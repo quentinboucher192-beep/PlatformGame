@@ -1,0 +1,5 @@
+# Local development secrets (copy to .dev.vars, which is git-ignored).
+# These values are for your machine only: never reuse them in staging/production.
+IP_HASH_SALT=local-development-salt-change-me
+# Optional: enables /api/v1/admin/* locally (use a long random value).
+# ADMIN_TOKEN=

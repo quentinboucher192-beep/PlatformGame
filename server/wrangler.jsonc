@@ -1,0 +1,89 @@
+// Cosmic Online Ranking - Cloudflare Worker configuration.
+//
+// Three environments share the same code:
+//   * dev        (`npm run dev`): local only, Miniflare simulates D1 and R2 on disk
+//                 (.wrangler/state). No Cloudflare account needed.
+//   * staging    (`wrangler deploy --env staging`)
+//   * production (`wrangler deploy`, top-level configuration)
+//
+// No secret lives in this file. Secrets are set with `wrangler secret put <NAME>`
+// (see docs/SECRETS.md): IP_HASH_SALT (required in staging/production) and ADMIN_TOKEN
+// (optional: enables the moderation routes). Local development reads them from
+// `.dev.vars` (git-ignored; copy `.dev.vars.example`).
+//
+// D1 / R2 resources: `database_id` is optional; on the first `wrangler deploy` Wrangler
+// provisions the database and bucket automatically, or you can create them yourself
+// (`wrangler d1 create ...`) and paste the id here (ids are not secrets).
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cosmic-online",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-13",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true, "head_sampling_rate": 1 },
+    "traces": { "enabled": true, "head_sampling_rate": 0.05 }
+  },
+  "triggers": { "crons": ["17 3 * * *"] },
+  "secrets": { "required": ["IP_HASH_SALT"] },
+  "vars": {
+    "ENVIRONMENT": "production",
+    "TOS_VERSION": "2026-11",
+    "MIN_GAME_VERSION": "2.1.0",
+    "ACCESS_TOKEN_TTL_SECONDS": "3600",
+    "REFRESH_TOKEN_TTL_DAYS": "30"
+  },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "cosmic-online-prod", "migrations_dir": "migrations" }
+  ],
+  "r2_buckets": [
+    { "binding": "STORAGE", "bucket_name": "cosmic-online-prod-files" }
+  ],
+  "env": {
+    "staging": {
+      "name": "cosmic-online-staging",
+      "workers_dev": true,
+      "observability": {
+        "enabled": true,
+        "logs": { "enabled": true, "head_sampling_rate": 1 },
+        "traces": { "enabled": true, "head_sampling_rate": 0.2 }
+      },
+      "triggers": { "crons": ["17 3 * * *"] },
+      "secrets": { "required": ["IP_HASH_SALT"] },
+      "vars": {
+        "ENVIRONMENT": "staging",
+        "TOS_VERSION": "2026-11",
+        "MIN_GAME_VERSION": "2.1.0",
+        "ACCESS_TOKEN_TTL_SECONDS": "3600",
+        "REFRESH_TOKEN_TTL_DAYS": "30"
+      },
+      "d1_databases": [
+        { "binding": "DB", "database_name": "cosmic-online-staging", "migrations_dir": "migrations" }
+      ],
+      "r2_buckets": [
+        { "binding": "STORAGE", "bucket_name": "cosmic-online-staging-files" }
+      ]
+    },
+    "dev": {
+      "name": "cosmic-online-dev",
+      "workers_dev": false,
+      "secrets": { "required": ["IP_HASH_SALT"] },
+      "vars": {
+        "ENVIRONMENT": "development",
+        "TOS_VERSION": "2026-11",
+        "MIN_GAME_VERSION": "2.1.0",
+        "ACCESS_TOKEN_TTL_SECONDS": "3600",
+        "REFRESH_TOKEN_TTL_DAYS": "30"
+      },
+      "d1_databases": [
+        { "binding": "DB", "database_name": "cosmic-online-dev", "migrations_dir": "migrations" }
+      ],
+      "r2_buckets": [
+        { "binding": "STORAGE", "bucket_name": "cosmic-online-dev-files" }
+      ]
+    }
+  },
+  "dev": { "ip": "127.0.0.1", "port": 8787 }
+}
