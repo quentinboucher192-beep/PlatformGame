@@ -1,0 +1,20 @@
+{
+  "texture": "sprites/enemies/prime_sentinel.png",
+  "frameWidth": 112,
+  "frameHeight": 112,
+  "pivot": [56, 80],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 8, "loop": true},
+    "move": {"row": 1, "count": 6, "fps": 10, "loop": true},
+    "roar": {"row": 2, "count": 8, "durations": [0.12, 0.12, 0.1, 0.1, 0.1, 0.12, 0.14, 0.16], "loop": false},
+    "hurt": {"row": 3, "count": 2, "durations": [0.08, 0.14], "loop": false},
+    "death": {"row": 4, "count": 14, "durations": [0.1, 0.12, 0.12, 0.12, 0.12, 0.14, 0.16, 0.12, 0.12, 0.12, 0.14, 0.14, 0.16, 0.3], "loop": false},
+    "telegraph_beam": {"row": 5, "count": 6, "durations": [0.1, 0.1, 0.1, 0.12, 0.14, 0.2], "loop": false},
+    "beam": {"row": 6, "count": 4, "fps": 14, "loop": true},
+    "telegraph_volley": {"row": 7, "count": 5, "durations": [0.1, 0.1, 0.12, 0.14, 0.18], "loop": false},
+    "volley": {"row": 8, "count": 4, "durations": [0.05, 0.12, 0.12, 0.14], "loop": false, "events": [{"frame": 1, "name": "fire"}]},
+    "telegraph_slam": {"row": 9, "count": 5, "durations": [0.1, 0.1, 0.12, 0.14, 0.2], "loop": false},
+    "slam": {"row": 10, "count": 5, "durations": [0.05, 0.05, 0.2, 0.14, 0.14], "loop": false, "events": [{"frame": 2, "name": "impact"}]},
+    "summon": {"row": 11, "count": 6, "durations": [0.12, 0.1, 0.12, 0.12, 0.14, 0.16], "loop": false}
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "texture": "sprites/enemies/spore_queen.png",
+  "frameWidth": 128,
+  "frameHeight": 112,
+  "pivot": [64, 112],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 6, "loop": true},
+    "roar": {"row": 1, "count": 8, "durations": [0.12, 0.12, 0.1, 0.1, 0.1, 0.12, 0.14, 0.16], "loop": false},
+    "hurt": {"row": 2, "count": 2, "durations": [0.08, 0.14], "loop": false},
+    "death": {"row": 3, "count": 14, "durations": [0.1, 0.12, 0.12, 0.14, 0.14, 0.14, 0.16, 0.16, 0.12, 0.12, 0.12, 0.14, 0.16, 0.3], "loop": false},
+    "telegraph_bite": {"row": 4, "count": 5, "durations": [0.1, 0.1, 0.12, 0.14, 0.2], "loop": false},
+    "bite": {"row": 5, "count": 5, "durations": [0.05, 0.05, 0.16, 0.12, 0.14], "loop": false, "events": [{"frame": 2, "name": "hit"}]},
+    "telegraph_spores": {"row": 6, "count": 6, "durations": [0.1, 0.1, 0.1, 0.12, 0.14, 0.2], "loop": false},
+    "spores": {"row": 7, "count": 4, "durations": [0.06, 0.14, 0.12, 0.14], "loop": false, "events": [{"frame": 1, "name": "fire"}]},
+    "telegraph_vines": {"row": 8, "count": 5, "durations": [0.1, 0.1, 0.12, 0.14, 0.2], "loop": false},
+    "vines": {"row": 9, "count": 4, "durations": [0.05, 0.2, 0.14, 0.14], "loop": false, "events": [{"frame": 1, "name": "impact"}]},
+    "summon": {"row": 10, "count": 6, "durations": [0.12, 0.1, 0.12, 0.12, 0.14, 0.16], "loop": false}
+  }
+}
