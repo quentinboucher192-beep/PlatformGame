@@ -1,0 +1,10 @@
+{
+  "texture": "sprites/objects/breakable_wall.png",
+  "frameWidth": 32,
+  "frameHeight": 64,
+  "pivot": [16, 64],
+  "clips": {
+    "intact": {"row": 0, "count": 1, "fps": 1, "loop": false},
+    "cracked": {"row": 1, "count": 1, "fps": 1, "loop": false}
+  }
+}

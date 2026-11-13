@@ -1,0 +1,9 @@
+{
+  "texture": "sprites/objects/health_orb.png",
+  "frameWidth": 12,
+  "frameHeight": 12,
+  "pivot": [6, 6],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 8, "loop": true}
+  }
+}

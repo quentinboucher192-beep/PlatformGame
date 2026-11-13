@@ -1,0 +1,11 @@
+{
+  "texture": "sprites/objects/lever.png",
+  "frameWidth": 16,
+  "frameHeight": 16,
+  "pivot": [8, 16],
+  "clips": {
+    "off": {"row": 0, "count": 1, "fps": 1, "loop": false},
+    "switching": {"row": 1, "count": 4, "fps": 16, "loop": false, "next": "on"},
+    "on": {"row": 2, "count": 1, "fps": 1, "loop": false}
+  }
+}

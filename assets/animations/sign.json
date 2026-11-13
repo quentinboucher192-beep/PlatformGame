@@ -1,0 +1,9 @@
+{
+  "texture": "sprites/objects/sign.png",
+  "frameWidth": 24,
+  "frameHeight": 24,
+  "pivot": [12, 24],
+  "clips": {
+    "idle": {"row": 0, "count": 1, "fps": 1, "loop": false}
+  }
+}

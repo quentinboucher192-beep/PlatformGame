@@ -1,0 +1,12 @@
+{
+  "texture": "sprites/objects/door.png",
+  "frameWidth": 16,
+  "frameHeight": 64,
+  "pivot": [8, 64],
+  "clips": {
+    "closed": {"row": 0, "count": 1, "fps": 1, "loop": false},
+    "opening": {"row": 1, "count": 6, "fps": 14, "loop": false, "next": "open"},
+    "open": {"row": 2, "count": 1, "fps": 1, "loop": false},
+    "closing": {"row": 3, "count": 6, "fps": 14, "loop": false, "next": "closed"}
+  }
+}

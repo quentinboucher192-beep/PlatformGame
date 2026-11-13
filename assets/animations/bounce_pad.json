@@ -1,0 +1,10 @@
+{
+  "texture": "sprites/objects/bounce_pad.png",
+  "frameWidth": 32,
+  "frameHeight": 16,
+  "pivot": [16, 16],
+  "clips": {
+    "idle": {"row": 0, "count": 1, "fps": 1, "loop": false},
+    "bounce": {"row": 1, "count": 5, "durations": [0.05, 0.07, 0.07, 0.07, 0.08], "loop": false, "next": "idle"}
+  }
+}

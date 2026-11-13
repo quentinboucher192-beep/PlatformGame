@@ -1,0 +1,14 @@
+{
+  "texture": "sprites/enemies/sentinel.png",
+  "frameWidth": 32,
+  "frameHeight": 32,
+  "pivot": [16, 32],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 8, "loop": true},
+    "move": {"row": 1, "count": 6, "fps": 10, "loop": true},
+    "telegraph": {"row": 2, "count": 6, "durations": [0.1, 0.1, 0.1, 0.1, 0.1, 0.12], "loop": false},
+    "attack": {"row": 3, "count": 3, "durations": [0.08, 0.1, 0.12], "loop": false, "events": [{"frame": 0, "name": "fire"}]},
+    "hurt": {"row": 4, "count": 2, "durations": [0.08, 0.12], "loop": false},
+    "death": {"row": 5, "count": 8, "durations": [0.08, 0.1, 0.1, 0.1, 0.08, 0.1, 0.1, 0.12], "loop": false}
+  }
+}

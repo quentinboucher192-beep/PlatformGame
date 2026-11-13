@@ -1,0 +1,27 @@
+{
+  "texture": "sprites/player/nova.png",
+  "frameWidth": 32,
+  "frameHeight": 32,
+  "pivot": [16, 32],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 7, "loop": true},
+    "walk": {"row": 1, "count": 8, "fps": 12, "loop": true, "events": [{"frame": 0, "name": "footstep"}, {"frame": 4, "name": "footstep"}]},
+    "run": {"row": 2, "count": 8, "fps": 15, "loop": true, "events": [{"frame": 0, "name": "footstep"}, {"frame": 4, "name": "footstep"}]},
+    "jump": {"row": 3, "count": 3, "durations": [0.06, 0.08, 0.1], "loop": false},
+    "double_jump": {"row": 4, "count": 6, "durations": [0.05, 0.05, 0.05, 0.05, 0.05, 0.1], "loop": false},
+    "fall": {"row": 5, "count": 3, "fps": 10, "loop": true},
+    "land": {"row": 6, "count": 3, "durations": [0.05, 0.06, 0.07], "loop": false, "next": "idle"},
+    "slide": {"row": 7, "count": 3, "durations": [0.05, 0.06, 0.1], "loop": false},
+    "wall_slide": {"row": 8, "count": 2, "fps": 10, "loop": true},
+    "climb": {"row": 9, "count": 4, "fps": 8, "loop": true},
+    "attack": {"row": 10, "count": 5, "durations": [0.04, 0.05, 0.07, 0.08, 0.1], "loop": false, "next": "idle", "events": [{"frame": 2, "name": "hit"}]},
+    "air_attack": {"row": 11, "count": 4, "durations": [0.04, 0.06, 0.08, 0.1], "loop": false, "events": [{"frame": 1, "name": "hit"}]},
+    "cast": {"row": 12, "count": 4, "durations": [0.06, 0.06, 0.1, 0.12], "loop": false, "events": [{"frame": 1, "name": "fire"}]},
+    "dash": {"row": 13, "count": 4, "fps": 18, "loop": true},
+    "hurt": {"row": 14, "count": 3, "durations": [0.08, 0.1, 0.12], "loop": false},
+    "death": {"row": 15, "count": 10, "durations": [0.12, 0.1, 0.12, 0.25, 0.09, 0.09, 0.09, 0.09, 0.1, 0.12], "loop": false},
+    "respawn": {"row": 16, "count": 10, "durations": [0.07, 0.07, 0.07, 0.07, 0.07, 0.07, 0.07, 0.07, 0.08, 0.12], "loop": false},
+    "victory": {"row": 17, "count": 10, "durations": [0.1, 0.08, 0.08, 0.1, 0.08, 0.08, 0.1, 0.1, 0.12, 0.2], "loop": false},
+    "interact": {"row": 18, "count": 4, "durations": [0.06, 0.08, 0.14, 0.1], "loop": false}
+  }
+}

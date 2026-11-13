@@ -1,0 +1,437 @@
+{
+  "texture": "sprites/decor/sylvanox_decor.png",
+  "sprites": {
+    "mushroom_small": {
+      "rect": [
+        92,
+        168,
+        16,
+        16
+      ],
+      "pivot": [
+        8,
+        16
+      ],
+      "frames": 1,
+      "fps": 0,
+      "glow": "#39f0d8",
+      "glowRadius": 20,
+      "glowOffset": [
+        0,
+        -11
+      ]
+    },
+    "mushroom_tall": {
+      "rect": [
+        160,
+        0,
+        32,
+        48
+      ],
+      "pivot": [
+        16,
+        48
+      ],
+      "frames": 1,
+      "fps": 0,
+      "glow": "#39f0d8",
+      "glowRadius": 40,
+      "glowOffset": [
+        2,
+        -32
+      ]
+    },
+    "mushroom_cluster": {
+      "rect": [
+        150,
+        142,
+        32,
+        24
+      ],
+      "pivot": [
+        16,
+        24
+      ],
+      "frames": 1,
+      "fps": 0,
+      "glow": "#b04cff",
+      "glowRadius": 28,
+      "glowOffset": [
+        3,
+        -14
+      ]
+    },
+    "glow_fern": {
+      "rect": [
+        0,
+        168,
+        24,
+        24
+      ],
+      "pivot": [
+        12,
+        24
+      ],
+      "frames": 1,
+      "fps": 0,
+      "glow": "#39f0d8",
+      "glowRadius": 22,
+      "glowOffset": [
+        0,
+        -14
+      ]
+    },
+    "glow_flowers": {
+      "rect": [
+        26,
+        168,
+        16,
+        16
+      ],
+      "pivot": [
+        8,
+        16
+      ],
+      "frames": 4,
+      "fps": 6,
+      "glow": "#e08aff",
+      "glowRadius": 16,
+      "glowOffset": [
+        0,
+        -9
+      ]
+    },
+    "crystal_cluster": {
+      "rect": [
+        218,
+        142,
+        24,
+        24
+      ],
+      "pivot": [
+        12,
+        24
+      ],
+      "frames": 1,
+      "fps": 0,
+      "glow": "#b04cff",
+      "glowRadius": 26,
+      "glowOffset": [
+        0,
+        -12
+      ]
+    },
+    "crystal_big": {
+      "rect": [
+        126,
+        0,
+        32,
+        48
+      ],
+      "pivot": [
+        16,
+        48
+      ],
+      "frames": 1,
+      "fps": 0,
+      "glow": "#b04cff",
+      "glowRadius": 44,
+      "glowOffset": [
+        0,
+        -24
+      ]
+    },
+    "ruin_pillar": {
+      "rect": [
+        82,
+        0,
+        24,
+        64
+      ],
+      "pivot": [
+        12,
+        64
+      ],
+      "frames": 1,
+      "fps": 0,
+      "glow": "#39f0d8",
+      "glowRadius": 14,
+      "glowOffset": [
+        -2,
+        -33
+      ]
+    },
+    "ruin_pillar_broken": {
+      "rect": [
+        220,
+        0,
+        24,
+        48
+      ],
+      "pivot": [
+        12,
+        48
+      ],
+      "frames": 1,
+      "fps": 0,
+      "glow": "#39f0d8",
+      "glowRadius": 12,
+      "glowOffset": [
+        -2,
+        -21
+      ]
+    },
+    "ruin_arch": {
+      "rect": [
+        0,
+        0,
+        80,
+        64
+      ],
+      "pivot": [
+        40,
+        64
+      ],
+      "frames": 1,
+      "fps": 0,
+      "glow": "#39f0d8",
+      "glowRadius": 18,
+      "glowOffset": [
+        0,
+        -58
+      ]
+    },
+    "statue_head": {
+      "rect": [
+        50,
+        66,
+        40,
+        40
+      ],
+      "pivot": [
+        20,
+        40
+      ],
+      "frames": 1,
+      "fps": 0,
+      "glow": "#39f0d8",
+      "glowRadius": 24,
+      "glowOffset": [
+        0,
+        -19
+      ]
+    },
+    "tech_panel": {
+      "rect": [
+        116,
+        108,
+        24,
+        24
+      ],
+      "pivot": [
+        12,
+        24
+      ],
+      "frames": 4,
+      "fps": 4,
+      "glow": "#ffb347",
+      "glowRadius": 24,
+      "glowOffset": [
+        0,
+        -13
+      ]
+    },
+    "lantern_pod": {
+      "rect": [
+        0,
+        108,
+        16,
+        32
+      ],
+      "pivot": [
+        8,
+        0
+      ],
+      "frames": 6,
+      "fps": 6,
+      "glow": "#39f0d8",
+      "glowRadius": 30,
+      "glowOffset": [
+        0,
+        21
+      ]
+    },
+    "hanging_vine_short": {
+      "rect": [
+        98,
+        108,
+        16,
+        32
+      ],
+      "pivot": [
+        8,
+        0
+      ],
+      "frames": 1,
+      "fps": 0
+    },
+    "hanging_vine_long": {
+      "rect": [
+        108,
+        0,
+        16,
+        64
+      ],
+      "pivot": [
+        8,
+        0
+      ],
+      "frames": 1,
+      "fps": 0
+    },
+    "roots": {
+      "rect": [
+        100,
+        142,
+        48,
+        24
+      ],
+      "pivot": [
+        24,
+        24
+      ],
+      "frames": 1,
+      "fps": 0
+    },
+    "rock_small": {
+      "rect": [
+        128,
+        168,
+        16,
+        12
+      ],
+      "pivot": [
+        8,
+        12
+      ],
+      "frames": 1,
+      "fps": 0
+    },
+    "rock_big": {
+      "rect": [
+        184,
+        142,
+        32,
+        24
+      ],
+      "pivot": [
+        16,
+        24
+      ],
+      "frames": 1,
+      "fps": 0
+    },
+    "floating_rock": {
+      "rect": [
+        0,
+        66,
+        48,
+        40
+      ],
+      "pivot": [
+        24,
+        20
+      ],
+      "frames": 1,
+      "fps": 0,
+      "glow": "#b04cff",
+      "glowRadius": 30,
+      "glowOffset": [
+        0,
+        10
+      ]
+    },
+    "holo_glyph": {
+      "rect": [
+        92,
+        66,
+        24,
+        32
+      ],
+      "pivot": [
+        12,
+        32
+      ],
+      "frames": 6,
+      "fps": 8,
+      "glow": "#39f0d8",
+      "glowRadius": 30,
+      "glowOffset": [
+        0,
+        -23
+      ]
+    },
+    "pipe_broken": {
+      "rect": [
+        50,
+        142,
+        48,
+        24
+      ],
+      "pivot": [
+        24,
+        24
+      ],
+      "frames": 1,
+      "fps": 0,
+      "glow": "#ffb347",
+      "glowRadius": 16,
+      "glowOffset": [
+        -3,
+        -12
+      ]
+    },
+    "banner_torn": {
+      "rect": [
+        194,
+        0,
+        24,
+        48
+      ],
+      "pivot": [
+        12,
+        48
+      ],
+      "frames": 1,
+      "fps": 0
+    },
+    "grass_tuft": {
+      "rect": [
+        110,
+        168,
+        16,
+        12
+      ],
+      "pivot": [
+        8,
+        12
+      ],
+      "frames": 1,
+      "fps": 0
+    },
+    "bones_ancient": {
+      "rect": [
+        0,
+        142,
+        48,
+        24
+      ],
+      "pivot": [
+        24,
+        24
+      ],
+      "frames": 1,
+      "fps": 0
+    }
+  }
+}

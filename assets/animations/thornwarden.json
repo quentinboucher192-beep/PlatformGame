@@ -1,0 +1,22 @@
+{
+  "texture": "sprites/enemies/thornwarden.png",
+  "frameWidth": 96,
+  "frameHeight": 96,
+  "pivot": [48, 96],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 6, "loop": true},
+    "walk": {"row": 1, "count": 8, "fps": 9, "loop": true},
+    "telegraph_slam": {"row": 2, "count": 6, "durations": [0.1, 0.1, 0.1, 0.12, 0.14, 0.2], "loop": false},
+    "slam": {"row": 3, "count": 6, "durations": [0.05, 0.05, 0.05, 0.2, 0.15, 0.15], "loop": false, "events": [{"frame": 3, "name": "impact"}]},
+    "telegraph_charge": {"row": 4, "count": 4, "durations": [0.12, 0.12, 0.14, 0.18], "loop": false},
+    "charge": {"row": 5, "count": 6, "fps": 12, "loop": true},
+    "telegraph_barrage": {"row": 6, "count": 6, "durations": [0.1, 0.1, 0.1, 0.1, 0.12, 0.16], "loop": false},
+    "barrage": {"row": 7, "count": 4, "durations": [0.06, 0.1, 0.1, 0.12], "loop": false, "events": [{"frame": 1, "name": "fire"}]},
+    "summon": {"row": 8, "count": 6, "durations": [0.12, 0.1, 0.12, 0.12, 0.14, 0.16], "loop": false},
+    "roar": {"row": 9, "count": 8, "durations": [0.12, 0.12, 0.1, 0.1, 0.1, 0.12, 0.14, 0.16], "loop": false},
+    "telegraph_laser": {"row": 10, "count": 6, "durations": [0.1, 0.1, 0.1, 0.12, 0.14, 0.2], "loop": false},
+    "laser": {"row": 11, "count": 4, "fps": 14, "loop": true},
+    "hurt": {"row": 12, "count": 2, "durations": [0.08, 0.14], "loop": false},
+    "death": {"row": 13, "count": 14, "durations": [0.1, 0.12, 0.12, 0.14, 0.14, 0.16, 0.16, 0.18, 0.12, 0.12, 0.12, 0.14, 0.16, 0.3], "loop": false}
+  }
+}

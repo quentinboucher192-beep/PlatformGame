@@ -1,0 +1,13 @@
+{
+  "texture": "sprites/objects/power_unlock.png",
+  "frameWidth": 32,
+  "frameHeight": 32,
+  "pivot": [16, 16],
+  "clips": {
+    "dash": {"row": 0, "count": 8, "fps": 8, "loop": true},
+    "wave": {"row": 1, "count": 8, "fps": 8, "loop": true},
+    "shield": {"row": 2, "count": 8, "fps": 8, "loop": true},
+    "impulse": {"row": 3, "count": 8, "fps": 8, "loop": true},
+    "teleport": {"row": 4, "count": 8, "fps": 8, "loop": true}
+  }
+}

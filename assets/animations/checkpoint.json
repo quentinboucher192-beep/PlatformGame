@@ -1,0 +1,11 @@
+{
+  "texture": "sprites/objects/checkpoint.png",
+  "frameWidth": 24,
+  "frameHeight": 48,
+  "pivot": [12, 48],
+  "clips": {
+    "inactive": {"row": 0, "count": 1, "fps": 1, "loop": false},
+    "activate": {"row": 1, "count": 8, "fps": 12, "loop": false, "next": "active"},
+    "active": {"row": 2, "count": 6, "fps": 8, "loop": true}
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "texture": "sprites/projectiles/projectiles.png",
+  "frameWidth": 16,
+  "frameHeight": 16,
+  "pivot": [8, 8],
+  "clips": {
+    "player_wave": {"row": 0, "count": 4, "fps": 16, "loop": true},
+    "drone_bolt": {"row": 1, "count": 4, "fps": 16, "loop": true},
+    "spore": {"row": 2, "count": 4, "fps": 10, "loop": true},
+    "wisp_orb": {"row": 3, "count": 4, "fps": 12, "loop": true},
+    "boss_thorn": {"row": 4, "count": 4, "fps": 12, "loop": true},
+    "boss_orb": {"row": 5, "count": 4, "fps": 12, "loop": true}
+  }
+}

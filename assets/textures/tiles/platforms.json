@@ -1,0 +1,9 @@
+{
+  "texture": "textures/tiles/platforms.png",
+  "tileSize": 16,
+  "styles": {
+    "ruin_bridge": 0,
+    "tech_ledge": 1,
+    "root_branch": 2
+  }
+}

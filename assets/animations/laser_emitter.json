@@ -1,0 +1,11 @@
+{
+  "texture": "sprites/objects/laser_emitter.png",
+  "frameWidth": 16,
+  "frameHeight": 16,
+  "pivot": [8, 16],
+  "clips": {
+    "off": {"row": 0, "count": 1, "fps": 1, "loop": false},
+    "charging": {"row": 1, "count": 4, "fps": 8, "loop": false},
+    "on": {"row": 2, "count": 4, "fps": 16, "loop": true}
+  }
+}

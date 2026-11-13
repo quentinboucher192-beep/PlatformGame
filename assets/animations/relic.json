@@ -1,0 +1,9 @@
+{
+  "texture": "sprites/objects/relic.png",
+  "frameWidth": 16,
+  "frameHeight": 16,
+  "pivot": [8, 8],
+  "clips": {
+    "idle": {"row": 0, "count": 8, "fps": 8, "loop": true}
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "texture": "sprites/objects/shard.png",
+  "frameWidth": 12,
+  "frameHeight": 12,
+  "pivot": [6, 6],
+  "clips": {
+    "spin": {"row": 0, "count": 8, "fps": 10, "loop": true}
+  }
+}

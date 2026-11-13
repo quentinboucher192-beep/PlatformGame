@@ -1,0 +1,10 @@
+{
+  "texture": "sprites/objects/receptor.png",
+  "frameWidth": 16,
+  "frameHeight": 32,
+  "pivot": [8, 32],
+  "clips": {
+    "off": {"row": 0, "count": 1, "fps": 1, "loop": false},
+    "on": {"row": 1, "count": 6, "fps": 8, "loop": true}
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "texture": "sprites/objects/exit_portal.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "pivot": [32, 64],
+  "clips": {
+    "idle": {"row": 0, "count": 8, "fps": 8, "loop": true},
+    "active": {"row": 1, "count": 8, "fps": 12, "loop": true}
+  }
+}
