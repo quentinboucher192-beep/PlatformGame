@@ -60,7 +60,7 @@
     0,
     210
    ],
-   "fillBelow": "#5a1a0e"
+   "fillBelow": "#ff8a3d"
   },
   {
    "texture": "backgrounds/pyralis/near.png",
@@ -4532,7 +4532,7 @@
    "type": "grapple_point",
    "layer": "gameplay",
    "rect": [
-    5028.0,
+    5020.0,
     788.0,
     24.0,
     24.0
@@ -4543,8 +4543,8 @@
    "type": "grapple_point",
    "layer": "gameplay",
    "rect": [
-    5172.0,
-    820.0,
+    5148.0,
+    804.0,
     24.0,
     24.0
    ]
@@ -4568,7 +4568,7 @@
    "type": "shard",
    "layer": "gameplay",
    "rect": [
-    4962.0,
+    4954.0,
     858.0,
     12.0,
     12.0
@@ -4582,7 +4582,7 @@
    "type": "shard",
    "layer": "gameplay",
    "rect": [
-    5034.0,
+    5018.0,
     858.0,
     12.0,
     12.0
@@ -4596,7 +4596,7 @@
    "type": "shard",
    "layer": "gameplay",
    "rect": [
-    5106.0,
+    5082.0,
     858.0,
     12.0,
     12.0
@@ -4610,7 +4610,7 @@
    "type": "shard",
    "layer": "gameplay",
    "rect": [
-    5178.0,
+    5146.0,
     858.0,
     12.0,
     12.0
@@ -4756,7 +4756,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    4971.4,
+    4963.4,
     704.0,
     25.200000000000003,
     67.2
@@ -4775,7 +4775,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    4971.4,
+    4963.4,
     768.0,
     25.200000000000003,
     67.2
@@ -4794,7 +4794,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    4971.4,
+    4963.4,
     832.0,
     25.200000000000003,
     67.2
@@ -4813,7 +4813,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    4971.4,
+    4963.4,
     896.0,
     25.200000000000003,
     67.2
@@ -4832,7 +4832,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    4971.4,
+    4963.4,
     960.0,
     25.200000000000003,
     67.2
@@ -4851,7 +4851,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    4971.4,
+    4963.4,
     1024.0,
     25.200000000000003,
     67.2
@@ -4870,7 +4870,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5115.4,
+    5091.4,
     704.0,
     25.200000000000003,
     67.2
@@ -4889,7 +4889,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5115.4,
+    5091.4,
     768.0,
     25.200000000000003,
     67.2
@@ -4908,7 +4908,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5115.4,
+    5091.4,
     832.0,
     25.200000000000003,
     67.2
@@ -4927,7 +4927,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5115.4,
+    5091.4,
     896.0,
     25.200000000000003,
     67.2
@@ -4946,7 +4946,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5115.4,
+    5091.4,
     960.0,
     25.200000000000003,
     67.2
@@ -4965,7 +4965,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5115.4,
+    5091.4,
     1024.0,
     25.200000000000003,
     67.2
@@ -4984,7 +4984,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5259.4,
+    5211.4,
     704.0,
     25.200000000000003,
     67.2
@@ -5003,7 +5003,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5259.4,
+    5211.4,
     768.0,
     25.200000000000003,
     67.2
@@ -5022,7 +5022,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5259.4,
+    5211.4,
     832.0,
     25.200000000000003,
     67.2
@@ -5041,7 +5041,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5259.4,
+    5211.4,
     896.0,
     25.200000000000003,
     67.2
@@ -5060,7 +5060,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5259.4,
+    5211.4,
     960.0,
     25.200000000000003,
     67.2
@@ -5079,7 +5079,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5259.4,
+    5211.4,
     1024.0,
     25.200000000000003,
     67.2
@@ -5212,10 +5212,10 @@
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    5296.0,
-    896.0,
-    240.0,
-    240.0
+    5248.0,
+    880.0,
+    288.0,
+    256.0
    ],
    "props": {
     "material": "basalt"
@@ -5226,8 +5226,8 @@
    "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
-    5332.0,
-    848.0,
+    5316.0,
+    832.0,
     24.0,
     48.0
    ],
@@ -5240,8 +5240,8 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    5336.0,
-    808.0,
+    5320.0,
+    792.0,
     16.0,
     16.0
    ],
@@ -5257,8 +5257,8 @@
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
-    5402.0,
-    858.0,
+    5386.0,
+    842.0,
     12.0,
     12.0
    ],
@@ -5272,7 +5272,7 @@
    "layer": "gameplay",
    "rect": [
     5480.0,
-    884.0,
+    868.0,
     16.0,
     12.0
    ],
@@ -5289,8 +5289,8 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5398.845182198129,
-    884.0,
+    5350.845182198129,
+    868.0,
     16.0,
     12.0
    ],
@@ -5309,8 +5309,8 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5458.459573205298,
-    872.0,
+    5410.459573205298,
+    856.0,
     16.0,
     24.0
    ],
@@ -5329,7 +5329,7 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    4664.35467633769,
+    4625.911334053853,
     1048.0,
     16.0,
     16.0
@@ -5346,7 +5346,7 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    4889.896205246982,
+    4911.860852341974,
     1048.0,
     16.0,
     16.0
@@ -5363,7 +5363,7 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    5134.082977162698,
+    5127.981348182428,
     1048.0,
     16.0,
     16.0
@@ -5380,7 +5380,7 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    5332.124937509047,
+    5281.071015007157,
     1048.0,
     16.0,
     16.0
@@ -5397,7 +5397,7 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    5521.911334053853,
+    5536.076514644266,
     1048.0,
     16.0,
     16.0
@@ -5579,7 +5579,7 @@
    "layer": "gameplay",
    "rect": [
     5500.0,
-    872.0,
+    856.0,
     24.0,
     24.0
    ],
@@ -5593,26 +5593,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    4712.155311224856,
-    532.0,
-    16.0,
-    12.0
-   ],
-   "props": {
-    "sprite": "ash_rock_small",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o329",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    4780.596799831661,
+    4744.793469556034,
     528.0,
     32.0,
     16.0
@@ -5628,11 +5609,11 @@
    }
   },
   {
-   "id": "o330",
+   "id": "o329",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    4864.399239192468,
+    4828.595908916841,
     532.0,
     16.0,
     12.0
@@ -5648,11 +5629,11 @@
    }
   },
   {
-   "id": "o331",
+   "id": "o330",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    4977.30751887481,
+    4941.504188599183,
     512.0,
     32.0,
     32.0
@@ -5667,11 +5648,11 @@
    }
   },
   {
-   "id": "o332",
+   "id": "o331",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5074.539160025868,
+    5038.7358297502415,
     504.0,
     24.0,
     40.0
@@ -5686,15 +5667,35 @@
    }
   },
   {
-   "id": "o333",
+   "id": "o332",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5219.273990110552,
+    5183.470659834926,
     496.0,
     24.0,
     48.0
    ],
+   "props": {
+    "sprite": "obsidian_spire",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o333",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5312.77348104577,
+    496.0,
+    24.0,
+    48.0
+   ],
+   "flipX": true,
    "props": {
     "sprite": "obsidian_spire",
     "alpha": 1.0,
@@ -5709,14 +5710,13 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5348.576811321396,
-    496.0,
-    24.0,
-    48.0
+    5382.967069602652,
+    532.0,
+    16.0,
+    12.0
    ],
-   "flipX": true,
    "props": {
-    "sprite": "obsidian_spire",
+    "sprite": "ash_rock_small",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -5729,26 +5729,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5418.770399878279,
-    532.0,
-    16.0,
-    12.0
-   ],
-   "props": {
-    "sprite": "ash_rock_small",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o336",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    5452.640315452584,
+    5416.836985176958,
     532.0,
     16.0,
     12.0
@@ -5764,7 +5745,7 @@
    }
   },
   {
-   "id": "o337",
+   "id": "o336",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5778,7 +5759,7 @@
    }
   },
   {
-   "id": "o338",
+   "id": "o337",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5792,7 +5773,7 @@
    }
   },
   {
-   "id": "o339",
+   "id": "o338",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5806,7 +5787,7 @@
    }
   },
   {
-   "id": "o340",
+   "id": "o339",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5820,7 +5801,7 @@
    }
   },
   {
-   "id": "o341",
+   "id": "o340",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5834,7 +5815,7 @@
    }
   },
   {
-   "id": "o342",
+   "id": "o341",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5848,7 +5829,7 @@
    }
   },
   {
-   "id": "o343",
+   "id": "o342",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5862,7 +5843,7 @@
    }
   },
   {
-   "id": "o344",
+   "id": "o343",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5876,7 +5857,7 @@
    }
   },
   {
-   "id": "o345",
+   "id": "o344",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5894,7 +5875,7 @@
    }
   },
   {
-   "id": "o346",
+   "id": "o345",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5912,7 +5893,7 @@
    }
   },
   {
-   "id": "o347",
+   "id": "o346",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -5926,7 +5907,7 @@
    }
   },
   {
-   "id": "o348",
+   "id": "o347",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -5940,7 +5921,7 @@
    }
   },
   {
-   "id": "o349",
+   "id": "o348",
    "type": "power_gate",
    "layer": "gameplay",
    "rect": [
@@ -5955,7 +5936,7 @@
    }
   },
   {
-   "id": "o350",
+   "id": "o349",
    "type": "relic",
    "layer": "gameplay",
    "rect": [
@@ -5970,7 +5951,7 @@
    }
   },
   {
-   "id": "o351",
+   "id": "o350",
    "type": "secret_area",
    "layer": "gameplay",
    "rect": [
@@ -5984,7 +5965,7 @@
    }
   },
   {
-   "id": "o352",
+   "id": "o351",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -6001,7 +5982,7 @@
    }
   },
   {
-   "id": "o353",
+   "id": "o352",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -6015,11 +5996,11 @@
    }
   },
   {
-   "id": "o354",
+   "id": "o353",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5702.539051222459,
+    5675.344233817794,
     536.0,
     24.0,
     40.0
@@ -6035,11 +6016,11 @@
    }
   },
   {
-   "id": "o355",
+   "id": "o354",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5780.178952990782,
+    5752.984135586116,
     560.0,
     32.0,
     16.0
@@ -6055,7 +6036,7 @@
    }
   },
   {
-   "id": "o356",
+   "id": "o355",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6073,7 +6054,7 @@
    }
   },
   {
-   "id": "o357",
+   "id": "o356",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -6088,7 +6069,7 @@
    }
   },
   {
-   "id": "o358",
+   "id": "o357",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
@@ -6103,7 +6084,7 @@
    }
   },
   {
-   "id": "o359",
+   "id": "o358",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
@@ -6118,7 +6099,7 @@
    }
   },
   {
-   "id": "o360",
+   "id": "o359",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
@@ -6133,7 +6114,7 @@
    }
   },
   {
-   "id": "o361",
+   "id": "o360",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -6147,7 +6128,7 @@
    }
   },
   {
-   "id": "o362",
+   "id": "o361",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -6161,7 +6142,7 @@
    }
   },
   {
-   "id": "o363",
+   "id": "o362",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -6175,7 +6156,7 @@
    }
   },
   {
-   "id": "o364",
+   "id": "o363",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -6189,7 +6170,7 @@
    }
   },
   {
-   "id": "o365",
+   "id": "o364",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -6203,7 +6184,7 @@
    }
   },
   {
-   "id": "o366",
+   "id": "o365",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -6217,7 +6198,7 @@
    }
   },
   {
-   "id": "o367",
+   "id": "o366",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -6231,7 +6212,7 @@
    }
   },
   {
-   "id": "o368",
+   "id": "o367",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -6245,7 +6226,7 @@
    }
   },
   {
-   "id": "o369",
+   "id": "o368",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6263,7 +6244,7 @@
    }
   },
   {
-   "id": "o370",
+   "id": "o369",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6281,7 +6262,7 @@
    }
   },
   {
-   "id": "o371",
+   "id": "o370",
    "type": "power_gate",
    "layer": "gameplay",
    "rect": [
@@ -6296,14 +6277,28 @@
    }
   },
   {
-   "id": "o372",
+   "id": "o371",
    "type": "solid",
    "layer": "terrain",
    "rect": [
     6352.0,
     656.0,
     16.0,
-    176.0
+    144.0
+   ],
+   "props": {
+    "material": "obsidian"
+   }
+  },
+  {
+   "id": "o372",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6432.0,
+    704.0,
+    32.0,
+    96.0
    ],
    "props": {
     "material": "obsidian"
@@ -6314,10 +6309,10 @@
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    6432.0,
-    704.0,
-    32.0,
-    128.0
+    6352.0,
+    800.0,
+    112.0,
+    336.0
    ],
    "props": {
     "material": "obsidian"
@@ -6325,36 +6320,22 @@
   },
   {
    "id": "o374",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    6352.0,
-    832.0,
-    112.0,
-    304.0
-   ],
-   "props": {
-    "material": "obsidian"
-   }
-  },
-  {
-   "id": "o375",
    "type": "grapple_point",
    "layer": "gameplay",
    "rect": [
     6388.0,
-    668.0,
+    652.0,
     24.0,
     24.0
    ]
   },
   {
-   "id": "o376",
+   "id": "o375",
    "type": "heart_container",
    "layer": "gameplay",
    "rect": [
     6392.0,
-    792.0,
+    760.0,
     16.0,
     16.0
    ],
@@ -6363,26 +6344,26 @@
    }
   },
   {
-   "id": "o377",
+   "id": "o376",
    "type": "secret_area",
    "layer": "gameplay",
    "rect": [
     6368.0,
     656.0,
     64.0,
-    176.0
+    144.0
    ],
    "props": {
     "message": "Un cœur de cristal scellé sous le pont !"
    }
   },
   {
-   "id": "o378",
+   "id": "o377",
    "type": "light",
    "layer": "gameplay",
    "rect": [
     6392.0,
-    776.0,
+    744.0,
     16.0,
     16.0
    ],
@@ -6394,7 +6375,7 @@
    }
   },
   {
-   "id": "o379",
+   "id": "o378",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -6408,7 +6389,7 @@
    }
   },
   {
-   "id": "o380",
+   "id": "o379",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -6422,7 +6403,7 @@
    }
   },
   {
-   "id": "o381",
+   "id": "o380",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -6436,7 +6417,7 @@
    }
   },
   {
-   "id": "o382",
+   "id": "o381",
    "type": "power_gate",
    "layer": "gameplay",
    "rect": [
@@ -6451,7 +6432,7 @@
    }
   },
   {
-   "id": "o383",
+   "id": "o382",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -6465,7 +6446,7 @@
    }
   },
   {
-   "id": "o384",
+   "id": "o383",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -6479,7 +6460,7 @@
    }
   },
   {
-   "id": "o385",
+   "id": "o384",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -6493,7 +6474,7 @@
    }
   },
   {
-   "id": "o386",
+   "id": "o385",
    "type": "power_gate",
    "layer": "gameplay",
    "rect": [
@@ -6508,7 +6489,7 @@
    }
   },
   {
-   "id": "o387",
+   "id": "o386",
    "type": "power_gate",
    "layer": "gameplay",
    "rect": [
@@ -6523,7 +6504,7 @@
    }
   },
   {
-   "id": "o388",
+   "id": "o387",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -6538,7 +6519,7 @@
    }
   },
   {
-   "id": "o389",
+   "id": "o388",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6557,11 +6538,11 @@
    }
   },
   {
-   "id": "o390",
+   "id": "o389",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    6440.622770673516,
+    6431.23192689235,
     512.0,
     16.0,
     64.0
@@ -6572,7 +6553,26 @@
     "tint": "#ffffff",
     "animSpeed": 1.0,
     "glow": true,
-    "sway": 1.6716136309598226
+    "sway": 1.8639147090913109
+   }
+  },
+  {
+   "id": "o390",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6514.341282212863,
+    512.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "sprite": "hanging_chain_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.777595496340306
    }
   },
   {
@@ -6580,18 +6580,18 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    6504.000425790002,
+    6579.087885381412,
     512.0,
     16.0,
-    64.0
+    32.0
    ],
    "props": {
-    "sprite": "hanging_chain_long",
+    "sprite": "hanging_chain",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
     "glow": true,
-    "sway": 1.059416691287252
+    "sway": 1.1492024793862408
    }
   },
   {
@@ -6599,7 +6599,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    6601.468331826385,
+    6680.2357408420285,
     512.0,
     16.0,
     32.0
@@ -6610,7 +6610,7 @@
     "tint": "#ffffff",
     "animSpeed": 1.0,
     "glow": true,
-    "sway": 1.1464678328471058
+    "sway": 1.8988143139314226
    }
   },
   {
@@ -6618,18 +6618,18 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    6694.79291565072,
+    6768.462806179902,
     512.0,
     16.0,
-    64.0
+    32.0
    ],
    "props": {
-    "sprite": "hanging_chain_long",
+    "sprite": "hanging_chain",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
     "glow": true,
-    "sway": 1.5549564331145271
+    "sway": 1.7282633912771472
    }
   },
   {
@@ -6637,7 +6637,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    6757.95463466126,
+    6826.371013817118,
     512.0,
     16.0,
     32.0
@@ -6648,30 +6648,11 @@
     "tint": "#ffffff",
     "animSpeed": 1.0,
     "glow": true,
-    "sway": 1.7727028278113415
+    "sway": 1.053921850424994
    }
   },
   {
    "id": "o395",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    6857.097721729968,
-    512.0,
-    16.0,
-    32.0
-   ],
-   "props": {
-    "sprite": "hanging_chain",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 1.8434097073017246
-   }
-  },
-  {
-   "id": "o396",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -6685,7 +6666,7 @@
    }
   },
   {
-   "id": "o397",
+   "id": "o396",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -6699,7 +6680,7 @@
    }
   },
   {
-   "id": "o398",
+   "id": "o397",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6717,7 +6698,7 @@
    }
   },
   {
-   "id": "o399",
+   "id": "o398",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6735,7 +6716,7 @@
    }
   },
   {
-   "id": "o400",
+   "id": "o399",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6753,7 +6734,7 @@
    }
   },
   {
-   "id": "o401",
+   "id": "o400",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -6767,7 +6748,7 @@
    }
   },
   {
-   "id": "o402",
+   "id": "o401",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -6781,7 +6762,7 @@
    }
   },
   {
-   "id": "o403",
+   "id": "o402",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -6795,7 +6776,7 @@
    }
   },
   {
-   "id": "o404",
+   "id": "o403",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -6809,7 +6790,7 @@
    }
   },
   {
-   "id": "o405",
+   "id": "o404",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -6823,7 +6804,7 @@
    }
   },
   {
-   "id": "o406",
+   "id": "o405",
    "type": "updraft",
    "layer": "gameplay",
    "rect": [
@@ -6838,7 +6819,7 @@
    }
   },
   {
-   "id": "o407",
+   "id": "o406",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -6853,7 +6834,7 @@
    }
   },
   {
-   "id": "o408",
+   "id": "o407",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -6870,7 +6851,7 @@
    }
   },
   {
-   "id": "o409",
+   "id": "o408",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -6887,7 +6868,7 @@
    }
   },
   {
-   "id": "o410",
+   "id": "o409",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -6901,7 +6882,7 @@
    }
   },
   {
-   "id": "o411",
+   "id": "o410",
    "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
@@ -6915,7 +6896,7 @@
    }
   },
   {
-   "id": "o412",
+   "id": "o411",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -6932,7 +6913,7 @@
    }
   },
   {
-   "id": "o413",
+   "id": "o412",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -6946,7 +6927,7 @@
    }
   },
   {
-   "id": "o414",
+   "id": "o413",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -6960,7 +6941,7 @@
    }
   },
   {
-   "id": "o415",
+   "id": "o414",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -6974,7 +6955,7 @@
    }
   },
   {
-   "id": "o416",
+   "id": "o415",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -6988,7 +6969,7 @@
    }
   },
   {
-   "id": "o417",
+   "id": "o416",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -7002,7 +6983,7 @@
    }
   },
   {
-   "id": "o418",
+   "id": "o417",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -7016,7 +6997,7 @@
    }
   },
   {
-   "id": "o419",
+   "id": "o418",
    "type": "door",
    "layer": "gameplay",
    "rect": [
@@ -7030,7 +7011,7 @@
    }
   },
   {
-   "id": "o420",
+   "id": "o419",
    "type": "door",
    "layer": "gameplay",
    "rect": [
@@ -7044,7 +7025,7 @@
    }
   },
   {
-   "id": "o421",
+   "id": "o420",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -7058,7 +7039,7 @@
    }
   },
   {
-   "id": "o422",
+   "id": "o421",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -7072,7 +7053,7 @@
    }
   },
   {
-   "id": "o423",
+   "id": "o422",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -7086,7 +7067,7 @@
    }
   },
   {
-   "id": "o424",
+   "id": "o423",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -7104,7 +7085,7 @@
    }
   },
   {
-   "id": "o425",
+   "id": "o424",
    "type": "camera_zone",
    "layer": "gameplay",
    "rect": [
@@ -7119,7 +7100,7 @@
    }
   },
   {
-   "id": "o426",
+   "id": "o425",
    "type": "combat_zone",
    "layer": "gameplay",
    "rect": [
@@ -7129,15 +7110,15 @@
     384.0
    ],
    "props": {
-    "doors": "o419,o420",
-    "waves": "o424",
+    "doors": "o418,o419",
+    "waves": "o423",
     "lockCamera": false,
     "music": "music/pyralis_boss.ogg",
     "announce": false
    }
   },
   {
-   "id": "o427",
+   "id": "o426",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7156,7 +7137,7 @@
    }
   },
   {
-   "id": "o428",
+   "id": "o427",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7175,7 +7156,7 @@
    }
   },
   {
-   "id": "o429",
+   "id": "o428",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -7192,7 +7173,7 @@
    }
   },
   {
-   "id": "o430",
+   "id": "o429",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7211,7 +7192,7 @@
    }
   },
   {
-   "id": "o431",
+   "id": "o430",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -7228,7 +7209,7 @@
    }
   },
   {
-   "id": "o432",
+   "id": "o431",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7248,7 +7229,7 @@
    }
   },
   {
-   "id": "o433",
+   "id": "o432",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7269,11 +7250,30 @@
    }
   },
   {
+   "id": "o433",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7134.562592552005,
+    416.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "sprite": "hanging_chain_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.558506627693505
+   }
+  },
+  {
    "id": "o434",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    7097.908207637216,
+    7254.249516095272,
     416.0,
     16.0,
     32.0
@@ -7284,7 +7284,7 @@
     "tint": "#ffffff",
     "animSpeed": 1.0,
     "glow": true,
-    "sway": 1.053921850424994
+    "sway": 1.5212194554802017
    }
   },
   {
@@ -7292,18 +7292,18 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    7197.228437452796,
+    7323.241938235029,
     416.0,
     16.0,
-    32.0
+    64.0
    ],
    "props": {
-    "sprite": "hanging_chain",
+    "sprite": "hanging_chain_long",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
     "glow": true,
-    "sway": 1.0527216947306464
+    "sway": 1.7580038055947038
    }
   },
   {
@@ -7311,7 +7311,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    7296.598419207942,
+    7439.952248235301,
     416.0,
     16.0,
     32.0
@@ -7322,7 +7322,7 @@
     "tint": "#ffffff",
     "animSpeed": 1.0,
     "glow": true,
-    "sway": 1.920246124209505
+    "sway": 1.4846148888398782
    }
   },
   {
@@ -7330,18 +7330,18 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    7393.820659843602,
+    7551.742251312772,
     416.0,
     16.0,
-    64.0
+    32.0
    ],
    "props": {
-    "sprite": "hanging_chain_long",
+    "sprite": "hanging_chain",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
     "glow": true,
-    "sway": 1.3689262020598385
+    "sway": 1.2207222428205782
    }
   },
   {
@@ -7349,45 +7349,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    7504.681679045857,
-    416.0,
-    16.0,
-    32.0
-   ],
-   "props": {
-    "sprite": "hanging_chain",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 1.6007585492604224
-   }
-  },
-  {
-   "id": "o439",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    7599.795496643034,
-    416.0,
-    16.0,
-    32.0
-   ],
-   "props": {
-    "sprite": "hanging_chain",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 1.9641511253524664
-   }
-  },
-  {
-   "id": "o440",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    7679.7090978295,
+    7632.493356834972,
     416.0,
     16.0,
     64.0
@@ -7398,30 +7360,30 @@
     "tint": "#ffffff",
     "animSpeed": 1.0,
     "glow": true,
-    "sway": 1.1328769611255343
+    "sway": 1.1776080247619323
    }
   },
   {
-   "id": "o441",
+   "id": "o439",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    7757.139320055788,
+    7756.779561003631,
     416.0,
     16.0,
-    32.0
+    64.0
    ],
    "props": {
-    "sprite": "hanging_chain",
+    "sprite": "hanging_chain_long",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
     "glow": true,
-    "sway": 1.484325313453471
+    "sway": 1.3319598692542685
    }
   },
   {
-   "id": "o442",
+   "id": "o440",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -7438,7 +7400,7 @@
    }
   },
   {
-   "id": "o443",
+   "id": "o441",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -7452,7 +7414,7 @@
    }
   },
   {
-   "id": "o444",
+   "id": "o442",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -7466,7 +7428,7 @@
    }
   },
   {
-   "id": "o445",
+   "id": "o443",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -7480,7 +7442,7 @@
    }
   },
   {
-   "id": "o446",
+   "id": "o444",
    "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
@@ -7494,7 +7456,7 @@
    }
   },
   {
-   "id": "o447",
+   "id": "o445",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -7511,7 +7473,7 @@
    }
   },
   {
-   "id": "o448",
+   "id": "o446",
    "type": "updraft",
    "layer": "gameplay",
    "rect": [
@@ -7526,7 +7488,7 @@
    }
   },
   {
-   "id": "o449",
+   "id": "o447",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -7541,7 +7503,7 @@
    }
   },
   {
-   "id": "o450",
+   "id": "o448",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -7558,7 +7520,7 @@
    }
   },
   {
-   "id": "o451",
+   "id": "o449",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -7572,7 +7534,7 @@
    }
   },
   {
-   "id": "o452",
+   "id": "o450",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -7586,7 +7548,7 @@
    }
   },
   {
-   "id": "o453",
+   "id": "o451",
    "type": "updraft",
    "layer": "gameplay",
    "rect": [
@@ -7601,7 +7563,7 @@
    }
   },
   {
-   "id": "o454",
+   "id": "o452",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -7616,7 +7578,7 @@
    }
   },
   {
-   "id": "o455",
+   "id": "o453",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -7633,7 +7595,7 @@
    }
   },
   {
-   "id": "o456",
+   "id": "o454",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -7647,7 +7609,7 @@
    }
   },
   {
-   "id": "o457",
+   "id": "o455",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -7661,7 +7623,7 @@
    }
   },
   {
-   "id": "o458",
+   "id": "o456",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -7675,7 +7637,7 @@
    }
   },
   {
-   "id": "o459",
+   "id": "o457",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -7689,7 +7651,7 @@
    }
   },
   {
-   "id": "o460",
+   "id": "o458",
    "type": "exit",
    "layer": "gameplay",
    "rect": [
@@ -7703,7 +7665,7 @@
    }
   },
   {
-   "id": "o461",
+   "id": "o459",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -7720,7 +7682,7 @@
    }
   },
   {
-   "id": "o462",
+   "id": "o460",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7739,7 +7701,7 @@
    }
   },
   {
-   "id": "o463",
+   "id": "o461",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -7756,7 +7718,7 @@
    }
   },
   {
-   "id": "o464",
+   "id": "o462",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -7770,7 +7732,7 @@
    }
   },
   {
-   "id": "o465",
+   "id": "o463",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -7784,7 +7746,7 @@
    }
   },
   {
-   "id": "o466",
+   "id": "o464",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -7798,7 +7760,7 @@
    }
   },
   {
-   "id": "o467",
+   "id": "o465",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -7812,7 +7774,7 @@
    }
   },
   {
-   "id": "o468",
+   "id": "o466",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -7826,7 +7788,7 @@
    }
   },
   {
-   "id": "o469",
+   "id": "o467",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -7840,7 +7802,7 @@
    }
   },
   {
-   "id": "o470",
+   "id": "o468",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -7854,7 +7816,7 @@
    }
   },
   {
-   "id": "o471",
+   "id": "o469",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -7868,7 +7830,7 @@
    }
   },
   {
-   "id": "o472",
+   "id": "o470",
    "type": "power_gate",
    "layer": "gameplay",
    "rect": [
@@ -7883,7 +7845,7 @@
    }
   },
   {
-   "id": "o473",
+   "id": "o471",
    "type": "relic",
    "layer": "gameplay",
    "rect": [
@@ -7898,7 +7860,7 @@
    }
   },
   {
-   "id": "o474",
+   "id": "o472",
    "type": "secret_area",
    "layer": "gameplay",
    "rect": [
@@ -7912,7 +7874,7 @@
    }
   },
   {
-   "id": "o475",
+   "id": "o473",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -7929,7 +7891,7 @@
    }
   },
   {
-   "id": "o476",
+   "id": "o474",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7948,7 +7910,7 @@
    }
   },
   {
-   "id": "o477",
+   "id": "o475",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7967,7 +7929,7 @@
    }
   },
   {
-   "id": "o478",
+   "id": "o476",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7986,7 +7948,7 @@
    }
   },
   {
-   "id": "o479",
+   "id": "o477",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -8005,11 +7967,45 @@
    }
   },
   {
+   "id": "o478",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    9.368281428344751,
+    1048.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
+   "id": "o479",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    453.0070707942411,
+    1048.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
    "id": "o480",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    7.121714087828963,
+    832.2632852087883,
     1048.0,
     16.0,
     16.0
@@ -8026,7 +8022,7 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    425.36828142834474,
+    1250.5625929451492,
     1048.0,
     16.0,
     16.0
@@ -8043,7 +8039,7 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    869.007070794241,
+    1751.8256719957255,
     1048.0,
     16.0,
     16.0
@@ -8060,7 +8056,7 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    1248.2632852087884,
+    2164.802574222342,
     1048.0,
     16.0,
     16.0
@@ -8077,7 +8073,7 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    1666.5625929451492,
+    2492.2507702551575,
     1048.0,
     16.0,
     16.0
@@ -8094,7 +8090,7 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    2167.8256719957253,
+    2934.689812676886,
     1048.0,
     16.0,
     16.0
@@ -8111,7 +8107,7 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    2580.802574222342,
+    3410.704256648306,
     1048.0,
     16.0,
     16.0
@@ -8128,7 +8124,7 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    2908.2507702551575,
+    3825.0440316992795,
     1048.0,
     16.0,
     16.0
@@ -8145,7 +8141,7 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    3350.689812676886,
+    4201.641808978704,
     1048.0,
     16.0,
     16.0
@@ -8162,7 +8158,7 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    3826.704256648306,
+    4621.155858434597,
     1048.0,
     16.0,
     16.0
@@ -8179,7 +8175,7 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    4241.044031699279,
+    5077.67342898574,
     1048.0,
     16.0,
     16.0
@@ -8196,7 +8192,7 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    4617.641808978704,
+    5458.788090609063,
     1048.0,
     16.0,
     16.0
@@ -8213,7 +8209,7 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    5037.155858434597,
+    5830.898815756513,
     1048.0,
     16.0,
     16.0
@@ -8230,7 +8226,7 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    5493.67342898574,
+    6238.471273780847,
     1048.0,
     16.0,
     16.0
@@ -8247,7 +8243,7 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    5874.788090609063,
+    6651.022416233111,
     1048.0,
     16.0,
     16.0
@@ -8264,7 +8260,7 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    6246.898815756513,
+    7103.176201874259,
     1048.0,
     16.0,
     16.0
@@ -8281,7 +8277,7 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    6654.471273780847,
+    7504.612955567203,
     1048.0,
     16.0,
     16.0
@@ -8298,7 +8294,7 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    7067.022416233111,
+    7990.345592183846,
     1048.0,
     16.0,
     16.0
@@ -8315,7 +8311,7 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    7519.176201874259,
+    8381.553575811107,
     1048.0,
     16.0,
     16.0
@@ -8329,36 +8325,40 @@
   },
   {
    "id": "o499",
-   "type": "light",
-   "layer": "gameplay",
+   "type": "decor",
+   "layer": "bg_decor",
    "rect": [
-    7920.612955567203,
-    1048.0,
+    1592.2092537533215,
+    544.0,
     16.0,
-    16.0
+    32.0
    ],
    "props": {
-    "color": "#ff6a2a",
-    "radius": 120,
-    "flicker": 0.12,
-    "bloom": false
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.2
    }
   },
   {
    "id": "o500",
-   "type": "light",
-   "layer": "gameplay",
+   "type": "decor",
+   "layer": "bg_decor",
    "rect": [
-    8406.345592183845,
-    1048.0,
+    1678.4359386887904,
+    544.0,
     16.0,
-    16.0
+    64.0
    ],
    "props": {
-    "color": "#ff6a2a",
-    "radius": 120,
-    "flicker": 0.12,
-    "bloom": false
+    "sprite": "hanging_chain_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.2
    }
   },
   {
@@ -8366,7 +8366,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    1607.1845252703692,
+    1768.4807618569039,
     544.0,
     16.0,
     32.0
@@ -8385,26 +8385,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    1669.8975084274282,
-    544.0,
-    16.0,
-    32.0
-   ],
-   "props": {
-    "sprite": "hanging_chain",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 1.2
-   }
-  },
-  {
-   "id": "o503",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    1766.2560247687625,
+    1847.826772533933,
     544.0,
     16.0,
     64.0
@@ -8419,11 +8400,30 @@
    }
   },
   {
+   "id": "o503",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1915.332284322231,
+    544.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.2
+   }
+  },
+  {
    "id": "o504",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    1841.021733075364,
+    2001.7038675189278,
     544.0,
     16.0,
     64.0
@@ -8442,13 +8442,13 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    1927.6413153533522,
+    2064.8381129853037,
     544.0,
     16.0,
-    32.0
+    64.0
    ],
    "props": {
-    "sprite": "hanging_chain",
+    "sprite": "hanging_chain_long",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -8461,13 +8461,13 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    1986.414022415986,
+    2162.2389239555496,
     544.0,
     16.0,
-    32.0
+    64.0
    ],
    "props": {
-    "sprite": "hanging_chain",
+    "sprite": "hanging_chain_long",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -8480,13 +8480,13 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    2088.426083340704,
+    2230.225384981964,
     544.0,
     16.0,
-    32.0
+    64.0
    ],
    "props": {
-    "sprite": "hanging_chain",
+    "sprite": "hanging_chain_long",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -8499,7 +8499,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    2166.1932987638775,
+    2332.8245364191143,
     544.0,
     16.0,
     32.0
@@ -8518,7 +8518,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    2243.8794477188435,
+    2406.429522578944,
     544.0,
     16.0,
     32.0
@@ -8537,7 +8537,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    2331.8140259584084,
+    2473.788926328011,
     544.0,
     16.0,
     64.0
@@ -8556,13 +8556,13 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    2391.432926030211,
+    2552.9938691247094,
     544.0,
     16.0,
-    64.0
+    32.0
    ],
    "props": {
-    "sprite": "hanging_chain_long",
+    "sprite": "hanging_chain",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -8575,7 +8575,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    2481.8177811567202,
+    2637.954691243156,
     544.0,
     16.0,
     32.0
@@ -8594,7 +8594,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    2571.436030021108,
+    2707.3081353794732,
     544.0,
     16.0,
     32.0
@@ -8613,7 +8613,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    2626.588360390948,
+    2788.2884137299257,
     544.0,
     16.0,
     32.0
@@ -8632,13 +8632,13 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    2704.0492221468394,
-    544.0,
+    1644.793522168044,
+    912.0,
     16.0,
-    32.0
+    64.0
    ],
    "props": {
-    "sprite": "hanging_chain",
+    "sprite": "hanging_chain_long",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -8651,8 +8651,27 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    2784.302457873746,
-    544.0,
+    1726.332712420766,
+    912.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "sprite": "hanging_chain_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.2
+   }
+  },
+  {
+   "id": "o517",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1912.5497981131045,
+    912.0,
     16.0,
     32.0
    ],
@@ -8666,36 +8685,17 @@
    }
   },
   {
-   "id": "o517",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    1620.1200106079611,
-    912.0,
-    16.0,
-    64.0
-   ],
-   "props": {
-    "sprite": "hanging_chain_long",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 1.2
-   }
-  },
-  {
    "id": "o518",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    1726.634273709407,
+    1998.2172272261114,
     912.0,
     16.0,
-    64.0
+    32.0
    ],
    "props": {
-    "sprite": "hanging_chain_long",
+    "sprite": "hanging_chain",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -8708,13 +8708,13 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    1911.0787584302605,
+    2061.080260832248,
     912.0,
     16.0,
-    64.0
+    32.0
    ],
    "props": {
-    "sprite": "hanging_chain_long",
+    "sprite": "hanging_chain",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -8727,7 +8727,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    1975.1381818682166,
+    2153.5708518217443,
     912.0,
     16.0,
     64.0
@@ -8746,7 +8746,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    2057.780854315113,
+    2210.919878314514,
     912.0,
     16.0,
     32.0
@@ -8765,7 +8765,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    2145.064707383336,
+    2307.078532711538,
     912.0,
     16.0,
     64.0
@@ -8784,7 +8784,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    2230.840151976012,
+    2398.6266327406324,
     912.0,
     16.0,
     32.0
@@ -8803,13 +8803,13 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    2305.7028567242305,
+    2449.247183613655,
     912.0,
     16.0,
-    32.0
+    64.0
    ],
    "props": {
-    "sprite": "hanging_chain",
+    "sprite": "hanging_chain_long",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -8822,7 +8822,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    2388.2353145846682,
+    2555.6109391992404,
     912.0,
     16.0,
     64.0
@@ -8841,7 +8841,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    2467.1449827343276,
+    2631.607452049937,
     912.0,
     16.0,
     32.0
@@ -8860,64 +8860,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    2550.9229334153974,
-    912.0,
-    16.0,
-    64.0
-   ],
-   "props": {
-    "sprite": "hanging_chain_long",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 1.2
-   }
-  },
-  {
-   "id": "o528",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    2630.9261853644534,
-    912.0,
-    16.0,
-    64.0
-   ],
-   "props": {
-    "sprite": "hanging_chain_long",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 1.2
-   }
-  },
-  {
-   "id": "o529",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    3198.687041395638,
-    448.0,
-    16.0,
-    64.0
-   ],
-   "props": {
-    "sprite": "hanging_chain_long",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 1.2
-   }
-  },
-  {
-   "id": "o530",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    3277.784983692051,
+    3208.2057596729637,
     448.0,
     16.0,
     32.0
@@ -8932,11 +8875,68 @@
    }
   },
   {
+   "id": "o528",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3273.8775941631043,
+    448.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.2
+   }
+  },
+  {
+   "id": "o529",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3360.527350053826,
+    448.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.2
+   }
+  },
+  {
+   "id": "o530",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3453.861269439304,
+    448.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "sprite": "hanging_chain_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.2
+   }
+  },
+  {
    "id": "o531",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    3355.5879718672554,
+    3532.6161344247357,
     448.0,
     16.0,
     32.0
@@ -8955,7 +8955,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    3440.53266118861,
+    3600.684049547309,
     448.0,
     16.0,
     64.0
@@ -8974,7 +8974,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    3535.7368619449617,
+    3674.060552674881,
     448.0,
     16.0,
     64.0
@@ -8993,7 +8993,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    3600.8423079396675,
+    3768.14476614786,
     448.0,
     16.0,
     32.0
@@ -9012,26 +9012,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    3684.78565936311,
-    448.0,
-    16.0,
-    32.0
-   ],
-   "props": {
-    "sprite": "hanging_chain",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 1.2
-   }
-  },
-  {
-   "id": "o536",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    3768.0641082068,
+    3841.3532466235724,
     448.0,
     16.0,
     64.0
@@ -9046,11 +9027,30 @@
    }
   },
   {
+   "id": "o536",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3927.2620620919856,
+    448.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.2
+   }
+  },
+  {
    "id": "o537",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    3842.442862092292,
+    4015.9489670153393,
     448.0,
     16.0,
     32.0
@@ -9069,13 +9069,13 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    3932.0052567423527,
-    448.0,
+    4183.202321712148,
+    576.0,
     16.0,
-    64.0
+    32.0
    ],
    "props": {
-    "sprite": "hanging_chain_long",
+    "sprite": "hanging_chain",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -9088,13 +9088,13 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    3990.035314117637,
-    448.0,
+    4284.707046602746,
+    576.0,
     16.0,
-    64.0
+    32.0
    ],
    "props": {
-    "sprite": "hanging_chain_long",
+    "sprite": "hanging_chain",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -9107,7 +9107,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    4192.279694865549,
+    4359.446657417862,
     576.0,
     16.0,
     32.0
@@ -9126,13 +9126,13 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    4271.72055769771,
+    4440.102415928686,
     576.0,
     16.0,
-    64.0
+    32.0
    ],
    "props": {
-    "sprite": "hanging_chain_long",
+    "sprite": "hanging_chain",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -9145,13 +9145,13 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    4351.161192540961,
+    4498.463179247002,
     576.0,
     16.0,
-    64.0
+    32.0
    ],
    "props": {
-    "sprite": "hanging_chain_long",
+    "sprite": "hanging_chain",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -9164,8 +9164,8 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    4419.912288618688,
-    576.0,
+    4390.20650326673,
+    816.0,
     16.0,
     64.0
    ],
@@ -9183,13 +9183,13 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    4504.55638705164,
-    576.0,
+    4449.991910745548,
+    816.0,
     16.0,
-    32.0
+    64.0
    ],
    "props": {
-    "sprite": "hanging_chain",
+    "sprite": "hanging_chain_long",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -9202,8 +9202,8 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    4376.5507672399945,
-    816.0,
+    4217.1325256730015,
+    928.0,
     16.0,
     64.0
    ],
@@ -9221,13 +9221,13 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    4470.895169403711,
-    816.0,
+    4304.847638230651,
+    928.0,
     16.0,
-    32.0
+    64.0
    ],
    "props": {
-    "sprite": "hanging_chain",
+    "sprite": "hanging_chain_long",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -9240,8 +9240,8 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    4230.429631796204,
-    928.0,
+    6142.164044865039,
+    704.0,
     16.0,
     32.0
    ],
@@ -9259,8 +9259,8 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    4317.577504929861,
-    928.0,
+    6195.586919906106,
+    704.0,
     16.0,
     32.0
    ],
@@ -9278,13 +9278,13 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    6143.839542299516,
+    6277.329861271799,
     704.0,
     16.0,
-    64.0
+    32.0
    ],
    "props": {
-    "sprite": "hanging_chain_long",
+    "sprite": "hanging_chain",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -9297,8 +9297,8 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    6202.127150276337,
-    704.0,
+    6433.582026573592,
+    512.0,
     16.0,
     32.0
    ],
@@ -9316,8 +9316,8 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    6280.704456091391,
-    704.0,
+    6509.768028365476,
+    512.0,
     16.0,
     32.0
    ],
@@ -9335,13 +9335,13 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    6419.858341154588,
+    6589.067091967347,
     512.0,
     16.0,
-    32.0
+    64.0
    ],
    "props": {
-    "sprite": "hanging_chain",
+    "sprite": "hanging_chain_long",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -9354,13 +9354,13 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    6498.290765761754,
+    6672.846000702284,
     512.0,
     16.0,
-    32.0
+    64.0
    ],
    "props": {
-    "sprite": "hanging_chain",
+    "sprite": "hanging_chain_long",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -9373,13 +9373,13 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    6583.947018550715,
+    6739.005315808543,
     512.0,
     16.0,
-    32.0
+    64.0
    ],
    "props": {
-    "sprite": "hanging_chain",
+    "sprite": "hanging_chain_long",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -9392,13 +9392,13 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    6687.614893514004,
+    6834.92084323145,
     512.0,
     16.0,
-    32.0
+    64.0
    ],
    "props": {
-    "sprite": "hanging_chain",
+    "sprite": "hanging_chain_long",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -9411,13 +9411,13 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    6764.776566005699,
-    512.0,
+    6583.455813495474,
+    704.0,
     16.0,
-    32.0
+    64.0
    ],
    "props": {
-    "sprite": "hanging_chain",
+    "sprite": "hanging_chain_long",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -9430,13 +9430,13 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    6847.195865733378,
-    512.0,
+    6662.045947928728,
+    704.0,
     16.0,
-    32.0
+    64.0
    ],
    "props": {
-    "sprite": "hanging_chain",
+    "sprite": "hanging_chain_long",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -9449,8 +9449,8 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    6603.730774430403,
-    704.0,
+    7001.437546253,
+    416.0,
     16.0,
     32.0
    ],
@@ -9468,8 +9468,8 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    6675.92138498908,
-    704.0,
+    7094.834298642732,
+    416.0,
     16.0,
     32.0
    ],
@@ -9487,13 +9487,13 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    7022.327709864751,
+    7176.423099250196,
     416.0,
     16.0,
-    32.0
+    64.0
    ],
    "props": {
-    "sprite": "hanging_chain",
+    "sprite": "hanging_chain_long",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -9506,64 +9506,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    7083.336788422346,
-    416.0,
-    16.0,
-    64.0
-   ],
-   "props": {
-    "sprite": "hanging_chain_long",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 1.2
-   }
-  },
-  {
-   "id": "o562",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    7154.786301896956,
-    416.0,
-    16.0,
-    64.0
-   ],
-   "props": {
-    "sprite": "hanging_chain_long",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 1.2
-   }
-  },
-  {
-   "id": "o563",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    7261.686153953162,
-    416.0,
-    16.0,
-    64.0
-   ],
-   "props": {
-    "sprite": "hanging_chain_long",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 1.2
-   }
-  },
-  {
-   "id": "o564",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    7314.513309195787,
+    7258.8597856830565,
     416.0,
     16.0,
     32.0
@@ -9578,11 +9521,49 @@
    }
   },
   {
-   "id": "o565",
+   "id": "o562",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    7402.235329710107,
+    7330.2297147937525,
+    416.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.2
+   }
+  },
+  {
+   "id": "o563",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7423.889228066007,
+    416.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.2
+   }
+  },
+  {
+   "id": "o564",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7496.86118797761,
     416.0,
     16.0,
     64.0
@@ -9597,11 +9578,30 @@
    }
   },
   {
+   "id": "o565",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7560.645822534175,
+    416.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.2
+   }
+  },
+  {
    "id": "o566",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    7488.344256974771,
+    7661.717738678036,
     416.0,
     16.0,
     64.0
@@ -9620,7 +9620,26 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    7582.575402657261,
+    7741.773211093204,
+    416.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "sprite": "hanging_chain_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.2
+   }
+  },
+  {
+   "id": "o568",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7822.065912716535,
     416.0,
     16.0,
     32.0
@@ -9635,41 +9654,22 @@
    }
   },
   {
-   "id": "o568",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    7632.857479768927,
-    416.0,
-    16.0,
-    64.0
-   ],
-   "props": {
-    "sprite": "hanging_chain_long",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 1.2
-   }
-  },
-  {
    "id": "o569",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    7743.098735877053,
-    416.0,
-    16.0,
-    64.0
+    209.45130490414857,
+    314.42676229326037,
+    36.0,
+    72.0
    ],
    "props": {
-    "sprite": "hanging_chain_long",
-    "alpha": 1.0,
-    "tint": "#ffffff",
+    "sprite": "obsidian_spire",
+    "alpha": 0.35,
+    "tint": "#ff9a7a",
     "animSpeed": 1.0,
     "glow": true,
-    "sway": 1.2
+    "sway": 0.0
    }
   },
   {
@@ -9677,18 +9677,18 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    7816.838029516217,
-    416.0,
-    16.0,
-    64.0
+    903.4139157446691,
+    315.91451102433416,
+    36.0,
+    72.0
    ],
    "props": {
-    "sprite": "hanging_chain_long",
-    "alpha": 1.0,
-    "tint": "#ffffff",
+    "sprite": "obsidian_spire",
+    "alpha": 0.35,
+    "tint": "#ff9a7a",
     "animSpeed": 1.0,
     "glow": true,
-    "sway": 1.2
+    "sway": 0.0
    }
   },
   {
@@ -9696,8 +9696,8 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    210.04163938340832,
-    250.07078294248913,
+    1665.4045427365618,
+    302.1163843171645,
     36.0,
     72.0
    ],
@@ -9715,8 +9715,8 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    972.7112704887672,
-    272.8483494468015,
+    2220.27516147832,
+    255.38846518542476,
     36.0,
     72.0
    ],
@@ -9734,8 +9734,8 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    1631.1908517072236,
-    336.44272564193716,
+    2917.520298095236,
+    343.87701721570465,
     36.0,
     72.0
    ],
@@ -9753,8 +9753,8 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    2264.193973861941,
-    275.76509688699196,
+    3603.0888382065473,
+    261.8623730724551,
     36.0,
     72.0
    ],
@@ -9772,8 +9772,8 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    2842.314108642375,
-    300.51217885714135,
+    4209.282284119515,
+    320.16237856268344,
     36.0,
     72.0
    ],
@@ -9791,8 +9791,8 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    3645.7950286928412,
-    318.25330292392846,
+    4802.478403092292,
+    268.98222668854373,
     36.0,
     72.0
    ],
@@ -9810,8 +9810,8 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    4165.103955120759,
-    288.36937047170863,
+    5483.374040416814,
+    298.67035242670283,
     36.0,
     72.0
    ],
@@ -9829,8 +9829,8 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    4918.270630937805,
-    250.68704185537536,
+    6261.152406964735,
+    267.15520637959366,
     36.0,
     72.0
    ],
@@ -9848,8 +9848,8 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5488.970377814239,
-    265.62442425008805,
+    6900.460578403199,
+    277.4479877378826,
     36.0,
     72.0
    ],
@@ -9867,8 +9867,8 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    6194.450587377838,
-    338.69144417884115,
+    7513.43501068243,
+    330.72510534627725,
     36.0,
     72.0
    ],
@@ -9886,46 +9886,8 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    6797.92534396599,
-    328.67634704191926,
-    36.0,
-    72.0
-   ],
-   "props": {
-    "sprite": "obsidian_spire",
-    "alpha": 0.35,
-    "tint": "#ff9a7a",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o582",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    7471.079979563137,
-    302.86100640945807,
-    36.0,
-    72.0
-   ],
-   "props": {
-    "sprite": "obsidian_spire",
-    "alpha": 0.35,
-    "tint": "#ff9a7a",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o583",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    8215.875175577128,
-    267.0926107886212,
+    8109.821017981035,
+    340.3826952754607,
     36.0,
     72.0
    ],
@@ -9958,7 +9920,7 @@
   },
   {
    "id": "ev2",
-   "source": "o424",
+   "source": "o423",
    "trigger": "bossDefeated",
    "once": true,
    "actions": [
@@ -9981,7 +9943,7 @@
   },
   {
    "id": "ev3",
-   "source": "o424",
+   "source": "o423",
    "trigger": "bossPhase",
    "once": false,
    "actions": [
@@ -9995,7 +9957,7 @@
   },
   {
    "id": "ev4",
-   "source": "o424",
+   "source": "o423",
    "trigger": "bossStart",
    "once": true,
    "actions": [

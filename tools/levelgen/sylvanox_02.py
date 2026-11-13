@@ -95,12 +95,14 @@ L.shards_line(51.5, 62.5, 57.5, 62.5, 4)
 
 # mushroom cap with a bounce pad, up to the next canopy layer
 L.solid(61, 62, 68, I, "root")
+L.solid(61, 61, 63, 62, "root", deco=False)          # root bump: step off it onto the pad
 L.bounce(64.5, 62, power=600)
 C.giant_mushroom(L, 63, 62, 1.6)
 L.sign(62, 62, "Rebondissez sur le champignon pour atteindre la canopée.")
 L.shards_line(64.5, 58, 64.5, 50, 4)
 
-L.solid(68, 50, 88, I, "root")
+L.solid(68, 50, 74, 68, "root")                    # cliff above the mushroom cap
+L.solid(74, 50, 88, I, "root")
 L.checkpoint(71, 50, "Lisière sporale")
 L.light(71, 45, "#39f0d8", 90)
 L.enemy("gloop", 77, 50, patrol_tiles=3)
@@ -247,16 +249,17 @@ L.decor("glow_fern", 306, 40)
 L.solid(274, 6, 331, 15, "root")
 L.solid(TL, 15, 312, 22, "root")
 L.gate(327, 15, 1, 7, "shield")
-L.heart(316, 19)
+L.heart(316, 20.9)
 L.orb("health_orb", 320, 20.5)
 L.shards_line(314, 20.5, 324, 20.5, 5)
 L.secret(312, 15, 327, 22, "Le cœur du grand arbre !")
 L.light(316, 18, "#ff8aa0", 70)
 L.decor("crystal_cluster", 313.5, 22)
 L.decor("lantern_pod", 319, 15, sway=1.0)
-L.ladder(328, 15, 52)                               # vines on the outer bark
+L.oneway(328, 333, 22, "root_branch")              # bark ledge in front of the curtain
+L.ladder(330, 22, 52)                               # vines hanging from it
 L.sign(332, 52, "Des lianes grimpent le long de l'écorce... Un rideau de plasma luit tout là-haut.")
-L.shards_line(328.5, 46, 328.5, 26, 5)
+L.shards_line(330.5, 46, 330.5, 26, 5)
 
 # =====================================================================================
 # ZONE 4 — Les Cimes tourmentées (glide + updrafts + dash + crumbling + webs; 2 routes)
@@ -282,10 +285,11 @@ L.shards_line(367, 48, 373, 48, 3)
 L.solid(375, 52, 383, I, "root")
 L.enemy("bomber", 380, 44, patrol_tiles=3)
 L.orb("health_orb", 377, 49)
-C.spore_cloud(L, 389, 43, 398, 50)
-L.crumble(392, 53, 3)
-L.enemy("nightwing", 400, 41, patrol_tiles=2)
-L.shards_arc(384, 403, 46, 1.5, 6)
+C.spore_cloud(L, 391, 36, 396, 52)                  # spore column across the gap: costs altitude
+L.crumble(397, 55, 3)                               # catch net at the foot of the next stump
+L.enemy("nightwing", 403, 44, patrol_tiles=2)
+L.shards_arc(384, 390, 46, 1.0, 4)
+L.shards_line(397, 48, 401, 50, 3)
 
 # --- upper route: bounce, updraft from the crumbling roots to the great branch, relic 3
 L.bounce(340.5, 52, power=580)
@@ -309,12 +313,12 @@ L.secret(394, 8, 399, 12, "Une niche de cristal au sommet des cimes !")
 L.light(396.5, 10, "#e08aff", 60)
 
 # --- merge
-L.solid(404, 52, 418, I, "root")
-L.checkpoint(407, 52, "Cimes tourmentées")
-L.light(407, 47, "#39f0d8", 90)
-L.enemy("bulwark", 414, 52, patrol_tiles=2, face_left=True)
-L.orb("health_orb", 410, 49)
-flora(404, 417, 52, 0.3, tall=False)
+L.solid(400, 53, 418, I, "root")
+L.checkpoint(407, 53, "Cimes tourmentées")
+L.light(407, 48, "#39f0d8", 90)
+L.enemy("bulwark", 414, 53, patrol_tiles=2, face_left=True)
+L.orb("health_orb", 410, 50)
+flora(404, 417, 53, 0.3, tall=False)
 C.vines(L, 346, 420, 16)
 L.emitter(346, 18, 420, 50, "spores", 2)
 
@@ -389,12 +393,12 @@ L.solid(AR, 20, 512, 50, "root")                   # chimney left wall
 L.solid(516, 26, W, 58, "root")                    # crown (top 26), chimney right wall
 L.checkpoint(509, 58, "Couronne")
 L.light(509, 53, "#39f0d8", 90)
-L.updraft(512, 516, 20, 58)
+L.updraft(512, 516, 24, 58)
 L.ladder(515, 27, 58)                              # vines too, for the patient climbers
 L.shards_line(514, 54, 514, 30, 6)
-L.decor("ruin_arch", 523, 26, "bg_decor", scale=1.25)
-exit_id = L.exit(523, 26)
-L.light(523, 22, "#ffd98a", 140)
+L.decor("ruin_arch", 524, 26, "bg_decor", scale=1.25)
+exit_id = L.exit(524, 26)
+L.light(524, 22, "#ffd98a", 140)
 L.decor("holo_glyph", 518, 26)
 L.decor("mushroom_tall", 528, 26, scale=1.4)
 L.emitter(516, 14, W, 26, "fireflies", 2)
