@@ -481,6 +481,15 @@ Enemy* GameWorld::spawnEnemy(const std::string& defId, Vec2 feet, bool faceLeft,
 
 void GameWorld::spawnProjectile(const Projectile& p) { pendingProjectiles_.push_back(p); }
 
+Enemy* GameWorld::findEnemy(uint32_t uid) const {
+    if (uid == 0) return nullptr;
+    for (const auto& e : enemies_)
+        if (e->uid() == uid) return e.get();
+    for (const auto& e : pendingEnemies_)
+        if (e->uid() == uid) return e.get();
+    return nullptr;
+}
+
 void GameWorld::spawnDrop(const std::string& type, Vec2 pos) {
     LevelObject o;
     static int dropCounter = 0;

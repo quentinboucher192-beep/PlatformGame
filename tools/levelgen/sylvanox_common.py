@@ -47,16 +47,11 @@ def giant_mushroom(L, x, y_ground, scale=2.0, layer="bg_decor", tint="#ffffff", 
 
 def spore_cloud(L, x0, y0, x1, y1, factor=0.5, rate=None):
     """Violet spore cloud: slows the player (slow_zone), dense spore particles and violet glow."""
+    # The engine draws the cloud itself (tint, drifting glows, spore puffs).
     oid = L.obj("slow_zone", [x0 * T, y0 * T, (x1 - x0) * T, (y1 - y0) * T], "gameplay",
-                {"factor": factor, "visible": True})
+                {"factor": factor, "visible": True, "style": "spores"})
     area = (x1 - x0) * (y1 - y0)
-    # two purely visual haze layers (factor 1 = no effect) inset inside the cloud: the additive
-    # violet fills stack into a soft, denser core so the hazard reads at a glance
-    for inset in (0.6, 1.4):
-        if x1 - x0 > 2 * inset + 1 and y1 - y0 > 2 * inset + 1:
-            L.obj("slow_zone", [(x0 + inset) * T, (y0 + inset) * T, (x1 - x0 - 2 * inset) * T,
-                                (y1 - y0 - 2 * inset) * T], "gameplay", {"factor": 1.0, "visible": True})
-    L.emitter(x0, y0, x1, y1, "spores", rate or max(8.0, area * 0.6))
+    L.emitter(x0, y0, x1, y1, "spores", rate or max(4.0, area * 0.3))
     L.emitter(x0, y1 - 1, x1, y1, "bounce_spores", max(0.6, (x1 - x0) * 0.12))
     # a few glowing puffs so the cloud reads as a volume, not just as particles
     n = max(1, int(round(area / 30.0)))

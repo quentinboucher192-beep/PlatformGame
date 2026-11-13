@@ -105,6 +105,8 @@ public:
     Enemy* spawnEnemy(const std::string& defId, Vec2 feet, bool faceLeft, const std::string& objectId = {},
                       float patrol = 96.0f);
     void spawnProjectile(const Projectile& p);
+    /// Enemy by unique id, including the ones spawned during this step (not yet in enemies()).
+    Enemy* findEnemy(uint32_t uid) const;
     void spawnDrop(const std::string& type, Vec2 pos);
 
     // ------------------------------------------------------------ combat

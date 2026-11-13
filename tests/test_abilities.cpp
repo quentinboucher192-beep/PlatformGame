@@ -230,3 +230,18 @@ TEST_CASE("abilities: bombs explode on impact") {
     for (int i = 0; i < 90; ++i) w.fixedUpdate(PlayerInput{}, kDt);
     CHECK(w.player().health == hp - 2);
 }
+
+TEST_CASE("arenas: starting inside a combat zone never duplicates its enemies") {
+    World env;
+    LevelData l = flat();
+    addObject(l, "enemy", {300, 790, 14, 10}, {{"enemy", "glowmite"}, {"dormant", true}, {"patrol", 32}});
+    std::string enemyId = l.objects.back().id;
+    addObject(l, "combat_zone", {0, 600, 600, 200}, {{"waves", enemyId}, {"doors", ""}, {"lockCamera", false}, {"announce", false}});
+    GameWorld& w = env.make(l);
+    for (int i = 0; i < 30; ++i) w.fixedUpdate(PlayerInput{}, kDt);
+    int copies = 0;
+    for (const auto& e : w.enemies()) copies += e->objectId() == enemyId ? 1 : 0;
+    CHECK(copies == 1);
+    for (const auto& e : w.enemies())
+        if (e->objectId() == enemyId) CHECK(!e->dormant());
+}

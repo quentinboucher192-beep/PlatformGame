@@ -231,12 +231,7 @@ void EnemySpawnEntity::init(GameWorld& w) {
     respawn(w, obj_.prop<bool>("dormant", false));
 }
 
-Enemy* EnemySpawnEntity::enemy(GameWorld& w) const {
-    if (enemyUid_ == 0) return nullptr;
-    for (auto& e : w.enemies())
-        if (e->uid() == enemyUid_) return e.get();
-    return nullptr;
-}
+Enemy* EnemySpawnEntity::enemy(GameWorld& w) const { return w.findEnemy(enemyUid_); }
 
 bool EnemySpawnEntity::enemyAlive(GameWorld& w) const {
     Enemy* e = enemy(w);

@@ -94,6 +94,8 @@
     "snowfall":         { "texture": "textures/fx/particle.png", "count": [1, 1], "life": [3.0, 5.0], "speed": [12, 30], "angle": 100, "spread": 30, "size": [2, 2], "colorStart": "#ffffffd0", "colorEnd": "#dfe9f500", "additive": false },
     "blizzard":         { "texture": "textures/fx/spark.png", "count": [1, 2], "life": [0.8, 1.4], "speed": [140, 260], "angle": 170, "spread": 14, "size": [5, 3], "colorStart": "#eefaffa0", "colorEnd": "#a8e4ff00", "stretch": 0.04 },
     "aurora_motes":     { "texture": "textures/fx/particle.png", "count": [1, 1], "life": [1.5, 3.0], "speed": [5, 20], "spread": 360, "size": [3, 0], "colorStart": "#5dffb0c0", "colorEnd": "#b48cff00" },
-    "frost_mist":       { "texture": "textures/fx/smoke.png", "frames": 4, "count": [1, 1], "life": [2.0, 3.5], "speed": [5, 15], "angle": -90, "spread": 60, "size": [18, 30], "colorStart": "#a8e4ff40", "colorEnd": "#5fb0ff00", "additive": false }
+    "frost_mist":       { "texture": "textures/fx/smoke.png", "frames": 4, "count": [1, 1], "life": [2.0, 3.5], "speed": [5, 15], "angle": -90, "spread": 60, "size": [18, 30], "colorStart": "#a8e4ff40", "colorEnd": "#5fb0ff00", "additive": false },
+    "spore_cloud":      { "texture": "textures/fx/smoke.png", "frames": 4, "count": [1, 1], "life": [1.6, 2.8], "speed": [4, 14], "angle": -90, "spread": 120, "size": [16, 30], "colorStart": "#e08aff80", "colorEnd": "#b04cff00" },
+    "ash_cloud":        { "texture": "textures/fx/smoke.png", "frames": 4, "count": [1, 1], "life": [1.6, 2.8], "speed": [4, 14], "angle": -90, "spread": 120, "size": [16, 30], "colorStart": "#8a7a7a60", "colorEnd": "#3a2f2a00", "additive": false }
   }
 }

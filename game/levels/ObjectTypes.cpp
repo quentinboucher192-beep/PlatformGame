@@ -257,7 +257,9 @@ std::vector<ObjectTypeInfo> build() {
         t.defaultSize = {96, 64};
         t.editorColor = {120, 120, 255, 255};
         t.props = {pFloat("factor", "Facteur de vitesse", 0.5f, 0.1f, 1.0f, 0.05f),
-                   pBool("visible", "Visible (spores)", true)};
+                   pBool("visible", "Visible (nuage)", true),
+                   pEnum("style", "Nuage", "spores", {"spores", "frost", "ash"},
+                         {"Spores (Sylvanox)", "Brume glacée (Glacior)", "Cendres (Pyralis)"})};
         add(t);
     }
     {

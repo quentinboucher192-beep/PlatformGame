@@ -143,6 +143,7 @@ L.sign(125, 47, "Planeur : maintenez Saut en tombant pour planer jusqu'à la cor
 
 # safe basin: a long gentle drop onto a mushroom cap, nothing deadly below
 L.solid(128, 62, 160, 70, "root")                  # basin floor
+L.ladder(128, 45, 62)                               # vines back up the trunk (no softlock in the basin)
 L.solid(141, 53, 149, 55, "root")                  # root ledge: the glide target
 L.light(145, 51, "#8ffff0", 70)
 L.shards_arc(130, 143, 49, 0.8, 5)
@@ -291,7 +292,6 @@ L.light(370, 50, "#b04cff", 90)
 L.shards_line(367, 48, 373, 48, 3)
 L.solid(375, 52, 383, I, "root")
 L.enemy("bomber", 380, 44, patrol_tiles=3)
-L.enemy("sporeflower", 382, 52)
 L.enemy("wisp", 394, 32, patrol_tiles=2)
 L.orb("health_orb", 377, 49)
 C.spore_cloud(L, 391, 36, 396, 52)                  # spore column across the gap: costs altitude
@@ -340,7 +340,8 @@ L.oneway(421, 427, 56, "root_branch")
 L.oneway(430, 436, 55, "root_branch")
 L.oneway(438, 443, 56, "root_branch")
 L.solid(444, 58, 452, 64, "root")
-L.enemy("gloop", 424, 56, patrol_tiles=2)
+L.enemy("gloop", 425.5, 56, patrol_tiles=1)
+L.enemy("sporeflower", 422, 56)
 L.enemy("gloop", 441, 56, patrol_tiles=1, face_left=True)
 L.enemy("weaver", 433, 55, patrol_tiles=2, face_left=True)
 L.enemy("bomber", 437, 48, patrol_tiles=3)

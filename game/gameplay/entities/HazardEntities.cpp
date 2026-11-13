@@ -188,18 +188,52 @@ void SlowZoneEntity::onPlayerStay(GameWorld& w, float /*dt*/) {
     w.player().speedMultiplier = std::min(w.player().speedMultiplier, obj_.prop<float>("factor", 0.5f));
 }
 
+namespace {
+// Cloud look of the slow zones: tint + particle presets per style.
+struct CloudStyle {
+    Color tint;
+    const char* motes;
+    const char* puffs;
+};
+CloudStyle cloudStyle(const std::string& s) {
+    if (s == "frost") return {{127, 246, 255, 255}, "frosted", "frost_mist"};
+    if (s == "ash") return {{170, 150, 140, 255}, "ash_fall", "ash_cloud"};
+    return {{224, 138, 255, 255}, "spores", "spore_cloud"};
+}
+}  // namespace
+
 void SlowZoneEntity::fixedUpdate(GameWorld& w, float dt) {
     if (!obj_.prop<bool>("visible", true)) return;
+    CloudStyle st = cloudStyle(obj_.propStr("style", "spores"));
+    float area = std::max(1.0f, box.w * box.h / 3000.0f);
     fxTimer_ -= dt;
     if (fxTimer_ <= 0.0f) {
-        fxTimer_ = std::max(0.05f, 1.5f / std::max(1.0f, box.w * box.h / 3000.0f));
-        w.particles().emit("spores", {w.rng().range(box.x, box.right()), w.rng().range(box.y, box.bottom())}, 1.0f);
+        fxTimer_ = std::max(0.04f, 0.9f / area);
+        w.particles().emit(st.motes, {w.rng().range(box.x, box.right()), w.rng().range(box.y, box.bottom())}, 1.0f);
+        if (w.rng().chance(0.85f))
+            w.particles().emit(st.puffs, {w.rng().range(box.x + 8, box.right() - 8), w.rng().range(box.y + 8, box.bottom() - 4)},
+                               1.0f);
     }
 }
 
 void SlowZoneEntity::render(RenderContext& ctx) {
     if (ctx.editor) ctx.r.drawWorldRect(box, {120, 120, 255, 160});
-    if (obj_.prop<bool>("visible", true)) ctx.r.fillWorldRect(box, {176, 76, 255, 16}, BlendMode::Additive);
+    if (!obj_.prop<bool>("visible", true)) return;
+    CloudStyle st = cloudStyle(obj_.propStr("style", "spores"));
+    // Soft, slowly drifting glowing blobs (no hard edge) give the cloud its volume.
+    int n = std::clamp(static_cast<int>(box.w * box.h / 1100.0f), 4, 40);
+    for (int i = 0; i < n; ++i) {
+        float hx = std::fmod(std::sin(static_cast<float>(i) * 12.9898f + box.x) * 43758.5453f, 1.0f);
+        float hy = std::fmod(std::sin(static_cast<float>(i) * 78.233f + box.y) * 12345.678f, 1.0f);
+        hx = hx < 0 ? hx + 1.0f : hx;
+        hy = hy < 0 ? hy + 1.0f : hy;
+        float drift = std::fmod(hx + ctx.time * (0.008f + 0.004f * static_cast<float>(i % 3)), 1.0f);
+        Vec2 c{box.x + 10.0f + drift * std::max(0.0f, box.w - 20.0f),
+               box.y + 10.0f + hy * std::max(0.0f, box.h - 20.0f) + std::sin(ctx.time * 0.7f + static_cast<float>(i)) * 3.0f};
+        float r = 18.0f + 16.0f * std::fmod(hx * 7.0f, 1.0f);
+        ctx.r.drawWorldGlow(c, r, st.tint.withAlpha(52));
+    }
+    ctx.lights.add(box.center(), std::max(box.w, box.h) * 0.6f, st.tint.withAlpha(120));
 }
 
 // -------------------------------------------------------------------- laser
@@ -275,7 +309,10 @@ std::string LaserEntity::debugInfo() const { return enabled_ ? (on_ ? "actif" : 
 void LaserEntity::render(RenderContext& ctx) {
     Vec2 o = origin();
     float ang = obj_.rotation;
-    emitter_.draw(ctx, o + Vec2{0, 8}, false, Color::white(), ang);
+    // The emitter sprite rotates around its bottom-centre pivot (8 px below its centre):
+    // place that pivot so the sprite centre stays on the beam origin for any rotation.
+    float ar = degToRad(ang);
+    emitter_.draw(ctx, o + Vec2{-8.0f * std::sin(ar), 8.0f * std::cos(ar)}, false, Color::white(), ang);
     if (ctx.editor) {
         float a = degToRad(ang);
         ctx.r.drawWorldLine(o, o + Vec2{std::cos(a), std::sin(a)} * (box.w - 8), {255, 77, 109, 120}, 1.0f);
