@@ -13,10 +13,11 @@ enum class BlendMode { Alpha, Additive, Multiply, None };
 
 /// Mapping between world coordinates (pixels of the art) and screen pixels.
 struct WorldView {
-    Vec2 topLeft;       // world point shown at the top-left of the screen
+    Vec2 topLeft;       // world point shown at screen pixel (0, 0)
     float scale = 1.0f; // screen pixels per world pixel
-    int screenW = 1;
+    int screenW = 1;    // size of the viewport in pixels
     int screenH = 1;
+    Vec2 origin;        // screen position of the viewport's top-left (editors' sub-views)
 
     Vec2 toScreen(Vec2 w) const { return (w - topLeft) * scale; }
     Vec2 toWorld(Vec2 s) const { return s / scale + topLeft; }
@@ -24,7 +25,10 @@ struct WorldView {
         Vec2 p = toScreen(r.pos());
         return {p.x, p.y, r.w * scale, r.h * scale};
     }
-    Rect visibleWorld() const { return {topLeft.x, topLeft.y, screenW / scale, screenH / scale}; }
+    Rect visibleWorld() const {
+        Vec2 tl = toWorld(origin);
+        return {tl.x, tl.y, screenW / scale, screenH / scale};
+    }
 };
 
 /// Thin, stateful wrapper around SDL_Renderer with 2D primitives used by the game,

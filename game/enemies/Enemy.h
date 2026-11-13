@@ -56,6 +56,10 @@ public:
         deathTimer_ = 0.0f;
     }
     void setDormant() { state_ = EnemyState::Dormant; engaged_ = false; }
+    /// Editor test: performs the given attack now (telegraph included).
+    bool forceAttack(GameWorld& w, const std::string& attackId);
+    /// Editor preview: plays a clip directly.
+    void previewClip(const std::string& clip) { playClip(clip, true); }
 
     bool alive() const { return state_ != EnemyState::Dead; }
     bool dormant() const { return state_ == EnemyState::Dormant; }

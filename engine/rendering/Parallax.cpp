@@ -49,7 +49,8 @@ void ParallaxBackground::load(ResourceManager& res, const std::vector<ParallaxLa
 
 void ParallaxBackground::render(Renderer& r, const WorldView& view, bool foreground) const {
     const float sw = static_cast<float>(view.screenW), sh = static_cast<float>(view.screenH);
-    Vec2 camCenter = view.toWorld({sw * 0.5f, sh * 0.5f});
+    const Vec2 origin = view.origin;  // viewport position (editors draw in sub-rectangles)
+    Vec2 camCenter = view.toWorld(origin + Vec2{sw * 0.5f, sh * 0.5f});
     for (const Layer& l : layers_) {
         if (l.def.foreground != foreground || !l.tex) continue;
         const float tw = static_cast<float>(l.tex->width()), th = static_cast<float>(l.tex->height());
@@ -58,26 +59,28 @@ void ParallaxBackground::render(Renderer& r, const WorldView& view, bool foregro
             float s = std::max(sw / tw, sh / th) * 1.08f;
             float w = tw * s, h = th * s;
             float dx = -std::fmod(camCenter.x * l.def.factor.x * view.scale, std::max(1.0f, w - sw));
-            float x = (sw - w) * 0.5f + std::clamp(dx * 0.02f, -(w - sw) * 0.5f, (w - sw) * 0.5f);
-            float y = (sh - h) * 0.5f;
+            float x = origin.x + (sw - w) * 0.5f + std::clamp(dx * 0.02f, -(w - sw) * 0.5f, (w - sw) * 0.5f);
+            float y = origin.y + (sh - h) * 0.5f;
             r.drawTexture(*l.tex, nullptr, {x, y, w, h}, l.def.tint);
             continue;
         }
         float scale = view.scale;
         float w = tw * scale, h = th * scale;
         float ox = (l.def.offset.x + l.def.scroll.x * time_ - camCenter.x * l.def.factor.x) * scale + sw * 0.5f;
-        float oy = (l.def.offset.y - (camCenter.y - referenceY_) * l.def.factor.y) * scale + sh * 0.5f - h * 0.5f;
-        if (l.def.fillAbove.a && oy > 0) r.fillRect({0, 0, sw, oy + 1}, l.def.fillAbove);
-        if (l.def.fillBelow.a && oy + h < sh) r.fillRect({0, oy + h - 1, sw, sh - (oy + h) + 2}, l.def.fillBelow);
+        float oy = origin.y + (l.def.offset.y - (camCenter.y - referenceY_) * l.def.factor.y) * scale + sh * 0.5f - h * 0.5f;
+        if (l.def.fillAbove.a && oy > origin.y) r.fillRect({origin.x, origin.y, sw, oy - origin.y + 1}, l.def.fillAbove);
+        if (l.def.fillBelow.a && oy + h < origin.y + sh)
+            r.fillRect({origin.x, oy + h - 1, sw, origin.y + sh - (oy + h) + 2}, l.def.fillBelow);
         if (l.def.repeatX) {
             float start = std::fmod(ox, w);
             if (start > 0) start -= w;
-            for (float x = start; x < sw; x += w) {
+            start += origin.x;
+            for (float x = start; x < origin.x + sw; x += w) {
                 float x0 = std::floor(x), x1 = std::floor(x + w);
                 r.drawTexture(*l.tex, nullptr, {x0, std::round(oy), x1 - x0 + 1, std::round(h)}, l.def.tint);
             }
         } else {
-            r.drawTexture(*l.tex, nullptr, {std::round(ox - w * 0.5f), std::round(oy), w, h}, l.def.tint);
+            r.drawTexture(*l.tex, nullptr, {std::round(origin.x + ox - w * 0.5f), std::round(oy), w, h}, l.def.tint);
         }
     }
 }

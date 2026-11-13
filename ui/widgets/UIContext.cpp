@@ -531,7 +531,10 @@ bool UIContext::tabs(const std::string& name, const Rect& rc, const std::vector<
         Renderer& rr = r();
         rr.fillRoundedRect(tr, s(6), Color::lerp(Color{16, 22, 42, 220}, Color{28, 64, 84, 240}, i == active ? 1.0f : hot * 0.4f));
         if (i == active) rr.fillRect({tr.x + s(8), tr.bottom() - s(3), tr.w - s(16), s(3)}, theme_.accent);
-        label(labels[i], tr.center(), 21, i == active ? Color::white() : theme_.textDim, Align::Center, FontFace::Bold,
+        float fs = 21.0f;
+        float tw = text().measure(labels[i], FontFace::Bold, s(fs)).x;
+        if (tw > tr.w - s(10)) fs *= std::max(0.55f, (tr.w - s(10)) / tw);
+        label(labels[i], tr.center(), fs, i == active ? Color::white() : theme_.textDim, Align::Center, FontFace::Bold,
               VAlign::Middle);
     }
     if (changedNow) {

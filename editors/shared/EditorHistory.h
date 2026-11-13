@@ -68,6 +68,7 @@ struct EditorCamera {
         v.screenH = static_cast<int>(viewport.h);
         v.topLeft = {center.x - viewport.w / v.scale * 0.5f - viewport.x / v.scale,
                      center.y - viewport.h / v.scale * 0.5f - viewport.y / v.scale};
+        v.origin = viewport.pos();
         return v;
     }
     void zoomAt(const Rect& viewport, Vec2 screen, float factor) {

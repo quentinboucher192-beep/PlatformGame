@@ -13,7 +13,8 @@ namespace cosmic {
 void ResourceManager::init(Renderer* renderer, AudioSystem* audio) {
     renderer_ = renderer;
     audio_ = audio;
-    mounts_ = {Paths::assetsDir()};
+    // User assets (edited animations...) override the installed ones.
+    mounts_ = {Paths::assetsDir(), Paths::userDir() / "assets"};
 }
 
 void ResourceManager::shutdown() {
@@ -24,7 +25,11 @@ void ResourceManager::shutdown() {
 void ResourceManager::pushMount(const fs::path& root) { mounts_.push_back(root); }
 
 void ResourceManager::popMount() {
-    if (mounts_.size() > 1) mounts_.pop_back();
+    if (mounts_.size() > 2) mounts_.pop_back();
+}
+
+void ResourceManager::invalidateAnimation(const std::string& rel) {
+    if (auto p = resolve(rel)) animations_.erase(Paths::toUtf8(*p));
 }
 
 std::optional<fs::path> ResourceManager::resolve(const std::string& rel) const {

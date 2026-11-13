@@ -60,6 +60,20 @@ bool Enemy::chooseAttack(GameWorld& w) {
     return true;
 }
 
+bool Enemy::forceAttack(GameWorld& w, const std::string& attackId) {
+    if (!alive() || dormant()) return false;
+    for (size_t i = 0; i < def_.attacks.size(); ++i) {
+        if (def_.attacks[i].id != attackId) continue;
+        sense(w);
+        engaged_ = true;
+        attack_ = &def_.attacks[i];
+        attackIndex_ = static_cast<int>(i);
+        beginAttack(w);
+        return true;
+    }
+    return false;
+}
+
 void Enemy::beginAttack(GameWorld& w) {
     state_ = EnemyState::Telegraph;
     stateTimer_ = attack_->telegraph / std::max(0.3f, phaseSpeed());

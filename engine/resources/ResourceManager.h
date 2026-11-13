@@ -36,6 +36,8 @@ public:
     /// checkerboard so problems are obvious, and an error is logged.
     TexturePtr texture(const std::string& rel, bool pixelArt = true);
     AnimationSetPtr animation(const std::string& rel);
+    /// Drops a cached animation so the next request reloads it (editor changes).
+    void invalidateAnimation(const std::string& rel);
     std::optional<Json> json(const std::string& rel);
     /// Absolute path of a sound to hand to AudioSystem (empty if missing).
     std::string soundPath(const std::string& rel);
