@@ -11,11 +11,11 @@ comme planètes verrouillées « en approche ».
 
 ## Jouer
 
-| Action | Clavier (principal / secondaire) | Manette (Xbox / PlayStation) |
+| Action | Clavier AZERTY (QWERTY) – principal / secondaire | Manette (Xbox / PlayStation) |
 |---|---|---|
-| Se déplacer | Q D / ← → (A D sur QWERTY) | Stick gauche / croix |
-| Viser haut / bas, grimper | Z S / ↑ ↓ | Stick gauche |
-| Sauter / double saut | Espace / Z | A / Croix |
+| Se déplacer | Q D (A D) / ← → | Stick gauche / croix |
+| Haut / bas, grimper | Z S (W S) / ↑ ↓ | Stick gauche |
+| Sauter / double saut | Espace / W (Z) | A / Croix |
 | Glissade | Bas en courant au sol | Bas (stick / croix) en courant |
 | Attaque | J / X | X / Carré |
 | Dash | K / Maj gauche | B / Rond |
@@ -26,8 +26,8 @@ comme planètes verrouillées « en approche ».
 | Interagir | E / Entrée | Y / Triangle |
 | Pause | Échap / P | Menu / Options |
 
-Les touches sont des **positions physiques** (scancodes) : sur un clavier AZERTY, les
-déplacements tombent naturellement sur ZQSD. Toutes les commandes se reconfigurent dans
+Les touches sont des **positions physiques** (scancodes) : les déplacements tombent sur ZQSD
+en AZERTY et sur WASD en QWERTY, et le jeu affiche toujours le nom réel de la touche. Toutes les commandes se reconfigurent dans
 *Paramètres → Clavier* et *Paramètres → Manette* (profils indépendants, zones mortes,
 sensibilité, inversion des axes, vibrations, réinitialisation). Les icônes affichées
 s'adaptent à la manette utilisée (Xbox, PlayStation ou générique) et basculent

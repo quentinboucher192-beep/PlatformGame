@@ -210,16 +210,16 @@ void LevelEditorScene::handleShortcuts() {
     InputManager& in = g_.app.input();
     if (ui.editingText()) return;
     if (in.ctrl()) {
-        if (in.keyPressed(SDL_SCANCODE_Z)) {
+        if (in.shortcutPressed(SDLK_Z)) {
             if (in.shift()) applyJson(history_.redo());
             else applyJson(history_.undo());
         }
-        if (in.keyPressed(SDL_SCANCODE_Y)) applyJson(history_.redo());
-        if (in.keyPressed(SDL_SCANCODE_S)) save();
-        if (in.keyPressed(SDL_SCANCODE_C)) copySelection();
-        if (in.keyPressed(SDL_SCANCODE_V)) paste(cam_.view(viewport_).toWorld(in.mousePos()));
-        if (in.keyPressed(SDL_SCANCODE_D)) duplicateSelection();
-        if (in.keyPressed(SDL_SCANCODE_A)) {
+        if (in.shortcutPressed(SDLK_Y)) applyJson(history_.redo());
+        if (in.shortcutPressed(SDLK_S)) save();
+        if (in.shortcutPressed(SDLK_C)) copySelection();
+        if (in.shortcutPressed(SDLK_V)) paste(cam_.view(viewport_).toWorld(in.mousePos()));
+        if (in.shortcutPressed(SDLK_D)) duplicateSelection();
+        if (in.shortcutPressed(SDLK_A)) {
             selection_.clear();
             for (const auto& o : level_.objects)
                 if (layerEditable(o.layer)) selection_.insert(o.id);
@@ -231,17 +231,17 @@ void LevelEditorScene::handleShortcuts() {
         if (tool_ == Tool::Place) tool_ = Tool::Select;
         else selection_.clear();
     }
-    if (in.keyPressed(SDL_SCANCODE_R)) rotateSelection(in.shift() ? -15.0f : 15.0f);
-    if (in.keyPressed(SDL_SCANCODE_F)) {
+    if (in.shortcutPressed(SDLK_R)) rotateSelection(in.shift() ? -15.0f : 15.0f);
+    if (in.shortcutPressed(SDLK_F)) {
         for (auto& o : level_.objects)
             if (selection_.count(o.id)) o.flipX = !o.flipX;
         if (!selection_.empty()) markChanged("Retourner");
     }
-    if (in.keyPressed(SDL_SCANCODE_G)) gridOn_ = !gridOn_;
+    if (in.shortcutPressed(SDLK_G)) gridOn_ = !gridOn_;
     if (in.keyPressed(SDL_SCANCODE_F5)) testPlay(in.shift());
     if (in.keyPressed(SDL_SCANCODE_F1)) modal_ = Modal::Help;
-    if (in.keyPressed(SDL_SCANCODE_V)) tool_ = Tool::Select;
-    if (in.keyPressed(SDL_SCANCODE_H)) tool_ = Tool::Pan;
+    if (in.shortcutPressed(SDLK_V)) tool_ = Tool::Select;
+    if (in.shortcutPressed(SDLK_H)) tool_ = Tool::Pan;
     if (in.keyPressed(SDL_SCANCODE_HOME)) cam_.zoom = 1.0f;
     // Nudge with Alt + arrows
     if (in.alt()) {

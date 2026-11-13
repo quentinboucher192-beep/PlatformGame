@@ -1,4 +1,4 @@
-# Builds Cosmic Platformer in Release, runs the tests, stages the installation and
+﻿# Builds Cosmic Platformer in Release, runs the tests, stages the installation and
 # compiles the Windows installer with Inno Setup.
 #
 # Requirements: Visual Studio 2022 (C++ workload) or Build Tools, CMake >= 3.24, Git,

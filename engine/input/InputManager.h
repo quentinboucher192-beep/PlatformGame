@@ -63,7 +63,10 @@ public:
 
     // ---------------------------------------------------- keyboard / mouse
     bool keyDown(SDL_Scancode sc) const;
-    bool keyPressed(SDL_Scancode sc) const;  // includes OS key repeat
+    bool keyPressed(SDL_Scancode sc) const;  // physical position, includes OS key repeat
+    /// Shortcut by key label in the current layout (Ctrl+Z is Ctrl+Z on AZERTY too),
+    /// e.g. shortcutPressed(SDLK_Z). Includes OS key repeat.
+    bool shortcutPressed(SDL_Keycode key) const;
     bool ctrl() const;
     bool shift() const;
     bool alt() const;
@@ -114,6 +117,7 @@ private:
     std::array<float, kActionCount> repeatTimer_{};
 
     std::vector<SDL_Scancode> keysPressed_;
+    std::vector<SDL_Keycode> keyLabelsPressed_;
     Vec2 leftStick_, rightStick_;
     float lt_ = 0.0f, rt_ = 0.0f;
 

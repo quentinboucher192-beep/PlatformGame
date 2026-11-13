@@ -64,6 +64,7 @@ void InputManager::openFirstGamepad() {
 void InputManager::beginFrame() {
     framePressed_.fill(false);
     keysPressed_.clear();
+    keyLabelsPressed_.clear();
     std::fill(std::begin(mousePressed_), std::end(mousePressed_), false);
     std::fill(std::begin(mouseReleased_), std::end(mouseReleased_), false);
     wheel_ = 0.0f;
@@ -76,6 +77,7 @@ void InputManager::handleEvent(const SDL_Event& e) {
     switch (e.type) {
         case SDL_EVENT_KEY_DOWN:
             keysPressed_.push_back(e.key.scancode);
+            keyLabelsPressed_.push_back(SDL_GetKeyFromScancode(e.key.scancode, SDL_KMOD_NONE, false));
             if (!e.key.repeat) {
                 lastDevice_ = InputDevice::Keyboard;
                 // Event-driven edges so that taps shorter than a frame are never lost.
@@ -276,6 +278,10 @@ bool InputManager::keyDown(SDL_Scancode sc) const { return SDL_GetKeyboardState(
 
 bool InputManager::keyPressed(SDL_Scancode sc) const {
     return std::find(keysPressed_.begin(), keysPressed_.end(), sc) != keysPressed_.end();
+}
+
+bool InputManager::shortcutPressed(SDL_Keycode key) const {
+    return std::find(keyLabelsPressed_.begin(), keyLabelsPressed_.end(), key) != keyLabelsPressed_.end();
 }
 
 bool InputManager::ctrl() const { return (SDL_GetModState() & (SDL_KMOD_CTRL | SDL_KMOD_GUI)) != 0; }

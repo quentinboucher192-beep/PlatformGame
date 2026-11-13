@@ -2,6 +2,7 @@
 #include "engine/core/FileUtil.h"
 #include "engine/core/Math.h"
 #include "engine/core/Paths.h"
+#include "engine/input/InputManager.h"
 #include "engine/physics/Collision.h"
 #include "engine/physics/PhysicsWorld.h"
 #include "saves/SaveFile.h"
@@ -113,4 +114,25 @@ TEST_CASE("input: bindings serialization") {
     CHECK(c.keys[static_cast<int>(Action::Jump)][0] == SDL_SCANCODE_W);
     CHECK(c.pad[static_cast<int>(Action::Wave)][0] == b.pad[static_cast<int>(Action::Wave)][0]);
     CHECK(c.gamepad.invertY);
+}
+
+TEST_CASE("input: key events feed actions and layout-aware shortcuts") {
+    InputManager in;
+    in.setBindings(InputBindings::defaults());
+    in.beginFrame();
+    SDL_Event e{};
+    e.type = SDL_EVENT_KEY_DOWN;
+    e.key.scancode = SDL_SCANCODE_SPACE;
+    in.handleEvent(e);
+    CHECK(in.keyPressed(SDL_SCANCODE_SPACE));
+    CHECK(in.shortcutPressed(SDL_GetKeyFromScancode(SDL_SCANCODE_SPACE, SDL_KMOD_NONE, false)));
+    CHECK(in.consumePlayerInput().isPressed(Action::Jump));
+    // Shortcuts follow the key label of the active layout, not the physical position.
+    e.key.scancode = SDL_SCANCODE_Z;
+    in.handleEvent(e);
+    SDL_Keycode label = SDL_GetKeyFromScancode(SDL_SCANCODE_Z, SDL_KMOD_NONE, false);
+    CHECK(in.shortcutPressed(label));
+    in.beginFrame();
+    CHECK(!in.keyPressed(SDL_SCANCODE_SPACE));
+    CHECK(!in.shortcutPressed(label));
 }

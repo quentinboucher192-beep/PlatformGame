@@ -202,12 +202,12 @@ void EnemyEditorScene::update(float dt) {
     InputManager& in = g_.app.input();
     if (controlPlayer_ && (in.keyPressed(SDL_SCANCODE_ESCAPE) || in.rawPadButton(SDL_GAMEPAD_BUTTON_BACK))) controlPlayer_ = false;
     if (!g_.ui.editingText() && in.ctrl()) {
-        if (in.keyPressed(SDL_SCANCODE_S)) saveEnemy();
-        if (in.keyPressed(SDL_SCANCODE_Z)) {
+        if (in.shortcutPressed(SDLK_S)) saveEnemy();
+        if (in.shortcutPressed(SDLK_Z)) {
             work_ = EnemyDefinition::fromJson(history_.undo());
             dirty_ = arenaDirty_ = true;
         }
-        if (in.keyPressed(SDL_SCANCODE_Y)) {
+        if (in.shortcutPressed(SDLK_Y)) {
             work_ = EnemyDefinition::fromJson(history_.redo());
             dirty_ = arenaDirty_ = true;
         }

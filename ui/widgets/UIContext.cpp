@@ -398,7 +398,7 @@ bool UIContext::textField(const std::string& name, const Rect& rc, std::string& 
             value.erase(i);
             changedNow = true;
         }
-        if (in.ctrl() && in.keyPressed(SDL_SCANCODE_V)) {
+        if (in.ctrl() && in.shortcutPressed(SDLK_V)) {
             if (char* clip = SDL_GetClipboardText()) {
                 for (const char* p = clip; *p && value.size() < maxLen; ++p)
                     if (static_cast<unsigned char>(*p) >= 32) value.push_back(*p);

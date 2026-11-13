@@ -1,4 +1,4 @@
-COSMIC PLATFORMER 1.0
+﻿COSMIC PLATFORMER 1.0
 Copyright (c) Cosmic Studio
 
 Le jeu, son code source, ses graphismes, sons et musiques (générés par les outils
