@@ -5282,20 +5282,6 @@
    }
   },
   {
-   "id": "o313",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    8682.0,
-    666.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
    "id": "o314",
    "type": "decor",
    "layer": "bg_decor",
@@ -6039,20 +6025,6 @@
    "layer": "gameplay",
    "rect": [
     9002.0,
-    602.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
-   "id": "o357",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    9450.0,
     602.0,
     12.0,
     12.0

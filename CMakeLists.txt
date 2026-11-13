@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 
 project(CosmicPlatformer
-    VERSION 2.1.2
+    VERSION 2.1.3
     DESCRIPTION "Cosmic Platformer - 2D platformer with integrated editors"
     LANGUAGES C CXX)
 

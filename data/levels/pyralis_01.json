@@ -2280,20 +2280,6 @@
    }
   },
   {
-   "id": "o133",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    2178.0,
-    970.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
    "id": "o134",
    "type": "decor",
    "layer": "bg_decor",
@@ -3161,20 +3147,6 @@
    }
   },
   {
-   "id": "o185",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    3050.0,
-    762.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
    "id": "o186",
    "type": "solid",
    "layer": "terrain",
@@ -3875,20 +3847,6 @@
    "layer": "gameplay",
    "rect": [
     3410.0,
-    666.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
-   "id": "o227",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    3842.0,
     666.0,
     12.0,
     12.0
@@ -4654,20 +4612,6 @@
     "radius": 90,
     "flicker": 0.1,
     "bloom": true
-   }
-  },
-  {
-   "id": "o277",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    5386.0,
-    842.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
    }
   },
   {
@@ -6832,20 +6776,6 @@
     "radius": 170,
     "flicker": 0.08,
     "bloom": true
-   }
-  },
-  {
-   "id": "o413",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    7218.0,
-    666.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
    }
   },
   {

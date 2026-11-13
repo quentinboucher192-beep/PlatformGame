@@ -310,7 +310,16 @@ class Level:
             self.obj("solid", list(g["rect"]), "terrain", {"material": g.get("material", "ruin_stone"), "seal": True},
                      oid="seal_%d" % (i + 1))
 
+    def harden(self):
+        """Campaign difficulty (version 2.1.3): one health orb out of two is removed (hearts
+        and energy orbs stay)."""
+        orbs = [o for o in self.data["objects"] if o["type"] == "health_orb"]
+        drop = {id(o) for i, o in enumerate(orbs) if i % 2 == 1}
+        self.data["objects"] = [o for o in self.data["objects"] if id(o) not in drop]
+
     def save(self, path):
+        if self.data.get("metadata", {}).get("generator") != "tools/levelgen/challenge.py":
+            self.harden()
         self.apply_seals()
         ids = [o["id"] for o in self.data["objects"]]
         assert len(ids) == len(set(ids)), "duplicate ids"

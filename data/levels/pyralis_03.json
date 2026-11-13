@@ -1992,20 +1992,6 @@
    }
   },
   {
-   "id": "o115",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    2378.0,
-    858.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
    "id": "o116",
    "type": "enemy",
    "layer": "gameplay",
@@ -3365,20 +3351,6 @@
    }
   },
   {
-   "id": "o196",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    3506.0,
-    762.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
    "id": "o197",
    "type": "energy_orb",
    "layer": "gameplay",
@@ -4706,20 +4678,6 @@
    }
   },
   {
-   "id": "o284",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    5490.0,
-    538.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
    "id": "o285",
    "type": "solid",
    "layer": "terrain",
@@ -5403,20 +5361,6 @@
    }
   },
   {
-   "id": "o329",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    7082.0,
-    506.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
    "id": "o330",
    "type": "solid",
    "layer": "terrain",
@@ -5760,20 +5704,6 @@
    "layer": "gameplay",
    "rect": [
     7314.0,
-    506.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
-   "id": "o352",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    7778.0,
     506.0,
     12.0,
     12.0

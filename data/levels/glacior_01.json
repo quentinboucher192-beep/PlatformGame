@@ -2479,20 +2479,6 @@
    }
   },
   {
-   "id": "o140",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    2450.0,
-    730.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
    "id": "o141",
    "type": "decor",
    "layer": "bg_decor",
@@ -3899,20 +3885,6 @@
    }
   },
   {
-   "id": "o232",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    4394.0,
-    762.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
    "id": "o233",
    "type": "decor",
    "layer": "bg_decor",
@@ -4392,20 +4364,6 @@
    "layer": "gameplay",
    "rect": [
     4602.0,
-    682.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
-   "id": "o262",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    4986.0,
     682.0,
     12.0,
     12.0
@@ -5177,20 +5135,6 @@
     "patrol": 64,
     "dormant": false,
     "boss": false
-   }
-  },
-  {
-   "id": "o308",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    5450.0,
-    506.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
    }
   },
   {
@@ -6472,20 +6416,6 @@
    }
   },
   {
-   "id": "o389",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    7162.0,
-    794.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
    "id": "o390",
    "type": "health_orb",
    "layer": "gameplay",
@@ -6737,20 +6667,6 @@
     "lockCamera": false,
     "music": "music/glacior_boss.ogg",
     "announce": false
-   }
-  },
-  {
-   "id": "o407",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    7402.0,
-    682.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
    }
   },
   {

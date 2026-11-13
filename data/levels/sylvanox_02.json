@@ -2970,20 +2970,6 @@
    }
   },
   {
-   "id": "o173",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    3290.0,
-    586.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
    "id": "o174",
    "type": "decor",
    "layer": "bg_decor",
@@ -4706,40 +4692,12 @@
    }
   },
   {
-   "id": "o275",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    4586.0,
-    698.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
    "id": "o276",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
     5066.0,
     698.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
-   "id": "o277",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    4826.0,
-    618.0,
     12.0,
     12.0
    ],
@@ -5692,20 +5650,6 @@
    "props": {
     "text": "Les cimes se déchaînent : brisez le cristal d'un Dash, planez entre les nuages.",
     "auto": true
-   }
-  },
-  {
-   "id": "o334",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    5418.0,
-    778.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
    }
   },
   {
@@ -6942,20 +6886,6 @@
    }
   },
   {
-   "id": "o414",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    6554.0,
-    794.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
    "id": "o415",
    "type": "decor",
    "layer": "bg_decor",
@@ -8133,20 +8063,6 @@
     "lockCamera": false,
     "music": "music/sylvanox_boss.ogg",
     "announce": false
-   }
-  },
-  {
-   "id": "o486",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    7426.0,
-    778.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
    }
   },
   {

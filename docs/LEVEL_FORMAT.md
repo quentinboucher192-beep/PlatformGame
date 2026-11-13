@@ -66,7 +66,7 @@ absente prend sa valeur par défaut.
 | Terrain | `solid` — `material` : `ruin_stone`, `ancient_metal`, `crystal`, `root` (Sylvanox), `basalt`, `obsidian`, `forge_metal` (Pyralis), `glacier_ice` (glissante), `snow_rock`, `frost_metal` (Glacior) |
 | Plateformes | `oneway` (`style` : `ruin_bridge`, `tech_ledge`, `root_branch`, `basalt_ledge`, `chain_grate`, `ice_ledge`, `snow_bridge`), `moving_platform`, `crumble_platform` (`style` : `ruins`, `basalt`, `ice`), `power_gate` (`power` : `dash` mur de cristal, `teleport` barrière de phase, `wave` barrière d'énergie — aussi dissoute par le Tir chargé —, `impulse` rocher fissuré, `shield` rideau de plasma, `ground_pound` sol fissuré), `bounce_pad`, `ladder` |
 | Dangers | `spikes`, `liquid` (`kind` : `acid`, `water`, `lava`, `icewater` — l'eau et l'eau glacée se nagent), `damage_zone`, `slow_zone` (`style` du nuage : `spores`, `frost`, `ash`), `laser` |
-| Gameplay | `player_start`, `checkpoint`, `exit`, `shard`, `relic`, `health_orb` (`amount`, 2 par défaut), `energy_orb`, `power_unlock` (`power` parmi les 10 pouvoirs), `heart_container` (`hearts` : cœurs maximum en plus pour le niveau) |
+| Gameplay | `player_start`, `checkpoint` (`label` ; `optional` : point d'une route alternative ou d'un détour, que le détecteur de raccourcis n'exige pas), `exit`, `shard`, `relic`, `health_orb` (`amount`, 2 par défaut), `energy_orb`, `power_unlock` (`power` parmi les 10 pouvoirs), `heart_container` (`hearts` : cœurs maximum en plus pour le niveau) |
 | Interactifs | `door`, `lever`, `receptor` (activé par l'Onde ou le Tir chargé), `sign`, `grapple_point` (point d'ancrage du Grappin) |
 | Ennemis | `enemy` (`enemy` = identifiant de définition, `patrol`, `faceLeft`, `dormant`, `boss`) |
 | Zones | `trigger`, `combat_zone` (`doors`, `waves` = vagues d'ennemis séparées par `;`, `lockCamera`, `music`, `announce`), `camera_zone`, `secret_area`, `updraft` (courant ascendant : `strength` vitesse de montée, `vent` grille au sol ; activable par événements) |
@@ -116,3 +116,18 @@ Types d'étapes : `camera`, `focus`, `cut`, `zoom`, `fade`, `flash`, `shake`, `t
 `formatVersion` est vérifié au chargement ; un niveau d'une version future est refusé avec
 un message clair. Les champs inconnus sont ignorés, les champs absents prennent leur valeur
 par défaut, ce qui permet d'ajouter des propriétés sans casser les anciens niveaux.
+
+## Plafond et détecteur de raccourcis
+
+Chaque niveau a un plafond invisible 48 px au-dessus du haut de ses limites (`bounds`), et
+un bloc `solid` qui touche le haut du niveau monte jusqu'à ce plafond : on ne sort jamais par
+le haut et on ne passe jamais au-dessus d'un mur qui atteint le haut du niveau.
+
+`CosmicPlatformer --analyze-levels <dossier>` analyse les niveaux de la campagne
+(`game/levels/LevelAnalyzer`) : espace où tient le joueur, hauteur et distance qu'il peut
+franchir avec ses pouvoirs dans ce niveau, route la plus courte comparée à la route qui passe
+par tous les points de contrôle (non optionnels), portes fermées au départ (arènes, leviers)
+contournables. Il écrit une carte PPM par niveau (jaune : route la plus courte, bleu : route
+prévue, magenta : contournement d'une porte). `--seal-levels tools/levelgen/seals` ajoute des
+colonnes depuis le plafond aux endroits contournés (sans toucher aux secrets, reliques, cœurs,
+lianes, courants ni ancrages) ; `tools/levelgen/levelkit.py` les intègre aux niveaux générés.

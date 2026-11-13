@@ -5,13 +5,22 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
-**Contenu de la version 2.0** : 3 planètes et 9 niveaux, chacun avec son boss à 3 phases.
+**Contenu de la version 2.1.3** : 3 planètes et 12 niveaux, chacun avec son boss. Le
+quatrième niveau de chaque planète est une **épreuve** : une grotte fermée de salles
+exigeantes (gouffres, puits, ponts qui s'effritent, lasers, courants, grappins, vol plané) et
+le retour du gardien de la planète.
 
 | Planète | Niveaux (boss) |
 |---|---|
-| **Sylvanox**, le monde-jardin | Les Ruines Suspendues (Thornwarden) · La Canopée des Spores (Reine Sporale) · Le Cœur de la Machine (Sentinelle Prime) |
-| **Pyralis**, la forge en fusion | Les Forges Englouties (Magmaroth) · Le Fleuve de Lave (Ignivore) · La Fonderie Primordiale (Forgeron Primordial) |
-| **Glacior**, le sanctuaire gelé | Les Plaines de Givre (Cryowyrm) · Les Grottes de Cristal (Hydre de Givre) · Le Bastion Gelé (Glaciarque) |
+| **Sylvanox**, le monde-jardin | Les Ruines Suspendues (Thornwarden) · La Canopée des Spores (Reine Sporale) · Le Cœur de la Machine (Sentinelle Prime) · *Les Catacombes des Anciens* (Thornwarden) |
+| **Pyralis**, la forge en fusion | Les Forges Englouties (Magmaroth) · Le Fleuve de Lave (Ignivore) · La Fonderie Primordiale (Forgeron Primordial) · *Le Creuset Profond* (Magmaroth) |
+| **Glacior**, le sanctuaire gelé | Les Plaines de Givre (Cryowyrm) · Les Grottes de Cristal (Hydre de Givre) · Le Bastion Gelé (Glaciarque) · *La Crevasse Hurlante* (Cryowyrm) |
+
+Aucun niveau ne se contourne : chaque niveau a un plafond (on ne passe plus par le haut) et
+le **détecteur de raccourcis** (`CosmicPlatformer --analyze-levels <dossier>`) vérifie, avec
+les capacités du joueur dans chaque niveau, qu'aucun point de contrôle ni aucune arène ne peut
+être évité ; un test l'exécute sur toute la campagne. Les niveaux classiques ont deux fois
+moins d'orbes de soin qu'en 2.1.2.
 
 48 sortes d'ennemis (12 espèces, chacune en version Sylvanox, feu et glace, plus les boss),
 10 pouvoirs, 10 cœurs de vie (plus des cœurs de cristal cachés), 3 reliques et un cœur de

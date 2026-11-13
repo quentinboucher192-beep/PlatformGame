@@ -2659,20 +2659,6 @@
    }
   },
   {
-   "id": "o159",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    3098.0,
-    490.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
    "id": "o160",
    "type": "shard",
    "layer": "gameplay",
@@ -3343,40 +3329,12 @@
    }
   },
   {
-   "id": "o201",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    3490.0,
-    698.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
    "id": "o202",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
     3954.0,
     698.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
-   "id": "o203",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    3722.0,
-    602.0,
     12.0,
     12.0
    ],
@@ -5372,20 +5330,6 @@
    }
   },
   {
-   "id": "o330",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    5802.0,
-    794.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
    "id": "o331",
    "type": "shard",
    "layer": "gameplay",
@@ -6000,20 +5944,6 @@
    }
   },
   {
-   "id": "o372",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    6562.0,
-    1034.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
    "id": "o373",
    "type": "health_orb",
    "layer": "gameplay",
@@ -6039,20 +5969,6 @@
    ],
    "props": {
     "amount": 40
-   }
-  },
-  {
-   "id": "o375",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    6570.0,
-    842.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
    }
   },
   {

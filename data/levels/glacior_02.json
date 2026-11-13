@@ -2744,20 +2744,6 @@
    }
   },
   {
-   "id": "o157",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    2034.0,
-    762.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
    "id": "o158",
    "type": "solid",
    "layer": "terrain",
@@ -3594,20 +3580,6 @@
    }
   },
   {
-   "id": "o215",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    3026.0,
-    730.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
    "id": "o216",
    "type": "health_orb",
    "layer": "gameplay",
@@ -4301,20 +4273,6 @@
    }
   },
   {
-   "id": "o257",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    3458.0,
-    234.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
    "id": "o258",
    "type": "health_orb",
    "layer": "gameplay",
@@ -4744,20 +4702,6 @@
     "radius": 90,
     "flicker": 0.1,
     "bloom": true
-   }
-  },
-  {
-   "id": "o286",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    4170.0,
-    858.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
    }
   },
   {
@@ -6994,20 +6938,6 @@
    }
   },
   {
-   "id": "o426",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    6426.0,
-    858.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
    "id": "o427",
    "type": "health_orb",
    "layer": "gameplay",
@@ -7239,20 +7169,6 @@
     "lockCamera": false,
     "music": "music/glacior_boss.ogg",
     "announce": false
-   }
-  },
-  {
-   "id": "o443",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    6730.0,
-    810.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
    }
   },
   {
