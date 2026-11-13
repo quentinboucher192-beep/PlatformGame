@@ -462,8 +462,8 @@ Enemy* GameWorld::spawnEnemy(const EnemyDefinition& def, Vec2 feet, bool faceLef
     if (def.assetRoot.empty() == false) services_.res.pushMount(def.assetRoot);
     auto anim = services_.res.animation(def.animation);
     if (!def.assetRoot.empty()) services_.res.popMount();
-    static uint32_t nextUid = 1;
-    auto e = std::make_unique<Enemy>(def, anim, feet, faceLeft, objectId, patrol, nextUid++);
+    // Per-world counter: a run must not depend on what was played before (replays).
+    auto e = std::make_unique<Enemy>(def, anim, feet, faceLeft, objectId, patrol, nextEnemyUid_++);
     Enemy* raw = e.get();
     pendingEnemies_.push_back(std::move(e));
     return raw;
@@ -492,8 +492,7 @@ Enemy* GameWorld::findEnemy(uint32_t uid) const {
 
 void GameWorld::spawnDrop(const std::string& type, Vec2 pos) {
     LevelObject o;
-    static int dropCounter = 0;
-    o.id = "drop_" + std::to_string(++dropCounter);
+    o.id = "drop_" + std::to_string(++dropCounter_);
     o.type = type;
     o.layer = "gameplay";
     o.rect = Rect::fromCenter(pos, {12, 12});

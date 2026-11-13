@@ -16,6 +16,11 @@ struct LevelData;
 /// (`metadata.revision` of the level file, 1 by default) and SHA-256 of the canonical
 /// JSON of the file (parsed then re-serialised: independent of whitespace and line
 /// endings, so Windows and Linux builds agree).
+/// Version of the simulation rules. Bump it whenever a code change can alter how a run
+/// plays out (physics, AI, damage, timers...): every ranked level then gets a new
+/// fingerprint, so records and replays of incompatible engines are never mixed.
+constexpr int kSimulationVersion = 2;
+
 struct LevelFingerprint {
     std::string levelId;
     int version = 1;
@@ -24,6 +29,10 @@ struct LevelFingerprint {
 
 std::optional<LevelFingerprint> fingerprintLevelFile(const fs::path& file, std::string* error = nullptr);
 std::optional<LevelFingerprint> fingerprintLevelJson(const Json& level);
+/// Fingerprint of a ranked level: the level, every enemy and power definition it uses
+/// (recursively), the player configuration and kSimulationVersion. Two runs with the same
+/// fingerprint, seed and inputs play out identically.
+std::optional<LevelFingerprint> fingerprintRankedLevel(const ContentDatabase& content, const Json& level);
 
 /// Fingerprints of the built-in levels (cached after the first computation).
 class LevelFingerprints {

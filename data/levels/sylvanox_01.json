@@ -9981,7 +9981,8 @@
   ]
  },
  "metadata": {
-  "generator": "tools/levelgen/sylvanox_01.py"
+  "generator": "tools/levelgen/sylvanox_01.py",
+  "revision": 2
  },
  "killY": 1240
 }

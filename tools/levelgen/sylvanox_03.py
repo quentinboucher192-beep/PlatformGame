@@ -492,6 +492,6 @@ d["outro"] = {"skippable": True, "letterbox": True, "steps": [
     {"type": "flash", "duration": 0.6, "params": {"color": "#e6fffb"}},
     {"type": "fade", "duration": 0.9, "params": {"to": 1}},
 ]}
-d["metadata"] = {"generator": "tools/levelgen/sylvanox_03.py"}
+d["metadata"] = {"generator": "tools/levelgen/sylvanox_03.py", "revision": 2}
 
 L.save(os.path.join(ROOT, "data/levels/sylvanox_03.json"))

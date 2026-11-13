@@ -99,6 +99,7 @@ public:
         rng_.reseed(seed);
     }
     uint64_t gameplaySeed() const { return seed_; }
+    uint64_t gameplayRngState() const { return rng_.state(); }
 
     std::vector<std::unique_ptr<LevelEntity>>& entities() { return entities_; }
     const std::vector<std::unique_ptr<LevelEntity>>& entities() const { return entities_; }
@@ -209,6 +210,8 @@ private:
     Random rng_{0xC0FFEE};
     Random fxRng_{0xF1F1F1};
     uint64_t seed_ = 0xC0FFEE;
+    uint32_t nextEnemyUid_ = 1;
+    int dropCounter_ = 0;
 
     Vec2 respawn_;
     bool respawnFaceLeft_ = false;

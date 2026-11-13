@@ -8,6 +8,7 @@
 #include "engine/resources/ResourceManager.h"
 #include "game/content/ContentDatabase.h"
 #include "game/gameplay/GameWorld.h"
+#include "packaging/Package.h"
 #include "packaging/Sha256.h"
 
 namespace cosmic {
@@ -22,6 +23,25 @@ std::optional<LevelFingerprint> fingerprintLevelJson(const Json& level) {
     // round-trip form: the dump is a canonical text of the level.
     f.hash = Sha256::hex(level.dump());
     return f;
+}
+
+std::optional<LevelFingerprint> fingerprintRankedLevel(const ContentDatabase& content, const Json& levelJson) {
+    auto base = fingerprintLevelJson(levelJson);
+    if (!base) return std::nullopt;
+    auto level = LevelData::fromJson(levelJson);
+    if (!level) return std::nullopt;
+    ResourceManager res;
+    res.init(nullptr, nullptr);
+    DependencySet deps = DependencyCollector(content, res).collect(*level);
+    Json enemies = Json::object(), powers = Json::object();
+    for (const auto& id : deps.enemies)
+        if (const EnemyDefinition* d = content.enemy(id)) enemies[id] = d->toJson();
+    for (const auto& id : deps.powers)
+        if (const PowerDefinition* d = content.power(id)) powers[id] = d->toJson();
+    Json bundle = {{"format", "cosmic.ranked-level"}, {"simulation", kSimulationVersion}, {"level", levelJson},
+                   {"enemies", enemies},          {"powers", powers},                  {"player", content.playerConfig()}};
+    base->hash = Sha256::hex(bundle.dump());
+    return base;
 }
 
 std::optional<LevelFingerprint> fingerprintLevelFile(const fs::path& file, std::string* error) {
@@ -44,7 +64,11 @@ const LevelFingerprint* LevelFingerprints::get(const ContentDatabase& content, c
         std::optional<LevelFingerprint> fp;
         const LevelEntry* e = content.level(levelId);
         // Only the levels shipped with the game can be ranked online.
-        if (e && e->source == ContentSource::Builtin) fp = fingerprintLevelFile(e->path);
+        if (e && e->source == ContentSource::Builtin)
+            if (auto text = FileUtil::readText(e->path)) {
+                Json j = Json::parse(*text, nullptr, false);
+                if (!j.is_discarded()) fp = fingerprintRankedLevel(content, j);
+            }
         it = cache_.emplace(levelId, fp).first;
     }
     return it->second ? &*it->second : nullptr;
@@ -101,7 +125,11 @@ Json buildOnlineManifest(ContentDatabase& content, std::string* error) {
     Json levels = Json::array();
     for (const LevelEntry* e : content.levels()) {
         if (e->source != ContentSource::Builtin) continue;
-        auto fp = fingerprintLevelFile(e->path);
+        std::optional<LevelFingerprint> fp;
+        if (auto text = FileUtil::readText(e->path)) {
+            Json j = Json::parse(*text, nullptr, false);
+            if (!j.is_discarded()) fp = fingerprintRankedLevel(content, j);
+        }
         std::string loadError;
         auto level = content.loadLevel(e->id, &loadError);
         if (!fp || !level) {

@@ -10980,7 +10980,8 @@
   ]
  },
  "metadata": {
-  "generator": "tools/levelgen/pyralis_02.py"
+  "generator": "tools/levelgen/pyralis_02.py",
+  "revision": 2
  },
  "killY": 1168
 }

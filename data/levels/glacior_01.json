@@ -10200,7 +10200,8 @@
   ]
  },
  "metadata": {
-  "generator": "tools/levelgen/glacior_01.py"
+  "generator": "tools/levelgen/glacior_01.py",
+  "revision": 2
  },
  "killY": 1176
 }

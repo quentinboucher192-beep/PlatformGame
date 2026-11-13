@@ -13068,7 +13068,8 @@
   ]
  },
  "metadata": {
-  "generator": "tools/levelgen/glacior_02.py"
+  "generator": "tools/levelgen/glacior_02.py",
+  "revision": 2
  },
  "killY": 1368
 }
