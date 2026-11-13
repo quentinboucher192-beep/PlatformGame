@@ -48,13 +48,13 @@ const V = "/api/v1";
 
 // Health and metadata
 route("GET", `${V}/health`, async (ctx) => {
-    let db = "ok";
     try {
         await ctx.env.DB.prepare("SELECT 1").first();
     } catch {
-        db = "unavailable";
+        // Homogeneous error envelope: clients never mistake a degraded service for a success.
+        throw new ApiError(503, "SERVICE_UNAVAILABLE", "Service temporairement indisponible.", { database: "unavailable" }, { "retry-after": "30" });
     }
-    return json(ctx, { status: db === "ok" ? "ok" : "degraded", api_version: API_VERSION, environment: ctx.env.ENVIRONMENT, database: db, time: new Date().toISOString() }, { status: db === "ok" ? 200 : 503 });
+    return json(ctx, { status: "ok", api_version: API_VERSION, environment: ctx.env.ENVIRONMENT, database: "ok", time: new Date().toISOString() });
 });
 route(
     "GET",
@@ -162,7 +162,8 @@ async function handle(request: Request, env: Bindings, exec: ExecutionContext, r
         const hit = await cache.match(request);
         if (hit) return hit;
     }
-    if (request.method === "GET") await rateLimit(ctx, RULES.reads, ctx.ip);
+    // The health check must work even when D1 (which stores the counters) is down.
+    if (request.method === "GET" && m.route.template !== `${V}/health`) await rateLimit(ctx, RULES.reads, ctx.ip);
     const viewer = m.route.viewer ? await optionalAuth(ctx) : null;
     const response = await m.route.handler(ctx, viewer);
     if (cache && response.status === 200) {

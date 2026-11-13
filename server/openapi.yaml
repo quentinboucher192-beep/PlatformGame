@@ -1,0 +1,4446 @@
+# Cosmic Online - OpenAPI 3.1 description of the REST API implemented in server/src.
+# Every route, field, status and error code is taken from the source (index.ts lists the routes).
+# Human-oriented French reference: docs/online/API.md.
+openapi: 3.1.0
+info:
+  title: Cosmic Online API
+  version: 1.0.0
+  summary: Online rankings, replays, profiles and friends for Cosmic Platformer.
+  description: |
+    REST API of the Cosmic Online ranking service (Cloudflare Worker + D1 + R2). French reference: `docs/online/API.md`.
+
+    **Conventions**
+    - Every path is under `/api/v1` (included in the server URLs below). Dates are ISO 8601 UTC, times in milliseconds, ids lower-case UUIDs.
+    - JSON responses: `{ok: true, data, meta?, request_id}` or `{ok: false, error: {code, message, details?}, request_id}`; headers `Content-Type: application/json; charset=utf-8`, `Cache-Control: no-store`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`. Binary responses (avatar, replay) have no envelope.
+    - JSON bodies require `Content-Type: application/json` (415 otherwise), must be a JSON object (400 INVALID_JSON) and are validated strictly: unknown fields, wrong types, out-of-range values and control characters give 400 VALIDATION_ERROR with `details: [{field, message}]`. `null` counts as absent (except where documented, e.g. PATCH /players/me).
+    - Lists use `limit`/`offset`; `meta` = `{limit, offset, total, next_offset}`.
+    - Any unknown path answers 404 NOT_FOUND, a known path with another method 405 METHOD_NOT_ALLOWED; HEAD is accepted wherever GET is. No CORS headers are emitted.
+    - Anonymous GET requests (no Authorization header) on routes marked edge-cacheable may be served from the Cloudflare cache (15 s by default outside development, at most 300 s, `Cache-Control: public, max-age=N`).
+
+    **Authentication**: `Authorization: Bearer <access_token>` (opaque, 1 h) obtained from /auth/register or /auth/login; renew with /auth/refresh (rotation, 120 s grace for a lost response, reuse after that revokes the session). The player is always identified from the session, never from a client-supplied id. Routes with an optional session (`security: [{}, bearerAuth]`) answer 401 when a header is sent but invalid or expired.
+
+    **Rate limits** (fixed windows, keys hashed): register 5/h per IP; login 30/15 min per IP and 20/15 min per username; refresh 60/min per IP; submit 30/min per player; replay upload 20/min per player; profile writes (PATCH /players/me, PUT /players/me/avatar) 20/5 min per player; friend requests 30/h per player; account deletion 5/h per player; every GET 300/min per IP. 429 RATE_LIMITED with `Retry-After`.
+servers:
+- {url: 'http://127.0.0.1:8787/api/v1', description: Development (`npm run dev` = `wrangler dev --env dev`).}
+- url: https://{workerHost}/api/v1
+  description: 'Staging: your deployed Worker (`wrangler deploy --env staging`).'
+  variables:
+    workerHost: {default: your-staging-worker.example, description: Hostname of your deployed staging Worker.}
+- url: https://{workerHost}/api/v1
+  description: 'Production: your deployed Worker (`wrangler deploy`).'
+  variables:
+    workerHost: {default: your-production-worker.example, description: Hostname of your deployed production Worker.}
+tags:
+- {name: Health & meta}
+- {name: Authentication}
+- {name: Players}
+- name: Leaderboards
+  description: Only VERIFIED records are ranked; suspended accounts are never ranked; a board is always bound to one level revision (content hash) and one category.
+- {name: Records & replays}
+- name: Globe
+  description: Coordinates are the approximate centre of the player's country, never a personal position.
+- {name: Friends}
+- name: Administration
+  description: 'Operators only: enabled when the ADMIN_TOKEN secret (>= 32 characters) is set, otherwise 404.'
+paths:
+  /health:
+    get:
+      tags: [Health & meta]
+      operationId: getHealth
+      summary: Service and database health
+      security: []
+      description: 'Runs `SELECT 1` on D1. Not cached. Note: like every GET it first goes through the per-IP `reads` rate limiter, which itself uses D1.'
+      responses:
+        '200':
+          description: Healthy.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/components/schemas/Health'}
+              example:
+                ok: true
+                data:
+                  status: ok
+                  api_version: 1.0.0
+                  environment: production
+                  database: ok
+                  time: '2026-11-13T09:00:00.000Z'
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+        '503':
+          description: '`SELECT 1` failed (D1 unavailable). This route is not rate limited, so it answers even when D1 is down.'
+          headers:
+            Retry-After: {schema: {type: integer}, description: Seconds before retrying (30).}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ErrorEnvelope'}
+              example:
+                ok: false
+                error: {code: SERVICE_UNAVAILABLE, message: Service temporairement indisponible., details: {database: unavailable}}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+  /meta:
+    get:
+      tags: [Health & meta]
+      operationId: getMeta
+      summary: API metadata, TOS version, categories and levels
+      security: []
+      description: Edge-cacheable for anonymous requests.
+      responses:
+        '200':
+          description: Metadata.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/components/schemas/Meta'}
+              example:
+                ok: true
+                data:
+                  api_version: 1.0.0
+                  environment: production
+                  tos_version: 2026-11
+                  min_game_version: 2.1.0
+                  categories: [ANY_PERCENT, HUNDRED_PERCENT, NO_DEATH, NO_DAMAGE, SPEEDRUN]
+                  modes: [STANDARD]
+                  levels:
+                  - id: sylvanox_01
+                    name: Les Ruines Suspendues
+                    planet_id: sylvanox
+                    planet_name: Sylvanox
+                    order: 1
+                    version: 1
+                    content_hash: 0652230a14e586a34efa302cc4c617c8175bdc63c4ff8ae2cdc34dbda9227b08
+                    ranking_enabled: true
+                    min_game_version: 2.1.0
+                    total_collectibles: 10
+                    time_limit_ms: 900000
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /auth/register:
+    post:
+      tags: [Authentication]
+      operationId: register
+      summary: Create an account and open a session
+      security: []
+      description: 'Rate limit `register`: 5 per hour per IP (checked before the body is read). JSON body <= 8 KiB.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/RegisterRequest'}
+            example:
+              username: NovaRider
+              password: sup3r secret pass
+              country_code: FR
+              location_visibility: globe
+              accept_tos: true
+              tos_version: 2026-11
+      responses:
+        '201':
+          description: Account created; a session is open.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/components/schemas/AuthResult'}
+              example:
+                ok: true
+                data:
+                  player:
+                    id: a908a1fb-a574-47c3-b6ed-f550f36cc212
+                    username: NovaRider
+                    avatar: avatar_07
+                    avatar_url: null
+                    country_code: FR
+                    region_code: null
+                    location_visibility: globe
+                    profile_visibility: public
+                    allow_friend_requests: true
+                    trust_level: 0
+                    tos_version: 2026-11
+                    created_at: '2026-11-13T09:12:44.512Z'
+                    last_seen_at: '2026-11-13T09:12:44.512Z'
+                    account_status: active
+                  session:
+                    access_token: JA4X-o_Dknel7UZHAScY6YGbw_CupBBdkzcEv8hNxoM
+                    access_expires_at: '2026-11-13T10:12:44.530Z'
+                    refresh_token: ggeyYnOLmtUCbypAk4h7cqglixzPd297BVpJkG3akwM
+                    refresh_expires_at: '2026-12-13T09:12:44.530Z'
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '400':
+          description: 'VALIDATION_ERROR (details = list of {field, message}; unknown fields are refused), INVALID_JSON (body is not a JSON object) or BAD_REQUEST
+            (invalid Content-Length header). Also: reserved username, password containing the username, accept_tos not true, outdated tos_version, region outside
+            the country, visible location without country, unknown country.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [VALIDATION_ERROR, INVALID_JSON, BAD_REQUEST]}
+              example:
+                ok: false
+                error:
+                  code: VALIDATION_ERROR
+                  message: Données invalides.
+                  details:
+                  - {field: player_id, message: champ inconnu}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '409':
+          description: USERNAME_TAKEN (case-insensitive).
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [USERNAME_TAKEN]}
+              example:
+                ok: false
+                error: {code: USERNAME_TAKEN, message: Ce pseudonyme est déjà utilisé.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '413': {$ref: '#/components/responses/PayloadTooLarge'}
+        '415': {$ref: '#/components/responses/UnsupportedMediaType'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /auth/login:
+    post:
+      tags: [Authentication]
+      operationId: login
+      summary: Log in with username and password
+      security: []
+      description: 'Rate limits: `login_ip` 30 per 15 min per IP (before the body is read), then `login_user` 20 per 15 min per username. After 10 consecutive wrong
+        passwords the account is locked for 15 minutes (423). Unknown username and wrong password give the same 401 (same code, same message, same timing).'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/LoginRequest'}
+            example: {username: novarider, password: sup3r secret pass}
+      responses:
+        '200':
+          description: Logged in; a new session is open.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/components/schemas/AuthResult'}
+              example:
+                ok: true
+                data:
+                  player:
+                    id: a908a1fb-a574-47c3-b6ed-f550f36cc212
+                    username: NovaRider
+                    avatar: avatar_07
+                    avatar_url: null
+                    country_code: FR
+                    region_code: null
+                    location_visibility: globe
+                    profile_visibility: public
+                    allow_friend_requests: true
+                    trust_level: 0
+                    tos_version: 2026-11
+                    created_at: '2026-11-13T09:12:44.512Z'
+                    last_seen_at: '2026-11-13T09:12:44.512Z'
+                    account_status: active
+                  session:
+                    access_token: JA4X-o_Dknel7UZHAScY6YGbw_CupBBdkzcEv8hNxoM
+                    access_expires_at: '2026-11-13T10:12:44.530Z'
+                    refresh_token: ggeyYnOLmtUCbypAk4h7cqglixzPd297BVpJkG3akwM
+                    refresh_expires_at: '2026-12-13T09:12:44.530Z'
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401':
+          description: 'INVALID_CREDENTIALS: unknown username or wrong password.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [INVALID_CREDENTIALS]}
+              example:
+                ok: false
+                error: {code: INVALID_CREDENTIALS, message: Pseudonyme ou mot de passe incorrect.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '403':
+          description: 'ACCOUNT_SUSPENDED: correct password but the account is suspended.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [ACCOUNT_SUSPENDED]}
+              example:
+                ok: false
+                error: {code: ACCOUNT_SUSPENDED, message: Ce compte est suspendu.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '413': {$ref: '#/components/responses/PayloadTooLarge'}
+        '415': {$ref: '#/components/responses/UnsupportedMediaType'}
+        '423':
+          description: 'ACCOUNT_LOCKED: too many failures; details.locked_until gives the end of the lock. Checked before the password.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [ACCOUNT_LOCKED]}
+              example:
+                ok: false
+                error:
+                  code: ACCOUNT_LOCKED
+                  message: 'Trop d''échecs de connexion : compte temporairement verrouillé.'
+                  details: {locked_until: '2026-11-13T09:27:44.000Z'}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /auth/refresh:
+    post:
+      tags: [Authentication]
+      operationId: refresh
+      summary: Rotate the session tokens
+      security: []
+      description: 'Exchanges a refresh token for a new access + refresh pair; the previous access token stops working immediately. Re-presenting the previous refresh
+        token within 120 s of the rotation (lost response) is accepted and rotates again. Re-presenting it later revokes the whole session (possible theft): 401 SESSION_REVOKED.
+        Rate limit `refresh`: 60 per minute per IP.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/RefreshRequest'}
+            example: {refresh_token: ggeyYnOLmtUCbypAk4h7cqglixzPd297BVpJkG3akwM}
+      responses:
+        '200':
+          description: New tokens.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      required: [session]
+                      properties:
+                        session: {$ref: '#/components/schemas/Session'}
+              example:
+                ok: true
+                data:
+                  session:
+                    access_token: WorW03_9kL9BwSLWCZfNy4DGyIop0Bth5xhs0lEb42w
+                    access_expires_at: '2026-11-13T10:12:44.530Z'
+                    refresh_token: LIbjbNeSy23KulMbx-vL83GQAZ32TZvi0CUZ8cXgxR8
+                    refresh_expires_at: '2026-12-13T09:12:44.530Z'
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401':
+          description: 'INVALID_REFRESH_TOKEN (unknown token), SESSION_REVOKED (reuse of a rotated token after the grace period, or session revoked meanwhile) or
+            SESSION_EXPIRED (refresh token expired: log in again).'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [INVALID_REFRESH_TOKEN, SESSION_REVOKED, SESSION_EXPIRED]}
+              example:
+                ok: false
+                error: {code: SESSION_REVOKED, message: 'Session révoquée par sécurité : reconnectez-vous.'}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '403': {$ref: '#/components/responses/AccountSuspended'}
+        '413': {$ref: '#/components/responses/PayloadTooLarge'}
+        '415': {$ref: '#/components/responses/UnsupportedMediaType'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /auth/logout:
+    post:
+      tags: [Authentication]
+      operationId: logout
+      summary: Revoke the current session (or all sessions)
+      security:
+      - {bearerAuth: []}
+      description: The body is optional and only read when Content-Type starts with application/json. Not rate limited.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/LogoutRequest'}
+            example: {all: true}
+      responses:
+        '200':
+          description: Session(s) revoked.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      required: [logged_out, all_sessions]
+                      properties:
+                        logged_out: {const: true}
+                        all_sessions: {type: boolean}
+              example:
+                ok: true
+                data: {logged_out: true, all_sessions: true}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/AccountSuspended'}
+        '413': {$ref: '#/components/responses/PayloadTooLarge'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /auth/me:
+    get:
+      tags: [Authentication]
+      operationId: getMe
+      summary: Private profile of the session owner
+      security:
+      - {bearerAuth: []}
+      responses:
+        '200':
+          description: Current player.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      required: [player]
+                      properties:
+                        player: {$ref: '#/components/schemas/PrivateProfile'}
+              example:
+                ok: true
+                data:
+                  player:
+                    id: a908a1fb-a574-47c3-b6ed-f550f36cc212
+                    username: NovaRider
+                    avatar: avatar_07
+                    avatar_url: null
+                    country_code: FR
+                    region_code: null
+                    location_visibility: globe
+                    profile_visibility: public
+                    allow_friend_requests: true
+                    trust_level: 0
+                    tos_version: 2026-11
+                    created_at: '2026-11-13T09:12:44.512Z'
+                    last_seen_at: '2026-11-13T09:12:44.512Z'
+                    account_status: active
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/AccountSuspended'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /players/search:
+    get:
+      tags: [Players]
+      operationId: searchPlayers
+      summary: Search players by username prefix
+      security: []
+      description: Case-insensitive prefix match on active accounts; at most 20 results, shortest names first. No pagination. The Authorization header is ignored.
+      parameters:
+      - name: q
+        in: query
+        required: true
+        schema: {type: string, pattern: '^[A-Za-z0-9_.-]{2,20}$'}
+        description: Missing -> 400 ("2 caractères minimum"); other characters -> 400 ("format invalide").
+      responses:
+        '200':
+          description: Matching players.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      required: [players]
+                      properties:
+                        players:
+                          type: array
+                          maxItems: 20
+                          items: {$ref: '#/components/schemas/PlayerSummary'}
+              example:
+                ok: true
+                data:
+                  players:
+                  - id: a908a1fb-a574-47c3-b6ed-f550f36cc212
+                    username: NovaRider
+                    avatar: avatar_07
+                    avatar_url: null
+                    country_code: FR
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '400':
+          description: VALIDATION_ERROR on q.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [VALIDATION_ERROR]}
+              example:
+                ok: false
+                error:
+                  code: VALIDATION_ERROR
+                  message: Paramètres de pagination invalides.
+                  details:
+                  - {field: limit, message: doit être entre 1 et 100}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /players/me/export:
+    get:
+      tags: [Players]
+      operationId: exportMe
+      summary: GDPR export of every personal data item
+      security:
+      - {bearerAuth: []}
+      description: Password hashes, token hashes and IPs are never exported (IPs are only stored hashed). The export itself is written to the audit log.
+      responses:
+        '200':
+          description: Personal data.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/components/schemas/ExportData'}
+              example:
+                ok: true
+                data:
+                  exported_at: '2026-11-13T10:00:00.000Z'
+                  player:
+                    id: a908a1fb-a574-47c3-b6ed-f550f36cc212
+                    username: NovaRider
+                    avatar: avatar_07
+                    avatar_url: null
+                    country_code: FR
+                    region_code: null
+                    location_visibility: globe
+                    profile_visibility: public
+                    allow_friend_requests: true
+                    trust_level: 0
+                    tos_version: 2026-11
+                    created_at: '2026-11-13T09:12:44.512Z'
+                    last_seen_at: '2026-11-13T09:12:44.512Z'
+                    account_status: active
+                  sessions:
+                  - id: 1b6d87a5-39eb-4302-9cab-17710358a403
+                    created_at: '2026-11-13T09:12:44.512Z'
+                    last_used_at: '2026-11-13T09:40:02.110Z'
+                    expires_at: '2026-11-13T10:12:44.530Z'
+                    refresh_expires_at: '2026-12-13T09:12:44.530Z'
+                    revoked_at: null
+                    client_info: CosmicPlatformer/2.1.0
+                  records: []
+                  friends: []
+                  replays: []
+                  audit_log:
+                  - {action: register, details: null, created_at: '2026-11-13T09:12:44.540Z'}
+                  notes: Le mot de passe n'est stocké que sous forme d'empreinte PBKDF2 et n'est pas exportable. Les adresses IP ne sont jamais stockées en clair.
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/AccountSuspended'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /players/me:
+    patch:
+      tags: [Players]
+      operationId: patchMe
+      summary: Update profile and privacy settings
+      security:
+      - {bearerAuth: []}
+      description: 'Rate limit `profile_write`: 20 per 5 min per player (shared with PUT /players/me/avatar). JSON body <= 8 KiB. GET /players/me does not exist:
+        use GET /auth/me (a GET on /players/me is routed to /players/{playerId} and answers 404 PLAYER_NOT_FOUND).'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/PatchMeRequest'}
+            example: {country_code: JP, location_visibility: globe, avatar: avatar_07, allow_friend_requests: false}
+      responses:
+        '200':
+          description: Updated profile.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      required: [player]
+                      properties:
+                        player: {$ref: '#/components/schemas/PrivateProfile'}
+              example:
+                ok: true
+                data:
+                  player:
+                    id: a908a1fb-a574-47c3-b6ed-f550f36cc212
+                    username: NovaRider
+                    avatar: avatar_07
+                    avatar_url: null
+                    country_code: JP
+                    region_code: null
+                    location_visibility: globe
+                    profile_visibility: public
+                    allow_friend_requests: false
+                    trust_level: 0
+                    tos_version: 2026-11
+                    created_at: '2026-11-13T09:12:44.512Z'
+                    last_seen_at: '2026-11-13T09:12:44.512Z'
+                    account_status: active
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '400':
+          description: 'VALIDATION_ERROR (details = list of {field, message}; unknown fields are refused), INVALID_JSON (body is not a JSON object) or BAD_REQUEST
+            (invalid Content-Length header). Also: reserved username, region outside the country, unknown country.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [VALIDATION_ERROR, INVALID_JSON, BAD_REQUEST]}
+              example:
+                ok: false
+                error:
+                  code: VALIDATION_ERROR
+                  message: Données invalides.
+                  details:
+                  - {field: player_id, message: champ inconnu}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/AccountSuspended'}
+        '409':
+          description: USERNAME_TAKEN.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [USERNAME_TAKEN]}
+              example:
+                ok: false
+                error: {code: USERNAME_TAKEN, message: Ce pseudonyme est déjà utilisé.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '413': {$ref: '#/components/responses/PayloadTooLarge'}
+        '415': {$ref: '#/components/responses/UnsupportedMediaType'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+    delete:
+      tags: [Players]
+      operationId: deleteMe
+      summary: Delete the account and all its data
+      security:
+      - {bearerAuth: []}
+      description: 'Requires the password and `confirm: "DELETE"`. Deletes replay files and the custom avatar (R2), then the player row (sessions, records, bests,
+        replays metadata, friendships cascade) and the player''s audit entries. Rate limit `account_delete`: 5 per hour per player.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/DeleteMeRequest'}
+            example: {password: sup3r secret pass, confirm: DELETE}
+      responses:
+        '200':
+          description: Account deleted.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      required: [deleted]
+                      properties:
+                        deleted: {const: true}
+              example:
+                ok: true
+                data: {deleted: true}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '400':
+          description: VALIDATION_ERROR (details = list of {field, message}; unknown fields are refused), INVALID_JSON (body is not a JSON object) or BAD_REQUEST
+            (invalid Content-Length header). confirm other than DELETE -> VALIDATION_ERROR ("doit valoir DELETE").
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [VALIDATION_ERROR, INVALID_JSON, BAD_REQUEST]}
+              example:
+                ok: false
+                error:
+                  code: VALIDATION_ERROR
+                  message: Données invalides.
+                  details:
+                  - {field: player_id, message: champ inconnu}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '401':
+          description: UNAUTHORIZED / INVALID_TOKEN / TOKEN_EXPIRED (session), or INVALID_CREDENTIALS (wrong password).
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [UNAUTHORIZED, INVALID_TOKEN, TOKEN_EXPIRED, INVALID_CREDENTIALS]}
+              example:
+                ok: false
+                error: {code: INVALID_CREDENTIALS, message: Mot de passe incorrect.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '403': {$ref: '#/components/responses/AccountSuspended'}
+        '413': {$ref: '#/components/responses/PayloadTooLarge'}
+        '415': {$ref: '#/components/responses/UnsupportedMediaType'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /players/me/avatar:
+    put:
+      tags: [Players]
+      operationId: putAvatar
+      summary: Upload a custom PNG avatar
+      security:
+      - {bearerAuth: []}
+      description: 'Raw PNG body (Content-Type image/png), at most 65 536 bytes. Strict check: PNG signature, IHDR first chunk, square image of 32 to 256 px, bit
+        depth 8, consistent chunk lengths, file ending exactly with IEND. Stored privately and served by GET /players/{playerId}/avatar. Rate limit `profile_write`
+        (shared with PATCH /players/me).'
+      requestBody:
+        required: true
+        content:
+          image/png:
+            schema: {type: string, format: binary, contentMediaType: image/png}
+      responses:
+        '200':
+          description: Avatar stored; avatar becomes `custom`.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      required: [player]
+                      properties:
+                        player: {$ref: '#/components/schemas/PrivateProfile'}
+              example:
+                ok: true
+                data:
+                  player:
+                    id: a908a1fb-a574-47c3-b6ed-f550f36cc212
+                    username: NovaRider
+                    avatar: custom
+                    avatar_url: /api/v1/players/a908a1fb-a574-47c3-b6ed-f550f36cc212/avatar
+                    country_code: FR
+                    region_code: null
+                    location_visibility: globe
+                    profile_visibility: public
+                    allow_friend_requests: true
+                    trust_level: 0
+                    tos_version: 2026-11
+                    created_at: '2026-11-13T09:12:44.512Z'
+                    last_seen_at: '2026-11-13T09:12:44.512Z'
+                    account_status: active
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '400':
+          description: 'BAD_REQUEST: invalid Content-Length header.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [BAD_REQUEST]}
+              example:
+                ok: false
+                error: {code: BAD_REQUEST, message: En-tête Content-Length invalide.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/AccountSuspended'}
+        '413': {$ref: '#/components/responses/PayloadTooLarge'}
+        '415':
+          description: 'UNSUPPORTED_MEDIA_TYPE: Content-Type is not image/png.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [UNSUPPORTED_MEDIA_TYPE]}
+              example:
+                ok: false
+                error: {code: UNSUPPORTED_MEDIA_TYPE, message: Avatar PNG attendu (image/png).}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '422':
+          description: 'INVALID_IMAGE: the PNG check failed (message gives the reason).'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [INVALID_IMAGE]}
+              example:
+                ok: false
+                error: {code: INVALID_IMAGE, message: 'Avatar refusé : image carrée de 32 à 256 pixels attendue.'}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /players/{playerId}:
+    get:
+      tags: [Players]
+      operationId: getPlayer
+      summary: Profile and statistics of a player
+      security:
+      - {}
+      - {bearerAuth: []}
+      description: 'Three shapes: the owner gets OwnProfile + statistics; others get PublicProfile + statistics, or HiddenProfile + `statistics: null` when the profile
+        is private. Suspended players answer 404.'
+      parameters:
+      - {$ref: '#/components/parameters/PlayerIdPath'}
+      responses:
+        '200':
+          description: Profile.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/components/schemas/PlayerProfile'}
+              example:
+                ok: true
+                data:
+                  player:
+                    id: a908a1fb-a574-47c3-b6ed-f550f36cc212
+                    username: NovaRider
+                    avatar: avatar_07
+                    avatar_url: null
+                    country_code: FR
+                    region_code: null
+                    created_at: '2026-11-13T09:12:44.512Z'
+                    hidden: false
+                    friendship: null
+                  statistics:
+                    verified_records: 3
+                    submitted_records: 4
+                    personal_bests: 2
+                    levels_completed: 1
+                    first_places: 1
+                    planets:
+                    - planet_id: sylvanox
+                      planet_name: Sylvanox
+                      levels: 3
+                      completed_levels: 1
+                      completed: false
+                    planets_completed: 0
+                    best_times:
+                    - level_id: sylvanox_01
+                      level_name: Les Ruines Suspendues
+                      planet_id: sylvanox
+                      category: ANY_PERCENT
+                      time_ms: 61000
+                      record_id: 4b9c3c4e-374c-4fa8-a579-383df21bd26e
+                      achieved_at: '2026-11-13T09:20:01.004Z'
+                      rank: 1
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '401': {$ref: '#/components/responses/InvalidOrExpiredToken'}
+        '403':
+          description: 'ACCOUNT_SUSPENDED: the viewer''s own account is suspended.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [ACCOUNT_SUSPENDED]}
+              example:
+                ok: false
+                error: {code: ACCOUNT_SUSPENDED, message: Ce compte est suspendu.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '404':
+          description: 'PLAYER_NOT_FOUND: malformed id, unknown or suspended player.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [PLAYER_NOT_FOUND]}
+              example:
+                ok: false
+                error: {code: PLAYER_NOT_FOUND, message: Joueur introuvable.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /players/{playerId}/records:
+    get:
+      tags: [Players]
+      operationId: getPlayerRecords
+      summary: Record history of a player
+      security:
+      - {}
+      - {bearerAuth: []}
+      description: Newest first. Other viewers only get VERIFIED records (public view, `status` ignored); the owner gets every status and the owner view. Private
+        profiles answer 403 to others.
+      parameters:
+      - {$ref: '#/components/parameters/PlayerIdPath'}
+      - {$ref: '#/components/parameters/Limit200'}
+      - {$ref: '#/components/parameters/Offset'}
+      - {$ref: '#/components/parameters/LevelIdQuery'}
+      - name: category
+        in: query
+        schema: {type: string, enum: [ANY_PERCENT, HUNDRED_PERCENT, NO_DEATH, NO_DAMAGE, SPEEDRUN]}
+        description: Optional filter (no default).
+      - name: status
+        in: query
+        schema: {type: string, enum: [PENDING, VERIFIED, REJECTED]}
+        description: Owner only; ignored for other viewers (always VERIFIED).
+      responses:
+        '200':
+          description: Records page.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      required: [player_id, records]
+                      properties:
+                        player_id: {type: string, format: uuid}
+                        records:
+                          type: array
+                          items:
+                            anyOf:
+                            - {$ref: '#/components/schemas/RecordOwner'}
+                            - {$ref: '#/components/schemas/Record'}
+                    meta: {$ref: '#/components/schemas/PageMeta'}
+                  required: [meta]
+              example:
+                ok: true
+                data:
+                  player_id: a908a1fb-a574-47c3-b6ed-f550f36cc212
+                  records:
+                  - id: 4b9c3c4e-374c-4fa8-a579-383df21bd26e
+                    player_id: a908a1fb-a574-47c3-b6ed-f550f36cc212
+                    level_id: sylvanox_01
+                    level_version: 1
+                    level_hash: 0652230a14e586a34efa302cc4c617c8175bdc63c4ff8ae2cdc34dbda9227b08
+                    mode: STANDARD
+                    category: ANY_PERCENT
+                    time_ms: 61000
+                    deaths: 0
+                    damage_taken: 0
+                    collectibles: 4
+                    total_collectibles: 10
+                    score: 0
+                    game_version: 2.1.0
+                    verification_status: VERIFIED
+                    has_replay: true
+                    created_at: '2026-11-13T09:20:01.004Z'
+                    verified_at: '2026-11-13T09:20:03.871Z'
+                meta: {limit: 50, offset: 0, total: 1, next_offset: null}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '400': {$ref: '#/components/responses/InvalidQuery'}
+        '401': {$ref: '#/components/responses/InvalidOrExpiredToken'}
+        '403':
+          description: PROFILE_PRIVATE (private profile, viewer is not the owner) or ACCOUNT_SUSPENDED (viewer's account).
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [ACCOUNT_SUSPENDED, PROFILE_PRIVATE]}
+              example:
+                ok: false
+                error: {code: PROFILE_PRIVATE, message: Le joueur a masqué son profil.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '404':
+          description: PLAYER_NOT_FOUND.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [PLAYER_NOT_FOUND]}
+              example:
+                ok: false
+                error: {code: PLAYER_NOT_FOUND, message: Joueur introuvable.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /players/{playerId}/statistics:
+    get:
+      tags: [Players]
+      operationId: getPlayerStatistics
+      summary: Statistics of a player
+      security:
+      - {}
+      - {bearerAuth: []}
+      parameters:
+      - {$ref: '#/components/parameters/PlayerIdPath'}
+      responses:
+        '200':
+          description: Statistics.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      required: [player_id, statistics]
+                      properties:
+                        player_id: {type: string, format: uuid}
+                        statistics: {$ref: '#/components/schemas/Statistics'}
+              example:
+                ok: true
+                data:
+                  player_id: a908a1fb-a574-47c3-b6ed-f550f36cc212
+                  statistics:
+                    verified_records: 3
+                    submitted_records: 4
+                    personal_bests: 2
+                    levels_completed: 1
+                    first_places: 1
+                    planets:
+                    - planet_id: sylvanox
+                      planet_name: Sylvanox
+                      levels: 3
+                      completed_levels: 1
+                      completed: false
+                    planets_completed: 0
+                    best_times:
+                    - level_id: sylvanox_01
+                      level_name: Les Ruines Suspendues
+                      planet_id: sylvanox
+                      category: ANY_PERCENT
+                      time_ms: 61000
+                      record_id: 4b9c3c4e-374c-4fa8-a579-383df21bd26e
+                      achieved_at: '2026-11-13T09:20:01.004Z'
+                      rank: 1
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '401': {$ref: '#/components/responses/InvalidOrExpiredToken'}
+        '403':
+          description: PROFILE_PRIVATE or ACCOUNT_SUSPENDED (viewer's account).
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [ACCOUNT_SUSPENDED, PROFILE_PRIVATE]}
+              example:
+                ok: false
+                error: {code: PROFILE_PRIVATE, message: Le joueur a masqué son profil.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '404':
+          description: PLAYER_NOT_FOUND.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [PLAYER_NOT_FOUND]}
+              example:
+                ok: false
+                error: {code: PLAYER_NOT_FOUND, message: Joueur introuvable.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /players/{playerId}/avatar:
+    get:
+      tags: [Players]
+      operationId: getAvatar
+      summary: Download a custom avatar (PNG)
+      security: []
+      description: Served even for private profiles. The Authorization header is ignored.
+      parameters:
+      - {$ref: '#/components/parameters/PlayerIdPath'}
+      responses:
+        '200':
+          description: PNG image.
+          headers:
+            Cache-Control:
+              schema: {type: string, const: 'public, max-age=300'}
+          content:
+            image/png:
+              schema: {type: string, format: binary, contentMediaType: image/png}
+        '404':
+          description: PLAYER_NOT_FOUND, or AVATAR_NOT_FOUND (no custom avatar / file missing).
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [PLAYER_NOT_FOUND, AVATAR_NOT_FOUND]}
+              example:
+                ok: false
+                error: {code: PLAYER_NOT_FOUND, message: Joueur introuvable.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /leaderboards/global:
+    get:
+      tags: [Leaderboards]
+      operationId: getGlobalLeaderboard
+      summary: Cosmic points ranking (or a level's world board)
+      security:
+      - {}
+      - {bearerAuth: []}
+      description: 'Without level_id: the cosmic points ranking over every ranked level (current revisions): for each level, floor(1000 x world best / player best),
+        summed. Accepts category, country, limit, offset. With level_id: identical to GET /leaderboards/level/{levelId} (LevelBoard; `country` is then ignored). Only
+        VERIFIED records count. Edge-cacheable for anonymous requests.'
+      parameters:
+      - {$ref: '#/components/parameters/LevelIdQuery'}
+      - {$ref: '#/components/parameters/Category'}
+      - {$ref: '#/components/parameters/CountryQuery'}
+      - {$ref: '#/components/parameters/Limit'}
+      - {$ref: '#/components/parameters/Offset'}
+      - {$ref: '#/components/parameters/Mode'}
+      - {$ref: '#/components/parameters/Period'}
+      - {$ref: '#/components/parameters/PlayerFilter'}
+      - {$ref: '#/components/parameters/LevelHash'}
+      - {$ref: '#/components/parameters/LevelVersion'}
+      responses:
+        '200':
+          description: Board.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data:
+                      oneOf:
+                      - {$ref: '#/components/schemas/GlobalPointsBoard'}
+                      - {$ref: '#/components/schemas/LevelBoard'}
+                    meta: {$ref: '#/components/schemas/PageMeta'}
+                  required: [meta]
+              example:
+                ok: true
+                data:
+                  board: {kind: cosmic_points, category: ANY_PERCENT, country_code: null}
+                  entries:
+                  - rank: 1
+                    world_rank: 1
+                    player:
+                      id: a908a1fb-a574-47c3-b6ed-f550f36cc212
+                      username: NovaRider
+                      avatar: avatar_07
+                      avatar_url: null
+                      country_code: FR
+                    points: 1909
+                    levels_completed: 2
+                    total_time_ms: 156000
+                    is_me: false
+                  me: null
+                meta: {limit: 25, offset: 0, total: 1, next_offset: null}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '400': {$ref: '#/components/responses/InvalidQuery'}
+        '401': {$ref: '#/components/responses/InvalidOrExpiredToken'}
+        '403': {$ref: '#/components/responses/AccountSuspended'}
+        '404': {$ref: '#/components/responses/LevelNotFound'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /leaderboards/level/{levelId}:
+    get:
+      tags: [Leaderboards]
+      operationId: getLevelLeaderboard
+      summary: World leaderboard of a level
+      security:
+      - {}
+      - {bearerAuth: []}
+      description: Best VERIFIED time of each active player on ONE level revision (current by default) and category. PENDING/REJECTED never appear; the viewer's own
+        pending run is reported in `me.pending`. Readable even when ranking is disabled for the level. Edge-cacheable for anonymous requests.
+      parameters:
+      - {$ref: '#/components/parameters/LevelIdPath'}
+      - {$ref: '#/components/parameters/Category'}
+      - {$ref: '#/components/parameters/Mode'}
+      - {$ref: '#/components/parameters/Period'}
+      - {$ref: '#/components/parameters/PlayerFilter'}
+      - {$ref: '#/components/parameters/Limit'}
+      - {$ref: '#/components/parameters/Offset'}
+      - {$ref: '#/components/parameters/LevelHash'}
+      - {$ref: '#/components/parameters/LevelVersion'}
+      responses:
+        '200':
+          description: Board page.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/components/schemas/LevelBoard'}
+                    meta: {$ref: '#/components/schemas/PageMeta'}
+                  required: [meta]
+              example:
+                ok: true
+                data:
+                  board:
+                    level_id: sylvanox_01
+                    name: Les Ruines Suspendues
+                    planet_id: sylvanox
+                    planet_name: Sylvanox
+                    version: 1
+                    content_hash: 0652230a14e586a34efa302cc4c617c8175bdc63c4ff8ae2cdc34dbda9227b08
+                    compatibility_status: active
+                    is_current: true
+                    ranking_enabled: true
+                    category: ANY_PERCENT
+                    mode: STANDARD
+                    period: all
+                    week_start: null
+                    week_end: null
+                    country_code: null
+                    friends: false
+                  entries:
+                  - rank: 1
+                    world_rank: 1
+                    player:
+                      id: a908a1fb-a574-47c3-b6ed-f550f36cc212
+                      username: NovaRider
+                      avatar: avatar_07
+                      avatar_url: null
+                      country_code: FR
+                    time_ms: 61000
+                    record_id: 4b9c3c4e-374c-4fa8-a579-383df21bd26e
+                    achieved_at: '2026-11-13T09:20:01.004Z'
+                    has_replay: true
+                    is_me: false
+                  me: null
+                meta: {limit: 25, offset: 0, total: 1, next_offset: null}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '400': {$ref: '#/components/responses/InvalidQuery'}
+        '401': {$ref: '#/components/responses/InvalidOrExpiredToken'}
+        '403': {$ref: '#/components/responses/AccountSuspended'}
+        '404': {$ref: '#/components/responses/LevelNotFound'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /leaderboards/planet/{planetId}:
+    get:
+      tags: [Leaderboards]
+      operationId: getPlanetLeaderboard
+      summary: Total time over every ranked level of a planet
+      security:
+      - {}
+      - {bearerAuth: []}
+      description: Only players with a verified best on every ranked level of the planet (current revisions) are ranked, by the sum of their best times.
+      parameters:
+      - {$ref: '#/components/parameters/PlanetIdPath'}
+      - {$ref: '#/components/parameters/Category'}
+      - {$ref: '#/components/parameters/CountryQuery'}
+      - {$ref: '#/components/parameters/Limit'}
+      - {$ref: '#/components/parameters/Offset'}
+      responses:
+        '200':
+          description: Board page.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/components/schemas/PlanetBoard'}
+                    meta: {$ref: '#/components/schemas/PageMeta'}
+                  required: [meta]
+              example:
+                ok: true
+                data:
+                  board:
+                    kind: planet_total_time
+                    planet_id: sylvanox
+                    category: ANY_PERCENT
+                    levels:
+                    - {id: sylvanox_01, name: Les Ruines Suspendues}
+                    country_code: null
+                  entries:
+                  - rank: 1
+                    world_rank: 1
+                    player:
+                      id: a908a1fb-a574-47c3-b6ed-f550f36cc212
+                      username: NovaRider
+                      avatar: avatar_07
+                      avatar_url: null
+                      country_code: FR
+                    total_time_ms: 152000
+                    levels_completed: 3
+                    is_me: false
+                  me: null
+                meta: {limit: 25, offset: 0, total: 1, next_offset: null}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '400':
+          description: VALIDATION_ERROR (planetId format, category, country, limit, offset).
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [VALIDATION_ERROR]}
+              example:
+                ok: false
+                error:
+                  code: VALIDATION_ERROR
+                  message: Paramètres de pagination invalides.
+                  details:
+                  - {field: limit, message: doit être entre 1 et 100}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '401': {$ref: '#/components/responses/InvalidOrExpiredToken'}
+        '403': {$ref: '#/components/responses/AccountSuspended'}
+        '404':
+          description: 'PLANET_NOT_FOUND: no ranked level on this planet.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [PLANET_NOT_FOUND]}
+              example:
+                ok: false
+                error: {code: PLANET_NOT_FOUND, message: Aucun niveau classé pour cette planète.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /leaderboards/country/{countryCode}:
+    get:
+      tags: [Leaderboards]
+      operationId: getCountryLeaderboard
+      summary: Level leaderboard restricted to a country
+      security:
+      - {}
+      - {bearerAuth: []}
+      description: Same as the level board, filtered on players of the country whose location_visibility is not hidden. `world_rank` keeps the world position.
+      parameters:
+      - {$ref: '#/components/parameters/CountryCodePath'}
+      - {$ref: '#/components/parameters/LevelIdQueryRequired'}
+      - {$ref: '#/components/parameters/Category'}
+      - {$ref: '#/components/parameters/Mode'}
+      - {$ref: '#/components/parameters/Period'}
+      - {$ref: '#/components/parameters/PlayerFilter'}
+      - {$ref: '#/components/parameters/Limit'}
+      - {$ref: '#/components/parameters/Offset'}
+      - {$ref: '#/components/parameters/LevelHash'}
+      - {$ref: '#/components/parameters/LevelVersion'}
+      responses:
+        '200':
+          description: Board page.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/components/schemas/LevelBoard'}
+                    meta: {$ref: '#/components/schemas/PageMeta'}
+                  required: [meta]
+              example:
+                ok: true
+                data:
+                  board:
+                    level_id: sylvanox_01
+                    name: Les Ruines Suspendues
+                    planet_id: sylvanox
+                    planet_name: Sylvanox
+                    version: 1
+                    content_hash: 0652230a14e586a34efa302cc4c617c8175bdc63c4ff8ae2cdc34dbda9227b08
+                    compatibility_status: active
+                    is_current: true
+                    ranking_enabled: true
+                    category: ANY_PERCENT
+                    mode: STANDARD
+                    period: all
+                    week_start: null
+                    week_end: null
+                    country_code: FR
+                    friends: false
+                  entries:
+                  - rank: 1
+                    world_rank: 2
+                    player:
+                      id: a908a1fb-a574-47c3-b6ed-f550f36cc212
+                      username: NovaRider
+                      avatar: avatar_07
+                      avatar_url: null
+                      country_code: FR
+                    time_ms: 61000
+                    record_id: 4b9c3c4e-374c-4fa8-a579-383df21bd26e
+                    achieved_at: '2026-11-13T09:20:01.004Z'
+                    has_replay: true
+                    is_me: false
+                  me: null
+                meta: {limit: 25, offset: 0, total: 1, next_offset: null}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '400':
+          description: VALIDATION_ERROR (countryCode not 2 letters, level_id missing or malformed, other parameters).
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [VALIDATION_ERROR]}
+              example:
+                ok: false
+                error:
+                  code: VALIDATION_ERROR
+                  message: Paramètres de pagination invalides.
+                  details:
+                  - {field: limit, message: doit être entre 1 et 100}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '401': {$ref: '#/components/responses/InvalidOrExpiredToken'}
+        '403': {$ref: '#/components/responses/AccountSuspended'}
+        '404': {$ref: '#/components/responses/LevelNotFound'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /leaderboards/friends:
+    get:
+      tags: [Leaderboards]
+      operationId: getFriendsLeaderboard
+      summary: Level leaderboard of the player and accepted friends
+      security:
+      - {bearerAuth: []}
+      description: Never edge-cached.
+      parameters:
+      - {$ref: '#/components/parameters/LevelIdQueryRequired'}
+      - {$ref: '#/components/parameters/Category'}
+      - {$ref: '#/components/parameters/Mode'}
+      - {$ref: '#/components/parameters/Period'}
+      - {$ref: '#/components/parameters/PlayerFilter'}
+      - {$ref: '#/components/parameters/Limit'}
+      - {$ref: '#/components/parameters/Offset'}
+      - {$ref: '#/components/parameters/LevelHash'}
+      - {$ref: '#/components/parameters/LevelVersion'}
+      responses:
+        '200':
+          description: Board page.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/components/schemas/LevelBoard'}
+                    meta: {$ref: '#/components/schemas/PageMeta'}
+                  required: [meta]
+              example:
+                ok: true
+                data:
+                  board:
+                    level_id: sylvanox_01
+                    name: Les Ruines Suspendues
+                    planet_id: sylvanox
+                    planet_name: Sylvanox
+                    version: 1
+                    content_hash: 0652230a14e586a34efa302cc4c617c8175bdc63c4ff8ae2cdc34dbda9227b08
+                    compatibility_status: active
+                    is_current: true
+                    ranking_enabled: true
+                    category: ANY_PERCENT
+                    mode: STANDARD
+                    period: all
+                    week_start: null
+                    week_end: null
+                    country_code: null
+                    friends: true
+                  entries:
+                  - rank: 1
+                    world_rank: 1
+                    player:
+                      id: a908a1fb-a574-47c3-b6ed-f550f36cc212
+                      username: NovaRider
+                      avatar: avatar_07
+                      avatar_url: null
+                      country_code: FR
+                    time_ms: 61000
+                    record_id: 4b9c3c4e-374c-4fa8-a579-383df21bd26e
+                    achieved_at: '2026-11-13T09:20:01.004Z'
+                    has_replay: true
+                    is_me: true
+                  me:
+                    entry:
+                      rank: 1
+                      world_rank: 1
+                      player:
+                        id: a908a1fb-a574-47c3-b6ed-f550f36cc212
+                        username: NovaRider
+                        avatar: avatar_07
+                        avatar_url: null
+                        country_code: FR
+                      time_ms: 61000
+                      record_id: 4b9c3c4e-374c-4fa8-a579-383df21bd26e
+                      achieved_at: '2026-11-13T09:20:01.004Z'
+                      has_replay: true
+                      is_me: true
+                    pending: null
+                meta: {limit: 25, offset: 0, total: 1, next_offset: null}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '400': {$ref: '#/components/responses/InvalidQuery'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/AccountSuspended'}
+        '404': {$ref: '#/components/responses/LevelNotFound'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /leaderboards/weekly:
+    get:
+      tags: [Leaderboards]
+      operationId: getWeeklyLeaderboard
+      summary: Weekly leaderboard of a level
+      security:
+      - {}
+      - {bearerAuth: []}
+      description: 'Level board with `period` forced to weekly (the period parameter is overwritten): best VERIFIED record of each player created since Monday 00:00
+        UTC.'
+      parameters:
+      - {$ref: '#/components/parameters/LevelIdQueryRequired'}
+      - {$ref: '#/components/parameters/Category'}
+      - {$ref: '#/components/parameters/Mode'}
+      - {$ref: '#/components/parameters/PlayerFilter'}
+      - {$ref: '#/components/parameters/Limit'}
+      - {$ref: '#/components/parameters/Offset'}
+      - {$ref: '#/components/parameters/LevelHash'}
+      - {$ref: '#/components/parameters/LevelVersion'}
+      responses:
+        '200':
+          description: Board page.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/components/schemas/LevelBoard'}
+                    meta: {$ref: '#/components/schemas/PageMeta'}
+                  required: [meta]
+              example:
+                ok: true
+                data:
+                  board:
+                    level_id: sylvanox_01
+                    name: Les Ruines Suspendues
+                    planet_id: sylvanox
+                    planet_name: Sylvanox
+                    version: 1
+                    content_hash: 0652230a14e586a34efa302cc4c617c8175bdc63c4ff8ae2cdc34dbda9227b08
+                    compatibility_status: active
+                    is_current: true
+                    ranking_enabled: true
+                    category: ANY_PERCENT
+                    mode: STANDARD
+                    period: weekly
+                    week_start: '2026-11-09T00:00:00.000Z'
+                    week_end: '2026-11-16T00:00:00.000Z'
+                    country_code: null
+                    friends: false
+                  entries:
+                  - rank: 1
+                    world_rank: 1
+                    player:
+                      id: a908a1fb-a574-47c3-b6ed-f550f36cc212
+                      username: NovaRider
+                      avatar: avatar_07
+                      avatar_url: null
+                      country_code: FR
+                    time_ms: 61000
+                    record_id: 4b9c3c4e-374c-4fa8-a579-383df21bd26e
+                    achieved_at: '2026-11-13T09:20:01.004Z'
+                    has_replay: true
+                    is_me: false
+                  me: null
+                meta: {limit: 25, offset: 0, total: 1, next_offset: null}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '400': {$ref: '#/components/responses/InvalidQuery'}
+        '401': {$ref: '#/components/responses/InvalidOrExpiredToken'}
+        '403': {$ref: '#/components/responses/AccountSuspended'}
+        '404': {$ref: '#/components/responses/LevelNotFound'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /records/submit:
+    post:
+      tags: [Records & replays]
+      operationId: submitRecord
+      summary: Submit a run
+      security:
+      - {bearerAuth: []}
+      description: |-
+        The player is the session owner; `player_id` is refused. JSON body <= 4 KiB. Rate limit `submit`: 30 per minute per player.
+
+        Checks, in order: schema -> level exists (404) -> ranking enabled (403) -> exact revision: level_version exists and its content hash equals level_hash (409 LEVEL_VERSION_MISMATCH) -> revision still active (409 LEVEL_VERSION_RETIRED) -> game_version >= the revision's and the server's minimum (426) -> category rules (422) -> progression consistency (422) -> idempotence on attempt_id.
+
+        Server decision (the client is never trusted): time below the revision's min_time_ms -> REJECTED IMPOSSIBLE_TIME; above time_limit_ms -> REJECTED TIME_OVER_LIMIT; otherwise, with an already-analysed replay of the same attempt: invalid -> REJECTED REPLAY_INVALID; SPEEDRUN without a valid replay -> PENDING; new world record more than 20 % below the current one and trust_level < 3 -> PENDING; new world record on a board of >= 5 players and trust_level < 2 -> PENDING; valid replay -> VERIFIED; trust_level >= 2 -> VERIFIED; else PENDING (waiting for the replay).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/SubmitRequest'}
+            example:
+              level_id: sylvanox_01
+              level_version: 1
+              level_hash: 0652230a14e586a34efa302cc4c617c8175bdc63c4ff8ae2cdc34dbda9227b08
+              category: ANY_PERCENT
+              time_ms: 61000
+              deaths: 0
+              damage_taken: 0
+              collectibles: 4
+              total_collectibles: 10
+              game_version: 2.1.0
+              attempt_id: 72c3f50d-4b27-46e4-8b70-f90de2db728a
+              has_replay: true
+      responses:
+        '200':
+          description: 'Duplicate: this attempt was already stored in this category with the same data; the stored record is returned.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/components/schemas/SubmitDuplicate'}
+              example:
+                ok: true
+                data:
+                  duplicate: true
+                  record:
+                    id: 4b9c3c4e-374c-4fa8-a579-383df21bd26e
+                    player_id: a908a1fb-a574-47c3-b6ed-f550f36cc212
+                    level_id: sylvanox_01
+                    level_version: 1
+                    level_hash: 0652230a14e586a34efa302cc4c617c8175bdc63c4ff8ae2cdc34dbda9227b08
+                    mode: STANDARD
+                    category: ANY_PERCENT
+                    time_ms: 61000
+                    deaths: 0
+                    damage_taken: 0
+                    collectibles: 4
+                    total_collectibles: 10
+                    score: 0
+                    game_version: 2.1.0
+                    verification_status: PENDING
+                    has_replay: false
+                    created_at: '2026-11-13T09:20:01.004Z'
+                    verified_at: null
+                    attempt_id: 72c3f50d-4b27-46e4-8b70-f90de2db728a
+                    rejection_reason: null
+                    verification_notes: En attente du replay.
+                  replay: {required: true, upload_path: /api/v1/records/4b9c3c4e-374c-4fa8-a579-383df21bd26e/replay}
+                  ranking: null
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '201':
+          description: Record stored with the server's decision.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/components/schemas/SubmitResult'}
+              example:
+                ok: true
+                data:
+                  duplicate: false
+                  record:
+                    id: 4b9c3c4e-374c-4fa8-a579-383df21bd26e
+                    player_id: a908a1fb-a574-47c3-b6ed-f550f36cc212
+                    level_id: sylvanox_01
+                    level_version: 1
+                    level_hash: 0652230a14e586a34efa302cc4c617c8175bdc63c4ff8ae2cdc34dbda9227b08
+                    mode: STANDARD
+                    category: ANY_PERCENT
+                    time_ms: 61000
+                    deaths: 0
+                    damage_taken: 0
+                    collectibles: 4
+                    total_collectibles: 10
+                    score: 0
+                    game_version: 2.1.0
+                    verification_status: PENDING
+                    has_replay: false
+                    created_at: '2026-11-13T09:20:01.004Z'
+                    verified_at: null
+                    attempt_id: 72c3f50d-4b27-46e4-8b70-f90de2db728a
+                    rejection_reason: null
+                    verification_notes: En attente du replay.
+                  replay: {required: true, accepted: true, upload_path: /api/v1/records/4b9c3c4e-374c-4fa8-a579-383df21bd26e/replay}
+                  ranking:
+                    previous_rank: null
+                    rank: null
+                    total: 4
+                    personal_best_improved: false
+                    previous_best_ms: null
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403':
+          description: RANKING_DISABLED (ranking disabled for this level) or ACCOUNT_SUSPENDED.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [ACCOUNT_SUSPENDED, RANKING_DISABLED]}
+              example:
+                ok: false
+                error: {code: RANKING_DISABLED, message: Le classement de ce niveau est désactivé.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '404':
+          description: LEVEL_NOT_FOUND.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [LEVEL_NOT_FOUND]}
+              example:
+                ok: false
+                error: {code: LEVEL_NOT_FOUND, message: Niveau inconnu du serveur.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '409':
+          description: LEVEL_VERSION_MISMATCH or LEVEL_VERSION_RETIRED (details.current_version), ATTEMPT_CONFLICT (same attempt_id already submitted with another
+            time_ms, deaths or level_hash), DUPLICATE_SUBMISSION (two identical submissions raced).
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum: [LEVEL_VERSION_MISMATCH, LEVEL_VERSION_RETIRED, ATTEMPT_CONFLICT, DUPLICATE_SUBMISSION]
+              example:
+                ok: false
+                error:
+                  code: LEVEL_VERSION_MISMATCH
+                  message: Cette version du niveau n'est pas reconnue par le serveur.
+                  details: {current_version: 2}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '413': {$ref: '#/components/responses/PayloadTooLarge'}
+        '415': {$ref: '#/components/responses/UnsupportedMediaType'}
+        '422':
+          description: 'CATEGORY_RULES_NOT_MET (details: list of French strings; HUNDRED_PERCENT needs every collectible, NO_DEATH and NO_DAMAGE need 0 deaths, NO_DAMAGE
+            needs 0 damage) or INCONSISTENT_PROGRESS (total_collectibles differs from the revision''s, or collectibles exceeds it). Nothing is stored.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [CATEGORY_RULES_NOT_MET, INCONSISTENT_PROGRESS]}
+              example:
+                ok: false
+                error:
+                  code: CATEGORY_RULES_NOT_MET
+                  message: Le run ne respecte pas les règles de la catégorie.
+                  details: [le run contient des morts]
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '426':
+          description: 'GAME_VERSION_UNSUPPORTED: game_version is below the revision''s min_game_version or the server''s MIN_GAME_VERSION; details.min_game_version
+            is the revision''s.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [GAME_VERSION_UNSUPPORTED]}
+              example:
+                ok: false
+                error:
+                  code: GAME_VERSION_UNSUPPORTED
+                  message: Version du jeu trop ancienne pour le classement en ligne.
+                  details: {min_game_version: 2.1.0}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /records/{recordId}:
+    get:
+      tags: [Records & replays]
+      operationId: getRecord
+      summary: A record with its player and rank
+      security:
+      - {}
+      - {bearerAuth: []}
+      description: Other viewers only see VERIFIED records of active players (otherwise 404); the owner sees any status and the owner view.
+      parameters:
+      - {$ref: '#/components/parameters/RecordIdPath'}
+      responses:
+        '200':
+          description: Record.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/components/schemas/RecordDetail'}
+              example:
+                ok: true
+                data:
+                  record:
+                    id: 4b9c3c4e-374c-4fa8-a579-383df21bd26e
+                    player_id: a908a1fb-a574-47c3-b6ed-f550f36cc212
+                    level_id: sylvanox_01
+                    level_version: 1
+                    level_hash: 0652230a14e586a34efa302cc4c617c8175bdc63c4ff8ae2cdc34dbda9227b08
+                    mode: STANDARD
+                    category: ANY_PERCENT
+                    time_ms: 61000
+                    deaths: 0
+                    damage_taken: 0
+                    collectibles: 4
+                    total_collectibles: 10
+                    score: 0
+                    game_version: 2.1.0
+                    verification_status: VERIFIED
+                    has_replay: true
+                    created_at: '2026-11-13T09:20:01.004Z'
+                    verified_at: '2026-11-13T09:20:03.871Z'
+                  player:
+                    id: a908a1fb-a574-47c3-b6ed-f550f36cc212
+                    username: NovaRider
+                    avatar: avatar_07
+                    avatar_url: null
+                    country_code: FR
+                  is_personal_best: true
+                  rank: 1
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '401': {$ref: '#/components/responses/InvalidOrExpiredToken'}
+        '403': {$ref: '#/components/responses/AccountSuspended'}
+        '404':
+          description: 'RECORD_NOT_FOUND: malformed id, unknown, or not visible to this viewer.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [RECORD_NOT_FOUND]}
+              example:
+                ok: false
+                error: {code: RECORD_NOT_FOUND, message: Record introuvable.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /records/{recordId}/replay:
+    put:
+      tags: [Records & replays]
+      operationId: uploadReplay
+      summary: Upload the replay of a run (CPRZ)
+      security:
+      - {bearerAuth: []}
+      description: |-
+        Owner only, once per attempt (the replay is attached to every record of the attempt). Raw body, Content-Type application/octet-stream, at most 1 048 576 bytes. Rate limit `replay_upload`: 20 per minute per player.
+
+        An unreadable file is refused (422, nothing stored, the client may retry). A readable file is stored and analysed: it must match the record's level_id, level_hash and attempt_id, last time_ms +/- 500 ms, have a frame count consistent with its duration, not exceed the level time limit + 5 s, have ordered events inside the trace, the same number of deaths and of collectibles (Shard/Relic pickups) as the record, no Damage event when damage_taken is 0, a Finish event in the last second, start within 96 px of the spawn, end within 160 px of the exit zone, stay inside the level bounds and contain no impossible movement between two samples. The analysis result (VERIFIED/REJECTED) is returned with 201 in both cases, and every PENDING record of the attempt is re-evaluated.
+
+        CPRZ container: bytes 0-3 ASCII `CPRZ`, bytes 4-7 uint32 little-endian inflated size (72 to 4 194 304), then a zlib stream (DecompressionStream "deflate") whose content is a CPRP v1 replay (little-endian): char[4] `CPRP`, u16 format_version (1), u16 sample_hz (10-120), u32 frame_count (> 0), u32 duration_ms, u32 event_count, u8[32] level_hash, u8[16] attempt_id (UUID bytes), u8 length + level_id (<= 64 bytes), u8 length + game_version (<= 16 bytes), frame_count x 12-byte frames {f32 x, f32 y, u8 state, u8 flags, u8 health, u8 reserved}, event_count x 8-byte events {u32 frame, u8 type, u8 arg, u16 value}; the inflated size must match exactly. Event types: 1 Jump, 2 AirJump, 3 Death, 4 Respawn, 5 Pickup (arg 0 Shard, 1 Relic, 2 Health, 3 Energy, 4 HeartContainer, 5 Secret), 6 Power, 7 Checkpoint, 8 Damage (value = amount), 9 Kill, 10 Teleport, 11 Finish.
+      parameters:
+      - {$ref: '#/components/parameters/RecordIdPath'}
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema: {type: string, format: binary, contentMediaType: application/octet-stream}
+      responses:
+        '201':
+          description: Replay stored and analysed.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/components/schemas/ReplayUploadResult'}
+              example:
+                ok: true
+                data:
+                  replay_id: 890a226a-5041-4ddf-a1bd-917adc04bcf2
+                  verification_status: VERIFIED
+                  analysis:
+                    ok: true
+                    reasons: []
+                    stats:
+                      frames: 1831
+                      duration_ms: 61000
+                      deaths: 0
+                      collectibles: 4
+                      damage: 0
+                      max_step_px: 82
+                      jumps: 37
+                  records:
+                  - record:
+                      id: 4b9c3c4e-374c-4fa8-a579-383df21bd26e
+                      player_id: a908a1fb-a574-47c3-b6ed-f550f36cc212
+                      level_id: sylvanox_01
+                      level_version: 1
+                      level_hash: 0652230a14e586a34efa302cc4c617c8175bdc63c4ff8ae2cdc34dbda9227b08
+                      mode: STANDARD
+                      category: ANY_PERCENT
+                      time_ms: 61000
+                      deaths: 0
+                      damage_taken: 0
+                      collectibles: 4
+                      total_collectibles: 10
+                      score: 0
+                      game_version: 2.1.0
+                      verification_status: VERIFIED
+                      has_replay: true
+                      created_at: '2026-11-13T09:20:01.004Z'
+                      verified_at: '2026-11-13T09:20:03.871Z'
+                      attempt_id: 72c3f50d-4b27-46e4-8b70-f90de2db728a
+                      rejection_reason: null
+                      verification_notes: null
+                    ranking:
+                      previous_rank: null
+                      rank: 1
+                      total: 1
+                      personal_best_improved: true
+                      previous_best_ms: null
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '400':
+          description: 'BAD_REQUEST: invalid Content-Length header.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [BAD_REQUEST]}
+              example:
+                ok: false
+                error: {code: BAD_REQUEST, message: En-tête Content-Length invalide.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403':
+          description: NOT_OWNER (record of another player) or ACCOUNT_SUSPENDED.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [ACCOUNT_SUSPENDED, NOT_OWNER]}
+              example:
+                ok: false
+                error: {code: NOT_OWNER, message: Ce record ne vous appartient pas.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '404':
+          description: RECORD_NOT_FOUND, or LEVEL_VERSION_NOT_FOUND (the record's revision is no longer registered).
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [RECORD_NOT_FOUND, LEVEL_VERSION_NOT_FOUND]}
+              example:
+                ok: false
+                error: {code: RECORD_NOT_FOUND, message: Record introuvable.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '409':
+          description: REPLAY_EXISTS (a replay is already attached to this attempt) or RECORD_REJECTED.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [REPLAY_EXISTS, RECORD_REJECTED]}
+              example:
+                ok: false
+                error: {code: REPLAY_EXISTS, message: Un replay est déjà associé à cette tentative.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '413': {$ref: '#/components/responses/PayloadTooLarge'}
+        '415':
+          description: 'UNSUPPORTED_MEDIA_TYPE: Content-Type is not application/octet-stream.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [UNSUPPORTED_MEDIA_TYPE]}
+              example:
+                ok: false
+                error: {code: UNSUPPORTED_MEDIA_TYPE, message: Le replay doit être envoyé en application/octet-stream.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '422':
+          description: 'REPLAY_MALFORMED: the container or replay cannot be read (message gives the reason).'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [REPLAY_MALFORMED]}
+              example:
+                ok: false
+                error: {code: REPLAY_MALFORMED, message: 'Replay illisible : en-tête CPRZ absent.'}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+    get:
+      tags: [Records & replays]
+      operationId: downloadReplay
+      summary: Download the replay of a record (CPRZ)
+      security:
+      - {}
+      - {bearerAuth: []}
+      description: Others can download only the VERIFIED replay of a VERIFIED record of a public, active profile. The owner can download their replay whatever its
+        status. Never edge-cached.
+      parameters:
+      - {$ref: '#/components/parameters/RecordIdPath'}
+      responses:
+        '200':
+          description: The CPRZ file exactly as uploaded.
+          headers:
+            Content-Length:
+              schema: {type: integer}
+            X-Replay-SHA256:
+              description: SHA-256 (hex) of the file.
+              schema: {type: string, pattern: '^[0-9a-f]{64}$'}
+            Cache-Control:
+              schema: {type: string, const: 'private, max-age=3600'}
+          content:
+            application/octet-stream:
+              schema: {type: string, format: binary, contentMediaType: application/octet-stream}
+        '401': {$ref: '#/components/responses/InvalidOrExpiredToken'}
+        '403':
+          description: PROFILE_PRIVATE (the owner's profile is private) or ACCOUNT_SUSPENDED (viewer's account).
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [ACCOUNT_SUSPENDED, PROFILE_PRIVATE]}
+              example:
+                ok: false
+                error: {code: PROFILE_PRIVATE, message: Le joueur a masqué son profil.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '404':
+          description: RECORD_NOT_FOUND (unknown or not visible), REPLAY_NOT_FOUND (no replay, replay not VERIFIED for a non-owner, or file missing).
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [RECORD_NOT_FOUND, REPLAY_NOT_FOUND]}
+              example:
+                ok: false
+                error: {code: RECORD_NOT_FOUND, message: Record introuvable.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /globe/records:
+    get:
+      tags: [Globe]
+      operationId: getGlobeRecords
+      summary: Globe markers of a level board, or podiums of every level
+      security:
+      - {}
+      - {bearerAuth: []}
+      description: 'Only players who chose location_visibility = globe, placed at their country''s approximate centre (never a personal position); hidden players
+        keep their rank but get no marker. With level_id: markers of that board ordered by world rank, at most `limit`. Without level_id: for every ranked level (planet,
+        order), the first `per_level` markers, the whole list truncated to `limit`. Out-of-range limit/per_level are clamped, not refused. Edge-cacheable for anonymous
+        requests.'
+      parameters:
+      - {$ref: '#/components/parameters/LevelIdQuery'}
+      - {$ref: '#/components/parameters/Category'}
+      - {$ref: '#/components/parameters/Period'}
+      - name: limit
+        in: query
+        schema: {type: integer, minimum: 1, maximum: 1000, default: 300}
+        description: 1 to 5 digits; clamped to 1..1000.
+      - name: per_level
+        in: query
+        schema: {type: integer, minimum: 1, maximum: 100, default: 10}
+        description: Without level_id only; clamped to 1..100.
+      - {$ref: '#/components/parameters/LevelHash'}
+      - {$ref: '#/components/parameters/LevelVersion'}
+      responses:
+        '200':
+          description: Markers.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/components/schemas/GlobeRecords'}
+              example:
+                ok: true
+                data:
+                  level_id: sylvanox_01
+                  category: ANY_PERCENT
+                  period: all
+                  records:
+                  - record_id: 4b9c3c4e-374c-4fa8-a579-383df21bd26e
+                    player_id: a908a1fb-a574-47c3-b6ed-f550f36cc212
+                    player_name: NovaRider
+                    avatar: avatar_07
+                    avatar_url: null
+                    country_code: FR
+                    latitude: 46.6
+                    longitude: 2.4
+                    time_ms: 61000
+                    rank: 2
+                    level_id: sylvanox_01
+                    achieved_at: '2026-11-13T09:20:01.004Z'
+                    is_me: false
+                  generated_at: '2026-11-13T10:00:00.000Z'
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '400':
+          description: VALIDATION_ERROR (category, period, non-digit limit/per_level, level_id, level_hash, level_version).
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [VALIDATION_ERROR]}
+              example:
+                ok: false
+                error:
+                  code: VALIDATION_ERROR
+                  message: Paramètres de pagination invalides.
+                  details:
+                  - {field: limit, message: doit être entre 1 et 100}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '401': {$ref: '#/components/responses/InvalidOrExpiredToken'}
+        '403': {$ref: '#/components/responses/AccountSuspended'}
+        '404': {$ref: '#/components/responses/LevelNotFound'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /globe/countries:
+    get:
+      tags: [Globe]
+      operationId: getGlobeCountries
+      summary: Per-country aggregation for the zoomed-out globe
+      security: []
+      description: 'With level_id: per country, the number of globe-visible players on that board and the country''s best rank, time and player, ordered by best rank.
+        Without level_id: per country, the number of globe-visible active players having at least one verified best in the category (best_* are null; period is echoed
+        but not used), ordered by players. The Authorization header is ignored. Edge-cacheable.'
+      parameters:
+      - {$ref: '#/components/parameters/LevelIdQuery'}
+      - {$ref: '#/components/parameters/Category'}
+      - {$ref: '#/components/parameters/Period'}
+      - {$ref: '#/components/parameters/LevelHash'}
+      - {$ref: '#/components/parameters/LevelVersion'}
+      responses:
+        '200':
+          description: Countries.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/components/schemas/GlobeCountries'}
+              example:
+                ok: true
+                data:
+                  level_id: sylvanox_01
+                  category: ANY_PERCENT
+                  period: all
+                  countries:
+                  - country_code: FR
+                    name_fr: France
+                    name_en: France
+                    latitude: 46.6
+                    longitude: 2.4
+                    players: 1
+                    best_time_ms: 61000
+                    best_rank: 2
+                    best_player: NovaRider
+                  generated_at: '2026-11-13T10:00:00.000Z'
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '400':
+          description: VALIDATION_ERROR (category, period, level_id, level_hash, level_version).
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [VALIDATION_ERROR]}
+              example:
+                ok: false
+                error:
+                  code: VALIDATION_ERROR
+                  message: Paramètres de pagination invalides.
+                  details:
+                  - {field: limit, message: doit être entre 1 et 100}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '404': {$ref: '#/components/responses/LevelNotFound'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /globe/records/{countryCode}:
+    get:
+      tags: [Globe]
+      operationId: getGlobeCountryRecords
+      summary: Globe markers of one country on a level board
+      security:
+      - {}
+      - {bearerAuth: []}
+      parameters:
+      - {$ref: '#/components/parameters/CountryCodePath'}
+      - {$ref: '#/components/parameters/LevelIdQueryRequired'}
+      - {$ref: '#/components/parameters/Category'}
+      - {$ref: '#/components/parameters/Period'}
+      - name: limit
+        in: query
+        schema: {type: integer, minimum: 1, maximum: 500, default: 100}
+        description: 1 to 5 digits; clamped to 1..500.
+      - {$ref: '#/components/parameters/LevelHash'}
+      - {$ref: '#/components/parameters/LevelVersion'}
+      responses:
+        '200':
+          description: Markers.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/components/schemas/GlobeCountryRecords'}
+              example:
+                ok: true
+                data:
+                  country_code: FR
+                  level_id: sylvanox_01
+                  category: ANY_PERCENT
+                  period: all
+                  records:
+                  - record_id: 4b9c3c4e-374c-4fa8-a579-383df21bd26e
+                    player_id: a908a1fb-a574-47c3-b6ed-f550f36cc212
+                    player_name: NovaRider
+                    avatar: avatar_07
+                    avatar_url: null
+                    country_code: FR
+                    latitude: 46.6
+                    longitude: 2.4
+                    time_ms: 61000
+                    rank: 2
+                    level_id: sylvanox_01
+                    achieved_at: '2026-11-13T09:20:01.004Z'
+                    is_me: false
+                  generated_at: '2026-11-13T10:00:00.000Z'
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '400':
+          description: VALIDATION_ERROR (countryCode, level_id missing or malformed, category, period, limit, level_hash, level_version).
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [VALIDATION_ERROR]}
+              example:
+                ok: false
+                error:
+                  code: VALIDATION_ERROR
+                  message: Paramètres de pagination invalides.
+                  details:
+                  - {field: limit, message: doit être entre 1 et 100}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '401': {$ref: '#/components/responses/InvalidOrExpiredToken'}
+        '403': {$ref: '#/components/responses/AccountSuspended'}
+        '404': {$ref: '#/components/responses/LevelNotFound'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /friends:
+    get:
+      tags: [Friends]
+      operationId: listFriends
+      summary: Friends and pending requests
+      security:
+      - {bearerAuth: []}
+      responses:
+        '200':
+          description: Lists.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/components/schemas/FriendLists'}
+              example:
+                ok: true
+                data:
+                  friends:
+                  - player:
+                      id: acdc8206-fa96-455a-945d-b49789f8a540
+                      username: Orion
+                      avatar: custom
+                      avatar_url: /api/v1/players/acdc8206-fa96-455a-945d-b49789f8a540/avatar
+                      country_code: null
+                    since: '2026-11-13T09:30:00.000Z'
+                  incoming: []
+                  outgoing: []
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/AccountSuspended'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /friends/request:
+    post:
+      tags: [Friends]
+      operationId: requestFriend
+      summary: Send a friend request (or accept a mutual one)
+      security:
+      - {bearerAuth: []}
+      description: 'If the target already sent you a request, this accepts it (200, even when the target refuses new requests). Otherwise a pending request is created
+        (201), unless the target disabled friend requests (403). At most 200 outgoing rows (friends + pending sent). Rate limit `friend_request`: 30 per hour per
+        player.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/FriendRequest'}
+            example: {username: Orion}
+      responses:
+        '200':
+          description: 'Mutual request: friendship accepted.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/components/schemas/FriendRequestResult'}
+              example:
+                ok: true
+                data:
+                  status: accepted
+                  player:
+                    id: acdc8206-fa96-455a-945d-b49789f8a540
+                    username: Orion
+                    avatar: custom
+                    avatar_url: /api/v1/players/acdc8206-fa96-455a-945d-b49789f8a540/avatar
+                    country_code: null
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '201':
+          description: Request sent.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/components/schemas/FriendRequestResult'}
+              example:
+                ok: true
+                data:
+                  status: pending
+                  player:
+                    id: acdc8206-fa96-455a-945d-b49789f8a540
+                    username: Orion
+                    avatar: custom
+                    avatar_url: /api/v1/players/acdc8206-fa96-455a-945d-b49789f8a540/avatar
+                    country_code: null
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '400':
+          description: 'VALIDATION_ERROR (details = list of {field, message}; unknown fields are refused), INVALID_JSON (body is not a JSON object) or BAD_REQUEST
+            (invalid Content-Length header). Also: neither username nor player_id, or the target is yourself (field player_id).'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [VALIDATION_ERROR, INVALID_JSON, BAD_REQUEST]}
+              example:
+                ok: false
+                error:
+                  code: VALIDATION_ERROR
+                  message: Données invalides.
+                  details:
+                  - {field: player_id, message: champ inconnu}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403':
+          description: FRIEND_REQUESTS_DISABLED or ACCOUNT_SUSPENDED.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [ACCOUNT_SUSPENDED, FRIEND_REQUESTS_DISABLED]}
+              example:
+                ok: false
+                error: {code: FRIEND_REQUESTS_DISABLED, message: Ce joueur n'accepte pas les demandes d'amis.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '404':
+          description: PLAYER_NOT_FOUND (unknown or suspended target).
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [PLAYER_NOT_FOUND]}
+              example:
+                ok: false
+                error: {code: PLAYER_NOT_FOUND, message: Joueur introuvable.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '409':
+          description: ALREADY_FRIENDS, REQUEST_ALREADY_SENT or FRIEND_LIMIT (200).
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [ALREADY_FRIENDS, REQUEST_ALREADY_SENT, FRIEND_LIMIT]}
+              example:
+                ok: false
+                error: {code: REQUEST_ALREADY_SENT, message: Demande déjà envoyée.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '413': {$ref: '#/components/responses/PayloadTooLarge'}
+        '415': {$ref: '#/components/responses/UnsupportedMediaType'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /friends/accept:
+    post:
+      tags: [Friends]
+      operationId: acceptFriend
+      summary: Accept a received friend request
+      security:
+      - {bearerAuth: []}
+      description: Not rate limited.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/FriendAccept'}
+            example: {player_id: a908a1fb-a574-47c3-b6ed-f550f36cc212}
+      responses:
+        '200':
+          description: Accepted.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/components/schemas/FriendAcceptResult'}
+              example:
+                ok: true
+                data:
+                  status: accepted
+                  player:
+                    id: a908a1fb-a574-47c3-b6ed-f550f36cc212
+                    username: NovaRider
+                    avatar: avatar_07
+                    avatar_url: null
+                    country_code: FR
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/AccountSuspended'}
+        '404':
+          description: 'REQUEST_NOT_FOUND: no pending request from this player.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [REQUEST_NOT_FOUND]}
+              example:
+                ok: false
+                error: {code: REQUEST_NOT_FOUND, message: Aucune demande d'ami de ce joueur.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '413': {$ref: '#/components/responses/PayloadTooLarge'}
+        '415': {$ref: '#/components/responses/UnsupportedMediaType'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /friends/{playerId}:
+    delete:
+      tags: [Friends]
+      operationId: deleteFriend
+      summary: Remove a friend, decline or cancel a request
+      security:
+      - {bearerAuth: []}
+      description: Deletes the relation in both directions. Not rate limited.
+      parameters:
+      - {$ref: '#/components/parameters/PlayerIdPath'}
+      responses:
+        '200':
+          description: Removed.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      required: [removed]
+                      properties:
+                        removed: {const: true}
+              example:
+                ok: true
+                data: {removed: true}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/AccountSuspended'}
+        '404':
+          description: PLAYER_NOT_FOUND (malformed id) or FRIEND_NOT_FOUND (no relation).
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [PLAYER_NOT_FOUND, FRIEND_NOT_FOUND]}
+              example:
+                ok: false
+                error: {code: PLAYER_NOT_FOUND, message: Joueur introuvable.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '500': {$ref: '#/components/responses/InternalError'}
+  /admin/records:
+    get:
+      tags: [Administration]
+      operationId: adminListRecords
+      summary: Records to review (moderation)
+      security:
+      - {adminToken: []}
+      description: Oldest first. Raw rows (all record columns + username, trust_level, replay analysis JSON). No `meta` is returned.
+      parameters:
+      - {$ref: '#/components/parameters/Limit200'}
+      - {$ref: '#/components/parameters/Offset'}
+      - name: status
+        in: query
+        schema: {type: string, enum: [PENDING, VERIFIED, REJECTED], default: PENDING}
+        description: An empty value is refused (400).
+      responses:
+        '200':
+          description: Records.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      required: [records]
+                      properties:
+                        records:
+                          type: array
+                          items: {$ref: '#/components/schemas/AdminRecordRow'}
+              example:
+                ok: true
+                data: {records: []}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '400':
+          description: VALIDATION_ERROR (limit, offset, status).
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [VALIDATION_ERROR]}
+              example:
+                ok: false
+                error:
+                  code: VALIDATION_ERROR
+                  message: Paramètres de pagination invalides.
+                  details:
+                  - {field: limit, message: doit être entre 1 et 100}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '404':
+          description: 'NOT_FOUND: the ADMIN_TOKEN secret is not configured (or shorter than 32 characters); the moderation routes then behave as if they did not
+            exist.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [NOT_FOUND]}
+              example:
+                ok: false
+                error: {code: NOT_FOUND, message: Ressource introuvable.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /admin/records/{recordId}/review:
+    post:
+      tags: [Administration]
+      operationId: adminReviewRecord
+      summary: Verify or reject a PENDING record
+      security:
+      - {adminToken: []}
+      description: REJECTED stores `reason` (or MODERATION) as rejection_reason; verification_notes = reason, or "Vérifié manuellement.". Personal bests, ranks and
+        trust level are updated. Not rate limited.
+      parameters:
+      - name: recordId
+        in: path
+        required: true
+        schema: {type: string}
+        description: Record id (not format-checked; unknown -> 404).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ReviewRequest'}
+            example: {decision: VERIFIED, reason: Replay vérifié}
+      responses:
+        '200':
+          description: Decision applied.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/components/schemas/ReviewResult'}
+              example:
+                ok: true
+                data:
+                  record_id: 4b9c3c4e-374c-4fa8-a579-383df21bd26e
+                  verification_status: VERIFIED
+                  ranking:
+                    previous_rank: null
+                    rank: 1
+                    total: 6
+                    personal_best_improved: true
+                    previous_best_ms: null
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '404':
+          description: 'NOT_FOUND: the ADMIN_TOKEN secret is not configured (or shorter than 32 characters); the moderation routes then behave as if they did not
+            exist. RECORD_NOT_FOUND: unknown record.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [NOT_FOUND, RECORD_NOT_FOUND]}
+              example:
+                ok: false
+                error: {code: NOT_FOUND, message: Ressource introuvable.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '409':
+          description: 'NOT_PENDING: the record is not PENDING.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [NOT_PENDING]}
+              example:
+                ok: false
+                error: {code: NOT_PENDING, message: Ce record n'est pas en attente.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '413': {$ref: '#/components/responses/PayloadTooLarge'}
+        '415': {$ref: '#/components/responses/UnsupportedMediaType'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /admin/levels:
+    post:
+      tags: [Administration]
+      operationId: adminRegisterLevels
+      summary: Register the level revisions of a game release
+      security:
+      - {adminToken: []}
+      description: 'Body = the levels of `CosmicPlatformer --online-manifest` (see server/scripts/register-levels.mjs), JSON <= 256 KiB, 1 to 500 levels. A new revision
+        becomes current and older active ones become legacy (their boards stay readable, never mixed). Re-registering the same revision is idempotent (`unchanged`);
+        a lower revision than the current one is `added_as_legacy`; a different hash under an existing revision number is refused (409). Levels are processed one
+        by one: on a 409, the levels before it are already registered. Not rate limited.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/RegisterLevelsRequest'}
+            example:
+              levels:
+              - id: sylvanox_01
+                name: Les Ruines Suspendues
+                planet_id: sylvanox
+                planet_name: Sylvanox
+                order: 1
+                version: 1
+                content_hash: 0652230a14e586a34efa302cc4c617c8175bdc63c4ff8ae2cdc34dbda9227b08
+                total_collectibles: 10
+                total_enemies: 20
+                time_limit_ms: 900000
+                min_time_ms: 30000
+                bounds: [6000, 1200]
+                spawn: [100, 500]
+                exit: [5000, 400, 64, 96]
+              game_version: 2.1.0
+      responses:
+        '200':
+          description: Per-level result.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/components/schemas/RegisterLevelsResult'}
+              example:
+                ok: true
+                data:
+                  levels:
+                  - {id: sylvanox_01, version: 1, result: current}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '400':
+          description: VALIDATION_ERROR (details = list of {field, message}; unknown fields are refused), INVALID_JSON (body is not a JSON object) or BAD_REQUEST
+            (invalid Content-Length header). Field names are prefixed with `levels[i].`; `levels` must be an array of 1 to 500 objects.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [VALIDATION_ERROR, INVALID_JSON, BAD_REQUEST]}
+              example:
+                ok: false
+                error:
+                  code: VALIDATION_ERROR
+                  message: Données invalides.
+                  details:
+                  - {field: player_id, message: champ inconnu}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '404':
+          description: 'NOT_FOUND: the ADMIN_TOKEN secret is not configured (or shorter than 32 characters); the moderation routes then behave as if they did not
+            exist.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [NOT_FOUND]}
+              example:
+                ok: false
+                error: {code: NOT_FOUND, message: Ressource introuvable.}
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '409':
+          description: 'REVISION_CONFLICT: this revision number already exists with another content hash.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/ErrorEnvelope'}
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code: {type: string, enum: [REVISION_CONFLICT]}
+              example:
+                ok: false
+                error:
+                  code: REVISION_CONFLICT
+                  message: 'sylvanox_01 : la révision 1 existe avec un autre contenu (augmentez metadata.revision).'
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '413': {$ref: '#/components/responses/PayloadTooLarge'}
+        '415': {$ref: '#/components/responses/UnsupportedMediaType'}
+        '500': {$ref: '#/components/responses/InternalError'}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque
+      description: Player access token from /auth/register, /auth/login or /auth/refresh. The header must match `^Bearer [A-Za-z0-9_-]{20,100}$` (else 401 INVALID_TOKEN).
+    adminToken:
+      type: http
+      scheme: bearer
+      description: Value of the ADMIN_TOKEN Worker secret, compared in constant time. Operators only; never shipped with the game.
+  parameters:
+    PlayerIdPath:
+      name: playerId
+      in: path
+      required: true
+      description: Player UUID (lower-case). A malformed id gives 404 PLAYER_NOT_FOUND, not 400.
+      schema: {type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'}
+    RecordIdPath:
+      name: recordId
+      in: path
+      required: true
+      description: Record UUID. A malformed id gives 404 RECORD_NOT_FOUND.
+      schema: {type: string, pattern: '^[0-9a-f-]{36}$'}
+    LevelIdPath:
+      name: levelId
+      in: path
+      required: true
+      schema: {type: string, pattern: '^[a-z0-9_]{1,64}$'}
+      description: Malformed -> 400 VALIDATION_ERROR (field level_id); unknown -> 404 LEVEL_NOT_FOUND.
+    PlanetIdPath:
+      name: planetId
+      in: path
+      required: true
+      schema: {type: string, pattern: '^[a-z0-9_]{1,64}$'}
+    CountryCodePath:
+      name: countryCode
+      in: path
+      required: true
+      schema: {type: string, pattern: '^[A-Za-z]{2}$'}
+      description: ISO 3166-1 alpha-2; upper-cased by the server (fr == FR).
+    Limit:
+      name: limit
+      in: query
+      schema: {type: integer, minimum: 1, maximum: 100, default: 25}
+      description: Page size. Out of range or non-digit values -> 400 VALIDATION_ERROR.
+    Limit200:
+      name: limit
+      in: query
+      schema: {type: integer, minimum: 1, maximum: 200, default: 50}
+      description: Page size. Out of range or non-digit values -> 400 VALIDATION_ERROR.
+    Offset:
+      name: offset
+      in: query
+      schema: {type: integer, minimum: 0, maximum: 10000, default: 0}
+    Category:
+      name: category
+      in: query
+      schema:
+        type: string
+        enum: [ANY_PERCENT, HUNDRED_PERCENT, NO_DEATH, NO_DAMAGE, SPEEDRUN]
+        default: ANY_PERCENT
+    Period:
+      name: period
+      in: query
+      schema: {type: string, enum: [all, weekly], default: all}
+      description: 'weekly: best VERIFIED record of each player created since Monday 00:00 UTC (history is kept, the reset is logical).'
+    Mode:
+      name: mode
+      in: query
+      schema: {type: string, enum: [STANDARD], default: STANDARD}
+      description: Validated only (a single mode exists).
+    LevelIdQuery:
+      name: level_id
+      in: query
+      schema: {type: string, pattern: '^[a-z0-9_]{1,64}$'}
+    LevelIdQueryRequired:
+      name: level_id
+      in: query
+      required: true
+      schema: {type: string, pattern: '^[a-z0-9_]{1,64}$'}
+      description: Missing -> 400 VALIDATION_ERROR ("obligatoire").
+    LevelHash:
+      name: level_hash
+      in: query
+      schema: {type: string, pattern: '^[0-9a-f]{64}$'}
+      description: 'Select a level revision by content hash (legacy boards). Takes precedence over level_version. Default: current revision.'
+    LevelVersion:
+      name: level_version
+      in: query
+      schema: {type: integer, minimum: 0, maximum: 999999}
+      description: Select a level revision by number (1 to 6 digits).
+    PlayerFilter:
+      name: player
+      in: query
+      schema: {type: string, pattern: '^[A-Za-z0-9_.-]{1,20}$'}
+      description: Case-insensitive username prefix filter. `rank` is then the rank among matches, `world_rank` the real rank.
+    CountryQuery:
+      name: country
+      in: query
+      schema: {type: string, pattern: '^[A-Z]{2}$'}
+      description: Restrict to players of this country who do not hide their location (upper-case only).
+  headers:
+    RetryAfter:
+      description: Seconds to wait before retrying.
+      schema: {type: integer, minimum: 1}
+  schemas:
+    SuccessEnvelope:
+      type: object
+      description: Every successful JSON response. Keys are always emitted in the order ok, data, meta, request_id.
+      required: [ok, data, request_id]
+      properties:
+        ok: {const: true}
+        data: {description: Route-specific payload.}
+        meta: {$ref: '#/components/schemas/PageMeta', description: Present only on paginated lists.}
+        request_id:
+          type: string
+          format: uuid
+          description: Unique id of the request (also in the server logs). A response served from the edge cache repeats the id of the request that filled the cache.
+    ErrorEnvelope:
+      type: object
+      description: Every error response (4xx/5xx). HTTP status and error.code always go together.
+      required: [ok, error, request_id]
+      properties:
+        ok: {const: false}
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: {type: string, description: Stable machine-readable code (see the error table in docs/online/API.md).}
+            message: {type: string, description: 'Human-readable message, in French. Never contains internal details.'}
+            details:
+              description: 'Optional, depends on the code: VALIDATION_ERROR -> array of FieldError; RATE_LIMITED -> {retry_after_seconds}; ACCOUNT_LOCKED -> {locked_until};
+                LEVEL_VERSION_MISMATCH and LEVEL_VERSION_RETIRED -> {current_version}; GAME_VERSION_UNSUPPORTED -> {min_game_version}; CATEGORY_RULES_NOT_MET -> array
+                of strings (French).'
+              oneOf:
+              - type: array
+                items: {$ref: '#/components/schemas/FieldError'}
+              - type: array
+                items: {type: string}
+              - type: object
+                required: [retry_after_seconds]
+                properties:
+                  retry_after_seconds: {type: integer, minimum: 1}
+              - type: object
+                required: [locked_until]
+                properties:
+                  locked_until: {type: string, format: date-time}
+              - type: object
+                required: [current_version]
+                properties:
+                  current_version: {type: integer}
+              - type: object
+                required: [min_game_version]
+                properties:
+                  min_game_version: {type: string}
+        request_id: {type: string, format: uuid}
+    FieldError:
+      type: object
+      required: [field, message]
+      properties:
+        field: {type: string}
+        message:
+          type: string
+          description: French, e.g. "champ inconnu", "obligatoire", "format invalide", "doit être entre 1 et 100".
+    PageMeta:
+      type: object
+      description: Pagination metadata (limit/offset).
+      required: [limit, offset, total, next_offset]
+      properties:
+        limit: {type: integer}
+        offset: {type: integer}
+        total: {type: integer, description: Number of entries matching the query (all pages).}
+        next_offset: {type: [integer, 'null'], description: 'offset + limit while it is below total, otherwise null.'}
+    Category:
+      type: string
+      enum: [ANY_PERCENT, HUNDRED_PERCENT, NO_DEATH, NO_DAMAGE, SPEEDRUN]
+      description: Ranking category.
+    Mode: {type: string, enum: [STANDARD]}
+    VerificationStatus:
+      type: string
+      enum: [PENDING, VERIFIED, REJECTED]
+      description: Only VERIFIED records ever appear in leaderboards, statistics ranks and on the globe.
+    Avatar:
+      type: string
+      pattern: ^(avatar_(0[1-9]|1[0-6])|custom)$
+      description: Preset avatar avatar_01..avatar_16, or `custom` after PUT /players/me/avatar.
+    LocationVisibility:
+      type: string
+      enum: [hidden, country, globe]
+      description: 'hidden: country never shown to others and excluded from country boards and the globe; country: country shown in rankings; globe: country shown
+        and a marker placed at the country''s centre on the globe.'
+    ProfileVisibility:
+      type: string
+      enum: [public, private]
+      description: 'private: others only see the PlayerSummary (no statistics, no record list, no replay download).'
+    PlayerSummary:
+      type: object
+      description: Minimal public identity (leaderboards, friends, search).
+      required: [id, username, avatar, avatar_url, country_code]
+      properties:
+        id: {type: string, format: uuid}
+        username: {type: string}
+        avatar: {$ref: '#/components/schemas/Avatar'}
+        avatar_url:
+          type: [string, 'null']
+          description: '`/api/v1/players/{id}/avatar` when avatar is `custom`, otherwise null (path relative to the host).'
+        country_code:
+          type: [string, 'null']
+          description: ISO 3166-1 alpha-2; null when the player hides their location (or has none).
+    PrivateProfile:
+      type: object
+      description: Everything the account owner may see about themselves.
+      required:
+      - id
+      - username
+      - avatar
+      - avatar_url
+      - country_code
+      - region_code
+      - location_visibility
+      - profile_visibility
+      - allow_friend_requests
+      - trust_level
+      - tos_version
+      - created_at
+      - last_seen_at
+      - account_status
+      properties:
+        id: {type: string, format: uuid}
+        username: {type: string}
+        avatar: {$ref: '#/components/schemas/Avatar'}
+        avatar_url: {type: [string, 'null']}
+        country_code: {type: [string, 'null']}
+        region_code: {type: [string, 'null'], description: 'ISO 3166-2 subdivision (e.g. FR-IDF), never a city.'}
+        location_visibility: {$ref: '#/components/schemas/LocationVisibility'}
+        profile_visibility: {$ref: '#/components/schemas/ProfileVisibility'}
+        allow_friend_requests: {type: boolean}
+        trust_level:
+          type: integer
+          minimum: 0
+          maximum: 3
+          description: 0 new account, 1 >= 3 verified runs with replay, 2 >= 15, 3 set manually in the database (no API route sets it). Any REJECTED record in the
+            last 30 days drops it to 0, even from 3.
+        tos_version: {type: string}
+        created_at: {type: string, format: date-time}
+        last_seen_at: {type: string, format: date-time}
+        account_status: {type: string, enum: [active, suspended]}
+    OwnProfile:
+      allOf:
+      - {$ref: '#/components/schemas/PrivateProfile'}
+      - type: object
+        required: [hidden]
+        properties:
+          hidden: {const: false}
+      description: GET /players/{playerId} when the viewer is that player.
+    PublicProfile:
+      allOf:
+      - {$ref: '#/components/schemas/PlayerSummary'}
+      - type: object
+        required: [region_code, created_at, hidden, friendship]
+        properties:
+          region_code: {type: [string, 'null'], description: null when the country is hidden.}
+          created_at: {type: string, format: date-time}
+          hidden: {const: false}
+          friendship:
+            type: [string, 'null']
+            enum: [friends, request_sent, request_received, null]
+            description: Relation with the authenticated viewer; null for anonymous viewers or no relation.
+      description: GET /players/{playerId} of a public profile seen by someone else.
+    HiddenProfile:
+      allOf:
+      - {$ref: '#/components/schemas/PlayerSummary'}
+      - type: object
+        required: [hidden]
+        properties:
+          hidden: {const: true}
+      description: GET /players/{playerId} of a private profile seen by someone else.
+    Session:
+      type: object
+      description: Session tokens. Only SHA-256 digests are stored server-side.
+      required: [access_token, access_expires_at, refresh_token, refresh_expires_at]
+      properties:
+        access_token:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{43}$
+          description: 'Opaque 256-bit token (base64url). Send as `Authorization: Bearer <token>`.'
+        access_expires_at: {type: string, format: date-time, description: Default lifetime 3600 s (ACCESS_TOKEN_TTL_SECONDS).}
+        refresh_token:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{43}$
+          description: 'Opaque token, single use: rotated by every POST /auth/refresh.'
+        refresh_expires_at:
+          type: string
+          format: date-time
+          description: Default lifetime 30 days (REFRESH_TOKEN_TTL_DAYS); slides forward on each refresh.
+    AuthResult:
+      type: object
+      required: [player, session]
+      properties:
+        player: {$ref: '#/components/schemas/PrivateProfile'}
+        session: {$ref: '#/components/schemas/Session'}
+    RegisterRequest:
+      type: object
+      required: [username, password, accept_tos, tos_version]
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 20
+          pattern: ^[A-Za-z0-9](?:[A-Za-z0-9_.-]{1,18})[A-Za-z0-9]$
+          description: 'Trimmed. Unique case-insensitively (409 USERNAME_TAKEN). Reserved names are refused (400): after lower-casing and removing `_`, `.`, `-`,
+            equal to admin, administrator, moderator, modo, cosmic, cosmicstudio, system, support, root, null, undefined, anonymous, staff, or starting with `<reserved>team`
+            or with `official`.'
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+          description: Must not contain the username (case-insensitive). Stored as PBKDF2-HMAC-SHA256.
+        avatar: {type: string, pattern: '^avatar_(0[1-9]|1[0-6])$', default: avatar_01}
+        country_code:
+          type: string
+          pattern: ^[A-Z]{2}$
+          description: Must exist in the server's country table (400 "pays inconnu").
+        region_code:
+          type: string
+          maxLength: 6
+          pattern: ^[A-Z]{2}-[A-Z0-9]{1,3}$
+          description: Requires country_code and must start with `<country_code>-`.
+        location_visibility:
+          $ref: '#/components/schemas/LocationVisibility'
+          default: hidden
+          description: Anything but hidden requires country_code.
+        profile_visibility: {$ref: '#/components/schemas/ProfileVisibility', default: public}
+        allow_friend_requests: {type: boolean, default: true}
+        accept_tos: {type: boolean, description: Must be true.}
+        tos_version:
+          type: string
+          maxLength: 32
+          description: Must equal the server's current TOS version (see GET /meta `tos_version`).
+      additionalProperties: false
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username: {type: string, minLength: 1, maxLength: 32, description: Trimmed; case-insensitive.}
+        password: {type: string, minLength: 1, maxLength: 128}
+      additionalProperties: false
+    RefreshRequest:
+      type: object
+      required: [refresh_token]
+      properties:
+        refresh_token: {type: string, minLength: 20, maxLength: 100, pattern: '^[A-Za-z0-9_-]+$'}
+      additionalProperties: false
+    LogoutRequest:
+      type: object
+      properties:
+        all: {type: boolean, default: false, description: true revokes every session of the player.}
+      additionalProperties: false
+    PlanetProgress:
+      type: object
+      required: [planet_id, planet_name, levels, completed_levels, completed]
+      properties:
+        planet_id: {type: string}
+        planet_name: {type: string}
+        levels: {type: integer, description: Ranked levels of the planet.}
+        completed_levels: {type: integer, description: Levels with a verified ANY_PERCENT best on the current revision.}
+        completed: {type: boolean}
+    BestTime:
+      type: object
+      required: [level_id, level_name, planet_id, category, time_ms, record_id, achieved_at, rank]
+      properties:
+        level_id: {type: string}
+        level_name: {type: string}
+        planet_id: {type: string}
+        category: {$ref: '#/components/schemas/Category'}
+        time_ms: {type: integer}
+        record_id: {type: string, format: uuid}
+        achieved_at: {type: string, format: date-time}
+        rank: {type: integer, description: 'World rank on the current revision (ties: earlier achieved_at, then player id).'}
+    Statistics:
+      type: object
+      description: Computed from VERIFIED records only (except submitted_records).
+      required:
+      - verified_records
+      - submitted_records
+      - personal_bests
+      - levels_completed
+      - first_places
+      - planets
+      - planets_completed
+      - best_times
+      properties:
+        verified_records: {type: integer}
+        submitted_records: {type: integer, description: 'Every submission, whatever its status.'}
+        personal_bests: {type: integer, description: Verified bests on current level revisions (all categories).}
+        levels_completed: {type: integer, description: Distinct levels with a verified ANY_PERCENT best on the current revision.}
+        first_places: {type: integer}
+        planets:
+          type: array
+          items: {$ref: '#/components/schemas/PlanetProgress'}
+        planets_completed: {type: integer}
+        best_times:
+          type: array
+          items: {$ref: '#/components/schemas/BestTime'}
+    PlayerProfile:
+      type: object
+      required: [player, statistics]
+      properties:
+        player:
+          oneOf:
+          - {$ref: '#/components/schemas/OwnProfile'}
+          - {$ref: '#/components/schemas/PublicProfile'}
+          - {$ref: '#/components/schemas/HiddenProfile'}
+        statistics:
+          oneOf:
+          - {$ref: '#/components/schemas/Statistics'}
+          - {type: 'null'}
+          description: null for a private profile seen by someone else.
+    Record:
+      type: object
+      description: Public view of a record (what other players see). `kills` is stored but never returned here.
+      required:
+      - id
+      - player_id
+      - level_id
+      - level_version
+      - level_hash
+      - mode
+      - category
+      - time_ms
+      - deaths
+      - damage_taken
+      - collectibles
+      - total_collectibles
+      - score
+      - game_version
+      - verification_status
+      - has_replay
+      - created_at
+      - verified_at
+      properties:
+        id: {type: string, format: uuid}
+        player_id: {type: string, format: uuid}
+        level_id: {type: string}
+        level_version: {type: integer}
+        level_hash: {type: string, pattern: '^[0-9a-f]{64}$'}
+        mode: {$ref: '#/components/schemas/Mode'}
+        category: {$ref: '#/components/schemas/Category'}
+        time_ms: {type: integer}
+        deaths: {type: integer}
+        damage_taken: {type: integer}
+        collectibles: {type: integer}
+        total_collectibles: {type: integer}
+        score: {type: integer}
+        game_version: {type: string}
+        verification_status: {$ref: '#/components/schemas/VerificationStatus'}
+        has_replay: {type: boolean, description: A replay file is attached to the attempt (whatever its analysis result).}
+        created_at: {type: string, format: date-time}
+        verified_at: {type: [string, 'null'], format: date-time}
+    RecordOwner:
+      allOf:
+      - {$ref: '#/components/schemas/Record'}
+      - type: object
+        required: [attempt_id, rejection_reason, verification_notes]
+        properties:
+          attempt_id: {type: string, format: uuid}
+          rejection_reason:
+            type: [string, 'null']
+            description: IMPOSSIBLE_TIME, TIME_OVER_LIMIT, REPLAY_INVALID, MODERATION, or the moderator's free text.
+          verification_notes: {type: [string, 'null'], description: 'Why a record is PENDING, or the replay analysis reasons (French).'}
+      description: Owner view of a record.
+    RankingChange:
+      type: object
+      required: [previous_rank, rank, total, personal_best_improved, previous_best_ms]
+      properties:
+        previous_rank: {type: [integer, 'null'], description: Rank of the player's best on this board before the decision.}
+        rank: {type: [integer, 'null'], description: Rank after the decision (null when not ranked).}
+        total: {type: integer, description: Players ranked on the board (level revision + category).}
+        personal_best_improved: {type: boolean}
+        previous_best_ms: {type: [integer, 'null']}
+    SubmitRequest:
+      type: object
+      description: 'There is deliberately no player_id: the player is the session owner. Sending player_id (or any unknown field) gives 400 VALIDATION_ERROR "champ
+        inconnu".'
+      required: [level_id, level_version, level_hash, category, time_ms, deaths, game_version, attempt_id]
+      properties:
+        level_id: {type: string, maxLength: 64, pattern: '^[a-z0-9_]{1,64}$'}
+        level_version: {type: integer, minimum: 1, maximum: 1000000}
+        level_hash:
+          type: string
+          minLength: 64
+          maxLength: 64
+          pattern: ^[0-9a-f]{64}$
+          description: Content hash of the exact level revision played.
+        mode: {$ref: '#/components/schemas/Mode', default: STANDARD}
+        category: {$ref: '#/components/schemas/Category'}
+        time_ms: {type: integer, minimum: 1, maximum: 86400000}
+        deaths: {type: integer, minimum: 0, maximum: 9999}
+        damage_taken: {type: integer, minimum: 0, maximum: 1000000, default: 0}
+        collectibles: {type: integer, minimum: 0, maximum: 10000, default: 0}
+        total_collectibles:
+          type: integer
+          minimum: 0
+          maximum: 10000
+          default: 0
+          description: Must equal the level revision's total (422 INCONSISTENT_PROGRESS).
+        kills: {type: integer, minimum: 0, maximum: 100000, default: 0}
+        score: {type: integer, minimum: 0, maximum: 100000000, default: 0}
+        game_version: {type: string, maxLength: 16, pattern: '^\d{1,3}\.\d{1,3}\.\d{1,4}$'}
+        attempt_id:
+          type: string
+          minLength: 36
+          maxLength: 36
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          description: Lower-case UUID v4 generated by the client for the run. Makes submission idempotent; one attempt may be submitted once per category.
+        has_replay: {type: boolean, default: false, description: Echoed back as replay.accepted; has no other effect.}
+      additionalProperties: false
+    SubmitResult:
+      type: object
+      required: [duplicate, record, replay, ranking]
+      properties:
+        duplicate: {const: false}
+        record: {$ref: '#/components/schemas/RecordOwner'}
+        replay:
+          type: object
+          required: [required, accepted, upload_path]
+          properties:
+            required: {type: boolean, description: true when no replay is attached yet and the record is PENDING.}
+            accepted: {type: boolean, description: Echo of the request's has_replay flag.}
+            upload_path: {type: string, description: '`/api/v1/records/{id}/replay` (PUT the CPRZ file there).'}
+        ranking: {$ref: '#/components/schemas/RankingChange'}
+    SubmitDuplicate:
+      type: object
+      description: 'Same attempt_id and category already stored with identical time_ms, deaths and level_hash: the stored record is returned, nothing changes.'
+      required: [duplicate, record, replay, ranking]
+      properties:
+        duplicate: {const: true}
+        record: {$ref: '#/components/schemas/RecordOwner'}
+        replay:
+          type: object
+          required: [required, upload_path]
+          properties:
+            required: {type: boolean}
+            upload_path: {type: string}
+        ranking: {type: 'null'}
+    RecordDetail:
+      type: object
+      required: [record, player, is_personal_best, rank]
+      properties:
+        record:
+          anyOf:
+          - {$ref: '#/components/schemas/RecordOwner'}
+          - {$ref: '#/components/schemas/Record'}
+          description: Owner view when the viewer owns the record.
+        player: {$ref: '#/components/schemas/PlayerSummary'}
+        is_personal_best: {type: boolean}
+        rank:
+          type: [integer, 'null']
+          description: Current world rank, only when the record is VERIFIED and is the player's personal best; otherwise null.
+    ReplayAnalysis:
+      type: object
+      required: [ok, reasons, stats]
+      properties:
+        ok: {type: boolean}
+        reasons:
+          type: array
+          items: {type: string}
+          description: Every inconsistency found (French); empty when ok.
+        stats:
+          type: object
+          required: [frames, duration_ms, deaths, collectibles, damage, max_step_px, jumps]
+          properties:
+            frames: {type: integer}
+            duration_ms: {type: integer}
+            deaths: {type: integer}
+            collectibles: {type: integer, description: Shard and Relic pickups.}
+            damage: {type: integer}
+            max_step_px: {type: integer}
+            jumps: {type: integer}
+    ReplayUploadResult:
+      type: object
+      required: [replay_id, verification_status, analysis, records]
+      properties:
+        replay_id: {type: string, format: uuid}
+        verification_status:
+          type: string
+          enum: [VERIFIED, REJECTED]
+          description: Result of the replay analysis (not necessarily the records' status).
+        analysis: {$ref: '#/components/schemas/ReplayAnalysis'}
+        records:
+          type: array
+          description: Every record of the same attempt that was still PENDING, re-evaluated with the replay (empty when none was pending).
+          items:
+            type: object
+            required: [record, ranking]
+            properties:
+              record: {$ref: '#/components/schemas/RecordOwner'}
+              ranking: {$ref: '#/components/schemas/RankingChange'}
+    LevelInfo:
+      type: object
+      required:
+      - id
+      - name
+      - planet_id
+      - planet_name
+      - order
+      - version
+      - content_hash
+      - ranking_enabled
+      - min_game_version
+      - total_collectibles
+      - time_limit_ms
+      properties:
+        id: {type: string}
+        name: {type: string}
+        planet_id: {type: string}
+        planet_name: {type: string}
+        order: {type: integer}
+        version: {type: integer, description: Current revision.}
+        content_hash: {type: string}
+        ranking_enabled: {type: boolean}
+        min_game_version: {type: string}
+        total_collectibles: {type: integer}
+        time_limit_ms: {type: integer}
+    Meta:
+      type: object
+      required: [api_version, environment, tos_version, min_game_version, categories, modes, levels]
+      properties:
+        api_version: {type: string, example: 1.0.0}
+        environment: {type: string, description: 'development, staging or production.'}
+        tos_version: {type: string}
+        min_game_version: {type: string}
+        categories:
+          type: array
+          items: {$ref: '#/components/schemas/Category'}
+        modes:
+          type: array
+          items: {$ref: '#/components/schemas/Mode'}
+        levels:
+          type: array
+          items: {$ref: '#/components/schemas/LevelInfo'}
+          description: Every registered level (ranking_enabled tells whether it is ranked).
+    Health:
+      type: object
+      required: [status, api_version, environment, database, time]
+      properties:
+        status: {type: string, enum: [ok]}
+        api_version: {type: string}
+        environment: {type: string}
+        database: {type: string, enum: [ok]}
+        time: {type: string, format: date-time}
+    LevelBoardInfo:
+      type: object
+      required:
+      - level_id
+      - name
+      - planet_id
+      - planet_name
+      - version
+      - content_hash
+      - compatibility_status
+      - is_current
+      - ranking_enabled
+      - category
+      - mode
+      - period
+      - week_start
+      - week_end
+      - country_code
+      - friends
+      properties:
+        level_id: {type: string}
+        name: {type: string}
+        planet_id: {type: string}
+        planet_name: {type: string}
+        version: {type: integer}
+        content_hash: {type: string}
+        compatibility_status: {type: string, enum: [active, legacy, disabled]}
+        is_current: {type: boolean}
+        ranking_enabled: {type: boolean}
+        category: {$ref: '#/components/schemas/Category'}
+        mode: {$ref: '#/components/schemas/Mode'}
+        period: {type: string, enum: [all, weekly]}
+        week_start:
+          type: [string, 'null']
+          format: date-time
+          description: Monday 00:00 UTC of the current week (weekly only).
+        week_end: {type: [string, 'null'], format: date-time}
+        country_code: {type: [string, 'null']}
+        friends: {type: boolean}
+    LevelBoardEntry:
+      type: object
+      description: 'Best VERIFIED time of one player. Ties: earlier achieved_at, then player id.'
+      required: [rank, world_rank, player, time_ms, record_id, achieved_at, has_replay, is_me]
+      properties:
+        rank: {type: integer, description: Rank inside this (possibly filtered) board.}
+        world_rank: {type: integer, description: Rank on the unfiltered world board of the same revision/category/period.}
+        player: {$ref: '#/components/schemas/PlayerSummary'}
+        time_ms: {type: integer}
+        record_id: {type: string, format: uuid}
+        achieved_at: {type: string, format: date-time}
+        has_replay: {type: boolean, description: A VERIFIED replay is available for download.}
+        is_me: {type: boolean}
+    PendingPerformance:
+      type: object
+      description: 'The viewer''s best PENDING record on this board: reported, never ranked.'
+      required: [record_id, time_ms, created_at, note, status]
+      properties:
+        record_id: {type: string, format: uuid}
+        time_ms: {type: integer}
+        created_at: {type: string, format: date-time}
+        note: {type: [string, 'null']}
+        status: {const: PENDING}
+    LevelBoardMe:
+      type: object
+      description: Viewer's own position, even outside the requested page.
+      required: [entry, pending]
+      properties:
+        entry:
+          oneOf:
+          - {$ref: '#/components/schemas/LevelBoardEntry'}
+          - {type: 'null'}
+        pending:
+          oneOf:
+          - {$ref: '#/components/schemas/PendingPerformance'}
+          - {type: 'null'}
+    LevelBoard:
+      type: object
+      required: [board, entries, me]
+      properties:
+        board: {$ref: '#/components/schemas/LevelBoardInfo'}
+        entries:
+          type: array
+          items: {$ref: '#/components/schemas/LevelBoardEntry'}
+        me:
+          oneOf:
+          - {$ref: '#/components/schemas/LevelBoardMe'}
+          - {type: 'null'}
+          description: null for anonymous requests.
+    GlobalPointsEntry:
+      type: object
+      description: 'Ties: points desc, levels_completed desc, total_time_ms asc, player id.'
+      required: [rank, world_rank, player, points, levels_completed, total_time_ms, is_me]
+      properties:
+        rank: {type: integer}
+        world_rank: {type: integer}
+        player: {$ref: '#/components/schemas/PlayerSummary'}
+        points: {type: integer, description: Sum over ranked levels of floor(1000 x world best / player best).}
+        levels_completed: {type: integer}
+        total_time_ms: {type: integer}
+        is_me: {type: boolean}
+    GlobalPointsBoard:
+      type: object
+      required: [board, entries, me]
+      properties:
+        board:
+          type: object
+          required: [kind, category, country_code]
+          properties:
+            kind: {const: cosmic_points}
+            category: {$ref: '#/components/schemas/Category'}
+            country_code: {type: [string, 'null']}
+        entries:
+          type: array
+          items: {$ref: '#/components/schemas/GlobalPointsEntry'}
+        me:
+          oneOf:
+          - type: object
+            required: [entry, pending]
+            properties:
+              entry:
+                oneOf:
+                - {$ref: '#/components/schemas/GlobalPointsEntry'}
+                - {type: 'null'}
+              pending: {type: 'null'}
+          - {type: 'null'}
+    PlanetTotalEntry:
+      type: object
+      description: Only players with a verified best on every ranked level (current revisions) of the planet.
+      required: [rank, world_rank, player, total_time_ms, levels_completed, is_me]
+      properties:
+        rank: {type: integer}
+        world_rank: {type: integer}
+        player: {$ref: '#/components/schemas/PlayerSummary'}
+        total_time_ms: {type: integer, description: Sum of the player's best times over every ranked level of the planet.}
+        levels_completed: {type: integer}
+        is_me: {type: boolean}
+    PlanetBoard:
+      type: object
+      required: [board, entries, me]
+      properties:
+        board:
+          type: object
+          required: [kind, planet_id, category, levels, country_code]
+          properties:
+            kind: {const: planet_total_time}
+            planet_id: {type: string}
+            category: {$ref: '#/components/schemas/Category'}
+            levels:
+              type: array
+              items:
+                type: object
+                required: [id, name]
+                properties:
+                  id: {type: string}
+                  name: {type: string}
+            country_code: {type: [string, 'null']}
+        entries:
+          type: array
+          items: {$ref: '#/components/schemas/PlanetTotalEntry'}
+        me:
+          oneOf:
+          - type: object
+            required: [entry, pending]
+            properties:
+              entry:
+                oneOf:
+                - {$ref: '#/components/schemas/PlanetTotalEntry'}
+                - {type: 'null'}
+              pending: {type: 'null'}
+          - {type: 'null'}
+    GlobeMarker:
+      type: object
+      description: Only players with location_visibility = globe whose country has coordinates.
+      required:
+      - record_id
+      - player_id
+      - player_name
+      - avatar
+      - avatar_url
+      - country_code
+      - latitude
+      - longitude
+      - time_ms
+      - rank
+      - level_id
+      - achieved_at
+      - is_me
+      properties:
+        record_id: {type: string, format: uuid}
+        player_id: {type: string, format: uuid}
+        player_name: {type: string}
+        avatar: {$ref: '#/components/schemas/Avatar'}
+        avatar_url: {type: [string, 'null']}
+        country_code: {type: string}
+        latitude: {type: number, description: 'Approximate centre of the country, never a personal position.'}
+        longitude: {type: number}
+        time_ms: {type: integer}
+        rank: {type: integer, description: World rank on the board.}
+        level_id: {type: string}
+        achieved_at: {type: string, format: date-time}
+        is_me: {type: boolean}
+    GlobeRecords:
+      type: object
+      required: [level_id, category, period, records, generated_at]
+      properties:
+        level_id: {type: [string, 'null']}
+        category: {$ref: '#/components/schemas/Category'}
+        period: {type: string, enum: [all, weekly]}
+        records:
+          type: array
+          items: {$ref: '#/components/schemas/GlobeMarker'}
+        generated_at: {type: string, format: date-time}
+    GlobeCountryRecords:
+      type: object
+      required: [country_code, level_id, category, period, records, generated_at]
+      properties:
+        country_code: {type: string}
+        level_id: {type: string}
+        category: {$ref: '#/components/schemas/Category'}
+        period: {type: string, enum: [all, weekly]}
+        records:
+          type: array
+          items: {$ref: '#/components/schemas/GlobeMarker'}
+        generated_at: {type: string, format: date-time}
+    GlobeCountry:
+      type: object
+      required: [country_code, name_fr, name_en, latitude, longitude, players, best_time_ms, best_rank, best_player]
+      properties:
+        country_code: {type: string}
+        name_fr: {type: string}
+        name_en: {type: string}
+        latitude: {type: number}
+        longitude: {type: number}
+        players:
+          type: integer
+          description: Globe-visible players (on the board with level_id; with any verified best in the category otherwise).
+        best_time_ms: {type: [integer, 'null'], description: null without level_id.}
+        best_rank: {type: [integer, 'null'], description: null without level_id.}
+        best_player: {type: [string, 'null'], description: Username of the country's best player; null without level_id.}
+    GlobeCountries:
+      type: object
+      required: [level_id, category, period, countries, generated_at]
+      properties:
+        level_id: {type: [string, 'null']}
+        category: {$ref: '#/components/schemas/Category'}
+        period: {type: string, enum: [all, weekly]}
+        countries:
+          type: array
+          items: {$ref: '#/components/schemas/GlobeCountry'}
+        generated_at: {type: string, format: date-time}
+    FriendEntry:
+      type: object
+      required: [player, since]
+      properties:
+        player: {$ref: '#/components/schemas/PlayerSummary'}
+        since: {type: string, format: date-time}
+    FriendLists:
+      type: object
+      description: Sorted by username; suspended players are omitted.
+      required: [friends, incoming, outgoing]
+      properties:
+        friends:
+          type: array
+          items: {$ref: '#/components/schemas/FriendEntry'}
+        incoming:
+          type: array
+          items: {$ref: '#/components/schemas/FriendEntry'}
+          description: Pending requests received.
+        outgoing:
+          type: array
+          items: {$ref: '#/components/schemas/FriendEntry'}
+          description: Pending requests sent.
+    FriendRequest:
+      type: object
+      description: username or player_id is required.
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 20
+          pattern: ^[A-Za-z0-9](?:[A-Za-z0-9_.-]{1,18})[A-Za-z0-9]$
+          description: Case-insensitive. Takes precedence over player_id.
+        player_id: {type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'}
+      additionalProperties: false
+    FriendRequestResult:
+      type: object
+      required: [status, player]
+      properties:
+        status: {type: string, enum: [pending, accepted]}
+        player: {$ref: '#/components/schemas/PlayerSummary'}
+    FriendAccept:
+      type: object
+      required: [player_id]
+      properties:
+        player_id:
+          type: string
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+          description: The requester.
+      additionalProperties: false
+    FriendAcceptResult:
+      type: object
+      required: [status, player]
+      properties:
+        status: {const: accepted}
+        player:
+          oneOf:
+          - {$ref: '#/components/schemas/PlayerSummary'}
+          - {type: 'null'}
+    PatchMeRequest:
+      type: object
+      description: Every field is optional; omitted fields keep their value.
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 20
+          pattern: ^[A-Za-z0-9](?:[A-Za-z0-9_.-]{1,18})[A-Za-z0-9]$
+          description: Same rules as at registration (reserved names refused, 409 if taken).
+        avatar:
+          type: string
+          pattern: ^avatar_(0[1-9]|1[0-6])$
+          description: Choosing a preset deletes the uploaded custom avatar.
+        country_code:
+          type: [string, 'null']
+          pattern: ^[A-Z]{2}$
+          description: null clears the country, the region, and forces location_visibility to hidden.
+        region_code:
+          type: [string, 'null']
+          maxLength: 6
+          pattern: ^[A-Z]{2}-[A-Z0-9]{1,3}$
+          description: null clears it. Must belong to the (new or current) country.
+        location_visibility:
+          $ref: '#/components/schemas/LocationVisibility'
+          description: Silently forced to hidden when the resulting profile has no country.
+        profile_visibility: {$ref: '#/components/schemas/ProfileVisibility'}
+        allow_friend_requests: {type: boolean}
+      additionalProperties: false
+    DeleteMeRequest:
+      type: object
+      required: [password, confirm]
+      properties:
+        password: {type: string, minLength: 1, maxLength: 128}
+        confirm: {const: DELETE, maxLength: 16}
+      additionalProperties: false
+    RecordRow:
+      type: object
+      description: Raw row of the `records` table (GDPR export and moderation only).
+      required:
+      - id
+      - player_id
+      - level_id
+      - level_version
+      - level_hash
+      - mode
+      - category
+      - time_ms
+      - deaths
+      - damage_taken
+      - collectibles
+      - total_collectibles
+      - kills
+      - score
+      - game_version
+      - attempt_id
+      - verification_status
+      - rejection_reason
+      - verification_notes
+      - replay_id
+      - created_at
+      - verified_at
+      properties:
+        id: {type: string, format: uuid}
+        player_id: {type: string, format: uuid}
+        level_id: {type: string}
+        level_version: {type: integer}
+        level_hash: {type: string}
+        mode: {type: string}
+        category: {type: string}
+        time_ms: {type: integer}
+        deaths: {type: integer}
+        damage_taken: {type: integer}
+        collectibles: {type: integer}
+        total_collectibles: {type: integer}
+        kills: {type: integer}
+        score: {type: integer}
+        game_version: {type: string}
+        attempt_id: {type: string, format: uuid}
+        verification_status: {$ref: '#/components/schemas/VerificationStatus'}
+        rejection_reason: {type: [string, 'null']}
+        verification_notes: {type: [string, 'null']}
+        replay_id: {type: [string, 'null'], format: uuid}
+        created_at: {type: string, format: date-time}
+        verified_at: {type: [string, 'null'], format: date-time}
+    ExportData:
+      type: object
+      required: [exported_at, player, sessions, records, friends, replays, audit_log, notes]
+      properties:
+        exported_at: {type: string, format: date-time}
+        player: {$ref: '#/components/schemas/PrivateProfile'}
+        sessions:
+          type: array
+          items:
+            type: object
+            required: [id, created_at, last_used_at, expires_at, refresh_expires_at, revoked_at, client_info]
+            properties:
+              id: {type: string, format: uuid}
+              created_at: {type: string, format: date-time}
+              last_used_at: {type: string, format: date-time}
+              expires_at: {type: string, format: date-time}
+              refresh_expires_at: {type: string, format: date-time}
+              revoked_at: {type: [string, 'null'], format: date-time}
+              client_info: {type: [string, 'null'], description: 'User-Agent, truncated to 120 characters.'}
+        records:
+          type: array
+          items: {$ref: '#/components/schemas/RecordRow'}
+        friends:
+          type: array
+          items:
+            type: object
+            required: [player_id, friend_id, status, created_at]
+            properties:
+              player_id: {type: string, format: uuid}
+              friend_id: {type: string, format: uuid}
+              status: {type: string, enum: [pending, accepted]}
+              created_at: {type: string, format: date-time}
+        replays:
+          type: array
+          items:
+            type: object
+            required:
+            - id
+            - record_id
+            - attempt_id
+            - file_size
+            - sha256
+            - format_version
+            - frame_count
+            - duration_ms
+            - verification_status
+            - created_at
+            properties:
+              id: {type: string, format: uuid}
+              record_id: {type: string, format: uuid}
+              attempt_id: {type: string, format: uuid}
+              file_size: {type: integer}
+              sha256: {type: string}
+              format_version: {type: integer}
+              frame_count: {type: integer}
+              duration_ms: {type: integer}
+              verification_status: {$ref: '#/components/schemas/VerificationStatus'}
+              created_at: {type: string, format: date-time}
+        audit_log:
+          type: array
+          items:
+            type: object
+            required: [action, details, created_at]
+            properties:
+              action: {type: string}
+              details: {type: [string, 'null'], description: JSON text.}
+              created_at: {type: string, format: date-time}
+        notes: {type: string}
+    AdminRecordRow:
+      allOf:
+      - {$ref: '#/components/schemas/RecordRow'}
+      - type: object
+        required: [username, trust_level, analysis]
+        properties:
+          username: {type: string}
+          trust_level: {type: integer}
+          analysis: {type: [string, 'null'], description: 'Replay analysis as JSON text, null without replay.'}
+    ReviewRequest:
+      type: object
+      required: [decision]
+      properties:
+        decision: {type: string, enum: [VERIFIED, REJECTED]}
+        reason: {type: string, maxLength: 200}
+      additionalProperties: false
+    ReviewResult:
+      type: object
+      required: [record_id, verification_status, ranking]
+      properties:
+        record_id: {type: string, format: uuid}
+        verification_status: {type: string, enum: [VERIFIED, REJECTED]}
+        ranking: {$ref: '#/components/schemas/RankingChange'}
+    ManifestLevel:
+      type: object
+      description: One level revision, as produced by `CosmicPlatformer --online-manifest`. Validation errors are reported as `levels[i].<field>`.
+      required:
+      - id
+      - name
+      - planet_id
+      - order
+      - version
+      - content_hash
+      - total_collectibles
+      - total_enemies
+      - time_limit_ms
+      - min_time_ms
+      - bounds
+      - spawn
+      - exit
+      properties:
+        id: {type: string, maxLength: 64, pattern: '^[a-z0-9_]{1,64}$'}
+        name: {type: string, minLength: 1, maxLength: 80}
+        planet_id: {type: string, maxLength: 64, pattern: '^[a-z0-9_]{1,64}$'}
+        planet_name: {type: string, maxLength: 80}
+        order: {type: integer, minimum: 0, maximum: 1000}
+        version: {type: integer, minimum: 1, maximum: 1000000}
+        content_hash: {type: string, pattern: '^[0-9a-f]{64}$'}
+        total_collectibles: {type: integer, minimum: 0, maximum: 10000}
+        total_enemies: {type: integer, minimum: 0, maximum: 100000}
+        time_limit_ms: {type: integer, minimum: 1000, maximum: 86400000}
+        min_time_ms: {type: integer, minimum: 0, maximum: 86400000}
+        bounds:
+          type: array
+          items: {type: number}
+          minItems: 2
+          maxItems: 2
+          description: '[width, height]'
+        spawn:
+          type: array
+          items: {type: number}
+          minItems: 2
+          maxItems: 2
+          description: '[x, y]'
+        exit:
+          type: array
+          items: {type: number}
+          minItems: 4
+          maxItems: 4
+          description: '[x, y, w, h]'
+      additionalProperties: false
+    RegisterLevelsRequest:
+      type: object
+      required: [levels]
+      properties:
+        levels:
+          type: array
+          minItems: 1
+          maxItems: 500
+          items: {$ref: '#/components/schemas/ManifestLevel'}
+        game_version:
+          type: string
+          pattern: ^\d{1,3}\.\d{1,3}\.\d{1,4}$
+          description: min_game_version of the new revisions; when absent or malformed the server's MIN_GAME_VERSION is used.
+    RegisterLevelsResult:
+      type: object
+      required: [levels]
+      properties:
+        levels:
+          type: array
+          items:
+            type: object
+            required: [id, version, result]
+            properties:
+              id: {type: string}
+              version: {type: integer}
+              result: {type: string, enum: [current, unchanged, added_as_legacy]}
+  responses:
+    BadRequest:
+      description: VALIDATION_ERROR (details = list of {field, message}; unknown fields are refused), INVALID_JSON (body is not a JSON object) or BAD_REQUEST (invalid
+        Content-Length header).
+      content:
+        application/json:
+          schema:
+            allOf:
+            - {$ref: '#/components/schemas/ErrorEnvelope'}
+            - type: object
+              properties:
+                error:
+                  type: object
+                  properties:
+                    code: {type: string, enum: [VALIDATION_ERROR, INVALID_JSON, BAD_REQUEST]}
+          example:
+            ok: false
+            error:
+              code: VALIDATION_ERROR
+              message: Données invalides.
+              details:
+              - {field: player_id, message: champ inconnu}
+            request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+    InvalidQuery:
+      description: 'VALIDATION_ERROR: a query or path parameter is malformed or out of range.'
+      content:
+        application/json:
+          schema:
+            allOf:
+            - {$ref: '#/components/schemas/ErrorEnvelope'}
+            - type: object
+              properties:
+                error:
+                  type: object
+                  properties:
+                    code: {type: string, enum: [VALIDATION_ERROR]}
+          example:
+            ok: false
+            error:
+              code: VALIDATION_ERROR
+              message: Paramètres de pagination invalides.
+              details:
+              - {field: limit, message: doit être entre 1 et 100}
+            request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+    Unauthorized:
+      description: 'UNAUTHORIZED (no Authorization header), INVALID_TOKEN (malformed header, unknown or revoked session) or TOKEN_EXPIRED (access token expired: call
+        POST /auth/refresh).'
+      content:
+        application/json:
+          schema:
+            allOf:
+            - {$ref: '#/components/schemas/ErrorEnvelope'}
+            - type: object
+              properties:
+                error:
+                  type: object
+                  properties:
+                    code: {type: string, enum: [UNAUTHORIZED, INVALID_TOKEN, TOKEN_EXPIRED]}
+          example:
+            ok: false
+            error: {code: TOKEN_EXPIRED, message: 'Jeton expiré : utilisez le jeton de renouvellement.'}
+            request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+    InvalidOrExpiredToken:
+      description: 'Only when an Authorization header is sent: INVALID_TOKEN (malformed, unknown or revoked) or TOKEN_EXPIRED. Anonymous requests never get a 401
+        here.'
+      content:
+        application/json:
+          schema:
+            allOf:
+            - {$ref: '#/components/schemas/ErrorEnvelope'}
+            - type: object
+              properties:
+                error:
+                  type: object
+                  properties:
+                    code: {type: string, enum: [INVALID_TOKEN, TOKEN_EXPIRED]}
+          example:
+            ok: false
+            error: {code: INVALID_TOKEN, message: Session inconnue ou révoquée.}
+            request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+    AccountSuspended:
+      description: 'ACCOUNT_SUSPENDED: the session belongs to a suspended account.'
+      content:
+        application/json:
+          schema:
+            allOf:
+            - {$ref: '#/components/schemas/ErrorEnvelope'}
+            - type: object
+              properties:
+                error:
+                  type: object
+                  properties:
+                    code: {type: string, enum: [ACCOUNT_SUSPENDED]}
+          example:
+            ok: false
+            error: {code: ACCOUNT_SUSPENDED, message: Ce compte est suspendu.}
+            request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+    LevelNotFound:
+      description: LEVEL_NOT_FOUND (unknown level id) or LEVEL_VERSION_NOT_FOUND (no revision matches level_hash / level_version, or the current revision row is missing).
+      content:
+        application/json:
+          schema:
+            allOf:
+            - {$ref: '#/components/schemas/ErrorEnvelope'}
+            - type: object
+              properties:
+                error:
+                  type: object
+                  properties:
+                    code: {type: string, enum: [LEVEL_NOT_FOUND, LEVEL_VERSION_NOT_FOUND]}
+          example:
+            ok: false
+            error: {code: LEVEL_NOT_FOUND, message: Niveau inconnu du serveur.}
+            request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+    AdminUnauthorized:
+      description: 'UNAUTHORIZED: missing or wrong admin token (the attempt is written to the audit log).'
+      content:
+        application/json:
+          schema:
+            allOf:
+            - {$ref: '#/components/schemas/ErrorEnvelope'}
+            - type: object
+              properties:
+                error:
+                  type: object
+                  properties:
+                    code: {type: string, enum: [UNAUTHORIZED]}
+          example:
+            ok: false
+            error: {code: UNAUTHORIZED, message: Authentification requise.}
+            request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+    RateLimited:
+      description: 'RATE_LIMITED: fixed-window limit exceeded. Retry-After (seconds) and details.retry_after_seconds give the wait.'
+      headers:
+        Retry-After: {$ref: '#/components/headers/RetryAfter'}
+      content:
+        application/json:
+          schema:
+            allOf:
+            - {$ref: '#/components/schemas/ErrorEnvelope'}
+            - type: object
+              properties:
+                error:
+                  type: object
+                  properties:
+                    code: {const: RATE_LIMITED}
+          example:
+            ok: false
+            error:
+              code: RATE_LIMITED
+              message: Trop de requêtes, réessayez plus tard.
+              details: {retry_after_seconds: 42}
+            request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+    InternalError:
+      description: 'INTERNAL_ERROR: unexpected failure; details stay in the server logs (search by request_id).'
+      content:
+        application/json:
+          schema:
+            allOf:
+            - {$ref: '#/components/schemas/ErrorEnvelope'}
+            - type: object
+              properties:
+                error:
+                  type: object
+                  properties:
+                    code: {const: INTERNAL_ERROR}
+          example:
+            ok: false
+            error: {code: INTERNAL_ERROR, message: Erreur interne du serveur.}
+            request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+    PayloadTooLarge:
+      description: 'PAYLOAD_TOO_LARGE: declared or actual body size above the route''s limit (JSON 8 KiB by default, 4 KiB for /records/submit, 256 KiB for /admin/levels,
+        64 KiB avatar, 1 MiB replay).'
+      content:
+        application/json:
+          schema:
+            allOf:
+            - {$ref: '#/components/schemas/ErrorEnvelope'}
+            - type: object
+              properties:
+                error:
+                  type: object
+                  properties:
+                    code: {const: PAYLOAD_TOO_LARGE}
+          example:
+            ok: false
+            error: {code: PAYLOAD_TOO_LARGE, message: Requête trop volumineuse (maximum 8192 octets).}
+            request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+    UnsupportedMediaType:
+      description: 'UNSUPPORTED_MEDIA_TYPE: the body must be sent with Content-Type application/json.'
+      content:
+        application/json:
+          schema:
+            allOf:
+            - {$ref: '#/components/schemas/ErrorEnvelope'}
+            - type: object
+              properties:
+                error:
+                  type: object
+                  properties:
+                    code: {const: UNSUPPORTED_MEDIA_TYPE}
+          example:
+            ok: false
+            error: {code: UNSUPPORTED_MEDIA_TYPE, message: Le corps doit être du JSON (application/json).}
+            request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0

@@ -15,6 +15,8 @@ export default defineConfig(async () => {
                         IP_HASH_SALT: "test-only-salt",
                         ADMIN_TOKEN: "test-admin-token-0123456789abcdef0123456789",
                         EDGE_CACHE_SECONDS: "0",
+                        // Real limits in tests (the dev environment multiplies them).
+                        RATE_LIMIT_SCALE: "1",
                         // Faster hashing in tests; production uses 100 000 iterations.
                         PBKDF2_ITERATIONS: "10000",
                     },
