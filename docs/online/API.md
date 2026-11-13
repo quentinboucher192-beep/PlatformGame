@@ -132,6 +132,7 @@ de `wrangler.jsonc`, plafonnée à 1 000) multiplie toutes les limites.
 | Règle | Limite | Fenêtre | Clé | Routes |
 |---|---|---|---|---|
 | `register` | 5 | 1 h | IP | `POST /auth/register` |
+| `username_check` | 60 | 5 min | IP | `GET /auth/username-available` |
 | `login_ip` | 30 | 15 min | IP | `POST /auth/login` |
 | `login_user` | 20 | 15 min | pseudonyme | `POST /auth/login` |
 | `refresh` | 60 | 1 min | IP | `POST /auth/refresh` |
@@ -304,6 +305,14 @@ Exemple : `curl -s $API/meta`
 ```
 
 ### 8.2 Authentification
+
+#### `GET /auth/username-available?username=<pseudo>` — pseudonyme libre ?
+Auth : aucune · limite `username_check` (60 / 5 min par IP) · jamais mis en cache.
+Applique les mêmes règles que l'inscription. Réponse `200` :
+`{ "username": "NovaRider", "available": false, "reason": "taken", "message": "Ce pseudonyme est déjà utilisé." }`
+avec `reason` parmi `null` (libre), `invalid` (format), `reserved`, `taken`. L'inscription
+reste l'autorité (un pseudonyme peut être pris entre la vérification et l'envoi : 409
+`USERNAME_TAKEN`). Le jeu interroge cette route 0,5 s après la dernière frappe.
 
 #### `POST /auth/register` — créer un compte
 Auth : aucune · limite `register` (vérifiée avant lecture du corps).

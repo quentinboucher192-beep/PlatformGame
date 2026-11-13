@@ -175,6 +175,12 @@ void UIContext::panel(const Rect& rc, bool highlight, float radius) {
     rr.drawRoundedRect(rc, rad, highlight ? theme_.accent.withAlpha(150) : theme_.border, std::max(1.0f, s(1.5f)));
 }
 
+float UIContext::fitFont(const std::string& t, FontFace face, float size, float room, float minScale) {
+    if (room <= 0.0f || t.empty()) return size;
+    float tw = text().measure(t, face, s(size)).x;
+    return tw > room ? size * std::max(minScale, room / tw) : size;
+}
+
 Vec2 UIContext::label(const std::string& t, Vec2 pos, float size, Color c, Align a, FontFace face, VAlign va) {
     TextStyle st;
     st.face = face;
@@ -246,6 +252,8 @@ bool UIContext::button(const std::string& name, const Rect& rc, const std::strin
         icon(st.icon, st.iconIndex, st.iconCell, ir, st.enabled ? Color::white() : Color{120, 120, 120, 255});
         if (st.align != Align::Center) textX = ir.right() + s(12);
     }
+    // The label always stays inside the button: it shrinks to the available width.
+    fs = fitFont(t, FontFace::Bold, fs, st.align == Align::Center ? drawn.w - s(20) : drawn.right() - textX - s(12));
     Color tc = st.enabled ? Color::lerp(theme_.text, Color::white(), hot) : theme_.textDim;
     label(t, {textX, drawn.center().y}, fs, tc, st.align, FontFace::Bold, VAlign::Middle);
     if (clicked) app_->resources().playSound(st.danger ? "sounds/ui_back.wav" : "sounds/ui_confirm.wav", 0.6f);
@@ -269,7 +277,9 @@ bool UIContext::toggle(const std::string& name, const Rect& rc, const std::strin
     }
     if (clippedOut(rc)) return clicked;
     drawFrame(rc, hot, isFocus, false, false, true, false);
-    label(t, {rc.x + s(20), rc.center().y}, 22, theme_.text, Align::Left, FontFace::Body, VAlign::Middle);
+    // The label never runs under the switch: it shrinks to the room left of the track.
+    float fs = fitFont(t, FontFace::Body, 22.0f, rc.w - s(20) - s(96), 0.6f);
+    label(t, {rc.x + s(20), rc.center().y}, fs, theme_.text, Align::Left, FontFace::Body, VAlign::Middle);
     float on = anim(wid ^ 0x9e3779b9u, value, 10.0f);
     Rect track{rc.right() - s(84), rc.center().y - s(13), s(64), s(26)};
     r().fillRoundedRect(track, s(13), Color::lerp(Color{40, 50, 70, 255}, theme_.accent.withAlpha(200), on));
@@ -313,7 +323,8 @@ bool UIContext::slider(const std::string& name, const Rect& rc, const std::strin
     if (changedNow) changed_ = true;
     if (clippedOut(rc)) return changedNow;
     drawFrame(rc, hot, isFocus, false, false, true, false);
-    label(t, {rc.x + s(20), rc.center().y}, 22, theme_.text, Align::Left, FontFace::Body, VAlign::Middle);
+    label(t, {rc.x + s(20), rc.center().y}, fitFont(t, FontFace::Body, 22.0f, track.x - rc.x - s(36)), theme_.text, Align::Left,
+          FontFace::Body, VAlign::Middle);
     float k = maxV > minV ? (value - minV) / (maxV - minV) : 0.0f;
     r().fillRoundedRect(track, s(4), {40, 50, 70, 255});
     r().fillRoundedRect({track.x, track.y, track.w * k, track.h}, s(4), theme_.accent);
@@ -365,13 +376,15 @@ bool UIContext::cycle(const std::string& name, const Rect& rc, const std::string
     }
     if (clippedOut(rc)) return changedNow;
     drawFrame(rc, hot, isFocus, false, false, true, false);
-    label(t, {rc.x + s(20), rc.center().y}, 22, theme_.text, Align::Left, FontFace::Body, VAlign::Middle);
+    label(t, {rc.x + s(20), rc.center().y}, fitFont(t, FontFace::Body, 22.0f, left.x - rc.x - s(28)), theme_.text, Align::Left,
+          FontFace::Body, VAlign::Middle);
     label("<", left.center(), 24, Color::lerp(theme_.textDim, theme_.accent, hot), Align::Center, FontFace::Bold,
           VAlign::Middle);
     label(">", right.center(), 24, Color::lerp(theme_.textDim, theme_.accent, hot), Align::Center, FontFace::Bold,
           VAlign::Middle);
-    label(options[index], {(left.right() + right.x) * 0.5f, rc.center().y}, 22, theme_.text, Align::Center,
-          FontFace::Bold, VAlign::Middle);
+    label(options[index], {(left.right() + right.x) * 0.5f, rc.center().y},
+          fitFont(options[index], FontFace::Bold, 22.0f, right.x - left.right() - s(8), 0.5f), theme_.text, Align::Center, FontFace::Bold,
+          VAlign::Middle);
     return changedNow;
 }
 

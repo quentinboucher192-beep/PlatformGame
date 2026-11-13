@@ -2,6 +2,7 @@
 
 #include <SDL3_image/SDL_image.h>
 
+#include <iterator>
 #include <system_error>
 
 #include "engine/audio/AudioSystem.h"
@@ -13,7 +14,7 @@ namespace cosmic {
 void ResourceManager::init(Renderer* renderer, AudioSystem* audio) {
     renderer_ = renderer;
     audio_ = audio;
-    // User assets (edited animations...) override the installed ones.
+    // Installed (native) assets always win; the user folder and packages only add new files.
     mounts_ = {Paths::assetsDir(), Paths::userDir() / "assets"};
 }
 
@@ -36,7 +37,14 @@ std::optional<fs::path> ResourceManager::resolve(const std::string& rel) const {
     if (rel.empty() || !Paths::isSafeRelative(rel)) return std::nullopt;
     fs::path r = Paths::fromUtf8(Paths::normalizeSlashes(rel));
     std::error_code ec;
+    // Native assets cannot be replaced: the installation folder is searched first, then the
+    // most recently mounted roots (package being played, then the user folder).
+    if (!mounts_.empty()) {
+        fs::path p = mounts_.front() / r;
+        if (fs::is_regular_file(p, ec)) return p;
+    }
     for (auto it = mounts_.rbegin(); it != mounts_.rend(); ++it) {
+        if (it == std::prev(mounts_.rend())) break;
         fs::path p = *it / r;
         if (fs::is_regular_file(p, ec)) return p;
     }

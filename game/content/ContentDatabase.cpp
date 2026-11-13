@@ -36,14 +36,16 @@ void ContentDatabase::reload() {
     enemies_.clear();
     powers_.clear();
     packages_.clear();
+    nativePowers_.clear();
+    nativeEffects_.clear();
     effects_ = Json::object();
 
     const fs::path data = Paths::dataDir();
     loadPlanetsFrom(data / "planets", {});
     for (const auto& f : jsonFiles(data / "levels")) loadLevelFile(f, ContentSource::Builtin, "", {});
     loadEnemiesFrom(data / "enemies", ContentSource::Builtin, {});
-    loadPowersFrom(data / "powers");
-    loadEffectsFrom(data / "effects");
+    loadPowersFrom(data / "powers", true);
+    loadEffectsFrom(data / "effects", true);
     if (auto pj = FileUtil::loadJson(data / "player.json")) playerConfig_ = *pj;
 
     for (const auto& f : jsonFiles(Paths::userLevelsDir())) loadLevelFile(f, ContentSource::User, "", {});
@@ -116,29 +118,44 @@ void ContentDatabase::loadEnemiesFrom(const fs::path& dir, ContentSource src, co
         d.sourcePath = Paths::toUtf8(f);
         d.assetRoot = assetRoot;
         d.builtin = src == ContentSource::Builtin;
+        if (!d.builtin) {
+            if (auto it = enemies_.find(d.id); it != enemies_.end() && it->second.builtin) {
+                Log::warn("Enemy '{}' ({}) ignored: native entities cannot be replaced", d.id, Paths::toUtf8(f));
+                continue;
+            }
+        }
         enemies_[d.id] = std::move(d);
     }
 }
 
-void ContentDatabase::loadPowersFrom(const fs::path& dir) {
+void ContentDatabase::loadPowersFrom(const fs::path& dir, bool native) {
     for (const auto& f : jsonFiles(dir)) {
         auto j = FileUtil::loadJson(f);
         if (!j || jstr(*j, "format") != "cosmic.power") continue;
         PowerDefinition d = PowerDefinition::fromJson(*j);
         if (d.id.empty()) continue;
+        if (!native && nativePowers_.count(d.id)) {
+            Log::warn("Power '{}' ({}) ignored: native powers cannot be replaced", d.id, Paths::toUtf8(f));
+            continue;
+        }
+        if (native) nativePowers_.insert(d.id);
         d.sourcePath = Paths::toUtf8(f);
         powers_[d.id] = std::move(d);
     }
 }
 
-void ContentDatabase::loadEffectsFrom(const fs::path& dir) {
+void ContentDatabase::loadEffectsFrom(const fs::path& dir, bool native) {
     for (const auto& f : jsonFiles(dir)) {
         auto j = FileUtil::loadJson(f);
         if (!j || !j->is_object()) continue;
         const Json& presets = j->contains("presets") ? (*j)["presets"] : *j;
         if (!presets.is_object()) continue;
-        for (auto& [k, v] : presets.items())
-            if (v.is_object()) effects_[k] = v;
+        for (auto& [k, v] : presets.items()) {
+            if (!v.is_object()) continue;
+            if (!native && nativeEffects_.count(k)) continue;  // native presets stay as shipped
+            if (native) nativeEffects_.insert(k);
+            effects_[k] = v;
+        }
     }
 }
 
@@ -157,8 +174,8 @@ void ContentDatabase::loadPackage(const fs::path& root) {
     const fs::path assets = root / "assets";
     loadPlanetsFrom(root / "planets", assets);
     loadEnemiesFrom(root / "enemies", ContentSource::Package, assets);
-    loadPowersFrom(root / "powers");
-    loadEffectsFrom(root / "effects");
+    loadPowersFrom(root / "powers", false);
+    loadEffectsFrom(root / "effects", false);
     loadLevelFile(root / "level.json", ContentSource::Package, info.id, assets);
     packages_.push_back(std::move(info));
 }
@@ -264,13 +281,30 @@ const EnemyDefinition* ContentDatabase::enemy(const std::string& id) const {
     return it == enemies_.end() ? nullptr : &it->second;
 }
 
+bool ContentDatabase::isNativeEnemy(const std::string& id) const {
+    auto it = enemies_.find(id);
+    return it != enemies_.end() && it->second.builtin;
+}
+
+std::string ContentDatabase::freeEnemyId(const std::string& base) const {
+    std::string b = FileUtil::slugify(base);
+    if (b.empty()) b = "ennemi";
+    std::string id = b;
+    for (int n = 2; enemies_.count(id); ++n) id = b + "_" + std::to_string(n);
+    return id;
+}
+
 bool ContentDatabase::saveUserEnemy(const EnemyDefinition& def) {
+    if (def.id.empty() || isNativeEnemy(def.id) || isNativeEnemy(FileUtil::slugify(def.id))) {
+        Log::warn("Refusing to save enemy '{}': native entities are read-only", def.id);
+        return false;
+    }
     fs::path p = Paths::userEnemiesDir() / (FileUtil::slugify(def.id) + ".json");
     if (!FileUtil::saveJson(p, def.toJson())) return false;
     EnemyDefinition copy = def;
     copy.sourcePath = Paths::toUtf8(p);
     copy.builtin = false;
-    // A user override of a built-in enemy keeps the built-in assets.
+    // A user enemy that was itself loaded from a package keeps that package's assets.
     if (auto it = enemies_.find(def.id); it != enemies_.end()) copy.assetRoot = it->second.assetRoot;
     enemies_[def.id] = std::move(copy);
     return true;
@@ -282,8 +316,6 @@ bool ContentDatabase::deleteUserEnemy(const std::string& id) {
     std::error_code ec;
     fs::remove(Paths::fromUtf8(it->second.sourcePath), ec);
     enemies_.erase(it);
-    // Restore the built-in definition if this was an override.
-    loadEnemiesFrom(Paths::dataDir() / "enemies", ContentSource::Builtin, {});
     return true;
 }
 

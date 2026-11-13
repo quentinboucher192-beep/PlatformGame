@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <set>
 #include <optional>
 #include <string>
 #include <vector>
@@ -61,15 +62,22 @@ public:
     bool deleteUserLevel(const std::string& id);
     bool levelIdExists(const std::string& id) const { return level(id) != nullptr; }
 
-    // Enemies (user definitions override built-in ones with the same id)
+    // Enemies. Native (built-in) definitions are the ones the campaign uses: they can be
+    // placed in any level but never replaced; a user file or a package that reuses a native
+    // id is ignored (the editor saves a copy under a new id instead).
     std::vector<const EnemyDefinition*> enemies() const;
     const EnemyDefinition* enemy(const std::string& id) const;
+    bool isNativeEnemy(const std::string& id) const;
+    /// Fails for a native id.
     bool saveUserEnemy(const EnemyDefinition& def);
     bool deleteUserEnemy(const std::string& id);
+    /// A free id derived from `base` (slugified) that is not used by any enemy.
+    std::string freeEnemyId(const std::string& base) const;
 
-    // Powers
+    // Powers (native powers cannot be replaced by packages either)
     std::vector<const PowerDefinition*> powers() const;
     const PowerDefinition* power(const std::string& id) const;
+    bool isNativePower(const std::string& id) const { return nativePowers_.count(id) > 0; }
 
     // Effects (particle presets) merged from every source
     const Json& effects() const { return effects_; }
@@ -86,8 +94,8 @@ private:
     /// A user level copied from an imported package keeps using that package's assets.
     void resolveAssetPackage(LevelEntry& e) const;
     void loadEnemiesFrom(const fs::path& dir, ContentSource src, const fs::path& assetRoot);
-    void loadPowersFrom(const fs::path& dir);
-    void loadEffectsFrom(const fs::path& dir);
+    void loadPowersFrom(const fs::path& dir, bool native);
+    void loadEffectsFrom(const fs::path& dir, bool native);
     void loadPackage(const fs::path& root);
 
     std::map<std::string, PlanetData> planets_;
@@ -95,6 +103,8 @@ private:
     std::map<std::string, EnemyDefinition> enemies_;
     std::map<std::string, PowerDefinition> powers_;
     std::vector<PackageInfo> packages_;
+    std::set<std::string> nativePowers_;
+    std::set<std::string> nativeEffects_;
     Json effects_ = Json::object();
     Json playerConfig_ = Json::object();
 };

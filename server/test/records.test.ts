@@ -181,6 +181,35 @@ describe("record submission", () => {
         expect(history.body.data.records).toHaveLength(3);
     });
 
+    it("does not hold a fast run on a young board: the replay and the time floor decide", async () => {
+        const first = await registerPlayer("FirstOne");
+        await verifiedRun(first, 233000);
+        const second = await registerPlayer("QuickTwo");
+        const run = await verifiedRun(second, 178000); // 23 % faster than the only run
+        expect(run.status).toBe("VERIFIED");
+        const board = await api("GET", "/api/v1/leaderboards/level/test_01");
+        expect(board.body.data.entries[0].player.username).toBe("QuickTwo");
+    });
+
+    it("re-decides a record held by an outdated rule when its owner checks it", async () => {
+        const first = await registerPlayer("Holder");
+        await verifiedRun(first, 233000);
+        const second = await registerPlayer("Held");
+        const run = await verifiedRun(second, 178000);
+        // Simulate a record held for review by the previous rule.
+        await env.DB.prepare("DELETE FROM player_bests WHERE record_id = ?1").bind(run.recordId).run();
+        await env.DB.prepare("UPDATE records SET verification_status = 'PENDING', verified_at = NULL, verification_notes = ?2 WHERE id = ?1")
+            .bind(run.recordId, "Record mondial battu de plus de 20 % : vérification manuelle.")
+            .run();
+        // Another player cannot trigger anything; the owner's status check does.
+        await api("GET", `/api/v1/records/${run.recordId}`, { token: first.token });
+        const still = await env.DB.prepare("SELECT verification_status FROM records WHERE id = ?1").bind(run.recordId).first("verification_status");
+        expect(still).toBe("PENDING");
+        const own = await api("GET", `/api/v1/records/${run.recordId}`, { token: second.token });
+        expect(own.body.data.record.verification_status).toBe("VERIFIED");
+        expect(own.body.data.rank).toBe(1);
+    });
+
     it("holds a crushing world record of a new account for manual review", async () => {
         const players = [];
         for (let i = 0; i < 5; ++i) players.push(await registerPlayer(`Runner${i}x`));

@@ -11,6 +11,7 @@ namespace cosmic {
 namespace {
 constexpr float kMaxRetryDelay = 300.0f;
 constexpr float kStatusPollSeconds = 90.0f;
+constexpr float kFriendsPollSeconds = 60.0f;
 
 ApiResult localError(const std::string& code, const std::string& message) {
     ApiResult r;
@@ -51,6 +52,7 @@ void OnlineService::init(const OnlineSettings& settings, const std::string& serv
     attempts_ = AttemptStore(userDir_ / "saves" / "online_attempts.json", userDir_ / "online" / "replays");
     attempts_.load();
     loadKnownRanks();
+    loadFriendNotices();
     initialized_ = true;
     Log::info("Cosmic Online : serveur {} ({}), client HTTP {}", config_.serverUrl.empty() ? "non configuré" : config_.serverUrl,
               config_.source, client_->transportName());
@@ -113,6 +115,14 @@ void OnlineService::update(float dt) {
                 if (loggedIn() && profile_.is_null()) refreshProfile();
                 if (loggedIn() && settings_.autoSync) syncNow();
             });
+        }
+    }
+    // Friend requests: read on connection, then every minute.
+    if (netState_ == OnlineState::Online && loggedIn() && !friendsBusy_) {
+        friendsTimer_ -= dt;
+        if (friendsTimer_ <= 0.0f) {
+            friendsTimer_ = kFriendsPollSeconds;
+            refreshFriends();
         }
     }
     // PENDING records are re-checked from time to time while connected.
@@ -240,6 +250,7 @@ void OnlineService::withRefresh(std::function<void(const ApiResult&)> then) {
 
 void OnlineService::sessionLost(const std::string& why) {
     if (!loggedIn()) return;
+    resetFriends();
     tokens_.clear();
     profile_ = Json();
     store_->erase();
@@ -248,6 +259,7 @@ void OnlineService::sessionLost(const std::string& why) {
 
 void OnlineService::applySession(const Json& data, bool remember) {
     remember_ = remember;
+    resetFriends();
     if (data.contains("session")) tokens_.fromApi(data["session"]);
     if (data.contains("player") && data["player"].is_object()) {
         profile_ = data["player"];
@@ -290,6 +302,7 @@ void OnlineService::logout(bool allDevices, ApiCallback cb) {
     Json body = {{"all", allDevices}};
     auto finish = [this, cb](const ApiResult& r) {
         // Locally the session ends whatever the server answered.
+        resetFriends();
         tokens_.clear();
         profile_ = Json();
         store_->erase();
@@ -352,6 +365,7 @@ void OnlineService::deleteAccount(const std::string& password, ApiCallback cb) {
     std::string owner = tokens_.playerId;
     call("DELETE", "/api/v1/players/me", body.dump(), "application/json", true, [this, owner, cb](const ApiResult& r) {
         if (r.ok) {
+            resetFriends();
             tokens_.clear();
             profile_ = Json();
             store_->erase();
@@ -616,6 +630,85 @@ void OnlineService::finishSync() {
     if (syncSentSomething_) notify(Notification::Kind::Info, "Synchronisation terminée", "Vos performances ont été envoyées à Cosmic Online.");
 }
 
+// ------------------------------------------------------------------ friends
+
+void OnlineService::checkUsername(const std::string& username, ApiCallback cb) {
+    call("GET", "/api/v1/auth/username-available?username=" + urlEncode(username), {}, {}, false, std::move(cb));
+}
+
+void OnlineService::resetFriends() {
+    pendingFriendRequests_ = 0;
+    friendsTimer_ = 3.0f;
+}
+
+void OnlineService::loadFriendNotices() {
+    if (auto t = FileUtil::readText(userDir_ / "online" / "friend_notices.json")) {
+        Json j = Json::parse(*t, nullptr, false);
+        if (j.is_object()) friendNotices_ = j;
+    }
+}
+
+void OnlineService::refreshFriends(ApiCallback cb) {
+    if (!loggedIn() || !usable()) {
+        if (cb) cb(localError("NOT_LOGGED_IN", "Non connecté."));
+        return;
+    }
+    friendsBusy_ = true;
+    std::string owner = tokens_.playerId;
+    call("GET", "/api/v1/friends", {}, {}, true, [this, owner, cb](const ApiResult& r) {
+        friendsBusy_ = false;
+        if (r.ok && owner == tokens_.playerId) noteFriends(r.data);
+        if (cb) cb(r);
+    });
+}
+
+void OnlineService::noteFriends(const Json& data) {
+    const std::string me = tokens_.playerId;
+    if (me.empty() || !data.is_object()) return;
+    auto entries = [&](const char* key) {
+        std::vector<std::pair<std::string, std::string>> v;  // id, username
+        if (auto it = data.find(key); it != data.end() && it->is_array())
+            for (const auto& f : *it)
+                if (f.contains("player") && f["player"].is_object())
+                    v.emplace_back(jstr(f["player"], "id"), jstr(f["player"], "username"));
+        return v;
+    };
+    auto idSet = [](const Json& list) {
+        std::set<std::string> s;
+        if (list.is_array())
+            for (const auto& x : list)
+                if (x.is_string()) s.insert(x.get<std::string>());
+        return s;
+    };
+    auto incoming = entries("incoming");
+    auto outgoing = entries("outgoing");
+    auto friends = entries("friends");
+    Json& known = friendNotices_[me];
+    const bool primed = known.is_object();
+    std::set<std::string> seenIncoming = primed ? idSet(known.value("incoming", Json::array())) : std::set<std::string>{};
+    std::set<std::string> wasOutgoing = primed ? idSet(known.value("outgoing", Json::array())) : std::set<std::string>{};
+
+    std::vector<std::string> newRequests;
+    for (const auto& [id, name] : incoming)
+        if (!seenIncoming.count(id)) newRequests.push_back(name);
+    if (newRequests.size() == 1)
+        notify(Notification::Kind::Friend, "Demande d'ami", newRequests.front() + " veut devenir votre ami (Paramètres en ligne → Amis).");
+    else if (newRequests.size() > 1)
+        notify(Notification::Kind::Friend, "Demandes d'amis",
+               std::to_string(newRequests.size()) + " joueurs veulent devenir vos amis (Paramètres en ligne → Amis).");
+    for (const auto& [id, name] : friends)
+        if (wasOutgoing.count(id)) notify(Notification::Kind::Friend, "Demande acceptée", name + " a accepté votre demande d'ami.");
+
+    Json in = Json::array(), out = Json::array();
+    for (const auto& e : incoming) in.push_back(e.first);
+    for (const auto& e : outgoing) out.push_back(e.first);
+    known = {{"incoming", in}, {"outgoing", out}};
+    pendingFriendRequests_ = static_cast<int>(incoming.size());
+    std::error_code ec;
+    fs::create_directories(userDir_ / "online", ec);
+    FileUtil::writeTextAtomic(userDir_ / "online" / "friend_notices.json", friendNotices_.dump());
+}
+
 // ---------------------------------------------------------------- interface
 
 void OnlineService::loadKnownRanks() {
@@ -646,7 +739,8 @@ void OnlineService::observeBoard(const std::string& boardKey, int myRank, int to
 
 void OnlineService::notify(Notification::Kind kind, std::string title, std::string text) {
     notifications_.push_back({kind, std::move(title), std::move(text)});
-    while (notifications_.size() > 12) notifications_.pop_front();
+    // Notifications wait during a run: keep enough of them.
+    while (notifications_.size() > 30) notifications_.pop_front();
 }
 
 std::vector<OnlineService::Notification> OnlineService::takeNotifications() {

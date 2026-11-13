@@ -17,7 +17,8 @@ class AudioSystem;
 
 /// Loads and caches textures, animations, sounds and JSON from a stack of mount points.
 /// Relative asset paths ("sprites/player/nova.png") are resolved against the mounts from
-/// the most recent to the oldest; the base game assets folder is always the last mount.
+/// the most recent to the oldest, except that the installed (native) assets always win:
+/// the user folder and packages can add files but never replace a native one.
 /// Imported level packages push their own assets folder so a level always finds the
 /// exact files it was exported with.
 class ResourceManager {

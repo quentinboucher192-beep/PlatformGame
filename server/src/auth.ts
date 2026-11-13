@@ -138,6 +138,25 @@ export async function countryExists(ctx: Ctx, code: string): Promise<boolean> {
     return (await ctx.env.DB.prepare("SELECT 1 AS x FROM countries WHERE code = ?1").bind(code).first()) !== null;
 }
 
+/**
+ * Tells whether a username can be registered (same rules as /auth/register), so the game
+ * can say so while the player types. Rate limited per IP; never reveals more than "taken".
+ */
+export async function usernameAvailable(ctx: Ctx): Promise<Response> {
+    await rateLimit(ctx, RULES.usernameCheck, ctx.ip);
+    const username = (ctx.url.searchParams.get("username") ?? "").trim();
+    const answer = (available: boolean, reason: "invalid" | "reserved" | "taken" | null, message: string) =>
+        json(ctx, { username, available, reason, message });
+    if (username.length < 3 || username.length > 20 || !USERNAME_RE.test(username))
+        return answer(false, "invalid", "3 à 20 caractères : lettres, chiffres, « _ », « . » ou « - » (pas au début ni à la fin).");
+    if (isReservedUsername(username)) return answer(false, "reserved", "Ce pseudonyme est réservé.");
+    const row = await ctx.env.DB.prepare("SELECT 1 AS x FROM players WHERE username_normalized = ?1")
+        .bind(normalizeUsername(username))
+        .first();
+    if (row) return answer(false, "taken", "Ce pseudonyme est déjà utilisé.");
+    return answer(true, null, "Pseudonyme disponible.");
+}
+
 export async function register(ctx: Ctx): Promise<Response> {
     await rateLimit(ctx, RULES.register, ctx.ip);
     const body = await readJsonObject(ctx);

@@ -59,6 +59,8 @@ public:
 
     // --------------------------------------------------------------- draw
     void panel(const Rect& r, bool highlight = false, float radius = 10.0f);
+    /// Font size (unscaled) at which `t` fits in `room` pixels, never below minScale * size.
+    float fitFont(const std::string& t, FontFace face, float size, float room, float minScale = 0.55f);
     Vec2 label(const std::string& t, Vec2 pos, float size = 24, Color c = {}, Align a = Align::Left,
                FontFace face = FontFace::Body, VAlign va = VAlign::Top);
     Vec2 labelWrapped(const std::string& t, Vec2 pos, float width, float size = 22, Color c = {});

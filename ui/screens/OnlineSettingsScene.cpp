@@ -1,6 +1,7 @@
 // ONLINE SETTINGS: client preferences, account and privacy (stored on the server), friends,
 // GDPR rights (export, deletion), cache and synchronisation.
 
+#include <algorithm>
 #include <cmath>
 
 #include "engine/core/FileUtil.h"
@@ -14,12 +15,13 @@ namespace {
 
 class OnlineSettingsScene : public Scene {
 public:
-    explicit OnlineSettingsScene(GameServices& g) : g_(g), ui_(g) {}
+    OnlineSettingsScene(GameServices& g, int tab) : g_(g), ui_(g), tab_(std::clamp(tab, 0, 2)) {}
 
     bool isOverlay() const override { return true; }
 
     void onEnter() override {
         loadProfileFields();
+        if (tab_ == 2) loadFriends();
         g_.ui.setFocus("osettings/tabs");
         if (g_.online.loggedIn()) g_.online.refreshProfile(OnlineService::guard(life_, [this](const ApiResult& r) {
             if (r.ok) loadProfileFields();
@@ -46,7 +48,7 @@ public:
             return;
         }
         int tab = tab_;
-        ui.tabs("tabs", {box_.x + ui.s(30), box_.y + ui.s(78), box_.w - ui.s(60), ui.s(42)}, {"Préférences", "Compte et confidentialité", "Amis"}, tab);
+        ui.tabs("tabs", {box_.x + ui.s(30), box_.y + ui.s(78), box_.w - ui.s(60), ui.s(42)}, {"Préférences", "Compte et confidentialité", friendsTabLabel()}, tab);
         if (tab != tab_) {
             tab_ = tab;
             message_.clear();
@@ -256,10 +258,16 @@ private:
             if (r.ok) {
                 friends_ = r.data;
                 friendsCache_ = r.fromCache;
+                if (!r.fromCache) g_.online.noteFriends(r.data);  // badges, no repeated notification
             } else {
                 say(r.message, true);
             }
         }));
+    }
+
+    std::string friendsTabLabel() const {
+        int n = g_.online.pendingFriendRequests();
+        return n > 0 ? "Amis (" + std::to_string(n) + ")" : "Amis";
     }
 
     void friends() {
@@ -270,11 +278,12 @@ private:
         }
         ui.pushId("friends");
         float x = content_.x, w = content_.w;
-        ui.textField("add", {x, content_.y, w - ui.s(250), ui.s(42)}, addName_, "Pseudonyme de votre ami", 20);
+        ui.textField("add", {x, content_.y, w - ui.s(300), ui.s(42)}, addName_, "Pseudonyme de votre ami", 20);
         UIContext::ButtonStyle p;
         p.primary = true;
+        p.small = true;
         p.enabled = addName_.size() >= 3;
-        if (ui.button("send", {x + w - ui.s(236), content_.y, ui.s(236), ui.s(42)}, "Envoyer une demande", p)) {
+        if (ui.button("send", {x + w - ui.s(286), content_.y, ui.s(286), ui.s(42)}, "Envoyer une demande", p)) {
             g_.online.send("POST", "/api/v1/friends/request", {{"username", addName_}}, OnlineService::guard(life_, [this](const ApiResult& r) {
                 say(r.ok ? (jstr(r.data, "status") == "accepted" ? "Vous êtes maintenant amis." : "Demande envoyée.") : r.message, !r.ok);
                 if (r.ok) {
@@ -362,6 +371,6 @@ private:
 
 }  // namespace
 
-std::unique_ptr<Scene> makeOnlineSettings(GameServices& g) { return std::make_unique<OnlineSettingsScene>(g); }
+std::unique_ptr<Scene> makeOnlineSettings(GameServices& g, int tab) { return std::make_unique<OnlineSettingsScene>(g, tab); }
 
 }  // namespace cosmic

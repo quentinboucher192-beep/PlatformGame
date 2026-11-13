@@ -49,7 +49,7 @@ public:
     explicit MainMenuScene(GameServices& g) : g_(g) {}
     void onEnter() override {
         g_.playMusic("music/menu_theme.ogg");
-        g_.ui.setFocus("main/play");
+        g_.ui.setFocus(!g_.progression.lastLevel.empty() ? "main/continue" : "main/campaign");
     }
     void onResume() override { g_.playMusic("music/menu_theme.ogg"); }
     void update(float dt) override {
@@ -62,36 +62,38 @@ public:
         bg_.render(g_, 0.15f);
         float appear = std::clamp(t_ / 0.7f, 0.0f, 1.0f);
         drawGameTitle(g_, {ui.screenW() * 0.66f, ui.screenH() * 0.36f}, 110, appear);
-        ui.label("Les Ruines Suspendues de Sylvanox", {ui.screenW() * 0.66f, ui.screenH() * 0.36f + ui.s(120)}, 26,
+        ui.label("Sylvanox · Pyralis · Glacior", {ui.screenW() * 0.66f, ui.screenH() * 0.36f + ui.s(120)}, 26,
                  ui.theme().text.withAlphaF(appear * 0.85f), Align::Center, FontFace::Body, VAlign::Middle);
 
+        bool canContinue = !g_.progression.lastLevel.empty() && g_.content.level(g_.progression.lastLevel);
+        int rows = canContinue ? 6 : 5;
         float x = ui.s(120), w = ui.s(470), h = ui.s(66), gap = ui.s(14);
-        float y = ui.screenH() * 0.5f - (8 * (h + gap)) * 0.5f + ui.s(40);
-        Rect side{x - ui.s(40), y - ui.s(40), w + ui.s(80), 8 * (h + gap) + ui.s(70)};
+        float y = ui.screenH() * 0.5f - (rows * (h + gap)) * 0.5f + ui.s(40);
+        Rect side{x - ui.s(40), y - ui.s(40), w + ui.s(80), rows * (h + gap) + ui.s(70)};
         ui.r().fillRoundedRect(side, ui.s(18), Color{6, 10, 22, 150});
         ui.pushId("main");
-        auto btn = [&](const char* id, const std::string& label, int icon, bool primary = false) {
+        auto btn = [&](const char* id, const std::string& label, const std::string& sub, bool primary = false) {
             UIContext::ButtonStyle st;
             st.primary = primary;
             st.align = Align::Left;
             float slide = (1.0f - applyEase(Ease::OutCubic, std::clamp((t_ - 0.1f) * 3.0f, 0.0f, 1.0f))) * ui.s(-60);
             bool c = ui.button(id, {x + slide, y, w, h}, label, st);
-            (void)icon;
+            if (!sub.empty())
+                ui.label(sub, {x + slide + w - ui.s(20), y + h * 0.5f}, 16, ui.theme().textDim, Align::Right, FontFace::Body, VAlign::Middle);
             y += h + gap;
             return c;
         };
-        std::string playLabel = g_.progression.lastLevel.empty() ? "Jouer" : "Continuer";
-        if (btn("play", playLabel, 0, true)) {
-            std::string planet = g_.progression.lastPlanet.empty() ? "sylvanox" : g_.progression.lastPlanet;
-            if (!g_.content.planet(planet)) planet = "sylvanox";
-            g_.app.switchScene(makeLevelSelect(g_, planet));
+        if (canContinue) {
+            const LevelEntry* last = g_.content.level(g_.progression.lastLevel);
+            if (btn("continue", "Continuer", last->name, true)) g_.app.switchScene(makeGameScene(g_, last->id), 0.5f);
         }
-        if (btn("planets", "Sélection des planètes", 1)) g_.app.switchScene(makePlanetMap(g_));
-        if (btn("online", "Online Ranking", 6)) g_.app.switchScene(makeOnlineRanking(g_));
-        if (btn("leveleditor", "Éditeur de niveaux", 2)) g_.app.switchScene(makeLevelEditor(g_, ""));
-        if (btn("enemyeditor", "Éditeur d'ennemis", 3)) g_.app.switchScene(makeEnemyEditor(g_));
-        if (btn("settings", "Paramètres", 4)) g_.app.pushScene(makeSettingsScene(g_, false));
-        if (btn("content", "Gestion des contenus", 5)) g_.app.switchScene(makeContentManager(g_));
+        if (btn("campaign", "Campagne", "planètes et niveaux", !canContinue)) g_.app.switchScene(makePlanetMap(g_));
+        std::string onlineSub = g_.online.loggedIn() ? g_.online.username() : "compte requis";
+        if (int n = g_.online.loggedIn() ? g_.online.pendingFriendRequests() : 0; n > 0)
+            onlineSub += " · " + std::to_string(n) + (n > 1 ? " demandes d'amis" : " demande d'ami");
+        if (btn("online", "Online", onlineSub)) g_.app.switchScene(makeOnlineRanking(g_));
+        if (btn("workshop", "Atelier", "vos niveaux, éditeurs, partage")) g_.app.switchScene(makeContentManager(g_));
+        if (btn("settings", "Paramètres", "")) g_.app.pushScene(makeSettingsScene(g_, false));
         UIContext::ButtonStyle danger;
         danger.danger = true;
         danger.align = Align::Left;

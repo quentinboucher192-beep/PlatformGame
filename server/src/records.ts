@@ -35,9 +35,13 @@ interface Decision {
 
 /**
  * Trust levels: 0 new account, 1 has verified runs with replays, 2 long clean history,
- * 3 set by moderators. A new world record on an established board by an account below
- * level 2, or any record crushing the world record, is reviewed manually.
+ * 3 set by moderators. On an established board (ESTABLISHED_BOARD players or more), a new
+ * world record by an account below level 2, or any record crushing the world record, is
+ * reviewed manually. On a young board the world record is not a meaningful reference yet
+ * (one casual run): the impossible-time floor of the level and the replay analysis decide.
  */
+export const ESTABLISHED_BOARD = 5;
+export const HELD_FOR_REVIEW_PREFIX = "Record mondial battu de plus de 20 %";
 export interface BoardContext {
     /** Rank this time would take among the verified bests of other players. */
     rank: number;
@@ -51,9 +55,10 @@ export function decide(trust: number, category: Category, replay: ReplayState, t
     if (replay === "invalid") return { status: "REJECTED", reason: "REPLAY_INVALID", note: null };
     if (category === "SPEEDRUN" && replay !== "valid")
         return { status: "PENDING", reason: null, note: "La catégorie SPEEDRUN exige un replay valide." };
-    if (board.rank === 1 && board.worldRecordMs !== null && timeMs < board.worldRecordMs * 0.8 && trust < 3)
-        return { status: "PENDING", reason: null, note: "Record mondial battu de plus de 20 % : vérification manuelle." };
-    if (board.rank === 1 && board.size >= 5 && trust < 2)
+    const established = board.size >= ESTABLISHED_BOARD;
+    if (established && board.rank === 1 && board.worldRecordMs !== null && timeMs < board.worldRecordMs * 0.8 && trust < 3)
+        return { status: "PENDING", reason: null, note: HELD_FOR_REVIEW_PREFIX + " : vérification manuelle." };
+    if (established && board.rank === 1 && trust < 2)
         return { status: "PENDING", reason: null, note: "Nouveau record mondial : vérification manuelle." };
     if (replay === "valid") return { status: "VERIFIED", reason: null, note: null };
     if (trust >= 2) return { status: "VERIFIED", reason: null, note: null };
@@ -174,6 +179,26 @@ export async function applyDecision(ctx: Ctx, r: RecordRow, d: Decision): Promis
         personal_best_improved: improved,
         previous_best_ms: previousMs,
     };
+}
+
+/**
+ * Re-applies the current rules to a record held PENDING although its replay was verified
+ * (rules changed, or the board grew/shrank since). Manual decisions are never undone:
+ * only PENDING records are concerned. Returns true when the status changed.
+ */
+export async function recheckHeld(ctx: Ctx, r: RecordRow): Promise<boolean> {
+    if (r.verification_status !== "PENDING" || !r.replay_id) return false;
+    const meta = await ctx.env.DB.prepare("SELECT verification_status FROM replay_metadata WHERE id = ?1")
+        .bind(r.replay_id)
+        .first<{ verification_status: string }>();
+    if (meta?.verification_status !== "VERIFIED") return false;
+    const player = await ctx.env.DB.prepare("SELECT trust_level FROM players WHERE id = ?1").bind(r.player_id).first<{ trust_level: number }>();
+    const board = await boardContext(ctx, r.level_hash, r.category, r.time_ms, r.player_id);
+    const d = decide(player?.trust_level ?? 0, r.category as Category, "valid", r.time_ms, board);
+    if (d.status === "PENDING" && d.note === r.verification_notes) return false;
+    await applyDecision(ctx, r, d);
+    await audit(ctx, r.player_id, "record_rechecked", { record_id: r.id, status: d.status });
+    return d.status !== "PENDING";
 }
 
 // -------------------------------------------------------------------- submit
@@ -347,9 +372,11 @@ function canView(r: RecordRow & { owner_visibility: string; owner_status: string
 }
 
 export async function getRecord(ctx: Ctx, viewer: AuthInfo | null): Promise<Response> {
-    const r = await loadRecord(ctx, ctx.params.recordId!);
+    let r = await loadRecord(ctx, ctx.params.recordId!);
     if (!canView(r, viewer)) throw Errors.notFound("RECORD_NOT_FOUND", "Record introuvable.");
     const owner = viewer?.player.id === r.player_id;
+    // The game polls its PENDING records: a record held by an outdated rule is re-decided.
+    if (owner && (await recheckHeld(ctx, r))) r = await loadRecord(ctx, r.id);
     const p = await ctx.env.DB.prepare("SELECT * FROM players WHERE id = ?1").bind(r.player_id).first<PlayerRow>();
     const rank = r.verification_status === "VERIFIED" ? await playerRank(ctx, r.level_hash, r.category, r.player_id) : null;
     const best = await ctx.env.DB.prepare("SELECT record_id FROM player_bests WHERE player_id = ?1 AND level_hash = ?2 AND category = ?3")

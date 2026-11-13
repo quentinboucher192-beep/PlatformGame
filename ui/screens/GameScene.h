@@ -32,6 +32,8 @@ public:
     void update(float dt) override;
     void render(float alpha) override;
     void renderDebug() override;
+    /// A run in progress is never disturbed by online notifications (they show afterwards).
+    bool holdsNotifications() const override { return true; }
 
     void restart();
     void quitToMenu();

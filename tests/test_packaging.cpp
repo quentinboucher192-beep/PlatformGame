@@ -203,3 +203,107 @@ TEST_CASE("packaging: corrupted and malicious archives are rejected") {
     FileUtil::writeTextAtomic(junk, "this is not a package");
     CHECK(!imp.inspect(junk).valid);
 }
+
+TEST_CASE("content: native entities are usable everywhere but never replaced") {
+    Env env;
+    const EnemyDefinition* native = env.content.enemy("glowmite");
+    CHECK(native != nullptr);
+    CHECK(native->builtin);
+    CHECK(env.content.isNativeEnemy("glowmite"));
+    const float nativeHp = native->hp;
+
+    // Saving under a native id is refused.
+    EnemyDefinition mod = *native;
+    mod.hp = nativeHp + 50.0f;
+    mod.builtin = false;
+    CHECK(!env.content.saveUserEnemy(mod));
+    CHECK(env.content.enemy("glowmite")->hp == nativeHp);
+
+    // A file planted in the user folder under a native id is ignored at load.
+    fs::path planted = Paths::userEnemiesDir() / "glowmite.json";
+    CHECK(FileUtil::saveJson(planted, mod.toJson()));
+    env.content.reload();
+    CHECK(env.content.enemy("glowmite")->builtin);
+    CHECK(env.content.enemy("glowmite")->hp == nativeHp);
+    fs::remove(planted);
+
+    // The player's version lives under its own id.
+    mod.id = env.content.freeEnemyId("glowmite_perso");
+    CHECK(mod.id != "glowmite");
+    CHECK(env.content.saveUserEnemy(mod));
+    CHECK(env.content.enemy(mod.id) != nullptr);
+    CHECK(!env.content.enemy(mod.id)->builtin);
+    CHECK(env.content.enemy("glowmite")->hp == nativeHp);
+    CHECK(env.content.deleteUserEnemy(mod.id));
+    CHECK(!env.content.deleteUserEnemy("glowmite"));
+    CHECK(env.content.enemy("glowmite") != nullptr);
+
+    // A native asset is never replaced by a file of the user folder or of a package.
+    fs::path userCopy = Paths::userDir() / "assets" / "animations" / "glowmite.json";
+    CHECK(FileUtil::saveJson(userCopy, Json{{"texture", "sprites/enemies/other.png"}}));
+    auto resolved = env.res.resolve("animations/glowmite.json");
+    CHECK(resolved.has_value());
+    CHECK(resolved && *resolved == Paths::assetsDir() / "animations" / "glowmite.json");
+    fs::remove(userCopy);
+    // ...while new files of the user folder are found.
+    fs::path userNew = Paths::userDir() / "assets" / "animations" / "user" / "test_only.json";
+    CHECK(FileUtil::saveJson(userNew, Json{{"texture", "sprites/enemies/glowmite.png"}}));
+    CHECK(env.res.resolve("animations/user/test_only.json").has_value());
+    fs::remove(userNew);
+}
+
+TEST_CASE("packaging: a package never replaces a native enemy, even with 'Replace'") {
+    Env env;
+    fs::path base = exportLevel(env, "native.cplanet");
+    fs::path step = tempFile("native_step.cplanet");
+    fs::path changed = tempFile("native_changed.cplanet");
+    const float nativeHp = env.content.enemy("thornwarden")->hp;
+    // A consistent package (valid fingerprints) whose author changed a native boss.
+    std::vector<uint8_t> enemyBytes;
+    rewrite(base, step, [&](std::string& name, std::vector<uint8_t>& data) {
+        if (name != "COSMIC_LEVEL/enemies/thornwarden.json") return;
+        Json j = Json::parse(std::string(data.begin(), data.end()));
+        j["hp"] = nativeHp * 10.0f;
+        std::string out = j.dump(1);
+        data.assign(out.begin(), out.end());
+        enemyBytes = data;
+    });
+    CHECK(!enemyBytes.empty());
+    rewrite(step, changed, [&](std::string& name, std::vector<uint8_t>& data) {
+        if (name != "COSMIC_LEVEL/manifest.json") return;
+        Json m = Json::parse(std::string(data.begin(), data.end()));
+        for (auto& f : m["files"])
+            if (f.value("path", "") == "enemies/thornwarden.json") {
+                f["size"] = enemyBytes.size();
+                f["sha256"] = Sha256::hex(enemyBytes);
+            }
+        std::string out = m.dump(1);
+        data.assign(out.begin(), out.end());
+    });
+    PackageImporter imp(env.content);
+    PackageInspection insp = imp.inspect(changed);
+    CHECK(insp.valid);
+    for (const auto& e : insp.errors) std::cout << "  " << e << "\n";
+    bool enemyConflict = false;
+    for (const auto& c : insp.conflicts) enemyConflict |= c.kind == ConflictKind::Enemy && c.id == "thornwarden";
+    CHECK(enemyConflict);
+    std::string newId, err;
+    CHECK(imp.install(insp, ConflictPolicy::Replace, &newId, &err));
+    env.content.reload();
+    // The native boss is untouched; the package's version got its own id and its level uses it.
+    CHECK(env.content.enemy("thornwarden")->builtin);
+    CHECK(env.content.enemy("thornwarden")->hp == nativeHp);
+    auto lvl = env.content.loadLevel(newId);
+    CHECK(lvl.has_value());
+    bool usesRenamed = false, usesNative = false;
+    for (const auto& o : lvl->objects) {
+        if (o.type != "enemy") continue;
+        usesRenamed |= o.propStr("enemy").rfind("thornwarden__", 0) == 0;
+        usesNative |= o.propStr("enemy") == "thornwarden";
+    }
+    CHECK(usesRenamed);
+    CHECK(!usesNative);
+    for (const auto* e : env.content.enemies())
+        if (e->id.rfind("thornwarden__", 0) == 0) CHECK(e->hp == nativeHp * 10.0f);
+    CHECK(env.content.removePackage(env.content.packages().front().id));
+}

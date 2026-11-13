@@ -60,7 +60,7 @@ public:
         ui.panel(panel, false, 18);
         ui.label("PARAMÈTRES", {panel.x + ui.s(40), panel.y + ui.s(26)}, 40, ui.theme().text, Align::Left, FontFace::Title);
         Rect tabsR{panel.x + ui.s(40), panel.y + ui.s(90), panel.w - ui.s(80), ui.s(54)};
-        ui.tabs("settings/tabs", tabsR, {"Graphismes", "Audio", "Clavier / souris", "Manette", "Jeu"}, tab_);
+        ui.tabs("settings/tabs", tabsR, {"Graphismes", "Audio", "Clavier / souris", "Manette", "Jeu", "En ligne"}, tab_);
         Rect content{panel.x + ui.s(40), tabsR.bottom() + ui.s(24), panel.w - ui.s(80), panel.bottom() - tabsR.bottom() - ui.s(110)};
         ui.pushId("tab" + std::to_string(tab_));
         switch (tab_) {
@@ -69,6 +69,7 @@ public:
             case 2: keyboard(content); break;
             case 3: gamepad(content); break;
             case 4: gameplay(content); break;
+            case 5: online(content); break;
         }
         ui.popId();
         ui.inputEnabled = true;
@@ -273,6 +274,30 @@ private:
             if (down) rr.drawGlow(p, s, ui.theme().accent.withAlpha(150));
             ui.icon(sheet, i, 32, Rect::fromCenter(p, {s, s}), down ? Color::white() : Color{170, 180, 200, 220});
         }
+    }
+
+    /// Summary of Cosmic Online; the detailed screen (privacy, friends, data) is shared with
+    /// the ONLINE section.
+    void online(const Rect& c) {
+        UIContext& ui = g_.ui;
+        float x = c.x, w = std::min(c.w, ui.s(900));
+        float y = c.y;
+        auto line = [&](const std::string& k, const std::string& v) {
+            ui.label(k, {x, y + ui.s(16)}, 20, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+            ui.label(v, {x + ui.s(320), y + ui.s(16)}, 21, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+            y += ui.s(46);
+        };
+        line("État", onlineStateLabel(g_.online.state()));
+        line("Compte", g_.online.loggedIn() ? g_.online.username() : "non connecté");
+        line("Serveur", g_.online.config().serverUrl.empty() ? "non configuré" : g_.online.config().serverUrl);
+        line("Performances à envoyer", std::to_string(g_.online.unsentCount()));
+        y += ui.s(20);
+        ui.labelWrapped("Connexion automatique, synchronisation, bande passante, visibilité du profil et du pays, amis, export "
+                        "et suppression des données :",
+                        {x, y}, w, 19, ui.theme().textDim);
+        UIContext::ButtonStyle p;
+        p.primary = true;
+        if (ui.button("open", {x, y + ui.s(70), ui.s(420), ui.s(56)}, "Paramètres en ligne détaillés", p)) g_.app.pushScene(makeOnlineSettings(g_));
     }
 
     void gameplay(const Rect& c) {

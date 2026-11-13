@@ -20,7 +20,21 @@ void EnemyEditorScene::onEnter() {
     if (!list.empty()) select(list.front()->id);
 }
 
-void EnemyEditorScene::onExit() { g_.app.input().stopTextInput(g_.app.window()); }
+void EnemyEditorScene::onExit() {
+    discardAnimationEdits();
+    g_.app.input().stopTextInput(g_.app.window());
+}
+
+bool EnemyEditorScene::editingNative() const { return g_.content.isNativeEnemy(selectedId_); }
+
+void EnemyEditorScene::discardAnimationEdits() {
+    if (!animDirty_) return;
+    if (!animMount_.empty()) g_.app.resources().pushMount(animMount_);
+    g_.app.resources().invalidateAnimation(animPath_);
+    if (!animMount_.empty()) g_.app.resources().popMount();
+    animDirty_ = false;
+    arenaDirty_ = true;
+}
 
 void EnemyEditorScene::flash(const std::string& m, bool error) {
     message_ = m;
@@ -32,6 +46,7 @@ void EnemyEditorScene::flash(const std::string& m, bool error) {
 void EnemyEditorScene::select(const std::string& id) {
     const EnemyDefinition* d = g_.content.enemy(id);
     if (!d) return;
+    discardAnimationEdits();
     work_ = *d;
     selectedId_ = id;
     dirty_ = false;
@@ -44,6 +59,8 @@ void EnemyEditorScene::select(const std::string& id) {
 }
 
 void EnemyEditorScene::loadAnimation() {
+    animPath_ = work_.animation;
+    animMount_ = work_.assetRoot;
     if (!work_.assetRoot.empty()) g_.app.resources().pushMount(work_.assetRoot);
     anim_ = g_.app.resources().animation(work_.animation);
     if (!work_.assetRoot.empty()) g_.app.resources().popMount();
@@ -105,24 +122,48 @@ void EnemyEditorScene::saveEnemy() {
         return;
     }
     work_.id = FileUtil::slugify(work_.id);
+    // Native entities (the ones the campaign uses) are read-only: the changes go to a copy.
+    bool copied = false;
+    if (g_.content.isNativeEnemy(work_.id)) {
+        if (const EnemyDefinition* native = g_.content.enemy(work_.id); native && work_.name == native->name)
+            work_.name += " (perso)";
+        work_.id = g_.content.freeEnemyId(work_.id + "_perso");
+        copied = true;
+    }
+    work_.builtin = false;
+    if (animDirty_ && !saveAnimation()) {
+        flash("Échec de l'enregistrement de l'animation", true);
+        return;
+    }
     if (g_.content.saveUserEnemy(work_)) {
         selectedId_ = work_.id;
         dirty_ = false;
-        if (animDirty_) saveAnimationOverride();
-        flash("Enregistré dans " + Paths::toUtf8(Paths::userEnemiesDir() / (work_.id + ".json")));
+        history_.reset(work_.toJson());
+        if (copied)
+            flash("Entité native non modifiable : votre version est enregistrée sous « " + work_.id + " »");
+        else
+            flash("Enregistré dans " + Paths::toUtf8(Paths::userEnemiesDir() / (work_.id + ".json")));
         g_.uiSound("ui_confirm");
     } else {
         flash("Échec de l'enregistrement", true);
     }
 }
 
-void EnemyEditorScene::saveAnimationOverride() {
-    if (!anim_) return;
-    fs::path p = Paths::userDir() / "assets" / Paths::fromUtf8(work_.animation);
-    if (FileUtil::saveJson(p, anim_->toJson())) {
-        animDirty_ = false;
-        g_.app.resources().invalidateAnimation(work_.animation);
-    }
+bool EnemyEditorScene::saveAnimation() {
+    if (!anim_) return true;
+    std::string rel = work_.animation;
+    std::error_code ec;
+    if (rel.empty() || fs::is_regular_file(Paths::assetsDir() / Paths::fromUtf8(rel), ec))
+        rel = "animations/user/" + FileUtil::slugify(work_.id) + ".json";
+    fs::path p = Paths::userDir() / "assets" / Paths::fromUtf8(rel);
+    if (!FileUtil::saveJson(p, anim_->toJson())) return false;
+    // Restore the original (possibly native) animation in the cache, then use the copy.
+    discardAnimationEdits();
+    work_.animation = rel;
+    g_.app.resources().invalidateAnimation(rel);
+    loadAnimation();
+    arenaDirty_ = true;
+    return true;
 }
 
 void EnemyEditorScene::deleteEnemy() {
@@ -227,7 +268,9 @@ void EnemyEditorScene::render(float alpha) {
     UIContext::ButtonStyle p;
     p.primary = dirty_;
     p.small = true;
-    if (ui.button("save", {W - ui.s(560), ui.s(12), ui.s(200), top - ui.s(24)}, dirty_ ? "Enregistrer*" : "Enregistrer", p)) saveEnemy();
+    std::string saveLabel = editingNative() ? "Enregistrer une copie" : "Enregistrer";
+    if (dirty_) saveLabel += "*";
+    if (ui.button("save", {W - ui.s(620), ui.s(12), ui.s(260), top - ui.s(24)}, saveLabel, p)) saveEnemy();
     UIContext::ButtonStyle s;
     s.small = true;
     if (ui.button("level", {W - ui.s(350), ui.s(12), ui.s(200), top - ui.s(24)}, "Éditeur de niveaux", s))
@@ -237,7 +280,7 @@ void EnemyEditorScene::render(float alpha) {
     q.danger = true;
     if (ui.button("quit", {W - ui.s(140), ui.s(12), ui.s(124), top - ui.s(24)}, "Quitter", q) ||
         (ui.backPressed() && !controlPlayer_))
-        g_.app.switchScene(makeMainMenu(g_));
+        g_.app.switchScene(makeContentManager(g_, {}, 4));
     ui.popId();
 
     ui.inputEnabled = !controlPlayer_;
@@ -271,7 +314,7 @@ void EnemyEditorScene::drawList(const Rect& r) {
     float y = l.y - ui.scrollOffset();
     for (size_t i = 0; i < list.size(); ++i) {
         const EnemyDefinition* d = list[i];
-        std::string sub = std::string(familyLabel(d->family)) + (d->builtin ? "" : " · personnalisé");
+        std::string sub = std::string(familyLabel(d->family)) + (d->builtin ? " · natif" : " · personnalisé");
         Color accent = d->isBoss ? ui.theme().danger : (d->builtin ? ui.theme().accent : ui.theme().warm);
         if (ui.listItem("e" + std::to_string(i), {l.x, y, l.w - ui.s(12), rh}, d->name, d->id == selectedId_, sub, accent)) {
             if (d->id != selectedId_) select(d->id);

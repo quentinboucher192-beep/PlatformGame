@@ -1,6 +1,6 @@
 # Guide des éditeurs
 
-Les deux éditeurs sont accessibles depuis le menu principal, ou directement :
+Les deux éditeurs sont dans l'**Atelier** (menu principal), ou directement :
 `CosmicPlatformer --editor [id_du_niveau]` et `CosmicPlatformer --enemy-editor`.
 Ils se pilotent à la souris et au clavier ; les menus et boîtes de dialogue sont aussi
 navigables à la manette.
@@ -8,6 +8,21 @@ navigables à la manette.
 Les créations sont enregistrées dans le dossier utilisateur (`levels/`, `enemies/`).
 Les contenus officiels et importés sont protégés : les ouvrir dans un éditeur crée une
 copie modifiable, l'original n'est jamais écrasé.
+
+**Entités natives** : les ennemis, boss, pouvoirs, effets et graphismes livrés avec le jeu
+sont ceux de la campagne. Ils sont utilisables dans tous vos niveaux mais jamais modifiables :
+
+* dans l'éditeur d'ennemis, une entité native porte la mention « natif » et un bandeau
+  l'indique ; vous pouvez essayer des réglages dans l'arène, et *Enregistrer une copie* crée
+  votre version (`<id>_perso`, avec sa propre animation `animations/user/<id>.json` si vous
+  avez changé le rythme des images) ;
+* un fichier du dossier utilisateur qui reprend l'identifiant d'une entité native est ignoré
+  au chargement, et un fichier graphique ou sonore du dossier utilisateur ou d'un package ne
+  remplace jamais un fichier de l'installation (il peut seulement en ajouter de nouveaux) ;
+* un package `.cplanet` dont un ennemi ou un pouvoir diffère d'une entité native de même
+  identifiant l'installe toujours sous un nouvel identifiant, même avec l'option *Remplacer*.
+
+La campagne et les records restent ainsi identiques pour tous les joueurs.
 
 ## Éditeur de niveaux
 

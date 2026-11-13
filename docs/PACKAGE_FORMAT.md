@@ -43,7 +43,7 @@ COSMIC_LEVEL/
 
 ## Export
 
-*Gestion des contenus → Exporter un niveau* (ou `--export <niveau> <fichier>`) :
+*Atelier → Exporter* (ou `--export <niveau> <fichier>`) :
 
 1. collecte des dépendances : chaque objet, ennemi, pouvoir, effet et animation est
    résolu jusqu'aux fichiers ; une dépendance introuvable **bloque** l'export et est
@@ -53,7 +53,7 @@ COSMIC_LEVEL/
 
 ## Import et sécurité
 
-*Gestion des contenus → Importer un package* (ou double-clic sur un `.cplanet`, ou
+*Atelier → Importer* (ou double-clic sur un `.cplanet`, ou
 `--import <fichier>`). L'archive est **analysée avant toute écriture** et refusée si :
 
 * ce n'est pas un ZIP valide, ou le manifeste manque / est invalide / a un format inconnu ;

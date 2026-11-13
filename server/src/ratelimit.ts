@@ -12,6 +12,7 @@ export interface RateRule {
 
 export const RULES = {
     register: { name: "register", limit: 5, windowSeconds: 3600 },
+    usernameCheck: { name: "username_check", limit: 60, windowSeconds: 300 },
     loginIp: { name: "login_ip", limit: 30, windowSeconds: 900 },
     loginUser: { name: "login_user", limit: 20, windowSeconds: 900 },
     refresh: { name: "refresh", limit: 60, windowSeconds: 60 },

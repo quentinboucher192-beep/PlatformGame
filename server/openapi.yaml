@@ -125,6 +125,43 @@ paths:
                 request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
         '429': {$ref: '#/components/responses/RateLimited'}
         '500': {$ref: '#/components/responses/InternalError'}
+  /auth/username-available:
+    get:
+      tags: [Authentication]
+      operationId: usernameAvailable
+      summary: Tell whether a username can be registered
+      security: []
+      description: 'Same rules as /auth/register. Rate limit `username_check`: 60 per 5 minutes per IP. Never cached. The registration stays authoritative (409 USERNAME_TAKEN).'
+      parameters:
+        - name: username
+          in: query
+          required: true
+          schema: {type: string, maxLength: 64}
+      responses:
+        '200':
+          description: Availability
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, data, request_id]
+                properties:
+                  ok: {type: boolean, enum: [true]}
+                  data:
+                    type: object
+                    required: [username, available, reason, message]
+                    properties:
+                      username: {type: string}
+                      available: {type: boolean}
+                      reason: {type: string, nullable: true, enum: [invalid, reserved, taken, null]}
+                      message: {type: string}
+                  request_id: {type: string}
+              example:
+                ok: true
+                data: {username: NovaRider, available: false, reason: taken, message: Ce pseudonyme est déjà utilisé.}
+                request_id: 5e0c92a7-0237-42e2-973e-54ad4c6f3e0b
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
   /auth/register:
     post:
       tags: [Authentication]

@@ -47,6 +47,20 @@ void EnemyEditorScene::drawProperties(const Rect& r) {
     std::vector<std::string> tabs = {"Général", "IA", "Attaques", "Pouvoirs", "Résist.", "Butin", "Boss"};
     ui.tabs("tabs", {r.x + ui.s(8), r.y + ui.s(8), r.w - ui.s(16), ui.s(44)}, tabs, tab_);
     Rect area{r.x, r.y + ui.s(60), r.w, r.h - ui.s(70)};
+    if (editingNative()) {
+        // Native entities are the campaign's: usable everywhere, never modified.
+        const std::string hint = "Essayez vos réglages dans l'arène ; « Enregistrer une copie » crée votre version.";
+        float bw = r.w - ui.s(20);
+        float hintH = ui.text().measureWrapped(hint, FontFace::Body, ui.s(16), bw - ui.s(24)).y;
+        Rect banner{r.x + ui.s(10), area.y, bw, ui.s(42) + hintH + ui.s(8)};
+        ui.r().fillRoundedRect(banner, ui.s(8), ui.theme().accent.withAlpha(40));
+        ui.label("Entité native de la campagne : non modifiable", {banner.x + ui.s(12), banner.y + ui.s(10)},
+                 ui.fitFont("Entité native de la campagne : non modifiable", FontFace::Bold, 19.0f, bw - ui.s(24)), ui.theme().accent,
+                 Align::Left, FontFace::Bold);
+        ui.labelWrapped(hint, {banner.x + ui.s(12), banner.y + ui.s(38)}, bw - ui.s(24), 16, ui.theme().textDim);
+        area.y += banner.h + ui.s(8);
+        area.h -= banner.h + ui.s(8);
+    }
     float x = r.x + ui.s(16), w = r.w - ui.s(44);
     ui.beginScroll("scroll" + std::to_string(tab_), area, ui.s(2200));
     float y = area.y + ui.s(6) - ui.scrollOffset();

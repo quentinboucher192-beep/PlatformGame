@@ -26,14 +26,15 @@ std::string humanSize(uint64_t b) {
 
 class ContentManagerScene : public Scene {
 public:
-    ContentManagerScene(GameServices& g, std::string importFile) : g_(g), importPath_(std::move(importFile)) {}
+    ContentManagerScene(GameServices& g, std::string importFile, int tab)
+        : g_(g), tab_(std::clamp(tab, 0, 4)), importPath_(std::move(importFile)) {}
 
     void onEnter() override {
         g_.playMusic("music/menu_theme.ogg");
         destDir_ = Paths::toUtf8(Paths::exportsDir());
         refreshLists();
         if (!importPath_.empty()) {
-            tab_ = 1;
+            tab_ = 3;
             analyze();
         }
     }
@@ -59,16 +60,21 @@ public:
         float W = ui.screenW(), H = ui.screenH();
         Rect panel{ui.s(50), ui.s(40), W - ui.s(100), H - ui.s(120)};
         ui.panel(panel, false, 18);
-        ui.label("GESTION DES CONTENUS", {panel.x + ui.s(36), panel.y + ui.s(22)}, 38, ui.theme().text, Align::Left, FontFace::Title);
-        Rect tabsR{panel.x + ui.s(36), panel.y + ui.s(84), ui.s(900), ui.s(52)};
+        Vec2 titleSize = ui.label("ATELIER", {panel.x + ui.s(36), panel.y + ui.s(22)}, 38, ui.theme().text, Align::Left,
+                                  FontFace::Title);
+        ui.label("Vos niveaux, les niveaux importés, le partage en .cplanet et l'éditeur d'ennemis",
+                 {panel.x + ui.s(36) + titleSize.x + ui.s(24), panel.y + ui.s(40)}, 19, ui.theme().textDim);
+        Rect tabsR{panel.x + ui.s(36), panel.y + ui.s(84), std::min(ui.s(1250), panel.w - ui.s(72)), ui.s(52)};
         int prev = tab_;
-        ui.tabs("cm/tabs", tabsR, {"Exporter un niveau", "Importer un package", "Packages installés"}, tab_);
+        ui.tabs("cm/tabs", tabsR, {"Mes niveaux", "Niveaux importés", "Exporter", "Importer", "Éditeur d'ennemis"}, tab_);
         if (prev != tab_) refreshLists();
         Rect content{panel.x + ui.s(36), tabsR.bottom() + ui.s(20), panel.w - ui.s(72), panel.bottom() - tabsR.bottom() - ui.s(50)};
         ui.pushId("cm" + std::to_string(tab_));
-        if (tab_ == 0) exportTab(content);
-        else if (tab_ == 1) importTab(content);
-        else installedTab(content);
+        if (tab_ == 0) myLevelsTab(content);
+        else if (tab_ == 1) installedTab(content);
+        else if (tab_ == 2) exportTab(content);
+        else if (tab_ == 3) importTab(content);
+        else enemyEditorTab(content);
         ui.popId();
         if (messageTimer_ > 0)
             ui.label(message_, {panel.center().x, panel.bottom() - ui.s(26)}, 22, messageColor_, Align::Center, FontFace::Bold,
@@ -98,6 +104,82 @@ private:
                 if (e.is_regular_file(ec) && FileUtil::extensionLower(e.path()) == PackageFormat::kExtension)
                     candidates_.push_back(e.path());
         }
+    }
+
+    // ============================================================= my levels
+    void myLevelsTab(const Rect& c) {
+        UIContext& ui = g_.ui;
+        std::vector<const LevelEntry*> mine;
+        for (const LevelEntry* l : g_.content.levels())
+            if (l->source == ContentSource::User) mine.push_back(l);
+        UIContext::ButtonStyle p;
+        p.primary = true;
+        if (ui.button("new", {c.x, c.y, ui.s(320), ui.s(56)}, "Nouveau niveau", p)) {
+            g_.app.switchScene(makeLevelEditor(g_, ""));
+            return;
+        }
+        ui.label(std::to_string(mine.size()) + (mine.size() > 1 ? " niveaux créés" : " niveau créé"), {c.x + ui.s(350), c.y + ui.s(28)}, 20,
+                 ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        Rect list{c.x, c.y + ui.s(76), c.w, c.h - ui.s(76)};
+        if (mine.empty()) {
+            ui.labelWrapped("Vous n'avez pas encore créé de niveau. « Nouveau niveau » ouvre l'éditeur ; vos créations sont "
+                            "enregistrées dans votre dossier utilisateur et peuvent être exportées en .cplanet.",
+                            {list.x, list.y}, std::min(list.w, ui.s(900)), 21, ui.theme().textDim);
+            return;
+        }
+        float rh = ui.s(92);
+        ui.beginScroll("mine", list, mine.size() * (rh + ui.s(10)));
+        float y = list.y - ui.scrollOffset();
+        for (size_t i = 0; i < mine.size(); ++i) {
+            const LevelEntry* l = mine[i];
+            Rect row{list.x, y, list.w - ui.s(16), rh};
+            ui.panel(row, false, 10);
+            ui.label(l->name.empty() ? l->id : l->name, {row.x + ui.s(20), row.y + ui.s(14)}, 24, ui.theme().text, Align::Left, FontFace::Bold);
+            const PlanetData* pl = g_.content.planet(l->planet);
+            ui.label(l->id + "  —  " + (pl ? pl->name : l->planet), {row.x + ui.s(20), row.y + ui.s(52)}, 18, ui.theme().textDim);
+            std::string id = "m" + std::to_string(i);
+            if (ui.button(id + "play", {row.right() - ui.s(700), row.y + ui.s(18), ui.s(150), ui.s(56)}, "Jouer")) {
+                g_.app.switchScene(makeGameScene(g_, l->id), 0.5f);
+                break;
+            }
+            if (ui.button(id + "edit", {row.right() - ui.s(536), row.y + ui.s(18), ui.s(150), ui.s(56)}, "Éditer")) {
+                g_.app.switchScene(makeLevelEditor(g_, l->id));
+                break;
+            }
+            if (ui.button(id + "export", {row.right() - ui.s(372), row.y + ui.s(18), ui.s(166), ui.s(56)}, "Exporter")) {
+                tab_ = 2;
+                selectLevel(l->id);
+                break;
+            }
+            UIContext::ButtonStyle d;
+            d.danger = true;
+            bool confirm = confirmDelete_ == l->id;
+            if (ui.button(id + "del", {row.right() - ui.s(192), row.y + ui.s(18), ui.s(170), ui.s(56)}, confirm ? "Confirmer" : "Supprimer", d)) {
+                if (confirm) {
+                    std::string lid = l->id;
+                    confirmDelete_.clear();
+                    if (g_.content.deleteUserLevel(lid)) notify("Niveau supprimé", ui.theme().warm);
+                    else notify("Suppression impossible", ui.theme().danger);
+                    break;
+                }
+                confirmDelete_ = l->id;
+            }
+            y += rh + ui.s(10);
+        }
+        ui.endScroll();
+    }
+
+    // ========================================================== enemy editor
+    void enemyEditorTab(const Rect& c) {
+        UIContext& ui = g_.ui;
+        ui.labelWrapped("L'éditeur d'ennemis crée ou modifie des ennemis et des boss : apparence animée, statistiques, "
+                        "comportements, attaques et phases, avec une arène de test où vous contrôlez le joueur. Les ennemis "
+                        "créés sont utilisables dans vos niveaux et embarqués automatiquement dans les packages .cplanet.",
+                        {c.x, c.y}, std::min(c.w, ui.s(1000)), 22, ui.theme().text);
+        UIContext::ButtonStyle p;
+        p.primary = true;
+        if (ui.button("open", {c.x, c.y + ui.s(150), ui.s(380), ui.s(60)}, "Ouvrir l'éditeur d'ennemis", p))
+            g_.app.switchScene(makeEnemyEditor(g_));
     }
 
     // ================================================================ export
@@ -427,8 +509,8 @@ private:
 
 }  // namespace
 
-std::unique_ptr<Scene> makeContentManager(GameServices& g, const std::string& importFile) {
-    return std::make_unique<ContentManagerScene>(g, importFile);
+std::unique_ptr<Scene> makeContentManager(GameServices& g, const std::string& importFile, int tab) {
+    return std::make_unique<ContentManagerScene>(g, importFile, tab);
 }
 
 }  // namespace cosmic

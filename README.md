@@ -69,32 +69,43 @@ pouvoirs utilisés, date) avec comparaison au meilleur essai.
 
 ## Cosmic Online (classements en ligne)
 
-Menu principal → **Online Ranking** : globe 3D interactif (rotation à la souris ou au stick
+Menu principal → **Online** (compte obligatoire pour cette section, jamais pour jouer) : globe 3D interactif (rotation à la souris ou au stick
 droit, zoom molette / gâchettes, clic sur un marqueur ou un pays), classements par niveau,
 pays, amis, planète et points cosmiques, catégories ANY% / 100% / NO DEATH / NO DAMAGE /
-SPEEDRUN, période historique ou hebdomadaire, profils publics, amis et replays. Un compte est
-**facultatif** ; hors ligne, les performances sont gardées et envoyées au retour de la
-connexion. La localisation se limite au pays choisi (affiché au centre du pays), jamais de
+SPEEDRUN, période historique ou hebdomadaire, profils publics, amis (avec notifications des
+demandes) et replays. Le jeu reste entièrement jouable sans compte ; hors ligne, les
+performances sont gardées et envoyées au retour de la connexion. La localisation se limite au pays choisi (affiché au centre du pays), jamais de
 position précise.
 
 Le serveur (Cloudflare Workers, D1, R2) est dans [`server/`](server/README.md) ; il se lance en
 local sans compte Cloudflare. Documentation complète : [docs/online/](docs/online/README.md).
 
+## Menu principal
+
+*Continuer* (dernier niveau joué) · *Campagne* (planètes et niveaux) · *Online* · *Atelier*
+(vos niveaux, niveaux importés, export / import `.cplanet`, éditeur d'ennemis) ·
+*Paramètres* · *Quitter*.
+
 ## Éditeurs
 
-* **Éditeur de niveaux** (menu principal ou `CosmicPlatformer --editor [id]`) :
+Les **entités natives** (ennemis, boss, pouvoirs, effets et graphismes de la campagne) sont
+utilisables dans tous les niveaux des joueurs mais ne sont jamais modifiables : l'éditeur
+d'ennemis enregistre vos réglages dans une copie, et un fichier utilisateur ou un package qui
+réutilise l'identifiant d'une entité native est ignoré (renommé à l'import).
+
+* **Éditeur de niveaux** (*Atelier → Mes niveaux* ou `CosmicPlatformer --editor [id]`) :
   calques, bibliothèque d'objets, propriétés, grille magnétique, zoom, déplacement de vue,
   sélection multiple, déplacement / redimensionnement / rotation / miroir, copier-coller,
   annuler / rétablir, événements et déclencheurs, cinématiques d'intro / outro, chrono et
   médailles, test immédiat (F5) avec retour à l'éditeur, sauvegarde automatique.
-* **Éditeur d'ennemis** (`--enemy-editor`) : aperçu animé, statistiques, comportements IA,
+* **Éditeur d'ennemis** (*Atelier → Éditeur d'ennemis* ou `--enemy-editor`) : aperçu animé, statistiques, comportements IA,
   attaques, phases de boss, arène de test où l'on peut contrôler le joueur.
 
 Voir [docs/EDITORS.md](docs/EDITORS.md).
 
 ## Partager un niveau
 
-*Gestion des contenus → Exporter* crée un fichier `.cplanet` autonome contenant le niveau,
+*Atelier → Exporter* crée un fichier `.cplanet` autonome contenant le niveau,
 la planète, les ennemis, les pouvoirs, les effets et **tous** les fichiers graphiques et
 audio utilisés, avec un manifeste signé par empreintes SHA-256. *Importer* vérifie
 l'archive (empreintes, chemins, tailles, version, dépendances, conflits) avant de

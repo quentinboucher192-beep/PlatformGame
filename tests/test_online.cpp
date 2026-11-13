@@ -6,7 +6,9 @@
 
 #include <atomic>
 #include <chrono>
+#include <cctype>
 #include <map>
+#include <set>
 #include <mutex>
 #include <thread>
 
@@ -61,6 +63,13 @@ struct FakeServer {
     int refreshCalls = 0, submitCalls = 0, replayCalls = 0, loginCalls = 0;
     std::vector<std::string> log;
     std::map<std::string, Json> records;
+    Json friends = {{"friends", Json::array()}, {"incoming", Json::array()}, {"outgoing", Json::array()}};
+    std::set<std::string> takenNames = {"orion"};
+    int friendsCalls = 0;
+
+    static Json friendEntry(const std::string& id, const std::string& name) {
+        return {{"player", {{"id", id}, {"username", name}}}, {"since", "2026-11-13T10:00:00.000Z"}};
+    }
 
     Json session() {
         ++counter;
@@ -100,6 +109,14 @@ struct FakeServer {
             return r;
         }
         if (path == "/api/v1/health") return okData({{"status", "ok"}});
+        if (path.rfind("/api/v1/auth/username-available?username=", 0) == 0) {
+            std::string name = path.substr(path.find('=') + 1);
+            std::string lower;
+            for (char c : name) lower.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(c))));
+            bool taken = takenNames.count(lower) > 0;
+            return okData({{"username", name}, {"available", !taken}, {"reason", taken ? Json("taken") : Json()},
+                           {"message", taken ? "Ce pseudonyme est déjà utilisé." : "Pseudonyme disponible."}});
+        }
         if (path == "/api/v1/auth/login") {
             ++loginCalls;
             Json b = Json::parse(rq.body);
@@ -114,6 +131,10 @@ struct FakeServer {
         }
         if (!authorized(rq)) return apiError(401, "TOKEN_EXPIRED");
         if (path == "/api/v1/auth/me") return okData({{"player", player()}});
+        if (path == "/api/v1/friends") {
+            ++friendsCalls;
+            return okData(friends);
+        }
         if (path == "/api/v1/records/submit") {
             ++submitCalls;
             Json b = Json::parse(rq.body);
@@ -706,4 +727,98 @@ TEST_CASE("online: queued requests can be cancelled") {
     }
     CHECK(cancelled + completed == 3);
     CHECK(cancelled >= 2);
+}
+
+TEST_CASE("online: username availability is asked to the server") {
+    Harness h("username");
+    auto ask = [&](const std::string& name) {
+        bool done = false;
+        Json data;
+        h.svc.checkUsername(name, [&](const ApiResult& r) {
+            done = true;
+            if (r.ok) data = r.data;
+        });
+        CHECK(pump(h.svc, [&] { return done; }));
+        return data;
+    };
+    CHECK(jget<bool>(ask("Andromeda"), "available", false));
+    Json taken = ask("Orion");
+    CHECK(!jget<bool>(taken, "available", true));
+    CHECK(jstr(taken, "reason") == "taken");
+    // The name is URL-encoded and never served from the cache.
+    ask("a b&c");
+    bool encoded = false;
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        for (const auto& l : h.server->log) encoded |= l.find("username=a%20b%26c") != std::string::npos;
+    }
+    CHECK(encoded);
+    h.server->down = true;
+    bool done = false, ok = true;
+    h.svc.checkUsername("Andromeda", [&](const ApiResult& r) {
+        done = true;
+        ok = r.ok;
+    });
+    CHECK(pump(h.svc, [&] { return done; }));
+    CHECK(!ok);
+}
+
+TEST_CASE("online: friend requests are notified once, acceptances too") {
+    Harness h("friends");
+    CHECK(h.login());
+    h.svc.takeNotifications();
+    auto countFriendNotices = [&](const std::string& title) {
+        int n = 0;
+        for (const auto& no : h.svc.takeNotifications())
+            if (no.kind == OnlineService::Notification::Kind::Friend && no.title == title) ++n;
+        return n;
+    };
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        h.server->friends["incoming"].push_back(FakeServer::friendEntry("22222222-2222-4222-8222-222222222222", "Vega"));
+        h.server->friends["outgoing"].push_back(FakeServer::friendEntry("33333333-3333-4333-8333-333333333333", "Lyra"));
+    }
+    // Read a few seconds after the connection, without any screen open.
+    CHECK(pump(h.svc, [&] { return h.svc.pendingFriendRequests() == 1; }, 3000, 0.5f));
+    CHECK(countFriendNotices("Demande d'ami") == 1);
+    // The same request is not notified again at the next poll.
+    bool done = false;
+    h.svc.refreshFriends([&](const ApiResult&) { done = true; });
+    CHECK(pump(h.svc, [&] { return done; }));
+    CHECK(countFriendNotices("Demande d'ami") == 0);
+    CHECK(h.svc.pendingFriendRequests() == 1);
+    // Lyra accepts; the player answers Vega.
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        h.server->friends["outgoing"] = Json::array();
+        h.server->friends["incoming"] = Json::array();
+        h.server->friends["friends"].push_back(FakeServer::friendEntry("33333333-3333-4333-8333-333333333333", "Lyra"));
+    }
+    done = false;
+    h.svc.refreshFriends([&](const ApiResult&) { done = true; });
+    CHECK(pump(h.svc, [&] { return done; }));
+    CHECK(countFriendNotices("Demande acceptée") == 1);
+    CHECK(h.svc.pendingFriendRequests() == 0);
+
+    // What was seen is remembered across restarts: no repeated notification.
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        h.server->friends["incoming"].push_back(FakeServer::friendEntry("44444444-4444-4444-8444-444444444444", "Altair"));
+    }
+    done = false;
+    h.svc.refreshFriends([&](const ApiResult&) { done = true; });
+    CHECK(pump(h.svc, [&] { return done; }));
+    CHECK(countFriendNotices("Demande d'ami") == 1);
+    OnlineService again;
+    again.init({}, "http://127.0.0.1:9", std::make_unique<FakeTransport>(h.server), h.dir);
+    CHECK(pump(again, [&] { return again.loggedIn() && again.pendingFriendRequests() == 1; }, 4000, 0.5f));
+    int repeated = 0;
+    for (const auto& no : again.takeNotifications()) repeated += no.kind == OnlineService::Notification::Kind::Friend;
+    CHECK(repeated == 0);
+    again.shutdown();
+
+    // Logging out clears the badge.
+    h.svc.logout(false);
+    CHECK(pump(h.svc, [&] { return !h.svc.loggedIn(); }));
+    CHECK(h.svc.pendingFriendRequests() == 0);
 }

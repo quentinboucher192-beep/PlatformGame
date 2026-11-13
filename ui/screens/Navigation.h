@@ -32,14 +32,19 @@ std::unique_ptr<Scene> makeGameScene(GameServices& g, const std::string& levelId
 std::unique_ptr<Scene> makeSettingsScene(GameServices& g, bool overlay);
 std::unique_ptr<Scene> makeLevelEditor(GameServices& g, const std::string& levelId);
 std::unique_ptr<Scene> makeEnemyEditor(GameServices& g);
+/// The ATELIER: the player's levels, imported levels, .cplanet export/import, enemy editor.
 /// `importFile`: a .cplanet file to analyse immediately (double-click / command line).
-std::unique_ptr<Scene> makeContentManager(GameServices& g, const std::string& importFile = {});
+/// `tab`: 0 Mes niveaux, 1 Niveaux importés, 2 Exporter, 3 Importer, 4 Éditeur d'ennemis.
+std::unique_ptr<Scene> makeContentManager(GameServices& g, const std::string& importFile = {}, int tab = 0);
 // Cosmic Online
 std::unique_ptr<Scene> makeOnlineRanking(GameServices& g, const std::string& levelId = {});
-/// Account overlay: create an account, log in or keep playing offline. `onboarding` shows
-/// the first-visit explanation (what is shared, location consent).
-std::unique_ptr<Scene> makeOnlineAccount(GameServices& g, bool onboarding);
-std::unique_ptr<Scene> makeOnlineSettings(GameServices& g);
+/// Account overlay: create an account or log in. `onboarding` shows the first-visit
+/// explanation (what is shared, location consent). `required`: the ONLINE section needs
+/// an account, so leaving without one returns to the main menu (the game itself never
+/// needs an account).
+std::unique_ptr<Scene> makeOnlineAccount(GameServices& g, bool onboarding, bool required = false);
+/// `tab`: 0 Préférences, 1 Compte et confidentialité, 2 Amis.
+std::unique_ptr<Scene> makeOnlineSettings(GameServices& g, int tab = 0);
 /// Downloads and plays back the replay of a verified record.
 std::unique_ptr<Scene> makeReplayViewer(GameServices& g, const std::string& recordId);
 

@@ -96,15 +96,25 @@ Décision (`decide()` dans `server/src/records.ts`) :
 
 * replay invalide → **REJECTED** ;
 * SPEEDRUN sans replay valide → **PENDING** ;
-* nouveau record mondial battant l'ancien de plus de 20 % (confiance < 3) → **PENDING**
-  (revue manuelle) ;
-* nouveau record mondial sur un classement d'au moins 5 joueurs, confiance < 2 → **PENDING** ;
+* sur un classement **établi** (au moins 5 joueurs classés) :
+  * nouveau record mondial battant l'ancien de plus de 20 % (confiance < 3) → **PENDING**
+    (revue manuelle) ;
+  * nouveau record mondial, confiance < 2 → **PENDING** (revue manuelle) ;
+* sur un classement jeune (moins de 5 joueurs), le record mondial n'est pas encore une
+  référence fiable (souvent une seule partie tranquille) : ces deux règles ne s'appliquent pas,
+  le plancher de temps du niveau (`min_time_ms`, temps impossible → **REJECTED**) et l'analyse
+  du replay décident ;
 * replay valide → **VERIFIED** ;
 * sans replay : confiance ≥ 2 → **VERIFIED**, sinon **PENDING** en attendant le replay.
 
 Les statuts côté joueur : **LOCAL** (pas encore envoyé), **EN ATTENTE** (PENDING),
 **VÉRIFIÉ**, **REFUSÉ**. Le jeu interroge régulièrement le serveur pour les records en attente
 et notifie le joueur du résultat.
+
+Réévaluation : un record **PENDING** dont le replay a été vérifié est redécidé avec les règles
+en vigueur quand son propriétaire consulte son statut (le jeu le fait toutes les 90 s quand il
+est connecté) et lors de la maintenance quotidienne (03:17 UTC). Une décision manuelle n'est
+jamais annulée : seuls les records encore en attente sont concernés.
 
 ## Limites de l'anti-triche (honnêtement)
 

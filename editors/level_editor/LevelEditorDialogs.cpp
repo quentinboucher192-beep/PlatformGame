@@ -79,12 +79,12 @@ void LevelEditorScene::drawModal() {
             UIContext::ButtonStyle p;
             p.primary = true;
             if (ui.button("saveq", {c.x, by, ui.s(300), ui.s(56)}, "Enregistrer et quitter", p) && save())
-                g_.app.switchScene(makeMainMenu(g_));
+                g_.app.switchScene(makeContentManager(g_));
             UIContext::ButtonStyle d;
             d.danger = true;
             if (ui.button("discard", {c.x + ui.s(316), by, ui.s(190), ui.s(56)}, "Abandonner", d)) {
                 autosave();
-                g_.app.switchScene(makeMainMenu(g_));
+                g_.app.switchScene(makeContentManager(g_));
             }
             if (ui.button("cancelq", {c.right() - ui.s(170), by, ui.s(170), ui.s(56)}, "Annuler")) modal_ = Modal::None;
             break;

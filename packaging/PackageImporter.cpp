@@ -203,11 +203,13 @@ bool PackageImporter::install(PackageInspection& insp, ConflictPolicy policy, st
                 level.id = id;
                 break;
             }
+            // Native (campaign) entities are never replaced: a different definition under a
+            // native id is always installed under a new id, whatever the policy.
             case ConflictKind::Enemy:
-                if (policy == ConflictPolicy::Rename) enemyRename[c.id] = c.id + "__" + suffix;
+                if (policy == ConflictPolicy::Rename || content_.isNativeEnemy(c.id)) enemyRename[c.id] = c.id + "__" + suffix;
                 break;
             case ConflictKind::Power:
-                if (policy == ConflictPolicy::Rename) powerRename[c.id] = c.id + "__" + suffix;
+                if (policy == ConflictPolicy::Rename || content_.isNativePower(c.id)) powerRename[c.id] = c.id + "__" + suffix;
                 break;
         }
     }
@@ -259,12 +261,14 @@ bool PackageImporter::install(PackageInspection& insp, ConflictPolicy policy, st
     ok = ok && writeJson("level.json", level.toJson());
     for (auto d : insp.enemies) {
         if (enemyRename.count(d.id)) d.id = enemyRename[d.id];
+        else if (content_.isNativeEnemy(d.id)) continue;  // identical to the native one: nothing to install
         for (auto& a : d.attacks)
             if (enemyRename.count(a.summonId)) a.summonId = enemyRename[a.summonId];
         ok = ok && writeJson("enemies/" + FileUtil::slugify(d.id) + ".json", d.toJson());
     }
     for (auto d : insp.powers) {
         if (powerRename.count(d.id)) d.id = powerRename[d.id];
+        else if (content_.isNativePower(d.id)) continue;
         ok = ok && writeJson("powers/" + FileUtil::slugify(d.id) + ".json", d.toJson());
     }
     Json manifest = insp.manifest;

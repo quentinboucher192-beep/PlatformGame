@@ -35,7 +35,13 @@ private:
     void resetArena();
     void changed();
     void loadAnimation();
-    void saveAnimationOverride();
+    /// Writes the edited clip timings to the user folder; a native animation is never
+    /// replaced: the enemy gets its own copy ("animations/user/<id>.json").
+    bool saveAnimation();
+    /// Unsaved timing edits live in the shared animation cache: reload it from disk.
+    void discardAnimationEdits();
+    /// The selected enemy is a native (campaign) entity: read-only, saved as a copy.
+    bool editingNative() const;
 
     void drawList(const Rect& r);
     void drawPreview(const Rect& r);
@@ -63,6 +69,8 @@ private:
     float previewSpeed_ = 1.0f;
     bool showRanges_ = true;
     bool animDirty_ = false;
+    std::string animPath_;
+    fs::path animMount_;
 
     std::unique_ptr<GameWorld> arena_;
     GameRenderer arenaRenderer_;

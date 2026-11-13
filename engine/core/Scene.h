@@ -29,6 +29,8 @@ public:
     /// Overlays let the scene below render (and optionally update).
     virtual bool isOverlay() const { return false; }
     virtual bool updatesSceneBelow() const { return false; }
+    /// While this scene is on top, non-essential popups (online notifications) wait.
+    virtual bool holdsNotifications() const { return false; }
 
     void attach(Application* app) { app_ = app; }
     Application& app() { return *app_; }

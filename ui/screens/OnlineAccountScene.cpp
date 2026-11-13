@@ -2,6 +2,7 @@
 // avatar, optional country, location visibility, terms), login, or offline play. An
 // account is never required to play.
 
+#include <cctype>
 #include <cmath>
 
 #include "engine/core/FileUtil.h"
@@ -17,9 +18,12 @@ enum class Page { Welcome, Register, Login, Terms, Country };
 
 class OnlineAccountScene : public Scene {
 public:
-    OnlineAccountScene(GameServices& g, bool onboarding) : g_(g), ui_(g), page_(onboarding ? Page::Welcome : Page::Login) {
-        if (g_.onlineOpen == "register") {
+    OnlineAccountScene(GameServices& g, bool onboarding, bool required)
+        : g_(g), ui_(g), page_(onboarding ? Page::Welcome : Page::Login), required_(required) {
+        // --online-open register[=Pseudonyme] (shortcut, also used for screenshots).
+        if (g_.onlineOpen.rfind("register", 0) == 0) {
             page_ = Page::Register;
+            if (auto eq = g_.onlineOpen.find('='); eq != std::string::npos) username_ = g_.onlineOpen.substr(eq + 1, 20);
             g_.onlineOpen.clear();
         }
     }
@@ -32,7 +36,80 @@ public:
         g_.ui.setFocus(page_ == Page::Welcome ? "account/welcome/create" : "account/login/user");
     }
 
-    void update(float dt) override { t_ += dt; }
+    void update(float dt) override {
+        t_ += dt;
+        if (page_ == Page::Register) watchUsername(dt);
+    }
+
+    // ------------------------------------------------- username availability
+    enum class NameState { Empty, Waiting, Checking, Free, Taken, Invalid, Unknown };
+
+    static bool localUsernameValid(const std::string& n) {
+        if (n.size() < 3 || n.size() > 20) return false;
+        auto alnum = [](char c) { return std::isalnum(static_cast<unsigned char>(c)) != 0; };
+        if (!alnum(n.front()) || !alnum(n.back())) return false;
+        for (char c : n)
+            if (!alnum(c) && c != '_' && c != '.' && c != '-') return false;
+        return true;
+    }
+
+    /// The server is asked 0.5 s after the last keystroke; only the latest answer counts.
+    void watchUsername(float dt) {
+        if (username_ != typedName_) {
+            typedName_ = username_;
+            ++nameRequest_;
+            nameTimer_ = 0.5f;
+            if (username_.empty()) nameState_ = NameState::Empty;
+            else if (!localUsernameValid(username_)) {
+                nameState_ = NameState::Invalid;
+                nameMessage_ = "Lettres, chiffres, « _ », « . » ou « - » (3 à 20, pas au début ni à la fin)";
+            } else {
+                nameState_ = NameState::Waiting;
+            }
+            return;
+        }
+        if (nameState_ != NameState::Waiting) return;
+        nameTimer_ -= dt;
+        if (nameTimer_ > 0.0f) return;
+        nameState_ = NameState::Checking;
+        int id = nameRequest_;
+        std::string name = username_;
+        g_.online.checkUsername(name, OnlineService::guard(life_, [this, id, name](const ApiResult& r) {
+            if (id != nameRequest_ || name != username_) return;  // the player kept typing
+            if (!r.ok) {
+                nameState_ = NameState::Unknown;
+                nameMessage_ = "Vérification impossible pour l'instant";
+                return;
+            }
+            std::string reason = jstr(r.data, "reason");
+            nameMessage_ = jstr(r.data, "message");
+            nameState_ = jget<bool>(r.data, "available", false) ? NameState::Free
+                         : reason == "invalid"                    ? NameState::Invalid
+                                                                  : NameState::Taken;
+        }));
+    }
+
+    void drawUsernameStatus(const Rect& field, float captionY) {
+        UIContext& ui = g_.ui;
+        std::string text;
+        Color c = ui.theme().textDim;
+        switch (nameState_) {
+            case NameState::Empty: return;
+            case NameState::Waiting:
+            case NameState::Checking: text = "Vérification…"; break;
+            case NameState::Free: text = "Disponible"; c = ui.theme().success; break;
+            case NameState::Taken: text = "Déjà pris"; c = ui.theme().danger; break;
+            case NameState::Invalid: text = "Format invalide"; c = ui.theme().danger; break;
+            case NameState::Unknown: text = "Non vérifié"; c = ui.theme().warm; break;
+        }
+        float tw = ui.text().measure(text, FontFace::Bold, ui.s(15)).x;
+        Vec2 at{field.right() - ui.s(14), field.center().y};
+        ui.label(text, at, 15, c, Align::Right, FontFace::Bold, VAlign::Middle);
+        ui.r().fillCircle({at.x - tw - ui.s(10), at.y}, ui.s(4.5f), c);
+        // Details (reserved, taken, rules) replace the caption above the field.
+        if (nameState_ == NameState::Taken || nameState_ == NameState::Invalid || nameState_ == NameState::Unknown)
+            ui.label(nameMessage_, {field.x, captionY}, 15, c, Align::Left, FontFace::Body, VAlign::Middle);
+    }
 
     void render(float) override {
         UIContext& ui = g_.ui;
@@ -56,16 +133,18 @@ public:
 private:
     void back() {
         if (page_ == Page::Terms || page_ == Page::Country) page_ = Page::Register;
+        else if (page_ == Page::Register && !onboardingVisible()) page_ = Page::Login;
         else if (page_ != Page::Welcome && onboardingVisible()) page_ = Page::Welcome;
         else close(false);
     }
     bool onboardingVisible() const { return !g_.settings.online.onboardingDone; }
 
     void close(bool connected) {
-        (void)connected;
         g_.settings.online.onboardingDone = true;
         g_.saveSettings();
-        g_.app.popScene();
+        // ONLINE requires an account: leaving without one goes back to the main menu.
+        if (required_ && !connected) g_.app.switchScene(makeMainMenu(g_));
+        else g_.app.popScene();
     }
 
     void title(const std::string& t, const std::string& sub) {
@@ -85,7 +164,8 @@ private:
             Vec2 sz = ui.labelWrapped(text, {x + ui.s(22), y + ui.s(30)}, w - ui.s(22), 16, ui.theme().textDim);
             y += ui.s(40) + sz.y;
         };
-        point("Facultatif", "Un compte n'est jamais obligatoire : tout le jeu reste jouable hors ligne, avec vos records locaux.");
+        point("Compte", "La section ONLINE demande un compte. Le jeu, lui, n'en a jamais besoin : campagne, Atelier et records "
+                        "locaux restent jouables hors ligne.");
         point("Ce qui est partagé", "Votre pseudonyme, votre avatar, vos temps et le replay de vos meilleurs runs (la trajectoire de votre "
                                     "personnage, pas une vidéo). Le mot de passe n'est conservé que sous forme d'empreinte irréversible.");
         point("Localisation", "Uniquement le pays que vous choisissez, si vous le choisissez. Sur le globe, vous apparaissez au centre de "
@@ -103,7 +183,7 @@ private:
         UIContext::ButtonStyle s;
         s.enabled = g_.online.usable();
         if (ui.button("login", {x + bw + ui.s(20), by, bw, ui.s(52)}, "Se connecter", s)) page_ = Page::Login;
-        if (ui.button("offline", {x + 2 * (bw + ui.s(20)), by, bw, ui.s(52)}, "Jouer hors ligne")) close(false);
+        if (ui.button("offline", {x + 2 * (bw + ui.s(20)), by, bw, ui.s(52)}, required_ ? "Retour au menu" : "Jouer hors ligne")) close(false);
         ui.popId();
     }
 
@@ -137,8 +217,11 @@ private:
         auto caption = [&](float cx, float cy, const std::string& t) {
             ui.label(t, {cx, cy}, 15, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
         };
-        caption(x, y, "Pseudonyme (3 à 20 caractères : lettres, chiffres, . _ -)");
-        ui.textField("user", {x, y + ui.s(14), col, ui.s(42)}, username_, "NovaRider", 20);
+        bool nameDetail = nameState_ == NameState::Taken || nameState_ == NameState::Invalid || nameState_ == NameState::Unknown;
+        if (!nameDetail) caption(x, y, "Pseudonyme (3 à 20 caractères : lettres, chiffres, . _ -)");
+        Rect nameField{x, y + ui.s(14), col, ui.s(42)};
+        ui.textField("user", nameField, username_, "NovaRider", 20);
+        drawUsernameStatus(nameField, y);
         caption(x, y + ui.s(76), "Mot de passe (8 caractères minimum)");
         ui.passwordField("pass", {x, y + ui.s(90), col, ui.s(42)}, password_, "Mot de passe");
         caption(x, y + ui.s(152), "Confirmation");
@@ -159,7 +242,7 @@ private:
         ui.toggle("public", {x2, y + ui.s(146), col, ui.s(38)}, "Profil public", profilePublic_);
         ui.toggle("friends", {x2, y + ui.s(190), col, ui.s(38)}, "Accepter les demandes d'amis", allowFriends_);
         ui.toggle("remember", {x2, y + ui.s(234), col, ui.s(38)}, "Connexion automatique", remember_);
-        ui.toggle("tos", {x2, y + ui.s(278), col, ui.s(38)}, "J'accepte les conditions d'utilisation", tos_);
+        ui.toggle("tos", {x2, y + ui.s(278), col, ui.s(38)}, "J'accepte les conditions", tos_);
         UIContext::ButtonStyle small;
         small.small = true;
         if (ui.button("terms", {x2, y + ui.s(324), ui.s(260), ui.s(34)}, "Lire les conditions", small)) page_ = Page::Terms;
@@ -170,7 +253,7 @@ private:
         float by = box_.bottom() - ui.s(70);
         UIContext::ButtonStyle p;
         p.primary = true;
-        p.enabled = !busy_;
+        p.enabled = !busy_ && nameState_ != NameState::Taken && nameState_ != NameState::Invalid;
         if (ui.button("submit", {box_.right() - ui.s(316), by, ui.s(280), ui.s(50)}, "Créer le compte", p)) submitRegister();
         if (ui.button("back", {x, by, ui.s(180), ui.s(50)}, "Retour")) back();
         ui.popId();
@@ -202,6 +285,10 @@ private:
                 close(true);
             } else {
                 error_ = fieldError(r);
+                if (r.code == "USERNAME_TAKEN") {
+                    nameState_ = NameState::Taken;
+                    nameMessage_ = r.message;
+                }
             }
         }));
     }
@@ -238,7 +325,7 @@ private:
             }));
         }
         if (ui.button("create", {x + ui.s(200), by, ui.s(220), ui.s(50)}, "Créer un compte")) page_ = Page::Register;
-        if (ui.button("back", {x, by, ui.s(180), ui.s(50)}, "Retour")) back();
+        if (ui.button("back", {x, by, ui.s(180), ui.s(50)}, required_ && !onboardingVisible() ? "Menu" : "Retour")) back();
         ui.popId();
     }
 
@@ -292,11 +379,18 @@ private:
     int locVis_ = 0;
     bool profilePublic_ = true, allowFriends_ = true, remember_ = true, tos_ = false;
     bool busy_ = false;
+    bool required_ = false;
+    NameState nameState_ = NameState::Empty;
+    std::string typedName_, nameMessage_;
+    float nameTimer_ = 0.0f;
+    int nameRequest_ = 0;
     std::string error_;
 };
 
 }  // namespace
 
-std::unique_ptr<Scene> makeOnlineAccount(GameServices& g, bool onboarding) { return std::make_unique<OnlineAccountScene>(g, onboarding); }
+std::unique_ptr<Scene> makeOnlineAccount(GameServices& g, bool onboarding, bool required) {
+    return std::make_unique<OnlineAccountScene>(g, onboarding, required);
+}
 
 }  // namespace cosmic

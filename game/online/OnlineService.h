@@ -29,7 +29,7 @@ namespace cosmic {
 class OnlineService {
 public:
     struct Notification {
-        enum class Kind { Info, Success, Warning, Error, Record };
+        enum class Kind { Info, Success, Warning, Error, Record, Friend };
         Kind kind = Kind::Info;
         std::string title;
         std::string text;
@@ -81,6 +81,18 @@ public:
     void updateProfile(const Json& patch, ApiCallback cb);
     void deleteAccount(const std::string& password, ApiCallback cb);
     void exportData(ApiCallback cb);
+    /// Asks the server whether `username` can be registered (same rules as the
+    /// registration; never cached). data: {available, reason, message}.
+    void checkUsername(const std::string& username, ApiCallback cb);
+
+    // -------------------------------------------------------------- friends
+    /// Friend requests received and not answered yet (last known), for the badges.
+    int pendingFriendRequests() const { return pendingFriendRequests_; }
+    /// Reads the friend list now. It is also read every minute while connected: a new
+    /// request, or a request of yours that was accepted, is notified once.
+    void refreshFriends(ApiCallback cb = {});
+    /// A screen that loaded GET /friends itself shares the answer (badges, notifications).
+    void noteFriends(const Json& data);
 
     // ----------------------------------------------------------------- data
     /// GET with the session when logged in. On network failure the last cached answer is
@@ -136,6 +148,8 @@ private:
     void applyRecordJson(OnlineAttempt& a, const Json& record, const Json& ranking);
     void saveAttempts();
     void loadKnownRanks();
+    void loadFriendNotices();
+    void resetFriends();
 
     std::unique_ptr<OnlineClient> client_;
     OnlineConfig config_;
@@ -165,6 +179,12 @@ private:
     bool syncClaim_ = false;
     bool syncSentSomething_ = false;
     std::set<std::string> syncPolled_;
+
+    float friendsTimer_ = 3.0f;
+    bool friendsBusy_ = false;
+    int pendingFriendRequests_ = 0;
+    /// Per player: ids seen in the last friend list (to notify only what is new).
+    Json friendNotices_ = Json::object();
 
     std::deque<Notification> notifications_;
     std::vector<RankChange> rankChanges_;

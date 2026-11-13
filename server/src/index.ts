@@ -2,12 +2,13 @@
 // caching of anonymous reads, and the daily maintenance cron.
 
 import * as admin from "./admin";
-import { login, logout, me, optionalAuth, refresh, register, type AuthInfo } from "./auth";
+import { login, logout, me, optionalAuth, refresh, register, usernameAvailable, type AuthInfo } from "./auth";
 import * as friends from "./friends";
 import * as globe from "./globe";
 import { ApiError, errorResponse, json, log, type Bindings, type Ctx } from "./http";
 import * as boards from "./leaderboards";
 import { listLevels } from "./levels";
+import type { RecordRow } from "./model";
 import * as players from "./players";
 import { RULES, rateLimit } from "./ratelimit";
 import * as records from "./records";
@@ -73,6 +74,7 @@ route(
 );
 
 // Authentication
+route("GET", `${V}/auth/username-available`, (ctx) => usernameAvailable(ctx));
 route("POST", `${V}/auth/register`, (ctx) => register(ctx));
 route("POST", `${V}/auth/login`, (ctx) => login(ctx));
 route("POST", `${V}/auth/refresh`, (ctx) => refresh(ctx));
@@ -175,8 +177,20 @@ async function handle(request: Request, env: Bindings, exec: ExecutionContext, r
     return response;
 }
 
+/** Records held PENDING with a verified replay are re-decided with the current rules. */
+async function recheckHeldRecords(env: Bindings, exec: ExecutionContext): Promise<number> {
+    const url = new URL("https://maintenance.invalid/");
+    const ctx: Ctx = { request: new Request(url), env, exec, url, params: {}, requestId: crypto.randomUUID(), ip: "maintenance" };
+    const held = await env.DB.prepare(
+        "SELECT * FROM records WHERE verification_status = 'PENDING' AND replay_id IS NOT NULL ORDER BY created_at LIMIT 200",
+    ).all<RecordRow>();
+    let changed = 0;
+    for (const r of held.results) if (await records.recheckHeld(ctx, r)) ++changed;
+    return changed;
+}
+
 /** Daily maintenance: expired sessions, stale rate-limit windows, old audit entries. */
-async function maintenance(env: Bindings): Promise<void> {
+async function maintenance(env: Bindings, exec: ExecutionContext): Promise<void> {
     const now = Date.now();
     const iso = (ms: number) => new Date(ms).toISOString();
     const results = await env.DB.batch([
@@ -187,7 +201,8 @@ async function maintenance(env: Bindings): Promise<void> {
         env.DB.prepare("DELETE FROM rate_limits WHERE window_start < ?1").bind(Math.floor(now / 1000) - 86400),
         env.DB.prepare("DELETE FROM audit_log WHERE created_at < ?1").bind(iso(now - 180 * 86400000)),
     ]);
-    log("info", "maintenance", { deleted: results.map((r) => r.meta.changes) });
+    const rechecked = await recheckHeldRecords(env, exec);
+    log("info", "maintenance", { deleted: results.map((r) => r.meta.changes), rechecked });
 }
 
 export default {
@@ -216,6 +231,6 @@ export default {
         return response;
     },
     async scheduled(_controller, env, exec): Promise<void> {
-        exec.waitUntil(maintenance(env));
+        exec.waitUntil(maintenance(env, exec));
     },
 } satisfies ExportedHandler<Bindings>;

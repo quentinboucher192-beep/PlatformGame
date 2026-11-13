@@ -50,6 +50,29 @@ describe("registration", () => {
         expect(s.token_hash).toMatch(/^[0-9a-f]{64}$/);
     });
 
+    it("says whether a username is free before registering", async () => {
+        await registerPlayer("Orion");
+        const check = async (name: string) =>
+            (await api("GET", `/api/v1/auth/username-available?username=${encodeURIComponent(name)}`)).body.data;
+        expect(await check("Andromeda")).toMatchObject({ available: true, reason: null });
+        expect(await check("orion")).toMatchObject({ available: false, reason: "taken" });
+        expect(await check("ORION")).toMatchObject({ available: false, reason: "taken" });
+        expect(await check("Admin")).toMatchObject({ available: false, reason: "reserved" });
+        expect(await check("a")).toMatchObject({ available: false, reason: "invalid" });
+        expect(await check("_bad_")).toMatchObject({ available: false, reason: "invalid" });
+        expect(await check("")).toMatchObject({ available: false, reason: "invalid" });
+        // The answer is never cached and the check is rate limited per IP.
+        const res = await api("GET", "/api/v1/auth/username-available?username=Andromeda");
+        expect(res.headers.get("cache-control")).toBe("no-store");
+        const ip = freshIp();
+        let limited = 0;
+        for (let i = 0; i < 65; ++i) {
+            const r = await api("GET", `/api/v1/auth/username-available?username=Name${i}x`, { ip });
+            if (r.status === 429) ++limited;
+        }
+        expect(limited).toBeGreaterThan(0);
+    });
+
     it("refuses duplicates, reserved names, weak passwords and missing consent", async () => {
         await registerPlayer("Orion");
         const dup = await api("POST", "/api/v1/auth/register", { body: { username: "orion", password: "another password", accept_tos: true, tos_version: "2026-11" } });

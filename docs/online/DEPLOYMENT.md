@@ -70,7 +70,7 @@ Production : mêmes étapes sans `--env staging` (`npm run deploy:production`,
 
 | Environnement | Adresse | État |
 |---|---|---|
-| staging | `https://cosmic-online-staging.xpg-licences-workersdev.workers.dev` | déployé (D1 `cosmic-online-staging`, R2 `cosmic-online-staging-files`, migrations 0001–0002, 9 niveaux de la version 2.1.0), `IP_HASH_SALT` défini, pas d'`ADMIN_TOKEN` |
+| staging | `https://cosmic-online-staging.xpg-licences-workersdev.workers.dev` | déployé (D1 `cosmic-online-staging`, R2 `cosmic-online-staging-files`, migrations 0001–0002, 9 niveaux de la version 2.1.0 ; code du serveur de la version 2.1.1 : vérification du pseudonyme, règle des classements établis), `IP_HASH_SALT` défini, pas d'`ADMIN_TOKEN` (les revues manuelles ne sont donc pas possibles tant que vous n'en définissez pas un) |
 | production | — | non déployée : `npm run deploy:production` avec un fichier de secrets au premier déploiement (`--secrets-file`), puis `npm run db:migrate:production` et l'enregistrement des niveaux |
 
 Premier déploiement d'un Worker qui n'existe pas encore : les secrets déclarés comme requis

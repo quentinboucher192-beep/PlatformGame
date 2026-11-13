@@ -66,23 +66,28 @@ public:
         auto changes = g_.online.takeRankChanges();
         if (!changes.empty()) startRankAnimation(changes.back());
         requestAll();
-        // First visit: explain Cosmic Online and offer an account (never mandatory).
-        if (g_.onlineOpen == "register" || g_.onlineOpen == "login") g_.app.pushScene(makeOnlineAccount(g_, false));
-        else if (g_.onlineOpen == "settings") {
+        // ONLINE requires an account (the rest of the game never does).
+        if (g_.onlineOpen == "login" || g_.onlineOpen.rfind("register", 0) == 0) {
+            accountAsked_ = true;
+            g_.app.pushScene(makeOnlineAccount(g_, false, true));
+        } else if (g_.onlineOpen == "settings" || g_.onlineOpen == "friends") {
+            int tab = g_.onlineOpen == "friends" ? 2 : 0;
             g_.onlineOpen.clear();
-            g_.app.pushScene(makeOnlineSettings(g_));
-        } else if (g_.online.usable() && !g_.online.loggedIn() && !g_.settings.online.onboardingDone)
-            g_.app.pushScene(makeOnlineAccount(g_, true));
+            g_.app.pushScene(makeOnlineSettings(g_, tab));
+        }
+        requireAccount();
     }
 
     void onResume() override {
         g_.playMusic("music/menu_theme.ogg");
+        accountAsked_ = false;
         requestAll();
     }
 
     void update(float dt) override {
         t_ += dt;
         bg_.update(dt);
+        requireAccount();
         cam_.update(dt);
         idle_ += dt;
         rankAnimT_ += dt;
@@ -114,6 +119,18 @@ public:
     }
 
 private:
+    /// Without an account (never logged in, logged out, session lost) the account screen
+    /// opens; leaving it without logging in returns to the main menu.
+    void requireAccount() {
+        if (g_.online.loggedIn()) {
+            accountAsked_ = false;
+            return;
+        }
+        if (accountAsked_ || g_.app.topScene() != this || g_.app.transitioning()) return;
+        accountAsked_ = true;
+        g_.app.pushScene(makeOnlineAccount(g_, !g_.settings.online.onboardingDone, true));
+    }
+
     // ----------------------------------------------------------------- data
     const RankedLevel* level() const { return levels_.empty() ? nullptr : &levels_[static_cast<size_t>(levelIdx_)]; }
 
@@ -535,9 +552,12 @@ private:
         st.small = true;
         ui.pushId("online/header");
         st.fontSize = 18;
-        float w = ui.text().measure("Paramètres en ligne", FontFace::Bold, ui.s(18)).x + ui.s(36);
-        if (ui.button("settings", {zoneC_.right() - w, header_.center().y - ui.s(19), w, ui.s(38)}, "Paramètres en ligne", st))
-            g_.app.pushScene(makeOnlineSettings(g_));
+        std::string settingsLabel = "Paramètres en ligne";
+        if (int n = g_.online.pendingFriendRequests(); n > 0)
+            settingsLabel += " · " + std::to_string(n) + (n > 1 ? " demandes d'amis" : " demande d'ami");
+        float w = ui.text().measure(settingsLabel, FontFace::Bold, ui.s(18)).x + ui.s(36);
+        if (ui.button("settings", {zoneC_.right() - w, header_.center().y - ui.s(19), w, ui.s(38)}, settingsLabel, st))
+            g_.app.pushScene(makeOnlineSettings(g_, g_.online.pendingFriendRequests() > 0 ? 2 : 0));
         if (g_.online.usable() && g_.online.unsentCount() + g_.online.pendingVerificationCount() > 0 && g_.online.loggedIn()) {
             if (ui.button("sync", {zoneC_.right() - w * 2 - ui.s(10), header_.center().y - ui.s(19), w, ui.s(38)},
                           g_.online.syncing() ? "Synchronisation…" : "Synchroniser", st))
@@ -568,7 +588,7 @@ private:
             std::string planet = g_.progression.lastPlanet.empty() ? "sylvanox" : g_.progression.lastPlanet;
             g_.app.switchScene(makeLevelSelect(g_, planet));
         }
-        if (item("planets", "PLANÈTES", false)) g_.app.switchScene(makePlanetMap(g_));
+        if (item("planets", "CAMPAGNE", false)) g_.app.switchScene(makePlanetMap(g_));
         item("ranking", "ONLINE RANKING", true);
         if (item("workshop", "ATELIER", false)) g_.app.switchScene(makeContentManager(g_));
         if (item("settings", "PARAMÈTRES", false)) g_.app.pushScene(makeSettingsScene(g_, false));
@@ -1122,6 +1142,7 @@ private:
 
     std::vector<RankedLevel> levels_;
     size_t installedCount_ = 0;
+    bool accountAsked_ = false;
     int levelIdx_ = 0;
     int category_ = 0;
     int period_ = 0;
