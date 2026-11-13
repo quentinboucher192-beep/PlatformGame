@@ -19,7 +19,6 @@ private:
     const char* name_;
 };
 }  // namespace
-std::unique_ptr<Scene> makeSettingsScene(GameServices& g, bool) { return std::make_unique<Placeholder>(g, "settings"); }
 std::unique_ptr<Scene> makeLevelEditor(GameServices& g, const std::string&) { return std::make_unique<Placeholder>(g, "level editor"); }
 std::unique_ptr<Scene> makeEnemyEditor(GameServices& g) { return std::make_unique<Placeholder>(g, "enemy editor"); }
 std::unique_ptr<Scene> makeContentManager(GameServices& g) { return std::make_unique<Placeholder>(g, "content"); }
