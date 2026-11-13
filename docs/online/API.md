@@ -192,6 +192,7 @@ prévu est coupé et refusé (`413 PAYLOAD_TOO_LARGE`). Un `Content-Length` inva
 | 405 | `METHOD_NOT_ALLOWED` | Méthode non autorisée sur cette route |
 | 409 | `USERNAME_TAKEN` | Pseudonyme déjà utilisé (sans tenir compte de la casse) |
 | 409 | `LEVEL_VERSION_MISMATCH` | `level_version` / `level_hash` inconnus du serveur ; `details.current_version` |
+| 409 | `LEVEL_VERSION_PENDING` | révision plus récente que toutes celles du serveur (jeu mis à jour avant l'enregistrement des niveaux) : le jeu garde la performance et la renvoie plus tard |
 | 409 | `LEVEL_VERSION_RETIRED` | Révision plus classée (legacy) ; `details.current_version` |
 | 409 | `ATTEMPT_CONFLICT` | `attempt_id` déjà soumis avec d'autres `time_ms`, `deaths` ou `level_hash` |
 | 409 | `DUPLICATE_SUBMISSION` | Deux soumissions identiques simultanées |

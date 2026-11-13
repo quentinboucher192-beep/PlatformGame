@@ -235,6 +235,12 @@ export async function submit(ctx: Ctx): Promise<Response> {
     const version = await ctx.env.DB.prepare("SELECT * FROM level_versions WHERE level_id = ?1 AND version = ?2")
         .bind(level.id, levelVersion)
         .first<LevelVersionRow>();
+    // A revision newer than every registered one: the game was updated before the server
+    // registered its levels. Temporary: the game keeps the run and sends it again later.
+    if (!version && levelVersion! > level.current_version)
+        throw Errors.conflict("LEVEL_VERSION_PENDING", "Cette révision du niveau n'est pas encore enregistrée sur le serveur.", {
+            current_version: level.current_version,
+        });
     if (!version || version.content_hash !== levelHash)
         throw Errors.conflict("LEVEL_VERSION_MISMATCH", "Cette version du niveau n'est pas reconnue par le serveur.", {
             current_version: level.current_version,

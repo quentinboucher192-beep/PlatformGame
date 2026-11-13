@@ -547,6 +547,12 @@ void OnlineService::syncStep() {
                     // Kept LOCAL: sent again when the connection / session comes back.
                     return finishSync();
                 }
+                if (r.code == "LEVEL_VERSION_PENDING") {
+                    // The game is newer than the server's level list: kept LOCAL, sent later.
+                    if (sub) sub->note = "Révision du niveau pas encore enregistrée sur le serveur : envoi automatique plus tard.";
+                    saveAttempts();
+                    return finishSync();
+                }
                 if (sub) {
                     // Refused for good by the server (version, category rules...).
                     sub->blocked = true;

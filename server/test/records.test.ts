@@ -82,6 +82,10 @@ describe("record submission", () => {
         const hash = await api("POST", "/api/v1/records/submit", { token: p.token, body: submission({ level_hash: "f".repeat(64) }) });
         expect(hash.status).toBe(409);
         expect(hash.body.error.code).toBe("LEVEL_VERSION_MISMATCH");
+        // A newer revision than the server knows: temporary (the game sends it again later).
+        const newer = await api("POST", "/api/v1/records/submit", { token: p.token, body: submission({ level_version: 9, level_hash: "e".repeat(64) }) });
+        expect(newer.status).toBe(409);
+        expect(newer.body.error.code).toBe("LEVEL_VERSION_PENDING");
         const locked = await api("POST", "/api/v1/records/submit", {
             token: p.token,
             body: submission({ level_id: "locked_01", level_hash: "c".repeat(64) }),

@@ -66,6 +66,7 @@ struct FakeServer {
     Json friends = {{"friends", Json::array()}, {"incoming", Json::array()}, {"outgoing", Json::array()}};
     std::set<std::string> takenNames = {"orion"};
     int friendsCalls = 0;
+    bool levelPending = false;  // the server does not know the game's level revision yet
 
     static Json friendEntry(const std::string& id, const std::string& name) {
         return {{"player", {{"id", id}, {"username", name}}}, {"since", "2026-11-13T10:00:00.000Z"}};
@@ -137,6 +138,7 @@ struct FakeServer {
         }
         if (path == "/api/v1/records/submit") {
             ++submitCalls;
+            if (levelPending) return apiError(409, "LEVEL_VERSION_PENDING");
             Json b = Json::parse(rq.body);
             std::string id = "rec-" + b["attempt_id"].get<std::string>().substr(0, 8) + "-" + b["category"].get<std::string>();
             bool dup = records.count(id) > 0;
@@ -821,4 +823,33 @@ TEST_CASE("online: friend requests are notified once, acceptances too") {
     h.svc.logout(false);
     CHECK(pump(h.svc, [&] { return !h.svc.loggedIn(); }));
     CHECK(h.svc.pendingFriendRequests() == 0);
+}
+
+TEST_CASE("online: a run on a revision the server does not know yet is sent later") {
+    ContentDatabase content;
+    content.reload();
+    float elapsed = 0.0f;
+    ReplayData rep = playCorridor(content, 0.0f, &elapsed);
+    Harness h("pending_revision");
+    CHECK(h.login());
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        h.server->levelPending = true;
+    }
+    OnlineAttempt* a = h.svc.recordRun(candidateFor(rep, rep.durationMs), rep.attemptId, &rep);
+    CHECK(a != nullptr);
+    CHECK(pump(h.svc, [&] { return h.server->submitCalls > 0 && !h.svc.syncing(); }));
+    a = h.svc.attempts().find(rep.attemptId);
+    // Kept LOCAL (not blocked for good).
+    for (const auto& s : a->submissions) {
+        CHECK(s.status == RecordStatus::Local);
+        CHECK(!s.blocked);
+    }
+    CHECK(h.svc.unsentCount() > 0);
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        h.server->levelPending = false;
+    }
+    h.svc.syncNow();
+    CHECK(pump(h.svc, [&] { return !h.svc.syncing() && h.svc.unsentCount() == 0; }, 5000));
 }
