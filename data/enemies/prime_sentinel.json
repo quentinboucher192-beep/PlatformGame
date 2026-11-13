@@ -43,8 +43,8 @@
       "count": 5,
       "spread": 14,
       "origin": [
-        8,
-        -24
+        34,
+        -52
       ],
       "projectileRadius": 5
     },
@@ -63,8 +63,8 @@
       "laserLength": 440,
       "sweepDegrees": 80,
       "origin": [
-        8,
-        -24
+        11,
+        -26
       ],
       "color": "#ffb347"
     },

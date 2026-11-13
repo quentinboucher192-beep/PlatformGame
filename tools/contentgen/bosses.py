@@ -45,7 +45,7 @@ ICE_SLOW = dict(hitEffect="ice_burst", slow=0.5, slowDuration=1.6)
 
 
 def spore_queen():
-    o = [0, -78]
+    o = [4, -65]   # spore burst above the crown cup
     attacks = [
         _atk("bite", "Morsure des trois têtes", "melee", 2, 96, 0.75, 0.3, 0.6, 2.4, "telegraph_bite", "bite",
              knockback=260),
@@ -74,10 +74,11 @@ def spore_queen():
 
 
 def prime_sentinel():
-    eye = [8, -24]
+    eye = [11, -26]       # beam starts at the eye
+    cannon = [34, -52]    # upper cannon muzzle on the volley fire frame
     attacks = [
         _atk("volley", "Salve de disques", "spread", 1, 460, 0.7, 0.25, 0.6, 2.6, "telegraph_volley", "volley",
-             projectile="energy_disc", projectileSpeed=190, count=5, spread=14, origin=eye, projectileRadius=5),
+             projectile="energy_disc", projectileSpeed=190, count=5, spread=14, origin=cannon, projectileRadius=5),
         _atk("beam", "Rayon de l'œil", "laser", 2, 460, 1.1, 1.5, 1.0, 5.5, "telegraph_beam", "beam",
              laserLength=440, sweepDegrees=80, origin=eye, color="#ffb347"),
         _atk("slam", "Écrasement", "lunge", 2, 300, 0.8, 0.6, 0.9, 4.0, "telegraph_slam", "slam",
@@ -162,10 +163,11 @@ def _wyrm(id, name, title, desc, theme):
 
 
 def forge_core():
-    heart = [6, -24]
+    heart = [12, -24]     # fire beam origin
+    crucible = [25, -36]  # near crucible on the volley fire frame
     attacks = [
         _atk("volley", "Gerbe de scories", "arc", 1, 460, 0.75, 0.25, 0.6, 2.8, "telegraph_volley", "volley",
-             projectile="magma_glob", projectileSpeed=170, count=5, spread=16, gravity=380, origin=heart, **FIRE),
+             projectile="magma_glob", projectileSpeed=170, count=5, spread=16, gravity=380, origin=crucible, **FIRE),
         _atk("beam", "Rayon de fusion", "laser", 2, 460, 1.1, 1.6, 1.0, 5.5, "telegraph_beam", "beam",
              laserLength=440, sweepDegrees=100, origin=heart, color="#ff8a3d"),
         _atk("slam", "Chute du creuset", "lunge", 2, 300, 0.8, 0.6, 0.9, 4.0, "telegraph_slam", "slam",
@@ -193,7 +195,7 @@ def forge_core():
 
 
 def frost_hydra():
-    o = [0, -78]
+    o = [0, -78]   # ice shards from the icicle crown
     attacks = [
         _atk("bite", "Morsure gelée", "melee", 2, 96, 0.75, 0.3, 0.6, 2.4, "telegraph_bite", "bite", knockback=260,
              slow=0.5, slowDuration=1.4),

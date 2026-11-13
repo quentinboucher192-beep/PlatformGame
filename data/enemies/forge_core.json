@@ -44,8 +44,8 @@
       "spread": 16,
       "gravity": 380,
       "origin": [
-        6,
-        -24
+        25,
+        -36
       ],
       "hitEffect": "fire_burst"
     },
@@ -64,7 +64,7 @@
       "laserLength": 440,
       "sweepDegrees": 100,
       "origin": [
-        6,
+        12,
         -24
       ],
       "color": "#ff8a3d"

@@ -58,8 +58,8 @@
       "spread": 22,
       "gravity": 420,
       "origin": [
-        0,
-        -78
+        4,
+        -65
       ],
       "projectileRadius": 6,
       "hitEffect": "acid_burst"
