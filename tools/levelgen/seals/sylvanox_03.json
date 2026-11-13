@@ -1,0 +1,38 @@
+[
+  {
+    "material": "ancient_metal",
+    "rect": [
+      1056.0,
+      -48.0,
+      48.0,
+      496.0
+    ]
+  },
+  {
+    "material": "ancient_metal",
+    "rect": [
+      1632.0,
+      -48.0,
+      48.0,
+      896.0
+    ]
+  },
+  {
+    "material": "ancient_metal",
+    "rect": [
+      4144.0,
+      -48.0,
+      48.0,
+      720.0
+    ]
+  },
+  {
+    "material": "ancient_metal",
+    "rect": [
+      4080.0,
+      -48.0,
+      16.0,
+      752.0
+    ]
+  }
+]

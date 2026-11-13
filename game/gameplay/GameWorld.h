@@ -56,6 +56,10 @@ struct WorldMessage {
 /// The simulation of a level: player, enemies, entities, projectiles, physics, camera,
 /// timer, events and cinematics. Also used by the level editor (render-only preview)
 /// and by the enemy editor (test arena).
+/// The level ceiling is this many pixels above the top of the level bounds (designed routes
+/// may brush the top edge; nothing can go farther up).
+constexpr float kCeilingMargin = 48.0f;
+
 class GameWorld {
 public:
     GameWorld(WorldServices services, WorldMode mode);

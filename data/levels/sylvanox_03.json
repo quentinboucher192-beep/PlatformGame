@@ -2619,7 +2619,8 @@
     48.0
    ],
    "props": {
-    "label": "Ancrages"
+    "label": "Ancrages",
+    "optional": true
    }
   },
   {
@@ -4189,7 +4190,8 @@
     48.0
    ],
    "props": {
-    "label": "Galerie des ancrages"
+    "label": "Galerie des ancrages",
+    "optional": true
    }
   },
   {
@@ -4937,7 +4939,8 @@
     48.0
    ],
    "props": {
-    "label": "Coursives de phase"
+    "label": "Coursives de phase",
+    "optional": true
    }
   },
   {
@@ -11010,6 +11013,66 @@
     "effect": "abyss_motes",
     "rate": 0.8
    }
+  },
+  {
+   "id": "seal_1",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1056.0,
+    -48.0,
+    48.0,
+    496.0
+   ],
+   "props": {
+    "material": "ancient_metal",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_2",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1632.0,
+    -48.0,
+    48.0,
+    896.0
+   ],
+   "props": {
+    "material": "ancient_metal",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_3",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    4144.0,
+    -48.0,
+    48.0,
+    720.0
+   ],
+   "props": {
+    "material": "ancient_metal",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_4",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    4080.0,
+    -48.0,
+    16.0,
+    752.0
+   ],
+   "props": {
+    "material": "ancient_metal",
+    "seal": true
+   }
   }
  ],
  "events": [
@@ -11273,7 +11336,7 @@
  },
  "metadata": {
   "generator": "tools/levelgen/sylvanox_03.py",
-  "revision": 2
+  "revision": 3
  },
  "killY": 1464
 }

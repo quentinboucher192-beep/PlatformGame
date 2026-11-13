@@ -10645,6 +10645,36 @@
     "glow": true,
     "sway": 0.0
    }
+  },
+  {
+   "id": "seal_1",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    4000.0,
+    -48.0,
+    16.0,
+    784.0
+   ],
+   "props": {
+    "material": "basalt",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_2",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    8448.0,
+    -48.0,
+    16.0,
+    496.0
+   ],
+   "props": {
+    "material": "basalt",
+    "seal": true
+   }
   }
  ],
  "events": [
@@ -10981,7 +11011,7 @@
  },
  "metadata": {
   "generator": "tools/levelgen/pyralis_02.py",
-  "revision": 2
+  "revision": 3
  },
  "killY": 1168
 }

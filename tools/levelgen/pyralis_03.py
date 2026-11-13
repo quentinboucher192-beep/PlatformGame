@@ -218,6 +218,7 @@ L.solid(354, 36, 358, 37, M)
 L.orb("health_orb", 343.5, 34)
 R(342, 46, 354, mat=M)                            # conduit landing (top 46)
 L.solid(354, 37, 380, 44, M)                  # conduit hood
+L.solid(354, 0, 358, 37, M)                   # forge wall up to the vault: the conduit cannot be skipped over the hood
 L.liquid(354, 378, 46.5, 50, "lava")
 L.solid(354, 50, 378, LAVA + 3, "basalt", deco=False)
 raft = L.moving(374, 46, 4, -20, 0, speed=60, wait=1.2, active=False)
@@ -370,6 +371,6 @@ P.intro("PYRALIS", "La Fonderie Primordiale",
         "Toute la fonderie tremble... Le cœur bat encore, là-bas. Allons-y.",
         cut=(240, 30), pan=(470, 26), low=(366, 44))
 P.outro("FONDERIE ÉTEINTE", "Pyralis — La Fonderie Primordiale")
-d["metadata"] = {"generator": "tools/levelgen/pyralis_03.py", "revision": 2}
+d["metadata"] = {"generator": "tools/levelgen/pyralis_03.py", "revision": 3}
 
 L.save(os.path.join(ROOT, "data/levels/pyralis_03.json"))

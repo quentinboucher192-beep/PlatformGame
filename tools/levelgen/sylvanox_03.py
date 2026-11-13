@@ -201,7 +201,7 @@ L.enemy("sentinel", 178, 28, patrol_tiles=3)
 
 L.solid(186, 33, 202, 40, X)                        # crystal balcony (top 33)
 L.decor("crystal_big", 200, 33, flip=True)
-L.checkpoint(189, 33, "Ancrages")
+L.checkpoint(189, 33, "Ancrages", optional=True)  # gliding under the balcony is fine
 L.light(189, 28, CYAN, 90)
 L.enemy("burrower", 198, 33, face_left=True)
 L.orb("health_orb", 194, 31)
@@ -278,7 +278,7 @@ L.solid(296, 36, 300, 58, M)                        # wall 1
 L.grapple(296, 32)
 L.laser(298, 28, 8, rotation=90, on=1.0, off=1.8, warn=0.6)
 L.oneway(304, 310, 44, "tech_ledge")                # rest ledge between the walls
-L.checkpoint(308.5, 44, "Galerie des ancrages")
+L.checkpoint(308.5, 44, "Galerie des ancrages", optional=True)  # upper route (alternative)
 L.grapple(315, 39)
 L.solid(322, 36, 326, 58, M)                        # wall 2
 L.grapple(322, 32)
@@ -321,7 +321,7 @@ L.orb("health_orb", 297.5, 68)
 L.orb("energy_orb", 300, 68)
 L.shards_line(279, 68, 282, 68, 2)
 L.shards_line(305, 68, 309, 68, 2)
-L.checkpoint(306, 70, "Coursives de phase")
+L.checkpoint(306, 70, "Coursives de phase", optional=True)  # lower route (alternative)
 L.light(306, 66, CYAN, 70)
 L.shards_line(321, 68, 333, 68, 4)
 L.shards_line(352, 66, 352, 56, 3)
@@ -492,6 +492,6 @@ d["outro"] = {"skippable": True, "letterbox": True, "steps": [
     {"type": "flash", "duration": 0.6, "params": {"color": "#e6fffb"}},
     {"type": "fade", "duration": 0.9, "params": {"to": 1}},
 ]}
-d["metadata"] = {"generator": "tools/levelgen/sylvanox_03.py", "revision": 2}
+d["metadata"] = {"generator": "tools/levelgen/sylvanox_03.py", "revision": 3}
 
 L.save(os.path.join(ROOT, "data/levels/sylvanox_03.json"))

@@ -10896,6 +10896,81 @@
     "glow": true,
     "sway": 0.0
    }
+  },
+  {
+   "id": "seal_1",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7152.0,
+    -48.0,
+    48.0,
+    800.0
+   ],
+   "props": {
+    "material": "root",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_2",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    8112.0,
+    -48.0,
+    48.0,
+    752.0
+   ],
+   "props": {
+    "material": "root",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_3",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5184.0,
+    -48.0,
+    16.0,
+    304.0
+   ],
+   "props": {
+    "material": "root",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_4",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5184.0,
+    464.0,
+    16.0,
+    240.0
+   ],
+   "props": {
+    "material": "root",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_5",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    8032.0,
+    -48.0,
+    16.0,
+    848.0
+   ],
+   "props": {
+    "material": "root",
+    "seal": true
+   }
   }
  ],
  "events": [
@@ -11145,7 +11220,7 @@
  },
  "metadata": {
   "generator": "tools/levelgen/sylvanox_02.py",
-  "revision": 2
+  "revision": 3
  },
  "killY": 1304
 }

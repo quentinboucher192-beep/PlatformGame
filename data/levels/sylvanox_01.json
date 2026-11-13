@@ -9741,6 +9741,126 @@
     "glow": true,
     "sway": 0.0
    }
+  },
+  {
+   "id": "seal_1",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3808.0,
+    -48.0,
+    48.0,
+    656.0
+   ],
+   "props": {
+    "material": "ruin_stone",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_2",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5824.0,
+    -48.0,
+    48.0,
+    672.0
+   ],
+   "props": {
+    "material": "ruin_stone",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_3",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6688.0,
+    -48.0,
+    48.0,
+    672.0
+   ],
+   "props": {
+    "material": "ruin_stone",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_4",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    8704.0,
+    -48.0,
+    48.0,
+    560.0
+   ],
+   "props": {
+    "material": "ruin_stone",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_5",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    9696.0,
+    -48.0,
+    48.0,
+    656.0
+   ],
+   "props": {
+    "material": "ruin_stone",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_6",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    4320.0,
+    -48.0,
+    16.0,
+    720.0
+   ],
+   "props": {
+    "material": "ruin_stone",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_7",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6608.0,
+    -48.0,
+    16.0,
+    720.0
+   ],
+   "props": {
+    "material": "ruin_stone",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_8",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    9632.0,
+    -48.0,
+    16.0,
+    688.0
+   ],
+   "props": {
+    "material": "ruin_stone",
+    "seal": true
+   }
   }
  ],
  "events": [
@@ -9982,7 +10102,7 @@
  },
  "metadata": {
   "generator": "tools/levelgen/sylvanox_01.py",
-  "revision": 2
+  "revision": 3
  },
  "killY": 1240
 }

@@ -194,8 +194,13 @@ class Level:
     def start(self, x, y_ground):
         return self.obj("player_start", [x * T - 5, y_ground * T - 22, 10, 22])
 
-    def checkpoint(self, x, y_ground, label=""):
-        return self.obj("checkpoint", [x * T - 12, y_ground * T - 48, 24, 48], props={"label": label})
+    def checkpoint(self, x, y_ground, label="", optional=False):
+        """optional: checkpoint of a detour or of an alternative route (the shortcut detector
+        does not require the route to pass by it)."""
+        props = {"label": label}
+        if optional:
+            props["optional"] = True
+        return self.obj("checkpoint", [x * T - 12, y_ground * T - 48, 24, 48], props=props)
 
     def exit(self, x, y_ground, locked=False):
         return self.obj("exit", [x * T - 20, y_ground * T - 64, 40, 64], props={"locked": locked})
@@ -292,7 +297,21 @@ class Level:
         return self.obj("emitter", [x0 * T, y0 * T, (x1 - x0) * T, (y1 - y0) * T], layer,
                         {"effect": effect, "rate": rate})
 
+    def apply_seals(self):
+        """Gates computed by the shortcut detector (CosmicPlatformer --seal-levels
+        tools/levelgen/seals): solid columns from the top of the level that force the route
+        past the checkpoints."""
+        seal = os.path.join(os.path.dirname(os.path.abspath(__file__)), "seals", self.data["id"] + ".json")
+        if not os.path.exists(seal):
+            return
+        with open(seal, encoding="utf-8") as f:
+            gates = json.load(f)
+        for i, g in enumerate(gates):
+            self.obj("solid", list(g["rect"]), "terrain", {"material": g.get("material", "ruin_stone"), "seal": True},
+                     oid="seal_%d" % (i + 1))
+
     def save(self, path):
+        self.apply_seals()
         ids = [o["id"] for o in self.data["objects"]]
         assert len(ids) == len(set(ids)), "duplicate ids"
         with open(path, "w", encoding="utf-8") as f:

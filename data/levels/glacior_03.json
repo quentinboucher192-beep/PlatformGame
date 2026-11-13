@@ -10554,6 +10554,36 @@
     "glow": true,
     "sway": 0.0
    }
+  },
+  {
+   "id": "seal_1",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1488.0,
+    -48.0,
+    16.0,
+    816.0
+   ],
+   "props": {
+    "material": "frost_metal",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_2",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7712.0,
+    -48.0,
+    16.0,
+    720.0
+   ],
+   "props": {
+    "material": "frost_metal",
+    "seal": true
+   }
   }
  ],
  "events": [
@@ -10897,7 +10927,7 @@
  },
  "metadata": {
   "generator": "tools/levelgen/glacior_03.py",
-  "revision": 2
+  "revision": 3
  },
  "killY": 1304
 }

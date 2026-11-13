@@ -11659,6 +11659,141 @@
     "glow": true,
     "sway": 0.0
    }
+  },
+  {
+   "id": "seal_1",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    2128.0,
+    -48.0,
+    48.0,
+    864.0
+   ],
+   "props": {
+    "material": "basalt",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_2",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3088.0,
+    -48.0,
+    48.0,
+    704.0
+   ],
+   "props": {
+    "material": "basalt",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_3",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    4080.0,
+    -48.0,
+    48.0,
+    704.0
+   ],
+   "props": {
+    "material": "basalt",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_4",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5296.0,
+    -48.0,
+    48.0,
+    784.0
+   ],
+   "props": {
+    "material": "basalt",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_5",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5680.0,
+    -48.0,
+    48.0,
+    480.0
+   ],
+   "props": {
+    "material": "basalt",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_6",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6928.0,
+    -48.0,
+    48.0,
+    544.0
+   ],
+   "props": {
+    "material": "basalt",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_7",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7872.0,
+    -48.0,
+    48.0,
+    656.0
+   ],
+   "props": {
+    "material": "basalt",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_8",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    4032.0,
+    -48.0,
+    16.0,
+    720.0
+   ],
+   "props": {
+    "material": "basalt",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_9",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7808.0,
+    -48.0,
+    16.0,
+    720.0
+   ],
+   "props": {
+    "material": "basalt",
+    "seal": true
+   }
   }
  ],
  "events": [
@@ -11946,7 +12081,7 @@
  },
  "metadata": {
   "generator": "tools/levelgen/pyralis_01.py",
-  "revision": 2
+  "revision": 3
  },
  "killY": 1136
 }

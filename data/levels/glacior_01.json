@@ -9921,6 +9921,81 @@
     "glow": true,
     "sway": 0.0
    }
+  },
+  {
+   "id": "seal_1",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3488.0,
+    -48.0,
+    48.0,
+    592.0
+   ],
+   "props": {
+    "material": "snow_rock",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_2",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    4320.0,
+    -48.0,
+    48.0,
+    688.0
+   ],
+   "props": {
+    "material": "snow_rock",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_3",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5216.0,
+    -48.0,
+    48.0,
+    688.0
+   ],
+   "props": {
+    "material": "snow_rock",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_4",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5120.0,
+    -48.0,
+    16.0,
+    720.0
+   ],
+   "props": {
+    "material": "snow_rock",
+    "seal": true
+   }
+  },
+  {
+   "id": "seal_5",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    8032.0,
+    -48.0,
+    16.0,
+    752.0
+   ],
+   "props": {
+    "material": "snow_rock",
+    "seal": true
+   }
   }
  ],
  "events": [
@@ -10201,7 +10276,7 @@
  },
  "metadata": {
   "generator": "tools/levelgen/glacior_01.py",
-  "revision": 2
+  "revision": 3
  },
  "killY": 1176
 }

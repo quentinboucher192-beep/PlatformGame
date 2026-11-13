@@ -21,11 +21,15 @@
 //                           profile:<name> | replay:<name> (automated screenshots)
 //   --online-server <url>   Cosmic Online server to use (else data/online/config.json)
 //   --replay <file.cprz>    play a replay file (exact replays are re-simulated)
+//   --analyze-levels <dir>  shortcut detector on the campaign levels (report + PPM maps)
+//   --seal-levels <dir>     add gates against the shortcuts found (tools/levelgen/seals)
 //   --save-replay <file.cprz>
 //                           with --level: save the replay of the run when the level is completed
 //   --online-manifest <file.json>
 //                           write the ranking manifest of the built-in levels (server seed)
 
+#include <cstdio>
+#include <map>
 #include <SDL3/SDL_main.h>
 
 #include <cstdlib>
@@ -34,6 +38,7 @@
 
 #include "engine/core/Application.h"
 #include "engine/core/FileUtil.h"
+#include "game/levels/LevelAnalyzer.h"
 #include "game/online/Replay.h"
 #include "engine/core/Log.h"
 #include "engine/core/Paths.h"
@@ -93,6 +98,69 @@ int manifestFromCommandLine(const std::string& file) {
     Log::info("Manifeste en ligne : {} niveaux -> {}", manifest["levels"].size(), file);
     return 0;
 }
+/// `--analyze-levels <folder>`: shortcut detector on the campaign levels (report + maps).
+int analyzeFromCommandLine(const std::string& folder) {
+    ContentDatabase content;
+    content.reload();
+    std::error_code ec;
+    fs::create_directories(Paths::fromUtf8(folder), ec);
+    int failures = 0;
+    for (const LevelEntry* e : content.levels()) {
+        if (e->source != ContentSource::Builtin) continue;
+        auto level = content.loadLevel(e->id);
+        if (!level) continue;
+        LevelAnalysis a = analyzeLevel(*level, content);
+        std::printf("%-14s route %6.0f px / prévue %6.0f px (%3.0f %%)  montée %3.0f px  air %4.0f px  %s\n", e->id.c_str(), a.shortestRoute,
+                    a.intendedRoute, a.ratio * 100.0f, a.maxRise, a.airReach, a.ok() ? "OK" : "PROBLÈMES");
+        for (const auto& p : a.problems) std::printf("    - %s\n", p.c_str());
+        writeAnalysisImage(*level, content, a, Paths::toUtf8(Paths::fromUtf8(folder) / (e->id + ".ppm")));
+        failures += a.ok() ? 0 : 1;
+    }
+    return failures == 0 ? 0 : 1;
+}
+/// `--seal-levels <folder>`: for each campaign level whose checkpoints can be bypassed, adds
+/// suggested gates to <folder>/<level>.json (read by tools/levelgen/levelkit.py).
+int sealFromCommandLine(const std::string& folder) {
+    ContentDatabase content;
+    content.reload();
+    std::error_code ec;
+    fs::create_directories(Paths::fromUtf8(folder), ec);
+    int added = 0;
+    for (const LevelEntry* e : content.levels()) {
+        if (e->source != ContentSource::Builtin) continue;
+        auto level = content.loadLevel(e->id);
+        if (!level) continue;
+        LevelAnalysis a = analyzeLevel(*level, content);
+        auto gates = suggestGates(*level, a);
+        if (gates.empty()) continue;
+        // Material of the level's terrain (most common one).
+        std::map<std::string, int> count;
+        for (const auto& o : level->objects)
+            if (o.type == "solid") ++count[o.propStr("material", "ruin_stone")];
+        std::string material = "ruin_stone";
+        int best = 0;
+        for (const auto& [m, n] : count)
+            if (n > best) {
+                best = n;
+                material = m;
+            }
+        fs::path file = Paths::fromUtf8(folder) / (e->id + ".json");
+        Json list = Json::array();
+        if (auto j = FileUtil::loadJson(file); j && j->is_array()) list = *j;
+        for (const auto& g : gates) {
+            bool known = false;
+            for (const auto& e : list)
+                if (e.contains("rect") && e["rect"][0].get<float>() == g.x && e["rect"][3].get<float>() == g.h) known = true;
+            if (known) continue;
+            list.push_back({{"rect", {g.x, g.y, g.w, g.h}}, {"material", material}});
+            std::printf("%-14s porte x=%.0f  hauteur %.0f px\n", e->id.c_str(), g.x, g.h);
+            ++added;
+        }
+        FileUtil::saveJson(file, list);
+    }
+    std::printf("%d porte(s) ajoutée(s)\n", added);
+    return 0;
+}
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -120,6 +188,18 @@ int main(int argc, char** argv) {
             return 2;
         }
         int rc = exportFromCommandLine(args[i + 1], args[i + 2], value("--author"));
+        Log::shutdown();
+        return rc;
+    }
+
+    if (std::string dir = value("--analyze-levels"); !dir.empty()) {
+        int rc = analyzeFromCommandLine(dir);
+        Log::shutdown();
+        return rc;
+    }
+
+    if (std::string dir = value("--seal-levels"); !dir.empty()) {
+        int rc = sealFromCommandLine(dir);
         Log::shutdown();
         return rc;
     }

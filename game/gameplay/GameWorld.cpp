@@ -108,7 +108,14 @@ void GameWorld::buildStatic() {
     };
     for (const auto& o : level_.objects) {
         if (o.type == "solid" && o.prop<bool>("collision", true)) {
-            uint32_t id = physics_.add(o.rect, ColliderKind::Solid);
+            // A wall that reaches the top of the level goes on up to the ceiling: the space
+            // between the top of the level and the ceiling is never a way over it.
+            Rect r = o.rect;
+            if (r.y <= level_.bounds.y + 0.5f) {
+                r.h += r.y - (level_.bounds.y - kCeilingMargin);
+                r.y = level_.bounds.y - kCeilingMargin;
+            }
+            uint32_t id = physics_.add(r, ColliderKind::Solid);
             float f = frictionOf(o.propStr("material", "ruin_stone"));
             if (f < 1.0f)
                 if (Collider* c = physics_.get(id)) c->friction = f;
@@ -116,10 +123,12 @@ void GameWorld::buildStatic() {
             physics_.add({o.rect.x, o.rect.y, o.rect.w, 4.0f}, ColliderKind::OneWay);
         }
     }
-    // Invisible level borders (left / right / top) so nobody leaves the level.
+    // Invisible level borders (left / right / top) so nobody leaves the level: no route
+    // over the top of the level.
     const Rect& b = level_.bounds;
     physics_.add({b.x - 32, b.y - 400, 32, b.h + 800}, ColliderKind::Solid);
     physics_.add({b.right(), b.y - 400, 32, b.h + 800}, ColliderKind::Solid);
+    physics_.add({b.x - 32, b.y - kCeilingMargin - 64, b.w + 64, 64}, ColliderKind::Solid);
 }
 
 void GameWorld::createEntities() {
