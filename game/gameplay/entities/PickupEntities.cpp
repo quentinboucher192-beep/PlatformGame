@@ -7,6 +7,7 @@
 #include "game/content/ContentDatabase.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/entities/Entities.h"
+#include "engine/core/DetMath.h"
 
 namespace cosmic {
 
@@ -56,7 +57,7 @@ void CollectibleEntity::fixedUpdate(GameWorld& w, float dt) {
             box = Rect::fromCenter(c, box.size());
             base_ = c;
         } else {
-            box = Rect::fromCenter(base_ + Vec2{0, std::sin(w.time() * 2.5f + seed_) * 2.0f}, box.size());
+            box = Rect::fromCenter(base_ + Vec2{0, dmath::sin(w.time() * 2.5f + seed_) * 2.0f}, box.size());
         }
     }
     sprite_.anim.update(dt);
@@ -171,7 +172,7 @@ void PowerUnlockEntity::onPlayerEnter(GameWorld& w) {
 }
 
 void PowerUnlockEntity::render(RenderContext& ctx) {
-    Vec2 c = box.center() + Vec2{0, std::sin(t_ * 2.0f) * 3.0f};
+    Vec2 c = box.center() + Vec2{0, dmath::sin(t_ * 2.0f) * 3.0f};
     ctx.r.drawWorldGlow(c, 26.0f, {176, 76, 255, 90});
     sprite_.draw(ctx, c);
     ctx.lights.add(c, 90.0f, {200, 120, 255, 255});

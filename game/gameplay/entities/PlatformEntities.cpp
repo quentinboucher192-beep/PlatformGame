@@ -6,6 +6,7 @@
 #include "engine/resources/ResourceManager.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/entities/Entities.h"
+#include "engine/core/DetMath.h"
 
 namespace cosmic {
 
@@ -172,7 +173,7 @@ void CrumblePlatformEntity::render(RenderContext& ctx) {
     if (phase_ == Phase::Shaking) {
         float k = 1.0f - timer_ / std::max(0.05f, obj_.prop<float>("delay", 0.45f));
         row = k > 0.5f ? 2 : 1;
-        r.x += std::sin(ctx.time * 70.0f) * 1.0f;
+        r.x += dmath::sin(ctx.time * 70.0f) * 1.0f;
     }
     drawThreeSlice(ctx, *tex_, row, r);
 }
@@ -327,7 +328,7 @@ void PowerGateEntity::render(RenderContext& ctx) {
     if (icons_ && !broken_) {
         int idx = power_ == "dash" ? 0 : power_ == "wave" ? 1 : power_ == "shield" ? 2 : power_ == "impulse" ? 3 : power_ == "ground_pound" ? 6 : 4;
         Rect src{idx * 32.0f, 0, 32, 32};
-        float pulse = 0.6f + 0.4f * std::sin(ctx.time * 3.0f);
+        float pulse = 0.6f + 0.4f * dmath::sin(ctx.time * 3.0f);
         ctx.r.drawWorldTexture(*icons_, &src, Rect::fromCenter(box.center(), {12, 12}), iconTint.withAlphaF(0.55f * pulse));
     }
 }
@@ -347,7 +348,7 @@ void BouncePadEntity::onPlayerStay(GameWorld& w, float dt) {
     p.launch({p.vel.x, -power}, true);
     cooldown_ = 0.2f;
     sprite_.anim.play("bounce", true);
-    w.playSound("sounds/bounce.wav", box.center(), 0.9f, w.rng().range(0.95f, 1.05f));
+    w.playSound("sounds/bounce.wav", box.center(), 0.9f, w.fxRng().range(0.95f, 1.05f));
     w.particles().emit("bounce_spores", {box.center().x, box.y + 4}, 1.0f);
     w.emit(id(), "activate");
 }

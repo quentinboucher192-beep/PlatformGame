@@ -7,6 +7,7 @@
 #include "game/enemies/Enemy.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/entities/Entities.h"
+#include "engine/core/DetMath.h"
 
 namespace cosmic {
 
@@ -109,7 +110,7 @@ void LiquidEntity::fixedUpdate(GameWorld& w, float dt) {
         float x0 = std::max(box.x + 4, vis.x), x1 = std::min(box.right() - 4, vis.right());
         bubbleTimer_ = std::max(0.08f, 1.2f / std::max(1.0f, (x1 - x0) / 64.0f));
         if (x1 <= x0) return;
-        float x = w.rng().range(x0, x1);
+        float x = w.fxRng().range(x0, x1);
         const char* fx = kind_ == "acid" ? "acid_bubbles" : kind_ == "lava" ? "lava_bubbles" : "bubbles";
         w.particles().emit(fx, {x, box.y + 4}, 1.0f);
     }
@@ -126,7 +127,7 @@ void LiquidEntity::render(RenderContext& ctx) {
     float endY = std::min(box.bottom(), vis.bottom() + 16.0f);
     for (float x = startX; x < endX - 0.5f; x += 16.0f) {
         float w = std::min(16.0f, box.right() - x);
-        float bob = std::sin(ctx.time * 2.0f + x * 0.05f) * amp;
+        float bob = dmath::sin(ctx.time * 2.0f + x * 0.05f) * amp;
         Rect src{static_cast<float>(frame) * 16.0f, 0, w, 16};
         ctx.r.drawWorldTexture(*tex_, &src, {x, box.y + bob - 2, w, 16}, Color::white(), bm);
         for (float y = box.y + 14 + bob; y < endY - 0.5f; y += 16.0f) {
@@ -166,7 +167,7 @@ void DamageZoneEntity::fixedUpdate(GameWorld& w, float dt) {
     fxTimer_ -= dt;
     if (fxTimer_ <= 0.0f) {
         fxTimer_ = std::max(0.05f, 2.0f / std::max(1.0f, box.w * box.h / 2000.0f));
-        w.particles().emit("toxic_mist", {w.rng().range(box.x, box.right()), w.rng().range(box.y, box.bottom())}, 1.0f);
+        w.particles().emit("toxic_mist", {w.fxRng().range(box.x, box.right()), w.fxRng().range(box.y, box.bottom())}, 1.0f);
     }
 }
 
@@ -216,9 +217,9 @@ void SlowZoneEntity::fixedUpdate(GameWorld& w, float dt) {
     fxTimer_ -= dt;
     if (fxTimer_ <= 0.0f) {
         fxTimer_ = std::max(0.04f, 0.9f / area);
-        w.particles().emit(st.motes, {w.rng().range(box.x, box.right()), w.rng().range(box.y, box.bottom())}, 1.0f);
-        if (w.rng().chance(0.85f))
-            w.particles().emit(st.puffs, {w.rng().range(box.x + 8, box.right() - 8), w.rng().range(box.y + 8, box.bottom() - 4)},
+        w.particles().emit(st.motes, {w.fxRng().range(box.x, box.right()), w.fxRng().range(box.y, box.bottom())}, 1.0f);
+        if (w.fxRng().chance(0.85f))
+            w.particles().emit(st.puffs, {w.fxRng().range(box.x + 8, box.right() - 8), w.fxRng().range(box.y + 8, box.bottom() - 4)},
                                1.0f);
     }
 }
@@ -230,13 +231,13 @@ void SlowZoneEntity::render(RenderContext& ctx) {
     // Soft, slowly drifting glowing blobs (no hard edge) give the cloud its volume.
     int n = std::clamp(static_cast<int>(box.w * box.h / 1100.0f), 4, 40);
     for (int i = 0; i < n; ++i) {
-        float hx = std::fmod(std::sin(static_cast<float>(i) * 12.9898f + box.x) * 43758.5453f, 1.0f);
-        float hy = std::fmod(std::sin(static_cast<float>(i) * 78.233f + box.y) * 12345.678f, 1.0f);
+        float hx = std::fmod(dmath::sin(static_cast<float>(i) * 12.9898f + box.x) * 43758.5453f, 1.0f);
+        float hy = std::fmod(dmath::sin(static_cast<float>(i) * 78.233f + box.y) * 12345.678f, 1.0f);
         hx = hx < 0 ? hx + 1.0f : hx;
         hy = hy < 0 ? hy + 1.0f : hy;
         float drift = std::fmod(hx + ctx.time * (0.008f + 0.004f * static_cast<float>(i % 3)), 1.0f);
         Vec2 c{box.x + 10.0f + drift * std::max(0.0f, box.w - 20.0f),
-               box.y + 10.0f + hy * std::max(0.0f, box.h - 20.0f) + std::sin(ctx.time * 0.7f + static_cast<float>(i)) * 3.0f};
+               box.y + 10.0f + hy * std::max(0.0f, box.h - 20.0f) + dmath::sin(ctx.time * 0.7f + static_cast<float>(i)) * 3.0f};
         float r = 18.0f + 16.0f * std::fmod(hx * 7.0f, 1.0f);
         ctx.r.drawWorldGlow(c, r, st.tint.withAlpha(52));
     }
@@ -255,7 +256,7 @@ void LaserEntity::init(GameWorld& w) {
 
 Vec2 LaserEntity::origin() const {
     float a = degToRad(obj_.rotation);
-    Vec2 dir{std::cos(a), std::sin(a)};
+    Vec2 dir{dmath::cos(a), dmath::sin(a)};
     return box.center() - dir * (box.w * 0.5f - 8.0f);
 }
 
@@ -287,10 +288,10 @@ void LaserEntity::fixedUpdate(GameWorld& w, float dt) {
     }
     float a = degToRad(obj_.rotation);
     Vec2 o = origin();
-    Vec2 far = o + Vec2{std::cos(a), std::sin(a)} * (box.w - 8.0f);
+    Vec2 far = o + Vec2{dmath::cos(a), dmath::sin(a)} * (box.w - 8.0f);
     end_ = far;
     if (on_) {
-        if (auto t = w.physics().raycast(o + Vec2{std::cos(a), std::sin(a)} * 9.0f, far)) end_ = o + (far - o) * *t;
+        if (auto t = w.physics().raycast(o + Vec2{dmath::cos(a), dmath::sin(a)} * 9.0f, far)) end_ = o + (far - o) * *t;
         Player& p = w.player();
         if (hitTimer_ <= 0.0f && p.alive() && Collision::segmentIntersectsRect(o, end_, p.box.expanded(-1))) {
             DamageInfo d;
@@ -319,14 +320,14 @@ void LaserEntity::render(RenderContext& ctx) {
     // The emitter sprite rotates around its bottom-centre pivot (8 px below its centre):
     // place that pivot so the sprite centre stays on the beam origin for any rotation.
     float ar = degToRad(ang);
-    emitter_.draw(ctx, o + Vec2{-8.0f * std::sin(ar), 8.0f * std::cos(ar)}, false, Color::white(), ang);
+    emitter_.draw(ctx, o + Vec2{-8.0f * dmath::sin(ar), 8.0f * dmath::cos(ar)}, false, Color::white(), ang);
     if (ctx.editor) {
         float a = degToRad(ang);
-        ctx.r.drawWorldLine(o, o + Vec2{std::cos(a), std::sin(a)} * (box.w - 8), {255, 77, 109, 120}, 1.0f);
+        ctx.r.drawWorldLine(o, o + Vec2{dmath::cos(a), dmath::sin(a)} * (box.w - 8), {255, 77, 109, 120}, 1.0f);
         return;
     }
     if (warning_) {
-        float flick = 0.5f + 0.5f * std::sin(ctx.time * 40.0f);
+        float flick = 0.5f + 0.5f * dmath::sin(ctx.time * 40.0f);
         ctx.r.drawWorldLine(o, end_, Color{255, 77, 109, static_cast<uint8_t>(60 + 80 * flick)}, 1.0f);
     }
     if (on_ && beam_) {

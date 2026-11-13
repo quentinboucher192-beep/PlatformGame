@@ -6,6 +6,7 @@
 #include "engine/resources/ResourceManager.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/entities/Entities.h"
+#include "engine/core/DetMath.h"
 
 namespace cosmic {
 
@@ -64,7 +65,7 @@ void CheckpointEntity::render(RenderContext& ctx) {
     sprite_.draw(ctx, box.bottomCenter());
     Vec2 crystal = box.bottomCenter() + Vec2{0, -38};
     if (activated_) {
-        float pulse = 0.85f + 0.15f * std::sin(ctx.time * 3.0f);
+        float pulse = 0.85f + 0.15f * dmath::sin(ctx.time * 3.0f);
         ctx.lights.add(crystal, 110.0f * pulse, {57, 240, 216, 255});
         ctx.r.drawWorldGlow(crystal, 16.0f * pulse, {57, 240, 216, 110});
     } else {
@@ -117,7 +118,7 @@ void ExitEntity::render(RenderContext& ctx) {
     Color tint = locked_ ? Color{120, 120, 140, 255} : Color::white();
     sprite_.draw(ctx, box.bottomCenter(), false, tint);
     if (!locked_) {
-        float pulse = 0.8f + 0.2f * std::sin(ctx.time * 2.0f);
+        float pulse = 0.8f + 0.2f * dmath::sin(ctx.time * 2.0f);
         ctx.lights.add(box.center(), 160.0f * pulse, {255, 217, 138, 255});
         ctx.lights.add(box.center(), 90.0f, {57, 240, 216, 255});
         ctx.r.drawWorldGlow(box.center(), 30.0f * pulse, {255, 217, 138, 70});
@@ -265,7 +266,7 @@ void SignEntity::interact(GameWorld& w) {
 
 void SignEntity::render(RenderContext& ctx) {
     sprite_.draw(ctx, box.bottomCenter());
-    float pulse = 0.7f + 0.3f * std::sin(ctx.time * 2.2f + box.x);
+    float pulse = 0.7f + 0.3f * dmath::sin(ctx.time * 2.2f + box.x);
     ctx.lights.add(box.center(), 36.0f * pulse, {57, 240, 216, 255});
 }
 

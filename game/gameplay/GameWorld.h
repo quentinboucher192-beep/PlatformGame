@@ -88,7 +88,17 @@ public:
     AudioSystem& audio() { return services_.audio; }
     const ContentDatabase& content() const { return services_.content; }
     float time() const { return time_; }
+    /// Gameplay randomness (attack choices, drops...). Only used from fixedUpdate: with the
+    /// same seed and the same inputs, a run plays out identically (replays, speedruns).
     Random& rng() { return rng_; }
+    /// Cosmetic randomness (sound pitch, particles): never affects the simulation.
+    Random& fxRng() { return fxRng_; }
+    /// Seeds the gameplay generator (call before the first step).
+    void seedGameplay(uint64_t seed) {
+        seed_ = seed;
+        rng_.reseed(seed);
+    }
+    uint64_t gameplaySeed() const { return seed_; }
 
     std::vector<std::unique_ptr<LevelEntity>>& entities() { return entities_; }
     const std::vector<std::unique_ptr<LevelEntity>>& entities() const { return entities_; }
@@ -197,6 +207,8 @@ private:
     std::vector<Projectile> pendingProjectiles_;
     std::vector<WorldMessage> messages_;
     Random rng_{0xC0FFEE};
+    Random fxRng_{0xF1F1F1};
+    uint64_t seed_ = 0xC0FFEE;
 
     Vec2 respawn_;
     bool respawnFaceLeft_ = false;

@@ -9,6 +9,7 @@
 #include "game/gameplay/GameWorld.h"
 #include "game/player/Player.h"
 #include "game/powers/Powers.h"
+#include "engine/core/DetMath.h"
 
 namespace cosmic {
 
@@ -233,7 +234,7 @@ void ChargeShotPower::render(const Player& p, RenderContext& ctx) const {
     if (!charging_) return;
     float k = chargeRatio();
     Vec2 hand = p.renderFeet(ctx.alpha) + Vec2{p.facing * 9.0f, -13.0f};
-    float pulse = 1.0f + 0.15f * std::sin(anim_ * (full_ ? 26.0f : 14.0f));
+    float pulse = 1.0f + 0.15f * dmath::sin(anim_ * (full_ ? 26.0f : 14.0f));
     Color c = def_.color;
     ctx.r.drawWorldGlow(hand, (10.0f + 16.0f * k) * pulse, c.withAlpha(static_cast<uint8_t>(90 + 120 * k)));
     ctx.r.fillWorldCircle(hand, (1.5f + 3.0f * k) * pulse, full_ ? Color{230, 255, 251, 255} : c);

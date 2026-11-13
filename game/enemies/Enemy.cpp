@@ -4,6 +4,7 @@
 #include <format>
 
 #include "game/gameplay/GameWorld.h"
+#include "engine/core/DetMath.h"
 
 namespace cosmic {
 
@@ -262,7 +263,7 @@ void Enemy::stepIdle(GameWorld& w, float dt) {
             break;
         case MovementType::Fly: {
             float t = hoverPhase_;
-            Vec2 target{origin_.x + std::sin(t * 0.6f) * patrolRange_, origin_.y - box.h * 0.5f + std::sin(t * 2.1f) * 6.0f};
+            Vec2 target{origin_.x + dmath::sin(t * 0.6f) * patrolRange_, origin_.y - box.h * 0.5f + dmath::sin(t * 2.1f) * 6.0f};
             moveTowards(w, target, speed, dt);
             playClip("move");
             break;
@@ -541,7 +542,7 @@ bool Enemy::takeDamage(GameWorld& w, const DamageInfo& dmg) {
         kill(w);
         return true;
     }
-    w.playSound(def_.hurtSound, box.center(), 0.8f, w.rng().range(0.95f, 1.1f));
+    w.playSound(def_.hurtSound, box.center(), 0.8f, w.fxRng().range(0.95f, 1.1f));
     bool staggers = def_.knockbackResist < 0.75f && !def_.isBoss;
     if (staggers && state_ != EnemyState::PhaseTransition) {
         state_ = EnemyState::Hurt;

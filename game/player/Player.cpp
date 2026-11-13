@@ -419,7 +419,7 @@ void Player::tryJump(GameWorld& w, const PlayerInput& in) {
         jumpBufferTimer_ = 0.0f;
         jumpCutAvailable_ = true;
         state_ = PlayerState::Jump;
-        w.playSound("sounds/jump.wav", box.center(), 0.75f, w.rng().range(0.95f, 1.05f));
+        w.playSound("sounds/jump.wav", box.center(), 0.75f, w.fxRng().range(0.95f, 1.05f));
         w.particles().emit("jump_puff", box.bottomCenter(), 1.0f);
         w.emit("player", "jump");
         return;
@@ -583,7 +583,7 @@ void Player::onLanded(GameWorld& w, float impactSpeed) {
         landTimer_ = 0.12f;
         float k = std::clamp(impactSpeed / cfg_.maxFallSpeed, 0.3f, 1.2f);
         w.particles().emit("dust_land", box.bottomCenter(), k);
-        w.playSound("sounds/land.wav", box.center(), 0.4f + 0.4f * k, w.rng().range(0.92f, 1.05f));
+        w.playSound("sounds/land.wav", box.center(), 0.4f + 0.4f * k, w.fxRng().range(0.92f, 1.05f));
         if (impactSpeed > cfg_.maxFallSpeed * 0.95f) w.shake(0.12f);
     }
 }

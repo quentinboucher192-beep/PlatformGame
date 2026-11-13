@@ -9,6 +9,7 @@
 #include "game/gameplay/entities/Entities.h"
 #include "game/player/Player.h"
 #include "game/powers/Powers.h"
+#include "engine/core/DetMath.h"
 
 namespace cosmic {
 
@@ -31,7 +32,7 @@ void GrapplePointEntity::render(RenderContext& ctx) {
     Vec2 c = box.center();
     if (ctx.editor) ctx.r.drawWorldCircle(c, range_, {57, 240, 216, 60});
     sprite_.draw(ctx, c);
-    float pulse = 0.8f + 0.2f * std::sin(ctx.time * 3.0f);
+    float pulse = 0.8f + 0.2f * dmath::sin(ctx.time * 3.0f);
     ctx.lights.add(c, (targeted_ ? 70.0f : 42.0f) * pulse, {57, 240, 216, 255});
     if (targeted_) ctx.r.drawWorldGlow(c, 18.0f, Color{143, 255, 240, 110});
 }
@@ -55,7 +56,7 @@ void UpdraftEntity::fixedUpdate(GameWorld& w, float dt) {
     fxTimer_ -= dt;
     if (fxTimer_ <= 0.0f) {
         fxTimer_ = std::max(0.03f, 0.9f / std::max(1.0f, box.w / 16.0f));
-        Vec2 pos{w.rng().range(box.x + 2.0f, box.right() - 2.0f), w.rng().range(box.y + box.h * 0.3f, box.bottom())};
+        Vec2 pos{w.fxRng().range(box.x + 2.0f, box.right() - 2.0f), w.fxRng().range(box.y + box.h * 0.3f, box.bottom())};
         w.particles().emit("updraft_wind", pos, 1.0f);
     }
 }

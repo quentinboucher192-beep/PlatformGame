@@ -5,6 +5,8 @@
 #include <cstdint>
 #include <string>
 
+#include "engine/core/DetMath.h"
+
 namespace cosmic {
 
 constexpr float kPi = 3.14159265358979323846f;
@@ -33,7 +35,7 @@ struct Vec2 {
         return l > 1e-6f ? Vec2{x / l, y / l} : Vec2{};
     }
     constexpr float dot(Vec2 o) const { return x * o.x + y * o.y; }
-    static Vec2 fromAngle(float radians) { return {std::cos(radians), std::sin(radians)}; }
+    static Vec2 fromAngle(float radians) { return {dmath::cos(radians), dmath::sin(radians)}; }
 };
 
 struct Rect {
@@ -132,7 +134,7 @@ inline float approach(float current, float target, float maxDelta) {
 }
 
 /// Frame-rate independent exponential smoothing factor (1 - e^(-rate*dt)).
-inline float damp(float rate, float dt) { return 1.0f - std::exp(-rate * dt); }
+inline float damp(float rate, float dt) { return 1.0f - dmath::exp(-rate * dt); }
 
 inline float distance(Vec2 a, Vec2 b) { return (a - b).length(); }
 

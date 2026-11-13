@@ -6,6 +6,7 @@
 #include "engine/resources/ResourceManager.h"
 #include "game/enemies/Enemy.h"
 #include "game/gameplay/GameWorld.h"
+#include "engine/core/DetMath.h"
 
 namespace cosmic {
 
@@ -85,7 +86,7 @@ void Enemy::beginAttack(GameWorld& w) {
     {
         Vec2 la = (playerPos_ - attackOrigin()).normalized();
         if (la.lengthSq() < 0.01f) la = aimDir_;
-        laserAngle_ = std::atan2(la.y, la.x) - degToRad(attack_->sweepDegrees * 0.5f) * facing;
+        laserAngle_ = dmath::atan2(la.y, la.x) - degToRad(attack_->sweepDegrees * 0.5f) * facing;
     }
     playClip(attack_->telegraphAnim, true);
     if (!attack_->telegraphSound.empty()) w.playSound(attack_->telegraphSound, box.center(), 0.7f);
@@ -185,7 +186,7 @@ void Enemy::performAttackStart(GameWorld& w) {
         case AttackType::Arc: {
             Vec2 origin = attackOrigin();
             Vec2 baseDir = a.type == AttackType::Spread ? Vec2{facing, 0.0f} : aimDir_;
-            float baseAngle = std::atan2(baseDir.y, baseDir.x);
+            float baseAngle = dmath::atan2(baseDir.y, baseDir.x);
             for (int i = 0; i < a.count; ++i) {
                 float off = a.count > 1 ? (i - (a.count - 1) * 0.5f) * degToRad(a.spread) : 0.0f;
                 Projectile p;
@@ -380,7 +381,7 @@ void Enemy::render(RenderContext& ctx) const {
         ctx.r.drawWorldTexture(tex, &src, dst, Color{255, 255, 255, static_cast<uint8_t>(hurtFlash_ / 0.14f * 220)},
                                BlendMode::Additive, flip);
     if (state_ == EnemyState::Telegraph) {
-        float pulse = 0.5f + 0.5f * std::sin(ctx.time * 28.0f);
+        float pulse = 0.5f + 0.5f * dmath::sin(ctx.time * 28.0f);
         ctx.r.drawWorldTexture(tex, &src, dst, Color{255, 60, 90, static_cast<uint8_t>(60 + 120 * pulse)},
                                BlendMode::Additive, flip);
     }
@@ -400,7 +401,7 @@ void Enemy::renderTelegraph(RenderContext& ctx) const {
     Vec2 top = feet + Vec2{0, -box.h * def_.scale - 10.0f};
     if (state_ == EnemyState::Alert || state_ == EnemyState::Telegraph) {
         auto warn = ctx.res.texture("textures/fx/warning.png");
-        float bob = std::sin(ctx.time * 12.0f) * 1.5f;
+        float bob = dmath::sin(ctx.time * 12.0f) * 1.5f;
         if (warn) {
             float s = state_ == EnemyState::Alert ? 12.0f : 14.0f;
             ctx.r.drawWorldTexture(*warn, nullptr, Rect::fromCenter(top + Vec2{0, bob}, {s, s}));

@@ -32,6 +32,8 @@ public:
         return lo + static_cast<int>(next() % static_cast<uint32_t>(hiInclusive - lo + 1));
     }
     bool chance(float p) { return unit() < p; }
+    /// Internal state (determinism checksums).
+    uint64_t state() const { return state_; }
     float sign() { return (next() & 1u) ? 1.0f : -1.0f; }
 
     /// Process-wide generator for visual effects.

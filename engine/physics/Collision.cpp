@@ -1,4 +1,5 @@
 #include "engine/physics/Collision.h"
+#include "engine/core/DetMath.h"
 
 #include <cmath>
 #include <limits>
@@ -31,7 +32,7 @@ void project(const Vec2* pts, int n, Vec2 axis, float& lo, float& hi) {
 
 bool overlaps(const Rect& a, const OrientedBox& b) {
     Vec2 ra[4] = {{a.x, a.y}, {a.right(), a.y}, {a.right(), a.bottom()}, {a.x, a.bottom()}};
-    float c = std::cos(b.angle), s = std::sin(b.angle);
+    float c = dmath::cos(b.angle), s = dmath::sin(b.angle);
     Vec2 ux{c, s}, uy{-s, c};
     Vec2 rb[4];
     const float sx[4] = {-1, 1, 1, -1}, sy[4] = {-1, -1, 1, 1};

@@ -293,7 +293,7 @@ EnemyDefinition EnemyDefinition::fromJson(const Json& j) {
         d.bossTitle = jstr(j["boss"], "title", d.name);
         if (j["boss"].contains("phases") && j["boss"]["phases"].is_array())
             for (const auto& p : j["boss"]["phases"]) d.phases.push_back(BossPhase::fromJson(p));
-        std::sort(d.phases.begin(), d.phases.end(), [](const auto& a, const auto& b) { return a.hpThreshold > b.hpThreshold; });
+        std::stable_sort(d.phases.begin(), d.phases.end(), [](const auto& a, const auto& b) { return a.hpThreshold > b.hpThreshold; });
     }
     return d;
 }

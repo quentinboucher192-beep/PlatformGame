@@ -127,7 +127,7 @@ void Player::handleAttack(GameWorld& w, const PlayerInput& in, float dt) {
     attackHitDone_ = false;
     attackAir_ = !grounded_;
     anim.play(attackAir_ ? "air_attack" : "attack", true);
-    w.playSound("sounds/slash.wav", center(), 0.8f, w.rng().range(0.93f, 1.08f));
+    w.playSound("sounds/slash.wav", center(), 0.8f, w.fxRng().range(0.93f, 1.08f));
     Vec2 fxPos = center() + Vec2{facing * 12.0f, -2.0f};
     w.particles().emit("slash_sparks", fxPos, 1.0f, {facing, 0.0f});
 }
@@ -263,7 +263,7 @@ void Player::onAnimEvent(GameWorld& w, const std::string& e) {
     if (e == "footstep" && grounded_) {
         footstepAlt_ = !footstepAlt_;
         w.playSound(footstepAlt_ ? "sounds/footstep_a.wav" : "sounds/footstep_b.wav", feet(), 0.35f,
-                    w.rng().range(0.9f, 1.1f));
+                    w.fxRng().range(0.9f, 1.1f));
     } else if (e.rfind("sfx:", 0) == 0) {
         w.playSound("sounds/" + e.substr(4) + ".wav", center(), 0.8f);
     }
