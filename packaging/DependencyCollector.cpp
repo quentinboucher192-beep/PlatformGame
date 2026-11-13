@@ -5,6 +5,7 @@
 #include "engine/core/FileUtil.h"
 #include "engine/resources/ResourceManager.h"
 #include "game/content/ContentDatabase.h"
+#include "game/levels/DecorAtlas.h"
 #include "game/levels/ObjectTypes.h"
 #include "packaging/Package.h"
 
@@ -100,6 +101,7 @@ void DependencyCollector::enemy(const std::string& id) {
         sound(a.telegraphSound);
         if (a.type == AttackType::Summon) enemy(a.summonId);
     }
+    if (d->deathSpawnCount > 0) enemy(d->deathSpawnId);
 }
 
 void DependencyCollector::power(const std::string& id) {
@@ -130,6 +132,16 @@ DependencySet DependencyCollector::collect(const LevelData& level) {
     for (const auto& pw : level.startPowers) power(pw);
 
     for (const auto& o : level.objects) {
+        if (o.type == "power_gate") {
+            // Only the sprites of this kind of obstacle.
+            std::string pw = o.propStr("power", "dash");
+            if (pw == "dash" || pw == "impulse") animation("animations/breakable_wall.json");
+            else if (pw == "teleport") animation("animations/phase_wall.json");
+            else if (pw == "ground_pound") animation("animations/cracked_floor.json");
+            else asset("sprites/objects/laser_beam.png");
+            asset("ui/icons_powers.png");
+            continue;
+        }
         if (const ObjectTypeInfo* t = ObjectTypes::find(o.type))
             for (const auto& a : t->assets) {
                 if (a.size() > 5 && a.substr(a.size() - 5) == ".json" && a.rfind("animations/", 0) == 0) animation(a);
@@ -146,8 +158,17 @@ DependencySet DependencyCollector::collect(const LevelData& level) {
         } else if (o.type == "combat_zone") {
             asset(o.propStr("music"));
         } else if (o.type == "decor") {
-            std::string atlas = "sprites/decor/sylvanox_decor.json";
-            if (auto j = res_.json(atlas)) asset(jstr(*j, "texture"));
+            if (const DecorSprite* s = DecorAtlas::shared(res_).find(o.propStr("sprite"))) {
+                asset(s->atlas);
+                asset(s->texturePath);
+            } else {
+                out_.warnings.push_back("Sprite de décor inconnu : " + o.propStr("sprite"));
+            }
+        } else if (o.type == "ladder") {
+            if (const DecorSprite* s = DecorAtlas::shared(res_).find("hanging_vine_long")) {
+                asset(s->atlas);
+                asset(s->texturePath);
+            }
         }
     }
     auto stepAssets = [&](const Json& p) {

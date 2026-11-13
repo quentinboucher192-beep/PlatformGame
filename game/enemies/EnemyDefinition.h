@@ -14,7 +14,7 @@ namespace cosmic {
 enum class EnemyFamily { Ground, Robot, Flying, Turret, Fast, Heavy, Caster, MiniBoss, Count };
 enum class MovementType { Idle, Patrol, Guard, Fly, Hop, Stationary, Count };
 enum class ReactionType { None, Chase, KeepDistance, Flee, GuardZone, Count };
-enum class AttackType { Contact, Melee, Lunge, Projectile, Spread, Arc, Slam, Charge, Laser, Summon, Count };
+enum class AttackType { Contact, Melee, Lunge, Projectile, Spread, Arc, Slam, Charge, Laser, Summon, Rain, Eruption, Count };
 
 const char* familyId(EnemyFamily f);
 const char* familyLabel(EnemyFamily f);
@@ -61,6 +61,23 @@ struct AttackDef {
     float sweepDegrees = 0.0f;
     std::string sound;
     std::string telegraphSound = "sounds/enemy_telegraph.wav";
+    // v2
+    bool hasOrigin = false;
+    Vec2 origin;                       // projectile / beam origin from the feet (x mirrored with facing)
+    float projectileRadius = 0.0f;     // 0 = automatic
+    std::string hitEffect;             // particle preset on impact ("" = default)
+    float slow = 0.0f;                 // > 0: hit slows the player to this speed ratio
+    float slowDuration = 0.0f;
+    float explosionRadius = 0.0f;      // > 0: projectiles explode (bombs)
+    float rainHeight = 220.0f;         // Rain: spawn height above the player
+    std::string warningEffect = "eruption_warning_fire";  // Eruption: telegraph particles on the ground
+    std::string eruptionEffect = "eruption_fire";         // Eruption: burst when it erupts
+    Color beamColor{255, 77, 109, 255};                    // Laser / breath colour
+
+    bool isProjectileType() const {
+        return type == AttackType::Projectile || type == AttackType::Spread || type == AttackType::Arc ||
+               type == AttackType::Rain || type == AttackType::Eruption;
+    }
 
     Json toJson() const;
     static AttackDef fromJson(const Json& j);
@@ -125,6 +142,8 @@ struct EnemyDefinition {
     std::string hurtSound = "sounds/enemy_hurt.wav";
     std::string deathSound = "sounds/enemy_death.wav";
     std::string alertSound = "sounds/enemy_alert.wav";
+    std::string deathSpawnId;  // spawned when killed (slimes splitting)
+    int deathSpawnCount = 0;
     bool isBoss = false;
     std::string bossTitle;
     std::vector<BossPhase> phases;

@@ -6,18 +6,42 @@
 #include "engine/resources/ResourceManager.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/player/Player.h"
+#include "game/powers/Powers.h"
 
 namespace cosmic {
 
 // ------------------------------------------------------------------ powers
 
 void Player::grantPower(const PowerDefinition& def) {
-    for (auto& p : powers_)
-        if (p->id() == def.id || p->def().input == def.input) {
-            p = PowerRegistry::instance().create(def);
-            return;
+    auto created = PowerRegistry::instance().create(def);
+    if (!created) return;
+    bool replaced = false;
+    for (auto& p : powers_) {
+        bool sameInput = p->def().input == def.input && p->exclusiveInput() && created->exclusiveInput();
+        if (p->id() == def.id || sameInput) {
+            p = std::move(created);
+            replaced = true;
+            break;
         }
-    if (auto p = PowerRegistry::instance().create(def)) powers_.push_back(std::move(p));
+    }
+    if (!replaced) powers_.push_back(std::move(created));
+    // Passive upgrades
+    extraAirJumps_ = 0;
+    for (const auto& p : powers_)
+        if (const auto* aj = dynamic_cast<const AirJumpPower*>(p.get())) extraAirJumps_ += aj->extraJumps();
+    if (grounded_) restoreAirJumps();
+    else airJumpsLeft_ = std::max(airJumpsLeft_, std::min(airJumpCount(), airJumpsLeft_ + extraAirJumps_));
+}
+
+Power* Player::movementPower() const {
+    for (const auto& p : powers_)
+        if (p->overridesMovement()) return p.get();
+    return nullptr;
+}
+
+void Player::applySlow(float multiplier, float seconds) {
+    slowMultiplier_ = std::clamp(multiplier, 0.2f, 1.0f);
+    slowTimer_ = std::max(slowTimer_, seconds);
 }
 
 bool Player::hasPower(const std::string& id) const {
@@ -32,10 +56,12 @@ Power* Player::power(const std::string& id) {
     return nullptr;
 }
 
-void Player::handlePowers(GameWorld& w, const PlayerInput& in) {
-    if (state_ == PlayerState::Climb && !in.isPressed(Action::Dash)) return;
+void Player::handlePowers(GameWorld& w, const PlayerInput& in, float dt) {
+    for (auto& p : powers_) p->handleInput(*this, w, in, dt);
+    if (movementPower()) return;
+    if (state_ == PlayerState::Climb && !in.isPressed(Action::Dash) && !in.isPressed(Action::Interact)) return;
     for (auto& p : powers_) {
-        if (!in.isPressed(p->def().input)) continue;
+        if (p->passive() || !p->wantsActivation(*this, w, in)) continue;
         if (!p->ready(*this)) {
             if (energy < p->def().energyCost) {
                 w.playSound("sounds/energy_low.wav", 0.5f);
@@ -126,6 +152,11 @@ bool Player::hurt(GameWorld& w, const DamageInfo& dmg) {
     if (invulnTimer_ > 0.0f) return false;
     int amount = std::max(1, static_cast<int>(std::round(dmg.amount)));
     health -= amount;
+    if (dmg.slow > 0.0f && dmg.slowDuration > 0.0f) {
+        applySlow(dmg.slow, dmg.slowDuration);
+        w.particles().emit("frost_burst", center(), 1.0f);
+        w.playSound("sounds/freeze.wav", center(), 0.8f);
+    }
     w.stats().damageTaken += amount;
     hurtFlash_ = 0.25f;
     w.flash({255, 60, 90, 255}, 0.18f);
@@ -174,6 +205,15 @@ void Player::chooseAnimation() {
     if (!forcedAnim_.empty()) return;
     std::string clip;
     float speed = 1.0f;
+    if (state_ != PlayerState::Dead && state_ != PlayerState::Respawn && state_ != PlayerState::Victory &&
+        state_ != PlayerState::Hurt && state_ != PlayerState::Hidden && attackTimer_ <= 0.0f) {
+        for (const auto& p : powers_)
+            if (const char* c = p->animationClip(*this); c && anim.set() && anim.set()->clip(c)) {
+                anim.play(c);
+                anim.speed = 1.0f;
+                return;
+            }
+    }
     switch (state_) {
         case PlayerState::Dead: clip = "death"; break;
         case PlayerState::Respawn: clip = "respawn"; break;

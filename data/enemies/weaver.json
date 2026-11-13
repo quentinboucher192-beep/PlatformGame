@@ -1,0 +1,92 @@
+{
+  "format": "cosmic.enemy",
+  "id": "weaver",
+  "name": "Tisseuse",
+  "description": "Araignée à l'abdomen de cristal. Sa toile colle aux bottes et ralentit.",
+  "family": "ground",
+  "animation": "animations/weaver.json",
+  "size": [
+    16,
+    12
+  ],
+  "scale": 1.0,
+  "hp": 3,
+  "contactDamage": 1,
+  "speed": 40,
+  "chaseSpeedMultiplier": 1.5,
+  "flying": false,
+  "knockbackResist": 0.0,
+  "detectionRange": 170,
+  "attackRange": 160,
+  "loseRange": 260,
+  "needsLineOfSight": true,
+  "movement": "patrol",
+  "reaction": "keepDistance",
+  "fleeHealthRatio": 0.0,
+  "preferredDistance": 100,
+  "hopVelocity": 220,
+  "attacks": [
+    {
+      "id": "web",
+      "name": "Toile",
+      "type": "projectile",
+      "damage": 1,
+      "range": 170,
+      "telegraph": 0.45,
+      "active": 0.2,
+      "recover": 0.5,
+      "cooldown": 2.0,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "web",
+      "projectileSpeed": 170,
+      "slow": 0.5,
+      "slowDuration": 1.8,
+      "hitEffect": "web_burst"
+    },
+    {
+      "id": "bite",
+      "name": "Morsure",
+      "type": "melee",
+      "damage": 1,
+      "range": 22,
+      "telegraph": 0.3,
+      "active": 0.15,
+      "recover": 0.4,
+      "cooldown": 1.2,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "weight": 0.6
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {},
+  "rewards": {
+    "score": 130,
+    "drops": [
+      {
+        "type": "energy_orb",
+        "chance": 0.3
+      }
+    ]
+  },
+  "light": {
+    "color": "#b04cff",
+    "radius": 26
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/enemy_death.wav",
+    "alert": "sounds/enemy_alert.wav"
+  }
+}

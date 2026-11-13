@@ -1,0 +1,16 @@
+{
+  "texture": "sprites/enemies/ice_burrower.png",
+  "frameWidth": 32,
+  "frameHeight": 32,
+  "pivot": [16, 32],
+  "clips": {
+    "idle": {"row": 0, "count": 4, "fps": 6, "loop": true},
+    "move": {"row": 1, "count": 4, "fps": 8, "loop": true},
+    "teleport_out": {"row": 2, "count": 6, "durations": [0.08, 0.07, 0.06, 0.06, 0.08, 0.1], "loop": false},
+    "teleport_in": {"row": 3, "count": 6, "durations": [0.1, 0.06, 0.06, 0.07, 0.08, 0.1], "loop": false},
+    "telegraph": {"row": 4, "count": 3, "durations": [0.12, 0.12, 0.18], "loop": false},
+    "attack": {"row": 5, "count": 4, "durations": [0.08, 0.08, 0.1, 0.12], "loop": false, "events": [{"frame": 1, "name": "fire"}]},
+    "hurt": {"row": 6, "count": 2, "durations": [0.08, 0.12], "loop": false},
+    "death": {"row": 7, "count": 7, "durations": [0.08, 0.1, 0.1, 0.12, 0.14, 0.12, 0.14], "loop": false}
+  }
+}

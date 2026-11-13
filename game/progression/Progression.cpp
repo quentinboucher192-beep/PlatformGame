@@ -49,6 +49,7 @@ bool Progression::planetCompleted(const PlanetData& p, const ContentDatabase& co
 
 bool Progression::planetUnlocked(const PlanetData& p, const ContentDatabase& content) const {
     if (content.levelsForPlanet(p.id).empty()) return false;  // nothing to play there (teasers)
+    if (unlockAll) return true;
     const std::string& rule = p.unlock;
     if (rule == "always" || rule.empty()) return true;
     if (rule == "never") return false;
@@ -61,7 +62,7 @@ bool Progression::planetUnlocked(const PlanetData& p, const ContentDatabase& con
 }
 
 bool Progression::levelUnlocked(const LevelEntry& level, const ContentDatabase& content) const {
-    if (level.source != ContentSource::Builtin) return true;
+    if (level.source != ContentSource::Builtin || unlockAll) return true;
     const PlanetData* p = content.planet(level.planet);
     if (!p) return true;
     auto it = std::find(p->levels.begin(), p->levels.end(), level.id);

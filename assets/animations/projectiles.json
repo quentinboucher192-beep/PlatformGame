@@ -9,6 +9,19 @@
     "spore": {"row": 2, "count": 4, "fps": 10, "loop": true},
     "wisp_orb": {"row": 3, "count": 4, "fps": 12, "loop": true},
     "boss_thorn": {"row": 4, "count": 4, "fps": 12, "loop": true},
-    "boss_orb": {"row": 5, "count": 4, "fps": 12, "loop": true}
+    "boss_orb": {"row": 5, "count": 4, "fps": 12, "loop": true},
+    "charge_shot": {"row": 6, "count": 4, "fps": 14, "loop": true},
+    "fireball": {"row": 7, "count": 4, "fps": 14, "loop": true},
+    "magma_glob": {"row": 8, "count": 4, "fps": 10, "loop": true},
+    "ember": {"row": 9, "count": 4, "fps": 16, "loop": true},
+    "ice_shard": {"row": 10, "count": 4, "fps": 12, "loop": true},
+    "frost_orb": {"row": 11, "count": 4, "fps": 12, "loop": true},
+    "bomb": {"row": 12, "count": 4, "fps": 8, "loop": true},
+    "acid_glob": {"row": 13, "count": 4, "fps": 10, "loop": true},
+    "web": {"row": 14, "count": 4, "fps": 10, "loop": true},
+    "spore_big": {"row": 15, "count": 4, "fps": 10, "loop": true},
+    "energy_disc": {"row": 16, "count": 4, "fps": 16, "loop": true},
+    "rock": {"row": 17, "count": 4, "fps": 12, "loop": true},
+    "grapple_hook": {"row": 18, "count": 4, "fps": 12, "loop": true}
   }
 }

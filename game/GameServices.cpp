@@ -20,6 +20,7 @@ void GameServices::applySettings() {
         app.setVSync(settings.graphics.vsync);
     }
     app.debugOverlay = app.debugOverlay && settings.gameplay.debugMode;
+    progression.unlockAll = settings.gameplay.unlockAll;
 }
 
 void GameServices::playMusic(const std::string& rel) {

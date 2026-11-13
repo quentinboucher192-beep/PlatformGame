@@ -1,5 +1,7 @@
 """Animated interactive objects (docs/ASSET_SPEC.md section 6) + JSONs.
-Static 3-slice sprites, spikes, laser beam and liquids live in objects_static.py."""
+Static 3-slice sprites, spikes, laser beam and liquids live in objects_static.py;
+the v2 ability objects (grapple_point, cracked_floor, updraft_vent,
+heart_container) in player_objects.py."""
 import math
 
 import numpy as np
@@ -7,6 +9,7 @@ import numpy as np
 import effects as FX
 import materials as M
 import objects_static
+import player_objects
 import power_symbols
 from common.palette import (ACID, AMBER, CYAN, DANGER, MOSS, OUTLINE, SCARF, SKY, STONE, SUIT, VIOLET,
                             hex_rgba)
@@ -268,7 +271,7 @@ def orb(kind):
 # ---------------------------------------------------------- power unlock
 def power_unlock():
     s = Sheet("sprites/objects/power_unlock.png", 32, 32, [16, 16])
-    for name in ("dash", "wave", "shield", "impulse", "teleport"):
+    for name in power_symbols.POWERS:
         frames = []
         for i in range(8):
             frames.append(power_symbols.tablet(name, i))
@@ -588,4 +591,5 @@ def build():
     phase_wall()
     sign()
     laser_emitter()
+    player_objects.build()
     objects_static.build()

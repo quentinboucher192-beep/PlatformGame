@@ -1,0 +1,228 @@
+{
+  "format": "cosmic.enemy",
+  "id": "forge_core",
+  "name": "Forgeron Primordial",
+  "description": "Cœur de forge vivant enchaîné dans des anneaux de fer. Il fond la roche et façonne des machines.",
+  "family": "miniboss",
+  "animation": "animations/forge_core.json",
+  "size": [
+    48,
+    48
+  ],
+  "scale": 1.0,
+  "hp": 72,
+  "contactDamage": 1,
+  "speed": 44,
+  "chaseSpeedMultiplier": 1.2,
+  "flying": true,
+  "knockbackResist": 1,
+  "detectionRange": 360,
+  "attackRange": 200,
+  "loseRange": 2000,
+  "needsLineOfSight": false,
+  "movement": "fly",
+  "reaction": "keepDistance",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 170,
+  "hopVelocity": 0,
+  "attacks": [
+    {
+      "id": "volley",
+      "name": "Gerbe de scories",
+      "type": "arc",
+      "damage": 1,
+      "range": 460,
+      "telegraph": 0.75,
+      "active": 0.25,
+      "recover": 0.6,
+      "cooldown": 2.8,
+      "telegraphAnim": "telegraph_volley",
+      "attackAnim": "volley",
+      "projectile": "magma_glob",
+      "projectileSpeed": 170,
+      "count": 5,
+      "spread": 16,
+      "gravity": 380,
+      "origin": [
+        6,
+        -24
+      ],
+      "hitEffect": "fire_burst"
+    },
+    {
+      "id": "beam",
+      "name": "Rayon de fusion",
+      "type": "laser",
+      "damage": 2,
+      "range": 460,
+      "telegraph": 1.1,
+      "active": 1.6,
+      "recover": 1.0,
+      "cooldown": 5.5,
+      "telegraphAnim": "telegraph_beam",
+      "attackAnim": "beam",
+      "laserLength": 440,
+      "sweepDegrees": 100,
+      "origin": [
+        6,
+        -24
+      ],
+      "color": "#ff8a3d"
+    },
+    {
+      "id": "slam",
+      "name": "Chute du creuset",
+      "type": "lunge",
+      "damage": 2,
+      "range": 300,
+      "telegraph": 0.8,
+      "active": 0.6,
+      "recover": 0.9,
+      "cooldown": 4.0,
+      "telegraphAnim": "telegraph_slam",
+      "attackAnim": "slam",
+      "lungeSpeed": 310,
+      "minRange": 40,
+      "knockback": 280
+    },
+    {
+      "id": "eruption",
+      "name": "Coulée de lave",
+      "type": "eruption",
+      "damage": 2,
+      "range": 480,
+      "telegraph": 1.0,
+      "active": 0.3,
+      "recover": 0.9,
+      "cooldown": 4.5,
+      "telegraphAnim": "telegraph_slam",
+      "attackAnim": "slam",
+      "projectile": "fireball",
+      "projectileSpeed": 420,
+      "count": 5,
+      "spread": 60,
+      "gravity": 700,
+      "warningEffect": "eruption_warning_fire",
+      "eruptionEffect": "eruption_fire",
+      "hitEffect": "fire_burst"
+    },
+    {
+      "id": "embers",
+      "name": "Pluie de braises",
+      "type": "rain",
+      "damage": 1,
+      "range": 520,
+      "telegraph": 1.0,
+      "active": 0.3,
+      "recover": 0.8,
+      "cooldown": 4.0,
+      "telegraphAnim": "telegraph_volley",
+      "attackAnim": "volley",
+      "projectile": "ember",
+      "projectileSpeed": 180,
+      "count": 8,
+      "spread": 36,
+      "gravity": 200,
+      "rainHeight": 250,
+      "hitEffect": "fire_burst"
+    },
+    {
+      "id": "summon",
+      "name": "Forge vivante",
+      "type": "summon",
+      "damage": 0,
+      "range": 500,
+      "telegraph": 0.9,
+      "active": 0.4,
+      "recover": 0.8,
+      "cooldown": 12,
+      "telegraphAnim": "summon",
+      "attackAnim": "summon",
+      "summonId": "forge_bomber",
+      "summonCount": 1,
+      "maxSummoned": 2
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "wave": 1.2,
+    "charge_shot": 1.3
+  },
+  "rewards": {
+    "score": 4500,
+    "drops": [
+      {
+        "type": "health_orb",
+        "chance": 1.0
+      },
+      {
+        "type": "energy_orb",
+        "chance": 1.0
+      }
+    ]
+  },
+  "light": {
+    "color": "#ff8a3d",
+    "radius": 100
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/boss_roar_fire.wav",
+    "alert": "sounds/boss_roar_fire.wav"
+  },
+  "boss": {
+    "title": "LE FORGERON PRIMORDIAL",
+    "phases": [
+      {
+        "name": "Allumage",
+        "hpThreshold": 1.0,
+        "attacks": [
+          "volley",
+          "beam",
+          "slam"
+        ],
+        "speedMultiplier": 1.0,
+        "cooldownMultiplier": 1.0
+      },
+      {
+        "name": "Coulée",
+        "hpThreshold": 0.66,
+        "attacks": [
+          "volley",
+          "beam",
+          "slam",
+          "eruption",
+          "summon"
+        ],
+        "speedMultiplier": 1.1,
+        "cooldownMultiplier": 0.9,
+        "enterText": "Le Forgeron Primordial ouvre ses vannes !",
+        "summonOnEnter": true
+      },
+      {
+        "name": "Fusion totale",
+        "hpThreshold": 0.33,
+        "attacks": [
+          "embers",
+          "beam",
+          "eruption",
+          "slam",
+          "volley"
+        ],
+        "speedMultiplier": 1.25,
+        "cooldownMultiplier": 0.75,
+        "enterText": "La fonderie entière s'embrase !"
+      }
+    ]
+  }
+}

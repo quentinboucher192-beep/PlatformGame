@@ -25,7 +25,7 @@ PowerDefinition PowerDefinition::fromJson(const Json& j) {
     d.behavior = jstr(j, "behavior", d.id);
     d.name = jstr(j, "name", d.id);
     d.description = jstr(j, "description");
-    d.icon = std::clamp(jget<int>(j, "icon", 0), 0, 4);
+    d.icon = std::clamp(jget<int>(j, "icon", 0), 0, 15);
     Action a = actionFromId(jstr(j, "input", "dash"));
     d.input = (a == Action::Count || !actionIsRebindable(a)) ? Action::Dash : a;
     d.energyCost = std::clamp(jget<float>(j, "energyCost", 20.0f), 0.0f, 100.0f);

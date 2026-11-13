@@ -84,10 +84,23 @@ PropDef pEnum(const char* key, const char* label, const char* def, std::vector<s
     return p;
 }
 
-const std::vector<std::string> kMaterials = {"ruin_stone", "ancient_metal", "crystal", "root"};
-const std::vector<std::string> kMaterialLabels = {"Pierre des ruines", "Métal ancien", "Cristal", "Racines"};
-const std::vector<std::string> kPowers = {"dash", "wave", "shield", "impulse", "teleport"};
-const std::vector<std::string> kPowerLabels = {"Dash", "Onde énergétique", "Bouclier", "Impulsion", "Téléportation"};
+const std::vector<std::string> kMaterials = {"ruin_stone", "ancient_metal", "crystal",     "root",
+                                             "basalt",     "obsidian",      "forge_metal", "glacier_ice",
+                                             "snow_rock",  "frost_metal"};
+const std::vector<std::string> kMaterialLabels = {"Pierre des ruines", "Métal ancien", "Cristal",
+                                                  "Racines",           "Basalte",      "Obsidienne",
+                                                  "Métal de forge",    "Glace (glissante)", "Roche enneigée",
+                                                  "Métal givré"};
+const std::vector<std::string> kPowers = {"dash",         "wave",        "shield",  "impulse", "teleport",
+                                          "glide",        "ground_pound", "charge_shot", "grapple", "triple_jump"};
+const std::vector<std::string> kPowerLabels = {"Dash",    "Onde énergétique", "Bouclier",   "Impulsion",
+                                               "Téléportation", "Planeur",    "Frappe sismique", "Tir chargé",
+                                               "Grappin", "Triple saut"};
+// Obstacles that a power opens (power_gate).
+const std::vector<std::string> kGatePowers = {"dash", "wave", "shield", "impulse", "teleport", "ground_pound"};
+const std::vector<std::string> kGatePowerLabels = {"Dash (mur de cristal)",        "Onde (barrière d'énergie)",
+                                                   "Bouclier (rideau de plasma)",  "Impulsion (rocher fissuré)",
+                                                   "Téléportation (barrière de phase)", "Frappe sismique (sol fissuré)"};
 
 std::vector<ObjectTypeInfo> build() {
     std::vector<ObjectTypeInfo> v;
@@ -116,8 +129,11 @@ std::vector<ObjectTypeInfo> build() {
         t.defaultSize = {64, 16};
         t.editorColor = {150, 120, 80, 255};
         t.defaultLayer = "terrain";
-        t.props = {pEnum("style", "Style", "ruin_bridge", {"ruin_bridge", "tech_ledge", "root_branch"},
-                         {"Pont en ruine", "Corniche technologique", "Branche"})};
+        t.props = {pEnum("style", "Style", "ruin_bridge",
+                         {"ruin_bridge", "tech_ledge", "root_branch", "basalt_ledge", "chain_grate", "ice_ledge",
+                          "snow_bridge"},
+                         {"Pont en ruine", "Corniche technologique", "Branche", "Corniche de basalte",
+                          "Grille suspendue", "Corniche de glace", "Pont enneigé"})};
         t.assets = {"textures/tiles/platforms.json", "textures/tiles/platforms.png"};
         t.help = "On peut sauter au travers par dessous et descendre avec Bas + Saut.";
         add(t);
@@ -159,13 +175,15 @@ std::vector<ObjectTypeInfo> build() {
         t.category = ObjCategory::Terrain;
         t.defaultSize = {32, 64};
         t.editorColor = {176, 76, 255, 255};
-        t.props = {pEnum("power", "Pouvoir requis", "dash", kPowers, kPowerLabels),
+        t.props = {pEnum("power", "Pouvoir requis", "dash", kGatePowers, kGatePowerLabels),
                    pBool("respawn", "Se reforme au checkpoint", false)};
         t.assets = {"animations/breakable_wall.json", "sprites/objects/breakable_wall.png", "animations/phase_wall.json",
-                    "sprites/objects/phase_wall.png", "sprites/objects/laser_beam.png"};
+                    "sprites/objects/phase_wall.png", "sprites/objects/laser_beam.png",
+                    "animations/cracked_floor.json", "sprites/objects/cracked_floor.png"};
         t.help = "Dash : mur de cristal à briser. Téléportation : barrière de phase à traverser. "
-                 "Onde / Impulsion : barrière détruite par le pouvoir. Bouclier : rideau de plasma "
-                 "franchissable seulement bouclier actif.";
+                 "Onde / Impulsion : barrière détruite par le pouvoir (le Tir chargé dissout aussi les "
+                 "barrières d'énergie). Bouclier : rideau de plasma franchissable seulement bouclier actif. "
+                 "Frappe sismique : sol fissuré brisé en plongeant dessus.";
         add(t);
     }
     {
@@ -240,6 +258,19 @@ std::vector<ObjectTypeInfo> build() {
         t.editorColor = {120, 120, 255, 255};
         t.props = {pFloat("factor", "Facteur de vitesse", 0.5f, 0.1f, 1.0f, 0.05f),
                    pBool("visible", "Visible (spores)", true)};
+        add(t);
+    }
+    {
+        ObjectTypeInfo t;
+        t.id = "updraft";
+        t.name = "Courant ascendant";
+        t.category = ObjCategory::Zones;
+        t.defaultSize = {48, 192};
+        t.editorColor = {143, 255, 240, 255};
+        t.props = {pFloat("strength", "Vitesse de montée", 230.0f, 40.0f, 600.0f, 10.0f),
+                   pBool("vent", "Grille au sol", true, "Dessine une bouche d'aération en bas de la zone")};
+        t.assets = {"animations/updraft_vent.json", "sprites/objects/updraft_vent.png"};
+        t.help = "Soulève le joueur qui plane (Planeur) et ralentit sa chute sinon.";
         add(t);
     }
     {
@@ -333,7 +364,7 @@ std::vector<ObjectTypeInfo> build() {
         t.resizable = false;
         t.snap = 8;
         t.editorColor = {255, 77, 109, 255};
-        t.props = {pInt("amount", "Soin", 1, 1, 10)};
+        t.props = {pInt("amount", "Soin", 2, 1, 10)};
         t.assets = {"animations/health_orb.json", "sprites/objects/health_orb.png"};
         add(t);
     }
@@ -364,8 +395,35 @@ std::vector<ObjectTypeInfo> build() {
         t.assets = {"animations/power_unlock.json", "sprites/objects/power_unlock.png"};
         add(t);
     }
+    {
+        ObjectTypeInfo t;
+        t.id = "heart_container";
+        t.name = "Cœur de cristal";
+        t.category = ObjCategory::Gameplay;
+        t.defaultSize = {16, 16};
+        t.resizable = false;
+        t.snap = 8;
+        t.editorColor = {255, 120, 150, 255};
+        t.props = {pInt("hearts", "Cœurs maximum en plus", 1, 1, 5)};
+        t.assets = {"animations/heart_container.json", "sprites/objects/heart_container.png"};
+        t.help = "Augmente la vie maximale pour le reste du niveau et soigne entièrement.";
+        add(t);
+    }
 
     // -------------------------------------------------------- interactive
+    {
+        ObjectTypeInfo t;
+        t.id = "grapple_point";
+        t.name = "Point d'ancrage";
+        t.category = ObjCategory::Interactive;
+        t.defaultSize = {24, 24};
+        t.resizable = false;
+        t.snap = 8;
+        t.editorColor = {57, 240, 216, 255};
+        t.assets = {"animations/grapple_point.json", "sprites/objects/grapple_point.png"};
+        t.help = "Avec le Grappin, Interagir à portée (environ 170 px) propulse le joueur jusqu'ici.";
+        add(t);
+    }
     {
         ObjectTypeInfo t;
         t.id = "door";
@@ -502,7 +560,7 @@ std::vector<ObjectTypeInfo> build() {
                    pFloat("alpha", "Opacité", 1, 0, 1, 0.05f), pStr("tint", "Teinte", "#ffffff", PropType::Color),
                    pFloat("animSpeed", "Vitesse d'animation", 1, 0, 4, 0.1f),
                    pBool("glow", "Lueur", true), pFloat("sway", "Balancement", 0, 0, 10, 0.5f)};
-        t.assets = {"sprites/decor/sylvanox_decor.json", "sprites/decor/sylvanox_decor.png"};
+        // Atlas resolved per sprite by the exporter (one atlas per planet).
         add(t);
     }
     {
@@ -547,9 +605,20 @@ std::vector<PaletteEntry> buildPalette() {
     add("Barrière d'énergie (Onde)", "power_gate", {{"power", "wave"}}, {16, 64});
     add("Rocher fissuré (Impulsion)", "power_gate", {{"power", "impulse"}}, {64, 32});
     add("Rideau de plasma (Bouclier)", "power_gate", {{"power", "shield"}}, {16, 80});
+    add("Sol fissuré (Frappe sismique)", "power_gate", {{"power", "ground_pound"}}, {64, 16});
+    add("Basalte", "solid", {{"material", "basalt"}});
+    add("Obsidienne", "solid", {{"material", "obsidian"}});
+    add("Métal de forge", "solid", {{"material", "forge_metal"}});
+    add("Glace (glissante)", "solid", {{"material", "glacier_ice"}});
+    add("Roche enneigée", "solid", {{"material", "snow_rock"}});
+    add("Métal givré", "solid", {{"material", "frost_metal"}});
     add("Pont en ruine", "oneway", {{"style", "ruin_bridge"}});
     add("Corniche technologique", "oneway", {{"style", "tech_ledge"}});
     add("Branche", "oneway", {{"style", "root_branch"}});
+    add("Corniche de basalte", "oneway", {{"style", "basalt_ledge"}});
+    add("Grille suspendue", "oneway", {{"style", "chain_grate"}});
+    add("Corniche de glace", "oneway", {{"style", "ice_ledge"}});
+    add("Pont enneigé", "oneway", {{"style", "snow_bridge"}});
     add("Plateforme mobile", "moving_platform");
     add("Plateforme fragile", "crumble_platform");
     add("Champignon rebond", "bounce_pad");
@@ -567,6 +636,14 @@ std::vector<PaletteEntry> buildPalette() {
     add("Tablette : Bouclier", "power_unlock", {{"power", "shield"}});
     add("Tablette : Impulsion", "power_unlock", {{"power", "impulse"}});
     add("Tablette : Téléportation", "power_unlock", {{"power", "teleport"}});
+    add("Tablette : Planeur", "power_unlock", {{"power", "glide"}});
+    add("Tablette : Frappe sismique", "power_unlock", {{"power", "ground_pound"}});
+    add("Tablette : Tir chargé", "power_unlock", {{"power", "charge_shot"}});
+    add("Tablette : Grappin", "power_unlock", {{"power", "grapple"}});
+    add("Tablette : Triple saut", "power_unlock", {{"power", "triple_jump"}});
+    add("", "heart_container");
+    add("", "grapple_point");
+    add("", "updraft");
     for (const char* t : {"door", "lever", "receptor", "sign", "trigger", "combat_zone", "camera_zone", "secret_area",
                           "light", "emitter"})
         add("", t);

@@ -31,6 +31,7 @@ public:
     std::string lastLevel;
     double playTimeSeconds = 0.0;
     bool introSeen = false;
+    bool unlockAll = false;  // from the settings: every level is playable (testing)
 
     Json toJson() const;
     void fromJson(const Json& j);

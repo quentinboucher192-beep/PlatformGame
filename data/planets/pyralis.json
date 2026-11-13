@@ -1,8 +1,27 @@
 {
-  "format": "cosmic.planet", "id": "pyralis", "name": "Pyralis", "subtitle": "La forge en fusion",
-  "description": "Un monde volcanique aux rivières de lave, dont les signaux restent brouillés.",
-  "type": "volcanic", "difficulty": 4, "color": "#ff8a3d", "atmosphere": "#ff4d1e60",
-  "illustration": "ui/planets/pyralis.png", "banner": "", "music": "music/planet_map.ogg",
-  "levels": [], "unlock": "planet:sylvanox", "teaser": true,
-  "orbit": { "radius": 190, "speed": 0.08, "phase": 2.6 }, "size": 0.9
+  "format": "cosmic.planet",
+  "id": "pyralis",
+  "name": "Pyralis",
+  "subtitle": "La forge en fusion",
+  "description": "Un monde volcanique où des forges colossales des Anciens brûlent encore. Les rivières de lave y charrient des machines à demi fondues, et quelque chose bat au cœur de la fonderie.",
+  "type": "volcanic",
+  "difficulty": 4,
+  "color": "#ff8a3d",
+  "atmosphere": "#ff4d1e60",
+  "illustration": "ui/planets/pyralis.png",
+  "banner": "ui/planets/pyralis_banner.png",
+  "music": "music/planet_map.ogg",
+  "levels": [
+    "pyralis_01",
+    "pyralis_02",
+    "pyralis_03"
+  ],
+  "unlock": "planet:sylvanox",
+  "teaser": false,
+  "orbit": {
+    "radius": 190,
+    "speed": 0.08,
+    "phase": 2.6
+  },
+  "size": 0.9
 }

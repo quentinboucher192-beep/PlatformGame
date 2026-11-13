@@ -43,7 +43,7 @@ void CheckpointEntity::activate(GameWorld& w, bool silent) {
     sprite_.anim.play("activate", true);
     w.setCheckpoint(id(), box.bottomCenter());
     if (silent) return;
-    w.player().heal(w.player().config().maxHealth);
+    w.player().heal(w.player().maxHealth());
     w.playSound("sounds/checkpoint.wav", box.center(), 0.9f);
     w.particles().emit("checkpoint", box.center() + Vec2{0, -10}, 1.0f);
     std::string label = obj_.propStr("label");
@@ -207,7 +207,7 @@ void ReceptorEntity::init(GameWorld& w) { sprite_.load(w.resources(), "animation
 void ReceptorEntity::update(GameWorld& /*w*/, float dt) { sprite_.anim.update(dt); }
 
 bool ReceptorEntity::onPowerHit(GameWorld& w, const std::string& power, const Rect& area) {
-    if (power != "wave" || !area.intersects(box.expanded(2))) return false;
+    if ((power != "wave" && power != "charge_shot") || !area.intersects(box.expanded(2))) return false;
     float duration = obj_.prop<float>("duration", 0.0f);
     if (on_) {
         timer_ = duration;

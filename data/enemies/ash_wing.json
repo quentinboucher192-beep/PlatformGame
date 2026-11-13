@@ -1,0 +1,78 @@
+{
+  "format": "cosmic.enemy",
+  "id": "ash_wing",
+  "name": "Aile de cendre",
+  "description": "Chauve-souris des ruines aux ailes veinées de lumière. Tournoie puis plonge sur sa proie. Variante de Pyralis forgée dans la lave : plus résistante et plus rapide.",
+  "family": "flying",
+  "animation": "animations/ash_wing.json",
+  "size": [
+    14,
+    10
+  ],
+  "scale": 1.0,
+  "hp": 3,
+  "contactDamage": 1,
+  "speed": 60.5,
+  "chaseSpeedMultiplier": 1.7,
+  "flying": true,
+  "knockbackResist": 0.0,
+  "detectionRange": 180,
+  "attackRange": 120,
+  "loseRange": 320,
+  "needsLineOfSight": false,
+  "movement": "fly",
+  "reaction": "chase",
+  "fleeHealthRatio": 0.0,
+  "preferredDistance": 110,
+  "hopVelocity": 220,
+  "attacks": [
+    {
+      "id": "dive",
+      "name": "Piqué",
+      "type": "lunge",
+      "damage": 1,
+      "range": 130,
+      "telegraph": 0.45,
+      "active": 0.55,
+      "recover": 0.5,
+      "cooldown": 1.8,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "minRange": 24,
+      "lungeSpeed": 235,
+      "knockback": 160
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "wave": 0.8
+  },
+  "rewards": {
+    "score": 150,
+    "drops": [
+      {
+        "type": "energy_orb",
+        "chance": 0.3
+      }
+    ]
+  },
+  "light": {
+    "color": "#ff8a3d",
+    "radius": 22
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/enemy_death.wav",
+    "alert": "sounds/bat_screech.wav"
+  }
+}

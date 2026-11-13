@@ -20,7 +20,8 @@ constexpr Named kReactions[] = {{"none", "Aucune"},
 constexpr Named kAttacks[] = {{"contact", "Contact"},           {"melee", "Corps à corps"},  {"lunge", "Bond"},
                               {"projectile", "Projectile visé"}, {"spread", "Salve en éventail"}, {"arc", "Tir en cloche"},
                               {"slam", "Onde de choc au sol"}, {"charge", "Charge"},      {"laser", "Rayon laser"},
-                              {"summon", "Appel de renforts"}};
+                              {"summon", "Appel de renforts"}, {"rain", "Pluie de projectiles"},
+                              {"eruption", "Éruption au sol"}};
 }  // namespace
 
 const char* familyId(EnemyFamily f) { return kFamilies[static_cast<int>(f)].id; }
@@ -60,12 +61,25 @@ Json AttackDef::toJson() const {
            {"knockback", knockback},
            {"sound", sound},
            {"telegraphSound", telegraphSound}};
-    if (type == AttackType::Projectile || type == AttackType::Spread || type == AttackType::Arc) {
+    if (isProjectileType()) {
         j["projectile"] = projectile;
         j["projectileSpeed"] = projectileSpeed;
         j["count"] = count;
         j["spread"] = spread;
         j["gravity"] = gravity;
+        if (projectileRadius > 0) j["projectileRadius"] = projectileRadius;
+        if (explosionRadius > 0) j["explosionRadius"] = explosionRadius;
+        if (!hitEffect.empty()) j["hitEffect"] = hitEffect;
+    }
+    if (type == AttackType::Rain) j["rainHeight"] = rainHeight;
+    if (type == AttackType::Eruption) {
+        j["warningEffect"] = warningEffect;
+        j["eruptionEffect"] = eruptionEffect;
+    }
+    if (hasOrigin) j["origin"] = {origin.x, origin.y};
+    if (slow > 0) {
+        j["slow"] = slow;
+        j["slowDuration"] = slowDuration;
     }
     if (type == AttackType::Lunge || type == AttackType::Charge) j["lungeSpeed"] = lungeSpeed;
     if (type == AttackType::Summon) {
@@ -76,6 +90,7 @@ Json AttackDef::toJson() const {
     if (type == AttackType::Laser) {
         j["laserLength"] = laserLength;
         j["sweepDegrees"] = sweepDegrees;
+        j["color"] = beamColor.toHex();
     }
     return j;
 }
@@ -109,6 +124,19 @@ AttackDef AttackDef::fromJson(const Json& j) {
     a.sweepDegrees = jget<float>(j, "sweepDegrees", 0.0f);
     a.sound = jstr(j, "sound");
     a.telegraphSound = jstr(j, "telegraphSound", "sounds/enemy_telegraph.wav");
+    if (j.contains("origin") && j["origin"].is_array() && j["origin"].size() == 2) {
+        a.hasOrigin = true;
+        a.origin = vec2FromJson(j["origin"], {});
+    }
+    a.projectileRadius = std::clamp(jget<float>(j, "projectileRadius", 0.0f), 0.0f, 40.0f);
+    a.hitEffect = jstr(j, "hitEffect");
+    a.slow = std::clamp(jget<float>(j, "slow", 0.0f), 0.0f, 1.0f);
+    a.slowDuration = std::clamp(jget<float>(j, "slowDuration", a.slow > 0 ? 1.5f : 0.0f), 0.0f, 10.0f);
+    a.explosionRadius = std::clamp(jget<float>(j, "explosionRadius", 0.0f), 0.0f, 200.0f);
+    a.rainHeight = std::clamp(jget<float>(j, "rainHeight", 220.0f), 40.0f, 800.0f);
+    a.warningEffect = jstr(j, "warningEffect", "eruption_warning_fire");
+    a.eruptionEffect = jstr(j, "eruptionEffect", "eruption_fire");
+    a.beamColor = colorFromJson(j.value("color", Json()), a.beamColor);
     return a;
 }
 
@@ -182,6 +210,7 @@ Json EnemyDefinition::toJson() const {
     Json drop = Json::array();
     for (const auto& d : drops) drop.push_back({{"type", d.type}, {"chance", d.chance}});
     j["rewards"] = {{"score", scoreValue}, {"drops", drop}};
+    if (!deathSpawnId.empty() && deathSpawnCount > 0) j["deathSpawn"] = {{"id", deathSpawnId}, {"count", deathSpawnCount}};
     j["light"] = {{"color", lightColor.toHex()}, {"radius", lightRadius}};
     j["sounds"] = {{"hurt", hurtSound}, {"death", deathSound}, {"alert", alertSound}};
     if (isBoss) {
@@ -240,6 +269,10 @@ EnemyDefinition EnemyDefinition::fromJson(const Json& j) {
     if (j.contains("damageMultipliers") && j["damageMultipliers"].is_object())
         for (auto& [k, v] : j["damageMultipliers"].items())
             if (v.is_number()) d.damageMultipliers[static_cast<size_t>(damageTypeFromId(k))] = std::clamp(v.get<float>(), 0.0f, 10.0f);
+    if (j.contains("deathSpawn") && j["deathSpawn"].is_object()) {
+        d.deathSpawnId = jstr(j["deathSpawn"], "id");
+        d.deathSpawnCount = std::clamp(jget<int>(j["deathSpawn"], "count", 2), 0, 6);
+    }
     if (j.contains("rewards")) {
         d.scoreValue = jget<int>(j["rewards"], "score", 100);
         if (j["rewards"].contains("drops") && j["rewards"]["drops"].is_array())

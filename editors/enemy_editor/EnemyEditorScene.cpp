@@ -178,7 +178,7 @@ void EnemyEditorScene::fixedUpdate(float dt) {
     if (!controlPlayer_) in = PlayerInput{};
     if (godMode_) {
         arena_->player().setInvulnerable(0.1f);
-        arena_->player().health = arena_->player().config().maxHealth;
+        arena_->player().health = arena_->player().maxHealth();
     }
     arena_->fixedUpdate(in, dt);
     // Respawn the enemy a moment after it dies so tuning can continue.

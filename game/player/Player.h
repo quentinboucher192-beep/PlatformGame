@@ -71,7 +71,10 @@ public:
     /// Returns true if the damage was taken.
     bool hurt(GameWorld& w, const DamageInfo& dmg);
     void kill(GameWorld& w);
-    void heal(int amount) { health = std::min(cfg_.maxHealth, health + amount); }
+    void heal(int amount) { health = std::min(maxHealth(), health + amount); }
+    /// Hearts: configured maximum plus the heart containers collected in this level.
+    int maxHealth() const { return cfg_.maxHealth + bonusHealth; }
+    int bonusHealth = 0;
     void addEnergy(float amount) { energy = std::min(cfg_.maxEnergy, energy + amount); }
     bool spendEnergy(float amount);
 
@@ -88,7 +91,21 @@ public:
     void endDash();
     bool dashing() const { return state_ == PlayerState::Dash; }
     Vec2 dashDirection() const { return dashDir_; }
-    void restoreAirJumps() { airJumpsLeft_ = cfg_.airJumps; }
+    void restoreAirJumps() { airJumpsLeft_ = airJumpCount(); }
+    /// Air jumps available after leaving the ground (double jump + upgrades).
+    int airJumpCount() const { return cfg_.airJumps + extraAirJumps_; }
+    int airJumpsLeft() const { return airJumpsLeft_; }
+    /// Moves the box with the current velocity (used by powers that drive the movement).
+    void physicsMove(GameWorld& w, float dt) { moveAndCollide(w, dt); }
+    /// The power currently driving the movement (ground pound, grapple), if any.
+    Power* movementPower() const;
+    /// Glide (set every step by the glide power): capped fall speed and air speed.
+    float glideFallSpeed = 0.0f;
+    float glideAirSpeed = 0.0f;
+    bool gliding() const { return glideFallSpeed > 0.0f; }
+    /// Temporary slow (ice attacks, webs).
+    void applySlow(float multiplier, float seconds);
+    bool slowed() const { return slowTimer_ > 0.0f; }
     void setShield(bool on) { shield_ = on; }
     bool shieldActive() const { return shield_; }
     void setCastPose(float seconds) { castTimer_ = seconds; }
@@ -104,6 +121,8 @@ public:
     Rect ladderRect;
     bool inWater = false;
     float speedMultiplier = 1.0f;
+    float updraft = 0.0f;         // upward wind speed of the updraft zone the player is in
+    float groundFriction = 1.0f;  // friction of the material under the feet (ice < 1)
 
     // ------------------------------------------------------- control
     bool controlEnabled = true;
@@ -123,7 +142,7 @@ private:
     void stepClimb(GameWorld& w, const PlayerInput& in, float dt);
     void stepSlide(GameWorld& w, const PlayerInput& in, float dt);
     void tryJump(GameWorld& w, const PlayerInput& in);
-    void handlePowers(GameWorld& w, const PlayerInput& in);
+    void handlePowers(GameWorld& w, const PlayerInput& in, float dt);
     void handleAttack(GameWorld& w, const PlayerInput& in, float dt);
     void handleInteract(GameWorld& w, const PlayerInput& in);
     void moveAndCollide(GameWorld& w, float dt);
@@ -142,6 +161,9 @@ private:
     float jumpBufferTimer_ = 0.0f;
     bool jumpCutAvailable_ = false;
     int airJumpsLeft_ = 1;
+    int extraAirJumps_ = 0;
+    float slowTimer_ = 0.0f;
+    float slowMultiplier_ = 1.0f;
     float wallJumpLockTimer_ = 0.0f;
     int wallDir_ = 0;
     float slideTimer_ = 0.0f;

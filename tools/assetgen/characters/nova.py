@@ -1,12 +1,15 @@
 """Player sheet: Nova (docs/ASSET_SPEC.md section 3).
 
-32x32 frames, pivot [16, 32], 19 clips (one per row)."""
+32x32 frames, pivot [16, 32], one clip per row: rows 0-18 = v1 clips,
+rows 19-25 = v2 abilities (glide, ground pound, charged shot, grapple),
+built in player_nova.py."""
 import math
 
 import numpy as np
 
 import effects as FX
 import materials as M
+import player_nova
 from common.palette import CYAN, VIOLET
 from nova_rig import Pose, draw
 from raster import Canvas, put
@@ -420,5 +423,6 @@ def build():
     s.add("respawn", respawn(), durations=[0.07, 0.07, 0.07, 0.07, 0.07, 0.07, 0.07, 0.07, 0.08, 0.12], loop=False)
     s.add("victory", victory(), durations=[0.1, 0.08, 0.08, 0.1, 0.08, 0.08, 0.1, 0.1, 0.12, 0.2], loop=False)
     s.add("interact", interact(), durations=[0.06, 0.08, 0.14, 0.1], loop=False)
+    player_nova.add_rows(s)  # rows 19-25
     s.save("animations/nova.json")
     return s

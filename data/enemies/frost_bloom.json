@@ -1,0 +1,87 @@
+{
+  "format": "cosmic.enemy",
+  "id": "frost_bloom",
+  "name": "Fleur de givre",
+  "description": "Plante carnivore enracinée. Gonfle son bulbe puis projette des spores toxiques en cloche. Variante de Glacior : ses attaques glacées ralentissent.",
+  "family": "turret",
+  "animation": "animations/frost_bloom.json",
+  "size": [
+    16,
+    20
+  ],
+  "scale": 1.0,
+  "hp": 4,
+  "contactDamage": 1,
+  "speed": 0.0,
+  "chaseSpeedMultiplier": 1,
+  "flying": false,
+  "knockbackResist": 1,
+  "detectionRange": 230,
+  "attackRange": 250,
+  "loseRange": 300,
+  "needsLineOfSight": false,
+  "movement": "stationary",
+  "reaction": "none",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 0,
+  "hopVelocity": 0,
+  "attacks": [
+    {
+      "id": "spore",
+      "name": "Spores",
+      "type": "arc",
+      "damage": 1,
+      "range": 250,
+      "minRange": 20,
+      "telegraph": 0.75,
+      "active": 0.15,
+      "recover": 0.6,
+      "cooldown": 2.2,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "frost_orb",
+      "projectileSpeed": 130,
+      "count": 1,
+      "spread": 0,
+      "gravity": 420,
+      "sound": "sounds/spore_spit.wav",
+      "hitEffect": "ice_burst",
+      "slow": 0.55,
+      "slowDuration": 1.5
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "melee": 1.5,
+    "dash": 0.5,
+    "charge_shot": 1.3
+  },
+  "rewards": {
+    "score": 150,
+    "drops": [
+      {
+        "type": "health_orb",
+        "chance": 0.25
+      }
+    ]
+  },
+  "light": {
+    "color": "#7ff6ff",
+    "radius": 36
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/enemy_death.wav",
+    "alert": "sounds/enemy_alert.wav"
+  }
+}

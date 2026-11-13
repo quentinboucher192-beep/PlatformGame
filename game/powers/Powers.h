@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+
+#include "engine/core/Math.h"
 #include "game/powers/Power.h"
 
 namespace cosmic {
@@ -77,6 +80,120 @@ protected:
 
 private:
     bool findDestination(const Player& p, const GameWorld& w, Vec2& feetOut) const;
+};
+
+/// Hold jump while falling: slow descent with better air speed. Updrafts lift a
+/// gliding player. No energy cost.
+class GlidePower : public Power {
+public:
+    using Power::Power;
+    bool exclusiveInput() const override { return false; }
+    bool wantsActivation(const Player&, const GameWorld&, const PlayerInput&) const override { return false; }
+    void handleInput(Player& p, GameWorld& w, const PlayerInput& in, float dt) override;
+    bool active() const override { return gliding_; }
+    void cancel(Player& p, GameWorld& w) override;
+    const char* animationClip(const Player&) const override { return gliding_ ? "glide" : nullptr; }
+
+protected:
+    void onActivate(Player&, GameWorld&) override {}
+
+private:
+    bool gliding_ = false;
+    float soundTimer_ = 0.0f;
+    float trailTimer_ = 0.0f;
+};
+
+/// Down + attack in the air: short hover then a vertical dive; the landing shockwave
+/// damages and stuns nearby enemies and breaks cracked floors.
+class GroundPoundPower : public Power {
+public:
+    using Power::Power;
+    bool exclusiveInput() const override { return false; }
+    bool wantsActivation(const Player& p, const GameWorld& w, const PlayerInput& in) const override;
+    bool canActivate(const Player& p, const GameWorld& w) const override;
+    bool overridesMovement() const override { return phase_ != Phase::None; }
+    void movePlayer(Player& p, GameWorld& w, const PlayerInput& in, float dt) override;
+    bool active() const override { return phase_ != Phase::None; }
+    void cancel(Player& p, GameWorld& w) override;
+    const char* animationClip(const Player&) const override;
+
+protected:
+    void onActivate(Player& p, GameWorld& w) override;
+
+private:
+    void impact(Player& p, GameWorld& w);
+    enum class Phase { None, Hover, Dive, Land } phase_ = Phase::None;
+    float timer_ = 0.0f;
+    float startY_ = 0.0f;
+    std::vector<const void*> hit_;
+};
+
+/// Hold attack to charge a plasma shot, release to fire it (piercing, big damage,
+/// activates receptors). A tap still performs the normal melee attack.
+class ChargeShotPower : public Power {
+public:
+    using Power::Power;
+    bool exclusiveInput() const override { return false; }
+    bool wantsActivation(const Player&, const GameWorld&, const PlayerInput&) const override { return false; }
+    void handleInput(Player& p, GameWorld& w, const PlayerInput& in, float dt) override;
+    bool active() const override { return charging_; }
+    void cancel(Player& p, GameWorld& w) override;
+    const char* animationClip(const Player& p) const override;
+    void render(const Player& p, RenderContext& ctx) const override;
+    float chargeRatio() const;
+
+protected:
+    void onActivate(Player& p, GameWorld& w) override;
+
+private:
+    float hold_ = 0.0f;
+    bool charging_ = false;
+    bool full_ = false;
+    float sparkTimer_ = 0.0f;
+    float soundTimer_ = 0.0f;
+    float anim_ = 0.0f;
+};
+
+/// Interact near a grapple point: an energy line pulls the player to the anchor, then
+/// releases them with momentum and restores the air jumps.
+class GrapplePower : public Power {
+public:
+    using Power::Power;
+    bool exclusiveInput() const override { return false; }
+    bool wantsActivation(const Player& p, const GameWorld& w, const PlayerInput& in) const override;
+    bool canActivate(const Player& p, const GameWorld& w) const override;
+    bool overridesMovement() const override { return phase_ != Phase::None; }
+    void movePlayer(Player& p, GameWorld& w, const PlayerInput& in, float dt) override;
+    bool active() const override { return phase_ != Phase::None; }
+    void cancel(Player& p, GameWorld& w) override;
+    void render(const Player& p, RenderContext& ctx) const override;
+    const char* animationClip(const Player&) const override;
+    /// Best anchor for the player right now (nullptr if none in range / in sight).
+    static const class LevelEntity* findTarget(const Player& p, const GameWorld& w, float range);
+
+protected:
+    void onActivate(Player& p, GameWorld& w) override;
+
+private:
+    void release(Player& p, GameWorld& w, bool boost);
+    enum class Phase { None, Throw, Pull } phase_ = Phase::None;
+    Vec2 anchor_;
+    Vec2 hook_;
+    float timer_ = 0.0f;
+    float stuck_ = 0.0f;
+};
+
+/// Passive upgrade: extra air jumps (triple jump).
+class AirJumpPower : public Power {
+public:
+    using Power::Power;
+    bool passive() const override { return true; }
+    bool exclusiveInput() const override { return false; }
+    bool wantsActivation(const Player&, const GameWorld&, const PlayerInput&) const override { return false; }
+    int extraJumps() const { return static_cast<int>(def_.param("jumps", 1)); }
+
+protected:
+    void onActivate(Player&, GameWorld&) override {}
 };
 
 }  // namespace cosmic

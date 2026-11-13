@@ -42,6 +42,9 @@ std::map<std::string, EntityFactory::Creator>& EntityFactory::registry() {
         {"decor", make<DecorEntity>()},
         {"light", make<LightEntity>()},
         {"emitter", make<EmitterEntity>()},
+        {"heart_container", make<CollectibleEntity>()},
+        {"grapple_point", make<GrapplePointEntity>()},
+        {"updraft", make<UpdraftEntity>()},
     };
     return r;
 }

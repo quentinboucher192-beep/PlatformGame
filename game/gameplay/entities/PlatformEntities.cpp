@@ -184,6 +184,7 @@ void PowerGateEntity::init(GameWorld& w) {
     collider_ = w.physics().add(box, ColliderKind::Solid, tags, this);
     if (power_ == "dash" || power_ == "impulse") sprite_.load(w.resources(), "animations/breakable_wall.json", "intact");
     if (power_ == "teleport") sprite_.load(w.resources(), "animations/phase_wall.json", "idle");
+    if (power_ == "ground_pound") sprite_.load(w.resources(), "animations/cracked_floor.json", "intact");
     beam_ = w.resources().texture("sprites/objects/laser_beam.png");
     icons_ = w.resources().texture("ui/icons_powers.png");
 }
@@ -215,7 +216,9 @@ void PowerGateEntity::fixedUpdate(GameWorld& w, float dt) {
 void PowerGateEntity::destroy(GameWorld& w) {
     broken_ = true;
     w.physics().setEnabled(collider_, false);
-    const char* fx = power_ == "dash" ? "crystal_shatter" : (power_ == "impulse" ? "rock_shatter" : "barrier_dissolve");
+    const char* fx = power_ == "dash" ? "crystal_shatter"
+                     : (power_ == "impulse" || power_ == "ground_pound") ? "rock_shatter"
+                                                                        : "barrier_dissolve";
     w.particles().emit(fx, box.center(), std::max(1.0f, box.h / 48.0f));
     w.playSound(power_ == "wave" ? "sounds/door_open.wav" : "sounds/explosion.wav", box.center(), 0.8f);
     w.shake(0.3f);
@@ -225,16 +228,21 @@ void PowerGateEntity::destroy(GameWorld& w) {
 
 bool PowerGateEntity::onPowerHit(GameWorld& w, const std::string& power, const Rect& area) {
     if (broken_ || !area.intersects(box.expanded(2))) return false;
-    if (power == power_ && (power_ == "dash" || power_ == "wave" || power_ == "impulse")) {
+    if (power == power_ && (power_ == "dash" || power_ == "wave" || power_ == "impulse" || power_ == "ground_pound")) {
         destroy(w);
         return true;
     }
-    if (power == "melee" && (power_ == "dash" || power_ == "impulse") && hintCooldown_ <= 0.0f) {
+    if (power == "charge_shot" && power_ == "wave") {
+        destroy(w);
+        return true;
+    }
+    if (power == "melee" && (power_ == "dash" || power_ == "impulse" || power_ == "ground_pound") && hintCooldown_ <= 0.0f) {
         crack_ = 1.0f;
         w.particles().emit("block_sparks", area.center(), 0.7f);
         w.playSound("sounds/shield_block.wav", area.center(), 0.6f);
-        w.hint(power_ == "dash" ? "Ce cristal est trop solide... un Dash pourrait le briser."
-                                : "Cette roche fissurée cédera sous une Impulsion.",
+        w.hint(power_ == "dash"     ? "Ce cristal est trop solide... un Dash pourrait le briser."
+               : power_ == "impulse" ? "Cette roche fissurée cédera sous une Impulsion."
+                                     : "Ce sol fissuré cédera sous une Frappe sismique (Bas + Attaque en l'air).",
                3.0f);
         hintCooldown_ = 5.0f;
     }
@@ -264,8 +272,8 @@ void PowerGateEntity::onPlayerRespawn(GameWorld& w) {
 void PowerGateEntity::render(RenderContext& ctx) {
     if (broken_ && !ctx.editor) return;
     Color iconTint{255, 255, 255, 150};
-    if (power_ == "dash" || power_ == "impulse") {
-        // Tile the crystal wall vertically/horizontally to the gate size.
+    if (power_ == "dash" || power_ == "impulse" || power_ == "ground_pound") {
+        // Tile the crystal wall / cracked slab vertically and horizontally to the gate size.
         if (sprite_.set && sprite_.set->texture) {
             const auto* clip = sprite_.set->clip(crack_ > 0 ? "cracked" : "intact");
             if (!clip) clip = sprite_.set->clip("intact");
@@ -279,7 +287,7 @@ void PowerGateEntity::render(RenderContext& ctx) {
                     ctx.r.drawWorldTexture(*sprite_.set->texture, &s, {x, y, wdt, h}, tint);
                 }
             }
-            Color glow = power_ == "impulse" ? Color{255, 179, 71, 70} : Color{176, 76, 255, 70};
+            Color glow = power_ == "dash" ? Color{176, 76, 255, 70} : Color{255, 179, 71, 70};
             ctx.lights.add(box.center(), std::max(box.w, box.h) * 0.8f, glow);
         }
     } else if (power_ == "teleport") {
@@ -350,7 +358,7 @@ void BouncePadEntity::render(RenderContext& ctx) {
 void LadderEntity::init(GameWorld& w) {
     auto& atlas = DecorAtlas::shared(w.resources());
     vine_ = atlas.find("hanging_vine_long");
-    tex_ = atlas.texture();
+    tex_ = vine_ ? vine_->texture : atlas.texture();
 }
 
 void LadderEntity::onPlayerStay(GameWorld& w, float /*dt*/) {

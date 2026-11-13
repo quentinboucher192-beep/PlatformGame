@@ -20,23 +20,38 @@
   "jumpBuffer": 0.12,
   "airJumps": 1,
   "wallSlideSpeed": 70,
-  "wallJumpVelocity": [175, -285],
+  "wallJumpVelocity": [
+    175,
+    -285
+  ],
   "wallJumpLock": 0.16,
   "slideSpeed": 235,
   "slideDuration": 0.42,
   "climbSpeed": 80,
-  "size": [10, 22],
-  "slideSize": [12, 11],
-  "maxHealth": 5,
-  "invulnerability": 1.2,
-  "knockback": [150, -170],
+  "size": [
+    10,
+    22
+  ],
+  "slideSize": [
+    12,
+    11
+  ],
+  "maxHealth": 10,
+  "invulnerability": 1.5,
+  "knockback": [
+    150,
+    -170
+  ],
   "maxEnergy": 100,
   "energyRegen": 14,
   "energyRegenDelay": 0.7,
   "attackDamage": 1,
   "attackDuration": 0.28,
   "attackCooldown": 0.32,
-  "attackRange": [24, 22],
+  "attackRange": [
+    24,
+    22
+  ],
   "swimSpeed": 90,
   "waterGravityMultiplier": 0.35
 }

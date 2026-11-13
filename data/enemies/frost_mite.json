@@ -1,0 +1,78 @@
+{
+  "format": "cosmic.enemy",
+  "id": "frost_mite",
+  "name": "Givrite",
+  "description": "Petit scarabée bioluminescent. Patrouille les corniches et mord ce qui s'approche. Variante de Glacior : ses attaques glacées ralentissent.",
+  "family": "ground",
+  "animation": "animations/frost_mite.json",
+  "size": [
+    14,
+    10
+  ],
+  "scale": 1.0,
+  "hp": 2,
+  "contactDamage": 1,
+  "speed": 30.4,
+  "chaseSpeedMultiplier": 1.9,
+  "flying": false,
+  "knockbackResist": 0,
+  "detectionRange": 120,
+  "attackRange": 22,
+  "loseRange": 220,
+  "needsLineOfSight": true,
+  "movement": "patrol",
+  "reaction": "chase",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 0,
+  "hopVelocity": 200,
+  "attacks": [
+    {
+      "id": "bite",
+      "name": "Morsure",
+      "type": "melee",
+      "damage": 1,
+      "range": 22,
+      "telegraph": 0.35,
+      "active": 0.15,
+      "recover": 0.4,
+      "cooldown": 1.2,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "knockback": 150,
+      "slow": 0.55,
+      "slowDuration": 1.5
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "charge_shot": 1.3
+  },
+  "rewards": {
+    "score": 125,
+    "drops": [
+      {
+        "type": "energy_orb",
+        "chance": 0.3
+      }
+    ]
+  },
+  "light": {
+    "color": "#7ff6ff",
+    "radius": 28
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/enemy_death.wav",
+    "alert": "sounds/enemy_alert.wav"
+  }
+}

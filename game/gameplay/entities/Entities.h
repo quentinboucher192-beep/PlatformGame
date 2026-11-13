@@ -445,4 +445,38 @@ private:
     float timer_ = 0.0f;
 };
 
+// ================================================================ abilities
+
+/// Anchor for the Grappin power; glows when it is the current target.
+class GrapplePointEntity : public LevelEntity {
+public:
+    using LevelEntity::LevelEntity;
+    void init(GameWorld& w) override;
+    void fixedUpdate(GameWorld& w, float dt) override;
+    void render(RenderContext& ctx) override;
+    bool targeted() const { return targeted_; }
+
+private:
+    AnimatedSprite sprite_;
+    bool targeted_ = false;
+    float range_ = 170.0f;
+};
+
+/// Rising wind column: lifts a gliding player, slows a falling one.
+class UpdraftEntity : public LevelEntity {
+public:
+    using LevelEntity::LevelEntity;
+    void init(GameWorld& w) override;
+    void fixedUpdate(GameWorld& w, float dt) override;
+    void render(RenderContext& ctx) override;
+    bool wantsPlayerOverlap() const override { return true; }
+    void onPlayerStay(GameWorld& w, float dt) override;
+    bool handleAction(GameWorld& w, const std::string& action, const Json& params) override;
+
+private:
+    AnimatedSprite vent_;
+    bool on_ = true;
+    float fxTimer_ = 0.0f;
+};
+
 }  // namespace cosmic

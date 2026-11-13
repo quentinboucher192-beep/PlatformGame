@@ -1,0 +1,7 @@
+{
+  "format": "cosmic.power", "id": "grapple", "behavior": "grapple", "name": "Grappin",
+  "description": "Près d'un point d'ancrage, Interagir lance une ligne d'énergie qui vous propulse vers lui. Saut pour lâcher en avance.",
+  "icon": 8, "input": "interact", "energyCost": 0, "cooldown": 0.25, "duration": 0,
+  "color": "#39f0d8", "sound": "sounds/grapple_fire.wav",
+  "params": { "range": 170, "hookSpeed": 1100, "pullSpeed": 430, "releaseBoost": 230 }
+}

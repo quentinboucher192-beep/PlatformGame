@@ -1,0 +1,88 @@
+{
+  "format": "cosmic.enemy",
+  "id": "ice_golem",
+  "name": "Golem de glace",
+  "description": "Gardien de pierre lent mais redoutable. Bloque les attaques frontales avec son bras-bouclier ; l'Impulsion brise sa garde. Variante de Glacior : ses attaques glacées ralentissent.",
+  "family": "heavy",
+  "animation": "animations/ice_golem.json",
+  "size": [
+    26,
+    34
+  ],
+  "scale": 1.0,
+  "hp": 14,
+  "contactDamage": 1,
+  "speed": 20.9,
+  "chaseSpeedMultiplier": 1.3,
+  "flying": false,
+  "knockbackResist": 0.9,
+  "detectionRange": 160,
+  "attackRange": 70,
+  "loseRange": 260,
+  "needsLineOfSight": true,
+  "movement": "guard",
+  "reaction": "chase",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 0,
+  "hopVelocity": 0,
+  "attacks": [
+    {
+      "id": "slam",
+      "name": "Frappe sismique",
+      "type": "slam",
+      "damage": 2,
+      "range": 90,
+      "telegraph": 0.85,
+      "active": 0.3,
+      "recover": 0.9,
+      "cooldown": 2.8,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectileSpeed": 170,
+      "knockback": 220,
+      "slow": 0.55,
+      "slowDuration": 1.5
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": true,
+      "duration": 1.4,
+      "cooldown": 3.0
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "melee": 0.6,
+    "dash": 0.5,
+    "impulse": 2.0,
+    "charge_shot": 1.3
+  },
+  "rewards": {
+    "score": 500,
+    "drops": [
+      {
+        "type": "health_orb",
+        "chance": 0.6
+      },
+      {
+        "type": "energy_orb",
+        "chance": 0.6
+      }
+    ]
+  },
+  "light": {
+    "color": "#7ff6ff",
+    "radius": 44
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/explosion.wav",
+    "alert": "sounds/enemy_alert.wav"
+  }
+}

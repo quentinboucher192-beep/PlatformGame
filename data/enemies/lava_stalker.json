@@ -1,0 +1,79 @@
+{
+  "format": "cosmic.enemy",
+  "id": "lava_stalker",
+  "name": "Traqueur de lave",
+  "description": "Prédateur rapide aux rayures bioluminescentes. S'accroupit avant de bondir : esquivez au bon moment. Variante de Pyralis forgée dans la lave : plus résistante et plus rapide.",
+  "family": "fast",
+  "animation": "animations/lava_stalker.json",
+  "size": [
+    18,
+    12
+  ],
+  "scale": 1.0,
+  "hp": 4,
+  "contactDamage": 1,
+  "speed": 60.5,
+  "chaseSpeedMultiplier": 2.4,
+  "flying": false,
+  "knockbackResist": 0.1,
+  "detectionRange": 170,
+  "attackRange": 80,
+  "loseRange": 300,
+  "needsLineOfSight": true,
+  "movement": "patrol",
+  "reaction": "chase",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 0,
+  "hopVelocity": 230,
+  "attacks": [
+    {
+      "id": "lunge",
+      "name": "Bond",
+      "type": "lunge",
+      "damage": 1,
+      "range": 80,
+      "minRange": 18,
+      "telegraph": 0.45,
+      "active": 0.35,
+      "recover": 0.65,
+      "cooldown": 1.6,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "lungeSpeed": 300,
+      "knockback": 190
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": true,
+      "radius": 160
+    }
+  },
+  "damageMultipliers": {
+    "wave": 0.8
+  },
+  "rewards": {
+    "score": 225,
+    "drops": [
+      {
+        "type": "energy_orb",
+        "chance": 0.4
+      }
+    ]
+  },
+  "light": {
+    "color": "#ff8a3d",
+    "radius": 26
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/enemy_death.wav",
+    "alert": "sounds/enemy_alert.wav"
+  }
+}

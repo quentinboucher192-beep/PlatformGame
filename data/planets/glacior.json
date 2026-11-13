@@ -1,8 +1,27 @@
 {
-  "format": "cosmic.planet", "id": "glacior", "name": "Glacior", "subtitle": "Les plaines de cristal gelé",
-  "description": "Une planète glacée aux confins du système, encore inexplorée.",
-  "type": "ice", "difficulty": 3, "color": "#a8e0ff", "atmosphere": "#a8e0ff60",
-  "illustration": "ui/planets/glacior.png", "banner": "", "music": "music/planet_map.ogg",
-  "levels": [], "unlock": "planet:sylvanox", "teaser": true,
-  "orbit": { "radius": 430, "speed": 0.03, "phase": 4.4 }, "size": 1.0
+  "format": "cosmic.planet",
+  "id": "glacior",
+  "name": "Glacior",
+  "subtitle": "Les plaines de cristal gelé",
+  "description": "Une planète figée sous une aurore éternelle. Sous la glace dorment les machines des Anciens et le bastion de leur dernier gardien.",
+  "type": "ice",
+  "difficulty": 5,
+  "color": "#a8e0ff",
+  "atmosphere": "#a8e0ff60",
+  "illustration": "ui/planets/glacior.png",
+  "banner": "ui/planets/glacior_banner.png",
+  "music": "music/planet_map.ogg",
+  "levels": [
+    "glacior_01",
+    "glacior_02",
+    "glacior_03"
+  ],
+  "unlock": "planet:pyralis",
+  "teaser": false,
+  "orbit": {
+    "radius": 430,
+    "speed": 0.03,
+    "phase": 4.4
+  },
+  "size": 1.0
 }

@@ -1,4 +1,10 @@
 file(GLOB COSMIC_TEST_SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
+# Optional extra test sources (work in progress kept outside the repository).
+set(COSMIC_EXTRA_TESTS_DIR "" CACHE PATH "Additional folder of test sources compiled into cosmic_tests")
+if(COSMIC_EXTRA_TESTS_DIR)
+    file(GLOB COSMIC_EXTRA_TEST_SOURCES CONFIGURE_DEPENDS ${COSMIC_EXTRA_TESTS_DIR}/*.cpp)
+    list(APPEND COSMIC_TEST_SOURCES ${COSMIC_EXTRA_TEST_SOURCES})
+endif()
 add_executable(cosmic_tests ${COSMIC_TEST_SOURCES})
 target_link_libraries(cosmic_tests PRIVATE cosmic_game)
 cosmic_set_warnings(cosmic_tests)

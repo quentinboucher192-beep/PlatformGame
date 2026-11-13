@@ -1,0 +1,97 @@
+{
+  "format": "cosmic.enemy",
+  "id": "lava_burrower",
+  "name": "Fouisseur de lave",
+  "description": "Ver géant qui disparaît sous terre et resurgit près de sa proie. Variante de Pyralis forgée dans la lave : plus résistante et plus rapide.",
+  "family": "ground",
+  "animation": "animations/lava_burrower.json",
+  "size": [
+    18,
+    16
+  ],
+  "scale": 1.0,
+  "hp": 5,
+  "contactDamage": 1,
+  "speed": 0.0,
+  "chaseSpeedMultiplier": 1.6,
+  "flying": false,
+  "knockbackResist": 0.0,
+  "detectionRange": 190,
+  "attackRange": 180,
+  "loseRange": 260,
+  "needsLineOfSight": false,
+  "movement": "stationary",
+  "reaction": "chase",
+  "fleeHealthRatio": 0.0,
+  "preferredDistance": 110,
+  "hopVelocity": 220,
+  "attacks": [
+    {
+      "id": "spit",
+      "name": "Crachat de pierres",
+      "type": "arc",
+      "damage": 1,
+      "range": 190,
+      "telegraph": 0.5,
+      "active": 0.2,
+      "recover": 0.6,
+      "cooldown": 2.2,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "magma_glob",
+      "projectileSpeed": 160,
+      "gravity": 520,
+      "count": 2,
+      "spread": 12,
+      "hitEffect": "fire_burst"
+    },
+    {
+      "id": "bite",
+      "name": "Morsure",
+      "type": "melee",
+      "damage": 2,
+      "range": 28,
+      "telegraph": 0.4,
+      "active": 0.2,
+      "recover": 0.6,
+      "cooldown": 1.4,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack"
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": true,
+      "cooldown": 3.5,
+      "range": 120
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "ground_pound": 2.0,
+    "wave": 0.8
+  },
+  "rewards": {
+    "score": 212,
+    "drops": [
+      {
+        "type": "energy_orb",
+        "chance": 0.3
+      }
+    ]
+  },
+  "light": {
+    "color": "#ff8a3d",
+    "radius": 24
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/enemy_death.wav",
+    "alert": "sounds/burrow.wav"
+  }
+}

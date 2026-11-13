@@ -1,0 +1,102 @@
+{
+  "format": "cosmic.enemy",
+  "id": "fire_wisp",
+  "name": "Feu follet ardent",
+  "description": "Esprit masqué maîtrisant les pouvoirs : se téléporte, tire des orbes en salve et appelle des renforts. Fuit quand il faiblit. Variante de Pyralis forgée dans la lave : plus résistante et plus rapide.",
+  "family": "caster",
+  "animation": "animations/fire_wisp.json",
+  "size": [
+    12,
+    12
+  ],
+  "scale": 1.0,
+  "hp": 5,
+  "contactDamage": 0,
+  "speed": 55.0,
+  "chaseSpeedMultiplier": 1.2,
+  "flying": true,
+  "knockbackResist": 0.3,
+  "detectionRange": 210,
+  "attackRange": 220,
+  "loseRange": 320,
+  "needsLineOfSight": true,
+  "movement": "fly",
+  "reaction": "keepDistance",
+  "fleeHealthRatio": 0.3,
+  "preferredDistance": 120,
+  "hopVelocity": 0,
+  "attacks": [
+    {
+      "id": "orbs",
+      "name": "Salve d'orbes",
+      "type": "projectile",
+      "damage": 1,
+      "range": 220,
+      "telegraph": 0.7,
+      "active": 0.2,
+      "recover": 0.6,
+      "cooldown": 2.4,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "fireball",
+      "projectileSpeed": 120,
+      "count": 3,
+      "spread": 16,
+      "sound": "sounds/enemy_shoot.wav",
+      "hitEffect": "fire_burst"
+    },
+    {
+      "id": "call",
+      "name": "Appel de renforts",
+      "type": "summon",
+      "damage": 0,
+      "range": 260,
+      "telegraph": 0.9,
+      "active": 0.3,
+      "recover": 0.6,
+      "cooldown": 9,
+      "weight": 0.6,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "summon",
+      "summonId": "ember_mite",
+      "summonCount": 2,
+      "maxSummoned": 3
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": true,
+      "cooldown": 3.5,
+      "range": 100
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": true,
+      "radius": 220
+    }
+  },
+  "damageMultipliers": {
+    "wave": 0.5,
+    "melee": 1.5
+  },
+  "rewards": {
+    "score": 375,
+    "drops": [
+      {
+        "type": "energy_orb",
+        "chance": 0.8
+      }
+    ]
+  },
+  "light": {
+    "color": "#ff8a3d",
+    "radius": 48
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/enemy_death.wav",
+    "alert": "sounds/enemy_alert.wav"
+  }
+}

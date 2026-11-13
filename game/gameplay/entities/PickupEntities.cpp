@@ -88,13 +88,25 @@ void CollectibleEntity::onPlayerEnter(GameWorld& w) {
         m.duration = 2.8f;
         w.message(m);
     } else if (t == "health_orb") {
-        if (p.health >= p.config().maxHealth && life_ < 0.0f) {
+        if (p.health >= p.maxHealth() && life_ < 0.0f) {
             playerInside = false;
             return;  // keep it for later
         }
         p.heal(obj_.prop<int>("amount", 1));
         w.playSound("sounds/collect_orb.wav", box.center(), 0.8f, 0.9f);
         w.particles().emit("heal", p.center(), 1.0f);
+    } else if (t == "heart_container") {
+        int hearts = std::max(1, obj_.prop<int>("hearts", 1));
+        p.bonusHealth += hearts;
+        p.health = p.maxHealth();
+        w.playSound("sounds/heart_pickup.wav", box.center(), 1.0f);
+        w.particles().emit("heart_pickup", box.center(), 1.0f);
+        w.flash({255, 120, 150, 255}, 0.15f);
+        WorldMessage m;
+        m.style = WorldMessage::Style::Secret;
+        m.text = "Cœur de cristal : +" + std::to_string(hearts) + (hearts > 1 ? " cœurs maximum !" : " cœur maximum !");
+        m.duration = 2.8f;
+        w.message(m);
     } else if (t == "energy_orb") {
         p.addEnergy(obj_.prop<float>("amount", 40.0f));
         w.playSound("sounds/collect_orb.wav", box.center(), 0.7f, 1.2f);
@@ -106,6 +118,12 @@ void CollectibleEntity::onPlayerEnter(GameWorld& w) {
 
 void CollectibleEntity::render(RenderContext& ctx) {
     if (life_ > 0.0f && life_ < 2.0f && static_cast<int>(life_ * 10) % 2 == 0) return;  // blink before vanishing
+    if (type() == "heart_container") {
+        sprite_.draw(ctx, box.bottomCenter());
+        ctx.lights.add(box.center(), 44.0f, {255, 120, 150, 255});
+        ctx.r.drawWorldGlow(box.center(), 13.0f, Color{255, 120, 150, 90});
+        return;
+    }
     sprite_.draw(ctx, box.center());
     Color c = type() == "shard"       ? Color{57, 240, 216, 255}
               : type() == "relic"     ? Color{255, 217, 138, 255}

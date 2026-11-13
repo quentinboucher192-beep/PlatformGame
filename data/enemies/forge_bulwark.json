@@ -1,0 +1,85 @@
+{
+  "format": "cosmic.enemy",
+  "id": "forge_bulwark",
+  "name": "Rempart de forge",
+  "description": "Chevalier-automate au bouclier de glyphes. Prenez-le à revers, ou brisez sa garde d'une Frappe sismique. Variante de Pyralis forgée dans la lave : plus résistante et plus rapide.",
+  "family": "heavy",
+  "animation": "animations/forge_bulwark.json",
+  "size": [
+    16,
+    24
+  ],
+  "scale": 1.0,
+  "hp": 8,
+  "contactDamage": 1,
+  "speed": 28.6,
+  "chaseSpeedMultiplier": 1.4,
+  "flying": false,
+  "knockbackResist": 0.7,
+  "detectionRange": 150,
+  "attackRange": 34,
+  "loseRange": 260,
+  "needsLineOfSight": true,
+  "movement": "patrol",
+  "reaction": "chase",
+  "fleeHealthRatio": 0.0,
+  "preferredDistance": 110,
+  "hopVelocity": 220,
+  "attacks": [
+    {
+      "id": "thrust",
+      "name": "Coup de lance",
+      "type": "melee",
+      "damage": 3,
+      "range": 34,
+      "telegraph": 0.55,
+      "active": 0.2,
+      "recover": 0.6,
+      "cooldown": 1.6,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "knockback": 230
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": true,
+      "duration": 1.4,
+      "cooldown": 2.4
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "ground_pound": 2.0,
+    "charge_shot": 1.5,
+    "impulse": 1.5,
+    "wave": 0.8
+  },
+  "rewards": {
+    "score": 275,
+    "drops": [
+      {
+        "type": "health_orb",
+        "chance": 0.25
+      },
+      {
+        "type": "energy_orb",
+        "chance": 0.4
+      }
+    ]
+  },
+  "light": {
+    "color": "#ff8a3d",
+    "radius": 30
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/enemy_death.wav",
+    "alert": "sounds/enemy_alert.wav"
+  }
+}

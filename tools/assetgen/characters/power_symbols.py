@@ -79,13 +79,91 @@ GLYPHS = {
     ],
 }
 
+# v2 powers (CONTENT_CONTRACT section 4)
+GLYPHS.update({
+    "glide": [          # energy wings spread from a core
+        "...........",
+        "#.........#",
+        "##.......##",
+        "#.#.....#.#",
+        ".#.#...#.#.",
+        "..#.#.#.#..",
+        "...#.+.#...",
+        "....+++....",
+        ".....+.....",
+        "....#.#....",
+        "...........",
+    ],
+    "ground_pound": [   # heavy arrow slamming into the ground, shock lines
+        "....+++....",
+        "....+++....",
+        "....+++....",
+        "..+++++++..",
+        "...+++++...",
+        "....+++....",
+        ".....+.....",
+        "#.#.....#.#",
+        ".#.#...#.#.",
+        "...........",
+        "###########",
+    ],
+    "charge_shot": [    # orb gathering energy from all sides
+        "#....#....#",
+        ".#.......#.",
+        "....###....",
+        "...#+++#...",
+        "..#+++++#..",
+        "#.#+++++#.#",
+        "..#+++++#..",
+        "...#+++#...",
+        "....###....",
+        ".#.......#.",
+        "#....#....#",
+    ],
+    "grapple": [        # grappling hook with its ring
+        "....+++....",
+        "....+.+....",
+        "....+++....",
+        ".....#.....",
+        ".....#.....",
+        "#....#....#",
+        "##...#...##",
+        ".##..#..##.",
+        "..##.#.##..",
+        "...#####...",
+        "...........",
+    ],
+    "triple_jump": [    # three rising chevrons, the top one bright
+        ".....+.....",
+        "....+.+....",
+        "...+...+...",
+        "..+.....+..",
+        ".....#.....",
+        "....#.#....",
+        "...#...#...",
+        "...........",
+        ".....#.....",
+        "....#.#....",
+        "...#...#...",
+    ],
+})
+
 COLORS = {
     "dash": (CYAN[1], CYAN[3], CYAN[0]),
     "wave": (CYAN[2], CYAN[3], CYAN[0]),
     "shield": (CYAN[1], CYAN[3], CYAN[0]),
     "impulse": (AMBER[1], AMBER[2], AMBER[0]),
     "teleport": (VIOLET[1], VIOLET[2], VIOLET[0]),
+    "glide": (CYAN[1], CYAN[3], CYAN[0]),
+    "ground_pound": (AMBER[1], AMBER[2], AMBER[0]),
+    "charge_shot": (CYAN[2], CYAN[3], CYAN[0]),
+    "grapple": (CYAN[1], CYAN[3], CYAN[0]),
+    "triple_jump": (VIOLET[1], VIOLET[2], VIOLET[0]),
 }
+
+# clip order of animations/power_unlock.json (v1 rows first, unchanged)
+POWERS = ("dash", "wave", "shield", "impulse", "teleport",
+          "glide", "ground_pound", "charge_shot", "grapple", "triple_jump")
 
 
 def tablet(name, i):

@@ -213,7 +213,9 @@ void Enemy::fixedUpdate(GameWorld& w, float dt) {
                 state_ = EnemyState::TeleportIn;
                 stateTimer_ = 0.3f;
                 playClip(anim_.has("teleport_in") ? "teleport_in" : "idle", true);
-                w.particles().emit("teleport_in_enemy", box.center(), 1.0f);
+                // Ground teleporters (burrowers) dig out instead of blinking.
+                if (def_.flying) w.particles().emit("teleport_in_enemy", box.center(), 1.0f);
+                else w.particles().emit("burrow_dirt", box.bottomCenter(), 1.0f);
                 face(playerPos_.x - box.center().x);
             }
             break;
@@ -392,8 +394,13 @@ void Enemy::tryTeleport(GameWorld& w) {
         state_ = EnemyState::TeleportOut;
         stateTimer_ = 0.32f;
         playClip(anim_.has("teleport_out") ? "teleport_out" : "idle", true);
-        w.particles().emit("teleport_out_enemy", box.center(), 1.0f);
-        w.playSound("sounds/wisp_teleport.wav", box.center(), 0.8f);
+        if (def_.flying) {
+            w.particles().emit("teleport_out_enemy", box.center(), 1.0f);
+            w.playSound("sounds/wisp_teleport.wav", box.center(), 0.8f);
+        } else {
+            w.particles().emit("burrow_dirt", box.bottomCenter(), 1.0f);
+            w.playSound("sounds/burrow.wav", box.center(), 0.8f);
+        }
         return;
     }
 }

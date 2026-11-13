@@ -5,6 +5,7 @@
 #include "engine/core/Application.h"
 #include "game/enemies/Enemy.h"
 #include "game/gameplay/GameWorld.h"
+#include "game/powers/Powers.h"
 #include "game/records/Records.h"
 #include "saves/Settings.h"
 #include "ui/widgets/Glyphs.h"
@@ -73,8 +74,10 @@ void Hud::render(UIContext& ui, GameWorld& w, const WorldView& view, const Level
 void Hud::drawVitals(UIContext& ui, GameWorld& w) {
     const Player& p = w.player();
     float x = ui.s(40), y = ui.s(34);
-    float hs = ui.s(44);
-    for (int i = 0; i < p.config().maxHealth; ++i) {
+    // Smaller hearts when the player has many of them (10 by default + heart containers).
+    int hearts = p.maxHealth();
+    float hs = ui.s(hearts > 12 ? 30.0f : (hearts > 8 ? 36.0f : 44.0f));
+    for (int i = 0; i < hearts; ++i) {
         bool full = i < p.health;
         Rect r{x + i * (hs + ui.s(4)), y, hs, hs};
         if (full && p.health == 1) {
@@ -129,7 +132,8 @@ void Hud::drawPowers(UIContext& ui, GameWorld& w) {
         } else if (ready) {
             r.drawRoundedRect(box.expanded(ui.s(4)), ui.s(10), {57, 240, 216, 90}, ui.s(1.5f));
         }
-        Glyphs::drawAction(ui, pw->def().input, {box.center().x - ui.s(14), box.bottom() + ui.s(22)}, ui.s(28));
+        if (!pw->passive())
+            Glyphs::drawAction(ui, pw->def().input, {box.center().x - ui.s(14), box.bottom() + ui.s(22)}, ui.s(28));
         x += size + ui.s(18);
     }
 }
@@ -220,17 +224,28 @@ void Hud::drawBoss(UIContext& ui, GameWorld& w) {
 }
 
 void Hud::drawInteractPrompt(UIContext& ui, GameWorld& w, const WorldView& view) {
-    LevelEntity* e = w.nearestInteractable();
-    if (!e || !w.player().alive()) return;
+    Player& player = w.player();
+    if (!player.alive()) return;
+    const LevelEntity* e = w.nearestInteractable();
+    const char* prompt = e ? e->interactPrompt() : "";
+    // Grapple anchors: prompt when nothing else can be used (or in the air).
+    if ((!e || !player.grounded()) && !player.movementPower()) {
+        if (const Power* g = player.power("grapple"))
+            if (const LevelEntity* t = GrapplePower::findTarget(player, w, g->def().param("range", 170.0f))) {
+                e = t;
+                prompt = "Grappin";
+            }
+    }
+    if (!e) return;
     Vec2 sp = view.toScreen({e->box.center().x, e->box.y - 10});
     float h = ui.s(34);
     TextStyle st = style(ui, 22, ui.theme().text, FontFace::Bold, Align::Left, VAlign::Middle);
-    float tw = ui.text().measure(e->interactPrompt(), FontFace::Bold, st.size).x;
+    float tw = ui.text().measure(prompt, FontFace::Bold, st.size).x;
     float total = h + ui.s(10) + tw;
     float bob = std::sin(time_ * 4.0f) * ui.s(3);
     Vec2 pos{sp.x - total * 0.5f, sp.y - h + bob};
     ui.r().fillRoundedRect({pos.x - ui.s(10), pos.y - h * 0.5f - ui.s(6), total + ui.s(20), h + ui.s(12)}, ui.s(10), {6, 10, 22, 190});
-    Glyphs::drawHint(ui, Action::Interact, e->interactPrompt(), pos, h);
+    Glyphs::drawHint(ui, Action::Interact, prompt, pos, h);
 }
 
 void Hud::drawMessages(UIContext& ui, GameWorld& w) {

@@ -10,8 +10,65 @@ T = 16
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 
-with open(os.path.join(ROOT, "assets/sprites/decor/sylvanox_decor.json")) as f:
-    DECOR = json.load(f)["sprites"]
+# Decor sprites of every planet atlas (names are unique across atlases).
+DECOR = {}
+for _atlas in ("sylvanox", "pyralis", "glacior"):
+    _p = os.path.join(ROOT, "assets/sprites/decor/%s_decor.json" % _atlas)
+    if os.path.exists(_p):
+        with open(_p) as f:
+            for _k, _v in json.load(f)["sprites"].items():
+                DECOR.setdefault(_k, _v)
+
+
+def enemy_size(kind):
+    """Collision box of an enemy definition (data/enemies/<kind>.json)."""
+    with open(os.path.join(ROOT, "data/enemies/%s.json" % kind), encoding="utf-8") as f:
+        d = json.load(f)
+    return d["size"][0] * 1.0, d["size"][1] * 1.0
+
+
+# Per-planet presentation: music, light, parallax stack (see docs/ASSET_SPEC.md section 8).
+PLANETS = {
+    "sylvanox": {
+        "music": "music/sylvanox_level.ogg", "bossMusic": "music/sylvanox_boss.ogg",
+        "ambience": "music/sylvanox_ambience.ogg", "ambientLight": "#7480a8", "backgroundColor": "#0b0f1e",
+        "background": [
+            {"texture": "backgrounds/sylvanox/sky.png", "factor": [0.0, 0.0], "fill": True},
+            {"texture": "backgrounds/sylvanox/far.png", "factor": [0.1, 0.05], "offset": [0, -20]},
+            {"texture": "backgrounds/sylvanox/mid.png", "factor": [0.25, 0.12], "offset": [0, 10]},
+            {"texture": "backgrounds/sylvanox/abyss.png", "factor": [0.4, 0.3], "offset": [0, 210], "fillBelow": "#2f7a1a"},
+            {"texture": "backgrounds/sylvanox/near.png", "factor": [0.5, 0.25], "offset": [0, 60]},
+            {"texture": "backgrounds/sylvanox/fg_vines.png", "factor": [1.15, 1.0], "offset": [0, -330],
+             "foreground": True, "tint": "#ffffffc0"},
+        ],
+    },
+    "pyralis": {
+        "music": "music/pyralis_level.ogg", "bossMusic": "music/pyralis_boss.ogg",
+        "ambience": "music/pyralis_ambience.ogg", "ambientLight": "#9a6a5a", "backgroundColor": "#14090b",
+        "background": [
+            {"texture": "backgrounds/pyralis/sky.png", "factor": [0.0, 0.0], "fill": True},
+            {"texture": "backgrounds/pyralis/far.png", "factor": [0.1, 0.05], "offset": [0, -20]},
+            {"texture": "backgrounds/pyralis/mid.png", "factor": [0.25, 0.12], "offset": [0, 10]},
+            {"texture": "backgrounds/pyralis/abyss.png", "factor": [0.4, 0.3], "offset": [0, 210], "fillBelow": "#5a1a0e"},
+            {"texture": "backgrounds/pyralis/near.png", "factor": [0.5, 0.25], "offset": [0, 60]},
+            {"texture": "backgrounds/pyralis/fg_embers.png", "factor": [1.15, 1.0], "offset": [0, -330],
+             "foreground": True, "tint": "#ffffffc0"},
+        ],
+    },
+    "glacior": {
+        "music": "music/glacior_level.ogg", "bossMusic": "music/glacior_boss.ogg",
+        "ambience": "music/glacior_ambience.ogg", "ambientLight": "#8ca4c8", "backgroundColor": "#0a1428",
+        "background": [
+            {"texture": "backgrounds/glacior/sky.png", "factor": [0.0, 0.0], "fill": True},
+            {"texture": "backgrounds/glacior/far.png", "factor": [0.1, 0.05], "offset": [0, -20]},
+            {"texture": "backgrounds/glacior/mid.png", "factor": [0.25, 0.12], "offset": [0, 10]},
+            {"texture": "backgrounds/glacior/abyss.png", "factor": [0.4, 0.3], "offset": [0, 210], "fillBelow": "#1f3a66"},
+            {"texture": "backgrounds/glacior/near.png", "factor": [0.5, 0.25], "offset": [0, 60]},
+            {"texture": "backgrounds/glacior/fg_icicles.png", "factor": [1.15, 1.0], "offset": [0, -330],
+             "foreground": True, "tint": "#ffffffc0"},
+        ],
+    },
+}
 
 
 class Level:
@@ -34,6 +91,16 @@ class Level:
         }
         self._next = 1
         self._ev = 1
+
+    def planet(self, planet_id):
+        """Applies the planet presentation preset (music, light, parallax background)."""
+        import copy
+        p = PLANETS[planet_id]
+        d = self.data
+        d["planet"] = planet_id
+        for k in ("music", "bossMusic", "ambience", "ambientLight", "backgroundColor"):
+            d[k] = p[k]
+        d["background"] = copy.deepcopy(p["background"])
 
     # ------------------------------------------------------------------ core
     def obj(self, type_, rect, layer="gameplay", props=None, rotation=0, flip=False, z=0, oid=None):
@@ -145,7 +212,7 @@ class Level:
         return self.obj("relic", [x * T - 8, y * T - 8, 16, 16], props={"value": 1000, "name": name})
 
     def orb(self, kind, x, y):
-        return self.obj(kind, [x * T - 6, y * T - 6, 12, 12], props={"amount": 1 if kind == "health_orb" else 40})
+        return self.obj(kind, [x * T - 6, y * T - 6, 12, 12], props={"amount": 2 if kind == "health_orb" else 40})
 
     def power(self, x, y, power, message=""):
         return self.obj("power_unlock", [x * T - 12, y * T - 12, 24, 24], props={"power": power, "message": message})
@@ -178,12 +245,28 @@ class Level:
         return self.obj("secret_area", [x0 * T, y0 * T, (x1 - x0) * T, (y1 - y0) * T], props={"message": message})
 
     def enemy(self, kind, x, y_ground, patrol_tiles=6, face_left=False, dormant=False, boss=False):
-        sizes = {"glowmite": (14, 10), "sentinel": (16, 14), "sporeflower": (16, 20), "stalker": (18, 12),
-                 "golem": (26, 34), "wisp": (12, 12), "thornwarden": (44, 60)}
-        w, h = sizes[kind]
+        """(x, y_ground) in tiles = feet of the enemy (flying ones hover from there)."""
+        w, h = enemy_size(kind)
         return self.obj("enemy", [x * T - w / 2, y_ground * T - h, w, h],
                         props={"enemy": kind, "faceLeft": face_left, "patrol": patrol_tiles * T,
                                "dormant": dormant, "boss": boss})
+
+    # -------------------------------------------------------------- abilities
+    def grapple(self, x, y):
+        """Grapple anchor centred on (x, y) tiles; reachable from about 10 tiles."""
+        return self.obj("grapple_point", [x * T - 12, y * T - 12, 24, 24])
+
+    def updraft(self, x0, x1, y_top, y_bottom, strength=230, vent=True):
+        return self.obj("updraft", [x0 * T, y_top * T, (x1 - x0) * T, (y_bottom - y_top) * T], "gameplay",
+                        {"strength": strength, "vent": vent})
+
+    def cracked_floor(self, x0, x1, y, h_tiles=1, respawn=False):
+        """Floor slab broken by a ground pound (top at row y)."""
+        return self.gate(x0, y, x1 - x0, h_tiles, "ground_pound", respawn)
+
+    def heart(self, x, y, hearts=1):
+        """Crystal heart (max health +1 for the level) centred on (x, y) tiles."""
+        return self.obj("heart_container", [x * T - 8, y * T - 8, 16, 16], props={"hearts": hearts})
 
     # ----------------------------------------------------------------- decor
     def decor(self, name, x, y, layer="bg_decor", scale=1.0, flip=False, alpha=1.0, tint="#ffffff", sway=0.0,

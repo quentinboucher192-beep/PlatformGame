@@ -1,0 +1,222 @@
+{
+  "format": "cosmic.enemy",
+  "id": "glaciarch",
+  "name": "Glaciarque",
+  "description": "Chevalier de glace millénaire, gardien du bastion gelé. Sa lame de cristal fige tout ce qu'elle touche.",
+  "family": "miniboss",
+  "animation": "animations/glaciarch.json",
+  "size": [
+    44,
+    60
+  ],
+  "scale": 1.0,
+  "hp": 80,
+  "contactDamage": 1,
+  "speed": 38,
+  "chaseSpeedMultiplier": 1.2,
+  "flying": false,
+  "knockbackResist": 1,
+  "detectionRange": 360,
+  "attackRange": 200,
+  "loseRange": 2000,
+  "needsLineOfSight": false,
+  "movement": "guard",
+  "reaction": "chase",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 150,
+  "hopVelocity": 0,
+  "attacks": [
+    {
+      "id": "slam",
+      "name": "Lame sismique",
+      "type": "slam",
+      "damage": 2,
+      "range": 190,
+      "telegraph": 0.85,
+      "active": 0.35,
+      "recover": 1.0,
+      "cooldown": 3.0,
+      "telegraphAnim": "telegraph_slam",
+      "attackAnim": "slam",
+      "projectileSpeed": 230,
+      "knockback": 260,
+      "slow": 0.5,
+      "slowDuration": 1.2
+    },
+    {
+      "id": "charge",
+      "name": "Charge du blizzard",
+      "type": "charge",
+      "damage": 2,
+      "range": 440,
+      "telegraph": 0.8,
+      "active": 2.2,
+      "recover": 1.1,
+      "cooldown": 4.0,
+      "telegraphAnim": "telegraph_charge",
+      "attackAnim": "charge",
+      "minRange": 70,
+      "lungeSpeed": 270,
+      "knockback": 270
+    },
+    {
+      "id": "barrage",
+      "name": "Éclats de cristal",
+      "type": "spread",
+      "damage": 1,
+      "range": 440,
+      "telegraph": 0.75,
+      "active": 0.25,
+      "recover": 0.8,
+      "cooldown": 3.0,
+      "telegraphAnim": "telegraph_barrage",
+      "attackAnim": "barrage",
+      "projectile": "ice_shard",
+      "projectileSpeed": 210,
+      "count": 5,
+      "spread": 10,
+      "hitEffect": "ice_burst",
+      "slow": 0.5,
+      "slowDuration": 1.6
+    },
+    {
+      "id": "spikes",
+      "name": "Forêt de glace",
+      "type": "eruption",
+      "damage": 2,
+      "range": 480,
+      "telegraph": 1.0,
+      "active": 0.3,
+      "recover": 0.9,
+      "cooldown": 4.5,
+      "telegraphAnim": "telegraph_slam",
+      "attackAnim": "slam",
+      "projectile": "ice_shard",
+      "projectileSpeed": 420,
+      "count": 5,
+      "spread": 58,
+      "gravity": 700,
+      "warningEffect": "eruption_warning_ice",
+      "eruptionEffect": "eruption_ice",
+      "hitEffect": "ice_burst",
+      "slow": 0.5,
+      "slowDuration": 1.6
+    },
+    {
+      "id": "beam",
+      "name": "Rayon glacial",
+      "type": "laser",
+      "damage": 2,
+      "range": 380,
+      "telegraph": 1.1,
+      "active": 1.5,
+      "recover": 1.1,
+      "cooldown": 6.0,
+      "telegraphAnim": "telegraph_laser",
+      "attackAnim": "laser",
+      "laserLength": 340,
+      "sweepDegrees": 70,
+      "color": "#7ff6ff",
+      "slow": 0.5,
+      "slowDuration": 1.6
+    },
+    {
+      "id": "summon",
+      "name": "Garde gelée",
+      "type": "summon",
+      "damage": 0,
+      "range": 500,
+      "telegraph": 0.9,
+      "active": 0.4,
+      "recover": 0.8,
+      "cooldown": 12,
+      "telegraphAnim": "summon",
+      "attackAnim": "summon",
+      "summonId": "frost_mite",
+      "summonCount": 2,
+      "maxSummoned": 3
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "dash": 0.5,
+    "ground_pound": 1.3
+  },
+  "rewards": {
+    "score": 5000,
+    "drops": [
+      {
+        "type": "health_orb",
+        "chance": 1.0
+      },
+      {
+        "type": "energy_orb",
+        "chance": 1.0
+      }
+    ]
+  },
+  "light": {
+    "color": "#7ff6ff",
+    "radius": 100
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/boss_roar_ice.wav",
+    "alert": "sounds/boss_roar_ice.wav"
+  },
+  "boss": {
+    "title": "LE GLACIARQUE, SEIGNEUR DE GLACIOR",
+    "phases": [
+      {
+        "name": "Garde éternelle",
+        "hpThreshold": 1.0,
+        "attacks": [
+          "slam",
+          "barrage",
+          "charge"
+        ],
+        "speedMultiplier": 1.0,
+        "cooldownMultiplier": 1.0
+      },
+      {
+        "name": "Mur de glace",
+        "hpThreshold": 0.66,
+        "attacks": [
+          "slam",
+          "barrage",
+          "charge",
+          "spikes",
+          "summon"
+        ],
+        "speedMultiplier": 1.1,
+        "cooldownMultiplier": 0.9,
+        "enterText": "Le Glaciarque appelle sa garde !",
+        "summonOnEnter": true
+      },
+      {
+        "name": "Hiver absolu",
+        "hpThreshold": 0.33,
+        "attacks": [
+          "slam",
+          "spikes",
+          "beam",
+          "charge",
+          "barrage"
+        ],
+        "speedMultiplier": 1.25,
+        "cooldownMultiplier": 0.75,
+        "enterText": "Le Glaciarque libère l'hiver absolu !"
+      }
+    ]
+  }
+}

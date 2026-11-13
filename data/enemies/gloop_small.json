@@ -1,0 +1,59 @@
+{
+  "format": "cosmic.enemy",
+  "id": "gloop_small",
+  "name": "Petit Gloop",
+  "description": "Fragment d'un Gloop. Plus rapide, mais fragile.",
+  "family": "ground",
+  "animation": "animations/gloop.json",
+  "size": [
+    9,
+    7
+  ],
+  "scale": 0.65,
+  "hp": 1,
+  "contactDamage": 1,
+  "speed": 42,
+  "chaseSpeedMultiplier": 1.5,
+  "flying": false,
+  "knockbackResist": 0.0,
+  "detectionRange": 160,
+  "attackRange": 28,
+  "loseRange": 260,
+  "needsLineOfSight": true,
+  "movement": "hop",
+  "reaction": "chase",
+  "fleeHealthRatio": 0.0,
+  "preferredDistance": 110,
+  "hopVelocity": 190,
+  "attacks": [],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {},
+  "rewards": {
+    "score": 40,
+    "drops": [
+      {
+        "type": "energy_orb",
+        "chance": 0.15
+      }
+    ]
+  },
+  "light": {
+    "color": "#8ff26a",
+    "radius": 16
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/enemy_death.wav",
+    "alert": "sounds/enemy_alert.wav"
+  }
+}

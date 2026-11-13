@@ -1,6 +1,8 @@
 #include "game/gameplay/GameWorld.h"
 
+#include <algorithm>
 #include <cmath>
+#include <map>
 
 #include "engine/audio/AudioSystem.h"
 #include "engine/core/Log.h"
@@ -94,9 +96,22 @@ bool GameWorld::load(const LevelData& level) {
 }
 
 void GameWorld::buildStatic() {
+    // Surface grip per terrain material, read from the tileset JSON ("friction", default 1).
+    std::map<std::string, float> friction;
+    auto frictionOf = [&](const std::string& material) {
+        auto it = friction.find(material);
+        if (it != friction.end()) return it->second;
+        float f = 1.0f;
+        if (auto j = resources().json("textures/tiles/" + material + ".json")) f = std::clamp(jget<float>(*j, "friction", 1.0f), 0.05f, 1.0f);
+        friction[material] = f;
+        return f;
+    };
     for (const auto& o : level_.objects) {
         if (o.type == "solid" && o.prop<bool>("collision", true)) {
-            physics_.add(o.rect, ColliderKind::Solid);
+            uint32_t id = physics_.add(o.rect, ColliderKind::Solid);
+            float f = frictionOf(o.propStr("material", "ruin_stone"));
+            if (f < 1.0f)
+                if (Collider* c = physics_.get(id)) c->friction = f;
         } else if (o.type == "oneway") {
             physics_.add({o.rect.x, o.rect.y, o.rect.w, 4.0f}, ColliderKind::OneWay);
         }
@@ -192,6 +207,7 @@ void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
     player_.onLadder = false;
     player_.inWater = false;
     player_.speedMultiplier = 1.0f;
+    player_.updraft = 0.0f;
     updatePlayerOverlaps(dt);
     player_.fixedUpdate(*this, effective, dt);
 
@@ -294,7 +310,8 @@ void GameWorld::updateProjectiles(float dt) {
         p.life -= dt;
         if (p.life <= 0.0f) {
             p.alive = false;
-            if (p.clip != "shockwave") particles_.emit(p.hitEffect, p.pos, 0.6f);
+            if (p.explosionRadius > 0.0f) explodeProjectile(p, p.pos);
+            else if (p.clip != "shockwave") particles_.emit(p.hitEffect, p.pos, 0.6f);
             continue;
         }
         p.vel.y += p.gravity * dt;
@@ -319,15 +336,21 @@ void GameWorld::updateProjectiles(float dt) {
         } else if (auto t = physics_.raycast(p.pos, np, false, ColliderTag::EnemyOnly)) {
             Vec2 hit = p.pos + (np - p.pos) * *t;
             p.alive = false;
+            if (p.explosionRadius > 0.0f) {
+                explodeProjectile(p, hit);
+                continue;
+            }
             particles_.emit(p.hitEffect, hit, 0.8f);
             if (!p.hitSound.empty()) playSound(p.hitSound, hit, 0.6f);
             if (p.fromPlayer && p.type == DamageType::Wave) powerHit("wave", Rect::fromCenter(hit, {12, 12}));
+            if (p.fromPlayer && p.type == DamageType::ChargeShot) powerHit("charge_shot", Rect::fromCenter(hit, {16, 16}));
             continue;
         }
         p.pos = np;
         Rect pr = Rect::fromCenter(p.pos, {p.radius * 2, p.radius * 2});
         if (p.fromPlayer) {
             if (p.type == DamageType::Wave) powerHit("wave", pr);
+            if (p.type == DamageType::ChargeShot) powerHit("charge_shot", pr);
             for (auto& e : enemies_) {
                 if (!e->alive() || e->dormant()) continue;
                 if (std::find(p.hitTargets.begin(), p.hitTargets.end(), e.get()) != p.hitTargets.end()) continue;
@@ -361,11 +384,18 @@ void GameWorld::updateProjectiles(float dt) {
                 particles_.emit("shield_hit", p.pos, 1.0f);
                 continue;
             }
+            if (p.explosionRadius > 0.0f) {
+                p.alive = false;
+                explodeProjectile(p, p.pos);
+                continue;
+            }
             DamageInfo d;
             d.amount = p.damage;
             d.type = p.type;
             d.source = p.pos - p.vel.normalized() * 8.0f;
             d.knockback = p.knockback;
+            d.slow = p.slow;
+            d.slowDuration = p.slowDuration;
             damagePlayer(d);
             if (p.clip != "shockwave") {
                 p.alive = false;
@@ -375,6 +405,27 @@ void GameWorld::updateProjectiles(float dt) {
     }
     projectiles_.erase(std::remove_if(projectiles_.begin(), projectiles_.end(), [](const auto& p) { return !p.alive; }),
                        projectiles_.end());
+}
+
+void GameWorld::explodeProjectile(const Projectile& p, Vec2 at) {
+    float r = p.explosionRadius;
+    particles_.emit("explosion", at, std::max(0.8f, r / 32.0f));
+    playSound("sounds/bomb_explode.wav", at, 0.9f);
+    shake(0.3f);
+    rumble(0.4f, 0.6f, 160);
+    DamageInfo d;
+    d.amount = p.damage;
+    d.type = DamageType::Explosion;
+    d.source = at;
+    d.knockback = std::max(p.knockback, 220.0f);
+    d.slow = p.slow;
+    d.slowDuration = p.slowDuration;
+    if (p.fromPlayer) {
+        d.fromPlayer = true;
+        damageEnemies(Rect::fromCenter(at, {r * 2, r * 2}), d, nullptr);
+    } else if (player_.alive() && Collision::circleIntersectsRect(at, r, player_.box)) {
+        damagePlayer(d);
+    }
 }
 
 void GameWorld::checkKillPlane() {
@@ -476,6 +527,20 @@ void GameWorld::onEnemyKilled(Enemy& e) {
     // Minions vanish with their summoner.
     for (auto& other : enemies_)
         if (other->summonedBy == e.uid() && other->alive()) other->kill(*this);
+    // Splitting enemies (slimes) leave smaller ones behind.
+    if (e.def().deathSpawnCount > 0 && !e.def().deathSpawnId.empty() && e.def().deathSpawnId != e.def().id) {
+        particles_.emit("split_splash", e.center(), 1.0f);
+        playSound("sounds/slime_split.wav", e.center(), 0.9f);
+        for (int i = 0; i < e.def().deathSpawnCount; ++i) {
+            float side = (i % 2 == 0) ? -1.0f : 1.0f;
+            Vec2 feet = e.box.bottomCenter() + Vec2{side * (6.0f + 6.0f * static_cast<float>(i / 2)), 0.0f};
+            if (Enemy* child = spawnEnemy(e.def().deathSpawnId, feet, side < 0)) {
+                child->vel = {side * (70.0f + 25.0f * static_cast<float>(i / 2)), -170.0f};
+                child->countsForStats = e.countsForStats;
+                child->alert(*this);
+            }
+        }
+    }
     if (!e.objectId().empty()) emit(e.objectId(), "killed");
     if (boss_ == &e) {
         boss_ = nullptr;

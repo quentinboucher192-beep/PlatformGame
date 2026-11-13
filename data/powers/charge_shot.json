@@ -1,0 +1,7 @@
+{
+  "format": "cosmic.power", "id": "charge_shot", "behavior": "charge_shot", "name": "Tir chargé",
+  "description": "Maintenez Attaque pour concentrer l'énergie, relâchez pour tirer une sphère de plasma perforante qui active aussi les récepteurs.",
+  "icon": 7, "input": "attack", "energyCost": 20, "cooldown": 0.3, "duration": 0,
+  "color": "#39f0d8", "sound": "sounds/charge_shot.wav",
+  "params": { "chargeTime": 0.85, "speed": 380, "range": 420, "damage": 4, "pierce": 3, "radius": 8, "recoil": 70 }
+}

@@ -23,6 +23,7 @@ struct GameplaySettings {
     bool debugMode = false;  // debug overlay available in game (F3)
     bool editorAutosave = true;
     int editorAutosaveSeconds = 60;
+    bool unlockAll = true;  // every planet and level playable without progression
 };
 
 /// Every user preference (stored in saves/settings.json, versioned).

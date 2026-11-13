@@ -284,6 +284,8 @@ private:
         r.y += row();
         ui.toggle("debug", r, "Mode debug (F3 en jeu)", working_.gameplay.debugMode);
         r.y += row();
+        ui.toggle("unlockall", r, "Tout débloquer : planètes et niveaux (mode test)", working_.gameplay.unlockAll);
+        r.y += row();
         ui.toggle("autosave", r, "Sauvegarde automatique de l'éditeur", working_.gameplay.editorAutosave);
         r.y += row();
         ui.sliderInt("autosavesec", r, "Intervalle de sauvegarde (s)", working_.gameplay.editorAutosaveSeconds, 10, 600);

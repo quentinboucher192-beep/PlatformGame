@@ -1,10 +1,12 @@
 """Projectile sheet (docs/ASSET_SPEC.md section 5): 16x16 frames, pivot
-[8, 8], one looping 4-frame clip per row, all travelling to the right."""
+[8, 8], one looping 4-frame clip per row, all travelling to the right.
+Rows 0-5 = v1 clips below, rows 6+ = v2 clips from player_projectiles.py."""
 import math
 
 import numpy as np
 
 import effects as FX
+import player_projectiles
 from common.palette import AMBER, CYAN, DANGER, MOSS, VIOLET, hex_rgba
 from raster import Canvas, Mat, put
 from sheet import Sheet
@@ -159,4 +161,5 @@ def build():
     s.add("wisp_orb", wisp_orb(), fps=12, loop=True)
     s.add("boss_thorn", boss_thorn(), fps=12, loop=True)
     s.add("boss_orb", boss_orb(), fps=12, loop=True)
+    player_projectiles.add_rows(s)  # v2 rows 6-18
     s.save("animations/projectiles.json")

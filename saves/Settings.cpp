@@ -21,7 +21,8 @@ Json Settings::toJson() const {
                      {"showInputHints", gameplay.showInputHints},
                      {"debugMode", gameplay.debugMode},
                      {"editorAutosave", gameplay.editorAutosave},
-                     {"editorAutosaveSeconds", gameplay.editorAutosaveSeconds}};
+                     {"editorAutosaveSeconds", gameplay.editorAutosaveSeconds},
+                     {"unlockAll", gameplay.unlockAll}};
     j["input"] = input.toJson();
     return j;
 }
@@ -54,6 +55,7 @@ Settings Settings::fromJson(const Json& j) {
         s.gameplay.debugMode = jget<bool>(g, "debugMode", false);
         s.gameplay.editorAutosave = jget<bool>(g, "editorAutosave", true);
         s.gameplay.editorAutosaveSeconds = std::clamp(jget<int>(g, "editorAutosaveSeconds", 60), 10, 600);
+        s.gameplay.unlockAll = jget<bool>(g, "unlockAll", true);
     }
     if (j.contains("input")) s.input = InputBindings::fromJson(j["input"]);
     return s;

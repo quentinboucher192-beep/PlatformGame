@@ -1,0 +1,203 @@
+{
+  "format": "cosmic.enemy",
+  "id": "spore_queen",
+  "name": "Reine Sporale",
+  "description": "Plante carnivore colossale enracinée au cœur de la canopée. Ses trois têtes mordent, ses sacs crachent des spores.",
+  "family": "miniboss",
+  "animation": "animations/spore_queen.json",
+  "size": [
+    56,
+    64
+  ],
+  "scale": 1.0,
+  "hp": 60,
+  "contactDamage": 1,
+  "speed": 0,
+  "chaseSpeedMultiplier": 1.2,
+  "flying": false,
+  "knockbackResist": 1,
+  "detectionRange": 360,
+  "attackRange": 200,
+  "loseRange": 2000,
+  "needsLineOfSight": false,
+  "movement": "stationary",
+  "reaction": "chase",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 150,
+  "hopVelocity": 0,
+  "attacks": [
+    {
+      "id": "bite",
+      "name": "Morsure des trois têtes",
+      "type": "melee",
+      "damage": 2,
+      "range": 96,
+      "telegraph": 0.75,
+      "active": 0.3,
+      "recover": 0.6,
+      "cooldown": 2.4,
+      "telegraphAnim": "telegraph_bite",
+      "attackAnim": "bite",
+      "knockback": 260
+    },
+    {
+      "id": "spores",
+      "name": "Salve de spores",
+      "type": "arc",
+      "damage": 1,
+      "range": 420,
+      "telegraph": 0.8,
+      "active": 0.25,
+      "recover": 0.7,
+      "cooldown": 3.0,
+      "telegraphAnim": "telegraph_spores",
+      "attackAnim": "spores",
+      "projectile": "spore_big",
+      "projectileSpeed": 150,
+      "count": 3,
+      "spread": 22,
+      "gravity": 420,
+      "origin": [
+        0,
+        -78
+      ],
+      "projectileRadius": 6,
+      "hitEffect": "acid_burst"
+    },
+    {
+      "id": "vines",
+      "name": "Ronces jaillissantes",
+      "type": "eruption",
+      "damage": 2,
+      "range": 420,
+      "telegraph": 1.0,
+      "active": 0.3,
+      "recover": 0.8,
+      "cooldown": 4.2,
+      "telegraphAnim": "telegraph_vines",
+      "attackAnim": "vines",
+      "projectile": "spore",
+      "projectileSpeed": 380,
+      "count": 3,
+      "spread": 72,
+      "gravity": 700,
+      "warningEffect": "eruption_warning_spore",
+      "eruptionEffect": "eruption_spore"
+    },
+    {
+      "id": "spore_rain",
+      "name": "Pluie de spores",
+      "type": "rain",
+      "damage": 1,
+      "range": 500,
+      "telegraph": 1.0,
+      "active": 0.3,
+      "recover": 0.8,
+      "cooldown": 4.0,
+      "telegraphAnim": "telegraph_spores",
+      "attackAnim": "spores",
+      "projectile": "spore",
+      "projectileSpeed": 150,
+      "count": 6,
+      "spread": 52,
+      "gravity": 180,
+      "rainHeight": 240
+    },
+    {
+      "id": "summon",
+      "name": "Bourgeons gluants",
+      "type": "summon",
+      "damage": 0,
+      "range": 500,
+      "telegraph": 0.9,
+      "active": 0.4,
+      "recover": 0.8,
+      "cooldown": 11,
+      "telegraphAnim": "summon",
+      "attackAnim": "summon",
+      "summonId": "gloop",
+      "summonCount": 2,
+      "maxSummoned": 3
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "charge_shot": 1.2,
+    "wave": 1.2
+  },
+  "rewards": {
+    "score": 3500,
+    "drops": [
+      {
+        "type": "health_orb",
+        "chance": 1.0
+      },
+      {
+        "type": "energy_orb",
+        "chance": 1.0
+      }
+    ]
+  },
+  "light": {
+    "color": "#b04cff",
+    "radius": 100
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/boss_roar.wav",
+    "alert": "sounds/boss_roar.wav"
+  },
+  "boss": {
+    "title": "REINE SPORALE, CŒUR DE LA CANOPÉE",
+    "phases": [
+      {
+        "name": "Floraison",
+        "hpThreshold": 1.0,
+        "attacks": [
+          "bite",
+          "spores",
+          "vines"
+        ],
+        "speedMultiplier": 1.0,
+        "cooldownMultiplier": 1.0
+      },
+      {
+        "name": "Sève bouillonnante",
+        "hpThreshold": 0.66,
+        "attacks": [
+          "bite",
+          "spores",
+          "vines",
+          "summon"
+        ],
+        "speedMultiplier": 1.1,
+        "cooldownMultiplier": 0.9,
+        "enterText": "La Reine Sporale répand ses bourgeons !",
+        "summonOnEnter": true
+      },
+      {
+        "name": "Tempête de spores",
+        "hpThreshold": 0.33,
+        "attacks": [
+          "bite",
+          "spore_rain",
+          "vines",
+          "spores"
+        ],
+        "speedMultiplier": 1.2,
+        "cooldownMultiplier": 0.75,
+        "enterText": "Le ciel se couvre de spores !"
+      }
+    ]
+  }
+}

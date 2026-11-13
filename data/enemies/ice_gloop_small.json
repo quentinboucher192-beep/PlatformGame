@@ -1,0 +1,61 @@
+{
+  "format": "cosmic.enemy",
+  "id": "ice_gloop_small",
+  "name": "Petit Gloop de glace",
+  "description": "Fragment d'un Gloop. Plus rapide, mais fragile. Variante de Glacior : ses attaques glacées ralentissent.",
+  "family": "ground",
+  "animation": "animations/ice_gloop.json",
+  "size": [
+    9,
+    7
+  ],
+  "scale": 0.65,
+  "hp": 1,
+  "contactDamage": 1,
+  "speed": 39.9,
+  "chaseSpeedMultiplier": 1.5,
+  "flying": false,
+  "knockbackResist": 0.0,
+  "detectionRange": 160,
+  "attackRange": 28,
+  "loseRange": 260,
+  "needsLineOfSight": true,
+  "movement": "hop",
+  "reaction": "chase",
+  "fleeHealthRatio": 0.0,
+  "preferredDistance": 110,
+  "hopVelocity": 190,
+  "attacks": [],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "charge_shot": 1.3
+  },
+  "rewards": {
+    "score": 50,
+    "drops": [
+      {
+        "type": "energy_orb",
+        "chance": 0.15
+      }
+    ]
+  },
+  "light": {
+    "color": "#7ff6ff",
+    "radius": 16
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/enemy_death.wav",
+    "alert": "sounds/enemy_alert.wav"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "format": "cosmic.power", "id": "triple_jump", "behavior": "air_jump", "name": "Triple saut",
+  "description": "Les propulseurs de la combinaison se rechargent : un saut supplémentaire en l'air.",
+  "icon": 9, "input": "jump", "energyCost": 0, "cooldown": 0, "duration": 0,
+  "color": "#b04cff", "sound": "sounds/triple_jump.wav",
+  "params": { "jumps": 1 }
+}

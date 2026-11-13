@@ -22,6 +22,13 @@
     "death": {"row": 15, "count": 10, "durations": [0.12, 0.1, 0.12, 0.25, 0.09, 0.09, 0.09, 0.09, 0.1, 0.12], "loop": false},
     "respawn": {"row": 16, "count": 10, "durations": [0.07, 0.07, 0.07, 0.07, 0.07, 0.07, 0.07, 0.07, 0.08, 0.12], "loop": false},
     "victory": {"row": 17, "count": 10, "durations": [0.1, 0.08, 0.08, 0.1, 0.08, 0.08, 0.1, 0.1, 0.12, 0.2], "loop": false},
-    "interact": {"row": 18, "count": 4, "durations": [0.06, 0.08, 0.14, 0.1], "loop": false}
+    "interact": {"row": 18, "count": 4, "durations": [0.06, 0.08, 0.14, 0.1], "loop": false},
+    "glide": {"row": 19, "count": 4, "fps": 10, "loop": true},
+    "pound_dive": {"row": 20, "count": 2, "fps": 14, "loop": true},
+    "pound_land": {"row": 21, "count": 4, "durations": [0.08, 0.08, 0.08, 0.1], "loop": false, "next": "idle", "events": [{"frame": 0, "name": "impact"}]},
+    "charge": {"row": 22, "count": 4, "fps": 12, "loop": true},
+    "shoot": {"row": 23, "count": 3, "durations": [0.06, 0.08, 0.12], "loop": false, "next": "idle", "events": [{"frame": 0, "name": "fire"}]},
+    "grapple": {"row": 24, "count": 4, "durations": [0.06, 0.06, 0.06, 0.1], "loop": false, "events": [{"frame": 1, "name": "fire"}]},
+    "grapple_pull": {"row": 25, "count": 2, "fps": 12, "loop": true}
   }
 }

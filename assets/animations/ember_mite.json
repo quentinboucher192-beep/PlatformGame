@@ -1,0 +1,14 @@
+{
+  "texture": "sprites/enemies/ember_mite.png",
+  "frameWidth": 24,
+  "frameHeight": 16,
+  "pivot": [12, 16],
+  "clips": {
+    "idle": {"row": 0, "count": 4, "fps": 6, "loop": true},
+    "walk": {"row": 1, "count": 6, "fps": 12, "loop": true},
+    "telegraph": {"row": 2, "count": 3, "durations": [0.12, 0.12, 0.16], "loop": false},
+    "attack": {"row": 3, "count": 4, "durations": [0.06, 0.06, 0.1, 0.12], "loop": false, "events": [{"frame": 2, "name": "hit"}]},
+    "hurt": {"row": 4, "count": 2, "durations": [0.08, 0.12], "loop": false},
+    "death": {"row": 5, "count": 6, "durations": [0.08, 0.1, 0.12, 0.14, 0.1, 0.12], "loop": false}
+  }
+}

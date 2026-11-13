@@ -164,6 +164,7 @@ private:
     void createEntities();
     void updatePlayerOverlaps(float dt);
     void updateProjectiles(float dt);
+    void explodeProjectile(const Projectile& p, Vec2 at);
     void updateEnemies(float dt);
     void updateCamera(float dt);
     void carryBodies();

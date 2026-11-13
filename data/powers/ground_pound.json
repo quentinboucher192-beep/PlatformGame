@@ -1,0 +1,7 @@
+{
+  "format": "cosmic.power", "id": "ground_pound", "behavior": "ground_pound", "name": "Frappe sismique",
+  "description": "En l'air, Bas + Attaque : plongeon vertical dont l'onde de choc écrase les ennemis et brise les sols fissurés.",
+  "icon": 6, "input": "attack", "energyCost": 10, "cooldown": 0.35, "duration": 0,
+  "color": "#8ffff0", "sound": "",
+  "params": { "hover": 0.12, "diveSpeed": 560, "damage": 2, "diveDamage": 1, "radius": 56, "landLock": 0.22 }
+}

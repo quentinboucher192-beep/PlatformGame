@@ -142,6 +142,9 @@ private:
     Vec2 aimDir_{1, 0};
     float laserAngle_ = 0.0f;
     float laserHitTimer_ = 0.0f;
+    std::vector<Vec2> targets_;  // rain / eruption impact points chosen during the telegraph
+    float warnTimer_ = 0.0f;
+    Vec2 attackOrigin() const;   // projectile / beam origin of the current attack
     float chargeDistance_ = 0.0f;
     int phase_ = 0;
     int patternIndex_ = 0;

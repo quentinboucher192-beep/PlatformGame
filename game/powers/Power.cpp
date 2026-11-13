@@ -1,10 +1,15 @@
 #include "game/powers/Power.h"
 
+#include "engine/input/InputManager.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/player/Player.h"
 #include "game/powers/Powers.h"
 
 namespace cosmic {
+
+bool Power::wantsActivation(const Player& /*p*/, const GameWorld& /*w*/, const PlayerInput& in) const {
+    return in.isPressed(def_.input);
+}
 
 bool Power::ready(const Player& p) const { return cooldown_ <= 0.0f && p.energy + 0.001f >= def_.energyCost; }
 
@@ -28,6 +33,11 @@ PowerRegistry::PowerRegistry() {
     registerBehavior("shield", [](const PowerDefinition& d) { return std::make_unique<ShieldPower>(d); });
     registerBehavior("impulse", [](const PowerDefinition& d) { return std::make_unique<ImpulsePower>(d); });
     registerBehavior("teleport", [](const PowerDefinition& d) { return std::make_unique<TeleportPower>(d); });
+    registerBehavior("glide", [](const PowerDefinition& d) { return std::make_unique<GlidePower>(d); });
+    registerBehavior("ground_pound", [](const PowerDefinition& d) { return std::make_unique<GroundPoundPower>(d); });
+    registerBehavior("charge_shot", [](const PowerDefinition& d) { return std::make_unique<ChargeShotPower>(d); });
+    registerBehavior("grapple", [](const PowerDefinition& d) { return std::make_unique<GrapplePower>(d); });
+    registerBehavior("air_jump", [](const PowerDefinition& d) { return std::make_unique<AirJumpPower>(d); });
 }
 
 void PowerRegistry::registerBehavior(const std::string& behavior, Factory f) { factories_[behavior] = std::move(f); }

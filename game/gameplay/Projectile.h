@@ -28,6 +28,10 @@ struct Projectile {
     std::string hitEffect = "hit_spark";
     std::string hitSound;
     float knockback = 140.0f;
+    float slow = 0.0f;             // see DamageInfo::slow
+    float slowDuration = 0.0f;
+    float explosionRadius = 0.0f;  // > 0: explodes on impact (bombs)
+    bool spin = false;             // drawn spinning instead of aligned with the velocity
     std::vector<const void*> hitTargets;  // already damaged (piercing)
 };
 

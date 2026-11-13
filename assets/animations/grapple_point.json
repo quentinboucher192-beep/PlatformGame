@@ -1,0 +1,10 @@
+{
+  "texture": "sprites/objects/grapple_point.png",
+  "frameWidth": 24,
+  "frameHeight": 24,
+  "pivot": [12, 12],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 6, "loop": true},
+    "active": {"row": 1, "count": 4, "fps": 10, "loop": true}
+  }
+}

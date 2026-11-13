@@ -1,0 +1,9 @@
+{
+  "texture": "sprites/objects/updraft_vent.png",
+  "frameWidth": 32,
+  "frameHeight": 16,
+  "pivot": [16, 16],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 10, "loop": true}
+  }
+}

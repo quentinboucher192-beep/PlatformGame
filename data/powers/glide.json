@@ -1,0 +1,7 @@
+{
+  "format": "cosmic.power", "id": "glide", "behavior": "glide", "name": "Planeur",
+  "description": "Maintenez Saut pendant une chute pour déployer les ailes d'énergie : descente lente et vitesse aérienne accrue. Les courants ascendants vous élèvent.",
+  "icon": 5, "input": "jump", "energyCost": 0, "cooldown": 0, "duration": 0,
+  "color": "#39f0d8", "sound": "sounds/glide_open.wav",
+  "params": { "fallSpeed": 52, "airSpeed": 175 }
+}

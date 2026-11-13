@@ -1,0 +1,61 @@
+{
+  "format": "cosmic.enemy",
+  "id": "magma_gloop_small",
+  "name": "Petit Gloop de magma",
+  "description": "Fragment d'un Gloop. Plus rapide, mais fragile. Variante de Pyralis forgée dans la lave : plus résistante et plus rapide.",
+  "family": "ground",
+  "animation": "animations/magma_gloop.json",
+  "size": [
+    9,
+    7
+  ],
+  "scale": 0.65,
+  "hp": 1,
+  "contactDamage": 1,
+  "speed": 46.2,
+  "chaseSpeedMultiplier": 1.5,
+  "flying": false,
+  "knockbackResist": 0.0,
+  "detectionRange": 160,
+  "attackRange": 28,
+  "loseRange": 260,
+  "needsLineOfSight": true,
+  "movement": "hop",
+  "reaction": "chase",
+  "fleeHealthRatio": 0.0,
+  "preferredDistance": 110,
+  "hopVelocity": 190,
+  "attacks": [],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "wave": 0.8
+  },
+  "rewards": {
+    "score": 50,
+    "drops": [
+      {
+        "type": "energy_orb",
+        "chance": 0.15
+      }
+    ]
+  },
+  "light": {
+    "color": "#ff8a3d",
+    "radius": 16
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/enemy_death.wav",
+    "alert": "sounds/enemy_alert.wav"
+  }
+}

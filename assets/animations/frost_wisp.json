@@ -1,0 +1,17 @@
+{
+  "texture": "sprites/enemies/frost_wisp.png",
+  "frameWidth": 24,
+  "frameHeight": 24,
+  "pivot": [12, 24],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 10, "loop": true},
+    "move": {"row": 1, "count": 6, "fps": 12, "loop": true},
+    "telegraph": {"row": 2, "count": 5, "durations": [0.1, 0.1, 0.1, 0.12, 0.14], "loop": false},
+    "attack": {"row": 3, "count": 4, "durations": [0.06, 0.06, 0.1, 0.12], "loop": false, "events": [{"frame": 2, "name": "fire"}]},
+    "teleport_out": {"row": 4, "count": 5, "durations": [0.05, 0.05, 0.05, 0.06, 0.08], "loop": false},
+    "teleport_in": {"row": 5, "count": 5, "durations": [0.06, 0.05, 0.05, 0.05, 0.06], "loop": false},
+    "summon": {"row": 6, "count": 6, "durations": [0.1, 0.1, 0.1, 0.1, 0.12, 0.16], "loop": false},
+    "hurt": {"row": 7, "count": 2, "durations": [0.08, 0.12], "loop": false},
+    "death": {"row": 8, "count": 7, "durations": [0.08, 0.1, 0.1, 0.12, 0.12, 0.12, 0.14], "loop": false}
+  }
+}

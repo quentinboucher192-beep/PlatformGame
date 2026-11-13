@@ -1,0 +1,82 @@
+{
+  "format": "cosmic.enemy",
+  "id": "forge_bomber",
+  "name": "Bombardier de forge",
+  "description": "Drone de soute qui survole sa cible et largue des charges explosives. Variante de Pyralis forgée dans la lave : plus résistante et plus rapide.",
+  "family": "robot",
+  "animation": "animations/forge_bomber.json",
+  "size": [
+    18,
+    12
+  ],
+  "scale": 1.0,
+  "hp": 4,
+  "contactDamage": 1,
+  "speed": 49.5,
+  "chaseSpeedMultiplier": 1.3,
+  "flying": true,
+  "knockbackResist": 0.0,
+  "detectionRange": 210,
+  "attackRange": 200,
+  "loseRange": 340,
+  "needsLineOfSight": false,
+  "movement": "fly",
+  "reaction": "chase",
+  "fleeHealthRatio": 0.0,
+  "preferredDistance": 110,
+  "hopVelocity": 220,
+  "attacks": [
+    {
+      "id": "bomb",
+      "name": "Largage",
+      "type": "arc",
+      "damage": 2,
+      "range": 210,
+      "telegraph": 0.6,
+      "active": 0.2,
+      "recover": 0.6,
+      "cooldown": 2.4,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "bomb",
+      "projectileSpeed": 120,
+      "gravity": 520,
+      "explosionRadius": 26,
+      "projectileRadius": 5,
+      "hitEffect": "fire_burst"
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "wave": 1.5,
+    "charge_shot": 1.5
+  },
+  "rewards": {
+    "score": 187,
+    "drops": [
+      {
+        "type": "energy_orb",
+        "chance": 0.3
+      }
+    ]
+  },
+  "light": {
+    "color": "#ff8a3d",
+    "radius": 30
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/enemy_death.wav",
+    "alert": "sounds/enemy_alert.wav"
+  }
+}

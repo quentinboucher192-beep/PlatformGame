@@ -8,6 +8,11 @@
     "wave": {"row": 1, "count": 8, "fps": 8, "loop": true},
     "shield": {"row": 2, "count": 8, "fps": 8, "loop": true},
     "impulse": {"row": 3, "count": 8, "fps": 8, "loop": true},
-    "teleport": {"row": 4, "count": 8, "fps": 8, "loop": true}
+    "teleport": {"row": 4, "count": 8, "fps": 8, "loop": true},
+    "glide": {"row": 5, "count": 8, "fps": 8, "loop": true},
+    "ground_pound": {"row": 6, "count": 8, "fps": 8, "loop": true},
+    "charge_shot": {"row": 7, "count": 8, "fps": 8, "loop": true},
+    "grapple": {"row": 8, "count": 8, "fps": 8, "loop": true},
+    "triple_jump": {"row": 9, "count": 8, "fps": 8, "loop": true}
   }
 }

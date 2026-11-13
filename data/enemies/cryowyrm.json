@@ -1,0 +1,212 @@
+{
+  "format": "cosmic.enemy",
+  "id": "cryowyrm",
+  "name": "Cryowyrm",
+  "description": "Serpent de cristal des plaines gelées. Son souffle fige le sang.",
+  "family": "miniboss",
+  "animation": "animations/cryowyrm.json",
+  "size": [
+    56,
+    40
+  ],
+  "scale": 1.0,
+  "hp": 64,
+  "contactDamage": 1,
+  "speed": 60,
+  "chaseSpeedMultiplier": 1.2,
+  "flying": true,
+  "knockbackResist": 1,
+  "detectionRange": 360,
+  "attackRange": 200,
+  "loseRange": 2000,
+  "needsLineOfSight": false,
+  "movement": "fly",
+  "reaction": "keepDistance",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 150,
+  "hopVelocity": 0,
+  "attacks": [
+    {
+      "id": "bolts",
+      "name": "Éclats de givre",
+      "type": "spread",
+      "damage": 1,
+      "range": 460,
+      "telegraph": 0.7,
+      "active": 0.25,
+      "recover": 0.6,
+      "cooldown": 2.6,
+      "telegraphAnim": "telegraph_meteor",
+      "attackAnim": "meteor",
+      "projectile": "ice_shard",
+      "projectileSpeed": 200,
+      "count": 4,
+      "spread": 12,
+      "origin": [
+        36,
+        -26
+      ],
+      "hitEffect": "ice_burst",
+      "slow": 0.5,
+      "slowDuration": 1.6
+    },
+    {
+      "id": "dive",
+      "name": "Piqué",
+      "type": "lunge",
+      "damage": 2,
+      "range": 320,
+      "telegraph": 0.85,
+      "active": 0.7,
+      "recover": 1.0,
+      "cooldown": 3.6,
+      "telegraphAnim": "telegraph_dive",
+      "attackAnim": "dive",
+      "lungeSpeed": 320,
+      "minRange": 40,
+      "knockback": 280,
+      "slow": 0.5,
+      "slowDuration": 1.4
+    },
+    {
+      "id": "breath",
+      "name": "Souffle glacial",
+      "type": "laser",
+      "damage": 2,
+      "range": 380,
+      "telegraph": 1.1,
+      "active": 1.5,
+      "recover": 1.1,
+      "cooldown": 5.5,
+      "telegraphAnim": "telegraph_breath",
+      "attackAnim": "breath",
+      "laserLength": 340,
+      "sweepDegrees": 90,
+      "origin": [
+        36,
+        -26
+      ],
+      "color": "#7ff6ff",
+      "slow": 0.5,
+      "slowDuration": 1.6
+    },
+    {
+      "id": "meteor",
+      "name": "Grêle de cristaux",
+      "type": "rain",
+      "damage": 1,
+      "range": 520,
+      "telegraph": 1.0,
+      "active": 0.3,
+      "recover": 0.8,
+      "cooldown": 4.2,
+      "telegraphAnim": "telegraph_meteor",
+      "attackAnim": "meteor",
+      "projectile": "ice_shard",
+      "projectileSpeed": 170,
+      "count": 6,
+      "spread": 48,
+      "gravity": 300,
+      "rainHeight": 260,
+      "hitEffect": "ice_burst",
+      "slow": 0.5,
+      "slowDuration": 1.6
+    },
+    {
+      "id": "summon",
+      "name": "Nuée",
+      "type": "summon",
+      "damage": 0,
+      "range": 500,
+      "telegraph": 0.9,
+      "active": 0.4,
+      "recover": 0.8,
+      "cooldown": 12,
+      "telegraphAnim": "summon",
+      "attackAnim": "summon",
+      "summonId": "frost_wing",
+      "summonCount": 2,
+      "maxSummoned": 3
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "wave": 1.2,
+    "charge_shot": 1.25
+  },
+  "rewards": {
+    "score": 3500,
+    "drops": [
+      {
+        "type": "health_orb",
+        "chance": 1.0
+      },
+      {
+        "type": "energy_orb",
+        "chance": 1.0
+      }
+    ]
+  },
+  "light": {
+    "color": "#7ff6ff",
+    "radius": 100
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/wyrm_roar.wav",
+    "alert": "sounds/wyrm_roar.wav"
+  },
+  "boss": {
+    "title": "CRYOWYRM, LE SERPENT DES GLACES",
+    "phases": [
+      {
+        "name": "Envol",
+        "hpThreshold": 1.0,
+        "attacks": [
+          "bolts",
+          "dive",
+          "breath"
+        ],
+        "speedMultiplier": 1.0,
+        "cooldownMultiplier": 1.0
+      },
+      {
+        "name": "Tourbillon",
+        "hpThreshold": 0.6,
+        "attacks": [
+          "meteor",
+          "dive",
+          "breath",
+          "summon"
+        ],
+        "speedMultiplier": 1.15,
+        "cooldownMultiplier": 0.9,
+        "enterText": "Cryowyrm appelle sa nuée !",
+        "summonOnEnter": true
+      },
+      {
+        "name": "Fureur",
+        "hpThreshold": 0.3,
+        "attacks": [
+          "meteor",
+          "dive",
+          "breath",
+          "bolts"
+        ],
+        "speedMultiplier": 1.25,
+        "cooldownMultiplier": 0.75,
+        "enterText": "Cryowyrm déchaîne le blizzard !"
+      }
+    ]
+  }
+}

@@ -29,9 +29,10 @@ const char* playerStateName(PlayerState s) {
 void Player::configure(const PlayerConfig& cfg, AnimationSetPtr animSet) {
     cfg_ = cfg;
     anim.setSet(std::move(animSet));
-    health = cfg_.maxHealth;
+    bonusHealth = 0;
+    health = maxHealth();
     energy = cfg_.maxEnergy;
-    airJumpsLeft_ = cfg_.airJumps;
+    airJumpsLeft_ = airJumpCount();
 }
 
 void Player::spawn(GameWorld& w, Vec2 feet, bool faceLeft, bool materialize) {
@@ -40,9 +41,9 @@ void Player::spawn(GameWorld& w, Vec2 feet, bool faceLeft, bool materialize) {
     prevBox = box;
     vel = {};
     facing = faceLeft ? -1.0f : 1.0f;
-    health = cfg_.maxHealth;
+    health = maxHealth();
     energy = cfg_.maxEnergy;
-    airJumpsLeft_ = cfg_.airJumps;
+    airJumpsLeft_ = airJumpCount();
     grounded_ = wasGrounded_ = false;
     invulnTimer_ = hurtTimer_ = attackTimer_ = castTimer_ = 0.0f;
     afterimages_.clear();
@@ -179,6 +180,7 @@ void Player::fixedUpdate(GameWorld& w, const PlayerInput& inRaw, float dt) {
     tick(dropThroughTimer_);
     tick(phasedTimer_);
     tick(hurtFlash_);
+    tick(slowTimer_);
     if (forcedAnimTimer_ > 0) {
         forcedAnimTimer_ -= dt;
         if (forcedAnimTimer_ <= 0) forcedAnim_.clear();
@@ -231,7 +233,7 @@ void Player::fixedUpdate(GameWorld& w, const PlayerInput& inRaw, float dt) {
 
     if (in.isPressed(Action::Jump)) jumpBufferTimer_ = cfg_.jumpBuffer;
 
-    if (controlEnabled) handlePowers(w, in);
+    if (controlEnabled) handlePowers(w, in, dt);
 
     if (state_ == PlayerState::Dash) {
         dashTimer_ -= dt;
@@ -248,6 +250,12 @@ void Player::fixedUpdate(GameWorld& w, const PlayerInput& inRaw, float dt) {
             endDash();
             tryJump(w, in);
         }
+        return;
+    }
+
+    // Ground pound / grapple drive the movement themselves.
+    if (Power* mp = movementPower()) {
+        mp->movePlayer(*this, w, in, dt);
         return;
     }
 
@@ -297,10 +305,12 @@ void Player::stepMovement(GameWorld& w, const PlayerInput& in, float dt) {
 
     // Horizontal
     float maxSpeed = cfg_.maxRunSpeed;
+    if (gliding() && glideAirSpeed > 0.0f) maxSpeed = glideAirSpeed;
     float target = mx * maxSpeed;
     if (std::abs(mx) > 0.05f && std::abs(mx) < 0.6f) target = signf(mx) * std::max(cfg_.walkSpeed * std::abs(mx) / 0.6f, 20.0f);
     if (attackTimer_ > 0.0f && grounded_) target *= 0.35f;
     target *= speedMultiplier;
+    if (slowTimer_ > 0.0f) target *= slowMultiplier_;
     if (inWater) target *= 0.7f;
     float accel;
     if (grounded_) {
@@ -310,6 +320,8 @@ void Player::stepMovement(GameWorld& w, const PlayerInput& in, float dt) {
             accel = cfg_.turnAcceleration;
         else
             accel = std::abs(target) > std::abs(vel.x) ? cfg_.groundAcceleration : cfg_.groundDeceleration;
+        // Slippery ground (ice): less grip to start, turn and stop.
+        if (groundFriction < 0.999f) accel *= std::max(0.08f, groundFriction);
     } else {
         accel = (std::abs(target) > 0.01f ? cfg_.airAcceleration : cfg_.airDeceleration) * cfg_.airControl;
         if (wallJumpLockTimer_ > 0.0f) accel *= 0.15f;
@@ -330,6 +342,14 @@ void Player::stepMovement(GameWorld& w, const PlayerInput& in, float dt) {
         if (in.isHeld(Action::Jump) || in.move.y < -0.5f) vel.y = approach(vel.y, -cfg_.swimSpeed * 0.8f, 600.0f * dt);
     }
     vel.y = std::min(vel.y + g * dt, maxFall);
+    // Glide: the fall is capped; an updraft lifts a gliding player, and only slows a falling one.
+    if (gliding() && vel.y > glideFallSpeed) vel.y = approach(vel.y, glideFallSpeed, 1500.0f * dt);
+    if (updraft > 0.0f && !inWater) {
+        if (gliding())
+            vel.y = approach(vel.y - g * dt, -updraft, 1100.0f * dt);  // the wind cancels gravity
+        else if (vel.y > 70.0f)
+            vel.y = approach(vel.y, 70.0f, 900.0f * dt);
+    }
 
     // Variable jump height
     if (jumpCutAvailable_ && !in.isHeld(Action::Jump) && vel.y < 0.0f) {
@@ -425,8 +445,13 @@ void Player::tryJump(GameWorld& w, const PlayerInput& in) {
         return;
     }
     if (airJumpsLeft_ > 0) {
+        bool extra = airJumpsLeft_ <= extraAirJumps_ && extraAirJumps_ > 0;
         --airJumpsLeft_;
         vel.y = -cfg_.doubleJumpVelocity();
+        if (extra) {
+            w.playSound("sounds/triple_jump.wav", box.center(), 0.8f);
+            w.particles().emit("triple_jump_ring", box.bottomCenter(), 1.0f);
+        }
         jumpBufferTimer_ = 0.0f;
         jumpCutAvailable_ = true;
         doubleJumpAnimTimer_ = 0.36f;
@@ -541,9 +566,12 @@ void Player::moveAndCollide(GameWorld& w, float dt) {
         grounded_ = false;
         groundId_ = 0;
     }
+    groundFriction = 1.0f;
+    if (grounded_ && groundId_)
+        if (const Collider* g = w.physics().get(groundId_)) groundFriction = g->friction;
     if (wasGrounded_ && !grounded_ && vel.y >= 0.0f) coyoteTimer_ = cfg_.coyoteTime;
     if (grounded_) {
-        airJumpsLeft_ = cfg_.airJumps;
+        airJumpsLeft_ = airJumpCount();
         jumpCutAvailable_ = vel.y < 0.0f && jumpCutAvailable_;
     }
 }

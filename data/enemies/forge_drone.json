@@ -1,0 +1,82 @@
+{
+  "format": "cosmic.enemy",
+  "id": "forge_drone",
+  "name": "Drone de forge",
+  "description": "Drone de garde des Anciens. Garde ses distances et tire des éclairs après avoir chargé son œil. Variante de Pyralis forgée dans la lave : plus résistante et plus rapide.",
+  "family": "robot",
+  "animation": "animations/forge_drone.json",
+  "size": [
+    16,
+    14
+  ],
+  "scale": 1.0,
+  "hp": 4,
+  "contactDamage": 1,
+  "speed": 49.5,
+  "chaseSpeedMultiplier": 1.2,
+  "flying": true,
+  "knockbackResist": 0.2,
+  "detectionRange": 200,
+  "attackRange": 220,
+  "loseRange": 320,
+  "needsLineOfSight": true,
+  "movement": "fly",
+  "reaction": "keepDistance",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 115,
+  "hopVelocity": 0,
+  "attacks": [
+    {
+      "id": "bolt",
+      "name": "Éclair",
+      "type": "projectile",
+      "damage": 1,
+      "range": 230,
+      "telegraph": 0.65,
+      "active": 0.1,
+      "recover": 0.5,
+      "cooldown": 1.9,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "fireball",
+      "projectileSpeed": 155,
+      "count": 1,
+      "spread": 0,
+      "sound": "sounds/enemy_shoot.wav",
+      "hitEffect": "fire_burst"
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": true,
+      "radius": 180
+    }
+  },
+  "damageMultipliers": {
+    "wave": 1.5
+  },
+  "rewards": {
+    "score": 187,
+    "drops": [
+      {
+        "type": "energy_orb",
+        "chance": 0.4
+      }
+    ]
+  },
+  "light": {
+    "color": "#ff8a3d",
+    "radius": 34
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/explosion.wav",
+    "alert": "sounds/enemy_alert.wav"
+  }
+}

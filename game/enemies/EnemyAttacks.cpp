@@ -82,15 +82,48 @@ void Enemy::beginAttack(GameWorld& w) {
     face(playerPos_.x - box.center().x);
     aimDir_ = (playerPos_ - box.center()).normalized();
     if (aimDir_.lengthSq() < 0.01f) aimDir_ = {facing, 0};
-    laserAngle_ = std::atan2(aimDir_.y, aimDir_.x) - degToRad(attack_->sweepDegrees * 0.5f) * facing;
+    {
+        Vec2 la = (playerPos_ - attackOrigin()).normalized();
+        if (la.lengthSq() < 0.01f) la = aimDir_;
+        laserAngle_ = std::atan2(la.y, la.x) - degToRad(attack_->sweepDegrees * 0.5f) * facing;
+    }
     playClip(attack_->telegraphAnim, true);
     if (!attack_->telegraphSound.empty()) w.playSound(attack_->telegraphSound, box.center(), 0.7f);
+    // Rain and eruptions announce where they will land.
+    targets_.clear();
+    if (attack_->type == AttackType::Rain || attack_->type == AttackType::Eruption) {
+        int n = std::max(1, attack_->count);
+        float spacing = std::max(attack_->spread, 24.0f);
+        for (int i = 0; i < n; ++i) {
+            float x = playerPos_.x + (static_cast<float>(i) - (n - 1) * 0.5f) * spacing + w.rng().range(-6.0f, 6.0f);
+            Vec2 from{x, playerPos_.y - 40.0f};
+            Vec2 to{x, playerPos_.y + 400.0f};
+            float groundY = playerPos_.y;
+            if (auto t = w.physics().raycast(from, to, true)) groundY = from.y + (to.y - from.y) * *t;
+            targets_.push_back({x, groundY});
+        }
+        warnTimer_ = 0.0f;
+    }
     if (attack_->type == AttackType::Laser) w.playSound("sounds/laser_charge.wav", box.center(), 0.8f);
+}
+
+Vec2 Enemy::attackOrigin() const {
+    if (attack_ && attack_->hasOrigin)
+        return box.bottomCenter() + Vec2{facing * attack_->origin.x * def_.scale, attack_->origin.y * def_.scale};
+    if (attack_ && attack_->type == AttackType::Laser) return box.center() + Vec2{facing * box.w * 0.3f, -box.h * 0.2f};
+    return box.center() + Vec2{facing * box.w * 0.4f, -box.h * 0.1f};
 }
 
 void Enemy::stepTelegraph(GameWorld& w, float dt) {
     if (!def_.flying) vel.x = approach(vel.x, 0.0f, 900.0f * dt);
     else vel = lerpv(vel, {}, damp(6.0f, dt));
+    if (!targets_.empty() && attack_) {
+        warnTimer_ -= dt;
+        if (warnTimer_ <= 0.0f) {
+            warnTimer_ = 0.07f;
+            for (const Vec2& t : targets_) w.particles().emit(attack_->warningEffect, t, 1.0f);
+        }
+    }
     // Ranged attackers keep tracking during the wind-up; melee commits early.
     if (attack_ && (attack_->type == AttackType::Projectile || attack_->type == AttackType::Arc) && stateTimer_ > 0.15f) {
         aimDir_ = (playerPos_ - box.center()).normalized();
@@ -109,10 +142,48 @@ void Enemy::performAttackStart(GameWorld& w) {
     attackStarted_ = true;
     if (!a.sound.empty()) w.playSound(a.sound, box.center(), 0.9f);
     switch (a.type) {
+        case AttackType::Rain:
+        case AttackType::Eruption: {
+            bool rain = a.type == AttackType::Rain;
+            for (const Vec2& t : targets_) {
+                Projectile p;
+                if (rain) {
+                    p.pos = p.prevPos = {t.x + w.rng().range(-4.0f, 4.0f), playerPos_.y - a.rainHeight};
+                    p.vel = {w.rng().range(-12.0f, 12.0f), a.projectileSpeed};
+                    p.gravity = a.gravity;
+                    p.life = 4.0f;
+                } else {
+                    p.pos = p.prevPos = t + Vec2{0, -6.0f};
+                    p.vel = {w.rng().range(-20.0f, 20.0f), -a.projectileSpeed};
+                    p.gravity = a.gravity > 0 ? a.gravity : 700.0f;
+                    p.life = 2.0f;
+                    w.particles().emit(a.eruptionEffect, t, 1.0f);
+                }
+                p.damage = a.damage;
+                p.type = DamageType::Projectile;
+                p.clip = a.projectile;
+                p.radius = a.projectileRadius > 0 ? a.projectileRadius : 5.0f;
+                p.light = def_.lightColor;
+                p.knockback = a.knockback;
+                p.hitEffect = a.hitEffect.empty() ? "projectile_burst" : a.hitEffect;
+                p.slow = a.slow;
+                p.slowDuration = a.slowDuration;
+                p.explosionRadius = a.explosionRadius;
+                w.spawnProjectile(p);
+            }
+            if (!rain) {
+                w.shake(0.25f);
+                w.playSound("sounds/golem_slam.wav", box.center(), 0.6f, 1.3f);
+            } else if (a.sound.empty()) {
+                w.playSound("sounds/enemy_shoot.wav", box.center(), 0.6f, 0.8f);
+            }
+            targets_.clear();
+            break;
+        }
         case AttackType::Projectile:
         case AttackType::Spread:
         case AttackType::Arc: {
-            Vec2 origin = box.center() + Vec2{facing * box.w * 0.4f, -box.h * 0.1f};
+            Vec2 origin = attackOrigin();
             Vec2 baseDir = a.type == AttackType::Spread ? Vec2{facing, 0.0f} : aimDir_;
             float baseAngle = std::atan2(baseDir.y, baseDir.x);
             for (int i = 0; i < a.count; ++i) {
@@ -134,12 +205,16 @@ void Enemy::performAttackStart(GameWorld& w) {
                 p.damage = a.damage;
                 p.type = DamageType::Projectile;
                 p.clip = a.projectile;
-                p.radius = a.projectile == "boss_orb" ? 7.0f : 4.5f;
+                p.radius = a.projectileRadius > 0 ? a.projectileRadius : (a.projectile == "boss_orb" ? 7.0f : 4.5f);
                 p.life = 4.0f;
                 p.light = def_.lightColor;
                 p.knockback = a.knockback;
                 p.hitSound = "sounds/explosion.wav";
-                p.hitEffect = "projectile_burst";
+                p.hitEffect = a.hitEffect.empty() ? "projectile_burst" : a.hitEffect;
+                p.slow = a.slow;
+                p.slowDuration = a.slowDuration;
+                p.explosionRadius = a.explosionRadius;
+                if (a.explosionRadius > 0.0f) p.hitSound.clear();
                 w.spawnProjectile(p);
             }
             w.particles().emit("muzzle_enemy", origin, 1.0f, baseDir);
@@ -220,6 +295,8 @@ void Enemy::performAttackActive(GameWorld& w, float dt) {
     d.type = DamageType::Contact;
     d.source = box.center();
     d.knockback = a.knockback;
+    d.slow = a.slow;
+    d.slowDuration = a.slowDuration;
     switch (a.type) {
         case AttackType::Melee: {
             vel.x = approach(vel.x, 0.0f, 900.0f * dt);
@@ -249,7 +326,7 @@ void Enemy::performAttackActive(GameWorld& w, float dt) {
             float sweep = degToRad(a.sweepDegrees) * facing;
             float progress = a.active > 0 ? 1.0f - std::max(0.0f, stateTimer_) / a.active : 1.0f;
             float ang = laserAngle_ + sweep * progress;
-            Vec2 origin = box.center() + Vec2{facing * box.w * 0.3f, -box.h * 0.2f};
+            Vec2 origin = attackOrigin();
             Vec2 end = origin + Vec2::fromAngle(ang) * a.laserLength;
             if (auto t = w.physics().raycast(origin, end)) end = origin + (end - origin) * *t;
             if (laserHitTimer_ <= 0.0f && Collision::segmentIntersectsRect(origin, end, p.box)) {
@@ -335,7 +412,8 @@ void Enemy::renderTelegraph(RenderContext& ctx) const {
     Color warnCol{255, 77, 109, static_cast<uint8_t>(80 + 140 * prog)};
     switch (attack_->type) {
         case AttackType::Laser: {
-            Vec2 origin = box.center() + Vec2{facing * box.w * 0.3f, -box.h * 0.2f};
+            Vec2 origin = attackOrigin();
+            Color bc = attack_->beamColor;
             float ang = laserAngle_;
             if (state_ == EnemyState::Attack) {
                 float progress = attack_->active > 0 ? 1.0f - std::max(0.0f, stateTimer_) / attack_->active : 1.0f;
@@ -343,13 +421,13 @@ void Enemy::renderTelegraph(RenderContext& ctx) const {
             }
             Vec2 end = origin + Vec2::fromAngle(ang) * attack_->laserLength;
             if (state_ == EnemyState::Telegraph) {
-                ctx.r.drawWorldLine(origin, end, warnCol, 1.0f + 2.0f * prog);
+                ctx.r.drawWorldLine(origin, end, bc.withAlpha(warnCol.a), 1.0f + 2.0f * prog);
             } else {
-                auto beam = ctx.res.texture("sprites/objects/laser_beam.png");
-                ctx.r.drawWorldLine(origin, end, {255, 77, 109, 230}, 6.0f * ctx.r.view().scale / 3.0f, BlendMode::Additive);
-                ctx.r.drawWorldLine(origin, end, {255, 230, 240, 255}, 2.0f * ctx.r.view().scale / 3.0f, BlendMode::Additive);
-                ctx.lights.add((origin + end) * 0.5f, attack_->laserLength * 0.6f, {255, 77, 109, 255});
-                (void)beam;
+                float s = ctx.r.view().scale / 3.0f;
+                ctx.r.drawWorldLine(origin, end, bc.withAlpha(230), 6.0f * s, BlendMode::Additive);
+                ctx.r.drawWorldLine(origin, end, {255, 240, 240, 255}, 2.0f * s, BlendMode::Additive);
+                ctx.r.drawWorldGlow(origin, 16.0f, bc.withAlpha(160));
+                ctx.lights.add((origin + end) * 0.5f, attack_->laserLength * 0.6f, bc);
             }
             break;
         }
@@ -357,6 +435,16 @@ void Enemy::renderTelegraph(RenderContext& ctx) const {
             if (state_ == EnemyState::Telegraph) {
                 Rect zone = Rect::fromCenter(box.bottomCenter() + Vec2{0, -3}, {attack_->range * 2.0f * prog + box.w, 6});
                 ctx.r.fillWorldRect(zone, Color{255, 77, 109, static_cast<uint8_t>(60 + 80 * prog)}, BlendMode::Additive);
+            }
+            break;
+        case AttackType::Rain:
+        case AttackType::Eruption:
+            if (state_ == EnemyState::Telegraph) {
+                for (const Vec2& t : targets_) {
+                    float r = 6.0f + 10.0f * prog;
+                    ctx.r.fillWorldRect(Rect::fromCenter(t + Vec2{0, -1}, {r * 2.0f, 3.0f}), warnCol, BlendMode::Additive);
+                    ctx.r.drawWorldGlow(t, r * 1.4f, warnCol.withAlpha(static_cast<uint8_t>(40 + 60 * prog)));
+                }
             }
             break;
         case AttackType::Charge:

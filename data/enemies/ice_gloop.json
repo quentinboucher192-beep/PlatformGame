@@ -1,0 +1,87 @@
+{
+  "format": "cosmic.enemy",
+  "id": "ice_gloop",
+  "name": "Gloop de glace",
+  "description": "Masse gélatineuse qui bondit en crachant de l'acide. Se divise en deux quand on le frappe à mort. Variante de Glacior : ses attaques glacées ralentissent.",
+  "family": "ground",
+  "animation": "animations/ice_gloop.json",
+  "size": [
+    14,
+    10
+  ],
+  "scale": 1.0,
+  "hp": 4,
+  "contactDamage": 1,
+  "speed": 28.5,
+  "chaseSpeedMultiplier": 1.3,
+  "flying": false,
+  "knockbackResist": 0.0,
+  "detectionRange": 150,
+  "attackRange": 140,
+  "loseRange": 260,
+  "needsLineOfSight": true,
+  "movement": "hop",
+  "reaction": "chase",
+  "fleeHealthRatio": 0.0,
+  "preferredDistance": 110,
+  "hopVelocity": 210,
+  "attacks": [
+    {
+      "id": "spit",
+      "name": "Crachat acide",
+      "type": "arc",
+      "damage": 1,
+      "range": 150,
+      "telegraph": 0.5,
+      "active": 0.2,
+      "recover": 0.6,
+      "cooldown": 2.2,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "frost_orb",
+      "projectileSpeed": 150,
+      "gravity": 520,
+      "count": 1,
+      "hitEffect": "ice_burst",
+      "slow": 0.55,
+      "slowDuration": 1.5
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "ground_pound": 1.5,
+    "charge_shot": 1.3
+  },
+  "rewards": {
+    "score": 137,
+    "drops": [
+      {
+        "type": "energy_orb",
+        "chance": 0.3
+      }
+    ]
+  },
+  "light": {
+    "color": "#7ff6ff",
+    "radius": 24
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/enemy_death.wav",
+    "alert": "sounds/enemy_alert.wav"
+  },
+  "deathSpawn": {
+    "id": "ice_gloop_small",
+    "count": 2
+  }
+}

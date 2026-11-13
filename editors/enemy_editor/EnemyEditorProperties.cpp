@@ -185,7 +185,7 @@ void EnemyEditorScene::tabAttacks(float x, float& y, float w) {
         c |= stringCycle(ui, "aanim", {x, y, w, ui.s(46)}, "Anim. attaque", a.attackAnim, clips);
         y += ui.s(54);
         c |= ui.numberField("kb", row.field("Recul infligé"), a.knockback, 10, 0, 1000, "%.0f");
-        if (a.type == AttackType::Projectile || a.type == AttackType::Spread || a.type == AttackType::Arc || a.type == AttackType::Slam) {
+        if (a.isProjectileType() || a.type == AttackType::Slam) {
             std::vector<std::string> proj;
             if (auto pa = g_.app.resources().animation("animations/projectiles.json"))
                 for (const auto& [k, _] : pa->clips) proj.push_back(k);
@@ -201,8 +201,35 @@ void EnemyEditorScene::tabAttacks(float x, float& y, float w) {
                     a.count = static_cast<int>(cnt);
                     c = true;
                 }
-                c |= ui.numberField("spr", row.field("Écart (°)"), a.spread, 1, 0, 90, "%.0f");
+                bool spacing = a.type == AttackType::Rain || a.type == AttackType::Eruption;
+                c |= ui.numberField("spr", row.field(spacing ? "Espacement (px)" : "Écart (°)"), a.spread, 1, 0,
+                                    spacing ? 200.0f : 90.0f, "%.0f");
                 c |= ui.numberField("grav", row.field("Gravité"), a.gravity, 20, 0, 2000, "%.0f");
+                c |= ui.numberField("prad", row.field("Rayon du projectile (0 = auto)"), a.projectileRadius, 0.5f, 0, 40, "%.1f");
+                c |= ui.numberField("expl", row.field("Rayon d'explosion (bombes)"), a.explosionRadius, 2, 0, 200, "%.0f");
+                if (a.type == AttackType::Rain)
+                    c |= ui.numberField("rainh", row.field("Hauteur de la pluie"), a.rainHeight, 10, 40, 800, "%.0f");
+                if (a.type == AttackType::Eruption) {
+                    static const std::vector<std::string> warn = {"eruption_warning_fire", "eruption_warning_ice",
+                                                                  "eruption_warning_spore"};
+                    static const std::vector<std::string> burst = {"eruption_fire", "eruption_ice", "eruption_spore"};
+                    c |= stringCycle(ui, "ewarn", {x, y, w, ui.s(46)}, "Avertissement", a.warningEffect, warn);
+                    y += ui.s(54);
+                    c |= stringCycle(ui, "eburst", {x, y, w, ui.s(46)}, "Éruption", a.eruptionEffect, burst);
+                    y += ui.s(54);
+                }
+            }
+        }
+        c |= ui.numberField("slow", row.field("Ralentit le joueur à (0 = non)"), a.slow, 0.05f, 0, 1, "%.2f");
+        if (a.slow > 0.0f) c |= ui.numberField("slowd", row.field("Durée du ralentissement (s)"), a.slowDuration, 0.1f, 0, 10, "%.1f");
+        if (a.isProjectileType() || a.type == AttackType::Laser) {
+            float ox = a.origin.x, oy = a.origin.y;
+            bool o1 = ui.numberField("orx", row.field("Origine X (depuis les pieds)"), ox, 1, -200, 200, "%.0f");
+            bool o2 = ui.numberField("ory", row.field("Origine Y (depuis les pieds)"), oy, 1, -200, 200, "%.0f");
+            if (o1 || o2) {
+                a.origin = {ox, oy};
+                a.hasOrigin = true;
+                c = true;
             }
         }
         if (a.type == AttackType::Lunge || a.type == AttackType::Charge)
@@ -218,6 +245,16 @@ void EnemyEditorScene::tabAttacks(float x, float& y, float w) {
         if (a.type == AttackType::Laser) {
             c |= ui.numberField("llen", row.field("Longueur du rayon"), a.laserLength, 10, 20, 2000, "%.0f");
             c |= ui.numberField("lsw", row.field("Balayage (°)"), a.sweepDegrees, 5, 0, 180, "%.0f");
+            static const std::vector<std::string> beams = {"#ff4d6d", "#ff8a3d", "#5fb0ff", "#39f0d8", "#b04cff", "#ffd98a"};
+            static const std::vector<std::string> beamNames = {"Rouge", "Feu", "Glace", "Cyan", "Violet", "Or"};
+            int bi = 0;
+            for (size_t k = 0; k < beams.size(); ++k)
+                if (Color::fromHex(beams[k]).toHex() == a.beamColor.toHex()) bi = static_cast<int>(k);
+            if (ui.cycle("lcol", {x, y, w, ui.s(46)}, "Couleur du rayon", bi, beamNames)) {
+                a.beamColor = Color::fromHex(beams[static_cast<size_t>(bi)]);
+                c = true;
+            }
+            y += ui.s(54);
         }
         auto sounds = PropertyEditor::assetFiles("sounds", ".wav");
         sounds.insert(sounds.begin(), "");
@@ -311,6 +348,18 @@ void EnemyEditorScene::tabRewards(float x, float& y, float w) {
         c = true;
     }
     y += ui.s(56);
+    ui.label("À sa mort", {x, y}, 21, ui.theme().accent, Align::Left, FontFace::Bold);
+    y += ui.s(34);
+    auto ids = PropertyEditor::enemyIds(g_);
+    ids.insert(ids.begin(), "");
+    c |= stringCycle(ui, "dspawn", {x, y, w, ui.s(46)}, "Se divise en", work_.deathSpawnId, ids);
+    y += ui.s(54);
+    float dc = static_cast<float>(work_.deathSpawnCount);
+    FieldRow row2{ui, x, w, w * 0.45f, y};
+    if (ui.numberField("dcount", row2.field("Nombre"), dc, 1, 0, 6, "%.0f")) {
+        work_.deathSpawnCount = static_cast<int>(dc);
+        c = true;
+    }
     if (c) changed();
 }
 

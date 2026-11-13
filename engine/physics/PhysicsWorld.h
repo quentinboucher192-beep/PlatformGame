@@ -34,6 +34,7 @@ struct Collider {
     bool dynamic = false;
     Vec2 velocity;  // world px / s, for moving platforms
     void* owner = nullptr;
+    float friction = 1.0f;  // surface grip (1 = normal, ice < 1)
 };
 
 struct MoveOptions {

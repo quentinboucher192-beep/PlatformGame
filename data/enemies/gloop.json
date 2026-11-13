@@ -1,0 +1,84 @@
+{
+  "format": "cosmic.enemy",
+  "id": "gloop",
+  "name": "Gloop",
+  "description": "Masse gélatineuse qui bondit en crachant de l'acide. Se divise en deux quand on le frappe à mort.",
+  "family": "ground",
+  "animation": "animations/gloop.json",
+  "size": [
+    14,
+    10
+  ],
+  "scale": 1.0,
+  "hp": 3,
+  "contactDamage": 1,
+  "speed": 30,
+  "chaseSpeedMultiplier": 1.3,
+  "flying": false,
+  "knockbackResist": 0.0,
+  "detectionRange": 150,
+  "attackRange": 140,
+  "loseRange": 260,
+  "needsLineOfSight": true,
+  "movement": "hop",
+  "reaction": "chase",
+  "fleeHealthRatio": 0.0,
+  "preferredDistance": 110,
+  "hopVelocity": 210,
+  "attacks": [
+    {
+      "id": "spit",
+      "name": "Crachat acide",
+      "type": "arc",
+      "damage": 1,
+      "range": 150,
+      "telegraph": 0.5,
+      "active": 0.2,
+      "recover": 0.6,
+      "cooldown": 2.2,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "acid_glob",
+      "projectileSpeed": 150,
+      "gravity": 520,
+      "count": 1,
+      "hitEffect": "acid_burst"
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "ground_pound": 1.5
+  },
+  "rewards": {
+    "score": 110,
+    "drops": [
+      {
+        "type": "energy_orb",
+        "chance": 0.3
+      }
+    ]
+  },
+  "light": {
+    "color": "#8ff26a",
+    "radius": 24
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/enemy_death.wav",
+    "alert": "sounds/enemy_alert.wav"
+  },
+  "deathSpawn": {
+    "id": "gloop_small",
+    "count": 2
+  }
+}

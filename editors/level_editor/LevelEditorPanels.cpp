@@ -159,10 +159,10 @@ void LevelEditorScene::drawLibrary(const Rect& r) {
                 placeEnemy_.clear();
                 tool_ = Tool::Place;
             }
-            if (const DecorSprite* s = atlas.find(names[i]); s && atlas.texture()) {
+            if (const DecorSprite* s = atlas.find(names[i]); s && s->texture) {
                 Rect src{s->rect.x, s->rect.y, s->rect.w, s->rect.h};
                 float k = std::min((cell - ui.s(16)) / src.w, (cell - ui.s(16)) / src.h);
-                ui.r().drawTexture(*atlas.texture(), &src, Rect::fromCenter(cr.center(), {src.w * k, src.h * k}));
+                ui.r().drawTexture(*s->texture, &src, Rect::fromCenter(cr.center(), {src.w * k, src.h * k}));
             }
         }
         ui.endScroll();

@@ -11,7 +11,7 @@ namespace cosmic {
 void DecorEntity::init(GameWorld& w) {
     auto& atlas = DecorAtlas::shared(w.resources());
     sprite_ = atlas.find(obj_.propStr("sprite", "mushroom_tall"));
-    tex_ = atlas.texture();
+    tex_ = sprite_ ? sprite_->texture : atlas.texture();
     tint_ = Color::fromHex(obj_.propStr("tint", "#ffffff"));
     alpha_ = std::clamp(obj_.prop<float>("alpha", 1.0f), 0.0f, 1.0f);
     animSpeed_ = obj_.prop<float>("animSpeed", 1.0f);

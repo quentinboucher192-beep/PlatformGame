@@ -1,0 +1,10 @@
+{
+  "texture": "sprites/objects/cracked_floor.png",
+  "frameWidth": 32,
+  "frameHeight": 16,
+  "pivot": [16, 16],
+  "clips": {
+    "intact": {"row": 0, "count": 1, "fps": 1, "loop": false},
+    "cracked": {"row": 1, "count": 1, "fps": 1, "loop": false}
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "format": "cosmic.enemy",
+  "id": "frost_weaver",
+  "name": "Tisseuse de givre",
+  "description": "Araignée à l'abdomen de cristal. Sa toile colle aux bottes et ralentit. Variante de Glacior : ses attaques glacées ralentissent.",
+  "family": "ground",
+  "animation": "animations/frost_weaver.json",
+  "size": [
+    16,
+    12
+  ],
+  "scale": 1.0,
+  "hp": 4,
+  "contactDamage": 1,
+  "speed": 38.0,
+  "chaseSpeedMultiplier": 1.5,
+  "flying": false,
+  "knockbackResist": 0.0,
+  "detectionRange": 170,
+  "attackRange": 160,
+  "loseRange": 260,
+  "needsLineOfSight": true,
+  "movement": "patrol",
+  "reaction": "keepDistance",
+  "fleeHealthRatio": 0.0,
+  "preferredDistance": 100,
+  "hopVelocity": 220,
+  "attacks": [
+    {
+      "id": "web",
+      "name": "Toile",
+      "type": "projectile",
+      "damage": 1,
+      "range": 170,
+      "telegraph": 0.45,
+      "active": 0.2,
+      "recover": 0.5,
+      "cooldown": 2.0,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "web",
+      "projectileSpeed": 170,
+      "slow": 0.5,
+      "slowDuration": 1.8,
+      "hitEffect": "web_burst"
+    },
+    {
+      "id": "bite",
+      "name": "Morsure",
+      "type": "melee",
+      "damage": 1,
+      "range": 22,
+      "telegraph": 0.3,
+      "active": 0.15,
+      "recover": 0.4,
+      "cooldown": 1.2,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "weight": 0.6,
+      "slow": 0.55,
+      "slowDuration": 1.5
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "charge_shot": 1.3
+  },
+  "rewards": {
+    "score": 162,
+    "drops": [
+      {
+        "type": "energy_orb",
+        "chance": 0.3
+      }
+    ]
+  },
+  "light": {
+    "color": "#7ff6ff",
+    "radius": 26
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/enemy_death.wav",
+    "alert": "sounds/enemy_alert.wav"
+  }
+}

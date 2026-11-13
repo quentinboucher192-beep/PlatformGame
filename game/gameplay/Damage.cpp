@@ -10,6 +10,7 @@ struct Info {
 constexpr Info kInfo[] = {
     {"melee", "Lame d'énergie"}, {"wave", "Onde énergétique"}, {"dash", "Dash"},       {"impulse", "Impulsion"},
     {"contact", "Contact"},       {"projectile", "Projectile"}, {"hazard", "Piège"},    {"explosion", "Explosion"},
+    {"ground_pound", "Frappe sismique"}, {"charge_shot", "Tir chargé"},
 };
 }  // namespace
 

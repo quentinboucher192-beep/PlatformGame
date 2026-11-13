@@ -82,6 +82,88 @@ for o in ("checkpoint", "exit_portal", "shard", "relic", "health_orb", "energy_o
           "receptor", "bounce_pad", "breakable_wall", "phase_wall", "sign", "laser_emitter"):
     TEXTURES[o] = f"sprites/objects/{o}.png"
 
+# ------------------------------------------------------------------ v2 content
+ANIMS["nova"][3].extend([("glide", 4), ("pound_dive", 2), ("pound_land", 4), ("charge", 4), ("shoot", 3),
+                         ("grapple", 4), ("grapple_pull", 2)])
+ANIMS["nova"][4].update({"pound_land": [(0, "impact")], "shoot": [(0, "fire")], "grapple": [(1, "fire")]})
+ANIMS["nova"][5].update({"pound_land": "idle", "shoot": "idle"})
+LOOPING["nova"] |= {"glide", "pound_dive", "charge", "grapple_pull"}
+V2_PROJECTILES = ["charge_shot", "fireball", "magma_glob", "ember", "ice_shard", "frost_orb", "bomb", "acid_glob", "web",
+                  "spore_big", "energy_disc", "rock", "grapple_hook"]
+ANIMS["projectiles"][3].extend((n, 4) for n in V2_PROJECTILES)
+LOOPING["projectiles"] |= set(V2_PROJECTILES)
+V2_POWERS = ["glide", "ground_pound", "charge_shot", "grapple", "triple_jump"]
+ANIMS["power_unlock"][3].extend((n, 8) for n in V2_POWERS)
+LOOPING["power_unlock"] |= set(V2_POWERS)
+ANIMS.update({
+    "grapple_point": (24, 24, [12, 12], [("idle", 6), ("active", 4)], {}, {}),
+    "cracked_floor": (32, 16, [16, 16], [("intact", 1), ("cracked", 1)], {}, {}),
+    "updraft_vent": (32, 16, [16, 16], [("idle", 6)], {}, {}),
+    "heart_container": (16, 16, [8, 16], [("idle", 8)], {}, {}),
+})
+LOOPING.update({"grapple_point": {"idle", "active"}, "updraft_vent": {"idle"}, "heart_container": {"idle"}})
+for o in ("grapple_point", "cracked_floor", "updraft_vent", "heart_container"):
+    TEXTURES[o] = f"sprites/objects/{o}.png"
+V2_SPECIES = {
+    "nightwing": (32, 24, [16, 20], [("idle", 6), ("move", 6), ("telegraph", 3), ("attack", 4), ("hurt", 2),
+                                     ("death", 6)], {"attack": [(1, "hit")]}, {}),
+    "gloop": (24, 20, [12, 20], [("idle", 4), ("walk", 6), ("telegraph", 3), ("attack", 4), ("hurt", 2),
+                                 ("death", 6)], {"attack": [(1, "fire")]}, {}),
+    "weaver": (32, 24, [16, 24], [("idle", 4), ("walk", 6), ("telegraph", 3), ("attack", 4), ("hurt", 2),
+                                  ("death", 6)], {"attack": [(1, "fire")]}, {}),
+    "bulwark": (32, 32, [16, 32], [("idle", 4), ("walk", 6), ("defend", 3), ("telegraph", 4), ("attack", 5),
+                                   ("hurt", 2), ("death", 8)], {"attack": [(2, "hit")]}, {}),
+    "bomber": (32, 24, [16, 20], [("idle", 6), ("move", 6), ("telegraph", 4), ("attack", 4), ("hurt", 2),
+                                  ("death", 8)], {"attack": [(1, "fire")]}, {}),
+    "burrower": (32, 32, [16, 32], [("idle", 4), ("move", 4), ("teleport_out", 6), ("teleport_in", 6),
+                                    ("telegraph", 3), ("attack", 4), ("hurt", 2), ("death", 7)],
+                 {"attack": [(1, "fire")]}, {}),
+}
+ANIMS.update(V2_SPECIES)
+V2_VARIANTS = {
+    "glowmite": ("ember_mite", "frost_mite"), "sentinel": ("forge_drone", "cryo_drone"),
+    "sporeflower": ("cinder_bloom", "frost_bloom"), "stalker": ("lava_stalker", "snow_stalker"),
+    "golem": ("magma_golem", "ice_golem"), "wisp": ("fire_wisp", "frost_wisp"), "nightwing": ("ash_wing", "frost_wing"),
+    "gloop": ("magma_gloop", "ice_gloop"), "weaver": ("ember_weaver", "frost_weaver"),
+    "bulwark": ("forge_bulwark", "frost_bulwark"), "bomber": ("forge_bomber", "cryo_bomber"),
+    "burrower": ("lava_burrower", "ice_burrower"),
+}
+for base, ids in V2_VARIANTS.items():
+    for v in ids:
+        ANIMS[v] = ANIMS[base]
+_BOSS_SETS = {
+    "knight": ([("idle", 6), ("walk", 8), ("telegraph_slam", 6), ("slam", 6), ("telegraph_charge", 4), ("charge", 6),
+                ("telegraph_barrage", 6), ("barrage", 4), ("summon", 6), ("roar", 8), ("telegraph_laser", 6),
+                ("laser", 4), ("hurt", 2), ("death", 14)], {"slam": [(3, "impact")], "barrage": [(1, "fire")]}),
+    "hydra": ([("idle", 6), ("roar", 8), ("hurt", 2), ("death", 14), ("telegraph_bite", 5), ("bite", 5),
+               ("telegraph_spores", 6), ("spores", 4), ("telegraph_vines", 5), ("vines", 4), ("summon", 6)],
+              {"bite": [(2, "hit")], "spores": [(1, "fire")], "vines": [(1, "impact")]}),
+    "core": ([("idle", 6), ("move", 6), ("roar", 8), ("hurt", 2), ("death", 14), ("telegraph_beam", 6), ("beam", 4),
+              ("telegraph_volley", 5), ("volley", 4), ("telegraph_slam", 5), ("slam", 5), ("summon", 6)],
+             {"volley": [(1, "fire")], "slam": [(2, "impact")]}),
+    "wyrm": ([("idle", 6), ("move", 6), ("roar", 8), ("hurt", 2), ("death", 14), ("telegraph_breath", 6),
+              ("breath", 4), ("telegraph_dive", 5), ("dive", 4), ("telegraph_meteor", 6), ("meteor", 4), ("summon", 6)],
+             {"meteor": [(1, "fire")]}),
+}
+V2_BOSSES = {
+    "spore_queen": ("hydra", 128, 112), "frost_hydra": ("hydra", 128, 112),
+    "prime_sentinel": ("core", 112, 112), "forge_core": ("core", 112, 112),
+    "magmaroth": ("knight", 96, 96), "glaciarch": ("knight", 96, 96),
+    "ignivore": ("wyrm", 128, 96), "cryowyrm": ("wyrm", 128, 96),
+}
+for _id, (_set, _w, _h) in V2_BOSSES.items():
+    _clips, _events = _BOSS_SETS[_set]
+    # Pivot: bottom-centre of the collision box, read from the produced JSON (it depends on the rig).
+    _pivot = None
+    _jp = os.path.join(ASSETS, "animations", _id + ".json")
+    if os.path.exists(_jp):
+        with open(_jp) as _f:
+            _pivot = json.load(_f).get("pivot")
+    ANIMS[_id] = (_w, _h, _pivot or [_w // 2, _h], list(_clips), dict(_events), {})
+for e in list(V2_SPECIES) + [v for ids in V2_VARIANTS.values() for v in ids] + list(V2_BOSSES):
+    TEXTURES[e] = f"sprites/enemies/{e}.png"
+LOOPING.update({k: {"idle", "move", "walk"} & {c for c, _ in ANIMS[k][3]} for k in V2_BOSSES})
+
 STATIC = {
     "sprites/objects/moving_platform.png": (48, 32),
     "sprites/objects/crumble_platform.png": (48, 48),
