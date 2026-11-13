@@ -15,6 +15,7 @@ assets/                     sprites, tuiles, fonds, sons, musiques, polices
 tools/                      générateurs d'assets (Python) et de niveaux (DSL Python)
 tests/                      tests unitaires et de jouabilité (cosmic_tests)
 installer/                  installateur Windows (Inno Setup), icône, ressources
+server/                     Cosmic Online : API Cloudflare Workers + D1 + R2 (TypeScript, indépendant du C++)
 ```
 
 ## Moteur (`engine/`)
@@ -86,6 +87,17 @@ Voir [PACKAGE_FORMAT.md](PACKAGE_FORMAT.md). `DependencyCollector` parcourt un n
 et produit la liste exhaustive des fichiers à embarquer ; `PackageImporter` vérifie puis
 installe de façon atomique.
 
+## Cosmic Online (`game/online/`, `ui/online/`, `server/`)
+
+Voir [online/README.md](online/README.md). `OnlineService` (membre de `GameServices`) est le
+seul point d'entrée : il possède le thread réseau (`OnlineClient`, transports WinHTTP /
+libcurl), la session, le cache, la file des performances et les notifications. Il est mis à
+jour par le crochet `Application::onUpdate` (après les scènes) ; les notifications sont
+dessinées par `Application::onOverlay`. `GameScene` enregistre le replay (`ReplayRecorder`,
+alimenté par `GameWorld::eventObserver`) et confie la performance à `recordRun` à la fin du
+niveau, sans modifier les records locaux existants (`RecordsManager`). La logique du globe
+(`OnlineGlobe`) est séparée de son rendu (`ui/online/GlobeRenderer`).
+
 ## Boucle de jeu
 
 ```
@@ -93,7 +105,9 @@ installe de façon atomique.
 tant que accumulateur ≥ 1/120 s :
     scène.fixedUpdate(1/120)       (physique, IA, pouvoirs, événements, chrono)
 scène.update(dt)                   (UI, audio, transitions)
+onUpdate(dt)                       (Cosmic Online : réponses réseau, synchronisation)
 scène.render(alpha)                (interpolation entre deux pas fixes)
+onOverlay()                        (notifications en jeu)
 ```
 
 Le chrono et toute la simulation utilisent le pas fixe : les résultats sont identiques

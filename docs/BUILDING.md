@@ -5,7 +5,8 @@
 | Plateforme | Outils |
 |---|---|
 | Windows | Visual Studio 2022 (charge de travail « Développement Desktop en C++ ») ou Build Tools 2022, CMake ≥ 3.24, Git ; Inno Setup 6 pour l'installateur |
-| Linux | GCC ≥ 12 ou Clang ≥ 15, CMake ≥ 3.24, Ninja (conseillé), Git, paquets de développement X11 / Wayland / audio requis par SDL3 (voir `.github/workflows/build.yml`) |
+| Linux | GCC ≥ 12 ou Clang ≥ 15, CMake ≥ 3.24, Ninja (conseillé), Git, paquets de développement X11 / Wayland / audio requis par SDL3 (voir `.github/workflows/build.yml`), `libcurl4-openssl-dev` pour Cosmic Online |
+| Serveur Cosmic Online (facultatif) | Node.js 22 — voir [online/INSTALL.md](online/INSTALL.md) |
 
 Les dépendances sont téléchargées par CMake (`FetchContent`) au premier configure, à des
 versions épinglées avec empreinte SHA-256 (`cmake/Dependencies.cmake`) :
@@ -15,6 +16,10 @@ nécessaire, ni pour compiler ni pour jouer.
 
 Option : `-DCOSMIC_USE_SYSTEM_DEPS=ON` utilise des bibliothèques déjà installées
 (`find_package`) au lieu de les télécharger.
+
+Client HTTP de Cosmic Online : WinHTTP sous Windows (fourni par le système), libcurl ailleurs
+(`find_package(CURL)`). Sans libcurl, ou avec `-DCOSMIC_ONLINE_HTTP=OFF`, le jeu se compile
+sans réseau : Cosmic Online indique alors « Réseau indisponible ».
 
 ## Windows (Visual Studio)
 
@@ -68,7 +73,14 @@ Wine : `wine build-win/bin/cosmic_tests.exe`.
   sortie et cinématique de fin) ;
 * packages : SHA-256, export complet, import sur un « autre PC » sans les assets
   d'origine, refus des archives corrompues et malveillantes (chemin `..`, bibliothèque
-  `.dll`, empreinte modifiée, version future, bombe ZIP, fichier non-ZIP).
+  `.dll`, empreinte modifiée, version future, bombe ZIP, fichier non-ZIP) ;
+* Cosmic Online (`cosmic_tests online`, `cosmic_tests globe`) : enveloppes JSON, cache,
+  session protégée, format et enregistrement des replays, file locale, renouvellement et perte
+  de session, repli sur le cache hors ligne, synchronisation après coupure, non-blocage du
+  thread principal, client HTTP réel face à un serveur TCP local défaillant (refus, délai,
+  coupure, réponse illisible, réponse trop grosse, annulation), logique du globe. Le test de
+  bout en bout contre un vrai serveur s'active avec `COSMIC_ONLINE_TEST_URL` et
+  `COSMIC_ONLINE_TEST_ADMIN_TOKEN` (voir [online/INSTALL.md](online/INSTALL.md)).
 
 Les tests utilisent un dossier utilisateur temporaire et ne touchent jamais aux vraies
 sauvegardes. `cosmic_tests <filtre>` n'exécute que les tests dont le nom contient le filtre.

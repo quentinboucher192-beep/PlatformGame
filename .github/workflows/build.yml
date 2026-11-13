@@ -53,7 +53,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends ninja-build libxcursor-dev libasound2-dev libpulse-dev \
             libxi-dev libxrandr-dev libxss-dev libxfixes-dev libxkbcommon-dev libdrm-dev libgbm-dev \
-            libegl1-mesa-dev libgl1-mesa-dev libxtst-dev libdbus-1-dev libudev-dev libwayland-dev wayland-protocols
+            libegl1-mesa-dev libgl1-mesa-dev libxtst-dev libdbus-1-dev libudev-dev libwayland-dev wayland-protocols \
+            libcurl4-openssl-dev
       - name: Cache dependencies
         uses: actions/cache@v4
         with:
@@ -68,3 +69,23 @@ jobs:
         env:
           SDL_VIDEODRIVER: offscreen
           SDL_AUDIODRIVER: dummy
+
+  server:
+    name: Cosmic Online server (Workers + D1, local)
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Type check
+        run: npx tsc --noEmit
+      - name: Tests (Miniflare, no Cloudflare account)
+        run: npx vitest run

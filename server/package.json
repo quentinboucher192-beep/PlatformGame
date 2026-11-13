@@ -7,10 +7,16 @@
   "scripts": {
     "dev": "wrangler dev --env dev",
     "db:migrate:local": "wrangler d1 migrations apply cosmic-online-dev --local --env dev",
-    "db:seed:local": "wrangler d1 execute cosmic-online-dev --local --env dev --file=seed/levels.sql",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "types": "wrangler types"
+    "types": "wrangler types",
+    "dev:setup": "bash scripts/dev-setup.sh",
+    "levels:register": "node scripts/register-levels.mjs",
+    "countries:generate": "node scripts/generate-countries.mjs",
+    "deploy:staging": "wrangler deploy --env staging",
+    "deploy:production": "wrangler deploy",
+    "db:migrate:staging": "wrangler d1 migrations apply cosmic-online-staging --remote --env staging",
+    "db:migrate:production": "wrangler d1 migrations apply cosmic-online-prod --remote"
   },
   "devDependencies": {
     "@cloudflare/vitest-plugin": "1.8.1",

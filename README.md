@@ -2,7 +2,8 @@
 
 Jeu de plateforme 2D en C++20 / SDL3, avec éditeur de niveaux, éditeur d'ennemis,
 système de planètes, records et partage de niveaux par fichiers `.cplanet`.
-Fonctionne entièrement hors ligne.
+Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
+mondiaux, les records vérifiés et un globe terrestre interactif.
 
 **Contenu de la version 2.0** : 3 planètes et 9 niveaux, chacun avec son boss à 3 phases.
 
@@ -65,6 +66,19 @@ lave, les éruptions et les bombes sont mortelles.
 Chaque niveau a un chrono (limite de 15 à 20 min), des médailles bronze / argent / or /
 platine, records locaux (meilleur temps, morts, collectibles, ennemis vaincus, score,
 pouvoirs utilisés, date) avec comparaison au meilleur essai.
+
+## Cosmic Online (classements en ligne)
+
+Menu principal → **Online Ranking** : globe 3D interactif (rotation à la souris ou au stick
+droit, zoom molette / gâchettes, clic sur un marqueur ou un pays), classements par niveau,
+pays, amis, planète et points cosmiques, catégories ANY% / 100% / NO DEATH / NO DAMAGE /
+SPEEDRUN, période historique ou hebdomadaire, profils publics, amis et replays. Un compte est
+**facultatif** ; hors ligne, les performances sont gardées et envoyées au retour de la
+connexion. La localisation se limite au pays choisi (affiché au centre du pays), jamais de
+position précise.
+
+Le serveur (Cloudflare Workers, D1, R2) est dans [`server/`](server/README.md) ; il se lance en
+local sans compte Cloudflare. Documentation complète : [docs/online/](docs/online/README.md).
 
 ## Éditeurs
 
@@ -131,9 +145,12 @@ L'exécutable est dans `build/bin/`. Installateur Windows : `installer\build_ins
 * [docs/EDITORS.md](docs/EDITORS.md) – guide des éditeurs
 * [docs/BUILDING.md](docs/BUILDING.md) – compilation, tests, installateur
 * [docs/ASSET_SPEC.md](docs/ASSET_SPEC.md) – contrat des assets (sprites, animations, tuiles, audio)
+* [docs/online/](docs/online/README.md) – Cosmic Online : installation, déploiement, secrets, API, règles, confidentialité, dépannage
 
 ## Licences
 
 Code et assets du jeu : Cosmic Studio. Les assets (sprites, décors, sons, musiques) sont
 générés par les scripts de `tools/assetgen`. Bibliothèques et polices tierces : voir
-[licenses/](licenses/).
+[licenses/](licenses/). Le globe utilise des données Natural Earth (domaine public), les
+drapeaux flag-icons (MIT), les noms de pays i18n-iso-countries (MIT) et les lumières des villes
+de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
