@@ -37,6 +37,8 @@ public:
     bool updatesSceneBelow() const override { return true; }
 
 private:
+    void drawOnlineStatus(const Rect& panel);
+
     GameServices& g_;
     GameScene& game_;
     ResultsData d_;

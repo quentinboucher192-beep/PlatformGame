@@ -15,6 +15,7 @@
 #include <thread>
 
 #include "engine/audio/AudioSystem.h"
+#include "engine/core/FileUtil.h"
 #include "engine/resources/ResourceManager.h"
 #include "game/content/ContentDatabase.h"
 #include "game/gameplay/GameWorld.h"
@@ -447,6 +448,8 @@ TEST_CASE("online live: populate a development server with real runs") {
         {"Ines", "FR", "globe", 6.6f},   {"Diego", "MX", "globe", 4.3f},   {"Yuki", "JP", "globe", 3.3f},    {"Aiko", "KR", "globe", 5.0f},
     };
     const char* sessionDir = envOr("COSMIC_ONLINE_TEST_SESSION_DIR");
+    // The demo user folder also gets the level, to watch the replays in the game.
+    if (sessionDir) FileUtil::saveJson(fs::path(sessionDir) / "levels" / (level.id + ".json"), level.toJson());
     for (const P& pl : players) {
         OnlineService svc;
         bool keep = sessionDir && std::string(pl.name) == "Astra";

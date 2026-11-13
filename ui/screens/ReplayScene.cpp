@@ -129,9 +129,11 @@ private:
     void loadLevel() {
         const Json& rec = record_.value("record", Json::object());
         std::string levelId = jstr(rec, "level_id");
-        const LevelFingerprint* fp = g_.online.fingerprints().get(g_.content, levelId);
-        if (!fp) return fail("Ce niveau n'est pas installé dans votre jeu.");
-        if (fp->hash != replay_.levelHash) return fail("Ce replay a été enregistré sur une autre version du niveau.");
+        // Any installed copy of the level works, as long as it is the exact same revision.
+        const LevelEntry* entry = g_.content.level(levelId);
+        if (!entry) return fail("Ce niveau n'est pas installé dans votre jeu.");
+        auto fp = fingerprintLevelFile(entry->path);
+        if (!fp || fp->hash != replay_.levelHash) return fail("Ce replay a été enregistré sur une autre version du niveau.");
         std::string err;
         auto level = g_.content.loadLevel(levelId, &err);
         if (!level) return fail("Chargement du niveau impossible : " + err);
@@ -216,7 +218,7 @@ private:
         UIContext& ui = g_.ui;
         Renderer& r = ui.r();
         r.fillGradientV({0, 0, ui.screenW(), ui.s(90)}, Color{4, 8, 18, 220}, Color{4, 8, 18, 0});
-        ui.label("REPLAY · " + playerName_, {ui.s(30), ui.s(32)}, 26, ui.theme().accent, Align::Left, FontFace::Title, VAlign::Middle);
+        ui.label("REPLAY - " + playerName_, {ui.s(30), ui.s(32)}, 26, ui.theme().accent, Align::Left, FontFace::Title, VAlign::Middle);
         std::string sub = level_.name + " · " + categoryText_ + " · " + formatRunTime(timeMs_) + (rank_ > 0 ? " · n°" + std::to_string(rank_) : "");
         ui.label(sub, {ui.s(30), ui.s(62)}, 17, ui.theme().text, Align::Left, FontFace::Body, VAlign::Middle);
         // Counters up to the current time.

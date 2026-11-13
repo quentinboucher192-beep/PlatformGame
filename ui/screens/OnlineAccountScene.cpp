@@ -17,7 +17,12 @@ enum class Page { Welcome, Register, Login, Terms, Country };
 
 class OnlineAccountScene : public Scene {
 public:
-    OnlineAccountScene(GameServices& g, bool onboarding) : g_(g), ui_(g), page_(onboarding ? Page::Welcome : Page::Login) {}
+    OnlineAccountScene(GameServices& g, bool onboarding) : g_(g), ui_(g), page_(onboarding ? Page::Welcome : Page::Login) {
+        if (g_.onlineOpen == "register") {
+            page_ = Page::Register;
+            g_.onlineOpen.clear();
+        }
+    }
 
     bool isOverlay() const override { return true; }
 
@@ -82,7 +87,7 @@ private:
         };
         point("Facultatif", "Un compte n'est jamais obligatoire : tout le jeu reste jouable hors ligne, avec vos records locaux.");
         point("Ce qui est partagé", "Votre pseudonyme, votre avatar, vos temps et le replay de vos meilleurs runs (la trajectoire de votre "
-                                    "personnage, pas une vidéo). Le mot de passe n'est conservé que sous forme chiffrée irréversible.");
+                                    "personnage, pas une vidéo). Le mot de passe n'est conservé que sous forme d'empreinte irréversible.");
         point("Localisation", "Uniquement le pays que vous choisissez, si vous le choisissez. Sur le globe, vous apparaissez au centre de "
                               "ce pays : jamais de position GPS, jamais d'adresse. Vous pouvez la masquer à tout moment.");
         point("Vos droits", "Vous pouvez masquer votre profil, exporter vos données ou supprimer votre compte depuis les paramètres en ligne.");
@@ -135,9 +140,9 @@ private:
         caption(x, y, "Pseudonyme (3 à 20 caractères : lettres, chiffres, . _ -)");
         ui.textField("user", {x, y + ui.s(14), col, ui.s(42)}, username_, "NovaRider", 20);
         caption(x, y + ui.s(76), "Mot de passe (8 caractères minimum)");
-        ui.passwordField("pass", {x, y + ui.s(90), col, ui.s(42)}, password_, "••••••••");
+        ui.passwordField("pass", {x, y + ui.s(90), col, ui.s(42)}, password_, "Mot de passe");
         caption(x, y + ui.s(152), "Confirmation");
-        ui.passwordField("pass2", {x, y + ui.s(166), col, ui.s(42)}, password2_, "••••••••");
+        ui.passwordField("pass2", {x, y + ui.s(166), col, ui.s(42)}, password2_, "Répétez le mot de passe");
         caption(x, y + ui.s(228), "Avatar");
         ui_.avatarPicker("avatar", {x, y + ui.s(242), col, col / 4.0f}, avatar_);
 
@@ -154,12 +159,12 @@ private:
         ui.toggle("public", {x2, y + ui.s(146), col, ui.s(38)}, "Profil public", profilePublic_);
         ui.toggle("friends", {x2, y + ui.s(190), col, ui.s(38)}, "Accepter les demandes d'amis", allowFriends_);
         ui.toggle("remember", {x2, y + ui.s(234), col, ui.s(38)}, "Connexion automatique", remember_);
-        ui.toggle("tos", {x2, y + ui.s(278), col - ui.s(150), ui.s(38)}, "J'accepte les conditions", tos_);
+        ui.toggle("tos", {x2, y + ui.s(278), col, ui.s(38)}, "J'accepte les conditions d'utilisation", tos_);
         UIContext::ButtonStyle small;
         small.small = true;
-        if (ui.button("terms", {x2 + col - ui.s(140), y + ui.s(280), ui.s(140), ui.s(34)}, "Lire", small)) page_ = Page::Terms;
+        if (ui.button("terms", {x2, y + ui.s(324), ui.s(260), ui.s(34)}, "Lire les conditions", small)) page_ = Page::Terms;
         ui.labelWrapped("Seul le pays choisi est utilisé, affiché au centre du pays. Aucune position précise n'est jamais collectée.",
-                        {x2, y + ui.s(326)}, col, 14, ui.theme().textDim);
+                        {x2, y + ui.s(372)}, col, 14, ui.theme().textDim);
 
         showError(x, box_.bottom() - ui.s(108), box_.w - ui.s(72));
         float by = box_.bottom() - ui.s(70);
@@ -209,7 +214,7 @@ private:
         ui.label("Pseudonyme", {x, y}, 15, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
         ui.textField("user", {x, y + ui.s(14), w, ui.s(44)}, username_, "NovaRider", 20);
         ui.label("Mot de passe", {x, y + ui.s(82)}, 15, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
-        ui.passwordField("pass", {x, y + ui.s(96), w, ui.s(44)}, password_, "••••••••");
+        ui.passwordField("pass", {x, y + ui.s(96), w, ui.s(44)}, password_, "Mot de passe");
         ui.toggle("remember", {x, y + ui.s(160), w, ui.s(40)}, "Connexion automatique sur cet ordinateur", remember_);
         ui.labelWrapped("La connexion automatique conserve un jeton de session protégé par votre compte Windows (ou lisible seulement par "
                         "votre utilisateur sous Linux). Le mot de passe n'est jamais enregistré.",

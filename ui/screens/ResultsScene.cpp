@@ -1,5 +1,7 @@
 #include "ui/screens/ResultsScene.h"
 
+#include "ui/online/OnlineWidgets.h"
+
 #include <cmath>
 
 #include "engine/core/Easing.h"
@@ -29,6 +31,37 @@ void ResultsScene::update(float dt) {
         medalPlayed_ = true;
         g_.uiSound("medal", 0.9f);
     }
+}
+
+void ResultsScene::drawOnlineStatus(const Rect& panel) {
+    if (!d_.online || t_ < 1.0f) return;
+    UIContext& ui = g_.ui;
+    // Live status from the queue (it changes while the server verifies the run).
+    const OnlineAttempt* a = g_.online.attempts().find(d_.online->attemptId);
+    const OnlineAttempt& at = a ? *a : *d_.online;
+    float y = panel.bottom() - ui.s(150);
+    float x = panel.x + ui.s(60);
+    Vec2 sz = ui.label("Cosmic Online", {x, y}, 20, ui.theme().accent, Align::Left, FontFace::Bold, VAlign::Middle);
+    x += sz.x + ui.s(20);
+    for (const auto& sub : at.submissions) {
+        std::string text = std::string(categoryLabel(sub.category)) + " " + recordStatusLabel(sub.status);
+        if (sub.status == RecordStatus::Verified && sub.rank > 0) text += " n°" + std::to_string(sub.rank);
+        float h = ui.s(26);
+        float w = ui.text().measure(text, FontFace::Bold, h * 0.6f).x + h;
+        Color c = OnlineUi::statusColor(sub.status);
+        Rect r{x, y - h * 0.5f, w, h};
+        ui.r().fillRoundedRect(r, h * 0.5f, c.withAlphaF(0.16f));
+        ui.r().drawRoundedRect(r, h * 0.5f, c.withAlphaF(0.85f), std::max(1.0f, ui.s(1.2f)));
+        ui.label(text, r.center(), h * 0.6f / ui.scale(), c, Align::Center, FontFace::Bold, VAlign::Middle);
+        x += w + ui.s(10);
+    }
+    std::string hint;
+    if (!g_.online.usable()) hint = std::string(onlineStateLabel(g_.online.state())) + " : performance gardée en local.";
+    else if (!g_.online.loggedIn()) hint = "Non connecté : envoyez-la depuis ONLINE RANKING (SUBMIT RECORD).";
+    else if (g_.online.state() == OnlineState::Offline) hint = "Hors ligne : envoi automatique au retour de la connexion.";
+    else if (g_.online.syncing()) hint = "Envoi et vérification en cours…";
+    if (!hint.empty())
+        ui.label(hint, {panel.right() - ui.s(60), y}, 17, ui.theme().textDim, Align::Right, FontFace::Body, VAlign::Middle);
 }
 
 void ResultsScene::render(float /*alpha*/) {
@@ -121,6 +154,7 @@ void ResultsScene::render(float /*alpha*/) {
     if (d_.editorTest)
         ui.label("Test depuis l'éditeur : les records ne sont pas enregistrés", {panel.center().x, panel.bottom() - ui.s(150)}, 20,
                  ui.theme().textDim, Align::Center);
+    drawOnlineStatus(panel);
 
     // ------------------------------------------------------------- buttons
     float bh = ui.s(64), by = panel.bottom() - ui.s(100);
@@ -145,6 +179,12 @@ void ResultsScene::render(float /*alpha*/) {
             bx += bw + ui.s(24);
         }
         std::string back = d_.editorTest ? "Retour à l'éditeur" : "Sélection des niveaux";
+        if (d_.online) {
+            UIContext::ButtonStyle os;
+            os.small = true;
+            if (ui.button("online", {panel.right() - ui.s(300), panel.y + ui.s(24), ui.s(270), ui.s(44)}, "Classement en ligne", os))
+                g_.app.switchScene(makeOnlineRanking(g_, d_.run.levelId), 0.4f);
+        }
         if (ui.button("back", {bx, by, bw, bh}, back) || ui.backPressed()) {
             g_.app.popScene();
             game_.quitToMenu();

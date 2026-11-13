@@ -58,6 +58,7 @@ public:
             for (const auto& id : p->levels)
                 if (const LevelEntry* e = g_.content.level(id); e && e->source == ContentSource::Builtin)
                     levels_.push_back({e->id, e->name, p->id, p->name, e});
+        installedCount_ = levels_.size();
         if (wantedLevel_.empty()) wantedLevel_ = g_.progression.lastLevel;
         selectWanted();
         tab_ = TabLevel;
@@ -66,7 +67,11 @@ public:
         if (!changes.empty()) startRankAnimation(changes.back());
         requestAll();
         // First visit: explain Cosmic Online and offer an account (never mandatory).
-        if (g_.online.usable() && !g_.online.loggedIn() && !g_.settings.online.onboardingDone)
+        if (g_.onlineOpen == "register" || g_.onlineOpen == "login") g_.app.pushScene(makeOnlineAccount(g_, false));
+        else if (g_.onlineOpen == "settings") {
+            g_.onlineOpen.clear();
+            g_.app.pushScene(makeOnlineSettings(g_));
+        } else if (g_.online.usable() && !g_.online.loggedIn() && !g_.settings.online.onboardingDone)
             g_.app.pushScene(makeOnlineAccount(g_, true));
     }
 
@@ -124,7 +129,8 @@ private:
             std::string id = jstr(ml, "id");
             if (id.empty() || !jget<bool>(ml, "ranking_enabled", true)) continue;
             if (std::any_of(levels_.begin(), levels_.end(), [&](const RankedLevel& l) { return l.id == id; })) continue;
-            levels_.push_back({id, jstr(ml, "name", id), jstr(ml, "planet_id"), jstr(ml, "planet_name"), nullptr});
+            // A copy installed by the player (package, user folder) can still be played and replayed.
+            levels_.push_back({id, jstr(ml, "name", id), jstr(ml, "planet_id"), jstr(ml, "planet_name"), g_.content.level(id)});
             added = true;
         }
         if (!added) return;
@@ -215,6 +221,21 @@ private:
             board_.nextOffset = r.meta.contains("next_offset") && r.meta["next_offset"].is_number() ? r.meta["next_offset"].get<int>() : -1;
             if (!r.fromCache && !more && board_.me.is_object() && board_.me.contains("entry") && board_.me["entry"].is_object())
                 g_.online.observeBoard(boardKey, jget<int>(board_.me["entry"], "rank", 0), board_.total);
+            // Automated checks: open a player's profile or replay from the board.
+            for (const char* kind : {"profile:", "replay:"}) {
+                std::string prefix = kind;
+                if (g_.onlineOpen.rfind(prefix, 0) != 0) continue;
+                std::string who = g_.onlineOpen.substr(prefix.size());
+                for (size_t i = 0; i < board_.entries.size(); ++i) {
+                    const Json& e = board_.entries[i];
+                    if (jstr(e["player"], "username") != who) continue;
+                    g_.onlineOpen.clear();
+                    selectedRow_ = static_cast<int>(i);
+                    if (prefix == "profile:") openProfile(jstr(e["player"], "id"));
+                    else g_.app.pushScene(makeReplayViewer(g_, jstr(e, "record_id")));
+                    break;
+                }
+            }
         }));
     }
 
@@ -587,7 +608,7 @@ private:
                          VAlign::Middle);
             }
             ui_.drawConnection({card.x + ui.s(20), card.y + ui.s(92)});
-            int totalLevels = static_cast<int>(std::count_if(levels_.begin(), levels_.end(), [](const RankedLevel& l) { return l.entry; }));
+            int totalLevels = static_cast<int>(installedCount_);
             int planetsDone = 0;
             for (const PlanetData* pl : g_.content.planets()) planetsDone += g_.progression.planetCompleted(*pl, g_.content) ? 1 : 0;
             ui.label(std::to_string(std::min(g_.progression.completedCount(), totalLevels)) + "/" + std::to_string(totalLevels) + " niveaux · " +
@@ -1100,6 +1121,7 @@ private:
     Rect header_, zoneA_, zoneB_, zoneC_, zoneD_, infoRect_, globeButtons_;
 
     std::vector<RankedLevel> levels_;
+    size_t installedCount_ = 0;
     int levelIdx_ = 0;
     int category_ = 0;
     int period_ = 0;

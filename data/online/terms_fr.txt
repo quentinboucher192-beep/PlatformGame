@@ -1,0 +1,35 @@
+COSMIC ONLINE — CONDITIONS D'UTILISATION ET CONFIDENTIALITÉ (version 2026-11)
+
+1. Le service
+Cosmic Online est un service facultatif de classements en ligne pour Cosmic Platformer. Le jeu reste entièrement jouable sans compte et sans connexion Internet. Vos records locaux restent sur votre ordinateur.
+
+2. Le compte
+Pour participer aux classements, vous créez un compte avec un pseudonyme et un mot de passe. Le pseudonyme est public. Le mot de passe n'est jamais stocké en clair : seule une empreinte irréversible (PBKDF2-SHA-256 avec sel) est conservée. Vous êtes responsable de la confidentialité de votre mot de passe. Les pseudonymes injurieux, trompeurs ou usurpant l'identité d'une autre personne sont interdits.
+
+3. Données traitées
+- Pseudonyme, avatar, date d'inscription : publics (sauf profil masqué, où seuls le pseudonyme et l'avatar restent visibles dans les classements).
+- Pays (facultatif) et, si vous le souhaitez, une grande région : utilisés uniquement selon votre choix de visibilité (masqué, classements, classements et globe). Sur le globe, vous apparaissez au centre approximatif du pays. Aucune position GPS n'est collectée, aucune adresse n'est jamais déduite.
+- Performances : temps, catégorie, nombre de morts, dégâts subis, objets récupérés, version du jeu et du niveau.
+- Replays : la trajectoire de votre personnage et les événements du run (sauts, morts, objets, pouvoirs), jamais une vidéo ni ce qui se passe sur votre ordinateur. Ils servent à vérifier les records et peuvent être consultés par les autres joueurs pour les records vérifiés (sauf profil masqué).
+- Sécurité : sessions de connexion (jetons stockés uniquement sous forme d'empreinte), journal des opérations sensibles (connexions, modifications de compte) et limitation du nombre de requêtes. Les adresses IP ne sont jamais conservées en clair, seulement sous forme d'empreinte salée.
+
+4. Finalités et base légale
+Ces données servent uniquement à fournir le service (comptes, classements, globe, amis, vérification des records) et à le protéger contre les abus. Base légale : l'exécution du service que vous demandez en créant un compte, et l'intérêt légitime de sécurité pour les journaux. Aucune donnée n'est vendue ni utilisée à des fins publicitaires.
+
+5. Durées de conservation
+- Compte, records et replays : tant que le compte existe.
+- Sessions : supprimées au plus tard 30 jours après leur expiration ou leur révocation.
+- Journal de sécurité : 180 jours.
+- Compteurs de limitation : 24 heures.
+
+6. Vos droits (RGPD)
+Depuis « Paramètres en ligne », vous pouvez à tout moment : modifier votre pseudonyme, votre avatar et votre pays ; masquer votre pays ou votre présence sur le globe ; masquer votre profil public ; refuser les demandes d'amis ; exporter vos données (fichier JSON) ; supprimer définitivement votre compte, vos records, vos replays et vos amis (confirmation par mot de passe). Vous pouvez aussi vous déconnecter de tous vos appareils.
+
+7. Équité des classements
+Toute tentative de triche (modification du jeu, de ses fichiers ou des données envoyées, automatisation) est interdite. Les records sont vérifiés par le serveur (cohérence, temps minimum, analyse du replay) et peuvent rester « en attente » d'une vérification manuelle. Un record peut être refusé et un compte suspendu en cas de triche avérée. La vérification automatique ne garantit pas l'absence totale de triche : les signalements sont examinés.
+
+8. Disponibilité
+Le service est fourni sans garantie de disponibilité permanente. En cas de coupure, le jeu conserve vos performances localement et les envoie quand la connexion revient.
+
+9. Modifications
+Ces conditions peuvent évoluer. Une nouvelle version vous sera présentée et devra être acceptée lors de la création d'un nouveau compte.

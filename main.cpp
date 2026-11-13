@@ -17,6 +17,8 @@
 //                           export a level and all its dependencies without opening a window
 //   --online [<level>]      start on the ONLINE RANKING screen
 //   --online-focus <name>   with --online: select the globe marker of this player
+//   --online-open <what>    with --online: open register | login | settings |
+//                           profile:<name> | replay:<name> (automated screenshots)
 //   --online-server <url>   Cosmic Online server to use (else data/online/config.json)
 //   --online-manifest <file.json>
 //                           write the ranking manifest of the built-in levels (server seed)
@@ -142,6 +144,7 @@ int main(int argc, char** argv) {
     game.loadAll();
     game.inputScript = value("--input");
     game.onlineFocus = value("--online-focus");
+    game.onlineOpen = value("--online-open");
     game.online.init(game.settings.online, value("--online-server"));
     OnlineToasts toasts;
     app.onUpdate = [&game, &toasts](float dt) {

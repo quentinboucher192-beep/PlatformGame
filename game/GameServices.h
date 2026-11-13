@@ -39,6 +39,9 @@ public:
     std::string inputScript;
     /// Automated checks: pseudonym whose globe marker the ranking screen selects.
     std::string onlineFocus;
+    /// Automated checks: overlay the ranking screen opens ("register", "login", "settings",
+    /// "profile:<pseudonym>", "replay:<pseudonym>").
+    std::string onlineOpen;
 };
 
 }  // namespace cosmic
