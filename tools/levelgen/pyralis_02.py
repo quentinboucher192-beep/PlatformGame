@@ -61,8 +61,6 @@ L.enemy("ember_mite", 72, 54, patrol_tiles=3, face_left=True)
 R(80, 51, 86)                                 # rock (top 51)
 L.enemy("cinder_bloom", 83, 51, face_left=True)
 L.orb("health_orb", 70, 52)
-P.lavafall(46, 20, LAVA, hazard=False, alpha=0.45)
-P.lavafall(30, 26, 54, hazard=False, alpha=0.45)
 
 # =====================================================================================
 # ZONE 2 — Le Gué du Passeur (Charged Shot tablet and tutorial)
@@ -154,8 +152,8 @@ L.enemy("cinder_bloom", 282, 50, face_left=True)
 L.moving(284, 54, 4, 14, 0, speed=52, wait=0.7, phase=0.5)        # raft B: 284 -> 298
 L.enemy("forge_bomber", 278, 42, patrol_tiles=8)
 L.enemy("ash_wing", 294, 46, patrol_tiles=5)
-L.solid(287, 24, 295, 30, "basalt")                             # slag outcrop
-P.lavafall(291, 30, 54, hazard=True)                             # falls on raft B's route: shield or time it
+L.solid(288, 44, 294, 48, "basalt")                             # floating slag outcrop
+P.lavafall(291, 48, 54, hazard=True)                             # falls on raft B's route: shield or time it
 L.sign(259, 54, "Une chute de lave barre la route du second radeau : passez-la sous Bouclier.")
 L.shards_line(264, 51, 296, 51, 8)
 R(302, 54, 312)                                                   # islet (top 54)
@@ -216,8 +214,8 @@ L.orb("health_orb", 394, 42)
 # grapple chain with crumbling relays
 L.grapple(412, 38)
 L.crumble(415, 42, 3, delay=0.35, respawn=3.5)
-L.grapple(422, 37)
-L.crumble(426, 41, 3, delay=0.35, respawn=3.5)
+L.grapple(421.5, 36.5)
+L.crumble(425, 40, 5, delay=0.4, respawn=3.5)
 L.enemy("forge_bomber", 420, 30, patrol_tiles=6)
 R(430, 40, 444)                                                   # cataract foot (top 40)
 L.checkpoint(434, 40, "Pied de la cataracte")
@@ -233,12 +231,11 @@ P.vent(455, 459, 12, 38)
 R(455, 38, 459)
 R(459, 30, 476)                                                   # top of the cataract (top 30)
 L.enemy("ember_weaver", 466, 30, patrol_tiles=2, face_left=True)
-P.lavafall(462, 4, 30, hazard=False, alpha=0.45)
 # heart: alcove behind a burning cascade, entered from the second geyser under Shield
 L.solid(447, 10, 454, 14, "obsidian")
 L.solid(447, 19, 454, 20, "obsidian")
 L.solid(447, 14, 448, 19, "obsidian")
-P.lavafall(454.3, 10, 32, hazard=True)
+P.lavafall(454.3, 12, 20, hazard=True)
 L.heart(450.5, 17.5)
 L.secret(448, 14, 454, 19, "Un cœur de cristal derrière la cascade !")
 L.light(450.5, 17, "#ff8aa0", 50)
@@ -258,8 +255,6 @@ boss, boss_l, boss_r = P.boss_arena(
 P.brazier(484, 36)
 P.brazier(524, 36)
 L.decor("skull_rock", 504, 36, scale=1.5)
-for x in (488, 497, 512, 521):
-    P.lavafall(x, 10, 36, hazard=False, alpha=0.35)
 L.light(504, 20, LAVA_GLOW, 180, flicker=0.08)
 L.orb("health_orb", 489.5, 28)
 L.orb("health_orb", 518.5, 28)
@@ -287,10 +282,55 @@ P.brazier(557, 32)
 P.scatter(531, 539, 36, 0.4)
 
 # =====================================================================================
+# Extra content: shard trails, more monsters, props
+# =====================================================================================
+L.checkpoint(129, 54, "Quai du conduit")
+L.light(129, 49, FORGE_GLOW, 90)
+L.checkpoint(317, 42, "Falaise de l'aqueduc")
+L.light(317, 37, FORGE_GLOW, 90)
+L.shards_arc(25, 35, 52, 1.5, 3)
+L.shards_line(63, 52, 77, 52, 4)
+L.shards_line(104, 53, 119, 53, 5)                 # collected while riding the conduit raft
+L.shards_line(131, 52, 136, 52, 3)
+L.shards_line(152, 51.5, 176, 51.5, 6)
+L.shards_line(185, 52, 196, 52, 3)
+L.shards_line(303, 52, 309, 52, 3)
+L.shards_line(313.5, 51, 313.5, 44, 4)
+L.shards_line(329, 41, 345, 41, 5)                 # under the aqueduct vault
+L.shards_line(410, 36, 428, 36, 4)
+L.shards_line(446, 37, 446, 26, 4)
+L.shards_line(457, 35, 457, 18, 5)
+L.shards_line(462, 28, 474, 28, 3)
+L.shards_line(531, 34, 538, 34, 3)
+L.enemy("forge_drone", 30, 47, patrol_tiles=4)
+L.enemy("magma_gloop", 76, 54, patrol_tiles=3, face_left=True)
+L.enemy("ember_mite", 131, 54, patrol_tiles=2)
+L.enemy("ember_mite", 135, 54, patrol_tiles=2, face_left=True)
+L.enemy("lava_stalker", 192, 54, patrol_tiles=4, face_left=True)
+L.enemy("ash_wing", 270, 46, patrol_tiles=6)
+L.enemy("forge_drone", 321, 35, patrol_tiles=3)
+L.enemy("fire_wisp", 400, 36, patrol_tiles=3)
+L.enemy("forge_drone", 468, 22, patrol_tiles=4)
+L.enemy("magma_gloop", 463, 30, patrol_tiles=2)
+L.enemy("lava_stalker", 537, 36, patrol_tiles=2, face_left=True)
+P.brazier(127, 54)
+P.banner(133, 54)
+P.brazier(152, 54)
+P.banner(175, 54, flip=True)
+L.decor("obsidian_spire", 324.5, 24, scale=1.2)
+L.decor("obsidian_spire", 349, 24, scale=1.4, flip=True)
+L.decor("lava_vent", 306, 54)
+L.decor("lava_vent", 397, 44)
+L.decor("skull_rock", 470, 30)
+L.decor("gear_wreck", 196, 54, alpha=0.9)
+P.chains(152, 176, 56, every=3, layer="fg_decor", long_ratio=0.2)
+P.chains(326, 348, 40, every=6, layer="fg_decor", long_ratio=0.0)
+
+# =====================================================================================
 # Ambience
 # =====================================================================================
 P.glow_line(0, W, LAVA - 2, every=24)
-P.under_glow(list(d["objects"]))
+P.autodecorate(density=0.32, fg_every=1)
 for x in range(10, W, 43):
     L.decor("obsidian_spire", x + P.rng.random() * 10, 24 + P.rng.random() * 6, "bg_decor", alpha=0.35,
             tint="#ff9a7a", scale=1.5)

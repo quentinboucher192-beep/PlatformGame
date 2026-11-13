@@ -497,7 +497,7 @@
     256.0,
     800.0,
     192.0,
-    352.0
+    32.0
    ],
    "props": {
     "material": "glacier_ice"
@@ -505,6 +505,21 @@
   },
   {
    "id": "o20",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    256.0,
+    832.0,
+    192.0,
+    320.0
+   ],
+   "props": {
+    "material": "snow_rock",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o21",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -518,7 +533,7 @@
    }
   },
   {
-   "id": "o21",
+   "id": "o22",
    "type": "player_start",
    "layer": "gameplay",
    "rect": [
@@ -529,7 +544,7 @@
    ]
   },
   {
-   "id": "o22",
+   "id": "o23",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -548,7 +563,7 @@
    }
   },
   {
-   "id": "o23",
+   "id": "o24",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -567,7 +582,7 @@
    }
   },
   {
-   "id": "o24",
+   "id": "o25",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -586,7 +601,7 @@
    }
   },
   {
-   "id": "o25",
+   "id": "o26",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -605,7 +620,7 @@
    }
   },
   {
-   "id": "o26",
+   "id": "o27",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -625,7 +640,7 @@
    }
   },
   {
-   "id": "o27",
+   "id": "o28",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -644,7 +659,7 @@
    }
   },
   {
-   "id": "o28",
+   "id": "o29",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -661,7 +676,7 @@
    }
   },
   {
-   "id": "o29",
+   "id": "o30",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -680,7 +695,7 @@
    }
   },
   {
-   "id": "o30",
+   "id": "o31",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -697,7 +712,7 @@
    }
   },
   {
-   "id": "o31",
+   "id": "o32",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -712,7 +727,7 @@
    }
   },
   {
-   "id": "o32",
+   "id": "o33",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -727,7 +742,7 @@
    }
   },
   {
-   "id": "o33",
+   "id": "o34",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -742,7 +757,7 @@
    }
   },
   {
-   "id": "o34",
+   "id": "o35",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -756,7 +771,7 @@
    }
   },
   {
-   "id": "o35",
+   "id": "o36",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -770,7 +785,7 @@
    }
   },
   {
-   "id": "o36",
+   "id": "o37",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -784,7 +799,7 @@
    }
   },
   {
-   "id": "o37",
+   "id": "o38",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -798,7 +813,7 @@
    }
   },
   {
-   "id": "o38",
+   "id": "o39",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -812,7 +827,7 @@
    }
   },
   {
-   "id": "o39",
+   "id": "o40",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -826,7 +841,7 @@
    }
   },
   {
-   "id": "o40",
+   "id": "o41",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -840,7 +855,7 @@
    }
   },
   {
-   "id": "o41",
+   "id": "o42",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -854,7 +869,7 @@
    }
   },
   {
-   "id": "o42",
+   "id": "o43",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -868,7 +883,7 @@
    }
   },
   {
-   "id": "o43",
+   "id": "o44",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -882,7 +897,7 @@
    }
   },
   {
-   "id": "o44",
+   "id": "o45",
    "type": "power_gate",
    "layer": "gameplay",
    "rect": [
@@ -897,7 +912,7 @@
    }
   },
   {
-   "id": "o45",
+   "id": "o46",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -911,7 +926,7 @@
    }
   },
   {
-   "id": "o46",
+   "id": "o47",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -925,7 +940,7 @@
    }
   },
   {
-   "id": "o47",
+   "id": "o48",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -939,7 +954,7 @@
    }
   },
   {
-   "id": "o48",
+   "id": "o49",
    "type": "relic",
    "layer": "gameplay",
    "rect": [
@@ -954,7 +969,7 @@
    }
   },
   {
-   "id": "o49",
+   "id": "o50",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -968,7 +983,7 @@
    }
   },
   {
-   "id": "o50",
+   "id": "o51",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -982,7 +997,7 @@
    }
   },
   {
-   "id": "o51",
+   "id": "o52",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -996,7 +1011,7 @@
    }
   },
   {
-   "id": "o52",
+   "id": "o53",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -1010,7 +1025,7 @@
    }
   },
   {
-   "id": "o53",
+   "id": "o54",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -1024,7 +1039,7 @@
    }
   },
   {
-   "id": "o54",
+   "id": "o55",
    "type": "secret_area",
    "layer": "gameplay",
    "rect": [
@@ -1038,7 +1053,7 @@
    }
   },
   {
-   "id": "o55",
+   "id": "o56",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -1055,7 +1070,7 @@
    }
   },
   {
-   "id": "o56",
+   "id": "o57",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1074,7 +1089,7 @@
    }
   },
   {
-   "id": "o57",
+   "id": "o58",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1093,7 +1108,7 @@
    }
   },
   {
-   "id": "o58",
+   "id": "o59",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1112,7 +1127,7 @@
    }
   },
   {
-   "id": "o59",
+   "id": "o60",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1131,7 +1146,7 @@
    }
   },
   {
-   "id": "o60",
+   "id": "o61",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1150,7 +1165,7 @@
    }
   },
   {
-   "id": "o61",
+   "id": "o62",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1169,7 +1184,7 @@
    }
   },
   {
-   "id": "o62",
+   "id": "o63",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1188,7 +1203,7 @@
    }
   },
   {
-   "id": "o63",
+   "id": "o64",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1207,7 +1222,7 @@
    }
   },
   {
-   "id": "o64",
+   "id": "o65",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1226,7 +1241,7 @@
    }
   },
   {
-   "id": "o65",
+   "id": "o66",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1246,7 +1261,7 @@
    }
   },
   {
-   "id": "o66",
+   "id": "o67",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -1261,7 +1276,7 @@
    }
   },
   {
-   "id": "o67",
+   "id": "o68",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -1279,7 +1294,7 @@
    }
   },
   {
-   "id": "o68",
+   "id": "o69",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -1297,7 +1312,7 @@
    }
   },
   {
-   "id": "o69",
+   "id": "o70",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1316,7 +1331,7 @@
    }
   },
   {
-   "id": "o70",
+   "id": "o71",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1335,7 +1350,7 @@
    }
   },
   {
-   "id": "o71",
+   "id": "o72",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1354,7 +1369,7 @@
    }
   },
   {
-   "id": "o72",
+   "id": "o73",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1374,7 +1389,7 @@
    }
   },
   {
-   "id": "o73",
+   "id": "o74",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -1388,7 +1403,7 @@
    }
   },
   {
-   "id": "o74",
+   "id": "o75",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -1406,7 +1421,7 @@
    }
   },
   {
-   "id": "o75",
+   "id": "o76",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -1420,7 +1435,7 @@
    }
   },
   {
-   "id": "o76",
+   "id": "o77",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -1434,7 +1449,7 @@
    }
   },
   {
-   "id": "o77",
+   "id": "o78",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1453,7 +1468,7 @@
    }
   },
   {
-   "id": "o78",
+   "id": "o79",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1472,7 +1487,7 @@
    }
   },
   {
-   "id": "o79",
+   "id": "o80",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1492,7 +1507,7 @@
    }
   },
   {
-   "id": "o80",
+   "id": "o81",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -1506,7 +1521,7 @@
    }
   },
   {
-   "id": "o81",
+   "id": "o82",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -1520,7 +1535,7 @@
    }
   },
   {
-   "id": "o82",
+   "id": "o83",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -1534,7 +1549,7 @@
    }
   },
   {
-   "id": "o83",
+   "id": "o84",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -1548,7 +1563,7 @@
    }
   },
   {
-   "id": "o84",
+   "id": "o85",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -1562,7 +1577,7 @@
    }
   },
   {
-   "id": "o85",
+   "id": "o86",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -1576,7 +1591,7 @@
    }
   },
   {
-   "id": "o86",
+   "id": "o87",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -1594,7 +1609,7 @@
    }
   },
   {
-   "id": "o87",
+   "id": "o88",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1609,7 +1624,7 @@
    }
   },
   {
-   "id": "o88",
+   "id": "o89",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -1623,7 +1638,7 @@
    }
   },
   {
-   "id": "o89",
+   "id": "o90",
    "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
@@ -1637,7 +1652,7 @@
    }
   },
   {
-   "id": "o90",
+   "id": "o91",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -1654,7 +1669,7 @@
    }
   },
   {
-   "id": "o91",
+   "id": "o92",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -1672,7 +1687,7 @@
    }
   },
   {
-   "id": "o92",
+   "id": "o93",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -1690,7 +1705,7 @@
    }
   },
   {
-   "id": "o93",
+   "id": "o94",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1709,7 +1724,7 @@
    }
   },
   {
-   "id": "o94",
+   "id": "o95",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1729,7 +1744,7 @@
    }
   },
   {
-   "id": "o95",
+   "id": "o96",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1748,7 +1763,7 @@
    }
   },
   {
-   "id": "o96",
+   "id": "o97",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1767,7 +1782,7 @@
    }
   },
   {
-   "id": "o97",
+   "id": "o98",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1787,7 +1802,7 @@
    }
   },
   {
-   "id": "o98",
+   "id": "o99",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -1801,7 +1816,7 @@
    }
   },
   {
-   "id": "o99",
+   "id": "o100",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -1815,7 +1830,7 @@
    }
   },
   {
-   "id": "o100",
+   "id": "o101",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1835,7 +1850,7 @@
    }
   },
   {
-   "id": "o101",
+   "id": "o102",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1855,7 +1870,7 @@
    }
   },
   {
-   "id": "o102",
+   "id": "o103",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1874,7 +1889,7 @@
    }
   },
   {
-   "id": "o103",
+   "id": "o104",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1894,7 +1909,7 @@
    }
   },
   {
-   "id": "o104",
+   "id": "o105",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1914,7 +1929,7 @@
    }
   },
   {
-   "id": "o105",
+   "id": "o106",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1933,7 +1948,7 @@
    }
   },
   {
-   "id": "o106",
+   "id": "o107",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1953,7 +1968,7 @@
    }
   },
   {
-   "id": "o107",
+   "id": "o108",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1973,7 +1988,7 @@
    }
   },
   {
-   "id": "o108",
+   "id": "o109",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1992,7 +2007,7 @@
    }
   },
   {
-   "id": "o109",
+   "id": "o110",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -2011,7 +2026,7 @@
    }
   },
   {
-   "id": "o110",
+   "id": "o111",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -2031,7 +2046,7 @@
    }
   },
   {
-   "id": "o111",
+   "id": "o112",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -2050,7 +2065,7 @@
    }
   },
   {
-   "id": "o112",
+   "id": "o113",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -2067,7 +2082,7 @@
    }
   },
   {
-   "id": "o113",
+   "id": "o114",
    "type": "power_unlock",
    "layer": "gameplay",
    "rect": [
@@ -2082,7 +2097,7 @@
    }
   },
   {
-   "id": "o114",
+   "id": "o115",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -2099,7 +2114,7 @@
    }
   },
   {
-   "id": "o115",
+   "id": "o116",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -2114,7 +2129,7 @@
    }
   },
   {
-   "id": "o116",
+   "id": "o117",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -2129,21 +2144,36 @@
    }
   },
   {
-   "id": "o117",
+   "id": "o118",
    "type": "solid",
    "layer": "terrain",
    "rect": [
     2176.0,
     640.0,
     224.0,
-    512.0
+    32.0
    ],
    "props": {
     "material": "glacier_ice"
    }
   },
   {
-   "id": "o118",
+   "id": "o119",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    2176.0,
+    672.0,
+    224.0,
+    480.0
+   ],
+   "props": {
+    "material": "snow_rock",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o120",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -2157,7 +2187,7 @@
    }
   },
   {
-   "id": "o119",
+   "id": "o121",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -2176,7 +2206,7 @@
    }
   },
   {
-   "id": "o120",
+   "id": "o122",
    "type": "spikes",
    "layer": "gameplay",
    "rect": [
@@ -2191,7 +2221,7 @@
    }
   },
   {
-   "id": "o121",
+   "id": "o123",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -2205,7 +2235,7 @@
    }
   },
   {
-   "id": "o122",
+   "id": "o124",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -2219,7 +2249,7 @@
    }
   },
   {
-   "id": "o123",
+   "id": "o125",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -2233,7 +2263,7 @@
    }
   },
   {
-   "id": "o124",
+   "id": "o126",
    "type": "energy_orb",
    "layer": "gameplay",
    "rect": [
@@ -2247,7 +2277,7 @@
    }
   },
   {
-   "id": "o125",
+   "id": "o127",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -2267,7 +2297,7 @@
    }
   },
   {
-   "id": "o126",
+   "id": "o128",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -2281,7 +2311,7 @@
    }
   },
   {
-   "id": "o127",
+   "id": "o129",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -2295,7 +2325,7 @@
    }
   },
   {
-   "id": "o128",
+   "id": "o130",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -2315,21 +2345,36 @@
    }
   },
   {
-   "id": "o129",
+   "id": "o131",
    "type": "solid",
    "layer": "terrain",
    "rect": [
     2512.0,
     512.0,
     240.0,
-    640.0
+    32.0
    ],
    "props": {
     "material": "glacier_ice"
    }
   },
   {
-   "id": "o130",
+   "id": "o132",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    2512.0,
+    544.0,
+    240.0,
+    608.0
+   ],
+   "props": {
+    "material": "snow_rock",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o133",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -2343,7 +2388,7 @@
    }
   },
   {
-   "id": "o131",
+   "id": "o134",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -2363,27 +2408,7 @@
    }
   },
   {
-   "id": "o132",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    2483.5865286721078,
-    528.0,
-    16.0,
-    24.0
-   ],
-   "flipX": true,
-   "props": {
-    "sprite": "icicles",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o133",
+   "id": "o135",
    "type": "spikes",
    "layer": "gameplay",
    "rect": [
@@ -2398,7 +2423,7 @@
    }
   },
   {
-   "id": "o134",
+   "id": "o136",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -2412,7 +2437,7 @@
    }
   },
   {
-   "id": "o135",
+   "id": "o137",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -2426,7 +2451,7 @@
    }
   },
   {
-   "id": "o136",
+   "id": "o138",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -2440,7 +2465,7 @@
    }
   },
   {
-   "id": "o137",
+   "id": "o139",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -2454,7 +2479,7 @@
    }
   },
   {
-   "id": "o138",
+   "id": "o140",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -2468,7 +2493,7 @@
    }
   },
   {
-   "id": "o139",
+   "id": "o141",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -2487,7 +2512,7 @@
    }
   },
   {
-   "id": "o140",
+   "id": "o142",
    "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
@@ -2501,7 +2526,7 @@
    }
   },
   {
-   "id": "o141",
+   "id": "o143",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -2518,7 +2543,7 @@
    }
   },
   {
-   "id": "o142",
+   "id": "o144",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -2536,7 +2561,7 @@
    }
   },
   {
-   "id": "o143",
+   "id": "o145",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -2551,7 +2576,7 @@
    }
   },
   {
-   "id": "o144",
+   "id": "o146",
    "type": "updraft",
    "layer": "gameplay",
    "rect": [
@@ -2566,7 +2591,7 @@
    }
   },
   {
-   "id": "o145",
+   "id": "o147",
    "type": "updraft",
    "layer": "gameplay",
    "rect": [
@@ -2581,7 +2606,7 @@
    }
   },
   {
-   "id": "o146",
+   "id": "o148",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -2596,7 +2621,7 @@
    }
   },
   {
-   "id": "o147",
+   "id": "o149",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -2611,7 +2636,7 @@
    }
   },
   {
-   "id": "o148",
+   "id": "o150",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -2626,7 +2651,7 @@
    }
   },
   {
-   "id": "o149",
+   "id": "o151",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -2644,7 +2669,7 @@
    }
   },
   {
-   "id": "o150",
+   "id": "o152",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -2662,7 +2687,7 @@
    }
   },
   {
-   "id": "o151",
+   "id": "o153",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -2676,7 +2701,7 @@
    }
   },
   {
-   "id": "o152",
+   "id": "o154",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -2690,7 +2715,7 @@
    }
   },
   {
-   "id": "o153",
+   "id": "o155",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -2704,40 +2729,12 @@
    }
   },
   {
-   "id": "o154",
-   "type": "shard",
-   "layer": "gameplay",
-   "rect": [
-    2866.0,
-    474.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "value": 50
-   }
-  },
-  {
-   "id": "o155",
-   "type": "shard",
-   "layer": "gameplay",
-   "rect": [
-    2866.0,
-    410.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "value": 50
-   }
-  },
-  {
    "id": "o156",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
     2866.0,
-    346.0,
+    474.0,
     12.0,
     12.0
    ],
@@ -2751,7 +2748,7 @@
    "layer": "gameplay",
    "rect": [
     2866.0,
-    282.0,
+    410.0,
     12.0,
     12.0
    ],
@@ -2761,6 +2758,34 @@
   },
   {
    "id": "o158",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    2866.0,
+    346.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o159",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    2866.0,
+    282.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o160",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -2774,7 +2799,7 @@
    }
   },
   {
-   "id": "o159",
+   "id": "o161",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -2788,7 +2813,7 @@
    }
   },
   {
-   "id": "o160",
+   "id": "o162",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -2802,7 +2827,7 @@
    }
   },
   {
-   "id": "o161",
+   "id": "o163",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -2816,7 +2841,7 @@
    }
   },
   {
-   "id": "o162",
+   "id": "o164",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -2830,7 +2855,7 @@
    }
   },
   {
-   "id": "o163",
+   "id": "o165",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -2844,7 +2869,7 @@
    }
   },
   {
-   "id": "o164",
+   "id": "o166",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -2858,7 +2883,7 @@
    }
   },
   {
-   "id": "o165",
+   "id": "o167",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -2872,7 +2897,7 @@
    }
   },
   {
-   "id": "o166",
+   "id": "o168",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -2886,46 +2911,45 @@
    }
   },
   {
-   "id": "o167",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    2935.805253200903,
-    608.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "sprite": "icicles",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o168",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    2962.719652787709,
-    608.0,
-    16.0,
-    24.0
-   ],
-   "flipX": true,
-   "props": {
-    "sprite": "icicles",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
    "id": "o169",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2933.1074171075816,
+    608.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o170",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2953.99982979634,
+    608.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o171",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -2943,11 +2967,11 @@
    }
   },
   {
-   "id": "o170",
+   "id": "o172",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    3150.0659710660766,
+    3155.2783481304973,
     576.0,
     24.0,
     48.0
@@ -2963,34 +2987,16 @@
    }
   },
   {
-   "id": "o171",
+   "id": "o173",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    3170.4174024660356,
-    576.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "sprite": "icicles",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o172",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    3188.6713039103624,
+    3171.349763826002,
     576.0,
     24.0,
     48.0
    ],
+   "flipX": true,
    "props": {
     "sprite": "icicles_long",
     "alpha": 1.0,
@@ -3001,26 +3007,12 @@
    }
   },
   {
-   "id": "o173",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    2736.0,
-    192.0,
-    96.0,
-    16.0
-   ],
-   "props": {
-    "material": "glacier_ice"
-   }
-  },
-  {
    "id": "o174",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    2747.4826001471783,
-    208.0,
+    3191.701195225961,
+    576.0,
     16.0,
     24.0
    ],
@@ -3035,10 +3027,24 @@
   },
   {
    "id": "o175",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    2736.0,
+    192.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o176",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    2767.3604707986306,
+    2740.9166418874283,
     208.0,
     16.0,
     24.0
@@ -3053,11 +3059,49 @@
    }
   },
   {
-   "id": "o176",
+   "id": "o177",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    2787.5578761725515,
+    2766.610982019889,
+    208.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o178",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2786.488852671341,
+    208.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o179",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2806.686258045262,
     208.0,
     24.0,
     48.0
@@ -3072,7 +3116,7 @@
    }
   },
   {
-   "id": "o177",
+   "id": "o180",
    "type": "relic",
    "layer": "gameplay",
    "rect": [
@@ -3087,7 +3131,7 @@
    }
   },
   {
-   "id": "o178",
+   "id": "o181",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -3101,7 +3145,7 @@
    }
   },
   {
-   "id": "o179",
+   "id": "o182",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -3115,7 +3159,7 @@
    }
   },
   {
-   "id": "o180",
+   "id": "o183",
    "type": "secret_area",
    "layer": "gameplay",
    "rect": [
@@ -3129,7 +3173,7 @@
    }
   },
   {
-   "id": "o181",
+   "id": "o184",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -3146,7 +3190,7 @@
    }
   },
   {
-   "id": "o182",
+   "id": "o185",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -3165,7 +3209,7 @@
    }
   },
   {
-   "id": "o183",
+   "id": "o186",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -3179,7 +3223,7 @@
    }
   },
   {
-   "id": "o184",
+   "id": "o187",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3197,7 +3241,7 @@
    }
   },
   {
-   "id": "o185",
+   "id": "o188",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -3211,7 +3255,7 @@
    }
   },
   {
-   "id": "o186",
+   "id": "o189",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -3231,7 +3275,7 @@
    }
   },
   {
-   "id": "o187",
+   "id": "o190",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -3245,7 +3289,7 @@
    }
   },
   {
-   "id": "o188",
+   "id": "o191",
    "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
@@ -3259,7 +3303,7 @@
    }
   },
   {
-   "id": "o189",
+   "id": "o192",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -3276,7 +3320,7 @@
    }
   },
   {
-   "id": "o190",
+   "id": "o193",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -3290,7 +3334,7 @@
    }
   },
   {
-   "id": "o191",
+   "id": "o194",
    "type": "liquid",
    "layer": "gameplay",
    "rect": [
@@ -3304,7 +3348,7 @@
    }
   },
   {
-   "id": "o192",
+   "id": "o195",
    "type": "damage_zone",
    "layer": "gameplay",
    "rect": [
@@ -3321,7 +3365,7 @@
    }
   },
   {
-   "id": "o193",
+   "id": "o196",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -3336,7 +3380,7 @@
    }
   },
   {
-   "id": "o194",
+   "id": "o197",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -3350,7 +3394,7 @@
    }
   },
   {
-   "id": "o195",
+   "id": "o198",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -3365,7 +3409,7 @@
    }
   },
   {
-   "id": "o196",
+   "id": "o199",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
@@ -3380,7 +3424,7 @@
    }
   },
   {
-   "id": "o197",
+   "id": "o200",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
@@ -3395,7 +3439,7 @@
    }
   },
   {
-   "id": "o198",
+   "id": "o201",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -3409,7 +3453,7 @@
    }
   },
   {
-   "id": "o199",
+   "id": "o202",
    "type": "moving_platform",
    "layer": "gameplay",
    "rect": [
@@ -3430,7 +3474,7 @@
    }
   },
   {
-   "id": "o200",
+   "id": "o203",
    "type": "grapple_point",
    "layer": "gameplay",
    "rect": [
@@ -3441,7 +3485,7 @@
    ]
   },
   {
-   "id": "o201",
+   "id": "o204",
    "type": "grapple_point",
    "layer": "gameplay",
    "rect": [
@@ -3452,7 +3496,7 @@
    ]
   },
   {
-   "id": "o202",
+   "id": "o205",
    "type": "grapple_point",
    "layer": "gameplay",
    "rect": [
@@ -3463,7 +3507,7 @@
    ]
   },
   {
-   "id": "o203",
+   "id": "o206",
    "type": "grapple_point",
    "layer": "gameplay",
    "rect": [
@@ -3474,7 +3518,7 @@
    ]
   },
   {
-   "id": "o204",
+   "id": "o207",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -3488,7 +3532,7 @@
    }
   },
   {
-   "id": "o205",
+   "id": "o208",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -3502,7 +3546,7 @@
    }
   },
   {
-   "id": "o206",
+   "id": "o209",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -3516,7 +3560,7 @@
    }
   },
   {
-   "id": "o207",
+   "id": "o210",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -3530,7 +3574,7 @@
    }
   },
   {
-   "id": "o208",
+   "id": "o211",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -3544,7 +3588,7 @@
    }
   },
   {
-   "id": "o209",
+   "id": "o212",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -3558,7 +3602,7 @@
    }
   },
   {
-   "id": "o210",
+   "id": "o213",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -3572,7 +3616,7 @@
    }
   },
   {
-   "id": "o211",
+   "id": "o214",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -3586,7 +3630,7 @@
    }
   },
   {
-   "id": "o212",
+   "id": "o215",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -3600,7 +3644,7 @@
    }
   },
   {
-   "id": "o213",
+   "id": "o216",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3618,7 +3662,7 @@
    }
   },
   {
-   "id": "o214",
+   "id": "o217",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3636,7 +3680,7 @@
    }
   },
   {
-   "id": "o215",
+   "id": "o218",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -3650,7 +3694,7 @@
    }
   },
   {
-   "id": "o216",
+   "id": "o219",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -3664,7 +3708,7 @@
    }
   },
   {
-   "id": "o217",
+   "id": "o220",
    "type": "heart_container",
    "layer": "gameplay",
    "rect": [
@@ -3678,7 +3722,7 @@
    }
   },
   {
-   "id": "o218",
+   "id": "o221",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -3692,7 +3736,7 @@
    }
   },
   {
-   "id": "o219",
+   "id": "o222",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -3706,7 +3750,7 @@
    }
   },
   {
-   "id": "o220",
+   "id": "o223",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -3720,7 +3764,7 @@
    }
   },
   {
-   "id": "o221",
+   "id": "o224",
    "type": "secret_area",
    "layer": "gameplay",
    "rect": [
@@ -3734,7 +3778,7 @@
    }
   },
   {
-   "id": "o222",
+   "id": "o225",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -3751,7 +3795,7 @@
    }
   },
   {
-   "id": "o223",
+   "id": "o226",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -3770,7 +3814,7 @@
    }
   },
   {
-   "id": "o224",
+   "id": "o227",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -3789,7 +3833,7 @@
    }
   },
   {
-   "id": "o225",
+   "id": "o228",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -3808,7 +3852,7 @@
    }
   },
   {
-   "id": "o226",
+   "id": "o229",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -3822,7 +3866,7 @@
    }
   },
   {
-   "id": "o227",
+   "id": "o230",
    "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
@@ -3836,7 +3880,7 @@
    }
   },
   {
-   "id": "o228",
+   "id": "o231",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -3853,7 +3897,7 @@
    }
   },
   {
-   "id": "o229",
+   "id": "o232",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -3867,7 +3911,7 @@
    }
   },
   {
-   "id": "o230",
+   "id": "o233",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -3886,7 +3930,7 @@
    }
   },
   {
-   "id": "o231",
+   "id": "o234",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -3900,7 +3944,7 @@
    }
   },
   {
-   "id": "o232",
+   "id": "o235",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -3914,7 +3958,7 @@
    }
   },
   {
-   "id": "o233",
+   "id": "o236",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -3928,7 +3972,7 @@
    }
   },
   {
-   "id": "o234",
+   "id": "o237",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -3942,7 +3986,7 @@
    }
   },
   {
-   "id": "o235",
+   "id": "o238",
    "type": "door",
    "layer": "gameplay",
    "rect": [
@@ -3956,7 +4000,7 @@
    }
   },
   {
-   "id": "o236",
+   "id": "o239",
    "type": "door",
    "layer": "gameplay",
    "rect": [
@@ -3970,7 +4014,7 @@
    }
   },
   {
-   "id": "o237",
+   "id": "o240",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -3984,7 +4028,7 @@
    }
   },
   {
-   "id": "o238",
+   "id": "o241",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -4003,63 +4047,11 @@
    }
   },
   {
-   "id": "o239",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    4609.6749737224245,
-    736.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "sprite": "icicles",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o240",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    4648.0692874789875,
-    736.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "sprite": "icicles",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o241",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    4928.0,
-    720.0,
-    112.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
    "id": "o242",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    4940.756965612522,
+    4625.950539648306,
     736.0,
     16.0,
     24.0
@@ -4075,21 +4067,16 @@
   },
   {
    "id": "o243",
-   "type": "decor",
-   "layer": "bg_decor",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    4969.97266989677,
-    736.0,
-    16.0,
-    24.0
+    4928.0,
+    720.0,
+    112.0,
+    16.0
    ],
    "props": {
-    "sprite": "icicles",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
+    "style": "ice_ledge"
    }
   },
   {
@@ -4097,12 +4084,11 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5014.785750954301,
+    4935.96210114328,
     736.0,
     16.0,
     24.0
    ],
-   "flipX": true,
    "props": {
     "sprite": "icicles",
     "alpha": 1.0,
@@ -4114,6 +4100,25 @@
   },
   {
    "id": "o245",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5000.381146866328,
+    736.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o246",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4127,35 +4132,15 @@
    }
   },
   {
-   "id": "o246",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    4748.1335360317535,
-    656.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "sprite": "icicles",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
    "id": "o247",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    4779.737148467913,
+    4737.62666514415,
     656.0,
     16.0,
     24.0
    ],
-   "flipX": true,
    "props": {
     "sprite": "icicles",
     "alpha": 1.0,
@@ -4170,7 +4155,7 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    4811.793347222688,
+    4803.701422700803,
     656.0,
     16.0,
     24.0
@@ -4393,7 +4378,7 @@
     224.0
    ],
    "props": {
-    "doors": "o235,o236",
+    "doors": "o238,o239",
     "waves": "o249,o250,o251,o252;o253,o254,o255,o256;o257,o258,o259",
     "lockCamera": true,
     "music": ""
@@ -4533,13 +4518,14 @@
   {
    "id": "o269",
    "type": "decor",
-   "layer": "fg_decor",
+   "layer": "bg_decor",
    "rect": [
-    4500.441811679709,
+    4507.449889418651,
     576.0,
     16.0,
     24.0
    ],
+   "flipX": true,
    "props": {
     "sprite": "icicles",
     "alpha": 1.0,
@@ -4552,9 +4538,9 @@
   {
    "id": "o270",
    "type": "decor",
-   "layer": "fg_decor",
+   "layer": "bg_decor",
    "rect": [
-    4529.792489585309,
+    4578.987926653539,
     576.0,
     16.0,
     24.0
@@ -4572,29 +4558,9 @@
   {
    "id": "o271",
    "type": "decor",
-   "layer": "fg_decor",
+   "layer": "bg_decor",
    "rect": [
-    4557.564302727301,
-    576.0,
-    24.0,
-    48.0
-   ],
-   "flipX": true,
-   "props": {
-    "sprite": "icicles_long",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o272",
-   "type": "decor",
-   "layer": "fg_decor",
-   "rect": [
-    4590.73650789941,
+    4656.448721725248,
     576.0,
     16.0,
     24.0
@@ -4610,11 +4576,30 @@
    }
   },
   {
+   "id": "o272",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4708.069069756548,
+    576.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
    "id": "o273",
    "type": "decor",
-   "layer": "fg_decor",
+   "layer": "bg_decor",
    "rect": [
-    4620.570298117084,
+    4753.223958842088,
     576.0,
     16.0,
     24.0
@@ -4632,9 +4617,9 @@
   {
    "id": "o274",
    "type": "decor",
-   "layer": "fg_decor",
+   "layer": "bg_decor",
    "rect": [
-    4652.447644878299,
+    4802.103671368229,
     576.0,
     16.0,
     24.0
@@ -4652,13 +4637,14 @@
   {
    "id": "o275",
    "type": "decor",
-   "layer": "fg_decor",
+   "layer": "bg_decor",
    "rect": [
-    4704.5329347135275,
+    4846.983987017627,
     576.0,
     16.0,
     24.0
    ],
+   "flipX": true,
    "props": {
     "sprite": "icicles",
     "alpha": 1.0,
@@ -4671,13 +4657,14 @@
   {
    "id": "o276",
    "type": "decor",
-   "layer": "fg_decor",
+   "layer": "bg_decor",
    "rect": [
-    4753.718199376767,
+    4892.882125814049,
     576.0,
     16.0,
     24.0
    ],
+   "flipX": true,
    "props": {
     "sprite": "icicles",
     "alpha": 1.0,
@@ -4690,9 +4677,9 @@
   {
    "id": "o277",
    "type": "decor",
-   "layer": "fg_decor",
+   "layer": "bg_decor",
    "rect": [
-    4783.342759499285,
+    4941.924197754378,
     576.0,
     16.0,
     24.0
@@ -4710,9 +4697,9 @@
   {
    "id": "o278",
    "type": "decor",
-   "layer": "fg_decor",
+   "layer": "bg_decor",
    "rect": [
-    4830.77857568702,
+    5022.055412885498,
     576.0,
     16.0,
     24.0
@@ -4728,125 +4715,6 @@
   },
   {
    "id": "o279",
-   "type": "decor",
-   "layer": "fg_decor",
-   "rect": [
-    4865.117579667095,
-    576.0,
-    16.0,
-    24.0
-   ],
-   "flipX": true,
-   "props": {
-    "sprite": "icicles",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o280",
-   "type": "decor",
-   "layer": "fg_decor",
-   "rect": [
-    4904.22547196682,
-    576.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "sprite": "icicles",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o281",
-   "type": "decor",
-   "layer": "fg_decor",
-   "rect": [
-    4956.067382990004,
-    576.0,
-    16.0,
-    24.0
-   ],
-   "flipX": true,
-   "props": {
-    "sprite": "icicles",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o282",
-   "type": "decor",
-   "layer": "fg_decor",
-   "rect": [
-    4992.542246190517,
-    576.0,
-    16.0,
-    24.0
-   ],
-   "flipX": true,
-   "props": {
-    "sprite": "icicles",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o283",
-   "type": "decor",
-   "layer": "fg_decor",
-   "rect": [
-    5024.720099215077,
-    576.0,
-    16.0,
-    24.0
-   ],
-   "flipX": true,
-   "props": {
-    "sprite": "icicles",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o284",
-   "type": "decor",
-   "layer": "fg_decor",
-   "rect": [
-    5055.219928666625,
-    576.0,
-    16.0,
-    24.0
-   ],
-   "flipX": true,
-   "props": {
-    "sprite": "icicles",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o285",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -4861,7 +4729,7 @@
    }
   },
   {
-   "id": "o286",
+   "id": "o280",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4875,7 +4743,7 @@
    }
   },
   {
-   "id": "o287",
+   "id": "o281",
    "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
@@ -4889,7 +4757,7 @@
    }
   },
   {
-   "id": "o288",
+   "id": "o282",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -4906,7 +4774,7 @@
    }
   },
   {
-   "id": "o289",
+   "id": "o283",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -4920,17 +4788,18 @@
    }
   },
   {
-   "id": "o290",
+   "id": "o284",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5160.0334868585505,
-    788.0,
-    16.0,
-    12.0
+    5187.741797244042,
+    744.0,
+    32.0,
+    56.0
    ],
+   "flipX": true,
    "props": {
-    "sprite": "snow_rock_small",
+    "sprite": "snow_pine",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -4939,15 +4808,36 @@
    }
   },
   {
-   "id": "o291",
+   "id": "o285",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5327.325037277197,
+    5280.550016996572,
+    776.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o286",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5297.549545679292,
     784.0,
     48.0,
     16.0
    ],
+   "flipX": true,
    "props": {
     "sprite": "snow_drift",
     "alpha": 1.0,
@@ -4958,15 +4848,16 @@
    }
   },
   {
-   "id": "o292",
+   "id": "o287",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5406.04232027367,
+    5396.880317044546,
     784.0,
     16.0,
     16.0
    ],
+   "flipX": true,
    "props": {
     "sprite": "frost_flower",
     "alpha": 1.0,
@@ -4977,21 +4868,36 @@
    }
   },
   {
-   "id": "o293",
+   "id": "o288",
    "type": "solid",
    "layer": "terrain",
    "rect": [
     5568.0,
     416.0,
     352.0,
-    736.0
+    32.0
    ],
    "props": {
     "material": "glacier_ice"
    }
   },
   {
-   "id": "o294",
+   "id": "o289",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5568.0,
+    448.0,
+    352.0,
+    704.0
+   ],
+   "props": {
+    "material": "snow_rock",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o290",
    "type": "spikes",
    "layer": "gameplay",
    "rect": [
@@ -5006,7 +4912,7 @@
    }
   },
   {
-   "id": "o295",
+   "id": "o291",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5020,11 +4926,11 @@
    }
   },
   {
-   "id": "o296",
+   "id": "o292",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5479.34000118113,
+    5475.560162195231,
     688.0,
     16.0,
     24.0
@@ -5040,11 +4946,11 @@
    }
   },
   {
-   "id": "o297",
+   "id": "o293",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5529.330147427808,
+    5517.7906952819885,
     688.0,
     16.0,
     24.0
@@ -5060,7 +4966,7 @@
    }
   },
   {
-   "id": "o298",
+   "id": "o294",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5074,11 +4980,11 @@
    }
   },
   {
-   "id": "o299",
+   "id": "o295",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5446.002528652676,
+    5446.402882131024,
     560.0,
     16.0,
     24.0
@@ -5094,11 +5000,11 @@
    }
   },
   {
-   "id": "o300",
+   "id": "o296",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5483.183658292854,
+    5513.570421036758,
     560.0,
     16.0,
     24.0
@@ -5113,27 +5019,7 @@
    }
   },
   {
-   "id": "o301",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    5529.016076523133,
-    560.0,
-    16.0,
-    24.0
-   ],
-   "flipX": true,
-   "props": {
-    "sprite": "icicles",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o302",
+   "id": "o297",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -5148,7 +5034,7 @@
    }
   },
   {
-   "id": "o303",
+   "id": "o298",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5162,7 +5048,7 @@
    }
   },
   {
-   "id": "o304",
+   "id": "o299",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5176,7 +5062,7 @@
    }
   },
   {
-   "id": "o305",
+   "id": "o300",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5190,7 +5076,7 @@
    }
   },
   {
-   "id": "o306",
+   "id": "o301",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5204,7 +5090,7 @@
    }
   },
   {
-   "id": "o307",
+   "id": "o302",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5218,7 +5104,7 @@
    }
   },
   {
-   "id": "o308",
+   "id": "o303",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5232,7 +5118,7 @@
    }
   },
   {
-   "id": "o309",
+   "id": "o304",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5246,7 +5132,7 @@
    }
   },
   {
-   "id": "o310",
+   "id": "o305",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5260,7 +5146,7 @@
    }
   },
   {
-   "id": "o311",
+   "id": "o306",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5274,7 +5160,7 @@
    }
   },
   {
-   "id": "o312",
+   "id": "o307",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5292,7 +5178,7 @@
    }
   },
   {
-   "id": "o313",
+   "id": "o308",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -5306,17 +5192,17 @@
    }
   },
   {
-   "id": "o314",
+   "id": "o309",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5610.092067784872,
-    392.0,
-    16.0,
-    24.0
+    5575.709489400127,
+    360.0,
+    24.0,
+    56.0
    ],
    "props": {
-    "sprite": "ice_crystal",
+    "sprite": "ice_spire",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -5325,11 +5211,31 @@
    }
   },
   {
-   "id": "o315",
+   "id": "o310",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5752.627288965716,
+    5633.245511527969,
+    404.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o311",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5715.308964172976,
     392.0,
     16.0,
     24.0
@@ -5345,17 +5251,17 @@
    }
   },
   {
-   "id": "o316",
+   "id": "o312",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    5797.065149232802,
-    360.0,
-    32.0,
-    56.0
+    5750.147880758693,
+    400.0,
+    16.0,
+    16.0
    ],
    "props": {
-    "sprite": "snow_pine",
+    "sprite": "frost_flower",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -5364,7 +5270,27 @@
    }
   },
   {
-   "id": "o317",
+   "id": "o313",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5792.093506733362,
+    360.0,
+    24.0,
+    56.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ice_spire",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o314",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5382,7 +5308,7 @@
    }
   },
   {
-   "id": "o318",
+   "id": "o315",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5400,7 +5326,7 @@
    }
   },
   {
-   "id": "o319",
+   "id": "o316",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5418,7 +5344,7 @@
    }
   },
   {
-   "id": "o320",
+   "id": "o317",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -5437,7 +5363,7 @@
    }
   },
   {
-   "id": "o321",
+   "id": "o318",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -5452,7 +5378,7 @@
    }
   },
   {
-   "id": "o322",
+   "id": "o319",
    "type": "grapple_point",
    "layer": "gameplay",
    "rect": [
@@ -5463,7 +5389,7 @@
    ]
   },
   {
-   "id": "o323",
+   "id": "o320",
    "type": "grapple_point",
    "layer": "gameplay",
    "rect": [
@@ -5474,7 +5400,7 @@
    ]
   },
   {
-   "id": "o324",
+   "id": "o321",
    "type": "grapple_point",
    "layer": "gameplay",
    "rect": [
@@ -5485,7 +5411,7 @@
    ]
   },
   {
-   "id": "o325",
+   "id": "o322",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5503,7 +5429,7 @@
    }
   },
   {
-   "id": "o326",
+   "id": "o323",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5517,7 +5443,7 @@
    }
   },
   {
-   "id": "o327",
+   "id": "o324",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5531,7 +5457,7 @@
    }
   },
   {
-   "id": "o328",
+   "id": "o325",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5545,7 +5471,7 @@
    }
   },
   {
-   "id": "o329",
+   "id": "o326",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5559,7 +5485,7 @@
    }
   },
   {
-   "id": "o330",
+   "id": "o327",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5573,7 +5499,7 @@
    }
   },
   {
-   "id": "o331",
+   "id": "o328",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5587,7 +5513,7 @@
    }
   },
   {
-   "id": "o332",
+   "id": "o329",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5601,7 +5527,7 @@
    }
   },
   {
-   "id": "o333",
+   "id": "o330",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -5616,7 +5542,7 @@
    }
   },
   {
-   "id": "o334",
+   "id": "o331",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -5630,7 +5556,7 @@
    }
   },
   {
-   "id": "o335",
+   "id": "o332",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -5644,11 +5570,87 @@
    }
   },
   {
+   "id": "o333",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6443.191747101233,
+    448.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o334",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6466.546219913231,
+    448.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o335",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6508.05568041307,
+    448.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
    "id": "o336",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    6447.553791541884,
+    6534.639815982813,
+    448.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o337",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6574.775135701281,
     448.0,
     16.0,
     24.0
@@ -5664,30 +5666,11 @@
    }
   },
   {
-   "id": "o337",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    6479.577309523796,
-    448.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "sprite": "icicles",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
    "id": "o338",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    6504.923683279576,
+    6604.7308083936,
     448.0,
     16.0,
     24.0
@@ -5704,85 +5687,6 @@
   },
   {
    "id": "o339",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    6538.17232669957,
-    448.0,
-    16.0,
-    24.0
-   ],
-   "flipX": true,
-   "props": {
-    "sprite": "icicles",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o340",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    6563.535475650736,
-    448.0,
-    16.0,
-    24.0
-   ],
-   "flipX": true,
-   "props": {
-    "sprite": "icicles",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o341",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    6589.100759917166,
-    448.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "sprite": "icicles",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o342",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    6619.43277689038,
-    448.0,
-    16.0,
-    24.0
-   ],
-   "flipX": true,
-   "props": {
-    "sprite": "icicles",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o343",
    "type": "power_gate",
    "layer": "gameplay",
    "rect": [
@@ -5797,7 +5701,7 @@
    }
   },
   {
-   "id": "o344",
+   "id": "o340",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5815,7 +5719,7 @@
    }
   },
   {
-   "id": "o345",
+   "id": "o341",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5833,7 +5737,7 @@
    }
   },
   {
-   "id": "o346",
+   "id": "o342",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -5848,7 +5752,7 @@
    }
   },
   {
-   "id": "o347",
+   "id": "o343",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -5867,7 +5771,7 @@
    }
   },
   {
-   "id": "o348",
+   "id": "o344",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -5886,7 +5790,7 @@
    }
   },
   {
-   "id": "o349",
+   "id": "o345",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -5900,7 +5804,7 @@
    }
   },
   {
-   "id": "o350",
+   "id": "o346",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -5917,7 +5821,7 @@
    }
   },
   {
-   "id": "o351",
+   "id": "o347",
    "type": "updraft",
    "layer": "gameplay",
    "rect": [
@@ -5932,7 +5836,7 @@
    }
   },
   {
-   "id": "o352",
+   "id": "o348",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -5947,7 +5851,7 @@
    }
   },
   {
-   "id": "o353",
+   "id": "o349",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5961,7 +5865,7 @@
    }
   },
   {
-   "id": "o354",
+   "id": "o350",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5975,7 +5879,7 @@
    }
   },
   {
-   "id": "o355",
+   "id": "o351",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5989,7 +5893,7 @@
    }
   },
   {
-   "id": "o356",
+   "id": "o352",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -6003,7 +5907,7 @@
    }
   },
   {
-   "id": "o357",
+   "id": "o353",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -6017,85 +5921,86 @@
    }
   },
   {
+   "id": "o354",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6810.041915388004,
+    144.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o355",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6837.357555268211,
+    144.0,
+    24.0,
+    48.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o356",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6866.976369653741,
+    144.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o357",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6887.253468658365,
+    144.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
    "id": "o358",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    6812.565233451421,
-    144.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "sprite": "icicles",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o359",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    6844.725943215942,
-    144.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "sprite": "icicles",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o360",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    6877.767290411439,
-    144.0,
-    16.0,
-    24.0
-   ],
-   "flipX": true,
-   "props": {
-    "sprite": "icicles",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o361",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    6904.042722165562,
-    144.0,
-    16.0,
-    24.0
-   ],
-   "flipX": true,
-   "props": {
-    "sprite": "icicles",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o362",
    "type": "relic",
    "layer": "gameplay",
    "rect": [
@@ -6110,7 +6015,7 @@
    }
   },
   {
-   "id": "o363",
+   "id": "o359",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -6124,7 +6029,7 @@
    }
   },
   {
-   "id": "o364",
+   "id": "o360",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -6138,7 +6043,7 @@
    }
   },
   {
-   "id": "o365",
+   "id": "o361",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -6152,7 +6057,7 @@
    }
   },
   {
-   "id": "o366",
+   "id": "o362",
    "type": "secret_area",
    "layer": "gameplay",
    "rect": [
@@ -6166,7 +6071,7 @@
    }
   },
   {
-   "id": "o367",
+   "id": "o363",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -6183,14 +6088,72 @@
    }
   },
   {
-   "id": "o368",
+   "id": "o364",
    "type": "solid",
    "layer": "terrain",
    "rect": [
     6768.0,
     560.0,
     96.0,
-    592.0
+    32.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o365",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6768.0,
+    592.0,
+    96.0,
+    560.0
+   ],
+   "props": {
+    "material": "snow_rock",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o366",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6864.0,
+    608.0,
+    96.0,
+    32.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o367",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6864.0,
+    640.0,
+    96.0,
+    512.0
+   ],
+   "props": {
+    "material": "snow_rock",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o368",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6960.0,
+    656.0,
+    96.0,
+    32.0
    ],
    "props": {
     "material": "glacier_ice"
@@ -6201,31 +6164,18 @@
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    6864.0,
-    608.0,
+    6960.0,
+    688.0,
     96.0,
-    544.0
+    464.0
    ],
    "props": {
-    "material": "glacier_ice"
+    "material": "snow_rock",
+    "decorTop": false
    }
   },
   {
    "id": "o370",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    6960.0,
-    656.0,
-    96.0,
-    496.0
-   ],
-   "props": {
-    "material": "glacier_ice"
-   }
-  },
-  {
-   "id": "o371",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -6239,7 +6189,7 @@
    }
   },
   {
-   "id": "o372",
+   "id": "o371",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6257,7 +6207,7 @@
    }
   },
   {
-   "id": "o373",
+   "id": "o372",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6275,7 +6225,7 @@
    }
   },
   {
-   "id": "o374",
+   "id": "o373",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6293,7 +6243,7 @@
    }
   },
   {
-   "id": "o375",
+   "id": "o374",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6311,7 +6261,7 @@
    }
   },
   {
-   "id": "o376",
+   "id": "o375",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6329,7 +6279,7 @@
    }
   },
   {
-   "id": "o377",
+   "id": "o376",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -6343,7 +6293,7 @@
    }
   },
   {
-   "id": "o378",
+   "id": "o377",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -6357,7 +6307,7 @@
    }
   },
   {
-   "id": "o379",
+   "id": "o378",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -6371,7 +6321,7 @@
    }
   },
   {
-   "id": "o380",
+   "id": "o379",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -6385,7 +6335,7 @@
    }
   },
   {
-   "id": "o381",
+   "id": "o380",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -6399,7 +6349,7 @@
    }
   },
   {
-   "id": "o382",
+   "id": "o381",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -6413,7 +6363,7 @@
    }
   },
   {
-   "id": "o383",
+   "id": "o382",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -6427,7 +6377,7 @@
    }
   },
   {
-   "id": "o384",
+   "id": "o383",
    "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
@@ -6441,7 +6391,7 @@
    }
   },
   {
-   "id": "o385",
+   "id": "o384",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -6458,7 +6408,7 @@
    }
   },
   {
-   "id": "o386",
+   "id": "o385",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -6473,7 +6423,7 @@
    }
   },
   {
-   "id": "o387",
+   "id": "o386",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -6487,7 +6437,7 @@
    }
   },
   {
-   "id": "o388",
+   "id": "o387",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -6501,18 +6451,18 @@
    }
   },
   {
-   "id": "o389",
+   "id": "o388",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    7101.875704486915,
-    692.0,
+    7070.5054713836425,
+    688.0,
     16.0,
-    12.0
+    16.0
    ],
    "flipX": true,
    "props": {
-    "sprite": "snow_rock_small",
+    "sprite": "frost_flower",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -6521,7 +6471,7 @@
    }
   },
   {
-   "id": "o390",
+   "id": "o389",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -6535,17 +6485,32 @@
    }
   },
   {
-   "id": "o391",
+   "id": "o390",
    "type": "solid",
    "layer": "terrain",
    "rect": [
     7424.0,
     832.0,
     448.0,
-    320.0
+    32.0
    ],
    "props": {
     "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o391",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7424.0,
+    864.0,
+    448.0,
+    288.0
+   ],
+   "props": {
+    "material": "snow_rock",
+    "decorTop": false
    }
   },
   {
@@ -6925,14 +6890,14 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    7279.794304614457,
+    7285.729217525108,
     416.0,
-    24.0,
-    48.0
+    16.0,
+    24.0
    ],
    "flipX": true,
    "props": {
-    "sprite": "icicles_long",
+    "sprite": "icicles",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -6945,11 +6910,12 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    7337.080244039761,
+    7336.285263241349,
     416.0,
     16.0,
     24.0
    ],
+   "flipX": true,
    "props": {
     "sprite": "icicles",
     "alpha": 1.0,
@@ -6964,13 +6930,14 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    7397.789016367097,
+    7376.746760084327,
     416.0,
-    16.0,
-    24.0
+    24.0,
+    48.0
    ],
+   "flipX": true,
    "props": {
-    "sprite": "icicles",
+    "sprite": "icicles_long",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -6983,12 +6950,11 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    7439.07784457351,
+    7416.395384718094,
     416.0,
     16.0,
     24.0
    ],
-   "flipX": true,
    "props": {
     "sprite": "icicles",
     "alpha": 1.0,
@@ -7003,13 +6969,13 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    7494.515230375594,
+    7474.40672567762,
     416.0,
-    16.0,
-    24.0
+    24.0,
+    48.0
    ],
    "props": {
-    "sprite": "icicles",
+    "sprite": "icicles_long",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -7022,7 +6988,45 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    7535.115482889662,
+    7532.331407027984,
+    416.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o421",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7589.985948543096,
+    416.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o422",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7629.943058891346,
     416.0,
     16.0,
     24.0
@@ -7038,50 +7042,11 @@
    }
   },
   {
-   "id": "o421",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    7579.655860916713,
-    416.0,
-    24.0,
-    48.0
-   ],
-   "flipX": true,
-   "props": {
-    "sprite": "icicles_long",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o422",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    7635.737714723696,
-    416.0,
-    24.0,
-    48.0
-   ],
-   "props": {
-    "sprite": "icicles_long",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
    "id": "o423",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    7674.1943375145,
+    7681.170172352093,
     416.0,
     16.0,
     24.0
@@ -7101,7 +7066,26 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    7714.5549191659675,
+    7712.708250876499,
+    416.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o425",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7766.286588823762,
     416.0,
     16.0,
     24.0
@@ -7116,31 +7100,11 @@
    }
   },
   {
-   "id": "o425",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    7768.6143390725465,
-    416.0,
-    24.0,
-    48.0
-   ],
-   "flipX": true,
-   "props": {
-    "sprite": "icicles_long",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
    "id": "o426",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    7817.534278433744,
+    7822.1181679228,
     416.0,
     16.0,
     24.0
@@ -7160,7 +7124,26 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    7872.587510425609,
+    7872.519320872504,
+    416.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o428",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7934.140807157834,
     416.0,
     16.0,
     24.0
@@ -7176,36 +7159,17 @@
    }
   },
   {
-   "id": "o428",
+   "id": "o429",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    7902.332876133309,
+    7986.0664839512065,
     416.0,
     24.0,
     48.0
    ],
    "props": {
     "sprite": "icicles_long",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o429",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    7955.395579439041,
-    416.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "sprite": "icicles",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -7471,14 +7435,13 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    8081.427804199388,
-    820.0,
+    8072.842122063426,
+    816.0,
     16.0,
-    12.0
+    16.0
    ],
-   "flipX": true,
    "props": {
-    "sprite": "snow_rock_small",
+    "sprite": "frost_flower",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -7491,13 +7454,13 @@
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    8173.190474457353,
-    808.0,
+    8170.177449213753,
+    820.0,
     16.0,
-    24.0
+    12.0
    ],
    "props": {
-    "sprite": "ice_crystal",
+    "sprite": "snow_rock_small",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,

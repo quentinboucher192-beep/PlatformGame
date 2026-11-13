@@ -33,11 +33,17 @@ d["startPowers"] = ["dash", "wave", "shield", "impulse", "teleport", "glide", "g
 SNOW, ICE, METAL = "snow_rock", "glacier_ice", "frost_metal"
 
 
+def icecap(x0, y, x1, depth=2, bottom=None):
+    """Snow rock mass capped with a slippery glacier-ice layer `depth` tiles thick."""
+    L.solid(x0, y, x1, y + depth, ICE)
+    return L.solid(x0, y + depth, x1, bottom or H, SNOW, deco=False)
+
+
 def ledge(x0, x1, y, style="ice_ledge", hang=True):
     """One-way ice ledge with icicles underneath."""
     oid = L.oneway(x0, x1, y, style)
     if hang:
-        icicles(L, rng, x0, x1, y + 1, every=2.6, long_ratio=0.0)
+        icicles(L, rng, x0, x1, y + 1, every=3.6, long_ratio=0.0)
     return oid
 
 
@@ -50,7 +56,7 @@ floating_ice(L, rng, 10, W - 10, 8, 22)
 # =====================================================================================
 L.solid(0, 4, 3, H, SNOW)                      # left cliff
 L.solid(3, 50, 16, H, SNOW)                    # start terrace
-L.solid(16, 50, 28, H, ICE)                    # flat slippery patch (safe)
+icecap(16, 50, 28)                             # flat slippery patch (safe)
 L.solid(28, 50, 34, H, SNOW)
 start = L.start(8, 50)
 deco(L, "frozen_statue", 4.8, 50)
@@ -120,7 +126,7 @@ L.light(120, 43, AURORA_GREEN, 120)
 L.emitter(112, 37, 129, 47, "aurora_motes", 1.5)
 L.sign(130.5, 48, "Ces parois hérissées de givre n'offrent aucune prise. Sautez trois fois pour atteindre la corniche !")
 # Tutorial cliff A: an ice ledge 8 tiles up (jump + double jump fall short); safe floor below.
-L.solid(136, 40, 150, H, ICE)
+icecap(136, 40, 150)
 ledgeA = ledge(132, 136, 40)
 ice_spikes_wall(L, 136, 41, 46, facing_left=True)
 L.shards_line(134, 46, 134, 42, 3)
@@ -129,7 +135,7 @@ flora(L, rng, 136, 150, 40, 0.3)
 # Cliff B over a safe pit: same move, now while crossing (recovery ledge back up on the left).
 L.solid(150, 48, 157, H, SNOW)                 # safe pit floor
 ledge(150, 152, 40)                            # recovery ledge (8 up from the pit)
-L.solid(157, 32, 172, H, ICE)
+icecap(157, 32, 172)
 ledgeB = ledge(153, 157, 32)
 ice_spikes_wall(L, 157, 33, 46, facing_left=True)
 L.shards_arc(150, 156, 34, 3, 4)
@@ -238,7 +244,7 @@ L.sign(283, 50, "Le Rempart gelé se protège de face : frappez-le de dos, en Fr
 for x in (283, 317):
     deco(L, "frost_banner", x, 50)
 deco(L, "frozen_machine", 300, 50)
-icicles(L, rng, AX0 + 3, AX1 - 3, 36, every=2.6, layer="fg_decor", long_ratio=0.1)
+icicles(L, rng, AX0 + 3, AX1 - 3, 36, every=4.0, layer="bg_decor", long_ratio=0.0)
 L.event(arena, "cleared", [{"type": "hint", "params": {"text": "L'avant-poste est libéré. Le col vous attend.",
                                                       "duration": 3}}], delay=0.8)
 
@@ -253,7 +259,7 @@ L.orb("health_orb", 331, 48)
 flora(L, rng, 322, 340, 50, 0.35, avoid=[(327, 329)])
 # 4a. L'Escalier de givre: three triple jumps up the spiky face of the ridge.
 RX0, RX1, RT = 348, 370, 26
-L.solid(RX0, RT, RX1, H, ICE)
+icecap(RX0, RT, RX1)
 ice_spikes_wall(L, RX0, RT + 1, 48, facing_left=True)
 ledge(342, 348, 42)
 ledge(340, 348, 34)
@@ -299,9 +305,9 @@ L.shards_line(426, 6.5, 429, 6.5, 3)
 L.secret(424, 3, 434, 8, "Le nid du blizzard !")
 L.light(431, 6, AURORA_VIOLET, 60)
 # 4d. Slippery ice steps down toward the lake of the aurora (wide steps, bombs from above).
-L.solid(423, 35, 429, H, ICE)
-L.solid(429, 38, 435, H, ICE)
-L.solid(435, 41, 441, H, ICE)
+icecap(423, 35, 429)
+icecap(429, 38, 435)
+icecap(435, 41, 441)
 L.solid(441, 44, 446, H, SNOW)
 L.enemy("frost_wing", 433, 30, patrol_tiles=5)
 L.enemy("snow_stalker", 432, 38, patrol_tiles=2, face_left=True)

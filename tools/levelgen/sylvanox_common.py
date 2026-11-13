@@ -106,6 +106,18 @@ def slow_zone(L, x0, y0, x1, y1, factor=0.5, visible=True):
                  {"factor": factor, "visible": visible})
 
 
+def abyss_updraft(L, x0, x1, y_top, y_bottom, strength=230):
+    """Updraft rising from the void (no vent): wind streaks and soft lights make the column readable."""
+    oid = L.updraft(x0, x1, y_top, y_bottom, strength=strength, vent=False)
+    h = y_bottom - y_top
+    L.emitter(x0, y_top + h * 0.15, x1, y_bottom, "updraft_wind", max(3.0, h * 0.35))
+    y = y_bottom - 4
+    while y > y_top + 3:
+        L.light((x0 + x1) / 2, y, "#8ffff0", 46, flicker=0.12)
+        y -= 11
+    return oid
+
+
 def damage_zone(L, x0, y0, x1, y1, damage=1, interval=0.8, visible=True):
     return L.obj("damage_zone", [x0 * T, y0 * T, (x1 - x0) * T, (y1 - y0) * T], "gameplay",
                  {"damage": damage, "interval": interval, "visible": visible, "shieldProtects": True})

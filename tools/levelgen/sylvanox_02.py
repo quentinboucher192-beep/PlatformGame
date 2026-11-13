@@ -36,6 +36,8 @@ d["killY"] = H * 16 + 24
 for layer in d["background"]:
     if layer["texture"].endswith(("mid.png", "near.png")):
         layer["tint"] = "#d8c8ff"           # spore haze: the canopy is more violet than the ruins
+    if layer.get("foreground"):
+        layer["offset"] = [0, -470]         # foreground canopy band above the highest branch route
 d["timer"] = {"mode": "limited", "limit": 1080, "onExpire": "gameover", "referenceTime": 330,
               "challengeMaxDeaths": 0}
 d["medals"] = {"bronze": {}, "silver": {"maxTime": 600}, "gold": {"maxTime": 420},
@@ -79,6 +81,7 @@ L.solid(30, 58, 56, 60, "root")
 C.spore_cloud(L, 38, 52, 46, 58)
 L.enemy("glowmite", 34, 58, patrol_tiles=3)
 L.enemy("sporeflower", 53, 58, face_left=True)
+L.enemy("nightwing", 43, 48, patrol_tiles=3)
 L.shards_arc(37, 47, 51, 1.5, 5)
 L.decor("mushroom_cluster", 50, 58)
 L.decor("glow_fern", 32, 58)
@@ -91,7 +94,7 @@ L.gate(49, 60, 1, 4, "teleport")
 L.relic(46.5, 62.5, "Graine d'aube")
 L.secret(44, 60, 49, 64, "Une graine cachée sous le pont de racines !")
 L.light(46.5, 62, "#e08aff", 60)
-L.shards_line(51.5, 62.5, 57.5, 62.5, 4)
+L.shards_line(52, 62.5, 57, 62.5, 3)
 
 # mushroom cap with a bounce pad, up to the next canopy layer
 L.solid(61, 62, 68, I, "root")
@@ -99,7 +102,7 @@ L.solid(61, 61, 63, 62, "root", deco=False)          # root bump: step off it on
 L.bounce(64.5, 62, power=600)
 C.giant_mushroom(L, 63, 62, 1.6)
 L.sign(62, 62, "Rebondissez sur le champignon pour atteindre la canopée.")
-L.shards_line(64.5, 58, 64.5, 50, 4)
+L.shards_line(64.5, 57, 64.5, 50, 3)
 
 L.solid(68, 50, 74, 68, "root")                    # cliff above the mushroom cap
 L.solid(74, 50, 88, I, "root")
@@ -112,7 +115,7 @@ L.enemy("sporeflower", 86.5, 50, face_left=True)
 flora(72, 86, 50, 0.3)
 L.orb("health_orb", 74, 47)
 L.enemy("nightwing", 91, 45, patrol_tiles=3)
-L.shards_arc(88, 95, 47, 3, 4)
+L.shards_arc(88, 95, 47, 3, 3)
 
 L.solid(95, 47, 112, I, "root")
 L.solid(112, 47, 128, 70, "root")                  # trunk: also the left wall of the glide basin
@@ -136,19 +139,18 @@ L.power(120, 45.7, "glide", "Planeur : maintenez Saut pendant une chute pour dé
                           "Les courants ascendants vous élèvent.")
 L.light(120, 41, "#8ffff0", 110)
 L.decor("ruin_arch", 120, 47)
-L.sign(125, 47, "Planeur : maintenez Saut en tombant pour planer. Visez le chapeau du champignon !")
+L.sign(125, 47, "Planeur : maintenez Saut en tombant pour planer jusqu'à la corniche de racines.")
 
 # safe basin: a long gentle drop onto a mushroom cap, nothing deadly below
 L.solid(128, 62, 160, 70, "root")                  # basin floor
-L.solid(141, 53, 149, 55, "root", deco=False)      # mushroom cap landing
-L.decor("mushroom_tall", 145, 62, scale=2.0)
-L.light(145, 52, "#8ffff0", 70)
-L.shards_arc(129, 144, 49, 0.8, 7)
+L.solid(141, 53, 149, 55, "root")                  # root ledge: the glide target
+L.light(145, 51, "#8ffff0", 70)
+L.shards_arc(130, 143, 49, 0.8, 5)
 L.orb("energy_orb", 147, 51)
 flora(128, 156, 62, 0.45)
 L.sign(153, 62, "Courant ascendant : sautez dedans et maintenez Saut pour vous élever.")
 L.updraft(156, 160, 28, 62)
-L.shards_line(158, 58, 158, 32, 6)
+L.shards_line(158, 56, 158, 34, 4)
 L.emitter(128, 50, 160, 62, "fireflies", 1.5)
 
 # the belvedere (top 34), with a secret chimney to a perch (relic 2)
@@ -168,23 +170,23 @@ L.decor("lantern_pod", 172, 15, sway=1.5)
 L.shards_line(164.5, 30, 164.5, 16, 4)
 
 # first glide gap: 24 tiles over the abyss, 6 tiles lower
-L.shards_arc(177, 199, 33, 2.5, 8)
+L.shards_arc(178, 198, 33, 2.5, 6)
 L.solid(200, 40, 218, I, "root")
 L.checkpoint(203, 40, "Premier envol")
 L.light(203, 35, "#39f0d8", 90)
 C.giant_mushroom(L, 209, 40, 2.4)
 L.enemy("nightwing", 208, 35, patrol_tiles=3)
 L.enemy("glowmite", 212, 40, patrol_tiles=3)
+L.enemy("weaver", 216, 40, patrol_tiles=1, face_left=True)
 L.orb("health_orb", 206, 37)
 flora(200, 216, 40, 0.35, tall=False)
 L.sign(215, 40, "Ce courant traverse le gouffre : planez dedans pour reprendre de l'altitude.")
 
 # second gap: an updraft rising from the abyss lifts the glider to a higher ledge
-L.updraft(232, 236, 18, ACID, vent=False)
+C.abyss_updraft(L, 232, 236, 18, ACID)
 L.light(234, ACID - 2, "#8ffff0", 120)
-L.emitter(232, 40, 236, ACID - 1, "spores", 1.0)
 L.shards_line(222, 41, 230, 41, 4)
-L.shards_line(234, 36, 234, 22, 5)
+L.shards_line(234, 34, 234, 22, 3)
 L.shards_arc(237, 251, 21, 1.5, 5)
 L.enemy("nightwing", 243, 22, patrol_tiles=3)
 L.solid(252, 30, 268, I, "root")
@@ -192,6 +194,7 @@ L.checkpoint(256, 30, "Cimes venteuses")
 L.light(256, 25, "#39f0d8", 90)
 flora(252, 266, 30, 0.35)
 L.orb("health_orb", 262, 27)
+L.enemy("nightwing", 270, 28, patrol_tiles=3)
 C.vines(L, 130, 268, 14)
 L.emitter(176, 18, 252, 40, "falling_leaves", 2)
 
@@ -204,62 +207,66 @@ L.oneway(262, 268, 44, "root_branch")
 L.shards_line(271, 35, 273, 35, 2)
 L.solid(256, 52, 276, I, "root")
 L.enemy("sporeflower", 259, 52)
-L.enemy("stalker", 268, 52, patrol_tiles=4, face_left=True)
+L.enemy("burrower", 266, 52, face_left=True)
 flora(256, 274, 52, 0.4)
 L.decor("roots", 273, 52)
 
 # the trunk
 TL, TR = 276, 328                                    # outer faces of the trunk
 L.solid(TL, 52, TR, ACID + 2, "root")                # trunk base / arena floor (top 52)
-L.solid(TL, 22, TR, 30, "root")                      # arena ceiling
-L.solid(TL, 30, 280, 44, "root")                     # left wall above the door
-L.solid(324, 30, TR, 44, "root")                     # right wall above the door
+L.solid(TL, 26, TR, 33, "root")                      # arena ceiling (19 tiles above the floor)
+L.solid(TL, 33, 280, 44, "root")                     # left wall above the door
+L.solid(324, 33, TR, 44, "root")                     # right wall above the door
 left_door = L.door(279, 44, 8, open_=True)
 right_door = L.door(324, 44, 8)
 L.oneway(283, 290, 46, "root_branch")
 L.oneway(314, 321, 46, "root_branch")
-L.oneway(295, 309, 40, "root_branch")
-L.oneway(284, 291, 34, "root_branch")
-L.oneway(313, 320, 34, "root_branch")
+L.oneway(295, 309, 41, "root_branch")
+L.oneway(284, 291, 37, "root_branch")
+L.oneway(313, 320, 37, "root_branch")
 w1 = [L.enemy("gloop", 288, 52, 3, dormant=True), L.enemy("gloop", 316, 52, 3, True, dormant=True),
-      L.enemy("glowmite", 302, 52, 4, dormant=True), L.enemy("weaver", 302, 40, 3, dormant=True)]
-w2 = [L.enemy("nightwing", 290, 40, 3, dormant=True), L.enemy("nightwing", 314, 40, 3, True, dormant=True),
+      L.enemy("glowmite", 302, 52, 4, dormant=True), L.enemy("weaver", 302, 41, 3, dormant=True)]
+w2 = [L.enemy("nightwing", 290, 41, 3, dormant=True), L.enemy("nightwing", 314, 41, 3, True, dormant=True),
       L.enemy("bulwark", 304, 52, 5, True, dormant=True), L.enemy("stalker", 292, 52, 5, dormant=True)]
-w3 = [L.enemy("bomber", 296, 36, 4, dormant=True), L.enemy("bomber", 310, 35, 4, True, dormant=True),
-      L.enemy("golem", 306, 52, 3, True, dormant=True), L.enemy("weaver", 287, 34, 2, dormant=True),
+w3 = [L.enemy("bomber", 296, 38, 4, dormant=True), L.enemy("bomber", 310, 37, 4, True, dormant=True),
+      L.enemy("golem", 306, 52, 3, True, dormant=True), L.enemy("weaver", 287, 37, 2, dormant=True),
       L.enemy("stalker", 316, 52, 4, True, dormant=True)]
-L.combat(280, 30, 324, 52, doors=left_door + "," + right_door,
+L.combat(280, 33, 324, 52, doors=left_door + "," + right_door,
          waves=";".join(",".join(w) for w in (w1, w2, w3)))
 L.orb("health_orb", 287, 44)
 L.orb("health_orb", 317, 44)
-L.orb("health_orb", 302, 38)
-L.orb("energy_orb", 287, 32)
-L.orb("energy_orb", 317, 32)
-L.light(302, 36, "#ff4d6d", 130, flicker=0.25)
+L.orb("health_orb", 302, 39)
+L.orb("energy_orb", 287.5, 35)
+L.orb("energy_orb", 316.5, 35)
+L.light(302, 38, "#ff4d6d", 130, flicker=0.25)
 L.light(287, 48, "#39f0d8", 60)
 L.light(317, 48, "#39f0d8", 60)
 for x in range(283, 322, 4):
-    L.decor(random.choice(["lantern_pod", "hanging_vine_short", "hanging_vine_long"]), x + random.random(), 30,
-            "bg_decor", sway=1.0)
+    L.decor(random.choice(["lantern_pod", "hanging_vine_short", "hanging_vine_long", "roots"]), x + random.random(),
+            33, "bg_decor", sway=1.0)
 flora(281, 323, 52, 0.45)
-L.decor("mushroom_cluster", 299, 40)
-L.decor("glow_fern", 306, 40)
+L.decor("roots", 282, 52)
+L.decor("roots", 322, 52, flip=True)
+L.decor("mushroom_cluster", 299, 41)
+L.decor("glow_fern", 306, 41)
+L.decor("glow_flowers", 287, 37)
+L.decor("mushroom_small", 316, 37)
 
 # crown of the trunk and the heart chamber behind a plasma curtain
-L.solid(274, 6, 331, 15, "root")
-L.solid(TL, 15, 312, 22, "root")
-L.gate(327, 15, 1, 7, "shield")
-L.heart(316, 20.9)
-L.orb("health_orb", 320, 20.5)
-L.shards_line(314, 20.5, 324, 20.5, 5)
-L.secret(312, 15, 327, 22, "Le cœur du grand arbre !")
-L.light(316, 18, "#ff8aa0", 70)
-L.decor("crystal_cluster", 313.5, 22)
-L.decor("lantern_pod", 319, 15, sway=1.0)
-L.oneway(328, 333, 22, "root_branch")              # bark ledge in front of the curtain
-L.ladder(330, 22, 52)                               # vines hanging from it
+L.solid(274, 8, 331, 19, "root")
+L.solid(TL, 19, 312, 26, "root")
+L.gate(327, 19, 1, 7, "shield")
+L.heart(316, 24.9)
+L.orb("health_orb", 320, 24.5)
+L.shards_line(314, 24.5, 324, 24.5, 5)
+L.secret(312, 19, 327, 26, "Le cœur du grand arbre !")
+L.light(316, 22, "#ff8aa0", 70)
+L.decor("crystal_cluster", 313.5, 26)
+L.decor("lantern_pod", 319, 19, sway=1.0)
+L.oneway(328, 333, 26, "root_branch")              # bark ledge in front of the curtain
+L.ladder(330, 26, 52)                               # vines hanging from it
 L.sign(332, 52, "Des lianes grimpent le long de l'écorce... Un rideau de plasma luit tout là-haut.")
-L.shards_line(330.5, 46, 330.5, 26, 5)
+L.shards_line(330.5, 46, 330.5, 30, 3)
 
 # =====================================================================================
 # ZONE 4 — Les Cimes tourmentées (glide + updrafts + dash + crumbling + webs; 2 routes)
@@ -284,6 +291,8 @@ L.light(370, 50, "#b04cff", 90)
 L.shards_line(367, 48, 373, 48, 3)
 L.solid(375, 52, 383, I, "root")
 L.enemy("bomber", 380, 44, patrol_tiles=3)
+L.enemy("sporeflower", 382, 52)
+L.enemy("wisp", 394, 32, patrol_tiles=2)
 L.orb("health_orb", 377, 49)
 C.spore_cloud(L, 391, 36, 396, 52)                  # spore column across the gap: costs altitude
 L.crumble(397, 55, 3)                               # catch net at the foot of the next stump
@@ -295,13 +304,13 @@ L.shards_line(397, 48, 401, 50, 3)
 L.bounce(340.5, 52, power=580)
 L.oneway(337, 345, 40, "root_branch")
 L.shards_line(340.5, 47, 340.5, 42, 2)
-L.updraft(350, 353, 8, 51, vent=False)
-L.emitter(350, 20, 353, 50, "spores", 0.6)
-L.shards_line(351.5, 36, 351.5, 12, 6)
+C.abyss_updraft(L, 350, 353, 8, 51)
+L.shards_line(351.5, 34, 351.5, 14, 4)
 L.enemy("weaver", 371, 12, patrol_tiles=2)
 C.spore_cloud(L, 376, 7, 382, 12)
 L.enemy("weaver", 386, 12, patrol_tiles=2, face_left=True)
 L.enemy("nightwing", 380, 5, patrol_tiles=3)
+L.enemy("bulwark", 389, 12, patrol_tiles=1, face_left=True)
 L.shards_line(362, 10, 374, 10, 5)
 L.orb("energy_orb", 384, 10)
 flora(360, 392, 12, 0.35, tall=False)
@@ -317,6 +326,7 @@ L.solid(400, 53, 418, I, "root")
 L.checkpoint(407, 53, "Cimes tourmentées")
 L.light(407, 48, "#39f0d8", 90)
 L.enemy("bulwark", 414, 53, patrol_tiles=2, face_left=True)
+L.enemy("glowmite", 410, 53, patrol_tiles=2)
 L.orb("health_orb", 410, 50)
 flora(404, 417, 53, 0.3, tall=False)
 C.vines(L, 346, 420, 16)
@@ -331,11 +341,11 @@ L.oneway(430, 436, 55, "root_branch")
 L.oneway(438, 443, 56, "root_branch")
 L.solid(444, 58, 452, 64, "root")
 L.enemy("gloop", 424, 56, patrol_tiles=2)
+L.enemy("gloop", 441, 56, patrol_tiles=1, face_left=True)
 L.enemy("weaver", 433, 55, patrol_tiles=2, face_left=True)
 L.enemy("bomber", 437, 48, patrol_tiles=3)
-L.enemy("burrower", 448, 58, face_left=True)
 C.spore_cloud(L, 426, 50, 432, 55)
-L.shards_line(422, 54, 442, 53, 6)
+L.shards_line(422, 54, 442, 53, 5)
 for x in range(420, 451, 3):
     L.decor(random.choice(["roots", "hanging_vine_long", "lantern_pod", "hanging_vine_short"]), x + random.random(),
             40, "bg_decor", sway=1.2)
@@ -395,7 +405,7 @@ L.checkpoint(509, 58, "Couronne")
 L.light(509, 53, "#39f0d8", 90)
 L.updraft(512, 516, 24, 58)
 L.ladder(515, 27, 58)                              # vines too, for the patient climbers
-L.shards_line(514, 54, 514, 30, 6)
+L.shards_line(514, 54, 514, 30, 4)
 L.decor("ruin_arch", 524, 26, "bg_decor", scale=1.25)
 exit_id = L.exit(524, 26)
 L.light(524, 22, "#ffd98a", 140)

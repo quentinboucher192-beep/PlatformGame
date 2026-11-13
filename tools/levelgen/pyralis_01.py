@@ -64,7 +64,6 @@ P.scatter(84, 96, 52, 0.4, forge=True)
 L.enemy("forge_drone", 91, 46, patrol_tiles=4)
 R(94, 49, 100)                                # step at the foundry door (top 49)
 L.enemy("cinder_bloom", 97, 49, face_left=True)
-P.lavafall(32.5, 40, LAVA, hazard=False, alpha=0.5)
 
 # =====================================================================================
 # ZONE 2 — La Fonderie Noyée (Ground Pound tablet, tutorial over a safe drop, secret)
@@ -196,15 +195,14 @@ P.scatter(263, 285, 63, 0.35)
 L.enemy("ember_weaver", 282, 63, patrol_tiles=2, face_left=True)
 L.oneway(289, 293, 60, "basalt_ledge")
 L.oneway(296, 301, 57, "basalt_ledge")
-P.lavafall(294.5, 44, 57, hazard=True)        # the lava curtain over the second ledge
+L.solid(293, 44, 296, 51, "basalt")           # stalactite spout
+P.lavafall(294.5, 51, 57, hazard=True)        # the lava curtain over the second ledge
 L.sign(287, 63, "Les chutes de lave brûlent : traversez-les sous Bouclier.")
 L.grapple(306, 52)
 L.grapple(314.5, 50)
 L.grapple(322.5, 51)
 L.shards_line(306, 54, 322, 54, 5)
 L.enemy("ash_wing", 316, 58, patrol_tiles=5)
-for x in (303, 310.5, 318.5, 326, 339):
-    P.lavafall(x + 0.5, 44, LAVA, hazard=False, alpha=0.45)
 R(328, 55, 346)                               # river landing (top 55)
 L.checkpoint(333, 55, "Fleuve souterrain")
 L.light(333, 50, FORGE_GLOW, 90)
@@ -321,13 +319,30 @@ L.gate(515, 28, 1, 6, "shield")
 L.relic(519.5, 32, "Marteau des Anciens")
 L.secret(516, 28, 523, 34, "L'alcôve du marteau !")
 L.light(519.5, 31, "#ff8aa0", 50)
-P.lavafall(508, 18, 36, hazard=False, alpha=0.5)
+
+# =====================================================================================
+# Extra content: checkpoint on the surface, more monsters, props
+# =====================================================================================
+L.checkpoint(357, 36, "Sortie des cheminées")
+L.light(357, 31, FORGE_GLOW, 90)
+L.enemy("magma_gloop", 86, 52, patrol_tiles=3, face_left=True)
+L.enemy("ember_weaver", 158, 52, patrol_tiles=3, face_left=True)
+L.enemy("lava_stalker", 363, 36, patrol_tiles=2, face_left=True)
+L.enemy("forge_bomber", 374, 28, patrol_tiles=5)
+L.enemy("ash_wing", 507, 30, patrol_tiles=3)
+L.enemy("forge_drone", 182, 43, patrol_tiles=4)
+L.enemy("cinder_bloom", 340, 55, face_left=True)
+P.brazier(258.5, 50)
+P.banner(254.5, 50)
+L.decor("steam_pipe", 433, 44)
+P.chains(262, 284, 51, every=5, layer="fg_decor", long_ratio=0.0)
+P.chains(288, 346, 44, every=7, layer="fg_decor", long_ratio=0.3)
 
 # =====================================================================================
 # Ambience: lava glow, chains under forge metal, background columns
 # =====================================================================================
 P.glow_line(0, W, LAVA - 2, every=26)
-P.under_glow(list(d["objects"]))
+P.autodecorate(density=0.32, fg_every=1)
 for x in range(14, W, 41):
     L.decor("obsidian_spire", x + P.rng.random() * 10, 20 + P.rng.random() * 6, "bg_decor", alpha=0.35,
             tint="#ff9a7a", scale=1.5)

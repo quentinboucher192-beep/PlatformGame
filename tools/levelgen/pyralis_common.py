@@ -97,13 +97,11 @@ class Pyra:
         purely decorative falls are drawn faded (alpha) so they read as background."""
         h = y_bottom - y_top
         tint = "#ffffff" if alpha >= 1.0 else "#ffb090"
-        if h <= 6:
-            self.L.decor("lava_fall", x, y_top, layer, scale=max(0.5, h / 4.0), alpha=alpha, tint=tint)
-        else:
-            n = int(h // 4)
-            seg = h / n
-            for i in range(n):
-                self.L.decor("lava_fall", x, y_top + i * seg, layer, scale=seg / 4.0 + 0.05, alpha=alpha, tint=tint)
+        # One sprite (lip on top, splash at the bottom) scaled up to x2; longer falls are stacked.
+        n = max(1, int(-(-h // 8)))
+        seg = h / n
+        for i in range(n):
+            self.L.decor("lava_fall", x, y_top + i * seg, layer, scale=max(0.5, seg / 4.0), alpha=alpha, tint=tint)
         if alpha >= 0.8:
             self.L.light(x, (y_top + y_bottom) / 2, LAVA_GLOW, max(60, h * 10), flicker=0.2)
         if hazard:
@@ -137,6 +135,90 @@ class Pyra:
                     tx = x / T + 1.5 + k * 5 + self.rng.random() * 2
                     self.L.decor("hanging_chain" if self.rng.random() < 0.6 else "hanging_chain_long", tx, bottom,
                                  "bg_decor", sway=1.2)
+
+    # ------------------------------------------------------- automatic decor
+    def autodecorate(self, density=0.3, skip=(), fg_every=0, chain_ceilings=True):
+        """Scatters debris on every exposed terrain top that is not decorated yet, hangs chains
+        under exposed forge-metal ceilings and adds lava bubbles on every lava pool.
+        skip: list of (x0, x1) tile ranges left untouched (arenas dressed by hand...)."""
+        objs = self.L.data["objects"]
+        solids = [o for o in objs if o["type"] == "solid" and o["layer"] == "terrain"
+                  and o.get("props", {}).get("collision", True)]
+        blockers = solids + [o for o in objs if o["type"] in ("power_gate", "door", "oneway")]
+        occupied = {}
+        for o in objs:
+            if o["type"] == "decor":
+                x, y, w, h = o["rect"]
+                gy = round((y + h) / T)
+                occupied.setdefault(gy, []).append((x + w / 2) / T)
+
+        def covered(x, y):  # tile column x just above row y has a blocker?
+            for b in blockers:
+                bx, by, bw, bh = b["rect"]
+                if bx / T <= x < (bx + bw) / T and by / T <= y - 0.5 < (by + bh) / T:
+                    return True
+            return False
+
+        def busy(x, y):
+            return any(abs(x - ox) < 1.6 for ox in occupied.get(int(round(y)), []))
+
+        rnd = self.rng
+        for o in solids:
+            x0, y0, w, h = (v / T for v in o["rect"])
+            if w < 3 or y0 >= self.lava - 1:
+                continue
+            if any(a <= x0 + w / 2 < b for a, b in skip):
+                continue
+            mat = o.get("props", {}).get("material", "basalt")
+            forge = mat == "forge_metal"
+            x = x0 + 0.8 + rnd.random()
+            while x < x0 + w - 0.8:
+                if covered(x, y0) or busy(x, y0):
+                    x += 1.0
+                    continue
+                r = rnd.random()
+                if r < density * 0.25 and x < x0 + w - 2:
+                    name = rnd.choice(FORGE_SMALL if forge else ROCK_TALL + ["ember_crystal", "fire_plant"])
+                    self.L.decor(name, x + 0.5, y0, "bg_decor", flip=rnd.random() < 0.5)
+                    occupied.setdefault(int(round(y0)), []).append(x + 0.5)
+                    x += 3 + rnd.random() * 2
+                elif r < density:
+                    name = rnd.choice(FORGE_SMALL[:3] + ROCK_SMALL if forge else ROCK_SMALL)
+                    self.L.decor(name, x, y0, "bg_decor", flip=rnd.random() < 0.5)
+                    occupied.setdefault(int(round(y0)), []).append(x)
+                    x += 2 + rnd.random() * 1.5
+                else:
+                    x += 1 + rnd.random()
+            if fg_every and w >= 10 and rnd.random() < 0.5:
+                fx = x0 + 2 + rnd.random() * (w - 4)
+                if not covered(fx, y0):
+                    self.L.decor(rnd.choice(["ash_rock_small", "slag_pile", "ash_rock_small"]), fx, y0 + 0.15,
+                                 "fg_decor", alpha=0.95)
+        # chains under exposed forge-metal ceilings
+        if chain_ceilings:
+            for o in solids:
+                if o.get("props", {}).get("material") != "forge_metal":
+                    continue
+                x0, y0, w, h = (v / T for v in o["rect"])
+                bottom = y0 + h
+                if w < 6 or bottom >= self.lava - 2:
+                    continue
+                x = x0 + 1.5 + rnd.random() * 2
+                while x < x0 + w - 1:
+                    below_free = not any(
+                        b["rect"][0] / T <= x < (b["rect"][0] + b["rect"][2]) / T
+                        and b["rect"][1] / T <= bottom + 0.5 < (b["rect"][1] + b["rect"][3]) / T for b in blockers)
+                    if below_free and rnd.random() < 0.35:
+                        self.L.decor("hanging_chain" if rnd.random() < 0.6 else "hanging_chain_long", x, bottom,
+                                     "bg_decor", sway=1.0 + rnd.random())
+                    x += 3 + rnd.random() * 3
+        # bubbling lava pools
+        for o in [o for o in objs if o["type"] == "liquid"]:
+            x, y, w, h = (v / T for v in o["rect"])
+            if y >= self.lava - 0.5:
+                continue
+            self.L.emitter(x, y - 0.5, x + w, y + 0.5, "lava_bubbles", max(1.0, w / 6))
+            self.L.emitter(x, y - 4, x + w, y, "embers_rising", max(0.8, w / 8))
 
     # ------------------------------------------------------------ cinematics
     def intro(self, title, subtitle, caption, nova, cut, pan, low, zoom=0.8):

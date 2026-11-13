@@ -1,0 +1,11443 @@
+{
+ "format": "cosmic.level",
+ "formatVersion": 1,
+ "id": "pyralis_03",
+ "name": "La Fonderie Primordiale",
+ "description": "Au cœur de Pyralis, la fonderie primordiale forge encore des machines sans maître. Réunissez tous vos pouvoirs pour atteindre le fourneau et éteindre le Forgeron Primordial.",
+ "planet": "pyralis",
+ "author": "Cosmic Studio",
+ "version": "1.0",
+ "difficulty": 4,
+ "music": "music/pyralis_level.ogg",
+ "bossMusic": "music/pyralis_boss.ogg",
+ "ambience": "music/pyralis_ambience.ogg",
+ "bounds": [
+  0,
+  0,
+  9344,
+  1344
+ ],
+ "ambientLight": "#9a6a5a",
+ "backgroundColor": "#14090b",
+ "background": [
+  {
+   "texture": "backgrounds/pyralis/sky.png",
+   "factor": [
+    0.0,
+    0.0
+   ],
+   "fill": true
+  },
+  {
+   "texture": "backgrounds/pyralis/far.png",
+   "factor": [
+    0.1,
+    0.05
+   ],
+   "offset": [
+    0,
+    -20
+   ]
+  },
+  {
+   "texture": "backgrounds/pyralis/mid.png",
+   "factor": [
+    0.25,
+    0.12
+   ],
+   "offset": [
+    0,
+    10
+   ]
+  },
+  {
+   "texture": "backgrounds/pyralis/abyss.png",
+   "factor": [
+    0.4,
+    0.3
+   ],
+   "offset": [
+    0,
+    210
+   ],
+   "fillBelow": "#ff8a3d"
+  },
+  {
+   "texture": "backgrounds/pyralis/near.png",
+   "factor": [
+    0.5,
+    0.25
+   ],
+   "offset": [
+    0,
+    60
+   ]
+  },
+  {
+   "texture": "backgrounds/pyralis/fg_embers.png",
+   "factor": [
+    1.15,
+    1.0
+   ],
+   "offset": [
+    0,
+    -330
+   ],
+   "foreground": true,
+   "tint": "#ffffffc0"
+  }
+ ],
+ "timer": {
+  "mode": "limited",
+  "limit": 1200,
+  "onExpire": "gameover",
+  "referenceTime": 420,
+  "challengeMaxDeaths": 0
+ },
+ "medals": {
+  "bronze": {},
+  "silver": {
+   "maxTime": 760
+  },
+  "gold": {
+   "maxTime": 540
+  },
+  "platinum": {
+   "maxTime": 420,
+   "maxDeaths": 0
+  }
+ },
+ "startPowers": [
+  "dash",
+  "wave",
+  "shield",
+  "impulse",
+  "teleport",
+  "glide",
+  "grapple",
+  "ground_pound",
+  "charge_shot"
+ ],
+ "cameraZoom": 1.0,
+ "layers": [
+  {
+   "id": "bg_decor",
+   "name": "Décor arrière",
+   "order": 0,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "terrain",
+   "name": "Terrain",
+   "order": 10,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "gameplay",
+   "name": "Gameplay",
+   "order": 20,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "fg_decor",
+   "name": "Décor avant",
+   "order": 30,
+   "visible": true,
+   "locked": false,
+   "foreground": true
+  }
+ ],
+ "objects": [
+  {
+   "id": "o1",
+   "type": "liquid",
+   "layer": "gameplay",
+   "rect": [
+    0.0,
+    1216.0,
+    9344.0,
+    128.0
+   ],
+   "props": {
+    "kind": "lava"
+   }
+  },
+  {
+   "id": "o2",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    0.0,
+    1120.0,
+    960.0,
+    96.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o3",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    960.0,
+    1120.0,
+    960.0,
+    96.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o4",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1920.0,
+    1120.0,
+    960.0,
+    96.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o5",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    2880.0,
+    1120.0,
+    960.0,
+    96.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o6",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    3840.0,
+    1120.0,
+    960.0,
+    96.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o7",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    4800.0,
+    1120.0,
+    960.0,
+    96.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o8",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    5760.0,
+    1120.0,
+    960.0,
+    96.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o9",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    6720.0,
+    1120.0,
+    960.0,
+    96.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o10",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    7680.0,
+    1120.0,
+    960.0,
+    96.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o11",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    8640.0,
+    1120.0,
+    704.0,
+    96.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o12",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    0.0,
+    1200.0,
+    1280.0,
+    32.0
+   ],
+   "props": {
+    "effect": "lava_bubbles",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o13",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1280.0,
+    1200.0,
+    1280.0,
+    32.0
+   ],
+   "props": {
+    "effect": "lava_bubbles",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o14",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    2560.0,
+    1200.0,
+    1280.0,
+    32.0
+   ],
+   "props": {
+    "effect": "lava_bubbles",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o15",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    3840.0,
+    1200.0,
+    1280.0,
+    32.0
+   ],
+   "props": {
+    "effect": "lava_bubbles",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o16",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    5120.0,
+    1200.0,
+    1280.0,
+    32.0
+   ],
+   "props": {
+    "effect": "lava_bubbles",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o17",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    6400.0,
+    1200.0,
+    1280.0,
+    32.0
+   ],
+   "props": {
+    "effect": "lava_bubbles",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o18",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    7680.0,
+    1200.0,
+    1280.0,
+    32.0
+   ],
+   "props": {
+    "effect": "lava_bubbles",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o19",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    8960.0,
+    1200.0,
+    384.0,
+    32.0
+   ],
+   "props": {
+    "effect": "lava_bubbles",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o20",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    0.0,
+    64.0,
+    1120.0,
+    416.0
+   ],
+   "props": {
+    "effect": "ash_fall",
+    "rate": 1.5
+   }
+  },
+  {
+   "id": "o21",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1120.0,
+    64.0,
+    1120.0,
+    416.0
+   ],
+   "props": {
+    "effect": "ash_fall",
+    "rate": 1.5
+   }
+  },
+  {
+   "id": "o22",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    2240.0,
+    64.0,
+    1120.0,
+    416.0
+   ],
+   "props": {
+    "effect": "ash_fall",
+    "rate": 1.5
+   }
+  },
+  {
+   "id": "o23",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    3360.0,
+    64.0,
+    1120.0,
+    416.0
+   ],
+   "props": {
+    "effect": "ash_fall",
+    "rate": 1.5
+   }
+  },
+  {
+   "id": "o24",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    4480.0,
+    64.0,
+    1120.0,
+    416.0
+   ],
+   "props": {
+    "effect": "ash_fall",
+    "rate": 1.5
+   }
+  },
+  {
+   "id": "o25",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    5600.0,
+    64.0,
+    1120.0,
+    416.0
+   ],
+   "props": {
+    "effect": "ash_fall",
+    "rate": 1.5
+   }
+  },
+  {
+   "id": "o26",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    6720.0,
+    64.0,
+    1120.0,
+    416.0
+   ],
+   "props": {
+    "effect": "ash_fall",
+    "rate": 1.5
+   }
+  },
+  {
+   "id": "o27",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    7840.0,
+    64.0,
+    1120.0,
+    416.0
+   ],
+   "props": {
+    "effect": "ash_fall",
+    "rate": 1.5
+   }
+  },
+  {
+   "id": "o28",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    8960.0,
+    64.0,
+    384.0,
+    416.0
+   ],
+   "props": {
+    "effect": "ash_fall",
+    "rate": 1.5
+   }
+  },
+  {
+   "id": "o29",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    0.0,
+    128.0,
+    48.0,
+    1136.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o30",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    48.0,
+    896.0,
+    352.0,
+    368.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o31",
+   "type": "player_start",
+   "layer": "gameplay",
+   "rect": [
+    139.0,
+    874.0,
+    10.0,
+    22.0
+   ]
+  },
+  {
+   "id": "o32",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    68.0,
+    864.0,
+    24.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "forge_brazier",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o33",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    72.0,
+    856.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff8a3d",
+    "radius": 70,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o34",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    180.0,
+    848.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "burnt_banner",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o35",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    264.0,
+    864.0,
+    48.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "gear_wreck",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o36",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    228.0,
+    872.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "La fonderie primordiale... Chaque pouvoir comptera. Les creusets débordent de lave.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o37",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    400.0,
+    848.0,
+    80.0,
+    416.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o38",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    480.0,
+    800.0,
+    32.0,
+    224.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o39",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    672.0,
+    800.0,
+    32.0,
+    224.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o40",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    480.0,
+    1024.0,
+    224.0,
+    240.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o41",
+   "type": "liquid",
+   "layer": "gameplay",
+   "rect": [
+    512.0,
+    848.0,
+    160.0,
+    176.0
+   ],
+   "props": {
+    "kind": "lava"
+   }
+  },
+  {
+   "id": "o42",
+   "type": "grapple_point",
+   "layer": "gameplay",
+   "rect": [
+    580.0,
+    692.0,
+    24.0,
+    24.0
+   ]
+  },
+  {
+   "id": "o43",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    506.0,
+    746.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o44",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    546.0,
+    722.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o45",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    586.0,
+    714.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o46",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    626.0,
+    722.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o47",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    666.0,
+    746.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o48",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    576.0,
+    824.0,
+    32.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "lava_vent",
+    "alpha": 0.8,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o49",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    64.0,
+    672.0,
+    128.0,
+    32.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o50",
+   "type": "grapple_point",
+   "layer": "gameplay",
+   "rect": [
+    260.0,
+    756.0,
+    24.0,
+    24.0
+   ]
+  },
+  {
+   "id": "o51",
+   "type": "grapple_point",
+   "layer": "gameplay",
+   "rect": [
+    212.0,
+    676.0,
+    24.0,
+    24.0
+   ]
+  },
+  {
+   "id": "o52",
+   "type": "relic",
+   "layer": "gameplay",
+   "rect": [
+    88.0,
+    640.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "value": 1000,
+    "name": "Creuset miniature"
+   }
+  },
+  {
+   "id": "o53",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    122.0,
+    642.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o54",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    146.0,
+    642.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o55",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    170.0,
+    642.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o56",
+   "type": "secret_area",
+   "layer": "gameplay",
+   "rect": [
+    64.0,
+    576.0,
+    128.0,
+    96.0
+   ],
+   "props": {
+    "message": "La niche du fondeur !"
+   }
+  },
+  {
+   "id": "o57",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    104.0,
+    616.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd98a",
+    "radius": 50,
+    "flicker": 0.1,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o58",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    136.0,
+    786.0,
+    16.0,
+    14.0
+   ],
+   "props": {
+    "enemy": "forge_drone",
+    "faceLeft": false,
+    "patrol": 64,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o59",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    704.0,
+    896.0,
+    448.0,
+    368.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o60",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    800.0,
+    608.0,
+    224.0,
+    48.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o61",
+   "type": "laser",
+   "layer": "gameplay",
+   "rect": [
+    744.0,
+    760.0,
+    240.0,
+    16.0
+   ],
+   "rotation": 90,
+   "props": {
+    "onTime": 1.2,
+    "offTime": 1.4,
+    "warnTime": 0.5,
+    "phase": 0.0,
+    "active": true
+   }
+  },
+  {
+   "id": "o62",
+   "type": "laser",
+   "layer": "gameplay",
+   "rect": [
+    840.0,
+    760.0,
+    240.0,
+    16.0
+   ],
+   "rotation": 90,
+   "props": {
+    "onTime": 1.2,
+    "offTime": 1.4,
+    "warnTime": 0.5,
+    "phase": 1.3,
+    "active": true
+   }
+  },
+  {
+   "id": "o63",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    740.0,
+    872.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Les lasers de la fonderie s'allument par cycles : passez quand ils s'éteignent.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o64",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    777.0,
+    886.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "ember_mite",
+    "faceLeft": false,
+    "patrol": 48,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o65",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    905.0,
+    886.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "ember_mite",
+    "faceLeft": true,
+    "patrol": 48,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o66",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    984.0,
+    770.0,
+    16.0,
+    14.0
+   ],
+   "props": {
+    "enemy": "forge_drone",
+    "faceLeft": false,
+    "patrol": 64,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o67",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    1080.0,
+    872.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "enemy": "forge_bulwark",
+    "faceLeft": true,
+    "patrol": 48,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o68",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    789.4965119473233,
+    880.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o69",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    861.0189074159911,
+    872.0,
+    32.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "forge_anvil",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o70",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1064.500946405375,
+    880.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o71",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1152.0,
+    896.0,
+    288.0,
+    368.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o72",
+   "type": "checkpoint",
+   "layer": "gameplay",
+   "rect": [
+    1204.0,
+    848.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "label": "Portes de la fonderie"
+   }
+  },
+  {
+   "id": "o73",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1208.0,
+    808.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff8a3d",
+    "radius": 90,
+    "flicker": 0.1,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o74",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    1274.0,
+    858.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 2
+   }
+  },
+  {
+   "id": "o75",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1309.2805004527593,
+    872.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ember_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o76",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1374.5369743409342,
+    884.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o77",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1408.0,
+    544.0,
+    1024.0,
+    128.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o78",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1444.6135092014347,
+    672.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "sprite": "hanging_chain_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.5900567819799845
+   }
+  },
+  {
+   "id": "o79",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1533.8299479838176,
+    672.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "sprite": "hanging_chain_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.5034980252857608
+   }
+  },
+  {
+   "id": "o80",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1631.7141219600715,
+    672.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "sprite": "hanging_chain_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.424320427495438
+   }
+  },
+  {
+   "id": "o81",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1709.7557248674143,
+    672.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.7602046311411814
+   }
+  },
+  {
+   "id": "o82",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1802.833256022718,
+    672.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.0777301181786139
+   }
+  },
+  {
+   "id": "o83",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1882.138305919931,
+    672.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.6937515498844737
+   }
+  },
+  {
+   "id": "o84",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1965.5768023608648,
+    672.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.8931100166946278
+   }
+  },
+  {
+   "id": "o85",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2058.0816080447007,
+    672.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.4828933627252379
+   }
+  },
+  {
+   "id": "o86",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2126.1024760562273,
+    672.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.9914486609189421
+   }
+  },
+  {
+   "id": "o87",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2224.9467817843306,
+    672.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.3572669328565934
+   }
+  },
+  {
+   "id": "o88",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2293.00855702545,
+    672.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.5119200990973218
+   }
+  },
+  {
+   "id": "o89",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2385.2945004725702,
+    672.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.4837841727463092
+   }
+  },
+  {
+   "id": "o90",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    1488.0,
+    896.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "dx": 80,
+    "dy": 0,
+    "speed": 36,
+    "wait": 0.6,
+    "phase": 0.0,
+    "active": true,
+    "triggered": false,
+    "oneway": false
+   }
+  },
+  {
+   "id": "o91",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    1584.0,
+    896.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "dx": 80,
+    "dy": 0,
+    "speed": 36,
+    "wait": 0.6,
+    "phase": 0.0,
+    "active": true,
+    "triggered": false,
+    "oneway": false
+   }
+  },
+  {
+   "id": "o92",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    1680.0,
+    896.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "dx": 80,
+    "dy": 0,
+    "speed": 36,
+    "wait": 0.6,
+    "phase": 0.0,
+    "active": true,
+    "triggered": false,
+    "oneway": false
+   }
+  },
+  {
+   "id": "o93",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    1776.0,
+    896.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "dx": 80,
+    "dy": 0,
+    "speed": 36,
+    "wait": 0.6,
+    "phase": 0.0,
+    "active": true,
+    "triggered": false,
+    "oneway": false
+   }
+  },
+  {
+   "id": "o94",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    1872.0,
+    896.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "dx": 80,
+    "dy": 0,
+    "speed": 36,
+    "wait": 0.6,
+    "phase": 0.0,
+    "active": true,
+    "triggered": false,
+    "oneway": false
+   }
+  },
+  {
+   "id": "o95",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    1968.0,
+    896.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "dx": 80,
+    "dy": 0,
+    "speed": 36,
+    "wait": 0.6,
+    "phase": 0.0,
+    "active": true,
+    "triggered": false,
+    "oneway": false
+   }
+  },
+  {
+   "id": "o96",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    2064.0,
+    896.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "dx": 80,
+    "dy": 0,
+    "speed": 36,
+    "wait": 0.6,
+    "phase": 0.0,
+    "active": true,
+    "triggered": false,
+    "oneway": false
+   }
+  },
+  {
+   "id": "o97",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    2160.0,
+    896.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "dx": 80,
+    "dy": 0,
+    "speed": 36,
+    "wait": 0.6,
+    "phase": 0.0,
+    "active": true,
+    "triggered": false,
+    "oneway": false
+   }
+  },
+  {
+   "id": "o98",
+   "type": "laser",
+   "layer": "gameplay",
+   "rect": [
+    1360.0,
+    928.0,
+    544.0,
+    16.0
+   ],
+   "rotation": 90,
+   "props": {
+    "onTime": 1.0,
+    "offTime": 1.6,
+    "warnTime": 0.5,
+    "phase": 0.0,
+    "active": true
+   }
+  },
+  {
+   "id": "o99",
+   "type": "laser",
+   "layer": "gameplay",
+   "rect": [
+    1552.0,
+    928.0,
+    544.0,
+    16.0
+   ],
+   "rotation": 90,
+   "props": {
+    "onTime": 1.0,
+    "offTime": 1.6,
+    "warnTime": 0.5,
+    "phase": 0.65,
+    "active": true
+   }
+  },
+  {
+   "id": "o100",
+   "type": "laser",
+   "layer": "gameplay",
+   "rect": [
+    1744.0,
+    928.0,
+    544.0,
+    16.0
+   ],
+   "rotation": 90,
+   "props": {
+    "onTime": 1.0,
+    "offTime": 1.6,
+    "warnTime": 0.5,
+    "phase": 1.3,
+    "active": true
+   }
+  },
+  {
+   "id": "o101",
+   "type": "laser",
+   "layer": "gameplay",
+   "rect": [
+    1936.0,
+    928.0,
+    544.0,
+    16.0
+   ],
+   "rotation": 90,
+   "props": {
+    "onTime": 1.0,
+    "offTime": 1.6,
+    "warnTime": 0.5,
+    "phase": 1.9500000000000002,
+    "active": true
+   }
+  },
+  {
+   "id": "o102",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    1364.0,
+    872.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "La chaîne de coulée avance et recule d'un seul bloc : sautez d'un plateau à l'autre entre deux tirs.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o103",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    1514.0,
+    842.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o104",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    1606.0,
+    842.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o105",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    1698.0,
+    842.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o106",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    1790.0,
+    842.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o107",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    1882.0,
+    842.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o108",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    1974.0,
+    842.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o109",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    2066.0,
+    842.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o110",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    2158.0,
+    842.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o111",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    2250.0,
+    842.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o112",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    1913.0,
+    790.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "ash_wing",
+    "faceLeft": false,
+    "patrol": 128,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o113",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    2336.0,
+    896.0,
+    512.0,
+    368.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o114",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    2378.0,
+    858.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 2
+   }
+  },
+  {
+   "id": "o115",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    2551.0,
+    884.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "lava_stalker",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o116",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    2664.0,
+    884.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "ember_weaver",
+    "faceLeft": true,
+    "patrol": 48,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o117",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2426.543332708605,
+    864.0,
+    48.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "gear_wreck",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o118",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2521.6412042940137,
+    884.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o119",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2577.303728662331,
+    872.0,
+    32.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "forge_anvil",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o120",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2638.389375947026,
+    880.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o121",
+   "type": "checkpoint",
+   "layer": "gameplay",
+   "rect": [
+    2388.0,
+    848.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "label": "Bout de la chaîne"
+   }
+  },
+  {
+   "id": "o122",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2392.0,
+    808.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff8a3d",
+    "radius": 90,
+    "flicker": 0.1,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o123",
+   "type": "grapple_point",
+   "layer": "gameplay",
+   "rect": [
+    2372.0,
+    756.0,
+    24.0,
+    24.0
+   ]
+  },
+  {
+   "id": "o124",
+   "type": "grapple_point",
+   "layer": "gameplay",
+   "rect": [
+    2436.0,
+    644.0,
+    24.0,
+    24.0
+   ]
+  },
+  {
+   "id": "o125",
+   "type": "grapple_point",
+   "layer": "gameplay",
+   "rect": [
+    2468.0,
+    548.0,
+    24.0,
+    24.0
+   ]
+  },
+  {
+   "id": "o126",
+   "type": "relic",
+   "layer": "gameplay",
+   "rect": [
+    1440.0,
+    512.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "value": 1000,
+    "name": "Lingot du Forgeron"
+   }
+  },
+  {
+   "id": "o127",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    1530.0,
+    506.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o128",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    1618.888888888889,
+    506.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o129",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    1707.7777777777778,
+    506.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o130",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    1796.6666666666665,
+    506.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o131",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    1885.5555555555557,
+    506.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o132",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    1974.4444444444443,
+    506.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o133",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    2063.333333333333,
+    506.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o134",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    2152.222222222222,
+    506.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o135",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    2241.1111111111113,
+    506.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o136",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    2330.0,
+    506.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o137",
+   "type": "secret_area",
+   "layer": "gameplay",
+   "rect": [
+    1408.0,
+    448.0,
+    192.0,
+    96.0
+   ],
+   "props": {
+    "message": "Le lingot oublié sur la chaîne !"
+   }
+  },
+  {
+   "id": "o138",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1440.0,
+    488.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd98a",
+    "radius": 60,
+    "flicker": 0.1,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o139",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    1912.0,
+    434.0,
+    16.0,
+    14.0
+   ],
+   "props": {
+    "enemy": "forge_drone",
+    "faceLeft": false,
+    "patrol": 96,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o140",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    1720.0,
+    524.0,
+    16.0,
+    20.0
+   ],
+   "props": {
+    "enemy": "cinder_bloom",
+    "faceLeft": false,
+    "patrol": 96,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o141",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1650.3476293449403,
+    520.0,
+    32.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ash_rock_big",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o142",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1720.30490465387,
+    520.0,
+    32.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ash_rock_big",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o143",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1826.2573506459385,
+    528.0,
+    32.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o144",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1885.0957061984002,
+    480.0,
+    24.0,
+    64.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "basalt_column",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o145",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1940.6790225087016,
+    532.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o146",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1998.2407769745691,
+    520.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ember_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o147",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2036.2712298645827,
+    520.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ember_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o148",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2146.134332272816,
+    532.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o149",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2179.861998875155,
+    512.0,
+    32.0,
+    32.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "skull_rock",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o150",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2249.8096646907898,
+    532.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o151",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2359.29151657701,
+    496.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "obsidian_spire",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o152",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    2848.0,
+    896.0,
+    864.0,
+    368.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o153",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    2816.0,
+    448.0,
+    928.0,
+    96.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o154",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    2848.0,
+    544.0,
+    48.0,
+    224.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o155",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3664.0,
+    544.0,
+    48.0,
+    224.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o156",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    2864.0,
+    768.0,
+    16.0,
+    128.0
+   ],
+   "props": {
+    "open": true
+   }
+  },
+  {
+   "id": "o157",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    3680.0,
+    768.0,
+    16.0,
+    128.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o158",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2992.0,
+    800.0,
+    112.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o159",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3456.0,
+    800.0,
+    112.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o160",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3200.0,
+    688.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o161",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    3032.0,
+    722.0,
+    16.0,
+    14.0
+   ],
+   "props": {
+    "enemy": "forge_drone",
+    "faceLeft": false,
+    "patrol": 64,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o162",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    3512.0,
+    722.0,
+    16.0,
+    14.0
+   ],
+   "props": {
+    "enemy": "forge_drone",
+    "faceLeft": true,
+    "patrol": 64,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o163",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    3129.0,
+    886.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "ember_mite",
+    "faceLeft": false,
+    "patrol": 48,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o164",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    3193.0,
+    886.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "ember_mite",
+    "faceLeft": true,
+    "patrol": 48,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o165",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    3385.0,
+    886.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "ember_mite",
+    "faceLeft": false,
+    "patrol": 48,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o166",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    3449.0,
+    886.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "magma_gloop",
+    "faceLeft": true,
+    "patrol": 64,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o167",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    3064.0,
+    872.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "enemy": "forge_bulwark",
+    "faceLeft": false,
+    "patrol": 48,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o168",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    3512.0,
+    872.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "enemy": "forge_bulwark",
+    "faceLeft": true,
+    "patrol": 48,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o169",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    3271.0,
+    884.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "lava_stalker",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o170",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    3159.0,
+    628.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "forge_bomber",
+    "faceLeft": false,
+    "patrol": 64,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o171",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    3415.0,
+    628.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "forge_bomber",
+    "faceLeft": true,
+    "patrol": 64,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o172",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    3411.0,
+    862.0,
+    26.0,
+    34.0
+   ],
+   "props": {
+    "enemy": "magma_golem",
+    "faceLeft": true,
+    "patrol": 64,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o173",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    3034.0,
+    660.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "fire_wisp",
+    "faceLeft": false,
+    "patrol": 48,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o174",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    3128.0,
+    884.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "ember_weaver",
+    "faceLeft": false,
+    "patrol": 48,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o175",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    3544.0,
+    884.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "ember_weaver",
+    "faceLeft": true,
+    "patrol": 48,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o176",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    3273.0,
+    598.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "ash_wing",
+    "faceLeft": false,
+    "patrol": 64,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o177",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    3223.0,
+    880.0,
+    18.0,
+    16.0
+   ],
+   "props": {
+    "enemy": "lava_burrower",
+    "faceLeft": false,
+    "patrol": 96,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o178",
+   "type": "combat_zone",
+   "layer": "gameplay",
+   "rect": [
+    2944.0,
+    544.0,
+    672.0,
+    352.0
+   ],
+   "props": {
+    "doors": "o156,o157",
+    "waves": "o161,o162,o163,o164,o165,o166;o167,o168,o169,o170,o171;o172,o173,o174,o175,o176,o177",
+    "lockCamera": true,
+    "music": ""
+   }
+  },
+  {
+   "id": "o179",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2948.0,
+    496.0,
+    24.0,
+    48.0
+   ],
+   "rotation": 180,
+   "props": {
+    "sprite": "burnt_banner",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o180",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3588.0,
+    496.0,
+    24.0,
+    48.0
+   ],
+   "rotation": 180,
+   "flipX": true,
+   "props": {
+    "sprite": "burnt_banner",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o181",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2964.0,
+    864.0,
+    24.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "forge_brazier",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o182",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2968.0,
+    856.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff8a3d",
+    "radius": 70,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o183",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3572.0,
+    864.0,
+    24.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "forge_brazier",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o184",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    3576.0,
+    856.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff8a3d",
+    "radius": 70,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o185",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3256.0,
+    860.0,
+    48.0,
+    36.0
+   ],
+   "props": {
+    "sprite": "forge_anvil",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o186",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2983.074061745941,
+    544.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "sprite": "hanging_chain_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.4649041186687506
+   }
+  },
+  {
+   "id": "o187",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3098.8381476680456,
+    544.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.3856081117454244
+   }
+  },
+  {
+   "id": "o188",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3171.4911888932093,
+    544.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "sprite": "hanging_chain_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.0103874944279005
+   }
+  },
+  {
+   "id": "o189",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3294.4527229027417,
+    544.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.227696353427016
+   }
+  },
+  {
+   "id": "o190",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3415.5252398597218,
+    544.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.962094170012572
+   }
+  },
+  {
+   "id": "o191",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3515.101320728021,
+    544.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.7987111186506688
+   }
+  },
+  {
+   "id": "o192",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3595.939020218509,
+    544.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.306705513662751
+   }
+  },
+  {
+   "id": "o193",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    3272.0,
+    632.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff4d1e",
+    "radius": 140,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o194",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    3042.0,
+    762.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 2
+   }
+  },
+  {
+   "id": "o195",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    3506.0,
+    762.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 2
+   }
+  },
+  {
+   "id": "o196",
+   "type": "energy_orb",
+   "layer": "gameplay",
+   "rect": [
+    3274.0,
+    650.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 40
+   }
+  },
+  {
+   "id": "o197",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3712.0,
+    896.0,
+    288.0,
+    368.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o198",
+   "type": "checkpoint",
+   "layer": "gameplay",
+   "rect": [
+    3748.0,
+    848.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "label": "Rideaux de plasma"
+   }
+  },
+  {
+   "id": "o199",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    3752.0,
+    808.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff8a3d",
+    "radius": 90,
+    "flicker": 0.1,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o200",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3840.0,
+    640.0,
+    704.0,
+    96.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o201",
+   "type": "power_gate",
+   "layer": "gameplay",
+   "rect": [
+    3904.0,
+    736.0,
+    16.0,
+    160.0
+   ],
+   "props": {
+    "power": "shield",
+    "respawn": false
+   }
+  },
+  {
+   "id": "o202",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    3844.0,
+    872.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Rideau de plasma : Bouclier. Barrière de phase : Téléportation. Le Bouclier se recharge en 5 s.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o203",
+   "type": "power_gate",
+   "layer": "gameplay",
+   "rect": [
+    4024.0,
+    736.0,
+    16.0,
+    160.0
+   ],
+   "props": {
+    "power": "teleport",
+    "respawn": false
+   }
+  },
+  {
+   "id": "o204",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    4064.0,
+    896.0,
+    192.0,
+    32.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o205",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    4256.0,
+    896.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o206",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    4320.0,
+    896.0,
+    224.0,
+    368.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o207",
+   "type": "laser",
+   "layer": "gameplay",
+   "rect": [
+    4120.0,
+    875.2,
+    144.0,
+    16.0
+   ],
+   "props": {
+    "onTime": 1.0,
+    "offTime": 1.4,
+    "warnTime": 0.5,
+    "phase": 0.0,
+    "active": true
+   }
+  },
+  {
+   "id": "o208",
+   "type": "laser",
+   "layer": "gameplay",
+   "rect": [
+    4112.0,
+    800.0,
+    160.0,
+    16.0
+   ],
+   "rotation": 90,
+   "props": {
+    "onTime": 1.1,
+    "offTime": 1.5,
+    "warnTime": 0.5,
+    "phase": 0.8,
+    "active": true
+   }
+  },
+  {
+   "id": "o209",
+   "type": "power_gate",
+   "layer": "gameplay",
+   "rect": [
+    4416.0,
+    736.0,
+    16.0,
+    160.0
+   ],
+   "props": {
+    "power": "shield",
+    "respawn": false
+   }
+  },
+  {
+   "id": "o210",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    4280.0,
+    786.0,
+    16.0,
+    14.0
+   ],
+   "props": {
+    "enemy": "forge_drone",
+    "faceLeft": false,
+    "patrol": 48,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o211",
+   "type": "energy_orb",
+   "layer": "gameplay",
+   "rect": [
+    4346.0,
+    858.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 40
+   }
+  },
+  {
+   "id": "o212",
+   "type": "power_gate",
+   "layer": "gameplay",
+   "rect": [
+    4064.0,
+    928.0,
+    16.0,
+    96.0
+   ],
+   "props": {
+    "power": "shield",
+    "respawn": false
+   }
+  },
+  {
+   "id": "o213",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    4064.0,
+    1024.0,
+    256.0,
+    240.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o214",
+   "type": "heart_container",
+   "layer": "gameplay",
+   "rect": [
+    4136.0,
+    984.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "hearts": 1
+   }
+  },
+  {
+   "id": "o215",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4170.0,
+    986.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o216",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4194.0,
+    986.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o217",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4218.0,
+    986.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o218",
+   "type": "updraft",
+   "layer": "gameplay",
+   "rect": [
+    4256.0,
+    800.0,
+    64.0,
+    224.0
+   ],
+   "props": {
+    "strength": 230,
+    "vent": true
+   }
+  },
+  {
+   "id": "o219",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    4256.0,
+    800.0,
+    64.0,
+    224.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 2.5
+   }
+  },
+  {
+   "id": "o220",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    4280.0,
+    1000.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffb070",
+    "radius": 70,
+    "flicker": 0.15,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o221",
+   "type": "secret_area",
+   "layer": "gameplay",
+   "rect": [
+    4080.0,
+    928.0,
+    176.0,
+    96.0
+   ],
+   "props": {
+    "message": "Un cœur de cristal sous la fonderie !"
+   }
+  },
+  {
+   "id": "o222",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    4136.0,
+    968.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff8aa0",
+    "radius": 60,
+    "flicker": 0.1,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o223",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    4544.0,
+    896.0,
+    96.0,
+    368.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o224",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    4586.0,
+    858.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 2
+   }
+  },
+  {
+   "id": "o225",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    4640.0,
+    960.0,
+    64.0,
+    304.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o226",
+   "type": "updraft",
+   "layer": "gameplay",
+   "rect": [
+    4640.0,
+    480.0,
+    64.0,
+    480.0
+   ],
+   "props": {
+    "strength": 230,
+    "vent": true
+   }
+  },
+  {
+   "id": "o227",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    4640.0,
+    480.0,
+    64.0,
+    480.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 2.5
+   }
+  },
+  {
+   "id": "o228",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    4664.0,
+    936.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffb070",
+    "radius": 70,
+    "flicker": 0.15,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o229",
+   "type": "laser",
+   "layer": "gameplay",
+   "rect": [
+    4568.0,
+    696.0,
+    144.0,
+    16.0
+   ],
+   "props": {
+    "onTime": 1.2,
+    "offTime": 1.3,
+    "warnTime": 0.5,
+    "phase": 0.0,
+    "active": true
+   }
+  },
+  {
+   "id": "o230",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    4704.0,
+    544.0,
+    96.0,
+    720.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o231",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    4744.0,
+    434.0,
+    16.0,
+    14.0
+   ],
+   "props": {
+    "enemy": "forge_drone",
+    "faceLeft": false,
+    "patrol": 32,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o232",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    4800.0,
+    704.0,
+    64.0,
+    560.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o233",
+   "type": "updraft",
+   "layer": "gameplay",
+   "rect": [
+    4800.0,
+    192.0,
+    64.0,
+    512.0
+   ],
+   "props": {
+    "strength": 230,
+    "vent": true
+   }
+  },
+  {
+   "id": "o234",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    4800.0,
+    192.0,
+    64.0,
+    512.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 2.5
+   }
+  },
+  {
+   "id": "o235",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    4824.0,
+    680.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffb070",
+    "radius": 70,
+    "flicker": 0.15,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o236",
+   "type": "laser",
+   "layer": "gameplay",
+   "rect": [
+    4728.0,
+    408.0,
+    144.0,
+    16.0
+   ],
+   "props": {
+    "onTime": 1.2,
+    "offTime": 1.3,
+    "warnTime": 0.5,
+    "phase": 1.2,
+    "active": true
+   }
+  },
+  {
+   "id": "o237",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    4864.0,
+    352.0,
+    128.0,
+    912.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o238",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    4868.0,
+    328.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Les creusets suspendus : enchaînez les ancrages du Grappin.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o239",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    4596.0,
+    872.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Les cheminées ardentes : planez dans les courants, attention aux lasers.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o240",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    4704.0,
+    112.0,
+    96.0,
+    32.0
+   ],
+   "props": {
+    "material": "obsidian"
+   }
+  },
+  {
+   "id": "o241",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    4704.0,
+    144.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "material": "obsidian"
+   }
+  },
+  {
+   "id": "o242",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    4704.0,
+    208.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "material": "obsidian"
+   }
+  },
+  {
+   "id": "o243",
+   "type": "power_gate",
+   "layer": "gameplay",
+   "rect": [
+    4784.0,
+    144.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "power": "dash",
+    "respawn": false
+   }
+  },
+  {
+   "id": "o244",
+   "type": "relic",
+   "layer": "gameplay",
+   "rect": [
+    4736.0,
+    176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "value": 1000,
+    "name": "Rouage primordial"
+   }
+  },
+  {
+   "id": "o245",
+   "type": "secret_area",
+   "layer": "gameplay",
+   "rect": [
+    4720.0,
+    144.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "message": "Le rouage caché au sommet des cheminées !"
+   }
+  },
+  {
+   "id": "o246",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    4736.0,
+    168.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd98a",
+    "radius": 50,
+    "flicker": 0.1,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o247",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5056.0,
+    512.0,
+    32.0,
+    96.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o248",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5408.0,
+    512.0,
+    32.0,
+    96.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o249",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5056.0,
+    608.0,
+    384.0,
+    32.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o250",
+   "type": "liquid",
+   "layer": "gameplay",
+   "rect": [
+    5088.0,
+    544.0,
+    320.0,
+    64.0
+   ],
+   "props": {
+    "kind": "lava"
+   }
+  },
+  {
+   "id": "o251",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5069.674167096248,
+    640.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.790132904356919
+   }
+  },
+  {
+   "id": "o252",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5117.013257460208,
+    640.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "sprite": "hanging_chain_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.1712604886796614
+   }
+  },
+  {
+   "id": "o253",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5162.585846184825,
+    640.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "sprite": "hanging_chain_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.9919754198753363
+   }
+  },
+  {
+   "id": "o254",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5224.68728025034,
+    640.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "sprite": "hanging_chain_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.9484454120035655
+   }
+  },
+  {
+   "id": "o255",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5275.816891542223,
+    640.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "sprite": "hanging_chain_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.9953413290410995
+   }
+  },
+  {
+   "id": "o256",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5328.4830457522985,
+    640.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "sprite": "hanging_chain_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.861833394710013
+   }
+  },
+  {
+   "id": "o257",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5381.224471622046,
+    640.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "sprite": "hanging_chain_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.330072231171341
+   }
+  },
+  {
+   "id": "o258",
+   "type": "grapple_point",
+   "layer": "gameplay",
+   "rect": [
+    5076.0,
+    324.0,
+    24.0,
+    24.0
+   ]
+  },
+  {
+   "id": "o259",
+   "type": "grapple_point",
+   "layer": "gameplay",
+   "rect": [
+    5204.0,
+    308.0,
+    24.0,
+    24.0
+   ]
+  },
+  {
+   "id": "o260",
+   "type": "grapple_point",
+   "layer": "gameplay",
+   "rect": [
+    5332.0,
+    308.0,
+    24.0,
+    24.0
+   ]
+  },
+  {
+   "id": "o261",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    5082.0,
+    394.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o262",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    5154.0,
+    394.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o263",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    5226.0,
+    394.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o264",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    5298.0,
+    394.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o265",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    5370.0,
+    394.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o266",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    5273.0,
+    438.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "ash_wing",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o267",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5440.0,
+    416.0,
+    32.0,
+    384.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o268",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5472.0,
+    416.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o269",
+   "type": "power_gate",
+   "layer": "gameplay",
+   "rect": [
+    5568.0,
+    416.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "power": "ground_pound",
+    "respawn": false
+   }
+  },
+  {
+   "id": "o270",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5632.0,
+    416.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o271",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5728.0,
+    288.0,
+    64.0,
+    320.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o272",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    5508.0,
+    392.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "La presse : frappez le sol, deux fois.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o273",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    5497.0,
+    566.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "ember_mite",
+    "faceLeft": false,
+    "patrol": 16,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o274",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    5545.0,
+    566.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "ember_mite",
+    "faceLeft": false,
+    "patrol": 16,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o275",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    5593.0,
+    566.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "ember_mite",
+    "faceLeft": false,
+    "patrol": 16,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o276",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    5672.0,
+    552.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "enemy": "forge_bulwark",
+    "faceLeft": true,
+    "patrol": 16,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o277",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5472.0,
+    576.0,
+    128.0,
+    16.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o278",
+   "type": "power_gate",
+   "layer": "gameplay",
+   "rect": [
+    5600.0,
+    576.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "power": "ground_pound",
+    "respawn": false
+   }
+  },
+  {
+   "id": "o279",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5664.0,
+    576.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o280",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    5490.0,
+    538.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 2
+   }
+  },
+  {
+   "id": "o281",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5472.0,
+    736.0,
+    192.0,
+    528.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o282",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5664.0,
+    592.0,
+    416.0,
+    112.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o283",
+   "type": "liquid",
+   "layer": "gameplay",
+   "rect": [
+    5664.0,
+    744.0,
+    384.0,
+    56.0
+   ],
+   "props": {
+    "kind": "lava"
+   }
+  },
+  {
+   "id": "o284",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5664.0,
+    800.0,
+    384.0,
+    464.0
+   ],
+   "props": {
+    "material": "basalt",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o285",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    5984.0,
+    736.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "dx": -320,
+    "dy": 0,
+    "speed": 60,
+    "wait": 1.2,
+    "phase": 0.0,
+    "active": false,
+    "triggered": false,
+    "oneway": false
+   }
+  },
+  {
+   "id": "o286",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6048.0,
+    736.0,
+    224.0,
+    528.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o287",
+   "type": "receptor",
+   "layer": "gameplay",
+   "rect": [
+    6064.0,
+    704.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "targets": "o285",
+    "duration": 0.0
+   }
+  },
+  {
+   "id": "o288",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    6064.0,
+    680.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#8ffff0",
+    "radius": 50,
+    "flicker": 0.1,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o289",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    5556.0,
+    712.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Le conduit de la presse : un Tir chargé sur le récepteur appellera le radeau.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o290",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5699.176136557894,
+    704.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.5436218931916719
+   }
+  },
+  {
+   "id": "o291",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5779.419051970539,
+    704.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.0954106466940317
+   }
+  },
+  {
+   "id": "o292",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5858.873028707231,
+    704.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.2811253687511583
+   }
+  },
+  {
+   "id": "o293",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5928.313533351655,
+    704.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.3894949553160454
+   }
+  },
+  {
+   "id": "o294",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5988.795387115255,
+    704.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.169091287231818
+   }
+  },
+  {
+   "id": "o295",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    5848.0,
+    712.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 90,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o296",
+   "type": "checkpoint",
+   "layer": "gameplay",
+   "rect": [
+    6116.0,
+    688.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "label": "Conduit de la presse"
+   }
+  },
+  {
+   "id": "o297",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    6120.0,
+    648.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff8a3d",
+    "radius": 90,
+    "flicker": 0.1,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o298",
+   "type": "updraft",
+   "layer": "gameplay",
+   "rect": [
+    6208.0,
+    320.0,
+    64.0,
+    416.0
+   ],
+   "props": {
+    "strength": 230,
+    "vent": true
+   }
+  },
+  {
+   "id": "o299",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    6208.0,
+    320.0,
+    64.0,
+    416.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 2.5
+   }
+  },
+  {
+   "id": "o300",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    6232.0,
+    712.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffb070",
+    "radius": 70,
+    "flicker": 0.15,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o301",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    6164.0,
+    712.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Remontez par la cheminée.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o302",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6272.0,
+    480.0,
+    288.0,
+    784.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o303",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6384.0,
+    224.0,
+    384.0,
+    128.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o304",
+   "type": "power_gate",
+   "layer": "gameplay",
+   "rect": [
+    6416.0,
+    352.0,
+    32.0,
+    128.0
+   ],
+   "props": {
+    "power": "dash",
+    "respawn": false
+   }
+  },
+  {
+   "id": "o305",
+   "type": "power_gate",
+   "layer": "gameplay",
+   "rect": [
+    6584.0,
+    352.0,
+    16.0,
+    128.0
+   ],
+   "props": {
+    "power": "teleport",
+    "respawn": false
+   }
+  },
+  {
+   "id": "o306",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6624.0,
+    480.0,
+    144.0,
+    784.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o307",
+   "type": "laser",
+   "layer": "gameplay",
+   "rect": [
+    6624.0,
+    400.0,
+    128.0,
+    16.0
+   ],
+   "rotation": 90,
+   "props": {
+    "onTime": 1.0,
+    "offTime": 1.3,
+    "warnTime": 0.5,
+    "phase": 0.0,
+    "active": true
+   }
+  },
+  {
+   "id": "o308",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6728.0,
+    456.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "enemy": "forge_bulwark",
+    "faceLeft": true,
+    "patrol": 16,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o309",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6330.0,
+    372.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "fire_wisp",
+    "faceLeft": false,
+    "patrol": 48,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o310",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    6308.0,
+    456.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Mur de cristal, barrière de phase, laser... puis le vide : gardez le Grappin prêt.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o311",
+   "type": "grapple_point",
+   "layer": "gameplay",
+   "rect": [
+    6820.0,
+    388.0,
+    24.0,
+    24.0
+   ]
+  },
+  {
+   "id": "o312",
+   "type": "grapple_point",
+   "layer": "gameplay",
+   "rect": [
+    6932.0,
+    372.0,
+    24.0,
+    24.0
+   ]
+  },
+  {
+   "id": "o313",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    6794.0,
+    442.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o314",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    6852.666666666667,
+    442.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o315",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    6911.333333333333,
+    442.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o316",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    6970.0,
+    442.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o317",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6871.0,
+    244.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "forge_bomber",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o318",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7008.0,
+    544.0,
+    96.0,
+    720.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o319",
+   "type": "checkpoint",
+   "layer": "gameplay",
+   "rect": [
+    7044.0,
+    496.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "label": "Antichambre du fourneau"
+   }
+  },
+  {
+   "id": "o320",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    7048.0,
+    456.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff8a3d",
+    "radius": 90,
+    "flicker": 0.1,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o321",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    7018.0,
+    506.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 2
+   }
+  },
+  {
+   "id": "o322",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    7082.0,
+    506.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 2
+   }
+  },
+  {
+   "id": "o323",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7104.0,
+    592.0,
+    32.0,
+    672.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o324",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7136.0,
+    640.0,
+    832.0,
+    624.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o325",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7072.0,
+    128.0,
+    960.0,
+    96.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o326",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7136.0,
+    224.0,
+    48.0,
+    288.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o327",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7920.0,
+    224.0,
+    48.0,
+    288.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o328",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    7152.0,
+    512.0,
+    16.0,
+    128.0
+   ],
+   "props": {
+    "open": true
+   }
+  },
+  {
+   "id": "o329",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    7936.0,
+    512.0,
+    16.0,
+    128.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o330",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    7264.0,
+    544.0,
+    112.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o331",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    7728.0,
+    544.0,
+    112.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o332",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    7472.0,
+    432.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o333",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    7720.0,
+    464.0,
+    48.0,
+    48.0
+   ],
+   "props": {
+    "enemy": "forge_core",
+    "faceLeft": true,
+    "patrol": 192,
+    "dormant": true,
+    "boss": true
+   }
+  },
+  {
+   "id": "o334",
+   "type": "camera_zone",
+   "layer": "gameplay",
+   "rect": [
+    7136.0,
+    128.0,
+    832.0,
+    576.0
+   ],
+   "props": {
+    "mode": "clamp",
+    "zoom": 0.92
+   }
+  },
+  {
+   "id": "o335",
+   "type": "combat_zone",
+   "layer": "gameplay",
+   "rect": [
+    7216.0,
+    224.0,
+    672.0,
+    416.0
+   ],
+   "props": {
+    "doors": "o328,o329",
+    "waves": "o333",
+    "lockCamera": false,
+    "music": "music/pyralis_boss.ogg",
+    "announce": false
+   }
+  },
+  {
+   "id": "o336",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7220.0,
+    608.0,
+    24.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "forge_brazier",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o337",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    7224.0,
+    600.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff8a3d",
+    "radius": 70,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o338",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7860.0,
+    608.0,
+    24.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "forge_brazier",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o339",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    7864.0,
+    600.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff8a3d",
+    "radius": 70,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o340",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7528.0,
+    604.0,
+    48.0,
+    36.0
+   ],
+   "props": {
+    "sprite": "forge_anvil",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o341",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7336.0,
+    608.0,
+    48.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "gear_wreck",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o342",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7752.0,
+    608.0,
+    48.0,
+    32.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "gear_wreck",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o343",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    7544.0,
+    376.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 180,
+    "flicker": 0.08,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o344",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    7314.0,
+    506.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 2
+   }
+  },
+  {
+   "id": "o345",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    7778.0,
+    506.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 2
+   }
+  },
+  {
+   "id": "o346",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7968.0,
+    640.0,
+    224.0,
+    624.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o347",
+   "type": "checkpoint",
+   "layer": "gameplay",
+   "rect": [
+    8020.0,
+    592.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "label": "Falaise du creuset"
+   }
+  },
+  {
+   "id": "o348",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    8024.0,
+    552.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff8a3d",
+    "radius": 90,
+    "flicker": 0.1,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o349",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    8192.0,
+    704.0,
+    64.0,
+    560.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o350",
+   "type": "updraft",
+   "layer": "gameplay",
+   "rect": [
+    8192.0,
+    288.0,
+    64.0,
+    416.0
+   ],
+   "props": {
+    "strength": 230,
+    "vent": true
+   }
+  },
+  {
+   "id": "o351",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    8192.0,
+    288.0,
+    64.0,
+    416.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 2.5
+   }
+  },
+  {
+   "id": "o352",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    8216.0,
+    680.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffb070",
+    "radius": 70,
+    "flicker": 0.15,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o353",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    8256.0,
+    448.0,
+    128.0,
+    816.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o354",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    8424.0,
+    338.0,
+    16.0,
+    14.0
+   ],
+   "props": {
+    "enemy": "forge_drone",
+    "faceLeft": false,
+    "patrol": 48,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o355",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    8512.0,
+    384.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o356",
+   "type": "power_gate",
+   "layer": "gameplay",
+   "rect": [
+    8608.0,
+    384.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "power": "ground_pound",
+    "respawn": false
+   }
+  },
+  {
+   "id": "o357",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    8656.0,
+    384.0,
+    240.0,
+    16.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o358",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    8896.0,
+    384.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o359",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    8960.0,
+    384.0,
+    384.0,
+    16.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o360",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    8512.0,
+    400.0,
+    64.0,
+    864.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o361",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    8576.0,
+    528.0,
+    416.0,
+    736.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o362",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    8992.0,
+    400.0,
+    352.0,
+    864.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o363",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    9312.0,
+    0.0,
+    32.0,
+    384.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o364",
+   "type": "exit",
+   "layer": "gameplay",
+   "rect": [
+    9132.0,
+    320.0,
+    40.0,
+    64.0
+   ],
+   "props": {
+    "locked": false
+   }
+  },
+  {
+   "id": "o365",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    9144.0,
+    312.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd98a",
+    "radius": 140,
+    "flicker": 0.1,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o366",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    9044.0,
+    352.0,
+    24.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "forge_brazier",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o367",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    9048.0,
+    344.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff8a3d",
+    "radius": 70,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o368",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    9252.0,
+    352.0,
+    24.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "forge_brazier",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o369",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    9256.0,
+    344.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff8a3d",
+    "radius": 70,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o370",
+   "type": "power_gate",
+   "layer": "gameplay",
+   "rect": [
+    8704.0,
+    400.0,
+    16.0,
+    128.0
+   ],
+   "props": {
+    "power": "wave",
+    "respawn": false
+   }
+  },
+  {
+   "id": "o371",
+   "type": "power_gate",
+   "layer": "gameplay",
+   "rect": [
+    8768.0,
+    400.0,
+    16.0,
+    128.0
+   ],
+   "props": {
+    "power": "shield",
+    "respawn": false
+   }
+  },
+  {
+   "id": "o372",
+   "type": "power_gate",
+   "layer": "gameplay",
+   "rect": [
+    8832.0,
+    400.0,
+    16.0,
+    128.0
+   ],
+   "props": {
+    "power": "teleport",
+    "respawn": false
+   }
+  },
+  {
+   "id": "o373",
+   "type": "heart_container",
+   "layer": "gameplay",
+   "rect": [
+    8872.0,
+    488.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "hearts": 1
+   }
+  },
+  {
+   "id": "o374",
+   "type": "updraft",
+   "layer": "gameplay",
+   "rect": [
+    8896.0,
+    288.0,
+    64.0,
+    240.0
+   ],
+   "props": {
+    "strength": 230,
+    "vent": true
+   }
+  },
+  {
+   "id": "o375",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    8896.0,
+    288.0,
+    64.0,
+    240.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 2.5
+   }
+  },
+  {
+   "id": "o376",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    8920.0,
+    504.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffb070",
+    "radius": 70,
+    "flicker": 0.15,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o377",
+   "type": "secret_area",
+   "layer": "gameplay",
+   "rect": [
+    8592.0,
+    400.0,
+    400.0,
+    128.0
+   ],
+   "props": {
+    "message": "Le second cœur de cristal, au cœur de la falaise !"
+   }
+  },
+  {
+   "id": "o378",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    8872.0,
+    472.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff8aa0",
+    "radius": 60,
+    "flicker": 0.1,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o379",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    8618.0,
+    490.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o380",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    8642.0,
+    490.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o381",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    8666.0,
+    490.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o382",
+   "type": "checkpoint",
+   "layer": "gameplay",
+   "rect": [
+    4564.0,
+    848.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "label": "Cheminées ardentes"
+   }
+  },
+  {
+   "id": "o383",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    4568.0,
+    808.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff8a3d",
+    "radius": 90,
+    "flicker": 0.1,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o384",
+   "type": "checkpoint",
+   "layer": "gameplay",
+   "rect": [
+    5492.0,
+    368.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "label": "La presse"
+   }
+  },
+  {
+   "id": "o385",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    5496.0,
+    328.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff8a3d",
+    "radius": 90,
+    "flicker": 0.1,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o386",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    202.0,
+    858.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o387",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    255.33333333333331,
+    858.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o388",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    308.66666666666663,
+    858.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o389",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    362.0,
+    858.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o390",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    746.0,
+    842.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o391",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    834.0,
+    842.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o392",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    922.0,
+    842.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o393",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    1010.0,
+    842.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o394",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    1098.0,
+    842.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o395",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    3002.0,
+    762.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o396",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    3082.0,
+    762.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o397",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    3466.0,
+    762.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o398",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    3546.0,
+    762.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o399",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4074.0,
+    858.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o400",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4127.333333333333,
+    858.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o401",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4180.666666666667,
+    858.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o402",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4234.0,
+    858.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o403",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4666.0,
+    890.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o404",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4666.0,
+    788.6666666666666,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o405",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4666.0,
+    687.3333333333334,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o406",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4666.0,
+    586.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o407",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4826.0,
+    650.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o408",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4826.0,
+    564.6666666666666,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o409",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4826.0,
+    479.33333333333337,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o410",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4826.0,
+    394.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o411",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    5482.0,
+    538.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o412",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    5556.666666666667,
+    538.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o413",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    5631.333333333333,
+    538.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o414",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    5706.0,
+    538.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o415",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    5706.0,
+    714.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o416",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    5770.0,
+    714.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o417",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    5834.0,
+    714.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o418",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    5898.0,
+    714.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o419",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    5962.0,
+    714.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o420",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    6282.0,
+    442.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o421",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    6330.0,
+    442.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o422",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    6378.0,
+    442.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o423",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    6618.0,
+    442.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o424",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    6666.0,
+    442.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o425",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    6714.0,
+    442.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o426",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    8218.0,
+    666.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o427",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    8218.0,
+    580.6666666666666,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o428",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    8218.0,
+    495.33333333333337,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o429",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    8218.0,
+    410.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o430",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    8266.0,
+    410.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o431",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    8314.0,
+    410.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o432",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    8362.0,
+    410.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o433",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    345.0,
+    886.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "ember_mite",
+    "faceLeft": true,
+    "patrol": 32,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o434",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    2504.0,
+    872.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "enemy": "forge_bulwark",
+    "faceLeft": true,
+    "patrol": 32,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o435",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    2633.0,
+    886.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "magma_gloop",
+    "faceLeft": false,
+    "patrol": 48,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o436",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    4375.0,
+    884.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "lava_stalker",
+    "faceLeft": true,
+    "patrol": 32,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o437",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    4761.0,
+    310.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "ash_wing",
+    "faceLeft": false,
+    "patrol": 64,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o438",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    4938.0,
+    212.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "fire_wisp",
+    "faceLeft": false,
+    "patrol": 48,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o439",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6873.0,
+    470.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "ash_wing",
+    "faceLeft": false,
+    "patrol": 64,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o440",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    8311.0,
+    212.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "forge_bomber",
+    "faceLeft": false,
+    "patrol": 64,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o441",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    8352.0,
+    428.0,
+    16.0,
+    20.0
+   ],
+   "props": {
+    "enemy": "cinder_bloom",
+    "faceLeft": true,
+    "patrol": 96,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o442",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    8089.0,
+    630.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "ember_mite",
+    "faceLeft": false,
+    "patrol": 32,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o443",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3732.0,
+    864.0,
+    24.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "forge_brazier",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o444",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    3736.0,
+    856.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff8a3d",
+    "radius": 70,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o445",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3812.0,
+    848.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "burnt_banner",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o446",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4516.0,
+    864.0,
+    24.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "forge_brazier",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o447",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    4520.0,
+    856.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff8a3d",
+    "radius": 70,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o448",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4608.0,
+    864.0,
+    32.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "steam_pipe",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o449",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6160.0,
+    712.0,
+    32.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "forge_anvil",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o450",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6268.0,
+    448.0,
+    24.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "forge_brazier",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o451",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    6272.0,
+    440.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff8a3d",
+    "radius": 70,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o452",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6984.0,
+    512.0,
+    32.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "steam_pipe",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o453",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    3836.1047756088433,
+    736.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.7976859983990203
+   }
+  },
+  {
+   "id": "o454",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    3893.6688139939133,
+    736.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.1774592355383051
+   }
+  },
+  {
+   "id": "o455",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    3993.568970873219,
+    736.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.122703590133927
+   }
+  },
+  {
+   "id": "o456",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    4059.5077730800576,
+    736.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.5034263976882007
+   }
+  },
+  {
+   "id": "o457",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    4142.2916982699735,
+    736.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.1908790972484118
+   }
+  },
+  {
+   "id": "o458",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    4199.481896487665,
+    736.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.6351703870256713
+   }
+  },
+  {
+   "id": "o459",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    4258.498183726004,
+    736.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.723870025819862
+   }
+  },
+  {
+   "id": "o460",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    4331.732045349654,
+    736.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.6305150113470233
+   }
+  },
+  {
+   "id": "o461",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    4425.2978739724995,
+    736.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.3126123321695875
+   }
+  },
+  {
+   "id": "o462",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    4512.688109038266,
+    736.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.2017285358988645
+   }
+  },
+  {
+   "id": "o463",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    6387.21767882872,
+    352.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.1625589294185465
+   }
+  },
+  {
+   "id": "o464",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    6464.318900947602,
+    352.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.6792118567585737
+   }
+  },
+  {
+   "id": "o465",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    6546.637067936289,
+    352.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.8721333064170038
+   }
+  },
+  {
+   "id": "o466",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    6632.444752882639,
+    352.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.4993992585542566
+   }
+  },
+  {
+   "id": "o467",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    6697.272525088506,
+    352.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.7600852187401848
+   }
+  },
+  {
+   "id": "o468",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    76.92007289207149,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
+   "id": "o469",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    431.37240633071644,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
+   "id": "o470",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    844.4010903866473,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
+   "id": "o471",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1193.7805716285318,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
+   "id": "o472",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1577.2726407609744,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
+   "id": "o473",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1939.6085253374924,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
+   "id": "o474",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2373.057102406661,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
+   "id": "o475",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2716.713815231821,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
+   "id": "o476",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    3100.5448128806734,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
+   "id": "o477",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    3490.3544133248033,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
+   "id": "o478",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    3884.210293299398,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
+   "id": "o479",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    4232.961368040727,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
+   "id": "o480",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    4673.716983838559,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
+   "id": "o481",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    5024.442616643845,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
+   "id": "o482",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    5379.899778531764,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
+   "id": "o483",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    5825.299216764941,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
+   "id": "o484",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    6191.628042125605,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
+   "id": "o485",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    6534.858769297505,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
+   "id": "o486",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    6986.10325425105,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
+   "id": "o487",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    7358.085449753173,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
+   "id": "o488",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    7683.2624482332385,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
+   "id": "o489",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    8057.576959374406,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
+   "id": "o490",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    8520.079468985923,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
+   "id": "o491",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    8846.41110684828,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
+   "id": "o492",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    9265.83384916413,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 120,
+    "flicker": 0.12,
+    "bloom": false
+   }
+  },
+  {
+   "id": "o493",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4.684086915478268,
+    104.0,
+    32.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_big",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o494",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    108.71408031020292,
+    872.0,
+    32.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "forge_anvil",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o495",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    227.8459125560435,
+    884.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o496",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    331.195270417325,
+    884.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o497",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    155.4359444202821,
+    882.4,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 0.95,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o498",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    519.018448933441,
+    1000.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "fire_plant",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o499",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    593.4522998539896,
+    1012.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o500",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    625.5492034652043,
+    1012.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o501",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    645.5482206264528,
+    1014.4000000000001,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 0.95,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o502",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    74.1880853577638,
+    660.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o503",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    938.7695834332441,
+    884.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o504",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1037.6105584236518,
+    880.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o505",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    1007.5113497269119,
+    886.4,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 0.95,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o506",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    799.9853600591745,
+    584.0,
+    32.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ash_rock_big",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o507",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1258.1010163620545,
+    884.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o508",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    1207.6613929592374,
+    882.4,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 0.95,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o509",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1443.1596077771874,
+    528.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o510",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1596.8349748180788,
+    532.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o511",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2073.919355770172,
+    532.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o512",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2207.8182102566943,
+    528.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o513",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2327.8727410518163,
+    520.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ember_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o514",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2402.8930626394745,
+    872.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "fire_plant",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o515",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2550.824699967685,
+    872.0,
+    32.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "forge_anvil",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o516",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2718.1298360627266,
+    872.0,
+    32.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "forge_anvil",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o517",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    2536.2687760486797,
+    882.4,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 0.95,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o518",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2910.4222267464615,
+    884.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o519",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3095.508250037154,
+    872.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ember_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o520",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3191.6316430187762,
+    880.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o521",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3304.627784255804,
+    884.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o522",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3430.3270941669443,
+    872.0,
+    32.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_big",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o523",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2850.959247612078,
+    436.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o524",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2911.8289328870064,
+    424.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ember_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o525",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3021.2119598366053,
+    432.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o526",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3123.931093737494,
+    436.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o527",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3224.608686765724,
+    424.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "fire_plant",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o528",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3260.440620819556,
+    432.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o529",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3336.3586177231246,
+    436.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o530",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3462.452548715078,
+    436.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o531",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3557.9857976673093,
+    436.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o532",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3646.7646727078004,
+    436.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o533",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3697.8367629755553,
+    416.0,
+    32.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "steam_pipe",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o534",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3768.1397822594145,
+    872.0,
+    32.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_big",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o535",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3835.1150326535017,
+    880.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o536",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3959.806636340733,
+    880.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o537",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3893.8103931515816,
+    624.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o538",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3947.1073178108877,
+    616.0,
+    32.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "forge_anvil",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o539",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3998.230138932342,
+    616.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "fire_plant",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o540",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4050.0925547994734,
+    616.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "fire_plant",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o541",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4139.476474397228,
+    628.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o542",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4166.377262920748,
+    616.0,
+    32.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_big",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o543",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4252.991741596131,
+    616.0,
+    32.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "forge_anvil",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o544",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4309.372024777018,
+    628.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o545",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4339.578575333398,
+    624.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o546",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4403.350552863768,
+    616.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "fire_plant",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o547",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4454.057343528879,
+    616.0,
+    32.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_big",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o548",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    3947.987889725276,
+    630.4,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 0.95,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o549",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4189.506682041015,
+    872.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "fire_plant",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o550",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    4091.9673999999404,
+    886.4,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 0.95,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o551",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4456.746998057512,
+    884.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o552",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4101.240450347756,
+    1008.0,
+    32.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o553",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4147.172791031087,
+    1008.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o554",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4200.425491272934,
+    1000.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ember_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o555",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    4145.06569905289,
+    1010.4000000000001,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 0.95,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o556",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4554.735764260393,
+    864.0,
+    32.0,
+    32.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "steam_pipe",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o557",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4670.354259979299,
+    936.0,
+    32.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ash_rock_big",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o558",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4745.292009082272,
+    520.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ember_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o559",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4837.406215113136,
+    680.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "fire_plant",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o560",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4896.731027582083,
+    328.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "fire_plant",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o561",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4714.187876919974,
+    72.0,
+    24.0,
+    40.0
+   ],
+   "props": {
+    "sprite": "basalt_column_broken",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o562",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5227.5192556152815,
+    592.0,
+    32.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o563",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5324.6960813067735,
+    584.0,
+    32.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "forge_anvil",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o564",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5381.034946505939,
+    592.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o565",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    5204.747887656319,
+    598.4,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 0.95,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o566",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5549.088047233058,
+    564.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o567",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5891.667860027761,
+    568.0,
+    32.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "forge_anvil",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o568",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5977.8344330664995,
+    560.0,
+    32.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "steam_pipe",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o569",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6018.916989198953,
+    576.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o570",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5721.505487466212,
+    784.0,
+    32.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o571",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5784.005465057942,
+    776.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ember_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o572",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5985.177357675617,
+    788.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o573",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6063.327126682088,
+    704.0,
+    32.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "steam_pipe",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o574",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6117.432457504398,
+    712.0,
+    32.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ash_rock_big",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o575",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6351.027615876724,
+    456.0,
+    32.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "forge_anvil",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o576",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6465.7669018876,
+    464.0,
+    32.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o577",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6393.410407377321,
+    208.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o578",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6481.574191292827,
+    200.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "fire_plant",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o579",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6670.405322468971,
+    208.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o580",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    6642.318067404496,
+    214.4,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 0.95,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o581",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7163.389929997798,
+    616.0,
+    32.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "forge_anvil",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o582",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7253.628754809895,
+    608.0,
+    48.0,
+    32.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "gear_wreck",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o583",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7486.0748481826495,
+    608.0,
+    48.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "gear_wreck",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o584",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7602.230994788317,
+    628.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o585",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7696.496289199397,
+    628.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o586",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    7495.515802917249,
+    630.4,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 0.95,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o587",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7127.9376378122015,
+    104.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ember_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o588",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7174.436736619572,
+    104.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ember_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o589",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7269.388505719839,
+    116.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o590",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7550.241938484937,
+    104.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "fire_plant",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o591",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7590.5741912871,
+    104.0,
+    32.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ash_rock_big",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o592",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7653.1770013924515,
+    104.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "fire_plant",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o593",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7678.695057219585,
+    112.0,
+    32.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o594",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7828.755067473234,
+    116.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o595",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7960.312015524657,
+    116.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o596",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    8010.524561124381,
+    104.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "fire_plant",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o597",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    8007.031737330319,
+    624.0,
+    32.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o598",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    8047.927677423024,
+    616.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ember_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o599",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    8106.1002987849515,
+    624.0,
+    32.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "slag_pile",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o600",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    8015.764520392773,
+    630.4,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 0.95,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o601",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    8714.169242125523,
+    344.0,
+    24.0,
+    40.0
+   ],
+   "props": {
+    "sprite": "basalt_column_broken",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o602",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    8845.202638954963,
+    360.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "fire_plant",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o603",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    8761.91422929493,
+    374.4,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 0.95,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o604",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    8970.419082481352,
+    360.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ember_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o605",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    9020.916863946191,
+    360.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "fire_plant",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o606",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    9119.639546269213,
+    336.0,
+    24.0,
+    48.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "obsidian_spire",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o607",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    8679.697109797315,
+    504.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "fire_plant",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o608",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    8846.375821514972,
+    516.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o609",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1491.349435797907,
+    672.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.7837733484274536
+   }
+  },
+  {
+   "id": "o610",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1770.5891708911845,
+    672.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "sprite": "hanging_chain_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.0242968804120294
+   }
+  },
+  {
+   "id": "o611",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2132.658914046615,
+    672.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.8635993258343966
+   }
+  },
+  {
+   "id": "o612",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2180.771740011996,
+    672.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "sprite": "hanging_chain_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.0184077388854456
+   }
+  },
+  {
+   "id": "o613",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2236.541410670567,
+    672.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.0400340584846626
+   }
+  },
+  {
+   "id": "o614",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3043.8374051168494,
+    544.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.0533303238424951
+   }
+  },
+  {
+   "id": "o615",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3214.333835062046,
+    544.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "sprite": "hanging_chain_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.8629011456328106
+   }
+  },
+  {
+   "id": "o616",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3291.5187040418796,
+    544.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "sprite": "hanging_chain_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.4847475767007552
+   }
+  },
+  {
+   "id": "o617",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3386.4358505511173,
+    544.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.374101974019099
+   }
+  },
+  {
+   "id": "o618",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4043.931563354375,
+    736.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.1311301987599482
+   }
+  },
+  {
+   "id": "o619",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4133.971425240975,
+    736.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.6138949566706224
+   }
+  },
+  {
+   "id": "o620",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4188.295764101076,
+    736.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.1379829753044488
+   }
+  },
+  {
+   "id": "o621",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4092.063276988196,
+    928.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.6635466333957074
+   }
+  },
+  {
+   "id": "o622",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5133.97692785339,
+    640.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "sprite": "hanging_chain_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.4828445066265314
+   }
+  },
+  {
+   "id": "o623",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5368.081196004871,
+    640.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.9912523962515902
+   }
+  },
+  {
+   "id": "o624",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5515.605643656154,
+    432.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.7471097043229462
+   }
+  },
+  {
+   "id": "o625",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5678.311698734354,
+    432.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.3932881416689145
+   }
+  },
+  {
+   "id": "o626",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5492.069073612248,
+    592.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "sprite": "hanging_chain_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.8145526751731502
+   }
+  },
+  {
+   "id": "o627",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5763.7507799614905,
+    704.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "sprite": "hanging_chain_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.4174659024162173
+   }
+  },
+  {
+   "id": "o628",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5850.084827762482,
+    704.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.2705062512123009
+   }
+  },
+  {
+   "id": "o629",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5985.959720271456,
+    704.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "sprite": "hanging_chain_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.1744896939086324
+   }
+  },
+  {
+   "id": "o630",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6630.268272895002,
+    352.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "sprite": "hanging_chain_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.9541127744068967
+   }
+  },
+  {
+   "id": "o631",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7094.079817330599,
+    224.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.640529886511592
+   }
+  },
+  {
+   "id": "o632",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7261.399664027971,
+    224.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.3831182775648156
+   }
+  },
+  {
+   "id": "o633",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7324.514901286889,
+    224.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.2934959988174666
+   }
+  },
+  {
+   "id": "o634",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7400.043915281991,
+    224.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.2323455843419389
+   }
+  },
+  {
+   "id": "o635",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7654.664299984329,
+    224.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "hanging_chain",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.382243346017294
+   }
+  },
+  {
+   "id": "o636",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    512.0,
+    840.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "effect": "lava_bubbles",
+    "rate": 1.6666666666666667
+   }
+  },
+  {
+   "id": "o637",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    512.0,
+    784.0,
+    160.0,
+    64.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 1.25
+   }
+  },
+  {
+   "id": "o638",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    5088.0,
+    536.0,
+    320.0,
+    16.0
+   ],
+   "props": {
+    "effect": "lava_bubbles",
+    "rate": 3.3333333333333335
+   }
+  },
+  {
+   "id": "o639",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    5088.0,
+    480.0,
+    320.0,
+    64.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 2.5
+   }
+  },
+  {
+   "id": "o640",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    5664.0,
+    736.0,
+    384.0,
+    16.0
+   ],
+   "props": {
+    "effect": "lava_bubbles",
+    "rate": 4.0
+   }
+  },
+  {
+   "id": "o641",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    5664.0,
+    680.0,
+    384.0,
+    64.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 3.0
+   }
+  },
+  {
+   "id": "o642",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    233.83480435674954,
+    293.9245373485854,
+    36.0,
+    72.0
+   ],
+   "props": {
+    "sprite": "obsidian_spire",
+    "alpha": 0.35,
+    "tint": "#ff9a7a",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o643",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    805.9363914804366,
+    279.9390315261154,
+    36.0,
+    72.0
+   ],
+   "props": {
+    "sprite": "obsidian_spire",
+    "alpha": 0.35,
+    "tint": "#ff9a7a",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o644",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1471.5708664430572,
+    341.10121147811554,
+    36.0,
+    72.0
+   ],
+   "props": {
+    "sprite": "obsidian_spire",
+    "alpha": 0.35,
+    "tint": "#ff9a7a",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o645",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2142.2766372927927,
+    312.1638583453436,
+    36.0,
+    72.0
+   ],
+   "props": {
+    "sprite": "obsidian_spire",
+    "alpha": 0.35,
+    "tint": "#ff9a7a",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o646",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2690.8317728835295,
+    330.9254920938239,
+    36.0,
+    72.0
+   ],
+   "props": {
+    "sprite": "obsidian_spire",
+    "alpha": 0.35,
+    "tint": "#ff9a7a",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o647",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3373.3907446727217,
+    278.4249806152811,
+    36.0,
+    72.0
+   ],
+   "props": {
+    "sprite": "obsidian_spire",
+    "alpha": 0.35,
+    "tint": "#ff9a7a",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o648",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3993.0771910660633,
+    272.99609856169366,
+    36.0,
+    72.0
+   ],
+   "props": {
+    "sprite": "obsidian_spire",
+    "alpha": 0.35,
+    "tint": "#ff9a7a",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o649",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4614.629973197269,
+    310.54119361317885,
+    36.0,
+    72.0
+   ],
+   "props": {
+    "sprite": "obsidian_spire",
+    "alpha": 0.35,
+    "tint": "#ff9a7a",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o650",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5173.806398043992,
+    312.5610971500956,
+    36.0,
+    72.0
+   ],
+   "props": {
+    "sprite": "obsidian_spire",
+    "alpha": 0.35,
+    "tint": "#ff9a7a",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o651",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5790.030172416355,
+    300.8659853563131,
+    36.0,
+    72.0
+   ],
+   "props": {
+    "sprite": "obsidian_spire",
+    "alpha": 0.35,
+    "tint": "#ff9a7a",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o652",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6558.932893819417,
+    317.0068343455175,
+    36.0,
+    72.0
+   ],
+   "props": {
+    "sprite": "obsidian_spire",
+    "alpha": 0.35,
+    "tint": "#ff9a7a",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o653",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7160.2585894825625,
+    307.2418757166618,
+    36.0,
+    72.0
+   ],
+   "props": {
+    "sprite": "obsidian_spire",
+    "alpha": 0.35,
+    "tint": "#ff9a7a",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o654",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7821.024151788839,
+    309.75552052804755,
+    36.0,
+    72.0
+   ],
+   "props": {
+    "sprite": "obsidian_spire",
+    "alpha": 0.35,
+    "tint": "#ff9a7a",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o655",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    8385.831507667339,
+    326.60678785669205,
+    36.0,
+    72.0
+   ],
+   "props": {
+    "sprite": "obsidian_spire",
+    "alpha": 0.35,
+    "tint": "#ff9a7a",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o656",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    9036.885221869376,
+    318.9085686970903,
+    36.0,
+    72.0
+   ],
+   "props": {
+    "sprite": "obsidian_spire",
+    "alpha": 0.35,
+    "tint": "#ff9a7a",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  }
+ ],
+ "events": [
+  {
+   "id": "ev1",
+   "source": "o178",
+   "trigger": "cleared",
+   "once": true,
+   "actions": [
+    {
+     "type": "hint",
+     "params": {
+      "text": "Les creusets refroidissent. Le cœur mécanique est ouvert.",
+      "duration": 3.5
+     }
+    }
+   ],
+   "delay": 0.8
+  },
+  {
+   "id": "ev2",
+   "source": "o333",
+   "trigger": "bossDefeated",
+   "once": true,
+   "actions": [
+    {
+     "type": "hint",
+     "params": {
+      "text": "Le Forgeron Primordial s'éteint. La fonderie se tait enfin.",
+      "duration": 4
+     }
+    },
+    {
+     "type": "shake",
+     "params": {
+      "amount": 0.5
+     }
+    }
+   ],
+   "delay": 1.5,
+   "name": "Forgeron Primordial vaincu"
+  },
+  {
+   "id": "ev3",
+   "source": "o333",
+   "trigger": "bossPhase",
+   "once": false,
+   "actions": [
+    {
+     "type": "shake",
+     "params": {
+      "amount": 0.4
+     }
+    }
+   ]
+  },
+  {
+   "id": "ev4",
+   "source": "o333",
+   "trigger": "bossStart",
+   "once": true,
+   "actions": [
+    {
+     "type": "dialogue",
+     "params": {
+      "speaker": "Nova",
+      "text": "Le cœur de la fonderie... Il faut l'éteindre !",
+      "duration": 3.5
+     }
+    }
+   ]
+  },
+  {
+   "id": "ev5",
+   "source": "level",
+   "trigger": "levelStart",
+   "once": true,
+   "actions": [
+    {
+     "type": "hint",
+     "params": {
+      "text": "Atteignez le fourneau au cœur de la fonderie.",
+      "duration": 4
+     }
+    }
+   ]
+  },
+  {
+   "id": "ev6",
+   "source": "level",
+   "trigger": "time",
+   "once": true,
+   "actions": [
+    {
+     "type": "hint",
+     "params": {
+      "text": "Plus que 5 minutes !",
+      "duration": 3
+     }
+    }
+   ],
+   "params": {
+    "seconds": 900
+   }
+  }
+ ],
+ "intro": {
+  "skippable": true,
+  "letterbox": true,
+  "steps": [
+   {
+    "type": "fade",
+    "duration": 0.01,
+    "params": {
+     "to": 1
+    }
+   },
+   {
+    "type": "cut",
+    "duration": 0.01,
+    "params": {
+     "x": 3840,
+     "y": 480
+    }
+   },
+   {
+    "type": "zoom",
+    "duration": 0.01,
+    "params": {
+     "zoom": 0.8
+    }
+   },
+   {
+    "type": "fade",
+    "duration": 1.6,
+    "wait": false,
+    "params": {
+     "to": 0
+    }
+   },
+   {
+    "type": "text",
+    "duration": 4.0,
+    "wait": false,
+    "params": {
+     "text": "PYRALIS",
+     "subtitle": "La Fonderie Primordiale"
+    }
+   },
+   {
+    "type": "camera",
+    "duration": 6.0,
+    "params": {
+     "x": 7520,
+     "y": 416,
+     "ease": "inOutSine"
+    }
+   },
+   {
+    "type": "text",
+    "duration": 3.5,
+    "wait": false,
+    "params": {
+     "text": "Ici, les Anciens forgeaient des étoiles. La fonderie, elle, ne s'est jamais arrêtée.",
+     "style": "caption"
+    }
+   },
+   {
+    "type": "camera",
+    "duration": 3.0,
+    "params": {
+     "x": 5280,
+     "y": 960,
+     "ease": "inOutCubic"
+    }
+   },
+   {
+    "type": "shake",
+    "duration": 0.6,
+    "wait": false,
+    "params": {
+     "amount": 0.35
+    }
+   },
+   {
+    "type": "wait",
+    "duration": 0.6
+   },
+   {
+    "type": "zoom",
+    "duration": 3.0,
+    "wait": false,
+    "params": {
+     "zoom": 1.0
+    }
+   },
+   {
+    "type": "camera",
+    "duration": 3.0,
+    "params": {
+     "start": true,
+     "ease": "inOutCubic"
+    }
+   },
+   {
+    "type": "spawnPlayer",
+    "duration": 0.9
+   },
+   {
+    "type": "dialogue",
+    "duration": 3.6,
+    "params": {
+     "speaker": "Nova",
+     "text": "Toute la fonderie tremble... Le cœur bat encore, là-bas. Allons-y."
+    }
+   }
+  ]
+ },
+ "outro": {
+  "skippable": true,
+  "letterbox": true,
+  "steps": [
+   {
+    "type": "zoom",
+    "duration": 1.4,
+    "wait": false,
+    "params": {
+     "zoom": 1.4
+    }
+   },
+   {
+    "type": "camera",
+    "duration": 1.4,
+    "params": {
+     "player": true
+    }
+   },
+   {
+    "type": "text",
+    "duration": 3.0,
+    "wait": false,
+    "params": {
+     "text": "FONDERIE ÉTEINTE",
+     "subtitle": "Pyralis — La Fonderie Primordiale"
+    }
+   },
+   {
+    "type": "playerAnim",
+    "duration": 2.2,
+    "params": {
+     "anim": "victory"
+    }
+   },
+   {
+    "type": "flash",
+    "duration": 0.6,
+    "params": {
+     "color": "#ffe0b0"
+    }
+   },
+   {
+    "type": "fade",
+    "duration": 0.9,
+    "params": {
+     "to": 1
+    }
+   }
+  ]
+ },
+ "metadata": {
+  "generator": "tools/levelgen/pyralis_03.py"
+ },
+ "killY": 1264
+}

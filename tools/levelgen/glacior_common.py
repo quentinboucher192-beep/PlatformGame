@@ -31,7 +31,11 @@ def deco(L, name, x, y, layer="bg_decor", **kw):
     return L.decor(name, x, y, layer, **kw)
 
 
-def flora(L, rng, x0, x1, y, density=0.35, layer="bg_decor", tall=True, ruins=False, avoid=()):
+CAVE_SMALL = ["ice_crystal", "frost_flower", "snow_rock_small", "ice_crystal", "frozen_bones", "frost_flower"]
+CAVE_TALL = ["ice_spire", "ice_crystal_big", "snow_rock_big", "ice_spire", "ice_crystal_big"]
+
+
+def flora(L, rng, x0, x1, y, density=0.35, layer="bg_decor", tall=True, ruins=False, avoid=(), cave=False):
     """Scatter snowy vegetation, rocks and crystals on a ground strip (tiles).
 
     `avoid` is a list of (xa, xb) ranges kept free (signs, checkpoints, tablets)."""
@@ -42,11 +46,11 @@ def flora(L, rng, x0, x1, y, density=0.35, layer="bg_decor", tall=True, ruins=Fa
             continue
         r = rng.random()
         if r < density * 0.32 and tall:
-            pool = TALL + (RUIN_TALL if ruins else [])
+            pool = (CAVE_TALL if cave else TALL) + (RUIN_TALL if ruins else [])
             deco(L, rng.choice(pool), x + rng.random() * 0.6, y, layer, flip=rng.random() < 0.5)
             x += 3 + rng.random() * 2
         elif r < density:
-            deco(L, rng.choice(SMALL), x + rng.random() * 0.6, y, layer, flip=rng.random() < 0.5)
+            deco(L, rng.choice(CAVE_SMALL if cave else SMALL), x + rng.random() * 0.6, y, layer, flip=rng.random() < 0.5)
             x += 2
         else:
             x += 1
@@ -125,7 +129,11 @@ def boss_arena(L, x0, x1, floor_y, ceil_y, boss_kind, boss_x, boss_y, platforms,
     x0..x1: outer walls (3 tiles thick each); floor top at `floor_y`; ceiling bottom at `ceil_y`.
     `materials` = list of (xa, xb, material) floor strips; `platforms` = (xa, xb, y, style)."""
     for xa, xb, mat in materials:
-        L.solid(xa, floor_y, xb, L.data["bounds"][3] // T, mat)
+        if mat == "glacier_ice":  # frozen lake: a slippery ice layer over the rock
+            L.solid(xa, floor_y, xb, floor_y + 2, mat)
+            L.solid(xa, floor_y + 2, xb, L.data["bounds"][3] // T, "snow_rock", deco=False)
+        else:
+            L.solid(xa, floor_y, xb, L.data["bounds"][3] // T, mat)
     L.solid(x0 - 4, ceil_y - 6, x1 + 4, ceil_y, ceiling_material)
     L.solid(x0, ceil_y, x0 + 3, floor_y - door_h, ceiling_material)
     L.solid(x1 - 3, ceil_y, x1, floor_y - door_h, ceiling_material)
