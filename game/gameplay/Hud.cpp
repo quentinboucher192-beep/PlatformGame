@@ -234,7 +234,7 @@ void Hud::drawInteractPrompt(UIContext& ui, GameWorld& w, const WorldView& view)
 }
 
 void Hud::drawMessages(UIContext& ui, GameWorld& w) {
-    float hintY = ui.screenH() - ui.s(150);
+    float hintY = ui.screenH() - ui.s(w.activeBoss() ? 210 : 150);
     for (const auto& m : w.messages()) {
         float a = std::min({1.0f, m.age / 0.3f, (m.duration - m.age) / 0.5f});
         if (a <= 0.0f) continue;

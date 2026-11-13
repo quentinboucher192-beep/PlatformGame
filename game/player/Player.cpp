@@ -404,8 +404,10 @@ void Player::tryJump(GameWorld& w, const PlayerInput& in) {
         w.emit("player", "jump");
         return;
     }
-    int wd = state_ == PlayerState::WallSlide ? wallDir_ : wallDirection(w);
-    if (wd != 0 && !inWater) {
+    // Wall jump only while sliding / falling along a wall: when rising against a wall
+    // the jump button keeps its double-jump meaning (climbing ledges feels natural).
+    int wd = state_ == PlayerState::WallSlide ? wallDir_ : (vel.y >= -20.0f ? wallDirection(w) : 0);
+    if (wd != 0 && !inWater && (state_ == PlayerState::WallSlide || airJumpsLeft_ == 0 || vel.y > 40.0f)) {
         vel = {-static_cast<float>(wd) * cfg_.wallJumpVelocity.x, cfg_.wallJumpVelocity.y};
         facing = -static_cast<float>(wd);
         wallJumpLockTimer_ = cfg_.wallJumpLock;
