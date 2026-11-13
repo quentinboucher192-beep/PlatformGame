@@ -29,7 +29,7 @@
 | Empreinte du mot de passe | D1 `player_credentials` | personne | vie du compte |
 | Sessions (empreintes, dates, client) | D1 `player_sessions` | le joueur (export) | 30 jours après expiration / révocation |
 | Records (temps, catégorie, morts, dégâts, objets, version) | D1 `records` | records vérifiés : tous ; autres : le joueur | vie du compte |
-| Replays (trajectoire + événements) | R2 `replays/` + D1 `replay_metadata` | records vérifiés des profils publics | vie du compte |
+| Replays (commandes de jeu pendant le niveau, trajectoire, événements) | R2 `replays/` + D1 `replay_metadata` | records vérifiés des profils publics | vie du compte |
 | Avatar personnalisé (PNG contrôlé) | R2 `avatars/` | tous | jusqu'au changement d'avatar |
 | Amis et demandes | D1 `player_friends` | les deux joueurs concernés | jusqu'au retrait |
 | Journal de sécurité (action, empreinte d'IP) | D1 `audit_log` | opérateurs | 180 jours |

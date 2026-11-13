@@ -3,15 +3,19 @@
 // digests below are checked by the Linux/GCC and Windows/MSVC builds of the CI).
 
 #include <cstdio>
+#include <cstdlib>
 #include <functional>
 #include <vector>
 
 #include "engine/audio/AudioSystem.h"
+#include "engine/core/FileUtil.h"
 #include "engine/core/Random.h"
 #include "engine/resources/ResourceManager.h"
 #include "game/content/ContentDatabase.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/InputFrame.h"
+#include "game/online/LevelFingerprint.h"
+#include "game/online/Replay.h"
 #include "tests/TestFramework.h"
 
 using namespace cosmic;
@@ -167,4 +171,92 @@ TEST_CASE("determinism: golden digests are identical on every platform") {
         }
     }
     CHECK(mismatches == 0);
+}
+
+TEST_CASE("determinism: a recorded replay plays the run again exactly") {
+    const auto inputs = scriptedInputs(99, 120 * 30);
+    Sim live("sylvanox_01");
+    ReplayRecorder rec;
+    std::string hash = std::string(64, 'a');
+    if (auto text = FileUtil::readText(live.content.level("sylvanox_01")->path))
+        if (auto fp = fingerprintRankedLevel(live.content, Json::parse(*text))) hash = fp->hash;
+    rec.begin("sylvanox_01", hash, makeUuidV4(), live.w->gameplaySeed());
+    for (const auto& in : inputs) {
+        InputFrame f = in;
+        if (live.w->cinematic().active() && live.w->cinematic().skippable()) f.flags |= InputFrame::SkipCinematic;
+        rec.recordInput(f);
+        stepWorld(*live.w, f, kSimDt);
+        rec.tick(*live.w);
+    }
+    rec.finish(*live.w, live.w->timer().elapsed());
+    const uint64_t liveFinal = simulationStateHash(*live.w);
+    ReplayData data = rec.take();
+    CHECK(data.exact());
+    CHECK(data.checks.size() >= 60);
+    // Through the file format (compressed container, run-length encoded inputs).
+    auto bytes = data.encode();
+    std::string err;
+    auto back = ReplayData::decode(bytes, &err);
+    CHECK(back.has_value());
+    CHECK(back->inputs == data.inputs);
+    CHECK(back->seed == data.seed);
+    CHECK(back->checks.size() == data.checks.size());
+    std::printf("  replay de 30 s : %zu octets compressés, %zu sommes de contrôle\n", bytes.size(), back->checks.size());
+    // COSMIC_TEST_REPLAY_OUT=<file.cprz>: keep the file (to watch it with --replay).
+    if (const char* out = std::getenv("COSMIC_TEST_REPLAY_OUT")) FileUtil::writeBinary(Paths::fromUtf8(out), bytes);
+
+    Sim view("sylvanox_01");
+    ReplaySimulator sim(*back, *view.w);
+    // The viewer also runs display updates at its own rate.
+    while (sim.step()) view.w->update(1.0f / 50.0f);
+    CHECK(sim.finished());
+    CHECK(!sim.desynced());
+    CHECK(sim.checksPassed() == back->checks.size());
+    CHECK(simulationStateHash(*view.w) == liveFinal);
+
+    // A replay of another level content desynchronises (and says when).
+    ReplayData tampered = *back;
+    tampered.seed ^= 1;
+    Sim other("sylvanox_01");
+    ReplaySimulator bad(tampered, *other.w);
+    while (bad.step()) {
+    }
+    // The seed only matters once randomness is used: the run must still be detected or equal.
+    if (bad.desynced()) CHECK(bad.desyncTick() > 0);
+
+    ReplayData edited = *back;
+    edited.inputs[400].held ^= 1u << static_cast<int>(Action::Jump);
+    edited.inputs[400].pressed ^= 1u << static_cast<int>(Action::Jump);
+    Sim third("sylvanox_01");
+    ReplaySimulator cheat(edited, *third.w);
+    while (cheat.step()) {
+    }
+    CHECK(cheat.desynced());
+    CHECK(cheat.desyncTick() > 400);
+    CHECK(cheat.desyncTick() <= 400 + ReplayData::kCheckTicks);
+}
+
+TEST_CASE("determinism: replay files reject inconsistent input sections") {
+    ReplayData d;
+    d.levelId = "x";
+    d.levelHash = std::string(64, 'b');
+    d.attemptId = makeUuidV4();
+    d.frames.push_back({});
+    d.inputs.assign(120, InputFrame{});
+    d.checks.push_back({60, 1});
+    auto raw = d.serialize();
+    CHECK(ReplayData::parse(raw).has_value());
+    CHECK(ReplayData::parse(raw)->formatVersion == 2);
+    // Truncated.
+    auto cut = raw;
+    cut.resize(cut.size() - 5);
+    CHECK(!ReplayData::parse(cut).has_value());
+    // Without inputs the file stays a version 1 trace.
+    ReplayData trace = d;
+    trace.inputs.clear();
+    trace.checks.clear();
+    auto v1 = ReplayData::parse(trace.serialize());
+    CHECK(v1.has_value());
+    CHECK(v1->formatVersion == 1);
+    CHECK(!v1->exact());
 }

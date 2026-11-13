@@ -166,8 +166,9 @@ private:
         };
         point("Compte", "La section ONLINE (classements et WORKSHOP) demande un compte. Le jeu, lui, n'en a jamais besoin : la "
                         "campagne et les records locaux restent jouables hors ligne.");
-        point("Ce qui est partagé", "Votre pseudonyme, votre avatar, vos temps et le replay de vos meilleurs runs (la trajectoire de votre "
-                                    "personnage, pas une vidéo). Le mot de passe n'est conservé que sous forme d'empreinte irréversible.");
+        point("Ce qui est partagé", "Votre pseudonyme, votre avatar, vos temps et le replay de vos meilleurs runs (les commandes de jeu "
+                                    "et la trajectoire de votre personnage pendant le niveau, pas une vidéo). Le mot de passe n'est "
+                                    "conservé que sous forme d'empreinte irréversible.");
         point("Localisation", "Uniquement le pays que vous choisissez, si vous le choisissez. Sur le globe, vous apparaissez au centre de "
                               "ce pays : jamais de position GPS, jamais d'adresse. Vous pouvez la masquer à tout moment.");
         point("Vos droits", "Vous pouvez masquer votre profil, exporter vos données ou supprimer votre compte depuis les paramètres en ligne.");

@@ -52,6 +52,7 @@ private:
     std::unique_ptr<GameWorld> world_;
     GameRenderer renderer_;
     Hud hud_;
+    std::shared_ptr<ReplayData> lastReplay_;  // exact replay of the finished run (results screen)
     bool mounted_ = false;
     bool ended_ = false;
     bool loadFailed_ = false;

@@ -411,10 +411,12 @@ export async function uploadReplay(ctx: Ctx): Promise<Response> {
     let analysis: ReplayAnalysis;
     let frameCount = 0;
     let durationMs = 0;
+    let formatVersion = 1;
     try {
         const replay = parseReplay(await inflateContainer(data));
         frameCount = replay.frames.length;
         durationMs = replay.durationMs;
+        formatVersion = replay.formatVersion;
         analysis = analyzeReplay(replay, r, version);
     } catch (e) {
         if (!(e instanceof ReplayError)) throw e;
@@ -428,7 +430,7 @@ export async function uploadReplay(ctx: Ctx): Promise<Response> {
     // R2 is private: the object is only ever served through GET /records/{id}/replay.
     await ctx.env.STORAGE.put(key, data, {
         httpMetadata: { contentType: "application/octet-stream" },
-        customMetadata: { record_id: r.id, sha256: digest, format: "CPRZ/1" },
+        customMetadata: { record_id: r.id, sha256: digest, format: "CPRZ/CPRP" },
     });
     const status = analysis.ok ? "VERIFIED" : "REJECTED";
     try {
@@ -436,9 +438,9 @@ export async function uploadReplay(ctx: Ctx): Promise<Response> {
             ctx.env.DB.prepare(
                 `INSERT INTO replay_metadata (id, record_id, player_id, attempt_id, storage_key, file_size, sha256, format_version,
                    frame_count, duration_ms, verification_status, analysis, created_at)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, 1, ?8, ?9, ?10, ?11, ?12)`,
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?13, ?8, ?9, ?10, ?11, ?12)`,
             ).bind(replayId, r.id, r.player_id, r.attempt_id, key, data.byteLength, digest, frameCount, durationMs, status,
-                JSON.stringify(analysis), nowIso()),
+                JSON.stringify(analysis), nowIso(), formatVersion),
             ctx.env.DB.prepare("UPDATE records SET replay_id = ?1 WHERE player_id = ?2 AND attempt_id = ?3").bind(replayId, r.player_id, r.attempt_id),
         ]);
     } catch (e) {

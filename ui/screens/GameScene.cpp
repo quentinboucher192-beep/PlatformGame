@@ -44,6 +44,8 @@ void GameScene::onEnter() {
                      g_.settings.graphics.particleQuality == 0 ? 0.4f : g_.settings.graphics.particleQuality == 1 ? 0.7f : 1.0f};
     world_ = std::make_unique<GameWorld>(ws, WorldMode::Play);
     world_->load(level_);
+    // Same randomness for every player of this level (and in its replays).
+    world_->seedGameplay(levelSeed(levelId_));
     if (opt_.spawn) world_->startAt(*opt_.spawn);
     if (const LevelRecord* rec = g_.records.get(levelId_)) world_->setReferenceSplits(rec->bestSplits);
     renderer_.build(g_.app.renderer(), res, *world_);
@@ -59,7 +61,7 @@ void GameScene::onEnter() {
         if (const LevelFingerprint* fp = g_.online.fingerprints().get(g_.content, levelId_)) {
             fingerprint_ = *fp;
             attemptId_ = makeUuidV4();
-            recorder_.begin(levelId_, fp->hash, attemptId_);
+            recorder_.begin(levelId_, fp->hash, attemptId_, world_->gameplaySeed());
             world_->eventObserver = [this](const std::string& src, const std::string& trig) { recorder_.onWorldEvent(src, trig); };
         }
     }
@@ -122,21 +124,24 @@ void GameScene::fixedUpdate(float dt) {
     if (!world_) return;
     PlayerInput in = g_.app.input().consumePlayerInput();
     if (script_.active()) in = script_.next();
+    // The simulation only ever sees the quantised frame, exactly what a replay stores.
+    InputFrame frame = InputFrame::fromPlayerInput(in);
     // Hold confirm to skip a cinematic.
     if (world_->cinematic().active() && world_->cinematic().skippable()) {
         bool held = g_.app.input().held(Action::MenuConfirm) || g_.app.input().held(Action::Jump);
         skipHold_ = held ? skipHold_ + dt / 0.8f : std::max(0.0f, skipHold_ - dt * 2.0f);
         if (skipHold_ >= 1.0f) {
-            world_->cinematic().skip(*world_);
             skipHold_ = 0.0f;
             g_.app.input().consumePlayerInput();
-            in = PlayerInput{};
+            frame = InputFrame{};
+            frame.flags = InputFrame::SkipCinematic;
         }
     } else {
         skipHold_ = 0.0f;
     }
     hud_.setSkipHold(skipHold_);
-    world_->fixedUpdate(in, dt);
+    if (!ended_) recorder_.recordInput(frame);
+    stepWorld(*world_, frame, kSimDt);
     if (!ended_) recorder_.tick(*world_);
     playTime_ += dt;
     if (!ended_ && world_->state() == WorldState::Completed) finishRun(true);
@@ -177,6 +182,12 @@ void GameScene::finishRun(bool completed) {
     if (completed && fingerprint_ && recorder_.active()) {
         recorder_.finish(*world_, r.time);
         ReplayData replay = recorder_.take();
+        lastReplay_ = std::make_shared<ReplayData>(replay);
+        if (!g_.saveReplayPath.empty()) {
+            auto bytes = replay.encode();
+            if (FileUtil::writeBinary(Paths::fromUtf8(g_.saveReplayPath), bytes))
+                Log::info("Replay enregistré : {} ({} octets)", g_.saveReplayPath, bytes.size());
+        }
         RunCandidate run;
         run.levelId = levelId_;
         run.levelVersion = fingerprint_->version;
@@ -205,6 +216,7 @@ void GameScene::finishRun(bool completed) {
     data.failReason = world_->failReason();
     data.nextLevel = nextLevelId();
     data.editorTest = opt_.editorTest;
+    data.replay = lastReplay_;
     data.fromOnline = opt_.fromOnline;
     data.online = online;
     g_.app.pushScene(std::make_unique<ResultsScene>(g_, *this, std::move(data)));

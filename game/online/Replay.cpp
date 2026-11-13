@@ -102,7 +102,8 @@ std::vector<uint8_t> ReplayData::serialize() const {
     std::vector<uint8_t> o;
     o.reserve(80 + frames.size() * 12 + events.size() * 8);
     o.insert(o.end(), {'C', 'P', 'R', 'P'});
-    putU16(o, kFormatVersion);
+    // Without recorded inputs (trace only) the file stays in version 1.
+    putU16(o, inputs.empty() ? 1 : kFormatVersion);
     putU16(o, sampleHz);
     putU32(o, static_cast<uint32_t>(frames.size()));
     putU32(o, durationMs);
@@ -137,6 +138,38 @@ std::vector<uint8_t> ReplayData::serialize() const {
         o.push_back(e.arg);
         putU16(o, e.value);
     }
+    if (inputs.empty()) return o;
+    // Version 2: seed, run-length encoded inputs, state digests.
+    putU32(o, static_cast<uint32_t>(seed & 0xFFFFFFFFu));
+    putU32(o, static_cast<uint32_t>(seed >> 32));
+    putU16(o, tickHz);
+    putU16(o, 0);
+    putU32(o, static_cast<uint32_t>(inputs.size()));
+    size_t runCountAt = o.size();
+    putU32(o, 0);
+    uint32_t runs = 0;
+    for (size_t i = 0; i < inputs.size();) {
+        size_t j = i + 1;
+        while (j < inputs.size() && j - i < 0xFFFF && inputs[j] == inputs[i]) ++j;
+        const InputFrame& f = inputs[i];
+        putU16(o, static_cast<uint16_t>(j - i));
+        putU16(o, f.held);
+        putU16(o, f.pressed);
+        putU16(o, f.released);
+        o.push_back(static_cast<uint8_t>(f.moveX));
+        o.push_back(static_cast<uint8_t>(f.moveY));
+        o.push_back(f.flags);
+        o.push_back(0);
+        ++runs;
+        i = j;
+    }
+    for (int k = 0; k < 4; ++k) o[runCountAt + k] = static_cast<uint8_t>((runs >> (8 * k)) & 0xFF);
+    putU32(o, static_cast<uint32_t>(checks.size()));
+    for (const auto& c : checks) {
+        putU32(o, c.tick);
+        putU32(o, static_cast<uint32_t>(c.hash & 0xFFFFFFFFu));
+        putU32(o, static_cast<uint32_t>(c.hash >> 32));
+    }
     return o;
 }
 
@@ -147,7 +180,8 @@ std::optional<ReplayData> ReplayData::parse(const std::vector<uint8_t>& raw, std
     }
     const uint8_t* p = raw.data();
     ReplayData d;
-    if (getU16(p + 4) != kFormatVersion) {
+    d.formatVersion = getU16(p + 4);
+    if (d.formatVersion != 1 && d.formatVersion != 2) {
         fail(error, "version de format non prise en charge");
         return std::nullopt;
     }
@@ -176,7 +210,7 @@ std::optional<ReplayData> ReplayData::parse(const std::vector<uint8_t>& raw, std
         return std::nullopt;
     }
     uint64_t need = static_cast<uint64_t>(frameCount) * 12 + static_cast<uint64_t>(eventCount) * 8;
-    if (at + need != raw.size()) {
+    if (d.formatVersion == 1 ? at + need != raw.size() : at + need > raw.size()) {
         fail(error, "taille incohérente");
         return std::nullopt;
     }
@@ -196,6 +230,62 @@ std::optional<ReplayData> ReplayData::parse(const std::vector<uint8_t>& raw, std
         e.arg = p[at + 5];
         e.value = getU16(p + at + 6);
         at += 8;
+    }
+    if (d.formatVersion == 1) return d;
+    // ---- version 2 trailer
+    auto left = [&]() { return raw.size() - at; };
+    if (left() < 20) {
+        fail(error, "section des entrées absente");
+        return std::nullopt;
+    }
+    d.seed = static_cast<uint64_t>(getU32(p + at)) | (static_cast<uint64_t>(getU32(p + at + 4)) << 32);
+    d.tickHz = getU16(p + at + 8);
+    uint32_t tickCount = getU32(p + at + 12);
+    uint32_t runCount = getU32(p + at + 16);
+    at += 20;
+    if (d.tickHz != kSimHz || tickCount == 0 || tickCount > kMaxTicks || runCount == 0 || runCount > tickCount ||
+        static_cast<uint64_t>(runCount) * 12 + 4 > left()) {
+        fail(error, "section des entrées incohérente");
+        return std::nullopt;
+    }
+    d.inputs.reserve(tickCount);
+    for (uint32_t r = 0; r < runCount; ++r) {
+        uint16_t repeat = getU16(p + at);
+        InputFrame f;
+        f.held = getU16(p + at + 2);
+        f.pressed = getU16(p + at + 4);
+        f.released = getU16(p + at + 6);
+        f.moveX = static_cast<int8_t>(p[at + 8]);
+        f.moveY = static_cast<int8_t>(p[at + 9]);
+        f.flags = p[at + 10];
+        at += 12;
+        if (repeat == 0 || d.inputs.size() + repeat > tickCount) {
+            fail(error, "plages d'entrées incohérentes");
+            return std::nullopt;
+        }
+        d.inputs.insert(d.inputs.end(), repeat, f);
+    }
+    if (d.inputs.size() != tickCount || left() < 4) {
+        fail(error, "nombre d'entrées incohérent");
+        return std::nullopt;
+    }
+    uint32_t checkCount = getU32(p + at);
+    at += 4;
+    if (checkCount > tickCount / kCheckTicks + 2 || static_cast<uint64_t>(checkCount) * 12 != left()) {
+        fail(error, "sommes de contrôle incohérentes");
+        return std::nullopt;
+    }
+    d.checks.resize(checkCount);
+    uint32_t prevTick = 0;
+    for (auto& c : d.checks) {
+        c.tick = getU32(p + at);
+        c.hash = static_cast<uint64_t>(getU32(p + at + 4)) | (static_cast<uint64_t>(getU32(p + at + 8)) << 32);
+        at += 12;
+        if (c.tick <= prevTick || c.tick > tickCount) {
+            fail(error, "sommes de contrôle incohérentes");
+            return std::nullopt;
+        }
+        prevTick = c.tick;
     }
     return d;
 }
@@ -255,11 +345,12 @@ ReplayFrame ReplayData::sampleAt(float seconds) const {
 
 // ---------------------------------------------------------------- recorder
 
-void ReplayRecorder::begin(const std::string& levelId, const std::string& levelHash, const std::string& attemptId) {
+void ReplayRecorder::begin(const std::string& levelId, const std::string& levelHash, const std::string& attemptId, uint64_t seed) {
     data_ = ReplayData{};
     data_.levelId = levelId;
     data_.levelHash = levelHash;
     data_.attemptId = attemptId;
+    data_.seed = seed;
     active_ = true;
     started_ = false;
 }
@@ -283,8 +374,20 @@ void ReplayRecorder::sample(const GameWorld& w) {
     data_.frames.push_back(f);
 }
 
+void ReplayRecorder::recordInput(const InputFrame& f) {
+    if (!active_ || data_.inputs.size() >= ReplayData::kMaxTicks) return;
+    data_.inputs.push_back(f);
+}
+
+void ReplayRecorder::check(const GameWorld& w) {
+    auto tick = static_cast<uint32_t>(data_.inputs.size());
+    if (tick == 0 || (!data_.checks.empty() && data_.checks.back().tick == tick)) return;
+    data_.checks.push_back({tick, simulationStateHash(w)});
+}
+
 void ReplayRecorder::tick(const GameWorld& w) {
     if (!active_) return;
+    if (!data_.inputs.empty() && data_.inputs.size() % ReplayData::kCheckTicks == 0) check(w);
     const LevelTimer& timer = w.timer();
     if (!started_) {
         if (!timer.running()) return;
@@ -331,12 +434,33 @@ void ReplayRecorder::onWorldEvent(const std::string& source, const std::string& 
 void ReplayRecorder::finish(const GameWorld& w, float elapsed) {
     if (!active_) return;
     tick(w);
+    check(w);  // the final state always has its digest
     sample(w);
     data_.durationMs = static_cast<uint32_t>(std::lround(elapsed * 1000.0f));
     data_.events.push_back({static_cast<uint32_t>(data_.frames.size() - 1), ReplayEventType::Finish, 0, 0});
     // Events recorded after the last sample point at it.
     for (auto& e : data_.events) e.frame = std::min<uint32_t>(e.frame, static_cast<uint32_t>(data_.frames.size() - 1));
     active_ = false;
+}
+
+ReplaySimulator::ReplaySimulator(const ReplayData& replay, GameWorld& world) : replay_(replay), world_(world) {
+    world_.seedGameplay(replay_.seed);
+}
+
+bool ReplaySimulator::step() {
+    if (finished() || desynced()) return false;
+    stepWorld(world_, replay_.inputs[tick_], kSimDt);
+    ++tick_;
+    while (nextCheck_ < replay_.checks.size() && replay_.checks[nextCheck_].tick <= tick_) {
+        const ReplayCheck& c = replay_.checks[nextCheck_++];
+        if (c.tick != tick_) continue;  // malformed list: ignored
+        if (simulationStateHash(world_) != c.hash) {
+            desyncTick_ = tick_;
+            return false;
+        }
+        ++checksPassed_;
+    }
+    return true;
 }
 
 ReplayData ReplayRecorder::take() {

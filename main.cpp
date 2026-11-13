@@ -20,6 +20,9 @@
 //   --online-open <what>    with --online: open register | login | settings |
 //                           profile:<name> | replay:<name> (automated screenshots)
 //   --online-server <url>   Cosmic Online server to use (else data/online/config.json)
+//   --replay <file.cprz>    play a replay file (exact replays are re-simulated)
+//   --save-replay <file.cprz>
+//                           with --level: save the replay of the run when the level is completed
 //   --online-manifest <file.json>
 //                           write the ranking manifest of the built-in levels (server seed)
 
@@ -31,6 +34,7 @@
 
 #include "engine/core/Application.h"
 #include "engine/core/FileUtil.h"
+#include "game/online/Replay.h"
 #include "engine/core/Log.h"
 #include "engine/core/Paths.h"
 #include "engine/resources/ResourceManager.h"
@@ -143,6 +147,7 @@ int main(int argc, char** argv) {
     GameServices game(app);
     game.loadAll();
     game.inputScript = value("--input");
+    game.saveReplayPath = value("--save-replay");
     game.onlineFocus = value("--online-focus");
     game.onlineOpen = value("--online-open");
     game.online.init(game.settings.online, value("--online-server"));
@@ -186,6 +191,17 @@ int main(int argc, char** argv) {
         app.pushScene(makePlanetMap(game));
     } else if (has("--online")) {
         app.pushScene(makeOnlineRanking(game, value("--online")));
+    } else if (std::string rf = value("--replay"); !rf.empty()) {
+        std::string err;
+        std::optional<ReplayData> rep;
+        if (auto bytes = FileUtil::readBinary(Paths::fromUtf8(rf))) rep = ReplayData::decode(*bytes, &err);
+        else err = "lecture impossible";
+        if (!rep) {
+            Log::error("Replay {} : {}", rf, err);
+            app.pushScene(makeSplashScene(game));
+        } else {
+            app.pushScene(makeLocalReplayViewer(game, std::move(*rep), Paths::toUtf8(Paths::fromUtf8(rf).filename())));
+        }
     } else {
         app.pushScene(makeSplashScene(game));
     }

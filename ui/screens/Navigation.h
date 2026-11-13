@@ -10,6 +10,8 @@
 
 namespace cosmic {
 
+struct ReplayData;
+
 class GameServices;
 
 /// Options for starting a level.
@@ -51,5 +53,7 @@ std::unique_ptr<Scene> makeOnlineAccount(GameServices& g, bool onboarding, bool 
 std::unique_ptr<Scene> makeOnlineSettings(GameServices& g, int tab = 0);
 /// Downloads and plays back the replay of a verified record.
 std::unique_ptr<Scene> makeReplayViewer(GameServices& g, const std::string& recordId);
+/// Plays a replay already in memory (the run just finished, a .cprz file).
+std::unique_ptr<Scene> makeLocalReplayViewer(GameServices& g, ReplayData replay, const std::string& title);
 
 }  // namespace cosmic

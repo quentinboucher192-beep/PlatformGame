@@ -238,6 +238,26 @@ describe("replays", () => {
         return { p, sub, recordId: res.body.data.record.id as string };
     }
 
+    it("accepts exact replays (format 2) and checks their input section", async () => {
+        const sub = submission();
+        const { p, recordId } = await pending("Exact", sub);
+        const good = await buildReplay({ attemptId: sub.attempt_id as string, durationMs: sub.time_ms as number, exact: true });
+        const up = await uploadReplay(p.token, recordId, good);
+        expect(up.status).toBe(201);
+        expect(up.body.data.verification_status).toBe("VERIFIED");
+        expect(up.body.data.analysis.stats.exact).toBe(true);
+        expect(up.body.data.analysis.stats.ticks).toBeGreaterThan(0);
+        const meta = await env.DB.prepare("SELECT format_version FROM replay_metadata WHERE record_id = ?1").bind(recordId).first("format_version");
+        expect(meta).toBe(2);
+        // Inputs shorter than the run itself: inconsistent.
+        const sub2 = submission();
+        const second = await pending("Short", sub2);
+        const short = await buildReplay({ attemptId: sub2.attempt_id as string, durationMs: sub2.time_ms as number, exactTicks: 120 });
+        const bad = await uploadReplay(second.p.token, second.recordId, short);
+        expect(bad.body.data.verification_status).toBe("REJECTED");
+        expect(bad.body.data.analysis.reasons.join(" ")).toContain("plus courtes");
+    });
+
     it("rejects a replay inconsistent with the submitted run", async () => {
         const { p, sub, recordId } = await pending("Nova");
         const replay = await buildReplay({ attemptId: sub.attempt_id as string, durationMs: 60000, deaths: 3 });

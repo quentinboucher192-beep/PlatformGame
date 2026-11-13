@@ -18,7 +18,12 @@
 import { toHex } from "./crypto";
 import type { LevelVersionRow, RecordRow } from "./model";
 
-export const REPLAY_FORMAT_VERSION = 1;
+/** Latest format written by the game. Version 1 (trajectory only) is still accepted. */
+export const REPLAY_FORMAT_VERSION = 2;
+/** Version 2: simulation steps per second and the longest run accepted (2 h of steps). */
+export const REPLAY_TICK_HZ = 120;
+export const REPLAY_MAX_TICKS = 120 * 7200;
+export const REPLAY_CHECK_TICKS = 60;
 export const MAX_REPLAY_UPLOAD = 1024 * 1024; // compressed
 export const MAX_REPLAY_RAW = 4 * 1024 * 1024; // inflated
 
@@ -54,8 +59,22 @@ export interface ReplayEvent {
     value: number;
 }
 
+/**
+ * Exact replay data (format 2): the gameplay seed and the input of every simulation step,
+ * with a digest of the simulation state every 0.5 s. The game re-simulates the run with it;
+ * the server checks its consistency and keeps it for a later server-side re-simulation.
+ */
+export interface ReplayInputs {
+    seed: string; // 16 hex characters
+    tickHz: number;
+    ticks: number;
+    runs: number;
+    checks: number;
+}
+
 export interface Replay {
     formatVersion: number;
+    inputs: ReplayInputs | null;
     sampleHz: number;
     durationMs: number;
     levelHash: string;
@@ -114,7 +133,7 @@ export function parseReplay(raw: Uint8Array): Replay {
     const magic = String.fromCharCode(raw[0]!, raw[1]!, raw[2]!, raw[3]!);
     if (magic !== "CPRP") throw new ReplayError("en-tête CPRP absent");
     const formatVersion = view.getUint16(4, true);
-    if (formatVersion !== REPLAY_FORMAT_VERSION) throw new ReplayError(`version de format ${formatVersion} non prise en charge`);
+    if (formatVersion !== 1 && formatVersion !== 2) throw new ReplayError(`version de format ${formatVersion} non prise en charge`);
     const sampleHz = view.getUint16(6, true);
     const frameCount = view.getUint32(8, true);
     const durationMs = view.getUint32(12, true);
@@ -137,7 +156,7 @@ export function parseReplay(raw: Uint8Array): Replay {
     const gameVersion = readStr(16);
     if (frameCount === 0) throw new ReplayError("aucune image");
     need(frameCount * 12 + eventCount * 8);
-    if (at + frameCount * 12 + eventCount * 8 !== raw.byteLength) throw new ReplayError("taille incohérente");
+    if (formatVersion === 1 && at + frameCount * 12 + eventCount * 8 !== raw.byteLength) throw new ReplayError("taille incohérente");
     const frames: ReplayFrame[] = new Array(frameCount);
     for (let i = 0; i < frameCount; ++i) {
         frames[i] = {
@@ -154,7 +173,40 @@ export function parseReplay(raw: Uint8Array): Replay {
         events[i] = { frame: view.getUint32(at, true), type: raw[at + 4]!, arg: raw[at + 5]!, value: view.getUint16(at + 6, true) };
         at += 8;
     }
-    return { formatVersion, sampleHz, durationMs, levelHash, attemptId, levelId, gameVersion, frames, events };
+    let inputs: ReplayInputs | null = null;
+    if (formatVersion === 2) {
+        // Seed, run-length encoded inputs (12 bytes per run), state digests (12 bytes each).
+        need(20);
+        const seed = view.getUint32(at + 4, true).toString(16).padStart(8, "0") + view.getUint32(at, true).toString(16).padStart(8, "0");
+        const tickHz = view.getUint16(at + 8, true);
+        const ticks = view.getUint32(at + 12, true);
+        const runs = view.getUint32(at + 16, true);
+        at += 20;
+        if (tickHz !== REPLAY_TICK_HZ) throw new ReplayError("fréquence de simulation invalide");
+        if (ticks === 0 || ticks > REPLAY_MAX_TICKS || runs === 0 || runs > ticks) throw new ReplayError("section des entrées incohérente");
+        need(runs * 12 + 4);
+        let total = 0;
+        for (let r = 0; r < runs; ++r) {
+            const repeat = view.getUint16(at, true);
+            if (repeat === 0) throw new ReplayError("plages d'entrées incohérentes");
+            total += repeat;
+            at += 12;
+        }
+        if (total !== ticks) throw new ReplayError("nombre d'entrées incohérent");
+        const checks = view.getUint32(at, true);
+        at += 4;
+        if (checks > Math.floor(ticks / REPLAY_CHECK_TICKS) + 2 || at + checks * 12 !== raw.byteLength)
+            throw new ReplayError("sommes de contrôle incohérentes");
+        let prev = 0;
+        for (let c = 0; c < checks; ++c) {
+            const tick = view.getUint32(at, true);
+            if (tick <= prev || tick > ticks) throw new ReplayError("sommes de contrôle incohérentes");
+            prev = tick;
+            at += 12;
+        }
+        inputs = { seed, tickHz, ticks, runs, checks };
+    }
+    return { formatVersion, inputs, sampleHz, durationMs, levelHash, attemptId, levelId, gameVersion, frames, events };
 }
 
 export interface ReplayAnalysis {
@@ -168,6 +220,9 @@ export interface ReplayAnalysis {
         damage: number;
         max_step_px: number;
         jumps: number;
+        /** Format 2: simulation steps recorded (null for a format 1 trajectory). */
+        ticks: number | null;
+        exact: boolean;
     };
 }
 
@@ -264,9 +319,27 @@ export function analyzeReplay(rep: Replay, record: RecordRow, level: LevelVersio
     }
     if (outOfBounds) reasons.push("position hors du niveau");
     if (tooFast > 0) reasons.push(`${tooFast} déplacement(s) impossible(s)`);
+    // Format 2: the recorded steps cover the intro and the whole run (never less than the
+    // run itself), with a state digest every 0.5 s.
+    if (rep.inputs) {
+        const stepsMs = (rep.inputs.ticks * 1000) / rep.inputs.tickHz;
+        if (stepsMs + 500 < rep.durationMs) reasons.push("entrées enregistrées plus courtes que la partie");
+        if (stepsMs > rep.durationMs + 600_000) reasons.push("entrées enregistrées bien plus longues que la partie");
+        if (rep.inputs.checks < Math.floor(rep.inputs.ticks / REPLAY_CHECK_TICKS)) reasons.push("sommes de contrôle manquantes");
+    }
     return {
         ok: reasons.length === 0,
         reasons,
-        stats: { frames: rep.frames.length, duration_ms: rep.durationMs, deaths, collectibles, damage, max_step_px: Math.round(maxStep), jumps },
+        stats: {
+            frames: rep.frames.length,
+            duration_ms: rep.durationMs,
+            deaths,
+            collectibles,
+            damage,
+            max_step_px: Math.round(maxStep),
+            jumps,
+            ticks: rep.inputs ? rep.inputs.ticks : null,
+            exact: rep.inputs !== null,
+        },
     };
 }

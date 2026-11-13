@@ -269,7 +269,7 @@ ReplayData playLive(const ContentDatabase& content, const LevelData& level, cons
     GameWorld w(ws, WorldMode::Play);
     w.load(level);
     ReplayRecorder rec;
-    rec.begin(level.id, hash, makeUuidV4());
+    rec.begin(level.id, hash, makeUuidV4(), levelSeed(level.id));
     w.eventObserver = [&](const std::string& s, const std::string& t) { rec.onWorldEvent(s, t); };
     float t = 0.0f;
     for (int i = 0; i < 120 * 60 && w.state() != WorldState::Completed; ++i) {

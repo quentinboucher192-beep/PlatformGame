@@ -231,7 +231,7 @@ ReplayData playCorridor(const ContentDatabase& content, float waitSeconds, float
     w.load(level);
     auto fp = fingerprintLevelJson(level.toJson());
     ReplayRecorder rec;
-    rec.begin(level.id, fp->hash, makeUuidV4());
+    rec.begin(level.id, fp->hash, makeUuidV4(), levelSeed(level.id));
     w.eventObserver = [&](const std::string& s, const std::string& t) { rec.onWorldEvent(s, t); };
     const float dt = 1.0f / 120.0f;
     float t = 0.0f;

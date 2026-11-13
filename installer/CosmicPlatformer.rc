@@ -4,8 +4,8 @@
 IDI_ICON1 ICON "app.ico"
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,1,1,0
- PRODUCTVERSION 2,1,1,0
+ FILEVERSION 2,1,2,0
+ PRODUCTVERSION 2,1,2,0
  FILEFLAGSMASK 0x3fL
  FILEFLAGS 0x0L
  FILEOS VOS_NT_WINDOWS32
@@ -18,11 +18,11 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Cosmic Studio"
             VALUE "FileDescription", "Cosmic Platformer"
-            VALUE "FileVersion", "2.1.1"
+            VALUE "FileVersion", "2.1.2"
             VALUE "InternalName", "CosmicPlatformer"
             VALUE "OriginalFilename", "CosmicPlatformer.exe"
             VALUE "ProductName", "Cosmic Platformer"
-            VALUE "ProductVersion", "2.1.1"
+            VALUE "ProductVersion", "2.1.2"
         END
     END
     BLOCK "VarFileInfo"

@@ -121,8 +121,10 @@ jamais annulée : seuls les records encore en attente sont concernés.
 Le client est un programme distribué : il peut être modifié. Le serveur ne fait jamais
 confiance aux données reçues et l'analyse de replay rend la triche coûteuse (il faut fabriquer
 une trajectoire plausible, cohérente avec le niveau, les morts, les objets et le temps), mais
-**elle ne la rend pas impossible** : la trajectoire n'est pas confrontée aux collisions du
-niveau ni re-simulée (le moteur n'est pas déterministe d'un compilateur à l'autre). C'est
-pourquoi les records mondiaux des comptes peu fiables passent par une revue manuelle
-(`/api/v1/admin/records`), et le format de replay est versionné pour permettre une validation
-plus stricte plus tard (re-simulation côté serveur, contrôle des collisions).
+**elle ne la rend pas impossible**. Depuis la version 2.1.2, le moteur est déterministe et
+chaque replay contient les entrées de chaque pas avec des empreintes de l'état : n'importe quel
+joueur peut rejouer exactement un record dans le jeu (une partie fabriquée se désynchronise),
+mais **le serveur ne re-simule pas encore** les replays ; il vérifie leur trajectoire et la
+cohérence de leurs entrées. C'est pourquoi les records mondiaux des comptes peu fiables, sur un
+classement établi, passent par une revue manuelle (`/api/v1/admin/records`). La re-simulation
+côté serveur est prévue plus tard ; les entrées sont déjà conservées pour elle.

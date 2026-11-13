@@ -179,6 +179,12 @@ void ResultsScene::render(float /*alpha*/) {
             bx += bw + ui.s(24);
         }
         std::string back = d_.editorTest ? "Retour à l'éditeur" : d_.fromOnline ? "Retour à ONLINE" : "Sélection des niveaux";
+        if (d_.replay && d_.replay->exact()) {
+            UIContext::ButtonStyle rs;
+            rs.small = true;
+            if (ui.button("watch", {panel.x + ui.s(30), panel.y + ui.s(24), ui.s(250), ui.s(44)}, "Revoir la partie", rs))
+                g_.app.pushScene(makeLocalReplayViewer(g_, *d_.replay, "Votre partie"));
+        }
         if (d_.online && !d_.fromOnline) {
             UIContext::ButtonStyle os;
             os.small = true;

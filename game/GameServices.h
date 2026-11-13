@@ -37,6 +37,8 @@ public:
     UIContext ui;
     /// Scripted input for automated runs (see InputScript), applied to the next level started.
     std::string inputScript;
+    /// --save-replay: file where the replay of a completed run is written (tests, sharing).
+    std::string saveReplayPath;
     /// Automated checks: pseudonym whose globe marker the ranking screen selects.
     std::string onlineFocus;
     /// Automated checks: overlay the ranking screen opens ("register", "login", "settings",

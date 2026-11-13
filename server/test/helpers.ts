@@ -151,6 +151,9 @@ export interface ReplaySpec {
     /** Override the trajectory: (frame index, frame count) -> position. */
     path?: (i: number, n: number) => { x: number; y: number };
     corrupt?: "magic" | "truncated" | "bomb";
+    /** Format 2: number of simulation steps recorded (defaults to the duration + 3 s of intro). */
+    exactTicks?: number;
+    exact?: boolean;
 }
 
 function hexToBytes(hex: string): Uint8Array {
@@ -180,11 +183,18 @@ export async function buildReplay(spec: ReplaySpec): Promise<Uint8Array> {
     for (let c = 0; c < collect; ++c) events.push({ frame: Math.floor(((c + 1) * frames) / (collect + 3)), type: 5, arg: c % 2, value: 0 });
     events.push({ frame: frames - 1, type: 11, arg: 0, value: 0 });
     events.sort((a, b) => a.frame - b.frame);
-    const size = 68 + 1 + levelId.length + 1 + gameVersion.length + frames * 12 + events.length * 8;
+    const exact = spec.exact || spec.exactTicks !== undefined;
+    const ticks = spec.exactTicks ?? Math.round((spec.durationMs / 1000 + 3) * 120);
+    // Inputs: one run of 1000 steps at most (u16 repeat), then a digest every 60 steps.
+    const runs: number[] = [];
+    for (let left = ticks; left > 0; left -= Math.min(left, 1000)) runs.push(Math.min(left, 1000));
+    const checks = Math.floor(ticks / 60);
+    const trailer = exact ? 20 + runs.length * 12 + 4 + checks * 12 : 0;
+    const size = 68 + 1 + levelId.length + 1 + gameVersion.length + frames * 12 + events.length * 8 + trailer;
     const raw = new Uint8Array(size);
     const view = new DataView(raw.buffer);
     raw.set(new TextEncoder().encode(spec.corrupt === "magic" ? "XXXX" : "CPRP"), 0);
-    view.setUint16(4, 1, true);
+    view.setUint16(4, exact ? 2 : 1, true);
     view.setUint16(6, hz, true);
     view.setUint32(8, frames, true);
     view.setUint32(12, spec.durationMs, true);
@@ -216,6 +226,27 @@ export async function buildReplay(spec: ReplaySpec): Promise<Uint8Array> {
         raw[at + 5] = e.arg;
         view.setUint16(at + 6, e.value, true);
         at += 8;
+    }
+    if (exact) {
+        view.setUint32(at, 0x1234, true);
+        view.setUint32(at + 4, 0, true);
+        view.setUint16(at + 8, 120, true);
+        view.setUint32(at + 12, ticks, true);
+        view.setUint32(at + 16, runs.length, true);
+        at += 20;
+        for (const r of runs) {
+            view.setUint16(at, r, true);
+            view.setUint16(at + 2, 2, true); // MoveRight held
+            raw[at + 8] = 127;
+            at += 12;
+        }
+        view.setUint32(at, checks, true);
+        at += 4;
+        for (let c = 1; c <= checks; ++c) {
+            view.setUint32(at, c * 60, true);
+            view.setUint32(at + 4, c, true);
+            at += 12;
+        }
     }
     const body = await deflate(spec.corrupt === "truncated" ? raw.subarray(0, raw.length - 20) : raw);
     const out = new Uint8Array(8 + body.length);

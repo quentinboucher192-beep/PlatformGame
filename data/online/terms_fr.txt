@@ -10,7 +10,7 @@ Pour participer aux classements, vous créez un compte avec un pseudonyme et un 
 - Pseudonyme, avatar, date d'inscription : publics (sauf profil masqué, où seuls le pseudonyme et l'avatar restent visibles dans les classements).
 - Pays (facultatif) et, si vous le souhaitez, une grande région : utilisés uniquement selon votre choix de visibilité (masqué, classements, classements et globe). Sur le globe, vous apparaissez au centre approximatif du pays. Aucune position GPS n'est collectée, aucune adresse n'est jamais déduite.
 - Performances : temps, catégorie, nombre de morts, dégâts subis, objets récupérés, version du jeu et du niveau.
-- Replays : la trajectoire de votre personnage et les événements du run (sauts, morts, objets, pouvoirs), jamais une vidéo ni ce qui se passe sur votre ordinateur. Ils servent à vérifier les records et peuvent être consultés par les autres joueurs pour les records vérifiés (sauf profil masqué).
+- Replays : les commandes de jeu utilisées pendant le niveau (déplacements, sauts, attaques, pouvoirs), la trajectoire de votre personnage et les événements du run (sauts, morts, objets, pouvoirs), jamais une vidéo ni ce qui se passe sur votre ordinateur en dehors du niveau. Ils servent à vérifier les records et peuvent être consultés par les autres joueurs pour les records vérifiés (sauf profil masqué).
 - Sécurité : sessions de connexion (jetons stockés uniquement sous forme d'empreinte), journal des opérations sensibles (connexions, modifications de compte) et limitation du nombre de requêtes. Les adresses IP ne sont jamais conservées en clair, seulement sous forme d'empreinte salée.
 
 4. Finalités et base légale
