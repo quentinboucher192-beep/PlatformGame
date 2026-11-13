@@ -1,0 +1,134 @@
+#pragma once
+
+#include <memory>
+#include <set>
+#include <string>
+#include <vector>
+
+#include "editors/shared/EditorHistory.h"
+#include "editors/shared/PropertyEditor.h"
+#include "engine/core/Scene.h"
+#include "game/gameplay/GameRenderer.h"
+#include "game/gameplay/GameWorld.h"
+#include "game/levels/LevelData.h"
+
+namespace cosmic {
+
+class GameServices;
+
+/// Integrated level editor: layered object placement with snapping, selection,
+/// move / resize / rotate, copy-paste, undo / redo, asset library, property panel,
+/// layers, events, cinematics, level settings, instant test play and autosave.
+class LevelEditorScene : public Scene {
+public:
+    LevelEditorScene(GameServices& g, std::string levelId);
+    ~LevelEditorScene() override;
+
+    void onEnter() override;
+    void onExit() override;
+    void onResume() override;
+    void update(float dt) override;
+    void render(float alpha) override;
+
+private:
+    enum class Tool { Select, Place, Pan };
+    enum class Drag { None, Move, Resize, BoxSelect, Pan, Create };
+    enum class Modal { None, Open, New, Settings, Events, Cinematics, Help, ConfirmQuit };
+    enum class LeftTab { Library, Layers, Objects };
+
+    // ---- document
+    void openLevel(const std::string& id);
+    void newLevel(const std::string& id, const std::string& name);
+    void loadDocument(const LevelData& level, bool builtinSource);
+    bool save();
+    void autosave();
+    void markChanged(const std::string& label);
+    void applyJson(const Json& j);
+    void rebuildPreview();
+    void testPlay(bool fromCamera);
+
+    // ---- editing operations
+    std::string createObject(const PaletteEntry& entry, const Rect& rect);
+    void deleteSelection();
+    void copySelection();
+    void paste(Vec2 at);
+    void duplicateSelection();
+    void rotateSelection(float degrees);
+    void moveSelection(Vec2 delta);
+    LevelObject* primary();
+    std::string objectAt(Vec2 world) const;
+    bool layerEditable(const std::string& layerId) const;
+    float snapFor(const LevelObject& o) const;
+    Vec2 snapPoint(Vec2 p, float grid) const;
+
+    // ---- frame parts
+    void handleViewport(const Rect& viewport);
+    void handleShortcuts();
+    void drawViewport(const Rect& viewport, float alpha);
+    void drawOverlays(const Rect& viewport);
+    void drawToolbar(const Rect& r);
+    void drawLeftPanel(const Rect& r);
+    void drawLibrary(const Rect& r);
+    void drawLayers(const Rect& r);
+    void drawObjectList(const Rect& r);
+    void drawProperties(const Rect& r);
+    void drawStatus(const Rect& r);
+    void drawModal();
+    void modalOpen(const Rect& r);
+    void modalNew(const Rect& r);
+    void modalSettings(const Rect& r);
+    void modalEvents(const Rect& r);
+    void modalCinematics(const Rect& r);
+    void modalHelp(const Rect& r);
+    void flash(const std::string& msg, bool error = false);
+
+    GameServices& g_;
+    std::string requestedId_;
+    LevelData level_;
+    bool builtinSource_ = false;
+    std::string assetRoot_;
+    bool mounted_ = false;
+    bool dirty_ = false;
+    float autosaveTimer_ = 0.0f;
+    std::string lastSaved_;
+    EditorHistory history_;
+
+    std::unique_ptr<GameWorld> world_;
+    GameRenderer renderer_;
+    bool previewDirty_ = true;
+    float previewDelay_ = 0.0f;
+
+    EditorCamera cam_;
+    Rect viewport_;
+    Tool tool_ = Tool::Select;
+    int paletteIndex_ = -1;
+    std::string placeEnemy_;
+    std::string placeDecor_;
+    Drag drag_ = Drag::None;
+    Vec2 dragStartWorld_, dragStartScreen_;
+    Vec2 dragAccum_;
+    int resizeHandle_ = -1;
+    Rect resizeStart_;
+    std::set<std::string> selection_;
+    std::string hovered_;
+    std::string activeLayer_ = "gameplay";
+    bool gridOn_ = true;
+    int gridIndex_ = 1;  // 8, 16, 32
+    std::vector<LevelObject> clipboard_;
+    LeftTab leftTab_ = LeftTab::Library;
+    int libraryCategory_ = 0;
+    std::string pickTarget_;  // property key waiting for an object pick
+    PropertyEditor props_;
+    Modal modal_ = Modal::None;
+    int selectedEvent_ = 0;
+    int cinematicTab_ = 0;
+    int selectedStep_ = 0;
+    std::string newId_, newName_;
+    std::string message_;
+    bool messageError_ = false;
+    float messageTimer_ = 0.0f;
+    float time_ = 0.0f;
+    bool autosaveAvailable_ = false;
+};
+
+}  // namespace cosmic

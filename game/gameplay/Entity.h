@@ -28,7 +28,7 @@ struct RenderContext {
 /// (platforms, hazards, pickups, doors, zones, decor...).
 class LevelEntity {
 public:
-    explicit LevelEntity(const LevelObject& obj) : obj_(obj), box(obj.rect) {}
+    explicit LevelEntity(const LevelObject& obj) : box(obj.rect), obj_(obj) {}
     virtual ~LevelEntity() = default;
 
     const std::string& id() const { return obj_.id; }
