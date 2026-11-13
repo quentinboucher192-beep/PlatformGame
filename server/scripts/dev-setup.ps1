@@ -1,4 +1,4 @@
-# Local Cosmic Online server for development (Windows PowerShell): no Cloudflare account needed.
+﻿# Local Cosmic Online server for development (Windows PowerShell): no Cloudflare account needed.
 #   powershell -ExecutionPolicy Bypass -File scripts\dev-setup.ps1 [-Levels]
 param([switch]$Levels)
 $ErrorActionPreference = "Stop"

@@ -11,6 +11,10 @@
 #include <winhttp.h>
 
 #include <algorithm>
+#include <chrono>
+#include <condition_variable>
+#include <mutex>
+#include <thread>
 
 namespace cosmic {
 
@@ -58,6 +62,55 @@ NetError mapError(DWORD e) {
     }
 }
 
+/// Hard deadline and immediate cancellation for synchronous WinHTTP calls: a watchdog
+/// closes the request handle, which makes the blocking call return at once. (WinHTTP's
+/// own timeouts are also set, but some implementations, such as Wine's, ignore them.)
+class Watchdog {
+public:
+    Watchdog(HINTERNET request, int deadlineMs, std::shared_ptr<std::atomic<bool>> cancel)
+        : request_(request), cancel_(std::move(cancel)), deadline_(std::chrono::steady_clock::now() + std::chrono::milliseconds(deadlineMs)) {
+        thread_ = std::thread([this] { run(); });
+    }
+    ~Watchdog() { stop(); }
+    /// Stops watching; after this the handle is never touched by the watchdog.
+    void stop() {
+        {
+            std::lock_guard<std::mutex> lock(m_);
+            done_ = true;
+        }
+        cv_.notify_all();
+        if (thread_.joinable()) thread_.join();
+    }
+    /// True if the watchdog closed the handle (the owner must not close it again).
+    bool fired() const { return fired_; }
+    NetError reason() const { return reason_; }
+
+private:
+    void run() {
+        std::unique_lock<std::mutex> lock(m_);
+        while (!done_) {
+            cv_.wait_for(lock, std::chrono::milliseconds(40));
+            if (done_) break;
+            bool cancelled = cancel_ && cancel_->load();
+            if (cancelled || std::chrono::steady_clock::now() >= deadline_) {
+                reason_ = cancelled ? NetError::Cancelled : NetError::Timeout;
+                fired_ = true;
+                WinHttpCloseHandle(request_);
+                break;
+            }
+        }
+    }
+    HINTERNET request_;
+    std::shared_ptr<std::atomic<bool>> cancel_;
+    std::chrono::steady_clock::time_point deadline_;
+    std::mutex m_;
+    std::condition_variable cv_;
+    bool done_ = false;
+    std::atomic<bool> fired_{false};
+    NetError reason_ = NetError::None;
+    std::thread thread_;
+};
+
 class WinHttpTransport final : public IHttpTransport {
 public:
     WinHttpTransport() {
@@ -86,12 +139,17 @@ public:
 
     HttpResponse perform(const HttpRequest& rq) override {
         HttpResponse res;
+        DWORD lastError = 0;
         auto fail = [&](NetError e, const std::string& msg) {
             res.status = 0;
             res.body.clear();
             res.error = rq.cancel && rq.cancel->load() ? NetError::Cancelled : e;
-            res.errorMessage = msg;
+            res.errorMessage = lastError ? msg + " (WinHTTP " + std::to_string(lastError) + ")" : msg;
             return res;
+        };
+        auto failLast = [&](const std::string& msg) {
+            lastError = GetLastError();
+            return fail(mapError(lastError), msg);
         };
         if (!session_) return fail(NetError::Other, "WinHTTP indisponible");
         ParsedUrl url;
@@ -100,12 +158,12 @@ public:
         std::string host = url.host;
         if (host.size() > 2 && host.front() == '[') host = host.substr(1, host.size() - 2);
         Handle connect(WinHttpConnect(session_, widen(host).c_str(), static_cast<INTERNET_PORT>(url.port), 0));
-        if (!connect.h) return fail(mapError(GetLastError()), "connexion impossible");
+        if (!connect.h) return failLast("connexion impossible");
         std::wstring method = widen(rq.method);
         std::wstring path = widen(url.pathAndQuery);
         Handle request(WinHttpOpenRequest(connect.h, method.c_str(), path.c_str(), nullptr, WINHTTP_NO_REFERER,
                                           WINHTTP_DEFAULT_ACCEPT_TYPES, url.https ? WINHTTP_FLAG_SECURE : 0));
-        if (!request.h) return fail(mapError(GetLastError()), "requête impossible");
+        if (!request.h) return failLast("requête impossible");
         int connectTimeout = std::min(rq.timeoutMs, 6000);
         WinHttpSetTimeouts(request.h, connectTimeout, connectTimeout, rq.timeoutMs, rq.timeoutMs);
         DWORD redirect = WINHTTP_OPTION_REDIRECT_POLICY_NEVER;
@@ -118,11 +176,42 @@ public:
         std::wstring headers;
         for (const auto& [k, v] : rq.headers) headers += widen(k + ": " + v + "\r\n");
         if (rq.cancel && rq.cancel->load()) return fail(NetError::Cancelled, "annulée");
+        HINTERNET raw = request.h;
+        Watchdog dog(raw, rq.timeoutMs + 500, rq.cancel);
+        HttpResponse out = exchange(raw, rq, headers, res, lastError);
+        dog.stop();
+        if (dog.fired()) {
+            request.h = nullptr;  // already closed by the watchdog
+            out.status = 0;
+            out.body.clear();
+            out.headers.clear();
+            out.error = dog.reason();
+            out.errorMessage = dog.reason() == NetError::Timeout ? "délai dépassé" : "annulée";
+        }
+        return out;
+    }
+
+private:
+    HttpResponse exchange(HINTERNET req, const HttpRequest& rq, const std::wstring& headers, HttpResponse res, DWORD& lastError) {
+        auto fail = [&](NetError e, const std::string& msg) {
+            res.status = 0;
+            res.body.clear();
+            res.error = rq.cancel && rq.cancel->load() ? NetError::Cancelled : e;
+            res.errorMessage = lastError ? msg + " (WinHTTP " + std::to_string(lastError) + ")" : msg;
+            return res;
+        };
+        auto failLast = [&](const std::string& msg) {
+            lastError = GetLastError();
+            return fail(mapError(lastError), msg);
+        };
+        struct {
+            HINTERNET h;
+        } request{req};
         BOOL sent = WinHttpSendRequest(request.h, headers.empty() ? WINHTTP_NO_ADDITIONAL_HEADERS : headers.c_str(),
                                        headers.empty() ? 0 : static_cast<DWORD>(-1L),
                                        rq.body.empty() ? WINHTTP_NO_REQUEST_DATA : const_cast<char*>(rq.body.data()),
                                        static_cast<DWORD>(rq.body.size()), static_cast<DWORD>(rq.body.size()), 0);
-        if (!sent || !WinHttpReceiveResponse(request.h, nullptr)) return fail(mapError(GetLastError()), "échange impossible");
+        if (!sent || !WinHttpReceiveResponse(request.h, nullptr)) return failLast("échange impossible");
         DWORD status = 0, size = sizeof(status);
         WinHttpQueryHeaders(request.h, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER, WINHTTP_HEADER_NAME_BY_INDEX, &status,
                             &size, WINHTTP_NO_HEADER_INDEX);
@@ -138,13 +227,13 @@ public:
         for (;;) {
             if (rq.cancel && rq.cancel->load()) return fail(NetError::Cancelled, "annulée");
             DWORD avail = 0;
-            if (!WinHttpQueryDataAvailable(request.h, &avail)) return fail(mapError(GetLastError()), "lecture impossible");
+            if (!WinHttpQueryDataAvailable(request.h, &avail)) return failLast("lecture impossible");
             if (avail == 0) break;
             if (res.body.size() + avail > rq.maxResponseBytes) return fail(NetError::TooLarge, "réponse trop volumineuse");
             size_t at = res.body.size();
             res.body.resize(at + avail);
             DWORD read = 0;
-            if (!WinHttpReadData(request.h, res.body.data() + at, avail, &read)) return fail(mapError(GetLastError()), "lecture impossible");
+            if (!WinHttpReadData(request.h, res.body.data() + at, avail, &read)) return failLast("lecture impossible");
             res.body.resize(at + read);
         }
         res.status = static_cast<int>(status);
