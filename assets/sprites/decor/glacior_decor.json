@@ -1,0 +1,305 @@
+{
+  "texture": "sprites/decor/glacior_decor.png",
+  "sprites": {
+    "ice_spire": {
+      "rect": [
+        116,
+        0,
+        24,
+        56
+      ],
+      "pivot": [
+        12,
+        56
+      ],
+      "frames": 1,
+      "fps": 0
+    },
+    "icicles": {
+      "rect": [
+        102,
+        116,
+        16,
+        24
+      ],
+      "pivot": [
+        8,
+        0
+      ],
+      "frames": 1,
+      "fps": 0
+    },
+    "icicles_long": {
+      "rect": [
+        26,
+        66,
+        24,
+        48
+      ],
+      "pivot": [
+        12,
+        0
+      ],
+      "frames": 1,
+      "fps": 0
+    },
+    "snow_drift": {
+      "rect": [
+        186,
+        116,
+        48,
+        16
+      ],
+      "pivot": [
+        24,
+        16
+      ],
+      "frames": 1,
+      "fps": 0
+    },
+    "frozen_tree": {
+      "rect": [
+        176,
+        0,
+        32,
+        48
+      ],
+      "pivot": [
+        16,
+        48
+      ],
+      "frames": 1,
+      "fps": 0
+    },
+    "snow_pine": {
+      "rect": [
+        82,
+        0,
+        32,
+        56
+      ],
+      "pivot": [
+        16,
+        56
+      ],
+      "frames": 1,
+      "fps": 0
+    },
+    "ice_crystal": {
+      "rect": [
+        84,
+        116,
+        16,
+        24
+      ],
+      "pivot": [
+        8,
+        24
+      ],
+      "frames": 1,
+      "fps": 0,
+      "glow": "#7ff6ff",
+      "glowRadius": 24,
+      "glowOffset": [
+        0,
+        -11
+      ]
+    },
+    "ice_crystal_big": {
+      "rect": [
+        210,
+        0,
+        32,
+        48
+      ],
+      "pivot": [
+        16,
+        48
+      ],
+      "frames": 1,
+      "fps": 0,
+      "glow": "#7ff6ff",
+      "glowRadius": 44,
+      "glowOffset": [
+        0,
+        -24
+      ]
+    },
+    "frozen_statue": {
+      "rect": [
+        142,
+        0,
+        32,
+        48
+      ],
+      "pivot": [
+        16,
+        48
+      ],
+      "frames": 1,
+      "fps": 0,
+      "glow": "#7ff6ff",
+      "glowRadius": 14,
+      "glowOffset": [
+        0,
+        -38
+      ]
+    },
+    "aurora_lamp": {
+      "rect": [
+        52,
+        66,
+        16,
+        40
+      ],
+      "pivot": [
+        8,
+        40
+      ],
+      "frames": 6,
+      "fps": 4,
+      "glow": "#5dffb0",
+      "glowRadius": 40,
+      "glowOffset": [
+        0,
+        -33
+      ]
+    },
+    "frost_flower": {
+      "rect": [
+        120,
+        116,
+        16,
+        16
+      ],
+      "pivot": [
+        8,
+        16
+      ],
+      "frames": 4,
+      "fps": 6,
+      "glow": "#7ff6ff",
+      "glowRadius": 16,
+      "glowOffset": [
+        0,
+        -10
+      ]
+    },
+    "ice_arch": {
+      "rect": [
+        0,
+        0,
+        80,
+        64
+      ],
+      "pivot": [
+        40,
+        64
+      ],
+      "frames": 1,
+      "fps": 0,
+      "glow": "#7ff6ff",
+      "glowRadius": 18,
+      "glowOffset": [
+        0,
+        -58
+      ]
+    },
+    "frozen_machine": {
+      "rect": [
+        150,
+        66,
+        48,
+        40
+      ],
+      "pivot": [
+        24,
+        40
+      ],
+      "frames": 1,
+      "fps": 0,
+      "glow": "#7ff6ff",
+      "glowRadius": 16,
+      "glowOffset": [
+        -10,
+        -24
+      ]
+    },
+    "frost_banner": {
+      "rect": [
+        0,
+        66,
+        24,
+        48
+      ],
+      "pivot": [
+        12,
+        48
+      ],
+      "frames": 1,
+      "fps": 0
+    },
+    "frozen_bones": {
+      "rect": [
+        0,
+        116,
+        48,
+        24
+      ],
+      "pivot": [
+        24,
+        24
+      ],
+      "frames": 1,
+      "fps": 0
+    },
+    "snow_rock_small": {
+      "rect": [
+        236,
+        116,
+        16,
+        12
+      ],
+      "pivot": [
+        8,
+        12
+      ],
+      "frames": 1,
+      "fps": 0
+    },
+    "snow_rock_big": {
+      "rect": [
+        50,
+        116,
+        32,
+        24
+      ],
+      "pivot": [
+        16,
+        24
+      ],
+      "frames": 1,
+      "fps": 0
+    },
+    "ice_floating": {
+      "rect": [
+        200,
+        66,
+        48,
+        40
+      ],
+      "pivot": [
+        24,
+        20
+      ],
+      "frames": 1,
+      "fps": 0,
+      "glow": "#7ff6ff",
+      "glowRadius": 30,
+      "glowOffset": [
+        0,
+        10
+      ]
+    }
+  }
+}

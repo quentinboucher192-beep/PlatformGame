@@ -80,6 +80,7 @@ class Material:
     drape_l = (0, 0)                   # lip drape length down the exposed left side (x=0, x=1)
     drape_r = (0, 0)
     outline_color = OUT
+    friction = None                    # optional JSON "friction" (0..1, 1 = normal)
 
     def __init__(self):
         self.base_idx = self.make_base_idx()
@@ -237,17 +238,29 @@ class Material:
         return atlas
 
 
-def generate():
+def all_materials():
+    """Sylvanox (v1) + Pyralis + Glacior material classes, in atlas generation order."""
     from tile_materials import MATERIALS
+    from tiles_pyralis import MATERIALS as PYRALIS
+    from tiles_glacior import MATERIALS as GLACIOR
+    return list(MATERIALS) + list(PYRALIS) + list(GLACIOR)
+
+
+def generate(names=None):
     out = []
-    for M in MATERIALS:
+    for M in all_materials():
+        if names and M.name not in names:
+            continue
         m = M()
         atlas = m.build()
         out.append(save_png(atlas, f"textures/tiles/{m.name}.png"))
-        out.append(save_json({
+        meta = {
             "texture": f"textures/tiles/{m.name}.png", "tileSize": 16,
             "maskRow": 0, "variantRow": 1, "variantCount": 16,
             "innerCornerRow": 2, "topDecorRow": 3, "topDecorCount": 8, "topDecorOffsetY": -12,
             "mapColor": m.map_color,
-        }, f"textures/tiles/{m.name}.json"))
+        }
+        if m.friction is not None:          # optional (1 = normal grip); omitted for v1 materials
+            meta["friction"] = m.friction
+        out.append(save_json(meta, f"textures/tiles/{m.name}.json"))
     return out

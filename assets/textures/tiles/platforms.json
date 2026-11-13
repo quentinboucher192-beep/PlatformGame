@@ -4,6 +4,10 @@
   "styles": {
     "ruin_bridge": 0,
     "tech_ledge": 1,
-    "root_branch": 2
+    "root_branch": 2,
+    "basalt_ledge": 3,
+    "chain_grate": 4,
+    "ice_ledge": 5,
+    "snow_bridge": 6
   }
 }

@@ -1,0 +1,12 @@
+{
+  "texture": "textures/tiles/obsidian.png",
+  "tileSize": 16,
+  "maskRow": 0,
+  "variantRow": 1,
+  "variantCount": 16,
+  "innerCornerRow": 2,
+  "topDecorRow": 3,
+  "topDecorCount": 8,
+  "topDecorOffsetY": -12,
+  "mapColor": "#5b2a6e"
+}

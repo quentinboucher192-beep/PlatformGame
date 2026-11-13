@@ -1,0 +1,13 @@
+{
+  "texture": "textures/tiles/glacier_ice.png",
+  "tileSize": 16,
+  "maskRow": 0,
+  "variantRow": 1,
+  "variantCount": 16,
+  "innerCornerRow": 2,
+  "topDecorRow": 3,
+  "topDecorCount": 8,
+  "topDecorOffsetY": -12,
+  "mapColor": "#5fb0ff",
+  "friction": 0.25
+}

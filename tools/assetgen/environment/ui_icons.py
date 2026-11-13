@@ -1,5 +1,6 @@
 """UI icon sheets (ASSET_SPEC section 11):
-  ui/icons_powers.png 160x32  dash, wave, shield, impulse, teleport
+  ui/icons_powers.png 320x32  dash, wave, shield, impulse, teleport, glide, ground_pound,
+                              charge_shot, grapple, triple_jump (cells 5-9: ui_icons_v2.py)
   ui/icons_medals.png 160x32  none, bronze, silver, gold, platinum
   ui/icons_hud.png    176x16  heart_full, heart_empty, energy, shard, relic, skull, clock,
                               enemy, star, lock, check
@@ -507,8 +508,10 @@ HUD = [heart_full, heart_empty, energy, shard, relic, skull, clock, enemy, star,
 
 
 def generate():
-    powers = new(160, 32)
-    for i, fn in enumerate([icon_dash, icon_wave, icon_shield, icon_impulse, icon_teleport]):
+    from ui_icons_v2 import ICONS as V2
+    icons = [icon_dash, icon_wave, icon_shield, icon_impulse, icon_teleport] + list(V2)
+    powers = new(32 * len(icons), 32)
+    for i, fn in enumerate(icons):
         powers[:, i * 32:(i + 1) * 32] = fn()
     medals = new(160, 32)
     for i, k in enumerate(["none", "bronze", "silver", "gold", "platinum"]):

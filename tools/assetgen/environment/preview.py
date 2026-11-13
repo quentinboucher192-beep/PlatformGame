@@ -91,7 +91,7 @@ def review_tiles(materials):
 def review_platforms():
     meta = json.load(open(os.path.join(ASSETS, "textures/tiles/platforms.json")))
     atlas = load_png(meta["texture"])
-    img = new(16 * 22, 16 * 7, "#121a33")
+    img = new(16 * 22, 32 * len(meta["styles"]) + 16, "#121a33")
     for name, row in meta["styles"].items():
         for k, n in enumerate((1, 2, 5)):
             x0 = 8 + k * 112
@@ -103,12 +103,13 @@ def review_platforms():
 
 
 BG_ORDER = [("sky", 0.0), ("far", 0.12), ("mid", 0.3), ("abyss", 0.5), ("near", 0.55)]
+FG_LAYER = {"sylvanox": "fg_vines", "pyralis": "fg_embers", "glacior": "fg_icicles"}
 
 
-def compose_backgrounds(cam_x, w=640, h=360, with_fg=True):
+def compose_backgrounds(cam_x, w=640, h=360, with_fg=True, planet="sylvanox"):
     img = new(w, h, "#000000")
-    for name, p in BG_ORDER + ([("fg_vines", 1.2)] if with_fg else []):
-        layer = load_png(f"backgrounds/sylvanox/{name}.png")
+    for name, p in BG_ORDER + ([(FG_LAYER[planet], 1.2)] if with_fg else []):
+        layer = load_png(f"backgrounds/{planet}/{name}.png")
         off = int(round(-cam_x * p)) % layer.shape[1]
         tiled = np.concatenate([layer, layer, layer], axis=1)
         paste(img, tiled[:, off:off + w], 0, 0)
@@ -228,6 +229,26 @@ def _terrain_layer(material):
     return img[:270]
 
 
+def review_planets_v2():
+    """Pyralis / Glacior: tilesets, parallax stacks + 2x seam strips, decor atlases, banners."""
+    paths = review_tiles(["basalt", "obsidian", "forge_metal", "glacier_ice", "snow_rock",
+                          "frost_metal"])
+    for planet in ("pyralis", "glacior"):
+        a = compose_backgrounds(0, planet=planet)
+        b = compose_backgrounds(700, planet=planet)
+        paths.append(save_review(np.concatenate([a, b], axis=0), f"bg_stack_{planet}.png", 2))
+        strip = new(1280, 360, "#000000")
+        for name, _ in BG_ORDER + [(FG_LAYER[planet], 1.2)]:
+            layer = load_png(f"backgrounds/{planet}/{name}.png")
+            paste(strip, np.concatenate([layer, layer], axis=1), 0, 0)
+        paths.append(save_review(strip, f"bg_strip_{planet}.png", 1))
+        da = load_png(f"sprites/decor/{planet}_decor.png")
+        paths.append(save_review(da, f"atlas_decor_{planet}.png", 3, bg="#10141c"))
+        paths.append(save_review(load_png(f"ui/planets/{planet}_banner.png"),
+                                 f"banner_{planet}.png", 2))
+    return paths
+
+
 def review_all(names=None):
     paths = []
     mats = ["ruin_stone", "ancient_metal", "crystal", "root"]
@@ -239,10 +260,10 @@ def review_all(names=None):
         paths.append(save_review(s, f"scene_{m}.png", 3))
     da = load_png("sprites/decor/sylvanox_decor.png")
     paths.append(save_review(da, "atlas_decor.png", 4, bg="#2a2140"))
-    sheet = new(616, 220, "#1a1f30")
+    sheet = new(616 + 160, 220, "#1a1f30")
     paste(sheet, load_png("ui/icons_powers.png"), 4, 4)
-    paste(sheet, load_png("ui/icons_medals.png"), 172, 4)
-    paste(sheet, load_png("ui/icons_hud.png"), 340, 12)
+    paste(sheet, load_png("ui/icons_medals.png"), 332, 4)
+    paste(sheet, load_png("ui/icons_hud.png"), 500, 12)
     for i, n in enumerate(["xbox", "playstation", "generic"]):
         paste(sheet, load_png(f"ui/glyphs/{n}.png"), 4, 44 + i * 36)
     paths.append(save_review(sheet, "ui_sheet.png", 3))
@@ -252,6 +273,7 @@ def review_all(names=None):
     paths.append(save_review(pl, "planets.png", 1))
     paths.append(save_review(load_png("ui/planets/sylvanox_banner.png"), "banner.png", 2))
     paths.append(save_review(load_png("ui/map_background.png"), "map_bg.png", 1))
+    paths += review_planets_v2()
     return paths
 
 

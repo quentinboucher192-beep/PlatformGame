@@ -60,16 +60,19 @@ def pack(items):
     return pos, int(np.ceil(total / 16.0) * 16)
 
 
-def build():
+def build_atlas(sprites, texture):
+    """Draw, shelf-pack and describe a decor atlas. sprites: {name: (painter, frames, fps,
+    pivot, glow)} with pivot in ("bottom", "top", "center") and glow = (colour, radius,
+    (ox, oy)) or None."""
     imgs = {}
-    for name, (fn, frames, fps, piv, glow) in SPRITES.items():
+    for name, (fn, frames, fps, piv, glow) in sprites.items():
         img = fn()
         assert img.shape[1] % frames == 0, name
         imgs[name] = img
     pos, H = pack([(n, im.shape[1], im.shape[0]) for n, im in imgs.items()])
     atlas = new(ATLAS_W, H)
-    meta = {"texture": "sprites/decor/sylvanox_decor.png", "sprites": {}}
-    for name, (fn, frames, fps, piv, glow) in SPRITES.items():
+    meta = {"texture": texture, "sprites": {}}
+    for name, (fn, frames, fps, piv, glow) in sprites.items():
         im = imgs[name]
         x, y = pos[name]
         atlas[y:y + im.shape[0], x:x + im.shape[1]] = im
@@ -82,6 +85,10 @@ def build():
             e["glowOffset"] = list(glow[2])
         meta["sprites"][name] = e
     return atlas, meta
+
+
+def build():
+    return build_atlas(SPRITES, "sprites/decor/sylvanox_decor.png")
 
 
 def generate():

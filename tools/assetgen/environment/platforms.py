@@ -1,6 +1,7 @@
-"""One-way platforms atlas (ASSET_SPEC section 7): textures/tiles/platforms.png 48x48.
+"""One-way platforms atlas (ASSET_SPEC section 7): textures/tiles/platforms.png 48x112.
 
-Rows: 0 ruin_bridge, 1 tech_ledge, 2 root_branch. Columns: left cap, middle (tileable), right cap.
+Rows: 0 ruin_bridge, 1 tech_ledge, 2 root_branch (Sylvanox), 3 basalt_ledge, 4 chain_grate
+(Pyralis), 5 ice_ledge, 6 snow_bridge (Glacior). Columns: left cap, middle (tileable), right cap.
 The walkable top is on the first 2 pixel rows of each cell.
 
 Each style is painted into a long strip (cap + 3 periodic middles + cap) so the outline pass
@@ -204,11 +205,215 @@ def root_branch():
     return s
 
 
-STYLES = [("ruin_bridge", ruin_bridge), ("tech_ledge", tech_ledge), ("root_branch", root_branch)]
+# ---------------------------------------------------------------------------
+# Pyralis / Glacior styles (rows 3-6)
+# ---------------------------------------------------------------------------
+BS = ["#0e0809", "#1a1012", "#271a1b", "#372526", "#4b3432", "#674842"]      # basalt
+ASH = ["#3a2c2c", "#5a4846", "#7e6a64", "#a8938a", "#cbb8ac"]
+LAVA = ["#b3201a", "#ff4d1e", "#ff8a3d", "#ffc56b", "#fff1c2"]
+FI = ["#0c0a0c", "#181417", "#262024", "#383034", "#51464a", "#726468", "#9a8a8c"]  # forge iron
+RUST = ["#6e3b2a", "#a0583a", "#d08a5a"]
+OP = "#0d0607"
+IC = ["#0c1d3c", "#163463", "#1f4f8f", "#2f6fb3", "#4d96e0", "#8fd2ff", "#c8ecff", "#eefaff"]
+SN = ["#7d93b5", "#9fb4d2", "#c9d8ea", "#dfe9f5", "#ffffff"]
+WD = ["#1a1418", "#2e2228", "#46343a", "#5e4a4c", "#7a6464"]                  # frozen wood
+ROPE = ["#4a3e34", "#7a6a52", "#a8956e"]
+OG = "#0a1428"
+
+
+def basalt_ledge():
+    s = new(SW, TS)
+    # bottom profile (periodic in the middle, tapering at the caps)
+    bot_m = [7, 8, 9, 8, 7, 7, 6, 7, 8, 10, 11, 9, 8, 7, 7, 6]
+    for x in range(SW):
+        m = x % TS
+        e = end_dist(x)
+        if e == 0:
+            continue
+        bot = bot_m[m] if e >= 4 else min(bot_m[m], 3 + e)
+        for y in range(0, bot + 1):
+            if y == 0:
+                c = ASH[4] if m in (2, 9, 13) else ASH[3]
+            elif y == 1:
+                c = ASH[2] if m % 3 else ASH[3]
+            elif y == 2:
+                c = ASH[1] if m % 2 else ASH[0]
+            else:
+                # rock with a lit band and shading towards the bottom
+                c = BS[4] if y == 3 else (BS[3] if y < bot - 1 else BS[2])
+                if m in (4, 11) and y >= 3:
+                    c = BS[1]                      # vertical joints
+                if m in (5, 12) and y == 4:
+                    c = BS[5]
+            if e == 1:
+                c = ASH[3] if y == 0 else (ASH[1] if y < 3 else BS[2])
+            s[y, x] = col(c)
+        # glowing lava seam along the joint + a drip under the slab
+        if e >= 4 and m == 11:
+            s[5, x] = col(LAVA[1])
+            s[6, x] = col(LAVA[0])
+            s[4, x] = col("#5a1410")
+        if e >= 4 and m == 4:
+            s[6, x] = col("#5a1410")
+        if e >= 4 and m == 10:
+            s[bot_m[m] - 1, x] = col(LAVA[0])
+            s[bot_m[m], x] = col(LAVA[1])
+    outline(s, OP)
+    # molten drop falling from the drip tip (lit side, no outline)
+    for x in range(SW):
+        if end_dist(x) >= 4 and x % TS == 10:
+            put(s, x, bot_m[10] + 2, LAVA[2])
+            put(s, x, bot_m[10] + 3, LAVA[3])
+    return s
+
+
+def chain_grate():
+    s = new(SW, TS)
+    for x in range(SW):
+        m = x % TS
+        e = end_dist(x)
+        if e == 0:
+            continue
+        # top rail rows 0-1, grate rows 2-5, bottom rail row 6
+        for y in range(0, 7):
+            if y == 0:
+                c = FI[6] if m % 8 not in (0,) else RUST[2]
+            elif y == 1:
+                c = FI[4]
+            elif y == 6:
+                c = FI[2]
+            else:
+                k = (m + y) % 4
+                k2 = (m - y) % 4
+                if k == 0 or k2 == 0:
+                    c = FI[3] if y < 4 else FI[2]      # cross-hatched bars
+                else:
+                    c = None                           # see-through hole
+            if e <= 2:
+                c = FI[4] if y < 2 else FI[3] if y < 5 else FI[2]
+            if c is not None:
+                s[y, x] = col(c)
+        # hot rivets on the top rail
+        if m in (4, 12) and e >= 3:
+            s[1, x] = col(LAVA[2])
+    # glowing embers caught in the grate holes
+    for x in range(SW):
+        m = x % TS
+        if end_dist(x) >= 3 and m in (6, 14):
+            s[4, x] = col(LAVA[0])
+            if m == 6:
+                s[3, x] = col(LAVA[1])
+    # chains hanging from under the caps and the middle
+    def chain(x, y0, n):
+        for i in range(n):
+            y = y0 + i
+            if i % 3 == 0:
+                put(s, x, y, FI[5])
+                put(s, x + 1, y, FI[3])
+            elif i % 3 == 1:
+                put(s, x, y, FI[4])
+            else:
+                put(s, x + 1, y, FI[4])
+    chain(3, 7, 7)
+    chain(SW - 5, 7, 7)
+    for x in range(SW):
+        if end_dist(x) >= 6 and x % TS == 8:
+            # sagging chain loop between the cells (periodic)
+            for (dx, dy) in [(0, 7), (1, 8), (2, 9), (3, 9), (4, 9), (5, 8), (6, 7)]:
+                put(s, x + dx, dy, FI[4] if dx % 2 else FI[5])
+    outline(s, OP)
+    return s
+
+
+def ice_ledge():
+    s = new(SW, TS)
+    icicles = {1: 3, 3: 5, 6: 2, 8: 6, 11: 3, 13: 4}       # x in period -> length below row 6
+    for x in range(SW):
+        m = x % TS
+        e = end_dist(x)
+        if e == 0:
+            continue
+        bot = 6 if e >= 3 else 4 + e // 2
+        for y in range(0, bot + 1):
+            if y == 0:
+                c = SN[4] if m % 5 in (1, 2) else IC[7]
+            elif y == 1:
+                c = SN[2] if m % 3 else IC[6]
+            elif y == bot:
+                c = IC[2]
+            else:
+                c = IC[4] if y == 2 else IC[3]
+                if (m + 2 * y) % 11 == 0:
+                    c = IC[6]                              # glint streak
+                elif (m - y) % 13 == 0:
+                    c = IC[5]
+            if e == 1:
+                c = IC[7] if y < 2 else IC[4]
+            s[y, x] = col(c)
+        if e >= 3 and m in icicles:
+            n = icicles[m]
+            for i in range(n):
+                y = bot + 1 + i
+                c = IC[5] if i < n - 1 else IC[7]
+                put(s, x, y, c)
+                if i == 0:
+                    put(s, x + 1, y, IC[3])
+    outline(s, OG)
+    return s
+
+
+def snow_bridge():
+    s = new(SW, TS)
+    for x in range(SW):
+        m = x % TS
+        e = end_dist(x)
+        if e == 0:
+            continue
+        for y in range(0, 7):
+            if y == 0:
+                c = SN[4]
+            elif y == 1:
+                c = SN[3] if m % 4 else SN[4]
+            elif y == 2:
+                c = SN[1] if m % 5 in (0, 3) else WD[4]   # snow lumps over the planks
+            elif y == 6:
+                c = WD[1]
+            else:
+                c = WD[3] if y == 3 else WD[2]
+                if m in (0, 7, 8) and y >= 3:
+                    c = WD[1] if m != 8 else WD[3]          # plank gaps
+                if (m, y) in ((3, 4), (12, 5)):
+                    c = WD[1]                               # knots
+            if e <= 2:
+                c = SN[4] if y < 2 else (WD[3] if y < 5 else WD[2])
+            s[y, x] = col(c)
+        # rope lashing under the planks (sags between posts)
+        if e >= 3:
+            sag = 7 + (1 if 4 <= m <= 11 else 0)
+            put(s, x, sag, ROPE[1] if m % 2 else ROPE[0])
+        # small icicles / snow drips
+        if e >= 3 and m in (5, 13):
+            put(s, x, 7, SN[1])
+            put(s, x, 8, IC[5])
+    # posts at both ends with snow caps
+    for px in (2, SW - 4):
+        for y in range(3, 15):
+            put(s, px, y, WD[4] if px < SW // 2 else WD[3])
+            put(s, px + 1, y, WD[2])
+        put(s, px, 9, ROPE[2])
+        put(s, px + 1, 9, ROPE[1])
+        put(s, px, 10, ROPE[1])
+    outline(s, OG)
+    return s
+
+
+STYLES = [("ruin_bridge", ruin_bridge), ("tech_ledge", tech_ledge), ("root_branch", root_branch),
+          ("basalt_ledge", basalt_ledge), ("chain_grate", chain_grate), ("ice_ledge", ice_ledge),
+          ("snow_bridge", snow_bridge)]
 
 
 def generate():
-    atlas = new(48, 48)
+    atlas = new(48, 16 * len(STYLES))
     for row, (name, fn) in enumerate(STYLES):
         strip = fn()
         cells = [strip[:, 0:16], strip[:, 32:48], strip[:, SW - 16:SW]]
