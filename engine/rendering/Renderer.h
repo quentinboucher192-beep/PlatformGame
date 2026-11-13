@@ -78,6 +78,11 @@ public:
 
     void pushClip(const Rect& r);
     void popClip();
+    /// Raw triangles (screen space), optionally textured: meshes such as the online globe.
+    void drawGeometry(const Texture* tex, const std::vector<SDL_Vertex>& verts, const std::vector<int>& idx,
+                      BlendMode blend = BlendMode::Alpha) {
+        geometry(verts, idx, blend, tex ? tex->sdl() : nullptr);
+    }
 
     // -------------------------------------------------------------- world space
     void setView(const WorldView& v) { view_ = v; }

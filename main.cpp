@@ -15,6 +15,7 @@
 //   --import <file.cplanet> open the import screen with this package (also: file as argument)
 //   --export <level> <file.cplanet> [--author <name>]
 //                           export a level and all its dependencies without opening a window
+//   --online [<level>]      start on the ONLINE RANKING screen
 //   --online-server <url>   Cosmic Online server to use (else data/online/config.json)
 //   --online-manifest <file.json>
 //                           write the ranking manifest of the built-in levels (server seed)
@@ -34,6 +35,7 @@
 #include "game/content/ContentDatabase.h"
 #include "game/online/LevelFingerprint.h"
 #include "packaging/PackageExporter.h"
+#include "ui/online/OnlineToasts.h"
 #include "ui/screens/Navigation.h"
 
 using namespace cosmic;
@@ -139,7 +141,12 @@ int main(int argc, char** argv) {
     game.loadAll();
     game.inputScript = value("--input");
     game.online.init(game.settings.online, value("--online-server"));
-    app.onUpdate = [&game](float dt) { game.online.update(dt); };
+    OnlineToasts toasts;
+    app.onUpdate = [&game, &toasts](float dt) {
+        game.online.update(dt);
+        toasts.update(game, dt);
+    };
+    app.onOverlay = [&game, &toasts] { toasts.render(game); };
 
     if (std::string f = value("--frames"); !f.empty()) app.maxFrames = std::atoi(f.c_str());
     for (size_t i = 0; i + 1 < args.size(); ++i) {
@@ -172,6 +179,8 @@ int main(int argc, char** argv) {
         app.pushScene(makeEnemyEditor(game));
     } else if (has("--planets")) {
         app.pushScene(makePlanetMap(game));
+    } else if (has("--online")) {
+        app.pushScene(makeOnlineRanking(game, value("--online")));
     } else {
         app.pushScene(makeSplashScene(game));
     }

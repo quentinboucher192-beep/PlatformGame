@@ -34,5 +34,13 @@ std::unique_ptr<Scene> makeLevelEditor(GameServices& g, const std::string& level
 std::unique_ptr<Scene> makeEnemyEditor(GameServices& g);
 /// `importFile`: a .cplanet file to analyse immediately (double-click / command line).
 std::unique_ptr<Scene> makeContentManager(GameServices& g, const std::string& importFile = {});
+// Cosmic Online
+std::unique_ptr<Scene> makeOnlineRanking(GameServices& g, const std::string& levelId = {});
+/// Account overlay: create an account, log in or keep playing offline. `onboarding` shows
+/// the first-visit explanation (what is shared, location consent).
+std::unique_ptr<Scene> makeOnlineAccount(GameServices& g, bool onboarding);
+std::unique_ptr<Scene> makeOnlineSettings(GameServices& g);
+/// Downloads and plays back the replay of a verified record.
+std::unique_ptr<Scene> makeReplayViewer(GameServices& g, const std::string& recordId);
 
 }  // namespace cosmic

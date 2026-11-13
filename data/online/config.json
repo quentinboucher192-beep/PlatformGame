@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "environment": "production",
+  "tos_version": "2026-11",
+  "servers": {
+    "development": "http://127.0.0.1:8787",
+    "staging": "",
+    "production": ""
+  }
+}

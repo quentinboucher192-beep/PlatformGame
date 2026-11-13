@@ -66,8 +66,8 @@ public:
                  ui.theme().text.withAlphaF(appear * 0.85f), Align::Center, FontFace::Body, VAlign::Middle);
 
         float x = ui.s(120), w = ui.s(470), h = ui.s(66), gap = ui.s(14);
-        float y = ui.screenH() * 0.5f - (7 * (h + gap)) * 0.5f + ui.s(40);
-        Rect side{x - ui.s(40), y - ui.s(40), w + ui.s(80), 7 * (h + gap) + ui.s(70)};
+        float y = ui.screenH() * 0.5f - (8 * (h + gap)) * 0.5f + ui.s(40);
+        Rect side{x - ui.s(40), y - ui.s(40), w + ui.s(80), 8 * (h + gap) + ui.s(70)};
         ui.r().fillRoundedRect(side, ui.s(18), Color{6, 10, 22, 150});
         ui.pushId("main");
         auto btn = [&](const char* id, const std::string& label, int icon, bool primary = false) {
@@ -87,6 +87,7 @@ public:
             g_.app.switchScene(makeLevelSelect(g_, planet));
         }
         if (btn("planets", "Sélection des planètes", 1)) g_.app.switchScene(makePlanetMap(g_));
+        if (btn("online", "Online Ranking", 6)) g_.app.switchScene(makeOnlineRanking(g_));
         if (btn("leveleditor", "Éditeur de niveaux", 2)) g_.app.switchScene(makeLevelEditor(g_, ""));
         if (btn("enemyeditor", "Éditeur d'ennemis", 3)) g_.app.switchScene(makeEnemyEditor(g_));
         if (btn("settings", "Paramètres", 4)) g_.app.pushScene(makeSettingsScene(g_, false));

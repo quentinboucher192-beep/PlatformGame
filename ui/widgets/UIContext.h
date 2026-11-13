@@ -88,6 +88,9 @@ public:
                const std::vector<std::string>& options);
     bool textField(const std::string& name, const Rect& r, std::string& value, const std::string& placeholder = "",
                    size_t maxLen = 120);
+    /// Text field whose content is displayed as dots (passwords).
+    bool passwordField(const std::string& name, const Rect& r, std::string& value, const std::string& placeholder = "",
+                       size_t maxLen = 128);
     bool numberField(const std::string& name, const Rect& r, float& value, float step, float minV, float maxV,
                      const char* fmt = "%.1f");
     bool listItem(const std::string& name, const Rect& r, const std::string& text, bool selected,
@@ -126,6 +129,8 @@ private:
         float content;
     };
     bool interact(WidgetId wid, const Rect& r, bool* hovered = nullptr);
+    bool textFieldImpl(const std::string& name, const Rect& r, std::string& value, const std::string& placeholder, size_t maxLen,
+                       bool mask);
     float anim(WidgetId wid, bool on, float speed = 12.0f);
     void registerFocusable(WidgetId wid, const Rect& r);
     bool clippedOut(const Rect& r) const;

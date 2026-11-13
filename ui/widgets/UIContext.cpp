@@ -342,7 +342,8 @@ bool UIContext::cycle(const std::string& name, const Rect& rc, const std::string
     int n = static_cast<int>(options.size());
     bool changedNow = false;
     InputManager& in = input();
-    Rect left{rc.x + rc.w * 0.45f, rc.y, s(36), rc.h};
+    // Without a caption the value uses the whole width.
+    Rect left{t.empty() ? rc.x + s(6) : rc.x + rc.w * 0.45f, rc.y, s(36), rc.h};
     Rect right{rc.right() - s(44), rc.y, s(36), rc.h};
     if (inputEnabled && isFocus && in.menuPressed(Action::MenuLeft)) {
         index = (index - 1 + n) % n;
@@ -376,6 +377,16 @@ bool UIContext::cycle(const std::string& name, const Rect& rc, const std::string
 
 bool UIContext::textField(const std::string& name, const Rect& rc, std::string& value, const std::string& placeholder,
                           size_t maxLen) {
+    return textFieldImpl(name, rc, value, placeholder, maxLen, false);
+}
+
+bool UIContext::passwordField(const std::string& name, const Rect& rc, std::string& value, const std::string& placeholder,
+                              size_t maxLen) {
+    return textFieldImpl(name, rc, value, placeholder, maxLen, true);
+}
+
+bool UIContext::textFieldImpl(const std::string& name, const Rect& rc, std::string& value, const std::string& placeholder,
+                              size_t maxLen, bool mask) {
     WidgetId wid = id(name);
     bool hovered = false;
     bool clicked = interact(wid, rc, &hovered);
@@ -398,7 +409,7 @@ bool UIContext::textField(const std::string& name, const Rect& rc, std::string& 
             value.erase(i);
             changedNow = true;
         }
-        if (in.ctrl() && in.shortcutPressed(SDLK_V)) {
+        if (!mask && in.ctrl() && in.shortcutPressed(SDLK_V)) {
             if (char* clip = SDL_GetClipboardText()) {
                 for (const char* p = clip; *p && value.size() < maxLen; ++p)
                     if (static_cast<unsigned char>(*p) >= 32) value.push_back(*p);
@@ -421,11 +432,15 @@ bool UIContext::textField(const std::string& name, const Rect& rc, std::string& 
     rr.drawRoundedRect(rc, s(6), editing_ == wid ? theme_.accent : Color::lerp(theme_.border, theme_.accent, hot * 0.6f),
                        std::max(1.0f, s(1.5f)));
     rr.pushClip(rc.expanded(-s(4)));
-    std::string shown = value.empty() && editing_ != wid ? placeholder : value;
+    std::string masked;
+    if (mask)
+        for (unsigned char ch : value)
+            if ((ch & 0xC0) != 0x80) masked += "\xE2\x80\xA2";  // one dot per code point
+    std::string shown = value.empty() && editing_ != wid ? placeholder : (mask ? masked : value);
     Color c = value.empty() && editing_ != wid ? theme_.textDim : theme_.text;
     Vec2 sz = label(shown, {rc.x + s(10), rc.center().y}, 20, c, Align::Left, FontFace::Body, VAlign::Middle);
     if (editing_ == wid && std::fmod(time_, 1.0f) < 0.6f) {
-        float cx = rc.x + s(10) + (value.empty() ? 0.0f : sz.x) + s(2);
+        float cx = rc.x + s(10) + (shown.empty() || value.empty() ? 0.0f : sz.x) + s(2);
         rr.fillRect({cx, rc.center().y - s(11), s(2), s(22)}, theme_.accent);
     }
     rr.popClip();
