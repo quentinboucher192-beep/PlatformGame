@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <string>
 
 #include "engine/core/Scene.h"
@@ -8,6 +9,8 @@
 #include "game/gameplay/GameRenderer.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/Hud.h"
+#include "game/online/LevelFingerprint.h"
+#include "game/online/Replay.h"
 #include "game/records/Records.h"
 #include "ui/screens/Navigation.h"
 
@@ -54,6 +57,10 @@ private:
     float skipHold_ = 0.0f;
     float playTime_ = 0.0f;
     InputScript script_;
+    // Cosmic Online: trace of the run (built-in levels started from the beginning only).
+    ReplayRecorder recorder_;
+    std::string attemptId_;
+    std::optional<LevelFingerprint> fingerprint_;
 };
 
 }  // namespace cosmic

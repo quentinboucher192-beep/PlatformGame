@@ -1,0 +1,46 @@
+GeoNames « cities1000 » via le paquet npm all-the-cities 3.1.0
+==============================================================
+
+Utilisé pour : assets/online/earth_night.png (lumières des villes : position et
+population de 135 233 localités de plus de 1000 habitants) et, pour les territoires
+absents de la carte 1:50m, la position (arrondie à 0,1°) de leur plus grande localité
+dans data/online/country_codes.json.
+
+Données d'origine
+  GeoNames – https://www.geonames.org/  (export : https://download.geonames.org/export/dump/)
+  Licence : Creative Commons Attribution 4.0 International (CC BY 4.0)
+            https://creativecommons.org/licenses/by/4.0/
+  ATTRIBUTION REQUISE (à afficher dans les crédits du jeu) :
+    « Lumières des villes dérivées des données GeoNames (www.geonames.org),
+      licence CC BY 4.0. Données transformées (agrégation, flou, colorisation). »
+  Modifications apportées : les points ont été agrégés et rendus en halos lumineux ;
+  aucune donnée nominative n'est redistribuée. Pas de garantie (voir la licence).
+
+Redistribution npm
+  all-the-cities 3.1.0 – https://github.com/zeke/all-the-cities
+  https://www.npmjs.com/package/all-the-cities
+  (dérivé de cities-with-1000, lui-même issu de GeoNames)
+  Licence du paquet : MIT (texte ci-dessous)
+
+--------------------------------------------------------------------------------
+MIT License
+
+Copyright (c) 2018 Nabil Ashraf
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

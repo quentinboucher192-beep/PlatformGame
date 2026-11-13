@@ -133,6 +133,8 @@ public:
     // ----------------------------------------------------- level logic
     /// Signals an event source (see LevelEvent): object id + trigger.
     void emit(const std::string& source, const std::string& trigger, const Json& params = Json::object());
+    /// Optional listener of every emitted event (replay recording); never changes the game.
+    std::function<void(const std::string& source, const std::string& trigger)> eventObserver;
     void setCheckpoint(const std::string& id, Vec2 feet);
     Vec2 respawnPoint() const { return respawn_; }
     const std::string& checkpointId() const { return checkpointId_; }

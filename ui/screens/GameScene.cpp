@@ -1,5 +1,6 @@
 #include "ui/screens/GameScene.h"
 
+#include <cmath>
 #include <format>
 
 #include "engine/core/FileUtil.h"
@@ -53,6 +54,15 @@ void GameScene::onEnter() {
     }
     g_.app.input().consumePlayerInput();  // drop the menu's pending presses
     if (!g_.inputScript.empty()) script_.parse(g_.inputScript);
+    // Cosmic Online: only official levels played from their start can be ranked.
+    if (!opt_.editorTest && !opt_.level && !opt_.spawn) {
+        if (const LevelFingerprint* fp = g_.online.fingerprints().get(g_.content, levelId_)) {
+            fingerprint_ = *fp;
+            attemptId_ = makeUuidV4();
+            recorder_.begin(levelId_, fp->hash, attemptId_);
+            world_->eventObserver = [this](const std::string& src, const std::string& trig) { recorder_.onWorldEvent(src, trig); };
+        }
+    }
 }
 
 void GameScene::onExit() {
@@ -123,6 +133,7 @@ void GameScene::fixedUpdate(float dt) {
     }
     hud_.setSkipHold(skipHold_);
     world_->fixedUpdate(in, dt);
+    if (!ended_) recorder_.tick(*world_);
     playTime_ += dt;
     if (!ended_ && world_->state() == WorldState::Completed) finishRun(true);
     if (!ended_ && world_->state() == WorldState::Failed) finishRun(false);
@@ -158,6 +169,26 @@ void GameScene::finishRun(bool completed) {
             g_.progression.save();
         }
     }
+    std::optional<OnlineAttempt> online;
+    if (completed && fingerprint_ && recorder_.active()) {
+        recorder_.finish(*world_, r.time);
+        ReplayData replay = recorder_.take();
+        RunCandidate run;
+        run.levelId = levelId_;
+        run.levelVersion = fingerprint_->version;
+        run.levelHash = fingerprint_->hash;
+        run.timeMs = static_cast<int64_t>(std::llround(static_cast<double>(r.time) * 1000.0));
+        run.deaths = s.deaths;
+        run.damageTaken = s.damageTaken;
+        run.collectibles = s.collectibles();
+        run.totalCollectibles = s.totalCollectibles();
+        run.kills = s.kills;
+        run.score = r.score;
+        run.fromStart = true;
+        if (const OnlineAttempt* a = g_.online.recordRun(run, attemptId_, &replay)) online = *a;
+    } else {
+        recorder_.abort();
+    }
     if (completed) {
         std::string victory = g_.app.resources().soundPath("music/victory.ogg");
         if (!victory.empty()) g_.app.audio().playSound(victory, 0.9f, 1.0f, 0.0f, AudioBus::Music);
@@ -170,6 +201,7 @@ void GameScene::finishRun(bool completed) {
     data.failReason = world_->failReason();
     data.nextLevel = nextLevelId();
     data.editorTest = opt_.editorTest;
+    data.online = online;
     g_.app.pushScene(std::make_unique<ResultsScene>(g_, *this, std::move(data)));
 }
 

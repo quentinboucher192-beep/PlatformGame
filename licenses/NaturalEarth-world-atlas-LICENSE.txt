@@ -1,0 +1,40 @@
+Natural Earth 1:50m (frontières de pays) via le paquet npm world-atlas 2.0.2
+==========================================================================
+
+Utilisé pour : assets/online/earth_day.png, assets/online/earth_countries.png,
+data/online/countries.json, data/online/country_codes.json (positions lat/lon).
+
+Données d'origine
+  Natural Earth, Admin 0 – Countries, 1:50m, version 4.1.0
+  https://www.naturalearthdata.com/downloads/50m-cultural-vectors/
+  Licence : domaine public (https://www.naturalearthdata.com/about/terms-of-use/)
+  « All versions of Natural Earth raster + vector map data found on this website are
+  in the public domain. » Aucune attribution n'est requise ; mention suggérée :
+  « Made with Natural Earth. Free vector and raster map data @ naturalearthdata.com. »
+
+Redistribution TopoJSON
+  world-atlas 2.0.2 – https://github.com/topojson/world-atlas
+  https://www.npmjs.com/package/world-atlas
+  Licence : ISC (texte ci-dessous ; à conserver avec les copies du logiciel)
+
+Outil de décodage (non redistribué, utilisé uniquement à la génération)
+  topojson-client 3.1.0 – https://github.com/topojson/topojson-client – licence ISC,
+  même titulaire (Michael Bostock).
+
+Attribution retenue pour le jeu
+  « Cartographie : Natural Earth (domaine public), via world-atlas (ISC, Mike Bostock). »
+
+--------------------------------------------------------------------------------
+Copyright 2013-2019 Michael Bostock
+
+Permission to use, copy, modify, and/or distribute this software for any purpose
+with or without fee is hereby granted, provided that the above copyright notice
+and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+THIS SOFTWARE.

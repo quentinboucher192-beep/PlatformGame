@@ -4,6 +4,7 @@
 
 #include "engine/core/Application.h"
 #include "game/content/ContentDatabase.h"
+#include "game/online/OnlineService.h"
 #include "game/progression/Progression.h"
 #include "game/records/Records.h"
 #include "saves/Settings.h"
@@ -31,6 +32,8 @@ public:
     Settings settings;
     Progression progression;
     RecordsManager records;
+    /// Cosmic Online (rankings, globe, account). Fully optional: offline play never needs it.
+    OnlineService online;
     UIContext ui;
     /// Scripted input for automated runs (see InputScript), applied to the next level started.
     std::string inputScript;

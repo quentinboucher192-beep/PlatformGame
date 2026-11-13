@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "engine/audio/AudioSystem.h"
 #include "engine/core/Json.h"
 #include "engine/input/InputTypes.h"
@@ -26,11 +28,25 @@ struct GameplaySettings {
     bool unlockAll = true;  // every planet and level playable without progression
 };
 
+/// Client-side preferences of Cosmic Online. Privacy settings that other players depend on
+/// (profile / country / globe visibility, friend requests) live on the server, with the
+/// account, and are edited from the same screen.
+struct OnlineSettings {
+    bool enabled = true;           // false: the game never contacts the server
+    bool autoLogin = true;         // reconnect with the saved session at startup
+    bool autoSync = true;          // send finished runs automatically when connected
+    bool showPseudonyms = true;    // false: other players appear as "Joueur n°X" (streaming)
+    int bandwidth = 1;             // 0 economical (fewer markers, no custom avatars), 1 normal
+    bool onboardingDone = false;   // first-visit screen of Cosmic Online already shown
+    std::string serverOverride;    // advanced: replaces the server of data/online/config.json
+};
+
 /// Every user preference (stored in saves/settings.json, versioned).
 struct Settings {
     GraphicsSettings graphics;
     AudioVolumes audio;
     GameplaySettings gameplay;
+    OnlineSettings online;
     InputBindings input = InputBindings::defaults();
 
     Json toJson() const;

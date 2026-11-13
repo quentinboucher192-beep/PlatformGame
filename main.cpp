@@ -15,6 +15,9 @@
 //   --import <file.cplanet> open the import screen with this package (also: file as argument)
 //   --export <level> <file.cplanet> [--author <name>]
 //                           export a level and all its dependencies without opening a window
+//   --online-server <url>   Cosmic Online server to use (else data/online/config.json)
+//   --online-manifest <file.json>
+//                           write the ranking manifest of the built-in levels (server seed)
 
 #include <SDL3/SDL_main.h>
 
@@ -23,11 +26,13 @@
 #include <vector>
 
 #include "engine/core/Application.h"
+#include "engine/core/FileUtil.h"
 #include "engine/core/Log.h"
 #include "engine/core/Paths.h"
 #include "engine/resources/ResourceManager.h"
 #include "game/GameServices.h"
 #include "game/content/ContentDatabase.h"
+#include "game/online/LevelFingerprint.h"
 #include "packaging/PackageExporter.h"
 #include "ui/screens/Navigation.h"
 
@@ -58,6 +63,25 @@ int exportFromCommandLine(const std::string& levelId, const std::string& file, c
         return 3;
     }
     Log::info("Export: {} -> {} ({} fichiers, {} octets)", levelId, file, plan.items.size(), plan.totalSize);
+    return 0;
+}
+
+/// `--online-manifest <file>`: fingerprints and measures of the built-in levels, used by
+/// server/scripts/seed-levels.mjs to register the level revisions on the server.
+int manifestFromCommandLine(const std::string& file) {
+    ContentDatabase content;
+    content.reload();
+    std::string err;
+    Json manifest = buildOnlineManifest(content, &err);
+    if (manifest.is_null()) {
+        Log::error("Manifeste en ligne impossible : {}", err);
+        return 2;
+    }
+    if (!FileUtil::saveJson(Paths::fromUtf8(file), manifest)) {
+        Log::error("Écriture impossible : {}", file);
+        return 3;
+    }
+    Log::info("Manifeste en ligne : {} niveaux -> {}", manifest["levels"].size(), file);
     return 0;
 }
 }  // namespace
@@ -91,6 +115,12 @@ int main(int argc, char** argv) {
         return rc;
     }
 
+    if (std::string m = value("--online-manifest"); !m.empty()) {
+        int rc = manifestFromCommandLine(m);
+        Log::shutdown();
+        return rc;
+    }
+
     Settings initial = SettingsStore::load();
     AppConfig cfg;
     cfg.headless = has("--headless");
@@ -108,6 +138,8 @@ int main(int argc, char** argv) {
     GameServices game(app);
     game.loadAll();
     game.inputScript = value("--input");
+    game.online.init(game.settings.online, value("--online-server"));
+    app.onUpdate = [&game](float dt) { game.online.update(dt); };
 
     if (std::string f = value("--frames"); !f.empty()) app.maxFrames = std::atoi(f.c_str());
     for (size_t i = 0; i + 1 < args.size(); ++i) {
@@ -147,6 +179,7 @@ int main(int argc, char** argv) {
     app.run();
     game.progression.save();
     game.records.save();
+    game.online.shutdown();
     app.shutdown();
     Log::info("Bye");
     Log::shutdown();

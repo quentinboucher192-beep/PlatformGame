@@ -227,6 +227,7 @@ void Application::run() {
             if (top || belowUpdates) scenes_[i]->update(static_cast<float>(dt));
         }
         audio_.updateLoops();
+        if (onUpdate) onUpdate(static_cast<float>(dt));
 
         renderFrame(alpha);
         ++frame_;

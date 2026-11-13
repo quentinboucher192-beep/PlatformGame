@@ -1,0 +1,18 @@
+{
+  "name": "globegen",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Générateur des données et textures du globe de classement en ligne (Cosmic Platformer).",
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "python3 -I build.py"
+  },
+  "dependencies": {
+    "@resvg/resvg-js": "2.6.2",
+    "all-the-cities": "3.1.0",
+    "flag-icons": "7.6.0",
+    "i18n-iso-countries": "7.14.0",
+    "topojson-client": "3.1.0",
+    "world-atlas": "2.0.2"
+  }
+}

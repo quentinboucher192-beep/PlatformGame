@@ -77,6 +77,8 @@ public:
     float headlessDt = 1.0f / 60.0f;
     bool headless() const { return config_.headless; }
 
+    /// Hook called every frame after the scenes updated (background services).
+    std::function<void(float)> onUpdate;
     /// Hook called every frame after the scenes rendered (debug overlay, toasts).
     std::function<void()> onOverlay;
     /// Hook for global hotkeys (returns true if consumed).

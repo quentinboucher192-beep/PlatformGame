@@ -1,9 +1,11 @@
 #pragma once
 
+#include <optional>
 #include <string>
 
 #include "engine/core/Scene.h"
 #include "game/levels/LevelData.h"
+#include "game/online/OnlineRecord.h"
 #include "game/records/Records.h"
 
 namespace cosmic {
@@ -19,6 +21,8 @@ struct ResultsData {
     std::string failReason;
     std::string nextLevel;
     bool editorTest = false;
+    /// Performance kept for Cosmic Online (nullopt: not an improvement / not rankable).
+    std::optional<OnlineAttempt> online;
 };
 
 /// End-of-level screen: animated statistics, comparison with the personal record, the

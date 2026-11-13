@@ -1,0 +1,103 @@
+{
+ "version": 1,
+ "cell": 128,
+ "columns": 4,
+ "avatars": [
+  {
+   "id": "avatar_01",
+   "name_fr": "Astronaute cyan",
+   "name_en": "Cyan astronaut",
+   "rim": "#39F0D8"
+  },
+  {
+   "id": "avatar_02",
+   "name_fr": "Astronaute violet",
+   "name_en": "Violet astronaut",
+   "rim": "#B04CFF"
+  },
+  {
+   "id": "avatar_03",
+   "name_fr": "Astronaute ambre",
+   "name_en": "Amber astronaut",
+   "rim": "#FFB347"
+  },
+  {
+   "id": "avatar_04",
+   "name_fr": "Astronaute rose",
+   "name_en": "Pink astronaut",
+   "rim": "#FF4D6D"
+  },
+  {
+   "id": "avatar_05",
+   "name_fr": "Alien vert",
+   "name_en": "Green alien",
+   "rim": "#78E68C"
+  },
+  {
+   "id": "avatar_06",
+   "name_fr": "Alien à trois yeux",
+   "name_en": "Three-eyed alien",
+   "rim": "#4C8DFF"
+  },
+  {
+   "id": "avatar_07",
+   "name_fr": "Poulpe cosmique",
+   "name_en": "Cosmic octopus",
+   "rim": "#FF4D6D"
+  },
+  {
+   "id": "avatar_08",
+   "name_fr": "Robot",
+   "name_en": "Robot",
+   "rim": "#39F0D8"
+  },
+  {
+   "id": "avatar_09",
+   "name_fr": "Planète à anneaux",
+   "name_en": "Ringed planet",
+   "rim": "#FFB347"
+  },
+  {
+   "id": "avatar_10",
+   "name_fr": "Comète",
+   "name_en": "Comet",
+   "rim": "#4C8DFF"
+  },
+  {
+   "id": "avatar_11",
+   "name_fr": "Étoile",
+   "name_en": "Star",
+   "rim": "#B04CFF"
+  },
+  {
+   "id": "avatar_12",
+   "name_fr": "Chat lunaire",
+   "name_en": "Moon cat",
+   "rim": "#78E68C"
+  },
+  {
+   "id": "avatar_13",
+   "name_fr": "Fusée",
+   "name_en": "Rocket",
+   "rim": "#FFB347"
+  },
+  {
+   "id": "avatar_14",
+   "name_fr": "Soucoupe volante",
+   "name_en": "Flying saucer",
+   "rim": "#39F0D8"
+  },
+  {
+   "id": "avatar_15",
+   "name_fr": "Trou noir",
+   "name_en": "Black hole",
+   "rim": "#B04CFF"
+  },
+  {
+   "id": "avatar_16",
+   "name_fr": "Galaxie spirale",
+   "name_en": "Spiral galaxy",
+   "rim": "#4C8DFF"
+  }
+ ]
+}

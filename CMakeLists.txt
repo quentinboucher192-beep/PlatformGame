@@ -68,6 +68,28 @@ add_library(cosmic_game STATIC ${COSMIC_GAME_SOURCES})
 target_link_libraries(cosmic_game PUBLIC cosmic_engine)
 cosmic_set_warnings(cosmic_game)
 
+# Cosmic Online HTTP client: WinHTTP (part of Windows, no DLL to ship) or libcurl elsewhere.
+# Without it the game still builds and runs; the online screens report that the network
+# is not available in this build.
+option(COSMIC_ONLINE_HTTP "Build the HTTP client of Cosmic Online" ON)
+if(WIN32)
+    target_link_libraries(cosmic_game PUBLIC crypt32)  # DPAPI protection of the saved session
+endif()
+if(COSMIC_ONLINE_HTTP)
+    if(WIN32)
+        target_compile_definitions(cosmic_game PRIVATE COSMIC_HTTP_WINHTTP)
+        target_link_libraries(cosmic_game PUBLIC winhttp)
+    else()
+        find_package(CURL)
+        if(CURL_FOUND)
+            target_compile_definitions(cosmic_game PRIVATE COSMIC_HTTP_CURL)
+            target_link_libraries(cosmic_game PUBLIC CURL::libcurl)
+        else()
+            message(WARNING "libcurl introuvable : Cosmic Online est compilé sans client HTTP (installez libcurl4-openssl-dev).")
+        endif()
+    endif()
+endif()
+
 # ------------------------------------------------------------------------- executable
 set(COSMIC_EXE_SOURCES main.cpp)
 if(WIN32)

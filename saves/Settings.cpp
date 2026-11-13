@@ -23,6 +23,13 @@ Json Settings::toJson() const {
                      {"editorAutosave", gameplay.editorAutosave},
                      {"editorAutosaveSeconds", gameplay.editorAutosaveSeconds},
                      {"unlockAll", gameplay.unlockAll}};
+    j["online"] = {{"enabled", online.enabled},
+                   {"autoLogin", online.autoLogin},
+                   {"autoSync", online.autoSync},
+                   {"showPseudonyms", online.showPseudonyms},
+                   {"bandwidth", online.bandwidth},
+                   {"onboardingDone", online.onboardingDone},
+                   {"serverOverride", online.serverOverride}};
     j["input"] = input.toJson();
     return j;
 }
@@ -56,6 +63,16 @@ Settings Settings::fromJson(const Json& j) {
         s.gameplay.editorAutosave = jget<bool>(g, "editorAutosave", true);
         s.gameplay.editorAutosaveSeconds = std::clamp(jget<int>(g, "editorAutosaveSeconds", 60), 10, 600);
         s.gameplay.unlockAll = jget<bool>(g, "unlockAll", true);
+    }
+    if (j.contains("online")) {
+        const Json& o = j["online"];
+        s.online.enabled = jget<bool>(o, "enabled", true);
+        s.online.autoLogin = jget<bool>(o, "autoLogin", true);
+        s.online.autoSync = jget<bool>(o, "autoSync", true);
+        s.online.showPseudonyms = jget<bool>(o, "showPseudonyms", true);
+        s.online.bandwidth = std::clamp(jget<int>(o, "bandwidth", 1), 0, 1);
+        s.online.onboardingDone = jget<bool>(o, "onboardingDone", false);
+        s.online.serverOverride = jstr(o, "serverOverride").substr(0, 200);
     }
     if (j.contains("input")) s.input = InputBindings::fromJson(j["input"]);
     return s;

@@ -632,6 +632,7 @@ void GameWorld::hint(const std::string& text, float duration) {
 
 void GameWorld::emit(const std::string& source, const std::string& trigger, const Json& params) {
     if (mode_ == WorldMode::Editor) return;
+    if (eventObserver) eventObserver(source, trigger);
     events_.signal(*this, source, trigger, params);
 }
 
