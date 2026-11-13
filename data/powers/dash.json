@@ -1,0 +1,7 @@
+{
+  "format": "cosmic.power", "id": "dash", "behavior": "dash", "name": "Dash",
+  "description": "Propulsion fulgurante dans la direction visée. Invulnérable pendant le Dash, brise les murs de cristal.",
+  "icon": 0, "input": "dash", "energyCost": 15, "cooldown": 0.45, "duration": 0.16,
+  "color": "#39f0d8", "sound": "sounds/dash.wav",
+  "params": { "speed": 430, "duration": 0.16, "airUses": 1, "damage": 1 }
+}

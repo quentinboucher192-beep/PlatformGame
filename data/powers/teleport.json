@@ -1,0 +1,7 @@
+{
+  "format": "cosmic.power", "id": "teleport", "behavior": "teleport", "name": "Téléportation courte",
+  "description": "Se téléporte sur une courte distance dans la direction visée, à travers les barrières de phase.",
+  "icon": 4, "input": "teleport", "energyCost": 35, "cooldown": 1.1, "duration": 0,
+  "color": "#b04cff", "sound": "sounds/teleport_out.wav",
+  "params": { "distance": 80 }
+}

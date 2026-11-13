@@ -1,0 +1,39 @@
+{
+  "format": "cosmic.enemy", "id": "thornwarden", "name": "Thornwarden",
+  "description": "Gardien ancien envahi par les ronces",
+  "family": "miniboss", "animation": "animations/thornwarden.json", "size": [44, 60], "scale": 1.0,
+  "hp": 48, "contactDamage": 1, "speed": 38, "chaseSpeedMultiplier": 1.2, "flying": false, "knockbackResist": 1,
+  "detectionRange": 320, "attackRange": 160, "loseRange": 2000, "needsLineOfSight": false,
+  "movement": "guard", "reaction": "chase", "fleeHealthRatio": 0, "preferredDistance": 0, "hopVelocity": 0,
+  "attacks": [
+    { "id": "slam", "name": "Frappe des ronces", "type": "slam", "damage": 2, "range": 170, "telegraph": 0.9, "active": 0.35,
+      "recover": 1.0, "cooldown": 3.0, "telegraphAnim": "telegraph_slam", "attackAnim": "slam", "projectileSpeed": 200, "knockback": 240 },
+    { "id": "charge", "name": "Charge", "type": "charge", "damage": 2, "range": 420, "minRange": 70, "telegraph": 0.85, "active": 2.4,
+      "recover": 1.1, "cooldown": 4.0, "telegraphAnim": "telegraph_charge", "attackAnim": "charge", "lungeSpeed": 250, "knockback": 260 },
+    { "id": "barrage", "name": "Pluie d'épines", "type": "projectile", "damage": 1, "range": 420, "telegraph": 0.8, "active": 0.25,
+      "recover": 0.8, "cooldown": 3.2, "telegraphAnim": "telegraph_barrage", "attackAnim": "barrage", "projectile": "boss_thorn",
+      "projectileSpeed": 175, "count": 5, "spread": 11 },
+    { "id": "orbs", "name": "Orbes du cœur", "type": "arc", "damage": 1, "range": 420, "telegraph": 0.8, "active": 0.25,
+      "recover": 0.8, "cooldown": 4.5, "telegraphAnim": "telegraph_barrage", "attackAnim": "barrage", "projectile": "boss_orb",
+      "projectileSpeed": 150, "count": 3, "spread": 25, "gravity": 380 },
+    { "id": "summon", "name": "Appel de la forêt", "type": "summon", "damage": 0, "range": 500, "telegraph": 0.9, "active": 0.4,
+      "recover": 0.8, "cooldown": 10, "telegraphAnim": "summon", "attackAnim": "summon", "summonId": "glowmite", "summonCount": 2, "maxSummoned": 3 },
+    { "id": "laser", "name": "Rayon du cœur", "type": "laser", "damage": 2, "range": 420, "telegraph": 1.1, "active": 1.4,
+      "recover": 1.2, "cooldown": 6.0, "telegraphAnim": "telegraph_laser", "attackAnim": "laser", "laserLength": 380, "sweepDegrees": 70 }
+  ],
+  "powers": { "teleport": { "enabled": false }, "defend": { "enabled": false }, "reinforcements": { "enabled": false } },
+  "damageMultipliers": { "dash": 0.5, "impulse": 1.5 },
+  "rewards": { "score": 3000, "drops": [ { "type": "health_orb", "chance": 1.0 } ] },
+  "light": { "color": "#39f0d8", "radius": 90 },
+  "sounds": { "hurt": "sounds/enemy_hurt.wav", "death": "sounds/boss_roar.wav", "alert": "sounds/boss_roar.wav" },
+  "boss": {
+    "title": "THORNWARDEN, GARDIEN ANCIEN",
+    "phases": [
+      { "name": "Éveil", "hpThreshold": 1.0, "attacks": ["slam", "barrage", "charge"], "speedMultiplier": 1.0, "cooldownMultiplier": 1.0 },
+      { "name": "Colère des ronces", "hpThreshold": 0.66, "attacks": ["barrage", "slam", "summon", "orbs", "charge"],
+        "speedMultiplier": 1.15, "cooldownMultiplier": 0.85, "enterText": "La forêt répond à son appel !", "summonOnEnter": true },
+      { "name": "Cœur embrasé", "hpThreshold": 0.33, "attacks": ["laser", "slam", "orbs", "charge", "barrage"],
+        "speedMultiplier": 1.3, "cooldownMultiplier": 0.7, "enterText": "Le cœur du Gardien s'embrase !" }
+    ]
+  }
+}

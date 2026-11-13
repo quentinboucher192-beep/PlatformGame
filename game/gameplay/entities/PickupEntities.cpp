@@ -1,0 +1,162 @@
+// Collectibles (shards, relics, orbs) and power unlock tablets.
+
+#include <cmath>
+
+#include "engine/input/InputTypes.h"
+#include "engine/resources/ResourceManager.h"
+#include "game/content/ContentDatabase.h"
+#include "game/gameplay/GameWorld.h"
+#include "game/gameplay/entities/Entities.h"
+
+namespace cosmic {
+
+void CollectibleEntity::init(GameWorld& w) {
+    const std::string& t = type();
+    std::string anim = "animations/" + t + ".json";
+    std::string clip = t == "shard" ? "spin" : "idle";
+    sprite_.load(w.resources(), anim, clip);
+    base_ = box.center();
+    seed_ = static_cast<float>((static_cast<int>(base_.x) * 13 + static_cast<int>(base_.y) * 7) % 100) * 0.07f;
+}
+
+void CollectibleEntity::makeDrop(float vx, float vy) {
+    dropping_ = true;
+    vel_ = {vx, vy};
+    pickupDelay_ = 0.35f;
+    life_ = 12.0f;
+}
+
+void CollectibleEntity::fixedUpdate(GameWorld& w, float dt) {
+    if (pickupDelay_ > 0.0f) pickupDelay_ -= dt;
+    if (life_ > 0.0f) {
+        life_ -= dt;
+        if (life_ <= 0.0f) removed = true;
+    }
+    if (dropping_) {
+        vel_.y = std::min(vel_.y + 600.0f * dt, 300.0f);
+        MoveOptions opt;
+        Rect b = box;
+        MoveResult r = w.physics().move(b, vel_ * dt, opt);
+        box = b;
+        if (r.hitBottom) {
+            vel_.y = -vel_.y * 0.35f;
+            vel_.x *= 0.6f;
+            if (std::abs(vel_.y) < 30.0f) {
+                dropping_ = false;
+                base_ = box.center() - Vec2{0, 4};
+            }
+        }
+        if (r.hitLeft || r.hitRight) vel_.x = -vel_.x * 0.5f;
+    } else {
+        // Magnet toward a nearby player (drops and energy orbs).
+        Player& p = w.player();
+        float d = distance(p.center(), box.center());
+        if ((life_ > 0.0f || type() == "energy_orb") && d < 40.0f && p.alive()) {
+            Vec2 c = box.center() + (p.center() - box.center()).normalized() * std::min(d, 220.0f * dt);
+            box = Rect::fromCenter(c, box.size());
+            base_ = c;
+        } else {
+            box = Rect::fromCenter(base_ + Vec2{0, std::sin(w.time() * 2.5f + seed_) * 2.0f}, box.size());
+        }
+    }
+    sprite_.anim.update(dt);
+}
+
+void CollectibleEntity::onPlayerEnter(GameWorld& w) {
+    if (pickupDelay_ > 0.0f || removed) {
+        playerInside = false;  // re-check next step
+        return;
+    }
+    Player& p = w.player();
+    const std::string& t = type();
+    if (t == "shard") {
+        if (life_ < 0.0f) w.stats().shards++;
+        w.stats().scoreBonus += obj_.prop<int>("value", 50);
+        float pitch = 1.0f + std::fmod(w.time() * 0.7f, 0.25f);
+        w.playSound("sounds/collect_shard.wav", box.center(), 0.6f, pitch);
+        w.particles().emit("collect_shard", box.center(), 1.0f);
+        p.addEnergy(4.0f);
+    } else if (t == "relic") {
+        w.stats().relics++;
+        w.stats().scoreBonus += obj_.prop<int>("value", 1000);
+        w.playSound("sounds/collect_relic.wav", box.center(), 0.9f);
+        w.particles().emit("collect_relic", box.center(), 1.0f);
+        w.flash({255, 217, 138, 255}, 0.15f);
+        WorldMessage m;
+        m.style = WorldMessage::Style::Secret;
+        m.text = obj_.propStr("name", "Relique ancienne") + " trouvée !";
+        m.duration = 2.8f;
+        w.message(m);
+    } else if (t == "health_orb") {
+        if (p.health >= p.config().maxHealth && life_ < 0.0f) {
+            playerInside = false;
+            return;  // keep it for later
+        }
+        p.heal(obj_.prop<int>("amount", 1));
+        w.playSound("sounds/collect_orb.wav", box.center(), 0.8f, 0.9f);
+        w.particles().emit("heal", p.center(), 1.0f);
+    } else if (t == "energy_orb") {
+        p.addEnergy(obj_.prop<float>("amount", 40.0f));
+        w.playSound("sounds/collect_orb.wav", box.center(), 0.7f, 1.2f);
+        w.particles().emit("energy_gain", p.center(), 1.0f);
+    }
+    w.emit(id(), "collected");
+    removed = true;
+}
+
+void CollectibleEntity::render(RenderContext& ctx) {
+    if (life_ > 0.0f && life_ < 2.0f && static_cast<int>(life_ * 10) % 2 == 0) return;  // blink before vanishing
+    sprite_.draw(ctx, box.center());
+    Color c = type() == "shard"       ? Color{57, 240, 216, 255}
+              : type() == "relic"     ? Color{255, 217, 138, 255}
+              : type() == "health_orb" ? Color{255, 77, 109, 255}
+                                       : Color{57, 240, 216, 255};
+    ctx.lights.add(box.center(), type() == "relic" ? 60.0f : 32.0f, c);
+    ctx.r.drawWorldGlow(box.center(), type() == "relic" ? 14.0f : 9.0f, c.withAlpha(90));
+}
+
+// ------------------------------------------------------------- power unlock
+
+void PowerUnlockEntity::init(GameWorld& w) {
+    power_ = obj_.propStr("power", "dash");
+    sprite_.load(w.resources(), "animations/power_unlock.json", power_);
+    // Already owned (start powers): the tablet is just decoration.
+    if (w.mode() != WorldMode::Editor && w.player().hasPower(power_)) removed = true;
+}
+
+void PowerUnlockEntity::update(GameWorld& /*w*/, float dt) {
+    t_ += dt;
+    sprite_.anim.update(dt);
+}
+
+void PowerUnlockEntity::onPlayerEnter(GameWorld& w) {
+    const PowerDefinition* def = w.content().power(power_);
+    if (!def) return;
+    w.player().grantPower(*def);
+    w.player().addEnergy(100.0f);
+    w.playSound("sounds/power_unlock.wav", 1.0f);
+    w.particles().emit("power_unlock", box.center(), 1.5f);
+    w.flash(def->color, 0.35f);
+    w.shake(0.25f);
+    w.hitStop(0.12f);
+    WorldMessage m;
+    m.style = WorldMessage::Style::Title;
+    m.text = "Nouveau pouvoir : " + def->name;
+    std::string msg = obj_.propStr("message");
+    m.subtitle = msg.empty() ? def->description : msg;
+    m.speaker = actionId(def->input);  // the HUD shows the matching button
+    m.duration = 5.0f;
+    w.message(m);
+    w.emit(id(), "collected");
+    w.emit(power_, "unlocked");
+    removed = true;
+}
+
+void PowerUnlockEntity::render(RenderContext& ctx) {
+    Vec2 c = box.center() + Vec2{0, std::sin(t_ * 2.0f) * 3.0f};
+    ctx.r.drawWorldGlow(c, 26.0f, {176, 76, 255, 90});
+    sprite_.draw(ctx, c);
+    ctx.lights.add(c, 90.0f, {200, 120, 255, 255});
+}
+
+}  // namespace cosmic

@@ -1,0 +1,7 @@
+{
+  "format": "cosmic.power", "id": "impulse", "behavior": "impulse", "name": "Impulsion",
+  "description": "Propulsion verticale libérant une onde de choc : repousse les ennemis, brise la roche fissurée. Une fois par saut.",
+  "icon": 3, "input": "impulse", "energyCost": 20, "cooldown": 0.8, "duration": 0,
+  "color": "#ffb347", "sound": "sounds/impulse.wav",
+  "params": { "velocity": 380, "radius": 46, "damage": 1, "knockback": 280, "airUses": 1 }
+}

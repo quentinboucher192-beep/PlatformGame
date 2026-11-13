@@ -1,0 +1,18 @@
+{
+  "format": "cosmic.enemy", "id": "sporeflower", "name": "Fleur à spores",
+  "description": "Plante carnivore enracinée. Gonfle son bulbe puis projette des spores toxiques en cloche.",
+  "family": "turret", "animation": "animations/sporeflower.json", "size": [16, 20], "scale": 1.0,
+  "hp": 3, "contactDamage": 1, "speed": 0, "chaseSpeedMultiplier": 1, "flying": false, "knockbackResist": 1,
+  "detectionRange": 230, "attackRange": 250, "loseRange": 300, "needsLineOfSight": false,
+  "movement": "stationary", "reaction": "none", "fleeHealthRatio": 0, "preferredDistance": 0, "hopVelocity": 0,
+  "attacks": [
+    { "id": "spore", "name": "Spores", "type": "arc", "damage": 1, "range": 250, "minRange": 20, "telegraph": 0.75,
+      "active": 0.15, "recover": 0.6, "cooldown": 2.2, "telegraphAnim": "telegraph", "attackAnim": "attack",
+      "projectile": "spore", "projectileSpeed": 130, "count": 1, "spread": 0, "gravity": 420, "sound": "sounds/spore_spit.wav" }
+  ],
+  "powers": { "teleport": { "enabled": false }, "defend": { "enabled": false }, "reinforcements": { "enabled": false } },
+  "damageMultipliers": { "melee": 1.5, "dash": 0.5 },
+  "rewards": { "score": 120, "drops": [ { "type": "health_orb", "chance": 0.25 } ] },
+  "light": { "color": "#b04cff", "radius": 36 },
+  "sounds": { "hurt": "sounds/enemy_hurt.wav", "death": "sounds/enemy_death.wav", "alert": "sounds/enemy_alert.wav" }
+}

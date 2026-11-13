@@ -1,0 +1,7 @@
+{
+  "format": "cosmic.power", "id": "wave", "behavior": "wave", "name": "Onde énergétique",
+  "description": "Projette un croissant d'énergie qui traverse un ennemi, active les récepteurs et dissout les barrières d'énergie.",
+  "icon": 1, "input": "wave", "energyCost": 20, "cooldown": 0.55, "duration": 0,
+  "color": "#39f0d8", "sound": "sounds/wave_cast.wav",
+  "params": { "speed": 330, "range": 300, "damage": 2, "pierce": 1, "radius": 7, "recoil": 40 }
+}

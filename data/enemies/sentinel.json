@@ -1,0 +1,18 @@
+{
+  "format": "cosmic.enemy", "id": "sentinel", "name": "Drone sentinelle",
+  "description": "Drone de garde des Anciens. Garde ses distances et tire des éclairs après avoir chargé son œil.",
+  "family": "robot", "animation": "animations/sentinel.json", "size": [16, 14], "scale": 1.0,
+  "hp": 3, "contactDamage": 1, "speed": 45, "chaseSpeedMultiplier": 1.2, "flying": true, "knockbackResist": 0.2,
+  "detectionRange": 200, "attackRange": 220, "loseRange": 320, "needsLineOfSight": true,
+  "movement": "fly", "reaction": "keepDistance", "fleeHealthRatio": 0, "preferredDistance": 115, "hopVelocity": 0,
+  "attacks": [
+    { "id": "bolt", "name": "Éclair", "type": "projectile", "damage": 1, "range": 230, "telegraph": 0.65, "active": 0.1,
+      "recover": 0.5, "cooldown": 1.9, "telegraphAnim": "telegraph", "attackAnim": "attack",
+      "projectile": "drone_bolt", "projectileSpeed": 155, "count": 1, "spread": 0, "sound": "sounds/enemy_shoot.wav" }
+  ],
+  "powers": { "teleport": { "enabled": false }, "defend": { "enabled": false }, "reinforcements": { "enabled": true, "radius": 180 } },
+  "damageMultipliers": { "wave": 1.5 },
+  "rewards": { "score": 150, "drops": [ { "type": "energy_orb", "chance": 0.4 } ] },
+  "light": { "color": "#ff8a3d", "radius": 34 },
+  "sounds": { "hurt": "sounds/enemy_hurt.wav", "death": "sounds/explosion.wav", "alert": "sounds/enemy_alert.wav" }
+}

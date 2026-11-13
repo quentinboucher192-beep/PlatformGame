@@ -22,6 +22,7 @@ constexpr uint32_t Door = 1u << 4;
 constexpr uint32_t Gate = 1u << 5;       // power gate
 constexpr uint32_t Bounce = 1u << 6;
 constexpr uint32_t EnemyOnly = 1u << 7;  // invisible wall for enemies only
+constexpr uint32_t ShieldPass = 1u << 8; // plasma curtain: passable while the shield is active
 }  // namespace ColliderTag
 
 struct Collider {

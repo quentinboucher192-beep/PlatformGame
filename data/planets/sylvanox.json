@@ -1,0 +1,8 @@
+{
+  "format": "cosmic.planet", "id": "sylvanox", "name": "Sylvanox", "subtitle": "Le monde-jardin des Anciens",
+  "description": "Une planète figée dans un crépuscule éternel. Les ruines d'une civilisation disparue flottent au-dessus d'un abîme toxique, envahies par une végétation bioluminescente. Quelque chose y veille encore.",
+  "type": "alien", "difficulty": 2, "color": "#39f0d8", "atmosphere": "#39f0d878",
+  "illustration": "ui/planets/sylvanox.png", "banner": "ui/planets/sylvanox_banner.png", "music": "music/planet_map.ogg",
+  "levels": ["sylvanox_01"], "unlock": "always", "teaser": false,
+  "orbit": { "radius": 300, "speed": 0.05, "phase": 0.6 }, "size": 1.15
+}

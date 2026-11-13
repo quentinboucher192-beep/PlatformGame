@@ -1,0 +1,7 @@
+{
+  "format": "cosmic.power", "id": "shield", "behavior": "shield", "name": "Bouclier",
+  "description": "Bulle protectrice temporaire : absorbe les dégâts, renvoie les projectiles et permet de franchir les rideaux de plasma.",
+  "icon": 2, "input": "shield", "energyCost": 30, "cooldown": 5.0, "duration": 2.2,
+  "color": "#8ffff0", "sound": "sounds/shield_up.wav", "soundEnd": "sounds/shield_down.wav",
+  "params": {}
+}
