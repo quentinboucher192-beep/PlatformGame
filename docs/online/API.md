@@ -141,6 +141,10 @@ de `wrangler.jsonc`, plafonnée à 1 000) multiplie toutes les limites.
 | `profile_write` | 20 | 5 min | joueur | `PATCH /players/me`, `PUT /players/me/avatar` (compteur partagé) |
 | `friend_request` | 30 | 1 h | joueur | `POST /friends/request` |
 | `account_delete` | 5 | 1 h | joueur | `DELETE /players/me` |
+| `social_message` | 30 | 1 min | joueur | `POST /social/conversations/{id}/messages` |
+| `social_group` | 10 | 1 h | joueur | `POST /social/groups` |
+| `social_report` | 20 | 1 h | joueur | `POST /social/messages/{id}/report` |
+| `social_block` | 30 | 1 h | joueur | `POST /social/blocks` |
 | `reads` | 300 | 1 min | IP | toute requête `GET` non servie par le cache |
 
 `POST /auth/logout`, `POST /friends/accept`, `DELETE /friends/{playerId}` et les `POST`
@@ -765,7 +769,34 @@ deux sens sont supprimés). Exemple : `curl -s -X DELETE $API/friends/a908a1fb-a
 `200` : `{ "removed": true }`. Erreurs : 401, 403, 404
 (`PLAYER_NOT_FOUND` si identifiant mal formé, `FRIEND_NOT_FOUND`).
 
-### 8.8 Administration
+### 8.8 Social : conversations, groupes, blocages
+
+Toutes ces routes exigent une session. Le serveur identifie le joueur par sa session et ne
+montre une conversation qu'à ses membres (`404 CONVERSATION_NOT_FOUND` pour les autres, sans
+révéler qu'elle existe). On n'écrit qu'à ses **amis** ; un **blocage** (dans un sens ou dans
+l'autre) met fin à l'amitié, empêche les demandes d'amis et les conversations privées, et masque
+les messages du joueur bloqué pour celui qui bloque, y compris dans les groupes.
+
+Un message : 1 à 500 caractères après nettoyage (caractères de contrôle et d'inversion de sens
+supprimés, sauts de ligne conservés, 3 lignes vides au plus, espaces de bord retirés).
+
+| Route | Rôle |
+|---|---|
+| `GET /social/conversations` | conversations du joueur (100 dernières actives) : `id`, `kind` (`direct`/`group`), `name` (nom du groupe ou pseudonyme de l'ami), `members[]` (profil public + `role`), `role`, `unread`, `last_message` ; `unread_total` |
+| `GET /social/unread` | `total` des messages non lus et les 5 plus récents (`id`, `conversation_id`, `created_at`, `body` tronqué à 120, `kind`, `name`, `sender`) — interrogé par le jeu toutes les 30 s pour les notifications |
+| `POST /social/direct` `{player_id}` | ouvre (ou crée une fois) la conversation privée avec un ami — `403 NOT_FRIENDS` / `403 BLOCKED` |
+| `POST /social/groups` `{name, member_ids}` | crée un groupe (nom 1-40, 1 à 19 amis : 20 membres au plus) ; le créateur en est le propriétaire |
+| `PATCH /social/groups/{id}` `{name}` | renommer (propriétaire) |
+| `POST /social/groups/{id}/members` `{player_id}` | ajouter un ami (propriétaire) — `409 GROUP_FULL` |
+| `DELETE /social/groups/{id}/members/{playerId}` | quitter (soi-même) ou retirer un membre (propriétaire). Le propriétaire qui part transmet le groupe au membre le plus ancien ; un groupe vide est supprimé |
+| `GET /social/conversations/{id}/messages?limit=1..100&before=<date ISO>` | messages du plus ancien au plus récent (`id`, `sender`, `mine`, `body`, `deleted`, `created_at`), `has_more` |
+| `POST /social/conversations/{id}/messages` `{body}` | envoie un message (`201`) ; dans une conversation privée, il faut être encore amis et sans blocage |
+| `POST /social/conversations/{id}/read` | marque tout comme lu |
+| `DELETE /social/messages/{id}` | l'auteur efface son message (le texte est supprimé, la bulle « Message supprimé » reste) |
+| `POST /social/messages/{id}/report` `{reason?}` | signale le message d'un autre membre aux modérateurs (une fois par joueur et par message, journal d'audit) |
+| `GET /social/blocks` · `POST /social/blocks` `{player_id}` · `DELETE /social/blocks/{playerId}` | joueurs bloqués, bloquer, débloquer (le joueur bloqué n'est pas prévenu) |
+
+### 8.9 Administration
 
 Réservé aux opérateurs : actif seulement si le secret `ADMIN_TOKEN` (≥ 32 caractères, posé
 avec `wrangler secret put`) existe, sinon ces routes répondent `404 NOT_FOUND`. En-tête

@@ -12,6 +12,7 @@ namespace {
 constexpr float kMaxRetryDelay = 300.0f;
 constexpr float kStatusPollSeconds = 90.0f;
 constexpr float kFriendsPollSeconds = 60.0f;
+constexpr float kSocialPollSeconds = 30.0f;
 
 ApiResult localError(const std::string& code, const std::string& message) {
     ApiResult r;
@@ -123,6 +124,14 @@ void OnlineService::update(float dt) {
         if (friendsTimer_ <= 0.0f) {
             friendsTimer_ = kFriendsPollSeconds;
             refreshFriends();
+        }
+    }
+    // Unread messages: read on connection, then every 30 seconds.
+    if (netState_ == OnlineState::Online && loggedIn() && !socialBusy_) {
+        socialTimer_ -= dt;
+        if (socialTimer_ <= 0.0f) {
+            socialTimer_ = kSocialPollSeconds;
+            refreshUnread();
         }
     }
     // PENDING records are re-checked from time to time while connected.
@@ -645,6 +654,15 @@ void OnlineService::checkUsername(const std::string& username, ApiCallback cb) {
 void OnlineService::resetFriends() {
     pendingFriendRequests_ = 0;
     friendsTimer_ = 3.0f;
+    unreadMessages_ = 0;
+    socialTimer_ = 5.0f;
+    openConversation_.clear();
+}
+
+void OnlineService::saveFriendNotices() {
+    std::error_code ec;
+    fs::create_directories(userDir_ / "online", ec);
+    FileUtil::writeTextAtomic(userDir_ / "online" / "friend_notices.json", friendNotices_.dump());
 }
 
 void OnlineService::loadFriendNotices() {
@@ -698,10 +716,10 @@ void OnlineService::noteFriends(const Json& data) {
     for (const auto& [id, name] : incoming)
         if (!seenIncoming.count(id)) newRequests.push_back(name);
     if (newRequests.size() == 1)
-        notify(Notification::Kind::Friend, "Demande d'ami", newRequests.front() + " veut devenir votre ami (Paramètres en ligne → Amis).");
+        notify(Notification::Kind::Friend, "Demande d'ami", newRequests.front() + " veut devenir votre ami (ONLINE → SOCIAL → Amis).");
     else if (newRequests.size() > 1)
         notify(Notification::Kind::Friend, "Demandes d'amis",
-               std::to_string(newRequests.size()) + " joueurs veulent devenir vos amis (Paramètres en ligne → Amis).");
+               std::to_string(newRequests.size()) + " joueurs veulent devenir vos amis (ONLINE → SOCIAL → Amis).");
     for (const auto& [id, name] : friends)
         if (wasOutgoing.count(id)) notify(Notification::Kind::Friend, "Demande acceptée", name + " a accepté votre demande d'ami.");
 
@@ -710,9 +728,69 @@ void OnlineService::noteFriends(const Json& data) {
     for (const auto& e : outgoing) out.push_back(e.first);
     known = {{"incoming", in}, {"outgoing", out}};
     pendingFriendRequests_ = static_cast<int>(incoming.size());
-    std::error_code ec;
-    fs::create_directories(userDir_ / "online", ec);
-    FileUtil::writeTextAtomic(userDir_ / "online" / "friend_notices.json", friendNotices_.dump());
+    saveFriendNotices();
+}
+
+// ------------------------------------------------------------------- social
+
+void OnlineService::refreshUnread(ApiCallback cb) {
+    if (!loggedIn() || !usable()) {
+        if (cb) cb(localError("NOT_LOGGED_IN", "Non connecté."));
+        return;
+    }
+    socialBusy_ = true;
+    std::string owner = tokens_.playerId;
+    call("GET", "/api/v1/social/unread", {}, {}, true, [this, owner, cb](const ApiResult& r) {
+        socialBusy_ = false;
+        if (r.ok && owner == tokens_.playerId) noteUnread(r.data);
+        if (cb) cb(r);
+    });
+}
+
+void OnlineService::noteUnread(const Json& data) {
+    const std::string me = tokens_.playerId;
+    if (me.empty() || !data.is_object()) return;
+    unreadMessages_ = std::max(0, jget<int>(data, "total", 0));
+    const std::string key = me + "/messages";
+    std::string seen = friendNotices_.contains(key) && friendNotices_[key].is_string() ? friendNotices_[key].get<std::string>() : std::string{};
+    std::string newest = seen;
+    struct Fresh {
+        std::string sender, body, where;
+    };
+    std::vector<Fresh> fresh;
+    if (auto it = data.find("latest"); it != data.end() && it->is_array())
+        for (const auto& m : *it) {
+            std::string at = jstr(m, "created_at");
+            if (at.empty() || at <= seen) continue;  // ISO-8601 UTC dates compare as strings
+            newest = std::max(newest, at);
+            if (jstr(m, "conversation_id") == openConversation_) continue;  // already on screen
+            std::string where = jstr(m, "kind") == "group" ? jstr(m, "name") : std::string{};
+            fresh.push_back({jstr(m, "sender"), jstr(m, "body"), where});
+        }
+    if (fresh.size() == 1) {
+        const Fresh& f = fresh.front();
+        std::string body = f.body;
+        if (body.size() > 110) {
+            size_t cut = 107;  // never inside a UTF-8 sequence
+            while (cut > 0 && (static_cast<unsigned char>(body[cut]) & 0xC0) == 0x80) --cut;
+            body = body.substr(0, cut) + "…";
+        }
+        for (char& c : body)
+            if (c == '\n') c = ' ';
+        notify(Notification::Kind::Message, f.where.empty() ? "Message de " + f.sender : f.sender + " · " + f.where, body);
+    } else if (fresh.size() > 1) {
+        std::vector<std::string> names;
+        for (const auto& f : fresh)
+            if (std::find(names.begin(), names.end(), f.sender) == names.end()) names.push_back(f.sender);
+        std::string who = names.front();
+        for (size_t i = 1; i < names.size() && i < 3; ++i) who += ", " + names[i];
+        if (names.size() > 3) who += "…";
+        notify(Notification::Kind::Message, std::to_string(fresh.size()) + " nouveaux messages", "De " + who + " (ONLINE → SOCIAL).");
+    }
+    if (newest != seen) {
+        friendNotices_[key] = newest;
+        saveFriendNotices();
+    }
 }
 
 // ---------------------------------------------------------------- interface

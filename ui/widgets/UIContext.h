@@ -103,10 +103,14 @@ public:
     void beginScroll(const std::string& name, const Rect& view, float contentHeight);
     void endScroll();
     float scrollOffset() const { return scrollStack_.empty() ? 0.0f : scrollStack_.back().offset; }
+    /// Moves a scroll region (clamped by the next beginScroll; a huge value = the end).
+    void setScroll(const std::string& name, float offset) { scrolls_[id(name)] = offset; }
 
     // --------------------------------------------------------------- state
     bool focused(const std::string& name) const { return focus_ == id(name); }
     void setFocus(const std::string& name) { focus_ = id(name); }
+    /// Focuses a text field and starts editing it (e.g. the chat input after sending).
+    void editText(const std::string& name);
     bool hasFocus() const { return focus_ != 0; }
     bool editingText() const { return editing_ != 0; }
     bool mouseOver(const Rect& r) const;

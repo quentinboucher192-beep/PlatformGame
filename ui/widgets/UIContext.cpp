@@ -398,6 +398,11 @@ bool UIContext::passwordField(const std::string& name, const Rect& rc, std::stri
     return textFieldImpl(name, rc, value, placeholder, maxLen, true);
 }
 
+void UIContext::editText(const std::string& name) {
+    focus_ = editing_ = id(name);
+    if (app_) input().startTextInput(app_->window());
+}
+
 bool UIContext::textFieldImpl(const std::string& name, const Rect& rc, std::string& value, const std::string& placeholder,
                               size_t maxLen, bool mask) {
     WidgetId wid = id(name);
@@ -451,9 +456,12 @@ bool UIContext::textFieldImpl(const std::string& name, const Rect& rc, std::stri
             if ((ch & 0xC0) != 0x80) masked += "\xE2\x80\xA2";  // one dot per code point
     std::string shown = value.empty() && editing_ != wid ? placeholder : (mask ? masked : value);
     Color c = value.empty() && editing_ != wid ? theme_.textDim : theme_.text;
-    Vec2 sz = label(shown, {rc.x + s(10), rc.center().y}, 20, c, Align::Left, FontFace::Body, VAlign::Middle);
+    // A text longer than the field slides left while it is edited, so the caret stays visible.
+    float shift = 0.0f;
+    if (editing_ == wid && !value.empty()) shift = std::max(0.0f, text().measure(shown, FontFace::Body, s(20)).x - (rc.w - s(26)));
+    Vec2 sz = label(shown, {rc.x + s(10) - shift, rc.center().y}, 20, c, Align::Left, FontFace::Body, VAlign::Middle);
     if (editing_ == wid && std::fmod(time_, 1.0f) < 0.6f) {
-        float cx = rc.x + s(10) + (shown.empty() || value.empty() ? 0.0f : sz.x) + s(2);
+        float cx = rc.x + s(10) - shift + (shown.empty() || value.empty() ? 0.0f : sz.x) + s(2);
         rr.fillRect({cx, rc.center().y - s(11), s(2), s(22)}, theme_.accent);
     }
     rr.popClip();

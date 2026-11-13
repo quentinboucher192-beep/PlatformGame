@@ -91,6 +91,8 @@ public:
         std::string onlineSub = g_.online.loggedIn() ? g_.online.username() : "compte requis";
         if (int n = g_.online.loggedIn() ? g_.online.pendingFriendRequests() : 0; n > 0)
             onlineSub += " · " + std::to_string(n) + (n > 1 ? " demandes d'amis" : " demande d'ami");
+        if (int n = g_.online.unreadMessages(); n > 0 && g_.online.loggedIn())
+            onlineSub += " · " + std::to_string(n) + (n > 1 ? " messages" : " message");
         if (btn("online", "Online", onlineSub)) g_.app.switchScene(makeOnlineRanking(g_));
         if (btn("settings", "Paramètres", "")) g_.app.pushScene(makeSettingsScene(g_, false));
         UIContext::ButtonStyle danger;

@@ -229,12 +229,18 @@ export async function patchMe(ctx: Ctx): Promise<Response> {
 export async function exportMe(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
     const id = auth.player.id;
-    const [sessions, records, friends, replays, auditRows] = await ctx.env.DB.batch([
+    const [sessions, records, friends, replays, auditRows, conversations, messages, blocks] = await ctx.env.DB.batch([
         ctx.env.DB.prepare("SELECT id, created_at, last_used_at, expires_at, refresh_expires_at, revoked_at, client_info FROM player_sessions WHERE player_id = ?1").bind(id),
         ctx.env.DB.prepare("SELECT * FROM records WHERE player_id = ?1 ORDER BY created_at").bind(id),
         ctx.env.DB.prepare("SELECT player_id, friend_id, status, created_at FROM player_friends WHERE player_id = ?1 OR friend_id = ?1").bind(id),
         ctx.env.DB.prepare("SELECT id, record_id, attempt_id, file_size, sha256, format_version, frame_count, duration_ms, verification_status, created_at FROM replay_metadata WHERE player_id = ?1").bind(id),
         ctx.env.DB.prepare("SELECT action, details, created_at FROM audit_log WHERE player_id = ?1 ORDER BY created_at").bind(id),
+        ctx.env.DB.prepare(
+            `SELECT c.id, c.kind, c.name, m.role, m.joined_at, m.last_read_at FROM conversation_members m
+             JOIN conversations c ON c.id = m.conversation_id WHERE m.player_id = ?1 ORDER BY m.joined_at`,
+        ).bind(id),
+        ctx.env.DB.prepare("SELECT id, conversation_id, body, created_at, deleted_at FROM messages WHERE sender_id = ?1 ORDER BY created_at").bind(id),
+        ctx.env.DB.prepare("SELECT blocked_id, created_at FROM player_blocks WHERE player_id = ?1").bind(id),
     ]);
     await audit(ctx, id, "data_export");
     return json(ctx, {
@@ -245,6 +251,9 @@ export async function exportMe(ctx: Ctx): Promise<Response> {
         friends: friends?.results ?? [],
         replays: replays?.results ?? [],
         audit_log: auditRows?.results ?? [],
+        conversations: conversations?.results ?? [],
+        messages_sent: messages?.results ?? [],
+        blocked_players: blocks?.results ?? [],
         notes: "Le mot de passe n'est stocké que sous forme d'empreinte PBKDF2 et n'est pas exportable. Les adresses IP ne sont jamais stockées en clair.",
     });
 }
@@ -273,6 +282,14 @@ export async function deleteMe(ctx: Ctx): Promise<Response> {
     await ctx.env.DB.batch([
         ctx.env.DB.prepare("DELETE FROM audit_log WHERE player_id = ?1").bind(id),
         ctx.env.DB.prepare("DELETE FROM players WHERE id = ?1").bind(id),
+        // Groups the player owned go to their oldest member; emptied conversations disappear.
+        ctx.env.DB.prepare(
+            `UPDATE conversation_members SET role = 'owner' WHERE rowid IN (
+               SELECT (SELECT m2.rowid FROM conversation_members m2 WHERE m2.conversation_id = c.id ORDER BY m2.joined_at LIMIT 1)
+               FROM conversations c WHERE c.kind = 'group'
+                 AND NOT EXISTS (SELECT 1 FROM conversation_members m3 WHERE m3.conversation_id = c.id AND m3.role = 'owner'))`,
+        ),
+        ctx.env.DB.prepare("DELETE FROM conversations WHERE NOT EXISTS (SELECT 1 FROM conversation_members m WHERE m.conversation_id = conversations.id)"),
     ]);
     // A trace without any personal identifier.
     await audit(ctx, null, "account_deleted");

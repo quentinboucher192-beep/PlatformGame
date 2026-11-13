@@ -269,6 +269,8 @@ int main(int argc, char** argv) {
         app.pushScene(makeEnemyEditor(game));
     } else if (has("--planets")) {
         app.pushScene(makePlanetMap(game));
+    } else if (has("--social")) {
+        app.pushScene(makeSocial(game, value("--social")));
     } else if (has("--online")) {
         app.pushScene(makeOnlineRanking(game, value("--online")));
     } else if (std::string rf = value("--replay"); !rf.empty()) {

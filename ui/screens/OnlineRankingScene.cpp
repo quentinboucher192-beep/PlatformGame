@@ -13,6 +13,7 @@
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/OnlineNav.h"
 #include "ui/screens/Thumbnail.h"
 #include "ui/widgets/Glyphs.h"
 
@@ -552,12 +553,11 @@ private:
         st.small = true;
         ui.pushId("online/header");
         st.fontSize = 18;
+        // Friend requests and messages are shown on the SOCIAL item of the navigation.
         std::string settingsLabel = "Paramètres en ligne";
-        if (int n = g_.online.pendingFriendRequests(); n > 0)
-            settingsLabel += " · " + std::to_string(n) + (n > 1 ? " demandes d'amis" : " demande d'ami");
         float w = ui.text().measure(settingsLabel, FontFace::Bold, ui.s(18)).x + ui.s(36);
         if (ui.button("settings", {zoneC_.right() - w, header_.center().y - ui.s(19), w, ui.s(38)}, settingsLabel, st))
-            g_.app.pushScene(makeOnlineSettings(g_, g_.online.pendingFriendRequests() > 0 ? 2 : 0));
+            g_.app.pushScene(makeOnlineSettings(g_, 0));
         if (g_.online.usable() && g_.online.unsentCount() + g_.online.pendingVerificationCount() > 0 && g_.online.loggedIn()) {
             if (ui.button("sync", {zoneC_.right() - w * 2 - ui.s(10), header_.center().y - ui.s(19), w, ui.s(38)},
                           g_.online.syncing() ? "Synchronisation…" : "Synchroniser", st))
@@ -567,30 +567,7 @@ private:
     }
 
     // ----------------------------------------------------------- navigation
-    void drawNavigation() {
-        UIContext& ui = g_.ui;
-        Rect nav{zoneA_.x, zoneA_.y, zoneA_.w, ui.s(3 * 58 + 20)};
-        ui.r().fillRoundedRect(nav, ui.s(14), Color{6, 10, 22, 170});
-        ui.pushId("online/nav");
-        float y = nav.y + ui.s(10), h = ui.s(50);
-        auto item = [&](const char* id, const char* label, bool current) {
-            UIContext::ButtonStyle st;
-            st.align = Align::Left;
-            st.fontSize = 21;
-            st.selected = current;
-            st.primary = current;
-            bool c = ui.button(id, {nav.x + ui.s(10), y, nav.w - ui.s(20), h}, label, st);
-            if (current) ui.r().fillRect({nav.x + ui.s(4), y + ui.s(8), ui.s(4), h - ui.s(16)}, ui.theme().accent);
-            y += h + ui.s(8);
-            return c;
-        };
-        // The levels are played from the level card ("Jouer ce niveau"); the campaign and
-        // the settings are reached from the main menu. The WORKSHOP lives here only.
-        item("ranking", "ONLINE RANKING", true);
-        if (item("workshop", "WORKSHOP", false)) g_.app.switchScene(makeContentManager(g_));
-        if (item("back", "RETOUR", false)) g_.app.switchScene(makeMainMenu(g_));
-        ui.popId();
-    }
+    void drawNavigation() { drawOnlineNav(g_, zoneA_, OnlineSection::Ranking); }
 
     void drawPlayerCard() {
         UIContext& ui = g_.ui;

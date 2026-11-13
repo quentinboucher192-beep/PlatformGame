@@ -32,20 +32,24 @@
 | Replays (commandes de jeu pendant le niveau, trajectoire, événements) | R2 `replays/` + D1 `replay_metadata` | records vérifiés des profils publics | vie du compte |
 | Avatar personnalisé (PNG contrôlé) | R2 `avatars/` | tous | jusqu'au changement d'avatar |
 | Amis et demandes | D1 `player_friends` | les deux joueurs concernés | jusqu'au retrait |
+| Messages (texte, date, auteur) et conversations | D1 `messages`, `conversations`, `conversation_members` | les membres de la conversation | vie du compte de l'auteur (le texte d'un message effacé par son auteur est supprimé) |
+| Joueurs bloqués | D1 `player_blocks` | le joueur qui bloque | jusqu'au déblocage |
+| Signalements de messages | D1 `message_reports` + journal d'audit | opérateurs | tant que le message existe |
 | Journal de sécurité (action, empreinte d'IP) | D1 `audit_log` | opérateurs | 180 jours |
 | Compteurs de limitation (empreintes) | D1 `rate_limits` | personne | 24 heures |
 
 ## Droits du joueur (Paramètres en ligne)
 
 * **Accès / portabilité** : *Exporter mes données* → `GET /api/v1/players/me/export`, enregistré
-  en JSON dans le dossier `exports/` du joueur.
+  en JSON dans le dossier `exports/` du joueur (dont les conversations, les messages envoyés et
+  les joueurs bloqués).
 * **Rectification** : pseudonyme, avatar, pays, visibilités (`PATCH /api/v1/players/me`).
 * **Opposition / limitation** : masquer le profil, le pays, la présence sur le globe, refuser
   les demandes d'amis, désactiver Cosmic Online ou la connexion automatique.
 * **Effacement** : *Supprimer mon compte* (mot de passe + confirmation) →
   `DELETE /api/v1/players/me` : suppression des fichiers R2 (replays, avatar) puis du compte et,
-  en cascade, des sessions, records, meilleurs temps, replays, amis et du journal d'audit
-  rattaché ; une seule trace anonyme « compte supprimé » est conservée. Les records locaux
+  en cascade, des sessions, records, meilleurs temps, replays, amis, messages envoyés,
+  appartenances aux groupes, blocages et du journal d'audit rattaché ; une seule trace anonyme « compte supprimé » est conservée. Les records locaux
   restent sur l'ordinateur du joueur.
 * **Déconnexion de tous les appareils** : révocation de toutes les sessions.
 

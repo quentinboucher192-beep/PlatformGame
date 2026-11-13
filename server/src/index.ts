@@ -11,6 +11,7 @@ import { listLevels } from "./levels";
 import type { RecordRow } from "./model";
 import * as players from "./players";
 import { RULES, rateLimit } from "./ratelimit";
+import * as social from "./social";
 import * as records from "./records";
 import { CATEGORIES, MODES } from "./validate";
 
@@ -116,6 +117,23 @@ route("GET", `${V}/friends`, (ctx) => friends.listFriends(ctx));
 route("POST", `${V}/friends/request`, (ctx) => friends.requestFriend(ctx));
 route("POST", `${V}/friends/accept`, (ctx) => friends.acceptFriend(ctx));
 route("DELETE", `${V}/friends/{playerId}`, (ctx) => friends.deleteFriend(ctx));
+
+// Social: conversations between friends, groups, blocks
+route("GET", `${V}/social/conversations`, (ctx) => social.listConversations(ctx));
+route("GET", `${V}/social/unread`, (ctx) => social.unread(ctx));
+route("POST", `${V}/social/direct`, (ctx) => social.openDirect(ctx));
+route("POST", `${V}/social/groups`, (ctx) => social.createGroup(ctx));
+route("PATCH", `${V}/social/groups/{conversationId}`, (ctx) => social.renameGroup(ctx));
+route("POST", `${V}/social/groups/{conversationId}/members`, (ctx) => social.addMember(ctx));
+route("DELETE", `${V}/social/groups/{conversationId}/members/{playerId}`, (ctx) => social.removeMember(ctx));
+route("GET", `${V}/social/conversations/{conversationId}/messages`, (ctx) => social.listMessages(ctx));
+route("POST", `${V}/social/conversations/{conversationId}/messages`, (ctx) => social.sendMessage(ctx));
+route("POST", `${V}/social/conversations/{conversationId}/read`, (ctx) => social.markRead(ctx));
+route("DELETE", `${V}/social/messages/{messageId}`, (ctx) => social.deleteMessage(ctx));
+route("POST", `${V}/social/messages/{messageId}/report`, (ctx) => social.reportMessage(ctx));
+route("GET", `${V}/social/blocks`, (ctx) => social.listBlocks(ctx));
+route("POST", `${V}/social/blocks`, (ctx) => social.blockPlayer(ctx));
+route("DELETE", `${V}/social/blocks/{playerId}`, (ctx) => social.unblockPlayer(ctx));
 
 // Moderation (only with the ADMIN_TOKEN secret)
 route("GET", `${V}/admin/records`, (ctx) => admin.listForReview(ctx));

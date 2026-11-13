@@ -29,7 +29,7 @@ namespace cosmic {
 class OnlineService {
 public:
     struct Notification {
-        enum class Kind { Info, Success, Warning, Error, Record, Friend };
+        enum class Kind { Info, Success, Warning, Error, Record, Friend, Message };
         Kind kind = Kind::Info;
         std::string title;
         std::string text;
@@ -93,6 +93,18 @@ public:
     void refreshFriends(ApiCallback cb = {});
     /// A screen that loaded GET /friends itself shares the answer (badges, notifications).
     void noteFriends(const Json& data);
+
+    // --------------------------------------------------------------- social
+    /// Unread messages of the player's conversations (last known), for the badges.
+    int unreadMessages() const { return unreadMessages_; }
+    /// Reads GET /social/unread now. It is also read every 30 seconds while connected:
+    /// each new message is notified once, except in the conversation open on screen.
+    void refreshUnread(ApiCallback cb = {});
+    /// The conversation shown by the SOCIAL screen ("" when none).
+    void setOpenConversation(const std::string& id) { openConversation_ = id; }
+    const std::string& openConversation() const { return openConversation_; }
+    /// A screen that loaded GET /social/unread itself shares the answer.
+    void noteUnread(const Json& data);
 
     // ----------------------------------------------------------------- data
     /// GET with the session when logged in. On network failure the last cached answer is
@@ -183,8 +195,15 @@ private:
     float friendsTimer_ = 3.0f;
     bool friendsBusy_ = false;
     int pendingFriendRequests_ = 0;
-    /// Per player: ids seen in the last friend list (to notify only what is new).
+    /// Per player: ids seen in the last friend list (to notify only what is new), and
+    /// under "<id>/messages" the date of the newest message already notified.
     Json friendNotices_ = Json::object();
+    void saveFriendNotices();
+
+    float socialTimer_ = 5.0f;
+    bool socialBusy_ = false;
+    int unreadMessages_ = 0;
+    std::string openConversation_;
 
     std::deque<Notification> notifications_;
     std::vector<RankChange> rankChanges_;

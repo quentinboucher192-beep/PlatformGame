@@ -22,6 +22,10 @@ export const RULES = {
     friendRequest: { name: "friend_request", limit: 30, windowSeconds: 3600 },
     reads: { name: "reads", limit: 300, windowSeconds: 60 },
     accountDelete: { name: "account_delete", limit: 5, windowSeconds: 3600 },
+    socialMessage: { name: "social_message", limit: 30, windowSeconds: 60 },
+    socialGroup: { name: "social_group", limit: 10, windowSeconds: 3600 },
+    socialReport: { name: "social_report", limit: 20, windowSeconds: 3600 },
+    socialBlock: { name: "social_block", limit: 30, windowSeconds: 3600 },
 } as const satisfies Record<string, RateRule>;
 
 /** RATE_LIMIT_SCALE multiplies every limit (development only: repeated local test runs). */

@@ -64,6 +64,7 @@ struct FakeServer {
     std::vector<std::string> log;
     std::map<std::string, Json> records;
     Json friends = {{"friends", Json::array()}, {"incoming", Json::array()}, {"outgoing", Json::array()}};
+    Json unread = {{"total", 0}, {"latest", Json::array()}};
     std::set<std::string> takenNames = {"orion"};
     int friendsCalls = 0;
     bool levelPending = false;  // the server does not know the game's level revision yet
@@ -132,6 +133,7 @@ struct FakeServer {
         }
         if (!authorized(rq)) return apiError(401, "TOKEN_EXPIRED");
         if (path == "/api/v1/auth/me") return okData({{"player", player()}});
+        if (path == "/api/v1/social/unread") return okData(unread);
         if (path == "/api/v1/friends") {
             ++friendsCalls;
             return okData(friends);
@@ -823,6 +825,78 @@ TEST_CASE("online: friend requests are notified once, acceptances too") {
     h.svc.logout(false);
     CHECK(pump(h.svc, [&] { return !h.svc.loggedIn(); }));
     CHECK(h.svc.pendingFriendRequests() == 0);
+}
+
+TEST_CASE("online: new messages are notified once, never for the conversation on screen") {
+    Harness h("messages");
+    CHECK(h.login());
+    h.svc.takeNotifications();
+    auto messageNotices = [&] {
+        std::vector<OnlineService::Notification> v;
+        for (auto& no : h.svc.takeNotifications())
+            if (no.kind == OnlineService::Notification::Kind::Message) v.push_back(no);
+        return v;
+    };
+    auto msg = [](const char* id, const char* conv, const char* at, const char* sender, const char* body, const char* kind = "direct",
+                  const char* name = nullptr) {
+        Json m = {{"id", id}, {"conversation_id", conv}, {"created_at", at}, {"sender", sender}, {"body", body}, {"kind", kind}};
+        m["name"] = name ? Json(name) : Json(nullptr);
+        return m;
+    };
+    auto poll = [&] {
+        bool done = false;
+        h.svc.refreshUnread([&](const ApiResult&) { done = true; });
+        CHECK(pump(h.svc, [&] { return done; }));
+    };
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        h.server->unread = {{"total", 1}, {"latest", Json::array({msg("m1", "c1", "2026-11-13T10:00:00.000Z", "Orion", "Salut !")})}};
+    }
+    // Read automatically a few seconds after the connection.
+    CHECK(pump(h.svc, [&] { return h.svc.unreadMessages() == 1; }, 3000, 0.5f));
+    auto n = messageNotices();
+    CHECK(n.size() == 1);
+    if (!n.empty()) {
+        CHECK(n[0].title == "Message de Orion");
+        CHECK(n[0].text == "Salut !");
+    }
+    poll();
+    CHECK(messageNotices().empty());  // same message: no repeat
+    // A group message (named after the group) and one in the conversation on screen.
+    h.svc.setOpenConversation("c1");
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        h.server->unread = {{"total", 3},
+                            {"latest", Json::array({msg("m3", "c1", "2026-11-13T10:02:00.000Z", "Orion", "Tu es là ?"),
+                                                    msg("m2", "g1", "2026-11-13T10:01:00.000Z", "Lyra", "Session vendredi ?", "group", "Équipe")})}};
+    }
+    poll();
+    n = messageNotices();
+    CHECK(n.size() == 1);
+    if (!n.empty()) CHECK(n[0].title == "Lyra · Équipe");
+    CHECK(h.svc.unreadMessages() == 3);
+    // Several at once: one summary. Remembered across restarts.
+    h.svc.setOpenConversation({});
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        h.server->unread = {{"total", 5},
+                            {"latest", Json::array({msg("m5", "c2", "2026-11-13T10:04:00.000Z", "Vega", "GG"),
+                                                    msg("m4", "c1", "2026-11-13T10:03:00.000Z", "Orion", std::string(200, 'x').c_str())})}};
+    }
+    poll();
+    n = messageNotices();
+    CHECK(n.size() == 1);
+    if (!n.empty()) CHECK(n[0].title == "2 nouveaux messages");
+    OnlineService again;
+    again.init({}, "http://127.0.0.1:9", std::make_unique<FakeTransport>(h.server), h.dir);
+    CHECK(pump(again, [&] { return again.loggedIn() && again.unreadMessages() == 5; }, 4000, 0.5f));
+    int repeated = 0;
+    for (const auto& no : again.takeNotifications()) repeated += no.kind == OnlineService::Notification::Kind::Message;
+    CHECK(repeated == 0);
+    again.shutdown();
+    h.svc.logout(false);
+    CHECK(pump(h.svc, [&] { return !h.svc.loggedIn(); }));
+    CHECK(h.svc.unreadMessages() == 0);
 }
 
 TEST_CASE("online: a run on a revision the server does not know yet is sent later") {

@@ -49,6 +49,9 @@ std::unique_ptr<Scene> makeOnlineRanking(GameServices& g, const std::string& lev
 /// an account, so leaving without one returns to the main menu (the game itself never
 /// needs an account).
 std::unique_ptr<Scene> makeOnlineAccount(GameServices& g, bool onboarding, bool required = false);
+/// SOCIAL (in ONLINE): conversations with friends, groups, friends, blocked players.
+/// `conversationId`: open this conversation; `tab`: 0 Discussions, 1 Amis, 2 Bloqués.
+std::unique_ptr<Scene> makeSocial(GameServices& g, const std::string& conversationId = {}, int tab = 0);
 /// `tab`: 0 Préférences, 1 Compte et confidentialité, 2 Amis.
 std::unique_ptr<Scene> makeOnlineSettings(GameServices& g, int tab = 0);
 /// Downloads and plays back the replay of a verified record.

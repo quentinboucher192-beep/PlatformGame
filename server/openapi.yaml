@@ -40,6 +40,7 @@ tags:
 - name: Globe
   description: Coordinates are the approximate centre of the player's country, never a personal position.
 - {name: Friends}
+- {name: Social, description: "Private conversations between friends, groups, blocks and reports"}
 - name: Administration
   description: 'Operators only: enabled when the ADMIN_TOKEN secret (>= 32 characters) is set, otherwise 404.'
 paths:
@@ -2790,6 +2791,367 @@ paths:
                 ok: false
                 error: {code: PLAYER_NOT_FOUND, message: Joueur introuvable.}
                 request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '500': {$ref: '#/components/responses/InternalError'}
+  /social/conversations:
+    get:
+      tags: [Social]
+      operationId: listConversations
+      summary: Conversations of the player with unread counts and last message
+      security:
+      - {bearerAuth: []}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /social/unread:
+    get:
+      tags: [Social]
+      operationId: socialUnread
+      summary: Unread total and the 5 newest unread messages (polled for notifications)
+      security:
+      - {bearerAuth: []}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /social/direct:
+    post:
+      tags: [Social]
+      operationId: openDirect
+      summary: Open (or create once) the private conversation with a friend
+      security:
+      - {bearerAuth: []}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [player_id]
+              properties:
+                player_id: {type: string, format: uuid}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {description: Forbidden (not friends, blocked, not the owner).}
+        '404': {description: Conversation, message or player not found (or not visible to this player).}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /social/groups:
+    post:
+      tags: [Social]
+      operationId: createGroup
+      summary: Create a group with friends (20 members at most)
+      security:
+      - {bearerAuth: []}
+      description: 'Rate limit `social_group`: 10 per hour per player.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [name, member_ids]
+              properties:
+                name: {type: string, minLength: 1, maxLength: 40}
+                member_ids: {type: array, items: {type: string, format: uuid}, minItems: 1, maxItems: 19}
+      responses:
+        '201':
+          description: Created.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {description: Forbidden (not friends, blocked, not the owner).}
+        '404': {description: Conversation, message or player not found (or not visible to this player).}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /social/groups/{conversationId}:
+    patch:
+      tags: [Social]
+      operationId: renameGroup
+      summary: Rename a group (owner)
+      security:
+      - {bearerAuth: []}
+      parameters:
+      - {name: conversationId, in: path, required: true, schema: {type: string}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [name]
+              properties:
+                name: {type: string, minLength: 1, maxLength: 40}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {description: Forbidden (not friends, blocked, not the owner).}
+        '404': {description: Conversation, message or player not found (or not visible to this player).}
+        '409': {description: Conflict (not a group, group full).}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /social/groups/{conversationId}/members:
+    post:
+      tags: [Social]
+      operationId: addGroupMember
+      summary: Add a friend to a group (owner)
+      security:
+      - {bearerAuth: []}
+      parameters:
+      - {name: conversationId, in: path, required: true, schema: {type: string}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [player_id]
+              properties:
+                player_id: {type: string, format: uuid}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {description: Forbidden (not friends, blocked, not the owner).}
+        '404': {description: Conversation, message or player not found (or not visible to this player).}
+        '409': {description: Conflict (not a group, group full).}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /social/groups/{conversationId}/members/{playerId}:
+    delete:
+      tags: [Social]
+      operationId: removeGroupMember
+      summary: Leave the group, or remove a member (owner); ownership passes to the oldest member, an empty group is deleted
+      security:
+      - {bearerAuth: []}
+      parameters:
+      - {name: conversationId, in: path, required: true, schema: {type: string}}
+      - {name: playerId, in: path, required: true, schema: {type: string}}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {description: Forbidden (not friends, blocked, not the owner).}
+        '404': {description: Conversation, message or player not found (or not visible to this player).}
+        '409': {description: Conflict (not a group, group full).}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /social/conversations/{conversationId}/messages:
+    get:
+      tags: [Social]
+      operationId: listMessages
+      summary: Messages, oldest first (paged backwards with before)
+      security:
+      - {bearerAuth: []}
+      parameters:
+      - {name: conversationId, in: path, required: true, schema: {type: string}}
+      - {name: before, in: query, required: false, schema: {type: string}}
+      - {name: limit, in: query, required: false, schema: {type: integer}}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {description: Conversation, message or player not found (or not visible to this player).}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+    post:
+      tags: [Social]
+      operationId: sendMessage
+      summary: Send a message (1-500 characters after cleaning)
+      security:
+      - {bearerAuth: []}
+      description: 'Control and bidirectional characters are removed, line breaks kept. A private conversation requires an accepted friendship and no block. Rate limit `social_message`: 30 per minute per player.'
+      parameters:
+      - {name: conversationId, in: path, required: true, schema: {type: string}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [body]
+              properties:
+                body: {type: string, minLength: 1, maxLength: 1000}
+      responses:
+        '201':
+          description: Sent.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {description: Forbidden (not friends, blocked, not the owner).}
+        '404': {description: Conversation, message or player not found (or not visible to this player).}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /social/conversations/{conversationId}/read:
+    post:
+      tags: [Social]
+      operationId: markConversationRead
+      summary: Mark the conversation as read
+      security:
+      - {bearerAuth: []}
+      parameters:
+      - {name: conversationId, in: path, required: true, schema: {type: string}}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {description: Conversation, message or player not found (or not visible to this player).}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /social/messages/{messageId}:
+    delete:
+      tags: [Social]
+      operationId: deleteMessage
+      summary: Delete one of your messages (its text is erased)
+      security:
+      - {bearerAuth: []}
+      parameters:
+      - {name: messageId, in: path, required: true, schema: {type: string}}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {description: Conversation, message or player not found (or not visible to this player).}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /social/messages/{messageId}/report:
+    post:
+      tags: [Social]
+      operationId: reportMessage
+      summary: Report a message of another member to the moderators
+      security:
+      - {bearerAuth: []}
+      description: 'Once per player and message. Rate limit `social_report`: 20 per hour per player.'
+      parameters:
+      - {name: messageId, in: path, required: true, schema: {type: string}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                reason: {type: string, maxLength: 200}
+      responses:
+        '201':
+          description: Reported.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {description: Conversation, message or player not found (or not visible to this player).}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /social/blocks:
+    get:
+      tags: [Social]
+      operationId: listBlocks
+      summary: Blocked players
+      security:
+      - {bearerAuth: []}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+    post:
+      tags: [Social]
+      operationId: blockPlayer
+      summary: Block a player (ends the friendship, hides their messages)
+      security:
+      - {bearerAuth: []}
+      description: 'Rate limit `social_block`: 30 per hour per player.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [player_id]
+              properties:
+                player_id: {type: string, format: uuid}
+      responses:
+        '201':
+          description: Blocked.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {description: Conversation, message or player not found (or not visible to this player).}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /social/blocks/{playerId}:
+    delete:
+      tags: [Social]
+      operationId: unblockPlayer
+      summary: Unblock a player
+      security:
+      - {bearerAuth: []}
+      parameters:
+      - {name: playerId, in: path, required: true, schema: {type: string}}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {description: Conversation, message or player not found (or not visible to this player).}
+        '429': {$ref: '#/components/responses/RateLimited'}
         '500': {$ref: '#/components/responses/InternalError'}
   /admin/records:
     get:

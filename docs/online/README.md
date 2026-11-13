@@ -95,9 +95,10 @@ Terminé et testé :
   coupure, réponse illisible, annulation) et test d'intégration de bout en bout contre un
   vrai serveur (Linux / libcurl et Windows / WinHTTP sous Wine) ;
 * écrans : ONLINE RANKING (navigation, globe, classements avec onglets, filtres et recherche,
-  niveau, carte du joueur), compte et consentement, paramètres en ligne (confidentialité, amis,
+  niveau, carte du joueur), SOCIAL (conversations privées entre amis, groupes, amis, joueurs
+  bloqués, signalements), compte et consentement, paramètres en ligne (confidentialité, amis,
   export et suppression des données), replays, statut en ligne sur l'écran de résultats,
-  notifications.
+  notifications (records, demandes d'amis, nouveaux messages).
 
 Limites connues (non présentées comme faites) :
 

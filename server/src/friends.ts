@@ -49,6 +49,13 @@ export async function requestFriend(ctx: Ctx): Promise<Response> {
     if (!target || target.account_status !== "active") throw Errors.notFound("PLAYER_NOT_FOUND", "Joueur introuvable.");
     const me = auth.player.id;
     if (target.id === me) throw Errors.validation([{ field: "player_id", message: "vous ne pouvez pas vous ajouter vous-même" }]);
+    // A block (either way) stops friend requests; the message does not tell who blocked whom.
+    const blocked = await ctx.env.DB.prepare(
+        "SELECT 1 AS x FROM player_blocks WHERE (player_id = ?1 AND blocked_id = ?2) OR (player_id = ?2 AND blocked_id = ?1)",
+    )
+        .bind(me, target.id)
+        .first();
+    if (blocked) throw Errors.forbidden("FRIEND_REQUESTS_DISABLED", "Ce joueur n'accepte pas les demandes d'amis.");
     const existing = await ctx.env.DB.prepare(
         "SELECT player_id, status FROM player_friends WHERE (player_id = ?1 AND friend_id = ?2) OR (player_id = ?2 AND friend_id = ?1)",
     )

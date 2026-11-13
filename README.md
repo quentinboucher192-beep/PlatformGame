@@ -98,7 +98,10 @@ local sans compte Cloudflare. Documentation complète : [docs/online/](docs/onli
 *Continuer* (dernier niveau joué) · *Campagne* (planètes et niveaux) · *Online* ·
 *Paramètres* · *Quitter*.
 
-**Online** (compte requis) : classements, globe, profils, amis, et le **WORKSHOP** (vos niveaux,
+**Online** (compte requis) : **ONLINE RANKING** (classements, globe, profils), **SOCIAL**
+(messagerie privée avec vos amis, groupes de discussion jusqu'à 20 membres, amis et demandes,
+joueurs bloqués, signalement de messages ; notifications des nouveaux messages et demandes,
+gardées pendant une partie et affichées ensuite) et le **WORKSHOP** (vos niveaux,
 niveaux importés, export / import `.cplanet`, éditeur d'ennemis). Dans ONLINE, un niveau se
 joue depuis sa fiche (*Jouer ce niveau*) ; à la fin (ou en quittant), on revient à ONLINE sur
 ce niveau.
