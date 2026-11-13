@@ -93,6 +93,8 @@ L.relic(147.5, 65.5, "Sceau du Forgeron")
 L.shards_line(139.5, 65.5, 144, 65.5, 3)
 L.secret(138, 64, 150, 67, "Une cache sous le sol fissuré !")
 L.light(146, 65, "#ffd98a", 50)
+for rx in (140.5, 144.5, 148):                # rubble in front of the cache (fades once inside)
+    L.decor("ash_rock_big", rx, 67.3, "fg_decor", scale=1.7, tint="#b08878", flip=rx > 144)
 L.sign(118, 63, "Une meute de Braisites : écrasez-les d'une Frappe sismique au milieu du groupe !")
 for i, x in enumerate((125, 127, 129.5, 132)):
     L.enemy("ember_mite", x, 63, patrol_tiles=2, face_left=i % 2 == 1)

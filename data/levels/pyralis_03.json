@@ -91,19 +91,19 @@
   "mode": "limited",
   "limit": 1200,
   "onExpire": "gameover",
-  "referenceTime": 420,
+  "referenceTime": 450,
   "challengeMaxDeaths": 0
  },
  "medals": {
   "bronze": {},
   "silver": {
-   "maxTime": 760
+   "maxTime": 780
   },
   "gold": {
-   "maxTime": 540
+   "maxTime": 570
   },
   "platinum": {
-   "maxTime": 420,
+   "maxTime": 450,
    "maxDeaths": 0
   }
  },
@@ -997,15 +997,15 @@
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    136.0,
-    786.0,
+    120.0,
+    530.0,
     16.0,
     14.0
    ],
    "props": {
     "enemy": "forge_drone",
     "faceLeft": false,
-    "patrol": 64,
+    "patrol": 48,
     "dormant": false,
     "boss": false
    }
@@ -11338,8 +11338,8 @@
     "type": "camera",
     "duration": 3.0,
     "params": {
-     "x": 5280,
-     "y": 960,
+     "x": 5856,
+     "y": 704,
      "ease": "inOutCubic"
     }
    },

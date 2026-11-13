@@ -11,7 +11,7 @@ import os
 import random
 
 from levelkit import Level, ROOT
-from glacior_common import (AURORA_GREEN, AURORA_VIOLET, FROST_CYAN, ICE_BLUE, WARM, DANGER, deco, flora, icicles,
+from glacior_common import (auto_flora, frost_cloud, AURORA_GREEN, AURORA_VIOLET, FROST_CYAN, ICE_BLUE, WARM, DANGER, deco, flora, icicles,
                             lamp, crystal_light, floating_ice, freezing_water, ice_spikes_wall, ceiling_spikes,
                             boss_arena)
 
@@ -228,6 +228,7 @@ L.solid(286, RW, 296, H, METAL)
 L.enemy("frost_bulwark", 291, RW, patrol_tiles=1, face_left=True)
 L.cracked_floor(296, 300, RW, 2)
 L.solid(300, RW, 304, 26, METAL)
+frost_cloud(L, 286, RW - 6, 296, RW, 0.65)                 # freezing mist on the narrow rampart
 L.sign(294, RW, "Brisez la dalle fissurée (Frappe sismique) pour descendre dans la salle des leviers.")
 # 4b. La Salle des Leviers: timed receptor door, plasma curtain under drone fire, phase barrier.
 HF = 34                                          # hall floor
@@ -347,6 +348,9 @@ for o in list(d["objects"]):
         if bottom < 60 and w >= 64 and (y + h) < H * 16:
             icicles(L, rng, x / 16, (x + w) / 16, bottom, every=3.4, long_ratio=0.15)
 
+# Dense snowy flora on every exposed ground (keeps clear of interactive objects).
+auto_flora(L, rng, density=0.55)
+
 # =====================================================================================
 # Events and cinematics
 # =====================================================================================
@@ -357,15 +361,17 @@ L.event("level", "time", [{"type": "hint", "params": {"text": "Plus que 5 minute
 
 d["intro"] = {"skippable": True, "letterbox": True, "steps": [
     {"type": "fade", "duration": 0.01, "params": {"to": 1}},
-    {"type": "cut", "duration": 0.01, "params": {"x": 7290, "y": 640}},
-    {"type": "zoom", "duration": 0.01, "params": {"zoom": 0.75}},
+    {"type": "cut", "duration": 0.01, "params": {"x": 7330, "y": 720}},
+    {"type": "zoom", "duration": 0.01, "params": {"zoom": 0.8}},
     {"type": "fade", "duration": 1.8, "wait": False, "params": {"to": 0}},
     {"type": "text", "duration": 4.5, "wait": False, "params": {"text": "GLACIOR", "subtitle": "Le Bastion Gelé"}},
-    {"type": "camera", "duration": 5.0, "params": {"x": 3600, "y": 300, "ease": "inOutSine"}},
+    {"type": "wait", "duration": 3.2},
     {"type": "text", "duration": 3.8, "wait": False, "params": {
         "text": "Le dernier gardien des Anciens n'a jamais quitté son trône de glace.", "style": "caption"}},
-    {"type": "camera", "duration": 4.0, "params": {"x": 1400, "y": 760, "ease": "inOutCubic"}},
-    {"type": "wait", "duration": 0.4},
+    {"type": "wait", "duration": 2.0},
+    {"type": "camera", "duration": 4.5, "params": {"x": 3600, "y": 360, "ease": "inOutSine"}},
+    {"type": "camera", "duration": 3.0, "params": {"x": 1400, "y": 760, "ease": "inOutCubic"}},
+    {"type": "wait", "duration": 0.3},
     {"type": "zoom", "duration": 2.5, "wait": False, "params": {"zoom": 1.0}},
     {"type": "camera", "duration": 2.5, "params": {"start": True, "ease": "inOutCubic"}},
     {"type": "spawnPlayer", "duration": 0.9},
@@ -385,10 +391,9 @@ d["outro"] = {"skippable": True, "letterbox": True, "steps": [
                                                     "text": "Sylvanox, Pyralis, Glacior... Les relais chantent à nouveau. La galaxie n'est plus seule."}},
     {"type": "zoom", "duration": 4.0, "wait": False, "params": {"zoom": 0.7}},
     {"type": "camera", "duration": 4.0, "wait": False, "params": {"x": 7700, "y": 300, "ease": "inOutSine"}},
-    {"type": "text", "duration": 4.0, "params": {"text": "MERCI D'AVOIR JOUÉ", "subtitle": "Cosmic Platformer",
-                                                 "style": "caption"}},
-    {"type": "text", "duration": 4.0, "params": {"text": "Conception, programmation, graphismes et musique",
-                                                 "subtitle": "Cosmic Studio", "style": "caption"}},
+    {"type": "text", "duration": 4.0, "params": {"text": "MERCI D'AVOIR JOUÉ", "subtitle": "Cosmic Platformer"}},
+    {"type": "text", "duration": 4.0, "params": {"text": "COSMIC STUDIO",
+                                                 "subtitle": "Conception, programmation, graphismes et musique"}},
     {"type": "text", "duration": 4.0, "params": {"text": "Et Nova reprit la route des étoiles...",
                                                  "style": "caption"}},
     {"type": "fade", "duration": 1.5, "params": {"to": 1}},

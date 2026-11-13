@@ -11,7 +11,7 @@ import os
 import random
 
 from levelkit import Level, ROOT
-from glacior_common import (AURORA_GREEN, AURORA_VIOLET, FROST_CYAN, ICE_BLUE, DANGER, deco, flora, icicles,
+from glacior_common import (auto_flora, frost_cloud, AURORA_GREEN, AURORA_VIOLET, FROST_CYAN, ICE_BLUE, DANGER, deco, flora, icicles,
                             lamp, crystal_light, ice_spikes_wall, ceiling_spikes, boss_arena)
 
 rng = random.Random(4202)
@@ -94,7 +94,7 @@ deco(L, "ice_arch", 27, 40, alpha=0.9)
 L.enemy("frost_mite", 38, 44, patrol_tiles=4)
 L.enemy("frost_wing", 54, 38, patrol_tiles=4)
 glow(33, 44)
-flora(L, rng, 30, 46, 44, 0.35, avoid=[(41, 43)])
+flora(L, rng, 30, 46, 44, 0.35, avoid=[(41, 43)], cave=True)
 # pit under an icicle ceiling: a single jump only
 L.sign(42, 44, "Stalactites ! Un simple saut suffit : gardez la tête basse.")
 ceiling_spikes(L, 46, 52, 37)
@@ -103,7 +103,7 @@ L.shards_arc(46, 50, 41.5, 1.5, 3)
 rock(50, 44, 62, H)
 L.enemy("ice_gloop", 57, 44, patrol_tiles=3, face_left=True)
 L.emitter(46, 70, 50, 82, "abyss_motes", 1)
-flora(L, rng, 50, 62, 44, 0.3)
+flora(L, rng, 50, 62, 44, 0.3, cave=True)
 # first dive under a rock curtain
 rock(62, 58, 82, H)                            # pool floor
 water(62, 82, 48, 58)
@@ -115,7 +115,7 @@ rock(82, 48, 100, H)
 cp1 = L.checkpoint(88, 48, "Bouche des grottes")
 L.light(88, 43, FROST_CYAN, 90)
 L.orb("health_orb", 85, 46)
-flora(L, rng, 82, 100, 48, 0.4, avoid=[(87, 89)])
+flora(L, rng, 82, 100, 48, 0.4, avoid=[(87, 89)], cave=True)
 icicles(L, rng, 62, 100, 30, every=3.0, long_ratio=0.3)
 
 # =====================================================================================
@@ -311,6 +311,7 @@ L.enemy("frost_weaver", 372, GF, patrol_tiles=3, face_left=True)
 L.enemy("ice_gloop", 380, GF, patrol_tiles=3, face_left=True)
 L.enemy("snow_stalker", 388, GF, patrol_tiles=2, face_left=True)
 ceiling_spikes(L, 384, 392, 44)
+frost_cloud(L, 370, 48, 384, GF, 0.6)                     # freezing mist in the upper gallery
 L.gate(392, 44, 1, 12, "teleport")
 L.shards_line(358, 53, 398, 53, 8)
 # 4c lower route: the sunken channel (cracked floor -> water channel -> rejoin at 400)
@@ -396,6 +397,9 @@ for x0, x1, y, av in ((30, 46, 44, [(41, 43)]), (50, 62, 44, [(59, 61)]), (82, 1
 for x0, x1, y in ((100, 172, 72), (CH0, CH1, 70)):
     flora(L, rng, x0, x1, y, 0.3, cave=True, tall=False)
 
+# Dense snowy flora on every exposed ground (keeps clear of interactive objects).
+auto_flora(L, rng, density=0.45, cave=True)
+
 # =====================================================================================
 # Events and cinematics
 # =====================================================================================
@@ -406,14 +410,15 @@ L.event("level", "time", [{"type": "hint", "params": {"text": "Plus que 5 minute
 
 d["intro"] = {"skippable": True, "letterbox": True, "steps": [
     {"type": "fade", "duration": 0.01, "params": {"to": 1}},
-    {"type": "cut", "duration": 0.01, "params": {"x": 2200, "y": 860}},
+    {"type": "cut", "duration": 0.01, "params": {"x": 2190, "y": 800}},
     {"type": "zoom", "duration": 0.01, "params": {"zoom": 0.85}},
     {"type": "fade", "duration": 1.6, "wait": False, "params": {"to": 0}},
     {"type": "text", "duration": 4.0, "wait": False, "params": {"text": "GLACIOR", "subtitle": "Les Grottes de Cristal"}},
-    {"type": "camera", "duration": 5.0, "params": {"x": 1600, "y": 800, "ease": "inOutSine"}},
+    {"type": "wait", "duration": 3.0},
     {"type": "text", "duration": 3.5, "wait": False, "params": {
         "text": "Sous la glace, la lumière du cristal ne s'éteint jamais.", "style": "caption"}},
-    {"type": "camera", "duration": 3.0, "params": {"x": 700, "y": 640, "ease": "inOutCubic"}},
+    {"type": "wait", "duration": 1.5},
+    {"type": "camera", "duration": 4.0, "params": {"x": 700, "y": 640, "ease": "inOutCubic"}},
     {"type": "wait", "duration": 0.4},
     {"type": "zoom", "duration": 2.5, "wait": False, "params": {"zoom": 1.0}},
     {"type": "camera", "duration": 2.5, "params": {"start": True, "ease": "inOutCubic"}},

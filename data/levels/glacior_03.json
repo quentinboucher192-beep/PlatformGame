@@ -4185,6 +4185,22 @@
   },
   {
    "id": "o246",
+   "type": "slow_zone",
+   "layer": "gameplay",
+   "rect": [
+    4576.0,
+    160.0,
+    160.0,
+    96.0
+   ],
+   "props": {
+    "factor": 0.65,
+    "visible": true,
+    "style": "frost"
+   }
+  },
+  {
+   "id": "o247",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -4199,7 +4215,7 @@
    }
   },
   {
-   "id": "o247",
+   "id": "o248",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4213,7 +4229,7 @@
    }
   },
   {
-   "id": "o248",
+   "id": "o249",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4227,7 +4243,7 @@
    }
   },
   {
-   "id": "o249",
+   "id": "o250",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4241,7 +4257,7 @@
    }
   },
   {
-   "id": "o250",
+   "id": "o251",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4255,7 +4271,7 @@
    }
   },
   {
-   "id": "o251",
+   "id": "o252",
    "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
@@ -4269,7 +4285,7 @@
    }
   },
   {
-   "id": "o252",
+   "id": "o253",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -4286,7 +4302,7 @@
    }
   },
   {
-   "id": "o253",
+   "id": "o254",
    "type": "door",
    "layer": "gameplay",
    "rect": [
@@ -4300,7 +4316,7 @@
    }
   },
   {
-   "id": "o254",
+   "id": "o255",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4314,7 +4330,7 @@
    }
   },
   {
-   "id": "o255",
+   "id": "o256",
    "type": "receptor",
    "layer": "gameplay",
    "rect": [
@@ -4324,12 +4340,12 @@
     32.0
    ],
    "props": {
-    "targets": "o253",
+    "targets": "o254",
     "duration": 4.0
    }
   },
   {
-   "id": "o256",
+   "id": "o257",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -4344,7 +4360,7 @@
    }
   },
   {
-   "id": "o257",
+   "id": "o258",
    "type": "power_gate",
    "layer": "gameplay",
    "rect": [
@@ -4359,7 +4375,7 @@
    }
   },
   {
-   "id": "o258",
+   "id": "o259",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4377,7 +4393,7 @@
    }
   },
   {
-   "id": "o259",
+   "id": "o260",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4395,7 +4411,7 @@
    }
   },
   {
-   "id": "o260",
+   "id": "o261",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -4410,7 +4426,7 @@
    }
   },
   {
-   "id": "o261",
+   "id": "o262",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4428,7 +4444,7 @@
    }
   },
   {
-   "id": "o262",
+   "id": "o263",
    "type": "power_gate",
    "layer": "gameplay",
    "rect": [
@@ -4443,7 +4459,7 @@
    }
   },
   {
-   "id": "o263",
+   "id": "o264",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -4457,25 +4473,11 @@
    }
   },
   {
-   "id": "o264",
-   "type": "shard",
-   "layer": "gameplay",
-   "rect": [
-    5146.0,
-    490.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "value": 50
-   }
-  },
-  {
    "id": "o265",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
-    5210.0,
+    5146.0,
     490.0,
     12.0,
     12.0
@@ -4489,7 +4491,7 @@
    "type": "shard",
    "layer": "gameplay",
    "rect": [
-    5274.0,
+    5210.0,
     490.0,
     12.0,
     12.0
@@ -4503,7 +4505,7 @@
    "type": "shard",
    "layer": "gameplay",
    "rect": [
-    5338.0,
+    5274.0,
     490.0,
     12.0,
     12.0
@@ -4517,7 +4519,7 @@
    "type": "shard",
    "layer": "gameplay",
    "rect": [
-    5402.0,
+    5338.0,
     490.0,
     12.0,
     12.0
@@ -4531,7 +4533,7 @@
    "type": "shard",
    "layer": "gameplay",
    "rect": [
-    5466.0,
+    5402.0,
     490.0,
     12.0,
     12.0
@@ -4545,7 +4547,7 @@
    "type": "shard",
    "layer": "gameplay",
    "rect": [
-    5530.0,
+    5466.0,
     490.0,
     12.0,
     12.0
@@ -4556,6 +4558,20 @@
   },
   {
    "id": "o271",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    5530.0,
+    490.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o272",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -4569,7 +4585,7 @@
    }
   },
   {
-   "id": "o272",
+   "id": "o273",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -4588,7 +4604,7 @@
    }
   },
   {
-   "id": "o273",
+   "id": "o274",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -4608,7 +4624,7 @@
    }
   },
   {
-   "id": "o274",
+   "id": "o275",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -4627,7 +4643,7 @@
    }
   },
   {
-   "id": "o275",
+   "id": "o276",
    "type": "grapple_point",
    "layer": "gameplay",
    "rect": [
@@ -4638,7 +4654,7 @@
    ]
   },
   {
-   "id": "o276",
+   "id": "o277",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4652,7 +4668,7 @@
    }
   },
   {
-   "id": "o277",
+   "id": "o278",
    "type": "relic",
    "layer": "gameplay",
    "rect": [
@@ -4667,7 +4683,7 @@
    }
   },
   {
-   "id": "o278",
+   "id": "o279",
    "type": "secret_area",
    "layer": "gameplay",
    "rect": [
@@ -4681,7 +4697,7 @@
    }
   },
   {
-   "id": "o279",
+   "id": "o280",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -4698,7 +4714,7 @@
    }
   },
   {
-   "id": "o280",
+   "id": "o281",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4712,7 +4728,7 @@
    }
   },
   {
-   "id": "o281",
+   "id": "o282",
    "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
@@ -4726,7 +4742,7 @@
    }
   },
   {
-   "id": "o282",
+   "id": "o283",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -4743,7 +4759,7 @@
    }
   },
   {
-   "id": "o283",
+   "id": "o284",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -4757,7 +4773,7 @@
    }
   },
   {
-   "id": "o284",
+   "id": "o285",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -4772,7 +4788,7 @@
    }
   },
   {
-   "id": "o285",
+   "id": "o286",
    "type": "grapple_point",
    "layer": "gameplay",
    "rect": [
@@ -4783,7 +4799,7 @@
    ]
   },
   {
-   "id": "o286",
+   "id": "o287",
    "type": "grapple_point",
    "layer": "gameplay",
    "rect": [
@@ -4794,7 +4810,7 @@
    ]
   },
   {
-   "id": "o287",
+   "id": "o288",
    "type": "updraft",
    "layer": "gameplay",
    "rect": [
@@ -4809,7 +4825,7 @@
    }
   },
   {
-   "id": "o288",
+   "id": "o289",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -4824,7 +4840,7 @@
    }
   },
   {
-   "id": "o289",
+   "id": "o290",
    "type": "power_gate",
    "layer": "gameplay",
    "rect": [
@@ -4839,7 +4855,7 @@
    }
   },
   {
-   "id": "o290",
+   "id": "o291",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4853,7 +4869,7 @@
    }
   },
   {
-   "id": "o291",
+   "id": "o292",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4867,7 +4883,7 @@
    }
   },
   {
-   "id": "o292",
+   "id": "o293",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4881,7 +4897,7 @@
    }
   },
   {
-   "id": "o293",
+   "id": "o294",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -4900,7 +4916,7 @@
    }
   },
   {
-   "id": "o294",
+   "id": "o295",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -4920,7 +4936,7 @@
    }
   },
   {
-   "id": "o295",
+   "id": "o296",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -4939,7 +4955,7 @@
    }
   },
   {
-   "id": "o296",
+   "id": "o297",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4953,7 +4969,7 @@
    }
   },
   {
-   "id": "o297",
+   "id": "o298",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -4972,7 +4988,7 @@
    }
   },
   {
-   "id": "o298",
+   "id": "o299",
    "type": "grapple_point",
    "layer": "gameplay",
    "rect": [
@@ -4983,7 +4999,7 @@
    ]
   },
   {
-   "id": "o299",
+   "id": "o300",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5001,7 +5017,7 @@
    }
   },
   {
-   "id": "o300",
+   "id": "o301",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5019,7 +5035,7 @@
    }
   },
   {
-   "id": "o301",
+   "id": "o302",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5033,7 +5049,7 @@
    }
   },
   {
-   "id": "o302",
+   "id": "o303",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5047,7 +5063,7 @@
    }
   },
   {
-   "id": "o303",
+   "id": "o304",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5061,7 +5077,7 @@
    }
   },
   {
-   "id": "o304",
+   "id": "o305",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5075,7 +5091,7 @@
    }
   },
   {
-   "id": "o305",
+   "id": "o306",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5089,7 +5105,7 @@
    }
   },
   {
-   "id": "o306",
+   "id": "o307",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5103,7 +5119,7 @@
    }
   },
   {
-   "id": "o307",
+   "id": "o308",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5117,7 +5133,7 @@
    }
   },
   {
-   "id": "o308",
+   "id": "o309",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5131,7 +5147,7 @@
    }
   },
   {
-   "id": "o309",
+   "id": "o310",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5145,7 +5161,7 @@
    }
   },
   {
-   "id": "o310",
+   "id": "o311",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5159,7 +5175,7 @@
    }
   },
   {
-   "id": "o311",
+   "id": "o312",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5173,7 +5189,7 @@
    }
   },
   {
-   "id": "o312",
+   "id": "o313",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5187,7 +5203,7 @@
    }
   },
   {
-   "id": "o313",
+   "id": "o314",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -5202,7 +5218,7 @@
    }
   },
   {
-   "id": "o314",
+   "id": "o315",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -5216,7 +5232,7 @@
    }
   },
   {
-   "id": "o315",
+   "id": "o316",
    "type": "relic",
    "layer": "gameplay",
    "rect": [
@@ -5231,7 +5247,7 @@
    }
   },
   {
-   "id": "o316",
+   "id": "o317",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5245,7 +5261,7 @@
    }
   },
   {
-   "id": "o317",
+   "id": "o318",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5259,7 +5275,7 @@
    }
   },
   {
-   "id": "o318",
+   "id": "o319",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -5273,7 +5289,7 @@
    }
   },
   {
-   "id": "o319",
+   "id": "o320",
    "type": "secret_area",
    "layer": "gameplay",
    "rect": [
@@ -5287,7 +5303,7 @@
    }
   },
   {
-   "id": "o320",
+   "id": "o321",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -5304,7 +5320,7 @@
    }
   },
   {
-   "id": "o321",
+   "id": "o322",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -5318,7 +5334,7 @@
    }
   },
   {
-   "id": "o322",
+   "id": "o323",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -5332,7 +5348,7 @@
    }
   },
   {
-   "id": "o323",
+   "id": "o324",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -5347,7 +5363,7 @@
    }
   },
   {
-   "id": "o324",
+   "id": "o325",
    "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
@@ -5361,7 +5377,7 @@
    }
   },
   {
-   "id": "o325",
+   "id": "o326",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -5378,7 +5394,7 @@
    }
   },
   {
-   "id": "o326",
+   "id": "o327",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -5392,7 +5408,7 @@
    }
   },
   {
-   "id": "o327",
+   "id": "o328",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -5406,7 +5422,7 @@
    }
   },
   {
-   "id": "o328",
+   "id": "o329",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -5420,7 +5436,7 @@
    }
   },
   {
-   "id": "o329",
+   "id": "o330",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -5434,7 +5450,7 @@
    }
   },
   {
-   "id": "o330",
+   "id": "o331",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -5448,7 +5464,7 @@
    }
   },
   {
-   "id": "o331",
+   "id": "o332",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -5462,7 +5478,7 @@
    }
   },
   {
-   "id": "o332",
+   "id": "o333",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -5476,7 +5492,7 @@
    }
   },
   {
-   "id": "o333",
+   "id": "o334",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -5490,7 +5506,7 @@
    }
   },
   {
-   "id": "o334",
+   "id": "o335",
    "type": "door",
    "layer": "gameplay",
    "rect": [
@@ -5504,7 +5520,7 @@
    }
   },
   {
-   "id": "o335",
+   "id": "o336",
    "type": "door",
    "layer": "gameplay",
    "rect": [
@@ -5518,7 +5534,7 @@
    }
   },
   {
-   "id": "o336",
+   "id": "o337",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5532,7 +5548,7 @@
    }
   },
   {
-   "id": "o337",
+   "id": "o338",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5546,7 +5562,7 @@
    }
   },
   {
-   "id": "o338",
+   "id": "o339",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5560,7 +5576,7 @@
    }
   },
   {
-   "id": "o339",
+   "id": "o340",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5578,7 +5594,7 @@
    }
   },
   {
-   "id": "o340",
+   "id": "o341",
    "type": "camera_zone",
    "layer": "gameplay",
    "rect": [
@@ -5593,7 +5609,7 @@
    }
   },
   {
-   "id": "o341",
+   "id": "o342",
    "type": "combat_zone",
    "layer": "gameplay",
    "rect": [
@@ -5603,15 +5619,15 @@
     384.0
    ],
    "props": {
-    "doors": "o334,o335",
-    "waves": "o339",
+    "doors": "o335,o336",
+    "waves": "o340",
     "lockCamera": false,
     "music": "music/glacior_boss.ogg",
     "announce": false
    }
   },
   {
-   "id": "o342",
+   "id": "o343",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -5625,7 +5641,7 @@
    }
   },
   {
-   "id": "o343",
+   "id": "o344",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -5639,7 +5655,7 @@
    }
   },
   {
-   "id": "o344",
+   "id": "o345",
    "type": "energy_orb",
    "layer": "gameplay",
    "rect": [
@@ -5653,7 +5669,7 @@
    }
   },
   {
-   "id": "o345",
+   "id": "o346",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -5670,7 +5686,7 @@
    }
   },
   {
-   "id": "o346",
+   "id": "o347",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -5689,7 +5705,7 @@
    }
   },
   {
-   "id": "o347",
+   "id": "o348",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -5708,7 +5724,7 @@
    }
   },
   {
-   "id": "o348",
+   "id": "o349",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -5725,7 +5741,7 @@
    }
   },
   {
-   "id": "o349",
+   "id": "o350",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -5745,7 +5761,7 @@
    }
   },
   {
-   "id": "o350",
+   "id": "o351",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -5762,7 +5778,7 @@
    }
   },
   {
-   "id": "o351",
+   "id": "o352",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -5781,7 +5797,7 @@
    }
   },
   {
-   "id": "o352",
+   "id": "o353",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -5801,7 +5817,7 @@
    }
   },
   {
-   "id": "o353",
+   "id": "o354",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -5820,7 +5836,7 @@
    }
   },
   {
-   "id": "o354",
+   "id": "o355",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -5840,7 +5856,7 @@
    }
   },
   {
-   "id": "o355",
+   "id": "o356",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -5859,7 +5875,7 @@
    }
   },
   {
-   "id": "o356",
+   "id": "o357",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -5876,7 +5892,7 @@
    }
   },
   {
-   "id": "o357",
+   "id": "o358",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -5895,7 +5911,7 @@
    }
   },
   {
-   "id": "o358",
+   "id": "o359",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -5912,7 +5928,7 @@
    }
   },
   {
-   "id": "o359",
+   "id": "o360",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -5931,7 +5947,7 @@
    }
   },
   {
-   "id": "o360",
+   "id": "o361",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -5950,7 +5966,7 @@
    }
   },
   {
-   "id": "o361",
+   "id": "o362",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -5969,7 +5985,7 @@
    }
   },
   {
-   "id": "o362",
+   "id": "o363",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -5989,7 +6005,7 @@
    }
   },
   {
-   "id": "o363",
+   "id": "o364",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6008,7 +6024,7 @@
    }
   },
   {
-   "id": "o364",
+   "id": "o365",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6027,7 +6043,7 @@
    }
   },
   {
-   "id": "o365",
+   "id": "o366",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6047,7 +6063,7 @@
    }
   },
   {
-   "id": "o366",
+   "id": "o367",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6067,7 +6083,7 @@
    }
   },
   {
-   "id": "o367",
+   "id": "o368",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6086,7 +6102,7 @@
    }
   },
   {
-   "id": "o368",
+   "id": "o369",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6105,7 +6121,7 @@
    }
   },
   {
-   "id": "o369",
+   "id": "o370",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6124,7 +6140,7 @@
    }
   },
   {
-   "id": "o370",
+   "id": "o371",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6144,7 +6160,7 @@
    }
   },
   {
-   "id": "o371",
+   "id": "o372",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6163,7 +6179,7 @@
    }
   },
   {
-   "id": "o372",
+   "id": "o373",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6183,7 +6199,7 @@
    }
   },
   {
-   "id": "o373",
+   "id": "o374",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6202,7 +6218,7 @@
    }
   },
   {
-   "id": "o374",
+   "id": "o375",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -6217,7 +6233,7 @@
    }
   },
   {
-   "id": "o375",
+   "id": "o376",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -6231,7 +6247,7 @@
    }
   },
   {
-   "id": "o376",
+   "id": "o377",
    "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
@@ -6245,7 +6261,7 @@
    }
   },
   {
-   "id": "o377",
+   "id": "o378",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -6262,7 +6278,7 @@
    }
   },
   {
-   "id": "o378",
+   "id": "o379",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -6276,7 +6292,7 @@
    }
   },
   {
-   "id": "o379",
+   "id": "o380",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6295,7 +6311,7 @@
    }
   },
   {
-   "id": "o380",
+   "id": "o381",
    "type": "exit",
    "layer": "gameplay",
    "rect": [
@@ -6309,7 +6325,7 @@
    }
   },
   {
-   "id": "o381",
+   "id": "o382",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -6326,7 +6342,7 @@
    }
   },
   {
-   "id": "o382",
+   "id": "o383",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6345,7 +6361,7 @@
    }
   },
   {
-   "id": "o383",
+   "id": "o384",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -6362,7 +6378,7 @@
    }
   },
   {
-   "id": "o384",
+   "id": "o385",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -6377,7 +6393,7 @@
    }
   },
   {
-   "id": "o385",
+   "id": "o386",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -6391,7 +6407,7 @@
    }
   },
   {
-   "id": "o386",
+   "id": "o387",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -6405,7 +6421,7 @@
    }
   },
   {
-   "id": "o387",
+   "id": "o388",
    "type": "shard",
    "layer": "gameplay",
    "rect": [
@@ -6419,7 +6435,7 @@
    }
   },
   {
-   "id": "o388",
+   "id": "o389",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6439,7 +6455,7 @@
    }
   },
   {
-   "id": "o389",
+   "id": "o390",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6459,7 +6475,7 @@
    }
   },
   {
-   "id": "o390",
+   "id": "o391",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6479,7 +6495,7 @@
    }
   },
   {
-   "id": "o391",
+   "id": "o392",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6499,7 +6515,7 @@
    }
   },
   {
-   "id": "o392",
+   "id": "o393",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6519,7 +6535,7 @@
    }
   },
   {
-   "id": "o393",
+   "id": "o394",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6539,7 +6555,7 @@
    }
   },
   {
-   "id": "o394",
+   "id": "o395",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6559,7 +6575,7 @@
    }
   },
   {
-   "id": "o395",
+   "id": "o396",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6579,7 +6595,7 @@
    }
   },
   {
-   "id": "o396",
+   "id": "o397",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6599,7 +6615,7 @@
    }
   },
   {
-   "id": "o397",
+   "id": "o398",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6619,7 +6635,7 @@
    }
   },
   {
-   "id": "o398",
+   "id": "o399",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6638,7 +6654,7 @@
    }
   },
   {
-   "id": "o399",
+   "id": "o400",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6658,7 +6674,7 @@
    }
   },
   {
-   "id": "o400",
+   "id": "o401",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6678,7 +6694,7 @@
    }
   },
   {
-   "id": "o401",
+   "id": "o402",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6698,7 +6714,7 @@
    }
   },
   {
-   "id": "o402",
+   "id": "o403",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6718,7 +6734,7 @@
    }
   },
   {
-   "id": "o403",
+   "id": "o404",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6738,7 +6754,7 @@
    }
   },
   {
-   "id": "o404",
+   "id": "o405",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6758,7 +6774,7 @@
    }
   },
   {
-   "id": "o405",
+   "id": "o406",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6777,7 +6793,7 @@
    }
   },
   {
-   "id": "o406",
+   "id": "o407",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6796,7 +6812,7 @@
    }
   },
   {
-   "id": "o407",
+   "id": "o408",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6816,7 +6832,7 @@
    }
   },
   {
-   "id": "o408",
+   "id": "o409",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6836,7 +6852,7 @@
    }
   },
   {
-   "id": "o409",
+   "id": "o410",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6856,7 +6872,7 @@
    }
   },
   {
-   "id": "o410",
+   "id": "o411",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6876,7 +6892,7 @@
    }
   },
   {
-   "id": "o411",
+   "id": "o412",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6896,7 +6912,7 @@
    }
   },
   {
-   "id": "o412",
+   "id": "o413",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6916,7 +6932,7 @@
    }
   },
   {
-   "id": "o413",
+   "id": "o414",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6935,7 +6951,7 @@
    }
   },
   {
-   "id": "o414",
+   "id": "o415",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6954,7 +6970,7 @@
    }
   },
   {
-   "id": "o415",
+   "id": "o416",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6974,7 +6990,7 @@
    }
   },
   {
-   "id": "o416",
+   "id": "o417",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -6993,7 +7009,7 @@
    }
   },
   {
-   "id": "o417",
+   "id": "o418",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7013,7 +7029,7 @@
    }
   },
   {
-   "id": "o418",
+   "id": "o419",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7033,7 +7049,7 @@
    }
   },
   {
-   "id": "o419",
+   "id": "o420",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7052,7 +7068,7 @@
    }
   },
   {
-   "id": "o420",
+   "id": "o421",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7071,7 +7087,7 @@
    }
   },
   {
-   "id": "o421",
+   "id": "o422",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7090,7 +7106,7 @@
    }
   },
   {
-   "id": "o422",
+   "id": "o423",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7109,7 +7125,7 @@
    }
   },
   {
-   "id": "o423",
+   "id": "o424",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7129,7 +7145,7 @@
    }
   },
   {
-   "id": "o424",
+   "id": "o425",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7149,7 +7165,7 @@
    }
   },
   {
-   "id": "o425",
+   "id": "o426",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7169,7 +7185,7 @@
    }
   },
   {
-   "id": "o426",
+   "id": "o427",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7189,7 +7205,7 @@
    }
   },
   {
-   "id": "o427",
+   "id": "o428",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7209,7 +7225,7 @@
    }
   },
   {
-   "id": "o428",
+   "id": "o429",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7228,7 +7244,7 @@
    }
   },
   {
-   "id": "o429",
+   "id": "o430",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7248,7 +7264,7 @@
    }
   },
   {
-   "id": "o430",
+   "id": "o431",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7267,7 +7283,7 @@
    }
   },
   {
-   "id": "o431",
+   "id": "o432",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7286,7 +7302,7 @@
    }
   },
   {
-   "id": "o432",
+   "id": "o433",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7306,7 +7322,7 @@
    }
   },
   {
-   "id": "o433",
+   "id": "o434",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7325,7 +7341,7 @@
    }
   },
   {
-   "id": "o434",
+   "id": "o435",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7345,7 +7361,7 @@
    }
   },
   {
-   "id": "o435",
+   "id": "o436",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7365,7 +7381,7 @@
    }
   },
   {
-   "id": "o436",
+   "id": "o437",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7385,7 +7401,7 @@
    }
   },
   {
-   "id": "o437",
+   "id": "o438",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7404,7 +7420,7 @@
    }
   },
   {
-   "id": "o438",
+   "id": "o439",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7424,7 +7440,7 @@
    }
   },
   {
-   "id": "o439",
+   "id": "o440",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7443,7 +7459,7 @@
    }
   },
   {
-   "id": "o440",
+   "id": "o441",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7462,7 +7478,7 @@
    }
   },
   {
-   "id": "o441",
+   "id": "o442",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7481,7 +7497,7 @@
    }
   },
   {
-   "id": "o442",
+   "id": "o443",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7501,7 +7517,7 @@
    }
   },
   {
-   "id": "o443",
+   "id": "o444",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7521,7 +7537,7 @@
    }
   },
   {
-   "id": "o444",
+   "id": "o445",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7540,7 +7556,7 @@
    }
   },
   {
-   "id": "o445",
+   "id": "o446",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7560,7 +7576,7 @@
    }
   },
   {
-   "id": "o446",
+   "id": "o447",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7579,7 +7595,7 @@
    }
   },
   {
-   "id": "o447",
+   "id": "o448",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7599,7 +7615,7 @@
    }
   },
   {
-   "id": "o448",
+   "id": "o449",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7619,7 +7635,7 @@
    }
   },
   {
-   "id": "o449",
+   "id": "o450",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7638,7 +7654,7 @@
    }
   },
   {
-   "id": "o450",
+   "id": "o451",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7657,7 +7673,7 @@
    }
   },
   {
-   "id": "o451",
+   "id": "o452",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7677,7 +7693,7 @@
    }
   },
   {
-   "id": "o452",
+   "id": "o453",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7697,7 +7713,7 @@
    }
   },
   {
-   "id": "o453",
+   "id": "o454",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7717,7 +7733,7 @@
    }
   },
   {
-   "id": "o454",
+   "id": "o455",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7737,7 +7753,7 @@
    }
   },
   {
-   "id": "o455",
+   "id": "o456",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7756,7 +7772,7 @@
    }
   },
   {
-   "id": "o456",
+   "id": "o457",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7775,7 +7791,7 @@
    }
   },
   {
-   "id": "o457",
+   "id": "o458",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7794,7 +7810,7 @@
    }
   },
   {
-   "id": "o458",
+   "id": "o459",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7814,7 +7830,7 @@
    }
   },
   {
-   "id": "o459",
+   "id": "o460",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7833,7 +7849,7 @@
    }
   },
   {
-   "id": "o460",
+   "id": "o461",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7853,7 +7869,7 @@
    }
   },
   {
-   "id": "o461",
+   "id": "o462",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7872,7 +7888,7 @@
    }
   },
   {
-   "id": "o462",
+   "id": "o463",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7892,7 +7908,7 @@
    }
   },
   {
-   "id": "o463",
+   "id": "o464",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7911,7 +7927,7 @@
    }
   },
   {
-   "id": "o464",
+   "id": "o465",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7931,7 +7947,7 @@
    }
   },
   {
-   "id": "o465",
+   "id": "o466",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7943,6 +7959,2591 @@
    "flipX": true,
    "props": {
     "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o467",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    31.33036497144891,
+    -16.0,
+    16.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o468",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    230.984976963283,
+    848.0,
+    32.0,
+    48.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frozen_tree",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o469",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    397.81994275425643,
+    884.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o470",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    611.1987226176929,
+    888.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o471",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    941.5845477527146,
+    900.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o472",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1150.0682873257238,
+    896.0,
+    16.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o473",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1329.092239800553,
+    880.0,
+    16.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o474",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1358.8275785178946,
+    880.0,
+    16.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o475",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1425.897257602319,
+    880.0,
+    16.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o476",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1445.55051595751,
+    848.0,
+    32.0,
+    48.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frozen_tree",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o477",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1538.9612189675872,
+    880.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o478",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1567.4912145353062,
+    872.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o479",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1648.6974592580352,
+    880.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o480",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1456.971767577399,
+    272.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o481",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1502.3983737899266,
+    276.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o482",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1696.8748193451265,
+    820.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o483",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1726.8170996148958,
+    816.0,
+    48.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_drift",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o484",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1776.2722435841638,
+    744.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o485",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1825.7596693759424,
+    744.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o486",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2118.20995460887,
+    784.0,
+    32.0,
+    48.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frozen_statue",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o487",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2238.7182596902476,
+    820.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o488",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2285.6081359949035,
+    820.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o489",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2703.442631594263,
+    680.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o490",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2783.0798682393183,
+    656.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "frost_banner",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o491",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3279.195173140503,
+    688.0,
+    16.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o492",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2640.0991521727788,
+    312.0,
+    48.0,
+    40.0
+   ],
+   "props": {
+    "sprite": "frozen_machine",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o493",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2712.648812158844,
+    304.0,
+    32.0,
+    48.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ice_crystal_big",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o494",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2797.602591078036,
+    336.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "snow_drift",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o495",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2872.2998001025344,
+    304.0,
+    32.0,
+    48.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frozen_statue",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o496",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2944.53906571394,
+    340.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o497",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2978.479414529894,
+    340.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o498",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3010.1384644255218,
+    336.0,
+    16.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o499",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3053.0851263242253,
+    328.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o500",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3086.1141335023526,
+    304.0,
+    24.0,
+    48.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frost_banner",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o501",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3137.9073419813303,
+    336.0,
+    48.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_drift",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o502",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3181.2997337567745,
+    340.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o503",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3201.6723241081054,
+    336.0,
+    48.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_drift",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o504",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3247.3155616721806,
+    340.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o505",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3422.1041462898725,
+    692.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o506",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3615.1030289160813,
+    664.0,
+    48.0,
+    40.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frozen_machine",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o507",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3773.4191762797414,
+    688.0,
+    16.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o508",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3375.0229764030873,
+    -16.0,
+    48.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_drift",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o509",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3425.1241901055055,
+    -16.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o510",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3455.7685091757858,
+    -12.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o511",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3533.288798716832,
+    -24.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o512",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3584.7978695901884,
+    -24.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o513",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3646.9434940608044,
+    -24.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o514",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3671.4998513762243,
+    -48.0,
+    32.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "ice_crystal_big",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o515",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3760.9192100536075,
+    -24.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o516",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3778.0491206381457,
+    -16.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "snow_drift",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o517",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3855.816383894064,
+    -16.0,
+    16.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o518",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3809.776105731489,
+    240.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o519",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3830.791176512546,
+    208.0,
+    32.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "frozen_statue",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o520",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3246.0589059727213,
+    -16.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "snow_drift",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o521",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3314.6066282244506,
+    -16.0,
+    48.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_drift",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o522",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3360.035048113694,
+    -12.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o523",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3293.37959365305,
+    208.0,
+    16.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o524",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3328.0160530138555,
+    184.0,
+    48.0,
+    40.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frozen_machine",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o525",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3895.034333302311,
+    208.0,
+    32.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "ice_crystal_big",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o526",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4370.477628256777,
+    232.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o527",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4416.311881939049,
+    232.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o528",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4514.9215402977625,
+    232.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o529",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4542.061427983057,
+    240.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o530",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4480.024609201154,
+    -24.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o531",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4578.679471173199,
+    244.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o532",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4609.934529036089,
+    232.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o533",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4640.275443786801,
+    240.0,
+    48.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_drift",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o534",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4801.275143471901,
+    216.0,
+    48.0,
+    40.0
+   ],
+   "props": {
+    "sprite": "frozen_machine",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o535",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4787.187290961968,
+    520.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o536",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4985.382731411789,
+    496.0,
+    32.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "frozen_statue",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o537",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5170.69335004566,
+    520.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o538",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5248.129012464232,
+    532.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o539",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5313.444315963473,
+    532.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o540",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5344.8852813835665,
+    528.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "snow_drift",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o541",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5481.3980224855195,
+    496.0,
+    32.0,
+    48.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ice_crystal_big",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o542",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5599.109361769631,
+    520.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o543",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4846.4487658917615,
+    -16.0,
+    48.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_drift",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o544",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4911.672337937161,
+    -12.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o545",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4941.40721561592,
+    -24.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o546",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4958.837532393617,
+    -16.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "snow_drift",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o547",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4991.8196332159705,
+    -16.0,
+    48.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_drift",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o548",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5054.404731590254,
+    -24.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o549",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5090.865234477907,
+    -24.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o550",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5247.5272943946375,
+    -12.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o551",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5266.414942859703,
+    -16.0,
+    48.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_drift",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o552",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5301.383436438967,
+    -48.0,
+    32.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "frozen_statue",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o553",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5442.017816691701,
+    -16.0,
+    48.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_drift",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o554",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5485.99380230544,
+    -16.0,
+    16.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o555",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5514.3380786493735,
+    -48.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "frost_banner",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o556",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5580.902110304572,
+    -40.0,
+    48.0,
+    40.0
+   ],
+   "props": {
+    "sprite": "frozen_machine",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o557",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5121.983392594595,
+    -16.0,
+    16.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o558",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5153.266395152561,
+    -24.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o559",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5199.390548821139,
+    -24.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o560",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6130.460247378498,
+    112.0,
+    16.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o561",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6158.516590166892,
+    112.0,
+    16.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o562",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6243.165934760309,
+    392.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o563",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6320.610363646664,
+    392.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o564",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6174.462712934197,
+    80.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o565",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6205.520766334776,
+    80.0,
+    16.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o566",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6241.448138098953,
+    72.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o567",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6261.896350767514,
+    48.0,
+    32.0,
+    48.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ice_crystal_big",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o568",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6650.614843246335,
+    336.0,
+    32.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "ice_crystal_big",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o569",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6754.89660397108,
+    372.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o570",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6877.956985850577,
+    784.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o571",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6961.339726376476,
+    784.0,
+    16.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o572",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7057.504416829107,
+    784.0,
+    16.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o573",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7170.521166266921,
+    784.0,
+    16.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o574",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7566.445223399128,
+    788.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o575",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7658.408747680478,
+    752.0,
+    24.0,
+    48.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frost_banner",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o576",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6850.216564369907,
+    308.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o577",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6896.041251701565,
+    308.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o578",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6930.458332747374,
+    308.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o579",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6954.979903082976,
+    272.0,
+    32.0,
+    48.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frozen_statue",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o580",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7010.204142025854,
+    280.0,
+    48.0,
+    40.0
+   ],
+   "props": {
+    "sprite": "frozen_machine",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o581",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7091.161310297952,
+    308.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o582",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7116.865730653737,
+    308.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o583",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7151.9952781083575,
+    304.0,
+    16.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o584",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7185.234591880162,
+    304.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "snow_drift",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o585",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7231.742112261261,
+    280.0,
+    48.0,
+    40.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frozen_machine",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o586",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7294.8877868079535,
+    280.0,
+    48.0,
+    40.0
+   ],
+   "props": {
+    "sprite": "frozen_machine",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o587",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7368.731516684246,
+    272.0,
+    32.0,
+    48.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ice_crystal_big",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o588",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7439.697737824064,
+    308.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o589",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7457.73166318813,
+    280.0,
+    48.0,
+    40.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frozen_machine",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o590",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7536.373821310112,
+    304.0,
+    48.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_drift",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o591",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7586.308772599202,
+    308.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o592",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7630.326815393572,
+    308.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o593",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7648.6782140800815,
+    304.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "snow_drift",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o594",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7697.5141969997285,
+    304.0,
+    48.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_drift",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o595",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7749.875699945496,
+    272.0,
+    32.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "frozen_statue",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o596",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7743.241542077708,
+    788.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o597",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7825.177208227892,
+    788.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o598",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7966.43936149598,
+    720.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "frost_flower",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -7970,7 +10571,7 @@
   },
   {
    "id": "ev2",
-   "source": "o339",
+   "source": "o340",
    "trigger": "bossPhase",
    "once": false,
    "actions": [
@@ -7984,7 +10585,7 @@
   },
   {
    "id": "ev3",
-   "source": "o339",
+   "source": "o340",
    "trigger": "bossStart",
    "once": true,
    "actions": [
@@ -8000,7 +10601,7 @@
   },
   {
    "id": "ev4",
-   "source": "o339",
+   "source": "o340",
    "trigger": "bossPhase",
    "once": true,
    "actions": [
@@ -8016,7 +10617,7 @@
   },
   {
    "id": "ev5",
-   "source": "o339",
+   "source": "o340",
    "trigger": "bossDefeated",
    "once": true,
    "actions": [
@@ -8080,15 +10681,15 @@
     "type": "cut",
     "duration": 0.01,
     "params": {
-     "x": 7290,
-     "y": 640
+     "x": 7330,
+     "y": 720
     }
    },
    {
     "type": "zoom",
     "duration": 0.01,
     "params": {
-     "zoom": 0.75
+     "zoom": 0.8
     }
    },
    {
@@ -8109,13 +10710,8 @@
     }
    },
    {
-    "type": "camera",
-    "duration": 5.0,
-    "params": {
-     "x": 3600,
-     "y": 300,
-     "ease": "inOutSine"
-    }
+    "type": "wait",
+    "duration": 3.2
    },
    {
     "type": "text",
@@ -8127,8 +10723,21 @@
     }
    },
    {
+    "type": "wait",
+    "duration": 2.0
+   },
+   {
     "type": "camera",
-    "duration": 4.0,
+    "duration": 4.5,
+    "params": {
+     "x": 3600,
+     "y": 360,
+     "ease": "inOutSine"
+    }
+   },
+   {
+    "type": "camera",
+    "duration": 3.0,
     "params": {
      "x": 1400,
      "y": 760,
@@ -8137,7 +10746,7 @@
    },
    {
     "type": "wait",
-    "duration": 0.4
+    "duration": 0.3
    },
    {
     "type": "zoom",
@@ -8254,17 +10863,15 @@
     "duration": 4.0,
     "params": {
      "text": "MERCI D'AVOIR JOUÉ",
-     "subtitle": "Cosmic Platformer",
-     "style": "caption"
+     "subtitle": "Cosmic Platformer"
     }
    },
    {
     "type": "text",
     "duration": 4.0,
     "params": {
-     "text": "Conception, programmation, graphismes et musique",
-     "subtitle": "Cosmic Studio",
-     "style": "caption"
+     "text": "COSMIC STUDIO",
+     "subtitle": "Conception, programmation, graphismes et musique"
     }
    },
    {

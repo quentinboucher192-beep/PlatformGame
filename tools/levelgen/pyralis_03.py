@@ -25,7 +25,7 @@ P.base(W, H,
        difficulty=4,
        start_powers=["dash", "wave", "shield", "impulse", "teleport", "glide", "grapple", "ground_pound",
                      "charge_shot"],
-       limit=1200, ref=420, medals=(None, 760, 540, 420))
+       limit=1200, ref=450, medals=(None, 780, 570, 450))
 d = L.data
 
 # =====================================================================================
@@ -55,7 +55,7 @@ L.relic(6, 40.5, "Creuset miniature")
 L.shards_line(8, 40.5, 11, 40.5, 3)
 L.secret(4, 36, 12, 42, "La niche du fondeur !")
 L.light(7, 39, "#ffd98a", 50)
-L.enemy("forge_drone", 9, 50, patrol_tiles=4)
+L.enemy("forge_drone", 8, 34, patrol_tiles=3)
 # floor with the laser gantry
 R(44, 56, 72, mat=M)
 L.solid(50, 38, 64, 41, M)                    # laser gantry
@@ -360,7 +360,7 @@ L.event("level", "time", [{"type": "hint", "params": {"text": "Plus que 5 minute
 P.intro("PYRALIS", "La Fonderie Primordiale",
         "Ici, les Anciens forgeaient des étoiles. La fonderie, elle, ne s'est jamais arrêtée.",
         "Toute la fonderie tremble... Le cœur bat encore, là-bas. Allons-y.",
-        cut=(240, 30), pan=(470, 26), low=(330, 60))
+        cut=(240, 30), pan=(470, 26), low=(366, 44))
 P.outro("FONDERIE ÉTEINTE", "Pyralis — La Fonderie Primordiale")
 d["metadata"] = {"generator": "tools/levelgen/pyralis_03.py"}
 

@@ -13,7 +13,7 @@ import os
 import random
 
 from levelkit import Level, ROOT
-from glacior_common import (AURORA_GREEN, AURORA_VIOLET, FROST_CYAN, ICE_BLUE, WARM, DANGER, deco, flora, icicles,
+from glacior_common import (auto_flora, frost_cloud, AURORA_GREEN, AURORA_VIOLET, FROST_CYAN, ICE_BLUE, WARM, DANGER, deco, flora, icicles,
                             lamp, crystal_light, floating_ice, freezing_water, ice_spikes_wall, boss_arena)
 
 rng = random.Random(4101)
@@ -275,6 +275,7 @@ L.enemy("frost_bloom", 368, RT, face_left=True)
 L.enemy("ice_burrower", 359, RT)
 L.enemy("snow_stalker", 364, RT, patrol_tiles=2, face_left=True)
 deco(L, "frozen_statue", 352, RT)
+frost_cloud(L, 356, RT - 6, 366, RT, 0.65)                 # freezing mist on the ridge
 L.sign(355, RT, "Le gouffre est trop large : enchaînez les ancrages au grappin (Interagir), ou planez.")
 L.grapple(376, 20)
 L.grapple(384, 19)
@@ -287,9 +288,11 @@ L.solid(398, 32, 420, H, SNOW)
 L.solid(402, 22, 416, 28, METAL)
 icicles(L, rng, 402, 416, 28, every=2.0, long_ratio=0.0)
 phase = L.gate(410, 28, 1, 4, "teleport")
-L.enemy("frost_bulwark", 405, 32, patrol_tiles=2, face_left=True)
+L.enemy("frost_bulwark", 407, 32, patrol_tiles=1, face_left=True)
 L.enemy("frost_mite", 414, 32, patrol_tiles=2)
-L.sign(400, 32, "Barrière de phase : téléportez-vous au travers (Téléportation).")
+L.sign(402.5, 32, "Barrière de phase : téléportez-vous au travers (Téléportation).")
+cp_bastion = L.checkpoint(399.5, 32, "Bastion de phase")
+L.light(399.5, 27, FROST_CYAN, 90)
 deco(L, "ice_arch", 400, 32, alpha=0.9)
 deco(L, "frost_banner", 417, 28 + 4)
 L.orb("health_orb", 418, 30)
@@ -371,6 +374,9 @@ for o in list(d["objects"]):
         if (y + h) / 16 < 50 and w >= 64:
             icicles(L, rng, x / 16, (x + w) / 16, (y + h) / 16, every=3.0)
 
+# Dense snowy flora on every exposed ground (keeps clear of interactive objects).
+auto_flora(L, rng, density=0.6, skip=[(110, 136)])
+
 # =====================================================================================
 # Events and cinematics
 # =====================================================================================
@@ -383,14 +389,15 @@ L.event("level", "time", [{"type": "hint", "params": {"text": "Plus que 5 minute
 
 d["intro"] = {"skippable": True, "letterbox": True, "steps": [
     {"type": "fade", "duration": 0.01, "params": {"to": 1}},
-    {"type": "cut", "duration": 0.01, "params": {"x": 7660, "y": 640}},
+    {"type": "cut", "duration": 0.01, "params": {"x": 7650, "y": 760}},
     {"type": "zoom", "duration": 0.01, "params": {"zoom": 0.8}},
     {"type": "fade", "duration": 1.6, "wait": False, "params": {"to": 0}},
     {"type": "text", "duration": 4.0, "wait": False, "params": {"text": "GLACIOR", "subtitle": "Les Plaines de Givre"}},
-    {"type": "camera", "duration": 5.0, "params": {"x": 5900, "y": 480, "ease": "inOutSine"}},
+    {"type": "wait", "duration": 3.0},
     {"type": "text", "duration": 3.5, "wait": False, "params": {
         "text": "Sous l'aurore éternelle, quelque chose ondule sous la glace du lac...", "style": "caption"}},
-    {"type": "camera", "duration": 4.0, "params": {"x": 2700, "y": 560, "ease": "inOutCubic"}},
+    {"type": "wait", "duration": 2.0},
+    {"type": "camera", "duration": 4.5, "params": {"x": 2600, "y": 520, "ease": "inOutSine"}},
     {"type": "wait", "duration": 0.4},
     {"type": "zoom", "duration": 3.0, "wait": False, "params": {"zoom": 1.0}},
     {"type": "camera", "duration": 3.0, "params": {"start": True, "ease": "inOutCubic"}},

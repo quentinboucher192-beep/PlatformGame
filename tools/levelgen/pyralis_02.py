@@ -39,7 +39,8 @@ L.relic(5.5, 54.5, "Écaille de salamandre")
 L.shards_line(8, 54.5, 11, 54.5, 3)
 L.secret(4, 51, 12, 56, "Une cache sous la falaise !")
 L.light(7, 54, "#ffd98a", 50)
-L.decor("ash_rock_big", 8, 56, "fg_decor", scale=1.4)
+for rx in (6, 10):                            # rubble in front of the cache (fades once inside)
+    L.decor("ash_rock_big", rx, 56.3, "fg_decor", scale=2.0, tint="#b08878", flip=rx > 8)
 start = L.start(16, 50)
 P.banner(13, 50)
 L.decor("basalt_column", 21, 50)
@@ -208,6 +209,8 @@ L.shards_line(398, 49.5, 401, 49.5, 3)
 P.vent(399, 402, 38, 51)
 L.secret(397, 45, 405, 51, "Une crypte sous l'îlot !")
 L.light(403.5, 49, "#ffd98a", 50)
+for rx in (399.5, 403.5):
+    L.decor("ash_rock_big", rx, 51.3, "fg_decor", scale=2.0, tint="#b08878", flip=rx > 401)
 L.decor("ash_rock_big", 395, 44, "bg_decor")
 L.enemy("lava_burrower", 406, 44)
 L.orb("health_orb", 394, 42)
@@ -302,7 +305,7 @@ L.shards_line(446, 37, 446, 26, 4)
 L.shards_line(457, 35, 457, 18, 5)
 L.shards_line(462, 28, 474, 28, 3)
 L.shards_line(531, 34, 538, 34, 3)
-L.enemy("forge_drone", 30, 47, patrol_tiles=4)
+L.enemy("forge_drone", 47, 45, patrol_tiles=4)
 L.enemy("magma_gloop", 76, 54, patrol_tiles=3, face_left=True)
 L.enemy("ember_mite", 131, 54, patrol_tiles=2)
 L.enemy("ember_mite", 135, 54, patrol_tiles=2, face_left=True)
@@ -330,7 +333,12 @@ P.chains(326, 348, 40, every=6, layer="fg_decor", long_ratio=0.0)
 # Ambience
 # =====================================================================================
 P.glow_line(0, W, LAVA - 2, every=24)
-P.autodecorate(density=0.32, fg_every=1)
+P.autodecorate(density=0.45, fg_every=1)
+for x, y in ((28, 54), (66, 54), (134, 54), (186, 54), (256, 54), (309, 54), (323, 42), (436, 40), (472, 30)):
+    L.decor(P.rng.choice(["lava_vent", "slag_pile", "ash_rock_big"]), x + 0.5, y, "bg_decor", flip=P.rng.random() < 0.5)
+for x in (40, 52, 270, 296, 366, 384, 416, 426):     # sunken forge wrecks in the river
+    L.decor(P.rng.choice(["gear_wreck", "basalt_column_broken", "obsidian_spire"]), x, LAVA + 0.6, "bg_decor",
+            alpha=0.85, scale=1.3)
 for x in range(10, W, 43):
     L.decor("obsidian_spire", x + P.rng.random() * 10, 24 + P.rng.random() * 6, "bg_decor", alpha=0.35,
             tint="#ff9a7a", scale=1.5)
@@ -347,7 +355,7 @@ L.event("level", "time", [{"type": "hint", "params": {"text": "Plus que 5 minute
 P.intro("PYRALIS", "Le Fleuve de Lave",
         "Le fleuve emporte les forges des Anciens vers le lac de feu... et ce qui y dort.",
         "Le fleuve est trop large pour sauter. Il me faut un radeau.",
-        cut=(200, 40), pan=(380, 38), low=(470, 58))
+        cut=(200, 40), pan=(380, 38), low=(504, 24))
 P.outro("FLEUVE TRAVERSÉ", "Pyralis — Le Fleuve de Lave")
 d["metadata"] = {"generator": "tools/levelgen/pyralis_02.py"}
 

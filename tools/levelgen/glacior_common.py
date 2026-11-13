@@ -147,3 +147,83 @@ def boss_arena(L, x0, x1, floor_y, ceil_y, boss_kind, boss_x, boss_y, platforms,
     L.data["objects"][-1]["props"]["announce"] = False
     L.event(boss, "bossPhase", [{"type": "shake", "params": {"amount": 0.4}}], once=False)
     return boss, left, right
+
+
+GAMEPLAY_KEEP_CLEAR = ("sign", "checkpoint", "lever", "receptor", "door", "power_unlock", "exit", "player_start",
+                       "power_gate", "bounce_pad")
+
+
+def auto_flora(L, rng, density=0.4, cave=False, max_row=None, min_row=0, skip=()):
+    """Decorates every exposed top surface of the terrain (snow, ice and metal) with flora,
+    keeping clear of interactive objects and of decor already placed on the same ground row.
+    `skip` = list of (x0, x1) tile ranges left untouched (arenas, tutorial spaces...)."""
+    T_ = T
+    solids = [o for o in L.data["objects"] if o["type"] == "solid" and o.get("props", {}).get("collision", True)
+              and o["layer"] == "terrain"]
+    occupied = set()
+    for o in solids:
+        x, y, w, h = o["rect"]
+        for cx in range(int(x // T_), int((x + w) // T_)):
+            for cy in range(int(y // T_), int((y + h) // T_)):
+                occupied.add((cx, cy))
+    keep = []
+    for o in L.data["objects"]:
+        if o["type"] in GAMEPLAY_KEEP_CLEAR or o["type"] == "enemy" and o["props"].get("dormant"):
+            x, y, w, h = o["rect"]
+            keep.append((x / T_ - 1.2, (x + w) / T_ + 1.2, y / T_ - 1, (y + h) / T_ + 1))
+    existing = {}
+    for o in L.data["objects"]:
+        if o["type"] == "decor":
+            x, y, w, h = o["rect"]
+            existing.setdefault(round((y + h) / T_), []).append((x + w / 2) / T_)
+    for o in solids:
+        x, y, w, h = o["rect"]
+        row = int(round(y / T_))
+        if max_row is not None and row > max_row or row < min_row:
+            continue
+        mat = o["props"].get("material", "snow_rock")
+        x0, x1 = int(x // T_), int((x + w) // T_)
+        cx = x0
+        while cx < x1:
+            if (cx, row - 1) in occupied or any(a <= cx <= b for a, b in skip):
+                cx += 1
+                continue
+            if any(a <= cx + 0.5 <= b and c <= row <= dd for a, b, c, dd in keep):
+                cx += 1
+                continue
+            if any(abs(ex - (cx + 0.5)) < 1.6 for ex in existing.get(row, [])):
+                cx += 1
+                continue
+            r = rng.random()
+            if r > density:
+                cx += 1
+                continue
+            if mat == "frost_metal":
+                pool = ["snow_rock_small", "snow_drift", "frost_flower", "ice_crystal"]
+                tall_pool = ["frost_banner", "frozen_machine", "ice_crystal_big", "frozen_statue"]
+            elif cave:
+                pool, tall_pool = CAVE_SMALL, CAVE_TALL
+            elif mat == "glacier_ice":
+                pool = ["ice_crystal", "frost_flower", "snow_drift", "ice_crystal"]
+                tall_pool = ["ice_spire", "ice_crystal_big"]
+            else:
+                pool, tall_pool = SMALL, TALL
+            # tall decor needs 3 free cells above and some width
+            free_above = all((cx + dx, row - dy) not in occupied for dx in (-1, 0, 1) for dy in (1, 2, 3, 4))
+            if r < density * 0.3 and free_above and cx - x0 >= 1 and x1 - cx >= 2:
+                name = rng.choice(tall_pool)
+                step = 4
+            else:
+                name = rng.choice(pool)
+                step = 2
+            px = cx + 0.5 + (rng.random() - 0.5) * 0.4
+            if name in DECOR:
+                L.decor(name, px, row, "bg_decor", flip=rng.random() < 0.5)
+                existing.setdefault(row, []).append(px)
+            cx += step
+
+
+def frost_cloud(L, x0, y0, x1, y1, factor=0.65):
+    """Freezing mist bank (slow zone, frost style): slows the player inside."""
+    return L.obj("slow_zone", [x0 * T, y0 * T, (x1 - x0) * T, (y1 - y0) * T], "gameplay",
+                 {"factor": factor, "visible": True, "style": "frost"})
