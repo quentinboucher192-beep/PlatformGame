@@ -60,7 +60,7 @@ public:
         float W = ui.screenW(), H = ui.screenH();
         Rect panel{ui.s(50), ui.s(40), W - ui.s(100), H - ui.s(120)};
         ui.panel(panel, false, 18);
-        Vec2 titleSize = ui.label("ATELIER", {panel.x + ui.s(36), panel.y + ui.s(22)}, 38, ui.theme().text, Align::Left,
+        Vec2 titleSize = ui.label("WORKSHOP", {panel.x + ui.s(36), panel.y + ui.s(22)}, 38, ui.theme().text, Align::Left,
                                   FontFace::Title);
         ui.label("Vos niveaux, les niveaux importés, le partage en .cplanet et l'éditeur d'ennemis",
                  {panel.x + ui.s(36) + titleSize.x + ui.s(24), panel.y + ui.s(40)}, 19, ui.theme().textDim);
@@ -79,8 +79,9 @@ public:
         if (messageTimer_ > 0)
             ui.label(message_, {panel.center().x, panel.bottom() - ui.s(26)}, 22, messageColor_, Align::Center, FontFace::Bold,
                      VAlign::Middle);
-        Glyphs::drawHint(ui, Action::MenuBack, "Menu principal", {ui.s(60), H - ui.s(40)}, ui.s(30));
-        if (ui.backPressed()) g_.app.switchScene(makeMainMenu(g_));
+        // The WORKSHOP is part of ONLINE: going back returns there.
+        Glyphs::drawHint(ui, Action::MenuBack, "ONLINE", {ui.s(60), H - ui.s(40)}, ui.s(30));
+        if (ui.backPressed()) g_.app.switchScene(makeOnlineRanking(g_));
         ui.end();
     }
 

@@ -102,12 +102,16 @@ void GameScene::quitToMenu() {
         g_.app.popScene();
         return;
     }
+    if (opt_.fromOnline) {
+        g_.app.switchScene(makeOnlineRanking(g_, levelId_), 0.4f);
+        return;
+    }
     std::string planet = level_.planet.empty() ? "sylvanox" : level_.planet;
     g_.app.switchScene(makeLevelSelect(g_, planet), 0.4f);
 }
 
 std::string GameScene::nextLevelId() const {
-    if (opt_.editorTest) return {};
+    if (opt_.editorTest || opt_.fromOnline) return {};
     auto list = g_.content.levelsForPlanet(level_.planet);
     for (size_t i = 0; i + 1 < list.size(); ++i)
         if (list[i]->id == levelId_ && g_.progression.levelUnlocked(*list[i + 1], g_.content)) return list[i + 1]->id;
@@ -201,6 +205,7 @@ void GameScene::finishRun(bool completed) {
     data.failReason = world_->failReason();
     data.nextLevel = nextLevelId();
     data.editorTest = opt_.editorTest;
+    data.fromOnline = opt_.fromOnline;
     data.online = online;
     g_.app.pushScene(std::make_unique<ResultsScene>(g_, *this, std::move(data)));
 }

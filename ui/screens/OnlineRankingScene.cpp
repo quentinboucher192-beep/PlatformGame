@@ -569,7 +569,7 @@ private:
     // ----------------------------------------------------------- navigation
     void drawNavigation() {
         UIContext& ui = g_.ui;
-        Rect nav{zoneA_.x, zoneA_.y, zoneA_.w, ui.s(6 * 58 + 20)};
+        Rect nav{zoneA_.x, zoneA_.y, zoneA_.w, ui.s(4 * 58 + 20)};
         ui.r().fillRoundedRect(nav, ui.s(14), Color{6, 10, 22, 170});
         ui.pushId("online/nav");
         float y = nav.y + ui.s(10), h = ui.s(50);
@@ -584,13 +584,10 @@ private:
             y += h + ui.s(8);
             return c;
         };
-        if (item("play", "JOUER", false)) {
-            std::string planet = g_.progression.lastPlanet.empty() ? "sylvanox" : g_.progression.lastPlanet;
-            g_.app.switchScene(makeLevelSelect(g_, planet));
-        }
-        if (item("planets", "CAMPAGNE", false)) g_.app.switchScene(makePlanetMap(g_));
+        // The levels are played from the level card ("Jouer ce niveau"); the campaign is
+        // reached from the main menu. The WORKSHOP lives here only.
         item("ranking", "ONLINE RANKING", true);
-        if (item("workshop", "ATELIER", false)) g_.app.switchScene(makeContentManager(g_));
+        if (item("workshop", "WORKSHOP", false)) g_.app.switchScene(makeContentManager(g_));
         if (item("settings", "PARAMÈTRES", false)) g_.app.pushScene(makeSettingsScene(g_, false));
         if (item("back", "RETOUR", false)) g_.app.switchScene(makeMainMenu(g_));
         ui.popId();
@@ -953,7 +950,11 @@ private:
         }
         st.primary = false;
         st.enabled = l->entry != nullptr;
-        if (ui.button("play", {bx, zoneD_.y + ui.s(114), bw, ui.s(40)}, "Jouer ce niveau", st)) g_.app.switchScene(makeGameScene(g_, l->id));
+        if (ui.button("play", {bx, zoneD_.y + ui.s(114), bw, ui.s(40)}, "Jouer ce niveau", st)) {
+            PlayOptions po;
+            po.fromOnline = true;
+            g_.app.switchScene(makeGameScene(g_, l->id, po));
+        }
         if (unsent > 0)
             ui.label(std::to_string(unsent) + " performance(s) à envoyer", {bx + bw * 0.5f, zoneD_.y + ui.s(172)}, 14, ui.theme().warm, Align::Center,
                      FontFace::Body, VAlign::Middle);

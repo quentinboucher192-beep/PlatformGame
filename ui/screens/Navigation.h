@@ -21,6 +21,9 @@ struct PlayOptions {
     std::string assetRoot;
     /// Start at this position (feet, world pixels) and skip the intro.
     std::optional<Vec2> spawn;
+    /// Launched from ONLINE ("Jouer ce niveau"): leaving the level goes back to ONLINE on
+    /// this level, never to the campaign; no "next level".
+    bool fromOnline = false;
 };
 
 // Factories of every screen (implemented next to each scene).
@@ -32,7 +35,8 @@ std::unique_ptr<Scene> makeGameScene(GameServices& g, const std::string& levelId
 std::unique_ptr<Scene> makeSettingsScene(GameServices& g, bool overlay);
 std::unique_ptr<Scene> makeLevelEditor(GameServices& g, const std::string& levelId);
 std::unique_ptr<Scene> makeEnemyEditor(GameServices& g);
-/// The ATELIER: the player's levels, imported levels, .cplanet export/import, enemy editor.
+/// The WORKSHOP (reached from ONLINE): the player's levels, imported levels, .cplanet
+/// export/import, enemy editor.
 /// `importFile`: a .cplanet file to analyse immediately (double-click / command line).
 /// `tab`: 0 Mes niveaux, 1 Niveaux importés, 2 Exporter, 3 Importer, 4 Éditeur d'ennemis.
 std::unique_ptr<Scene> makeContentManager(GameServices& g, const std::string& importFile = {}, int tab = 0);

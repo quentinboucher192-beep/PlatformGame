@@ -21,6 +21,7 @@ struct ResultsData {
     std::string failReason;
     std::string nextLevel;
     bool editorTest = false;
+    bool fromOnline = false;  // launched from ONLINE: back goes to ONLINE
     /// Performance kept for Cosmic Online (nullopt: not an improvement / not rankable).
     std::optional<OnlineAttempt> online;
 };

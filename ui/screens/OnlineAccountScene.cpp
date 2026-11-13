@@ -164,8 +164,8 @@ private:
             Vec2 sz = ui.labelWrapped(text, {x + ui.s(22), y + ui.s(30)}, w - ui.s(22), 16, ui.theme().textDim);
             y += ui.s(40) + sz.y;
         };
-        point("Compte", "La section ONLINE demande un compte. Le jeu, lui, n'en a jamais besoin : campagne, Atelier et records "
-                        "locaux restent jouables hors ligne.");
+        point("Compte", "La section ONLINE (classements et WORKSHOP) demande un compte. Le jeu, lui, n'en a jamais besoin : la "
+                        "campagne et les records locaux restent jouables hors ligne.");
         point("Ce qui est partagé", "Votre pseudonyme, votre avatar, vos temps et le replay de vos meilleurs runs (la trajectoire de votre "
                                     "personnage, pas une vidéo). Le mot de passe n'est conservé que sous forme d'empreinte irréversible.");
         point("Localisation", "Uniquement le pays que vous choisissez, si vous le choisissez. Sur le globe, vous apparaissez au centre de "

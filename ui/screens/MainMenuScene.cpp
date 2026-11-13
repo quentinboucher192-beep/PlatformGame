@@ -66,7 +66,7 @@ public:
                  ui.theme().text.withAlphaF(appear * 0.85f), Align::Center, FontFace::Body, VAlign::Middle);
 
         bool canContinue = !g_.progression.lastLevel.empty() && g_.content.level(g_.progression.lastLevel);
-        int rows = canContinue ? 6 : 5;
+        int rows = canContinue ? 5 : 4;
         float x = ui.s(120), w = ui.s(470), h = ui.s(66), gap = ui.s(14);
         float y = ui.screenH() * 0.5f - (rows * (h + gap)) * 0.5f + ui.s(40);
         Rect side{x - ui.s(40), y - ui.s(40), w + ui.s(80), rows * (h + gap) + ui.s(70)};
@@ -92,7 +92,6 @@ public:
         if (int n = g_.online.loggedIn() ? g_.online.pendingFriendRequests() : 0; n > 0)
             onlineSub += " · " + std::to_string(n) + (n > 1 ? " demandes d'amis" : " demande d'ami");
         if (btn("online", "Online", onlineSub)) g_.app.switchScene(makeOnlineRanking(g_));
-        if (btn("workshop", "Atelier", "vos niveaux, éditeurs, partage")) g_.app.switchScene(makeContentManager(g_));
         if (btn("settings", "Paramètres", "")) g_.app.pushScene(makeSettingsScene(g_, false));
         UIContext::ButtonStyle danger;
         danger.danger = true;

@@ -1,6 +1,6 @@
 # Guide des éditeurs
 
-Les deux éditeurs sont dans l'**Atelier** (menu principal), ou directement :
+Les deux éditeurs sont dans le **WORKSHOP** (menu *Online*), ou directement :
 `CosmicPlatformer --editor [id_du_niveau]` et `CosmicPlatformer --enemy-editor`.
 Ils se pilotent à la souris et au clavier ; les menus et boîtes de dialogue sont aussi
 navigables à la manette.
