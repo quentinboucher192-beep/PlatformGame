@@ -1,0 +1,70 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  windows:
+    name: Windows (MSVC) + installer
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: build/_deps
+          key: deps-win-${{ hashFiles('cmake/Dependencies.cmake') }}
+      - name: Configure
+        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+      - name: Build
+        run: cmake --build build --config Release --parallel
+      - name: Tests
+        run: ctest --test-dir build -C Release --output-on-failure
+        env:
+          SDL_VIDEODRIVER: offscreen
+          SDL_AUDIODRIVER: dummy
+      - name: Stage
+        run: cmake --install build --config Release --prefix build/stage
+      - name: Inno Setup
+        shell: pwsh
+        run: |
+          if (-not (Get-Command iscc.exe -ErrorAction SilentlyContinue)) { choco install innosetup -y --no-progress }
+          $iscc = (Get-Command iscc.exe -ErrorAction SilentlyContinue).Source
+          if (-not $iscc) { $iscc = Join-Path ${env:ProgramFiles(x86)} "Inno Setup 6\ISCC.exe" }
+          & $iscc "/DStageDir=$PWD\build\stage" installer\CosmicPlatformer.iss
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CosmicPlatformer-Setup
+          path: installer/Output/*.exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CosmicPlatformer-portable-windows
+          path: build/stage
+
+  linux:
+    name: Linux (GCC) + tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: System packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ninja-build libxcursor-dev libasound2-dev libpulse-dev \
+            libxi-dev libxrandr-dev libxss-dev libxfixes-dev libxkbcommon-dev libdrm-dev libgbm-dev \
+            libegl1-mesa-dev libgl1-mesa-dev libxtst-dev libdbus-1-dev libudev-dev libwayland-dev wayland-protocols
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: build/_deps
+          key: deps-linux-${{ hashFiles('cmake/Dependencies.cmake') }}
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build --parallel
+      - name: Tests
+        run: ctest --test-dir build --output-on-failure
+        env:
+          SDL_VIDEODRIVER: offscreen
+          SDL_AUDIODRIVER: dummy

@@ -32,6 +32,7 @@ std::unique_ptr<Scene> makeGameScene(GameServices& g, const std::string& levelId
 std::unique_ptr<Scene> makeSettingsScene(GameServices& g, bool overlay);
 std::unique_ptr<Scene> makeLevelEditor(GameServices& g, const std::string& levelId);
 std::unique_ptr<Scene> makeEnemyEditor(GameServices& g);
-std::unique_ptr<Scene> makeContentManager(GameServices& g);
+/// `importFile`: a .cplanet file to analyse immediately (double-click / command line).
+std::unique_ptr<Scene> makeContentManager(GameServices& g, const std::string& importFile = {});
 
 }  // namespace cosmic

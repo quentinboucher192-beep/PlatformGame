@@ -26,12 +26,16 @@ std::string humanSize(uint64_t b) {
 
 class ContentManagerScene : public Scene {
 public:
-    explicit ContentManagerScene(GameServices& g) : g_(g) {}
+    ContentManagerScene(GameServices& g, std::string importFile) : g_(g), importPath_(std::move(importFile)) {}
 
     void onEnter() override {
         g_.playMusic("music/menu_theme.ogg");
         destDir_ = Paths::toUtf8(Paths::exportsDir());
         refreshLists();
+        if (!importPath_.empty()) {
+            tab_ = 1;
+            analyze();
+        }
     }
 
     void update(float dt) override {
@@ -423,6 +427,8 @@ private:
 
 }  // namespace
 
-std::unique_ptr<Scene> makeContentManager(GameServices& g) { return std::make_unique<ContentManagerScene>(g); }
+std::unique_ptr<Scene> makeContentManager(GameServices& g, const std::string& importFile) {
+    return std::make_unique<ContentManagerScene>(g, importFile);
+}
 
 }  // namespace cosmic

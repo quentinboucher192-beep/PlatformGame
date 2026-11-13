@@ -27,7 +27,8 @@ struct LevelEntry {
     fs::path path;
     ContentSource source = ContentSource::Builtin;
     std::string packageId;
-    fs::path assetRoot;  // package assets folder (empty for builtin / user levels)
+    fs::path assetRoot;        // assets folder mounted while playing / editing (packages)
+    std::string assetPackage;  // user copy of an imported level: package providing its assets
 };
 
 struct PackageInfo {
@@ -82,6 +83,8 @@ public:
 private:
     void loadPlanetsFrom(const fs::path& dir, const fs::path& assetRoot);
     void loadLevelFile(const fs::path& file, ContentSource src, const std::string& pkg, const fs::path& assetRoot);
+    /// A user level copied from an imported package keeps using that package's assets.
+    void resolveAssetPackage(LevelEntry& e) const;
     void loadEnemiesFrom(const fs::path& dir, ContentSource src, const fs::path& assetRoot);
     void loadPowersFrom(const fs::path& dir);
     void loadEffectsFrom(const fs::path& dir);

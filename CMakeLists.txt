@@ -34,6 +34,12 @@ option(COSMIC_BUILD_TESTS "Build the unit tests" ON)
 include(cmake/Dependencies.cmake)
 include(cmake/CompilerWarnings.cmake)
 
+if(MINGW)
+    # Self-contained Windows executables with MinGW: no libstdc++ / libgcc / winpthread DLLs
+    # (applies to the targets below, not to the SDL libraries configured above).
+    add_link_options(-static -static-libgcc -static-libstdc++)
+endif()
+
 # ----------------------------------------------------------------------------- engine
 file(GLOB_RECURSE COSMIC_ENGINE_SOURCES CONFIGURE_DEPENDS
     ${CMAKE_SOURCE_DIR}/engine/*.cpp ${CMAKE_SOURCE_DIR}/engine/*.h)
@@ -70,11 +76,11 @@ endif()
 add_executable(CosmicPlatformer WIN32 ${COSMIC_EXE_SOURCES})
 target_link_libraries(CosmicPlatformer PRIVATE cosmic_game)
 cosmic_set_warnings(CosmicPlatformer)
+# The installed game finds its shared libraries next to the executable.
+set_target_properties(CosmicPlatformer PROPERTIES INSTALL_RPATH "$ORIGIN" BUILD_WITH_INSTALL_RPATH OFF)
 
-# Make assets/ and data/ reachable from the build folder (the game looks next to the
-# executable first, then in COSMIC_SOURCE_DIR as a developer fallback).
-add_custom_command(TARGET CosmicPlatformer POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E echo "Cosmic Platformer built: $<TARGET_FILE:CosmicPlatformer>")
+# Note: from the build tree the game finds assets/ and data/ through COSMIC_SOURCE_DIR;
+# installed, they sit next to the executable (see engine/core/Paths.cpp).
 
 # ------------------------------------------------------------------------------ tests
 if(COSMIC_BUILD_TESTS)

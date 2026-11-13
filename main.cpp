@@ -11,6 +11,9 @@
 //   --shot <frame>:<file>   save a screenshot at a given frame (repeatable)
 //   --input <script>        scripted gameplay input, e.g. "0:right;90:right,jump;120:"
 //   --user-dir <path>       use another folder for saves and user content
+//   --import <file.cplanet> open the import screen with this package (also: file as argument)
+//   --export <level> <file.cplanet> [--author <name>]
+//                           export a level and all its dependencies without opening a window
 
 #include <SDL3/SDL_main.h>
 
@@ -21,10 +24,42 @@
 #include "engine/core/Application.h"
 #include "engine/core/Log.h"
 #include "engine/core/Paths.h"
+#include "engine/resources/ResourceManager.h"
 #include "game/GameServices.h"
+#include "game/content/ContentDatabase.h"
+#include "packaging/PackageExporter.h"
 #include "ui/screens/Navigation.h"
 
 using namespace cosmic;
+
+namespace {
+/// `--export <level> <file>`: same exporter as the content manager, without a window.
+int exportFromCommandLine(const std::string& levelId, const std::string& file, const std::string& author) {
+    ContentDatabase content;
+    content.reload();
+    ResourceManager res;
+    res.init(nullptr, nullptr);
+    std::string err;
+    auto level = content.loadLevel(levelId, &err);
+    if (!level) {
+        Log::error("Export: niveau '{}' introuvable ({})", levelId, err);
+        return 2;
+    }
+    PackageExporter exporter(content, res);
+    ExportOptions opt;
+    opt.author = author.empty() ? level->author : author;
+    opt.destination = Paths::fromUtf8(file);
+    ExportPlan plan = exporter.plan(*level, opt);
+    for (const auto& w : plan.warnings) Log::warn("Export: {}", w);
+    if (!plan.ok() || !exporter.write(*level, plan, opt, &err)) {
+        for (const auto& m : plan.missing) Log::error("Export: dépendance manquante: {}", m);
+        Log::error("Export impossible: {}", err.empty() ? "dépendances manquantes" : err);
+        return 3;
+    }
+    Log::info("Export: {} -> {} ({} fichiers, {} octets)", levelId, file, plan.items.size(), plan.totalSize);
+    return 0;
+}
+}  // namespace
 
 int main(int argc, char** argv) {
     std::vector<std::string> args(argv + 1, argv + argc);
@@ -35,7 +70,7 @@ int main(int argc, char** argv) {
     };
     auto value = [&](const char* f) -> std::string {
         for (size_t i = 0; i + 1 < args.size(); ++i)
-            if (args[i] == f) return args[i + 1];
+            if (args[i] == f && args[i + 1].rfind("--", 0) != 0) return args[i + 1];
         return {};
     };
 
@@ -43,6 +78,17 @@ int main(int argc, char** argv) {
     Log::init(Paths::toUtf8(Paths::logFile()));
     Log::info("Cosmic Platformer {} — data: {} — user: {}", COSMIC_VERSION_STRING, Paths::toUtf8(Paths::installDir()),
               Paths::toUtf8(Paths::userDir()));
+
+    for (size_t i = 0; i < args.size(); ++i) {
+        if (args[i] != "--export") continue;
+        if (i + 2 >= args.size()) {
+            Log::error("Usage: --export <niveau> <fichier.cplanet> [--author <nom>]");
+            return 2;
+        }
+        int rc = exportFromCommandLine(args[i + 1], args[i + 2], value("--author"));
+        Log::shutdown();
+        return rc;
+    }
 
     Settings initial = SettingsStore::load();
     AppConfig cfg;
@@ -70,8 +116,15 @@ int main(int argc, char** argv) {
         if (c != std::string::npos) app.scheduledScreenshots.push_back({std::atoi(s.substr(0, c).c_str()), s.substr(c + 1)});
     }
 
+    // A .cplanet given on the command line (file association) opens the import screen.
+    std::string importFile = value("--import");
+    for (const auto& a : args)
+        if (a.size() > 8 && a.substr(a.size() - 8) == ".cplanet") importFile = a;
+
     std::string level = value("--level");
-    if (!level.empty()) {
+    if (!importFile.empty()) {
+        app.pushScene(makeContentManager(game, importFile));
+    } else if (!level.empty()) {
         PlayOptions opt;
         if (std::string sp = value("--spawn"); !sp.empty()) {
             size_t c = sp.find(',');

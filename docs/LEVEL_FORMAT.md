@@ -1,0 +1,118 @@
+# Format des niveaux (`cosmic.level`, version 1)
+
+Un niveau est un fichier JSON unique. Les niveaux officiels sont dans `data/levels/`, les
+créations dans `levels/` du dossier utilisateur, les niveaux importés dans
+`packages/<id>/`. Toutes les coordonnées sont en pixels (tuile = 16 px), origine en haut à
+gauche, y vers le bas. Les chemins d'assets sont relatifs au dossier `assets/`.
+
+L'éditeur de niveaux lit et écrit ce format ; le niveau officiel
+`data/levels/sylvanox_01.json` est généré par `tools/levelgen/sylvanox_01.py`.
+
+## En-tête
+
+```json
+{
+  "format": "cosmic.level", "formatVersion": 1,
+  "id": "sylvanox_01", "name": "Les Ruines Suspendues", "description": "…",
+  "planet": "sylvanox", "author": "Cosmic Studio", "version": "1.0", "difficulty": 2,
+  "music": "music/sylvanox_level.ogg", "bossMusic": "music/sylvanox_boss.ogg",
+  "ambience": "music/sylvanox_ambience.ogg",
+  "bounds": [0, 0, 10560, 1216], "killY": 1240, "cameraZoom": 1.0,
+  "ambientLight": "#7480a8", "backgroundColor": "#0b0f1e",
+  "background": [ { "texture": "backgrounds/sylvanox/sky.png", "factor": [0, 0], "fill": true }, … ],
+  "timer":  { "mode": "limited", "limit": 900, "onExpire": "gameover", "referenceTime": 210, "challengeMaxDeaths": 0 },
+  "medals": { "bronze": {}, "silver": { "maxTime": 420 }, "gold": { "maxTime": 270 },
+              "platinum": { "maxTime": 200, "maxDeaths": 0 } },
+  "startPowers": [],
+  "layers": [ … ], "objects": [ … ], "events": [ … ],
+  "intro": { … }, "outro": { … }, "metadata": { … }
+}
+```
+
+* `background` : couches de parallaxe, de la plus lointaine à la plus proche (`factor` =
+  vitesse relative à la caméra, `fill`, `offset`, `repeatX`, `tint`…).
+* `timer.mode` : `unlimited`, `limited` (temps maximum), `timeAttack` (chrono mis en avant,
+  pas de limite), `challenge` (limite + nombre de morts maximum).
+  `onExpire` : `gameover`, `restartCheckpoint` ou `continue`. `referenceTime` sert au score.
+* `medals` : pour chaque médaille, `maxTime` (secondes) et/ou `maxDeaths` ; un objet vide
+  = obtenue en terminant le niveau.
+* `startPowers` : identifiants des pouvoirs disponibles dès le départ.
+
+## Calques
+
+```json
+{ "id": "terrain", "name": "Terrain", "order": 10, "visible": true, "locked": false }
+```
+
+`order` fixe l'ordre de rendu ; `"foreground": true` dessine le calque devant le joueur.
+Le niveau officiel utilise `bg_decor`, `terrain`, `gameplay`, `fg_decor`.
+
+## Objets
+
+```json
+{ "id": "o186", "type": "moving_platform", "layer": "gameplay",
+  "rect": [4864, 768, 48, 16], "rotation": 0, "flipX": false, "z": 0,
+  "props": { "dx": 144, "dy": 0, "speed": 45, "wait": 0.5, "phase": 0, "active": true,
+             "triggered": false, "oneway": false } }
+```
+
+`props` dépend du type ; le schéma de chaque type (clé, libellé, type, valeur par défaut,
+bornes, choix possibles) est défini dans `game/levels/ObjectTypes.cpp` et sert à la fois au
+jeu, à l'éditeur (panneau de propriétés) et à l'exporteur (dépendances). Une propriété
+absente prend sa valeur par défaut.
+
+| Catégorie | Types |
+|---|---|
+| Terrain | `solid` (matériau : pierre des ruines, métal ancien, cristal, racines…) |
+| Plateformes | `oneway`, `moving_platform`, `crumble_platform`, `power_gate` (mur de cristal / Dash, barrière de phase / Téléportation, barrière d'énergie / Onde, rocher fissuré / Impulsion, rideau de plasma / Bouclier), `bounce_pad`, `ladder` |
+| Dangers | `spikes`, `liquid` (acide, eau, lave), `damage_zone`, `slow_zone`, `laser` |
+| Gameplay | `player_start`, `checkpoint`, `exit`, `shard`, `relic`, `health_orb`, `energy_orb`, `power_unlock` |
+| Interactifs | `door`, `lever`, `receptor`, `sign` |
+| Ennemis | `enemy` (`enemy` = identifiant de définition, `patrol`, `faceLeft`, `dormant`, `boss`) |
+| Zones | `trigger`, `combat_zone` (`doors`, `waves` = vagues d'ennemis séparées par `;`, `lockCamera`, `music`, `announce`), `camera_zone`, `secret_area` |
+| Décor | `decor` (élément de l'atlas de décor), `light`, `emitter` (particules) |
+
+Les références entre objets (portes d'une arène, cibles d'un levier, vagues…) utilisent
+les `id` d'objets.
+
+## Événements
+
+```json
+{ "id": "ev1", "name": "Gardien vaincu", "source": "o349", "trigger": "bossDefeated",
+  "once": true, "delay": 1.5,
+  "actions": [ { "type": "hint", "target": "", "params": { "text": "Le passage est ouvert.", "duration": 4 } } ] }
+```
+
+* `source` : `id` de l'objet surveillé, `level` pour les déclencheurs globaux, ou
+  identifiant de pouvoir pour `powerUsed` / `unlocked`.
+* `trigger` : `enter`, `exit`, `activate`, `cleared`, `start`, `killed`, `bossStart`,
+  `bossPhase`, `bossDefeated`, `collected`, `checkpoint`, `powerUsed`, `unlocked`,
+  `levelStart`, `time` (avec `params.seconds`).
+* `actions[].type` : `open`, `close`, `toggle`, `activate`, `disable`, `enable`, `spawn`,
+  `startBoss`, `showText`, `hint`, `dialogue`, `cameraPan`, `lockCamera`, `unlockCamera`,
+  `shake`, `flash`, `playMusic`, `playSound`, `effect`, `addTime`, `givePower`, `heal`,
+  `killPlayer`, `completeLevel` ; `target` = `id` de l'objet visé.
+
+Les événements sont interprétés par `EventSystem` : ce sont des **données**, jamais du code.
+
+## Cinématiques
+
+```json
+"intro": { "skippable": true, "letterbox": true, "steps": [
+  { "type": "fade", "duration": 0.01, "params": { "to": 1 } },
+  { "type": "cut", "duration": 0.01, "params": { "x": 2000, "y": 640 } },
+  { "type": "camera", "duration": 3.0, "wait": true, "params": { "x": 600, "y": 700, "ease": "inOutSine" } },
+  { "type": "text", "duration": 4.0, "wait": false, "params": { "text": "SYLVANOX", "subtitle": "Les Ruines Suspendues" } }
+] }
+```
+
+Types d'étapes : `camera`, `focus`, `cut`, `zoom`, `fade`, `flash`, `shake`, `text`,
+`dialogue`, `sound`, `music`, `effect`, `letterbox`, `spawnPlayer`, `hidePlayer`,
+`playerWalk`, `playerAnim`, `action` (exécute une action d'événement), `wait`.
+`wait: false` lance l'étape suivante sans attendre la fin de celle-ci.
+
+## Compatibilité
+
+`formatVersion` est vérifié au chargement ; un niveau d'une version future est refusé avec
+un message clair. Les champs inconnus sont ignorés, les champs absents prennent leur valeur
+par défaut, ce qui permet d'ajouter des propriétés sans casser les anciens niveaux.

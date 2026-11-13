@@ -57,6 +57,7 @@ void ContentDatabase::reload() {
         std::sort(roots.begin(), roots.end());
         for (const auto& r : roots) loadPackage(r);
     }
+    for (auto& [id, e] : levels_) resolveAssetPackage(e);
     Log::info("Content: {} planets, {} levels, {} enemies, {} powers, {} packages", planets_.size(), levels_.size(),
               enemies_.size(), powers_.size(), packages_.size());
 }
@@ -98,6 +99,7 @@ void ContentDatabase::loadLevelFile(const fs::path& file, ContentSource src, con
     e.source = src;
     e.packageId = pkg;
     e.assetRoot = assetRoot;
+    if (auto m = j->find("metadata"); m != j->end() && m->is_object()) e.assetPackage = jstr(*m, "assetPackage");
     if (levels_.count(e.id)) {
         Log::warn("Duplicate level id '{}' ({}) ignored", e.id, Paths::toUtf8(file));
         return;
@@ -222,8 +224,20 @@ bool ContentDatabase::saveUserLevel(const LevelData& level) {
     if (it == levels_.end() || it->second.source == ContentSource::User) {
         levels_.erase(level.id);
         loadLevelFile(p, ContentSource::User, "", {});
+        if (auto saved = levels_.find(level.id); saved != levels_.end()) resolveAssetPackage(saved->second);
     }
     return true;
+}
+
+void ContentDatabase::resolveAssetPackage(LevelEntry& e) const {
+    if (e.source != ContentSource::User || e.assetPackage.empty()) return;
+    for (const auto& p : packages_) {
+        if (p.id != e.assetPackage) continue;
+        std::error_code ec;
+        if (fs::is_directory(p.root / "assets", ec)) e.assetRoot = p.root / "assets";
+        return;
+    }
+    Log::warn("Level '{}' uses assets of package '{}', which is not installed", e.id, e.assetPackage);
 }
 
 bool ContentDatabase::deleteUserLevel(const std::string& id) {

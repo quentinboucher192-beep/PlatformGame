@@ -1,0 +1,124 @@
+# Cosmic Platformer
+
+Jeu de plateforme 2D en C++20 / SDL3, avec éditeur de niveaux, éditeur d'ennemis,
+système de planètes, records et partage de niveaux par fichiers `.cplanet`.
+Fonctionne entièrement hors ligne.
+
+**Contenu de la version 1.0** : la planète **Sylvanox** et son niveau
+**« Les Ruines Suspendues »** (≈ 10 500 px de long, 6 zones, mini-boss à 3 phases,
+3 reliques secrètes, 2 routes finales). Pyralis et Glacior apparaissent sur la carte
+comme planètes verrouillées « en approche ».
+
+## Jouer
+
+| Action | Clavier (principal / secondaire) | Manette (Xbox / PlayStation) |
+|---|---|---|
+| Se déplacer | Q D / ← → (A D sur QWERTY) | Stick gauche / croix |
+| Viser haut / bas, grimper | Z S / ↑ ↓ | Stick gauche |
+| Sauter / double saut | Espace / Z | A / Croix |
+| Glissade | Bas en courant au sol | Bas (stick / croix) en courant |
+| Attaque | J / X | X / Carré |
+| Dash | K / Maj gauche | B / Rond |
+| Onde d'énergie | L / C | RT / R2 |
+| Bouclier | O / V | LB / L1 |
+| Impulsion | I / B | RB / R1 |
+| Téléportation courte | U / N | LT / L2 |
+| Interagir | E / Entrée | Y / Triangle |
+| Pause | Échap / P | Menu / Options |
+
+Les touches sont des **positions physiques** (scancodes) : sur un clavier AZERTY, les
+déplacements tombent naturellement sur ZQSD. Toutes les commandes se reconfigurent dans
+*Paramètres → Clavier* et *Paramètres → Manette* (profils indépendants, zones mortes,
+sensibilité, inversion des axes, vibrations, réinitialisation). Les icônes affichées
+s'adaptent à la manette utilisée (Xbox, PlayStation ou générique) et basculent
+automatiquement entre clavier et manette.
+
+Touches globales : **F3** mode debug (FPS, dt, colliders, hitboxes, position/vitesse du
+joueur, états des ennemis, chrono, particules), **F11** plein écran, **F12** capture d'écran.
+
+### Le niveau
+
+1. **Le Seuil des Anciens** – cinématique d'introduction, apprentissage des déplacements,
+   du saut mural et du double saut.
+2. **La Canopée Brisée** – exploration, premiers ennemis, premier pouvoir : le **Dash**.
+3. **Les Jardins Gardés** – **Onde d'énergie** et **Bouclier**, arène verrouillée à vagues.
+4. **Les Ponts Suspendus** – plateformes mobiles et friables, lasers, **Impulsion**,
+   glissade, barrières de phase franchies par **Téléportation**, passages secrets.
+5. **Le Sanctuaire du Gardien** – mini-boss *Thornwarden* en 3 phases, attaques télégraphiées.
+6. **L'Ascension finale** – deux routes vers le relais, cinématique de fin, écran de résultats.
+
+Chrono (limite 15 min, temps de référence 3 min 30), médailles bronze / argent / or /
+platine, records locaux (meilleur temps, morts, collectibles, ennemis vaincus, score,
+pouvoirs utilisés, date) avec comparaison au meilleur essai.
+
+## Éditeurs
+
+* **Éditeur de niveaux** (menu principal ou `CosmicPlatformer --editor [id]`) :
+  calques, bibliothèque d'objets, propriétés, grille magnétique, zoom, déplacement de vue,
+  sélection multiple, déplacement / redimensionnement / rotation / miroir, copier-coller,
+  annuler / rétablir, événements et déclencheurs, cinématiques d'intro / outro, chrono et
+  médailles, test immédiat (F5) avec retour à l'éditeur, sauvegarde automatique.
+* **Éditeur d'ennemis** (`--enemy-editor`) : aperçu animé, statistiques, comportements IA,
+  attaques, phases de boss, arène de test où l'on peut contrôler le joueur.
+
+Voir [docs/EDITORS.md](docs/EDITORS.md).
+
+## Partager un niveau
+
+*Gestion des contenus → Exporter* crée un fichier `.cplanet` autonome contenant le niveau,
+la planète, les ennemis, les pouvoirs, les effets et **tous** les fichiers graphiques et
+audio utilisés, avec un manifeste signé par empreintes SHA-256. *Importer* vérifie
+l'archive (empreintes, chemins, tailles, version, dépendances, conflits) avant de
+l'installer ; aucun code n'est jamais exécuté depuis un package. Avec l'installateur
+Windows, un double-clic sur un `.cplanet` ouvre directement l'écran d'import.
+
+En ligne de commande :
+
+```
+CosmicPlatformer --export sylvanox_01 MonNiveau.cplanet --author "Mon nom"
+CosmicPlatformer --import MonNiveau.cplanet
+```
+
+Voir [docs/PACKAGE_FORMAT.md](docs/PACKAGE_FORMAT.md).
+
+## Données utilisateur
+
+Sauvegardes, paramètres, records, niveaux créés, packages importés, exports, captures et
+journal (`cosmic.log`) sont stockés dans :
+
+* Windows : `%APPDATA%\CosmicStudio\CosmicPlatformer\`
+* Linux : `~/.local/share/CosmicStudio/CosmicPlatformer/`
+
+Les fichiers sont versionnés et migrés automatiquement ; un fichier corrompu est mis de
+côté (`.corrupt`) au lieu de faire planter le jeu. La désinstallation les conserve, sauf
+demande explicite.
+
+## Compiler
+
+Prérequis : CMake ≥ 3.24, un compilateur C++20 (Visual Studio 2022, GCC 12+ ou Clang 15+),
+Git, et une connexion Internet **uniquement** au premier configure (téléchargement de SDL3,
+SDL3_image, SDL3_ttf, SDL3_mixer, nlohmann/json, miniz, aux versions épinglées).
+
+```
+cmake -S . -B build
+cmake --build build --config Release --parallel
+ctest --test-dir build -C Release --output-on-failure
+```
+
+L'exécutable est dans `build/bin/`. Installateur Windows : `installer\build_installer.ps1`
+(Inno Setup 6). Détails, options et compilation croisée : [docs/BUILDING.md](docs/BUILDING.md).
+
+## Documentation
+
+* [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) – modules, boucle de jeu, flux de données
+* [docs/LEVEL_FORMAT.md](docs/LEVEL_FORMAT.md) – format JSON des niveaux, objets, événements
+* [docs/PACKAGE_FORMAT.md](docs/PACKAGE_FORMAT.md) – format `.cplanet` et vérifications à l'import
+* [docs/EDITORS.md](docs/EDITORS.md) – guide des éditeurs
+* [docs/BUILDING.md](docs/BUILDING.md) – compilation, tests, installateur
+* [docs/ASSET_SPEC.md](docs/ASSET_SPEC.md) – contrat des assets (sprites, animations, tuiles, audio)
+
+## Licences
+
+Code et assets du jeu : Cosmic Studio. Les assets (sprites, décors, sons, musiques) sont
+générés par les scripts de `tools/assetgen`. Bibliothèques et polices tierces : voir
+[licenses/](licenses/).

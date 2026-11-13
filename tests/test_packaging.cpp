@@ -134,6 +134,23 @@ TEST_CASE("packaging: import works on a 'PC' without the original assets") {
     // Enemies of the package are registered with their package asset root.
     const EnemyDefinition* boss = env.content.enemy("thornwarden");
     CHECK(boss != nullptr);
+
+    // An editable copy made by the level editor keeps using the package assets,
+    // including after a restart (reload).
+    LevelData copy = *lvl;
+    copy.id = newId + "_copie";
+    copy.metadata["assetPackage"] = e->packageId;
+    const fs::path packageAssets = e->assetRoot;
+    CHECK(env.content.saveUserLevel(copy));
+    CHECK(env.content.level(copy.id) != nullptr);
+    CHECK(env.content.level(copy.id)->assetRoot == packageAssets);
+    env.content.reload();
+    const LevelEntry* ce = env.content.level(copy.id);
+    CHECK(ce != nullptr);
+    CHECK(ce->source == ContentSource::User);
+    CHECK(ce->assetRoot == packageAssets);
+    CHECK(env.content.deleteUserLevel(copy.id));
+
     CHECK(env.content.removePackage(env.content.packages().front().id));
 }
 

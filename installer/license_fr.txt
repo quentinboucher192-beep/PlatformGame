@@ -1,0 +1,18 @@
+COSMIC PLATFORMER 1.0
+Copyright (c) Cosmic Studio
+
+Le jeu, son code source, ses graphismes, sons et musiques (générés par les outils
+du projet, voir tools/assetgen) sont fournis par Cosmic Studio.
+
+Composants tiers inclus (voir le dossier « licenses » après installation) :
+  - SDL 3, SDL_image 3, SDL_ttf 3, SDL_mixer 3 : licence zlib
+  - FreeType : FreeType License (FTL)
+  - nlohmann/json : licence MIT
+  - miniz : licence MIT
+  - Polices Orbitron et Chakra Petch : SIL Open Font License 1.1
+
+Vos sauvegardes, records, niveaux créés et packages importés sont stockés dans
+votre profil utilisateur (%APPDATA%\CosmicStudio\CosmicPlatformer). Ils sont
+conservés lors d'une désinstallation, sauf si vous demandez leur suppression.
+
+LE LOGICIEL EST FOURNI « EN L'ÉTAT », SANS GARANTIE D'AUCUNE SORTE.
