@@ -363,3 +363,24 @@ Sounds: `glide_open`, `glide_loop` (loop), `pound_dive`, `pound_impact`, `charge
 `fireball`, `ice_shatter`, `freeze`, `bomb_drop`, `bomb_explode`, `slime_split`, `bat_screech`,
 `burrow`, `web_hit`, `lava_bubble`, `boss_roar_fire`, `boss_roar_ice`, `mech_alarm`, `wyrm_roar`,
 `updraft_loop` (loop). Loops are played as sustained effects (`AudioSystem::sustainLoop`).
+
+### 14.6 Planet environments
+
+* Tilesets (§7 format): `basalt`, `obsidian`, `forge_metal` (Pyralis); `glacier_ice` (JSON
+  `"friction": 0.25`, slippery), `snow_rock`, `frost_metal` (Glacior). Optional JSON key
+  `friction` (1 = normal grip).
+* `textures/tiles/platforms.png` is 48x112: rows 3 `basalt_ledge`, 4 `chain_grate`, 5 `ice_ledge`,
+  6 `snow_bridge`.
+* Backgrounds `backgrounds/pyralis/{sky,far,mid,near,abyss,fg_embers}.png` and
+  `backgrounds/glacior/{sky,far,mid,near,abyss,fg_icicles}.png`, same roles and parallax as
+  Sylvanox (§8); abyss fill colour below the layer: Pyralis `#ff8a3d`, Glacior `#c2dbef`.
+* Decor atlases (§9 format, names unique across atlases):
+  * `pyralis_decor`: lava_vent (anim 6), basalt_column, basalt_column_broken, obsidian_spire,
+    forge_anvil, forge_brazier (anim 6), hanging_chain, hanging_chain_long (pivot top), lava_fall
+    (anim 6, pivot top), fire_plant (anim 4), slag_pile, gear_wreck, skull_rock, ember_crystal,
+    steam_pipe, burnt_banner, ash_rock_small, ash_rock_big.
+  * `glacior_decor`: ice_spire, icicles, icicles_long (pivot top), snow_drift, frozen_tree,
+    snow_pine, ice_crystal, ice_crystal_big, frozen_statue, aurora_lamp (anim 6), frost_flower
+    (anim 4), ice_arch, frozen_machine, frost_banner, frozen_bones, snow_rock_small, snow_rock_big,
+    ice_floating (pivot centre).
+* Banners `ui/planets/pyralis_banner.png`, `ui/planets/glacior_banner.png` (480x270).
