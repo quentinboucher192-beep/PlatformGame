@@ -843,7 +843,7 @@
     16.0
    ],
    "props": {
-    "delay": 0.45,
+    "delay": 0.5,
     "respawn": 3.0
    }
   },
@@ -852,13 +852,13 @@
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
-    816.0,
+    800.0,
     896.0,
     48.0,
     16.0
    ],
    "props": {
-    "delay": 0.45,
+    "delay": 0.5,
     "respawn": 3.0
    }
   },
@@ -3491,16 +3491,16 @@
    "type": "moving_platform",
    "layer": "gameplay",
    "rect": [
-    3600.0,
-    528.0,
+    3632.0,
+    576.0,
     48.0,
     16.0
    ],
    "props": {
     "dx": 0,
-    "dy": -160,
+    "dy": -192,
     "speed": 45,
-    "wait": 0.8,
+    "wait": 1.0,
     "phase": 0.0,
     "active": true,
     "triggered": false,
@@ -4218,9 +4218,9 @@
    "layer": "terrain",
    "rect": [
     4864.0,
-    160.0,
+    0.0,
     256.0,
-    192.0
+    352.0
    ],
    "props": {
     "material": "frost_metal"
@@ -4232,9 +4232,9 @@
    "layer": "terrain",
    "rect": [
     5216.0,
-    160.0,
+    0.0,
     416.0,
-    192.0
+    352.0
    ],
    "props": {
     "material": "frost_metal"
@@ -4246,9 +4246,9 @@
    "layer": "terrain",
    "rect": [
     5120.0,
-    160.0,
+    0.0,
     96.0,
-    80.0
+    240.0
    ],
    "props": {
     "material": "frost_metal"
@@ -4632,7 +4632,7 @@
    "layer": "gameplay",
    "rect": [
     5156.0,
-    420.0,
+    404.0,
     24.0,
     24.0
    ]
@@ -4643,7 +4643,7 @@
    "layer": "terrain",
    "rect": [
     5120.0,
-    304.0,
+    320.0,
     96.0,
     16.0
    ],
@@ -4657,7 +4657,7 @@
    "layer": "gameplay",
    "rect": [
     5160.0,
-    272.0,
+    288.0,
     16.0,
     16.0
    ],

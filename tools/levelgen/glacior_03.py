@@ -74,8 +74,8 @@ L.emitter(3, 40, 26, 55, "aurora_motes", 1)
 # the bridge: snow-bridge spans on frost-metal pylons, some of them crumbling
 for x0, x1 in ((26, 32), (35, 44), (55, 63), (69, 76)):
     ledge(x0, x1, 56, "snow_bridge")
-for x in (47, 51):
-    L.crumble(x, 56, 3, delay=0.45, respawn=3.0)
+for x in (47, 50):
+    L.crumble(x, 56, 3, delay=0.5, respawn=3.0)
 for x in (38, 58, 72):
     wall(x, 57, x + 2, H, METAL, top=False)
     icicles(L, rng, x, x + 2, 57, every=1.5)
@@ -186,7 +186,7 @@ L.shards_line(218.5, 40, 218.5, 18, 6)
 ledge(216, 222, 14)
 # route B: triple-jump ledge, lift and anchors on the right
 ledge(230, 238, 36)
-lift = L.moving(225, 33, 3, 0, -10, speed=45, wait=0.8)
+lift = L.moving(227, 36, 3, 0, -12, speed=45, wait=1.0)
 L.grapple(232, 22)
 ledge(228, 238, 16)
 ice_spikes_wall(L, TX1, 20, 30, facing_left=True)
@@ -232,9 +232,9 @@ L.sign(294, RW, "Brisez la dalle fissurée (Frappe sismique) pour descendre dans
 # 4b. La Salle des Leviers: timed receptor door, plasma curtain under drone fire, phase barrier.
 HF = 34                                          # hall floor
 L.solid(286, HF, 352, H, METAL)                   # hall floor (the slab shaft opens into the hall)
-L.solid(304, 10, 320, 22, METAL)                  # hall ceiling, with a niche (relic 2)
-L.solid(326, 10, 352, 22, METAL)
-L.solid(320, 10, 326, 15, METAL)
+L.solid(304, 0, 320, 22, METAL)                   # hall ceiling up to the sky, with a niche (relic 2)
+L.solid(326, 0, 352, 22, METAL)
+L.solid(320, 0, 326, 15, METAL)
 cp5 = L.checkpoint(302, HF, "Salle des leviers")
 L.light(302, HF - 5, FROST_CYAN, 90)
 timed = L.door(316, HF - 8, 8)
@@ -251,9 +251,9 @@ L.shards_line(318, 31, 346, 31, 8)
 L.orb("health_orb", 322, HF - 2)
 banners((310, 326, 340), HF)
 # relic 2: a niche in the hall ceiling, reached with the grapple and a triple jump
-L.grapple(323, 27)
-ledge(320, 326, 19, hang=False)
-L.relic(323, 17.5, "Lame de givre")
+L.grapple(323, 26)
+ledge(320, 326, 20, hang=False)
+L.relic(323, 18.5, "Lame de givre")
 L.secret(320, 15, 326, 22, "La niche du gardien !")
 L.light(323, 17, AURORA_VIOLET, 60)
 # 4c. Le Gouffre du Gardien: anchors, wind, crystal wall in the air, triple-jump ledges.

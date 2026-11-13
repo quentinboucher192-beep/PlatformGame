@@ -32,8 +32,8 @@ d["ambientLight"] = "#56628c"
 d["backgroundColor"] = "#06080f"
 d["killY"] = H * 16 + 24
 # Inside the machine: a colder, darker sky and no foreground vines.
-TINTS = {"sky.png": "#3a4466", "far.png": "#46507a", "mid.png": "#4e5a86", "abyss.png": "#7a86a8",
-         "near.png": "#56628e"}
+TINTS = {"sky.png": "#252c44", "far.png": "#30395a", "mid.png": "#3a446a", "abyss.png": "#5c6890",
+         "near.png": "#465280"}
 d["background"] = [l for l in d["background"] if not l.get("foreground")]
 for layer in d["background"]:
     for k, v in TINTS.items():
@@ -99,7 +99,8 @@ L.laser(47, 10, 12, rotation=90, on=1.2, off=1.6, warn=0.6)
 L.sign(43, 22, "Les lasers des Anciens s'éteignent un instant : passez entre deux tirs.")
 L.enemy("glowmite", 52, 22, patrol_tiles=2)
 L.enemy("sentinel", 54, 17, patrol_tiles=2)
-machine(40, 56, 22, 0.3)
+machine(40, 56, 22, 0.45)
+L.decor("tech_panel", 41, 22)
 L.light(52, 14, AMBER, 70)
 L.shards_line(44, 20, 50, 20, 3)
 
@@ -122,10 +123,13 @@ L.enemy("sentinel", 87, 35, patrol_tiles=2)
 L.enemy("glowmite", 74, 40, patrol_tiles=2)
 L.enemy("stalker", 85, 40, patrol_tiles=3, face_left=True)
 L.orb("health_orb", 72, 38)
-machine(66, 92, 40, 0.3)
+machine(66, 92, 40, 0.45)
+L.decor("holo_glyph", 71, 40)
+L.decor("pipe_broken", 89, 40, flip=True)
 ceiling_dressing(67, 93, 30)
 L.sign(91, 40, "Puits laser : planez et glissez entre les faisceaux.")
 L.light(80, 33, AMBER, 70)
+L.shards_line(70, 37, 78, 37, 4)
 
 # the laser shaft: glide slalom between static beams, then a cycling one
 L.solid(86, 50, 94, 64, M)                          # shaft left wall
@@ -137,7 +141,8 @@ L.relic(105, 58.5, "Engrenage d'aube")
 L.secret(103, 56, 107, 60, "Une poche de cristal dans le puits !")
 L.light(105, 58, "#e08aff", 60)
 L.laser(94, 45, 5, rotation=0, off=0)               # from the left wall, gap on the right
-L.laser(102, 52, 5, rotation=180, off=0)            # from the right wall, gap on the left
+L.solid(96, 52, 97, 53, M)                          # emitter stub in the middle of the shaft
+L.laser(97, 52.5, 5, rotation=0, off=0)             # from the stub to the right wall, gap on the left
 L.laser(94, 61, 6, rotation=0, on=1.0, off=1.5, warn=0.5)
 L.shards_line(100.5, 43, 100.5, 47, 2)
 L.shards_line(95.5, 50, 95.5, 54, 2)
@@ -159,12 +164,15 @@ L.light(117, 61, "#8ffff0", 110)
 L.decor("ruin_arch", 117, 64)
 L.sign(121, 64, "Grappin : approchez d'un anneau lumineux et appuyez sur Interagir (E).")
 machine(112, 116, 64, 0.4)
+L.shards_line(112, 62, 115, 62, 3)
 
 # tutorial: a shallow pit (falling is harmless) and two anchors up to a high ledge
 L.solid(124, 67, 137, 74, M)                        # pit floor (3 below the hall)
 L.grapple(129, 58)
 L.grapple(135, 51)
-L.solid(137, 50, 150, 74, M)                        # high ledge (14 above the hall floor)
+L.solid(137, 50, 150, 74, X)                        # high crystal ledge (14 above the hall floor)
+L.decor("crystal_big", 140, 50)
+L.decor("crystal_cluster", 148, 50)
 L.sign(126, 67, "Pas de danger ici : remontez à gauche et réessayez.")
 L.shards_line(126, 61, 128, 59, 2)
 L.shards_line(131, 56, 134, 53, 2)
@@ -191,11 +199,14 @@ L.shards_arc(151, 186, 40, 4, 7)
 L.enemy("wisp", 169, 47, patrol_tiles=3)
 L.enemy("sentinel", 178, 28, patrol_tiles=3)
 L.enemy("bomber", 168, 27, patrol_tiles=3)
-L.solid(186, 33, 202, 40, M)                        # balcony (top 33)
+L.solid(186, 33, 202, 40, X)                        # crystal balcony (top 33)
+L.decor("crystal_big", 200, 33, flip=True)
 L.checkpoint(189, 33, "Ancrages")
 L.light(189, 28, CYAN, 90)
 L.enemy("burrower", 198, 33, face_left=True)
 L.orb("health_orb", 194, 31)
+L.shards_line(190, 31, 196, 31, 3)
+L.shards_line(204, 36, 204, 48, 4)
 machine(186, 201, 33, 0.3)
 L.emitter(112, 30, 186, 60, "fireflies", 1.5)
 
@@ -245,6 +256,7 @@ L.solid(258, 52, 266, 62, M)                        # split platform (left part,
 L.solid(270, 52, 278, 58, M)                        # split platform (right part); hatch between
 L.checkpoint(261, 52, "Fonderie")
 L.light(261, 47, CYAN, 90)
+L.shards_line(258.5, 50, 264.5, 50, 3)
 L.sign(272, 52, "Deux voies : les ancrages au-dessus de l'acide, ou la trappe vers les coursives de phase.")
 L.light(268, 50, AMBER, 50)
 
@@ -306,7 +318,9 @@ L.enemy("glowmite", 344, 70, patrol_tiles=2, face_left=True)
 L.orb("health_orb", 297.5, 68)
 L.orb("energy_orb", 300, 68)
 L.shards_line(279, 68, 282, 68, 2)
+L.shards_line(305, 68, 309, 68, 2)
 L.shards_line(321, 68, 333, 68, 4)
+L.shards_line(352, 66, 352, 56, 3)
 for x in (280, 299, 315, 329, 343):
     L.light(x, 64, AMBER, 50)
 L.decor("tech_panel", 272, 70)
@@ -328,10 +342,13 @@ L.solid(362, 30, 372, 44, M)                        # its ceiling (gliders land 
 L.checkpoint(358, 52, "Labyrinthe de phase")
 L.light(358, 47, CYAN, 90)
 L.orb("health_orb", 363, 50)
+L.shards_line(355, 50, 359, 50, 3)
+L.shards_arc(372, 382, 47, 2, 4)
 L.enemy("golem", 366, 52, patrol_tiles=2, face_left=True)
 L.gate(371, 44, 1, 8, "shield")
 L.grapple(377, 46)
-L.solid(382, 52, 394, 58, M)                        # far platform
+L.solid(382, 52, 394, 58, X)                        # far platform (crystal)
+L.decor("crystal_cluster", 384, 52)
 L.solid(382, 36, 396, 44, M)                        # its ceiling
 L.gate(389, 44, 1, 8, "teleport")
 L.sign(384, 52, "Le sas du cœur : bouclier, grappin, téléportation.")
@@ -347,6 +364,7 @@ L.solid(394, 74, 456, 84, M)                        # arena floor (top 74)
 L.checkpoint(396, 74, "Cœur de la machine")
 L.light(396, 69, CYAN, 90)
 L.orb("health_orb", 395.5, 66)
+L.shards_line(396, 56, 396, 68, 4)
 AL, AR = 398, 454
 L.solid(AL, 36, AR + 2, 44, M)                      # vault of the core hall (30 tiles above the floor)
 L.solid(AL, 44, 401, 66, M)
@@ -408,6 +426,28 @@ L.shards_line(461, 70, 461, 54, 4)
 # Background dressing
 # =====================================================================================
 C.bg_rocks(L, 30, W - 30, 34, 60, every=47, tint="#8890b8", alpha=0.6)
+# ceilings: torn banners, hanging cables (vines) and lanterns of the overgrown machine
+ceiling_dressing(40, 58, 10, every=4)
+ceiling_dressing(112, 186, 22, every=6)
+ceiling_dressing(278, 352, 28, every=6)
+ceiling_dressing(262, 350, 62, every=7)
+ceiling_dressing(362, 372, 44, every=3)
+ceiling_dressing(382, 396, 44, every=3)
+ceiling_dressing(456, W, 36, every=5)
+# vines and roots hanging under the floating machine blocks
+C.hanging_under(L, ACID - 1, kinds=["hanging_vine_short", "roots", "hanging_vine_long"], every=6,
+                skip=lambda x, b: b < 40 and x > 250)
+# ancient guardians, pillars and consoles along the halls
+for (name, x, y, fl) in [("statue_head", 44, 22, False), ("ruin_pillar", 64, 40, False), ("statue_head", 92, 40, True),
+                         ("ruin_pillar", 113, 64, False), ("holo_glyph", 120, 64, False), ("ruin_pillar_broken", 195, 33, False),
+                         ("statue_head", 199, 52, True), ("ruin_pillar", 213, 52, False), ("ruin_pillar", 253, 52, False),
+                         ("holo_glyph", 263, 52, False), ("tech_panel", 276, 52, False), ("crystal_big", 360, 52, False),
+                         ("holo_glyph", 369, 52, False), ("ruin_pillar_broken", 391, 52, True), ("statue_head", 467, 50, False)]:
+    L.decor(name, x, y, flip=fl)
+for x in (60, 98, 230, 300, 352, 426, 461):
+    L.emitter(x - 4, 30, x + 4, 60, "fireflies", 0.8)
+L.emitter(296, 62, 340, 70, "laser_sparks", 0.6)
+L.emitter(86, 20, 106, 40, "abyss_motes", 0.8)
 
 # =====================================================================================
 # Events and cinematics
