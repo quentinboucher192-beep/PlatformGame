@@ -98,9 +98,13 @@ Terminé et testé :
 
 Limites connues (non présentées comme faites) :
 
-* aucune infrastructure n'est déployée par défaut : `data/online/config.json` ne contient pas
-  d'adresse de production tant que vous n'avez pas déployé le Worker (voir
-  [DEPLOYMENT.md](DEPLOYMENT.md)) ; sans adresse, l'écran l'indique clairement ;
+* déploiement : l'environnement **staging** est en ligne sur Cloudflare
+  (`https://cosmic-online-staging.xpg-licences-workersdev.workers.dev`, D1 + R2, 9 niveaux
+  enregistrés) et c'est le serveur utilisé par défaut (`data/online/config.json`,
+  `environment: staging`). La **production** n'est pas encore déployée (voir
+  [DEPLOYMENT.md](DEPLOYMENT.md)) ; le jeton d'administration a été retiré du staging après
+  l'enregistrement des niveaux : définissez le vôtre (`wrangler secret put ADMIN_TOKEN --env
+  staging`) pour modérer ou enregistrer de nouvelles révisions ;
 * pas de récupération de mot de passe (les comptes n'ont pas d'adresse e-mail) ;
 * la vérification des replays augmente fortement le coût de la triche mais ne la rend pas
   impossible (voir [RULES.md](RULES.md)) ; les records mondiaux suspects passent en revue

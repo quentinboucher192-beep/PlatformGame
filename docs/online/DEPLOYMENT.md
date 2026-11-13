@@ -56,6 +56,8 @@ npx wrangler whoami                                   # vérifie le compte utili
    CosmicPlatformer --online-manifest manifest.json
    ADMIN_TOKEN=<valeur> node scripts/register-levels.mjs manifest.json https://cosmic-online-staging.<sous-domaine>.workers.dev
    ```
+   Derrière un proxy d'entreprise, Node n'utilise le proxy que avec
+   `NODE_USE_ENV_PROXY=1` (variables `HTTPS_PROXY` / `NO_PROXY`).
 6. **Vérification** : `curl https://cosmic-online-staging.<sous-domaine>.workers.dev/api/v1/health`.
 7. **Le jeu** : renseignez l'adresse dans `data/online/config.json`
    (`servers.staging` ou `servers.production`, sans `/` final) et `environment` ; reconstruisez
@@ -63,6 +65,18 @@ npx wrangler whoami                                   # vérifie le compte utili
 
 Production : mêmes étapes sans `--env staging` (`npm run deploy:production`,
 `npm run db:migrate:production`, secrets avec `wrangler secret put ... ` sans `--env`).
+
+## État actuel
+
+| Environnement | Adresse | État |
+|---|---|---|
+| staging | `https://cosmic-online-staging.xpg-licences-workersdev.workers.dev` | déployé (D1 `cosmic-online-staging`, R2 `cosmic-online-staging-files`, migrations 0001–0002, 9 niveaux de la version 2.1.0), `IP_HASH_SALT` défini, pas d'`ADMIN_TOKEN` |
+| production | — | non déployée : `npm run deploy:production` avec un fichier de secrets au premier déploiement (`--secrets-file`), puis `npm run db:migrate:production` et l'enregistrement des niveaux |
+
+Premier déploiement d'un Worker qui n'existe pas encore : les secrets déclarés comme requis
+doivent être fournis avec `wrangler deploy --secrets-file <fichier>` (lignes `NOM=valeur`,
+fichier hors du dépôt, supprimé après usage). Le bucket R2 doit exister (activation de R2
+dans le tableau de bord, puis `wrangler r2 bucket create <nom>`).
 
 ## Nouvelle version du jeu
 
