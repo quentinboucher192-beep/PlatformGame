@@ -1,0 +1,10 @@
+/build*/
+/out/
+*.tmp
+*.pyc
+__pycache__/
+/installer/Output/
+.vs/
+.vscode/
+*.user
+CMakeUserPresets.json

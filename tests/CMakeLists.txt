@@ -1,0 +1,6 @@
+file(GLOB COSMIC_TEST_SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
+add_executable(cosmic_tests ${COSMIC_TEST_SOURCES})
+target_link_libraries(cosmic_tests PRIVATE cosmic_game)
+cosmic_set_warnings(cosmic_tests)
+add_test(NAME cosmic_tests COMMAND cosmic_tests WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+set_tests_properties(cosmic_tests PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=offscreen;SDL_AUDIODRIVER=dummy")
