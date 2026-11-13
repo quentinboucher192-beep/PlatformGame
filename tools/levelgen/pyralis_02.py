@@ -51,6 +51,7 @@ R(24, 54, 37)                                 # bank (top 54)
 P.scatter(25, 36, 54, 0.45)
 L.sign(34, 54, "Montez sur le radeau : il vous fera traverser.")
 raft1 = L.moving(37, 54, 4, 16, 0, speed=48, wait=0.8)
+L.liquid(37, 57, 54.5, LAVA, "lava")
 L.shards_line(40, 51, 54, 51, 5)
 L.enemy("ash_wing", 48, 47, patrol_tiles=6)
 R(57, 54, 86)                                 # far bank (top 54)
@@ -90,6 +91,9 @@ P.scatter(127, 137, 54, 0.4)
 L.enemy("fire_wisp", 148, 46, patrol_tiles=3)
 # shield-bearers' bridge over the lava
 L.solid(150, 54, 177, 56, "forge_metal")
+L.liquid(150, 156, 59, LAVA, "lava")
+L.liquid(158, 169, 59, LAVA, "lava")
+L.liquid(171, 177, 59, LAVA, "lava")
 L.solid(156, 56, 158, LAVA + 3, "forge_metal")
 L.solid(169, 56, 171, LAVA + 3, "forge_metal")
 L.sign(148.5, 54, "Les Remparts parent de près : abattez-les de loin au Tir chargé, il perce leur garde !")
@@ -148,9 +152,11 @@ R(252, 54, 262)
 L.checkpoint(256, 54, "Fleuve de lave")
 L.light(256, 49, FORGE_GLOW, 90)
 L.moving(262, 54, 4, 14, 0, speed=52, wait=0.7)                  # raft A: 262 -> 276
+L.liquid(262, 280, 54.5, LAVA, "lava")
 R(280, 50, 284)                                                   # basalt pile (top 50)
 L.enemy("cinder_bloom", 282, 50, face_left=True)
 L.moving(284, 54, 4, 14, 0, speed=52, wait=0.7, phase=0.5)        # raft B: 284 -> 298
+L.liquid(284, 302, 54.5, LAVA, "lava")
 L.enemy("forge_bomber", 278, 42, patrol_tiles=8)
 L.enemy("ash_wing", 294, 46, patrol_tiles=5)
 L.solid(288, 44, 294, 48, "basalt")                             # floating slag outcrop
@@ -162,6 +168,7 @@ L.enemy("lava_burrower", 306, 54)
 L.orb("health_orb", 304, 52)
 # lift up the cliff (vertical raft)
 L.moving(312, 54, 3, 0, -12, speed=45, wait=1.0)                 # lift 54 -> 42
+L.liquid(312, 315, 54.5, LAVA, "lava")
 R(315, 42, 326)                                                   # cliff top (top 42)
 L.orb("energy_orb", 318, 40)
 L.enemy("ember_weaver", 320, 42, patrol_tiles=2, face_left=True)
@@ -180,6 +187,7 @@ L.checkpoint(353, 42, "Rive des radeaux")
 L.light(353, 37, FORGE_GLOW, 90)
 # 4b. collapsing obsidian bridges and the eruption
 L.sign(355.5, 42, "Les ponts d'obsidienne s'effondrent sous vos pas. Courez !")
+L.liquid(357, 392, 46.5, LAVA, "lava")
 xs = [358, 363, 368, 373, 378, 383, 388]
 ys = [43, 43, 42, 42, 43, 43, 42]
 for x, y in zip(xs, ys):
@@ -215,6 +223,7 @@ L.decor("ash_rock_big", 395, 44, "bg_decor")
 L.enemy("lava_burrower", 406, 44)
 L.orb("health_orb", 394, 42)
 # grapple chain with crumbling relays
+L.liquid(408, 430, 45.5, LAVA, "lava")
 L.grapple(412, 38)
 L.crumble(415, 42, 3, delay=0.35, respawn=3.5)
 L.grapple(421.5, 36.5)

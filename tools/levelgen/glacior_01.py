@@ -275,7 +275,7 @@ L.enemy("frost_bloom", 368, RT, face_left=True)
 L.enemy("ice_burrower", 359, RT)
 L.enemy("snow_stalker", 364, RT, patrol_tiles=2, face_left=True)
 deco(L, "frozen_statue", 352, RT)
-frost_cloud(L, 356, RT - 6, 366, RT, 0.65)                 # freezing mist on the ridge
+frost_cloud(L, 357, RT - 5, 363, RT, 0.7)                  # freezing mist on the ridge
 L.sign(355, RT, "Le gouffre est trop large : enchaînez les ancrages au grappin (Interagir), ou planez.")
 L.grapple(376, 20)
 L.grapple(384, 19)
