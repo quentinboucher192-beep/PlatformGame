@@ -21,7 +21,7 @@ constexpr Named kAttacks[] = {{"contact", "Contact"},           {"melee", "Corps
                               {"projectile", "Projectile visé"}, {"spread", "Salve en éventail"}, {"arc", "Tir en cloche"},
                               {"slam", "Onde de choc au sol"}, {"charge", "Charge"},      {"laser", "Rayon laser"},
                               {"summon", "Appel de renforts"}, {"rain", "Pluie de projectiles"},
-                              {"eruption", "Éruption au sol"}};
+                              {"eruption", "Éruption au sol"}, {"leap", "Saut sur le joueur"}};
 }  // namespace
 
 const char* familyId(EnemyFamily f) { return kFamilies[static_cast<int>(f)].id; }
@@ -92,6 +92,17 @@ Json AttackDef::toJson() const {
         j["sweepDegrees"] = sweepDegrees;
         j["color"] = beamColor.toHex();
     }
+    if (lead > 0) j["lead"] = lead;
+    if (bursts > 1) {
+        j["bursts"] = bursts;
+        j["burstInterval"] = burstInterval;
+    }
+    if (homing > 0) {
+        j["homing"] = homing;
+        j["homingTime"] = homingTime;
+    }
+    if (stagger > 0) j["stagger"] = stagger;
+    if (type == AttackType::Leap) j["leapTime"] = leapTime;
     return j;
 }
 
@@ -133,6 +144,13 @@ AttackDef AttackDef::fromJson(const Json& j) {
     a.slow = std::clamp(jget<float>(j, "slow", 0.0f), 0.0f, 1.0f);
     a.slowDuration = std::clamp(jget<float>(j, "slowDuration", a.slow > 0 ? 1.5f : 0.0f), 0.0f, 10.0f);
     a.explosionRadius = std::clamp(jget<float>(j, "explosionRadius", 0.0f), 0.0f, 200.0f);
+    a.lead = std::clamp(jget<float>(j, "lead", 0.0f), 0.0f, 1.0f);
+    a.bursts = std::clamp(jget<int>(j, "bursts", 1), 1, 8);
+    a.burstInterval = std::clamp(jget<float>(j, "burstInterval", 0.3f), 0.05f, 3.0f);
+    a.homing = std::clamp(jget<float>(j, "homing", 0.0f), 0.0f, 12.0f);
+    a.homingTime = std::clamp(jget<float>(j, "homingTime", 1.2f), 0.0f, 6.0f);
+    a.stagger = std::clamp(jget<float>(j, "stagger", 0.0f), 0.0f, 1.0f);
+    a.leapTime = std::clamp(jget<float>(j, "leapTime", 0.8f), 0.3f, 2.0f);
     a.rainHeight = std::clamp(jget<float>(j, "rainHeight", 220.0f), 40.0f, 800.0f);
     a.warningEffect = jstr(j, "warningEffect", "eruption_warning_fire");
     a.eruptionEffect = jstr(j, "eruptionEffect", "eruption_fire");
@@ -147,7 +165,9 @@ Json BossPhase::toJson() const {
             {"speedMultiplier", speedMultiplier},
             {"cooldownMultiplier", cooldownMultiplier},
             {"enterText", enterText},
-            {"summonOnEnter", summonOnEnter}};
+            {"summonOnEnter", summonOnEnter},
+            {"combo", combo},
+            {"telegraphMultiplier", telegraphMultiplier}};
 }
 
 BossPhase BossPhase::fromJson(const Json& j) {
@@ -161,6 +181,8 @@ BossPhase BossPhase::fromJson(const Json& j) {
     p.cooldownMultiplier = std::clamp(jget<float>(j, "cooldownMultiplier", 1.0f), 0.1f, 4.0f);
     p.enterText = jstr(j, "enterText");
     p.summonOnEnter = jget<bool>(j, "summonOnEnter", false);
+    p.combo = std::clamp(jget<int>(j, "combo", 1), 1, 5);
+    p.telegraphMultiplier = std::clamp(jget<float>(j, "telegraphMultiplier", 1.0f), 0.4f, 2.0f);
     return p;
 }
 
@@ -217,6 +239,7 @@ Json EnemyDefinition::toJson() const {
         Json ph = Json::array();
         for (const auto& p : phases) ph.push_back(p.toJson());
         j["boss"] = {{"title", bossTitle}, {"phases", ph}};
+        if (enrageTime > 0) j["boss"]["enrageTime"] = enrageTime;
     }
     return j;
 }
@@ -291,6 +314,7 @@ EnemyDefinition EnemyDefinition::fromJson(const Json& j) {
     if (j.contains("boss") && j["boss"].is_object()) {
         d.isBoss = true;
         d.bossTitle = jstr(j["boss"], "title", d.name);
+        d.enrageTime = std::clamp(jget<float>(j["boss"], "enrageTime", 0.0f), 0.0f, 3600.0f);
         if (j["boss"].contains("phases") && j["boss"]["phases"].is_array())
             for (const auto& p : j["boss"]["phases"]) d.phases.push_back(BossPhase::fromJson(p));
         std::stable_sort(d.phases.begin(), d.phases.end(), [](const auto& a, const auto& b) { return a.hpThreshold > b.hpThreshold; });

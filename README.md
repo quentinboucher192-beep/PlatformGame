@@ -22,6 +22,12 @@ les capacités du joueur dans chaque niveau, qu'aucun point de contrôle ni aucu
 être évité ; un test l'exécute sur toute la campagne. Les niveaux classiques ont deux fois
 moins d'orbes de soin qu'en 2.1.2.
 
+**Boss** (version 2.2) : ils lisent le combat — distance, joueur en l'air ou perché,
+attaques déjà utilisées —, visent là où le joueur va atterrir, enchaînent des combos dans
+les dernières phases, punissent le joueur qui reste hors de portée et entrent en rage si le
+combat s'éternise ; chacun a 4 nouvelles attaques (saut balistique, lignes d'éruptions
+successives, projectiles à tête chercheuse, salves re-visées) et des annonces plus courtes.
+
 48 sortes d'ennemis (12 espèces, chacune en version Sylvanox, feu et glace, plus les boss),
 10 pouvoirs, 10 cœurs de vie (plus des cœurs de cristal cachés), 3 reliques et un cœur de
 cristal secrets par niveau. Par défaut, l'option *Paramètres → Jeu → Tout débloquer* rend

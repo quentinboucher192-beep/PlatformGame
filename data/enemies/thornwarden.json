@@ -1,39 +1,309 @@
 {
-  "format": "cosmic.enemy", "id": "thornwarden", "name": "Thornwarden",
+  "format": "cosmic.enemy",
+  "id": "thornwarden",
+  "name": "Thornwarden",
   "description": "Gardien ancien envahi par les ronces",
-  "family": "miniboss", "animation": "animations/thornwarden.json", "size": [44, 60], "scale": 1.0,
-  "hp": 48, "contactDamage": 1, "speed": 38, "chaseSpeedMultiplier": 1.2, "flying": false, "knockbackResist": 1,
-  "detectionRange": 320, "attackRange": 160, "loseRange": 2000, "needsLineOfSight": false,
-  "movement": "guard", "reaction": "chase", "fleeHealthRatio": 0, "preferredDistance": 0, "hopVelocity": 0,
-  "attacks": [
-    { "id": "slam", "name": "Frappe des ronces", "type": "slam", "damage": 2, "range": 170, "telegraph": 0.9, "active": 0.35,
-      "recover": 1.0, "cooldown": 3.0, "telegraphAnim": "telegraph_slam", "attackAnim": "slam", "projectileSpeed": 200, "knockback": 240 },
-    { "id": "charge", "name": "Charge", "type": "charge", "damage": 2, "range": 420, "minRange": 70, "telegraph": 0.85, "active": 2.4,
-      "recover": 1.1, "cooldown": 4.0, "telegraphAnim": "telegraph_charge", "attackAnim": "charge", "lungeSpeed": 250, "knockback": 260 },
-    { "id": "barrage", "name": "Pluie d'épines", "type": "projectile", "damage": 1, "range": 420, "telegraph": 0.8, "active": 0.25,
-      "recover": 0.8, "cooldown": 3.2, "telegraphAnim": "telegraph_barrage", "attackAnim": "barrage", "projectile": "boss_thorn",
-      "projectileSpeed": 175, "count": 5, "spread": 11 },
-    { "id": "orbs", "name": "Orbes du cœur", "type": "arc", "damage": 1, "range": 420, "telegraph": 0.8, "active": 0.25,
-      "recover": 0.8, "cooldown": 4.5, "telegraphAnim": "telegraph_barrage", "attackAnim": "barrage", "projectile": "boss_orb",
-      "projectileSpeed": 150, "count": 3, "spread": 25, "gravity": 380 },
-    { "id": "summon", "name": "Appel de la forêt", "type": "summon", "damage": 0, "range": 500, "telegraph": 0.9, "active": 0.4,
-      "recover": 0.8, "cooldown": 10, "telegraphAnim": "summon", "attackAnim": "summon", "summonId": "glowmite", "summonCount": 2, "maxSummoned": 3 },
-    { "id": "laser", "name": "Rayon du cœur", "type": "laser", "damage": 2, "range": 420, "telegraph": 1.1, "active": 1.4,
-      "recover": 1.2, "cooldown": 6.0, "telegraphAnim": "telegraph_laser", "attackAnim": "laser", "laserLength": 380, "sweepDegrees": 70 }
+  "family": "miniboss",
+  "animation": "animations/thornwarden.json",
+  "size": [
+    44,
+    60
   ],
-  "powers": { "teleport": { "enabled": false }, "defend": { "enabled": false }, "reinforcements": { "enabled": false } },
-  "damageMultipliers": { "dash": 0.5, "impulse": 1.5 },
-  "rewards": { "score": 3000, "drops": [ { "type": "health_orb", "chance": 1.0 } ] },
-  "light": { "color": "#39f0d8", "radius": 90 },
-  "sounds": { "hurt": "sounds/enemy_hurt.wav", "death": "sounds/boss_roar.wav", "alert": "sounds/boss_roar.wav" },
+  "scale": 1.0,
+  "hp": 60,
+  "contactDamage": 1,
+  "speed": 38,
+  "chaseSpeedMultiplier": 1.2,
+  "flying": false,
+  "knockbackResist": 1,
+  "detectionRange": 320,
+  "attackRange": 160,
+  "loseRange": 2000,
+  "needsLineOfSight": false,
+  "movement": "guard",
+  "reaction": "chase",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 0,
+  "hopVelocity": 0,
+  "attacks": [
+    {
+      "id": "slam",
+      "name": "Frappe des ronces",
+      "type": "slam",
+      "damage": 2,
+      "range": 170,
+      "telegraph": 0.63,
+      "active": 0.35,
+      "recover": 0.6,
+      "cooldown": 1.8,
+      "telegraphAnim": "telegraph_slam",
+      "attackAnim": "slam",
+      "projectileSpeed": 200,
+      "knockback": 240
+    },
+    {
+      "id": "charge",
+      "name": "Charge",
+      "type": "charge",
+      "damage": 2,
+      "range": 420,
+      "minRange": 70,
+      "telegraph": 0.59,
+      "active": 2.4,
+      "recover": 0.66,
+      "cooldown": 2.4,
+      "telegraphAnim": "telegraph_charge",
+      "attackAnim": "charge",
+      "lungeSpeed": 250,
+      "knockback": 260
+    },
+    {
+      "id": "barrage",
+      "name": "Pluie d'épines",
+      "type": "projectile",
+      "damage": 1,
+      "range": 420,
+      "telegraph": 0.56,
+      "active": 0.25,
+      "recover": 0.48,
+      "cooldown": 1.92,
+      "telegraphAnim": "telegraph_barrage",
+      "attackAnim": "barrage",
+      "projectile": "boss_thorn",
+      "projectileSpeed": 175,
+      "count": 5,
+      "spread": 11,
+      "lead": 0.7
+    },
+    {
+      "id": "orbs",
+      "name": "Orbes du cœur",
+      "type": "arc",
+      "damage": 1,
+      "range": 420,
+      "telegraph": 0.56,
+      "active": 0.25,
+      "recover": 0.48,
+      "cooldown": 2.7,
+      "telegraphAnim": "telegraph_barrage",
+      "attackAnim": "barrage",
+      "projectile": "boss_orb",
+      "projectileSpeed": 150,
+      "count": 3,
+      "spread": 25,
+      "gravity": 380,
+      "lead": 0.7
+    },
+    {
+      "id": "summon",
+      "name": "Appel de la forêt",
+      "type": "summon",
+      "damage": 0,
+      "range": 500,
+      "telegraph": 0.9,
+      "active": 0.4,
+      "recover": 0.8,
+      "cooldown": 8.0,
+      "telegraphAnim": "summon",
+      "attackAnim": "summon",
+      "summonId": "glowmite",
+      "summonCount": 2,
+      "maxSummoned": 3
+    },
+    {
+      "id": "laser",
+      "name": "Rayon du cœur",
+      "type": "laser",
+      "damage": 2,
+      "range": 420,
+      "telegraph": 0.75,
+      "active": 1.4,
+      "recover": 0.72,
+      "cooldown": 3.6,
+      "telegraphAnim": "telegraph_laser",
+      "attackAnim": "laser",
+      "laserLength": 380,
+      "sweepDegrees": 70
+    },
+    {
+      "id": "v3_leap",
+      "name": "Bond du gardien",
+      "type": "leap",
+      "damage": 2,
+      "range": 560,
+      "telegraph": 0.55,
+      "active": 1.6,
+      "recover": 0.5,
+      "cooldown": 4.2,
+      "telegraphAnim": "telegraph_slam",
+      "attackAnim": "slam",
+      "projectileSpeed": 200,
+      "knockback": 240,
+      "minRange": 120,
+      "leapTime": 0.8,
+      "lead": 0.9
+    },
+    {
+      "id": "v3_line",
+      "name": "Sillon de ronces",
+      "type": "eruption",
+      "damage": 2,
+      "range": 600,
+      "telegraph": 0.55,
+      "active": 0.3,
+      "recover": 0.45,
+      "cooldown": 4.0,
+      "telegraphAnim": "telegraph_barrage",
+      "attackAnim": "barrage",
+      "projectile": "boss_thorn",
+      "projectileSpeed": 300,
+      "count": 9,
+      "spread": 40,
+      "lead": 0.8,
+      "minRange": 0,
+      "stagger": 0.08,
+      "gravity": 700,
+      "warningEffect": "eruption_warning_spore",
+      "eruptionEffect": "eruption_spore"
+    },
+    {
+      "id": "v3_seekers",
+      "name": "Épines chercheuses",
+      "type": "projectile",
+      "damage": 1,
+      "range": 560,
+      "telegraph": 0.5,
+      "active": 0.25,
+      "recover": 0.4,
+      "cooldown": 3.6,
+      "telegraphAnim": "telegraph_barrage",
+      "attackAnim": "barrage",
+      "projectile": "boss_thorn",
+      "projectileSpeed": 150,
+      "count": 3,
+      "spread": 28,
+      "lead": 0,
+      "minRange": 0,
+      "gravity": 0,
+      "homing": 2.2,
+      "homingTime": 1.4
+    },
+    {
+      "id": "v3_volley",
+      "name": "Rafale d'épines",
+      "type": "projectile",
+      "damage": 1,
+      "range": 560,
+      "telegraph": 0.45,
+      "active": 0.25,
+      "recover": 0.4,
+      "cooldown": 3.0,
+      "telegraphAnim": "telegraph_barrage",
+      "attackAnim": "barrage",
+      "projectile": "boss_thorn",
+      "projectileSpeed": 220,
+      "count": 3,
+      "spread": 10,
+      "lead": 0.9,
+      "minRange": 0,
+      "bursts": 3,
+      "burstInterval": 0.26,
+      "gravity": 0
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "dash": 0.5,
+    "impulse": 1.5
+  },
+  "rewards": {
+    "score": 3000,
+    "drops": [
+      {
+        "type": "health_orb",
+        "chance": 1.0
+      }
+    ]
+  },
+  "light": {
+    "color": "#39f0d8",
+    "radius": 90
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/boss_roar.wav",
+    "alert": "sounds/boss_roar.wav"
+  },
   "boss": {
     "title": "THORNWARDEN, GARDIEN ANCIEN",
     "phases": [
-      { "name": "Éveil", "hpThreshold": 1.0, "attacks": ["slam", "barrage", "charge"], "speedMultiplier": 1.0, "cooldownMultiplier": 1.0 },
-      { "name": "Colère des ronces", "hpThreshold": 0.66, "attacks": ["barrage", "slam", "summon", "orbs", "charge"],
-        "speedMultiplier": 1.15, "cooldownMultiplier": 0.85, "enterText": "La forêt répond à son appel !", "summonOnEnter": true },
-      { "name": "Cœur embrasé", "hpThreshold": 0.33, "attacks": ["laser", "slam", "orbs", "charge", "barrage"],
-        "speedMultiplier": 1.3, "cooldownMultiplier": 0.7, "enterText": "Le cœur du Gardien s'embrase !" }
-    ]
+      {
+        "name": "Éveil",
+        "hpThreshold": 1.0,
+        "attacks": [
+          "slam",
+          "barrage",
+          "charge",
+          "v3_leap",
+          "v3_line"
+        ],
+        "speedMultiplier": 1.0,
+        "cooldownMultiplier": 1.0,
+        "combo": 1,
+        "telegraphMultiplier": 1.0
+      },
+      {
+        "name": "Colère des ronces",
+        "hpThreshold": 0.66,
+        "attacks": [
+          "barrage",
+          "slam",
+          "summon",
+          "orbs",
+          "charge",
+          "v3_leap",
+          "v3_line",
+          "v3_seekers"
+        ],
+        "speedMultiplier": 1.15,
+        "cooldownMultiplier": 0.85,
+        "enterText": "La forêt répond à son appel !",
+        "summonOnEnter": true,
+        "combo": 2,
+        "telegraphMultiplier": 0.9
+      },
+      {
+        "name": "Cœur embrasé",
+        "hpThreshold": 0.33,
+        "attacks": [
+          "laser",
+          "slam",
+          "orbs",
+          "charge",
+          "barrage",
+          "v3_leap",
+          "v3_line",
+          "v3_seekers",
+          "v3_volley"
+        ],
+        "speedMultiplier": 1.3,
+        "cooldownMultiplier": 0.7,
+        "enterText": "Le cœur du Gardien s'embrase !",
+        "combo": 3,
+        "telegraphMultiplier": 0.8
+      }
+    ],
+    "enrageTime": 75,
+    "brainVersion": 3
   }
 }

@@ -123,15 +123,27 @@ exactement à l'état précédent. Une sauvegarde automatique est écrite régul
     projectiles venue d'en haut, éruption au sol) avec télégraphe, durée, recharge, dégâts,
     portée, projectile, rayon d'explosion (bombes), ralentissement infligé (glace, toiles),
     point d'origine (bouche, arme) et couleur du rayon. La pluie et l'éruption marquent au
-    sol, pendant le télégraphe, les endroits où elles vont frapper.
+    sol, pendant le télégraphe, les endroits où elles vont frapper. Attaques avancées :
+    *saut sur le joueur* (trajectoire balistique qui franchit les rebords, onde de choc à
+    l'atterrissage), *anticipation* (0 = vise le joueur, 1 = vise l'endroit où il sera, point
+    d'atterrissage compris s'il saute), *salves* (plusieurs volées re-visées pendant
+    l'attaque), *tête chercheuse* (vitesse de virage et durée du guidage), *impacts
+    successifs en ligne* (éruptions ou pluie qui partent du boss et traversent la position
+    du joueur, une à une).
   * *Pouvoirs* – téléportation (portée, recharge) et défense frontale (garde).
   * *Résist.* – multiplicateur de dégâts par source (0 = immunisé, < 1 = résistance,
     > 1 = faiblesse).
   * *Butin* – points rapportés et objets lâchés (orbes de vie / d’énergie, éclats) avec
     leur probabilité ; division à la mort (un Gloop se sépare en deux petits).
-  * *Boss* – mode mini-boss (jauge de vie, titre affiché) et phases : nom, seuil de PV,
-    multiplicateurs de vitesse et de recharge, texte d'entrée, renforts, attaques
-    actives dans l'ordre du cycle.
+  * *Boss* – mode mini-boss (jauge de vie, titre affiché), *rage* (après N secondes de
+    combat : plus rapide, recharges plus courtes, annonces raccourcies) et phases : nom,
+    seuil de PV, multiplicateurs de vitesse, de recharge et de durée d'annonce, nombre
+    d'attaques enchaînées (combo), texte d'entrée, renforts, attaques disponibles.
+    Un boss ne suit pas de cycle fixe : il choisit selon la situation (distance, joueur en
+    l'air ou perché au-dessus de lui, attaques déjà utilisées — jamais deux fois de suite la
+    même), recule pour trouver un angle si le joueur est sur une corniche, et punit un joueur
+    resté hors de portée (saut, pluie, éruptions, tirs en cloche). Tout passe par le hasard
+    déterministe du moteur : un replay rejoue exactement le même combat.
 * **Arène de test** : l'ennemi évolue avec sa vraie IA ; *Jouer dans l'arène* donne le
   contrôle du joueur (Échap pour le rendre), *Réinitialiser*, *Tester : <attaque>* force
   l'attaque sélectionnée.

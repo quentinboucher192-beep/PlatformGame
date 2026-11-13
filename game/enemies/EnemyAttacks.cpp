@@ -10,6 +10,10 @@
 
 namespace cosmic {
 
+namespace {
+constexpr float kLeapGravity = 900.0f;  // same as the enemies' gravity (Enemy.cpp)
+}  // namespace
+
 std::vector<const AttackDef*> Enemy::availableAttacks() const {
     std::vector<const AttackDef*> out;
     if (def_.isBoss && phase_ < static_cast<int>(def_.phases.size()) && !def_.phases[phase_].attacks.empty()) {
@@ -23,6 +27,7 @@ std::vector<const AttackDef*> Enemy::availableAttacks() const {
 
 bool Enemy::chooseAttack(GameWorld& w) {
     auto list = availableAttacks();
+    if (def_.isBoss) return chooseBossAttack(w, list);
     std::vector<const AttackDef*> candidates;
     float total = 0.0f;
     for (const AttackDef* a : list) {
@@ -41,22 +46,122 @@ bool Enemy::chooseAttack(GameWorld& w) {
     }
     if (candidates.empty()) return false;
     const AttackDef* chosen = candidates.front();
-    if (def_.isBoss) {
-        // Bosses cycle through their phase pattern for readable, learnable fights.
-        chosen = candidates[static_cast<size_t>(patternIndex_) % candidates.size()];
-        ++patternIndex_;
-    } else {
-        float r = w.rng().range(0.0f, total);
-        for (const AttackDef* a : candidates) {
-            r -= a->weight;
-            if (r <= 0.0f) {
-                chosen = a;
-                break;
-            }
+    float r = w.rng().range(0.0f, total);
+    for (const AttackDef* a : candidates) {
+        r -= a->weight;
+        if (r <= 0.0f) {
+            chosen = a;
+            break;
         }
     }
     attack_ = chosen;
     attackIndex_ = static_cast<int>(chosen - def_.attacks.data());
+    beginAttack(w);
+    return true;
+}
+
+// Bosses read the situation instead of cycling a fixed pattern: distance, a player in the
+// air or perched above, the attacks just used (never the same one twice in a row), a player
+// out of reach for too long (punished by the attacks that reach everywhere), combos.
+bool Enemy::chooseBossAttack(GameWorld& w, const std::vector<const AttackDef*>& list) {
+    struct Cand {
+        const AttackDef* a;
+        float score;
+    };
+    std::vector<Cand> cands;
+    const bool near = playerDist_ < 120.0f;
+    const bool far = playerDist_ > 260.0f;
+    const float above = box.bottom() - (playerPos_.y + 12.0f);  // > 0: the player stands higher
+    const bool air = playerAirborne_ || above > 48.0f;
+    const bool inCombo = comboLeft_ > 0;
+    // Right under a perched player: only what reaches over the ledge is worth it; otherwise
+    // the boss steps back first (movement code).
+    const bool underneath = !def_.flying && above > 48.0f && std::abs(playerPos_.x - box.center().x) < 260.0f;
+    bool reachable = false;
+    auto reach = [](const AttackDef* a) { return a->type == AttackType::Laser ? std::min(a->range, a->laserLength) : a->range; };
+    for (const AttackDef* a : list) {
+        if (a->type == AttackType::Contact) continue;
+        if (playerDist_ <= reach(a) && playerDist_ >= a->minRange) reachable = true;
+    }
+    outOfReach_ = reachable ? 0.0f : outOfReach_ + simDt_;
+    const bool punish = outOfReach_ > 1.6f;
+    int alive = 0;
+    for (const auto& e : w.enemies())
+        if (e->summonedBy == uid_ && e->alive()) ++alive;
+    float total = 0.0f;
+    for (const AttackDef* a : list) {
+        if (a->type == AttackType::Contact) continue;
+        size_t idx = static_cast<size_t>(a - def_.attacks.data());
+        if (idx >= attackCooldowns_.size()) continue;
+        // In a combo the next blow ignores cooldowns (but never repeats the last ones).
+        if (attackCooldowns_[idx] > 0.0f && !(inCombo && static_cast<int>(idx) != lastAttack_ && static_cast<int>(idx) != prevAttack_)) continue;
+        bool inRange = playerDist_ <= reach(a) && playerDist_ >= a->minRange;
+        if (a->type == AttackType::Summon && alive >= a->maxSummoned) continue;
+        if (a->type == AttackType::Leap && def_.flying) continue;
+        if (underneath && a->type != AttackType::Leap && a->type != AttackType::Rain && a->type != AttackType::Eruption &&
+            a->type != AttackType::Arc && a->type != AttackType::Summon)
+            continue;
+        float fit = a->weight;
+        switch (a->type) {
+            case AttackType::Melee: fit *= near ? 2.2f : (far ? 0.2f : 0.8f); break;
+            case AttackType::Slam: fit *= (near ? 1.8f : 1.0f) * (air ? 0.35f : 1.0f); break;
+            case AttackType::Charge: fit *= (far ? 1.5f : 1.0f) * (above > 48.0f ? 0.1f : (air ? 0.5f : 1.0f)); break;
+            case AttackType::Lunge: fit *= (air ? 1.3f : 1.0f) * (far ? 1.2f : 1.0f); break;
+            case AttackType::Projectile:
+            case AttackType::Spread: fit *= (air ? 1.5f : 1.0f) * (far ? 1.4f : 1.0f); break;
+            case AttackType::Arc: fit *= (far ? 1.3f : 1.0f) * (above > 48.0f ? 1.4f : 1.0f); break;
+            case AttackType::Laser: fit *= (air ? 1.6f : 1.0f) * (far ? 1.2f : 1.0f); break;
+            case AttackType::Rain: fit *= far ? 1.3f : 1.0f; break;
+            case AttackType::Eruption: fit *= (air ? 0.7f : 1.0f) * (far ? 1.2f : 1.0f); break;
+            case AttackType::Leap: fit *= (far ? 1.8f : 0.6f) * (above > 48.0f ? 2.0f : 1.0f); break;
+            case AttackType::Summon: fit *= alive > 0 ? 0.3f : 0.7f; break;
+            default: break;
+        }
+        if (!inRange) {
+            if (!punish) continue;
+            float k = 0.0f;
+            switch (a->type) {
+                case AttackType::Leap: k = 3.0f; break;
+                case AttackType::Rain: k = 2.5f; break;
+                case AttackType::Eruption: k = 2.0f; break;
+                case AttackType::Arc: k = 1.8f; break;
+                case AttackType::Laser:
+                case AttackType::Projectile:
+                case AttackType::Spread:
+                case AttackType::Lunge: k = 1.5f; break;
+                case AttackType::Charge: k = std::abs(above) < 32.0f ? 1.2f : 0.0f; break;
+                default: break;
+            }
+            if (k <= 0.0f) continue;
+            fit *= k;
+        }
+        if (static_cast<int>(idx) == lastAttack_) fit *= 0.1f;
+        else if (static_cast<int>(idx) == prevAttack_) fit *= 0.45f;
+        fit *= w.rng().range(0.7f, 1.3f);
+        cands.push_back({a, fit});
+        total += fit;
+    }
+    if (cands.empty() || total <= 0.0f) {
+        comboLeft_ = 0;
+        return false;
+    }
+    const AttackDef* chosen = cands.front().a;
+    float r = w.rng().range(0.0f, total);
+    for (const Cand& c : cands) {
+        r -= c.score;
+        if (r <= 0.0f) {
+            chosen = c.a;
+            break;
+        }
+    }
+    if (inCombo) --comboLeft_;
+    else if (phase_ < static_cast<int>(def_.phases.size())) comboLeft_ = std::max(0, def_.phases[phase_].combo - 1);
+    outOfReach_ = 0.0f;
+    attack_ = chosen;
+    attackIndex_ = static_cast<int>(chosen - def_.attacks.data());
+    prevAttack_ = lastAttack_;
+    lastAttack_ = attackIndex_;
+    ++patternIndex_;
     beginAttack(w);
     return true;
 }
@@ -77,9 +182,14 @@ bool Enemy::forceAttack(GameWorld& w, const std::string& attackId) {
 
 void Enemy::beginAttack(GameWorld& w) {
     state_ = EnemyState::Telegraph;
-    stateTimer_ = attack_->telegraph / std::max(0.3f, phaseSpeed());
+    stateTimer_ = attack_->telegraph * telegraphScale() / std::max(0.3f, phaseSpeed());
+    if (def_.isBoss) stateTimer_ = std::max(0.3f, stateTimer_);  // always readable
     attackStarted_ = false;
     attackHit_ = false;
+    attackClock_ = 0.0f;
+    burstsLeft_ = 0;
+    staged_.clear();
+    leapLanded_ = false;
     face(playerPos_.x - box.center().x);
     aimDir_ = (playerPos_ - box.center()).normalized();
     if (aimDir_.lengthSq() < 0.01f) aimDir_ = {facing, 0};
@@ -95,11 +205,32 @@ void Enemy::beginAttack(GameWorld& w) {
     if (attack_->type == AttackType::Rain || attack_->type == AttackType::Eruption) {
         int n = std::max(1, attack_->count);
         float spacing = std::max(attack_->spread, 24.0f);
+        // Aimed where the player will be when it lands (lead), not where it stands now.
+        Vec2 aim = attack_->lead > 0.0f ? predictPlayer(w, (attack_->telegraph + 0.3f) * attack_->lead) : playerPos_;
+        float dir = signf(aim.x - box.center().x);
+        if (dir == 0.0f) dir = facing;
         for (int i = 0; i < n; ++i) {
-            float x = playerPos_.x + (static_cast<float>(i) - (n - 1) * 0.5f) * spacing + w.rng().range(-6.0f, 6.0f);
-            Vec2 from{x, playerPos_.y - 40.0f};
-            Vec2 to{x, playerPos_.y + 400.0f};
-            float groundY = playerPos_.y;
+            float x;
+            if (attack_->stagger > 0.0f) {
+                // A line that runs from the boss through the player's landing point and beyond
+                // (centred on the player when it is right next to the boss, or above it).
+                float start = box.center().x + dir * (box.w * 0.5f + 8.0f);
+                float end = aim.x + dir * spacing * 2.0f;
+                if (dir * (end - start) < spacing * 3.0f) {
+                    start = aim.x - dir * spacing * (n - 1) * 0.5f;
+                    end = aim.x + dir * spacing * (n - 1) * 0.5f;
+                }
+                x = n > 1 ? start + (end - start) * static_cast<float>(i) / static_cast<float>(n - 1) : aim.x;
+            } else {
+                x = aim.x + (static_cast<float>(i) - (n - 1) * 0.5f) * spacing + w.rng().range(-6.0f, 6.0f);
+            }
+            Vec2 from{x, aim.y - 40.0f};
+            Vec2 to{x, aim.y + 400.0f};
+            if (def_.isBoss) {  // bosses may stand above or below the player
+                from.y = std::min(aim.y, box.center().y) - 40.0f;
+                to.y = std::max(aim.y, box.bottom()) + 400.0f;
+            }
+            float groundY = aim.y;
             if (auto t = w.physics().raycast(from, to, true)) groundY = from.y + (to.y - from.y) * *t;
             targets_.push_back({x, groundY});
         }
@@ -126,8 +257,14 @@ void Enemy::stepTelegraph(GameWorld& w, float dt) {
         }
     }
     // Ranged attackers keep tracking during the wind-up; melee commits early.
-    if (attack_ && (attack_->type == AttackType::Projectile || attack_->type == AttackType::Arc) && stateTimer_ > 0.15f) {
-        aimDir_ = (playerPos_ - box.center()).normalized();
+    if (attack_ && (attack_->type == AttackType::Projectile || attack_->type == AttackType::Arc || attack_->type == AttackType::Lunge) &&
+        stateTimer_ > 0.15f) {
+        Vec2 aim = playerPos_;
+        if (attack_->lead > 0.0f) {
+            float speed = attack_->type == AttackType::Lunge ? attack_->lungeSpeed : attack_->projectileSpeed;
+            aim = predictPlayer(w, distance(box.center(), playerPos_) / std::max(60.0f, speed) * attack_->lead);
+        }
+        aimDir_ = (aim - box.center()).normalized();
         face(aimDir_.x);
     }
     if (stateTimer_ <= 0.0f && attack_) {
@@ -138,6 +275,107 @@ void Enemy::stepTelegraph(GameWorld& w, float dt) {
     }
 }
 
+void Enemy::spawnImpact(GameWorld& w, const AttackDef& a, Vec2 t) {
+    bool rain = a.type == AttackType::Rain;
+    Projectile p;
+    if (rain) {
+        p.pos = p.prevPos = {t.x + w.rng().range(-4.0f, 4.0f), std::min(t.y, playerPos_.y) - a.rainHeight};
+        p.vel = {w.rng().range(-12.0f, 12.0f), a.projectileSpeed};
+        p.gravity = a.gravity;
+        p.life = 4.0f;
+    } else {
+        p.pos = p.prevPos = t + Vec2{0, -6.0f};
+        p.vel = {w.rng().range(-20.0f, 20.0f), -a.projectileSpeed};
+        p.gravity = a.gravity > 0 ? a.gravity : 700.0f;
+        p.life = 2.0f;
+        w.particles().emit(a.eruptionEffect, t, 1.0f);
+    }
+    p.damage = a.damage;
+    p.type = DamageType::Projectile;
+    p.clip = a.projectile;
+    p.radius = a.projectileRadius > 0 ? a.projectileRadius : 5.0f;
+    p.light = def_.lightColor;
+    p.knockback = a.knockback;
+    p.hitEffect = a.hitEffect.empty() ? "projectile_burst" : a.hitEffect;
+    p.slow = a.slow;
+    p.slowDuration = a.slowDuration;
+    p.explosionRadius = a.explosionRadius;
+    w.spawnProjectile(p);
+    if (!rain && a.stagger > 0.0f) w.playSound("sounds/golem_slam.wav", t, 0.35f, 1.4f);
+}
+
+void Enemy::fireProjectiles(GameWorld& w, const AttackDef& a) {
+    Vec2 origin = attackOrigin();
+    Vec2 baseDir = a.type == AttackType::Spread ? Vec2{facing, 0.0f} : aimDir_;
+    if (a.type == AttackType::Spread && a.lead > 0.0f) baseDir = aimDir_;  // aimed fans (bosses)
+    float baseAngle = dmath::atan2(baseDir.y, baseDir.x);
+    Vec2 target = a.lead > 0.0f ? predictPlayer(w, distance(origin, playerPos_) / std::max(60.0f, a.projectileSpeed) * a.lead) : playerPos_;
+    for (int i = 0; i < a.count; ++i) {
+        float off = a.count > 1 ? (i - (a.count - 1) * 0.5f) * degToRad(a.spread) : 0.0f;
+        Projectile p;
+        p.pos = p.prevPos = origin;
+        if (a.type == AttackType::Arc) {
+            // Ballistic lob that lands near the player (or where it is going).
+            float g = a.gravity > 0 ? a.gravity : 500.0f;
+            float dx = target.x - origin.x + off * 60.0f;
+            float tFlight = std::clamp(std::abs(dx) / std::max(40.0f, a.projectileSpeed), 0.5f, 1.4f);
+            float dy = target.y - origin.y;
+            p.vel = {dx / tFlight, (dy - 0.5f * g * tFlight * tFlight) / tFlight};
+            p.gravity = g;
+        } else {
+            p.vel = Vec2::fromAngle(baseAngle + off) * a.projectileSpeed;
+            p.gravity = a.gravity;
+        }
+        p.damage = a.damage;
+        p.type = DamageType::Projectile;
+        p.clip = a.projectile;
+        p.radius = a.projectileRadius > 0 ? a.projectileRadius : (a.projectile == "boss_orb" ? 7.0f : 4.5f);
+        p.life = a.homing > 0.0f ? std::max(4.0f, a.homingTime + 2.5f) : 4.0f;
+        p.light = def_.lightColor;
+        p.knockback = a.knockback;
+        p.hitSound = "sounds/explosion.wav";
+        p.hitEffect = a.hitEffect.empty() ? "projectile_burst" : a.hitEffect;
+        p.slow = a.slow;
+        p.slowDuration = a.slowDuration;
+        p.explosionRadius = a.explosionRadius;
+        p.homing = a.homing;
+        p.homingTime = a.homingTime;
+        if (a.explosionRadius > 0.0f) p.hitSound.clear();
+        w.spawnProjectile(p);
+    }
+    w.particles().emit("muzzle_enemy", origin, 1.0f, baseDir);
+    if (a.sound.empty()) w.playSound("sounds/enemy_shoot.wav", origin, 0.7f);
+}
+
+void Enemy::slam(GameWorld& w, const AttackDef& a) {
+    Vec2 base = box.bottomCenter();
+    w.shake(def_.isBoss ? 0.6f : 0.4f);
+    w.rumble(0.6f, 0.4f, 200);
+    w.playSound("sounds/golem_slam.wav", base, 1.0f);
+    w.particles().emit("slam_dust", base, def_.isBoss ? 2.0f : 1.2f);
+    for (float dir : {-1.0f, 1.0f}) {
+        Projectile p;
+        p.pos = p.prevPos = base + Vec2{dir * box.w * 0.5f, -6.0f};
+        p.vel = {dir * a.projectileSpeed, 0.0f};
+        p.damage = a.damage;
+        p.type = DamageType::Explosion;
+        p.clip = "shockwave";
+        p.radius = 7.0f;
+        p.life = a.range / std::max(30.0f, a.projectileSpeed);
+        p.light = {255, 179, 71, 255};
+        p.knockback = a.knockback;
+        p.hitEffect = "slam_dust";
+        w.spawnProjectile(p);
+    }
+    // Direct impact area
+    DamageInfo d;
+    d.amount = a.damage;
+    d.type = DamageType::Explosion;
+    d.source = base;
+    d.knockback = a.knockback;
+    if (Rect::fromCenter(base, {box.w + 30, 24}).intersects(w.player().box)) w.damagePlayer(d);
+}
+
 void Enemy::performAttackStart(GameWorld& w) {
     const AttackDef& a = *attack_;
     attackStarted_ = true;
@@ -146,31 +384,12 @@ void Enemy::performAttackStart(GameWorld& w) {
         case AttackType::Rain:
         case AttackType::Eruption: {
             bool rain = a.type == AttackType::Rain;
-            for (const Vec2& t : targets_) {
-                Projectile p;
-                if (rain) {
-                    p.pos = p.prevPos = {t.x + w.rng().range(-4.0f, 4.0f), playerPos_.y - a.rainHeight};
-                    p.vel = {w.rng().range(-12.0f, 12.0f), a.projectileSpeed};
-                    p.gravity = a.gravity;
-                    p.life = 4.0f;
-                } else {
-                    p.pos = p.prevPos = t + Vec2{0, -6.0f};
-                    p.vel = {w.rng().range(-20.0f, 20.0f), -a.projectileSpeed};
-                    p.gravity = a.gravity > 0 ? a.gravity : 700.0f;
-                    p.life = 2.0f;
-                    w.particles().emit(a.eruptionEffect, t, 1.0f);
-                }
-                p.damage = a.damage;
-                p.type = DamageType::Projectile;
-                p.clip = a.projectile;
-                p.radius = a.projectileRadius > 0 ? a.projectileRadius : 5.0f;
-                p.light = def_.lightColor;
-                p.knockback = a.knockback;
-                p.hitEffect = a.hitEffect.empty() ? "projectile_burst" : a.hitEffect;
-                p.slow = a.slow;
-                p.slowDuration = a.slowDuration;
-                p.explosionRadius = a.explosionRadius;
-                w.spawnProjectile(p);
+            if (a.stagger > 0.0f) {
+                // One impact after another: the line chases the player.
+                for (size_t k = 0; k < targets_.size(); ++k) staged_.push_back({targets_[k], static_cast<float>(k) * a.stagger});
+                stateTimer_ = std::max(stateTimer_, static_cast<float>(targets_.size()) * a.stagger + 0.05f);
+            } else {
+                for (const Vec2& t : targets_) spawnImpact(w, a, t);
             }
             if (!rain) {
                 w.shake(0.25f);
@@ -183,81 +402,50 @@ void Enemy::performAttackStart(GameWorld& w) {
         }
         case AttackType::Projectile:
         case AttackType::Spread:
-        case AttackType::Arc: {
-            Vec2 origin = attackOrigin();
-            Vec2 baseDir = a.type == AttackType::Spread ? Vec2{facing, 0.0f} : aimDir_;
-            float baseAngle = dmath::atan2(baseDir.y, baseDir.x);
-            for (int i = 0; i < a.count; ++i) {
-                float off = a.count > 1 ? (i - (a.count - 1) * 0.5f) * degToRad(a.spread) : 0.0f;
-                Projectile p;
-                p.pos = p.prevPos = origin;
-                if (a.type == AttackType::Arc) {
-                    // Ballistic lob that lands near the player.
-                    float g = a.gravity > 0 ? a.gravity : 500.0f;
-                    float dx = playerPos_.x - origin.x + off * 60.0f;
-                    float tFlight = std::clamp(std::abs(dx) / std::max(40.0f, a.projectileSpeed), 0.5f, 1.4f);
-                    float dy = playerPos_.y - origin.y;
-                    p.vel = {dx / tFlight, (dy - 0.5f * g * tFlight * tFlight) / tFlight};
-                    p.gravity = g;
-                } else {
-                    p.vel = Vec2::fromAngle(baseAngle + off) * a.projectileSpeed;
-                    p.gravity = a.gravity;
-                }
-                p.damage = a.damage;
-                p.type = DamageType::Projectile;
-                p.clip = a.projectile;
-                p.radius = a.projectileRadius > 0 ? a.projectileRadius : (a.projectile == "boss_orb" ? 7.0f : 4.5f);
-                p.life = 4.0f;
-                p.light = def_.lightColor;
-                p.knockback = a.knockback;
-                p.hitSound = "sounds/explosion.wav";
-                p.hitEffect = a.hitEffect.empty() ? "projectile_burst" : a.hitEffect;
-                p.slow = a.slow;
-                p.slowDuration = a.slowDuration;
-                p.explosionRadius = a.explosionRadius;
-                if (a.explosionRadius > 0.0f) p.hitSound.clear();
-                w.spawnProjectile(p);
+        case AttackType::Arc:
+            fireProjectiles(w, a);
+            if (a.bursts > 1) {
+                burstsLeft_ = a.bursts - 1;
+                burstTimer_ = a.burstInterval;
+                stateTimer_ = std::max(stateTimer_, static_cast<float>(a.bursts - 1) * a.burstInterval + 0.05f);
             }
-            w.particles().emit("muzzle_enemy", origin, 1.0f, baseDir);
-            if (a.sound.empty()) w.playSound("sounds/enemy_shoot.wav", origin, 0.7f);
             break;
-        }
         case AttackType::Lunge:
             vel.x = facing * a.lungeSpeed * phaseSpeed();
             vel.y = def_.flying ? aimDir_.y * a.lungeSpeed : -120.0f;
-            if (def_.flying) vel = aimDir_ * a.lungeSpeed;
+            if (def_.flying) vel = aimDir_ * a.lungeSpeed * (a.lead > 0.0f ? phaseSpeed() : 1.0f);
             break;
         case AttackType::Charge:
             chargeDistance_ = 0.0f;
             w.playSound("sounds/dash.wav", box.center(), 0.8f, 0.7f);
             break;
-        case AttackType::Slam: {
-            Vec2 base = box.bottomCenter();
-            w.shake(def_.isBoss ? 0.6f : 0.4f);
-            w.rumble(0.6f, 0.4f, 200);
-            w.playSound("sounds/golem_slam.wav", base, 1.0f);
-            w.particles().emit("slam_dust", base, def_.isBoss ? 2.0f : 1.2f);
-            for (float dir : {-1.0f, 1.0f}) {
-                Projectile p;
-                p.pos = p.prevPos = base + Vec2{dir * box.w * 0.5f, -6.0f};
-                p.vel = {dir * a.projectileSpeed, 0.0f};
-                p.damage = a.damage;
-                p.type = DamageType::Explosion;
-                p.clip = "shockwave";
-                p.radius = 7.0f;
-                p.life = a.range / std::max(30.0f, a.projectileSpeed);
-                p.light = {255, 179, 71, 255};
-                p.knockback = a.knockback;
-                p.hitEffect = "slam_dust";
-                w.spawnProjectile(p);
+        case AttackType::Slam: slam(w, a); break;
+        case AttackType::Leap: {
+            // Ballistic jump onto the point where the player will be, high enough to clear
+            // ledges (a perched player is not safe): apex at least 64 px above the higher end.
+            Vec2 tgt = predictPlayer(w, std::max(a.lead, 0.5f));
+            float groundY = tgt.y;
+            Vec2 from{tgt.x, tgt.y - 40.0f}, to{tgt.x, tgt.y + 400.0f};
+            if (auto t = w.physics().raycast(from, to, true)) groundY = from.y + (to.y - from.y) * *t;
+            float dx = std::clamp(tgt.x - box.center().x, -640.0f, 640.0f);
+            if (std::abs(dx) < std::abs(tgt.x - box.center().x)) {
+                // Too far for one leap: land as close as possible, on the ground there.
+                float lx = box.center().x + dx;
+                groundY = box.bottom();
+                Vec2 f2{lx, std::min(tgt.y, box.bottom()) - 40.0f}, t2{lx, box.bottom() + 400.0f};
+                if (auto t = w.physics().raycast(f2, t2, true)) groundY = f2.y + (t2.y - f2.y) * *t;
             }
-            // Direct impact area
-            DamageInfo d;
-            d.amount = a.damage;
-            d.type = DamageType::Explosion;
-            d.source = base;
-            d.knockback = a.knockback;
-            if (Rect::fromCenter(base, {box.w + 30, 24}).intersects(w.player().box)) w.damagePlayer(d);
+            float dy = groundY - box.bottom();  // < 0: landing higher
+            const float g = kLeapGravity;
+            float apex = std::max({std::max(0.0f, -dy) + 64.0f, 96.0f + std::abs(dx) * 0.1f, g * a.leapTime * a.leapTime / 8.0f});
+            float vy = -std::sqrt(2.0f * g * apex);
+            float T = (-vy + std::sqrt(std::max(0.0f, vy * vy + 2.0f * g * dy))) / g;
+            vel.x = dx / std::max(0.2f, T);
+            vel.y = vy;
+            face(dx);
+            stateTimer_ = T + 0.8f;
+            w.playSound("sounds/dash.wav", box.center(), 0.9f, 0.6f);
+            w.particles().emit("slam_dust", box.bottomCenter(), 1.2f);
             break;
         }
         case AttackType::Laser:
@@ -291,6 +479,28 @@ void Enemy::performAttackStart(GameWorld& w) {
 void Enemy::performAttackActive(GameWorld& w, float dt) {
     const AttackDef& a = *attack_;
     Player& p = w.player();
+    attackClock_ += dt;
+    // Staggered impacts (eruption lines) and further volleys (bursts), re-aimed each time.
+    for (size_t k = 0; k < staged_.size();) {
+        if (attackClock_ >= staged_[k].time) {
+            spawnImpact(w, a, staged_[k].at);
+            staged_.erase(staged_.begin() + static_cast<std::ptrdiff_t>(k));
+        } else {
+            ++k;
+        }
+    }
+    if (burstsLeft_ > 0) {
+        burstTimer_ -= dt;
+        if (burstTimer_ <= 0.0f) {
+            --burstsLeft_;
+            burstTimer_ = a.burstInterval;
+            Vec2 aim = a.lead > 0.0f ? predictPlayer(w, distance(box.center(), playerPos_) / std::max(60.0f, a.projectileSpeed) * a.lead) : playerPos_;
+            aimDir_ = (aim - box.center()).normalized();
+            if (aimDir_.lengthSq() < 0.01f) aimDir_ = {facing, 0.0f};
+            face(aimDir_.x);
+            fireProjectiles(w, a);
+        }
+    }
     DamageInfo d;
     d.amount = a.damage;
     d.type = DamageType::Contact;
@@ -337,6 +547,14 @@ void Enemy::performAttackActive(GameWorld& w, float dt) {
             w.particles().emit("laser_sparks", end, 0.4f);
             break;
         }
+        case AttackType::Leap:
+            if (!leapLanded_ && attackClock_ > 0.12f && grounded_) {
+                leapLanded_ = true;
+                vel.x = 0.0f;
+                slam(w, a);
+                stateTimer_ = std::min(stateTimer_, 0.15f);
+            }
+            break;
         default:
             if (!def_.flying) vel.x = approach(vel.x, 0.0f, 900.0f * dt);
             break;
@@ -358,6 +576,9 @@ void Enemy::finishAttack(GameWorld& w) {
         attackCooldowns_[attackIndex_] = attack_->cooldown * phaseCooldown();
     state_ = EnemyState::Recover;
     stateTimer_ = attack_->recover * phaseCooldown();
+    if (def_.isBoss && comboLeft_ > 0) stateTimer_ = 0.12f;  // the next blow of the combo follows at once
+    staged_.clear();
+    burstsLeft_ = 0;
     playClip(anim_.has("recover") ? "recover" : "idle", true);
     attack_ = nullptr;
 }
@@ -446,6 +667,15 @@ void Enemy::renderTelegraph(RenderContext& ctx) const {
                     ctx.r.fillWorldRect(Rect::fromCenter(t + Vec2{0, -1}, {r * 2.0f, 3.0f}), warnCol, BlendMode::Additive);
                     ctx.r.drawWorldGlow(t, r * 1.4f, warnCol.withAlpha(static_cast<uint8_t>(40 + 60 * prog)));
                 }
+            }
+            break;
+        case AttackType::Leap:
+            if (state_ == EnemyState::Telegraph) {
+                // Where it is going to land: under the player.
+                Vec2 c = playerPos_ + Vec2{0.0f, 12.0f};
+                float r = 10.0f + 18.0f * prog;
+                ctx.r.fillWorldRect(Rect::fromCenter(c, {r * 2.0f, 3.0f}), warnCol, BlendMode::Additive);
+                ctx.r.drawWorldGlow(c, r * 1.3f, warnCol.withAlpha(static_cast<uint8_t>(50 + 70 * prog)));
             }
             break;
         case AttackType::Charge:

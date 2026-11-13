@@ -10,7 +10,7 @@
     64
   ],
   "scale": 1.0,
-  "hp": 60,
+  "hp": 75,
   "contactDamage": 1,
   "speed": 0,
   "chaseSpeedMultiplier": 1.2,
@@ -32,10 +32,10 @@
       "type": "melee",
       "damage": 2,
       "range": 96,
-      "telegraph": 0.75,
+      "telegraph": 0.52,
       "active": 0.3,
-      "recover": 0.6,
-      "cooldown": 2.4,
+      "recover": 0.36,
+      "cooldown": 1.44,
       "telegraphAnim": "telegraph_bite",
       "attackAnim": "bite",
       "knockback": 260
@@ -46,10 +46,10 @@
       "type": "arc",
       "damage": 1,
       "range": 420,
-      "telegraph": 0.8,
+      "telegraph": 0.56,
       "active": 0.25,
-      "recover": 0.7,
-      "cooldown": 3.0,
+      "recover": 0.42,
+      "cooldown": 1.8,
       "telegraphAnim": "telegraph_spores",
       "attackAnim": "spores",
       "projectile": "spore_big",
@@ -62,7 +62,8 @@
         -65
       ],
       "projectileRadius": 6,
-      "hitEffect": "acid_burst"
+      "hitEffect": "acid_burst",
+      "lead": 0.7
     },
     {
       "id": "vines",
@@ -70,10 +71,10 @@
       "type": "eruption",
       "damage": 2,
       "range": 420,
-      "telegraph": 1.0,
+      "telegraph": 0.65,
       "active": 0.3,
-      "recover": 0.8,
-      "cooldown": 4.2,
+      "recover": 0.48,
+      "cooldown": 2.52,
       "telegraphAnim": "telegraph_vines",
       "attackAnim": "vines",
       "projectile": "spore",
@@ -82,7 +83,8 @@
       "spread": 72,
       "gravity": 700,
       "warningEffect": "eruption_warning_spore",
-      "eruptionEffect": "eruption_spore"
+      "eruptionEffect": "eruption_spore",
+      "lead": 0.7
     },
     {
       "id": "spore_rain",
@@ -90,10 +92,10 @@
       "type": "rain",
       "damage": 1,
       "range": 500,
-      "telegraph": 1.0,
+      "telegraph": 0.65,
       "active": 0.3,
-      "recover": 0.8,
-      "cooldown": 4.0,
+      "recover": 0.48,
+      "cooldown": 2.4,
       "telegraphAnim": "telegraph_spores",
       "attackAnim": "spores",
       "projectile": "spore",
@@ -101,7 +103,8 @@
       "count": 6,
       "spread": 52,
       "gravity": 180,
-      "rainHeight": 240
+      "rainHeight": 240,
+      "lead": 0.7
     },
     {
       "id": "summon",
@@ -112,12 +115,113 @@
       "telegraph": 0.9,
       "active": 0.4,
       "recover": 0.8,
-      "cooldown": 11,
+      "cooldown": 8.8,
       "telegraphAnim": "summon",
       "attackAnim": "summon",
       "summonId": "gloop",
       "summonCount": 2,
       "maxSummoned": 3
+    },
+    {
+      "id": "v3_rain",
+      "name": "Pluie traquante",
+      "type": "rain",
+      "damage": 1,
+      "range": 620,
+      "telegraph": 0.5,
+      "active": 0.3,
+      "recover": 0.4,
+      "cooldown": 3.2,
+      "telegraphAnim": "telegraph_spores",
+      "attackAnim": "spores",
+      "projectile": "spore",
+      "projectileSpeed": 150,
+      "count": 6,
+      "spread": 34,
+      "gravity": 180,
+      "rainHeight": 200,
+      "lead": 1.0,
+      "minRange": 0,
+      "stagger": 0.1
+    },
+    {
+      "id": "v3_line",
+      "name": "Lignée de racines",
+      "type": "eruption",
+      "damage": 2,
+      "range": 600,
+      "telegraph": 0.55,
+      "active": 0.3,
+      "recover": 0.45,
+      "cooldown": 4.0,
+      "telegraphAnim": "telegraph_vines",
+      "attackAnim": "vines",
+      "projectile": "spore",
+      "projectileSpeed": 300,
+      "count": 9,
+      "spread": 40,
+      "gravity": 700,
+      "warningEffect": "eruption_warning_spore",
+      "eruptionEffect": "eruption_spore",
+      "lead": 0.8,
+      "minRange": 0,
+      "stagger": 0.08
+    },
+    {
+      "id": "v3_seekers",
+      "name": "Spores chercheuses",
+      "type": "projectile",
+      "damage": 1,
+      "range": 560,
+      "telegraph": 0.5,
+      "active": 0.25,
+      "recover": 0.4,
+      "cooldown": 3.6,
+      "telegraphAnim": "telegraph_spores",
+      "attackAnim": "spores",
+      "projectile": "spore_big",
+      "projectileSpeed": 150,
+      "count": 3,
+      "spread": 28,
+      "gravity": 0,
+      "origin": [
+        4,
+        -65
+      ],
+      "projectileRadius": 6,
+      "hitEffect": "acid_burst",
+      "lead": 0,
+      "minRange": 0,
+      "homing": 2.2,
+      "homingTime": 1.4
+    },
+    {
+      "id": "v3_volley",
+      "name": "Rafale de spores",
+      "type": "projectile",
+      "damage": 1,
+      "range": 560,
+      "telegraph": 0.45,
+      "active": 0.25,
+      "recover": 0.4,
+      "cooldown": 3.0,
+      "telegraphAnim": "telegraph_spores",
+      "attackAnim": "spores",
+      "projectile": "spore_big",
+      "projectileSpeed": 220,
+      "count": 3,
+      "spread": 10,
+      "gravity": 0,
+      "origin": [
+        4,
+        -65
+      ],
+      "projectileRadius": 6,
+      "hitEffect": "acid_burst",
+      "lead": 0.9,
+      "minRange": 0,
+      "bursts": 3,
+      "burstInterval": 0.26
     }
   ],
   "powers": {
@@ -166,10 +270,14 @@
         "attacks": [
           "bite",
           "spores",
-          "vines"
+          "vines",
+          "v3_rain",
+          "v3_line"
         ],
         "speedMultiplier": 1.0,
-        "cooldownMultiplier": 1.0
+        "cooldownMultiplier": 1.0,
+        "combo": 1,
+        "telegraphMultiplier": 1.0
       },
       {
         "name": "Sève bouillonnante",
@@ -178,12 +286,17 @@
           "bite",
           "spores",
           "vines",
-          "summon"
+          "summon",
+          "v3_rain",
+          "v3_line",
+          "v3_seekers"
         ],
         "speedMultiplier": 1.1,
         "cooldownMultiplier": 0.9,
         "enterText": "La Reine Sporale répand ses bourgeons !",
-        "summonOnEnter": true
+        "summonOnEnter": true,
+        "combo": 2,
+        "telegraphMultiplier": 0.9
       },
       {
         "name": "Tempête de spores",
@@ -192,12 +305,20 @@
           "bite",
           "spore_rain",
           "vines",
-          "spores"
+          "spores",
+          "v3_rain",
+          "v3_line",
+          "v3_seekers",
+          "v3_volley"
         ],
         "speedMultiplier": 1.2,
         "cooldownMultiplier": 0.75,
-        "enterText": "Le ciel se couvre de spores !"
+        "enterText": "Le ciel se couvre de spores !",
+        "combo": 3,
+        "telegraphMultiplier": 0.8
       }
-    ]
+    ],
+    "enrageTime": 75,
+    "brainVersion": 3
   }
 }

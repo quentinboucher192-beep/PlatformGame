@@ -17,7 +17,7 @@ namespace {
 constexpr float kJumpWeight = 0.55f;     // per 100 tiles
 constexpr float kHazardWeight = 0.30f;   // per 100 tiles
 constexpr float kEnemyWeight = 0.22f;    // per 100 tiles
-constexpr float kBossWeight = 1.0f;
+constexpr float kBossWeight = 0.6f;
 constexpr float kOffset = 6.0f;          // what any complete level has (length, a few jumps...)
 constexpr float kCurve = 8.0f;           // score = 5 (1 - exp(-(raw - kOffset) / kCurve))
 

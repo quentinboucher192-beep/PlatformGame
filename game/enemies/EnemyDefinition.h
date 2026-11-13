@@ -14,7 +14,7 @@ namespace cosmic {
 enum class EnemyFamily { Ground, Robot, Flying, Turret, Fast, Heavy, Caster, MiniBoss, Count };
 enum class MovementType { Idle, Patrol, Guard, Fly, Hop, Stationary, Count };
 enum class ReactionType { None, Chase, KeepDistance, Flee, GuardZone, Count };
-enum class AttackType { Contact, Melee, Lunge, Projectile, Spread, Arc, Slam, Charge, Laser, Summon, Rain, Eruption, Count };
+enum class AttackType { Contact, Melee, Lunge, Projectile, Spread, Arc, Slam, Charge, Laser, Summon, Rain, Eruption, Leap, Count };
 
 const char* familyId(EnemyFamily f);
 const char* familyLabel(EnemyFamily f);
@@ -73,6 +73,14 @@ struct AttackDef {
     std::string warningEffect = "eruption_warning_fire";  // Eruption: telegraph particles on the ground
     std::string eruptionEffect = "eruption_fire";         // Eruption: burst when it erupts
     Color beamColor{255, 77, 109, 255};                    // Laser / breath colour
+    // v3 (bosses): smarter attacks
+    float lead = 0.0f;           // 0..1: aims where the player will be (projectiles, rain, eruptions, lunges, leaps)
+    int bursts = 1;              // projectile attacks: volleys fired during the active window
+    float burstInterval = 0.3f;  // seconds between volleys
+    float homing = 0.0f;         // projectiles turn toward the player (radians per second)
+    float homingTime = 1.2f;     // ... during this many seconds
+    float stagger = 0.0f;        // rain / eruption: impacts one after another along a line (s between impacts)
+    float leapTime = 0.8f;       // Leap: flight time to the predicted landing point
 
     bool isProjectileType() const {
         return type == AttackType::Projectile || type == AttackType::Spread || type == AttackType::Arc ||
@@ -91,6 +99,8 @@ struct BossPhase {
     float cooldownMultiplier = 1.0f;
     std::string enterText;
     bool summonOnEnter = false;
+    int combo = 1;                    // attacks chained without a full recovery
+    float telegraphMultiplier = 1.0f; // < 1: shorter wind-ups
     Json toJson() const;
     static BossPhase fromJson(const Json& j);
 };
@@ -147,6 +157,8 @@ struct EnemyDefinition {
     bool isBoss = false;
     std::string bossTitle;
     std::vector<BossPhase> phases;
+    /// Seconds of fight after which the boss enrages (faster, shorter cooldowns); 0 = never.
+    float enrageTime = 0.0f;
 
     // Runtime bookkeeping
     std::string sourcePath;

@@ -5,6 +5,7 @@
 #include <map>
 
 #include "engine/audio/AudioSystem.h"
+#include "engine/core/DetMath.h"
 #include "engine/core/Log.h"
 #include "engine/physics/Collision.h"
 #include "engine/resources/ResourceManager.h"
@@ -324,6 +325,18 @@ void GameWorld::updateProjectiles(float dt) {
             continue;
         }
         p.vel.y += p.gravity * dt;
+        if (p.homing > 0.0f && p.age < p.homingTime && !p.fromPlayer && player_.alive()) {
+            // Seeker: turns toward the player at a bounded rate (deterministic math).
+            Vec2 to = player_.center() - p.pos;
+            float want = dmath::atan2(to.y, to.x);
+            float cur = dmath::atan2(p.vel.y, p.vel.x);
+            float diff = want - cur;
+            while (diff > kPi) diff -= 2.0f * kPi;
+            while (diff < -kPi) diff += 2.0f * kPi;
+            float step = std::clamp(diff, -p.homing * dt, p.homing * dt);
+            float speed = p.vel.length();
+            p.vel = Vec2{dmath::cos(cur + step), dmath::sin(cur + step)} * speed;
+        }
         Vec2 np = p.pos + p.vel * dt;
         if (p.clip == "shockwave") {
             // Ground shockwave: dies at walls or ledges.

@@ -79,12 +79,14 @@ std::string Enemy::debugInfo() const {
 }
 
 float Enemy::phaseSpeed() const {
-    if (def_.isBoss && phase_ < static_cast<int>(def_.phases.size())) return def_.phases[phase_].speedMultiplier;
+    if (def_.isBoss && phase_ < static_cast<int>(def_.phases.size()))
+        return def_.phases[phase_].speedMultiplier * (enraged_ ? 1.2f : 1.0f);
     return 1.0f;
 }
 
 float Enemy::phaseCooldown() const {
-    if (def_.isBoss && phase_ < static_cast<int>(def_.phases.size())) return def_.phases[phase_].cooldownMultiplier;
+    if (def_.isBoss && phase_ < static_cast<int>(def_.phases.size()))
+        return def_.phases[phase_].cooldownMultiplier * (enraged_ ? 0.7f : 1.0f);
     return 1.0f;
 }
 
@@ -119,6 +121,36 @@ void Enemy::sense(GameWorld& w) {
         los = w.physics().lineOfSight(eye, playerPos_);
     }
     playerVisible_ = p.alive() && !p.respawning() && inRange && los;
+    // Player motion, for the bosses' predictions (smoothed, per fixed step).
+    if (havePlayerPos_) {
+        Vec2 v = (playerPos_ - lastPlayerPos_) * 120.0f;
+        if (v.lengthSq() > 900.0f * 900.0f) v = {};  // respawn / teleport
+        playerVel_ = playerVel_ * 0.8f + v * 0.2f;
+    }
+    lastPlayerPos_ = playerPos_;
+    havePlayerPos_ = true;
+    playerAirborne_ = !p.grounded();
+}
+
+Vec2 Enemy::predictPlayer(const GameWorld& w, float seconds) const {
+    Vec2 v = playerVel_;
+    Vec2 p = playerPos_ + Vec2{v.x * seconds, 0.0f};
+    const Rect& b = w.level().bounds;
+    p.x = std::clamp(p.x, b.x + 16.0f, b.right() - 16.0f);
+    if (playerAirborne_) {
+        // Where a jumping player comes down: the ground below the predicted x.
+        Vec2 from{p.x, playerPos_.y - 8.0f};
+        Vec2 to{p.x, playerPos_.y + 360.0f};
+        if (auto t = w.physics().raycast(from, to, true)) p.y = from.y + (to.y - from.y) * *t - 12.0f;
+    }
+    return p;
+}
+
+float Enemy::telegraphScale() const {
+    float k = 1.0f;
+    if (def_.isBoss && phase_ < static_cast<int>(def_.phases.size())) k *= def_.phases[phase_].telegraphMultiplier;
+    if (enraged_) k *= 0.85f;
+    return k;
 }
 
 bool Enemy::groundAhead(const GameWorld& w) const {
@@ -176,6 +208,24 @@ void Enemy::fixedUpdate(GameWorld& w, float dt) {
     sense(w);
     checkPhase(w);
     stateTimer_ -= dt;
+    simDt_ = dt;
+    if (def_.isBoss && engaged_) {
+        fightTime_ += dt;
+        if (!enraged_ && def_.enrageTime > 0.0f && fightTime_ >= def_.enrageTime && state_ != EnemyState::PhaseTransition) {
+            // A fight that drags on: the boss gets faster and hits more often.
+            enraged_ = true;
+            WorldMessage m;
+            m.style = WorldMessage::Style::Boss;
+            m.text = "Le gardien entre en rage !";
+            m.subtitle = "Rage";
+            m.duration = 2.0f;
+            w.message(m);
+            w.playSound("sounds/boss_roar.wav", box.center(), 1.0f);
+            w.flash({255, 60, 40, 255}, 0.2f);
+            w.shake(0.5f);
+            w.particles().emit("boss_phase", box.center(), 1.5f);
+        }
+    }
 
     switch (state_) {
         case EnemyState::Idle:
@@ -190,7 +240,18 @@ void Enemy::fixedUpdate(GameWorld& w, float dt) {
         case EnemyState::Attack: stepAttack(w, dt); break;
         case EnemyState::Recover:
             vel.x = approach(vel.x, 0.0f, 700.0f * dt);
-            if (def_.flying) vel = lerpv(vel, {}, damp(4.0f, dt));
+            if (def_.flying && def_.isBoss && engaged_) {
+                // Flying bosses keep repositioning between attacks (preferred distance, above).
+                Vec2 toP = playerPos_ - box.center();
+                float d = toP.length();
+                Vec2 target = box.center();
+                if (d > def_.preferredDistance * 1.3f) target = box.center() + toP.normalized() * 60.0f;
+                else if (d < def_.preferredDistance * 0.8f) target = box.center() - toP.normalized() * 60.0f;
+                target.y = std::min(target.y, playerPos_.y - 50.0f);
+                moveTowards(w, target, def_.speed * 0.7f, dt);
+            } else if (def_.flying) {
+                vel = lerpv(vel, {}, damp(4.0f, dt));
+            }
             if (stateTimer_ <= 0.0f) state_ = EnemyState::Chase;
             break;
         case EnemyState::Defend:
@@ -229,6 +290,8 @@ void Enemy::fixedUpdate(GameWorld& w, float dt) {
             if (stateTimer_ <= 0.0f) {
                 state_ = EnemyState::Chase;
                 patternIndex_ = 0;
+                comboLeft_ = 0;
+                staged_.clear();
             }
             break;
         default: break;
@@ -343,6 +406,18 @@ void Enemy::stepEngaged(GameWorld& w, float dt) {
         case ReactionType::Chase: {
             Vec2 target = playerPos_;
             if (def_.flying) target.y -= 28.0f;
+            if (def_.isBoss && !def_.flying && box.bottom() - (playerPos_.y + 12.0f) > 48.0f) {
+                // Player perched above: step back to get an angle for shots and leaps
+                // instead of waiting under the ledge.
+                float side = box.center().x >= playerPos_.x ? 1.0f : -1.0f;
+                const Rect& b = w.level().bounds;
+                if ((side > 0 && playerPos_.x + 200.0f > b.right() - 40.0f) || (side < 0 && playerPos_.x - 200.0f < b.x + 40.0f)) side = -side;
+                target.x = playerPos_.x + side * 190.0f;
+                moveTowards(w, target, speed, dt);
+                if (std::abs(target.x - box.center().x) < 8.0f) face(playerPos_.x - box.center().x);
+                playClip(std::abs(vel.x) > def_.speed * 1.2f ? "run" : (std::abs(vel.x) > 5.0f ? "walk" : "idle"));
+                break;
+            }
             if (playerDist_ > def_.attackRange * 0.7f || def_.flying)
                 moveTowards(w, target, speed, dt);
             else
@@ -476,6 +551,8 @@ void Enemy::applyPhysics(GameWorld& w, float dt) {
             stateTimer_ = attack_->recover * 1.8f;
             playClip("recover", true);
             vel.x = -facing * 60.0f;
+        } else if (state_ == EnemyState::Attack && attack_ && attack_->type == AttackType::Leap && vel.y < 0.0f) {
+            // Rising along a ledge: keeps its momentum to land on top of it.
         } else {
             vel.x = 0;
         }

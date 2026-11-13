@@ -248,6 +248,20 @@ void EnemyEditorScene::tabAttacks(float x, float& y, float w) {
         }
         if (a.type == AttackType::Lunge || a.type == AttackType::Charge)
             c |= ui.numberField("lunge", row.field("Vitesse d'élan"), a.lungeSpeed, 10, 10, 1000, "%.0f");
+        if (a.type == AttackType::Leap)
+            c |= ui.numberField("leapt", row.field("Durée du saut (s)"), a.leapTime, 0.05f, 0.3f, 2.0f, "%.2f");
+        // Smarter attacks (bosses and anyone else)
+        if (a.isProjectileType() || a.type == AttackType::Lunge || a.type == AttackType::Leap)
+            c |= ui.numberField("lead", row.field("Anticipation (0 = vise le joueur, 1 = où il va)"), a.lead, 0.05f, 0, 1, "%.2f");
+        if (a.type == AttackType::Projectile || a.type == AttackType::Spread || a.type == AttackType::Arc) {
+            float b = static_cast<float>(a.bursts);
+            if (ui.numberField("bursts", row.field("Salves"), b, 1, 1, 8, "%.0f")) a.bursts = static_cast<int>(b), c = true;
+            if (a.bursts > 1) c |= ui.numberField("bint", row.field("Intervalle entre salves (s)"), a.burstInterval, 0.05f, 0.05f, 3, "%.2f");
+            c |= ui.numberField("homing", row.field("Tête chercheuse (rad/s, 0 = non)"), a.homing, 0.25f, 0, 12, "%.2f");
+            if (a.homing > 0.0f) c |= ui.numberField("homt", row.field("Durée du guidage (s)"), a.homingTime, 0.1f, 0, 6, "%.1f");
+        }
+        if (a.type == AttackType::Rain || a.type == AttackType::Eruption)
+            c |= ui.numberField("stag", row.field("Impacts successifs en ligne (s, 0 = ensemble)"), a.stagger, 0.02f, 0, 1, "%.2f");
         if (a.type == AttackType::Summon) {
             auto ids = PropertyEditor::enemyIds(g_);
             c |= stringCycle(ui, "sumid", {x, y, w, ui.s(46)}, "Renfort", a.summonId, ids);
@@ -388,6 +402,7 @@ void EnemyEditorScene::tabBoss(float x, float& y, float w) {
     }
     FieldRow row{ui, x, w, w * 0.4f, y};
     c |= ui.textField("title", row.field("Titre affiché"), work_.bossTitle);
+    c |= ui.numberField("enrage", row.field("Rage après (s, 0 = jamais)"), work_.enrageTime, 5, 0, 600, "%.0f");
     for (size_t i = 0; i < work_.phases.size(); ++i) {
         if (ui.listItem("ph" + std::to_string(i), {x, y, w, ui.s(48)}, work_.phases[i].name, selectedPhase_ == static_cast<int>(i),
                         std::format("sous {:.0f}% PV", work_.phases[i].hpThreshold * 100)))
@@ -427,7 +442,12 @@ void EnemyEditorScene::tabBoss(float x, float& y, float w) {
         c |= ui.textField("ptext", pr.field("Texte d'entrée"), p.enterText);
         c |= ui.toggle("psum", {x, y, w, ui.s(44)}, "Invoque des renforts en entrant", p.summonOnEnter);
         y += ui.s(52);
-        ui.label("Attaques de la phase (dans l'ordre du cycle)", {x, y}, 18, ui.theme().textDim);
+        {
+            float cb = static_cast<float>(p.combo);
+            if (ui.numberField("pcombo", pr.field("Attaques enchaînées (combo)"), cb, 1, 1, 5, "%.0f")) p.combo = static_cast<int>(cb), c = true;
+            c |= ui.numberField("ptel", pr.field("Durée d'annonce x"), p.telegraphMultiplier, 0.05f, 0.4f, 2, "%.2f");
+        }
+        ui.label("Attaques de la phase (le boss choisit selon la situation)", {x, y}, 18, ui.theme().textDim);
         y += ui.s(30);
         for (const auto& a : work_.attacks) {
             bool on = std::find(p.attacks.begin(), p.attacks.end(), a.id) != p.attacks.end();

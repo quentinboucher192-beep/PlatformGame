@@ -10,7 +10,7 @@
     48
   ],
   "scale": 1.0,
-  "hp": 64,
+  "hp": 80,
   "contactDamage": 1,
   "speed": 46,
   "chaseSpeedMultiplier": 1.2,
@@ -32,10 +32,10 @@
       "type": "spread",
       "damage": 1,
       "range": 460,
-      "telegraph": 0.7,
+      "telegraph": 0.49,
       "active": 0.25,
-      "recover": 0.6,
-      "cooldown": 2.6,
+      "recover": 0.36,
+      "cooldown": 1.56,
       "telegraphAnim": "telegraph_volley",
       "attackAnim": "volley",
       "projectile": "energy_disc",
@@ -46,7 +46,8 @@
         34,
         -52
       ],
-      "projectileRadius": 5
+      "projectileRadius": 5,
+      "lead": 0.7
     },
     {
       "id": "beam",
@@ -54,10 +55,10 @@
       "type": "laser",
       "damage": 2,
       "range": 460,
-      "telegraph": 1.1,
+      "telegraph": 0.75,
       "active": 1.5,
-      "recover": 1.0,
-      "cooldown": 5.5,
+      "recover": 0.6,
+      "cooldown": 3.3,
       "telegraphAnim": "telegraph_beam",
       "attackAnim": "beam",
       "laserLength": 440,
@@ -74,15 +75,16 @@
       "type": "lunge",
       "damage": 2,
       "range": 300,
-      "telegraph": 0.8,
+      "telegraph": 0.56,
       "active": 0.6,
-      "recover": 0.9,
-      "cooldown": 4.0,
+      "recover": 0.54,
+      "cooldown": 2.4,
       "telegraphAnim": "telegraph_slam",
       "attackAnim": "slam",
       "lungeSpeed": 300,
       "minRange": 40,
-      "knockback": 280
+      "knockback": 280,
+      "lead": 0.7
     },
     {
       "id": "debris",
@@ -90,10 +92,10 @@
       "type": "rain",
       "damage": 1,
       "range": 520,
-      "telegraph": 1.0,
+      "telegraph": 0.65,
       "active": 0.3,
-      "recover": 0.8,
-      "cooldown": 4.5,
+      "recover": 0.48,
+      "cooldown": 2.7,
       "telegraphAnim": "telegraph_volley",
       "attackAnim": "volley",
       "projectile": "rock",
@@ -102,7 +104,8 @@
       "spread": 46,
       "gravity": 240,
       "rainHeight": 250,
-      "hitEffect": "slam_dust"
+      "hitEffect": "slam_dust",
+      "lead": 0.7
     },
     {
       "id": "summon",
@@ -113,12 +116,108 @@
       "telegraph": 0.9,
       "active": 0.4,
       "recover": 0.8,
-      "cooldown": 12,
+      "cooldown": 9.6,
       "telegraphAnim": "summon",
       "attackAnim": "summon",
       "summonId": "sentinel",
       "summonCount": 2,
       "maxSummoned": 3
+    },
+    {
+      "id": "v3_dive",
+      "name": "Plongée prédictive",
+      "type": "lunge",
+      "damage": 2,
+      "range": 420,
+      "telegraph": 0.45,
+      "active": 0.7,
+      "recover": 0.45,
+      "cooldown": 2.8,
+      "telegraphAnim": "telegraph_slam",
+      "attackAnim": "slam",
+      "lungeSpeed": 390.0,
+      "minRange": 0,
+      "knockback": 280,
+      "lead": 1.0
+    },
+    {
+      "id": "v3_line",
+      "name": "Ligne d'impacts",
+      "type": "eruption",
+      "damage": 2,
+      "range": 600,
+      "telegraph": 0.55,
+      "active": 0.3,
+      "recover": 0.45,
+      "cooldown": 4.0,
+      "telegraphAnim": "telegraph_volley",
+      "attackAnim": "volley",
+      "projectile": "rock",
+      "projectileSpeed": 300,
+      "count": 9,
+      "spread": 40,
+      "gravity": 700,
+      "rainHeight": 250,
+      "hitEffect": "slam_dust",
+      "lead": 0.8,
+      "minRange": 0,
+      "stagger": 0.08,
+      "warningEffect": "eruption_warning_spore",
+      "eruptionEffect": "eruption_spore"
+    },
+    {
+      "id": "v3_seekers",
+      "name": "Orbes chercheurs",
+      "type": "projectile",
+      "damage": 1,
+      "range": 560,
+      "telegraph": 0.5,
+      "active": 0.25,
+      "recover": 0.4,
+      "cooldown": 3.6,
+      "telegraphAnim": "telegraph_volley",
+      "attackAnim": "volley",
+      "projectile": "energy_disc",
+      "projectileSpeed": 150,
+      "count": 3,
+      "spread": 28,
+      "origin": [
+        34,
+        -52
+      ],
+      "projectileRadius": 5,
+      "lead": 0,
+      "minRange": 0,
+      "gravity": 0,
+      "homing": 2.2,
+      "homingTime": 1.4
+    },
+    {
+      "id": "v3_volley",
+      "name": "Rafale de défense",
+      "type": "projectile",
+      "damage": 1,
+      "range": 560,
+      "telegraph": 0.45,
+      "active": 0.25,
+      "recover": 0.4,
+      "cooldown": 3.0,
+      "telegraphAnim": "telegraph_volley",
+      "attackAnim": "volley",
+      "projectile": "energy_disc",
+      "projectileSpeed": 220,
+      "count": 3,
+      "spread": 10,
+      "origin": [
+        34,
+        -52
+      ],
+      "projectileRadius": 5,
+      "lead": 0.9,
+      "minRange": 0,
+      "bursts": 3,
+      "burstInterval": 0.26,
+      "gravity": 0
     }
   ],
   "powers": {
@@ -167,10 +266,14 @@
         "attacks": [
           "volley",
           "beam",
-          "slam"
+          "slam",
+          "v3_dive",
+          "v3_line"
         ],
         "speedMultiplier": 1.0,
-        "cooldownMultiplier": 1.0
+        "cooldownMultiplier": 1.0,
+        "combo": 1,
+        "telegraphMultiplier": 1.0
       },
       {
         "name": "Protocole de défense",
@@ -179,12 +282,17 @@
           "volley",
           "beam",
           "slam",
-          "summon"
+          "summon",
+          "v3_dive",
+          "v3_line",
+          "v3_seekers"
         ],
         "speedMultiplier": 1.1,
         "cooldownMultiplier": 0.9,
         "enterText": "Sentinelle Prime appelle son escorte !",
-        "summonOnEnter": true
+        "summonOnEnter": true,
+        "combo": 2,
+        "telegraphMultiplier": 0.9
       },
       {
         "name": "Surcharge",
@@ -193,12 +301,20 @@
           "volley",
           "beam",
           "slam",
-          "debris"
+          "debris",
+          "v3_dive",
+          "v3_line",
+          "v3_seekers",
+          "v3_volley"
         ],
         "speedMultiplier": 1.25,
         "cooldownMultiplier": 0.75,
-        "enterText": "Le plafond s'effondre !"
+        "enterText": "Le plafond s'effondre !",
+        "combo": 3,
+        "telegraphMultiplier": 0.8
       }
-    ]
+    ],
+    "enrageTime": 75,
+    "brainVersion": 3
   }
 }

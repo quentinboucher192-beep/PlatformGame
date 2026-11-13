@@ -10,7 +10,7 @@
     40
   ],
   "scale": 1.0,
-  "hp": 60,
+  "hp": 75,
   "contactDamage": 1,
   "speed": 60,
   "chaseSpeedMultiplier": 1.2,
@@ -32,10 +32,10 @@
       "type": "spread",
       "damage": 1,
       "range": 460,
-      "telegraph": 0.7,
+      "telegraph": 0.49,
       "active": 0.25,
-      "recover": 0.6,
-      "cooldown": 2.6,
+      "recover": 0.36,
+      "cooldown": 1.56,
       "telegraphAnim": "telegraph_meteor",
       "attackAnim": "meteor",
       "projectile": "fireball",
@@ -46,7 +46,8 @@
         47,
         -56
       ],
-      "hitEffect": "fire_burst"
+      "hitEffect": "fire_burst",
+      "lead": 0.7
     },
     {
       "id": "dive",
@@ -54,15 +55,16 @@
       "type": "lunge",
       "damage": 2,
       "range": 320,
-      "telegraph": 0.85,
+      "telegraph": 0.59,
       "active": 0.7,
-      "recover": 1.0,
-      "cooldown": 3.6,
+      "recover": 0.6,
+      "cooldown": 2.16,
       "telegraphAnim": "telegraph_dive",
       "attackAnim": "dive",
       "lungeSpeed": 320,
       "minRange": 40,
-      "knockback": 280
+      "knockback": 280,
+      "lead": 0.7
     },
     {
       "id": "breath",
@@ -70,10 +72,10 @@
       "type": "laser",
       "damage": 2,
       "range": 380,
-      "telegraph": 1.1,
+      "telegraph": 0.75,
       "active": 1.5,
-      "recover": 1.1,
-      "cooldown": 5.5,
+      "recover": 0.66,
+      "cooldown": 3.3,
       "telegraphAnim": "telegraph_breath",
       "attackAnim": "breath",
       "laserLength": 340,
@@ -90,10 +92,10 @@
       "type": "rain",
       "damage": 1,
       "range": 520,
-      "telegraph": 1.0,
+      "telegraph": 0.65,
       "active": 0.3,
-      "recover": 0.8,
-      "cooldown": 4.2,
+      "recover": 0.48,
+      "cooldown": 2.52,
       "telegraphAnim": "telegraph_meteor",
       "attackAnim": "meteor",
       "projectile": "fireball",
@@ -102,7 +104,8 @@
       "spread": 56,
       "gravity": 300,
       "rainHeight": 260,
-      "hitEffect": "fire_burst"
+      "hitEffect": "fire_burst",
+      "lead": 0.7
     },
     {
       "id": "summon",
@@ -113,12 +116,108 @@
       "telegraph": 0.9,
       "active": 0.4,
       "recover": 0.8,
-      "cooldown": 12,
+      "cooldown": 9.6,
       "telegraphAnim": "summon",
       "attackAnim": "summon",
       "summonId": "ash_wing",
       "summonCount": 2,
       "maxSummoned": 3
+    },
+    {
+      "id": "v3_dive",
+      "name": "Piqué prédictif",
+      "type": "lunge",
+      "damage": 2,
+      "range": 420,
+      "telegraph": 0.45,
+      "active": 0.7,
+      "recover": 0.45,
+      "cooldown": 2.8,
+      "telegraphAnim": "telegraph_dive",
+      "attackAnim": "dive",
+      "lungeSpeed": 416.0,
+      "minRange": 0,
+      "knockback": 280,
+      "lead": 1.0
+    },
+    {
+      "id": "v3_line",
+      "name": "Traînée de feu",
+      "type": "eruption",
+      "damage": 2,
+      "range": 600,
+      "telegraph": 0.55,
+      "active": 0.3,
+      "recover": 0.45,
+      "cooldown": 4.0,
+      "telegraphAnim": "telegraph_meteor",
+      "attackAnim": "meteor",
+      "projectile": "fireball",
+      "projectileSpeed": 300,
+      "count": 9,
+      "spread": 40,
+      "gravity": 700,
+      "rainHeight": 260,
+      "hitEffect": "fire_burst",
+      "lead": 0.8,
+      "minRange": 0,
+      "stagger": 0.08,
+      "warningEffect": "eruption_warning_fire",
+      "eruptionEffect": "eruption_fire"
+    },
+    {
+      "id": "v3_seekers",
+      "name": "Feux follets",
+      "type": "projectile",
+      "damage": 1,
+      "range": 560,
+      "telegraph": 0.5,
+      "active": 0.25,
+      "recover": 0.4,
+      "cooldown": 3.6,
+      "telegraphAnim": "telegraph_meteor",
+      "attackAnim": "meteor",
+      "projectile": "fireball",
+      "projectileSpeed": 150,
+      "count": 3,
+      "spread": 28,
+      "origin": [
+        47,
+        -56
+      ],
+      "hitEffect": "fire_burst",
+      "lead": 0,
+      "minRange": 0,
+      "gravity": 0,
+      "homing": 2.2,
+      "homingTime": 1.4
+    },
+    {
+      "id": "v3_volley",
+      "name": "Rafale ardente",
+      "type": "projectile",
+      "damage": 1,
+      "range": 560,
+      "telegraph": 0.45,
+      "active": 0.25,
+      "recover": 0.4,
+      "cooldown": 3.0,
+      "telegraphAnim": "telegraph_meteor",
+      "attackAnim": "meteor",
+      "projectile": "fireball",
+      "projectileSpeed": 220,
+      "count": 3,
+      "spread": 10,
+      "origin": [
+        47,
+        -56
+      ],
+      "hitEffect": "fire_burst",
+      "lead": 0.9,
+      "minRange": 0,
+      "bursts": 3,
+      "burstInterval": 0.26,
+      "gravity": 0
     }
   ],
   "powers": {
@@ -166,10 +265,14 @@
         "attacks": [
           "bolts",
           "dive",
-          "breath"
+          "breath",
+          "v3_dive",
+          "v3_line"
         ],
         "speedMultiplier": 1.0,
-        "cooldownMultiplier": 1.0
+        "cooldownMultiplier": 1.0,
+        "combo": 1,
+        "telegraphMultiplier": 1.0
       },
       {
         "name": "Tourbillon",
@@ -178,12 +281,17 @@
           "meteor",
           "dive",
           "breath",
-          "summon"
+          "summon",
+          "v3_dive",
+          "v3_line",
+          "v3_seekers"
         ],
         "speedMultiplier": 1.15,
         "cooldownMultiplier": 0.9,
         "enterText": "Ignivore appelle sa nuée !",
-        "summonOnEnter": true
+        "summonOnEnter": true,
+        "combo": 2,
+        "telegraphMultiplier": 0.9
       },
       {
         "name": "Fureur",
@@ -192,12 +300,20 @@
           "meteor",
           "dive",
           "breath",
-          "bolts"
+          "bolts",
+          "v3_dive",
+          "v3_line",
+          "v3_seekers",
+          "v3_volley"
         ],
         "speedMultiplier": 1.25,
         "cooldownMultiplier": 0.75,
-        "enterText": "Ignivore s'embrase !"
+        "enterText": "Ignivore s'embrase !",
+        "combo": 3,
+        "telegraphMultiplier": 0.8
       }
-    ]
+    ],
+    "enrageTime": 75,
+    "brainVersion": 3
   }
 }

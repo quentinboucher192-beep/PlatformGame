@@ -73,6 +73,7 @@ public:
     float hp() const { return hp_; }
     float maxHp() const { return maxHp_; }
     int phaseIndex() const { return phase_; }
+    bool enraged() const { return enraged_; }
     const std::string& currentAttackName() const;
     std::string debugInfo() const;
     Vec2 center() const { return box.center(); }
@@ -149,6 +150,33 @@ private:
     int phase_ = 0;
     int patternIndex_ = 0;
     Vec2 teleportTarget_;
+
+    // Boss brain (v3): prediction, variety, anti-camping, combos, enrage.
+    Vec2 predictPlayer(const GameWorld& w, float seconds) const;
+    float telegraphScale() const;
+    bool chooseBossAttack(GameWorld& w, const std::vector<const AttackDef*>& list);
+    void fireProjectiles(GameWorld& w, const AttackDef& a);
+    void spawnImpact(GameWorld& w, const AttackDef& a, Vec2 t);
+    void slam(GameWorld& w, const AttackDef& a);
+    float simDt_ = 1.0f / 120.0f;
+    Vec2 playerVel_;
+    Vec2 lastPlayerPos_;
+    bool havePlayerPos_ = false;
+    bool playerAirborne_ = false;
+    float outOfReach_ = 0.0f;
+    int comboLeft_ = 0;
+    int lastAttack_ = -1, prevAttack_ = -1;
+    float fightTime_ = 0.0f;
+    bool enraged_ = false;
+    int burstsLeft_ = 0;
+    float burstTimer_ = 0.0f;
+    struct Staged {
+        Vec2 at;
+        float time;
+    };
+    std::vector<Staged> staged_;  // staggered impacts still to come
+    float attackClock_ = 0.0f;
+    bool leapLanded_ = false;
 };
 
 }  // namespace cosmic
