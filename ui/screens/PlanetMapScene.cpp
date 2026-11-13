@@ -147,7 +147,7 @@ public:
     void drawInfo(const PlanetData& p) {
         UIContext& ui = g_.ui;
         bool unlocked = g_.progression.planetUnlocked(p, g_.content);
-        float w = ui.s(560), h = ui.s(720);
+        float w = ui.s(560), h = std::min(ui.s(820), ui.screenH() - ui.s(60));
         Rect panel{ui.screenW() - w - ui.s(50), (ui.screenH() - h) * 0.5f, w, h};
         ui.panel(panel, true, 18);
         float x = panel.x + ui.s(34), y = panel.y + ui.s(30);
@@ -172,8 +172,10 @@ public:
         std::string desc = unlocked || !p.teaser ? p.description
                                                  : "Les coordonnées de ce monde sont encore en cours de décodage. "
                                                    "Terminez les missions disponibles pour en apprendre davantage.";
-        Vec2 ds = ui.labelWrapped(desc, {x, y}, panel.w - ui.s(68), 21, ui.theme().text);
-        y += ds.y + ui.s(24);
+        ui.labelWrapped(desc, {x, y}, panel.w - ui.s(68), 19, ui.theme().text);
+        Rect btn{panel.x + ui.s(34), panel.bottom() - ui.s(90), panel.w - ui.s(68), ui.s(62)};
+        // Progress row anchored above the button, so long descriptions never push it below.
+        y = btn.y - ui.s(92);
         auto levels = g_.content.levelsForPlanet(p.id);
         int done = 0;
         for (const auto* l : levels) done += g_.progression.levelCompleted(l->id) ? 1 : 0;
@@ -189,7 +191,6 @@ public:
                 mx += ui.s(42);
             }
         }
-        Rect btn{panel.x + ui.s(34), panel.bottom() - ui.s(90), panel.w - ui.s(68), ui.s(62)};
         UIContext::ButtonStyle st;
         st.primary = true;
         st.enabled = unlocked;

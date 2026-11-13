@@ -49,6 +49,9 @@ void AudioSystem::shutdown() {
         }
         if (ambience_) MIX_DestroyTrack(ambience_);
         ambience_ = nullptr;
+        for (auto& [k, l] : loops_)
+            if (l.track) MIX_DestroyTrack(l.track);
+        loops_.clear();
         for (auto& [p, a] : cache_) MIX_DestroyAudio(a);
         cache_.clear();
         MIX_DestroyMixer(mixer_);
@@ -156,6 +159,37 @@ void AudioSystem::playAmbience(const std::string& path, int fadeMs) {
     MIX_SetTrackAudio(ambience_, a);
     applyMusicGain();
     playTrack(ambience_, -1, fadeMs);
+}
+
+void AudioSystem::sustainLoop(const std::string& key, const std::string& path, float volume) {
+    if (!mixer_ || path.empty()) return;
+    Loop& l = loops_[key];
+    l.lastRefresh = SDL_GetTicks();
+    if (!l.track) l.track = MIX_CreateTrack(mixer_);
+    if (!l.track) return;
+    MIX_SetTrackGain(l.track, std::clamp(volume, 0.0f, 2.0f) * busGain(AudioBus::Effects));
+    if (l.playing && l.path == path && MIX_TrackPlaying(l.track)) return;
+    MIX_Audio* a = load(path, true);
+    if (!a) return;
+    if (MIX_TrackPlaying(l.track)) MIX_StopTrack(l.track, 0);
+    MIX_SetTrackAudio(l.track, a);
+    l.path = path;
+    l.playing = true;
+    playTrack(l.track, -1, 60);
+}
+
+void AudioSystem::stopLoop(const std::string& key, int fadeMs) {
+    auto it = loops_.find(key);
+    if (it == loops_.end() || !it->second.playing || !mixer_) return;
+    it->second.playing = false;
+    if (it->second.track && MIX_TrackPlaying(it->second.track))
+        MIX_StopTrack(it->second.track, MIX_TrackMSToFrames(it->second.track, fadeMs));
+}
+
+void AudioSystem::updateLoops() {
+    uint64_t now = SDL_GetTicks();
+    for (auto& [key, l] : loops_)
+        if (l.playing && now - l.lastRefresh > 120) stopLoop(key);
 }
 
 void AudioSystem::stopAmbience(int fadeMs) {

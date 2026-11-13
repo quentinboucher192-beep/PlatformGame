@@ -118,6 +118,8 @@ public:
     // ------------------------------------------------------- feedback
     void playSound(const std::string& rel, Vec2 worldPos, float volume = 1.0f, float pitch = 1.0f);
     void playSound(const std::string& rel, float volume = 1.0f, float pitch = 1.0f);
+    /// Keeps a looping sound playing while called every step (stops shortly after).
+    void sustainSound(const std::string& key, const std::string& rel, float volume = 1.0f);
     void shake(float trauma);
     void hitStop(float seconds) { hitStop_ = std::max(hitStop_, seconds); }
     void flash(Color c, float duration);

@@ -30,21 +30,17 @@ void GlidePower::handleInput(Player& p, GameWorld& w, const PlayerInput& in, flo
     if (want && !gliding_) {
         w.playSound(def_.sound.empty() ? "sounds/glide_open.wav" : def_.sound, p.center(), 0.7f);
         w.particles().emit("glide_open", p.center() + Vec2{0, -6}, 1.0f);
-        soundTimer_ = 0.0f;
     }
     gliding_ = want;
     p.glideFallSpeed = gliding_ ? def_.param("fallSpeed", 52.0f) : 0.0f;
     p.glideAirSpeed = gliding_ ? def_.param("airSpeed", 175.0f) : 0.0f;
     if (!gliding_) return;
+    w.sustainSound("glide", "sounds/glide_loop.wav", 0.45f);
+    if (p.updraft > 0.0f) w.sustainSound("updraft", "sounds/updraft_loop.wav", 0.4f);
     trailTimer_ -= dt;
     if (trailTimer_ <= 0.0f) {
         trailTimer_ = 0.08f;
         w.particles().emit("glide_trail", p.center() + Vec2{-p.facing * 6.0f, -8.0f}, 1.0f);
-    }
-    soundTimer_ -= dt;
-    if (p.updraft > 0.0f && soundTimer_ <= 0.0f) {
-        soundTimer_ = 1.6f;
-        w.playSound("sounds/updraft_loop.wav", p.center(), 0.35f);
     }
 }
 
@@ -164,11 +160,8 @@ void ChargeShotPower::handleInput(Player& p, GameWorld& w, const PlayerInput& in
     }
     if (in.isHeld(Action::Attack)) {
         hold_ += dt;
-        bool wasCharging = charging_;
         charging_ = hold_ >= 0.25f;
-        if (charging_ && !wasCharging) w.playSound("sounds/charge_loop.wav", p.center(), 0.45f);
-        soundTimer_ -= dt;
-        if (charging_ && !full_ && soundTimer_ <= 0.0f) soundTimer_ = 0.5f;
+        if (charging_) w.sustainSound("charge", "sounds/charge_loop.wav", full_ ? 0.3f : 0.5f);
         if (charging_ && !full_ && hold_ >= def_.param("chargeTime", 0.85f)) {
             full_ = true;
             w.playSound("sounds/charge_ready.wav", p.center(), 0.8f);

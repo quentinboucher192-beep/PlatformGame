@@ -43,8 +43,8 @@
       "count": 3,
       "spread": 15,
       "origin": [
-        36,
-        -26
+        47,
+        -56
       ],
       "hitEffect": "fire_burst"
     },
@@ -79,8 +79,8 @@
       "laserLength": 340,
       "sweepDegrees": 90,
       "origin": [
-        36,
-        -26
+        39,
+        -27
       ],
       "color": "#ff8a3d"
     },

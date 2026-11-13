@@ -574,6 +574,11 @@ void GameWorld::playSound(const std::string& rel, float volume, float pitch) {
     services_.res.playSound(rel, volume, pitch, 0.0f);
 }
 
+void GameWorld::sustainSound(const std::string& key, const std::string& rel, float volume) {
+    if (mode_ == WorldMode::Editor) return;
+    services_.res.sustainLoop(key, rel, volume);
+}
+
 void GameWorld::shake(float trauma) { camera_.addTrauma(trauma); }
 
 void GameWorld::flash(Color c, float duration) {

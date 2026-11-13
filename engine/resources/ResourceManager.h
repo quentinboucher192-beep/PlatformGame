@@ -42,6 +42,8 @@ public:
     /// Absolute path of a sound to hand to AudioSystem (empty if missing).
     std::string soundPath(const std::string& rel);
     void playSound(const std::string& rel, float volume = 1.0f, float pitch = 1.0f, float pan = 0.0f);
+    /// Sustained looping effect, see AudioSystem::sustainLoop().
+    void sustainLoop(const std::string& key, const std::string& rel, float volume);
 
     void clearCaches();
     size_t textureCount() const { return textures_.size(); }

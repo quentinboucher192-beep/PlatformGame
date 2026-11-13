@@ -74,6 +74,10 @@
       "count": 4,
       "spread": 18,
       "gravity": 420,
+      "origin": [
+        33,
+        -71
+      ],
       "hitEffect": "fire_burst"
     },
     {
@@ -111,7 +115,11 @@
       "attackAnim": "laser",
       "laserLength": 320,
       "sweepDegrees": 60,
-      "color": "#ff8a3d"
+      "color": "#ff8a3d",
+      "origin": [
+        24,
+        -56
+      ]
     },
     {
       "id": "summon",

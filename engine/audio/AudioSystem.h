@@ -43,6 +43,14 @@ public:
     void playAmbience(const std::string& path, int fadeMs = 1500);
     void stopAmbience(int fadeMs = 800);
 
+    /// Sustained looping effect (charging, gliding wind, updraft): starts it if needed and
+    /// sets its volume. It keeps playing only while it is refreshed: updateLoops() fades out
+    /// loops that were not refreshed recently (released button, paused game, closed level).
+    void sustainLoop(const std::string& key, const std::string& path, float volume);
+    void stopLoop(const std::string& key, int fadeMs = 150);
+    /// Called once per frame by the application.
+    void updateLoops();
+
     void setVolumes(const AudioVolumes& v);
     const AudioVolumes& volumes() const { return volumes_; }
 
@@ -66,6 +74,13 @@ private:
     MusicTrack music_[2];
     int activeMusic_ = 0;
     MIX_Track* ambience_ = nullptr;
+    struct Loop {
+        MIX_Track* track = nullptr;
+        std::string path;
+        uint64_t lastRefresh = 0;
+        bool playing = false;
+    };
+    std::unordered_map<std::string, Loop> loops_;
     std::string musicPath_;
     std::string ambiencePath_;
     AudioVolumes volumes_;

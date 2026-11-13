@@ -106,12 +106,12 @@ def magmaroth():
         _atk("charge", "Ruée de magma", "charge", 2, 420, 0.8, 2.2, 1.1, 4.0, "telegraph_charge", "charge",
              minRange=70, lungeSpeed=260, knockback=270),
         _atk("barrage", "Gerbe de magma", "arc", 1, 420, 0.8, 0.25, 0.8, 3.2, "telegraph_barrage", "barrage",
-             projectile="magma_glob", projectileSpeed=160, count=4, spread=18, gravity=420, **FIRE),
+             projectile="magma_glob", projectileSpeed=160, count=4, spread=18, gravity=420, origin=[33, -71], **FIRE),
         _atk("eruption", "Éruption", "eruption", 2, 460, 1.0, 0.3, 0.9, 4.5, "telegraph_slam", "slam",
              projectile="fireball", projectileSpeed=420, count=4, spread=64, gravity=700,
              warningEffect="eruption_warning_fire", eruptionEffect="eruption_fire", **FIRE),
         _atk("breath", "Souffle de forge", "laser", 2, 360, 1.1, 1.4, 1.1, 6.0, "telegraph_laser", "laser",
-             laserLength=320, sweepDegrees=60, color="#ff8a3d"),
+             laserLength=320, sweepDegrees=60, color="#ff8a3d", origin=[24, -56]),
         _atk("summon", "Braises vivantes", "summon", 0, 500, 0.9, 0.4, 0.8, 11, "summon", "summon",
              summonId="ember_mite", summonCount=2, maxSummoned=3),
     ]
@@ -129,14 +129,15 @@ def magmaroth():
 
 
 def _wyrm(id, name, title, desc, theme):
-    mouth = [36, -26]
     fire = theme == "fire"
+    spit = [47, -56] if fire else [51, -59]     # mouth on the `meteor` fire frame
+    mouth = [39, -27] if fire else [44, -27]    # mouth during `breath`
     proj = "fireball" if fire else "ice_shard"
     eff = FIRE if fire else ICE_SLOW
     attacks = [
         _atk("bolts", "Crachats" if fire else "Éclats de givre", "spread", 1, 460, 0.7, 0.25, 0.6, 2.6,
              "telegraph_meteor", "meteor", projectile=proj, projectileSpeed=200, count=3 if fire else 4,
-             spread=15 if fire else 12, origin=mouth, **eff),
+             spread=15 if fire else 12, origin=spit, **eff),
         _atk("dive", "Piqué", "lunge", 2, 320, 0.85, 0.7, 1.0, 3.6, "telegraph_dive", "dive", lungeSpeed=320,
              minRange=40, knockback=280, **({} if fire else {"slow": 0.5, "slowDuration": 1.4})),
         _atk("breath", "Souffle ardent" if fire else "Souffle glacial", "laser", 2, 380, 1.1, 1.5, 1.1, 5.5,
@@ -226,12 +227,12 @@ def glaciarch():
         _atk("charge", "Charge du blizzard", "charge", 2, 440, 0.8, 2.2, 1.1, 4.0, "telegraph_charge", "charge",
              minRange=70, lungeSpeed=270, knockback=270),
         _atk("barrage", "Éclats de cristal", "spread", 1, 440, 0.75, 0.25, 0.8, 3.0, "telegraph_barrage", "barrage",
-             projectile="ice_shard", projectileSpeed=210, count=5, spread=10, **ICE_SLOW),
+             projectile="ice_shard", projectileSpeed=210, count=5, spread=10, origin=[45, -35], **ICE_SLOW),
         _atk("spikes", "Forêt de glace", "eruption", 2, 480, 1.0, 0.3, 0.9, 4.5, "telegraph_slam", "slam",
              projectile="ice_shard", projectileSpeed=420, count=5, spread=58, gravity=700,
              warningEffect="eruption_warning_ice", eruptionEffect="eruption_ice", **ICE_SLOW),
         _atk("beam", "Rayon glacial", "laser", 2, 380, 1.1, 1.5, 1.1, 6.0, "telegraph_laser", "laser",
-             laserLength=340, sweepDegrees=70, color="#7ff6ff", slow=0.5, slowDuration=1.6),
+             laserLength=340, sweepDegrees=70, color="#7ff6ff", slow=0.5, slowDuration=1.6, origin=[0, -52]),
         _atk("summon", "Garde gelée", "summon", 0, 500, 0.9, 0.4, 0.8, 12, "summon", "summon",
              summonId="frost_mite", summonCount=2, maxSummoned=3),
     ]

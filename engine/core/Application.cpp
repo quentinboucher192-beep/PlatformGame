@@ -226,6 +226,7 @@ void Application::run() {
             bool belowUpdates = !top && scenes_[i + 1]->isOverlay() && scenes_[i + 1]->updatesSceneBelow();
             if (top || belowUpdates) scenes_[i]->update(static_cast<float>(dt));
         }
+        audio_.updateLoops();
 
         renderFrame(alpha);
         ++frame_;

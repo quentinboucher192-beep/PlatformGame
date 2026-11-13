@@ -129,6 +129,12 @@ void ResourceManager::playSound(const std::string& rel, float volume, float pitc
     if (!p.empty()) audio_->playSound(p, volume, pitch, pan);
 }
 
+void ResourceManager::sustainLoop(const std::string& key, const std::string& rel, float volume) {
+    if (!audio_ || rel.empty()) return;
+    std::string p = soundPath(rel);
+    if (!p.empty()) audio_->sustainLoop(key, p, volume);
+}
+
 void ResourceManager::clearCaches() {
     textures_.clear();
     animations_.clear();

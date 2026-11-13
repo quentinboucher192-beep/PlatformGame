@@ -5,6 +5,7 @@
 //   --spawn <x>,<y>         with --level: start at this position (pixels), skipping the intro
 //   --editor [<id>]         start in the level editor
 //   --enemy-editor          start in the enemy editor
+//   --planets               start on the planet selection map
 //   --windowed / --fullscreen
 //   --headless              hidden window, fixed 60 Hz frames (automated checks)
 //   --frames <n>            quit after n frames
@@ -137,6 +138,8 @@ int main(int argc, char** argv) {
         app.pushScene(makeLevelEditor(game, value("--editor")));
     } else if (has("--enemy-editor")) {
         app.pushScene(makeEnemyEditor(game));
+    } else if (has("--planets")) {
+        app.pushScene(makePlanetMap(game));
     } else {
         app.pushScene(makeSplashScene(game));
     }

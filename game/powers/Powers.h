@@ -99,7 +99,6 @@ protected:
 
 private:
     bool gliding_ = false;
-    float soundTimer_ = 0.0f;
     float trailTimer_ = 0.0f;
 };
 
@@ -150,7 +149,6 @@ private:
     bool charging_ = false;
     bool full_ = false;
     float sparkTimer_ = 0.0f;
-    float soundTimer_ = 0.0f;
     float anim_ = 0.0f;
 };
 

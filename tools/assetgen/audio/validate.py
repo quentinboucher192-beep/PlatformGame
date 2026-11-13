@@ -8,11 +8,14 @@ Checks
                 no clipped samples; no DC offset; starts/ends at ~zero (no clicks); little leading /
                 trailing silence; not silent; isolated sample-discontinuity scan; spectral sanity
                 (sub rumble, piercing highs); loudness balance between categories.
+                v2 effects (contract section 6) also get a per-sound duration and loudness window;
+                the three seamless loops get a loop-seam check (end -> start step, level and
+                spectral continuity, wrap-around discontinuity scan) instead of the silence checks.
   music/*.ogg   every listed track exists; Vorbis / 44.1 kHz / stereo; exact bar-length sample
                 count for loops; decoded peak <= -1 dBFS; integrated loudness (ffmpeg ebur128) and
                 true peak; DC; dropouts; stereo correlation; octave-band balance; loop seam
                 (boundary step, envelope and spectral continuity, high-frequency splice energy);
-                total size < 12 MB.
+                total size < 24 MB.
   fonts/        files exist, sfnt magic, required tables, PIL/FreeType can load them, cmap covers
                 English + French glyphs, OFL licence texts present.
 Exit status 1 if any FAIL.
@@ -44,6 +47,24 @@ power_unlock door_open lever crumble bounce laser_charge laser_fire enemy_shoot 
 enemy_telegraph golem_slam explosion boss_roar boss_phase summon wisp_teleport spore_spit ui_move
 ui_confirm ui_back ui_error timer_tick timer_warning medal score_tick portal energy_low""".split()
 
+# v2 content (contract section 6): name -> (min s, max s, max-momentary LUFS low, high)
+SOUNDS_V2 = {
+    'glide_open': (0.3, 0.9, -18.5, -15.5), 'glide_loop': (1.5, 4.0, -24.5, -21.5),
+    'pound_dive': (0.25, 0.7, -17.5, -14.5), 'pound_impact': (0.6, 1.8, -12.5, -9.5),
+    'charge_loop': (1.0, 3.0, -21.5, -18.5), 'charge_ready': (0.3, 1.0, -17.5, -14.5),
+    'charge_shot': (0.35, 1.0, -14.5, -11.5), 'grapple_fire': (0.15, 0.6, -18.5, -15.5),
+    'grapple_hit': (0.2, 0.7, -17.5, -14.5), 'triple_jump': (0.2, 0.6, -17.5, -14.5),
+    'heart_pickup': (0.8, 2.2, -15.5, -12.5), 'fireball': (0.3, 0.9, -16.5, -13.5),
+    'ice_shatter': (0.5, 1.4, -15.5, -12.5), 'freeze': (0.4, 1.0, -17.5, -14.5),
+    'bomb_drop': (0.5, 1.1, -18.5, -15.5), 'bomb_explode': (0.8, 2.0, -12.0, -9.0),
+    'slime_split': (0.25, 0.7, -18.5, -15.5), 'bat_screech': (0.25, 0.7, -18.5, -15.5),
+    'burrow': (0.5, 1.3, -17.5, -14.5), 'web_hit': (0.2, 0.6, -18.5, -15.5),
+    'lava_bubble': (0.25, 0.8, -20.5, -17.5), 'boss_roar_fire': (2.0, 4.0, -11.5, -8.5),
+    'boss_roar_ice': (2.0, 4.0, -11.5, -8.5), 'mech_alarm': (0.8, 1.6, -16.5, -13.5),
+    'wyrm_roar': (1.8, 3.6, -12.0, -9.0), 'updraft_loop': (2.0, 5.0, -24.5, -21.5),
+}
+LOOP_SOUNDS = {'glide_loop', 'charge_loop', 'updraft_loop'}
+
 # name: (loop?, min s, max s, LUFS low, LUFS high)
 MUSIC = {
     'menu_theme': (True, 55, 75, -17.5, -12.5),
@@ -52,6 +73,14 @@ MUSIC = {
     'sylvanox_boss': (True, 55, 66, -16.0, -11.5),
     'victory': (False, 5, 8, -17.0, -11.5),
     'sylvanox_ambience': (True, 35, 45, -30.0, -19.0),
+    # v2 planets
+    'pyralis_level': (True, 90, 105, -16.5, -12.0),
+    'pyralis_boss': (True, 58, 72, -16.0, -11.5),
+    'pyralis_ambience': (True, 55, 65, -30.0, -19.0),
+    'glacior_level': (True, 95, 110, -16.5, -12.0),
+    'glacior_boss': (True, 64, 78, -16.0, -11.5),
+    'glacior_ambience': (True, 55, 65, -30.0, -19.0),
+    'sylvanox_depths': (True, 88, 104, -16.5, -12.0),
 }
 FONTS = {'Orbitron.ttf': 'title', 'ChakraPetch-Regular.ttf': 'ui', 'ChakraPetch-SemiBold.ttf': 'ui'}
 LICENCES = ['OFL-Orbitron.txt', 'OFL-ChakraPetch.txt']
@@ -59,7 +88,8 @@ LICENCES = ['OFL-Orbitron.txt', 'OFL-ChakraPetch.txt']
 # loudness groups for the balance check (max-momentary LUFS)
 QUIET = {'ui_move', 'ui_confirm', 'ui_back', 'ui_error', 'timer_tick', 'score_tick',
          'footstep_a', 'footstep_b'}
-LOUD = {'explosion', 'boss_roar', 'golem_slam', 'boss_phase'}
+LOUD = {'explosion', 'boss_roar', 'golem_slam', 'boss_phase', 'pound_impact', 'bomb_explode',
+        'boss_roar_fire', 'boss_roar_ice', 'wyrm_roar'}
 
 
 class Report:
@@ -114,7 +144,7 @@ def check_sounds(rep):
     rep.line(f'{"name":17} {"dur":>5} {"peak":>6} {"loud":>6} {"cent":>6} {"lead":>5} {"tail":>5}  notes')
     loud = {}
     sdir = os.path.join(ASSETS, 'sounds')
-    for name in SOUNDS:
+    for name in SOUNDS + list(SOUNDS_V2):
         path = os.path.join(sdir, name + '.wav')
         what = f'sounds/{name}.wav'
         if not os.path.exists(path):
@@ -139,8 +169,10 @@ def check_sounds(rep):
         n = len(x)
         dur = n / SR
         notes = []
-        if not 0.02 <= dur <= 5.0:
-            rep.fail(what, f'duration {dur:.2f}s out of range')
+        is_loop = name in LOOP_SOUNDS
+        dmin, dmax = SOUNDS_V2[name][:2] if name in SOUNDS_V2 else (0.02, 5.0)
+        if not dmin <= dur <= dmax:
+            rep.fail(what, f'duration {dur:.2f}s outside {dmin}-{dmax}s')
         pk = db(np.max(np.abs(x)))
         if pk > -1.0:
             rep.fail(what, f'peak {pk:.2f} dBFS > -1 dBFS')
@@ -151,15 +183,32 @@ def check_sounds(rep):
         dc = float(np.mean(x))
         if abs(dc) > 0.003:
             rep.fail(what, f'DC offset {dc:.4f}')
-        if abs(x[0]) > 0.002 or abs(x[-1]) > 0.002:
+        if is_loop:
+            # a loop must start near zero (first trigger) and wrap continuously (end -> start)
+            if abs(x[0]) > 0.004:
+                rep.fail(what, f'loop does not start near zero ({x[0]:.4f}) -> click on first play')
+            m = seam_metrics(x[None, :], spec_win=0.1)
+            if m['jump'] > max(3.0 * m['local'], 0.01):
+                rep.fail(what, f'loop seam step {m["jump"]:.4f} vs local max {m["local"]:.4f} (click)')
+            if abs(m['env_drop']) > max(m['env_p995'], 3.0):
+                rep.fail(what, f'loop seam level jump {m["env_drop"]:+.1f} dB')
+            if m['seam_d'] > m['spec_p95'] * 1.25:
+                rep.fail(what, f'loop seam spectral change {m["seam_d"]:.3f} vs typical {m["spec_p95"]:.3f}')
+            if m['hf_ratio'] > 2.0:
+                rep.fail(what, f'loop seam high-frequency burst x{m["hf_ratio"]:.1f}')
+            kw, _ = discontinuities(np.concatenate([x[-4096:], x[:4096]]))
+            if kw:
+                rep.fail(what, f'{kw} sample discontinuities across the loop seam')
+            notes.append(f'loop seam step {m["jump"]:.4f} spec {m["seam_d"]:.2f}/{m["spec_p95"]:.2f}')
+        elif abs(x[0]) > 0.002 or abs(x[-1]) > 0.002:
             rep.fail(what, f'does not start/end at zero ({x[0]:.4f} / {x[-1]:.4f}) -> click')
         above = np.nonzero(np.abs(x) > 10 ** (-60 / 20))[0]
         lead = above[0] / SR if len(above) else dur
         tail_idx = np.nonzero(np.abs(x) > 10 ** (-66 / 20))[0]
         tail = (n - tail_idx[-1]) / SR if len(tail_idx) else dur
-        if lead > 0.02:
+        if lead > 0.02 and not is_loop:
             rep.warn(what, f'{lead * 1000:.0f} ms of leading near-silence')
-        if tail > 0.06:
+        if tail > 0.06 and not is_loop:
             rep.warn(what, f'{tail * 1000:.0f} ms of trailing silence')
         k, _ = discontinuities(x)
         if k:
@@ -176,17 +225,25 @@ def check_sounds(rep):
             rep.warn(what, f'{hf * 100:.0f}% of energy above 12 kHz (harsh/hissy?)')
         if sub > 0.2:
             rep.warn(what, f'{sub * 100:.0f}% of energy below 35 Hz (rumble)')
-        lm = max_momentary(x)
+        lm = max_momentary(np.concatenate([x, x]) if is_loop else x)
         loud[name] = lm
+        if name in SOUNDS_V2:
+            llo, lhi = SOUNDS_V2[name][2:]
+            if not llo <= lm <= lhi:
+                rep.fail(what, f'loudness {lm:.1f} LUFS (100 ms max) outside [{llo}, {lhi}]')
         rep.line(f'{name:17} {dur:5.2f} {pk:6.1f} {lm:6.1f} {centroid:6.0f} {lead * 1000:5.0f} '
                  f'{tail * 1000:5.0f}  {" ".join(notes)}')
     # balance between categories
     if loud:
-        mid = [v for k_, v in loud.items() if k_ not in QUIET and k_ not in LOUD]
+        mid = [v for k_, v in loud.items() if k_ not in QUIET and k_ not in LOUD
+               and k_ not in LOOP_SOUNDS]
         med = float(np.median(mid)) if mid else -16.0
         for k_ in QUIET & loud.keys():
             if loud[k_] > med:
                 rep.fail(f'sounds/{k_}.wav', f'UI/footstep louder ({loud[k_]:.1f}) than gameplay median {med:.1f}')
+        for k_ in LOOP_SOUNDS & loud.keys():
+            if loud[k_] > med:
+                rep.fail(f'sounds/{k_}.wav', f'continuous loop louder ({loud[k_]:.1f}) than gameplay median {med:.1f}')
         for k_ in LOUD & loud.keys():
             if loud[k_] < med:
                 rep.fail(f'sounds/{k_}.wav', f'big impact quieter ({loud[k_]:.1f}) than gameplay median {med:.1f}')
@@ -220,8 +277,8 @@ def expected_samples(name):
     return n
 
 
-def seam_metrics(x):
-    """Compare the loop seam (end -> start) with ordinary consecutive material."""
+def seam_metrics(x, spec_win=0.25):
+    """Compare the loop seam (end -> start) with ordinary consecutive material. x: (C, n)."""
     mono = x.mean(axis=0)
     n = len(mono)
     # 1) boundary step vs the steps in the 50 ms on either side of the seam (a discontinuity is
@@ -242,7 +299,7 @@ def seam_metrics(x):
     drops = -np.diff(20 * np.log10(rms))
     env_p995 = float(np.percentile(drops, 99.5))
     # 3) spectral continuity: 0.25 s windows; seam pair vs consecutive pairs
-    W = int(0.25 * SR)
+    W = int(spec_win * SR)
     win = np.hanning(W)
 
     def spec(seg):
@@ -350,8 +407,8 @@ def check_music(rep):
                  f'peak {pk:5.2f}  corr {corr:4.2f}  {seam}')
         rep.line(' ' * 18 + ' octave bands dB: ' + ' '.join(f'{c:g}:{b:.0f}' for c, b in zip(cen, bands)))
     rep.line(f'total music size {total / 1024 / 1024:.2f} MB')
-    if total > 12 * 1024 * 1024:
-        rep.fail('music', f'total size {total / 1024 / 1024:.1f} MB > 12 MB')
+    if total > 24 * 1024 * 1024:
+        rep.fail('music', f'total size {total / 1024 / 1024:.1f} MB > 24 MB')
 
 
 # --------------------------------------------------------------------------- fonts

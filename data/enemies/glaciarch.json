@@ -75,6 +75,10 @@
       "projectileSpeed": 210,
       "count": 5,
       "spread": 10,
+      "origin": [
+        45,
+        -35
+      ],
       "hitEffect": "ice_burst",
       "slow": 0.5,
       "slowDuration": 1.6
@@ -118,7 +122,11 @@
       "sweepDegrees": 70,
       "color": "#7ff6ff",
       "slow": 0.5,
-      "slowDuration": 1.6
+      "slowDuration": 1.6,
+      "origin": [
+        0,
+        -52
+      ]
     },
     {
       "id": "summon",

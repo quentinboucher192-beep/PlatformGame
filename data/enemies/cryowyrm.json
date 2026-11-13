@@ -43,8 +43,8 @@
       "count": 4,
       "spread": 12,
       "origin": [
-        36,
-        -26
+        51,
+        -59
       ],
       "hitEffect": "ice_burst",
       "slow": 0.5,
@@ -83,8 +83,8 @@
       "laserLength": 340,
       "sweepDegrees": 90,
       "origin": [
-        36,
-        -26
+        44,
+        -27
       ],
       "color": "#7ff6ff",
       "slow": 0.5,

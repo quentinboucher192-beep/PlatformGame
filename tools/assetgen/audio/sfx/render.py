@@ -43,9 +43,39 @@ def finalize(x, sd):
     return x
 
 
+def loop_start(x):
+    """Index of the quietest upward zero crossing of a periodic buffer (wrap included): starting
+    the file there makes the first sample ~0 (no click when the loop is first triggered) while
+    the end -> start seam stays exactly continuous."""
+    prev = np.roll(x, 1)
+    cross = np.nonzero((prev < 0.0) & (x >= 0.0))[0]
+    if not len(cross):
+        return 0
+    w = ns(0.004)
+    a = np.abs(x)
+    c = np.cumsum(np.concatenate([a[-w:], a, a[:w]]))
+    env = (c[2 * w:] - c[:-2 * w]) / (2 * w)          # local mean level (circular)
+    score = np.abs(x[cross]) + np.abs(prev[cross]) + 0.25 * env[cross]
+    return int(cross[np.argmin(score)])
+
+
+def finalize_loop(x, sd):
+    """Level a periodic buffer without breaking its periodicity: circular high-pass and limiter,
+    loudness measured over two periods, then rotated to start on a quiet zero crossing."""
+    x = np.asarray(x, dtype=float)
+    x = filt(x, hp(34.0, 0.7), circular=True)
+    x = x - x.mean()
+    x = x * 10 ** ((sd.loud - max_momentary(np.concatenate([x, x]))) / 20)
+    x = limit(x, CEILING_DB, window=0.002, circular=True)
+    x = np.roll(x, -loop_start(x))
+    assert peak_db(x) <= -1.0, (sd.name, peak_db(x))
+    return x
+
+
 def render(name):
     sd = REGISTRY[name]
-    return finalize(sd.fn(rng_for(name)), sd)
+    fin = finalize_loop if sd.loop else finalize
+    return fin(sd.fn(rng_for(name)), sd)
 
 
 def render_all(out_dir, names=None, log=print):
@@ -55,5 +85,6 @@ def render_all(out_dir, names=None, log=print):
             continue
         x = render(name)
         write_wav16(os.path.join(out_dir, name + '.wav'), x)
+        kind = '  loop' if REGISTRY[name].loop else ''
         log(f'  sounds/{name}.wav  {len(x) / 44100:5.2f}s  peak {peak_db(x):6.1f} dBFS  '
-            f'loud {max_momentary(x):6.1f}')
+            f'loud {max_momentary(x):6.1f}{kind}')
