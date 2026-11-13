@@ -11,7 +11,10 @@
 namespace cosmic {
 
 namespace {
-const char* kMaterials[] = {"ruin_stone", "ancient_metal", "crystal", "root"};
+// Every terrain material (same list as the `solid` object type); index + 1 is stored per tile.
+const char* kMaterials[] = {"ruin_stone", "ancient_metal", "crystal",     "root",      "basalt",
+                            "obsidian",   "forge_metal",   "glacier_ice", "snow_rock", "frost_metal"};
+constexpr int kMaterialCount = static_cast<int>(sizeof(kMaterials) / sizeof(kMaterials[0]));
 
 struct Grid {
     int x0 = 0, y0 = 0, w = 0, h = 0;
@@ -29,6 +32,12 @@ struct Grid {
 
 int floorDiv(int a, int b) { return a >= 0 ? a / b : -((-a + b - 1) / b); }
 }  // namespace
+
+bool TerrainRenderer::supportsMaterial(const std::string& material) {
+    for (const char* m : kMaterials)
+        if (material == m) return true;
+    return false;
+}
 
 void TerrainRenderer::loadTilesets(ResourceManager& res) {
     tilesets_.clear();
@@ -110,7 +119,7 @@ void TerrainRenderer::build(Renderer& r, ResourceManager& res, const LevelData& 
             for (const auto* o : solids) {
                 int mi = 1;
                 std::string m = o->propStr("material", "ruin_stone");
-                for (int i = 0; i < 4; ++i)
+                for (int i = 0; i < kMaterialCount; ++i)
                     if (m == kMaterials[i]) mi = i + 1;
                 bool deco = o->prop<bool>("decorTop", true);
                 int tx0 = static_cast<int>(std::floor(o->rect.x / kTile)), tx1 = static_cast<int>(std::ceil(o->rect.right() / kTile));

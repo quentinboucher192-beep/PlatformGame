@@ -30,6 +30,8 @@ public:
     static constexpr int kMargin = 16;  // room for surface decoration overhang
 
     void build(Renderer& r, ResourceManager& res, const LevelData& level);
+    /// True if `material` has a tileset slot in the renderer.
+    static bool supportsMaterial(const std::string& material);
     void render(Renderer& r, const std::string& layerId) const;
     void clear() { chunks_.clear(); }
     const Tileset* tileset(const std::string& material) const;

@@ -7,6 +7,7 @@
 #include "game/gameplay/GameWorld.h"
 #include "game/levels/DecorAtlas.h"
 #include "game/levels/ObjectTypes.h"
+#include "game/levels/TerrainRenderer.h"
 #include "game/planets/PlanetData.h"
 #include "game/powers/Power.h"
 #include "tests/TestFramework.h"
@@ -107,6 +108,20 @@ TEST_CASE("content: every power has a behaviour, an icon and its sounds") {
 
 TEST_CASE("content: object types reference existing assets") {
     Env env;
+    // Every terrain material offered by the editor is drawn with its own tileset.
+    if (const ObjectTypeInfo* solid = ObjectTypes::find("solid"))
+        for (const auto& p : solid->props)
+            if (p.key == "material")
+                for (const auto& m : p.options) {
+                    if (!TerrainRenderer::supportsMaterial(m)) fail("matériau non rendu : " + m);
+                    if (!env.res.exists("textures/tiles/" + m + ".json")) fail("tuiles manquantes : " + m);
+                }
+    if (auto pj = env.res.json("textures/tiles/platforms.json"))
+        if (const ObjectTypeInfo* ow = ObjectTypes::find("oneway"))
+            for (const auto& p : ow->props)
+                if (p.key == "style")
+                    for (const auto& st : p.options)
+                        if (!(*pj)["styles"].contains(st)) fail("style de plateforme sans sprite : " + st);
     for (const auto& t : ObjectTypes::all())
         for (const auto& a : t.assets)
             if (!env.res.exists(a)) fail("type " + t.id + " : asset manquant " + a);
