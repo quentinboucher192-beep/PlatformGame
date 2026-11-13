@@ -63,14 +63,14 @@ absente prend sa valeur par défaut.
 
 | Catégorie | Types |
 |---|---|
-| Terrain | `solid` (matériau : pierre des ruines, métal ancien, cristal, racines…) |
-| Plateformes | `oneway`, `moving_platform`, `crumble_platform`, `power_gate` (mur de cristal / Dash, barrière de phase / Téléportation, barrière d'énergie / Onde, rocher fissuré / Impulsion, rideau de plasma / Bouclier), `bounce_pad`, `ladder` |
+| Terrain | `solid` — `material` : `ruin_stone`, `ancient_metal`, `crystal`, `root` (Sylvanox), `basalt`, `obsidian`, `forge_metal` (Pyralis), `glacier_ice` (glissante), `snow_rock`, `frost_metal` (Glacior) |
+| Plateformes | `oneway` (`style` : `ruin_bridge`, `tech_ledge`, `root_branch`, `basalt_ledge`, `chain_grate`, `ice_ledge`, `snow_bridge`), `moving_platform`, `crumble_platform`, `power_gate` (`power` : `dash` mur de cristal, `teleport` barrière de phase, `wave` barrière d'énergie — aussi dissoute par le Tir chargé —, `impulse` rocher fissuré, `shield` rideau de plasma, `ground_pound` sol fissuré), `bounce_pad`, `ladder` |
 | Dangers | `spikes`, `liquid` (acide, eau, lave), `damage_zone`, `slow_zone`, `laser` |
-| Gameplay | `player_start`, `checkpoint`, `exit`, `shard`, `relic`, `health_orb`, `energy_orb`, `power_unlock` |
-| Interactifs | `door`, `lever`, `receptor`, `sign` |
+| Gameplay | `player_start`, `checkpoint`, `exit`, `shard`, `relic`, `health_orb` (`amount`, 2 par défaut), `energy_orb`, `power_unlock` (`power` parmi les 10 pouvoirs), `heart_container` (`hearts` : cœurs maximum en plus pour le niveau) |
+| Interactifs | `door`, `lever`, `receptor` (activé par l'Onde ou le Tir chargé), `sign`, `grapple_point` (point d'ancrage du Grappin) |
 | Ennemis | `enemy` (`enemy` = identifiant de définition, `patrol`, `faceLeft`, `dormant`, `boss`) |
-| Zones | `trigger`, `combat_zone` (`doors`, `waves` = vagues d'ennemis séparées par `;`, `lockCamera`, `music`, `announce`), `camera_zone`, `secret_area` |
-| Décor | `decor` (élément de l'atlas de décor), `light`, `emitter` (particules) |
+| Zones | `trigger`, `combat_zone` (`doors`, `waves` = vagues d'ennemis séparées par `;`, `lockCamera`, `music`, `announce`), `camera_zone`, `secret_area`, `updraft` (courant ascendant : `strength` vitesse de montée, `vent` grille au sol ; activable par événements) |
+| Décor | `decor` (élément d'un atlas de décor : `sprites/decor/<planète>_decor.json`, noms uniques), `light`, `emitter` (particules) |
 
 Les références entre objets (portes d'une arène, cibles d'un levier, vagues…) utilisent
 les `id` d'objets.

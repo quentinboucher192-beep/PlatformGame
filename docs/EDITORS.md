@@ -104,13 +104,16 @@ exactement à l'état précédent. Une sauvegarde automatique est écrite régul
     détection / d'attaque / d'abandon, ligne de vue, seuil de fuite, distance de tir,
     force des sauts.
   * *Attaques* – liste d'attaques (contact, corps à corps, bond, projectile visé, salve en
-    éventail, tir en cloche, onde de choc, charge, rayon laser, appel de renforts) avec
-    télégraphe, durée, recharge, dégâts, portée et projectile.
+    éventail, tir en cloche, onde de choc, charge, rayon laser, appel de renforts, pluie de
+    projectiles venue d'en haut, éruption au sol) avec télégraphe, durée, recharge, dégâts,
+    portée, projectile, rayon d'explosion (bombes), ralentissement infligé (glace, toiles),
+    point d'origine (bouche, arme) et couleur du rayon. La pluie et l'éruption marquent au
+    sol, pendant le télégraphe, les endroits où elles vont frapper.
   * *Pouvoirs* – téléportation (portée, recharge) et défense frontale (garde).
   * *Résist.* – multiplicateur de dégâts par source (0 = immunisé, < 1 = résistance,
     > 1 = faiblesse).
   * *Butin* – points rapportés et objets lâchés (orbes de vie / d’énergie, éclats) avec
-    leur probabilité.
+    leur probabilité ; division à la mort (un Gloop se sépare en deux petits).
   * *Boss* – mode mini-boss (jauge de vie, titre affiché) et phases : nom, seuil de PV,
     multiplicateurs de vitesse et de recharge, texte d'entrée, renforts, attaques
     actives dans l'ordre du cycle.

@@ -270,3 +270,96 @@ jingle, ~6 s), `sylvanox_ambience` (ambient night-forest loop).
 SIL Open Font License fonts, licence text copied next to them:
 `Orbitron.ttf` (titles), `ChakraPetch-Regular.ttf`, `ChakraPetch-SemiBold.ttf` (UI), plus
 `OFL-Orbitron.txt`, `OFL-ChakraPetch.txt`.
+
+## 14. v2 content (Pyralis, Glacior, new enemies, bosses and abilities)
+
+Generators: `characters/enemy_<species>.py` + `characters/variants.py` (enemies),
+`characters/bosses_a.py` / `bosses_b.py` (bosses, called by `boss.py`), `characters/player_*.py`
+(player rows, projectiles, objects), `environment/*` (planets), `audio/*` (music, sounds).
+Art direction of the new planets: **Pyralis** — basalt/charcoal, lava oranges, obsidian
+glints, rusted metal; **Glacior** — deep navy, ice blues, snow, frost cyan, aurora green/violet.
+
+### 14.1 New enemy species (Sylvanox palette)
+
+| id | frame | pivot | collision | clips (frames) |
+|---|---|---|---|---|
+| `nightwing` | 32x24 | [16,20] | 14x10 | idle 6, move 6, telegraph 3, attack 4 (`hit` f1), hurt 2, death 6 |
+| `gloop` | 24x20 | [12,20] | 14x10 | idle 4, walk 6, telegraph 3, attack 4 (`fire` f1), hurt 2, death 6 |
+| `weaver` | 32x24 | [16,24] | 16x12 | idle 4, walk 6, telegraph 3, attack 4 (`fire` f1), hurt 2, death 6 |
+| `bulwark` | 32x32 | [16,32] | 16x24 | idle 4, walk 6, defend 3, telegraph 4, attack 5 (`hit` f2), hurt 2, death 8 |
+| `bomber` | 32x24 | [16,20] | 18x12 | idle 6, move 6, telegraph 4, attack 4 (`fire` f1), hurt 2, death 8 |
+| `burrower` | 32x32 | [16,32] | 18x16 | idle 4, move 4, teleport_out 6, teleport_in 6, telegraph 3, attack 4 (`fire` f1), hurt 2, death 7 |
+
+`gloop_small` (and the themed small gloops) reuse the gloop sheets at scale 0.65.
+
+### 14.2 Themed variants
+
+Real palette swaps of the 12 regular species (same frame size, pivot, clips and events),
+with ember specks (Pyralis) or frost rims (Glacior):
+
+| base | Pyralis | Glacior |
+|---|---|---|
+| glowmite | ember_mite | frost_mite |
+| sentinel | forge_drone | cryo_drone |
+| sporeflower | cinder_bloom | frost_bloom |
+| stalker | lava_stalker | snow_stalker |
+| golem | magma_golem | ice_golem |
+| wisp | fire_wisp | frost_wisp |
+| nightwing | ash_wing | frost_wing |
+| gloop | magma_gloop | ice_gloop |
+| weaver | ember_weaver | frost_weaver |
+| bulwark | forge_bulwark | frost_bulwark |
+| bomber | forge_bomber | cryo_bomber |
+| burrower | lava_burrower | ice_burrower |
+
+### 14.3 Bosses
+
+Clip sets (exact names, used by `data/enemies/<id>.json`):
+
+* **Knight**: idle 6, walk 8, telegraph_slam 6, slam 6 (`impact` f3), telegraph_charge 4, charge 6,
+  telegraph_barrage 6, barrage 4 (`fire` f1), summon 6, roar 8, telegraph_laser 6, laser 4, hurt 2, death 14.
+* **Hydra** (rooted): idle 6, roar 8, hurt 2, death 14, telegraph_bite 5, bite 5 (`hit` f2),
+  telegraph_spores 6, spores 4 (`fire` f1), telegraph_vines 5, vines 4 (`impact` f1), summon 6.
+* **Core** (floating): idle 6, move 6, roar 8, hurt 2, death 14, telegraph_beam 6, beam 4,
+  telegraph_volley 5, volley 4 (`fire` f1), telegraph_slam 5, slam 5 (`impact` f2), summon 6.
+* **Wyrm** (flying serpent): idle 6, move 6, roar 8, hurt 2, death 14, telegraph_breath 6, breath 4,
+  telegraph_dive 5, dive 4, telegraph_meteor 6, meteor 4 (`fire` f1), summon 6.
+
+| id | name | planet | set | frame | collision |
+|---|---|---|---|---|---|
+| `spore_queen` | Reine Sporale | Sylvanox | hydra | 128x112 | 56x64 |
+| `prime_sentinel` | Sentinelle Prime | Sylvanox | core | 112x112 | 48x48 |
+| `magmaroth` | Magmaroth | Pyralis | knight | 96x96 (pivot [48,96]) | 44x60 |
+| `ignivore` | Ignivore | Pyralis | wyrm | 128x96 (pivot [64,84]) | 56x40 |
+| `forge_core` | Forgeron Primordial | Pyralis | core | 112x112 | 48x48 |
+| `cryowyrm` | Cryowyrm | Glacior | wyrm | 128x96 (pivot [64,84]) | 56x40 |
+| `frost_hydra` | Hydre de Givre | Glacior | hydra | 128x112 | 56x64 |
+| `glaciarch` | Glaciarque | Glacior | knight | 96x96 (pivot [48,96]) | 44x60 |
+
+Attack origins (mouths, weapons) are set per attack in the enemy definitions (`origin`, sprite
+pixels from the feet, x mirrored with the facing).
+
+### 14.4 Player, projectiles, objects
+
+* `nova` rows 19-25: `glide` 4 (loop), `pound_dive` 2 (loop), `pound_land` 4 (`impact` f0, next idle),
+  `charge` 4 (loop), `shoot` 3 (`fire` f0, next idle), `grapple` 4 (`fire` f1), `grapple_pull` 2 (loop).
+* `projectiles` rows 6-18 (16x16, drawn travelling right): `charge_shot`, `fireball`, `magma_glob`,
+  `ember`, `ice_shard`, `frost_orb`, `bomb`, `acid_glob`, `web`, `spore_big`, `energy_disc`, `rock`,
+  `grapple_hook`.
+* Objects: `grapple_point` 24x24 pivot [12,12] (idle 6, active 4), `cracked_floor` 32x16 pivot [16,16]
+  (intact, cracked), `updraft_vent` 32x16 pivot [16,16] (idle 6), `heart_container` 16x16 pivot [8,16]
+  (idle 8).
+* `power_unlock` clips added: `glide`, `ground_pound`, `charge_shot`, `grapple`, `triple_jump`.
+* `ui/icons_powers.png` is 320x32: 0 dash, 1 wave, 2 shield, 3 impulse, 4 teleport, 5 glide,
+  6 ground_pound, 7 charge_shot, 8 grapple, 9 triple_jump.
+
+### 14.5 Audio
+
+Music: `pyralis_level`, `pyralis_boss`, `pyralis_ambience`, `glacior_level` (3/4),
+`glacior_boss`, `glacior_ambience`, `sylvanox_depths` (all seamless loops; ambiences ≈ 60 s at
+-24 LUFS, level tracks -14 LUFS, boss tracks -13.5 LUFS).
+Sounds: `glide_open`, `glide_loop` (loop), `pound_dive`, `pound_impact`, `charge_loop` (loop),
+`charge_ready`, `charge_shot`, `grapple_fire`, `grapple_hit`, `triple_jump`, `heart_pickup`,
+`fireball`, `ice_shatter`, `freeze`, `bomb_drop`, `bomb_explode`, `slime_split`, `bat_screech`,
+`burrow`, `web_hit`, `lava_bubble`, `boss_roar_fire`, `boss_roar_ice`, `mech_alarm`, `wyrm_roar`,
+`updraft_loop` (loop). Loops are played as sustained effects (`AudioSystem::sustainLoop`).
