@@ -8,6 +8,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <mutex>
@@ -407,4 +408,77 @@ TEST_CASE("online live: two players compare their runs through the real server")
     viewer.shutdown();
     std::error_code ec;
     fs::remove_all(base, ec);
+}
+
+// Local development helper (not a check): fills a development server with real runs of
+// the corridor level by several test accounts, so that the ranking screen and the globe can
+// be tried with data that went through the whole pipeline (replays analysed by the server).
+// Never point it at production.
+TEST_CASE("online live: populate a development server with real runs") {
+    const char* url = envOr("COSMIC_ONLINE_TEST_URL");
+    const char* admin = envOr("COSMIC_ONLINE_TEST_ADMIN_TOKEN");
+    const char* populate = envOr("COSMIC_ONLINE_TEST_POPULATE");
+    if (!url || !admin || !populate || !hasNetworkClient()) return;
+    ContentDatabase content;
+    content.reload();
+    LevelData level = liveCorridor();
+    auto fp = fingerprintLevelJson(level.toJson());
+    {
+        Json body = {{"levels", Json::array({onlineManifestEntry(content, level, *fp)})}, {"game_version", COSMIC_VERSION_STRING}};
+        HttpRequest rq;
+        rq.method = "POST";
+        rq.url = std::string(url) + "/api/v1/admin/levels";
+        rq.headers = {{"Content-Type", "application/json"}, {"Authorization", std::string("Bearer ") + admin}};
+        rq.body = body.dump();
+        CHECK(parseApiResponse(makePlatformTransport()->perform(rq)).ok);
+    }
+    struct P {
+        const char* name;
+        const char* country;
+        const char* visibility;
+        float wait;
+    };
+    const P players[] = {
+        {"Astra", "FR", "globe", 1.2f},  {"Kepler", "DE", "globe", 0.4f},  {"Lumen", "FR", "globe", 2.6f},   {"Nadia", "MA", "globe", 3.1f},
+        {"Hoshi", "JP", "globe", 0.7f},  {"Ravi", "IN", "globe", 4.0f},    {"Lucia", "ES", "globe", 1.9f},   {"Tupac", "PE", "globe", 5.2f},
+        {"Mia", "AU", "globe", 2.2f},    {"Jabu", "ZA", "globe", 6.1f},    {"Ana", "BR", "globe", 3.5f},     {"Leo", "US", "globe", 0.9f},
+        {"Sofia", "IT", "country", 2.9f}, {"Erik", "SE", "globe", 4.6f},   {"Chen", "CN", "globe", 1.5f},    {"Olu", "NG", "globe", 7.0f},
+        {"Maya", "CA", "globe", 3.8f},   {"Kai", "NZ", "globe", 5.6f},     {"Zara", "GB", "globe", 2.4f},    {"Noor", "EG", "hidden", 1.1f},
+        {"Ines", "FR", "globe", 6.6f},   {"Diego", "MX", "globe", 4.3f},   {"Yuki", "JP", "globe", 3.3f},    {"Aiko", "KR", "globe", 5.0f},
+    };
+    const char* sessionDir = envOr("COSMIC_ONLINE_TEST_SESSION_DIR");
+    for (const P& pl : players) {
+        OnlineService svc;
+        bool keep = sessionDir && std::string(pl.name) == "Astra";
+        fs::path dir = keep ? fs::path(sessionDir) : fs::temp_directory_path() / (std::string("cosmic_populate_") + pl.name);
+        svc.init(OnlineSettings{}, url, nullptr, dir);
+        Json form = {{"username", pl.name}, {"password", "development only password"}, {"country_code", pl.country},
+                     {"location_visibility", pl.visibility}, {"accept_tos", true}, {"tos_version", svc.config().tosVersion}};
+        ApiResult reg = callSync(svc, [&](ApiCallback cb) { svc.registerAccount(form, keep, cb); });
+        if (!reg.ok) {
+            ApiResult in = callSync(svc, [&](ApiCallback cb) { svc.login(pl.name, "development only password", keep, cb); });
+            CHECK(in.ok);
+        }
+        char avatar[16];
+        std::snprintf(avatar, sizeof(avatar), "avatar_%02d", static_cast<int>(&pl - players) % 16 + 1);
+        callSync(svc, [&](ApiCallback cb) { svc.updateProfile({{"avatar", avatar}}, cb); });
+        if (std::getenv("COSMIC_ONLINE_TEST_PROFILES_ONLY")) {
+            svc.shutdown();
+            continue;
+        }
+        ReplayData rep = playLive(content, level, fp->hash, pl.wait);
+        RunCandidate c;
+        c.levelId = level.id;
+        c.levelVersion = fp->version;
+        c.levelHash = fp->hash;
+        c.timeMs = rep.durationMs;
+        c.hasReplay = true;
+        if (svc.recordRun(c, rep.attemptId, &rep))
+            pumpLive(svc, [&] { return !svc.syncing() && svc.attempts().find(rep.attemptId)->replayUploaded; });
+        svc.shutdown();
+        if (!keep) {
+            std::error_code ec;
+            fs::remove_all(dir, ec);
+        }
+    }
 }

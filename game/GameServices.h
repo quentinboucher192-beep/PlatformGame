@@ -37,6 +37,8 @@ public:
     UIContext ui;
     /// Scripted input for automated runs (see InputScript), applied to the next level started.
     std::string inputScript;
+    /// Automated checks: pseudonym whose globe marker the ranking screen selects.
+    std::string onlineFocus;
 };
 
 }  // namespace cosmic

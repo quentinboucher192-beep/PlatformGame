@@ -138,7 +138,11 @@ MarkerTier markerTier(int rank) {
     }
 }
 
-void layoutMarkers(std::vector<GlobeMarker>& markers, float radiusPx, float spacingPx) {
+void layoutMarkers(std::vector<GlobeMarker>& markers, float radiusPx, float spacingPx, bool spread) {
+    if (!spread) {
+        for (auto& m : markers) m.display = m.location;
+        return;
+    }
     // Angular size of `spacingPx` pixels at the centre of the disk.
     double step = std::clamp(static_cast<double>(spacingPx) / std::max(1.0f, radiusPx) / kDegD, 0.05, 6.0);
     std::map<std::pair<long long, long long>, int> seen;

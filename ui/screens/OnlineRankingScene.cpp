@@ -23,6 +23,15 @@ namespace {
 constexpr const char* kTabs[] = {"GLOBAL", "AMIS", "PAYS", "PLANÈTE", "NIVEAU"};
 enum Tab { TabGlobal = 0, TabFriends, TabCountry, TabPlanet, TabLevel };
 
+/// A level of the ranking list: installed in this game, or only known by the server.
+struct RankedLevel {
+    std::string id;
+    std::string name;
+    std::string planet;
+    std::string planetName;
+    const LevelEntry* entry = nullptr;  // null: ranked online but not installed here
+};
+
 struct BoardState {
     bool loading = false;
     bool loaded = false;
@@ -47,10 +56,10 @@ public:
         globe_.init(g_.app.resources());
         for (const PlanetData* p : g_.content.planets())
             for (const auto& id : p->levels)
-                if (const LevelEntry* e = g_.content.level(id); e && e->source == ContentSource::Builtin) levels_.push_back(e);
+                if (const LevelEntry* e = g_.content.level(id); e && e->source == ContentSource::Builtin)
+                    levels_.push_back({e->id, e->name, p->id, p->name, e});
         if (wantedLevel_.empty()) wantedLevel_ = g_.progression.lastLevel;
-        for (size_t i = 0; i < levels_.size(); ++i)
-            if (levels_[i]->id == wantedLevel_) levelIdx_ = static_cast<int>(i);
+        selectWanted();
         tab_ = TabLevel;
         g_.ui.setFocus("online/nav/ranking");
         auto changes = g_.online.takeRankChanges();
@@ -101,7 +110,32 @@ public:
 
 private:
     // ----------------------------------------------------------------- data
-    const LevelEntry* level() const { return levels_.empty() ? nullptr : levels_[static_cast<size_t>(levelIdx_)]; }
+    const RankedLevel* level() const { return levels_.empty() ? nullptr : &levels_[static_cast<size_t>(levelIdx_)]; }
+
+    void selectWanted() {
+        for (size_t i = 0; i < levels_.size(); ++i)
+            if (levels_[i].id == wantedLevel_) levelIdx_ = static_cast<int>(i);
+    }
+
+    /// Adds the levels ranked by the server that this installation does not have.
+    void mergeServerLevels() {
+        bool added = false;
+        for (const auto& ml : meta_.value("levels", Json::array())) {
+            std::string id = jstr(ml, "id");
+            if (id.empty() || !jget<bool>(ml, "ranking_enabled", true)) continue;
+            if (std::any_of(levels_.begin(), levels_.end(), [&](const RankedLevel& l) { return l.id == id; })) continue;
+            levels_.push_back({id, jstr(ml, "name", id), jstr(ml, "planet_id"), jstr(ml, "planet_name"), nullptr});
+            added = true;
+        }
+        if (!added) return;
+        std::string current = level() ? level()->id : std::string();
+        // The level asked for (command line, last played) may be one of the new ones.
+        bool switchTo = !wantedLevel_.empty() && wantedLevel_ != current &&
+                        std::any_of(levels_.begin(), levels_.end(), [&](const RankedLevel& l) { return l.id == wantedLevel_; });
+        if (!switchTo) wantedLevel_ = current;
+        selectWanted();
+        if (switchTo) refreshAfterChange();
+    }
     RunCategory category() const { return kAllCategories[static_cast<size_t>(category_)]; }
     std::string periodId() const { return period_ == 1 ? "weekly" : "all"; }
     bool levelBoard() const { return tab_ == TabFriends || tab_ == TabCountry || tab_ == TabLevel; }
@@ -109,7 +143,7 @@ private:
     std::string myCountry() const { return jstr(g_.online.profile(), "country_code"); }
 
     std::string boardPath(int offset) const {
-        const LevelEntry* l = level();
+        const RankedLevel* l = level();
         std::string cat = categoryId(category());
         std::string q = "?category=" + cat + "&limit=50&offset=" + std::to_string(offset);
         std::string lvl = l ? "&level_id=" + l->id : "";
@@ -131,7 +165,9 @@ private:
         requestGlobe();
         if (!g_.online.usable()) return;
         g_.online.get("/api/v1/meta", OnlineService::guard(life_, [this](const ApiResult& r) {
-            if (r.ok) meta_ = r.data;
+            if (!r.ok) return;
+            meta_ = r.data;
+            mergeServerLevels();
         }));
     }
 
@@ -183,7 +219,7 @@ private:
     }
 
     void requestGlobe() {
-        const LevelEntry* l = level();
+        const RankedLevel* l = level();
         if (!l) return;
         int gen = ++globeGen_;
         globeLoading_ = true;
@@ -206,6 +242,14 @@ private:
                 if (auto mk = GlobeMarker::fromJson(m)) markers_.push_back(*mk);
             for (size_t i = 0; i < markers_.size(); ++i)
                 if (!keepRecord.empty() && markers_[i].recordId == keepRecord) selected_ = static_cast<int>(i);
+            // Automated checks (--online-focus <pseudonym>): select that player's marker.
+            if (!g_.onlineFocus.empty())
+                for (size_t i = 0; i < markers_.size(); ++i)
+                    if (markers_[i].playerName == g_.onlineFocus) {
+                        g_.onlineFocus.clear();
+                        selectMarker(static_cast<int>(i));
+                        break;
+                    }
         }));
     }
 
@@ -331,7 +375,7 @@ private:
         globe_.renderEarth(r, globeView_, cam_, sun);
         globe_.renderAtmosphere(r, globeView_, cam_, sun, t_);
         // Markers: layout at the current zoom, clustering, then drawing back to front.
-        layoutMarkers(markers_, globeView_.radius(cam_), 15.0f);
+        layoutMarkers(markers_, globeView_.radius(cam_), 15.0f, cam_.zoom >= 1.8);
         clusters_ = clusterMarkers(markers_, cam_, globeView_, ui.s(cam_.zoom > 2.5 ? 10.0f : 18.0f),
                                    g_.settings.online.bandwidth == 0 ? 120 : 400);
         for (size_t i = 0; i < clusters_.size(); ++i) {
@@ -402,11 +446,14 @@ private:
             };
             row("Rang mondial", "n°" + std::to_string(m.rank), tier);
             row("Temps", formatRunTime(m.timeMs), ui.theme().text);
-            const LevelEntry* le = g_.content.level(m.levelId);
-            row("Niveau", le ? le->name : m.levelId, ui.theme().text);
+            std::string levelName = m.levelId;
+            for (const auto& rl : levels_)
+                if (rl.id == m.levelId) levelName = rl.name;
+            row("Niveau", levelName, ui.theme().text);
             row("Date", m.achievedAt.substr(0, 10), ui.theme().text);
             UIContext::ButtonStyle st;
             st.small = true;
+            st.fontSize = 16;
             float bw = (w - ui.s(40)) / 2;
             ui.pushId("online/info");
             if (ui.button("profile", {box.x + ui.s(14), box.bottom() - ui.s(44), bw, ui.s(34)}, "Profil", st)) openProfile(m.playerId);
@@ -540,11 +587,11 @@ private:
                          VAlign::Middle);
             }
             ui_.drawConnection({card.x + ui.s(20), card.y + ui.s(92)});
-            int totalLevels = static_cast<int>(levels_.size());
+            int totalLevels = static_cast<int>(std::count_if(levels_.begin(), levels_.end(), [](const RankedLevel& l) { return l.entry; }));
             int planetsDone = 0;
             for (const PlanetData* pl : g_.content.planets()) planetsDone += g_.progression.planetCompleted(*pl, g_.content) ? 1 : 0;
-            ui.label("Niveaux terminés : " + std::to_string(std::min(g_.progression.completedCount(), totalLevels)) + "/" + std::to_string(totalLevels) +
-                         " · Planètes : " + std::to_string(planetsDone) + "/" + std::to_string(g_.content.planets().size()),
+            ui.label(std::to_string(std::min(g_.progression.completedCount(), totalLevels)) + "/" + std::to_string(totalLevels) + " niveaux · " +
+                         std::to_string(planetsDone) + "/" + std::to_string(g_.content.planets().size()) + " planètes terminés",
                      {card.x + ui.s(14), card.y + ui.s(120)}, 15, ui.theme().text, Align::Left, FontFace::Body, VAlign::Middle);
             int unsent = g_.online.unsentCount(), pending = g_.online.pendingVerificationCount();
             std::string q = unsent > 0 ? std::to_string(unsent) + " envoi(s) en attente" : pending > 0 ? std::to_string(pending) + " record(s) en vérification" : "Tout est synchronisé";
@@ -764,27 +811,33 @@ private:
     }
 
     // ---------------------------------------------------------------- level
-    TexturePtr thumbnail(const LevelEntry& l) {
+    TexturePtr thumbnail(const RankedLevel& l) {
         auto it = thumbs_.find(l.id);
         if (it != thumbs_.end()) return it->second;
         TexturePtr t;
-        if (auto data = g_.content.loadLevel(l.id)) {
-            auto png = renderLevelThumbnail(g_, *data, Paths::toUtf8(l.assetRoot));
-            if (!png.empty()) t = textureFromPng(g_, png);
-        }
+        if (l.entry)
+            if (auto data = g_.content.loadLevel(l.id)) {
+                auto png = renderLevelThumbnail(g_, *data, Paths::toUtf8(l.entry->assetRoot));
+                if (!png.empty()) t = textureFromPng(g_, png);
+            }
         thumbs_[l.id] = t;
         return t;
     }
 
     void drawLevelZone() {
         UIContext& ui = g_.ui;
-        const LevelEntry* l = level();
+        const RankedLevel* l = level();
         ui.panel(zoneD_, false, 14);
         if (!l) return;
         ui.pushId("online/level");
         Rect th{zoneD_.x + ui.s(14), zoneD_.y + ui.s(14), ui.s(240), ui.s(135)};
-        if (TexturePtr t = thumbnail(*l)) ui.r().drawTexture(*t, nullptr, th);
-        else ui.r().fillRect(th, Color{20, 30, 56, 255});
+        if (TexturePtr t = thumbnail(*l)) {
+            ui.r().drawTexture(*t, nullptr, th);
+        } else {
+            ui.r().fillRect(th, Color{20, 30, 56, 255});
+            ui.label(l->entry ? "Aperçu indisponible" : "Niveau non installé", th.center(), 16, ui.theme().textDim, Align::Center, FontFace::Body,
+                     VAlign::Middle);
+        }
         ui.r().drawRect(th, ui.theme().border, ui.s(1));
         UIContext::ButtonStyle arrow;
         arrow.small = true;
@@ -801,8 +854,8 @@ private:
                  Align::Center, FontFace::Body, VAlign::Middle);
         float x = th.right() + ui.s(22);
         const PlanetData* planet = g_.content.planet(l->planet);
-        ui.label(planet ? planet->name : l->planet, {x, zoneD_.y + ui.s(26)}, 17, planet ? planet->color : ui.theme().accent, Align::Left,
-                 FontFace::Bold, VAlign::Middle);
+        ui.label(planet ? planet->name : (l->planetName.empty() ? l->planet : l->planetName), {x, zoneD_.y + ui.s(26)}, 17,
+                 planet ? planet->color : ui.theme().accent, Align::Left, FontFace::Bold, VAlign::Middle);
         ui.label(l->name, {x, zoneD_.y + ui.s(54)}, 26, ui.theme().text, Align::Left, FontFace::Title, VAlign::Middle);
         float col2 = x + std::min(ui.s(330), (zoneD_.right() - x) * 0.5f);
         float y = zoneD_.y + ui.s(88);
@@ -844,7 +897,7 @@ private:
         st.small = true;
         float bw = ui.s(170), bx = zoneD_.right() - bw - ui.s(14);
         std::string replayRecord = replayCandidate();
-        st.enabled = !replayRecord.empty();
+        st.enabled = !replayRecord.empty() && l->entry != nullptr;
         if (ui.button("replay", {bx, zoneD_.y + ui.s(18), bw, ui.s(40)}, "VIEW REPLAY", st))
             g_.app.pushScene(makeReplayViewer(g_, replayRecord));
         int unsent = 0;
@@ -858,7 +911,7 @@ private:
             else g_.online.syncNow(true);
         }
         st.primary = false;
-        st.enabled = true;
+        st.enabled = l->entry != nullptr;
         if (ui.button("play", {bx, zoneD_.y + ui.s(114), bw, ui.s(40)}, "Jouer ce niveau", st)) g_.app.switchScene(makeGameScene(g_, l->id));
         if (unsent > 0)
             ui.label(std::to_string(unsent) + " performance(s) à envoyer", {bx + bw * 0.5f, zoneD_.y + ui.s(172)}, 14, ui.theme().warm, Align::Center,
@@ -1002,7 +1055,7 @@ private:
         rankAnim_ = c;
         rankAnimT_ = 0.0f;
         for (size_t i = 0; i < levels_.size(); ++i)
-            if (levels_[i]->id == c.levelId) levelIdx_ = static_cast<int>(i);
+            if (levels_[i].id == c.levelId) levelIdx_ = static_cast<int>(i);
         for (size_t i = 0; i < kAllCategories.size(); ++i)
             if (kAllCategories[i] == c.category) category_ = static_cast<int>(i);
         shockCountry_ = myCountry();
@@ -1046,7 +1099,7 @@ private:
     float idle_ = 10.0f;
     Rect header_, zoneA_, zoneB_, zoneC_, zoneD_, infoRect_, globeButtons_;
 
-    std::vector<const LevelEntry*> levels_;
+    std::vector<RankedLevel> levels_;
     int levelIdx_ = 0;
     int category_ = 0;
     int period_ = 0;

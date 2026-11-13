@@ -104,8 +104,10 @@ enum class MarkerTier { Gold, Silver, Bronze, Cyan };
 MarkerTier markerTier(int rank);
 
 /// Spreads markers sharing a location on a small spiral whose angular size keeps a
-/// constant on-screen spacing (`spacingPx`) at the current zoom.
-void layoutMarkers(std::vector<GlobeMarker>& markers, float radiusPx, float spacingPx = 14.0f);
+/// constant on-screen spacing (`spacingPx`) at the current zoom. With `spread` false
+/// (zoomed out) every marker stays on its country centre, so clustering aggregates them
+/// per country.
+void layoutMarkers(std::vector<GlobeMarker>& markers, float radiusPx, float spacingPx = 14.0f, bool spread = true);
 
 struct GlobeCluster {
     Vec2 screen;
