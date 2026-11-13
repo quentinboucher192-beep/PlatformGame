@@ -500,7 +500,10 @@ void Enemy::contactDamage(GameWorld& w) {
 bool Enemy::takeDamage(GameWorld& w, const DamageInfo& dmg) {
     if (!alive() || dormant() || invuln_ > 0.0f) return false;
     if (state_ == EnemyState::TeleportOut || state_ == EnemyState::TeleportIn) return false;
-    if (state_ == EnemyState::Defend && dmg.type != DamageType::Impulse && dmg.type != DamageType::Dash) {
+    // Guard-breaking hits: impulse, dash, ground pound (from above) and the charged shot.
+    bool breaksGuard = dmg.type == DamageType::Impulse || dmg.type == DamageType::Dash ||
+                       dmg.type == DamageType::GroundPound || dmg.type == DamageType::ChargeShot;
+    if (state_ == EnemyState::Defend && !breaksGuard) {
         float fromSide = signf(dmg.source.x - box.center().x);
         if (fromSide == facing || fromSide == 0.0f) {
             w.playSound("sounds/shield_block.wav", box.center(), 0.8f, 0.8f);
@@ -509,7 +512,7 @@ bool Enemy::takeDamage(GameWorld& w, const DamageInfo& dmg) {
             return false;
         }
     }
-    if (state_ == EnemyState::Defend && dmg.type == DamageType::Impulse) {
+    if (state_ == EnemyState::Defend && breaksGuard && dmg.type != DamageType::Dash) {
         // Guard broken
         state_ = EnemyState::Hurt;
         stateTimer_ = 0.8f;

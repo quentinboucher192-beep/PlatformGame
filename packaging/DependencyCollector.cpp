@@ -151,6 +151,12 @@ DependencySet DependencyCollector::collect(const LevelData& level) {
             std::string m = o.propStr("material", "ruin_stone");
             asset("textures/tiles/" + m + ".json");
             asset("textures/tiles/" + m + ".png");
+        } else if (o.type == "crumble_platform") {
+            std::string st = o.propStr("style", "ruins");
+            asset(st == "ruins" ? std::string("sprites/objects/crumble_platform.png")
+                                : "sprites/objects/crumble_platform_" + st + ".png");
+        } else if (o.type == "liquid") {
+            asset("sprites/objects/liquid_" + o.propStr("kind", "acid") + ".png");
         } else if (o.type == "enemy") {
             enemy(o.propStr("enemy"));
         } else if (o.type == "power_unlock") {

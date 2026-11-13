@@ -64,8 +64,8 @@ absente prend sa valeur par défaut.
 | Catégorie | Types |
 |---|---|
 | Terrain | `solid` — `material` : `ruin_stone`, `ancient_metal`, `crystal`, `root` (Sylvanox), `basalt`, `obsidian`, `forge_metal` (Pyralis), `glacier_ice` (glissante), `snow_rock`, `frost_metal` (Glacior) |
-| Plateformes | `oneway` (`style` : `ruin_bridge`, `tech_ledge`, `root_branch`, `basalt_ledge`, `chain_grate`, `ice_ledge`, `snow_bridge`), `moving_platform`, `crumble_platform`, `power_gate` (`power` : `dash` mur de cristal, `teleport` barrière de phase, `wave` barrière d'énergie — aussi dissoute par le Tir chargé —, `impulse` rocher fissuré, `shield` rideau de plasma, `ground_pound` sol fissuré), `bounce_pad`, `ladder` |
-| Dangers | `spikes`, `liquid` (acide, eau, lave), `damage_zone`, `slow_zone`, `laser` |
+| Plateformes | `oneway` (`style` : `ruin_bridge`, `tech_ledge`, `root_branch`, `basalt_ledge`, `chain_grate`, `ice_ledge`, `snow_bridge`), `moving_platform`, `crumble_platform` (`style` : `ruins`, `basalt`, `ice`), `power_gate` (`power` : `dash` mur de cristal, `teleport` barrière de phase, `wave` barrière d'énergie — aussi dissoute par le Tir chargé —, `impulse` rocher fissuré, `shield` rideau de plasma, `ground_pound` sol fissuré), `bounce_pad`, `ladder` |
+| Dangers | `spikes`, `liquid` (`kind` : `acid`, `water`, `lava`, `icewater` — l'eau et l'eau glacée se nagent), `damage_zone`, `slow_zone` (`style` du nuage : `spores`, `frost`, `ash`), `laser` |
 | Gameplay | `player_start`, `checkpoint`, `exit`, `shard`, `relic`, `health_orb` (`amount`, 2 par défaut), `energy_orb`, `power_unlock` (`power` parmi les 10 pouvoirs), `heart_container` (`hearts` : cœurs maximum en plus pour le niveau) |
 | Interactifs | `door`, `lever`, `receptor` (activé par l'Onde ou le Tir chargé), `sign`, `grapple_point` (point d'ancrage du Grappin) |
 | Ennemis | `enemy` (`enemy` = identifiant de définition, `patrol`, `faceLeft`, `dormant`, `boss`) |

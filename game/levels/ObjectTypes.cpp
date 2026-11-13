@@ -164,8 +164,10 @@ std::vector<ObjectTypeInfo> build() {
         t.defaultSize = {48, 16};
         t.editorColor = {170, 150, 110, 255};
         t.props = {pFloat("delay", "Délai avant chute (s)", 0.45f, 0.05f, 5, 0.05f),
-                   pFloat("respawn", "Réapparition (s, 0 = jamais)", 3.0f, 0, 60, 0.5f)};
-        t.assets = {"sprites/objects/crumble_platform.png"};
+                   pFloat("respawn", "Réapparition (s, 0 = jamais)", 3.0f, 0, 60, 0.5f),
+                   pEnum("style", "Apparence", "ruins", {"ruins", "basalt", "ice"},
+                         {"Pierre des ruines", "Basalte", "Glace"})};
+        t.assets = {};  // texture per style, collected by the exporter
         add(t);
     }
     {
@@ -229,10 +231,10 @@ std::vector<ObjectTypeInfo> build() {
         t.category = ObjCategory::Hazards;
         t.defaultSize = {128, 48};
         t.editorColor = {157, 255, 58, 255};
-        t.props = {pEnum("kind", "Type", "acid", {"acid", "water", "lava"}, {"Acide de l'abîme", "Eau", "Lave"}),
+        t.props = {pEnum("kind", "Type", "acid", {"acid", "water", "lava", "icewater"},
+                         {"Acide de l'abîme", "Eau", "Lave", "Eau glacée"}),
                    pFloat("waveHeight", "Hauteur des vagues", 1, 0, 4, 0.5f)};
-        t.assets = {"sprites/objects/liquid_acid.png", "sprites/objects/liquid_water.png",
-                    "sprites/objects/liquid_lava.png"};
+        // Texture per kind, collected by the exporter (sprites/objects/liquid_<kind>.png).
         t.help = "Acide et lave sont mortels ; l'eau ralentit et permet de nager.";
         add(t);
     }
@@ -629,6 +631,7 @@ std::vector<PaletteEntry> buildPalette() {
     add("Acide de l'abîme", "liquid", {{"kind", "acid"}});
     add("Eau", "liquid", {{"kind", "water"}});
     add("Lave", "liquid", {{"kind", "lava"}});
+    add("Eau glacée", "liquid", {{"kind", "icewater"}});
     add("Zone de dégâts", "damage_zone");
     add("Zone de ralentissement", "slow_zone");
     add("Laser ancien", "laser");

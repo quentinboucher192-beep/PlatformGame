@@ -167,7 +167,10 @@ public:
     void render(const Player& p, RenderContext& ctx) const override;
     const char* animationClip(const Player&) const override;
     /// Best anchor for the player right now (nullptr if none in range / in sight).
-    static const class LevelEntity* findTarget(const Player& p, const GameWorld& w, float range);
+    /// `skip` (if set) is an anchor position to ignore (the one just released).
+    static const class LevelEntity* findTarget(const Player& p, const GameWorld& w, float range,
+                                               const Vec2* skip = nullptr);
+    void fixedUpdate(Player& p, GameWorld& w, float dt) override;
 
 protected:
     void onActivate(Player& p, GameWorld& w) override;
@@ -175,10 +178,12 @@ protected:
 private:
     void release(Player& p, GameWorld& w, bool boost);
     enum class Phase { None, Throw, Pull } phase_ = Phase::None;
+    const Vec2* recentAnchor() const { return sinceRelease_ < 0.35f ? &anchor_ : nullptr; }
     Vec2 anchor_;
     Vec2 hook_;
     float timer_ = 0.0f;
     float stuck_ = 0.0f;
+    float sinceRelease_ = 10.0f;
 };
 
 /// Passive upgrade: extra air jumps (triple jump).

@@ -245,3 +245,26 @@ TEST_CASE("arenas: starting inside a combat zone never duplicates its enemies") 
     for (const auto& e : w.enemies())
         if (e->objectId() == enemyId) CHECK(!e->dormant());
 }
+
+TEST_CASE("hazards: side spikes push the player away from their base") {
+    for (int rot : {90, 270}) {
+        World env;
+        LevelData l = flat();
+        // Vertical strip of spikes standing in the open, pointing right (90) or left (270).
+        addObject(l, "spikes", {300, 736, 16, 64}, {{"damage", 1}});
+        l.objects.back().rotation = static_cast<float>(rot);
+        GameWorld& w = env.make(l);
+        settle(w);
+        w.player().teleportTo({308, 800});
+        bool pushed = false;
+        for (int i = 0; i < 10 && !pushed; ++i) {
+            int hp = w.player().health;
+            w.fixedUpdate(PlayerInput{}, kDt);
+            if (w.player().health < hp) {
+                pushed = true;
+                CHECK(w.player().vel.x * (rot == 90 ? 1.0f : -1.0f) > 100.0f);
+            }
+        }
+        CHECK(pushed);
+    }
+}

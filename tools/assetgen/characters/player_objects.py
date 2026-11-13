@@ -300,3 +300,33 @@ def build():
         for clip, frames, kw in clips():
             s.add(clip, frames, **kw)
         s.save(f"animations/{name}.json")
+    build_icewater()
+
+
+# ------------------------------------------------------------- icy water (Glacior)
+# Palette swap of the water strip (same layout, same animation) for the frozen planet.
+ICEWATER = {
+    (19, 92, 80): (28, 74, 128), (31, 138, 106): (47, 111, 179), (143, 255, 240): (238, 250, 255),
+    (31, 184, 176): (95, 176, 255), (15, 59, 58): (19, 38, 74), (57, 240, 216): (168, 228, 255),
+}
+
+
+def build_icewater():
+    from PIL import Image
+    from sheet import asset_path, save_png
+    src = np.array(Image.open(asset_path("sprites/objects/liquid_water.png")).convert("RGBA"))
+    out = src.copy()
+    rgb = src[..., :3].astype(np.int32)
+    for (r, g, b), (nr, ng, nb) in ICEWATER.items():
+        mask = (rgb[..., 0] == r) & (rgb[..., 1] == g) & (rgb[..., 2] == b)
+        out[mask, 0], out[mask, 1], out[mask, 2] = nr, ng, nb
+    # Any other colour (anti-aliased edges) is shifted toward ice blue keeping its luminance.
+    known = np.zeros(src.shape[:2], bool)
+    for (r, g, b) in ICEWATER:
+        known |= (rgb[..., 0] == r) & (rgb[..., 1] == g) & (rgb[..., 2] == b)
+    other = (~known) & (src[..., 3] > 0)
+    lum = (0.3 * rgb[..., 0] + 0.59 * rgb[..., 1] + 0.11 * rgb[..., 2])
+    out[other, 0] = np.clip(lum[other] * 0.55, 0, 255)
+    out[other, 1] = np.clip(lum[other] * 0.85, 0, 255)
+    out[other, 2] = np.clip(lum[other] * 1.35 + 20, 0, 255)
+    save_png(out, "sprites/objects/liquid_icewater.png")

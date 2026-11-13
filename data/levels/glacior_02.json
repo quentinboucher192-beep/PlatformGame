@@ -1005,7 +1005,7 @@
     160.0
    ],
    "props": {
-    "kind": "water"
+    "kind": "icewater"
    }
   },
   {
@@ -2006,7 +2006,7 @@
     352.0
    ],
    "props": {
-    "kind": "water"
+    "kind": "icewater"
    }
   },
   {
@@ -2020,7 +2020,7 @@
     352.0
    ],
    "props": {
-    "kind": "water"
+    "kind": "icewater"
    }
   },
   {
@@ -2034,7 +2034,7 @@
     352.0
    ],
    "props": {
-    "kind": "water"
+    "kind": "icewater"
    }
   },
   {
@@ -2048,7 +2048,7 @@
     352.0
    ],
    "props": {
-    "kind": "water"
+    "kind": "icewater"
    }
   },
   {
@@ -2062,7 +2062,7 @@
     352.0
    ],
    "props": {
-    "kind": "water"
+    "kind": "icewater"
    }
   },
   {
@@ -2090,7 +2090,7 @@
     304.0
    ],
    "props": {
-    "kind": "water"
+    "kind": "icewater"
    }
   },
   {
@@ -2118,7 +2118,7 @@
     304.0
    ],
    "props": {
-    "kind": "water"
+    "kind": "icewater"
    }
   },
   {
@@ -2146,7 +2146,7 @@
     304.0
    ],
    "props": {
-    "kind": "water"
+    "kind": "icewater"
    }
   },
   {
@@ -2174,7 +2174,7 @@
     304.0
    ],
    "props": {
-    "kind": "water"
+    "kind": "icewater"
    }
   },
   {
@@ -5003,7 +5003,8 @@
    ],
    "props": {
     "delay": 0.5,
-    "respawn": 2.5
+    "respawn": 2.5,
+    "style": "ice"
    }
   },
   {
@@ -5018,7 +5019,8 @@
    ],
    "props": {
     "delay": 0.5,
-    "respawn": 2.5
+    "respawn": 2.5,
+    "style": "ice"
    }
   },
   {
@@ -6527,7 +6529,7 @@
     32.0
    ],
    "props": {
-    "kind": "water"
+    "kind": "icewater"
    }
   },
   {
@@ -6541,7 +6543,7 @@
     160.0
    ],
    "props": {
-    "kind": "water"
+    "kind": "icewater"
    }
   },
   {
@@ -6569,7 +6571,7 @@
     56.0
    ],
    "props": {
-    "kind": "water"
+    "kind": "icewater"
    }
   },
   {

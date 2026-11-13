@@ -4,10 +4,19 @@ Jeu de plateforme 2D en C++20 / SDL3, avec éditeur de niveaux, éditeur d'ennem
 système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne.
 
-**Contenu de la version 1.0** : la planète **Sylvanox** et son niveau
-**« Les Ruines Suspendues »** (≈ 10 500 px de long, 6 zones, mini-boss à 3 phases,
-3 reliques secrètes, 2 routes finales). Pyralis et Glacior apparaissent sur la carte
-comme planètes verrouillées « en approche ».
+**Contenu de la version 2.0** : 3 planètes et 9 niveaux, chacun avec son boss à 3 phases.
+
+| Planète | Niveaux (boss) |
+|---|---|
+| **Sylvanox**, le monde-jardin | Les Ruines Suspendues (Thornwarden) · La Canopée des Spores (Reine Sporale) · Le Cœur de la Machine (Sentinelle Prime) |
+| **Pyralis**, la forge en fusion | Les Forges Englouties (Magmaroth) · Le Fleuve de Lave (Ignivore) · La Fonderie Primordiale (Forgeron Primordial) |
+| **Glacior**, le sanctuaire gelé | Les Plaines de Givre (Cryowyrm) · Les Grottes de Cristal (Hydre de Givre) · Le Bastion Gelé (Glaciarque) |
+
+48 sortes d'ennemis (12 espèces, chacune en version Sylvanox, feu et glace, plus les boss),
+10 pouvoirs, 10 cœurs de vie (plus des cœurs de cristal cachés), 3 reliques et un cœur de
+cristal secrets par niveau. Par défaut, l'option *Paramètres → Jeu → Tout débloquer* rend
+toutes les planètes et tous les niveaux accessibles ; sans elle, ils se débloquent dans
+l'ordre.
 
 ## Jouer
 
@@ -23,6 +32,11 @@ comme planètes verrouillées « en approche ».
 | Bouclier | O / V | LB / L1 |
 | Impulsion | I / B | RB / R1 |
 | Téléportation courte | U / N | LT / L2 |
+| Planeur | maintenir Saut en tombant | maintenir A / Croix |
+| Frappe sismique | Bas + Attaque en l'air | Bas + X / Carré |
+| Tir chargé | maintenir Attaque, relâcher | maintenir X / Carré |
+| Grappin | Interagir près d'un point d'ancrage | Y / Triangle |
+| Triple saut | troisième Saut en l'air (passif) | A / Croix |
 | Interagir | E / Entrée | Y / Triangle |
 | Pause | Échap / P | Menu / Options |
 
@@ -36,18 +50,19 @@ automatiquement entre clavier et manette.
 Touches globales : **F3** mode debug (FPS, dt, colliders, hitboxes, position/vitesse du
 joueur, états des ennemis, chrono, particules), **F11** plein écran, **F12** capture d'écran.
 
-### Le niveau
+### Les pouvoirs
 
-1. **Le Seuil des Anciens** – cinématique d'introduction, apprentissage des déplacements,
-   du saut mural et du double saut.
-2. **La Canopée Brisée** – exploration, premiers ennemis, premier pouvoir : le **Dash**.
-3. **Les Jardins Gardés** – **Onde d'énergie** et **Bouclier**, arène verrouillée à vagues.
-4. **Les Ponts Suspendus** – plateformes mobiles et friables, lasers, **Impulsion**,
-   glissade, barrières de phase franchies par **Téléportation**, passages secrets.
-5. **Le Sanctuaire du Gardien** – mini-boss *Thornwarden* en 3 phases, attaques télégraphiées.
-6. **L'Ascension finale** – deux routes vers le relais, cinématique de fin, écran de résultats.
+Les cinq premiers (Dash, Onde, Bouclier, Impulsion, Téléportation) s'obtiennent dans
+« Les Ruines Suspendues » ; les suivants s'apprennent chacun dans un niveau : Planeur
+(La Canopée des Spores, courants ascendants), Grappin (Le Cœur de la Machine), Frappe
+sismique (Les Forges Englouties, sols fissurés), Tir chargé (Le Fleuve de Lave, récepteurs
+lointains, boucliers des Remparts) et Triple saut (Les Plaines de Givre). Les niveaux joués
+hors de l'ordre donnent d'office les pouvoirs des niveaux précédents.
 
-Chrono (limite 15 min, temps de référence 3 min 30), médailles bronze / argent / or /
+Sur Glacior, la glace est glissante et les attaques gelées ralentissent ; sur Pyralis, la
+lave, les éruptions et les bombes sont mortelles.
+
+Chaque niveau a un chrono (limite de 15 à 20 min), des médailles bronze / argent / or /
 platine, records locaux (meilleur temps, morts, collectibles, ennemis vaincus, score,
 pouvoirs utilisés, date) avec comparaison au meilleur essai.
 

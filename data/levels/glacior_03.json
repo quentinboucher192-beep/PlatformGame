@@ -844,7 +844,8 @@
    ],
    "props": {
     "delay": 0.5,
-    "respawn": 3.0
+    "respawn": 3.0,
+    "style": "ice"
    }
   },
   {
@@ -859,7 +860,8 @@
    ],
    "props": {
     "delay": 0.5,
-    "respawn": 3.0
+    "respawn": 3.0,
+    "style": "ice"
    }
   },
   {
@@ -3926,7 +3928,8 @@
    ],
    "props": {
     "delay": 0.45,
-    "respawn": 2.5
+    "respawn": 2.5,
+    "style": "ice"
    }
   },
   {
@@ -3941,7 +3944,8 @@
    ],
    "props": {
     "delay": 0.45,
-    "respawn": 2.5
+    "respawn": 2.5,
+    "style": "ice"
    }
   },
   {

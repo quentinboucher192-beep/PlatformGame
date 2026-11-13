@@ -242,19 +242,23 @@ void ChargeShotPower::render(const Player& p, RenderContext& ctx) const {
 
 // ================================================================= Grapple
 
-const LevelEntity* GrapplePower::findTarget(const Player& p, const GameWorld& w, float range) {
+const LevelEntity* GrapplePower::findTarget(const Player& p, const GameWorld& w, float range, const Vec2* skip) {
     const LevelEntity* best = nullptr;
     float bestScore = 1e9f;
     Vec2 from = p.center() + Vec2{0, -4};
+    // Chains of anchors: prefer the ones ahead in the direction of travel over the one just passed.
+    float dir = std::abs(p.vel.x) > 30.0f ? signf(p.vel.x) : p.facing;
     for (const auto& e : w.entities()) {
         if (!e->active || e->type() != "grapple_point") continue;
         Vec2 a = e->box.center();
+        if (skip && distance(a, *skip) < 2.0f) continue;
         Vec2 d = a - from;
         float dist = d.length();
         if (dist > range || dist < 18.0f) continue;
         if (d.y > 40.0f) continue;  // anchors below the player are not reachable
         if (w.physics().raycast(from, a, false, ColliderTag::EnemyOnly)) continue;
-        float score = dist - (signf(d.x) == p.facing ? 40.0f : 0.0f) + (d.y > 0 ? 30.0f : 0.0f);
+        bool ahead = std::abs(d.x) < 8.0f || signf(d.x) == dir;
+        float score = dist + (ahead ? -40.0f : 160.0f) + (d.y > 0 ? 30.0f : 0.0f) + (dist < 40.0f ? 60.0f : 0.0f);
         if (score < bestScore) {
             bestScore = score;
             best = e.get();
@@ -266,15 +270,20 @@ const LevelEntity* GrapplePower::findTarget(const Player& p, const GameWorld& w,
 bool GrapplePower::wantsActivation(const Player& p, const GameWorld& w, const PlayerInput& in) const {
     if (!in.isPressed(def_.input)) return false;
     if (p.grounded() && w.nearestInteractable()) return false;  // levers and signs keep priority
-    return findTarget(p, w, def_.param("range", 170.0f)) != nullptr;
+    return findTarget(p, w, def_.param("range", 170.0f), recentAnchor()) != nullptr;
 }
 
 bool GrapplePower::canActivate(const Player& p, const GameWorld& w) const {
-    return phase_ == Phase::None && !p.dashing() && findTarget(p, w, def_.param("range", 170.0f));
+    return phase_ == Phase::None && !p.dashing() && findTarget(p, w, def_.param("range", 170.0f), recentAnchor());
+}
+
+void GrapplePower::fixedUpdate(Player& p, GameWorld& w, float dt) {
+    Power::fixedUpdate(p, w, dt);
+    if (phase_ == Phase::None) sinceRelease_ += dt;
 }
 
 void GrapplePower::onActivate(Player& p, GameWorld& w) {
-    const LevelEntity* t = findTarget(p, w, def_.param("range", 170.0f));
+    const LevelEntity* t = findTarget(p, w, def_.param("range", 170.0f), recentAnchor());
     if (!t) return;
     anchor_ = t->box.center();
     hook_ = p.center() + Vec2{p.facing * 6.0f, -6.0f};
@@ -328,6 +337,7 @@ void GrapplePower::movePlayer(Player& p, GameWorld& w, const PlayerInput& in, fl
 void GrapplePower::release(Player& p, GameWorld& /*w*/, bool boost) {
     Vec2 dir = (anchor_ - p.center()).normalized();
     phase_ = Phase::None;
+    sinceRelease_ = 0.0f;
     Vec2 v = boost ? Vec2{dir.x * def_.param("pullSpeed", 430.0f) * 0.5f, -def_.param("releaseBoost", 230.0f)}
                    : p.vel * 0.3f;
     p.launch(v, true);

@@ -118,6 +118,28 @@ def crumble_platform():
                             part[y + 1, x] = OUTLINE
         img[stage * 16:(stage + 1) * 16] = part
     save_png(img, "sprites/objects/crumble_platform.png")
+    crumble_variants(np.array(img) if not isinstance(img, np.ndarray) else img)
+
+
+# Planet variants of the crumbling slab: exact palette swaps of the Sylvanox version.
+CRUMBLE_VARIANTS = {
+    "basalt": {(125, 151, 168): (140, 100, 90), (87, 114, 134): (90, 60, 52), (59, 84, 102): (64, 40, 36),
+               (42, 62, 79): (44, 26, 26), (29, 43, 58): (30, 17, 19), (11, 15, 30): (20, 9, 11),
+               (19, 92, 80): (179, 32, 26), (53, 181, 131): (255, 138, 61), (143, 255, 240): (255, 241, 194)},
+    "ice": {(125, 151, 168): (238, 250, 255), (87, 114, 134): (168, 228, 255), (59, 84, 102): (95, 176, 255),
+            (42, 62, 79): (47, 111, 179), (29, 43, 58): (31, 58, 102), (11, 15, 30): (10, 20, 40),
+            (19, 92, 80): (201, 216, 234), (53, 181, 131): (255, 255, 255), (143, 255, 240): (127, 246, 255)},
+}
+
+
+def crumble_variants(base):
+    base = np.asarray(base)
+    for style, mapping in CRUMBLE_VARIANTS.items():
+        out = base.copy()
+        for (r, g, b), (nr, ng, nb) in mapping.items():
+            m = (base[..., 0] == r) & (base[..., 1] == g) & (base[..., 2] == b) & (base[..., 3] > 0)
+            out[m, 0], out[m, 1], out[m, 2] = nr, ng, nb
+        save_png(out, f"sprites/objects/crumble_platform_{style}.png")
 
 
 def spikes():

@@ -8,7 +8,7 @@ Run from the repository root:  python3 tools/levelgen/pyralis_01.py
 """
 import os
 
-from levelkit import Level, ROOT
+from levelkit import Level, ROOT, T
 from pyralis_common import Pyra, FORGE_GLOW, LAVA_GLOW, EMBER_GLOW
 
 W, H = 524, 76
@@ -118,6 +118,8 @@ L.enemy("magma_gloop", 146, 52, patrol_tiles=5)
 L.enemy("fire_wisp", 136, 44, patrol_tiles=4)
 L.orb("health_orb", 128, 50)
 L.orb("energy_orb", 160, 50)
+# smoke of the dead furnaces in the upper hall
+L.obj("slow_zone", [140 * T, 45 * T, 12 * T, 7 * T], "gameplay", {"factor": 0.65, "visible": True, "style": "ash"})
 L.shards_line(128, 48, 162, 48, 7)
 P.scatter(125, 166, 52, 0.4, forge=True)
 L.decor("forge_anvil", 140, 52)

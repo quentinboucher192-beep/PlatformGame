@@ -3344,7 +3344,7 @@
     160.0
    ],
    "props": {
-    "kind": "water"
+    "kind": "icewater"
    }
   },
   {
@@ -3420,7 +3420,8 @@
    ],
    "props": {
     "delay": 0.5,
-    "respawn": 3.0
+    "respawn": 3.0,
+    "style": "ice"
    }
   },
   {
@@ -3435,7 +3436,8 @@
    ],
    "props": {
     "delay": 0.5,
-    "respawn": 3.0
+    "respawn": 3.0,
+    "style": "ice"
    }
   },
   {

@@ -9,7 +9,7 @@ Run from the repository root:  python3 tools/levelgen/pyralis_02.py
 """
 import os
 
-from levelkit import Level, ROOT
+from levelkit import Level, ROOT, T
 from pyralis_common import Pyra, FORGE_GLOW, LAVA_GLOW, EMBER_GLOW
 
 W, H = 560, 80
@@ -165,6 +165,8 @@ L.sign(259, 54, "Une chute de lave barre la route du second radeau : passez-la s
 L.shards_line(264, 51, 296, 51, 8)
 R(302, 54, 312)                                                   # islet (top 54)
 L.enemy("lava_burrower", 306, 54)
+# ash cloud over the islet
+L.obj("slow_zone", [303 * T, 48 * T, 8 * T, 6 * T], "gameplay", {"factor": 0.7, "visible": True, "style": "ash"})
 L.orb("health_orb", 304, 52)
 # lift up the cliff (vertical raft)
 L.moving(312, 54, 3, 0, -12, speed=45, wait=1.0)                 # lift 54 -> 42

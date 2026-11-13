@@ -91,6 +91,7 @@ class Level:
         }
         self._next = 1
         self._ev = 1
+        self.crumble_style = "ruins"
 
     def planet(self, planet_id):
         """Applies the planet presentation preset (music, light, parallax background)."""
@@ -101,6 +102,7 @@ class Level:
         for k in ("music", "bossMusic", "ambience", "ambientLight", "backgroundColor"):
             d[k] = p[k]
         d["background"] = copy.deepcopy(p["background"])
+        self.crumble_style = {"pyralis": "basalt", "glacior": "ice"}.get(planet_id, "ruins")
 
     # ------------------------------------------------------------------ core
     def obj(self, type_, rect, layer="gameplay", props=None, rotation=0, flip=False, z=0, oid=None):
@@ -153,9 +155,12 @@ class Level:
                         {"dx": dx * T, "dy": dy * T, "speed": speed, "wait": wait, "phase": phase,
                          "active": active, "triggered": triggered, "oneway": oneway})
 
-    def crumble(self, x, y, w_tiles=3, delay=0.45, respawn=3.0):
-        return self.obj("crumble_platform", [x * T, y * T, w_tiles * T, T], "gameplay",
-                        {"delay": delay, "respawn": respawn})
+    def crumble(self, x, y, w_tiles=3, delay=0.45, respawn=3.0, style=None):
+        props = {"delay": delay, "respawn": respawn}
+        style = style or self.crumble_style
+        if style != "ruins":
+            props["style"] = style
+        return self.obj("crumble_platform", [x * T, y * T, w_tiles * T, T], "gameplay", props)
 
     def gate(self, x, y, w_tiles, h_tiles, power, respawn=False):
         return self.obj("power_gate", [x * T, y * T, w_tiles * T, h_tiles * T], "gameplay",

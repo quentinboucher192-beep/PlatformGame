@@ -56,7 +56,7 @@ def ceiling(x0, x1, bottom, top=0, mat=SNOW, hang=True):
 
 
 def water(x0, x1, y0, y1):
-    return L.liquid(x0, x1, y0, y1, "water")
+    return L.liquid(x0, x1, y0, y1, "icewater")
 
 
 def ledge(x0, x1, y, style="ice_ledge"):

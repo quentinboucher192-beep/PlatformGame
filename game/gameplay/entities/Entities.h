@@ -133,6 +133,8 @@ public:
     void onPlayerStay(GameWorld& w, float dt) override;
     void onPlayerEnter(GameWorld& w) override;
 
+    bool swimmable() const;
+
 private:
     std::string kind_;
     TexturePtr tex_;

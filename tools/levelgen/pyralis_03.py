@@ -10,7 +10,7 @@ Run from the repository root:  python3 tools/levelgen/pyralis_03.py
 """
 import os
 
-from levelkit import Level, ROOT
+from levelkit import Level, ROOT, T
 from pyralis_common import Pyra, FORGE_GLOW, LAVA_GLOW, EMBER_GLOW
 
 W, H = 584, 84
@@ -211,6 +211,8 @@ for x in (344, 347, 350):
     L.enemy("ember_mite", x, 36, patrol_tiles=1)
 L.enemy("forge_bulwark", 355, 36, patrol_tiles=1, face_left=True)
 L.solid(342, 36, 350, 37, M)
+# press smoke: slows the fight in the press chamber
+L.obj("slow_zone", [342 * T, 29 * T, 16 * T, 7 * T], "gameplay", {"factor": 0.65, "visible": True, "style": "ash"})
 L.cracked_floor(350, 354, 36)
 L.solid(354, 36, 358, 37, M)
 L.orb("health_orb", 343.5, 34)

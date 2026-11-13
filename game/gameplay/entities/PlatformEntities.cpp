@@ -114,7 +114,11 @@ std::string MovingPlatformEntity::debugInfo() const { return moving_ ? "en mouve
 
 void CrumblePlatformEntity::init(GameWorld& w) {
     collider_ = w.physics().add(box, ColliderKind::Solid, ColliderTag::Crumble, this);
-    tex_ = w.resources().texture("sprites/objects/crumble_platform.png");
+    // Planet look: ruins (Sylvanox), basalt (Pyralis) or ice (Glacior).
+    std::string style = obj_.propStr("style", "ruins");
+    tex_ = w.resources().texture(style == "ruins" ? std::string("sprites/objects/crumble_platform.png")
+                                                  : "sprites/objects/crumble_platform_" + style + ".png");
+    if (!tex_) tex_ = w.resources().texture("sprites/objects/crumble_platform.png");
 }
 
 void CrumblePlatformEntity::fixedUpdate(GameWorld& w, float dt) {
@@ -321,7 +325,7 @@ void PowerGateEntity::render(RenderContext& ctx) {
     }
     // Power symbol hovering over the gate.
     if (icons_ && !broken_) {
-        int idx = power_ == "dash" ? 0 : power_ == "wave" ? 1 : power_ == "shield" ? 2 : power_ == "impulse" ? 3 : 4;
+        int idx = power_ == "dash" ? 0 : power_ == "wave" ? 1 : power_ == "shield" ? 2 : power_ == "impulse" ? 3 : power_ == "ground_pound" ? 6 : 4;
         Rect src{idx * 32.0f, 0, 32, 32};
         float pulse = 0.6f + 0.4f * std::sin(ctx.time * 3.0f);
         ctx.r.drawWorldTexture(*icons_, &src, Rect::fromCenter(box.center(), {12, 12}), iconTint.withAlphaF(0.55f * pulse));

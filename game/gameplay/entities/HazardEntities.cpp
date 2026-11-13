@@ -37,15 +37,17 @@ void SpikesEntity::onPlayerStay(GameWorld& w, float /*dt*/) {
         if (!w.player().invulnerable()) w.player().kill(w);
         return;
     }
+    // Direction the points face: 0 up, 1 right (90°), 2 down, 3 left (270°).
+    int q = quarterTurns(obj_.rotation);
+    Vec2 out = q == 0 ? Vec2{0, -1} : q == 1 ? Vec2{1, 0} : q == 2 ? Vec2{0, 1} : Vec2{-1, 0};
     DamageInfo d;
     d.amount = static_cast<float>(obj_.prop<int>("damage", 1));
     d.type = DamageType::Hazard;
-    d.source = {w.player().center().x, box.center().y + 8};
+    d.source = q == 0 || q == 2 ? Vec2{w.player().center().x, box.center().y - out.y * 8.0f} : box.center() - out * 16.0f;
     d.knockback = 120.0f;
     if (w.damagePlayer(d)) {
-        // Pop the player out of the spikes.
-        int q = quarterTurns(obj_.rotation);
-        Vec2 push = q == 0 ? Vec2{0, -260} : q == 2 ? Vec2{0, 120} : q == 1 ? Vec2{-200, -150} : Vec2{200, -150};
+        // Pop the player out of the spikes, away from their base (never into the wall).
+        Vec2 push = q == 0 ? Vec2{0, -260} : q == 2 ? Vec2{0, 120} : Vec2{out.x * 200.0f, -150.0f};
         w.player().vel = push;
     }
 }
@@ -76,14 +78,16 @@ void LiquidEntity::init(GameWorld& w) {
     tex_ = w.resources().texture("sprites/objects/liquid_" + kind_ + ".png");
 }
 
+bool LiquidEntity::swimmable() const { return kind_ == "water" || kind_ == "icewater"; }
+
 void LiquidEntity::onPlayerEnter(GameWorld& w) {
-    w.particles().emit(kind_ == "water" ? "splash_water" : "splash_acid", {w.player().center().x, box.y}, 1.0f);
+    w.particles().emit(swimmable() ? "splash_water" : "splash_acid", {w.player().center().x, box.y}, 1.0f);
     w.playSound("sounds/land.wav", {w.player().center().x, box.y}, 0.6f, 0.7f);
 }
 
 void LiquidEntity::onPlayerStay(GameWorld& w, float /*dt*/) {
     Player& p = w.player();
-    if (kind_ == "water") {
+    if (swimmable()) {
         p.inWater = true;
         return;
     }
@@ -95,7 +99,7 @@ void LiquidEntity::onPlayerStay(GameWorld& w, float /*dt*/) {
 
 void LiquidEntity::fixedUpdate(GameWorld& w, float dt) {
     // Enemies (walkers) die in deadly liquids.
-    if (kind_ != "water") {
+    if (!swimmable()) {
         for (auto& e : w.enemies())
             if (e->alive() && !e->def().flying && overlapBox().intersects(e->box)) e->kill(w);
     }
@@ -131,7 +135,10 @@ void LiquidEntity::render(RenderContext& ctx) {
             ctx.r.drawWorldTexture(*tex_, &bsrc, {x, y, w, h}, Color::white(), bm);
         }
     }
-    Color glow = kind_ == "acid" ? Color{157, 255, 58, 255} : kind_ == "lava" ? Color{255, 120, 40, 255} : Color{31, 120, 140, 255};
+    Color glow = kind_ == "acid"       ? Color{157, 255, 58, 255}
+                 : kind_ == "lava"     ? Color{255, 120, 40, 255}
+                 : kind_ == "icewater" ? Color{95, 176, 255, 255}
+                                       : Color{31, 120, 140, 255};
     for (float x = std::floor(startX / 96.0f) * 96.0f + 40.0f; x < endX + 96.0f; x += 96.0f)
         if (x > box.x && x < box.right()) ctx.lights.add({x, box.y}, 110.0f, glow);
 }

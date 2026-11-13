@@ -101,7 +101,7 @@ def floating_ice(L, rng, x0, x1, y0, y1, step=34, alpha=0.75):
 
 def freezing_water(L, x0, x1, y0, y1, interval=1.4, mist=True):
     """Icy water: swimmable, but the cold bites (1 damage every `interval` s, shield protects)."""
-    wid = L.liquid(x0, x1, y0, y1, "water")
+    wid = L.liquid(x0, x1, y0, y1, "icewater")
     L.obj("damage_zone", [x0 * T, (y0 + 0.4) * T, (x1 - x0) * T, (y1 - y0 - 0.4) * T], "gameplay",
           {"damage": 1, "interval": interval, "visible": False, "shieldProtects": True})
     if mist:
