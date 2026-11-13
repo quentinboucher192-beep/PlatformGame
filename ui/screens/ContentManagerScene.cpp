@@ -435,6 +435,7 @@ private:
         std::string levelId, err;
         if (imp.install(*insp_, policy_ == 0 ? ConflictPolicy::Rename : ConflictPolicy::Replace, &levelId, &err)) {
             g_.content.reload();
+            g_.ratings.contentChanged();
             lastImported_ = levelId;
             notify("Niveau importé : " + levelId, g_.ui.theme().success);
             g_.uiSound("power_unlock", 0.5f);
@@ -476,6 +477,7 @@ private:
                     std::string pid = p.id;
                     confirmDelete_.clear();
                     g_.content.removePackage(pid);
+                    g_.ratings.contentChanged();
                     notify("Package supprimé", g_.ui.theme().warm);
                     ui.endScroll();
                     return;

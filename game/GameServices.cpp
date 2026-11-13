@@ -7,6 +7,7 @@ namespace cosmic {
 void GameServices::loadAll() {
     settings = SettingsStore::load();
     content.reload();
+    ratings.init(content);
     progression.load();
     records.load();
     applySettings();

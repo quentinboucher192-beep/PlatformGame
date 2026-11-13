@@ -38,6 +38,7 @@
 
 #include "engine/core/Application.h"
 #include "engine/core/FileUtil.h"
+#include "game/levels/DifficultyRating.h"
 #include "game/levels/LevelAnalyzer.h"
 #include "game/online/Replay.h"
 #include "engine/core/Log.h"
@@ -117,6 +118,30 @@ int analyzeFromCommandLine(const std::string& folder) {
         failures += a.ok() ? 0 : 1;
     }
     return failures == 0 ? 0 : 1;
+}
+/// `--rate-levels [file]`: computes the difficulty of every campaign level (breakdown on the
+/// console); with a file, writes them as data/levels/ratings.json does.
+int rateFromCommandLine(const std::string& file) {
+    ContentDatabase content;
+    content.reload();
+    Json out = {{"format", "cosmic.level_ratings"}, {"version", DifficultyRating::kRatingVersion}, {"levels", Json::object()}};
+    std::printf("%-14s %5s %6s | %5s %5s %5s %5s %5s %5s %5s %5s | sauts(vide) pièges ennemis cp-max soin/100\n", "niveau", "note", "brut",
+                "saut", "piège", "enn.", "boss", "cp", "soin", "temps", "long");
+    for (const LevelEntry* e : content.levels()) {
+        if (e->source != ContentSource::Builtin) continue;
+        auto level = content.loadLevel(e->id);
+        if (!level) continue;
+        DifficultyRating r = rateDifficulty(*level, content);
+        std::printf("%-14s %5.1f %6.2f | %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f | %3d(%2d) %4d %4d %6.0f %5.1f\n", e->id.c_str(), r.score,
+                    r.raw, r.jumps, r.hazards, r.enemies, r.boss, r.checkpoints, r.healing, r.timer, r.length, r.preciseJumps, r.deadlyJumps,
+                    r.hazardCount, r.enemyCount, r.longestCheckpointGap, r.healPer100);
+        out["levels"][e->id] = r.toJson();
+    }
+    if (!file.empty() && file != "1") {
+        std::string text = out.dump(2) + "\n";
+        if (!FileUtil::writeTextAtomic(Paths::fromUtf8(file), text)) return 1;
+    }
+    return 0;
 }
 /// `--seal-levels <folder>`: for each campaign level whose checkpoints can be bypassed, adds
 /// suggested gates to <folder>/<level>.json (read by tools/levelgen/levelkit.py).
@@ -198,6 +223,12 @@ int main(int argc, char** argv) {
         return rc;
     }
 
+    if (has("--rate-levels")) {
+        int rc = rateFromCommandLine(value("--rate-levels"));
+        Log::shutdown();
+        return rc;
+    }
+
     if (std::string dir = value("--seal-levels"); !dir.empty()) {
         int rc = sealFromCommandLine(dir);
         Log::shutdown();
@@ -233,6 +264,7 @@ int main(int argc, char** argv) {
     game.online.init(game.settings.online, value("--online-server"));
     OnlineToasts toasts;
     app.onUpdate = [&game, &toasts](float dt) {
+        game.ratings.poll();
         game.online.update(dt);
         toasts.update(game, dt);
     };

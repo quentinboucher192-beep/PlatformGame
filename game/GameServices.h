@@ -4,6 +4,7 @@
 
 #include "engine/core/Application.h"
 #include "game/content/ContentDatabase.h"
+#include "game/levels/RatingService.h"
 #include "game/online/OnlineService.h"
 #include "game/progression/Progression.h"
 #include "game/records/Records.h"
@@ -29,6 +30,8 @@ public:
 
     Application& app;
     ContentDatabase content;
+    /// Difficulty ratings (campaign precomputed, other levels on a worker thread).
+    RatingService ratings;
     Settings settings;
     Progression progression;
     RecordsManager records;

@@ -177,8 +177,27 @@ void LevelEditorScene::modalSettings(const Rect& c) {
         changed |= pickString(ui, "planet", {left.x, left.y, colW, ui.s(46)}, "Planète", level_.planet, ids, names);
         left.y += ui.s(54);
     }
-    changed |= ui.sliderInt("diff", {left.x, left.y, colW, ui.s(46)}, "Difficulté", level_.difficulty, 1, 5);
-    left.y += ui.s(54);
+    {
+        // The difficulty is computed from the level (jumps, hazards, enemies, boss,
+        // checkpoints, healing), never typed in.
+        Rect row{left.x, left.y, colW, ui.s(46)};
+        ui.r().fillRoundedRect(row, ui.s(6), Color{14, 20, 38, 235});
+        const auto& dr = g_.ratings.draft();
+        std::string t = g_.ratings.draftPending() ? "Difficulté : calcul…" : dr ? "Difficulté calculée : " + dr->label() : "Difficulté : —";
+        ui.label(t, {row.x + ui.s(12), row.center().y}, 18, ui.theme().warm, Align::Left, FontFace::Bold, VAlign::Middle);
+        UIContext::ButtonStyle st;
+        st.small = true;
+        st.enabled = !g_.ratings.draftPending();
+        if (ui.button("rerate", {row.right() - ui.s(150), row.y + ui.s(5), ui.s(144), row.h - ui.s(10)}, "Recalculer", st))
+            g_.ratings.requestDraft(level_);
+        left.y += ui.s(50);
+        if (dr && !g_.ratings.draftPending()) {
+            ui.labelWrapped(dr->summary(), {left.x + ui.s(4), left.y}, colW - ui.s(8), 14, ui.theme().textDim);
+            left.y += ui.s(26);
+        }
+        if (dr && !g_.ratings.draftPending()) level_.difficulty = ratingStars(dr->score);
+        left.y += ui.s(4);
+    }
     auto music = withNone(PropertyEditor::assetFiles("music", ".ogg"));
     changed |= pickString(ui, "music", {left.x, left.y, colW, ui.s(46)}, "Musique", level_.music, music, labelsNone(music));
     left.y += ui.s(54);

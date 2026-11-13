@@ -131,3 +131,37 @@ contournables. Il écrit une carte PPM par niveau (jaune : route la plus courte,
 prévue, magenta : contournement d'une porte). `--seal-levels tools/levelgen/seals` ajoute des
 colonnes depuis le plafond aux endroits contournés (sans toucher aux secrets, reliques, cœurs,
 lianes, courants ni ancrages) ; `tools/levelgen/levelkit.py` les intègre aux niveaux générés.
+
+## Note de difficulté (calculée)
+
+La difficulté affichée (carte des planètes, fiche du niveau, éditeur) n'est **pas saisie** :
+elle est calculée à partir du niveau par `game/levels/DifficultyRating.cpp` (formule versionnée,
+`kRatingVersion`). Le champ `difficulty` du fichier n'est plus qu'un arrondi en étoiles de cette
+note, gardé pour la compatibilité.
+
+Le parcours prévu (départ → chaque point de passage dans l'ordre → sortie, donné par le
+détecteur de raccourcis) est parcouru et on mesure ce que le joueur y rencontre :
+
+| Composante | Mesure |
+|---|---|
+| Sauts | chaque passage en l'air comparé au saut complet du joueur (double saut compris : ~165 px de portée, ~100 px de hauteur avec `data/player.json`) ; au-delà de 55 % le saut compte, d'autant plus qu'il est long ou haut, **×2 si un raté est mortel** (lave, acide, pics, vide) |
+| Pièges | pics (longueur, dégâts, mort instantanée), lasers (part du temps allumés), liquides mortels traversés, zones de dégâts, plateformes fragiles (délai court, sans réapparition), plateformes mobiles, glace glissante sous les pieds, points d'ancrage |
+| Ennemis | ennemis à moins de 192 px du parcours : santé, dégâts, rapidité des attaques (temps d'annonce), attaques à distance, vol, téléportation, garde, renforts |
+| Boss | temps qu'il faut au joueur pour le vaincre comparé au temps qu'il lui faut pour vaincre le joueur (dégâts par seconde de ses attaques, pondérés par la difficulté à les esquiver selon leur temps d'annonce, phases) |
+| Points de passage | distance moyenne et maximale entre deux points de passage (ce que coûte une erreur) |
+| Soins | orbes de santé et cœurs par 100 tuiles (fait **baisser** la note) |
+| Temps | temps limité serré par rapport à la longueur du parcours |
+
+Sauts, pièges et ennemis sont des **densités par 100 tuiles** de parcours. La somme pondérée
+passe par une courbe saturante `5 × (1 − exp(−(brut − 6) / 8))`, arrondie à la demi-étoile.
+
+* Campagne : `CosmicPlatformer --rate-levels data/levels/ratings.json` écrit les notes (avec le
+  détail de chaque composante) ; un test vérifie que ce fichier correspond à la formule.
+  `CosmicPlatformer --rate-levels` seul affiche le détail.
+* Niveaux des joueurs et importés : notés en arrière-plan par le jeu (le fil principal
+  n'attend jamais) ; l'éditeur affiche la note et son résumé dans *Niveau* (bouton
+  *Recalculer*).
+
+Limite connue : c'est une estimation à partir de la géométrie et des données ; elle ne joue
+pas le niveau. Le détecteur suppose un joueur très habile (il prend la route la plus courte
+possible) : les sauts mesurés sont ceux de cette route.

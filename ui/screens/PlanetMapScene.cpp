@@ -164,10 +164,28 @@ public:
         y += ui.s(54);
         ui.label(unlocked || !p.teaser ? p.subtitle : planetTypeLabel(p.type), {x, y}, 22, ui.theme().textDim);
         y += ui.s(40);
-        std::string stars;
-        for (int i = 0; i < 5; ++i) stars += i < p.difficulty ? "★" : "☆";
-        ui.label(std::string(planetTypeLabel(p.type)) + "   Difficulté " + std::to_string(p.difficulty) + "/5", {x, y}, 20,
-                 ui.theme().warm);
+        // Planet difficulty: mean of its levels' computed ratings (the planet file's value
+        // until they are known).
+        std::string diff = std::to_string(p.difficulty) + "/5";
+        {
+            float sum = 0.0f;
+            int n = 0;
+            bool all = true;
+            for (const LevelEntry* le : g_.content.levelsForPlanet(p.id)) {
+                if (const DifficultyRating* r = g_.ratings.get(*le)) {
+                    sum += r->score;
+                    ++n;
+                } else {
+                    all = false;
+                }
+            }
+            if (n > 0 && all) {
+                DifficultyRating mean;
+                mean.score = std::round(sum / static_cast<float>(n) * 2.0f) / 2.0f;
+                diff = mean.label();
+            }
+        }
+        ui.label(std::string(planetTypeLabel(p.type)) + "   Difficulté " + diff, {x, y}, 20, ui.theme().warm);
         y += ui.s(38);
         std::string desc = unlocked || !p.teaser ? p.description
                                                  : "Les coordonnées de ce monde sont encore en cours de décodage. "
@@ -306,8 +324,17 @@ public:
         // Left column: level info and medal goals
         if (cached_) {
             const LevelData& d = *cached_;
-            ui.label("Difficulté " + std::to_string(d.difficulty) + "/5   —   " + timerModeLabel(d.timerMode), {x, cy}, 21, ui.theme().warm);
-            cy += ui.s(34);
+            // Computed from the level itself (game/levels/DifficultyRating.h), never typed in.
+            const DifficultyRating* rating = g_.ratings.get(l);
+            std::string diff = rating ? rating->label() : "calcul…";
+            if (rating)
+                for (int i = 0; i < 5; ++i) diff += i < ratingStars(rating->score) ? (i == 0 ? "  ★" : "★") : (i == 0 ? "  ☆" : "☆");
+            ui.label("Difficulté " + diff + "   —   " + timerModeLabel(d.timerMode), {x, cy}, 21, ui.theme().warm);
+            cy += ui.s(30);
+            if (rating) {
+                ui.label(rating->summary(), {x, cy}, 16, ui.theme().textDim);
+                cy += ui.s(28);
+            }
             if (d.timerMode == TimerMode::Limited || d.timerMode == TimerMode::Challenge) {
                 ui.label("Durée maximale : " + LevelTimer::format(d.timeLimit, false), {x, cy}, 21, ui.theme().text);
                 cy += ui.s(32);

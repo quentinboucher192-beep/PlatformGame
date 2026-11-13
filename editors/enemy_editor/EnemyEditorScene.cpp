@@ -109,6 +109,7 @@ void EnemyEditorScene::newEnemy(bool duplicate) {
     work_ = d;
     selectedId_ = id;
     g_.content.saveUserEnemy(work_);
+    g_.ratings.contentChanged();
     history_.reset(work_.toJson());
     dirty_ = false;
     loadAnimation();
@@ -136,6 +137,7 @@ void EnemyEditorScene::saveEnemy() {
         return;
     }
     if (g_.content.saveUserEnemy(work_)) {
+        g_.ratings.contentChanged();
         selectedId_ = work_.id;
         dirty_ = false;
         history_.reset(work_.toJson());
@@ -174,6 +176,7 @@ void EnemyEditorScene::deleteEnemy() {
     }
     std::string id = selectedId_;
     g_.content.deleteUserEnemy(id);
+    g_.ratings.contentChanged();
     flash("Supprimé : " + id);
     auto list = g_.content.enemies();
     if (const EnemyDefinition* again = g_.content.enemy(id)) select(again->id);  // built-in restored

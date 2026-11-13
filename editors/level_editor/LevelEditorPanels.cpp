@@ -55,7 +55,10 @@ void LevelEditorScene::drawToolbar(const Rect& r) {
     if (btn("zoomout", "-", 40)) cam_.zoomAt(viewport_, viewport_.center(), 1.0f / 1.25f);
     if (btn("zoomin", "+", 40)) cam_.zoomAt(viewport_, viewport_.center(), 1.25f);
     x += ui.s(10);
-    if (btn("settings", "Niveau", 90)) modal_ = Modal::Settings;
+    if (btn("settings", "Niveau", 90)) {
+        modal_ = Modal::Settings;
+        g_.ratings.requestDraft(level_);  // computed on a worker thread, shown in the dialog
+    }
     if (btn("events", "Événements", 124)) modal_ = Modal::Events;
     if (btn("cine", "Cinématiques", 136)) modal_ = Modal::Cinematics;
     x += ui.s(10);
