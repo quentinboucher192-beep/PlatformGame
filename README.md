@@ -73,7 +73,11 @@ Menu principal → **Online** (compte obligatoire pour cette section, jamais pou
 droit, zoom molette / gâchettes, clic sur un marqueur ou un pays), classements par niveau,
 pays, amis, planète et points cosmiques, catégories ANY% / 100% / NO DEATH / NO DAMAGE /
 SPEEDRUN, période historique ou hebdomadaire, profils publics, amis (avec notifications des
-demandes) et replays. Le jeu reste entièrement jouable sans compte ; hors ligne, les
+demandes) et **replays exacts** : le moteur est déterministe (pas fixe de 1/120 s, hasard du
+gameplay à graine fixe par niveau, mathématiques identiques sous Windows et Linux), un replay
+contient les commandes de chaque pas et le jeu rejoue la partie à l'identique (mêmes
+animations, mêmes ennemis, mêmes attaques), avec vérification de l'état toutes les 0,5 s
+(`CosmicPlatformer --replay fichier.cprz`, *Revoir la partie* à la fin d'un niveau). Le jeu reste entièrement jouable sans compte ; hors ligne, les
 performances sont gardées et envoyées au retour de la connexion. La localisation se limite au pays choisi (affiché au centre du pays), jamais de
 position précise.
 

@@ -12,7 +12,7 @@ Le jeu reste entièrement jouable sans compte et sans Internet.
 | [SECRETS.md](SECRETS.md) | Secrets : lesquels, où, comment les changer |
 | [API.md](API.md) | Référence de l'API REST (et [`server/openapi.yaml`](../../server/openapi.yaml)) |
 | [RULES.md](RULES.md) | Catégories, validation des records, statuts, niveaux de confiance, limites de l'anti-triche |
-| [REPLAY_FORMAT.md](REPLAY_FORMAT.md) | Format binaire des replays (CPRP / CPRZ) |
+| [REPLAY_FORMAT.md](REPLAY_FORMAT.md) | Format binaire des replays (CPRP / CPRZ) et déterminisme du moteur |
 | [PRIVACY.md](PRIVACY.md) | Données personnelles, localisation, RGPD |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Dépannage |
 
@@ -52,9 +52,12 @@ disparaissent avant la réponse ne sont jamais rappelés (`OnlineService::guard`
 
 ## Parcours d'un record
 
-1. Pendant la partie, `ReplayRecorder` échantillonne la position, l'état et la vie du joueur
-   (30 fois par seconde de chrono) et note les événements (sauts, morts, objets, pouvoirs,
-   points de contrôle). Seuls les niveaux officiels lancés depuis leur début sont concernés.
+1. Pendant la partie, `ReplayRecorder` enregistre l'entrée de chaque pas de simulation (120 par
+   seconde) avec une empreinte de l'état toutes les 0,5 s, ce qui permet de rejouer la partie
+   exactement ; il échantillonne aussi la position, l'état et la vie du joueur (30 fois par
+   seconde de chrono) et note les événements (sauts, morts, objets, pouvoirs, points de
+   contrôle). Seuls les niveaux officiels lancés depuis leur début sont concernés
+   ([REPLAY_FORMAT.md](REPLAY_FORMAT.md)).
 2. À la fin du niveau, `OnlineService::recordRun` garde la performance localement (statut
    **LOCAL**) si elle améliore le meilleur temps local dans au moins une catégorie, avec son
    replay compressé, sous un identifiant de tentative unique (UUID v4).
