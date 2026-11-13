@@ -95,7 +95,7 @@ powershell -ExecutionPolicy Bypass -File installer\build_installer.ps1
 Le script configure, compile en Release, exécute les tests, prépare l'installation avec
 `cmake --install build --config Release --prefix build\stage`, puis compile
 `installer\CosmicPlatformer.iss` avec Inno Setup. Résultat :
-`installer\Output\CosmicPlatformer-Setup-2.0.0.exe`.
+`installer\Output\CosmicPlatformer-Setup-2.1.0.exe`.
 
 L'installateur :
 

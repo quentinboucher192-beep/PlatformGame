@@ -69,9 +69,12 @@
     "dev": {
       "name": "cosmic-online-dev",
       "workers_dev": false,
-      "secrets": { "required": ["IP_HASH_SALT"] },
+      // Locally the admin token (level registration, moderation) comes from .dev.vars too.
+      "secrets": { "required": ["IP_HASH_SALT", "ADMIN_TOKEN"] },
       "vars": {
         "ENVIRONMENT": "development",
+        // Local only: repeated test runs from 127.0.0.1 would hit the per-IP limits.
+        "RATE_LIMIT_SCALE": "50",
         "TOS_VERSION": "2026-11",
         "MIN_GAME_VERSION": "2.1.0",
         "ACCESS_TOKEN_TTL_SECONDS": "3600",

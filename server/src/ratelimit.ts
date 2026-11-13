@@ -23,7 +23,14 @@ export const RULES = {
     accountDelete: { name: "account_delete", limit: 5, windowSeconds: 3600 },
 } as const satisfies Record<string, RateRule>;
 
+/** RATE_LIMIT_SCALE multiplies every limit (development only: repeated local test runs). */
+function scale(ctx: Ctx): number {
+    const n = Number((ctx.env as { RATE_LIMIT_SCALE?: string }).RATE_LIMIT_SCALE ?? "1");
+    return Number.isFinite(n) && n >= 1 ? Math.min(n, 1000) : 1;
+}
+
 export async function rateLimit(ctx: Ctx, rule: RateRule, key: string): Promise<void> {
+    const limit = rule.limit * scale(ctx);
     const hashed = await hashIp(key, ctx.env.IP_HASH_SALT ?? "");
     const now = Math.floor(Date.now() / 1000);
     const windowStart = now - (now % rule.windowSeconds);
@@ -36,7 +43,7 @@ export async function rateLimit(ctx: Ctx, rule: RateRule, key: string): Promise<
     )
         .bind(`${rule.name}:${hashed}`, windowStart)
         .first<{ count: number }>();
-    if (row && row.count > rule.limit) {
+    if (row && row.count > limit) {
         const retry = Math.max(1, windowStart + rule.windowSeconds - now);
         throw new ApiError(429, "RATE_LIMITED", "Trop de requêtes, réessayez plus tard.", { retry_after_seconds: retry }, {
             "retry-after": String(retry),

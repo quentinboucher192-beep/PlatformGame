@@ -280,3 +280,31 @@ describe("replays", () => {
         expect(legacy.body.data.entries).toHaveLength(1);
     });
 });
+
+describe("level registration (admin)", () => {
+    const level = (overrides: Record<string, unknown> = {}) => ({
+        id: "new_01", name: "Nouveau", planet_id: "testworld", planet_name: "Monde test", order: 3, version: 1,
+        content_hash: "e".repeat(64), total_collectibles: 5, total_enemies: 2, time_limit_ms: 600000, min_time_ms: 20000,
+        bounds: [4000, 1000], spawn: [100, 800], exit: [3800, 700, 40, 64], ...overrides,
+    });
+    const admin = { authorization: `Bearer ${env.ADMIN_TOKEN}` };
+
+    it("registers revisions, keeps old ones as legacy and refuses conflicting content", async () => {
+        expect((await api("POST", "/api/v1/admin/levels", { body: { levels: [level()] } })).status).toBe(401);
+        const first = await api("POST", "/api/v1/admin/levels", { headers: admin, body: { levels: [level()], game_version: "2.1.0" } });
+        expect(first.status).toBe(200);
+        expect(first.body.data.levels[0].result).toBe("current");
+        const again = await api("POST", "/api/v1/admin/levels", { headers: admin, body: { levels: [level()] } });
+        expect(again.body.data.levels[0].result).toBe("unchanged");
+        const conflict = await api("POST", "/api/v1/admin/levels", { headers: admin, body: { levels: [level({ content_hash: "f".repeat(64) })] } });
+        expect(conflict.status).toBe(409);
+        const v2 = await api("POST", "/api/v1/admin/levels", { headers: admin, body: { levels: [level({ version: 2, content_hash: "f".repeat(64) })] } });
+        expect(v2.body.data.levels[0].result).toBe("current");
+        const meta = await api("GET", "/api/v1/meta");
+        expect(meta.body.data.levels.find((l: any) => l.id === "new_01")).toMatchObject({ version: 2, content_hash: "f".repeat(64) });
+        const old = await env.DB.prepare("SELECT compatibility_status FROM level_versions WHERE level_id = 'new_01' AND version = 1").first("compatibility_status");
+        expect(old).toBe("legacy");
+        const bad = await api("POST", "/api/v1/admin/levels", { headers: admin, body: { levels: [level({ spawn: [1] })] } });
+        expect(bad.status).toBe(400);
+    });
+});

@@ -13,7 +13,7 @@ import { RULES, rateLimit } from "./ratelimit";
 import * as records from "./records";
 import { CATEGORIES, MODES } from "./validate";
 
-export const API_VERSION = "1.0.0";
+const API_VERSION = "1.0.0";
 
 type Handler = (ctx: Ctx, viewer: AuthInfo | null) => Promise<Response>;
 
@@ -118,6 +118,7 @@ route("DELETE", `${V}/friends/{playerId}`, (ctx) => friends.deleteFriend(ctx));
 // Moderation (only with the ADMIN_TOKEN secret)
 route("GET", `${V}/admin/records`, (ctx) => admin.listForReview(ctx));
 route("POST", `${V}/admin/records/{recordId}/review`, (ctx) => admin.review(ctx));
+route("POST", `${V}/admin/levels`, (ctx) => admin.registerLevels(ctx));
 
 function match(method: string, path: string): { route: Route; params: Record<string, string> } | "method" | null {
     let pathMatched = false;

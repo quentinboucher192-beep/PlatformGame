@@ -10,6 +10,7 @@
 namespace cosmic {
 
 class ContentDatabase;
+struct LevelData;
 
 /// Identity of a level revision for online rankings: id, integer revision
 /// (`metadata.revision` of the level file, 1 by default) and SHA-256 of the canonical
@@ -38,5 +39,7 @@ private:
 /// limits) used to register level revisions on the server (`--online-manifest`). The
 /// spawn is measured by running the intro of the level in a headless world.
 Json buildOnlineManifest(ContentDatabase& content, std::string* error = nullptr);
+/// Manifest entry of one level (also used by the integration tests with their own level).
+Json onlineManifestEntry(const ContentDatabase& content, const LevelData& level, const LevelFingerprint& fp);
 
 }  // namespace cosmic
