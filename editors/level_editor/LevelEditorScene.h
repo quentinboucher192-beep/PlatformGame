@@ -140,6 +140,7 @@ private:
     bool checksDirty_ = true;
     bool minimapOn_ = true;
     Rect minimapRect_;
+    Rect liveFeedRect_;  // the grouped notifications drawn this frame (empty when none)
     Rect bannerRect_;
     int groupCounter_ = 0;
     std::string assetRoot_;

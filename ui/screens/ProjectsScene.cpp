@@ -198,12 +198,16 @@ public:
         // Automated checks of the working copy: "project-download", "project-send",
         // "project-pull" run once the project is loaded.
         const std::string& o = g_.onlineOpen;
-        if ((o == "project-download" || o == "project-send" || o == "project-pull" || o == "project-live" || o.rfind("project-live-edit:", 0) == 0) &&
+        if ((o == "project-download" || o == "project-send" || o == "project-pull" || o == "project-live" || o.rfind("project-live-edit:", 0) == 0 ||
+             o.rfind("project-live-copy:", 0) == 0) &&
             detail_.is_object() && !working_ && member()) {
             std::string what = o;
             g_.onlineOpen.clear();
             if (what == "project-live") goLive();
-            else if (what.rfind("project-live-edit:", 0) == 0) {
+            else if (what.rfind("project-live-copy:", 0) == 0) {
+                g_.onlineOpen = "live-copy:" + what.substr(18);  // read by the live editor
+                goLive();
+            } else if (what.rfind("project-live-edit:", 0) == 0) {
                 g_.onlineOpen = "live-edit:" + what.substr(18);  // read by the live editor
                 goLive();
             }

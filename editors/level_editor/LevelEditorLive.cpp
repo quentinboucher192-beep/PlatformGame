@@ -90,6 +90,15 @@ void LevelEditorScene::updateLive(float dt) {
         }
         g_.onlineOpen.clear();
     }
+    // "live-copy:<id>": copies that object later on (its message must not cover the live
+    // notifications).
+    if (g_.onlineOpen.rfind("live-copy:", 0) == 0 && time_ > 9.0f) {
+        if (level_.findObject(g_.onlineOpen.substr(10))) {
+            selection_ = {g_.onlineOpen.substr(10)};
+            copySelection();
+        }
+        g_.onlineOpen.clear();
+    }
     // My edits, as operations (not in the middle of a drag: at its end).
     if (liveDirty_ && drag_ == Drag::None) {
         liveDirty_ = false;
@@ -246,6 +255,7 @@ void LevelEditorScene::drawPresence(const Rect& area) {
 }
 
 void LevelEditorScene::drawLiveOverlay(const Rect& vp) {
+    liveFeedRect_ = {};
     if (!live_) return;
     UIContext& ui = g_.ui;
     Renderer& r = ui.r();
@@ -304,6 +314,7 @@ void LevelEditorScene::drawLiveOverlay(const Rect& vp) {
         const auto& [line, color, alpha] = *it;
         float lw = std::min(vp.w * 0.5f, ui.text().measure(line, FontFace::Body, ui.s(14)).x + ui.s(24));
         Rect lr{vp.x + ui.s(12), y - ui.s(26), lw, ui.s(24)};
+        liveFeedRect_ = liveFeedRect_.w > 0.0f ? liveFeedRect_.united(lr) : lr;
         r.fillRoundedRect(lr, ui.s(6), Color{6, 10, 24, static_cast<uint8_t>(225 * alpha)});
         r.fillRect({lr.x, lr.y + ui.s(4), ui.s(3), lr.h - ui.s(8)}, color.withAlphaF(alpha));
         ui.label(line, {lr.x + ui.s(10), lr.center().y}, ui.fitFont(line, FontFace::Body, 14, lw - ui.s(18)), ui.theme().text.withAlphaF(alpha), Align::Left,

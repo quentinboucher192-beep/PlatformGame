@@ -649,13 +649,19 @@ void LevelEditorScene::render(float alpha) {
         st.valign = VAlign::Middle;
         Vec2 sz = ui.text().measure(message_, FontFace::Body, st.size);
         Rect bg = Rect::fromCenter({viewport_.center().x, viewport_.bottom() - ui.s(40)}, {sz.x + ui.s(40), ui.s(44)});
-        if (modal && bg.intersects(modalRect_))  // never over a dialog: in the band below it
+        if (modal && bg.intersects(modalRect_)) {  // never over a dialog: in the band below it
             bg = Rect::fromCenter({W * 0.5f, (modalRect_.bottom() + H) * 0.5f}, bg.size());
-        else if (minimapOn_ && bg.intersects(minimapRect_))  // nor over the map of the level
-            bg = Rect::fromCenter({viewport_.center().x, minimapRect_.y - ui.s(32)}, bg.size());
+        } else {
+            // Nor over the map of the level or the live notifications: just above them.
+            for (int pass = 0; pass < 2; ++pass) {
+                if (minimapOn_ && bg.intersects(minimapRect_)) bg.y = minimapRect_.y - ui.s(10) - bg.h;
+                if (liveFeedRect_.w > 0.0f && bg.intersects(liveFeedRect_)) bg.y = liveFeedRect_.y - ui.s(10) - bg.h;
+            }
+        }
         r.fillRoundedRect(bg, ui.s(10), {6, 10, 24, 225});
         ui.text().draw(message_, bg.center(), st);
     }
+    liveFeedRect_ = {};  // computed again by the next frame's live overlay
     ui.end();
 }
 
