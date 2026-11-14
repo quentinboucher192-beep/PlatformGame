@@ -77,7 +77,7 @@ void LevelEditorScene::drawToolbar(const Rect& r) {
     q.danger = true;
     if (ui.button("quit", {qx, y, ui.s(100), h}, "Quitter", q)) {
         if (dirty_) modal_ = Modal::ConfirmQuit;
-        else g_.app.switchScene(makeContentManager(g_));
+        else g_.app.switchScene(makeEditorExit(g_, level_.id));
     }
     ui.popId();
 }

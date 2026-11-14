@@ -46,6 +46,10 @@
 | Abonnements aux créateurs | D1 `player_follows` | listes publiques ou privées (réglage `follows_visibility`) | jusqu'au désabonnement ou à un blocage |
 | Notifications (type, acteur, niveau, date, lu) et catégories désactivées | D1 `notifications`, `players.notifications_off` | le joueur | lues : 60 jours ; 500 au plus |
 | Temps joué par niveau (secondes, date de la dernière partie) | D1 `player_playtime` | profils visibles | vie du compte |
+| Projets collaboratifs (nom, description, réglages), membres et rôles | D1 `projects`, `project_members` | les membres (projets listés : nom, propriétaire, nombre de membres) | jusqu'à la suppression du projet ou du compte du propriétaire |
+| Révisions des projets (niveau JSON, auteur, message, empreinte) | R2 `projects/` + D1 `project_revisions` | les membres | jusqu'à la suppression du projet |
+| Invitations (empreinte SHA-256 de la clé, 4 derniers caractères, rôle, limites) et demandes d'adhésion (message) | D1 `project_invites`, `project_join_requests` | administrateurs du projet | jusqu'à la suppression du projet |
+| Journal d'un projet (qui a fait quoi, quand) | D1 `project_activity` | les membres | jusqu'à la suppression du projet |
 | Journal de sécurité (action, empreinte d'IP) | D1 `audit_log` | opérateurs | 180 jours |
 | Compteurs de limitation (empreintes) | D1 `rate_limits` | personne | 24 heures |
 
@@ -85,6 +89,7 @@ vérification de son empreinte SHA-256.
 | `saves/online_attempts.json`, `online/replays/` | performances en attente ou suivies et leurs replays |
 | `online/known_ranks.json` | derniers rangs vus (notifications « record battu ») |
 | `online/playtime.json` | temps joué pas encore envoyé (seulement pour le compte connecté) |
+| `online/projects.json` | liens entre les copies locales (WORKSHOP → Mes niveaux) et les projets, révision de départ |
 | `saves/progress.json` | temps joué par niveau (affiché sur la fiche de chaque niveau, même sans compte) |
 
 À la suppression du compte, les performances et replays locaux rattachés à ce compte sont

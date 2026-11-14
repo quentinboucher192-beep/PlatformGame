@@ -389,9 +389,18 @@ int main(int argc, char** argv) {
     for (const auto& a : args)
         if (a.size() > 8 && a.substr(a.size() - 8) == ".cplanet") importFile = a;
 
+    // A project invitation link (cosmic://rejoindre/<clé>, registered by the installer) opens
+    // PROJETS with the key ready: joining stays the player's choice.
+    std::string joinLink;
+    for (const auto& a : args)
+        if (a.size() > 9 && (a.rfind("cosmic://", 0) == 0 || a.rfind("COSMIC://", 0) == 0)) joinLink = a.substr(0, 200);
+
     std::string level = value("--level");
     if (!importFile.empty()) {
         app.pushScene(makeContentManager(game, importFile));
+    } else if (!joinLink.empty()) {
+        game.onlineOpen = "join-key:" + joinLink;
+        app.pushScene(makeProjects(game));
     } else if (!level.empty()) {
         PlayOptions opt;
         if (std::string sp = value("--spawn"); !sp.empty()) {
@@ -422,6 +431,8 @@ int main(int argc, char** argv) {
         else app.pushScene(makeSplashScene(game));
     } else if (std::string pub = value("--publish"); !pub.empty()) {
         app.pushScene(makeCommunityPublish(game, pub));
+    } else if (has("--projects")) {
+        app.pushScene(makeProjects(game, value("--projects")));
     } else if (has("--online-levels")) {
         app.pushScene(makeOnlineLevels(game, value("--online-levels")));
     } else if (std::string st = value("--settings-tab"); !st.empty()) {

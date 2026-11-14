@@ -1,4 +1,10 @@
 {
+  "2.10.0": [
+    "ONLINE → PROJETS : des niveaux construits à plusieurs, avec des rôles (lecteur, testeur, éditeur, administrateur, propriétaire) vérifiés par le serveur.",
+    "Invitations : clés et liens cosmic:// (nombre d'utilisations, durée, révocation), invitations directes, demandes d'adhésion, projets ouverts à tous.",
+    "Chaque membre travaille sur sa copie dans l'éditeur habituel ; chaque envoi crée une révision, et une copie faite d'après une ancienne révision n'écrase jamais la plus récente.",
+    "Membres, rôles, transfert du projet, journal d'activité et révisions ; notifications des invitations et des changements de rôle."
+  ],
   "2.9.0": [
     "ONLINE LEVELS : favoris (onglet Favoris trié et filtré, niveaux retirés conservés comme indisponibles) et compteurs de favoris et de commentaires sur chaque niveau.",
     "Commentaires sur les niveaux de la communauté : réponses, réactions (J'aime, J'adore, Drôle, Impressionnant, Pas utile), épinglage par le créateur, modification, suppression, signalement.",

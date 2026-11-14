@@ -58,8 +58,9 @@ const std::vector<OnlineKind>& onlineKinds() {
         {"comment_reaction", "J", {255, 120, 170, 255}, "Réaction", "Réaction à un de mes commentaires"},
         {"level_comment", "C", {150, 170, 255, 255}, "Commentaire", "Commentaire sur un de mes niveaux"},
         {"new_follower", "A", {120, 230, 140, 255}, "Abonné", "Nouvel abonné"},
-        // The project kinds (invitations, roles, versions, mentions) arrive with the
-        // collaborative projects; they are not offered before.
+        {"project_invite", "P", {176, 76, 255, 255}, "Projet", "Invitation à un projet"},
+        {"project_role", "P", {176, 76, 255, 255}, "Projet", "Changement de mon rôle dans un projet"},
+        // Named versions and mentions arrive with the history and the live editor.
     };
     return k;
 }
@@ -68,7 +69,7 @@ const OnlineKind& onlineKind(const std::string& kind) {
         if (kind == k.kind) return k;
     return onlineKinds().front();
 }
-const char* kOnlineFilters[] = {"all", "unread", "creators", "comments"};
+const char* kOnlineFilters[] = {"all", "unread", "creators", "comments", "projects"};
 
 std::string sizeText(int64_t bytes) {
     if (bytes <= 0) return "";
@@ -265,6 +266,8 @@ private:
         if ((kind == "new_level" || kind == "level_update") && !jstr(n, "level_id").empty()) return "Voir le niveau";
         if ((kind == "comment_reply" || kind == "comment_reaction" || kind == "level_comment") && !jstr(n, "level_id").empty()) return "Voir les commentaires";
         if (kind == "new_follower" && n.contains("actor") && n["actor"].is_object()) return "Voir le profil";
+        if (kind == "project_invite") return "Voir l'invitation";
+        if (kind == "project_role" && n.contains("data") && !jstr(n["data"], "project_id").empty()) return "Voir le projet";
         return {};
     }
 
@@ -275,6 +278,15 @@ private:
         auto go = [this, n, kind]() {
             if (kind == "new_follower") {
                 g_.app.pushScene(makePlayerProfile(g_, jstr(n["actor"], "id")));
+                return;
+            }
+            if (kind == "project_invite") {
+                g_.onlineOpen = "project-invitations";
+                g_.app.switchScene(makeProjects(g_));
+                return;
+            }
+            if (kind == "project_role") {
+                g_.app.switchScene(makeProjects(g_, jstr(n["data"], "project_id")));
                 return;
             }
             if (kind == "comment_reply" || kind == "comment_reaction" || kind == "level_comment") g_.onlineOpen = "comments";
@@ -294,8 +306,8 @@ private:
         }
         // Filters and settings.
         int filter = filter_;
-        float fw = std::min(W - ui.s(240), ui.s(700));
-        ui.tabs("filter", {x0, y, fw, ui.s(42)}, {"Toutes", "Non lues", "Créateurs", "Commentaires"}, filter);
+        float fw = std::min(W - ui.s(240), ui.s(860));
+        ui.tabs("filter", {x0, y, fw, ui.s(42)}, {"Toutes", "Non lues", "Créateurs", "Commentaires", "Projets"}, filter);
         if (filter != filter_) {
             filter_ = filter;
             loadOnline(false);

@@ -6,7 +6,7 @@
 ; The executable is linked against the static MSVC runtime: no redistributable needed.
 
 #define MyAppName "Cosmic Platformer"
-#define MyAppVersion "2.9.0"
+#define MyAppVersion "2.10.0"
 #define MyAppPublisher "Cosmic Studio"
 #define MyAppExeName "CosmicPlatformer.exe"
 #ifndef StageDir
@@ -51,6 +51,10 @@ french.GroupShortcuts=Raccourcis :
 english.GroupShortcuts=Shortcuts:
 french.TaskAssoc=Ouvrir les packages de niveaux .cplanet avec Cosmic Platformer
 english.TaskAssoc=Open .cplanet level packages with Cosmic Platformer
+french.TaskLinks=Ouvrir les liens d'invitation aux projets (cosmic://) avec Cosmic Platformer
+english.TaskLinks=Open project invitation links (cosmic://) with Cosmic Platformer
+french.LinkType=Lien Cosmic Platformer
+english.LinkType=Cosmic Platformer link
 french.GroupFiles=Fichiers :
 english.GroupFiles=Files:
 french.LevelEditor=Éditeur de niveaux
@@ -71,6 +75,7 @@ english.KeepSavesHint=Choose "No" to keep them.
 [Tasks]
 Name: "desktopicon"; Description: "{cm:TaskDesktop}"; GroupDescription: "{cm:GroupShortcuts}"
 Name: "association"; Description: "{cm:TaskAssoc}"; GroupDescription: "{cm:GroupFiles}"
+Name: "links"; Description: "{cm:TaskLinks}"; GroupDescription: "{cm:GroupFiles}"
 
 [Files]
 Source: "{#StageDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -89,6 +94,12 @@ Root: HKA; Subkey: "Software\Classes\.cplanet"; ValueType: string; ValueName: ""
 Root: HKA; Subkey: "Software\Classes\CosmicPlatformer.Package"; ValueType: string; ValueName: ""; ValueData: "{cm:PackageType}"; Flags: uninsdeletekey; Tasks: association
 Root: HKA; Subkey: "Software\Classes\CosmicPlatformer.Package\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Tasks: association
 Root: HKA; Subkey: "Software\Classes\CosmicPlatformer.Package\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" --import ""%1"""; Tasks: association
+
+; Invitation links: the game only puts the key in PROJETS → Rejoindre; joining is the player's choice.
+Root: HKA; Subkey: "Software\Classes\cosmic"; ValueType: string; ValueName: ""; ValueData: "URL:{cm:LinkType}"; Flags: uninsdeletekey; Tasks: links
+Root: HKA; Subkey: "Software\Classes\cosmic"; ValueType: string; ValueName: "URL Protocol"; ValueData: ""; Tasks: links
+Root: HKA; Subkey: "Software\Classes\cosmic\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Tasks: links
+Root: HKA; Subkey: "Software\Classes\cosmic\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Tasks: links
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall skipifsilent

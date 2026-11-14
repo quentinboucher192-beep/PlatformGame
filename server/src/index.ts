@@ -10,6 +10,7 @@ import * as boards from "./leaderboards";
 import * as creators from "./creators";
 import * as notifications from "./notifications";
 import * as workshop from "./workshop";
+import * as projects from "./projects";
 import { listLevels } from "./levels";
 import type { RecordRow } from "./model";
 import * as players from "./players";
@@ -189,6 +190,33 @@ route("POST", `${V}/community/levels/{levelId}/report`, (ctx) => community.repor
 route("POST", `${V}/community/levels/{levelId}/records`, (ctx) => community.submitRecord(ctx));
 route("PUT", `${V}/community/records/{recordId}/replay`, (ctx) => community.uploadRecordReplay(ctx));
 route("GET", `${V}/community/records/{recordId}/replay`, (ctx) => community.downloadRecordReplay(ctx));
+
+// Collaborative projects (phase 2): roles checked by the server, invitations, revisions
+route("POST", `${V}/projects`, (ctx) => projects.createProject(ctx));
+route("GET", `${V}/projects`, (ctx) => projects.myProjects(ctx));
+route("GET", `${V}/projects/discover`, (ctx) => projects.discoverProjects(ctx));
+route("POST", `${V}/projects/join`, (ctx) => projects.joinWithKey(ctx));
+route("GET", `${V}/projects/invitations`, (ctx) => projects.myInvitations(ctx));
+route("POST", `${V}/projects/invitations/{inviteId}/accept`, (ctx) => projects.answerInvitation(ctx, true));
+route("DELETE", `${V}/projects/invitations/{inviteId}`, (ctx) => projects.answerInvitation(ctx, false));
+route("GET", `${V}/projects/{projectId}`, (ctx) => projects.getProject(ctx));
+route("PATCH", `${V}/projects/{projectId}`, (ctx) => projects.updateProject(ctx));
+route("DELETE", `${V}/projects/{projectId}`, (ctx) => projects.deleteProject(ctx));
+route("GET", `${V}/projects/{projectId}/members`, (ctx) => projects.listMembers(ctx));
+route("PATCH", `${V}/projects/{projectId}/members/{playerId}`, (ctx) => projects.setRole(ctx));
+route("DELETE", `${V}/projects/{projectId}/members/{playerId}`, (ctx) => projects.removeMember(ctx));
+route("POST", `${V}/projects/{projectId}/transfer`, (ctx) => projects.transferProject(ctx));
+route("POST", `${V}/projects/{projectId}/invites`, (ctx) => projects.createInvite(ctx));
+route("GET", `${V}/projects/{projectId}/invites`, (ctx) => projects.listInvites(ctx));
+route("DELETE", `${V}/projects/{projectId}/invites/{inviteId}`, (ctx) => projects.revokeInvite(ctx));
+route("POST", `${V}/projects/{projectId}/join`, (ctx) => projects.requestJoin(ctx));
+route("DELETE", `${V}/projects/{projectId}/join`, (ctx) => projects.cancelJoinRequest(ctx));
+route("GET", `${V}/projects/{projectId}/requests`, (ctx) => projects.listRequests(ctx));
+route("POST", `${V}/projects/{projectId}/requests/{playerId}`, (ctx) => projects.answerRequest(ctx));
+route("GET", `${V}/projects/{projectId}/content`, (ctx) => projects.getContent(ctx));
+route("PUT", `${V}/projects/{projectId}/content`, (ctx) => projects.putContent(ctx));
+route("GET", `${V}/projects/{projectId}/revisions`, (ctx) => projects.listRevisions(ctx));
+route("GET", `${V}/projects/{projectId}/activity`, (ctx) => projects.listActivity(ctx));
 
 // Moderation (only with the ADMIN_TOKEN secret)
 route("GET", `${V}/admin/records`, (ctx) => admin.listForReview(ctx));

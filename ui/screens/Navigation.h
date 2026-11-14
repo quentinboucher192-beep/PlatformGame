@@ -66,6 +66,12 @@ std::unique_ptr<Scene> makeOnlineAccount(GameServices& g, bool onboarding, bool 
 /// ONLINE LEVELS: the players' published levels (popular, hardest, recent, top rated,
 /// friends', search, mine), download and play, ratings, reports, per-level leaderboards.
 std::unique_ptr<Scene> makeOnlineLevels(GameServices& g, const std::string& communityId = {});
+/// ONLINE → PROJETS: collaborative projects (roles, invitations, revisions); `projectId`
+/// opens that project.
+std::unique_ptr<Scene> makeProjects(GameServices& g, const std::string& projectId = {});
+/// Where the level editor goes when it closes: back to PROJETS for the working copy of a
+/// project, to the WORKSHOP otherwise.
+std::unique_ptr<Scene> makeEditorExit(GameServices& g, const std::string& levelId);
 /// WORKSHOP → Mes niveaux → Publier en ligne.
 std::unique_ptr<Scene> makeCommunityPublish(GameServices& g, const std::string& levelId);
 /// SOCIAL (in ONLINE): conversations with friends, groups, friends, blocked players.

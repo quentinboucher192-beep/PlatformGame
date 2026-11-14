@@ -155,6 +155,9 @@ de `wrangler.jsonc`, plafonnée à 1 000) multiplie toutes les limites.
 | `community_reaction` | 120 | 10 min | joueur | `PUT /community/comments/{id}/reaction` |
 | `follow` | 60 | 1 h | joueur | `POST /players/{id}/follow` |
 | `playtime` | 40 | 1 h | joueur | `POST /players/me/playtime` |
+| `project_create` / `project_invite` | 10 / 30 | 1 h | joueur | `POST /projects`, `POST /projects/{id}/invites` |
+| `project_join` | 20 | 1 h | joueur | `POST /projects/join`, `POST /projects/{id}/join` |
+| `project_save` | 120 | 1 h | joueur | `PUT /projects/{id}/content` |
 | `reads` | 300 | 1 min | IP | toute requête `GET` non servie par le cache |
 
 `POST /auth/logout`, `POST /friends/accept`, `DELETE /friends/{playerId}` et les `POST`
@@ -911,7 +914,7 @@ même commentaire, abonnés…).
 | GET | `/notifications/unread` | `{ unread }` |
 | POST | `/notifications/{id}/read`, `/notifications/read-all` | lu |
 | DELETE | `/notifications/{id}` | supprimée |
-| GET / PUT | `/notifications/settings` `{ <kind>: bool }` | catégories reçues (`new_level`, `level_update`, `comment_reply`, `comment_reaction`, `level_comment`, `new_follower` ; les catégories de projets arrivent avec les projets collaboratifs) |
+| GET / PUT | `/notifications/settings` `{ <kind>: bool }` | catégories reçues (`new_level`, `level_update`, `comment_reply`, `comment_reaction`, `level_comment`, `new_follower`, `project_invite`, `project_role` ; `project_version` et `project_mention` arriveront avec l'historique et l'éditeur en direct) |
 
 Le jeu lit les notifications non lues à la connexion puis chaque minute ; les nouvelles sont
 annoncées une fois. Les notifications lues de plus de 60 jours sont purgées (500 au plus par
@@ -927,6 +930,42 @@ joueur).
 `level_id` : identifiant d'un niveau officiel, d'un niveau de la communauté, ou `other` (niveaux
 personnels, jamais détaillés). Le jeu garde le temps à envoyer dans `online/playtime.json`
 tant qu'il n'a pas été accepté.
+
+### 8.9 quater Projets collaboratifs (ONLINE → PROJETS)
+
+Un projet est un niveau construit à plusieurs. Rôles, du moins au plus étendu, **tous vérifiés
+par le serveur** : `viewer` (lecteur : voit le projet, ses membres, son activité, télécharge une
+copie) < `tester` (joue la dernière version) < `editor` (envoie de nouvelles révisions) <
+`admin` (invitations, demandes, rôles des éditeurs/testeurs/lecteurs, réglages) < `owner`
+(administrateurs, transfert, suppression). Un non-membre ne voit qu'un projet listé
+(`request` ou `open`), sans son contenu ; un projet `private` ou `invite` lui répond 404.
+
+| Méthode | Route | Rôle | Règle |
+|---|---|---|---|
+| POST | `/projects` `{ name, description?, visibility?, join_role?, planet?, content?, message? }` | — | crée le projet (30 par joueur) ; `content` (niveau JSON, 2 Mo) devient la révision 1 |
+| GET | `/projects` | — | mes projets et mon rôle |
+| GET | `/projects/discover?q=` | — | projets `request` / `open` (blocages exclus) |
+| GET / PATCH / DELETE | `/projects/{id}` | — / admin / owner | fiche (`my_role`, `can`, `last_revision`) ; réglages (`name`, `description`, `visibility` : `private` \| `invite` \| `request` \| `open`, `join_role`) ; suppression avec ses fichiers |
+| GET | `/projects/{id}/members` | viewer | membres et rôles |
+| PATCH | `/projects/{id}/members/{playerId}` `{ role }` | admin | un admin gère éditeurs, testeurs, lecteurs ; seul le propriétaire nomme ou retire un admin |
+| DELETE | `/projects/{id}/members/{playerId}` | soi / admin | quitter ou retirer ; le propriétaire doit d'abord transférer |
+| POST | `/projects/{id}/transfer` `{ player_id }` | owner | le nouveau propriétaire doit être membre ; l'ancien devient admin |
+| POST | `/projects/{id}/invites` `{ role, max_uses?, expires_hours?, player_id? }` | admin | clé `CPJ-…` (128 bits aléatoires, **renvoyée une seule fois**, stockée en SHA-256) et lien `cosmic://rejoindre/<clé>` ; ou invitation directe d'un joueur (notifiée) |
+| GET / DELETE | `/projects/{id}/invites`, `/projects/{id}/invites/{inviteId}` | admin | liste (statut `active` \| `used` \| `expired` \| `revoked`, jamais la clé) ; révocation |
+| POST | `/projects/join` `{ key }` | — | clé ou lien ; utilisations comptées atomiquement ; même réponse `409 INVITE_INVALID` pour une clé inconnue, mal formée, épuisée, expirée ou révoquée |
+| GET | `/projects/invitations` | — | mes invitations directes |
+| POST / DELETE | `/projects/invitations/{inviteId}/accept`, `/projects/invitations/{inviteId}` | — | accepter / refuser |
+| POST / DELETE | `/projects/{id}/join` `{ message? }` | — | rejoindre un projet `open` (avec `join_role`) ou demander à rejoindre un projet `request` ; annuler sa demande |
+| GET / POST | `/projects/{id}/requests`, `/projects/{id}/requests/{playerId}` `{ accept, role? }` | admin | demandes en attente ; accepter (rôle notifié) ou refuser |
+| GET | `/projects/{id}/content?revision=` | viewer | le niveau (JSON brut, en-têtes `x-project-revision`, `x-content-sha256`) |
+| PUT | `/projects/{id}/content` `{ base_revision, content, message? }` | editor | nouvelle révision ; faite d'après une révision dépassée : **`409 REVISION_CONFLICT`** (`details.current_revision`, `saved_by`, `saved_at`), rien n'est écrasé |
+| GET | `/projects/{id}/revisions`, `/projects/{id}/activity` | viewer | révisions (auteur, message, empreinte) ; journal du projet |
+
+Un joueur bloqué par le propriétaire (ou qui l'a bloqué) ne peut ni rejoindre ni être invité.
+Dans le jeu, chaque membre travaille sur une copie locale (un niveau de WORKSHOP → Mes niveaux,
+lié au projet dans `online/projects.json`) ; « Récupérer la dernière version » garde d'abord une
+copie modifiée sous un autre nom. L'installateur peut associer les liens `cosmic://` au jeu :
+ouvrir un lien place la clé dans PROJETS → Rejoindre, sans rejoindre automatiquement.
 
 ### 8.9 bis Installateurs du jeu (notification « nouvelle version »)
 

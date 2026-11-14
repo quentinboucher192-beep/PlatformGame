@@ -7,6 +7,7 @@ import { verifyPassword } from "./crypto";
 import { ApiError, Errors, json, nowIso, readJsonObject, readLimited, type Ctx } from "./http";
 import { playerSummary, privateProfile, recordJson, visibleCountry, type PlayerRow, type RecordRow } from "./model";
 import { communityKeys } from "./community";
+import { ownedProjectKeys } from "./projects";
 import { RULES, rateLimit } from "./ratelimit";
 import {
     AVATAR_RE,
@@ -320,6 +321,7 @@ export async function deleteMe(ctx: Ctx): Promise<Response> {
     // Community levels of the player (packages, thumbnails, replays of every player on them)
     // and the player's replays on other levels.
     toDelete.push(...(await communityKeys(ctx, "l.author_id = ?1", id)));
+    toDelete.push(...(await ownedProjectKeys(ctx, id)));
     const own = await ctx.env.DB.prepare("SELECT replay_key FROM community_records WHERE player_id = ?1 AND replay_key IS NOT NULL").bind(id).all<{ replay_key: string }>();
     for (const r of own.results) if (!toDelete.includes(r.replay_key)) toDelete.push(r.replay_key);
     for (let i = 0; i < toDelete.length; i += 500) await ctx.env.STORAGE.delete(toDelete.slice(i, i + 500));
