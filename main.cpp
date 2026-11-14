@@ -35,6 +35,7 @@
 //   --online-manifest <file.json>
 //                           write the ranking manifest of the built-in levels (server seed)
 
+#include <algorithm>
 #include <cstdio>
 #include <map>
 #include <SDL3/SDL_main.h>
@@ -348,8 +349,14 @@ int main(int argc, char** argv) {
     Settings initial = SettingsStore::load();
     AppConfig cfg;
     cfg.headless = has("--headless");
-    cfg.width = cfg.headless ? 1600 : initial.graphics.windowWidth;
-    cfg.height = cfg.headless ? 900 : initial.graphics.windowHeight;
+    // Screenshots without a screen: 1600×900 unless --width / --height say otherwise.
+    auto sizeArg = [&](const char* name, int def) {
+        std::string v = value(name);
+        int n = v.empty() ? def : std::atoi(v.c_str());
+        return std::clamp(n, 640, 3840);
+    };
+    cfg.width = cfg.headless ? sizeArg("--width", 1600) : initial.graphics.windowWidth;
+    cfg.height = cfg.headless ? sizeArg("--height", 900) : initial.graphics.windowHeight;
     cfg.fullscreen = !has("--windowed") && (initial.graphics.fullscreen || has("--fullscreen"));
     cfg.vsync = initial.graphics.vsync;
 

@@ -1,4 +1,7 @@
 {
+  "2.14.1": [
+    "SOCIAL : l'encadré du joueur ne passe plus sur le bouton RETOUR ; il se place sous le menu, quelle que soit la taille de la fenêtre."
+  ],
   "2.14.0": [
     "Édition en direct : notifications regroupées en bas de la vue (arrivées, départs, « Astrid : 6 modifications · place des éclats »).",
     "Plus robuste aux coupures : si le dernier membre disparaît sans quitter (jeu fermé, réseau coupé), ses modifications deviennent une révision d'elles-mêmes peu après.",

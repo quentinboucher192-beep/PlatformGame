@@ -115,8 +115,8 @@ public:
         bg_.render(g_, 0.5f);
         ui.inputEnabled = modal_ == Modal::None;
         drawHeader();
-        drawOnlineNav(g_, zoneA_, OnlineSection::Social);
-        drawInfoCard();
+        float navH = drawOnlineNav(g_, zoneA_, OnlineSection::Social);
+        drawInfoCard(navH);
         drawListZone();
         drawChatZone();
         ui.inputEnabled = true;
@@ -382,23 +382,36 @@ private:
         ui_.drawConnection({zoneC_.right() - ui.s(240), header_.center().y});
     }
 
-    void drawInfoCard() {
+    /// Under the navigation column (whatever its height), sized to its content and to the room
+    /// left: the explanation is left out rather than drawn over or past anything.
+    void drawInfoCard(float navH) {
         UIContext& ui = g_.ui;
-        Rect card{zoneA_.x, zoneA_.y + ui.s(5 * 58 + 20) + ui.s(16), zoneA_.w, ui.s(250)};
+        const float top = zoneA_.y + navH + ui.s(16), room = zoneA_.bottom() - top;
+        float w = zoneA_.w - ui.s(32);
+        int unread = g_.online.unreadMessages(), req = g_.online.pendingFriendRequests();
+        static const char* kNote =
+            "Seuls vos amis peuvent vous écrire. Les messages sont privés : seuls les membres de la conversation les voient. "
+            "Bloquer un joueur met fin à l'amitié et masque ses messages.";
+        const float linesH = ui.s(req > 0 ? 88 : 66);
+        const float noteH = ui.text().measureWrapped(kNote, FontFace::Body, ui.s(14), w).y;
+        float h = linesH + ui.s(10) + noteH + ui.s(14);
+        const bool note = h <= room;
+        if (!note) h = linesH + ui.s(4);
+        if (h > room) return;  // not even the summary fits: the column stays free
+        Rect card{zoneA_.x, top, zoneA_.w, h};
         ui.r().fillRoundedRect(card, ui.s(14), Color{10, 16, 34, 215});
         ui.r().drawRoundedRect(card, ui.s(14), ui.theme().border, ui.s(1.2f));
-        float x = card.x + ui.s(16), w = card.w - ui.s(32);
-        ui.label(g_.online.loggedIn() ? g_.online.username() : "Non connecté", {x, card.y + ui.s(24)}, 20, ui.theme().text, Align::Left,
-                 FontFace::Bold, VAlign::Middle);
-        int unread = g_.online.unreadMessages(), req = g_.online.pendingFriendRequests();
+        float x = card.x + ui.s(16);
+        std::string name = g_.online.loggedIn() ? g_.online.username() : "Non connecté";
+        ui.label(name, {x, card.y + ui.s(22)}, ui.fitFont(name, FontFace::Bold, 20, w), ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
         std::string line = unread > 0 ? std::to_string(unread) + (unread > 1 ? " messages non lus" : " message non lu") : "Aucun message non lu";
-        ui.label(line, {x, card.y + ui.s(52)}, 15, unread > 0 ? ui.theme().accent : ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
-        if (req > 0)
-            ui.label(std::to_string(req) + (req > 1 ? " demandes d'amis" : " demande d'ami"), {x, card.y + ui.s(74)}, 15, ui.theme().warm, Align::Left,
-                     FontFace::Body, VAlign::Middle);
-        ui.labelWrapped("Seuls vos amis peuvent vous écrire. Les messages sont privés : seuls les membres de la conversation les voient. "
-                        "Bloquer un joueur met fin à l'amitié et masque ses messages.",
-                        {x, card.y + ui.s(96)}, w, 14, ui.theme().textDim);
+        ui.label(line, {x, card.y + ui.s(48)}, ui.fitFont(line, FontFace::Body, 15, w), unread > 0 ? ui.theme().accent : ui.theme().textDim, Align::Left,
+                 FontFace::Body, VAlign::Middle);
+        if (req > 0) {
+            std::string r = std::to_string(req) + (req > 1 ? " demandes d'amis" : " demande d'ami");
+            ui.label(r, {x, card.y + ui.s(70)}, ui.fitFont(r, FontFace::Body, 15, w), ui.theme().warm, Align::Left, FontFace::Body, VAlign::Middle);
+        }
+        if (note) ui.labelWrapped(kNote, {x, card.y + linesH + ui.s(10)}, w, 14, ui.theme().textDim);
     }
 
     // ------------------------------------------------------------ list zone
