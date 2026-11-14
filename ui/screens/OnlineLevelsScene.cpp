@@ -687,7 +687,12 @@ private:
                 if (ui.button("star" + std::to_string(s), {x + ui.s(110) + (s - 1) * ui.s(50), y, ui.s(44), ui.s(38)}, std::to_string(s), st)) {
                     g_.online.send("POST", "/api/v1/community/levels/" + id + "/rate", {{"stars", s}}, OnlineService::guard(life_, [this, id](const ApiResult& r) {
                         say(r.ok ? "Merci pour votre note." : r.message, !r.ok);
-                        if (r.ok) openLevel(id);
+                        if (r.ok) {
+                            g_.achievements.stats().insert("rated_levels", id);
+                            g_.checkAchievements();
+                            g_.achievements.save();
+                            openLevel(id);
+                        }
                     }));
                 }
             }

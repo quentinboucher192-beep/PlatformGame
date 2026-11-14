@@ -1,5 +1,6 @@
 #include "game/GameServices.h"
 
+#include "engine/core/FileUtil.h"
 #include "engine/core/Log.h"
 
 namespace cosmic {
@@ -14,9 +15,74 @@ void GameServices::loadAll() {
     ghosts.open(Paths::userDir() / "ghosts");
     ghosts.trimCache(static_cast<uint64_t>(settings.ghosts.cacheMB) * 1024 * 1024);
     segments.load();
+    if (std::string err; !achievementCatalog.loadDefault(&err)) Log::warn("Succès : {}", err);
+    achievements.load();
+    online.onAchievementEvent = [this](const std::string& key) {
+        achievements.stats().add(key);
+        checkAchievements();
+        achievements.save();
+    };
+    checkAchievements(false);  // what the existing saves already prove (no toast at startup)
     news.load();
     news.startScan(content);
     applySettings();
+}
+
+AchievementInputs GameServices::achievementInputs() const {
+    AchievementInputs in;
+    in.content = &content;
+    in.progression = &progression;
+    in.records = &records;
+    in.bosses = &bossStats;
+    in.stats = &achievements.stats();
+    in.playTimeSeconds = progression.playTimeSeconds;
+    for (const PlanetData* p : content.planets())
+        for (const LevelEntry* e : content.levelsForPlanet(p->id)) in.campaignLevels.push_back(e->id);
+    for (const LevelEntry* e : content.levels()) {
+        if (online.communityInstall(e->id)) {
+            if (const LevelRecord* r = records.get(e->id); r && r->completions > 0) ++in.communityLevelsFinished;
+        } else if (e->source == ContentSource::User) {
+            ++in.userLevels;
+        }
+    }
+    std::error_code ec;
+    if (fs::is_directory(Paths::userEnemiesDir(), ec))
+        for (const auto& f : fs::directory_iterator(Paths::userEnemiesDir(), ec))
+            if (f.path().extension() == ".json") ++in.userEnemies;
+    if (fs::is_directory(Paths::userLevelsDir(), ec))
+        for (const auto& f : fs::directory_iterator(Paths::userLevelsDir(), ec)) {
+            std::string name = Paths::toUtf8(f.path().filename());
+            if (name.size() > 16 && name.compare(name.size() - 16, 16, ".completion.json") == 0) ++in.completionProofs;
+        }
+    in.onlineAccount = online.loggedIn();
+    in.friends = online.friendCount();
+    return in;
+}
+
+void GameServices::checkAchievements(bool announce) {
+    if (achievementCatalog.achievements().empty()) return;
+    auto fresh = achievements.evaluate(achievementCatalog, achievementInputs(), FileUtil::nowString());
+    // The profile shows them (declared by the game) when the player is connected.
+    std::vector<std::string> ids;
+    for (const auto& a : achievementCatalog.achievements())
+        if (achievements.unlocked(a.id)) ids.push_back(a.id);
+    online.setAchievements(std::move(ids));
+    if (fresh.empty()) return;
+    achievements.save();
+    if (!announce) {
+        achievements.takeAnnouncements();
+        return;
+    }
+    if (fresh.size() > 3) {
+        int stars = 0;
+        for (const AchievementDef* a : fresh) stars += a->stars;
+        online.notify(OnlineService::Notification::Kind::Success, std::to_string(fresh.size()) + " succès débloqués",
+                      "+" + std::to_string(stars) + " étoiles · menu principal → Succès");
+        return;
+    }
+    for (const AchievementDef* a : fresh)
+        online.notify(OnlineService::Notification::Kind::Success, "Succès débloqué : " + a->name,
+                      std::string(static_cast<size_t>(a->stars), '*') + " " + a->description);
 }
 
 void GameServices::checkForUpdate() {

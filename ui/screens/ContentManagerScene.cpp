@@ -394,6 +394,9 @@ private:
         std::string err;
         if (ex.write(*level, *plan_, opt, &err)) {
             notify("Exporté : " + Paths::toUtf8(opt.destination), g_.ui.theme().success);
+            g_.achievements.stats().add("exports");
+            g_.checkAchievements();
+            g_.achievements.save();
             g_.uiSound("medal", 0.5f);
         } else {
             notify("Échec de l'export : " + err, g_.ui.theme().danger);

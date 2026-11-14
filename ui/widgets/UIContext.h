@@ -100,6 +100,9 @@ public:
                        size_t maxLen = 128);
     bool numberField(const std::string& name, const Rect& r, float& value, float step, float minV, float maxV,
                      const char* fmt = "%.1f");
+    /// A focusable, clickable area drawn by the caller (map nodes, web nodes...): takes part
+    /// in keyboard / gamepad navigation like a button. Returns true when activated.
+    bool hotspot(const std::string& name, const Rect& r, bool* hovered = nullptr);
     bool listItem(const std::string& name, const Rect& r, const std::string& text, bool selected,
                   const std::string& sub = "", Color accent = {});
     /// `badges` (optional, one per tab): a counter shown in a small pill at the tab's right,

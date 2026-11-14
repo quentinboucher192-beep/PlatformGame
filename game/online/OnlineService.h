@@ -88,6 +88,8 @@ public:
     // -------------------------------------------------------------- friends
     /// Friend requests received and not answered yet (last known), for the badges.
     int pendingFriendRequests() const { return pendingFriendRequests_; }
+    /// Friends of the player (last known list).
+    int friendCount() const { return friendCount_; }
     /// Reads the friend list now. It is also read every minute while connected: a new
     /// request, or a request of yours that was accepted, is notified once.
     void refreshFriends(ApiCallback cb = {});
@@ -120,6 +122,9 @@ public:
     /// the player's online profile. Kept on disk until sent (only while logged in; the
     /// server caps it by the real time elapsed between two reports).
     void notePlaytime(const std::string& levelKey, double seconds);
+    /// The achievements unlocked in this game (ids). Sent to the profile when the player is
+    /// connected (and again after a change or another login): shown as declared by the game.
+    void setAchievements(std::vector<std::string> ids);
     /// Seconds waiting to be sent (tests, settings).
     double pendingPlaytime() const;
     void flushPlaytime(ApiCallback cb = {});
@@ -182,6 +187,8 @@ public:
     std::vector<Notification> takeNotifications();
     std::vector<RankChange> takeRankChanges();
     void notify(Notification::Kind kind, std::string title, std::string text);
+    /// Something the achievements count happened online ("race_verified"), set by the game.
+    std::function<void(const std::string&)> onAchievementEvent;
 
     /// Wraps a callback so that it is dropped if `owner` (a screen) no longer exists.
     template <typename F>
@@ -240,6 +247,7 @@ private:
     float friendsTimer_ = 3.0f;
     bool friendsBusy_ = false;
     int pendingFriendRequests_ = 0;
+    int friendCount_ = 0;
     /// Per player: ids seen in the last friend list (to notify only what is new), and
     /// under "<id>/messages" the date of the newest message already notified.
     Json friendNotices_ = Json::object();
@@ -261,6 +269,10 @@ private:
     /// {"player": id, "levels": {key: seconds}} (online/playtime.json).
     Json playtime_ = Json::object();
     float playtimeTimer_ = 20.0f;
+    std::vector<std::string> achievements_;
+    std::string achievementsSentFor_;  // player whose profile has the current list
+    bool achievementsBusy_ = false;
+    float achievementsTimer_ = 5.0f;
     bool playtimeBusy_ = false;
     void savePlaytime();
 

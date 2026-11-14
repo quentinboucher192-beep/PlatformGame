@@ -496,6 +496,10 @@ int main(int argc, char** argv) {
         app.pushScene(makePowerGuide(game, page.empty() ? 0 : std::atoi(page.c_str()) - 1));
     } else if (has("--notifications")) {
         app.pushScene(makeNotifications(game, value("--notifications") == "online" ? 1 : 0));
+    } else if (has("--achievements")) {
+        if (std::string a = value("--achievements"); !a.empty())
+            game.onlineOpen = a == "list" ? "ach-list" : a.rfind("zoom:", 0) == 0 ? "ach-" + a : "ach:" + a;
+        app.pushScene(makeAchievements(game));
     } else if (has("--boss-stats")) {
         if (std::string b = value("--boss-stats"); !b.empty()) game.onlineOpen = "boss:" + b;
         app.pushScene(makeBossStats(game));

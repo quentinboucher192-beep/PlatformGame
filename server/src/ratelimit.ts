@@ -38,6 +38,7 @@ export const RULES = {
     communityReaction: { name: "community_reaction", limit: 120, windowSeconds: 600 },
     follow: { name: "follow", limit: 60, windowSeconds: 3600 },
     playtime: { name: "playtime", limit: 40, windowSeconds: 3600 },
+    achievements: { name: "achievements", limit: 30, windowSeconds: 3600 },
     projectCreate: { name: "project_create", limit: 10, windowSeconds: 3600 },
     projectInvite: { name: "project_invite", limit: 30, windowSeconds: 3600 },
     projectJoin: { name: "project_join", limit: 20, windowSeconds: 3600 },

@@ -70,7 +70,7 @@ public:
         // Only a campaign level: WORKSHOP levels are reached from the WORKSHOP.
         bool canContinue = !g_.progression.lastLevel.empty() && g_.content.level(g_.progression.lastLevel) &&
                            !g_.content.campaignPlanetOf(g_.progression.lastLevel).empty();
-        int rows = canContinue ? 7 : 6;
+        int rows = canContinue ? 8 : 7;
         float x = ui.s(120), w = ui.s(470), h = ui.s(66), gap = ui.s(14);
         float y = ui.screenH() * 0.5f - (rows * (h + gap)) * 0.5f + ui.s(40);
         Rect side{x - ui.s(40), y - ui.s(40), w + ui.s(80), rows * (h + gap) + ui.s(70)};
@@ -105,6 +105,11 @@ public:
             if (online > 0) sub += (sub.empty() ? "" : " · ") + std::to_string(online) + " en ligne";
             // Straight to the Cosmic Online centre when only it has something new.
             if (btn("news", "Notifications", sub)) g_.app.switchScene(makeNotifications(g_, n == 0 && online > 0 ? 1 : 0), 0.3f);
+        }
+        {
+            std::string sub = std::to_string(g_.achievements.stars(g_.achievementCatalog)) + " / " +
+                              std::to_string(g_.achievementCatalog.totalStars()) + " étoiles";
+            if (btn("achievements", "Succès", sub)) g_.app.switchScene(makeAchievements(g_), 0.3f);
         }
         {
             int kills = 0;

@@ -4,6 +4,7 @@
 // actions FOLLOW / friend / block. Every number comes from the server.
 
 #include <algorithm>
+#include <cmath>
 #include <map>
 
 #include "game/GameServices.h"
@@ -302,6 +303,32 @@ private:
         tiles.push_back({std::to_string(jget<int>(creator, "followers", 0)), "abonnés"});
         tiles.push_back({std::to_string(jget<int>(creator, "following", 0)), "abonnements"});
         y = drawTiles(tiles, x, y, w) + ui.s(10);
+        // Achievements' stars: unlocked in the player's game, declared to the server (not verified).
+        if (const Json& ach = data_.value("achievements", Json()); !hidden && ach.is_object()) {
+            Rect band{x, y, w, ui.s(46)};
+            ui.r().fillRoundedRect(band, ui.s(10), Color{30, 26, 12, 220});
+            ui.r().drawRoundedRect(band, ui.s(10), Color{255, 214, 90, 120}, ui.s(1.2f));
+            Vec2 sc{band.x + ui.s(26), band.center().y};
+            Color gold{255, 214, 90, 255};
+            // A five-pointed star.
+            for (int i = 0; i < 10; ++i) {
+                float a0 = -1.5708f + i * 0.6283f, a1 = -1.5708f + (i + 1) * 0.6283f;
+                float r0 = i % 2 == 0 ? ui.s(12) : ui.s(5.4f), r1 = i % 2 == 0 ? ui.s(5.4f) : ui.s(12);
+                ui.r().fillTriangle(sc, {sc.x + std::cos(a0) * r0, sc.y + std::sin(a0) * r0}, {sc.x + std::cos(a1) * r1, sc.y + std::sin(a1) * r1}, gold);
+            }
+            std::string v = std::to_string(jget<int>(ach, "stars", 0)) + " / " + std::to_string(jget<int>(ach, "total_stars", 0)) + " étoiles  ·  " +
+                            std::to_string(jget<int>(ach, "count", 0)) + " / " + std::to_string(jget<int>(ach, "total_count", 0)) + " succès";
+            float vx = band.x + ui.s(50);
+            float vf = ui.fitFont(v, FontFace::Bold, 20, w * 0.5f);
+            Vec2 vs = ui.label(v, {vx, band.center().y}, vf, gold, Align::Left, FontFace::Bold, VAlign::Middle);
+            std::string note = jget<int>(ach, "count", 0) > 0 ? "déclarés par le jeu de ce joueur, non vérifiés par le serveur"
+                                                               : "aucun succès déclaré pour l'instant";
+            float room = band.right() - (vx + vs.x + ui.s(24)) - ui.s(14);
+            if (room > ui.s(80))
+                ui.label(ui.elide(note, FontFace::Body, 14, room), {band.right() - ui.s(14), band.center().y}, 14, ui.theme().textDim, Align::Right,
+                         FontFace::Body, VAlign::Middle);
+            y += band.h + ui.s(10);
+        }
         if (isCreator) {
             const Json& rt = creator.value("rating", Json::object());
             std::vector<Tile> ct = {

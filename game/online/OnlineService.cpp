@@ -111,6 +111,13 @@ ApiResult OnlineService::unusableResult() const {
 
 // ------------------------------------------------------------------- update
 
+void OnlineService::setAchievements(std::vector<std::string> ids) {
+    if (ids == achievements_) return;
+    achievements_ = std::move(ids);
+    achievementsSentFor_.clear();  // to send again
+    achievementsTimer_ = 5.0f;
+}
+
 void OnlineService::update(float dt) {
     if (!initialized_ || !client_) return;
     client_->poll();
@@ -158,6 +165,19 @@ void OnlineService::update(float dt) {
         if (playtimeTimer_ <= 0.0f) {
             playtimeTimer_ = kPlaytimeSendSeconds;
             flushPlaytime();
+        }
+    }
+    // Achievements: the list goes to the profile a few seconds after a change or a login.
+    if (netState_ == OnlineState::Online && loggedIn() && !achievementsBusy_ && achievementsSentFor_ != tokens_.playerId) {
+        achievementsTimer_ -= dt;
+        if (achievementsTimer_ <= 0.0f) {
+            achievementsTimer_ = 60.0f;  // after a failure: a minute later
+            achievementsBusy_ = true;
+            std::string who = tokens_.playerId;
+            send("PUT", "/api/v1/players/me/achievements", {{"unlocked", achievements_}}, [this, who](const ApiResult& r) {
+                achievementsBusy_ = false;
+                if (r.ok) achievementsSentFor_ = who;
+            });
         }
     }
     // PENDING records are re-checked from time to time while connected.
@@ -554,6 +574,7 @@ void OnlineService::submitRaceAttempt(RaceAttempt a, std::vector<uint8_t> replay
                 return;
             }
             if (jget<bool>(u.data, "verifier", false)) {
+                if (onAchievementEvent) onAchievementEvent("race_verified");
                 notify(Notification::Kind::Record, "Niveau vérifié !", "Vous êtes le premier à finir « " + title + " » : vous en êtes le vérificateur.");
                 return;
             }
@@ -980,6 +1001,7 @@ void OnlineService::noteFriends(const Json& data) {
     for (const auto& e : outgoing) out.push_back(e.first);
     known = {{"incoming", in}, {"outgoing", out}};
     pendingFriendRequests_ = static_cast<int>(incoming.size());
+    friendCount_ = static_cast<int>(friends.size());
     saveFriendNotices();
 }
 

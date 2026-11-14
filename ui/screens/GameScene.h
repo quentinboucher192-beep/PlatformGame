@@ -1,6 +1,7 @@
 #pragma once
 
 #include <future>
+#include <map>
 #include <memory>
 #include <optional>
 #include <string>
@@ -106,6 +107,12 @@ private:
     GhostRun ghostRun_;
     std::string ghostHash_;
     int64_t pbGhostMs_ = 0;
+    // Achievements: what this run adds to the lifetime counters (once, at its end).
+    void noteAchievementStats(bool completed, const RecordUpdate* upd);
+    bool statsNoted_ = false;
+    int64_t runJumps_ = 0;
+    bool wasGliding_ = false;  // the glider opens without a « powerUsed » event: counted here
+    std::map<std::string, int64_t> runPowers_;
     std::string raceKind_, raceLevelId_, raceHash_, raceTitle_;
     int raceVersion_ = 0;
 };

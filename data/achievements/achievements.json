@@ -1,0 +1,1990 @@
+{
+ "format": "cosmic.achievements",
+ "version": 1,
+ "categories": [
+  {
+   "id": "voyage",
+   "name": "Voyage",
+   "color": "#39F0D8",
+   "description": "La campagne : niveaux, planètes et le Noyau stellaire."
+  },
+  {
+   "id": "chrono",
+   "name": "Chrono",
+   "color": "#FFD45A",
+   "description": "Médailles et records personnels."
+  },
+  {
+   "id": "combat",
+   "name": "Combat",
+   "color": "#FF6D8A",
+   "description": "Ennemis vaincus, niveau par niveau et au total."
+  },
+  {
+   "id": "gardiens",
+   "name": "Gardiens",
+   "color": "#FF9F4A",
+   "description": "Les boss : chaque gardien, ses échos et l'Astrarque."
+  },
+  {
+   "id": "maitrise",
+   "name": "Maîtrise",
+   "color": "#B48CFF",
+   "description": "Sans mourir, sans être touché : la précision."
+  },
+  {
+   "id": "pouvoirs",
+   "name": "Pouvoirs",
+   "color": "#6ED6FF",
+   "description": "Chaque pouvoir utilisé, l'arsenal complet."
+  },
+  {
+   "id": "tresors",
+   "name": "Trésors",
+   "color": "#FFE27A",
+   "description": "Éclats, reliques et secrets."
+  },
+  {
+   "id": "endurance",
+   "name": "Endurance",
+   "color": "#7CFF9C",
+   "description": "Temps de jeu, sauts, chutes et parties."
+  },
+  {
+   "id": "fantomes",
+   "name": "Fantômes",
+   "color": "#9FD8FF",
+   "description": "Ghost Racing : courir contre ses fantômes et ceux des autres."
+  },
+  {
+   "id": "extreme",
+   "name": "Extrême",
+   "color": "#FF4D6D",
+   "description": "Une seule vie : les niveaux EXTRÊME."
+  },
+  {
+   "id": "createur",
+   "name": "Créateur",
+   "color": "#F59BFF",
+   "description": "L'éditeur de niveaux et d'ennemis, la publication."
+  },
+  {
+   "id": "communaute",
+   "name": "Communauté",
+   "color": "#8CA8FF",
+   "description": "Cosmic Online : niveaux des joueurs et amis (compte facultatif)."
+  }
+ ],
+ "achievements": [
+  {
+   "id": "voyage_first",
+   "category": "voyage",
+   "name": "Premier pas",
+   "description": "Terminer un niveau.",
+   "stars": 1,
+   "condition": {
+    "type": "levels_completed",
+    "count": 1
+   }
+  },
+  {
+   "id": "voyage_5",
+   "category": "voyage",
+   "name": "Explorateur",
+   "description": "Terminer 5 niveaux de la campagne.",
+   "stars": 1,
+   "condition": {
+    "type": "levels_completed",
+    "count": 5
+   },
+   "requires": [
+    "voyage_first"
+   ]
+  },
+  {
+   "id": "voyage_10",
+   "category": "voyage",
+   "name": "Navigateur",
+   "description": "Terminer 10 niveaux de la campagne.",
+   "stars": 2,
+   "condition": {
+    "type": "levels_completed",
+    "count": 10
+   },
+   "requires": [
+    "voyage_5"
+   ]
+  },
+  {
+   "id": "voyage_sylvanox",
+   "category": "voyage",
+   "name": "Gardien de Sylvanox",
+   "description": "Terminer les 4 niveaux de Sylvanox.",
+   "stars": 2,
+   "condition": {
+    "type": "planet",
+    "planet": "sylvanox"
+   },
+   "requires": [
+    "voyage_first"
+   ]
+  },
+  {
+   "id": "voyage_glacior",
+   "category": "voyage",
+   "name": "Gardien de Glacior",
+   "description": "Terminer les 4 niveaux de Glacior.",
+   "stars": 2,
+   "condition": {
+    "type": "planet",
+    "planet": "glacior"
+   },
+   "requires": [
+    "voyage_first"
+   ]
+  },
+  {
+   "id": "voyage_pyralis",
+   "category": "voyage",
+   "name": "Gardien de Pyralis",
+   "description": "Terminer les 4 niveaux de Pyralis.",
+   "stars": 3,
+   "condition": {
+    "type": "planet",
+    "planet": "pyralis"
+   },
+   "requires": [
+    "voyage_first"
+   ]
+  },
+  {
+   "id": "voyage_core_open",
+   "category": "voyage",
+   "name": "Le cœur s'ouvre",
+   "description": "Terminer les trois planètes.",
+   "stars": 3,
+   "condition": {
+    "type": "planets",
+    "planets": [
+     "sylvanox",
+     "glacior",
+     "pyralis"
+    ]
+   },
+   "requires": [
+    "voyage_sylvanox",
+    "voyage_glacior",
+    "voyage_pyralis"
+   ]
+  },
+  {
+   "id": "voyage_echoes",
+   "category": "voyage",
+   "name": "L'Arène des Échos",
+   "description": "Terminer L'Arène des Échos.",
+   "stars": 4,
+   "condition": {
+    "type": "level",
+    "level": "noyau_01"
+   },
+   "requires": [
+    "voyage_core_open"
+   ]
+  },
+  {
+   "id": "voyage_star",
+   "category": "voyage",
+   "name": "Au cœur de l'étoile",
+   "description": "Terminer Le Cœur de l'Étoile.",
+   "stars": 4,
+   "condition": {
+    "type": "level",
+    "level": "noyau_02"
+   },
+   "requires": [
+    "voyage_core_open"
+   ]
+  },
+  {
+   "id": "voyage_all",
+   "category": "voyage",
+   "name": "Système conquis",
+   "description": "Terminer les 14 niveaux de la campagne.",
+   "stars": 5,
+   "condition": {
+    "type": "all_levels"
+   },
+   "requires": [
+    "voyage_echoes",
+    "voyage_star"
+   ]
+  },
+  {
+   "id": "chrono_bronze",
+   "category": "chrono",
+   "name": "Première médaille",
+   "description": "Obtenir une médaille de bronze.",
+   "stars": 1,
+   "condition": {
+    "type": "medal_count",
+    "medal": 1,
+    "count": 1
+   }
+  },
+  {
+   "id": "chrono_silver",
+   "category": "chrono",
+   "name": "Argenté",
+   "description": "Obtenir une médaille d'argent.",
+   "stars": 1,
+   "condition": {
+    "type": "medal_count",
+    "medal": 2,
+    "count": 1
+   },
+   "requires": [
+    "chrono_bronze"
+   ]
+  },
+  {
+   "id": "chrono_gold",
+   "category": "chrono",
+   "name": "Doré",
+   "description": "Obtenir une médaille d'or.",
+   "stars": 2,
+   "condition": {
+    "type": "medal_count",
+    "medal": 3,
+    "count": 1
+   },
+   "requires": [
+    "chrono_silver"
+   ]
+  },
+  {
+   "id": "chrono_gold_5",
+   "category": "chrono",
+   "name": "Orfèvre",
+   "description": "Obtenir l'or sur 5 niveaux.",
+   "stars": 3,
+   "condition": {
+    "type": "medal_count",
+    "medal": 3,
+    "count": 5
+   },
+   "requires": [
+    "chrono_gold"
+   ]
+  },
+  {
+   "id": "chrono_gold_planet",
+   "category": "chrono",
+   "name": "Planète dorée",
+   "description": "Obtenir l'or sur tous les niveaux d'une planète.",
+   "stars": 3,
+   "condition": {
+    "type": "medal_planet_any",
+    "medal": 3
+   },
+   "requires": [
+    "chrono_gold"
+   ]
+  },
+  {
+   "id": "chrono_gold_all",
+   "category": "chrono",
+   "name": "Tout en or",
+   "description": "Obtenir l'or sur les 14 niveaux.",
+   "stars": 4,
+   "condition": {
+    "type": "medal_count",
+    "medal": 3,
+    "count": 14
+   },
+   "requires": [
+    "chrono_gold_5"
+   ]
+  },
+  {
+   "id": "chrono_platinum",
+   "category": "chrono",
+   "name": "Platine !",
+   "description": "Obtenir une médaille de platine.",
+   "stars": 3,
+   "condition": {
+    "type": "medal_count",
+    "medal": 4,
+    "count": 1
+   },
+   "requires": [
+    "chrono_gold"
+   ]
+  },
+  {
+   "id": "chrono_platinum_5",
+   "category": "chrono",
+   "name": "Métronome",
+   "description": "Obtenir le platine sur 5 niveaux.",
+   "stars": 4,
+   "condition": {
+    "type": "medal_count",
+    "medal": 4,
+    "count": 5
+   },
+   "requires": [
+    "chrono_platinum"
+   ]
+  },
+  {
+   "id": "chrono_platinum_all",
+   "category": "chrono",
+   "name": "Chronomaître",
+   "description": "Obtenir le platine sur les 14 niveaux.",
+   "stars": 5,
+   "condition": {
+    "type": "medal_count",
+    "medal": 4,
+    "count": 14
+   },
+   "requires": [
+    "chrono_platinum_5",
+    "chrono_gold_all"
+   ]
+  },
+  {
+   "id": "chrono_pb",
+   "category": "chrono",
+   "name": "Toujours plus vite",
+   "description": "Battre son propre meilleur temps sur un niveau.",
+   "stars": 1,
+   "condition": {
+    "type": "stat",
+    "key": "pb_improved",
+    "count": 1
+   }
+  },
+  {
+   "id": "chrono_pb_10",
+   "category": "chrono",
+   "name": "Obsession du chrono",
+   "description": "Battre 10 fois un de ses meilleurs temps.",
+   "stars": 2,
+   "condition": {
+    "type": "stat",
+    "key": "pb_improved",
+    "count": 10
+   },
+   "requires": [
+    "chrono_pb"
+   ]
+  },
+  {
+   "id": "chrono_pb_50",
+   "category": "chrono",
+   "name": "Optimiseur",
+   "description": "Battre 50 fois un de ses meilleurs temps.",
+   "stars": 4,
+   "condition": {
+    "type": "stat",
+    "key": "pb_improved",
+    "count": 50
+   },
+   "requires": [
+    "chrono_pb_10"
+   ]
+  },
+  {
+   "id": "combat_10",
+   "category": "combat",
+   "name": "Premiers combats",
+   "description": "Vaincre 10 ennemis.",
+   "stars": 1,
+   "condition": {
+    "type": "stat",
+    "key": "kills",
+    "count": 10
+   }
+  },
+  {
+   "id": "combat_100",
+   "category": "combat",
+   "name": "Chasseur",
+   "description": "Vaincre 100 ennemis.",
+   "stars": 1,
+   "condition": {
+    "type": "stat",
+    "key": "kills",
+    "count": 100
+   },
+   "requires": [
+    "combat_10"
+   ]
+  },
+  {
+   "id": "combat_500",
+   "category": "combat",
+   "name": "Fléau des ombres",
+   "description": "Vaincre 500 ennemis.",
+   "stars": 2,
+   "condition": {
+    "type": "stat",
+    "key": "kills",
+    "count": 500
+   },
+   "requires": [
+    "combat_100"
+   ]
+  },
+  {
+   "id": "combat_2000",
+   "category": "combat",
+   "name": "Légion vaincue",
+   "description": "Vaincre 2 000 ennemis.",
+   "stars": 3,
+   "condition": {
+    "type": "stat",
+    "key": "kills",
+    "count": 2000
+   },
+   "requires": [
+    "combat_500"
+   ]
+  },
+  {
+   "id": "combat_10000",
+   "category": "combat",
+   "name": "Anéantisseur",
+   "description": "Vaincre 10 000 ennemis.",
+   "stars": 5,
+   "condition": {
+    "type": "stat",
+    "key": "kills",
+    "count": 10000
+   },
+   "requires": [
+    "combat_2000"
+   ]
+  },
+  {
+   "id": "combat_run_50",
+   "category": "combat",
+   "name": "Nettoyage",
+   "description": "Vaincre 50 ennemis en une seule partie.",
+   "stars": 2,
+   "condition": {
+    "type": "max",
+    "key": "run_kills",
+    "count": 50
+   },
+   "requires": [
+    "combat_100"
+   ]
+  },
+  {
+   "id": "combat_run_100",
+   "category": "combat",
+   "name": "Tornade",
+   "description": "Vaincre 100 ennemis en une seule partie.",
+   "stars": 3,
+   "condition": {
+    "type": "max",
+    "key": "run_kills",
+    "count": 100
+   },
+   "requires": [
+    "combat_run_50"
+   ]
+  },
+  {
+   "id": "combat_clear",
+   "category": "combat",
+   "name": "Aucun survivant",
+   "description": "Terminer un niveau après avoir vaincu tous ses ennemis.",
+   "stars": 3,
+   "condition": {
+    "type": "set",
+    "key": "cleared_levels",
+    "count": 1
+   },
+   "requires": [
+    "combat_100"
+   ]
+  },
+  {
+   "id": "combat_clear_5",
+   "category": "combat",
+   "name": "Purificateur",
+   "description": "Terminer 5 niveaux en ayant vaincu tous leurs ennemis.",
+   "stars": 4,
+   "condition": {
+    "type": "set",
+    "key": "cleared_levels",
+    "count": 5
+   },
+   "requires": [
+    "combat_clear"
+   ]
+  },
+  {
+   "id": "combat_clear_all",
+   "category": "combat",
+   "name": "Silence total",
+   "description": "Vaincre tous les ennemis des 14 niveaux de la campagne.",
+   "stars": 5,
+   "condition": {
+    "type": "set",
+    "key": "cleared_levels",
+    "count": 14,
+    "campaign": true
+   },
+   "requires": [
+    "combat_clear_5"
+   ]
+  },
+  {
+   "id": "gardiens_first",
+   "category": "gardiens",
+   "name": "Premier gardien",
+   "description": "Vaincre un boss.",
+   "stars": 1,
+   "condition": {
+    "type": "boss_distinct",
+    "variant": "original",
+    "count": 1
+   }
+  },
+  {
+   "id": "gardiens_thornwarden",
+   "category": "gardiens",
+   "name": "Thornwarden",
+   "description": "Vaincre Thornwarden.",
+   "stars": 2,
+   "condition": {
+    "type": "boss",
+    "boss": "thornwarden"
+   },
+   "requires": [
+    "gardiens_first"
+   ]
+  },
+  {
+   "id": "gardiens_spore_queen",
+   "category": "gardiens",
+   "name": "Reine Sporale",
+   "description": "Vaincre Reine Sporale.",
+   "stars": 2,
+   "condition": {
+    "type": "boss",
+    "boss": "spore_queen"
+   },
+   "requires": [
+    "gardiens_first"
+   ]
+  },
+  {
+   "id": "gardiens_prime_sentinel",
+   "category": "gardiens",
+   "name": "Sentinelle Prime",
+   "description": "Vaincre Sentinelle Prime.",
+   "stars": 2,
+   "condition": {
+    "type": "boss",
+    "boss": "prime_sentinel"
+   },
+   "requires": [
+    "gardiens_first"
+   ]
+  },
+  {
+   "id": "gardiens_archon_catacombs",
+   "category": "gardiens",
+   "name": "Archonte des Catacombes",
+   "description": "Vaincre Archonte des Catacombes.",
+   "stars": 3,
+   "condition": {
+    "type": "boss",
+    "boss": "archon_catacombs"
+   },
+   "requires": [
+    "gardiens_first"
+   ]
+  },
+  {
+   "id": "gardiens_cryowyrm",
+   "category": "gardiens",
+   "name": "Cryowyrm",
+   "description": "Vaincre Cryowyrm.",
+   "stars": 2,
+   "condition": {
+    "type": "boss",
+    "boss": "cryowyrm"
+   },
+   "requires": [
+    "gardiens_first"
+   ]
+  },
+  {
+   "id": "gardiens_frost_hydra",
+   "category": "gardiens",
+   "name": "Hydre de Givre",
+   "description": "Vaincre Hydre de Givre.",
+   "stars": 2,
+   "condition": {
+    "type": "boss",
+    "boss": "frost_hydra"
+   },
+   "requires": [
+    "gardiens_first"
+   ]
+  },
+  {
+   "id": "gardiens_glaciarch",
+   "category": "gardiens",
+   "name": "Glaciarque",
+   "description": "Vaincre Glaciarque.",
+   "stars": 3,
+   "condition": {
+    "type": "boss",
+    "boss": "glaciarch"
+   },
+   "requires": [
+    "gardiens_first"
+   ]
+  },
+  {
+   "id": "gardiens_howling_wyrm",
+   "category": "gardiens",
+   "name": "Wyrm Hurlante",
+   "description": "Vaincre Wyrm Hurlante.",
+   "stars": 3,
+   "condition": {
+    "type": "boss",
+    "boss": "howling_wyrm"
+   },
+   "requires": [
+    "gardiens_first"
+   ]
+  },
+  {
+   "id": "gardiens_magmaroth",
+   "category": "gardiens",
+   "name": "Magmaroth",
+   "description": "Vaincre Magmaroth.",
+   "stars": 2,
+   "condition": {
+    "type": "boss",
+    "boss": "magmaroth"
+   },
+   "requires": [
+    "gardiens_first"
+   ]
+  },
+  {
+   "id": "gardiens_ignivore",
+   "category": "gardiens",
+   "name": "Ignivore",
+   "description": "Vaincre Ignivore.",
+   "stars": 3,
+   "condition": {
+    "type": "boss",
+    "boss": "ignivore"
+   },
+   "requires": [
+    "gardiens_first"
+   ]
+  },
+  {
+   "id": "gardiens_forge_core",
+   "category": "gardiens",
+   "name": "Forgeron Primordial",
+   "description": "Vaincre Forgeron Primordial.",
+   "stars": 3,
+   "condition": {
+    "type": "boss",
+    "boss": "forge_core"
+   },
+   "requires": [
+    "gardiens_first"
+   ]
+  },
+  {
+   "id": "gardiens_crucible_heart",
+   "category": "gardiens",
+   "name": "Cœur du Creuset",
+   "description": "Vaincre Cœur du Creuset.",
+   "stars": 3,
+   "condition": {
+    "type": "boss",
+    "boss": "crucible_heart"
+   },
+   "requires": [
+    "gardiens_first"
+   ]
+  },
+  {
+   "id": "gardiens_12",
+   "category": "gardiens",
+   "name": "Les douze gardiens",
+   "description": "Vaincre les 12 gardiens des planètes.",
+   "stars": 4,
+   "condition": {
+    "type": "boss_distinct",
+    "variant": "original",
+    "count": 12
+   },
+   "requires": [
+    "gardiens_thornwarden",
+    "gardiens_spore_queen",
+    "gardiens_prime_sentinel",
+    "gardiens_archon_catacombs",
+    "gardiens_cryowyrm",
+    "gardiens_frost_hydra",
+    "gardiens_glaciarch",
+    "gardiens_howling_wyrm",
+    "gardiens_magmaroth",
+    "gardiens_ignivore",
+    "gardiens_forge_core",
+    "gardiens_crucible_heart"
+   ]
+  },
+  {
+   "id": "gardiens_echoes",
+   "category": "gardiens",
+   "name": "Silence des échos",
+   "description": "Vaincre les 12 échos des gardiens.",
+   "stars": 4,
+   "condition": {
+    "type": "boss_distinct",
+    "variant": "echo",
+    "count": 12
+   },
+   "requires": [
+    "gardiens_12"
+   ]
+  },
+  {
+   "id": "gardiens_astrarque",
+   "category": "gardiens",
+   "name": "Astrarque",
+   "description": "Vaincre l'Astrarque, au cœur de l'étoile.",
+   "stars": 5,
+   "condition": {
+    "type": "boss",
+    "boss": "astrarque"
+   },
+   "requires": [
+    "gardiens_12"
+   ]
+  },
+  {
+   "id": "gardiens_50",
+   "category": "gardiens",
+   "name": "Tueur de titans",
+   "description": "Remporter 50 combats contre des boss.",
+   "stars": 3,
+   "condition": {
+    "type": "boss_total",
+    "count": 50
+   },
+   "requires": [
+    "gardiens_first"
+   ]
+  },
+  {
+   "id": "gardiens_200",
+   "category": "gardiens",
+   "name": "Fléau des titans",
+   "description": "Remporter 200 combats contre des boss.",
+   "stars": 5,
+   "condition": {
+    "type": "boss_total",
+    "count": 200
+   },
+   "requires": [
+    "gardiens_50"
+   ]
+  },
+  {
+   "id": "maitrise_nodeath",
+   "category": "maitrise",
+   "name": "Sans faux pas",
+   "description": "Terminer un niveau sans mourir.",
+   "stars": 1,
+   "condition": {
+    "type": "levels_no_death",
+    "count": 1
+   }
+  },
+  {
+   "id": "maitrise_nodeath_5",
+   "category": "maitrise",
+   "name": "Équilibriste",
+   "description": "Terminer 5 niveaux sans mourir.",
+   "stars": 2,
+   "condition": {
+    "type": "levels_no_death",
+    "count": 5
+   },
+   "requires": [
+    "maitrise_nodeath"
+   ]
+  },
+  {
+   "id": "maitrise_nodeath_all",
+   "category": "maitrise",
+   "name": "Immortel",
+   "description": "Terminer les 14 niveaux de la campagne sans mourir.",
+   "stars": 4,
+   "condition": {
+    "type": "levels_no_death",
+    "count": 14
+   },
+   "requires": [
+    "maitrise_nodeath_5"
+   ]
+  },
+  {
+   "id": "maitrise_nodamage",
+   "category": "maitrise",
+   "name": "Intouchable",
+   "description": "Terminer un niveau sans subir de dégât.",
+   "stars": 3,
+   "condition": {
+    "type": "set",
+    "key": "no_damage_levels",
+    "count": 1
+   },
+   "requires": [
+    "maitrise_nodeath"
+   ]
+  },
+  {
+   "id": "maitrise_nodamage_5",
+   "category": "maitrise",
+   "name": "Fantôme vivant",
+   "description": "Terminer 5 niveaux sans subir de dégât.",
+   "stars": 5,
+   "condition": {
+    "type": "set",
+    "key": "no_damage_levels",
+    "count": 5
+   },
+   "requires": [
+    "maitrise_nodamage"
+   ]
+  },
+  {
+   "id": "maitrise_phase",
+   "category": "maitrise",
+   "name": "Esquive parfaite",
+   "description": "Battre une phase de boss sans être touché.",
+   "stars": 1,
+   "condition": {
+    "type": "boss_phase_nohit",
+    "count": 1
+   }
+  },
+  {
+   "id": "maitrise_phase_25",
+   "category": "maitrise",
+   "name": "Danseur de phases",
+   "description": "Battre 25 phases de boss sans être touché.",
+   "stars": 3,
+   "condition": {
+    "type": "boss_phase_nohit",
+    "count": 25
+   },
+   "requires": [
+    "maitrise_phase"
+   ]
+  },
+  {
+   "id": "maitrise_boss_nohit",
+   "category": "maitrise",
+   "name": "Sans une égratignure",
+   "description": "Vaincre un boss sans être touché.",
+   "stars": 3,
+   "condition": {
+    "type": "boss_nohit_distinct",
+    "count": 1
+   },
+   "requires": [
+    "maitrise_phase"
+   ]
+  },
+  {
+   "id": "maitrise_boss_nohit_6",
+   "category": "maitrise",
+   "name": "Maître esquiveur",
+   "description": "Vaincre 6 boss différents sans être touché.",
+   "stars": 4,
+   "condition": {
+    "type": "boss_nohit_distinct",
+    "count": 6
+   },
+   "requires": [
+    "maitrise_boss_nohit"
+   ]
+  },
+  {
+   "id": "maitrise_boss_nohit_12",
+   "category": "maitrise",
+   "name": "Perfection gardienne",
+   "description": "Vaincre les 12 gardiens sans être touché.",
+   "stars": 5,
+   "condition": {
+    "type": "boss_nohit_distinct",
+    "count": 12,
+    "variant": "original"
+   },
+   "requires": [
+    "maitrise_boss_nohit_6"
+   ]
+  },
+  {
+   "id": "pouvoirs_first",
+   "category": "pouvoirs",
+   "name": "Étincelle",
+   "description": "Utiliser un pouvoir.",
+   "stars": 1,
+   "condition": {
+    "type": "stat",
+    "key": "power_uses",
+    "count": 1
+   }
+  },
+  {
+   "id": "pouvoirs_dash",
+   "category": "pouvoirs",
+   "name": "Maîtrise : Dash",
+   "description": "Utiliser Dash 50 fois.",
+   "stars": 1,
+   "condition": {
+    "type": "power_uses",
+    "power": "dash",
+    "count": 50
+   },
+   "requires": [
+    "pouvoirs_first"
+   ]
+  },
+  {
+   "id": "pouvoirs_wave",
+   "category": "pouvoirs",
+   "name": "Maîtrise : Onde énergétique",
+   "description": "Utiliser Onde énergétique 50 fois.",
+   "stars": 1,
+   "condition": {
+    "type": "power_uses",
+    "power": "wave",
+    "count": 50
+   },
+   "requires": [
+    "pouvoirs_first"
+   ]
+  },
+  {
+   "id": "pouvoirs_shield",
+   "category": "pouvoirs",
+   "name": "Maîtrise : Bouclier",
+   "description": "Utiliser Bouclier 50 fois.",
+   "stars": 1,
+   "condition": {
+    "type": "power_uses",
+    "power": "shield",
+    "count": 50
+   },
+   "requires": [
+    "pouvoirs_first"
+   ]
+  },
+  {
+   "id": "pouvoirs_impulse",
+   "category": "pouvoirs",
+   "name": "Maîtrise : Impulsion",
+   "description": "Utiliser Impulsion 50 fois.",
+   "stars": 1,
+   "condition": {
+    "type": "power_uses",
+    "power": "impulse",
+    "count": 50
+   },
+   "requires": [
+    "pouvoirs_first"
+   ]
+  },
+  {
+   "id": "pouvoirs_glide",
+   "category": "pouvoirs",
+   "name": "Maîtrise : Planeur",
+   "description": "Utiliser Planeur 50 fois.",
+   "stars": 1,
+   "condition": {
+    "type": "power_uses",
+    "power": "glide",
+    "count": 50
+   },
+   "requires": [
+    "pouvoirs_first"
+   ]
+  },
+  {
+   "id": "pouvoirs_triple_jump",
+   "category": "pouvoirs",
+   "name": "Maîtrise : Triple saut",
+   "description": "Terminer 5 niveaux en possédant Triple saut (pouvoir passif).",
+   "stars": 1,
+   "condition": {
+    "type": "stat",
+    "key": "carried_triple_jump",
+    "count": 5
+   },
+   "requires": [
+    "pouvoirs_first"
+   ]
+  },
+  {
+   "id": "pouvoirs_air_dash",
+   "category": "pouvoirs",
+   "name": "Maîtrise : Ruée aérienne",
+   "description": "Terminer 5 niveaux en possédant Ruée aérienne (pouvoir passif).",
+   "stars": 1,
+   "condition": {
+    "type": "stat",
+    "key": "carried_air_dash",
+    "count": 5
+   },
+   "requires": [
+    "pouvoirs_first"
+   ]
+  },
+  {
+   "id": "pouvoirs_teleport",
+   "category": "pouvoirs",
+   "name": "Maîtrise : Téléportation courte",
+   "description": "Utiliser Téléportation courte 50 fois.",
+   "stars": 2,
+   "condition": {
+    "type": "power_uses",
+    "power": "teleport",
+    "count": 50
+   },
+   "requires": [
+    "pouvoirs_first"
+   ]
+  },
+  {
+   "id": "pouvoirs_charge_shot",
+   "category": "pouvoirs",
+   "name": "Maîtrise : Tir chargé",
+   "description": "Utiliser Tir chargé 50 fois.",
+   "stars": 2,
+   "condition": {
+    "type": "power_uses",
+    "power": "charge_shot",
+    "count": 50
+   },
+   "requires": [
+    "pouvoirs_first"
+   ]
+  },
+  {
+   "id": "pouvoirs_ground_pound",
+   "category": "pouvoirs",
+   "name": "Maîtrise : Frappe sismique",
+   "description": "Utiliser Frappe sismique 50 fois.",
+   "stars": 2,
+   "condition": {
+    "type": "power_uses",
+    "power": "ground_pound",
+    "count": 50
+   },
+   "requires": [
+    "pouvoirs_first"
+   ]
+  },
+  {
+   "id": "pouvoirs_grapple",
+   "category": "pouvoirs",
+   "name": "Maîtrise : Grappin",
+   "description": "Utiliser Grappin 50 fois.",
+   "stars": 2,
+   "condition": {
+    "type": "power_uses",
+    "power": "grapple",
+    "count": 50
+   },
+   "requires": [
+    "pouvoirs_first"
+   ]
+  },
+  {
+   "id": "pouvoirs_magnet",
+   "category": "pouvoirs",
+   "name": "Maîtrise : Aimant",
+   "description": "Terminer 5 niveaux en possédant Aimant (pouvoir passif).",
+   "stars": 2,
+   "condition": {
+    "type": "stat",
+    "key": "carried_magnet",
+    "count": 5
+   },
+   "requires": [
+    "pouvoirs_first"
+   ]
+  },
+  {
+   "id": "pouvoirs_plasma_bomb",
+   "category": "pouvoirs",
+   "name": "Maîtrise : Bombe plasma",
+   "description": "Utiliser Bombe plasma 50 fois.",
+   "stars": 2,
+   "condition": {
+    "type": "power_uses",
+    "power": "plasma_bomb",
+    "count": 50
+   },
+   "requires": [
+    "pouvoirs_first"
+   ]
+  },
+  {
+   "id": "pouvoirs_time_slow",
+   "category": "pouvoirs",
+   "name": "Maîtrise : Ralenti temporel",
+   "description": "Utiliser Ralenti temporel 50 fois.",
+   "stars": 2,
+   "condition": {
+    "type": "power_uses",
+    "power": "time_slow",
+    "count": 50
+   },
+   "requires": [
+    "pouvoirs_first"
+   ]
+  },
+  {
+   "id": "pouvoirs_all",
+   "category": "pouvoirs",
+   "name": "Arsenal complet",
+   "description": "Obtenir chacun des 14 pouvoirs.",
+   "stars": 3,
+   "condition": {
+    "type": "set",
+    "key": "powers_owned",
+    "count": 14
+   },
+   "requires": [
+    "pouvoirs_first"
+   ]
+  },
+  {
+   "id": "pouvoirs_1000",
+   "category": "pouvoirs",
+   "name": "Réacteur vivant",
+   "description": "Utiliser des pouvoirs 1 000 fois.",
+   "stars": 3,
+   "condition": {
+    "type": "stat",
+    "key": "power_uses",
+    "count": 1000
+   },
+   "requires": [
+    "pouvoirs_first"
+   ]
+  },
+  {
+   "id": "pouvoirs_10000",
+   "category": "pouvoirs",
+   "name": "Surcharge",
+   "description": "Utiliser des pouvoirs 10 000 fois.",
+   "stars": 5,
+   "condition": {
+    "type": "stat",
+    "key": "power_uses",
+    "count": 10000
+   },
+   "requires": [
+    "pouvoirs_1000"
+   ]
+  },
+  {
+   "id": "pouvoirs_none",
+   "category": "pouvoirs",
+   "name": "À mains nues",
+   "description": "Terminer un niveau de la campagne sans utiliser de pouvoir.",
+   "stars": 3,
+   "condition": {
+    "type": "set",
+    "key": "no_power_levels",
+    "count": 1
+   }
+  },
+  {
+   "id": "tresors_shards_50",
+   "category": "tresors",
+   "name": "Glaneur",
+   "description": "Ramasser 50 éclats.",
+   "stars": 1,
+   "condition": {
+    "type": "stat",
+    "key": "shards",
+    "count": 50
+   }
+  },
+  {
+   "id": "tresors_shards_500",
+   "category": "tresors",
+   "name": "Collectionneur",
+   "description": "Ramasser 500 éclats.",
+   "stars": 2,
+   "condition": {
+    "type": "stat",
+    "key": "shards",
+    "count": 500
+   },
+   "requires": [
+    "tresors_shards_50"
+   ]
+  },
+  {
+   "id": "tresors_shards_3000",
+   "category": "tresors",
+   "name": "Trésorier stellaire",
+   "description": "Ramasser 3 000 éclats.",
+   "stars": 4,
+   "condition": {
+    "type": "stat",
+    "key": "shards",
+    "count": 3000
+   },
+   "requires": [
+    "tresors_shards_500"
+   ]
+  },
+  {
+   "id": "tresors_relic",
+   "category": "tresors",
+   "name": "Relique ancienne",
+   "description": "Trouver une relique.",
+   "stars": 1,
+   "condition": {
+    "type": "stat",
+    "key": "relics",
+    "count": 1
+   }
+  },
+  {
+   "id": "tresors_relic_25",
+   "category": "tresors",
+   "name": "Archéologue",
+   "description": "Trouver 25 reliques.",
+   "stars": 3,
+   "condition": {
+    "type": "stat",
+    "key": "relics",
+    "count": 25
+   },
+   "requires": [
+    "tresors_relic"
+   ]
+  },
+  {
+   "id": "tresors_full",
+   "category": "tresors",
+   "name": "Rien ne se perd",
+   "description": "Ramasser tous les éclats et reliques d'un niveau.",
+   "stars": 2,
+   "condition": {
+    "type": "levels_full_collect",
+    "count": 1
+   },
+   "requires": [
+    "tresors_shards_50"
+   ]
+  },
+  {
+   "id": "tresors_full_5",
+   "category": "tresors",
+   "name": "Gardien des reliques",
+   "description": "Tout ramasser dans 5 niveaux.",
+   "stars": 3,
+   "condition": {
+    "type": "levels_full_collect",
+    "count": 5
+   },
+   "requires": [
+    "tresors_full"
+   ]
+  },
+  {
+   "id": "tresors_full_all",
+   "category": "tresors",
+   "name": "Inventaire complet",
+   "description": "Tout ramasser dans les 14 niveaux de la campagne.",
+   "stars": 5,
+   "condition": {
+    "type": "levels_full_collect",
+    "count": 14
+   },
+   "requires": [
+    "tresors_full_5"
+   ]
+  },
+  {
+   "id": "tresors_secret",
+   "category": "tresors",
+   "name": "Passage secret",
+   "description": "Découvrir un secret.",
+   "stars": 1,
+   "condition": {
+    "type": "stat",
+    "key": "secrets",
+    "count": 1
+   }
+  },
+  {
+   "id": "tresors_secret_15",
+   "category": "tresors",
+   "name": "Fouineur",
+   "description": "Découvrir 15 secrets.",
+   "stars": 2,
+   "condition": {
+    "type": "stat",
+    "key": "secrets",
+    "count": 15
+   },
+   "requires": [
+    "tresors_secret"
+   ]
+  },
+  {
+   "id": "tresors_secrets_level",
+   "category": "tresors",
+   "name": "Aucun recoin oublié",
+   "description": "Découvrir tous les secrets d'un niveau.",
+   "stars": 3,
+   "condition": {
+    "type": "levels_all_secrets",
+    "count": 1
+   },
+   "requires": [
+    "tresors_secret"
+   ]
+  },
+  {
+   "id": "tresors_secrets_all",
+   "category": "tresors",
+   "name": "Cartographe des ombres",
+   "description": "Découvrir tous les secrets des 14 niveaux de la campagne.",
+   "stars": 5,
+   "condition": {
+    "type": "levels_all_secrets",
+    "count": 14
+   },
+   "requires": [
+    "tresors_secrets_level"
+   ]
+  },
+  {
+   "id": "endurance_1h",
+   "category": "endurance",
+   "name": "Une heure dans les étoiles",
+   "description": "Jouer une heure.",
+   "stars": 1,
+   "condition": {
+    "type": "playtime",
+    "seconds": 3600
+   }
+  },
+  {
+   "id": "endurance_10h",
+   "category": "endurance",
+   "name": "Voyageur assidu",
+   "description": "Jouer dix heures.",
+   "stars": 2,
+   "condition": {
+    "type": "playtime",
+    "seconds": 36000
+   },
+   "requires": [
+    "endurance_1h"
+   ]
+  },
+  {
+   "id": "endurance_50h",
+   "category": "endurance",
+   "name": "Habitant du cosmos",
+   "description": "Jouer cinquante heures.",
+   "stars": 4,
+   "condition": {
+    "type": "playtime",
+    "seconds": 180000
+   },
+   "requires": [
+    "endurance_10h"
+   ]
+  },
+  {
+   "id": "endurance_jumps_1000",
+   "category": "endurance",
+   "name": "Bondissant",
+   "description": "Sauter 1 000 fois.",
+   "stars": 1,
+   "condition": {
+    "type": "stat",
+    "key": "jumps",
+    "count": 1000
+   }
+  },
+  {
+   "id": "endurance_jumps_10000",
+   "category": "endurance",
+   "name": "Ressort cosmique",
+   "description": "Sauter 10 000 fois.",
+   "stars": 2,
+   "condition": {
+    "type": "stat",
+    "key": "jumps",
+    "count": 10000
+   },
+   "requires": [
+    "endurance_jumps_1000"
+   ]
+  },
+  {
+   "id": "endurance_jumps_50000",
+   "category": "endurance",
+   "name": "Apesanteur",
+   "description": "Sauter 50 000 fois.",
+   "stars": 4,
+   "condition": {
+    "type": "stat",
+    "key": "jumps",
+    "count": 50000
+   },
+   "requires": [
+    "endurance_jumps_10000"
+   ]
+  },
+  {
+   "id": "endurance_deaths_100",
+   "category": "endurance",
+   "name": "Persévérance",
+   "description": "Tomber 100 fois et toujours se relever.",
+   "stars": 1,
+   "condition": {
+    "type": "stat",
+    "key": "deaths",
+    "count": 100
+   }
+  },
+  {
+   "id": "endurance_deaths_1000",
+   "category": "endurance",
+   "name": "Phénix",
+   "description": "Tomber 1 000 fois et toujours se relever.",
+   "stars": 3,
+   "condition": {
+    "type": "stat",
+    "key": "deaths",
+    "count": 1000
+   },
+   "requires": [
+    "endurance_deaths_100"
+   ]
+  },
+  {
+   "id": "endurance_runs_50",
+   "category": "endurance",
+   "name": "Habitué",
+   "description": "Terminer 50 parties.",
+   "stars": 1,
+   "condition": {
+    "type": "stat",
+    "key": "runs_completed",
+    "count": 50
+   }
+  },
+  {
+   "id": "endurance_runs_500",
+   "category": "endurance",
+   "name": "Infatigable",
+   "description": "Terminer 500 parties.",
+   "stars": 3,
+   "condition": {
+    "type": "stat",
+    "key": "runs_completed",
+    "count": 500
+   },
+   "requires": [
+    "endurance_runs_50"
+   ]
+  },
+  {
+   "id": "endurance_attempts",
+   "category": "endurance",
+   "name": "Obstiné",
+   "description": "Tenter 25 fois le même niveau.",
+   "stars": 2,
+   "condition": {
+    "type": "max",
+    "key": "level_attempts",
+    "count": 25
+   }
+  },
+  {
+   "id": "fantomes_first",
+   "category": "fantomes",
+   "name": "Course contre soi",
+   "description": "Terminer un niveau en course contre un fantôme.",
+   "stars": 1,
+   "condition": {
+    "type": "stat",
+    "key": "ghost_races",
+    "count": 1
+   }
+  },
+  {
+   "id": "fantomes_gold",
+   "category": "fantomes",
+   "name": "Segment d'or",
+   "description": "Battre son meilleur segment entre deux points de sauvegarde.",
+   "stars": 1,
+   "condition": {
+    "type": "stat",
+    "key": "gold_segments",
+    "count": 1
+   },
+   "requires": [
+    "fantomes_first"
+   ]
+  },
+  {
+   "id": "fantomes_gold_25",
+   "category": "fantomes",
+   "name": "Orpailleur",
+   "description": "Battre 25 fois un de ses meilleurs segments.",
+   "stars": 3,
+   "condition": {
+    "type": "stat",
+    "key": "gold_segments",
+    "count": 25
+   },
+   "requires": [
+    "fantomes_gold"
+   ]
+  },
+  {
+   "id": "fantomes_pb",
+   "category": "fantomes",
+   "name": "Plus vite que moi",
+   "description": "Arriver avant le fantôme de son meilleur temps.",
+   "stars": 2,
+   "condition": {
+    "type": "stat",
+    "key": "pb_ghost_wins",
+    "count": 1
+   },
+   "requires": [
+    "fantomes_first"
+   ]
+  },
+  {
+   "id": "fantomes_pb_10",
+   "category": "fantomes",
+   "name": "Dépassement",
+   "description": "Arriver 10 fois avant le fantôme de son meilleur temps.",
+   "stars": 3,
+   "condition": {
+    "type": "stat",
+    "key": "pb_ghost_wins",
+    "count": 10
+   },
+   "requires": [
+    "fantomes_pb"
+   ]
+  },
+  {
+   "id": "fantomes_close",
+   "category": "fantomes",
+   "name": "Photo-finish",
+   "description": "Arriver à moins d'un dixième de seconde d'un fantôme.",
+   "stars": 3,
+   "condition": {
+    "type": "stat",
+    "key": "photo_finish",
+    "count": 1
+   },
+   "requires": [
+    "fantomes_first"
+   ]
+  },
+  {
+   "id": "fantomes_pack",
+   "category": "fantomes",
+   "name": "Peloton",
+   "description": "Terminer un niveau contre 3 fantômes ou plus.",
+   "stars": 2,
+   "condition": {
+    "type": "stat",
+    "key": "ghost_pack_races",
+    "count": 1
+   },
+   "requires": [
+    "fantomes_first"
+   ]
+  },
+  {
+   "id": "fantomes_world",
+   "category": "fantomes",
+   "name": "Contre le monde",
+   "description": "Courir contre le fantôme d'un record mondial.",
+   "stars": 2,
+   "condition": {
+    "type": "stat",
+    "key": "world_ghost_races",
+    "count": 1
+   },
+   "requires": [
+    "fantomes_first"
+   ]
+  },
+  {
+   "id": "fantomes_world_win",
+   "category": "fantomes",
+   "name": "Nouveau maître",
+   "description": "Arriver avant le fantôme d'un record mondial.",
+   "stars": 5,
+   "condition": {
+    "type": "stat",
+    "key": "world_ghost_wins",
+    "count": 1
+   },
+   "requires": [
+    "fantomes_world"
+   ]
+  },
+  {
+   "id": "fantomes_friend",
+   "category": "fantomes",
+   "name": "Défi amical",
+   "description": "Arriver avant le fantôme d'un ami.",
+   "stars": 2,
+   "condition": {
+    "type": "stat",
+    "key": "friend_ghost_wins",
+    "count": 1
+   },
+   "requires": [
+    "fantomes_first"
+   ]
+  },
+  {
+   "id": "extreme_first",
+   "category": "extreme",
+   "name": "Une seule vie",
+   "description": "Terminer un niveau EXTRÊME.",
+   "stars": 3,
+   "condition": {
+    "type": "stat",
+    "key": "extreme_finished",
+    "count": 1
+   }
+  },
+  {
+   "id": "extreme_5",
+   "category": "extreme",
+   "name": "Survivant",
+   "description": "Terminer 5 fois un niveau EXTRÊME.",
+   "stars": 4,
+   "condition": {
+    "type": "stat",
+    "key": "extreme_finished",
+    "count": 5
+   },
+   "requires": [
+    "extreme_first"
+   ]
+  },
+  {
+   "id": "extreme_attempts",
+   "category": "extreme",
+   "name": "Acharné",
+   "description": "Tenter 20 fois un niveau EXTRÊME.",
+   "stars": 2,
+   "condition": {
+    "type": "stat",
+    "key": "extreme_attempts",
+    "count": 20
+   }
+  },
+  {
+   "id": "extreme_star_nodeath",
+   "category": "extreme",
+   "name": "Étoile immaculée",
+   "description": "Terminer Le Cœur de l'Étoile sans mourir.",
+   "stars": 5,
+   "condition": {
+    "type": "level_no_death",
+    "level": "noyau_02"
+   },
+   "requires": [
+    "extreme_first"
+   ]
+  },
+  {
+   "id": "extreme_echoes_platinum",
+   "category": "extreme",
+   "name": "Platine des échos",
+   "description": "Obtenir le platine dans L'Arène des Échos.",
+   "stars": 5,
+   "condition": {
+    "type": "medal_level",
+    "level": "noyau_01",
+    "medal": 4
+   },
+   "requires": [
+    "extreme_first"
+   ]
+  },
+  {
+   "id": "extreme_verify",
+   "category": "extreme",
+   "name": "Vérificateur",
+   "description": "Être le premier à terminer un niveau EXTRÊME d'un autre joueur (course à la vérification).",
+   "stars": 4,
+   "condition": {
+    "type": "stat",
+    "key": "race_verified",
+    "count": 1
+   },
+   "requires": [
+    "extreme_first"
+   ]
+  },
+  {
+   "id": "createur_level",
+   "category": "createur",
+   "name": "Architecte",
+   "description": "Créer un niveau dans l'éditeur.",
+   "stars": 1,
+   "condition": {
+    "type": "user_levels",
+    "count": 1
+   }
+  },
+  {
+   "id": "createur_levels_5",
+   "category": "createur",
+   "name": "Bâtisseur",
+   "description": "Créer 5 niveaux.",
+   "stars": 2,
+   "condition": {
+    "type": "user_levels",
+    "count": 5
+   },
+   "requires": [
+    "createur_level"
+   ]
+  },
+  {
+   "id": "createur_proof",
+   "category": "createur",
+   "name": "Testé et approuvé",
+   "description": "Terminer un de ses niveaux depuis l'éditeur (preuve de fin).",
+   "stars": 2,
+   "condition": {
+    "type": "completion_proofs",
+    "count": 1
+   },
+   "requires": [
+    "createur_level"
+   ]
+  },
+  {
+   "id": "createur_enemy",
+   "category": "createur",
+   "name": "Démiurge",
+   "description": "Créer un ennemi dans l'éditeur d'ennemis.",
+   "stars": 2,
+   "condition": {
+    "type": "user_enemies",
+    "count": 1
+   },
+   "requires": [
+    "createur_level"
+   ]
+  },
+  {
+   "id": "createur_export",
+   "category": "createur",
+   "name": "Cartographe",
+   "description": "Exporter une planète (.cplanet).",
+   "stars": 1,
+   "condition": {
+    "type": "stat",
+    "key": "exports",
+    "count": 1
+   },
+   "requires": [
+    "createur_level"
+   ]
+  },
+  {
+   "id": "createur_publish",
+   "category": "createur",
+   "name": "Publié !",
+   "description": "Publier un niveau dans ONLINE LEVELS.",
+   "stars": 3,
+   "condition": {
+    "type": "set",
+    "key": "published_levels",
+    "count": 1
+   },
+   "requires": [
+    "createur_proof"
+   ]
+  },
+  {
+   "id": "createur_publish_5",
+   "category": "createur",
+   "name": "Éditeur prolifique",
+   "description": "Publier 5 niveaux.",
+   "stars": 4,
+   "condition": {
+    "type": "set",
+    "key": "published_levels",
+    "count": 5
+   },
+   "requires": [
+    "createur_publish"
+   ]
+  },
+  {
+   "id": "createur_extreme",
+   "category": "createur",
+   "name": "Créateur extrême",
+   "description": "Publier un niveau EXTRÊME.",
+   "stars": 4,
+   "condition": {
+    "type": "set",
+    "key": "published_extreme",
+    "count": 1
+   },
+   "requires": [
+    "createur_publish"
+   ]
+  },
+  {
+   "id": "communaute_account",
+   "category": "communaute",
+   "name": "Citoyen cosmique",
+   "description": "Se connecter à Cosmic Online.",
+   "stars": 1,
+   "condition": {
+    "type": "online_account"
+   }
+  },
+  {
+   "id": "communaute_level",
+   "category": "communaute",
+   "name": "Visiteur",
+   "description": "Terminer un niveau d'un autre joueur.",
+   "stars": 1,
+   "condition": {
+    "type": "set",
+    "key": "community_levels",
+    "count": 1
+   }
+  },
+  {
+   "id": "communaute_level_10",
+   "category": "communaute",
+   "name": "Globe-trotteur",
+   "description": "Terminer 10 niveaux de joueurs différents.",
+   "stars": 2,
+   "condition": {
+    "type": "set",
+    "key": "community_levels",
+    "count": 10
+   },
+   "requires": [
+    "communaute_level"
+   ]
+  },
+  {
+   "id": "communaute_level_50",
+   "category": "communaute",
+   "name": "Ambassadeur",
+   "description": "Terminer 50 niveaux de joueurs différents.",
+   "stars": 4,
+   "condition": {
+    "type": "set",
+    "key": "community_levels",
+    "count": 50
+   },
+   "requires": [
+    "communaute_level_10"
+   ]
+  },
+  {
+   "id": "communaute_friend",
+   "category": "communaute",
+   "name": "Premier ami",
+   "description": "Avoir un ami sur Cosmic Online.",
+   "stars": 1,
+   "condition": {
+    "type": "friends",
+    "count": 1
+   },
+   "requires": [
+    "communaute_account"
+   ]
+  },
+  {
+   "id": "communaute_friends_10",
+   "category": "communaute",
+   "name": "Populaire",
+   "description": "Avoir 10 amis sur Cosmic Online.",
+   "stars": 2,
+   "condition": {
+    "type": "friends",
+    "count": 10
+   },
+   "requires": [
+    "communaute_friend"
+   ]
+  },
+  {
+   "id": "communaute_rate",
+   "category": "communaute",
+   "name": "Critique",
+   "description": "Noter un niveau de joueur.",
+   "stars": 1,
+   "condition": {
+    "type": "set",
+    "key": "rated_levels",
+    "count": 1
+   },
+   "requires": [
+    "communaute_level"
+   ]
+  },
+  {
+   "id": "communaute_rate_25",
+   "category": "communaute",
+   "name": "Juré",
+   "description": "Noter 25 niveaux différents de joueurs.",
+   "stars": 2,
+   "condition": {
+    "type": "set",
+    "key": "rated_levels",
+    "count": 25
+   },
+   "requires": [
+    "communaute_rate"
+   ]
+  }
+ ]
+}

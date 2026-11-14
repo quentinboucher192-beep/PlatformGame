@@ -271,6 +271,15 @@ void UIContext::drawFrame(const Rect& rc, float hot, bool focusedNow, bool prima
 
 // ================================================================ widgets
 
+bool UIContext::hotspot(const std::string& name, const Rect& rc, bool* hovered) {
+    WidgetId wid = id(name);
+    if (clippedOut(rc)) {
+        registerFocusable(wid, rc);
+        return false;
+    }
+    return interact(wid, rc, hovered);
+}
+
 bool UIContext::button(const std::string& name, const Rect& rc, const std::string& t, const ButtonStyle& st) {
     WidgetId wid = id(name);
     if (clippedOut(rc)) {

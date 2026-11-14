@@ -3,6 +3,7 @@
 #include <string>
 
 #include "engine/core/Application.h"
+#include "game/achievements/Achievements.h"
 #include "game/content/ContentDatabase.h"
 #include "game/ghost/GhostStore.h"
 #include "game/ghost/SegmentHistory.h"
@@ -45,6 +46,14 @@ public:
     /// and the history of my segments.
     GhostStore ghosts;
     SegmentHistory segments;
+    /// Achievements: the catalogue (data) and what this player has unlocked (saves).
+    AchievementCatalog achievementCatalog;
+    AchievementBook achievements;
+    /// What the achievements' conditions read now.
+    AchievementInputs achievementInputs() const;
+    /// Unlocks what is done, saves, and announces the new ones (`announce` false: silently,
+    /// e.g. the first check of saves made before achievements existed... still listed).
+    void checkAchievements(bool announce = true);
     /// Notifications of the main menu (new content, records dropped, new installer).
     NewsCenter news;
     /// Asks the server once for a newer installer (no account needed, nothing personal sent).

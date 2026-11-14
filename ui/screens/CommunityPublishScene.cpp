@@ -283,6 +283,11 @@ private:
         status_ = "Publié ! Version " + std::to_string(version) + " visible dans ONLINE LEVELS (Récents).";
         if (level_ && level_->extreme) status_ += " Sa course à la vérification est ouverte.";
         g_.online.notify(OnlineService::Notification::Kind::Success, "Niveau publié", "« " + title_ + " » est en ligne.");
+        // Achievements: a level published (a new version of the same level counts once).
+        g_.achievements.stats().insert("published_levels", id);
+        if (level_ && level_->extreme) g_.achievements.stats().insert("published_extreme", id);
+        g_.checkAchievements();
+        g_.achievements.save();
     }
 
     GameServices& g_;

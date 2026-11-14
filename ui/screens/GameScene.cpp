@@ -108,6 +108,9 @@ void GameScene::onEnter() {
     world_->eventObserver = [this](const std::string& src, const std::string& trig) {
         if (recordMode_ != RecordMode::None) recorder_.onWorldEvent(src, trig);
         bossFights_.onWorldEvent(src, trig);
+        if (ended_) return;
+        if (trig == "jump" && src == "player") ++runJumps_;
+        else if (trig == "powerUsed") ++runPowers_[src];
     };
     // Ghost Racing: the hash of this exact version of the level (the one its replays carry).
     if (!opt_.editorTest && !opt_.level) {
@@ -139,6 +142,71 @@ void GameScene::startGhosts() {
     ghostRun_.setVisible(gs.enabled || opt_.ghostsChosen);
 }
 
+void GameScene::noteAchievementStats(bool completed, const RecordUpdate* upd) {
+    if (statsNoted_ || !world_ || opt_.editorTest || loadFailed_) return;
+    statsNoted_ = true;
+    AchievementStats& a = g_.achievements.stats();
+    const RunStats& s = world_->stats();
+    a.add("kills", s.kills);
+    a.add("deaths", s.deaths);
+    a.add("shards", s.shards);
+    a.add("relics", s.relics);
+    a.add("secrets", s.secrets);
+    a.add("jumps", runJumps_);
+    int64_t uses = 0;
+    for (const auto& pw : world_->player().powers()) {
+        a.insert("powers_owned", pw->id());
+        if (completed) a.add("carried_" + pw->id());  // passive powers: finished while owned
+    }
+    for (const auto& [id, n] : runPowers_) {
+        if (!g_.content.power(id)) continue;  // only the player's powers
+        a.powerUses[id] += n;
+        a.insert("powers_used", id);
+        uses += n;
+    }
+    a.add("power_uses", uses);
+    a.raise("run_kills", s.kills);
+    if (level_.extreme && !opt_.spawn) a.add("extreme_attempts");
+    if (completed) {
+        a.add("runs_completed");
+        // Level achievements: a campaign level played from its start.
+        if (!workshop_ && !opt_.level && !opt_.spawn && !opt_.training) {
+            if (s.deaths == 0) a.insert("no_death_levels", levelId_);
+            if (s.damageTaken == 0) a.insert("no_damage_levels", levelId_);
+            if (s.powersUsed.empty() && uses == 0) a.insert("no_power_levels", levelId_);
+            if (s.totalEnemies > 0 && s.kills >= s.totalEnemies) a.insert("cleared_levels", levelId_);
+            if (s.totalCollectibles() > 0 && s.collectibles() >= s.totalCollectibles()) a.insert("full_collect_levels", levelId_);
+            if (s.totalSecrets > 0 && s.secrets >= s.totalSecrets) a.insert("all_secrets_levels", levelId_);
+        }
+        if (const Json* c = g_.online.communityInstall(levelId_)) a.insert("community_levels", jstr(*c, "id"));
+        if (level_.extreme && !opt_.spawn) a.add("extreme_finished");
+        if (upd && upd->newBestTime && upd->previousBestTime > 0.0f) a.add("pb_improved");
+        // Ghost Racing.
+        const GhostRace& gr = ghostRun_.race();
+        if (!gr.empty() && gr.finished()) {
+            a.add("ghost_races");
+            if (gr.size() >= 3) a.add("ghost_pack_races");
+            for (const auto& sr : gr.splits()) a.add("gold_segments", sr.goldSegment ? 1 : 0);
+            bool photo = false, world = false;
+            for (int i = 0; i < gr.size(); ++i) {
+                const GhostRace::Racer& g = gr.racer(i);
+                const std::string& src = g.meta.source;
+                world = world || src == "world";
+                if (!g.hasLiveDelta || !g.sameVersion) continue;
+                photo = photo || std::abs(g.liveDelta) < 0.1f;
+                if (g.liveDelta >= 0.0f) continue;
+                if (src == "pb") a.add("pb_ghost_wins");
+                else if (src == "world") a.add("world_ghost_wins");
+                else if (src == "friend") a.add("friend_ghost_wins");
+            }
+            if (world) a.add("world_ghost_races");
+            if (photo) a.add("photo_finish");
+        }
+    }
+    g_.checkAchievements();
+    g_.achievements.save();
+}
+
 void GameScene::saveGhosts(const RunResult& r) {
     if (!lastReplay_ || ghostHash_.empty() || lastReplay_->levelHash != ghostHash_) return;
     GhostMeta m;
@@ -160,6 +228,7 @@ void GameScene::saveGhosts(const RunResult& r) {
 }
 
 void GameScene::onExit() {
+    noteAchievementStats(false, nullptr);  // a run left or restarted (a finished one is already counted)
     if (mounted_) g_.app.resources().popMount();
     mounted_ = false;
     g_.app.audio().stopAmbience(600);
@@ -307,6 +376,11 @@ void GameScene::fixedUpdate(float dt) {
     if (!ended_) recorder_.recordInput(frame);
     stepWorld(*world_, frame, kSimDt);
     if (!ended_) recorder_.tick(*world_);
+    if (!ended_) {
+        bool gliding = world_->player().gliding();
+        if (gliding && !wasGliding_) ++runPowers_["glide"];
+        wasGliding_ = gliding;
+    }
     if (!ended_ && !opt_.editorTest) {
         bossFights_.step(*world_, g_.bossStats);
         bossFeedback();
@@ -449,7 +523,7 @@ void GameScene::finishRun(bool completed) {
             sp += ".completion.json";
             Json side = {{"format", "cosmic.completion"}, {"gameplay_hash", gameplayHash_}, {"time_ms", timeMs},
                          {"deaths", s.deaths}, {"date", FileUtil::nowString()}};
-            if (FileUtil::writeBinary(rp, bytes) && FileUtil::writeTextAtomic(sp, side.dump(1)))
+            if (FileUtil::writeBinary(rp, bytes) && FileUtil::writeTextAtomic(sp, side.dump(1)) && (g_.achievements.stats().add("completion_proofs"), true))
                 g_.online.notify(OnlineService::Notification::Kind::Success, "Fin de niveau enregistrée",
                                  "Cette version peut être publiée : WORKSHOP → Mes niveaux → Publier en ligne.");
         }
@@ -468,6 +542,7 @@ void GameScene::finishRun(bool completed) {
     // best one if faster), its segments join the history.
     if (completed) ghostRun_.finish(r.time);
     if (completed && !opt_.editorTest && !opt_.training) saveGhosts(r);
+    noteAchievementStats(completed, &upd);
     std::optional<float> raceEstimate;
     if (race_.active()) {
         raceEstimate = raceScore(race_.layout(), race_.progress());
