@@ -15,10 +15,10 @@ OUT = os.path.join(ROOT, "assets", "ui", "boss_arrow.png")
 S = 4  # supersampling
 SIZE = 128
 
-DEEP = (92, 8, 28)
-RED = (232, 44, 78)
-HOT = (255, 120, 92)
-GOLD = (255, 214, 140)
+DEEP = (150, 20, 46)
+RED = (255, 64, 96)
+HOT = (255, 168, 120)
+GOLD = (255, 244, 200)
 OUTLINE = (24, 4, 12)
 
 
@@ -44,9 +44,10 @@ def main():
     # Glow behind.
     glow = Image.new("RGBA", (n, n), (0, 0, 0, 0))
     gd = ImageDraw.Draw(glow)
-    gd.polygon(sc([(118, 64), (36, 14), (52, 64), (36, 114)]), fill=(255, 60, 90, 170))
-    glow = glow.filter(ImageFilter.GaussianBlur(9 * S))
+    gd.polygon(sc([(124, 64), (30, 8), (50, 64), (30, 120)]), fill=(255, 80, 110, 255))
+    glow = glow.filter(ImageFilter.GaussianBlur(7 * S))
     img = Image.alpha_composite(img, glow)
+    img = Image.alpha_composite(img, glow)  # twice: a brighter halo
 
     # Outline then the two faceted halves (light upper face, darker lower face).
     d = ImageDraw.Draw(img)

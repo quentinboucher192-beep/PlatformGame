@@ -284,10 +284,17 @@ void GameScene::drawBossArrow(const WorldView& view) {
     float ty = std::abs(d.y) > 1e-3f ? (frame.h * 0.5f) / std::abs(d.y) : 1e9f;
     Vec2 p = c + d * std::min(tx, ty);
     float angle = std::atan2(d.y, d.x) * 57.29578f;
-    float pulse = 1.0f + 0.08f * std::sin(ui.time() * 6.0f);
-    float size = ui.s(76) * pulse;
+    // Blinks (bright 0.32 s, dim 0.18 s) with an additive halo while bright: seen at once.
+    bool bright = std::fmod(ui.time(), 0.5f) < 0.32f;
+    float pulse = 1.0f + 0.1f * std::sin(ui.time() * 12.0f);
+    float size = ui.s(84) * (bright ? pulse : 0.92f);
     Rect dst = Rect::fromCenter(p, {size, size});
-    ui.r().drawTexture(*tex, nullptr, dst, Color::white().withAlphaF(0.92f), BlendMode::Alpha, false, false, angle);
+    ui.r().drawTexture(*tex, nullptr, dst, Color::white().withAlphaF(bright ? 1.0f : 0.45f), BlendMode::Alpha, false, false, angle);
+    if (bright) {
+        Rect halo = Rect::fromCenter(p, {size * 1.35f, size * 1.35f});
+        ui.r().drawTexture(*tex, nullptr, halo, Color{255, 150, 150, 255}.withAlphaF(0.55f), BlendMode::Additive, false, false, angle);
+        ui.r().drawTexture(*tex, nullptr, dst, Color::white().withAlphaF(0.5f), BlendMode::Additive, false, false, angle);
+    }
 }
 
 void GameScene::bossFeedback() {
