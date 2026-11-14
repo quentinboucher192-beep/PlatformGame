@@ -41,6 +41,8 @@ public:
     bool avatarPicker(const std::string& id, const Rect& area, std::string& avatar);
 
     static std::string ageText(double seconds);
+    /// ageText() of an ISO-8601 UTC date from the server ("" if unreadable).
+    static std::string ageOf(const std::string& iso);
     static Color statusColor(RecordStatus s);
 
 private:

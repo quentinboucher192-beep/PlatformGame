@@ -150,6 +150,11 @@ de `wrangler.jsonc`, plafonnée à 1 000) multiplie toutes les limites.
 | `community_download` | 120 | 1 h | joueur (ou IP) | `GET /community/levels/{id}/package` |
 | `community_rate` / `community_report` | 60 / 20 | 1 h | joueur | notes, signalements |
 | `community_record` | 30 | 1 min | joueur | `POST /community/levels/{id}/records` |
+| `community_favorite` | 120 | 1 h | joueur | `POST`/`DELETE /community/levels/{id}/favorite` |
+| `community_comment` | 8 | 10 min | joueur | `POST /community/levels/{id}/comments`, `PATCH /community/comments/{id}` |
+| `community_reaction` | 120 | 10 min | joueur | `PUT /community/comments/{id}/reaction` |
+| `follow` | 60 | 1 h | joueur | `POST /players/{id}/follow` |
+| `playtime` | 40 | 1 h | joueur | `POST /players/me/playtime` |
 | `reads` | 300 | 1 min | IP | toute requête `GET` non servie par le cache |
 
 `POST /auth/logout`, `POST /friends/accept`, `DELETE /friends/{playerId}` et les `POST`
@@ -848,6 +853,81 @@ Plus durs, Récents, Mieux notés, Amis, Recherche, Les miens ; *Télécharger e
 package par les mêmes vérifications que tout import `.cplanet` et contrôle l'empreinte de
 gameplay de la copie installée).
 
+### 8.9 ter Workshop : favoris, commentaires, créateurs, abonnements, notifications, temps joué
+
+Toutes ces routes identifient le joueur par sa session (jamais par un identifiant envoyé) ;
+le serveur vérifie lui-même chaque droit (auteur, créateur du niveau, blocages).
+
+**Favoris** (un par joueur et par niveau ; un favori survit au retrait du niveau et apparaît
+« indisponible », avec le titre et l'auteur qu'il avait).
+
+| Méthode | Route | Réponse |
+|---|---|---|
+| POST / DELETE | `/community/levels/{id}/favorite` | `{ favorite, favorites }` (idempotent) |
+| GET | `/community/favorites?sort=added\|title\|rating\|downloads\|updated&filter=all\|available\|unavailable&q=` | `{ favorites: [{ level_id, title, author_name, available, unavailable_reason (deleted\|hidden\|private), favorited_at, version, downloads, favorites, comments, rating, thumbnail_url }] }` paginé |
+
+Les cartes de niveau (`GET /community/levels…`) donnent aussi `favorites`, `comments` et
+`my_favorite`.
+
+**Commentaires** (un seul niveau de réponses ; 1 000 caractères, 2 liens au plus ; le même
+texte n'est accepté qu'une fois par 24 h ; les auteurs bloqués dans un sens ou l'autre ne se
+voient pas).
+
+| Méthode | Route | Règle |
+|---|---|---|
+| GET | `/community/levels/{id}/comments?sort=recent\|popular\|oldest` | commentaires principaux, épinglés d'abord ; `{ comments, comment_count }` paginé |
+| GET | `/community/comments/{id}/replies` | réponses, des plus anciennes aux plus récentes |
+| POST | `/community/levels/{id}/comments` `{ body, parent_id? }` | `201 { comment }` ; une réponse à une réponse est rangée sous le même commentaire |
+| PATCH | `/community/comments/{id}` `{ body }` | auteur seulement (`edited_at`) |
+| DELETE | `/community/comments/{id}` | **auteur seulement** : le créateur du niveau ne peut pas effacer un avis, même négatif ; un commentaire qui a des réponses reste affiché « supprimé » |
+| POST / DELETE | `/community/comments/{id}/pin` | créateur du niveau, commentaires principaux, 3 au plus |
+| PUT / DELETE | `/community/comments/{id}/reaction` `{ kind }` | `like`, `love`, `funny`, `impressive`, `not_useful` : une réaction active par joueur, modifiable ; `{ reactions, my_reaction }` |
+| POST | `/community/comments/{id}/report` `{ reason }` | `spam`, `harassment`, `inappropriate`, `spoiler`, `other` ; masqué après 3 signalements, en attente de modération (son auteur le voit encore, marqué `hidden`) |
+
+Chaque commentaire : `{ id, parent_id, author, creator, level_author, body, deleted, hidden,
+pinned, created_at, edited_at, reply_count, reactions, reaction_total, my_reaction, reported,
+mine, can_edit, can_pin }`.
+
+**Créateurs et abonnements** (est créateur tout joueur qui a au moins un niveau publié : statut
+calculé par le serveur, jamais déclaré par le jeu ; suivre n'est pas une amitié).
+
+| Méthode | Route | Réponse |
+|---|---|---|
+| GET | `/players/{id}` | en plus du profil : `creator { is_creator, levels_published, downloads, unique_players, favorites, rating, first_published_at, followers, following }`, `follow { following, followed_by, notify, blocked }`, `playtime` |
+| GET | `/players/{id}/creations?sort=popular\|recent\|top` | niveaux publiés (et brouillons pour soi) |
+| POST | `/players/{id}/follow` `{ notify? }` | `{ following, notify, followers }` ; jamais soi-même ni en cas de blocage ; seul un nouvel abonné est notifié |
+| DELETE | `/players/{id}/follow` | `{ following: false, followers }` |
+| GET | `/players/{id}/followers`, `/players/{id}/following` | listes (`403 FOLLOWS_PRIVATE` si le joueur les a rendues privées : `PATCH /players/me { follows_visibility: "private" }`) |
+| GET | `/creators?q=&sort=followers\|levels\|downloads\|recent` | recherche de créateurs (profils publics) |
+
+Un blocage retire les abonnements dans les deux sens.
+
+**Centre de notifications** (les événements répétés non lus sont regroupés : réactions à un
+même commentaire, abonnés…).
+
+| Méthode | Route | Réponse |
+|---|---|---|
+| GET | `/notifications?filter=all\|unread\|creators\|comments\|projects` | `{ notifications: [{ id, kind, text, count, actor, level_id, comment_id, created_at, read }], unread }` paginé |
+| GET | `/notifications/unread` | `{ unread }` |
+| POST | `/notifications/{id}/read`, `/notifications/read-all` | lu |
+| DELETE | `/notifications/{id}` | supprimée |
+| GET / PUT | `/notifications/settings` `{ <kind>: bool }` | catégories reçues (`new_level`, `level_update`, `comment_reply`, `comment_reaction`, `level_comment`, `new_follower` ; les catégories de projets arrivent avec les projets collaboratifs) |
+
+Le jeu lit les notifications non lues à la connexion puis chaque minute ; les nouvelles sont
+annoncées une fois. Les notifications lues de plus de 60 jours sont purgées (500 au plus par
+joueur).
+
+**Temps joué** (profils : total et par niveau, en heures et minutes).
+
+| Méthode | Route | Règle |
+|---|---|---|
+| POST | `/players/me/playtime` `{ sessions: [{ level_id, seconds }] }` | 50 entrées au plus, 6 h au plus chacune ; le serveur n'accepte jamais plus que le temps écoulé depuis le précédent envoi (+ 5 min) : `{ accepted_seconds, playtime }` |
+| GET | `/players/{id}/playtime` | `{ playtime: { total_seconds, levels: [{ level_id, title, seconds, last_played_at }] } }` (profils visibles) |
+
+`level_id` : identifiant d'un niveau officiel, d'un niveau de la communauté, ou `other` (niveaux
+personnels, jamais détaillés). Le jeu garde le temps à envoyer dans `online/playtime.json`
+tant qu'il n'a pas été accepté.
+
 ### 8.9 bis Installateurs du jeu (notification « nouvelle version »)
 
 Publics (aucun compte, rien de personnel n'est envoyé : le jeu ne transmet pas sa version, il
@@ -865,6 +945,10 @@ envoi du fichier dans le bucket (`wrangler r2 object put <bucket>/releases/Cosmi
 puis `wrangler d1 migrations apply`.
 
 ### 8.10 Administration
+
+Modération des commentaires : `GET /admin/comments` (commentaires masqués ou signalés, avec
+les motifs) et `POST /admin/comments/{id}/moderate { action: "restore" | "remove" }`.
+
 
 Réservé aux opérateurs : actif seulement si le secret `ADMIN_TOKEN` (≥ 32 caractères, posé
 avec `wrangler secret put`) existe, sinon ces routes répondent `404 NOT_FOUND`. En-tête

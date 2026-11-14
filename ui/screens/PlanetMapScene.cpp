@@ -335,8 +335,9 @@ public:
             ui.label("Difficulté " + diff + "   —   " + timerModeLabel(d.timerMode), {x, cy}, 21, ui.theme().warm);
             cy += ui.s(30);
             if (rating) {
-                ui.label(rating->summary(), {x, cy}, 16, ui.theme().textDim);
-                cy += ui.s(28);
+                // Within its column (the records are on the right).
+                Vec2 rs = ui.labelWrapped(rating->summary(), {x, cy}, colW - ui.s(10), 16, ui.theme().textDim);
+                cy += rs.y + ui.s(8);
             }
             if (d.timerMode == TimerMode::Limited || d.timerMode == TimerMode::Challenge) {
                 ui.label("Durée maximale : " + LevelTimer::format(d.timeLimit, false), {x, cy}, 21, ui.theme().text);
@@ -377,6 +378,7 @@ public:
             ui.label(v, {rx + colW, ry}, 21, ui.theme().text, Align::Right, FontFace::Bold);
             ry += ui.s(32);
         };
+        line("Temps joué", playTimeText(g_.progression.levelPlayTime(l.id)));
         if (rec && rec->completions > 0) {
             line("Meilleur temps", LevelTimer::format(rec->bestTime));
             line("Meilleur score", std::to_string(rec->bestScore));
@@ -392,7 +394,9 @@ public:
             ui.label("Classement local", {rx, ry}, 22, ui.theme().textDim, Align::Left, FontFace::Bold);
             ry += ui.s(34);
             int rank = 1;
+            const float listBottom = panel.bottom() - ui.s(100);  // above the "Jouer" button
             for (const auto& e : g_.records.providers().front()->top(l.id, 5)) {
+                if (ry + ui.s(30) > listBottom) break;
                 ui.icon("ui/icons_medals.png", static_cast<int>(e.medal), 32, {rx, ry - ui.s(4), ui.s(26), ui.s(26)});
                 ui.label(std::to_string(rank++) + ".  " + LevelTimer::format(e.time) + "   " + std::to_string(e.score) + " pts",
                          {rx + ui.s(36), ry}, 19, ui.theme().text);

@@ -13,6 +13,8 @@ constexpr float kMaxRetryDelay = 300.0f;
 constexpr float kStatusPollSeconds = 90.0f;
 constexpr float kFriendsPollSeconds = 60.0f;
 constexpr float kSocialPollSeconds = 30.0f;
+constexpr float kNotificationsPollSeconds = 60.0f;
+constexpr float kPlaytimeSendSeconds = 120.0f;
 
 ApiResult localError(const std::string& code, const std::string& message) {
     ApiResult r;
@@ -57,6 +59,10 @@ void OnlineService::init(const OnlineSettings& settings, const std::string& serv
     if (auto t = FileUtil::readText(userDir_ / "online" / "community_installs.json")) {
         Json j = Json::parse(*t, nullptr, false);
         if (j.is_object()) communityInstalls_ = j;
+    }
+    if (auto t = FileUtil::readText(userDir_ / "online" / "playtime.json")) {
+        Json j = Json::parse(*t, nullptr, false);
+        if (j.is_object() && j.contains("levels") && j["levels"].is_object()) playtime_ = j;
     }
     initialized_ = true;
     Log::info("Cosmic Online : serveur {} ({}), client HTTP {}", config_.serverUrl.empty() ? "non configuré" : config_.serverUrl,
@@ -136,6 +142,22 @@ void OnlineService::update(float dt) {
         if (socialTimer_ <= 0.0f) {
             socialTimer_ = kSocialPollSeconds;
             refreshUnread();
+        }
+    }
+    // Notification centre: read on connection, then every minute.
+    if (netState_ == OnlineState::Online && loggedIn() && !notificationsBusy_) {
+        notificationsTimer_ -= dt;
+        if (notificationsTimer_ <= 0.0f) {
+            notificationsTimer_ = kNotificationsPollSeconds;
+            refreshNotifications();
+        }
+    }
+    // Time played: sent a little after each session, then every two minutes if needed.
+    if (netState_ == OnlineState::Online && loggedIn() && !playtimeBusy_ && pendingPlaytime() >= 1.0) {
+        playtimeTimer_ -= dt;
+        if (playtimeTimer_ <= 0.0f) {
+            playtimeTimer_ = kPlaytimeSendSeconds;
+            flushPlaytime();
         }
     }
     // PENDING records are re-checked from time to time while connected.
@@ -726,6 +748,115 @@ void OnlineService::resetFriends() {
     unreadMessages_ = 0;
     socialTimer_ = 5.0f;
     openConversation_.clear();
+    unreadNotifications_ = 0;
+    notificationsTimer_ = 4.0f;
+}
+
+// ------------------------------------------------------------ notification centre
+
+void OnlineService::refreshNotifications(ApiCallback cb) {
+    if (!loggedIn() || !usable()) {
+        if (cb) cb(localError("NOT_LOGGED_IN", "Non connecté."));
+        return;
+    }
+    notificationsBusy_ = true;
+    std::string owner = tokens_.playerId;
+    call("GET", "/api/v1/notifications?filter=unread&limit=5", {}, {}, true, [this, owner, cb](const ApiResult& r) {
+        notificationsBusy_ = false;
+        if (r.ok && owner == tokens_.playerId) noteNotifications(r.data);
+        if (cb) cb(r);
+    });
+}
+
+void OnlineService::noteNotifications(const Json& data) {
+    const std::string me = tokens_.playerId;
+    if (me.empty() || !data.is_object()) return;
+    unreadNotifications_ = std::max(0, jget<int>(data, "unread", 0));
+    // Each notification is announced once (newest date seen, kept with the friend notices).
+    const std::string key = me + "/notifications";
+    const bool first = !friendNotices_.contains(key) || !friendNotices_[key].is_string();
+    // "0" sorts before every date: nothing seen yet, but the first reading is done.
+    std::string seen = first ? std::string("0") : friendNotices_[key].get<std::string>();
+    std::string newest = seen;
+    std::vector<std::string> fresh;
+    if (auto it = data.find("notifications"); it != data.end() && it->is_array())
+        for (const auto& n : *it) {
+            std::string at = jstr(n, "created_at");
+            if (at.empty() || at <= seen) continue;
+            newest = std::max(newest, at);
+            fresh.push_back(jstr(n, "text"));
+        }
+    if (newest == seen && !first) return;
+    friendNotices_[key] = newest;
+    saveFriendNotices();
+    if (first) return;  // first reading on this computer: what is there is not "new"
+    if (fresh.size() == 1) notify(Notification::Kind::Workshop, "Cosmic Online", fresh.front());
+    else if (!fresh.empty())
+        notify(Notification::Kind::Workshop, std::to_string(unreadNotifications_) + " notifications non lues", fresh.front() + " (et d'autres : NOTIFICATIONS).");
+}
+
+// ------------------------------------------------------------------ time played
+
+void OnlineService::notePlaytime(const std::string& levelKey, double seconds) {
+    if (!loggedIn() || !(seconds > 0.0) || levelKey.empty()) return;
+    if (jstr(playtime_, "player") != tokens_.playerId) playtime_ = {{"player", tokens_.playerId}, {"levels", Json::object()}};
+    Json& levels = playtime_["levels"];
+    levels[levelKey] = jget<double>(levels, levelKey.c_str(), 0.0) + std::min(seconds, 6.0 * 3600.0);
+    savePlaytime();
+    playtimeTimer_ = std::min(playtimeTimer_, 5.0f);
+}
+
+double OnlineService::pendingPlaytime() const {
+    if (!playtime_.contains("levels") || !playtime_["levels"].is_object() || jstr(playtime_, "player") != tokens_.playerId) return 0.0;
+    double total = 0.0;
+    for (const auto& v : playtime_["levels"]) total += v.is_number() ? v.get<double>() : 0.0;
+    return total;
+}
+
+void OnlineService::savePlaytime() {
+    std::error_code ec;
+    fs::create_directories(userDir_ / "online", ec);
+    FileUtil::writeTextAtomic(userDir_ / "online" / "playtime.json", playtime_.dump());
+}
+
+void OnlineService::flushPlaytime(ApiCallback cb) {
+    if (!loggedIn() || !usable() || pendingPlaytime() < 1.0) {
+        if (cb) cb(localError("NOTHING_TO_SEND", "Rien à envoyer."));
+        return;
+    }
+    // Whole seconds only; the fractions stay for the next report.
+    Json sessions = Json::array();
+    Json sent = Json::object();
+    for (auto it = playtime_["levels"].begin(); it != playtime_["levels"].end() && sessions.size() < 50; ++it) {
+        long long secs = it.value().is_number() ? static_cast<long long>(it.value().get<double>()) : 0;
+        if (secs < 1) continue;
+        secs = std::min<long long>(secs, 6 * 3600);
+        sessions.push_back({{"level_id", it.key()}, {"seconds", secs}});
+        sent[it.key()] = secs;
+    }
+    if (sessions.empty()) {
+        if (cb) cb(localError("NOTHING_TO_SEND", "Rien à envoyer."));
+        return;
+    }
+    playtimeBusy_ = true;
+    std::string owner = tokens_.playerId;
+    call("POST", "/api/v1/players/me/playtime", Json{{"sessions", sessions}}.dump(), "application/json", true,
+         [this, owner, sent, cb](const ApiResult& r) {
+             playtimeBusy_ = false;
+             // Sent (the server may have kept less: it never counts more than the real time),
+             // or refused as invalid: either way these seconds are not sent again.
+             bool done = r.ok || (r.status >= 400 && r.status < 500 && r.status != 401 && r.status != 429);
+             if (done && owner == tokens_.playerId && jstr(playtime_, "player") == owner) {
+                 Json& levels = playtime_["levels"];
+                 for (auto it = sent.begin(); it != sent.end(); ++it) {
+                     double left = jget<double>(levels, it.key().c_str(), 0.0) - it.value().get<double>();
+                     if (left <= 0.0) levels.erase(it.key());
+                     else levels[it.key()] = left;
+                 }
+                 savePlaytime();
+             }
+             if (cb) cb(r);
+         });
 }
 
 void OnlineService::saveFriendNotices() {

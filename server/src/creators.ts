@@ -65,14 +65,16 @@ export async function creatorStats(ctx: Ctx, playerId: string) {
 
 /** Follow relation between the viewer and a player. */
 export async function followState(ctx: Ctx, viewer: string | null, playerId: string) {
-    if (!viewer || viewer === playerId) return { following: false, followed_by: false, notify: false };
+    if (!viewer || viewer === playerId) return { following: false, followed_by: false, notify: false, blocked: false };
     const r = await ctx.env.DB.prepare(
         `SELECT (SELECT notify FROM player_follows WHERE follower_id = ?1 AND creator_id = ?2) AS mine,
-                (SELECT 1 FROM player_follows WHERE follower_id = ?2 AND creator_id = ?1) AS theirs`,
+                (SELECT 1 FROM player_follows WHERE follower_id = ?2 AND creator_id = ?1) AS theirs,
+                (SELECT 1 FROM player_blocks WHERE player_id = ?1 AND blocked_id = ?2) AS blocked`,
     )
         .bind(viewer, playerId)
-        .first<{ mine: number | null; theirs: number | null }>();
-    return { following: r?.mine != null, followed_by: r?.theirs != null, notify: r?.mine === 1 };
+        .first<{ mine: number | null; theirs: number | null; blocked: number | null }>();
+    // blocked: the viewer blocked this player (never tells whether the player blocked the viewer).
+    return { following: r?.mine != null, followed_by: r?.theirs != null, notify: r?.mine === 1, blocked: r?.blocked != null };
 }
 
 /** Time played: total and per level (titles of official and community levels). */
@@ -107,15 +109,15 @@ export async function follow(ctx: Ctx): Promise<Response> {
         wants = v.bool("notify", { optional: true }) ?? true;
         v.done();
     }
-    const res = await ctx.env.DB.prepare(
+    const before = await ctx.env.DB.prepare("SELECT 1 AS x FROM player_follows WHERE follower_id = ?1 AND creator_id = ?2").bind(me, p.id).first();
+    await ctx.env.DB.prepare(
         `INSERT INTO player_follows (follower_id, creator_id, notify, created_at) VALUES (?1, ?2, ?3, ?4)
          ON CONFLICT (follower_id, creator_id) DO UPDATE SET notify = excluded.notify`,
     )
         .bind(me, p.id, wants ? 1 : 0, nowIso())
         .run();
-    const existed = res.meta.changes > 0 && (await ctx.env.DB.prepare("SELECT created_at FROM player_follows WHERE follower_id = ?1 AND creator_id = ?2").bind(me, p.id).first());
-    void existed;
-    await notify(ctx, p.id, "new_follower", { actor: me, groupKey: "followers" });
+    // Only a new follower is announced (changing the notification choice is not).
+    if (!before) await notify(ctx, p.id, "new_follower", { actor: me, groupKey: "followers" });
     const stats = await creatorStats(ctx, p.id);
     return json(ctx, { following: true, notify: wants, followers: stats.followers });
 }

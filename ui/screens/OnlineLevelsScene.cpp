@@ -1,7 +1,8 @@
 // ONLINE LEVELS: levels published by the players (Cosmic Online). Lists (popular, hardest,
-// recent, top rated, friends', search, mine), level card with its leaderboard, download and
-// play (the package goes through the same checks as any imported .cplanet), ratings,
-// reports. Nothing is invented: every list and number comes from the server.
+// recent, top rated, friends', search, mine, favorites), level card with its leaderboard,
+// download and play (the package goes through the same checks as any imported .cplanet),
+// ratings, favorites, comments, reports, the creator's profile. Nothing is invented: every
+// list and number comes from the server.
 
 #include <algorithm>
 #include <cmath>
@@ -11,6 +12,7 @@
 #include "game/GameServices.h"
 #include "game/online/LevelFingerprint.h"
 #include "packaging/PackageImporter.h"
+#include "ui/online/CommentsPanel.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
@@ -21,7 +23,22 @@ namespace cosmic {
 
 namespace {
 
-const char* kSorts[] = {"popular", "hardest", "recent", "top", "friends", "search", "mine"};
+const char* kSorts[] = {"popular", "hardest", "recent", "top", "friends", "search", "mine", "favorites"};
+constexpr int kSearchTab = 5, kFriendsTab = 4, kMineTab = 6, kFavoritesTab = 7;
+const char* kFavSorts[] = {"added", "title", "rating", "downloads", "updated"};
+const std::vector<std::string> kFavSortLabels = {"Ajout le plus récent", "Titre", "Mieux notés", "Plus téléchargés", "Mis à jour récemment"};
+const char* kFavFilters[] = {"all", "available", "unavailable"};
+const std::vector<std::string> kFavFilterLabels = {"Tous", "Disponibles", "Indisponibles"};
+
+std::string decimal(double v) {
+    char b[32];
+    std::snprintf(b, sizeof b, "%.1f", v);
+    std::string t = b;
+    if (auto p = t.find('.'); p != std::string::npos) t[p] = ',';
+    return t;
+}
+
+std::string plural(int n, const char* one, const char* many) { return std::to_string(n) + " " + (n > 1 ? many : one); }
 
 std::string timeText(int64_t ms) {
     char buf[32];
@@ -45,7 +62,7 @@ std::string urlEncode(const std::string& s) {
 
 class OnlineLevelsScene : public Scene {
 public:
-    OnlineLevelsScene(GameServices& g, std::string wanted) : g_(g), ui_(g), wanted_(std::move(wanted)) {}
+    OnlineLevelsScene(GameServices& g, std::string wanted) : g_(g), ui_(g), comments_(g, ui_), wanted_(std::move(wanted)) {}
 
     void onEnter() override {
         g_.playMusic("music/menu_theme.ogg");
@@ -55,6 +72,15 @@ public:
         if (autoPlay_) {
             g_.onlineOpen.clear();
             tab_ = 2;
+        }
+        // Automated screenshots: "tab:N" opens a list, "creators" the creator search.
+        if (g_.onlineOpen.rfind("tab:", 0) == 0) {
+            tab_ = std::clamp(std::atoi(g_.onlineOpen.c_str() + 4), 0, kFavoritesTab);
+            g_.onlineOpen.clear();
+        } else if (g_.onlineOpen == "creators") {
+            tab_ = kSearchTab;
+            searchCreators_ = true;
+            g_.onlineOpen.clear();
         }
         load(false);
         if (!wanted_.empty()) openLevel(wanted_);
@@ -75,6 +101,12 @@ public:
             downloadAndPlay(detail_["level"]);
         }
         if (searchDirty_ > 0.0f && (searchDirty_ -= dt) <= 0.0f) load(false);
+        if ((g_.onlineOpen == "comments" || g_.onlineOpen == "comments-replies") && detail_.contains("level")) {
+            // From a notification ("Voir les commentaires"), or automated screenshots.
+            if (g_.onlineOpen == "comments-replies") comments_.expandAll();
+            g_.onlineOpen.clear();
+            comments_.open(selected_, jstr(detail_["level"], "title"));
+        }
     }
 
     void render(float) override {
@@ -82,18 +114,30 @@ public:
         ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
         layout();
         bg_.render(g_, 0.5f);
-        ui.inputEnabled = !confirmReport_;
+        bool modal = confirmReport_ || comments_.modal();
+        // Under a screen pushed over this one (profile, account) nothing here reacts.
+        const bool top = g_.app.topScene() == this;
+        ui.inputEnabled = !modal && top;
         drawHeader();
         drawOnlineNav(g_, zoneA_, OnlineSection::Levels);
-        drawList();
+        if (comments_.isOpen()) {
+            ui.r().fillRoundedRect(zoneL_, ui.s(14), Color{8, 13, 30, 220});
+            ui.r().drawRoundedRect(zoneL_, ui.s(14), ui.theme().border, ui.s(1.2f));
+            if (!comments_.draw(zoneL_)) comments_.close();
+        } else {
+            drawList();
+        }
         drawDetail();
-        ui.inputEnabled = true;
+        ui.inputEnabled = top;
         if (confirmReport_) drawReport();
+        else if (comments_.modal()) comments_.drawModal();
         else if (ui.backPressed() && !ui.editingText()) {
-            if (!selected_.empty()) selected_.clear();
+            if (comments_.isOpen()) comments_.close();
+            else if (!selected_.empty()) selected_.clear();
             else g_.app.switchScene(makeMainMenu(g_));
         }
-        ui.end();
+        ui.inputEnabled = true;
+        if (top) ui.end();
     }
 
 private:
@@ -117,6 +161,8 @@ private:
     void load(bool more) {
         if (busy_) return;
         std::string sort = kSorts[tab_];
+        if (tab_ == kFavoritesTab) return loadFavorites(more);
+        if (tab_ == kSearchTab && searchCreators_) return loadCreators(more);
         if (sort == "search" && query_.size() < 2) {
             levels_ = Json::array();
             nextOffset_ = -1;
@@ -143,6 +189,65 @@ private:
                 nextOffset_ = r.meta.is_object() && r.meta.contains("next_offset") && r.meta["next_offset"].is_number() ? r.meta["next_offset"].get<int>() : -1;
             }),
             !more);
+    }
+
+    void loadFavorites(bool more) {
+        std::string path = std::string("/api/v1/community/favorites?limit=20&sort=") + kFavSorts[favSort_] + "&filter=" + kFavFilters[favFilter_];
+        if (more && nextOffset_ > 0) path += "&offset=" + std::to_string(nextOffset_);
+        busy_ = true;
+        int gen = ++generation_;
+        g_.online.get(
+            path, OnlineService::guard(life_, [this, more, gen](const ApiResult& r) {
+                if (gen != generation_) return;
+                busy_ = false;
+                loaded_ = true;
+                if (!r.ok) return say(r.message, true);
+                fromCache_ = r.fromCache;
+                Json list = r.data.value("favorites", Json::array());
+                if (more)
+                    for (auto& l : list) levels_.push_back(l);
+                else
+                    levels_ = list;
+                nextOffset_ = r.meta.is_object() && r.meta.contains("next_offset") && r.meta["next_offset"].is_number() ? r.meta["next_offset"].get<int>() : -1;
+            }),
+            false);
+    }
+
+    /// Creators (players with a published level), the most followed first; filtered by the
+    /// beginning of their pseudonym.
+    void loadCreators(bool more) {
+        std::string path = "/api/v1/creators?limit=30&sort=followers";
+        if (!query_.empty()) path += "&q=" + urlEncode(query_);
+        if (more && nextOffset_ > 0) path += "&offset=" + std::to_string(nextOffset_);
+        busy_ = true;
+        int gen = ++generation_;
+        g_.online.get(
+            path, OnlineService::guard(life_, [this, more, gen](const ApiResult& r) {
+                if (gen != generation_) return;
+                busy_ = false;
+                loaded_ = true;
+                if (!r.ok) return say(r.message, true);
+                Json list = r.data.value("creators", Json::array());
+                if (more)
+                    for (auto& l : list) levels_.push_back(l);
+                else
+                    levels_ = list;
+                nextOffset_ = r.meta.is_object() && r.meta.contains("next_offset") && r.meta["next_offset"].is_number() ? r.meta["next_offset"].get<int>() : -1;
+            }),
+            false);
+    }
+
+    void setFavorite(const std::string& id, bool on) {
+        g_.online.send(on ? "POST" : "DELETE", "/api/v1/community/levels/" + id + "/favorite", Json(),
+                       OnlineService::guard(life_, [this, id, on](const ApiResult& r) {
+                           if (!r.ok) return say(r.message, true);
+                           say(on ? "Ajouté à vos favoris." : "Retiré de vos favoris.", false);
+                           if (detail_.contains("level") && jstr(detail_["level"], "id") == id) {
+                               detail_["level"]["my_favorite"] = on;
+                               detail_["level"]["favorites"] = jget<int>(r.data, "favorites", 0);
+                           }
+                           if (tab_ == kFavoritesTab) load(false);
+                       }));
     }
 
     void openLevel(const std::string& id) {
@@ -253,7 +358,7 @@ private:
         ui.pushId("levels/list");
         int tab = tab_;
         ui.tabs("tabs", {zoneL_.x + ui.s(12), zoneL_.y + ui.s(12), zoneL_.w - ui.s(24), ui.s(40)},
-                {"Populaires", "Plus durs", "Récents", "Mieux notés", "Amis", "Recherche", "Les miens"}, tab);
+                {"Populaires", "Plus durs", "Récents", "Mieux notés", "Amis", "Recherche", "Les miens", "Favoris"}, tab);
         if (tab != tab_) {
             tab_ = tab;
             levels_ = Json::array();
@@ -261,18 +366,43 @@ private:
             load(false);
         }
         float y = zoneL_.y + ui.s(64);
-        if (tab_ == 5) {
+        if (tab_ == kSearchTab) {
             std::string before = query_;
-            ui.textField("q", {zoneL_.x + ui.s(12), y, zoneL_.w - ui.s(24), ui.s(42)}, query_, "Titre ou pseudonyme de l'auteur (2 lettres au moins)", 60);
+            float mw = ui.s(300);
+            int mode = searchCreators_ ? 1 : 0;
+            ui.tabs("mode", {zoneL_.x + ui.s(12), y, mw, ui.s(42)}, {"Niveaux", "Créateurs"}, mode);
+            if ((mode == 1) != searchCreators_) {
+                searchCreators_ = mode == 1;
+                levels_ = Json::array();
+                loaded_ = false;
+                load(false);
+            }
+            ui.textField("q", {zoneL_.x + ui.s(22) + mw, y, zoneL_.w - ui.s(34) - mw, ui.s(42)}, query_,
+                         searchCreators_ ? "Début du pseudonyme (vide : les plus suivis)" : "Titre ou pseudonyme de l'auteur (2 lettres au moins)", 60);
             if (query_ != before) searchDirty_ = 0.4f;
+            y += ui.s(52);
+        }
+        if (tab_ == kFavoritesTab) {
+            float half = (zoneL_.w - ui.s(24) - ui.s(10)) * 0.5f;
+            int sort = favSort_, filter = favFilter_;
+            ui.cycle("favsort", {zoneL_.x + ui.s(12), y, half, ui.s(42)}, "Tri", sort, kFavSortLabels);
+            ui.cycle("favfilter", {zoneL_.x + ui.s(22) + half, y, half, ui.s(42)}, "Afficher", filter, kFavFilterLabels);
+            if (sort != favSort_ || filter != favFilter_) {
+                favSort_ = sort;
+                favFilter_ = filter;
+                load(false);
+            }
             y += ui.s(52);
         }
         Rect view{zoneL_.x + ui.s(12), y, zoneL_.w - ui.s(24), zoneL_.bottom() - y - ui.s(12)};
         if (levels_.empty()) {
             std::string empty = !loaded_ || busy_ ? "Chargement…"
-                                : tab_ == 5 ? (query_.size() < 2 ? "Tapez au moins deux lettres." : "Aucun niveau ne correspond.")
-                                : tab_ == 4 ? "Vos amis n'ont pas encore publié de niveau."
-                                : tab_ == 6 ? "Vous n'avez rien publié : WORKSHOP → Mes niveaux → Publier."
+                                : tab_ == kSearchTab && searchCreators_ ? "Aucun créateur ne correspond."
+                                : tab_ == kSearchTab ? (query_.size() < 2 ? "Tapez au moins deux lettres." : "Aucun niveau ne correspond.")
+                                : tab_ == kFriendsTab ? "Vos amis n'ont pas encore publié de niveau."
+                                : tab_ == kMineTab ? "Vous n'avez rien publié : WORKSHOP → Mes niveaux → Publier."
+                                : tab_ == kFavoritesTab ? (favFilter_ == 0 ? "Aucun favori : ouvrez un niveau et choisissez « Ajouter aux favoris »."
+                                                                           : "Aucun favori dans cette catégorie.")
                                             : "Aucun niveau publié pour l'instant : soyez le premier (WORKSHOP → Mes niveaux → Publier).";
             ui.labelWrapped(empty, {view.x + ui.s(8), view.y + ui.s(8)}, view.w - ui.s(16), 17, ui.theme().textDim);
             drawStatus({view.x, view.bottom() - ui.s(30), view.w, ui.s(28)});
@@ -284,8 +414,18 @@ private:
         ui.beginScroll("cards", view, content);
         float cy = view.y - ui.scrollOffset();
         for (const auto& l : levels_) {
-            std::string id = jstr(l, "id");
+            std::string id = jstr(l, tab_ == kFavoritesTab ? "level_id" : "id");
             Rect row{view.x, cy, view.w - ui.s(12), rh};
+            if (tab_ == kSearchTab && searchCreators_) {
+                if (cy > view.y - rh && cy < view.bottom()) drawCreator(l, id, row);
+                cy += rh + gap;
+                continue;
+            }
+            if (tab_ == kFavoritesTab && !jget<bool>(l, "available", false)) {
+                if (cy > view.y - rh && cy < view.bottom()) drawUnavailableFavorite(l, id, row);
+                cy += rh + gap;
+                continue;
+            }
             if (cy > view.y - rh && cy < view.bottom()) {
                 UIContext::ButtonStyle st;
                 st.selected = id == selected_;
@@ -298,31 +438,34 @@ private:
                 std::string title = jstr(l, "title");
                 ui.label(title, {tx, row.y + ui.s(24)}, ui.fitFont(title, FontFace::Bold, 20, room), ui.theme().text, Align::Left, FontFace::Bold,
                          VAlign::Middle);
-                const Json& a = l.value("author", Json::object());
-                const PlanetData* pl = g_.content.planet(jstr(l, "planet"));
-                std::string sub = "par " + jstr(a, "username") + "  ·  " + (pl ? pl->name : jstr(l, "planet")) + "  ·  v" + std::to_string(jget<int>(l, "version", 1));
-                ui.label(sub, {tx, row.y + ui.s(52)}, 15, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+                std::string sub;
+                if (tab_ == kFavoritesTab) {
+                    sub = "par " + jstr(l, "author_name") + "  ·  v" + std::to_string(jget<int>(l, "version", 1)) + "  ·  favori " +
+                          OnlineUi::ageOf(jstr(l, "favorited_at"));
+                } else {
+                    const Json& a = l.value("author", Json::object());
+                    const PlanetData* pl = g_.content.planet(jstr(l, "planet"));
+                    sub = "par " + jstr(a, "username") + "  ·  " + (pl ? pl->name : jstr(l, "planet")) + "  ·  v" + std::to_string(jget<int>(l, "version", 1));
+                }
+                float subRoom = room;
+                if (tab_ != kFavoritesTab && jstr(l, "status") != "published")
+                    subRoom -= ui.text().measure("masqué (signalements)", FontFace::Bold, ui.s(14)).x + ui.s(20);
+                ui.label(sub, {tx, row.y + ui.s(52)}, ui.fitFont(sub, FontFace::Body, 15, subRoom), ui.theme().textDim, Align::Left, FontFace::Body,
+                         VAlign::Middle);
                 std::string stats;
-                if (l.contains("difficulty") && l["difficulty"].is_number()) {
-                    char b[32];
-                    std::snprintf(b, sizeof b, "Difficulté %.1f/5", l["difficulty"].get<double>());
-                    stats = b;
-                    if (auto p = stats.find('.'); p != std::string::npos) stats[p] = ',';
-                }
+                if (l.contains("difficulty") && l["difficulty"].is_number()) stats = "Difficulté " + decimal(l["difficulty"].get<double>()) + "/5  ·  ";
                 const Json& rt = l.value("rating", Json::object());
-                if (rt.contains("average") && rt["average"].is_number()) {
-                    char b[48];
-                    std::snprintf(b, sizeof b, "  ·  note %.1f/5 (%d)", rt["average"].get<double>(), jget<int>(rt, "count", 0));
-                    std::string nb = b;
-                    if (auto p = nb.find('.'); p != std::string::npos) nb[p] = ',';
-                    stats += nb;
-                }
-                stats += "  ·  " + std::to_string(jget<int>(l, "downloads", 0)) + " téléchargements";
-                ui.label(stats, {tx, row.y + ui.s(78)}, 14, ui.theme().warm, Align::Left, FontFace::Body, VAlign::Middle);
+                if (rt.is_object() && rt.contains("average") && rt["average"].is_number())
+                    stats += "note " + decimal(rt["average"].get<double>()) + "/5 (" + std::to_string(jget<int>(rt, "count", 0)) + ")  ·  ";
+                stats += plural(jget<int>(l, "downloads", 0), "téléchargement", "téléchargements") + "  ·  " +
+                         plural(jget<int>(l, "favorites", 0), "favori", "favoris") + "  ·  " +
+                         plural(jget<int>(l, "comments", 0), "commentaire", "commentaires");
+                ui.label(stats, {tx, row.y + ui.s(78)}, ui.fitFont(stats, FontFace::Body, 14, room), ui.theme().warm, Align::Left, FontFace::Body,
+                         VAlign::Middle);
                 if (l.contains("best") && l["best"].is_object())
                     ui.label("Record " + timeText(jget<int64_t>(l["best"], "time_ms", 0)) + " · " + jstr(l["best"], "player"),
                              {row.right() - ui.s(14), row.y + ui.s(24)}, 14, ui.theme().accent, Align::Right, FontFace::Bold, VAlign::Middle);
-                if (jstr(l, "status") != "published")
+                if (tab_ != kFavoritesTab && jstr(l, "status") != "published")
                     ui.label(jstr(l, "status") == "hidden" ? "masqué (signalements)" : "brouillon", {row.right() - ui.s(14), row.y + ui.s(52)}, 14,
                              ui.theme().danger, Align::Right, FontFace::Bold, VAlign::Middle);
             }
@@ -339,6 +482,57 @@ private:
             ui.label("Hors ligne : liste en cache", {view.right(), zoneL_.y + ui.s(64) - ui.s(8)}, 13, ui.theme().warm, Align::Right, FontFace::Body,
                      VAlign::Middle);
         ui.popId();
+    }
+
+    /// A favorite whose level is gone (removed, hidden or no longer public): kept with the
+    /// title and author it had, and can be removed from the favorites.
+    void drawUnavailableFavorite(const Json& l, const std::string& id, const Rect& row) {
+        UIContext& ui = g_.ui;
+        ui.r().fillRoundedRect(row, ui.s(8), Color{14, 18, 32, 200});
+        ui.r().drawRoundedRect(row, ui.s(8), ui.theme().border.withAlphaF(0.5f), ui.s(1));
+        float rh = row.h;
+        Rect th{row.x + ui.s(8), row.y + ui.s(8), (rh - ui.s(16)) * 16.0f / 9.0f, rh - ui.s(16)};
+        ui.r().fillRoundedRect(th, ui.s(6), Color{10, 12, 22, 255});
+        ui.label("indisponible", th.center(), 13, ui.theme().textDim, Align::Center, FontFace::Body, VAlign::Middle);
+        float tx = th.right() + ui.s(14);
+        float bw = ui.s(200);
+        float room = row.right() - tx - bw - ui.s(24);
+        std::string title = jstr(l, "title");
+        ui.label(title, {tx, row.y + ui.s(24)}, ui.fitFont(title, FontFace::Bold, 20, room), ui.theme().textDim, Align::Left, FontFace::Bold, VAlign::Middle);
+        std::string sub = "par " + jstr(l, "author_name") + "  ·  favori " + OnlineUi::ageOf(jstr(l, "favorited_at"));
+        ui.label(sub, {tx, row.y + ui.s(52)}, ui.fitFont(sub, FontFace::Body, 15, room), ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        std::string why = jstr(l, "unavailable_reason");
+        std::string text = why == "deleted" ? "Indisponible : retiré par son auteur"
+                         : why == "hidden"  ? "Indisponible : masqué après des signalements"
+                                            : "Indisponible : ce niveau n'est plus public";
+        ui.label(text, {tx, row.y + ui.s(78)}, ui.fitFont(text, FontFace::Body, 14, room), ui.theme().danger, Align::Left, FontFace::Body, VAlign::Middle);
+        UIContext::ButtonStyle d;
+        d.small = true;
+        d.danger = true;
+        if (ui.button("unfav" + id, {row.right() - bw - ui.s(12), row.center().y - ui.s(20), bw, ui.s(40)}, "Retirer des favoris", d)) setFavorite(id, false);
+    }
+
+    void drawCreator(const Json& c, const std::string& id, const Rect& row) {
+        UIContext& ui = g_.ui;
+        if (ui.button("cr" + id, row, "")) g_.app.pushScene(makePlayerProfile(g_, id));
+        float av = row.h - ui.s(24);
+        ui_.drawAvatar(jstr(c, "avatar", "avatar_01"), id, {row.x + ui.s(12), row.y + ui.s(12), av, av});
+        float tx = row.x + av + ui.s(30), room = row.right() - tx - ui.s(16);
+        std::string name = jstr(c, "username");
+        Vec2 ns = ui.label(name, {tx, row.y + ui.s(28)}, ui.fitFont(name, FontFace::Bold, 21, room * 0.6f), ui.theme().text, Align::Left, FontFace::Bold,
+                           VAlign::Middle);
+        float cw = ui.text().measure("CRÉATEUR", FontFace::Bold, ui.s(12)).x + ui.s(16);
+        Rect chip{tx + ns.x + ui.s(12), row.y + ui.s(28) - ui.s(11), cw, ui.s(22)};
+        ui.r().fillRoundedRect(chip, ui.s(11), ui.theme().warm.withAlphaF(0.22f));
+        ui.label("CRÉATEUR", chip.center(), 12, ui.theme().warm, Align::Center, FontFace::Bold, VAlign::Middle);
+        if (jget<bool>(c, "following", false))
+            ui.label("SUIVI", {row.right() - ui.s(16), row.y + ui.s(28)}, 15, ui.theme().success, Align::Right, FontFace::Bold, VAlign::Middle);
+        std::string stats = plural(jget<int>(c, "levels", 0), "niveau publié", "niveaux publiés") + "  ·  " +
+                            plural(jget<int>(c, "followers", 0), "abonné", "abonnés") + "  ·  " +
+                            plural(jget<int>(c, "downloads", 0), "téléchargement", "téléchargements");
+        ui.label(stats, {tx, row.y + ui.s(62)}, ui.fitFont(stats, FontFace::Body, 15, room), ui.theme().warm, Align::Left, FontFace::Body, VAlign::Middle);
+        std::string last = "dernier niveau " + OnlineUi::ageOf(jstr(c, "last_published_at"));
+        ui.label(last, {tx, row.y + ui.s(88)}, ui.fitFont(last, FontFace::Body, 14, room), ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
     }
 
     void drawStatus(const Rect& r) {
@@ -374,10 +568,21 @@ private:
         y += ui.s(34);
         const Json& a = l.value("author", Json::object());
         bool mine = jstr(a, "id") == g_.online.playerId();
-        ui.label("par " + jstr(a, "username") + (mine ? " (vous)" : "") + "  ·  version " + std::to_string(jget<int>(l, "version", 1)) + "  ·  " +
-                     std::to_string(jget<int>(l, "downloads", 0)) + " téléch.  ·  " + std::to_string(jget<int>(l, "completions", 0)) + " fins",
-                 {x, y + ui.s(10)}, 14, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
-        y += ui.s(28);
+        {
+            // The author's name opens the creator's profile.
+            std::string who = "par " + jstr(a, "username") + (mine ? " (vous)" : "");
+            UIContext::ButtonStyle as;
+            as.small = true;
+            as.fontSize = 15;
+            float aw = std::min(w * 0.55f, ui.text().measure(who, FontFace::Bold, ui.s(15)).x + ui.s(24));
+            if (ui.button("author", {x, y, aw, ui.s(30)}, who, as) && !jstr(a, "id").empty()) g_.app.pushScene(makePlayerProfile(g_, jstr(a, "id")));
+            std::string info = "version " + std::to_string(jget<int>(l, "version", 1)) + "  ·  " + std::to_string(jget<int>(l, "downloads", 0)) +
+                               " téléch.  ·  " + plural(jget<int>(l, "completions", 0), "fin", "fins");
+            float room = w - aw - ui.s(12);
+            ui.label(info, {x + aw + ui.s(12), y + ui.s(15)}, ui.fitFont(info, FontFace::Body, 14, room), ui.theme().textDim, Align::Left, FontFace::Body,
+                     VAlign::Middle);
+        }
+        y += ui.s(38);
         std::string desc = jstr(l, "description");
         if (!desc.empty()) {
             Vec2 sz = ui.labelWrapped(desc, {x, y}, w, 15, ui.theme().text);
@@ -397,6 +602,26 @@ private:
             else downloadAndPlay(l);
         }
         y += ui.s(58);
+        // Favorites and comments.
+        {
+            bool fav = jget<bool>(l, "my_favorite", false);
+            int favs = jget<int>(l, "favorites", 0), coms = jget<int>(l, "comments", 0);
+            float half = (w - ui.s(10)) * 0.5f;
+            UIContext::ButtonStyle fs;
+            fs.small = true;
+            fs.selected = fav;
+            fs.primary = fav;
+            if (ui.button("favorite", {x, y, half, ui.s(42)}, (fav ? "Dans vos favoris (" : "Ajouter aux favoris (") + std::to_string(favs) + ")", fs))
+                setFavorite(id, !fav);
+            UIContext::ButtonStyle cs;
+            cs.small = true;
+            cs.selected = comments_.isOpen() && comments_.levelId() == id;
+            if (ui.button("comments", {x + half + ui.s(10), y, half, ui.s(42)}, "Commentaires (" + std::to_string(coms) + ")", cs)) {
+                if (cs.selected) comments_.close();
+                else comments_.open(id, title);
+            }
+            y += ui.s(52);
+        }
         // Rating
         if (!mine) {
             int myStars = l.contains("my_rating") && l["my_rating"].is_number() ? l["my_rating"].get<int>() : 0;
@@ -501,12 +726,15 @@ private:
 
     GameServices& g_;
     OnlineUi ui_;
+    CommentsPanel comments_;
     MenuBackground bg_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     std::string wanted_;
     bool accountAsked_ = false;
     Rect header_, zoneA_, zoneL_, zoneD_;
     int tab_ = 0;
+    int favSort_ = 0, favFilter_ = 0;
+    bool searchCreators_ = false;
     std::string query_;
     float searchDirty_ = 0.0f;
     Json levels_ = Json::array();

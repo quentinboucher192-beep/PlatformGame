@@ -29,7 +29,7 @@ namespace cosmic {
 class OnlineService {
 public:
     struct Notification {
-        enum class Kind { Info, Success, Warning, Error, Record, Friend, Message };
+        enum class Kind { Info, Success, Warning, Error, Record, Friend, Message, Workshop };
         Kind kind = Kind::Info;
         std::string title;
         std::string text;
@@ -105,6 +105,24 @@ public:
     const std::string& openConversation() const { return openConversation_; }
     /// A screen that loaded GET /social/unread itself shares the answer.
     void noteUnread(const Json& data);
+
+    // -------------------------------------------------------- notifications
+    /// Unread notifications of the Cosmic Online centre (last known), for the badges.
+    int unreadNotifications() const { return unreadNotifications_; }
+    /// Reads the newest unread notifications now (also every minute while connected): the
+    /// new ones are announced once by a toast.
+    void refreshNotifications(ApiCallback cb = {});
+    /// A screen that loaded GET /notifications (or marked some read) shares the counter.
+    void noteNotificationsUnread(int unread) { unreadNotifications_ = std::max(0, unread); }
+
+    // ------------------------------------------------------------ time played
+    /// Time played in a level (official id, community level id, or "other"), counted on
+    /// the player's online profile. Kept on disk until sent (only while logged in; the
+    /// server caps it by the real time elapsed between two reports).
+    void notePlaytime(const std::string& levelKey, double seconds);
+    /// Seconds waiting to be sent (tests, settings).
+    double pendingPlaytime() const;
+    void flushPlaytime(ApiCallback cb = {});
 
     // ------------------------------------------------------ community levels
     /// Community level installed from ONLINE LEVELS under this local id: {id, version,
@@ -219,6 +237,17 @@ private:
     bool socialBusy_ = false;
     int unreadMessages_ = 0;
     std::string openConversation_;
+
+    float notificationsTimer_ = 4.0f;
+    bool notificationsBusy_ = false;
+    int unreadNotifications_ = 0;
+    void noteNotifications(const Json& data);
+
+    /// {"player": id, "levels": {key: seconds}} (online/playtime.json).
+    Json playtime_ = Json::object();
+    float playtimeTimer_ = 20.0f;
+    bool playtimeBusy_ = false;
+    void savePlaytime();
 
     std::deque<Notification> notifications_;
     std::vector<RankChange> rankChanges_;

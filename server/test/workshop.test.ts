@@ -156,6 +156,8 @@ describe("creators, followers and notifications", () => {
         // Blocking ends the follow.
         expect((await api("POST", `${V}/social/blocks`, { token: nova.token, body: { player_id: fan.id } })).status).toBeLessThan(300);
         expect((await api("GET", `${V}/players/${nova.id}/followers`)).body.data.players).toHaveLength(0);
+        expect((await api("GET", `${V}/players/${fan.id}`, { token: nova.token })).body.data.follow.blocked).toBe(true);
+        expect((await api("GET", `${V}/players/${nova.id}`, { token: fan.token })).body.data.follow.blocked).toBe(false);
         expect((await api("POST", `${V}/players/${nova.id}/follow`, { token: fan.token })).status).toBe(403);
     });
 
@@ -163,6 +165,10 @@ describe("creators, followers and notifications", () => {
         const nova = await registerPlayer("Nova");
         const fan = await registerPlayer("Fan");
         await api("POST", `${V}/players/${nova.id}/follow`, { token: fan.token, body: { notify: false } });
+        // Changing the notification choice is not a new follower.
+        expect((await api("POST", `${V}/players/${nova.id}/follow`, { token: fan.token, body: { notify: true } })).body.data).toMatchObject({ following: true, notify: true });
+        const notes = await api("GET", `${V}/notifications`, { token: nova.token });
+        expect(notes.body.data.notifications.filter((n: { kind: string }) => n.kind === "new_follower")).toHaveLength(1);
         await api("PATCH", `${V}/players/me`, { token: fan.token, body: { follows_visibility: "private" } });
         expect((await api("GET", `${V}/players/${fan.id}/following`)).status).toBe(403);
         expect((await api("GET", `${V}/players/${fan.id}/following`, { token: fan.token })).status).toBe(200);

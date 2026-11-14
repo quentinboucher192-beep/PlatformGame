@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <set>
 #include <string>
 
@@ -10,6 +11,9 @@ namespace cosmic {
 class ContentDatabase;
 struct PlanetData;
 struct LevelEntry;
+
+/// "0 min", "45 min", "3 h 05 min": time played, in hours and minutes.
+std::string playTimeText(double seconds);
 
 /// Campaign progression: completed levels, unlocked planets, last played content
 /// (saves/progress.json, versioned).
@@ -30,6 +34,13 @@ public:
     std::string lastPlanet = "sylvanox";
     std::string lastLevel;
     double playTimeSeconds = 0.0;
+    /// Time played in one level (seconds, every session, finished or not).
+    double levelPlayTime(const std::string& levelId) const {
+        auto it = levelPlayTime_.find(levelId);
+        return it == levelPlayTime_.end() ? 0.0 : it->second;
+    }
+    /// Adds a session to the total and to the level.
+    void addPlayTime(const std::string& levelId, double seconds);
     bool introSeen = false;
     bool unlockAll = false;  // from the settings: every level is playable (testing)
 
@@ -39,6 +50,7 @@ public:
 
 private:
     std::set<std::string> completed_;
+    std::map<std::string, double> levelPlayTime_;
 };
 
 }  // namespace cosmic

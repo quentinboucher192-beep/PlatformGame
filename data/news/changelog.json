@@ -1,4 +1,11 @@
 {
+  "2.9.0": [
+    "ONLINE LEVELS : favoris (onglet Favoris trié et filtré, niveaux retirés conservés comme indisponibles) et compteurs de favoris et de commentaires sur chaque niveau.",
+    "Commentaires sur les niveaux de la communauté : réponses, réactions (J'aime, J'adore, Drôle, Impressionnant, Pas utile), épinglage par le créateur, modification, suppression, signalement.",
+    "Profils complets : badge CRÉATEUR, statistiques de créateur, créations, abonnés et abonnements, SUIVRE, ami, blocage ; recherche de créateurs.",
+    "Temps joué en heures et minutes : sur la fiche de chaque niveau et dans les profils en ligne (total et par niveau).",
+    "Notifications Cosmic Online : nouveaux niveaux des créateurs suivis, favoris mis à jour, réponses, réactions, abonnés ; filtres, lu/non lu, suppression et catégories désactivables."
+  ],
   "2.8.0": [
     "Rayons des boss texturés et animés : flamme (Pyralis), givre (Glacior), plasma et sève (Sylvanox), lumière d'étoile (Astrarque).",
     "Éditeur d'ennemis : texture et épaisseur de chaque rayon, avec aperçu ; les libellés longs ne passent plus sous leur champ.",

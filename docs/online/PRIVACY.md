@@ -38,17 +38,27 @@
 | Temps sur les niveaux de la communauté (et leurs replays) | D1 `community_records` + R2 | temps acceptés : tous | vie du compte |
 | Notes et signalements de niveaux | D1 `community_ratings`, `community_reports` | notes : agrégées ; signalements : opérateurs | vie du compte |
 | Signalements de messages | D1 `message_reports` + journal d'audit | opérateurs | tant que le message existe |
+| Favoris (niveau, titre et auteur au moment de l'ajout) | D1 `community_favorites` | le joueur ; nombre agrégé sur le niveau | jusqu'au retrait |
+| Commentaires et réponses (texte, dates, empreinte du texte contre le spam) | D1 `community_comments` | tous (sauf blocages et commentaires masqués) | jusqu'à leur suppression par l'auteur, la suppression du niveau ou du compte |
+| Réactions aux commentaires | D1 `community_comment_reactions` | nombres agrégés ; la sienne pour le joueur | jusqu'au retrait |
+| Signalements de commentaires | D1 `community_comment_reports` | opérateurs | tant que le commentaire existe |
+| Joueurs d'un niveau (téléchargement ou temps envoyé) | D1 `community_level_players` | nombre agrégé (« joueurs uniques » du créateur) | tant que le niveau existe |
+| Abonnements aux créateurs | D1 `player_follows` | listes publiques ou privées (réglage `follows_visibility`) | jusqu'au désabonnement ou à un blocage |
+| Notifications (type, acteur, niveau, date, lu) et catégories désactivées | D1 `notifications`, `players.notifications_off` | le joueur | lues : 60 jours ; 500 au plus |
+| Temps joué par niveau (secondes, date de la dernière partie) | D1 `player_playtime` | profils visibles | vie du compte |
 | Journal de sécurité (action, empreinte d'IP) | D1 `audit_log` | opérateurs | 180 jours |
 | Compteurs de limitation (empreintes) | D1 `rate_limits` | personne | 24 heures |
 
 ## Droits du joueur (Paramètres en ligne)
 
 * **Accès / portabilité** : *Exporter mes données* → `GET /api/v1/players/me/export`, enregistré
-  en JSON dans le dossier `exports/` du joueur (dont les conversations, les messages envoyés et
-  les joueurs bloqués).
+  en JSON dans le dossier `exports/` du joueur (dont les conversations, les messages envoyés,
+  les joueurs bloqués, les favoris, commentaires, réactions, abonnements, notifications et le
+  temps joué).
 * **Rectification** : pseudonyme, avatar, pays, visibilités (`PATCH /api/v1/players/me`).
 * **Opposition / limitation** : masquer le profil, le pays, la présence sur le globe, refuser
-  les demandes d'amis, désactiver Cosmic Online ou la connexion automatique.
+  les demandes d'amis, rendre privées ses listes d'abonnés et d'abonnements, désactiver des
+  catégories de notifications, désactiver Cosmic Online ou la connexion automatique.
 * **Effacement** : *Supprimer mon compte* (mot de passe + confirmation) →
   `DELETE /api/v1/players/me` : suppression des fichiers R2 (replays, avatar) puis du compte et,
   en cascade, des sessions, records, meilleurs temps, replays, amis, messages envoyés,
@@ -74,6 +84,8 @@ vérification de son empreinte SHA-256.
 | `online/cache/` | dernières réponses du serveur (classements, globe, profils) ; *Effacer le cache en ligne* |
 | `saves/online_attempts.json`, `online/replays/` | performances en attente ou suivies et leurs replays |
 | `online/known_ranks.json` | derniers rangs vus (notifications « record battu ») |
+| `online/playtime.json` | temps joué pas encore envoyé (seulement pour le compte connecté) |
+| `saves/progress.json` | temps joué par niveau (affiché sur la fiche de chaque niveau, même sans compte) |
 
 À la suppression du compte, les performances et replays locaux rattachés à ce compte sont
 également effacés.

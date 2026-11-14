@@ -1,6 +1,7 @@
 #include "game/progression/Progression.h"
 
 #include <algorithm>
+#include <cstdio>
 
 #include "engine/core/Paths.h"
 #include "game/content/ContentDatabase.h"
@@ -13,12 +14,27 @@ SaveFile progressFile() { return SaveFile("progress", Progression::kVersion); }
 fs::path progressPath() { return Paths::savesDir() / "progress.json"; }
 }  // namespace
 
+std::string playTimeText(double seconds) {
+    long long minutes = seconds > 0.0 ? static_cast<long long>(seconds / 60.0) : 0;
+    if (minutes < 60) return std::to_string(minutes) + " min";
+    char buf[48];
+    std::snprintf(buf, sizeof buf, "%lld h %02lld min", minutes / 60, minutes % 60);
+    return buf;
+}
+
 Json Progression::toJson() const {
     return {{"completedLevels", std::vector<std::string>(completed_.begin(), completed_.end())},
             {"lastPlanet", lastPlanet},
             {"lastLevel", lastLevel},
             {"playTimeSeconds", playTimeSeconds},
+            {"levelPlayTime", levelPlayTime_},
             {"introSeen", introSeen}};
+}
+
+void Progression::addPlayTime(const std::string& levelId, double seconds) {
+    if (!(seconds > 0.0)) return;
+    playTimeSeconds += seconds;
+    if (!levelId.empty()) levelPlayTime_[levelId] += seconds;
 }
 
 void Progression::fromJson(const Json& j) {
@@ -27,6 +43,10 @@ void Progression::fromJson(const Json& j) {
     lastPlanet = jstr(j, "lastPlanet", "sylvanox");
     lastLevel = jstr(j, "lastLevel");
     playTimeSeconds = jget<double>(j, "playTimeSeconds", 0.0);
+    levelPlayTime_.clear();
+    if (j.contains("levelPlayTime") && j["levelPlayTime"].is_object())
+        for (auto it = j["levelPlayTime"].begin(); it != j["levelPlayTime"].end(); ++it)
+            if (it.value().is_number() && it.value().get<double>() > 0.0) levelPlayTime_[it.key()] = it.value().get<double>();
     introSeen = jget<bool>(j, "introSeen", false);
 }
 

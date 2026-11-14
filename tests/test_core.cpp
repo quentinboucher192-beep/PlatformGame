@@ -136,3 +136,24 @@ TEST_CASE("input: key events feed actions and layout-aware shortcuts") {
     CHECK(!in.keyPressed(SDL_SCANCODE_SPACE));
     CHECK(!in.shortcutPressed(label));
 }
+
+#include "game/progression/Progression.h"
+
+TEST_CASE("progression: time played per level, shown in hours and minutes") {
+    cosmic::Progression p;
+    p.addPlayTime("sylvanox_01", 125.0);
+    p.addPlayTime("sylvanox_01", 3600.0);
+    p.addPlayTime("", 30.0);  // a level without id (editor data) counts in the total only
+    p.addPlayTime("pyralis_02", -5.0);
+    CHECK(std::abs(p.levelPlayTime("sylvanox_01") - 3725.0) < 1e-9);
+    CHECK(p.levelPlayTime("pyralis_02") == 0.0);
+    CHECK(std::abs(p.playTimeSeconds - 3755.0) < 1e-9);
+    cosmic::Progression q;
+    q.fromJson(p.toJson());
+    CHECK(std::abs(q.levelPlayTime("sylvanox_01") - 3725.0) < 1e-9);
+    CHECK(cosmic::playTimeText(0) == "0 min");
+    CHECK(cosmic::playTimeText(59) == "0 min");
+    CHECK(cosmic::playTimeText(45 * 60 + 10) == "45 min");
+    CHECK(cosmic::playTimeText(3725) == "1 h 02 min");
+    CHECK(cosmic::playTimeText(120 * 3600 + 5 * 60) == "120 h 05 min");
+}

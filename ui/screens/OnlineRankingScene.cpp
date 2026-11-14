@@ -104,19 +104,19 @@ public:
         ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
         layout();
         bg_.render(g_, 0.35f);
-        ui.inputEnabled = !profileOpen_;
+        // Under the profile (pushed over this screen) nothing here reacts.
+        const bool top = g_.app.topScene() == this;
+        ui.inputEnabled = top;
         drawGlobeZone();
         drawHeader();
         drawNavigation();
         drawPlayerCard();
         drawBoardZone();
         drawLevelZone();
-        ui.inputEnabled = true;
-        if (profileOpen_) drawProfile();
         drawRankAnimation();
-        if (ui.backPressed() && !profileOpen_) g_.app.switchScene(makeMainMenu(g_));
-        else if (ui.backPressed() && profileOpen_) profileOpen_ = false;
-        ui.end();
+        if (top && ui.backPressed()) g_.app.switchScene(makeMainMenu(g_));
+        ui.inputEnabled = true;
+        if (top) ui.end();
     }
 
 private:
@@ -317,7 +317,7 @@ private:
 
     // ---------------------------------------------------------------- globe
     void handleGlobeInput(float dt) {
-        if (profileOpen_ || g_.app.topScene() != this || g_.ui.editingText()) return;
+        if (g_.app.topScene() != this || g_.ui.editingText()) return;
         InputManager& in = g_.app.input();
         Vec2 mp = in.mousePos();
         bool inside = zoneB_.contains(mp);
@@ -959,113 +959,7 @@ private:
     // -------------------------------------------------------------- profile
     void openProfile(const std::string& playerId) {
         if (playerId.empty() || !g_.online.usable()) return;
-        profileOpen_ = true;
-        profileLoading_ = true;
-        profile_ = Json();
-        profileError_.clear();
-        friendMessage_.clear();
-        int gen = ++profileGen_;
-        g_.online.get("/api/v1/players/" + playerId, OnlineService::guard(life_, [this, gen](const ApiResult& r) {
-            if (gen != profileGen_) return;
-            profileLoading_ = false;
-            if (r.ok) profile_ = r.data;
-            else profileError_ = r.message;
-        }));
-    }
-
-    void drawProfile() {
-        UIContext& ui = g_.ui;
-        ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{2, 4, 10, 170});
-        Rect box{ui.screenW() * 0.5f - ui.s(330), ui.screenH() * 0.5f - ui.s(300), ui.s(660), ui.s(600)};
-        ui.r().fillRoundedRect(box, ui.s(16), Color{10, 16, 34, 245});
-        ui.r().drawRoundedRect(box, ui.s(16), ui.theme().accent.withAlphaF(0.6f), ui.s(1.5f));
-        ui.pushId("online/profile");
-        UIContext::ButtonStyle st;
-        st.small = true;
-        if (ui.button("close", {box.right() - ui.s(120), box.y + ui.s(14), ui.s(106), ui.s(34)}, "Fermer", st)) profileOpen_ = false;
-        if (profileLoading_) {
-            ui.label("Chargement du profil…", box.center(), 20, ui.theme().textDim, Align::Center, FontFace::Body, VAlign::Middle);
-        } else if (!profileError_.empty()) {
-            ui.labelWrapped(profileError_, {box.x + ui.s(30), box.center().y}, box.w - ui.s(60), 18, ui.theme().danger);
-        } else if (profile_.is_object()) {
-            const Json& p = profile_["player"];
-            bool hidden = jget<bool>(p, "hidden", false);
-            std::string pid = jstr(p, "id");
-            ui_.drawAvatar(jstr(p, "avatar", "avatar_01"), pid, {box.x + ui.s(24), box.y + ui.s(24), ui.s(96), ui.s(96)});
-            ui.label(jstr(p, "username"), {box.x + ui.s(140), box.y + ui.s(50)}, 30, ui.theme().text, Align::Left, FontFace::Title, VAlign::Middle);
-            std::string cc = jstr(p, "country_code");
-            if (!cc.empty()) {
-                ui_.drawFlag(cc, {box.x + ui.s(140), box.y + ui.s(78), ui.s(28), ui.s(21)});
-                ui.label(ui_.countryName(cc), {box.x + ui.s(176), box.y + ui.s(89)}, 17, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
-            }
-            if (hidden) {
-                ui.labelWrapped("Ce joueur a choisi de masquer son profil public. Seuls son pseudonyme et son avatar sont visibles.",
-                                {box.x + ui.s(30), box.y + ui.s(160)}, box.w - ui.s(60), 18, ui.theme().textDim);
-            } else {
-                std::string since = jstr(p, "created_at").substr(0, 10);
-                ui.label("Inscrit le " + since, {box.x + ui.s(140), box.y + ui.s(112)}, 15, ui.theme().textDim, Align::Left, FontFace::Body,
-                         VAlign::Middle);
-                const Json& s = profile_.value("statistics", Json::object());
-                float y = box.y + ui.s(150);
-                float cw = (box.w - ui.s(48)) / 4;
-                auto stat = [&](int i, const std::string& v, const std::string& k) {
-                    Rect c{box.x + ui.s(24) + i * cw, y, cw - ui.s(10), ui.s(70)};
-                    ui.r().fillRoundedRect(c, ui.s(10), Color{18, 28, 54, 230});
-                    ui.label(v, {c.center().x, c.y + ui.s(26)}, 26, ui.theme().accent, Align::Center, FontFace::Title, VAlign::Middle);
-                    ui.label(k, {c.center().x, c.y + ui.s(54)}, 13, ui.theme().textDim, Align::Center, FontFace::Body, VAlign::Middle);
-                };
-                stat(0, std::to_string(jget<int>(s, "verified_records", 0)), "records vérifiés");
-                stat(1, std::to_string(jget<int>(s, "first_places", 0)), "premières places");
-                stat(2, std::to_string(jget<int>(s, "levels_completed", 0)), "niveaux classés");
-                stat(3, std::to_string(jget<int>(s, "planets_completed", 0)), "planètes terminées");
-                y += ui.s(90);
-                ui.label("Meilleurs temps", {box.x + ui.s(24), y}, 18, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
-                y += ui.s(22);
-                const Json bests = s.value("best_times", Json::array());
-                Rect view{box.x + ui.s(24), y, box.w - ui.s(48), box.bottom() - ui.s(76) - y};
-                ui.beginScroll("bests", view, static_cast<float>(bests.size()) * ui.s(30));
-                float yy = view.y - ui.scrollOffset();
-                for (const auto& b : bests) {
-                    RunCategory cat;
-                    std::string catLabel = categoryFromId(jstr(b, "category"), cat) ? categoryLabel(cat) : jstr(b, "category");
-                    ui.label(jstr(b, "level_name") + " · " + catLabel, {view.x, yy + ui.s(14)}, 16, ui.theme().text, Align::Left, FontFace::Body,
-                             VAlign::Middle);
-                    int rk = jget<int>(b, "rank", 0);
-                    ui.label("n°" + std::to_string(rk), {view.right() - ui.s(130), yy + ui.s(14)}, 16,
-                             rk <= 3 ? GlobeRenderer::tierColor(markerTier(rk)) : ui.theme().textDim, Align::Right, FontFace::Bold, VAlign::Middle);
-                    ui.label(formatRunTime(jget<int64_t>(b, "time_ms", 0)), {view.right() - ui.s(8), yy + ui.s(14)}, 16, ui.theme().text,
-                             Align::Right, FontFace::Bold, VAlign::Middle);
-                    yy += ui.s(30);
-                }
-                if (bests.empty())
-                    ui.label("Aucun record vérifié pour l'instant.", {view.x, view.y + ui.s(14)}, 16, ui.theme().textDim, Align::Left,
-                             FontFace::Body, VAlign::Middle);
-                ui.endScroll();
-            }
-            // Friendship
-            if (g_.online.loggedIn() && pid != g_.online.playerId()) {
-                std::string fr = jstr(p, "friendship");
-                std::string label = fr == "friends" ? "Retirer des amis" : fr == "request_sent" ? "Demande envoyée" : fr == "request_received" ? "Accepter la demande" : "Ajouter en ami";
-                UIContext::ButtonStyle fs;
-                fs.small = true;
-                fs.enabled = fr != "request_sent";
-                if (ui.button("friend", {box.x + ui.s(24), box.bottom() - ui.s(56), ui.s(220), ui.s(38)}, label, fs)) friendAction(pid, fr);
-                if (!friendMessage_.empty())
-                    ui.label(friendMessage_, {box.x + ui.s(260), box.bottom() - ui.s(37)}, 15, ui.theme().textDim, Align::Left, FontFace::Body,
-                             VAlign::Middle);
-            }
-        }
-        ui.popId();
-    }
-
-    void friendAction(const std::string& pid, const std::string& state) {
-        auto done = OnlineService::guard(life_, [this, pid](const ApiResult& r) {
-            friendMessage_ = r.ok ? "C'est fait." : r.message;
-            if (r.ok) openProfile(pid);
-        });
-        if (state == "friends") g_.online.send("DELETE", "/api/v1/friends/" + pid, Json(), done);
-        else if (state == "request_received") g_.online.send("POST", "/api/v1/friends/accept", {{"player_id", pid}}, done);
-        else g_.online.send("POST", "/api/v1/friends/request", {{"player_id", pid}}, done);
+        g_.app.pushScene(makePlayerProfile(g_, playerId));
     }
 
     // -------------------------------------------------------- rank change
@@ -1144,12 +1038,6 @@ private:
     bool pressing_ = false, dragged_ = false;
     Vec2 pressPos_;
 
-    bool profileOpen_ = false;
-    bool profileLoading_ = false;
-    Json profile_;
-    std::string profileError_;
-    std::string friendMessage_;
-    int profileGen_ = 0;
 
     std::optional<OnlineService::RankChange> rankAnim_;
     float rankAnimT_ = 10.0f;

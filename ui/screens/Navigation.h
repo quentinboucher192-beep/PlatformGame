@@ -42,8 +42,9 @@ std::unique_ptr<Scene> makeGameScene(GameServices& g, const std::string& levelId
 std::unique_ptr<Scene> makeSettingsScene(GameServices& g, bool overlay);
 /// HUD editor: place and size every HUD element; "Enregistrer" writes the layout into `target`.
 std::unique_ptr<Scene> makeHudEditor(GameServices& g, GameplaySettings& target);
-/// Notifications of the main menu (new content, records dropped, new installer).
-std::unique_ptr<Scene> makeNotifications(GameServices& g);
+/// Notifications of the main menu (new content, records dropped, new installer); `tab` 1:
+/// the Cosmic Online notification centre.
+std::unique_ptr<Scene> makeNotifications(GameServices& g, int tab = 0);
 /// Help: every power of the player with a live example (pushed over the current screen).
 std::unique_ptr<Scene> makePowerGuide(GameServices& g, int page = 0);
 std::unique_ptr<Scene> makeLevelEditor(GameServices& g, const std::string& levelId);
@@ -70,6 +71,9 @@ std::unique_ptr<Scene> makeCommunityPublish(GameServices& g, const std::string& 
 /// SOCIAL (in ONLINE): conversations with friends, groups, friends, blocked players.
 /// `conversationId`: open this conversation; `tab`: 0 Discussions, 1 Amis, 2 Bloqués.
 std::unique_ptr<Scene> makeSocial(GameServices& g, const std::string& conversationId = {}, int tab = 0);
+/// Profile of a player (pushed over the current screen): records, creator card and
+/// creations, followers, time played, follow / friend / block.
+std::unique_ptr<Scene> makePlayerProfile(GameServices& g, const std::string& playerId);
 /// `tab`: 0 Préférences, 1 Compte et confidentialité, 2 Amis.
 std::unique_ptr<Scene> makeOnlineSettings(GameServices& g, int tab = 0);
 /// Downloads and plays back the replay of a verified record.

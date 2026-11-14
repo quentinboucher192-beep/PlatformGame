@@ -100,8 +100,11 @@ public:
         if (btn("online", "Online", onlineSub)) g_.app.switchScene(makeOnlineRanking(g_));
         {
             int n = g_.news.unread();
-            std::string sub = n > 0 ? std::to_string(n) + (n > 1 ? " nouvelles" : " nouvelle") : "";
-            if (btn("news", "Notifications", sub)) g_.app.switchScene(makeNotifications(g_), 0.3f);
+            int online = g_.online.loggedIn() ? g_.online.unreadNotifications() : 0;
+            std::string sub = n > 0 ? std::to_string(n) + (n > 1 ? " nouveautés" : " nouveauté") : "";
+            if (online > 0) sub += (sub.empty() ? "" : " · ") + std::to_string(online) + " en ligne";
+            // Straight to the Cosmic Online centre when only it has something new.
+            if (btn("news", "Notifications", sub)) g_.app.switchScene(makeNotifications(g_, n == 0 && online > 0 ? 1 : 0), 0.3f);
         }
         if (btn("settings", "Paramètres", "")) g_.app.pushScene(makeSettingsScene(g_, false));
         UIContext::ButtonStyle danger;

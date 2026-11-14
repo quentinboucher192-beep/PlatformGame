@@ -6,6 +6,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <cmath>
 #include <cctype>
 #include <map>
 #include <set>
@@ -65,6 +66,9 @@ struct FakeServer {
     std::map<std::string, Json> records;
     Json friends = {{"friends", Json::array()}, {"incoming", Json::array()}, {"outgoing", Json::array()}};
     Json unread = {{"total", 0}, {"latest", Json::array()}};
+    Json notifications = Json::array();  // unread notifications, newest first
+    std::vector<Json> playtimeReports;
+    int playtimeStatus = 200;
     std::set<std::string> takenNames = {"orion"};
     int friendsCalls = 0;
     bool levelPending = false;  // the server does not know the game's level revision yet
@@ -134,6 +138,16 @@ struct FakeServer {
         if (!authorized(rq)) return apiError(401, "TOKEN_EXPIRED");
         if (path == "/api/v1/auth/me") return okData({{"player", player()}});
         if (path == "/api/v1/social/unread") return okData(unread);
+        if (path.rfind("/api/v1/notifications?filter=unread", 0) == 0)
+            return okData({{"notifications", notifications}, {"unread", static_cast<int>(notifications.size())}});
+        if (path == "/api/v1/players/me/playtime") {
+            if (playtimeStatus != 200) return apiError(playtimeStatus, "RATE_LIMITED");
+            Json b = Json::parse(rq.body);
+            playtimeReports.push_back(b);
+            int total = 0;
+            for (const auto& x : b["sessions"]) total += x["seconds"].get<int>();
+            return okData({{"accepted_seconds", total}});
+        }
         if (path == "/api/v1/friends") {
             ++friendsCalls;
             return okData(friends);
@@ -926,4 +940,83 @@ TEST_CASE("online: a run on a revision the server does not know yet is sent late
     }
     h.svc.syncNow();
     CHECK(pump(h.svc, [&] { return !h.svc.syncing() && h.svc.unsentCount() == 0; }, 5000));
+}
+
+TEST_CASE("online: workshop notifications are announced once, the first reading is silent") {
+    Harness h("notifications");
+    auto note = [](const char* id, const char* at, const char* text) {
+        return Json{{"id", id}, {"kind", "new_level"}, {"created_at", at}, {"text", text}, {"read", false}};
+    };
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        h.server->notifications = Json::array({note("n1", "2026-11-13T10:00:00.000Z", "Nova vient de publier un nouveau niveau : A")});
+    }
+    CHECK(h.login());
+    // Read automatically after the connection; what was already there is not "new".
+    CHECK(pump(h.svc, [&] { return h.svc.unreadNotifications() == 1; }, 3000, 0.5f));
+    auto workshop = [&] {
+        std::vector<OnlineService::Notification> v;
+        for (auto& no : h.svc.takeNotifications())
+            if (no.kind == OnlineService::Notification::Kind::Workshop) v.push_back(no);
+        return v;
+    };
+    CHECK(workshop().empty());
+    auto poll = [&] {
+        bool done = false;
+        h.svc.refreshNotifications([&](const ApiResult&) { done = true; });
+        CHECK(pump(h.svc, [&] { return done; }));
+    };
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        h.server->notifications.insert(h.server->notifications.begin(), note("n2", "2026-11-13T10:05:00.000Z", "Orion a répondu à votre commentaire"));
+    }
+    poll();
+    auto n = workshop();
+    CHECK(n.size() == 1);
+    if (!n.empty()) CHECK(n[0].text == "Orion a répondu à votre commentaire");
+    CHECK(h.svc.unreadNotifications() == 2);
+    poll();
+    CHECK(workshop().empty());  // no repeat
+    // A screen that marked everything read shares the counter.
+    h.svc.noteNotificationsUnread(0);
+    CHECK(h.svc.unreadNotifications() == 0);
+}
+
+TEST_CASE("online: time played is kept until sent, whole seconds only, never while logged out") {
+    Harness h("playtime");
+    h.svc.notePlaytime("test_01", 120.0);  // logged out: not linked to any account
+    CHECK(h.svc.pendingPlaytime() == 0.0);
+    CHECK(h.login());
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        h.server->playtimeStatus = 429;
+    }
+    h.svc.notePlaytime("test_01", 90.5);
+    h.svc.notePlaytime("other", 30.0);
+    CHECK(std::abs(h.svc.pendingPlaytime() - 120.5) < 1e-6);
+    bool done = false;
+    h.svc.flushPlaytime([&](const ApiResult&) { done = true; });
+    CHECK(pump(h.svc, [&] { return done; }));
+    CHECK(std::abs(h.svc.pendingPlaytime() - 120.5) < 1e-6);  // refused for now: kept
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        h.server->playtimeStatus = 200;
+    }
+    // Kept on disk: another start of the game sends it.
+    OnlineService again;
+    again.init({}, "http://127.0.0.1:9", std::make_unique<FakeTransport>(h.server), h.dir);
+    CHECK(pump(again, [&] { return again.loggedIn(); }, 4000, 0.5f));
+    CHECK(std::abs(again.pendingPlaytime() - 120.5) < 1e-6);
+    CHECK(pump(again, [&] { return again.pendingPlaytime() < 1.0; }, 4000, 1.0f));
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        CHECK(h.server->playtimeReports.size() == 1);
+        std::map<std::string, int> sent;
+        if (!h.server->playtimeReports.empty())
+            for (const auto& x : h.server->playtimeReports[0]["sessions"]) sent[x["level_id"].get<std::string>()] = x["seconds"].get<int>();
+        CHECK(sent["test_01"] == 90);
+        CHECK(sent["other"] == 30);
+    }
+    CHECK(std::abs(again.pendingPlaytime() - 0.5) < 1e-6);  // the fraction waits for the next session
+    again.shutdown();
 }

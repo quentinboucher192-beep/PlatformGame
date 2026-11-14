@@ -433,7 +433,9 @@ int main(int argc, char** argv) {
         std::string page = value("--guide-page");
         app.pushScene(makePowerGuide(game, page.empty() ? 0 : std::atoi(page.c_str()) - 1));
     } else if (has("--notifications")) {
-        app.pushScene(makeNotifications(game));
+        app.pushScene(makeNotifications(game, value("--notifications") == "online" ? 1 : 0));
+    } else if (std::string pid = value("--profile"); !pid.empty()) {
+        app.pushScene(makePlayerProfile(game, pid));
     } else if (has("--social")) {
         app.pushScene(makeSocial(game, value("--social")));
     } else if (has("--online")) {

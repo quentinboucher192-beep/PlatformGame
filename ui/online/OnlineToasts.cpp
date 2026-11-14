@@ -18,6 +18,7 @@ Color kindColor(const UITheme& th, OnlineService::Notification::Kind k) {
         case OnlineService::Notification::Kind::Record: return Color{255, 206, 84, 255};
         case OnlineService::Notification::Kind::Friend: return Color{150, 170, 255, 255};
         case OnlineService::Notification::Kind::Message: return Color{120, 220, 255, 255};
+        case OnlineService::Notification::Kind::Workshop: return Color{255, 170, 120, 255};
         default: return th.accent;
     }
 }
@@ -30,7 +31,7 @@ void OnlineToasts::update(GameServices& g, float dt) {
     for (auto& n : hold ? std::vector<OnlineService::Notification>{} : g.online.takeNotifications()) {
         toasts_.push_back({n, 0.0f});
         bool loud = n.kind == OnlineService::Notification::Kind::Record || n.kind == OnlineService::Notification::Kind::Friend ||
-                    n.kind == OnlineService::Notification::Kind::Message;
+                    n.kind == OnlineService::Notification::Kind::Message || n.kind == OnlineService::Notification::Kind::Workshop;
         g.uiSound(loud ? "ui_confirm" : "ui_move", 0.5f);
     }
     for (auto& t : toasts_) t.t += dt;

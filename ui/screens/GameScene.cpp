@@ -91,7 +91,14 @@ void GameScene::onExit() {
     g_.app.audio().stopAmbience(600);
     g_.app.audio().setMusicDuck(1.0f);
     if (!opt_.editorTest) {
-        g_.progression.playTimeSeconds += playTime_;
+        g_.progression.addPlayTime(opt_.level ? std::string{} : levelId_, playTime_);
+        // Online profile: official levels by id, community levels by their online id.
+        if (!opt_.level) {
+            std::string key = "other";
+            if (const Json* c = g_.online.communityInstall(levelId_)) key = jstr(*c, "id");
+            else if (const LevelEntry* e = g_.content.level(levelId_); e && e->source == ContentSource::Builtin) key = levelId_;
+            g_.online.notePlaytime(key, playTime_);
+        }
         g_.progression.save();
         g_.records.save();
     }

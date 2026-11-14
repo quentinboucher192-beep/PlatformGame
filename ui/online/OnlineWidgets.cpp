@@ -1,11 +1,13 @@
 #include "ui/online/OnlineWidgets.h"
 
 #include <cctype>
+#include <chrono>
 #include <cmath>
 #include <cstdio>
 
 #include "engine/core/FileUtil.h"
 #include "game/GameServices.h"
+#include "game/online/OnlineSession.h"
 #include "ui/screens/Thumbnail.h"
 
 namespace cosmic {
@@ -169,6 +171,13 @@ std::string OnlineUi::ageText(double seconds) {
     if (seconds < 3600) return "il y a " + std::to_string(static_cast<int>(seconds / 60)) + " min";
     if (seconds < 86400) return "il y a " + std::to_string(static_cast<int>(seconds / 3600)) + " h";
     return "il y a " + std::to_string(static_cast<int>(seconds / 86400)) + " j";
+}
+
+std::string OnlineUi::ageOf(const std::string& iso) {
+    auto t = parseIsoUtc(iso);
+    if (!t) return {};
+    double secs = std::chrono::duration<double>(std::chrono::system_clock::now() - *t).count();
+    return ageText(std::max(0.0, secs));
 }
 
 }  // namespace cosmic
