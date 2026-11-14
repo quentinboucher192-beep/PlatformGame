@@ -22,6 +22,7 @@ const char* playerStateName(PlayerState s) {
         case PlayerState::Respawn: return "Respawn";
         case PlayerState::Victory: return "Victory";
         case PlayerState::Hidden: return "Hidden";
+        case PlayerState::Crouch: return "Crouch";
     }
     return "?";
 }
@@ -93,6 +94,8 @@ bool Player::spendEnergy(float amount) {
     energyRegenTimer_ = cfg_.energyRegenDelay;
     return true;
 }
+
+Vec2 Player::crouchSize() const { return {cfg_.size.x, std::max(8.0f, std::round(cfg_.size.y * 0.58f))}; }
 
 void Player::setHitbox(Vec2 size) {
     Vec2 feetPos = box.bottomCenter();
@@ -187,6 +190,15 @@ void Player::fixedUpdate(GameWorld& w, const PlayerInput& inRaw, float dt) {
     }
 
     if (state_ == PlayerState::Hidden) return;
+    // Out of a crouch some other way (hurt, dash, launched, dead...): standing size again
+    // as soon as there is room for it.
+    if (crouchBox_ && state_ != PlayerState::Crouch) {
+        Rect stand = Rect::fromBottomCenter(box.bottomCenter(), cfg_.size);
+        if (!w.physics().overlapsSolid(stand, moveOptions())) {
+            setHitbox(cfg_.size);
+            crouchBox_ = false;
+        }
+    }
     if (state_ == PlayerState::Dead) {
         deathTimer_ -= dt;
         vel.x = approach(vel.x, 0.0f, 600.0f * dt);
@@ -299,6 +311,42 @@ void Player::stepMovement(GameWorld& w, const PlayerInput& in, float dt) {
             setHitbox(cfg_.slideSize);
             w.playSound("sounds/slide.wav", box.center(), 0.7f);
             w.particles().emit("dust_run", box.bottomCenter(), 1.0f, {-facing, -0.3f});
+            return;
+        }
+    }
+
+    // Crouch: Down alone on the ground, even standing still (Down while running is a slide,
+    // a diagonal keeps walking): a smaller hitbox lets attacks pass overhead. The player
+    // stays in place; Jump, an attack or a direction stands up (Down + Jump still drops
+    // through a one-way platform).
+    {
+        bool down = in.move.y > 0.5f && std::abs(mx) < 0.35f;
+        bool canCrouch = grounded_ && controlEnabled && down && !inWater && !onLadder && attackTimer_ <= 0.0f && jumpBufferTimer_ <= 0.0f;
+        if (state_ == PlayerState::Crouch) {
+            bool stay = canCrouch;
+            if (!stay) {
+                Rect stand = Rect::fromBottomCenter(box.bottomCenter(), cfg_.size);
+                if (!w.physics().overlapsSolid(stand, moveOptions())) {
+                    setHitbox(cfg_.size);
+                    crouchBox_ = false;
+                    state_ = PlayerState::Idle;
+                } else if (grounded_) {
+                    stay = true;  // no room to stand up (low ceiling)
+                    jumpBufferTimer_ = 0.0f;
+                }
+            }
+            if (stay) {
+                vel.x = approach(vel.x, 0.0f, cfg_.groundDeceleration * dt);
+                vel.y = std::min(vel.y + cfg_.gravity() * dt, cfg_.maxFallSpeed);
+                moveAndCollide(w, dt);
+                return;
+            }
+        } else if (canCrouch && std::abs(vel.x) <= cfg_.maxRunSpeed * 0.55f) {
+            state_ = PlayerState::Crouch;
+            setHitbox(crouchSize());
+            crouchBox_ = true;
+            vel.x = approach(vel.x, 0.0f, cfg_.groundDeceleration * dt);
+            moveAndCollide(w, dt);
             return;
         }
     }

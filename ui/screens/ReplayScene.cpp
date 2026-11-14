@@ -33,6 +33,7 @@ const char* clipFor(const ReplayFrame& f, Vec2 vel) {
         case PlayerState::Slide: return "slide";
         case PlayerState::Climb: return "climb";
         case PlayerState::WallSlide: return "wall_slide";
+        case PlayerState::Crouch: return "crouch";
         default: break;
     }
     if (f.flags & ReplayFrame::Grounded) {

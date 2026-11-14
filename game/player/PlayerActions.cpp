@@ -271,6 +271,7 @@ void Player::chooseAnimation() {
         case PlayerState::Hurt: clip = "hurt"; break;
         case PlayerState::Dash: clip = "dash"; break;
         case PlayerState::Slide: clip = "slide"; break;
+        case PlayerState::Crouch: clip = "crouch"; break;
         case PlayerState::Climb: clip = "climb"; speed = anim.speed; break;
         case PlayerState::WallSlide: clip = "wall_slide"; break;
         case PlayerState::Hidden: return;

@@ -33,6 +33,7 @@ enum class PlayerState {
     Respawn,
     Victory,
     Hidden,
+    Crouch,  // 2.17: Down on the ground, even standing still (smaller hitbox to dodge)
 };
 const char* playerStateName(PlayerState s);
 
@@ -159,6 +160,9 @@ private:
     void stepMovement(GameWorld& w, const PlayerInput& in, float dt);
     void stepClimb(GameWorld& w, const PlayerInput& in, float dt);
     void stepSlide(GameWorld& w, const PlayerInput& in, float dt);
+    /// Size of the crouching hitbox (same width, a bit more than half the height).
+    Vec2 crouchSize() const;
+    bool crouchBox_ = false;  // the hitbox is the crouching one
     void tryJump(GameWorld& w, const PlayerInput& in);
     void handlePowers(GameWorld& w, const PlayerInput& in, float dt);
     void handleAttack(GameWorld& w, const PlayerInput& in, float dt);

@@ -54,7 +54,7 @@ std::optional<LevelFingerprint> fingerprintRankedLevel(const ContentDatabase& co
         if (const PowerDefinition* d = content.power(id)) powers[id] = d->toJson();
     Json levelPart = levelJson;
     levelPart.erase("extreme");
-    Json bundle = {{"format", "cosmic.ranked-level"}, {"simulation", kSimulationVersion}, {"level", levelPart},
+    Json bundle = {{"format", "cosmic.ranked-level"}, {"simulation", kRankingGeneration}, {"level", levelPart},
                    {"enemies", enemies},          {"powers", powers},                  {"player", content.playerConfig()}};
     base->hash = Sha256::hex(bundle.dump());
     return base;
@@ -207,7 +207,7 @@ std::string fingerprintGameplay(const ContentDatabase& content, const LevelData&
     for (const auto& p : level.startPowers) start.push_back(powerKey(p));
     Json full = level.toJson();
     Json bundle = {{"format", "cosmic.gameplay-level"},
-                   {"simulation", kSimulationVersion},
+                   {"simulation", kRankingGeneration},
                    {"level",
                     {{"bounds", full.value("bounds", Json())},
                      {"killY", full.value("killY", Json())},

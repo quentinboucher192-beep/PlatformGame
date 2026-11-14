@@ -20,10 +20,17 @@ struct LevelData;
 /// JSON of the file (parsed then re-serialised: independent of whitespace and line
 /// endings, so Windows and Linux builds agree).
 /// Version of the simulation rules. Bump it whenever a code change can alter how a run
-/// plays out (physics, AI, damage, timers...): every ranked level then gets a new
-/// fingerprint, so records and replays of incompatible engines are never mixed.
-constexpr int kSimulationVersion = 6;  // 6: energy 150, time slow, magnet, air dash, plasma bomb (special button),
+/// plays out (physics, AI, damage, timers...), with the reference digests of
+/// tests/test_determinism.cpp.
+constexpr int kSimulationVersion = 7;  // 6: energy 150, time slow, magnet, air dash, plasma bomb (special button),
                                        //    arena bosses keep their wounds when the player dies
+                                       // 7: crouch in place (Down on the ground)
+/// Generation of the rankings, part of every ranked fingerprint. It follows
+/// kSimulationVersion when a change makes earlier runs incomparable (records and replays of
+/// different generations are never mixed). A change that only adds a possibility and
+/// leaves every earlier run valid keeps it, so the records are kept:
+///   6 -> simulation 6 and 7 (7 adds crouching in place: earlier runs never crouched).
+constexpr int kRankingGeneration = 6;
 
 struct LevelFingerprint {
     std::string levelId;
@@ -34,7 +41,7 @@ struct LevelFingerprint {
 std::optional<LevelFingerprint> fingerprintLevelFile(const fs::path& file, std::string* error = nullptr);
 std::optional<LevelFingerprint> fingerprintLevelJson(const Json& level);
 /// Fingerprint of a ranked level: the level, every enemy and power definition it uses
-/// (recursively), the player configuration and kSimulationVersion. Two runs with the same
+/// (recursively), the player configuration and kRankingGeneration. Two runs with the same
 /// fingerprint, seed and inputs play out identically.
 std::optional<LevelFingerprint> fingerprintRankedLevel(const ContentDatabase& content, const Json& level);
 

@@ -149,6 +149,19 @@ def slide():
     return frames(ps)
 
 
+def crouch():
+    """2.17: Down alone on the ground (a smaller hitbox to dodge): knees bent, body low."""
+    ps = [
+        Pose(hip=(16, 27.5), lean=0.12, bob=2, foot_f=(19, 30), foot_b=(13, 30), knee_f=1, knee_b=1,
+             hand_f=(20, 26), hand_b=(13, 27), scarf_ang=2.8, scarf_curl=0.12, scarf_amp=0.18, scarf_phase=0.0),
+        Pose(hip=(16, 29), lean=0.22, bob=5, foot_f=(20, 30), foot_b=(12, 30), knee_f=1, knee_b=1, tilt=0.15,
+             hand_f=(21, 28), hand_b=(13, 29), scarf_ang=2.95, scarf_curl=0.16, scarf_amp=0.15, scarf_phase=1.2),
+        Pose(hip=(16, 29), lean=0.22, bob=6, foot_f=(20, 30), foot_b=(12, 30), knee_f=1, knee_b=1, tilt=0.15,
+             hand_f=(21, 28.5), hand_b=(13, 29.5), scarf_ang=3.0, scarf_curl=0.2, scarf_amp=0.12, scarf_phase=2.4),
+    ]
+    return frames(ps)
+
+
 def wall_slide():
     out = []
     for i in range(2):
@@ -424,5 +437,6 @@ def build():
     s.add("victory", victory(), durations=[0.1, 0.08, 0.08, 0.1, 0.08, 0.08, 0.1, 0.1, 0.12, 0.2], loop=False)
     s.add("interact", interact(), durations=[0.06, 0.08, 0.14, 0.1], loop=False)
     player_nova.add_rows(s)  # rows 19-25
+    s.add("crouch", crouch(), durations=[0.04, 0.06, 0.1], loop=False)  # row 26 (2.17)
     s.save("animations/nova.json")
     return s

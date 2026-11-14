@@ -19,6 +19,10 @@
 ## Moteur et en ligne
 - Simulation déterministe à 120 Hz : toute règle qui change le déroulement d'une partie fait
   passer `kSimulationVersion` et les empreintes de référence (`tests/test_determinism.cpp`).
+  `kRankingGeneration` (dans l'empreinte des classements) ne suit que si les anciens records
+  ne sont plus comparables ; un ajout qui laisse valides les anciennes parties (ex. 2.17 :
+  s'accroupir) la garde, pour ne pas effacer les records. La caméra et l'affichage ne font
+  pas partie de la simulation.
 - Les choix du joueur pendant une partie (pouvoir remplacé…) passent par les entrées
   (`InputFrame`), jamais par l'interface seule, pour que les replays restent exacts.
 - Ne jamais faire confiance aux données du client ; aucun secret dans le dépôt ni dans le jeu ;
