@@ -15,7 +15,8 @@ namespace {
 
 bool isMine(const GhostMeta& m) { return m.source == "pb" || m.source == "prev" || m.source == "last"; }
 
-std::string displayName(const GhostMeta& m) { return m.label.empty() ? m.sourceLabel() : m.label; }
+/// Mine are named by what they are (best time, last run...), the others by their player.
+std::string displayName(const GhostMeta& m) { return m.label.empty() || isMine(m) ? m.sourceLabel() : m.label; }
 
 }  // namespace
 
