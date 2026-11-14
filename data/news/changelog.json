@@ -1,4 +1,7 @@
 {
+  "2.6.0": [
+    "Éditeur du HUD (Paramètres › Jeu › Personnaliser le HUD) : placez et redimensionnez la vie, l'énergie, les pouvoirs, les éclats, le chronomètre, la barre de progression et la vie du boss, ou masquez-les ; deux éléments ne se chevauchent jamais."
+  ],
   "2.5.0": [
     "4 nouveaux pouvoirs : Ralenti temporel et Bombe plasma (nouvelle touche Spécial : F, manette R3), Aimant et Ruée aérienne (passifs) ; réserve d'énergie de 150 et barre agrandie.",
     "Guide des pouvoirs (menu Pause, aide de l'éditeur) : un exemple animé de chacun des 14 pouvoirs, joué par le moteur du jeu.",

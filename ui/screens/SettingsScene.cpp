@@ -23,6 +23,11 @@ public:
 
     void onEnter() override {
         working_ = g_.settings;
+        // Automated screenshots: --settings-tab <n>.
+        if (g_.onlineOpen.rfind("settings-tab:", 0) == 0) {
+            tab_ = std::clamp(std::atoi(g_.onlineOpen.c_str() + 13), 0, 4);
+            g_.onlineOpen.clear();
+        }
         g_.ui.setFocus("settings/tabs");
     }
 
@@ -282,8 +287,12 @@ private:
         r.y += row();
         ui.toggle("hints", r, "Afficher les touches à l'écran", working_.gameplay.showInputHints);
         r.y += row();
-        static const std::vector<std::string> bars = {"Masquée", "En haut de l'écran", "En bas de l'écran"};
+        std::vector<std::string> bars = {"Masquée", "En haut de l'écran", "En bas de l'écran"};
+        if (working_.gameplay.hud[HudElement::Progress].custom) bars.push_back("Placée dans l'éditeur du HUD");
         ui.cycle("progress", r, "Barre de progression du niveau", working_.gameplay.progressBar, bars);
+        r.y += row();
+        if (ui.button("hudeditor", r, "Personnaliser le HUD (place et taille de chaque élément)"))
+            g_.app.pushScene(makeHudEditor(g_, working_.gameplay));
         r.y += row();
         ui.toggle("debug", r, "Mode debug (F3 en jeu)", working_.gameplay.debugMode);
         r.y += row();

@@ -11,6 +11,7 @@
 namespace cosmic {
 
 struct ReplayData;
+struct GameplaySettings;
 
 class GameServices;
 
@@ -37,6 +38,8 @@ std::unique_ptr<Scene> makePlanetMap(GameServices& g);
 std::unique_ptr<Scene> makeLevelSelect(GameServices& g, const std::string& planetId);
 std::unique_ptr<Scene> makeGameScene(GameServices& g, const std::string& levelId, PlayOptions opt = {});
 std::unique_ptr<Scene> makeSettingsScene(GameServices& g, bool overlay);
+/// HUD editor: place and size every HUD element; "Enregistrer" writes the layout into `target`.
+std::unique_ptr<Scene> makeHudEditor(GameServices& g, GameplaySettings& target);
 /// Notifications of the main menu (new content, records dropped, new installer).
 std::unique_ptr<Scene> makeNotifications(GameServices& g);
 /// Help: every power of the player with a live example (pushed over the current screen).

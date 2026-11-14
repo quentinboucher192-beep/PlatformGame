@@ -6,6 +6,18 @@
 
 namespace cosmic {
 
+bool hudVisible(const GameplaySettings& g, HudElement e) {
+    if (e == HudElement::Timer) return g.showTimer;
+    if (e == HudElement::Progress) return g.progressBar > 0;
+    return g.hud[e].visible;
+}
+
+void setHudVisible(GameplaySettings& g, HudElement e, bool visible) {
+    if (e == HudElement::Timer) g.showTimer = visible;
+    else if (e == HudElement::Progress) g.progressBar = !visible ? 0 : (g.hud[e].custom ? 3 : (g.progressBar > 0 ? g.progressBar : 1));
+    else g.hud[e].visible = visible;
+}
+
 Json Settings::toJson() const {
     Json j;
     j["graphics"] = {{"fullscreen", graphics.fullscreen},
@@ -20,6 +32,7 @@ Json Settings::toJson() const {
     j["gameplay"] = {{"showTimer", gameplay.showTimer},
                      {"showInputHints", gameplay.showInputHints},
                      {"progressBar", gameplay.progressBar},
+                     {"hud", gameplay.hud.toJson()},
                      {"debugMode", gameplay.debugMode},
                      {"editorAutosave", gameplay.editorAutosave},
                      {"editorAutosaveSeconds", gameplay.editorAutosaveSeconds},
@@ -60,7 +73,9 @@ Settings Settings::fromJson(const Json& j) {
         const Json& g = j["gameplay"];
         s.gameplay.showTimer = jget<bool>(g, "showTimer", true);
         s.gameplay.showInputHints = jget<bool>(g, "showInputHints", true);
-        s.gameplay.progressBar = std::clamp(jget<int>(g, "progressBar", 1), 0, 2);
+        s.gameplay.progressBar = std::clamp(jget<int>(g, "progressBar", 1), 0, 3);
+        if (g.contains("hud")) s.gameplay.hud = HudLayout::fromJson(g["hud"]);
+        if (s.gameplay.progressBar == 3 && !s.gameplay.hud[HudElement::Progress].custom) s.gameplay.progressBar = 1;
         s.gameplay.debugMode = jget<bool>(g, "debugMode", false);
         s.gameplay.editorAutosave = jget<bool>(g, "editorAutosave", true);
         s.gameplay.editorAutosaveSeconds = std::clamp(jget<int>(g, "editorAutosaveSeconds", 60), 10, 600);

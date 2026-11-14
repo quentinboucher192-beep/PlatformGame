@@ -5,6 +5,16 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.6.0** : **éditeur du HUD** (Paramètres › Jeu › « Personnaliser le
+HUD », ou `--hud-editor`). Sur un aperçu du vrai HUD posé sur un vrai niveau, chaque élément —
+vie et énergie, pouvoirs, éclats et reliques, chronomètre, barre de progression, vie du boss —
+se déplace (glisser à la souris, ou curseurs de position au clavier et à la manette), change de
+taille (50 à 200 %, molette ou curseur) et peut être masqué. Deux éléments ne peuvent jamais se
+chevaucher ni sortir de l'écran : un déplacement qui le ferait est bloqué (l'élément glisse le
+long de l'obstacle) et un message dit pourquoi ; une disposition en conflit ne s'enregistre pas.
+Les positions sont relatives à l'écran : elles suivent la résolution. « Tout réinitialiser »
+revient à la disposition d'origine.
+
 **Nouveau dans la version 2.5.0** :
 * **4 nouveaux pouvoirs** (14 au total) : **Ralenti temporel** (les ennemis et leurs tirs
   ralentissent quelques secondes) et **Bombe plasma** (rebondit puis explose : dégâts autour

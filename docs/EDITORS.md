@@ -175,3 +175,28 @@ exactement à l'état précédent. Une sauvegarde automatique est écrite régul
 * Enregistrer : Ctrl+S ; Annuler / Rétablir : Ctrl+Z / Ctrl+Y.
 
 Les ennemis créés apparaissent immédiatement dans la bibliothèque de l'éditeur de niveaux.
+
+## Éditeur du HUD
+
+*Paramètres › Jeu › « Personnaliser le HUD »* (ou `CosmicPlatformer --hud-editor`).
+
+L'écran montre, réduit, le vrai HUD du jeu dessiné sur un vrai niveau (quatre pouvoirs portés
+et un combat de boss en cours, pour que tout soit visible). À droite, la liste des éléments :
+vie et énergie, pouvoirs, éclats et reliques, chronomètre, barre de progression, vie du boss.
+
+* **Déplacer** : glisser l'élément dans l'aperçu, ou ses curseurs « Position horizontale » et
+  « Position verticale » (clavier, manette). 0 % colle l'élément au bord gauche (ou haut),
+  100 % au bord droit (ou bas).
+* **Taille** : molette sur l'aperçu, ou le curseur « Taille » (50 à 200 %) ; l'élément grandit
+  autour de son centre.
+* **Afficher** : masque ou montre l'élément (le chronomètre et la barre de progression
+  reprennent les réglages « Afficher le chronomètre » et « Barre de progression »).
+* **Place et taille par défaut**, **Tout réinitialiser** : reviennent à la disposition d'origine.
+
+Deux éléments ne se chevauchent jamais et restent dans l'écran : un changement qui le ferait
+est refusé (en glissant, l'élément suit l'obstacle sur l'autre axe) et le message sous
+l'aperçu dit ce qui gêne. Une disposition qui se chevauche déjà (fichier modifié à la main,
+écran d'un autre format) est montrée en rouge et ne peut pas être enregistrée tant que le
+conflit n'est pas réglé. La disposition est enregistrée dans `saves/settings.json`
+(`gameplay.hud` : pour chaque élément `scale`, `visible`, et `x`, `y` en fraction de l'écran
+quand il a été déplacé ; `progressBar` vaut 3 quand la barre a été placée dans l'éditeur).

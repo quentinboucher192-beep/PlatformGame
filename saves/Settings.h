@@ -5,6 +5,7 @@
 #include "engine/audio/AudioSystem.h"
 #include "engine/core/Json.h"
 #include "engine/input/InputTypes.h"
+#include "saves/HudLayout.h"
 
 namespace cosmic {
 
@@ -22,13 +23,20 @@ struct GraphicsSettings {
 struct GameplaySettings {
     bool showTimer = true;
     bool showInputHints = true;
-    /// Progress bar of the level: 0 hidden, 1 at the top, 2 at the bottom.
+    /// Progress bar of the level: 0 hidden, 1 at the top, 2 at the bottom, 3 where the
+    /// player put it in the HUD editor.
     int progressBar = 1;
+    /// Place and size of each HUD element (HUD editor).
+    HudLayout hud;
     bool debugMode = false;  // debug overlay available in game (F3)
     bool editorAutosave = true;
     int editorAutosaveSeconds = 60;
     bool unlockAll = true;  // every planet and level playable without progression
 };
+
+/// Whether a HUD element is shown (the timer and the progress bar have their own settings).
+bool hudVisible(const GameplaySettings& g, HudElement e);
+void setHudVisible(GameplaySettings& g, HudElement e, bool visible);
 
 /// Client-side preferences of Cosmic Online. Privacy settings that other players depend on
 /// (profile / country / globe visibility, friend requests) live on the server, with the

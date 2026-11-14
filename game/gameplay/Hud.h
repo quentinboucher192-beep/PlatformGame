@@ -2,6 +2,7 @@
 
 #include "engine/rendering/Renderer.h"
 #include "game/gameplay/LevelProgress.h"
+#include "saves/HudLayout.h"
 
 namespace cosmic {
 
@@ -19,18 +20,32 @@ public:
     void render(UIContext& ui, GameWorld& w, const WorldView& view, const LevelRecord* record,
                 const GameplaySettings& settings);
 
+    /// Where an element is drawn: its anchor on screen, its size factor and, for the
+    /// progress bar, the length of the rail.
+    struct Place {
+        Vec2 o;
+        float k = 1.0f;
+        float width = 0.0f;
+    };
+    Place place(UIContext& ui, const GameWorld& w, const GameplaySettings& s, HudElement e) const;
+    /// Screen area an element covers at a place (HUD editor, overlap checks); empty when
+    /// the element has nothing to show in this world.
+    Rect area(UIContext& ui, const GameWorld& w, HudElement e, const Place& p) const;
+    /// Anchor of a place whose area has its top-left corner at `topLeft` (dragging).
+    Vec2 anchorForArea(UIContext& ui, const GameWorld& w, HudElement e, const Place& p, Vec2 topLeft) const;
+
 private:
-    void drawVitals(UIContext& ui, GameWorld& w);
-    void drawPowers(UIContext& ui, GameWorld& w);
-    void drawTimer(UIContext& ui, GameWorld& w, const LevelRecord* record);
-    void drawCollectibles(UIContext& ui, GameWorld& w);
-    void drawBoss(UIContext& ui, GameWorld& w);
+    void drawVitals(UIContext& ui, GameWorld& w, Vec2 o, float k);
+    void drawPowers(UIContext& ui, GameWorld& w, Vec2 o, float k);
+    void drawTimer(UIContext& ui, GameWorld& w, const LevelRecord* record, Vec2 o, float k);
+    void drawCollectibles(UIContext& ui, GameWorld& w, Vec2 o, float k);
+    void drawBoss(UIContext& ui, GameWorld& w, Vec2 o, float k);
     void drawMessages(UIContext& ui, GameWorld& w);
     void drawCinematic(UIContext& ui, GameWorld& w);
     void drawInteractPrompt(UIContext& ui, GameWorld& w, const WorldView& view);
     /// Level progress bar (placement 1 top, 2 bottom): route %, checkpoints, ambushes,
     /// bosses and the exit portal.
-    void drawProgress(UIContext& ui, GameWorld& w, int placement);
+    void drawProgress(UIContext& ui, GameWorld& w, Vec2 o, float k, float width);
 
     float displayedHealth_ = 5.0f;
     float displayedEnergy_ = 100.0f;

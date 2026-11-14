@@ -7,6 +7,8 @@
 //   --editor [<id>]         start in the level editor (--editor-help: with its help open)
 //   --enemy-editor          start in the enemy editor
 //   --planets               start on the planet selection map
+//   --hud-editor            open the HUD editor (place and size of the HUD elements)
+//   --settings-tab <n>      open the settings on a tab (0 graphics ... 4 game)
 //   --power-guide [--guide-page <n>]
 //                           open the power guide of the help (animated demo of every power)
 //   --windowed / --fullscreen
@@ -416,6 +418,11 @@ int main(int argc, char** argv) {
         app.pushScene(makeCommunityPublish(game, pub));
     } else if (has("--online-levels")) {
         app.pushScene(makeOnlineLevels(game, value("--online-levels")));
+    } else if (std::string st = value("--settings-tab"); !st.empty()) {
+        game.onlineOpen = "settings-tab:" + st;
+        app.pushScene(makeSettingsScene(game, false));
+    } else if (has("--hud-editor")) {
+        app.pushScene(makeHudEditor(game, game.settings.gameplay));
     } else if (has("--power-guide")) {
         std::string page = value("--guide-page");
         app.pushScene(makePowerGuide(game, page.empty() ? 0 : std::atoi(page.c_str()) - 1));
