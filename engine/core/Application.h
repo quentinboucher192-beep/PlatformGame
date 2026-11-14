@@ -75,10 +75,15 @@ public:
     uint64_t frameIndex() const { return frame_; }
     /// Simulated frame delta used in headless mode (deterministic).
     float headlessDt = 1.0f / 60.0f;
+    /// Headless runs that talk to a real server: frames paced at real time (tests).
+    bool headlessRealtime = false;
     bool headless() const { return config_.headless; }
 
     /// Hook called every frame after the scenes updated (background services).
     std::function<void(float)> onUpdate;
+    /// Before each scene is drawn: `covered` when another scene is above it (the UI then
+    /// ignores input for it), and once more with false before the overlays.
+    std::function<void(bool covered)> onSceneRender;
     /// Hook called every frame after the scenes rendered (debug overlay, toasts).
     std::function<void()> onOverlay;
     /// Hook for global hotkeys (returns true if consumed).

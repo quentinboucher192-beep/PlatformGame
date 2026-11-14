@@ -128,6 +128,10 @@ public:
     float time() const { return time_; }
     /// When false, widgets ignore input (e.g. behind a modal dialog).
     bool inputEnabled = true;
+    /// False while a scene covered by another one is drawn (set by the application before
+    /// each scene): nothing under an overlay reacts to clicks, keys or the gamepad.
+    bool sceneInput = true;
+    bool acceptsInput() const { return inputEnabled && sceneInput; }
     /// Last widget changed this frame (for undo snapshots in editors).
     bool anyChanged() const { return changed_; }
 

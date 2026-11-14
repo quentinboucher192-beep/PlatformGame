@@ -56,12 +56,12 @@ void UIContext::begin(Application& app, float dt) {
     InputManager& in = app.input();
     if (in.mouseMovedThisFrame() || in.mousePressed(SDL_BUTTON_LEFT) || in.wheel() != 0.0f) pointerMode_ = true;
     if (in.anyMenuInput()) pointerMode_ = false;
-    confirm_ = inputEnabled && editing_ == 0 && in.menuPressed(Action::MenuConfirm);
+    confirm_ = acceptsInput() && editing_ == 0 && in.menuPressed(Action::MenuConfirm);
     if (!in.mouseDown(SDL_BUTTON_LEFT) && !in.mouseReleased(SDL_BUTTON_LEFT)) active_ = 0;
 }
 
 bool UIContext::backPressed() const {
-    return inputEnabled && editing_ == 0 && app_->input().menuPressed(Action::MenuBack) && !app_->input().capturing();
+    return acceptsInput() && editing_ == 0 && app_->input().menuPressed(Action::MenuBack) && !app_->input().capturing();
 }
 
 bool UIContext::mouseOver(const Rect& rc) const {
@@ -72,11 +72,11 @@ bool UIContext::mouseOver(const Rect& rc) const {
 }
 
 bool UIContext::mouseClicked(const Rect& rc) const {
-    return inputEnabled && mouseOver(rc) && app_->input().mousePressed(SDL_BUTTON_LEFT);
+    return acceptsInput() && mouseOver(rc) && app_->input().mousePressed(SDL_BUTTON_LEFT);
 }
 
 void UIContext::registerFocusable(WidgetId wid, const Rect& rc) {
-    if (!inputEnabled) return;
+    if (!acceptsInput()) return;
     Rect vis = rc;
     if (!scrollStack_.empty()) {
         // Focusable even if scrolled out; the scroll follows the focus.
@@ -99,7 +99,7 @@ float UIContext::anim(WidgetId wid, bool on, float speed) {
 
 bool UIContext::interact(WidgetId wid, const Rect& rc, bool* hoveredOut) {
     registerFocusable(wid, rc);
-    if (!inputEnabled) {
+    if (!acceptsInput()) {
         if (hoveredOut) *hoveredOut = false;
         return false;
     }
@@ -125,7 +125,7 @@ void UIContext::end() {
     ended_ = true;
     InputManager& in = app_->input();
     if (!focusSeen_) focus_ = 0;
-    if (editing_ != 0 || !inputEnabled || focusables_.empty()) return;
+    if (editing_ != 0 || !acceptsInput() || focusables_.empty()) return;
     Vec2 dir;
     if (in.menuPressed(Action::MenuUp)) dir = {0, -1};
     else if (in.menuPressed(Action::MenuDown)) dir = {0, 1};
@@ -308,7 +308,7 @@ bool UIContext::toggle(const std::string& name, const Rect& rc, const std::strin
     bool clicked = interact(wid, rc, &hovered);
     bool isFocus = focus_ == wid;
     float hot = anim(wid, hovered || isFocus);
-    if (isFocus && (input().menuPressed(Action::MenuLeft) || input().menuPressed(Action::MenuRight)) && inputEnabled) {
+    if (isFocus && (input().menuPressed(Action::MenuLeft) || input().menuPressed(Action::MenuRight)) && acceptsInput()) {
         clicked = true;
         navConsumedH_ = true;
     }
@@ -340,7 +340,7 @@ bool UIContext::slider(const std::string& name, const Rect& rc, const std::strin
     bool changedNow = false;
     Rect track{rc.x + rc.w * 0.45f, rc.center().y - s(4), rc.w * 0.42f, s(8)};
     InputManager& in = input();
-    if (inputEnabled && isFocus) {
+    if (acceptsInput() && isFocus) {
         if (in.menuPressed(Action::MenuLeft)) {
             value = std::max(minV, value - step);
             changedNow = true;
@@ -352,7 +352,7 @@ bool UIContext::slider(const std::string& name, const Rect& rc, const std::strin
             navConsumedH_ = true;
         }
     }
-    if (inputEnabled && active_ == wid && in.mouseDown(SDL_BUTTON_LEFT)) {
+    if (acceptsInput() && active_ == wid && in.mouseDown(SDL_BUTTON_LEFT)) {
         float k = std::clamp((in.mousePos().x - track.x) / track.w, 0.0f, 1.0f);
         float v = minV + k * (maxV - minV);
         if (step > 0) v = std::round(v / step) * step;
@@ -398,11 +398,11 @@ bool UIContext::cycle(const std::string& name, const Rect& rc, const std::string
     // Without a caption the value uses the whole width.
     Rect left{t.empty() ? rc.x + s(6) : rc.x + rc.w * 0.45f, rc.y, s(36), rc.h};
     Rect right{rc.right() - s(44), rc.y, s(36), rc.h};
-    if (inputEnabled && isFocus && in.menuPressed(Action::MenuLeft)) {
+    if (acceptsInput() && isFocus && in.menuPressed(Action::MenuLeft)) {
         index = (index - 1 + n) % n;
         changedNow = true;
         navConsumedH_ = true;
-    } else if (inputEnabled && isFocus && in.menuPressed(Action::MenuRight)) {
+    } else if (acceptsInput() && isFocus && in.menuPressed(Action::MenuRight)) {
         index = (index + 1) % n;
         changedNow = true;
         navConsumedH_ = true;
@@ -479,7 +479,7 @@ bool UIContext::textFieldImpl(const std::string& name, const Rect& rc, std::stri
         }
         bool clickedOutside = in.mousePressed(SDL_BUTTON_LEFT) && !mouseOver(rc);
         if (in.keyPressed(SDL_SCANCODE_RETURN) || in.keyPressed(SDL_SCANCODE_ESCAPE) || in.keyPressed(SDL_SCANCODE_TAB) ||
-            clickedOutside || !inputEnabled) {
+            clickedOutside || !acceptsInput()) {
             editing_ = 0;
             in.stopTextInput(app_->window());
         }
@@ -521,7 +521,7 @@ bool UIContext::numberField(const std::string& name, const Rect& rc, float& valu
     bool changedNow = false;
     Rect minus{rc.x, rc.y, rc.h, rc.h}, plus{rc.right() - rc.h, rc.y, rc.h, rc.h};
     float mult = in.shift() ? 10.0f : (in.ctrl() ? 0.1f : 1.0f);
-    if (inputEnabled) {
+    if (acceptsInput()) {
         if ((isFocus && in.menuPressed(Action::MenuLeft)) || (mouseClicked(minus))) {
             value = std::max(minV, value - step * mult);
             changedNow = true;
@@ -589,7 +589,7 @@ bool UIContext::tabs(const std::string& name, const Rect& rc, const std::vector<
     int n = static_cast<int>(labels.size());
     bool changedNow = false;
     InputManager& in = input();
-    if (inputEnabled && editing_ == 0) {
+    if (acceptsInput() && editing_ == 0) {
         if (in.menuPressed(Action::MenuTabPrev)) {
             active = (active - 1 + n) % n;
             changedNow = true;
@@ -604,7 +604,7 @@ bool UIContext::tabs(const std::string& name, const Rect& rc, const std::vector<
         Rect tr{rc.x + i * w + s(2), rc.y, w - s(4), rc.h};
         WidgetId wid = id(name + "#" + std::to_string(i));
         bool hovered = mouseOver(tr);
-        if (inputEnabled && hovered && in.mousePressed(SDL_BUTTON_LEFT)) {
+        if (acceptsInput() && hovered && in.mousePressed(SDL_BUTTON_LEFT)) {
             active = i;
             changedNow = true;
         }
@@ -642,7 +642,7 @@ void UIContext::beginScroll(const std::string& name, const Rect& view, float con
     float& off = scrolls_[wid];
     float maxOff = std::max(0.0f, contentHeight - view.h);
     InputManager& in = input();
-    if (inputEnabled && view.contains(in.mousePos()) && in.wheel() != 0.0f) off -= in.wheel() * s(60);
+    if (acceptsInput() && view.contains(in.mousePos()) && in.wheel() != 0.0f) off -= in.wheel() * s(60);
     off = std::clamp(off, 0.0f, maxOff);
     scrollStack_.push_back({wid, view, off, contentHeight});
     r().pushClip(view);

@@ -17,6 +17,9 @@
 //   --headless              hidden window, fixed 60 Hz frames (automated checks)
 //   --frames <n>            quit after n frames
 //   --shot <frame>:<file>   save a screenshot at a given frame (repeatable)
+//   --realtime              headless: frames paced at real time (checks against a server)
+//   --click <frame>:<x>,<y> left click at a screen position at a given frame (repeatable;
+//                           automated checks of the menus)
 //   --input <script>        scripted gameplay input, e.g. "0:right;90:right,jump;120:"
 //   --user-dir <path>       use another folder for saves and user content
 //   --import <file.cplanet> open the import screen with this package (also: file as argument)
@@ -378,15 +381,52 @@ int main(int argc, char** argv) {
     game.online.init(game.settings.online, value("--online-server"));
     OnlineToasts toasts;
     game.checkForUpdate();
-    app.onUpdate = [&game, &toasts](float dt) {
+    // Scripted mouse clicks (automated checks): moved, pressed, released two frames later.
+    struct Click {
+        int frame;
+        float x, y;
+    };
+    std::vector<Click> clicks;
+    for (size_t i = 0; i + 1 < args.size(); ++i) {
+        if (args[i] != "--click") continue;
+        const std::string& s = args[i + 1];
+        size_t c = s.find(':'), k = s.find(',');
+        if (c != std::string::npos && k != std::string::npos && k > c)
+            clicks.push_back({std::atoi(s.substr(0, c).c_str()), std::strtof(s.substr(c + 1, k - c - 1).c_str(), nullptr),
+                              std::strtof(s.substr(k + 1).c_str(), nullptr)});
+    }
+    app.onUpdate = [&game, &toasts, &app, clicks](float dt) {
+        int f = static_cast<int>(app.frameIndex());
+        for (const auto& c : clicks) {
+            if (f != c.frame && f != c.frame + 2) continue;
+            SDL_Event e{};
+            if (f == c.frame) {
+                e.type = SDL_EVENT_MOUSE_MOTION;
+                e.motion.x = c.x;
+                e.motion.y = c.y;
+                SDL_PushEvent(&e);
+                e = SDL_Event{};
+                e.type = SDL_EVENT_MOUSE_BUTTON_DOWN;
+                e.button.down = true;
+            } else {
+                e.type = SDL_EVENT_MOUSE_BUTTON_UP;
+            }
+            e.button.button = SDL_BUTTON_LEFT;
+            e.button.x = c.x;
+            e.button.y = c.y;
+            SDL_PushEvent(&e);
+        }
         game.ratings.poll();
         game.news.poll(game.content, game.records, COSMIC_VERSION_STRING);
         game.online.update(dt);
         toasts.update(game, dt);
     };
     app.onOverlay = [&game, &toasts] { toasts.render(game); };
+    // A scene under another one (a profile over a leaderboard...) never reacts to input.
+    app.onSceneRender = [&game](bool covered) { game.ui.sceneInput = !covered; };
 
     if (std::string f = value("--frames"); !f.empty()) app.maxFrames = std::atoi(f.c_str());
+    app.headlessRealtime = has("--realtime");  // headless at 60 frames per second (server checks)
     for (size_t i = 0; i + 1 < args.size(); ++i) {
         if (args[i] != "--shot") continue;
         const std::string& s = args[i + 1];

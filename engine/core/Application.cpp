@@ -166,7 +166,15 @@ void Application::run() {
         Uint64 now = SDL_GetPerformanceCounter();
         double dt = static_cast<double>(now - last) / freq;
         last = now;
-        if (config_.headless) dt = headlessDt;
+        if (config_.headless) {
+            if (headlessRealtime) {
+                double spent = static_cast<double>(SDL_GetPerformanceCounter() - now) / freq;
+                (void)spent;
+                Uint64 target = static_cast<Uint64>(headlessDt * 1000.0f);
+                if (dt * 1000.0 < static_cast<double>(target)) SDL_Delay(static_cast<Uint32>(target - static_cast<Uint64>(dt * 1000.0)));
+            }
+            dt = headlessDt;
+        }
         dt = std::min(dt, 0.1);  // breakpoint / window drag protection
         frameMs_ = static_cast<float>(dt * 1000.0);
         fpsTimer += static_cast<float>(dt);
@@ -240,7 +248,11 @@ void Application::renderFrame(float alpha) {
     // Render from the deepest non-covered scene up.
     size_t first = scenes_.empty() ? 0 : scenes_.size() - 1;
     while (first > 0 && scenes_[first]->isOverlay()) --first;
-    for (size_t i = first; i < scenes_.size(); ++i) scenes_[i]->render(i + 1 == scenes_.size() ? alpha : 1.0f);
+    for (size_t i = first; i < scenes_.size(); ++i) {
+        if (onSceneRender) onSceneRender(i + 1 != scenes_.size());
+        scenes_[i]->render(i + 1 == scenes_.size() ? alpha : 1.0f);
+    }
+    if (onSceneRender) onSceneRender(false);
 
     if (debugOverlay && !scenes_.empty()) scenes_.back()->renderDebug();
     if (onOverlay) onOverlay();

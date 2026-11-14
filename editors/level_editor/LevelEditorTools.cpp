@@ -252,7 +252,7 @@ void LevelEditorScene::drawValidation(const Rect& r) {
             ui.r().pushClip(row);
             ui.labelWrapped(is.text, {row.x + ui.s(12), row.y + ui.s(6)}, row.w - ui.s(20), 14, ui.theme().text);
             ui.r().popClip();
-            if (!is.objectId.empty() && ui.inputEnabled && ui.mouseClicked(row))
+            if (!is.objectId.empty() && ui.acceptsInput() && ui.mouseClicked(row))
                 if (const LevelObject* o = level_.findObject(is.objectId)) {
                     selection_ = {o->id};
                     cam_.center = o->rect.center();
