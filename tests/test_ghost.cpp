@@ -133,8 +133,6 @@ GhostWorld& world() {
     return g;
 }
 
-Rect bounds() { return ghostLevel(false).bounds; }
-
 }  // namespace
 
 TEST_CASE("ghost: a recorded run becomes a ghost with exact checkpoint splits") {

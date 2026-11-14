@@ -642,7 +642,7 @@ private:
             float nameRoom = row.w - ui.s(34) - starsW - ui.s(16);
             ui.label(ui.elide(all[i].name, FontFace::Body, fz(ui, 16), nameRoom), {row.x + ui.s(30), row.center().y}, 16,
                      done ? th.text : th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
-            drawStarRow(ui.r(), {row.right() - starsW - ui.s(6), row.center().y}, ui.s(14), all[i].stars, Color{255, 214, 90, done ? 255 : 150},
+            drawStarRow(ui.r(), {row.right() - starsW - ui.s(6), row.center().y}, ui.s(14), all[i].stars, Color{255, 214, 90, static_cast<uint8_t>(done ? 255 : 150)},
                         Color{90, 100, 130, 110});
         }
         ui.endScroll();
@@ -713,7 +713,7 @@ private:
                 }
                 ui.label(ui.elide(st, FontFace::Body, fz(ui, 15), cStars - cProg - ui.s(16)), {cProg, row.center().y}, fz(ui, 15), sc, Align::Left, FontFace::Body,
                          VAlign::Middle);
-                drawStarRow(ui.r(), {cStars, row.center().y}, ui.s(14), a.stars, Color{255, 214, 90, done ? 255 : 150}, Color{90, 100, 130, 110});
+                drawStarRow(ui.r(), {cStars, row.center().y}, ui.s(14), a.stars, Color{255, 214, 90, static_cast<uint8_t>(done ? 255 : 150)}, Color{90, 100, 130, 110});
             }
         }
         ui.endScroll();
