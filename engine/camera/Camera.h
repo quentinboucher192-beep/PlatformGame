@@ -16,6 +16,7 @@ struct CameraZone {
     Vec2 center;
     bool clampToArea = true;  // keep the view inside `area`
     float zoom = 0.0f;        // 0 = keep current
+    bool fitArea = false;     // zoom out until the whole area is in view (boss arenas)
 };
 
 /// Professional 2D follow camera: smoothed follow with look-ahead, vertical dead zone,
@@ -25,6 +26,8 @@ public:
     // Base view size in world pixels at zoom 1 (the art is designed for 480x270).
     static constexpr float kViewWidth = 480.0f;
     static constexpr float kViewHeight = 270.0f;
+    /// Least zoom used to fit an area (beyond it, the camera follows inside the area).
+    static constexpr float kMinFitZoom = 0.42f;
 
     void reset(Vec2 center);
     void setBounds(const Rect& b) { bounds_ = b; hasBounds_ = b.w > 0 && b.h > 0; }
@@ -53,6 +56,8 @@ public:
     /// Interpolated view for rendering.
     WorldView view(int screenW, int screenH, float alpha) const;
     Rect visibleArea(int screenW, int screenH) const;
+    /// Zoom showing the whole of `area` on the current screen shape.
+    float fitZoom(const Rect& area) const;
 
 private:
     Vec2 clampCenter(Vec2 c, float zoom, int screenW, int screenH) const;

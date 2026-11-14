@@ -368,6 +368,8 @@ public:
     bool started() const { return started_; }
     bool cleared() const { return cleared_; }
     size_t waveCount() const { return waves_.size(); }
+    /// Whether one of the arena's waves names this enemy object.
+    bool lists(const std::string& objectId) const;
     /// Waves beaten so far (the current one counts once its last enemy is down).
     size_t wavesDone() const { return cleared_ ? waves_.size() : started_ ? wave_ + (waveDelay_ > 0.0f ? 1 : 0) : 0; }
     /// The waves an arena will have, read from the level (same rules as init()).

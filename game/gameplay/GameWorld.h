@@ -166,6 +166,10 @@ public:
     const std::string& failReason() const { return failReason_; }
     void startBoss(Enemy& boss);
     Enemy* activeBoss() const { return boss_; }
+    /// Arena of the boss fight in progress (the camera frames it), if any.
+    const CameraZone* bossCameraZone() const { return boss_ && bossZone_ ? &*bossZone_ : nullptr; }
+    /// The combat arena holding an enemy (named in its waves, or containing it).
+    std::optional<Rect> arenaOf(const Enemy& e) const;
     void setMusic(const std::string& rel);
     void restoreLevelMusic();
     LevelEntity* nearestInteractable() const { return interactable_; }
@@ -256,6 +260,8 @@ private:
     Enemy* boss_ = nullptr;
     LevelEntity* interactable_ = nullptr;
     std::optional<CameraZone> lockedZone_;
+    /// The arena of the boss being fought: the camera shows all of it (display only).
+    std::optional<CameraZone> bossZone_;
     const CameraZone* activeZone_ = nullptr;
     std::string failReason_;
     std::string currentMusic_;

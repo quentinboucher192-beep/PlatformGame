@@ -34,6 +34,7 @@ bool GameWorld::load(const LevelData& level) {
     boss_ = nullptr;
     interactable_ = nullptr;
     lockedZone_.reset();
+    bossZone_.reset();
     activeZone_ = nullptr;
     time_ = 0.0f;
 
@@ -488,7 +489,9 @@ void GameWorld::checkKillPlane() {
 
 void GameWorld::updateCamera(float dt) {
     activeZone_ = nullptr;
-    if (lockedZone_) {
+    if (const CameraZone* bz = bossCameraZone()) {
+        activeZone_ = bz;  // a boss fight: the whole arena in view
+    } else if (lockedZone_) {
         activeZone_ = &*lockedZone_;
     } else {
         for (auto& e : entities_) {
@@ -610,6 +613,7 @@ void GameWorld::onEnemyKilled(Enemy& e) {
         flash({255, 255, 255, 255}, 0.4f);
         restoreLevelMusic();
         lockedZone_.reset();
+        bossZone_.reset();
         if (!e.objectId().empty()) emit(e.objectId(), "bossDefeated");
     }
 }
@@ -757,6 +761,7 @@ void GameWorld::respawnPlayer() {
     // Keep unlocked powers; refill as a fresh start.
     camera_.reset(respawn_ - Vec2{0, 20});
     lockedZone_.reset();
+    bossZone_.reset();
     for (size_t i = 0; i < entities_.size(); ++i) entities_[i]->onPlayerRespawn(*this);
     playSound("sounds/respawn.wav", 0.8f);
     if (boss_ && boss_->alive()) {
@@ -808,8 +813,28 @@ void GameWorld::failLevel(const std::string& reason) {
     player_.controlEnabled = false;
 }
 
+std::optional<Rect> GameWorld::arenaOf(const Enemy& e) const {
+    const CombatZoneEntity* inside = nullptr;
+    for (const auto& ent : entities_)
+        if (const auto* cz = dynamic_cast<const CombatZoneEntity*>(ent.get())) {
+            if (cz->lists(e.objectId())) return cz->box;
+            if (!inside && cz->box.contains(e.box.center())) inside = cz;
+        }
+    if (inside) return inside->box;
+    return std::nullopt;
+}
+
 void GameWorld::startBoss(Enemy& boss) {
     boss_ = &boss;
+    // The camera shows the whole arena (walls and floor included) during the fight.
+    bossZone_.reset();
+    if (auto arena = arenaOf(boss)) {
+        CameraZone z;
+        z.area = {arena->x - 24.0f, arena->y - 24.0f, arena->w + 48.0f, arena->h + 64.0f};
+        z.clampToArea = true;
+        z.fitArea = true;
+        bossZone_ = z;
+    }
     if (boss.dormant()) boss.wake(*this);
     boss.alert(*this);
     if (!level_.bossMusic.empty()) setMusic(level_.bossMusic);

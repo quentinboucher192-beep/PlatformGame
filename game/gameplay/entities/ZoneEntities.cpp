@@ -104,6 +104,14 @@ void CombatZoneEntity::startWave(GameWorld& w, size_t index) {
     if (index > 0) w.hint("Vague " + std::to_string(index + 1) + " / " + std::to_string(waves_.size()), 2.0f);
 }
 
+bool CombatZoneEntity::lists(const std::string& objectId) const {
+    if (objectId.empty()) return false;
+    for (const auto& wave : waves_)
+        for (const auto& id : wave)
+            if (id == objectId) return true;
+    return false;
+}
+
 void CombatZoneEntity::onPlayerEnter(GameWorld& w) {
     if (started_ || cleared_ || waves_.empty()) return;
     started_ = true;

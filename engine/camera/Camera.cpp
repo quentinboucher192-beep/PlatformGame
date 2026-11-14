@@ -86,8 +86,9 @@ void Camera::fixedUpdate(float dt) {
     if (zoomT_ < zoomDur_) {
         zoomT_ += dt;
         zoom_ = lerpf(zoomFrom_, zoomTo_, applyEase(zoomEase_, std::min(1.0f, zoomT_ / zoomDur_)));
-    } else if (zone_ && zone_->zoom > 0.0f && !scripted_) {
-        zoom_ = lerpf(zoom_, zone_->zoom, damp(3.0f, dt));
+    } else if (zone_ && (zone_->zoom > 0.0f || zone_->fitArea) && !scripted_) {
+        float z = zone_->fitArea ? std::clamp(fitZoom(zone_->area), kMinFitZoom, std::max(kMinFitZoom, baseZoom_)) : zone_->zoom;
+        zoom_ = lerpf(zoom_, z, damp(3.0f, dt));
     } else if (!scripted_) {
         zoom_ = lerpf(zoom_, baseZoom_, damp(3.0f, dt));
     }
@@ -124,6 +125,12 @@ void Camera::fixedUpdate(float dt) {
 }
 
 void Camera::update(float /*dt*/) {}
+
+float Camera::fitZoom(const Rect& area) const {
+    if (area.w <= 0.0f || area.h <= 0.0f) return baseZoom_;
+    float aspect = lastScreenH_ > 0 ? static_cast<float>(lastScreenW_) / static_cast<float>(lastScreenH_) : 16.0f / 9.0f;
+    return std::min(kViewHeight * aspect / area.w, kViewHeight / area.h);
+}
 
 WorldView Camera::view(int screenW, int screenH, float alpha) const {
     lastScreenW_ = screenW;
