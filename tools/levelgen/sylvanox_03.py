@@ -220,6 +220,8 @@ L.enemy("glowmite", 199, 52, patrol_tiles=2)
 L.enemy("sentinel", 202, 45, patrol_tiles=2)
 L.enemy("bomber", 207, 43, patrol_tiles=2)
 L.solid(206, 26, 258, 32, M)                        # arena ceiling
+# The machine is solid above the foundry: its roof is not a path over the arena.
+L.solid(206, -3, 259, 26, M)
 L.solid(208, 32, 211, 44, M)
 L.solid(255, 32, 258, 44, M)
 a_left = L.door(210, 44, 8, open_=True)
