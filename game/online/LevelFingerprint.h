@@ -4,6 +4,8 @@
 #include <optional>
 #include <string>
 
+#include "game/levels/LevelData.h"
+
 #include "engine/core/Json.h"
 #include "engine/core/Paths.h"
 
@@ -33,6 +35,15 @@ std::optional<LevelFingerprint> fingerprintLevelJson(const Json& level);
 /// (recursively), the player configuration and kSimulationVersion. Two runs with the same
 /// fingerprint, seed and inputs play out identically.
 std::optional<LevelFingerprint> fingerprintRankedLevel(const ContentDatabase& content, const Json& level);
+
+/// Fingerprint of what a community level plays like: geometry, objects, events, cinematics,
+/// timer, start powers, the definitions of its enemies and powers, the player and the
+/// simulation version - but not its id, name, description, author, music or metadata, and
+/// enemy / power references are replaced by a digest of their definition. So a copy of the
+/// level installed on another computer (where the importer may rename the level or its
+/// definitions) has the same fingerprint as the author's: the author's completion replay and
+/// the players' replays are matched with it (Cosmic Online, community levels).
+std::string fingerprintGameplay(const ContentDatabase& content, const LevelData& level);
 
 /// Fingerprints of the built-in levels (cached after the first computation).
 class LevelFingerprints {

@@ -139,13 +139,21 @@ private:
             const PlanetData* pl = g_.content.planet(l->planet);
             ui.label(l->id + "  —  " + (pl ? pl->name : l->planet), {row.x + ui.s(20), row.y + ui.s(52)}, 18, ui.theme().textDim);
             std::string id = "m" + std::to_string(i);
-            if (ui.button(id + "play", {row.right() - ui.s(700), row.y + ui.s(18), ui.s(150), ui.s(56)}, "Jouer")) {
+            if (ui.button(id + "play", {row.right() - ui.s(886), row.y + ui.s(18), ui.s(150), ui.s(56)}, "Jouer")) {
                 g_.app.switchScene(makeGameScene(g_, l->id), 0.5f);
                 break;
             }
-            if (ui.button(id + "edit", {row.right() - ui.s(536), row.y + ui.s(18), ui.s(150), ui.s(56)}, "Éditer")) {
+            if (ui.button(id + "edit", {row.right() - ui.s(722), row.y + ui.s(18), ui.s(150), ui.s(56)}, "Éditer")) {
                 g_.app.switchScene(makeLevelEditor(g_, l->id));
                 break;
+            }
+            {
+                UIContext::ButtonStyle pub;
+                pub.primary = true;
+                if (ui.button(id + "publish", {row.right() - ui.s(558), row.y + ui.s(18), ui.s(172), ui.s(56)}, "Publier", pub)) {
+                    g_.app.pushScene(makeCommunityPublish(g_, l->id));
+                    break;
+                }
             }
             if (ui.button(id + "export", {row.right() - ui.s(372), row.y + ui.s(18), ui.s(166), ui.s(56)}, "Exporter")) {
                 tab_ = 2;

@@ -54,6 +54,10 @@ void OnlineService::init(const OnlineSettings& settings, const std::string& serv
     attempts_.load();
     loadKnownRanks();
     loadFriendNotices();
+    if (auto t = FileUtil::readText(userDir_ / "online" / "community_installs.json")) {
+        Json j = Json::parse(*t, nullptr, false);
+        if (j.is_object()) communityInstalls_ = j;
+    }
     initialized_ = true;
     Log::info("Cosmic Online : serveur {} ({}), client HTTP {}", config_.serverUrl.empty() ? "non configuré" : config_.serverUrl,
               config_.source, client_->transportName());
@@ -426,7 +430,72 @@ void OnlineService::send(const std::string& method, const std::string& path, con
     call(method, path, body.is_null() ? std::string() : body.dump(), body.is_null() ? std::string() : "application/json", true, cb);
 }
 
-void OnlineService::getBinary(const std::string& path, std::function<void(const HttpResponse&)> cb) {
+void OnlineService::sendBytes(const std::string& method, const std::string& path, std::string bytes, ApiCallback cb, int timeoutMs) {
+    call(method, path, std::move(bytes), "application/octet-stream", true, std::move(cb), false, timeoutMs);
+}
+
+// ------------------------------------------------------------ community levels
+
+const Json* OnlineService::communityInstall(const std::string& localLevelId) const {
+    auto it = communityInstalls_.find(localLevelId);
+    return it != communityInstalls_.end() && it->is_object() ? &*it : nullptr;
+}
+
+void OnlineService::noteCommunityInstall(const std::string& localLevelId, const Json& info) {
+    communityInstalls_[localLevelId] = info;
+    saveCommunityInstalls();
+}
+
+void OnlineService::saveCommunityInstalls() {
+    std::error_code ec;
+    fs::create_directories(userDir_ / "online", ec);
+    FileUtil::writeTextAtomic(userDir_ / "online" / "community_installs.json", communityInstalls_.dump(1));
+}
+
+void OnlineService::submitCommunityRun(const std::string& localLevelId, int64_t timeMs, int deaths, const std::string& attemptId,
+                                       std::vector<uint8_t> replay) {
+    const Json* info = communityInstall(localLevelId);
+    if (!info) return;
+    std::string title = jstr(*info, "title", localLevelId);
+    if (!jget<bool>(*info, "verified", false)) {
+        notify(Notification::Kind::Warning, "Temps non classé",
+               "Votre copie de « " + title + " » diffère de la version publiée : retéléchargez-la depuis ONLINE LEVELS.");
+        return;
+    }
+    if (!loggedIn() || !usable()) {
+        notify(Notification::Kind::Info, "Temps non envoyé", "Connectez-vous à Cosmic Online pour classer vos temps sur « " + title + " ».");
+        return;
+    }
+    std::string id = jstr(*info, "id");
+    Json body = {{"version", jget<int>(*info, "version", 1)}, {"attempt_id", attemptId}, {"time_ms", timeMs}, {"deaths", deaths}};
+    send("POST", "/api/v1/community/levels/" + id + "/records", body,
+         [this, title, replay = std::move(replay)](const ApiResult& r) mutable {
+             if (!r.ok) {
+                 notify(Notification::Kind::Warning, "Temps non envoyé", r.message);
+                 return;
+             }
+             std::string upload = jstr(r.data, "upload");
+             if (upload.rfind("/api/v1/community/records/", 0) != 0) return;
+             sendBytes("PUT", upload, std::string(replay.begin(), replay.end()), [this, title](const ApiResult& u) {
+                 if (!u.ok) {
+                     notify(Notification::Kind::Warning, "Replay non envoyé", u.message);
+                     return;
+                 }
+                 const Json& rec = u.data.value("record", Json::object());
+                 if (jstr(rec, "status") == "REPLAY_OK") {
+                     int rank = u.data.contains("me") && u.data["me"].is_object() ? jget<int>(u.data["me"], "rank", 0) : 0;
+                     notify(Notification::Kind::Record, "Temps classé", "« " + title + " » : " + (rank > 0 ? "rang " + std::to_string(rank) : "temps enregistré") + ".");
+                 } else {
+                     std::string why;
+                     for (const auto& x : rec.value("reasons", Json::array()))
+                         if (x.is_string()) why += (why.empty() ? "" : ", ") + x.get<std::string>();
+                     notify(Notification::Kind::Warning, "Temps refusé", "Replay non conforme" + (why.empty() ? std::string{} : " : " + why) + ".");
+                 }
+             });
+         });
+}
+
+void OnlineService::getBinary(const std::string& path, std::function<void(const HttpResponse&)> cb, size_t maxBytes) {
     if (!usable()) {
         HttpResponse r;
         r.error = NetError::Unsupported;
@@ -436,8 +505,8 @@ void OnlineService::getBinary(const std::string& path, std::function<void(const 
     HttpRequest rq;
     rq.url = config_.serverUrl + path;
     if (loggedIn() && !tokens_.accessExpiring()) rq.headers.push_back({"Authorization", "Bearer " + tokens_.accessToken});
-    rq.timeoutMs = 20000;
-    rq.maxResponseBytes = 2 * 1024 * 1024;
+    rq.timeoutMs = maxBytes > (2u << 20) ? 90000 : 20000;
+    rq.maxResponseBytes = maxBytes;
     client_->send(std::move(rq), [cb](const HttpResponse& r) { cb(r); });
 }
 

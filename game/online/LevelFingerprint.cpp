@@ -142,3 +142,66 @@ Json buildOnlineManifest(ContentDatabase& content, std::string* error) {
 }
 
 }  // namespace cosmic
+
+namespace cosmic {
+
+std::string fingerprintGameplay(const ContentDatabase& content, const LevelData& level) {
+    Json enemies = Json::object(), powers = Json::object();
+    auto defKey = [](Json j) {
+        j.erase("id");
+        j.erase("name");
+        j.erase("description");
+        return std::make_pair(Sha256::hex(j.dump()).substr(0, 24), j);
+    };
+    auto enemyKey = [&](const std::string& id) -> std::string {
+        const EnemyDefinition* d = content.enemy(id);
+        if (!d) return "missing:" + id;
+        auto [k, j] = defKey(d->toJson());
+        enemies[k] = j;
+        return k;
+    };
+    auto powerKey = [&](const std::string& id) -> std::string {
+        const PowerDefinition* d = content.power(id);
+        if (!d) return "missing:" + id;
+        auto [k, j] = defKey(d->toJson());
+        powers[k] = j;
+        return k;
+    };
+    Json objects = Json::array();
+    for (const auto& o : level.objects) {
+        Json oj = o.toJson();
+        if (o.type == "enemy") oj["props"]["enemy"] = enemyKey(o.propStr("enemy"));
+        if (o.type == "power_unlock" || o.type == "power_gate") oj["props"]["power"] = powerKey(o.propStr("power"));
+        if (o.type == "combat_zone") oj["props"].erase("music");
+        objects.push_back(oj);
+    }
+    Json events = Json::array();
+    for (const auto& e : level.events) {
+        Json ej = e.toJson();
+        if (content.power(e.source)) ej["source"] = powerKey(e.source);
+        for (auto& a : ej["actions"])
+            if (a.contains("params") && a["params"].is_object() && a["params"].contains("power") && a["params"]["power"].is_string())
+                a["params"]["power"] = powerKey(a["params"]["power"].get<std::string>());
+        events.push_back(ej);
+    }
+    Json start = Json::array();
+    for (const auto& p : level.startPowers) start.push_back(powerKey(p));
+    Json full = level.toJson();
+    Json bundle = {{"format", "cosmic.gameplay-level"},
+                   {"simulation", kSimulationVersion},
+                   {"level",
+                    {{"bounds", full.value("bounds", Json())},
+                     {"killY", full.value("killY", Json())},
+                     {"timer", full.value("timer", Json())},
+                     {"startPowers", start},
+                     {"objects", objects},
+                     {"events", events},
+                     {"intro", full.value("intro", Json())},
+                     {"outro", full.value("outro", Json())}}},
+                   {"enemies", enemies},
+                   {"powers", powers},
+                   {"player", content.playerConfig()}};
+    return Sha256::hex(bundle.dump());
+}
+
+}  // namespace cosmic

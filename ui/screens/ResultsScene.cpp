@@ -188,8 +188,10 @@ void ResultsScene::render(float /*alpha*/) {
         if (d_.online && !d_.fromOnline) {
             UIContext::ButtonStyle os;
             os.small = true;
-            if (ui.button("online", {panel.right() - ui.s(300), panel.y + ui.s(24), ui.s(270), ui.s(44)}, "Classement en ligne", os))
-                g_.app.switchScene(makeOnlineRanking(g_, d_.run.levelId), 0.4f);
+            if (ui.button("online", {panel.right() - ui.s(300), panel.y + ui.s(24), ui.s(270), ui.s(44)}, "Classement en ligne", os)) {
+                if (const Json* c = g_.online.communityInstall(d_.run.levelId)) g_.app.switchScene(makeOnlineLevels(g_, jstr(*c, "id")), 0.4f);
+                else g_.app.switchScene(makeOnlineRanking(g_, d_.run.levelId), 0.4f);
+            }
         }
         if (ui.button("back", {bx, by, bw, bh}, back) || ui.backPressed()) {
             g_.app.popScene();

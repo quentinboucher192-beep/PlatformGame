@@ -14,6 +14,9 @@ struct ExportOptions {
     std::string description;
     fs::path destination;               // full path of the .cplanet file
     std::vector<uint8_t> thumbnailPng;  // optional preview image
+    /// Community levels: the game's own assets are not packed (every installation of the
+    /// same version has them); minEngineVersion becomes this version.
+    bool skipInstalledAssets = false;
 };
 
 struct ExportItem {

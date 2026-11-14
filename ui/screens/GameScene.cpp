@@ -7,6 +7,7 @@
 #include "engine/core/Log.h"
 #include "game/GameServices.h"
 #include "game/enemies/Enemy.h"
+#include "game/online/LevelFingerprint.h"
 #include "ui/screens/PauseScene.h"
 #include "ui/screens/ResultsScene.h"
 
@@ -56,14 +57,25 @@ void GameScene::onEnter() {
     }
     g_.app.input().consumePlayerInput();  // drop the menu's pending presses
     if (!g_.inputScript.empty()) script_.parse(g_.inputScript);
-    // Cosmic Online: only official levels played from their start can be ranked.
-    if (!opt_.editorTest && !opt_.level && !opt_.spawn) {
-        if (const LevelFingerprint* fp = g_.online.fingerprints().get(g_.content, levelId_)) {
-            fingerprint_ = *fp;
+    // Cosmic Online: official levels and community levels played from their start can be
+    // ranked; a player level finished in an editor test (from its start) can be published.
+    if (!opt_.spawn) {
+        bool community = !opt_.editorTest && !opt_.level && g_.online.communityInstall(levelId_) != nullptr;
+        if (opt_.editorTest || community) {
+            gameplayHash_ = fingerprintGameplay(g_.content, level_);
             attemptId_ = makeUuidV4();
-            recorder_.begin(levelId_, fp->hash, attemptId_, world_->gameplaySeed());
-            world_->eventObserver = [this](const std::string& src, const std::string& trig) { recorder_.onWorldEvent(src, trig); };
+            recorder_.begin(levelId_, gameplayHash_, attemptId_, world_->gameplaySeed());
+            recordMode_ = community ? RecordMode::Community : RecordMode::EditorCompletion;
+        } else if (!opt_.level) {
+            if (const LevelFingerprint* fp = g_.online.fingerprints().get(g_.content, levelId_)) {
+                fingerprint_ = *fp;
+                attemptId_ = makeUuidV4();
+                recorder_.begin(levelId_, fp->hash, attemptId_, world_->gameplaySeed());
+                recordMode_ = RecordMode::Official;
+            }
         }
+        if (recordMode_ != RecordMode::None)
+            world_->eventObserver = [this](const std::string& src, const std::string& trig) { recorder_.onWorldEvent(src, trig); };
     }
 }
 
@@ -105,7 +117,8 @@ void GameScene::quitToMenu() {
         return;
     }
     if (opt_.fromOnline) {
-        g_.app.switchScene(makeOnlineRanking(g_, levelId_), 0.4f);
+        if (const Json* c = g_.online.communityInstall(levelId_)) g_.app.switchScene(makeOnlineLevels(g_, jstr(*c, "id")), 0.4f);
+        else g_.app.switchScene(makeOnlineRanking(g_, levelId_), 0.4f);
         return;
     }
     std::string planet = level_.planet.empty() ? "sylvanox" : level_.planet;
@@ -201,6 +214,27 @@ void GameScene::finishRun(bool completed) {
         run.score = r.score;
         run.fromStart = true;
         if (const OnlineAttempt* a = g_.online.recordRun(run, attemptId_, &replay)) online = *a;
+    } else if (completed && recorder_.active() && recordMode_ != RecordMode::None && recordMode_ != RecordMode::Official) {
+        recorder_.finish(*world_, r.time);
+        ReplayData replay = recorder_.take();
+        lastReplay_ = std::make_shared<ReplayData>(replay);
+        std::vector<uint8_t> bytes = replay.encode();
+        int64_t timeMs = static_cast<int64_t>(std::llround(static_cast<double>(r.time) * 1000.0));
+        if (recordMode_ == RecordMode::Community) {
+            g_.online.submitCommunityRun(levelId_, timeMs, s.deaths, attemptId_, std::move(bytes));
+        } else if (const LevelEntry* e = g_.content.level(levelId_); e && e->source == ContentSource::User) {
+            // Proof that this version of the level can be finished: required to publish it.
+            fs::path base = Paths::userLevelsDir() / FileUtil::slugify(levelId_);
+            fs::path rp = base;
+            rp += ".completion.cprz";
+            fs::path sp = base;
+            sp += ".completion.json";
+            Json side = {{"format", "cosmic.completion"}, {"gameplay_hash", gameplayHash_}, {"time_ms", timeMs},
+                         {"deaths", s.deaths}, {"date", FileUtil::nowString()}};
+            if (FileUtil::writeBinary(rp, bytes) && FileUtil::writeTextAtomic(sp, side.dump(1)))
+                g_.online.notify(OnlineService::Notification::Kind::Success, "Fin de niveau enregistrée",
+                                 "Cette version peut être publiée : WORKSHOP → Mes niveaux → Publier en ligne.");
+        }
     } else {
         recorder_.abort();
     }

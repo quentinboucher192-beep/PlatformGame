@@ -88,3 +88,54 @@ TEST_CASE("difficulty: deadly hazards, enemies and fewer checkpoints raise the r
     CHECK(!r0.summary().empty());
     CHECK(r0.label().find(",") != std::string::npos);
 }
+
+#include "game/online/LevelFingerprint.h"
+
+TEST_CASE("community: the gameplay fingerprint ignores names and renames, not the gameplay") {
+    ContentDatabase content;
+    content.reload();
+    auto base = content.loadLevel("sylvanox_02");
+    CHECK(base.has_value());
+    if (!base) return;
+    const std::string h = fingerprintGameplay(content, *base);
+    CHECK(h.size() == 64);
+    // Another id, name, author, description, music and metadata: same gameplay.
+    LevelData renamed = *base;
+    renamed.id = "copie_importee";
+    renamed.name = "Autre nom";
+    renamed.author = "Quelqu'un";
+    renamed.description = "…";
+    renamed.music = "music/menu_theme.ogg";
+    renamed.metadata["community"] = {{"id", "x"}};
+    CHECK(fingerprintGameplay(content, renamed) == h);
+    // The importer may rename an enemy definition: same definition, same fingerprint.
+    ContentDatabase other;
+    other.reload();
+    std::string enemyId;
+    for (const auto& o : base->objects)
+        if (o.type == "enemy") {
+            enemyId = o.propStr("enemy");
+            break;
+        }
+    CHECK(!enemyId.empty());
+    EnemyDefinition copy = *content.enemy(enemyId);
+    copy.id = enemyId + "_perso";
+    copy.builtin = false;
+    CHECK(other.saveUserEnemy(copy));
+    LevelData remapped = *base;
+    for (auto& o : remapped.objects)
+        if (o.type == "enemy" && o.propStr("enemy") == enemyId) o.props["enemy"] = copy.id;
+    CHECK(fingerprintGameplay(other, remapped) == h);
+    other.deleteUserEnemy(copy.id);
+    // A moved platform, a different timer or a stronger enemy: another fingerprint.
+    LevelData moved = *base;
+    for (auto& o : moved.objects)
+        if (o.type == "solid") {
+            o.rect.x += 16.0f;
+            break;
+        }
+    CHECK(fingerprintGameplay(content, moved) != h);
+    LevelData timed = *base;
+    timed.timeLimit += 10.0f;
+    CHECK(fingerprintGameplay(content, timed) != h);
+}

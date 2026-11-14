@@ -125,7 +125,10 @@ local sans compte Cloudflare. Documentation complète : [docs/online/](docs/onli
 *Continuer* (dernier niveau joué) · *Campagne* (planètes et niveaux) · *Online* ·
 *Paramètres* · *Quitter*.
 
-**Online** (compte requis) : **ONLINE RANKING** (classements, globe, profils), **SOCIAL**
+**Online** (compte requis) : **ONLINE LEVELS** (les niveaux publiés par les joueurs : Populaires,
+Plus durs, Récents, Mieux notés, Amis, Recherche, Les miens ; télécharger et jouer, noter,
+signaler, classement par niveau ; *WORKSHOP → Mes niveaux → Publier* après avoir terminé son
+niveau depuis le départ dans l'éditeur), **ONLINE RANKING** (classements, globe, profils), **SOCIAL**
 (messagerie privée avec vos amis, groupes de discussion jusqu'à 20 membres, amis et demandes,
 joueurs bloqués, signalement de messages ; notifications des nouveaux messages et demandes,
 gardées pendant une partie et affichées ensuite) et le **WORKSHOP** (vos niveaux,

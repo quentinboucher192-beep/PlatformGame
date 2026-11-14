@@ -14,7 +14,7 @@ int onlineSocialBadge(GameServices& g) {
 
 float drawOnlineNav(GameServices& g, const Rect& area, OnlineSection current) {
     UIContext& ui = g.ui;
-    constexpr int kItems = 4;
+    constexpr int kItems = 5;
     Rect nav{area.x, area.y, area.w, ui.s(kItems * 58 + 20)};
     ui.r().fillRoundedRect(nav, ui.s(14), Color{6, 10, 22, 170});
     ui.pushId("online/nav");
@@ -40,6 +40,7 @@ float drawOnlineNav(GameServices& g, const Rect& area, OnlineSection current) {
     };
     // The levels are played from the level card ("Jouer ce niveau"); the campaign and the
     // settings are reached from the main menu. The WORKSHOP lives here only.
+    if (item("levels", "ONLINE LEVELS", current == OnlineSection::Levels)) g.app.switchScene(makeOnlineLevels(g));
     if (item("ranking", "ONLINE RANKING", current == OnlineSection::Ranking)) g.app.switchScene(makeOnlineRanking(g));
     if (item("social", "SOCIAL", current == OnlineSection::Social, onlineSocialBadge(g))) g.app.switchScene(makeSocial(g));
     if (item("workshop", "WORKSHOP", current == OnlineSection::Workshop)) g.app.switchScene(makeContentManager(g));

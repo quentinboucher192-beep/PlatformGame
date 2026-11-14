@@ -384,7 +384,7 @@ private:
 
     void drawInfoCard() {
         UIContext& ui = g_.ui;
-        Rect card{zoneA_.x, zoneA_.y + ui.s(4 * 58 + 20) + ui.s(16), zoneA_.w, ui.s(250)};
+        Rect card{zoneA_.x, zoneA_.y + ui.s(5 * 58 + 20) + ui.s(16), zoneA_.w, ui.s(250)};
         ui.r().fillRoundedRect(card, ui.s(14), Color{10, 16, 34, 215});
         ui.r().drawRoundedRect(card, ui.s(14), ui.theme().border, ui.s(1.2f));
         float x = card.x + ui.s(16), w = card.w - ui.s(32);

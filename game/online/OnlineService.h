@@ -106,12 +106,24 @@ public:
     /// A screen that loaded GET /social/unread itself shares the answer.
     void noteUnread(const Json& data);
 
+    // ------------------------------------------------------ community levels
+    /// Community level installed from ONLINE LEVELS under this local id: {id, version,
+    /// level_hash, title, verified} (null when it is not one).
+    const Json* communityInstall(const std::string& localLevelId) const;
+    void noteCommunityInstall(const std::string& localLevelId, const Json& info);
+    /// A completed run of an installed community level (replay attached): sent to its
+    /// leaderboard; the result is notified (rank, or why the time was refused).
+    void submitCommunityRun(const std::string& localLevelId, int64_t timeMs, int deaths, const std::string& attemptId,
+                            std::vector<uint8_t> replay);
+    /// PUT / POST of raw bytes with the session (packages, replays).
+    void sendBytes(const std::string& method, const std::string& path, std::string bytes, ApiCallback cb, int timeoutMs = 90000);
+
     // ----------------------------------------------------------------- data
     /// GET with the session when logged in. On network failure the last cached answer is
     /// delivered instead, flagged `fromCache` with its age.
     void get(const std::string& pathAndQuery, ApiCallback cb, bool useCache = true);
     void send(const std::string& method, const std::string& path, const Json& body, ApiCallback cb);
-    void getBinary(const std::string& path, std::function<void(const HttpResponse&)> cb);
+    void getBinary(const std::string& path, std::function<void(const HttpResponse&)> cb, size_t maxBytes = 2 * 1024 * 1024);
     std::optional<OnlineCache::Entry> cached(const std::string& pathAndQuery);
     size_t clearCache();
     void checkConnection(ApiCallback cb = {});
@@ -199,6 +211,9 @@ private:
     /// under "<id>/messages" the date of the newest message already notified.
     Json friendNotices_ = Json::object();
     void saveFriendNotices();
+
+    Json communityInstalls_ = Json::object();
+    void saveCommunityInstalls();
 
     float socialTimer_ = 5.0f;
     bool socialBusy_ = false;

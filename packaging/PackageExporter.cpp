@@ -75,6 +75,12 @@ ExportPlan PackageExporter::plan(const LevelData& level, const ExportOptions& op
             p.warnings.push_back("Type de fichier non autorisé ignoré : " + rel);
             continue;
         }
+        if (opt.skipInstalledAssets) {
+            // Installed with the game (installed files always win over packages anyway).
+            std::error_code ec;
+            fs::path rel2 = fs::relative(*src, Paths::assetsDir(), ec);
+            if (!ec && !rel2.empty() && rel2.native().find(Paths::fromUtf8("..").native()) != 0) continue;
+        }
         ExportItem item;
         item.archivePath = "assets/" + rel;
         item.source = *src;
@@ -144,7 +150,7 @@ bool PackageExporter::write(const LevelData& level, const ExportPlan& plan, cons
                      {"author", opt.author.empty() ? level.author : opt.author},
                      {"version", opt.version},
                      {"engineVersion", PackageFormat::engineVersion()},
-                     {"minEngineVersion", "1.0.0"},
+                     {"minEngineVersion", opt.skipInstalledAssets ? PackageFormat::engineVersion() : std::string("1.0.0")},
                      {"description", opt.description.empty() ? level.description : opt.description},
                      {"createdAt", FileUtil::nowString()},
                      {"planet", level.planet},

@@ -34,6 +34,9 @@
 | Amis et demandes | D1 `player_friends` | les deux joueurs concernés | jusqu'au retrait |
 | Messages (texte, date, auteur) et conversations | D1 `messages`, `conversations`, `conversation_members` | les membres de la conversation | vie du compte de l'auteur (le texte d'un message effacé par son auteur est supprimé) |
 | Joueurs bloqués | D1 `player_blocks` | le joueur qui bloque | jusqu'au déblocage |
+| Niveaux publiés (package `.cplanet`, vignette, replay de fin de l'auteur, titre, description, note calculée) | R2 `community/` + D1 `community_levels`, `community_level_versions` | tous (niveaux publiés) | jusqu'au retrait par l'auteur ou la suppression du compte |
+| Temps sur les niveaux de la communauté (et leurs replays) | D1 `community_records` + R2 | temps acceptés : tous | vie du compte |
+| Notes et signalements de niveaux | D1 `community_ratings`, `community_reports` | notes : agrégées ; signalements : opérateurs | vie du compte |
 | Signalements de messages | D1 `message_reports` + journal d'audit | opérateurs | tant que le message existe |
 | Journal de sécurité (action, empreinte d'IP) | D1 `audit_log` | opérateurs | 180 jours |
 | Compteurs de limitation (empreintes) | D1 `rate_limits` | personne | 24 heures |
@@ -49,7 +52,8 @@
 * **Effacement** : *Supprimer mon compte* (mot de passe + confirmation) →
   `DELETE /api/v1/players/me` : suppression des fichiers R2 (replays, avatar) puis du compte et,
   en cascade, des sessions, records, meilleurs temps, replays, amis, messages envoyés,
-  appartenances aux groupes, blocages et du journal d'audit rattaché ; une seule trace anonyme « compte supprimé » est conservée. Les records locaux
+  appartenances aux groupes, blocages, niveaux publiés (packages, vignettes, replays des
+  joueurs sur ces niveaux), temps, notes et signalements, et du journal d'audit rattaché ; une seule trace anonyme « compte supprimé » est conservée. Les records locaux
   restent sur l'ordinateur du joueur.
 * **Déconnexion de tous les appareils** : révocation de toutes les sessions.
 

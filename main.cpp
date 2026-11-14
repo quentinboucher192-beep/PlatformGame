@@ -301,6 +301,17 @@ int main(int argc, char** argv) {
         app.pushScene(makeEnemyEditor(game));
     } else if (has("--planets")) {
         app.pushScene(makePlanetMap(game));
+    } else if (std::string et = value("--editor-test"); !et.empty()) {
+        // Automated checks: the editor's test run of a player level (completion replay).
+        PlayOptions opt;
+        opt.level = game.content.loadLevel(et);
+        opt.editorTest = true;
+        if (opt.level) app.pushScene(makeGameScene(game, et, opt));
+        else app.pushScene(makeSplashScene(game));
+    } else if (std::string pub = value("--publish"); !pub.empty()) {
+        app.pushScene(makeCommunityPublish(game, pub));
+    } else if (has("--online-levels")) {
+        app.pushScene(makeOnlineLevels(game, value("--online-levels")));
     } else if (has("--social")) {
         app.pushScene(makeSocial(game, value("--social")));
     } else if (has("--online")) {

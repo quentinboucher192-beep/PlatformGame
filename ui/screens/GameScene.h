@@ -64,6 +64,11 @@ private:
     ReplayRecorder recorder_;
     std::string attemptId_;
     std::optional<LevelFingerprint> fingerprint_;
+    /// What the recorded replay is for: an official ranked run, a community level run, or
+    /// the editor's completion run of a player level (needed to publish it).
+    enum class RecordMode { None, Official, Community, EditorCompletion };
+    RecordMode recordMode_ = RecordMode::None;
+    std::string gameplayHash_;
 };
 
 }  // namespace cosmic

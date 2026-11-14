@@ -49,6 +49,11 @@ std::unique_ptr<Scene> makeOnlineRanking(GameServices& g, const std::string& lev
 /// an account, so leaving without one returns to the main menu (the game itself never
 /// needs an account).
 std::unique_ptr<Scene> makeOnlineAccount(GameServices& g, bool onboarding, bool required = false);
+/// ONLINE LEVELS: the players' published levels (popular, hardest, recent, top rated,
+/// friends', search, mine), download and play, ratings, reports, per-level leaderboards.
+std::unique_ptr<Scene> makeOnlineLevels(GameServices& g, const std::string& communityId = {});
+/// WORKSHOP → Mes niveaux → Publier en ligne.
+std::unique_ptr<Scene> makeCommunityPublish(GameServices& g, const std::string& levelId);
 /// SOCIAL (in ONLINE): conversations with friends, groups, friends, blocked players.
 /// `conversationId`: open this conversation; `tab`: 0 Discussions, 1 Amis, 2 Bloqués.
 std::unique_ptr<Scene> makeSocial(GameServices& g, const std::string& conversationId = {}, int tab = 0);

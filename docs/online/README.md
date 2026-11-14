@@ -94,7 +94,9 @@ Terminé et testé :
   file de synchronisation, replays, tests unitaires, tests sur sockets réelles (refus, délai,
   coupure, réponse illisible, annulation) et test d'intégration de bout en bout contre un
   vrai serveur (Linux / libcurl et Windows / WinHTTP sous Wine) ;
-* écrans : ONLINE RANKING (navigation, globe, classements avec onglets, filtres et recherche,
+* écrans : ONLINE LEVELS (niveaux de la communauté : listes, recherche, fiche, téléchargement
+  vérifié, notes, signalements, classement par niveau ; publication depuis le WORKSHOP avec le
+  replay de fin de l'auteur), ONLINE RANKING (navigation, globe, classements avec onglets, filtres et recherche,
   niveau, carte du joueur), SOCIAL (conversations privées entre amis, groupes, amis, joueurs
   bloqués, signalements), compte et consentement, paramètres en ligne (confidentialité, amis,
   export et suppression des données), replays, statut en ligne sur l'écran de résultats,

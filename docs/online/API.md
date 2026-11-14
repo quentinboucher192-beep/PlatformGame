@@ -145,6 +145,11 @@ de `wrangler.jsonc`, plafonnée à 1 000) multiplie toutes les limites.
 | `social_group` | 10 | 1 h | joueur | `POST /social/groups` |
 | `social_report` | 20 | 1 h | joueur | `POST /social/messages/{id}/report` |
 | `social_block` | 30 | 1 h | joueur | `POST /social/blocks` |
+| `community_publish` | 10 | 1 h | joueur | `POST /community/levels` |
+| `community_upload` | 40 | 1 h | joueur | `PUT …/versions/{v}/package` et `…/replay` |
+| `community_download` | 120 | 1 h | joueur (ou IP) | `GET /community/levels/{id}/package` |
+| `community_rate` / `community_report` | 60 / 20 | 1 h | joueur | notes, signalements |
+| `community_record` | 30 | 1 min | joueur | `POST /community/levels/{id}/records` |
 | `reads` | 300 | 1 min | IP | toute requête `GET` non servie par le cache |
 
 `POST /auth/logout`, `POST /friends/accept`, `DELETE /friends/{playerId}` et les `POST`
@@ -796,7 +801,54 @@ supprimés, sauts de ligne conservés, 3 lignes vides au plus, espaces de bord r
 | `POST /social/messages/{id}/report` `{reason?}` | signale le message d'un autre membre aux modérateurs (une fois par joueur et par message, journal d'audit) |
 | `GET /social/blocks` · `POST /social/blocks` `{player_id}` · `DELETE /social/blocks/{playerId}` | joueurs bloqués, bloquer, débloquer (le joueur bloqué n'est pas prévenu) |
 
-### 8.9 Administration
+### 8.9 Niveaux de la communauté (ONLINE LEVELS)
+
+Les joueurs publient leurs niveaux ; le serveur ne fait confiance à rien de ce qui est envoyé.
+
+**Publication (compte requis)** — trois requêtes :
+
+1. `POST /community/levels` `{community_id?, title (3-60), description (≤ 500), planet, difficulty
+   (0,5-5, note calculée par le jeu), level_hash, min_game_version}` → `201 {id, version, upload:
+   {package, replay}}`. Avec `community_id` (auteur seulement) : nouvelle version du même niveau.
+   `level_hash` est l'**empreinte de gameplay** (`fingerprintGameplay`, côté jeu) : géométrie,
+   objets, événements, cinématiques, minuterie, pouvoirs de départ, définitions des ennemis et
+   pouvoirs, joueur, version de simulation — sans nom, auteur, musique ni métadonnées, et
+   insensible aux renommages faits à l'installation.
+2. `PUT …/versions/{v}/package` (`application/octet-stream`, 16 Mo au plus) : le `.cplanet` est
+   vérifié avant d'être stocké — ZIP lu par son répertoire central, aucun chiffrement, chemins
+   sûrs (ni absolu, ni `..`, ni `\`, ni lecteur, ni caractère de contrôle), tout sous
+   `COSMIC_LEVEL/`, extensions de données seulement (json, png, jpg, bmp, wav, ogg, mp3, flac,
+   ttf, otf, txt, md), 2 000 fichiers et 64 Mo décompressés au plus, taux de compression
+   plafonné, `manifest.json` et `level.json` valides, un départ et une sortie. La vignette
+   (`metadata/thumbnail.png`) est extraite. Erreur : `422 PACKAGE_INVALID` avec la raison.
+3. `PUT …/versions/{v}/replay` : le replay de **fin de niveau de l'auteur** sur cette version
+   (même `level_hash`, trajectoire du départ à la sortie, durée cohérente) — un niveau impossible
+   ne peut pas être publié. `422 REPLAY_LEVEL_MISMATCH` / `REPLAY_REJECTED` sinon.
+
+La version est publiée quand les deux envois sont acceptés (`published: true`) ; l'ancienne
+version passe `superseded` (ses temps restent dans son classement).
+
+| Route | Rôle |
+|---|---|
+| `GET /community/levels?sort=popular\|hardest\|recent\|top\|friends\|mine&q=&planet=&limit=&offset=` | listes ; `top` = moyenne bayésienne des notes, `friends` et `mine` demandent une session, `q` cherche dans le titre (sans accents) et le pseudonyme de l'auteur |
+| `GET /community/levels/{id}` | fiche, versions, classement de la version courante |
+| `GET /community/levels/{id}/package?version=` | le `.cplanet` (versions publiées ; l'auteur voit les siennes), en-têtes `x-level-hash` et `x-content-sha256` ; compte un téléchargement (sauf l'auteur) |
+| `GET /community/levels/{id}/thumbnail` | vignette PNG |
+| `POST /community/levels/{id}/rate` `{stars 1-5}` | une note par joueur (modifiable), jamais sur son propre niveau |
+| `POST /community/levels/{id}/report` `{reason?}` | un signalement par joueur ; 5 signalements masquent le niveau en attendant la modération |
+| `DELETE /community/levels/{id}` | l'auteur retire son niveau (fichiers R2 supprimés) |
+| `POST /community/levels/{id}/records` `{version, attempt_id, time_ms, deaths}` puis `PUT /community/records/{id}/replay` | un temps sur un niveau de la communauté ; il n'entre au classement (`REPLAY_OK`) qu'après vérification du replay (structure, version du niveau, tentative, durée, trajectoire, objets et dégâts lus dans le replay) ; sinon `REJECTED` avec les raisons |
+| `GET /community/levels/{id}/leaderboard?version=` | meilleur temps de chaque joueur ; `verification` rappelle que ces temps ne sont pas re-simulés |
+| `GET /community/records/{id}/replay` | replay d'un temps classé |
+
+Côté jeu : *WORKSHOP → Mes niveaux → Publier* (le niveau doit avoir été terminé depuis son départ
+dans l'éditeur, F5 ; le package ne contient que le niveau et ses fichiers propres, les fichiers
+du jeu étant sur chaque installation de la même version) ; *ONLINE → ONLINE LEVELS* (Populaires,
+Plus durs, Récents, Mieux notés, Amis, Recherche, Les miens ; *Télécharger et jouer* passe le
+package par les mêmes vérifications que tout import `.cplanet` et contrôle l'empreinte de
+gameplay de la copie installée).
+
+### 8.10 Administration
 
 Réservé aux opérateurs : actif seulement si le secret `ADMIN_TOKEN` (≥ 32 caractères, posé
 avec `wrangler secret put`) existe, sinon ces routes répondent `404 NOT_FOUND`. En-tête

@@ -327,8 +327,6 @@ public:
             // Computed from the level itself (game/levels/DifficultyRating.h), never typed in.
             const DifficultyRating* rating = g_.ratings.get(l);
             std::string diff = rating ? rating->label() : "calcul…";
-            if (rating)
-                for (int i = 0; i < 5; ++i) diff += i < ratingStars(rating->score) ? (i == 0 ? "  ★" : "★") : (i == 0 ? "  ☆" : "☆");
             ui.label("Difficulté " + diff + "   —   " + timerModeLabel(d.timerMode), {x, cy}, 21, ui.theme().warm);
             cy += ui.s(30);
             if (rating) {
