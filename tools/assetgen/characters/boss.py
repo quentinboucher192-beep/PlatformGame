@@ -281,31 +281,8 @@ def laser():
         f = draw(p.__class__(**{**p.__dict__, "cloak_wave": math.sin(i * 1.6)}))
         cx, cy = core_pos(p)
         cx, cy = int(round(cx)), int(round(cy))
-        hw = [3, 4, 3, 2][i]
-        for x in range(cx + 2, W):
-            for dy in range(-hw - 1, hw + 2):
-                y = cy + dy
-                if not (0 <= y < H):
-                    continue
-                d = abs(dy)
-                if d <= hw - 2:
-                    col = CYAN[3]
-                elif d <= hw - 1:
-                    col = CYAN[2]
-                elif d <= hw:
-                    col = CYAN[1]
-                else:
-                    col = CYAN[0] if (x + i) % 3 else None
-                if col is not None:
-                    f[y, x] = col
+        # The beam itself is drawn by the game (textured beam, 2.8): only the muzzle here.
         FX.burst(f, cx + 2, cy, 5 + (i % 2), CYANS[:3], seed=110 + i, jag=0.3)
-        # sparks around the beam
-        rng = np.random.default_rng(120 + i)
-        for _ in range(8):
-            x = int(rng.integers(cx + 8, W))
-            y = cy + int(rng.integers(-hw - 5, hw + 6))
-            if 0 <= y < H and f[y, x, 3] == 0:
-                f[y, x] = CYAN[2]
         out.append(f)
     return out
 

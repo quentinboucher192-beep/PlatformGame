@@ -34,6 +34,8 @@ void PauseScene::render(float /*alpha*/) {
         ui.label(info, {panel.center().x, panel.y + ui.s(112)}, 22, ui.theme().textDim, Align::Center);
         std::string stats = "Éclats " + std::to_string(world->stats().shards) + "/" + std::to_string(world->stats().totalShards) +
                             "   Morts " + std::to_string(world->stats().deaths) + "   Ennemis " + std::to_string(world->stats().kills);
+        if (int lives = world->level().livesAllowed(); lives > 0)
+            stats += "   Vies " + std::to_string(std::max(0, lives - world->stats().deaths)) + "/" + std::to_string(lives);
         ui.label(stats, {panel.center().x, panel.y + ui.s(142)}, 20, ui.theme().textDim, Align::Center);
     }
 

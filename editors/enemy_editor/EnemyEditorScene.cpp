@@ -21,6 +21,14 @@ void EnemyEditorScene::onEnter() {
     auto list = g_.content.enemies();
     if (!startId_.empty() && g_.content.enemy(startId_)) select(startId_);
     else if (!list.empty()) select(list.front()->id);
+    // Automated screenshots (--enemy-attack <id>): that attack selected in its tab.
+    if (g_.onlineOpen.rfind("attack:", 0) == 0) {
+        std::string id = g_.onlineOpen.substr(7);
+        for (size_t i = 0; i < work_.attacks.size(); ++i)
+            if (work_.attacks[i].id == id) selectedAttack_ = static_cast<int>(i);
+        scrollTo_ = 1150.0f;
+        g_.onlineOpen.clear();
+    }
 }
 
 void EnemyEditorScene::onExit() {

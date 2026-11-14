@@ -320,44 +320,15 @@ class Sentinel:
         if i >= 2:
             ring(f, ex, ey, 14.5 - 1.2 * (i - 2), REDS[3] if i < 4 else REDS[2], -PI, PI, only_empty=False)
         if i >= 3:
-            # red targeting line towards the right edge
-            for x in range(int(ex) + 14, W, 2 if i < 5 else 1):
-                put(f, x, int(round(ey)), REDS[3] if i < 5 else REDS[2])
+            pass  # the aiming line is drawn by the game (one line only)
         if i == 5:
             FX.sparkle(f, int(ex), int(ey), 7, REDS[0], REDS[2])
 
     def fx_beam(self, f, i, p):
         ex, ey = self.eye_pos(p)
         ex, ey = int(round(ex)), int(round(ey))
-        hw = [4, 5, 4, 3][i]
-        for x in range(ex + 4, W):
-            wob = 1 if ((x + i * 3) // 6) % 2 else 0
-            for dy in range(-hw - 2, hw + 3):
-                y = ey + dy
-                if not (0 <= y < H):
-                    continue
-                d = abs(dy)
-                if d <= hw - 3:
-                    col = REDS[0]
-                elif d <= hw - 2:
-                    col = REDS[1]
-                elif d <= hw - 1:
-                    col = REDS[2]
-                elif d <= hw:
-                    col = REDS[3]
-                elif d <= hw + 1 + wob:
-                    col = REDS[4] if (x + i) % 2 else None
-                else:
-                    col = None
-                if col is not None:
-                    f[y, x] = col
+        # The beam itself is drawn by the game (textured beam, 2.8): only the muzzle here.
         FX.burst(f, ex + 4, ey, 7 + (i % 2), REDS[:4], seed=self.seed + 110 + i, jag=0.35)
-        rng = np.random.default_rng(self.seed + 120 + i)
-        for _ in range(12):
-            x = int(rng.integers(ex + 10, W))
-            y = ey + int(rng.integers(-hw - 7, hw + 8))
-            if 0 <= y < H and f[y, x, 3] == 0:
-                f[y, x] = REDS[int(rng.integers(1, 4))]
 
     def fx_telegraph_volley(self, f, i, p):
         t = (i + 1) / 5

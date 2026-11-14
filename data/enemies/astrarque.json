@@ -68,7 +68,9 @@
         12,
         -24
       ],
-      "color": "#ff8a3d"
+      "color": "#ff8a3d",
+      "beamTexture": "star",
+      "beamWidth": 20
     },
     {
       "id": "slam",
@@ -283,6 +285,8 @@
       "color": "#7ff6ff",
       "slow": 0.5,
       "slowDuration": 1.6,
+      "beamTexture": "frost",
+      "beamWidth": 16,
       "lead": 0.8
     },
     {

@@ -425,8 +425,7 @@ class Forge:
             ring(f, hx, hy, 30 - 3 * i, FIRE[2], -PI, PI, dotted=2)
         if i >= 3:
             ring(f, hx, hy, 18 - 1.5 * (i - 3), FIRE[1], -PI, PI, only_empty=False)
-            for x in range(int(ex) + 18, W, 2 if i < 5 else 1):
-                put(f, x, int(round(ey)), FIRE[3] if i < 5 else FIRE[2])
+            pass  # the aiming line is drawn by the game (one line only)
         self._smoke(f, p, i, 1.0 + t, seed=110)
         if i == 5:
             FX.sparkle(f, int(ex), int(ey), 7, FIRE[0], FIRE[2])
@@ -434,35 +433,8 @@ class Forge:
     def fx_beam(self, f, i, p):
         ex, ey = self.eye_pos(p)
         ex, ey = int(round(ex)), int(round(ey))
-        hw = [5, 6, 5, 4][i]
-        rng = np.random.default_rng(self.seed + 130 + i)
-        for x in range(ex, W):
-            wob = int(round(1.2 * math.sin(x * 0.45 + i * 1.7)))
-            for dy in range(-hw - 3, hw + 4):
-                y = ey + dy + (wob if abs(dy) > hw - 2 else 0)
-                if not (0 <= y < H):
-                    continue
-                d = abs(dy)
-                if d <= hw - 3:
-                    col = FIRE[0]
-                elif d <= hw - 2:
-                    col = FIRE[1]
-                elif d <= hw - 1:
-                    col = FIRE[2]
-                elif d <= hw:
-                    col = FIRE[3]
-                elif d <= hw + 2:
-                    col = FIRE[4] if ((x + dy + i) % 3) == 0 else None
-                else:
-                    col = None
-                if col is not None:
-                    f[y, x] = col
+        # The beam itself is drawn by the game (textured beam, 2.8): only the muzzle here.
         FX.burst(f, ex + 2, ey, 8 + (i % 2), FIRE[:4], seed=self.seed + 140 + i, jag=0.4)
-        for _ in range(14):
-            x = int(rng.integers(ex + 10, W))
-            y = ey + int(rng.integers(-hw - 9, hw + 10))
-            if 0 <= y < H and f[y, x, 3] == 0:
-                f[y, x] = EMBER[int(rng.integers(0, 4))]
         self._smoke(f, p, i, 1.4, seed=150)
 
     def fx_telegraph_volley(self, f, i, p):

@@ -90,7 +90,9 @@
       ],
       "color": "#7ff6ff",
       "slow": 0.5,
-      "slowDuration": 1.6
+      "slowDuration": 1.6,
+      "beamTexture": "frost",
+      "beamWidth": 18
     },
     {
       "id": "meteor",

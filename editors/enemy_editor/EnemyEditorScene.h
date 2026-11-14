@@ -80,6 +80,7 @@ private:
     bool godMode_ = true;
     Rect arenaRect_;
     std::string startId_;  // enemy shown first (command line, links)
+    float scrollTo_ = -1.0f;  // properties scroll asked from the command line (unscaled px)
     int tab_ = 0;
     int selectedAttack_ = 0;
     int selectedPhase_ = 0;

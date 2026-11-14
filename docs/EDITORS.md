@@ -150,7 +150,10 @@ exactement à l'état précédent. Une sauvegarde automatique est écrite régul
     éventail, tir en cloche, onde de choc, charge, rayon laser, appel de renforts, pluie de
     projectiles venue d'en haut, éruption au sol) avec télégraphe, durée, recharge, dégâts,
     portée, projectile, rayon d'explosion (bombes), ralentissement infligé (glace, toiles),
-    point d'origine (bouche, arme) et couleur du rayon. La pluie et l'éruption marquent au
+    point d'origine (bouche, arme), couleur du rayon et **texture du rayon** (trait
+    lumineux, flamme, givre, plasma, sève et ronces, lumière d'étoile ; `beamTexture`) avec
+    son **épaisseur** (`beamWidth`) et un aperçu animé — l'aspect seul, hors des empreintes
+    des niveaux. La pluie et l'éruption marquent au
     sol, pendant le télégraphe, les endroits où elles vont frapper. Attaques avancées :
     *saut sur le joueur* (trajectoire balistique qui franchit les rebords, onde de choc à
     l'atterrissage), *anticipation* (0 = vise le joueur, 1 = vise l'endroit où il sera, point

@@ -128,7 +128,8 @@
       "origin": [
         0,
         -52
-      ]
+      ],
+      "beamTexture": "frost"
     },
     {
       "id": "summon",

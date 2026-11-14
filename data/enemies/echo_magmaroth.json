@@ -121,7 +121,9 @@
       "origin": [
         24,
         -56
-      ]
+      ],
+      "beamTexture": "flame",
+      "beamWidth": 16
     },
     {
       "id": "summon",

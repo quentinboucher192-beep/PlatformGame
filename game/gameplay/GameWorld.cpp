@@ -708,6 +708,11 @@ void GameWorld::onPlayerDeathAnimationDone() {
         player_.setHidden(true);
         return;
     }
+    if (level_.lives > 0 && stats_.deaths >= level_.lives) {
+        failLevel(level_.lives == 1 ? "Plus de vie" : "Plus de vies");
+        player_.setHidden(true);
+        return;
+    }
     respawnPlayer();
 }
 

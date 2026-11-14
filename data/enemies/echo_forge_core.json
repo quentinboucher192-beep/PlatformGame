@@ -68,7 +68,9 @@
         12,
         -24
       ],
-      "color": "#ff8a3d"
+      "color": "#ff8a3d",
+      "beamTexture": "flame",
+      "beamWidth": 16
     },
     {
       "id": "slam",

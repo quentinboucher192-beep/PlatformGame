@@ -73,6 +73,10 @@ struct AttackDef {
     std::string warningEffect = "eruption_warning_fire";  // Eruption: telegraph particles on the ground
     std::string eruptionEffect = "eruption_fire";         // Eruption: burst when it erupts
     Color beamColor{255, 77, 109, 255};                    // Laser / breath colour
+    /// Texture of the beam (animations/beams.json: flame, frost, plasma, thorn, star);
+    /// "" = the drawn line of old. Appearance only (not in the level fingerprints).
+    std::string beamTexture;
+    float beamWidth = 14.0f;  // thickness of the textured beam (world px), appearance only
     // v3 (bosses): smarter attacks
     float lead = 0.0f;           // 0..1: aims where the player will be (projectiles, rain, eruptions, lunges, leaps)
     int bursts = 1;              // projectile attacks: volleys fired during the active window

@@ -196,3 +196,11 @@ par le soleil de la carte.
 
 Un niveau à une seule vie (mode `challenge`, `challengeMaxDeaths` 0, comme l'Arène des Échos)
 peut n'avoir aucun checkpoint : la première chute met fin à la partie.
+
+## Règles du niveau (2.8)
+
+`damageFactor` (×0,25 à ×5, 1 par défaut) multiplie les dégâts que reçoit le joueur (jamais
+moins d'un cœur par coup) ; `lives` (0 = illimitées) est le nombre de vies pour tout le niveau.
+Les deux ne sont écrits que s'ils diffèrent de leur valeur par défaut, et font partie de
+l'empreinte de gameplay. La fiche du niveau affiche toujours « Dégâts reçus : ×… — Vies : … »
+(le mode défi compte `challengeMaxDeaths + 1` vies).

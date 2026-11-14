@@ -10,7 +10,17 @@ namespace cosmic {
 
 Rect FieldRow::field(const std::string& label, float h) {
     float hh = h > 0 ? h : ui.s(44);
-    ui.label(label, {x, y + hh * 0.5f}, 18, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+    // The label never runs under its field: smaller if needed, else on two lines.
+    float room = labelW - ui.s(10);
+    float fs = ui.fitFont(label, FontFace::Body, 18, room, 0.8f);
+    if (ui.text().measure(label, FontFace::Body, ui.s(fs)).x <= room) {
+        ui.label(label, {x, y + hh * 0.5f}, fs, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+    } else {
+        float f2 = 15.0f;
+        while (f2 > 10.0f && ui.text().measureWrapped(label, FontFace::Body, ui.s(f2), room).y > hh) f2 -= 0.5f;
+        Vec2 sz = ui.text().measureWrapped(label, FontFace::Body, ui.s(f2), room);
+        ui.labelWrapped(label, {x, y + (hh - sz.y) * 0.5f}, room, f2, ui.theme().textDim);
+    }
     Rect r{x + labelW, y, width - labelW, hh};
     y += hh + ui.s(8);
     return r;

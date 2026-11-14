@@ -5,6 +5,23 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.8.0** : les **rayons des boss** ne sont plus des traits : ils sont
+dessinés avec des textures animées (`animations/beams.json`, générées par
+`tools/assetgen/characters/beams.py` dans les palettes des souffles des boss) — flamme pour
+Pyralis, givre pour Glacior, plasma et sève pour Sylvanox, lumière d'étoile pour l'Astrarque
+— avec une embouchure, un corps répété sur toute la longueur et une extrémité effilochée.
+Dans l'éditeur d'ennemis (onglet Attaques), la *texture du rayon* et son *épaisseur* se
+choisissent avec un aperçu animé, à côté des sprites, animations, projectiles, effets et sons
+déjà paramétrables. L'aspect d'un rayon ne fait pas partie de l'empreinte des niveaux : le
+changer ne fait perdre aucun record. Le faisceau n'est plus peint dans les sprites d'attaque
+des boss (`tools/assetgen/characters`, seuls les clips de rayon et de télégraphe changent) :
+un seul rendu, sans double trait.
+
+**Règles de niveau** (paramètres du niveau dans l'éditeur, affichées sur la fiche du niveau
+avant de jouer) : *facteur de dégâts reçus* (×0,25 à ×5) et *nombre de vies* (illimitées par
+défaut ; « Plus de vies » met fin à la partie). Le mode défi les affiche aussi (l'Arène des
+Échos : « Vies : 1 »). Les niveaux existants gardent leurs règles et leurs empreintes.
+
 **Nouveau dans la version 2.7.0** : le **Noyau stellaire**, l'étoile au centre du système,
 s'ouvre quand Sylvanox, Glacior et Pyralis sont terminées (décors propres : l'étoile et les
 trois mondes revus dans sa lumière). Deux niveaux :

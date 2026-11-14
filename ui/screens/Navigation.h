@@ -29,6 +29,8 @@ struct PlayOptions {
     bool fromOnline = false;
     /// Automated screenshots: open the pause menu as soon as the level is playing.
     bool openPause = false;
+    /// Automated screenshots: the active boss uses this attack whenever it can.
+    std::string forceBossAttack;
 };
 
 // Factories of every screen (implemented next to each scene).

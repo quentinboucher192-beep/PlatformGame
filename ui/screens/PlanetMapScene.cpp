@@ -343,6 +343,19 @@ public:
                 cy += ui.s(32);
             }
             ui.label("Temps de référence : " + LevelTimer::format(d.referenceTime, false), {x, cy}, 21, ui.theme().text);
+            cy += ui.s(32);
+            {
+                // The level's rules, always said before playing.
+                char dmg[32];
+                std::snprintf(dmg, sizeof dmg, "%.1f", d.damageFactor);
+                for (char& ch : dmg)
+                    if (ch == '.') ch = ',';
+                int lives = d.livesAllowed();
+                std::string rules = std::string("Dégâts reçus : ×") + dmg + "   —   Vies : " +
+                                    (lives == 0 ? std::string("illimitées") : std::to_string(lives));
+                bool hard = d.damageFactor > 1.0f || lives > 0;
+                ui.label(rules, {x, cy}, ui.fitFont(rules, FontFace::Body, 21, colW - ui.s(10)), hard ? ui.theme().warm : ui.theme().text);
+            }
             cy += ui.s(44);
             ui.label("Médailles", {x, cy}, 22, ui.theme().textDim, Align::Left, FontFace::Bold);
             cy += ui.s(36);

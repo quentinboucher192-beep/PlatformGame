@@ -1,4 +1,10 @@
 {
+  "2.8.0": [
+    "Rayons des boss texturés et animés : flamme (Pyralis), givre (Glacior), plasma et sève (Sylvanox), lumière d'étoile (Astrarque).",
+    "Éditeur d'ennemis : texture et épaisseur de chaque rayon, avec aperçu ; les libellés longs ne passent plus sous leur champ.",
+    "Plus de double trait : le faisceau n'est plus peint dans les sprites d'attaque des boss, il n'est dessiné qu'une fois.",
+    "Règles de niveau affichées avant de jouer et réglables dans l'éditeur : facteur de dégâts reçus et nombre de vies."
+  ],
   "2.7.0": [
     "Noyau stellaire : l'étoile au centre de la carte s'ouvre quand Sylvanox, Glacior et Pyralis sont terminées.",
     "L'Arène des Échos : les douze gardiens à la suite, sans aucun soin ni checkpoint, en une seule vie.",

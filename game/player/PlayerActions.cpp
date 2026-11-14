@@ -199,7 +199,8 @@ bool Player::hurt(GameWorld& w, const DamageInfo& dmg) {
         return false;
     }
     if (invulnTimer_ > 0.0f) return false;
-    int amount = std::max(1, static_cast<int>(std::round(dmg.amount)));
+    // The level's damage factor (shown before playing: "Dégâts reçus : x1.5").
+    int amount = std::max(1, static_cast<int>(std::round(dmg.amount * w.level().damageFactor)));
     health -= amount;
     if (dmg.slow > 0.0f && dmg.slowDuration > 0.0f) {
         applySlow(dmg.slow, dmg.slowDuration);

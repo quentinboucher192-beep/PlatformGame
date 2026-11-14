@@ -12,6 +12,7 @@
 namespace cosmic {
 
 class ContentDatabase;
+struct EnemyDefinition;
 struct LevelData;
 
 /// Identity of a level revision for online rankings: id, integer revision
@@ -44,6 +45,11 @@ std::optional<LevelFingerprint> fingerprintRankedLevel(const ContentDatabase& co
 /// level installed on another computer (where the importer may rename the level or its
 /// definitions) has the same fingerprint as the author's: the author's completion replay and
 /// the players' replays are matched with it (Cosmic Online, community levels).
+/// An enemy as it plays, for the fingerprints: appearance-only settings added after 2.7
+/// (beam textures and thickness) are left out, so that changing the look of an attack
+/// never changes a level's fingerprint (nor drops its records).
+Json gameplayEnemyJson(const EnemyDefinition& d);
+
 std::string fingerprintGameplay(const ContentDatabase& content, const LevelData& level);
 
 /// Fingerprints of the built-in levels (cached after the first computation).

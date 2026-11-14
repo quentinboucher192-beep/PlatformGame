@@ -3,6 +3,7 @@
 #include <format>
 
 #include "editors/enemy_editor/EnemyEditorScene.h"
+#include "game/gameplay/BeamRenderer.h"
 #include "editors/shared/PropertyEditor.h"
 #include "game/gameplay/BossBadge.h"
 #include "engine/resources/ResourceManager.h"
@@ -63,6 +64,10 @@ void EnemyEditorScene::drawProperties(const Rect& r) {
         area.h -= banner.h + ui.s(8);
     }
     float x = r.x + ui.s(16), w = r.w - ui.s(44);
+    if (scrollTo_ >= 0.0f) {  // automated screenshots: the selected attack's settings in view
+        ui.setScroll("scroll" + std::to_string(tab_), ui.s(scrollTo_));
+        scrollTo_ = -1.0f;
+    }
     ui.beginScroll("scroll" + std::to_string(tab_), area, ui.s(2200));
     float y = area.y + ui.s(6) - ui.scrollOffset();
     switch (tab_) {
@@ -292,6 +297,29 @@ void EnemyEditorScene::tabAttacks(float x, float& y, float w) {
                 c = true;
             }
             y += ui.s(54);
+            // Texture of the beam (animations/beams.json) and its thickness, with a live preview.
+            const auto& styles = BeamRenderer::styles();
+            int si = 0;
+            for (size_t k = 0; k < styles.size(); ++k)
+                if (styles[k] == a.beamTexture) si = static_cast<int>(k);
+            if (ui.cycle("ltex", {x, y, w, ui.s(46)}, "Texture du rayon", si, BeamRenderer::styleLabels())) {
+                a.beamTexture = styles[static_cast<size_t>(si)];
+                c = true;
+            }
+            y += ui.s(54);
+            if (!a.beamTexture.empty()) {
+                c |= ui.numberField("lwid", row.field("Épaisseur du rayon (px)"), a.beamWidth, 1, 4, 48, "%.0f");
+                Rect pv{x, y, w, ui.s(44)};
+                ui.r().fillRoundedRect(pv, ui.s(8), {6, 9, 20, 255});
+                WorldView saved = ui.r().view();
+                ui.r().setView(WorldView{});
+                ui.r().pushClip(pv);
+                BeamRenderer::draw(ui.r(), g_.app.resources(), a.beamTexture, {pv.x + ui.s(10), pv.center().y}, 0.0f,
+                                   pv.w - ui.s(20), std::min(a.beamWidth * ui.s(1.6f), pv.h - ui.s(8)), ui.time());
+                ui.r().popClip();
+                ui.r().setView(saved);
+                y += pv.h + ui.s(10);
+            }
         }
         auto sounds = PropertyEditor::assetFiles("sounds", ".wav");
         sounds.insert(sounds.begin(), "");

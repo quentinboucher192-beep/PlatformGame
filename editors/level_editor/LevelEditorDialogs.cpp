@@ -249,6 +249,19 @@ void LevelEditorScene::modalSettings(const Rect& c) {
         level_.challengeMaxDeaths = static_cast<int>(cmd);
         changed = true;
     }
+    {
+        // Rules shown to the player before playing (level card): damage factor and lives.
+        float df = level_.damageFactor;
+        if (ui.numberField("dmgf", right.field("Facteur de dégâts reçus"), df, 0.25f, 0.25f, 5.0f, "x%.2f")) {
+            level_.damageFactor = df;
+            changed = true;
+        }
+        float lv = static_cast<float>(level_.lives);
+        if (ui.numberField("lives", right.field("Vies (0 = illimitées)"), lv, 1, 0, 99, "%.0f")) {
+            level_.lives = static_cast<int>(lv);
+            changed = true;
+        }
+    }
     right.y += ui.s(10);
     ui.label("Médailles (0 = pas de condition)", {right.x, right.y}, 22, ui.theme().accent, Align::Left, FontFace::Bold);
     right.y += ui.s(36);

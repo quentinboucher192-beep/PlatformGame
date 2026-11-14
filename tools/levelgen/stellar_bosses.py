@@ -76,6 +76,9 @@ for i, p in enumerate(d["boss"]["phases"]):
     p["combo"] = [2, 3, 4][min(i, 2)]
     p["telegraphMultiplier"] = [0.9, 0.8, 0.7][min(i, 2)]
     p["cooldownMultiplier"] = round(p.get("cooldownMultiplier", 1.0) * 0.85, 2)
+for a in d["attacks"]:
+    if a.get("type") == "laser" and not a["id"].startswith("a_"):
+        a["beamTexture"], a["beamWidth"] = "star", 20  # its own beam: starlight
 d["boss"]["title"] = "L'ASTRARQUE"
 d["boss"]["enrageTime"] = 90
 d["boss"]["barIcon"] = "star"

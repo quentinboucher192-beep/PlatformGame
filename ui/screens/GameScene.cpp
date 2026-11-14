@@ -296,6 +296,10 @@ void GameScene::update(float dt) {
         g_.app.pushScene(std::make_unique<PowerChoiceScene>(g_, *this));
         return;
     }
+    if (!opt_.forceBossAttack.empty())
+        if (Enemy* b = world_->activeBoss(); b && b->alive() && (b->state() == EnemyState::Chase || b->state() == EnemyState::Alert ||
+                                                                 b->state() == EnemyState::Idle || b->state() == EnemyState::Patrol))
+            b->forceAttack(*world_, opt_.forceBossAttack);
     bool autoPause = opt_.openPause && world_->state() == WorldState::Playing;
     if (autoPause) opt_.openPause = false;
     if (!ended_ && (in.menuPressed(Action::Pause) || autoPause)) {

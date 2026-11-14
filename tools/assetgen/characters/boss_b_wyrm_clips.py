@@ -275,7 +275,7 @@ def breath(th):
               phase=i / 4, t=i / 4, amp=1.6, sweep=0.3)
         f = th.draw(p)
         mx, my = Wy.mouth(p, th.kind)
-        stream(f, th, int(mx), my, i, seed=100)
+        # breath drawn by the game (textured beam, 2.8): only the muzzle here
         X.burst_under(f, mx + 1, my, 4 + (i % 2), th.hot[:3], seed=105 + i, jag=0.3)
         out.append(f)
     return out

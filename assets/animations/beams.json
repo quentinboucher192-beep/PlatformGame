@@ -1,0 +1,49 @@
+{
+  "texture": "sprites/projectiles/beams.png",
+  "frameWidth": 64,
+  "frameHeight": 16,
+  "pivot": [
+    0,
+    8
+  ],
+  "beam": {
+    "startCap": 16,
+    "body": [
+      16,
+      48
+    ],
+    "endCap": 16
+  },
+  "clips": {
+    "flame": {
+      "row": 0,
+      "count": 4,
+      "fps": 14,
+      "loop": true
+    },
+    "frost": {
+      "row": 1,
+      "count": 4,
+      "fps": 14,
+      "loop": true
+    },
+    "plasma": {
+      "row": 2,
+      "count": 4,
+      "fps": 14,
+      "loop": true
+    },
+    "thorn": {
+      "row": 3,
+      "count": 4,
+      "fps": 14,
+      "loop": true
+    },
+    "star": {
+      "row": 4,
+      "count": 4,
+      "fps": 14,
+      "loop": true
+    }
+  }
+}

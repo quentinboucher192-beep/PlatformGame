@@ -4,9 +4,11 @@
 //   --level <id>            start directly in a level
 //   --spawn <x>,<y>         with --level: start at this position (pixels), skipping the intro
 //   --pause                 with --level: open the pause menu once playing (screenshots)
+//   --boss-attack <id>      with --level: the active boss uses this attack whenever it can (screenshots)
 //   --editor [<id>]         start in the level editor (--editor-help: with its help open)
 //   --enemy-editor          start in the enemy editor
 //   --planets               start on the planet selection map
+//   --level-select <planet> start on the levels of a planet (the last level played selected)
 //   --hud-editor            open the HUD editor (place and size of the HUD elements)
 //   --settings-tab <n>      open the settings on a tab (0 graphics ... 4 game)
 //   --power-guide [--guide-page <n>]
@@ -399,12 +401,16 @@ int main(int argc, char** argv) {
                                  static_cast<float>(std::atof(sp.substr(c + 1).c_str()))};
         }
         opt.openPause = has("--pause");
+        opt.forceBossAttack = value("--boss-attack");
         app.pushScene(makeGameScene(game, level, opt));
     } else if (has("--editor")) {
         if (has("--editor-help")) app.pushScene(makeLevelEditorHelp(game, value("--editor")));
         else app.pushScene(makeLevelEditor(game, value("--editor")));
     } else if (has("--enemy-editor")) {
+        if (std::string at = value("--enemy-attack"); !at.empty()) game.onlineOpen = "attack:" + at;
         app.pushScene(makeEnemyEditor(game, value("--enemy-editor"), std::atoi(value("--enemy-tab").c_str())));
+    } else if (std::string ls = value("--level-select"); !ls.empty()) {
+        app.pushScene(makeLevelSelect(game, ls));
     } else if (has("--planets")) {
         app.pushScene(makePlanetMap(game));
     } else if (std::string et = value("--editor-test"); !et.empty()) {

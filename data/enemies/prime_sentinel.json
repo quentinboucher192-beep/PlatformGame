@@ -67,7 +67,8 @@
         11,
         -26
       ],
-      "color": "#ffb347"
+      "color": "#ffb347",
+      "beamTexture": "plasma"
     },
     {
       "id": "slam",

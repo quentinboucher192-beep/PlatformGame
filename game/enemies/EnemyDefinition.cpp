@@ -91,6 +91,8 @@ Json AttackDef::toJson() const {
         j["laserLength"] = laserLength;
         j["sweepDegrees"] = sweepDegrees;
         j["color"] = beamColor.toHex();
+        if (!beamTexture.empty()) j["beamTexture"] = beamTexture;
+        if (beamWidth != 14.0f) j["beamWidth"] = beamWidth;
     }
     if (lead > 0) j["lead"] = lead;
     if (bursts > 1) {
@@ -155,6 +157,8 @@ AttackDef AttackDef::fromJson(const Json& j) {
     a.warningEffect = jstr(j, "warningEffect", "eruption_warning_fire");
     a.eruptionEffect = jstr(j, "eruptionEffect", "eruption_fire");
     a.beamColor = colorFromJson(j.value("color", Json()), a.beamColor);
+    a.beamTexture = jstr(j, "beamTexture", "");
+    a.beamWidth = std::clamp(jget<float>(j, "beamWidth", 14.0f), 4.0f, 48.0f);
     return a;
 }
 

@@ -291,6 +291,9 @@ Json LevelData::toJson() const {
                   {"onExpire", expireActionId(onExpire)},
                   {"referenceTime", referenceTime},
                   {"challengeMaxDeaths", challengeMaxDeaths}};
+    // Written only when set, so that the levels of before keep their fingerprints.
+    if (damageFactor != 1.0f) j["damageFactor"] = damageFactor;
+    if (lives > 0) j["lives"] = lives;
     j["medals"] = {{"bronze", medals[0].toJson()},
                    {"silver", medals[1].toJson()},
                    {"gold", medals[2].toJson()},
@@ -349,6 +352,11 @@ std::optional<LevelData> LevelData::fromJson(const Json& j, std::string* error) 
         d.onExpire = expireActionFromId(jstr(t, "onExpire", "gameover"));
         d.referenceTime = std::max(1.0f, jget<float>(t, "referenceTime", 180.0f));
         d.challengeMaxDeaths = std::max(0, jget<int>(t, "challengeMaxDeaths", 0));
+    }
+    {
+        float df = jget<float>(j, "damageFactor", 1.0f);
+        d.damageFactor = std::isfinite(df) ? std::clamp(df, 0.25f, 5.0f) : 1.0f;
+        d.lives = std::clamp(jget<int>(j, "lives", 0), 0, 99);
     }
     if (j.contains("medals")) {
         const Json& m = j["medals"];

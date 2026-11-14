@@ -84,7 +84,9 @@
         39,
         -27
       ],
-      "color": "#ff8a3d"
+      "color": "#ff8a3d",
+      "beamTexture": "flame",
+      "beamWidth": 16
     },
     {
       "id": "meteor",

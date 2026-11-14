@@ -25,6 +25,16 @@ std::optional<LevelFingerprint> fingerprintLevelJson(const Json& level) {
     return f;
 }
 
+Json gameplayEnemyJson(const EnemyDefinition& d) {
+    Json j = d.toJson();
+    if (j.contains("attacks") && j["attacks"].is_array())
+        for (auto& a : j["attacks"]) {
+            a.erase("beamTexture");
+            a.erase("beamWidth");
+        }
+    return j;
+}
+
 std::optional<LevelFingerprint> fingerprintRankedLevel(const ContentDatabase& content, const Json& levelJson) {
     auto base = fingerprintLevelJson(levelJson);
     if (!base) return std::nullopt;
@@ -35,7 +45,7 @@ std::optional<LevelFingerprint> fingerprintRankedLevel(const ContentDatabase& co
     DependencySet deps = DependencyCollector(content, res).collect(*level);
     Json enemies = Json::object(), powers = Json::object();
     for (const auto& id : deps.enemies)
-        if (const EnemyDefinition* d = content.enemy(id)) enemies[id] = d->toJson();
+        if (const EnemyDefinition* d = content.enemy(id)) enemies[id] = gameplayEnemyJson(*d);
     for (const auto& id : deps.powers)
         if (const PowerDefinition* d = content.power(id)) powers[id] = d->toJson();
     Json bundle = {{"format", "cosmic.ranked-level"}, {"simulation", kSimulationVersion}, {"level", levelJson},
@@ -156,7 +166,7 @@ std::string fingerprintGameplay(const ContentDatabase& content, const LevelData&
     auto enemyKey = [&](const std::string& id) -> std::string {
         const EnemyDefinition* d = content.enemy(id);
         if (!d) return "missing:" + id;
-        auto [k, j] = defKey(d->toJson());
+        auto [k, j] = defKey(gameplayEnemyJson(*d));
         enemies[k] = j;
         return k;
     };
@@ -202,6 +212,9 @@ std::string fingerprintGameplay(const ContentDatabase& content, const LevelData&
                    {"enemies", enemies},
                    {"powers", powers},
                    {"player", content.playerConfig()}};
+    // Rules of the level added in 2.8 (only when set: the levels of before keep their print).
+    if (level.damageFactor != 1.0f) bundle["level"]["damageFactor"] = level.damageFactor;
+    if (level.lives > 0) bundle["level"]["lives"] = level.lives;
     return Sha256::hex(bundle.dump());
 }
 

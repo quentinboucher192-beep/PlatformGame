@@ -123,7 +123,8 @@
       "telegraphAnim": "telegraph_laser",
       "attackAnim": "laser",
       "laserLength": 380,
-      "sweepDegrees": 70
+      "sweepDegrees": 70,
+      "beamTexture": "thorn"
     },
     {
       "id": "v3_leap",

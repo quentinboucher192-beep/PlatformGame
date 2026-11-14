@@ -462,7 +462,7 @@ def mag_laser():
         f = K.draw_magmaroth(p)
         vent_fx(f, p, i / 4, 1.4, seed=170)
         mx, my = K.magma_mouth(p)
-        flame_stream(f, int(mx) + 1, my + 0.5, i, seed=171)
+        # flame stream drawn by the game (textured beam, 2.8): only the muzzle here
         FX.burst(f, mx + 2, my + 0.5, 4 + (i % 2), C.EMBERS[:3], seed=172 + i, jag=0.3)
         X.rising(f, 70, 95, 28, 50, 8, i / 4, C.ASHES, seed=176, rise=8)
         out.append(f)
@@ -889,7 +889,7 @@ def gla_laser():
               cape_wave=math.sin(i * 1.6) - 1, cape_lift=0.4, bristle=0.6, wglow=1.3, t=i / 4)
         f = K.draw_glaciarch(p)
         cx, cy = K.glaciarch_core(p)
-        frost_beam(f, int(cx) + 3, cy, i, seed=420)
+        # frost beam drawn by the game (textured beam, 2.8): only the muzzle here
         FX.burst(f, cx + 3, cy, 5 + (i % 2), C.FROSTS[:3], seed=425 + i, jag=0.3)
         out.append(f)
     return out

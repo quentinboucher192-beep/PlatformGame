@@ -5,6 +5,7 @@
 #include "engine/physics/Collision.h"
 #include "engine/resources/ResourceManager.h"
 #include "game/enemies/Enemy.h"
+#include "game/gameplay/BeamRenderer.h"
 #include "game/gameplay/GameWorld.h"
 #include "engine/core/DetMath.h"
 
@@ -644,6 +645,13 @@ void Enemy::renderTelegraph(RenderContext& ctx) const {
             Vec2 end = origin + Vec2::fromAngle(ang) * attack_->laserLength;
             if (state_ == EnemyState::Telegraph) {
                 ctx.r.drawWorldLine(origin, end, bc.withAlpha(warnCol.a), 1.0f + 2.0f * prog);
+            } else if (BeamRenderer::draw(ctx.r, ctx.res, attack_->beamTexture, origin, ang, attack_->laserLength,
+                                          attack_->beamWidth, ctx.time)) {
+                // Textured beam (flame, frost...): a glow at the mouth and its light.
+                Color sc = BeamRenderer::styleColor(attack_->beamTexture, bc);
+                ctx.r.drawWorldGlow(origin, attack_->beamWidth * 1.4f, sc.withAlpha(140));
+                ctx.r.drawWorldGlow(end, attack_->beamWidth, sc.withAlpha(110));
+                ctx.lights.add((origin + end) * 0.5f, attack_->laserLength * 0.6f, sc);
             } else {
                 float s = ctx.r.view().scale / 3.0f;
                 ctx.r.drawWorldLine(origin, end, bc.withAlpha(230), 6.0f * s, BlendMode::Additive);

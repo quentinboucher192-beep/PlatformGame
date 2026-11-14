@@ -137,6 +137,12 @@ struct LevelData {
     ExpireAction onExpire = ExpireAction::GameOver;
     float referenceTime = 180.0f;  // developer reference time ("par")
     int challengeMaxDeaths = 0;    // challenge mode: deaths allowed
+    /// Damage the player receives is multiplied by this (1 = normal), shown before playing.
+    float damageFactor = 1.0f;
+    /// Lives for the whole level (0 = unlimited): the run ends when they are all lost.
+    int lives = 0;
+    /// Lives the player really has: `lives`, or what the challenge mode allows (0 = unlimited).
+    int livesAllowed() const { return lives > 0 ? lives : (timerMode == TimerMode::Challenge ? challengeMaxDeaths + 1 : 0); }
     std::array<MedalRule, 4> medals;  // bronze, silver, gold, platinum
 
     std::vector<std::string> startPowers;
