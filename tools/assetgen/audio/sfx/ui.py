@@ -72,3 +72,17 @@ def medal(rng):
     low = bell('D5', 1.0, ratio=1.0, index=1.0, decay=0.35) * 0.3
     x = place([(0.0, line * 0.4), (0.22, low), (0.05, glints)])
     return room(x, rng, t60=1.2, wet=0.28)
+
+
+@sound('boss_phase_clear', -18, 'ui', fade_out=0.08)
+def boss_phase_clear(rng):
+    """2.17: a boss phase beaten without being hit (short bright rising chime)."""
+    notes = [(0.0, 1318.5), (0.06, 1760.0), (0.12, 2217.5)]
+    parts = []
+    for t, f in notes:
+        a = _ui_note(f, 0.32, 0.09)
+        a += bell(f * 2.0, 0.32, ratio=2.0, index=0.7, decay=0.07) * 0.18
+        parts.append((t, a))
+    shimmer = bell(4435.0, 0.5, ratio=1.5, index=0.5, decay=0.14) * 0.08
+    parts.append((0.18, shimmer))
+    return place(parts)

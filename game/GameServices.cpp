@@ -10,6 +10,7 @@ void GameServices::loadAll() {
     ratings.init(content);
     progression.load();
     records.load();
+    bossStats.load();
     news.load();
     news.startScan(content);
     applySettings();

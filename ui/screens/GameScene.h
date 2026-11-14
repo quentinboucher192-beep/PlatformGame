@@ -13,6 +13,7 @@
 #include "game/online/LevelFingerprint.h"
 #include "game/online/Replay.h"
 #include "game/race/Race.h"
+#include "game/records/BossStats.h"
 #include "game/records/Records.h"
 #include "ui/screens/PauseMap.h"
 #include "ui/screens/Navigation.h"
@@ -90,6 +91,9 @@ private:
     void sendRaceAttempt(bool finished, std::vector<uint8_t> replay);
     void abandonRaceAttempt();
     RaceTracker race_;
+    /// Boss fights of the run: statistics, sound of a phase beaten without a hit.
+    BossFightTracker bossFights_;
+    void bossFeedback();
     std::future<std::vector<Vec2>> raceRouteFuture_;
     std::string raceKind_, raceLevelId_, raceHash_, raceTitle_;
     int raceVersion_ = 0;

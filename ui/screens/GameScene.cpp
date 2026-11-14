@@ -97,9 +97,11 @@ void GameScene::onEnter() {
             race_.begin(buildRaceLayout(level_, g_.content, false));
             raceRouteFuture_ = std::async(std::launch::async, [level = level_, &content = g_.content] { return raceRoute(intendedRoute(level, content)); });
         }
-        if (recordMode_ != RecordMode::None)
-            world_->eventObserver = [this](const std::string& src, const std::string& trig) { recorder_.onWorldEvent(src, trig); };
     }
+    world_->eventObserver = [this](const std::string& src, const std::string& trig) {
+        if (recordMode_ != RecordMode::None) recorder_.onWorldEvent(src, trig);
+        bossFights_.onWorldEvent(src, trig);
+    };
 }
 
 void GameScene::onExit() {
@@ -118,6 +120,7 @@ void GameScene::onExit() {
         }
         g_.progression.save();
         g_.records.save();
+        g_.bossStats.save();
     }
 }
 
@@ -249,6 +252,10 @@ void GameScene::fixedUpdate(float dt) {
     if (!ended_) recorder_.recordInput(frame);
     stepWorld(*world_, frame, kSimDt);
     if (!ended_) recorder_.tick(*world_);
+    if (!ended_ && !opt_.editorTest) {
+        bossFights_.step(*world_, g_.bossStats);
+        bossFeedback();
+    }
     if (!ended_ && race_.active()) {
         race_.update(*world_);
         recorder_.raceProgress(race_.progress().bossRemoved, race_.progress().wavesDone);
@@ -258,8 +265,25 @@ void GameScene::fixedUpdate(float dt) {
     if (!ended_ && world_->state() == WorldState::Failed) finishRun(false);
 }
 
+void GameScene::bossFeedback() {
+    for (const auto& e : bossFights_.takeEvents()) {
+        if (e.kind == BossFightTracker::Event::Kind::PhaseNoHit) {
+            g_.uiSound("boss_phase_clear", 0.8f);
+            std::string ph = e.phaseName.empty() ? "Phase " + std::to_string(e.phase + 1) : e.phaseName;
+            world_->hint(ph + " sans dégât !", 2.2f);
+        } else if (e.noHit) {
+            g_.uiSound("boss_phase_clear", 1.0f);
+            world_->hint(e.bossName + " vaincu sans dégât !", 3.0f);
+        }
+    }
+}
+
 void GameScene::finishRun(bool completed) {
     ended_ = true;
+    if (!opt_.editorTest) {
+        bossFights_.step(*world_, g_.bossStats);
+        g_.bossStats.save();
+    }
     RunResult r;
     r.levelId = levelId_;
     r.completed = completed;
@@ -371,6 +395,7 @@ void GameScene::finishRun(bool completed) {
     data.fromWorkshop = workshop_ && !opt_.fromOnline;
     data.online = online;
     data.raceScore = raceEstimate;
+    data.bossKills = bossFights_.kills();
     if (race_.active()) {
         data.raceBosses = race_.progress().bossesBeaten();
         data.raceBossTotal = static_cast<int>(race_.layout().bosses.size());

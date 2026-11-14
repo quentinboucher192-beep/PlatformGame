@@ -70,7 +70,7 @@ public:
         // Only a campaign level: WORKSHOP levels are reached from the WORKSHOP.
         bool canContinue = !g_.progression.lastLevel.empty() && g_.content.level(g_.progression.lastLevel) &&
                            !g_.content.campaignPlanetOf(g_.progression.lastLevel).empty();
-        int rows = canContinue ? 6 : 5;
+        int rows = canContinue ? 7 : 6;
         float x = ui.s(120), w = ui.s(470), h = ui.s(66), gap = ui.s(14);
         float y = ui.screenH() * 0.5f - (rows * (h + gap)) * 0.5f + ui.s(40);
         Rect side{x - ui.s(40), y - ui.s(40), w + ui.s(80), rows * (h + gap) + ui.s(70)};
@@ -105,6 +105,12 @@ public:
             if (online > 0) sub += (sub.empty() ? "" : " · ") + std::to_string(online) + " en ligne";
             // Straight to the Cosmic Online centre when only it has something new.
             if (btn("news", "Notifications", sub)) g_.app.switchScene(makeNotifications(g_, n == 0 && online > 0 ? 1 : 0), 0.3f);
+        }
+        {
+            int kills = 0;
+            for (const auto& [id, r] : g_.bossStats.all()) kills += r.kills;
+            std::string sub = kills > 0 ? std::to_string(kills) + (kills > 1 ? " victoires sur les boss" : " victoire sur un boss") : "boss";
+            if (btn("stats", "Statistiques", sub)) g_.app.switchScene(makeBossStats(g_), 0.3f);
         }
         if (btn("settings", "Paramètres", "")) g_.app.pushScene(makeSettingsScene(g_, false));
         UIContext::ButtonStyle danger;

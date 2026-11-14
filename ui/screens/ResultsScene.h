@@ -7,6 +7,7 @@
 #include "engine/core/Scene.h"
 #include "game/levels/LevelData.h"
 #include "game/online/OnlineRecord.h"
+#include "game/records/BossStats.h"
 #include "game/records/Records.h"
 
 namespace cosmic {
@@ -34,6 +35,8 @@ struct ResultsData {
     int raceBosses = 0, raceBossTotal = 0;
     /// Where its leaderboard is: "official" or "community", the level id, version, hash.
     std::string raceKind, raceLevelId, raceHash;
+    /// Bosses beaten during the run (statistics: victories, fights without a hit).
+    std::vector<BossFightTracker::Event> bossKills;
     int raceVersion = 0;
 };
 
@@ -51,6 +54,7 @@ public:
 private:
     void drawOnlineStatus(const Rect& panel);
     void drawRace(const Rect& panel);
+    void drawBosses(const Rect& panel);
 
     GameServices& g_;
     GameScene& game_;

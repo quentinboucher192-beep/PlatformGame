@@ -88,6 +88,29 @@ void ResultsScene::drawRace(const Rect& panel) {
     ui.label(hint, {x, y + ui.s(34)}, ui.fitFont(hint, FontFace::Body, 17, maxW), ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
 }
 
+void ResultsScene::drawBosses(const Rect& panel) {
+    // The race line takes this place on an EXTRÊME level.
+    if (d_.raceScore || d_.bossKills.empty() || t_ < 0.9f) return;
+    UIContext& ui = g_.ui;
+    float x = panel.x + ui.s(60), maxW = ui.s(560);
+    float y = panel.y + ui.s(600);
+    std::string line, sub;
+    int noHit = 0;
+    for (const auto& k : d_.bossKills) noHit += k.noHit ? 1 : 0;
+    if (d_.bossKills.size() == 1) {
+        const auto& k = d_.bossKills.front();
+        line = k.bossName + " vaincu" + (k.noHit ? " sans dégât !" : "");
+        sub = std::to_string(k.kills) + (k.kills == 1 ? "re victoire" : "e victoire") + " contre ce boss · détails dans Statistiques";
+    } else {
+        line = std::to_string(d_.bossKills.size()) + " boss vaincus";
+        if (noHit > 0) line += " · " + std::to_string(noHit) + " sans dégât";
+        sub = "Victoires et combats sans dégât : menu principal → Statistiques";
+    }
+    ui.label(line, {x, y}, ui.fitFont(line, FontFace::Bold, 22, maxW), noHit > 0 ? ui.theme().success : ui.theme().warm, Align::Left, FontFace::Bold,
+             VAlign::Middle);
+    ui.label(sub, {x, y + ui.s(34)}, ui.fitFont(sub, FontFace::Body, 17, maxW), ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+}
+
 void ResultsScene::render(float /*alpha*/) {
     UIContext& ui = g_.ui;
     ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
@@ -179,6 +202,7 @@ void ResultsScene::render(float /*alpha*/) {
         ui.label("Test depuis l'éditeur : les records ne sont pas enregistrés", {panel.center().x, panel.bottom() - ui.s(150)}, 20,
                  ui.theme().textDim, Align::Center);
     drawRace(panel);
+    drawBosses(panel);
     drawOnlineStatus(panel);
 
     // ------------------------------------------------------------- buttons

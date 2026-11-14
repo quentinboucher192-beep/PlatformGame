@@ -46,6 +46,8 @@ std::unique_ptr<Scene> makeHudEditor(GameServices& g, GameplaySettings& target);
 /// Notifications of the main menu (new content, records dropped, new installer); `tab` 1:
 /// the Cosmic Online notification centre.
 std::unique_ptr<Scene> makeNotifications(GameServices& g, int tab = 0);
+/// Main menu → Statistiques: the bosses (victories, without being hit, per phase).
+std::unique_ptr<Scene> makeBossStats(GameServices& g);
 /// Help: every power of the player with a live example (pushed over the current screen).
 std::unique_ptr<Scene> makePowerGuide(GameServices& g, int page = 0);
 std::unique_ptr<Scene> makeLevelEditor(GameServices& g, const std::string& levelId);

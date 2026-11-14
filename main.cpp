@@ -456,6 +456,9 @@ int main(int argc, char** argv) {
         app.pushScene(makePowerGuide(game, page.empty() ? 0 : std::atoi(page.c_str()) - 1));
     } else if (has("--notifications")) {
         app.pushScene(makeNotifications(game, value("--notifications") == "online" ? 1 : 0));
+    } else if (has("--boss-stats")) {
+        if (std::string b = value("--boss-stats"); !b.empty()) game.onlineOpen = "boss:" + b;
+        app.pushScene(makeBossStats(game));
     } else if (std::string race = value("--race"); !race.empty()) {
         auto c1 = race.find(':');
         std::string kind = race.substr(0, c1), rest = c1 == std::string::npos ? std::string{} : race.substr(c1 + 1);

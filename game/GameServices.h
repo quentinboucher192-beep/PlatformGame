@@ -8,6 +8,7 @@
 #include "game/online/OnlineService.h"
 #include "game/progression/NewsCenter.h"
 #include "game/progression/Progression.h"
+#include "game/records/BossStats.h"
 #include "game/records/Records.h"
 #include "saves/Settings.h"
 #include "ui/widgets/UIContext.h"
@@ -36,6 +37,8 @@ public:
     Settings settings;
     Progression progression;
     RecordsManager records;
+    /// Boss statistics (victories, phases and fights without being hit).
+    BossStats bossStats;
     /// Notifications of the main menu (new content, records dropped, new installer).
     NewsCenter news;
     /// Asks the server once for a newer installer (no account needed, nothing personal sent).
