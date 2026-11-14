@@ -20,6 +20,9 @@ namespace {
 
 constexpr float kPi = 3.14159265f;
 
+/// Never below 11.5 pixels (small windows): below, the font loses its spaces.
+float fz(const UIContext& ui, float size) { return std::max(size, 11.5f / ui.s(1.0f)); }
+
 std::string dateFr(const std::string& d) {
     // FileUtil::nowString(): "YYYY-MM-DD HH:MM".
     if (d.size() < 16) return d;
@@ -308,7 +311,7 @@ private:
         Renderer& r = ui.r();
         const AchievementCatalog& cat = g_.achievementCatalog;
         const auto& all = cat.achievements();
-        const float labelRoom = ui.s(66);
+        const float labelRoom = ui.s(88);  // the category names around the web
         const float R0 = std::min(area.w, area.h) * 0.5f - labelRoom;
         webInput(area, R0);
         float R = R0 * zoom_;
@@ -454,7 +457,7 @@ private:
             std::string sub = std::to_string(have) + " / " + std::to_string(tot);
             float fs = 16.0f;
             Vec2 sz = ui.text().measure(k.name, FontFace::Bold, ui.s(fs));
-            Vec2 sz2 = ui.text().measure(sub, FontFace::Body, ui.s(13));
+            Vec2 sz2 = ui.text().measure(sub, FontFace::Body, ui.s(fz(ui, 13)));
             float bw = std::max(sz.x, sz2.x + ui.s(16)), bh = sz.y + sz2.y;
             float rr = R + ui.s(12);
             Rect box;
@@ -463,6 +466,11 @@ private:
                 float cx = std::cos(a);
                 float x = cx > 0.3f ? p.x : cx < -0.3f ? p.x - bw : p.x - bw * 0.5f;
                 float y = std::sin(a) < -0.3f ? p.y - bh : std::sin(a) > 0.3f ? p.y : p.y - bh * 0.5f;
+                // Inside the web's area (at 100 %: never cut by its edges).
+                if (zoom_ <= 1.0f) {
+                    x = std::clamp(x, area.x, std::max(area.x, area.right() - bw));
+                    y = std::clamp(y, area.y, std::max(area.y, area.bottom() - bh));
+                }
                 box = {x, y, bw, bh};
                 bool hit = false;
                 for (const Rect& o : placed) hit = hit || o.intersects(box);
@@ -472,7 +480,7 @@ private:
             bool on = ci == static_cast<size_t>(categoryIndex(sel().category));
             ui.label(k.name, {box.x + box.w * 0.5f, box.y}, fs, on ? k.color : k.color.withAlpha(200), Align::Center, FontFace::Bold);
             drawStar(ui.r(), {box.x + (box.w - sz2.x - ui.s(16)) * 0.5f + ui.s(6), box.y + sz.y + sz2.y * 0.5f}, ui.s(6), Color{255, 214, 90, 200}, true);
-            ui.label(sub, {box.x + (box.w - sz2.x - ui.s(16)) * 0.5f + ui.s(16), box.y + sz.y}, 13, ui.theme().textDim, Align::Left);
+            ui.label(sub, {box.x + (box.w - sz2.x - ui.s(16)) * 0.5f + ui.s(16), box.y + sz.y}, fz(ui, 13), ui.theme().textDim, Align::Left);
         }
         r.popClip();
         webArea_ = area;
@@ -489,7 +497,7 @@ private:
         x += bw + ui.s(8);
         char pct[16];
         std::snprintf(pct, sizeof pct, "%d %%", static_cast<int>(std::lround(zoom_ * 100.0f)));
-        ui.label(pct, {x + ui.s(36), y}, 17, ui.theme().text, Align::Center, FontFace::Bold, VAlign::Middle);
+        ui.label(pct, {x + ui.s(36), y}, fz(ui, 17), ui.theme().text, Align::Center, FontFace::Bold, VAlign::Middle);
         x += ui.s(72) + ui.s(8);
         if (ui.button("zoomin", {x, y - h * 0.5f, bw, h}, "+", st)) zoomAt(zoom_ * 1.25f, webArea_.center(), webArea_);
         x += bw + ui.s(10);
@@ -567,7 +575,7 @@ private:
         r().fillCircle({x + ui.s(7), y + ui.s(13)}, ui.s(7), col);
         std::string cname = k ? k->name : a.category;
         ui.label(ui.elide(cname, FontFace::Bold, 22, w - rw - ui.s(40)), {x + ui.s(22), y}, 22, col, Align::Left, FontFace::Bold);
-        ui.label(right, {x + w, y + ui.s(3)}, 16, th.textDim, Align::Right);
+        ui.label(right, {x + w, y + ui.s(3)}, fz(ui, 16), th.textDim, Align::Right);
         y += ui.s(34);
         if (k) y += ui.labelWrapped(k->description, {x, y}, w, std::max(15.0f, 11.5f / ui.s(1.0f)), th.textDim).y + ui.s(10);
         ui.separator({x, y}, w);
@@ -578,7 +586,7 @@ private:
         y += ui.s(44);
         drawStarRow(ui.r(), {x, y + ui.s(10)}, ui.s(20), a.stars, Color{255, 214, 90, 255}, Color{120, 130, 160, 160});
         std::string diff = a.stars == 1 ? "Facile" : a.stars == 2 ? "Moyen" : a.stars == 3 ? "Difficile" : a.stars == 4 ? "Très difficile" : "Extrême";
-        ui.label(diff, {x + ui.s(132), y + ui.s(10)}, 16, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        ui.label(diff, {x + ui.s(132), y + ui.s(10)}, fz(ui, 16), th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
         y += ui.s(32);
         y += ui.labelWrapped(a.description, {x, y}, w, 19, th.text).y + ui.s(12);
         Color sc;
@@ -590,7 +598,7 @@ private:
             Rect bar{x, y, w * 0.55f, ui.s(12)};
             ui.r().fillRoundedRect(bar, ui.s(6), Color{20, 28, 52, 255});
             if (f > 0.0f) ui.r().fillRoundedRect({bar.x, bar.y, std::max(bar.h, bar.w * f), bar.h}, ui.s(6), col);
-            ui.label(ui.elide(status, FontFace::Bold, 17, w * 0.42f), {bar.right() + ui.s(14), bar.center().y}, 17, sc, Align::Left, FontFace::Bold,
+            ui.label(ui.elide(status, FontFace::Bold, fz(ui, 17), w * 0.42f), {bar.right() + ui.s(14), bar.center().y}, fz(ui, 17), sc, Align::Left, FontFace::Bold,
                      VAlign::Middle);
             y += ui.s(30);
         } else {
@@ -601,7 +609,7 @@ private:
         for (const auto& o : cat.achievements())
             for (const auto& r2 : o.after)
                 if (r2 == a.id) opens += (opens.empty() ? "« " : ", « ") + o.name + " »";
-        if (!opens.empty()) y += ui.labelWrapped("Ouvre la voie à " + opens, {x, y}, w, 15, th.textDim).y + ui.s(8);
+        if (!opens.empty()) y += ui.labelWrapped("Ouvre la voie à " + opens, {x, y}, w, fz(ui, 15), th.textDim).y + ui.s(8);
         ui.separator({x, y + ui.s(4)}, w);
         y += ui.s(16);
         // The category's achievements.
@@ -632,7 +640,7 @@ private:
             else ui.r().drawCircle(dot, ui.s(6), g_.achievements.available(all[i]) ? col : Color{120, 130, 160, 120}, ui.s(1.5f));
             float starsW = ui.s(14) * 1.15f * 4.0f + ui.s(14);
             float nameRoom = row.w - ui.s(34) - starsW - ui.s(16);
-            ui.label(ui.elide(all[i].name, FontFace::Body, 16, nameRoom), {row.x + ui.s(30), row.center().y}, 16,
+            ui.label(ui.elide(all[i].name, FontFace::Body, fz(ui, 16), nameRoom), {row.x + ui.s(30), row.center().y}, 16,
                      done ? th.text : th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
             drawStarRow(ui.r(), {row.right() - starsW - ui.s(6), row.center().y}, ui.s(14), all[i].stars, Color{255, 214, 90, done ? 255 : 150},
                         Color{90, 100, 130, 110});
@@ -667,12 +675,12 @@ private:
                 for (const auto& a : all) tot += a.category == k.id ? a.stars : 0;
                 ui.label(k.name, {area.x, y + ui.s(26)}, 22, k.color, Align::Left, FontFace::Bold, VAlign::Middle);
                 std::string s = std::to_string(have) + " / " + std::to_string(tot) + " étoiles";
-                ui.label(s, {area.x + w, y + ui.s(26)}, 16, th.textDim, Align::Right, FontFace::Body, VAlign::Middle);
+                ui.label(s, {area.x + w, y + ui.s(26)}, fz(ui, 16), th.textDim, Align::Right, FontFace::Body, VAlign::Middle);
                 float nw = ui.text().measure(k.name, FontFace::Bold, ui.s(22)).x;
                 float sw = ui.text().measure(s, FontFace::Body, ui.s(16)).x;
                 float dr = w - nw - sw - ui.s(60);
                 if (dr > ui.s(120))
-                    ui.label(ui.elide(k.description, FontFace::Body, 15, dr), {area.x + nw + ui.s(24), y + ui.s(26)}, 15, th.textDim, Align::Left,
+                    ui.label(ui.elide(k.description, FontFace::Body, fz(ui, 15), dr), {area.x + nw + ui.s(24), y + ui.s(26)}, fz(ui, 15), th.textDim, Align::Left,
                              FontFace::Body, VAlign::Middle);
             }
             y += hh;
@@ -691,9 +699,9 @@ private:
                 Vec2 dot{row.x + ui.s(14), row.center().y};
                 if (done) ui.r().fillCircle(dot, ui.s(6), k.color);
                 else ui.r().drawCircle(dot, ui.s(6), g_.achievements.available(a) ? k.color : Color{120, 130, 160, 120}, ui.s(1.5f));
-                ui.label(ui.elide(a.name, FontFace::Bold, 16, cDesc - cName - ui.s(14)), {cName, row.center().y}, 16, done ? th.text : th.textDim,
+                ui.label(ui.elide(a.name, FontFace::Bold, fz(ui, 16), cDesc - cName - ui.s(14)), {cName, row.center().y}, fz(ui, 16), done ? th.text : th.textDim,
                          Align::Left, FontFace::Bold, VAlign::Middle);
-                ui.label(ui.elide(a.description, FontFace::Body, 15, cProg - cDesc - ui.s(16)), {cDesc, row.center().y}, 15, th.textDim, Align::Left,
+                ui.label(ui.elide(a.description, FontFace::Body, fz(ui, 15), cProg - cDesc - ui.s(16)), {cDesc, row.center().y}, fz(ui, 15), th.textDim, Align::Left,
                          FontFace::Body, VAlign::Middle);
                 Color sc;
                 std::string st = statusText(a, sc);
@@ -703,7 +711,7 @@ private:
                 } else if (!g_.achievements.available(a)) {
                     st = "Verrouillé";
                 }
-                ui.label(ui.elide(st, FontFace::Body, 15, cStars - cProg - ui.s(16)), {cProg, row.center().y}, 15, sc, Align::Left, FontFace::Body,
+                ui.label(ui.elide(st, FontFace::Body, fz(ui, 15), cStars - cProg - ui.s(16)), {cProg, row.center().y}, fz(ui, 15), sc, Align::Left, FontFace::Body,
                          VAlign::Middle);
                 drawStarRow(ui.r(), {cStars, row.center().y}, ui.s(14), a.stars, Color{255, 214, 90, done ? 255 : 150}, Color{90, 100, 130, 110});
             }
