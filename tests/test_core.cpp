@@ -1,6 +1,7 @@
 #include "engine/core/Easing.h"
 #include "engine/core/FileUtil.h"
 #include "engine/core/Math.h"
+#include "ui/screens/PauseMap.h"
 #include "engine/core/Paths.h"
 #include "engine/input/InputManager.h"
 #include "engine/physics/Collision.h"
@@ -156,4 +157,23 @@ TEST_CASE("progression: time played per level, shown in hours and minutes") {
     CHECK(cosmic::playTimeText(45 * 60 + 10) == "45 min");
     CHECK(cosmic::playTimeText(3725) == "1 h 02 min");
     CHECK(cosmic::playTimeText(120 * 3600 + 5 * 60) == "120 h 05 min");
+}
+
+TEST_CASE("pause map: only what the camera has shown is explored") {
+    cosmic::ExploredMap m;
+    m.reset({0, 0, 1000, 500});
+    CHECK(m.cols == 16);
+    CHECK(m.rows == 8);
+    CHECK(m.empty());
+    m.mark({100, 100, 200, 100});
+    CHECK(!m.empty());
+    CHECK(m.seenPoint({150, 150}));
+    CHECK(!m.seenPoint({900, 450}));
+    cosmic::Rect box = m.seenBox();
+    CHECK(box.x <= 100.0f);
+    CHECK(box.right() >= 300.0f);
+    CHECK(box.right() <= 400.0f);
+    m.mark({-500, -500, 100, 100});  // outside the level: ignored
+    m.mark({950, 450, 400, 400});    // partly outside: the inside part counts
+    CHECK(m.seenPoint({990, 490}));
 }

@@ -220,6 +220,9 @@ route("GET", `${V}/projects/{projectId}/content`, (ctx) => projects.getContent(c
 route("PUT", `${V}/projects/{projectId}/content`, (ctx) => projects.putContent(ctx));
 route("GET", `${V}/projects/{projectId}/revisions`, (ctx) => projects.listRevisions(ctx));
 route("GET", `${V}/projects/{projectId}/activity`, (ctx) => projects.listActivity(ctx));
+// Chat of the live editor
+route("GET", `${V}/projects/{projectId}/messages`, (ctx) => projects.listMessages(ctx));
+route("POST", `${V}/projects/{projectId}/messages`, (ctx) => projects.postMessage(ctx));
 // History and named versions (phase 5)
 route("GET", `${V}/projects/{projectId}/compare`, (ctx) => projects.compareRevisions(ctx));
 route("POST", `${V}/projects/{projectId}/revisions/{revision}/restore`, (ctx) => projects.restoreRevision(ctx));

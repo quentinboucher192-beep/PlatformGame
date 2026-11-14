@@ -32,7 +32,8 @@ void GameRenderer::render(Renderer& r, ResourceManager& res, GameWorld& world, c
 
     // Background colour + parallax
     Color bg = lvl.backgroundColor;
-    r.fillRect({0, 0, static_cast<float>(r.width()), static_cast<float>(r.height())}, bg);
+    if (opt.mapView) r.fillRect({view.origin.x, view.origin.y, static_cast<float>(view.screenW), static_cast<float>(view.screenH)}, bg);
+    else r.fillRect({0, 0, static_cast<float>(r.width()), static_cast<float>(r.height())}, bg);
     parallax_.update(0.0f);
     parallax_.render(r, view, false);
 
@@ -79,11 +80,12 @@ void GameRenderer::render(Renderer& r, ResourceManager& res, GameWorld& world, c
     }
     drawActors();
 
-    // Telegraphs read on top of everything in the world.
-    for (const auto& e : world.enemies())
-        if (e->box.expanded(200).intersects(vis)) e->renderTelegraph(ctx);
-
-    parallax_.render(r, view, true);
+    if (!opt.mapView) {
+        // Telegraphs read on top of everything in the world.
+        for (const auto& e : world.enemies())
+            if (e->box.expanded(200).intersects(vis)) e->renderTelegraph(ctx);
+        parallax_.render(r, view, true);
+    }
 
     // Dynamic lighting (multiplied over the world)
     lastLights_ = lights_.count();
@@ -94,7 +96,7 @@ void GameRenderer::render(Renderer& r, ResourceManager& res, GameWorld& world, c
     }
 
     // Screen flash
-    Color f = world.flashColor();
+    Color f = opt.mapView ? Color{0, 0, 0, 0} : world.flashColor();
     if (f.a > 0) r.fillRect({0, 0, static_cast<float>(r.width()), static_cast<float>(r.height())}, f, BlendMode::Additive);
 
     if (opt.debug) drawDebug(r, world);

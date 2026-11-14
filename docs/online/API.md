@@ -977,8 +977,8 @@ pour tous.
 
 | Méthode | Route | Rôle | Réponse |
 |---|---|---|---|
-| POST | `/projects/{id}/live/join` `{ view? }` | lecteur | `{ doc, seq, revision, epoch, color, participants, locks }` (le document courant : dernière révision + opérations suivantes) |
-| POST | `/projects/{id}/live/heartbeat` `{ since_seq, epoch?, cursor?, view?, selection?, activity? }` | lecteur | `{ seq, revision, epoch, participants, locks, ops, resync }` (`resync` : rejoindre, le document a été remplacé par une restauration ou un enregistrement) ; toutes les ~0,6 s ; plus de 5 par seconde : réponse courte `{ throttled }` |
+| POST | `/projects/{id}/live/join` `{ view? }` | lecteur | `{ doc, seq, revision, epoch, chat_seq, color, participants, locks }` (le document courant : dernière révision + opérations suivantes) |
+| POST | `/projects/{id}/live/heartbeat` `{ since_seq, epoch?, cursor?, view?, selection?, activity? }` | lecteur | `{ seq, revision, epoch, chat_seq, participants, locks, ops, resync }` (`resync` : rejoindre, le document a été remplacé par une restauration ou un enregistrement) ; toutes les ~0,6 s ; plus de 5 par seconde : réponse courte `{ throttled }` |
 | POST | `/projects/{id}/live/ops` `{ ops: [{ id, base_seq, op }] }` | éditeur | `{ results: [{ id, status, seq?, by?, current? }], seq }` ; 50 opérations au plus par requête, 300 par membre et par 10 s (au-delà : `429 RATE_LIMITED` avec `Retry-After`, rien n'est appliqué ; le jeu garde ses opérations et les renvoie) |
 | POST | `/projects/{id}/live/leave` | lecteur | quitte la salle |
 
@@ -1000,6 +1000,26 @@ les opérations des autres au niveau et à tout l'historique d'annulation (« An
 ses propres modifications), garde ses opérations non confirmées dans `online/live_<projet>.json`
 (rien n'est perdu hors ligne) et montre chaque refus avec le choix de réappliquer sa modification
 ou de garder la version du projet.
+
+**Fiche d'un projet pour ses membres** : `counts` (`members`, `versions`, et pour les
+administrateurs `requests` en attente et `invites` actives) et `stamp`, une empreinte qui change dès
+que quelque chose change dans le projet (révision, opérations, membres, rôles, demandes,
+invitations, versions, activité). Le jeu la relit toutes les 4 s et ne recharge l'onglet affiché
+que si elle a changé ; la liste `GET /projects` donne aux administrateurs `pending_requests`.
+Un membre retiré par un administrateur reçoit la notification `project_removed` ; s'il était dans
+l'éditeur en direct, le jeu le ramène au menu principal (sa version du niveau est gardée comme
+niveau indépendant).
+
+### 8.9 septies Discussion du projet (éditeur en direct)
+
+| Méthode | Route | Rôle | Règle |
+|---|---|---|---|
+| GET | `/projects/{id}/messages?after=&before=&limit=` | viewer | messages du plus ancien au plus récent (`after` : les nouveaux depuis un id ; `before` : les précédents ; 50 par défaut, 100 au plus) et `more` |
+| POST | `/projects/{id}/messages` `{ body, reply_to? }` | viewer | 1 à 500 caractères, une ligne ; `reply_to` : un message du même projet (sinon `404 MESSAGE_NOT_FOUND`) ; 30 messages par minute et par joueur ; l'auteur du message auquel on répond reçoit `project_reply` (regroupées tant qu'elles ne sont pas lues) |
+
+Chaque message : `{ id, body, created_at, author: { id, username, avatar }, reply_to: { id, username, excerpt } | null }`.
+Les messages sont gardés avec le projet. La salle du projet donne `chat_seq` (id du dernier
+message) avec `join` et chaque `heartbeat` : le jeu ne relit la discussion que quand il change.
 
 ### 8.9 sexies Historique et versions nommées
 

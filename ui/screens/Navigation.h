@@ -29,6 +29,7 @@ struct PlayOptions {
     bool fromOnline = false;
     /// Automated screenshots: open the pause menu as soon as the level is playing.
     bool openPause = false;
+    float pauseAfter = 0.0f;  // screenshots: open the pause menu after this many seconds of play
     /// Automated screenshots: the active boss uses this attack whenever it can.
     std::string forceBossAttack;
 };

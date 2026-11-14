@@ -1,5 +1,6 @@
 #pragma once
 
+#include "engine/core/Math.h"
 #include "engine/core/Scene.h"
 
 namespace cosmic {
@@ -18,10 +19,15 @@ public:
     bool isOverlay() const override { return true; }
 
 private:
+    void drawMapPanel(const Rect& panel);
+public:
+
+private:
     GameServices& g_;
     GameScene& game_;
     float t_ = 0.0f;
     bool confirmQuit_ = false;
+    float mapPan_ = 0.0f;  // world units the map was scrolled by
 };
 
 }  // namespace cosmic

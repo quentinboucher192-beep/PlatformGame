@@ -1,4 +1,11 @@
 {
+  "2.15.0": [
+    "Éditeur en direct : discussion du projet (bouton Discussion avec compteur de messages non lus), messages gardés avec le projet, « Répondre » à un message ; l'auteur est prévenu.",
+    "PROJETS se met à jour tout seul (membres, rôles, demandes, invitations, révisions) chez l'administrateur comme chez le membre concerné ; compteurs sur Demandes et Invitations.",
+    "Membre retiré pendant l'édition en direct : retour au menu principal avec une notification, sa version du niveau est gardée ; rôle changé : l'éditeur passe aussitôt en lecture seule (ou redevient modifiable).",
+    "Pause : carte des zones déjà explorées, avec les points de passage, la sortie, les pouvoirs laissés aux stations et les objets restés au sol.",
+    "Corrections : changer le rôle d'un membre ne recharge plus la page ; Historique de l'éditeur lisible ; un profil ouvert depuis une liste d'abonnés ne laisse plus l'écran rogné ; textes ajustés à leur place partout."
+  ],
   "2.14.1": [
     "SOCIAL : l'encadré du joueur ne passe plus sur le bouton RETOUR ; il se place sous le menu, quelle que soit la taille de la fenêtre."
   ],

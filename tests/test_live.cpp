@@ -45,6 +45,9 @@ struct Room {
     bool loseNextAnswer = false;  // the operations are applied, the answer never arrives
     bool throttleNext = false;    // 429 once
     bool miraHere = false;        // a third member, present or not
+    std::string myRole = "editor";  // as the room reports it
+    bool opsForbidden = false;    // 403 on operations (role lowered)
+    int64_t chatSeq = 0;
 
     Json accept(const std::string& author, const std::string& id, int base, const Json& op) {
         for (const auto& l : log)
@@ -83,11 +86,12 @@ struct Room {
         auto presence = [&] {
             Json locksJson = Json::object();
             for (const auto& [k, v] : locks) locksJson[k] = v;
-            Json d{{"participants", Json::array({{{"id", "me-0000"}, {"username", "Nova"}, {"color", "#39F0D8"}, {"me", true}},
+            Json d{{"participants", Json::array({{{"id", "me-0000"}, {"username", "Nova"}, {"color", "#39F0D8"}, {"me", true}, {"role", myRole}},
                                                       {{"id", "orion-01"}, {"username", "Orion"}, {"color", "#FFB347"}, {"cursor", {{"x", 40}, {"y", 20}}},
                                                        {"selection", Json::array({"o1"})}, {"activity", "déplace Bloc"}}})},
                    {"locks", locksJson}};
             if (miraHere) d["participants"].push_back({{"id", "mira-02"}, {"username", "Mira"}, {"color", "#B04CFF"}});
+            d["chat_seq"] = chatSeq;
             return d;
         };
         if (path.find("/live/join") != std::string::npos) {
@@ -114,6 +118,12 @@ struct Room {
         }
         if (path.find("/live/ops") != std::string::npos) {
             ++opsRequests;
+            if (opsForbidden) {
+                HttpResponse r;
+                r.status = 403;
+                r.body = R"({"ok":false,"error":{"code":"PROJECT_ROLE","message":"Il faut être éditeur du projet pour le modifier."}})";
+                return r;
+            }
             if (throttleNext) {
                 throttleNext = false;
                 HttpResponse r;
@@ -437,6 +447,45 @@ TEST_CASE("live: arrivals, departures and the others' edits grouped by member") 
         CHECK(ev[0].kind == Kind::Left);
         CHECK(ev[0].name == "Mira");
     }
+    live.leave();
+    svc.shutdown();
+    std::error_code ec;
+    fs::remove_all(dir, ec);
+}
+
+TEST_CASE("live: a lowered role keeps me in the room as a reader; new chat messages are signalled") {
+    auto room = std::make_shared<Room>();
+    room->doc = baseDoc();
+    fs::path dir = liveDir("role");
+    OnlineService svc;
+    svc.init({}, "http://127.0.0.1:9", std::make_unique<RoomTransport>(room), dir);
+    bool logged = false;
+    svc.login("Nova", "pw", false, [&](const ApiResult& r) { logged = r.ok; });
+    for (int i = 0; i < 3000 && !logged; ++i) {
+        svc.update(0.05f);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+    CHECK(logged);
+    LiveSession live(svc, "p", dir / "queue.json");
+    CHECK(spin(svc, live, [&] { return live.state() == LiveSession::State::Live; }));
+    CHECK(live.myRole() == "editor");
+    CHECK(live.chatSeq() == 0);
+    // An administrator lowers my role: my edit is refused, I stay in the room and see it.
+    {
+        std::lock_guard<std::mutex> lock(room->m);
+        room->myRole = "viewer";
+        room->opsForbidden = true;
+        room->chatSeq = 42;
+    }
+    live.submit({Json{{"t", "doc"}, {"k", "name"}, {"v", "Interdit"}}});
+    std::vector<LiveSession::Rejection> rej;
+    CHECK(spin(svc, live, [&] {
+        for (auto& r : live.takeRejections()) rej.push_back(r);
+        return !rej.empty() && live.myRole() == "viewer" && live.chatSeq() == 42;
+    }, 4000));
+    if (!rej.empty()) CHECK(rej[0].status == "forbidden");
+    CHECK(live.state() == LiveSession::State::Live);
+    CHECK(live.pending() == 0u);
     live.leave();
     svc.shutdown();
     std::error_code ec;

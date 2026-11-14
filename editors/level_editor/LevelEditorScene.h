@@ -111,6 +111,13 @@ private:
     /// never create the same id at the same time.
     std::string newObjectId() const;
     void drawPresence(const Rect& area);
+    // Chat of the live project (LevelEditorChat.cpp): kept by the server, answers included.
+    void updateChat();
+    void loadChat(bool older);
+    void sendChat();
+    void drawChatToggle(const Rect& r);
+    void drawChat();
+    int chatUnread() const;
     void drawLiveOverlay(const Rect& viewport);
     void drawConflicts();
     void drawHistory(const Rect& r);
@@ -196,6 +203,14 @@ private:
         float time = 0.0f;
     };
     std::vector<LiveFeedEntry> liveFeed_;
+    bool chatOpen_ = false, chatLoaded_ = false, chatLoading_ = false, chatSending_ = false, chatMore_ = false, chatStick_ = true;
+    Rect chatRect_;                       // the chat panel this frame (empty when closed)
+    Json chatMessages_ = Json::array();   // oldest first
+    int64_t chatLastId_ = 0, chatSeenId_ = 0;
+    std::string chatDraft_, chatError_;
+    Json chatReplyTo_;                    // the message being answered (null: none)
+    bool kicked_ = false;                 // no longer a member: back to the main menu
+    std::shared_ptr<int> life_ = std::make_shared<int>(0);  // answers arriving after the editor closed are dropped
     std::unique_ptr<class OnlineUi> liveUi_;
     std::vector<LevelObject> clipboard_;
     LeftTab leftTab_ = LeftTab::Explorer;

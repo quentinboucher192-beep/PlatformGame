@@ -491,15 +491,13 @@ private:
         const float rh = ui.s(58), gap = ui.s(6);
         ui.beginScroll("players", area, list.size() * (rh + gap));
         float cy = area.y - ui.scrollOffset();
+        std::string chosen;  // opened once the list is closed (never in the middle of it)
         for (const auto& pl : list) {
             Rect row{area.x, cy, area.w - ui.s(14), rh};
             cy += rh + gap;
             if (row.bottom() < area.y || row.y > area.bottom()) continue;
             std::string id = jstr(pl, "id");
-            if (ui.button("pl/" + id, row, "")) {
-                openOther(id);
-                return;
-            }
+            if (ui.button("pl/" + id, row, "")) chosen = id;
             ui_.drawAvatar(jstr(pl, "avatar", "avatar_01"), id, {row.x + ui.s(10), row.y + ui.s(9), ui.s(40), ui.s(40)});
             std::string name = jstr(pl, "username");
             int nf = jget<int>(pl, "followers", 0);
@@ -517,6 +515,7 @@ private:
                      FontFace::Body, VAlign::Middle);
         }
         ui.endScroll();
+        if (!chosen.empty()) openOther(chosen);
     }
 
     void drawConfirmBlock() {

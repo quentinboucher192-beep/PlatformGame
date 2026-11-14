@@ -118,6 +118,24 @@ void GameScene::handleEvent(const SDL_Event& e) {
     }
 }
 
+void GameScene::renderMapView(const Rect& dst, const Rect& win) {
+    if (!world_ || win.w <= 0.0f || win.h <= 0.0f) return;
+    Renderer& r = g_.app.renderer();
+    WorldView v;
+    v.scale = std::min(dst.w / win.w, dst.h / win.h);
+    v.screenW = static_cast<int>(dst.w);
+    v.screenH = static_cast<int>(dst.h);
+    v.topLeft = {win.x - dst.x / v.scale, win.y - dst.y / v.scale};
+    v.origin = dst.pos();
+    RenderOptions opt;
+    opt.lighting = false;
+    opt.mapView = true;
+    r.pushClip(dst);
+    renderer_.render(r, g_.app.resources(), *world_, v, 1.0f, opt);
+    r.setView(WorldView{});
+    r.popClip();
+}
+
 void GameScene::restart() {
     PlayOptions o = opt_;
     if (!o.level && !opt_.editorTest) o.level.reset();
@@ -295,6 +313,9 @@ void GameScene::update(float dt) {
     }
     if (!world_) return;
     world_->update(dt);
+    // The pause map: what the camera has shown (display only, outside the simulation).
+    if (explored_.cols == 0) explored_.reset(world_->level().bounds);
+    explored_.mark(world_->camera().visibleArea(1920, 1080));
     if (trackFuture_.valid() && trackFuture_.wait_for(std::chrono::seconds(0)) == std::future_status::ready) hud_.setProgressTrack(trackFuture_.get());
     hud_.update(*world_, dt);
     InputManager& in = g_.app.input();
@@ -307,7 +328,8 @@ void GameScene::update(float dt) {
         if (Enemy* b = world_->activeBoss(); b && b->alive() && (b->state() == EnemyState::Chase || b->state() == EnemyState::Alert ||
                                                                  b->state() == EnemyState::Idle || b->state() == EnemyState::Patrol))
             b->forceAttack(*world_, opt_.forceBossAttack);
-    bool autoPause = opt_.openPause && world_->state() == WorldState::Playing;
+    bool autoPause = opt_.openPause && world_->state() == WorldState::Playing &&
+                     (opt_.pauseAfter <= 0.0f || world_->timer().elapsed() >= opt_.pauseAfter);
     if (autoPause) opt_.openPause = false;
     if (!ended_ && (in.menuPressed(Action::Pause) || autoPause)) {
         if (world_->state() == WorldState::Playing || world_->state() == WorldState::Intro) {

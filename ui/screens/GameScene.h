@@ -13,6 +13,7 @@
 #include "game/online/LevelFingerprint.h"
 #include "game/online/Replay.h"
 #include "game/records/Records.h"
+#include "ui/screens/PauseMap.h"
 #include "ui/screens/Navigation.h"
 
 namespace cosmic {
@@ -43,8 +44,13 @@ public:
     void answerPowerOffer(uint8_t choice) { pendingChoice_ = choice; }
     const std::string& levelId() const { return levelId_; }
     GameWorld* world() { return world_.get(); }
+    /// What the player has seen of the level so far (the pause menu's map).
+    const ExploredMap& explored() const { return explored_; }
+    /// The level as it is, drawn small in `dst` (the pause map): `win` is the part of the world shown.
+    void renderMapView(const Rect& dst, const Rect& win);
 
 private:
+    ExploredMap explored_;
     void finishRun(bool completed);
     std::string nextLevelId() const;
 

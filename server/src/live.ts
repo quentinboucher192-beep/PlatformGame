@@ -146,6 +146,8 @@ export class ProjectRoom extends DurableObject<Bindings> {
     private snapshotting = false;
     /** Changes when the document is replaced from outside (save, restore): members rejoin. */
     private epoch = 0;
+    /** Id of the project's latest chat message: members fetch new ones when it moves. */
+    private chatSeq = 0;
     /**
      * Batches of operations (and flushes) run one after the other, each until its operations
      * are written to D1: the order of the buffer is the order of the numbers, and nothing is
@@ -172,6 +174,11 @@ export class ProjectRoom extends DurableObject<Bindings> {
                     return Response.json(await this.serial(() => this.ops(request)));
                 case "/leave":
                     return Response.json(await this.leave(request));
+                case "/chat": {
+                    const id = Number(((await request.json()) as { id?: unknown }).id);
+                    if (Number.isInteger(id) && id > this.chatSeq) this.chatSeq = id;
+                    return Response.json({ chat_seq: this.chatSeq });
+                }
                 case "/reload":
                     this.doc = null;
                     this.epoch += 1;
@@ -257,6 +264,8 @@ export class ProjectRoom extends DurableObject<Bindings> {
             seq = row.seq;
         }
         this.recent = this.recent.slice(-BUFFER);
+        const chat = await db.prepare("SELECT COALESCE(MAX(id), 0) AS m FROM project_messages WHERE project_id = ?1").bind(this.projectId).first<{ m: number }>();
+        this.chatSeq = Math.max(this.chatSeq, chat?.m ?? 0);
         this.doc = doc;
         this.revision = p.revision;
         this.snapshotSeq = snapshotSeq;
@@ -362,6 +371,7 @@ export class ProjectRoom extends DurableObject<Bindings> {
             seq: this.seq,
             revision: this.revision,
             epoch: this.epoch,
+            chat_seq: this.chatSeq,
             color: p.color,
             participants: this.presence(me.id),
             locks: this.locks(),
@@ -383,7 +393,16 @@ export class ProjectRoom extends DurableObject<Bindings> {
         const { ops, resync } = await this.opsSince(since);
         // The document was replaced since this member joined: rejoin to get it.
         const replaced = typeof body.epoch === "number" && body.epoch !== this.epoch;
-        return { seq: this.seq, revision: this.revision, epoch: this.epoch, participants: this.presence(me.id), locks: this.locks(), ops, resync: resync || replaced };
+        return {
+            seq: this.seq,
+            revision: this.revision,
+            epoch: this.epoch,
+            chat_seq: this.chatSeq,
+            participants: this.presence(me.id),
+            locks: this.locks(),
+            ops,
+            resync: resync || replaced,
+        };
     }
 
     private async leave(request: Request) {
@@ -568,6 +587,12 @@ export async function liveRoute(ctx: Ctx, action: (typeof LIVE_ACTIONS)[number])
     }
     if (!res.ok || data.error) throw new Error("live room: " + String(data.error ?? res.status));
     return json(ctx, data);
+}
+
+/** Tells the room of a project that a chat message was posted (its id). */
+export async function chatRoom(env: Bindings, projectId: string, id: number): Promise<void> {
+    const stub = env.PROJECT_ROOMS.get(env.PROJECT_ROOMS.idFromName(projectId));
+    await stub.fetch("https://room/chat", { method: "POST", headers: { "x-project-id": projectId, "content-type": "application/json" }, body: JSON.stringify({ id }) });
 }
 
 /** Asks the room to write its pending live edits as a revision (no-op without a room). */

@@ -19,6 +19,8 @@ export const NOTIFICATION_KINDS = [
     "project_role",
     "project_version",
     "project_mention",
+    "project_reply", //     an answer to my message in a project's chat
+    "project_removed", //   an administrator removed me from a project
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
@@ -26,7 +28,7 @@ export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 const GROUPS: Record<string, NotificationKind[]> = {
     creators: ["new_level", "level_update", "new_follower"],
     comments: ["comment_reply", "comment_reaction", "level_comment"],
-    projects: ["project_invite", "project_role", "project_version", "project_mention"],
+    projects: ["project_invite", "project_role", "project_version", "project_mention", "project_reply", "project_removed"],
 };
 const MAX_PER_PLAYER = 500;
 
@@ -135,6 +137,10 @@ function sentence(n: NotificationRow, d: Record<string, string>): string {
             return `Nouvelle version de ${d.project ?? ""} : ${d.version ?? ""}`;
         case "project_mention":
             return `${who} vous a mentionné dans ${d.project ?? ""}`;
+        case "project_reply":
+            return n.count > 1 ? `${n.count} réponses à vos messages dans ${d.project ?? ""}` : `${who} a répondu à votre message dans ${d.project ?? ""}`;
+        case "project_removed":
+            return `Vous avez été retiré du projet ${d.project ?? ""}`;
     }
 }
 

@@ -35,6 +35,7 @@ std::vector<std::string> splitIds(const std::string& s) {
 void LevelEditorScene::drawMinimap(const Rect& vp) {
     minimapRect_ = {};
     if (!minimapOn_ || level_.bounds.w <= 0 || level_.bounds.h <= 0) return;
+    if (chatRect_.w > 0.0f) return;  // the chat panel takes that side of the view meanwhile
     UIContext& ui = g_.ui;
     Renderer& r = ui.r();
     const Rect& b = level_.bounds;
@@ -128,24 +129,42 @@ void LevelEditorScene::drawReadOnlyBanner(const Rect& vp) {
 
 void LevelEditorScene::drawHistory(const Rect& r) {
     UIContext& ui = g_.ui;
-    ui.labelWrapped("Chaque modification est gardée : cliquez sur une étape pour y revenir (Ctrl+Z / Ctrl+Y pour avancer pas à pas).",
-                    {r.x, r.y}, r.w, 15, ui.theme().textDim);
-    Rect list{r.x, r.y + ui.s(54), r.w, r.h - ui.s(54)};
-    float rh = ui.s(40), gap = ui.s(4);
+    // The explanation takes the height it needs; the steps start below it.
+    Vec2 hs = ui.labelWrapped("Cliquez sur une étape pour y revenir. Ctrl+Z / Ctrl+Y : un pas en arrière / en avant.", {r.x, r.y}, r.w, 16,
+                              ui.theme().textDim);
+    const float top = r.y + hs.y + ui.s(10);
+    Rect list{r.x, top, r.w, r.bottom() - top};
+    const float rh = ui.s(50), gap = ui.s(5);
     size_t n = history_.size();
     ui.beginScroll("history", list, static_cast<float>(n) * (rh + gap));
     float y = list.y - ui.scrollOffset();
     for (size_t i = 0; i < n; ++i) {
         size_t idx = n - 1 - i;  // newest first
-        if (y > list.y - rh && y < list.bottom()) {
-            bool cur = idx == history_.index();
-            std::string label = std::format("{}. {}", idx + 1, history_.label(idx));
-            Color c = idx > history_.index() ? ui.theme().textDim : Color{};
-            if (ui.listItem("h" + std::to_string(idx), {list.x, y, list.w - ui.s(12), rh}, label, cur, idx > history_.index() ? "annulé" : "", c) &&
-                !cur && !readOnly_)
-                applyJson(history_.jump(idx));
-        }
+        Rect row{list.x, y, list.w - ui.s(12), rh};
         y += rh + gap;
+        if (row.bottom() < list.y || row.y > list.bottom()) continue;
+        const bool cur = idx == history_.index(), undone = idx > history_.index();
+        UIContext::ButtonStyle st;
+        st.selected = cur;
+        st.small = true;
+        if (ui.button("h" + std::to_string(idx), row, "", st) && !cur && !readOnly_) applyJson(history_.jump(idx));
+        // Number, then what was done, then its state; each in its own place.
+        std::string num = std::to_string(idx + 1);
+        float nw = std::max(ui.s(30), ui.text().measure(num, FontFace::Bold, ui.s(15)).x + ui.s(14));
+        Rect badge{row.x + ui.s(8), row.center().y - ui.s(13), nw, ui.s(26)};
+        Color tone = cur ? ui.theme().accent : undone ? ui.theme().textDim : ui.theme().text;
+        ui.r().fillRoundedRect(badge, ui.s(13), tone.withAlphaF(cur ? 0.25f : 0.12f));
+        ui.label(num, badge.center(), 15, tone, Align::Center, FontFace::Bold, VAlign::Middle);
+        std::string tag = cur ? "actuelle" : undone ? "annulée" : "";
+        float tw = tag.empty() ? 0.0f : ui.text().measure(tag, FontFace::Body, ui.s(14)).x + ui.s(10);
+        if (!tag.empty())
+            ui.label(tag, {row.right() - ui.s(8), row.center().y}, 14, cur ? ui.theme().accent : ui.theme().textDim, Align::Right, FontFace::Body,
+                     VAlign::Middle);
+        float lx = badge.right() + ui.s(8), room = row.right() - ui.s(8) - tw - lx;
+        std::string text = history_.label(idx);
+        float fs = ui.fitFont(text, FontFace::Body, 18, room, 0.8f);
+        ui.label(ui.elide(text, FontFace::Body, fs, room), {lx, row.center().y}, fs, undone ? ui.theme().textDim : ui.theme().text, Align::Left,
+                 FontFace::Body, VAlign::Middle);
     }
     ui.endScroll();
 }

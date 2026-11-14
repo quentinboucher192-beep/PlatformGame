@@ -107,6 +107,30 @@ void LevelEditorScene::onEnter() {
         libraryCategory_ = 7;
         g_.onlineOpen.clear();
     }
+    if (o.rfind("add:", 0) == 0 && !readOnly_) {
+        // "add:<type>,<type>…": places those objects like the library does, then shows the
+        // history (automated screenshots).
+        std::string list = o.substr(4);
+        float x = cam_.center.x;
+        for (size_t at = 0; at <= list.size();) {
+            size_t end = list.find(',', at);
+            std::string type = list.substr(at, end == std::string::npos ? std::string::npos : end - at);
+            at = end == std::string::npos ? list.size() + 1 : end + 1;
+            if (const ObjectTypeInfo* t = ObjectTypes::find(type)) {
+                PaletteEntry e;
+                e.type = type;
+                e.label = t->name;
+                createObject(e, {x, cam_.center.y, t->defaultSize.x, t->defaultSize.y});
+                x += t->defaultSize.x + 16.0f;
+            }
+        }
+        leftTab_ = LeftTab::History;
+        g_.onlineOpen.clear();
+    }
+    if (o == "chat" && live_) {  // the live editor with its chat open (screenshots)
+        chatOpen_ = true;
+        g_.onlineOpen.clear();
+    }
     if (o == "check") leftTab_ = LeftTab::Check;
     if (o == "history") leftTab_ = LeftTab::History;
     if (o == "objects") leftTab_ = LeftTab::Explorer;
@@ -122,7 +146,7 @@ void LevelEditorScene::onEnter() {
 }
 
 void LevelEditorScene::onExit() {
-    if (live_) {
+    if (live_ && !kicked_) {
         // The local copy keeps what was edited together, linked to the project's revision.
         live_->leave();
         if (liveLoaded_) {
@@ -624,12 +648,20 @@ void LevelEditorScene::render(float alpha) {
 
     bool modal = modal_ != Modal::None || !conflicts_.empty();
     bool menu = menu_ != Menu::None;
+    // The chat of a live project: on the right of the view, over its whole height (the map of
+    // the level steps aside meanwhile; clicks there are the chat's).
+    chatRect_ = {};
+    if (live_ && chatOpen_) {
+        float cw = std::min(ui.s(420), viewport_.w * 0.45f);
+        chatRect_ = {viewport_.right() - ui.s(10) - cw, viewport_.y + ui.s(10), cw, viewport_.h - ui.s(20)};
+    }
     ui.inputEnabled = !modal && !menu;
     drawViewport(viewport_, alpha);
     if (!modal && !menu) {
         handleViewport(viewport_);
         handleShortcuts();
     }
+    drawChat();
     drawCanvasHeader({center.x, center.y, center.w, headerH});
     if (tableH > 0.0f) drawSelectionTable({center.x, viewport_.bottom(), center.w, tableH});
     drawToolbar({0, 0, W, top});
@@ -654,9 +686,13 @@ void LevelEditorScene::render(float alpha) {
         } else {
             // Nor over the map of the level or the live notifications: just above them.
             for (int pass = 0; pass < 2; ++pass) {
-                if (minimapOn_ && bg.intersects(minimapRect_)) bg.y = minimapRect_.y - ui.s(10) - bg.h;
+                // The map and its caption « Carte (M) » above it.
+                Rect map{minimapRect_.x, minimapRect_.y - ui.s(20), minimapRect_.w, minimapRect_.h + ui.s(20)};
+                if (minimapOn_ && minimapRect_.w > 0.0f && bg.intersects(map)) bg.y = map.y - ui.s(8) - bg.h;
                 if (liveFeedRect_.w > 0.0f && bg.intersects(liveFeedRect_)) bg.y = liveFeedRect_.y - ui.s(10) - bg.h;
             }
+            // Nor over the chat: in the part of the view on its left.
+            if (chatRect_.w > 0.0f && bg.intersects(chatRect_)) bg.x = std::max(viewport_.x + ui.s(10), chatRect_.x - ui.s(10) - bg.w);
         }
         r.fillRoundedRect(bg, ui.s(10), {6, 10, 24, 225});
         ui.text().draw(message_, bg.center(), st);

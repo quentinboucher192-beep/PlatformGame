@@ -416,7 +416,8 @@ int main(int argc, char** argv) {
                 opt.spawn = Vec2{static_cast<float>(std::atof(sp.substr(0, c).c_str())),
                                  static_cast<float>(std::atof(sp.substr(c + 1).c_str()))};
         }
-        opt.openPause = has("--pause");
+        opt.openPause = has("--pause") || has("--pause-after");
+        opt.pauseAfter = static_cast<float>(std::atof(value("--pause-after").c_str()));
         opt.forceBossAttack = value("--boss-attack");
         app.pushScene(makeGameScene(game, level, opt));
     } else if (has("--editor")) {

@@ -249,7 +249,7 @@ export async function patchMe(ctx: Ctx): Promise<Response> {
 export async function exportMe(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
     const id = auth.player.id;
-    const [sessions, records, friends, replays, auditRows, conversations, messages, blocks, cLevels, cRecords, cRatings, favs, comments, reactions, follows, notes, playtimeRows] = await ctx.env.DB.batch([
+    const [sessions, records, friends, replays, auditRows, conversations, messages, blocks, cLevels, cRecords, cRatings, favs, comments, reactions, follows, notes, playtimeRows, projectRows, projectMessages] = await ctx.env.DB.batch([
         ctx.env.DB.prepare("SELECT id, created_at, last_used_at, expires_at, refresh_expires_at, revoked_at, client_info FROM player_sessions WHERE player_id = ?1").bind(id),
         ctx.env.DB.prepare("SELECT * FROM records WHERE player_id = ?1 ORDER BY created_at").bind(id),
         ctx.env.DB.prepare("SELECT player_id, friend_id, status, created_at FROM player_friends WHERE player_id = ?1 OR friend_id = ?1").bind(id),
@@ -272,6 +272,10 @@ export async function exportMe(ctx: Ctx): Promise<Response> {
         ctx.env.DB.prepare("SELECT follower_id, creator_id, notify, created_at FROM player_follows WHERE follower_id = ?1 OR creator_id = ?1").bind(id),
         ctx.env.DB.prepare("SELECT kind, level_id, data, count, created_at, read_at FROM notifications WHERE player_id = ?1 ORDER BY created_at").bind(id),
         ctx.env.DB.prepare("SELECT level_key, seconds, updated_at FROM player_playtime WHERE player_id = ?1").bind(id),
+        ctx.env.DB.prepare(
+            "SELECT m.project_id, p.name AS project, m.role, m.joined_at FROM project_members m JOIN projects p ON p.id = m.project_id WHERE m.player_id = ?1",
+        ).bind(id),
+        ctx.env.DB.prepare("SELECT id, project_id, body, reply_to, created_at FROM project_messages WHERE author_id = ?1 ORDER BY id").bind(id),
     ]);
     await audit(ctx, id, "data_export");
     return json(ctx, {
@@ -294,6 +298,8 @@ export async function exportMe(ctx: Ctx): Promise<Response> {
         follows: follows?.results ?? [],
         notifications: notes?.results ?? [],
         playtime: playtimeRows?.results ?? [],
+        projects: projectRows?.results ?? [],
+        project_messages: projectMessages?.results ?? [],
         notes: "Le mot de passe n'est stocké que sous forme d'empreinte PBKDF2 et n'est pas exportable. Les adresses IP ne sont jamais stockées en clair.",
     });
 }

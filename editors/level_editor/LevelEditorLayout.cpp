@@ -96,7 +96,13 @@ void LevelEditorScene::drawToolbar(const Rect& r) {
     // Right: test (with its menu), help; between them, live editing presence.
     float presenceX = x + ui.s(10);
     x = r.right() - ui.s(14) - ui.s(40) - ui.s(6) - ui.s(36) - ui.s(2) - ui.s(128);
-    if (live_) drawPresence({presenceX, r.y + ui.s(4), x - presenceX - ui.s(16), r.h - ui.s(8)});
+    if (live_) {
+        // The chat button (with its unread counter), then the members.
+        float cw = std::min(ui.s(160), (x - presenceX - ui.s(16)) * 0.4f);
+        drawChatToggle({presenceX, y, cw, h});
+        presenceX += cw + ui.s(12);
+        drawPresence({presenceX, r.y + ui.s(4), x - presenceX - ui.s(16), r.h - ui.s(8)});
+    }
     {
         UIContext::ButtonStyle st;
         st.small = true;

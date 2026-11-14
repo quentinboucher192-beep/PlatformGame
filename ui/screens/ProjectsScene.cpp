@@ -157,6 +157,21 @@ public:
         bg_.update(dt);
         requireAccount();
         if (searchDirty_ > 0.0f && (searchDirty_ -= dt) <= 0.0f) loadList();
+        sendPendingRoles();
+        // What changes elsewhere (members, requests, invitations, revisions…) shows up without
+        // switching tab: the project's stamp is checked every few seconds, the list less often.
+        if (g_.app.topScene() == this && g_.online.loggedIn()) {
+            pollTimer_ += dt;
+            listTimer_ += dt;
+            if (pollTimer_ >= 4.0f && !selected_.empty() && detail_.is_object() && !polling_) {
+                pollTimer_ = 0.0f;
+                poll();
+            }
+            if (listTimer_ >= 15.0f) {
+                listTimer_ = 0.0f;
+                loadList();
+            }
+        }
         // Automated screenshots of the history: "project-rev:N[:M]" selects revision N (and
         // compares it with M), "project-name:N" / "project-restore:N" open the dialogs,
         // "project-vcmp" compares the oldest named version with the latest revision.
@@ -199,11 +214,15 @@ public:
         // "project-pull" run once the project is loaded.
         const std::string& o = g_.onlineOpen;
         if ((o == "project-download" || o == "project-send" || o == "project-pull" || o == "project-live" || o.rfind("project-live-edit:", 0) == 0 ||
-             o.rfind("project-live-copy:", 0) == 0) &&
+             o.rfind("project-live-copy:", 0) == 0 || o == "project-live-chat") &&
             detail_.is_object() && !working_ && member()) {
             std::string what = o;
             g_.onlineOpen.clear();
             if (what == "project-live") goLive();
+            else if (what == "project-live-chat") {
+                g_.onlineOpen = "chat";  // read by the live editor
+                goLive();
+            }
             else if (what.rfind("project-live-copy:", 0) == 0) {
                 g_.onlineOpen = "live-copy:" + what.substr(18);  // read by the live editor
                 goLive();
@@ -279,6 +298,10 @@ private:
                 if (!r.ok) return say(r.message, true);
                 list_ = r.data.value(listTab_ == 1 ? "invitations" : "projects", Json::array());
                 if (listTab_ == 1) invitationCount_ = static_cast<int>(list_.size());
+                if (listTab_ == 0) {
+                    requestTotal_ = 0;
+                    for (const auto& pr : list_) requestTotal_ += jget<int>(pr, "pending_requests", 0);
+                }
             }),
             false);
         if (listTab_ != 1)  // the counter of the "Invitations" tab
@@ -289,11 +312,17 @@ private:
     }
 
     void open(const std::string& id) {
+        // Refreshing the project on screen keeps it displayed until the new data arrives
+        // (no blank page, no "Chargement…" after each action).
+        const bool refresh = id == selected_ && detail_.is_object();
         selected_ = id;
-        detail_ = Json();
-        tabData_ = Json();
+        if (!refresh) {
+            detail_ = Json();
+            tabData_ = Json();
+            pendingRoles_.clear();
+        }
         createdKey_.clear();
-        g_.online.get("/api/v1/projects/" + id, OnlineService::guard(life_, [this, id](const ApiResult& r) {
+        g_.online.get("/api/v1/projects/" + id, OnlineService::guard(life_, [this, id, refresh](const ApiResult& r) {
                           if (id != selected_) return;
                           if (!r.ok) {
                               say(r.message, true);
@@ -304,13 +333,14 @@ private:
                           for (int i = 0; i < 3; ++i)
                               if (jstr(detail_, "join_role") == kJoinRoles[i]) requestRole_ = i;
                           if (!manager() && detailTab_ >= 2 && detailTab_ <= 3) detailTab_ = 0;
-                          loadTab();
+                          loadTab(refresh);
                       }),
                       false);
     }
 
-    void loadTab() {
-        tabData_ = Json();
+    /// `keep`: the current tab's data stays on screen until the new data arrives.
+    void loadTab(bool keep = false) {
+        if (!keep) tabData_ = Json();
         if (!member()) return;
         std::string base = "/api/v1/projects/" + selected_;
         std::string path = detailTab_ == 1 ? base + "/members" : detailTab_ == 2 ? base + "/invites" : detailTab_ == 3 ? base + "/requests"
@@ -342,6 +372,30 @@ private:
         if (revAuthor_ > 0 && revAuthor_ <= static_cast<int>(revAuthors_.size())) f += "&author=" + revAuthors_[static_cast<size_t>(revAuthor_ - 1)].first;
         if (!revQuery_.empty()) f += "&q=" + urlEncode(revQuery_);
         return f;
+    }
+
+    /// Checks whether the project on screen changed; if so, what is shown is refreshed in place.
+    void poll() {
+        polling_ = true;
+        std::string id = selected_;
+        g_.online.get("/api/v1/projects/" + id, OnlineService::guard(life_, [this, id](const ApiResult& r) {
+                          polling_ = false;
+                          if (id != selected_ || !r.ok) return;  // gone, or offline: what is shown stays
+                          Json fresh = r.data.value("project", Json::object());
+                          bool changed = jstr(fresh, "stamp") != jstr(detail_, "stamp");
+                          detail_ = std::move(fresh);
+                          if (!member()) {  // removed from the project meanwhile
+                              tabData_ = Json();
+                              loadList();
+                              return;
+                          }
+                          if (!manager() && detailTab_ >= 2 && detailTab_ <= 3) detailTab_ = 0;
+                          if (changed) {
+                              loadTab(true);
+                              loadList();
+                          }
+                      }),
+                      false);
     }
 
     std::string role() const { return detail_.is_object() ? jstr(detail_, "my_role") : std::string{}; }
@@ -497,8 +551,8 @@ private:
         ui.pushId("projects/list");
         float x = zoneL_.x + ui.s(12), w = zoneL_.w - ui.s(24), y = zoneL_.y + ui.s(12);
         int tab = listTab_;
-        ui.tabs("tabs", {x, y, w, ui.s(40)}, {"Mes projets", "Invitations" + (invitationCount_ > 0 ? " (" + std::to_string(invitationCount_) + ")" : std::string()), "Découvrir"},
-                tab);
+        // Counters: requests waiting in the projects I manage, invitations waiting for me.
+        ui.tabs("tabs", {x, y, w, ui.s(40)}, {"Mes projets", "Invitations", "Découvrir"}, tab, {requestTotal_, invitationCount_, 0});
         if (tab != listTab_) {
             listTab_ = tab;
             list_ = Json::array();
@@ -570,10 +624,15 @@ private:
         std::string r = jstr(p, "my_role");
         std::string badge = r.empty() ? visibilityName(jstr(p, "visibility")) : roleName(r);
         float bw = chipWidth(badge);
+        // Requests waiting for my answer (managers only), before the role.
+        int waiting = jget<int>(p, "pending_requests", 0);
+        std::string req = waiting > 0 ? std::to_string(waiting) + (waiting > 1 ? " demandes" : " demande") : std::string();
+        float rw = req.empty() ? 0.0f : chipWidth(req) + ui.s(6);
         std::string name = jstr(p, "name");
-        ui.label(name, {x, row.y + ui.s(24)}, ui.fitFont(name, FontFace::Bold, 19, room - bw - ui.s(12)), ui.theme().text, Align::Left, FontFace::Bold,
-                 VAlign::Middle);
+        ui.label(name, {x, row.y + ui.s(24)}, ui.fitFont(name, FontFace::Bold, 19, room - bw - rw - ui.s(12)), ui.theme().text, Align::Left,
+                 FontFace::Bold, VAlign::Middle);
         chip(badge, {row.right() - ui.s(14) - bw, row.y + ui.s(24)}, r.empty() ? ui.theme().warm : ui.theme().accent);
+        if (!req.empty()) chip(req, {row.right() - ui.s(14) - bw - rw, row.y + ui.s(24)}, ui.theme().danger);
         const Json& o = p.value("owner", Json::object());
         int rev = jget<int>(p, "revision", 0), members = jget<int>(p, "member_count", 1);
         std::string sub = "par " + jstr(o, "username") + "  ·  " + std::to_string(members) + (members > 1 ? " membres" : " membre") + "  ·  " +
@@ -667,7 +726,9 @@ private:
         }
         std::vector<std::string> tabs = {"Projet", "Membres", "Invitations", "Demandes", "Activité", "Révisions", "Versions"};
         int tab = detailTab_;
-        ui.tabs("tabs", {x, y, w, ui.s(40)}, tabs, tab);
+        // Requests waiting for an answer (red), active invitations (plain count).
+        const Json& counts = detail_.contains("counts") && detail_["counts"].is_object() ? detail_["counts"] : Json::object();
+        ui.tabs("tabs", {x, y, w, ui.s(40)}, tabs, tab, {0, 0, -jget<int>(counts, "invites", 0), jget<int>(counts, "requests", 0), 0, 0, 0});
         if (tab != detailTab_) {
             if ((tab == 2 || tab == 3) && !manager()) {
                 say("Réservé aux administrateurs du projet.", true);
@@ -881,11 +942,13 @@ private:
                 if (my == "owner") opts.push_back("Administrateur");
                 int cur = std::max(0, roleRank(r) - 1);
                 int sel = std::min(cur, static_cast<int>(opts.size()) - 1);
+                auto pending = pendingRoles_.find(pid);
+                if (pending != pendingRoles_.end()) sel = pending->second.role;
                 int before = sel;
                 ui.cycle("role" + pid, {bx, row.y + ui.s(10), ui.s(190), ui.s(40)}, "", sel, opts);
-                if (sel != before)
-                    g_.online.send("PATCH", "/api/v1/projects/" + selected_ + "/members/" + pid, {{"role", kRoles[sel]}},
-                                   OnlineService::guard(life_, [this](const ApiResult& r) { done(r, "Rôle modifié."); }));
+                // Shown at once; sent once the choice settles (cycling Éditeur → Lecteur sends
+                // one change, not two).
+                if (sel != before) pendingRoles_[pid] = {sel, ui.time(), jstr(pl, "username"), sel == cur};
                 UIContext::ButtonStyle d;
                 d.small = true;
                 d.danger = true;
@@ -909,6 +972,35 @@ private:
             }
         }
         ui.endScroll();
+    }
+
+    /// Sends the role changes chosen in the members tab, once the choice has settled; only
+    /// that member's line is updated (the page is not reloaded).
+    void sendPendingRoles() {
+        const float now = g_.ui.time();
+        for (auto& [pid, p] : pendingRoles_) {
+            if (p.sending || now - p.chosenAt < 0.7f) continue;
+            if (p.unchanged) {  // back to the role the member already has
+                p.done = true;
+                continue;
+            }
+            p.sending = true;
+            int role = p.role;
+            std::string id = pid, name = p.name, project = selected_;
+            g_.online.send("PATCH", "/api/v1/projects/" + project + "/members/" + id, {{"role", kRoles[role]}},
+                           OnlineService::guard(life_, [this, id, name, role, project](const ApiResult& r) {
+                               auto it = pendingRoles_.find(id);
+                               bool newer = it != pendingRoles_.end() && it->second.role != role;  // changed again meanwhile
+                               if (it != pendingRoles_.end() && !newer) pendingRoles_.erase(it);
+                               else if (newer) it->second.sending = false;
+                               if (!r.ok) return say(r.message, true);
+                               if (project == selected_ && tabData_.is_object() && tabData_.contains("members"))
+                                   for (auto& m : tabData_["members"])
+                                       if (jstr(m.value("player", Json::object()), "id") == id) m["role"] = kRoles[role];
+                               say("Rôle de " + name + " : " + roleWord(kRoles[role]) + ".", false);
+                           }));
+        }
+        for (auto it = pendingRoles_.begin(); it != pendingRoles_.end();) it = it->second.done ? pendingRoles_.erase(it) : std::next(it);
     }
 
     void drawInvites(Rect a) {
@@ -1548,7 +1640,9 @@ private:
     Rect header_, zoneA_, zoneL_, zoneD_;
     ProjectLinks links_;
     // List.
-    int listTab_ = 0, listGen_ = 0, invitationCount_ = 0;
+    int listTab_ = 0, listGen_ = 0, invitationCount_ = 0, requestTotal_ = 0;
+    float pollTimer_ = 0.0f, listTimer_ = 0.0f;
+    bool polling_ = false;
     Json list_ = Json::array();
     bool listBusy_ = false, listLoaded_ = false;
     std::string key_, query_;
@@ -1566,6 +1660,13 @@ private:
     int newVisibility_ = 0, newLevel_ = 0;
     std::vector<const LevelEntry*> myLevels_;
     std::string confirm_, confirmTarget_, confirmName_;
+    struct PendingRole {
+        int role = 0;
+        float chosenAt = 0.0f;
+        std::string name;
+        bool unchanged = false, sending = false, done = false;
+    };
+    std::map<std::string, PendingRole> pendingRoles_;  // member id -> role chosen, not sent yet
     // History (revisions, comparison, named versions).
     int selectedRev_ = 0, compareTo_ = 1, revAuthor_ = 0;
     float revSearchT_ = 0.0f;

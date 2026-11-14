@@ -63,6 +63,41 @@ void LevelEditorScene::updateLive(float dt) {
     live_->setActivity(activity);
     live_->update(dt);
 
+    // No longer a member (removed, project deleted): back to the main menu, told why; what I
+    // had in the editor is kept as a level of my own.
+    if (live_->state() == LiveSession::State::Failed && !kicked_) {
+        kicked_ = true;
+        LevelData mine = level_;
+        mine.id = level_.id + "_ma_version";
+        mine.name = level_.name + " (ma version)";
+        bool kept = liveLoaded_ && g_.content.saveUserLevel(mine);
+        std::error_code ec;
+        fs::remove(Paths::userDir() / "online" / ("live_" + liveProject_ + ".json"), ec);
+        std::string why = live_->failedStatus() == 404 ? "Vous ne faites plus partie de ce projet (ou il a été supprimé)."
+                                                       : "Accès au projet perdu : " + live_->error();
+        g_.online.notify(OnlineService::Notification::Kind::Warning, "Édition en direct terminée",
+                         why + (kept ? " Votre version est gardée dans WORKSHOP → Mes niveaux : « " + mine.name + " »." : ""));
+        g_.app.switchScene(makeMainMenu(g_));
+        return;
+    }
+    // My role changed (an administrator changed it): editing follows at once.
+    if (std::string role = live_->myRole(); !role.empty() && role != liveRole_) {
+        static const char* ranks[] = {"viewer", "tester", "editor", "admin", "owner"};
+        static const char* words[] = {"lecteur", "testeur", "éditeur", "administrateur", "propriétaire"};
+        int rank = 0;
+        for (int i = 0; i < 5; ++i)
+            if (role == ranks[i]) rank = i;
+        liveRole_ = role;
+        bool canEdit = rank >= 2;
+        if (readOnly_ == canEdit) {
+            readOnly_ = !canEdit;
+            if (readOnly_) drag_ = Drag::None;
+            flash(std::string("Votre rôle dans le projet : ") + words[rank] + (canEdit ? " — vous pouvez modifier le niveau." : " — lecture seule."),
+                  !canEdit);
+        }
+    }
+    updateChat();
+
     if (auto doc = live_->takeJoinedDocument()) {
         if (auto lvl = LevelData::fromJson(*doc)) {
             lvl->id = requestedId_.empty() ? level_.id : requestedId_;
@@ -312,7 +347,8 @@ void LevelEditorScene::drawLiveOverlay(const Rect& vp) {
     float y = vp.bottom() - ui.s(16);
     for (auto it = lines.rbegin(); it != lines.rend() && y - ui.s(26) > vp.y + vp.h * 0.5f; ++it) {
         const auto& [line, color, alpha] = *it;
-        float lw = std::min(vp.w * 0.5f, ui.text().measure(line, FontFace::Body, ui.s(14)).x + ui.s(24));
+        float maxW = chatRect_.w > 0.0f ? chatRect_.x - vp.x - ui.s(24) : vp.w * 0.5f;  // never under the chat
+        float lw = std::min({vp.w * 0.5f, maxW, ui.text().measure(line, FontFace::Body, ui.s(14)).x + ui.s(24)});
         Rect lr{vp.x + ui.s(12), y - ui.s(26), lw, ui.s(24)};
         liveFeedRect_ = liveFeedRect_.w > 0.0f ? liveFeedRect_.united(lr) : lr;
         r.fillRoundedRect(lr, ui.s(6), Color{6, 10, 24, static_cast<uint8_t>(225 * alpha)});

@@ -180,8 +180,9 @@ void LiveSession::failed(const ApiResult& r) {
         retryTimer_ = 3.0f;
         return;
     }
-    // No access any more (removed from the project, role changed, project deleted).
+    // No access any more (removed from the project, project deleted).
     state_ = State::Failed;
+    failedStatus_ = r.status;
     error_ = r.message;
 }
 
@@ -235,7 +236,14 @@ void LiveSession::heartbeat() {
                  }));
 }
 
+std::string LiveSession::myRole() const {
+    for (const auto& p : participants_)
+        if (p.me) return p.role;
+    return {};
+}
+
 void LiveSession::absorb(const Json& data) {
+    if (data.contains("chat_seq") && data["chat_seq"].is_number_integer()) chatSeq_ = std::max(chatSeq_, data["chat_seq"].get<int64_t>());
     if (data.contains("participants") && data["participants"].is_array()) {
         std::set<std::string> before;
         for (const auto& p : participants_)
@@ -342,10 +350,12 @@ void LiveSession::flush() {
                          for (auto& q : queue_)
                              if (std::find(ids.begin(), ids.end(), q.id) != ids.end()) q.sent = false;
                          if (r.status == 403) {
-                             // My role no longer allows editing: every pending edit is refused.
+                             // My role no longer allows editing: every pending edit is refused,
+                             // and I stay in the room as a reader.
                              for (auto& q : queue_) rejections_.push_back({"forbidden", "", q.op, Json()});
                              queue_.clear();
                              saveQueue();
+                             return;
                          }
                          return failed(r);
                      }

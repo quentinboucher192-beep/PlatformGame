@@ -17,6 +17,7 @@ struct RenderOptions {
     bool editor = false;
     bool debug = false;          // colliders, hitboxes, AI states
     float zoomOverride = 0.0f;   // editor camera
+    bool mapView = false;        // the level drawn small (pause map): no foreground planes, telegraphs or flash
 };
 
 /// Draws a GameWorld: parallax planes, layered terrain and entities, enemies, player,

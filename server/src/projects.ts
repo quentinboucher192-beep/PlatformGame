@@ -19,7 +19,7 @@ import { playerSummary, type PlayerRow } from "./model";
 import { notify } from "./notifications";
 import { RULES, rateLimit } from "./ratelimit";
 import { Validator, paging } from "./validate";
-import { flushRoom, reloadRoom } from "./live";
+import { chatRoom, flushRoom, reloadRoom } from "./live";
 
 export const ROLES = ["viewer", "tester", "editor", "admin", "owner"] as const;
 export type Role = (typeof ROLES)[number];
@@ -269,14 +269,20 @@ export async function createProject(ctx: Ctx): Promise<Response> {
 export async function myProjects(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
     const rows = await ctx.env.DB.prepare(
-        `SELECT p.*, m.role AS my_role, o.username AS o_username, o.avatar AS o_avatar, o.id AS o_id
+        `SELECT p.*, m.role AS my_role, o.username AS o_username, o.avatar AS o_avatar, o.id AS o_id,
+                (SELECT COUNT(*) FROM project_join_requests j WHERE j.project_id = p.id) AS pending_requests
          FROM project_members m JOIN projects p ON p.id = m.project_id JOIN players o ON o.id = p.owner_id
          WHERE m.player_id = ?1 AND p.deleted_at IS NULL ORDER BY p.updated_at DESC LIMIT 100`,
     )
         .bind(auth.player.id)
-        .all<ProjectRow & { my_role: Role; o_username: string; o_avatar: string; o_id: string }>();
+        .all<ProjectRow & { my_role: Role; o_username: string; o_avatar: string; o_id: string; pending_requests: number }>();
     return json(ctx, {
-        projects: rows.results.map((r) => ({ ...projectView(r, r.my_role), owner: { id: r.o_id, username: r.o_username, avatar: r.o_avatar } })),
+        projects: rows.results.map((r) => ({
+            ...projectView(r, r.my_role),
+            owner: { id: r.o_id, username: r.o_username, avatar: r.o_avatar },
+            // Requests waiting for an answer: only those who can answer them see the number.
+            ...(RANK[r.my_role] >= RANK.admin ? { pending_requests: r.pending_requests } : {}),
+        })),
     });
 }
 
@@ -333,7 +339,27 @@ export async function getProject(ctx: Ctx): Promise<Response> {
         )
             .bind(p.id, p.revision)
             .first();
-    return json(ctx, { project: { ...projectView(p, role, owner), requested, last_revision: last } });
+    // Counters for the tabs, and a stamp that changes whenever something in the project does
+    // (the game polls this to refresh what it shows).
+    let counts: Record<string, number> | null = null;
+    let stamp: string | null = null;
+    if (role) {
+        const c = await ctx.env.DB.prepare(
+            `SELECT (SELECT COUNT(*) FROM project_members WHERE project_id = ?1) AS members,
+                    (SELECT COUNT(*) FROM project_join_requests WHERE project_id = ?1) AS requests,
+                    (SELECT COUNT(*) FROM project_invites WHERE project_id = ?1 AND revoked_at IS NULL AND (expires_at IS NULL OR expires_at > ?2)
+                        AND (max_uses IS NULL OR uses < max_uses)) AS invites,
+                    (SELECT COUNT(*) FROM project_versions WHERE project_id = ?1) AS versions,
+                    (SELECT COALESCE(MAX(created_at), '') FROM project_activity WHERE project_id = ?1) AS activity_at,
+                    (SELECT ops_seq FROM projects WHERE id = ?1) AS ops_seq`,
+        )
+            .bind(p.id, nowIso())
+            .first<{ members: number; requests: number; invites: number; versions: number; activity_at: string; ops_seq: number }>();
+        const manager = RANK[role] >= RANK.admin;
+        counts = { members: c?.members ?? 0, versions: c?.versions ?? 0, ...(manager ? { requests: c?.requests ?? 0, invites: c?.invites ?? 0 } : {}) };
+        stamp = [p.revision, p.updated_at, c?.ops_seq ?? 0, c?.members, c?.requests, c?.invites, c?.versions, c?.activity_at, role].join("|");
+    }
+    return json(ctx, { project: { ...projectView(p, role, owner), requested, last_revision: last, counts, stamp } });
 }
 
 /** PATCH /projects/{id} {name?, description?, visibility?, join_role?, planet?} : admins. */
@@ -441,6 +467,8 @@ export async function removeMember(ctx: Ctx): Promise<Response> {
         ctx.env.DB.prepare("UPDATE projects SET member_count = (SELECT COUNT(*) FROM project_members WHERE project_id = ?1) WHERE id = ?1").bind(p.id),
         activity(ctx, p.id, me, target === me ? "member_left" : "member_removed", { player: target }),
     ]);
+    // Removed by someone else: told at once (the game also takes them out of the live editor).
+    if (target !== me) await notify(ctx, target, "project_removed", { actor: me, data: { project: p.name } });
     return json(ctx, { removed: true });
 }
 
@@ -990,4 +1018,95 @@ export async function ownedProjectKeys(ctx: Ctx, playerId: string): Promise<stri
         .bind(playerId)
         .all<{ content_key: string }>();
     return rows.results.map((r) => r.content_key);
+}
+
+// ------------------------------------------------------------- chat (live editor)
+
+const MESSAGE_MAX = 500;
+
+type MessageRow = {
+    id: number;
+    body: string;
+    created_at: string;
+    reply_to: number | null;
+    a_id: string;
+    a_name: string;
+    a_avatar: string;
+    q_body: string | null;
+    q_name: string | null;
+};
+
+const MESSAGE_SELECT = `SELECT m.id, m.body, m.created_at, m.reply_to, a.id AS a_id, a.username AS a_name, a.avatar AS a_avatar,
+        q.body AS q_body, qa.username AS q_name
+    FROM project_messages m JOIN players a ON a.id = m.author_id
+    LEFT JOIN project_messages q ON q.id = m.reply_to LEFT JOIN players qa ON qa.id = q.author_id`;
+
+function messageView(r: MessageRow) {
+    return {
+        id: r.id,
+        body: r.body,
+        created_at: r.created_at,
+        author: { id: r.a_id, username: r.a_name, avatar: r.a_avatar },
+        // The message answered: who and the beginning of what they wrote (null if deleted since).
+        reply_to: r.reply_to !== null && r.q_body !== null ? { id: r.reply_to, username: r.q_name, excerpt: r.q_body.slice(0, 80) } : null,
+    };
+}
+
+/** GET /projects/{id}/messages?after=&before=&limit= : members. Oldest first. */
+export async function listMessages(ctx: Ctx): Promise<Response> {
+    const { p } = await access(ctx, "viewer");
+    const num = (k: string) => {
+        const v = ctx.url.searchParams.get(k);
+        if (v === null) return null;
+        const n = Number.parseInt(v, 10);
+        if (!Number.isInteger(n) || n < 0) throw Errors.validation([{ field: k, message: "nombre entier attendu" }]);
+        return n;
+    };
+    const after = num("after"),
+        before = num("before");
+    const limit = Math.min(100, Math.max(1, num("limit") ?? 50));
+    let rows: MessageRow[];
+    let more = false;
+    if (after !== null) {
+        // New messages since the last one known.
+        rows = (await ctx.env.DB.prepare(`${MESSAGE_SELECT} WHERE m.project_id = ?1 AND m.id > ?2 ORDER BY m.id ASC LIMIT ?3`).bind(p.id, after, limit + 1).all<MessageRow>()).results;
+        more = rows.length > limit;
+        rows = rows.slice(0, limit);
+    } else {
+        // The latest ones (or those before a given message), shown oldest first.
+        rows = (
+            await ctx.env.DB.prepare(`${MESSAGE_SELECT} WHERE m.project_id = ?1 AND m.id < ?2 ORDER BY m.id DESC LIMIT ?3`)
+                .bind(p.id, before ?? Number.MAX_SAFE_INTEGER, limit + 1)
+                .all<MessageRow>()
+        ).results;
+        more = rows.length > limit;
+        rows = rows.slice(0, limit).reverse();
+    }
+    return json(ctx, { messages: rows.map(messageView), more });
+}
+
+/** POST /projects/{id}/messages {body, reply_to?} : members. Kept with the project. */
+export async function postMessage(ctx: Ctx): Promise<Response> {
+    const { me, p } = await access(ctx, "viewer");
+    await rateLimit(ctx, RULES.projectChat, "player:" + me);
+    const v = new Validator(await readJsonObject(ctx, 4096), ["body", "reply_to"]);
+    const body = v.str("body", { min: 1, max: MESSAGE_MAX })!;
+    const replyTo = v.int("reply_to", { min: 1, max: Number.MAX_SAFE_INTEGER, optional: true }) ?? null;
+    v.done();
+    let answered: { author_id: string } | null = null;
+    if (replyTo !== null) {
+        answered = await ctx.env.DB.prepare("SELECT author_id FROM project_messages WHERE id = ?1 AND project_id = ?2").bind(replyTo, p.id).first<{ author_id: string }>();
+        if (!answered) throw Errors.notFound("MESSAGE_NOT_FOUND", "Le message auquel vous répondez n'existe plus.");
+    }
+    const row = await ctx.env.DB.prepare("INSERT INTO project_messages (project_id, author_id, body, reply_to, created_at) VALUES (?1, ?2, ?3, ?4, ?5) RETURNING id")
+        .bind(p.id, me, body, replyTo, nowIso())
+        .first<{ id: number }>();
+    const id = row!.id;
+    // The members in the live editor learn about it with their next heartbeat.
+    if (ctx.env.PROJECT_ROOMS) await chatRoom(ctx.env, p.id, id).catch(() => undefined);
+    // The author of the message answered is told (if still a member, and not answering oneself).
+    if (answered && answered.author_id !== me && (await roleOf(ctx, p.id, answered.author_id)))
+        await notify(ctx, answered.author_id, "project_reply", { actor: me, data: { project: p.name, project_id: p.id }, groupKey: "chat:" + p.id });
+    const full = await ctx.env.DB.prepare(`${MESSAGE_SELECT} WHERE m.id = ?1`).bind(id).first<MessageRow>();
+    return json(ctx, { message: messageView(full!) }, { status: 201 });
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <deque>
 #include <map>
 #include <memory>
@@ -95,6 +96,12 @@ public:
 
     State state() const { return state_; }
     const std::string& error() const { return error_; }
+    /// HTTP status that ended the session (404: no longer a member, or the project is gone).
+    int failedStatus() const { return failedStatus_; }
+    /// My role as the room sees it now (changes when an administrator changes it).
+    std::string myRole() const;
+    /// Id of the project's latest chat message (0: none): new ones are fetched when it moves.
+    int64_t chatSeq() const { return chatSeq_; }
     const std::vector<Participant>& participants() const { return participants_; }
     /// Objects selected by another member: id -> member id.
     const std::map<std::string, std::string>& locks() const { return locks_; }
@@ -129,7 +136,8 @@ private:
     std::string error_;
     bool joinBusy_ = false, beatBusy_ = false, opsBusy_ = false, left_ = false;
     float beatTimer_ = 0.0f, retryTimer_ = 0.0f;
-    int applied_ = 0, revision_ = 0, epoch_ = 0;
+    int applied_ = 0, revision_ = 0, epoch_ = 0, failedStatus_ = 0;
+    int64_t chatSeq_ = 0;
     std::optional<Json> joined_;
     std::vector<Json> remote_;
     std::vector<Rejection> rejections_;

@@ -61,6 +61,8 @@ public:
     void panel(const Rect& r, bool highlight = false, float radius = 10.0f);
     /// Font size (unscaled) at which `t` fits in `room` pixels, never below minScale * size.
     float fitFont(const std::string& t, FontFace face, float size, float room, float minScale = 0.55f);
+    /// `t` shortened with « … » (on a character boundary) so that it fits `room` at `size`.
+    std::string elide(const std::string& t, FontFace face, float size, float room);
     Vec2 label(const std::string& t, Vec2 pos, float size = 24, Color c = {}, Align a = Align::Left,
                FontFace face = FontFace::Body, VAlign va = VAlign::Top);
     Vec2 labelWrapped(const std::string& t, Vec2 pos, float width, float size = 22, Color c = {});
@@ -97,7 +99,10 @@ public:
                      const char* fmt = "%.1f");
     bool listItem(const std::string& name, const Rect& r, const std::string& text, bool selected,
                   const std::string& sub = "", Color accent = {});
-    bool tabs(const std::string& name, const Rect& r, const std::vector<std::string>& labels, int& active);
+    /// `badges` (optional, one per tab): a counter shown in a small pill at the tab's right,
+    /// the label being fitted to the room left (0: no pill). Positive: something waits for
+    /// an answer (red pill); negative: a plain count, shown as its absolute value (accent).
+    bool tabs(const std::string& name, const Rect& r, const std::vector<std::string>& labels, int& active, const std::vector<int>& badges = {});
 
     // Scroll regions
     void beginScroll(const std::string& name, const Rect& view, float contentHeight);

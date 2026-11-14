@@ -38,7 +38,8 @@ void LevelEditorScene::handleViewport(const Rect& vp) {
     Vec2 mouse = in.mousePos();
     Vec2 world = view.toWorld(mouse);
     // The minimap and the read-only banner sit over the viewport: clicks there are theirs.
-    bool inside = vp.contains(mouse) && !(minimapOn_ && minimapRect_.contains(mouse)) && !(readOnly_ && bannerRect_.contains(mouse));
+    bool inside = vp.contains(mouse) && !(minimapOn_ && minimapRect_.contains(mouse)) && !(readOnly_ && bannerRect_.contains(mouse)) &&
+                  !chatRect_.contains(mouse);
     float grid = snapOn_ ? (gridIndex_ == 0 ? 8.0f : gridIndex_ == 1 ? 16.0f : 32.0f) : 1.0f;
 
     // ---- camera: wheel zoom, middle / right drag, keyboard & gamepad pan

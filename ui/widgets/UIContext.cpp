@@ -39,6 +39,12 @@ void UIContext::begin(Application& app, float dt) {
     app_ = &app;
     if (app.frameIndex() == frame_) return;
     frame_ = app.frameIndex();
+    // A list left open by the previous frame (a screen that changed in the middle of it)
+    // must not keep the whole screen clipped: it is closed here.
+    while (!scrollStack_.empty()) {
+        scrollStack_.pop_back();
+        r().popClip();
+    }
     ended_ = false;
     dt_ = dt;
     time_ += dt;
@@ -178,7 +184,27 @@ void UIContext::panel(const Rect& rc, bool highlight, float radius) {
 float UIContext::fitFont(const std::string& t, FontFace face, float size, float room, float minScale) {
     if (room <= 0.0f || t.empty()) return size;
     float tw = text().measure(t, face, s(size)).x;
-    return tw > room ? size * std::max(minScale, room / tw) : size;
+    if (tw <= room) return size;
+    const float least = size * minScale;
+    float fs = size * std::max(minScale, room / tw);
+    // Glyphs are rasterised at whole pixel sizes: the width does not shrink exactly in
+    // proportion. A few small steps more make sure the text really fits.
+    for (int i = 0; i < 8 && fs > least && text().measure(t, face, s(fs)).x > room; ++i) fs = std::max(least, fs * 0.96f);
+    return fs;
+}
+
+std::string UIContext::elide(const std::string& t, FontFace face, float size, float room) {
+    if (room <= 0.0f || text().measure(t, face, s(size)).x <= room) return t;
+    std::string cut = t;
+    while (!cut.empty()) {
+        // Drop one character (UTF-8: its continuation bytes too) and trailing spaces.
+        size_t n = cut.size() - 1;
+        while (n > 0 && (static_cast<unsigned char>(cut[n]) & 0xC0) == 0x80) --n;
+        cut.resize(n);
+        while (!cut.empty() && cut.back() == ' ') cut.pop_back();
+        if (text().measure(cut + "…", face, s(size)).x <= room) return cut + "…";
+    }
+    return "…";
 }
 
 Vec2 UIContext::label(const std::string& t, Vec2 pos, float size, Color c, Align a, FontFace face, VAlign va) {
@@ -528,18 +554,21 @@ bool UIContext::listItem(const std::string& name, const Rect& rc, const std::str
     if (selected || hot > 0.01f)
         rr.drawRoundedRect(rc, s(6), theme_.accent.withAlphaF(selected ? 0.8f : 0.5f * hot), std::max(1.0f, s(1.5f)));
     if (accent.a) rr.fillRoundedRect({rc.x + s(4), rc.y + s(6), s(4), rc.h - s(12)}, s(2), accent);
-    float x = rc.x + s(16);
+    // Never past the item: the text is made smaller, then shortened with « … ».
+    float x = rc.x + s(16), room = rc.right() - x - s(10);
     if (sub.empty()) {
-        label(t, {x, rc.center().y}, 21, theme_.text, Align::Left, FontFace::Body, VAlign::Middle);
+        float fs = fitFont(t, FontFace::Body, 21, room, 0.75f);
+        label(elide(t, FontFace::Body, fs, room), {x, rc.center().y}, fs, theme_.text, Align::Left, FontFace::Body, VAlign::Middle);
     } else {
-        label(t, {x, rc.y + rc.h * 0.3f}, 21, theme_.text, Align::Left, FontFace::Bold, VAlign::Middle);
-        label(sub, {x, rc.y + rc.h * 0.72f}, 16, theme_.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        float fs = fitFont(t, FontFace::Bold, 21, room, 0.75f), ss = fitFont(sub, FontFace::Body, 16, room, 0.8f);
+        label(elide(t, FontFace::Bold, fs, room), {x, rc.y + rc.h * 0.3f}, fs, theme_.text, Align::Left, FontFace::Bold, VAlign::Middle);
+        label(elide(sub, FontFace::Body, ss, room), {x, rc.y + rc.h * 0.72f}, ss, theme_.textDim, Align::Left, FontFace::Body, VAlign::Middle);
     }
     if (clicked) app_->resources().playSound("sounds/ui_move.wav", 0.5f);
     return clicked;
 }
 
-bool UIContext::tabs(const std::string& name, const Rect& rc, const std::vector<std::string>& labels, int& active) {
+bool UIContext::tabs(const std::string& name, const Rect& rc, const std::vector<std::string>& labels, int& active, const std::vector<int>& badges) {
     if (labels.empty()) return false;
     int n = static_cast<int>(labels.size());
     bool changedNow = false;
@@ -567,11 +596,23 @@ bool UIContext::tabs(const std::string& name, const Rect& rc, const std::vector<
         Renderer& rr = r();
         rr.fillRoundedRect(tr, s(6), Color::lerp(Color{16, 22, 42, 220}, Color{28, 64, 84, 240}, i == active ? 1.0f : hot * 0.4f));
         if (i == active) rr.fillRect({tr.x + s(8), tr.bottom() - s(3), tr.w - s(16), s(3)}, theme_.accent);
-        float fs = 21.0f;
-        float tw = text().measure(labels[i], FontFace::Bold, s(fs)).x;
-        if (tw > tr.w - s(10)) fs *= std::max(0.55f, (tr.w - s(10)) / tw);
-        label(labels[i], tr.center(), fs, i == active ? Color::white() : theme_.textDim, Align::Center, FontFace::Bold,
-              VAlign::Middle);
+        // The counter first (its own place at the right), then the label in what is left.
+        int count = i < static_cast<int>(badges.size()) ? badges[static_cast<size_t>(i)] : 0;
+        const bool urgent = count > 0;
+        count = std::abs(count);
+        Rect room = tr;
+        if (count > 0) {
+            std::string n = count > 99 ? "99+" : std::to_string(count);
+            float bh = std::min(s(20), tr.h - s(8));
+            float bw = std::max(bh, text().measure(n, FontFace::Bold, s(13)).x + s(10));
+            Rect b{tr.right() - s(5) - bw, tr.center().y - bh * 0.5f, bw, bh};
+            rr.fillRoundedRect(b, bh * 0.5f, urgent ? theme_.danger : theme_.accent.withAlphaF(0.85f));
+            label(n, b.center(), 13, urgent ? Color::white() : Color{6, 14, 24, 255}, Align::Center, FontFace::Bold, VAlign::Middle);
+            room.w = b.x - s(3) - room.x;
+        }
+        float fs = fitFont(labels[i], FontFace::Bold, 21.0f, room.w - s(10), 0.55f);
+        std::string shown = elide(labels[i], FontFace::Bold, fs, room.w - s(8));
+        label(shown, room.center(), fs, i == active ? Color::white() : theme_.textDim, Align::Center, FontFace::Bold, VAlign::Middle);
     }
     if (changedNow) {
         app_->resources().playSound("sounds/ui_move.wav", 0.6f);
