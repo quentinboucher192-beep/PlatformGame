@@ -19,6 +19,7 @@ import { playerSummary, type PlayerRow } from "./model";
 import { notify } from "./notifications";
 import { RULES, rateLimit } from "./ratelimit";
 import { Validator, paging } from "./validate";
+import { reloadRoom } from "./live";
 
 export const ROLES = ["viewer", "tester", "editor", "admin", "owner"] as const;
 export type Role = (typeof ROLES)[number];
@@ -180,6 +181,16 @@ async function storeContent(ctx: Ctx, p: ProjectRow, author: string, content: un
         throw Errors.validation([{ field: "content", message: "niveau attendu (objet JSON)" }]);
     const text = JSON.stringify(content);
     if (text.length > MAX_CONTENT_BYTES) throw new ApiError(413, "PAYLOAD_TOO_LARGE", "Niveau trop volumineux pour un projet (2 Mo au plus).");
+    // Live operations made since the last revision would be lost under this save: refused.
+    const live = await ctx.env.DB.prepare(
+        "SELECT p.ops_seq, COALESCE((SELECT ops_seq FROM project_revisions r WHERE r.project_id = p.id AND r.revision = p.revision), 0) AS rev_seq FROM projects p WHERE p.id = ?1",
+    )
+        .bind(p.id)
+        .first<{ ops_seq: number; rev_seq: number }>();
+    if (live && live.ops_seq > live.rev_seq)
+        throw Errors.conflict("LIVE_CHANGES", "Des modifications ont été faites en direct depuis la dernière révision : rejoignez l'édition en direct pour les voir.", {
+            ops_seq: live.ops_seq,
+        });
     const revision = base + 1;
     const key = `projects/${p.id}/r${revision}.json`;
     const hash = await sha256Hex(text);
@@ -205,8 +216,8 @@ async function storeContent(ctx: Ctx, p: ProjectRow, author: string, content: un
         await ctx.env.STORAGE.put(key, text, { httpMetadata: { contentType: "application/json" } });
         await ctx.env.DB.batch([
             ctx.env.DB.prepare(
-                "INSERT INTO project_revisions (project_id, revision, content_key, content_hash, size, author_id, message, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
-            ).bind(p.id, revision, key, hash, text.length, author, message, now),
+                "INSERT INTO project_revisions (project_id, revision, content_key, content_hash, size, author_id, message, created_at, ops_seq) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+            ).bind(p.id, revision, key, hash, text.length, author, message, now, live?.ops_seq ?? 0),
             activity(ctx, p.id, author, "saved", { revision, message }),
         ]);
     } catch (e) {
@@ -214,6 +225,8 @@ async function storeContent(ctx: Ctx, p: ProjectRow, author: string, content: un
         await ctx.env.DB.prepare("UPDATE projects SET revision = ?2 WHERE id = ?1 AND revision = ?3").bind(p.id, base, revision).run();
         throw e;
     }
+    // The live room (if any) starts again from this revision.
+    if (ctx.env.PROJECT_ROOMS) ctx.exec.waitUntil(reloadRoom(ctx.env, p.id).catch(() => undefined));
     return { revision, content_hash: hash, size: text.length, saved_at: now };
 }
 

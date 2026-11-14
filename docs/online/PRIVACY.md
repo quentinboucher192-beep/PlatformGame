@@ -50,6 +50,8 @@
 | Révisions des projets (niveau JSON, auteur, message, empreinte) | R2 `projects/` + D1 `project_revisions` | les membres | jusqu'à la suppression du projet |
 | Invitations (empreinte SHA-256 de la clé, 4 derniers caractères, rôle, limites) et demandes d'adhésion (message) | D1 `project_invites`, `project_join_requests` | administrateurs du projet | jusqu'à la suppression du projet |
 | Journal d'un projet (qui a fait quoi, quand) | D1 `project_activity` | les membres | jusqu'à la suppression du projet |
+| Opérations de l'édition en direct (modification, auteur, date) | D1 `project_ops` | les membres | jusqu'à la suppression du projet |
+| Présence en direct (curseur et vue dans le niveau, sélection, activité) | mémoire de la salle du projet, jamais écrite | les membres présents | 20 secondes après le dernier signe de vie |
 | Journal de sécurité (action, empreinte d'IP) | D1 `audit_log` | opérateurs | 180 jours |
 | Compteurs de limitation (empreintes) | D1 `rate_limits` | personne | 24 heures |
 
@@ -90,6 +92,7 @@ vérification de son empreinte SHA-256.
 | `online/known_ranks.json` | derniers rangs vus (notifications « record battu ») |
 | `online/playtime.json` | temps joué pas encore envoyé (seulement pour le compte connecté) |
 | `online/projects.json` | liens entre les copies locales (WORKSHOP → Mes niveaux) et les projets, révision de départ |
+| `online/live_<projet>.json` | modifications faites en direct pas encore confirmées par le serveur (supprimé une fois vide) |
 | `saves/progress.json` | temps joué par niveau (affiché sur la fiche de chaque niveau, même sans compte) |
 
 À la suppression du compte, les performances et replays locaux rattachés à ce compte sont

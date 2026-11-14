@@ -139,6 +139,11 @@ void LevelEditorScene::handleViewport(const Rect& vp) {
             }
         } else if (drag_ == Drag::None) {
             std::string hit = objectAt(world);
+            if (std::string who = hit.empty() ? std::string{} : lockHolder(hit); !who.empty()) {
+                // Live editing: another member works on it (temporary lock).
+                flash(who + " modifie cet objet : attendez qu'il le relâche.", true);
+                return;
+            }
             if (hit.empty()) {
                 if (!in.shift()) selection_.clear();
                 drag_ = Drag::BoxSelect;
@@ -188,7 +193,7 @@ void LevelEditorScene::handleViewport(const Rect& vp) {
                      std::abs(world.x - dragStartWorld_.x), std::abs(world.y - dragStartWorld_.y)};
             if (box.w > 2 && box.h > 2)
                 for (const auto& o : level_.objects)
-                    if (layerEditable(o.layer) && box.intersects(o.rect)) selection_.insert(o.id);
+                    if (layerEditable(o.layer) && box.intersects(o.rect) && lockHolder(o.id).empty()) selection_.insert(o.id);
         }
         if (drag_ == Drag::Create) {
             const auto& pal = ObjectTypes::palette();
@@ -275,6 +280,7 @@ void LevelEditorScene::drawViewport(const Rect& vp, float alpha) {
         renderer_.render(r, g_.app.resources(), *world_, view, alpha, opt);
     }
     drawOverlays(vp);
+    drawLiveOverlay(vp);
     r.setView(WorldView{});
     drawMinimap(vp);
     drawReadOnlyBanner(vp);

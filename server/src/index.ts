@@ -11,6 +11,9 @@ import * as creators from "./creators";
 import * as notifications from "./notifications";
 import * as workshop from "./workshop";
 import * as projects from "./projects";
+import { liveRoute } from "./live";
+// The Durable Object class of the live editing rooms is exported by the Worker module.
+export { ProjectRoom } from "./live";
 import { listLevels } from "./levels";
 import type { RecordRow } from "./model";
 import * as players from "./players";
@@ -217,6 +220,11 @@ route("GET", `${V}/projects/{projectId}/content`, (ctx) => projects.getContent(c
 route("PUT", `${V}/projects/{projectId}/content`, (ctx) => projects.putContent(ctx));
 route("GET", `${V}/projects/{projectId}/revisions`, (ctx) => projects.listRevisions(ctx));
 route("GET", `${V}/projects/{projectId}/activity`, (ctx) => projects.listActivity(ctx));
+// Live editing (phases 3-4): presence, temporary locks and operations, in the project's room
+route("POST", `${V}/projects/{projectId}/live/join`, (ctx) => liveRoute(ctx, "join"));
+route("POST", `${V}/projects/{projectId}/live/heartbeat`, (ctx) => liveRoute(ctx, "heartbeat"));
+route("POST", `${V}/projects/{projectId}/live/ops`, (ctx) => liveRoute(ctx, "ops"));
+route("POST", `${V}/projects/{projectId}/live/leave`, (ctx) => liveRoute(ctx, "leave"));
 
 // Moderation (only with the ADMIN_TOKEN secret)
 route("GET", `${V}/admin/records`, (ctx) => admin.listForReview(ctx));

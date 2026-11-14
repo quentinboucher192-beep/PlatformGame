@@ -9,6 +9,9 @@
 #include "engine/core/FileUtil.h"
 #include "engine/core/Log.h"
 #include "game/GameServices.h"
+#include "engine/core/FileUtil.h"
+#include "packaging/Sha256.h"
+#include "ui/online/OnlineWidgets.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/Thumbnail.h"
 
@@ -33,6 +36,17 @@ LevelEditorScene::LevelEditorScene(GameServices& g, std::string levelId) : g_(g)
 
 LevelEditorScene::~LevelEditorScene() = default;
 
+std::unique_ptr<Scene> makeLevelEditorLive(GameServices& g, const std::string& levelId, const std::string& projectId, const std::string& role) {
+    auto s = std::make_unique<LevelEditorScene>(g, levelId);
+    s->goLive(projectId, role);
+    return s;
+}
+
+void LevelEditorScene::goLive(const std::string& projectId, const std::string& role) {
+    liveProject_ = projectId;
+    liveRole_ = role;
+}
+
 void LevelEditorScene::onEnter() {
     g_.app.audio().stopMusic(500);
     g_.app.audio().stopAmbience(500);
@@ -44,6 +58,17 @@ void LevelEditorScene::onEnter() {
     }
     loadFavorites();
     explorerOpen_.insert(activeLayer_);
+    if (!liveProject_.empty()) {
+        // Live editing: the room's document replaces the local copy once joined.
+        live_ = std::make_unique<LiveSession>(g_.online, liveProject_, Paths::userDir() / "online" / ("live_" + liveProject_ + ".json"));
+        liveUi_ = std::make_unique<OnlineUi>(g_);
+        static const char* ranks[] = {"viewer", "tester", "editor", "admin", "owner"};
+        int rank = 0;
+        for (int i = 0; i < 5; ++i)
+            if (liveRole_ == ranks[i]) rank = i;
+        if (rank < 2) readOnly_ = true;  // readers and testers watch
+        live_->join();
+    }
     // Screenshots / support: --online-open check|history|objects|duplicate|select-one|
     // select-many|menu-test|favorites.
     const std::string& o = g_.onlineOpen;
@@ -97,6 +122,24 @@ void LevelEditorScene::onEnter() {
 }
 
 void LevelEditorScene::onExit() {
+    if (live_) {
+        // The local copy keeps what was edited together, linked to the project's revision.
+        live_->leave();
+        if (liveLoaded_) {
+            g_.content.saveUserLevel(level_);
+            fs::path linksFile = Paths::userDir() / "online" / "projects.json";
+            Json links = Json::object();
+            if (auto t = FileUtil::readText(linksFile)) {
+                Json j = Json::parse(*t, nullptr, false);
+                if (j.is_object()) links = j;
+            }
+            links[level_.id]["project_id"] = liveProject_;
+            links[level_.id]["revision"] = live_->revision();
+            links[level_.id]["local_hash"] = Sha256::hex(level_.toJson().dump());
+            FileUtil::writeTextAtomic(linksFile, links.dump(1));
+            dirty_ = false;
+        }
+    }
     if (dirty_) autosave();
     if (mounted_) g_.app.resources().popMount();
     mounted_ = false;
@@ -213,12 +256,14 @@ void LevelEditorScene::autosave() {
 }
 
 void LevelEditorScene::markChanged(const std::string& label) {
+    liveDirty_ = true;
+    lastEditLabel_ = label;
     if (readOnly_) {
         // Campaign / imported level: every edit is refused (the document goes back to its
         // last state); the banner offers the copy.
         if (auto l = LevelData::fromJson(history_.current())) level_ = *l;
         previewDirty_ = true;
-        flash("Lecture seule : « Dupliquer pour modifier » d'abord", true);
+        flash(live_ ? "Lecture seule : votre rôle dans le projet ne permet pas de le modifier" : "Lecture seule : « Dupliquer pour modifier » d'abord", true);
         return;
     }
     checksDirty_ = true;
@@ -230,6 +275,7 @@ void LevelEditorScene::markChanged(const std::string& label) {
 }
 
 void LevelEditorScene::applyJson(const Json& j) {
+    liveDirty_ = true;  // undo / redo: sent like any edit
     if (auto l = LevelData::fromJson(j)) {
         level_ = *l;
         for (auto it = selection_.begin(); it != selection_.end();)
@@ -341,7 +387,7 @@ std::string LevelEditorScene::createObject(const PaletteEntry& entry, const Rect
             }
     }
     LevelObject o;
-    o.id = level_.nextObjectId();
+    o.id = newObjectId();
     o.type = entry.type;
     o.props = t->defaultProps();
     for (auto& [k, v] : entry.props.items()) o.props[k] = v;
@@ -382,7 +428,7 @@ void LevelEditorScene::paste(Vec2 at) {
     for (auto o : clipboard_) {
         const ObjectTypeInfo* t = ObjectTypes::find(o.type);
         if (t && t->unique) continue;
-        o.id = level_.nextObjectId();
+        o.id = newObjectId();
         o.rect = o.rect.translated(delta);
         level_.objects.push_back(o);
         selection_.insert(o.id);
@@ -545,6 +591,7 @@ Vec2 LevelEditorScene::snapPoint(Vec2 p, float grid) const {
 
 void LevelEditorScene::update(float dt) {
     time_ += dt;
+    if (live_) updateLive(dt);
     if (messageTimer_ > 0) messageTimer_ -= dt;
     if (previewDelay_ > 0) previewDelay_ -= dt;
     if (previewDirty_ && previewDelay_ <= 0 && drag_ == Drag::None) rebuildPreview();
@@ -575,7 +622,7 @@ void LevelEditorScene::render(float alpha) {
     Rect center{left, top, W - left - right, H - top - status};
     viewport_ = {center.x, center.y + headerH, center.w, center.h - headerH - tableH};
 
-    bool modal = modal_ != Modal::None;
+    bool modal = modal_ != Modal::None || !conflicts_.empty();
     bool menu = menu_ != Menu::None;
     ui.inputEnabled = !modal && !menu;
     drawViewport(viewport_, alpha);
@@ -592,7 +639,8 @@ void LevelEditorScene::render(float alpha) {
     ui.inputEnabled = !modal;
     if (menu && !modal) drawMenus();
     ui.inputEnabled = true;
-    if (modal) drawModal();
+    if (!conflicts_.empty()) drawConflicts();
+    else if (modal) drawModal();
     if (messageTimer_ > 0.0f) {
         TextStyle st;
         st.size = ui.s(22);

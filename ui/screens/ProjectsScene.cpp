@@ -158,10 +158,16 @@ public:
         // Automated checks of the working copy: "project-download", "project-send",
         // "project-pull" run once the project is loaded.
         const std::string& o = g_.onlineOpen;
-        if ((o == "project-download" || o == "project-send" || o == "project-pull") && detail_.is_object() && !working_ && member()) {
+        if ((o == "project-download" || o == "project-send" || o == "project-pull" || o == "project-live" || o.rfind("project-live-edit:", 0) == 0) &&
+            detail_.is_object() && !working_ && member()) {
             std::string what = o;
             g_.onlineOpen.clear();
-            if (what == "project-download") download(true, [this](const std::string&) { say("Copie locale téléchargée.", false); });
+            if (what == "project-live") goLive();
+            else if (what.rfind("project-live-edit:", 0) == 0) {
+                g_.onlineOpen = "live-edit:" + what.substr(18);  // read by the live editor
+                goLive();
+            }
+            else if (what == "project-download") download(true, [this](const std::string&) { say("Copie locale téléchargée.", false); });
             else if (what == "project-send") sendChanges();
             else {
                 if (copyState().modified) keepModifiedCopy();
@@ -334,6 +340,14 @@ private:
             g_.ratings.contentChanged();
             if (then) then(local);
         });
+    }
+
+    void goLive() {
+        // A local copy changed offline is kept apart first (the room's document replaces it).
+        if (copyState().modified) keepModifiedCopy();
+        std::string role = this->role();
+        std::string pid = selected_;
+        download(true, [this, role, pid](const std::string& local) { g_.app.switchScene(makeLevelEditorLive(g_, local, pid, role)); });
     }
 
     /// Before replacing a modified local copy, it is kept as an independent level.
@@ -686,6 +700,15 @@ private:
                 ui.textField("msg", {x, y, w, ui.s(40)}, message_, "Description de vos modifications (facultatif)", 200);
                 y += ui.s(50);
             }
+        }
+        // Live editing with the other members (editors edit, the others watch).
+        if (hasContent) {
+            UIContext::ButtonStyle ls = st;
+            ls.primary = true;
+            if (ui.button("live", {x, y, w, ui.s(44)}, editor() ? "Édition en direct avec les autres membres" : "Regarder l'édition en direct", ls)) {
+                goLive();
+            }
+            y += ui.s(54);
         }
         if (tester() && hasContent) {
             if (ui.button("play", {x, y, half, ui.s(44)}, "Jouer la dernière version", st))

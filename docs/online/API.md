@@ -967,6 +967,40 @@ lié au projet dans `online/projects.json`) ; « Récupérer la dernière versio
 copie modifiée sous un autre nom. L'installateur peut associer les liens `cosmic://` au jeu :
 ouvrir un lien place la clé dans PROJETS → Rejoindre, sans rejoindre automatiquement.
 
+### 8.9 quinquies Édition en direct (présence, verrous, opérations)
+
+Chaque projet a une « salle » (Durable Object `ProjectRoom`) atteinte seulement par le Worker,
+qui vérifie la session et le rôle à chaque requête. La présence (curseur, vue, sélection,
+activité, couleur) n'existe qu'en mémoire et disparaît 20 s après le dernier signe de vie ; les
+opérations sont persistantes (D1 `project_ops`) et numérotées par la salle, dans le même ordre
+pour tous.
+
+| Méthode | Route | Rôle | Réponse |
+|---|---|---|---|
+| POST | `/projects/{id}/live/join` `{ view? }` | lecteur | `{ doc, seq, revision, color, participants, locks }` (le document courant : dernière révision + opérations suivantes) |
+| POST | `/projects/{id}/live/heartbeat` `{ since_seq, cursor?, view?, selection?, activity? }` | lecteur | `{ seq, revision, participants, locks, ops, resync }` ; toutes les ~0,6 s ; plus de 5 par seconde : réponse courte `{ throttled }` |
+| POST | `/projects/{id}/live/ops` `{ ops: [{ id, base_seq, op }] }` | éditeur | `{ results: [{ id, status, seq?, by?, current? }], seq }` ; 50 opérations au plus |
+| POST | `/projects/{id}/live/leave` | lecteur | quitte la salle |
+
+Opérations : `{ t: "add", o }` (objet avec `id` et `type`), `{ t: "set", id, f }` (champs de
+l'objet ; `null` retire un champ), `{ t: "del", id }`, `{ t: "doc", k, v }` (clé du document autre
+que `objects` et `id`) ; 64 Ko au plus chacune. Statuts : `ok` ; `conflict` (un autre membre a
+modifié la même chose après `base_seq` : `current` donne sa version) ; `locked` (sélectionné par
+un autre membre : verrou temporaire) ; `not_found` (supprimé) ; `id_taken` ; `invalid`. Une
+opération renvoyée avec le même `id` (réponse perdue) n'est appliquée qu'une fois. Les objets
+sélectionnés par un éditeur sont verrouillés pour les autres (les sélections des lecteurs et
+testeurs ne verrouillent rien). Toutes les 200 opérations, et quand le dernier membre quitte la
+salle, le document devient une nouvelle révision (« Édition en direct (opérations a à b) »). Un
+enregistrement classique (`PUT /projects/{id}/content`) faite alors que des opérations ne sont
+pas encore dans une révision est refusé (`409 LIVE_CHANGES`) : rien n'est écrasé.
+
+Dans le jeu (PROJETS → « Édition en direct »), l'éditeur envoie la différence entre le document
+connu de la salle et le sien après chaque modification (y compris annuler / rétablir), applique
+les opérations des autres au niveau et à tout l'historique d'annulation (« Annuler » ne défait que
+ses propres modifications), garde ses opérations non confirmées dans `online/live_<projet>.json`
+(rien n'est perdu hors ligne) et montre chaque refus avec le choix de réappliquer sa modification
+ou de garder la version du projet.
+
 ### 8.9 bis Installateurs du jeu (notification « nouvelle version »)
 
 Publics (aucun compte, rien de personnel n'est envoyé : le jeu ne transmet pas sa version, il

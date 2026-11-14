@@ -237,6 +237,8 @@ void LevelEditorScene::drawStatus(const Rect& r) {
                                 world.y, static_cast<int>(std::floor(world.x / 16)), static_cast<int>(std::floor(world.y / 16)),
                                 cam_.zoom * 100, level_.findLayer(activeLayer_) ? level_.findLayer(activeLayer_)->name : "?");
     std::string right = dirty_ ? "Modifications non enregistrées" : (lastSaved_.empty() ? "" : "Enregistré à " + lastSaved_);
+    if (live_) right = "En direct · révision " + std::to_string(live_->revision()) + " · opération " + std::to_string(live_->seq()) +
+                       (readOnly_ ? " · lecture seule (" + std::string(liveRole_ == "tester" ? "testeur" : "lecteur") + ")" : "");
     if (!pickTarget_.empty()) right = "Choisissez un objet cible…";
     Vec2 rs = ui.label(right, {r.right() - ui.s(14), r.center().y}, 17, dirty_ ? ui.theme().warm : ui.theme().textDim, Align::Right,
                        FontFace::Body, VAlign::Middle);

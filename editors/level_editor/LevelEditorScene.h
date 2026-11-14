@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "editors/shared/EditorHistory.h"
+#include "game/online/LiveSession.h"
 #include "editors/shared/PropertyEditor.h"
 #include "engine/core/Scene.h"
 #include "game/gameplay/GameRenderer.h"
@@ -22,6 +23,9 @@ class GameServices;
 class LevelEditorScene : public Scene {
 public:
     LevelEditorScene(GameServices& g, std::string levelId);
+    /// Live editing of a collaborative project (the level is its local copy). `role`: the
+    /// player's role in the project; below "editor" the level is only watched.
+    void goLive(const std::string& projectId, const std::string& role);
     bool openHelpOnEnter = false;  // automated screenshots (--editor-help)
     ~LevelEditorScene() override;
 
@@ -97,6 +101,18 @@ private:
     void drawLinks(const Rect& viewport);
     void loadFavorites();
     void saveFavorites() const;
+    // ---- live editing (collaborative projects)
+    void updateLive(float dt);
+    void applyRemote(const std::vector<Json>& ops);
+    void restoreFromServer(const LiveSession::Rejection& r);
+    /// Name of the member who holds `id` (selected by someone else), "" if free.
+    std::string lockHolder(const std::string& id) const;
+    /// A free object id; in live editing it carries a mark of this player, so two members
+    /// never create the same id at the same time.
+    std::string newObjectId() const;
+    void drawPresence(const Rect& area);
+    void drawLiveOverlay(const Rect& viewport);
+    void drawConflicts();
     void drawHistory(const Rect& r);
     void drawValidation(const Rect& r);
     void runChecks();
@@ -162,6 +178,14 @@ private:
     std::set<std::string> explorerOpen_;  // expanded layers ("type:<type>" when grouped by type)
     int explorerGroup_ = 0;               // 0 by layer, 1 by type
     std::set<std::string> favorites_;     // library items marked as favorites (editor/favorites.json)
+    std::unique_ptr<LiveSession> live_;
+    std::string liveProject_, liveRole_;
+    Json liveSynced_;                     // the document as the room knows it (plus my sent edits)
+    bool liveLoaded_ = false, liveDirty_ = false;
+    std::string followId_;                // member whose view I follow
+    std::string lastEditLabel_;
+    std::vector<LiveSession::Rejection> conflicts_;
+    std::unique_ptr<class OnlineUi> liveUi_;
     std::vector<LevelObject> clipboard_;
     LeftTab leftTab_ = LeftTab::Explorer;
     int libraryCategory_ = 0;

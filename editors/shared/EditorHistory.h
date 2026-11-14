@@ -51,6 +51,12 @@ public:
     size_t index() const { return index_; }
     const std::string& label(size_t i) const { return labels_[std::min(i, labels_.size() - 1)]; }
     const Json& current() const { return states_[index_]; }
+    /// Changes every stored state the same way (live editing: the other members' edits
+    /// are part of every state, so undo only takes back one's own).
+    template <typename F>
+    void transformAll(F f) {
+        for (auto& s : states_) f(s);
+    }
     /// Goes straight to state `i` (history panel).
     const Json& jump(size_t i) {
         index_ = std::min(i, states_.size() - 1);

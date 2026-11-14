@@ -48,6 +48,8 @@ std::unique_ptr<Scene> makeNotifications(GameServices& g, int tab = 0);
 /// Help: every power of the player with a live example (pushed over the current screen).
 std::unique_ptr<Scene> makePowerGuide(GameServices& g, int page = 0);
 std::unique_ptr<Scene> makeLevelEditor(GameServices& g, const std::string& levelId);
+/// Live editing of a collaborative project in the level editor (`levelId`: its local copy).
+std::unique_ptr<Scene> makeLevelEditorLive(GameServices& g, const std::string& levelId, const std::string& projectId, const std::string& role);
 /// Automated screenshots: the level editor with its help open.
 std::unique_ptr<Scene> makeLevelEditorHelp(GameServices& g, const std::string& levelId);
 std::unique_ptr<Scene> makeEnemyEditor(GameServices& g, const std::string& enemyId = {}, int tab = 0);

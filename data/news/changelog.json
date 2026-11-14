@@ -1,4 +1,10 @@
 {
+  "2.12.0": [
+    "PROJETS → Édition en direct : plusieurs membres dans le même niveau, avec leurs avatars, leurs curseurs, leurs sélections et ce qu'ils font, et l'état de la synchronisation.",
+    "Un objet sélectionné par un éditeur est verrouillé pour les autres le temps qu'il travaille dessus ; « Suivre » un membre montre sa vue.",
+    "Chaque modification est envoyée au serveur, qui la range dans un même ordre pour tous ; « Annuler » ne défait que vos propres modifications.",
+    "Une modification refusée (conflit, objet verrouillé ou supprimé) est montrée avec le choix de la réappliquer : rien n'est écrasé sans vous. Hors ligne, vos modifications attendent sur le disque."
+  ],
   "2.11.0": [
     "Éditeur de niveaux refait en panneaux fixes : menus Fichier et Tester (depuis le début, la vue ou la sélection), explorateur à gauche (par calque ou par type), bibliothèque et entité à droite.",
     "Bibliothèque en huit catégories (plateformes, terrain, pièges, jeu, zones, ennemis, décors) et favoris marqués d'une étoile.",

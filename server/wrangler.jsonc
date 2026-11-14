@@ -41,6 +41,11 @@
   "r2_buckets": [
     { "binding": "STORAGE", "bucket_name": "cosmic-online-prod-files" }
   ],
+  // Live editing of collaborative projects: one Durable Object per project (presence,
+  // temporary locks, order of the operations). Its state is in memory; the operations
+  // themselves are kept in D1.
+  "durable_objects": { "bindings": [{ "name": "PROJECT_ROOMS", "class_name": "ProjectRoom" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ProjectRoom"] }],
   "env": {
     "staging": {
       "name": "cosmic-online-staging",
@@ -64,7 +69,9 @@
       ],
       "r2_buckets": [
         { "binding": "STORAGE", "bucket_name": "cosmic-online-staging-files" }
-      ]
+      ],
+      "durable_objects": { "bindings": [{ "name": "PROJECT_ROOMS", "class_name": "ProjectRoom" }] },
+      "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ProjectRoom"] }]
     },
     "dev": {
       "name": "cosmic-online-dev",
@@ -85,7 +92,9 @@
       ],
       "r2_buckets": [
         { "binding": "STORAGE", "bucket_name": "cosmic-online-dev-files" }
-      ]
+      ],
+      "durable_objects": { "bindings": [{ "name": "PROJECT_ROOMS", "class_name": "ProjectRoom" }] },
+      "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ProjectRoom"] }]
     }
   },
   "dev": { "ip": "127.0.0.1", "port": 8787 }

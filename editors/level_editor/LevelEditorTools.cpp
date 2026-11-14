@@ -103,6 +103,15 @@ void LevelEditorScene::drawReadOnlyBanner(const Rect& vp) {
     bannerRect_ = bar;
     ui.r().fillRoundedRect(bar, ui.s(10), Color{40, 26, 10, 235});
     ui.r().drawRoundedRect(bar, ui.s(10), ui.theme().warm, ui.s(1.5f));
+    if (live_) {
+        // Live editing of a project, as a reader or a tester: watching only.
+        std::string role = liveRole_ == "tester" ? "testeur" : "lecteur";
+        ui.label("Projet en direct — lecture seule", {bar.x + ui.s(18), bar.y + ui.s(19)}, 19, ui.theme().warm, Align::Left, FontFace::Bold, VAlign::Middle);
+        std::string why = "Vous êtes " + role + " de ce projet : vous voyez les modifications des éditeurs au fur et à mesure.";
+        ui.label(why, {bar.x + ui.s(18), bar.y + ui.s(41)}, ui.fitFont(why, FontFace::Body, 15, bar.w - ui.s(36)), ui.theme().textDim, Align::Left,
+                 FontFace::Body, VAlign::Middle);
+        return;
+    }
     std::string what = readOnlySource_.empty() ? "Niveau de la campagne" : "Niveau importé";
     ui.label(what + " — lecture seule", {bar.x + ui.s(18), bar.y + ui.s(19)}, 19, ui.theme().warm, Align::Left, FontFace::Bold,
              VAlign::Middle);

@@ -93,8 +93,10 @@ void LevelEditorScene::drawToolbar(const Rect& r) {
     }
     if (btn("events", "Événements", 124)) modal_ = Modal::Events;
     if (btn("cine", "Cinématiques", 136)) modal_ = Modal::Cinematics;
-    // Right: test (with its menu), help.
+    // Right: test (with its menu), help; between them, live editing presence.
+    float presenceX = x + ui.s(10);
     x = r.right() - ui.s(14) - ui.s(40) - ui.s(6) - ui.s(36) - ui.s(2) - ui.s(128);
+    if (live_) drawPresence({presenceX, r.y + ui.s(4), x - presenceX - ui.s(16), r.h - ui.s(8)});
     {
         UIContext::ButtonStyle st;
         st.small = true;
