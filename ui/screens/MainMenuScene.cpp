@@ -49,7 +49,9 @@ public:
     explicit MainMenuScene(GameServices& g) : g_(g) {}
     void onEnter() override {
         g_.playMusic("music/menu_theme.ogg");
-        g_.ui.setFocus(!g_.progression.lastLevel.empty() ? "main/continue" : "main/campaign");
+        g_.ui.setFocus(!g_.progression.lastLevel.empty() && !g_.content.campaignPlanetOf(g_.progression.lastLevel).empty()
+                           ? "main/continue"
+                           : "main/campaign");
     }
     void onResume() override { g_.playMusic("music/menu_theme.ogg"); }
     void update(float dt) override {
@@ -65,7 +67,9 @@ public:
         ui.label("Sylvanox · Pyralis · Glacior", {ui.screenW() * 0.66f, ui.screenH() * 0.36f + ui.s(120)}, 26,
                  ui.theme().text.withAlphaF(appear * 0.85f), Align::Center, FontFace::Body, VAlign::Middle);
 
-        bool canContinue = !g_.progression.lastLevel.empty() && g_.content.level(g_.progression.lastLevel);
+        // Only a campaign level: WORKSHOP levels are reached from the WORKSHOP.
+        bool canContinue = !g_.progression.lastLevel.empty() && g_.content.level(g_.progression.lastLevel) &&
+                           !g_.content.campaignPlanetOf(g_.progression.lastLevel).empty();
         int rows = canContinue ? 5 : 4;
         float x = ui.s(120), w = ui.s(470), h = ui.s(66), gap = ui.s(14);
         float y = ui.screenH() * 0.5f - (rows * (h + gap)) * 0.5f + ui.s(40);

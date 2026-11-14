@@ -55,7 +55,12 @@ public:
 
     // Levels
     std::vector<const LevelEntry*> levels() const;
+    /// The campaign of a planet: only the levels its planet file declares, in that order.
+    /// Levels made in the editor or imported alone stay in the WORKSHOP even when their
+    /// "planet" field names this planet (it only chooses their look).
     std::vector<const LevelEntry*> levelsForPlanet(const std::string& planetId) const;
+    /// Planet whose campaign lists this level ("" = a WORKSHOP level).
+    std::string campaignPlanetOf(const std::string& levelId) const;
     const LevelEntry* level(const std::string& id) const;
     std::optional<LevelData> loadLevel(const std::string& id, std::string* error = nullptr) const;
     bool saveUserLevel(const LevelData& level);

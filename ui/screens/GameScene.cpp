@@ -34,6 +34,7 @@ void GameScene::onEnter() {
         Log::error("Cannot load level {}: {}", levelId_, loadError_);
         return;
     }
+    workshop_ = !opt_.editorTest && g_.content.campaignPlanetOf(levelId_).empty();
     std::string root = opt_.assetRoot;
     if (root.empty())
         if (const LevelEntry* e = g_.content.level(levelId_)) root = Paths::toUtf8(e->assetRoot);
@@ -52,8 +53,10 @@ void GameScene::onEnter() {
     renderer_.build(g_.app.renderer(), res, *world_);
     if (!opt_.editorTest) {
         g_.records.registerAttempt(levelId_);
-        g_.progression.lastLevel = levelId_;
-        g_.progression.lastPlanet = level_.planet;
+        if (!workshop_) {
+            g_.progression.lastLevel = levelId_;
+            g_.progression.lastPlanet = level_.planet;
+        }
     }
     g_.app.input().consumePlayerInput();  // drop the menu's pending presses
     if (!g_.inputScript.empty()) script_.parse(g_.inputScript);
@@ -121,12 +124,16 @@ void GameScene::quitToMenu() {
         else g_.app.switchScene(makeOnlineRanking(g_, levelId_), 0.4f);
         return;
     }
+    if (workshop_) {
+        g_.app.switchScene(makeContentManager(g_), 0.4f);
+        return;
+    }
     std::string planet = level_.planet.empty() ? "sylvanox" : level_.planet;
     g_.app.switchScene(makeLevelSelect(g_, planet), 0.4f);
 }
 
 std::string GameScene::nextLevelId() const {
-    if (opt_.editorTest || opt_.fromOnline) return {};
+    if (opt_.editorTest || opt_.fromOnline || workshop_) return {};
     auto list = g_.content.levelsForPlanet(level_.planet);
     for (size_t i = 0; i + 1 < list.size(); ++i)
         if (list[i]->id == levelId_ && g_.progression.levelUnlocked(*list[i + 1], g_.content)) return list[i + 1]->id;
@@ -252,6 +259,7 @@ void GameScene::finishRun(bool completed) {
     data.editorTest = opt_.editorTest;
     data.replay = lastReplay_;
     data.fromOnline = opt_.fromOnline;
+    data.fromWorkshop = workshop_ && !opt_.fromOnline;
     data.online = online;
     g_.app.pushScene(std::make_unique<ResultsScene>(g_, *this, std::move(data)));
 }

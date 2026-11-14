@@ -48,6 +48,9 @@ private:
     GameServices& g_;
     std::string levelId_;
     PlayOptions opt_;
+    /// Not in any planet's campaign (made in the editor, imported): leaving goes back to
+    /// the WORKSHOP, no "next level", and "Continuer" keeps pointing at the campaign.
+    bool workshop_ = false;
     LevelData level_;
     std::unique_ptr<GameWorld> world_;
     GameRenderer renderer_;

@@ -149,6 +149,17 @@ TEST_CASE("packaging: import works on a 'PC' without the original assets") {
     CHECK(ce != nullptr);
     CHECK(ce->source == ContentSource::User);
     CHECK(ce->assetRoot == packageAssets);
+    // Neither the imported level nor the player's copy joins the Sylvanox campaign, even
+    // though their "planet" field says sylvanox: they stay in the WORKSHOP.
+    CHECK(copy.planet == "sylvanox");
+    for (const LevelEntry* l : env.content.levelsForPlanet("sylvanox")) {
+        CHECK(l->source == ContentSource::Builtin);
+        CHECK(l->id != copy.id);
+        CHECK(l->id != newId);
+    }
+    CHECK(env.content.campaignPlanetOf(copy.id).empty());
+    CHECK(env.content.campaignPlanetOf(newId).empty());
+    CHECK(env.content.campaignPlanetOf("sylvanox_01") == "sylvanox");
     CHECK(env.content.deleteUserLevel(copy.id));
 
     CHECK(env.content.removePackage(env.content.packages().front().id));

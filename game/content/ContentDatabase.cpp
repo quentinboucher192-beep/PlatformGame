@@ -74,10 +74,9 @@ void ContentDatabase::loadPlanetsFrom(const fs::path& dir, const fs::path& asset
         p.assetRoot = assetRoot;
         auto it = planets_.find(p.id);
         if (it != planets_.end() && !assetRoot.empty()) {
-            // A package planet with an existing id only contributes its levels.
-            for (const auto& l : p.levels)
-                if (std::find(it->second.levels.begin(), it->second.levels.end(), l) == it->second.levels.end())
-                    it->second.levels.push_back(l);
+            // A package planet with an existing id (a level exported from the campaign
+            // carries its planet for the look) never changes that planet's campaign: its
+            // levels stay in the WORKSHOP. Only a new planet brings its own campaign.
             continue;
         }
         planets_[p.id] = std::move(p);
@@ -204,15 +203,13 @@ std::vector<const LevelEntry*> ContentDatabase::levelsForPlanet(const std::strin
         for (const auto& id : p->levels)
             if (const LevelEntry* l = level(id)) v.push_back(l);
     }
-    std::vector<const LevelEntry*> extra;
-    for (const auto& [id, l] : levels_)
-        if (l.planet == planetId && std::find(v.begin(), v.end(), &l) == v.end()) extra.push_back(&l);
-    std::sort(extra.begin(), extra.end(), [](const auto* a, const auto* b) {
-        if (a->source != b->source) return a->source < b->source;
-        return a->name < b->name;
-    });
-    v.insert(v.end(), extra.begin(), extra.end());
     return v;
+}
+
+std::string ContentDatabase::campaignPlanetOf(const std::string& levelId) const {
+    for (const auto& [id, p] : planets_)
+        if (std::find(p.levels.begin(), p.levels.end(), levelId) != p.levels.end() && level(levelId)) return id;
+    return {};
 }
 
 const LevelEntry* ContentDatabase::level(const std::string& id) const {

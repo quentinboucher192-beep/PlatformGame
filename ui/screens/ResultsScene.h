@@ -23,6 +23,7 @@ struct ResultsData {
     std::string nextLevel;
     bool editorTest = false;
     bool fromOnline = false;  // launched from ONLINE: back goes to ONLINE
+    bool fromWorkshop = false;  // a WORKSHOP level: back goes to the WORKSHOP
     /// Exact replay of the run (official levels played from their start).
     std::shared_ptr<ReplayData> replay;
     /// Performance kept for Cosmic Online (nullopt: not an improvement / not rankable).
