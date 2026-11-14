@@ -5,6 +5,7 @@ import { audit, countryExists, requireAuth, type AuthInfo } from "./auth";
 import { verifyPassword } from "./crypto";
 import { ApiError, Errors, json, nowIso, readJsonObject, readLimited, type Ctx } from "./http";
 import { playerSummary, privateProfile, recordJson, visibleCountry, type PlayerRow, type RecordRow } from "./model";
+import { communityKeys } from "./community";
 import { RULES, rateLimit } from "./ratelimit";
 import {
     AVATAR_RE,
@@ -229,7 +230,7 @@ export async function patchMe(ctx: Ctx): Promise<Response> {
 export async function exportMe(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
     const id = auth.player.id;
-    const [sessions, records, friends, replays, auditRows, conversations, messages, blocks] = await ctx.env.DB.batch([
+    const [sessions, records, friends, replays, auditRows, conversations, messages, blocks, cLevels, cRecords, cRatings] = await ctx.env.DB.batch([
         ctx.env.DB.prepare("SELECT id, created_at, last_used_at, expires_at, refresh_expires_at, revoked_at, client_info FROM player_sessions WHERE player_id = ?1").bind(id),
         ctx.env.DB.prepare("SELECT * FROM records WHERE player_id = ?1 ORDER BY created_at").bind(id),
         ctx.env.DB.prepare("SELECT player_id, friend_id, status, created_at FROM player_friends WHERE player_id = ?1 OR friend_id = ?1").bind(id),
@@ -241,6 +242,11 @@ export async function exportMe(ctx: Ctx): Promise<Response> {
         ).bind(id),
         ctx.env.DB.prepare("SELECT id, conversation_id, body, created_at, deleted_at FROM messages WHERE sender_id = ?1 ORDER BY created_at").bind(id),
         ctx.env.DB.prepare("SELECT blocked_id, created_at FROM player_blocks WHERE player_id = ?1").bind(id),
+        ctx.env.DB.prepare(
+            "SELECT id, title, description, planet, difficulty, status, current_version, downloads, completions, created_at, updated_at FROM community_levels WHERE author_id = ?1",
+        ).bind(id),
+        ctx.env.DB.prepare("SELECT id, level_id, version, time_ms, deaths, status, created_at FROM community_records WHERE player_id = ?1").bind(id),
+        ctx.env.DB.prepare("SELECT level_id, stars, created_at FROM community_ratings WHERE player_id = ?1").bind(id),
     ]);
     await audit(ctx, id, "data_export");
     return json(ctx, {
@@ -254,6 +260,9 @@ export async function exportMe(ctx: Ctx): Promise<Response> {
         conversations: conversations?.results ?? [],
         messages_sent: messages?.results ?? [],
         blocked_players: blocks?.results ?? [],
+        community_levels: cLevels?.results ?? [],
+        community_records: cRecords?.results ?? [],
+        community_ratings: cRatings?.results ?? [],
         notes: "Le mot de passe n'est stocké que sous forme d'empreinte PBKDF2 et n'est pas exportable. Les adresses IP ne sont jamais stockées en clair.",
     });
 }
@@ -278,6 +287,11 @@ export async function deleteMe(ctx: Ctx): Promise<Response> {
     const keys = await ctx.env.DB.prepare("SELECT storage_key FROM replay_metadata WHERE player_id = ?1").bind(id).all<{ storage_key: string }>();
     const toDelete = keys.results.map((k) => k.storage_key);
     if (auth.player.avatar_custom_key) toDelete.push(auth.player.avatar_custom_key);
+    // Community levels of the player (packages, thumbnails, replays of every player on them)
+    // and the player's replays on other levels.
+    toDelete.push(...(await communityKeys(ctx, "l.author_id = ?1", id)));
+    const own = await ctx.env.DB.prepare("SELECT replay_key FROM community_records WHERE player_id = ?1 AND replay_key IS NOT NULL").bind(id).all<{ replay_key: string }>();
+    for (const r of own.results) if (!toDelete.includes(r.replay_key)) toDelete.push(r.replay_key);
     for (let i = 0; i < toDelete.length; i += 500) await ctx.env.STORAGE.delete(toDelete.slice(i, i + 500));
     await ctx.env.DB.batch([
         ctx.env.DB.prepare("DELETE FROM audit_log WHERE player_id = ?1").bind(id),

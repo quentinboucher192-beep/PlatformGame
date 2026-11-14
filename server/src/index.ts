@@ -12,6 +12,7 @@ import type { RecordRow } from "./model";
 import * as players from "./players";
 import { RULES, rateLimit } from "./ratelimit";
 import * as social from "./social";
+import * as community from "./community";
 import * as records from "./records";
 import { CATEGORIES, MODES } from "./validate";
 
@@ -134,6 +135,22 @@ route("POST", `${V}/social/messages/{messageId}/report`, (ctx) => social.reportM
 route("GET", `${V}/social/blocks`, (ctx) => social.listBlocks(ctx));
 route("POST", `${V}/social/blocks`, (ctx) => social.blockPlayer(ctx));
 route("DELETE", `${V}/social/blocks/{playerId}`, (ctx) => social.unblockPlayer(ctx));
+
+// Community levels: publish, browse, download, rate, report, per-level leaderboards
+route("GET", `${V}/community/levels`, (ctx) => community.listLevels(ctx));
+route("POST", `${V}/community/levels`, (ctx) => community.startPublish(ctx));
+route("GET", `${V}/community/levels/{levelId}`, (ctx) => community.getLevel(ctx));
+route("DELETE", `${V}/community/levels/{levelId}`, (ctx) => community.removeLevel(ctx));
+route("PUT", `${V}/community/levels/{levelId}/versions/{version}/package`, (ctx) => community.uploadPackage(ctx));
+route("PUT", `${V}/community/levels/{levelId}/versions/{version}/replay`, (ctx) => community.uploadCompletion(ctx));
+route("GET", `${V}/community/levels/{levelId}/package`, (ctx) => community.downloadPackage(ctx));
+route("GET", `${V}/community/levels/{levelId}/thumbnail`, (ctx) => community.thumbnail(ctx));
+route("GET", `${V}/community/levels/{levelId}/leaderboard`, (ctx) => community.leaderboard(ctx));
+route("POST", `${V}/community/levels/{levelId}/rate`, (ctx) => community.rate(ctx));
+route("POST", `${V}/community/levels/{levelId}/report`, (ctx) => community.report(ctx));
+route("POST", `${V}/community/levels/{levelId}/records`, (ctx) => community.submitRecord(ctx));
+route("PUT", `${V}/community/records/{recordId}/replay`, (ctx) => community.uploadRecordReplay(ctx));
+route("GET", `${V}/community/records/{recordId}/replay`, (ctx) => community.downloadRecordReplay(ctx));
 
 // Moderation (only with the ADMIN_TOKEN secret)
 route("GET", `${V}/admin/records`, (ctx) => admin.listForReview(ctx));

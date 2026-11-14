@@ -26,6 +26,12 @@ export const RULES = {
     socialGroup: { name: "social_group", limit: 10, windowSeconds: 3600 },
     socialReport: { name: "social_report", limit: 20, windowSeconds: 3600 },
     socialBlock: { name: "social_block", limit: 30, windowSeconds: 3600 },
+    communityPublish: { name: "community_publish", limit: 10, windowSeconds: 3600 },
+    communityUpload: { name: "community_upload", limit: 40, windowSeconds: 3600 },
+    communityDownload: { name: "community_download", limit: 120, windowSeconds: 3600 },
+    communityRate: { name: "community_rate", limit: 60, windowSeconds: 3600 },
+    communityReport: { name: "community_report", limit: 20, windowSeconds: 3600 },
+    communityRecord: { name: "community_record", limit: 30, windowSeconds: 60 },
 } as const satisfies Record<string, RateRule>;
 
 /** RATE_LIMIT_SCALE multiplies every limit (development only: repeated local test runs). */
