@@ -546,3 +546,37 @@ TEST_CASE("ghost: training from a checkpoint compares from there") {
     CHECK(std::abs(s.delta - expected) < 0.003f);
     CHECK(std::abs(s.segment - myRun) < 0.002f);
 }
+
+TEST_CASE("ghost: a tie to the millisecond is a tie, not a win") {
+    LevelData level = ghostLevel(false);
+    Run a = world().run(level, {1.0f});
+    GhostRace race;
+    race.add(GhostMeta{}, a.replay, true, Color{});
+    GhostTrack me;
+    me.load(a.replay);
+    for (size_t i = 0; i < a.splits.size(); ++i) race.onSplit(static_cast<int>(i), a.splits[i], me.poseAt(a.splits[i]).feet);
+    race.finish(a.time);  // the same run: the ghost keeps its duration in whole milliseconds
+    CHECK(race.splits().back().delta == 0.0f);
+    CHECK(race.racer(0).liveDelta == 0.0f);
+    for (const auto& s : race.splits()) CHECK(s.delta == 0.0f);
+}
+
+TEST_CASE("ghost: a record made on another version is kept as a non-official ghost when asked") {
+    fs::path root = fs::temp_directory_path() / ("cosmic_ghost_test_" + makeUuidV4().substr(0, 8));
+    GhostStore store(root);
+    LevelData level = ghostLevel(false);
+    Run r = world().run(level, {});
+    GhostMeta m;
+    m.recordId = "rec_v1";
+    m.levelId = level.id;
+    m.levelHash = std::string(64, 'd');  // the version installed here
+    // Strict (default): refused; lenient (a downloaded record of an older version): kept with
+    // the replay's own version, so the race knows it is not this version.
+    CHECK(!store.storeDownload(r.replay.encode(), m));
+    CHECK(store.storeDownload(r.replay.encode(), m, nullptr, false));
+    auto e = store.cached("rec_v1");
+    CHECK(e.has_value());
+    if (e) CHECK(e->meta.levelHash == r.replay.levelHash);
+    std::error_code ec;
+    fs::remove_all(root, ec);
+}

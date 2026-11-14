@@ -46,8 +46,10 @@ public:
     /// The player's ghosts of a level (any version: `meta.levelHash` tells which one).
     std::vector<GhostEntry> localGhosts(const std::string& levelId) const;
 
-    /// A downloaded replay (raw ".cprz" bytes, checked here) and its description.
-    bool storeDownload(const std::vector<uint8_t>& bytes, GhostMeta meta, std::string* error = nullptr);
+    /// A downloaded replay (raw ".cprz" bytes, checked here) and its description. With
+    /// `sameVersionOnly`, a replay of another version of the level is refused; without, it
+    /// is kept with its own version (raced as a non-official comparison).
+    bool storeDownload(const std::vector<uint8_t>& bytes, GhostMeta meta, std::string* error = nullptr, bool sameVersionOnly = true);
     std::optional<GhostEntry> cached(const std::string& recordId) const;
     /// Every cached download of a level.
     std::vector<GhostEntry> cachedFor(const std::string& levelId) const;

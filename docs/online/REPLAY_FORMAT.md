@@ -74,6 +74,11 @@ dernier est pris à la fin du niveau.
 | 9 | ennemi vaincu | — |
 | 10 | téléportation | — |
 | 11 | fin du niveau | — (dernier échantillon) |
+| 12 | boss touché (course à la vérification, 2.16) | arg : boss, value : vie retirée (pour mille) |
+| 13 | vague d'embuscade (course à la vérification, 2.16) | arg : embuscade, value : vagues battues |
+| 14 | temps de passage (Ghost Racing, 2.18) | arg : n° du point (255 au-delà), value : les 16 bits bas du temps en ms ; l'échantillon de l'événement donne le reste (le temps le plus proche ayant ces 16 bits) |
+
+Un lecteur ignore les types qu'il ne connaît pas (le serveur ignore le type 14).
 
 Les éclats et reliques (arg 0 et 1) forment le nombre d'objets comparé au record.
 

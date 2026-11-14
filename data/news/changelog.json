@@ -1,4 +1,15 @@
 {
+  "2.18.0": [
+    "Ghost Racing : courez contre vos fantômes (meilleur temps, record précédent, dernière course), le record mondial, les records de vos amis ou un replay importé, jusqu'à 8 à la fois.",
+    "Fantômes translucides colorés avec contour lumineux, nom et temps de référence ; aucune collision, aucun déclenchement : purement visuels. Touche G (clic du stick gauche) pour les masquer.",
+    "Écart en direct (« +2,450 s » retard, « -1,230 s » avance), temps du fantôme au même endroit, fin estimée ; écarts exacts à chaque point de sauvegarde, meilleurs segments en or, animation de nouveau record.",
+    "Panneau des segments façon LiveSplit : un élément « Fantômes » de l'éditeur du HUD (place, taille, affichage).",
+    "Avant le départ (bouton « Fantômes… » des niveaux, « Course contre ce temps » d'ONLINE RANKING, « Course contre un fantôme… » d'ONLINE LEVELS) : choix des fantômes, options d'affichage, mode entraînement.",
+    "Mode entraînement : un segment depuis un point de sauvegarde, répété automatiquement contre les fantômes ; aucun record, aucune progression, rien n'est envoyé.",
+    "Fin de course : écart final sur chaque fantôme et écran « Segments » (durées, temps cumulés, meilleurs segments, record, fantômes, historique de vos courses).",
+    "Succès : 134 succès en 12 catégories avec des étoiles de difficulté (344 étoiles), sur une toile d'araignée avec zoom (menu principal → Succès) ou en liste. Les étoiles apparaissent sur votre profil en ligne, comme déclarées par le jeu.",
+    "Mode concentré : un HUD réduit choisi dans l'éditeur du HUD (onglet « Mode concentré »), touche T (Partage à la manette) ou menu pause ; les messages du niveau se règlent dans chaque mode."
+  ],
   "2.17.0": [
     "S'accroupir : Bas seul au sol, même sur place, baisse le personnage pour laisser passer les attaques (Bas en courant reste une glissade).",
     "Combats de boss : la caméra montre toute l'arène ; une flèche lumineuse qui clignote sur le bord de l'écran indique un boss hors de vue ; les créatures invoquées disparaissent avec leur boss.",

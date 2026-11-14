@@ -1076,6 +1076,26 @@ tracé déclaré. Le premier joueur dont la tentative finie est acceptée devien
 la notification `race_verified`. Les cartes d'ONLINE LEVELS donnent `extreme`,
 `verified { player, at }` (pour la version courante) et `race_best`.
 
+### 8.9 nonies Succès déclarés (profil)
+
+`PUT /api/v1/players/me/achievements` (authentifié, 30 fois par heure) — corps
+`{"unlocked": ["voyage_first", ...]}` (1000 identifiants au plus, `[a-z0-9_]`). La liste
+**remplace** la précédente. Le serveur ignore les identifiants qu'il ne connaît pas et compte
+lui-même les étoiles avec sa copie du catalogue (`src/achievementCatalog.json`, générée depuis
+`data/achievements/achievements.json` par `scripts/achievements-catalog.mjs`) : le client
+n'envoie jamais de nombre d'étoiles. Réponse : `{"achievements": {stars, count, total_stars,
+total_count, declared: true, updated_at}}`.
+
+`GET /api/v1/players/{id}` ajoute `achievements` (le même objet ; `null` pour un profil masqué).
+Ces succès sont **déclarés par le jeu** : débloqués sur l'ordinateur du joueur, ils ne sont
+pas vérifiés par le serveur et le profil le dit. Ils figurent dans l'export des données et
+disparaissent avec le compte (table `player_achievements`, migration 0031).
+
+Ghost Racing (2.18) n'ajoute aucune route : les fantômes en ligne sont les replays des
+records déjà servis par `GET /api/v1/records/{id}/replay` (records vérifiés) et
+`GET /api/v1/community/records/{id}/replay`. Le nouvel événement de replay `Split` (type 14,
+temps de passage) est ignoré par l'analyse du serveur (voir l'annexe).
+
 ### 8.9 bis Installateurs du jeu (notification « nouvelle version »)
 
 Publics (aucun compte, rien de personnel n'est envoyé : le jeu ne transmet pas sa version, il

@@ -52,3 +52,42 @@ TEST_CASE("hud layout: the timer and the progress bar keep their own settings") 
     setHudVisible(g, HudElement::Progress, true);
     CHECK(g.progressBar == 3);
 }
+
+TEST_CASE("hud layout: focus mode keeps only its elements, and its own level messages choice") {
+    GameplaySettings g;
+    // Defaults: health, powers and the boss stay; the rest goes in focus mode.
+    CHECK(g.hud[HudElement::Vitals].focus);
+    CHECK(g.hud[HudElement::Powers].focus);
+    CHECK(g.hud[HudElement::Boss].focus);
+    CHECK(!g.hud[HudElement::Timer].focus);
+    CHECK(!g.hud[HudElement::Splits].focus);
+    CHECK(hudVisible(g, HudElement::Timer));
+    CHECK(messagesVisible(g));
+    g.focusMode = true;
+    CHECK(!hudVisible(g, HudElement::Timer));
+    CHECK(!hudVisible(g, HudElement::Collectibles));
+    CHECK(hudVisible(g, HudElement::Vitals));
+    CHECK(!messagesVisible(g));  // hidden by default in focus mode
+    g.focusMessages = true;
+    CHECK(messagesVisible(g));
+    // An element hidden in the full HUD stays hidden in focus mode.
+    g.hud[HudElement::Powers].visible = false;
+    CHECK(!hudVisible(g, HudElement::Powers));
+    // Saved and read back.
+    Settings s;
+    s.gameplay = g;
+    s.gameplay.hud[HudElement::Timer].focus = true;
+    s.gameplay.showMessages = false;
+    Settings r = Settings::fromJson(s.toJson());
+    CHECK(r.gameplay.focusMode);
+    CHECK(r.gameplay.focusMessages);
+    CHECK(!r.gameplay.showMessages);
+    CHECK(r.gameplay.hud[HudElement::Timer].focus);
+    CHECK(!r.gameplay.hud[HudElement::Collectibles].focus);
+    // A file from before 2.18: the defaults.
+    Settings old = Settings::fromJson(Json::parse(R"({"gameplay":{"hud":{"timer":{"scale":1.0,"visible":true}}}})"));
+    CHECK(!old.gameplay.focusMode);
+    CHECK(old.gameplay.showMessages);
+    CHECK(!old.gameplay.hud[HudElement::Timer].focus);
+    CHECK(old.gameplay.hud[HudElement::Vitals].focus);
+}

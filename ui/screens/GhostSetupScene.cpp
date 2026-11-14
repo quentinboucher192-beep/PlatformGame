@@ -228,6 +228,7 @@ private:
         if (auto cached = g_.ghosts.cached(rid)) {
             r.entry = std::move(*cached);
             r.entry.meta.source = source;  // what it is to this player now (world / friend)
+            r.sameVersion = r.entry.meta.levelHash == hash_;
         } else {
             r.entry.meta = m;
             r.state = Row::State::Remote;
@@ -305,10 +306,13 @@ private:
             else if (resp.status != 200) err = parseApiResponse(resp).message;
             else {
                 std::vector<uint8_t> bytes(resp.body.begin(), resp.body.end());
-                if (g_.ghosts.storeDownload(bytes, meta, &err)) {
+                // Kept even when made on another version of the level: raced, never as an
+                // official comparison (the row says so).
+                if (g_.ghosts.storeDownload(bytes, meta, &err, false)) {
                     if (auto e = g_.ghosts.cached(meta.recordId)) {
                         row.entry = std::move(*e);
                         row.entry.meta.source = meta.source;
+                        row.sameVersion = row.entry.meta.levelHash == hash_;
                         row.state = Row::State::Ready;
                         g_.ghosts.trimCache(static_cast<uint64_t>(g_.settings.ghosts.cacheMB) * 1024 * 1024);
                         return;

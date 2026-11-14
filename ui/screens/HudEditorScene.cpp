@@ -434,6 +434,12 @@ private:
             if (ui.listItem("el" + std::to_string(i), {c.x, y, c.w, rowH}, HudLayout::label(e), i == selected_, sub)) selected_ = i;
             y += rowH + gap;
         }
+        // The level's messages (hints, signs, titles): not a place on screen, just shown or not.
+        {
+            bool& msg = mode_ == 1 ? work_.focusMessages : work_.showMessages;
+            ui.toggle("messages", {c.x, y, c.w, ui.s(48)}, "Messages du niveau (indications, titres)", msg);
+            y += ui.s(48) + gap;
+        }
         y += ui.s(14);
         auto e = static_cast<HudElement>(selected_);
         std::string title = std::string("Réglages : ") + HudLayout::label(e);

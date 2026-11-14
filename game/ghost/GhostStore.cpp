@@ -159,7 +159,7 @@ std::vector<GhostEntry> GhostStore::localGhosts(const std::string& levelId) cons
     return out;
 }
 
-bool GhostStore::storeDownload(const std::vector<uint8_t>& bytes, GhostMeta meta, std::string* error) {
+bool GhostStore::storeDownload(const std::vector<uint8_t>& bytes, GhostMeta meta, std::string* error, bool sameVersionOnly) {
     std::string key = safeName(meta.recordId);
     if (key.empty()) {
         if (error) *error = "Record inconnu.";
@@ -176,7 +176,7 @@ bool GhostStore::storeDownload(const std::vector<uint8_t>& bytes, GhostMeta meta
         return false;
     }
     // What the description says about the run must be what the replay contains.
-    if (!meta.levelHash.empty() && r->levelHash != meta.levelHash) {
+    if (sameVersionOnly && !meta.levelHash.empty() && r->levelHash != meta.levelHash) {
         if (error) *error = "Le replay ne correspond pas à ce record.";
         return false;
     }

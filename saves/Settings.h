@@ -31,6 +31,9 @@ struct GameplaySettings {
     /// « Mode concentré »: only the elements chosen for it (HUD editor) are shown; toggled in
     /// game (T / Partage, pause menu). Display only.
     bool focusMode = false;
+    /// The level's messages (hints, signs, power and boss titles), in each mode.
+    bool showMessages = true;
+    bool focusMessages = false;
     bool debugMode = false;  // debug overlay available in game (F3)
     bool editorAutosave = true;
     int editorAutosaveSeconds = 60;
@@ -40,6 +43,8 @@ struct GameplaySettings {
 /// Whether a HUD element is shown (the timer and the progress bar have their own settings;
 /// in focus mode, only the elements chosen for it).
 bool hudVisible(const GameplaySettings& g, HudElement e);
+/// Whether the level's messages are shown (in the mode in use).
+inline bool messagesVisible(const GameplaySettings& g) { return g.focusMode ? g.focusMessages : g.showMessages; }
 void setHudVisible(GameplaySettings& g, HudElement e, bool visible);
 
 /// Client-side preferences of Cosmic Online. Privacy settings that other players depend on

@@ -106,7 +106,7 @@ void Hud::render(UIContext& ui, GameWorld& w, const WorldView& view, const Level
         }
         if (settings.showInputHints) drawInteractPrompt(ui, w, view);
     }
-    drawMessages(ui, w);
+    if (messagesVisible(settings)) drawMessages(ui, w);
     drawCinematic(ui, w);
 }
 

@@ -5,6 +5,32 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.18.0** :
+* **Ghost Racing** : courez contre des **fantômes** : vos propres courses (meilleur temps,
+  record précédent, dernière course de cette version du niveau), le **record mondial**, les
+  records de vos **amis**, un replay **téléchargé** ou **importé** — jusqu'à 8 à la fois. Les
+  fantômes sont translucides, colorés, entourés d'une lueur, avec leur nom et leur temps ; ils
+  ne touchent à rien (aucune collision, aucun mécanisme, aucun point de sauvegarde). Touche
+  **G** (clic du stick gauche) pour les masquer, options dans la pause.
+* **Écarts en direct** sous le chronomètre (« +2,450 s » de retard, « -1,230 s » d'avance),
+  temps du fantôme au même endroit, fin estimée, et un **panneau des segments** façon
+  LiveSplit (durée et écart de chaque segment, temps cumulé et écart cumulé, meilleurs
+  segments en or, animation de nouveau record) — un élément « Fantômes » de l'éditeur du HUD.
+* **Avant le départ** (« Fantômes… » sur la fiche d'un niveau, « Course contre ce temps »
+  dans ONLINE RANKING, « Course contre un fantôme… » dans ONLINE LEVELS) : choix des
+  fantômes, version et type de record affichés, options d'affichage, et le **mode
+  entraînement** (un segment depuis un point de sauvegarde, répété contre les fantômes, sans
+  aucun record). En fin de course : écart sur chaque fantôme et écran **Segments** (durées,
+  temps cumulés, meilleurs segments, record, fantômes, historique).
+* **Succès** (menu principal → *Succès*) : **134 succès** en 12 catégories, avec 1 à 5
+  **étoiles** de difficulté, présentés sur une **toile d'araignée** (un secteur par catégorie,
+  les étoiles du dehors vers le cœur, des fils entre les étapes, zoom et déplacement) ou en
+  liste. Ils se débloquent d'après vos vraies sauvegardes ; vos étoiles s'affichent sur votre
+  profil en ligne, comme **déclarées par le jeu** (non vérifiées par le serveur).
+* **Mode concentré** : un HUD réduit (vie, pouvoirs, boss par défaut), choisi dans l'onglet
+  « Mode concentré » de l'éditeur du HUD ; touche **T** (Partage à la manette) ou menu pause.
+  Les **messages du niveau** (indications, titres) s'affichent ou non dans chaque mode.
+
 **Nouveau dans la version 2.17.0** :
 * **S'accroupir** : Bas seul au sol, même sur place, baisse le personnage pour laisser passer
   les attaques au-dessus (Bas en courant reste une glissade, une diagonale fait marcher).
@@ -235,8 +261,8 @@ local sans compte Cloudflare. Documentation complète : [docs/online/](docs/onli
 ## Menu principal
 
 *Continuer* (dernier niveau joué) · *Campagne* (planètes et niveaux) · *Online* ·
-*Notifications* · *Statistiques* (les boss : victoires, combats et phases sans dégât) ·
-*Paramètres* · *Quitter*.
+*Notifications* · *Succès* (toile des 134 succès et de leurs étoiles) · *Statistiques* (les
+boss : victoires, combats et phases sans dégât) · *Paramètres* · *Quitter*.
 
 **Online** (compte requis) : **ONLINE LEVELS** (les niveaux publiés par les joueurs : Populaires,
 Plus durs, Récents, Mieux notés, Amis, Recherche, Les miens ; télécharger et jouer, noter,
@@ -320,6 +346,7 @@ L'exécutable est dans `build/bin/`. Installateur Windows : `installer\build_ins
 * [docs/EDITORS.md](docs/EDITORS.md) – guide des éditeurs
 * [docs/BUILDING.md](docs/BUILDING.md) – compilation, tests, installateur
 * [docs/ASSET_SPEC.md](docs/ASSET_SPEC.md) – contrat des assets (sprites, animations, tuiles, audio)
+* [docs/GHOST_RACING.md](docs/GHOST_RACING.md) – fantômes, écarts, entraînement, succès, mode concentré (et leurs limites)
 * [docs/online/](docs/online/README.md) – Cosmic Online : installation, déploiement, secrets, API, règles, confidentialité, dépannage
 
 ## Licences

@@ -46,6 +46,7 @@
 | Abonnements aux créateurs | D1 `player_follows` | listes publiques ou privées (réglage `follows_visibility`) | jusqu'au désabonnement ou à un blocage |
 | Notifications (type, acteur, niveau, date, lu) et catégories désactivées | D1 `notifications`, `players.notifications_off` | le joueur | lues : 60 jours ; 500 au plus |
 | Temps joué par niveau (secondes, date de la dernière partie) | D1 `player_playtime` | profils visibles | vie du compte |
+| Succès débloqués (identifiants ; étoiles recomptées par le serveur), déclarés par le jeu | D1 `player_achievements` | profils visibles (masqués avec le profil) | vie du compte |
 | Projets collaboratifs (nom, description, réglages), membres et rôles | D1 `projects`, `project_members` | les membres (projets listés : nom, propriétaire, nombre de membres) | jusqu'à la suppression du projet ou du compte du propriétaire |
 | Révisions des projets (niveau JSON, auteur, message, empreinte) | R2 `projects/` + D1 `project_revisions` | les membres | jusqu'à la suppression du projet |
 | Invitations (empreinte SHA-256 de la clé, 4 derniers caractères, rôle, limites) et demandes d'adhésion (message) | D1 `project_invites`, `project_join_requests` | administrateurs du projet | jusqu'à la suppression du projet |
@@ -98,6 +99,9 @@ vérification de son empreinte SHA-256.
 | `online/live_<projet>.json` | modifications faites en direct pas encore confirmées par le serveur (supprimé une fois vide) |
 | `saves/progress.json` | temps joué par niveau (affiché sur la fiche de chaque niveau, même sans compte) |
 | `saves/boss_stats.json` | statistiques des boss (victoires, défaites, combats et phases sans dégât) : jamais envoyées au serveur |
+| `saves/achievements.json` | succès débloqués et compteurs de partie (sauts, ennemis vaincus…) : seule la liste des succès est envoyée, au compte connecté |
+| `saves/segments.json` | temps de passage de vos dernières courses et meilleurs segments : jamais envoyés |
+| `ghosts/` | fantômes : vos courses (`local/`), replays téléchargés (`cache/`, limité en taille), replays importés (`files/`) : jamais envoyés |
 
 À la suppression du compte, les performances et replays locaux rattachés à ce compte sont
 également effacés.

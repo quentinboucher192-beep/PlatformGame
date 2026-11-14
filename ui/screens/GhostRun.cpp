@@ -51,7 +51,9 @@ void GhostRun::begin(std::vector<GhostEntry> choices, const LevelData& level, co
                 l.refused = who + " : " + c.reason;
             } else {
                 l.sameVersion = r->levelHash == levelHash;
-                if (!l.sameVersion && r->levelId != level.id) {
+                // Another version: still this level? (the uploader's own copy has another id;
+                // the description written at download time names ours).
+                if (!l.sameVersion && r->levelId != level.id && e.meta.levelId != level.id) {
                     l.refused = who + " : replay d'un autre niveau.";
                 } else {
                     l.track.load(*r);
