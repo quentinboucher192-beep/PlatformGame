@@ -1,0 +1,387 @@
+{
+  "format": "cosmic.enemy",
+  "id": "crucible_heart",
+  "name": "Cœur du Creuset",
+  "description": "Le magma du creuset ancestral a pris forme et défend sa forge.",
+  "family": "miniboss",
+  "animation": "animations/magmaroth.json",
+  "size": [
+    55,
+    75
+  ],
+  "scale": 1.25,
+  "hp": 120,
+  "contactDamage": 2,
+  "speed": 38,
+  "chaseSpeedMultiplier": 1.2,
+  "flying": false,
+  "knockbackResist": 1,
+  "detectionRange": 360,
+  "attackRange": 200,
+  "loseRange": 2000,
+  "needsLineOfSight": false,
+  "movement": "guard",
+  "reaction": "chase",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 150,
+  "hopVelocity": 0,
+  "attacks": [
+    {
+      "id": "slam",
+      "name": "Marteau tellurique",
+      "type": "slam",
+      "damage": 2,
+      "range": 180,
+      "telegraph": 0.59,
+      "active": 0.35,
+      "recover": 0.6,
+      "cooldown": 1.8,
+      "telegraphAnim": "telegraph_slam",
+      "attackAnim": "slam",
+      "projectileSpeed": 220,
+      "knockback": 260
+    },
+    {
+      "id": "charge",
+      "name": "Ruée de magma",
+      "type": "charge",
+      "damage": 2,
+      "range": 420,
+      "telegraph": 0.56,
+      "active": 2.2,
+      "recover": 0.66,
+      "cooldown": 2.4,
+      "telegraphAnim": "telegraph_charge",
+      "attackAnim": "charge",
+      "minRange": 70,
+      "lungeSpeed": 260,
+      "knockback": 270
+    },
+    {
+      "id": "barrage",
+      "name": "Gerbe de magma",
+      "type": "arc",
+      "damage": 1,
+      "range": 420,
+      "telegraph": 0.56,
+      "active": 0.25,
+      "recover": 0.48,
+      "cooldown": 1.92,
+      "telegraphAnim": "telegraph_barrage",
+      "attackAnim": "barrage",
+      "projectile": "magma_glob",
+      "projectileSpeed": 160,
+      "count": 4,
+      "spread": 18,
+      "gravity": 420,
+      "origin": [
+        33,
+        -71
+      ],
+      "hitEffect": "fire_burst",
+      "lead": 0.7
+    },
+    {
+      "id": "eruption",
+      "name": "Éruption",
+      "type": "eruption",
+      "damage": 2,
+      "range": 460,
+      "telegraph": 0.65,
+      "active": 0.3,
+      "recover": 0.54,
+      "cooldown": 2.7,
+      "telegraphAnim": "telegraph_slam",
+      "attackAnim": "slam",
+      "projectile": "fireball",
+      "projectileSpeed": 420,
+      "count": 4,
+      "spread": 64,
+      "gravity": 700,
+      "warningEffect": "eruption_warning_fire",
+      "eruptionEffect": "eruption_fire",
+      "hitEffect": "fire_burst",
+      "lead": 0.7
+    },
+    {
+      "id": "breath",
+      "name": "Souffle de forge",
+      "type": "laser",
+      "damage": 2,
+      "range": 360,
+      "telegraph": 0.75,
+      "active": 1.4,
+      "recover": 0.66,
+      "cooldown": 3.6,
+      "telegraphAnim": "telegraph_laser",
+      "attackAnim": "laser",
+      "laserLength": 320,
+      "sweepDegrees": 60,
+      "color": "#ff8a3d",
+      "origin": [
+        24,
+        -56
+      ]
+    },
+    {
+      "id": "summon",
+      "name": "Braises vivantes",
+      "type": "summon",
+      "damage": 0,
+      "range": 500,
+      "telegraph": 0.9,
+      "active": 0.4,
+      "recover": 0.8,
+      "cooldown": 8.8,
+      "telegraphAnim": "summon",
+      "attackAnim": "summon",
+      "summonId": "ember_mite",
+      "summonCount": 2,
+      "maxSummoned": 3
+    },
+    {
+      "id": "v3_leap",
+      "name": "Saut volcanique",
+      "type": "leap",
+      "damage": 2,
+      "range": 560,
+      "telegraph": 0.55,
+      "active": 1.6,
+      "recover": 0.5,
+      "cooldown": 4.2,
+      "telegraphAnim": "telegraph_slam",
+      "attackAnim": "slam",
+      "projectileSpeed": 220,
+      "knockback": 260,
+      "minRange": 120,
+      "leapTime": 0.8,
+      "lead": 0.9
+    },
+    {
+      "id": "v3_line",
+      "name": "Fissure de magma",
+      "type": "eruption",
+      "damage": 2,
+      "range": 600,
+      "telegraph": 0.55,
+      "active": 0.3,
+      "recover": 0.45,
+      "cooldown": 4.0,
+      "telegraphAnim": "telegraph_slam",
+      "attackAnim": "slam",
+      "projectile": "fireball",
+      "projectileSpeed": 300,
+      "count": 9,
+      "spread": 40,
+      "gravity": 700,
+      "warningEffect": "eruption_warning_fire",
+      "eruptionEffect": "eruption_fire",
+      "hitEffect": "fire_burst",
+      "lead": 0.8,
+      "minRange": 0,
+      "stagger": 0.08
+    },
+    {
+      "id": "v3_seekers",
+      "name": "Scories chercheuses",
+      "type": "projectile",
+      "damage": 1,
+      "range": 560,
+      "telegraph": 0.5,
+      "active": 0.25,
+      "recover": 0.4,
+      "cooldown": 3.6,
+      "telegraphAnim": "telegraph_barrage",
+      "attackAnim": "barrage",
+      "projectile": "magma_glob",
+      "projectileSpeed": 150,
+      "count": 3,
+      "spread": 28,
+      "gravity": 0,
+      "origin": [
+        33,
+        -71
+      ],
+      "hitEffect": "fire_burst",
+      "lead": 0,
+      "minRange": 0,
+      "homing": 2.2,
+      "homingTime": 1.4
+    },
+    {
+      "id": "v3_volley",
+      "name": "Rafale de lave",
+      "type": "projectile",
+      "damage": 1,
+      "range": 560,
+      "telegraph": 0.45,
+      "active": 0.25,
+      "recover": 0.4,
+      "cooldown": 3.0,
+      "telegraphAnim": "telegraph_barrage",
+      "attackAnim": "barrage",
+      "projectile": "magma_glob",
+      "projectileSpeed": 220,
+      "count": 3,
+      "spread": 10,
+      "gravity": 0,
+      "origin": [
+        33,
+        -71
+      ],
+      "hitEffect": "fire_burst",
+      "lead": 0.9,
+      "minRange": 0,
+      "bursts": 3,
+      "burstInterval": 0.26
+    },
+    {
+      "id": "x_embers",
+      "name": "Pluie de braises",
+      "type": "rain",
+      "damage": 1,
+      "range": 520,
+      "telegraph": 0.65,
+      "active": 0.3,
+      "recover": 0.48,
+      "cooldown": 2.4,
+      "telegraphAnim": "telegraph_barrage",
+      "attackAnim": "barrage",
+      "projectile": "ember",
+      "projectileSpeed": 180,
+      "count": 8,
+      "spread": 36,
+      "gravity": 200,
+      "rainHeight": 250,
+      "hitEffect": "fire_burst",
+      "lead": 0.8
+    },
+    {
+      "id": "x_volley",
+      "name": "Gerbe de scories",
+      "type": "arc",
+      "damage": 1,
+      "range": 460,
+      "telegraph": 0.52,
+      "active": 0.25,
+      "recover": 0.36,
+      "cooldown": 1.68,
+      "telegraphAnim": "telegraph_barrage",
+      "attackAnim": "barrage",
+      "projectile": "magma_glob",
+      "projectileSpeed": 170,
+      "count": 5,
+      "spread": 16,
+      "gravity": 380,
+      "origin": [
+        25,
+        -36
+      ],
+      "hitEffect": "fire_burst",
+      "lead": 0.8
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "dash": 0.5,
+    "ground_pound": 1.3,
+    "wave": 0.8
+  },
+  "rewards": {
+    "score": 3500,
+    "drops": [
+      {
+        "type": "health_orb",
+        "chance": 1.0
+      },
+      {
+        "type": "energy_orb",
+        "chance": 1.0
+      }
+    ]
+  },
+  "light": {
+    "color": "#ff8a3d",
+    "radius": 100
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/boss_roar_fire.wav",
+    "alert": "sounds/boss_roar_fire.wav"
+  },
+  "boss": {
+    "title": "LE CŒUR DU CREUSET",
+    "phases": [
+      {
+        "name": "Ébullition",
+        "hpThreshold": 1.0,
+        "attacks": [
+          "slam",
+          "barrage",
+          "charge",
+          "v3_leap",
+          "v3_line"
+        ],
+        "speedMultiplier": 1.0,
+        "cooldownMultiplier": 0.85,
+        "combo": 2,
+        "telegraphMultiplier": 0.9
+      },
+      {
+        "name": "Coulée ardente",
+        "hpThreshold": 0.66,
+        "attacks": [
+          "slam",
+          "barrage",
+          "charge",
+          "eruption",
+          "summon",
+          "v3_leap",
+          "v3_line",
+          "v3_seekers",
+          "x_embers"
+        ],
+        "speedMultiplier": 1.1,
+        "cooldownMultiplier": 0.77,
+        "enterText": "Le sol se fissure sous Magmaroth !",
+        "summonOnEnter": true,
+        "combo": 3,
+        "telegraphMultiplier": 0.8
+      },
+      {
+        "name": "Fusion du cœur",
+        "hpThreshold": 0.33,
+        "attacks": [
+          "slam",
+          "eruption",
+          "breath",
+          "charge",
+          "barrage",
+          "v3_leap",
+          "v3_line",
+          "v3_seekers",
+          "v3_volley",
+          "x_embers",
+          "x_volley"
+        ],
+        "speedMultiplier": 1.2,
+        "cooldownMultiplier": 0.68,
+        "enterText": "Magmaroth crache le feu de la forge !",
+        "combo": 3,
+        "telegraphMultiplier": 0.7
+      }
+    ],
+    "enrageTime": 60,
+    "brainVersion": 3
+  }
+}

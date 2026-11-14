@@ -437,6 +437,6 @@ d["outro"] = {"skippable": True, "letterbox": True, "steps": [
     {"type": "flash", "duration": 0.6, "params": {"color": "#e6fbff"}},
     {"type": "fade", "duration": 0.9, "params": {"to": 1}},
 ]}
-d["metadata"] = {"generator": "tools/levelgen/glacior_02.py", "revision": 3}
+d["metadata"] = {"generator": "tools/levelgen/glacior_02.py", "revision": 4}
 
 L.save(os.path.join(ROOT, "data/levels/glacior_02.json"))

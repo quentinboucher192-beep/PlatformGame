@@ -88,7 +88,7 @@ void GameScene::handleEvent(const SDL_Event& e) {
     if (e.type == SDL_EVENT_RENDER_TARGETS_RESET || e.type == SDL_EVENT_RENDER_DEVICE_RESET) {
         if (world_) renderer_.rebuildTerrain(g_.app.renderer(), g_.app.resources(), *world_);
     }
-    if (e.type == SDL_EVENT_WINDOW_FOCUS_LOST && world_ && world_->state() == WorldState::Playing && !ended_) {
+    if (e.type == SDL_EVENT_WINDOW_FOCUS_LOST && world_ && world_->state() == WorldState::Playing && !ended_ && !g_.app.headless()) {
         g_.app.pushScene(std::make_unique<PauseScene>(g_, *this));
     }
 }

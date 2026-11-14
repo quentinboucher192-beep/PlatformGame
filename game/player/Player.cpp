@@ -562,6 +562,8 @@ void Player::moveAndCollide(GameWorld& w, float dt) {
         const Collider* g = w.physics().groundBelow(box, opt);
         grounded_ = g != nullptr;
         groundId_ = g ? g->id : 0;
+        // Touching down exactly on the surface is a landing too (air dash refilled, ...).
+        if (grounded_ && !wasGrounded_) onLanded(w, vel.y);
     } else {
         grounded_ = false;
         groundId_ = 0;

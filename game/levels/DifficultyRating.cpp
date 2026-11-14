@@ -15,7 +15,7 @@ namespace {
 // Calibrated on the campaign (see docs/LEVEL_FORMAT.md, "Note de difficulté"). Changing a
 // weight changes every rating: bump kRatingVersion.
 constexpr float kJumpWeight = 0.55f;     // per 100 tiles
-constexpr float kHazardWeight = 0.30f;   // per 100 tiles
+constexpr float kHazardWeight = 0.45f;   // per 100 tiles
 constexpr float kEnemyWeight = 0.22f;    // per 100 tiles
 constexpr float kBossWeight = 0.6f;
 constexpr float kOffset = 6.0f;          // what any complete level has (length, a few jumps...)
@@ -50,6 +50,21 @@ Physics physicsFrom(const Json& cfg) {
     p.jumpSpan = p.runSpeed * total;
     p.maxHealth = std::max(1, jget<int>(cfg, "maxHealth", 10));
     return p;
+}
+
+std::vector<std::string> splitTargets(const std::string& s) {
+    std::vector<std::string> out;
+    std::string cur;
+    for (char c : s) {
+        if (c == ',' || c == ';' || c == ' ') {
+            if (!cur.empty()) out.push_back(cur);
+            cur.clear();
+        } else {
+            cur += c;
+        }
+    }
+    if (!cur.empty()) out.push_back(cur);
+    return out;
 }
 
 bool isSupport(const LevelObject& o) {
@@ -249,7 +264,7 @@ DifficultyRating rateDifficulty(const LevelData& level, const ContentDatabase& c
         } else if (o.type == "laser") {
             float on = o.prop<float>("onTime", 1.5f), off = o.prop<float>("offTime", 1.5f);
             float duty = off <= 0.0f ? 1.0f : on / std::max(0.1f, on + off);
-            w = 1.0f + 1.5f * duty;
+            w = (1.0f + 1.5f * duty) * (1.0f + 0.25f * static_cast<float>(std::max(0, o.prop<int>("damage", 1) - 1)));
             if (!o.prop<bool>("active", true)) w *= 0.7f;
             reach = 48.0f;
         } else if (o.type == "liquid") {
@@ -262,13 +277,22 @@ DifficultyRating rateDifficulty(const LevelData& level, const ContentDatabase& c
         } else if (o.type == "slow_zone") {
             w = 0.4f;
         } else if (o.type == "crumble_platform") {
-            w = 1.0f;
+            w = 1.2f;
             if (o.prop<float>("delay", 0.45f) < 0.35f) w += 0.6f;
             if (o.prop<float>("respawn", 3.0f) <= 0.0f) w += 0.3f;
             reach = 24.0f;
         } else if (o.type == "moving_platform") {
             w = 0.6f + (std::abs(o.prop<float>("dy", 0.0f)) > 32.0f ? 0.3f : 0.0f);
+            if (fallIsDeadly(o.rect.center().x, o.rect.y)) w += 0.6f;  // the only support over the void
             reach = 24.0f;
+        } else if (o.type == "receptor" && o.prop<float>("duration", 0.0f) > 0.0f) {
+            // Timed door: distance to the farthest target against the time it stays open.
+            float far = 0.0f;
+            for (const auto& t : splitTargets(o.propStr("targets")))
+                if (const LevelObject* d = level.findObject(t)) far = std::max(far, std::abs(d->rect.center().x - o.rect.center().x));
+            float tight = far / (ph.runSpeed * o.prop<float>("duration", 1.0f));
+            w = 1.5f + 3.0f * std::clamp(tight, 0.0f, 1.0f);
+            reach = 96.0f;
         } else if (o.type == "power_gate") {
             w = 0.3f;
         } else if (o.type == "grapple_point") {

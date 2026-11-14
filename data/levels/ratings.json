@@ -6,7 +6,7 @@
         "boss": 4.44,
         "checkpoints": 0.52,
         "enemies": 3.32,
-        "hazards": 0.81,
+        "hazards": 1.21,
         "healing": -0.34,
         "jumps": 4.66,
         "length": 0.84,
@@ -20,17 +20,17 @@
         "longest_checkpoint_gap": 87.95,
         "precise_jumps": 12
       },
-      "raw": 14.24,
+      "raw": 14.65,
       "route_tiles": 560.26,
-      "score": 3.0,
-      "version": 1
+      "score": 3.5,
+      "version": 2
     },
     "glacior_02": {
       "components": {
         "boss": 5.25,
         "checkpoints": 0.71,
         "enemies": 3.52,
-        "hazards": 0.9,
+        "hazards": 1.39,
         "healing": -0.35,
         "jumps": 2.4,
         "length": 0.83,
@@ -44,17 +44,17 @@
         "longest_checkpoint_gap": 128.68,
         "precise_jumps": 7
       },
-      "raw": 13.28,
+      "raw": 13.76,
       "route_tiles": 556.2,
       "score": 3.0,
-      "version": 1
+      "version": 2
     },
     "glacior_03": {
       "components": {
         "boss": 5.23,
         "checkpoints": 0.54,
         "enemies": 3.25,
-        "hazards": 0.74,
+        "hazards": 1.37,
         "healing": -0.35,
         "jumps": 2.24,
         "length": 0.83,
@@ -63,46 +63,46 @@
       "facts": {
         "deadly_jumps": 4,
         "enemies": 29,
-        "hazards": 22,
+        "hazards": 23,
         "heal_per_100_tiles": 2.89,
         "longest_checkpoint_gap": 100.59,
         "precise_jumps": 5
       },
-      "raw": 12.48,
+      "raw": 13.1,
       "route_tiles": 553.66,
       "score": 3.0,
-      "version": 1
+      "version": 2
     },
     "glacior_04": {
       "components": {
-        "boss": 4.44,
-        "checkpoints": 0.68,
-        "enemies": 2.34,
-        "hazards": 0.71,
-        "healing": -0.14,
-        "jumps": 3.59,
-        "length": 1.0,
+        "boss": 7.47,
+        "checkpoints": 0.83,
+        "enemies": 2.59,
+        "hazards": 1.24,
+        "healing": -0.1,
+        "jumps": 4.31,
+        "length": 0.71,
         "timer": 0.0
       },
       "facts": {
-        "deadly_jumps": 8,
-        "enemies": 26,
-        "hazards": 21,
-        "heal_per_100_tiles": 1.13,
-        "longest_checkpoint_gap": 115.95,
-        "precise_jumps": 8
+        "deadly_jumps": 6,
+        "enemies": 20,
+        "hazards": 10,
+        "heal_per_100_tiles": 0.84,
+        "longest_checkpoint_gap": 132.41,
+        "precise_jumps": 6
       },
-      "raw": 12.63,
-      "route_tiles": 710.74,
-      "score": 3.0,
-      "version": 1
+      "raw": 17.06,
+      "route_tiles": 473.57,
+      "score": 3.5,
+      "version": 2
     },
     "pyralis_01": {
       "components": {
         "boss": 4.11,
         "checkpoints": 0.51,
         "enemies": 4.46,
-        "hazards": 1.15,
+        "hazards": 1.77,
         "healing": -0.3,
         "jumps": 4.62,
         "length": 0.85,
@@ -116,17 +116,17 @@
         "longest_checkpoint_gap": 81.8,
         "precise_jumps": 13
       },
-      "raw": 15.39,
+      "raw": 16.01,
       "route_tiles": 565.23,
       "score": 3.5,
-      "version": 1
+      "version": 2
     },
     "pyralis_02": {
       "components": {
         "boss": 4.11,
         "checkpoints": 0.46,
         "enemies": 4.42,
-        "hazards": 2.56,
+        "hazards": 3.96,
         "healing": -0.26,
         "jumps": 4.8,
         "length": 0.83,
@@ -140,17 +140,17 @@
         "longest_checkpoint_gap": 81.83,
         "precise_jumps": 10
       },
-      "raw": 16.93,
+      "raw": 18.33,
       "route_tiles": 554.22,
-      "score": 3.5,
-      "version": 1
+      "score": 4.0,
+      "version": 2
     },
     "pyralis_03": {
       "components": {
         "boss": 5.12,
         "checkpoints": 0.56,
         "enemies": 3.8,
-        "hazards": 1.86,
+        "hazards": 2.79,
         "healing": -0.27,
         "jumps": 3.83,
         "length": 0.95,
@@ -164,41 +164,41 @@
         "longest_checkpoint_gap": 85.0,
         "precise_jumps": 13
       },
-      "raw": 15.85,
+      "raw": 16.78,
       "route_tiles": 632.53,
       "score": 3.5,
-      "version": 1
+      "version": 2
     },
     "pyralis_04": {
       "components": {
-        "boss": 4.11,
-        "checkpoints": 0.73,
-        "enemies": 2.48,
-        "hazards": 0.52,
-        "healing": -0.14,
-        "jumps": 4.68,
-        "length": 1.0,
+        "boss": 7.17,
+        "checkpoints": 0.71,
+        "enemies": 3.33,
+        "hazards": 3.75,
+        "healing": -0.12,
+        "jumps": 2.73,
+        "length": 0.62,
         "timer": 0.0
       },
       "facts": {
-        "deadly_jumps": 10,
-        "enemies": 25,
-        "hazards": 16,
-        "heal_per_100_tiles": 1.17,
-        "longest_checkpoint_gap": 116.95,
-        "precise_jumps": 11
+        "deadly_jumps": 3,
+        "enemies": 21,
+        "hazards": 20,
+        "heal_per_100_tiles": 0.97,
+        "longest_checkpoint_gap": 118.93,
+        "precise_jumps": 4
       },
-      "raw": 13.39,
-      "route_tiles": 685.57,
-      "score": 3.0,
-      "version": 1
+      "raw": 18.19,
+      "route_tiles": 412.6,
+      "score": 4.0,
+      "version": 2
     },
     "sylvanox_01": {
       "components": {
         "boss": 3.13,
         "checkpoints": 0.89,
         "enemies": 1.29,
-        "hazards": 0.33,
+        "hazards": 0.5,
         "healing": -0.07,
         "jumps": 4.93,
         "length": 1.0,
@@ -212,17 +212,17 @@
         "longest_checkpoint_gap": 154.36,
         "precise_jumps": 13
       },
-      "raw": 11.5,
+      "raw": 11.66,
       "route_tiles": 685.15,
       "score": 2.5,
-      "version": 1
+      "version": 2
     },
     "sylvanox_02": {
       "components": {
         "boss": 4.5,
         "checkpoints": 0.55,
         "enemies": 3.69,
-        "hazards": 0.32,
+        "hazards": 0.51,
         "healing": -0.33,
         "jumps": 4.27,
         "length": 0.87,
@@ -236,17 +236,17 @@
         "longest_checkpoint_gap": 96.66,
         "precise_jumps": 14
       },
-      "raw": 13.87,
+      "raw": 14.06,
       "route_tiles": 577.63,
       "score": 3.0,
-      "version": 1
+      "version": 2
     },
     "sylvanox_03": {
       "components": {
         "boss": 4.5,
         "checkpoints": 0.79,
         "enemies": 2.9,
-        "hazards": 0.88,
+        "hazards": 1.32,
         "healing": -0.3,
         "jumps": 3.43,
         "length": 0.84,
@@ -260,35 +260,35 @@
         "longest_checkpoint_gap": 163.63,
         "precise_jumps": 9
       },
-      "raw": 13.04,
+      "raw": 13.48,
       "route_tiles": 558.82,
       "score": 3.0,
-      "version": 1
+      "version": 2
     },
     "sylvanox_04": {
       "components": {
-        "boss": 3.13,
-        "checkpoints": 0.73,
-        "enemies": 2.15,
-        "hazards": 0.53,
-        "healing": -0.14,
-        "jumps": 4.93,
-        "length": 1.0,
+        "boss": 5.26,
+        "checkpoints": 0.62,
+        "enemies": 3.25,
+        "hazards": 6.98,
+        "healing": -0.13,
+        "jumps": 1.65,
+        "length": 0.56,
         "timer": 0.0
       },
       "facts": {
-        "deadly_jumps": 10,
-        "enemies": 25,
-        "hazards": 16,
-        "heal_per_100_tiles": 1.18,
-        "longest_checkpoint_gap": 116.95,
-        "precise_jumps": 11
+        "deadly_jumps": 4,
+        "enemies": 22,
+        "hazards": 36,
+        "heal_per_100_tiles": 1.07,
+        "longest_checkpoint_gap": 98.0,
+        "precise_jumps": 4
       },
-      "raw": 12.32,
-      "route_tiles": 678.19,
-      "score": 2.5,
-      "version": 1
+      "raw": 18.18,
+      "route_tiles": 373.0,
+      "score": 4.0,
+      "version": 2
     }
   },
-  "version": 1
+  "version": 2
 }

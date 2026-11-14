@@ -371,6 +371,6 @@ P.intro("PYRALIS", "Les Forges Englouties",
         "Quelle chaleur ! Le signal vient du fond des forges. Restons loin de la lave.",
         cut=(130, 40), pan=(260, 44), low=(330, 58))
 P.outro("CREUSET ATTEINT", "Pyralis — Les Forges Englouties")
-d["metadata"] = {"generator": "tools/levelgen/pyralis_01.py", "revision": 3}
+d["metadata"] = {"generator": "tools/levelgen/pyralis_01.py", "revision": 4}
 
 L.save(os.path.join(ROOT, "data/levels/pyralis_01.json"))

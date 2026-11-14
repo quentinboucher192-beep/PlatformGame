@@ -31,7 +31,7 @@ class ContentDatabase;
 /// (5 (1 - exp(-(raw - 6) / 8))) and is rounded to half a star. The formula is versioned (kRatingVersion): a stored rating made
 /// with another version is recomputed.
 struct DifficultyRating {
-    static constexpr int kRatingVersion = 1;
+    static constexpr int kRatingVersion = 2;
 
     float score = 0.0f;  // 0.5 .. 5, by half stars
     float raw = 0.0f;    // weighted sum before the curve

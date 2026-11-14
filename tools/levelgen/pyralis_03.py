@@ -371,6 +371,6 @@ P.intro("PYRALIS", "La Fonderie Primordiale",
         "Toute la fonderie tremble... Le cœur bat encore, là-bas. Allons-y.",
         cut=(240, 30), pan=(470, 26), low=(366, 44))
 P.outro("FONDERIE ÉTEINTE", "Pyralis — La Fonderie Primordiale")
-d["metadata"] = {"generator": "tools/levelgen/pyralis_03.py", "revision": 3}
+d["metadata"] = {"generator": "tools/levelgen/pyralis_03.py", "revision": 4}
 
 L.save(os.path.join(ROOT, "data/levels/pyralis_03.json"))

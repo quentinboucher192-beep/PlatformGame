@@ -368,6 +368,6 @@ P.intro("PYRALIS", "Le Fleuve de Lave",
         "Le fleuve est trop large pour sauter. Il me faut un radeau.",
         cut=(200, 40), pan=(380, 38), low=(504, 24))
 P.outro("FLEUVE TRAVERSÉ", "Pyralis — Le Fleuve de Lave")
-d["metadata"] = {"generator": "tools/levelgen/pyralis_02.py", "revision": 3}
+d["metadata"] = {"generator": "tools/levelgen/pyralis_02.py", "revision": 4}
 
 L.save(os.path.join(ROOT, "data/levels/pyralis_02.json"))
