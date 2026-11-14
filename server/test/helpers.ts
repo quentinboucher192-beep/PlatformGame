@@ -83,7 +83,8 @@ export async function publishV2(): Promise<void> {
 
 /** Empties every table (storage persists between tests of a file). */
 export async function resetDb(): Promise<void> {
-    const tables = ["client_releases", "rate_limits", "audit_log", "community_records", "community_reports", "community_ratings", "community_level_versions",
+    const tables = ["notifications", "player_playtime", "player_follows", "community_level_players", "community_comment_reports", "community_comment_reactions",
+        "community_comments", "community_favorites", "client_releases", "rate_limits", "audit_log", "community_records", "community_reports", "community_ratings", "community_level_versions",
         "community_levels", "message_reports", "messages", "conversation_members", "conversations", "player_blocks", "player_friends", "player_bests", "replay_metadata", "records", "player_sessions",
         "player_credentials", "players", "level_versions", "levels", "countries"];
     await env.DB.batch(tables.map((t) => env.DB.prepare(`DELETE FROM ${t}`)));

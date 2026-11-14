@@ -7,6 +7,9 @@ import * as friends from "./friends";
 import * as globe from "./globe";
 import { ApiError, errorResponse, json, log, type Bindings, type Ctx } from "./http";
 import * as boards from "./leaderboards";
+import * as creators from "./creators";
+import * as notifications from "./notifications";
+import * as workshop from "./workshop";
 import { listLevels } from "./levels";
 import type { RecordRow } from "./model";
 import * as players from "./players";
@@ -90,7 +93,24 @@ route("GET", `${V}/players/me/export`, (ctx) => players.exportMe(ctx));
 route("PATCH", `${V}/players/me`, (ctx) => players.patchMe(ctx));
 route("DELETE", `${V}/players/me`, (ctx) => players.deleteMe(ctx));
 route("PUT", `${V}/players/me/avatar`, (ctx) => players.putAvatar(ctx));
+route("POST", `${V}/players/me/playtime`, (ctx) => creators.reportPlaytime(ctx));
 route("GET", `${V}/players/{playerId}`, players.getPlayer, { viewer: true });
+route("GET", `${V}/players/{playerId}/creations`, creators.creations, { viewer: true });
+route("GET", `${V}/players/{playerId}/followers`, creators.followers, { viewer: true });
+route("GET", `${V}/players/{playerId}/following`, creators.following, { viewer: true });
+route("GET", `${V}/players/{playerId}/playtime`, creators.getPlaytime, { viewer: true });
+route("POST", `${V}/players/{playerId}/follow`, (ctx) => creators.follow(ctx));
+route("DELETE", `${V}/players/{playerId}/follow`, (ctx) => creators.unfollow(ctx));
+route("GET", `${V}/creators`, (ctx) => creators.searchCreators(ctx));
+
+// Notification centre
+route("GET", `${V}/notifications`, (ctx) => notifications.listNotifications(ctx));
+route("GET", `${V}/notifications/unread`, (ctx) => notifications.unreadNotifications(ctx));
+route("POST", `${V}/notifications/read-all`, (ctx) => notifications.readAllNotifications(ctx));
+route("GET", `${V}/notifications/settings`, (ctx) => notifications.getNotificationSettings(ctx));
+route("PUT", `${V}/notifications/settings`, (ctx) => notifications.putNotificationSettings(ctx));
+route("POST", `${V}/notifications/{notificationId}/read`, (ctx) => notifications.readNotification(ctx));
+route("DELETE", `${V}/notifications/{notificationId}`, (ctx) => notifications.deleteNotification(ctx));
 route("GET", `${V}/players/{playerId}/records`, players.getPlayerRecords, { viewer: true });
 route("GET", `${V}/players/{playerId}/statistics`, players.getStatistics, { viewer: true });
 route("GET", `${V}/players/{playerId}/avatar`, (ctx) => players.getAvatar(ctx));
@@ -152,6 +172,19 @@ route("GET", `${V}/client/download/{version}`, (ctx) => releases.download(ctx));
 route("GET", `${V}/community/levels/{levelId}/thumbnail`, (ctx) => community.thumbnail(ctx));
 route("GET", `${V}/community/levels/{levelId}/leaderboard`, (ctx) => community.leaderboard(ctx));
 route("POST", `${V}/community/levels/{levelId}/rate`, (ctx) => community.rate(ctx));
+route("GET", `${V}/community/favorites`, (ctx) => workshop.listFavorites(ctx));
+route("POST", `${V}/community/levels/{levelId}/favorite`, (ctx) => workshop.addFavorite(ctx));
+route("DELETE", `${V}/community/levels/{levelId}/favorite`, (ctx) => workshop.removeFavorite(ctx));
+route("GET", `${V}/community/levels/{levelId}/comments`, (ctx) => workshop.listComments(ctx));
+route("POST", `${V}/community/levels/{levelId}/comments`, (ctx) => workshop.postComment(ctx));
+route("GET", `${V}/community/comments/{commentId}/replies`, (ctx) => workshop.listReplies(ctx));
+route("PATCH", `${V}/community/comments/{commentId}`, (ctx) => workshop.editComment(ctx));
+route("DELETE", `${V}/community/comments/{commentId}`, (ctx) => workshop.deleteComment(ctx));
+route("POST", `${V}/community/comments/{commentId}/pin`, (ctx) => workshop.pinComment(ctx, true));
+route("DELETE", `${V}/community/comments/{commentId}/pin`, (ctx) => workshop.pinComment(ctx, false));
+route("PUT", `${V}/community/comments/{commentId}/reaction`, (ctx) => workshop.reactComment(ctx));
+route("DELETE", `${V}/community/comments/{commentId}/reaction`, (ctx) => workshop.unreactComment(ctx));
+route("POST", `${V}/community/comments/{commentId}/report`, (ctx) => workshop.reportComment(ctx));
 route("POST", `${V}/community/levels/{levelId}/report`, (ctx) => community.report(ctx));
 route("POST", `${V}/community/levels/{levelId}/records`, (ctx) => community.submitRecord(ctx));
 route("PUT", `${V}/community/records/{recordId}/replay`, (ctx) => community.uploadRecordReplay(ctx));
@@ -161,6 +194,14 @@ route("GET", `${V}/community/records/{recordId}/replay`, (ctx) => community.down
 route("GET", `${V}/admin/records`, (ctx) => admin.listForReview(ctx));
 route("POST", `${V}/admin/records/{recordId}/review`, (ctx) => admin.review(ctx));
 route("POST", `${V}/admin/levels`, (ctx) => admin.registerLevels(ctx));
+route("GET", `${V}/admin/comments`, async (ctx) => {
+    await admin.requireAdmin(ctx);
+    return workshop.adminListComments(ctx);
+});
+route("POST", `${V}/admin/comments/{commentId}/moderate`, async (ctx) => {
+    await admin.requireAdmin(ctx);
+    return workshop.adminModerateComment(ctx);
+});
 
 function match(method: string, path: string): { route: Route; params: Record<string, string> } | "method" | null {
     let pathMatched = false;
@@ -221,6 +262,7 @@ async function handle(request: Request, env: Bindings, exec: ExecutionContext, r
 async function recheckHeldRecords(env: Bindings, exec: ExecutionContext): Promise<number> {
     const url = new URL("https://maintenance.invalid/");
     const ctx: Ctx = { request: new Request(url), env, exec, url, params: {}, requestId: crypto.randomUUID(), ip: "maintenance" };
+    await notifications.pruneNotifications(ctx);
     const held = await env.DB.prepare(
         "SELECT * FROM records WHERE verification_status = 'PENDING' AND replay_id IS NOT NULL ORDER BY created_at LIMIT 200",
     ).all<RecordRow>();

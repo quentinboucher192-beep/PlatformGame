@@ -8,7 +8,7 @@ import type { RecordRow } from "./model";
 import { applyDecision } from "./records";
 import { HASH_RE, LEVEL_ID_RE, PLANET_ID_RE, SEMVER_RE, Validator, paging } from "./validate";
 
-async function requireAdmin(ctx: Ctx): Promise<void> {
+export async function requireAdmin(ctx: Ctx): Promise<void> {
     const secret = ctx.env.ADMIN_TOKEN;
     if (!secret || secret.length < 32) throw Errors.notFound();
     const h = ctx.request.headers.get("authorization") ?? "";

@@ -1,6 +1,7 @@
 // Player profiles, privacy settings, statistics, search, GDPR export and account deletion,
 // custom avatars.
 
+import { creatorStats, followState, playtime } from "./creators";
 import { audit, countryExists, requireAuth, type AuthInfo } from "./auth";
 import { verifyPassword } from "./crypto";
 import { ApiError, Errors, json, nowIso, readJsonObject, readLimited, type Ctx } from "./http";
@@ -93,9 +94,21 @@ async function statistics(ctx: Ctx, playerId: string) {
 /** GET /players/{id}: public profile (reduced when the profile is private). */
 export async function getPlayer(ctx: Ctx, viewer: AuthInfo | null): Promise<Response> {
     const p = await loadPlayer(ctx, ctx.params.playerId!);
-    if (isSelf(viewer, p.id)) return json(ctx, { player: { ...privateProfile(p), hidden: false }, statistics: await statistics(ctx, p.id) });
+    if (isSelf(viewer, p.id))
+        return json(ctx, {
+            player: { ...privateProfile(p), hidden: false, follows_visibility: (p as unknown as { follows_visibility?: string }).follows_visibility ?? "public" },
+            statistics: await statistics(ctx, p.id),
+            creator: await creatorStats(ctx, p.id),
+            playtime: await playtime(ctx, p.id),
+        });
     if (p.profile_visibility === "private")
-        return json(ctx, { player: { ...playerSummary(p), hidden: true }, statistics: null });
+        return json(ctx, {
+            player: { ...playerSummary(p), hidden: true },
+            statistics: null,
+            creator: await creatorStats(ctx, p.id),
+            follow: await followState(ctx, viewer?.player.id ?? null, p.id),
+            playtime: null,
+        });
     let friendship: string | null = null;
     if (viewer) {
         const f = await ctx.env.DB.prepare(
@@ -110,6 +123,9 @@ export async function getPlayer(ctx: Ctx, viewer: AuthInfo | null): Promise<Resp
     return json(ctx, {
         player: { ...playerSummary(p), region_code: visibleCountry(p) ? p.region_code : null, created_at: p.created_at, hidden: false, friendship },
         statistics: await statistics(ctx, p.id),
+        creator: await creatorStats(ctx, p.id),
+        follow: await followState(ctx, viewer?.player.id ?? null, p.id),
+        playtime: await playtime(ctx, p.id),
     });
 }
 
@@ -172,7 +188,7 @@ export async function patchMe(ctx: Ctx): Promise<Response> {
     await rateLimit(ctx, RULES.profileWrite, "player:" + auth.player.id);
     const body = await readJsonObject(ctx);
     const v = new Validator(body, [
-        "username", "avatar", "country_code", "region_code", "location_visibility", "profile_visibility", "allow_friend_requests",
+        "username", "avatar", "country_code", "region_code", "location_visibility", "profile_visibility", "allow_friend_requests", "follows_visibility",
     ]);
     const username = v.str("username", { min: 3, max: 20, pattern: USERNAME_RE, trim: true, optional: true });
     const avatar = v.str("avatar", { max: 16, pattern: AVATAR_RE, optional: true });
@@ -184,6 +200,7 @@ export async function patchMe(ctx: Ctx): Promise<Response> {
     const locVis = v.oneOf("location_visibility", LOCATION_VISIBILITY, { optional: true });
     const profVis = v.oneOf("profile_visibility", PROFILE_VISIBILITY, { optional: true });
     const allowFriends = v.bool("allow_friend_requests", { optional: true });
+    const followsVis = v.oneOf("follows_visibility", ["public", "private"], { optional: true });
     if (username && isReservedUsername(username)) v.fail("username", "pseudonyme réservé");
     v.done();
     const p = auth.player;
@@ -212,6 +229,7 @@ export async function patchMe(ctx: Ctx): Promise<Response> {
         if (String(e).includes("UNIQUE")) throw Errors.conflict("USERNAME_TAKEN", "Ce pseudonyme est déjà utilisé.");
         throw e;
     }
+    if (followsVis) await ctx.env.DB.prepare("UPDATE players SET follows_visibility = ?2 WHERE id = ?1").bind(p.id, followsVis).run();
     if (avatar && p.avatar === "custom" && p.avatar_custom_key) {
         await ctx.env.STORAGE.delete(p.avatar_custom_key);
         await ctx.env.DB.prepare("UPDATE players SET avatar_custom_key = NULL WHERE id = ?1").bind(p.id).run();
@@ -230,7 +248,7 @@ export async function patchMe(ctx: Ctx): Promise<Response> {
 export async function exportMe(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
     const id = auth.player.id;
-    const [sessions, records, friends, replays, auditRows, conversations, messages, blocks, cLevels, cRecords, cRatings] = await ctx.env.DB.batch([
+    const [sessions, records, friends, replays, auditRows, conversations, messages, blocks, cLevels, cRecords, cRatings, favs, comments, reactions, follows, notes, playtimeRows] = await ctx.env.DB.batch([
         ctx.env.DB.prepare("SELECT id, created_at, last_used_at, expires_at, refresh_expires_at, revoked_at, client_info FROM player_sessions WHERE player_id = ?1").bind(id),
         ctx.env.DB.prepare("SELECT * FROM records WHERE player_id = ?1 ORDER BY created_at").bind(id),
         ctx.env.DB.prepare("SELECT player_id, friend_id, status, created_at FROM player_friends WHERE player_id = ?1 OR friend_id = ?1").bind(id),
@@ -247,6 +265,12 @@ export async function exportMe(ctx: Ctx): Promise<Response> {
         ).bind(id),
         ctx.env.DB.prepare("SELECT id, level_id, version, time_ms, deaths, status, created_at FROM community_records WHERE player_id = ?1").bind(id),
         ctx.env.DB.prepare("SELECT level_id, stars, created_at FROM community_ratings WHERE player_id = ?1").bind(id),
+        ctx.env.DB.prepare("SELECT level_id, level_title, author_name, created_at FROM community_favorites WHERE player_id = ?1").bind(id),
+        ctx.env.DB.prepare("SELECT id, level_id, parent_id, body, created_at, edited_at, deleted_at, pinned_at FROM community_comments WHERE author_id = ?1").bind(id),
+        ctx.env.DB.prepare("SELECT comment_id, kind, created_at FROM community_comment_reactions WHERE player_id = ?1").bind(id),
+        ctx.env.DB.prepare("SELECT follower_id, creator_id, notify, created_at FROM player_follows WHERE follower_id = ?1 OR creator_id = ?1").bind(id),
+        ctx.env.DB.prepare("SELECT kind, level_id, data, count, created_at, read_at FROM notifications WHERE player_id = ?1 ORDER BY created_at").bind(id),
+        ctx.env.DB.prepare("SELECT level_key, seconds, updated_at FROM player_playtime WHERE player_id = ?1").bind(id),
     ]);
     await audit(ctx, id, "data_export");
     return json(ctx, {
@@ -263,6 +287,12 @@ export async function exportMe(ctx: Ctx): Promise<Response> {
         community_levels: cLevels?.results ?? [],
         community_records: cRecords?.results ?? [],
         community_ratings: cRatings?.results ?? [],
+        community_favorites: favs?.results ?? [],
+        community_comments: comments?.results ?? [],
+        comment_reactions: reactions?.results ?? [],
+        follows: follows?.results ?? [],
+        notifications: notes?.results ?? [],
+        playtime: playtimeRows?.results ?? [],
         notes: "Le mot de passe n'est stocké que sous forme d'empreinte PBKDF2 et n'est pas exportable. Les adresses IP ne sont jamais stockées en clair.",
     });
 }

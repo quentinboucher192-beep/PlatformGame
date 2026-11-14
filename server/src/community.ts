@@ -7,6 +7,7 @@ import { audit, optionalAuth, requireAuth } from "./auth";
 import { sha256Hex } from "./crypto";
 import { ApiError, Errors, json, nowIso, readJsonObject, readLimited, type Ctx } from "./http";
 import { playerSummary, type LevelVersionRow, type PlayerRow, type RecordRow } from "./model";
+import { notifyMany } from "./notifications";
 import { RULES, rateLimit } from "./ratelimit";
 import { analyzeReplay, EventType, inflateContainer, MAX_REPLAY_UPLOAD, parseReplay, PickupKind, ReplayError, type Replay } from "./replay";
 import { HASH_RE, PLANET_ID_RE, SEMVER_RE, Validator, paging } from "./validate";
@@ -274,7 +275,10 @@ async function readReplay(ctx: Ctx): Promise<{ data: Uint8Array; replay: Replay 
     }
 }
 
-function card(l: CommunityLevelRow & Partial<PlayerRow> & { best_ms?: number | null; best_player?: string | null; my_stars?: number | null }) {
+function card(
+    l: CommunityLevelRow &
+        Partial<PlayerRow> & { best_ms?: number | null; best_player?: string | null; my_stars?: number | null; my_fav?: number | null; favorite_count?: number; comment_count?: number },
+) {
     return {
         id: l.id,
         title: l.title,
@@ -297,6 +301,9 @@ function card(l: CommunityLevelRow & Partial<PlayerRow> & { best_ms?: number | n
         thumbnail_url: `/api/v1/community/levels/${l.id}/thumbnail`,
         best: l.best_ms != null ? { time_ms: l.best_ms, player: l.best_player ?? null } : null,
         my_rating: l.my_stars ?? null,
+        favorites: l.favorite_count ?? 0,
+        comments: l.comment_count ?? 0,
+        my_favorite: l.my_fav === 1,
         created_at: l.created_at,
         updated_at: l.updated_at,
     };
@@ -306,7 +313,8 @@ const CARD_SQL = `SELECT l.*, p.username, p.avatar, p.avatar_custom_key, p.count
     (SELECT MIN(r.time_ms) FROM community_records r WHERE r.level_id = l.id AND r.version = l.current_version AND r.status = 'REPLAY_OK') AS best_ms,
     (SELECT pp.username FROM community_records r JOIN players pp ON pp.id = r.player_id
        WHERE r.level_id = l.id AND r.version = l.current_version AND r.status = 'REPLAY_OK' ORDER BY r.time_ms, r.created_at LIMIT 1) AS best_player,
-    (SELECT stars FROM community_ratings cr WHERE cr.level_id = l.id AND cr.player_id = ?1) AS my_stars
+    (SELECT stars FROM community_ratings cr WHERE cr.level_id = l.id AND cr.player_id = ?1) AS my_stars,
+    EXISTS (SELECT 1 FROM community_favorites cf WHERE cf.level_id = l.id AND cf.player_id = ?1) AS my_fav
   FROM community_levels l JOIN players p ON p.id = l.author_id`;
 
 // ------------------------------------------------------------------- routes
@@ -327,6 +335,10 @@ export async function listLevels(ctx: Ctx): Promise<Response> {
     const where: string[] = [sort === "mine" ? "l.author_id = ?1 AND l.status <> 'removed'" : "l.status = 'published' AND ?1 IS NOT NULL"];
     const args: unknown[] = [me];
     if (sort === "friends") where.push("l.author_id IN (SELECT friend_id FROM player_friends WHERE player_id = ?1 AND status = 'accepted')");
+    // Blocked authors (either direction) disappear from the lists of the viewer.
+    where.push(
+        "NOT EXISTS (SELECT 1 FROM player_blocks b WHERE (b.player_id = ?1 AND b.blocked_id = l.author_id) OR (b.player_id = l.author_id AND b.blocked_id = ?1))",
+    );
     if (q) {
         args.push("%" + normalizeTitle(q).replace(/[\\%_]/g, (c) => "\\" + c) + "%");
         where.push(`(l.title_norm LIKE ?${args.length} ESCAPE '\\' OR p.username_normalized LIKE ?${args.length} ESCAPE '\\')`);
@@ -336,7 +348,7 @@ export async function listLevels(ctx: Ctx): Promise<Response> {
         where.push(`l.planet = ?${args.length}`);
     }
     const order = {
-        popular: "(l.downloads + 3 * l.completions + 2 * l.rating_sum) DESC, l.updated_at DESC",
+        popular: "(l.downloads + 3 * l.completions + 2 * l.rating_sum + 2 * l.favorite_count + l.comment_count) DESC, l.updated_at DESC",
         hardest: "COALESCE(l.difficulty, 0) DESC, l.completions ASC, l.updated_at DESC",
         recent: "l.updated_at DESC",
         // Bayesian average: a level needs several ratings to top the list.
@@ -557,6 +569,21 @@ async function tryPublish(ctx: Ctx, id: string, version: number): Promise<boolea
     ]);
     const l = await loadLevel(ctx, id);
     await audit(ctx, l.author_id, "community_level_published", { level_id: id, version });
+    if (l.status === "published") {
+        // Followers learn about a new level; players who keep it in their favorites, about a new version.
+        if (version === 1 || !(await ctx.env.DB.prepare("SELECT 1 AS x FROM community_level_versions WHERE level_id = ?1 AND version < ?2 AND published_at IS NOT NULL").bind(id, version).first()))
+            await notifyMany(ctx, "SELECT follower_id AS pid FROM player_follows WHERE creator_id = ?1 AND notify = 1", "new_level", {
+                actor: l.author_id,
+                levelId: id,
+                data: { title: l.title, version: String(version) },
+            });
+        else
+            await notifyMany(ctx, "SELECT player_id AS pid FROM community_favorites WHERE level_id = ?2", "level_update", {
+                actor: l.author_id,
+                levelId: id,
+                data: { title: l.title, version: String(version) },
+            });
+    }
     return true;
 }
 
@@ -574,6 +601,8 @@ export async function downloadPackage(ctx: Ctx): Promise<Response> {
     const obj = await ctx.env.STORAGE.get(v.package_key);
     if (!obj) throw Errors.notFound("COMMUNITY_VERSION_NOT_FOUND", "Fichier introuvable.");
     if (me !== l.author_id) await ctx.env.DB.prepare("UPDATE community_levels SET downloads = downloads + 1 WHERE id = ?1").bind(l.id).run();
+    if (me && me !== l.author_id)
+        await ctx.env.DB.prepare("INSERT OR IGNORE INTO community_level_players (level_id, player_id, first_at) VALUES (?1, ?2, ?3)").bind(l.id, me, nowIso()).run();
     return new Response(obj.body, {
         headers: {
             "content-type": "application/octet-stream",
@@ -709,6 +738,8 @@ export async function submitRecord(ctx: Ctx): Promise<Response> {
         if (String(e).includes("UNIQUE")) throw Errors.conflict("ATTEMPT_EXISTS", "Cette tentative a déjà été envoyée.");
         throw e;
     }
+    if (me !== l.author_id)
+        await ctx.env.DB.prepare("INSERT OR IGNORE INTO community_level_players (level_id, player_id, first_at) VALUES (?1, ?2, ?3)").bind(l.id, me, nowIso()).run();
     return json(ctx, { record: { id, status: "PENDING" }, upload: `/api/v1/community/records/${id}/replay` }, { status: 201 });
 }
 

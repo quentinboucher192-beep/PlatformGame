@@ -459,6 +459,7 @@ export async function blockPlayer(ctx: Ctx): Promise<Response> {
     if (pid === me) throw Errors.validation([{ field: "player_id", message: "vous ne pouvez pas vous bloquer vous-même" }]);
     const p = await activePlayer(ctx, pid!);
     await ctx.env.DB.batch([
+        ctx.env.DB.prepare("DELETE FROM player_follows WHERE (follower_id = ?1 AND creator_id = ?2) OR (follower_id = ?2 AND creator_id = ?1)").bind(me, p.id),
         ctx.env.DB.prepare("INSERT OR IGNORE INTO player_blocks (player_id, blocked_id, created_at) VALUES (?1, ?2, ?3)").bind(me, p.id, nowIso()),
         ctx.env.DB.prepare("DELETE FROM player_friends WHERE (player_id = ?1 AND friend_id = ?2) OR (player_id = ?2 AND friend_id = ?1)").bind(me, p.id),
     ]);

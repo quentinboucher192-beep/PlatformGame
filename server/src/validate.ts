@@ -28,7 +28,7 @@ export class Validator {
         return this.obj[field] !== undefined && this.obj[field] !== null;
     }
 
-    str(field: string, opt: { min?: number; max: number; pattern?: RegExp; optional?: boolean; trim?: boolean }): string | undefined {
+    str(field: string, opt: { min?: number; max: number; pattern?: RegExp; optional?: boolean; trim?: boolean; multiline?: boolean }): string | undefined {
         const v = this.obj[field];
         if (v === undefined || v === null) {
             if (!opt.optional) this.fail(field, "obligatoire");
@@ -39,8 +39,8 @@ export class Validator {
             return undefined;
         }
         const s = opt.trim ? v.trim() : v;
-        // Control characters are never legitimate in identifiers or names.
-        if (/[\u0000-\u001f\u007f]/.test(s)) {
+        // Control characters are never legitimate in identifiers or names (texts may break lines).
+        if ((opt.multiline ? /[\u0000-\u0009\u000b\u000c\u000e-\u001f\u007f]/ : /[\u0000-\u001f\u007f]/).test(s)) {
             this.fail(field, "caractères de contrôle interdits");
             return undefined;
         }
