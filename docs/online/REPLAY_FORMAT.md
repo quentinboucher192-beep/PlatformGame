@@ -95,7 +95,7 @@ Les éclats et reliques (arg 0 et 1) forment le nombre d'objets comparé au reco
 | Champ | Type | Notes |
 |---|---|---|
 | repeat | u16 | nombre de pas identiques consécutifs (≥ 1) ; la somme vaut tick_count |
-| held | u16 | actions maintenues (bit = `Action` : 0 gauche, 1 droite, 2 haut, 3 bas, 4 saut, 5 attaque, 6 dash, 7 onde, 8 bouclier, 9 impulsion, 10 téléportation, 11 interagir) |
+| held | u16 | actions maintenues (bit = `Action` : 0 gauche, 1 droite, 2 haut, 3 bas, 4 saut, 5 attaque, 6 dash, 7 onde, 8 bouclier, 9 impulsion, 10 téléportation, 11 interagir, 12 spécial — ralenti, bombe plasma — depuis la simulation 6) |
 | pressed | u16 | actions enfoncées pendant ce pas |
 | released | u16 | actions relâchées pendant ce pas |
 | move_x, move_y | i8, i8 | stick analogique quantifié (−127 à 127, soit ±1) |

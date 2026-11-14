@@ -296,7 +296,9 @@ void GameScene::update(float dt) {
         g_.app.pushScene(std::make_unique<PowerChoiceScene>(g_, *this));
         return;
     }
-    if (!ended_ && in.menuPressed(Action::Pause)) {
+    bool autoPause = opt_.openPause && world_->state() == WorldState::Playing;
+    if (autoPause) opt_.openPause = false;
+    if (!ended_ && (in.menuPressed(Action::Pause) || autoPause)) {
         if (world_->state() == WorldState::Playing || world_->state() == WorldState::Intro) {
             g_.app.pushScene(std::make_unique<PauseScene>(g_, *this));
             return;

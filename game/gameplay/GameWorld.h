@@ -139,6 +139,12 @@ public:
     void sustainSound(const std::string& key, const std::string& rel, float volume = 1.0f);
     void shake(float trauma);
     void hitStop(float seconds) { hitStop_ = std::max(hitStop_, seconds); }
+    /// Time slow power: enemies and their shots run at `factor` speed for `seconds`.
+    void slowTime(float seconds, float factor) {
+        timeSlow_ = std::max(timeSlow_, seconds);
+        timeSlowFactor_ = factor;
+    }
+    float timeSlowRemaining() const { return timeSlow_; }
     void flash(Color c, float duration);
     void rumble(float low, float high, int ms);
     void message(WorldMessage msg);
@@ -190,6 +196,8 @@ public:
     /// Bots and tests: answers every power offer at once with this choice (0 = wait for the
     /// input frames, as in a real game).
     uint8_t autoPowerChoice = 0;
+    /// Demos (power guide): no sound.
+    bool silent = false;
 
     // ---------------------------------------------------------- render
     /// Fill colour of the screen behind the parallax layers.
@@ -240,6 +248,8 @@ private:
     std::string checkpointId_;
     float time_ = 0.0f;
     float hitStop_ = 0.0f;
+    float timeSlow_ = 0.0f;
+    float timeSlowFactor_ = 1.0f;
     std::optional<PowerOffer> powerOffer_;
     Color flash_{255, 255, 255, 0};
     float flashTimer_ = 0.0f, flashDuration_ = 0.0f;

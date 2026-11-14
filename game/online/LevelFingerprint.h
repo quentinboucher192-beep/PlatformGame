@@ -21,7 +21,8 @@ struct LevelData;
 /// Version of the simulation rules. Bump it whenever a code change can alter how a run
 /// plays out (physics, AI, damage, timers...): every ranked level then gets a new
 /// fingerprint, so records and replays of incompatible engines are never mixed.
-constexpr int kSimulationVersion = 5;  // 5: power slots (replace / leave choice in the input frames)
+constexpr int kSimulationVersion = 6;  // 6: energy 150, time slow, magnet, air dash, plasma bomb (special button),
+                                       //    arena bosses keep their wounds when the player dies
 
 struct LevelFingerprint {
     std::string levelId;

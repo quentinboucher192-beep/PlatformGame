@@ -226,8 +226,10 @@ void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
     updatePlayerOverlaps(dt);
     player_.fixedUpdate(*this, effective, dt);
 
-    updateEnemies(dt);
+    // Time slow power: enemies (and, in updateProjectiles, their shots) run slower.
+    updateEnemies(timeSlow_ > 0.0f ? dt * timeSlowFactor_ : dt);
     updateProjectiles(dt);
+    if (timeSlow_ > 0.0f) timeSlow_ = std::max(0.0f, timeSlow_ - dt);
 
     entities_.erase(std::remove_if(entities_.begin(), entities_.end(),
                                    [&](const auto& e) {
@@ -315,11 +317,13 @@ void GameWorld::updateEnemies(float dt) {
     pendingEnemies_.clear();
 }
 
-void GameWorld::updateProjectiles(float dt) {
+void GameWorld::updateProjectiles(float frameDt) {
     for (auto& p : pendingProjectiles_) projectiles_.push_back(std::move(p));
     pendingProjectiles_.clear();
     for (auto& p : projectiles_) {
         if (!p.alive) continue;
+        // Enemy shots follow the time slow power; the player's never do.
+        const float dt = (!p.fromPlayer && timeSlow_ > 0.0f) ? frameDt * timeSlowFactor_ : frameDt;
         p.prevPos = p.pos;
         p.age += dt;
         p.life -= dt;
@@ -362,6 +366,18 @@ void GameWorld::updateProjectiles(float dt) {
             if (static_cast<int>(p.age * 30) % 2 == 0) particles_.emit("shockwave_dust", np + Vec2{0, 4}, 0.6f);
         } else if (auto t = physics_.raycast(p.pos, np, false, ColliderTag::EnemyOnly)) {
             Vec2 hit = p.pos + (np - p.pos) * *t;
+            if (p.bounces > 0) {
+                // Bounce: the axis whose move alone hits the scenery is reflected.
+                --p.bounces;
+                bool hx = physics_.raycast(p.pos, {np.x, p.pos.y}, false, ColliderTag::EnemyOnly).has_value();
+                bool hy = physics_.raycast(p.pos, {p.pos.x, np.y}, false, ColliderTag::EnemyOnly).has_value();
+                if (hy || !hx) p.vel.y = -p.vel.y * 0.55f;
+                if (hx) p.vel.x = -p.vel.x * 0.6f;
+                p.vel.x *= 0.85f;
+                p.pos = hit - (np - p.pos).normalized() * 1.5f;
+                playSound("sounds/bomb_drop.wav", p.pos, 0.4f, 1.3f);
+                continue;
+            }
             p.alive = false;
             if (p.explosionRadius > 0.0f) {
                 explodeProjectile(p, hit);
@@ -382,6 +398,11 @@ void GameWorld::updateProjectiles(float dt) {
                 if (!e->alive() || e->dormant()) continue;
                 if (std::find(p.hitTargets.begin(), p.hitTargets.end(), e.get()) != p.hitTargets.end()) continue;
                 if (!Collision::circleIntersectsRect(p.pos, p.radius, e->box)) continue;
+                if (p.explosionRadius > 0.0f) {  // plasma bomb: bursts on the first enemy
+                    p.alive = false;
+                    explodeProjectile(p, p.pos);
+                    break;
+                }
                 DamageInfo d;
                 d.amount = p.damage;
                 d.type = p.type;
@@ -450,6 +471,7 @@ void GameWorld::explodeProjectile(const Projectile& p, Vec2 at) {
     if (p.fromPlayer) {
         d.fromPlayer = true;
         damageEnemies(Rect::fromCenter(at, {r * 2, r * 2}), d, nullptr);
+        powerHit("impulse", Rect::fromCenter(at, {r * 2, r * 2}));  // breaks cracked rock
     } else if (player_.alive() && Collision::circleIntersectsRect(at, r, player_.box)) {
         damagePlayer(d);
     }
@@ -595,7 +617,7 @@ void GameWorld::onEnemyKilled(Enemy& e) {
 // ================================================================ feedback
 
 void GameWorld::playSound(const std::string& rel, Vec2 worldPos, float volume, float pitch) {
-    if (mode_ == WorldMode::Editor) return;
+    if (mode_ == WorldMode::Editor || silent) return;
     Vec2 c = camera_.center();
     float dx = worldPos.x - c.x;
     float dist = distance(worldPos, c);
@@ -605,12 +627,12 @@ void GameWorld::playSound(const std::string& rel, Vec2 worldPos, float volume, f
 }
 
 void GameWorld::playSound(const std::string& rel, float volume, float pitch) {
-    if (mode_ == WorldMode::Editor) return;
+    if (mode_ == WorldMode::Editor || silent) return;
     services_.res.playSound(rel, volume, pitch, 0.0f);
 }
 
 void GameWorld::sustainSound(const std::string& key, const std::string& rel, float volume) {
-    if (mode_ == WorldMode::Editor) return;
+    if (mode_ == WorldMode::Editor || silent) return;
     services_.res.sustainLoop(key, rel, volume);
 }
 

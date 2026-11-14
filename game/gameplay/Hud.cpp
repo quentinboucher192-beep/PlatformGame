@@ -68,6 +68,15 @@ void Hud::update(GameWorld& w, float dt) {
 void Hud::render(UIContext& ui, GameWorld& w, const WorldView& view, const LevelRecord* record,
                  const GameplaySettings& settings) {
     bool cinematic = w.cinematic().active() || w.state() == WorldState::Intro || w.state() == WorldState::Outro;
+    if (float slow = w.timeSlowRemaining(); slow > 0.0f && !cinematic) {
+        // Time slow: violet veil on the edges, and the seconds left under the energy bar.
+        float k = std::min(1.0f, slow / 0.4f);
+        Color v{150, 90, 255, 255};
+        ui.r().fillGradientV({0, 0, ui.screenW(), ui.s(120)}, v.withAlpha(static_cast<uint8_t>(60 * k)), v.withAlpha(0));
+        ui.r().fillGradientV({0, ui.screenH() - ui.s(120), ui.screenW(), ui.s(120)}, v.withAlpha(0), v.withAlpha(static_cast<uint8_t>(60 * k)));
+        ui.r().fillGradientH({0, 0, ui.s(140), ui.screenH()}, v.withAlpha(static_cast<uint8_t>(50 * k)), v.withAlpha(0));
+        ui.r().fillGradientH({ui.screenW() - ui.s(140), 0, ui.s(140), ui.screenH()}, v.withAlpha(0), v.withAlpha(static_cast<uint8_t>(50 * k)));
+    }
     if (!cinematic) {
         drawVitals(ui, w);
         drawPowers(ui, w);
@@ -102,7 +111,8 @@ void Hud::drawVitals(UIContext& ui, GameWorld& w) {
         }
     }
     // Energy bar
-    float bw = ui.s(260), bh = ui.s(16);
+    // The bar grows with the energy reserve (150 since 2.5).
+    float bw = ui.s(260.0f * std::clamp(p.config().maxEnergy / 100.0f, 1.0f, 1.8f)), bh = ui.s(16);
     Rect frame{x + ui.s(4), y + hs + ui.s(12), bw, bh};
     ui.icon(kHudIcons, Energy, 16, {frame.x - ui.s(2), frame.center().y - ui.s(14), ui.s(28), ui.s(28)});
     frame.x += ui.s(32);
@@ -253,44 +263,14 @@ void Hud::drawProgress(UIContext& ui, GameWorld& w, int placement) {
     float fill = shownProgress_;
     float headX = xAt(fill);
 
-    // Backdrop: a capsule framed in light, with a halo that breathes around it.
-    Rect back{rail.x - ui.s(30), rail.y - ui.s(52), rail.w + ui.s(110), ui.s(124)};
+    // No frame around the bar (the player's choice): only a halo that breathes along the rail,
+    // so it stays readable over any background.
     float breathe = 0.75f + 0.25f * std::sin(t * 1.6f);
-    for (float x = back.x + ui.s(20); x <= back.right() - ui.s(20); x += ui.s(40)) {
-        float k = (x - back.x) / back.w;
-        Color c = Color::lerp(cyan, violet, k);
-        r.drawGlow({x, back.y + ui.s(4)}, ui.s(70), c.withAlpha(static_cast<uint8_t>(52 * breathe)));
-        r.drawGlow({x, back.bottom() - ui.s(4)}, ui.s(70), c.withAlpha(static_cast<uint8_t>(52 * breathe)));
+    for (float x = rail.x; x <= rail.right(); x += ui.s(48)) {
+        float k = (x - rail.x) / std::max(1.0f, rail.w);
+        r.drawGlow({x, rail.center().y}, ui.s(46), Color::lerp(cyan, violet, k).withAlpha(static_cast<uint8_t>(34 * breathe)));
     }
-    r.drawGlow({back.x + ui.s(8), back.center().y}, ui.s(80), cyan.withAlpha(static_cast<uint8_t>(70 * breathe)));
-    r.drawGlow({back.right() - ui.s(8), back.center().y}, ui.s(80), violet.withAlpha(static_cast<uint8_t>(80 * breathe)));
-    r.drawGlow({back.x + back.w * 0.25f, back.center().y}, back.h * 1.3f, cyan.withAlpha(static_cast<uint8_t>(40 * breathe)));
-    r.drawGlow({back.x + back.w * 0.55f, back.center().y}, back.h * 1.4f, gold.withAlpha(static_cast<uint8_t>(38 * breathe)));
-    r.drawGlow({back.x + back.w * 0.85f, back.center().y}, back.h * 1.3f, violet.withAlpha(static_cast<uint8_t>(46 * breathe)));
-    r.fillRoundedRectGradient(back, ui.s(24), {12, 16, 34, 205}, {4, 6, 16, 215});
-    {
-        // A band of light sweeps across the capsule every few seconds.
-        float sweep = std::fmod(t, 4.5f) / 1.6f;
-        if (sweep < 1.0f) {
-            float sx = back.x + back.w * sweep;
-            float bw = ui.s(90);
-            r.pushClip(back.expanded(-ui.s(3)));
-            r.fillGradientH({sx - bw, back.y, bw, back.h}, Color{255, 255, 255, 0}, Color{255, 246, 220, 36}, BlendMode::Additive);
-            r.fillGradientH({sx, back.y, bw, back.h}, Color{255, 246, 220, 36}, Color{255, 255, 255, 0}, BlendMode::Additive);
-            r.popClip();
-        }
-    }
-    r.drawRoundedRect(back, ui.s(24), gold.withAlpha(static_cast<uint8_t>(110 + 60 * breathe)), ui.s(2));
-    r.drawRoundedRect(back.expanded(-ui.s(5)), ui.s(20), cyan.withAlpha(45), ui.s(1));
-    r.fillGradientH({back.x + ui.s(24), back.y, back.w * 0.5f - ui.s(24), ui.s(2)}, gold.withAlpha(0), gold);
-    r.fillGradientH({back.center().x, back.y, back.w * 0.5f - ui.s(24), ui.s(2)}, gold, gold.withAlpha(0));
-    // Bright corner accents
-    for (int cx = 0; cx < 2; ++cx)
-        for (int cy = 0; cy < 2; ++cy) {
-            Vec2 c{cx ? back.right() - ui.s(16) : back.x + ui.s(16), cy ? back.bottom() - ui.s(10) : back.y + ui.s(10)};
-            r.drawGlow(c, ui.s(14), gold.withAlpha(static_cast<uint8_t>(120 * breathe)));
-            r.fillCircle(c, ui.s(2), Color{255, 245, 220, 255});
-        }
+    r.drawGlow({rail.right() + ui.s(30), rail.center().y}, ui.s(70), violet.withAlpha(static_cast<uint8_t>(60 * breathe)));
 
     // Header: section on the left, percentage on the right.
     std::string section = w.level().name;
@@ -300,13 +280,15 @@ void Hud::drawProgress(UIContext& ui, GameWorld& w, int placement) {
     TextStyle ps = style(ui, 26, gold, FontFace::Title, Align::Right, VAlign::Bottom);
     ps.glow = ui.s(16);
     ps.glowColor = gold.withAlpha(140);
+    ps.shadow = true;
     std::string pctText = std::to_string(pct) + " %";
     float pctW = ui.text().measure(pctText, FontFace::Title, ps.size).x;
     float headerY = rail.y - ui.s(14);
     ui.text().draw(pctText, {rail.right() + ui.s(62), headerY + ui.s(2)}, ps);
     float room = rail.w + ui.s(62) - pctW - ui.s(30);
-    TextStyle ss = style(ui, ui.fitFont(section, FontFace::Bold, 16, room, 0.6f), Color{200, 214, 232, 255}, FontFace::Bold, Align::Left,
+    TextStyle ss = style(ui, ui.fitFont(section, FontFace::Bold, 16, room, 0.6f), Color{214, 226, 242, 255}, FontFace::Bold, Align::Left,
                          VAlign::Bottom);
+    ss.shadow = true;
     ui.text().draw(section, {rail.x, headerY}, ss);
 
     // Aura of the filled part: a wide bloom brighter towards the head, and sparks rising off it.
@@ -326,7 +308,7 @@ void Hud::drawProgress(UIContext& ui, GameWorld& w, int placement) {
                      c.withAlpha(static_cast<uint8_t>(230 * (1.0f - life))));
     }
     // Rail
-    r.fillRoundedRect(rail.expanded(ui.s(5)), ui.s(11), {5, 8, 20, 240});
+    r.fillRoundedRect(rail.expanded(ui.s(5)), ui.s(11), {5, 8, 20, 225});
     r.drawRoundedRect(rail.expanded(ui.s(5)), ui.s(11), gold.withAlpha(150), ui.s(2));
     for (int k = 1; k < 10; ++k) {
         float x = rail.x + rail.w * static_cast<float>(k) / 10.0f;
@@ -389,6 +371,7 @@ void Hud::drawProgress(UIContext& ui, GameWorld& w, int placement) {
         TextStyle ls = style(ui, fs, c, FontFace::Bold, Align::Center, VAlign::Top);
         ls.glow = ui.s(10);
         ls.glowColor = c.withAlpha(110);
+        ls.shadow = true;
         ui.text().draw(text, {x, rail.center().y + ui.s(34)}, ls);
     };
     auto nearMajor = [&](float x) {

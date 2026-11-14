@@ -42,8 +42,8 @@
     150,
     -170
   ],
-  "maxEnergy": 100,
-  "energyRegen": 14,
+  "maxEnergy": 150,
+  "energyRegen": 18,
   "energyRegenDelay": 0.7,
   "attackDamage": 1,
   "attackDuration": 0.28,

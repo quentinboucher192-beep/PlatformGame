@@ -14,9 +14,9 @@ class GameWorld;
 /// Live play goes through this type too (analog stick quantised to 1/127), so a run
 /// replayed from its recorded frames receives bit-identical inputs.
 struct InputFrame {
-    /// Gameplay actions recorded: MoveLeft .. Interact (menus and pause never reach the
+    /// Gameplay actions recorded: MoveLeft .. Special (menus and pause never reach the
     /// simulation).
-    static constexpr int kActions = static_cast<int>(Action::Interact) + 1;
+    static constexpr int kActions = static_cast<int>(Action::Special) + 1;
     enum Flag : uint8_t { SkipCinematic = 1 };
     /// Answer to a pending power offer (GameWorld::powerOffer): 1..8 replaces that slot,
     /// kChoiceLeave leaves the new power on its tablet, 0 = no answer this step.

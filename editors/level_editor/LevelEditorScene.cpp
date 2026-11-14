@@ -18,6 +18,12 @@ std::unique_ptr<Scene> makeLevelEditor(GameServices& g, const std::string& level
     return std::make_unique<LevelEditorScene>(g, levelId);
 }
 
+std::unique_ptr<Scene> makeLevelEditorHelp(GameServices& g, const std::string& levelId) {
+    auto s = std::make_unique<LevelEditorScene>(g, levelId);
+    s->openHelpOnEnter = true;
+    return s;
+}
+
 LevelEditorScene::LevelEditorScene(GameServices& g, std::string levelId) : g_(g), requestedId_(std::move(levelId)) {
     props_.onPickObject = [this](const std::string& key) {
         pickTarget_ = key;
@@ -42,7 +48,14 @@ void LevelEditorScene::onEnter() {
     if (o == "history") leftTab_ = LeftTab::History;
     if (o == "objects") leftTab_ = LeftTab::Objects;
     if (o == "duplicate" && readOnly_) duplicateForEditing();
-    if (o == "check" || o == "history" || o == "objects" || o == "duplicate") g_.onlineOpen.clear();
+    if (o == "settings") modal_ = Modal::Settings;
+    if (o == "events") modal_ = Modal::Events;
+    if (o == "cinematics") modal_ = Modal::Cinematics;
+    if (o == "open") modal_ = Modal::Open;
+    if (o == "check" || o == "history" || o == "objects" || o == "duplicate" || o == "settings" || o == "events" ||
+        o == "cinematics" || o == "open")
+        g_.onlineOpen.clear();
+    if (openHelpOnEnter) modal_ = Modal::Help;
 }
 
 void LevelEditorScene::onExit() {
@@ -541,6 +554,8 @@ void LevelEditorScene::render(float alpha) {
         st.valign = VAlign::Middle;
         Vec2 sz = ui.text().measure(message_, FontFace::Body, st.size);
         Rect bg = Rect::fromCenter({viewport_.center().x, viewport_.bottom() - ui.s(40)}, {sz.x + ui.s(40), ui.s(44)});
+        if (modal && bg.intersects(modalRect_))  // never over a dialog: in the band below it
+            bg = Rect::fromCenter({W * 0.5f, (modalRect_.bottom() + H) * 0.5f}, bg.size());
         r.fillRoundedRect(bg, ui.s(10), {6, 10, 24, 225});
         ui.text().draw(message_, bg.center(), st);
     }

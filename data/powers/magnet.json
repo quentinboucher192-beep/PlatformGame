@@ -1,0 +1,17 @@
+{
+  "format": "cosmic.power",
+  "id": "magnet",
+  "behavior": "magnet",
+  "name": "Aimant",
+  "description": "Les éclats, reliques et orbes proches filent vers vous (passif).",
+  "icon": 11,
+  "input": "special",
+  "energyCost": 0,
+  "cooldown": 0,
+  "duration": 0,
+  "color": "#ff5a8a",
+  "sound": "sounds/power_unlock.wav",
+  "params": {
+    "radius": 150
+  }
+}

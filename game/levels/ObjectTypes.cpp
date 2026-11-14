@@ -92,10 +92,12 @@ const std::vector<std::string> kMaterialLabels = {"Pierre des ruines", "Métal a
                                                   "Métal de forge",    "Glace (glissante)", "Roche enneigée",
                                                   "Métal givré"};
 const std::vector<std::string> kPowers = {"dash",         "wave",        "shield",  "impulse", "teleport",
-                                          "glide",        "ground_pound", "charge_shot", "grapple", "triple_jump"};
+                                          "glide",        "ground_pound", "charge_shot", "grapple", "triple_jump",
+                                          "time_slow",    "magnet",      "air_dash", "plasma_bomb"};
 const std::vector<std::string> kPowerLabels = {"Dash",    "Onde énergétique", "Bouclier",   "Impulsion",
                                                "Téléportation", "Planeur",    "Frappe sismique", "Tir chargé",
-                                               "Grappin", "Triple saut"};
+                                               "Grappin", "Triple saut", "Ralenti temporel", "Aimant",
+                                               "Ruée aérienne", "Bombe plasma"};
 // Obstacles that a power opens (power_gate).
 const std::vector<std::string> kGatePowers = {"dash", "wave", "shield", "impulse", "teleport", "ground_pound"};
 const std::vector<std::string> kGatePowerLabels = {"Dash (mur de cristal)",        "Onde (barrière d'énergie)",
@@ -521,6 +523,7 @@ std::vector<ObjectTypeInfo> build() {
                    pStr("waves", "Vagues (ids ennemis par vague, ';' sépare les vagues)", "", PropType::Text),
                    pBool("lockCamera", "Bloquer la caméra sur l'arène", true),
                    pBool("announce", "Annoncer le combat (titres)", true),
+                   pBool("bossKeepsDamage", "Le boss garde ses blessures si le joueur meurt", true),
                    pStr("music", "Musique pendant le combat", "", PropType::SoundRef),
                    pStr("skullColor", "Aspect : couleur de la tête de mort (vide = couleur de la planète)", "", PropType::Color)};
         t.help = "Embuscade : en entrant, les portes se ferment et les vagues arrivent ; elles se rouvrent une fois "
@@ -649,6 +652,10 @@ std::vector<PaletteEntry> buildPalette() {
     add("Tablette : Tir chargé", "power_unlock", {{"power", "charge_shot"}});
     add("Tablette : Grappin", "power_unlock", {{"power", "grapple"}});
     add("Tablette : Triple saut", "power_unlock", {{"power", "triple_jump"}});
+    add("Tablette : Ralenti temporel", "power_unlock", {{"power", "time_slow"}});
+    add("Tablette : Aimant", "power_unlock", {{"power", "magnet"}});
+    add("Tablette : Ruée aérienne", "power_unlock", {{"power", "air_dash"}});
+    add("Tablette : Bombe plasma", "power_unlock", {{"power", "plasma_bomb"}});
     add("", "heart_container");
     add("", "grapple_point");
     add("", "updraft");

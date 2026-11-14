@@ -13,6 +13,10 @@
     "ground_pound": {"row": 6, "count": 8, "fps": 8, "loop": true},
     "charge_shot": {"row": 7, "count": 8, "fps": 8, "loop": true},
     "grapple": {"row": 8, "count": 8, "fps": 8, "loop": true},
-    "triple_jump": {"row": 9, "count": 8, "fps": 8, "loop": true}
+    "triple_jump": {"row": 9, "count": 8, "fps": 8, "loop": true},
+    "time_slow": {"row": 10, "count": 8, "fps": 8, "loop": true},
+    "magnet": {"row": 11, "count": 8, "fps": 8, "loop": true},
+    "air_dash": {"row": 12, "count": 8, "fps": 8, "loop": true},
+    "plasma_bomb": {"row": 13, "count": 8, "fps": 8, "loop": true}
   }
 }

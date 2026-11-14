@@ -24,7 +24,7 @@ void PauseScene::render(float /*alpha*/) {
     float k = std::min(1.0f, t_ / 0.25f);
     ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{4, 6, 14, 255}.withAlphaF(0.65f * k));
 
-    float w = ui.s(560), h = ui.s(620);
+    float w = ui.s(560), h = ui.s(700);
     Rect panel{(ui.screenW() - w) * 0.5f, (ui.screenH() - h) * 0.5f + (1.0f - applyEase(Ease::OutCubic, k)) * ui.s(40), w, h};
     ui.panel(panel, true, 18);
     ui.label("PAUSE", {panel.center().x, panel.y + ui.s(40)}, 52, ui.theme().text, Align::Center, FontFace::Title);
@@ -50,6 +50,8 @@ void PauseScene::render(float /*alpha*/) {
     }
     y += bh + ui.s(16);
     if (ui.button("settings", {bx, y, bw, bh}, "Paramètres")) g_.app.pushScene(makeSettingsScene(g_, true));
+    y += bh + ui.s(16);
+    if (ui.button("guide", {bx, y, bw, bh}, "Guide des pouvoirs")) g_.app.pushScene(makePowerGuide(g_));
     y += bh + ui.s(16);
     UIContext::ButtonStyle danger;
     danger.danger = true;

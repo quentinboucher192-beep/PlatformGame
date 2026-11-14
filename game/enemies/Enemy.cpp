@@ -481,6 +481,11 @@ void Enemy::tryTeleport(GameWorld& w) {
     }
 }
 
+void Enemy::setWounds(float hp, int phase) {
+    hp_ = std::clamp(hp, 1.0f, maxHp_);
+    phase_ = def_.phases.empty() ? 0 : std::clamp(phase, 0, static_cast<int>(def_.phases.size()) - 1);
+}
+
 void Enemy::checkPhase(GameWorld& w) {
     if (!def_.isBoss || def_.phases.empty()) return;
     int next = phase_ + 1;

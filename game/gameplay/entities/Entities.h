@@ -415,10 +415,15 @@ public:
     Enemy* enemy(GameWorld& w) const;
     /// Recreates the enemy (combat zone reset). `dormant` overrides the object's prop.
     void respawn(GameWorld& w, bool dormant);
+    /// Combat zone reset after the player's death: a boss comes back with the wounds it had
+    /// (life and phase), a defeated boss stays defeated. Other enemies are recreated.
+    void respawnKeepingWounds(GameWorld& w, bool dormant);
     bool enemyAlive(GameWorld& w) const;
+    bool defeated() const { return defeated_; }
 
 private:
     uint32_t enemyUid_ = 0;
+    bool defeated_ = false;  // a boss beaten in an arena that was reset
     AnimationSetPtr previewAnim_;
 };
 

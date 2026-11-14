@@ -34,6 +34,14 @@ void DashPower::onActivate(Player& p, GameWorld& w) {
 
 void DashPower::fixedUpdate(Player& p, GameWorld& w, float dt) {
     Power::fixedUpdate(p, w, dt);
+    if (refill_) {
+        // Landed: air dashes back (one more per Air Dash upgrade carried).
+        refill_ = false;
+        int extra = 0;
+        for (const auto& pw : p.powers())
+            if (const auto* ad = dynamic_cast<const AirDashPower*>(pw.get())) extra += ad->extraDashes();
+        airUses_ = static_cast<int>(def_.param("airUses", 1)) + extra;
+    }
     if (!dashing_) return;
     if (!p.dashing()) {
         dashing_ = false;

@@ -146,6 +146,58 @@ GLYPHS.update({
         "....#.#....",
         "...#...#...",
     ],
+    "time_slow": [      # hourglass
+        "#########..",
+        ".#.....#...",
+        "..#...#....",
+        "...#+#.....",
+        "....+......",
+        "...#+#.....",
+        "..#.+.#....",
+        ".#.+++.#...",
+        "#########..",
+        "...........",
+        "...........",
+    ],
+    "magnet": [         # horseshoe magnet
+        "++.....++..",
+        "##.....##..",
+        "##.....##..",
+        "##.....##..",
+        "##.....##..",
+        ".##...##...",
+        "..#####....",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+    ],
+    "air_dash": [       # two chevrons
+        "#...#......",
+        ".#...#.....",
+        "..#...#....",
+        "...+...+...",
+        "..#...#....",
+        ".#...#.....",
+        "#...#......",
+        "...........",
+        "...........",
+        "...........",
+        "...........",
+    ],
+    "plasma_bomb": [    # bomb with a lit fuse
+        "........+..",
+        ".......#.+.",
+        "......#....",
+        "...###.....",
+        "..#####....",
+        ".###+###...",
+        ".##+####...",
+        ".#######...",
+        "..#####....",
+        "...###.....",
+        "...........",
+    ],
 })
 
 COLORS = {
@@ -159,11 +211,16 @@ COLORS = {
     "charge_shot": (CYAN[2], CYAN[3], CYAN[0]),
     "grapple": (CYAN[1], CYAN[3], CYAN[0]),
     "triple_jump": (VIOLET[1], VIOLET[2], VIOLET[0]),
+    "time_slow": (VIOLET[1], VIOLET[2], VIOLET[0]),
+    "magnet": (AMBER[1], AMBER[2], AMBER[0]),
+    "air_dash": (CYAN[1], CYAN[3], CYAN[0]),
+    "plasma_bomb": (AMBER[1], AMBER[2], AMBER[0]),
 }
 
 # clip order of animations/power_unlock.json (v1 rows first, unchanged)
 POWERS = ("dash", "wave", "shield", "impulse", "teleport",
-          "glide", "ground_pound", "charge_shot", "grapple", "triple_jump")
+          "glide", "ground_pound", "charge_shot", "grapple", "triple_jump",
+          "time_slow", "magnet", "air_dash", "plasma_bomb")
 
 
 def tablet(name, i):

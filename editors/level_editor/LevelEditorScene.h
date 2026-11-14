@@ -22,6 +22,7 @@ class GameServices;
 class LevelEditorScene : public Scene {
 public:
     LevelEditorScene(GameServices& g, std::string levelId);
+    bool openHelpOnEnter = false;  // automated screenshots (--editor-help)
     ~LevelEditorScene() override;
 
     void onEnter() override;
@@ -147,6 +148,7 @@ private:
     std::string pickTarget_;  // property key waiting for an object pick
     PropertyEditor props_;
     Modal modal_ = Modal::None;
+    Rect modalRect_;  // last dialog drawn (editor messages are placed outside it)
     int selectedEvent_ = 0;
     int cinematicTab_ = 0;
     int selectedStep_ = 0;

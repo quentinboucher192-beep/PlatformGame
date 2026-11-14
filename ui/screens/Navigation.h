@@ -26,6 +26,8 @@ struct PlayOptions {
     /// Launched from ONLINE ("Jouer ce niveau"): leaving the level goes back to ONLINE on
     /// this level, never to the campaign; no "next level".
     bool fromOnline = false;
+    /// Automated screenshots: open the pause menu as soon as the level is playing.
+    bool openPause = false;
 };
 
 // Factories of every screen (implemented next to each scene).
@@ -37,7 +39,11 @@ std::unique_ptr<Scene> makeGameScene(GameServices& g, const std::string& levelId
 std::unique_ptr<Scene> makeSettingsScene(GameServices& g, bool overlay);
 /// Notifications of the main menu (new content, records dropped, new installer).
 std::unique_ptr<Scene> makeNotifications(GameServices& g);
+/// Help: every power of the player with a live example (pushed over the current screen).
+std::unique_ptr<Scene> makePowerGuide(GameServices& g, int page = 0);
 std::unique_ptr<Scene> makeLevelEditor(GameServices& g, const std::string& levelId);
+/// Automated screenshots: the level editor with its help open.
+std::unique_ptr<Scene> makeLevelEditorHelp(GameServices& g, const std::string& levelId);
 std::unique_ptr<Scene> makeEnemyEditor(GameServices& g, const std::string& enemyId = {}, int tab = 0);
 /// The WORKSHOP (reached from ONLINE): the player's levels, imported levels, .cplanet
 /// export/import, enemy editor.

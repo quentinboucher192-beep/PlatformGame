@@ -72,6 +72,7 @@ uint64_t simulationStateHash(const GameWorld& w) {
     f.i32(static_cast<int32_t>(p.powers().size()));
     for (const auto& pw : p.powers()) f.bytes(pw->id().data(), pw->id().size());
     f.i32(w.powerOffer() ? 1 : 0);
+    f.f32(w.timeSlowRemaining());
     f.i32(static_cast<int32_t>(w.enemies().size()));
     for (const auto& e : w.enemies()) {
         f.rect(e->box);

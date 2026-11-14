@@ -56,12 +56,16 @@ const std::vector<std::pair<std::string, std::string>>& stepTypes() {
 void LevelEditorScene::drawModal() {
     UIContext& ui = g_.ui;
     ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, {0, 0, 0, 160});
-    float w = std::min(ui.screenW() - ui.s(120), ui.s(1300)), h = std::min(ui.screenH() - ui.s(100), ui.s(900));
+    // Large dialogs leave a band at the bottom of the screen for the editor's messages.
+    float w = std::min(ui.screenW() - ui.s(120), ui.s(1300)), h = std::min(ui.screenH() - ui.s(170), ui.s(900));
+    float y = (ui.screenH() - h) * 0.5f - ui.s(30);
     if (modal_ == Modal::New || modal_ == Modal::ConfirmQuit) {
         w = ui.s(760);
         h = ui.s(400);
+        y = (ui.screenH() - h) * 0.5f;
     }
-    Rect m{(ui.screenW() - w) * 0.5f, (ui.screenH() - h) * 0.5f, w, h};
+    Rect m{(ui.screenW() - w) * 0.5f, y, w, h};
+    modalRect_ = m;
     ui.panel(m, true, 16);
     ui.pushId("modal");
     Rect c{m.x + ui.s(30), m.y + ui.s(24), m.w - ui.s(60), m.h - ui.s(48)};
@@ -650,6 +654,8 @@ void LevelEditorScene::modalHelp(const Rect& c) {
         Vec2 s = ui.labelWrapped(l, {c.x, y}, c.w, 19, ui.theme().text);
         y += s.y + ui.s(10);
     }
+    if (ui.button("guide", {c.right() - ui.s(180) - ui.s(16) - ui.s(300), c.bottom() - ui.s(58), ui.s(300), ui.s(56)}, "Guide des pouvoirs"))
+        g_.app.pushScene(makePowerGuide(g_));
     if (ui.button("close", {c.right() - ui.s(180), c.bottom() - ui.s(58), ui.s(180), ui.s(56)}, "Fermer")) modal_ = Modal::None;
 }
 

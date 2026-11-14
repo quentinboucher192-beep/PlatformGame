@@ -1,4 +1,10 @@
 {
+  "2.5.0": [
+    "4 nouveaux pouvoirs : Ralenti temporel et Bombe plasma (nouvelle touche Spécial : F, manette R3), Aimant et Ruée aérienne (passifs) ; réserve d'énergie de 150 et barre agrandie.",
+    "Guide des pouvoirs (menu Pause, aide de l'éditeur) : un exemple animé de chacun des 14 pouvoirs, joué par le moteur du jeu.",
+    "Les boss gardent leurs blessures quand vous mourez dans leur arène : plus besoin de tout recommencer.",
+    "Barre de progression sans encadré."
+  ],
   "2.4.0": [
     "Barre de progression du niveau (Paramètres › Jeu) : pourcentage, checkpoints, embuscades (tête de mort à la couleur choisie dans l'éditeur), boss (leur portrait ou l'icône choisie) et portail de fin.",
     "Notifications dans le menu principal : nouveaux niveaux, pouvoirs, monstres et boss, records à refaire quand un niveau change, nouvelles versions à télécharger.",

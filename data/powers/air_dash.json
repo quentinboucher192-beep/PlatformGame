@@ -1,0 +1,17 @@
+{
+  "format": "cosmic.power",
+  "id": "air_dash",
+  "behavior": "air_dash",
+  "name": "Ruée aérienne",
+  "description": "Un Dash de plus avant de toucher le sol (passif, avec le Dash).",
+  "icon": 12,
+  "input": "dash",
+  "energyCost": 0,
+  "cooldown": 0,
+  "duration": 0,
+  "color": "#39f0d8",
+  "sound": "sounds/dash.wav",
+  "params": {
+    "dashes": 1
+  }
+}

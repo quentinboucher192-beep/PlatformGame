@@ -85,7 +85,7 @@ void CombatZoneEntity::startWave(GameWorld& w, size_t index) {
     if (index >= waves_.size()) return;
     for (const auto& id : waves_[index]) {
         auto* es = dynamic_cast<EnemySpawnEntity*>(w.entity(id));
-        if (!es) continue;
+        if (!es || es->defeated()) continue;
         Enemy* e = es->enemy(w);
         if (!e || !e->alive()) es->respawn(w, false);
         else if (e->dormant()) e->wake(w);
@@ -159,9 +159,13 @@ void CombatZoneEntity::onPlayerRespawn(GameWorld& w) {
     waveDelay_ = 0.0f;
     setDoors(w, true);
     bool explicitWaves = !obj_.propStr("waves").empty();
+    bool keepWounds = obj_.prop<bool>("bossKeepsDamage", true);
     for (const auto& wave : waves_)
         for (const auto& id : wave)
-            if (auto* es = dynamic_cast<EnemySpawnEntity*>(w.entity(id))) es->respawn(w, explicitWaves);
+            if (auto* es = dynamic_cast<EnemySpawnEntity*>(w.entity(id))) {
+                if (keepWounds) es->respawnKeepingWounds(w, explicitWaves);
+                else es->respawn(w, explicitWaves);
+            }
 }
 
 bool CombatZoneEntity::handleAction(GameWorld& w, const std::string& action, const Json&) {
@@ -244,6 +248,22 @@ void EnemySpawnEntity::respawn(GameWorld& w, bool dormant) {
                             id(), obj_.prop<float>("patrol", 96.0f));
     enemyUid_ = e ? e->uid() : 0;
     if (e && dormant) e->setDormant();
+}
+
+void EnemySpawnEntity::respawnKeepingWounds(GameWorld& w, bool dormant) {
+    Enemy* old = enemy(w);
+    if (!old || !old->def().isBoss) {
+        respawn(w, dormant);
+        return;
+    }
+    if (!old->alive()) {
+        defeated_ = true;
+        return;
+    }
+    float hp = old->hp();
+    int phase = old->phaseIndex();
+    respawn(w, dormant);
+    if (Enemy* e = enemy(w)) e->setWounds(hp, phase);
 }
 
 bool EnemySpawnEntity::handleAction(GameWorld& w, const std::string& action, const Json&) {

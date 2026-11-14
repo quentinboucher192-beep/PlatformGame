@@ -89,7 +89,7 @@ absente prend sa valeur par défaut.
 | Gameplay | `player_start`, `checkpoint` (`label` ; `optional` : point d'une route alternative ou d'un détour, que le détecteur de raccourcis n'exige pas), `exit`, `shard`, `relic`, `health_orb` (`amount`, 2 par défaut), `energy_orb`, `power_unlock` (`power` parmi les 10 pouvoirs), `heart_container` (`hearts` : cœurs maximum en plus pour le niveau) |
 | Interactifs | `door`, `lever`, `receptor` (activé par l'Onde ou le Tir chargé), `sign`, `grapple_point` (point d'ancrage du Grappin) |
 | Ennemis | `enemy` (`enemy` = identifiant de définition, `patrol`, `faceLeft`, `dormant`, `boss`) |
-| Zones | `trigger`, `combat_zone` (`doors`, `waves` = vagues d'ennemis séparées par `;`, `lockCamera`, `music`, `announce`), `camera_zone`, `secret_area`, `updraft` (courant ascendant : `strength` vitesse de montée, `vent` grille au sol ; activable par événements) |
+| Zones | `trigger`, `combat_zone` (`doors`, `waves` = vagues d'ennemis séparées par `;`, `lockCamera`, `music`, `announce`, `skullColor` couleur de la tête de mort sur la barre de progression, `bossKeepsDamage` — vrai par défaut — le boss de l'arène garde ses blessures et sa phase quand le joueur meurt ; un boss vaincu le reste), `camera_zone`, `secret_area`, `updraft` (courant ascendant : `strength` vitesse de montée, `vent` grille au sol ; activable par événements) |
 | Décor | `decor` (élément d'un atlas de décor : `sprites/decor/<planète>_decor.json`, noms uniques), `light`, `emitter` (particules) |
 
 Les références entre objets (portes d'une arène, cibles d'un levier, vagues…) utilisent

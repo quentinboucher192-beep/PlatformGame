@@ -5,6 +5,19 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.5.0** :
+* **4 nouveaux pouvoirs** (14 au total) : **Ralenti temporel** (les ennemis et leurs tirs
+  ralentissent quelques secondes) et **Bombe plasma** (rebondit puis explose : dégâts autour
+  d'elle, brise la roche fissurée) sur la nouvelle touche **Spécial** (F, manette R3) ;
+  **Aimant** (éclats, reliques et orbes proches filent vers vous) et **Ruée aérienne** (un Dash
+  de plus avant de toucher le sol), passifs. Réserve d'énergie portée à 150, barre agrandie.
+* **Guide des pouvoirs** (menu Pause et aide de l'éditeur, ou `--power-guide`) : chaque
+  pouvoir avec un exemple animé joué en boucle par le moteur du jeu, sa touche et ce qu'il
+  fait. Les tests vérifient que chaque exemple montre réellement le pouvoir réussir.
+* **Les boss gardent leurs blessures** quand vous mourez dans leur arène : à votre retour, ils
+  ont la vie et la phase où vous les avez laissés (réglable par arène dans l'éditeur).
+* Barre de progression **sans encadré** : rail lumineux, repères et pourcentage seulement.
+
 **Nouveau dans la version 2.4.0** :
 * **Barre de progression** du niveau (Paramètres › Jeu : en haut, en bas ou masquée) : une
   capsule lumineuse avec le pourcentage parcouru, la section en cours, les checkpoints, les

@@ -24,6 +24,7 @@ enum class Action : int {
     Impulse,
     Teleport,
     Interact,
+    Special,  // power on the special button (time slow, plasma bomb...)
     Pause,
     MenuUp,
     MenuDown,

@@ -31,6 +31,7 @@ struct Projectile {
     float slow = 0.0f;             // see DamageInfo::slow
     float slowDuration = 0.0f;
     float explosionRadius = 0.0f;  // > 0: explodes on impact (bombs)
+    int bounces = 0;               // > 0: bounces off the scenery instead of exploding (plasma bomb)
     bool spin = false;             // drawn spinning instead of aligned with the velocity
     float homing = 0.0f;           // enemy projectiles: turn rate toward the player (rad/s)
     float homingTime = 0.0f;       // ... while age < homingTime

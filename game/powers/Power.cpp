@@ -38,6 +38,10 @@ PowerRegistry::PowerRegistry() {
     registerBehavior("charge_shot", [](const PowerDefinition& d) { return std::make_unique<ChargeShotPower>(d); });
     registerBehavior("grapple", [](const PowerDefinition& d) { return std::make_unique<GrapplePower>(d); });
     registerBehavior("air_jump", [](const PowerDefinition& d) { return std::make_unique<AirJumpPower>(d); });
+    registerBehavior("time_slow", [](const PowerDefinition& d) { return std::make_unique<TimeSlowPower>(d); });
+    registerBehavior("magnet", [](const PowerDefinition& d) { return std::make_unique<MagnetPower>(d); });
+    registerBehavior("air_dash", [](const PowerDefinition& d) { return std::make_unique<AirDashPower>(d); });
+    registerBehavior("plasma_bomb", [](const PowerDefinition& d) { return std::make_unique<PlasmaBombPower>(d); });
 }
 
 void PowerRegistry::registerBehavior(const std::string& behavior, Factory f) { factories_[behavior] = std::move(f); }

@@ -16,7 +16,7 @@ public:
     void fixedUpdate(Player& p, GameWorld& w, float dt) override;
     bool controlsMovement() const override { return dashing_; }
     bool active() const override { return dashing_; }
-    void onLand() override { airUses_ = static_cast<int>(def_.param("airUses", 1)); }
+    void onLand() override { refill_ = true; }
     void cancel(Player& p, GameWorld& w) override;
 
 protected:
@@ -24,6 +24,7 @@ protected:
 
 private:
     bool dashing_ = false;
+    bool refill_ = true;  // computed on the first step (air dash upgrades)
     int airUses_ = 1;
     float hitTimer_ = 0.0f;
 };
@@ -197,6 +198,51 @@ public:
 
 protected:
     void onActivate(Player&, GameWorld&) override {}
+};
+
+/// Slows the enemies and their shots for a few seconds (special button).
+class TimeSlowPower : public Power {
+public:
+    using Power::Power;
+
+protected:
+    void onActivate(Player& p, GameWorld& w) override;
+};
+
+/// Passive: shards, relics and orbs nearby fly to the player.
+class MagnetPower : public Power {
+public:
+    using Power::Power;
+    bool passive() const override { return true; }
+    bool exclusiveInput() const override { return false; }
+    bool wantsActivation(const Player&, const GameWorld&, const PlayerInput&) const override { return false; }
+    float radius() const { return def_.param("radius", 150.0f); }
+
+protected:
+    void onActivate(Player&, GameWorld&) override {}
+};
+
+/// Passive upgrade of the Dash: more dashes before touching the ground.
+class AirDashPower : public Power {
+public:
+    using Power::Power;
+    bool passive() const override { return true; }
+    bool exclusiveInput() const override { return false; }
+    bool wantsActivation(const Player&, const GameWorld&, const PlayerInput&) const override { return false; }
+    int extraDashes() const { return static_cast<int>(def_.param("dashes", 1)); }
+
+protected:
+    void onActivate(Player&, GameWorld&) override {}
+};
+
+/// Bouncing plasma bomb (special button): explodes after its fuse or on an enemy, damages
+/// around it and breaks cracked rock like the Impulse.
+class PlasmaBombPower : public Power {
+public:
+    using Power::Power;
+
+protected:
+    void onActivate(Player& p, GameWorld& w) override;
 };
 
 }  // namespace cosmic

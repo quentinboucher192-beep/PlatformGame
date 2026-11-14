@@ -386,8 +386,8 @@ class Level:
         self.apply_seals()
         self.apply_power_slots()
         meta = self.data.setdefault("metadata", {})
-        if meta.get("revision", 0) < 5:
-            meta["revision"] = 5  # 2.3: power slots and stations
+        if meta.get("revision", 0) < 6:
+            meta["revision"] = 6  # 2.5: energy 150, new powers (simulation 6)
         ids = [o["id"] for o in self.data["objects"]]
         assert len(ids) == len(set(ids)), "duplicate ids"
         with open(path, "w", encoding="utf-8") as f:

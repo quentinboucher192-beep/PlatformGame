@@ -1,0 +1,18 @@
+{
+  "format": "cosmic.power",
+  "id": "time_slow",
+  "behavior": "time_slow",
+  "name": "Ralenti temporel",
+  "description": "Ralentit les ennemis et leurs tirs pendant quelques secondes : le temps de passer entre deux attaques.",
+  "icon": 10,
+  "input": "special",
+  "energyCost": 60,
+  "cooldown": 10,
+  "duration": 3.5,
+  "color": "#b07aff",
+  "sound": "sounds/teleport_in.wav",
+  "params": {
+    "duration": 3.5,
+    "factor": 0.35
+  }
+}

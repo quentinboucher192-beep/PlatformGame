@@ -7,6 +7,7 @@
 #include "game/content/ContentDatabase.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/entities/Entities.h"
+#include "game/powers/Powers.h"
 #include "engine/core/DetMath.h"
 
 namespace cosmic {
@@ -52,8 +53,17 @@ void CollectibleEntity::fixedUpdate(GameWorld& w, float dt) {
         // Magnet toward a nearby player (drops and energy orbs).
         Player& p = w.player();
         float d = distance(p.center(), box.center());
-        if ((life_ > 0.0f || type() == "energy_orb") && d < 40.0f && p.alive()) {
-            Vec2 c = box.center() + (p.center() - box.center()).normalized() * std::min(d, 220.0f * dt);
+        // The Magnet power pulls every collectible from much farther, and faster.
+        float reach = 40.0f, speed = 220.0f;
+        bool pulled = life_ > 0.0f || type() == "energy_orb";
+        for (const auto& pw : p.powers())
+            if (const auto* mg = dynamic_cast<const MagnetPower*>(pw.get())) {
+                reach = mg->radius();
+                speed = 380.0f;
+                pulled = true;
+            }
+        if (pulled && d < reach && p.alive()) {
+            Vec2 c = box.center() + (p.center() - box.center()).normalized() * std::min(d, speed * dt);
             box = Rect::fromCenter(c, box.size());
             base_ = c;
         } else {

@@ -3205,7 +3205,7 @@
  },
  "metadata": {
   "generator": "tools/levelgen/challenge.py",
-  "revision": 5,
+  "revision": 6,
   "rooms": [
    {
     "type": "rafts",

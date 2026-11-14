@@ -179,7 +179,10 @@ Model buildModel(const LevelData& level, const ContentDatabase& content, const s
     if (hasPower(powers, "teleport")) maxRise += param("teleport", "distance", 80.0f);
     float airTime = 2.0f * timeToApex * static_cast<float>(1 + airJumps);
     airReach = run * airTime;
-    if (hasPower(powers, "dash")) airReach += param("dash", "speed", 430.0f) * param("dash", "duration", 0.16f);
+    if (hasPower(powers, "dash")) {
+        float one = param("dash", "speed", 430.0f) * param("dash", "duration", 0.16f);
+        airReach += one * (hasPower(powers, "air_dash") ? 2.0f : 1.0f);  // Air Dash: one more in the air
+    }
     if (hasPower(powers, "teleport")) airReach += param("teleport", "distance", 80.0f);
     if (hasPower(powers, "glide")) airReach += maxRise / std::max(10.0f, param("glide", "fallSpeed", 52.0f)) * param("glide", "airSpeed", 175.0f);
     float grappleRange = hasPower(powers, "grapple") ? param("grapple", "range", 170.0f) : 0.0f;
@@ -199,7 +202,11 @@ Model buildModel(const LevelData& level, const ContentDatabase& content, const s
             if (closedDoors && !o.prop<bool>("open", false)) g.mark(g.solid, o.rect);
         }
         else if (t == "power_gate") {
-            if (!powers.count(o.propStr("power"))) g.mark(g.solid, o.rect);
+            {
+                std::string need = o.propStr("power");
+                bool open = powers.count(need) || (need == "impulse" && powers.count("plasma_bomb"));  // the bomb breaks rock too
+                if (!open) g.mark(g.solid, o.rect);
+            }
         } else if (t == "oneway" || t == "crumble_platform" || t == "moving_platform") g.mark(g.platform, o.rect);
         else if (t == "ladder") g.mark(g.climb, o.rect);
         else if (t == "updraft") g.mark(g.updraft, o.rect);
@@ -786,7 +793,10 @@ std::vector<PowerStation> planPowerStations(const LevelData& level, const Conten
     for (const auto& o : level.objects) {
         Event e;
         if (!o.propStr("needsPower").empty()) e.needs = {o.propStr("needsPower")};  // set by the level designer
-        else if (o.type == "power_gate") e.needs = {o.propStr("power")};
+        else if (o.type == "power_gate") {
+            e.needs = {o.propStr("power")};
+            if (e.needs.front() == "impulse") e.needs.push_back("plasma_bomb");  // the bomb breaks rock too
+        }
         else if (o.type == "grapple_point") e.needs = {"grapple"};
         else if (o.type == "updraft") e.needs = {"glide"};
         else if (o.type == "receptor") e.needs = {"wave", "charge_shot"};

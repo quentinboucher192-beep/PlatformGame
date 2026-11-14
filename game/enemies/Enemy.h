@@ -73,6 +73,8 @@ public:
     float hp() const { return hp_; }
     float maxHp() const { return maxHp_; }
     int phaseIndex() const { return phase_; }
+    /// Boss fights resumed after the player's death: the boss keeps its wounds and its phase.
+    void setWounds(float hp, int phase);
     bool enraged() const { return enraged_; }
     const std::string& currentAttackName() const;
     std::string debugInfo() const;

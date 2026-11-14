@@ -3,9 +3,12 @@
 // Command line (all optional):
 //   --level <id>            start directly in a level
 //   --spawn <x>,<y>         with --level: start at this position (pixels), skipping the intro
-//   --editor [<id>]         start in the level editor
+//   --pause                 with --level: open the pause menu once playing (screenshots)
+//   --editor [<id>]         start in the level editor (--editor-help: with its help open)
 //   --enemy-editor          start in the enemy editor
 //   --planets               start on the planet selection map
+//   --power-guide [--guide-page <n>]
+//                           open the power guide of the help (animated demo of every power)
 //   --windowed / --fullscreen
 //   --headless              hidden window, fixed 60 Hz frames (automated checks)
 //   --frames <n>            quit after n frames
@@ -393,9 +396,11 @@ int main(int argc, char** argv) {
                 opt.spawn = Vec2{static_cast<float>(std::atof(sp.substr(0, c).c_str())),
                                  static_cast<float>(std::atof(sp.substr(c + 1).c_str()))};
         }
+        opt.openPause = has("--pause");
         app.pushScene(makeGameScene(game, level, opt));
     } else if (has("--editor")) {
-        app.pushScene(makeLevelEditor(game, value("--editor")));
+        if (has("--editor-help")) app.pushScene(makeLevelEditorHelp(game, value("--editor")));
+        else app.pushScene(makeLevelEditor(game, value("--editor")));
     } else if (has("--enemy-editor")) {
         app.pushScene(makeEnemyEditor(game, value("--enemy-editor"), std::atoi(value("--enemy-tab").c_str())));
     } else if (has("--planets")) {
@@ -411,6 +416,9 @@ int main(int argc, char** argv) {
         app.pushScene(makeCommunityPublish(game, pub));
     } else if (has("--online-levels")) {
         app.pushScene(makeOnlineLevels(game, value("--online-levels")));
+    } else if (has("--power-guide")) {
+        std::string page = value("--guide-page");
+        app.pushScene(makePowerGuide(game, page.empty() ? 0 : std::atoi(page.c_str()) - 1));
     } else if (has("--notifications")) {
         app.pushScene(makeNotifications(game));
     } else if (has("--social")) {

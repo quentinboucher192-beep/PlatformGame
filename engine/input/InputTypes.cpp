@@ -12,6 +12,7 @@ constexpr ActionInfo kActions[kActionCount] = {
     {"move_down", "Bas / Glissade"},  {"jump", "Saut"},                {"attack", "Attaque"},
     {"dash", "Dash"},                 {"wave", "Onde énergétique"},    {"shield", "Bouclier"},
     {"impulse", "Impulsion"},         {"teleport", "Téléportation"},   {"interact", "Interagir"},
+    {"special", "Pouvoir spécial"},
     {"pause", "Pause"},               {"menu_up", "Menu haut"},        {"menu_down", "Menu bas"},
     {"menu_left", "Menu gauche"},     {"menu_right", "Menu droite"},   {"menu_confirm", "Valider"},
     {"menu_back", "Retour"},          {"menu_tab_prev", "Onglet précédent"}, {"menu_tab_next", "Onglet suivant"},
@@ -45,6 +46,7 @@ void InputBindings::resetKeyboard() {
     set(Action::Impulse, SDL_SCANCODE_I, SDL_SCANCODE_B);
     set(Action::Teleport, SDL_SCANCODE_U, SDL_SCANCODE_N);
     set(Action::Interact, SDL_SCANCODE_E, SDL_SCANCODE_RETURN);
+    set(Action::Special, SDL_SCANCODE_F, SDL_SCANCODE_H);
     set(Action::Pause, SDL_SCANCODE_ESCAPE, SDL_SCANCODE_P);
     set(Action::MenuUp, SDL_SCANCODE_UP, SDL_SCANCODE_W);
     set(Action::MenuDown, SDL_SCANCODE_DOWN, SDL_SCANCODE_S);
@@ -72,6 +74,7 @@ void InputBindings::resetGamepad() {
     set(Action::Impulse, B::button(SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER));
     set(Action::Teleport, B::axisPos(SDL_GAMEPAD_AXIS_LEFT_TRIGGER));
     set(Action::Interact, B::button(SDL_GAMEPAD_BUTTON_NORTH));
+    set(Action::Special, B::button(SDL_GAMEPAD_BUTTON_RIGHT_STICK));
     set(Action::Pause, B::button(SDL_GAMEPAD_BUTTON_START));
     set(Action::MenuUp, B::button(SDL_GAMEPAD_BUTTON_DPAD_UP), B::axisNeg(SDL_GAMEPAD_AXIS_LEFTY));
     set(Action::MenuDown, B::button(SDL_GAMEPAD_BUTTON_DPAD_DOWN), B::axisPos(SDL_GAMEPAD_AXIS_LEFTY));
