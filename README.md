@@ -5,6 +5,34 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.17.0** :
+* **S'accroupir** : Bas seul au sol, même sur place, baisse le personnage pour laisser passer
+  les attaques au-dessus (Bas en courant reste une glissade, une diagonale fait marcher).
+* **Combats de boss** : la caméra montre **toute l'arène** pendant le combat (vérifié sur les
+  24 combats de la campagne) ; une **flèche lumineuse qui clignote** sur le bord de l'écran
+  indique un boss hors de vue ; les **créatures invoquées disparaissent avec leur boss**.
+* **Statistiques des boss** (menu principal → *Statistiques*) : combats, victoires, défaites,
+  victoires sans dégât, et pour chaque phase le nombre de fois battue et battue **sans
+  dégât**, meilleur combat, dernière victoire. Un petit son salue chaque phase battue sans
+  dégât ; l'écran de fin résume les boss vaincus. Gardées sur l'ordinateur, jamais envoyées.
+* **Pouvoirs** : coûts d'énergie selon leur force (référence : le tir chargé à 20, une attaque
+  moins forte coûte moins). Leurs **caractéristiques** (énergie, dégâts, rayon, portée,
+  vitesse, recharge…) sont lues dans leur définition et affichées sur les cartes du guide,
+  dans la **fiche** de chaque pouvoir (une carte du guide l'ouvre) et quand on les ramasse.
+* **Nouvelle génération de classement** : les règles changent (coûts, créatures des boss), les
+  classements en ligne de la campagne repartent à zéro (anciens records archivés).
+* Correction : un profil ouvert depuis un classement ne se recharge plus quand on clique sur
+  ses onglets (un écran recouvert par un autre ne reçoit plus aucun clic).
+
+**Depuis la version 2.9** (résumé) : **ONLINE LEVELS** s'enrichit de favoris, commentaires
+avec réponses et réactions, profils de créateurs, abonnés et notifications en ligne, et du
+temps joué par niveau ; **PROJETS** permet de créer un niveau à plusieurs (rôles, invitations
+à clé, demandes d'adhésion, **édition en direct** avec présence des autres, verrous et
+discussion, historique des révisions et versions nommées) ; la pause montre une **carte des
+zones explorées** ; les **niveaux EXTRÊME** (une seule vie) ont une **course à la
+vérification** : chaque tentative est classée selon sa progression (parcours, vie retirée aux
+boss, vagues d'embuscade) et le premier à finir le niveau en devient le vérificateur.
+
 **Nouveau dans la version 2.8.0** : les **rayons des boss** ne sont plus des traits : ils sont
 dessinés avec des textures animées (`animations/beams.json`, générées par
 `tools/assetgen/characters/beams.py` dans les palettes des souffles des boss) — flamme pour
@@ -140,6 +168,7 @@ l'ordre.
 | Haut / bas, grimper | Z S (W S) / ↑ ↓ | Stick gauche |
 | Sauter / double saut | Espace / W (Z) | A / Croix |
 | Glissade | Bas en courant au sol | Bas (stick / croix) en courant |
+| S'accroupir | Bas seul au sol (même sur place) | Bas (stick / croix) sans direction |
 | Attaque | J / X | X / Carré |
 | Dash | K / Maj gauche | B / Rond |
 | Onde d'énergie | L / C | RT / R2 |
@@ -176,6 +205,12 @@ hors de l'ordre donnent d'office les pouvoirs des niveaux précédents.
 Sur Glacior, la glace est glissante et les attaques gelées ralentissent ; sur Pyralis, la
 lave, les éruptions et les bombes sont mortelles.
 
+Chaque pouvoir actif coûte de l'énergie selon sa force (jauge de 150) : Dash 5, Impulsion 8,
+Onde 10, Frappe sismique 10, Tir chargé 20 (la référence), Bombe plasma 20, Bouclier 20,
+Téléportation 25, Ralenti 60 ; les pouvoirs passifs sont gratuits. Le *Guide des pouvoirs*
+(menu pause) montre chaque pouvoir joué en boucle par le moteur avec son coût ; sa fiche donne
+toutes ses caractéristiques.
+
 Chaque niveau a un chrono (limite de 15 à 20 min), des médailles bronze / argent / or /
 platine, records locaux (meilleur temps, morts, collectibles, ennemis vaincus, score,
 pouvoirs utilisés, date) avec comparaison au meilleur essai.
@@ -200,6 +235,7 @@ local sans compte Cloudflare. Documentation complète : [docs/online/](docs/onli
 ## Menu principal
 
 *Continuer* (dernier niveau joué) · *Campagne* (planètes et niveaux) · *Online* ·
+*Notifications* · *Statistiques* (les boss : victoires, combats et phases sans dégât) ·
 *Paramètres* · *Quitter*.
 
 **Online** (compte requis) : **ONLINE LEVELS** (les niveaux publiés par les joueurs : Populaires,
@@ -256,6 +292,7 @@ journal (`cosmic.log`) sont stockés dans :
 * Windows : `%APPDATA%\CosmicStudio\CosmicPlatformer\`
 * Linux : `~/.local/share/CosmicStudio/CosmicPlatformer/`
 
+Les statistiques des boss sont dans `saves/boss_stats.json` (jamais envoyées au serveur).
 Les fichiers sont versionnés et migrés automatiquement ; un fichier corrompu est mis de
 côté (`.corrupt`) au lieu de faire planter le jeu. La désinstallation les conserve, sauf
 demande explicite.
