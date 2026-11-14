@@ -39,7 +39,7 @@ void LevelEditorScene::handleViewport(const Rect& vp) {
     Vec2 world = view.toWorld(mouse);
     // The minimap and the read-only banner sit over the viewport: clicks there are theirs.
     bool inside = vp.contains(mouse) && !(minimapOn_ && minimapRect_.contains(mouse)) && !(readOnly_ && bannerRect_.contains(mouse));
-    float grid = gridOn_ ? (gridIndex_ == 0 ? 8.0f : gridIndex_ == 1 ? 16.0f : 32.0f) : 1.0f;
+    float grid = snapOn_ ? (gridIndex_ == 0 ? 8.0f : gridIndex_ == 1 ? 16.0f : 32.0f) : 1.0f;
 
     // ---- camera: wheel zoom, middle / right drag, keyboard & gamepad pan
     if (inside && in.wheel() != 0.0f && !ui.editingText()) cam_.zoomAt(vp, mouse, in.wheel() > 0 ? 1.15f : 1.0f / 1.15f);
@@ -130,7 +130,7 @@ void LevelEditorScene::handleViewport(const Rect& vp) {
                         if (const DecorSprite* s = DecorAtlas::shared(g_.app.resources()).find(placeDecor_))
                             size = {s->rect.w, s->rect.h};
                     }
-                    float sg = gridOn_ ? std::min(grid, t ? std::max(1.0f, t->snap) : grid) : 1.0f;
+                    float sg = snapOn_ ? std::min(grid, t ? std::max(1.0f, t->snap) : grid) : 1.0f;
                     Vec2 p = snapPoint(world - size * 0.5f, sg);
                     // Characters / pickups: place feet on the grid line under the cursor.
                     std::string id = createObject(entry, {p.x, p.y, size.x, size.y});
@@ -243,7 +243,7 @@ void LevelEditorScene::handleShortcuts() {
             if (selection_.count(o.id)) o.flipX = !o.flipX;
         if (!selection_.empty()) markChanged("Retourner");
     }
-    if (in.shortcutPressed(SDLK_G)) gridOn_ = !gridOn_;
+    if (in.shortcutPressed(SDLK_G)) snapOn_ = !snapOn_;
     if (in.shortcutPressed(SDLK_M)) minimapOn_ = !minimapOn_;
     if (in.keyPressed(SDL_SCANCODE_F5)) testPlay(in.shift());
     if (in.keyPressed(SDL_SCANCODE_F1)) modal_ = Modal::Help;
@@ -258,7 +258,7 @@ void LevelEditorScene::handleShortcuts() {
         if (in.keyPressed(SDL_SCANCODE_UP)) d.y = -1;
         if (in.keyPressed(SDL_SCANCODE_DOWN)) d.y = 1;
         if (d.lengthSq() > 0 && !selection_.empty()) {
-            moveSelection(d * (gridOn_ ? 16.0f : 1.0f));
+            moveSelection(d * (snapOn_ ? 16.0f : 1.0f));
             markChanged("Déplacer");
         }
     }
@@ -303,6 +303,9 @@ void LevelEditorScene::drawOverlays(const Rect& vp) {
             r.drawWorldLine({vis.x, y}, {vis.right(), y}, c, 1.0f);
         }
     }
+    // Zones, collisions and links between objects (overlays of the header above the view).
+    drawLinks(vp);
+    r.setView(view);
     // Level bounds & kill line
     r.drawWorldRect(level_.bounds, {57, 240, 216, 160}, 2.0f);
     float ky = level_.effectiveKillY();
@@ -368,7 +371,7 @@ void LevelEditorScene::drawOverlays(const Rect& vp) {
     }
     // Placement ghost
     if (tool_ == Tool::Place && viewport_.contains(in.mousePos()) && drag_ == Drag::None) {
-        Vec2 p = snapPoint(world, gridOn_ ? grid : 1.0f);
+        Vec2 p = snapPoint(world, snapOn_ ? grid : 1.0f);
         r.drawWorldRect(Rect::fromCenter(p, {16, 16}), {255, 217, 138, 200}, 1.5f);
     }
     if (!pickTarget_.empty()) {

@@ -42,11 +42,49 @@ void LevelEditorScene::onEnter() {
         loadDocument(LevelData::makeEmpty("nouveau_niveau", "Nouveau niveau", "sylvanox"), false);
         modal_ = Modal::Open;
     }
-    // Screenshots / support: --online-open check|history|objects|duplicate.
+    loadFavorites();
+    explorerOpen_.insert(activeLayer_);
+    // Screenshots / support: --online-open check|history|objects|duplicate|select-one|
+    // select-many|menu-test|favorites.
     const std::string& o = g_.onlineOpen;
+    if (o == "select-one" || o == "select-many") {
+        // Objects of the gameplay layer that link to others first (they show the links).
+        std::vector<std::string> pick;
+        for (const auto& ob : level_.objects) {
+            const ObjectTypeInfo* t = ObjectTypes::find(ob.type);
+            bool linked = false;
+            if (t)
+                for (const auto& pd : t->props) linked |= pd.type == PropType::ObjectRef && !ob.propStr(pd.key.c_str()).empty();
+            if (linked) pick.push_back(ob.id);
+        }
+        for (const auto& ob : level_.objects)
+            if (pick.size() < 6 && ob.type != "solid" && std::find(pick.begin(), pick.end(), ob.id) == pick.end()) pick.push_back(ob.id);
+        if (!pick.empty()) {
+            selection_.clear();
+            for (size_t i = 0; i < pick.size() && i < (o == "select-one" ? 1u : 6u); ++i) selection_.insert(pick[i]);
+            if (const LevelObject* first = level_.findObject(pick.front())) cam_.center = first->rect.center();
+        }
+        g_.onlineOpen.clear();
+    } else if (o.rfind("select:", 0) == 0 || o.rfind("entity:", 0) == 0) {
+        if (o.rfind("entity:", 0) == 0) libraryOpen_ = false;  // the whole column for the entity
+        if (const LevelObject* ob = level_.findObject(o.substr(7))) {
+            selection_ = {ob->id};
+            cam_.center = ob->rect.center();
+        }
+        g_.onlineOpen.clear();
+    } else if (o == "by-type") {
+        explorerGroup_ = 1;
+        g_.onlineOpen.clear();
+    } else if (o == "menu-test") {
+        menu_ = Menu::Test;
+        g_.onlineOpen.clear();
+    } else if (o == "favorites") {
+        libraryCategory_ = 7;
+        g_.onlineOpen.clear();
+    }
     if (o == "check") leftTab_ = LeftTab::Check;
     if (o == "history") leftTab_ = LeftTab::History;
-    if (o == "objects") leftTab_ = LeftTab::Objects;
+    if (o == "objects") leftTab_ = LeftTab::Explorer;
     if (o == "duplicate" && readOnly_) duplicateForEditing();
     if (o == "settings") modal_ = Modal::Settings;
     if (o == "events") modal_ = Modal::Events;
@@ -337,7 +375,7 @@ void LevelEditorScene::paste(Vec2 at) {
     if (clipboard_.empty()) return;
     Rect bounds = clipboard_.front().rect;
     for (const auto& o : clipboard_) bounds = bounds.united(o.rect);
-    float grid = gridOn_ ? (gridIndex_ == 0 ? 8.0f : gridIndex_ == 1 ? 16.0f : 32.0f) : 1.0f;
+    float grid = snapOn_ ? (gridIndex_ == 0 ? 8.0f : gridIndex_ == 1 ? 16.0f : 32.0f) : 1.0f;
     Vec2 target = snapPoint(at, grid);
     Vec2 delta = target - bounds.pos();
     selection_.clear();
@@ -491,7 +529,7 @@ std::string LevelEditorScene::objectAt(Vec2 world) const {
 }
 
 float LevelEditorScene::snapFor(const LevelObject& o) const {
-    if (!gridOn_) return 1.0f;
+    if (!snapOn_) return 1.0f;
     float grid = gridIndex_ == 0 ? 8.0f : gridIndex_ == 1 ? 16.0f : 32.0f;
     if (const ObjectTypeInfo* t = ObjectTypes::find(o.type)) grid = std::min(grid, std::max(1.0f, t->snap));
     if (o.type == "solid" || o.type == "oneway") grid = std::max(grid, 16.0f);
@@ -530,20 +568,29 @@ void LevelEditorScene::render(float alpha) {
     Renderer& r = ui.r();
     float W = ui.screenW(), H = ui.screenH();
     r.fillRect({0, 0, W, H}, {8, 10, 20, 255});
-    float top = ui.s(62), status = ui.s(34), left = ui.s(380), right = ui.s(430);
-    viewport_ = {left, top, W - left - right, H - top - status};
+    // Fixed panels: top bar, EXPLORATEUR (left), BIBLIOTHÈQUE / ENTITÉ (right), the view with
+    // its header and, for a multiple selection, its table.
+    float top = ui.s(62), status = ui.s(34), left = ui.s(340), right = ui.s(430), headerH = ui.s(40);
+    float tableH = selection_.size() >= 2 ? std::min(ui.s(236), ui.s(76) + static_cast<float>(selection_.size()) * ui.s(28)) : 0.0f;
+    Rect center{left, top, W - left - right, H - top - status};
+    viewport_ = {center.x, center.y + headerH, center.w, center.h - headerH - tableH};
 
     bool modal = modal_ != Modal::None;
-    ui.inputEnabled = !modal;
+    bool menu = menu_ != Menu::None;
+    ui.inputEnabled = !modal && !menu;
     drawViewport(viewport_, alpha);
-    if (!modal) {
+    if (!modal && !menu) {
         handleViewport(viewport_);
         handleShortcuts();
     }
+    drawCanvasHeader({center.x, center.y, center.w, headerH});
+    if (tableH > 0.0f) drawSelectionTable({center.x, viewport_.bottom(), center.w, tableH});
     drawToolbar({0, 0, W, top});
     drawLeftPanel({0, top, left, H - top - status});
-    drawProperties({W - right, top, right, H - top - status});
+    drawRightPanel({W - right, top, right, H - top - status});
     drawStatus({0, H - status, W, status});
+    ui.inputEnabled = !modal;
+    if (menu && !modal) drawMenus();
     ui.inputEnabled = true;
     if (modal) drawModal();
     if (messageTimer_ > 0.0f) {
@@ -556,6 +603,8 @@ void LevelEditorScene::render(float alpha) {
         Rect bg = Rect::fromCenter({viewport_.center().x, viewport_.bottom() - ui.s(40)}, {sz.x + ui.s(40), ui.s(44)});
         if (modal && bg.intersects(modalRect_))  // never over a dialog: in the band below it
             bg = Rect::fromCenter({W * 0.5f, (modalRect_.bottom() + H) * 0.5f}, bg.size());
+        else if (minimapOn_ && bg.intersects(minimapRect_))  // nor over the map of the level
+            bg = Rect::fromCenter({viewport_.center().x, minimapRect_.y - ui.s(32)}, bg.size());
         r.fillRoundedRect(bg, ui.s(10), {6, 10, 24, 225});
         ui.text().draw(message_, bg.center(), st);
     }

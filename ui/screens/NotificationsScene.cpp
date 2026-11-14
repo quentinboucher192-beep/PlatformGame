@@ -358,7 +358,7 @@ private:
             Rect card{x0, cy, W - ui.s(14), heights[i]};
             cy += heights[i] + ui.s(10);
             if (card.bottom() < view.y || card.y > view.bottom()) continue;
-            const OnlineKind& k = onlineKind(jstr(n, "kind"));
+            const OnlineKind k = onlineKind(jstr(n, "kind"));
             bool unread = !jget<bool>(n, "read", false);
             ui.panel(card, unread, 12);
             if (unread) ui.r().fillRoundedRect({card.x, card.y + ui.s(10), ui.s(4), card.h - ui.s(20)}, ui.s(2), k.color);

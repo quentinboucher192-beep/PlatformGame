@@ -35,7 +35,8 @@ private:
     enum class Tool { Select, Place, Pan };
     enum class Drag { None, Move, Resize, BoxSelect, Pan, Create };
     enum class Modal { None, Open, New, Settings, Events, Cinematics, Help, ConfirmQuit };
-    enum class LeftTab { Library, Layers, Objects, History, Check };
+    enum class LeftTab { Explorer, History, Check };
+    enum class Menu { None, File, Test };
     struct Issue {
         std::string text;
         std::string objectId;  // to select / frame ("" = level-wide)
@@ -81,10 +82,21 @@ private:
     void drawViewport(const Rect& viewport, float alpha);
     void drawOverlays(const Rect& viewport);
     void drawToolbar(const Rect& r);
+    void drawMenus();
     void drawLeftPanel(const Rect& r);
+    /// Layers as a tree with their objects (search, select, frame), and the active layer's settings.
+    void drawExplorer(const Rect& r);
+    void drawLayerSettings(const Rect& r);
+    /// Right column: BIBLIOTHÈQUE and ENTITÉ, each folding.
+    void drawRightPanel(const Rect& r);
     void drawLibrary(const Rect& r);
-    void drawLayers(const Rect& r);
-    void drawObjectList(const Rect& r);
+    /// Above the view: where the selection is (Niveau › calque › objet) and the overlays.
+    void drawCanvasHeader(const Rect& r);
+    /// Under the view, with 2 objects or more selected: one row each, and group actions.
+    void drawSelectionTable(const Rect& r);
+    void drawLinks(const Rect& viewport);
+    void loadFavorites();
+    void saveFavorites() const;
     void drawHistory(const Rect& r);
     void drawValidation(const Rect& r);
     void runChecks();
@@ -140,10 +152,18 @@ private:
     std::set<std::string> selection_;
     std::string hovered_;
     std::string activeLayer_ = "gameplay";
-    bool gridOn_ = true;
-    int gridIndex_ = 1;  // 8, 16, 32
+    bool gridOn_ = true;   // grid drawn
+    bool snapOn_ = true;   // "Aimanter": positions on the grid
+    int gridIndex_ = 1;    // 8, 16, 32
+    bool overlayLinks_ = true, overlayZones_ = true, overlayCollisions_ = false;
+    Menu menu_ = Menu::None;
+    Rect menuAnchor_;
+    bool libraryOpen_ = true, entityOpen_ = true;
+    std::set<std::string> explorerOpen_;  // expanded layers ("type:<type>" when grouped by type)
+    int explorerGroup_ = 0;               // 0 by layer, 1 by type
+    std::set<std::string> favorites_;     // library items marked as favorites (editor/favorites.json)
     std::vector<LevelObject> clipboard_;
-    LeftTab leftTab_ = LeftTab::Library;
+    LeftTab leftTab_ = LeftTab::Explorer;
     int libraryCategory_ = 0;
     std::string pickTarget_;  // property key waiting for an object pick
     PropertyEditor props_;

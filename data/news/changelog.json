@@ -1,4 +1,10 @@
 {
+  "2.11.0": [
+    "Éditeur de niveaux refait en panneaux fixes : menus Fichier et Tester (depuis le début, la vue ou la sélection), explorateur à gauche (par calque ou par type), bibliothèque et entité à droite.",
+    "Bibliothèque en huit catégories (plateformes, terrain, pièges, jeu, zones, ennemis, décors) et favoris marqués d'une étoile.",
+    "Au-dessus de la vue : fil d'Ariane, taille de la grille, aimanter, zoom et « Tout le niveau », surcouches grille, liens, zones et collisions.",
+    "Sélection multiple présentée en tableau (type, calque, position, groupe, liens) ; l'entité montre ses relations (« Activé par… », événements qui l'utilisent) ; avertissements dans la barre d'état."
+  ],
   "2.10.0": [
     "ONLINE → PROJETS : des niveaux construits à plusieurs, avec des rôles (lecteur, testeur, éditeur, administrateur, propriétaire) vérifiés par le serveur.",
     "Invitations : clés et liens cosmic:// (nombre d'utilisations, durée, révocation), invitations directes, demandes d'adhésion, projets ouverts à tous.",
