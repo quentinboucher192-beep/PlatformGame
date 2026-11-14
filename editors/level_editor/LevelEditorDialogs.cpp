@@ -197,6 +197,12 @@ void LevelEditorScene::modalSettings(const Rect& c) {
         }
         if (dr && !g_.ratings.draftPending()) level_.difficulty = ratingStars(dr->score);
         left.y += ui.s(4);
+        // Thumbnail of the level (WORKSHOP, ONLINE LEVELS, packages): the editor's current view.
+        UIContext::ButtonStyle th;
+        th.small = true;
+        th.enabled = !readOnly_;
+        if (ui.button("thumb", {left.x, left.y, colW, ui.s(42)}, "Capturer la vignette (vue actuelle de l'éditeur)", th)) captureThumbnail();
+        left.y += ui.s(50);
     }
     auto music = withNone(PropertyEditor::assetFiles("music", ".ogg"));
     changed |= pickString(ui, "music", {left.x, left.y, colW, ui.s(46)}, "Musique", level_.music, music, labelsNone(music));
@@ -616,13 +622,17 @@ void LevelEditorScene::modalHelp(const Rect& c) {
         "ZQSD / WASD / flèches : déplacer la vue (Maj : plus vite) · Alt+flèches : décaler la sélection",
         "Ctrl+Z / Ctrl+Y : annuler / rétablir · Ctrl+C / Ctrl+V / Ctrl+D : copier, coller, dupliquer · Ctrl+A : tout",
         "Suppr : supprimer · R / Maj+R : rotation · F : miroir · G : grille · V : sélection · H : main",
-        "Ctrl+S : enregistrer · F5 : tester depuis le départ · Maj+F5 : tester depuis la vue",
+        "Ctrl+S : enregistrer · F5 : tester depuis le départ · Maj+F5 : tester depuis la vue · « Tester ici » : depuis l'objet sélectionné",
+        "Ctrl+G : grouper · Ctrl+Maj+G : dégrouper · Alt+clic : un seul objet d'un groupe · M : carte (clic pour s'y rendre)",
+        "Plusieurs objets sélectionnés : aligner (gauche, centres, droite, haut, bas) et répartir dans le panneau de droite",
+        "Onglets de gauche : bibliothèque (recherche), calques, objets (filtre), historique (cliquez pour revenir à une étape), vérifier",
+        "Niveaux de la campagne et importés : lecture seule, « Dupliquer » crée votre copie modifiable",
         "Sauvegarde automatique régulière dans le dossier utilisateur (levels/autosave).",
     };
     float y = c.y + ui.s(60);
     for (const char* l : lines) {
-        Vec2 s = ui.labelWrapped(l, {c.x, y}, c.w, 21, ui.theme().text);
-        y += s.y + ui.s(14);
+        Vec2 s = ui.labelWrapped(l, {c.x, y}, c.w, 19, ui.theme().text);
+        y += s.y + ui.s(10);
     }
     if (ui.button("close", {c.right() - ui.s(180), c.bottom() - ui.s(58), ui.s(180), ui.s(56)}, "Fermer")) modal_ = Modal::None;
 }

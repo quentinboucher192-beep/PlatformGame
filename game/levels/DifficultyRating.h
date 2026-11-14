@@ -55,6 +55,8 @@ struct DifficultyRating {
     int enemyCount = 0;     // enemies next to the route (boss excluded)
     float longestCheckpointGap = 0.0f;  // tiles of route
     float healPer100 = 0.0f;            // health points available per 100 tiles
+    /// Problems found by the shortcut detector (not serialised; editor validation panel).
+    std::vector<std::string> problems;
 
     Json toJson() const;
     static DifficultyRating fromJson(const Json& j);

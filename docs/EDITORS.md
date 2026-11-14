@@ -28,21 +28,44 @@ La campagne et les records restent ainsi identiques pour tous les joueurs.
 
 ### Interface
 
-* **Barre d'outils** : Ouvrir, Nouveau, Enregistrer, Annuler, Rétablir, outil Sélection,
-  outil Main, grille (8 / 16 / 32 px ou désactivée), zoom − / +, *Niveau* (paramètres),
-  *Événements*, *Cinématiques*, *Tester (F5)*, *Tester ici*, aide, Quitter.
+* **Niveaux de la campagne et niveaux importés : lecture seule.** On peut les ouvrir, les
+  explorer et les tester ; toute modification est refusée et un bandeau propose
+  **Dupliquer pour modifier** : la copie (`<id>_copie`, révision 1, auteur = votre
+  pseudonyme si vous êtes connecté, `duplicatedFrom` dans les métadonnées) devient un de vos
+  niveaux, modifiable et enregistrable.
+* **Barre d'outils** : Ouvrir, Nouveau, Enregistrer (ou *Dupliquer* en lecture seule),
+  Annuler, Rétablir, outil Sélection, outil Main, grille (8 / 16 / 32 px ou désactivée),
+  zoom − / +, *Niveau* (paramètres, difficulté calculée, vignette), *Événements*,
+  *Cinématiques*, *Tester (F5)*, *Tester (vue)*, aide, Quitter.
 * **Panneau gauche** :
-  * *Bibliothèque* – tous les objets par catégorie (terrain, plateformes, pièges & dangers,
-    gameplay, interactifs, ennemis, zones & événements, décors, lumières & effets), avec
-    variantes prêtes à l'emploi (matériaux, barrières de pouvoir, liquides…), tous les
-    ennemis disponibles et les éléments de décor.
+  * *Biblio.* – onglets Terrain, Jeu, Ennemis, Décors, **recherche** (sans accents ni
+    majuscules), **vignettes** (texture de l'objet, première image de l'animation de
+    l'ennemi, sprite du décor) ; variantes prêtes à l'emploi (matériaux, barrières de
+    pouvoir, liquides…).
   * *Calques* – ordre, visibilité, verrouillage, renommage, création, suppression,
     déplacement de la sélection vers un calque.
-  * *Objets* – liste de tous les objets du niveau (clic : sélection et cadrage).
-* **Vue centrale** – le niveau rendu avec le moteur du jeu (parallaxe, terrain, éclairage).
+  * *Objets* – liste de tous les objets avec **filtre** (identifiant, type, ennemi, groupe,
+    calque, nom de point de passage) ; clic : sélection et cadrage, Maj+clic : ajout.
+  * *Histor.* – toutes les étapes de l'historique (annuler / rétablir) : un clic revient
+    directement à une étape.
+  * *Vérifier* – contrôles immédiats (départ, sortie, points de passage, objets hors
+    limites, ennemis introuvables, références de leviers / récepteurs / arènes / événements
+    vers des objets inexistants, plateformes mobiles immobiles) puis, sur un fil de travail,
+    le **détecteur de raccourcis** (sortie atteignable, points de passage contournables) et
+    la **note de difficulté** calculée ; un clic sur un problème sélectionne l'objet.
+* **Vue centrale** – le niveau rendu avec le moteur du jeu (parallaxe, terrain, éclairage),
+  et la **carte** (M) : tout le niveau en miniature (terrain, dangers, ennemis, boss,
+  départ, sortie, points de passage, sélection), le cadre de la vue ; clic ou glisser pour
+  s'y rendre.
 * **Panneau droit** – propriétés de l'objet sélectionné (position, taille, rotation,
-  miroir, calque et propriétés propres au type), ou actions groupées pour une sélection
-  multiple.
+  miroir, calque et propriétés propres au type) et **Tester ici** (partie lancée depuis cet
+  objet) ; pour une sélection multiple : **aligner** (gauche, centre, droite, haut, centre,
+  bas), **répartir** à intervalles égaux (horizontalement, verticalement), **grouper /
+  dégrouper** (un clic sur un objet groupé sélectionne tout le groupe, Alt+clic l'objet
+  seul), supprimer, dupliquer.
+* **Vignette** (*Niveau* → *Capturer la vignette*) : la vue actuelle de l'éditeur devient
+  l'image du niveau (`<id>.thumb.png` à côté du fichier, point de vue gardé dans
+  `metadata.thumbnailFocus`).
 
 ### Raccourcis
 
@@ -65,6 +88,8 @@ La campagne et les records restent ainsi identiques pour tous les joueurs.
 | Outils Sélection / Main | V / H |
 | Enregistrer | Ctrl+S |
 | Tester depuis le départ / depuis la vue | F5 / Maj+F5 |
+| Grouper / dégrouper | Ctrl+G / Ctrl+Maj+G |
+| Carte | M |
 | Aide | F1 |
 
 ### Paramètres du niveau (bouton *Niveau*)

@@ -48,6 +48,14 @@ public:
     const std::string& undoLabel() const { return labels_[index_]; }
     const std::string& redoLabel() const { return labels_[std::min(index_ + 1, labels_.size() - 1)]; }
     size_t size() const { return states_.size(); }
+    size_t index() const { return index_; }
+    const std::string& label(size_t i) const { return labels_[std::min(i, labels_.size() - 1)]; }
+    const Json& current() const { return states_[index_]; }
+    /// Goes straight to state `i` (history panel).
+    const Json& jump(size_t i) {
+        index_ = std::min(i, states_.size() - 1);
+        return states_[index_];
+    }
 
 private:
     size_t limit_;

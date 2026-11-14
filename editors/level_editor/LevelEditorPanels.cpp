@@ -36,7 +36,11 @@ void LevelEditorScene::drawToolbar(const Rect& r) {
         newId_.clear();
         newName_.clear();
     }
-    if (btn("save", dirty_ ? "Enregistrer*" : "Enregistrer", 130, dirty_)) save();
+    if (readOnly_) {
+        if (btn("dupe", "Dupliquer", 130, true)) duplicateForEditing();
+    } else if (btn("save", dirty_ ? "Enregistrer*" : "Enregistrer", 130, dirty_)) {
+        save();
+    }
     x += ui.s(10);
     if (btn("undo", "Annuler", 92, false, history_.canUndo())) applyJson(history_.undo());
     if (btn("redo", "Rétablir", 96, false, history_.canRedo())) applyJson(history_.redo());
@@ -63,7 +67,7 @@ void LevelEditorScene::drawToolbar(const Rect& r) {
     if (btn("cine", "Cinématiques", 136)) modal_ = Modal::Cinematics;
     x += ui.s(10);
     if (btn("test", "Tester (F5)", 126, true)) testPlay(false);
-    if (btn("testhere", "Tester ici", 112)) testPlay(true);
+    if (btn("testhere", "Tester (vue)", 122)) testPlay(true);
     if (btn("help", "?", 40)) modal_ = Modal::Help;
     float qx = r.right() - ui.s(112);
     UIContext::ButtonStyle q;
@@ -82,21 +86,45 @@ void LevelEditorScene::drawLeftPanel(const Rect& r) {
     ui.r().fillRect(r, {12, 16, 32, 245});
     ui.r().fillRect({r.right() - 1, r.y, 1, r.h}, ui.theme().border);
     int tab = static_cast<int>(leftTab_);
-    ui.tabs("lefttabs", {r.x + ui.s(8), r.y + ui.s(8), r.w - ui.s(16), ui.s(42)}, {"Bibliothèque", "Calques", "Objets"}, tab);
+    ui.tabs("lefttabs", {r.x + ui.s(8), r.y + ui.s(8), r.w - ui.s(16), ui.s(42)}, {"Biblio.", "Calques", "Objets", "Histor.", "Vérifier"}, tab);
     leftTab_ = static_cast<LeftTab>(tab);
     Rect c{r.x + ui.s(10), r.y + ui.s(60), r.w - ui.s(20), r.h - ui.s(70)};
     ui.pushId("left");
     if (leftTab_ == LeftTab::Library) drawLibrary(c);
     else if (leftTab_ == LeftTab::Layers) drawLayers(c);
-    else drawObjectList(c);
+    else if (leftTab_ == LeftTab::Objects) drawObjectList(c);
+    else if (leftTab_ == LeftTab::History) drawHistory(c);
+    else drawValidation(c);
     ui.popId();
 }
 
+namespace {
+/// Lowercase without accents (search fields).
+std::string fold(const std::string& s) {
+    std::string out;
+    for (size_t i = 0; i < s.size(); ++i) {
+        unsigned char c = static_cast<unsigned char>(s[i]);
+        if (c == 0xC3 && i + 1 < s.size()) {
+            unsigned char d = static_cast<unsigned char>(s[++i]);
+            const char* map = "aaaaaaaceeeeiiiidnooooo/ouuuuyby";  // U+00C0..U+00DF and U+00E0..U+00FF share the low 5 bits
+            out.push_back(map[d & 0x1F]);
+            continue;
+        }
+        out.push_back(static_cast<char>(std::tolower(c)));
+    }
+    return out;
+}
+bool matches(const std::string& text, const std::string& query) { return query.empty() || fold(text).find(fold(query)) != std::string::npos; }
+}  // namespace
+
 void LevelEditorScene::drawLibrary(const Rect& r) {
     UIContext& ui = g_.ui;
-    static const std::vector<std::string> cats = {"Terrain", "Gameplay", "Ennemis", "Décors"};
-    ui.cycle("cat", {r.x, r.y, r.w, ui.s(44)}, "Catégorie", libraryCategory_, cats);
-    Rect list{r.x, r.y + ui.s(54), r.w, r.h - ui.s(54)};
+    static const std::vector<std::string> cats = {"Terrain", "Jeu", "Ennemis", "Décors"};
+    int cat = libraryCategory_;
+    ui.tabs("cattabs", {r.x, r.y, r.w, ui.s(38)}, cats, cat);
+    libraryCategory_ = cat;
+    ui.textField("search", {r.x, r.y + ui.s(44), r.w, ui.s(40)}, librarySearch_, "Rechercher…", 40);
+    Rect list{r.x, r.y + ui.s(92), r.w, r.h - ui.s(92)};
     const auto& pal = ObjectTypes::palette();
     std::vector<int> items;
     auto inCat = [&](const PaletteEntry& e) {
@@ -113,43 +141,85 @@ void LevelEditorScene::drawLibrary(const Rect& r) {
         }
     };
     float rh = ui.s(50), gap = ui.s(6);
+    auto thumb = [&](const Rect& row, TexturePtr tex, const Rect* src, Color fallback) {
+        Rect box{row.x + ui.s(6), row.y + ui.s(5), row.h - ui.s(10), row.h - ui.s(10)};
+        ui.r().fillRoundedRect(box, ui.s(4), Color{6, 9, 20, 255});
+        if (tex) {
+            Rect s = src ? *src : Rect{0, 0, static_cast<float>(tex->width()), static_cast<float>(tex->height())};
+            float k = std::min((box.w - ui.s(4)) / s.w, (box.h - ui.s(4)) / s.h);
+            ui.r().drawTexture(*tex, &s, Rect::fromCenter(box.center(), {s.w * k, s.h * k}));
+        } else {
+            ui.r().fillRoundedRect(box.expanded(-ui.s(8)), ui.s(3), fallback);
+        }
+    };
     if (libraryCategory_ <= 1) {
         for (int i = 0; i < static_cast<int>(pal.size()); ++i)
-            if (inCat(pal[i])) items.push_back(i);
+            if (inCat(pal[i]) && matches(pal[i].label + " " + pal[i].type, librarySearch_)) items.push_back(i);
         ui.beginScroll("palscroll", list, items.size() * (rh + gap));
         float y = list.y - ui.scrollOffset();
         for (int i : items) {
             const ObjectTypeInfo* t = ObjectTypes::find(pal[i].type);
             bool sel = tool_ == Tool::Place && paletteIndex_ == i && placeEnemy_.empty() && placeDecor_.empty();
-            if (ui.listItem("p" + std::to_string(i), {list.x, y, list.w - ui.s(12), rh}, pal[i].label, sel, "",
-                            t ? t->editorColor : Color{})) {
+            Rect row{list.x, y, list.w - ui.s(12), rh};
+            if (ui.listItem("p" + std::to_string(i), row, "        " + pal[i].label, sel, "", t ? t->editorColor : Color{})) {
                 paletteIndex_ = i;
                 placeEnemy_.clear();
                 placeDecor_.clear();
                 tool_ = Tool::Place;
             }
+            if (y > list.y - rh && y < list.bottom()) {
+                TexturePtr tex;
+                if (t)
+                    for (const auto& a : t->assets)
+                        if (a.size() > 4 && a.substr(a.size() - 4) == ".png") {
+                            tex = g_.app.resources().texture(a);
+                            break;
+                        }
+                Rect src{0, 0, 16, 16};
+                bool sheet = tex && tex->width() > 2 * tex->height();  // animation strips: first frame
+                if (tex && sheet) src = {0, 0, static_cast<float>(tex->height()), static_cast<float>(tex->height())};
+                thumb(row, tex, sheet ? &src : nullptr, t ? t->editorColor : Color{120, 120, 140, 255});
+            }
             y += rh + gap;
         }
         ui.endScroll();
     } else if (libraryCategory_ == 2) {
-        auto enemies = g_.content.enemies();
-        ui.beginScroll("enscroll", list, enemies.size() * (ui.s(70) + gap));
+        std::vector<const EnemyDefinition*> enemies;
+        for (const EnemyDefinition* e : g_.content.enemies())
+            if (matches(e->name + " " + e->id + " " + familyLabel(e->family), librarySearch_)) enemies.push_back(e);
+        const float eh = ui.s(70);
+        ui.beginScroll("enscroll", list, enemies.size() * (eh + gap));
         float y = list.y - ui.scrollOffset();
         for (size_t i = 0; i < enemies.size(); ++i) {
             const EnemyDefinition* e = enemies[i];
             bool sel = tool_ == Tool::Place && placeEnemy_ == e->id;
-            if (ui.listItem("e" + std::to_string(i), {list.x, y, list.w - ui.s(12), ui.s(70)}, e->name, sel,
-                            std::string(familyLabel(e->family)) + (e->builtin ? "" : " · perso"), {255, 77, 109, 255})) {
+            Rect row{list.x, y, list.w - ui.s(12), eh};
+            if (ui.listItem("e" + e->id, row, "           " + e->name, sel,
+                            "             " + std::string(familyLabel(e->family)) + (e->isBoss ? " · boss" : "") + (e->builtin ? "" : " · perso"),
+                            {255, 77, 109, 255})) {
                 placeEnemy_ = e->id;
                 placeDecor_.clear();
                 tool_ = Tool::Place;
             }
-            y += ui.s(70) + gap;
+            if (y > list.y - eh && y < list.bottom()) {
+                AnimationSetPtr anim = g_.app.resources().animation(e->animation);
+                if (anim && anim->texture) {
+                    const AnimationClip* c = anim->clip("idle");
+                    if (!c && !anim->clips.empty()) c = &anim->clips.begin()->second;
+                    Rect src = c ? anim->frameRect(*c, 0) : Rect{0, 0, static_cast<float>(anim->frameWidth), static_cast<float>(anim->frameHeight)};
+                    thumb(row, anim->texture, &src, {});
+                } else {
+                    thumb(row, nullptr, nullptr, {255, 77, 109, 255});
+                }
+            }
+            y += eh + gap;
         }
         ui.endScroll();
     } else {
         DecorAtlas& atlas = DecorAtlas::shared(g_.app.resources());
-        auto names = atlas.names();
+        std::vector<std::string> names;
+        for (const auto& n : atlas.names())
+            if (matches(n, librarySearch_)) names.push_back(n);
         float cell = (list.w - ui.s(24)) / 3.0f;
         int rows = (static_cast<int>(names.size()) + 2) / 3;
         ui.beginScroll("decscroll", list, rows * (cell + gap));
@@ -157,7 +227,7 @@ void LevelEditorScene::drawLibrary(const Rect& r) {
         for (size_t i = 0; i < names.size(); ++i) {
             Rect cr{list.x + (i % 3) * (cell + ui.s(4)), y0 + (i / 3) * (cell + gap), cell, cell};
             bool sel = tool_ == Tool::Place && placeDecor_ == names[i];
-            if (ui.listItem("d" + std::to_string(i), cr, "", sel)) {
+            if (ui.listItem("d" + names[i], cr, "", sel)) {
                 placeDecor_ = names[i];
                 placeEnemy_.clear();
                 tool_ = Tool::Place;
@@ -263,25 +333,45 @@ void LevelEditorScene::drawLayers(const Rect& r) {
 
 void LevelEditorScene::drawObjectList(const Rect& r) {
     UIContext& ui = g_.ui;
-    float rh = ui.s(44), gap = ui.s(4);
-    ui.beginScroll("objlist", r, level_.objects.size() * (rh + gap));
-    float y = r.y - ui.scrollOffset();
+    ui.textField("osearch", {r.x, r.y, r.w, ui.s(40)}, outlinerSearch_, "Filtrer : id, type, ennemi, groupe…", 40);
+    Rect list{r.x, r.y + ui.s(48), r.w, r.h - ui.s(48)};
+    std::vector<size_t> shown;
+    std::vector<std::string> labels;
     for (size_t i = 0; i < level_.objects.size(); ++i) {
         const LevelObject& o = level_.objects[i];
-        if (y > r.y - rh && y < r.bottom()) {
+        const ObjectTypeInfo* t = ObjectTypes::find(o.type);
+        std::string label = o.id + "  " + (t ? t->name : o.type);
+        if (o.type == "enemy") label += " (" + o.propStr("enemy") + ")";
+        if (o.type == "decor") label += " (" + o.propStr("sprite") + ")";
+        if (o.type == "checkpoint" && !o.propStr("label").empty()) label += " « " + o.propStr("label") + " »";
+        if (std::string gid = o.propStr("group"); !gid.empty()) label += "  [" + gid + "]";
+        if (!matches(label + " " + o.type + " " + o.layer, outlinerSearch_)) continue;
+        shown.push_back(i);
+        labels.push_back(label);
+    }
+    float rh = ui.s(44), gap = ui.s(4);
+    ui.beginScroll("objlist", list, shown.size() * (rh + gap));
+    float y = list.y - ui.scrollOffset();
+    for (size_t k = 0; k < shown.size(); ++k) {
+        const LevelObject& o = level_.objects[shown[k]];
+        if (y > list.y - rh && y < list.bottom()) {
             const ObjectTypeInfo* t = ObjectTypes::find(o.type);
-            std::string label = o.id + "  " + (t ? t->name : o.type);
-            if (o.type == "enemy") label += " (" + o.propStr("enemy") + ")";
-            if (o.type == "decor") label += " (" + o.propStr("sprite") + ")";
-            if (ui.listItem("o" + std::to_string(i), {r.x, y, r.w - ui.s(12), rh}, label, selection_.count(o.id) > 0, "",
+            if (ui.listItem("o" + o.id, {list.x, y, list.w - ui.s(12), rh}, labels[k], selection_.count(o.id) > 0, "",
                             t ? t->editorColor : Color{})) {
-                selection_ = {o.id};
-                cam_.center = o.rect.center();
+                if (g_.app.input().shift()) {
+                    if (selection_.count(o.id)) selection_.erase(o.id);
+                    else selection_.insert(o.id);
+                } else {
+                    selection_ = {o.id};
+                    cam_.center = o.rect.center();
+                }
             }
         }
         y += rh + gap;
     }
     ui.endScroll();
+    ui.label(std::to_string(shown.size()) + " / " + std::to_string(level_.objects.size()) + " objets", {list.right() - ui.s(14), r.y - ui.s(12)}, 13,
+             ui.theme().textDim, Align::Right, FontFace::Body, VAlign::Middle);
 }
 
 void LevelEditorScene::drawProperties(const Rect& r) {
@@ -303,11 +393,35 @@ void LevelEditorScene::drawProperties(const Rect& r) {
     if (selection_.size() > 1) {
         ui.label(std::to_string(selection_.size()) + " objets sélectionnés", {x, y}, 22, ui.theme().text, Align::Left, FontFace::Bold);
         y += ui.s(50);
+        ui.label("Aligner", {x, y}, 17, ui.theme().accent, Align::Left, FontFace::Bold);
+        y += ui.s(28);
+        static const char* labels[] = {"Gauche", "Centre H", "Droite", "Haut", "Centre V", "Bas"};
+        UIContext::ButtonStyle sm;
+        sm.small = true;
+        sm.enabled = !readOnly_;
+        float bw = (w - ui.s(12)) / 3.0f;
+        for (int i = 0; i < 6; ++i)
+            if (ui.button(std::string("al") + std::to_string(i), {x + (i % 3) * (bw + ui.s(6)), y + (i / 3) * ui.s(46), bw, ui.s(40)}, labels[i], sm))
+                alignSelection(i);
+        y += ui.s(98);
+        sm.enabled = !readOnly_ && selection_.size() >= 3;
+        if (ui.button("sph", {x, y, w * 0.49f, ui.s(40)}, "Répartir H", sm)) alignSelection(6);
+        if (ui.button("spv", {x + w * 0.51f, y, w * 0.49f, ui.s(40)}, "Répartir V", sm)) alignSelection(7);
+        y += ui.s(56);
+        ui.label("Groupe", {x, y}, 17, ui.theme().accent, Align::Left, FontFace::Bold);
+        y += ui.s(28);
+        sm.enabled = !readOnly_;
+        if (ui.button("grp", {x, y, w * 0.49f, ui.s(40)}, "Grouper (Ctrl+G)", sm)) groupSelection(true);
+        if (ui.button("ungrp", {x + w * 0.51f, y, w * 0.49f, ui.s(40)}, "Dégrouper", sm)) groupSelection(false);
+        y += ui.s(46);
+        ui.labelWrapped("Un clic sur un objet groupé sélectionne tout son groupe (Alt+clic : l'objet seul).", {x, y}, w, 14, ui.theme().textDim);
+        y += ui.s(50);
         UIContext::ButtonStyle d;
         d.danger = true;
+        d.enabled = !readOnly_;
         if (ui.button("delmany", {x, y, w, ui.s(48)}, "Supprimer la sélection", d)) deleteSelection();
         y += ui.s(58);
-        if (ui.button("dupmany", {x, y, w, ui.s(48)}, "Dupliquer (Ctrl+D)")) duplicateSelection();
+        if (ui.button("dupmany", {x, y, w, ui.s(48)}, "Dupliquer (Ctrl+D)", sm)) duplicateSelection();
         ui.popId();
         return;
     }
@@ -382,10 +496,20 @@ void LevelEditorScene::drawProperties(const Rect& r) {
     UIContext::ButtonStyle d;
     d.danger = true;
     d.small = true;
-    if (ui.button("delete", {x, r.bottom() - ui.s(60), w * 0.48f, ui.s(48)}, "Supprimer", d)) deleteSelection();
+    d.enabled = !readOnly_;
+    if (ui.button("delete", {x, r.bottom() - ui.s(60), w * 0.31f, ui.s(48)}, "Supprimer", d)) deleteSelection();
     UIContext::ButtonStyle s;
     s.small = true;
-    if (ui.button("dup", {x + w * 0.52f, r.bottom() - ui.s(60), w * 0.48f, ui.s(48)}, "Dupliquer", s)) duplicateSelection();
+    s.enabled = !readOnly_;
+    if (ui.button("dup", {x + w * 0.345f, r.bottom() - ui.s(60), w * 0.31f, ui.s(48)}, "Dupliquer", s)) duplicateSelection();
+    UIContext::ButtonStyle tp;
+    tp.small = true;
+    tp.primary = true;
+    // Play from this object (a checkpoint, a ledge, the boss arena...): feet on top of it.
+    if (ui.button("testobj", {x + w * 0.69f, r.bottom() - ui.s(60), w * 0.31f, ui.s(48)}, "Tester ici", tp)) {
+        LevelObject* po = primary();
+        if (po) testFrom(po->type == "solid" || po->type == "oneway" ? Vec2{po->rect.center().x, po->rect.y} : po->rect.bottomCenter());
+    }
     ui.popId();
 }
 

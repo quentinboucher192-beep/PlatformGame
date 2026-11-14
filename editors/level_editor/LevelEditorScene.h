@@ -34,7 +34,12 @@ private:
     enum class Tool { Select, Place, Pan };
     enum class Drag { None, Move, Resize, BoxSelect, Pan, Create };
     enum class Modal { None, Open, New, Settings, Events, Cinematics, Help, ConfirmQuit };
-    enum class LeftTab { Library, Layers, Objects };
+    enum class LeftTab { Library, Layers, Objects, History, Check };
+    struct Issue {
+        std::string text;
+        std::string objectId;  // to select / frame ("" = level-wide)
+        bool error = false;
+    };
 
     // ---- document
     void openLevel(const std::string& id);
@@ -46,6 +51,10 @@ private:
     void applyJson(const Json& j);
     void rebuildPreview();
     void testPlay(bool fromCamera);
+    void testFrom(Vec2 feet);
+    /// Campaign levels are read-only: a copy (new id) becomes an editable player level.
+    void duplicateForEditing();
+    void captureThumbnail();
 
     // ---- editing operations
     std::string createObject(const PaletteEntry& entry, const Rect& rect);
@@ -55,6 +64,10 @@ private:
     void duplicateSelection();
     void rotateSelection(float degrees);
     void moveSelection(Vec2 delta);
+    /// 0 left, 1 centre H, 2 right, 3 top, 4 centre V, 5 bottom, 6 spread H, 7 spread V.
+    void alignSelection(int mode);
+    void groupSelection(bool group);
+    void expandToGroups();
     LevelObject* primary();
     std::string objectAt(Vec2 world) const;
     bool layerEditable(const std::string& layerId) const;
@@ -71,6 +84,11 @@ private:
     void drawLibrary(const Rect& r);
     void drawLayers(const Rect& r);
     void drawObjectList(const Rect& r);
+    void drawHistory(const Rect& r);
+    void drawValidation(const Rect& r);
+    void runChecks();
+    void drawMinimap(const Rect& viewport);
+    void drawReadOnlyBanner(const Rect& viewport);
     void drawProperties(const Rect& r);
     void drawStatus(const Rect& r);
     void drawModal();
@@ -86,6 +104,15 @@ private:
     std::string requestedId_;
     LevelData level_;
     bool builtinSource_ = false;
+    bool readOnly_ = false;
+    std::string readOnlySource_;  // package id of an imported level being viewed
+    std::string librarySearch_, outlinerSearch_;
+    std::vector<Issue> issues_;
+    bool checksDirty_ = true;
+    bool minimapOn_ = true;
+    Rect minimapRect_;
+    Rect bannerRect_;
+    int groupCounter_ = 0;
     std::string assetRoot_;
     bool mounted_ = false;
     bool dirty_ = false;

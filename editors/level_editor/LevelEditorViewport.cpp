@@ -37,7 +37,8 @@ void LevelEditorScene::handleViewport(const Rect& vp) {
     WorldView view = cam_.view(vp);
     Vec2 mouse = in.mousePos();
     Vec2 world = view.toWorld(mouse);
-    bool inside = vp.contains(mouse);
+    // The minimap and the read-only banner sit over the viewport: clicks there are theirs.
+    bool inside = vp.contains(mouse) && !(minimapOn_ && minimapRect_.contains(mouse)) && !(readOnly_ && bannerRect_.contains(mouse));
     float grid = gridOn_ ? (gridIndex_ == 0 ? 8.0f : gridIndex_ == 1 ? 16.0f : 32.0f) : 1.0f;
 
     // ---- camera: wheel zoom, middle / right drag, keyboard & gamepad pan
@@ -85,7 +86,7 @@ void LevelEditorScene::handleViewport(const Rect& vp) {
         dragStartScreen_ = mouse;
         dragAccum_ = {};
         // Resize handle of the single selection?
-        if (LevelObject* p = primary(); p && tool_ == Tool::Select) {
+        if (LevelObject* p = primary(); p && tool_ == Tool::Select && !readOnly_) {
             const ObjectTypeInfo* t = ObjectTypes::find(p->type);
             if (t && t->resizable && layerEditable(p->layer)) {
                 for (int i = 0; i < 8; ++i) {
@@ -99,7 +100,10 @@ void LevelEditorScene::handleViewport(const Rect& vp) {
                 }
             }
         }
-        if (drag_ == Drag::None && tool_ == Tool::Place) {
+        if (drag_ == Drag::None && tool_ == Tool::Place && readOnly_) {
+            flash("Lecture seule : « Dupliquer pour modifier » d'abord", true);
+            tool_ = Tool::Select;
+        } else if (drag_ == Drag::None && tool_ == Tool::Place) {
             const auto& pal = ObjectTypes::palette();
             PaletteEntry entry;
             bool ok = false;
@@ -145,7 +149,8 @@ void LevelEditorScene::handleViewport(const Rect& vp) {
                 } else if (!selection_.count(hit)) {
                     selection_ = {hit};
                 }
-                if (selection_.count(hit)) drag_ = Drag::Move;
+                if (!in.alt()) expandToGroups();  // Alt+clic : un seul objet d'un groupe
+                if (selection_.count(hit) && !readOnly_) drag_ = Drag::Move;
             }
         }
     }
@@ -219,6 +224,7 @@ void LevelEditorScene::handleShortcuts() {
         if (in.shortcutPressed(SDLK_C)) copySelection();
         if (in.shortcutPressed(SDLK_V)) paste(cam_.view(viewport_).toWorld(in.mousePos()));
         if (in.shortcutPressed(SDLK_D)) duplicateSelection();
+        if (in.shortcutPressed(SDLK_G)) groupSelection(!in.shift());
         if (in.shortcutPressed(SDLK_A)) {
             selection_.clear();
             for (const auto& o : level_.objects)
@@ -238,6 +244,7 @@ void LevelEditorScene::handleShortcuts() {
         if (!selection_.empty()) markChanged("Retourner");
     }
     if (in.shortcutPressed(SDLK_G)) gridOn_ = !gridOn_;
+    if (in.shortcutPressed(SDLK_M)) minimapOn_ = !minimapOn_;
     if (in.keyPressed(SDL_SCANCODE_F5)) testPlay(in.shift());
     if (in.keyPressed(SDL_SCANCODE_F1)) modal_ = Modal::Help;
     if (in.shortcutPressed(SDLK_V)) tool_ = Tool::Select;
@@ -268,6 +275,9 @@ void LevelEditorScene::drawViewport(const Rect& vp, float alpha) {
         renderer_.render(r, g_.app.resources(), *world_, view, alpha, opt);
     }
     drawOverlays(vp);
+    r.setView(WorldView{});
+    drawMinimap(vp);
+    drawReadOnlyBanner(vp);
     r.popClip();
 }
 

@@ -158,7 +158,10 @@ float enemyThreat(const EnemyDefinition& d) {
 
 DifficultyRating rateDifficulty(const LevelData& level, const ContentDatabase& content) {
     LevelAnalyzerOptions opt;
-    return rateDifficulty(level, content, analyzeLevel(level, content, opt));
+    LevelAnalysis a = analyzeLevel(level, content, opt);
+    DifficultyRating r = rateDifficulty(level, content, a);
+    r.problems = a.problems;
+    return r;
 }
 
 DifficultyRating rateDifficulty(const LevelData& level, const ContentDatabase& content, const LevelAnalysis& a) {

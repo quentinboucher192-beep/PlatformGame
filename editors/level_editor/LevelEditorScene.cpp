@@ -2,6 +2,7 @@
 
 #include "editors/level_editor/LevelEditorScene.h"
 
+#include <algorithm>
 #include <cmath>
 #include <format>
 
@@ -9,6 +10,7 @@
 #include "engine/core/Log.h"
 #include "game/GameServices.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/Thumbnail.h"
 
 namespace cosmic {
 
@@ -34,6 +36,13 @@ void LevelEditorScene::onEnter() {
         loadDocument(LevelData::makeEmpty("nouveau_niveau", "Nouveau niveau", "sylvanox"), false);
         modal_ = Modal::Open;
     }
+    // Screenshots / support: --online-open check|history|objects|duplicate.
+    const std::string& o = g_.onlineOpen;
+    if (o == "check") leftTab_ = LeftTab::Check;
+    if (o == "history") leftTab_ = LeftTab::History;
+    if (o == "objects") leftTab_ = LeftTab::Objects;
+    if (o == "duplicate" && readOnly_) duplicateForEditing();
+    if (o == "check" || o == "history" || o == "objects" || o == "duplicate") g_.onlineOpen.clear();
 }
 
 void LevelEditorScene::onExit() {
@@ -76,18 +85,11 @@ void LevelEditorScene::openLevel(const std::string& id) {
         mounted_ = true;
     }
     bool builtin = e && e->source != ContentSource::User;
-    if (builtin) {
-        // Built-in and imported levels are never modified in place: edit a copy.
-        std::string base = lvl->id + "_copie";
-        std::string nid = base;
-        int n = 2;
-        while (g_.content.levelIdExists(nid)) nid = base + std::to_string(n++);
-        lvl->id = nid;
-        lvl->name += " (copie)";
-        if (e->source == ContentSource::Package) lvl->metadata["assetPackage"] = e->packageId;
-        flash("Niveau protégé : vous éditez une copie (" + nid + ")");
-    }
-    loadDocument(*lvl, false);
+    readOnlySource_ = builtin && e ? (e->source == ContentSource::Package ? e->packageId : std::string{}) : std::string{};
+    loadDocument(*lvl, builtin);
+    if (builtin)
+        flash(e->source == ContentSource::Package ? "Niveau importé : lecture seule. « Dupliquer pour modifier » crée votre copie."
+                                                  : "Niveau de la campagne : lecture seule. « Dupliquer pour modifier » crée votre copie.");
     // Offer the autosave if it is newer than the file.
     fs::path auto_ = Paths::autosaveDir() / (FileUtil::slugify(level_.id) + ".json");
     std::error_code ec;
@@ -112,6 +114,14 @@ void LevelEditorScene::loadDocument(const LevelData& level, bool builtinSource) 
     level_ = level;
     level_.ensureDefaultLayers();
     builtinSource_ = builtinSource;
+    readOnly_ = builtinSource;
+    checksDirty_ = true;
+    issues_.clear();
+    groupCounter_ = 0;
+    for (const auto& o : level_.objects) {
+        std::string gid = o.propStr("group");
+        if (gid.size() > 1 && gid[0] == 'g') groupCounter_ = std::max(groupCounter_, std::atoi(gid.c_str() + 1));
+    }
     selection_.clear();
     history_.reset(level_.toJson());
     dirty_ = false;
@@ -126,6 +136,10 @@ void LevelEditorScene::loadDocument(const LevelData& level, bool builtinSource) 
 
 bool LevelEditorScene::save() {
     if (level_.id.empty()) return false;
+    if (readOnly_) {
+        flash("Lecture seule : « Dupliquer pour modifier » pour enregistrer votre version", true);
+        return false;
+    }
     level_.metadata["editedWith"] = std::string("Cosmic Platformer ") + COSMIC_VERSION_STRING;
     level_.metadata["savedAt"] = FileUtil::nowString();
     if (!g_.content.saveUserLevel(level_)) {
@@ -142,11 +156,21 @@ bool LevelEditorScene::save() {
 }
 
 void LevelEditorScene::autosave() {
+    if (readOnly_) return;
     fs::path p = Paths::autosaveDir() / (FileUtil::slugify(level_.id) + ".json");
     if (FileUtil::saveJson(p, level_.toJson())) Log::info("Editor autosave: {}", Paths::toUtf8(p));
 }
 
 void LevelEditorScene::markChanged(const std::string& label) {
+    if (readOnly_) {
+        // Campaign / imported level: every edit is refused (the document goes back to its
+        // last state); the banner offers the copy.
+        if (auto l = LevelData::fromJson(history_.current())) level_ = *l;
+        previewDirty_ = true;
+        flash("Lecture seule : « Dupliquer pour modifier » d'abord", true);
+        return;
+    }
+    checksDirty_ = true;
     if (history_.commit(level_.toJson(), label)) {
         dirty_ = true;
         previewDirty_ = true;
@@ -170,6 +194,61 @@ void LevelEditorScene::rebuildPreview() {
     world_->load(level_);
     renderer_.build(g_.app.renderer(), g_.app.resources(), *world_);
     previewDirty_ = false;
+}
+
+void LevelEditorScene::duplicateForEditing() {
+    std::string base = FileUtil::slugify(level_.id + "_copie");
+    std::string nid = base;
+    int n = 2;
+    while (g_.content.levelIdExists(nid)) nid = base + std::to_string(n++);
+    std::string from = level_.id;
+    level_.id = nid;
+    level_.name += " (copie)";
+    if (g_.online.loggedIn()) level_.author = g_.online.username();
+    level_.metadata.erase("generator");
+    level_.metadata["revision"] = 1;
+    level_.metadata["duplicatedFrom"] = from;
+    if (!readOnlySource_.empty()) level_.metadata["assetPackage"] = readOnlySource_;
+    readOnly_ = false;
+    builtinSource_ = false;
+    readOnlySource_.clear();
+    history_.reset(level_.toJson(), "Copie de " + from);
+    dirty_ = true;
+    if (save()) flash("Copie créée : " + nid + " — elle est à vous, modifiez-la librement.");
+}
+
+void LevelEditorScene::captureThumbnail() {
+    // The view of the editor camera becomes the level's thumbnail (WORKSHOP, ONLINE, packages).
+    Vec2 focus = cam_.center;
+    std::vector<uint8_t> png = renderLevelThumbnail(g_, level_, assetRoot_, &focus);
+    if (png.empty()) {
+        flash("Capture impossible", true);
+        return;
+    }
+    level_.metadata["thumbnailFocus"] = {focus.x, focus.y};
+    fs::path file = Paths::userLevelsDir() / (FileUtil::slugify(level_.id) + ".thumb.png");
+    std::error_code ec;
+    fs::create_directories(file.parent_path(), ec);
+    if (!FileUtil::writeBinary(file, png)) {
+        flash("Impossible d'écrire " + Paths::toUtf8(file), true);
+        return;
+    }
+    markChanged("Vignette");
+    flash("Vignette capturée : " + Paths::toUtf8(file));
+}
+
+void LevelEditorScene::testFrom(Vec2 feet) {
+    if (level_.countObjects("player_start") == 0) {
+        flash("Placez d'abord un départ du joueur", true);
+        return;
+    }
+    autosave();
+    PlayOptions opt;
+    opt.level = level_;
+    opt.editorTest = true;
+    opt.assetRoot = assetRoot_;
+    opt.spawn = feet;
+    g_.app.pushScene(makeGameScene(g_, level_.id, opt));
 }
 
 void LevelEditorScene::testPlay(bool fromCamera) {
@@ -296,6 +375,74 @@ void LevelEditorScene::rotateSelection(float degrees) {
 void LevelEditorScene::moveSelection(Vec2 delta) {
     for (auto& o : level_.objects)
         if (selection_.count(o.id) && layerEditable(o.layer)) o.rect = o.rect.translated(delta);
+}
+
+void LevelEditorScene::alignSelection(int mode) {
+    std::vector<LevelObject*> objs;
+    for (auto& o : level_.objects)
+        if (selection_.count(o.id) && layerEditable(o.layer)) objs.push_back(&o);
+    if (objs.size() < 2) return;
+    float minX = 1e9f, maxX = -1e9f, minY = 1e9f, maxY = -1e9f;
+    for (auto* o : objs) {
+        minX = std::min(minX, o->rect.x);
+        maxX = std::max(maxX, o->rect.right());
+        minY = std::min(minY, o->rect.y);
+        maxY = std::max(maxY, o->rect.bottom());
+    }
+    const float cx = (minX + maxX) * 0.5f, cy = (minY + maxY) * 0.5f;
+    if (mode == 6 || mode == 7) {
+        // Even gaps between the objects, the outer ones stay in place.
+        bool h = mode == 6;
+        std::sort(objs.begin(), objs.end(), [h](auto* a, auto* b) { return h ? a->rect.x < b->rect.x : a->rect.y < b->rect.y; });
+        float total = 0.0f;
+        for (auto* o : objs) total += h ? o->rect.w : o->rect.h;
+        float span = h ? maxX - minX : maxY - minY;
+        float gap = (span - total) / static_cast<float>(objs.size() - 1);
+        float pos = h ? minX : minY;
+        for (auto* o : objs) {
+            if (h) o->rect.x = std::round(pos);
+            else o->rect.y = std::round(pos);
+            pos += (h ? o->rect.w : o->rect.h) + gap;
+        }
+    } else {
+        for (auto* o : objs) {
+            switch (mode) {
+                case 0: o->rect.x = minX; break;
+                case 1: o->rect.x = std::round(cx - o->rect.w * 0.5f); break;
+                case 2: o->rect.x = maxX - o->rect.w; break;
+                case 3: o->rect.y = minY; break;
+                case 4: o->rect.y = std::round(cy - o->rect.h * 0.5f); break;
+                case 5: o->rect.y = maxY - o->rect.h; break;
+                default: break;
+            }
+        }
+    }
+    static const char* names[] = {"Aligner à gauche", "Centrer horizontalement", "Aligner à droite", "Aligner en haut",
+                                  "Centrer verticalement", "Aligner en bas", "Répartir horizontalement", "Répartir verticalement"};
+    markChanged(names[std::clamp(mode, 0, 7)]);
+}
+
+void LevelEditorScene::groupSelection(bool group) {
+    if (selection_.empty()) return;
+    std::string gid = group ? "g" + std::to_string(++groupCounter_) : std::string{};
+    for (auto& o : level_.objects) {
+        if (!selection_.count(o.id)) continue;
+        if (group) o.props["group"] = gid;
+        else o.props.erase("group");
+    }
+    markChanged(group ? "Grouper" : "Dégrouper");
+    flash(group ? std::to_string(selection_.size()) + " objets groupés (" + gid + ") : un clic sélectionne tout le groupe"
+                : "Groupe défait");
+}
+
+void LevelEditorScene::expandToGroups() {
+    std::set<std::string> groups;
+    for (const auto& o : level_.objects)
+        if (selection_.count(o.id))
+            if (std::string gid = o.propStr("group"); !gid.empty()) groups.insert(gid);
+    if (groups.empty()) return;
+    for (const auto& o : level_.objects)
+        if (groups.count(o.propStr("group"))) selection_.insert(o.id);
 }
 
 LevelObject* LevelEditorScene::primary() {
