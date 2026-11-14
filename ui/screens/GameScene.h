@@ -47,6 +47,11 @@ public:
     /// Answer of the power choice window (InputFrame::choice), used by the next step.
     void answerPowerOffer(uint8_t choice) { pendingChoice_ = choice; }
     const std::string& levelId() const { return levelId_; }
+    // Ghost Racing (pause menu → Fantômes).
+    bool hasGhosts() const { return ghostRun_.active(); }
+    bool ghostsVisible() const { return ghostRun_.visible(); }
+    void setGhostsVisible(bool on) { ghostRun_.setVisible(on); }
+    void applyGhostSettings();
     GameWorld* world() { return world_.get(); }
     /// What the player has seen of the level so far (the pause menu's map).
     const ExploredMap& explored() const { return explored_; }
@@ -110,9 +115,17 @@ private:
     // Achievements: what this run adds to the lifetime counters (once, at its end).
     void noteAchievementStats(bool completed, const RecordUpdate* upd);
     bool statsNoted_ = false;
+    // Training (Ghost Racing): a segment from a checkpoint, again and again, never a record.
+    void startTraining();
+    void trainingSegmentDone();
+    void drawTrainingBanner();
+    float segmentBanner_ = 0.0f;
+    float segmentTime_ = 0.0f;
+    float segmentBest_ = -1.0f;
     int64_t runJumps_ = 0;
     bool wasGliding_ = false;  // the glider opens without a « powerUsed » event: counted here
     std::map<std::string, int64_t> runPowers_;
+    std::vector<std::string> runCheckpoints_;  // checkpoint ids, in the order reached
     std::string raceKind_, raceLevelId_, raceHash_, raceTitle_;
     int raceVersion_ = 0;
 };

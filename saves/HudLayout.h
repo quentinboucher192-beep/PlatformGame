@@ -19,10 +19,14 @@ struct HudPlace {
     float x = 0.0f, y = 0.0f;
     float scale = 1.0f;
     bool visible = true;  // the timer and the progress bar use their own settings
+    bool focus = true;    // also shown in the « mode concentré » (focus mode)
 };
 
 struct HudLayout {
     std::array<HudPlace, kHudElements> items{};
+    HudLayout();
+    /// Shown in focus mode by default: what the fight needs (health, powers, the boss).
+    static bool defaultFocus(HudElement e);
 
     HudPlace& operator[](HudElement e) { return items[static_cast<size_t>(e)]; }
     const HudPlace& operator[](HudElement e) const { return items[static_cast<size_t>(e)]; }

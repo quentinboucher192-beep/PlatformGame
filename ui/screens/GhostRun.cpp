@@ -94,6 +94,31 @@ void GhostRun::collect() {
         labels_.push_back(std::move(label));
     }
     anims_.resize(static_cast<size_t>(race_.size()));
+    if (hasTrainingFrom_ && !race_.empty()) {
+        // The reference ghost's split at this checkpoint (exact), else its nearest moment.
+        const GhostTrack& t = race_.racer(race_.reference()).track;
+        int best = -1;
+        float bd = 320.0f * 320.0f;
+        for (size_t j = 0; j < t.splits().size(); ++j) {
+            float d = (t.poseAt(t.splits()[j]).feet - trainingFrom_).lengthSq();
+            if (d < bd) {
+                bd = d;
+                best = static_cast<int>(j);
+            }
+        }
+        if (best >= 0) race_.setOffset(t.splits()[static_cast<size_t>(best)], best);
+        else race_.setOffset(t.nearestTime(trainingFrom_), 0);
+    }
+}
+
+void GhostRun::setSettings(const GhostSettings& s) {
+    settings_ = s;
+    int mine = 0, world = 0, friends = 0, other = 0;
+    for (int i = 0; i < race_.size(); ++i) {
+        GhostRace::Racer& r = race_.racer(i);
+        int& kind = isMine(r.meta) ? mine : r.meta.source == "world" ? world : r.meta.source == "friend" ? friends : other;
+        r.color = colorFor(r.meta, kind++);
+    }
 }
 
 int GhostRun::otherVersions() const {
@@ -210,7 +235,7 @@ void GhostRun::drawHud(UIContext& ui, const WorldView& view, const Rect& area, f
         else row.name = "Point " + std::to_string(sr.index + 1);
         row.done = true;
         row.seg = sr.segment;
-        row.cum = sr.player;
+        row.cum = sr.player - race_.offset();  // training: from the segment's start
         row.hasCumDelta = sr.comparable;
         row.cumDelta = sr.delta;
         row.hasSegDelta = sr.ghostSegment >= 0.0f;
@@ -222,19 +247,24 @@ void GhostRun::drawHud(UIContext& ui, const WorldView& view, const Rect& area, f
     if (!race_.finished()) {
         // Next targets: the reference ghost's splits still ahead, then the exit.
         int shownNext = 0;
-        for (int j = lastGhost + 1; j < static_cast<int>(gs.size()) && shownNext < 3 && nRows < 9; ++j, ++shownNext) {
+        const float off = race_.offset();
+        int first = lastGhost + 1;
+        while (first < static_cast<int>(gs.size()) && gs[static_cast<size_t>(first)] <= off + 0.01f) ++first;  // training: before the start
+        for (int j = first; j < static_cast<int>(gs.size()) && shownNext < 3 && nRows < 9; ++j, ++shownNext) {
             Row& row = rows[nRows++];
             row.name = checkpointName(ref.track.poseAt(gs[static_cast<size_t>(j)]).feet, j);
-            row.seg = gs[static_cast<size_t>(j)] - (j > 0 ? gs[static_cast<size_t>(j - 1)] : race_.offset());
-            row.cum = gs[static_cast<size_t>(j)];
+            row.seg = gs[static_cast<size_t>(j)] - std::max(off, j > 0 ? gs[static_cast<size_t>(j - 1)] : 0.0f);
+            row.cum = gs[static_cast<size_t>(j)] - off;
         }
         Row& exitRow = rows[nRows++];
         exitRow.name = "Arrivée";
-        exitRow.cum = ref.track.duration();
-        exitRow.seg = ref.track.duration() - (gs.empty() ? race_.offset() : gs.back());
+        exitRow.cum = ref.track.duration() - off;
+        exitRow.seg = ref.track.duration() - std::max(off, gs.empty() ? 0.0f : gs.back());
     }
     // Sizes: what does not fit in the place goes (oldest rows, then the other ghosts).
-    const float bigFs = F(32), smallFs = F(16), rowFs = F(15), headFs = F(13);
+    // Never below 11.5 pixels (small windows): below, the font loses its spaces.
+    const float minFs = 11.5f / ui.s(1.0f);
+    const float bigFs = F(32), smallFs = std::max(F(16), minFs), rowFs = std::max(F(15), minFs), headFs = std::max(F(13), minFs);
     const float lineSmall = S(23), lineRow = S(22);
     int others = race_.size() > 1 ? std::min(race_.size(), 4) : 0;
     auto heightFor = [&](int rowsShown, int othersShown) {
@@ -256,7 +286,7 @@ void GhostRun::drawHud(UIContext& ui, const WorldView& view, const Rect& area, f
     ui.r().drawRoundedRect(box, S(8), ref.color.withAlpha(90), S(1.5f));
     ui.r().pushClip(box);
     float x = left + pad, cy = y + pad;
-    float hf = ui.fitFont(who, FontFace::Bold, F(14), inner, 0.8f);
+    float hf = ui.fitFont(who, FontFace::Bold, std::max(F(14), minFs), inner, 0.85f);
     ui.label(ui.elide(who, FontFace::Bold, hf, inner), {x, cy}, hf, ref.color, Align::Left, FontFace::Bold);
     cy += lineSmall;
     if (settings_.showDelta) {
@@ -269,9 +299,9 @@ void GhostRun::drawHud(UIContext& ui, const WorldView& view, const Rect& area, f
         ui.label(word, {x, cy + S(12)}, smallFs, dc, Align::Left, FontFace::Bold);
         cy += S(42);
         std::string info;
-        if (ref.timeHere >= 0.0f) info = "Fantôme ici " + formatGhostTime(ref.timeHere);
+        if (ref.timeHere >= 0.0f) info = "Fantôme ici " + formatGhostTime(std::max(0.0f, ref.timeHere - race_.offset()));
         float fin = race_.estimatedFinish();
-        if (!race_.finished() && fin > 0.0f) info += (info.empty() ? "" : "  ·  ") + std::string("Fin estimée ") + formatGhostTime(fin);
+        if (!race_.finished() && fin > 0.0f && !training_) info += (info.empty() ? "" : "  ·  ") + std::string("Fin estimée ") + formatGhostTime(fin);
         if (race_.finished()) info = "Arrivée " + formatGhostTime(race_.finalTime()) + "  ·  fantôme " + formatGhostTime(ref.track.duration());
         if (!info.empty()) {
             float f = ui.fitFont(info, FontFace::Body, smallFs, inner, 0.75f);

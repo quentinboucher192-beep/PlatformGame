@@ -51,11 +51,12 @@ void GameScene::onEnter() {
     // Same randomness for every player of this level (and in its replays).
     world_->seedGameplay(levelSeed(levelId_));
     if (opt_.spawn) world_->startAt(*opt_.spawn);
-    if (const LevelRecord* rec = g_.records.get(levelId_)) world_->setReferenceSplits(rec->bestSplits);
+    if (opt_.training) startTraining();
+    if (const LevelRecord* rec = g_.records.get(levelId_); rec && !opt_.training) world_->setReferenceSplits(rec->bestSplits);
     renderer_.build(g_.app.renderer(), res, *world_);
     if (g_.settings.gameplay.progressBar > 0)
         trackFuture_ = std::async(std::launch::async, [level = level_, &content = g_.content] { return buildProgressTrack(level, content); });
-    if (!opt_.editorTest) {
+    if (!opt_.editorTest && !opt_.training) {
         g_.records.registerAttempt(levelId_);
         if (!workshop_) {
             g_.progression.lastLevel = levelId_;
@@ -111,6 +112,7 @@ void GameScene::onEnter() {
         if (ended_) return;
         if (trig == "jump" && src == "player") ++runJumps_;
         else if (trig == "powerUsed") ++runPowers_[src];
+        else if (trig == "checkpoint") runCheckpoints_.push_back(src);
     };
     // Ghost Racing: the hash of this exact version of the level (the one its replays carry).
     if (!opt_.editorTest && !opt_.level) {
@@ -134,6 +136,7 @@ void GameScene::startGhosts() {
     else if (gs.enabled && gs.personalByDefault && pb) choices.push_back(*pb);
     if (choices.empty()) return;
     ghostRun_.begin(std::move(choices), level_, g_.content, ghostHash_, gs, opt_.training);
+    if (opt_.training && opt_.spawn) ghostRun_.setTrainingFrom(*opt_.spawn);
     if (pb) {
         std::string key = GhostStore::levelKey(levelId_, ghostHash_);
         ghostRun_.setPersonal(g_.segments.bestSegments(key, pb->meta.splits.size()), pb->meta.splits,
@@ -247,6 +250,8 @@ void GameScene::onExit() {
         g_.bossStats.save();
     }
 }
+
+void GameScene::applyGhostSettings() { ghostRun_.setSettings(g_.settings.ghosts); }
 
 void GameScene::onResume() {
     g_.app.audio().setMusicDuck(1.0f);
@@ -443,6 +448,17 @@ void GameScene::bossFeedback() {
 }
 
 void GameScene::finishRun(bool completed) {
+    if (opt_.training) {
+        // Training never makes a record nor progress: the exit ends the segment, a fall ends
+        // the attempt (both start again).
+        if (completed) trainingSegmentDone();
+        else {
+            ended_ = true;
+            segmentBanner_ = 0.8f;
+            segmentTime_ = -1.0f;
+        }
+        return;
+    }
     ended_ = true;
     if (!opt_.editorTest) {
         bossFights_.step(*world_, g_.bossStats);
@@ -566,6 +582,31 @@ void GameScene::finishRun(bool completed) {
     data.online = online;
     data.raceScore = raceEstimate;
     data.bossKills = bossFights_.kills();
+    if (completed && !opt_.editorTest) {
+        auto seg = std::make_shared<SegmentSummary>();
+        seg->levelName = level_.name;
+        seg->levelKey = GhostStore::levelKey(levelId_, ghostHash_);
+        for (const std::string& id : runCheckpoints_) {
+            std::string label;
+            for (const LevelObject& o : level_.objects)
+                if (o.id == id) label = o.propStr("label");
+            seg->names.push_back(label.empty() ? "Point " + std::to_string(seg->names.size() + 1) : label);
+        }
+        seg->splits = r.splits;
+        seg->time = r.time;
+        const GhostRace& gr = ghostRun_.race();
+        seg->bestSegments = gr.personalBestSegments();
+        seg->pbSplits = gr.personalSplits();
+        seg->pbTime = gr.personalTime();
+        if (seg->bestSegments.empty()) seg->bestSegments = g_.segments.bestSegments(seg->levelKey, r.splits.size());
+        for (int i = 0; i < gr.size(); ++i) {
+            const GhostRace::Racer& g = gr.racer(i);
+            std::string name = g.meta.sourceLabel();
+            if (!g.meta.label.empty() && g.meta.label != "Moi") name += " · " + g.meta.label;
+            seg->ghosts.push_back({name, g.color, g.track.splits(), g.track.duration(), g.liveDelta, g.sameVersion});
+        }
+        data.segments = seg;
+    }
     if (race_.active()) {
         data.raceBosses = race_.progress().bossesBeaten();
         data.raceBossTotal = static_cast<int>(race_.layout().bosses.size());
@@ -592,6 +633,12 @@ void GameScene::update(float dt) {
     if (raceRouteFuture_.valid() && raceRouteFuture_.wait_for(std::chrono::seconds(0)) == std::future_status::ready) race_.setRoute(raceRouteFuture_.get());
     hud_.update(*world_, dt);
     InputManager& in = g_.app.input();
+    // « Mode concentré »: the reduced HUD chosen in the HUD editor (display only).
+    if (in.menuPressed(Action::FocusToggle) && !ended_) {
+        g_.settings.gameplay.focusMode = !g_.settings.gameplay.focusMode;
+        g_.saveSettings();
+        world_->hint(g_.settings.gameplay.focusMode ? "Mode concentré" : "HUD complet", 1.4f);
+    }
     if (ghostRun_.active()) {
         ghostRun_.update(*world_, dt);
         // Quick toggle (G / left stick click): display only, never part of the run.
@@ -618,11 +665,46 @@ void GameScene::update(float dt) {
             return;
         }
     }
-    // Quick restart (contre-la-montre): R key or the gamepad View/Back button.
+    // Quick restart (contre-la-montre, training): R key or the gamepad View/Back button.
     if (!ended_ && (in.keyPressed(SDL_SCANCODE_R) || in.rawPadButton(SDL_GAMEPAD_BUTTON_BACK)) &&
-        world_->state() == WorldState::Playing && level_.timerMode == TimerMode::TimeAttack) {
+        world_->state() == WorldState::Playing && (level_.timerMode == TimerMode::TimeAttack || opt_.training)) {
         restart();
+        return;
     }
+    // Training: the segment ends at its checkpoint; the next attempt starts by itself.
+    if (opt_.training && !ended_ && !opt_.trainingEnd.empty() && world_->checkpointId() == opt_.trainingEnd) trainingSegmentDone();
+    if (segmentBanner_ > 0.0f) {
+        segmentBanner_ -= dt;
+        if (segmentBanner_ <= 0.0f || in.menuPressed(Action::MenuConfirm)) restart();
+    }
+}
+
+void GameScene::startTraining() {
+    // The checkpoint the segment starts from is reached (silently): the timer's first split.
+    if (!opt_.trainingCheckpoint.empty())
+        if (LevelEntity* e = world_->entity(opt_.trainingCheckpoint)) e->handleAction(*world_, "activate", Json::object());
+    // The powers of the tablets placed before it on the route (the last ones if the slots are
+    // fewer: those a player would keep).
+    std::vector<std::string> powers = opt_.trainingPowers;
+    int slots = world_->player().powerSlots();
+    if (slots > 0 && static_cast<int>(powers.size()) > slots) powers.erase(powers.begin(), powers.end() - slots);
+    for (const std::string& id : powers)
+        if (const PowerDefinition* d = g_.content.power(id); d && !world_->player().hasPower(id)) world_->player().grantPower(*d);
+}
+
+void GameScene::trainingSegmentDone() {
+    ended_ = true;
+    float t = world_->timer().elapsed();
+    // The segment's comparison is its last split (the run itself is not over: no finish).
+    if (opt_.trainingEnd.empty()) ghostRun_.finish(t);  // a segment ending at the exit
+    std::string key = levelId_ + ":" + opt_.trainingCheckpoint;
+    std::vector<float>& tries = g_.trainingAttempts[key];
+    segmentBest_ = tries.empty() ? -1.0f : *std::min_element(tries.begin(), tries.end());
+    tries.push_back(t);
+    if (tries.size() > 50) tries.erase(tries.begin());
+    segmentTime_ = t;
+    segmentBanner_ = 2.4f;
+    g_.uiSound(segmentBest_ < 0.0f || t < segmentBest_ ? "medal" : "ui_confirm", 0.6f);
 }
 
 void GameScene::render(float alpha) {
@@ -643,7 +725,8 @@ void GameScene::render(float alpha) {
     renderer_.render(r, g_.app.resources(), *world_, view, alpha, opt);
     if (ghostRun_.active()) ghostRun_.drawWorld(r, view, world_->player().anim.set());
     hud_.render(g_.ui, *world_, view, g_.records.get(levelId_), g_.settings.gameplay);
-    if (ghostRun_.active() && !world_->cinematic().active() && world_->state() != WorldState::Intro) {
+    // The ghosts' HUD: not under the results screen (nor under its notifications).
+    if (ghostRun_.active() && !world_->cinematic().active() && world_->state() != WorldState::Intro && (!ended_ || opt_.training)) {
         const GameplaySettings& gs = g_.settings.gameplay;
         Rect keepOut[kHudElements];
         int n = 0;
@@ -655,11 +738,48 @@ void GameScene::render(float alpha) {
         ghostRun_.drawHud(g_.ui, view, hud_.area(g_.ui, *world_, HudElement::Splits, sp), sp.k, hudVisible(gs, HudElement::Splits), keepOut, n);
     }
     drawBossArrow(view);
+    if (opt_.training) drawTrainingBanner();
     if (g_.settings.graphics.showFps) {
         char buf[32];
         std::snprintf(buf, sizeof(buf), "%.0f FPS", g_.app.fps());
         g_.ui.label(buf, {g_.ui.s(12), g_.ui.screenH() - g_.ui.s(30)}, 18, g_.ui.theme().textDim);
     }
+}
+
+void GameScene::drawTrainingBanner() {
+    UIContext& ui = g_.ui;
+    const float W = ui.screenW();
+    // Always: what this run is (no record), at the bottom left.
+    std::string tag = "ENTRAÎNEMENT · aucun record · R / Vue : recommencer";
+    ui.label(ui.elide(tag, FontFace::Bold, 15, W * 0.5f), {ui.s(24), ui.screenH() - ui.s(28)}, 15, ui.theme().warm, Align::Left, FontFace::Bold,
+             VAlign::Middle);
+    if (segmentBanner_ <= 0.0f) return;
+    Rect b = Rect::fromCenter({W * 0.5f, ui.screenH() * 0.36f}, {std::min(ui.s(640), W - ui.s(40)), ui.s(150)});
+    ui.r().fillRoundedRect(b, ui.s(14), Color{8, 12, 26, 220});
+    ui.r().drawRoundedRect(b, ui.s(14), ui.theme().accent.withAlpha(140), ui.s(2));
+    if (segmentTime_ < 0.0f) {
+        ui.label("Essai manqué : on recommence", b.center(), 26, ui.theme().text, Align::Center, FontFace::Bold, VAlign::Middle);
+        return;
+    }
+    std::string head = "SEGMENT  " + formatGhostTime(segmentTime_);
+    ui.label(head, {b.center().x, b.y + ui.s(40)}, ui.fitFont(head, FontFace::Title, 34, b.w - ui.s(40)), ui.theme().text, Align::Center,
+             FontFace::Title, VAlign::Middle);
+    std::string line;
+    const GhostRace& gr = ghostRun_.race();
+    if (!gr.empty() && !gr.splits().empty() && gr.splits().back().comparable) {
+        float d = gr.splits().back().delta;
+        if (gr.splits().back().ghostSegment >= 0.0f) d = gr.splits().back().segment - gr.splits().back().ghostSegment;
+        line = formatGhostDelta(d) + " sur le fantôme";
+    }
+    if (segmentBest_ >= 0.0f) {
+        std::string best = segmentTime_ < segmentBest_ ? "meilleur essai !" : "meilleur essai " + formatGhostTime(segmentBest_);
+        line += (line.empty() ? "" : "   ·   ") + best;
+    }
+    std::vector<float>& tries = g_.trainingAttempts[levelId_ + ":" + opt_.trainingCheckpoint];
+    line += (line.empty() ? "" : "   ·   ") + std::to_string(tries.size()) + (tries.size() > 1 ? " essais" : " essai");
+    ui.label(ui.elide(line, FontFace::Body, 19, b.w - ui.s(40)), {b.center().x, b.y + ui.s(86)}, 19, ui.theme().textDim, Align::Center,
+             FontFace::Body, VAlign::Middle);
+    ui.label("Nouvel essai…", {b.center().x, b.y + ui.s(122)}, 16, ui.theme().accent, Align::Center, FontFace::Body, VAlign::Middle);
 }
 
 void GameScene::renderDebug() {

@@ -937,27 +937,34 @@ private:
         // Actions
         std::string replayRecord = replayCandidate();
         st.enabled = !replayRecord.empty() && l->entry != nullptr;
-        if (ui.button("replay", {bx, zoneD_.y + ui.s(18), bw, ui.s(40)}, "VIEW REPLAY", st))
+        if (ui.button("replay", {bx, zoneD_.y + ui.s(14), bw, ui.s(36)}, "VIEW REPLAY", st))
             g_.app.pushScene(makeReplayViewer(g_, replayRecord));
+        // Ghost Racing: race the selected record (or the world record) as a ghost.
+        if (ui.button("ghost", {bx, zoneD_.y + ui.s(58), bw, ui.s(36)}, "Course contre ce temps", st)) {
+            GhostSetupRequest req;
+            req.recordId = replayRecord;
+            req.fromOnline = true;
+            g_.app.pushScene(makeGhostSetup(g_, l->id, req));
+        }
         int unsent = 0;
         for (const auto& a : g_.online.attempts().all())
             if (a.levelId == l->id && (a.ownerId.empty() || a.ownerId == g_.online.playerId()))
                 for (const auto& s2 : a.submissions) unsent += s2.status == RecordStatus::Local && !s2.blocked ? 1 : 0;
         st.enabled = unsent > 0 && g_.online.usable();
         st.primary = unsent > 0;
-        if (ui.button("submit", {bx, zoneD_.y + ui.s(66), bw, ui.s(40)}, "SUBMIT RECORD", st)) {
+        if (ui.button("submit", {bx, zoneD_.y + ui.s(102), bw, ui.s(36)}, "SUBMIT RECORD", st)) {
             if (!g_.online.loggedIn()) g_.app.pushScene(makeOnlineAccount(g_, false));
             else g_.online.syncNow(true);
         }
         st.primary = false;
         st.enabled = l->entry != nullptr;
-        if (ui.button("play", {bx, zoneD_.y + ui.s(114), bw, ui.s(40)}, "Jouer ce niveau", st)) {
+        if (ui.button("play", {bx, zoneD_.y + ui.s(146), bw, ui.s(36)}, "Jouer ce niveau", st)) {
             PlayOptions po;
             po.fromOnline = true;
             g_.app.switchScene(makeGameScene(g_, l->id, po));
         }
         if (unsent > 0)
-            ui.label(std::to_string(unsent) + " performance(s) à envoyer", {bx + bw * 0.5f, zoneD_.y + ui.s(172)}, 14, ui.theme().warm, Align::Center,
+            ui.label(std::to_string(unsent) + " performance(s) à envoyer", {bx + bw * 0.5f, zoneD_.y + ui.s(194)}, 13, ui.theme().warm, Align::Center,
                      FontFace::Body, VAlign::Middle);
         // Different revision locally and on the server: warn (records are never mixed).
         if (meta_.is_object())

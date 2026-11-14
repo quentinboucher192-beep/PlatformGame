@@ -9,6 +9,7 @@
 namespace cosmic {
 
 bool hudVisible(const GameplaySettings& g, HudElement e) {
+    if (g.focusMode && !g.hud[e].focus) return false;
     if (e == HudElement::Timer) return g.showTimer;
     if (e == HudElement::Progress) return g.progressBar > 0;
     return g.hud[e].visible;
@@ -35,6 +36,7 @@ Json Settings::toJson() const {
                      {"showInputHints", gameplay.showInputHints},
                      {"progressBar", gameplay.progressBar},
                      {"hud", gameplay.hud.toJson()},
+                     {"focusMode", gameplay.focusMode},
                      {"debugMode", gameplay.debugMode},
                      {"editorAutosave", gameplay.editorAutosave},
                      {"editorAutosaveSeconds", gameplay.editorAutosaveSeconds},
@@ -86,6 +88,7 @@ Settings Settings::fromJson(const Json& j) {
         s.gameplay.showInputHints = jget<bool>(g, "showInputHints", true);
         s.gameplay.progressBar = std::clamp(jget<int>(g, "progressBar", 1), 0, 3);
         if (g.contains("hud")) s.gameplay.hud = HudLayout::fromJson(g["hud"]);
+        s.gameplay.focusMode = jget<bool>(g, "focusMode", false);
         if (s.gameplay.progressBar == 3 && !s.gameplay.hud[HudElement::Progress].custom) s.gameplay.progressBar = 1;
         s.gameplay.debugMode = jget<bool>(g, "debugMode", false);
         s.gameplay.editorAutosave = jget<bool>(g, "editorAutosave", true);

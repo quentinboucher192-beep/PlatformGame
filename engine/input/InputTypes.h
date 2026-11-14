@@ -27,6 +27,7 @@ enum class Action : int {
     Special,  // power on the special button (time slow, plasma bomb...)
     Pause,
     GhostToggle,  // 2.18: show / hide the ghosts of Ghost Racing (display only, never recorded)
+    FocusToggle,  // 2.18: « mode concentré », the reduced HUD (display only, never recorded)
     MenuUp,
     MenuDown,
     MenuLeft,

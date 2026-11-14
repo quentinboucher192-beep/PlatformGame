@@ -1,6 +1,8 @@
 #pragma once
 
+#include <map>
 #include <string>
+#include <vector>
 
 #include "engine/core/Application.h"
 #include "game/achievements/Achievements.h"
@@ -47,6 +49,8 @@ public:
     GhostStore ghosts;
     SegmentHistory segments;
     /// Achievements: the catalogue (data) and what this player has unlocked (saves).
+    /// Training attempts of this session (per level and starting checkpoint), never saved.
+    std::map<std::string, std::vector<float>> trainingAttempts;
     AchievementCatalog achievementCatalog;
     AchievementBook achievements;
     /// What the achievements' conditions read now.

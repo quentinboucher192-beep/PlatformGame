@@ -94,7 +94,8 @@ void PauseScene::render(float /*alpha*/) {
     float k = std::min(1.0f, t_ / 0.25f);
     ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{4, 6, 14, 255}.withAlphaF(0.65f * k));
 
-    float w = ui.s(560), h = ui.s(700);
+    const bool ghosts = game_.hasGhosts();
+    float w = ui.s(560), h = ui.s(ghosts ? 860 : 780);
     // The map of what was explored sits on the right of the menu when the window has room.
     GameWorld* mapWorld = game_.world();
     const float gap = ui.s(24);
@@ -133,6 +134,19 @@ void PauseScene::render(float /*alpha*/) {
     y += bh + ui.s(16);
     if (ui.button("guide", {bx, y, bw, bh}, "Guide des pouvoirs")) g_.app.pushScene(makePowerGuide(g_));
     y += bh + ui.s(16);
+    {
+        // « Mode concentré »: the reduced HUD (also T / Partage in game).
+        bool focus = g_.settings.gameplay.focusMode;
+        if (ui.toggle("focus", {bx, y, bw, bh}, "Mode concentré (HUD réduit)", focus)) {
+            g_.settings.gameplay.focusMode = focus;
+            g_.saveSettings();
+        }
+        y += bh + ui.s(16);
+    }
+    if (ghosts) {
+        if (ui.button("ghosts", {bx, y, bw, bh}, game_.ghostsVisible() ? "Fantômes" : "Fantômes (masqués)")) g_.app.pushScene(makeGhostOptions(g_, &game_));
+        y += bh + ui.s(16);
+    }
     UIContext::ButtonStyle danger;
     danger.danger = true;
     std::string quitLabel = game_.editorTest() ? "Retour à l'éditeur" : (confirmQuit_ ? "Confirmer : quitter le niveau" : "Retour au menu");

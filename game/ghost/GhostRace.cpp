@@ -40,6 +40,11 @@ std::string formatGhostTime(float seconds) {
     return buf;
 }
 
+namespace {
+/// Gaps compared to the millisecond (what the timer shows): a tie is a tie.
+float msGap(float a, float b) { return static_cast<float>(std::llround(static_cast<double>(a) * 1000.0) - std::llround(static_cast<double>(b) * 1000.0)) / 1000.0f; }
+}  // namespace
+
 void GhostRace::clear() {
     racers_.clear();
     reference_ = 0;
@@ -147,7 +152,7 @@ void GhostRace::onSplit(int index, float runTime, Vec2 feet) {
         if (s.ghostIndex >= 0) {
             s.comparable = true;
             s.ghost = gs[static_cast<size_t>(s.ghostIndex)];
-            s.delta = s.player - s.ghost;
+            s.delta = msGap(s.player, s.ghost);
             float prevGhost = -1.0f;
             if (results_.empty()) prevGhost = offset_;
             else if (results_.back().comparable) prevGhost = gs[static_cast<size_t>(results_.back().ghostIndex)];
@@ -177,7 +182,7 @@ void GhostRace::finish(float runTime) {
         const Racer& ref = racers_[static_cast<size_t>(reference_)];
         s.comparable = true;
         s.ghost = ref.track.duration();
-        s.delta = s.player - s.ghost;
+        s.delta = msGap(s.player, s.ghost);
         float prevGhost = -1.0f;
         if (results_.empty()) prevGhost = offset_;
         else if (results_.back().comparable) prevGhost = ref.track.splits()[static_cast<size_t>(results_.back().ghostIndex)];
@@ -185,7 +190,7 @@ void GhostRace::finish(float runTime) {
         for (Racer& r : racers_) {
             r.timeHere = r.track.duration();
             r.hasLiveDelta = true;
-            r.liveDelta = s.player - r.timeHere;
+            r.liveDelta = msGap(s.player, r.timeHere);
         }
     }
     if (offset_ <= 0.0f) {

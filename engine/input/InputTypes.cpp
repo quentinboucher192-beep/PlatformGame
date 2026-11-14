@@ -14,6 +14,7 @@ constexpr ActionInfo kActions[kActionCount] = {
     {"impulse", "Impulsion"},         {"teleport", "Téléportation"},   {"interact", "Interagir"},
     {"special", "Pouvoir spécial"},
     {"pause", "Pause"},               {"ghost_toggle", "Afficher / masquer les fantômes"},
+    {"focus_toggle", "Mode concentré (HUD réduit)"},
     {"menu_up", "Menu haut"},        {"menu_down", "Menu bas"},
     {"menu_left", "Menu gauche"},     {"menu_right", "Menu droite"},   {"menu_confirm", "Valider"},
     {"menu_back", "Retour"},          {"menu_tab_prev", "Onglet précédent"}, {"menu_tab_next", "Onglet suivant"},
@@ -50,6 +51,7 @@ void InputBindings::resetKeyboard() {
     set(Action::Special, SDL_SCANCODE_F, SDL_SCANCODE_H);
     set(Action::Pause, SDL_SCANCODE_ESCAPE, SDL_SCANCODE_P);
     set(Action::GhostToggle, SDL_SCANCODE_G);
+    set(Action::FocusToggle, SDL_SCANCODE_T);
     set(Action::MenuUp, SDL_SCANCODE_UP, SDL_SCANCODE_W);
     set(Action::MenuDown, SDL_SCANCODE_DOWN, SDL_SCANCODE_S);
     set(Action::MenuLeft, SDL_SCANCODE_LEFT, SDL_SCANCODE_A);
@@ -79,6 +81,8 @@ void InputBindings::resetGamepad() {
     set(Action::Special, B::button(SDL_GAMEPAD_BUTTON_RIGHT_STICK));
     set(Action::Pause, B::button(SDL_GAMEPAD_BUTTON_START));
     set(Action::GhostToggle, B::button(SDL_GAMEPAD_BUTTON_LEFT_STICK));
+    // Share (Xbox Series) / capture (Switch) / microphone (PS5), or the PlayStation touchpad.
+    set(Action::FocusToggle, B::button(SDL_GAMEPAD_BUTTON_MISC1), B::button(SDL_GAMEPAD_BUTTON_TOUCHPAD));
     set(Action::MenuUp, B::button(SDL_GAMEPAD_BUTTON_DPAD_UP), B::axisNeg(SDL_GAMEPAD_AXIS_LEFTY));
     set(Action::MenuDown, B::button(SDL_GAMEPAD_BUTTON_DPAD_DOWN), B::axisPos(SDL_GAMEPAD_AXIS_LEFTY));
     set(Action::MenuLeft, B::button(SDL_GAMEPAD_BUTTON_DPAD_LEFT), B::axisNeg(SDL_GAMEPAD_AXIS_LEFTX));
@@ -233,6 +237,8 @@ std::string padBindingName(const PadBinding& b, GamepadStyle style) {
                 case SDL_GAMEPAD_BUTTON_BACK: return style == GamepadStyle::PlayStation ? "Partage" : "Vue";
                 case SDL_GAMEPAD_BUTTON_LEFT_STICK: return style == GamepadStyle::PlayStation ? "L3" : "LS";
                 case SDL_GAMEPAD_BUTTON_RIGHT_STICK: return style == GamepadStyle::PlayStation ? "R3" : "RS";
+                case SDL_GAMEPAD_BUTTON_MISC1: return style == GamepadStyle::PlayStation ? "Micro" : "Partage";
+                case SDL_GAMEPAD_BUTTON_TOUCHPAD: return "Pavé tactile";
                 case SDL_GAMEPAD_BUTTON_DPAD_UP: return "Croix haut";
                 case SDL_GAMEPAD_BUTTON_DPAD_DOWN: return "Croix bas";
                 case SDL_GAMEPAD_BUTTON_DPAD_LEFT: return "Croix gauche";

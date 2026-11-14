@@ -82,7 +82,7 @@ void GameServices::checkAchievements(bool announce) {
     }
     for (const AchievementDef* a : fresh)
         online.notify(OnlineService::Notification::Kind::Success, "Succès débloqué : " + a->name,
-                      std::string(static_cast<size_t>(a->stars), '*') + " " + a->description);
+                      a->description + " (" + std::to_string(a->stars) + (a->stars > 1 ? " étoiles)" : " étoile)"));
 }
 
 void GameServices::checkForUpdate() {

@@ -74,6 +74,8 @@ public:
     /// Splits read to the millisecond (Split events, 2.18+) or estimated from the
     /// checkpoint samples (older replays: about 1/30 s).
     bool splitsExact() const { return splitsExact_; }
+    /// The moment the ghost was nearest to `p` (training without a split there).
+    float nearestTime(Vec2 p) const;
     /// First time the ghost reached `progress` (0..1) of the route; -1 if never or unmapped.
     float timeAtProgress(float progress) const;
     bool mapped() const { return !progressTimes_.empty(); }

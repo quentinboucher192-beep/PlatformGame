@@ -421,6 +421,11 @@ public:
         st.enabled = unlocked;
         Rect btn{panel.right() - ui.s(360), panel.bottom() - ui.s(92), ui.s(320), ui.s(64)};
         if (ui.button("play_level", btn, unlocked ? "Jouer" : "Verrouillé", st)) play();
+        // Ghost Racing: choose the ghosts (or a training segment) before the start.
+        UIContext::ButtonStyle gs;
+        gs.enabled = unlocked;
+        Rect gbtn{btn.x - ui.s(16) - ui.s(250), btn.y, ui.s(250), btn.h};
+        if (ui.button("ghosts_level", gbtn, "Fantômes…", gs) && unlocked) g_.app.pushScene(makeGhostSetup(g_, l.id));
     }
 
     void play() {

@@ -7,6 +7,7 @@
 
 #include "engine/core/Easing.h"
 #include "game/GameServices.h"
+#include "game/ghost/GhostRace.h"
 #include "game/levels/LevelTimer.h"
 #include "ui/screens/GameScene.h"
 #include "ui/screens/Navigation.h"
@@ -133,6 +134,18 @@ void ResultsScene::render(float /*alpha*/) {
     ui.label(d_.level.name, {panel.center().x, panel.y + ui.s(104)}, 26, ui.theme().textDim, Align::Center);
     if (!run.completed && !d_.failReason.empty())
         ui.label(d_.failReason, {panel.center().x, panel.y + ui.s(140)}, 24, ui.theme().danger, Align::Center);
+    // Ghost Racing: the final gap on each ghost raced.
+    if (run.completed && d_.segments && !d_.segments->ghosts.empty() && t_ > 0.5f) {
+        std::string line;
+        for (const auto& gh : d_.segments->ghosts) {
+            if (!line.empty()) line += "   ·   ";
+            line += formatGhostDelta(gh.gap) + (gh.gap < -0.0005f ? " d'avance sur " : gh.gap > 0.0005f ? " de retard sur " : " : égalité avec ") + gh.name;
+        }
+        float room = ui.s(900);
+        float f = ui.fitFont(line, FontFace::Bold, 20, room, 0.7f);
+        Color c = d_.segments->ghosts.front().gap < -0.0005f ? ui.theme().success : d_.segments->ghosts.front().gap > 0.0005f ? ui.theme().danger : ui.theme().text;
+        ui.label(ui.elide(line, FontFace::Bold, f, room), {panel.center().x, panel.y + ui.s(140)}, f, c, Align::Center, FontFace::Bold);
+    }
 
     // ---------------------------------------------------------- left: stats
     float lx = panel.x + ui.s(60), ly = panel.y + ui.s(190);
@@ -236,11 +249,18 @@ void ResultsScene::render(float /*alpha*/) {
         std::string back = d_.editorTest ? "Retour à l'éditeur" : d_.fromOnline ? "Retour à ONLINE"
                            : d_.fromWorkshop ? "Retour à l'Atelier"
                                              : "Sélection des niveaux";
+        float topY = panel.y + ui.s(24);
         if (d_.replay && d_.replay->exact()) {
             UIContext::ButtonStyle rs;
             rs.small = true;
-            if (ui.button("watch", {panel.x + ui.s(30), panel.y + ui.s(24), ui.s(250), ui.s(44)}, "Revoir la partie", rs))
+            if (ui.button("watch", {panel.x + ui.s(30), topY, ui.s(250), ui.s(44)}, "Revoir la partie", rs))
                 g_.app.pushScene(makeLocalReplayViewer(g_, *d_.replay, "Votre partie"));
+            topY += ui.s(54);
+        }
+        if (d_.segments) {
+            UIContext::ButtonStyle rs;
+            rs.small = true;
+            if (ui.button("segments", {panel.x + ui.s(30), topY, ui.s(250), ui.s(44)}, "Segments", rs)) g_.app.pushScene(makeSegments(g_, d_.segments));
         }
         if (d_.online && !d_.fromOnline) {
             UIContext::ButtonStyle os;

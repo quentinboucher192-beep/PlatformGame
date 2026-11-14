@@ -1001,7 +1001,8 @@ void OnlineService::noteFriends(const Json& data) {
     for (const auto& e : outgoing) out.push_back(e.first);
     known = {{"incoming", in}, {"outgoing", out}};
     pendingFriendRequests_ = static_cast<int>(incoming.size());
-    friendCount_ = static_cast<int>(friends.size());
+    friendIds_.clear();
+    for (const auto& f : friends) friendIds_.insert(f.first);
     saveFriendNotices();
 }
 

@@ -331,7 +331,14 @@ private:
                     say(olderRules ? "Publié avant les règles de la 2.17 : vos temps n'y sont plus classés tant que son auteur n'en publie pas une nouvelle version."
                                    : "Installé, mais cette copie diffère de la version publiée : vos temps n'y seront pas classés.",
                         true);
-                play(installed);
+                if (ghostAfterInstall_) {
+                    ghostAfterInstall_ = false;
+                    GhostSetupRequest q;
+                    q.fromOnline = true;
+                    g_.app.pushScene(makeGhostSetup(g_, installed, q));
+                } else {
+                    play(installed);
+                }
             },
             16u << 20);
     }
@@ -645,10 +652,28 @@ private:
         p.enabled = !working_;
         std::string playLabel = local.empty() ? "Télécharger et jouer" : (ver == current ? "Jouer" : "Mettre à jour et jouer (v" + std::to_string(current) + ")");
         if (ui.button("play", {x, y, w, ui.s(48)}, working_ ? "Téléchargement…" : playLabel, p)) {
+            ghostAfterInstall_ = false;
             if (!local.empty() && ver == current) play(local);
             else downloadAndPlay(l);
         }
         y += ui.s(58);
+        {
+            // Ghost Racing: the world record, friends' records, mine (installed first if needed).
+            UIContext::ButtonStyle gs;
+            gs.small = true;
+            gs.enabled = !working_;
+            if (ui.button("ghosts", {x, y, w, ui.s(42)}, "Course contre un fantôme…", gs)) {
+                if (!local.empty() && ver == current) {
+                    GhostSetupRequest q;
+                    q.fromOnline = true;
+                    g_.app.pushScene(makeGhostSetup(g_, local, q));
+                } else {
+                    ghostAfterInstall_ = true;
+                    downloadAndPlay(l);
+                }
+            }
+            y += ui.s(52);
+        }
         if (extreme) {
             UIContext::ButtonStyle rs;
             rs.small = true;
@@ -804,6 +829,7 @@ private:
     Json detail_ = Json::object();
     std::map<std::string, TexturePtr> thumbs_;
     bool working_ = false, autoPlay_ = false;
+    bool ghostAfterInstall_ = false;  // « Course contre un fantôme » on a level to install first
     bool confirmReport_ = false, confirmRemove_ = false;
     int reportReason_ = 0;
     std::string status_;

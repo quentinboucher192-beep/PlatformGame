@@ -235,6 +235,18 @@ float GhostTrack::timeAtProgress(float progress) const {
     return a + (b - a) * (f - static_cast<float>(i));
 }
 
+float GhostTrack::nearestTime(Vec2 p) const {
+    float best = 1e30f, t = 0.0f;
+    for (size_t i = 0; i < frames_.size(); ++i) {
+        float d = (Vec2{frames_[i].x, frames_[i].y} - p).lengthSq();
+        if (d < best) {
+            best = d;
+            t = static_cast<float>(i) / hz_;
+        }
+    }
+    return t;
+}
+
 GhostTrack::Pose GhostTrack::poseAt(float t) const {
     Pose p;
     if (frames_.empty()) return p;

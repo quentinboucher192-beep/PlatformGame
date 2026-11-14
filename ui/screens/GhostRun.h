@@ -34,8 +34,11 @@ public:
     void setPersonal(std::vector<float> bestSegments, std::vector<float> pbSplits, float pbTime) {
         race_.setPersonal(std::move(bestSegments), std::move(pbSplits), pbTime);
     }
-    /// Training: where the run starts in the ghosts' time (set once known).
-    void setTrainingStart(float ghostTime, int splitBase) { race_.setOffset(ghostTime, splitBase); }
+    /// Training from the checkpoint at `feet`: the ghosts start where they passed it.
+    void setTrainingFrom(Vec2 feet) {
+        trainingFrom_ = feet;
+        hasTrainingFrom_ = true;
+    }
 
     /// Every frame (main thread): collects what finished loading, follows the run.
     void update(const GameWorld& w, float dt);
@@ -53,7 +56,8 @@ public:
     /// Quick toggle in game: ghosts and their HUD shown or hidden.
     void setVisible(bool on) { visible_ = on; }
     bool visible() const { return visible_; }
-    void setSettings(const GhostSettings& s) { settings_ = s; }
+    /// New look (colours, opacity, HUD) at once; the number of ghosts applies to the next run.
+    void setSettings(const GhostSettings& s);
 
     const GhostRace& race() const { return race_; }
     /// Screen area of the comparison box drawn last (other HUD pieces keep clear of it).
@@ -94,6 +98,8 @@ private:
     std::vector<Checkpoint> checkpoints_;
     size_t seenSplits_ = 0;
     bool training_ = false;
+    Vec2 trainingFrom_;
+    bool hasTrainingFrom_ = false;
     bool visible_ = true;
     float recordFlash_ = 0.0f;  // "NOUVEAU RECORD" animation
     Rect hudRect_;

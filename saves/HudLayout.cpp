@@ -5,6 +5,14 @@
 
 namespace cosmic {
 
+HudLayout::HudLayout() {
+    for (int i = 0; i < kHudElements; ++i) items[static_cast<size_t>(i)].focus = defaultFocus(static_cast<HudElement>(i));
+}
+
+bool HudLayout::defaultFocus(HudElement e) {
+    return e == HudElement::Vitals || e == HudElement::Powers || e == HudElement::Boss;
+}
+
 const char* HudLayout::id(HudElement e) {
     switch (e) {
         case HudElement::Vitals: return "vitals";
@@ -35,7 +43,7 @@ Json HudLayout::toJson() const {
     Json j = Json::object();
     for (int i = 0; i < kHudElements; ++i) {
         const HudPlace& p = items[static_cast<size_t>(i)];
-        Json e = {{"scale", p.scale}, {"visible", p.visible}};
+        Json e = {{"scale", p.scale}, {"visible", p.visible}, {"focus", p.focus}};
         if (p.custom) {
             e["x"] = p.x;
             e["y"] = p.y;
@@ -56,6 +64,7 @@ HudLayout HudLayout::fromJson(const Json& j) {
         HudPlace& p = l.items[static_cast<size_t>(i)];
         p.scale = finite(jget<float>(e, "scale", 1.0f), kMinScale, kMaxScale, 1.0f);
         p.visible = jget<bool>(e, "visible", true);
+        p.focus = jget<bool>(e, "focus", defaultFocus(static_cast<HudElement>(i)));
         if (e.contains("x") && e.contains("y") && e["x"].is_number() && e["y"].is_number()) {
             p.custom = true;
             p.x = finite(e["x"].get<float>(), 0.0f, 1.0f, 0.0f);

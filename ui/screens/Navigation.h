@@ -42,6 +42,38 @@ struct PlayOptions {
     /// the ghosts from there; never a record, never progression, never sent online.
     bool training = false;
     std::string trainingCheckpoint;
+    std::string trainingEnd;                 // the checkpoint ending the segment ("" = the exit)
+    std::vector<std::string> trainingPowers; // tablets picked up before the start, in route order
+};
+
+/// A finished run's segments (results screen → Segments): this run, my best segments, my
+/// record's segments, the ghosts raced, the history of my runs of this level version.
+struct SegmentSummary {
+    std::string levelName;
+    std::string levelKey;                 // GhostStore::levelKey (history)
+    std::vector<std::string> names;       // checkpoint names, in the order reached
+    std::vector<float> splits;            // this run (cumulative)
+    float time = 0.0f;
+    std::vector<float> bestSegments;      // my best ones before this run (-1 unknown)
+    std::vector<float> pbSplits;          // my record's splits before this run
+    float pbTime = 0.0f;
+    struct Ghost {
+        std::string name;
+        Color color;
+        std::vector<float> splits;
+        float duration = 0.0f;
+        float gap = 0.0f;                 // this run's time - the ghost's
+        bool sameVersion = true;
+    };
+    std::vector<Ghost> ghosts;
+};
+std::unique_ptr<Scene> makeSegments(GameServices& g, std::shared_ptr<const SegmentSummary> s);
+
+/// What the pre-race screen opens with: an online record to race against (preselected and
+/// downloaded at once), and where the run came from.
+struct GhostSetupRequest {
+    std::string recordId;
+    bool fromOnline = false;
 };
 
 // Factories of every screen (implemented next to each scene).
@@ -56,6 +88,12 @@ std::unique_ptr<Scene> makeHudEditor(GameServices& g, GameplaySettings& target);
 /// Notifications of the main menu (new content, records dropped, new installer); `tab` 1:
 /// the Cosmic Online notification centre.
 std::unique_ptr<Scene> makeNotifications(GameServices& g, int tab = 0);
+/// Before a run: the ghosts to race against (mine, downloaded, online) and the training mode.
+std::unique_ptr<Scene> makeGhostSetup(GameServices& g, const std::string& levelId, GhostSetupRequest req = {});
+class GameScene;
+/// Ghost Racing options (opacity, colours, HUD): from the pause menu (`game`: the run, whose
+/// ghosts follow the changes at once) or from the pre-race screen (nullptr).
+std::unique_ptr<Scene> makeGhostOptions(GameServices& g, GameScene* game);
 /// Main menu → Succès: every achievement on a spider web (categories, stars), or as a list.
 std::unique_ptr<Scene> makeAchievements(GameServices& g);
 /// Main menu → Statistiques: the bosses (victories, without being hit, per phase).

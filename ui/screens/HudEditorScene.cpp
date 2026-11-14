@@ -31,7 +31,9 @@ constexpr const char* kPreviewLevel = "sylvanox_01";
 
 class HudEditorScene : public Scene {
 public:
-    HudEditorScene(GameServices& g, GameplaySettings& target) : g_(g), target_(target), work_(target) {}
+    HudEditorScene(GameServices& g, GameplaySettings& target) : g_(g), target_(target), work_(target), savedFocus_(target.focusMode) {
+        work_.focusMode = false;
+    }
 
     void onEnter() override {
         buildWorld();
@@ -40,6 +42,11 @@ public:
         // operations, as the mouse and the sliders use them.
         demo_ = g_.onlineOpen == "hud-demo";
         if (demo_) g_.onlineOpen.clear();
+        if (g_.onlineOpen == "hud-focus") {  // automated screenshots: the focus mode's tab
+            mode_ = 1;
+            work_.focusMode = true;
+            g_.onlineOpen.clear();
+        }
     }
 
     void fixedUpdate(float dt) override {
@@ -98,9 +105,12 @@ public:
 
         // Below the preview: status, then how to use it.
         float y = P.bottom() + ui.s(18);
-        Vec2 used = ui.labelWrapped("Souris : glissez un élément pour le déplacer, molette pour changer sa taille. Clavier et "
-                                    "manette : choisissez un élément dans la liste, puis réglez sa taille et sa position avec "
-                                    "les curseurs. Deux éléments ne peuvent jamais se chevaucher.",
+        Vec2 used = ui.labelWrapped(mode_ == 1 ? "Mode concentré (touche T, Partage à la manette, ou le menu pause) : choisissez les éléments "
+                                                 "gardés. Les places et les tailles sont les mêmes dans les deux modes ; deux éléments ne peuvent "
+                                                 "jamais se chevaucher."
+                                               : "Souris : glissez un élément pour le déplacer, molette pour changer sa taille. Clavier et "
+                                                 "manette : choisissez un élément dans la liste, puis réglez sa taille et sa position avec "
+                                                 "les curseurs. Deux éléments ne peuvent jamais se chevaucher.",
                                     {P.x, y}, P.w, 18, ui.theme().textDim);
         y += used.y + ui.s(16);
         if (ui.button("resetall", {P.x, y, ui.s(300), ui.s(50)}, "Tout réinitialiser")) resetAll();
@@ -116,6 +126,7 @@ public:
 
         if (save) {
             target_ = work_;
+            target_.focusMode = savedFocus_;  // the mode in use stays the player's choice in game
             if (&target_ == &g_.settings.gameplay) g_.saveSettings();  // opened on its own (not from Paramètres)
             g_.app.popScene();
         } else if (cancel) {
@@ -181,8 +192,16 @@ private:
 
     // ------------------------------------------------------------ layout rules
 
+    /// The place an element takes: shown in either mode (places are common to both modes, so
+    /// no layout can overlap in one of them).
     Rect areaOf(const GameplaySettings& s, HudElement e) {
-        if (!world_ || !hudVisible(s, e)) return {};
+        if (!world_) return {};
+        GameplaySettings a = s;
+        a.focusMode = false;
+        bool shown = hudVisible(a, e);
+        a.focusMode = true;
+        shown = shown || hudVisible(a, e);
+        if (!shown) return {};
         return hud_.area(g_.ui, *world_, e, hud_.place(g_.ui, *world_, s, e));
     }
 
@@ -290,6 +309,7 @@ private:
         GameplaySettings c = work_;
         c.hud[e] = HudPlace{};
         c.hud[e].visible = work_.hud[e].visible;
+        c.hud[e].focus = work_.hud[e].focus;
         if (e == HudElement::Progress && c.progressBar == 3) c.progressBar = 1;
         tryApply(c, e);
     }
@@ -297,7 +317,9 @@ private:
     void resetAll() {
         GameplaySettings c = work_;
         bool timer = hudVisible(c, HudElement::Timer), bar = hudVisible(c, HudElement::Progress);
-        c.hud = HudLayout{};
+        HudLayout fresh;
+        for (int i = 0; i < kHudElements; ++i) fresh.items[static_cast<size_t>(i)].focus = c.hud.items[static_cast<size_t>(i)].focus;
+        c.hud = fresh;  // places and sizes; what each mode shows is kept
         c.showTimer = timer;
         c.progressBar = bar ? 1 : 0;
         work_ = c;
@@ -345,6 +367,7 @@ private:
             bool sel = i == selected_;
             bool clash = std::any_of(bad.begin(), bad.end(), [&](const auto& p) { return p.first == i || p.second == i; });
             Color c = clash ? ui.theme().danger : sel ? ui.theme().accent : Color{200, 214, 232, 120};
+            if (!clash && !sel && !hudVisible(work_, e)) c = Color{200, 214, 232, 45};  // hidden in this mode
             if (sel) r.fillRect(pr, ui.theme().accent.withAlpha(28));
             r.drawRect(pr, c, sel ? ui.s(2.5f) : ui.s(1.0f));
         }
@@ -389,7 +412,15 @@ private:
     void drawPanel(const Rect& c) {
         UIContext& ui = g_.ui;
         float y = c.y;
-        ui.label("Éléments", {c.x, y}, 22, ui.theme().text, Align::Left, FontFace::Bold);
+        // The two modes: the full HUD, and the « mode concentré » (toggled in game).
+        int mode = mode_;
+        if (ui.tabs("mode", {c.x, y, c.w, ui.s(46)}, {"HUD complet", "Mode concentré"}, mode)) {
+            mode_ = mode;
+            work_.focusMode = mode_ == 1;
+        }
+        y += ui.s(58);
+        ui.label(mode_ == 1 ? "Éléments gardés en mode concentré" : "Éléments", {c.x, y}, ui.fitFont(mode_ == 1 ? "Éléments gardés en mode concentré" : "Éléments", FontFace::Bold, 22, c.w),
+                 ui.theme().text, Align::Left, FontFace::Bold);
         y += ui.s(38);
         float rowH = ui.s(52), gap = ui.s(6);
         for (int i = 0; i < kHudElements; ++i) {
@@ -411,9 +442,18 @@ private:
         Rect r{c.x, y, c.w, ui.s(50)};
         float step = ui.s(58);
         bool vis = hudVisible(work_, e);
-        if (ui.toggle("visible", r, "Afficher", vis)) {
+        if (ui.toggle("visible", r, mode_ == 1 ? "Garder en mode concentré" : "Afficher", vis)) {
             GameplaySettings cand = work_;
-            setHudVisible(cand, e, vis);
+            if (mode_ == 1) {
+                cand.hud[e].focus = vis;
+                if (vis) {  // shown in focus mode needs the element itself to be shown
+                    cand.focusMode = false;
+                    setHudVisible(cand, e, true);
+                    cand.focusMode = true;
+                }
+            } else {
+                setHudVisible(cand, e, vis);
+            }
             if (!vis) work_ = cand;
             else tryApply(cand, e);
         }
@@ -448,6 +488,8 @@ private:
     Rect preview_;
     float previewScale_ = 0.6f;
     int selected_ = 0;
+    int mode_ = 0;  // 0 the full HUD, 1 the « mode concentré »
+    bool savedFocus_ = false;
     bool dragging_ = false;
     bool bossShown_ = false;
     bool demo_ = false;

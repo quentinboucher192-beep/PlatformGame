@@ -89,7 +89,8 @@ public:
     /// Friend requests received and not answered yet (last known), for the badges.
     int pendingFriendRequests() const { return pendingFriendRequests_; }
     /// Friends of the player (last known list).
-    int friendCount() const { return friendCount_; }
+    int friendCount() const { return static_cast<int>(friendIds_.size()); }
+    const std::set<std::string>& friendIds() const { return friendIds_; }
     /// Reads the friend list now. It is also read every minute while connected: a new
     /// request, or a request of yours that was accepted, is notified once.
     void refreshFriends(ApiCallback cb = {});
@@ -247,7 +248,7 @@ private:
     float friendsTimer_ = 3.0f;
     bool friendsBusy_ = false;
     int pendingFriendRequests_ = 0;
-    int friendCount_ = 0;
+    std::set<std::string> friendIds_;
     /// Per player: ids seen in the last friend list (to notify only what is new), and
     /// under "<id>/messages" the date of the newest message already notified.
     Json friendNotices_ = Json::object();

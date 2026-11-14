@@ -28,13 +28,17 @@ struct GameplaySettings {
     int progressBar = 1;
     /// Place and size of each HUD element (HUD editor).
     HudLayout hud;
+    /// « Mode concentré »: only the elements chosen for it (HUD editor) are shown; toggled in
+    /// game (T / Partage, pause menu). Display only.
+    bool focusMode = false;
     bool debugMode = false;  // debug overlay available in game (F3)
     bool editorAutosave = true;
     int editorAutosaveSeconds = 60;
     bool unlockAll = true;  // every planet and level playable without progression
 };
 
-/// Whether a HUD element is shown (the timer and the progress bar have their own settings).
+/// Whether a HUD element is shown (the timer and the progress bar have their own settings;
+/// in focus mode, only the elements chosen for it).
 bool hudVisible(const GameplaySettings& g, HudElement e);
 void setHudVisible(GameplaySettings& g, HudElement e, bool visible);
 

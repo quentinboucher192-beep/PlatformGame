@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <optional>
 #include <string>
 
@@ -9,6 +10,7 @@
 #include "game/online/OnlineRecord.h"
 #include "game/records/BossStats.h"
 #include "game/records/Records.h"
+#include "ui/screens/Navigation.h"
 
 namespace cosmic {
 
@@ -38,6 +40,8 @@ struct ResultsData {
     /// Bosses beaten during the run (statistics: victories, fights without a hit).
     std::vector<BossFightTracker::Event> bossKills;
     int raceVersion = 0;
+    /// Segments of the run and the ghosts raced (Ghost Racing); null when not finished.
+    std::shared_ptr<const SegmentSummary> segments;
 };
 
 /// End-of-level screen: animated statistics, comparison with the personal record, the
