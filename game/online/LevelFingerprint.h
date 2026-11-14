@@ -22,15 +22,18 @@ struct LevelData;
 /// Version of the simulation rules. Bump it whenever a code change can alter how a run
 /// plays out (physics, AI, damage, timers...), with the reference digests of
 /// tests/test_determinism.cpp.
-constexpr int kSimulationVersion = 7;  // 6: energy 150, time slow, magnet, air dash, plasma bomb (special button),
+constexpr int kSimulationVersion = 8;  // 6: energy 150, time slow, magnet, air dash, plasma bomb (special button),
                                        //    arena bosses keep their wounds when the player dies
                                        // 7: crouch in place (Down on the ground)
+                                       // 8: energy costs by strength (charge shot = reference),
+                                       //    a boss's creatures vanish with it
 /// Generation of the rankings, part of every ranked fingerprint. It follows
 /// kSimulationVersion when a change makes earlier runs incomparable (records and replays of
 /// different generations are never mixed). A change that only adds a possibility and
 /// leaves every earlier run valid keeps it, so the records are kept:
 ///   6 -> simulation 6 and 7 (7 adds crouching in place: earlier runs never crouched).
-constexpr int kRankingGeneration = 6;
+///   8 -> simulation 8 (2.17: energy costs and minions changed: the rankings start again).
+constexpr int kRankingGeneration = 8;
 
 struct LevelFingerprint {
     std::string levelId;

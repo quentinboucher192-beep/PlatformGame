@@ -6,6 +6,7 @@
 #include "engine/resources/ResourceManager.h"
 #include "game/content/ContentDatabase.h"
 #include "game/gameplay/GameWorld.h"
+#include "game/powers/PowerStats.h"
 #include "game/gameplay/entities/Entities.h"
 #include "game/powers/Powers.h"
 #include "engine/core/DetMath.h"
@@ -200,7 +201,8 @@ void PowerUnlockEntity::celebrate(GameWorld& w, const PowerDefinition& def, Vec2
         m.subtitle = message.empty() ? def.description : message;
     }
     m.speaker = actionId(def.input);  // the HUD shows the matching button
-    m.duration = 5.0f;
+    m.detail = powerStatsLine(def, 5);
+    m.duration = 6.0f;
     w.message(m);
 }
 

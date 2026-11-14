@@ -49,6 +49,7 @@ struct WorldMessage {
     std::string speaker;
     std::string text;
     std::string subtitle;
+    std::string detail;  // a power picked up: its characteristics (energy, damage, reach...)
     float duration = 3.0f;
     float age = 0.0f;
 };

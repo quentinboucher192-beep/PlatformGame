@@ -3606,7 +3606,7 @@
  },
  "metadata": {
   "generator": "tools/levelgen/challenge.py",
-  "revision": 6,
+  "revision": 8,
   "rooms": [
    {
     "type": "metronome",

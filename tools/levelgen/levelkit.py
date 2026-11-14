@@ -405,6 +405,9 @@ class Level:
         meta = self.data.setdefault("metadata", {})
         if meta.get("revision", 0) < 6:
             meta["revision"] = 6  # 2.5: energy 150, new powers (simulation 6)
+        # 2.17: ranking generation 8 (power energy costs by strength, a boss's creatures
+        # vanish with it): a new revision of every campaign level, fresh rankings.
+        meta["revision"] = max(8, meta.get("revision", 0) + 1) if meta.get("revision", 0) < 8 else meta["revision"]
         ids = [o["id"] for o in self.data["objects"]]
         assert len(ids) == len(set(ids)), "duplicate ids"
         with open(path, "w", encoding="utf-8") as f:

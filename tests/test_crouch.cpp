@@ -1,6 +1,6 @@
 // Crouching in place (2.17): Down alone on the ground lowers the hitbox to let attacks pass
 // overhead, even standing still. Down while running is still a slide, a diagonal keeps
-// walking, Jump stands up. The rankings keep their generation: the records stay.
+// walking, Jump stands up.
 
 #include <cmath>
 
@@ -103,14 +103,18 @@ TEST_CASE("crouch: a shot at head height passes over a crouching player") {
     CHECK(!shot.intersects(low));
 }
 
-TEST_CASE("crouch: the ranked fingerprints did not change (records kept)") {
-    CHECK(kSimulationVersion == 7);
-    CHECK(kRankingGeneration == 6);
+TEST_CASE("crouch: the rankings generation follows the rules (2.17: a new generation)") {
+    CHECK(kSimulationVersion == 8);
+    CHECK(kRankingGeneration == 8);
     ContentDatabase content;
     content.reload();
     LevelFingerprints fps;
     const LevelFingerprint* fp = fps.get(content, "noyau_01");
     CHECK(fp != nullptr);
-    // The hash registered on the server for this version (migration 0012, board of 0027).
-    if (fp) CHECK(fp->hash == "e6b2f3ab5ab26dfa9d28cedf0e776f0b6662681b46f0e67c50a703053c2feefc");
+    // Generation 6's hash (before the energy costs and the minions rule) is no longer used:
+    // the 2.17 rankings start again (revision 8 of every campaign level).
+    if (fp) {
+        CHECK(fp->hash != "e6b2f3ab5ab26dfa9d28cedf0e776f0b6662681b46f0e67c50a703053c2feefc");
+        CHECK(fp->version >= 8);
+    }
 }

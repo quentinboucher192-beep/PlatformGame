@@ -677,19 +677,32 @@ void Hud::drawMessages(UIContext& ui, GameWorld& w) {
                 ui.r().fillGradientH({0, y - ui.s(60), ui.screenW() * 0.5f, ui.s(150)}, {0, 0, 0, 0}, Color{4, 8, 18, 170}.withAlphaF(a));
                 ui.r().fillGradientH({ui.screenW() * 0.5f, y - ui.s(60), ui.screenW() * 0.5f, ui.s(150)}, Color{4, 8, 18, 170}.withAlphaF(a), {0, 0, 0, 0});
                 ui.text().draw(m.text, {ui.screenW() * 0.5f + slide, y}, st);
+                // Below the title, one after the other: subtitle, characteristics, button.
+                float yy = y + ui.s(44);
                 if (!m.subtitle.empty()) {
                     TextStyle sub = style(ui, 26, ui.theme().text.withAlphaF(a), FontFace::Body, Align::Center, VAlign::Top);
                     float maxW = ui.s(1100);
                     Vec2 sz = ui.text().measureWrapped(m.subtitle, FontFace::Body, sub.size, maxW);
                     sub.align = Align::Left;
-                    ui.text().drawWrapped(m.subtitle, {ui.screenW() * 0.5f - sz.x * 0.5f, y + ui.s(44)}, maxW, sub);
+                    ui.text().drawWrapped(m.subtitle, {ui.screenW() * 0.5f - sz.x * 0.5f, yy}, maxW, sub);
+                    yy += sz.y + ui.s(12);
+                }
+                if (!m.detail.empty()) {
+                    // A power picked up: its characteristics on a band.
+                    float fs = ui.fitFont(m.detail, FontFace::Bold, 22, ui.s(1100));
+                    float tw = ui.text().measure(m.detail, FontFace::Bold, ui.s(fs)).x;
+                    Rect band{ui.screenW() * 0.5f - tw * 0.5f - ui.s(18), yy, tw + ui.s(36), ui.s(40)};
+                    ui.r().fillRoundedRect(band, ui.s(20), Color{8, 14, 30, 210}.withAlphaF(a));
+                    ui.r().drawRoundedRect(band, ui.s(20), ui.theme().warm.withAlphaF(0.6f * a), std::max(1.0f, ui.s(1.2f)));
+                    ui.label(m.detail, band.center(), fs, ui.theme().warm.withAlphaF(a), Align::Center, FontFace::Bold, VAlign::Middle);
+                    yy += band.h + ui.s(12);
                 }
                 // Power unlock: show the button for the new power.
                 if (!m.speaker.empty()) {
                     Action act = actionFromId(m.speaker);
                     if (act != Action::Count) {
                         float h = ui.s(40);
-                        Glyphs::drawHint(ui, act, "pour l'utiliser", {ui.screenW() * 0.5f - ui.s(110), y + ui.s(130)}, h);
+                        Glyphs::drawHint(ui, act, "pour l'utiliser", {ui.screenW() * 0.5f - ui.s(110), std::max(y + ui.s(130), yy + h * 0.5f)}, h);
                     }
                 }
                 break;

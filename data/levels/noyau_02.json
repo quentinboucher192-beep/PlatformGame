@@ -9509,7 +9509,7 @@
  },
  "metadata": {
   "generator": "tools/levelgen/stellar_core.py",
-  "revision": 7,
+  "revision": 8,
   "rooms": [
    {
     "type": "metronome",
