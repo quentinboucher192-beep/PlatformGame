@@ -159,7 +159,7 @@ std::vector<uint8_t> ReplayData::serialize() const {
         o.push_back(static_cast<uint8_t>(f.moveX));
         o.push_back(static_cast<uint8_t>(f.moveY));
         o.push_back(f.flags);
-        o.push_back(0);
+        o.push_back(f.choice);  // power choice (was reserved, always 0 before)
         ++runs;
         i = j;
     }
@@ -258,6 +258,7 @@ std::optional<ReplayData> ReplayData::parse(const std::vector<uint8_t>& raw, std
         f.moveX = static_cast<int8_t>(p[at + 8]);
         f.moveY = static_cast<int8_t>(p[at + 9]);
         f.flags = p[at + 10];
+        f.choice = p[at + 11];
         at += 12;
         if (repeat == 0 || d.inputs.size() + repeat > tickCount) {
             fail(error, "plages d'entrées incohérentes");

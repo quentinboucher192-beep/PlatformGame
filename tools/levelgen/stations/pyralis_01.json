@@ -1,0 +1,314 @@
+{
+  "level": "pyralis_01",
+  "sections": [
+    {
+      "label": "",
+      "movement": [],
+      "needs": [
+        [
+          "glide"
+        ],
+        [
+          "grapple"
+        ]
+      ],
+      "pos": [
+        128.0,
+        896.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Quai des cendres",
+      "movement": [],
+      "needs": [
+        [
+          "ground_pound"
+        ]
+      ],
+      "pos": [
+        1296.0,
+        832.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Galerie engloutie",
+      "movement": [],
+      "needs": [
+        [
+          "ground_pound"
+        ],
+        [
+          "glide"
+        ]
+      ],
+      "pos": [
+        2160.0,
+        1008.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Salle des enclumes",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        3120.0,
+        800.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Puits des cuves",
+      "movement": [],
+      "needs": [
+        [
+          "ground_pound"
+        ],
+        [
+          "grapple"
+        ]
+      ],
+      "pos": [
+        4112.0,
+        800.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Fleuve souterrain",
+      "movement": [],
+      "needs": [
+        [
+          "glide"
+        ]
+      ],
+      "pos": [
+        5328.0,
+        880.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Sortie des cheminées",
+      "movement": [],
+      "needs": [
+        [
+          "ground_pound"
+        ],
+        [
+          "grapple"
+        ],
+        [
+          "dash"
+        ],
+        [
+          "teleport"
+        ],
+        [
+          "glide"
+        ]
+      ],
+      "pos": [
+        5712.0,
+        576.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Forge du Marteau",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        6960.0,
+        704.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Ascension du creuset",
+      "movement": [],
+      "needs": [
+        [
+          "glide"
+        ],
+        [
+          "shield"
+        ]
+      ],
+      "pos": [
+        7904.0,
+        800.0
+      ],
+      "reachable": true
+    }
+  ],
+  "slots": 4,
+  "stations": [
+    {
+      "mid": false,
+      "section": "Galerie engloutie",
+      "sign": [
+        2240.0,
+        1008.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            2328.0,
+            942.0
+          ],
+          "power": "glide"
+        }
+      ],
+      "upcoming": [
+        "glide",
+        "ground_pound"
+      ]
+    },
+    {
+      "mid": false,
+      "section": "Puits des cuves",
+      "sign": [
+        4192.0,
+        800.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            4248.0,
+            734.0
+          ],
+          "power": "dash"
+        },
+        {
+          "center": [
+            5256.0,
+            814.0
+          ],
+          "power": "shield"
+        },
+        {
+          "center": [
+            5312.0,
+            814.0
+          ],
+          "power": "grapple"
+        }
+      ],
+      "upcoming": [
+        "grapple",
+        "ground_pound",
+        "dash",
+        "shield"
+      ]
+    },
+    {
+      "mid": false,
+      "section": "Fleuve souterrain",
+      "sign": [
+        5640.0,
+        576.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            5696.0,
+            510.0
+          ],
+          "power": "glide"
+        }
+      ],
+      "upcoming": [
+        "glide"
+      ]
+    },
+    {
+      "mid": false,
+      "section": "Sortie des cheminées",
+      "sign": [
+        5792.0,
+        576.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            5848.0,
+            510.0
+          ],
+          "power": "ground_pound"
+        },
+        {
+          "center": [
+            6968.0,
+            638.0
+          ],
+          "power": "grapple"
+        },
+        {
+          "center": [
+            5728.0,
+            510.0
+          ],
+          "power": "dash"
+        },
+        {
+          "center": [
+            5664.0,
+            510.0
+          ],
+          "power": "teleport"
+        }
+      ],
+      "upcoming": [
+        "glide",
+        "ground_pound",
+        "grapple",
+        "dash",
+        "teleport"
+      ]
+    },
+    {
+      "mid": true,
+      "section": "Sortie des cheminées",
+      "sign": [
+        5808.0,
+        576.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            5848.0,
+            510.0
+          ],
+          "power": "glide"
+        }
+      ],
+      "upcoming": [
+        "glide"
+      ]
+    },
+    {
+      "mid": false,
+      "section": "Ascension du creuset",
+      "sign": [
+        8248.0,
+        416.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            8304.0,
+            350.0
+          ],
+          "power": "shield"
+        }
+      ],
+      "upcoming": [
+        "glide",
+        "shield"
+      ]
+    }
+  ]
+}

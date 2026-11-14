@@ -1,5 +1,6 @@
 // Player combat, powers, damage, animation selection and rendering.
 
+#include <algorithm>
 #include <cmath>
 
 #include "engine/rendering/Renderer.h"
@@ -12,25 +13,73 @@ namespace cosmic {
 
 // ------------------------------------------------------------------ powers
 
+namespace {
+bool sharesExclusiveInput(const Power& owned, const PowerDefinition& def, const Power& created) {
+    return owned.def().input == def.input && owned.exclusiveInput() && created.exclusiveInput();
+}
+}  // namespace
+
 void Player::grantPower(const PowerDefinition& def) {
     auto created = PowerRegistry::instance().create(def);
     if (!created) return;
     bool replaced = false;
     for (auto& p : powers_) {
-        bool sameInput = p->def().input == def.input && p->exclusiveInput() && created->exclusiveInput();
-        if (p->id() == def.id || sameInput) {
+        if (p->id() == def.id || sharesExclusiveInput(*p, def, *created)) {
             p = std::move(created);
             replaced = true;
             break;
         }
     }
     if (!replaced) powers_.push_back(std::move(created));
+    refreshPassivePowers();
+}
+
+int Player::conflictingPower(const PowerDefinition& def) const {
+    auto probe = PowerRegistry::instance().create(def);
+    if (!probe) return -1;
+    for (size_t i = 0; i < powers_.size(); ++i)
+        if (powers_[i]->id() != def.id && sharesExclusiveInput(*powers_[i], def, *probe)) return static_cast<int>(i);
+    return -1;
+}
+
+Player::Offer Player::offerPower(const PowerDefinition& def) {
+    if (hasPower(def.id)) return Offer::AlreadyOwned;
+    bool full = powerSlots_ > 0 && static_cast<int>(powers_.size()) >= powerSlots_;
+    if (full || conflictingPower(def) >= 0) return Offer::NeedsChoice;
+    auto created = PowerRegistry::instance().create(def);
+    if (!created) return Offer::AlreadyOwned;
+    powers_.push_back(std::move(created));
+    refreshPassivePowers();
+    return Offer::Granted;
+}
+
+std::string Player::replacePower(int slot, const PowerDefinition& def) {
+    if (slot < 0 || slot >= static_cast<int>(powers_.size())) return {};
+    auto created = PowerRegistry::instance().create(def);
+    if (!created) return {};
+    std::string removed = powers_[static_cast<size_t>(slot)]->id();
+    powers_[static_cast<size_t>(slot)] = std::move(created);
+    refreshPassivePowers();
+    return removed;
+}
+
+bool Player::removePower(const std::string& id) {
+    auto it = std::find_if(powers_.begin(), powers_.end(), [&](const auto& p) { return p->id() == id; });
+    if (it == powers_.end()) return false;
+    powers_.erase(it);
+    refreshPassivePowers();
+    return true;
+}
+
+void Player::refreshPassivePowers() {
     // Passive upgrades
+    int before = extraAirJumps_;
     extraAirJumps_ = 0;
     for (const auto& p : powers_)
         if (const auto* aj = dynamic_cast<const AirJumpPower*>(p.get())) extraAirJumps_ += aj->extraJumps();
     if (grounded_) restoreAirJumps();
-    else airJumpsLeft_ = std::max(airJumpsLeft_, std::min(airJumpCount(), airJumpsLeft_ + extraAirJumps_));
+    else if (extraAirJumps_ >= before) airJumpsLeft_ = std::max(airJumpsLeft_, std::min(airJumpCount(), airJumpsLeft_ + extraAirJumps_));
+    else airJumpsLeft_ = std::min(airJumpsLeft_, airJumpCount());
 }
 
 Power* Player::movementPower() const {

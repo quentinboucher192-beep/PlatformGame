@@ -100,10 +100,16 @@ Les éclats et reliques (arg 0 et 1) forment le nombre d'objets comparé au reco
 | released | u16 | actions relâchées pendant ce pas |
 | move_x, move_y | i8, i8 | stick analogique quantifié (−127 à 127, soit ±1) |
 | flags | u8 | 1 : saut de la cinématique en cours |
-| réservé | u8 | 0 |
+| choice | u8 | réponse à une offre de pouvoir (jeu 2.3) : 0 aucune, 1 à 8 remplace ce pouvoir porté, 255 laisse le nouveau pouvoir sur sa tablette (octet réservé, toujours 0, avant 2.3) |
 
 En jeu, la simulation ne reçoit **que** cette forme quantifiée : le rejeu lui donne donc
 exactement les mêmes entrées.
+
+Emplacements de pouvoirs (simulation 5) : quand le joueur touche une tablette alors que tous
+ses emplacements sont pris (ou qu'un pouvoir porté utilise le même bouton), la simulation
+s'arrête : les pas sans réponse (`choice` = 0) ne simulent rien et ne sont pas enregistrés en
+jeu. Le premier pas suivant porte la réponse du joueur, puis la partie reprend avec les
+entrées de ce pas. Un pouvoir remplacé reste sur la tablette.
 
 ### Empreinte (12 octets)
 

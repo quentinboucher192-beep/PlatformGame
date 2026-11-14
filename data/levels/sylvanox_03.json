@@ -100,12 +100,10 @@
   }
  },
  "startPowers": [
-  "dash",
   "wave",
-  "shield",
-  "impulse",
-  "teleport",
-  "glide"
+  "dash",
+  "glide",
+  "teleport"
  ],
  "cameraZoom": 1.0,
  "layers": [
@@ -11155,6 +11153,53 @@
     "material": "ancient_metal",
     "seal": true
    }
+  },
+  {
+   "id": "station_1_1",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    5148.0,
+    498.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "teleport",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_1_2",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    5724.0,
+    754.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "shield",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_sign_1",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    4732.0,
+    552.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Station de pouvoirs. Pour la suite : le Grappin, le Bouclier, la Téléportation. Vous portez 4 pouvoirs au plus : celui que vous laissez reste ici.",
+    "auto": true
+   }
   }
  ],
  "events": [
@@ -11418,7 +11463,8 @@
  },
  "metadata": {
   "generator": "tools/levelgen/sylvanox_03.py",
-  "revision": 4
+  "revision": 5
  },
- "killY": 1464
+ "killY": 1464,
+ "maxPowers": 4
 }

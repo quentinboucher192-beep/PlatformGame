@@ -110,9 +110,8 @@
  "startPowers": [
   "dash",
   "wave",
-  "shield",
-  "impulse",
-  "grapple"
+  "grapple",
+  "shield"
  ],
  "cameraZoom": 1.0,
  "layers": [
@@ -3607,7 +3606,7 @@
  },
  "metadata": {
   "generator": "tools/levelgen/challenge.py",
-  "revision": 4,
+  "revision": 5,
   "rooms": [
    {
     "type": "metronome",
@@ -3651,5 +3650,6 @@
    }
   ]
  },
- "killY": 880
+ "killY": 880,
+ "maxPowers": 4
 }

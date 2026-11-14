@@ -110,11 +110,10 @@
   }
  },
  "startPowers": [
-  "dash",
+  "teleport",
   "wave",
-  "shield",
-  "impulse",
-  "teleport"
+  "dash",
+  "impulse"
  ],
  "cameraZoom": 1.0,
  "layers": [
@@ -10887,6 +10886,115 @@
     "material": "root",
     "seal": true
    }
+  },
+  {
+   "id": "station_1_1",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    4220.0,
+    402.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "shield",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_sign_1",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    4164.0,
+    456.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Station de pouvoirs. Pour la suite : le Bouclier. Vous portez 4 pouvoirs au plus : celui que vous laissez reste ici.",
+    "auto": true
+   }
+  },
+  {
+   "id": "station_2_1",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    5500.0,
+    754.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "glide",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_2_2",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    5756.0,
+    754.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "dash",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_sign_2",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    5444.0,
+    808.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Station de pouvoirs. Pour la suite : le Dash, le Planeur. Vous portez 4 pouvoirs au plus : celui que vous laissez reste ici.",
+    "auto": true
+   }
+  },
+  {
+   "id": "station_3_1",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    8308.0,
+    338.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "glide",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_sign_3",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    8252.0,
+    392.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Station de pouvoirs. Pour la suite : le Planeur. Vous portez 4 pouvoirs au plus : celui que vous laissez reste ici.",
+    "auto": true
+   }
   }
  ],
  "events": [
@@ -11136,7 +11244,8 @@
  },
  "metadata": {
   "generator": "tools/levelgen/sylvanox_02.py",
-  "revision": 4
+  "revision": 5
  },
- "killY": 1304
+ "killY": 1304,
+ "maxPowers": 4
 }

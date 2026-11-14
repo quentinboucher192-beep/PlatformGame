@@ -1,0 +1,261 @@
+{
+  "level": "pyralis_02",
+  "sections": [
+    {
+      "label": "",
+      "movement": [],
+      "needs": [
+        [
+          "ground_pound"
+        ]
+      ],
+      "pos": [
+        256.0,
+        800.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Berges calcinées",
+      "movement": [],
+      "needs": [
+        [
+          "wave",
+          "charge_shot"
+        ]
+      ],
+      "pos": [
+        976.0,
+        864.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Quai du conduit",
+      "movement": [],
+      "needs": [
+        [
+          "wave"
+        ]
+      ],
+      "pos": [
+        2064.0,
+        864.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Gué du passeur",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        2896.0,
+        864.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Fleuve de lave",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        4096.0,
+        864.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Falaise de l'aqueduc",
+      "movement": [],
+      "needs": [
+        [
+          "wave",
+          "charge_shot"
+        ]
+      ],
+      "pos": [
+        5072.0,
+        672.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Rive des radeaux",
+      "movement": [],
+      "needs": [
+        [
+          "grapple"
+        ],
+        [
+          "ground_pound"
+        ],
+        [
+          "glide"
+        ]
+      ],
+      "pos": [
+        5648.0,
+        672.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Pied de la cataracte",
+      "movement": [],
+      "needs": [
+        [
+          "glide"
+        ]
+      ],
+      "pos": [
+        6944.0,
+        640.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Lac de feu",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        7552.0,
+        480.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Rive lointaine",
+      "movement": [],
+      "needs": [
+        [
+          "teleport"
+        ]
+      ],
+      "pos": [
+        8544.0,
+        576.0
+      ],
+      "reachable": true
+    }
+  ],
+  "slots": 4,
+  "stations": [
+    {
+      "mid": false,
+      "section": "Fleuve de lave",
+      "sign": [
+        5048.0,
+        672.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            4104.0,
+            798.0
+          ],
+          "power": "shield"
+        }
+      ],
+      "upcoming": [
+        "shield"
+      ]
+    },
+    {
+      "mid": false,
+      "section": "Falaise de l'aqueduc",
+      "sign": [
+        5152.0,
+        672.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            5632.0,
+            606.0
+          ],
+          "power": "wave"
+        }
+      ],
+      "upcoming": [
+        "wave"
+      ]
+    },
+    {
+      "mid": false,
+      "section": "Rive des radeaux",
+      "sign": [
+        6888.0,
+        640.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            6944.0,
+            574.0
+          ],
+          "power": "grapple"
+        },
+        {
+          "center": [
+            5704.0,
+            606.0
+          ],
+          "power": "ground_pound"
+        },
+        {
+          "center": [
+            5152.0,
+            606.0
+          ],
+          "power": "glide"
+        }
+      ],
+      "upcoming": [
+        "glide",
+        "grapple",
+        "ground_pound"
+      ]
+    },
+    {
+      "mid": false,
+      "section": "Pied de la cataracte",
+      "sign": [
+        7352.0,
+        480.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            7408.0,
+            414.0
+          ],
+          "power": "shield"
+        }
+      ],
+      "upcoming": [
+        "glide",
+        "shield"
+      ]
+    },
+    {
+      "mid": false,
+      "section": "Rive lointaine",
+      "sign": [
+        8648.0,
+        512.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            8704.0,
+            446.0
+          ],
+          "power": "teleport"
+        }
+      ],
+      "upcoming": [
+        "teleport"
+      ]
+    }
+  ]
+}

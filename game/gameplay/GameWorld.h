@@ -173,6 +173,24 @@ public:
     void setReferenceSplits(std::vector<float> splits) { referenceSplits_ = std::move(splits); }
     float splitFlashTimer() const { return splitFlash_; }
 
+    // ------------------------------------------------- power slots
+    /// A power tablet touched while every slot is taken (or with a power on the same
+    /// input): the simulation waits for the player's choice, which arrives with the next
+    /// input frame (InputFrame::choice) so replays reproduce it exactly.
+    struct PowerOffer {
+        std::string tabletId;  // entity offering the power
+        std::string powerId;
+        int conflictSlot = -1;  // >= 0: only this power can be replaced (same input)
+    };
+    const std::optional<PowerOffer>& powerOffer() const { return powerOffer_; }
+    void offerPower(const std::string& tabletId, const std::string& powerId, int conflictSlot);
+    /// Applies a choice: 1..8 replaces that slot, InputFrame::kChoiceLeave keeps the
+    /// carried powers. Returns false if no offer is pending.
+    bool resolvePowerOffer(uint8_t choice);
+    /// Bots and tests: answers every power offer at once with this choice (0 = wait for the
+    /// input frames, as in a real game).
+    uint8_t autoPowerChoice = 0;
+
     // ---------------------------------------------------------- render
     /// Fill colour of the screen behind the parallax layers.
     Color backgroundColor() const { return level_.backgroundColor; }
@@ -222,6 +240,7 @@ private:
     std::string checkpointId_;
     float time_ = 0.0f;
     float hitStop_ = 0.0f;
+    std::optional<PowerOffer> powerOffer_;
     Color flash_{255, 255, 255, 0};
     float flashTimer_ = 0.0f, flashDuration_ = 0.0f;
     Enemy* boss_ = nullptr;

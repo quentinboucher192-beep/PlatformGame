@@ -38,6 +38,11 @@ struct Run {
         WorldServices s{res, audio, content, nullptr, 0.0f, 1.0f};
         w = std::make_unique<GameWorld>(s, WorldMode::Play);
         w->load(*level);
+        w->autoPowerChoice = 1;  // full power slots: take the tablet, leave the first power
+        // The zone tests start anywhere: they get the powers of the level's stations (2.3 power slots).
+        for (const auto& so : w->level().objects)
+            if (so.type == "power_unlock" && so.id.rfind("station_", 0) == 0)
+                if (const PowerDefinition* sd = w->content().power(so.propStr("power"))) w->player().grantPower(*sd);
         w->startAt({tx * T, ty * T});
         for (const char* p : powers) w->player().grantPower(*content.power(p));
         for (int i = 0; i < 20; ++i) w->fixedUpdate(PlayerInput{}, DT);  // settle
@@ -228,6 +233,7 @@ TEST_CASE("sylvanox_02: zone 1 relic vault behind the phase barrier under the br
 
 TEST_CASE("sylvanox_02: zone 2 glide tablet then gentle glide onto the mushroom cap") {
     Run r("sylvanox_02", 113, 47, {});
+    r.p().removePower("glide");  // (later power stations offer it too)
     CHECK(!r.p().hasPower("glide"));
     GlideJump g{200.0f};  // never jumps: just walks off the ledge, then glides
     g.phase = 3;
@@ -335,6 +341,7 @@ TEST_CASE("sylvanox_02: zone 3 heart chamber: climb the bark vines, shield throu
 
 TEST_CASE("sylvanox_02: zone 4 dash through the crystal curtain between the stumps") {
     Run r("sylvanox_02", 361.5f, 52, {"dash"});
+    r.p().removePower("glide");  // the jump button held must not open the glider here
     int phase = 0;
     r.until(900, [](Player& p) { return standingOn(p, 52, 375, 383); }, [&](Player& p, int) {
         if (phase == 0 && p.box.right() > 364.6f * T) {

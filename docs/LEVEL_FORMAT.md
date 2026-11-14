@@ -37,6 +37,26 @@ L'éditeur de niveaux lit et écrit ce format ; le niveau officiel
 * `medals` : pour chaque médaille, `maxTime` (secondes) et/ou `maxDeaths` ; un objet vide
   = obtenue en terminant le niveau.
 * `startPowers` : identifiants des pouvoirs disponibles dès le départ.
+* `maxPowers` (2.3) : pouvoirs portés en même temps, 4 par défaut (absent = 4), 0 = sans
+  limite ; jamais moins que le nombre de pouvoirs de départ. Toucher une tablette quand tout
+  est pris ouvre le choix « remplacer un pouvoir porté » ou « laisser celui-ci » ; le pouvoir
+  remplacé reste sur la tablette (rien n'est jamais perdu). Les tablettes d'un pouvoir déjà
+  porté restent visibles, estompées.
+* Propriété `needsPower` (tout objet) : pouvoir que cet obstacle demande, pour le calcul des
+  stations de pouvoirs (`CosmicPlatformer --plan-stations`), quand le type de l'objet ne le
+  dit pas (chute de lave que seul le bouclier traverse, récepteur hors de portée de l'onde…).
+
+### Stations de pouvoirs (campagne)
+
+Les niveaux de la campagne portent au plus 4 pouvoirs. `tools/levelgen` fixe les pouvoirs de
+départ (`START_POWERS`) puis ajoute les stations calculées par `--plan-stations` : la route
+prévue est coupée à chaque checkpoint et, pour chaque section, les pouvoirs que demandent ses
+obstacles (barrières, anneaux, courants d'air, récepteurs, `needsPower`) qui ne sont pas
+assurés à l'entrée sont proposés par des tablettes posées en hauteur après le checkpoint (un
+saut pour prendre celle qu'on veut), avec un panneau qui les annonce. Une section qui demande
+plus de pouvoirs à la suite que d'emplacements reçoit une station au milieu. Les pouvoirs
+des zones facultatives (reliques, cœurs) y sont aussi proposés, pour que tout reste
+récupérable.
 
 ## Calques
 

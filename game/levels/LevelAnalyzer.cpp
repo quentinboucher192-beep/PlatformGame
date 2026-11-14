@@ -1,5 +1,7 @@
 #include "game/levels/LevelAnalyzer.h"
 
+#include "game/powers/PowerDefinition.h"
+
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -589,6 +591,391 @@ bool writeAnalysisImage(const LevelData& level, const ContentDatabase& content, 
     std::fwrite(px.data(), 1, px.size(), f);
     std::fclose(f);
     return true;
+}
+
+std::vector<PowerSection> powerSections(const LevelData& level, const ContentDatabase& content, const std::vector<std::string>& preferred) {
+    std::vector<PowerSection> out;
+    std::set<std::string> all;
+    for (const PowerDefinition* p : content.powers()) all.insert(p->id);
+    float rise = 0.0f, air = 0.0f;
+    Model m = buildModel(level, content, all, rise, air);
+    // Start, checkpoints in progress order, exit (as analyzeLevel).
+    Vec2 startFeet, exitFeet;
+    bool hasStart = false, hasExit = false;
+    std::vector<std::pair<std::string, Vec2>> cps;
+    for (const auto& o : level.objects) {
+        if (o.type == "player_start") startFeet = o.rect.bottomCenter(), hasStart = true;
+        else if (o.type == "exit") exitFeet = o.rect.bottomCenter(), hasExit = true;
+        else if (o.type == "checkpoint" && !o.prop<bool>("optional", false)) cps.push_back({o.propStr("label", o.id), o.rect.bottomCenter()});
+    }
+    int start = hasStart ? nearestFree(m, startFeet, 4) : -1;
+    int exitCell = hasExit ? nearestFree(m, exitFeet, 6) : -1;
+    if (start < 0 || exitCell < 0) return out;
+    std::vector<float> fromStart;
+    shortest(m, start, -1, nullptr, &fromStart);
+    std::vector<std::pair<std::string, Vec2>> ordered;
+    std::vector<std::pair<float, size_t>> keys;
+    for (size_t k = 0; k < cps.size(); ++k) {
+        int c = nearestFree(m, cps[k].second, 6);
+        if (c < 0) continue;
+        keys.push_back({fromStart[static_cast<size_t>(c)], k});
+    }
+    std::stable_sort(keys.begin(), keys.end());
+    for (const auto& [d, k] : keys) ordered.push_back(cps[k]);
+    // Sections and their route.
+    std::vector<Vec2> ends;
+    std::vector<std::vector<Vec2>> paths;
+    {
+        PowerSection s0;
+        s0.pos = startFeet;
+        out.push_back(s0);
+        for (const auto& [label, pos] : ordered) {
+            PowerSection s;
+            s.label = label;
+            s.pos = pos;
+            out.push_back(s);
+        }
+        int prev = start;
+        for (size_t k = 0; k < out.size(); ++k) {
+            Vec2 to = k + 1 < out.size() ? out[k + 1].pos : exitFeet;
+            ends.push_back(to);
+            int target = nearestFree(m, to, 6);
+            std::vector<int> seg;
+            if (target >= 0) shortest(m, prev, target, &seg);
+            std::vector<Vec2> pts;
+            for (int c : seg) pts.push_back(cellFeet(m, c));
+            paths.push_back(std::move(pts));
+            if (target >= 0) prev = target;
+        }
+    }
+    // Obstacles asking for a power, attached to the section whose route passes nearest.
+    for (const auto& o : level.objects) {
+        std::vector<std::string> need;
+        if (o.type == "power_gate") need = {o.propStr("power")};
+        else if (o.type == "grapple_point") need = {"grapple"};
+        else if (o.type == "updraft") need = {"glide"};
+        else if (o.type == "receptor") need = {"wave", "charge_shot"};
+        if (need.empty()) continue;
+        need.erase(std::remove_if(need.begin(), need.end(), [&](const std::string& p) { return !all.count(p); }), need.end());
+        if (need.empty()) continue;
+        Vec2 c = o.rect.center();
+        float best = 1e18f;
+        size_t bestK = 0;
+        for (size_t k = 0; k < paths.size(); ++k)
+            for (const Vec2& p : paths[k]) {
+                float d = (p - c).lengthSq();
+                if (d < best) best = d, bestK = k;
+            }
+        if (best > 320.0f * 320.0f) continue;  // off the route (secret, optional detour)
+        auto& needs = out[bestK].needs;
+        if (std::find(needs.begin(), needs.end(), need) == needs.end()) needs.push_back(need);
+    }
+    // Movement: can the end of each section be reached with its obstacle powers only?
+    auto reaches = [&](const std::set<std::string>& powers, Vec2 from, Vec2 to) {
+        float r2 = 0.0f, a2 = 0.0f;
+        Model mm = buildModel(level, content, powers, r2, a2);
+        int f = nearestFree(mm, from, 6), t = nearestFree(mm, to, 6);
+        if (f < 0 || t < 0) return false;
+        return std::isfinite(shortest(mm, f, t, nullptr));
+    };
+    std::vector<std::string> candidates;
+    for (const auto& p : preferred)
+        if (all.count(p)) candidates.push_back(p);
+    for (const auto& p : all)
+        if (std::find(candidates.begin(), candidates.end(), p) == candidates.end()) candidates.push_back(p);
+    for (size_t k = 0; k < out.size(); ++k) {
+        std::set<std::string> base;
+        for (const auto& alt : out[k].needs) base.insert(alt.front());
+        if (reaches(base, out[k].pos, ends[k])) continue;
+        bool done = false;
+        for (const auto& p : candidates) {
+            if (base.count(p)) continue;
+            auto with = base;
+            with.insert(p);
+            if (reaches(with, out[k].pos, ends[k])) {
+                out[k].movement = {p};
+                done = true;
+                break;
+            }
+        }
+        for (size_t i = 0; i < candidates.size() && !done; ++i)
+            for (size_t j = i + 1; j < candidates.size() && !done; ++j) {
+                if (base.count(candidates[i]) || base.count(candidates[j])) continue;
+                auto with = base;
+                with.insert(candidates[i]);
+                with.insert(candidates[j]);
+                if (reaches(with, out[k].pos, ends[k])) {
+                    out[k].movement = {candidates[i], candidates[j]};
+                    done = true;
+                }
+            }
+        out[k].reachable = done;
+    }
+    return out;
+}
+
+/// Station tablets float above head height: walking past them takes nothing, a jump takes the
+/// one wanted (one choice window at a time).
+constexpr float kStationTabletHeight = 66.0f;
+
+std::vector<PowerStation> planPowerStations(const LevelData& level, const ContentDatabase& content) {
+    std::vector<PowerStation> stations;
+    int slots = level.powerSlots();
+    if (slots <= 0) return stations;
+    // Every power of the game is available somewhere (start, tablets, the stations planned
+    // here): the route is computed with all of them.
+    std::set<std::string> all;
+    for (const PowerDefinition* p : content.powers()) all.insert(p->id);
+    float rise = 0.0f, air = 0.0f;
+    Model m = buildModel(level, content, all, rise, air);
+    const Grid& g = m.g;
+    Vec2 startFeet, exitFeet;
+    bool hasStart = false, hasExit = false;
+    std::vector<std::pair<std::string, Vec2>> cps;
+    for (const auto& o : level.objects) {
+        if (o.type == "player_start") startFeet = o.rect.bottomCenter(), hasStart = true;
+        else if (o.type == "exit") exitFeet = o.rect.bottomCenter(), hasExit = true;
+        else if (o.type == "checkpoint" && !o.prop<bool>("optional", false)) cps.push_back({o.propStr("label", o.id), o.rect.bottomCenter()});
+    }
+    int start = hasStart ? nearestFree(m, startFeet, 4) : -1;
+    int exitCell = hasExit ? nearestFree(m, exitFeet, 6) : -1;
+    if (start < 0 || exitCell < 0) return stations;
+    std::vector<float> fromStart;
+    shortest(m, start, -1, nullptr, &fromStart);
+    std::vector<std::pair<float, size_t>> keys;
+    for (size_t k = 0; k < cps.size(); ++k) {
+        int c = nearestFree(m, cps[k].second, 6);
+        if (c >= 0) keys.push_back({fromStart[static_cast<size_t>(c)], k});
+    }
+    std::stable_sort(keys.begin(), keys.end());
+    struct Section {
+        std::string label;
+        std::vector<int> path;
+    };
+    std::vector<Section> sections;
+    {
+        std::vector<std::pair<std::string, int>> marks = {{"", start}};
+        for (const auto& [d, k] : keys) marks.push_back({cps[k].first, nearestFree(m, cps[k].second, 6)});
+        marks.push_back({"#exit", exitCell});
+        for (size_t i = 0; i + 1 < marks.size(); ++i) {
+            Section s;
+            s.label = marks[i].first;
+            shortest(m, marks[i].second, marks[i + 1].second, &s.path);
+            if (s.path.empty()) s.path.push_back(marks[i].second);
+            sections.push_back(std::move(s));
+        }
+    }
+    // Events on the route: obstacles (alternative powers) and existing tablets.
+    struct Event {
+        size_t section = 0;
+        size_t at = 0;  // index in the section path
+        std::vector<std::string> needs;
+        std::string tablet;
+        bool optional = false;  // off the route (relic, heart) or avoidable (timed hazard)
+    };
+    std::vector<Event> events;
+    auto locate = [&](Vec2 c, size_t& sec, size_t& at) {
+        float best = 1e18f;
+        for (size_t k = 0; k < sections.size(); ++k)
+            for (size_t i = 0; i < sections[k].path.size(); ++i) {
+                float d = (cellFeet(m, sections[k].path[i]) - c).lengthSq();
+                if (d < best) best = d, sec = k, at = i;
+            }
+        return best;
+    };
+    for (const auto& o : level.objects) {
+        Event e;
+        if (!o.propStr("needsPower").empty()) e.needs = {o.propStr("needsPower")};  // set by the level designer
+        else if (o.type == "power_gate") e.needs = {o.propStr("power")};
+        else if (o.type == "grapple_point") e.needs = {"grapple"};
+        else if (o.type == "updraft") e.needs = {"glide"};
+        else if (o.type == "receptor") e.needs = {"wave", "charge_shot"};
+        else if (o.type == "damage_zone" && o.prop<bool>("shieldProtects", false)) e.needs = {"shield"}, e.optional = true;
+        else if (o.type == "power_unlock") e.tablet = o.propStr("power");
+        else continue;
+        e.needs.erase(std::remove_if(e.needs.begin(), e.needs.end(), [&](const std::string& p) { return !all.count(p); }), e.needs.end());
+        if (e.needs.empty() && e.tablet.empty()) continue;
+        // Off the route (a relic, a heart): still offered by the section's station, so that
+        // everything stays collectible, but never counted in the slots the route needs.
+        if (locate(o.rect.center(), e.section, e.at) > 320.0f * 320.0f) {
+            if (!e.tablet.empty()) continue;
+            e.optional = true;
+        }
+        events.push_back(e);
+    }
+    // Movement: powers the model needs, besides the obstacles' ones, to cross each section
+    // (a higher ledge, a longer gap...). They are asked for at the start of the section.
+    {
+        std::vector<std::string> candidates(level.startPowers.begin(), level.startPowers.end());
+        for (const auto& o : level.objects)
+            if (o.type == "power_unlock") candidates.push_back(o.propStr("power"));
+        for (const auto& p : all) candidates.push_back(p);
+        std::vector<std::string> uniq;
+        for (const auto& p : candidates)
+            if (std::find(uniq.begin(), uniq.end(), p) == uniq.end() && all.count(p)) uniq.push_back(p);
+        auto reaches = [&](const std::set<std::string>& powers, int from, int to) {
+            float r2 = 0.0f, a2 = 0.0f;
+            Model mm = buildModel(level, content, powers, r2, a2);
+            int f = nearestFree(mm, cellFeet(m, from), 6), t = nearestFree(mm, cellFeet(m, to), 6);
+            return f >= 0 && t >= 0 && std::isfinite(shortest(mm, f, t, nullptr));
+        };
+        for (size_t k = 0; k < sections.size(); ++k) {
+            const auto& path = sections[k].path;
+            std::set<std::string> base;
+            for (const auto& e : events)
+                if (e.section == k && !e.needs.empty()) base.insert(e.needs.front());
+            if (reaches(base, path.front(), path.back())) continue;
+            std::vector<std::string> add;
+            for (const auto& p : uniq) {
+                if (base.count(p)) continue;
+                auto with = base;
+                with.insert(p);
+                if (reaches(with, path.front(), path.back())) {
+                    add = {p};
+                    break;
+                }
+            }
+            for (size_t i = 0; i < uniq.size() && add.empty(); ++i)
+                for (size_t j = i + 1; j < uniq.size() && add.empty(); ++j) {
+                    if (base.count(uniq[i]) || base.count(uniq[j])) continue;
+                    auto with = base;
+                    with.insert(uniq[i]);
+                    with.insert(uniq[j]);
+                    if (reaches(with, path.front(), path.back())) add = {uniq[i], uniq[j]};
+                }
+            for (const auto& p : add) {
+                Event e;
+                e.section = k;
+                e.at = 0;
+                e.needs = {p};
+                events.push_back(e);
+            }
+        }
+    }
+    std::stable_sort(events.begin(), events.end(), [](const Event& a, const Event& b) {
+        return a.section != b.section ? a.section < b.section : a.at < b.at;
+    });
+    // Tablet spots: standing cells of the route, `dist` px after (or before) index `i`.
+    // A station spot stands on solid ground (not a platform that moves or breaks) and has
+    // room above it for the tablet (no solid between the feet and the tablet's top).
+    auto grounded = [&](int c) {
+        int x = c % g.w, y = c / g.w;
+        if (y + 1 >= g.h || g.deadly[static_cast<size_t>(c)]) return false;
+        if (g.solidIn(x, y + 1, x + m.bw - 1, y + 1) < m.bw) return false;
+        int top = y - static_cast<int>(std::ceil((kStationTabletHeight + 12.0f) / kCell));
+        return top >= 0 && g.solidIn(x - 1, top, x + m.bw, y) == 0;
+    };
+    auto spots = [&](const std::vector<int>& path, size_t from, int count, int dir) {
+        std::vector<Vec2> out;
+        Vec2 last{-1e9f, -1e9f};
+        long i = static_cast<long>(from);
+        while (static_cast<int>(out.size()) < count && i >= 0 && i < static_cast<long>(path.size())) {
+            int c = path[static_cast<size_t>(i)];
+            Vec2 f = cellFeet(m, c);
+            if (grounded(c) && (out.empty() ? true : (f - last).length() >= 56.0f)) {
+                out.push_back(f);
+                last = f;
+            }
+            i += dir;
+        }
+        return out;
+    };
+    std::set<std::string> guaranteed(level.startPowers.begin(), level.startPowers.end());
+    for (size_t k = 0; k < sections.size(); ++k) {
+        const auto& path = sections[k].path;
+        std::set<std::string> carried = guaranteed, offered, since;
+        bool swapped = false;
+        PowerStation head;
+        head.section = sections[k].label;
+        std::vector<PowerStation> mids;
+        for (const auto& e : events) {
+            if (e.section != k) continue;
+            if (!e.tablet.empty()) {
+                offered.insert(e.tablet);
+                swapped = true;
+                continue;
+            }
+            if (e.optional) {
+                bool have = false;
+                for (const auto& alt : e.needs) have = have || carried.count(alt) || offered.count(alt) || since.count(alt);
+                if (!have) {
+                    offered.insert(e.needs.front());
+                    swapped = true;
+                    head.tablets.push_back({e.needs.front(), {}});
+                }
+                continue;
+            }
+            std::string p = e.needs.front();
+            bool have = false;
+            for (const auto& alt : e.needs) {
+                if (carried.count(alt) || offered.count(alt) || since.count(alt)) {
+                    p = alt;
+                    have = true;
+                    break;
+                }
+            }
+            if (!since.count(p) && static_cast<int>(since.size()) >= slots) {
+                // More powers in a row than the slots: a station just before this obstacle.
+                PowerStation mid;
+                mid.section = sections[k].label;
+                mid.midSection = true;
+                size_t back = e.at > 22 ? e.at - 22 : 0;
+                auto sp = spots(path, back, 1, -1);
+                if (sp.empty()) sp = spots(path, back, 1, 1);
+                if (!sp.empty()) mid.tablets.push_back({p, sp.front() - Vec2{0, kStationTabletHeight}});
+                mid.sign = sp.empty() ? cellFeet(m, path[back]) : sp.front() - Vec2{40, 0};
+                mids.push_back(mid);
+                since = {p};
+                carried.clear();
+                offered = {p};
+                swapped = true;
+                continue;
+            }
+            since.insert(p);
+            if (!have) {
+                head.upcoming.push_back(p);
+                offered.insert(p);
+                swapped = true;
+                head.tablets.push_back({p, {}});
+            }
+        }
+        // Upcoming list of the section (for the sign) and tablet spots after its checkpoint.
+        if (!head.tablets.empty()) {
+            head.upcoming.assign(since.begin(), since.end());
+            for (const auto& t : head.tablets)
+                if (std::find(head.upcoming.begin(), head.upcoming.end(), t.first) == head.upcoming.end()) head.upcoming.push_back(t.first);
+            int want = static_cast<int>(head.tablets.size()) + 1;  // + the sign
+            auto sp = spots(path, std::min<size_t>(path.size() - 1, 9), want, 1);
+            // Not enough standing room after the checkpoint: just before it (end of the
+            // previous section), never on a moving platform or inside the scenery.
+            auto addFrom = [&](const std::vector<Vec2>& more) {
+                for (const Vec2& f : more) {
+                    if (static_cast<int>(sp.size()) >= want) break;
+                    bool clear = true;
+                    for (const Vec2& q : sp) clear = clear && (f - q).length() >= 56.0f;
+                    if (clear) sp.push_back(f);
+                }
+            };
+            if (static_cast<int>(sp.size()) < want) addFrom(spots(path, std::min<size_t>(path.size() - 1, 8), want * 3, -1));
+            if (static_cast<int>(sp.size()) < want && k > 0) {
+                const auto& prevPath = sections[k - 1].path;
+                addFrom(spots(prevPath, prevPath.size() - 1, want * 3, -1));
+            }
+            if (static_cast<int>(sp.size()) < want) addFrom(spots(path, 0, want * 6, 1));
+            for (size_t i = 0; i < head.tablets.size(); ++i) {
+                Vec2 f = i + 1 < sp.size() ? sp[i + 1] : cellFeet(m, path.front()) + Vec2{48.0f + 56.0f * static_cast<float>(i), 0.0f};
+                head.tablets[i].second = f - Vec2{0, kStationTabletHeight};
+            }
+            head.sign = sp.empty() ? cellFeet(m, path.front()) + Vec2{24, 0} : sp.front();
+            stations.push_back(head);
+        }
+        for (auto& mdl : mids) {
+            mdl.upcoming = {mdl.tablets.empty() ? std::string() : mdl.tablets.front().first};
+            stations.push_back(mdl);
+        }
+        if (swapped) guaranteed = since;
+    }
+    return stations;
 }
 
 }  // namespace cosmic

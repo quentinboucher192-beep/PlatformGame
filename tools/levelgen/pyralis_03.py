@@ -223,7 +223,7 @@ L.liquid(354, 378, 46.5, 50, "lava")
 L.solid(354, 50, 378, LAVA + 3, "basalt", deco=False)
 raft = L.moving(374, 46, 4, -20, 0, speed=60, wait=1.2, active=False)
 R(378, 46, 392, mat=M)
-L.receptor(379.5, 46, raft)
+L.needs(L.receptor(379.5, 46, raft), "charge_shot")  # out of the wave's reach
 L.light(379.5, 43, "#8ffff0", 50)
 L.sign(348, 46, "Le conduit de la presse : un Tir chargé sur le récepteur appellera le radeau.")
 P.chains(355, 377, 44, every=4, layer="bg_decor", long_ratio=0.0)

@@ -23,6 +23,11 @@ struct World {
         WorldServices s{res, audio, content, nullptr, 1.0f, 1.0f};
         w = std::make_unique<GameWorld>(s, mode);
         w->load(level);
+        w->autoPowerChoice = 1;  // full power slots: take the tablet, leave the first power
+        // The zone tests start anywhere: they get the powers of the level's stations (2.3 power slots).
+        for (const auto& so : w->level().objects)
+            if (so.type == "power_unlock" && so.id.rfind("station_", 0) == 0)
+                if (const PowerDefinition* sd = w->content().power(so.propStr("power"))) w->player().grantPower(*sd);
         return *w;
     }
 };
@@ -135,7 +140,9 @@ TEST_CASE("levels: first level is complete and round-trips") {
     CHECK(level->countObjects("checkpoint") >= 6);
     CHECK(level->countObjects("relic") == 3);
     CHECK(level->countObjects("secret_area") >= 3);
-    CHECK(level->countObjects("power_unlock") == 5);
+    int tutorials = 0;  // the five tutorial tablets (power stations aside)
+    for (const auto& o : level->objects) tutorials += o.type == "power_unlock" && o.id.rfind("station_", 0) != 0 ? 1 : 0;
+    CHECK(tutorials == 5);
     bool boss = false;
     for (const auto& o : level->objects) boss |= o.type == "enemy" && o.prop<bool>("boss", false);
     CHECK(boss);

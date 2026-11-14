@@ -5,6 +5,15 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.3.0** : **4 pouvoirs portés au plus** dans chaque niveau (réglable
+par niveau dans l'éditeur). Toucher la tablette d'un nouveau pouvoir quand tout est pris
+ouvre un choix : remplacer un pouvoir porté (il reste sur la tablette, à reprendre quand vous
+voulez) ou laisser le nouveau. Les niveaux de la campagne partent avec 4 pouvoirs au plus et
+des **stations de pouvoirs** (tablettes en hauteur après certains checkpoints, avec un
+panneau) proposent ceux dont la suite a besoin : on ne peut jamais rester bloqué. Le choix
+fait partie du replay. Les niveaux créés ou importés restent dans l'Atelier, jamais dans la
+campagne.
+
 **Contenu de la version 2.2.0** : 3 planètes et 12 niveaux, chacun avec son boss. Le
 quatrième niveau de chaque planète est une **épreuve** bâtie sur une mécanique propre à la
 planète, avec un gardien d'élite qui n'apparaît nulle part ailleurs :

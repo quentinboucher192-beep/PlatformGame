@@ -108,12 +108,10 @@
   }
  },
  "startPowers": [
-  "dash",
-  "wave",
-  "shield",
   "glide",
   "ground_pound",
-  "charge_shot"
+  "charge_shot",
+  "dash"
  ],
  "cameraZoom": 1.0,
  "layers": [
@@ -3207,7 +3205,7 @@
  },
  "metadata": {
   "generator": "tools/levelgen/challenge.py",
-  "revision": 4,
+  "revision": 5,
   "rooms": [
    {
     "type": "rafts",
@@ -3251,5 +3249,6 @@
    }
   ]
  },
- "killY": 880
+ "killY": 880,
+ "maxPowers": 4
 }

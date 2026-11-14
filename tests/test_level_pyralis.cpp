@@ -34,6 +34,11 @@ struct PyRun {
         WorldServices s{res, audio, content, nullptr, 0.0f, 1.0f};
         w = std::make_unique<GameWorld>(s, WorldMode::Play);
         w->load(*level);
+        w->autoPowerChoice = 1;  // full power slots: take the tablet, leave the first power
+        // The zone tests start anywhere: they get the powers of the level's stations (2.3 power slots).
+        for (const auto& so : w->level().objects)
+            if (so.type == "power_unlock" && so.id.rfind("station_", 0) == 0)
+                if (const PowerDefinition* sd = w->content().power(so.propStr("power"))) w->player().grantPower(*sd);
         w->startAt({tx * T, ty * T});
         x0 = tx;
         for (const char* p : extra) w->player().grantPower(*content.power(p));
@@ -306,6 +311,7 @@ TEST_CASE("pyralis_01: the grapple crosses the lava gap to the quay") {
 
 TEST_CASE("pyralis_01: the tablet teaches the ground pound and the cracked floor gives way") {
     PyRun r("pyralis_01", 102, 52);
+    r.p().removePower("ground_pound");  // (a later power station offers it too)
     CHECK(!r.p().hasPower("ground_pound"));
     r.playSafe(240, [&](Player&, int) { return in(1); });
     CHECK(r.p().hasPower("ground_pound"));

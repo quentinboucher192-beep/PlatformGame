@@ -1,0 +1,269 @@
+{
+  "level": "glacior_03",
+  "sections": [
+    {
+      "label": "",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        128.0,
+        896.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Pont des glaces",
+      "movement": [],
+      "needs": [
+        [
+          "ground_pound"
+        ],
+        [
+          "grapple"
+        ]
+      ],
+      "pos": [
+        1280.0,
+        896.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Cour d'honneur",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        2624.0,
+        704.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Tour des vents",
+      "movement": [],
+      "needs": [
+        [
+          "glide"
+        ],
+        [
+          "grapple"
+        ],
+        [
+          "teleport"
+        ]
+      ],
+      "pos": [
+        3480.0,
+        704.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Chemin de ronde",
+      "movement": [],
+      "needs": [
+        [
+          "dash"
+        ],
+        [
+          "ground_pound"
+        ]
+      ],
+      "pos": [
+        3968.0,
+        256.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Salle des leviers",
+      "movement": [],
+      "needs": [
+        [
+          "wave",
+          "charge_shot"
+        ],
+        [
+          "shield"
+        ],
+        [
+          "teleport"
+        ],
+        [
+          "grapple"
+        ]
+      ],
+      "pos": [
+        4832.0,
+        544.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Gouffre du gardien",
+      "movement": [],
+      "needs": [
+        [
+          "grapple"
+        ],
+        [
+          "glide"
+        ],
+        [
+          "dash"
+        ]
+      ],
+      "pos": [
+        5680.0,
+        544.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Antichambre du trône",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        6848.0,
+        800.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Sommet de l'aurore",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        7792.0,
+        800.0
+      ],
+      "reachable": true
+    }
+  ],
+  "slots": 4,
+  "stations": [
+    {
+      "mid": false,
+      "section": "Tour des vents",
+      "sign": [
+        3816.0,
+        256.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            3872.0,
+            190.0
+          ],
+          "power": "teleport"
+        }
+      ],
+      "upcoming": [
+        "glide",
+        "grapple",
+        "teleport"
+      ]
+    },
+    {
+      "mid": false,
+      "section": "Chemin de ronde",
+      "sign": [
+        4048.0,
+        256.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            4376.0,
+            190.0
+          ],
+          "power": "dash"
+        },
+        {
+          "center": [
+            4432.0,
+            190.0
+          ],
+          "power": "ground_pound"
+        }
+      ],
+      "upcoming": [
+        "dash",
+        "ground_pound"
+      ]
+    },
+    {
+      "mid": false,
+      "section": "Salle des leviers",
+      "sign": [
+        4912.0,
+        544.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            4968.0,
+            478.0
+          ],
+          "power": "wave"
+        },
+        {
+          "center": [
+            5024.0,
+            478.0
+          ],
+          "power": "grapple"
+        },
+        {
+          "center": [
+            5080.0,
+            478.0
+          ],
+          "power": "shield"
+        },
+        {
+          "center": [
+            5136.0,
+            478.0
+          ],
+          "power": "teleport"
+        }
+      ],
+      "upcoming": [
+        "grapple",
+        "shield",
+        "teleport",
+        "wave"
+      ]
+    },
+    {
+      "mid": false,
+      "section": "Gouffre du gardien",
+      "sign": [
+        6136.0,
+        384.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            6600.0,
+            318.0
+          ],
+          "power": "glide"
+        },
+        {
+          "center": [
+            6656.0,
+            318.0
+          ],
+          "power": "dash"
+        }
+      ],
+      "upcoming": [
+        "dash",
+        "glide",
+        "grapple"
+      ]
+    }
+  ]
+}

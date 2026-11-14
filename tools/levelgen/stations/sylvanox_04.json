@@ -1,0 +1,69 @@
+{
+  "level": "sylvanox_04",
+  "sections": [
+    {
+      "label": "",
+      "movement": [],
+      "needs": [
+        [
+          "wave",
+          "charge_shot"
+        ]
+      ],
+      "pos": [
+        64.0,
+        640.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Seuil I",
+      "movement": [],
+      "needs": [
+        [
+          "grapple"
+        ],
+        [
+          "dash"
+        ]
+      ],
+      "pos": [
+        1488.0,
+        640.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Galerie II",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        3056.0,
+        640.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Croisée III",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        4400.0,
+        640.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Antre IV",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        5072.0,
+        640.0
+      ],
+      "reachable": true
+    }
+  ],
+  "slots": 4,
+  "stations": []
+}

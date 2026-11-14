@@ -1,0 +1,118 @@
+{
+  "level": "sylvanox_01",
+  "sections": [
+    {
+      "label": "",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        144.0,
+        928.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Seuil des Anciens",
+      "movement": [],
+      "needs": [
+        [
+          "dash"
+        ]
+      ],
+      "pos": [
+        1536.0,
+        880.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Canopée brisée",
+      "movement": [],
+      "needs": [
+        [
+          "wave",
+          "charge_shot"
+        ]
+      ],
+      "pos": [
+        3840.0,
+        800.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Jardins gardés",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        5856.0,
+        768.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Ponts suspendus",
+      "movement": [],
+      "needs": [
+        [
+          "impulse"
+        ],
+        [
+          "teleport"
+        ]
+      ],
+      "pos": [
+        6720.0,
+        800.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Sanctuaire",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        8736.0,
+        704.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Dernière ascension",
+      "movement": [],
+      "needs": [
+        [
+          "shield"
+        ]
+      ],
+      "pos": [
+        9728.0,
+        768.0
+      ],
+      "reachable": true
+    }
+  ],
+  "slots": 4,
+  "stations": [
+    {
+      "mid": false,
+      "section": "Dernière ascension",
+      "sign": [
+        10184.0,
+        480.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            10240.0,
+            414.0
+          ],
+          "power": "shield"
+        }
+      ],
+      "upcoming": [
+        "shield"
+      ]
+    }
+  ]
+}

@@ -296,6 +296,7 @@ Json LevelData::toJson() const {
                    {"gold", medals[2].toJson()},
                    {"platinum", medals[3].toJson()}};
     j["startPowers"] = startPowers;
+    j["maxPowers"] = maxPowers;
     j["cameraZoom"] = cameraZoom;
     Json ls = Json::array();
     for (const auto& l : layers) ls.push_back(l.toJson());
@@ -358,6 +359,7 @@ std::optional<LevelData> LevelData::fromJson(const Json& j, std::string* error) 
     if (j.contains("startPowers") && j["startPowers"].is_array())
         for (const auto& p : j["startPowers"])
             if (p.is_string()) d.startPowers.push_back(p.get<std::string>());
+    d.maxPowers = std::clamp(jget<int>(j, "maxPowers", kDefaultMaxPowers), 0, kMaxPowerSlots);
     d.cameraZoom = std::clamp(jget<float>(j, "cameraZoom", 1.0f), 0.5f, 2.0f);
     if (j.contains("layers") && j["layers"].is_array())
         for (const auto& l : j["layers"]) d.layers.push_back(LevelLayer::fromJson(l));

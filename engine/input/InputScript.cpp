@@ -1,5 +1,6 @@
 #include "engine/input/InputScript.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <sstream>
 
@@ -30,6 +31,14 @@ bool InputScript::parse(const std::string& script) {
         std::string a;
         while (std::getline(as, a, ',')) {
             if (a.empty()) continue;
+            if (a == "leave") {
+                e.choice = 255;
+                continue;
+            }
+            if (a.size() == 7 && a.rfind("choice", 0) == 0 && a[6] >= '1' && a[6] <= '8') {
+                e.choice = static_cast<uint8_t>(a[6] - '0');
+                continue;
+            }
             Action act = parseAction(a);
             if (act == Action::Count) {
                 Log::warn("Input script: unknown action '{}'", a);
@@ -53,6 +62,7 @@ PlayerInput InputScript::next() {
             if (!now[i] && held_[i]) in.released[i] = true;
         }
         held_ = now;
+        if (entries_[index_].choice) choice_ = entries_[index_].choice;
         ++index_;
     }
     in.held = held_;

@@ -108,11 +108,10 @@
   }
  },
  "startPowers": [
-  "dash",
-  "wave",
-  "shield",
   "glide",
-  "triple_jump"
+  "triple_jump",
+  "dash",
+  "shield"
  ],
  "cameraZoom": 1.0,
  "layers": [
@@ -3501,7 +3500,7 @@
  },
  "metadata": {
   "generator": "tools/levelgen/challenge.py",
-  "revision": 4,
+  "revision": 5,
   "rooms": [
    {
     "type": "updraft",
@@ -3550,5 +3549,6 @@
    }
   ]
  },
- "killY": 880
+ "killY": 880,
+ "maxPowers": 4
 }

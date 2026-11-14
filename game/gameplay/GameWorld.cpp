@@ -12,6 +12,7 @@
 #include "game/content/ContentDatabase.h"
 #include "game/enemies/Enemy.h"
 #include "game/gameplay/EntityFactory.h"
+#include "game/gameplay/InputFrame.h"
 #include "game/gameplay/entities/Entities.h"
 
 namespace cosmic {
@@ -51,6 +52,8 @@ bool GameWorld::load(const LevelData& level) {
     player_.clearPowers();
     for (const auto& pid : level_.startPowers)
         if (const PowerDefinition* d = services_.content.power(pid)) player_.grantPower(*d);
+    player_.setPowerSlots(level_.powerSlots());
+    powerOffer_.reset();
 
     buildStatic();
     createEntities();
@@ -177,6 +180,8 @@ void GameWorld::beginPlay() {
 // ================================================================== update
 
 void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
+    // Waiting for the player to choose which power to keep: nothing moves (see stepWorld).
+    if (powerOffer_ && mode_ != WorldMode::Editor) return;
     time_ += dt;
     if (flashTimer_ > 0.0f) flashTimer_ = std::max(0.0f, flashTimer_ - dt);
     if (splitFlash_ > 0.0f) splitFlash_ -= dt;
@@ -682,6 +687,40 @@ void GameWorld::onPlayerDeathAnimationDone() {
         return;
     }
     respawnPlayer();
+}
+
+void GameWorld::offerPower(const std::string& tabletId, const std::string& powerId, int conflictSlot) {
+    if (powerOffer_ || mode_ == WorldMode::Editor) return;
+    powerOffer_ = PowerOffer{tabletId, powerId, conflictSlot};
+    if (autoPowerChoice) {
+        resolvePowerOffer(autoPowerChoice);
+        return;
+    }
+    player_.vel = {0.0f, std::min(player_.vel.y, 0.0f)};
+    playSound("sounds/power_unlock.wav", 0.6f, 0.8f);
+}
+
+bool GameWorld::resolvePowerOffer(uint8_t choice) {
+    if (!powerOffer_) return false;
+    PowerOffer offer = *powerOffer_;
+    powerOffer_.reset();
+    const PowerDefinition* def = services_.content.power(offer.powerId);
+    auto* tablet = dynamic_cast<PowerUnlockEntity*>(entity(offer.tabletId));
+    int slot = static_cast<int>(choice) - 1;
+    if (offer.conflictSlot >= 0) slot = offer.conflictSlot;  // a power on the same button must go
+    bool leave = choice == 0 || choice == InputFrame::kChoiceLeave || !def || !tablet ||
+                 slot < 0 || slot >= static_cast<int>(player_.powers().size());
+    if (leave) {
+        hint("Pouvoir laissé ici : vous pourrez revenir le prendre.", 2.5f);
+        return true;
+    }
+    std::string dropped = player_.replacePower(slot, *def);
+    player_.addEnergy(100.0f);
+    tablet->exchange(*this, dropped);
+    PowerUnlockEntity::celebrate(*this, *def, tablet->box.center(), {}, dropped);
+    emit(offer.tabletId, "collected");
+    emit(offer.powerId, "unlocked");
+    return true;
 }
 
 void GameWorld::respawnPlayer() {

@@ -11,6 +11,7 @@
 namespace cosmic {
 
 class Enemy;
+struct PowerDefinition;
 
 /// Helper: loads an animation set once and plays clips.
 struct AnimatedSprite {
@@ -220,11 +221,19 @@ public:
     void update(GameWorld& w, float dt) override;
     bool wantsPlayerOverlap() const override { return true; }
     void onPlayerEnter(GameWorld& w) override;
+    const std::string& power() const { return power_; }
+    /// The player took this tablet's power and left `dropped` in exchange: the tablet now
+    /// offers the dropped power (nothing is ever lost, the player can come back for it).
+    void exchange(GameWorld& w, const std::string& dropped);
+    /// Feedback of a power just obtained (title, sound, particles).
+    static void celebrate(GameWorld& w, const PowerDefinition& def, Vec2 at, const std::string& message,
+                          const std::string& dropped = {});
 
 private:
     AnimatedSprite sprite_;
     std::string power_;
     float t_ = 0.0f;
+    bool owned_ = false;  // display only (the player carries this power)
 };
 
 // ============================================================= interactive

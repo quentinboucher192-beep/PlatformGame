@@ -56,6 +56,11 @@ struct GRun {
         WorldServices s{res, audio, content, nullptr, 0.0f, 1.0f};
         w = std::make_unique<GameWorld>(s, WorldMode::Play);
         w->load(*l);
+        w->autoPowerChoice = 1;  // full power slots: take the tablet, leave the first power
+        // The zone tests start anywhere: they get the powers of the level's stations (2.3 power slots).
+        for (const auto& so : w->level().objects)
+            if (so.type == "power_unlock" && so.id.rfind("station_", 0) == 0)
+                if (const PowerDefinition* sd = w->content().power(so.propStr("power"))) w->player().grantPower(*sd);
         w->startAt({tx * kT, ty * kT});
         for (const char* p : powers) w->player().grantPower(*content.power(p));
         god = invulnerable;

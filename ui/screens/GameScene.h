@@ -38,6 +38,8 @@ public:
     void restart();
     void quitToMenu();
     bool editorTest() const { return opt_.editorTest; }
+    /// Answer of the power choice window (InputFrame::choice), used by the next step.
+    void answerPowerOffer(uint8_t choice) { pendingChoice_ = choice; }
     const std::string& levelId() const { return levelId_; }
     GameWorld* world() { return world_.get(); }
 
@@ -51,6 +53,7 @@ private:
     /// Not in any planet's campaign (made in the editor, imported): leaving goes back to
     /// the WORKSHOP, no "next level", and "Continuer" keeps pointing at the campaign.
     bool workshop_ = false;
+    uint8_t pendingChoice_ = 0;
     LevelData level_;
     std::unique_ptr<GameWorld> world_;
     GameRenderer renderer_;

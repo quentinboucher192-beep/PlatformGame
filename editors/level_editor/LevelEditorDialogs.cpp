@@ -268,7 +268,23 @@ void LevelEditorScene::modalSettings(const Rect& c) {
     }
     ui.label("(-1 morts = illimité)", {right.x, right.y}, 16, ui.theme().textDim);
     right.y += ui.s(30);
-    ui.label("Pouvoirs au départ", {right.x, right.y}, 22, ui.theme().accent, Align::Left, FontFace::Bold);
+    {
+        // Power slots: picking up a tablet with every slot taken asks to replace a power.
+        static const std::vector<std::string> opts = {"Sans limite", "1", "2", "3", "4 (par défaut)", "5", "6", "7", "8"};
+        int idx = std::clamp(level_.maxPowers, 0, LevelData::kMaxPowerSlots);
+        if (ui.cycle("maxpow", {right.x, right.y, colW, ui.s(46)}, "Pouvoirs portés au maximum", idx, opts)) {
+            level_.maxPowers = idx;
+            changed = true;
+        }
+        right.y += ui.s(54);
+    }
+    {
+        int n = static_cast<int>(level_.startPowers.size());
+        bool over = level_.maxPowers > 0 && n > level_.maxPowers;
+        std::string t = "Pouvoirs au départ" + (level_.maxPowers > 0 ? "  " + std::to_string(n) + " / " + std::to_string(level_.maxPowers) : "");
+        ui.label(t, {right.x, right.y}, 22, over ? ui.theme().warm : ui.theme().accent, Align::Left, FontFace::Bold);
+        if (over) ui.label("plus que la limite : elle passe à " + std::to_string(n), {right.x + colW, right.y + ui.s(4)}, 15, ui.theme().warm, Align::Right);
+    }
     right.y += ui.s(36);
     for (const auto* p : g_.content.powers()) {
         bool has = std::find(level_.startPowers.begin(), level_.startPowers.end(), p->id) != level_.startPowers.end();

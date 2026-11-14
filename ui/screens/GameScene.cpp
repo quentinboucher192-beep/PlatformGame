@@ -9,6 +9,7 @@
 #include "game/enemies/Enemy.h"
 #include "game/online/LevelFingerprint.h"
 #include "ui/screens/PauseScene.h"
+#include "ui/screens/PowerChoiceScene.h"
 #include "ui/screens/ResultsScene.h"
 
 namespace cosmic {
@@ -142,6 +143,15 @@ std::string GameScene::nextLevelId() const {
 
 void GameScene::fixedUpdate(float dt) {
     if (!world_) return;
+    // A power offer waits for the player's answer (PowerChoiceScene): nothing is simulated
+    // or recorded until it comes. Scripted runs leave the power unless told otherwise.
+    uint8_t choice = 0;
+    if (world_->powerOffer()) {
+        choice = pendingChoice_;
+        if (!choice && script_.active()) choice = script_.choice() ? script_.choice() : InputFrame::kChoiceLeave;
+        if (!choice) return;
+        pendingChoice_ = 0;
+    }
     PlayerInput in = g_.app.input().consumePlayerInput();
     if (script_.active()) in = script_.next();
     // The simulation only ever sees the quantised frame, exactly what a replay stores.
@@ -160,6 +170,7 @@ void GameScene::fixedUpdate(float dt) {
         skipHold_ = 0.0f;
     }
     hud_.setSkipHold(skipHold_);
+    frame.choice = choice;
     if (!ended_) recorder_.recordInput(frame);
     stepWorld(*world_, frame, kSimDt);
     if (!ended_) recorder_.tick(*world_);
@@ -274,6 +285,11 @@ void GameScene::update(float dt) {
     world_->update(dt);
     hud_.update(*world_, dt);
     InputManager& in = g_.app.input();
+    // A power tablet with every slot taken: ask which power to keep (live play only).
+    if (!ended_ && world_->powerOffer() && !pendingChoice_ && !script_.active()) {
+        g_.app.pushScene(std::make_unique<PowerChoiceScene>(g_, *this));
+        return;
+    }
     if (!ended_ && in.menuPressed(Action::Pause)) {
         if (world_->state() == WorldState::Playing || world_->state() == WorldState::Intro) {
             g_.app.pushScene(std::make_unique<PauseScene>(g_, *this));

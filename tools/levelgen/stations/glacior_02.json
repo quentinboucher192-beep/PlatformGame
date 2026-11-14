@@ -1,0 +1,197 @@
+{
+  "level": "glacior_02",
+  "sections": [
+    {
+      "label": "",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        112.0,
+        640.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Bouche des grottes",
+      "movement": [],
+      "needs": [
+        [
+          "grapple"
+        ],
+        [
+          "teleport"
+        ]
+      ],
+      "pos": [
+        1408.0,
+        768.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Lac souterrain",
+      "movement": [],
+      "needs": [
+        [
+          "grapple"
+        ]
+      ],
+      "pos": [
+        2800.0,
+        800.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Galerie scintillante",
+      "movement": [],
+      "needs": [
+        [
+          "dash"
+        ],
+        [
+          "grapple"
+        ],
+        [
+          "wave",
+          "charge_shot"
+        ]
+      ],
+      "pos": [
+        4128.0,
+        896.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Salle des reflets",
+      "movement": [],
+      "needs": [
+        [
+          "ground_pound"
+        ],
+        [
+          "teleport"
+        ],
+        [
+          "dash"
+        ]
+      ],
+      "pos": [
+        5584.0,
+        896.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Caverne de l'Hydre",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        6464.0,
+        896.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Remontée",
+      "movement": [],
+      "needs": [
+        [
+          "glide"
+        ],
+        [
+          "teleport"
+        ]
+      ],
+      "pos": [
+        7456.0,
+        960.0
+      ],
+      "reachable": true
+    }
+  ],
+  "slots": 4,
+  "stations": [
+    {
+      "mid": false,
+      "section": "Galerie scintillante",
+      "sign": [
+        4208.0,
+        896.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            4264.0,
+            830.0
+          ],
+          "power": "shield"
+        },
+        {
+          "center": [
+            4600.0,
+            830.0
+          ],
+          "power": "wave"
+        }
+      ],
+      "upcoming": [
+        "dash",
+        "grapple",
+        "wave",
+        "shield"
+      ]
+    },
+    {
+      "mid": false,
+      "section": "Salle des reflets",
+      "sign": [
+        5704.0,
+        896.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            5760.0,
+            830.0
+          ],
+          "power": "ground_pound"
+        },
+        {
+          "center": [
+            5816.0,
+            830.0
+          ],
+          "power": "teleport"
+        }
+      ],
+      "upcoming": [
+        "dash",
+        "ground_pound",
+        "teleport"
+      ]
+    },
+    {
+      "mid": false,
+      "section": "Remontée",
+      "sign": [
+        7464.0,
+        960.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            6488.0,
+            830.0
+          ],
+          "power": "glide"
+        }
+      ],
+      "upcoming": [
+        "glide",
+        "teleport"
+      ]
+    }
+  ]
+}

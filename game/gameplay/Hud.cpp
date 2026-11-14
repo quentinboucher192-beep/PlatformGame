@@ -113,7 +113,7 @@ void Hud::drawVitals(UIContext& ui, GameWorld& w) {
 
 void Hud::drawPowers(UIContext& ui, GameWorld& w) {
     const Player& p = w.player();
-    if (p.powers().empty()) return;
+    if (p.powers().empty() && p.powerSlots() <= 0) return;
     float size = ui.s(54);
     float x = ui.s(40), y = ui.s(140);
     Renderer& r = ui.r();
@@ -136,6 +136,20 @@ void Hud::drawPowers(UIContext& ui, GameWorld& w) {
             Glyphs::drawAction(ui, pw->def().input, {box.center().x - ui.s(14), box.bottom() + ui.s(22)}, ui.s(28));
         x += size + ui.s(18);
     }
+    // Power slots of the level: the free ones are shown empty, with the count.
+    int slots = p.powerSlots();
+    if (slots <= 0) return;
+    int carried = static_cast<int>(p.powers().size());
+    for (int i = carried; i < slots; ++i) {
+        Rect box{x, y, size, size};
+        r.fillRoundedRect(box.expanded(ui.s(4)), ui.s(10), {8, 12, 26, 120});
+        r.drawRoundedRect(box.expanded(ui.s(4)), ui.s(10), {140, 160, 185, 70}, ui.s(1.5f));
+        r.fillRect({box.center().x - ui.s(8), box.center().y - ui.s(1), ui.s(16), ui.s(2)}, {140, 160, 185, 70});
+        r.fillRect({box.center().x - ui.s(1), box.center().y - ui.s(8), ui.s(2), ui.s(16)}, {140, 160, 185, 70});
+        x += size + ui.s(18);
+    }
+    TextStyle cs = style(ui, 18, carried >= slots ? ui.theme().warm : ui.theme().textDim, FontFace::Bold, Align::Left);
+    ui.text().draw(std::to_string(carried) + " / " + std::to_string(slots), {x, y + size * 0.5f - ui.s(11)}, cs);
 }
 
 void Hud::drawTimer(UIContext& ui, GameWorld& w, const LevelRecord* record) {

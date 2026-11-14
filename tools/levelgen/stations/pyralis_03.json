@@ -1,0 +1,326 @@
+{
+  "level": "pyralis_03",
+  "sections": [
+    {
+      "label": "",
+      "movement": [],
+      "needs": [
+        [
+          "grapple"
+        ]
+      ],
+      "pos": [
+        144.0,
+        896.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Portes de la fonderie",
+      "movement": [],
+      "needs": [
+        [
+          "grapple"
+        ]
+      ],
+      "pos": [
+        1216.0,
+        896.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Bout de la chaîne",
+      "movement": [],
+      "needs": [
+        [
+          "grapple"
+        ]
+      ],
+      "pos": [
+        2400.0,
+        896.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Rideaux de plasma",
+      "movement": [],
+      "needs": [
+        [
+          "shield"
+        ],
+        [
+          "teleport"
+        ],
+        [
+          "glide"
+        ]
+      ],
+      "pos": [
+        3760.0,
+        896.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Cheminées ardentes",
+      "movement": [],
+      "needs": [
+        [
+          "glide"
+        ],
+        [
+          "dash"
+        ],
+        [
+          "grapple"
+        ]
+      ],
+      "pos": [
+        4576.0,
+        896.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "La presse",
+      "movement": [],
+      "needs": [
+        [
+          "ground_pound"
+        ],
+        [
+          "wave",
+          "charge_shot"
+        ]
+      ],
+      "pos": [
+        5504.0,
+        416.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Conduit de la presse",
+      "movement": [],
+      "needs": [
+        [
+          "glide"
+        ],
+        [
+          "dash"
+        ],
+        [
+          "teleport"
+        ],
+        [
+          "grapple"
+        ]
+      ],
+      "pos": [
+        6128.0,
+        736.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Antichambre du fourneau",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        7056.0,
+        544.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Falaise du creuset",
+      "movement": [],
+      "needs": [
+        [
+          "glide"
+        ],
+        [
+          "ground_pound"
+        ],
+        [
+          "wave"
+        ],
+        [
+          "shield"
+        ],
+        [
+          "teleport"
+        ]
+      ],
+      "pos": [
+        8032.0,
+        640.0
+      ],
+      "reachable": true
+    }
+  ],
+  "slots": 4,
+  "stations": [
+    {
+      "mid": false,
+      "section": "Cheminées ardentes",
+      "sign": [
+        4872.0,
+        352.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            4928.0,
+            286.0
+          ],
+          "power": "dash"
+        }
+      ],
+      "upcoming": [
+        "dash",
+        "glide",
+        "grapple"
+      ]
+    },
+    {
+      "mid": false,
+      "section": "La presse",
+      "sign": [
+        6096.0,
+        736.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            5560.0,
+            350.0
+          ],
+          "power": "ground_pound"
+        },
+        {
+          "center": [
+            4984.0,
+            286.0
+          ],
+          "power": "charge_shot"
+        }
+      ],
+      "upcoming": [
+        "charge_shot",
+        "ground_pound"
+      ]
+    },
+    {
+      "mid": false,
+      "section": "Conduit de la presse",
+      "sign": [
+        6280.0,
+        480.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            6336.0,
+            414.0
+          ],
+          "power": "glide"
+        },
+        {
+          "center": [
+            6392.0,
+            414.0
+          ],
+          "power": "dash"
+        },
+        {
+          "center": [
+            6448.0,
+            414.0
+          ],
+          "power": "teleport"
+        },
+        {
+          "center": [
+            6504.0,
+            414.0
+          ],
+          "power": "grapple"
+        }
+      ],
+      "upcoming": [
+        "dash",
+        "glide",
+        "grapple",
+        "teleport"
+      ]
+    },
+    {
+      "mid": false,
+      "section": "Falaise du creuset",
+      "sign": [
+        8264.0,
+        448.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            8320.0,
+            382.0
+          ],
+          "power": "ground_pound"
+        },
+        {
+          "center": [
+            8376.0,
+            382.0
+          ],
+          "power": "wave"
+        },
+        {
+          "center": [
+            8520.0,
+            318.0
+          ],
+          "power": "shield"
+        },
+        {
+          "center": [
+            8576.0,
+            318.0
+          ],
+          "power": "glide"
+        }
+      ],
+      "upcoming": [
+        "glide",
+        "teleport",
+        "ground_pound",
+        "wave",
+        "shield"
+      ]
+    },
+    {
+      "mid": true,
+      "section": "Falaise du creuset",
+      "sign": [
+        8624.0,
+        384.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            8664.0,
+            318.0
+          ],
+          "power": "teleport"
+        }
+      ],
+      "upcoming": [
+        "teleport"
+      ]
+    }
+  ]
+}

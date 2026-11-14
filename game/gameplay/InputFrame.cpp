@@ -8,6 +8,10 @@
 namespace cosmic {
 
 void stepWorld(GameWorld& world, const InputFrame& frame, float dt) {
+    if (world.powerOffer()) {
+        if (frame.choice == 0) return;
+        world.resolvePowerOffer(frame.choice);
+    }
     if (frame.flags & InputFrame::SkipCinematic) {
         if (world.cinematic().active() && world.cinematic().skippable()) world.cinematic().skip(world);
         world.fixedUpdate(PlayerInput{}, dt);
@@ -65,6 +69,9 @@ uint64_t simulationStateHash(const GameWorld& w) {
     f.i32(p.health);
     f.i32(static_cast<int32_t>(p.state()));
     f.i32(w.stats().deaths);
+    f.i32(static_cast<int32_t>(p.powers().size()));
+    for (const auto& pw : p.powers()) f.bytes(pw->id().data(), pw->id().size());
+    f.i32(w.powerOffer() ? 1 : 0);
     f.i32(static_cast<int32_t>(w.enemies().size()));
     for (const auto& e : w.enemies()) {
         f.rect(e->box);

@@ -1,0 +1,190 @@
+{
+  "level": "sylvanox_02",
+  "sections": [
+    {
+      "label": "",
+      "movement": [],
+      "needs": [
+        [
+          "teleport"
+        ]
+      ],
+      "pos": [
+        128.0,
+        928.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Lisière sporale",
+      "movement": [],
+      "needs": [
+        [
+          "wave"
+        ]
+      ],
+      "pos": [
+        1136.0,
+        800.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Belvédère des Vents",
+      "movement": [],
+      "needs": [
+        [
+          "glide"
+        ]
+      ],
+      "pos": [
+        1824.0,
+        752.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Premier envol",
+      "movement": [],
+      "needs": [
+        [
+          "glide"
+        ]
+      ],
+      "pos": [
+        3248.0,
+        640.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Cimes venteuses",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        4096.0,
+        480.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Tronc creux",
+      "movement": [],
+      "needs": [
+        [
+          "dash"
+        ]
+      ],
+      "pos": [
+        5376.0,
+        832.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Cimes tourmentées",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        6512.0,
+        848.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Chambre noyée",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        7184.0,
+        928.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Couronne",
+      "movement": [],
+      "needs": [
+        [
+          "glide"
+        ]
+      ],
+      "pos": [
+        8144.0,
+        928.0
+      ],
+      "reachable": true
+    }
+  ],
+  "slots": 4,
+  "stations": [
+    {
+      "mid": false,
+      "section": "Cimes venteuses",
+      "sign": [
+        4176.0,
+        480.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            4232.0,
+            414.0
+          ],
+          "power": "shield"
+        }
+      ],
+      "upcoming": [
+        "shield"
+      ]
+    },
+    {
+      "mid": false,
+      "section": "Tronc creux",
+      "sign": [
+        5456.0,
+        832.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            5512.0,
+            766.0
+          ],
+          "power": "glide"
+        },
+        {
+          "center": [
+            5768.0,
+            766.0
+          ],
+          "power": "dash"
+        }
+      ],
+      "upcoming": [
+        "dash",
+        "glide"
+      ]
+    },
+    {
+      "mid": false,
+      "section": "Couronne",
+      "sign": [
+        8264.0,
+        416.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            8320.0,
+            350.0
+          ],
+          "power": "glide"
+        }
+      ],
+      "upcoming": [
+        "glide"
+      ]
+    }
+  ]
+}

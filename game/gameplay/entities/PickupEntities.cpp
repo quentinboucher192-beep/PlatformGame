@@ -139,40 +139,68 @@ void CollectibleEntity::render(RenderContext& ctx) {
 void PowerUnlockEntity::init(GameWorld& w) {
     power_ = obj_.propStr("power", "dash");
     sprite_.load(w.resources(), "animations/power_unlock.json", power_);
-    // Already owned (start powers): the tablet is just decoration.
-    if (w.mode() != WorldMode::Editor && w.player().hasPower(power_)) removed = true;
+    // A tablet of a power already carried stays (power stations, swaps): it is shown dimmed.
 }
 
-void PowerUnlockEntity::update(GameWorld& /*w*/, float dt) {
+void PowerUnlockEntity::update(GameWorld& w, float dt) {
     t_ += dt;
+    owned_ = w.mode() != WorldMode::Editor && w.player().hasPower(power_);
     sprite_.anim.update(dt);
 }
 
 void PowerUnlockEntity::onPlayerEnter(GameWorld& w) {
     const PowerDefinition* def = w.content().power(power_);
-    if (!def) return;
-    w.player().grantPower(*def);
+    if (!def || w.mode() == WorldMode::Editor) return;
+    switch (w.player().offerPower(*def)) {
+        case Player::Offer::AlreadyOwned: return;
+        case Player::Offer::NeedsChoice:
+            // Every slot is taken (or a carried power uses the same button): the player
+            // chooses which power to leave here, or leaves this one.
+            w.offerPower(id(), power_, w.player().conflictingPower(*def));
+            return;
+        case Player::Offer::Granted: break;
+    }
     w.player().addEnergy(100.0f);
-    w.playSound("sounds/power_unlock.wav", 1.0f);
-    w.particles().emit("power_unlock", box.center(), 1.5f);
-    w.flash(def->color, 0.35f);
-    w.shake(0.25f);
-    w.hitStop(0.12f);
-    WorldMessage m;
-    m.style = WorldMessage::Style::Title;
-    m.text = "Nouveau pouvoir : " + def->name;
-    std::string msg = obj_.propStr("message");
-    m.subtitle = msg.empty() ? def->description : msg;
-    m.speaker = actionId(def->input);  // the HUD shows the matching button
-    m.duration = 5.0f;
-    w.message(m);
+    celebrate(w, *def, box.center(), obj_.propStr("message"));
     w.emit(id(), "collected");
     w.emit(power_, "unlocked");
     removed = true;
 }
 
+void PowerUnlockEntity::exchange(GameWorld& w, const std::string& dropped) {
+    power_ = dropped;
+    sprite_.load(w.resources(), "animations/power_unlock.json", power_);
+    w.particles().emit("power_unlock", box.center(), 1.0f);
+}
+
+void PowerUnlockEntity::celebrate(GameWorld& w, const PowerDefinition& def, Vec2 at, const std::string& message,
+                                  const std::string& dropped) {
+    w.playSound("sounds/power_unlock.wav", 1.0f);
+    w.particles().emit("power_unlock", at, 1.5f);
+    w.flash(def.color, 0.35f);
+    w.shake(0.25f);
+    w.hitStop(0.12f);
+    WorldMessage m;
+    m.style = WorldMessage::Style::Title;
+    m.text = "Nouveau pouvoir : " + def.name;
+    if (!dropped.empty()) {
+        const PowerDefinition* old = w.content().power(dropped);
+        m.subtitle = (old ? old->name : dropped) + " reste ici : revenez le reprendre quand vous voulez.";
+    } else {
+        m.subtitle = message.empty() ? def.description : message;
+    }
+    m.speaker = actionId(def.input);  // the HUD shows the matching button
+    m.duration = 5.0f;
+    w.message(m);
+}
+
 void PowerUnlockEntity::render(RenderContext& ctx) {
     Vec2 c = box.center() + Vec2{0, dmath::sin(t_ * 2.0f) * 3.0f};
+    if (owned_ && !ctx.editor) {
+        // Already carried: a faint tablet, available again if the power is left elsewhere.
+        sprite_.draw(ctx, c, false, Color{140, 150, 175, 140});
+        return;
+    }
     ctx.r.drawWorldGlow(c, 26.0f, {176, 76, 255, 90});
     sprite_.draw(ctx, c);
     ctx.lights.add(c, 90.0f, {200, 120, 255, 255});

@@ -1,0 +1,144 @@
+{
+  "level": "sylvanox_03",
+  "sections": [
+    {
+      "label": "",
+      "movement": [],
+      "needs": [
+        [
+          "wave",
+          "charge_shot"
+        ]
+      ],
+      "pos": [
+        112.0,
+        352.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Portes englouties",
+      "movement": [],
+      "needs": [
+        [
+          "dash"
+        ]
+      ],
+      "pos": [
+        1088.0,
+        640.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Salle des ancrages",
+      "movement": [],
+      "needs": [
+        [
+          "grapple"
+        ]
+      ],
+      "pos": [
+        1664.0,
+        1024.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Fonderie",
+      "movement": [],
+      "needs": [
+        [
+          "grapple"
+        ],
+        [
+          "shield"
+        ],
+        [
+          "teleport"
+        ]
+      ],
+      "pos": [
+        4176.0,
+        832.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Labyrinthe de phase",
+      "movement": [],
+      "needs": [
+        [
+          "shield"
+        ],
+        [
+          "grapple"
+        ],
+        [
+          "teleport"
+        ]
+      ],
+      "pos": [
+        5728.0,
+        832.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Cœur de la machine",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        6336.0,
+        1184.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Ascenseur des Anciens",
+      "movement": [],
+      "needs": [
+        [
+          "grapple"
+        ]
+      ],
+      "pos": [
+        7296.0,
+        1184.0
+      ],
+      "reachable": true
+    }
+  ],
+  "slots": 4,
+  "stations": [
+    {
+      "mid": false,
+      "section": "Fonderie",
+      "sign": [
+        4744.0,
+        576.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            5160.0,
+            510.0
+          ],
+          "power": "teleport"
+        },
+        {
+          "center": [
+            5736.0,
+            766.0
+          ],
+          "power": "shield"
+        }
+      ],
+      "upcoming": [
+        "grapple",
+        "shield",
+        "teleport"
+      ]
+    }
+  ]
+}

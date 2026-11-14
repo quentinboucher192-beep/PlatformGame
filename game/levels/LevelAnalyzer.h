@@ -70,6 +70,34 @@ LevelAnalysis analyzeLevel(const LevelData& level, const ContentDatabase& conten
 std::vector<Rect> suggestGates(const LevelData& level, const LevelAnalysis& a, float clearance = 112.0f, float width = 48.0f,
                                bool deviationGates = false);
 
+/// Power slots planning: the intended route cut at each checkpoint, and for every section
+/// what its obstacles ask for (power gates, grapple points, updrafts, receptors) plus the
+/// powers the movement model needs to reach the next checkpoint.
+struct PowerSection {
+    std::string label;  // checkpoint opening the section ("" = the start)
+    Vec2 pos;           // its feet
+    /// Obstacles on the route: each entry is satisfied by one of its powers.
+    std::vector<std::vector<std::string>> needs;
+    /// Extra powers the model needs to reach the end of the section with `needs` only.
+    std::vector<std::string> movement;
+    bool reachable = true;  // with needs + movement (false: more than single additions)
+};
+/// `preferred`: powers tried first when a section needs more movement (the level's core).
+std::vector<PowerSection> powerSections(const LevelData& level, const ContentDatabase& content,
+                                        const std::vector<std::string>& preferred = {});
+
+/// Power stations: tablets placed on the route so that every obstacle asking for a power can
+/// be passed with the level's power slots, whatever the player chose to carry before (a
+/// power left on a tablet stays there, so nothing is ever lost).
+struct PowerStation {
+    std::string section;  // checkpoint opening the section ("" = start)
+    bool midSection = false;
+    Vec2 sign;            // feet of the sign announcing the powers of the section
+    std::vector<std::pair<std::string, Vec2>> tablets;  // power, centre of the tablet
+    std::vector<std::string> upcoming;                  // powers the section asks for
+};
+std::vector<PowerStation> planPowerStations(const LevelData& level, const ContentDatabase& content);
+
 /// Writes a PPM picture of the analysis (terrain, reachable space, routes, checkpoints).
 bool writeAnalysisImage(const LevelData& level, const ContentDatabase& content, const LevelAnalysis& a, const std::string& path,
                         const LevelAnalyzerOptions& opt = {});

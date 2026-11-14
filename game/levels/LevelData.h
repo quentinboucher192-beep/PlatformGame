@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+
 #include <array>
 #include <optional>
 #include <string>
@@ -138,6 +140,16 @@ struct LevelData {
     std::array<MedalRule, 4> medals;  // bronze, silver, gold, platinum
 
     std::vector<std::string> startPowers;
+    /// Powers the player can carry at once (0 = no limit). Picking up a tablet with every
+    /// slot taken asks to replace one of them or to leave the new power where it is.
+    static constexpr int kDefaultMaxPowers = 4;
+    static constexpr int kMaxPowerSlots = 8;
+    int maxPowers = kDefaultMaxPowers;
+    /// Slots actually available: never fewer than the start powers (older levels).
+    int powerSlots() const {
+        if (maxPowers <= 0) return 0;
+        return std::max(maxPowers, static_cast<int>(startPowers.size()));
+    }
     float cameraZoom = 1.0f;
 
     std::vector<LevelLayer> layers;

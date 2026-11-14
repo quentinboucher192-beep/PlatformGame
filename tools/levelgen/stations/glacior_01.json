@@ -1,0 +1,197 @@
+{
+  "level": "glacior_01",
+  "sections": [
+    {
+      "label": "",
+      "movement": [],
+      "needs": [
+        [
+          "ground_pound"
+        ]
+      ],
+      "pos": [
+        128.0,
+        800.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Lisière gelée",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        1520.0,
+        768.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Falaises d'aurore",
+      "movement": [],
+      "needs": [
+        [
+          "glide"
+        ]
+      ],
+      "pos": [
+        2576.0,
+        512.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Rive du lac",
+      "movement": [],
+      "needs": [
+        [
+          "grapple"
+        ]
+      ],
+      "pos": [
+        3520.0,
+        736.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Avant-poste gelé",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        4352.0,
+        800.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Col des blizzards",
+      "movement": [],
+      "needs": [
+        [
+          "grapple"
+        ]
+      ],
+      "pos": [
+        5248.0,
+        800.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Bastion de phase",
+      "movement": [],
+      "needs": [
+        [
+          "teleport"
+        ],
+        [
+          "glide"
+        ]
+      ],
+      "pos": [
+        6392.0,
+        512.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Lac de l'aurore",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        7192.0,
+        832.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Sanctuaire",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        8128.0,
+        832.0
+      ],
+      "reachable": true
+    }
+  ],
+  "slots": 4,
+  "stations": [
+    {
+      "mid": false,
+      "section": "Falaises d'aurore",
+      "sign": [
+        2656.0,
+        512.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            2712.0,
+            446.0
+          ],
+          "power": "glide"
+        }
+      ],
+      "upcoming": [
+        "glide"
+      ]
+    },
+    {
+      "mid": false,
+      "section": "Rive du lac",
+      "sign": [
+        4360.0,
+        800.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            3576.0,
+            670.0
+          ],
+          "power": "grapple"
+        },
+        {
+          "center": [
+            3208.0,
+            494.0
+          ],
+          "power": "shield"
+        }
+      ],
+      "upcoming": [
+        "grapple",
+        "shield"
+      ]
+    },
+    {
+      "mid": false,
+      "section": "Bastion de phase",
+      "sign": [
+        6672.0,
+        512.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            7200.0,
+            766.0
+          ],
+          "power": "teleport"
+        },
+        {
+          "center": [
+            6416.0,
+            446.0
+          ],
+          "power": "glide"
+        }
+      ],
+      "upcoming": [
+        "glide",
+        "teleport"
+      ]
+    }
+  ]
+}

@@ -33,6 +33,7 @@
 #include <SDL3/SDL_main.h>
 
 #include <cstdlib>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -119,6 +120,90 @@ int analyzeFromCommandLine(const std::string& folder) {
     }
     return failures == 0 ? 0 : 1;
 }
+/// `--power-needs`: for every campaign level, which powers are indispensable (the exit or
+/// a checkpoint can no longer be reached without them), to plan the power slots.
+int powerNeedsFromCommandLine() {
+    ContentDatabase content;
+    content.reload();
+    for (const LevelEntry* e : content.levels()) {
+        if (e->source != ContentSource::Builtin) continue;
+        auto level = content.loadLevel(e->id);
+        if (!level) continue;
+        std::set<std::string> all(level->startPowers.begin(), level->startPowers.end());
+        for (const auto& o : level->objects)
+            if (o.type == "power_unlock") all.insert(o.propStr("power"));
+        std::printf("%-14s", e->id.c_str());
+        for (const auto& p : all) {
+            LevelData l = *level;
+            l.startPowers.clear();
+            for (const auto& q : all)
+                if (q != p) l.startPowers.push_back(q);
+            l.objects.erase(std::remove_if(l.objects.begin(), l.objects.end(),
+                                           [&](const LevelObject& o) { return o.type == "power_unlock" && o.propStr("power") == p; }),
+                            l.objects.end());
+            LevelAnalysis a = analyzeLevel(l, content);
+            std::string first;
+            for (const auto& prob : a.problems)
+                if (first.empty() && prob.find("inaccessible") != std::string::npos) first = prob;
+            bool needed = !a.reachable || !first.empty();
+            std::printf("  %s%s", p.c_str(), needed ? "*" : "");
+            if (needed && !first.empty()) std::printf("(%s)", first.substr(0, 60).c_str());
+        }
+        std::printf("\n");
+    }
+    return 0;
+}
+
+/// `--plan-stations <dir>`: power slots plan of every campaign level (PowerSection list as
+/// JSON, read by tools/levelgen to place the power stations).
+int planStationsFromCommandLine(const std::string& folder) {
+    ContentDatabase content;
+    content.reload();
+    std::error_code ec;
+    fs::create_directories(Paths::fromUtf8(folder), ec);
+    for (const LevelEntry* e : content.levels()) {
+        if (e->source != ContentSource::Builtin) continue;
+        auto level = content.loadLevel(e->id);
+        if (!level) continue;
+        std::vector<std::string> preferred = level->startPowers;
+        if (level->metadata.contains("corePowers"))
+            for (const auto& p : level->metadata["corePowers"]) preferred.insert(preferred.begin(), p.get<std::string>());
+        auto sections = powerSections(*level, content, preferred);
+        Json j = {{"level", e->id}, {"sections", Json::array()}};
+        std::printf("%s\n", e->id.c_str());
+        for (const auto& s : sections) {
+            Json needs = Json::array();
+            std::string txt;
+            for (const auto& alt : s.needs) {
+                needs.push_back(alt);
+                txt += " " + alt.front() + (alt.size() > 1 ? "|" + alt[1] : "");
+            }
+            std::string mv;
+            for (const auto& p : s.movement) mv += " +" + p;
+            std::printf("   %-26s needs:%s%s%s\n", s.label.empty() ? "(départ)" : s.label.c_str(), txt.c_str(), mv.c_str(),
+                        s.reachable ? "" : "  !! INATTEIGNABLE");
+            j["sections"].push_back({{"label", s.label}, {"pos", {s.pos.x, s.pos.y}}, {"needs", needs}, {"movement", s.movement},
+                                     {"reachable", s.reachable}});
+        }
+        Json st = Json::array();
+        for (const auto& ps : planPowerStations(*level, content)) {
+            Json tabs = Json::array();
+            std::string txt;
+            for (const auto& [p, c] : ps.tablets) {
+                tabs.push_back({{"power", p}, {"center", {c.x, c.y}}});
+                txt += " " + p;
+            }
+            st.push_back({{"section", ps.section}, {"mid", ps.midSection}, {"sign", {ps.sign.x, ps.sign.y}}, {"tablets", tabs},
+                          {"upcoming", ps.upcoming}});
+            std::printf("   STATION %s%s :%s\n", ps.section.empty() ? "(départ)" : ps.section.c_str(), ps.midSection ? " (milieu)" : "", txt.c_str());
+        }
+        j["stations"] = st;
+        j["slots"] = level->powerSlots();
+        FileUtil::saveJson(Paths::fromUtf8(folder) / (e->id + ".json"), j);
+    }
+    return 0;
+}
+
 /// `--rate-levels [file]`: computes the difficulty of every campaign level (breakdown on the
 /// console); with a file, writes them as data/levels/ratings.json does.
 int rateFromCommandLine(const std::string& file) {
@@ -219,6 +304,18 @@ int main(int argc, char** argv) {
 
     if (std::string dir = value("--analyze-levels"); !dir.empty()) {
         int rc = analyzeFromCommandLine(dir);
+        Log::shutdown();
+        return rc;
+    }
+
+    if (std::string dir = value("--plan-stations"); !dir.empty()) {
+        int rc = planStationsFromCommandLine(dir);
+        Log::shutdown();
+        return rc;
+    }
+
+    if (has("--power-needs")) {
+        int rc = powerNeedsFromCommandLine();
         Log::shutdown();
         return rc;
     }

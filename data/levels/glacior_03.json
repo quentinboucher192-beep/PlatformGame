@@ -108,16 +108,10 @@
   }
  },
  "startPowers": [
-  "dash",
-  "wave",
-  "shield",
-  "impulse",
-  "teleport",
-  "glide",
+  "triple_jump",
   "grapple",
   "ground_pound",
-  "charge_shot",
-  "triple_jump"
+  "glide"
  ],
  "cameraZoom": 1.0,
  "layers": [
@@ -10486,6 +10480,210 @@
     "material": "frost_metal",
     "seal": true
    }
+  },
+  {
+   "id": "station_1_1",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    3860.0,
+    178.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "teleport",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_sign_1",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    3804.0,
+    232.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Station de pouvoirs. Pour la suite : le Planeur, le Grappin, la Téléportation. Vous portez 4 pouvoirs au plus : celui que vous laissez reste ici.",
+    "auto": true
+   }
+  },
+  {
+   "id": "station_2_1",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    4364.0,
+    178.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "dash",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_2_2",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    4420.0,
+    178.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "ground_pound",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_sign_2",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    4036.0,
+    232.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Station de pouvoirs. Pour la suite : le Dash, la Frappe sismique. Vous portez 4 pouvoirs au plus : celui que vous laissez reste ici.",
+    "auto": true
+   }
+  },
+  {
+   "id": "station_3_1",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    4956.0,
+    466.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "wave",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_3_2",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    5012.0,
+    466.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "grapple",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_3_3",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    5068.0,
+    466.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "shield",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_3_4",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    5124.0,
+    466.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "teleport",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_sign_3",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    4900.0,
+    520.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Station de pouvoirs. Pour la suite : le Grappin, le Bouclier, la Téléportation, l'Onde. Vous portez 4 pouvoirs au plus : celui que vous laissez reste ici.",
+    "auto": true
+   }
+  },
+  {
+   "id": "station_4_1",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    6588.0,
+    306.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "glide",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_4_2",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    6644.0,
+    306.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "dash",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_sign_4",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    6124.0,
+    360.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Station de pouvoirs. Pour la suite : le Dash, le Planeur, le Grappin. Vous portez 4 pouvoirs au plus : celui que vous laissez reste ici.",
+    "auto": true
+   }
   }
  ],
  "events": [
@@ -10829,7 +11027,8 @@
  },
  "metadata": {
   "generator": "tools/levelgen/glacior_03.py",
-  "revision": 4
+  "revision": 5
  },
- "killY": 1304
+ "killY": 1304,
+ "maxPowers": 4
 }

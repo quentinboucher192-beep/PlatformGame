@@ -71,6 +71,31 @@ PLANETS = {
 }
 
 
+
+# Power slots (version 2.3): powers carried at once in every campaign level, and the
+# start set of each level (the other powers come from tablets and power stations).
+MAX_POWERS = 4
+START_POWERS = {
+    "sylvanox_01": [],
+    "sylvanox_02": ["teleport", "wave", "dash", "impulse"],
+    "sylvanox_03": ["wave", "dash", "glide", "teleport"],
+    "sylvanox_04": ["dash", "wave", "grapple", "shield"],
+    "glacior_01": ["ground_pound", "glide", "grapple", "dash"],
+    "glacior_02": ["triple_jump", "grapple", "teleport", "dash"],
+    "glacior_03": ["triple_jump", "grapple", "ground_pound", "glide"],
+    "glacior_04": ["glide", "triple_jump", "dash", "shield"],
+    "pyralis_01": ["glide", "grapple", "dash", "shield"],
+    "pyralis_02": ["ground_pound", "wave", "glide", "grapple"],
+    "pyralis_03": ["grapple", "shield", "glide", "teleport"],
+    "pyralis_04": ["glide", "ground_pound", "charge_shot", "dash"],
+}
+POWER_NAMES = {
+    "dash": "le Dash", "wave": "l'Onde", "shield": "le Bouclier", "impulse": "l'Impulsion", "teleport": "la Téléportation",
+    "glide": "le Planeur", "grapple": "le Grappin", "ground_pound": "la Frappe sismique", "charge_shot": "le Tir chargé",
+    "triple_jump": "le Triple saut", "time_slow": "le Ralenti", "magnet": "l'Aimant", "air_dash": "la Ruée aérienne",
+    "plasma_bomb": "la Bombe plasma",
+}
+
 class Level:
     def __init__(self, level_id, name, width_tiles, height_tiles):
         self.data = {
@@ -310,6 +335,44 @@ class Level:
             self.obj("solid", list(g["rect"]), "terrain", {"material": g.get("material", "ruin_stone"), "seal": True},
                      oid="seal_%d" % (i + 1))
 
+    def needs(self, oid, power):
+        """Marks an object as asking for a power (power stations planning): a hazard only
+        the shield crosses, a receptor out of the wave's reach..."""
+        for o in self.data["objects"]:
+            if o["id"] == oid:
+                o.setdefault("props", {})["needsPower"] = power
+                return oid
+        raise KeyError(oid)
+
+    def apply_power_slots(self):
+        """Power slots (version 2.3): a campaign level carries at most MAX_POWERS powers. The
+        start set comes from START_POWERS; the power stations (tablets + sign) computed by
+        CosmicPlatformer --plan-stations tools/levelgen/stations are added on the route."""
+        lid = self.data["id"]
+        if lid not in START_POWERS:
+            return
+        self.data["startPowers"] = list(START_POWERS[lid])
+        self.data["maxPowers"] = MAX_POWERS
+        plan = os.path.join(os.path.dirname(os.path.abspath(__file__)), "stations", lid + ".json")
+        if not os.path.exists(plan):
+            return
+        with open(plan, encoding="utf-8") as f:
+            stations = json.load(f).get("stations", [])
+        for i, st in enumerate(stations):
+            for j, t in enumerate(st["tablets"]):
+                cx, cy = t["center"]
+                self.obj("power_unlock", [round(cx) - 12, round(cy) - 12, 24, 24],
+                         props={"power": t["power"], "message": "", "station": True}, oid="station_%d_%d" % (i + 1, j + 1))
+            names = ", ".join(POWER_NAMES.get(p, p) for p in st["upcoming"] if p)
+            sx, sy = st["sign"]
+            if st.get("mid"):
+                text = "Station de pouvoirs : il faut maintenant %s. Le pouvoir que vous laissez reste ici." % names
+            else:
+                text = ("Station de pouvoirs. Pour la suite : %s. Vous portez %d pouvoirs au plus : "
+                        "celui que vous laissez reste ici." % (names, MAX_POWERS))
+            self.obj("sign", [round(sx) - 12, round(sy) - 24, 24, 24], props={"text": text, "auto": True},
+                     oid="station_sign_%d" % (i + 1))
+
     def harden(self):
         """Campaign difficulty (version 2.1.3): one health orb out of two is removed (hearts
         and energy orbs stay)."""
@@ -321,6 +384,10 @@ class Level:
         if self.data.get("metadata", {}).get("generator") != "tools/levelgen/challenge.py":
             self.harden()
         self.apply_seals()
+        self.apply_power_slots()
+        meta = self.data.setdefault("metadata", {})
+        if meta.get("revision", 0) < 5:
+            meta["revision"] = 5  # 2.3: power slots and stations
         ids = [o["id"] for o in self.data["objects"]]
         assert len(ids) == len(set(ids)), "duplicate ids"
         with open(path, "w", encoding="utf-8") as f:

@@ -108,15 +108,10 @@
   }
  },
  "startPowers": [
-  "dash",
-  "wave",
-  "shield",
-  "impulse",
-  "teleport",
-  "glide",
   "grapple",
-  "ground_pound",
-  "charge_shot"
+  "shield",
+  "glide",
+  "teleport"
  ],
  "cameraZoom": 1.0,
  "layers": [
@@ -4795,7 +4790,8 @@
    ],
    "props": {
     "targets": "o290",
-    "duration": 0.0
+    "duration": 0.0,
+    "needsPower": "charge_shot"
    }
   },
   {
@@ -11373,6 +11369,273 @@
     "material": "forge_metal",
     "seal": true
    }
+  },
+  {
+   "id": "station_1_1",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    4916.0,
+    274.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "dash",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_sign_1",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    4860.0,
+    328.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Station de pouvoirs. Pour la suite : le Dash, le Planeur, le Grappin. Vous portez 4 pouvoirs au plus : celui que vous laissez reste ici.",
+    "auto": true
+   }
+  },
+  {
+   "id": "station_2_1",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    5548.0,
+    338.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "ground_pound",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_2_2",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    4972.0,
+    274.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "charge_shot",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_sign_2",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    6084.0,
+    712.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Station de pouvoirs. Pour la suite : le Tir chargé, la Frappe sismique. Vous portez 4 pouvoirs au plus : celui que vous laissez reste ici.",
+    "auto": true
+   }
+  },
+  {
+   "id": "station_3_1",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    6324.0,
+    402.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "glide",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_3_2",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    6380.0,
+    402.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "dash",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_3_3",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    6436.0,
+    402.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "teleport",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_3_4",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    6492.0,
+    402.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "grapple",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_sign_3",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    6268.0,
+    456.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Station de pouvoirs. Pour la suite : le Dash, le Planeur, le Grappin, la Téléportation. Vous portez 4 pouvoirs au plus : celui que vous laissez reste ici.",
+    "auto": true
+   }
+  },
+  {
+   "id": "station_4_1",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    8308.0,
+    370.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "ground_pound",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_4_2",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    8364.0,
+    370.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "wave",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_4_3",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    8508.0,
+    306.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "shield",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_4_4",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    8564.0,
+    306.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "glide",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_sign_4",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    8252.0,
+    424.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Station de pouvoirs. Pour la suite : le Planeur, la Téléportation, la Frappe sismique, l'Onde, le Bouclier. Vous portez 4 pouvoirs au plus : celui que vous laissez reste ici.",
+    "auto": true
+   }
+  },
+  {
+   "id": "station_5_1",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    8652.0,
+    306.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "teleport",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_sign_5",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    8612.0,
+    360.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Station de pouvoirs : il faut maintenant la Téléportation. Le pouvoir que vous laissez reste ici.",
+    "auto": true
+   }
   }
  ],
  "events": [
@@ -11644,7 +11907,8 @@
  },
  "metadata": {
   "generator": "tools/levelgen/pyralis_03.py",
-  "revision": 4
+  "revision": 5
  },
- "killY": 1264
+ "killY": 1264,
+ "maxPowers": 4
 }

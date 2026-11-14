@@ -1,0 +1,65 @@
+{
+  "level": "glacior_04",
+  "sections": [
+    {
+      "label": "",
+      "movement": [],
+      "needs": [
+        [
+          "glide"
+        ]
+      ],
+      "pos": [
+        64.0,
+        640.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Seuil I",
+      "movement": [],
+      "needs": [
+        [
+          "glide"
+        ]
+      ],
+      "pos": [
+        2048.0,
+        544.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Galerie II",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        3552.0,
+        480.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Croisée III",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        5328.0,
+        480.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Antre IV",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        6416.0,
+        608.0
+      ],
+      "reachable": true
+    }
+  ],
+  "slots": 4,
+  "stations": []
+}

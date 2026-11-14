@@ -194,6 +194,7 @@ std::string fingerprintGameplay(const ContentDatabase& content, const LevelData&
                      {"killY", full.value("killY", Json())},
                      {"timer", full.value("timer", Json())},
                      {"startPowers", start},
+                     {"powerSlots", level.powerSlots()},
                      {"objects", objects},
                      {"events", events},
                      {"intro", full.value("intro", Json())},

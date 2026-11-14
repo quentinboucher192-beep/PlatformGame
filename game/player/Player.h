@@ -79,7 +79,25 @@ public:
     bool spendEnergy(float amount);
 
     // --------------------------------------------------------- powers
+    /// Grants a power outright (start powers, scripted gifts, tests): a power on the same
+    /// exclusive input is replaced, the slot limit is not checked.
     void grantPower(const PowerDefinition& def);
+    /// Result of offering a power (tablet picked up).
+    enum class Offer { Granted, AlreadyOwned, NeedsChoice };
+    /// Grants the power if a slot is free and no carried power uses the same exclusive
+    /// input; otherwise the player must choose (replace a power or leave the new one).
+    Offer offerPower(const PowerDefinition& def);
+    /// Index of the carried power the new one would have to replace because they share an
+    /// exclusive input (-1 = none: any slot can be replaced).
+    int conflictingPower(const PowerDefinition& def) const;
+    /// Replaces the power in `slot` by `def` and returns the id of the power removed.
+    std::string replacePower(int slot, const PowerDefinition& def);
+    /// Removes a carried power (tests, scripted levels). Returns false if not carried.
+    bool removePower(const std::string& id);
+    /// Powers the player can carry at once (0 = no limit), set by the level.
+    void setPowerSlots(int slots) { powerSlots_ = std::max(0, slots); }
+    int powerSlots() const { return powerSlots_; }
+    void refreshPassivePowers();
     bool hasPower(const std::string& id) const;
     Power* power(const std::string& id);
     const std::vector<std::unique_ptr<Power>>& powers() const { return powers_; }
@@ -162,6 +180,7 @@ private:
     bool jumpCutAvailable_ = false;
     int airJumpsLeft_ = 1;
     int extraAirJumps_ = 0;
+    int powerSlots_ = 0;
     float slowTimer_ = 0.0f;
     float slowMultiplier_ = 1.0f;
     float wallJumpLockTimer_ = 0.0f;

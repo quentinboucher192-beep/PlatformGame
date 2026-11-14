@@ -18,6 +18,9 @@ struct InputFrame {
     /// simulation).
     static constexpr int kActions = static_cast<int>(Action::Interact) + 1;
     enum Flag : uint8_t { SkipCinematic = 1 };
+    /// Answer to a pending power offer (GameWorld::powerOffer): 1..8 replaces that slot,
+    /// kChoiceLeave leaves the new power on its tablet, 0 = no answer this step.
+    static constexpr uint8_t kChoiceLeave = 255;
 
     uint16_t held = 0;
     uint16_t pressed = 0;
@@ -25,6 +28,7 @@ struct InputFrame {
     int8_t moveX = 0;  // -127..127
     int8_t moveY = 0;
     uint8_t flags = 0;
+    uint8_t choice = 0;
 
     bool operator==(const InputFrame&) const = default;
 
@@ -57,7 +61,8 @@ struct InputFrame {
     }
 };
 
-/// One fixed step of a run: applies the frame (cinematic skip included) to the world.
+/// One fixed step of a run: applies the frame (cinematic skip, power choice) to the world.
+/// While a power offer waits for an answer, a frame without one simulates nothing.
 /// Live play, the replay viewer and the tests all advance the simulation through here.
 void stepWorld(GameWorld& world, const InputFrame& frame, float dt);
 

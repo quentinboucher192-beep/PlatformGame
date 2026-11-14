@@ -9833,6 +9833,37 @@
     "material": "ruin_stone",
     "seal": true
    }
+  },
+  {
+   "id": "station_1_1",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    10228.0,
+    402.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "shield",
+    "message": "",
+    "station": true
+   }
+  },
+  {
+   "id": "station_sign_1",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    10172.0,
+    456.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Station de pouvoirs. Pour la suite : le Bouclier. Vous portez 4 pouvoirs au plus : celui que vous laissez reste ici.",
+    "auto": true
+   }
   }
  ],
  "events": [
@@ -10074,7 +10105,8 @@
  },
  "metadata": {
   "generator": "tools/levelgen/sylvanox_01.py",
-  "revision": 4
+  "revision": 5
  },
- "killY": 1240
+ "killY": 1240,
+ "maxPowers": 4
 }
