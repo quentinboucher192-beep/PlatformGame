@@ -5096,6 +5096,7 @@
   ],
   "noHealing": true
  },
+ "extreme": true,
  "killY": 880,
  "maxPowers": 4
 }

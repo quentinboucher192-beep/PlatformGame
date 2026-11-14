@@ -517,6 +517,58 @@ void OnlineService::submitCommunityRun(const std::string& localLevelId, int64_t 
          });
 }
 
+void OnlineService::submitRaceAttempt(RaceAttempt a, std::vector<uint8_t> replay) {
+    char est[32];
+    std::snprintf(est, sizeof est, "%.1f", a.estimate);
+    std::string pct = est;
+    for (char& c : pct)
+        if (c == '.') c = ',';
+    if (!loggedIn() || !usable()) {
+        notify(Notification::Kind::Info, "Progression non classée",
+               "« " + a.title + " » : " + pct + " %. Connectez-vous à Cosmic Online pour entrer dans la course à la vérification.");
+        return;
+    }
+    Json body = {{"kind", a.kind},          {"level_id", a.levelId}, {"attempt_id", a.attemptId}, {"time_ms", a.timeMs},
+                 {"finished", a.finished},  {"bosses", a.bosses},    {"waves", a.waves}};
+    if (a.kind == "official") body["level_hash"] = a.levelHash;
+    else body["version"] = a.version;
+    std::string title = a.title;
+    send("POST", "/api/v1/races/runs", body, [this, title, pct, replay = std::move(replay)](const ApiResult& r) mutable {
+        if (!r.ok) {
+            notify(Notification::Kind::Warning, "Progression non envoyée", r.message);
+            return;
+        }
+        std::string upload = jstr(r.data, "upload");
+        if (upload.rfind("/api/v1/races/runs/", 0) != 0) return;
+        sendBytes("PUT", upload, std::string(replay.begin(), replay.end()), [this, title, pct](const ApiResult& u) {
+            if (!u.ok) {
+                notify(Notification::Kind::Warning, "Progression non envoyée", u.message);
+                return;
+            }
+            const Json& run = u.data.value("run", Json::object());
+            if (jstr(run, "status") != "VERIFIED") {
+                std::string why;
+                for (const auto& x : run.value("reasons", Json::array()))
+                    if (x.is_string()) why += (why.empty() ? "" : ", ") + x.get<std::string>();
+                notify(Notification::Kind::Warning, "Progression refusée", "Replay non conforme" + (why.empty() ? std::string{} : " : " + why) + ".");
+                return;
+            }
+            if (jget<bool>(u.data, "verifier", false)) {
+                notify(Notification::Kind::Record, "Niveau vérifié !", "Vous êtes le premier à finir « " + title + " » : vous en êtes le vérificateur.");
+                return;
+            }
+            char sc[32];
+            std::snprintf(sc, sizeof sc, "%.1f", jget<double>(run, "score", 0.0));
+            std::string s = sc;
+            for (char& c : s)
+                if (c == '.') c = ',';
+            int rank = jget<int>(run, "rank", 0);
+            notify(Notification::Kind::Record, "Course à la vérification",
+                   "« " + title + " » : " + s + " %" + (rank > 0 ? " — " + std::to_string(rank) + (rank == 1 ? "er" : "e") + " de la course." : "."));
+        });
+    });
+}
+
 void OnlineService::getBinary(const std::string& path, std::function<void(const HttpResponse&)> cb, size_t maxBytes) {
     if (!usable()) {
         HttpResponse r;

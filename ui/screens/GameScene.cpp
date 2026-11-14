@@ -7,6 +7,7 @@
 #include "engine/core/Log.h"
 #include "game/GameServices.h"
 #include "game/enemies/Enemy.h"
+#include "game/levels/LevelAnalyzer.h"
 #include "game/online/LevelFingerprint.h"
 #include "ui/screens/PauseScene.h"
 #include "ui/screens/PowerChoiceScene.h"
@@ -80,6 +81,22 @@ void GameScene::onEnter() {
                 recordMode_ = RecordMode::Official;
             }
         }
+        if (level_.extreme && level_.oneLife() && (recordMode_ == RecordMode::Official || recordMode_ == RecordMode::Community)) {
+            raceTitle_ = level_.name;
+            if (recordMode_ == RecordMode::Official) {
+                raceKind_ = "official";
+                raceLevelId_ = levelId_;
+                raceHash_ = fingerprint_->hash;
+            } else if (const Json* c = g_.online.communityInstall(levelId_)) {
+                raceKind_ = "community";
+                raceLevelId_ = jstr(*c, "id");
+                raceVersion_ = jget<int>(*c, "version", 0);
+                if (!jstr(*c, "title").empty()) raceTitle_ = jstr(*c, "title");
+            }
+            // The route is the one declared online (same computation), off the main thread.
+            race_.begin(buildRaceLayout(level_, g_.content, false));
+            raceRouteFuture_ = std::async(std::launch::async, [level = level_, &content = g_.content] { return raceRoute(intendedRoute(level, content)); });
+        }
         if (recordMode_ != RecordMode::None)
             world_->eventObserver = [this](const std::string& src, const std::string& trig) { recorder_.onWorldEvent(src, trig); };
     }
@@ -136,13 +153,44 @@ void GameScene::renderMapView(const Rect& dst, const Rect& win) {
     r.popClip();
 }
 
+void GameScene::sendRaceAttempt(bool finished, std::vector<uint8_t> replay) {
+    if (!race_.active() || raceKind_.empty() || replay.empty()) return;
+    const RaceProgress& p = race_.progress();
+    OnlineService::RaceAttempt a;
+    a.kind = raceKind_;
+    a.levelId = raceLevelId_;
+    a.levelHash = raceHash_;
+    a.version = raceVersion_;
+    a.title = raceTitle_;
+    a.attemptId = attemptId_;
+    a.timeMs = static_cast<int64_t>(std::llround(static_cast<double>(world_->timer().elapsed()) * 1000.0));
+    a.finished = finished;
+    for (float b : p.bossRemoved) a.bosses.push_back(static_cast<int>(std::clamp(std::lround(b * 1000.0f), 0L, 1000L)));
+    a.waves = p.wavesDone;
+    a.estimate = raceScore(race_.layout(), p);
+    // Nothing done (left at once): not an attempt worth ranking.
+    if (!finished && a.estimate < 0.1f) return;
+    g_.online.submitRaceAttempt(std::move(a), std::move(replay));
+}
+
+void GameScene::abandonRaceAttempt() {
+    // Restarting or leaving during an EXTRÊME attempt still ranks how far it went.
+    if (ended_ || !race_.active() || !recorder_.active() || !world_) return;
+    ended_ = true;
+    recorder_.finishAttempt(*world_, world_->timer().elapsed());
+    ReplayData replay = recorder_.take();
+    sendRaceAttempt(false, replay.encode());
+}
+
 void GameScene::restart() {
+    abandonRaceAttempt();
     PlayOptions o = opt_;
     if (!o.level && !opt_.editorTest) o.level.reset();
     g_.app.replaceTop(makeGameScene(g_, levelId_, o), 0.3f);
 }
 
 void GameScene::quitToMenu() {
+    abandonRaceAttempt();
     if (opt_.editorTest) {
         g_.app.popScene();
         return;
@@ -201,6 +249,10 @@ void GameScene::fixedUpdate(float dt) {
     if (!ended_) recorder_.recordInput(frame);
     stepWorld(*world_, frame, kSimDt);
     if (!ended_) recorder_.tick(*world_);
+    if (!ended_ && race_.active()) {
+        race_.update(*world_);
+        recorder_.raceProgress(race_.progress().bossRemoved, race_.progress().wavesDone);
+    }
     playTime_ += dt;
     if (!ended_ && world_->state() == WorldState::Completed) finishRun(true);
     if (!ended_ && world_->state() == WorldState::Failed) finishRun(false);
@@ -240,6 +292,7 @@ void GameScene::finishRun(bool completed) {
         }
     }
     std::optional<OnlineAttempt> online;
+    std::vector<uint8_t> raceReplay;  // the same replay, for the EXTRÊME race
     if (completed && fingerprint_ && recorder_.active()) {
         recorder_.finish(*world_, r.time);
         ReplayData replay = recorder_.take();
@@ -249,6 +302,7 @@ void GameScene::finishRun(bool completed) {
             if (FileUtil::writeBinary(Paths::fromUtf8(g_.saveReplayPath), bytes))
                 Log::info("Replay enregistré : {} ({} octets)", g_.saveReplayPath, bytes.size());
         }
+        if (race_.active()) raceReplay = replay.encode();
         RunCandidate run;
         run.levelId = levelId_;
         run.levelVersion = fingerprint_->version;
@@ -268,6 +322,7 @@ void GameScene::finishRun(bool completed) {
         lastReplay_ = std::make_shared<ReplayData>(replay);
         std::vector<uint8_t> bytes = replay.encode();
         int64_t timeMs = static_cast<int64_t>(std::llround(static_cast<double>(r.time) * 1000.0));
+        if (race_.active()) raceReplay = bytes;
         if (recordMode_ == RecordMode::Community) {
             g_.online.submitCommunityRun(levelId_, timeMs, s.deaths, attemptId_, std::move(bytes));
         } else if (const LevelEntry* e = g_.content.level(levelId_); e && e->source == ContentSource::User) {
@@ -283,8 +338,21 @@ void GameScene::finishRun(bool completed) {
                 g_.online.notify(OnlineService::Notification::Kind::Success, "Fin de niveau enregistrée",
                                  "Cette version peut être publiée : WORKSHOP → Mes niveaux → Publier en ligne.");
         }
+    } else if (!completed && race_.active() && recorder_.active()) {
+        // EXTRÊME: a failed attempt is ranked by how far it went.
+        recorder_.finishAttempt(*world_, r.time);
+        ReplayData replay = recorder_.take();
+        lastReplay_ = std::make_shared<ReplayData>(replay);
+        raceReplay = replay.encode();
+        if (!g_.saveReplayPath.empty() && FileUtil::writeBinary(Paths::fromUtf8(g_.saveReplayPath), raceReplay))
+            Log::info("Replay enregistré : {} ({} octets)", g_.saveReplayPath, raceReplay.size());
     } else {
         recorder_.abort();
+    }
+    std::optional<float> raceEstimate;
+    if (race_.active()) {
+        raceEstimate = raceScore(race_.layout(), race_.progress());
+        sendRaceAttempt(completed, std::move(raceReplay));
     }
     if (completed) {
         std::string victory = g_.app.resources().soundPath("music/victory.ogg");
@@ -302,6 +370,11 @@ void GameScene::finishRun(bool completed) {
     data.fromOnline = opt_.fromOnline;
     data.fromWorkshop = workshop_ && !opt_.fromOnline;
     data.online = online;
+    data.raceScore = raceEstimate;
+    if (race_.active()) {
+        data.raceBosses = race_.progress().bossesBeaten();
+        data.raceBossTotal = static_cast<int>(race_.layout().bosses.size());
+    }
     g_.app.pushScene(std::make_unique<ResultsScene>(g_, *this, std::move(data)));
 }
 
@@ -317,6 +390,7 @@ void GameScene::update(float dt) {
     if (explored_.cols == 0) explored_.reset(world_->level().bounds);
     explored_.mark(world_->camera().visibleArea(1920, 1080));
     if (trackFuture_.valid() && trackFuture_.wait_for(std::chrono::seconds(0)) == std::future_status::ready) hud_.setProgressTrack(trackFuture_.get());
+    if (raceRouteFuture_.valid() && raceRouteFuture_.wait_for(std::chrono::seconds(0)) == std::future_status::ready) race_.setRoute(raceRouteFuture_.get());
     hud_.update(*world_, dt);
     InputManager& in = g_.app.input();
     // A power tablet with every slot taken: ask which power to keep (live play only).

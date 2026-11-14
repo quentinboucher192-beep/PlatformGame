@@ -1,4 +1,5 @@
 #include "game/online/LevelFingerprint.h"
+#include "game/race/Race.h"
 
 #include <algorithm>
 #include <cmath>
@@ -116,7 +117,7 @@ Json onlineManifestEntry(const ContentDatabase& content, const LevelData& level,
     }
     bool limited = level.timerMode == TimerMode::Limited || level.timerMode == TimerMode::Challenge;
     float limit = limited ? level.timeLimit : 3600.0f;
-    return {
+    Json entry = {
         {"id", level.id},
         {"name", level.name},
         {"planet_id", level.planet},
@@ -134,6 +135,9 @@ Json onlineManifestEntry(const ContentDatabase& content, const LevelData& level,
         {"spawn", {std::round(spawn.x), std::round(spawn.y)}},
         {"exit", {exit.x, exit.y, exit.w, exit.h}},
     };
+    // EXTRÊME levels: the layout of their race (route, bosses, ambushes) for the server.
+    if (level.extreme && level.oneLife()) entry["race"] = buildRaceLayout(level, content).toJson();
+    return entry;
 }
 
 Json buildOnlineManifest(ContentDatabase& content, std::string* error) {

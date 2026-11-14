@@ -68,6 +68,9 @@ public:
     Vec2 labelWrapped(const std::string& t, Vec2 pos, float width, float size = 22, Color c = {});
     void separator(Vec2 a, float width);
     void icon(const std::string& texture, int index, int cell, const Rect& dst, Color tint = Color::white());
+    /// The EXTRÊME badge (one life), `height` pixels high, its left edge centred on
+    /// `leftMid`; returns its width (0 when nothing is drawn).
+    float extremeBadge(Vec2 leftMid, float height, float alpha = 1.0f);
 
     // ------------------------------------------------------------ widgets
     struct ButtonStyle {

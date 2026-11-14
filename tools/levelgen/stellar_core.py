@@ -195,6 +195,8 @@ def boss_rush():
     d["description"] = ("Les douze gardiens du système reviennent, l'un après l'autre, en échos de lumière. "
                         "Aucun soin, aucun checkpoint : une seule vie pour les vaincre tous.")
     d["difficulty"] = 5
+    # EXTRÊME: one life (the challenge mode below allows no death) and a race online.
+    d["extreme"] = True
     b.f = 40
     b.opening("L'Arène des Échos : douze gardiens à la suite. Ni soin ni checkpoint, une seule vie. "
               "Choisissez vos quatre pouvoirs.")

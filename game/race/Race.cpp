@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <set>
 
 #include "game/content/ContentDatabase.h"
 #include "game/enemies/Enemy.h"
@@ -21,25 +22,53 @@ Json RaceLayout::toJson() const {
     return {{"route", r}, {"bosses", b}, {"ambushes", a}};
 }
 
-RaceLayout buildRaceLayout(const LevelData& level, const ContentDatabase& content) {
-    RaceLayout l;
-    l.route = intendedRoute(level, content);
+std::vector<Vec2> raceRoute(std::vector<Vec2> route) {
     // Fewer points: the route stays faithful (the server projects the replay on it).
-    if (l.route.size() > 400) {
+    if (route.size() > 400) {
         std::vector<Vec2> thin;
-        size_t step = (l.route.size() + 399) / 400;
-        for (size_t i = 0; i < l.route.size(); i += step) thin.push_back(l.route[i]);
-        if (!(thin.back() == l.route.back())) thin.push_back(l.route.back());
-        l.route = std::move(thin);
+        size_t step = (route.size() + 399) / 400;
+        for (size_t i = 0; i < route.size(); i += step) thin.push_back(route[i]);
+        if (!(thin.back() == route.back())) thin.push_back(route.back());
+        route = std::move(thin);
     }
+    return route;
+}
+
+RaceLayout buildRaceLayout(const LevelData& level, const ContentDatabase& content, bool withRoute) {
+    RaceLayout l;
+    if (withRoute) l.route = raceRoute(intendedRoute(level, content));
+    std::set<std::string> bossIds;
     for (const auto& o : level.objects) {
-        if (o.type == "enemy") {
-            const EnemyDefinition* d = content.enemy(o.propStr("enemy"));
-            if ((d && d->isBoss) || o.prop<bool>("boss", false)) l.bosses.push_back({o.id, d ? d->name : o.propStr("enemy")});
-        } else if (o.type == "combat_zone") {
-            int waves = static_cast<int>(CombatZoneEntity::countWaves(o, level));
-            if (waves > 0) l.ambushes.push_back({o.id, waves});
+        if (o.type != "enemy") continue;
+        const EnemyDefinition* d = content.enemy(o.propStr("enemy"));
+        if ((d && d->isBoss) || o.prop<bool>("boss", false)) {
+            l.bosses.push_back({o.id, d ? d->name : o.propStr("enemy")});
+            bossIds.insert(o.id);
         }
+    }
+    // Ambushes: arenas with at least one enemy that is not a boss (a boss's own arena is
+    // already counted by the boss's health).
+    for (const auto& o : level.objects) {
+        if (o.type != "combat_zone") continue;
+        int waves = static_cast<int>(CombatZoneEntity::countWaves(o, level));
+        if (waves <= 0) continue;
+        bool others = false;
+        std::string list = o.propStr("waves");
+        if (!list.empty()) {
+            std::string id;
+            for (char c : list + ";") {
+                if (c == ',' || c == ';') {
+                    if (!id.empty() && !bossIds.count(id)) others = true;
+                    id.clear();
+                } else if (c != ' ' && c != '\n' && c != '\r' && c != '\t') {
+                    id.push_back(c);
+                }
+            }
+        } else {
+            for (const auto& e : level.objects)
+                if (e.type == "enemy" && o.rect.contains(e.rect.center()) && !bossIds.count(e.id)) others = true;
+        }
+        if (others) l.ambushes.push_back({o.id, waves});
     }
     return l;
 }
@@ -69,9 +98,15 @@ float raceScore(const RaceLayout& layout, const RaceProgress& p) {
 
 void RaceTracker::begin(const RaceLayout& layout) {
     layout_ = layout;
+    begun_ = true;
     progress_ = {};
     progress_.bossRemoved.assign(layout_.bosses.size(), 0.0f);
     progress_.wavesDone.assign(layout_.ambushes.size(), 0);
+    setRoute(layout_.route);
+}
+
+void RaceTracker::setRoute(const std::vector<Vec2>& route) {
+    layout_.route = raceRoute(route);
     cumulative_.assign(layout_.route.size(), 0.0f);
     for (size_t i = 1; i < layout_.route.size(); ++i) cumulative_[i] = cumulative_[i - 1] + (layout_.route[i] - layout_.route[i - 1]).length();
     length_ = cumulative_.empty() ? 0.0f : cumulative_.back();
@@ -79,9 +114,14 @@ void RaceTracker::begin(const RaceLayout& layout) {
 }
 
 void RaceTracker::update(GameWorld& world) {
-    if (!active() || length_ <= 1.0f) return;
+    if (!active()) return;
+    if (world.state() == WorldState::Completed || world.state() == WorldState::Outro) progress_.finished = true;
+    if (length_ > 1.0f) followRoute(world.player().feet());
+    trackFights(world);
+}
+
+void RaceTracker::followRoute(Vec2 feet) {
     // The furthest point of the route reached (local search, as the progress bar does).
-    Vec2 feet = world.player().feet();
     size_t lo = hint_ > 60 ? hint_ - 60 : 0, hi = std::min(layout_.route.size(), hint_ + 60);
     auto nearest = [&](size_t a, size_t b) {
         size_t best = a;
@@ -102,6 +142,9 @@ void RaceTracker::update(GameWorld& world) {
     }
     hint_ = i;
     progress_.route = std::max(progress_.route, cumulative_[i] / length_);
+}
+
+void RaceTracker::trackFights(GameWorld& world) {
     // Bosses: the health removed (a defeated boss counts whole).
     for (size_t b = 0; b < layout_.bosses.size(); ++b) {
         auto* es = dynamic_cast<EnemySpawnEntity*>(world.entity(layout_.bosses[b].id));
@@ -114,7 +157,6 @@ void RaceTracker::update(GameWorld& world) {
     for (size_t a = 0; a < layout_.ambushes.size(); ++a)
         if (const auto* z = dynamic_cast<const CombatZoneEntity*>(world.entity(layout_.ambushes[a].id)))
             progress_.wavesDone[a] = std::max(progress_.wavesDone[a], static_cast<int>(z->wavesDone()));
-    if (world.state() == WorldState::Completed || world.state() == WorldState::Outro) progress_.finished = true;
 }
 
 }  // namespace cosmic

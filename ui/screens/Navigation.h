@@ -85,6 +85,11 @@ std::unique_ptr<Scene> makeSocial(GameServices& g, const std::string& conversati
 std::unique_ptr<Scene> makePlayerProfile(GameServices& g, const std::string& playerId);
 /// `tab`: 0 Préférences, 1 Compte et confidentialité, 2 Amis.
 std::unique_ptr<Scene> makeOnlineSettings(GameServices& g, int tab = 0);
+/// « Course à la vérification » of an EXTRÊME level (pushed over the current screen):
+/// `kind` "official" (campaign level, `levelHash` optional) or "community" (online id,
+/// `version` 0 = the current one).
+std::unique_ptr<Scene> makeRaceBoard(GameServices& g, const std::string& kind, const std::string& levelId, int version = 0,
+                                     const std::string& levelHash = {});
 /// Downloads and plays back the replay of a verified record.
 std::unique_ptr<Scene> makeReplayViewer(GameServices& g, const std::string& recordId);
 /// Plays a replay already in memory (the run just finished, a .cprz file).

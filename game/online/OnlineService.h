@@ -131,6 +131,21 @@ public:
     void noteCommunityInstall(const std::string& localLevelId, const Json& info);
     /// A completed run of an installed community level (replay attached): sent to its
     /// leaderboard; the result is notified (rank, or why the time was refused).
+    /// An attempt of an EXTRÊME level's « course à la vérification »: declared, then its
+    /// replay sent; the server computes the score (the game's value is only an estimate).
+    struct RaceAttempt {
+        std::string kind;       // "official" or "community"
+        std::string levelId;    // official level id, or the community level's online id
+        std::string levelHash;  // official: the ranked fingerprint
+        int version = 0;        // community: the published version
+        std::string title, attemptId;
+        int64_t timeMs = 0;
+        bool finished = false;
+        std::vector<int> bosses;  // per mille of health removed, per boss of the layout
+        std::vector<int> waves;   // per ambush of the layout
+        float estimate = 0.0f;
+    };
+    void submitRaceAttempt(RaceAttempt a, std::vector<uint8_t> replay);
     void submitCommunityRun(const std::string& localLevelId, int64_t timeMs, int deaths, const std::string& attemptId,
                             std::vector<uint8_t> replay);
     /// PUT / POST of raw bytes with the session (packages, replays).

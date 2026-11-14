@@ -12,6 +12,7 @@
 #include "game/gameplay/Hud.h"
 #include "game/online/LevelFingerprint.h"
 #include "game/online/Replay.h"
+#include "game/race/Race.h"
 #include "game/records/Records.h"
 #include "ui/screens/PauseMap.h"
 #include "ui/screens/Navigation.h"
@@ -84,6 +85,14 @@ private:
     enum class RecordMode { None, Official, Community, EditorCompletion };
     RecordMode recordMode_ = RecordMode::None;
     std::string gameplayHash_;
+    // EXTRÊME level (one life) played from its start: the attempt joins the « course à la
+    // vérification », whether it finishes or not (sent at the end, on a death or when left).
+    void sendRaceAttempt(bool finished, std::vector<uint8_t> replay);
+    void abandonRaceAttempt();
+    RaceTracker race_;
+    std::future<std::vector<Vec2>> raceRouteFuture_;
+    std::string raceKind_, raceLevelId_, raceHash_, raceTitle_;
+    int raceVersion_ = 0;
 };
 
 }  // namespace cosmic

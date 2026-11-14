@@ -235,6 +235,22 @@ void UIContext::icon(const std::string& texture, int index, int cell, const Rect
     r().drawTexture(*tex, &src, dst, tint);
 }
 
+float UIContext::extremeBadge(Vec2 leftMid, float height, float alpha) {
+    if (height <= 0.0f) return 0.0f;
+    if (auto tex = app_->resources().texture("ui/badge_extreme.png"); tex && tex->height() > 0) {
+        float w = height * static_cast<float>(tex->width()) / static_cast<float>(tex->height());
+        r().drawTexture(*tex, nullptr, {leftMid.x, leftMid.y - height * 0.5f, w, height}, Color::white().withAlphaF(alpha));
+        return w;
+    }
+    // Without the picture: the same words on a red plate.
+    float fs = height * 0.55f;
+    float w = text().measure("EXTRÊME", FontFace::Bold, fs).x + height;
+    Rect rc{leftMid.x, leftMid.y - height * 0.5f, w, height};
+    r().fillRoundedRect(rc, height * 0.3f, Color{170, 30, 40, 230}.withAlphaF(alpha));
+    label("EXTRÊME", rc.center(), fs / scale(), Color::white().withAlphaF(alpha), Align::Center, FontFace::Bold, VAlign::Middle);
+    return w;
+}
+
 void UIContext::drawFrame(const Rect& rc, float hot, bool focusedNow, bool primary, bool danger, bool enabled, bool selected) {
     Renderer& rr = r();
     float rad = s(8);

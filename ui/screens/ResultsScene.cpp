@@ -3,6 +3,7 @@
 #include "ui/online/OnlineWidgets.h"
 
 #include <cmath>
+#include <cstdio>
 
 #include "engine/core/Easing.h"
 #include "game/GameServices.h"
@@ -62,6 +63,29 @@ void ResultsScene::drawOnlineStatus(const Rect& panel) {
     else if (g_.online.syncing()) hint = "Envoi et vérification en cours…";
     if (!hint.empty())
         ui.label(hint, {panel.right() - ui.s(60), y}, 17, ui.theme().textDim, Align::Right, FontFace::Body, VAlign::Middle);
+}
+
+void ResultsScene::drawRace(const Rect& panel) {
+    if (!d_.raceScore || t_ < 0.9f) return;
+    UIContext& ui = g_.ui;
+    float x = panel.x + ui.s(60), maxW = ui.s(560);
+    float y = panel.y + ui.s(600);
+    float bw = ui.extremeBadge({x, y}, ui.s(34));
+    char buf[32];
+    std::snprintf(buf, sizeof buf, "%.1f", *d_.raceScore);
+    std::string pct = buf;
+    for (char& c : pct)
+        if (c == '.') c = ',';
+    std::string line = "Course à la vérification : " + pct + " %";
+    if (d_.raceBossTotal > 0) line += " · boss " + std::to_string(d_.raceBosses) + "/" + std::to_string(d_.raceBossTotal);
+    float tx = x + bw + ui.s(14);
+    float fs = ui.fitFont(line, FontFace::Bold, 22, tx > x ? maxW - (tx - x) : maxW);
+    ui.label(line, {tx, y}, fs, ui.theme().warm, Align::Left, FontFace::Bold, VAlign::Middle);
+    std::string hint;
+    if (!g_.online.usable() || !g_.online.loggedIn()) hint = "Connectez-vous à Cosmic Online pour entrer dans la course.";
+    else if (d_.run.completed) hint = "Score recalculé par le serveur ; le premier à finir vérifie le niveau.";
+    else hint = "Estimation : le serveur recalcule le score depuis le replay.";
+    ui.label(hint, {x, y + ui.s(34)}, ui.fitFont(hint, FontFace::Body, 17, maxW), ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
 }
 
 void ResultsScene::render(float /*alpha*/) {
@@ -154,6 +178,7 @@ void ResultsScene::render(float /*alpha*/) {
     if (d_.editorTest)
         ui.label("Test depuis l'éditeur : les records ne sont pas enregistrés", {panel.center().x, panel.bottom() - ui.s(150)}, 20,
                  ui.theme().textDim, Align::Center);
+    drawRace(panel);
     drawOnlineStatus(panel);
 
     // ------------------------------------------------------------- buttons

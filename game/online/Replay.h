@@ -114,6 +114,8 @@ public:
     void onWorldEvent(const std::string& source, const std::string& trigger);
     /// Ends the recording when the level is completed (`elapsed` = timer value).
     void finish(const GameWorld& w, float elapsed);
+    /// Ends the recording of an attempt that did not reach the end (an extreme level's race).
+    void finishAttempt(const GameWorld& w, float elapsed);
     void abort() { active_ = false; }
     /// Progress of an extreme level's race (bosses' health, ambushes' waves) as events.
     void raceProgress(const std::vector<float>& bossRemoved, const std::vector<int>& wavesDone);

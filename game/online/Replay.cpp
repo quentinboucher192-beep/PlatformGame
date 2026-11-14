@@ -453,6 +453,16 @@ void ReplayRecorder::onWorldEvent(const std::string& source, const std::string& 
     }
 }
 
+void ReplayRecorder::finishAttempt(const GameWorld& w, float elapsed) {
+    if (!active_) return;
+    tick(w);
+    check(w);
+    sample(w);
+    data_.durationMs = static_cast<uint32_t>(std::lround(elapsed * 1000.0f));
+    for (auto& e : data_.events) e.frame = std::min<uint32_t>(e.frame, static_cast<uint32_t>(data_.frames.size() - 1));
+    active_ = false;
+}
+
 void ReplayRecorder::finish(const GameWorld& w, float elapsed) {
     if (!active_) return;
     tick(w);

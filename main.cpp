@@ -27,6 +27,9 @@
 //   --online-open <what>    with --online: open register | login | settings |
 //                           profile:<name> | replay:<name> (automated screenshots)
 //   --online-server <url>   Cosmic Online server to use (else data/online/config.json)
+//   --race <kind:level[:version]>
+//                           the « course à la vérification » of an EXTRÊME level, over
+//                           ONLINE RANKING (official) or ONLINE LEVELS (community)
 //   --replay <file.cprz>    play a replay file (exact replays are re-simulated)
 //   --analyze-levels <dir>  shortcut detector on the campaign levels (report + PPM maps)
 //   --seal-levels <dir>     add gates against the shortcuts found (tools/levelgen/seals)
@@ -453,6 +456,15 @@ int main(int argc, char** argv) {
         app.pushScene(makePowerGuide(game, page.empty() ? 0 : std::atoi(page.c_str()) - 1));
     } else if (has("--notifications")) {
         app.pushScene(makeNotifications(game, value("--notifications") == "online" ? 1 : 0));
+    } else if (std::string race = value("--race"); !race.empty()) {
+        auto c1 = race.find(':');
+        std::string kind = race.substr(0, c1), rest = c1 == std::string::npos ? std::string{} : race.substr(c1 + 1);
+        auto c2 = rest.find(':');
+        std::string lid = rest.substr(0, c2);
+        int ver = c2 == std::string::npos ? 0 : std::atoi(rest.c_str() + c2 + 1);
+        if (kind == "community") app.pushScene(makeOnlineLevels(game, lid));
+        else app.pushScene(makeOnlineRanking(game, lid));
+        app.pushScene(makeRaceBoard(game, kind, lid, ver));
     } else if (std::string pid = value("--profile"); !pid.empty()) {
         app.pushScene(makePlayerProfile(game, pid));
     } else if (has("--social")) {

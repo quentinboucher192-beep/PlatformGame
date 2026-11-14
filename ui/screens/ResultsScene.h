@@ -28,6 +28,10 @@ struct ResultsData {
     std::shared_ptr<ReplayData> replay;
     /// Performance kept for Cosmic Online (nullopt: not an improvement / not rankable).
     std::optional<OnlineAttempt> online;
+    /// EXTRÊME level: the attempt's progress for the « course à la vérification » (the
+    /// game's estimate; the server computes the ranked score from the replay).
+    std::optional<float> raceScore;
+    int raceBosses = 0, raceBossTotal = 0;
 };
 
 /// End-of-level screen: animated statistics, comparison with the personal record, the
@@ -43,6 +47,7 @@ public:
 
 private:
     void drawOnlineStatus(const Rect& panel);
+    void drawRace(const Rect& panel);
 
     GameServices& g_;
     GameScene& game_;

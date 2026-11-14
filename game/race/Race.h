@@ -33,7 +33,9 @@ struct RaceLayout {
 
 /// Built from the level and its content (bosses: enemies whose definition is a boss or
 /// that are marked as one; ambushes: combat arenas).
-RaceLayout buildRaceLayout(const LevelData& level, const ContentDatabase& content);
+RaceLayout buildRaceLayout(const LevelData& level, const ContentDatabase& content, bool withRoute = true);
+/// The route of a layout, thinned like buildRaceLayout does (at most about 400 points).
+std::vector<Vec2> raceRoute(std::vector<Vec2> route);
 
 struct RaceProgress {
     float route = 0.0f;                 // 0..1, the furthest point reached along the route
@@ -51,17 +53,22 @@ float raceScore(const RaceLayout& layout, const RaceProgress& p);
 class RaceTracker {
 public:
     void begin(const RaceLayout& layout);
+    /// The route arrives later (computed off the main thread when the level starts).
+    void setRoute(const std::vector<Vec2>& route);
     void update(GameWorld& world);
     const RaceProgress& progress() const { return progress_; }
-    bool active() const { return !layout_.route.empty(); }
+    bool active() const { return begun_; }
     const RaceLayout& layout() const { return layout_; }
 
 private:
+    void followRoute(Vec2 feet);
+    void trackFights(GameWorld& world);
     RaceLayout layout_;
     RaceProgress progress_;
     std::vector<float> cumulative_;
     float length_ = 0.0f;
     size_t hint_ = 0;
+    bool begun_ = false;
 };
 
 }  // namespace cosmic

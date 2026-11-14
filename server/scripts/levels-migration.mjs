@@ -41,6 +41,8 @@ for (const l of manifest.levels) {
     out.push(
         `UPDATE level_versions SET compatibility_status = 'legacy' WHERE level_id = ${id(l.id)} AND version < ${n(l.version)} AND compatibility_status = 'active';`,
     );
+    // EXTRÊME level: the layout of its race (« course à la vérification »).
+    if (l.race) out.push(`UPDATE level_versions SET race = ${q(JSON.stringify(l.race))} WHERE level_id = ${id(l.id)} AND content_hash = ${hash(l.content_hash)};`);
     out.push("");
 }
 process.stdout.write(out.join("\n"));
