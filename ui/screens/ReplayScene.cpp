@@ -14,6 +14,7 @@
 #include "game/gameplay/GameRenderer.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/Hud.h"
+#include "game/ghost/Ghost.h"
 #include "game/online/LevelFingerprint.h"
 #include "game/online/Replay.h"
 #include "ui/screens/Navigation.h"
@@ -23,25 +24,7 @@ namespace cosmic {
 
 namespace {
 
-const char* clipFor(const ReplayFrame& f, Vec2 vel) {
-    switch (static_cast<PlayerState>(f.state)) {
-        case PlayerState::Dead: return "death";
-        case PlayerState::Respawn: return "respawn";
-        case PlayerState::Victory: return "victory";
-        case PlayerState::Hurt: return "hurt";
-        case PlayerState::Dash: return "dash";
-        case PlayerState::Slide: return "slide";
-        case PlayerState::Climb: return "climb";
-        case PlayerState::WallSlide: return "wall_slide";
-        case PlayerState::Crouch: return "crouch";
-        default: break;
-    }
-    if (f.flags & ReplayFrame::Grounded) {
-        float s = std::abs(vel.x);
-        return s > 93.0f ? "run" : s > 8.0f ? "walk" : "idle";
-    }
-    return vel.y < -30.0f ? "jump" : "fall";
-}
+const char* clipFor(const ReplayFrame& f, Vec2 vel) { return ghostClipFor(f, vel); }
 
 class ReplayScene : public Scene {
 public:

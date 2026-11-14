@@ -4,8 +4,10 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <vector>
 
 #include "engine/core/Scene.h"
+#include "game/ghost/GhostStore.h"
 #include "game/levels/LevelData.h"
 
 namespace cosmic {
@@ -32,6 +34,14 @@ struct PlayOptions {
     float pauseAfter = 0.0f;  // screenshots: open the pause menu after this many seconds of play
     /// Automated screenshots: the active boss uses this attack whenever it can.
     std::string forceBossAttack;
+    /// Ghost Racing: the ghosts chosen before the start (`ghostsChosen` false: the default
+    /// ones, i.e. my best time if the setting asks for it). Kept when the run restarts.
+    std::vector<GhostEntry> ghosts;
+    bool ghostsChosen = false;
+    /// Training (Ghost Racing): starts at this checkpoint (level object id), compares with
+    /// the ghosts from there; never a record, never progression, never sent online.
+    bool training = false;
+    std::string trainingCheckpoint;
 };
 
 // Factories of every screen (implemented next to each scene).

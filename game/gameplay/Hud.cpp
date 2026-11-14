@@ -137,6 +137,13 @@ Hud::Place Hud::place(UIContext& ui, const GameWorld& w, const GameplaySettings&
         case HudElement::Collectibles: p.o = {W * 0.5f, ui.s(34)}; break;
         case HudElement::Timer: p.o = {W - ui.s(40), ui.s(30)}; break;
         case HudElement::Boss: p.o = {W * 0.5f, H - ui.s(86) * p.k}; break;
+        case HudElement::Splits: {
+            // Right-aligned under the timer (wherever the timer is).
+            Rect t = area(ui, w, HudElement::Timer, place(ui, w, s, HudElement::Timer));
+            p.o = {t.right(), t.bottom() + ui.s(8)};
+            if (p.o.y + ui.s(300) * p.k > H) p.o = {W - ui.s(36), ui.s(220)};
+            break;
+        }
         case HudElement::Progress: {
             // Centred, never under the power icons (left) nor the timer (right).
             Place pw = place(ui, w, s, HudElement::Powers);
@@ -179,6 +186,7 @@ Rect Hud::area(UIContext& ui, const GameWorld& w, HudElement e, const Place& p) 
         case HudElement::Timer: return {o.x - S(274), o.y - S(4), S(278), S(182)};
         case HudElement::Progress: return {o.x - p.width * 0.5f - S(36), o.y - S(50), p.width + S(36) + S(104), S(108)};
         case HudElement::Boss: return {o.x - S(456), o.y - S(44), S(912), S(78)};
+        case HudElement::Splits: return {o.x - S(460), o.y, S(460), S(300)};
         default: return {};
     }
 }

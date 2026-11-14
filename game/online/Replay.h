@@ -33,6 +33,9 @@ enum class ReplayEventType : uint8_t {
     Finish = 11,
     BossHit = 12,      // arg: boss index in the race layout, value: health removed (per mille)
     WaveCleared = 13,  // arg: ambush index in the race layout, value: waves beaten
+    Split = 14,        // 2.18: a checkpoint split; arg: split index (255 = more), value: low
+                       //       16 bits of the split time in ms, the frame gives the rest
+                       //       (ReplayData::splitTimeMs; Ghost Racing; ignored by the server)
 };
 
 enum class ReplayPickup : uint8_t { Shard = 0, Relic = 1, Health = 2, Energy = 3, HeartContainer = 4, Secret = 5 };
@@ -95,6 +98,8 @@ struct ReplayData {
     size_t countEvents(ReplayEventType t) const;
     /// Interpolated frame at `seconds` (viewer).
     ReplayFrame sampleAt(float seconds) const;
+    /// Time of a Split event, in ms since the start (exact).
+    int64_t splitTimeMs(const ReplayEvent& e) const;
 };
 
 /// Index of a power id in the replay format (stable list); 255 if unknown.
@@ -132,6 +137,7 @@ private:
     bool started_ = false;
     int lastDeaths_ = 0, lastShards_ = 0, lastRelics_ = 0, lastSecrets_ = 0, lastKills_ = 0, lastDamage_ = 0;
     uint8_t lastState_ = 0;
+    size_t lastSplits_ = 0;
     std::vector<uint16_t> lastBoss_;
     std::vector<int> lastWaves_;
 };

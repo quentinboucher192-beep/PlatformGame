@@ -18,6 +18,7 @@
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/Hud.h"
 #include "game/gameplay/LevelProgress.h"
+#include "ui/screens/GhostRun.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
 #include "ui/widgets/Glyphs.h"
@@ -171,6 +172,10 @@ private:
         renderer_.render(r, g_.app.resources(), *world_, view, alpha, opt);
         r.setView(WorldView{});
         hud_.render(g_.ui, *world_, view, nullptr, work_);
+        if (hudVisible(work_, HudElement::Splits)) {
+            Hud::Place sp = hud_.place(g_.ui, *world_, work_, HudElement::Splits);
+            GhostRun::drawPreview(g_.ui, hud_.area(g_.ui, *world_, HudElement::Splits, sp), sp.k);
+        }
         r.setTarget(nullptr);
     }
 

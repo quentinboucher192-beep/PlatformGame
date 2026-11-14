@@ -26,6 +26,7 @@ enum class Action : int {
     Interact,
     Special,  // power on the special button (time slow, plasma bomb...)
     Pause,
+    GhostToggle,  // 2.18: show / hide the ghosts of Ghost Racing (display only, never recorded)
     MenuUp,
     MenuDown,
     MenuLeft,

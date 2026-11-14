@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstdlib>
 #include <cstring>
 #include <random>
 
@@ -344,6 +345,17 @@ ReplayFrame ReplayData::sampleAt(float seconds) const {
     return a;
 }
 
+int64_t ReplayData::splitTimeMs(const ReplayEvent& e) const {
+    // The 16 low bits are exact; the frame (sampled at sampleHz) is within a sample of the
+    // time: the nearest value with those low bits is the split.
+    int64_t approx = static_cast<int64_t>(e.frame) * 1000 / std::max<int64_t>(1, sampleHz);
+    int64_t base = approx - (approx & 0xFFFF) + e.value;
+    int64_t best = base;
+    for (int64_t c : {base - 65536, base + 65536})
+        if (c >= 0 && std::llabs(c - approx) < std::llabs(best - approx)) best = c;
+    return std::max<int64_t>(0, best);
+}
+
 // ---------------------------------------------------------------- recorder
 
 void ReplayRecorder::begin(const std::string& levelId, const std::string& levelHash, const std::string& attemptId, uint64_t seed) {
@@ -356,6 +368,7 @@ void ReplayRecorder::begin(const std::string& levelId, const std::string& levelH
     started_ = false;
     lastBoss_.clear();
     lastWaves_.clear();
+    lastSplits_ = 0;
 }
 
 void ReplayRecorder::push(ReplayEventType t, uint8_t arg, uint16_t value) {
@@ -403,6 +416,7 @@ void ReplayRecorder::tick(const GameWorld& w) {
         lastKills_ = s.kills;
         lastDamage_ = s.damageTaken;
         lastState_ = static_cast<uint8_t>(w.player().state());
+        lastSplits_ = timer.splits().size();
     }
     const RunStats& s = w.stats();
     for (; lastDeaths_ < s.deaths; ++lastDeaths_) push(ReplayEventType::Death);
@@ -413,6 +427,12 @@ void ReplayRecorder::tick(const GameWorld& w) {
     if (s.damageTaken > lastDamage_) {
         push(ReplayEventType::Damage, 0, static_cast<uint16_t>(std::min(s.damageTaken - lastDamage_, 65535)));
         lastDamage_ = s.damageTaken;
+    }
+    // Checkpoint splits to the millisecond: the low 16 bits of the time, the event's frame
+    // (within a sample of it) gives the rest (see splitTimeMs).
+    for (; lastSplits_ < timer.splits().size(); ++lastSplits_) {
+        long ms = std::lround(static_cast<double>(timer.splits()[lastSplits_]) * 1000.0);
+        push(ReplayEventType::Split, static_cast<uint8_t>(std::min<size_t>(lastSplits_, 255)), static_cast<uint16_t>(static_cast<unsigned long>(std::max(0L, ms)) & 0xFFFFu));
     }
     uint8_t state = static_cast<uint8_t>(w.player().state());
     if (state != lastState_ && w.player().state() == PlayerState::Respawn) push(ReplayEventType::Respawn);

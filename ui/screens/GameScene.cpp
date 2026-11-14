@@ -81,6 +81,13 @@ void GameScene::onEnter() {
                 recordMode_ = RecordMode::Official;
             }
         }
+        if (recordMode_ == RecordMode::None && !opt_.level) {
+            // Any other level played from its start: recorded for the ghosts only.
+            gameplayHash_ = fingerprintGameplay(g_.content, level_);
+            attemptId_ = makeUuidV4();
+            recorder_.begin(levelId_, gameplayHash_, attemptId_, world_->gameplaySeed());
+            recordMode_ = RecordMode::Local;
+        }
         if (level_.extreme && level_.oneLife() && (recordMode_ == RecordMode::Official || recordMode_ == RecordMode::Community)) {
             raceTitle_ = level_.name;
             if (recordMode_ == RecordMode::Official) {
@@ -102,6 +109,54 @@ void GameScene::onEnter() {
         if (recordMode_ != RecordMode::None) recorder_.onWorldEvent(src, trig);
         bossFights_.onWorldEvent(src, trig);
     };
+    // Ghost Racing: the hash of this exact version of the level (the one its replays carry).
+    if (!opt_.editorTest && !opt_.level) {
+        if (recordMode_ == RecordMode::Official && fingerprint_) ghostHash_ = fingerprint_->hash;
+        else if (!gameplayHash_.empty()) ghostHash_ = gameplayHash_;
+        else if (const LevelFingerprint* fp = g_.online.fingerprints().get(g_.content, levelId_)) ghostHash_ = fp->hash;
+        else ghostHash_ = fingerprintGameplay(g_.content, level_);
+        startGhosts();
+    }
+}
+
+void GameScene::startGhosts() {
+    const GhostSettings& gs = g_.settings.ghosts;
+    std::vector<GhostEntry> local = g_.ghosts.localGhosts(levelId_);
+    const GhostEntry* pb = nullptr;
+    for (const GhostEntry& e : local)
+        if (e.meta.source == "pb" && e.meta.levelHash == ghostHash_) pb = &e;
+    if (pb) pbGhostMs_ = pb->meta.timeMs;
+    std::vector<GhostEntry> choices;
+    if (opt_.ghostsChosen) choices = opt_.ghosts;
+    else if (gs.enabled && gs.personalByDefault && pb) choices.push_back(*pb);
+    if (choices.empty()) return;
+    ghostRun_.begin(std::move(choices), level_, g_.content, ghostHash_, gs, opt_.training);
+    if (pb) {
+        std::string key = GhostStore::levelKey(levelId_, ghostHash_);
+        ghostRun_.setPersonal(g_.segments.bestSegments(key, pb->meta.splits.size()), pb->meta.splits,
+                              static_cast<float>(pb->meta.timeMs) / 1000.0f);
+    }
+    ghostRun_.setVisible(gs.enabled || opt_.ghostsChosen);
+}
+
+void GameScene::saveGhosts(const RunResult& r) {
+    if (!lastReplay_ || ghostHash_.empty() || lastReplay_->levelHash != ghostHash_) return;
+    GhostMeta m;
+    m.source = "last";
+    m.label = g_.online.loggedIn() && !g_.online.username().empty() ? g_.online.username() : "Moi";
+    m.playerId = g_.online.loggedIn() ? g_.online.playerId() : std::string{};
+    m.levelId = levelId_;
+    m.levelHash = ghostHash_;
+    m.timeMs = static_cast<int64_t>(std::llround(static_cast<double>(r.time) * 1000.0));
+    m.date = r.date;
+    m.splits = r.splits;
+    m.community = recordMode_ == RecordMode::Community;
+    m.gameVersion = COSMIC_VERSION_STRING;
+    if (fingerprint_) m.levelVersion = fingerprint_->version;
+    bool newBest = pbGhostMs_ <= 0 || m.timeMs < pbGhostMs_;
+    g_.ghosts.recordRun(*lastReplay_, m, newBest);
+    g_.segments.add(GhostStore::levelKey(levelId_, ghostHash_), r.splits, r.time, r.date);
+    g_.segments.save();
 }
 
 void GameScene::onExit() {
@@ -283,6 +338,9 @@ void GameScene::drawBossArrow(const WorldView& view) {
     float tx = std::abs(d.x) > 1e-3f ? (frame.w * 0.5f) / std::abs(d.x) : 1e9f;
     float ty = std::abs(d.y) > 1e-3f ? (frame.h * 0.5f) / std::abs(d.y) : 1e9f;
     Vec2 p = c + d * std::min(tx, ty);
+    // Never over the ghosts' comparison box (under the timer): slid along the border below it.
+    if (const Rect& gb = ghostRun_.hudRect(); gb.w > 0.0f && Rect::fromCenter(p, {ui.s(100), ui.s(100)}).intersects(gb))
+        p.y = std::min(frame.bottom(), gb.bottom() + ui.s(56));
     float angle = std::atan2(d.y, d.x) * 57.29578f;
     // Blinks (bright 0.32 s, dim 0.18 s) with an additive halo while bright: seen at once.
     bool bright = std::fmod(ui.time(), 0.5f) < 0.32f;
@@ -381,7 +439,8 @@ void GameScene::finishRun(bool completed) {
         if (race_.active()) raceReplay = bytes;
         if (recordMode_ == RecordMode::Community) {
             g_.online.submitCommunityRun(levelId_, timeMs, s.deaths, attemptId_, std::move(bytes));
-        } else if (const LevelEntry* e = g_.content.level(levelId_); e && e->source == ContentSource::User) {
+        } else if (const LevelEntry* e = g_.content.level(levelId_);
+                   recordMode_ == RecordMode::EditorCompletion && e && e->source == ContentSource::User) {
             // Proof that this version of the level can be finished: required to publish it.
             fs::path base = Paths::userLevelsDir() / FileUtil::slugify(levelId_);
             fs::path rp = base;
@@ -405,6 +464,10 @@ void GameScene::finishRun(bool completed) {
     } else {
         recorder_.abort();
     }
+    // Ghost Racing: the run against the ghosts ends; this run becomes my last ghost (and my
+    // best one if faster), its segments join the history.
+    if (completed) ghostRun_.finish(r.time);
+    if (completed && !opt_.editorTest && !opt_.training) saveGhosts(r);
     std::optional<float> raceEstimate;
     if (race_.active()) {
         raceEstimate = raceScore(race_.layout(), race_.progress());
@@ -454,6 +517,14 @@ void GameScene::update(float dt) {
     if (raceRouteFuture_.valid() && raceRouteFuture_.wait_for(std::chrono::seconds(0)) == std::future_status::ready) race_.setRoute(raceRouteFuture_.get());
     hud_.update(*world_, dt);
     InputManager& in = g_.app.input();
+    if (ghostRun_.active()) {
+        ghostRun_.update(*world_, dt);
+        // Quick toggle (G / left stick click): display only, never part of the run.
+        if (in.menuPressed(Action::GhostToggle)) {
+            ghostRun_.setVisible(!ghostRun_.visible());
+            world_->hint(ghostRun_.visible() ? "Fantômes affichés" : "Fantômes masqués", 1.4f);
+        }
+    }
     // A power tablet with every slot taken: ask which power to keep (live play only).
     if (!ended_ && world_->powerOffer() && !pendingChoice_ && !script_.active()) {
         g_.app.pushScene(std::make_unique<PowerChoiceScene>(g_, *this));
@@ -495,7 +566,19 @@ void GameScene::render(float alpha) {
     opt.lighting = g_.settings.graphics.dynamicLighting;
     opt.debug = g_.app.debugOverlay;
     renderer_.render(r, g_.app.resources(), *world_, view, alpha, opt);
+    if (ghostRun_.active()) ghostRun_.drawWorld(r, view, world_->player().anim.set());
     hud_.render(g_.ui, *world_, view, g_.records.get(levelId_), g_.settings.gameplay);
+    if (ghostRun_.active() && !world_->cinematic().active() && world_->state() != WorldState::Intro) {
+        const GameplaySettings& gs = g_.settings.gameplay;
+        Rect keepOut[kHudElements];
+        int n = 0;
+        for (int e = 0; e < kHudElements; ++e) {
+            auto el = static_cast<HudElement>(e);
+            if (el != HudElement::Splits && hudVisible(gs, el)) keepOut[n++] = hud_.area(g_.ui, *world_, el, hud_.place(g_.ui, *world_, gs, el));
+        }
+        Hud::Place sp = hud_.place(g_.ui, *world_, gs, HudElement::Splits);
+        ghostRun_.drawHud(g_.ui, view, hud_.area(g_.ui, *world_, HudElement::Splits, sp), sp.k, hudVisible(gs, HudElement::Splits), keepOut, n);
+    }
     drawBossArrow(view);
     if (g_.settings.graphics.showFps) {
         char buf[32];

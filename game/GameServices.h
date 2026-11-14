@@ -4,6 +4,8 @@
 
 #include "engine/core/Application.h"
 #include "game/content/ContentDatabase.h"
+#include "game/ghost/GhostStore.h"
+#include "game/ghost/SegmentHistory.h"
 #include "game/levels/RatingService.h"
 #include "game/online/OnlineService.h"
 #include "game/progression/NewsCenter.h"
@@ -39,6 +41,10 @@ public:
     RecordsManager records;
     /// Boss statistics (victories, phases and fights without being hit).
     BossStats bossStats;
+    /// Ghost Racing: the replays kept on this computer (my runs, downloads, chosen files)
+    /// and the history of my segments.
+    GhostStore ghosts;
+    SegmentHistory segments;
     /// Notifications of the main menu (new content, records dropped, new installer).
     NewsCenter news;
     /// Asks the server once for a newer installer (no account needed, nothing personal sent).

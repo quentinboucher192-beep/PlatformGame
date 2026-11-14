@@ -51,12 +51,33 @@ struct OnlineSettings {
     std::string serverOverride;    // advanced: replaces the server of data/online/config.json
 };
 
+/// Ghost Racing: ghosts shown during a run (display only, never part of the simulation).
+struct GhostSettings {
+    bool enabled = true;           // ghosts and gaps shown (quick toggle in game)
+    bool personalByDefault = true; // race against my best time when nothing else is chosen
+    int maxGhosts = 3;             // 1..8 at once
+    int opacity = 1;               // 0 discreet, 1 normal, 2 strong
+    bool showNames = true;         // name and reference time above each ghost
+    bool showPanel = true;         // segments panel (splits, gaps, best segments)
+    bool showDelta = true;         // live gap under the timer
+    int cacheMB = 64;              // downloaded replays kept (favourites never removed)
+    /// Colour of each kind of ghost: mine, world record, friends, others (palette index).
+    int colorMine = 0, colorWorld = 1, colorFriend = 2, colorOther = 3;
+};
+
+/// Palette of ghost colours (settings store the index).
+constexpr int kGhostPaletteSize = 8;
+Color ghostPaletteColor(int index);
+const char* ghostPaletteName(int index);
+float ghostOpacity(int level);
+
 /// Every user preference (stored in saves/settings.json, versioned).
 struct Settings {
     GraphicsSettings graphics;
     AudioVolumes audio;
     GameplaySettings gameplay;
     OnlineSettings online;
+    GhostSettings ghosts;
     InputBindings input = InputBindings::defaults();
 
     Json toJson() const;

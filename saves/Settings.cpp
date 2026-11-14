@@ -4,6 +4,8 @@
 #include "engine/core/Paths.h"
 #include "saves/SaveFile.h"
 
+#include <algorithm>
+
 namespace cosmic {
 
 bool hudVisible(const GameplaySettings& g, HudElement e) {
@@ -37,6 +39,15 @@ Json Settings::toJson() const {
                      {"editorAutosave", gameplay.editorAutosave},
                      {"editorAutosaveSeconds", gameplay.editorAutosaveSeconds},
                      {"unlockAll", gameplay.unlockAll}};
+    j["ghosts"] = {{"enabled", ghosts.enabled},
+                   {"personalByDefault", ghosts.personalByDefault},
+                   {"maxGhosts", ghosts.maxGhosts},
+                   {"opacity", ghosts.opacity},
+                   {"showNames", ghosts.showNames},
+                   {"showPanel", ghosts.showPanel},
+                   {"showDelta", ghosts.showDelta},
+                   {"cacheMB", ghosts.cacheMB},
+                   {"colors", {ghosts.colorMine, ghosts.colorWorld, ghosts.colorFriend, ghosts.colorOther}}};
     j["online"] = {{"enabled", online.enabled},
                    {"autoLogin", online.autoLogin},
                    {"autoSync", online.autoSync},
@@ -80,6 +91,24 @@ Settings Settings::fromJson(const Json& j) {
         s.gameplay.editorAutosave = jget<bool>(g, "editorAutosave", true);
         s.gameplay.editorAutosaveSeconds = std::clamp(jget<int>(g, "editorAutosaveSeconds", 60), 10, 600);
         s.gameplay.unlockAll = jget<bool>(g, "unlockAll", true);
+    }
+    if (j.contains("ghosts")) {
+        const Json& g = j["ghosts"];
+        s.ghosts.enabled = jget<bool>(g, "enabled", true);
+        s.ghosts.personalByDefault = jget<bool>(g, "personalByDefault", true);
+        s.ghosts.maxGhosts = std::clamp(jget<int>(g, "maxGhosts", 3), 1, 8);
+        s.ghosts.opacity = std::clamp(jget<int>(g, "opacity", 1), 0, 2);
+        s.ghosts.showNames = jget<bool>(g, "showNames", true);
+        s.ghosts.showPanel = jget<bool>(g, "showPanel", true);
+        s.ghosts.showDelta = jget<bool>(g, "showDelta", true);
+        s.ghosts.cacheMB = std::clamp(jget<int>(g, "cacheMB", 64), 8, 1024);
+        auto colors = jget<std::vector<int>>(g, "colors", {0, 1, 2, 3});
+        colors.resize(4, 0);
+        for (int& c : colors) c = std::clamp(c, 0, kGhostPaletteSize - 1);
+        s.ghosts.colorMine = colors[0];
+        s.ghosts.colorWorld = colors[1];
+        s.ghosts.colorFriend = colors[2];
+        s.ghosts.colorOther = colors[3];
     }
     if (j.contains("online")) {
         const Json& o = j["online"];
@@ -130,5 +159,32 @@ Settings SettingsStore::load() {
 }
 
 bool SettingsStore::save(const Settings& s) { return settingsFile().save(settingsPath(), s.toJson()); }
+
+Color ghostPaletteColor(int index) {
+    static const Color kPalette[kGhostPaletteSize] = {
+        {110, 214, 255, 255},  // cyan
+        {255, 204, 84, 255},   // gold
+        {184, 140, 255, 255},  // violet
+        {120, 255, 156, 255},  // green
+        {255, 118, 150, 255},  // pink
+        {245, 245, 255, 255},  // white
+        {255, 158, 74, 255},   // orange
+        {74, 224, 200, 255},   // turquoise
+    };
+    return kPalette[std::clamp(index, 0, kGhostPaletteSize - 1)];
+}
+
+const char* ghostPaletteName(int index) {
+    static const char* kNames[kGhostPaletteSize] = {"Cyan", "Or", "Violet", "Vert", "Rose", "Blanc", "Orange", "Turquoise"};
+    return kNames[std::clamp(index, 0, kGhostPaletteSize - 1)];
+}
+
+float ghostOpacity(int level) {
+    switch (std::clamp(level, 0, 2)) {
+        case 0: return 0.28f;
+        case 2: return 0.72f;
+        default: return 0.48f;
+    }
+}
 
 }  // namespace cosmic

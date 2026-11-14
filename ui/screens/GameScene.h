@@ -15,6 +15,7 @@
 #include "game/race/Race.h"
 #include "game/records/BossStats.h"
 #include "game/records/Records.h"
+#include "ui/screens/GhostRun.h"
 #include "ui/screens/PauseMap.h"
 #include "ui/screens/Navigation.h"
 
@@ -83,7 +84,9 @@ private:
     std::optional<LevelFingerprint> fingerprint_;
     /// What the recorded replay is for: an official ranked run, a community level run, or
     /// the editor's completion run of a player level (needed to publish it).
-    enum class RecordMode { None, Official, Community, EditorCompletion };
+    /// Local: any other level played from its start (workshop, imported), recorded for the
+    /// ghosts only (nothing is sent).
+    enum class RecordMode { None, Official, Community, EditorCompletion, Local };
     RecordMode recordMode_ = RecordMode::None;
     std::string gameplayHash_;
     // EXTRÊME level (one life) played from its start: the attempt joins the « course à la
@@ -97,6 +100,12 @@ private:
     /// A boss out of view: a textured arrow on the screen's border, turned towards it.
     void drawBossArrow(const WorldView& view);
     std::future<std::vector<Vec2>> raceRouteFuture_;
+    // Ghost Racing: ghosts of the run, this level version's hash, my best ghost's time.
+    void startGhosts();
+    void saveGhosts(const RunResult& r);
+    GhostRun ghostRun_;
+    std::string ghostHash_;
+    int64_t pbGhostMs_ = 0;
     std::string raceKind_, raceLevelId_, raceHash_, raceTitle_;
     int raceVersion_ = 0;
 };

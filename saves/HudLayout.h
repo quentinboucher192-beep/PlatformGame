@@ -7,7 +7,8 @@
 namespace cosmic {
 
 /// Elements of the in-game HUD that the player can place and size (Paramètres › HUD).
-enum class HudElement : int { Vitals, Powers, Collectibles, Timer, Progress, Boss, Count };
+/// Splits (2.18): the ghosts' comparison box (live gap and segments panel, Ghost Racing).
+enum class HudElement : int { Vitals, Powers, Collectibles, Timer, Progress, Boss, Splits, Count };
 constexpr int kHudElements = static_cast<int>(HudElement::Count);
 
 /// Where an element goes. `custom` false: the game's default place; true: the element's
