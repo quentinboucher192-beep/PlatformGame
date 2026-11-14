@@ -86,6 +86,8 @@ public:
     float facing = 1.0f;
     uint32_t summonedBy = 0;
     bool countsForStats = true;
+    /// Dies with its summoner (2.17): no reward, no split.
+    bool vanishing = false;
 
 private:
     // AI

@@ -94,6 +94,8 @@ private:
     /// Boss fights of the run: statistics, sound of a phase beaten without a hit.
     BossFightTracker bossFights_;
     void bossFeedback();
+    /// A boss out of view: a textured arrow on the screen's border, turned towards it.
+    void drawBossArrow(const WorldView& view);
     std::future<std::vector<Vec2>> raceRouteFuture_;
     std::string raceKind_, raceLevelId_, raceHash_, raceTitle_;
     int raceVersion_ = 0;

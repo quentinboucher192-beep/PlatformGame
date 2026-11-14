@@ -578,17 +578,25 @@ bool GameWorld::powerHit(const std::string& power, const Rect& area) {
 bool GameWorld::damagePlayer(const DamageInfo& dmg) { return player_.hurt(*this, dmg); }
 
 void GameWorld::onEnemyKilled(Enemy& e) {
-    if (e.countsForStats) {
+    if (e.countsForStats && !e.vanishing) {
         stats_.kills++;
         stats_.scoreBonus += e.def().scoreValue;
     }
-    for (const auto& d : e.def().drops)
-        if (rng_.chance(d.chance)) spawnDrop(d.type, e.center());
-    // Minions vanish with their summoner.
-    for (auto& other : enemies_)
-        if (other->summonedBy == e.uid() && other->alive()) other->kill(*this);
-    // Splitting enemies (slimes) leave smaller ones behind.
-    if (e.def().deathSpawnCount > 0 && !e.def().deathSpawnId.empty() && e.def().deathSpawnId != e.def().id) {
+    if (!e.vanishing)
+        for (const auto& d : e.def().drops)
+            if (rng_.chance(d.chance)) spawnDrop(d.type, e.center());
+    // Minions vanish with their summoner (2.17: those just summoned too, and without
+    // leaving rewards or split children behind: a beaten boss takes all its creatures).
+    auto vanish = [&](Enemy& o) {
+        if (o.summonedBy != e.uid() || !o.alive()) return;
+        o.vanishing = true;
+        o.countsForStats = false;
+        o.kill(*this);
+    };
+    for (size_t i = 0; i < enemies_.size(); ++i) vanish(*enemies_[i]);
+    for (size_t i = 0; i < pendingEnemies_.size(); ++i) vanish(*pendingEnemies_[i]);
+    // Splitting enemies (slimes) leave smaller ones behind (a minion's belong to its summoner).
+    if (!e.vanishing && e.def().deathSpawnCount > 0 && !e.def().deathSpawnId.empty() && e.def().deathSpawnId != e.def().id) {
         particles_.emit("split_splash", e.center(), 1.0f);
         playSound("sounds/slime_split.wav", e.center(), 0.9f);
         for (int i = 0; i < e.def().deathSpawnCount; ++i) {
@@ -597,6 +605,7 @@ void GameWorld::onEnemyKilled(Enemy& e) {
             if (Enemy* child = spawnEnemy(e.def().deathSpawnId, feet, side < 0)) {
                 child->vel = {side * (70.0f + 25.0f * static_cast<float>(i / 2)), -170.0f};
                 child->countsForStats = e.countsForStats;
+                child->summonedBy = e.summonedBy;
                 child->alert(*this);
             }
         }

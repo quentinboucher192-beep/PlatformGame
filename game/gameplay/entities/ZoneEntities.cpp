@@ -261,7 +261,13 @@ bool EnemySpawnEntity::enemyAlive(GameWorld& w) const {
 }
 
 void EnemySpawnEntity::respawn(GameWorld& w, bool dormant) {
-    if (Enemy* old = enemy(w)) old->despawn();
+    if (Enemy* old = enemy(w)) {
+        // Its creatures go with it (2.17: a boss fight restarted after the player's death
+        // starts without the previous fight's minions).
+        for (const auto& m : w.enemies())
+            if (m->summonedBy == old->uid() && m->alive()) m->despawn();
+        old->despawn();
+    }
     Enemy* e = w.spawnEnemy(obj_.propStr("enemy", "glowmite"), obj_.rect.bottomCenter(), obj_.prop<bool>("faceLeft", false),
                             id(), obj_.prop<float>("patrol", 96.0f));
     enemyUid_ = e ? e->uid() : 0;

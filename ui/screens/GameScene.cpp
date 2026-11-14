@@ -265,6 +265,31 @@ void GameScene::fixedUpdate(float dt) {
     if (!ended_ && world_->state() == WorldState::Failed) finishRun(false);
 }
 
+void GameScene::drawBossArrow(const WorldView& view) {
+    Enemy* boss = world_->activeBoss();
+    if (!boss || !boss->alive() || world_->cinematic().active()) return;
+    UIContext& ui = g_.ui;
+    const float W = ui.screenW(), H = ui.screenH();
+    Rect onScreen = view.toScreen(boss->box);
+    if (onScreen.intersects({0, 0, W, H})) return;
+    auto tex = g_.app.resources().texture("ui/boss_arrow.png");
+    if (!tex) return;
+    // Along the line from the screen's centre to the boss, stopped by a frame that keeps
+    // clear of the HUD (hearts and progress bar above, boss bar below).
+    Rect frame{ui.s(56), ui.s(150), W - ui.s(112), H - ui.s(150) - ui.s(130)};
+    Vec2 c = frame.center();
+    Vec2 d = onScreen.center() - c;
+    if (d.lengthSq() < 1.0f) return;
+    float tx = std::abs(d.x) > 1e-3f ? (frame.w * 0.5f) / std::abs(d.x) : 1e9f;
+    float ty = std::abs(d.y) > 1e-3f ? (frame.h * 0.5f) / std::abs(d.y) : 1e9f;
+    Vec2 p = c + d * std::min(tx, ty);
+    float angle = std::atan2(d.y, d.x) * 57.29578f;
+    float pulse = 1.0f + 0.08f * std::sin(ui.time() * 6.0f);
+    float size = ui.s(76) * pulse;
+    Rect dst = Rect::fromCenter(p, {size, size});
+    ui.r().drawTexture(*tex, nullptr, dst, Color::white().withAlphaF(0.92f), BlendMode::Alpha, false, false, angle);
+}
+
 void GameScene::bossFeedback() {
     for (const auto& e : bossFights_.takeEvents()) {
         if (e.kind == BossFightTracker::Event::Kind::PhaseNoHit) {
@@ -464,6 +489,7 @@ void GameScene::render(float alpha) {
     opt.debug = g_.app.debugOverlay;
     renderer_.render(r, g_.app.resources(), *world_, view, alpha, opt);
     hud_.render(g_.ui, *world_, view, g_.records.get(levelId_), g_.settings.gameplay);
+    drawBossArrow(view);
     if (g_.settings.graphics.showFps) {
         char buf[32];
         std::snprintf(buf, sizeof(buf), "%.0f FPS", g_.app.fps());
