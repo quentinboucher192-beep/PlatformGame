@@ -354,6 +354,8 @@ void ReplayRecorder::begin(const std::string& levelId, const std::string& levelH
     data_.seed = seed;
     active_ = true;
     started_ = false;
+    lastBoss_.clear();
+    lastWaves_.clear();
 }
 
 void ReplayRecorder::push(ReplayEventType t, uint8_t arg, uint16_t value) {
@@ -418,6 +420,25 @@ void ReplayRecorder::tick(const GameWorld& w) {
     // One sample every 1/sampleHz second of level time (the timer, not wall clock).
     float next = static_cast<float>(data_.frames.size()) / static_cast<float>(data_.sampleHz);
     if (timer.elapsed() + 1e-4f >= next) sample(w);
+}
+
+void ReplayRecorder::raceProgress(const std::vector<float>& bossRemoved, const std::vector<int>& wavesDone) {
+    if (!active_ || !started_) return;
+    lastBoss_.resize(bossRemoved.size(), 0);
+    lastWaves_.resize(wavesDone.size(), 0);
+    for (size_t i = 0; i < bossRemoved.size() && i < 255; ++i) {
+        auto pm = static_cast<uint16_t>(std::clamp(std::lround(bossRemoved[i] * 1000.0f), 0L, 1000L));
+        // Every percent (and the end): enough to recompute the score, few events.
+        if (pm >= lastBoss_[i] + 10 || (pm == 1000 && lastBoss_[i] != 1000)) {
+            push(ReplayEventType::BossHit, static_cast<uint8_t>(i), pm);
+            lastBoss_[i] = pm;
+        }
+    }
+    for (size_t i = 0; i < wavesDone.size() && i < 255; ++i)
+        if (wavesDone[i] > lastWaves_[i]) {
+            push(ReplayEventType::WaveCleared, static_cast<uint8_t>(i), static_cast<uint16_t>(wavesDone[i]));
+            lastWaves_[i] = wavesDone[i];
+        }
 }
 
 void ReplayRecorder::onWorldEvent(const std::string& source, const std::string& trigger) {

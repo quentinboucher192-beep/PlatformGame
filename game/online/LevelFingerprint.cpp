@@ -20,8 +20,11 @@ std::optional<LevelFingerprint> fingerprintLevelJson(const Json& level) {
     if (f.levelId.empty()) return std::nullopt;
     if (level.contains("metadata") && level["metadata"].is_object()) f.version = std::max(1, jget<int>(level["metadata"], "revision", 1));
     // nlohmann::json keeps object keys sorted and prints numbers in their shortest
-    // round-trip form: the dump is a canonical text of the level.
-    f.hash = Sha256::hex(level.dump());
+    // round-trip form: the dump is a canonical text of the level. The EXTRÊME mark is
+    // online presentation only (the one life it needs is in the level's rules): left out.
+    Json canonical = level;
+    canonical.erase("extreme");
+    f.hash = Sha256::hex(canonical.dump());
     return f;
 }
 
@@ -48,7 +51,9 @@ std::optional<LevelFingerprint> fingerprintRankedLevel(const ContentDatabase& co
         if (const EnemyDefinition* d = content.enemy(id)) enemies[id] = gameplayEnemyJson(*d);
     for (const auto& id : deps.powers)
         if (const PowerDefinition* d = content.power(id)) powers[id] = d->toJson();
-    Json bundle = {{"format", "cosmic.ranked-level"}, {"simulation", kSimulationVersion}, {"level", levelJson},
+    Json levelPart = levelJson;
+    levelPart.erase("extreme");
+    Json bundle = {{"format", "cosmic.ranked-level"}, {"simulation", kSimulationVersion}, {"level", levelPart},
                    {"enemies", enemies},          {"powers", powers},                  {"player", content.playerConfig()}};
     base->hash = Sha256::hex(bundle.dump());
     return base;

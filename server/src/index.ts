@@ -9,6 +9,7 @@ import { ApiError, errorResponse, json, log, type Bindings, type Ctx } from "./h
 import * as boards from "./leaderboards";
 import * as creators from "./creators";
 import * as notifications from "./notifications";
+import * as race from "./race";
 import * as workshop from "./workshop";
 import * as projects from "./projects";
 import { liveRoute } from "./live";
@@ -220,6 +221,10 @@ route("GET", `${V}/projects/{projectId}/content`, (ctx) => projects.getContent(c
 route("PUT", `${V}/projects/{projectId}/content`, (ctx) => projects.putContent(ctx));
 route("GET", `${V}/projects/{projectId}/revisions`, (ctx) => projects.listRevisions(ctx));
 route("GET", `${V}/projects/{projectId}/activity`, (ctx) => projects.listActivity(ctx));
+// Course à la vérification (EXTRÊME levels)
+route("POST", `${V}/races/runs`, (ctx) => race.submitRun(ctx));
+route("PUT", `${V}/races/runs/{runId}/replay`, (ctx) => race.uploadRunReplay(ctx));
+route("GET", `${V}/races/board`, (ctx) => race.getBoard(ctx));
 // Chat of the live editor
 route("GET", `${V}/projects/{projectId}/messages`, (ctx) => projects.listMessages(ctx));
 route("POST", `${V}/projects/{projectId}/messages`, (ctx) => projects.postMessage(ctx));

@@ -6,6 +6,7 @@
 
 #include "engine/core/FileUtil.h"
 #include "game/GameServices.h"
+#include "game/online/OnlineService.h"
 #include "packaging/PackageExporter.h"
 #include "packaging/PackageImporter.h"
 #include "ui/screens/MenuBackground.h"
@@ -36,6 +37,12 @@ public:
         if (!importPath_.empty()) {
             tab_ = 3;
             analyze();
+        }
+        // Screenshots: "confirm-delete:<level id>" shows the deletion choice of that level.
+        if (g_.onlineOpen.rfind("confirm-delete:", 0) == 0) {
+            confirmDelete_ = g_.onlineOpen.substr(15);
+            if (auto lvl = g_.content.loadLevel(confirmDelete_)) confirmCommunityId_ = jstr(lvl->metadata.value("community", Json::object()), "id");
+            g_.onlineOpen.clear();
         }
     }
 
@@ -135,9 +142,15 @@ private:
             const LevelEntry* l = mine[i];
             Rect row{list.x, y, list.w - ui.s(16), rh};
             ui.panel(row, false, 10);
-            ui.label(l->name.empty() ? l->id : l->name, {row.x + ui.s(20), row.y + ui.s(14)}, 24, ui.theme().text, Align::Left, FontFace::Bold);
+            // Name and details: never under the buttons on the right.
+            const float textRoom = row.w - ui.s(906) - ui.s(20);
+            std::string title = l->name.empty() ? l->id : l->name;
+            float tfs = ui.fitFont(title, FontFace::Bold, 24, textRoom, 0.7f);
+            ui.label(ui.elide(title, FontFace::Bold, tfs, textRoom), {row.x + ui.s(20), row.y + ui.s(14)}, tfs, ui.theme().text, Align::Left, FontFace::Bold);
             const PlanetData* pl = g_.content.planet(l->planet);
-            ui.label(l->id + "  —  " + (pl ? pl->name : l->planet), {row.x + ui.s(20), row.y + ui.s(52)}, 18, ui.theme().textDim);
+            std::string sub = l->id + "  —  " + (pl ? pl->name : l->planet);
+            float sfs = ui.fitFont(sub, FontFace::Body, 18, textRoom, 0.7f);
+            ui.label(ui.elide(sub, FontFace::Body, sfs, textRoom), {row.x + ui.s(20), row.y + ui.s(52)}, sfs, ui.theme().textDim);
             std::string id = "m" + std::to_string(i);
             if (ui.button(id + "play", {row.right() - ui.s(886), row.y + ui.s(18), ui.s(150), ui.s(56)}, "Jouer")) {
                 g_.app.switchScene(makeGameScene(g_, l->id), 0.5f);
@@ -146,6 +159,36 @@ private:
             if (ui.button(id + "edit", {row.right() - ui.s(722), row.y + ui.s(18), ui.s(150), ui.s(56)}, "Éditer")) {
                 g_.app.switchScene(makeLevelEditor(g_, l->id));
                 break;
+            }
+            // A level published in ONLINE LEVELS: deleting it asks whether to remove the
+            // publication too (otherwise it would stay online, without its local copy).
+            if (confirmDelete_ == l->id && !confirmCommunityId_.empty()) {
+                UIContext::ButtonStyle d;
+                d.danger = true;
+                d.small = true;
+                d.fontSize = 17;
+                d.enabled = !removing_;
+                UIContext::ButtonStyle k;
+                k.small = true;
+                k.fontSize = 17;
+                k.enabled = !removing_;
+                float bx = row.right() - ui.s(558);
+                if (ui.button(id + "delonline", {bx, row.y + ui.s(18), ui.s(240), ui.s(56)}, removing_ ? "Retrait…" : "Supprimer et retirer d'ONLINE", d))
+                    removeEverywhere(l->id, confirmCommunityId_);
+                if (ui.button(id + "dellocal", {bx + ui.s(248), row.y + ui.s(18), ui.s(176), ui.s(56)}, "Ma copie seulement", k)) {
+                    std::string lid = l->id;
+                    confirmDelete_.clear();
+                    confirmCommunityId_.clear();
+                    if (g_.content.deleteUserLevel(lid)) notify("Copie locale supprimée ; le niveau reste dans ONLINE LEVELS.", ui.theme().warm);
+                    else notify("Suppression impossible", ui.theme().danger);
+                    break;
+                }
+                if (ui.button(id + "delcancel", {bx + ui.s(432), row.y + ui.s(18), ui.s(104), ui.s(56)}, "Annuler", k)) {
+                    confirmDelete_.clear();
+                    confirmCommunityId_.clear();
+                }
+                y += rh + ui.s(10);
+                continue;
             }
             {
                 UIContext::ButtonStyle pub;
@@ -172,10 +215,36 @@ private:
                     break;
                 }
                 confirmDelete_ = l->id;
+                // Published online? (its publication id is kept in the level.)
+                confirmCommunityId_.clear();
+                if (auto lvl = g_.content.loadLevel(l->id)) confirmCommunityId_ = jstr(lvl->metadata.value("community", Json::object()), "id");
+                if (!confirmCommunityId_.empty())
+                    notify("Ce niveau est publié dans ONLINE LEVELS : le retirer aussi, ou ne supprimer que votre copie ?", ui.theme().warm);
             }
             y += rh + ui.s(10);
         }
         ui.endScroll();
+    }
+
+    /// Removes the publication first (the server says it is done), then the local copy.
+    void removeEverywhere(const std::string& levelId, const std::string& communityId) {
+        if (!g_.online.loggedIn()) {
+            notify("Connectez-vous à Cosmic Online pour le retirer d'ONLINE LEVELS : rien n'a été supprimé.", g_.ui.theme().danger);
+            return;
+        }
+        removing_ = true;
+        g_.online.send("DELETE", "/api/v1/community/levels/" + communityId, Json(), OnlineService::guard(life_, [this, levelId](const ApiResult& r) {
+                           removing_ = false;
+                           // Already gone online (404): only the local copy remains to delete.
+                           if (!r.ok && r.status != 404) {
+                               notify("Retrait d'ONLINE LEVELS impossible (" + r.message + ") : rien n'a été supprimé.", g_.ui.theme().danger);
+                               return;
+                           }
+                           confirmDelete_.clear();
+                           confirmCommunityId_.clear();
+                           g_.content.deleteUserLevel(levelId);
+                           notify("Niveau supprimé et retiré d'ONLINE LEVELS.", g_.ui.theme().warm);
+                       }));
     }
 
     // ========================================================== enemy editor
@@ -510,7 +579,9 @@ private:
     TexturePtr thumb_;
     int policy_ = 0;
     std::string lastImported_;
-    std::string confirmDelete_;
+    std::string confirmDelete_, confirmCommunityId_;
+    bool removing_ = false;
+    std::shared_ptr<int> life_ = std::make_shared<int>(0);
     int dialog_ = 0;
     int dialogKind_ = 0;
     std::string message_;

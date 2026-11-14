@@ -141,6 +141,12 @@ struct LevelData {
     float damageFactor = 1.0f;
     /// Lives for the whole level (0 = unlimited): the run ends when they are all lost.
     int lives = 0;
+    /// EXTRÊME level: one life (lives 1, or the challenge mode without a death allowed) and a
+    /// « course à la vérification » (progress ranking) online. Not part of the gameplay: the
+    /// ranked fingerprint leaves it out.
+    bool extreme = false;
+    /// One life only: what an extreme level requires.
+    bool oneLife() const { return livesAllowed() == 1; }
     /// Lives the player really has: `lives`, or what the challenge mode allows (0 = unlimited).
     int livesAllowed() const { return lives > 0 ? lives : (timerMode == TimerMode::Challenge ? challengeMaxDeaths + 1 : 0); }
     std::array<MedalRule, 4> medals;  // bronze, silver, gold, platinum

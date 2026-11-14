@@ -403,7 +403,7 @@ int main(int argc, char** argv) {
         if (a.size() > 9 && (a.rfind("cosmic://", 0) == 0 || a.rfind("COSMIC://", 0) == 0)) joinLink = a.substr(0, 200);
 
     std::string level = value("--level");
-    if (!importFile.empty()) {
+    if (!importFile.empty() || has("--workshop")) {
         app.pushScene(makeContentManager(game, importFile));
     } else if (!joinLink.empty()) {
         game.onlineOpen = "join-key:" + joinLink;

@@ -60,6 +60,16 @@ void TriggerEntity::render(RenderContext& ctx) {
 
 // ------------------------------------------------------------- combat zone
 
+size_t CombatZoneEntity::countWaves(const LevelObject& zone, const LevelData& level) {
+    size_t n = 0;
+    for (const auto& wave : splitList(zone.propStr("waves"), ';'))
+        if (!splitList(wave, ',').empty()) ++n;
+    if (n == 0)
+        for (const auto& o : level.objects)
+            if (o.type == "enemy" && zone.rect.contains(o.rect.center())) return 1;
+    return n;
+}
+
 void CombatZoneEntity::init(GameWorld& w) {
     for (const auto& wave : splitList(obj_.propStr("waves"), ';')) {
         auto ids = splitList(wave, ',');

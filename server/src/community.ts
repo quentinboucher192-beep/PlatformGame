@@ -9,6 +9,7 @@ import { ApiError, Errors, json, nowIso, readJsonObject, readLimited, type Ctx }
 import { playerSummary, type LevelVersionRow, type PlayerRow, type RecordRow } from "./model";
 import { notifyMany } from "./notifications";
 import { RULES, rateLimit } from "./ratelimit";
+import { parseLayout } from "./race";
 import { analyzeReplay, EventType, inflateContainer, MAX_REPLAY_UPLOAD, parseReplay, PickupKind, ReplayError, type Replay } from "./replay";
 import { HASH_RE, PLANET_ID_RE, SEMVER_RE, Validator, paging } from "./validate";
 import { listZip, readEntry, safeEntryName, ZipError } from "./zip";
@@ -39,6 +40,10 @@ interface CommunityLevelRow {
     report_count: number;
     created_at: string;
     updated_at: string;
+    extreme?: number;
+    verified_by?: string | null;
+    verified_at?: string | null;
+    verified_version?: number | null;
 }
 
 interface VersionRow {
@@ -86,6 +91,9 @@ export interface PackageInfo {
     exit: [number, number, number, number];
     timeLimitMs: number;
     thumbnail: Uint8Array | null;
+    /** EXTRÊME level, and whether its rules give one life (what an extreme level needs). */
+    extreme: boolean;
+    oneLife: boolean;
 }
 
 /** Checks a .cplanet package without trusting anything in it. Throws ApiError 422. */
@@ -161,6 +169,9 @@ export async function inspectPackage(data: Uint8Array): Promise<PackageInfo> {
     if (!exit) throw bad("aucune sortie");
     const timer = typeof level.timer === "object" && level.timer !== null ? (level.timer as Record<string, unknown>) : {};
     const limit = typeof timer.limit === "number" && Number.isFinite(timer.limit) ? timer.limit : 0;
+    // One life: lives = 1, or the challenge mode without a death allowed (LevelData::livesAllowed).
+    const lives = typeof level.lives === "number" ? level.lives : 0;
+    const oneLife = lives === 1 || (lives === 0 && timer.mode === "challenge" && (timer.challengeMaxDeaths ?? 0) === 0);
     let thumbnail: Uint8Array | null = null;
     const te = byName.get(ROOT + "metadata/thumbnail.png");
     if (te && te.size <= MAX_THUMBNAIL) {
@@ -177,6 +188,8 @@ export async function inspectPackage(data: Uint8Array): Promise<PackageInfo> {
         spawn,
         exit,
         timeLimitMs: Math.max(0, Math.round(limit * 1000)),
+        extreme: level.extreme === true,
+        oneLife,
         thumbnail,
     };
 }
@@ -212,6 +225,11 @@ function pathVersion(ctx: Ctx): number {
 }
 
 /** The replay checks of the official records, against this level version's geometry. */
+/** The checks' view of a community version (for the race of an extreme level). */
+export function pseudoVersionOf(row: Record<string, unknown>): LevelVersionRow {
+    return pseudoVersion(row as unknown as VersionRow);
+}
+
 function pseudoVersion(v: VersionRow): LevelVersionRow {
     return {
         id: 0,
@@ -277,7 +295,16 @@ async function readReplay(ctx: Ctx): Promise<{ data: Uint8Array; replay: Replay 
 
 function card(
     l: CommunityLevelRow &
-        Partial<PlayerRow> & { best_ms?: number | null; best_player?: string | null; my_stars?: number | null; my_fav?: number | null; favorite_count?: number; comment_count?: number },
+        Partial<PlayerRow> & {
+            best_ms?: number | null;
+            best_player?: string | null;
+            my_stars?: number | null;
+            my_fav?: number | null;
+            favorite_count?: number;
+            comment_count?: number;
+            verifier_name?: string | null;
+            race_best?: number | null;
+        },
 ) {
     return {
         id: l.id,
@@ -304,6 +331,13 @@ function card(
         favorites: l.favorite_count ?? 0,
         comments: l.comment_count ?? 0,
         my_favorite: l.my_fav === 1,
+        // EXTRÊME: one life, a race; verified once someone finished the current version.
+        extreme: l.extreme === 1,
+        verified:
+            l.extreme === 1 && l.verified_version === l.current_version && l.verified_at
+                ? { player: l.verifier_name ?? null, at: l.verified_at }
+                : null,
+        race_best: l.extreme === 1 ? (l.race_best ?? null) : null,
         created_at: l.created_at,
         updated_at: l.updated_at,
     };
@@ -314,7 +348,9 @@ const CARD_SQL = `SELECT l.*, p.username, p.avatar, p.avatar_custom_key, p.count
     (SELECT pp.username FROM community_records r JOIN players pp ON pp.id = r.player_id
        WHERE r.level_id = l.id AND r.version = l.current_version AND r.status = 'REPLAY_OK' ORDER BY r.time_ms, r.created_at LIMIT 1) AS best_player,
     (SELECT stars FROM community_ratings cr WHERE cr.level_id = l.id AND cr.player_id = ?1) AS my_stars,
-    EXISTS (SELECT 1 FROM community_favorites cf WHERE cf.level_id = l.id AND cf.player_id = ?1) AS my_fav
+    EXISTS (SELECT 1 FROM community_favorites cf WHERE cf.level_id = l.id AND cf.player_id = ?1) AS my_fav,
+    (SELECT vp.username FROM players vp WHERE vp.id = l.verified_by) AS verifier_name,
+    (SELECT MAX(rr.score) FROM race_runs rr WHERE rr.board = 'c:' || l.id || ':' || l.current_version AND rr.status = 'VERIFIED') AS race_best
   FROM community_levels l JOIN players p ON p.id = l.author_id`;
 
 // ------------------------------------------------------------------- routes
@@ -441,7 +477,7 @@ export async function startPublish(ctx: Ctx): Promise<Response> {
     const me = auth.player.id;
     await rateLimit(ctx, RULES.communityPublish, "player:" + me);
     const body = await readJsonObject(ctx);
-    const v = new Validator(body, ["community_id", "title", "description", "planet", "difficulty", "level_hash", "min_game_version"]);
+    const v = new Validator(body, ["community_id", "title", "description", "planet", "difficulty", "level_hash", "min_game_version", "race"]);
     const communityId = v.str("community_id", { min: 36, max: 36, pattern: ID_RE, optional: true });
     const title = v.str("title", { min: 3, max: 60, trim: true });
     const description = v.str("description", { max: 500, trim: true, optional: true }) ?? "";
@@ -453,6 +489,9 @@ export async function startPublish(ctx: Ctx): Promise<Response> {
         if (typeof body.difficulty !== "number" || !(body.difficulty >= 0.5 && body.difficulty <= 5)) v.fail("difficulty", "entre 0,5 et 5");
         else difficulty = Math.round(body.difficulty * 2) / 2;
     }
+    // The race layout of an EXTRÊME level (intended route, bosses, ambushes).
+    const race = body.race === undefined || body.race === null ? null : parseLayout(body.race);
+    if (body.race !== undefined && body.race !== null && !race) v.fail("race", "tracé de course invalide");
     v.done();
     const now = nowIso();
     let id: string;
@@ -484,9 +523,9 @@ export async function startPublish(ctx: Ctx): Promise<Response> {
             .run();
     }
     await ctx.env.DB.prepare(
-        "INSERT INTO community_level_versions (level_id, version, status, level_hash, min_game_version, created_at) VALUES (?1, ?2, 'uploading', ?3, ?4, ?5)",
+        "INSERT INTO community_level_versions (level_id, version, status, level_hash, min_game_version, created_at, race) VALUES (?1, ?2, 'uploading', ?3, ?4, ?5, ?6)",
     )
-        .bind(id, version, levelHash!, minGame!, now)
+        .bind(id, version, levelHash!, minGame!, now, race ? JSON.stringify(race) : null)
         .run();
     const base = `/api/v1/community/levels/${id}/versions/${version}`;
     return json(ctx, { id, version, upload: { package: base + "/package", replay: base + "/replay" } }, { status: 201 });
@@ -511,6 +550,11 @@ export async function uploadPackage(ctx: Ctx): Promise<Response> {
         throw new ApiError(415, "UNSUPPORTED_MEDIA_TYPE", "Le package doit être envoyé en application/octet-stream.");
     const data = await readLimited(ctx.request, MAX_PACKAGE);
     const info = await inspectPackage(data);
+    if (info.extreme && !info.oneLife)
+        throw new ApiError(422, "EXTREME_LIVES", "Un niveau EXTRÊME se joue avec une seule vie : réglez ses vies sur 1 dans l'éditeur.");
+    if (info.extreme && !(v as VersionRow & { race?: string | null }).race)
+        throw new ApiError(422, "RACE_LAYOUT_MISSING", "Le tracé de la course de ce niveau EXTRÊME manque : publiez-le depuis une version à jour du jeu.");
+    await ctx.env.DB.prepare("UPDATE community_levels SET extreme = ?2 WHERE id = ?1").bind(l.id, info.extreme ? 1 : 0).run();
     const key = `community/${l.id}/v${v.version}.cplanet`;
     await ctx.env.STORAGE.put(key, data, {
         httpMetadata: { contentType: "application/octet-stream" },
@@ -554,7 +598,9 @@ export async function uploadCompletion(ctx: Ctx): Promise<Response> {
 
 async function tryPublish(ctx: Ctx, id: string, version: number): Promise<boolean> {
     const v = await loadVersion(ctx, id, version);
-    if (!v.package_key || !v.replay_key) return false;
+    // An EXTRÊME level is published without its author's completion: the race verifies it.
+    const extreme = (await ctx.env.DB.prepare("SELECT extreme FROM community_levels WHERE id = ?1").bind(id).first<{ extreme: number }>())?.extreme === 1;
+    if (!v.package_key || (!v.replay_key && !extreme)) return false;
     const now = nowIso();
     await ctx.env.DB.batch([
         ctx.env.DB.prepare("UPDATE community_level_versions SET status = 'superseded' WHERE level_id = ?1 AND status = 'published'").bind(id),

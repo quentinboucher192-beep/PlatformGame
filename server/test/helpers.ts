@@ -83,7 +83,7 @@ export async function publishV2(): Promise<void> {
 
 /** Empties every table (storage persists between tests of a file). */
 export async function resetDb(): Promise<void> {
-    const tables = ["project_messages", "project_versions", "project_ops", "project_activity", "project_revisions", "project_join_requests", "project_invites", "project_members", "projects", "notifications", "player_playtime", "player_follows", "community_level_players", "community_comment_reports", "community_comment_reactions",
+    const tables = ["race_victors", "race_runs", "project_messages", "project_versions", "project_ops", "project_activity", "project_revisions", "project_join_requests", "project_invites", "project_members", "projects", "notifications", "player_playtime", "player_follows", "community_level_players", "community_comment_reports", "community_comment_reactions",
         "community_comments", "community_favorites", "client_releases", "rate_limits", "audit_log", "community_records", "community_reports", "community_ratings", "community_level_versions",
         "community_levels", "message_reports", "messages", "conversation_members", "conversations", "player_blocks", "player_friends", "player_bests", "replay_metadata", "records", "player_sessions",
         "player_credentials", "players", "level_versions", "levels", "countries"];
@@ -156,6 +156,9 @@ export interface ReplaySpec {
     /** Format 2: number of simulation steps recorded (defaults to the duration + 3 s of intro). */
     exactTicks?: number;
     exact?: boolean;
+    /** false: an attempt that does not reach the exit (no Finish event). */
+    finish?: boolean;
+    extraEvents?: { frame: number; type: number; arg: number; value: number }[];
 }
 
 function hexToBytes(hex: string): Uint8Array {
@@ -183,7 +186,8 @@ export async function buildReplay(spec: ReplaySpec): Promise<Uint8Array> {
     }
     const collect = spec.collectibles ?? 4;
     for (let c = 0; c < collect; ++c) events.push({ frame: Math.floor(((c + 1) * frames) / (collect + 3)), type: 5, arg: c % 2, value: 0 });
-    events.push({ frame: frames - 1, type: 11, arg: 0, value: 0 });
+    if (spec.finish !== false) events.push({ frame: frames - 1, type: 11, arg: 0, value: 0 });
+    for (const e of spec.extraEvents ?? []) events.push({ ...e, frame: Math.min(e.frame, frames - 1) });
     events.sort((a, b) => a.frame - b.frame);
     const exact = spec.exact || spec.exactTicks !== undefined;
     const ticks = spec.exactTicks ?? Math.round((spec.durationMs / 1000 + 3) * 120);

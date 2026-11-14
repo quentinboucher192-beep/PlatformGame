@@ -31,6 +31,8 @@ enum class ReplayEventType : uint8_t {
     Kill = 9,
     Teleport = 10,
     Finish = 11,
+    BossHit = 12,      // arg: boss index in the race layout, value: health removed (per mille)
+    WaveCleared = 13,  // arg: ambush index in the race layout, value: waves beaten
 };
 
 enum class ReplayPickup : uint8_t { Shard = 0, Relic = 1, Health = 2, Energy = 3, HeartContainer = 4, Secret = 5 };
@@ -113,6 +115,8 @@ public:
     /// Ends the recording when the level is completed (`elapsed` = timer value).
     void finish(const GameWorld& w, float elapsed);
     void abort() { active_ = false; }
+    /// Progress of an extreme level's race (bosses' health, ambushes' waves) as events.
+    void raceProgress(const std::vector<float>& bossRemoved, const std::vector<int>& wavesDone);
     const ReplayData& data() const { return data_; }
     ReplayData take();
 
@@ -126,6 +130,8 @@ private:
     bool started_ = false;
     int lastDeaths_ = 0, lastShards_ = 0, lastRelics_ = 0, lastSecrets_ = 0, lastKills_ = 0, lastDamage_ = 0;
     uint8_t lastState_ = 0;
+    std::vector<uint16_t> lastBoss_;
+    std::vector<int> lastWaves_;
 };
 
 /// Plays a version 2 replay again: feeds the recorded inputs to a world loaded with the same

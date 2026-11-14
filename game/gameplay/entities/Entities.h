@@ -367,6 +367,11 @@ public:
     std::string debugInfo() const override;
     bool started() const { return started_; }
     bool cleared() const { return cleared_; }
+    size_t waveCount() const { return waves_.size(); }
+    /// Waves beaten so far (the current one counts once its last enemy is down).
+    size_t wavesDone() const { return cleared_ ? waves_.size() : started_ ? wave_ + (waveDelay_ > 0.0f ? 1 : 0) : 0; }
+    /// The waves an arena will have, read from the level (same rules as init()).
+    static size_t countWaves(const LevelObject& zone, const LevelData& level);
 
 private:
     void startWave(GameWorld& w, size_t index);
