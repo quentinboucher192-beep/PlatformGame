@@ -325,6 +325,7 @@ void Hud::drawTimer(UIContext& ui, GameWorld& w, const LevelRecord* record, Vec2
 void Hud::drawCollectibles(UIContext& ui, GameWorld& w, Vec2 o, float k) {
     auto S = [&](float v) { return ui.s(v) * k; };
     const RunStats& s = w.stats();
+    if (s.totalShards == 0 && s.totalRelics == 0) return;  // nothing to collect in this level
     float cx = o.x;
     float y = o.y;
     float is = S(34) * (1.0f + 0.25f * shardPulse_);

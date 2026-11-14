@@ -9,7 +9,8 @@ struct Info {
 };
 constexpr Info kTypes[] = {{"alien", "Planète extraterrestre"}, {"volcanic", "Planète volcanique"},
                            {"ice", "Planète glacée"},           {"desert", "Planète désertique"},
-                           {"forest", "Planète forestière"},    {"tech", "Planète technologique"}};
+                           {"forest", "Planète forestière"},    {"tech", "Planète technologique"},
+                           {"star", "Étoile"}};
 }  // namespace
 
 const char* planetTypeId(PlanetType t) { return kTypes[static_cast<int>(t)].id; }

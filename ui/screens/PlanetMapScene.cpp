@@ -68,6 +68,7 @@ public:
         auto toScreen = [&](Vec2 p) { return center + (p - focus_) * scale; };
         // Orbits
         for (const auto* p : planets_) {
+            if (p->orbitRadius <= 0.0f) continue;  // the star at the centre has no orbit
             std::vector<Vec2> pts;
             int seg = 96;
             for (int k = 0; k <= seg; ++k) {
@@ -100,7 +101,10 @@ public:
                 r.drawRing(sp, size * 0.62f, ui.s(3), p->color.withAlphaF(0.7f * pulse));
                 r.drawGlow(sp, size * 1.3f, p->atmosphere.withAlphaF(0.5f));
             }
-            if (auto tex = g_.app.resources().texture(p->illustration, false)) {
+            bool star = p->orbitRadius <= 0.0f;  // the sun itself (drawn above), opened at the end
+            if (star) {
+                if (unlocked) r.drawGlow(sp, size * (0.9f + 0.1f * std::sin(t_ * 2.0f)), p->color.withAlpha(90));
+            } else if (auto tex = g_.app.resources().texture(p->illustration, false)) {
                 Color tint = unlocked ? Color::white() : Color{60, 66, 90, 255};
                 r.drawTexture(*tex, nullptr, Rect::fromCenter(sp, {size, size}), tint);
             }
@@ -111,7 +115,8 @@ public:
                 selected_ = i;
                 g_.uiSound("ui_move");
             }
-            ui.label(unlocked || !p->teaser ? p->name : "Signal inconnu", {sp.x, sp.y + size * 0.55f}, 22,
+            // Below the selection ring (radius 0.62 size), never across it.
+            ui.label(unlocked || !p->teaser ? p->name : "Signal inconnu", {sp.x, sp.y + size * 0.66f + ui.s(4)}, 22,
                      unlocked ? ui.theme().text : ui.theme().textDim, Align::Center, FontFace::Bold);
         }
         ui.popId();

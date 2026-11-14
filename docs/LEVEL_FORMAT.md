@@ -185,3 +185,14 @@ passe par une courbe saturante `5 × (1 − exp(−(brut − 6) / 8))`, arrondie
 Limite connue : c'est une estimation à partir de la géométrie et des données ; elle ne joue
 pas le niveau. Le détecteur suppose un joueur très habile (il prend la route la plus courte
 possible) : les sauts mesurés sont ceux de cette route.
+
+## Planètes (`data/planets/<id>.json`)
+
+`levels` (ordre de la campagne), `unlock` : `always`, `never`, `planet:<id>` (cette planète
+terminée), `planets:<id>,<id>,…` (toutes ces planètes terminées : le Noyau stellaire s'ouvre
+avec `planets:sylvanox,glacior,pyralis`), `level:<id>` (ce niveau terminé). `orbit.radius`
+à 0 place la planète au centre de la carte : c'est l'étoile du système (type `star`), dessinée
+par le soleil de la carte.
+
+Un niveau à une seule vie (mode `challenge`, `challengeMaxDeaths` 0, comme l'Arène des Échos)
+peut n'avoir aucun checkpoint : la première chute met fin à la partie.

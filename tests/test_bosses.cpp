@@ -199,7 +199,9 @@ TEST_CASE("bosses: they read the fight — moving players get hit, campers get p
     std::vector<Row> rows;
     for (const EnemyDefinition* def : content.enemies()) {
         if (!def->isBoss || !def->builtin) continue;
-        Row r{def->id, fight(*def, false, 40.0f), fight(*def, true, 20.0f), fight(*def, false, 90.0f)};
+        // "Long" = 90 s, or longer for a boss whose rage comes later (the Astrarque: 90 s).
+        float longFight = std::max(90.0f, def->enrageTime + 10.0f);
+        Row r{def->id, fight(*def, false, 40.0f), fight(*def, true, 20.0f), fight(*def, false, longFight)};
         std::printf("  %-15s mobile : %2d coups / 40 s, %2d attaques (%zu diff.) | perché : %d coups / 20 s | 90 s : %d coups%s\n", r.id.c_str(),
                     r.moving.hits, r.moving.attacks, r.moving.used.size(), r.camping.hits, r.late.hits, r.late.enraged ? ", rage" : "");
         rows.push_back(r);

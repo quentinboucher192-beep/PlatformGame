@@ -593,8 +593,8 @@ void Enemy::render(RenderContext& ctx) const {
     bool flip = facing < 0.0f;
     Rect src = anim_.sourceRect();
     Rect dst = anim_.destRect(feet, flip, def_.scale);
-    Color tint = Color::white();
-    if (state_ == EnemyState::Dormant) tint = {255, 255, 255, 110};
+    Color tint = def_.tint;
+    if (state_ == EnemyState::Dormant) tint.a = 110;
     if (state_ == EnemyState::Dead) tint.a = static_cast<uint8_t>(std::clamp(deathTimer_ / 0.9f, 0.0f, 1.0f) * 255);
     ctx.r.drawWorldTexture(tex, &src, dst, tint, BlendMode::Alpha, flip);
     // Hurt flash and telegraph pulse (additive overlays of the same frame)

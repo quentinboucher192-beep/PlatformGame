@@ -68,6 +68,21 @@ PLANETS = {
              "foreground": True, "tint": "#ffffffc0"},
         ],
     },
+    # Stellar Core (2.7): the star at the centre of the system; its sky is the star itself and
+    # the three planets come back as echoes in its light.
+    "noyau": {
+        "music": "music/sylvanox_depths.ogg", "bossMusic": "music/pyralis_boss.ogg",
+        "ambience": "music/pyralis_ambience.ogg", "ambientLight": "#a890c8", "backgroundColor": "#0a0716",
+        "background": [
+            {"texture": "backgrounds/noyau/sky.png", "factor": [0.0, 0.0], "fill": True},
+            {"texture": "backgrounds/noyau/far.png", "factor": [0.1, 0.05], "offset": [0, -20]},
+            {"texture": "backgrounds/noyau/mid.png", "factor": [0.25, 0.12], "offset": [0, 10]},
+            {"texture": "backgrounds/noyau/abyss.png", "factor": [0.4, 0.3], "offset": [0, 210], "fillBelow": "#ffd98a"},
+            {"texture": "backgrounds/noyau/near.png", "factor": [0.5, 0.25], "offset": [0, 60]},
+            {"texture": "backgrounds/noyau/fg_motes.png", "factor": [1.15, 1.0], "offset": [0, -330],
+             "foreground": True, "tint": "#ffffffc0"},
+        ],
+    },
 }
 
 
@@ -88,6 +103,8 @@ START_POWERS = {
     "pyralis_02": ["ground_pound", "wave", "glide", "grapple"],
     "pyralis_03": ["grapple", "shield", "glide", "teleport"],
     "pyralis_04": ["glide", "ground_pound", "charge_shot", "dash"],
+    "noyau_01": ["dash", "wave", "shield", "charge_shot"],
+    "noyau_02": ["dash", "wave", "shield", "grapple"],
 }
 POWER_NAMES = {
     "dash": "le Dash", "wave": "l'Onde", "shield": "le Bouclier", "impulse": "l'Impulsion", "teleport": "la Téléportation",
@@ -381,7 +398,7 @@ class Level:
         self.data["objects"] = [o for o in self.data["objects"] if id(o) not in drop]
 
     def save(self, path):
-        if self.data.get("metadata", {}).get("generator") != "tools/levelgen/challenge.py":
+        if self.data.get("metadata", {}).get("generator") not in ("tools/levelgen/challenge.py", "tools/levelgen/stellar_core.py"):
             self.harden()
         self.apply_seals()
         self.apply_power_slots()

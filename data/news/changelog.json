@@ -1,4 +1,11 @@
 {
+  "2.7.0": [
+    "Noyau stellaire : l'étoile au centre de la carte s'ouvre quand Sylvanox, Glacior et Pyralis sont terminées.",
+    "L'Arène des Échos : les douze gardiens à la suite, sans aucun soin ni checkpoint, en une seule vie.",
+    "Le Cœur de l'Étoile, niveau final : les trois planètes rejouées, cinq embuscades, quatre boss et l'Astrarque.",
+    "Barre de progression : une seule icône par boss (plus de tête de mort sur son arène) ; compteur d'éclats masqué dans les niveaux qui n'en ont pas.",
+    "Éditeur d'ennemis : teinte du sprite."
+  ],
   "2.6.0": [
     "Éditeur du HUD (Paramètres › Jeu › Personnaliser le HUD) : placez et redimensionnez la vie, l'énergie, les pouvoirs, les éclats, le chronomètre, la barre de progression et la vie du boss, ou masquez-les ; deux éléments ne se chevauchent jamais."
   ],

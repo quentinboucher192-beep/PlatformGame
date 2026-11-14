@@ -5,6 +5,22 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.7.0** : le **Noyau stellaire**, l'étoile au centre du système,
+s'ouvre quand Sylvanox, Glacior et Pyralis sont terminées (décors propres : l'étoile et les
+trois mondes revus dans sa lumière). Deux niveaux :
+* **L'Arène des Échos** (boss rush) : les douze gardiens de la campagne, l'un après l'autre,
+  en *échos* spectraux — même combat, mais aucun orbe de vie à leur mort. Aucun soin, aucun
+  checkpoint, **une seule vie** (mode défi) ; on choisit ses quatre pouvoirs au départ.
+* **Le Cœur de l'Étoile** (niveau final, selon la maquette) : le Seuil (huit pouvoirs, on en
+  garde quatre), les échos de Sylvanox, de Glacior et de Pyralis (salles calibrées des
+  épreuves, embuscades, Sentinelle Prime, Hydre de Givre et Forgeron Primordial en échos),
+  la Couronne (les trois mondes mêlés, deux embuscades à la suite) et le Cœur : l'**Astrarque**
+  (190 PV, trois phases, attaques de quatre gardiens, rage après 90 s), sur des plateformes
+  qui tournent, la caméra élargie pour qu'il ne frappe jamais hors de l'écran. L'Astrarque
+  reprend la silhouette du Forgeron Primordial, agrandie et dorée.
+* Barre de progression : une seule icône par boss ; compteur d'éclats masqué quand le niveau
+  n'en a pas. Éditeur d'ennemis : *teinte du sprite*.
+
 **Nouveau dans la version 2.6.0** : **éditeur du HUD** (Paramètres › Jeu › « Personnaliser le
 HUD », ou `--hud-editor`). Sur un aperçu du vrai HUD posé sur un vrai niveau, chaque élément —
 vie et énergie, pouvoirs, éclats et reliques, chronomètre, barre de progression, vie du boss —

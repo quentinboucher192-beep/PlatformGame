@@ -53,6 +53,20 @@ bool Progression::planetUnlocked(const PlanetData& p, const ContentDatabase& con
     const std::string& rule = p.unlock;
     if (rule == "always" || rule.empty()) return true;
     if (rule == "never") return false;
+    if (rule.rfind("planets:", 0) == 0) {  // every planet of the list completed
+        size_t start = 8;
+        while (start <= rule.size()) {
+            size_t end = rule.find(',', start);
+            std::string id = rule.substr(start, end == std::string::npos ? std::string::npos : end - start);
+            if (!id.empty()) {
+                const PlanetData* other = content.planet(id);
+                if (!other || !planetCompleted(*other, content)) return false;
+            }
+            if (end == std::string::npos) break;
+            start = end + 1;
+        }
+        return true;
+    }
     if (rule.rfind("planet:", 0) == 0) {
         const PlanetData* other = content.planet(rule.substr(7));
         return other && planetCompleted(*other, content);

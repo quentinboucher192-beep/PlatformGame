@@ -1,0 +1,186 @@
+{
+  "level": "noyau_02",
+  "sections": [
+    {
+      "label": "",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        64.0,
+        640.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Seuil I",
+      "movement": [],
+      "needs": [
+        [
+          "grapple"
+        ],
+        [
+          "dash"
+        ]
+      ],
+      "pos": [
+        832.0,
+        640.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Galerie II",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        3696.0,
+        640.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Croisée III",
+      "movement": [],
+      "needs": [
+        [
+          "glide"
+        ]
+      ],
+      "pos": [
+        4560.0,
+        640.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Antre IV",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        8272.0,
+        608.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Passage V",
+      "movement": [],
+      "needs": [
+        [
+          "glide"
+        ]
+      ],
+      "pos": [
+        9136.0,
+        608.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Abîme VI",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        13024.0,
+        640.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Sanctuaire VII",
+      "movement": [],
+      "needs": [
+        [
+          "wave",
+          "charge_shot"
+        ]
+      ],
+      "pos": [
+        13888.0,
+        640.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Porte VIII",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        17088.0,
+        640.0
+      ],
+      "reachable": true
+    }
+  ],
+  "slots": 4,
+  "stations": [
+    {
+      "mid": false,
+      "section": "Seuil I",
+      "sign": [
+        912.0,
+        640.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            968.0,
+            574.0
+          ],
+          "power": "grapple"
+        },
+        {
+          "center": [
+            1576.0,
+            574.0
+          ],
+          "power": "dash"
+        }
+      ],
+      "upcoming": [
+        "dash",
+        "grapple"
+      ]
+    },
+    {
+      "mid": false,
+      "section": "Croisée III",
+      "sign": [
+        4904.0,
+        416.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            4960.0,
+            350.0
+          ],
+          "power": "glide"
+        }
+      ],
+      "upcoming": [
+        "glide"
+      ]
+    },
+    {
+      "mid": false,
+      "section": "Sanctuaire VII",
+      "sign": [
+        13968.0,
+        640.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            14024.0,
+            574.0
+          ],
+          "power": "wave"
+        }
+      ],
+      "upcoming": [
+        "wave"
+      ]
+    }
+  ]
+}

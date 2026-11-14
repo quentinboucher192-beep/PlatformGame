@@ -97,6 +97,54 @@
       "score": 3.5,
       "version": 2
     },
+    "noyau_01": {
+      "components": {
+        "boss": 60.29,
+        "checkpoints": 8.14,
+        "enemies": 0.0,
+        "hazards": 0.0,
+        "healing": -0.0,
+        "jumps": 0.0,
+        "length": 1.0,
+        "timer": 0.0
+      },
+      "facts": {
+        "deadly_jumps": 0,
+        "enemies": 0,
+        "hazards": 0,
+        "heal_per_100_tiles": 0.0,
+        "longest_checkpoint_gap": 743.0,
+        "precise_jumps": 0
+      },
+      "raw": 69.44,
+      "route_tiles": 743.0,
+      "score": 5.0,
+      "version": 2
+    },
+    "noyau_02": {
+      "components": {
+        "boss": 26.1,
+        "checkpoints": 1.32,
+        "enemies": 3.53,
+        "hazards": 3.05,
+        "healing": -0.17,
+        "jumps": 2.68,
+        "length": 1.0,
+        "timer": 0.0
+      },
+      "facts": {
+        "deadly_jumps": 13,
+        "enemies": 66,
+        "hazards": 51,
+        "heal_per_100_tiles": 1.38,
+        "longest_checkpoint_gap": 251.9,
+        "precise_jumps": 13
+      },
+      "raw": 37.51,
+      "route_tiles": 1159.88,
+      "score": 5.0,
+      "version": 2
+    },
     "pyralis_01": {
       "components": {
         "boss": 4.11,

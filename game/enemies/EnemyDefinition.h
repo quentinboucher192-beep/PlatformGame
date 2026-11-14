@@ -163,6 +163,12 @@ struct EnemyDefinition {
     /// sprite) or a symbol (crown, skull, flame, snowflake, eye, star); colour "" = gold.
     std::string barIcon = "portrait";
     std::string barColor;
+    /// Colour the sprite is multiplied by (white = its own colours): spectral echoes, the
+    /// Astrarque's starlight. Appearance only.
+    Color tint = Color::white();
+    /// For variants of another enemy (the echoes of the bosses): the original's id. The
+    /// news of the main menu announce the original only.
+    std::string variantOf;
 
     // Runtime bookkeeping
     std::string sourcePath;

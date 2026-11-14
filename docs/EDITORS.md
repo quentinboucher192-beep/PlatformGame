@@ -137,8 +137,11 @@ exactement à l'état précédent. Une sauvegarde automatique est écrite régul
 * **Propriétés** en onglets :
   * *Général* – nom, identifiant, description, famille (créature terrestre, robot,
     volante, tourelle, rapide, lourde, utilisateur de pouvoirs, mini-boss), feuille
-    d'animation, taille, échelle du sprite, PV, dégâts de contact, vitesse,
-    multiplicateur de poursuite.
+    d'animation, taille, échelle du sprite, **teinte du sprite** (couleur qui multiplie
+    celles du sprite, vide = ses propres couleurs ; enregistrée dans `tint`), PV, dégâts de
+    contact, vitesse, multiplicateur de poursuite. Une variante d'un autre ennemi (les
+    échos des boss du Noyau stellaire) porte `variantOf` : l'identifiant de l'original ;
+    les notifications du menu n'annoncent que l'original.
   * *IA* – déplacement (immobile, patrouille, surveillance, vol, sauts, fixe) et réaction
     au joueur (aucune, poursuite, garde ses distances, fuite, protège sa zone), portées de
     détection / d'attaque / d'abandon, ligne de vue, seuil de fuite, distance de tir,

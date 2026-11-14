@@ -234,6 +234,8 @@ Json EnemyDefinition::toJson() const {
     j["rewards"] = {{"score", scoreValue}, {"drops", drop}};
     if (!deathSpawnId.empty() && deathSpawnCount > 0) j["deathSpawn"] = {{"id", deathSpawnId}, {"count", deathSpawnCount}};
     j["light"] = {{"color", lightColor.toHex()}, {"radius", lightRadius}};
+    if (tint != Color::white()) j["tint"] = tint.toHex();
+    if (!variantOf.empty()) j["variantOf"] = variantOf;
     j["sounds"] = {{"hurt", hurtSound}, {"death", deathSound}, {"alert", alertSound}};
     if (isBoss) {
         Json ph = Json::array();
@@ -308,6 +310,8 @@ EnemyDefinition EnemyDefinition::fromJson(const Json& j) {
         d.lightColor = colorFromJson(j["light"].value("color", Json()), d.lightColor);
         d.lightRadius = jget<float>(j["light"], "radius", d.lightRadius);
     }
+    if (j.contains("tint")) d.tint = colorFromJson(j["tint"], Color::white());
+    d.variantOf = jstr(j, "variantOf", "");
     if (j.contains("sounds")) {
         d.hurtSound = jstr(j["sounds"], "hurt", d.hurtSound);
         d.deathSound = jstr(j["sounds"], "death", d.deathSound);

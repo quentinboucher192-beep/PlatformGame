@@ -9,7 +9,7 @@
 
 namespace cosmic {
 
-enum class PlanetType { Alien, Volcanic, Ice, Desert, Forest, Tech, Count };
+enum class PlanetType { Alien, Volcanic, Ice, Desert, Forest, Tech, Star, Count };
 const char* planetTypeId(PlanetType t);
 const char* planetTypeLabel(PlanetType t);
 PlanetType planetTypeFromId(const std::string& s);

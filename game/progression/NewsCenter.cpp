@@ -75,7 +75,7 @@ NewsCenter::Snapshot NewsCenter::snapshot(const ContentDatabase& content) {
         }
     for (const PowerDefinition* p : content.powers()) s.powers.push_back({p->id, p->name});
     for (const EnemyDefinition* e : content.enemies()) {
-        if (!content.isNativeEnemy(e->id)) continue;
+        if (!content.isNativeEnemy(e->id) || !e->variantOf.empty()) continue;  // echoes: their original is announced
         (e->isBoss ? s.bosses : s.enemies).push_back({e->id, e->name});
     }
     return s;

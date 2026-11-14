@@ -25,7 +25,8 @@ TEST_CASE("levels: no shortcut in the campaign (shortcut detector)") {
         for (const auto& p : a.problems) std::printf("  %s : %s\n", e->id.c_str(), p.c_str());
         CHECK(a.reachable);
         CHECK(a.ok());
-        CHECK(!a.checkpoints.empty());
+        bool oneLife = level->timerMode == TimerMode::Challenge && level->challengeMaxDeaths == 0;  // the boss rush
+        CHECK(!a.checkpoints.empty() || oneLife);
     }
     CHECK(levels >= 9);
 }

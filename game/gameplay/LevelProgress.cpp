@@ -1,6 +1,7 @@
 #include "game/gameplay/LevelProgress.h"
 
 #include <algorithm>
+#include <set>
 #include <cmath>
 
 #include "game/content/ContentDatabase.h"
@@ -52,6 +53,28 @@ LevelProgressTrack buildProgressTrack(const LevelData& level, const ContentDatab
     t.length = t.cumulative.back();
     if (!t.valid()) return t;
     using Kind = LevelProgressTrack::Marker::Kind;
+    // A boss's own arena is shown by the boss's badge only (not by a skull as well).
+    auto isBoss = [&](const LevelObject& e) {
+        if (e.type != "enemy") return false;
+        const EnemyDefinition* d = content.enemy(e.propStr("enemy"));
+        return d && d->isBoss;
+    };
+    auto bossArena = [&](const LevelObject& zone) {
+        std::string waves = zone.propStr("waves");
+        std::set<std::string> ids;
+        std::string cur;
+        for (char c : waves + ",") {
+            if (c == ',' || c == ';') {
+                if (!cur.empty()) ids.insert(cur);
+                cur.clear();
+            } else if (c != ' ') {
+                cur += c;
+            }
+        }
+        for (const auto& e : level.objects)
+            if (isBoss(e) && (ids.empty() ? zone.rect.contains(e.rect.center()) : ids.count(e.id) > 0)) return true;
+        return false;
+    };
     for (const auto& o : level.objects) {
         LevelProgressTrack::Marker m;
         if (o.type == "checkpoint" && !o.prop<bool>("optional", false)) {
@@ -59,6 +82,7 @@ LevelProgressTrack buildProgressTrack(const LevelData& level, const ContentDatab
             m.label = o.propStr("label");
             m.at = t.fractionAt(o.rect.bottomCenter());
         } else if (o.type == "combat_zone") {
+            if (bossArena(o)) continue;
             m.kind = Kind::Ambush;
             std::string waves = o.propStr("waves");
             int n = waves.empty() ? 1 : 1 + static_cast<int>(std::count(waves.begin(), waves.end(), ';'));

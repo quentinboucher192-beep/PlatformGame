@@ -1,0 +1,317 @@
+{
+  "format": "cosmic.enemy",
+  "id": "echo_ignivore",
+  "name": "Écho : Ignivore",
+  "description": "Reflet de Ignivore, rappelé par le cœur de l'étoile. Il ne laisse aucun soin derrière lui.",
+  "family": "miniboss",
+  "animation": "animations/ignivore.json",
+  "size": [
+    56,
+    40
+  ],
+  "scale": 1.0,
+  "hp": 75,
+  "contactDamage": 1,
+  "speed": 60,
+  "chaseSpeedMultiplier": 1.2,
+  "flying": true,
+  "knockbackResist": 1,
+  "detectionRange": 360,
+  "attackRange": 200,
+  "loseRange": 2000,
+  "needsLineOfSight": false,
+  "movement": "fly",
+  "reaction": "keepDistance",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 150,
+  "hopVelocity": 0,
+  "attacks": [
+    {
+      "id": "bolts",
+      "name": "Crachats",
+      "type": "spread",
+      "damage": 1,
+      "range": 460,
+      "telegraph": 0.49,
+      "active": 0.25,
+      "recover": 0.36,
+      "cooldown": 1.56,
+      "telegraphAnim": "telegraph_meteor",
+      "attackAnim": "meteor",
+      "projectile": "fireball",
+      "projectileSpeed": 200,
+      "count": 3,
+      "spread": 15,
+      "origin": [
+        47,
+        -56
+      ],
+      "hitEffect": "fire_burst",
+      "lead": 0.7
+    },
+    {
+      "id": "dive",
+      "name": "Piqué",
+      "type": "lunge",
+      "damage": 2,
+      "range": 320,
+      "telegraph": 0.59,
+      "active": 0.7,
+      "recover": 0.6,
+      "cooldown": 2.16,
+      "telegraphAnim": "telegraph_dive",
+      "attackAnim": "dive",
+      "lungeSpeed": 320,
+      "minRange": 40,
+      "knockback": 280,
+      "lead": 0.7
+    },
+    {
+      "id": "breath",
+      "name": "Souffle ardent",
+      "type": "laser",
+      "damage": 2,
+      "range": 380,
+      "telegraph": 0.75,
+      "active": 1.5,
+      "recover": 0.66,
+      "cooldown": 3.3,
+      "telegraphAnim": "telegraph_breath",
+      "attackAnim": "breath",
+      "laserLength": 340,
+      "sweepDegrees": 90,
+      "origin": [
+        39,
+        -27
+      ],
+      "color": "#ff8a3d"
+    },
+    {
+      "id": "meteor",
+      "name": "Pluie de météores",
+      "type": "rain",
+      "damage": 1,
+      "range": 520,
+      "telegraph": 0.65,
+      "active": 0.3,
+      "recover": 0.48,
+      "cooldown": 2.52,
+      "telegraphAnim": "telegraph_meteor",
+      "attackAnim": "meteor",
+      "projectile": "fireball",
+      "projectileSpeed": 170,
+      "count": 5,
+      "spread": 56,
+      "gravity": 300,
+      "rainHeight": 260,
+      "hitEffect": "fire_burst",
+      "lead": 0.7
+    },
+    {
+      "id": "summon",
+      "name": "Nuée",
+      "type": "summon",
+      "damage": 0,
+      "range": 500,
+      "telegraph": 0.9,
+      "active": 0.4,
+      "recover": 0.8,
+      "cooldown": 9.6,
+      "telegraphAnim": "summon",
+      "attackAnim": "summon",
+      "summonId": "ash_wing",
+      "summonCount": 2,
+      "maxSummoned": 3
+    },
+    {
+      "id": "v3_dive",
+      "name": "Piqué prédictif",
+      "type": "lunge",
+      "damage": 2,
+      "range": 420,
+      "telegraph": 0.45,
+      "active": 0.7,
+      "recover": 0.45,
+      "cooldown": 2.8,
+      "telegraphAnim": "telegraph_dive",
+      "attackAnim": "dive",
+      "lungeSpeed": 416.0,
+      "minRange": 0,
+      "knockback": 280,
+      "lead": 1.0
+    },
+    {
+      "id": "v3_line",
+      "name": "Traînée de feu",
+      "type": "eruption",
+      "damage": 2,
+      "range": 600,
+      "telegraph": 0.55,
+      "active": 0.3,
+      "recover": 0.45,
+      "cooldown": 4.0,
+      "telegraphAnim": "telegraph_meteor",
+      "attackAnim": "meteor",
+      "projectile": "fireball",
+      "projectileSpeed": 300,
+      "count": 9,
+      "spread": 40,
+      "gravity": 700,
+      "rainHeight": 260,
+      "hitEffect": "fire_burst",
+      "lead": 0.8,
+      "minRange": 0,
+      "stagger": 0.08,
+      "warningEffect": "eruption_warning_fire",
+      "eruptionEffect": "eruption_fire"
+    },
+    {
+      "id": "v3_seekers",
+      "name": "Feux follets",
+      "type": "projectile",
+      "damage": 1,
+      "range": 560,
+      "telegraph": 0.5,
+      "active": 0.25,
+      "recover": 0.4,
+      "cooldown": 3.6,
+      "telegraphAnim": "telegraph_meteor",
+      "attackAnim": "meteor",
+      "projectile": "fireball",
+      "projectileSpeed": 150,
+      "count": 3,
+      "spread": 28,
+      "origin": [
+        47,
+        -56
+      ],
+      "hitEffect": "fire_burst",
+      "lead": 0,
+      "minRange": 0,
+      "gravity": 0,
+      "homing": 2.2,
+      "homingTime": 1.4
+    },
+    {
+      "id": "v3_volley",
+      "name": "Rafale ardente",
+      "type": "projectile",
+      "damage": 1,
+      "range": 560,
+      "telegraph": 0.45,
+      "active": 0.25,
+      "recover": 0.4,
+      "cooldown": 3.0,
+      "telegraphAnim": "telegraph_meteor",
+      "attackAnim": "meteor",
+      "projectile": "fireball",
+      "projectileSpeed": 220,
+      "count": 3,
+      "spread": 10,
+      "origin": [
+        47,
+        -56
+      ],
+      "hitEffect": "fire_burst",
+      "lead": 0.9,
+      "minRange": 0,
+      "bursts": 3,
+      "burstInterval": 0.26,
+      "gravity": 0
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "charge_shot": 1.25
+  },
+  "rewards": {
+    "score": 3500,
+    "drops": [
+      {
+        "type": "energy_orb",
+        "chance": 1.0
+      }
+    ]
+  },
+  "light": {
+    "color": "#ff8a3d",
+    "radius": 100
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/wyrm_roar.wav",
+    "alert": "sounds/wyrm_roar.wav"
+  },
+  "boss": {
+    "title": "ÉCHO — IGNIVORE, LE SERPENT DE FEU",
+    "phases": [
+      {
+        "name": "Envol",
+        "hpThreshold": 1.0,
+        "attacks": [
+          "bolts",
+          "dive",
+          "breath",
+          "v3_dive",
+          "v3_line"
+        ],
+        "speedMultiplier": 1.0,
+        "cooldownMultiplier": 1.0,
+        "combo": 1,
+        "telegraphMultiplier": 1.0
+      },
+      {
+        "name": "Tourbillon",
+        "hpThreshold": 0.6,
+        "attacks": [
+          "meteor",
+          "dive",
+          "breath",
+          "summon",
+          "v3_dive",
+          "v3_line",
+          "v3_seekers"
+        ],
+        "speedMultiplier": 1.15,
+        "cooldownMultiplier": 0.9,
+        "enterText": "Ignivore appelle sa nuée !",
+        "summonOnEnter": true,
+        "combo": 2,
+        "telegraphMultiplier": 0.9
+      },
+      {
+        "name": "Fureur",
+        "hpThreshold": 0.3,
+        "attacks": [
+          "meteor",
+          "dive",
+          "breath",
+          "bolts",
+          "v3_dive",
+          "v3_line",
+          "v3_seekers",
+          "v3_volley"
+        ],
+        "speedMultiplier": 1.25,
+        "cooldownMultiplier": 0.75,
+        "enterText": "Ignivore s'embrase !",
+        "combo": 3,
+        "telegraphMultiplier": 0.8
+      }
+    ],
+    "enrageTime": 75,
+    "brainVersion": 3
+  },
+  "variantOf": "ignivore",
+  "tint": "#a894ff"
+}

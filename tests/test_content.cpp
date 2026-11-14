@@ -170,7 +170,9 @@ TEST_CASE("content: every official level is complete and coherent") {
             }
             if (starts != 1) fail(levelId + " : " + std::to_string(starts) + " départs");
             if (exits < 1) fail(levelId + " : pas de sortie");
-            if (checkpoints < 3) fail(levelId + " : moins de 3 checkpoints");
+            // A one-life level (challenge mode, no fall allowed: the boss rush) has no checkpoint.
+            bool oneLife = level->timerMode == TimerMode::Challenge && level->challengeMaxDeaths == 0;
+            if (checkpoints < 3 && !oneLife) fail(levelId + " : moins de 3 checkpoints");
             if (bosses < 1) fail(levelId + " : pas de boss");
             for (const auto& p : level->startPowers)
                 if (!env.content.power(p)) fail(levelId + " : pouvoir de départ inconnu " + p);

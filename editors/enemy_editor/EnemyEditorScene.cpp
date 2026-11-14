@@ -359,7 +359,7 @@ void EnemyEditorScene::drawPreview(const Rect& r) {
         Rect src = previewAnim_.sourceRect();
         Rect dst{feet.x - anim_->pivot.x * scale, feet.y - anim_->pivot.y * scale, anim_->frameWidth * scale, anim_->frameHeight * scale};
         ui.r().fillRect({stage.x, feet.y, stage.w, ui.s(2)}, {57, 240, 216, 80});
-        ui.r().drawTexture(*anim_->texture, &src, dst);
+        ui.r().drawTexture(*anim_->texture, &src, dst, work_.tint);
         if (showRanges_) {
             Rect hb = Rect::fromBottomCenter(feet, work_.size * scale * work_.scale);
             ui.r().drawRect(hb, {255, 77, 109, 220}, 2.0f);

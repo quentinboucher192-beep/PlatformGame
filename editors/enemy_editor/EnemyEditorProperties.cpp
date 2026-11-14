@@ -98,6 +98,14 @@ void EnemyEditorScene::tabGeneral(float x, float& y, float w) {
     c |= ui.numberField("sw", row.field("Hitbox largeur"), work_.size.x, 1, 2, 400, "%.0f");
     c |= ui.numberField("sh", row.field("Hitbox hauteur"), work_.size.y, 1, 2, 400, "%.0f");
     c |= ui.numberField("scale", row.field("Échelle du sprite"), work_.scale, 0.1f, 0.25f, 4, "%.2f");
+    {
+        // Colour the sprite is multiplied by (empty = its own colours).
+        std::string tint = work_.tint == Color::white() ? "" : work_.tint.toHex();
+        if (PropertyEditor::colorPicker(ui, "tint", x, y, w, w * 0.4f, "Teinte du sprite", tint)) {
+            work_.tint = tint.empty() ? Color::white() : Color::fromHex(tint, Color::white());
+            c = true;
+        }
+    }
     c |= ui.numberField("hp", row.field("Points de vie"), work_.hp, 1, 0.5f, 10000, "%.1f");
     c |= ui.numberField("contact", row.field("Dégâts de contact"), work_.contactDamage, 1, 0, 50, "%.0f");
     c |= ui.numberField("speed", row.field("Vitesse (px/s)"), work_.speed, 5, 0, 1000, "%.0f");
