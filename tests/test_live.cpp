@@ -42,6 +42,9 @@ struct Room {
     std::map<std::string, std::string> locks;
     int opsRequests = 0;
     int epoch = 0, joins = 0;  // epoch: changes when the document is replaced (restore)
+    bool loseNextAnswer = false;  // the operations are applied, the answer never arrives
+    bool throttleNext = false;    // 429 once
+    bool miraHere = false;        // a third member, present or not
 
     Json accept(const std::string& author, const std::string& id, int base, const Json& op) {
         for (const auto& l : log)
@@ -80,10 +83,12 @@ struct Room {
         auto presence = [&] {
             Json locksJson = Json::object();
             for (const auto& [k, v] : locks) locksJson[k] = v;
-            return Json{{"participants", Json::array({{{"id", "me-0000"}, {"username", "Nova"}, {"color", "#39F0D8"}, {"me", true}},
+            Json d{{"participants", Json::array({{{"id", "me-0000"}, {"username", "Nova"}, {"color", "#39F0D8"}, {"me", true}},
                                                       {{"id", "orion-01"}, {"username", "Orion"}, {"color", "#FFB347"}, {"cursor", {{"x", 40}, {"y", 20}}},
                                                        {"selection", Json::array({"o1"})}, {"activity", "déplace Bloc"}}})},
-                        {"locks", locksJson}};
+                   {"locks", locksJson}};
+            if (miraHere) d["participants"].push_back({{"id", "mira-02"}, {"username", "Mira"}, {"color", "#B04CFF"}});
+            return d;
         };
         if (path.find("/live/join") != std::string::npos) {
             Json d = presence();
@@ -109,6 +114,22 @@ struct Room {
         }
         if (path.find("/live/ops") != std::string::npos) {
             ++opsRequests;
+            if (throttleNext) {
+                throttleNext = false;
+                HttpResponse r;
+                r.status = 429;
+                r.headers["retry-after"] = "1";
+                r.body = R"({"ok":false,"error":{"code":"RATE_LIMITED","message":"Trop de modifications d'un coup."}})";
+                return r;
+            }
+            if (loseNextAnswer) {
+                loseNextAnswer = false;
+                for (const auto& item : body["ops"]) accept("me-0000", jstr(item, "id"), jget<int>(item, "base_seq", 0), item["op"]);
+                HttpResponse r;
+                r.error = NetError::Connect;
+                r.errorMessage = "connexion coupée";
+                return r;
+            }
             Json results = Json::array();
             for (const auto& item : body["ops"]) results.push_back(accept("me-0000", jstr(item, "id"), jget<int>(item, "base_seq", 0), item["op"]));
             return ok({{"results", results}, {"seq", seq}});
@@ -299,6 +320,123 @@ TEST_CASE("live: a document replaced by a restore makes the session rejoin") {
         CHECK((*doc)["objects"].size() == 1u);
     }
     CHECK(room->joins == 2);
+    live.leave();
+    svc.shutdown();
+    std::error_code ec;
+    fs::remove_all(dir, ec);
+}
+
+TEST_CASE("live: a lost answer and a refusal under load lose nothing and apply nothing twice") {
+    auto room = std::make_shared<Room>();
+    room->doc = baseDoc();
+    fs::path dir = liveDir("cut");
+    OnlineService svc;
+    svc.init({}, "http://127.0.0.1:9", std::make_unique<RoomTransport>(room), dir);
+    bool logged = false;
+    svc.login("Nova", "pw", false, [&](const ApiResult& r) { logged = r.ok; });
+    for (int i = 0; i < 3000 && !logged; ++i) {
+        svc.update(0.05f);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+    CHECK(logged);
+    LiveSession live(svc, "p", dir / "queue.json");
+    CHECK(spin(svc, live, [&] { return live.state() == LiveSession::State::Live; }));
+    // The connection drops after the room applied my edits: they are sent again, the room
+    // recognises them (same ids) and they are applied once.
+    {
+        std::lock_guard<std::mutex> lock(room->m);
+        room->loseNextAnswer = true;
+    }
+    live.submit({Json{{"t", "set"}, {"id", "o1"}, {"f", {{"x", 5}}}}, Json{{"t", "add"}, {"o", {{"id", "o9"}, {"type", "coin"}}}}});
+    CHECK(spin(svc, live, [&] { return live.state() == LiveSession::State::Offline; }, 3000));
+    CHECK(live.pending() == 2u);
+    CHECK(spin(svc, live, [&] { return live.state() == LiveSession::State::Live && live.pending() == 0; }, 8000));
+    // Too many edits at once: refused with 429, kept, sent again later.
+    {
+        std::lock_guard<std::mutex> lock(room->m);
+        room->throttleNext = true;
+    }
+    live.submit({Json{{"t", "doc"}, {"k", "name"}, {"v", "Après la coupure"}}});
+    CHECK(spin(svc, live, [&] { return live.pending() == 0 && live.state() == LiveSession::State::Live; }, 8000));
+    {
+        std::lock_guard<std::mutex> lock(room->m);
+        CHECK(room->seq == 3);  // 2 + 1: nothing applied twice
+        CHECK(room->log.size() == 3u);
+        CHECK(jstr(room->doc, "name") == "Après la coupure");
+        int coins = 0;
+        for (const auto& o : room->doc["objects"]) coins += jstr(o, "id") == "o9";
+        CHECK(coins == 1);
+    }
+    CHECK(live.takeRejections().empty());
+    live.leave();
+    svc.shutdown();
+    std::error_code ec;
+    fs::remove_all(dir, ec);
+}
+
+TEST_CASE("live: arrivals, departures and the others' edits grouped by member") {
+    auto room = std::make_shared<Room>();
+    room->doc = baseDoc();
+    fs::path dir = liveDir("events");
+    OnlineService svc;
+    svc.init({}, "http://127.0.0.1:9", std::make_unique<RoomTransport>(room), dir);
+    bool logged = false;
+    svc.login("Nova", "pw", false, [&](const ApiResult& r) { logged = r.ok; });
+    for (int i = 0; i < 3000 && !logged; ++i) {
+        svc.update(0.05f);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+    CHECK(logged);
+    LiveSession live(svc, "p", dir / "queue.json");
+    CHECK(spin(svc, live, [&] { return live.state() == LiveSession::State::Live; }));
+    using Kind = LiveSession::Event::Kind;
+    std::vector<LiveSession::Event> ev;
+    auto collect = [&] {
+        for (auto& e : live.takeEvents()) ev.push_back(e);
+    };
+    // Orion was already there: no arrival announced for him.
+    spin(svc, live, [&] { return false; }, 800);
+    collect();
+    CHECK(ev.empty());
+    // Mira arrives, Orion makes three edits and Mira one, all received in one heartbeat.
+    {
+        std::lock_guard<std::mutex> lock(room->m);
+        room->miraHere = true;
+        room->accept("orion-01", "orion-a-000001", 0, {{"t", "set"}, {"id", "o1"}, {"f", {{"x", 1}}}});
+        room->accept("mira-02", "mira-a-0000001", 0, {{"t", "set"}, {"id", "o2"}, {"f", {{"x", 2}}}});
+        room->accept("orion-01", "orion-a-000002", 1, {{"t", "add"}, {"o", {{"id", "o5"}, {"type", "coin"}}}});
+        room->accept("orion-01", "orion-a-000003", 3, {{"t", "doc"}, {"k", "name"}, {"v", "Ensemble"}});
+    }
+    CHECK(spin(svc, live, [&] {
+        collect();
+        return ev.size() >= 3;
+    }));
+    CHECK(ev.size() == 3u);
+    if (ev.size() == 3u) {
+        CHECK(ev[0].kind == Kind::Joined);
+        CHECK(ev[0].name == "Mira");
+        CHECK(ev[1].kind == Kind::Edits);
+        CHECK(ev[1].name == "Orion");
+        CHECK(ev[1].count == 3);
+        CHECK(ev[2].kind == Kind::Edits);
+        CHECK(ev[2].name == "Mira");
+        CHECK(ev[2].count == 1);
+    }
+    CHECK(live.takeRemoteOps().size() == 4u);
+    // Mira leaves.
+    ev.clear();
+    {
+        std::lock_guard<std::mutex> lock(room->m);
+        room->miraHere = false;
+    }
+    CHECK(spin(svc, live, [&] {
+        collect();
+        return !ev.empty();
+    }));
+    if (!ev.empty()) {
+        CHECK(ev[0].kind == Kind::Left);
+        CHECK(ev[0].name == "Mira");
+    }
     live.leave();
     svc.shutdown();
     std::error_code ec;

@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cmath>
 #include <format>
+#include <tuple>
 
 #include "editors/level_editor/LevelEditorScene.h"
 #include "engine/core/FileUtil.h"
@@ -37,6 +38,11 @@ std::string LevelEditorScene::lockHolder(const std::string& id) const {
     const LiveSession::Participant* p = live_->participant(it->second);
     return p ? p->name : std::string("un autre membre");
 }
+
+namespace {
+constexpr float kFeedGroupSeconds = 10.0f;  // a member's edits within this time make one line
+constexpr float kFeedSeconds = 12.0f;       // how long a line stays
+}  // namespace
 
 void LevelEditorScene::updateLive(float dt) {
     // What I show the others.
@@ -93,6 +99,26 @@ void LevelEditorScene::updateLive(float dt) {
             if (!ops.empty()) live_->submit(ops);
         }
         liveSynced_ = std::move(now);
+    }
+    // Grouped notifications: the edits of a member within a few seconds make one line.
+    {
+        const float now = g_.ui.time();
+        using Kind = LiveSession::Event::Kind;
+        for (auto& e : live_->takeEvents()) {
+            auto it = std::find_if(liveFeed_.begin(), liveFeed_.end(),
+                                   [&](const LiveFeedEntry& f) { return e.kind == Kind::Edits && f.kind == Kind::Edits && f.id == e.id && now - f.time < kFeedGroupSeconds; });
+            if (it != liveFeed_.end()) {
+                LiveFeedEntry f = *it;
+                f.count += e.count;
+                f.time = now;
+                liveFeed_.erase(it);
+                liveFeed_.push_back(std::move(f));
+            } else {
+                liveFeed_.push_back({e.kind, e.id, e.name, e.color, e.count, now});
+            }
+        }
+        liveFeed_.erase(std::remove_if(liveFeed_.begin(), liveFeed_.end(), [&](const LiveFeedEntry& f) { return now - f.time > kFeedSeconds; }), liveFeed_.end());
+        while (liveFeed_.size() > 5) liveFeed_.erase(liveFeed_.begin());
     }
     // The others' edits (after a drag, never under the mouse).
     if (drag_ == Drag::None) {
@@ -251,17 +277,37 @@ void LevelEditorScene::drawLiveOverlay(const Rect& vp) {
             ui.label(tag, tr.center(), 13, Color{8, 10, 20, 255}, Align::Center, FontFace::Body, VAlign::Middle);
         }
     }
-    // Activity of the others, one line each (the latest), bottom-left of the view.
-    float y = vp.bottom() - ui.s(16);
+    // Bottom-left of the view, newest at the bottom: the grouped notifications, then what the
+    // others are doing right now (members without a recent line of edits).
+    using Kind = LiveSession::Event::Kind;
+    std::vector<std::tuple<std::string, Color, float>> lines;  // text, colour, opacity
+    const float now = ui.time();
+    for (const auto& f : liveFeed_) {
+        std::string who = f.name.empty() ? std::string("Un membre parti") : f.name;
+        std::string text;
+        if (f.kind == Kind::Joined) text = who + " a rejoint l'édition";
+        else if (f.kind == Kind::Left) text = who + " est parti";
+        else {
+            text = who + " : " + std::to_string(f.count) + (f.count > 1 ? " modifications" : " modification");
+            const LiveSession::Participant* p = live_->participant(f.id);
+            if (p && !p->activity.empty()) text += " · " + p->activity;
+        }
+        lines.push_back({text, f.color, std::clamp((kFeedSeconds - (now - f.time)) / 1.5f, 0.0f, 1.0f)});
+    }
     for (const auto& p : live_->participants()) {
         if (p.me || p.activity.empty()) continue;
-        std::string line = p.name + " " + p.activity;
-        float lw = std::min(vp.w * 0.5f, ui.text().measure(line, FontFace::Body, ui.s(14)).x + ui.s(20));
+        bool listed = std::any_of(liveFeed_.begin(), liveFeed_.end(), [&](const LiveFeedEntry& f) { return f.kind == Kind::Edits && f.id == p.id; });
+        if (!listed) lines.push_back({p.name + " · " + p.activity, p.color, 1.0f});
+    }
+    float y = vp.bottom() - ui.s(16);
+    for (auto it = lines.rbegin(); it != lines.rend() && y - ui.s(26) > vp.y + vp.h * 0.5f; ++it) {
+        const auto& [line, color, alpha] = *it;
+        float lw = std::min(vp.w * 0.5f, ui.text().measure(line, FontFace::Body, ui.s(14)).x + ui.s(24));
         Rect lr{vp.x + ui.s(12), y - ui.s(26), lw, ui.s(24)};
-        r.fillRoundedRect(lr, ui.s(6), Color{6, 10, 24, 210});
-        r.fillRect({lr.x, lr.y + ui.s(4), ui.s(3), lr.h - ui.s(8)}, p.color);
-        ui.label(line, {lr.x + ui.s(10), lr.center().y}, ui.fitFont(line, FontFace::Body, 14, lw - ui.s(16)), ui.theme().text, Align::Left, FontFace::Body,
-                 VAlign::Middle);
+        r.fillRoundedRect(lr, ui.s(6), Color{6, 10, 24, static_cast<uint8_t>(225 * alpha)});
+        r.fillRect({lr.x, lr.y + ui.s(4), ui.s(3), lr.h - ui.s(8)}, color.withAlphaF(alpha));
+        ui.label(line, {lr.x + ui.s(10), lr.center().y}, ui.fitFont(line, FontFace::Body, 14, lw - ui.s(18)), ui.theme().text.withAlphaF(alpha), Align::Left,
+                 FontFace::Body, VAlign::Middle);
         y -= ui.s(30);
     }
 }

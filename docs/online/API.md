@@ -979,7 +979,7 @@ pour tous.
 |---|---|---|---|
 | POST | `/projects/{id}/live/join` `{ view? }` | lecteur | `{ doc, seq, revision, epoch, color, participants, locks }` (le document courant : dernière révision + opérations suivantes) |
 | POST | `/projects/{id}/live/heartbeat` `{ since_seq, epoch?, cursor?, view?, selection?, activity? }` | lecteur | `{ seq, revision, epoch, participants, locks, ops, resync }` (`resync` : rejoindre, le document a été remplacé par une restauration ou un enregistrement) ; toutes les ~0,6 s ; plus de 5 par seconde : réponse courte `{ throttled }` |
-| POST | `/projects/{id}/live/ops` `{ ops: [{ id, base_seq, op }] }` | éditeur | `{ results: [{ id, status, seq?, by?, current? }], seq }` ; 50 opérations au plus |
+| POST | `/projects/{id}/live/ops` `{ ops: [{ id, base_seq, op }] }` | éditeur | `{ results: [{ id, status, seq?, by?, current? }], seq }` ; 50 opérations au plus par requête, 300 par membre et par 10 s (au-delà : `429 RATE_LIMITED` avec `Retry-After`, rien n'est appliqué ; le jeu garde ses opérations et les renvoie) |
 | POST | `/projects/{id}/live/leave` | lecteur | quitte la salle |
 
 Opérations : `{ t: "add", o }` (objet avec `id` et `type`), `{ t: "set", id, f }` (champs de

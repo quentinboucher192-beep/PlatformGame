@@ -15,7 +15,7 @@
 
 import { DurableObject } from "cloudflare:workers";
 import { requireAuth } from "./auth";
-import { Errors, json, nowIso, readJsonObject, readLimited, type Bindings, type Ctx } from "./http";
+import { ApiError, Errors, json, nowIso, readJsonObject, readLimited, type Bindings, type Ctx } from "./http";
 
 const OBJECT_ID_RE = /^[A-Za-z0-9_.-]{1,60}$/;
 const CLIENT_OP_RE = /^[A-Za-z0-9-]{8,64}$/;
@@ -25,6 +25,9 @@ const MAX_OPS_PER_REQUEST = 50;
 const SNAPSHOT_EVERY = 200;
 const STALE_MS = 20_000;
 const BUFFER = 1000;
+/** Operations a member may send per window (more is refused with 429; the game retries). */
+const OPS_PER_WINDOW = 300;
+const OPS_WINDOW_MS = 10_000;
 const COLORS = ["#39F0D8", "#FFB347", "#FF4D6D", "#B04CFF", "#7FB8FF", "#78E68C", "#FFD98A", "#FF8A5C"];
 const ROLE_RANK: Record<string, number> = { viewer: 1, tester: 2, editor: 3, admin: 4, owner: 5 };
 
@@ -98,7 +101,8 @@ export function applyOp(doc: Record<string, unknown>, op: Op): void {
     const list = objects(doc);
     switch (op.t) {
         case "add":
-            list.push(op.o);
+            // A copy: later edits change the document, never the operation kept in the buffer.
+            list.push(structuredClone(op.o));
             break;
         case "set": {
             // null removes the field.
@@ -130,6 +134,8 @@ function touchKey(op: Op): string {
 
 export class ProjectRoom extends DurableObject<Bindings> {
     private projectId = "";
+    /** The project id is kept in the room's storage: an alarm may wake a fresh instance. */
+    private projectStored = false;
     private doc: Record<string, unknown> | null = null;
     private revision = 0;
     private snapshotSeq = 0;
@@ -140,10 +146,22 @@ export class ProjectRoom extends DurableObject<Bindings> {
     private snapshotting = false;
     /** Changes when the document is replaced from outside (save, restore): members rejoin. */
     private epoch = 0;
+    /**
+     * Batches of operations (and flushes) run one after the other, each until its operations
+     * are written to D1: the order of the buffer is the order of the numbers, and nothing is
+     * shown to the others before it is stored.
+     */
+    private chain: Promise<unknown> = Promise.resolve();
+    /** Operations received per member in the current window (load protection). */
+    private budget = new Map<string, { start: number; count: number }>();
 
     async fetch(request: Request): Promise<Response> {
         const url = new URL(request.url);
         this.projectId = request.headers.get("x-project-id") ?? this.projectId;
+        if (this.projectId && !this.projectStored) {
+            await this.ctx.storage.put("project_id", this.projectId);
+            this.projectStored = true;
+        }
         try {
             switch (url.pathname) {
                 case "/join":
@@ -151,7 +169,7 @@ export class ProjectRoom extends DurableObject<Bindings> {
                 case "/heartbeat":
                     return Response.json(await this.heartbeat(request));
                 case "/ops":
-                    return Response.json(await this.ops(request));
+                    return Response.json(await this.serial(() => this.ops(request)));
                 case "/leave":
                     return Response.json(await this.leave(request));
                 case "/reload":
@@ -160,11 +178,15 @@ export class ProjectRoom extends DurableObject<Bindings> {
                     return Response.json({ reloaded: true });
                 case "/flush":
                     // Live edits not yet in a revision are written now (before a restore).
-                    if (this.projectId) {
-                        await this.load();
-                        if (this.seq > this.snapshotSeq) await this.snapshot("Édition en direct");
-                    }
-                    return Response.json({ revision: this.revision });
+                    return Response.json(
+                        await this.serial(async () => {
+                            if (this.projectId) {
+                                await this.load();
+                                if (this.seq > this.snapshotSeq) await this.snapshot("Édition en direct");
+                            }
+                            return { revision: this.revision };
+                        }),
+                    );
                 default:
                     return Response.json({ error: "unknown" }, { status: 404 });
             }
@@ -173,10 +195,33 @@ export class ProjectRoom extends DurableObject<Bindings> {
         }
     }
 
+    private serial<T>(work: () => Promise<T>): Promise<T> {
+        const run = this.chain.then(work);
+        this.chain = run.catch(() => undefined);
+        return run;
+    }
+
+    /**
+     * Some time after the last sign of life: when nobody is left (gone without leaving: game
+     * closed, network cut), the live edits not yet in a revision become one. The instance may
+     * be a fresh one (the room was put to sleep): the document is then read back from D1.
+     */
     async alarm(): Promise<void> {
         this.prune();
-        if (this.participants.size === 0 && this.doc && this.seq > this.snapshotSeq) await this.snapshot("Édition en direct");
-        if (this.participants.size > 0) await this.ctx.storage.setAlarm(Date.now() + 30_000);
+        if (this.participants.size > 0) {
+            await this.ctx.storage.setAlarm(Date.now() + 30_000);
+            return;
+        }
+        if (!this.projectId) this.projectId = (await this.ctx.storage.get<string>("project_id")) ?? "";
+        if (!this.projectId) return;
+        await this.serial(async () => {
+            try {
+                await this.load();
+            } catch {
+                return; // project deleted
+            }
+            if (this.seq > this.snapshotSeq) await this.snapshot("Édition en direct");
+        });
     }
 
     // ------------------------------------------------------------ state
@@ -221,6 +266,7 @@ export class ProjectRoom extends DurableObject<Bindings> {
     private prune(): void {
         const now = Date.now();
         for (const [id, p] of this.participants) if (now - p.lastSeen > STALE_MS) this.participants.delete(id);
+        for (const [id, b] of this.budget) if (now - b.start >= OPS_WINDOW_MS) this.budget.delete(id);
     }
 
     /** Objects selected by someone else than `me`: they are locked for `me`. */
@@ -354,6 +400,11 @@ export class ProjectRoom extends DurableObject<Bindings> {
         if (ROLE_RANK[me.role]! < ROLE_RANK.editor!) return { error: "role" };
         const body = (await request.json()) as { ops?: unknown };
         const list = Array.isArray(body.ops) ? body.ops.slice(0, MAX_OPS_PER_REQUEST) : [];
+        const now = Date.now();
+        let b = this.budget.get(me.id);
+        if (!b || now - b.start >= OPS_WINDOW_MS) this.budget.set(me.id, (b = { start: now, count: 0 }));
+        if (b.count + list.length > OPS_PER_WINDOW) return { error: "throttled", retry_after: Math.max(1, Math.ceil((b.start + OPS_WINDOW_MS - now) / 1000)) };
+        b.count += list.length;
         const locks = this.locks();
         const doc = this.doc!;
         const results: Record<string, unknown>[] = [];
@@ -410,19 +461,22 @@ export class ProjectRoom extends DurableObject<Bindings> {
         if (accepted.length) {
             const now = nowIso();
             const db = this.env.DB;
-            await db.batch([
-                ...accepted.map((a) =>
-                    db.prepare("INSERT OR IGNORE INTO project_ops (project_id, seq, client_op_id, author_id, op, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6)").bind(
-                        this.projectId,
-                        a.seq,
-                        a.id,
-                        a.author,
-                        JSON.stringify(a.op),
-                        now,
+            try {
+                await db.batch([
+                    ...accepted.map((a) =>
+                        db
+                            .prepare("INSERT OR IGNORE INTO project_ops (project_id, seq, client_op_id, author_id, op, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6)")
+                            .bind(this.projectId, a.seq, a.id, a.author, JSON.stringify(a.op), now),
                     ),
-                ),
-                db.prepare("UPDATE projects SET ops_seq = ?2, updated_at = ?3 WHERE id = ?1").bind(this.projectId, this.seq, now),
-            ]);
+                    db.prepare("UPDATE projects SET ops_seq = ?2, updated_at = ?3 WHERE id = ?1").bind(this.projectId, this.seq, now),
+                ]);
+            } catch (e) {
+                // Not stored: the room forgets them (reads D1 again) and the members rejoin;
+                // the game keeps its operations and sends them again.
+                this.doc = null;
+                this.epoch += 1;
+                throw e;
+            }
             this.recent.push(...accepted);
             if (this.recent.length > BUFFER) this.recent = this.recent.slice(-BUFFER);
             if (this.seq - this.snapshotSeq >= SNAPSHOT_EVERY) await this.snapshot("Édition en direct");
@@ -434,12 +488,16 @@ export class ProjectRoom extends DurableObject<Bindings> {
     private async snapshot(message: string): Promise<void> {
         if (this.snapshotting || !this.doc) return;
         this.snapshotting = true;
+        // The document and the last operation it contains, taken at the same instant: other
+        // operations may arrive while this revision is written, they stay after `upTo`.
+        const text = JSON.stringify(this.doc);
+        const from = this.snapshotSeq + 1,
+            upTo = this.seq;
         try {
             const db = this.env.DB;
             const p = await db.prepare("SELECT revision FROM projects WHERE id = ?1").bind(this.projectId).first<{ revision: number }>();
             if (!p) return;
             const revision = p.revision + 1;
-            const text = JSON.stringify(this.doc);
             const claim = await db.prepare("UPDATE projects SET revision = ?2 WHERE id = ?1 AND revision = ?3").bind(this.projectId, revision, p.revision).run();
             if (claim.meta.changes !== 1) return;
             const key = `projects/${this.projectId}/r${revision}.json`;
@@ -449,10 +507,10 @@ export class ProjectRoom extends DurableObject<Bindings> {
                 .prepare(
                     "INSERT INTO project_revisions (project_id, revision, content_key, content_hash, size, author_id, message, created_at, ops_seq) VALUES (?1, ?2, ?3, ?4, ?5, NULL, ?6, ?7, ?8)",
                 )
-                .bind(this.projectId, revision, key, hash, text.length, `${message} (opérations ${this.snapshotSeq + 1} à ${this.seq})`, nowIso(), this.seq)
+                .bind(this.projectId, revision, key, hash, text.length, `${message} (opérations ${from} à ${upTo})`, nowIso(), upTo)
                 .run();
             this.revision = revision;
-            this.snapshotSeq = this.seq;
+            this.snapshotSeq = upTo;
         } finally {
             this.snapshotting = false;
         }
@@ -502,6 +560,12 @@ export async function liveRoute(ctx: Ctx, action: (typeof LIVE_ACTIONS)[number])
         body: JSON.stringify(body),
     });
     const data = (await res.json()) as Record<string, unknown>;
+    if (data.error === "throttled") {
+        const retry = Number(data.retry_after) || 1;
+        throw new ApiError(429, "RATE_LIMITED", "Trop de modifications d'un coup : elles sont gardées et renvoyées dans un instant.", { retry_after_seconds: retry }, {
+            "retry-after": String(retry),
+        });
+    }
     if (!res.ok || data.error) throw new Error("live room: " + String(data.error ?? res.status));
     return json(ctx, data);
 }

@@ -185,6 +185,16 @@ private:
     std::string followId_;                // member whose view I follow
     std::string lastEditLabel_;
     std::vector<LiveSession::Rejection> conflicts_;
+    /// Grouped notifications of the others' activity: one line per arrival or departure, and
+    /// one line per member for their edits of the last seconds (the count grows).
+    struct LiveFeedEntry {
+        LiveSession::Event::Kind kind = LiveSession::Event::Kind::Edits;
+        std::string id, name;
+        Color color = Color::white();
+        int count = 0;
+        float time = 0.0f;
+    };
+    std::vector<LiveFeedEntry> liveFeed_;
     std::unique_ptr<class OnlineUi> liveUi_;
     std::vector<LevelObject> clipboard_;
     LeftTab leftTab_ = LeftTab::Explorer;

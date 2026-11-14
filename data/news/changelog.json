@@ -1,4 +1,10 @@
 {
+  "2.14.0": [
+    "Édition en direct : notifications regroupées en bas de la vue (arrivées, départs, « Astrid : 6 modifications · place des éclats »).",
+    "Plus robuste aux coupures : si le dernier membre disparaît sans quitter (jeu fermé, réseau coupé), ses modifications deviennent une révision d'elles-mêmes peu après.",
+    "Protection contre les afflux : au-delà de 300 modifications en 10 secondes, le serveur demande d'attendre ; le jeu garde les modifications et les renvoie.",
+    "Révision automatique fidèle même quand d'autres modifications arrivent pendant son écriture."
+  ],
   "2.13.0": [
     "PROJETS → Révisions : tout l'historique, filtré par auteur ou par les mots du message, avec l'empreinte de chaque révision.",
     "Comparer deux révisions : objets ajoutés, supprimés ou modifiés (et ce qui a changé), réglages du niveau.",

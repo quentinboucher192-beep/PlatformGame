@@ -166,6 +166,7 @@ void LiveSession::onJoin(const ApiResult& r) {
     acked_.clear();
     remote_.clear();
     joined_ = std::move(doc);
+    presenceKnown_ = false;
     absorb(r.data);
     state_ = State::Live;
     error_.clear();
@@ -236,6 +237,9 @@ void LiveSession::heartbeat() {
 
 void LiveSession::absorb(const Json& data) {
     if (data.contains("participants") && data["participants"].is_array()) {
+        std::set<std::string> before;
+        for (const auto& p : participants_)
+            if (!p.me) before.insert(p.id);
         participants_.clear();
         for (const auto& p : data["participants"]) {
             Participant x;
@@ -255,8 +259,20 @@ void LiveSession::absorb(const Json& data) {
             if (p.contains("selection") && p["selection"].is_array())
                 for (const auto& s : p["selection"])
                     if (s.is_string()) x.selection.push_back(s.get<std::string>());
+            known_[x.id] = {x.name, x.color};
             participants_.push_back(std::move(x));
         }
+        // Arrivals and departures since the last presence (not on the first one after joining).
+        std::set<std::string> now;
+        for (const auto& p : participants_)
+            if (!p.me) now.insert(p.id);
+        if (presenceKnown_) {
+            for (const auto& id : now)
+                if (!before.count(id)) events_.push_back({Event::Kind::Joined, id, known_[id].first, known_[id].second, 0});
+            for (const auto& id : before)
+                if (!now.count(id)) events_.push_back({Event::Kind::Left, id, known_[id].first, known_[id].second, 0});
+        }
+        presenceKnown_ = true;
     }
     if (data.contains("locks") && data["locks"].is_object()) {
         locks_.clear();
@@ -268,6 +284,7 @@ void LiveSession::absorb(const Json& data) {
 }
 
 void LiveSession::readOps(const Json& ops) {
+    std::vector<std::pair<std::string, int>> byAuthor;  // in the order of their first edit
     for (const auto& o : ops) {
         int seq = jget<int>(o, "seq", 0);
         if (seq <= applied_) continue;
@@ -279,9 +296,23 @@ void LiveSession::readOps(const Json& ops) {
             saveQueue();
         } else if (o.contains("op")) {
             remote_.push_back(o["op"]);
+            std::string author = jstr(o, "author");
+            auto it = std::find_if(byAuthor.begin(), byAuthor.end(), [&](const auto& a) { return a.first == author; });
+            if (it == byAuthor.end()) byAuthor.push_back({author, 1});
+            else ++it->second;
         }
         applied_ = seq;
     }
+    for (const auto& [author, n] : byAuthor) {
+        auto k = known_.find(author);
+        events_.push_back({Event::Kind::Edits, author, k != known_.end() ? k->second.first : std::string(), k != known_.end() ? k->second.second : Color::white(), n});
+    }
+}
+
+std::vector<LiveSession::Event> LiveSession::takeEvents() {
+    std::vector<Event> e;
+    e.swap(events_);
+    return e;
 }
 
 void LiveSession::submit(const std::vector<Json>& ops) {

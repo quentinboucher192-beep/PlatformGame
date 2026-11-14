@@ -53,6 +53,15 @@ public:
         Json op;             // my operation
         Json current;        // the server's state of what it touched (null if gone)
     };
+    /// What the others did, for the editor's grouped notifications: arrivals, departures,
+    /// and the number of their edits received at once (one event per member and batch).
+    struct Event {
+        enum class Kind { Joined, Left, Edits };
+        Kind kind = Kind::Edits;
+        std::string id, name;
+        Color color = Color::white();
+        int count = 0;
+    };
     enum class State { Joining, Live, Offline, Failed };
 
     LiveSession(OnlineService& online, std::string projectId, fs::path queueFile = {});
@@ -82,6 +91,7 @@ public:
     /// Operations of the other members, in the server's order, to apply.
     std::vector<Json> takeRemoteOps();
     std::vector<Rejection> takeRejections();
+    std::vector<Event> takeEvents();
 
     State state() const { return state_; }
     const std::string& error() const { return error_; }
@@ -123,6 +133,9 @@ private:
     std::optional<Json> joined_;
     std::vector<Json> remote_;
     std::vector<Rejection> rejections_;
+    std::vector<Event> events_;
+    std::map<std::string, std::pair<std::string, Color>> known_;  // member id -> name, colour (kept after they leave)
+    bool presenceKnown_ = false;  // false until the first presence after a (re)join: no arrivals for those already there
     std::vector<Participant> participants_;
     std::map<std::string, std::string> locks_;
     std::deque<Queued> queue_;

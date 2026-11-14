@@ -14,6 +14,8 @@ Le jeu reste entièrement jouable sans compte et sans Internet.
 | [RULES.md](RULES.md) | Catégories, validation des records, statuts, niveaux de confiance, limites de l'anti-triche |
 | [REPLAY_FORMAT.md](REPLAY_FORMAT.md) | Format binaire des replays (CPRP / CPRZ) et déterminisme du moteur |
 | [PRIVACY.md](PRIVACY.md) | Données personnelles, localisation, RGPD |
+| [COLLABORATION.md](COLLABORATION.md) | Projets collaboratifs : rôles, invitations, édition en direct, historique, versions, limites, tests de charge |
+| [BILAN_ONLINE_2_8.md](BILAN_ONLINE_2_8.md) | Bilan du cahier des charges ONLINE 2.8 : fonctions, tests, limites, migrations, reste à faire |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Dépannage |
 
 ## Architecture
