@@ -15,12 +15,13 @@ Json RunResult::toJson() const {
             {"relics", relics},       {"secrets", secrets},       {"totalSecrets", totalSecrets},
             {"kills", kills},         {"score", score},           {"medal", static_cast<int>(medal)},
             {"powersUsed", powersUsed}, {"splits", splits},       {"date", date},
-            {"player", player}};
+            {"player", player},       {"levelHash", levelHash}};
 }
 
 RunResult RunResult::fromJson(const Json& j) {
     RunResult r;
     r.levelId = jstr(j, "levelId");
+    r.levelHash = jstr(j, "levelHash");
     r.completed = jget<bool>(j, "completed", false);
     r.time = jget<float>(j, "time", 0.0f);
     r.deaths = jget<int>(j, "deaths", 0);
@@ -57,7 +58,8 @@ Json LevelRecord::toJson() const {
             {"mostKills", mostKills},
             {"mostSecrets", mostSecrets},
             {"bestMedal", static_cast<int>(bestMedal)},
-            {"leaderboard", lb}};
+            {"leaderboard", lb},
+            {"levelHash", levelHash}};
 }
 
 LevelRecord LevelRecord::fromJson(const Json& j) {
@@ -67,6 +69,7 @@ LevelRecord LevelRecord::fromJson(const Json& j) {
     r.completions = jget<int>(j, "completions", 0);
     r.bestTime = jget<float>(j, "bestTime", 0.0f);
     r.bestTimeDate = jstr(j, "bestTimeDate");
+    r.levelHash = jstr(j, "levelHash");
     r.bestSplits = jget<std::vector<float>>(j, "bestSplits", {});
     r.bestTimePowers = jget<std::vector<std::string>>(j, "bestTimePowers", {});
     r.firstCompletionTime = jget<float>(j, "firstCompletionTime", 0.0f);
@@ -171,6 +174,26 @@ void RecordsManager::registerAttempt(const std::string& levelId) { getOrCreate(l
 
 void RecordsManager::reset(const std::string& levelId) { records_.erase(levelId); }
 
+std::optional<LevelRecord> RecordsManager::invalidateBest(const std::string& levelId) {
+    auto it = records_.find(levelId);
+    if (it == records_.end()) return std::nullopt;
+    LevelRecord before = it->second;
+    LevelRecord& r = it->second;
+    r.bestTime = 0.0f;
+    r.bestTimeDate.clear();
+    r.bestSplits.clear();
+    r.bestTimePowers.clear();
+    r.bestScore = 0;
+    r.fewestDeaths = -1;
+    r.mostCollectibles = 0;
+    r.mostKills = 0;
+    r.mostSecrets = 0;
+    r.bestMedal = Medal::None;
+    r.leaderboard.clear();
+    r.levelHash.clear();
+    return before;
+}
+
 RecordUpdate RecordsManager::submit(const RunResult& run) {
     RecordUpdate u;
     LevelRecord& r = getOrCreate(run.levelId);
@@ -189,6 +212,7 @@ RecordUpdate RecordsManager::submit(const RunResult& run) {
         r.bestTimeDate = run.date;
         r.bestSplits = run.splits;
         r.bestTimePowers = run.powersUsed;
+        r.levelHash = run.levelHash;
     }
     if (run.score > r.bestScore) {
         u.newBestScore = true;

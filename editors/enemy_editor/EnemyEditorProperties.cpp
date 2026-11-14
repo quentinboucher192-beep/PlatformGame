@@ -4,6 +4,7 @@
 
 #include "editors/enemy_editor/EnemyEditorScene.h"
 #include "editors/shared/PropertyEditor.h"
+#include "game/gameplay/BossBadge.h"
 #include "engine/resources/ResourceManager.h"
 #include "game/GameServices.h"
 
@@ -402,7 +403,26 @@ void EnemyEditorScene::tabBoss(float x, float& y, float w) {
     }
     FieldRow row{ui, x, w, w * 0.4f, y};
     c |= ui.textField("title", row.field("Titre affiché"), work_.bossTitle);
-    c |= ui.numberField("enrage", row.field("Rage après (s, 0 = jamais)"), work_.enrageTime, 5, 0, 600, "%.0f");
+    c |= ui.numberField("enrage", row.field("Rage (s, 0 = jamais)"), work_.enrageTime, 5, 0, 600, "%.0f");
+    {
+        // Aspect on the level progress bar (and in the level editor): its portrait or a symbol.
+        ui.label("Aspect sur la barre de progression", {x, y}, 18, ui.theme().accent, Align::Left, FontFace::Bold);
+        y += ui.s(30);
+        const auto& ids = BossBadge::icons();
+        int cur = 0;
+        for (size_t i = 0; i < ids.size(); ++i)
+            if (ids[i] == work_.barIcon) cur = static_cast<int>(i);
+        float preview = ui.s(64);
+        if (ui.cycle("baricon", {x, y, w - preview - ui.s(12), ui.s(46)}, "Icône", cur, BossBadge::iconLabels())) {
+            work_.barIcon = ids[static_cast<size_t>(cur)];
+            c = true;
+        }
+        Rect pv{x + w - preview, y - ui.s(6), preview, preview};
+        ui.r().fillRoundedRect(pv, ui.s(10), {6, 9, 20, 255});
+        BossBadge::draw(ui.r(), g_.app.resources(), work_, pv.center(), ui.s(20), false, ui.time());
+        y += ui.s(66);
+        c |= PropertyEditor::colorPicker(ui, "barcolor", x, y, w - preview - ui.s(12), (w - preview) * 0.4f, "Couleur", work_.barColor);
+    }
     for (size_t i = 0; i < work_.phases.size(); ++i) {
         if (ui.listItem("ph" + std::to_string(i), {x, y, w, ui.s(48)}, work_.phases[i].name, selectedPhase_ == static_cast<int>(i),
                         std::format("sous {:.0f}% PV", work_.phases[i].hpThreshold * 100)))

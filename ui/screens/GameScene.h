@@ -1,5 +1,6 @@
 #pragma once
 
+#include <future>
 #include <memory>
 #include <optional>
 #include <string>
@@ -54,6 +55,8 @@ private:
     /// the WORKSHOP, no "next level", and "Continuer" keeps pointing at the campaign.
     bool workshop_ = false;
     uint8_t pendingChoice_ = 0;
+    /// Route of the progress bar, computed off the main thread when the level starts.
+    std::future<LevelProgressTrack> trackFuture_;
     LevelData level_;
     std::unique_ptr<GameWorld> world_;
     GameRenderer renderer_;

@@ -360,8 +360,10 @@ int main(int argc, char** argv) {
     game.onlineOpen = value("--online-open");
     game.online.init(game.settings.online, value("--online-server"));
     OnlineToasts toasts;
+    game.checkForUpdate();
     app.onUpdate = [&game, &toasts](float dt) {
         game.ratings.poll();
+        game.news.poll(game.content, game.records, COSMIC_VERSION_STRING);
         game.online.update(dt);
         toasts.update(game, dt);
     };
@@ -395,7 +397,7 @@ int main(int argc, char** argv) {
     } else if (has("--editor")) {
         app.pushScene(makeLevelEditor(game, value("--editor")));
     } else if (has("--enemy-editor")) {
-        app.pushScene(makeEnemyEditor(game));
+        app.pushScene(makeEnemyEditor(game, value("--enemy-editor"), std::atoi(value("--enemy-tab").c_str())));
     } else if (has("--planets")) {
         app.pushScene(makePlanetMap(game));
     } else if (std::string et = value("--editor-test"); !et.empty()) {
@@ -409,6 +411,8 @@ int main(int argc, char** argv) {
         app.pushScene(makeCommunityPublish(game, pub));
     } else if (has("--online-levels")) {
         app.pushScene(makeOnlineLevels(game, value("--online-levels")));
+    } else if (has("--notifications")) {
+        app.pushScene(makeNotifications(game));
     } else if (has("--social")) {
         app.pushScene(makeSocial(game, value("--social")));
     } else if (has("--online")) {

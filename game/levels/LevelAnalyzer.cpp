@@ -978,4 +978,40 @@ std::vector<PowerStation> planPowerStations(const LevelData& level, const Conten
     return stations;
 }
 
+std::vector<Vec2> intendedRoute(const LevelData& level, const ContentDatabase& content) {
+    std::vector<Vec2> out;
+    std::set<std::string> all;
+    for (const PowerDefinition* p : content.powers()) all.insert(p->id);
+    float rise = 0.0f, air = 0.0f;
+    Model m = buildModel(level, content, all, rise, air);
+    Vec2 startFeet, exitFeet;
+    bool hasStart = false, hasExit = false;
+    std::vector<Vec2> cps;
+    for (const auto& o : level.objects) {
+        if (o.type == "player_start") startFeet = o.rect.bottomCenter(), hasStart = true;
+        else if (o.type == "exit") exitFeet = o.rect.bottomCenter(), hasExit = true;
+        else if (o.type == "checkpoint" && !o.prop<bool>("optional", false)) cps.push_back(o.rect.bottomCenter());
+    }
+    int start = hasStart ? nearestFree(m, startFeet, 4) : -1;
+    int exitCell = hasExit ? nearestFree(m, exitFeet, 6) : -1;
+    if (start < 0 || exitCell < 0) return out;
+    std::vector<float> fromStart;
+    shortest(m, start, -1, nullptr, &fromStart);
+    std::vector<std::pair<float, int>> order;
+    for (const Vec2& c : cps) {
+        int cell = nearestFree(m, c, 6);
+        if (cell >= 0 && std::isfinite(fromStart[static_cast<size_t>(cell)])) order.push_back({fromStart[static_cast<size_t>(cell)], cell});
+    }
+    std::stable_sort(order.begin(), order.end());
+    int prev = start;
+    order.push_back({0.0f, exitCell});
+    for (const auto& [d, target] : order) {
+        std::vector<int> seg;
+        if (!std::isfinite(shortest(m, prev, target, &seg))) continue;
+        for (int c : seg) out.push_back(cellFeet(m, c));
+        prev = target;
+    }
+    return out;
+}
+
 }  // namespace cosmic

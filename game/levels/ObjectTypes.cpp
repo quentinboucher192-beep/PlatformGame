@@ -521,7 +521,10 @@ std::vector<ObjectTypeInfo> build() {
                    pStr("waves", "Vagues (ids ennemis par vague, ';' sépare les vagues)", "", PropType::Text),
                    pBool("lockCamera", "Bloquer la caméra sur l'arène", true),
                    pBool("announce", "Annoncer le combat (titres)", true),
-                   pStr("music", "Musique pendant le combat", "", PropType::SoundRef)};
+                   pStr("music", "Musique pendant le combat", "", PropType::SoundRef),
+                   pStr("skullColor", "Aspect : couleur de la tête de mort (vide = couleur de la planète)", "", PropType::Color)};
+        t.help = "Embuscade : en entrant, les portes se ferment et les vagues arrivent ; elles se rouvrent une fois "
+                 "l'arène nettoyée. La barre de progression la montre par une tête de mort, de la couleur choisie dans Aspect.";
         add(t);
     }
     {

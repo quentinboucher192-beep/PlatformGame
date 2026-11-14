@@ -98,6 +98,10 @@ struct PowerStation {
 };
 std::vector<PowerStation> planPowerStations(const LevelData& level, const ContentDatabase& content);
 
+/// The intended route of the level (feet positions, start -> checkpoints in progress order
+/// -> exit), computed with every power of the game: the progress bar measures along it.
+std::vector<Vec2> intendedRoute(const LevelData& level, const ContentDatabase& content);
+
 /// Writes a PPM picture of the analysis (terrain, reachable space, routes, checkpoints).
 bool writeAnalysisImage(const LevelData& level, const ContentDatabase& content, const LevelAnalysis& a, const std::string& path,
                         const LevelAnalyzerOptions& opt = {});

@@ -5,6 +5,18 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.4.0** :
+* **Barre de progression** du niveau (Paramètres › Jeu : en haut, en bas ou masquée) : une
+  capsule lumineuse avec le pourcentage parcouru, la section en cours, les checkpoints, les
+  **embuscades** (tête de mort à la couleur choisie dans l'éditeur, champ « Aspect » de la zone ;
+  par défaut la couleur de la planète), les **boss** (leur portrait, ou l'icône et la couleur
+  choisies dans l'éditeur d'ennemis, onglet Boss, avec aperçu) et le **portail** de fin.
+* **Notifications** dans le menu principal : nouveaux niveaux de la campagne, nouveaux pouvoirs,
+  monstres et boss, niveaux modifiés, **records perdus** (un temps établi sur une autre version
+  d'un niveau ne compte plus : il est retiré et c'est dit), version installée avec ses
+  nouveautés, et **nouvel installateur** disponible : téléchargement depuis le serveur,
+  vérification SHA-256, puis « Lancer l'installateur ».
+
 **Nouveau dans la version 2.3.0** : **4 pouvoirs portés au plus** dans chaque niveau (réglable
 par niveau dans l'éditeur). Toucher la tablette d'un nouveau pouvoir quand tout est pris
 ouvre un choix : remplacer un pouvoir porté (il reste sur la tablette, à reprendre quand vous

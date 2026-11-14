@@ -1,6 +1,7 @@
 #pragma once
 
 #include "engine/rendering/Renderer.h"
+#include "game/gameplay/LevelProgress.h"
 
 namespace cosmic {
 
@@ -27,6 +28,9 @@ private:
     void drawMessages(UIContext& ui, GameWorld& w);
     void drawCinematic(UIContext& ui, GameWorld& w);
     void drawInteractPrompt(UIContext& ui, GameWorld& w, const WorldView& view);
+    /// Level progress bar (placement 1 top, 2 bottom): route %, checkpoints, ambushes,
+    /// bosses and the exit portal.
+    void drawProgress(UIContext& ui, GameWorld& w, int placement);
 
     float displayedHealth_ = 5.0f;
     float displayedEnergy_ = 100.0f;
@@ -37,7 +41,17 @@ private:
     float time_ = 0.0f;
     float skipHold_ = 0.0f;
 
+    LevelProgressTrack track_;
+    size_t trackHint_ = 0;
+    float progress_ = 0.0f;      // current place on the route (0..1)
+    float bestProgress_ = 0.0f;  // furthest place reached
+    float shownProgress_ = 0.0f;
+
 public:
+    void setProgressTrack(LevelProgressTrack t) {
+        track_ = std::move(t);
+        trackHint_ = 0;
+    }
     float skipProgress() const { return skipHold_; }
     void setSkipHold(float v) { skipHold_ = v; }
 };

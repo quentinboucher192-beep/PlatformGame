@@ -159,6 +159,10 @@ struct EnemyDefinition {
     std::vector<BossPhase> phases;
     /// Seconds of fight after which the boss enrages (faster, shorter cooldowns); 0 = never.
     float enrageTime = 0.0f;
+    /// Look of the boss on the level progress bar (and in the editors): "portrait" (its own
+    /// sprite) or a symbol (crown, skull, flame, snowflake, eye, star); colour "" = gold.
+    std::string barIcon = "portrait";
+    std::string barColor;
 
     // Runtime bookkeeping
     std::string sourcePath;

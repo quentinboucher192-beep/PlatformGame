@@ -35,8 +35,10 @@ std::unique_ptr<Scene> makePlanetMap(GameServices& g);
 std::unique_ptr<Scene> makeLevelSelect(GameServices& g, const std::string& planetId);
 std::unique_ptr<Scene> makeGameScene(GameServices& g, const std::string& levelId, PlayOptions opt = {});
 std::unique_ptr<Scene> makeSettingsScene(GameServices& g, bool overlay);
+/// Notifications of the main menu (new content, records dropped, new installer).
+std::unique_ptr<Scene> makeNotifications(GameServices& g);
 std::unique_ptr<Scene> makeLevelEditor(GameServices& g, const std::string& levelId);
-std::unique_ptr<Scene> makeEnemyEditor(GameServices& g);
+std::unique_ptr<Scene> makeEnemyEditor(GameServices& g, const std::string& enemyId = {}, int tab = 0);
 /// The WORKSHOP (reached from ONLINE): the player's levels, imported levels, .cplanet
 /// export/import, enemy editor.
 /// `importFile`: a .cplanet file to analyse immediately (double-click / command line).

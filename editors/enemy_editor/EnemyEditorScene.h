@@ -20,7 +20,8 @@ class GameServices;
 /// with an animated preview and a live test arena.
 class EnemyEditorScene : public Scene {
 public:
-    explicit EnemyEditorScene(GameServices& g) : g_(g) {}
+    explicit EnemyEditorScene(GameServices& g, std::string startId = {}, int startTab = 0)
+        : g_(g), startId_(std::move(startId)), tab_(startTab) {}
     void onEnter() override;
     void onExit() override;
     void update(float dt) override;
@@ -78,6 +79,7 @@ private:
     bool controlPlayer_ = false;
     bool godMode_ = true;
     Rect arenaRect_;
+    std::string startId_;  // enemy shown first (command line, links)
     int tab_ = 0;
     int selectedAttack_ = 0;
     int selectedPhase_ = 0;

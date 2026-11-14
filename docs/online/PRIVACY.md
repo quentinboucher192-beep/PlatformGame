@@ -57,6 +57,15 @@
   restent sur l'ordinateur du joueur.
 * **Déconnexion de tous les appareils** : révocation de toutes les sessions.
 
+## Vérification des mises à jour
+
+Au démarrage (Cosmic Online activé) et à l'ouverture des Notifications, le jeu demande
+`GET /client/latest` : aucune donnée de compte, aucun identifiant ni numéro de version n'est
+envoyé (le serveur voit seulement l'adresse IP de la requête, comme pour toute requête, et n'en
+garde qu'une empreinte salée pour la limitation de débit). Le téléchargement de l'installateur
+n'a lieu que sur demande du joueur, et le fichier n'est proposé à l'exécution qu'après
+vérification de son empreinte SHA-256.
+
 ## Côté jeu (ordinateur du joueur)
 
 | Fichier (dossier utilisateur) | Contenu |

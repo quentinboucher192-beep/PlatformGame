@@ -22,6 +22,8 @@ struct GraphicsSettings {
 struct GameplaySettings {
     bool showTimer = true;
     bool showInputHints = true;
+    /// Progress bar of the level: 0 hidden, 1 at the top, 2 at the bottom.
+    int progressBar = 1;
     bool debugMode = false;  // debug overlay available in game (F3)
     bool editorAutosave = true;
     int editorAutosaveSeconds = 60;

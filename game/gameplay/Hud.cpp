@@ -4,7 +4,10 @@
 
 #include "engine/core/Application.h"
 #include "game/enemies/Enemy.h"
+#include "game/content/ContentDatabase.h"
+#include "game/gameplay/BossBadge.h"
 #include "game/gameplay/GameWorld.h"
+#include "game/gameplay/entities/Entities.h"
 #include "game/powers/Powers.h"
 #include "game/records/Records.h"
 #include "saves/Settings.h"
@@ -41,6 +44,12 @@ void Hud::update(GameWorld& w, float dt) {
         shardPulse_ = 1.0f;
     }
     shardPulse_ = std::max(0.0f, shardPulse_ - dt * 3.0f);
+    if (track_.valid()) {
+        progress_ = track_.project(p.box.bottomCenter(), trackHint_);
+        if (w.state() == WorldState::Completed || w.state() == WorldState::Outro) progress_ = 1.0f;
+        bestProgress_ = std::max(bestProgress_, progress_);
+        shownProgress_ = lerpf(shownProgress_, bestProgress_, damp(6.0f, dt));
+    }
     if (Enemy* b = w.activeBoss()) bossBarDelayed_ = approach(bossBarDelayed_, b->hpRatio(), dt * 0.35f);
     else bossBarDelayed_ = 1.0f;
 
@@ -65,6 +74,7 @@ void Hud::render(UIContext& ui, GameWorld& w, const WorldView& view, const Level
         if (settings.showTimer) drawTimer(ui, w, record);
         drawCollectibles(ui, w);
         drawBoss(ui, w);
+        if (settings.progressBar > 0) drawProgress(ui, w, settings.progressBar);
         if (settings.showInputHints) drawInteractPrompt(ui, w, view);
     }
     drawMessages(ui, w);
@@ -216,6 +226,303 @@ void Hud::drawCollectibles(UIContext& ui, GameWorld& w) {
         ui.icon(kHudIcons, Relic, 16, {x + ui.s(140), y, ui.s(34), ui.s(34)});
         st.color = s.relics > 0 ? Color{255, 217, 138, 255} : ui.theme().textDim;
         ui.text().draw(relics, {x + ui.s(180), y + ui.s(17)}, st);
+    }
+}
+
+void Hud::drawProgress(UIContext& ui, GameWorld& w, int placement) {
+    if (!track_.valid()) return;
+    Renderer& r = ui.r();
+    const Color gold{255, 217, 138, 255}, cyan{57, 240, 216, 255}, ember{255, 138, 92, 255}, violet{176, 76, 255, 255};
+    const Color red{255, 77, 109, 255}, green{120, 230, 140, 255};
+    constexpr float kPi = 3.14159265f;
+    float t = time_;
+    // Room: centred, never under the power icons (left) nor the timer (right).
+    size_t slots = std::max<size_t>(w.player().powers().size(), static_cast<size_t>(std::max(0, w.player().powerSlots())));
+    float powersRight = ui.s(40) + static_cast<float>(slots) * ui.s(72) + ui.s(90);
+    float width = std::min(ui.screenW() * 0.44f, ui.s(820));
+    float left = (ui.screenW() - width) * 0.5f;
+    if (left < powersRight) {
+        float right = left + width;
+        left = powersRight;
+        width = std::max(ui.s(300), right - left);
+    }
+    float railY = placement == 1 ? ui.s(150) : ui.screenH() - ui.s(w.activeBoss() ? 178.0f : 82.0f);
+    float railH = ui.s(14);
+    Rect rail{left, railY - railH * 0.5f, width, railH};
+    auto xAt = [&](float f) { return rail.x + rail.w * std::clamp(f, 0.0f, 1.0f); };
+    float fill = shownProgress_;
+    float headX = xAt(fill);
+
+    // Backdrop: a capsule framed in light, with a halo that breathes around it.
+    Rect back{rail.x - ui.s(30), rail.y - ui.s(52), rail.w + ui.s(110), ui.s(124)};
+    float breathe = 0.75f + 0.25f * std::sin(t * 1.6f);
+    for (float x = back.x + ui.s(20); x <= back.right() - ui.s(20); x += ui.s(40)) {
+        float k = (x - back.x) / back.w;
+        Color c = Color::lerp(cyan, violet, k);
+        r.drawGlow({x, back.y + ui.s(4)}, ui.s(70), c.withAlpha(static_cast<uint8_t>(52 * breathe)));
+        r.drawGlow({x, back.bottom() - ui.s(4)}, ui.s(70), c.withAlpha(static_cast<uint8_t>(52 * breathe)));
+    }
+    r.drawGlow({back.x + ui.s(8), back.center().y}, ui.s(80), cyan.withAlpha(static_cast<uint8_t>(70 * breathe)));
+    r.drawGlow({back.right() - ui.s(8), back.center().y}, ui.s(80), violet.withAlpha(static_cast<uint8_t>(80 * breathe)));
+    r.drawGlow({back.x + back.w * 0.25f, back.center().y}, back.h * 1.3f, cyan.withAlpha(static_cast<uint8_t>(40 * breathe)));
+    r.drawGlow({back.x + back.w * 0.55f, back.center().y}, back.h * 1.4f, gold.withAlpha(static_cast<uint8_t>(38 * breathe)));
+    r.drawGlow({back.x + back.w * 0.85f, back.center().y}, back.h * 1.3f, violet.withAlpha(static_cast<uint8_t>(46 * breathe)));
+    r.fillRoundedRectGradient(back, ui.s(24), {12, 16, 34, 205}, {4, 6, 16, 215});
+    {
+        // A band of light sweeps across the capsule every few seconds.
+        float sweep = std::fmod(t, 4.5f) / 1.6f;
+        if (sweep < 1.0f) {
+            float sx = back.x + back.w * sweep;
+            float bw = ui.s(90);
+            r.pushClip(back.expanded(-ui.s(3)));
+            r.fillGradientH({sx - bw, back.y, bw, back.h}, Color{255, 255, 255, 0}, Color{255, 246, 220, 36}, BlendMode::Additive);
+            r.fillGradientH({sx, back.y, bw, back.h}, Color{255, 246, 220, 36}, Color{255, 255, 255, 0}, BlendMode::Additive);
+            r.popClip();
+        }
+    }
+    r.drawRoundedRect(back, ui.s(24), gold.withAlpha(static_cast<uint8_t>(110 + 60 * breathe)), ui.s(2));
+    r.drawRoundedRect(back.expanded(-ui.s(5)), ui.s(20), cyan.withAlpha(45), ui.s(1));
+    r.fillGradientH({back.x + ui.s(24), back.y, back.w * 0.5f - ui.s(24), ui.s(2)}, gold.withAlpha(0), gold);
+    r.fillGradientH({back.center().x, back.y, back.w * 0.5f - ui.s(24), ui.s(2)}, gold, gold.withAlpha(0));
+    // Bright corner accents
+    for (int cx = 0; cx < 2; ++cx)
+        for (int cy = 0; cy < 2; ++cy) {
+            Vec2 c{cx ? back.right() - ui.s(16) : back.x + ui.s(16), cy ? back.bottom() - ui.s(10) : back.y + ui.s(10)};
+            r.drawGlow(c, ui.s(14), gold.withAlpha(static_cast<uint8_t>(120 * breathe)));
+            r.fillCircle(c, ui.s(2), Color{255, 245, 220, 255});
+        }
+
+    // Header: section on the left, percentage on the right.
+    std::string section = w.level().name;
+    for (const auto& m : track_.markers)
+        if (m.kind == LevelProgressTrack::Marker::Kind::Checkpoint && m.at <= bestProgress_ + 0.002f && !m.label.empty()) section = m.label;
+    int pct = static_cast<int>(std::floor(shownProgress_ * 100.0f + 0.001f));
+    TextStyle ps = style(ui, 26, gold, FontFace::Title, Align::Right, VAlign::Bottom);
+    ps.glow = ui.s(16);
+    ps.glowColor = gold.withAlpha(140);
+    std::string pctText = std::to_string(pct) + " %";
+    float pctW = ui.text().measure(pctText, FontFace::Title, ps.size).x;
+    float headerY = rail.y - ui.s(14);
+    ui.text().draw(pctText, {rail.right() + ui.s(62), headerY + ui.s(2)}, ps);
+    float room = rail.w + ui.s(62) - pctW - ui.s(30);
+    TextStyle ss = style(ui, ui.fitFont(section, FontFace::Bold, 16, room, 0.6f), Color{200, 214, 232, 255}, FontFace::Bold, Align::Left,
+                         VAlign::Bottom);
+    ui.text().draw(section, {rail.x, headerY}, ss);
+
+    // Aura of the filled part: a wide bloom brighter towards the head, and sparks rising off it.
+    for (float x = rail.x; x <= headX; x += ui.s(18)) {
+        float k = (x - rail.x) / std::max(1.0f, headX - rail.x);
+        float flick = 0.85f + 0.15f * std::sin(t * 6.0f + x * 0.05f);
+        r.drawGlow({x, rail.center().y}, ui.s(54), Color::lerp(cyan, gold, k).withAlpha(static_cast<uint8_t>((30 + 60 * k) * flick)));
+    }
+    for (int i = 0; i < 14; ++i) {
+        float seed = static_cast<float>(i) * 0.6180339f;
+        float life = std::fmod(t * (0.55f + 0.25f * std::fmod(seed * 7.0f, 1.0f)) + seed, 1.0f);
+        float px = rail.x + (headX - rail.x) * std::fmod(seed * 3.7f + 0.13f, 1.0f);
+        if (px > headX) continue;
+        float py = rail.center().y - life * ui.s(34);
+        Color c = Color::lerp(cyan, gold, (px - rail.x) / std::max(1.0f, headX - rail.x));
+        r.fillCircle({px + std::sin(t * 3.0f + seed * 9.0f) * ui.s(3), py}, ui.s(1.8f) * (1.0f - life * 0.6f),
+                     c.withAlpha(static_cast<uint8_t>(230 * (1.0f - life))));
+    }
+    // Rail
+    r.fillRoundedRect(rail.expanded(ui.s(5)), ui.s(11), {5, 8, 20, 240});
+    r.drawRoundedRect(rail.expanded(ui.s(5)), ui.s(11), gold.withAlpha(150), ui.s(2));
+    for (int k = 1; k < 10; ++k) {
+        float x = rail.x + rail.w * static_cast<float>(k) / 10.0f;
+        if (x > headX) r.fillRect({x - ui.s(0.75f), rail.y + ui.s(3), ui.s(1.5f), railH - ui.s(6)}, violet.withAlpha(110));
+    }
+    r.fillGradientH({headX, rail.y + ui.s(2), std::max(0.0f, rail.right() - headX), railH - ui.s(4)}, violet.withAlpha(30), violet.withAlpha(90));
+    // Fill: cyan -> gold -> ember, rounded start, light running along it.
+    if (headX > rail.x + railH * 0.5f) {
+        float mid = rail.x + (headX - rail.x) * 0.6f;
+        r.fillGradientH({rail.x + railH * 0.5f, rail.y, std::max(0.0f, mid - rail.x - railH * 0.5f), railH}, cyan, gold);
+        r.fillGradientH({mid, rail.y, std::max(0.0f, headX - mid), railH}, gold, ember);
+        r.fillCircle({rail.x + railH * 0.5f, rail.center().y}, railH * 0.5f, cyan);
+        r.fillRect({rail.x + railH * 0.5f, rail.y + ui.s(2), std::max(0.0f, headX - rail.x - railH), ui.s(2)}, Color{255, 255, 255, 70},
+                   BlendMode::Additive);
+        for (int i = 0; i < 2; ++i) {
+            float run = std::fmod(t * 0.4f + 0.5f * static_cast<float>(i), 1.0f);
+            float rx = rail.x + (headX - rail.x) * run;
+            r.drawGlow({rx, rail.center().y}, ui.s(24), Color{255, 255, 255, 110});
+        }
+    }
+
+    using Kind = LevelProgressTrack::Marker::Kind;
+    // Icons of ambushes and bosses never cover each other: nudged apart along the rail.
+    std::vector<float> iconX(track_.markers.size(), 0.0f);
+    {
+        float minGap = ui.s(34), last = -1e9f;
+        for (size_t i = 0; i < track_.markers.size(); ++i) {
+            float x = xAt(track_.markers[i].at);
+            if (track_.markers[i].kind == Kind::Checkpoint) {
+                iconX[i] = x;
+                continue;
+            }
+            x = std::max(x, last + minGap);
+            iconX[i] = x;
+            last = x;
+        }
+        float overflow = last - (rail.right() - ui.s(6));
+        if (overflow > 0.0f)
+            for (size_t i = track_.markers.size(); i-- > 0;) {
+                if (track_.markers[i].kind == Kind::Checkpoint) continue;
+                iconX[i] -= overflow;
+                float limit = iconX[i] - minGap;
+                overflow = 0.0f;
+                for (size_t j = i; j-- > 0;)
+                    if (track_.markers[j].kind != Kind::Checkpoint) {
+                        overflow = std::max(0.0f, iconX[j] - limit);
+                        break;
+                    }
+                if (overflow <= 0.0f) break;
+            }
+    }
+    std::vector<std::pair<float, float>> labelSpans;  // no two labels overlap
+    auto label = [&](const std::string& text, float x, Color c) {
+        float fs = 14.0f;
+        float tw = ui.text().measure(text, FontFace::Bold, ui.s(fs)).x;
+        float a = x - tw * 0.5f, b = x + tw * 0.5f;
+        for (const auto& [l, rr] : labelSpans)
+            if (a < rr + ui.s(10) && b > l - ui.s(10)) return;
+        labelSpans.push_back({a, b});
+        TextStyle ls = style(ui, fs, c, FontFace::Bold, Align::Center, VAlign::Top);
+        ls.glow = ui.s(10);
+        ls.glowColor = c.withAlpha(110);
+        ui.text().draw(text, {x, rail.center().y + ui.s(34)}, ls);
+    };
+    auto nearMajor = [&](float x) {
+        for (size_t i = 0; i < track_.markers.size(); ++i)
+            if (track_.markers[i].kind != Kind::Checkpoint && std::abs(iconX[i] - x) < ui.s(20)) return true;
+        return false;
+    };
+    // Checkpoints first (small), then ambushes and bosses on top; boss labels win.
+    for (size_t i = 0; i < track_.markers.size(); ++i) {
+        const auto& m = track_.markers[i];
+        if (m.kind != Kind::Checkpoint || nearMajor(iconX[i])) continue;
+        Vec2 c{iconX[i], rail.center().y};
+        bool on = w.checkpointId() == m.objectId || m.at <= bestProgress_ + 0.002f;
+        float s = ui.s(8);
+        if (on) r.drawGlow(c, ui.s(22), cyan.withAlpha(140));
+        std::vector<Vec2> o = {{c.x, c.y - s - ui.s(2)}, {c.x + s + ui.s(2), c.y}, {c.x, c.y + s + ui.s(2)}, {c.x - s - ui.s(2), c.y}};
+        std::vector<Vec2> d = {{c.x, c.y - s}, {c.x + s, c.y}, {c.x, c.y + s}, {c.x - s, c.y}};
+        r.fillConvexPolygon(o, on ? cyan : Color{90, 106, 144, 255});
+        r.fillConvexPolygon(d, on ? Color{210, 255, 250, 255} : Color{10, 14, 30, 255});
+    }
+    for (int pass = 0; pass < 2; ++pass)
+        for (size_t i = 0; i < track_.markers.size(); ++i) {
+            const auto& m = track_.markers[i];
+            if (m.kind == Kind::Checkpoint || (pass == 0) != (m.kind == Kind::Boss)) continue;
+            float x = iconX[i];
+            Vec2 c{x, rail.center().y};
+            if (std::abs(x - xAt(m.at)) > ui.s(2))  // nudged: a thin tick shows the real place
+                r.fillRect({xAt(m.at) - ui.s(1), rail.y - ui.s(6), ui.s(2), railH + ui.s(12)}, Color{255, 255, 255, 110});
+            if (m.kind == Kind::Ambush) {
+                auto* zone = dynamic_cast<CombatZoneEntity*>(w.entity(m.objectId));
+                bool cleared = zone && zone->cleared();
+                bool active = zone && zone->started() && !cleared;
+                Color col = m.color;
+                if (cleared) col = Color{150, 160, 180, 255};
+                float pulse = active ? 1.0f + 0.3f * std::sin(t * 9.0f) : (cleared ? 1.0f : 1.0f + 0.15f * std::sin(t * 3.0f));
+                if (!cleared) {
+                    r.drawGlow(c, ui.s(50) * pulse, col.withAlpha(active ? 230 : 170));
+                    r.drawGlow(c, ui.s(22), Color{255, 255, 255, 60});
+                }
+                // Skull: cranium, cheekbones, jaw with teeth, glowing eye sockets.
+                float k = ui.s(1.45f) * (active ? 1.0f + 0.08f * std::sin(t * 9.0f) : 1.0f);
+                Vec2 hc = c - Vec2{0, 2.5f * k};
+                Color bone = cleared ? Color{170, 178, 196, 255} : Color::lerp(col, Color::white(), 0.55f);
+                r.fillCircle(hc, 10.5f * k, col);
+                r.fillCircle(hc, 9.0f * k, bone);
+                r.fillRoundedRect({c.x - 6.5f * k, c.y + 3.0f * k, 13.0f * k, 7.5f * k}, 2.5f * k, bone);
+                Color hole{16, 6, 14, 255};
+                r.fillCircle(hc + Vec2{-3.6f * k, 0.8f * k}, 2.9f * k, hole);
+                r.fillCircle(hc + Vec2{3.6f * k, 0.8f * k}, 2.9f * k, hole);
+                if (!cleared) {
+                    Color eye = Color::lerp(col, Color::white(), 0.25f);
+                    r.fillCircle(hc + Vec2{-3.6f * k, 0.8f * k}, 1.3f * k * pulse, eye);
+                    r.fillCircle(hc + Vec2{3.6f * k, 0.8f * k}, 1.3f * k * pulse, eye);
+                }
+                r.fillTriangle({c.x, c.y + 0.4f * k}, {c.x - 1.4f * k, c.y + 3.2f * k}, {c.x + 1.4f * k, c.y + 3.2f * k}, hole);
+                for (int tooth = -1; tooth <= 1; ++tooth) r.fillRect({c.x + tooth * 2.8f * k - 0.5f * k, c.y + 5.6f * k, 1.0f * k, 4.0f * k}, hole);
+                if (cleared) {
+                    // Green badge with a check mark.
+                    Vec2 b = c + Vec2{9.0f * k, 7.0f * k};
+                    r.drawGlow(b, ui.s(14), green.withAlpha(150));
+                    r.fillCircle(b, 6.0f * k, green);
+                    r.drawLine(b + Vec2{-3.0f * k, 0}, b + Vec2{-0.8f * k, 2.4f * k}, {12, 30, 18, 255}, ui.s(1.8f));
+                    r.drawLine(b + Vec2{-0.8f * k, 2.4f * k}, b + Vec2{3.2f * k, -2.6f * k}, {12, 30, 18, 255}, ui.s(1.8f));
+                }
+                Color lc = cleared ? green : Color::lerp(col, Color::white(), 0.35f);
+                label(cleared ? "nettoyée" : active ? "en cours !" : m.label, x, lc);
+            } else {
+                bool alive = false;
+                for (const auto& e : w.enemies())
+                    if (e->objectId() == m.objectId && e->alive()) alive = true;
+                const EnemyDefinition* def = w.content().enemy(m.enemyId);
+                Color col = !alive ? Color{140, 150, 175, 255} : def ? BossBadge::color(*def) : gold;
+                float rad = ui.s(17);
+                if (alive) {
+                    float pulse = 1.0f + 0.2f * std::sin(t * 4.0f);
+                    r.drawGlow(c, ui.s(80) * pulse, Color::lerp(col, ember, 0.4f).withAlpha(140));
+                    r.drawGlow(c, ui.s(40), col.withAlpha(190));
+                    // Rays turning around the boss.
+                    for (int k = 0; k < 8; ++k) {
+                        float a = t * 0.8f + static_cast<float>(k) * kPi / 4.0f;
+                        Vec2 dir{std::cos(a), std::sin(a)};
+                        r.drawLine(c + dir * (rad + ui.s(6)), c + dir * (rad + ui.s(16 + 5 * std::sin(t * 3.0f + k))), col.withAlpha(190),
+                                   ui.s(2.5f));
+                    }
+                }
+                if (def) BossBadge::draw(r, w.resources(), *def, c, rad, !alive, t);
+                label(alive ? m.label : m.label + " — vaincu", x, col);
+            }
+        }
+
+    // Exit portal at the end of the rail: turning rings in a violet glow.
+    {
+        Vec2 c{rail.right() + ui.s(22), rail.center().y};
+        bool done = shownProgress_ >= 0.995f;
+        float pulse = 1.0f + 0.12f * std::sin(t * 2.0f);
+        r.drawGlow(c, ui.s(84) * pulse, violet.withAlpha(done ? 240 : 180));
+        r.drawGlow(c, ui.s(36), cyan.withAlpha(170));
+        r.drawRing(c, ui.s(18), ui.s(3.5f), violet);
+        r.drawRing(c, ui.s(22), ui.s(1.5f), violet.withAlpha(140));
+        for (int k = 0; k < 3; ++k) {
+            float a0 = t * 2.4f + static_cast<float>(k) * 2.0943951f;
+            r.drawArc(c, ui.s(13), ui.s(3), a0, a0 + 1.3f, cyan);
+            float a1 = -t * 1.6f + static_cast<float>(k) * 2.0943951f;
+            r.drawArc(c, ui.s(8), ui.s(2), a1, a1 + 1.0f, Color{230, 200, 255, 255});
+        }
+        r.fillCircle(c, ui.s(4), Color{240, 255, 252, 255});
+        label("portail", c.x, Color{212, 166, 255, 255});
+    }
+
+    // The player: bright head, pulsing halo, expanding ring, orbiting sparks and a trail.
+    {
+        Vec2 h{xAt(std::clamp(progress_, 0.0f, 1.0f)), rail.center().y};
+        for (int i = 1; i <= 8; ++i) {
+            float bx = h.x - static_cast<float>(i) * ui.s(8);
+            if (bx < rail.x) break;
+            float k = 1.0f - static_cast<float>(i) / 9.0f;
+            r.fillCircle({bx, h.y + std::sin(t * 7.0f + static_cast<float>(i)) * ui.s(2)}, ui.s(3.2f) * k,
+                         gold.withAlpha(static_cast<uint8_t>(220 * k)));
+        }
+        float pulse = 1.0f + 0.15f * std::sin(t * 5.0f);
+        r.drawGlow(h, ui.s(72) * pulse, gold.withAlpha(190));
+        r.drawGlow(h, ui.s(28), Color{255, 255, 255, 170});
+        // Lens flare: a thin horizontal streak through the head.
+        float fl = ui.s(110) * pulse;
+        r.fillGradientH({h.x - fl, h.y - ui.s(1.5f), fl, ui.s(3)}, Color{255, 240, 200, 0}, Color{255, 250, 235, 230}, BlendMode::Additive);
+        r.fillGradientH({h.x, h.y - ui.s(1.5f), fl, ui.s(3)}, Color{255, 250, 235, 230}, Color{255, 240, 200, 0}, BlendMode::Additive);
+        float wave = std::fmod(t, 1.2f) / 1.2f;
+        r.drawRing(h, ui.s(12) + ui.s(22) * wave, ui.s(2.5f), gold.withAlpha(static_cast<uint8_t>(220 * (1.0f - wave))));
+        for (int k = 0; k < 4; ++k) {
+            float a = t * 3.0f + static_cast<float>(k) * kPi * 0.5f;
+            r.fillCircle(h + Vec2{std::cos(a), std::sin(a) * 0.6f} * ui.s(17), ui.s(2.2f), Color{255, 240, 200, 230});
+        }
+        r.fillCircle(h, ui.s(11), gold);
+        r.fillCircle(h, ui.s(8), Color{255, 252, 236, 255});
     }
 }
 

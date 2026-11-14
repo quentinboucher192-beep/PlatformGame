@@ -1,0 +1,11 @@
+{
+  "2.4.0": [
+    "Barre de progression du niveau (Paramètres › Jeu) : pourcentage, checkpoints, embuscades (tête de mort à la couleur choisie dans l'éditeur), boss (leur portrait ou l'icône choisie) et portail de fin.",
+    "Notifications dans le menu principal : nouveaux niveaux, pouvoirs, monstres et boss, records à refaire quand un niveau change, nouvelles versions à télécharger.",
+    "Éditeur d'ennemis : « Aspect » des boss sur la barre de progression (icône et couleur, avec aperçu)."
+  ],
+  "2.3.0": [
+    "4 pouvoirs portés au plus : remplacer un pouvoir ou laisser le nouveau ; le pouvoir laissé reste sur sa tablette.",
+    "Stations de pouvoirs dans la campagne, raccourci du Cœur de la Machine supprimé."
+  ]
+}

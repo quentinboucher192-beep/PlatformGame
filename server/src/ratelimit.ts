@@ -29,6 +29,7 @@ export const RULES = {
     communityPublish: { name: "community_publish", limit: 10, windowSeconds: 3600 },
     communityUpload: { name: "community_upload", limit: 40, windowSeconds: 3600 },
     communityDownload: { name: "community_download", limit: 120, windowSeconds: 3600 },
+    clientDownload: { name: "client_download", limit: 6, windowSeconds: 3600 },
     communityRate: { name: "community_rate", limit: 60, windowSeconds: 3600 },
     communityReport: { name: "community_report", limit: 20, windowSeconds: 3600 },
     communityRecord: { name: "community_record", limit: 30, windowSeconds: 60 },

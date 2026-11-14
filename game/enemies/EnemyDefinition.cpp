@@ -240,6 +240,8 @@ Json EnemyDefinition::toJson() const {
         for (const auto& p : phases) ph.push_back(p.toJson());
         j["boss"] = {{"title", bossTitle}, {"phases", ph}};
         if (enrageTime > 0) j["boss"]["enrageTime"] = enrageTime;
+        if (barIcon != "portrait") j["boss"]["barIcon"] = barIcon;
+        if (!barColor.empty()) j["boss"]["barColor"] = barColor;
     }
     return j;
 }
@@ -315,6 +317,8 @@ EnemyDefinition EnemyDefinition::fromJson(const Json& j) {
         d.isBoss = true;
         d.bossTitle = jstr(j["boss"], "title", d.name);
         d.enrageTime = std::clamp(jget<float>(j["boss"], "enrageTime", 0.0f), 0.0f, 3600.0f);
+        d.barIcon = jstr(j["boss"], "barIcon", "portrait");
+        d.barColor = jstr(j["boss"], "barColor", "");
         if (j["boss"].contains("phases") && j["boss"]["phases"].is_array())
             for (const auto& p : j["boss"]["phases"]) d.phases.push_back(BossPhase::fromJson(p));
         std::stable_sort(d.phases.begin(), d.phases.end(), [](const auto& a, const auto& b) { return a.hpThreshold > b.hpThreshold; });

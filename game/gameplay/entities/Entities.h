@@ -365,6 +365,8 @@ public:
     void onPlayerRespawn(GameWorld& w) override;
     bool handleAction(GameWorld& w, const std::string& action, const Json& params) override;
     std::string debugInfo() const override;
+    bool started() const { return started_; }
+    bool cleared() const { return cleared_; }
 
 private:
     void startWave(GameWorld& w, size_t index);

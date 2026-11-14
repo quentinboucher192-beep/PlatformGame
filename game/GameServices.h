@@ -6,6 +6,7 @@
 #include "game/content/ContentDatabase.h"
 #include "game/levels/RatingService.h"
 #include "game/online/OnlineService.h"
+#include "game/progression/NewsCenter.h"
 #include "game/progression/Progression.h"
 #include "game/records/Records.h"
 #include "saves/Settings.h"
@@ -35,6 +36,10 @@ public:
     Settings settings;
     Progression progression;
     RecordsManager records;
+    /// Notifications of the main menu (new content, records dropped, new installer).
+    NewsCenter news;
+    /// Asks the server once for a newer installer (no account needed, nothing personal sent).
+    void checkForUpdate();
     /// Cosmic Online (rankings, globe, account). Fully optional: offline play never needs it.
     OnlineService online;
     UIContext ui;

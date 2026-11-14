@@ -12,12 +12,15 @@
 
 namespace cosmic {
 
-std::unique_ptr<Scene> makeEnemyEditor(GameServices& g) { return std::make_unique<EnemyEditorScene>(g); }
+std::unique_ptr<Scene> makeEnemyEditor(GameServices& g, const std::string& enemyId, int tab) {
+    return std::make_unique<EnemyEditorScene>(g, enemyId, tab);
+}
 
 void EnemyEditorScene::onEnter() {
     g_.app.audio().stopMusic(500);
     auto list = g_.content.enemies();
-    if (!list.empty()) select(list.front()->id);
+    if (!startId_.empty() && g_.content.enemy(startId_)) select(startId_);
+    else if (!list.empty()) select(list.front()->id);
 }
 
 void EnemyEditorScene::onExit() {

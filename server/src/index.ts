@@ -14,6 +14,7 @@ import { RULES, rateLimit } from "./ratelimit";
 import * as social from "./social";
 import * as community from "./community";
 import * as records from "./records";
+import * as releases from "./releases";
 import { CATEGORIES, MODES } from "./validate";
 
 const API_VERSION = "1.0.0";
@@ -144,6 +145,10 @@ route("DELETE", `${V}/community/levels/{levelId}`, (ctx) => community.removeLeve
 route("PUT", `${V}/community/levels/{levelId}/versions/{version}/package`, (ctx) => community.uploadPackage(ctx));
 route("PUT", `${V}/community/levels/{levelId}/versions/{version}/replay`, (ctx) => community.uploadCompletion(ctx));
 route("GET", `${V}/community/levels/{levelId}/package`, (ctx) => community.downloadPackage(ctx));
+
+// Game installers (in-game "nouvelle version" notification)
+route("GET", `${V}/client/latest`, (ctx) => releases.latest(ctx), { cacheable: true });
+route("GET", `${V}/client/download/{version}`, (ctx) => releases.download(ctx));
 route("GET", `${V}/community/levels/{levelId}/thumbnail`, (ctx) => community.thumbnail(ctx));
 route("GET", `${V}/community/levels/{levelId}/leaderboard`, (ctx) => community.leaderboard(ctx));
 route("POST", `${V}/community/levels/{levelId}/rate`, (ctx) => community.rate(ctx));

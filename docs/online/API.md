@@ -848,6 +848,22 @@ Plus durs, Récents, Mieux notés, Amis, Recherche, Les miens ; *Télécharger e
 package par les mêmes vérifications que tout import `.cplanet` et contrôle l'empreinte de
 gameplay de la copie installée).
 
+### 8.9 bis Installateurs du jeu (notification « nouvelle version »)
+
+Publics (aucun compte, rien de personnel n'est envoyé : le jeu ne transmet pas sa version, il
+compare lui-même).
+
+| Méthode | Route | Réponse |
+|---|---|---|
+| GET | `/client/latest?platform=windows` | `{ release: { version, file_name, size, sha256, notes, published_at, download } }` ou `{ release: null }` |
+| GET | `/client/download/{version}` | l'installateur (`application/octet-stream`, `content-disposition: attachment`, en-tête `x-content-sha256`) ; 6 téléchargements par heure et par IP (`429` au-delà) |
+
+Le jeu ne propose « Lancer l'installateur » qu'après avoir vérifié que l'empreinte SHA-256 du
+fichier reçu est celle annoncée par `/client/latest`. Publication d'une version :
+`node scripts/release-migration.mjs <version> <fichier.exe> "<notes>" > migrations/000N_release_<v>.sql`,
+envoi du fichier dans le bucket (`wrangler r2 object put <bucket>/releases/CosmicPlatformer-Setup-<v>.exe --file … --remote`)
+puis `wrangler d1 migrations apply`.
+
 ### 8.10 Administration
 
 Réservé aux opérateurs : actif seulement si le secret `ADMIN_TOKEN` (≥ 32 caractères, posé

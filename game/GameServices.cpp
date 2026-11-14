@@ -10,7 +10,20 @@ void GameServices::loadAll() {
     ratings.init(content);
     progression.load();
     records.load();
+    news.load();
+    news.startScan(content);
     applySettings();
+}
+
+void GameServices::checkForUpdate() {
+    if (!online.usable()) return;
+    online.get("/api/v1/client/latest?platform=windows", [this](const ApiResult& r) {
+        if (!r.ok || !r.data.is_object() || !r.data.contains("release") || !r.data["release"].is_object()) return;
+        const Json& rel = r.data["release"];
+        std::string v = jstr(rel, "version");
+        if (v.empty() || !versionNewer(v, COSMIC_VERSION_STRING)) return;
+        news.offerRelease(v, jget<int64_t>(rel, "size", 0), jstr(rel, "sha256"), jstr(rel, "download"), jstr(rel, "notes"));
+    }, false);
 }
 
 void GameServices::applySettings() {

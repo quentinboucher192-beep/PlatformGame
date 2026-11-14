@@ -282,6 +282,9 @@ private:
         r.y += row();
         ui.toggle("hints", r, "Afficher les touches à l'écran", working_.gameplay.showInputHints);
         r.y += row();
+        static const std::vector<std::string> bars = {"Masquée", "En haut de l'écran", "En bas de l'écran"};
+        ui.cycle("progress", r, "Barre de progression du niveau", working_.gameplay.progressBar, bars);
+        r.y += row();
         ui.toggle("debug", r, "Mode debug (F3 en jeu)", working_.gameplay.debugMode);
         r.y += row();
         ui.toggle("unlockall", r, "Tout débloquer : planètes et niveaux (mode test)", working_.gameplay.unlockAll);

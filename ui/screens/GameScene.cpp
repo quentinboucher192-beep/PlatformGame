@@ -52,6 +52,8 @@ void GameScene::onEnter() {
     if (opt_.spawn) world_->startAt(*opt_.spawn);
     if (const LevelRecord* rec = g_.records.get(levelId_)) world_->setReferenceSplits(rec->bestSplits);
     renderer_.build(g_.app.renderer(), res, *world_);
+    if (g_.settings.gameplay.progressBar > 0)
+        trackFuture_ = std::async(std::launch::async, [level = level_, &content = g_.content] { return buildProgressTrack(level, content); });
     if (!opt_.editorTest) {
         g_.records.registerAttempt(levelId_);
         if (!workshop_) {
@@ -198,6 +200,9 @@ void GameScene::finishRun(bool completed) {
     r.powersUsed.assign(s.powersUsed.begin(), s.powersUsed.end());
     r.splits = world_->timer().splits();
     r.date = FileUtil::nowString();
+    // A campaign record belongs to this version of the level (notifications drop it if the
+    // level changes later).
+    if (!workshop_ && !opt_.editorTest) r.levelHash = fingerprintGameplay(g_.content, level_);
     const LevelRecord* before = g_.records.get(levelId_);
     LevelRecord previous = before ? *before : LevelRecord{};
     RecordUpdate upd;
@@ -283,6 +288,7 @@ void GameScene::update(float dt) {
     }
     if (!world_) return;
     world_->update(dt);
+    if (trackFuture_.valid() && trackFuture_.wait_for(std::chrono::seconds(0)) == std::future_status::ready) hud_.setProgressTrack(trackFuture_.get());
     hud_.update(*world_, dt);
     InputManager& in = g_.app.input();
     // A power tablet with every slot taken: ask which power to keep (live play only).

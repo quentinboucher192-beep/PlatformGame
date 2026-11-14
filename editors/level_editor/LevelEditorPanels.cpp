@@ -7,6 +7,7 @@
 #include "editors/level_editor/LevelEditorScene.h"
 #include "engine/resources/ResourceManager.h"
 #include "game/GameServices.h"
+#include "game/gameplay/BossBadge.h"
 #include "game/levels/DecorAtlas.h"
 #include "ui/screens/Navigation.h"
 
@@ -486,6 +487,15 @@ void LevelEditorScene::drawProperties(const Rect& r) {
                 ui.label(std::format("PV {:.0f} · vitesse {:.0f} · {}", d->hp, d->speed, movementLabel(d->movement)), {x, sy}, 17,
                          ui.theme().textDim);
                 sy += ui.s(28);
+                if (d->isBoss) {
+                    // Its badge on the progress bar (Aspect, chosen in the enemy editor).
+                    Rect pv{x, sy, ui.s(56), ui.s(56)};
+                    ui.r().fillRoundedRect(pv, ui.s(10), {6, 9, 20, 255});
+                    BossBadge::draw(ui.r(), g_.app.resources(), *d, pv.center(), ui.s(18), false, ui.time());
+                    ui.labelWrapped("Icône de ce boss sur la barre de progression (Aspect : éditeur d'ennemis, onglet Boss).",
+                                    {pv.right() + ui.s(12), sy + ui.s(4)}, w - pv.w - ui.s(22), 15, ui.theme().textDim);
+                    sy += ui.s(66);
+                }
                 o->rect.w = d->size.x;
                 o->rect.h = d->size.y;
             }

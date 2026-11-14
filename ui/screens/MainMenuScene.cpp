@@ -70,7 +70,7 @@ public:
         // Only a campaign level: WORKSHOP levels are reached from the WORKSHOP.
         bool canContinue = !g_.progression.lastLevel.empty() && g_.content.level(g_.progression.lastLevel) &&
                            !g_.content.campaignPlanetOf(g_.progression.lastLevel).empty();
-        int rows = canContinue ? 5 : 4;
+        int rows = canContinue ? 6 : 5;
         float x = ui.s(120), w = ui.s(470), h = ui.s(66), gap = ui.s(14);
         float y = ui.screenH() * 0.5f - (rows * (h + gap)) * 0.5f + ui.s(40);
         Rect side{x - ui.s(40), y - ui.s(40), w + ui.s(80), rows * (h + gap) + ui.s(70)};
@@ -98,6 +98,11 @@ public:
         if (int n = g_.online.unreadMessages(); n > 0 && g_.online.loggedIn())
             onlineSub += " · " + std::to_string(n) + (n > 1 ? " messages" : " message");
         if (btn("online", "Online", onlineSub)) g_.app.switchScene(makeOnlineRanking(g_));
+        {
+            int n = g_.news.unread();
+            std::string sub = n > 0 ? std::to_string(n) + (n > 1 ? " nouvelles" : " nouvelle") : "";
+            if (btn("news", "Notifications", sub)) g_.app.switchScene(makeNotifications(g_), 0.3f);
+        }
         if (btn("settings", "Paramètres", "")) g_.app.pushScene(makeSettingsScene(g_, false));
         UIContext::ButtonStyle danger;
         danger.danger = true;

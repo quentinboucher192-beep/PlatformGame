@@ -24,6 +24,10 @@ public:
     bool edit(GameServices& g, const std::vector<PropDef>& defs, Json& props, float x, float& y, float width);
     bool editOne(GameServices& g, const PropDef& def, Json& props, float x, float& y, float width);
 
+    /// Colour field: "#rrggbb" text (any colour), its swatch, and ready-made colours
+    /// (the first, "A", clears it: automatic colour). `y` advances.
+    static bool colorPicker(UIContext& ui, const std::string& id, float x, float& y, float width, float labelW,
+                            const std::string& label, std::string& value);
     static std::vector<std::string> enemyIds(GameServices& g);
     static std::vector<std::string> powerIds(GameServices& g);
     static std::vector<std::string> decorNames(GameServices& g);

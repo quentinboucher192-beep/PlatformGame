@@ -3,6 +3,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -30,6 +31,8 @@ struct RunResult {
     std::vector<float> splits;
     std::string date;
     std::string player = "Nova";
+    /// Gameplay fingerprint of the level played (campaign): a record is only valid for it.
+    std::string levelHash;
 
     Json toJson() const;
     static RunResult fromJson(const Json& j);
@@ -52,6 +55,8 @@ struct LevelRecord {
     int mostSecrets = 0;
     Medal bestMedal = Medal::None;
     std::vector<RunResult> leaderboard;  // local top runs (by time)
+    /// Gameplay fingerprint of the level when the best time was set ("" = before 2.4.0).
+    std::string levelHash;
 
     Json toJson() const;
     static LevelRecord fromJson(const Json& j);
@@ -115,6 +120,9 @@ public:
     void registerAttempt(const std::string& levelId);
     RecordUpdate submit(const RunResult& run);
     void reset(const std::string& levelId);
+    /// The level changed since its records were set: best time, medal, score and local
+    /// ranking are dropped (attempts and completions stay). Returns the record as it was.
+    std::optional<LevelRecord> invalidateBest(const std::string& levelId);
 
     const std::vector<std::unique_ptr<ILeaderboardProvider>>& providers() const { return providers_; }
     void addProvider(std::unique_ptr<ILeaderboardProvider> p) { providers_.push_back(std::move(p)); }

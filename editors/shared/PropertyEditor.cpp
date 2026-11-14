@@ -125,13 +125,10 @@ bool PropertyEditor::editOne(GameServices& g, const PropDef& def, Json& props, f
         }
         case PropType::Color: {
             std::string s = v.is_string() ? v.get<std::string>() : "#ffffff";
-            Rect r = row.field(def.label);
-            Rect sw{r.right() - r.h, r.y, r.h, r.h};
-            if (ui.textField(id, {r.x, r.y, r.w - r.h - ui.s(6), r.h}, s, "#rrggbb", 9)) {
+            if (colorPicker(ui, id, x, y, width, width * 0.42f, def.label, s)) {
                 v = s;
                 changed = true;
             }
-            ui.r().fillRoundedRect(sw, ui.s(6), Color::fromHex(s, Color::white()));
             break;
         }
         case PropType::ObjectRef: {
@@ -170,6 +167,37 @@ bool PropertyEditor::editOne(GameServices& g, const PropDef& def, Json& props, f
             break;
         }
     }
+    return changed;
+}
+
+bool PropertyEditor::colorPicker(UIContext& ui, const std::string& id, float x, float& y, float width, float labelW,
+                                 const std::string& label, std::string& value) {
+    bool changed = false;
+    FieldRow row{ui, x, width, labelW, y};
+    Rect r = row.field(label);
+    Rect sw{r.right() - r.h, r.y, r.h, r.h};
+    if (ui.textField(id, {r.x, r.y, r.w - r.h - ui.s(6), r.h}, value, "auto (#rrggbb)", 9)) changed = true;
+    if (value.empty()) {
+        ui.r().drawRoundedRect(sw, ui.s(6), ui.theme().textDim, ui.s(1.5f));
+        ui.label("A", sw.center(), 14, ui.theme().textDim, Align::Center, FontFace::Bold, VAlign::Middle);
+    } else {
+        ui.r().fillRoundedRect(sw, ui.s(6), Color::fromHex(value, Color::white()));
+    }
+    static const char* presets[] = {"", "#ff4660", "#ff8a3c", "#ffd24a", "#78e68c", "#39f0d8", "#56acff", "#b04cff", "#ff7ad9", "#f2f2f2"};
+    float px = r.x, sz = ui.s(26), gap = ui.s(6);
+    for (int i = 0; i < 10 && px + sz <= r.right(); ++i) {
+        Rect pr{px, y, sz, sz};
+        bool on = value == presets[i];
+        if (ui.mouseClicked(pr)) {
+            value = presets[i];
+            changed = true;
+        }
+        if (presets[i][0]) ui.r().fillRoundedRect(pr, ui.s(5), Color::fromHex(presets[i], Color::white()));
+        else ui.label("A", pr.center(), 13, ui.theme().textDim, Align::Center, FontFace::Bold, VAlign::Middle);
+        ui.r().drawRoundedRect(pr, ui.s(5), on ? ui.theme().accent : Color{90, 106, 144, 255}, ui.s(on ? 2.0f : 1.0f));
+        px += sz + gap;
+    }
+    y += sz + ui.s(10);
     return changed;
 }
 

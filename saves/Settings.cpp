@@ -19,6 +19,7 @@ Json Settings::toJson() const {
     j["audio"] = {{"master", audio.master}, {"music", audio.music}, {"effects", audio.effects}, {"ambience", audio.ambience}};
     j["gameplay"] = {{"showTimer", gameplay.showTimer},
                      {"showInputHints", gameplay.showInputHints},
+                     {"progressBar", gameplay.progressBar},
                      {"debugMode", gameplay.debugMode},
                      {"editorAutosave", gameplay.editorAutosave},
                      {"editorAutosaveSeconds", gameplay.editorAutosaveSeconds},
@@ -59,6 +60,7 @@ Settings Settings::fromJson(const Json& j) {
         const Json& g = j["gameplay"];
         s.gameplay.showTimer = jget<bool>(g, "showTimer", true);
         s.gameplay.showInputHints = jget<bool>(g, "showInputHints", true);
+        s.gameplay.progressBar = std::clamp(jget<int>(g, "progressBar", 1), 0, 2);
         s.gameplay.debugMode = jget<bool>(g, "debugMode", false);
         s.gameplay.editorAutosave = jget<bool>(g, "editorAutosave", true);
         s.gameplay.editorAutosaveSeconds = std::clamp(jget<int>(g, "editorAutosaveSeconds", 60), 10, 600);
