@@ -97,6 +97,7 @@ vérification de son empreinte SHA-256.
 | `online/projects.json` | liens entre les copies locales (WORKSHOP → Mes niveaux) et les projets, révision de départ |
 | `online/live_<projet>.json` | modifications faites en direct pas encore confirmées par le serveur (supprimé une fois vide) |
 | `saves/progress.json` | temps joué par niveau (affiché sur la fiche de chaque niveau, même sans compte) |
+| `saves/boss_stats.json` | statistiques des boss (victoires, défaites, combats et phases sans dégât) : jamais envoyées au serveur |
 
 À la suppression du compte, les performances et replays locaux rattachés à ce compte sont
 également effacés.

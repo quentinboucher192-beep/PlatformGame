@@ -10,6 +10,7 @@
 
 #include "engine/core/FileUtil.h"
 #include "game/GameServices.h"
+#include "game/progression/NewsCenter.h"
 #include "game/online/LevelFingerprint.h"
 #include "packaging/PackageImporter.h"
 #include "ui/online/CommentsPanel.h"
@@ -294,11 +295,17 @@ private:
         std::string id = jstr(level, "id");
         int version = jget<int>(level, "version", 1);
         std::string title = jstr(level, "title");
+        // A version published before the 2.17 rules (energy costs, minions) has another
+        // gameplay fingerprint: its times are no longer ranked until a new version.
+        std::string minGame;
+        for (const auto& v : detail_.value("versions", Json::array()))
+            if (jget<int>(v, "version", 0) == version) minGame = jstr(v, "min_game_version");
+        bool olderRules = !minGame.empty() && versionNewer("2.17.0", minGame);
         working_ = true;
         say("Téléchargement…", false);
         g_.online.getBinary(
             "/api/v1/community/levels/" + id + "/package",
-            [this, id, version, title, life = std::weak_ptr<int>(life_)](const HttpResponse& r) {
+            [this, id, version, title, olderRules, life = std::weak_ptr<int>(life_)](const HttpResponse& r) {
                 if (!life.lock()) return;
                 working_ = false;
                 if (r.status != 200) return say(r.networkFailure() ? "Connexion impossible : " + r.errorMessage : "Téléchargement refusé (" + std::to_string(r.status) + ").", true);
@@ -320,7 +327,10 @@ private:
                 std::string serverHash = r.header("x-level-hash");
                 bool verified = !serverHash.empty() && fingerprintGameplay(g_.content, *lvl) == serverHash;
                 g_.online.noteCommunityInstall(installed, {{"id", id}, {"version", version}, {"level_hash", serverHash}, {"title", title}, {"verified", verified}});
-                if (!verified) say("Installé, mais cette copie diffère de la version publiée : vos temps n'y seront pas classés.", true);
+                if (!verified)
+                    say(olderRules ? "Publié avant les règles de la 2.17 : vos temps n'y sont plus classés tant que son auteur n'en publie pas une nouvelle version."
+                                   : "Installé, mais cette copie diffère de la version publiée : vos temps n'y seront pas classés.",
+                        true);
                 play(installed);
             },
             16u << 20);

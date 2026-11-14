@@ -1,4 +1,12 @@
 {
+  "2.17.0": [
+    "S'accroupir : Bas seul au sol, même sur place, baisse le personnage pour laisser passer les attaques (Bas en courant reste une glissade).",
+    "Combats de boss : la caméra montre toute l'arène ; une flèche lumineuse qui clignote sur le bord de l'écran indique un boss hors de vue ; les créatures invoquées disparaissent avec leur boss.",
+    "Statistiques des boss (menu principal → Statistiques) : victoires, défaites, combats sans dégât, phases sans dégât avec compteurs, meilleur combat. Un petit son salue chaque phase battue sans dégât.",
+    "Pouvoirs : coûts d'énergie selon leur force (référence : le tir chargé à 20, une attaque moins forte coûte moins). Leurs caractéristiques (énergie, dégâts, rayon, portée, recharge…) sont affichées dans le guide, dans la fiche de chaque pouvoir et quand on les ramasse.",
+    "Nouvelle génération de classement : les règles changent (coûts, créatures des boss), les classements en ligne de la campagne repartent à zéro.",
+    "Correction : un profil ouvert depuis un classement ne se recharge plus quand on clique sur ses onglets."
+  ],
   "2.16.0": [
     "Niveaux EXTRÊME : une seule vie, sans possibilité de la changer, et un badge EXTRÊME dans la campagne, ONLINE LEVELS et ONLINE RANKING. L'enchaînement des boss (L'Arène des Échos) devient EXTRÊME.",
     "Course à la vérification : chaque tentative d'un niveau EXTRÊME est classée selon sa progression, même sans arriver au bout : parcours (40 points), vie retirée aux boss et vagues d'embuscade battues (60 points). Le serveur recalcule le score à partir du replay.",

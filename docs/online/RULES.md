@@ -14,6 +14,23 @@ courte) : elle ne dépend ni des espaces ni des fins de ligne, donc Windows et L
 même valeur. Seuls les niveaux livrés avec le jeu, lancés depuis leur début (sans point de
 départ forcé, hors test de l'éditeur), produisent des performances classées.
 
+### Générations de classement
+
+L'empreinte d'un niveau inclut aussi la **génération de classement** du jeu
+(`kRankingGeneration`) et les définitions qu'il utilise (ennemis, pouvoirs, joueur). Quand une
+règle change le déroulement des parties au point que les anciens records ne sont plus
+comparables, la génération change : chaque niveau de la campagne reçoit une nouvelle révision
+(migration générée par `server/scripts/levels-migration.mjs`) et les classements repartent à
+zéro ; les records de l'ancienne révision restent consultables, figés. Une règle qui ne fait
+qu'ajouter une possibilité sans rendre invalide une ancienne partie garde la génération (2.17 :
+s'accroupir). La caméra et l'affichage ne font pas partie de la simulation.
+
+- Génération 6 : jusqu'à la 2.16.
+- Génération 8 (2.17) : coûts d'énergie des pouvoirs selon leur force, les créatures invoquées
+  disparaissent avec leur boss. Révision 8 de chaque niveau de la campagne. Un niveau de la
+  communauté publié avant la 2.17 n'est plus classé tant que son auteur n'en publie pas une
+  nouvelle version (son empreinte dépend des règles).
+
 ## Catégories
 
 | Catégorie | Identifiant | Règle |
