@@ -51,6 +51,7 @@
 | Invitations (empreinte SHA-256 de la clé, 4 derniers caractères, rôle, limites) et demandes d'adhésion (message) | D1 `project_invites`, `project_join_requests` | administrateurs du projet | jusqu'à la suppression du projet |
 | Journal d'un projet (qui a fait quoi, quand) | D1 `project_activity` | les membres | jusqu'à la suppression du projet |
 | Opérations de l'édition en direct (modification, auteur, date) | D1 `project_ops` | les membres | jusqu'à la suppression du projet |
+| Versions nommées des projets (nom, notes, révision, empreinte, auteur) | D1 `project_versions` | les membres | jusqu'à la suppression du projet (une version ne se modifie pas ; l'auteur devient anonyme si son compte est supprimé) |
 | Présence en direct (curseur et vue dans le niveau, sélection, activité) | mémoire de la salle du projet, jamais écrite | les membres présents | 20 secondes après le dernier signe de vie |
 | Journal de sécurité (action, empreinte d'IP) | D1 `audit_log` | opérateurs | 180 jours |
 | Compteurs de limitation (empreintes) | D1 `rate_limits` | personne | 24 heures |

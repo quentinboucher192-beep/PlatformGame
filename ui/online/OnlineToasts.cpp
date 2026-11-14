@@ -55,7 +55,7 @@ void OnlineToasts::render(GameServices& g) {
         float a = std::min(in, out);
         Rect r{ui.screenW() - ui.s(20) - w + (1.0f - in) * ui.s(60), y, w, h};
         Color c = kindColor(ui.theme(), t.n.kind);
-        ui.r().fillRoundedRect(r, ui.s(10), Color{10, 15, 34, static_cast<uint8_t>(235 * a)});
+        ui.r().fillRoundedRect(r, ui.s(10), Color{10, 15, 34, static_cast<uint8_t>(252 * a)});
         ui.r().fillRoundedRect({r.x, r.y, ui.s(5), r.h}, ui.s(2), c.withAlphaF(a));
         ui.r().drawRoundedRect(r, ui.s(10), c.withAlphaF(0.5f * a), ui.s(1.2f));
         ui.label(t.n.title, {r.x + ui.s(18), r.y + ui.s(22)}, 18, c.withAlphaF(a), Align::Left, FontFace::Bold, VAlign::Middle);

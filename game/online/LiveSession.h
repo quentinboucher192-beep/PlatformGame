@@ -119,7 +119,7 @@ private:
     std::string error_;
     bool joinBusy_ = false, beatBusy_ = false, opsBusy_ = false, left_ = false;
     float beatTimer_ = 0.0f, retryTimer_ = 0.0f;
-    int applied_ = 0, revision_ = 0;
+    int applied_ = 0, revision_ = 0, epoch_ = 0;
     std::optional<Json> joined_;
     std::vector<Json> remote_;
     std::vector<Rejection> rejections_;

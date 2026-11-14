@@ -1,4 +1,10 @@
 {
+  "2.13.0": [
+    "PROJETS → Révisions : tout l'historique, filtré par auteur ou par les mots du message, avec l'empreinte de chaque révision.",
+    "Comparer deux révisions : objets ajoutés, supprimés ou modifiés (et ce qui a changé), réglages du niveau.",
+    "Restaurer une ancienne révision la recopie en une nouvelle révision : rien n'est effacé, et une édition en direct en cours est d'abord enregistrée puis rechargée chez tous.",
+    "Versions nommées (« Bêta 1 »…) : définitives, vérifiées par leur empreinte SHA-256, téléchargeables comme niveau indépendant ; les membres sont prévenus."
+  ],
   "2.12.0": [
     "PROJETS → Édition en direct : plusieurs membres dans le même niveau, avec leurs avatars, leurs curseurs, leurs sélections et ce qu'ils font, et l'état de la synchronisation.",
     "Un objet sélectionné par un éditeur est verrouillé pour les autres le temps qu'il travaille dessus ; « Suivre » un membre montre sa vue.",

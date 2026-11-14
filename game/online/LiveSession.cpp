@@ -162,6 +162,7 @@ void LiveSession::onJoin(const ApiResult& r) {
     }
     applied_ = jget<int>(r.data, "seq", 0);
     revision_ = jget<int>(r.data, "revision", 0);
+    epoch_ = jget<int>(r.data, "epoch", 0);
     acked_.clear();
     remote_.clear();
     joined_ = std::move(doc);
@@ -210,7 +211,7 @@ void LiveSession::update(float dt) {
 
 void LiveSession::heartbeat() {
     beatBusy_ = true;
-    Json body = {{"since_seq", applied_}, {"selection", selection_}, {"activity", activity_}};
+    Json body = {{"since_seq", applied_}, {"epoch", epoch_}, {"selection", selection_}, {"activity", activity_}};
     body["cursor"] = cursor_ ? Json{{"x", cursor_->x}, {"y", cursor_->y}} : Json(nullptr);
     if (viewCenter_) body["view"] = {{"x", viewCenter_->x}, {"y", viewCenter_->y}, {"zoom", viewZoom_}};
     online_.send("POST", "/api/v1/projects/" + projectId_ + "/live/heartbeat", body, OnlineService::guard(life_, [this](const ApiResult& r) {

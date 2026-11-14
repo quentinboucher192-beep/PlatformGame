@@ -959,7 +959,7 @@ copie) < `tester` (joue la dernière version) < `editor` (envoie de nouvelles r�
 | GET / POST | `/projects/{id}/requests`, `/projects/{id}/requests/{playerId}` `{ accept, role? }` | admin | demandes en attente ; accepter (rôle notifié) ou refuser |
 | GET | `/projects/{id}/content?revision=` | viewer | le niveau (JSON brut, en-têtes `x-project-revision`, `x-content-sha256`) |
 | PUT | `/projects/{id}/content` `{ base_revision, content, message? }` | editor | nouvelle révision ; faite d'après une révision dépassée : **`409 REVISION_CONFLICT`** (`details.current_revision`, `saved_by`, `saved_at`), rien n'est écrasé |
-| GET | `/projects/{id}/revisions`, `/projects/{id}/activity` | viewer | révisions (auteur, message, empreinte) ; journal du projet |
+| GET | `/projects/{id}/revisions?author=&q=`, `/projects/{id}/activity` | viewer | révisions (auteur, message, empreinte, `live` pour l'édition en direct, `version` si elle est nommée), filtrées par auteur ou par mots du message ; journal du projet |
 
 Un joueur bloqué par le propriétaire (ou qui l'a bloqué) ne peut ni rejoindre ni être invité.
 Dans le jeu, chaque membre travaille sur une copie locale (un niveau de WORKSHOP → Mes niveaux,
@@ -977,8 +977,8 @@ pour tous.
 
 | Méthode | Route | Rôle | Réponse |
 |---|---|---|---|
-| POST | `/projects/{id}/live/join` `{ view? }` | lecteur | `{ doc, seq, revision, color, participants, locks }` (le document courant : dernière révision + opérations suivantes) |
-| POST | `/projects/{id}/live/heartbeat` `{ since_seq, cursor?, view?, selection?, activity? }` | lecteur | `{ seq, revision, participants, locks, ops, resync }` ; toutes les ~0,6 s ; plus de 5 par seconde : réponse courte `{ throttled }` |
+| POST | `/projects/{id}/live/join` `{ view? }` | lecteur | `{ doc, seq, revision, epoch, color, participants, locks }` (le document courant : dernière révision + opérations suivantes) |
+| POST | `/projects/{id}/live/heartbeat` `{ since_seq, epoch?, cursor?, view?, selection?, activity? }` | lecteur | `{ seq, revision, epoch, participants, locks, ops, resync }` (`resync` : rejoindre, le document a été remplacé par une restauration ou un enregistrement) ; toutes les ~0,6 s ; plus de 5 par seconde : réponse courte `{ throttled }` |
 | POST | `/projects/{id}/live/ops` `{ ops: [{ id, base_seq, op }] }` | éditeur | `{ results: [{ id, status, seq?, by?, current? }], seq }` ; 50 opérations au plus |
 | POST | `/projects/{id}/live/leave` | lecteur | quitte la salle |
 
@@ -1000,6 +1000,25 @@ les opérations des autres au niveau et à tout l'historique d'annulation (« An
 ses propres modifications), garde ses opérations non confirmées dans `online/live_<projet>.json`
 (rien n'est perdu hors ligne) et montre chaque refus avec le choix de réappliquer sa modification
 ou de garder la version du projet.
+
+### 8.9 sexies Historique et versions nommées
+
+Une révision ne change jamais : son contenu (R2) est relu avec son SHA-256 à chaque lecture
+(`500 REVISION_CORRUPTED` s'il ne correspond plus). Restaurer une ancienne révision en crée une
+**nouvelle** ; rien n'est effacé de l'historique.
+
+| Méthode | Route | Rôle | Règle |
+|---|---|---|---|
+| GET | `/projects/{id}/compare?from=&to=` | viewer | `{ from, to, counts: { added, removed, changed, settings }, added, removed, changed: [{ id, type, fields }], settings }` (200 objets au plus par liste) |
+| POST | `/projects/{id}/revisions/{revision}/restore` | editor | `201 { saved, restored_from }` ; les opérations de l'édition en direct pas encore enregistrées deviennent d'abord une révision, puis la salle recharge le document (les membres présents le reçoivent : `epoch` change, `resync`) |
+| POST | `/projects/{id}/versions` `{ name, revision?, notes? }` | editor | nomme une révision (la dernière par défaut) ; nom unique dans le projet (`409 VERSION_EXISTS`) ; **immuable** : aucune route ne modifie ni ne supprime une version ; les autres membres reçoivent la notification `project_version` |
+| GET | `/projects/{id}/versions` | viewer | versions (nom, notes, révision, SHA-256, auteur, date) |
+| GET | `/projects/{id}/versions/{versionId}/content` | viewer | le niveau de la version, vérifié contre l'empreinte enregistrée (`500 VERSION_CORRUPTED` sinon) |
+
+Dans le jeu (PROJETS → onglets « Révisions » et « Versions ») : filtres par auteur et par texte,
+comparaison de deux révisions, restauration (éditeurs, après confirmation), téléchargement d'une
+révision ou d'une version comme niveau indépendant (WORKSHOP → Mes niveaux), création d'une
+version nommée.
 
 ### 8.9 bis Installateurs du jeu (notification « nouvelle version »)
 

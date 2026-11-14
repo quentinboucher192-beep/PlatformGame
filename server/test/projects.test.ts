@@ -180,3 +180,78 @@ describe("collaborative projects", () => {
         expect((await api("GET", `${V}/projects`, { token: owner.token })).body.data.projects).toHaveLength(0);
     });
 });
+
+describe("history and named versions", () => {
+    it("filters, compares, restores as a new revision; versions are immutable and checked", async () => {
+        const nova = await registerPlayer("Nova");
+        const orion = await registerPlayer("Orion");
+        const p = await create(nova);
+        const { key } = await keyFor(nova, p.id, { role: "editor" });
+        await api("POST", `${V}/projects/join`, { token: orion.token, body: { key } });
+        const v2 = { ...LEVEL, name: "Deux", tiles: [[0, 1]], entities: [{ id: "e1" }] } as Record<string, unknown>;
+        (v2 as { objects?: unknown }).objects = [{ id: "o1", type: "solid", x: 0 }, { id: "o2", type: "door" }];
+        await api("PUT", `${V}/projects/${p.id}/content`, { token: orion.token, body: { base_revision: 1, content: v2, message: "Porte ajoutée" } });
+        const v3 = { ...v2, objects: [{ id: "o1", type: "solid", x: 32 }] };
+        await api("PUT", `${V}/projects/${p.id}/content`, { token: nova.token, body: { base_revision: 2, content: v3, message: "Sol déplacé" } });
+        // Filters.
+        const byOrion = await api("GET", `${V}/projects/${p.id}/revisions?author=${orion.id}`, { token: nova.token });
+        expect(byOrion.body.data.revisions.map((r: { revision: number }) => r.revision)).toEqual([2]);
+        const byText = await api("GET", `${V}/projects/${p.id}/revisions?q=sol`, { token: nova.token });
+        expect(byText.body.data.revisions.map((r: { message: string }) => r.message)).toEqual(["Sol déplacé"]);
+        // Compare 2 → 3.
+        const cmp = await api("GET", `${V}/projects/${p.id}/compare?from=2&to=3`, { token: orion.token });
+        expect(cmp.body.data.counts).toEqual({ added: 0, removed: 1, changed: 1, settings: 0 });
+        expect(cmp.body.data.removed[0]).toEqual({ id: "o2", type: "door" });
+        expect(cmp.body.data.changed[0]).toMatchObject({ id: "o1", fields: ["x"] });
+        // Restore 2: a new revision 4, the old ones untouched.
+        const rs = await api("POST", `${V}/projects/${p.id}/revisions/2/restore`, { token: nova.token });
+        expect(rs.status).toBe(201);
+        expect(rs.body.data.saved.revision).toBe(4);
+        expect((await api("GET", `${V}/projects/${p.id}/content`, { token: nova.token })).body.name).toBe("Deux");
+        expect((await api("GET", `${V}/projects/${p.id}/content?revision=3`, { token: nova.token })).body.objects).toHaveLength(1);
+        const revs = await api("GET", `${V}/projects/${p.id}/revisions`, { token: nova.token });
+        expect(revs.body.data.revisions[0].message).toBe("Restauration de la révision 2");
+        // Named version of revision 3, with the SHA-256 of its content.
+        const ver = await api("POST", `${V}/projects/${p.id}/versions`, { token: orion.token, body: { name: "Bêta 1", revision: 3, notes: "Avant les tests" } });
+        expect(ver.status).toBe(201);
+        expect(ver.body.data.version.content_hash).toMatch(/^[0-9a-f]{64}$/);
+        expect((await api("POST", `${V}/projects/${p.id}/versions`, { token: nova.token, body: { name: "Bêta 1" } })).body.error.code).toBe("VERSION_EXISTS");
+        const list = await api("GET", `${V}/projects/${p.id}/versions`, { token: nova.token });
+        expect(list.body.data.versions[0]).toMatchObject({ name: "Bêta 1", revision: 3, notes: "Avant les tests", author: { username: "Orion" } });
+        const content = await api("GET", `${V}/projects/${p.id}/versions/${ver.body.data.version.id}/content`, { token: nova.token });
+        expect(content.status).toBe(200);
+        expect(content.headers.get("x-content-sha256")).toBe(ver.body.data.version.content_hash);
+        expect(content.body.objects).toHaveLength(1);
+        // Members are told; viewers cannot restore nor name.
+        const n = await api("GET", `${V}/notifications?filter=projects`, { token: nova.token });
+        expect(n.body.data.notifications[0].text).toBe("Nouvelle version de La Forteresse : Bêta 1");
+        const reader = await registerPlayer("Lecteur");
+        const rk = await keyFor(nova, p.id, { role: "viewer" });
+        await api("POST", `${V}/projects/join`, { token: reader.token, body: { key: rk.key } });
+        expect((await api("POST", `${V}/projects/${p.id}/revisions/1/restore`, { token: reader.token })).status).toBe(403);
+        expect((await api("POST", `${V}/projects/${p.id}/versions`, { token: reader.token, body: { name: "x" } })).status).toBe(403);
+        // A revision whose stored content no longer matches its hash is refused, not served.
+        const key3 = await env.DB.prepare("SELECT content_key FROM project_revisions WHERE project_id = ?1 AND revision = 3").bind(p.id).first<{ content_key: string }>();
+        await env.STORAGE.put(key3!.content_key, JSON.stringify({ objects: [] }));
+        expect((await api("GET", `${V}/projects/${p.id}/versions/${ver.body.data.version.id}/content`, { token: nova.token })).status).toBe(500);
+    });
+
+    it("a restore during live editing keeps the live edits and makes the members rejoin", async () => {
+        const nova = await registerPlayer("Nova");
+        const p = await create(nova);
+        const live = (action: string, body: unknown = {}) => api("POST", `${V}/projects/${p.id}/live/${action}`, { token: nova.token, body });
+        const j = await live("join");
+        await live("ops", { ops: [{ id: "op-restore-test-1", base_seq: 0, op: { t: "doc", k: "name", v: "En direct" } }] });
+        const rs = await api("POST", `${V}/projects/${p.id}/revisions/1/restore`, { token: nova.token });
+        expect(rs.status).toBe(201);
+        // Revision 2 holds the live edit, revision 3 is the restore.
+        expect(rs.body.data.saved.revision).toBe(3);
+        expect((await api("GET", `${V}/projects/${p.id}/content?revision=2`, { token: nova.token })).body.name).toBe("En direct");
+        expect((await api("GET", `${V}/projects/${p.id}/content`, { token: nova.token })).body.name).toBe("Mon projet");
+        await new Promise((r) => setTimeout(r, 220));
+        const hb = await live("heartbeat", { since_seq: 1, epoch: j.body.data.epoch });
+        expect(hb.body.data.resync).toBe(true);
+        const again = await live("join");
+        expect(again.body.data.doc.name).toBe("Mon projet");
+    });
+});

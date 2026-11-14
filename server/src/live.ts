@@ -138,6 +138,8 @@ export class ProjectRoom extends DurableObject<Bindings> {
     private touched = new Map<string, { seq: number; author: string | null }>();
     private recent: StoredOp[] = [];
     private snapshotting = false;
+    /** Changes when the document is replaced from outside (save, restore): members rejoin. */
+    private epoch = 0;
 
     async fetch(request: Request): Promise<Response> {
         const url = new URL(request.url);
@@ -154,7 +156,15 @@ export class ProjectRoom extends DurableObject<Bindings> {
                     return Response.json(await this.leave(request));
                 case "/reload":
                     this.doc = null;
+                    this.epoch += 1;
                     return Response.json({ reloaded: true });
+                case "/flush":
+                    // Live edits not yet in a revision are written now (before a restore).
+                    if (this.projectId) {
+                        await this.load();
+                        if (this.seq > this.snapshotSeq) await this.snapshot("Édition en direct");
+                    }
+                    return Response.json({ revision: this.revision });
                 default:
                     return Response.json({ error: "unknown" }, { status: 404 });
             }
@@ -305,6 +315,7 @@ export class ProjectRoom extends DurableObject<Bindings> {
             doc: this.doc,
             seq: this.seq,
             revision: this.revision,
+            epoch: this.epoch,
             color: p.color,
             participants: this.presence(me.id),
             locks: this.locks(),
@@ -324,7 +335,9 @@ export class ProjectRoom extends DurableObject<Bindings> {
         p.lastBeat = Date.now();
         const since = typeof body.since_seq === "number" ? body.since_seq : this.seq;
         const { ops, resync } = await this.opsSince(since);
-        return { seq: this.seq, revision: this.revision, participants: this.presence(me.id), locks: this.locks(), ops, resync };
+        // The document was replaced since this member joined: rejoin to get it.
+        const replaced = typeof body.epoch === "number" && body.epoch !== this.epoch;
+        return { seq: this.seq, revision: this.revision, epoch: this.epoch, participants: this.presence(me.id), locks: this.locks(), ops, resync: resync || replaced };
     }
 
     private async leave(request: Request) {
@@ -491,6 +504,12 @@ export async function liveRoute(ctx: Ctx, action: (typeof LIVE_ACTIONS)[number])
     const data = (await res.json()) as Record<string, unknown>;
     if (!res.ok || data.error) throw new Error("live room: " + String(data.error ?? res.status));
     return json(ctx, data);
+}
+
+/** Asks the room to write its pending live edits as a revision (no-op without a room). */
+export async function flushRoom(env: Bindings, projectId: string): Promise<void> {
+    const stub = env.PROJECT_ROOMS.get(env.PROJECT_ROOMS.idFromName(projectId));
+    await stub.fetch("https://room/flush", { method: "POST", headers: { "x-project-id": projectId } });
 }
 
 /** Tells the room of a project that its content changed outside the live session. */

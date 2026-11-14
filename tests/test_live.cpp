@@ -41,6 +41,7 @@ struct Room {
     std::map<std::string, std::pair<int, std::string>> touched;  // key -> seq, author
     std::map<std::string, std::string> locks;
     int opsRequests = 0;
+    int epoch = 0, joins = 0;  // epoch: changes when the document is replaced (restore)
 
     Json accept(const std::string& author, const std::string& id, int base, const Json& op) {
         for (const auto& l : log)
@@ -89,6 +90,8 @@ struct Room {
             d["doc"] = doc;
             d["seq"] = seq;
             d["revision"] = 1;
+            d["epoch"] = epoch;
+            ++joins;
             return ok(d);
         }
         if (path.find("/live/heartbeat") != std::string::npos) {
@@ -100,6 +103,8 @@ struct Room {
             d["ops"] = ops;
             d["seq"] = seq;
             d["revision"] = 1;
+            d["epoch"] = epoch;
+            d["resync"] = jget<int>(body, "epoch", -1) != epoch;
             return ok(d);
         }
         if (path.find("/live/ops") != std::string::npos) {
@@ -253,6 +258,48 @@ TEST_CASE("live: a session joins, sends my edits once, applies the others' in or
     CHECK(jstr(room->doc, "name") == "Hors ligne");
     CHECK(!fs::exists(dir / "queue.json"));
     again.leave();
+    svc.shutdown();
+    std::error_code ec;
+    fs::remove_all(dir, ec);
+}
+
+TEST_CASE("live: a document replaced by a restore makes the session rejoin") {
+    auto room = std::make_shared<Room>();
+    room->doc = baseDoc();
+    fs::path dir = liveDir("epoch");
+    OnlineService svc;
+    svc.init({}, "http://127.0.0.1:9", std::make_unique<RoomTransport>(room), dir);
+    bool logged = false;
+    svc.login("Nova", "pw", false, [&](const ApiResult& r) { logged = r.ok; });
+    for (int i = 0; i < 3000 && !logged; ++i) {
+        svc.update(0.05f);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+    CHECK(logged);
+    LiveSession live(svc, "p", dir / "queue.json");
+    CHECK(spin(svc, live, [&] { return live.state() == LiveSession::State::Live; }));
+    CHECK(live.takeJoinedDocument().has_value());
+    // Heartbeats with the same epoch: no new join.
+    CHECK(spin(svc, live, [&] { return false; }, 1500) == false);
+    CHECK(room->joins == 1);
+    // A restore replaces the document (new epoch): the next heartbeat brings the session back.
+    {
+        std::lock_guard<std::mutex> lock(room->m);
+        room->doc["name"] = "Restaurée";
+        room->doc["objects"].erase(1);
+        ++room->epoch;
+    }
+    std::optional<Json> doc;
+    CHECK(spin(svc, live, [&] {
+        if (auto d = live.takeJoinedDocument()) doc = d;
+        return doc.has_value() && live.state() == LiveSession::State::Live;
+    }, 4000));
+    if (doc) {
+        CHECK(jstr(*doc, "name") == "Restaurée");
+        CHECK((*doc)["objects"].size() == 1u);
+    }
+    CHECK(room->joins == 2);
+    live.leave();
     svc.shutdown();
     std::error_code ec;
     fs::remove_all(dir, ec);

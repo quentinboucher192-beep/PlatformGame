@@ -10,12 +10,14 @@
 #include <algorithm>
 #include <cctype>
 #include <chrono>
+#include <cmath>
 #include <map>
 
 #include <SDL3/SDL_clipboard.h>
 
 #include "engine/core/FileUtil.h"
 #include "game/GameServices.h"
+#include "game/levels/ObjectTypes.h"
 #include "game/online/OnlineSession.h"
 #include "packaging/Sha256.h"
 #include "ui/online/OnlineWidgets.h"
@@ -129,7 +131,7 @@ public:
         if (!wanted_.empty()) open(wanted_);
         // Automated screenshots: "project-tab:N" opens a tab of the project.
         if (g_.onlineOpen.rfind("project-tab:", 0) == 0) {
-            detailTab_ = std::clamp(std::atoi(g_.onlineOpen.c_str() + 12), 0, 4);
+            detailTab_ = std::clamp(std::atoi(g_.onlineOpen.c_str() + 12), 0, 6);
             g_.onlineOpen.clear();
         } else if (g_.onlineOpen == "project-new") {
             g_.onlineOpen.clear();
@@ -155,6 +157,44 @@ public:
         bg_.update(dt);
         requireAccount();
         if (searchDirty_ > 0.0f && (searchDirty_ -= dt) <= 0.0f) loadList();
+        // Automated screenshots of the history: "project-rev:N[:M]" selects revision N (and
+        // compares it with M), "project-name:N" / "project-restore:N" open the dialogs,
+        // "project-vcmp" compares the oldest named version with the latest revision.
+        const std::string& h = g_.onlineOpen;
+        if ((h.rfind("project-rev:", 0) == 0 || h.rfind("project-name:", 0) == 0 || h.rfind("project-restore:", 0) == 0 || h == "project-vcmp") &&
+            detail_.is_object() && member()) {
+            const int want = h == "project-vcmp" ? 6 : 5;
+            if (detailTab_ != want) {
+                detailTab_ = want;
+                loadTab();
+            }
+        }
+        if ((h.rfind("project-rev:", 0) == 0 || h.rfind("project-name:", 0) == 0 || h.rfind("project-restore:", 0) == 0 || h == "project-vcmp") &&
+            detail_.is_object() && member() && tabData_.is_object()) {
+            std::string what = h;
+            g_.onlineOpen.clear();
+            if (what == "project-vcmp") {
+                Json v = tabData_.value("versions", Json::array());
+                if (!v.empty()) compareWith(jget<int>(v.back(), "revision", 1), jget<int>(detail_, "revision", 1));
+            } else {
+                size_t c = what.find(':');
+                selectedRev_ = std::atoi(what.c_str() + c + 1);
+                compareTo_ = std::max(1, selectedRev_ - 1);
+                if (what[8] == 'r' && what[9] == 'e' && what[10] == 'v') {
+                    size_t c2 = what.find(':', c + 1);
+                    if (c2 != std::string::npos) {
+                        compareTo_ = std::max(1, std::atoi(what.c_str() + c2 + 1));
+                        compareWith(compareTo_, selectedRev_);
+                    }
+                } else if (what[8] == 'n') {
+                    naming_ = true;
+                    versionName_ = "Bêta 2";
+                    versionNotes_ = "Avec le pont et la porte haute.";
+                } else {
+                    confirm_ = "restore";
+                }
+            }
+        }
         // Automated checks of the working copy: "project-download", "project-send",
         // "project-pull" run once the project is loaded.
         const std::string& o = g_.onlineOpen;
@@ -185,7 +225,7 @@ public:
         layout();
         bg_.render(g_, 0.5f);
         const bool top = g_.app.topScene() == this;
-        const bool modal = creating_ || !confirm_.empty();
+        const bool modal = creating_ || naming_ || !confirm_.empty();
         ui.inputEnabled = top && !modal;
         drawHeader();
         drawOnlineNav(g_, zoneA_, OnlineSection::Projects);
@@ -193,6 +233,7 @@ public:
         drawDetail();
         ui.inputEnabled = top;
         if (creating_) drawCreate();
+        else if (naming_) drawNaming();
         else if (!confirm_.empty()) drawConfirm();
         else if (ui.backPressed() && !ui.editingText()) {
             if (!selected_.empty()) selected_.clear();
@@ -269,14 +310,34 @@ private:
         if (!member()) return;
         std::string base = "/api/v1/projects/" + selected_;
         std::string path = detailTab_ == 1 ? base + "/members" : detailTab_ == 2 ? base + "/invites" : detailTab_ == 3 ? base + "/requests"
-                         : detailTab_ == 4 ? base + "/activity" : base + "/revisions?limit=10";
+                         : detailTab_ == 4 ? base + "/activity"
+                         : detailTab_ == 6 ? base + "/versions"
+                         : detailTab_ == 5 ? base + "/revisions?limit=100" + revisionFilter()
+                                           : base + "/revisions?limit=10";
         int gen = ++tabGen_;
         g_.online.get(path, OnlineService::guard(life_, [this, gen](const ApiResult& r) {
                           if (gen != tabGen_) return;
                           if (!r.ok) return say(r.message, true);
                           tabData_ = r.data;
+                          // The authors of the filter, from the unfiltered history.
+                          if (detailTab_ == 5 && revAuthor_ == 0 && revQuery_.empty()) {
+                              revAuthors_.clear();
+                              for (const auto& rv : tabData_.value("revisions", Json::array())) {
+                                  if (!rv.contains("author") || !rv["author"].is_object()) continue;
+                                  std::string id = jstr(rv["author"], "id");
+                                  if (std::none_of(revAuthors_.begin(), revAuthors_.end(), [&](const auto& a) { return a.first == id; }))
+                                      revAuthors_.push_back({id, jstr(rv["author"], "username")});
+                              }
+                          }
                       }),
                       false);
+    }
+
+    std::string revisionFilter() const {
+        std::string f;
+        if (revAuthor_ > 0 && revAuthor_ <= static_cast<int>(revAuthors_.size())) f += "&author=" + revAuthors_[static_cast<size_t>(revAuthor_ - 1)].first;
+        if (!revQuery_.empty()) f += "&q=" + urlEncode(revQuery_);
+        return f;
     }
 
     std::string role() const { return detail_.is_object() ? jstr(detail_, "my_role") : std::string{}; }
@@ -600,7 +661,7 @@ private:
             ui.popId();
             return;
         }
-        std::vector<std::string> tabs = {"Projet", "Membres", "Invitations", "Demandes", "Activité"};
+        std::vector<std::string> tabs = {"Projet", "Membres", "Invitations", "Demandes", "Activité", "Révisions", "Versions"};
         int tab = detailTab_;
         ui.tabs("tabs", {x, y, w, ui.s(40)}, tabs, tab);
         if (tab != detailTab_) {
@@ -608,6 +669,9 @@ private:
                 say("Réservé aux administrateurs du projet.", true);
             } else {
                 detailTab_ = tab;
+                compare_ = Json();
+                compareLabel_.clear();
+                selectedRev_ = 0;
                 loadTab();
             }
         }
@@ -618,6 +682,8 @@ private:
             case 1: drawMembers(area); break;
             case 2: drawInvites(area); break;
             case 3: drawRequests(area); break;
+            case 5: drawRevisions(area); break;
+            case 6: drawVersions(area); break;
             default: drawActivity(area); break;
         }
         ui.popId();
@@ -1029,6 +1095,299 @@ private:
         return who + " : " + act;
     }
 
+    // ------------------------------------------------------------ history
+    /// Downloads a revision or a named version as an independent level (never the linked copy).
+    void historyCopy(const std::string& path, const std::string& what, const std::string& slug) {
+        std::string id = selected_, name = jstr(detail_, "name");
+        working_ = true;
+        g_.online.getBinary(path, [this, id, name, what, slug, life = std::weak_ptr<int>(life_)](const HttpResponse& r) {
+            if (!life.lock()) return;
+            working_ = false;
+            if (r.status != 200) return say(r.networkFailure() ? "Connexion impossible : " + r.errorMessage : "Téléchargement refusé (" + std::to_string(r.status) + ").", true);
+            Json j = Json::parse(r.body, nullptr, false);
+            std::string err;
+            auto lvl = j.is_object() ? LevelData::fromJson(j, &err) : std::nullopt;
+            if (!lvl) return say("Contenu illisible : " + (err.empty() ? std::string("format inconnu") : err), true);
+            lvl->id = localIdFor(id) + "_" + slug;
+            lvl->name = name + " (" + what + ")";
+            if (!g_.content.saveUserLevel(*lvl)) return say("Impossible d'écrire la copie.", true);
+            g_.ratings.contentChanged();
+            say("« " + lvl->name + " » est dans WORKSHOP → Mes niveaux.", false);
+        });
+    }
+
+    void compareWith(int from, int to) {
+        compare_ = Json();
+        compareLabel_ = "Révision " + std::to_string(from) + " → révision " + std::to_string(to);
+        int gen = ++compareGen_;
+        g_.online.get("/api/v1/projects/" + selected_ + "/compare?from=" + std::to_string(from) + "&to=" + std::to_string(to),
+                      OnlineService::guard(life_, [this, gen](const ApiResult& r) {
+                          if (gen != compareGen_) return;
+                          if (!r.ok) {
+                              compareLabel_.clear();
+                              return say(r.message, true);
+                          }
+                          compare_ = r.data;
+                      }),
+                      false);
+    }
+
+    /// A key of the level or of an object, in words.
+    static std::string keyName(const std::string& k) {
+        static const std::map<std::string, std::string> names = {
+            {"type", "type"}, {"layer", "calque"}, {"rect", "position et taille"}, {"rotation", "rotation"}, {"flipX", "retournement"},
+            {"z", "profondeur"}, {"props", "propriétés"}, {"name", "nom"}, {"description", "description"}, {"planet", "planète"},
+            {"music", "musique"}, {"bossMusic", "musique du boss"}, {"ambience", "ambiance"}, {"ambientLight", "lumière"},
+            {"background", "fond"}, {"backgroundColor", "couleur du fond"}, {"bounds", "limites"}, {"cameraZoom", "zoom de la caméra"},
+            {"damageFactor", "dégâts"}, {"difficulty", "difficulté"}, {"events", "événements"}, {"intro", "cinématique d'entrée"},
+            {"outro", "cinématique de fin"}, {"killY", "hauteur de chute"}, {"layers", "calques"}, {"lives", "vies"},
+            {"maxPowers", "pouvoirs maximum"}, {"medals", "médailles"}, {"metadata", "informations"}, {"startPowers", "pouvoirs de départ"},
+            {"timer", "chronomètre"}, {"author", "auteur"}, {"format", "format"}, {"formatVersion", "version du format"}, {"version", "version"}};
+        auto it = names.find(k);
+        return it != names.end() ? it->second : k;
+    }
+
+    static std::string typeName(const std::string& type) {
+        const ObjectTypeInfo* t = ObjectTypes::find(type);
+        return t ? t->name : type;
+    }
+
+    /// The comparison in `r`: the counts, then each change.
+    void drawCompare(const Rect& r) {
+        UIContext& ui = g_.ui;
+        ui.r().fillRoundedRect(r, ui.s(8), Color{16, 24, 50, 235});
+        float x = r.x + ui.s(12), w = r.w - ui.s(24);
+        if (!compare_.is_object()) {
+            std::string t = compareLabel_.empty() ? "Choisissez une révision à comparer, puis « Comparer »." : compareLabel_ + " : comparaison…";
+            ui.label(t, {x, r.y + ui.s(18)}, ui.fitFont(t, FontFace::Body, 14, w), ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+            return;
+        }
+        const Json& c = compare_.value("counts", Json::object());
+        auto n = [&](const char* k) { return std::to_string(jget<int>(c, k, 0)); };
+        std::string head = compareLabel_ + " : " + n("added") + " ajouté(s), " + n("removed") + " supprimé(s), " + n("changed") + " modifié(s), " +
+                           n("settings") + " réglage(s)";
+        ui.label(head, {x, r.y + ui.s(18)}, ui.fitFont(head, FontFace::Bold, 15, w), ui.theme().accent, Align::Left, FontFace::Bold, VAlign::Middle);
+        std::vector<std::pair<Color, std::string>> lines;
+        for (const auto& o : compare_.value("added", Json::array())) lines.push_back({ui.theme().success, "+ " + typeName(jstr(o, "type")) + "  (" + jstr(o, "id") + ")"});
+        for (const auto& o : compare_.value("removed", Json::array())) lines.push_back({ui.theme().danger, "- " + typeName(jstr(o, "type")) + "  (" + jstr(o, "id") + ")"});
+        for (const auto& o : compare_.value("changed", Json::array())) {
+            std::string f;
+            for (const auto& k : o.value("fields", Json::array()))
+                if (k.is_string()) f += (f.empty() ? "" : ", ") + keyName(k.get<std::string>());
+            lines.push_back({ui.theme().warm, "~ " + typeName(jstr(o, "type")) + "  (" + jstr(o, "id") + ") : " + f});
+        }
+        std::string settings;
+        for (const auto& k : compare_.value("settings", Json::array()))
+            if (k.is_string()) settings += (settings.empty() ? "" : ", ") + keyName(k.get<std::string>());
+        if (!settings.empty()) lines.push_back({ui.theme().accent, "Réglages du niveau : " + settings});
+        if (lines.empty()) lines.push_back({ui.theme().textDim, "Aucune différence : les deux révisions ont le même contenu."});
+        Rect list{x, r.y + ui.s(36), w, r.h - ui.s(42)};
+        const float lh = ui.s(22);
+        ui.beginScroll("cmp", list, lines.size() * lh);
+        float ly = list.y - ui.scrollOffset();
+        for (const auto& [col, text] : lines) {
+            if (ly + lh > list.y && ly < list.bottom())
+                ui.label(text, {list.x, ly + lh * 0.5f}, ui.fitFont(text, FontFace::Body, 14, list.w - ui.s(16)), col, Align::Left, FontFace::Body, VAlign::Middle);
+            ly += lh;
+        }
+        ui.endScroll();
+    }
+
+    void drawRevisions(const Rect& a) {
+        UIContext& ui = g_.ui;
+        float x = a.x, w = a.w, y = a.y;
+        // Filters: author, words of the message.
+        std::vector<std::string> authors = {"Tous les auteurs"};
+        for (const auto& au : revAuthors_) authors.push_back(au.second);
+        int au = std::clamp(revAuthor_, 0, static_cast<int>(authors.size()) - 1);
+        float cw = std::floor(w * 0.42f);
+        ui.cycle("author", {x, y, cw, ui.s(40)}, "", au, authors);
+        std::string before = revQuery_;
+        ui.textField("rq", {x + cw + ui.s(10), y, w - cw - ui.s(10), ui.s(40)}, revQuery_, "Chercher dans les messages", 60);
+        if (au != revAuthor_) {
+            revAuthor_ = au;
+            selectedRev_ = 0;
+            loadTab();
+        }
+        if (before != revQuery_) revSearchT_ = ui.time();
+        if (revSearchT_ > 0.0f && ui.time() - revSearchT_ > 0.45f) {
+            revSearchT_ = 0.0f;
+            selectedRev_ = 0;
+            loadTab();
+        }
+        y += ui.s(50);
+        Json list = tabData_.is_object() ? tabData_.value("revisions", Json::array()) : Json::array();
+        const bool hasSel = selectedRev_ > 0;
+        const float panelH = hasSel ? ui.s(272) : 0.0f;
+        Rect view{x, y, w, a.bottom() - y - (hasSel ? panelH + ui.s(10) : 0.0f)};
+        if (list.empty()) {
+            std::string t = !tabData_.is_object() ? "Chargement…" : (revAuthor_ || !revQuery_.empty()) ? "Aucune révision ne correspond." : "Aucune révision.";
+            ui.label(t, {x, y + ui.s(14)}, 15, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        } else {
+            const float rh = ui.s(54), gap = ui.s(4);
+            ui.beginScroll("revs", view, list.size() * (rh + gap));
+            float cy = view.y - ui.scrollOffset();
+            for (const auto& rv : list) {
+                Rect row{view.x, cy, view.w - ui.s(14), rh};
+                cy += rh + gap;
+                if (row.bottom() < view.y || row.y > view.bottom()) continue;
+                int n = jget<int>(rv, "revision", 0);
+                UIContext::ButtonStyle st;
+                st.selected = n == selectedRev_;
+                if (ui.button("rv" + std::to_string(n), row, "", st)) {
+                    selectedRev_ = n;
+                    compare_ = Json();
+                    compareLabel_.clear();
+                    compareTo_ = n > 1 ? n - 1 : std::max(1, jget<int>(detail_, "revision", 1));
+                }
+                std::string version = rv.contains("version") && rv["version"].is_string() ? rv["version"].get<std::string>() : std::string();
+                float vw = version.empty() ? 0.0f : std::min(chipWidth(version), row.w * 0.35f);
+                std::string msg = jstr(rv, "message");
+                std::string head = "n°" + std::to_string(n) + "  " + (msg.empty() ? std::string("(sans message)") : msg);
+                ui.label(head, {row.x + ui.s(12), row.y + ui.s(18)}, ui.fitFont(head, FontFace::Bold, 16, row.w - vw - ui.s(36)), ui.theme().text, Align::Left,
+                         FontFace::Bold, VAlign::Middle);
+                if (!version.empty()) chip(version, {row.right() - ui.s(12) - vw, row.y + ui.s(18)}, ui.theme().success);
+                std::string who = rv.contains("author") && rv["author"].is_object() ? "par " + jstr(rv["author"], "username")
+                                : jget<bool>(rv, "live", false)                    ? std::string("édition en direct")
+                                                                                   : std::string("auteur parti");
+                std::string sub = who + "  ·  " + OnlineUi::ageOf(jstr(rv, "created_at")) + "  ·  SHA-256 " + jstr(rv, "content_hash").substr(0, 12) + "…";
+                ui.label(sub, {row.x + ui.s(12), row.y + ui.s(39)}, ui.fitFont(sub, FontFace::Body, 13, row.w - ui.s(24)), ui.theme().textDim, Align::Left,
+                         FontFace::Body, VAlign::Middle);
+            }
+            ui.endScroll();
+        }
+        if (!hasSel) return;
+        // What can be done with the selected revision.
+        Rect pr{x, a.bottom() - panelH, w, panelH};
+        ui.r().fillRoundedRect(pr, ui.s(10), Color{10, 16, 36, 245});
+        ui.r().drawRoundedRect(pr, ui.s(10), ui.theme().accent.withAlphaF(0.45f), ui.s(1));
+        float px = pr.x + ui.s(12), pw = pr.w - ui.s(24), py = pr.y + ui.s(10);
+        int last = std::max(1, jget<int>(detail_, "revision", 1));
+        std::vector<std::string> others;
+        for (int i = last; i >= 1; --i) others.push_back("Comparer à la révision " + std::to_string(i));
+        int other = std::clamp(last - compareTo_, 0, static_cast<int>(others.size()) - 1);
+        const float bw = std::floor((pw - ui.s(20)) / 3.0f), bh = ui.s(38);
+        ui.cycle("cmpwith", {px, py, bw * 2 + ui.s(10), bh}, "", other, others);
+        compareTo_ = last - other;
+        UIContext::ButtonStyle s;
+        s.small = true;
+        s.fontSize = 15;
+        if (ui.button("cmp", {px + 2 * (bw + ui.s(10)), py, bw, bh}, "Comparer", s)) compareWith(compareTo_, selectedRev_);
+        py += bh + ui.s(8);
+        UIContext::ButtonStyle e = s;
+        e.enabled = editor() && !working_;
+        if (ui.button("restore", {px, py, bw, bh}, "Restaurer…", e)) confirm_ = "restore";
+        UIContext::ButtonStyle c = s;
+        c.enabled = !working_;
+        if (ui.button("copy", {px + bw + ui.s(10), py, bw, bh}, "Télécharger une copie", c))
+            historyCopy("/api/v1/projects/" + selected_ + "/content?revision=" + std::to_string(selectedRev_), "révision " + std::to_string(selectedRev_),
+                        "r" + std::to_string(selectedRev_));
+        if (ui.button("name", {px + 2 * (bw + ui.s(10)), py, bw, bh}, "Nommer une version…", e)) {
+            naming_ = true;
+            versionName_.clear();
+            versionNotes_.clear();
+        }
+        py += bh + ui.s(10);
+        drawCompare({px, py, pw, pr.bottom() - py - ui.s(10)});
+    }
+
+    void drawVersions(const Rect& a) {
+        UIContext& ui = g_.ui;
+        Json list = tabData_.is_object() ? tabData_.value("versions", Json::array()) : Json::array();
+        Vec2 hs = ui.labelWrapped("Une version nomme une révision pour toujours : elle ne se modifie pas, et son empreinte SHA-256 est vérifiée à chaque "
+                                  "téléchargement. Pour en créer une : onglet « Révisions », puis « Nommer une version… ».",
+                                  {a.x, a.y}, a.w, 14, ui.theme().textDim);
+        const bool cmp = !compareLabel_.empty();
+        const float cmpH = cmp ? ui.s(200) : 0.0f;
+        float top = a.y + hs.y + ui.s(12);
+        Rect view{a.x, top, a.w, a.bottom() - top - (cmp ? cmpH + ui.s(10) : 0.0f)};
+        if (list.empty()) {
+            ui.label(tabData_.is_object() ? "Aucune version nommée pour l'instant." : "Chargement…", {view.x, view.y + ui.s(14)}, 15, ui.theme().textDim,
+                     Align::Left, FontFace::Body, VAlign::Middle);
+            return;
+        }
+        int last = std::max(1, jget<int>(detail_, "revision", 1));
+        const float rh = ui.s(112), gap = ui.s(6);
+        ui.beginScroll("vers", view, list.size() * (rh + gap));
+        float cy = view.y - ui.scrollOffset();
+        for (const auto& v : list) {
+            Rect row{view.x, cy, view.w - ui.s(14), rh};
+            cy += rh + gap;
+            if (row.bottom() < view.y || row.y > view.bottom()) continue;
+            ui.r().fillRoundedRect(row, ui.s(8), Color{14, 22, 46, 230});
+            ui.r().drawRoundedRect(row, ui.s(8), ui.theme().border, ui.s(1));
+            int rev = jget<int>(v, "revision", 0);
+            std::string name = jstr(v, "name"), vid = jstr(v, "id"), hash = jstr(v, "content_hash");
+            float rx = row.x + ui.s(12), rw = row.w - ui.s(24);
+            ui.label(name, {rx, row.y + ui.s(18)}, ui.fitFont(name, FontFace::Bold, 18, rw), ui.theme().success, Align::Left, FontFace::Bold, VAlign::Middle);
+            std::string by = v.contains("author") && v["author"].is_object() ? "par " + jstr(v["author"], "username") : std::string("auteur parti");
+            std::string sub = "révision " + std::to_string(rev) + "  ·  SHA-256 " + hash.substr(0, 10) + "…" + (hash.size() > 10 ? hash.substr(hash.size() - 6) : "") +
+                              "  ·  " + by + "  ·  " + OnlineUi::ageOf(jstr(v, "created_at"));
+            ui.label(sub, {rx, row.y + ui.s(40)}, ui.fitFont(sub, FontFace::Body, 13, rw), ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+            std::string notes = jstr(v, "notes");
+            for (char& ch : notes)
+                if (ch == '\n') ch = ' ';
+            if (!notes.empty())
+                ui.label(notes, {rx, row.y + ui.s(61)}, ui.fitFont(notes, FontFace::Body, 13, rw, 0.8f), ui.theme().text, Align::Left, FontFace::Body,
+                         VAlign::Middle);
+            const float bw = std::floor((rw - ui.s(20)) / 3.0f), by0 = row.bottom() - ui.s(36);
+            UIContext::ButtonStyle s;
+            s.small = true;
+            s.fontSize = 14;
+            s.enabled = !working_;
+            if (ui.button("vc" + vid, {rx, by0, bw, ui.s(28)}, "Télécharger une copie", s))
+                historyCopy("/api/v1/projects/" + selected_ + "/versions/" + vid + "/content", "version " + name, "v" + vid.substr(0, 8));
+            UIContext::ButtonStyle d = s;
+            d.enabled = rev != last;
+            if (ui.button("vd" + vid, {rx + bw + ui.s(10), by0, bw, ui.s(28)}, rev == last ? "C'est la dernière" : "Comparer à la dernière", d))
+                compareWith(rev, last);
+            UIContext::ButtonStyle e = s;
+            e.enabled = editor() && !working_ && rev != last;
+            if (ui.button("vr" + vid, {rx + 2 * (bw + ui.s(10)), by0, bw, ui.s(28)}, "Restaurer…", e)) {
+                selectedRev_ = rev;
+                confirm_ = "restore";
+            }
+        }
+        ui.endScroll();
+        if (cmp) drawCompare({a.x, a.bottom() - cmpH, a.w, cmpH});
+    }
+
+    void drawNaming() {
+        UIContext& ui = g_.ui;
+        ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{2, 4, 12, 170});
+        Rect box{ui.screenW() * 0.5f - ui.s(340), ui.screenH() * 0.5f - ui.s(180), ui.s(680), ui.s(360)};
+        ui.r().fillRoundedRect(box, ui.s(18), Color{9, 14, 32, 250});
+        ui.r().drawRoundedRect(box, ui.s(18), ui.theme().accent.withAlphaF(0.55f), ui.s(1.5f));
+        ui.pushId("projects/name");
+        float x = box.x + ui.s(30), w = box.w - ui.s(60), y = box.y + ui.s(24);
+        std::string title = "Nommer la révision " + std::to_string(selectedRev_);
+        ui.label(title, {x, y + ui.s(16)}, ui.fitFont(title, FontFace::Title, 26, w), ui.theme().text, Align::Left, FontFace::Title, VAlign::Middle);
+        y += ui.s(44);
+        Vec2 hs = ui.labelWrapped("Le nom est définitif : une version ne se modifie pas et ne se remplace pas. Les autres membres sont prévenus.", {x, y}, w, 15,
+                                  ui.theme().textDim);
+        y += hs.y + ui.s(14);
+        ui.textField("vname", {x, y, w, ui.s(44)}, versionName_, "Nom (par exemple « Bêta 1 »)", 40);
+        y += ui.s(54);
+        ui.textField("vnotes", {x, y, w, ui.s(44)}, versionNotes_, "Notes (facultatif)", 300);
+        UIContext::ButtonStyle p;
+        p.primary = true;
+        p.enabled = !versionName_.empty() && !working_;
+        if (ui.button("ok", {x, box.bottom() - ui.s(70), ui.s(260), ui.s(46)}, working_ ? "Création…" : "Créer la version", p)) {
+            working_ = true;
+            g_.online.send("POST", "/api/v1/projects/" + selected_ + "/versions", {{"name", versionName_}, {"revision", selectedRev_}, {"notes", versionNotes_}},
+                           OnlineService::guard(life_, [this](const ApiResult& r) {
+                               working_ = false;
+                               if (!r.ok) return say(r.message, true);
+                               naming_ = false;
+                               say("Version « " + jstr(r.data.value("version", Json::object()), "name") + " » créée.", false);
+                               loadTab();
+                           }));
+        } else if (ui.button("cancel", {box.right() - ui.s(210), box.bottom() - ui.s(70), ui.s(180), ui.s(46)}, "Annuler") || (ui.backPressed() && !ui.editingText())) {
+            naming_ = false;
+        }
+        ui.popId();
+    }
+
     void drawActivity(const Rect& a) {
         UIContext& ui = g_.ui;
         Json list = tabData_.is_object() ? tabData_.value("activity", Json::array()) : Json::array();
@@ -1131,11 +1490,19 @@ private:
         std::string text = confirm_ == "delete"   ? "Supprimer définitivement « " + name + " » et toutes ses révisions ? Les copies locales des membres restent sur leurs ordinateurs."
                          : confirm_ == "leave"    ? "Quitter « " + name + " » ? Il faudra une nouvelle invitation pour revenir. Votre copie locale reste dans vos niveaux."
                          : confirm_ == "remove"   ? "Retirer " + confirmName_ + " du projet ?"
+                         : confirm_ == "restore"
+                             ? "Restaurer la révision " + std::to_string(selectedRev_) +
+                                   " ? Son contenu devient une nouvelle révision : rien n'est effacé de l'historique, et l'édition en direct en cours est "
+                                   "d'abord enregistrée."
                                                   : "Transférer « " + name + " » à " + confirmName_ + " ? Vous deviendrez administrateur du projet.";
         ui.labelWrapped(text, {box.x + ui.s(30), box.y + ui.s(30)}, box.w - ui.s(60), 17, ui.theme().text);
         UIContext::ButtonStyle d;
         d.danger = true;
-        std::string label = confirm_ == "delete" ? "Supprimer" : confirm_ == "leave" ? "Quitter" : confirm_ == "remove" ? "Retirer" : "Transférer";
+        std::string label = confirm_ == "delete"  ? "Supprimer"
+                          : confirm_ == "leave"   ? "Quitter"
+                          : confirm_ == "remove"  ? "Retirer"
+                          : confirm_ == "restore" ? "Restaurer"
+                                                  : "Transférer";
         if (ui.button("ok", {box.x + ui.s(30), box.bottom() - ui.s(70), ui.s(240), ui.s(46)}, label, d)) {
             std::string what = confirm_, pid = confirmTarget_, id = selected_;
             confirm_.clear();
@@ -1149,6 +1516,13 @@ private:
                 g_.online.send("DELETE", base + "/members/" + g_.online.playerId(), Json(), OnlineService::guard(life_, [this](const ApiResult& r) {
                                    if (r.ok) selected_.clear();
                                    done(r, "Vous avez quitté le projet.");
+                               }));
+            else if (what == "restore")
+                g_.online.send("POST", base + "/revisions/" + std::to_string(selectedRev_) + "/restore", Json::object(),
+                               OnlineService::guard(life_, [this](const ApiResult& r) {
+                                   int n = jget<int>(r.data.value("saved", Json::object()), "revision", 0);
+                                   done(r, "Restauration enregistrée : révision " + std::to_string(n) + ".");
+                                   if (r.ok) selectedRev_ = 0;
                                }));
             else if (what == "remove")
                 g_.online.send("DELETE", base + "/members/" + pid, Json(), OnlineService::guard(life_, [this](const ApiResult& r) { done(r, "Membre retiré."); }));
@@ -1178,7 +1552,7 @@ private:
     // Detail.
     std::string selected_;
     Json detail_, tabData_, conflict_;
-    int detailTab_ = 0, tabGen_ = 0;
+    int detailTab_ = 0, tabGen_ = 0, compareGen_ = 0;
     bool working_ = false;
     std::string message_, joinMessage_, invitee_, createdKey_, createdLink_;
     int inviteRole_ = 2, inviteUses_ = 0, inviteHours_ = 2, requestRole_ = 0;
@@ -1188,6 +1562,13 @@ private:
     int newVisibility_ = 0, newLevel_ = 0;
     std::vector<const LevelEntry*> myLevels_;
     std::string confirm_, confirmTarget_, confirmName_;
+    // History (revisions, comparison, named versions).
+    int selectedRev_ = 0, compareTo_ = 1, revAuthor_ = 0;
+    float revSearchT_ = 0.0f;
+    std::string revQuery_, compareLabel_, versionName_, versionNotes_;
+    std::vector<std::pair<std::string, std::string>> revAuthors_;
+    Json compare_;
+    bool naming_ = false;
     std::string status_;
     bool statusError_ = false;
     float statusT_ = -100.0f;

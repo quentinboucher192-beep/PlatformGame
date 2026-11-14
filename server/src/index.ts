@@ -220,6 +220,12 @@ route("GET", `${V}/projects/{projectId}/content`, (ctx) => projects.getContent(c
 route("PUT", `${V}/projects/{projectId}/content`, (ctx) => projects.putContent(ctx));
 route("GET", `${V}/projects/{projectId}/revisions`, (ctx) => projects.listRevisions(ctx));
 route("GET", `${V}/projects/{projectId}/activity`, (ctx) => projects.listActivity(ctx));
+// History and named versions (phase 5)
+route("GET", `${V}/projects/{projectId}/compare`, (ctx) => projects.compareRevisions(ctx));
+route("POST", `${V}/projects/{projectId}/revisions/{revision}/restore`, (ctx) => projects.restoreRevision(ctx));
+route("GET", `${V}/projects/{projectId}/versions`, (ctx) => projects.listVersions(ctx));
+route("POST", `${V}/projects/{projectId}/versions`, (ctx) => projects.createVersion(ctx));
+route("GET", `${V}/projects/{projectId}/versions/{versionId}/content`, (ctx) => projects.versionContent(ctx));
 // Live editing (phases 3-4): presence, temporary locks and operations, in the project's room
 route("POST", `${V}/projects/{projectId}/live/join`, (ctx) => liveRoute(ctx, "join"));
 route("POST", `${V}/projects/{projectId}/live/heartbeat`, (ctx) => liveRoute(ctx, "heartbeat"));

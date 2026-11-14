@@ -60,7 +60,7 @@ const std::vector<OnlineKind>& onlineKinds() {
         {"new_follower", "A", {120, 230, 140, 255}, "Abonné", "Nouvel abonné"},
         {"project_invite", "P", {176, 76, 255, 255}, "Projet", "Invitation à un projet"},
         {"project_role", "P", {176, 76, 255, 255}, "Projet", "Changement de mon rôle dans un projet"},
-        // Named versions and mentions arrive with the history and the live editor.
+        {"project_version", "V", {176, 76, 255, 255}, "Version", "Nouvelle version nommée d'un projet"},
     };
     return k;
 }
@@ -267,7 +267,7 @@ private:
         if ((kind == "comment_reply" || kind == "comment_reaction" || kind == "level_comment") && !jstr(n, "level_id").empty()) return "Voir les commentaires";
         if (kind == "new_follower" && n.contains("actor") && n["actor"].is_object()) return "Voir le profil";
         if (kind == "project_invite") return "Voir l'invitation";
-        if (kind == "project_role" && n.contains("data") && !jstr(n["data"], "project_id").empty()) return "Voir le projet";
+        if ((kind == "project_role" || kind == "project_version") && n.contains("data") && !jstr(n["data"], "project_id").empty()) return "Voir le projet";
         return {};
     }
 
@@ -285,7 +285,7 @@ private:
                 g_.app.switchScene(makeProjects(g_));
                 return;
             }
-            if (kind == "project_role") {
+            if (kind == "project_role" || kind == "project_version") {
                 g_.app.switchScene(makeProjects(g_, jstr(n["data"], "project_id")));
                 return;
             }

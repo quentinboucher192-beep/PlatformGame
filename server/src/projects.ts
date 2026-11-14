@@ -19,7 +19,7 @@ import { playerSummary, type PlayerRow } from "./model";
 import { notify } from "./notifications";
 import { RULES, rateLimit } from "./ratelimit";
 import { Validator, paging } from "./validate";
-import { reloadRoom } from "./live";
+import { flushRoom, reloadRoom } from "./live";
 
 export const ROLES = ["viewer", "tester", "editor", "admin", "owner"] as const;
 export type Role = (typeof ROLES)[number];
@@ -754,16 +754,33 @@ export async function putContent(ctx: Ctx): Promise<Response> {
     return json(ctx, { saved }, { status: 201 });
 }
 
-/** GET /projects/{id}/revisions : members. */
+/** GET /projects/{id}/revisions?author=&q= : members (filter by author or by message). */
 export async function listRevisions(ctx: Ctx): Promise<Response> {
     const { p } = await access(ctx, "viewer");
     const { limit, offset } = paging(ctx.url, 30, 100);
+    const where = ["r.project_id = ?1"];
+    const args: unknown[] = [p.id];
+    const author = ctx.url.searchParams.get("author");
+    if (author) {
+        if (!ID_RE.test(author)) throw Errors.validation([{ field: "author", message: "identifiant de joueur attendu" }]);
+        args.push(author);
+        where.push(`r.author_id = ?${args.length}`);
+    }
+    const q = (ctx.url.searchParams.get("q") ?? "").trim().toLowerCase().slice(0, 60);
+    if (q) {
+        args.push("%" + q.replace(/[\\%_]/g, (c) => "\\" + c) + "%");
+        where.push(`lower(r.message) LIKE ?${args.length} ESCAPE '\\'`);
+    }
+    const total = await ctx.env.DB.prepare(`SELECT COUNT(*) AS n FROM project_revisions r WHERE ${where.join(" AND ")}`).bind(...args).first<{ n: number }>();
+    args.push(limit, offset);
     const rows = await ctx.env.DB.prepare(
-        `SELECT r.revision, r.content_hash, r.size, r.message, r.created_at, pl.id AS a_id, pl.username AS a_name, pl.avatar AS a_avatar
-         FROM project_revisions r LEFT JOIN players pl ON pl.id = r.author_id WHERE r.project_id = ?1 ORDER BY r.revision DESC LIMIT ?2 OFFSET ?3`,
+        `SELECT r.revision, r.content_hash, r.size, r.message, r.created_at, r.ops_seq, pl.id AS a_id, pl.username AS a_name, pl.avatar AS a_avatar,
+                (SELECT name FROM project_versions v WHERE v.project_id = r.project_id AND v.revision = r.revision ORDER BY v.created_at LIMIT 1) AS version_name
+         FROM project_revisions r LEFT JOIN players pl ON pl.id = r.author_id WHERE ${where.join(" AND ")} ORDER BY r.revision DESC LIMIT ?${args.length - 1} OFFSET ?${args.length}`,
     )
-        .bind(p.id, limit, offset)
+        .bind(...args)
         .all<Record<string, unknown>>();
+    const n = total?.n ?? 0;
     return json(
         ctx,
         {
@@ -773,11 +790,156 @@ export async function listRevisions(ctx: Ctx): Promise<Response> {
                 size: r.size,
                 message: r.message,
                 created_at: r.created_at,
+                live: (r.ops_seq as number) > 0 && r.a_id === null,
+                version: r.version_name ?? null,
                 author: r.a_id ? { id: r.a_id, username: r.a_name, avatar: r.a_avatar } : null,
             })),
         },
-        { meta: { limit, offset, total: p.revision, next_offset: offset + limit < p.revision ? offset + limit : null } },
+        { meta: { limit, offset, total: n, next_offset: offset + limit < n ? offset + limit : null } },
     );
+}
+
+// ---------------------------------------------------------- history (phase 5)
+
+async function revisionContent(ctx: Ctx, projectId: string, revision: number): Promise<{ doc: Record<string, unknown>; hash: string; text: string }> {
+    const r = await ctx.env.DB.prepare("SELECT content_key, content_hash FROM project_revisions WHERE project_id = ?1 AND revision = ?2")
+        .bind(projectId, revision)
+        .first<{ content_key: string; content_hash: string }>();
+    const obj = r ? await ctx.env.STORAGE.get(r.content_key) : null;
+    if (!r || !obj) throw Errors.notFound("REVISION_NOT_FOUND", `Révision ${revision} introuvable.`);
+    const text = await obj.text();
+    // The stored content must still be what was saved (immutable revisions).
+    if ((await sha256Hex(text)) !== r.content_hash) throw new ApiError(500, "REVISION_CORRUPTED", "Le contenu de cette révision ne correspond plus à son empreinte.");
+    return { doc: JSON.parse(text) as Record<string, unknown>, hash: r.content_hash, text };
+}
+
+function revisionParam(ctx: Ctx, name: string, max: number): number {
+    const v = Number.parseInt(ctx.url.searchParams.get(name) ?? ctx.params[name] ?? "", 10);
+    if (!Number.isInteger(v) || v < 1 || v > max) throw Errors.validation([{ field: name, message: `révision entre 1 et ${max}` }]);
+    return v;
+}
+
+/** The differences between two documents (objects by id, other keys whole). */
+export function compareDocs(a: Record<string, unknown>, b: Record<string, unknown>) {
+    const byId = (d: Record<string, unknown>) => new Map(((Array.isArray(d.objects) ? d.objects : []) as Record<string, unknown>[]).map((o) => [String(o.id), o]));
+    const A = byId(a),
+        B = byId(b);
+    const brief = (o: Record<string, unknown>) => ({ id: String(o.id), type: String(o.type ?? "") });
+    const added = [...B.values()].filter((o) => !A.has(String(o.id))).map(brief);
+    const removed = [...A.values()].filter((o) => !B.has(String(o.id))).map(brief);
+    const changed: { id: string; type: string; fields: string[] }[] = [];
+    for (const [id, ob] of B) {
+        const oa = A.get(id);
+        if (!oa) continue;
+        const keys = new Set([...Object.keys(oa), ...Object.keys(ob)]);
+        const fields = [...keys].filter((k) => k !== "id" && JSON.stringify(oa[k]) !== JSON.stringify(ob[k]));
+        if (fields.length) changed.push({ ...brief(ob), fields });
+    }
+    const docKeys = new Set([...Object.keys(a), ...Object.keys(b)]);
+    const settings = [...docKeys].filter((k) => k !== "objects" && k !== "id" && JSON.stringify(a[k]) !== JSON.stringify(b[k]));
+    const cap = <T>(l: T[]) => l.slice(0, 200);
+    return {
+        counts: { added: added.length, removed: removed.length, changed: changed.length, settings: settings.length },
+        added: cap(added),
+        removed: cap(removed),
+        changed: cap(changed),
+        settings,
+    };
+}
+
+/** GET /projects/{id}/compare?from=&to= : members. */
+export async function compareRevisions(ctx: Ctx): Promise<Response> {
+    const { p } = await access(ctx, "viewer");
+    const from = revisionParam(ctx, "from", p.revision),
+        to = revisionParam(ctx, "to", p.revision);
+    const [a, b] = await Promise.all([revisionContent(ctx, p.id, from), revisionContent(ctx, p.id, to)]);
+    return json(ctx, { from, to, ...compareDocs(a.doc, b.doc) });
+}
+
+/** POST /projects/{id}/revisions/{revision}/restore : editors. Restoring makes a NEW revision. */
+export async function restoreRevision(ctx: Ctx): Promise<Response> {
+    const { me, p } = await access(ctx, "editor");
+    await rateLimit(ctx, RULES.projectSave, "player:" + me);
+    const rev = revisionParam(ctx, "revision", p.revision);
+    const src = await revisionContent(ctx, p.id, rev);
+    // Live edits not yet in a revision are written first (nothing is lost under the restore).
+    if (ctx.env.PROJECT_ROOMS) await flushRoom(ctx.env, p.id);
+    const fresh = await loadProject(ctx, p.id);
+    const saved = await storeContent(ctx, fresh, me, src.doc, `Restauration de la révision ${rev}`, fresh.revision);
+    await activity(ctx, p.id, me, "restored", { revision: rev, new_revision: saved.revision }).run();
+    return json(ctx, { saved, restored_from: rev }, { status: 201 });
+}
+
+/** POST /projects/{id}/versions {name, revision?, notes?} : editors. Immutable once created. */
+export async function createVersion(ctx: Ctx): Promise<Response> {
+    const { me, p } = await access(ctx, "editor");
+    await rateLimit(ctx, RULES.projectSave, "player:" + me);
+    const v = new Validator(await readJsonObject(ctx), ["name", "revision", "notes"]);
+    const name = v.str("name", { min: 1, max: 40 })!;
+    const revision = v.int("revision", { min: 1, max: Math.max(1, p.revision), optional: true }) ?? p.revision;
+    const notes = v.str("notes", { max: 300, optional: true, multiline: true }) ?? "";
+    v.done();
+    if (p.revision < 1) throw Errors.conflict("NO_CONTENT", "Le projet n'a pas encore de révision.");
+    const src = await revisionContent(ctx, p.id, revision);
+    const id = crypto.randomUUID();
+    try {
+        await ctx.env.DB.batch([
+            ctx.env.DB.prepare(
+                "INSERT INTO project_versions (id, project_id, name, notes, revision, content_hash, created_by, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+            ).bind(id, p.id, name, notes, revision, src.hash, me, nowIso()),
+            activity(ctx, p.id, me, "version", { name, revision }),
+        ]);
+    } catch (e) {
+        if (String(e).includes("UNIQUE")) throw Errors.conflict("VERSION_EXISTS", `Une version s'appelle déjà « ${name} » : les versions ne se remplacent pas.`);
+        throw e;
+    }
+    // The other members are told (their notification settings apply).
+    const members = await ctx.env.DB.prepare("SELECT player_id FROM project_members WHERE project_id = ?1 AND player_id <> ?2").bind(p.id, me).all<{ player_id: string }>();
+    for (const m of members.results) await notify(ctx, m.player_id, "project_version", { actor: me, data: { project: p.name, project_id: p.id, version: name } });
+    return json(ctx, { version: { id, name, notes, revision, content_hash: src.hash } }, { status: 201 });
+}
+
+/** GET /projects/{id}/versions : members. */
+export async function listVersions(ctx: Ctx): Promise<Response> {
+    const { p } = await access(ctx, "viewer");
+    const rows = await ctx.env.DB.prepare(
+        `SELECT v.*, pl.username AS a_name, pl.avatar AS a_avatar FROM project_versions v LEFT JOIN players pl ON pl.id = v.created_by
+         WHERE v.project_id = ?1 ORDER BY v.created_at DESC LIMIT 200`,
+    )
+        .bind(p.id)
+        .all<Record<string, unknown>>();
+    return json(ctx, {
+        versions: rows.results.map((r) => ({
+            id: r.id,
+            name: r.name,
+            notes: r.notes,
+            revision: r.revision,
+            content_hash: r.content_hash,
+            created_at: r.created_at,
+            author: r.created_by ? { id: r.created_by, username: r.a_name, avatar: r.a_avatar } : null,
+        })),
+    });
+}
+
+/** GET /projects/{id}/versions/{versionId}/content : the named version's level (checked against its SHA-256). */
+export async function versionContent(ctx: Ctx): Promise<Response> {
+    const { p } = await access(ctx, "viewer");
+    const v = await ctx.env.DB.prepare("SELECT revision, content_hash, name FROM project_versions WHERE id = ?1 AND project_id = ?2")
+        .bind(ctx.params.versionId!, p.id)
+        .first<{ revision: number; content_hash: string; name: string }>();
+    if (!v) throw Errors.notFound("VERSION_NOT_FOUND", "Version introuvable.");
+    const src = await revisionContent(ctx, p.id, v.revision);
+    if (src.hash !== v.content_hash) throw new ApiError(500, "VERSION_CORRUPTED", "Le contenu de cette version ne correspond plus à son empreinte.");
+    return new Response(src.text, {
+        status: 200,
+        headers: {
+            "content-type": "application/json; charset=utf-8",
+            "cache-control": "private, no-store",
+            "x-project-revision": String(v.revision),
+            "x-content-sha256": v.content_hash,
+            "x-request-id": ctx.requestId,
+        },
+    });
 }
 
 /** GET /projects/{id}/activity : members. */
