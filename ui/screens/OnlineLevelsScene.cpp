@@ -436,7 +436,15 @@ private:
                 float tx = th.right() + ui.s(14);
                 float room = row.right() - tx - ui.s(12);
                 std::string title = jstr(l, "title");
-                ui.label(title, {tx, row.y + ui.s(24)}, ui.fitFont(title, FontFace::Bold, 20, room), ui.theme().text, Align::Left, FontFace::Bold,
+                bool extreme = jget<bool>(l, "extreme", false);
+                float titleX = tx;
+                if (extreme) titleX += ui.extremeBadge({tx, row.y + ui.s(24)}, ui.s(26)) + ui.s(10);
+                float titleRoom = row.right() - titleX - ui.s(12);
+                if (l.contains("best") && l["best"].is_object())
+                    titleRoom -= ui.text().measure("Record " + timeText(jget<int64_t>(l["best"], "time_ms", 0)) + " · " + jstr(l["best"], "player"), FontFace::Bold,
+                                                   ui.s(14)).x + ui.s(16);
+                float tf = ui.fitFont(title, FontFace::Bold, 20, titleRoom, 0.75f);
+                ui.label(ui.elide(title, FontFace::Bold, tf, titleRoom), {titleX, row.y + ui.s(24)}, tf, ui.theme().text, Align::Left, FontFace::Bold,
                          VAlign::Middle);
                 std::string sub;
                 if (tab_ == kFavoritesTab) {
@@ -453,7 +461,14 @@ private:
                 ui.label(sub, {tx, row.y + ui.s(52)}, ui.fitFont(sub, FontFace::Body, 15, subRoom), ui.theme().textDim, Align::Left, FontFace::Body,
                          VAlign::Middle);
                 std::string stats;
-                if (l.contains("difficulty") && l["difficulty"].is_number()) stats = "Difficulté " + decimal(l["difficulty"].get<double>()) + "/5  ·  ";
+                if (extreme) {
+                    const Json& vf = l.value("verified", Json());
+                    if (vf.is_object()) stats = "Vérifié par " + (jstr(vf, "player").empty() ? std::string("un joueur") : jstr(vf, "player")) + "  ·  ";
+                    else if (l.contains("race_best") && l["race_best"].is_number())
+                        stats = "Non vérifié, meilleure progression " + decimal(l["race_best"].get<double>()) + " %  ·  ";
+                    else stats = "Non vérifié  ·  ";
+                }
+                if (l.contains("difficulty") && l["difficulty"].is_number()) stats += "Difficulté " + decimal(l["difficulty"].get<double>()) + "/5  ·  ";
                 const Json& rt = l.value("rating", Json::object());
                 if (rt.is_object() && rt.contains("average") && rt["average"].is_number())
                     stats += "note " + decimal(rt["average"].get<double>()) + "/5 (" + std::to_string(jget<int>(rt, "count", 0)) + ")  ·  ";
@@ -564,7 +579,13 @@ private:
         if (TexturePtr t = thumbnail(id)) ui.r().drawTexture(*t, nullptr, th);
         y = th.bottom() + ui.s(12);
         std::string title = jstr(l, "title");
-        ui.label(title, {x, y + ui.s(14)}, ui.fitFont(title, FontFace::Title, 24, w), ui.theme().text, Align::Left, FontFace::Title, VAlign::Middle);
+        bool extreme = jget<bool>(l, "extreme", false);
+        {
+            float tx = x;
+            if (extreme) tx += ui.extremeBadge({x, y + ui.s(14)}, ui.s(30)) + ui.s(12);
+            float tf = ui.fitFont(title, FontFace::Title, 24, x + w - tx, 0.7f);
+            ui.label(ui.elide(title, FontFace::Title, tf, x + w - tx), {tx, y + ui.s(14)}, tf, ui.theme().text, Align::Left, FontFace::Title, VAlign::Middle);
+        }
         y += ui.s(34);
         const Json& a = l.value("author", Json::object());
         bool mine = jstr(a, "id") == g_.online.playerId();
@@ -588,6 +609,22 @@ private:
             Vec2 sz = ui.labelWrapped(desc, {x, y}, w, 15, ui.theme().text);
             y += std::min(sz.y, ui.s(80)) + ui.s(8);
         }
+        // EXTRÊME: one life, published without verification; its race decides who verifies it.
+        if (extreme) {
+            const Json& vf = l.value("verified", Json());
+            std::string state;
+            Color sc = ui.theme().warm;
+            if (vf.is_object()) {
+                state = "Vérifié par " + (jstr(vf, "player").empty() ? std::string("un joueur") : jstr(vf, "player"));
+                if (std::string at = jstr(vf, "at"); at.size() >= 10) state += " le " + at.substr(8, 2) + "/" + at.substr(5, 2) + "/" + at.substr(0, 4);
+            } else {
+                sc = Color{255, 140, 60, 255};
+                state = "Pas encore vérifié : une seule vie, le premier à finir le vérifie";
+                if (l.contains("race_best") && l["race_best"].is_number()) state += " (meilleure progression " + decimal(l["race_best"].get<double>()) + " %)";
+            }
+            ui.label(state, {x, y + ui.s(10)}, ui.fitFont(state, FontFace::Bold, 15, w), sc, Align::Left, FontFace::Bold, VAlign::Middle);
+            y += ui.s(28);
+        }
         // Play
         int ver = 0;
         bool verified = false;
@@ -602,6 +639,13 @@ private:
             else downloadAndPlay(l);
         }
         y += ui.s(58);
+        if (extreme) {
+            UIContext::ButtonStyle rs;
+            rs.small = true;
+            if (ui.button("race", {x, y, w, ui.s(42)}, "Course à la vérification (classement de progression)", rs))
+                g_.app.pushScene(makeRaceBoard(g_, "community", id, current));
+            y += ui.s(52);
+        }
         // Favorites and comments.
         {
             bool fav = jget<bool>(l, "my_favorite", false);

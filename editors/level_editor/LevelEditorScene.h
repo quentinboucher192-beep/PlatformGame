@@ -218,6 +218,7 @@ private:
     std::string pickTarget_;  // property key waiting for an object pick
     PropertyEditor props_;
     Modal modal_ = Modal::None;
+    float settingsContentH_ = 0.0f;  // height of the settings' content (last frame)
     Rect modalRect_;  // last dialog drawn (editor messages are placed outside it)
     int selectedEvent_ = 0;
     int cinematicTab_ = 0;

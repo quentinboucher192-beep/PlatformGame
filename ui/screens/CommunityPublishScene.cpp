@@ -2,12 +2,18 @@
 // Conditions: an account, a start and an exit, and a completion of this exact version of the
 // level (editor test from the start, see GameScene) whose replay goes with it. The package
 // holds the level and its own files only (the game's assets are on every installation).
+// An EXTRÊME level (one life) needs no completion: it goes with the layout of its « course à
+// la vérification » (intended route, bosses, ambushes) and the first player to finish it
+// verifies it.
 
 #include <algorithm>
+#include <chrono>
+#include <future>
 
 #include "engine/core/FileUtil.h"
 #include "game/GameServices.h"
 #include "game/online/LevelFingerprint.h"
+#include "game/race/Race.h"
 #include "packaging/PackageExporter.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/Thumbnail.h"
@@ -28,7 +34,8 @@ public:
         if (autoPublish_) g_.onlineOpen.clear();
     }
     void update(float) override {
-        if (autoPublish_ && !busy_ && !done_ && level_ && g_.online.loggedIn() && hasStart_ && hasExit_ && completionOk_ &&
+        if (raceFuture_.valid() && raceFuture_.wait_for(std::chrono::seconds(0)) == std::future_status::ready) race_ = raceFuture_.get();
+        if (autoPublish_ && !busy_ && !done_ && level_ && g_.online.loggedIn() && hasStart_ && hasExit_ && proofOk() &&
             g_.online.state() == OnlineState::Online && entry_ && g_.ratings.get(*entry_)) {
             autoPublish_ = false;
             publish();
@@ -56,7 +63,10 @@ public:
             auto check = [&](bool ok, const std::string& text, const std::string& hint = {}) {
                 Rect dot{x + ui.s(2), y + ui.s(4), ui.s(16), ui.s(16)};
                 ui.r().fillRoundedRect(dot, ui.s(8), ok ? ui.theme().success : ui.theme().danger);
-                ui.label(text, {x + ui.s(30), y + ui.s(12)}, 18, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+                float room = w - ui.s(30);
+                float fs = ui.fitFont(text, FontFace::Bold, 18, room, 0.75f);
+                ui.label(ui.elide(text, FontFace::Bold, fs, room), {x + ui.s(30), y + ui.s(12)}, fs, ui.theme().text, Align::Left, FontFace::Bold,
+                         VAlign::Middle);
                 y += ui.s(30);
                 if (!ok && !hint.empty()) {
                     Vec2 sz = ui.labelWrapped(hint, {x + ui.s(30), y}, w - ui.s(30), 14, ui.theme().textDim);
@@ -67,11 +77,23 @@ public:
             check(g_.online.loggedIn(), g_.online.loggedIn() ? "Compte : " + g_.online.username() : "Compte Cosmic Online",
                   "Publier demande un compte (jouer n'en demande jamais).");
             check(hasStart_ && hasExit_, "Départ et sortie", "Placez un départ du joueur et une sortie dans l'éditeur.");
-            check(completionOk_, completionOk_ ? "Terminé depuis le départ (" + timeText(completionMs_) + ")" : "Niveau terminé depuis le départ",
-                  completionMissing_ ? "Testez le niveau depuis le départ dans l'éditeur (F5, pas « Tester ici ») et allez jusqu'à la sortie : "
-                                       "un niveau impossible ne peut pas être publié."
-                                     : "Le niveau a changé depuis votre dernière fin de niveau : enregistrez-le, puis terminez-le de nouveau "
-                                       "depuis le départ (F5 dans l'éditeur).");
+            if (level_->extreme) {
+                check(level_->oneLife(), "EXTRÊME : une seule vie",
+                      "Un niveau EXTRÊME se joue avec une seule vie : réglez-la dans Niveau → Paramètres.");
+                std::string course = "Tracé de la course : calcul…";
+                if (race_) {
+                    size_t na = race_->ambushes.size();
+                    course = "Course : " + std::to_string(race_->bosses.size()) + " boss, " + std::to_string(na) + (na > 1 ? " embuscades" : " embuscade");
+                }
+                check(race_.has_value(), course);
+                check(true, "Publié sans vérification : la course la fera");
+            } else {
+                check(completionOk_, completionOk_ ? "Terminé depuis le départ (" + timeText(completionMs_) + ")" : "Niveau terminé depuis le départ",
+                      completionMissing_ ? "Testez le niveau depuis le départ dans l'éditeur (F5, pas « Tester ici ») et allez jusqu'à la sortie : "
+                                           "un niveau impossible ne peut pas être publié."
+                                         : "Le niveau a changé depuis votre dernière fin de niveau : enregistrez-le, puis terminez-le de nouveau "
+                                           "depuis le départ (F5 dans l'éditeur).");
+            }
             const DifficultyRating* r = entry_ ? g_.ratings.get(*entry_) : nullptr;
             ui.label("Difficulté calculée : " + (r ? r->label() : std::string("calcul…")), {x, y + ui.s(12)}, 17, ui.theme().warm, Align::Left,
                      FontFace::Bold, VAlign::Middle);
@@ -79,8 +101,12 @@ public:
             ui.label(thumbFile_ ? "Vignette : celle capturée dans l'éditeur" : "Vignette : vue du départ (Niveau → Capturer la vignette)",
                      {x, y + ui.s(12)}, 15, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
             y += ui.s(40);
-            ui.labelWrapped("Ce qui est envoyé : le niveau, vos ennemis et pouvoirs personnalisés, vos fichiers propres et le replay de votre "
-                            "fin de niveau. Les autres joueurs pourront le télécharger, le noter, le signaler et y classer leurs temps.",
+            ui.labelWrapped(level_->extreme
+                                ? "Ce qui est envoyé : le niveau, vos ennemis et pouvoirs personnalisés, vos fichiers propres et le tracé de sa course "
+                                  "(parcours prévu, boss, embuscades). Chaque tentative y est classée selon sa progression ; le premier joueur qui "
+                                  "le termine en devient le vérificateur."
+                                : "Ce qui est envoyé : le niveau, vos ennemis et pouvoirs personnalisés, vos fichiers propres et le replay de votre "
+                                  "fin de niveau. Les autres joueurs pourront le télécharger, le noter, le signaler et y classer leurs temps.",
                             {x, y}, w, 14, ui.theme().textDim);
 
             // Fields
@@ -107,7 +133,7 @@ public:
         bool titleOk = title_.size() >= 3;
         // The computed difficulty goes with the publication: wait for it (worker thread).
         bool rated = entry_ && g_.ratings.get(*entry_);
-        p.enabled = level_ && g_.online.loggedIn() && hasStart_ && hasExit_ && completionOk_ && titleOk && rated && !busy_ && !done_;
+        p.enabled = level_ && g_.online.loggedIn() && hasStart_ && hasExit_ && proofOk() && titleOk && rated && !busy_ && !done_;
         if (ui.button("go", {box.x + ui.s(36), by, ui.s(360), ui.s(54)}, busy_ ? "Publication…" : (done_ ? "Publié" : "Publier"), p)) publish();
         if (!g_.online.loggedIn()) {
             UIContext::ButtonStyle l;
@@ -155,10 +181,19 @@ private:
         fs::path thumb = base;
         thumb += ".thumb.png";
         thumbFile_ = FileUtil::exists(thumb);
+        // (A computation still running is kept: replacing it would wait for it here.)
+        if (level_->extreme && !raceFuture_.valid()) {
+            race_.reset();
+            raceFuture_ = std::async(std::launch::async, [level = *level_, &content = g_.content] { return buildRaceLayout(level, content, true); });
+        }
         const Json& c = level_->metadata.value("community", Json::object());
         communityId_ = jstr(c, "id");
         publishedVersion_ = jget<int>(c, "version", 0);
     }
+
+    /// What makes the publication acceptable: a completion of this version, or, for an
+    /// EXTRÊME level (one life), the layout of its race.
+    bool proofOk() const { return level_ && (level_->extreme ? level_->oneLife() && race_.has_value() : completionOk_); }
 
     void fail(const std::string& m) {
         busy_ = false;
@@ -189,17 +224,22 @@ private:
         std::string err;
         if (!ex.write(*level_, plan, opt, &err)) return fail("Package impossible : " + err);
         auto pkg = FileUtil::readBinary(opt.destination);
-        auto replay = FileUtil::readBinary(replayFile_);
-        if (!pkg || !replay) return fail("Lecture du package ou du replay impossible.");
+        const bool extreme = level_->extreme;
+        std::optional<std::vector<uint8_t>> replay;
+        if (!extreme) replay = FileUtil::readBinary(replayFile_);
+        if (!pkg || (!extreme && !replay)) return fail("Lecture du package ou du replay impossible.");
+        if (extreme && !race_) return fail("Le tracé de la course n'est pas prêt.");
         const DifficultyRating* r = entry_ ? g_.ratings.get(*entry_) : nullptr;
         Json body = {{"title", title_}, {"description", description_}, {"planet", level_->planet}, {"level_hash", hash_},
                      {"min_game_version", PackageFormat::engineVersion()}};
         if (r) body["difficulty"] = r->score;
         if (!communityId_.empty()) body["community_id"] = communityId_;
+        if (extreme) body["race"] = race_->toJson();
         status_ = "Création de la publication…";
         auto pkgBytes = std::make_shared<std::string>(pkg->begin(), pkg->end());
-        auto replayBytes = std::make_shared<std::string>(replay->begin(), replay->end());
-        g_.online.send("POST", "/api/v1/community/levels", body, OnlineService::guard(life_, [this, pkgBytes, replayBytes](const ApiResult& res) {
+        auto replayBytes = std::make_shared<std::string>();
+        if (replay) replayBytes->assign(replay->begin(), replay->end());
+        g_.online.send("POST", "/api/v1/community/levels", body, OnlineService::guard(life_, [this, extreme, pkgBytes, replayBytes](const ApiResult& res) {
             if (!res.ok) return fail(res.message);
             std::string id = jstr(res.data, "id");
             int version = jget<int>(res.data, "version", 1);
@@ -207,8 +247,14 @@ private:
             std::string pkgPath = jstr(up, "package"), replayPath = jstr(up, "replay");
             if (pkgPath.rfind("/api/v1/community/", 0) != 0 || replayPath.rfind("/api/v1/community/", 0) != 0) return fail("Réponse inattendue du serveur.");
             status_ = "Envoi du package (" + std::to_string(pkgBytes->size() / 1024 + 1) + " Ko)…";
-            g_.online.sendBytes("PUT", pkgPath, *pkgBytes, OnlineService::guard(life_, [this, id, version, replayPath, replayBytes](const ApiResult& p) {
+            g_.online.sendBytes("PUT", pkgPath, *pkgBytes, OnlineService::guard(life_, [this, extreme, id, version, replayPath, replayBytes](const ApiResult& p) {
                 if (!p.ok) return fail(p.message);
+                if (extreme) {
+                    // Published at once: its race verifies it.
+                    if (!jget<bool>(p.data, "published", false)) return fail("Envoi incomplet : réessayez.");
+                    published(id, version);
+                    return;
+                }
                 status_ = "Envoi du replay de fin de niveau…";
                 g_.online.sendBytes("PUT", replayPath, *replayBytes, OnlineService::guard(life_, [this, id, version](const ApiResult& rr) {
                     if (!rr.ok) {
@@ -217,26 +263,33 @@ private:
                             if (x.is_string()) why += " · " + x.get<std::string>();
                         return fail(rr.message + why);
                     }
-                    busy_ = false;
-                    done_ = jget<bool>(rr.data, "published", false);
-                    if (!done_) return fail("Envoi incomplet : réessayez.");
-                    // Remember the publication in the level (metadata only: not part of the gameplay).
-                    if (level_) {
-                        level_->metadata["community"] = {{"id", id}, {"version", version}, {"published_at", FileUtil::nowString()}};
-                        g_.content.saveUserLevel(*level_);
-                    }
-                    communityId_ = id;
-                    publishedVersion_ = version;
-                    status_ = "Publié ! Version " + std::to_string(version) + " visible dans ONLINE LEVELS (Récents).";
-                    g_.online.notify(OnlineService::Notification::Kind::Success, "Niveau publié", "« " + title_ + " » est en ligne.");
+                    if (!jget<bool>(rr.data, "published", false)) return fail("Envoi incomplet : réessayez.");
+                    published(id, version);
                 }));
             }));
         }));
     }
 
+    void published(const std::string& id, int version) {
+        busy_ = false;
+        done_ = true;
+        // Remember the publication in the level (metadata only: not part of the gameplay).
+        if (level_) {
+            level_->metadata["community"] = {{"id", id}, {"version", version}, {"published_at", FileUtil::nowString()}};
+            g_.content.saveUserLevel(*level_);
+        }
+        communityId_ = id;
+        publishedVersion_ = version;
+        status_ = "Publié ! Version " + std::to_string(version) + " visible dans ONLINE LEVELS (Récents).";
+        if (level_ && level_->extreme) status_ += " Sa course à la vérification est ouverte.";
+        g_.online.notify(OnlineService::Notification::Kind::Success, "Niveau publié", "« " + title_ + " » est en ligne.");
+    }
+
     GameServices& g_;
     std::string levelId_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
+    std::future<RaceLayout> raceFuture_;
+    std::optional<RaceLayout> race_;
     const LevelEntry* entry_ = nullptr;
     std::optional<LevelData> level_;
     bool hasStart_ = false, hasExit_ = false;

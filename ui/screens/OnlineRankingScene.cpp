@@ -838,6 +838,16 @@ private:
         return t;
     }
 
+    bool isExtreme(const RankedLevel& l) {
+        auto it = extreme_.find(l.id);
+        if (it != extreme_.end()) return it->second;
+        bool e = false;
+        if (l.entry)
+            if (auto data = g_.content.loadLevel(l.id)) e = data->extreme && data->oneLife();
+        extreme_[l.id] = e;
+        return e;
+    }
+
     void drawLevelZone() {
         UIContext& ui = g_.ui;
         const RankedLevel* l = level();
@@ -868,9 +878,27 @@ private:
                  Align::Center, FontFace::Body, VAlign::Middle);
         float x = th.right() + ui.s(22);
         const PlanetData* planet = g_.content.planet(l->planet);
-        ui.label(planet ? planet->name : (l->planetName.empty() ? l->planet : l->planetName), {x, zoneD_.y + ui.s(26)}, 17,
-                 planet ? planet->color : ui.theme().accent, Align::Left, FontFace::Bold, VAlign::Middle);
-        ui.label(l->name, {x, zoneD_.y + ui.s(54)}, 26, ui.theme().text, Align::Left, FontFace::Title, VAlign::Middle);
+        UIContext::ButtonStyle st;
+        st.small = true;
+        float bw = ui.s(170), bx = zoneD_.right() - bw - ui.s(14);
+        bool extreme = isExtreme(*l);
+        // EXTRÊME: its « course à la vérification », next to the other actions.
+        float textRight = bx - ui.s(14);
+        if (extreme) {
+            float rw = ui.s(250);
+            Rect rb{bx - rw - ui.s(10), zoneD_.y + ui.s(18), rw, ui.s(40)};
+            if (ui.button("race", rb, "Course à la vérification", st)) {
+                const LevelFingerprint* fp = g_.online.fingerprints().get(g_.content, l->id);
+                g_.app.pushScene(makeRaceBoard(g_, "official", l->id, 0, fp ? fp->hash : std::string{}));
+            }
+            textRight = rb.x - ui.s(14);
+        }
+        std::string planetName = planet ? planet->name : (l->planetName.empty() ? l->planet : l->planetName);
+        Vec2 pn = ui.label(planetName, {x, zoneD_.y + ui.s(26)}, 17, planet ? planet->color : ui.theme().accent, Align::Left, FontFace::Bold, VAlign::Middle);
+        if (extreme) ui.extremeBadge({x + pn.x + ui.s(12), zoneD_.y + ui.s(26)}, ui.s(24));
+        float nf = ui.fitFont(l->name, FontFace::Title, 26, textRight - x, 0.7f);
+        ui.label(ui.elide(l->name, FontFace::Title, nf, textRight - x), {x, zoneD_.y + ui.s(54)}, nf, ui.theme().text, Align::Left, FontFace::Title,
+                 VAlign::Middle);
         float col2 = x + std::min(ui.s(330), (zoneD_.right() - x) * 0.5f);
         float y = zoneD_.y + ui.s(88);
         auto info = [&](float cx, float& yy, const std::string& k, const std::string& v, Color c) {
@@ -907,9 +935,6 @@ private:
             ui_.drawStatusChip(s->status, {x + ui.s(190), zoneD_.y + ui.s(126)}, ui.s(22));
         }
         // Actions
-        UIContext::ButtonStyle st;
-        st.small = true;
-        float bw = ui.s(170), bx = zoneD_.right() - bw - ui.s(14);
         std::string replayRecord = replayCandidate();
         st.enabled = !replayRecord.empty() && l->entry != nullptr;
         if (ui.button("replay", {bx, zoneD_.y + ui.s(18), bw, ui.s(40)}, "VIEW REPLAY", st))
@@ -1044,6 +1069,7 @@ private:
     std::string shockCountry_;
     float shockT_ = 2.0f;
     std::map<std::string, TexturePtr> thumbs_;
+    std::map<std::string, bool> extreme_;  // EXTRÊME levels (one life): they have a race
 };
 
 }  // namespace

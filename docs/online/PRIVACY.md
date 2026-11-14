@@ -53,6 +53,7 @@
 | Opérations de l'édition en direct (modification, auteur, date) | D1 `project_ops` | les membres | jusqu'à la suppression du projet |
 | Versions nommées des projets (nom, notes, révision, empreinte, auteur) | D1 `project_versions` | les membres | jusqu'à la suppression du projet (une version ne se modifie pas ; l'auteur devient anonyme si son compte est supprimé) |
 | Discussion des projets (message, réponse à, date, auteur) | D1 `project_messages` | les membres du projet | jusqu'à la suppression du projet ; supprimés avec le compte de leur auteur ; inclus dans l'export de vos données (avec vos projets et vos rôles) |
+| Tentatives de la course à la vérification (niveaux EXTRÊME : score, parcours, boss, vagues, temps, date) et leurs replays | D1 `race_runs`, `race_victors` + R2 `races/` | classement public (pseudonyme, score, détail, date) | supprimées avec votre compte (replays compris) ou avec le niveau de la communauté ; incluses dans l'export de vos données (`race_attempts`) ; le titre de vérificateur d'un compte supprimé devient anonyme |
 | Présence en direct (curseur et vue dans le niveau, sélection, activité) | mémoire de la salle du projet, jamais écrite | les membres présents | 20 secondes après le dernier signe de vie |
 | Journal de sécurité (action, empreinte d'IP) | D1 `audit_log` | opérateurs | 180 jours |
 | Compteurs de limitation (empreintes) | D1 `rate_limits` | personne | 24 heures |

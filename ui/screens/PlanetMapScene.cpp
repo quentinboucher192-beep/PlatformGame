@@ -316,7 +316,13 @@ public:
         }
         float x = panel.x + ui.s(36), y = panel.y + ui.s(30);
         float colW = (panel.w - ui.s(108)) * 0.5f;
-        ui.label(l.name, {x, y}, 40, ui.theme().text, Align::Left, FontFace::Title);
+        bool extreme = cached_ && cached_->extreme && cached_->oneLife();
+        {
+            float room = panel.w - ui.s(72) - (extreme ? ui.s(170) : 0.0f);
+            float tf = ui.fitFont(l.name, FontFace::Title, 40, room, 0.7f);
+            Vec2 ts = ui.label(ui.elide(l.name, FontFace::Title, tf, room), {x, y}, tf, ui.theme().text, Align::Left, FontFace::Title);
+            if (extreme) ui.extremeBadge({x + ts.x + ui.s(18), y + ts.y * 0.5f}, ui.s(42));
+        }
         y += ui.s(60);
         if (!l.author.empty()) {
             ui.label("par " + l.author, {x, y}, 20, ui.theme().textDim);
@@ -353,7 +359,8 @@ public:
                     if (ch == '.') ch = ',';
                 int lives = d.livesAllowed();
                 std::string rules = std::string("Dégâts reçus : ×") + dmg + "   —   Vies : " +
-                                    (lives == 0 ? std::string("illimitées") : std::to_string(lives));
+                                    (lives == 0 ? std::string("illimitées") : std::to_string(lives)) +
+                                    (extreme ? std::string(" (EXTRÊME : course à la vérification)") : std::string{});
                 bool hard = d.damageFactor > 1.0f || lives > 0;
                 ui.label(rules, {x, cy}, ui.fitFont(rules, FontFace::Body, 21, colW - ui.s(10)), hard ? ui.theme().warm : ui.theme().text);
             }

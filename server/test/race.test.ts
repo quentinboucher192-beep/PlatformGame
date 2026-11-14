@@ -137,6 +137,21 @@ describe("course à la vérification", () => {
         expect(board.body.data.ranking[0].score).toBe(board.body.data.ranking[1].score);
     });
 
+    it("the race leaves with its level, and a player's attempts are in their data export", async () => {
+        const author = await registerPlayer("Createur");
+        const { id } = await publishExtreme(author);
+        const ana = await registerPlayer("Ana");
+        await attempt(ana, id, { upTo: 0.4, boss: 300, waves: 1 });
+        const exp = await api("GET", `${V}/players/me/export`, { token: ana.token });
+        expect(exp.status).toBe(200);
+        expect(exp.body.data.race_attempts).toHaveLength(1);
+        expect(exp.body.data.race_attempts[0]).toMatchObject({ board: `c:${id}:1`, status: "VERIFIED" });
+        const del = await api("DELETE", `${V}/community/levels/${id}`, { token: author.token });
+        expect(del.status).toBe(200);
+        const left = await env.DB.prepare("SELECT COUNT(*) AS n FROM race_runs WHERE board LIKE ?1").bind(`c:${id}:%`).first<{ n: number }>();
+        expect(left!.n).toBe(0);
+    });
+
     it("official extreme levels have a race too (layout registered with the level version)", async () => {
         const p = await registerPlayer("Ana");
         const lv = await env.DB.prepare("SELECT level_id, content_hash FROM level_versions WHERE compatibility_status = 'active' LIMIT 1").first<{ level_id: string; content_hash: string }>();

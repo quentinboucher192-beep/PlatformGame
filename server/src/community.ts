@@ -737,7 +737,12 @@ export async function removeLevel(ctx: Ctx): Promise<Response> {
     if (l.author_id !== auth.player.id) throw Errors.forbidden("NOT_AUTHOR", "Ce niveau ne vous appartient pas.");
     const keys = await communityKeys(ctx, "l.id = ?1", l.id);
     for (let i = 0; i < keys.length; i += 500) await ctx.env.STORAGE.delete(keys.slice(i, i + 500));
-    await ctx.env.DB.prepare("DELETE FROM community_levels WHERE id = ?1").bind(l.id).run();
+    await ctx.env.DB.batch([
+        // Its « course à la vérification » goes with it (boards 'c:<level>:<version>').
+        ctx.env.DB.prepare("DELETE FROM race_runs WHERE board LIKE 'c:' || ?1 || ':%'").bind(l.id),
+        ctx.env.DB.prepare("DELETE FROM race_victors WHERE board LIKE 'c:' || ?1 || ':%'").bind(l.id),
+        ctx.env.DB.prepare("DELETE FROM community_levels WHERE id = ?1").bind(l.id),
+    ]);
     await audit(ctx, auth.player.id, "community_level_removed", { level_id: l.id });
     return json(ctx, { removed: true });
 }
@@ -752,9 +757,15 @@ export async function communityKeys(ctx: Ctx, where: string, arg: string): Promi
     const r = await ctx.env.DB.prepare(`SELECT r.replay_key FROM community_records r JOIN community_levels l ON l.id = r.level_id WHERE ${where}`)
         .bind(arg)
         .all<{ replay_key: string | null }>();
+    const race = await ctx.env.DB.prepare(
+        `SELECT rr.replay_key FROM race_runs rr JOIN community_levels l ON rr.board LIKE 'c:' || l.id || ':%' WHERE ${where} AND rr.replay_key IS NOT NULL`,
+    )
+        .bind(arg)
+        .all<{ replay_key: string | null }>();
     const keys: string[] = [];
     for (const x of v.results) for (const k of [x.package_key, x.thumbnail_key, x.replay_key]) if (k) keys.push(k);
     for (const x of r.results) if (x.replay_key) keys.push(x.replay_key);
+    for (const x of race.results) if (x.replay_key) keys.push(x.replay_key);
     return keys;
 }
 

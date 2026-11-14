@@ -32,6 +32,9 @@ struct ResultsData {
     /// game's estimate; the server computes the ranked score from the replay).
     std::optional<float> raceScore;
     int raceBosses = 0, raceBossTotal = 0;
+    /// Where its leaderboard is: "official" or "community", the level id, version, hash.
+    std::string raceKind, raceLevelId, raceHash;
+    int raceVersion = 0;
 };
 
 /// End-of-level screen: animated statistics, comparison with the personal record, the

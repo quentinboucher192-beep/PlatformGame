@@ -1040,6 +1040,42 @@ comparaison de deux révisions, restauration (éditeurs, après confirmation), t
 révision ou d'une version comme niveau indépendant (WORKSHOP → Mes niveaux), création d'une
 version nommée.
 
+### 8.9 octies Course à la vérification (niveaux EXTRÊME)
+
+Un niveau **EXTRÊME** se joue avec **une seule vie** (`lives = 1`, ou mode défi sans mort
+autorisée) ; l'éditeur verrouille ce réglage. Un niveau de la communauté EXTRÊME est publié
+**sans** la fin de niveau de son auteur : il déclare à la place le tracé de sa course
+(`race` dans `POST /community/levels`), et le premier joueur qui le termine en devient le
+**vérificateur**. L'enchaînement des boss de la campagne (`noyau_01`) est EXTRÊME ; son tracé
+est enregistré avec la version du niveau (`level_versions.race`, migration 0027).
+
+Tracé (`race`) : `{ route: [[x, y], …] (2 à 500 points, parcours prévu du départ à la sortie),
+bosses: [{ id, name }], ambushes: [{ id, waves }] }`. Le paquet doit contenir un niveau
+`extreme: true` à une seule vie (`422 EXTREME_LIVES`) et sa version un tracé
+(`422 RACE_LAYOUT_MISSING`).
+
+Score de progression (0 à 100, une décimale, arrondi vers le bas ; 100 seulement si la sortie
+est atteinte) : `40 × parcours + 60 × parts obtenues / parts`, où chaque boss compte 2 parts
+(selon la part de sa vie retirée) et chaque embuscade 1 part (vagues battues / vagues). Sans
+boss ni embuscade, le parcours compte pour 100.
+
+| Méthode | Route | Compte | Règle |
+|---|---|---|---|
+| POST | `/races/runs` `{ kind, level_id, version? \| level_hash?, attempt_id, time_ms, finished, bosses, waves }` | oui | `kind` : `community` (id en ligne, `version` facultative) ou `official` (`level_hash` facultatif) ; `bosses` : pour mille de vie retirée par boss du tracé ; `waves` : vagues battues par embuscade ; `201 { run: { id, status: PENDING }, upload }` ; `409 RUN_EXISTS` pour une tentative déjà envoyée ; 240 envois par heure |
+| PUT | `/races/runs/{runId}/replay` | oui (le joueur de la tentative) | le replay (`application/octet-stream`) ; le serveur calcule le score : `{ run: { status: VERIFIED \| REJECTED, score, finished, reasons, rank }, verifier }` |
+| GET | `/races/board?kind=&level_id=&version=\|level_hash=` | non | `{ race: { title, version, bosses, ambushes, participants }, verifier: { player, at } \| null, ranking: [{ rank, player, score, route, bosses_beaten, waves, finished, detail, time_ms, at, me }], my_pending }` (meilleure tentative vérifiée de chaque joueur, 100 au plus ; égalité : la plus ancienne d'abord) |
+
+Ce que le serveur vérifie (sinon `REJECTED`, avec les raisons) : le replay est celui de la
+tentative et de cette version du niveau ; au plus une mort et aucune réapparition ; départ au
+point de départ ; trajectoire dans les limites du niveau et à une vitesse possible ; la vie
+retirée aux boss et les vagues déclarées correspondent aux événements du replay (`BossHit`,
+`WaveCleared`, tolérance de 1 % de vie) ; une tentative « finie » a l'événement de fin et
+arrive dans la sortie. Le parcours est la plus lointaine projection de la trajectoire sur le
+tracé déclaré. Le premier joueur dont la tentative finie est acceptée devient le vérificateur
+(une seule fois par version, jamais remplacé) ; les autres participants et l'auteur reçoivent
+la notification `race_verified`. Les cartes d'ONLINE LEVELS donnent `extreme`,
+`verified { player, at }` (pour la version courante) et `race_best`.
+
 ### 8.9 bis Installateurs du jeu (notification « nouvelle version »)
 
 Publics (aucun compte, rien de personnel n'est envoyé : le jeu ne transmet pas sa version, il

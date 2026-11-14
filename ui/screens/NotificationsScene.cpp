@@ -61,6 +61,10 @@ const std::vector<OnlineKind>& onlineKinds() {
         {"project_invite", "P", {176, 76, 255, 255}, "Projet", "Invitation à un projet"},
         {"project_role", "P", {176, 76, 255, 255}, "Projet", "Changement de mon rôle dans un projet"},
         {"project_version", "V", {176, 76, 255, 255}, "Version", "Nouvelle version nommée d'un projet"},
+        {"project_mention", "@", {176, 76, 255, 255}, "Projet", "Mention dans un projet"},
+        {"project_reply", "R", {176, 76, 255, 255}, "Projet", "Réponse à mes messages d'un projet"},
+        {"project_removed", "P", {255, 120, 120, 255}, "Projet", "Retrait d'un projet"},
+        {"race_verified", "X", {255, 140, 60, 255}, "EXTRÊME", "Vérification d'un niveau EXTRÊME que j'ai tenté"},
     };
     return k;
 }
@@ -267,7 +271,11 @@ private:
         if ((kind == "comment_reply" || kind == "comment_reaction" || kind == "level_comment") && !jstr(n, "level_id").empty()) return "Voir les commentaires";
         if (kind == "new_follower" && n.contains("actor") && n["actor"].is_object()) return "Voir le profil";
         if (kind == "project_invite") return "Voir l'invitation";
-        if ((kind == "project_role" || kind == "project_version") && n.contains("data") && !jstr(n["data"], "project_id").empty()) return "Voir le projet";
+        if ((kind == "project_role" || kind == "project_version" || kind == "project_mention" || kind == "project_reply") && n.contains("data") &&
+            !jstr(n["data"], "project_id").empty())
+            return "Voir le projet";
+        if (kind == "project_removed") return "Mes projets";
+        if (kind == "race_verified" && (!jstr(n, "level_id").empty() || (n.contains("data") && !jstr(n["data"], "official").empty()))) return "Voir le niveau";
         return {};
     }
 
@@ -285,8 +293,18 @@ private:
                 g_.app.switchScene(makeProjects(g_));
                 return;
             }
-            if (kind == "project_role" || kind == "project_version") {
-                g_.app.switchScene(makeProjects(g_, jstr(n["data"], "project_id")));
+            if (kind == "project_role" || kind == "project_version" || kind == "project_mention" || kind == "project_reply") {
+                g_.app.switchScene(makeProjects(g_, n.contains("data") ? jstr(n["data"], "project_id") : std::string{}));
+                return;
+            }
+            if (kind == "project_removed") {
+                g_.app.switchScene(makeProjects(g_));
+                return;
+            }
+            if (kind == "race_verified" && jstr(n, "level_id").empty()) {
+                // A campaign level: its world ranking (the race is opened from there).
+                std::string official = n.contains("data") ? jstr(n["data"], "official") : std::string{};
+                if (!official.empty()) g_.app.switchScene(makeOnlineRanking(g_, official));
                 return;
             }
             if (kind == "comment_reply" || kind == "comment_reaction" || kind == "level_comment") g_.onlineOpen = "comments";

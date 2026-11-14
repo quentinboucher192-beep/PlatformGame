@@ -334,7 +334,11 @@ async function crown(ctx: Ctx, board: Board, me: string, runId: string, now: str
     const others = await ctx.env.DB.prepare("SELECT DISTINCT player_id FROM race_runs WHERE board = ?1 AND player_id <> ?2").bind(board.key, me).all<{ player_id: string }>();
     const told = new Set(others.results.map((o) => o.player_id));
     if (board.authorId && board.authorId !== me) told.add(board.authorId);
-    for (const pid of told) await notify(ctx, pid, "race_verified", { actor: me, levelId: board.kind === "community" ? board.levelId : null, data: { title: board.title } });
+    for (const pid of told) await notify(ctx, pid, "race_verified", {
+            actor: me,
+            levelId: board.kind === "community" ? board.levelId : null,
+            data: board.kind === "official" ? { title: board.title, official: board.levelId } : { title: board.title },
+        });
     return true;
 }
 

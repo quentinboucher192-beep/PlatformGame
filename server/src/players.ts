@@ -249,7 +249,7 @@ export async function patchMe(ctx: Ctx): Promise<Response> {
 export async function exportMe(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
     const id = auth.player.id;
-    const [sessions, records, friends, replays, auditRows, conversations, messages, blocks, cLevels, cRecords, cRatings, favs, comments, reactions, follows, notes, playtimeRows, projectRows, projectMessages] = await ctx.env.DB.batch([
+    const [sessions, records, friends, replays, auditRows, conversations, messages, blocks, cLevels, cRecords, cRatings, favs, comments, reactions, follows, notes, playtimeRows, projectRows, projectMessages, raceRows] = await ctx.env.DB.batch([
         ctx.env.DB.prepare("SELECT id, created_at, last_used_at, expires_at, refresh_expires_at, revoked_at, client_info FROM player_sessions WHERE player_id = ?1").bind(id),
         ctx.env.DB.prepare("SELECT * FROM records WHERE player_id = ?1 ORDER BY created_at").bind(id),
         ctx.env.DB.prepare("SELECT player_id, friend_id, status, created_at FROM player_friends WHERE player_id = ?1 OR friend_id = ?1").bind(id),
@@ -276,6 +276,9 @@ export async function exportMe(ctx: Ctx): Promise<Response> {
             "SELECT m.project_id, p.name AS project, m.role, m.joined_at FROM project_members m JOIN projects p ON p.id = m.project_id WHERE m.player_id = ?1",
         ).bind(id),
         ctx.env.DB.prepare("SELECT id, project_id, body, reply_to, created_at FROM project_messages WHERE author_id = ?1 ORDER BY id").bind(id),
+        ctx.env.DB.prepare(
+            "SELECT id, board, status, score, route, bosses_beaten, waves, finished, time_ms, created_at, verified_at FROM race_runs WHERE player_id = ?1 ORDER BY created_at",
+        ).bind(id),
     ]);
     await audit(ctx, id, "data_export");
     return json(ctx, {
@@ -300,6 +303,7 @@ export async function exportMe(ctx: Ctx): Promise<Response> {
         playtime: playtimeRows?.results ?? [],
         projects: projectRows?.results ?? [],
         project_messages: projectMessages?.results ?? [],
+        race_attempts: raceRows?.results ?? [],
         notes: "Le mot de passe n'est stocké que sous forme d'empreinte PBKDF2 et n'est pas exportable. Les adresses IP ne sont jamais stockées en clair.",
     });
 }
@@ -330,9 +334,20 @@ export async function deleteMe(ctx: Ctx): Promise<Response> {
     toDelete.push(...(await ownedProjectKeys(ctx, id)));
     const own = await ctx.env.DB.prepare("SELECT replay_key FROM community_records WHERE player_id = ?1 AND replay_key IS NOT NULL").bind(id).all<{ replay_key: string }>();
     for (const r of own.results) if (!toDelete.includes(r.replay_key)) toDelete.push(r.replay_key);
+    // Replays of the player's attempts in the races of EXTRÊME levels.
+    const race = await ctx.env.DB.prepare("SELECT replay_key FROM race_runs WHERE player_id = ?1 AND replay_key IS NOT NULL").bind(id).all<{ replay_key: string }>();
+    for (const r of race.results) if (!toDelete.includes(r.replay_key)) toDelete.push(r.replay_key);
     for (let i = 0; i < toDelete.length; i += 500) await ctx.env.STORAGE.delete(toDelete.slice(i, i + 500));
     await ctx.env.DB.batch([
         ctx.env.DB.prepare("DELETE FROM audit_log WHERE player_id = ?1").bind(id),
+        // The races of the player's community levels go with the levels (their own attempts
+        // elsewhere follow the account: ON DELETE CASCADE).
+        ctx.env.DB.prepare(
+            "DELETE FROM race_runs WHERE EXISTS (SELECT 1 FROM community_levels l WHERE l.author_id = ?1 AND race_runs.board LIKE 'c:' || l.id || ':%')",
+        ).bind(id),
+        ctx.env.DB.prepare(
+            "DELETE FROM race_victors WHERE EXISTS (SELECT 1 FROM community_levels l WHERE l.author_id = ?1 AND race_victors.board LIKE 'c:' || l.id || ':%')",
+        ).bind(id),
         ctx.env.DB.prepare("DELETE FROM players WHERE id = ?1").bind(id),
         // Groups the player owned go to their oldest member; emptied conversations disappear.
         ctx.env.DB.prepare(

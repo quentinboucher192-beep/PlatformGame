@@ -374,6 +374,10 @@ void GameScene::finishRun(bool completed) {
     if (race_.active()) {
         data.raceBosses = race_.progress().bossesBeaten();
         data.raceBossTotal = static_cast<int>(race_.layout().bosses.size());
+        data.raceKind = raceKind_;
+        data.raceLevelId = raceLevelId_;
+        data.raceVersion = raceVersion_;
+        data.raceHash = raceHash_;
     }
     g_.app.pushScene(std::make_unique<ResultsScene>(g_, *this, std::move(data)));
 }

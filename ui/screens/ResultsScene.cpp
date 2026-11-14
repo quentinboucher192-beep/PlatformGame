@@ -183,9 +183,10 @@ void ResultsScene::render(float /*alpha*/) {
 
     // ------------------------------------------------------------- buttons
     float bh = ui.s(64), by = panel.bottom() - ui.s(100);
-    float bw = ui.s(340);
     bool hasNext = run.completed && !d_.nextLevel.empty();
-    int count = hasNext ? 3 : 2;
+    bool hasRace = d_.raceScore.has_value() && !d_.raceKind.empty();
+    int count = (hasNext ? 3 : 2) + (hasRace ? 1 : 0);
+    float bw = std::min(ui.s(340), (panel.w - ui.s(120) - (count - 1) * ui.s(24)) / static_cast<float>(count));
     float total = count * bw + (count - 1) * ui.s(24);
     float bx = panel.center().x - total * 0.5f;
     ui.pushId("results");
@@ -201,6 +202,11 @@ void ResultsScene::render(float /*alpha*/) {
             if (ui.button("next", {bx, by, bw, bh}, "Niveau suivant", p)) {
                 g_.app.switchScene(makeGameScene(g_, d_.nextLevel), 0.4f);
             }
+            bx += bw + ui.s(24);
+        }
+        if (hasRace) {
+            if (ui.button("race", {bx, by, bw, bh}, "Course à la vérification"))
+                g_.app.pushScene(makeRaceBoard(g_, d_.raceKind, d_.raceLevelId, d_.raceVersion, d_.raceHash));
             bx += bw + ui.s(24);
         }
         std::string back = d_.editorTest ? "Retour à l'éditeur" : d_.fromOnline ? "Retour à ONLINE"

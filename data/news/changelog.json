@@ -1,4 +1,11 @@
 {
+  "2.16.0": [
+    "Niveaux EXTRÊME : une seule vie, sans possibilité de la changer, et un badge EXTRÊME dans la campagne, ONLINE LEVELS et ONLINE RANKING. L'enchaînement des boss (L'Arène des Échos) devient EXTRÊME.",
+    "Course à la vérification : chaque tentative d'un niveau EXTRÊME est classée selon sa progression, même sans arriver au bout : parcours (40 points), vie retirée aux boss et vagues d'embuscade battues (60 points). Le serveur recalcule le score à partir du replay.",
+    "Le premier joueur qui termine un niveau EXTRÊME en devient le vérificateur ; les autres participants et l'auteur sont prévenus. Le classement s'ouvre depuis la fiche du niveau, ONLINE RANKING et l'écran de fin.",
+    "Éditeur : réglage « Niveau EXTRÊME (une seule vie) ». Un niveau EXTRÊME se publie sans fin de niveau de son auteur, avec le tracé de sa course (parcours prévu, boss, embuscades).",
+    "WORKSHOP : supprimer un niveau publié propose aussi de le retirer d'ONLINE LEVELS. Notifications : niveau EXTRÊME vérifié, réponse dans un projet, retrait d'un projet."
+  ],
   "2.15.0": [
     "Éditeur en direct : discussion du projet (bouton Discussion avec compteur de messages non lus), messages gardés avec le projet, « Répondre » à un message ; l'auteur est prévenu.",
     "PROJETS se met à jour tout seul (membres, rôles, demandes, invitations, révisions) chez l'administrateur comme chez le membre concerné ; compteurs sur Demandes et Invitations.",

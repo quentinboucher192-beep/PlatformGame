@@ -164,7 +164,7 @@ void LevelEditorScene::modalSettings(const Rect& c) {
     float y = c.y + ui.s(56);
     float lw = colW * 0.42f;
     Rect area{c.x, y, c.w, c.h - ui.s(130)};
-    ui.beginScroll("setscroll", area, ui.s(1100));
+    ui.beginScroll("setscroll", area, settingsContentH_ > 0.0f ? settingsContentH_ : ui.s(1100));
     float y1 = y - ui.scrollOffset(), y2 = y1;
     FieldRow left{ui, c.x, colW, lw, y1};
     FieldRow right{ui, c.x + colW + ui.s(40), colW, lw, y2};
@@ -256,10 +256,30 @@ void LevelEditorScene::modalSettings(const Rect& c) {
             level_.damageFactor = df;
             changed = true;
         }
-        float lv = static_cast<float>(level_.lives);
-        if (ui.numberField("lives", right.field("Vies (0 = illimitées)"), lv, 1, 0, 99, "%.0f")) {
-            level_.lives = static_cast<int>(lv);
+        // EXTRÊME: one life, not modifiable; published without verification, its
+        // « course à la vérification » ranks every attempt until someone finishes it.
+        bool ex = level_.extreme;
+        if (ui.toggle("extreme", {right.x, right.y, colW, ui.s(44)}, "Niveau EXTRÊME (une seule vie)", ex)) {
+            level_.extreme = ex;
             changed = true;
+        }
+        right.y += ui.s(52);
+        if (level_.extreme) {
+            if (level_.lives != 1) {
+                level_.lives = 1;
+                changed = true;
+            }
+            Rect r = right.field("Vies");
+            ui.r().fillRoundedRect(r, ui.s(6), Color{14, 20, 38, 235});
+            const std::string t = "1, imposée par le mode EXTRÊME";
+            ui.label(t, {r.x + ui.s(12), r.center().y}, ui.fitFont(t, FontFace::Bold, 17, r.w - ui.s(24)), ui.theme().warm, Align::Left, FontFace::Bold,
+                     VAlign::Middle);
+        } else {
+            float lv = static_cast<float>(level_.lives);
+            if (ui.numberField("lives", right.field("Vies (0 = illimitées)"), lv, 1, 0, 99, "%.0f")) {
+                level_.lives = static_cast<int>(lv);
+                changed = true;
+            }
         }
     }
     right.y += ui.s(10);
@@ -312,6 +332,7 @@ void LevelEditorScene::modalSettings(const Rect& c) {
         }
         right.y += ui.s(50);
     }
+    settingsContentH_ = std::max(left.y, right.y) - (y - ui.scrollOffset()) + ui.s(20);
     ui.endScroll();
     if (changed) markChanged("Paramètres du niveau");
     if (ui.button("ok", {c.right() - ui.s(200), c.bottom() - ui.s(58), ui.s(200), ui.s(56)}, "Fermer")) modal_ = Modal::None;

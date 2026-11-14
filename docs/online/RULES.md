@@ -116,6 +116,22 @@ en vigueur quand son propriétaire consulte son statut (le jeu le fait toutes le
 est connecté) et lors de la maintenance quotidienne (03:17 UTC). Une décision manuelle n'est
 jamais annulée : seuls les records encore en attente sont concernés.
 
+## Course à la vérification (niveaux EXTRÊME)
+
+Un niveau EXTRÊME (une seule vie) a, en plus de ses classements de temps, un classement de
+**progression** : chaque tentative compte, même sans arriver au bout. Le score (0 à 100) vaut
+40 points pour le parcours (la plus lointaine avancée sur le tracé prévu) et 60 points pour les
+combats (2 parts par boss selon la vie qui lui a été retirée, 1 part par embuscade selon les
+vagues battues). Seule une tentative qui atteint la sortie vaut 100 ; le premier joueur à y
+arriver devient le **vérificateur** du niveau. Chaque joueur est classé avec sa meilleure
+tentative ; à égalité, la plus ancienne passe devant. Les tentatives sont classées séparément
+pour chaque version d'un niveau (jamais mélangées).
+
+Le jeu calcule le même score pour l'afficher (une estimation) ; le score classé est **celui du
+serveur**, recalculé à partir du replay. Les limites ci-dessous s'appliquent aussi : la vie des
+boss et les vagues viennent des événements du replay, vérifiés pour leur cohérence (avec la
+déclaration du joueur, la trajectoire, les morts et le temps), pas re-simulés.
+
 ## Limites de l'anti-triche (honnêtement)
 
 Le client est un programme distribué : il peut être modifié. Le serveur ne fait jamais
