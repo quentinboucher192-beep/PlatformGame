@@ -13,10 +13,10 @@ testée. Ce qui n'est pas fait ou reste limité est dit en §4 et §5.
 | 2.11.0 | Refonte de l'éditeur de niveaux selon la maquette approuvée (préalable à la phase 3) | `f29c2b3` |
 | 2.12.0 | Phases 3 et 4 — édition en direct : présence, verrous, opérations synchronisées | `6d75b3c` |
 | 2.13.0 | Phase 5 — historique, comparaison, restauration, versions nommées | `359e255` |
-| 2.14.0 | Phase 6 — finitions : notifications regroupées, robustesse aux coupures et à la charge, tests multi-comptes et de charge, documentation, ce bilan | ce commit |
+| 2.14.0 | Phase 6 — finitions : notifications regroupées, robustesse aux coupures et à la charge, tests multi-comptes et de charge, documentation, ce bilan | `5995dec`, `eb3380f` |
 
 Chaque version a son installateur Windows (artefact de la CI) ; les versions 2.9.0 à 2.12.0
-sont aussi proposées dans le jeu par le serveur de staging (notification « nouvelle version »,
+et 2.14.0 sont aussi proposées dans le jeu par le serveur de staging (notification « nouvelle version »,
 téléchargement dans le jeu, lancement par le joueur ; aucune mise à jour automatique).
 
 ## 2. Fonctionnalités
@@ -141,7 +141,7 @@ p95 214 ms.
 | 0020 | `project_ops`, colonnes `ops_seq` | appliquée |
 | 0021 | `project_versions` | appliquée |
 | 0022 | release 2.12.0 | appliquée |
-| 0023 | release 2.14.0 (après la CI de cette version) | à venir |
+| 0023 | release 2.14.0 | appliquée |
 
 Toutes les migrations ne font qu'ajouter (tables, colonnes, lignes) : niveaux, classements,
 replays et publications existants restent compatibles. Le Durable Object `ProjectRoom` est
