@@ -70,7 +70,7 @@ Production : mêmes étapes sans `--env staging` (`npm run deploy:production`,
 
 | Environnement | Adresse | État |
 |---|---|---|
-| staging | `https://cosmic-online-staging.xpg-licences-workersdev.workers.dev` | déployé (D1 `cosmic-online-staging`, R2 `cosmic-online-staging-files`, migrations 0001–0002, révision 1 des 9 niveaux (jeu 2.1.0 / 2.1.1) ; code du serveur de la version 2.1.2 : replays exacts v2, vérification du pseudonyme, règle des classements établis). **La révision 3 des 12 niveaux (jeu 2.1.3 : moteur déterministe, plafond, niveaux sans raccourci, épreuves) reste à enregistrer** : `CosmicPlatformer --online-manifest manifest.json` puis `scripts/register-levels.mjs` avec un `ADMIN_TOKEN` ; d'ici là, le jeu 2.1.2 garde les performances en local et les envoie automatiquement après l'enregistrement, `IP_HASH_SALT` défini, pas d'`ADMIN_TOKEN` (les revues manuelles ne sont donc pas possibles tant que vous n'en définissez pas un) |
+| staging | `https://cosmic-online-staging.xpg-licences-workersdev.workers.dev` | déployé (D1 `cosmic-online-staging`, R2 `cosmic-online-staging-files`, migrations 0001–0005 : social, niveaux de la communauté, et **révision 4 des 12 niveaux du jeu 2.2.0** enregistrée par la migration `0005_levels_2_2_0.sql`, générée par `scripts/levels-migration.mjs` depuis `CosmicPlatformer --online-manifest`, sans secret d'administration), `IP_HASH_SALT` défini, pas d'`ADMIN_TOKEN` (les revues manuelles ne sont donc pas possibles tant que vous n'en définissez pas un) |
 | production | — | non déployée : `npm run deploy:production` avec un fichier de secrets au premier déploiement (`--secrets-file`), puis `npm run db:migrate:production` et l'enregistrement des niveaux |
 
 Premier déploiement d'un Worker qui n'existe pas encore : les secrets déclarés comme requis
@@ -116,3 +116,21 @@ dans le tableau de bord, puis `wrangler r2 bucket create <nom>`).
 `npx wrangler rollback --env staging` revient à la version précédente du Worker. Les
 migrations ne sont pas annulées automatiquement : une migration doit rester compatible avec
 le code précédent le temps du déploiement.
+
+
+## Enregistrer les niveaux d'une nouvelle version du jeu sans secret
+
+```bash
+CosmicPlatformer --online-manifest manifest.json
+```
+
+```bash
+node scripts/levels-migration.mjs manifest.json > migrations/0006_levels_X_Y_Z.sql
+```
+
+```bash
+npx wrangler d1 migrations apply cosmic-online-staging --remote --env staging
+```
+
+La migration a le même effet que `POST /admin/levels` : les nouvelles révisions deviennent
+courantes, les anciennes passent « legacy », une révision existante n'est jamais modifiée.
