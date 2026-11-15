@@ -30,7 +30,8 @@
   {
    "fr": "(autre version)",
    "where": [
-    "ui/screens/GhostRun.cpp"
+    "ui/screens/GhostRun.cpp",
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -38,6 +39,19 @@
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
     "editors/level_editor/LevelEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "(désynchronisé)",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "(hors ligne)",
+   "where": [
+    "ui/online/RatingWidgets.cpp",
+    "ui/screens/OnlineRankingScene.cpp"
    ]
   },
   {
@@ -50,6 +64,12 @@
    "fr": "(médaille {0})",
    "where": [
     "game/progression/NewsCenter.cpp"
+   ]
+  },
+  {
+   "fr": "(non connecté)",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
    ]
   },
   {
@@ -74,6 +94,30 @@
    "fr": "({0} sur mon record d'avant)",
    "where": [
     "ui/screens/SegmentsScene.cpp"
+   ]
+  },
+  {
+   "fr": "+1 s",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "+10 ms",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "+100 ms",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "+5 s",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -145,7 +189,8 @@
   {
    "fr": "0,000 s",
    "where": [
-    "game/ghost/GhostRace.cpp"
+    "game/ghost/GhostRace.cpp",
+    "game/ghost/ReplayCompare.cpp"
    ]
   },
   {
@@ -188,6 +233,18 @@
    "fr": "1. Le service",
    "where": [
     "data/online/terms_fr.txt"
+   ]
+  },
+  {
+   "fr": "12 nouveaux succès (Aethra, les 4 gardiens, les 16 gardiens et échos, Nyxara sans être touché, les nouveaux pouvoirs) : 146 succès, 383 étoiles. Les succès « tous les niveaux » comptent désormais les 18 niveaux.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "1re pression : pose une balise (gratuit). 2e pression dans les 5 s : retour instantané à la balise, à l'arrêt et brièvement invulnérable.",
+   "where": [
+    "data/powers/recall.json"
    ]
   },
   {
@@ -242,6 +299,18 @@
    "fr": "4 (par défaut)",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "4 nouveaux gardiens : Mycélia la Mère-Racine, Aurorax le Miroir boréal, Pyrogyre l'Anneau solaire, Nyxara la Dévoreuse d'étoiles — 12 attaques inédites (racine traqueuse, cage de ronces, reflets, lac gelé, prisme, couronne de feu, marée de lave, puits gravitationnel, onde d'éclipse…). Les 12 gardiens classiques ne changent pas.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "4 nouveaux pouvoirs (bouton Spécial) : Lame boomerang, Nova de givre (les ennemis gelés deviennent des plateformes), Leurre holographique, Balise de rappel ; aide animée, fiches, éditeur.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -321,7 +390,51 @@
    "where": [
     "editors/shared/PropertyEditor.cpp",
     "engine/input/InputTypes.cpp",
-    "ui/screens/NotificationsScene.cpp"
+    "ui/screens/NotificationsScene.cpp",
+    "ui/screens/ReplayCompareSetupScene.cpp",
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "A : {0}",
+   "where": [
+    "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "A en avance",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "A en retard",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "A rejoué à l'identique",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "A rejoué à l'identique · {0} contrôles vérifiés",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "A · {0}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "A − B",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -577,6 +690,12 @@
    ]
   },
   {
+   "fr": "Adhérence (1 = normale)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Administrateur",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -586,6 +705,46 @@
    "fr": "administrateur",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
+   ]
+  },
+  {
+   "fr": "AETHRA",
+   "where": [
+    "data/levels/aethra_01.json",
+    "data/levels/aethra_02.json",
+    "data/levels/aethra_03.json",
+    "data/levels/aethra_04.json"
+   ]
+  },
+  {
+   "fr": "Aethra",
+   "where": [
+    "data/music/tracks.json",
+    "data/planets/aethra.json"
+   ]
+  },
+  {
+   "fr": "Aethra — L'Horizon des événements",
+   "where": [
+    "data/levels/aethra_04.json"
+   ]
+  },
+  {
+   "fr": "Aethra — La Caldeira",
+   "where": [
+    "data/levels/aethra_03.json"
+   ]
+  },
+  {
+   "fr": "Aethra — Le Bosquet Englouti",
+   "where": [
+    "data/levels/aethra_01.json"
+   ]
+  },
+  {
+   "fr": "Aethra — Le Lac aux Reflets",
+   "where": [
+    "data/levels/aethra_02.json"
    ]
   },
   {
@@ -899,6 +1058,12 @@
    ]
   },
   {
+   "fr": "Aléatoire",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Ambassadeur",
    "where": [
     "data/achievements/achievements.json"
@@ -909,6 +1074,36 @@
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "ambiance",
+   "where": [
+    "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ambiance d'Aethra",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Ambiance de Glacior",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Ambiance de Pyralis",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Ambiance de Sylvanox",
+   "where": [
+    "data/music/tracks.json"
    ]
   },
   {
@@ -966,6 +1161,7 @@
   {
    "fr": "Ancrages",
    "where": [
+    "data/levels/aethra_04.json",
     "data/levels/sylvanox_03.json"
    ]
   },
@@ -1041,6 +1237,12 @@
    ]
   },
   {
+   "fr": "Animation suivante ({0} / {1})",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "animations",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -1071,6 +1273,7 @@
     "ui/screens/OnlineSettingsScene.cpp",
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/ProjectsScene.cpp",
+    "ui/screens/ReplayCompareSetupScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
   },
@@ -1144,7 +1347,8 @@
   {
    "fr": "Any%",
    "where": [
-    "ui/screens/GhostSetupScene.cpp"
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/ReplayCompareSetupScene.cpp"
    ]
   },
   {
@@ -1202,6 +1406,19 @@
    ]
   },
   {
+   "fr": "Appel du vide",
+   "where": [
+    "data/enemies/echo_nyxara.json",
+    "data/enemies/nyxara.json"
+   ]
+  },
+  {
+   "fr": "Appliquer",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Appuyez sur un bouton ou une gâchette de la manette",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -1253,7 +1470,8 @@
   {
    "fr": "Architecte",
    "where": [
-    "data/achievements/achievements.json"
+    "data/achievements/achievements.json",
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -1296,6 +1514,7 @@
   {
    "fr": "Argent",
    "where": [
+    "data/cosmetics/cosmetics.json",
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/gameplay/Hud.cpp",
     "game/levels/LevelData.cpp"
@@ -1358,10 +1577,17 @@
    ]
   },
   {
+   "fr": "Arrivé avant le fantôme d'un record mondial.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Arrivée",
    "where": [
     "ui/screens/GhostRun.cpp",
     "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/ReplayScene.cpp",
     "ui/screens/SegmentsScene.cpp"
    ]
   },
@@ -1445,6 +1671,12 @@
    ]
   },
   {
+   "fr": "Aspiration",
+   "where": [
+    "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
    "fr": "Astrarque",
    "where": [
     "data/achievements/achievements.json",
@@ -1473,12 +1705,6 @@
    "fr": "Astronaute violet",
    "where": [
     "data/online/avatars.json"
-   ]
-  },
-  {
-   "fr": "Att.",
-   "where": [
-    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -1537,6 +1763,12 @@
    ]
   },
   {
+   "fr": "attendez la fin du téléchargement.",
+   "where": [
+    "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
    "fr": "Attendre la fin avant l'étape suivante",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -1555,9 +1787,33 @@
    ]
   },
   {
+   "fr": "Attraction (px/s, max 140)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Au bord d'Aethra, l'île la plus lointaine glisse vers un trou noir. Lasers, ancrages et leviers des Anciens tiennent encore le passage : au bout attend la Dévoreuse d'étoiles.",
+   "where": [
+    "data/levels/aethra_04.json"
+   ]
+  },
+  {
+   "fr": "Au bord du vide, la lumière ne revient pas.",
+   "where": [
+    "data/levels/aethra_04.json"
+   ]
+  },
+  {
    "fr": "Au centre du système, l'étoile s'ouvre. Ses couloirs rejouent les trois planètes avant son cœur, où l'Astrarque porte les échos de tous les gardiens.",
    "where": [
     "data/levels/noyau_02.json"
+   ]
+  },
+  {
+   "fr": "Au cœur d'une île de basalte, une caldeira bouillonne de magma venu de Pyralis. Au-dessus d'elle tourne l'Anneau solaire, et la lave monte quand il le veut.",
+   "where": [
+    "data/levels/aethra_03.json"
    ]
   },
   {
@@ -1627,6 +1883,13 @@
    ]
   },
   {
+   "fr": "Aube",
+   "where": [
+    "data/enemies/echo_pyrogyre.json",
+    "data/enemies/pyrogyre.json"
+   ]
+  },
+  {
    "fr": "Aube stellaire",
    "where": [
     "data/enemies/astrarque.json"
@@ -1655,6 +1918,12 @@
   },
   {
    "fr": "Aucun commentaire pour l'instant : donnez le premier avis sur ce niveau.",
+   "where": [
+    "ui/online/CommentsPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun commentaire pour l'instant : félicitez ou interrogez l'auteur de cette course.",
    "where": [
     "ui/online/CommentsPanel.cpp"
    ]
@@ -1750,6 +2019,12 @@
    ]
   },
   {
+   "fr": "Aucun morceau entendu pour l'instant : jouez un niveau.",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun niveau classé pour cette planète.",
    "where": [
     "server/src/leaderboards.ts"
@@ -1828,6 +2103,18 @@
    ]
   },
   {
+   "fr": "Aucun replay pour ce niveau : terminez-le (votre course est gardée), ou importez un replay.",
+   "where": [
+    "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun replay à montrer.",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun serveur Cosmic Online n'est configuré pour cette version du jeu.",
    "where": [
     "game/online/OnlineService.cpp"
@@ -1858,6 +2145,12 @@
    ]
   },
   {
+   "fr": "Aucun titre sous votre nom.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Aucun élément ne correspond.",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -1866,6 +2159,7 @@
   {
    "fr": "Aucune",
    "where": [
+    "data/cosmetics/cosmetics.json",
     "game/enemies/EnemyDefinition.cpp",
     "game/levels/LevelData.cpp"
    ]
@@ -1916,6 +2210,18 @@
    "fr": "Aucune manette détectée",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "aucune note",
+   "where": [
+    "game/online/LevelRatings.cpp"
+   ]
+  },
+  {
+   "fr": "aucune note pour l'instant",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
    ]
   },
   {
@@ -1973,6 +2279,34 @@
    ]
   },
   {
+   "fr": "Aurorax",
+   "where": [
+    "data/achievements/achievements.json",
+    "data/enemies/aurorax.json"
+   ]
+  },
+  {
+   "fr": "Aurorax se dédouble sur le lac !",
+   "where": [
+    "data/enemies/aurorax.json",
+    "data/enemies/echo_aurorax.json"
+   ]
+  },
+  {
+   "fr": "AURORAX, LE MIROIR BORÉAL",
+   "where": [
+    "data/enemies/aurorax.json"
+   ]
+  },
+  {
+   "fr": "Aurore",
+   "where": [
+    "data/cosmetics/cosmetics.json",
+    "data/enemies/aurorax.json",
+    "data/enemies/echo_aurorax.json"
+   ]
+  },
+  {
    "fr": "AURORE RALLUMÉE",
    "where": [
     "data/levels/glacior_01.json"
@@ -1996,6 +2330,12 @@
    "fr": "auteur",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "AUTEUR DE LA COURSE",
+   "where": [
+    "ui/online/CommentsPanel.cpp"
    ]
   },
   {
@@ -2044,9 +2384,22 @@
    ]
   },
   {
+   "fr": "Autre version : comparaison non officielle",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "autre version : comparaison non officielle",
    "where": [
-    "ui/screens/GhostSetupScene.cpp"
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Autre version : comparaison non officielle (les deux replays n'ont pas été faits sur la même version du niveau).",
+   "where": [
+    "ui/screens/ReplayCompareSetupScene.cpp"
    ]
   },
   {
@@ -2098,6 +2451,7 @@
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/OnlineSettingsScene.cpp",
+    "ui/screens/OnlineThreadScene.cpp",
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/RaceScene.cpp",
@@ -2129,6 +2483,12 @@
    ]
   },
   {
+   "fr": "Avec vos étoiles · menu principal → Collection",
+   "where": [
+    "game/GameServices.cpp"
+   ]
+  },
+  {
    "fr": "Avertissement",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -2138,6 +2498,19 @@
    "fr": "Avertissement (s)",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Avis et commentaires",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp",
+    "ui/screens/OnlineThreadScene.cpp"
+   ]
+  },
+  {
+   "fr": "Avis et commentaires ({0})",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp"
    ]
   },
   {
@@ -2163,7 +2536,33 @@
    "fr": "B",
    "where": [
     "engine/input/InputTypes.cpp",
-    "ui/screens/NotificationsScene.cpp"
+    "ui/screens/NotificationsScene.cpp",
+    "ui/screens/ReplayCompareSetupScene.cpp",
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "B : {0}",
+   "where": [
+    "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "B n'est pas passé par {0} : recalage impossible",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "B recalé sur {0} : {1}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "B · {0}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -2190,6 +2589,13 @@
    "fr": "Balayage (°)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Balise de rappel",
+   "where": [
+    "data/powers/recall.json",
+    "game/levels/ObjectTypes.cpp"
    ]
   },
   {
@@ -2300,6 +2706,7 @@
   {
    "fr": "Basalte",
    "where": [
+    "data/levels/aethra_03.json",
     "game/levels/ObjectTypes.cpp"
    ]
   },
@@ -2412,6 +2819,18 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Bestiaire",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Bestiaire · {0}",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -2632,6 +3051,12 @@
    ]
   },
   {
+   "fr": "Boss ralentis",
+   "where": [
+    "game/powers/PowerStats.cpp"
+   ]
+  },
+  {
    "fr": "Boss rencontrés",
    "where": [
     "ui/screens/BossStatsScene.cpp"
@@ -2695,6 +3120,13 @@
    ]
   },
   {
+   "fr": "Bourgeons",
+   "where": [
+    "data/enemies/echo_mycelia.json",
+    "data/enemies/mycelia.json"
+   ]
+  },
+  {
    "fr": "Bourgeons gelés",
    "where": [
     "data/enemies/echo_frost_hydra.json",
@@ -2718,6 +3150,12 @@
    "fr": "Bouton retiré de « {0} »",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Braise",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -2748,6 +3186,18 @@
    ]
   },
   {
+   "fr": "Bras",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Bras de spirale (0 = aucun)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Brisez la dalle fissurée (Frappe sismique) pour descendre dans la salle des leviers.",
    "where": [
     "data/levels/glacior_03.json"
@@ -2756,6 +3206,7 @@
   {
    "fr": "Bronze",
    "where": [
+    "data/cosmetics/cosmetics.json",
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/gameplay/Hud.cpp",
     "game/levels/LevelData.cpp"
@@ -2856,7 +3307,8 @@
   {
    "fr": "C",
    "where": [
-    "ui/screens/NotificationsScene.cpp"
+    "ui/screens/NotificationsScene.cpp",
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -2882,6 +3334,50 @@
    "fr": "Cacher le joueur",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "cadre",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Cadre argent.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Cadre bronze.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Cadre or, avec un halo.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Cadre platine irisé.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Cadres d'avatar",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Cage de ronces",
+   "where": [
+    "data/enemies/echo_mycelia.json",
+    "data/enemies/mycelia.json",
+    "game/enemies/EnemyDefinition.cpp"
    ]
   },
   {
@@ -2960,6 +3456,12 @@
    ]
   },
   {
+   "fr": "caméra",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Caméra fixe",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -2976,6 +3478,12 @@
    "fr": "Canopée brisée",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "Canopée des Spores, Arène des Échos, Cœur de l'Étoile",
+   "where": [
+    "data/music/tracks.json"
    ]
   },
   {
@@ -3036,6 +3544,7 @@
   {
    "fr": "Carte des planètes",
    "where": [
+    "data/music/tracks.json",
     "ui/screens/PlanetMapScene.cpp"
    ]
   },
@@ -3052,15 +3561,33 @@
    ]
   },
   {
+   "fr": "catalogue des récompenses illisible : {0}",
+   "where": [
+    "game/cosmetics/Collection.cpp"
+   ]
+  },
+  {
    "fr": "Catalogue des succès introuvable ou illisible.",
    "where": [
     "game/achievements/Achievements.cpp"
    ]
   },
   {
+   "fr": "Catégorie",
+   "where": [
+    "ui/screens/OnlineThreadScene.cpp"
+   ]
+  },
+  {
    "fr": "Catégorie inconnue.",
    "where": [
     "server/src/leaderboards.ts"
+   ]
+  },
+  {
+   "fr": "catégorie sans élément par défaut : {0}",
+   "where": [
+    "game/cosmetics/Collection.cpp"
    ]
   },
   {
@@ -3317,6 +3844,12 @@
    ]
   },
   {
+   "fr": "Ce replay est celui d'un autre niveau ({0}).",
+   "where": [
+    "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
    "fr": "Ce replay n'a pas été joué sur cette version du niveau : terminez la version publiée.",
    "where": [
     "server/src/community.ts"
@@ -3332,6 +3865,12 @@
    "fr": "Ce sol fissuré cédera sous une Frappe sismique (Bas + Attaque en l'air).",
    "where": [
     "game/gameplay/entities/PlatformEntities.cpp"
+   ]
+  },
+  {
+   "fr": "Cendre de l'œil solaire",
+   "where": [
+    "data/levels/aethra_03.json"
    ]
   },
   {
@@ -3459,7 +3998,8 @@
   {
    "fr": "cette version",
    "where": [
-    "ui/screens/GhostSetupScene.cpp"
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/ReplayCompareSetupScene.cpp"
    ]
   },
   {
@@ -3529,6 +4069,12 @@
    ]
   },
   {
+   "fr": "Changer A / B…",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Changer de calque",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -3555,6 +4101,7 @@
   {
    "fr": "Chaque levier ouvre le rideau devant vous... et referme celui de derrière.",
    "where": [
+    "data/levels/aethra_04.json",
     "data/levels/sylvanox_04.json"
    ]
   },
@@ -3595,10 +4142,23 @@
    ]
   },
   {
+   "fr": "Charge de cristal",
+   "where": [
+    "data/enemies/aurorax.json",
+    "data/enemies/echo_aurorax.json"
+   ]
+  },
+  {
    "fr": "Charge du blizzard",
    "where": [
     "data/enemies/echo_glaciarch.json",
     "data/enemies/glaciarch.json"
+   ]
+  },
+  {
+   "fr": "Chargement de la course…",
+   "where": [
+    "ui/screens/OnlineThreadScene.cpp"
    ]
   },
   {
@@ -3642,6 +4202,7 @@
    "where": [
     "editors/level_editor/LevelEditorChat.cpp",
     "ui/online/CommentsPanel.cpp",
+    "ui/online/RatingWidgets.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/OnlineRankingScene.cpp",
@@ -3650,6 +4211,12 @@
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/RaceScene.cpp",
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "chargement…",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp"
    ]
   },
   {
@@ -3760,6 +4327,12 @@
    ]
   },
   {
+   "fr": "Cheminées",
+   "where": [
+    "data/levels/aethra_03.json"
+   ]
+  },
+  {
    "fr": "Cheminées ardentes",
    "where": [
     "data/levels/pyralis_03.json"
@@ -3814,6 +4387,18 @@
    "where": [
     "editors/shared/PropertyEditor.cpp",
     "ui/screens/AchievementsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Choisissez ce que vous équipez maintenant",
+   "where": [
+    "ui/screens/RewardsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Choisissez de 1 à 5 étoiles.",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
    ]
   },
   {
@@ -3885,7 +4470,14 @@
   {
    "fr": "Chronomaître",
    "where": [
-    "data/achievements/achievements.json"
+    "data/achievements/achievements.json",
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "CHRONOMÈTRE",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -3902,12 +4494,25 @@
    ]
   },
   {
+   "fr": "Chute d'étoiles",
+   "where": [
+    "data/enemies/echo_nyxara.json",
+    "data/enemies/nyxara.json"
+   ]
+  },
+  {
    "fr": "Chute de stalactites",
    "where": [
     "data/enemies/echo_frost_hydra.json",
     "data/enemies/echo_howling_wyrm.json",
     "data/enemies/frost_hydra.json",
     "data/enemies/howling_wyrm.json"
+   ]
+  },
+  {
+   "fr": "Chute des spores",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -3999,6 +4604,12 @@
    ]
   },
   {
+   "fr": "Clairière",
+   "where": [
+    "data/levels/aethra_01.json"
+   ]
+  },
+  {
    "fr": "Classement",
    "where": [
     "game/online/OnlineService.cpp"
@@ -4061,6 +4672,12 @@
    ]
   },
   {
+   "fr": "Classique",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Clavier / souris",
    "where": [
     "ui/screens/MainMenuScene.cpp",
@@ -4114,7 +4731,8 @@
    "where": [
     "game/gameplay/entities/InteractiveEntities.cpp",
     "game/gameplay/entities/ZoneEntities.cpp",
-    "game/levels/EventSystem.cpp"
+    "game/levels/EventSystem.cpp",
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -4154,6 +4772,12 @@
    ]
   },
   {
+   "fr": "cocher / choisir",
+   "where": [
+    "ui/screens/RewardsScene.cpp"
+   ]
+  },
+  {
    "fr": "code",
    "where": [
     "game/online/OnlineGlobe.cpp",
@@ -4179,6 +4803,30 @@
    "where": [
     "ui/screens/PlanetMapScene.cpp",
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "COLLECTION",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Collection",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "collection",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "Collection (menu principal) : des récompenses visuelles débloquées par les étoiles des succès — combinaisons de Nova, traînées, cadres d'avatar, titres et effets de victoire. Rien ne s'achète, rien ne change dans la partie.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -4242,6 +4890,30 @@
    ]
   },
   {
+   "fr": "Combat contre Aurorax",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Combat contre Mycélia",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Combat contre Nyxara",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Combat contre Pyrogyre",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
    "fr": "Combat d'arène commencé",
    "where": [
     "game/levels/EventSystem.cpp"
@@ -4266,9 +4938,51 @@
    ]
   },
   {
+   "fr": "Combats de Glacior",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Combats de Pyralis et du Noyau",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Combats de Sylvanox",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
    "fr": "Combats sans dégât",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Combinaison cuivrée, visière orange, écharpe rouge.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Combinaison sombre et visière dorée du Noyau stellaire.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Combinaison {0}",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Combinaisons",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -4281,6 +4995,12 @@
    "fr": "Commentaire",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "commentaire d'un autre fil",
+   "where": [
+    "server/src/workshop.ts"
    ]
   },
   {
@@ -4338,6 +5058,12 @@
    ]
   },
   {
+   "fr": "Commentaire sur une de mes courses",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
    "fr": "Commentaire épinglé en tête.",
    "where": [
     "ui/online/CommentsPanel.cpp"
@@ -4356,7 +5082,19 @@
    ]
   },
   {
-   "fr": "Commentaires ({0}) · {1}",
+   "fr": "Commentaires de la course",
+   "where": [
+    "ui/screens/OnlineThreadScene.cpp"
+   ]
+  },
+  {
+   "fr": "Commentaires des niveaux de la campagne, visibles uniquement dans ONLINE (réponses, réactions, signalement, modération, comme pour les niveaux des joueurs).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Commentaires indisponibles : {0}",
    "where": [
     "ui/online/CommentsPanel.cpp"
    ]
@@ -4365,6 +5103,24 @@
    "fr": "Commentaires sur les niveaux de la communauté : réponses, réactions (J'aime, J'adore, Drôle, Impressionnant, Pas utile), épinglage par le créateur, modification, suppression, signalement.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Commentaires sur les runs des classements : une bulle sur chaque ligne ouvre le fil de la course ; son auteur est notifié.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Commentaires{0}",
+   "where": [
+    "ui/online/CommentsPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Commentaires{0} · {1}",
+   "where": [
+    "ui/online/CommentsPanel.cpp"
    ]
   },
   {
@@ -4387,9 +5143,40 @@
    ]
   },
   {
+   "fr": "COMPARAISON",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "COMPARAISON DE REPLAYS",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Comparer",
    "where": [
-    "ui/screens/ProjectsScene.cpp"
+    "ui/screens/ProjectsScene.cpp",
+    "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Comparer des replays…",
+   "where": [
+    "ui/screens/SegmentsScene.cpp"
+   ]
+  },
+  {
+   "fr": "COMPARER DEUX REPLAYS",
+   "where": [
+    "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Comparer deux replays…",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -4408,6 +5195,13 @@
    "fr": "Comparer à la révision {0}",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Comparer…",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp",
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -4462,6 +5256,7 @@
   {
    "fr": "Comète",
    "where": [
+    "data/cosmetics/cosmetics.json",
     "data/online/avatars.json"
    ]
   },
@@ -4493,6 +5288,12 @@
    "fr": "Conduit de la presse",
    "where": [
     "data/levels/pyralis_03.json"
+   ]
+  },
+  {
+   "fr": "Confidentialité : notes et commentaires inclus dans l'export de vos données et supprimés avec le compte.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -4605,6 +5406,18 @@
    ]
   },
   {
+   "fr": "Connectez-vous pour noter ce niveau",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "Connectez-vous pour noter ce niveau.",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
    "fr": "Connectez-vous à Cosmic Online (menu ONLINE) pour recevoir les notifications des créateurs que vous suivez, de vos favoris et de vos commentaires. Le jeu reste entièrement jouable sans compte.",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -4709,6 +5522,12 @@
    "where": [
     "editors/level_editor/LevelEditorLive.cpp",
     "game/online/OnlineTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Constellation",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -4892,6 +5711,12 @@
    ]
   },
   {
+   "fr": "Corrigé : mourir contre un boss puis le finir sans être touché n'est plus compté « sans dégât ». Champs de texte : Ctrl+A, Ctrl+C, Ctrl+X, Ctrl+V, sélection et curseur.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Corée du Nord",
    "where": [
     "data/online/countries.json",
@@ -5036,6 +5861,7 @@
   {
    "fr": "Couloir des vents : planez, et surveillez les rayons de givre.",
    "where": [
+    "data/levels/aethra_02.json",
     "data/levels/glacior_04.json",
     "data/levels/noyau_02.json"
    ]
@@ -5134,6 +5960,19 @@
    ]
   },
   {
+   "fr": "Couronne de feu",
+   "where": [
+    "data/enemies/echo_pyrogyre.json",
+    "data/enemies/pyrogyre.json"
+   ]
+  },
+  {
+   "fr": "Couronne de flammes",
+   "where": [
+    "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
    "fr": "Couronne de givre",
    "where": [
     "data/levels/glacior_01.json"
@@ -5185,6 +6024,12 @@
    "fr": "Course du vendredi",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Course indisponible : {0}",
+   "where": [
+    "ui/screens/OnlineThreadScene.cpp"
    ]
   },
   {
@@ -5524,6 +6369,13 @@
    ]
   },
   {
+   "fr": "Crépuscule",
+   "where": [
+    "data/enemies/echo_nyxara.json",
+    "data/enemies/nyxara.json"
+   ]
+  },
+  {
    "fr": "Ctrl D",
    "where": [
     "engine/input/InputTypes.cpp"
@@ -5685,6 +6537,12 @@
    "fr": "dans {0} min",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Danse du vide",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -5874,6 +6732,18 @@
    ]
   },
   {
+   "fr": "Demi-largeur du pic",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Demi-écart des murs",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Depuis la sélection",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -5910,6 +6780,12 @@
    ]
   },
   {
+   "fr": "Dernière moyenne reçue {0}",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
    "fr": "dernière partie {0}",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -5934,6 +6810,12 @@
    ]
   },
   {
+   "fr": "Des gerbes de couleurs à l'arrivée.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Des lianes grimpent le long de l'écorce... Un rideau de plasma luit tout là-haut.",
    "where": [
     "data/levels/sylvanox_02.json"
@@ -5949,6 +6831,24 @@
    "fr": "Des modifications ont été faites en direct depuis la dernière révision : rejoignez l'édition en direct pour les voir.",
    "where": [
     "server/src/projects.ts"
+   ]
+  },
+  {
+   "fr": "Des étincelles cyan quand Nova court ou fait un dash.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Des étoiles tombent sur le portail.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Des îles-sanctuaires flottent sur un océan de nébuleuse, dans une lumière violette et or où se mêlent racines, cristal de givre, magma et vide. Quatre gardiens nouveaux y veillent sur des pouvoirs oubliés.",
+   "where": [
+    "data/planets/aethra.json"
    ]
   },
   {
@@ -5983,6 +6883,7 @@
    "where": [
     "game/achievements/Achievements.cpp",
     "game/content/ContentDatabase.cpp",
+    "game/cosmetics/Collection.cpp",
     "game/enemies/EnemyDefinition.cpp",
     "game/levels/LevelData.cpp",
     "game/planets/PlanetData.cpp",
@@ -6081,6 +6982,12 @@
    ]
   },
   {
+   "fr": "Difficulté calculée par le jeu : {0}",
+   "where": [
+    "ui/screens/OnlineThreadScene.cpp"
+   ]
+  },
+  {
    "fr": "Difficulté {0}   —   {1}",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
@@ -6096,30 +7003,6 @@
    "fr": "dimensions du niveau invalides",
    "where": [
     "game/levels/LevelData.cpp"
-   ]
-  },
-  {
-   "fr": "direction|B",
-   "where": [
-    "ui/screens/ReplayScene.cpp"
-   ]
-  },
-  {
-   "fr": "direction|D",
-   "where": [
-    "ui/screens/ReplayScene.cpp"
-   ]
-  },
-  {
-   "fr": "direction|G",
-   "where": [
-    "ui/screens/ReplayScene.cpp"
-   ]
-  },
-  {
-   "fr": "direction|H",
-   "where": [
-    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -6165,6 +7048,12 @@
    ]
   },
   {
+   "fr": "Disponible dès le départ",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Disponibles",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -6205,6 +7094,12 @@
    "fr": "Divulgue la solution",
    "where": [
     "ui/online/CommentsPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Dix niveaux de joueurs terminés.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -6321,12 +7216,6 @@
    ]
   },
   {
-   "fr": "Douze gardiens, aucun soin, une seule vie.",
-   "where": [
-    "data/levels/noyau_01.json"
-   ]
-  },
-  {
    "fr": "Droite",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp",
@@ -6418,12 +7307,14 @@
    "fr": "Durée",
    "where": [
     "game/powers/PowerStats.cpp",
+    "ui/screens/CollectionScene.cpp",
     "ui/screens/GhostRun.cpp"
    ]
   },
   {
    "fr": "Durée (s)",
    "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp",
     "editors/level_editor/LevelEditorDialogs.cpp"
    ]
   },
@@ -6454,6 +7345,24 @@
   },
   {
    "fr": "Durée de garde (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Durée de la cage (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Durée de la couronne (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Durée de la spirale (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
@@ -6492,6 +7401,12 @@
    "fr": "Durée du travelling",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Durée du verglas (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -6537,6 +7452,12 @@
    ]
   },
   {
+   "fr": "Dès le départ",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Débloquer",
    "where": [
     "ui/screens/PlayerProfileScene.cpp",
@@ -6574,9 +7495,33 @@
    ]
   },
   {
+   "fr": "Décalage de B",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Décalage de départ (0-1)",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Décalage illisible : tapez par exemple +1,250 ou -0,5",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Décalage limité à {0}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "décalage {0}",
+   "where": [
+    "game/ghost/ReplayCompare.cpp"
    ]
   },
   {
@@ -6644,6 +7589,10 @@
   {
    "fr": "Décor arrière",
    "where": [
+    "data/levels/aethra_01.json",
+    "data/levels/aethra_02.json",
+    "data/levels/aethra_03.json",
+    "data/levels/aethra_04.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -6664,6 +7613,10 @@
   {
    "fr": "Décor avant",
    "where": [
+    "data/levels/aethra_01.json",
+    "data/levels/aethra_02.json",
+    "data/levels/aethra_03.json",
+    "data/levels/aethra_04.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -6707,7 +7660,7 @@
    ]
   },
   {
-   "fr": "Découvrir tous les secrets des 14 niveaux de la campagne.",
+   "fr": "Découvrir tous les secrets des 18 niveaux de la campagne.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -7052,6 +8005,12 @@
    ]
   },
   {
+   "fr": "Effets de victoire",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Effets sonores",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -7062,6 +8021,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Elles ne dépendent pas du nombre d'étoiles : il faut le succès lui-même.",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -7180,27 +8145,53 @@
    ]
   },
   {
+   "fr": "En lecture",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "En lecture · {0}",
+   "where": [
+    "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
    "fr": "En ligne",
    "where": [
     "game/online/OnlineTypes.cpp"
    ]
   },
   {
+   "fr": "en ligne",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
    "fr": "En ligne : {0}",
    "where": [
-    "ui/screens/GhostSetupScene.cpp"
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/ReplayCompareSetupScene.cpp"
    ]
   },
   {
    "fr": "en ligne · téléchargé si choisi",
    "where": [
-    "ui/screens/GhostSetupScene.cpp"
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/ReplayCompareSetupScene.cpp"
    ]
   },
   {
    "fr": "en mouvement",
    "where": [
     "game/gameplay/entities/PlatformEntities.cpp"
+   ]
+  },
+  {
+   "fr": "En pause",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -7251,6 +8242,24 @@
    "fr": "Enchaînez les ancrages : chaque traction rend vos sauts aériens.",
    "where": [
     "data/levels/sylvanox_03.json"
+   ]
+  },
+  {
+   "fr": "encore {0}",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Encore {0} étoile",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Encore {0} étoiles",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -7335,6 +8344,12 @@
    ]
   },
   {
+   "fr": "Ennemis gelés",
+   "where": [
+    "game/powers/PowerStats.cpp"
+   ]
+  },
+  {
    "fr": "Ennemis traversés",
    "where": [
     "game/powers/PowerStats.cpp"
@@ -7369,6 +8384,12 @@
    ]
   },
   {
+   "fr": "Enregistrer en image (PNG)",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Enregistrer et quitter",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -7396,6 +8417,12 @@
    "fr": "Enregistré à {0}",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
+   ]
+  },
+  {
+   "fr": "Enregistrée : {0}",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -7456,6 +8483,18 @@
    "fr": "entrée du répertoire central invalide",
    "where": [
     "server/src/zip.ts"
+   ]
+  },
+  {
+   "fr": "Entrées",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Entrées : non enregistrées dans ce mode",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -7588,6 +8627,12 @@
    ]
   },
   {
+   "fr": "Esprit de l'aurore figé dans un corps de cristal. Sur le lac gelé, ses reflets se battent avec lui.",
+   "where": [
+    "data/enemies/aurorax.json"
+   ]
+  },
+  {
    "fr": "Esprit masqué maîtrisant les pouvoirs : se téléporte, tire des orbes en salve et appelle des renforts. Fuit quand il faiblit.",
    "where": [
     "data/enemies/wisp.json"
@@ -7644,9 +8689,27 @@
    ]
   },
   {
+   "fr": "et",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Et Nova reprit la route des étoiles...",
    "where": [
     "data/levels/glacior_03.json"
+   ]
+  },
+  {
+   "fr": "et {0}",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "ex. +1,250",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -7665,6 +8728,7 @@
    "fr": "Explorateur",
    "where": [
     "data/achievements/achievements.json",
+    "data/cosmetics/cosmetics.json",
     "editors/level_editor/LevelEditorLayout.cpp"
    ]
   },
@@ -7833,6 +8897,12 @@
    ]
   },
   {
+   "fr": "fantôme, trajectoire enregistrée",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "FANTÔMES",
    "where": [
     "ui/screens/GhostOptionsScene.cpp"
@@ -7913,6 +8983,12 @@
    ]
   },
   {
+   "fr": "Fenêtre de retour",
+   "where": [
+    "game/powers/PowerStats.cpp"
+   ]
+  },
+  {
    "fr": "Fermer",
    "where": [
     "editors/level_editor/LevelEditorChat.cpp",
@@ -7921,6 +8997,7 @@
     "ui/screens/CommunityPublishScene.cpp",
     "ui/screens/GhostOptionsScene.cpp",
     "ui/screens/OnlineSettingsScene.cpp",
+    "ui/screens/OnlineThreadScene.cpp",
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/RaceScene.cpp",
     "ui/screens/SegmentsScene.cpp",
@@ -7937,6 +9014,12 @@
    "fr": "Feu",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Feu d'artifice",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -8112,6 +9195,12 @@
    ]
   },
   {
+   "fr": "Fin de niveau",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
    "fr": "Fin de niveau enregistrée",
    "where": [
     "ui/screens/GameScene.cpp"
@@ -8169,6 +9258,12 @@
    "where": [
     "game/gameplay/BeamRenderer.cpp",
     "game/gameplay/BossBadge.cpp"
+   ]
+  },
+  {
+   "fr": "Flammes",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -8352,6 +9447,12 @@
    ]
   },
   {
+   "fr": "Forges englouties",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
    "fr": "format",
    "where": [
     "game/achievements/Achievements.cpp",
@@ -8404,6 +9505,13 @@
    ]
   },
   {
+   "fr": "Forêt vivante",
+   "where": [
+    "data/enemies/echo_mycelia.json",
+    "data/enemies/mycelia.json"
+   ]
+  },
+  {
    "fr": "Fouineur",
    "where": [
     "data/achievements/achievements.json"
@@ -8450,6 +9558,12 @@
    "fr": "Fragment d'aurore",
    "where": [
     "data/levels/glacior_01.json"
+   ]
+  },
+  {
+   "fr": "Fragment d'horizon",
+   "where": [
+    "data/levels/aethra_04.json"
    ]
   },
   {
@@ -8595,6 +9709,18 @@
    ]
   },
   {
+   "fr": "Galerie",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Galerie : les planètes atteintes (à enregistrer en image), les gardiens battus avec leurs animations et statistiques, les créatures rencontrées.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Galerie des ancrages",
    "where": [
     "data/levels/sylvanox_03.json"
@@ -8630,6 +9756,10 @@
   {
    "fr": "Gameplay",
    "where": [
+    "data/levels/aethra_01.json",
+    "data/levels/aethra_02.json",
+    "data/levels/aethra_03.json",
+    "data/levels/aethra_04.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -8681,6 +9811,18 @@
    ]
   },
   {
+   "fr": "Garder pour plus tard",
+   "where": [
+    "ui/screens/RewardsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Gardien",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Gardien ancestral réveillé au cœur de la machinerie des Anciens.",
    "where": [
     "data/enemies/archon_catacombs.json"
@@ -8725,7 +9867,8 @@
   {
    "fr": "Gardien de Sylvanox",
    "where": [
-    "data/achievements/achievements.json"
+    "data/achievements/achievements.json",
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -8747,9 +9890,34 @@
    ]
   },
   {
+   "fr": "Gardien · {0}",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Gardiens",
    "where": [
-    "data/achievements/achievements.json"
+    "data/achievements/achievements.json",
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Gardiens de Glacior",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Gardiens de Pyralis",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Gardiens de Sylvanox",
+   "where": [
+    "data/music/tracks.json"
    ]
   },
   {
@@ -8776,6 +9944,13 @@
     "data/enemies/echo_crucible_heart.json",
     "data/enemies/echo_forge_core.json",
     "data/enemies/forge_core.json"
+   ]
+  },
+  {
+   "fr": "Gerbe solaire",
+   "where": [
+    "data/enemies/echo_pyrogyre.json",
+    "data/enemies/pyrogyre.json"
    ]
   },
   {
@@ -8806,6 +9981,7 @@
   {
    "fr": "Givre",
    "where": [
+    "data/cosmetics/cosmetics.json",
     "game/gameplay/BeamRenderer.cpp"
    ]
   },
@@ -8837,6 +10013,7 @@
   {
    "fr": "Glace vive : impossible de s'arrêter net.",
    "where": [
+    "data/levels/aethra_02.json",
     "data/levels/glacior_04.json",
     "data/levels/noyau_02.json"
    ]
@@ -8867,6 +10044,7 @@
   {
    "fr": "Glacior",
    "where": [
+    "data/music/tracks.json",
     "data/planets/glacior.json"
    ]
   },
@@ -8934,7 +10112,8 @@
   {
    "fr": "Globe-trotteur",
    "where": [
-    "data/achievements/achievements.json"
+    "data/achievements/achievements.json",
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -8998,6 +10177,19 @@
    ]
   },
   {
+   "fr": "Graine de la Mère-Racine",
+   "where": [
+    "data/levels/aethra_01.json"
+   ]
+  },
+  {
+   "fr": "Grande marée",
+   "where": [
+    "data/enemies/echo_pyrogyre.json",
+    "data/enemies/pyrogyre.json"
+   ]
+  },
+  {
    "fr": "Graphismes",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -9020,8 +10212,15 @@
   {
    "fr": "Grappin : d'ancrage en ancrage, entre deux tirs.",
    "where": [
+    "data/levels/aethra_01.json",
     "data/levels/noyau_02.json",
     "data/levels/sylvanox_04.json"
+   ]
+  },
+  {
+   "fr": "Grappin : enchaînez les ancrages.",
+   "where": [
+    "data/levels/aethra_04.json"
    ]
   },
   {
@@ -9085,6 +10284,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Grondement de lave",
+   "where": [
+    "data/music/tracks.json"
    ]
   },
   {
@@ -9331,7 +10536,19 @@
    ]
   },
   {
+   "fr": "Hauteur de la lave",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Hauteur de la pluie",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Hauteur des murs",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
@@ -9340,6 +10557,12 @@
    "fr": "Hauteur des vagues",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Hauteur du pic",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -9403,6 +10626,13 @@
    ]
   },
   {
+   "fr": "Horizon",
+   "where": [
+    "data/enemies/echo_nyxara.json",
+    "data/enemies/nyxara.json"
+   ]
+  },
+  {
    "fr": "Hors connexion",
    "where": [
     "game/online/OnlineTypes.cpp"
@@ -9421,6 +10651,12 @@
    ]
   },
   {
+   "fr": "Hors ligne : la note se donne une fois reconnecté.",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
    "fr": "Hors ligne : liste en cache",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp",
@@ -9435,6 +10671,18 @@
    ]
   },
   {
+   "fr": "Hors ligne : moyenne reçue {0}",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "Hors ligne : notation impossible pour l'instant",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
    "fr": "Hors ligne : profil en cache",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -9444,6 +10692,18 @@
    "fr": "Hors ligne : seuls les fantômes enregistrés sur cet ordinateur sont proposés.",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Hors ligne : seuls les replays enregistrés sur cet ordinateur sont proposés.",
+   "where": [
+    "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Hors ligne : téléchargement impossible.",
+   "where": [
+    "ui/screens/ReplayCompareSetupScene.cpp"
    ]
   },
   {
@@ -9505,6 +10765,12 @@
    ]
   },
   {
+   "fr": "Ici, la lave obéit à un soleil.",
+   "where": [
+    "data/levels/aethra_03.json"
+   ]
+  },
+  {
    "fr": "Ici, les Anciens forgeaient des étoiles. La fonderie, elle, ne s'est jamais arrêtée.",
    "where": [
     "data/levels/pyralis_03.json"
@@ -9535,6 +10801,7 @@
     "editors/level_editor/LevelEditorLive.cpp",
     "game/achievements/Achievements.cpp",
     "game/content/ContentDatabase.cpp",
+    "game/cosmetics/Collection.cpp",
     "game/enemies/EnemyDefinition.cpp",
     "game/levels/LevelData.cpp",
     "game/online/LevelFingerprint.cpp",
@@ -9545,6 +10812,7 @@
     "game/progression/NewsCenter.cpp",
     "game/race/Race.cpp",
     "ui/online/CommentsPanel.cpp",
+    "ui/screens/CollectionScene.cpp",
     "ui/screens/CommunityPublishScene.cpp",
     "ui/screens/ContentManagerScene.cpp",
     "ui/screens/GameScene.cpp",
@@ -9553,9 +10821,12 @@
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/OnlineSettingsScene.cpp",
+    "ui/screens/OnlineThreadScene.cpp",
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/RaceScene.cpp",
+    "ui/screens/ReplayCompareSetupScene.cpp",
+    "ui/screens/ReplayScene.cpp",
     "ui/screens/ResultsScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
@@ -9729,9 +11000,21 @@
    ]
   },
   {
+   "fr": "image",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "image carrée de 32 à 256 pixels attendue",
    "where": [
     "server/src/players.ts"
+   ]
+  },
+  {
+   "fr": "Image ›",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -9773,7 +11056,8 @@
   {
    "fr": "Importer un replay…",
    "where": [
-    "ui/screens/GhostSetupScene.cpp"
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/ReplayCompareSetupScene.cpp"
    ]
   },
   {
@@ -9786,6 +11070,12 @@
    "fr": "Impossible : « {0} » toucherait {1}.",
    "where": [
     "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Impossible d'enregistrer l'image.",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -9860,6 +11150,12 @@
    ]
   },
   {
+   "fr": "Inconnu",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Inde",
    "where": [
     "data/online/countries.json",
@@ -9869,7 +11165,8 @@
   {
    "fr": "indisponible",
    "where": [
-    "ui/screens/OnlineLevelsScene.cpp"
+    "ui/screens/OnlineLevelsScene.cpp",
+    "ui/screens/OnlineRankingScene.cpp"
    ]
   },
   {
@@ -9928,6 +11225,13 @@
    ]
   },
   {
+   "fr": "Inspiration",
+   "where": [
+    "data/enemies/echo_mycelia.json",
+    "data/enemies/mycelia.json"
+   ]
+  },
+  {
    "fr": "Installation impossible : {0}",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -9958,6 +11262,12 @@
    ]
   },
   {
+   "fr": "Inter.",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Interactifs",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -9980,6 +11290,18 @@
    "fr": "Intervalle de sauvegarde (s)",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Intervalle des salves (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Intervalle des spores (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -10091,6 +11413,12 @@
    ]
   },
   {
+   "fr": "Invulnérable à l'arrivée",
+   "where": [
+    "game/powers/PowerStats.cpp"
+   ]
+  },
+  {
    "fr": "Irak",
    "where": [
     "data/online/countries.json",
@@ -10135,7 +11463,8 @@
   {
    "fr": "J",
    "where": [
-    "ui/screens/NotificationsScene.cpp"
+    "ui/screens/NotificationsScene.cpp",
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -10240,6 +11569,12 @@
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Jouer ce morceau au menu principal",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -10394,6 +11729,12 @@
    ]
   },
   {
+   "fr": "K",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Kazakhstan",
    "where": [
     "data/online/countries.json",
@@ -10436,9 +11777,21 @@
    ]
   },
   {
+   "fr": "L",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "L'alcôve du marteau !",
    "where": [
     "data/levels/pyralis_01.json"
+   ]
+  },
+  {
+   "fr": "L'Anneau solaire",
+   "where": [
+    "data/music/tracks.json"
    ]
   },
   {
@@ -10451,6 +11804,12 @@
    "fr": "L'ARCHONTE DES CATACOMBES",
    "where": [
     "data/enemies/archon_catacombs.json"
+   ]
+  },
+  {
+   "fr": "L'arrivée habituelle au portail.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -10467,13 +11826,19 @@
    ]
   },
   {
-   "fr": "L'Arène des Échos : douze gardiens à la suite. Ni soin ni checkpoint, une seule vie. Choisissez vos quatre pouvoirs.",
+   "fr": "L'Arène des Échos : les douze gardiens à la suite, sans aucun soin ni checkpoint, en une seule vie.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "L'Arène des Échos : seize gardiens à la suite. Ni soin ni checkpoint, une seule vie. Choisissez vos quatre pouvoirs.",
    "where": [
     "data/levels/noyau_01.json"
    ]
   },
   {
-   "fr": "L'Arène des Échos : les douze gardiens à la suite, sans aucun soin ni checkpoint, en une seule vie.",
+   "fr": "L'Arène des Échos enchaîne maintenant les 16 gardiens (nouvelle révision : son classement repart de zéro).",
    "where": [
     "data/news/changelog.json"
    ]
@@ -10512,6 +11877,18 @@
    "fr": "L'extension n'est pas .cplanet",
    "where": [
     "packaging/PackageImporter.cpp"
+   ]
+  },
+  {
+   "fr": "L'Horizon des événements",
+   "where": [
+    "data/levels/aethra_04.json"
+   ]
+  },
+  {
+   "fr": "L'HORIZON SE REFERME",
+   "where": [
+    "data/levels/aethra_04.json"
    ]
   },
   {
@@ -10615,9 +11992,34 @@
    ]
   },
   {
+   "fr": "La balise est bloquée : impossible d'y revenir.",
+   "where": [
+    "game/powers/PowersSanctuary.cpp"
+   ]
+  },
+  {
    "fr": "La cache de la rive !",
    "where": [
     "data/levels/pyralis_02.json"
+   ]
+  },
+  {
+   "fr": "La Caldeira",
+   "where": [
+    "data/levels/aethra_03.json"
+   ]
+  },
+  {
+   "fr": "LA CALDEIRA S'ÉTEINT",
+   "where": [
+    "data/levels/aethra_03.json"
+   ]
+  },
+  {
+   "fr": "La caldeira se remplit de lave !",
+   "where": [
+    "data/enemies/echo_pyrogyre.json",
+    "data/enemies/pyrogyre.json"
    ]
   },
   {
@@ -10648,6 +12050,12 @@
    "fr": "La canopée secrète !",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "La carte des planètes",
+   "where": [
+    "data/music/tracks.json"
    ]
   },
   {
@@ -10693,6 +12101,12 @@
    ]
   },
   {
+   "fr": "La combinaison de Nova, avec son écharpe orange.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "La connexion automatique conserve un jeton de session protégé par votre compte Windows (ou lisible seulement par votre utilisateur sous Linux). Le mot de passe n'est jamais enregistré.",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
@@ -10720,6 +12134,12 @@
    "fr": "La Crevasse Hurlante",
    "where": [
     "data/levels/glacior_04.json"
+   ]
+  },
+  {
+   "fr": "La Dévoreuse d'étoiles",
+   "where": [
+    "data/music/tracks.json"
    ]
   },
   {
@@ -10781,6 +12201,12 @@
    ]
   },
   {
+   "fr": "La Mère-Racine",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
    "fr": "La niche du fondeur !",
    "where": [
     "data/levels/pyralis_03.json"
@@ -10790,6 +12216,19 @@
    "fr": "La niche du gardien !",
    "where": [
     "data/levels/glacior_03.json"
+   ]
+  },
+  {
+   "fr": "La nuit polaire tombe sur le lac !",
+   "where": [
+    "data/enemies/aurorax.json",
+    "data/enemies/echo_aurorax.json"
+   ]
+  },
+  {
+   "fr": "La planète des sanctuaires",
+   "where": [
+    "data/planets/aethra.json"
    ]
   },
   {
@@ -10897,6 +12336,13 @@
    ]
   },
   {
+   "fr": "Lac gelé",
+   "where": [
+    "data/enemies/aurorax.json",
+    "data/enemies/echo_aurorax.json"
+   ]
+  },
+  {
    "fr": "Lac souterrain",
    "where": [
     "data/levels/glacior_02.json"
@@ -10918,6 +12364,13 @@
    "fr": "Laisser {0} ici",
    "where": [
     "ui/screens/PowerChoiceScene.cpp"
+   ]
+  },
+  {
+   "fr": "Lame boomerang",
+   "where": [
+    "data/powers/boomerang.json",
+    "game/levels/ObjectTypes.cpp"
    ]
   },
   {
@@ -10943,6 +12396,12 @@
    "fr": "Lance une bombe qui rebondit puis explose : dégâts autour d'elle, brise la roche fissurée comme l'Impulsion.",
    "where": [
     "data/powers/plasma_bomb.json"
+   ]
+  },
+  {
+   "fr": "Lance une lame d'énergie qui revient vers vous : elle touche à l'aller et au retour, traverse les ennemis, rapporte éclats et orbes et active les récepteurs.",
+   "where": [
+    "data/powers/boomerang.json"
    ]
   },
   {
@@ -11011,6 +12470,7 @@
   {
    "fr": "Larme d'aurore",
    "where": [
+    "data/levels/aethra_02.json",
     "data/levels/glacior_01.json"
    ]
   },
@@ -11032,6 +12492,12 @@
    "fr": "Lave",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Lave haute pendant (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -11065,6 +12531,18 @@
    ]
   },
   {
+   "fr": "Le Bosquet Englouti",
+   "where": [
+    "data/levels/aethra_01.json"
+   ]
+  },
+  {
+   "fr": "LE BOSQUET RESPIRE",
+   "where": [
+    "data/levels/aethra_01.json"
+   ]
+  },
+  {
    "fr": "Le boss garde ses blessures si le joueur meurt",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -11083,9 +12561,21 @@
    ]
   },
   {
+   "fr": "Le cadre de base, sur le profil et dans les classements.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Le catalogue des succès est introuvable (data/achievements).",
    "where": [
     "ui/screens/AchievementsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le champignon-mère qui relie toutes les racines de Sylvanox. Elle s'enfonce sous terre et ressurgit là où on ne l'attend pas.",
+   "where": [
+    "data/enemies/mycelia.json"
    ]
   },
   {
@@ -11322,6 +12812,15 @@
    ]
   },
   {
+   "fr": "Le gardien du sanctuaire est vaincu : le portail s'éveille.",
+   "where": [
+    "data/levels/aethra_01.json",
+    "data/levels/aethra_02.json",
+    "data/levels/aethra_03.json",
+    "data/levels/aethra_04.json"
+   ]
+  },
+  {
    "fr": "Le gardien entre en rage !",
    "where": [
     "game/enemies/Enemy.cpp"
@@ -11378,6 +12877,12 @@
    ]
   },
   {
+   "fr": "Le joueur a masqué son profil : les commentaires de ses courses sont fermés.",
+   "where": [
+    "server/src/workshop.ts"
+   ]
+  },
+  {
    "fr": "Le joueur a masqué son profil.",
    "where": [
     "server/src/players.ts",
@@ -11397,6 +12902,12 @@
    ]
   },
   {
+   "fr": "Le Lac aux Reflets",
+   "where": [
+    "data/levels/aethra_02.json"
+   ]
+  },
+  {
    "fr": "Le lac de l'aurore... Le Cryowyrm y dort. Reprenez votre souffle.",
    "where": [
     "data/levels/glacior_01.json"
@@ -11405,7 +12916,14 @@
   {
    "fr": "Le lac gelé se traverse par-dessous.",
    "where": [
+    "data/levels/aethra_02.json",
     "data/levels/glacior_04.json"
+   ]
+  },
+  {
+   "fr": "LE LAC S'APAISE",
+   "where": [
+    "data/levels/aethra_02.json"
    ]
   },
   {
@@ -11442,6 +12960,12 @@
    "fr": "Le message auquel vous répondez n'existe plus.",
    "where": [
     "server/src/projects.ts"
+   ]
+  },
+  {
+   "fr": "Le Miroir boréal",
+   "where": [
+    "data/music/tracks.json"
    ]
   },
   {
@@ -11536,6 +13060,12 @@
    ]
   },
   {
+   "fr": "Le platine sur les 18 niveaux.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Le pont est fragile : certaines dalles s'effondrent sous vos pas.",
    "where": [
     "data/levels/glacior_03.json"
@@ -11592,6 +13122,7 @@
   {
    "fr": "Le radeau part quand vous montez : choisissez le bon moment.",
    "where": [
+    "data/levels/aethra_03.json",
     "data/levels/noyau_02.json",
     "data/levels/pyralis_04.json"
    ]
@@ -11802,10 +13333,28 @@
    ]
   },
   {
+   "fr": "Lecteur de replay avancé : vitesses, image par image, barre de temps, sauts aux points de sauvegarde, entrées du joueur ; comparer deux replays avec un décalage de temps ou un recalage sur un point.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Lecture",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "lecture",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Lecture des niveaux…",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -11836,6 +13385,12 @@
    ]
   },
   {
+   "fr": "Lecture seule : aucun record, aucune progression, rien n'est envoyé. Les replays en ligne sont téléchargés avant la lecture.",
+   "where": [
+    "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
    "fr": "Lecture seule : votre rôle dans le projet ne permet pas de le modifier",
    "where": [
     "editors/level_editor/LevelEditorScene.cpp"
@@ -11852,6 +13407,12 @@
    "fr": "Lecture seule : « Dupliquer pour modifier » pour enregistrer votre version",
    "where": [
     "editors/level_editor/LevelEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Les 12 gardiens sans être touché.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -11903,6 +13464,18 @@
    ]
   },
   {
+   "fr": "Les commentaires d'un niveau officiel ne s'épinglent pas.",
+   "where": [
+    "server/src/workshop.ts"
+   ]
+  },
+  {
+   "fr": "Les commentaires s'ouvrent quand la course est vérifiée.",
+   "where": [
+    "server/src/workshop.ts"
+   ]
+  },
+  {
    "fr": "Les commentaires s'ouvrent quand le niveau est publié.",
    "where": [
     "server/src/workshop.ts"
@@ -11939,6 +13512,12 @@
    ]
   },
   {
+   "fr": "Les deux",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Les deux mots de passe sont différents.",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
@@ -11948,18 +13527,6 @@
    "fr": "Les douze gardiens",
    "where": [
     "data/achievements/achievements.json"
-   ]
-  },
-  {
-   "fr": "Les douze gardiens du système reviennent, l'un après l'autre, en échos de lumière. Aucun soin, aucun checkpoint : une seule vie pour les vaincre tous.",
-   "where": [
-    "data/levels/noyau_01.json"
-   ]
-  },
-  {
-   "fr": "Les douze échos se sont tus.",
-   "where": [
-    "data/levels/noyau_01.json"
    ]
   },
   {
@@ -12001,6 +13568,7 @@
   {
    "fr": "Les lasers battent la mesure : un saut par temps, sans s'arrêter.",
    "where": [
+    "data/levels/aethra_04.json",
     "data/levels/noyau_02.json",
     "data/levels/sylvanox_04.json"
    ]
@@ -12060,9 +13628,39 @@
    ]
   },
   {
+   "fr": "Les profondeurs",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
    "fr": "Les propulseurs de la combinaison se rechargent : un saut supplémentaire en l'air.",
    "where": [
     "data/powers/triple_jump.json"
+   ]
+  },
+  {
+   "fr": "Les quatre niveaux d'Aethra",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Les quatre niveaux de Glacior",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Les quatre niveaux de Pyralis",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Les racines se souviennent de chaque pas.",
+   "where": [
+    "data/levels/aethra_01.json"
    ]
   },
   {
@@ -12075,6 +13673,12 @@
    "fr": "Les Remparts parent de près : abattez-les de loin au Tir chargé, il perce leur garde !",
    "where": [
     "data/levels/pyralis_02.json"
+   ]
+  },
+  {
+   "fr": "Les ruines",
+   "where": [
+    "data/music/tracks.json"
    ]
   },
   {
@@ -12093,6 +13697,30 @@
    "fr": "les réglages « {0} » du niveau",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
+   ]
+  },
+  {
+   "fr": "Les sanctuaires",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Les seize gardiens",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Les seize gardiens du système reviennent, l'un après l'autre, en échos de lumière. Aucun soin, aucun checkpoint : une seule vie pour les vaincre tous.",
+   "where": [
+    "data/levels/noyau_01.json"
+   ]
+  },
+  {
+   "fr": "Les seize échos se sont tus.",
+   "where": [
+    "data/levels/noyau_01.json"
    ]
   },
   {
@@ -12121,6 +13749,18 @@
    ]
   },
   {
+   "fr": "Les étoiles déjà gagnées comptent aussi.",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Les étoiles viennent des succès (menu principal → Succès). Certaines récompenses demandent un succès précis.",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Lesotho",
    "where": [
     "data/online/countries.json",
@@ -12138,6 +13778,13 @@
    "fr": "Lettres, chiffres, « _ », « . » ou « - » (3 à 20, pas au début ni à la fin)",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "Leurre holographique",
+   "where": [
+    "data/powers/decoy.json",
+    "game/levels/ObjectTypes.cpp"
    ]
   },
   {
@@ -12162,6 +13809,12 @@
    "fr": "Levier",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Leviers",
+   "where": [
+    "data/levels/aethra_04.json"
    ]
   },
   {
@@ -12380,13 +14033,21 @@
   {
    "fr": "local",
    "where": [
-    "ui/screens/GhostSetupScene.cpp"
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/ReplayCompareSetupScene.cpp",
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
    "fr": "Localisation",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "Longueur d'un segment",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -12716,6 +14377,14 @@
    ]
   },
   {
+   "fr": "Marée de lave",
+   "where": [
+    "data/enemies/echo_pyrogyre.json",
+    "data/enemies/pyrogyre.json",
+    "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
    "fr": "Masquer les réponses",
    "where": [
     "ui/online/CommentsPanel.cpp"
@@ -12818,6 +14487,12 @@
    ]
   },
   {
+   "fr": "Maîtrise : Balise de rappel",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Maîtrise : Bombe plasma",
    "where": [
     "data/achievements/achievements.json"
@@ -12849,6 +14524,24 @@
   },
   {
    "fr": "Maîtrise : Impulsion",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Maîtrise : Lame boomerang",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Maîtrise : Leurre holographique",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Maîtrise : Nova de givre",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -13027,7 +14720,20 @@
   {
    "fr": "Menu principal",
    "where": [
+    "data/music/tracks.json",
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Menus",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Merci : votre note est enregistrée.",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
    ]
   },
   {
@@ -13204,6 +14910,12 @@
    "fr": "Mini-boss (phases, jauge de vie)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Miroir",
+   "where": [
+    "data/levels/aethra_02.json"
    ]
   },
   {
@@ -13438,6 +15150,12 @@
    ]
   },
   {
+   "fr": "Montré en fantôme sur le chronomètre de A, décalable dans le temps.",
+   "where": [
+    "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
    "fr": "Montserrat",
    "where": [
     "data/online/countries.json",
@@ -13449,6 +15167,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Morceaux",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -13536,6 +15260,12 @@
    ]
   },
   {
+   "fr": "Moyenne calculée par Cosmic Online à partir des notes des joueurs qui ont terminé ce niveau (temps vérifié). Ce n'est pas la difficulté /5, calculée par le jeu à partir du niveau lui-même.",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
    "fr": "Mozambique",
    "where": [
     "data/online/countries.json",
@@ -13582,6 +15312,7 @@
   {
    "fr": "Murs de cristal : sautez, puis Dash à travers.",
    "where": [
+    "data/levels/aethra_01.json",
     "data/levels/noyau_02.json",
     "data/levels/sylvanox_04.json"
    ]
@@ -13618,9 +15349,27 @@
    ]
   },
   {
+   "fr": "Musique du menu principal (choisie)",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Musique pendant le combat",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Musiques",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Musiques : un juke-box des morceaux déjà entendus en jeu (lecture, pause, avance, répéter, aléatoire) et la musique du menu principal au choix.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -13631,9 +15380,43 @@
    ]
   },
   {
+   "fr": "Mycélia",
+   "where": [
+    "data/achievements/achievements.json",
+    "data/enemies/mycelia.json"
+   ]
+  },
+  {
+   "fr": "Mycélia aspire l'air du bosquet !",
+   "where": [
+    "data/enemies/echo_mycelia.json",
+    "data/enemies/mycelia.json"
+   ]
+  },
+  {
+   "fr": "Mycélia réveille la forêt !",
+   "where": [
+    "data/enemies/echo_mycelia.json",
+    "data/enemies/mycelia.json"
+   ]
+  },
+  {
+   "fr": "MYCÉLIA, LA MÈRE-RACINE",
+   "where": [
+    "data/enemies/mycelia.json"
+   ]
+  },
+  {
    "fr": "Mèche",
    "where": [
     "game/powers/PowerStats.cpp"
+   ]
+  },
+  {
+   "fr": "Mère de tout",
+   "where": [
+    "data/enemies/echo_mycelia.json",
+    "data/enemies/mycelia.json"
    ]
   },
   {
@@ -13812,7 +15595,8 @@
   {
    "fr": "niveau de joueur, version {0}",
    "where": [
-    "ui/screens/GhostSetupScene.cpp"
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/ReplayCompareSetupScene.cpp"
    ]
   },
   {
@@ -13876,9 +15660,17 @@
    ]
   },
   {
+   "fr": "niveau inconnu du serveur",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
    "fr": "Niveau inconnu du serveur.",
    "where": [
-    "server/src/levels.ts"
+    "server/src/campaign.ts",
+    "server/src/levels.ts",
+    "server/src/workshop.ts"
    ]
   },
   {
@@ -13890,7 +15682,8 @@
   {
    "fr": "Niveau introuvable : {0}",
    "where": [
-    "ui/screens/GhostSetupScene.cpp"
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/ReplayCompareSetupScene.cpp"
    ]
   },
   {
@@ -13916,7 +15709,8 @@
   {
    "fr": "niveau local",
    "where": [
-    "ui/screens/GhostSetupScene.cpp"
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/ReplayCompareSetupScene.cpp"
    ]
   },
   {
@@ -13934,7 +15728,14 @@
   {
    "fr": "Niveau non installé",
    "where": [
-    "ui/screens/OnlineRankingScene.cpp"
+    "ui/screens/OnlineRankingScene.cpp",
+    "ui/screens/OnlineThreadScene.cpp"
+   ]
+  },
+  {
+   "fr": "Niveau non installé : replay illisible ici.",
+   "where": [
+    "ui/screens/OnlineThreadScene.cpp"
    ]
   },
   {
@@ -14061,6 +15862,12 @@
    "fr": "NO DEATH",
    "where": [
     "game/online/OnlineTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Noire et rouge, comme les échos des gardiens.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -14259,6 +16066,43 @@
    ]
   },
   {
+   "fr": "NOTE DES JOUEURS",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "Note des joueurs :",
+   "where": [
+    "ui/online/RatingWidgets.cpp",
+    "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Note du niveau",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "Note du niveau : chargement…",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "Note indisponible : {0}",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "Note indisponible.",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
    "fr": "note moyenne",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -14299,6 +16143,24 @@
    "fr": "Notes (facultatif)",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Notes des joueurs pour les niveaux de la campagne : après avoir terminé un niveau (temps vérifié en ligne), notez-le de 1 à 5 étoiles depuis l'écran de fin ou ONLINE ; la moyenne s'affiche sur la fiche du niveau et dans ONLINE (distincte de la difficulté calculée).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Notez ce niveau (1 à 5 étoiles)",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "Notez ce niveau quand votre temps sera vérifié",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
    ]
   },
   {
@@ -14364,7 +16226,8 @@
   {
    "fr": "Nouveau maître",
    "where": [
-    "data/achievements/achievements.json"
+    "data/achievements/achievements.json",
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -14511,6 +16374,12 @@
    ]
   },
   {
+   "fr": "Nouvelle planète : Aethra, la planète des sanctuaires (après Sylvanox, Glacior et Pyralis) — 4 niveaux complets, chacun gardé par un nouveau gardien.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Nouvelle version d'un de mes favoris",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -14549,6 +16418,12 @@
    ]
   },
   {
+   "fr": "NOUVELLES RÉCOMPENSES",
+   "where": [
+    "ui/screens/RewardsScene.cpp"
+   ]
+  },
+  {
    "fr": "Nova",
    "where": [
     "data/levels/glacior_01.json",
@@ -14561,13 +16436,28 @@
     "data/levels/sylvanox_02.json",
     "data/levels/sylvanox_03.json",
     "game/records/Records.cpp",
-    "game/records/Records.h"
+    "game/records/Records.h",
+    "ui/screens/CollectionScene.cpp",
+    "ui/screens/RewardsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Nova de givre",
+   "where": [
+    "data/powers/frost_nova.json",
+    "game/levels/ObjectTypes.cpp"
    ]
   },
   {
    "fr": "NovaRider",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "Noyau",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -14603,6 +16493,13 @@
    ]
   },
   {
+   "fr": "Nuit polaire",
+   "where": [
+    "data/enemies/aurorax.json",
+    "data/enemies/echo_aurorax.json"
+   ]
+  },
+  {
    "fr": "Nul ne rallumera le relais. L'hiver des Anciens est éternel.",
    "where": [
     "data/levels/glacior_03.json"
@@ -14617,6 +16514,39 @@
     "data/enemies/echo_ignivore.json",
     "data/enemies/howling_wyrm.json",
     "data/enemies/ignivore.json"
+   ]
+  },
+  {
+   "fr": "Nyxara",
+   "where": [
+    "data/achievements/achievements.json",
+    "data/enemies/nyxara.json"
+   ]
+  },
+  {
+   "fr": "Nyxara avale la lumière !",
+   "where": [
+    "data/enemies/echo_nyxara.json",
+    "data/enemies/nyxara.json"
+   ]
+  },
+  {
+   "fr": "Nyxara ouvre l'horizon des événements !",
+   "where": [
+    "data/enemies/echo_nyxara.json",
+    "data/enemies/nyxara.json"
+   ]
+  },
+  {
+   "fr": "NYXARA, LA DÉVOREUSE D'ÉTOILES",
+   "where": [
+    "data/enemies/nyxara.json"
+   ]
+  },
+  {
+   "fr": "N°",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -14656,6 +16586,12 @@
    "fr": "n°{0} / {1}",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Née du vide entre les étoiles, elle avale la lumière. Plus elle est blessée, plus l'arène s'assombrit.",
+   "where": [
+    "data/enemies/nyxara.json"
    ]
   },
   {
@@ -14744,7 +16680,7 @@
    ]
   },
   {
-   "fr": "Obtenir chacun des 14 pouvoirs.",
+   "fr": "Obtenir chacun des 18 pouvoirs.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -14762,7 +16698,7 @@
    ]
   },
   {
-   "fr": "Obtenir l'or sur les 14 niveaux.",
+   "fr": "Obtenir l'or sur les 18 niveaux.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -14786,7 +16722,7 @@
    ]
   },
   {
-   "fr": "Obtenir le platine sur les 14 niveaux.",
+   "fr": "Obtenir le platine sur les 18 niveaux.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -14822,6 +16758,12 @@
    ]
   },
   {
+   "fr": "obtenu",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Obtenu le {0}",
    "where": [
     "ui/screens/AchievementsScene.cpp"
@@ -14831,6 +16773,12 @@
    "fr": "Obtenu le {0}/{1}/{2}",
    "where": [
     "ui/screens/AchievementsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Océan de nébuleuse",
+   "where": [
+    "data/music/tracks.json"
    ]
   },
   {
@@ -14877,7 +16825,20 @@
    ]
   },
   {
+   "fr": "Onde d'éclipse",
+   "where": [
+    "data/enemies/echo_nyxara.json",
+    "data/enemies/nyxara.json"
+   ]
+  },
+  {
    "fr": "Onde de choc au sol",
+   "where": [
+    "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Onde en anneau",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
    ]
@@ -15027,6 +16988,7 @@
   {
    "fr": "Or",
    "where": [
+    "data/cosmetics/cosmetics.json",
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/gameplay/Hud.cpp",
@@ -15038,6 +17000,12 @@
    "fr": "or",
    "where": [
     "game/progression/NewsCenter.cpp"
+   ]
+  },
+  {
+   "fr": "Or stellaire",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -15157,6 +17125,12 @@
    ]
   },
   {
+   "fr": "Ouverture (°)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Ouvre la voie à {0}",
    "where": [
     "ui/screens/AchievementsScene.cpp"
@@ -15203,6 +17177,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Où l'entendre",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -15302,6 +17282,36 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Palier : toutes les étoiles ({0})",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Palier : {0} étoiles",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Palier de {0} étoiles",
+   "where": [
+    "ui/screens/RewardsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Paliers",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Paliers atteints",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -15533,6 +17543,12 @@
    ]
   },
   {
+   "fr": "Partie rejouée à l'identique",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Partie rejouée à l'identique · {0} contrôles vérifiés",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -15563,15 +17579,41 @@
    ]
   },
   {
+   "fr": "Pas de l'ombre",
+   "where": [
+    "data/enemies/echo_nyxara.json",
+    "data/enemies/nyxara.json",
+    "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
    "fr": "Pas de médaille",
    "where": [
     "ui/screens/ResultsScene.cpp"
    ]
   },
   {
+   "fr": "Pas de replay vérifié pour cette course.",
+   "where": [
+    "ui/screens/OnlineThreadScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pas de traînée derrière Nova.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Pas encore affronté : ses statistiques commenceront au premier combat.",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pas encore atteinte.",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -15593,9 +17635,21 @@
    ]
   },
   {
+   "fr": "Pas encore rencontrée.",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Pas encore terminé ({0} essais).",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pas encore vaincu.",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -15638,6 +17692,12 @@
    "fr": "Passage étroit : glissez (Bas en pleine course) pour vous faufiler.",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "passages à 1/30 s près",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -15773,7 +17833,8 @@
   {
    "fr": "Perfection gardienne",
    "where": [
-    "data/achievements/achievements.json"
+    "data/achievements/achievements.json",
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -15786,6 +17847,12 @@
    "fr": "Performances en attente d'envoi",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Perle de basalte",
+   "where": [
+    "data/levels/aethra_03.json"
    ]
   },
   {
@@ -15910,7 +17977,8 @@
   {
    "fr": "Phases sans dégât",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "ui/screens/BossStatsScene.cpp",
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -15998,6 +18066,12 @@
    ]
   },
   {
+   "fr": "Pistons",
+   "where": [
+    "data/levels/aethra_03.json"
+   ]
+  },
+  {
    "fr": "Piège",
    "where": [
     "game/gameplay/Damage.cpp"
@@ -16053,6 +18127,12 @@
    ]
   },
   {
+   "fr": "Plaines de givre",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
    "fr": "planet.json invalide",
    "where": [
     "packaging/PackageImporter.cpp"
@@ -16080,6 +18160,7 @@
   {
    "fr": "Planeur dans les cheminées. Attention à la voûte.",
    "where": [
+    "data/levels/aethra_03.json",
     "data/levels/noyau_02.json",
     "data/levels/pyralis_04.json"
    ]
@@ -16135,7 +18216,8 @@
   {
    "fr": "Planète",
    "where": [
-    "editors/level_editor/LevelEditorDialogs.cpp"
+    "editors/level_editor/LevelEditorDialogs.cpp",
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -16205,6 +18287,12 @@
    ]
   },
   {
+   "fr": "Planètes",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "planètes et niveaux",
    "where": [
     "ui/screens/MainMenuScene.cpp"
@@ -16262,6 +18350,7 @@
   {
    "fr": "Platine",
    "where": [
+    "data/cosmetics/cosmetics.json",
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/gameplay/Hud.cpp",
     "game/levels/LevelData.cpp"
@@ -16328,6 +18417,12 @@
    ]
   },
   {
+   "fr": "Pluie d'étoiles",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Pluie de braises",
    "where": [
     "data/enemies/astrarque.json",
@@ -16363,7 +18458,9 @@
    "where": [
     "data/enemies/archon_catacombs.json",
     "data/enemies/echo_archon_catacombs.json",
+    "data/enemies/echo_mycelia.json",
     "data/enemies/echo_spore_queen.json",
+    "data/enemies/mycelia.json",
     "data/enemies/spore_queen.json"
    ]
   },
@@ -16455,6 +18552,18 @@
    ]
   },
   {
+   "fr": "Plus tard",
+   "where": [
+    "ui/screens/RewardsScene.cpp"
+   ]
+  },
+  {
+   "fr": "plus tard",
+   "where": [
+    "ui/screens/RewardsScene.cpp"
+   ]
+  },
+  {
    "fr": "Plus téléchargés",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -16482,6 +18591,24 @@
    "fr": "Poids (probabilité)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Point",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "point",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Point : {0}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -16538,7 +18665,14 @@
     "ui/screens/GameScene.cpp",
     "ui/screens/GhostRun.cpp",
     "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/ReplayScene.cpp",
     "ui/screens/SegmentsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Point »",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -16656,6 +18790,30 @@
    ]
   },
   {
+   "fr": "Porte de l'horizon",
+   "where": [
+    "data/levels/aethra_04.json"
+   ]
+  },
+  {
+   "fr": "Porte de la caldeira",
+   "where": [
+    "data/levels/aethra_03.json"
+   ]
+  },
+  {
+   "fr": "Porte du bosquet",
+   "where": [
+    "data/levels/aethra_01.json"
+   ]
+  },
+  {
+   "fr": "Porte du lac",
+   "where": [
+    "data/levels/aethra_02.json"
+   ]
+  },
+  {
    "fr": "porte fermée {0} (x={1}) contournable par un détour de {2} px",
    "where": [
     "game/levels/LevelAnalyzer.cpp"
@@ -16738,6 +18896,18 @@
    ]
   },
   {
+   "fr": "Pose une copie lumineuse de Nova : quelques secondes, ennemis et boss la visent à votre place. Elle disparaît dès qu'une attaque la touche.",
+   "where": [
+    "data/powers/decoy.json"
+   ]
+  },
+  {
+   "fr": "Poser la balise",
+   "where": [
+    "game/powers/PowerStats.cpp"
+   ]
+  },
+  {
    "fr": "Position",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -16793,6 +18963,24 @@
    ]
   },
   {
+   "fr": "Pour avoir créé un niveau.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Pour avoir terminé Sylvanox.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Pour celles et ceux qui ont presque tout.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Pour invoquer des créatures, ajoutez une attaque de type « Appel de renforts ».",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -16821,6 +19009,24 @@
    "fr": "Poursuite",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Poursuite sous le sol (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Poussière d'étoile éteinte",
+   "where": [
+    "data/levels/aethra_04.json"
+   ]
+  },
+  {
+   "fr": "Poussière d'étoiles",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -16984,9 +19190,32 @@
    ]
   },
   {
+   "fr": "Prenez la tablette du sanctuaire.",
+   "where": [
+    "data/levels/aethra_01.json",
+    "data/levels/aethra_02.json",
+    "data/levels/aethra_03.json",
+    "data/levels/aethra_04.json"
+   ]
+  },
+  {
+   "fr": "Prisme",
+   "where": [
+    "data/enemies/aurorax.json",
+    "data/enemies/echo_aurorax.json"
+   ]
+  },
+  {
    "fr": "Prisme de la machine",
    "where": [
     "data/levels/sylvanox_03.json"
+   ]
+  },
+  {
+   "fr": "Prisme de la nuit polaire",
+   "where": [
+    "data/enemies/aurorax.json",
+    "data/enemies/echo_aurorax.json"
    ]
   },
   {
@@ -17002,6 +19231,12 @@
    ]
   },
   {
+   "fr": "Prisme rebondissant",
+   "where": [
+    "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
    "fr": "Privé",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -17011,6 +19246,18 @@
    "fr": "Privé (membres seulement)",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "prochain palier : {0} étoiles (encore {1})",
+   "where": [
+    "ui/screens/RewardsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Prochain palier : {0}, {1} (encore {2})",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -17420,6 +19667,14 @@
    ]
   },
   {
+   "fr": "Puits gravitationnel",
+   "where": [
+    "data/enemies/echo_nyxara.json",
+    "data/enemies/nyxara.json",
+    "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
    "fr": "Puits laser : planez et glissez entre les faisceaux.",
    "where": [
     "data/levels/sylvanox_03.json"
@@ -17461,6 +19716,7 @@
   {
    "fr": "Pyralis",
    "where": [
+    "data/music/tracks.json",
     "data/planets/pyralis.json"
    ]
   },
@@ -17492,6 +19748,32 @@
    "fr": "Pyralis, la forge en fusion. La lave est mortelle : restez sur la roche !",
    "where": [
     "data/levels/pyralis_01.json"
+   ]
+  },
+  {
+   "fr": "Pyrogyre",
+   "where": [
+    "data/achievements/achievements.json",
+    "data/enemies/pyrogyre.json"
+   ]
+  },
+  {
+   "fr": "Pyrogyre devient une étoile naissante !",
+   "where": [
+    "data/enemies/echo_pyrogyre.json",
+    "data/enemies/pyrogyre.json"
+   ]
+  },
+  {
+   "fr": "PYROGYRE, L'ANNEAU SOLAIRE",
+   "where": [
+    "data/enemies/pyrogyre.json"
+   ]
+  },
+  {
+   "fr": "Pèlerin d'Aethra",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -17592,7 +19874,8 @@
   {
    "fr": "R",
    "where": [
-    "ui/screens/NotificationsScene.cpp"
+    "ui/screens/NotificationsScene.cpp",
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -17633,8 +19916,17 @@
    ]
   },
   {
+   "fr": "Racine traqueuse",
+   "where": [
+    "data/enemies/echo_mycelia.json",
+    "data/enemies/mycelia.json",
+    "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
    "fr": "Racines",
    "where": [
+    "data/levels/aethra_01.json",
     "game/levels/ObjectTypes.cpp"
    ]
   },
@@ -17842,16 +20134,29 @@
    ]
   },
   {
+   "fr": "Rayon du coup",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Rayon du cœur",
    "where": [
     "data/enemies/archon_catacombs.json",
     "data/enemies/echo_archon_catacombs.json",
     "data/enemies/echo_thornwarden.json",
-    "data/enemies/thornwarden.json"
+    "data/enemies/thornwarden.json",
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
    "fr": "Rayon du projectile (0 = auto)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Rayon final",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
@@ -17867,6 +20172,19 @@
    "fr": "Rayon laser",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Rayon le plus large",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Rayon solaire",
+   "where": [
+    "data/enemies/echo_pyrogyre.json",
+    "data/enemies/pyrogyre.json"
    ]
   },
   {
@@ -17897,6 +20215,7 @@
   {
    "fr": "Rebonds",
    "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp",
     "game/powers/PowerStats.cpp"
    ]
   },
@@ -17904,6 +20223,18 @@
    "fr": "Recalculer",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Recaler B",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "recalé sur {0}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -17931,6 +20262,12 @@
    ]
   },
   {
+   "fr": "Recherche de l'instant… {0} %",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Recherche des fantômes en ligne…",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
@@ -17940,6 +20277,12 @@
    "fr": "Recherche des nouveautés…",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Recherche des replays en ligne…",
+   "where": [
+    "ui/screens/ReplayCompareSetupScene.cpp"
    ]
   },
   {
@@ -17961,12 +20304,6 @@
    ]
   },
   {
-   "fr": "Recherche…",
-   "where": [
-    "ui/screens/ReplayScene.cpp"
-   ]
-  },
-  {
    "fr": "Recommencer",
    "where": [
     "ui/screens/PauseScene.cpp",
@@ -17983,7 +20320,9 @@
    "fr": "record",
    "where": [
     "game/progression/NewsCenter.cpp",
-    "ui/screens/GhostSetupScene.cpp"
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/ReplayCompareSetupScene.cpp",
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -18021,7 +20360,8 @@
    "where": [
     "server/src/admin.ts",
     "server/src/community.ts",
-    "server/src/records.ts"
+    "server/src/records.ts",
+    "server/src/workshop.ts"
    ]
   },
   {
@@ -18142,9 +20482,21 @@
    ]
   },
   {
+   "fr": "Reflet : {0}",
+   "where": [
+    "game/enemies/GuardianAttacks.cpp"
+   ]
+  },
+  {
    "fr": "Reflet de Archonte des Catacombes, rappelé par le cœur de l'étoile. Il ne laisse aucun soin derrière lui.",
    "where": [
     "data/enemies/echo_archon_catacombs.json"
+   ]
+  },
+  {
+   "fr": "Reflet de Aurorax, rappelé par le cœur de l'étoile. Il ne laisse aucun soin derrière lui.",
+   "where": [
+    "data/enemies/echo_aurorax.json"
    ]
   },
   {
@@ -18190,6 +20542,24 @@
    ]
   },
   {
+   "fr": "Reflet de Mycélia, rappelé par le cœur de l'étoile. Il ne laisse aucun soin derrière lui.",
+   "where": [
+    "data/enemies/echo_mycelia.json"
+   ]
+  },
+  {
+   "fr": "Reflet de Nyxara, rappelé par le cœur de l'étoile. Il ne laisse aucun soin derrière lui.",
+   "where": [
+    "data/enemies/echo_nyxara.json"
+   ]
+  },
+  {
+   "fr": "Reflet de Pyrogyre, rappelé par le cœur de l'étoile. Il ne laisse aucun soin derrière lui.",
+   "where": [
+    "data/enemies/echo_pyrogyre.json"
+   ]
+  },
+  {
    "fr": "Reflet de Reine Sporale, rappelé par le cœur de l'étoile. Il ne laisse aucun soin derrière lui.",
    "where": [
     "data/enemies/echo_spore_queen.json"
@@ -18211,6 +20581,32 @@
    "fr": "Reflet de Wyrm Hurlante, rappelé par le cœur de l'étoile. Il ne laisse aucun soin derrière lui.",
    "where": [
     "data/enemies/echo_howling_wyrm.json"
+   ]
+  },
+  {
+   "fr": "Reflets",
+   "where": [
+    "data/enemies/aurorax.json",
+    "data/enemies/echo_aurorax.json"
+   ]
+  },
+  {
+   "fr": "Reflets (doubles)",
+   "where": [
+    "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Reflets bleu glacier, écharpe blanche.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Reflets éternels",
+   "where": [
+    "data/enemies/aurorax.json",
+    "data/enemies/echo_aurorax.json"
    ]
   },
   {
@@ -18280,6 +20676,18 @@
    "fr": "Rejouer",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Rejoué (à l'identique s'il est de cette version du niveau), avec le HUD et la caméra du jeu.",
+   "where": [
+    "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "rejoué à l'identique",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -18410,6 +20818,12 @@
    ]
   },
   {
+   "fr": "Replay",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "replay",
    "where": [
     "game/ghost/GhostStore.cpp",
@@ -18431,7 +20845,20 @@
   {
    "fr": "Replay COSMIC PLATFORMER",
    "where": [
-    "ui/screens/GhostSetupScene.cpp"
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "replay d'un autre niveau.",
+   "where": [
+    "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Replay en cours de lecture",
+   "where": [
+    "ui/screens/ReplayCompareSetupScene.cpp"
    ]
   },
   {
@@ -18455,7 +20882,8 @@
   {
    "fr": "Replay importé.",
    "where": [
-    "ui/screens/GhostSetupScene.cpp"
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/ReplayCompareSetupScene.cpp"
    ]
   },
   {
@@ -18497,7 +20925,8 @@
   {
    "fr": "Replay refusé : {0}",
    "where": [
-    "ui/screens/GhostSetupScene.cpp"
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/ReplayCompareSetupScene.cpp"
    ]
   },
   {
@@ -18510,6 +20939,18 @@
    "fr": "replay vérifié (structure, version du niveau, durée, trajectoire), non re-simulé",
    "where": [
     "server/src/community.ts"
+   ]
+  },
+  {
+   "fr": "Replays comparés",
+   "where": [
+    "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Replays de ce niveau",
+   "where": [
+    "ui/screens/ReplayCompareSetupScene.cpp"
    ]
   },
   {
@@ -18644,6 +21085,12 @@
    ]
   },
   {
+   "fr": "Retirer ma note",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
    "fr": "Retirer {0} de vos amis ? Votre conversation privée restera lisible mais vous ne pourrez plus vous écrire.",
    "where": [
     "ui/screens/SocialScene.cpp"
@@ -18673,6 +21120,7 @@
     "engine/input/InputTypes.cpp",
     "ui/screens/AchievementsScene.cpp",
     "ui/screens/BossStatsScene.cpp",
+    "ui/screens/CollectionScene.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/OnlineAccountScene.cpp",
     "ui/screens/PowerGuideScene.cpp",
@@ -18690,6 +21138,12 @@
    "fr": "Retour au checkpoint",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Retour au classement",
+   "where": [
+    "ui/online/CommentsPanel.cpp"
    ]
   },
   {
@@ -18815,6 +21269,12 @@
    ]
   },
   {
+   "fr": "Rive",
+   "where": [
+    "data/levels/aethra_02.json"
+   ]
+  },
+  {
    "fr": "Rive des radeaux",
    "where": [
     "data/levels/pyralis_02.json"
@@ -18898,6 +21358,18 @@
    ]
   },
   {
+   "fr": "Rotation (°/s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Rotation par salve (°)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Rouage primordial",
    "where": [
     "data/levels/pyralis_03.json"
@@ -18924,6 +21396,18 @@
    ]
   },
   {
+   "fr": "Route des étoiles",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Route des étoiles : les 17 paliers de récompenses, et celles qui demandent un succès précis ; à la fin d'un niveau, les nouvelles récompenses à équiper tout de suite ou plus tard.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Royaume-Uni",
    "where": [
     "data/online/countries.json",
@@ -18944,6 +21428,12 @@
    ]
   },
   {
+   "fr": "Ruines Suspendues, Cœur de la Machine, Catacombes",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
    "fr": "Run",
    "where": [
     "game/player/Player.cpp"
@@ -18954,7 +21444,9 @@
    "where": [
     "game/enemies/Enemy.cpp",
     "game/ghost/Ghost.cpp",
-    "game/player/PlayerActions.cpp"
+    "game/player/PlayerActions.cpp",
+    "ui/screens/CollectionScene.cpp",
+    "ui/screens/RewardsScene.cpp"
    ]
   },
   {
@@ -19050,6 +21542,7 @@
   {
    "fr": "Réalisé le",
    "where": [
+    "ui/screens/OnlineThreadScene.cpp",
     "ui/screens/PlanetMapScene.cpp"
    ]
   },
@@ -19077,6 +21570,18 @@
    "fr": "Récepteur d'énergie",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Récompense du succès « {0} »",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Récompenses de succès précis",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -19250,6 +21755,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Répéter",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -19559,7 +22070,9 @@
   {
    "fr": "Salve de spores",
    "where": [
+    "data/enemies/echo_mycelia.json",
     "data/enemies/echo_spore_queen.json",
+    "data/enemies/mycelia.json",
     "data/enemies/spore_queen.json"
    ]
   },
@@ -19597,6 +22110,12 @@
    ]
   },
   {
+   "fr": "sans décalage",
+   "where": [
+    "game/ghost/ReplayCompare.cpp"
+   ]
+  },
+  {
    "fr": "Sans faux pas",
    "where": [
     "data/achievements/achievements.json"
@@ -19612,6 +22131,13 @@
    "fr": "Sans mourir, sans être touché : la précision.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Sans titre",
+   "where": [
+    "data/cosmetics/cosmetics.json",
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -19653,6 +22179,12 @@
     "data/enemies/echo_crucible_heart.json",
     "data/enemies/echo_magmaroth.json",
     "data/enemies/magmaroth.json"
+   ]
+  },
+  {
+   "fr": "Saut, double saut, puis Dash au sommet.",
+   "where": [
+    "data/levels/aethra_04.json"
    ]
   },
   {
@@ -19883,6 +22415,7 @@
    "fr": "Segment",
    "where": [
     "ui/screens/GhostRun.cpp",
+    "ui/screens/ReplayScene.cpp",
     "ui/screens/SegmentsScene.cpp"
    ]
   },
@@ -19914,6 +22447,12 @@
    "fr": "Segments",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Seize gardiens, aucun soin, une seule vie.",
+   "where": [
+    "data/levels/noyau_01.json"
    ]
   },
   {
@@ -20035,6 +22574,12 @@
    ]
   },
   {
+   "fr": "Seuil",
+   "where": [
+    "data/levels/aethra_04.json"
+   ]
+  },
+  {
    "fr": "Seuil des Anciens",
    "where": [
     "data/levels/sylvanox_01.json"
@@ -20056,6 +22601,12 @@
   },
   {
    "fr": "Seul l'auteur d'un commentaire peut le supprimer.",
+   "where": [
+    "server/src/workshop.ts"
+   ]
+  },
+  {
+   "fr": "Seul l'auteur de la course peut épingler un commentaire.",
    "where": [
     "server/src/workshop.ts"
    ]
@@ -20112,6 +22663,12 @@
    "fr": "Seulement ce que vous avez déjà exploré",
    "where": [
     "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
+   "fr": "Seulement visuelles : rien ne change dans la partie.",
+   "where": [
+    "ui/screens/RewardsScene.cpp"
    ]
   },
   {
@@ -20191,6 +22748,12 @@
     "data/enemies/echo_archon_catacombs.json",
     "data/enemies/echo_thornwarden.json",
     "data/enemies/thornwarden.json"
+   ]
+  },
+  {
+   "fr": "Simple",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -20279,6 +22842,12 @@
    "fr": "Sol fissuré (Frappe sismique)",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Sol gelé",
+   "where": [
+    "game/enemies/EnemyDefinition.cpp"
    ]
   },
   {
@@ -20440,6 +23009,12 @@
    ]
   },
   {
+   "fr": "Souffle de la forêt",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
    "fr": "Souffle glacial",
    "where": [
     "data/enemies/astrarque.json",
@@ -20534,9 +23109,21 @@
    ]
   },
   {
+   "fr": "Sous votre nom, sur le profil et dans les classements.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "sous {0}% PV",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Sous-bois",
+   "where": [
+    "data/levels/aethra_01.json"
    ]
   },
   {
@@ -20570,9 +23157,34 @@
    ]
   },
   {
+   "fr": "Spectre",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "SPEEDRUN",
    "where": [
     "game/online/OnlineTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Spirale de tirs",
+   "where": [
+    "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Spirale solaire",
+   "where": [
+    "data/enemies/echo_pyrogyre.json",
+    "data/enemies/pyrogyre.json"
+   ]
+  },
+  {
+   "fr": "Spore d'or",
+   "where": [
+    "data/levels/aethra_01.json"
    ]
   },
   {
@@ -20586,6 +23198,7 @@
   {
    "fr": "spores",
    "where": [
+    "game/enemies/GuardianAttacks.cpp",
     "game/gameplay/entities/HazardEntities.cpp",
     "game/levels/ObjectTypes.cpp"
    ]
@@ -20629,6 +23242,12 @@
    ]
   },
   {
+   "fr": "Spéc.",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Sri Lanka",
    "where": [
     "data/online/countries.json",
@@ -20648,6 +23267,12 @@
    ]
   },
   {
+   "fr": "Standard",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Station de pouvoirs : il faut maintenant la Téléportation. Le pouvoir que vous laissez reste ici.",
    "where": [
     "data/levels/pyralis_03.json"
@@ -20662,6 +23287,7 @@
   {
    "fr": "Station de pouvoirs. Pour la suite : l'Onde. Vous portez 4 pouvoirs au plus : celui que vous laissez reste ici.",
    "where": [
+    "data/levels/aethra_03.json",
     "data/levels/noyau_02.json",
     "data/levels/pyralis_02.json"
    ]
@@ -20748,6 +23374,12 @@
    ]
   },
   {
+   "fr": "Station de pouvoirs. Pour la suite : le Grappin. Vous portez 4 pouvoirs au plus : celui que vous laissez reste ici.",
+   "where": [
+    "data/levels/aethra_01.json"
+   ]
+  },
+  {
    "fr": "Station de pouvoirs. Pour la suite : le Planeur, la Frappe sismique, le Grappin, le Dash, la Téléportation. Vous portez 4 pouvoirs au plus : celui que vous laissez reste ici.",
    "where": [
     "data/levels/pyralis_01.json"
@@ -20794,6 +23426,7 @@
   {
    "fr": "Station de pouvoirs. Pour la suite : le Planeur. Vous portez 4 pouvoirs au plus : celui que vous laissez reste ici.",
    "where": [
+    "data/levels/aethra_03.json",
     "data/levels/glacior_01.json",
     "data/levels/noyau_02.json",
     "data/levels/pyralis_01.json",
@@ -20826,6 +23459,12 @@
   },
   {
    "fr": "Statistiques des boss (menu principal → Statistiques) : victoires, défaites, combats sans dégât, phases sans dégât avec compteurs, meilleur combat. Un petit son salue chaque phase battue sans dégât.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Statistiques des boss et galerie : les nouveaux gardiens et leurs échos y figurent. Musiques : 4 thèmes de combat et la musique d'Aethra.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -20927,9 +23566,21 @@
    ]
   },
   {
+   "fr": "Succès obtenu",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Succès obtenus",
    "where": [
     "ui/screens/AchievementsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Succès requis",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -20959,9 +23610,24 @@
    ]
   },
   {
+   "fr": "Suivre A",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Suivre B",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Supernova",
    "where": [
-    "data/enemies/astrarque.json"
+    "data/cosmetics/cosmetics.json",
+    "data/enemies/astrarque.json",
+    "data/enemies/echo_pyrogyre.json",
+    "data/enemies/pyrogyre.json"
    ]
   },
   {
@@ -21068,9 +23734,28 @@
    ]
   },
   {
+   "fr": "Sur la première île-sanctuaire, un bosquet de Sylvanox s'est enfoncé dans la nébuleuse. Ses racines vivent encore, et la Mère-Racine les entend toutes.",
+   "where": [
+    "data/levels/aethra_01.json"
+   ]
+  },
+  {
+   "fr": "Sur le lac, chaque reflet peut mordre.",
+   "where": [
+    "data/levels/aethra_02.json"
+   ]
+  },
+  {
    "fr": "sur {0}",
    "where": [
-    "ui/screens/AchievementsScene.cpp"
+    "ui/screens/AchievementsScene.cpp",
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "sur {0} · passages à 1/30 s près",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -21138,11 +23823,12 @@
   {
    "fr": "Sylvanox",
    "where": [
+    "data/music/tracks.json",
     "data/planets/sylvanox.json"
    ]
   },
   {
-   "fr": "Sylvanox · Pyralis · Glacior",
+   "fr": "Sylvanox · Pyralis · Glacior · Aethra",
    "where": [
     "ui/screens/MainMenuScene.cpp"
    ]
@@ -21259,6 +23945,12 @@
    ]
   },
   {
+   "fr": "Sève",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Sève bouillonnante",
    "where": [
     "data/enemies/echo_spore_queen.json",
@@ -21328,6 +24020,12 @@
    ]
   },
   {
+   "fr": "Tablette : Balise de rappel",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
    "fr": "Tablette : Bombe plasma",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -21359,6 +24057,24 @@
   },
   {
    "fr": "Tablette : Impulsion",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Tablette : Lame boomerang",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Tablette : Leurre holographique",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Tablette : Nova de givre",
    "where": [
     "game/levels/ObjectTypes.cpp"
    ]
@@ -21538,7 +24254,9 @@
    "fr": "Temps",
    "where": [
     "ui/screens/GhostRun.cpp",
-    "ui/screens/OnlineRankingScene.cpp"
+    "ui/screens/OnlineRankingScene.cpp",
+    "ui/screens/OnlineThreadScene.cpp",
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -21575,6 +24293,12 @@
    "fr": "Temps de jeu, sauts, chutes et parties.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "TEMPS DE PASSAGE",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -21872,13 +24596,19 @@
    ]
   },
   {
-   "fr": "Terminer les 14 niveaux de la campagne sans mourir.",
+   "fr": "Terminer les 18 niveaux de la campagne sans mourir.",
    "where": [
     "data/achievements/achievements.json"
    ]
   },
   {
-   "fr": "Terminer les 14 niveaux de la campagne.",
+   "fr": "Terminer les 18 niveaux de la campagne.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Terminer les 4 niveaux d'Aethra.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -21980,6 +24710,18 @@
    ]
   },
   {
+   "fr": "Terminez ce niveau avec un temps vérifié par Cosmic Online pour le noter.",
+   "where": [
+    "server/src/campaign.ts"
+   ]
+  },
+  {
+   "fr": "Terminez ce niveau connecté à Cosmic Online : une fois votre temps vérifié, vous pourrez le noter.",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
    "fr": "TERMINÉ",
    "where": [
     "ui/screens/RaceScene.cpp"
@@ -21994,6 +24736,10 @@
   {
    "fr": "Terrain",
    "where": [
+    "data/levels/aethra_01.json",
+    "data/levels/aethra_02.json",
+    "data/levels/aethra_03.json",
+    "data/levels/aethra_04.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -22155,10 +24901,22 @@
    ]
   },
   {
+   "fr": "Thème principal",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
    "fr": "Timor-Leste",
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Tir",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -22172,6 +24930,7 @@
   {
    "fr": "Tir chargé sur le récepteur, puis courez.",
    "where": [
+    "data/levels/aethra_03.json",
     "data/levels/noyau_02.json",
     "data/levels/pyralis_04.json"
    ]
@@ -22203,6 +24962,7 @@
   {
    "fr": "Titre",
    "where": [
+    "ui/screens/CollectionScene.cpp",
     "ui/screens/CommunityPublishScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp"
    ]
@@ -22223,6 +24983,12 @@
    "fr": "Titre ou pseudonyme de l'auteur (2 lettres au moins)",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Titres",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -22270,6 +25036,12 @@
    "fr": "Tornade",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Total",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -22331,6 +25103,12 @@
    ]
   },
   {
+   "fr": "tous les paliers sont atteints",
+   "where": [
+    "ui/screens/RewardsScene.cpp"
+   ]
+  },
+  {
    "fr": "Tous vos amis sont déjà dans le groupe.",
    "where": [
     "ui/screens/SocialScene.cpp"
@@ -22373,7 +25151,7 @@
    ]
   },
   {
-   "fr": "Tout ramasser dans les 14 niveaux de la campagne.",
+   "fr": "Tout ramasser dans les 18 niveaux de la campagne.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -22409,6 +25187,18 @@
    ]
   },
   {
+   "fr": "Toutes les récompenses des paliers sont débloquées",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Toutes les étoiles : le cadre ultime.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Toutes vos sessions ont été fermées.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
@@ -22433,6 +25223,12 @@
    ]
   },
   {
+   "fr": "Tracés",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Trait lumineux",
    "where": [
     "game/gameplay/BeamRenderer.cpp"
@@ -22445,7 +25241,19 @@
    ]
   },
   {
+   "fr": "trajectoire enregistrée",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Trajectoire enregistrée (ancien format de replay)",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Trajectoire enregistrée (autre version du niveau)",
    "where": [
     "ui/screens/ReplayScene.cpp"
    ]
@@ -22545,6 +25353,12 @@
    "where": [
     "data/enemies/echo_ignivore.json",
     "data/enemies/ignivore.json"
+   ]
+  },
+  {
+   "fr": "Traînées",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -22804,13 +25618,15 @@
   {
    "fr": "Téléchargement impossible.",
    "where": [
-    "ui/screens/GhostSetupScene.cpp"
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/ReplayCompareSetupScene.cpp"
    ]
   },
   {
    "fr": "Téléchargement interrompu ({0}).",
    "where": [
-    "ui/screens/GhostSetupScene.cpp"
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/ReplayCompareSetupScene.cpp"
    ]
   },
   {
@@ -22831,7 +25647,8 @@
    "where": [
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/NotificationsScene.cpp",
-    "ui/screens/OnlineLevelsScene.cpp"
+    "ui/screens/OnlineLevelsScene.cpp",
+    "ui/screens/ReplayCompareSetupScene.cpp"
    ]
   },
   {
@@ -22922,6 +25739,12 @@
    ]
   },
   {
+   "fr": "Un anneau de magma en orbite autour d'un œil solaire. Il fait tourner le feu autour de lui comme une étoile qui naît.",
+   "where": [
+    "data/enemies/pyrogyre.json"
+   ]
+  },
+  {
    "fr": "Un ascenseur des Anciens : montez dessus pour descendre.",
    "where": [
     "data/levels/sylvanox_03.json"
@@ -22994,6 +25817,15 @@
    ]
   },
   {
+   "fr": "Un cœur de cristal dormait dans la voûte !",
+   "where": [
+    "data/levels/aethra_01.json",
+    "data/levels/aethra_02.json",
+    "data/levels/aethra_03.json",
+    "data/levels/aethra_04.json"
+   ]
+  },
+  {
    "fr": "Un cœur de cristal pris dans les glaces !",
    "where": [
     "data/levels/glacior_01.json"
@@ -23036,6 +25868,12 @@
    ]
   },
   {
+   "fr": "Un gardien entre dans la galerie quand vous le battez.",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "un gardien redoutable",
    "where": [
     "game/levels/DifficultyRating.cpp"
@@ -23054,6 +25892,12 @@
    ]
   },
   {
+   "fr": "Un lac de Glacior flotte sous l'aurore d'Aethra. Ses rives de cristal renvoient chaque geste, et sur la glace, Aurorax se bat avec ses propres reflets.",
+   "where": [
+    "data/levels/aethra_02.json"
+   ]
+  },
+  {
    "fr": "Un membre parti",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
@@ -23063,6 +25907,12 @@
    "fr": "Un monde volcanique où des forges colossales des Anciens brûlent encore. Les rivières de lave y charrient des machines à demi fondues, et quelque chose bat au cœur de la fonderie.",
    "where": [
     "data/planets/pyralis.json"
+   ]
+  },
+  {
+   "fr": "Un morceau se débloque la première fois que vous l'entendez en jeu.",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -23162,6 +26012,21 @@
    ]
   },
   {
+   "fr": "Un ruban vert et violet qui ondule.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Un sanctuaire caché dans la voûte !",
+   "where": [
+    "data/levels/aethra_01.json",
+    "data/levels/aethra_02.json",
+    "data/levels/aethra_03.json",
+    "data/levels/aethra_04.json"
+   ]
+  },
+  {
    "fr": "Un serpent de glace ! Gardons nos distances.",
    "where": [
     "data/levels/glacior_01.json"
@@ -23228,6 +26093,12 @@
    ]
   },
   {
+   "fr": "Une créature y entre dès que vous la rencontrez.",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Une graine cachée sous le pont de racines !",
    "where": [
     "data/levels/sylvanox_02.json"
@@ -23243,6 +26114,12 @@
    "fr": "Une heure dans les étoiles",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Une longue queue blanche et bleue.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -23270,6 +26147,24 @@
    ]
   },
   {
+   "fr": "Une ombre bordée d'or.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Une onde de froid gèle les ennemis proches : un ennemi gelé devient une plateforme. Les boss sont ralentis et les tirs ennemis pris dans l'onde volent en éclats.",
+   "where": [
+    "data/powers/frost_nova.json"
+   ]
+  },
+  {
+   "fr": "Une onde de lumière à la fin du niveau.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Une planète figée dans un crépuscule éternel. Les ruines d'une civilisation disparue flottent au-dessus d'un abîme toxique, envahies par une végétation bioluminescente. Quelque chose y veille encore.",
    "where": [
     "data/planets/sylvanox.json"
@@ -23279,6 +26174,12 @@
    "fr": "Une planète figée sous une aurore éternelle. Sous la glace dorment les machines des Anciens et le bastion de leur dernier gardien.",
    "where": [
     "data/planets/glacior.json"
+   ]
+  },
+  {
+   "fr": "Une planète s'ouvre quand vous y arrivez.",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -23328,6 +26229,30 @@
    "fr": "une seule vie : retour à un point de passage impossible",
    "where": [
     "server/src/race.ts"
+   ]
+  },
+  {
+   "fr": "Une tablette des sanctuaires : la Balise de rappel vous ramène là où vous l'avez posée.",
+   "where": [
+    "data/levels/aethra_04.json"
+   ]
+  },
+  {
+   "fr": "Une tablette des sanctuaires : la Lame boomerang part, frappe et revient.",
+   "where": [
+    "data/levels/aethra_01.json"
+   ]
+  },
+  {
+   "fr": "Une tablette des sanctuaires : la Nova de givre fige tout ce qui vous entoure.",
+   "where": [
+    "data/levels/aethra_02.json"
+   ]
+  },
+  {
+   "fr": "Une tablette des sanctuaires : le Leurre holographique attire les coups à votre place.",
+   "where": [
+    "data/levels/aethra_03.json"
    ]
   },
   {
@@ -23387,6 +26312,12 @@
    ]
   },
   {
+   "fr": "Utiliser Balise de rappel 50 fois.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Utiliser Bombe plasma 50 fois.",
    "where": [
     "data/achievements/achievements.json"
@@ -23438,6 +26369,24 @@
    "fr": "Utiliser la position actuelle de la caméra",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Utiliser Lame boomerang 50 fois.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Utiliser Leurre holographique 50 fois.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Utiliser Nova de givre 50 fois.",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -23573,6 +26522,12 @@
    ]
   },
   {
+   "fr": "Vaincre Aurorax.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Vaincre Cryowyrm.",
    "where": [
     "data/achievements/achievements.json"
@@ -23633,7 +26588,43 @@
    ]
   },
   {
+   "fr": "Vaincre les 16 gardiens des planètes, Aethra comprise.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre les 16 échos des gardiens.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Vaincre Magmaroth.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre Mycélia.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre Nyxara sans être touché.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre Nyxara.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre Pyrogyre.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -23657,7 +26648,7 @@
    ]
   },
   {
-   "fr": "Vaincre tous les ennemis des 14 niveaux de la campagne.",
+   "fr": "Vaincre tous les ennemis des 18 niveaux de la campagne.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -23726,6 +26717,18 @@
    "where": [
     "game/gameplay/entities/AbilityEntities.cpp",
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Vent des aurores",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Vents",
+   "where": [
+    "data/levels/aethra_02.json"
    ]
   },
   {
@@ -23814,6 +26817,7 @@
     "game/levels/LevelData.cpp",
     "game/levels/RatingService.cpp",
     "game/online/LevelFingerprint.cpp",
+    "game/online/LevelRatings.cpp",
     "game/online/OnlineCache.cpp",
     "game/online/OnlineService.cpp",
     "game/online/OnlineSession.cpp",
@@ -23829,7 +26833,8 @@
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/ProjectsScene.cpp",
-    "ui/screens/RaceScene.cpp"
+    "ui/screens/RaceScene.cpp",
+    "ui/screens/ReplayCompareSetupScene.cpp"
    ]
   },
   {
@@ -23929,7 +26934,8 @@
   {
    "fr": "version {0} (classée)",
    "where": [
-    "ui/screens/GhostSetupScene.cpp"
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/ReplayCompareSetupScene.cpp"
    ]
   },
   {
@@ -23963,15 +26969,34 @@
    ]
   },
   {
+   "fr": "Vert de Sylvanox, écharpe violette.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Vestiaire",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Vibrations",
    "where": [
     "ui/screens/SettingsScene.cpp"
    ]
   },
   {
+   "fr": "Victoire",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
    "fr": "Victoires",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "ui/screens/BossStatsScene.cpp",
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -23989,13 +27014,20 @@
   {
    "fr": "Victoires sans dégât",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "ui/screens/BossStatsScene.cpp",
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
    "fr": "Victory",
    "where": [
     "game/player/Player.cpp"
+   ]
+  },
+  {
+   "fr": "Vie des doubles (s, 0 = jusqu'au coup)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -24079,6 +27111,12 @@
    ]
   },
   {
+   "fr": "Violet translucide, comme un fantôme.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Visibilité du calque",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -24138,6 +27176,12 @@
    ]
   },
   {
+   "fr": "vitesse",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Vitesse (px/s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
@@ -24163,9 +27207,27 @@
    ]
   },
   {
+   "fr": "Vitesse de l'anneau",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Vitesse de la racine (max 130)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Vitesse de montée",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Vitesse des tirs",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -24205,6 +27267,12 @@
    ]
   },
   {
+   "fr": "Vitesse {0}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Voir l'invitation",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -24241,6 +27309,12 @@
    ]
   },
   {
+   "fr": "Voir le replay",
+   "where": [
+    "ui/screens/OnlineThreadScene.cpp"
+   ]
+  },
+  {
    "fr": "Voir les commentaires",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -24269,6 +27343,12 @@
    "where": [
     "game/levels/Cinematic.cpp",
     "game/levels/EventSystem.cpp"
+   ]
+  },
+  {
+   "fr": "Volume : celui de la musique (Paramètres → Audio).",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -24369,9 +27449,45 @@
    ]
   },
   {
+   "fr": "VOTRE NOTE",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
    "fr": "Votre note",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre note : {0}/5",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "votre note : {0}/5",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "Votre note : {0}/5. Choisissez une autre étoile pour la changer.",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "Votre note du niveau : {0}/5",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "Votre note est retirée.",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
    ]
   },
   {
@@ -24516,6 +27632,12 @@
   },
   {
    "fr": "Vous ne pouvez pas commenter ce niveau.",
+   "where": [
+    "server/src/workshop.ts"
+   ]
+  },
+  {
+   "fr": "Vous ne pouvez pas commenter cette course.",
    "where": [
     "server/src/workshop.ts"
    ]
@@ -24789,7 +27911,9 @@
   {
    "fr": "vérifié en ligne",
    "where": [
-    "ui/screens/GhostSetupScene.cpp"
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/ReplayCompareSetupScene.cpp",
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -25039,9 +28163,28 @@
    ]
   },
   {
+   "fr": "Zénith",
+   "where": [
+    "data/enemies/echo_pyrogyre.json",
+    "data/enemies/pyrogyre.json"
+   ]
+  },
+  {
+   "fr": "Zéro",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "{0}   Difficulté {1}",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0}  ·  A : {1}  ·  B : {2}  ·  {3}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -25192,9 +28335,21 @@
    ]
   },
   {
+   "fr": "{0} / {1} débloqués",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} / {1} niveaux terminés",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} / {1} récompenses",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
    ]
   },
   {
@@ -25298,6 +28453,12 @@
    "fr": "{0} a accepté votre demande d'ami.",
    "where": [
     "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "{0} a commenté votre course : {1}",
+   "where": [
+    "server/src/notifications.ts"
    ]
   },
   {
@@ -25508,6 +28669,12 @@
    "fr": "{0} commentaires épinglés au plus.",
    "where": [
     "server/src/workshop.ts"
+   ]
+  },
+  {
+   "fr": "{0} compris",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -25857,6 +29024,18 @@
    ]
   },
   {
+   "fr": "{0} note",
+   "where": [
+    "game/online/LevelRatings.cpp"
+   ]
+  },
+  {
+   "fr": "{0} notes",
+   "where": [
+    "game/online/LevelRatings.cpp"
+   ]
+  },
+  {
    "fr": "{0} notifications non lues",
    "where": [
     "game/online/OnlineService.cpp"
@@ -25947,6 +29126,18 @@
    ]
   },
   {
+   "fr": "{0} replay",
+   "where": [
+    "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} replays",
+   "where": [
+    "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} reste ici : revenez le reprendre quand vous voulez.",
    "where": [
     "game/gameplay/entities/PickupEntities.cpp"
@@ -25962,6 +29153,18 @@
    "fr": "{0} réactions à votre commentaire sur {1}",
    "where": [
     "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "{0} récompense débloquée",
+   "where": [
+    "game/GameServices.cpp"
+   ]
+  },
+  {
+   "fr": "{0} récompenses débloquées",
+   "where": [
+    "game/GameServices.cpp"
    ]
   },
   {
@@ -26010,6 +29213,18 @@
    "fr": "{0} sur le fantôme",
    "where": [
     "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} sur {1} sélectionnée",
+   "where": [
+    "ui/screens/RewardsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} sur {1} sélectionnées",
+   "where": [
+    "ui/screens/RewardsScene.cpp"
    ]
   },
   {
@@ -26170,9 +29385,21 @@
    ]
   },
   {
+   "fr": "{0} · rang mondial n°{1}",
+   "where": [
+    "ui/screens/OnlineThreadScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} · semaine",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · succès",
+   "where": [
+    "ui/screens/RewardsScene.cpp"
    ]
   },
   {
@@ -26204,6 +29431,24 @@
    "where": [
     "game/powers/PowerStats.cpp",
     "ui/screens/PowerGuideScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} étoile",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} étoiles",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} étoiles sur {1}",
+   "where": [
+    "ui/screens/RewardsScene.cpp"
    ]
   },
   {
@@ -26249,6 +29494,12 @@
    ]
   },
   {
+   "fr": "{0}en ligne (Cosmic Online)",
+   "where": [
+    "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
    "fr": "{0}re victoire contre ce boss · détails dans Statistiques",
    "where": [
     "ui/screens/ResultsScene.cpp"
@@ -26258,6 +29509,18 @@
    "fr": "« Afficher les pseudonymes » désactivé : les autres joueurs apparaissent sous la forme « Joueur n°X » (diffusion en direct). « Économie » limite le nombre de marqueurs et ne télécharge pas les avatars personnalisés.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "« Plus tard » garde tout dans Collection → Vestiaire.",
+   "where": [
+    "ui/screens/RewardsScene.cpp"
+   ]
+  },
+  {
+   "fr": "« Point",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -26309,9 +29572,27 @@
    ]
   },
   {
+   "fr": "±5 s",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "À choisir dans la liste",
+   "where": [
+    "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
    "fr": "À droite : bibliothèque (catégories, recherche, étoile = favori) et entité (propriétés, relations avec les autres objets)",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "À découvrir : {0}",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -26324,6 +29605,12 @@
    "fr": "À jouer depuis la carte des planètes.",
    "where": [
     "game/progression/NewsCenter.cpp"
+   ]
+  },
+  {
+   "fr": "À l'arrêt",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -26345,9 +29632,21 @@
    ]
   },
   {
+   "fr": "à obtenir",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "À sa mort",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "À équiper",
+   "where": [
+    "ui/screens/RewardsScene.cpp"
    ]
   },
   {
@@ -26373,13 +29672,20 @@
   {
    "fr": "Écart",
    "where": [
-    "ui/screens/GhostRun.cpp"
+    "ui/screens/GhostRun.cpp",
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
    "fr": "Écart (°)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Écart A − B",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -26404,6 +29710,13 @@
    "fr": "échange impossible",
    "where": [
     "game/online/HttpTransportWinHttp.cpp"
+   ]
+  },
+  {
+   "fr": "Échanger A et B",
+   "where": [
+    "ui/screens/ReplayCompareSetupScene.cpp",
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -26468,73 +29781,104 @@
    ]
   },
   {
-   "fr": "Écho 1 / 12 : Thornwarden.",
+   "fr": "Écho",
+   "where": [
+    "data/cosmetics/cosmetics.json",
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Écho 1 / 16 : Thornwarden.",
    "where": [
     "data/levels/noyau_01.json"
    ]
   },
   {
-   "fr": "Écho 10 / 12 : Ignivore.",
+   "fr": "Écho 10 / 16 : Ignivore.",
    "where": [
     "data/levels/noyau_01.json"
    ]
   },
   {
-   "fr": "Écho 11 / 12 : Forgeron Primordial.",
+   "fr": "Écho 11 / 16 : Forgeron Primordial.",
    "where": [
     "data/levels/noyau_01.json"
    ]
   },
   {
-   "fr": "Écho 12 / 12 : Cœur du Creuset.",
+   "fr": "Écho 12 / 16 : Cœur du Creuset.",
    "where": [
     "data/levels/noyau_01.json"
    ]
   },
   {
-   "fr": "Écho 2 / 12 : Reine Sporale.",
+   "fr": "Écho 13 / 16 : Mycélia.",
    "where": [
     "data/levels/noyau_01.json"
    ]
   },
   {
-   "fr": "Écho 3 / 12 : Sentinelle Prime.",
+   "fr": "Écho 14 / 16 : Aurorax.",
    "where": [
     "data/levels/noyau_01.json"
    ]
   },
   {
-   "fr": "Écho 4 / 12 : Archonte des Catacombes.",
+   "fr": "Écho 15 / 16 : Pyrogyre.",
    "where": [
     "data/levels/noyau_01.json"
    ]
   },
   {
-   "fr": "Écho 5 / 12 : Cryowyrm.",
+   "fr": "Écho 16 / 16 : Nyxara.",
    "where": [
     "data/levels/noyau_01.json"
    ]
   },
   {
-   "fr": "Écho 6 / 12 : Hydre de Givre.",
+   "fr": "Écho 2 / 16 : Reine Sporale.",
    "where": [
     "data/levels/noyau_01.json"
    ]
   },
   {
-   "fr": "Écho 7 / 12 : Glaciarque.",
+   "fr": "Écho 3 / 16 : Sentinelle Prime.",
    "where": [
     "data/levels/noyau_01.json"
    ]
   },
   {
-   "fr": "Écho 8 / 12 : Wyrm Hurlante.",
+   "fr": "Écho 4 / 16 : Archonte des Catacombes.",
    "where": [
     "data/levels/noyau_01.json"
    ]
   },
   {
-   "fr": "Écho 9 / 12 : Magmaroth.",
+   "fr": "Écho 5 / 16 : Cryowyrm.",
+   "where": [
+    "data/levels/noyau_01.json"
+   ]
+  },
+  {
+   "fr": "Écho 6 / 16 : Hydre de Givre.",
+   "where": [
+    "data/levels/noyau_01.json"
+   ]
+  },
+  {
+   "fr": "Écho 7 / 16 : Glaciarque.",
+   "where": [
+    "data/levels/noyau_01.json"
+   ]
+  },
+  {
+   "fr": "Écho 8 / 16 : Wyrm Hurlante.",
+   "where": [
+    "data/levels/noyau_01.json"
+   ]
+  },
+  {
+   "fr": "Écho 9 / 16 : Magmaroth.",
    "where": [
     "data/levels/noyau_01.json"
    ]
@@ -26543,6 +29887,12 @@
    "fr": "Écho : Archonte des Catacombes",
    "where": [
     "data/enemies/echo_archon_catacombs.json"
+   ]
+  },
+  {
+   "fr": "Écho : Aurorax",
+   "where": [
+    "data/enemies/echo_aurorax.json"
    ]
   },
   {
@@ -26585,6 +29935,24 @@
    "fr": "Écho : Magmaroth",
    "where": [
     "data/enemies/echo_magmaroth.json"
+   ]
+  },
+  {
+   "fr": "Écho : Mycélia",
+   "where": [
+    "data/enemies/echo_mycelia.json"
+   ]
+  },
+  {
+   "fr": "Écho : Nyxara",
+   "where": [
+    "data/enemies/echo_nyxara.json"
+   ]
+  },
+  {
+   "fr": "Écho : Pyrogyre",
+   "where": [
+    "data/enemies/echo_pyrogyre.json"
    ]
   },
   {
@@ -26642,6 +30010,18 @@
    ]
   },
   {
+   "fr": "Écho · {0}",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "ÉCHO — AURORAX, LE MIROIR BORÉAL",
+   "where": [
+    "data/enemies/echo_aurorax.json"
+   ]
+  },
+  {
    "fr": "ÉCHO — CRYOWYRM, LE SERPENT DES GLACES",
    "where": [
     "data/enemies/echo_cryowyrm.json"
@@ -26696,6 +30076,24 @@
    ]
   },
   {
+   "fr": "ÉCHO — MYCÉLIA, LA MÈRE-RACINE",
+   "where": [
+    "data/enemies/echo_mycelia.json"
+   ]
+  },
+  {
+   "fr": "ÉCHO — NYXARA, LA DÉVOREUSE D'ÉTOILES",
+   "where": [
+    "data/enemies/echo_nyxara.json"
+   ]
+  },
+  {
+   "fr": "ÉCHO — PYROGYRE, L'ANNEAU SOLAIRE",
+   "where": [
+    "data/enemies/echo_pyrogyre.json"
+   ]
+  },
+  {
    "fr": "ÉCHO — REINE SPORALE, CŒUR DE LA CANOPÉE",
    "where": [
     "data/enemies/echo_spore_queen.json"
@@ -26711,6 +30109,12 @@
    "fr": "ÉCHO — THORNWARDEN, GARDIEN ANCIEN",
    "where": [
     "data/enemies/echo_thornwarden.json"
+   ]
+  },
+  {
+   "fr": "Échos de l'Horizon",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -26737,6 +30141,19 @@
    "fr": "Éclat d'énergie",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Éclat du premier reflet",
+   "where": [
+    "data/levels/aethra_02.json"
+   ]
+  },
+  {
+   "fr": "Éclats",
+   "where": [
+    "data/enemies/aurorax.json",
+    "data/enemies/echo_aurorax.json"
    ]
   },
   {
@@ -26782,6 +30199,14 @@
    "fr": "Éclats, reliques et secrets.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Éclipse",
+   "where": [
+    "data/cosmetics/cosmetics.json",
+    "data/enemies/echo_nyxara.json",
+    "data/enemies/nyxara.json"
    ]
   },
   {
@@ -26832,7 +30257,8 @@
    "where": [
     "game/ghost/GhostStore.cpp",
     "ui/screens/GhostSetupScene.cpp",
-    "ui/screens/OnlineLevelsScene.cpp"
+    "ui/screens/OnlineLevelsScene.cpp",
+    "ui/screens/ReplayCompareSetupScene.cpp"
    ]
   },
   {
@@ -26960,7 +30386,8 @@
   {
    "fr": "égalité",
    "where": [
-    "ui/screens/GhostRun.cpp"
+    "ui/screens/GhostRun.cpp",
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -27028,6 +30455,12 @@
    ]
   },
   {
+   "fr": "Énergie au retour",
+   "where": [
+    "game/powers/PowerStats.cpp"
+   ]
+  },
+  {
    "fr": "Énergie insuffisante",
    "where": [
     "game/player/PlayerActions.cpp",
@@ -27083,6 +30516,25 @@
    ]
   },
   {
+   "fr": "Équiper",
+   "where": [
+    "ui/screens/CollectionScene.cpp",
+    "ui/screens/RewardsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Équiper ({0})",
+   "where": [
+    "ui/screens/RewardsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Équipé",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Éruption",
    "where": [
     "data/enemies/crucible_heart.json",
@@ -27108,6 +30560,13 @@
    "fr": "Éruption du fleuve",
    "where": [
     "data/levels/pyralis_02.json"
+   ]
+  },
+  {
+   "fr": "Éruptions",
+   "where": [
+    "data/enemies/echo_pyrogyre.json",
+    "data/enemies/pyrogyre.json"
    ]
   },
   {
@@ -27164,9 +30623,30 @@
    ]
   },
   {
+   "fr": "étoiles",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Étoiles chercheuses",
+   "where": [
+    "data/enemies/echo_nyxara.json",
+    "data/enemies/nyxara.json"
+   ]
+  },
+  {
+   "fr": "étoiles sur {0} · rien ne s'achète, tout se gagne avec les succès",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Éveil",
    "where": [
+    "data/enemies/echo_mycelia.json",
     "data/enemies/echo_thornwarden.json",
+    "data/enemies/mycelia.json",
     "data/enemies/thornwarden.json"
    ]
   },
@@ -27368,9 +30848,39 @@
    ]
   },
   {
+   "fr": "‹ Image",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "›  {0} objets sélectionnés",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "−1 s",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "−10 ms",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "−100 ms",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "−5 s",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   }
  ]

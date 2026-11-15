@@ -1,4 +1,10 @@
 {
+  "2.22.0": [
+    "Langue du jeu : français ou anglais, au choix dans l'installateur Windows, qui s'affiche lui-même dans la langue choisie ; le jeu démarre dans cette langue.",
+    "Paramètres › Jeu › « Langue / Language » : changer de langue à tout moment, avec effet immédiat sur tous les écrans, les niveaux, les ennemis, les succès et les actualités.",
+    "Les contenus des joueurs (niveaux de la communauté, pseudonymes, commentaires, messages) restent tels que leurs auteurs les ont écrits ; les messages connus du serveur Cosmic Online sont traduits par le jeu.",
+    "En anglais : badge EXTREME, nombres (2.45 ; 12,345) et pluriels à l'anglaise."
+  ],
   "2.21.0": [
     "Notes des joueurs pour les niveaux de la campagne : après avoir terminé un niveau (temps vérifié en ligne), notez-le de 1 à 5 étoiles depuis l'écran de fin ou ONLINE ; la moyenne s'affiche sur la fiche du niveau et dans ONLINE (distincte de la difficulté calculée).",
     "Commentaires des niveaux de la campagne, visibles uniquement dans ONLINE (réponses, réactions, signalement, modération, comme pour les niveaux des joueurs).",

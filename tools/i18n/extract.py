@@ -580,7 +580,8 @@ def add(out, text, where, words, source=None):
 # ----------------------------------------------------------------------------- data
 
 DATA_KEYS = {"name", "text", "description", "label", "message", "subtitle", "title", "enterText", "exitText", "speaker", "hint",
-             "detail", "prompt", "caption", "tooltip", "summary", "question", "answer", "unlockText", "objective"}
+             "detail", "prompt", "caption", "tooltip", "summary", "question", "answer", "unlockText", "objective",
+             "where"}
 DATA_SKIP_FILES = {"data/online/config.json", "data/online/flags.json", "data/levels/ratings.json"}
 
 
