@@ -400,6 +400,31 @@ bool Dictionary::byCase(std::string_view s, std::string& out, int depth) const {
 }
 
 bool Dictionary::byParts(std::string_view s, std::string& out, int depth) const {
+    // Signs around a known text: « • Texte », « Texte : », « (Texte) », « Texte… ».
+    std::string decorated;
+    size_t a = 0, b = s.size();
+    while (a < b) {
+        if (letterAt(s, a) || isDigit(s[a])) break;
+        ++a;
+    }
+    while (b > a) {
+        // Step back over one UTF-8 character.
+        size_t p = b - 1;
+        while (p > a && (static_cast<unsigned char>(s[p]) & 0xC0) == 0x80) --p;
+        if (letterAt(s, p) || isDigit(s[p])) break;
+        b = p;
+    }
+    if ((a != 0 || b != s.size()) && a < b) {
+        std::string core;
+        bool full = translateInto(s.substr(a, b - a), core, depth + 1);
+        if (!core.empty()) {
+            decorated = englishTypography(s.substr(0, a)) + core + englishTypography(s.substr(b));
+            if (full) {
+                out = decorated;
+                return true;
+            }
+        }
+    }
     // Pieces between separators (« A · B », « A — B »).
     for (const char* sepC : kSeparators) {
         std::string_view sep(sepC);
@@ -418,35 +443,18 @@ bool Dictionary::byParts(std::string_view s, std::string& out, int depth) const 
             } else {
                 res.append(part);
             }
-            all &= full || !hasLetter(part);
+            all &= full || letterCount(part) < 2;  // « o17 », « x »: an id, a unit
             if (f == std::string_view::npos) break;
             res += sep == " : " ? std::string(": ") : sep == " ; " ? std::string("; ") : std::string(sep);
             start = f + sep.size();
         }
-        if (!any) return false;
+        if (!any) break;
         out = res;
         return all;
     }
-    // Signs around a known text: « • Texte », « Texte : », « (Texte) », « Texte… ».
-    size_t a = 0, b = s.size();
-    while (a < b) {
-        if (letterAt(s, a) || isDigit(s[a])) break;
-        ++a;
-    }
-    while (b > a) {
-        // Step back over one UTF-8 character.
-        size_t p = b - 1;
-        while (p > a && (static_cast<unsigned char>(s[p]) & 0xC0) == 0x80) --p;
-        if (letterAt(s, p) || isDigit(s[p])) break;
-        b = p;
-    }
-    if (a == 0 && b == s.size()) return false;
-    if (a >= b) return false;
-    std::string core;
-    bool full = translateInto(s.substr(a, b - a), core, depth + 1);
-    if (core.empty()) return false;
-    out = englishTypography(s.substr(0, a)) + core + englishTypography(s.substr(b));
-    return full;
+    if (decorated.empty()) return false;
+    out = decorated;
+    return false;
 }
 
 bool Dictionary::translateInto(std::string_view s, std::string& out, int depth) const {
@@ -689,8 +697,6 @@ std::string_view display(std::string_view french) {
             if (letterCount(french) >= 2) noteMissing(st, french);
         }
     }
-    // What was already translated stays as it is (a text measured, then drawn).
-    if (out != key) st.cache.try_emplace(out, out);
     auto [ins, ok] = st.cache.emplace(std::move(key), std::move(out));
     return ins->second;
 }

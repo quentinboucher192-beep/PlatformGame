@@ -2,6 +2,7 @@
 // its coverage of every text the game shows (tools/i18n/catalog.json, written by
 // tools/i18n/extract.py), the language setting and the installer's choice.
 
+#include <chrono>
 #include <regex>
 #include <set>
 
@@ -93,7 +94,7 @@ TEST_CASE("i18n: display in the language in use, cached, player texts verbatim")
     i18n::setLanguage(Language::English);
     CHECK(i18n::language() == Language::English);
     CHECK(i18n::tr("Jouer") == "Play");
-    CHECK(i18n::tr("Play") == "Play");  // already shown text is never translated again
+    CHECK(i18n::tr("Play") == "Play");  // not a French text: shown as it is
     {
         i18n::Verbatim mine;  // a pseudonym, a comment…
         CHECK(i18n::tr("Jouer") == "Jouer");
@@ -132,27 +133,17 @@ TEST_CASE("i18n: every text of the catalogue has an English translation with the
     CHECK(wrongSlots == 0);
 }
 
-TEST_CASE("i18n: an English text is never itself a French text translated differently") {
-    // The renderer may receive a text already translated (measured, then drawn): showing
-    // it again must not change it.
+TEST_CASE("i18n: the whole dictionary loads and its models are usable") {
     auto dict = FileUtil::loadJson("data/i18n/en.json");
     CHECK(dict);
     const Json& strings = (*dict)["strings"];
-    int conflicts = 0;
-    for (auto it = strings.begin(); it != strings.end(); ++it) {
-        if (!it.value().is_string()) continue;
-        std::string en = it.value().get<std::string>();
-        if (en == it.key()) continue;
-        auto other = strings.find(en);
-        if (other != strings.end() && other->is_string() && other->get<std::string>() != en) {
-            if (++conflicts <= 20) std::cerr << "  « " << it.key() << " » -> « " << en << " » -> « " << other->get<std::string>() << " »\n";
-        }
-    }
-    CHECK(conflicts == 0);
-    // The whole dictionary loads, and its models are usable.
     i18n::Dictionary d;
     CHECK(d.load(*dict) == strings.size());
-    CHECK(d.translate("Jouer") != "Jouer");
+    CHECK(d.translate("Jouer") == "Play");
+    CHECK(d.translate("Sentinelle Prime vaincu sans dégât !") == "Prime Sentinel defeated without taking damage!");
+    CHECK(d.translate("0 niveau créé") == "0 levels created");
+    CHECK(d.translate("1 niveau créé") == "1 level created");
+    CHECK(d.translate("Platine : < 3:20, 0 mort") == "Platinum: < 3:20, 0 deaths");
 }
 
 TEST_CASE("i18n: the language is a setting; the installer's choice applies once") {
@@ -184,4 +175,23 @@ TEST_CASE("i18n: the language is a setting; the installer's choice applies once"
     CHECK(!applyInstallerLanguage(none, dir / "absent.ini"));
     CHECK(none.language.empty());
     fs::remove_all(dir);
+}
+
+TEST_CASE("i18n: a text already shown costs one cache lookup (no slowdown per frame)") {
+    i18n::setLanguage(Language::English);
+    const char* texts[] = {"Jouer", "Paramètres", "Reprendre", "Temps écoulé 1:23", "Sentinelle Prime vaincu sans dégât !",
+                           "12 / 72", "1:23.45", "Niveau 3", "Vies 3/5", "Une planète figée dans un crépuscule éternel."};
+    size_t total = 0;
+    for (const char* t : texts) total += i18n::display(t).size();  // first time: dictionary
+    auto t0 = std::chrono::steady_clock::now();
+    const int frames = 2000;  // 2 000 frames of 10 texts
+    for (int f = 0; f < frames; ++f) {
+        for (const char* t : texts) total += i18n::display(t).size();
+        if (f % 60 == 0) i18n::endFrame();
+    }
+    double us = std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - t0).count() / (frames * 10.0);
+    std::cout << "       i18n::display: " << us << " µs per text already shown\n";
+    CHECK(total > 0);
+    CHECK(us < 20.0);  // a frame shows a few hundred texts: well under a millisecond
+    i18n::setLanguage(Language::French);
 }

@@ -2424,6 +2424,12 @@
    ]
   },
   {
+   "fr": "BIBLIOTHÈQUE",
+   "where": [
+    "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
    "fr": "Bibliothèque en huit catégories (plateformes, terrain, pièges, jeu, zones, ennemis, décors) et favoris marqués d'une étoile.",
    "where": [
     "data/news/changelog.json"
@@ -11781,6 +11787,7 @@
    "fr": "lecteur",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp",
+    "editors/level_editor/LevelEditorPanels.cpp",
     "editors/level_editor/LevelEditorTools.cpp"
    ]
   },
@@ -12909,6 +12916,12 @@
    ]
   },
   {
+   "fr": "Meilleur temps mondial",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
    "fr": "Meilleurs segments {0}",
    "where": [
     "ui/screens/GhostRun.cpp"
@@ -13921,12 +13934,6 @@
    ]
   },
   {
-   "fr": "niveau publié",
-   "where": [
-    "ui/screens/OnlineLevelsScene.cpp"
-   ]
-  },
-  {
    "fr": "Niveau retiré.",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -14031,7 +14038,6 @@
   {
    "fr": "niveaux publiés",
    "where": [
-    "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/PlayerProfileScene.cpp"
    ]
   },
@@ -16753,6 +16759,12 @@
    ]
   },
   {
+   "fr": "Position mondiale",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
    "fr": "Position verticale",
    "where": [
     "ui/screens/HudEditorScene.cpp"
@@ -18024,6 +18036,7 @@
   {
    "fr": "Record personnel",
    "where": [
+    "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/ResultsScene.cpp"
    ]
   },
@@ -22065,6 +22078,7 @@
    "fr": "testeur",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp",
+    "editors/level_editor/LevelEditorPanels.cpp",
     "editors/level_editor/LevelEditorTools.cpp"
    ]
   },
@@ -22761,15 +22775,15 @@
    ]
   },
   {
-   "fr": "Type détecté : {0}",
+   "fr": "Type de parcours",
    "where": [
-    "ui/screens/SettingsScene.cpp"
+    "ui/screens/OnlineRankingScene.cpp"
    ]
   },
   {
-   "fr": "téléchargement",
+   "fr": "Type détecté : {0}",
    "where": [
-    "ui/screens/OnlineLevelsScene.cpp"
+    "ui/screens/SettingsScene.cpp"
    ]
   },
   {
@@ -22800,7 +22814,6 @@
   {
    "fr": "téléchargements",
    "where": [
-    "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/PlayerProfileScene.cpp"
    ]
   },
@@ -23805,7 +23818,9 @@
     "ui/screens/GameScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
-    "ui/screens/ProjectsScene.cpp"
+    "ui/screens/PlayerProfileScene.cpp",
+    "ui/screens/ProjectsScene.cpp",
+    "ui/screens/RaceScene.cpp"
    ]
   },
   {
@@ -25403,9 +25418,21 @@
    ]
   },
   {
+   "fr": "{0} abonné",
+   "where": [
+    "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} abonné  ·  depuis {1}",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} abonnés",
+   "where": [
+    "ui/screens/OnlineLevelsScene.cpp"
    ]
   },
   {
@@ -25454,6 +25481,18 @@
    "fr": "{0} boss vaincus",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} commentaire",
+   "where": [
+    "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} commentaires",
+   "where": [
+    "ui/screens/OnlineLevelsScene.cpp"
    ]
   },
   {
@@ -25597,6 +25636,18 @@
    ]
   },
   {
+   "fr": "{0} favori",
+   "where": [
+    "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} favoris",
+   "where": [
+    "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} fichier(s) manquant(s)",
    "where": [
     "packaging/PackageExporter.cpp"
@@ -25618,6 +25669,18 @@
    "fr": "{0} fichiers, {1} — moteur {2}",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} fin",
+   "where": [
+    "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} fins",
+   "where": [
+    "ui/screens/OnlineLevelsScene.cpp"
    ]
   },
   {
@@ -25767,9 +25830,21 @@
    ]
   },
   {
+   "fr": "{0} niveau publié",
+   "where": [
+    "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} niveaux créés",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} niveaux publiés",
+   "where": [
+    "ui/screens/OnlineLevelsScene.cpp"
    ]
   },
   {
@@ -25944,6 +26019,18 @@
    "fr": "{0} trouvée !",
    "where": [
     "game/gameplay/entities/PickupEntities.cpp"
+   ]
+  },
+  {
+   "fr": "{0} téléchargement",
+   "where": [
+    "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} téléchargements",
+   "where": [
+    "ui/screens/OnlineLevelsScene.cpp"
    ]
   },
   {

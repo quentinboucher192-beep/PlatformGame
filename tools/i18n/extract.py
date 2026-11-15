@@ -143,18 +143,17 @@ CAMEL = re.compile(r"^[a-z]+(?:[A-Z][a-z0-9]*)+$")
 CODE_CONST = re.compile(r"^[A-Z0-9]+(?:_[A-Z0-9]+)+$")
 # Calls whose text is never shown to the player.
 SKIP_CALLS = {
-    "info", "warn", "error", "debug", "trace",  # Log::
     "printf", "fprintf", "puts", "SDL_Log", "SDL_SetHint", "getenv", "SDL_GetHint",
     "playSound", "texture", "soundPath", "loadJson", "readText", "playMusic", "uiSound",
     "CHECK", "REQUIRE", "TEST_CASE", "static_assert", "assert",
     "get", "post", "send", "del", "patch", "put",  # HTTP paths of OnlineService
     "pushId", "id", "focused", "setFocus", "setScroll", "editText",
     "contains", "find", "rfind", "count", "erase", "starts_with", "ends_with", "jstr", "jget", "propStr", "propNum",
-    "propBool", "param", "header", "setHeader", "icon", "fromUtf8", "path",
+    "propBool", "param", "setHeader", "icon", "fromUtf8", "path",
 }
 # First argument only is a widget id / key (the second is shown).
 ID_FIRST_ARG = {"button", "toggle", "slider", "sliderInt", "cycle", "textField", "passwordField", "numberField", "hotspot", "listItem",
-                "tabs", "beginScroll", "value", "jstr", "jget"}
+                "tabs", "beginScroll", "value", "jstr", "jget", "header"}
 
 
 def load_ignore():
@@ -483,6 +482,22 @@ def enclosing_call(toks, a):
     return None, 0, -1
 
 
+def mark_done(toks, a, b, done):
+    """Literals of the text [a, b) (not those given to a call inside it, which are texts of
+    their own: plural(n, "favori", "favoris"))."""
+    stack = []
+    for k in range(a, b):
+        t = toks[k].text
+        if t in OPEN:
+            call = t == "(" and k > a and (toks[k - 1].kind == "id" or toks[k - 1].text == ">")
+            stack.append(call)
+        elif t in CLOSE:
+            if stack:
+                stack.pop()
+        elif toks[k].kind == "str" and not any(stack):
+            done.add(k)
+
+
 def extract_cpp(path, words, out):
     with open(path, encoding="utf-8", errors="replace") as f:
         toks = tokenize(f.read())
@@ -497,15 +512,17 @@ def extract_cpp(path, words, out):
         if a >= 4 and b < len(toks) and toks[a - 1].text in ("(", "{") and toks[b].text in (")", "}") \
                 and toks[a - 2].text in ("string", "string_view") and toks[a - 3].text == "::" and toks[a - 4].text == "std":
             a, b = span_of(toks, a - 4)
-        for k in range(a, b):
-            if toks[k].kind == "str":
-                done.add(k)
+        mark_done(toks, a, b, done)
         name, arg, paren = enclosing_call(toks, a)
         base = name.split("::")[-1] if name else None
         if name and (name.startswith("Log::") or base in SKIP_CALLS and not (base in ID_FIRST_ARG and arg >= 1)):
             if not (base in ("jstr", "jget", "value") and arg >= 2):  # jstr(j, "key", "défaut affiché")
                 continue
         if base in ID_FIRST_ARG and arg == 0:
+            continue
+        # plural(n, "favori", "favoris"): « {0} favori », « {0} favoris ».
+        if base == "plural" and arg in (1, 2) and b - a == 1:
+            out.setdefault("{0} " + toks[i].value, {"where": set()})["where"].add(rel)
             continue
         # j["key"], a == "x"
         if a > 0 and toks[a - 1].text == "[" and b < len(toks) and toks[b].text == "]":
@@ -527,9 +544,7 @@ def extract_cpp(path, words, out):
         if any(k in seen_spans for k in [(a, b)]):
             continue
         seen_spans.add((a, b))
-        for k in range(a, b):
-            if toks[k].kind == "str":
-                done.add(k)
+        mark_done(toks, a, b, done)
         models = []
         for pieces in chain_alternatives(toks, a, b):
             if style and len(pieces) == 1 and isinstance(pieces[0], str):

@@ -195,10 +195,11 @@ float UIContext::fitFont(const std::string& t, FontFace face, float size, float 
 }
 
 std::string UIContext::elide(const std::string& source, FontFace face, float size, float room) {
-    // Shortened in the language shown (the pieces of a translated text are not translated again).
+    // Shortened in the language shown: the text as displayed is measured and cut (its pieces
+    // are never looked up again). When it fits, the source is returned (translated when drawn).
     const std::string t = i18n::tr(source);
-    if (room <= 0.0f || text().measure(t, face, s(size)).x <= room) return t;
-    i18n::Verbatim pieces;
+    i18n::Verbatim shown;
+    if (room <= 0.0f || text().measure(t, face, s(size)).x <= room) return source;
     std::string cut = t;
     while (!cut.empty()) {
         // Drop one character (UTF-8: its continuation bytes too) and trailing spaces.
