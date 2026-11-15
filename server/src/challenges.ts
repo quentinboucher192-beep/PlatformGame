@@ -17,6 +17,11 @@
 // « replay checked by the server », not re-simulated. A run received after the end of its
 // challenge (+ 10 min) is accepted « hors délai » (late): it is ranked only in the board
 // « Depuis » (period=all) and never counts for a streak.
+//
+// « Plus loin » (2.34): on a challenge whose level version has a race layout, an attempt that
+// does not reach the end is sent with its replay; the server computes its progress score from
+// the replay with the analysis of the « course à la vérification » (race.ts), never taking
+// the game's, and a finished run counts 100. Only the player's best attempt keeps its replay.
 
 import catalogJson from "./challengeCatalog.json";
 import { audit, requireAuth, type AuthInfo } from "./auth";
@@ -26,6 +31,7 @@ import { sha256Hex } from "./crypto";
 import { ApiError, Errors, json, log, nowIso, readJsonObject, readLimited, type Ctx } from "./http";
 import { avatarUrl, type LevelVersionRow, type RecordRow } from "./model";
 import { notify } from "./notifications";
+import { analyzeRace, detailOf, parseLayout, raceScore, type Claim, type RaceLayout } from "./race";
 import { RULES, rateLimit } from "./ratelimit";
 import { decide, type BoardContext, type Decision, type ReplayState } from "./records";
 import { EventType, MAX_REPLAY_UPLOAD, PickupKind, ReplayError, analyzeReplay, inflateContainer, parseReplay, type Replay, type ReplayAnalysis } from "./replay";
@@ -257,6 +263,8 @@ interface ChallengeRow {
     created_at: string;
     updated_at: string;
     author_name: string | null;
+    /** The level version has a race layout (« Plus loin »). */
+    has_race: number;
 }
 
 interface RunRow {
@@ -286,7 +294,13 @@ interface RunRow {
     verified_at: string | null;
 }
 
-const CHALLENGE_SQL = "SELECT c.*, p.username AS author_name FROM challenges c LEFT JOIN players p ON p.id = c.featured_player_id";
+const CHALLENGE_SQL = `SELECT c.*, p.username AS author_name,
+    CASE c.level_source
+      WHEN 'campaign' THEN EXISTS (SELECT 1 FROM level_versions lv WHERE lv.level_id = c.level_id AND lv.content_hash = c.level_hash AND lv.race IS NOT NULL)
+      ELSE EXISTS (SELECT 1 FROM community_level_versions cv
+                   WHERE cv.level_id = c.level_id AND cv.version = c.level_version AND cv.level_hash = c.level_hash AND cv.race IS NOT NULL)
+    END AS has_race
+  FROM challenges c LEFT JOIN players p ON p.id = c.featured_player_id`;
 
 function powersOf(c: Pick<ChallengeRow, "powers">): string[] {
     try {
@@ -323,6 +337,8 @@ export function challengeJson(c: ChallengeRow) {
         rules: rulesOf(c),
         rules_hash: c.rules_hash,
         tiers: { silver_ms: c.silver_ms, gold_ms: c.gold_ms, gold_no_damage: c.gold_no_damage === 1 },
+        // 2.34: the board « Plus loin » exists (the level version has a race layout).
+        progress_available: c.has_race === 1,
     };
 }
 
@@ -655,7 +671,8 @@ export async function calendar(ctx: Ctx, viewer: AuthInfo | null): Promise<Respo
 export const SCOPES = ["world", "country", "friends"] as const;
 /** live: runs received during the challenge (+ 10 min); all: also the late ones (« Depuis »). */
 export const BOARD_PERIODS = ["live", "all"] as const;
-export const BOARDS = ["time"] as const;
+/** time: best times; progress: « Plus loin », best progress of each player (2.34). */
+export const BOARDS = ["time", "progress"] as const;
 
 interface BoardRow {
     run_id: string;
@@ -674,11 +691,26 @@ interface BoardRow {
     total: number;
 }
 
-/**
- * Best VERIFIED run of each active player on a challenge; ?1 = challenge, ?2 = 1 to take the
- * late runs too (period=all), filters from ?3.
- */
-function boardSql(filter: { country?: string; friendsOf?: string }): { sql: string; extra: unknown[] } {
+interface ProgressRow {
+    player_id: string;
+    progress: number;
+    finished: number;
+    time_ms: number;
+    late: number;
+    created_at: string;
+    username: string;
+    avatar: string;
+    avatar_custom_key: string | null;
+    country_code: string | null;
+    location_visibility: string;
+    rank: number;
+    total: number;
+}
+
+type ScopeFilter = { country?: string; friendsOf?: string };
+
+/** The scope's conditions on a board's players (`b` the best rows, `p` the players), bound from ?3. */
+function scopeWhere(filter: ScopeFilter): { where: string; extra: unknown[] } {
     const where: string[] = [];
     const extra: unknown[] = [];
     let n = 3;
@@ -692,6 +724,42 @@ function boardSql(filter: { country?: string; friendsOf?: string }): { sql: stri
         n++;
         extra.push(filter.friendsOf);
     }
+    return { where: where.map((w) => " AND " + w).join(""), extra };
+}
+
+/**
+ * « Plus loin »: best VERIFIED progress of each active player — the attempts' scores, 100 for
+ * a finished run —, highest first, ties by the earlier submission; ?1 = challenge, ?2 = 1 to
+ * take the late ones too, filters from ?3.
+ */
+function progressSql(filter: ScopeFilter): { sql: string; extra: unknown[] } {
+    const { where, extra } = scopeWhere(filter);
+    const sql = `
+      WITH items AS (
+        SELECT a.player_id, a.progress, 0 AS finished, a.time_ms, a.late, a.created_at, a.id AS item_id
+        FROM challenge_attempts a WHERE a.challenge_id = ?1 AND a.status = 'VERIFIED' AND (?2 = 1 OR a.late = 0)
+        UNION ALL
+        SELECT r.player_id, 100.0, 1, r.time_ms, r.late, r.created_at, r.id
+        FROM challenge_runs r WHERE r.challenge_id = ?1 AND r.status = 'VERIFIED' AND (?2 = 1 OR r.late = 0)),
+      best AS (
+        SELECT player_id, progress, finished, time_ms, late, created_at FROM (
+          SELECT items.*, ROW_NUMBER() OVER (PARTITION BY player_id ORDER BY progress DESC, created_at, item_id) AS rn FROM items)
+        WHERE rn = 1),
+      ranked AS (
+        SELECT b.*, p.username, p.avatar, p.avatar_custom_key, p.country_code, p.location_visibility
+        FROM best b JOIN players p ON p.id = b.player_id
+        WHERE p.account_status = 'active'${where}),
+      filtered AS (SELECT ranked.*, ROW_NUMBER() OVER (ORDER BY progress DESC, created_at, player_id) AS rank FROM ranked)
+      SELECT *, COUNT(*) OVER () AS total FROM filtered`;
+    return { sql, extra };
+}
+
+/**
+ * Best VERIFIED run of each active player on a challenge; ?1 = challenge, ?2 = 1 to take the
+ * late runs too (period=all), filters from ?3.
+ */
+function boardSql(filter: ScopeFilter): { sql: string; extra: unknown[] } {
+    const { where, extra } = scopeWhere(filter);
     const sql = `
       WITH best AS (
         SELECT run_id, player_id, time_ms, tier, created_at, has_replay, late FROM (
@@ -702,7 +770,7 @@ function boardSql(filter: { country?: string; friendsOf?: string }): { sql: stri
       ranked AS (
         SELECT b.*, p.username, p.avatar, p.avatar_custom_key, p.country_code, p.location_visibility
         FROM best b JOIN players p ON p.id = b.player_id
-        WHERE p.account_status = 'active'${where.length ? " AND " + where.join(" AND ") : ""}),
+        WHERE p.account_status = 'active'${where}),
       filtered AS (SELECT ranked.*, ROW_NUMBER() OVER (ORDER BY time_ms, created_at, player_id) AS rank FROM ranked)
       SELECT *, COUNT(*) OVER () AS total FROM filtered`;
     return { sql, extra };
@@ -724,11 +792,16 @@ function playerJson(
     );
 }
 
+const PROGRESS_UNAVAILABLE = () =>
+    Errors.conflict("PROGRESS_UNAVAILABLE", "Pas de classement « Plus loin » pour ce défi : son niveau n'a pas de tracé.");
+
 /**
- * GET /challenges/{id}/leaderboard?scope=world|country|friends&country=&period=live|all&board=time&limit=50:
- * `{ challenge_id, scope, period, board, country_code, entries: [{ rank, run_id, player,
- * time_ms, tier, status, has_replay, is_me, late }], me, total }`. `me` is the viewer's best
- * run: VERIFIED (with its rank in this scope) or, when better, PENDING (rank null).
+ * GET /challenges/{id}/leaderboard?scope=world|country|friends&country=&period=live|all&board=time|progress&limit=50:
+ * `{ challenge_id, scope, period, board, country_code, entries, me, total }`. board=time:
+ * entries `{ rank, run_id, player, time_ms, tier, status, has_replay, is_me, late }`, `me` is
+ * the viewer's best run: VERIFIED (with its rank in this scope) or, when better, PENDING (rank
+ * null). board=progress (« Plus loin »): entries `{ rank, player, progress, finished, time_ms,
+ * status, late, is_me }`, `me` the viewer's best VERIFIED progress.
  */
 export async function leaderboard(ctx: Ctx, viewer: AuthInfo | null): Promise<Response> {
     const c = await startedChallenge(ctx, ctx.params.challengeId!);
@@ -737,7 +810,7 @@ export async function leaderboard(ctx: Ctx, viewer: AuthInfo | null): Promise<Re
     const board = queryEnum(ctx.url, "board", BOARDS, "time");
     const page = paging(ctx.url, 50, 100);
     let country = queryString(ctx.url, "country", COUNTRY_RE);
-    const filter: { country?: string; friendsOf?: string } = {};
+    const filter: ScopeFilter = {};
     if (scope === "country") {
         country ??= viewer?.player.country_code ?? undefined;
         if (!country) throw Errors.validation([{ field: "country", message: "code pays ISO à 2 lettres attendu" }]);
@@ -747,6 +820,10 @@ export async function leaderboard(ctx: Ctx, viewer: AuthInfo | null): Promise<Re
         filter.friendsOf = viewer.player.id;
     }
     const all = period === "all" ? 1 : 0;
+    if (board === "progress") {
+        if (c.has_race !== 1) throw PROGRESS_UNAVAILABLE();
+        return progressBoard(ctx, c, viewer, { scope, period, filter, all, page });
+    }
     const { sql, extra } = boardSql(filter);
     const n = 3 + extra.length;
     const rows = await ctx.env.DB.prepare(`${sql} ORDER BY rank LIMIT ?${n} OFFSET ?${n + 1}`)
@@ -807,6 +884,54 @@ export async function leaderboard(ctx: Ctx, viewer: AuthInfo | null): Promise<Re
         period,
         board,
         country_code: filter.country ?? null,
+        entries: rows.results.map(entry),
+        me,
+        total,
+    });
+}
+
+/** board=progress of the leaderboard (« Plus loin », 2.34). */
+async function progressBoard(
+    ctx: Ctx,
+    c: ChallengeRow,
+    viewer: AuthInfo | null,
+    o: { scope: string; period: string; filter: ScopeFilter; all: number; page: { limit: number; offset: number } },
+): Promise<Response> {
+    const { sql, extra } = progressSql(o.filter);
+    const n = 3 + extra.length;
+    const rows = await ctx.env.DB.prepare(`${sql} ORDER BY rank LIMIT ?${n} OFFSET ?${n + 1}`)
+        .bind(c.id, o.all, ...extra, o.page.limit, o.page.offset)
+        .all<ProgressRow>();
+    let total = rows.results[0]?.total ?? 0;
+    if (rows.results.length === 0 && o.page.offset > 0) {
+        const t = await ctx.env.DB.prepare(`SELECT COUNT(*) AS total FROM (${sql})`).bind(c.id, o.all, ...extra).first<{ total: number }>();
+        total = t?.total ?? 0;
+    }
+    let mine: ProgressRow | null = null;
+    let outside: ProgressRow | null = null;
+    if (viewer) {
+        mine = await ctx.env.DB.prepare(`${sql} WHERE player_id = ?${n}`).bind(c.id, o.all, ...extra, viewer.player.id).first<ProgressRow>();
+        // Not in this scope (a country, friends): my best of the period, without a rank.
+        if (!mine) outside = await ctx.env.DB.prepare(`${progressSql({}).sql} WHERE player_id = ?3`).bind(c.id, o.all, viewer.player.id).first<ProgressRow>();
+    }
+    const looks = await boardCosmetics(ctx, [...rows.results.map((r) => r.player_id), ...(viewer ? [viewer.player.id] : [])]);
+    const entry = (r: ProgressRow) => ({
+        rank: r.rank,
+        player: playerJson({ ...r, id: r.player_id }, looks),
+        progress: r.progress,
+        finished: r.finished === 1,
+        time_ms: r.time_ms,
+        status: "VERIFIED" as const,
+        late: r.late === 1,
+        is_me: viewer?.player.id === r.player_id,
+    });
+    const me = mine ? entry(mine) : outside ? { ...entry(outside), rank: null } : null;
+    return json(ctx, {
+        challenge_id: c.id,
+        scope: o.scope,
+        period: o.period,
+        board: "progress",
+        country_code: o.filter.country ?? null,
         entries: rows.results.map(entry),
         me,
         total,
@@ -878,20 +1003,35 @@ export async function recheckHeldRuns(ctx: Ctx, playerId: string | null, limit =
 
 // ------------------------------------------------------------------ submission
 
-/** The level revision a challenge is played on (campaign) or its community version's geometry. */
-async function levelOf(ctx: Ctx, c: ChallengeRow): Promise<LevelVersionRow> {
+/**
+ * The level revision a challenge is played on (campaign) or its community version's geometry,
+ * with the race layout of that version (« Plus loin »; null without one).
+ */
+async function levelVersionOf(ctx: Ctx, c: ChallengeRow): Promise<{ level: LevelVersionRow; layout: RaceLayout | null }> {
+    const layoutOf = (race: unknown) => {
+        if (typeof race !== "string") return null;
+        try {
+            return parseLayout(JSON.parse(race));
+        } catch {
+            return null;
+        }
+    };
     if (c.level_source === "campaign") {
         const v = await ctx.env.DB.prepare("SELECT * FROM level_versions WHERE level_id = ?1 AND content_hash = ?2")
             .bind(c.level_id, c.level_hash)
-            .first<LevelVersionRow>();
-        if (v) return v;
+            .first<LevelVersionRow & { race: string | null }>();
+        if (v) return { level: v, layout: layoutOf(v.race) };
     } else {
         const v = await ctx.env.DB.prepare("SELECT * FROM community_level_versions WHERE level_id = ?1 AND version = ?2")
             .bind(c.level_id, c.level_version)
             .first<Record<string, unknown>>();
-        if (v && v.level_hash === c.level_hash) return pseudoVersionOf(v);
+        if (v && v.level_hash === c.level_hash) return { level: pseudoVersionOf(v), layout: layoutOf(v.race) };
     }
     throw Errors.notFound("LEVEL_VERSION_NOT_FOUND", "Le niveau de ce défi n'est plus disponible.");
+}
+
+async function levelOf(ctx: Ctx, c: ChallengeRow): Promise<LevelVersionRow> {
+    return (await levelVersionOf(ctx, c)).level;
 }
 
 /** Whether a submission received at `now` comes after the end of its challenge (+ 10 min). */
@@ -1126,6 +1266,298 @@ export async function downloadRunReplay(ctx: Ctx, viewer: AuthInfo | null): Prom
     });
 }
 
+// ------------------------------------------------------- attempts (« Plus loin », 2.34)
+
+interface AttemptRow {
+    id: string;
+    challenge_id: string;
+    player_id: string;
+    attempt_id: string;
+    time_ms: number;
+    level_hash: string;
+    rules_hash: string;
+    game_version: string;
+    claim: string;
+    late: number;
+    status: "PENDING" | "VERIFIED" | "REJECTED";
+    progress: number | null;
+    route: number | null;
+    detail: string | null;
+    reasons: string | null;
+    replay_key: string | null;
+    replay_sha256: string | null;
+    replay_size: number | null;
+    replay_at: string | null;
+    created_at: string;
+    verified_at: string | null;
+}
+
+/** The upload path of an attempt's replay: the game's attempt id (looked up among the session player's attempts). */
+const attemptUploadPath = (attemptId: string) => `/api/v1/challenges/attempts/${attemptId}/replay`;
+
+function attemptJson(a: AttemptRow) {
+    return { attempt_id: a.attempt_id, status: a.status, progress: a.progress, finished: false, late: a.late === 1 };
+}
+
+/**
+ * What the game declares of an attempt, `{ finished: false, bosses: [‰ removed per boss of the
+ * layout], waves: [waves beaten per ambush] }`: only compared with what the replay shows, never
+ * taken as the score. A finished run is sent as a run (POST …/runs), not as an attempt.
+ */
+function readClaim(v: Validator, raw: unknown): Claim {
+    const claim: Claim = { finished: false, bosses: [], waves: [] };
+    if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
+        v.fail("claim", "objet { finished, bosses, waves } attendu");
+        return claim;
+    }
+    const o = raw as Record<string, unknown>;
+    for (const k of Object.keys(o)) if (!["finished", "bosses", "waves"].includes(k)) v.fail(`claim.${k}`, "champ inconnu");
+    if (o.finished !== false) v.fail("claim.finished", "false attendu : une partie finie s'envoie par POST /challenges/{id}/runs");
+    const ints = (k: "bosses" | "waves", max: number) => {
+        const a = o[k];
+        if (!Array.isArray(a) || a.length > 64 || !a.every((n) => Number.isInteger(n) && n >= 0 && n <= max)) {
+            v.fail(`claim.${k}`, `liste d'entiers de 0 à ${max} attendue (64 au plus)`);
+            return [];
+        }
+        return a as number[];
+    };
+    claim.bosses = ints("bosses", 1000);
+    claim.waves = ints("waves", 99);
+    return claim;
+}
+
+/**
+ * POST /challenges/{challengeId}/attempts `{ attempt_id, time_ms, level_hash, rules_hash,
+ * game_version, claim }`: an attempt that did not reach the end, sent when the game finds it
+ * better than the player's best on this challenge. Its score comes from its replay only (PUT
+ * /challenges/attempts/{attemptId}/replay). Idempotent by attempt_id; late after the end of
+ * the challenge (+ 10 min), like the runs.
+ */
+export async function submitAttempt(ctx: Ctx): Promise<Response> {
+    const auth = await requireAuth(ctx);
+    await rateLimit(ctx, RULES.challengeSubmit, "player:" + auth.player.id);
+    const id = ctx.params.challengeId!;
+    const period = parseChallengeId(id);
+    if (!period) throw Errors.notFound("CHALLENGE_NOT_FOUND", "Défi introuvable.");
+    const body = await readJsonObject(ctx, 4 * 1024);
+    // Neither `player_id` nor a score is accepted: the player comes from the session, the score from the replay.
+    const v = new Validator(body, ["attempt_id", "time_ms", "level_hash", "rules_hash", "game_version", "claim"]);
+    const attemptId = v.str("attempt_id", { min: 36, max: 36, pattern: UUID_RE });
+    const timeMs = v.int("time_ms", { min: 1, max: 24 * 3600 * 1000 });
+    const levelHash = v.str("level_hash", { min: 64, max: 64, pattern: HASH_RE });
+    const hash = v.str("rules_hash", { min: 64, max: 64, pattern: HASH_RE });
+    const gameVersion = v.str("game_version", { max: 16, pattern: SEMVER_RE });
+    const claim = readClaim(v, body.claim);
+    v.done();
+
+    const now = Date.now();
+    if (period.start > utcDate(now)) throw Errors.conflict("CHALLENGE_NOT_STARTED", "Ce défi n'a pas encore commencé.");
+    const c = await ctx.env.DB.prepare(`${CHALLENGE_SQL} WHERE c.id = ?1`).bind(id).first<ChallengeRow>();
+    if (!c) throw Errors.notFound("CHALLENGE_NOT_FOUND", "Défi introuvable.");
+
+    const existing = await ctx.env.DB.prepare("SELECT * FROM challenge_attempts WHERE player_id = ?1 AND attempt_id = ?2")
+        .bind(auth.player.id, attemptId)
+        .first<AttemptRow>();
+    if (existing) {
+        if (
+            existing.challenge_id !== c.id ||
+            existing.time_ms !== timeMs ||
+            existing.level_hash !== levelHash ||
+            existing.rules_hash !== hash ||
+            existing.claim !== JSON.stringify(claim)
+        )
+            throw Errors.conflict("ATTEMPT_CONFLICT", "Cet essai a déjà été envoyé avec d'autres données.");
+        return json(ctx, {
+            duplicate: true,
+            attempt: attemptJson(existing),
+            replay: { required: existing.replay_at === null && existing.status === "PENDING", upload_path: attemptUploadPath(existing.attempt_id) },
+        });
+    }
+
+    const late = isLate(c, now);
+    const { level, layout } = await levelVersionOf(ctx, c);
+    if (!layout) throw PROGRESS_UNAVAILABLE();
+    const minGame = [CHALLENGE_MIN_GAME_VERSION, ctx.env.MIN_GAME_VERSION, level.min_game_version].reduce((a, b) => (compareVersions(a, b) >= 0 ? a : b));
+    if (compareVersions(gameVersion!, minGame) < 0)
+        throw new ApiError(426, "GAME_VERSION_UNSUPPORTED", "Version du jeu trop ancienne pour les défis.", { min_game_version: minGame });
+    if (levelHash !== c.level_hash) throw Errors.conflict("LEVEL_MISMATCH", "Ce n'est pas la version du niveau de ce défi.", { level_hash: c.level_hash });
+    if (hash !== c.rules_hash) throw Errors.conflict("RULES_MISMATCH", "Ces règles ne sont pas celles du défi.", { rules_hash: c.rules_hash });
+    if (claim.bosses.length !== layout.bosses.length || claim.waves.length !== layout.ambushes.length)
+        throw Errors.validation([
+            { field: "claim", message: `une valeur par boss (${layout.bosses.length}) et par embuscade (${layout.ambushes.length}) du tracé du niveau` },
+        ]);
+
+    // Longer than the level allows: refused at once, no replay to send.
+    const overLimit = timeMs! > level.time_limit_ms;
+    const a: AttemptRow = {
+        id: crypto.randomUUID(),
+        challenge_id: c.id,
+        player_id: auth.player.id,
+        attempt_id: attemptId!,
+        time_ms: timeMs!,
+        level_hash: c.level_hash,
+        rules_hash: c.rules_hash,
+        game_version: gameVersion!,
+        claim: JSON.stringify(claim),
+        late: late ? 1 : 0,
+        status: overLimit ? "REJECTED" : "PENDING",
+        progress: null,
+        route: null,
+        detail: null,
+        reasons: overLimit ? JSON.stringify(["durée au-delà de la limite du niveau"]) : null,
+        replay_key: null,
+        replay_sha256: null,
+        replay_size: null,
+        replay_at: null,
+        created_at: nowIso(),
+        verified_at: null,
+    };
+    try {
+        await ctx.env.DB.prepare(
+            `INSERT INTO challenge_attempts (id, challenge_id, player_id, attempt_id, time_ms, level_hash, rules_hash, game_version, claim, late,
+               status, reasons, created_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)`,
+        )
+            .bind(a.id, a.challenge_id, a.player_id, a.attempt_id, a.time_ms, a.level_hash, a.rules_hash, a.game_version, a.claim, a.late,
+                a.status, a.reasons, a.created_at)
+            .run();
+    } catch (e) {
+        if (String(e).includes("UNIQUE")) throw Errors.conflict("DUPLICATE_SUBMISSION", "Essai déjà enregistré.");
+        throw e;
+    }
+    return json(
+        ctx,
+        { duplicate: false, attempt: attemptJson(a), replay: { required: a.status === "PENDING", upload_path: attemptUploadPath(a.attempt_id) } },
+        { status: 201 },
+    );
+}
+
+/**
+ * PUT /challenges/attempts/{attemptId}/replay (`attemptId`: the game's attempt_id): the
+ * attempt's replay (CPRZ, format 4 with the challenge section). The server checks it with the
+ * race analysis (rules, hearts, plausible trajectory, one life unless the challenge has its
+ * checkpoints on) and computes the progress from it (route reached along the layout, bosses'
+ * health removed, waves beaten). Only the player's best attempt on the challenge keeps its
+ * replay.
+ */
+export async function uploadAttemptReplay(ctx: Ctx): Promise<Response> {
+    const auth = await requireAuth(ctx);
+    const me = auth.player.id;
+    await rateLimit(ctx, RULES.replayUpload, "player:" + me);
+    const attemptId = ctx.params.attemptId!;
+    const a = UUID_RE.test(attemptId)
+        ? await ctx.env.DB.prepare("SELECT * FROM challenge_attempts WHERE player_id = ?1 AND attempt_id = ?2").bind(me, attemptId).first<AttemptRow>()
+        : null;
+    if (!a) throw Errors.notFound("ATTEMPT_NOT_FOUND", "Essai introuvable.");
+    if (a.replay_at !== null) throw Errors.conflict("REPLAY_EXISTS", "Le replay de cet essai a déjà été envoyé.");
+    if (a.status === "REJECTED") throw Errors.conflict("ATTEMPT_REJECTED", "Cet essai a été refusé.");
+    const type = (ctx.request.headers.get("content-type") ?? "").toLowerCase();
+    if (!type.startsWith("application/octet-stream"))
+        throw new ApiError(415, "UNSUPPORTED_MEDIA_TYPE", "Le replay doit être envoyé en application/octet-stream.");
+    const data = await readLimited(ctx.request, MAX_REPLAY_UPLOAD);
+    const c = await ctx.env.DB.prepare(`${CHALLENGE_SQL} WHERE c.id = ?1`).bind(a.challenge_id).first<ChallengeRow>();
+    if (!c) throw Errors.notFound("CHALLENGE_NOT_FOUND", "Défi introuvable.");
+    const { level, layout } = await levelVersionOf(ctx, c);
+    if (!layout) throw PROGRESS_UNAVAILABLE();
+    let replay: Replay;
+    try {
+        replay = parseReplay(await inflateContainer(data));
+    } catch (e) {
+        if (!(e instanceof ReplayError)) throw e;
+        throw new ApiError(422, "REPLAY_MALFORMED", `Replay illisible : ${e.message}.`);
+    }
+    const analysis = analyzeRace(replay, a.attempt_id, a.time_ms, JSON.parse(a.claim) as Claim, layout, level, {
+        challengeRules: canonicalRules(c.id, rulesOf(c)),
+        hearts: c.hearts,
+        respawns: c.checkpoints === 1,
+    });
+    const ok = analysis.reasons.length === 0;
+    // Never 100: only a finished run reaches it.
+    const progress = ok ? raceScore(layout, analysis.route, analysis.bossRemoved, analysis.wavesDone, false) : null;
+
+    const db = ctx.env.DB;
+    const before = await db
+        .prepare(
+            `SELECT (SELECT MAX(progress) FROM challenge_attempts WHERE challenge_id = ?1 AND player_id = ?2 AND status = 'VERIFIED' AND id <> ?3) AS attempts,
+                    EXISTS (SELECT 1 FROM challenge_runs WHERE challenge_id = ?1 AND player_id = ?2 AND status = 'VERIFIED') AS finished`,
+        )
+        .bind(c.id, me, a.id)
+        .first<{ attempts: number | null; finished: number }>();
+    const previous = before?.attempts ?? null;
+    // The player's best attempt on this challenge keeps its replay; the others do not.
+    const keep = progress !== null && (previous === null || progress > previous);
+    let key: string | null = null;
+    let digest: string | null = null;
+    if (keep) {
+        key = `challenges/${c.id}/${me}/attempt-${a.id}-${crypto.randomUUID()}.cprz`;
+        digest = await sha256Hex(data);
+        await ctx.env.STORAGE.put(key, data, {
+            httpMetadata: { contentType: "application/octet-stream" },
+            customMetadata: { challenge_attempt_id: a.id, sha256: digest, format: "CPRZ/CPRP" },
+        });
+    }
+    const now = nowIso();
+    const claim = await db
+        .prepare(
+            `UPDATE challenge_attempts SET status = ?2, progress = ?3, route = ?4, detail = ?5, reasons = ?6, replay_key = ?7, replay_sha256 = ?8,
+               replay_size = ?9, replay_at = ?10, verified_at = ?11 WHERE id = ?1 AND status = 'PENDING' AND replay_at IS NULL`,
+        )
+        .bind(
+            a.id,
+            ok ? "VERIFIED" : "REJECTED",
+            progress,
+            analysis.route,
+            JSON.stringify(detailOf(layout, analysis)),
+            ok ? null : JSON.stringify(analysis.reasons.slice(0, 8)),
+            key,
+            digest,
+            key ? data.byteLength : null,
+            now,
+            ok ? now : null,
+        )
+        .run();
+    if (claim.meta.changes !== 1) {
+        if (key) await ctx.env.STORAGE.delete(key);
+        throw Errors.conflict("REPLAY_EXISTS", "Le replay de cet essai a déjà été envoyé.");
+    }
+    if (keep) {
+        // The previous best attempt loses its replay (never a better one sent at the same time).
+        const old = await db
+            .prepare(
+                `SELECT id, replay_key FROM challenge_attempts WHERE challenge_id = ?1 AND player_id = ?2 AND id <> ?3 AND replay_key IS NOT NULL
+                   AND (progress IS NULL OR progress < ?4)`,
+            )
+            .bind(c.id, me, a.id, progress)
+            .all<{ id: string; replay_key: string }>();
+        for (const o of old.results) {
+            await ctx.env.STORAGE.delete(o.replay_key);
+            await db.prepare("UPDATE challenge_attempts SET replay_key = NULL, replay_sha256 = NULL, replay_size = NULL WHERE id = ?1").bind(o.id).run();
+        }
+    }
+    if (!ok) await audit(ctx, me, "challenge_attempt_rejected", { attempt_id: a.id, reasons: analysis.reasons.slice(0, 5) });
+    // My rank on the board of the attempt's period (« Pendant le défi », or « Depuis » for a late one).
+    const rank = ok ? ((await db.prepare(`${progressSql({}).sql} WHERE player_id = ?3`).bind(c.id, a.late, me).first<ProgressRow>())?.rank ?? null) : null;
+    const best = before?.finished === 1 ? 100 : Math.max(previous ?? -1, progress ?? -1);
+    return json(
+        ctx,
+        {
+            attempt: {
+                attempt_id: a.attempt_id,
+                status: ok ? ("VERIFIED" as const) : ("REJECTED" as const),
+                progress,
+                finished: false,
+                late: a.late === 1,
+                rank,
+                reasons: ok ? [] : analysis.reasons.slice(0, 8),
+            },
+            // A new record of progress on this challenge (better than every attempt and finished run before).
+            new_best: keep && before?.finished !== 1,
+            best_progress: best < 0 ? null : best,
+        },
+        { status: 201 },
+    );
+}
+
 // ------------------------------------------------------------------- my results
 
 export interface Streak {
@@ -1165,7 +1597,7 @@ interface PlayerResult {
     kind: ChallengeKind;
     period: string;
     date: string;
-    best_time_ms: number;
+    best_time_ms: number | null;
     tier: Tier | null;
     status: RunRow["status"];
     late: boolean;
@@ -1177,8 +1609,10 @@ interface PlayerResult {
  * challenges that touch these days). The runs received in time come first: the result is
  * the best of them that was not rejected (its time and status; its tier is the best one
  * reached in time); with only late runs, the best late one (`late: true`, its tier the best
- * one reached late); with only rejected runs, the best rejected one (tier null).
- * `best_progress` belongs to « Plus loin » (2.34): null here.
+ * one reached late); with only rejected runs, the best rejected one (tier null). A challenge
+ * only tried (attempts of « Plus loin », no run) gives the state of its best attempt, without
+ * time nor tier. `best_progress`: the best VERIFIED progress on the challenge, in time or
+ * late (attempts; 100 for a finished run), null without one.
  */
 async function playerResults(ctx: Ctx, playerId: string, o: { span?: { start: string; end: string }; limit: number }): Promise<PlayerResult[]> {
     const rows = await ctx.env.DB.prepare(
@@ -1188,10 +1622,26 @@ async function playerResults(ctx: Ctx, playerId: string, o: { span?: { start: st
                                      ORDER BY (r.status = 'REJECTED'), r.late, r.time_ms, (r.status <> 'VERIFIED'), r.created_at, r.id) AS rn,
                   MAX(CASE WHEN r.status <> 'REJECTED' AND r.late = 0 THEN ${TIER_RANK_SQL} ELSE 0 END) OVER (PARTITION BY r.challenge_id) AS live_tier,
                   MAX(CASE WHEN r.status <> 'REJECTED' THEN ${TIER_RANK_SQL} ELSE 0 END) OVER (PARTITION BY r.challenge_id) AS any_tier
-           FROM challenge_runs r WHERE r.player_id = ?1)
-         SELECT runs.challenge_id, c.kind, c.period, c.date, runs.time_ms, runs.status, runs.late, runs.live_tier, runs.any_tier
-         FROM runs JOIN challenges c ON c.id = runs.challenge_id
-         WHERE runs.rn = 1 AND (?2 IS NULL OR (c.date < ?3 AND c.end_date > ?2))
+           FROM challenge_runs r WHERE r.player_id = ?1),
+         attempts AS (
+           SELECT a.challenge_id, a.status, a.late,
+                  ROW_NUMBER() OVER (PARTITION BY a.challenge_id
+                                     ORDER BY (a.status = 'REJECTED'), a.late, (a.status <> 'VERIFIED'), a.progress DESC, a.created_at, a.id) AS rn
+           FROM challenge_attempts a WHERE a.player_id = ?1),
+         bests AS (
+           SELECT challenge_id, MAX(p) AS best FROM (
+             SELECT challenge_id, progress AS p FROM challenge_attempts WHERE player_id = ?1 AND status = 'VERIFIED'
+             UNION ALL
+             SELECT challenge_id, 100.0 FROM challenge_runs WHERE player_id = ?1 AND status = 'VERIFIED')
+           GROUP BY challenge_id),
+         played AS (SELECT challenge_id FROM runs WHERE rn = 1 UNION SELECT challenge_id FROM attempts WHERE rn = 1)
+         SELECT played.challenge_id, c.kind, c.period, c.date, runs.time_ms, runs.status, runs.late, runs.live_tier, runs.any_tier,
+                attempts.status AS attempt_status, attempts.late AS attempt_late, bests.best AS best_progress
+         FROM played JOIN challenges c ON c.id = played.challenge_id
+         LEFT JOIN runs ON runs.challenge_id = played.challenge_id AND runs.rn = 1
+         LEFT JOIN attempts ON attempts.challenge_id = played.challenge_id AND attempts.rn = 1
+         LEFT JOIN bests ON bests.challenge_id = played.challenge_id
+         WHERE (?2 IS NULL OR (c.date < ?3 AND c.end_date > ?2))
          ORDER BY c.date DESC, ${kindOrder("c.kind")} DESC LIMIT ?4`,
     )
         .bind(playerId, o.span?.start ?? null, o.span?.end ?? null, o.limit)
@@ -1200,24 +1650,26 @@ async function playerResults(ctx: Ctx, playerId: string, o: { span?: { start: st
             kind: ChallengeKind;
             period: string;
             date: string;
-            time_ms: number;
-            status: RunRow["status"];
-            late: number;
-            live_tier: number;
-            any_tier: number;
+            time_ms: number | null;
+            status: RunRow["status"] | null;
+            late: number | null;
+            live_tier: number | null;
+            any_tier: number | null;
+            attempt_status: RunRow["status"] | null;
+            attempt_late: number | null;
+            best_progress: number | null;
         }>();
     return rows.results.map((r) => {
-        const rank = r.status === "REJECTED" ? 0 : r.late === 1 ? r.any_tier : r.live_tier;
+        const base = { challenge_id: r.challenge_id, kind: r.kind, period: r.period, date: r.date, best_progress: r.best_progress };
+        if (r.status === null)
+            return { ...base, best_time_ms: null, tier: null, status: r.attempt_status ?? "PENDING", late: r.attempt_late === 1 };
+        const rank = r.status === "REJECTED" ? 0 : r.late === 1 ? (r.any_tier ?? 0) : (r.live_tier ?? 0);
         return {
-            challenge_id: r.challenge_id,
-            kind: r.kind,
-            period: r.period,
-            date: r.date,
+            ...base,
             best_time_ms: r.time_ms,
             tier: rank > 0 ? TIERS[rank - 1]! : null,
             status: r.status,
             late: r.late === 1,
-            best_progress: null,
         };
     });
 }
@@ -1276,9 +1728,12 @@ export async function mine(ctx: Ctx): Promise<Response> {
 
 // ------------------------------------------------------------------- account
 
-/** R2 keys of a player's challenge replays (account deletion). */
+/** R2 keys of a player's challenge replays: runs and (2.34) attempts (account deletion). */
 export async function challengeReplayKeys(ctx: Ctx, playerId: string): Promise<string[]> {
-    const rows = await ctx.env.DB.prepare("SELECT replay_key FROM challenge_runs WHERE player_id = ?1 AND replay_key IS NOT NULL")
+    const rows = await ctx.env.DB.prepare(
+        `SELECT replay_key FROM challenge_runs WHERE player_id = ?1 AND replay_key IS NOT NULL
+         UNION ALL SELECT replay_key FROM challenge_attempts WHERE player_id = ?1 AND replay_key IS NOT NULL`,
+    )
         .bind(playerId)
         .all<{ replay_key: string }>();
     return rows.results.map((r) => r.replay_key);

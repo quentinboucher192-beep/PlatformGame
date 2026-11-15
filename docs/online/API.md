@@ -137,7 +137,7 @@ de `wrangler.jsonc`, plafonnée à 1 000) multiplie toutes les limites.
 | `login_user` | 20 | 15 min | pseudonyme | `POST /auth/login` |
 | `refresh` | 60 | 1 min | IP | `POST /auth/refresh` |
 | `submit` | 30 | 1 min | joueur | `POST /records/submit` |
-| `replay_upload` | 20 | 1 min | joueur | `PUT /records/{recordId}/replay`, `PUT /challenges/runs/{runId}/replay` (compteur partagé) |
+| `replay_upload` | 20 | 1 min | joueur | `PUT /records/{recordId}/replay`, `PUT /challenges/runs/{runId}/replay`, `PUT /challenges/attempts/{attemptId}/replay` (compteur partagé) |
 | `profile_write` | 20 | 5 min | joueur | `PATCH /players/me`, `PUT /players/me/avatar` (compteur partagé) |
 | `friend_request` | 30 | 1 h | joueur | `POST /friends/request` |
 | `account_delete` | 5 | 1 h | joueur | `DELETE /players/me` |
@@ -160,7 +160,7 @@ de `wrangler.jsonc`, plafonnée à 1 000) multiplie toutes les limites.
 | `project_create` / `project_invite` | 10 / 30 | 1 h | joueur | `POST /projects`, `POST /projects/{id}/invites` |
 | `project_join` | 20 | 1 h | joueur | `POST /projects/join`, `POST /projects/{id}/join` |
 | `project_save` | 120 | 1 h | joueur | `PUT /projects/{id}/content` |
-| `challenge_submit` | 30 | 1 min | joueur | `POST /challenges/{challengeId}/runs` (le replay d'une partie de défi compte dans `replay_upload`) |
+| `challenge_submit` | 30 | 1 min | joueur | `POST /challenges/{challengeId}/runs`, `POST /challenges/{challengeId}/attempts` (compteur partagé ; leurs replays comptent dans `replay_upload`) |
 | `reads` | 300 | 1 min | IP | toute requête `GET` non servie par le cache |
 
 `POST /auth/logout`, `POST /friends/accept`, `DELETE /friends/{playerId}` et les `POST`
@@ -171,11 +171,11 @@ d'administration n'ont pas de limite propre.
 | Contenu | Limite |
 |---|---|
 | Corps JSON (par défaut) | 8 Kio (8 192 octets) |
-| `POST /records/submit`, `POST /challenges/{challengeId}/runs` | 4 Kio |
+| `POST /records/submit`, `POST /challenges/{challengeId}/runs`, `POST /challenges/{challengeId}/attempts` | 4 Kio |
 | `PUT /players/me/cosmetics` | 1 Kio |
 | `POST /admin/levels` | 256 Kio, 1 à 500 niveaux |
 | Avatar `PUT /players/me/avatar` | 64 Kio, PNG carré 32 à 256 px, profondeur 8 bits |
-| Replay `PUT /records/{recordId}/replay`, `PUT /challenges/runs/{runId}/replay` | 1 Mio compressé, 72 o à 4 Mio décompressé |
+| Replay `PUT /records/{recordId}/replay`, `PUT /challenges/runs/{runId}/replay`, `PUT /challenges/attempts/{attemptId}/replay` | 1 Mio compressé, 72 o à 4 Mio décompressé |
 
 Un `Content-Length` déclaré trop grand est refusé avant lecture ; un corps plus long que
 prévu est coupé et refusé (`413 PAYLOAD_TOO_LARGE`). Un `Content-Length` invalide donne
@@ -211,6 +211,7 @@ prévu est coupé et refusé (`413 PAYLOAD_TOO_LARGE`). Un `Content-Length` inva
 | 404 | `REPLAY_NOT_FOUND` | Pas de replay (ou replay non vérifié pour un tiers, ou fichier absent) |
 | 404 | `CHALLENGE_NOT_FOUND` | Défi inconnu, identifiant mal formé, ou défi dont la période n'a pas commencé (jamais révélé) |
 | 404 | `RUN_NOT_FOUND` | Partie de défi inconnue, ou non visible par ce lecteur |
+| 404 | `ATTEMPT_NOT_FOUND` | Essai « Plus loin » inconnu parmi ceux du joueur connecté |
 | 404 | `AVATAR_NOT_FOUND` | Pas d'avatar personnalisé |
 | 404 | `REQUEST_NOT_FOUND` | Aucune demande d'ami de ce joueur |
 | 404 | `FRIEND_NOT_FOUND` | Aucun lien d'amitié avec ce joueur |
@@ -224,6 +225,8 @@ prévu est coupé et refusé (`413 PAYLOAD_TOO_LARGE`). Un `Content-Length` inva
 | 409 | `REPLAY_EXISTS` | Un replay est déjà associé à la tentative |
 | 409 | `RECORD_REJECTED` | Replay envoyé pour un record refusé |
 | 409 | `RUN_REJECTED` | Replay envoyé pour une partie de défi refusée |
+| 409 | `ATTEMPT_REJECTED` | Replay envoyé pour un essai « Plus loin » refusé (plus long que la limite du niveau) |
+| 409 | `PROGRESS_UNAVAILABLE` | « Plus loin » demandé (essai, `board=progress`) sur un défi dont la version du niveau n'a pas de tracé |
 | 409 | `CHALLENGE_NOT_STARTED` | Partie envoyée pour un défi dont la période n'a pas commencé (qu'il existe ou non) |
 | 409 | `CHALLENGE_ENDED` | (2.32 seulement) plus jamais renvoyé depuis 2.33 : une partie reçue plus de 10 minutes après la fin du défi est acceptée hors délai (`late: true`) |
 | 409 | `RULES_MISMATCH` | `rules_hash` différent de celui du défi ; `details.rules_hash` |
@@ -1280,25 +1283,29 @@ niveau « … » est le défi du jour ! », « … de la semaine ! », « … du
 | GET | `/challenges/{challengeId}` · cache | aucune | le défi (`Challenge`) s'il a commencé, sinon `404 CHALLENGE_NOT_FOUND` |
 | GET | `/challenges/daily/current` | aucune | (2.32) `{ server_time, challenge, previous }` : défi du jour et celui d'hier (`null` s'il n'y en a pas) |
 | GET | `/challenges/daily?before=AAAA-MM-JJ&limit=N` · cache | aucune | (2.32) `{ challenges: [Challenge], next_before }` : défis **du jour** commencés, du plus récent au plus ancien, `before` exclu ; `limit` 1 à 30 (défaut 30) ; `next_before` : la valeur de `before` de la page suivante (`null` à la fin) |
-| GET | `/challenges/{challengeId}/leaderboard?scope=world\|country\|friends&country=XX&period=live\|all&board=time&limit=50&offset=0` · cache | facultative (`friends` : requise) | `{ challenge_id, scope, period, board, country_code, entries: [{ rank, run_id, player, time_ms, tier, status, has_replay, is_me, late }], me, total }` |
+| GET | `/challenges/{challengeId}/leaderboard?scope=world\|country\|friends&country=XX&period=live\|all&board=time\|progress&limit=50&offset=0` · cache | facultative (`friends` : requise) | `{ challenge_id, scope, period, board, country_code, entries, me, total }` ; `board=time` : entrées `{ rank, run_id, player, time_ms, tier, status, has_replay, is_me, late }` ; `board=progress` (2.34) : entrées `{ rank, player, progress, finished, time_ms, status, late, is_me }` |
 | POST | `/challenges/{challengeId}/runs` | requise · `challenge_submit` | `201 { duplicate: false, run: { id, status, tier, time_ms, late }, replay: { required, accepted, upload_path } }` ; `200` avec `duplicate: true` pour une tentative déjà reçue |
 | PUT | `/challenges/runs/{runId}/replay` | requise, propriétaire · `replay_upload` | `201 { run: { id, status, tier, time_ms, late }, replay: { verification_status }, analysis }` |
+| POST | `/challenges/{challengeId}/attempts` | requise · `challenge_submit` | (2.34, « Plus loin ») `201 { duplicate: false, attempt: { attempt_id, status, progress: null, finished: false, late }, replay: { required, upload_path } }` ; `200` avec `duplicate: true` pour un essai déjà reçu |
+| PUT | `/challenges/attempts/{attemptId}/replay` | requise (ses essais seulement) · `replay_upload` | (2.34) `201 { attempt: { attempt_id, status, progress, finished: false, late, rank, reasons }, new_best, best_progress }` |
 | GET | `/challenges/runs/{runId}/replay` | facultative | le replay (`application/octet-stream`, en-tête `x-replay-sha256`) : public pour une partie `VERIFIED` (fantôme du 1er ; `403 PROFILE_PRIVATE` si son auteur a masqué son profil), sinon son propriétaire seulement |
 | GET | `/challenges/me?limit=60` | requise | `{ streak: { current, best, last_date }, streaks: { daily, weekly, monthly }, results: [{ challenge_id, kind, period, date, best_time_ms, tier, status, late, best_progress }] }` (du plus récent au plus ancien, `limit` 1 à 366 ; chaque série : `{ current, best, last_period }`) |
 
 `Challenge` : `{ id, kind: "daily" | "weekly" | "monthly", period, date, starts_at, ends_at,
 source: "auto" | "admin", level: { source: "campaign" | "community", level_id, level_version,
 level_hash, title, author: { id, username } | null }, rules: { hearts, slots, powers,
-stations, checkpoints }, rules_hash, tiers: { silver_ms, gold_ms, gold_no_damage } }`
-(`period` : `AAAA-MM-JJ`, `AAAA-Www` ou `AAAA-MM` ; `date` : premier jour de la période, lu
-par les jeux 2.32 ; `powers` triés ; `author` : auteur d'un niveau de la communauté, `null`
-sinon). `tier` vaut `bronze`, `silver` ou `gold`. La forme canonique des règles et
+stations, checkpoints }, rules_hash, tiers: { silver_ms, gold_ms, gold_no_damage },
+progress_available }` (`period` : `AAAA-MM-JJ`, `AAAA-Www` ou `AAAA-MM` ; `date` : premier
+jour de la période, lu par les jeux 2.32 ; `powers` triés ; `author` : auteur d'un niveau de
+la communauté, `null` sinon ; `progress_available` (2.34) : la version du niveau a un tracé,
+donc un classement « Plus loin »). `tier` vaut `bronze`, `silver` ou `gold`. La forme canonique des règles et
 `rules_hash` sont les mêmes pour les trois sortes (la clé `challenge` porte l'identifiant).
 
 **Classement.** Meilleur temps `VERIFIED` de chaque joueur actif sur le défi ; égalité : la
 partie envoyée la première, puis l'identifiant du joueur. `period=live` (défaut, et ce que
 lit un jeu 2.32) : les parties reçues pendant le défi (+ 10 min) ; `period=all` (« Depuis ») :
-aussi les parties hors délai, marquées `late: true`. `board=time` seulement (`progress` : 2.34).
+aussi les parties hors délai, marquées `late: true`. `board=time` (défaut) ou `board=progress`
+(« Plus loin », ci-dessous).
 `scope=country` : pays `country` (par défaut celui du lecteur connecté ; `400` sans pays),
 joueurs qui ne masquent pas leur localisation ; `scope=friends` : le lecteur et ses amis.
 `player` a la forme des classements (§8.4 : `country_code` masqué selon la confidentialité,
@@ -1344,11 +1351,41 @@ périodes. `streak` (2.32) = la série des jours, avec `last_date`. Une partie h
 compte jamais. `results` : par défi joué, les parties à l'heure d'abord — la meilleure partie
 à l'heure non rejetée (son temps et son statut ; `tier` : meilleur palier à l'heure, `late:
 false`), sinon la meilleure partie hors délai non rejetée (`late: true`), sinon la meilleure
-partie rejetée (`tier: null`, `status: "REJECTED"`) ; `best_progress` : `null` (2.34).
+partie rejetée (`tier: null`, `status: "REJECTED"`) ; un défi seulement essayé (« Plus loin »,
+aucune partie) : `best_time_ms` et `tier` à `null`, `status` et `late` de son meilleur essai ;
+`best_progress` : meilleure progression vérifiée, à l'heure ou hors délai (essais ; 100 pour
+une partie finie vérifiée), `null` sans.
 
-Les parties de défi figurent dans l'export des données (`challenge_runs`, avec `late`) et
-disparaissent avec le compte, leurs replays compris (tables `challenges` et `challenge_runs`,
-migrations 0049 et 0054).
+**« Plus loin » (2.34).** Sur un défi dont la version du niveau a un tracé
+(`level_versions.race`, `community_level_versions.race` : avec les fichiers actuels, `noyau_01`
+dans la campagne et les niveaux EXTRÊME de la communauté), un essai qui n'arrive pas au bout
+est noté par sa progression, comme la course à la vérification (§8.9 octies) : 40 points pour
+le trajet atteint le long du tracé, 60 pour la santé retirée aux boss (2 parts chacun) et les
+vagues d'embuscades (1 part chacune) ; une décimale, toujours sous 100 ; une partie finie
+vérifiée compte 100. Le jeu déclare l'essai (`POST …/attempts` : `{ attempt_id, time_ms,
+level_hash, rules_hash, game_version, claim: { finished: false, bosses: [‰ par boss du
+tracé], waves: [vagues par embuscade du tracé] } }`, aucun autre champ, mêmes contrôles et
+erreurs que les parties, `409 PROGRESS_UNAVAILABLE` sans tracé, hors délai comme elles ; un
+essai plus long que la limite du niveau est refusé d'emblée) puis envoie son replay format 4
+(`PUT /challenges/attempts/{attemptId}/replay`, où `attemptId` est son `attempt_id`, cherché
+parmi les essais du joueur connecté). Le **serveur calcule le score depuis le replay** avec
+l'analyse de la course (`src/race.ts` : version du niveau, tentative, durée, départ,
+trajectoire plausible, boss et vagues déclarés identiques au replay) plus la section défi
+exacte, la vie au plus `hearts` et la limite de temps du niveau ; sans points de passage
+(`checkpoints: false`) une seule vie, avec eux morts et retours permis (le score est le plus
+loin atteint). Réponse : `progress` (`null` si refusé, raisons dans `reasons`), `rank` dans
+`board=progress` de la période de l'essai, `new_best` (meilleur que tous mes essais et
+parties finies vérifiés de ce défi), `best_progress`. Un seul replay d'essai est gardé par
+joueur et par défi, celui du meilleur essai vérifié (aucune route ne le télécharge).
+`board=progress` : meilleure progression `VERIFIED` de chaque joueur (essais et parties
+finies), de la plus haute à la plus basse, à égalité le plus tôt envoyé d'abord ; `me` : ma
+meilleure progression vérifiée de cette période (`rank: null` hors du `scope`), sinon `null`.
+Les essais ne comptent ni pour les séries ni pour les paliers.
+
+Les parties de défi et les essais « Plus loin » figurent dans l'export des données
+(`challenge_runs`, avec `late` ; `challenge_attempts`) et disparaissent avec le compte, leurs
+replays compris (tables `challenges`, `challenge_runs` et `challenge_attempts`, migrations
+0049, 0054 et 0055).
 
 ### 8.9 bis Installateurs du jeu (notification « nouvelle version »)
 

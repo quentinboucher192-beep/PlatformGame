@@ -150,6 +150,15 @@ quotidienne (`17 3 * * *`) et chaque lecture des défis en cours tirent ensuite 
 d'aujourd'hui à J+7, de la semaine en cours à S+2 et du mois en cours à M+1. Aucun secret
 n'est nécessaire.
 
+**« Plus loin » (2.34)** : migration `0055_challenge_progress.sql` (nouvelle table
+`challenge_attempts`, rien d'autre ne change : elle peut être appliquée avant le Worker). Un
+défi n'a ce classement que si la version de son niveau a un tracé (`level_versions.race`,
+écrit par `levels-migration.mjs` quand le manifeste du jeu en donne un ;
+`community_level_versions.race` pour un niveau EXTRÊME de la communauté). Aujourd'hui seul
+`noyau_01` en a un dans la campagne : pour un défi « Plus loin » sur la campagne, choisissez-le
+avec `challenge-set.mjs`, ou un niveau EXTRÊME de la communauté. Vérifier qu'un défi l'a :
+`progress_available` dans `GET /api/v1/challenges/{id}`.
+
 **Catalogue des niveaux.** Le tirage automatique ne prend un niveau de la campagne que si sa
 révision active sur le serveur est celle de `src/challengeCatalog.json` (version 2 depuis
 2.33 : il donne aussi la place de chaque niveau dans sa planète, pour les semaines et les

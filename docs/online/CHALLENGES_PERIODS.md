@@ -80,13 +80,13 @@ cours ou la précédente, avec au moins une partie **non hors délai** et non re
   statut ; `tier` = meilleur palier à l'heure), `late: false`. Sinon, avec seulement des
   parties hors délai non rejetées : la meilleure d'entre elles, `late: true`. Sinon (tout est
   rejeté) : la meilleure partie rejetée, `tier: null`, `status: "REJECTED"`. `best_progress`
-  vaut toujours `null` en 2.33 (« Plus loin » : §5, 2.34). `results[]` garde `date` (= premier
-  jour) et contient aussi les défis de la semaine et du mois (un jeu 2.32 les range par
+  : voir §5 (serveur 2.33 : toujours `null`). `results[]` garde `date` (= premier jour) et
+  contient aussi les défis de la semaine et du mois (un jeu 2.32 les range par
   `challenge_id`, sans effet).
 - Classement : la réponse rappelle `period` et `board` ; chaque entrée et `me` ont `late`
   (toujours `false` avec `period=live`). Un joueur qui n'a que des parties hors délai n'est
-  pas dans `period=live` (son `me` y vaut `null`). `board` n'accepte que `time` en 2.33
-  (`400` sinon).
+  pas dans `period=live` (son `me` y vaut `null`). `board` : `time` ou (serveur 2.34)
+  `progress`, `400` sinon.
 - Partie : `run.late` aussi dans la réponse idempotente (`duplicate: true`) et dans celle du
   replay. Le contrôle de la partie (paliers, replay, première place en revue) est le même ;
   la position utilisée pour la revue est celle du classement `live` pour une partie à
@@ -158,3 +158,57 @@ tracé, pas de « Plus loin » pour ce défi (`progress_available: false` dans l
   l'envoi.
 - Limites de débit : comme les parties ; un joueur ne garde qu'un replay d'essai par défi
   (le meilleur).
+
+### Précisions du serveur (2.34, lecture la plus simple de ce qui précède)
+
+- Objet défi : `progress_available` (booléen) en plus, sur toutes les routes qui le donnent.
+  Il est vrai quand la version du niveau du défi a un tracé. **Avec les fichiers actuels,
+  seul `noyau_01` (EXTRÊME) en a un dans la campagne**, et les niveaux EXTRÊME de la
+  communauté en ont un : un défi tiré automatiquement a donc `progress_available: false` tant
+  que les autres niveaux de la campagne n'ont pas de tracé enregistré.
+- `POST /challenges/{challengeId}/attempts` (connecté · limite `challenge_submit`, corps 4 Kio
+  au plus, aucun autre champ : ni joueur, ni score) : `claim.finished` doit valoir `false`
+  (une partie finie s'envoie par `…/runs`) ; `claim.bosses` : un entier 0..1000 par boss du
+  tracé, `claim.waves` : un entier 0..99 par embuscade du tracé, dans l'ordre du tracé
+  (`400 VALIDATION_ERROR` sinon). Mêmes contrôles et mêmes erreurs que `…/runs`
+  (`CHALLENGE_NOT_STARTED`, `CHALLENGE_NOT_FOUND`, `426`, `LEVEL_MISMATCH`,
+  `RULES_MISMATCH`), plus `409 PROGRESS_UNAVAILABLE` (pas de tracé). Idempotent par
+  `attempt_id` (`ATTEMPT_CONFLICT` si les données diffèrent) ; hors délai comme les parties
+  (`late`). Réponse `201 { duplicate: false, attempt: { attempt_id, status: "PENDING",
+  progress: null, finished: false, late }, replay: { required: true, upload_path } }` (`200`
+  et `duplicate: true` pour un essai déjà reçu). Un essai plus long que la limite de temps du
+  niveau est refusé d'emblée (`status: "REJECTED"`, `required: false`).
+- `PUT /challenges/attempts/{attemptId}/replay` (connecté · limite `replay_upload`,
+  `application/octet-stream`, 1 Mio au plus) : `{attemptId}` est **l'`attempt_id` envoyé par
+  le jeu** (cherché parmi les essais du joueur connecté seulement ; `upload_path` le donne
+  tel quel). Erreurs : `404 ATTEMPT_NOT_FOUND`, `409 REPLAY_EXISTS` (déjà reçu), `409
+  ATTEMPT_REJECTED`, `422 REPLAY_MALFORMED` (rien n'est gardé), `409 PROGRESS_UNAVAILABLE`.
+  Réponse `201 { attempt: { attempt_id, status: "VERIFIED" | "REJECTED", progress, finished:
+  false, late, rank, reasons }, new_best, best_progress }` : `progress` (une décimale, < 100)
+  calculé par le serveur, `null` si l'essai est refusé ; `rank` dans `board=progress` de sa
+  période (`live` à l'heure, `all` hors délai) ; `new_best` : meilleur que tous mes essais et
+  parties finies vérifiés de ce défi ; `best_progress` : ma meilleure progression vérifiée sur
+  ce défi après cet essai. Contrôles : ceux de la course à la vérification (version du niveau,
+  `attempt_id`, durée, départ, trajectoire, boss et vagues **identiques** à ce que le replay
+  montre) + section défi exactement la forme canonique (format 4), vie jamais au-dessus de
+  `hearts`, durée dans la limite du niveau. `checkpoints: false` : une seule vie (l'essai
+  s'arrête à sa première mort ; un `Respawn` ou deux morts le font refuser) ; `checkpoints:
+  true` : morts et retours permis, la trajectoire peut alors sauter à une mort ou un retour.
+  « Vérifié » = replay contrôlé par le serveur, comme les parties.
+- Un seul replay d'essai par joueur et par défi : celui du meilleur essai vérifié ; un essai
+  moins bon n'est pas gardé, l'ancien meilleur perd le sien. Aucune route ne télécharge un
+  replay d'essai.
+- `board=progress` : `409 PROGRESS_UNAVAILABLE` sans tracé ; `period`, `scope`, `limit`,
+  `offset` comme `board=time`. Entrées `{ rank, player, progress, finished, time_ms, status:
+  "VERIFIED", late, is_me }` : un essai (`finished: false`, son `time_ms`) ou une partie
+  finie vérifiée (`progress: 100`, `finished: true`, son temps). À score égal, le plus tôt
+  envoyé d'abord (entre parties finies aussi : la première envoyée, pas la plus rapide).
+  `me` : ma meilleure progression vérifiée de cette période (`rank: null` hors de ce
+  `scope`), sinon `null` (un essai en attente de son replay n'a pas encore de score).
+- `best_progress` (`results[]`, `me` du calendrier) : ma meilleure progression vérifiée sur
+  ce défi, à l'heure ou hors délai (essais ; 100 pour une partie finie vérifiée, même sans
+  tracé), `null` sans. Un défi seulement essayé (aucune partie finie) figure dans les
+  résultats avec `best_time_ms: null`, `tier: null`, `status` et `late` de son meilleur essai.
+  Les essais ne comptent pas pour les séries.
+- Base : table `challenge_attempts` (migration `0055_challenge_progress.sql`) ; dans l'export
+  des données (`challenge_attempts`) ; supprimée avec le compte, replays compris.

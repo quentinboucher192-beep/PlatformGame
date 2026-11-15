@@ -329,6 +329,15 @@ export async function exportMe(ctx: Ctx): Promise<Response> {
                 .bind(id)
                 .all()
         ).results,
+        // 2.34: attempts of « Plus loin » (progress computed by the server from their replay).
+        challenge_attempts: (
+            await ctx.env.DB.prepare(
+                `SELECT id, challenge_id, attempt_id, time_ms, claim, late, status, progress, route, detail, reasons, game_version, created_at,
+                   verified_at FROM challenge_attempts WHERE player_id = ?1 ORDER BY created_at`,
+            )
+                .bind(id)
+                .all()
+        ).results,
         notes: "Le mot de passe n'est stocké que sous forme d'empreinte PBKDF2 et n'est pas exportable. Les adresses IP ne sont jamais stockées en clair.",
     });
 }
