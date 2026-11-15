@@ -1,6 +1,7 @@
 #include "engine/core/I18n.h"
 
 #include <algorithm>
+#include <functional>
 #include <cstdio>
 #include <cstdlib>
 #include <mutex>
@@ -521,6 +522,28 @@ bool Dictionary::translateInto(std::string_view s, std::string& out, int depth) 
 bool Dictionary::byWords(std::string_view s, std::string& out) const {
     // Last resort: runs of words between signs and numbers (« Platine < 3:20 »,
     // « Vies 3/5 »), each one replaced when it is a known text.
+    auto known = [&](std::string_view w, std::string& t) {
+        if (const std::string* v = exact(w)) {
+            t = *v;
+            return true;
+        }
+        return byCase(w, t, 0);
+    };
+    // A group of words made of known texts (« Poser la balise gratuit », « Noyau et Comète »):
+    // the longest known start first. Only short groups (no unknown sentence is cut up).
+    std::function<bool(std::string_view, std::string&, int)> segment = [&](std::string_view w, std::string& t, int words) {
+        if (known(w, t)) return true;
+        if (words <= 1) return false;
+        for (size_t sp = w.rfind(' '); sp != std::string_view::npos && sp > 0; sp = sp > 1 ? w.rfind(' ', sp - 1) : std::string_view::npos) {
+            std::string a, b;
+            int left = static_cast<int>(std::count(w.begin(), w.begin() + static_cast<std::ptrdiff_t>(sp), ' ')) + 1;
+            if (known(w.substr(0, sp), a) && segment(w.substr(sp + 1), b, words - left)) {
+                t = a + " " + b;
+                return true;
+            }
+        }
+        return false;
+    };
     std::string res;
     bool any = false, all = true;
     size_t i = 0;
@@ -545,6 +568,9 @@ bool Dictionary::byWords(std::string_view s, std::string& out) const {
             res += *v;
             any = true;
         } else if (byCase(run, t, 0)) {
+            res += t;
+            any = true;
+        } else if (int words = static_cast<int>(std::count(run.begin(), run.end(), ' ')) + 1; words <= 8 && segment(run, t, words)) {
             res += t;
             any = true;
         } else {

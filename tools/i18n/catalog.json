@@ -8060,6 +8060,12 @@
    ]
   },
   {
+   "fr": "En anglais : badge EXTREME, nombres (2.45 ; 12,345) et pluriels à l'anglaise.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "EN ATTENTE",
    "where": [
     "game/online/OnlineTypes.cpp"
@@ -12441,6 +12447,12 @@
    ]
   },
   {
+   "fr": "Langue du jeu : français ou anglais, au choix dans l'installateur Windows, qui s'affiche lui-même dans la langue choisie ; le jeu démarre dans cette langue.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Laos",
    "where": [
     "data/online/countries.json",
@@ -13485,6 +13497,12 @@
    "fr": "les conditions d'utilisation doivent être acceptées",
    "where": [
     "server/src/auth.ts"
+   ]
+  },
+  {
+   "fr": "Les contenus des joueurs (niveaux de la communauté, pseudonymes, commentaires, messages) restent tels que leurs auteurs les ont écrits ; les messages connus du serveur Cosmic Online sont traduits par le jeu.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -17495,6 +17513,12 @@
    ]
   },
   {
+   "fr": "Paramètres › Jeu › « Langue / Language » : changer de langue à tout moment, avec effet immédiat sur tous les écrans, les niveaux, les ennemis, les succès et les actualités.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Parcourir…",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
@@ -20223,6 +20247,12 @@
    "fr": "Recalculer",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "recaler",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {

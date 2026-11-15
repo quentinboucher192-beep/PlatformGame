@@ -654,7 +654,8 @@ def extract_server(words, out):
 # ----------------------------------------------------------------------------- main
 
 # Lowercase French words shown alone that no sentence of the game contains.
-EXTRA_WORDS = {"argent", "brouillon", "gratuit", "informations", "normale", "oui", "non", "profondeur", "retournement"}
+EXTRA_WORDS = {"argent", "brouillon", "gratuit", "informations", "normale", "oui", "non", "profondeur", "retournement", "recaler",
+               "vitesse", "lecture", "image", "point", "caméra"}
 
 
 def french_words():

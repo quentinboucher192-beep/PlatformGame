@@ -83,6 +83,9 @@ TEST_CASE("i18n: plural words, numbers, case, pieces around a known text") {
     // Last resort: known words between signs and numbers.
     CHECK(d.translate("Or < 3:20") == "Gold < 3:20");
     CHECK(d.translate("Paramètres : 3 / 4") == "Settings: 3 / 4");
+    d.add("Poser la balise", "Place the beacon");
+    d.add("gratuit", "free");
+    CHECK(d.translate("Poser la balise gratuit  ·  Jouer 0,2 s") == "Place the beacon free  ·  Play 0.2 s");
     std::string out;
     CHECK(!d.lookup("Jouer · Texte inconnu", out));
     CHECK(out == "Play · Texte inconnu");  // partial: the known piece is translated
