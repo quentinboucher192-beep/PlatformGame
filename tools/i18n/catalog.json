@@ -9383,6 +9383,12 @@
    ]
   },
   {
+   "fr": "Entraînement par segment : quitter l'entraînement (pause › « Retour à l'entraînement ») ramène à l'écran d'entraînement, sur le même segment, au lieu du choix des niveaux.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "ENTRAÎNEMENT · aucun record · {0} / Vue : recommencer",
    "where": [
     "ui/screens/GameScene.cpp"
@@ -23110,6 +23116,12 @@
    "fr": "Retour à l'Atelier",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Retour à l'entraînement",
+   "where": [
+    "ui/screens/PauseScene.cpp"
    ]
   },
   {

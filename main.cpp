@@ -538,6 +538,12 @@ int main(int argc, char** argv) {
         opt.openPause = has("--pause") || has("--pause-after");
         opt.pauseAfter = static_cast<float>(std::atof(value("--pause-after").c_str()));
         opt.forceBossAttack = value("--boss-attack");
+        // --training-from <checkpoint>: a section training from that checkpoint (automated checks;
+        // "start" = from the level's start to its first checkpoint).
+        if (std::string tf = value("--training-from"); !tf.empty()) {
+            opt.training = true;
+            if (tf != "start") opt.trainingCheckpoint = tf;
+        }
         app.pushScene(makeGameScene(game, level, opt));
     } else if (has("--editor")) {
         if (has("--editor-help")) app.pushScene(makeLevelEditorHelp(game, value("--editor")));

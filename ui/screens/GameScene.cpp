@@ -367,6 +367,15 @@ void GameScene::quitToMenu() {
         g_.app.popScene();
         return;
     }
+    if (opt_.training) {
+        // A section training: back to its setup, on the same segment (2.31).
+        GhostSetupRequest req;
+        req.fromOnline = opt_.fromOnline;
+        req.training = true;
+        req.trainingCheckpoint = opt_.trainingCheckpoint;
+        g_.app.switchScene(makeGhostSetup(g_, levelId_, std::move(req)), 0.4f);
+        return;
+    }
     if (opt_.fromOnline) {
         if (const Json* c = g_.online.communityInstall(levelId_)) g_.app.switchScene(makeOnlineLevels(g_, jstr(*c, "id")), 0.4f);
         else g_.app.switchScene(makeOnlineRanking(g_, levelId_), 0.4f);

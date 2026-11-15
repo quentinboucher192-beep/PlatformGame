@@ -170,9 +170,11 @@ void PauseScene::render(float /*alpha*/) {
     }
     UIContext::ButtonStyle danger;
     danger.danger = true;
-    std::string quitLabel = game_.editorTest() ? "Retour à l'éditeur" : (confirmQuit_ ? "Confirmer : quitter le niveau" : "Retour au menu");
+    std::string quitLabel = game_.editorTest()        ? "Retour à l'éditeur"
+                            : game_.sectionTraining() ? "Retour à l'entraînement"  // its setup, same segment
+                            : (confirmQuit_ ? "Confirmer : quitter le niveau" : "Retour au menu");
     if (ui.button("quit", {bx, y, bw, bh}, quitLabel, danger)) {
-        if (game_.editorTest() || confirmQuit_) {
+        if (game_.editorTest() || game_.sectionTraining() || confirmQuit_) {
             g_.app.popScene();
             game_.quitToMenu();
         } else {

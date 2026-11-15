@@ -50,6 +50,7 @@ public:
     void restart();
     void quitToMenu();
     bool editorTest() const { return opt_.editorTest; }
+    bool sectionTraining() const { return opt_.training; }  // « Répéter un segment »: quitting returns to its setup
     /// Answer of the power choice window (InputFrame::choice), used by the next step.
     void answerPowerOffer(uint8_t choice) { pendingChoice_ = choice; }
     const std::string& levelId() const { return levelId_; }

@@ -5,6 +5,9 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.31.1** :
+* Quitter un entraînement par segment ramène à l'écran d'entraînement, sur le même segment.
+
 **Nouveau dans la version 2.31.0** :
 * **Touches des pouvoirs par niveau** : chaque pouvoir garde sa touche, quel que soit l'ordre de
   ramassage. Le créateur les choisit dans l'éditeur ; le joueur les change dans le choix du niveau

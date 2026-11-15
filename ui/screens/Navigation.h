@@ -85,6 +85,10 @@ std::unique_ptr<Scene> makeSegments(GameServices& g, std::shared_ptr<const Segme
 struct GhostSetupRequest {
     std::string recordId;
     bool fromOnline = false;
+    /// Back from a section training (2.31): the training on, at the same segment (its start
+    /// checkpoint, "" = the level's start).
+    bool training = false;
+    std::string trainingCheckpoint;
 };
 
 // Factories of every screen (implemented next to each scene).

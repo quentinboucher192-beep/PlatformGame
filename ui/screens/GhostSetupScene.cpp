@@ -97,6 +97,7 @@ public:
         }
         levelKey_ = GhostStore::levelKey(levelId_, hash_);
         if (!req_.recordId.empty()) preselectOnline();
+        if (req_.training) training_ = true;  // back from a training: the same segment (set once the route is known)
         fetchOnline();
         g_.ui.setFocus("gsetup/launch");
     }
@@ -123,6 +124,13 @@ public:
                 if (g_.content.power(id) && std::find(levelPowers_.begin(), levelPowers_.end(), id) == levelPowers_.end()) levelPowers_.push_back(id);
             routeReady_ = true;
             refsDirty_ = true;
+            if (req_.training) {
+                // The segment the training was on: from its start checkpoint (0 = the level's start).
+                startIdx_ = 0;
+                for (size_t i = 0; i < checkpoints_.size(); ++i)
+                    if (checkpoints_[i].id == req_.trainingCheckpoint) startIdx_ = static_cast<int>(i) + 1;
+                req_.training = false;
+            }
         }
         if (routeReady_) updateTraining();
         if (importDialog_ >= 0)
