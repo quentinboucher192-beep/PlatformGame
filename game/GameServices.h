@@ -94,6 +94,12 @@ public:
     NewBadges newBadges;
     /// Asks the server once for a newer installer (no account needed, nothing personal sent).
     void checkForUpdate();
+    /// Presence for friends (2.32.3): « active » or « idle » (no input for 5 min), sent every
+    /// minute and on each change while logged in; « offline » when the game closes.
+    void updatePresence(float dt);
+    void presenceOffline();
+    float presenceTimer_ = 0.0f;
+    std::string presenceSent_;
     /// Cosmic Online (rankings, globe, account). Fully optional: offline play never needs it.
     OnlineService online;
     /// « Défis du jour » (2.32): the challenges (cached, playable offline until their end),

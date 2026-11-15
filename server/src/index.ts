@@ -159,6 +159,7 @@ route("GET", `${V}/globe/records/{countryCode}`, globe.globeCountryRecords, { vi
 
 // Friends
 route("GET", `${V}/friends`, (ctx) => friends.listFriends(ctx));
+route("POST", `${V}/presence`, (ctx) => friends.postPresence(ctx));
 route("POST", `${V}/friends/request`, (ctx) => friends.requestFriend(ctx));
 route("POST", `${V}/friends/accept`, (ctx) => friends.acceptFriend(ctx));
 route("DELETE", `${V}/friends/{playerId}`, (ctx) => friends.deleteFriend(ctx));

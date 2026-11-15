@@ -2,6 +2,8 @@
 
 #include <set>
 
+#include <SDL3/SDL_timer.h>
+
 #include "engine/core/I18n.h"
 
 #include "engine/core/FileUtil.h"
@@ -250,6 +252,26 @@ void GameServices::applySettings() {
 void GameServices::playMusic(const std::string& rel) {
     std::string p = app.resources().soundPath(rel);
     if (!p.empty()) app.audio().playMusic(p, 1200);
+}
+
+void GameServices::updatePresence(float dt) {
+    if (!online.loggedIn() || !online.usable()) {
+        presenceSent_.clear();
+        return;
+    }
+    uint64_t now = SDL_GetTicks(), last = app.input().lastActivityMs();
+    const std::string state = last > 0 && now - last < 5u * 60u * 1000u ? "active" : "idle";
+    presenceTimer_ -= dt;
+    if (state == presenceSent_ && presenceTimer_ > 0.0f) return;
+    presenceTimer_ = 60.0f;
+    presenceSent_ = state;
+    online.send("POST", "/api/v1/presence", {{"state", state}}, [](const ApiResult&) {});
+}
+
+void GameServices::presenceOffline() {
+    if (!online.loggedIn() || !online.usable() || presenceSent_.empty()) return;
+    presenceSent_.clear();
+    online.send("POST", "/api/v1/presence", {{"state", "offline"}}, [](const ApiResult&) {});
 }
 
 }  // namespace cosmic

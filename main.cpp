@@ -482,7 +482,9 @@ int main(int argc, char** argv) {
             clicks.push_back({std::atoi(s.substr(0, c).c_str()), std::strtof(s.substr(c + 1, k - c - 1).c_str(), nullptr),
                               std::strtof(s.substr(k + 1).c_str(), nullptr)});
     }
-    app.onUpdate = [&game, &toasts, &app, clicks](float dt) {
+    // Presence for friends: a real window, or a headless run against a server (--realtime).
+    const bool sendPresence = !has("--headless") || has("--realtime");
+    app.onUpdate = [&game, &toasts, &app, clicks, sendPresence](float dt) {
         int f = static_cast<int>(app.frameIndex());
         for (const auto& c : clicks) {
             if (f != c.frame && f != c.frame + 2) continue;
@@ -508,6 +510,7 @@ int main(int argc, char** argv) {
         game.online.update(dt);
         game.challenges.update(dt);
         game.updates.update();
+        if (sendPresence) game.updatePresence(dt);
         toasts.update(game, dt);
     };
     app.onOverlay = [&game, &toasts] { toasts.render(game); };
@@ -697,6 +700,7 @@ int main(int argc, char** argv) {
     app.run();
     game.progression.save();
     game.records.save();
+    game.presenceOffline();  // friends see « hors ligne » at once (else after 150 s)
     game.online.shutdown();
     app.shutdown();
     Log::info("Bye");

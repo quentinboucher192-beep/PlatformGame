@@ -75,6 +75,16 @@ void InputManager::beginFrame() {
 
 void InputManager::handleEvent(const SDL_Event& e) {
     switch (e.type) {
+        case SDL_EVENT_KEY_DOWN: case SDL_EVENT_MOUSE_BUTTON_DOWN: case SDL_EVENT_MOUSE_MOTION: case SDL_EVENT_MOUSE_WHEEL:
+        case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+            lastActivityMs_ = SDL_GetTicks();
+            break;
+        case SDL_EVENT_GAMEPAD_AXIS_MOTION:
+            if (e.gaxis.value > 12000 || e.gaxis.value < -12000) lastActivityMs_ = SDL_GetTicks();
+            break;
+        default: break;
+    }
+    switch (e.type) {
         case SDL_EVENT_KEY_DOWN:
             // Rebinding: the key goes to the command being set, and to nothing else.
             if (capturing_ && captureDevice_ == InputDevice::Keyboard) {

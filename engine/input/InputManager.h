@@ -47,6 +47,8 @@ public:
     /// True on press this frame (with auto-repeat for navigation actions).
     bool menuPressed(Action a) const { return framePressed_[idx(a)]; }
     bool anyMenuInput() const;
+    /// SDL ticks (ms) of the last key, button, click, wheel or stick move: presence (idle).
+    uint64_t lastActivityMs() const { return lastActivityMs_; }
 
     // ------------------------------------------------------------ devices
     InputDevice lastDevice() const { return lastDevice_; }
@@ -108,6 +110,7 @@ public:
     PadBinding capturedPad() const { return capturedPad_; }
 
 private:
+    uint64_t lastActivityMs_ = 0;
     static int idx(Action a) { return static_cast<int>(a); }
     float padValue(const PadBinding& b) const;
     /// The commands bound to `code` (a mouse button or a notch of the wheel) are pressed.

@@ -521,6 +521,7 @@ private:
             st.align = Align::Left;
             if (ui.button("c" + id, row, "", st)) openConversation(id);
             drawConversationAvatar(c, {row.x + ui.s(8), row.y + ui.s(9), ui.s(48), ui.s(48)});
+            avatarToProfile("cav" + id, otherMember(c), {row.x + ui.s(8), row.y + ui.s(9), ui.s(48), ui.s(48)});
             float tx = row.x + ui.s(66);
             int unread = sel ? 0 : jget<int>(c, "unread", 0);
             // Unread: an accent bar at the left of the row and the counter at its right edge,
@@ -567,6 +568,22 @@ private:
         ui.endScroll();
     }
 
+    /// The other player of a private conversation ("" for a group).
+    std::string otherMember(const Json& c) const {
+        if (jstr(c, "kind") != "direct") return {};
+        for (const auto& m : c.value("members", Json::array()))
+            if (jstr(m, "id") != g_.online.playerId()) return jstr(m, "id");
+        return {};
+    }
+    /// A click on a player's avatar (or its presence pill) opens their profile (2.32.3).
+    void avatarToProfile(const std::string& name, const std::string& playerId, const Rect& r) {
+        if (playerId.empty()) return;
+        UIContext& ui = g_.ui;
+        bool hovered = false;
+        if (ui.hotspot(name, r, &hovered)) g_.app.pushScene(makePlayerProfile(g_, playerId));
+        if (hovered) ui.r().drawRoundedRect(r.expanded(ui.s(2)), r.w * 0.5f, ui.theme().accent, std::max(1.0f, ui.s(2)));
+    }
+
     void drawConversationAvatar(const Json& c, const Rect& r) {
         UIContext& ui = g_.ui;
         if (jstr(c, "kind") == "direct") {
@@ -596,6 +613,11 @@ private:
                  Align::Center, FontFace::Bold, VAlign::Middle);
     }
 
+    static Color presenceColor(const std::string& p) {
+        return p == "online" ? Color{72, 220, 120, 255} : p == "away" ? Color{255, 176, 60, 255} : Color{120, 128, 150, 255};
+    }
+    static std::string presenceWord(const std::string& p) { return p == "online" ? "en ligne" : p == "away" ? "absent" : "hors ligne"; }
+
     void drawFriends(const Rect& area) {
         UIContext& ui = g_.ui;
         ui.textField("add", {area.x, area.y, area.w - ui.s(150), ui.s(40)}, addName_, "Pseudonyme", 20);
@@ -618,8 +640,16 @@ private:
             const char* kind;
             Json list;
         };
+        // Friends: online first, then away, then offline (each group by name, as received).
+        Json byPresence = Json::array();
+        for (const char* want : {"online", "away", "offline", ""})
+            for (const auto& f : friends_.value("friends", Json::array())) {
+                std::string p = jstr(f, "presence");
+                if (p != "online" && p != "away" && p != "offline") p.clear();
+                if (p == want) byPresence.push_back(f);
+            }
         std::vector<Section> sections = {{"Demandes reçues", "in", friends_.value("incoming", Json::array())},
-                                         {"Amis", "friend", friends_.value("friends", Json::array())},
+                                         {"Amis", "friend", byPresence},
                                          {"Demandes envoyées", "out", friends_.value("outgoing", Json::array())}};
         const float rowH = ui.s(52), extra = ui.s(46);
         float total = 0;
@@ -647,6 +677,15 @@ private:
                 Rect row{view.x, y, view.w - ui.s(12), rowH - ui.s(6) + (open ? extra : 0.0f)};
                 ui.r().fillRoundedRect(row, ui.s(6), Color{16, 24, 46, 200});
                 ui_.drawAvatar(jstr(pl, "avatar", "avatar_01"), pid, {row.x + ui.s(5), row.y + ui.s(4), ui.s(38), ui.s(38)});
+                avatarToProfile("fav" + pid, pid, {row.x + ui.s(2), row.y + ui.s(2), ui.s(46), ui.s(44)});
+                // Presence (2.32.3): a pill on the avatar's corner, its word after the name.
+                std::string presence = s.kind == std::string("friend") ? jstr(f, "presence") : std::string();
+                if (!presence.empty()) {
+                    Color pc = presenceColor(presence);
+                    Vec2 pd{row.x + ui.s(38), row.y + ui.s(37)};
+                    ui.r().fillCircle(pd, ui.s(7), Color{10, 14, 30, 255});
+                    ui.r().fillCircle(pd, ui.s(5), pc);
+                }
                 float nx = row.x + ui.s(52);
                 std::string cc = jstr(pl, "country_code");
                 if (!cc.empty()) {
@@ -678,8 +717,17 @@ private:
                     if (rowButton("cancel", "Annuler", ui.s(96))) friendCall("DELETE", "/api/v1/friends/" + pid, Json(), "Demande annulée.");
                 }
                 float room = bx - nx - ui.s(4);
-                ui.label(name, {nx, row.y + ui.s(23)}, ui.fitFont(name, FontFace::Bold, 17, room), ui.theme().text, Align::Left, FontFace::Bold,
-                         VAlign::Middle);
+                const std::string word = presence.empty() ? std::string() : presenceWord(presence);
+                float ww = word.empty() ? 0.0f : ui.text().measure(word, FontFace::Body, ui.s(14)).x + ui.s(14);
+                if (ww > room * 0.45f) ww = 0.0f;  // no room: the pill on the avatar says it
+                float nf = ui.fitFont(name, FontFace::Bold, 17, room - ww);
+                Vec2 ns;
+                {
+                    i18n::Verbatim v;  // the name as its player chose it
+                    ns = ui.label(name, {nx, row.y + ui.s(23)}, nf, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+                }
+                if (ww > 0.0f)
+                    ui.label(word, {nx + ns.x + ui.s(12), row.y + ui.s(23)}, 14, presenceColor(presence), Align::Left, FontFace::Body, VAlign::Middle);
                 if (open) {
                     UIContext::ButtonStyle d = b;
                     d.danger = true;
@@ -761,6 +809,7 @@ private:
         Rect bar{zoneC_.x, zoneC_.y, zoneC_.w, ui.s(70)};
         bool group = jstr(current_, "kind") == "group";
         drawConversationAvatar(current_, {bar.x + ui.s(14), bar.y + ui.s(11), ui.s(48), ui.s(48)});
+        avatarToProfile("hav", otherMember(current_), {bar.x + ui.s(14), bar.y + ui.s(11), ui.s(48), ui.s(48)});
         std::string title = jstr(current_, "name");
         {
             i18n::Verbatim playerWords;  // the group's name as its players wrote it

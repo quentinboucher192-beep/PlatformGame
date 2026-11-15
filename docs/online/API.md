@@ -140,6 +140,7 @@ de `wrangler.jsonc`, plafonnée à 1 000) multiplie toutes les limites.
 | `replay_upload` | 20 | 1 min | joueur | `PUT /records/{recordId}/replay`, `PUT /challenges/runs/{runId}/replay` (compteur partagé) |
 | `profile_write` | 20 | 5 min | joueur | `PATCH /players/me`, `PUT /players/me/avatar` (compteur partagé) |
 | `friend_request` | 30 | 1 h | joueur | `POST /friends/request` |
+| `presence` | 6 | 1 min | joueur | `POST /presence` |
 | `account_delete` | 5 | 1 h | joueur | `DELETE /players/me` |
 | `social_message` | 30 | 1 min | joueur | `POST /social/conversations/{id}/messages` |
 | `social_group` | 10 | 1 h | joueur | `POST /social/groups` |
@@ -784,6 +785,16 @@ Erreurs : 405 (autre méthode que `GET`/`HEAD`), 429.
 
 Les amitiés sont réciproques ; une demande est en attente jusqu'à acceptation. Les comptes
 suspendus sont omis.
+
+#### `POST /presence` (2.32.3)
+
+Corps `{ "state": "active" | "idle" | "offline" }` (joueur de la session). Le jeu l'envoie
+chaque minute et à chaque changement : `idle` après 5 minutes sans action, `offline` en se
+fermant. Seuls le dernier état et son heure sont gardés. Réponse `{ "state" }`.
+
+Dans `GET /friends`, chaque ami accepté porte `presence` : `online`, `away` (inactif) ou
+`offline` (rien reçu depuis 150 s, fermé, ou présence masquée par `presence_visible: false`
+dans `PATCH /players/me`).
 
 #### `GET /friends`
 Auth : requise. Triés par pseudonyme. Exemple : `curl -s $API/friends -H "authorization: Bearer $TOKEN"`

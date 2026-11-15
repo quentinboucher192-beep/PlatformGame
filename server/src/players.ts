@@ -200,6 +200,7 @@ export async function patchMe(ctx: Ctx): Promise<Response> {
     const body = await readJsonObject(ctx);
     const v = new Validator(body, [
         "username", "avatar", "country_code", "region_code", "location_visibility", "profile_visibility", "allow_friend_requests", "follows_visibility",
+        "presence_visible",
     ]);
     const username = v.str("username", { min: 3, max: 20, pattern: USERNAME_RE, trim: true, optional: true });
     const avatar = v.str("avatar", { max: 16, pattern: AVATAR_RE, optional: true });
@@ -212,6 +213,7 @@ export async function patchMe(ctx: Ctx): Promise<Response> {
     const profVis = v.oneOf("profile_visibility", PROFILE_VISIBILITY, { optional: true });
     const allowFriends = v.bool("allow_friend_requests", { optional: true });
     const followsVis = v.oneOf("follows_visibility", ["public", "private"], { optional: true });
+    const presenceVisible = v.bool("presence_visible", { optional: true });
     if (username && isReservedUsername(username)) v.fail("username", "pseudonyme réservé");
     v.done();
     const p = auth.player;
@@ -241,6 +243,8 @@ export async function patchMe(ctx: Ctx): Promise<Response> {
         throw e;
     }
     if (followsVis) await ctx.env.DB.prepare("UPDATE players SET follows_visibility = ?2 WHERE id = ?1").bind(p.id, followsVis).run();
+    if (presenceVisible !== undefined)
+        await ctx.env.DB.prepare("UPDATE players SET presence_visible = ?2 WHERE id = ?1").bind(p.id, presenceVisible ? 1 : 0).run();
     if (avatar && p.avatar === "custom" && p.avatar_custom_key) {
         await ctx.env.STORAGE.delete(p.avatar_custom_key);
         await ctx.env.DB.prepare("UPDATE players SET avatar_custom_key = NULL WHERE id = ?1").bind(p.id).run();

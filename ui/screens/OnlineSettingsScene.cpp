@@ -79,6 +79,7 @@ private:
         locVis_ = lv == "globe" ? 2 : lv == "country" ? 1 : 0;
         profilePublic_ = jstr(p, "profile_visibility", "public") == "public";
         allowFriends_ = jget<bool>(p, "allow_friend_requests", true);
+        showPresence_ = jget<bool>(p, "presence_visible", true);
         avatar_ = jstr(p, "avatar", "avatar_01");
         if (avatar_ == "custom") avatar_.clear();
     }
@@ -173,8 +174,10 @@ private:
             !country_.empty())
             locVis_ = vis;
         ui.toggle("friends", {x, y + ui.s(150), w, ui.s(42)}, "Autoriser les demandes d'amis", allowFriends_);
-        ui.label("Avatar", {x, y + ui.s(206)}, 15, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
-        ui_.avatarPicker("avatars", {x, y + ui.s(220), w, w / 4.0f}, avatar_);
+        // Presence (2.32.3): « en ligne / absent / hors ligne » shown to friends only.
+        ui.toggle("presence", {x, y + ui.s(200), w, ui.s(42)}, "Montrer ma présence à mes amis", showPresence_);
+        ui.label("Avatar", {x, y + ui.s(256)}, 15, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        ui_.avatarPicker("avatars", {x, y + ui.s(270), w, std::min(w / 4.0f, content_.bottom() - ui.s(60) - (y + ui.s(270)))}, avatar_);
         UIContext::ButtonStyle p;
         p.primary = true;
         p.enabled = !busy_;
@@ -215,7 +218,8 @@ private:
         static const char* vis[] = {"hidden", "country", "globe"};
         Json patch = {{"profile_visibility", profilePublic_ ? "public" : "private"},
                       {"location_visibility", country_.empty() ? "hidden" : vis[locVis_]},
-                      {"allow_friend_requests", allowFriends_}};
+                      {"allow_friend_requests", allowFriends_},
+                      {"presence_visible", showPresence_}};
         patch["country_code"] = country_.empty() ? Json(nullptr) : Json(country_);
         if (!avatar_.empty()) patch["avatar"] = avatar_;
         busy_ = true;
@@ -360,7 +364,7 @@ private:
     bool busy_ = false;
     std::string country_, countryFilter_, avatar_ = "avatar_01";
     int locVis_ = 0;
-    bool profilePublic_ = true, allowFriends_ = true;
+    bool profilePublic_ = true, allowFriends_ = true, showPresence_ = true;
     bool pickingCountry_ = false;
     std::string deletePassword_;
     bool confirmDelete_ = false;

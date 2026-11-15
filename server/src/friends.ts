@@ -25,7 +25,7 @@ export async function listFriends(ctx: Ctx): Promise<Response> {
     const incoming = [];
     const outgoing = [];
     for (const r of rows.results) {
-        const entry = { player: playerSummary(r), since: r.created_at };
+        const entry = { player: playerSummary(r), since: r.created_at, ...(r.status === "accepted" ? { presence: presenceOf(r) } : {}) };
         if (r.status === "accepted") {
             if (r.a === id) friends.push(entry);
         } else if (r.a === id) outgoing.push(entry);
@@ -117,4 +117,28 @@ export async function deleteFriend(ctx: Ctx): Promise<Response> {
         .run();
     if (!res.meta.changes) throw Errors.notFound("FRIEND_NOT_FOUND", "Aucun lien avec ce joueur.");
     return json(ctx, { removed: true });
+}
+
+/** A friend's presence: « online », « away » (idle), or « offline » (silent for 150 s, or hidden). */
+export const PRESENCE_TIMEOUT_MS = 150_000;
+export function presenceOf(p: Pick<PlayerRow, "presence_state" | "presence_at" | "presence_visible">, now = Date.now()): "online" | "away" | "offline" {
+    if (p.presence_visible === 0 || !p.presence_at || !p.presence_state) return "offline";
+    const at = Date.parse(p.presence_at);
+    if (!Number.isFinite(at) || now - at > PRESENCE_TIMEOUT_MS) return "offline";
+    return p.presence_state === "idle" ? "away" : "online";
+}
+
+/** POST /presence {state: active|idle|offline}: the game's heartbeat (every minute while it runs). */
+export async function postPresence(ctx: Ctx): Promise<Response> {
+    const auth = await requireAuth(ctx);
+    await rateLimit(ctx, RULES.presence, "player:" + auth.player.id);
+    const body = await readJsonObject(ctx);
+    const v = new Validator(body, ["state"]);
+    const state = v.oneOf("state", ["active", "idle", "offline"]);
+    v.done();
+    if (state === "offline")
+        await ctx.env.DB.prepare("UPDATE players SET presence_state = NULL, presence_at = NULL WHERE id = ?1").bind(auth.player.id).run();
+    else
+        await ctx.env.DB.prepare("UPDATE players SET presence_state = ?2, presence_at = ?3 WHERE id = ?1").bind(auth.player.id, state, nowIso()).run();
+    return json(ctx, { state });
 }

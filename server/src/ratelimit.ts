@@ -20,6 +20,7 @@ export const RULES = {
     replayUpload: { name: "replay_upload", limit: 20, windowSeconds: 60 },
     profileWrite: { name: "profile_write", limit: 20, windowSeconds: 300 },
     friendRequest: { name: "friend_request", limit: 30, windowSeconds: 3600 },
+    presence: { name: "presence", limit: 6, windowSeconds: 60 },
     reads: { name: "reads", limit: 300, windowSeconds: 60 },
     accountDelete: { name: "account_delete", limit: 5, windowSeconds: 3600 },
     socialMessage: { name: "social_message", limit: 30, windowSeconds: 60 },
