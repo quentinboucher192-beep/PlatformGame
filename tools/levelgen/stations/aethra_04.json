@@ -57,26 +57,5 @@
     }
   ],
   "slots": 4,
-  "stations": [
-    {
-      "mid": false,
-      "section": "Seuil",
-      "sign": [
-        1408.0,
-        608.0
-      ],
-      "tablets": [
-        {
-          "center": [
-            1864.0,
-            542.0
-          ],
-          "power": "grapple"
-        }
-      ],
-      "upcoming": [
-        "grapple"
-      ]
-    }
-  ]
+  "stations": []
 }

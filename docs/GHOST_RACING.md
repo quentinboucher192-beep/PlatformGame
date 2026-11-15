@@ -234,8 +234,8 @@ Code : `game/ghost/ReplayCompare.*` (décalage, recalage, tableau, écart),
 
 ## Succès
 
-134 succès en 12 catégories (`data/achievements/achievements.json`), chacun avec 1 à 5 étoiles
-de difficulté (344 étoiles). Ils se débloquent d'après les vraies sauvegardes
+146 succès en 12 catégories (`data/achievements/achievements.json`), chacun avec 1 à 5 étoiles
+de difficulté (383 étoiles). Ils se débloquent d'après les vraies sauvegardes
 (progression, records, statistiques des boss) — y compris rétroactivement — et des compteurs
 de partie gardés dans `saves/achievements.json` (ennemis vaincus, sauts, chutes, pouvoirs
 utilisés, segments en or…). Certains succès en suivent d'autres (les fils de la toile) : un

@@ -74,7 +74,7 @@
    ]
   },
   {
-   "texture": "backgrounds/aethra/fg_motes.png",
+   "texture": "backgrounds/aethra/fg_petals.png",
    "factor": [
     1.15,
     1.0
@@ -156,7 +156,7 @@
     288.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -242,7 +242,7 @@
     896.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -331,7 +331,7 @@
     288.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -696,7 +696,7 @@
     288.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -782,7 +782,7 @@
     224.0
    ],
    "props": {
-    "material": "snow_rock",
+    "material": "sanctum_stone",
     "decorTop": false
    }
   },
@@ -826,7 +826,7 @@
     512.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -1000,7 +1000,7 @@
     320.0
    ],
    "props": {
-    "material": "snow_rock",
+    "material": "sanctum_stone",
     "decorTop": false
    }
   },
@@ -1047,7 +1047,7 @@
     384.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -1094,7 +1094,7 @@
     384.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -1199,7 +1199,7 @@
     320.0
    ],
    "props": {
-    "material": "snow_rock",
+    "material": "sanctum_stone",
     "decorTop": false
    }
   },
@@ -1376,7 +1376,7 @@
     384.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -1446,7 +1446,7 @@
     384.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -1525,7 +1525,7 @@
     384.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -1682,7 +1682,7 @@
     272.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -1818,7 +1818,7 @@
     384.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -1847,7 +1847,7 @@
     384.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -2132,7 +2132,7 @@
     384.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -2435,7 +2435,7 @@
     384.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -2533,7 +2533,7 @@
     384.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -2879,7 +2879,7 @@
     384.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -3041,7 +3041,7 @@
     320.0
    ],
    "props": {
-    "material": "snow_rock",
+    "material": "sanctum_stone",
     "decorTop": false
    }
   },
@@ -3189,7 +3189,7 @@
     448.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -3274,7 +3274,7 @@
     448.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -3334,7 +3334,7 @@
     448.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -3515,7 +3515,7 @@
     384.0
    ],
    "props": {
-    "material": "snow_rock",
+    "material": "sanctum_stone",
     "decorTop": false
    }
   },
@@ -3664,7 +3664,7 @@
     448.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -3678,7 +3678,7 @@
     448.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -4033,7 +4033,7 @@
     448.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -4112,7 +4112,7 @@
     448.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -4160,7 +4160,7 @@
     320.0
    ],
    "props": {
-    "material": "snow_rock",
+    "material": "sanctum_stone",
     "decorTop": false
    }
   },
@@ -4189,7 +4189,7 @@
     384.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -4218,7 +4218,7 @@
     256.0
    ],
    "props": {
-    "material": "snow_rock",
+    "material": "sanctum_stone",
     "decorTop": false
    }
   },
@@ -4247,7 +4247,7 @@
     320.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -4276,7 +4276,7 @@
     192.0
    ],
    "props": {
-    "material": "snow_rock",
+    "material": "sanctum_stone",
     "decorTop": false
    }
   },
@@ -4305,7 +4305,7 @@
     256.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -4371,7 +4371,7 @@
     256.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -4676,7 +4676,7 @@
     256.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -4755,7 +4755,7 @@
     896.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "sanctum_stone"
    }
   }
  ],

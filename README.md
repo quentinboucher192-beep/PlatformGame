@@ -5,6 +5,24 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.20.0** :
+* **Aethra**, cinquième planète (ouverte avec le Noyau, après Sylvanox, Glacior et Pyralis) :
+  la planète des sanctuaires, des îles flottant sur un océan de nébuleuse. **4 niveaux
+  complets** (secrets, reliques, médailles), chacun avec la tablette d'un nouveau pouvoir au
+  départ et un **nouveau gardien** à la fin.
+* **4 gardiens** et **12 attaques inédites**, toutes annoncées avant de frapper :
+  *Mycélia, la Mère-Racine* (racine traqueuse, cage de ronces, inspiration), *Aurorax, le Miroir
+  boréal* (reflets, lac gelé, prisme qui rebondit), *Pyrogyre, l'Anneau solaire* (couronne de
+  feu, spirale, marée de lave) et *Nyxara, la Dévoreuse d'étoiles* (puits gravitationnel, pas de
+  l'ombre, onde d'éclipse ; l'arène s'assombrit en phase 3). Les 12 gardiens classiques ne
+  changent pas. **L'Arène des Échos** enchaîne maintenant les **16** gardiens.
+* **4 pouvoirs** (bouton *Spécial*) : **Lame boomerang** (touche à l'aller et au retour,
+  rapporte éclats et orbes), **Nova de givre** (gèle les ennemis proches, qui deviennent des
+  plateformes ; ralentit les boss), **Leurre holographique** (ennemis et boss le visent 3 s),
+  **Balise de rappel** (retour instantané à la balise dans les 5 s).
+* **12 nouveaux succès** (146 au total, 383 étoiles), nouveaux gardiens dans les
+  *Statistiques* et la *Galerie*, et 6 nouvelles musiques dans le juke-box.
+
 **Nouveau dans la version 2.19.0** :
 * **Collection** (menu principal → *Collection*) : des **récompenses visuelles** débloquées par
   les étoiles des succès — 7 **combinaisons** de Nova, 4 **traînées**, 5 **cadres d'avatar**,
@@ -42,7 +60,7 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
   entraînement** (un segment depuis un point de sauvegarde, répété contre les fantômes, sans
   aucun record). En fin de course : écart sur chaque fantôme et écran **Segments** (durées,
   temps cumulés, meilleurs segments, record, fantômes, historique).
-* **Succès** (menu principal → *Succès*) : **134 succès** en 12 catégories, avec 1 à 5
+* **Succès** (menu principal → *Succès*) : **134 succès** (146 depuis la 2.20) en 12 catégories, avec 1 à 5
   **étoiles** de difficulté, présentés sur une **toile d'araignée** (un secteur par catégorie,
   les étoiles du dehors vers le cœur, des fils entre les étapes, zoom et déplacement) ou en
   liste. Ils se débloquent d'après vos vraies sauvegardes ; vos étoiles s'affichent sur votre
@@ -282,7 +300,7 @@ local sans compte Cloudflare. Documentation complète : [docs/online/](docs/onli
 ## Menu principal
 
 *Continuer* (dernier niveau joué) · *Campagne* (planètes et niveaux) · *Online* ·
-*Notifications* · *Succès* (toile des 134 succès et de leurs étoiles) · *Collection*
+*Notifications* · *Succès* (toile des 146 succès et de leurs étoiles) · *Collection*
 (vestiaire, route des étoiles, musiques, galerie) · *Statistiques* (les boss : victoires,
 combats et phases sans dégât) · *Paramètres* · *Quitter*.
 

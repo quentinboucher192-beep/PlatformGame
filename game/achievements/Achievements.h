@@ -34,6 +34,7 @@ struct AchievementCondition {
     int64_t count = 1;
     int medal = 0;
     double seconds = 0.0;
+    bool noHit = false;  // "boss": beaten without being hit (2.19)
 };
 
 struct AchievementDef {

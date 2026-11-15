@@ -206,17 +206,32 @@
    ]
   },
   {
+   "id": "voyage_aethra",
+   "category": "voyage",
+   "name": "Pèlerin d'Aethra",
+   "description": "Terminer les 4 niveaux d'Aethra.",
+   "stars": 3,
+   "condition": {
+    "type": "planet",
+    "planet": "aethra"
+   },
+   "requires": [
+    "voyage_core_open"
+   ]
+  },
+  {
    "id": "voyage_all",
    "category": "voyage",
    "name": "Système conquis",
-   "description": "Terminer les 14 niveaux de la campagne.",
+   "description": "Terminer les 18 niveaux de la campagne.",
    "stars": 5,
    "condition": {
     "type": "all_levels"
    },
    "requires": [
     "voyage_echoes",
-    "voyage_star"
+    "voyage_star",
+    "voyage_aethra"
    ]
   },
   {
@@ -294,12 +309,12 @@
    "id": "chrono_gold_all",
    "category": "chrono",
    "name": "Tout en or",
-   "description": "Obtenir l'or sur les 14 niveaux.",
+   "description": "Obtenir l'or sur les 18 niveaux.",
    "stars": 4,
    "condition": {
     "type": "medal_count",
     "medal": 3,
-    "count": 14
+    "count": 18
    },
    "requires": [
     "chrono_gold_5"
@@ -339,12 +354,12 @@
    "id": "chrono_platinum_all",
    "category": "chrono",
    "name": "Chronomaître",
-   "description": "Obtenir le platine sur les 14 niveaux.",
+   "description": "Obtenir le platine sur les 18 niveaux.",
    "stars": 5,
    "condition": {
     "type": "medal_count",
     "medal": 4,
-    "count": 14
+    "count": 18
    },
    "requires": [
     "chrono_platinum_5",
@@ -529,12 +544,12 @@
    "id": "combat_clear_all",
    "category": "combat",
    "name": "Silence total",
-   "description": "Vaincre tous les ennemis des 14 niveaux de la campagne.",
+   "description": "Vaincre tous les ennemis des 18 niveaux de la campagne.",
    "stars": 5,
    "condition": {
     "type": "set",
     "key": "cleared_levels",
-    "count": 14,
+    "count": 18,
     "campaign": true
    },
    "requires": [
@@ -722,6 +737,62 @@
    ]
   },
   {
+   "id": "gardiens_mycelia",
+   "category": "gardiens",
+   "name": "Mycélia",
+   "description": "Vaincre Mycélia.",
+   "stars": 3,
+   "condition": {
+    "type": "boss",
+    "boss": "mycelia"
+   },
+   "requires": [
+    "gardiens_first"
+   ]
+  },
+  {
+   "id": "gardiens_aurorax",
+   "category": "gardiens",
+   "name": "Aurorax",
+   "description": "Vaincre Aurorax.",
+   "stars": 3,
+   "condition": {
+    "type": "boss",
+    "boss": "aurorax"
+   },
+   "requires": [
+    "gardiens_first"
+   ]
+  },
+  {
+   "id": "gardiens_pyrogyre",
+   "category": "gardiens",
+   "name": "Pyrogyre",
+   "description": "Vaincre Pyrogyre.",
+   "stars": 3,
+   "condition": {
+    "type": "boss",
+    "boss": "pyrogyre"
+   },
+   "requires": [
+    "gardiens_first"
+   ]
+  },
+  {
+   "id": "gardiens_nyxara",
+   "category": "gardiens",
+   "name": "Nyxara",
+   "description": "Vaincre Nyxara.",
+   "stars": 4,
+   "condition": {
+    "type": "boss",
+    "boss": "nyxara"
+   },
+   "requires": [
+    "gardiens_first"
+   ]
+  },
+  {
    "id": "gardiens_12",
    "category": "gardiens",
    "name": "Les douze gardiens",
@@ -748,6 +819,21 @@
    ]
   },
   {
+   "id": "gardiens_16",
+   "category": "gardiens",
+   "name": "Les seize gardiens",
+   "description": "Vaincre les 16 gardiens des planètes, Aethra comprise.",
+   "stars": 5,
+   "condition": {
+    "type": "boss_distinct",
+    "variant": "original",
+    "count": 16
+   },
+   "requires": [
+    "gardiens_12"
+   ]
+  },
+  {
    "id": "gardiens_echoes",
    "category": "gardiens",
    "name": "Silence des échos",
@@ -760,6 +846,21 @@
    },
    "requires": [
     "gardiens_12"
+   ]
+  },
+  {
+   "id": "gardiens_echoes_16",
+   "category": "gardiens",
+   "name": "Échos de l'Horizon",
+   "description": "Vaincre les 16 échos des gardiens.",
+   "stars": 5,
+   "condition": {
+    "type": "boss_distinct",
+    "variant": "echo",
+    "count": 16
+   },
+   "requires": [
+    "gardiens_echoes"
    ]
   },
   {
@@ -833,11 +934,11 @@
    "id": "maitrise_nodeath_all",
    "category": "maitrise",
    "name": "Immortel",
-   "description": "Terminer les 14 niveaux de la campagne sans mourir.",
+   "description": "Terminer les 18 niveaux de la campagne sans mourir.",
    "stars": 4,
    "condition": {
     "type": "levels_no_death",
-    "count": 14
+    "count": 18
    },
    "requires": [
     "maitrise_nodeath_5"
@@ -939,6 +1040,21 @@
    },
    "requires": [
     "maitrise_boss_nohit_6"
+   ]
+  },
+  {
+   "id": "maitrise_nyxara_nohit",
+   "category": "maitrise",
+   "name": "Danse du vide",
+   "description": "Vaincre Nyxara sans être touché.",
+   "stars": 5,
+   "condition": {
+    "type": "boss",
+    "boss": "nyxara",
+    "nohit": true
+   },
+   "requires": [
+    "gardiens_nyxara"
    ]
   },
   {
@@ -1164,15 +1280,75 @@
    ]
   },
   {
+   "id": "pouvoirs_boomerang",
+   "category": "pouvoirs",
+   "name": "Maîtrise : Lame boomerang",
+   "description": "Utiliser Lame boomerang 50 fois.",
+   "stars": 2,
+   "condition": {
+    "type": "power_uses",
+    "power": "boomerang",
+    "count": 50
+   },
+   "requires": [
+    "pouvoirs_first"
+   ]
+  },
+  {
+   "id": "pouvoirs_frost_nova",
+   "category": "pouvoirs",
+   "name": "Maîtrise : Nova de givre",
+   "description": "Utiliser Nova de givre 50 fois.",
+   "stars": 2,
+   "condition": {
+    "type": "power_uses",
+    "power": "frost_nova",
+    "count": 50
+   },
+   "requires": [
+    "pouvoirs_first"
+   ]
+  },
+  {
+   "id": "pouvoirs_decoy",
+   "category": "pouvoirs",
+   "name": "Maîtrise : Leurre holographique",
+   "description": "Utiliser Leurre holographique 50 fois.",
+   "stars": 2,
+   "condition": {
+    "type": "power_uses",
+    "power": "decoy",
+    "count": 50
+   },
+   "requires": [
+    "pouvoirs_first"
+   ]
+  },
+  {
+   "id": "pouvoirs_recall",
+   "category": "pouvoirs",
+   "name": "Maîtrise : Balise de rappel",
+   "description": "Utiliser Balise de rappel 50 fois.",
+   "stars": 2,
+   "condition": {
+    "type": "power_uses",
+    "power": "recall",
+    "count": 50
+   },
+   "requires": [
+    "pouvoirs_first"
+   ]
+  },
+  {
    "id": "pouvoirs_all",
    "category": "pouvoirs",
    "name": "Arsenal complet",
-   "description": "Obtenir chacun des 14 pouvoirs.",
+   "description": "Obtenir chacun des 18 pouvoirs.",
    "stars": 3,
    "condition": {
     "type": "set",
     "key": "powers_owned",
-    "count": 14
+    "count": 18
    },
    "requires": [
     "pouvoirs_first"
@@ -1321,11 +1497,11 @@
    "id": "tresors_full_all",
    "category": "tresors",
    "name": "Inventaire complet",
-   "description": "Tout ramasser dans les 14 niveaux de la campagne.",
+   "description": "Tout ramasser dans les 18 niveaux de la campagne.",
    "stars": 5,
    "condition": {
     "type": "levels_full_collect",
-    "count": 14
+    "count": 18
    },
    "requires": [
     "tresors_full_5"
@@ -1376,11 +1552,11 @@
    "id": "tresors_secrets_all",
    "category": "tresors",
    "name": "Cartographe des ombres",
-   "description": "Découvrir tous les secrets des 14 niveaux de la campagne.",
+   "description": "Découvrir tous les secrets des 18 niveaux de la campagne.",
    "stars": 5,
    "condition": {
     "type": "levels_all_secrets",
-    "count": 14
+    "count": 18
    },
    "requires": [
     "tresors_secrets_level"

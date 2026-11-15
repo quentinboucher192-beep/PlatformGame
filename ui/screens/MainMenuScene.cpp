@@ -64,7 +64,7 @@ public:
         bg_.render(g_, 0.15f);
         float appear = std::clamp(t_ / 0.7f, 0.0f, 1.0f);
         drawGameTitle(g_, {ui.screenW() * 0.66f, ui.screenH() * 0.36f}, 110, appear);
-        ui.label("Sylvanox · Pyralis · Glacior", {ui.screenW() * 0.66f, ui.screenH() * 0.36f + ui.s(120)}, 26,
+        ui.label("Sylvanox · Pyralis · Glacior · Aethra", {ui.screenW() * 0.66f, ui.screenH() * 0.36f + ui.s(120)}, 26,
                  ui.theme().text.withAlphaF(appear * 0.85f), Align::Center, FontFace::Body, VAlign::Middle);
 
         // Only a campaign level: WORKSHOP levels are reached from the WORKSHOP.

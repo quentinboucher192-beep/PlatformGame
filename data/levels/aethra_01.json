@@ -74,7 +74,7 @@
    ]
   },
   {
-   "texture": "backgrounds/aethra/fg_motes.png",
+   "texture": "backgrounds/aethra/fg_petals.png",
    "factor": [
     1.15,
     1.0
@@ -156,7 +156,7 @@
     288.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -204,7 +204,7 @@
     896.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -293,7 +293,7 @@
     288.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -402,7 +402,7 @@
     288.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -492,7 +492,7 @@
     320.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -582,7 +582,7 @@
     320.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -672,7 +672,7 @@
     288.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -800,7 +800,7 @@
     304.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -889,7 +889,7 @@
     288.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -956,7 +956,7 @@
     288.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -1340,7 +1340,7 @@
     288.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -1719,7 +1719,7 @@
     288.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -1779,7 +1779,7 @@
     288.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -2083,7 +2083,7 @@
     288.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -2097,7 +2097,7 @@
     288.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -2400,7 +2400,7 @@
     288.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -2498,7 +2498,7 @@
     288.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -2780,7 +2780,7 @@
     288.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -2794,7 +2794,7 @@
     288.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -2972,7 +2972,7 @@
     544.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -2986,7 +2986,7 @@
     544.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -3015,7 +3015,7 @@
     544.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -3398,7 +3398,7 @@
     544.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -3477,7 +3477,7 @@
     544.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -3520,7 +3520,7 @@
     544.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -3599,7 +3599,7 @@
     544.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -3678,7 +3678,7 @@
     544.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -3778,7 +3778,7 @@
     544.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -4171,7 +4171,7 @@
     544.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -4269,7 +4269,7 @@
     544.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -4331,7 +4331,7 @@
     480.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -4412,7 +4412,7 @@
     416.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -4455,7 +4455,7 @@
     352.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -4536,7 +4536,7 @@
     288.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -4602,7 +4602,7 @@
     288.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -4912,7 +4912,7 @@
     288.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -5029,7 +5029,7 @@
     896.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -5060,37 +5060,6 @@
    ],
    "props": {
     "text": "Station de pouvoirs. Pour la suite : le Grappin. Vous portez 4 pouvoirs au plus : celui que vous laissez reste ici.",
-    "auto": true
-   }
-  },
-  {
-   "id": "station_2_1",
-   "type": "power_unlock",
-   "layer": "gameplay",
-   "rect": [
-    4860.0,
-    274.0,
-    24.0,
-    24.0
-   ],
-   "props": {
-    "power": "dash",
-    "message": "",
-    "station": true
-   }
-  },
-  {
-   "id": "station_sign_2",
-   "type": "sign",
-   "layer": "gameplay",
-   "rect": [
-    4804.0,
-    328.0,
-    24.0,
-    24.0
-   ],
-   "props": {
-    "text": "Station de pouvoirs. Pour la suite : le Dash. Vous portez 4 pouvoirs au plus : celui que vous laissez reste ici.",
     "auto": true
    }
   }

@@ -74,7 +74,7 @@
    ]
   },
   {
-   "texture": "backgrounds/aethra/fg_motes.png",
+   "texture": "backgrounds/aethra/fg_petals.png",
    "factor": [
     1.15,
     1.0
@@ -156,7 +156,7 @@
     288.0
    ],
    "props": {
-    "material": "obsidian"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -204,7 +204,7 @@
     896.0
    ],
    "props": {
-    "material": "obsidian"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -293,7 +293,7 @@
     288.0
    ],
    "props": {
-    "material": "obsidian"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -658,7 +658,7 @@
     288.0
    ],
    "props": {
-    "material": "obsidian"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -782,7 +782,7 @@
     224.0
    ],
    "props": {
-    "material": "obsidian",
+    "material": "sanctum_stone",
     "decorTop": false
    }
   },
@@ -1039,7 +1039,7 @@
     288.0
    ],
    "props": {
-    "material": "obsidian"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -1142,7 +1142,7 @@
     288.0
    ],
    "props": {
-    "material": "obsidian"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -1221,7 +1221,7 @@
     288.0
    ],
    "props": {
-    "material": "obsidian"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -1326,7 +1326,7 @@
     224.0
    ],
    "props": {
-    "material": "obsidian",
+    "material": "sanctum_stone",
     "decorTop": false
    }
   },
@@ -1453,7 +1453,7 @@
     288.0
    ],
    "props": {
-    "material": "obsidian"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -1467,7 +1467,7 @@
     288.0
    ],
    "props": {
-    "material": "obsidian"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -1704,7 +1704,7 @@
     288.0
    ],
    "props": {
-    "material": "obsidian"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -2008,7 +2008,7 @@
     288.0
    ],
    "props": {
-    "material": "obsidian"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -2132,7 +2132,7 @@
     224.0
    ],
    "props": {
-    "material": "obsidian",
+    "material": "sanctum_stone",
     "decorTop": false
    }
   },
@@ -2288,7 +2288,7 @@
     288.0
    ],
    "props": {
-    "material": "obsidian"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -2358,7 +2358,7 @@
     288.0
    ],
    "props": {
-    "material": "obsidian"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -2437,7 +2437,7 @@
     288.0
    ],
    "props": {
-    "material": "obsidian"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -2764,7 +2764,7 @@
     288.0
    ],
    "props": {
-    "material": "obsidian"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -2926,7 +2926,7 @@
     224.0
    ],
    "props": {
-    "material": "obsidian",
+    "material": "sanctum_stone",
     "decorTop": false
    }
   },
@@ -3240,7 +3240,7 @@
     288.0
    ],
    "props": {
-    "material": "obsidian"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -3361,7 +3361,7 @@
     288.0
    ],
    "props": {
-    "material": "obsidian"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -3440,7 +3440,7 @@
     288.0
    ],
    "props": {
-    "material": "obsidian"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -3507,7 +3507,7 @@
     224.0
    ],
    "props": {
-    "material": "obsidian",
+    "material": "sanctum_stone",
     "decorTop": false
    }
   },
@@ -3593,7 +3593,7 @@
     288.0
    ],
    "props": {
-    "material": "obsidian"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -3607,7 +3607,7 @@
     288.0
    ],
    "props": {
-    "material": "obsidian"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -3873,7 +3873,7 @@
     288.0
    ],
    "props": {
-    "material": "obsidian"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -4266,7 +4266,7 @@
     288.0
    ],
    "props": {
-    "material": "obsidian"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -4364,7 +4364,7 @@
     288.0
    ],
    "props": {
-    "material": "obsidian"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -4650,7 +4650,7 @@
     288.0
    ],
    "props": {
-    "material": "obsidian"
+    "material": "sanctum_stone"
    }
   },
   {
@@ -4767,38 +4767,7 @@
     896.0
    ],
    "props": {
-    "material": "obsidian"
-   }
-  },
-  {
-   "id": "station_1_1",
-   "type": "power_unlock",
-   "layer": "gameplay",
-   "rect": [
-    1852.0,
-    530.0,
-    24.0,
-    24.0
-   ],
-   "props": {
-    "power": "grapple",
-    "message": "",
-    "station": true
-   }
-  },
-  {
-   "id": "station_sign_1",
-   "type": "sign",
-   "layer": "gameplay",
-   "rect": [
-    1396.0,
-    584.0,
-    24.0,
-    24.0
-   ],
-   "props": {
-    "text": "Station de pouvoirs. Pour la suite : le Grappin. Vous portez 4 pouvoirs au plus : celui que vous laissez reste ici.",
-    "auto": true
+    "material": "sanctum_stone"
    }
   }
  ],

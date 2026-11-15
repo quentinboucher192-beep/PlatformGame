@@ -51,7 +51,7 @@
     },
     "aethra_03": {
       "components": {
-        "boss": 3.14,
+        "boss": 2.72,
         "checkpoints": 0.74,
         "enemies": 3.3,
         "hazards": 2.55,
@@ -68,7 +68,7 @@
         "longest_checkpoint_gap": 104.49,
         "precise_jumps": 4
       },
-      "raw": 13.11,
+      "raw": 12.68,
       "route_tiles": 448.11,
       "score": 3.0,
       "version": 2
@@ -195,7 +195,7 @@
     },
     "noyau_01": {
       "components": {
-        "boss": 73.84,
+        "boss": 73.41,
         "checkpoints": 11.17,
         "enemies": 0.0,
         "hazards": 0.0,
@@ -212,7 +212,7 @@
         "longest_checkpoint_gap": 975.0,
         "precise_jumps": 0
       },
-      "raw": 86.01,
+      "raw": 85.59,
       "route_tiles": 975.0,
       "score": 5.0,
       "version": 2

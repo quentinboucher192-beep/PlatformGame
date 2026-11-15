@@ -38,7 +38,7 @@ def tile(name, fallback):
     return fallback
 
 
-STONE = "aethra_stone"  # the islands' rock (tools/assetgen/environment)
+STONE = "sanctum_stone"  # the islands' rock (tools/assetgen/environment: sanctum_stone, nebula_rock)
 
 LEVELS = {
     "aethra_01": {

@@ -1,4 +1,12 @@
 {
+  "2.20.0": [
+    "Nouvelle planète : Aethra, la planète des sanctuaires (après Sylvanox, Glacior et Pyralis) — 4 niveaux complets, chacun gardé par un nouveau gardien.",
+    "4 nouveaux gardiens : Mycélia la Mère-Racine, Aurorax le Miroir boréal, Pyrogyre l'Anneau solaire, Nyxara la Dévoreuse d'étoiles — 12 attaques inédites (racine traqueuse, cage de ronces, reflets, lac gelé, prisme, couronne de feu, marée de lave, puits gravitationnel, onde d'éclipse…). Les 12 gardiens classiques ne changent pas.",
+    "4 nouveaux pouvoirs (bouton Spécial) : Lame boomerang, Nova de givre (les ennemis gelés deviennent des plateformes), Leurre holographique, Balise de rappel ; aide animée, fiches, éditeur.",
+    "L'Arène des Échos enchaîne maintenant les 16 gardiens (nouvelle révision : son classement repart de zéro).",
+    "12 nouveaux succès (Aethra, les 4 gardiens, les 16 gardiens et échos, Nyxara sans être touché, les nouveaux pouvoirs) : 146 succès, 383 étoiles. Les succès « tous les niveaux » comptent désormais les 18 niveaux.",
+    "Statistiques des boss et galerie : les nouveaux gardiens et leurs échos y figurent. Musiques : 4 thèmes de combat et la musique d'Aethra."
+  ],
   "2.19.0": [
     "Collection (menu principal) : des récompenses visuelles débloquées par les étoiles des succès — combinaisons de Nova, traînées, cadres d'avatar, titres et effets de victoire. Rien ne s'achète, rien ne change dans la partie.",
     "Route des étoiles : les 17 paliers de récompenses, et celles qui demandent un succès précis ; à la fin d'un niveau, les nouvelles récompenses à équiper tout de suite ou plus tard.",

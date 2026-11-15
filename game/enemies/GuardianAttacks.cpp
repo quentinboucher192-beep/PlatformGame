@@ -617,8 +617,9 @@ void Enemy::renderGuardian(RenderContext& ctx, float prog) const {
             } else if (t < travel + kTrackerWarn + kTrackerBurst) {
                 float half = orDefault(a.radius, 16.0f), h = orDefault(a.height, 44.0f);
                 float k = std::min(1.0f, (t - travel - kTrackerWarn) / 0.08f);
-                if (const AnimationClip* c = fxClip(fx, "root_spike")) {
-                    drawClip(ctx, fx, c, markPos_ + Vec2{0, -h * k * 0.5f}, h * k);
+                auto rootFx = ctx.res.animation("animations/root_spike.json");  // art 2.19: its own sheet
+                if (const AnimationClip* c = fxClip(rootFx, "erupt")) {
+                    drawClip(ctx, rootFx, c, markPos_ + Vec2{0, -h * k * 0.5f}, h * k);
                 } else {
                     // A root spike: stacked slabs narrowing to a point, a violet glow at its tip.
                     const int n = 8;
@@ -747,7 +748,8 @@ void Enemy::renderGuardian(RenderContext& ctx, float prog) const {
         case AttackType::Blink:
             if (tele) {
                 Vec2 c = markPos_ + Vec2{0, -14.0f};
-                if (const AnimationClip* m = fxClip(fx, "shadow_mark")) drawClip(ctx, fx, m, c, 36.0f, Color{255, 255, 255, static_cast<uint8_t>(120 + 135 * prog)});
+                auto markFx = ctx.res.animation("animations/shadow_mark.json");  // art 2.19: its own sheet
+                if (const AnimationClip* m = fxClip(markFx, "idle")) drawClip(ctx, markFx, m, c, 36.0f, Color{255, 255, 255, static_cast<uint8_t>(120 + 135 * prog)});
                 else {
                     ctx.r.drawWorldCircle(c, 16.0f, Color{255, 118, 150, static_cast<uint8_t>(110 + 140 * prog)}, 2.0f * s);
                     ctx.r.drawWorldLine(c + Vec2{-8, -8}, c + Vec2{8, 8}, Color{255, 118, 150, 230}, 2.0f * s);

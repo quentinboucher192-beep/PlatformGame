@@ -119,20 +119,13 @@ TEST_CASE("achievements: every condition is known and names real content") {
         }
         if (!c.power.empty()) CHECK(f.content.power(c.power) != nullptr);
         if (c.type == "medal_count" || c.type == "levels_no_death" || c.type == "levels_full_collect" || c.type == "levels_all_secrets")
-            CHECK(c.count <= 14);  // the campaign has 14 levels
+            CHECK(c.count <= 18);  // the campaign has 18 levels (2.19: Aethra)
     }
     // Every power of the game has its achievement: used (active powers, counted from their
     // « powerUsed » event) or owned at the end of levels (passive ones never fire it).
     const std::set<std::string> passive = {"triple_jump", "air_dash", "magnet"};
-    // 2.19: the powers of the sanctuaries get their achievements with the catalog of 2.19
-    // (added by the integration, not with the powers): until then they are only listed.
-    const std::set<std::string> pending = {"boomerang", "frost_nova", "decoy", "recall"};
     for (const PowerDefinition* p : f.content.powers()) {
         const AchievementDef* a = f.catalog.find("pouvoirs_" + p->id);
-        if (!a && pending.count(p->id)) {
-            std::printf("  succès à ajouter : pouvoirs_%s\n", p->id.c_str());
-            continue;
-        }
         CHECK(a != nullptr);
         if (!a) continue;
         if (passive.count(p->id)) CHECK(a->condition.type == "stat" && a->condition.key == "carried_" + p->id);
@@ -178,7 +171,7 @@ TEST_CASE("achievements: campaign, medals and bosses come from the saves") {
     const AchievementDef* all = f.catalog.find("voyage_all");
     AchievementProgress p = AchievementBook::progress(*all, f.inputs());
     CHECK(p.value == 12);
-    CHECK(p.target == 14);
+    CHECK(p.target == 18);  // 2.19: the four levels of Aethra
 }
 
 TEST_CASE("achievements: counters, sets and the required threads") {

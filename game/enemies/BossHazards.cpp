@@ -244,13 +244,15 @@ void BossHazards::bendShot(Projectile& p, float dt) const {
 
 void BossHazards::render(RenderContext& ctx) const {
     if (empty()) return;
-    auto fx = ctx.res.animation("animations/projectiles.json");
-    auto clipOf = [&](const char* name) -> const AnimationClip* { return fx && fx->texture ? fx->clip(name) : nullptr; };
+    // The art of 2.19 gives each effect its own sheet (animations/<name>.json).
+    auto sheetOf = [&](const char* name) { return ctx.res.animation(std::string("animations/") + name + ".json"); };
+    auto clipIn = [](const AnimationSetPtr& set, const char* clip) -> const AnimationClip* { return set && set->texture ? set->clip(clip) : nullptr; };
     const float t = ctx.time;
     const float px = 1.0f / std::max(0.05f, ctx.r.view().scale);  // one screen pixel in world units
 
     // Frozen ground: a pale veil on every frozen surface.
-    const AnimationClip* veil = clipOf("frost_floor");
+    AnimationSetPtr fx = sheetOf("frost_floor");
+    const AnimationClip* veil = clipIn(fx, "idle");
     for (const Ice& ice : ice_) {
         float a = std::min({1.0f, ice.age / 0.35f, ice.time / 0.6f});
         if (a <= 0.0f) continue;
@@ -263,7 +265,7 @@ void BossHazards::render(RenderContext& ctx) const {
                     float wdt = std::min(fw, top.right() - x);
                     Rect s = src;
                     s.w = src.w * (wdt / fw);
-                    ctx.r.drawWorldTexture(*fx->texture, &s, {x, top.y - fh * 0.5f, wdt, fh}, Color{255, 255, 255, static_cast<uint8_t>(230 * a)});
+                    ctx.r.drawWorldTexture(*fx->texture, &s, {x, top.y - fx->pivot.y, wdt, fh}, Color{255, 255, 255, static_cast<uint8_t>(230 * a)});
                 }
             } else {
                 ctx.r.fillWorldRect({top.x, top.y - 1.0f, top.w, 6.0f}, Color{190, 240, 255, static_cast<uint8_t>(150 * a)});
@@ -278,7 +280,8 @@ void BossHazards::render(RenderContext& ctx) const {
     }
 
     // Lava tide.
-    const AnimationClip* lava = clipOf("lava_flood");
+    AnimationSetPtr lavaFx = sheetOf("lava_flood");
+    const AnimationClip* lava = clipIn(lavaFx, "surface");
     for (const Flood& f : floods_) {
         float level = f.level();
         if (level < 0.5f) continue;
@@ -288,13 +291,13 @@ void BossHazards::render(RenderContext& ctx) const {
         ctx.r.fillWorldRect({body.x, top + 6.0f, body.w, std::max(0.0f, body.h - 6.0f)}, Color{255, 110, 40, 60}, BlendMode::Additive);
         if (lava) {
             int frame = static_cast<int>(t * 10.0f) % std::max(1, lava->frameCount());
-            Rect src = fx->frameRect(*lava, frame);
-            float fw = static_cast<float>(fx->frameWidth), fh = static_cast<float>(fx->frameHeight);
+            Rect src = lavaFx->frameRect(*lava, frame);
+            float fw = static_cast<float>(lavaFx->frameWidth), fh = static_cast<float>(lavaFx->frameHeight);
             for (float x = f.left; x < f.right; x += fw) {
                 float wdt = std::min(fw, f.right - x);
                 Rect s = src;
                 s.w = src.w * (wdt / fw);
-                ctx.r.drawWorldTexture(*fx->texture, &s, {x, top - fh * 0.5f, wdt, fh});
+                ctx.r.drawWorldTexture(*lavaFx->texture, &s, {x, top - fh * 0.5f, wdt, fh});
             }
         } else {
             for (float x = f.left; x < f.right; x += 12.0f) {
@@ -306,7 +309,8 @@ void BossHazards::render(RenderContext& ctx) const {
     }
 
     // Walls of thorns, rising out of the ground.
-    const AnimationClip* thorn = clipOf("thorn_wall");
+    AnimationSetPtr thornFx = sheetOf("thorn_wall");
+    const AnimationClip* thorn = clipIn(thornFx, "idle");
     for (const Wall& wl : walls_) {
         float grow = std::min(1.0f, wl.age / 0.2f) * std::min(1.0f, wl.time / 0.25f);
         Rect r = wl.rect;
@@ -314,15 +318,15 @@ void BossHazards::render(RenderContext& ctx) const {
         Rect vis{r.x, r.bottom() - h, r.w, h};
         if (thorn) {
             int frame = static_cast<int>(t * 8.0f) % std::max(1, thorn->frameCount());
-            Rect src = fx->frameRect(*thorn, frame);
-            float fw = static_cast<float>(fx->frameWidth), fh = static_cast<float>(fx->frameHeight);
+            Rect src = thornFx->frameRect(*thorn, frame);
+            float fw = static_cast<float>(thornFx->frameWidth), fh = static_cast<float>(thornFx->frameHeight);
             float scale = r.w * 1.6f / fw;
             for (float y = vis.bottom(); y > vis.y + 0.5f; y -= fh * scale) {
                 float seg = std::min(fh * scale, y - vis.y);
                 Rect s = src;
                 s.y = src.y + src.h * (1.0f - seg / (fh * scale));
                 s.h = src.h * (seg / (fh * scale));
-                ctx.r.drawWorldTexture(*fx->texture, &s, {r.center().x - fw * scale * 0.5f, y - seg, fw * scale, seg});
+                ctx.r.drawWorldTexture(*thornFx->texture, &s, {r.center().x - fw * scale * 0.5f, y - seg, fw * scale, seg});
             }
         } else {
             ctx.r.fillWorldRect(vis, Color{46, 88, 40, 255});
@@ -338,16 +342,17 @@ void BossHazards::render(RenderContext& ctx) const {
     }
 
     // Pulls: a black hole (well) or air rushing in (vortex).
-    const AnimationClip* hole = clipOf("void_well");
+    AnimationSetPtr holeFx = sheetOf("void_well");
+    const AnimationClip* hole = clipIn(holeFx, "idle");
     for (const Pull& pl : pulls_) {
         float a = std::min({1.0f, pl.age / 0.3f, pl.time / 0.3f});
         if (pl.core > 0.0f) {
             float r = pl.core * (0.6f + 0.4f * a);
             if (hole) {
                 int frame = static_cast<int>(t * 10.0f) % std::max(1, hole->frameCount());
-                Rect src = fx->frameRect(*hole, frame);
+                Rect src = holeFx->frameRect(*hole, frame);
                 float s = r * 3.2f;
-                ctx.r.drawWorldTexture(*fx->texture, &src, Rect::fromCenter(pl.center, {s, s}), Color{255, 255, 255, static_cast<uint8_t>(255 * a)});
+                ctx.r.drawWorldTexture(*holeFx->texture, &src, Rect::fromCenter(pl.center, {s, s}), Color{255, 255, 255, static_cast<uint8_t>(255 * a)});
             } else {
                 ctx.r.drawWorldGlow(pl.center, r * 3.0f, Color{120, 60, 200, static_cast<uint8_t>(110 * a)});
                 ctx.r.fillWorldCircle(pl.center, r, Color{4, 0, 10, static_cast<uint8_t>(250 * a)});
