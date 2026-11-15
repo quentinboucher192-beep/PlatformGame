@@ -671,7 +671,7 @@ void Enemy::renderGuardian(RenderContext& ctx, float prog) const {
             if (path_.size() < 2) break;
             if (tele) {
                 for (size_t k = 1; k < path_.size(); ++k)
-                    dashedLine(ctx.r, path_[k - 1], path_[k], Color{220, 250, 255, static_cast<uint8_t>(90 + 150 * prog)}, 2.0f * s);
+                    dashedLine(ctx.r, path_[k - 1], path_[k], Color{220, 250, 255, static_cast<uint8_t>(110 + 140 * prog)}, 3.0f * s, 12.0f, 7.0f);
                 break;
             }
             Color bc = a.beamColor;
@@ -681,8 +681,8 @@ void Enemy::renderGuardian(RenderContext& ctx, float prog) const {
                 float len = dd.length();
                 float ang = dmath::atan2(dd.y, dd.x);
                 if (!BeamRenderer::draw(ctx.r, ctx.res, a.beamTexture, p0, ang, len, a.beamWidth, ctx.time)) {
-                    ctx.r.drawWorldLine(p0, p1, bc.withAlpha(220), 6.0f * s, BlendMode::Additive);
-                    ctx.r.drawWorldLine(p0, p1, {245, 255, 255, 255}, 2.0f * s, BlendMode::Additive);
+                    ctx.r.drawWorldLine(p0, p1, bc.withAlpha(220), 10.0f * s, BlendMode::Additive);
+                    ctx.r.drawWorldLine(p0, p1, {245, 255, 255, 255}, 3.5f * s, BlendMode::Additive);
                 }
                 ctx.r.drawWorldGlow(p1, 16.0f, bc.withAlpha(160));
                 ctx.lights.add((p0 + p1) * 0.5f, std::min(260.0f, len * 0.5f), bc);
@@ -769,14 +769,26 @@ void Enemy::renderGuardian(RenderContext& ctx, float prog) const {
             }
             const int steps = 72;
             float start = angle_ + gapHalf, span = 2.0f * kPi - 2.0f * gapHalf;
-            Color dark = tele ? Color{91, 42, 140, static_cast<uint8_t>(60 + 100 * prog)} : Color{60, 20, 100, 235};
-            Color edge = tele ? Color{180, 140, 255, static_cast<uint8_t>(60 + 120 * prog)} : Color{200, 160, 255, 255};
+            // A dark band in a violet glow, bright rims; the opening's lips glow green.
+            const float thick = kRingThickness * ctx.r.view().scale * (tele ? 0.4f : 1.0f);
+            Color glow = tele ? Color{150, 90, 230, static_cast<uint8_t>(40 + 80 * prog)} : Color{170, 100, 255, 170};
+            Color dark = tele ? Color{60, 24, 100, static_cast<uint8_t>(60 + 100 * prog)} : Color{34, 8, 58, 240};
+            Color edge = tele ? Color{200, 160, 255, static_cast<uint8_t>(60 + 120 * prog)} : Color{235, 205, 255, 255};
+            const float rim = kRingThickness * 0.5f;
             for (int k = 0; k < steps; ++k) {
                 float a0 = start + span * static_cast<float>(k) / steps, a1 = start + span * static_cast<float>(k + 1) / steps;
-                Vec2 p0 = c + Vec2::fromAngle(a0) * r, p1 = c + Vec2::fromAngle(a1) * r;
-                ctx.r.drawWorldLine(p0, p1, dark, kRingThickness * ctx.r.view().scale * (tele ? 0.4f : 1.0f));
-                ctx.r.drawWorldLine(p0, p1, edge, 1.5f * s, BlendMode::Additive);
+                Vec2 d0 = Vec2::fromAngle(a0), d1 = Vec2::fromAngle(a1);
+                Vec2 p0 = c + d0 * r, p1 = c + d1 * r;
+                ctx.r.drawWorldLine(p0, p1, glow, thick * 2.0f, BlendMode::Additive);
+                ctx.r.drawWorldLine(p0, p1, dark, thick);
+                if (!tele) {
+                    ctx.r.drawWorldLine(c + d0 * (r - rim), c + d1 * (r - rim), edge, 1.5f * s, BlendMode::Additive);
+                    ctx.r.drawWorldLine(c + d0 * (r + rim), c + d1 * (r + rim), edge, 1.5f * s, BlendMode::Additive);
+                }
             }
+            for (float lip : {angle_ - gapHalf, angle_ + gapHalf})
+                ctx.r.drawWorldGlow(c + Vec2::fromAngle(lip) * r, kRingThickness * (tele ? 0.8f : 1.4f),
+                                    Color{150, 255, 190, static_cast<uint8_t>(tele ? 60 + 120 * prog : 220)});
             if (!tele) ctx.lights.add(c, r, Color{150, 100, 230, 200});
             break;
         }
