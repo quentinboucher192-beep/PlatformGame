@@ -270,6 +270,16 @@ describe("daily challenges: generation", () => {
         expect((await api("GET", "/api/v1/challenges/daily?limit=31")).status).toBe(400);
     });
 
+    it("draws each day once when many readers arrive together", async () => {
+        const reads = await Promise.all(Array.from({ length: 6 }, () => api("GET", "/api/v1/challenges/daily/current")));
+        for (const r of reads) expect(r.status).toBe(200);
+        const ids = new Set(reads.map((r) => JSON.stringify(r.body.data.challenge)));
+        expect(ids.size).toBe(1);
+        const rows = await env.DB.prepare("SELECT date, COUNT(*) AS n FROM daily_challenges GROUP BY date").all<{ date: string; n: number }>();
+        expect(rows.results).toHaveLength(8);
+        for (const r of rows.results) expect(r.n).toBe(1);
+    });
+
     it("never changes a challenge that has begun; missing days are drawn again", async () => {
         await api("GET", "/api/v1/challenges/daily/current");
         const t = today();

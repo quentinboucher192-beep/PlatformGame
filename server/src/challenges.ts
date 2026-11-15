@@ -328,10 +328,11 @@ async function drawChallenge(ctx: Ctx, date: string): Promise<boolean> {
     const now = nowIso();
     const res = await db
         .prepare(
-            `INSERT OR IGNORE INTO daily_challenges (id, kind, date, source, level_source, level_id, level_version, level_hash, level_title,
+            `INSERT INTO daily_challenges (id, kind, date, source, level_source, level_id, level_version, level_hash, level_title,
                hearts, slots, powers, stations, checkpoints, rules_hash, silver_ms, gold_ms, gold_no_damage, featured_player_id,
                featured_notified_at, created_at, updated_at)
-             VALUES (?1, 'daily', ?2, 'auto', 'campaign', ?3, ?4, ?5, ?6, ?7, ?8, ?9, 1, ?10, ?11, ?12, ?13, 1, NULL, NULL, ?14, ?14)`,
+             VALUES (?1, 'daily', ?2, 'auto', 'campaign', ?3, ?4, ?5, ?6, ?7, ?8, ?9, 1, ?10, ?11, ?12, ?13, 1, NULL, NULL, ?14, ?14)
+             ON CONFLICT DO NOTHING`,
         )
         .bind(
             id,
@@ -379,7 +380,7 @@ async function notifyFeatured(ctx: Ctx, today: string): Promise<void> {
 /**
  * The challenges of today to today + 7 exist (missing ones are drawn) and the creator of a
  * community level of the day is told. Called by every read of the current challenge and by
- * the daily maintenance; an existing challenge is never touched (INSERT OR IGNORE).
+ * the daily maintenance; an existing challenge is never touched (ON CONFLICT DO NOTHING).
  */
 export async function ensureChallenges(ctx: Ctx): Promise<void> {
     const today = utcDate();
