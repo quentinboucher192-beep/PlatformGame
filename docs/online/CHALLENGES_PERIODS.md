@@ -130,6 +130,26 @@ cours ou la précédente, avec au moins une partie **non hors délai** et non re
   et à la souris.
 - Hors ligne : le calendrier montre ce qui est en cache et le dit.
 - Fin d'une partie hors délai : « Hors délai : classé dans "Depuis", ne compte pas pour la série ».
+- Classement : chaque ligne qui a un replay (`has_replay`, `run_id`) a son bouton « Voir »
+  (`GET /challenges/runs/{runId}/replay`, public pour une partie VERIFIED, comme en 2.32).
+
+### Précisions (lecture retenue par le jeu 2.33)
+
+- Un défi dont l'`id` n'est pas exactement `<kind>-<period>`, ou dont `starts_at` / `ends_at`
+  ne sont pas les bornes UTC de sa période (et `date` son premier jour), est refusé par le jeu.
+  Un défi sans `kind` ni `period` (serveur 2.32) est un défi du jour (`period` = `date`).
+- Serveur pas encore à jour : `GET /challenges/current` → 404 : le jeu lit
+  `GET /challenges/daily/current` (le jour seulement) ; `GET /challenges/calendar` → 404 : le
+  jeu prend les jours du mois dans `GET /challenges/daily?before=<1er du mois suivant>&limit=30`
+  (deux pages au plus) ; un défi plus ancien que le mois dit que le calendrier va plus loin.
+- Classement : `period=live` (défaut) n'est pas écrit dans la requête ; `period=all` l'est.
+  Avec `period=all`, chaque entrée (et `me`) porte `late`.
+- `me` du calendrier : une clé par identifiant de défi (`null` sans session) ; `best_time_ms`
+  et `tier` `null` quand le joueur n'a fini aucune partie de ce défi (des essais seulement).
+- `streaks.*.last_period` : la dernière période de la série (`"2026-11-16"`, `"2026-W47"`,
+  `"2026-11"`) ; le jeu lit encore `streak.last_date` d'un serveur 2.32 pour le jour.
+- Le jeu estime qu'une partie est hors délai quand elle finit plus de 10 min après `ends_at`
+  (horloge du serveur) ; il garde ensuite le `run.late` que le serveur renvoie.
 
 ## 5. « Plus loin » (2.34.0)
 
@@ -221,3 +241,27 @@ tracé, pas de « Plus loin » pour ce défi (`progress_available: false` dans l
   Les essais ne comptent pas pour les séries.
 - Base : table `challenge_attempts` (migration `0059_challenge_progress.sql`) ; dans l'export
   des données (`challenge_attempts`) ; supprimée avec le compte, replays compris.
+
+### Précisions (lecture retenue par le jeu 2.34)
+
+- `progress_available` absent (serveur 2.33) = `false` : ni bascule « Plus loin », ni essai envoyé.
+- L'essai n'est envoyé que si son estimation (`raceScore`, une décimale, arrondie vers le bas)
+  dépasse strictement mon meilleur : celui gardé sur ce PC ou le `best_progress` du serveur
+  (100 dès qu'une partie est finie, ici ou ailleurs). Un seul essai en attente par défi : un
+  meilleur remplace celui qui n'est pas encore parti.
+- Sans points de passage (`checkpoints: false`), l'essai est la première vie : son replay
+  s'arrête à la première mort (la partie continue ; finie, elle compte comme une partie). Avec
+  points de passage, l'essai se termine à l'échec du niveau, à « Recommencer » ou au retour au
+  menu.
+- Réponse lue de `POST …/attempts` : `{ duplicate, attempt: { attempt_id, status, progress,
+  late }, replay: { required, upload_path } }` ; sans `upload_path`, le jeu envoie le replay à
+  `PUT /challenges/attempts/{attempt_id}/replay` (son propre `attempt_id`). Réponse du `PUT` :
+  `{ attempt: { attempt_id, status, progress, finished, late, rank, reasons }, new_best,
+  best_progress }` ; le jeu garde `best_progress`.
+- Entrées de `board=progress` (et `me`) : `{ rank, player, progress, finished, time_ms, status,
+  late, is_me, attempt_id, run_id, has_replay }` ; « Voir » si `has_replay` :
+  `GET /challenges/runs/{run_id}/replay` pour une partie finie, sinon
+  `GET /challenges/attempts/{attempt_id}/replay` (identifiant du serveur, public pour un essai
+  VERIFIED).
+- `PROGRESS_UNAVAILABLE` (409), `ATTEMPT_REJECTED` (409), `ATTEMPT_NOT_FOUND` (404) : l'essai
+  est refusé, avec sa raison, et n'est pas renvoyé.

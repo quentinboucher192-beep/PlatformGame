@@ -132,9 +132,11 @@ std::unique_ptr<Scene> makeNewRewards(GameServices& g);
 std::unique_ptr<Scene> makeBossStats(GameServices& g, const std::string& bossId = {});
 /// Boss statistics → Entraînement: hearts, power slots, powers and phase, then the boss's arena.
 std::unique_ptr<Scene> makeBossTraining(GameServices& g, const std::string& bossId);
-/// Main menu → Défis (2.32): `tab` 0 « Aujourd'hui », 1 « Archives » (`select`: the
-/// challenge selected there).
+/// Main menu → Défis (2.33): `tab` 0 « Jour », 1 « Semaine », 2 « Mois », 3 « Calendrier »
+/// (`select`: the month "YYYY-MM" shown there, or the challenge whose card is open).
 std::unique_ptr<Scene> makeChallenges(GameServices& g, int tab = 0, const std::string& select = {});
+/// The Défis screen on a challenge: its kind's tab while it runs, else the calendar on its card.
+std::unique_ptr<Scene> makeChallengesOn(GameServices& g, const std::string& challengeId);
 /// Before a challenge run (pushed over the Défis screen): the level, what changes today,
 /// the tiers, the ghost, the connection. `practice`: hors classement.
 std::unique_ptr<Scene> makeChallengeStart(GameServices& g, const std::string& challengeId, bool practice);

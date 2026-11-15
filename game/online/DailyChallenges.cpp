@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <cstdio>
 #include <set>
 
@@ -38,10 +39,7 @@ bool safeId(const std::string& s, size_t max = 64) {
     return true;
 }
 
-bool isDate(const std::string& s) {
-    int y, m, d;
-    return s.size() == 10 && std::sscanf(s.c_str(), "%4d-%2d-%2d", &y, &m, &d) == 3 && m >= 1 && m <= 12 && d >= 1 && d <= 31;
-}
+bool isDate(const std::string& s) { return challenge_period::dayNumber(s).has_value(); }
 
 std::optional<int64_t> isoMs(const Json& j, const char* key) {
     if (!j.contains(key) || !j[key].is_string()) return std::nullopt;
@@ -50,17 +48,9 @@ std::optional<int64_t> isoMs(const Json& j, const char* key) {
     return std::chrono::duration_cast<std::chrono::milliseconds>(t->time_since_epoch()).count();
 }
 
-/// Days since 1970-01-01 of a "YYYY-MM-DD" date (days_from_civil).
-std::optional<int64_t> dayNumber(const std::string& date) {
-    int y, m, d;
-    if (!isDate(date) || std::sscanf(date.c_str(), "%4d-%2d-%2d", &y, &m, &d) != 3) return std::nullopt;
-    y -= m <= 2;
-    const int era = (y >= 0 ? y : y - 399) / 400;
-    const unsigned yoe = static_cast<unsigned>(y - era * 400);
-    const unsigned doy = (153 * (m + (m > 2 ? -3 : 9)) + 2) / 5 + static_cast<unsigned>(d) - 1;
-    const unsigned doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
-    return static_cast<int64_t>(era) * 146097 + static_cast<int64_t>(doe) - 719468;
-}
+bool isMonth(const std::string& s) { return challenge_period::valid(ChallengeKind::Monthly, s); }
+
+int64_t floorDiv(int64_t a, int64_t b) { return a / b - ((a % b != 0) && ((a < 0) != (b < 0)) ? 1 : 0); }
 
 SaveFile resultsFile() { return SaveFile("challenge_results", ChallengeService::kVersion); }
 SaveFile pendingFile() { return SaveFile("challenge_runs", ChallengeService::kVersion); }
@@ -116,6 +106,104 @@ ChallengeRunState challengeRunStateFromServer(const std::string& status) {
     return ChallengeRunState::Pending;
 }
 
+// ------------------------------------------------------------------ kinds, periods
+
+const char* challengeKindId(ChallengeKind k) {
+    switch (k) {
+        case ChallengeKind::Weekly: return "weekly";
+        case ChallengeKind::Monthly: return "monthly";
+        case ChallengeKind::Daily: break;
+    }
+    return "daily";
+}
+
+std::optional<ChallengeKind> challengeKindFromId(const std::string& id) {
+    if (id == "daily") return ChallengeKind::Daily;
+    if (id == "weekly") return ChallengeKind::Weekly;
+    if (id == "monthly") return ChallengeKind::Monthly;
+    return std::nullopt;
+}
+
+namespace challenge_period {
+
+std::optional<int64_t> dayNumber(const std::string& date) {
+    int y = 0, m = 0, d = 0;
+    if (date.size() != 10 || date[4] != '-' || date[7] != '-' || std::sscanf(date.c_str(), "%4d-%2d-%2d", &y, &m, &d) != 3) return std::nullopt;
+    if (m < 1 || m > 12 || d < 1 || d > 31) return std::nullopt;
+    const int yy = y - (m <= 2);  // days_from_civil
+    const int era = (yy >= 0 ? yy : yy - 399) / 400;
+    const unsigned yoe = static_cast<unsigned>(yy - era * 400);
+    const unsigned doy = (153 * static_cast<unsigned>(m + (m > 2 ? -3 : 9)) + 2) / 5 + static_cast<unsigned>(d) - 1;
+    const unsigned doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
+    int64_t n = static_cast<int64_t>(era) * 146097 + static_cast<int64_t>(doe) - 719468;
+    // 2026-02-30 is not a day: it must read back the same.
+    if (dateOfDay(n) != date) return std::nullopt;
+    return n;
+}
+
+std::string dateOfDay(int64_t day) { return ChallengeService::utcDate(day * 86400000LL); }
+
+int weekday(int64_t day) { return static_cast<int>(((day % 7) + 7 + 3) % 7); }  // 1970-01-01: a Thursday
+
+std::string ofDay(ChallengeKind kind, int64_t day) {
+    std::string date = dateOfDay(day);
+    if (kind == ChallengeKind::Daily) return date;
+    if (kind == ChallengeKind::Monthly) return date.substr(0, 7);
+    // ISO 8601: the week belongs to the year of its Thursday.
+    int64_t thursday = day - weekday(day) + 3;
+    std::string th = dateOfDay(thursday);
+    int64_t jan1 = *dayNumber(th.substr(0, 4) + "-01-01");
+    char b[16];
+    std::snprintf(b, sizeof b, "%s-W%02d", th.substr(0, 4).c_str(), static_cast<int>((thursday - jan1) / 7 + 1));
+    return b;
+}
+
+std::optional<int64_t> firstDay(ChallengeKind kind, const std::string& period) {
+    if (kind == ChallengeKind::Daily) return dayNumber(period);
+    if (kind == ChallengeKind::Monthly) {
+        if (period.size() != 7 || period[4] != '-') return std::nullopt;
+        return dayNumber(period + "-01");
+    }
+    int y = 0, w = 0;
+    if (period.size() != 8 || period[4] != '-' || period[5] != 'W' || std::sscanf(period.c_str(), "%4d-W%2d", &y, &w) != 2 || w < 1 || w > 53)
+        return std::nullopt;
+    auto jan4 = dayNumber(period.substr(0, 4) + "-01-04");  // always in week 1
+    if (!jan4) return std::nullopt;
+    int64_t monday = *jan4 - weekday(*jan4) + static_cast<int64_t>(w - 1) * 7;
+    if (ofDay(ChallengeKind::Weekly, monday) != period) return std::nullopt;  // week 53 of a 52-week year
+    return monday;
+}
+
+bool valid(ChallengeKind kind, const std::string& period) { return firstDay(kind, period).has_value(); }
+
+std::optional<int64_t> index(ChallengeKind kind, const std::string& period) {
+    auto first = firstDay(kind, period);
+    if (!first) return std::nullopt;
+    if (kind == ChallengeKind::Daily) return *first;
+    if (kind == ChallengeKind::Weekly) return floorDiv(*first - 4, 7);  // 1970-01-05: a Monday
+    int y = 0, m = 0;
+    std::sscanf(period.c_str(), "%4d-%2d", &y, &m);
+    return static_cast<int64_t>(y) * 12 + (m - 1);
+}
+
+std::string addMonths(const std::string& month, int delta) {
+    if (!valid(ChallengeKind::Monthly, month)) return {};
+    int y = 0, m = 0;
+    std::sscanf(month.c_str(), "%4d-%2d", &y, &m);
+    int64_t n = static_cast<int64_t>(y) * 12 + (m - 1) + delta;
+    if (n < 0 || n >= 10000 * 12) return {};
+    char b[16];
+    std::snprintf(b, sizeof b, "%04d-%02d", static_cast<int>(n / 12), static_cast<int>(n % 12) + 1);
+    return b;
+}
+
+int daysInMonth(const std::string& month) {
+    auto a = firstDay(ChallengeKind::Monthly, month), b = firstDay(ChallengeKind::Monthly, addMonths(month, 1));
+    return a && b ? static_cast<int>(*b - *a) : 0;
+}
+
+}  // namespace challenge_period
+
 // ------------------------------------------------------------------ the challenge
 
 ChallengeTier DailyChallenge::tierFor(int64_t timeMs, int damageTaken) const {
@@ -133,14 +221,28 @@ std::optional<DailyChallenge> DailyChallenge::fromJson(const Json& j, std::strin
     if (!j.is_object()) return fail("défi absent");
     DailyChallenge c;
     c.id = jstr(j, "id");
-    c.kind = jstr(j, "kind", "daily");
-    c.date = jstr(j, "date");
+    // 2.32 servers write only the day's challenges (no kind, no period).
+    auto kind = challengeKindFromId(jstr(j, "kind", "daily"));
+    if (!kind) return fail("sorte de défi inconnue");
+    c.kind = *kind;
     c.source = jstr(j, "source", "auto");
-    if (!safeId(c.id) || !safeId(c.kind, 16) || !isDate(c.date)) return fail("identifiant ou date du défi invalide");
+    if (!safeId(c.id)) return fail("identifiant du défi invalide");
     auto starts = isoMs(j, "starts_at"), ends = isoMs(j, "ends_at");
     if (!starts || !ends || *ends <= *starts) return fail("dates du défi invalides");
     c.startsAtMs = *starts;
     c.endsAtMs = *ends;
+    // The period: as written, else the day of a 2.32 challenge; its id is « kind-period ».
+    c.date = jstr(j, "date", ChallengeService::utcDate(c.startsAtMs));
+    c.period = jstr(j, "period", c.kind == ChallengeKind::Daily ? c.date : std::string());
+    if (!isDate(c.date) || !challenge_period::valid(c.kind, c.period) || c.id != std::string(c.kindId()) + "-" + c.period)
+        return fail("identifiant ou période du défi invalide");
+    // Its dates are those of its period (UTC): a day, a Monday to the next one, a month.
+    auto first = challenge_period::firstDay(c.kind, c.period);
+    int64_t next = c.kind == ChallengeKind::Daily    ? *first + 1
+                   : c.kind == ChallengeKind::Weekly ? *first + 7
+                                                     : *challenge_period::firstDay(c.kind, challenge_period::addMonths(c.period, 1));
+    if (c.startsAtMs != *first * 86400000LL || c.endsAtMs != next * 86400000LL || c.date != challenge_period::dateOfDay(*first))
+        return fail("dates du défi différentes de sa période");
     const Json& lv = j.contains("level") ? j["level"] : Json();
     if (!lv.is_object()) return fail("niveau du défi absent");
     c.level.source = jstr(lv, "source");
@@ -174,6 +276,8 @@ std::optional<DailyChallenge> DailyChallenge::fromJson(const Json& j, std::strin
     c.goldMs = jget<int64_t>(tiers, "gold_ms", 0);
     c.goldNoDamage = jget<bool>(tiers, "gold_no_damage", true);
     if (c.silverMs <= 0 || c.goldMs <= 0 || c.silverMs > 2 * 3600 * 1000LL || c.goldMs > 2 * 3600 * 1000LL) return fail("paliers du défi invalides");
+    // 2.34: the level has a route, its attempts are ranked by how far they go (absent: no).
+    c.progressAvailable = jget<bool>(j, "progress_available", false);
     c.raw = j;
     return c;
 }
@@ -181,13 +285,21 @@ std::optional<DailyChallenge> DailyChallenge::fromJson(const Json& j, std::strin
 // ------------------------------------------------------------------ submissions
 
 Json ChallengeSubmission::toJson() const {
-    return {{"attempt_id", attemptId},   {"challenge_id", challengeId}, {"owner", ownerId},
-            {"time_ms", timeMs},         {"deaths", deaths},            {"damage_taken", damageTaken},
-            {"level_hash", levelHash},   {"rules_hash", rulesHash},     {"game_version", gameVersion},
-            {"has_replay", hasReplay},   {"replay_uploaded", replayUploaded},
-            {"state", static_cast<int>(state)}, {"tier", static_cast<int>(serverTier)},
-            {"run_id", runId},           {"upload_path", uploadPath},   {"note", note},
-            {"created_at", createdAt}};
+    Json j = {{"attempt_id", attemptId},   {"challenge_id", challengeId}, {"owner", ownerId},
+              {"time_ms", timeMs},         {"deaths", deaths},            {"damage_taken", damageTaken},
+              {"level_hash", levelHash},   {"rules_hash", rulesHash},     {"game_version", gameVersion},
+              {"has_replay", hasReplay},   {"replay_uploaded", replayUploaded}, {"late", late},
+              {"state", static_cast<int>(state)}, {"tier", static_cast<int>(serverTier)},
+              {"run_id", runId},           {"upload_path", uploadPath},   {"note", note},
+              {"created_at", createdAt}};
+    if (attempt) {
+        j["attempt"] = true;
+        j["bosses"] = bosses;
+        j["waves"] = waves;
+        j["progress"] = progress;
+        j["server_progress"] = serverProgress;
+    }
+    return j;
 }
 
 std::optional<ChallengeSubmission> ChallengeSubmission::fromJson(const Json& j) {
@@ -205,19 +317,39 @@ std::optional<ChallengeSubmission> ChallengeSubmission::fromJson(const Json& j) 
     s.gameVersion = jstr(j, "game_version");
     s.hasReplay = jget<bool>(j, "has_replay", false);
     s.replayUploaded = jget<bool>(j, "replay_uploaded", false);
+    s.late = jget<bool>(j, "late", false);
     s.state = static_cast<ChallengeRunState>(std::clamp(jget<int>(j, "state", 1), 0, 5));
     s.serverTier = static_cast<ChallengeTier>(std::clamp(jget<int>(j, "tier", 0), 0, 3));
     s.runId = jstr(j, "run_id");
     s.uploadPath = jstr(j, "upload_path");
     s.note = jstr(j, "note");
     s.createdAt = jstr(j, "created_at");
+    s.attempt = jget<bool>(j, "attempt", false);
+    if (s.attempt) {
+        for (const Json& b : jfield(j, "bosses", Json::array()))
+            if (b.is_number_integer()) s.bosses.push_back(std::clamp(b.get<int>(), 0, 1000));
+        for (const Json& w : jfield(j, "waves", Json::array()))
+            if (w.is_number_integer()) s.waves.push_back(std::max(0, w.get<int>()));
+        s.progress = jget<float>(j, "progress", 0.0f);
+        s.serverProgress = jget<float>(j, "server_progress", -1.0f);
+    }
     return s;
 }
 
 Json ChallengeSubmission::body() const {
+    if (attempt)
+        // The claim only: the server computes the score from the replay, never takes the game's.
+        return {{"attempt_id", attemptId},
+                {"time_ms", timeMs},
+                {"level_hash", levelHash},
+                {"rules_hash", rulesHash},
+                {"game_version", gameVersion},
+                {"claim", {{"finished", false}, {"bosses", bosses}, {"waves", waves}}}};
     return {{"attempt_id", attemptId}, {"time_ms", timeMs},       {"deaths", deaths},           {"damage_taken", damageTaken},
             {"level_hash", levelHash}, {"rules_hash", rulesHash}, {"game_version", gameVersion}, {"has_replay", hasReplay}};
 }
+
+std::string ChallengeSubmission::postPath() const { return "/api/v1/challenges/" + challengeId + (attempt ? "/attempts" : "/runs"); }
 
 // ------------------------------------------------------------------ service
 
@@ -271,11 +403,17 @@ void ChallengeService::loadAll() {
         offsetMs_ = jget<int64_t>(*st, "offset_ms", 0);
         // A wild value (damaged file): the computer's clock instead.
         if (offsetMs_ > 400LL * 86400000 || offsetMs_ < -400LL * 86400000) offsetKnown_ = false, offsetMs_ = 0;
-        if (st->contains("streak") && (*st)["streak"].is_object()) {
-            const Json& s = (*st)["streak"];
-            serverStreak_ = Streak{std::max(0, jget<int>(s, "current", 0)), std::max(0, jget<int>(s, "best", 0)), jstr(s, "last_date"), true};
-            serverStreakFor_ = jstr(*st, "streak_player");
-        }
+        auto readStreak = [](const Json& s) {
+            return Streak{std::max(0, jget<int>(s, "current", 0)), std::max(0, jget<int>(s, "best", 0)),
+                          jstr(s, "last_period", jstr(s, "last_date")), true};
+        };
+        // 2.32 kept the day's streak alone under "streak".
+        if (st->contains("streak") && (*st)["streak"].is_object()) serverStreaks_[0] = readStreak((*st)["streak"]);
+        if (st->contains("streaks") && (*st)["streaks"].is_object())
+            for (int k = 0; k < kChallengeKinds; ++k)
+                if (const Json& s = jfield((*st)["streaks"], challengeKindId(static_cast<ChallengeKind>(k))); s.is_object()) serverStreaks_[k] = readStreak(s);
+        serverStreakFor_ = jstr(*st, "streak_player");
+        if (std::string fm = jstr(*st, "first_month"); isMonth(fm)) firstMonth_ = fm;
     }
     if (auto d = resultsFile().load(dir_ / "results.json"); d && d->is_object() && d->contains("results") && (*d)["results"].is_object()) {
         for (const auto& [id, v] : (*d)["results"].items()) {
@@ -283,14 +421,22 @@ void ChallengeService::loadAll() {
             ChallengeResult r;
             r.challengeId = id;
             r.date = jstr(v, "date");
+            // 2.32 results are days' challenges.
+            r.kind = challengeKindFromId(jstr(v, "kind", "daily")).value_or(ChallengeKind::Daily);
+            r.period = jstr(v, "period", r.kind == ChallengeKind::Daily ? r.date : std::string());
             r.bestMs = std::max<int64_t>(0, jget<int64_t>(v, "best_ms", 0));
             r.tier = static_cast<ChallengeTier>(std::clamp(jget<int>(v, "tier", 0), 0, 3));
             r.deaths = jget<int>(v, "deaths", 0);
             r.damageTaken = jget<int>(v, "damage_taken", 0);
             r.finishes = jget<int>(v, "finishes", 0);
+            // 2.32 runs were all played while their challenge ran.
+            r.liveFinishes = std::clamp(jget<int>(v, "live_finishes", r.finishes), 0, std::max(0, r.finishes));
+            r.bestLate = jget<bool>(v, "best_late", false);
             r.bestAttemptId = jstr(v, "best_attempt");
             r.hasReplay = jget<bool>(v, "has_replay", false);
-            if (isDate(r.date)) results_[id] = r;
+            r.bestProgress = std::clamp(jget<float>(v, "best_progress", 0.0f), 0.0f, 99.9f);
+            r.bestProgressAttemptId = jstr(v, "best_progress_attempt");
+            if (isDate(r.date) && challenge_period::valid(r.kind, r.period)) results_[id] = r;
         }
     }
     if (auto d = pendingFile().load(dir_ / "pending.json"); d && d->is_object() && d->contains("runs") && (*d)["runs"].is_array())
@@ -303,10 +449,15 @@ void ChallengeService::saveState() const {
     std::error_code ec;
     fs::create_directories(dir_, ec);
     Json st = {{"format", "cosmic.challenge_state"}, {"offset_known", offsetKnown_}, {"offset_ms", offsetMs_}};
-    if (serverStreak_) {
-        st["streak"] = {{"current", serverStreak_->current}, {"best", serverStreak_->best}, {"last_date", serverStreak_->lastDate}};
+    Json streaks = Json::object();
+    for (int k = 0; k < kChallengeKinds; ++k)
+        if (const auto& s = serverStreaks_[k])
+            streaks[challengeKindId(static_cast<ChallengeKind>(k))] = {{"current", s->current}, {"best", s->best}, {"last_period", s->lastPeriod}};
+    if (!streaks.empty()) {
+        st["streaks"] = streaks;
         st["streak_player"] = serverStreakFor_;
     }
+    if (!firstMonth_.empty()) st["first_month"] = firstMonth_;
     FileUtil::writeTextAtomic(dir_ / "state.json", st.dump(1));
 }
 
@@ -316,8 +467,20 @@ void ChallengeService::saveResults() const {
     fs::create_directories(dir_, ec);
     Json all = Json::object();
     for (const auto& [id, r] : results_)
-        all[id] = {{"date", r.date},      {"best_ms", r.bestMs},           {"tier", static_cast<int>(r.tier)}, {"deaths", r.deaths},
-                   {"damage_taken", r.damageTaken}, {"finishes", r.finishes}, {"best_attempt", r.bestAttemptId},   {"has_replay", r.hasReplay}};
+        all[id] = {{"date", r.date},
+                   {"kind", challengeKindId(r.kind)},
+                   {"period", r.period},
+                   {"best_ms", r.bestMs},
+                   {"tier", static_cast<int>(r.tier)},
+                   {"deaths", r.deaths},
+                   {"damage_taken", r.damageTaken},
+                   {"finishes", r.finishes},
+                   {"live_finishes", r.liveFinishes},
+                   {"best_late", r.bestLate},
+                   {"best_attempt", r.bestAttemptId},
+                   {"has_replay", r.hasReplay},
+                   {"best_progress", r.bestProgress},
+                   {"best_progress_attempt", r.bestProgressAttemptId}};
     if (!resultsFile().save(dir_ / "results.json", {{"results", all}})) Log::warn("Défis : impossible d'enregistrer les résultats");
 }
 
@@ -361,11 +524,11 @@ const DailyChallenge* ChallengeService::note(const Json& challenge) {
     return &challenges_[c->id];
 }
 
-const DailyChallenge* ChallengeService::current() const {
+const DailyChallenge* ChallengeService::current(ChallengeKind kind) const {
     const int64_t now = nowMs();
     const DailyChallenge* best = nullptr;
     for (const auto& [id, c] : challenges_)
-        if (c.startsAtMs <= now && now < c.endsAtMs && (!best || c.startsAtMs > best->startsAtMs)) best = &c;
+        if (c.kind == kind && c.startsAtMs <= now && now < c.endsAtMs && (!best || c.startsAtMs > best->startsAtMs)) best = &c;
     return best;
 }
 
@@ -394,55 +557,164 @@ void ChallengeService::refresh(bool force) {
     if (!force && clock_ - lastFetch_ < wait) return;
     lastFetch_ = clock_;
     fetch_ = Fetch::Loading;
-    online_->get("/api/v1/challenges/daily/current", OnlineService::guard(life_, [this](const ApiResult& r) {
+    fetchCurrent(false);
+}
+
+void ChallengeService::fetchCurrent(bool legacy) {
+    // 2.33: the three kinds at once; a server still at 2.32 answers 404 there, and its route
+    // of the day is read instead (the game keeps working, the day's challenge only).
+    const std::string path = legacy ? "/api/v1/challenges/daily/current" : "/api/v1/challenges/current";
+    online_->get(path, OnlineService::guard(life_, [this, legacy](const ApiResult& r) {
+        if (!legacy && !r.ok && r.status == 404) {
+            fetchCurrent(true);
+            return;
+        }
         if (!r.ok) {
             fetch_ = r.networkFailure() || r.status >= 500 ? Fetch::Offline : Fetch::Failed;
             fetchMessage_ = r.message;
             return;
         }
-        if (!r.fromCache) {
-            // The server's clock: the countdown never relies on this computer's alone.
-            if (auto t = parseIsoUtc(jstr(r.data, "server_time"))) {
-                int64_t server = std::chrono::duration_cast<std::chrono::milliseconds>(t->time_since_epoch()).count();
-                offsetMs_ = server - localNowMs();
-                offsetKnown_ = true;
-                saveState();
-            }
-        }
-        note(jfield(r.data, "challenge", Json()));
-        note(jfield(r.data, "previous", Json()));
-        fetch_ = r.fromCache ? Fetch::Offline : Fetch::Ok;
-        fetchMessage_ = r.fromCache ? r.message : std::string();
+        applyCurrent(r, legacy);
     }), false);
 }
 
-void ChallengeService::loadArchives(std::function<void(bool, const std::string&)> cb) {
-    if (!online_ || archivesBusy_) return;
+void ChallengeService::applyCurrent(const ApiResult& r, bool legacy) {
+    legacy_ = legacy;
+    if (!r.fromCache) {
+        // The server's clock: the countdown never relies on this computer's alone.
+        if (auto t = parseIsoUtc(jstr(r.data, "server_time"))) {
+            int64_t server = std::chrono::duration_cast<std::chrono::milliseconds>(t->time_since_epoch()).count();
+            offsetMs_ = server - localNowMs();
+            offsetKnown_ = true;
+            saveState();
+        }
+    }
+    if (legacy) {
+        note(jfield(r.data, "challenge", Json()));
+        note(jfield(r.data, "previous", Json()));
+    } else {
+        // { daily, weekly, monthly, previous: { daily, weekly, monthly } }, each one or null.
+        const Json& previous = jfield(r.data, "previous", Json::object());
+        for (int k = 0; k < kChallengeKinds; ++k) {
+            const char* key = challengeKindId(static_cast<ChallengeKind>(k));
+            if (const DailyChallenge* c = note(jfield(r.data, key, Json())); c && c->kind != static_cast<ChallengeKind>(k))
+                Log::warn("Défis : {} donné comme défi « {} »", c->id, key);
+            if (previous.is_object()) note(jfield(previous, key, Json()));
+        }
+    }
+    // The first end among the running challenges: the next reading is due then.
+    knownEndMs_ = 0;
+    for (int k = 0; k < kChallengeKinds; ++k)
+        if (const DailyChallenge* c = current(static_cast<ChallengeKind>(k)); c && (knownEndMs_ == 0 || c->endsAtMs < knownEndMs_)) knownEndMs_ = c->endsAtMs;
+    fetch_ = r.fromCache ? Fetch::Offline : Fetch::Ok;
+    fetchMessage_ = r.fromCache ? r.message : std::string();
+}
+
+// ------------------------------------------------------------------ calendar
+
+const ChallengeService::CalendarMonth& ChallengeService::calendar(const std::string& month) const {
+    static const CalendarMonth kNever;
+    auto it = calendar_.find(month);
+    return it == calendar_.end() ? kNever : it->second;
+}
+
+std::vector<const DailyChallenge*> ChallengeService::challengesOfMonth(const std::string& month) const {
+    std::vector<const DailyChallenge*> out;
+    auto first = challenge_period::firstDay(ChallengeKind::Monthly, month);
+    auto next = challenge_period::firstDay(ChallengeKind::Monthly, challenge_period::addMonths(month, 1));
+    if (!first || !next) return out;
+    const int64_t from = *first * 86400000LL, to = *next * 86400000LL, now = nowMs();
+    for (const auto& [id, c] : challenges_)
+        if (c.startsAtMs <= now && c.startsAtMs < to && c.endsAtMs > from) out.push_back(&c);
+    std::sort(out.begin(), out.end(), [](const DailyChallenge* a, const DailyChallenge* b) {
+        return a->startsAtMs != b->startsAtMs ? a->startsAtMs < b->startsAtMs : a->kind < b->kind;
+    });
+    return out;
+}
+
+void ChallengeService::loadCalendar(const std::string& month, bool force) {
+    if (!online_ || !isMonth(month)) return;
+    CalendarMonth& m = calendar_[month];
+    if (m.state == CalendarMonth::State::Loading || (!force && m.state == CalendarMonth::State::Ok)) return;
     if (!online_->usable()) {
-        if (cb) cb(false, "Cosmic Online indisponible");
+        m.state = CalendarMonth::State::Offline;
+        m.message = "Cosmic Online indisponible";
         return;
     }
-    // Older than the oldest one known (the day of the current one when none).
-    std::string before = utcDate(nowMs());
-    for (const DailyChallenge* c : past())
-        if (c->date < before) before = c->date;
-    archivesBusy_ = true;
-    online_->get("/api/v1/challenges/daily?before=" + before + "&limit=" + std::to_string(kArchivePage),
-                 OnlineService::guard(life_, [this, cb](const ApiResult& r) {
-                     archivesBusy_ = false;
-                     if (!r.ok) {
-                         if (cb) cb(false, r.message);
-                         return;
-                     }
-                     const Json& list = r.data.is_array() ? r.data : jfield(r.data, "challenges", Json::array());
-                     int n = 0;
-                     if (list.is_array())
-                         for (const Json& c : list) n += note(c) ? 1 : 0;
-                     const Json& next = r.data.is_object() ? jfield(r.data, "next_before", Json()) : Json();
-                     archivesDone_ = n == 0 || (r.data.is_object() && r.data.contains("next_before") && next.is_null());
-                     if (cb) cb(true, {});
-                 }),
-                 false);
+    m.state = CalendarMonth::State::Loading;
+    if (legacy_) {
+        loadCalendarLegacy(month, challenge_period::addMonths(month, 1) + "-01", 0);
+        return;
+    }
+    online_->get("/api/v1/challenges/calendar?month=" + month, OnlineService::guard(life_, [this, month](const ApiResult& r) {
+        CalendarMonth& m = calendar_[month];
+        if (!r.ok && r.status == 404 && !r.networkFailure() && r.code != "CHALLENGE_NOT_FOUND") {
+            // A 2.32 server: the month's days from its list of the day's challenges.
+            legacy_ = true;
+            loadCalendarLegacy(month, challenge_period::addMonths(month, 1) + "-01", 0);
+            return;
+        }
+        if (!r.ok) {
+            m.state = r.networkFailure() || r.status >= 500 ? CalendarMonth::State::Offline : CalendarMonth::State::Failed;
+            m.message = r.message;
+            return;
+        }
+        const Json& list = jfield(r.data, "challenges", Json::array());
+        if (list.is_array())
+            for (const Json& c : list) note(c);
+        std::string fm = jstr(r.data, "first_month");
+        if (isMonth(fm) && fm != firstMonth_ && !r.fromCache) {
+            firstMonth_ = fm;
+            saveState();
+        } else if (isMonth(fm) && firstMonth_.empty()) {
+            firstMonth_ = fm;
+        }
+        // My result of each challenge (logged in): as /challenges/me reads it.
+        const Json& me = jfield(r.data, "me", Json());
+        if (me.is_object() && resultsMine())
+            for (const auto& [id, x] : me.items())
+                if (safeId(id) && x.is_object()) noteServerResult(id, x);
+        m.state = r.fromCache ? CalendarMonth::State::Cached : CalendarMonth::State::Ok;
+        m.message = r.fromCache ? r.message : std::string();
+    }), true);
+}
+
+void ChallengeService::loadCalendarLegacy(const std::string& month, const std::string& before, int page) {
+    // GET /challenges/daily?before=…&limit=30 (2.32), newest first: up to two pages cover a
+    // month; a challenge older than the month tells that the calendar goes further back.
+    online_->get("/api/v1/challenges/daily?before=" + before + "&limit=30", OnlineService::guard(life_, [this, month, page](const ApiResult& r) {
+        CalendarMonth& m = calendar_[month];
+        if (!r.ok) {
+            m.state = r.networkFailure() || r.status >= 500 ? CalendarMonth::State::Offline : CalendarMonth::State::Failed;
+            m.message = r.message;
+            return;
+        }
+        const Json& list = r.data.is_array() ? r.data : jfield(r.data, "challenges", Json::array());
+        const std::string start = month + "-01";
+        std::string oldest;
+        int n = 0;
+        if (list.is_array())
+            for (const Json& j : list)
+                if (const DailyChallenge* c = note(j)) {
+                    ++n;
+                    if (oldest.empty() || c->date < oldest) oldest = c->date;
+                }
+        bool earlier = !oldest.empty() && oldest < start;
+        if (!earlier && n >= 30 && page == 0) {
+            loadCalendarLegacy(month, oldest, 1);  // the first days of the month
+            return;
+        }
+        // Nothing before this month: it is the first one of the calendar.
+        if (!earlier && n < 30 && (firstMonth_.empty() || firstMonth_ < month)) {
+            std::string fm = oldest.empty() ? month : oldest.substr(0, 7);
+            if (fm != firstMonth_) {
+                firstMonth_ = fm;
+                if (!r.fromCache) saveState();
+            }
+        }
+        m.state = r.fromCache ? CalendarMonth::State::Cached : CalendarMonth::State::Ok;
+        m.message = r.fromCache ? r.message : std::string();
+    }), true);
 }
 
 // ------------------------------------------------------------------ results
@@ -462,52 +734,76 @@ std::optional<ReplayData> ChallengeService::bestReplay(const std::string& challe
     return ReplayData::decode(*bytes);
 }
 
-ChallengeService::Streak ChallengeService::localStreak() const {
-    std::set<int64_t> days;
+ChallengeService::Streak ChallengeService::localStreak(ChallengeKind kind) const {
+    // The periods of that kind with a run finished while its challenge ran (« hors délai »
+    // runs never count).
+    std::map<int64_t, std::string> periods;
     for (const auto& [id, r] : results_)
-        if (r.finishes > 0)
-            if (auto d = dayNumber(r.date)) days.insert(*d);
+        if (r.kind == kind && r.liveFinishes > 0)
+            if (auto i = challenge_period::index(kind, r.period)) periods[*i] = r.period;
     Streak s;
-    if (days.empty()) return s;
-    // The longest run of days in a row.
+    if (periods.empty()) return s;
+    // The longest run of periods in a row.
     int run = 0;
     int64_t prev = 0;
-    for (int64_t d : days) {
-        run = run > 0 && d == prev + 1 ? run + 1 : 1;
-        prev = d;
+    for (const auto& [i, p] : periods) {
+        run = run > 0 && i == prev + 1 ? run + 1 : 1;
+        prev = i;
         s.best = std::max(s.best, run);
     }
-    auto today = dayNumber(utcDate(nowMs()));
-    if (!today) return s;
-    int64_t from = days.count(*today) ? *today : days.count(*today - 1) ? *today - 1 : -1;
-    if (from < 0) return s;
-    for (int64_t d = from; days.count(d); --d) ++s.current;
-    s.lastDate = utcDate(from * 86400000LL);
+    auto now = challenge_period::index(kind, challenge_period::ofDay(kind, nowMs() / 86400000LL - (nowMs() < 0 ? 1 : 0)));
+    if (!now) return s;
+    int64_t from = periods.count(*now) ? *now : periods.count(*now - 1) ? *now - 1 : INT64_MIN;
+    if (from == INT64_MIN) return s;
+    for (int64_t i = from; periods.count(i); --i) ++s.current;
+    s.lastPeriod = periods[from];
     return s;
 }
 
-ChallengeService::Streak ChallengeService::streak() const {
-    if (serverStreak_ && online_ && online_->loggedIn() && serverStreakFor_ == online_->playerId()) {
+ChallengeService::Streak ChallengeService::streak(ChallengeKind kind) const {
+    const auto& server = serverStreaks_[static_cast<int>(kind)];
+    if (server && online_ && online_->loggedIn() && serverStreakFor_ == online_->playerId()) {
         // The server's (read at the last /challenges/me), unless it no longer runs: its last
-        // day is before yesterday.
-        Streak s = *serverStreak_;
-        auto last = dayNumber(s.lastDate), today = dayNumber(utcDate(nowMs()));
-        if (last && today && *last < *today - 1) s.current = 0;
-        // Today's challenge finished here since that reading (the server counts it once it
-        // has the run): the streak goes on by today.
-        const std::string todayDate = utcDate(nowMs());
-        bool playedToday = false;
-        for (const auto& [id, r] : results_) playedToday = playedToday || (r.finishes > 0 && r.date == todayDate);
-        if (last && today && *last == *today - 1 && playedToday) {
+        // period is before the previous one.
+        Streak s = *server;
+        const std::string nowPeriod = challenge_period::ofDay(kind, nowMs() / 86400000LL);
+        auto last = challenge_period::index(kind, s.lastPeriod), now = challenge_period::index(kind, nowPeriod);
+        if (last && now && *last < *now - 1) s.current = 0;
+        // The current challenge finished here since that reading (the server counts it once it
+        // has the run): the streak goes on by this period.
+        bool playedNow = false;
+        for (const auto& [id, r] : results_) playedNow = playedNow || (r.kind == kind && r.liveFinishes > 0 && r.period == nowPeriod);
+        if (last && now && *last == *now - 1 && playedNow) {
             ++s.current;
             s.best = std::max(s.best, s.current);
-            s.lastDate = todayDate;
+            s.lastPeriod = nowPeriod;
         }
-        Streak local = localStreak();
+        Streak local = localStreak(kind);
         if (local.current > s.current) return local;
         return s;
     }
-    return localStreak();
+    return localStreak(kind);
+}
+
+bool ChallengeService::resultsMine() {
+    if (!online_ || !online_->loggedIn()) return false;
+    if (serverStreakFor_ != online_->playerId()) {
+        // Another account's: forgotten.
+        serverResults_.clear();
+        for (auto& s : serverStreaks_) s.reset();
+        serverStreakFor_ = online_->playerId();
+    }
+    return true;
+}
+
+void ChallengeService::noteServerResult(const std::string& id, const Json& x) {
+    ServerResult sr;
+    sr.bestMs = std::max<int64_t>(0, jget<int64_t>(x, "best_time_ms", 0));
+    sr.tier = challengeTierFromJson(jfield(x, "tier", Json()));
+    sr.status = challengeRunStateFromServer(jstr(x, "status"));
+    sr.late = jget<bool>(x, "late", false);
+    if (const Json& p = jfield(x, "best_progress", Json()); p.is_number()) sr.bestProgress = std::clamp(p.get<float>(), 0.0f, 100.0f);
+    serverResults_[id] = sr;
 }
 
 void ChallengeService::refreshMine(ApiCallback cb) {
@@ -524,25 +820,31 @@ void ChallengeService::refreshMine(ApiCallback cb) {
     std::string who = online_->playerId();
     online_->get("/api/v1/challenges/me?limit=60", OnlineService::guard(life_, [this, cb, who](const ApiResult& r) {
         mineBusy_ = false;
-        if (r.ok && online_->playerId() == who) {
-            if (serverStreakFor_ != who) serverResults_.clear();  // another account's
-            serverStreakFor_ = who;
-            const Json& s = jfield(r.data, "streak", Json::object());
-            if (s.is_object())
-                serverStreak_ = Streak{std::max(0, jget<int>(s, "current", 0)), std::max(0, jget<int>(s, "best", 0)), jstr(s, "last_date"), true};
-            else serverStreak_.reset();
+        if (r.ok && online_->playerId() == who && resultsMine()) {
+            auto readStreak = [](const Json& s) {
+                return Streak{std::max(0, jget<int>(s, "current", 0)), std::max(0, jget<int>(s, "best", 0)),
+                              jstr(s, "last_period", jstr(s, "last_date")), true};
+            };
+            // 2.33: one streak per kind; a 2.32 server gives the day's alone ("streak").
+            const Json& streaks = jfield(r.data, "streaks", Json());
+            const Json& daily = jfield(r.data, "streak", Json());
+            for (int k = 0; k < kChallengeKinds; ++k) {
+                const Json& s = streaks.is_object() ? jfield(streaks, challengeKindId(static_cast<ChallengeKind>(k))) : k == 0 ? daily : Json();
+                if (s.is_object()) serverStreaks_[k] = readStreak(s);
+                else serverStreaks_[k].reset();
+            }
             const Json& results = jfield(r.data, "results", Json::array());
             bool changed = false;
             if (results.is_array())
                 for (const Json& x : results) {
                     std::string id = jstr(x, "challenge_id");
                     if (!safeId(id)) continue;
-                    ChallengeRunState st = challengeRunStateFromServer(jstr(x, "status"));
-                    int64_t best = jget<int64_t>(x, "best_time_ms", 0);
-                    serverResults_[id] = ServerResult{std::max<int64_t>(0, best), challengeTierFromJson(jfield(x, "tier", Json())), st};
+                    noteServerResult(id, x);
+                    ChallengeRunState st = serverResults_[id].status;
+                    int64_t best = serverResults_[id].bestMs;
                     // My run of that time: its state is the server's.
                     for (auto& sub : submissions_)
-                        if (sub.challengeId == id && sub.ownerId == who && sub.timeMs == best && !sub.runId.empty() && sub.state != st &&
+                        if (!sub.attempt && sub.challengeId == id && sub.ownerId == who && sub.timeMs == best && !sub.runId.empty() && sub.state != st &&
                             (sub.state == ChallengeRunState::Sent || sub.state == ChallengeRunState::Pending)) {
                             sub.state = st;
                             changed = true;
@@ -575,20 +877,26 @@ ChallengeService::RunReport ChallengeService::recordRun(const DailyChallenge& c,
                                                         const ReplayData* replay, bool sendable, const std::string& whyNot) {
     RunReport rep;
     rep.tier = c.tierFor(timeMs, damageTaken);
+    // After the end (and its grace): « hors délai », in « Depuis » only, never the streak.
+    rep.late = lateNow(c);
     ChallengeResult& r = results_[c.id];
     bool first = r.finishes == 0;
     r.challengeId = c.id;
+    r.kind = c.kind;
+    r.period = c.period;
     r.date = c.date;
     rep.previousBestMs = r.bestMs;
     rep.newBest = r.bestMs == 0 || timeMs < r.bestMs;
     bool betterTier = rep.tier > r.tier;
     ++r.finishes;
+    if (!rep.late) ++r.liveFinishes;
     if (betterTier) r.tier = rep.tier;
     if (rep.newBest) {
         r.bestMs = timeMs;
         r.deaths = deaths;
         r.damageTaken = damageTaken;
         r.bestAttemptId = attemptId;
+        r.bestLate = rep.late;
         r.hasReplay = false;
         if (replay && safeId(c.id)) {
             std::vector<uint8_t> bytes = replay->encode();
@@ -598,11 +906,12 @@ ChallengeService::RunReport ChallengeService::recordRun(const DailyChallenge& c,
         }
     }
     saveResults();
-    // Sent: the first run of the day (the streak), a better time or a better tier.
-    bool worth = first || rep.newBest || betterTier;
+    // Sent: the first run of the challenge (the streak), the first one in time after late ones,
+    // a better time or a better tier.
+    bool worth = first || rep.newBest || betterTier || (!rep.late && r.liveFinishes == 1);
     if (!online_ || !online_->loggedIn()) {
         rep.state = ChallengeRunState::LocalOnly;
-        rep.note = "Sans compte : ni classement ni envoi. Connectez-vous à Cosmic Online pour entrer dans le classement du jour.";
+        rep.note = "Sans compte : ni classement ni envoi. Connectez-vous à Cosmic Online pour entrer dans le classement du défi.";
         return rep;
     }
     if (!sendable) {
@@ -625,6 +934,7 @@ ChallengeService::RunReport ChallengeService::recordRun(const DailyChallenge& c,
     s.levelHash = levelHash;
     s.rulesHash = c.rulesHash;
     s.gameVersion = COSMIC_VERSION_STRING;
+    s.late = rep.late;
     s.createdAt = FileUtil::nowString();
     if (replay && safeId(attemptId)) {
         std::vector<uint8_t> bytes = replay->encode();
@@ -634,6 +944,27 @@ ChallengeService::RunReport ChallengeService::recordRun(const DailyChallenge& c,
     }
     s.state = ChallengeRunState::Waiting;
     submissions_.push_back(s);
+    trimSubmissions();
+    saveSubmissions();
+    rep.state = ChallengeRunState::Waiting;
+    sendTimer_ = 0.0f;
+    flush();
+    return rep;
+}
+
+const ChallengeSubmission* ChallengeService::submission(const std::string& attemptId, bool attempt) const {
+    for (const auto& s : submissions_)
+        if (s.attemptId == attemptId && s.attempt == attempt) return &s;
+    return nullptr;
+}
+
+ChallengeSubmission* ChallengeService::findSubmission(const std::string& attemptId, bool attempt) {
+    for (auto& s : submissions_)
+        if (s.attemptId == attemptId && s.attempt == attempt) return &s;
+    return nullptr;
+}
+
+void ChallengeService::trimSubmissions() {
     // The oldest decided ones go beyond the limit (the waiting ones always stay).
     while (submissions_.size() > kMaxSubmissions) {
         auto it = std::find_if(submissions_.begin(), submissions_.end(), [](const ChallengeSubmission& x) {
@@ -642,17 +973,6 @@ ChallengeService::RunReport ChallengeService::recordRun(const DailyChallenge& c,
         if (it == submissions_.end()) break;
         submissions_.erase(it);
     }
-    saveSubmissions();
-    rep.state = ChallengeRunState::Waiting;
-    sendTimer_ = 0.0f;
-    flush();
-    return rep;
-}
-
-const ChallengeSubmission* ChallengeService::submission(const std::string& attemptId) const {
-    for (const auto& s : submissions_)
-        if (s.attemptId == attemptId) return &s;
-    return nullptr;
 }
 
 const ChallengeSubmission* ChallengeService::bestSubmission(const std::string& challengeId) const {
@@ -668,14 +988,19 @@ int ChallengeService::waitingCount() const {
     return n;
 }
 
-fs::path ChallengeService::uploadPath(const std::string& attemptId) const { return dir_ / "upload" / (attemptId + ".cprz"); }
+fs::path ChallengeService::uploadPath(const std::string& attemptId, bool attempt) const {
+    return dir_ / "upload" / (attemptId + (attempt ? "-attempt.cprz" : ".cprz"));
+}
 
 void ChallengeService::applyRun(ChallengeSubmission& s, const Json& run) {
     if (!run.is_object()) return;
+    // A run's id is the server's; an attempt is known by the game's own attempt_id.
     std::string id = jstr(run, "id");
-    if (safeId(id)) s.runId = id;
+    if (safeId(id) && !s.attempt) s.runId = id;
     if (run.contains("status") && run["status"].is_string()) s.state = challengeRunStateFromServer(run["status"].get<std::string>());
     if (run.contains("tier")) s.serverTier = challengeTierFromJson(run["tier"]);
+    if (run.contains("late") && run["late"].is_boolean()) s.late = run["late"].get<bool>();
+    if (const Json& p = jfield(run, "progress", Json()); p.is_number()) s.serverProgress = std::clamp(p.get<float>(), 0.0f, 100.0f);
 }
 
 void ChallengeService::flush() {
@@ -687,31 +1012,33 @@ void ChallengeService::sendNext() {
     const std::string me = online_->playerId();
     for (auto& s : submissions_) {
         if (s.ownerId != me) continue;
-        if (s.state == ChallengeRunState::Sent && s.hasReplay && !s.replayUploaded && !s.runId.empty()) {
-            upload(s.attemptId);
+        if (s.state == ChallengeRunState::Sent && s.hasReplay && !s.replayUploaded && (s.attempt || !s.runId.empty())) {
+            upload(s.attemptId, s.attempt);
             return;
         }
         if (s.state != ChallengeRunState::Waiting) continue;
         sending_ = true;
         std::string attemptId = s.attemptId;
-        online_->send("POST", "/api/v1/challenges/" + s.challengeId + "/runs", s.body(), OnlineService::guard(life_, [this, attemptId](const ApiResult& r) {
+        bool attempt = s.attempt;
+        online_->send("POST", s.postPath(), s.body(), OnlineService::guard(life_, [this, attemptId, attempt](const ApiResult& r) {
             sending_ = false;
-            ChallengeSubmission* sub = nullptr;
-            for (auto& x : submissions_)
-                if (x.attemptId == attemptId) sub = &x;
+            ChallengeSubmission* sub = findSubmission(attemptId, attempt);
             if (!sub) return;
             if (r.ok) {
-                applyRun(*sub, jfield(r.data, "run", Json()));
+                applyRun(*sub, jfield(r.data, attempt ? "attempt" : "run", Json()));
                 const Json& rp = jfield(r.data, "replay", Json::object());
                 std::string up = rp.is_object() ? jstr(rp, "upload_path") : std::string();
                 bool required = rp.is_object() && jget<bool>(rp, "required", false);
                 bool accepted = rp.is_object() && jget<bool>(rp, "accepted", true);
-                if (sub->hasReplay && !sub->replayUploaded && accepted && up.rfind("/api/v1/challenges/runs/", 0) == 0 && up.find("..") == std::string::npos &&
+                // An attempt's replay goes to PUT /challenges/attempts/{attempt_id}/replay.
+                const std::string prefix = attempt ? "/api/v1/challenges/attempts/" : "/api/v1/challenges/runs/";
+                if (attempt && up.empty()) up = prefix + attemptId + "/replay";
+                if (sub->hasReplay && !sub->replayUploaded && accepted && up.rfind(prefix, 0) == 0 && up.find("..") == std::string::npos &&
                     sub->state != ChallengeRunState::Rejected) {
                     sub->uploadPath = up;
                     sub->state = ChallengeRunState::Sent;  // until its replay is there
                 } else if (required && !sub->hasReplay) {
-                    sub->note = "Replay manquant : le temps ne pourra pas être vérifié.";
+                    sub->note = attempt ? "Replay manquant : l'essai ne pourra pas être classé." : "Replay manquant : le temps ne pourra pas être vérifié.";
                 }
                 saveSubmissions();
                 sendTimer_ = 0.0f;
@@ -723,26 +1050,27 @@ void ChallengeService::sendNext() {
                 return;
             }
             sub->state = ChallengeRunState::Rejected;
-            if (r.code == "CHALLENGE_ENDED") sub->note = "Envoyé trop tard : le défi était terminé.";
+            if (r.code == "CHALLENGE_ENDED") sub->note = "Envoyé trop tard : ce serveur n'accepte pas encore les parties hors délai.";
             else if (r.code == "RULES_MISMATCH") sub->note = "Règles différentes de celles du défi.";
             else if (r.code == "LEVEL_MISMATCH") sub->note = "Version du niveau différente de celle du défi.";
             else if (r.code == "GAME_VERSION_UNSUPPORTED") sub->note = "Version du jeu trop ancienne : mettez le jeu à jour.";
             else if (r.code == "CHALLENGE_NOT_FOUND") sub->note = "Défi inconnu du serveur.";
+            else if (r.code == "PROGRESS_UNAVAILABLE") sub->note = "Ce défi n'a pas de classement « Plus loin » sur le serveur.";
+            else if (r.code == "ATTEMPT_REJECTED") sub->note = "Essai refusé par le serveur.";
+            else if (attempt && r.status == 404) sub->note = "Ce serveur ne classe pas encore les essais (« Plus loin »).";
             else sub->note = r.message;
             saveSubmissions();
-            online_->notify(OnlineService::Notification::Kind::Warning, "Défi : temps refusé", sub->note);
+            online_->notify(OnlineService::Notification::Kind::Warning, attempt ? "Défi : essai refusé" : "Défi : temps refusé", sub->note);
             sendTimer_ = 0.0f;
         }));
         return;
     }
 }
 
-void ChallengeService::upload(const std::string& attemptId) {
-    ChallengeSubmission* s = nullptr;
-    for (auto& x : submissions_)
-        if (x.attemptId == attemptId) s = &x;
+void ChallengeService::upload(const std::string& attemptId, bool attempt) {
+    ChallengeSubmission* s = findSubmission(attemptId, attempt);
     if (!s) return;
-    auto bytes = FileUtil::readBinary(uploadPath(attemptId));
+    auto bytes = FileUtil::readBinary(uploadPath(attemptId, attempt));
     if (!bytes) {
         // The file is gone: nothing to upload (the server keeps the run without its proof).
         s->replayUploaded = true;
@@ -751,11 +1079,9 @@ void ChallengeService::upload(const std::string& attemptId) {
         return;
     }
     sending_ = true;
-    online_->sendBytes("PUT", s->uploadPath, std::string(bytes->begin(), bytes->end()), OnlineService::guard(life_, [this, attemptId](const ApiResult& r) {
+    online_->sendBytes("PUT", s->uploadPath, std::string(bytes->begin(), bytes->end()), OnlineService::guard(life_, [this, attemptId, attempt](const ApiResult& r) {
         sending_ = false;
-        ChallengeSubmission* sub = nullptr;
-        for (auto& x : submissions_)
-            if (x.attemptId == attemptId) sub = &x;
+        ChallengeSubmission* sub = findSubmission(attemptId, attempt);
         if (!sub) return;
         if (!r.ok && unreachable(r)) {
             sendTimer_ = kRetrySeconds;
@@ -763,10 +1089,16 @@ void ChallengeService::upload(const std::string& attemptId) {
         }
         sub->replayUploaded = true;
         std::error_code ec;
-        fs::remove(uploadPath(attemptId), ec);
+        fs::remove(uploadPath(attemptId, attempt), ec);
         if (r.ok) {
-            applyRun(*sub, jfield(r.data, "run", Json()));
+            applyRun(*sub, jfield(r.data, attempt ? "attempt" : "run", Json()));
             if (sub->state == ChallengeRunState::Sent) sub->state = ChallengeRunState::Pending;
+            // The server's best progress on this challenge (« Plus loin »), as it now stands.
+            if (attempt && resultsMine())
+                if (const Json& bp = jfield(r.data, "best_progress", Json()); bp.is_number()) {
+                    ServerResult& sr = serverResults_[sub->challengeId];
+                    sr.bestProgress = std::max(sr.bestProgress, std::clamp(bp.get<float>(), 0.0f, 100.0f));
+                }
             mineTimer_ = 0.0f;  // its status soon
         } else if (r.code != "REPLAY_EXISTS") {
             sub->state = ChallengeRunState::Rejected;
@@ -779,12 +1111,14 @@ void ChallengeService::upload(const std::string& attemptId) {
         sendTimer_ = 0.0f;
     }), 30000);
 }
-
 void ChallengeService::update(float dt) {
     clock_ += dt;
     if (!online_ || !online_->usable()) return;
-    // A challenge that just ended: the next one is asked for (once a minute at most).
-    if (fetch_ != Fetch::Never && fetch_ != Fetch::Loading && !current() && clock_ - lastFetch_ > kRefreshMissingSeconds) refresh();
+    // A challenge that just ended (or none of the day known): the next ones are asked for
+    // (once a minute at most).
+    if (fetch_ != Fetch::Never && fetch_ != Fetch::Loading && clock_ - lastFetch_ > kRefreshMissingSeconds &&
+        (!current() || (knownEndMs_ > 0 && nowMs() >= knownEndMs_)))
+        refresh();
     if (!online_->loggedIn()) return;
     sendTimer_ -= dt;
     bool offline = online_->state() == OnlineState::Offline;
@@ -812,29 +1146,120 @@ void ChallengeService::update(float dt) {
     }
 }
 
-// ------------------------------------------------------------------ leaderboard, ghost
+// ------------------------------------------------------------------ « Plus loin » (2.34)
 
-void ChallengeService::leaderboard(const std::string& challengeId, const std::string& scope, ApiCallback cb) {
-    if (!online_ || !safeId(challengeId)) return;
-    online_->get("/api/v1/challenges/" + challengeId + "/leaderboard?scope=" + online::encodeQueryValue(scope) + "&limit=50", std::move(cb), true);
+float ChallengeService::bestProgress(const std::string& challengeId) const {
+    float best = 0.0f;
+    if (const ChallengeResult* r = result(challengeId)) best = r->bestMs > 0 ? 100.0f : r->bestProgress;
+    if (auto s = serverResult(challengeId)) {
+        if (s->bestMs > 0) best = 100.0f;
+        if (s->bestProgress > best) best = s->bestProgress;
+    }
+    return best;
 }
 
-fs::path ChallengeService::runReplayPath(const std::string& challengeId, const std::string& runId) const {
-    return dir_ / "ghosts" / (challengeId + "-" + runId + ".cprz");
+bool ChallengeService::beatsBestAttempt(float progress, float best) {
+    // Scores have one decimal (raceScore): compared in tenths, strictly better only.
+    long p = std::lround(progress * 10.0f), b = std::lround(best * 10.0f);
+    return p >= 1 && p < 1000 && p > b;
+}
+
+ChallengeService::AttemptReport ChallengeService::recordAttempt(const DailyChallenge& c, float progress, int64_t timeMs, std::vector<int> bosses,
+                                                                std::vector<int> waves, const std::string& levelHash, const std::string& attemptId,
+                                                                const ReplayData* replay, bool sendable, const std::string& whyNot) {
+    AttemptReport rep;
+    rep.progress = std::clamp(std::floor(progress * 10.0f) / 10.0f, 0.0f, 99.9f);
+    rep.late = lateNow(c);
+    if (!c.progressAvailable) return rep;  // no route: no « Plus loin » for this challenge
+    rep.previousBest = bestProgress(c.id);
+    rep.newBest = beatsBestAttempt(rep.progress, rep.previousBest);
+    if (!rep.newBest) {
+        rep.note = rep.previousBest >= 100.0f ? "Défi déjà fini : un essai qui s'arrête avant ne change rien."
+                                              : "Pas plus loin que votre meilleur essai : rien n'est envoyé.";
+        return rep;
+    }
+    ChallengeResult& r = results_[c.id];
+    r.challengeId = c.id;
+    r.kind = c.kind;
+    r.period = c.period;
+    r.date = c.date;
+    r.bestProgress = rep.progress;
+    r.bestProgressAttemptId = attemptId;
+    saveResults();
+    if (!online_ || !online_->loggedIn()) {
+        rep.note = "Sans compte : gardé sur ce PC. Connectez-vous à Cosmic Online pour entrer dans le classement « Plus loin ».";
+        return rep;
+    }
+    if (!sendable) {
+        rep.note = whyNot.empty() ? std::string("Non envoyé.") : whyNot;
+        return rep;
+    }
+    ChallengeSubmission s;
+    s.attempt = true;
+    s.attemptId = attemptId;
+    s.challengeId = c.id;
+    s.ownerId = online_->playerId();
+    s.timeMs = timeMs;
+    s.levelHash = levelHash;
+    s.rulesHash = c.rulesHash;
+    s.gameVersion = COSMIC_VERSION_STRING;
+    s.late = rep.late;
+    s.bosses = std::move(bosses);
+    s.waves = std::move(waves);
+    s.progress = rep.progress;
+    s.createdAt = FileUtil::nowString();
+    if (replay && safeId(attemptId)) {
+        std::vector<uint8_t> bytes = replay->encode();
+        std::error_code ec;
+        fs::create_directories(uploadPath(attemptId, true).parent_path(), ec);
+        s.hasReplay = !bytes.empty() && FileUtil::writeBinary(uploadPath(attemptId, true), bytes);
+    }
+    // One attempt kept per challenge (the best): an older one still waiting is replaced.
+    submissions_.erase(std::remove_if(submissions_.begin(), submissions_.end(),
+                                      [&](const ChallengeSubmission& x) {
+                                          return x.attempt && x.challengeId == c.id && x.ownerId == s.ownerId && x.state == ChallengeRunState::Waiting;
+                                      }),
+                       submissions_.end());
+    s.state = ChallengeRunState::Waiting;
+    submissions_.push_back(s);
+    trimSubmissions();
+    saveSubmissions();
+    rep.state = ChallengeRunState::Waiting;
+    sendTimer_ = 0.0f;
+    flush();
+    return rep;
+}
+
+// ------------------------------------------------------------------ leaderboard, ghost
+
+std::string ChallengeService::leaderboardPath(const std::string& challengeId, const std::string& scope, bool allPeriod, bool progressBoard) {
+    // period=live and board=time are the defaults (the only ones a 2.32 server knows): left out.
+    return "/api/v1/challenges/" + challengeId + "/leaderboard?scope=" + online::encodeQueryValue(scope) + (allPeriod ? "&period=all" : "") +
+           (progressBoard ? "&board=progress" : "") + "&limit=50";
+}
+
+void ChallengeService::leaderboard(const std::string& challengeId, const std::string& scope, ApiCallback cb, bool allPeriod, bool progressBoard) {
+    if (!online_ || !safeId(challengeId)) return;
+    online_->get(leaderboardPath(challengeId, scope, allPeriod, progressBoard), std::move(cb), true);
+}
+
+fs::path ChallengeService::runReplayPath(const std::string& challengeId, const std::string& runId, bool attempt) const {
+    return dir_ / "ghosts" / (challengeId + (attempt ? "-attempt-" : "-") + runId + ".cprz");
 }
 
 void ChallengeService::downloadRunReplay(const std::string& challengeId, const std::string& runId,
-                                         std::function<void(std::optional<fs::path>, const std::string&)> cb) {
+                                         std::function<void(std::optional<fs::path>, const std::string&)> cb, bool attempt) {
     if (!online_ || !safeId(challengeId) || !safeId(runId)) {
         if (cb) cb(std::nullopt, "Replay inconnu.");
         return;
     }
-    fs::path file = runReplayPath(challengeId, runId);
+    fs::path file = runReplayPath(challengeId, runId, attempt);
     if (FileUtil::exists(file)) {
         if (cb) cb(file, {});
         return;
     }
-    online_->getBinary("/api/v1/challenges/runs/" + runId + "/replay",
+    // A run's replay, or (« Plus loin ») an attempt's, by the server's id of that attempt.
+    online_->getBinary(std::string(attempt ? "/api/v1/challenges/attempts/" : "/api/v1/challenges/runs/") + runId + "/replay",
                        [cb, file, alive = std::weak_ptr<int>(life_)](const HttpResponse& r) {
                            if (!alive.lock()) return;
                            if (r.networkFailure() || r.status != 200) {

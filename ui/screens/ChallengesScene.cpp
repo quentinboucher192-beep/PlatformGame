@@ -1,10 +1,13 @@
-// Main menu → « Défis » (2.32, docs/online/DAILY_CHALLENGES.md): the challenge of the day
-// (« Aujourd'hui »: level, countdown, rules, tiers, my best time and its state, Jouer / Revoir
-// mon meilleur replay / S'entraîner, the day's leaderboard) and the past ones (« Archives »:
-// my tier per day, Rejouer hors classement); before a run, what changes today, the tiers,
-// the ghost and the connection; after it, the time, the tier, the streak and the sending
-// state. The challenge stays playable offline until its end once downloaded; without an
-// account the results stay on this computer.
+// Main menu → « Défis » (2.32 and 2.33, docs/online/DAILY_CHALLENGES.md and
+// CHALLENGES_PERIODS.md): the challenges of the day, of the week and of the month (« Jour »,
+// « Semaine », « Mois »: level, countdown, rules, tiers, my best time and its state, the streak
+// of that kind, Jouer / Revoir mon meilleur replay / S'entraîner, the leaderboard) and the
+// « Calendrier » (a month, Monday to Sunday, with each day's and each week's challenge and the
+// month's one at the head; a cell opens that challenge's card, where a challenge that is over
+// has its leaderboard « Pendant le défi » / « Depuis » and « Jouer (hors délai) »); before a
+// run, what changes, the tiers, the ghost and the connection; after it, the time, the tier,
+// the streak and the sending state. A challenge stays playable offline until its end once
+// downloaded; without an account the results stay on this computer.
 
 #include <algorithm>
 #include <cmath>
@@ -83,26 +86,77 @@ float chipWidth(UIContext& ui, const std::string& text, float h) {
     return ui.text().measure(text, FontFace::Bold, ui.s(fs)).x + h;
 }
 
-/// "5 h 12 min", "12 min 05 s", "45 s".
+/// "3 j 05 h", "5 h 12 min", "12 min 05 s", "45 s".
 std::string countdown(int64_t ms) {
     int64_t s = std::max<int64_t>(0, ms / 1000);
     char b[48];
-    if (s >= 3600) std::snprintf(b, sizeof b, "%lld h %02lld min", static_cast<long long>(s / 3600), static_cast<long long>((s / 60) % 60));
+    if (s >= 86400) std::snprintf(b, sizeof b, "%lld j %02lld h", static_cast<long long>(s / 86400), static_cast<long long>((s / 3600) % 24));
+    else if (s >= 3600) std::snprintf(b, sizeof b, "%lld h %02lld min", static_cast<long long>(s / 3600), static_cast<long long>((s / 60) % 60));
     else if (s >= 60) std::snprintf(b, sizeof b, "%lld min %02lld s", static_cast<long long>(s / 60), static_cast<long long>(s % 60));
     else std::snprintf(b, sizeof b, "%lld s", static_cast<long long>(s));
     return b;
 }
 
+const char* const kMonthNames[12] = {"janvier", "février", "mars",      "avril",   "mai",      "juin",
+                                     "juillet", "août",    "septembre", "octobre", "novembre", "décembre"};
+
 /// "16 novembre 2026" (`year` false: "16 novembre").
 std::string frenchDate(const std::string& ymd, bool year = true) {
-    static const char* const kMonths[12] = {"janvier", "février", "mars",      "avril",   "mai",      "juin",
-                                            "juillet", "août",    "septembre", "octobre", "novembre", "décembre"};
     int y = 0, m = 0, d = 0;
     if (std::sscanf(ymd.c_str(), "%4d-%2d-%2d", &y, &m, &d) != 3 || m < 1 || m > 12) return ymd;
-    std::string out = std::to_string(d) + " " + kMonths[m - 1];
+    std::string out = std::to_string(d) + " " + kMonthNames[m - 1];
     if (year) out += " " + std::to_string(y);
     return out;
 }
+
+/// "novembre 2026" of "2026-11".
+std::string frenchMonth(const std::string& ym) {
+    int y = 0, m = 0;
+    if (std::sscanf(ym.c_str(), "%4d-%2d", &y, &m) != 2 || m < 1 || m > 12) return ym;
+    return std::string(kMonthNames[m - 1]) + " " + std::to_string(y);
+}
+
+/// "Défi du 16 novembre", "Défi de la semaine du 16 novembre", "Défi du mois de novembre 2026".
+std::string challengeTitle(const DailyChallenge& c, bool year = false) {
+    switch (c.kind) {
+        case ChallengeKind::Weekly: return "Défi de la semaine du " + frenchDate(c.date, year);
+        case ChallengeKind::Monthly: return "Défi du mois de " + frenchMonth(c.period);
+        case ChallengeKind::Daily: break;
+    }
+    return "Défi du " + frenchDate(c.date, year);
+}
+
+/// "Classement du jour", "… de la semaine", "… du mois".
+const char* boardTitle(ChallengeKind k) {
+    return k == ChallengeKind::Weekly ? "Classement de la semaine" : k == ChallengeKind::Monthly ? "Classement du mois" : "Classement du jour";
+}
+
+/// "Série : 3 jours" / "… 1 semaine" / "… 2 mois".
+std::string streakCount(ChallengeKind k, int n) {
+    if (k == ChallengeKind::Weekly) return std::to_string(n) + (n > 1 ? " semaines" : " semaine");
+    if (k == ChallengeKind::Monthly) return std::to_string(n) + " mois";
+    return std::to_string(n) + (n > 1 ? " jours" : " jour");
+}
+
+/// "63,4 %", "100 %" (« Plus loin »: how far an attempt went).
+std::string percentText(float p) {
+    p = std::clamp(p, 0.0f, 100.0f);
+    if (p >= 100.0f) return "100 %";
+    char b[32];
+    std::snprintf(b, sizeof b, "%.1f", std::floor(p * 10.0f) / 10.0f);
+    std::string s = b;
+    std::replace(s.begin(), s.end(), '.', ',');
+    return s + " %";
+}
+
+/// "Le 1er du jour" (the first of the board, as a ghost).
+const char* firstOfBoard(ChallengeKind k) {
+    return k == ChallengeKind::Weekly ? "Le 1er de la semaine" : k == ChallengeKind::Monthly ? "Le 1er du mois" : "Le 1er du jour";
+}
+
+/// The screen of the « Défis » menu that shows a challenge: its kind's tab while it runs, else
+/// the calendar on it.
+int challengeTab(const ChallengeService& s, const DailyChallenge& c) { return s.ended(c) ? 3 : static_cast<int>(c.kind); }
 
 /// Where the challenge's level is on this computer.
 struct LevelPlace {
@@ -303,10 +357,11 @@ void downloadChallengeLevel(GameServices& g, const DailyChallenge& c, std::weak_
 }
 
 /// Connection line of the screens (what happens to a run's result).
-std::string connectionLine(GameServices& g, bool practice, const LevelPlace& place) {
+std::string connectionLine(GameServices& g, bool practice, bool late, const LevelPlace& place) {
     if (practice) return "Hors classement : rien n'est envoyé ni gardé comme meilleur temps.";
     if (!place.localId.empty() && !place.sameVersion) return "Votre version du niveau diffère de celle du défi : temps gardé sur ce PC.";
     if (!g.online.loggedIn()) return "Sans compte : votre résultat restera sur ce PC (ni classement ni envoi).";
+    if (late) return "Hors délai : votre temps ira dans le classement « Depuis », sans compter pour la série.";
     if (g.online.state() == OnlineState::Online)
         return "Connecté : votre temps sera envoyé à la fin du défi.";
     return "Hors ligne : votre temps partira à la prochaine connexion.";
@@ -316,16 +371,24 @@ std::string connectionLine(GameServices& g, bool practice, const LevelPlace& pla
 
 class ChallengesScene : public Scene {
 public:
-    ChallengesScene(GameServices& g, int tab, std::string select) : g_(g), ou_(g), tab_(std::clamp(tab, 0, 1)), selected_(std::move(select)) {}
+    ChallengesScene(GameServices& g, int tab, std::string select) : g_(g), ou_(g), tab_(std::clamp(tab, 0, 3)) {
+        // The calendar on a month ("2026-10") or on a challenge's card (its id).
+        if (tab_ == 3 && !select.empty()) {
+            if (challenge_period::valid(ChallengeKind::Monthly, select)) month_ = select;
+            else detail_ = select;
+        }
+    }
 
     void onEnter() override {
         bg_.init(g_);
         g_.playMusic(g_.menuMusic());
         g_.challenges.refresh(true);
         if (g_.online.loggedIn()) g_.challenges.refreshMine();
-        if (tab_ == 1) {
-            if (g_.challenges.past().size() < 8 && !g_.challenges.archivesExhausted()) loadMore();
-            g_.ui.setFocus(selected_.empty() ? "chal/tab1" : "chal/replay");
+        if (const DailyChallenge* c = detail_.empty() ? nullptr : g_.challenges.find(detail_); c && month_.empty()) month_ = c->date.substr(0, 7);
+        if (month_.empty()) month_ = ChallengeService::utcMonth(g_.challenges.nowMs());
+        if (tab_ == 3) {
+            g_.challenges.loadCalendar(month_);
+            g_.ui.setFocus(detail_.empty() ? "chal/d" + ChallengeService::utcDate(g_.challenges.nowMs()) : "chal/play");
         } else {
             g_.ui.setFocus("chal/play");
         }
@@ -333,33 +396,39 @@ public:
     void onResume() override {
         g_.playMusic(g_.menuMusic());
         boardFor_.clear();  // a run may have changed it
+        if (tab_ == 3) g_.challenges.loadCalendar(month_, true);
     }
 
     void update(float dt) override {
         bg_.update(dt);
         t_ += dt;
         if (msgTimer_ > 0.0f) msgTimer_ -= dt;
-        // The leaderboard of the day's challenge (logged in only), again from time to time.
-        const DailyChallenge* c = g_.challenges.current();
+        // The leaderboard of the challenge shown (logged in only), again from time to time.
+        const DailyChallenge* c = shown();
         boardAge_ += dt;
-        if (c && g_.online.loggedIn() && !boardBusy_ && (boardFor_ != c->id + "/" + scopeId() || boardAge_ > 60.0f)) fetchBoard(*c);
+        if (c && g_.online.loggedIn() && !boardBusy_ && (boardFor_ != boardKey(*c) || boardAge_ > 60.0f)) fetchBoard(*c);
     }
 
     void render(float) override {
         UIContext& ui = g_.ui;
         ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
         bg_.render(g_, 0.72f);
+        if (!pendingFocus_.empty()) {
+            ui.setFocus(pendingFocus_);
+            pendingFocus_.clear();
+        }
         ui.pushId("chal");
         const float W = ui.screenW(), H = ui.screenH(), m = ui.s(40);
         const float y0 = ui.s(26);
-        // Header: title, the two tabs, the connection, Retour.
+        // Header: title, the four tabs, the connection, Retour.
         float tf = 32.0f;
         Vec2 ts = ui.label("DÉFIS", {m, y0 + ui.s(24)}, tf, ui.theme().text, Align::Left, FontFace::Title, VAlign::Middle);
         float x = m + ts.x + ui.s(28);
-        static const char* const kTabs[2] = {"Aujourd'hui", "Archives"};
-        static const char* const kTabFeatures[2] = {"challenges.tab.today", "challenges.tab.archives"};
-        for (int i = 0; i < 2; ++i) {
-            float w = ui.text().measure(kTabs[i], FontFace::Bold, ui.s(18)).x + ui.s(40);
+        static const char* const kTabs[4] = {"Jour", "Semaine", "Mois", "Calendrier"};
+        static const char* const kTabFeatures[4] = {"challenges.tab.today", "challenges.tab.week", "challenges.tab.month", "challenges.tab.calendar"};
+        for (int i = 0; i < 4; ++i) {
+            // Never narrower than its « NOUVEAU » pill: two pills side by side never touch.
+            float w = std::max(ui.text().measure(kTabs[i], FontFace::Bold, ui.s(18)).x + ui.s(40), ui.newPillWidth(true) + ui.s(18));
             UIContext::ButtonStyle st;
             st.small = true;
             st.selected = tab_ == i;
@@ -369,26 +438,64 @@ public:
             ui.newBadge("tab" + std::to_string(i), tr, kTabFeatures[i], true, true);
             x += w + ui.s(10);
         }
-        if (ui.input().menuPressed(Action::MenuTabNext) || ui.input().menuPressed(Action::MenuTabPrev)) switchTab(1 - tab_);
+        if (ui.input().menuPressed(Action::MenuTabNext)) switchTab((tab_ + 1) % 4);
+        else if (ui.input().menuPressed(Action::MenuTabPrev)) switchTab((tab_ + 3) % 4);
         UIContext::ButtonStyle bs;
         bs.small = true;
         Rect back{W - m - ui.s(150), y0 + ui.s(4), ui.s(150), ui.s(42)};
         bool leave = ui.button("back", back, "Retour", bs);
         drawConnection({x + ui.s(16), y0 + ui.s(25)}, back.x - ui.s(20) - (x + ui.s(16)));
         Rect body{m, ui.s(92), W - 2 * m, H - ui.s(92) - ui.s(26)};
-        if (tab_ == 0) drawToday(body);
-        else drawArchives(body);
+        if (tab_ < 3) {
+            drawKind(static_cast<ChallengeKind>(tab_), body);
+        } else if (const DailyChallenge* c = detail_.empty() ? nullptr : g_.challenges.find(detail_)) {
+            drawCardAndBoard(*c, body, true);
+        } else {
+            detail_.clear();
+            drawCalendar(body);
+        }
         ui.popId();
-        if (leave || ui.backPressed()) g_.app.switchScene(makeMainMenu(g_), 0.3f);
+        // Back: from a challenge's card to the calendar, else to the main menu.
+        if (!leave && ui.backPressed() && tab_ == 3 && !detail_.empty()) closeDetail();
+        else if (leave || ui.backPressed()) g_.app.switchScene(makeMainMenu(g_), 0.3f);
         ui.end();
     }
 
 private:
     const char* scopeId() const { return scope_ == 0 ? "world" : scope_ == 1 ? "country" : "friends"; }
 
+    /// The challenge whose card is on screen (nullptr: none, or the calendar's grid).
+    const DailyChallenge* shown() const {
+        if (tab_ < 3) return g_.challenges.current(static_cast<ChallengeKind>(tab_));
+        return detail_.empty() ? nullptr : g_.challenges.find(detail_);
+    }
+    /// « Depuis » (period=all) only for a challenge that is over.
+    bool allPeriod(const DailyChallenge& c) const { return period_ == 1 && g_.challenges.ended(c); }
+    /// « Plus loin » (board=progress) only for a challenge whose level has a route.
+    bool progressBoard(const DailyChallenge& c) const { return boardKind_ == 1 && c.progressAvailable; }
+    std::string boardKey(const DailyChallenge& c) const {
+        return c.id + "/" + scopeId() + (allPeriod(c) ? "/all" : "/live") + (progressBoard(c) ? "/progress" : "/time");
+    }
+
     void switchTab(int t) {
         tab_ = t;
-        if (tab_ == 1 && g_.challenges.past().size() < 8 && !g_.challenges.archivesExhausted()) loadMore();
+        if (tab_ == 3) g_.challenges.loadCalendar(month_);
+    }
+
+    void openDetail(const std::string& id, const std::string& from) {
+        detail_ = id;
+        detailFrom_ = from;
+        pendingFocus_ = "chal/play";
+    }
+    void closeDetail() {
+        detail_.clear();
+        if (!detailFrom_.empty()) pendingFocus_ = "chal/" + detailFrom_;
+    }
+    void changeMonth(int delta) {
+        std::string m = challenge_period::addMonths(month_, delta);
+        if (m.empty()) return;
+        month_ = m;
+        g_.challenges.loadCalendar(month_);
     }
 
     void say(const std::string& m) {
@@ -414,54 +521,62 @@ private:
         }
     }
 
-    // ------------------------------------------------------------------ Aujourd'hui
+    // ------------------------------------------------------------ Jour, Semaine, Mois
 
-    void drawToday(const Rect& body) {
-        UIContext& ui = g_.ui;
-        const DailyChallenge* c = g_.challenges.current();
+    void drawKind(ChallengeKind kind, const Rect& body) {
+        const DailyChallenge* c = g_.challenges.current(kind);
         if (!c) {
-            drawNoChallenge(body);
+            drawNoChallenge(kind, body);
             return;
         }
+        drawCardAndBoard(*c, body, false);
+    }
+
+    void drawCardAndBoard(const DailyChallenge& c, const Rect& body, bool fromCalendar) {
+        UIContext& ui = g_.ui;
         const float gap = ui.s(22);
         Rect left{body.x, body.y, (body.w - gap) * 0.57f, body.h};
         Rect right{left.right() + gap, body.y, body.right() - left.right() - gap, body.h};
-        drawChallengeCard(*c, left);
-        drawBoard(*c, right);
+        drawChallengeCard(c, left, fromCalendar);
+        drawBoard(c, right);
     }
 
-    void drawNoChallenge(const Rect& body) {
+    void drawNoChallenge(ChallengeKind kind, const Rect& body) {
         UIContext& ui = g_.ui;
         Rect p = Rect::fromCenter(body.center(), {std::min(ui.s(900), body.w), std::min(ui.s(330), body.h)});
         ui.panel(p, true, 16);
         float x = p.x + ui.s(36), w = p.w - ui.s(72), y = p.y + ui.s(34);
         auto fs = g_.challenges.fetchState();
-        std::string head = fs == ChallengeService::Fetch::Loading ? "Recherche du défi du jour…" : "Aucun défi du jour sur ce PC";
+        std::string head = fs == ChallengeService::Fetch::Loading ? "Recherche du défi…"
+                           : kind == ChallengeKind::Weekly        ? "Aucun défi de la semaine sur ce PC"
+                           : kind == ChallengeKind::Monthly       ? "Aucun défi du mois sur ce PC"
+                                                                  : "Aucun défi du jour sur ce PC";
         fitLabel(ui, head, {x, y + ui.s(16)}, 28, w, ui.theme().text, Align::Left, FontFace::Bold);
         y += ui.s(58);
         std::string text;
         if (!g_.online.usable())
-            text = "Cosmic Online est indisponible dans cette version ou désactivé dans les paramètres : le défi du jour vient du serveur.";
+            text = "Cosmic Online est indisponible dans cette version ou désactivé dans les paramètres : les défis viennent du serveur.";
         else if (fs == ChallengeService::Fetch::Loading)
-            text = "Le défi est demandé au serveur.";
+            text = "Les défis sont demandés au serveur.";
         else if (fs == ChallengeService::Fetch::Offline)
-            text = "Hors ligne : connectez-vous à Internet pour recevoir le défi du jour. Une fois téléchargé, il reste jouable hors ligne jusqu'à sa fin.";
+            text = "Hors ligne : connectez-vous à Internet pour recevoir les défis. Une fois téléchargé, un défi reste jouable hors ligne jusqu'à sa fin.";
         else if (fs == ChallengeService::Fetch::Failed)
             text = "Le serveur n'a pas donné de défi : " + g_.challenges.fetchMessage();
+        else if (kind != ChallengeKind::Daily && g_.challenges.legacyServer())
+            text = "Ce serveur Cosmic Online ne propose encore que le défi du jour.";
         else
-            text = "Le défi du jour vient du serveur ; une fois téléchargé, il reste jouable hors ligne jusqu'à sa fin.";
+            text = "Pas de défi de cette sorte en ce moment. Les défis viennent du serveur ; une fois téléchargé, un défi reste jouable hors ligne jusqu'à sa fin.";
         Vec2 s = ui.labelWrapped(text, {x, y}, w, fz(ui, 18), ui.theme().textDim);
         y += s.y + ui.s(24);
         UIContext::ButtonStyle st;
         st.primary = true;
         st.enabled = g_.online.usable() && fs != ChallengeService::Fetch::Loading;
         float bw = std::min(w, ui.s(320));
-        if (ui.button("play", {x, std::min(y, p.bottom() - ui.s(84)), bw, ui.s(56)}, "Réessayer", st)) g_.challenges.refresh(true);
+        float by = std::min(y, p.bottom() - ui.s(84));
+        if (ui.button("play", {x, by, bw, ui.s(56)}, "Réessayer", st)) g_.challenges.refresh(true);
         float ax = x + bw + ui.s(16);
-        if (!g_.challenges.past().empty() && ax + ui.s(200) < p.right() - ui.s(36)) {
-            if (ui.button("toarch", {ax, std::min(y, p.bottom() - ui.s(84)), std::min(ui.s(300), p.right() - ui.s(36) - ax), ui.s(56)}, "Voir les archives"))
-                switchTab(1);
-        }
+        if (ax + ui.s(200) < p.right() - ui.s(36))
+            if (ui.button("tocalendar", {ax, by, std::min(ui.s(300), p.right() - ui.s(36) - ax), ui.s(56)}, "Voir le calendrier")) switchTab(3);
     }
 
     /// The level: its name, its planet (campaign: and its description) or its author
@@ -513,26 +628,38 @@ private:
         return std::max(preview ? prevH : 0.0f, ui.s(c.community() ? 108 : 78));
     }
 
-    void drawChallengeCard(const DailyChallenge& c, const Rect& area) {
+    void drawChallengeCard(const DailyChallenge& c, const Rect& area, bool fromCalendar) {
         UIContext& ui = g_.ui;
         ui.panel(area, false, 16);
         const float x = area.x + ui.s(28), w = area.w - ui.s(56);
         float y = area.y + ui.s(24);
         LevelPlace place = levelPlace(g_, c);
-        // Line 1: the day, and the countdown in a pill at the right.
-        std::string left = "Défi du " + frenchDate(c.date, false);
-        std::string cd = "Se termine dans " + countdown(c.endsAtMs - g_.challenges.nowMs());
-        float ph = ui.s(32);
+        const bool over = g_.challenges.ended(c);
+        // Line 1: (from the calendar: back to it), the challenge, its countdown (or « Terminé »)
+        // in a pill at the right.
+        float ph = ui.s(32), lx = x;
+        if (fromCalendar) {
+            const std::string bl = "Calendrier";
+            float bw = ui.text().measure(bl, FontFace::Bold, ui.s(16)).x + ui.s(36);
+            UIContext::ButtonStyle st;
+            st.small = true;
+            st.fontSize = 16;
+            if (ui.button("tocal", {x, y - ui.s(4), bw, ph + ui.s(8)}, bl, st)) closeDetail();
+            lx = x + bw + ui.s(16);
+        }
+        std::string left = challengeTitle(c, over);
+        std::string cd = over ? std::string("Terminé") : "Se termine dans " + countdown(c.endsAtMs - g_.challenges.nowMs());
+        Color cdc = over ? ui.theme().textDim : ui.theme().warm;
         float pw = chipWidth(ui, cd, ph);
-        float leftRoom = w - pw - ui.s(16);
+        float leftRoom = x + w - pw - ui.s(16) - lx;
         if (leftRoom < ui.s(120)) {
-            // Narrow: the countdown under the day.
-            fitLabel(ui, left, {x, y + ph * 0.5f}, 17, w, ui.theme().accent, Align::Left, FontFace::Bold);
+            // Narrow: the countdown under the title.
+            fitLabel(ui, left, {lx, y + ph * 0.5f}, 17, x + w - lx, ui.theme().accent, Align::Left, FontFace::Bold);
             y += ph + ui.s(8);
-            chip(ui, cd, x, y + ph * 0.5f, ph, ui.theme().warm, w);
+            chip(ui, cd, x, y + ph * 0.5f, ph, cdc, w);
         } else {
-            fitLabel(ui, left, {x, y + ph * 0.5f}, 17, leftRoom, ui.theme().accent, Align::Left, FontFace::Bold);
-            chip(ui, cd, x + w - pw, y + ph * 0.5f, ph, ui.theme().warm, pw);
+            fitLabel(ui, left, {lx, y + ph * 0.5f}, 17, leftRoom, ui.theme().accent, Align::Left, FontFace::Bold);
+            chip(ui, cd, x + w - pw, y + ph * 0.5f, ph, cdc, pw);
         }
         y += ph + ui.s(14);
         // Below the level, everything has its height: the level's preview takes what is left.
@@ -544,7 +671,7 @@ private:
                             + ui.s(84) + ui.s(36);                                      // my best, note
         y += drawLevelHeader(c, place, x, y, w, std::clamp(by - y - below, ui.s(84), ui.s(330))) + ui.s(16);
         // The rules (chips).
-        fitLabel(ui, "Règles du jour", {x, y + ui.s(11)}, 18, w, ui.theme().accent, Align::Left, FontFace::Bold);
+        fitLabel(ui, "Règles du défi", {x, y + ui.s(11)}, 18, w, ui.theme().accent, Align::Left, FontFace::Bold);
         y += ui.s(30);
         y += drawChipRows(ui, chips, x, y, w, chipH, ui.theme().accent) + ui.s(18);
         // The tiers.
@@ -553,41 +680,48 @@ private:
         y += ui.s(30);
         drawTierCards(ui, c, {x, y, w, ui.s(96)}, myDay(c.id).tier, true);
         y += ui.s(96) + ui.s(18);
-        // My best time, its state, the streak.
+        // My best time, its state, the streak of this kind.
         Rect box{x, y, w, std::max(ui.s(60), std::min(ui.s(84), by - ui.s(16) - y))};
         drawMyBest(c, res, box);
         y = box.bottom() + ui.s(10);
-        // A note (the level to download, another version, a message) above the buttons.
+        // A note (the level to download, another version, the end, a message) above the buttons.
         std::string note = msgTimer_ > 0.0f ? msg_ : place.problem;
         if (note.empty() && !place.localId.empty() && !place.sameVersion)
-            note = "Votre version du niveau diffère de celle du défi : vos temps resteront sur ce PC.";
+            note = over ? "Le niveau a changé depuis ce défi : « S'entraîner » seulement, hors classement."
+                        : "Votre version du niveau diffère de celle du défi : vos temps resteront sur ce PC.";
+        if (note.empty() && over) note = "Défi terminé : une partie maintenant est hors délai (classement « Depuis », sans la série).";
         if (!note.empty() && by - y > ui.s(18)) fitLabel(ui, note, {x, (y + by) * 0.5f}, 16, w, ui.theme().warm, Align::Left, FontFace::Body, VAlign::Middle, 0.7f);
-        // Jouer (or Télécharger le niveau), Revoir mon meilleur replay, S'entraîner.
+        // Jouer (or Télécharger, or Jouer hors délai), Revoir mon meilleur replay, S'entraîner:
+        // widths after their labels, which share one size.
         const float gap = ui.s(14);
-        float b1 = w * 0.26f, b2 = w * 0.37f, b3 = w - b1 - b2 - 2 * gap;
         UIContext::ButtonStyle primary;
         primary.primary = true;
         bool needDownload = c.community() && place.localId.empty();
-        primary.enabled = needDownload ? (g_.online.usable() && !downloading_) : place.problem.empty();
-        const std::string playLabel = needDownload ? (downloading_ ? "Téléchargement…" : "Télécharger") : "Jouer";
-        // The three labels share one size: the largest at which each fits its button.
+        primary.enabled = needDownload ? (g_.online.usable() && !downloading_) : place.problem.empty() && (!over || place.sameVersion);
+        const std::string playLabel = needDownload ? (downloading_ ? "Téléchargement…" : "Télécharger") : over ? "Jouer (hors délai)" : "Jouer";
         const std::string bestLabel = "Revoir mon meilleur replay", practiceLabel = "S'entraîner (hors classement)";
+        const std::string* labels[3] = {&playLabel, &bestLabel, &practiceLabel};
+        float tws[3], sum = 0.0f;
+        for (int i = 0; i < 3; ++i) sum += tws[i] = ui.text().measure(*labels[i], FontFace::Bold, ui.s(26)).x + ui.s(40);
+        // Each label's width, the room left shared equally (too narrow: each in proportion).
+        float bws[3];
+        const float room = w - 2 * gap;
+        for (int i = 0; i < 3; ++i) bws[i] = sum <= room ? tws[i] + (room - sum) / 3.0f : room * tws[i] / sum;
         float fs = 26.0f;
-        for (auto [label, bw] : {std::pair{&playLabel, b1}, std::pair{&bestLabel, b2}, std::pair{&practiceLabel, b3}})
-            fs = std::min(fs, ui.fitFont(*label, FontFace::Bold, 26.0f, bw - ui.s(28)));
+        for (int i = 0; i < 3; ++i) fs = std::min(fs, ui.fitFont(*labels[i], FontFace::Bold, 26.0f, bws[i] - ui.s(28)));
         primary.fontSize = fs;
-        if (ui.button("play", {x, by, b1, ui.s(58)}, playLabel, primary)) {
+        if (ui.button("play", {x, by, bws[0], ui.s(58)}, playLabel, primary)) {
             if (needDownload) download(c);
             else g_.app.pushScene(makeChallengeStart(g_, c.id, false));
         }
         UIContext::ButtonStyle st;
         st.fontSize = fs;
         st.enabled = res && res->hasReplay && !place.localId.empty();
-        if (ui.button("best", {x + b1 + gap, by, b2, ui.s(58)}, bestLabel, st)) watchBest(c);
+        if (ui.button("best", {x + bws[0] + gap, by, bws[1], ui.s(58)}, bestLabel, st)) watchBest(c);
         UIContext::ButtonStyle pr;
         pr.fontSize = fs;
         pr.enabled = !place.localId.empty();
-        if (ui.button("practice", {x + b1 + b2 + 2 * gap, by, b3, ui.s(58)}, practiceLabel, pr))
+        if (ui.button("practice", {x + bws[0] + bws[1] + 2 * gap, by, bws[2], ui.s(58)}, practiceLabel, pr))
             g_.app.pushScene(makeChallengeStart(g_, c.id, true));
     }
 
@@ -604,9 +738,9 @@ private:
         ui.r().fillRoundedRect(box, ui.s(10), Color{12, 18, 38, 220});
         float x = box.x + ui.s(18), w = box.w - ui.s(36);
         float top = box.y + box.h * 0.30f, bottom = box.y + box.h * 0.70f;
-        // Top line: the caption at the left, the streak at the right.
-        ChallengeService::Streak s = g_.challenges.streak();
-        std::string streak = "Série : " + std::to_string(s.current) + (s.current > 1 ? " jours" : " jour") + (s.fromServer ? "" : " (sur ce PC)");
+        // Top line: the caption at the left, the streak of this kind at the right.
+        ChallengeService::Streak s = g_.challenges.streak(c.kind);
+        std::string streak = "Série : " + streakCount(c.kind, s.current) + (s.fromServer ? "" : " (sur ce PC)");
         float sw = ui.text().measure(streak, FontFace::Bold, ui.s(fz(ui, 15))).x;
         sw = std::min(sw, w * 0.5f);
         fitLabel(ui, streak, {x + w, top}, 15, sw, s.current > 0 ? ui.theme().warm : ui.theme().textDim, Align::Right, FontFace::Bold);
@@ -614,7 +748,16 @@ private:
         // This computer's best, or the server's when it is better (a run made elsewhere).
         const MyDay day = myDay(c.id);
         if (day.bestMs <= 0) {
-            fitLabel(ui, "Pas encore de temps sur ce défi.", {x, bottom}, 19, w, ui.theme().text, Align::Left, FontFace::Bold);
+            // « Plus loin » (2.34): not finished yet, my furthest attempt at the right.
+            float ew = 0.0f;
+            const float best = c.progressAvailable ? g_.challenges.bestProgress(c.id) : 0.0f;
+            if (best > 0.0f && best < 100.0f) {
+                const std::string essai = "Mon meilleur essai : " + percentText(best);
+                ew = std::min(ui.text().measure(essai, FontFace::Bold, ui.s(fz(ui, 18))).x, w * 0.5f);
+                fitLabel(ui, essai, {x + w, bottom}, 18, ew, ui.theme().accent, Align::Right, FontFace::Bold);
+                ew += ui.s(16);
+            }
+            fitLabel(ui, "Pas encore de temps sur ce défi.", {x, bottom}, 19, w - ew, ui.theme().text, Align::Left, FontFace::Bold);
             return;
         }
         Vec2 t = ui.label(formatRunTime(day.bestMs), {x, bottom}, fz(ui, 24), ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
@@ -628,6 +771,7 @@ private:
         }
         std::string label = challengeRunStateLabel(state);
         if (cx < x + w - ui.s(60)) cx += chip(ui, label, cx, bottom, h, stateColor(ui.theme(), state), x + w - cx) + ui.s(10);
+        if (day.late && cx < x + w - ui.s(60)) cx += chip(ui, "Hors délai", cx, bottom, h, ui.theme().warm, x + w - cx) + ui.s(10);
         if (!note.empty() && cx < x + w - ui.s(60)) fitLabel(ui, note, {cx, bottom}, 14, x + w - cx, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle, 0.7f);
     }
 
@@ -659,7 +803,42 @@ private:
         // The replay names the level as installed when it was played.
         LevelPlace place = levelPlace(g_, c);
         if (!place.localId.empty()) rep->levelId = place.localId;
-        g_.app.pushScene(makeLocalReplayViewer(g_, std::move(*rep), "Mon meilleur temps · défi du " + frenchDate(c.date)));
+        g_.app.pushScene(makeLocalReplayViewer(g_, std::move(*rep), "Mon meilleur temps – " + challengeTitle(c, true)));
+    }
+
+    /// « Voir » on a leaderboard row: that run's replay (or, `attempt`, that attempt's on
+    /// « Plus loin »; public once verified), downloaded once (kept in saves/challenges/ghosts/),
+    /// then played in the replay viewer.
+    void watchRun(const Json& e, const std::string& replayId, bool attempt) {
+        const DailyChallenge* c = shown();
+        if (!c || !watching_.empty()) return;
+        const std::string id = c->id;
+        const Json& p = jfield(e, "player", Json());
+        // The pseudonym as shown on the board (hidden in streaming mode).
+        const std::string name = ou_.displayName(p.is_object() ? jstr(p, "username") : std::string(), jget<int>(e, "rank", 0), jget<bool>(e, "is_me", false));
+        watching_ = replayId;
+        g_.challenges.downloadRunReplay(id, replayId, [this, id, name, life = std::weak_ptr<int>(life_)](std::optional<fs::path> file, const std::string& why) {
+            if (!life.lock()) return;
+            watching_.clear();
+            std::optional<ReplayData> rep = file ? GhostStore::loadReplay(*file) : std::nullopt;
+            const DailyChallenge* c = g_.challenges.find(id);
+            if (!rep || !c) {
+                g_.uiSound("ui_error");
+                say(why.empty() ? std::string("Replay indisponible.") : why);
+                return;
+            }
+            // The replay names the level as installed on its player's computer: this one's copy.
+            LevelPlace place = levelPlace(g_, *c);
+            if (place.localId.empty()) {
+                g_.uiSound("ui_error");
+                say(place.problem.empty() ? std::string("Niveau absent de ce PC.") : place.problem);
+                return;
+            }
+            rep->levelId = place.localId;
+            std::string title = challengeTitle(*c, true);
+            if (!name.empty()) title = name + " – " + title;
+            g_.app.pushScene(makeLocalReplayViewer(g_, std::move(*rep), title));
+        }, attempt);
     }
 
     void download(const DailyChallenge& c) {
@@ -677,7 +856,13 @@ private:
     void fetchBoard(const DailyChallenge& c) {
         boardBusy_ = true;
         boardAge_ = 0.0f;
-        std::string key = c.id + "/" + scopeId();
+        std::string key = boardKey(c);
+        if (boardId_ != c.id) {
+            // Another challenge: never its board under this one's title.
+            boardId_ = c.id;
+            boardOk_ = false;
+            board_ = Json();
+        }
         boardFor_ = key;
         g_.challenges.leaderboard(c.id, scopeId(), OnlineService::guard(life_, [this, key](const ApiResult& r) {
             boardBusy_ = false;
@@ -688,19 +873,19 @@ private:
             boardCode_ = r.status == 400 ? std::string("BAD_REQUEST") : r.code;  // scope=country without a country: 400
             boardOffline_ = !r.ok && (r.networkFailure() || r.status >= 500);
             if (r.ok) board_ = r.data;
-        }));
+        }), allPeriod(c), progressBoard(c));
     }
 
     void drawBoard(const DailyChallenge& c, const Rect& area) {
         UIContext& ui = g_.ui;
         ui.panel(area, false, 16);
         float x = area.x + ui.s(24), w = area.w - ui.s(48), y = area.y + ui.s(22);
-        fitLabel(ui, "Classement du jour", {x, y + ui.s(16)}, 24, w, ui.theme().text, Align::Left, FontFace::Bold);
+        fitLabel(ui, boardTitle(c.kind), {x, y + ui.s(16)}, 24, w, ui.theme().text, Align::Left, FontFace::Bold);
         y += ui.s(48);
         if (!g_.online.loggedIn()) {
             std::string text = g_.online.usable()
-                                   ? "Connectez-vous à Cosmic Online pour voir le classement du jour et y entrer. Sans compte, le défi se joue quand même : vos résultats restent sur ce PC."
-                                   : "Le classement du jour vient de Cosmic Online, indisponible ici. Le défi se joue quand même : vos résultats restent sur ce PC.";
+                                   ? "Connectez-vous à Cosmic Online pour voir le classement du défi et y entrer. Sans compte, le défi se joue quand même : vos résultats restent sur ce PC."
+                                   : "Le classement du défi vient de Cosmic Online, indisponible ici. Le défi se joue quand même : vos résultats restent sur ce PC.";
             Vec2 s = ui.labelWrapped(text, {x, y}, w, fz(ui, 17), ui.theme().textDim);
             y += s.y + ui.s(22);
             UIContext::ButtonStyle st;
@@ -711,10 +896,11 @@ private:
             fitLabel(ui, "Avec un compte", {x, y + ui.s(11)}, 18, w, ui.theme().accent, Align::Left, FontFace::Bold);
             y += ui.s(34);
             const std::pair<const char*, const char*> lines[] = {
-                {"Monde, Pays, Amis", "les meilleurs temps du jour, avec leur palier."},
+                {"Monde, Pays, Amis", "les meilleurs temps du défi, avec leur palier."},
                 {"Vérifié", "le serveur a contrôlé le replay de la partie."},
                 {"En attente de contrôle", "le temps est reçu, son replay pas encore contrôlé."},
                 {"Hors ligne : à l'envoi", "la partie attend la connexion pour partir."},
+                {"Hors délai", "partie jouée après la fin du défi : classée dans « Depuis »."},
             };
             for (const auto& [k, v] : lines) {
                 if (y + ui.s(60) > area.bottom() - ui.s(16)) break;
@@ -724,6 +910,44 @@ private:
             }
             return;
         }
+        // A challenge that is over: the runs made while it ran, or also those made since.
+        if (g_.challenges.ended(c)) {
+            static const char* const kPeriods[2] = {"Pendant le défi", "Depuis"};
+            float pw = (w - ui.s(10)) * 0.5f;
+            for (int i = 0; i < 2; ++i) {
+                UIContext::ButtonStyle st;
+                st.small = true;
+                st.selected = period_ == i;
+                st.fontSize = ui.fitFont(kPeriods[i], FontFace::Bold, 17, pw - ui.s(24), 0.7f);
+                Rect pr{x + (pw + ui.s(10)) * static_cast<float>(i), y, pw, ui.s(40)};
+                if (ui.button("period" + std::to_string(i), pr, kPeriods[i], st) && period_ != i) {
+                    period_ = i;
+                    fetchBoard(c);
+                }
+                if (i == 1) ui.newBadge("period1", pr, "challenges.board.period", true, true);
+            }
+            y += ui.s(52);
+        }
+        // « Meilleurs temps » / « Plus loin » (2.34): the attempts that went the furthest,
+        // finished or not, when the level has a route.
+        if (c.progressAvailable) {
+            static const char* const kBoards[2] = {"Meilleurs temps", "Plus loin"};
+            float bw = (w - ui.s(10)) * 0.5f;
+            for (int i = 0; i < 2; ++i) {
+                UIContext::ButtonStyle st;
+                st.small = true;
+                st.selected = boardKind_ == i;
+                st.fontSize = ui.fitFont(kBoards[i], FontFace::Bold, 17, bw - ui.s(24), 0.7f);
+                Rect br{x + (bw + ui.s(10)) * static_cast<float>(i), y, bw, ui.s(40)};
+                if (ui.button("kind" + std::to_string(i), br, kBoards[i], st) && boardKind_ != i) {
+                    boardKind_ = i;
+                    fetchBoard(c);
+                }
+                if (i == 1) ui.newBadge("kind1", br, "challenges.board.progress", true, true);
+            }
+            y += ui.s(52);
+        }
+        const bool progress = progressBoard(c);
         // Monde, Pays, Amis.
         static const char* const kScopes[3] = {"Monde", "Pays", "Amis"};
         float sw = (w - 2 * ui.s(10)) / 3.0f;
@@ -739,15 +963,17 @@ private:
         }
         y += ui.s(52);
         Rect list{x, y, w, area.bottom() - ui.s(20) - y};
+        const bool fresh = boardFor_ == boardKey(c);
         // The player's own line (its PENDING time too), at the bottom when there is one.
         const Json& me = jfield(board_, "me", Json());
-        bool hasMe = boardOk_ && me.is_object() && jget<int64_t>(me, "time_ms", 0) > 0;
+        bool hasMe = fresh && boardOk_ && me.is_object() &&
+                     (progress ? jget<float>(me, "progress", 0.0f) > 0.0f : jget<int64_t>(me, "time_ms", 0) > 0);
         // Pinned at the bottom only when my run is not already in the list.
         if (hasMe)
             for (const Json& e : jfield(board_, "entries", Json::array()))
                 if (jget<bool>(e, "is_me", false) || (!jstr(me, "run_id").empty() && jstr(e, "run_id") == jstr(me, "run_id"))) hasMe = false;
         if (hasMe) list.h -= ui.s(64);
-        if (boardBusy_ && !boardOk_) {
+        if (!fresh || (boardBusy_ && !boardOk_)) {
             fitLabel(ui, "Chargement…", {x, y + ui.s(14)}, 17, w, ui.theme().textDim);
             return;
         }
@@ -762,8 +988,11 @@ private:
         }
         const Json& entries = jfield(board_, "entries", Json::array());
         if (!entries.is_array() || entries.empty()) {
-            ui.labelWrapped(scope_ == 2 ? "Aucun ami n'a encore de temps vérifié sur ce défi." : "Aucun temps vérifié pour l'instant : soyez le premier !",
-                            {x, y}, w, fz(ui, 17), ui.theme().textDim);
+            std::string text = progress ? (scope_ == 2 ? "Aucun ami n'a encore d'essai classé sur ce défi."
+                                                       : "Aucun essai classé pour l'instant : allez le plus loin possible !")
+                               : scope_ == 2 ? "Aucun ami n'a encore de temps vérifié sur ce défi."
+                                             : "Aucun temps vérifié pour l'instant : soyez le premier !";
+            ui.labelWrapped(text, {x, y}, w, fz(ui, 17), ui.theme().textDim);
         } else {
             const float rowH = ui.s(46);
             float content = rowH * static_cast<float>(entries.size());
@@ -774,7 +1003,7 @@ private:
                 Rect row{list.x, ry + rowH * static_cast<float>(i), list.w - ui.s(10), rowH - ui.s(4)};
                 ++i;
                 if (row.bottom() < list.y || row.y > list.bottom()) continue;
-                drawBoardRow(e, row, jget<bool>(e, "is_me", false));
+                drawBoardRow(e, row, jget<bool>(e, "is_me", false), progress);
             }
             ui.endScroll();
         }
@@ -783,12 +1012,14 @@ private:
             ui.r().fillRoundedRect(row, ui.s(8), ui.theme().accent.withAlpha(30));
             Json mine = me;
             mine["is_me"] = true;
-            drawBoardRow(mine, row, true);
+            drawBoardRow(mine, row, true, progress);
         }
         if (boardCached_) fitLabel(ui, "Hors ligne : dernier classement reçu", {x + w, area.y + ui.s(38)}, 14, w * 0.45f, ui.theme().warm, Align::Right);
     }
 
-    void drawBoardRow(const Json& e, const Rect& row, bool me) {
+    /// A row of a leaderboard: « Meilleurs temps » (time, tier) or « Plus loin » (`progress`:
+    /// how far, « Fini » for a finished run).
+    void drawBoardRow(const Json& e, const Rect& row, bool me, bool progress) {
         UIContext& ui = g_.ui;
         if (me) ui.r().drawRoundedRect(row, ui.s(8), ui.theme().accent.withAlpha(150), std::max(1.0f, ui.s(1.2f)));
         else ui.r().fillRoundedRect(row, ui.s(8), Color{12, 18, 38, 200});
@@ -797,8 +1028,27 @@ private:
         std::string rk = rank > 0 ? std::to_string(rank) : std::string("—");
         fitLabel(ui, rk, {x + ui.s(34), cy}, 18, ui.s(40), rank == 1 ? tierColor(ChallengeTier::Gold) : ui.theme().text, Align::Right, FontFace::Bold);
         x += ui.s(48);
-        // Right side first: status, tier, time (each measured), then the name in what is left.
+        // Right side first: « Voir » (its replay), status, « hors délai », tier (or « Fini »),
+        // time (or progress), each measured, then the name in what is left.
         float right = row.right() - ui.s(10);
+        // The replay: a run's (run_id), or on « Plus loin » an attempt's (its server id).
+        std::string replayId = jstr(e, "run_id");
+        bool attemptReplay = false;
+        if (replayId.empty() && progress) {
+            replayId = jstr(e, "attempt_id");
+            attemptReplay = true;
+        }
+        if (jget<bool>(e, "has_replay", false) && !replayId.empty()) {
+            const std::string label = watching_ == replayId ? "…" : "Voir";
+            float bw = std::max(ui.text().measure("Voir", FontFace::Bold, ui.s(fz(ui, 15))).x, ui.text().measure("…", FontFace::Bold, ui.s(fz(ui, 15))).x) + ui.s(28);
+            UIContext::ButtonStyle st;
+            st.small = true;
+            st.fontSize = fz(ui, 15);
+            st.enabled = watching_.empty();
+            if (ui.button("watch" + replayId + (me ? "m" : ""), {right - bw, row.y + ui.s(5), bw, row.h - ui.s(10)}, label, st))
+                watchRun(e, replayId, attemptReplay);
+            right -= bw + ui.s(10);
+        }
         std::string status = jstr(e, "status", "VERIFIED");
         ChallengeRunState st = challengeRunStateFromServer(status);
         float h = ui.s(26);
@@ -807,17 +1057,31 @@ private:
             chip(ui, challengeRunStateLabel(st), right - sw, cy, h, stateColor(ui.theme(), st), sw);
             right -= sw + ui.s(8);
         }
-        ChallengeTier tier = challengeTierFromJson(jfield(e, "tier", Json()));
-        if (tier != ChallengeTier::None) {
+        if (jget<bool>(e, "late", false)) {
+            float lw = chipWidth(ui, "Hors délai", h);
+            if (right - lw > x + ui.s(180)) {
+                chip(ui, "Hors délai", right - lw, cy, h, ui.theme().warm, lw);
+                right -= lw + ui.s(8);
+            }
+        }
+        if (progress) {
+            if (jget<bool>(e, "finished", false)) {
+                float fw = chipWidth(ui, "Fini", h);
+                if (right - fw > x + ui.s(160)) {
+                    chip(ui, "Fini", right - fw, cy, h, ui.theme().success, fw, true);
+                    right -= fw + ui.s(10);
+                }
+            }
+        } else if (ChallengeTier tier = challengeTierFromJson(jfield(e, "tier", Json())); tier != ChallengeTier::None) {
             float tw = chipWidth(ui, challengeTierLabel(tier), h);
             if (right - tw > x + ui.s(160)) {
                 chip(ui, challengeTierLabel(tier), right - tw, cy, h, tierColor(tier), tw, true);
                 right -= tw + ui.s(10);
             }
         }
-        std::string time = formatRunTime(jget<int64_t>(e, "time_ms", 0));
-        float tw = ui.text().measure(time, FontFace::Bold, ui.s(fz(ui, 18))).x;
-        ui.label(time, {right, cy}, fz(ui, 18), ui.theme().text, Align::Right, FontFace::Bold, VAlign::Middle);
+        std::string value = progress ? percentText(jget<float>(e, "progress", 0.0f)) : formatRunTime(jget<int64_t>(e, "time_ms", 0));
+        float tw = ui.text().measure(value, FontFace::Bold, ui.s(fz(ui, 18))).x;
+        ui.label(value, {right, cy}, fz(ui, 18), ui.theme().text, Align::Right, FontFace::Bold, VAlign::Middle);
         right -= tw + ui.s(14);
         // The player: flag, then the name as they chose it (hidden in streaming mode).
         const Json& p = jfield(e, "player", Json());
@@ -832,175 +1096,259 @@ private:
         if (right - x > ui.s(24)) fitLabel(ui, me && !name.empty() ? name : shown, {x, cy}, 17, right - x, me ? ui.theme().accent : ui.theme().text);
     }
 
-    // ------------------------------------------------------------------ Archives
+    // ------------------------------------------------------------------ my results
 
-    /// My result of a challenge's day: the best of this computer's and the server's (a run
-    /// made on another computer counts too), with the state of that time.
+    /// My result of a challenge: the best of this computer's and the server's (a run made on
+    /// another computer counts too), with the state of that time.
     struct MyDay {
         int64_t bestMs = 0;
         ChallengeTier tier = ChallengeTier::None;
         ChallengeRunState state = ChallengeRunState::LocalOnly;
+        bool late = false;  // that time was made « hors délai »
     };
     MyDay myDay(const std::string& id) const {
         MyDay d;
         if (const ChallengeResult* r = g_.challenges.result(id); r && r->bestMs > 0) {
             d.bestMs = r->bestMs;
             d.tier = r->tier;
-            if (const ChallengeSubmission* s = g_.challenges.bestSubmission(id); s && g_.online.loggedIn() && s->ownerId == g_.online.playerId())
+            d.late = r->bestLate;
+            if (const ChallengeSubmission* s = g_.challenges.bestSubmission(id); s && g_.online.loggedIn() && s->ownerId == g_.online.playerId()) {
                 d.state = s->state;
+                d.late = s->late;
+            }
         }
         if (auto s = g_.challenges.serverResult(id); s && s->bestMs > 0) {
             if (d.bestMs <= 0 || s->bestMs <= d.bestMs) {
                 d.bestMs = s->bestMs;
                 d.state = s->status;
+                d.late = s->late;
             }
             d.tier = std::max(d.tier, s->tier);
         }
         return d;
     }
 
-    void loadMore() {
-        g_.challenges.loadArchives([this, life = std::weak_ptr<int>(life_)](bool ok, const std::string& m) {
-            if (!life.lock()) return;
-            if (!ok && g_.online.state() == OnlineState::Offline) say("Hors ligne : les défis passés gardés sur ce PC restent là.");
-            else if (!ok) say(m.empty() ? std::string("Archives indisponibles.") : m);
-        });
-    }
+    // ------------------------------------------------------------------ Calendrier
 
-    void drawArchives(const Rect& body) {
+    /// One cell of the calendar (a day, a week): `head` at the top left, then the challenge's
+    /// level and my tier and state; a hotspot (click, Entrée, A: its card) when there is one.
+    void drawCell(const std::string& name, const Rect& r, const DailyChallenge* c, const std::string& head, bool future, bool today, std::string& info) {
         UIContext& ui = g_.ui;
-        auto list = g_.challenges.past();
-        const float gap = ui.s(22);
-        Rect left{body.x, body.y, (body.w - gap) * 0.42f, body.h};
-        Rect right{left.right() + gap, body.y, body.right() - left.right() - gap, body.h};
-        ui.panel(left, false, 16);
-        float x = left.x + ui.s(20), w = left.w - ui.s(40), y = left.y + ui.s(20);
-        fitLabel(ui, "Défis passés", {x, y + ui.s(14)}, 22, w, ui.theme().text, Align::Left, FontFace::Bold);
-        y += ui.s(44);
-        const DailyChallenge* sel = nullptr;
-        for (const DailyChallenge* c : list)
-            if (c->id == selected_) sel = c;
-        if (!sel && !list.empty()) {
-            sel = list.front();
-            selected_ = sel->id;
-        }
-        bool more = g_.online.usable() && !g_.challenges.archivesExhausted();
-        float bottomBar = more ? ui.s(64) : 0.0f;
-        Rect view{x, y, w, left.bottom() - ui.s(16) - bottomBar - y};
-        if (list.empty()) {
-            std::string t = g_.challenges.archivesLoading() ? "Chargement des défis passés…"
-                            : g_.online.usable()           ? "Aucun défi passé pour l'instant."
-                                                           : "Aucun défi passé sur ce PC. Les archives viennent de Cosmic Online.";
-            ui.labelWrapped(t, {x, y}, w, fz(ui, 17), ui.theme().textDim);
-        } else {
-            const float rowH = ui.s(78);
-            ui.beginScroll("arch", view, rowH * static_cast<float>(list.size()));
-            float ry = view.y - ui.scrollOffset();
-            for (size_t i = 0; i < list.size(); ++i) {
-                const DailyChallenge& c = *list[i];
-                Rect row{view.x, ry + rowH * static_cast<float>(i), view.w - ui.s(12), rowH - ui.s(8)};
-                if (row.bottom() < view.y - rowH || row.y > view.bottom() + rowH) {
-                    ui.hotspot("row" + c.id, row);  // still in the focus order
-                    continue;
-                }
-                bool hovered = false;
-                if (ui.hotspot("row" + c.id, row, &hovered)) selected_ = c.id;
-                if (ui.focused("row" + c.id)) selected_ = c.id;
-                bool on = selected_ == c.id;
-                ui.r().fillRoundedRect(row, ui.s(10), on ? Color{28, 64, 84, 240} : hovered ? Color{20, 30, 56, 230} : Color{12, 18, 38, 220});
-                if (on || ui.focused("row" + c.id)) ui.r().drawRoundedRect(row, ui.s(10), ui.theme().accent.withAlpha(180), std::max(1.0f, ui.s(1.5f)));
-                float rx = row.x + ui.s(16), rroom = row.w - ui.s(32);
-                // My tier at the right (« Non joué » when I did not finish it).
-                ChallengeTier t = myDay(c.id).tier;
-                float h = ui.s(28);
-                std::string tl = t == ChallengeTier::None ? std::string("Non joué") : challengeTierLabel(t);
-                float tw = chipWidth(ui, tl, h);
-                chip(ui, tl, row.right() - ui.s(16) - tw, row.center().y, h, tierColor(t), tw, t != ChallengeTier::None);
-                rroom -= tw + ui.s(14);
-                fitLabel(ui, frenchDate(c.date), {rx, row.y + row.h * 0.32f}, 17, rroom, ui.theme().accent, Align::Left, FontFace::Bold);
-                std::optional<i18n::Verbatim> v;
-                if (c.community()) v.emplace();
-                fitLabel(ui, levelTitle(g_, c), {rx, row.y + row.h * 0.70f}, 17, rroom, ui.theme().text);
+        Color bg = future ? Color{10, 14, 26, 140} : Color{12, 18, 38, 215};
+        bool hovered = false, focused = false;
+        if (c && !future) {
+            if (ui.hotspot(name, r, &hovered)) openDetail(c->id, name);
+            focused = ui.focused(name);
+            if (hovered || focused) {
+                bg = Color{26, 44, 76, 240};
+                info = challengeTitle(*c, true);
             }
-            ui.endScroll();
         }
-        if (more) {
-            UIContext::ButtonStyle st;
-            st.small = true;
-            st.enabled = !g_.challenges.archivesLoading();
-            if (ui.button("more", {x, left.bottom() - ui.s(16) - ui.s(48), w, ui.s(48)},
-                          g_.challenges.archivesLoading() ? "Chargement…" : "Charger les défis précédents", st))
-                loadMore();
+        ui.r().fillRoundedRect(r, ui.s(8), bg);
+        if (today) ui.r().drawRoundedRect(r, ui.s(8), ui.theme().accent, std::max(1.5f, ui.s(2.5f)));
+        else if (focused) ui.r().drawRoundedRect(r, ui.s(8), ui.theme().accent.withAlpha(190), std::max(1.0f, ui.s(1.5f)));
+        const float px = r.x + ui.s(10), room = r.w - ui.s(20);
+        const float l1 = r.y + r.h * 0.22f, l2 = r.y + r.h * 0.52f, l3 = r.y + r.h * 0.80f;
+        // Line 1: the day (or the week), my tier at the right.
+        float tierW = 0.0f;
+        const MyDay day = c && !future ? myDay(c->id) : MyDay{};
+        if (day.tier != ChallengeTier::None) {
+            float ch = std::min(ui.s(24), r.h * 0.3f);
+            tierW = std::min(chipWidth(ui, challengeTierLabel(day.tier), ch), room * 0.55f);
+            chip(ui, challengeTierLabel(day.tier), r.right() - ui.s(8) - tierW, l1, ch, tierColor(day.tier), tierW, true);
         }
-        drawArchiveDetail(sel, right);
+        Color hc = today ? ui.theme().accent : future ? ui.theme().textDim.withAlpha(120) : ui.theme().text;
+        fitLabel(ui, head, {px, l1}, 18, room - tierW - ui.s(6), hc, Align::Left, FontFace::Bold);
+        if (!c || future) return;
+        {
+            std::optional<i18n::Verbatim> v;
+            if (c->community()) v.emplace();  // a player's level: as its author named it
+            fitLabel(ui, levelTitle(g_, *c), {px, l2}, 15, room, Color{185, 200, 218, 255});
+        }
+        // Line 3: where my best run stands (nothing when I did not play it).
+        if (day.bestMs <= 0) return;
+        std::string st;
+        Color sc = ui.theme().textDim;
+        if (day.state == ChallengeRunState::Rejected) st = "Refusé", sc = ui.theme().danger;
+        else if (day.late) st = "Hors délai", sc = ui.theme().warm;
+        else if (day.state == ChallengeRunState::Verified) st = "Vérifié", sc = ui.theme().success;
+        else if (day.state == ChallengeRunState::Pending || day.state == ChallengeRunState::Sent) st = "En attente", sc = ui.theme().accent;
+        else if (day.state == ChallengeRunState::Waiting) st = "À l'envoi", sc = ui.theme().warm;
+        else st = "Sur ce PC";
+        fitLabel(ui, st, {px, l3}, 14, room, sc, Align::Left, FontFace::Bold);
     }
 
-    void drawArchiveDetail(const DailyChallenge* c, const Rect& area) {
+    /// The month's challenge, at the head of the calendar.
+    void drawMonthBand(const Rect& r, const DailyChallenge* c, std::string& info) {
         UIContext& ui = g_.ui;
-        ui.panel(area, false, 16);
-        float x = area.x + ui.s(28), w = area.w - ui.s(56), y = area.y + ui.s(24);
+        bool hovered = false, focused = false;
+        if (c) {
+            if (ui.hotspot("month", r, &hovered)) openDetail(c->id, "month");
+            focused = ui.focused("month");
+            if (hovered || focused) info = challengeTitle(*c, true);
+        }
+        ui.r().fillRoundedRect(r, ui.s(10), hovered || focused ? Color{26, 44, 76, 240} : Color{14, 22, 46, 225});
+        ui.r().drawRoundedRect(r, ui.s(10), ui.theme().violet.withAlpha(focused ? 230 : 120), std::max(1.0f, ui.s(focused ? 2.0f : 1.2f)));
+        float x = r.x + ui.s(16), right = r.right() - ui.s(16), cy = r.center().y, h = std::min(ui.s(30), r.h * 0.6f);
+        x += chip(ui, "Défi du mois", x, cy, h, ui.theme().violet, r.w * 0.3f, true) + ui.s(16);
         if (!c) {
-            ui.labelWrapped("Choisissez un défi dans la liste.", {x, y}, w, fz(ui, 17), ui.theme().textDim);
+            std::string none = g_.challenges.legacyServer() ? "Ce serveur ne propose pas encore de défi du mois."
+                                                            : "Pas de défi du mois pour " + frenchMonth(month_) + ".";
+            fitLabel(ui, none, {x, cy}, 17, right - x, ui.theme().textDim);
             return;
         }
-        LevelPlace place = levelPlace(g_, *c);
-        fitLabel(ui, "Défi du " + frenchDate(c->date), {x, y + ui.s(12)}, 17, w, ui.theme().accent, Align::Left, FontFace::Bold);
-        y += ui.s(38);
-        const float by = area.bottom() - ui.s(24) - ui.s(58);
-        const std::vector<std::string> chips = ruleChips(g_, *c);
-        const float chipH = ui.s(30);
-        const float below = chipRowsHeight(ui, chips, w, chipH) + ui.s(18) + ui.s(92) + ui.s(18) + ui.s(80) + ui.s(50);
-        y += drawLevelHeader(*c, place, x, y, w, std::clamp(by - y - below, ui.s(84), ui.s(330))) + ui.s(18);
-        y += drawChipRows(ui, chips, x, y, w, chipH, ui.theme().accent) + ui.s(18);
-        const ChallengeResult* res = g_.challenges.result(c->id);
+        // At the right: my tier and the state of my best run, measured first.
         const MyDay day = myDay(c->id);
-        drawTierCards(ui, *c, {x, y, w, ui.s(92)}, day.tier, true);
-        y += ui.s(92) + ui.s(18);
-        // My result that day (this computer's, or the server's: a run made elsewhere).
-        Rect box{x, y, w, std::max(ui.s(56), std::min(ui.s(80), by - ui.s(46) - y))};
-        ui.r().fillRoundedRect(box, ui.s(10), Color{12, 18, 38, 220});
-        float bx = box.x + ui.s(18), bw = box.w - ui.s(36), cy = box.center().y;
-        if (day.bestMs <= 0) {
-            fitLabel(ui, "Vous n'avez pas fini ce défi le jour même.", {bx, cy}, 18, bw, ui.theme().textDim);
-        } else {
-            Vec2 l = ui.label("Mon temps : ", {bx, cy}, fz(ui, 18), ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
-            Vec2 t = ui.label(formatRunTime(day.bestMs), {bx + l.x, cy}, fz(ui, 22), ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
-            float cx = bx + l.x + t.x + ui.s(14);
-            if (cx < bx + bw - ui.s(60)) chip(ui, challengeRunStateLabel(day.state), cx, cy, ui.s(28), stateColor(ui.theme(), day.state), bx + bw - cx);
+        if (day.bestMs > 0) {
+            std::string st = day.late ? std::string("Hors délai") : challengeRunStateLabel(day.state);
+            Color sc = day.late ? ui.theme().warm : stateColor(ui.theme(), day.state);
+            float sw = std::min(chipWidth(ui, st, h), (right - x) * 0.35f);
+            chip(ui, st, right - sw, cy, h, sc, sw);
+            right -= sw + ui.s(8);
+            float tw = std::min(chipWidth(ui, challengeTierLabel(day.tier), h), (right - x) * 0.3f);
+            chip(ui, challengeTierLabel(day.tier), right - tw, cy, h, tierColor(day.tier), tw, true);
+            right -= tw + ui.s(14);
         }
-        y = box.bottom() + ui.s(8);
-        std::string note = msgTimer_ > 0.0f ? msg_ : place.problem;
-        if (note.empty() && !place.localId.empty() && !place.sameVersion) note = "Le niveau a changé depuis ce défi : la partie se joue sur votre version.";
-        if (note.empty()) note = "Rejouer un défi passé ne compte pas : hors classement, rien n'est envoyé.";
-        if (by - y > ui.s(30)) fitLabel(ui, note, {x, y + ui.s(16)}, 15, w, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle, 0.7f);
-        const float gap = ui.s(14);
-        float b1 = (w - gap) * 0.5f;
-        bool needDownload = c->community() && place.localId.empty();
-        UIContext::ButtonStyle primary;
-        primary.primary = true;
-        primary.enabled = needDownload ? (g_.online.usable() && !downloading_) : place.problem.empty();
-        std::string label = needDownload ? (downloading_ ? "Téléchargement…" : "Télécharger le niveau") : "Rejouer (hors classement)";
-        if (ui.button("replay", {x, by, b1, ui.s(58)}, label, primary)) {
-            if (needDownload) download(*c);
-            else g_.app.pushScene(makeChallengeStart(g_, c->id, true));
+        std::optional<i18n::Verbatim> v;
+        if (c->community()) v.emplace();
+        fitLabel(ui, levelTitle(g_, *c), {x, cy}, 19, right - x, ui.theme().text, Align::Left, FontFace::Bold);
+    }
+
+    void drawCalendar(const Rect& body) {
+        UIContext& ui = g_.ui;
+        ChallengeService& cs = g_.challenges;
+        ui.panel(body, false, 16);
+        const float x = body.x + ui.s(22), w = body.w - ui.s(44);
+        float y = body.y + ui.s(16);
+        const int64_t now = cs.nowMs();
+        const int64_t today = now / 86400000LL;
+        const std::string thisMonth = ChallengeService::utcMonth(now);
+        if (month_.empty() || month_ > thisMonth) month_ = thisMonth;
+        // Never before the oldest month with a challenge (the server's word; offline, the
+        // oldest one kept here), never after this one.
+        std::string first = cs.firstMonth();
+        if (first.empty()) {
+            auto past = cs.past();
+            first = past.empty() ? thisMonth : past.back()->date.substr(0, 7);
         }
-        UIContext::ButtonStyle st;
-        st.enabled = res && res->hasReplay && !place.localId.empty();
-        if (ui.button("archbest", {x + b1 + gap, by, w - b1 - gap, ui.s(58)}, "Revoir mon meilleur replay", st)) watchBest(*c);
+        // Mois précédent, the month, Mois suivant.
+        const float hh = ui.s(44);
+        {
+            static const char* const kTitles[12] = {"Janvier", "Février", "Mars",      "Avril",   "Mai",      "Juin",
+                                                    "Juillet", "Août",    "Septembre", "Octobre", "Novembre", "Décembre"};
+            const std::string prevL = "Mois précédent", nextL = "Mois suivant";
+            float bw = std::max(ui.text().measure(prevL, FontFace::Bold, ui.s(17)).x, ui.text().measure(nextL, FontFace::Bold, ui.s(17)).x) + ui.s(40);
+            UIContext::ButtonStyle nb;
+            nb.small = true;
+            nb.fontSize = 17;
+            nb.enabled = month_ > first;
+            if (ui.button("prev", {x, y, bw, hh}, prevL, nb)) changeMonth(-1);
+            nb.enabled = month_ < thisMonth;
+            if (ui.button("next", {x + w - bw, y, bw, hh}, nextL, nb)) changeMonth(+1);
+            int yy = 0, mm = 0;
+            std::sscanf(month_.c_str(), "%4d-%2d", &yy, &mm);
+            std::string title = std::string(kTitles[std::clamp(mm, 1, 12) - 1]) + " " + std::to_string(yy);
+            fitLabel(ui, title, {x + w * 0.5f, y + hh * 0.5f}, 28, w - 2 * bw - ui.s(40), ui.theme().text, Align::Center, FontFace::Title);
+        }
+        y += hh + ui.s(12);
+        std::string info;
+        // The month's challenge at the head.
+        const DailyChallenge* mc = cs.find("monthly-" + month_);
+        if (mc && mc->startsAtMs > now) mc = nullptr;  // never shown before its start
+        const float bandH = ui.s(54);
+        drawMonthBand({x, y, w, bandH}, mc, info);
+        y += bandH + ui.s(12);
+        // The days, Monday to Sunday, and a column for each week's challenge.
+        const float gap = ui.s(6);
+        const float weekW = std::max(ui.s(160), w * 0.15f);
+        const float dayW = (w - weekW - 7 * gap) / 7.0f;
+        static const char* const kDays[7] = {"Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"};
+        const float headH = ui.s(26);
+        for (int d = 0; d < 7; ++d)
+            fitLabel(ui, kDays[d], {x + (dayW + gap) * static_cast<float>(d) + ui.s(10), y + headH * 0.5f}, 15, dayW - ui.s(12), ui.theme().textDim, Align::Left,
+                     FontFace::Bold);
+        fitLabel(ui, "Semaine", {x + 7 * (dayW + gap) + ui.s(10), y + headH * 0.5f}, 15, weekW - ui.s(12), ui.theme().violet, Align::Left, FontFace::Bold);
+        y += headH + ui.s(4);
+        const int64_t firstDay = challenge_period::firstDay(ChallengeKind::Monthly, month_).value_or(today);
+        const int days = std::max(28, challenge_period::daysInMonth(month_));
+        const int64_t gridStart = firstDay - challenge_period::weekday(firstDay);
+        const int rows = static_cast<int>((firstDay + days - 1 - gridStart) / 7) + 1;
+        const float footH = ui.s(30);
+        const float gridBottom = body.bottom() - ui.s(14) - footH - ui.s(8);
+        const float rowH = std::min(ui.s(120), (gridBottom - y - gap * static_cast<float>(rows - 1)) / static_cast<float>(rows));
+        for (int r = 0; r < rows; ++r) {
+            const int64_t weekStart = gridStart + 7 * r;
+            const float ry = y + (rowH + gap) * static_cast<float>(r);
+            for (int d = 0; d < 7; ++d) {
+                const int64_t day = weekStart + d;
+                Rect cell{x + (dayW + gap) * static_cast<float>(d), ry, dayW, rowH};
+                if (day < firstDay || day >= firstDay + days) {
+                    // Another month's day: left empty (its challenges are in its own month).
+                    ui.r().fillRoundedRect(cell, ui.s(8), Color{10, 14, 26, 90});
+                    continue;
+                }
+                const std::string date = challenge_period::dateOfDay(day);
+                const DailyChallenge* c = cs.find("daily-" + date);
+                if (c && c->startsAtMs > now) c = nullptr;
+                drawCell("d" + date, cell, c, std::to_string(day - firstDay + 1), day > today, day == today, info);
+            }
+            // The week's challenge (ISO week of that row).
+            const std::string week = challenge_period::ofDay(ChallengeKind::Weekly, weekStart);
+            const DailyChallenge* wc = cs.find("weekly-" + week);
+            if (wc && wc->startsAtMs > now) wc = nullptr;
+            Rect wcell{x + 7 * (dayW + gap), ry, weekW, rowH};
+            int wn = std::atoi(week.substr(6).c_str());
+            drawCell("w" + week, wcell, wc, "Semaine " + std::to_string(wn), weekStart > today, false, info);
+            if (wcell.w > 0) ui.r().drawRoundedRect(wcell, ui.s(8), ui.theme().violet.withAlpha(70), std::max(1.0f, ui.s(1.0f)));
+        }
+        // Footer: what the calendar shows (the server's answer, or what is kept here), and the
+        // challenge under the pointer or the focus.
+        const float fy = body.bottom() - ui.s(14) - footH * 0.5f;
+        const CalendarMonthView v = monthStatus();
+        float used = 0.0f;
+        if (!v.text.empty()) used = fitLabel(ui, v.text, {x, fy}, 15, w * 0.62f, v.color, Align::Left, FontFace::Body, VAlign::Middle, 0.7f).x + ui.s(24);
+        if (!info.empty() && w - used > ui.s(80)) fitLabel(ui, info, {x + w, fy}, 15, w - used, ui.theme().text, Align::Right, FontFace::Bold);
+    }
+
+    struct CalendarMonthView {
+        std::string text;
+        Color color;
+    };
+    CalendarMonthView monthStatus() const {
+        const UITheme& th = g_.ui.theme();
+        const auto& m = g_.challenges.calendar(month_);
+        using S = ChallengeService::CalendarMonth::State;
+        if (!g_.online.usable()) return {"Cosmic Online indisponible : seuls les défis gardés sur ce PC sont montrés.", th.warm};
+        switch (m.state) {
+            case S::Loading: return {"Chargement du calendrier…", th.textDim};
+            case S::Cached: return {"Hors ligne : dernier calendrier reçu, avec les défis gardés sur ce PC.", th.warm};
+            case S::Offline: return {"Hors ligne : seuls les défis gardés sur ce PC sont montrés.", th.warm};
+            case S::Failed: return {"Calendrier indisponible : " + m.message, th.warm};
+            case S::Never: return {"Seuls les défis gardés sur ce PC sont montrés.", th.textDim};
+            case S::Ok: break;
+        }
+        if (g_.challenges.legacyServer()) return {"Ce serveur ne propose encore que les défis du jour.", th.textDim};
+        return {};
     }
 
     GameServices& g_;
     OnlineUi ou_;
     MenuBackground bg_;
     int tab_ = 0;
-    std::string selected_;
+    std::string detail_;      // the calendar shows this challenge's card ("" = the month)
+    std::string detailFrom_;  // the cell it was opened from (the focus goes back to it)
+    std::string month_;       // the calendar's month ("2026-11")
+    std::string pendingFocus_;
     int scope_ = 0;
+    int period_ = 0;  // 0: « Pendant le défi » (period=live), 1: « Depuis » (period=all)
+    int boardKind_ = 0;  // 0: « Meilleurs temps », 1: « Plus loin » (board=progress, 2.34)
     Json board_;
-    std::string boardFor_;
+    std::string boardFor_, boardId_;
     std::string boardMsg_, boardCode_;
     bool boardBusy_ = false, boardOk_ = false, boardOffline_ = false, boardCached_ = false;
     float boardAge_ = 0.0f;
     bool downloading_ = false;
+    std::string watching_;  // the run whose replay is being downloaded (« Voir »)
     std::map<std::string, TexturePtr> thumbs_;
     std::string msg_;
     float msgTimer_ = 0.0f;
@@ -1046,6 +1394,12 @@ public:
                     topName_ = p.is_object() ? jstr(p, "username") : std::string();
                 }));
         }
+        // A challenge that is over: the run is « hors délai » (« Depuis » only), on the
+        // challenge's version of the level only, else a practice.
+        if (challenge_ && !practice_ && g_.challenges.ended(*challenge_)) {
+            late_ = true;
+            if (!place_.localId.empty() && !place_.sameVersion) practice_ = true;
+        }
         g_.ui.setFocus("cstart/go");
     }
 
@@ -1069,8 +1423,16 @@ public:
             cancel = ui.button("cancel", {panel.right() - ui.s(32) - ui.s(220), panel.bottom() - ui.s(80), ui.s(220), ui.s(54)}, "Retour");
         } else {
             const DailyChallenge& c = *challenge_;
-            std::string title = practice_ ? "ENTRAÎNEMENT — HORS CLASSEMENT" : "Défi du " + frenchDate(c.date, false);
-            fitLabel(ui, title, {x, y + ui.s(20)}, 32, w, practice_ ? ui.theme().warm : ui.theme().text, Align::Left, FontFace::Title, VAlign::Middle, 0.6f);
+            std::string title = practice_ ? "ENTRAÎNEMENT — HORS CLASSEMENT" : challengeTitle(c, late_);
+            // A run « hors délai »: said at the right of the title.
+            float tagW = 0.0f;
+            if (late_ && !practice_) {
+                const std::string tag = "Hors délai : classé dans « Depuis »";
+                tagW = std::min(chipWidth(ui, tag, ui.s(34)), w * 0.45f);
+                chip(ui, tag, x + w - tagW, y + ui.s(20), ui.s(34), ui.theme().warm, tagW);
+                tagW += ui.s(20);
+            }
+            fitLabel(ui, title, {x, y + ui.s(20)}, 32, w - tagW, practice_ ? ui.theme().warm : ui.theme().text, Align::Left, FontFace::Title, VAlign::Middle, 0.6f);
             y += ui.s(52);
             {
                 std::string sub = levelTitle(g_, c);
@@ -1100,7 +1462,9 @@ public:
             primary.primary = true;
             primary.enabled = place_.problem.empty() && level_.has_value() && !downloadingGhost_;
             Rect goR{panel.right() - ui.s(32) - ui.s(330), by, ui.s(330), ui.s(56)};
-            go = ui.button("go", goR, downloadingGhost_ ? "Fantôme…" : practice_ ? "Lancer l'entraînement" : "Lancer le défi", primary);
+            const std::string goLabel = downloadingGhost_ ? "Fantôme…" : practice_ ? "Lancer l'entraînement" : late_ ? "Lancer (hors délai)" : "Lancer le défi";
+            primary.fontSize = ui.fitFont(goLabel, FontFace::Bold, 26, goR.w - ui.s(28), 0.6f);
+            go = ui.button("go", goR, goLabel, primary);
             Rect cancelR{goR.x - ui.s(16) - ui.s(200), by, ui.s(200), ui.s(56)};
             cancel = ui.button("cancel", cancelR, "Annuler");
             float leftEnd = cancelR.x;
@@ -1181,10 +1545,10 @@ private:
     void drawRight(const DailyChallenge& c, const Rect& area) {
         UIContext& ui = g_.ui;
         float x = area.x, w = area.w, y = area.y;
-        fitLabel(ui, "Ce qui change aujourd'hui", {x, y + ui.s(12)}, 22, w, ui.theme().text, Align::Left, FontFace::Bold);
+        fitLabel(ui, "Ce qui change dans ce défi", {x, y + ui.s(12)}, 22, w, ui.theme().text, Align::Left, FontFace::Bold);
         y += ui.s(40);
         // Under the rules: the ghost choice and the connection (what becomes of the result).
-        const std::string conn = connectionLine(g_, practice_, place_);
+        const std::string conn = connectionLine(g_, practice_, late_, place_);
         const float connH = ui.s(32) + ui.text().measureWrapped(conn, FontFace::Body, ui.s(fz(ui, 17)), w - ui.s(24)).y;
         const float ghostH = ui.s(32 + 54);
         float rulesBottom = area.bottom() - ghostH - connH - ui.s(36);
@@ -1220,7 +1584,7 @@ private:
         }
         std::vector<std::pair<int, std::string>> opts = {{0, "Aucun"}};
         if (bestMs_ > 0) opts.push_back({1, "Mon meilleur · " + formatRunTime(bestMs_)});
-        if (!topRun_.empty()) opts.push_back({2, "Le 1er du jour · " + formatRunTime(topMs_)});
+        if (!topRun_.empty()) opts.push_back({2, std::string(firstOfBoard(c.kind)) + " · " + formatRunTime(topMs_)});
         float gap = ui.s(12);
         float bw = (w - gap * static_cast<float>(opts.size() - 1)) / static_cast<float>(opts.size());
         for (size_t i = 0; i < opts.size(); ++i) {
@@ -1246,11 +1610,14 @@ private:
 
     void launch() {
         if (!challenge_ || !level_) return;
-        // Ended while this screen was open: the run can only be a practice now.
-        if (!practice_ && g_.challenges.nowMs() >= challenge_->endsAtMs) {
-            practice_ = true;
+        // Ended while this screen was open: the run is « hors délai » now (said once), or a
+        // practice when the level installed is not the challenge's version.
+        if (!practice_ && !late_ && g_.challenges.ended(*challenge_)) {
+            late_ = true;
+            practice_ = !place_.localId.empty() && !place_.sameVersion;
             g_.uiSound("ui_error");
-            say("Ce défi vient de se terminer : la partie sera hors classement.");
+            say(practice_ ? "Ce défi vient de se terminer : la partie sera hors classement."
+                          : "Ce défi vient de se terminer : la partie sera hors délai (classement « Depuis »).");
             return;
         }
         PlayOptions o;
@@ -1272,7 +1639,7 @@ private:
                 GhostEntry e;
                 e.file = *file;
                 e.meta.source = "world";
-                e.meta.label = topName_.empty() ? std::string("1er du jour") : topName_;
+                e.meta.label = topName_.empty() ? std::string(firstOfBoard(challenge_->kind)) : topName_;
                 e.meta.levelId = place_.localId;
                 e.meta.timeMs = topMs_;
                 e.meta.validated = true;
@@ -1288,6 +1655,7 @@ private:
     GameServices& g_;
     std::string id_;
     bool practice_ = false;
+    bool late_ = false;  // the challenge is over: a run « hors délai »
     std::optional<DailyChallenge> challenge_;
     LevelPlace place_;
     std::optional<LevelData> level_;
@@ -1319,18 +1687,30 @@ public:
         const float W = ui.screenW(), H = ui.screenH();
         ui.r().fillRect({0, 0, W, H}, Color{4, 6, 14, 180});
         ui.pushId("cend");
-        const int rows = d_.completed ? (d_.practice ? 2 : 4) : 1;
+        const bool late = d_.completed && !d_.practice && d_.report.late;
+        // « Plus loin » (2.34): an unfinished attempt, its progress (and, when it went further
+        // than my best one, its sending state).
+        const bool attempt = !d_.completed && d_.attempt.has_value();
+        // Time, tier, (the streak: not for a run « hors délai »), the sending state; a fall:
+        // why, (the attempt's progress and its sending state).
+        const int rows = d_.completed ? (d_.practice ? 2 : late ? 3 : 4) : 1 + (attempt ? (d_.attempt->newBest ? 2 : 1) : 0);
         // The sending state, followed live (and why, when it says more than the state).
-        ChallengeRunState state = d_.report.state;
-        std::string note = d_.completed && !d_.practice ? d_.report.note : std::string();
-        if (const ChallengeSubmission* sub = g_.challenges.submission(d_.attemptId)) {
+        ChallengeRunState state = attempt ? d_.attempt->state : d_.report.state;
+        std::string note = attempt ? d_.attempt->note : d_.completed && !d_.practice ? d_.report.note : std::string();
+        if (const ChallengeSubmission* sub = g_.challenges.submission(d_.attemptId, attempt)) {
             state = sub->state;
             note = sub->note;
         }
         if (d_.practice) note = "Hors classement : ce temps n'est ni envoyé ni gardé comme meilleur temps.";
+        // The notes under the rows, one after the other.
+        std::vector<std::pair<std::string, Color>> notes;
+        if (late) notes.push_back({"Hors délai : classé dans « Depuis », ne compte pas pour la série.", ui.theme().warm});
+        if (!note.empty()) notes.push_back({note, ui.theme().textDim});
         float pw = std::min(ui.s(900), W - ui.s(80));
         const float w = pw - ui.s(72);
-        float noteH = note.empty() ? 0.0f : ui.text().measureWrapped(note, FontFace::Body, ui.s(fz(ui, 16)), w).y + ui.s(14);
+        float noteH = 0.0f;
+        for (const auto& [t, c] : notes) noteH += ui.text().measureWrapped(t, FontFace::Body, ui.s(fz(ui, 16)), w).y + ui.s(10);
+        if (noteH > 0.0f) noteH += ui.s(4);
         float ph = std::min(ui.s(30 + 56 + 24 + 44) + ui.s(64) * static_cast<float>(rows) + noteH + ui.s(24 + 60 + 30), H - ui.s(60));
         Rect p{(W - pw) * 0.5f, (H - ph) * 0.5f, pw, ph};
         ui.panel(p, true, 18);
@@ -1340,12 +1720,12 @@ public:
         fitLabel(ui, title, {p.center().x, y + ui.s(28)}, 44, w, tc, Align::Center, FontFace::Title, VAlign::Middle, 0.6f);
         y += ui.s(56) + ui.s(24);
         {
-            // The level (a player's level: as its author named it), the day.
+            // The level (a player's level: as its author named it), the challenge.
             std::string sub = levelTitle(g_, d_.challenge);
-            std::string tail = "  ·  défi du " + frenchDate(d_.challenge.date) + (d_.practice ? "  ·  hors classement" : "");
+            std::string tail = "  ·  " + challengeTitle(d_.challenge, true) + (d_.practice ? "  ·  hors classement" : late ? "  ·  hors délai" : "");
             std::optional<i18n::Verbatim> v;
             if (d_.challenge.community()) v.emplace();
-            float sw = std::min(ui.text().measure(sub, FontFace::Bold, ui.s(fz(ui, 20))).x, w * 0.6f);
+            float sw = std::min(ui.text().measure(sub, FontFace::Bold, ui.s(fz(ui, 20))).x, w * 0.5f);
             v.reset();
             float tw = std::min(ui.text().measure(tail, FontFace::Body, ui.s(fz(ui, 18))).x, w - sw);
             float sx = p.center().x - (sw + tw) * 0.5f;
@@ -1361,7 +1741,7 @@ public:
             float vf = fit(ui, v, FontFace::Bold, 22, w * 0.42f, 0.7f);
             float vw = ui.text().measure(v, FontFace::Bold, ui.s(vf)).x;
             float ew = 0.0f;
-            if (!extra.empty()) ew = std::min(chipWidth(ui, extra, ui.s(28)), w * 0.3f);
+            if (!extra.empty()) ew = std::min(chipWidth(ui, extra, ui.s(28)), w * 0.45f);
             float kroom = w - ui.s(36) - vw - ui.s(16) - (ew > 0 ? ew + ui.s(12) : 0.0f);
             fitLabel(ui, k, {rr.x + ui.s(18), rr.center().y}, 18, kroom, ui.theme().textDim);
             ui.label(v, {rr.right() - ui.s(18), rr.center().y}, vf, c, Align::Right, FontFace::Bold, VAlign::Middle);
@@ -1371,6 +1751,12 @@ public:
         if (!d_.completed) {
             std::string why = d_.failReason.empty() ? std::string("Partie terminée") : d_.failReason;
             row("Raison", why, ui.theme().danger);
+            if (attempt) {
+                const ChallengeService::AttemptReport& a = *d_.attempt;
+                row("Progression de l'essai", percentText(a.progress), a.newBest ? ui.theme().success : ui.theme().accent,
+                    a.newBest ? std::string("Nouveau record de progression") : std::string(), ui.theme().success);
+                if (a.newBest) row("Envoi", challengeRunStateLabel(state), stateColor(ui.theme(), state));
+            }
         } else {
             std::string newBest = !d_.practice && d_.report.newBest ? "Nouveau meilleur temps" : std::string();
             row("Temps", formatRunTime(d_.timeMs), ui.theme().accent, newBest, ui.theme().success);
@@ -1378,13 +1764,18 @@ public:
             std::string dmg = d_.damageTaken == 0 ? std::string("sans dégât") : std::to_string(d_.damageTaken) + (d_.damageTaken > 1 ? " dégâts" : " dégât");
             row("Palier atteint", tier, tierColor(d_.tier), dmg, d_.damageTaken == 0 ? ui.theme().success : ui.theme().textDim);
             if (!d_.practice) {
-                ChallengeService::Streak s = g_.challenges.streak();
-                std::string sv = std::to_string(s.current) + (s.current > 1 ? " jours" : " jour");
-                row(s.fromServer ? "Série (Cosmic Online)" : "Série (sur ce PC)", sv, s.current > 0 ? ui.theme().warm : ui.theme().text);
+                if (!late) {
+                    ChallengeService::Streak s = g_.challenges.streak(d_.challenge.kind);
+                    row(s.fromServer ? "Série (Cosmic Online)" : "Série (sur ce PC)", streakCount(d_.challenge.kind, s.current),
+                        s.current > 0 ? ui.theme().warm : ui.theme().text);
+                }
                 row("Envoi", challengeRunStateLabel(state), stateColor(ui.theme(), state));
             }
         }
-        if (!note.empty()) ui.labelWrapped(note, {x, y}, w, fz(ui, 16), ui.theme().textDim);
+        for (const auto& [t, c] : notes) {
+            Vec2 s = ui.labelWrapped(t, {x, y}, w, fz(ui, 16), c);
+            y += s.y + ui.s(10);
+        }
         // Rejouer, Revoir la partie, Retour aux défis.
         float by = p.bottom() - ui.s(30) - ui.s(60), gap = ui.s(16);
         float bw = (w - 2 * gap) / 3.0f;
@@ -1401,7 +1792,7 @@ public:
             g_.app.popScene();
             game_.restart();
         } else if (watch && d_.replay) {
-            g_.app.pushScene(makeLocalReplayViewer(g_, *d_.replay, "Votre partie · défi du " + frenchDate(d_.challenge.date)));
+            g_.app.pushScene(makeLocalReplayViewer(g_, *d_.replay, "Votre partie – " + challengeTitle(d_.challenge, true)));
         } else if (back || ui.backPressed()) {
             game_.quitToMenu();
         }
@@ -1418,6 +1809,13 @@ private:
 
 std::unique_ptr<Scene> makeChallenges(GameServices& g, int tab, const std::string& select) {
     return std::make_unique<ChallengesScene>(g, tab, select);
+}
+
+std::unique_ptr<Scene> makeChallengesOn(GameServices& g, const std::string& challengeId) {
+    const DailyChallenge* c = g.challenges.find(challengeId);
+    if (!c) return makeChallenges(g, challengeId.rfind("weekly-", 0) == 0 ? 1 : challengeId.rfind("monthly-", 0) == 0 ? 2 : 0);
+    int tab = challengeTab(g.challenges, *c);
+    return makeChallenges(g, tab, tab == 3 ? challengeId : std::string());
 }
 
 std::unique_ptr<Scene> makeChallengeStart(GameServices& g, const std::string& challengeId, bool practice) {
