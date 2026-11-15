@@ -58,8 +58,7 @@ void GameServices::loadAll() {
     newBadges.init(Paths::savesDir() / "new_badges.json", news.lastVersion(), COSMIC_VERSION_STRING);
     ui.isNewFeature = [this](const std::string& id) { return newBadges.isNew(id); };
     ui.featureSeen = [this](const std::string& id) {
-        newBadges.markSeen(id);
-        newBadges.save();
+        if (newBadges.markSeen(id)) newBadges.save();  // a step of a trail (a tab…) has nothing to save
     };
     news.startScan(content);
     applySettings();

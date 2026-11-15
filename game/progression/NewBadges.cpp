@@ -18,15 +18,20 @@ void NewBadges::loadCatalog(const fs::path& file) {
     std::vector<Feature> out;
     if (auto j = FileUtil::loadJson(file); j && j->is_object() && j->contains("features") && (*j)["features"].is_array()) {
         for (const auto& f : (*j)["features"]) {
-            if (!f.is_object() || !f.contains("id") || !f["id"].is_string() || !f.contains("version") || !f["version"].is_string()) continue;
+            if (!f.is_object() || !f.contains("id") || !f["id"].is_string()) continue;
             Feature x;
             x.id = f["id"].get<std::string>();
-            x.version = f["version"].get<std::string>();
-            if (!std::regex_match(x.id, kIdRe) || !std::regex_match(x.version, kVersionRe)) continue;
+            if (!std::regex_match(x.id, kIdRe)) continue;
+            // No version: a step of the trail (a tab, a category) between novelties and the menus.
+            if (f.contains("version")) {
+                if (!f["version"].is_string() || !std::regex_match(f["version"].get<std::string>(), kVersionRe)) continue;
+                x.version = f["version"].get<std::string>();
+            }
             if (f.contains("parents") && f["parents"].is_array())
                 for (const auto& p : f["parents"])
                     if (p.is_string() && std::regex_match(p.get<std::string>(), kIdRe) && p.get<std::string>() != x.id)
                         x.parents.push_back(p.get<std::string>());
+            if (x.version.empty() && x.parents.empty()) continue;  // links nothing
             out.push_back(std::move(x));
         }
     }
@@ -36,6 +41,7 @@ void NewBadges::loadCatalog(const fs::path& file) {
 void NewBadges::setCatalog(const std::vector<Feature>& features) {
     features_.clear();
     children_.clear();
+    cache_.clear();
     for (const auto& f : features) features_[f.id] = f;
     for (const auto& [id, f] : features_)
         for (const auto& p : f.parents) children_[p].push_back(id);
@@ -45,6 +51,7 @@ void NewBadges::init(const fs::path& saveFile, const std::string& previousVersio
     file_ = saveFile;
     seen_.clear();
     baseline_.clear();
+    cache_.clear();
     if (auto j = FileUtil::loadJson(file_); j && j->is_object()) {
         if (j->contains("baseline") && (*j)["baseline"].is_string() && std::regex_match((*j)["baseline"].get<std::string>(), kVersionRe))
             baseline_ = (*j)["baseline"].get<std::string>();
@@ -62,35 +69,38 @@ void NewBadges::init(const fs::path& saveFile, const std::string& previousVersio
 
 bool NewBadges::ownNew(const std::string& id) const {
     auto it = features_.find(id);
-    if (it == features_.end()) return false;
+    if (it == features_.end() || it->second.version.empty()) return false;
     const Feature& f = it->second;
     return versionNewer(f.version, baseline_) && !seen_.count(f.id + "@" + f.version);
 }
 
-std::string NewBadges::newestUnseen(const std::string& id, int depth) const {
-    std::string best;
-    if (ownNew(id)) best = features_.at(id).version;
-    if (depth > 8) return best;  // a badly written catalogue cannot loop
+bool NewBadges::newAtOrBelow(const std::string& id, std::set<std::string>& visited) const {
+    if (!visited.insert(id).second) return false;  // already looked at (or a cycle)
+    if (ownNew(id)) return true;
     auto it = children_.find(id);
-    if (it == children_.end()) return best;
-    for (const auto& c : it->second) {
-        std::string v = newestUnseen(c, depth + 1);
-        if (!v.empty() && (best.empty() || versionNewer(v, best))) best = v;
-    }
-    return best;
+    if (it == children_.end()) return false;
+    for (const auto& c : it->second)
+        if (newAtOrBelow(c, visited)) return true;
+    return false;
 }
 
 bool NewBadges::isNew(const std::string& id) const {
-    if (ownNew(id)) return true;
-    // A parent: new while something under it is, until it is focused itself (for that version).
-    std::string v = newestUnseen(id);
-    return !v.empty() && !seen_.count(id + "@" + v);
+    if (auto it = cache_.find(id); it != cache_.end()) return it->second;
+    // A novelty: until seen. A parent: as long as anything under it is new, whatever focus it
+    // had (its own focus or click never takes the pill away while something deeper is new).
+    std::set<std::string> visited;
+    bool v = newAtOrBelow(id, visited);
+    if (cache_.size() > 4096) cache_.clear();
+    cache_[id] = v;
+    return v;
 }
 
-void NewBadges::markSeen(const std::string& id) {
-    if (auto it = features_.find(id); it != features_.end()) seen_.insert(id + "@" + it->second.version);
-    std::string v = newestUnseen(id);
-    if (!v.empty()) seen_.insert(id + "@" + v);
+bool NewBadges::markSeen(const std::string& id) {
+    auto it = features_.find(id);
+    if (it == features_.end() || it->second.version.empty()) return false;  // a step: nothing of its own
+    if (!seen_.insert(id + "@" + it->second.version).second) return false;
+    cache_.clear();
+    return true;
 }
 
 bool NewBadges::save() const {
