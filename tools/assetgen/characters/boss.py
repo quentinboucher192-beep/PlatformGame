@@ -370,6 +370,6 @@ def build():
     s.save("animations/thornwarden.json")
     # v2 bosses (docs/ASSET_SPEC.md section 4b), one module per family of rigs.
     import importlib.util
-    for name in ("bosses_a", "bosses_b"):
+    for name in ("bosses_a", "bosses_b", "bosses_c"):
         if importlib.util.find_spec(name) is not None:
             importlib.import_module(name).build()
