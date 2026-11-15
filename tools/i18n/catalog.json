@@ -9293,6 +9293,18 @@
    ]
   },
   {
+   "fr": "Entraînement par segment : aperçu du segment choisi (départ, arrivée, trajet de votre record), votre meilleur segment, son temps dans votre record, votre meilleur temps à l'entraînement (gardé d'une séance à l'autre) et la Somme des meilleurs segments (Sum of Best) avec le gain possible.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Entraînement par segment : choix des pouvoirs portés (« Choisir… »), dernier choix gardé pour chaque segment ; pendant l'essai, un encadré rappelle vos références.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "ENTRAÎNEMENT · aucun record · {0} / Vue : recommencer",
    "where": [
     "ui/screens/GameScene.cpp"
@@ -17449,6 +17461,12 @@
    "fr": "Notification introuvable.",
    "where": [
     "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Notification « Record battu » : vous êtes prévenu quand un temps vérifié vous prend un record mondial (désactivable dans les réglages des notifications).",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -27077,6 +27095,12 @@
    ]
   },
   {
+   "fr": "Touches : les boutons de la souris (gauche, droit, molette, latéraux et boutons en plus des souris de jeu) et la molette se lient aux commandes dans Clavier / souris.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Touches des pouvoirs par emplacement : « Pouvoir 1 » à « Pouvoir 8 » se règlent dans Paramètres › Clavier / souris et Manette ; la touche d'un emplacement utilise le pouvoir qui y est équipé, quel qu'il soit. Vos anciennes touches de pouvoirs deviennent celles des emplacements 1 à 6.",
    "where": [
     "data/news/changelog.json"
@@ -31949,6 +31973,12 @@
    "fr": "« Afficher les pseudonymes » désactivé : les autres joueurs apparaissent sous la forme « Joueur n°X » (diffusion en direct). « Économie » limite le nombre de marqueurs et ne télécharge pas les avatars personnalisés.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "« Mode concentré » : nom raccourci dans la pause et les touches.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {

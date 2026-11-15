@@ -5,6 +5,12 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.30.2** :
+* **Entraînement par segment** : aperçu du segment, meilleur segment, temps dans le record,
+  meilleur temps à l'entraînement (gardé), **Sum of Best** et gain possible, choix des pouvoirs.
+* **Boutons de la souris et molette** liables aux commandes (*Clavier / souris*), toutes souris.
+* Notification **« Record battu »** quand un temps vérifié vous prend un record mondial.
+
 **Nouveau dans la version 2.30.1** :
 * **Replays recadrés** : la partie tient dans la place que laissent le panneau et les commandes,
   rien n'est caché dessous ; **« Masquer les infos »** (touche I, Select à la manette) lui donne

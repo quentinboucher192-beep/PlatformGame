@@ -1063,7 +1063,7 @@ private:
         y += lineH;
         cell(x0, y, colW, "Meilleur à l'entraînement", trainValue, tr != nullptr);
         float gain = refs_.possibleGain();
-        std::string gainValue = gain >= 0.0f ? formatGhostDelta(-gain) : refs_.pbTime > 0.0f && refs_.sob > 0.0f ? "autre parcours" : "—";
+        std::string gainValue = gain >= 0.0f ? formatGhostDelta(gain).substr(formatGhostDelta(gain)[0] == '+' ? 1 : 0) : refs_.pbTime > 0.0f && refs_.sob > 0.0f ? "autre parcours" : "—";
         cell(x1, y, colW, "Gain possible", gainValue, gain >= 0.0f);
         return lineH * 4.0f;
     }

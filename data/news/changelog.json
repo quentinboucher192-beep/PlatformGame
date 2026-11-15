@@ -1,4 +1,11 @@
 {
+  "2.30.2": [
+    "Entraînement par segment : aperçu du segment choisi (départ, arrivée, trajet de votre record), votre meilleur segment, son temps dans votre record, votre meilleur temps à l'entraînement (gardé d'une séance à l'autre) et la Somme des meilleurs segments (Sum of Best) avec le gain possible.",
+    "Entraînement par segment : choix des pouvoirs portés (« Choisir… »), dernier choix gardé pour chaque segment ; pendant l'essai, un encadré rappelle vos références.",
+    "Touches : les boutons de la souris (gauche, droit, molette, latéraux et boutons en plus des souris de jeu) et la molette se lient aux commandes dans Clavier / souris.",
+    "Notification « Record battu » : vous êtes prévenu quand un temps vérifié vous prend un record mondial (désactivable dans les réglages des notifications).",
+    "« Mode concentré » : nom raccourci dans la pause et les touches."
+  ],
   "2.30.1": [
     "Replays : la partie est recadrée dans la place que laissent le panneau et les commandes ; tout ce que voyait le joueur reste visible, plus rien n'est caché sous le panneau.",
     "Nouveau bouton « Masquer les infos » (touche I, bouton Select de la manette) : le panneau de droite disparaît et la partie prend toute la largeur.",
