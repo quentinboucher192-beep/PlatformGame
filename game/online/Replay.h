@@ -66,8 +66,14 @@ struct ReplayData {
     /// 3 since 2.24: the recorded actions take 32 bits (keys of the power slots) and the
     /// input section says how the powers were used (keysPerSlot). Versions 1 and 2 are read.
     static constexpr uint16_t kFormatVersion = 3;
+    /// 4 since 2.31: version 3 + the rules of a daily challenge (input flag 2 and a section
+    /// after the state digests: u16 length, then the canonical form of the rules). Written
+    /// only for a challenge run; every other run stays in version 3.
+    static constexpr uint16_t kFormatChallenge = 4;
     /// Input flags of the version 3 input section.
     static constexpr uint16_t kInputKeysPerSlot = 1;
+    /// Version 4: the run was played with challenge rules (section after the digests).
+    static constexpr uint16_t kInputChallengeRules = 2;
     /// One state digest every kCheckTicks steps (0.5 s).
     static constexpr uint32_t kCheckTicks = 60;
     /// Longest run accepted (2 hours of steps).
@@ -93,6 +99,9 @@ struct ReplayData {
     bool keysPerSlot = false;
     std::vector<InputFrame> inputs;  // one per simulation step since the level was loaded
     std::vector<ReplayCheck> checks;
+    /// Version 4: canonical form of the challenge rules the run was played with (see
+    /// ChallengeRules::canonical); empty for any other run (written in version 3).
+    std::string challengeRules;
     bool exact() const { return formatVersion >= 2 && !inputs.empty(); }
 
     /// Raw "CPRP" bytes.
@@ -122,7 +131,8 @@ public:
     /// Input of the step about to be simulated (call before stepWorld).
     void recordInput(const InputFrame& f);
     /// After the step: samples the trace and adds a state digest every kCheckTicks steps
-    /// (and notes the world's keys of the powers, ReplayData::keysPerSlot).
+    /// (and notes the world's keys of the powers, ReplayData::keysPerSlot, and its challenge
+    /// rules, ReplayData::challengeRules: a challenge run is written in version 4).
     void tick(const GameWorld& w);
     void onWorldEvent(const std::string& source, const std::string& trigger);
     /// Ends the recording when the level is completed (`elapsed` = timer value).
@@ -157,7 +167,8 @@ private:
 class ReplaySimulator {
 public:
     /// Seeds `world` with the replay's seed and gives it the replay's keys of the powers
-    /// (ReplayData::keysPerSlot). `world` must have just loaded the level.
+    /// (ReplayData::keysPerSlot) and, for a challenge run (version 4), its rules
+    /// (GameWorld::setChallenge). `world` must have just loaded the level.
     ReplaySimulator(const ReplayData& replay, GameWorld& world);
     bool finished() const { return tick_ >= replay_.inputs.size(); }
     uint32_t tick() const { return tick_; }

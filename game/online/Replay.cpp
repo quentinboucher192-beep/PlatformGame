@@ -103,8 +103,10 @@ std::vector<uint8_t> ReplayData::serialize() const {
     std::vector<uint8_t> o;
     o.reserve(80 + frames.size() * 12 + events.size() * 8);
     o.insert(o.end(), {'C', 'P', 'R', 'P'});
-    // Without recorded inputs (trace only) the file stays in version 1.
-    putU16(o, inputs.empty() ? 1 : kFormatVersion);
+    // Without recorded inputs (trace only) the file stays in version 1; a challenge run is
+    // version 4 (its rules after the digests), every other run version 3.
+    const bool challenge = !inputs.empty() && !challengeRules.empty();
+    putU16(o, inputs.empty() ? 1 : challenge ? kFormatChallenge : kFormatVersion);
     putU16(o, sampleHz);
     putU32(o, static_cast<uint32_t>(frames.size()));
     putU32(o, durationMs);
@@ -144,7 +146,8 @@ std::vector<uint8_t> ReplayData::serialize() const {
     putU32(o, static_cast<uint32_t>(seed & 0xFFFFFFFFu));
     putU32(o, static_cast<uint32_t>(seed >> 32));
     putU16(o, tickHz);
-    putU16(o, keysPerSlot ? kInputKeysPerSlot : 0);  // input flags (reserved, 0, in version 2)
+    // Input flags (reserved, 0, in version 2).
+    putU16(o, static_cast<uint16_t>((keysPerSlot ? kInputKeysPerSlot : 0) | (challenge ? kInputChallengeRules : 0)));
     putU32(o, static_cast<uint32_t>(inputs.size()));
     size_t runCountAt = o.size();
     putU32(o, 0);
@@ -171,6 +174,12 @@ std::vector<uint8_t> ReplayData::serialize() const {
         putU32(o, static_cast<uint32_t>(c.hash & 0xFFFFFFFFu));
         putU32(o, static_cast<uint32_t>(c.hash >> 32));
     }
+    if (challenge) {
+        // Version 4: the canonical form of the challenge rules (1 .. 1024 bytes).
+        size_t n = std::min(challengeRules.size(), ChallengeRules::kMaxCanonicalBytes);
+        putU16(o, static_cast<uint16_t>(n));
+        o.insert(o.end(), challengeRules.begin(), challengeRules.begin() + static_cast<std::ptrdiff_t>(n));
+    }
     return o;
 }
 
@@ -182,7 +191,7 @@ std::optional<ReplayData> ReplayData::parse(const std::vector<uint8_t>& raw, std
     const uint8_t* p = raw.data();
     ReplayData d;
     d.formatVersion = getU16(p + 4);
-    if (d.formatVersion < 1 || d.formatVersion > kFormatVersion) {
+    if (d.formatVersion < 1 || d.formatVersion > kFormatChallenge) {
         fail(error, "version de format non prise en charge");
         return std::nullopt;
     }
@@ -233,7 +242,7 @@ std::optional<ReplayData> ReplayData::parse(const std::vector<uint8_t>& raw, std
         at += 8;
     }
     if (d.formatVersion == 1) return d;
-    // ---- version 2 and 3 trailer
+    // ---- version 2, 3 and 4 trailer
     auto left = [&]() { return raw.size() - at; };
     if (left() < 20) {
         fail(error, "section des entrées absente");
@@ -247,10 +256,14 @@ std::optional<ReplayData> ReplayData::parse(const std::vector<uint8_t>& raw, std
     uint32_t tickCount = getU32(p + at + 12);
     uint32_t runCount = getU32(p + at + 16);
     at += 20;
-    // A run: 12 bytes in version 2 (actions on 16 bits), 18 in version 3 (32 bits).
+    // A run: 12 bytes in version 2 (actions on 16 bits), 18 in version 3 and 4 (32 bits).
     const size_t runBytes = d.formatVersion >= 3 ? 18 : 12;
+    // Version 4 is exactly a challenge run (flag 2 and its section); no other bit exists.
+    const bool challenge = d.formatVersion == kFormatChallenge;
+    const uint16_t knownFlags = challenge ? (kInputKeysPerSlot | kInputChallengeRules) : kInputKeysPerSlot;
     if (d.tickHz != kSimHz || tickCount == 0 || tickCount > kMaxTicks || runCount == 0 || runCount > tickCount ||
-        (inputFlags & ~kInputKeysPerSlot) != 0 || static_cast<uint64_t>(runCount) * runBytes + 4 > left()) {
+        (inputFlags & ~knownFlags) != 0 || challenge != ((inputFlags & kInputChallengeRules) != 0) ||
+        static_cast<uint64_t>(runCount) * runBytes + 4 > left()) {
         fail(error, "section des entrées incohérente");
         return std::nullopt;
     }
@@ -294,7 +307,8 @@ std::optional<ReplayData> ReplayData::parse(const std::vector<uint8_t>& raw, std
     }
     uint32_t checkCount = getU32(p + at);
     at += 4;
-    if (checkCount > tickCount / kCheckTicks + 2 || static_cast<uint64_t>(checkCount) * 12 != left()) {
+    const uint64_t checkBytes = static_cast<uint64_t>(checkCount) * 12;
+    if (checkCount > tickCount / kCheckTicks + 2 || (challenge ? checkBytes + 2 > left() : checkBytes != left())) {
         fail(error, "sommes de contrôle incohérentes");
         return std::nullopt;
     }
@@ -309,6 +323,21 @@ std::optional<ReplayData> ReplayData::parse(const std::vector<uint8_t>& raw, std
             return std::nullopt;
         }
         prevTick = c.tick;
+    }
+    if (challenge) {
+        // Version 4: u16 length, then the canonical form of the rules, and nothing after.
+        uint16_t n = getU16(p + at);
+        at += 2;
+        if (n == 0 || n > ChallengeRules::kMaxCanonicalBytes || left() != n) {
+            fail(error, "section des règles du défi incohérente");
+            return std::nullopt;
+        }
+        d.challengeRules.assign(reinterpret_cast<const char*>(p + at), n);
+        std::string why;
+        if (!ChallengeRules::fromCanonical(d.challengeRules, &why)) {
+            fail(error, ("règles du défi : " + why).c_str());
+            return std::nullopt;
+        }
     }
     return d;
 }
@@ -425,6 +454,8 @@ void ReplayRecorder::check(const GameWorld& w) {
 void ReplayRecorder::tick(const GameWorld& w) {
     if (!active_) return;
     data_.keysPerSlot = w.keysPerSlot();
+    if (data_.challengeRules.empty())
+        if (const ChallengeRules* c = w.challenge()) data_.challengeRules = c->canonical();
     if (!data_.inputs.empty() && data_.inputs.size() % ReplayData::kCheckTicks == 0) check(w);
     const LevelTimer& timer = w.timer();
     if (!started_) {
@@ -520,6 +551,9 @@ void ReplayRecorder::finish(const GameWorld& w, float elapsed) {
 ReplaySimulator::ReplaySimulator(const ReplayData& replay, GameWorld& world) : replay_(replay), world_(world) {
     world_.setKeysPerSlot(replay_.keysPerSlot);
     world_.seedGameplay(replay_.seed);
+    // A challenge run (version 4): its rules, as the run was set up (after the level's load).
+    if (!replay_.challengeRules.empty())
+        if (auto rules = ChallengeRules::fromCanonical(replay_.challengeRules)) world_.setChallenge(*rules);
 }
 
 bool ReplaySimulator::step() {

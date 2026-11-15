@@ -810,10 +810,43 @@ void GameWorld::respawnPlayer() {
     lockedZone_.reset();
     bossZone_.reset();
     for (size_t i = 0; i < entities_.size(); ++i) entities_[i]->onPlayerRespawn(*this);
+    // A challenge without checkpoints: back to its start state (2.31, simulation 11).
+    if (challenge_ && !challenge_->checkpoints) restartChallenge();
     playSound("sounds/respawn.wav", 0.8f);
     if (boss_ && boss_->alive()) {
         // The boss fight restarts from the checkpoint before the arena.
         restoreLevelMusic();
+    }
+}
+
+void GameWorld::setChallenge(const ChallengeRules& rules) {
+    challenge_ = rules;
+    challenge_->powers = rules.sortedPowers();  // as in the canonical form
+    applyChallengeStart(*this, *challenge_);
+}
+
+void GameWorld::restartChallenge() {
+    applyChallengeStart(*this, *challenge_);
+    // The power tablets as the level placed them: a tablet taken comes back, a tablet holding
+    // a power left in exchange offers its own again (the powers carried were reset above).
+    for (const LevelObject& o : level_.objects) {
+        if (o.type != "power_unlock") continue;
+        if (auto* t = dynamic_cast<PowerUnlockEntity*>(entity(o.id))) {
+            t->restore(*this);
+            continue;
+        }
+        auto e = EntityFactory::create(o);
+        if (!e) continue;
+        if (const LevelLayer* l = level_.findLayer(o.layer)) {
+            e->layerOrder = l->order * 1000 + o.z;
+            e->foreground = l->foreground;
+        }
+        e->init(*this);
+        LevelEntity* raw = e.get();
+        auto at = std::upper_bound(entities_.begin(), entities_.end(), raw->layerOrder,
+                                   [](int order, const auto& x) { return order < x->layerOrder; });
+        entities_.insert(at, std::move(e));
+        entityById_[raw->id()] = raw;
     }
 }
 
