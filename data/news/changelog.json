@@ -1,4 +1,10 @@
 {
+  "2.21.0": [
+    "Notes des joueurs pour les niveaux de la campagne : après avoir terminé un niveau (temps vérifié en ligne), notez-le de 1 à 5 étoiles depuis l'écran de fin ou ONLINE ; la moyenne s'affiche sur la fiche du niveau et dans ONLINE (distincte de la difficulté calculée).",
+    "Commentaires des niveaux de la campagne, visibles uniquement dans ONLINE (réponses, réactions, signalement, modération, comme pour les niveaux des joueurs).",
+    "Commentaires sur les runs des classements : une bulle sur chaque ligne ouvre le fil de la course ; son auteur est notifié.",
+    "Confidentialité : notes et commentaires inclus dans l'export de vos données et supprimés avec le compte."
+  ],
   "2.20.0": [
     "Nouvelle planète : Aethra, la planète des sanctuaires (après Sylvanox, Glacior et Pyralis) — 4 niveaux complets, chacun gardé par un nouveau gardien.",
     "4 nouveaux gardiens : Mycélia la Mère-Racine, Aurorax le Miroir boréal, Pyrogyre l'Anneau solaire, Nyxara la Dévoreuse d'étoiles — 12 attaques inédites (racine traqueuse, cage de ronces, reflets, lac gelé, prisme, couronne de feu, marée de lave, puits gravitationnel, onde d'éclipse…). Les 12 gardiens classiques ne changent pas.",

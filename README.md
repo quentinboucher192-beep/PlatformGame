@@ -5,6 +5,18 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.21.0** :
+* **Notes des joueurs** pour les niveaux de la campagne : un niveau terminé avec un temps
+  **vérifié** en ligne peut être noté de 1 à 5 étoiles (écran de fin ou ONLINE) ; la moyenne
+  (« 4,3 ★ · 128 notes »), calculée par le serveur, s'affiche sur la fiche du niveau et dans
+  ONLINE, à côté de la difficulté calculée (qui ne change pas). Hors ligne : la dernière
+  moyenne reçue, marquée comme telle.
+* **Commentaires des niveaux de la campagne**, visibles **uniquement dans ONLINE** (bouton
+  *Avis et commentaires*), et **commentaires sur les runs** des classements (une bulle sur
+  chaque ligne ; l'auteur du run est notifié). Mêmes règles que les commentaires des niveaux
+  des joueurs : réponses, réactions, signalement, modération, profils masqués, export et
+  suppression des données.
+
 **Nouveau dans la version 2.20.0** :
 * **Aethra**, cinquième planète (ouverte avec le Noyau, après Sylvanox, Glacior et Pyralis) :
   la planète des sanctuaires, des îles flottant sur un océan de nébuleuse. **4 niveaux
