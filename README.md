@@ -232,8 +232,9 @@ Sur Glacior, la glace est glissante et les attaques gelées ralentissent ; sur P
 lave, les éruptions et les bombes sont mortelles.
 
 Chaque pouvoir actif coûte de l'énergie selon sa force (jauge de 150) : Dash 5, Impulsion 8,
-Onde 10, Frappe sismique 10, Tir chargé 20 (la référence), Bombe plasma 20, Bouclier 20,
-Téléportation 25, Ralenti 60 ; les pouvoirs passifs sont gratuits. Le *Guide des pouvoirs*
+Onde 10, Frappe sismique 10, Lame boomerang 12, Balise de rappel 15 (pour revenir ; la poser est
+gratuit), Tir chargé 20 (la référence), Bombe plasma 20, Bouclier 20, Téléportation 25, Leurre
+holographique 25, Nova de givre 30, Ralenti 60 ; les pouvoirs passifs sont gratuits. Le *Guide des pouvoirs*
 (menu pause) montre chaque pouvoir joué en boucle par le moteur avec son coût ; sa fiche donne
 toutes ses caractéristiques.
 

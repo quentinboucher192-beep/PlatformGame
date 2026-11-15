@@ -93,11 +93,13 @@ const std::vector<std::string> kMaterialLabels = {"Pierre des ruines", "Métal a
                                                   "Métal givré"};
 const std::vector<std::string> kPowers = {"dash",         "wave",        "shield",  "impulse", "teleport",
                                           "glide",        "ground_pound", "charge_shot", "grapple", "triple_jump",
-                                          "time_slow",    "magnet",      "air_dash", "plasma_bomb"};
+                                          "time_slow",    "magnet",      "air_dash", "plasma_bomb",
+                                          "boomerang",    "frost_nova",  "decoy",    "recall"};
 const std::vector<std::string> kPowerLabels = {"Dash",    "Onde énergétique", "Bouclier",   "Impulsion",
                                                "Téléportation", "Planeur",    "Frappe sismique", "Tir chargé",
                                                "Grappin", "Triple saut", "Ralenti temporel", "Aimant",
-                                               "Ruée aérienne", "Bombe plasma"};
+                                               "Ruée aérienne", "Bombe plasma", "Lame boomerang", "Nova de givre",
+                                               "Leurre holographique", "Balise de rappel"};
 // Obstacles that a power opens (power_gate).
 const std::vector<std::string> kGatePowers = {"dash", "wave", "shield", "impulse", "teleport", "ground_pound"};
 const std::vector<std::string> kGatePowerLabels = {"Dash (mur de cristal)",        "Onde (barrière d'énergie)",
@@ -656,6 +658,10 @@ std::vector<PaletteEntry> buildPalette() {
     add("Tablette : Aimant", "power_unlock", {{"power", "magnet"}});
     add("Tablette : Ruée aérienne", "power_unlock", {{"power", "air_dash"}});
     add("Tablette : Bombe plasma", "power_unlock", {{"power", "plasma_bomb"}});
+    add("Tablette : Lame boomerang", "power_unlock", {{"power", "boomerang"}});
+    add("Tablette : Nova de givre", "power_unlock", {{"power", "frost_nova"}});
+    add("Tablette : Leurre holographique", "power_unlock", {{"power", "decoy"}});
+    add("Tablette : Balise de rappel", "power_unlock", {{"power", "recall"}});
     add("", "heart_container");
     add("", "grapple_point");
     add("", "updraft");

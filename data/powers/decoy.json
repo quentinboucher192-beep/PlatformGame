@@ -1,0 +1,17 @@
+{
+  "format": "cosmic.power",
+  "id": "decoy",
+  "behavior": "decoy",
+  "name": "Leurre holographique",
+  "description": "Pose une copie lumineuse de Nova : quelques secondes, ennemis et boss la visent à votre place. Elle disparaît dès qu'une attaque la touche.",
+  "icon": 16,
+  "input": "special",
+  "energyCost": 25,
+  "cooldown": 8,
+  "duration": 0,
+  "color": "#39f0d8",
+  "sound": "sounds/decoy_spawn.wav",
+  "params": {
+    "duration": 3
+  }
+}

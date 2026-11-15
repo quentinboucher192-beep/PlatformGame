@@ -37,6 +37,9 @@ bool GameWorld::load(const LevelData& level) {
     bossZone_.reset();
     activeZone_ = nullptr;
     time_ = 0.0f;
+    decoyTimer_ = 0.0f;
+    decoysBroken_ = 0;
+    frozenPlatforms_.clear();  // their colliders went with physics_.clear()
 
     particles_.init(&services_.res);
     particles_.loadPresets(services_.content.effects());
@@ -234,6 +237,8 @@ void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
     updateEnemies(timeSlow_ > 0.0f ? dt * timeSlowFactor_ : dt);
     updateProjectiles(dt);
     if (timeSlow_ > 0.0f) timeSlow_ = std::max(0.0f, timeSlow_ - dt);
+    if (decoyTimer_ > 0.0f) updateDecoy();
+    if (!frozenPlatforms_.empty() || !enemies_.empty()) syncFrozenPlatforms();
 
     entities_.erase(std::remove_if(entities_.begin(), entities_.end(),
                                    [&](const auto& e) {
@@ -253,7 +258,8 @@ void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
 void GameWorld::update(float dt) {
     particles_.update(dt);
     player_.update(*this, dt);
-    for (auto& e : enemies_) e->update(*this, dt);
+    for (auto& e : enemies_)
+        if (!e->frozen()) e->update(*this, dt);  // a frozen enemy keeps its pose
     for (auto& e : entities_) e->update(*this, dt);
     for (auto& m : messages_) m.age += dt;
     messages_.erase(std::remove_if(messages_.begin(), messages_.end(), [](const auto& m) { return m.age >= m.duration; }),
@@ -769,6 +775,7 @@ bool GameWorld::resolvePowerOffer(uint8_t choice) {
 void GameWorld::respawnPlayer() {
     projectiles_.clear();
     pendingProjectiles_.clear();
+    decoyTimer_ = 0.0f;
     player_.spawn(*this, respawn_, respawnFaceLeft_, true);
     // Keep unlocked powers; refill as a fresh start.
     camera_.reset(respawn_ - Vec2{0, 20});
@@ -885,6 +892,60 @@ void GameWorld::addSecretFound(const std::string& id, const std::string& text) {
     m.duration = 2.5f;
     message(m);
     playSound("sounds/collect_relic.wav", 0.8f);
+}
+
+// ============================================================= 2.19 powers
+
+Rect GameWorld::decoyBox() const { return Rect::fromCenter(decoyPos_, player_.config().size); }
+
+void GameWorld::updateDecoy() {
+    // The hologram absorbs one attack: the first enemy shot or blow that reaches it.
+    Rect box = decoyBox();
+    bool broken = false;
+    for (auto& p : projectiles_) {
+        if (!p.alive || p.fromPlayer || !Collision::circleIntersectsRect(p.pos, p.radius, box)) continue;
+        p.alive = false;
+        particles_.emit(p.hitEffect, p.pos, 0.8f);
+        broken = true;
+        break;
+    }
+    for (size_t i = 0; i < enemies_.size() && !broken; ++i) {
+        const Enemy& e = *enemies_[i];
+        if (!e.alive() || e.dormant() || e.frozen()) continue;
+        bool attacking = e.state() == EnemyState::Attack;
+        if (!attacking && e.def().contactDamage <= 0.0f) continue;
+        if (e.state() == EnemyState::TeleportOut || e.state() == EnemyState::TeleportIn) continue;
+        if (e.box.expanded(attacking ? 10.0f : 0.0f).intersects(box)) broken = true;
+    }
+    if (!broken) return;
+    decoyTimer_ = 0.0f;
+    ++decoysBroken_;
+    particles_.emit("hologram_break", decoyPos_, 1.0f);
+    playSound("sounds/shield_down.wav", decoyPos_, 0.7f, 1.3f);
+}
+
+void GameWorld::syncFrozenPlatforms() {
+    // Platforms of the enemies no longer frozen (thawed, dead, gone) are removed...
+    frozenPlatforms_.erase(std::remove_if(frozenPlatforms_.begin(), frozenPlatforms_.end(),
+                                          [&](const FrozenPlatform& f) {
+                                              Enemy* e = findEnemy(f.enemy);
+                                              if (e && e->alive() && e->frozen()) return false;
+                                              physics_.remove(f.collider);
+                                              if (e) particles_.emit("frost_burst", e->center(), 0.7f);
+                                              return true;
+                                          }),
+                           frozenPlatforms_.end());
+    // ...and every frozen enemy carries one on the top of its box (it may fall or be pushed).
+    for (const auto& e : enemies_) {
+        if (!e->alive() || !e->frozen()) continue;
+        Rect top{e->box.x, e->box.y, e->box.w, 4.0f};
+        auto it = std::find_if(frozenPlatforms_.begin(), frozenPlatforms_.end(),
+                               [&](const FrozenPlatform& f) { return f.enemy == e->uid(); });
+        if (it == frozenPlatforms_.end())
+            frozenPlatforms_.push_back({e->uid(), physics_.add(top, ColliderKind::OneWay, 0, e.get(), true)});
+        else
+            physics_.setDynamicBox(it->collider, top, e->vel);
+    }
 }
 
 }  // namespace cosmic
