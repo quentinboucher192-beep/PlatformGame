@@ -187,7 +187,7 @@ l'identique. Une partie sans défi se joue exactement comme avant (mêmes emprei
 
 `ReplaySimulator` charge le niveau, applique la graine puis les entrées pas à pas
 (`stepWorld`, la même fonction qu'en jeu) et compare chaque empreinte. Le lecteur
-(*VOIR LE REPLAY*, *Revoir la partie* sur l'écran de résultats, `CosmicPlatformer --replay
+(*Voir le replay*, *Revoir la partie* sur l'écran de résultats, `CosmicPlatformer --replay
 fichier.cprz`) affiche « Partie rejouée à l'identique » avec le nombre de contrôles vérifiés.
 Une empreinte différente signifie que la simulation locale n'est pas celle qui a enregistré
 la partie : le lecteur l'indique (« Désynchronisé à … ») et propose la trajectoire enregistrée.

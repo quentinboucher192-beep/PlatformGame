@@ -191,7 +191,7 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
   temps du fantôme au même endroit, fin estimée, et un **panneau des segments** façon
   LiveSplit (durée et écart de chaque segment, temps cumulé et écart cumulé, meilleurs
   segments en or, animation de nouveau record) — un élément « Fantômes » de l'éditeur du HUD.
-* **Avant le départ** (« Fantômes… » sur la fiche d'un niveau, « Course contre ce temps »
+* **Avant le départ** (« Fantômes… » sur la fiche d'un niveau, « Défier ce temps »
   dans CLASSEMENTS, « Course contre un fantôme… » dans NIVEAUX EN LIGNE) : choix des
   fantômes, version et type de record affichés, options d'affichage, et le **mode
   entraînement** (un segment depuis un point de sauvegarde, répété contre les fantômes, sans

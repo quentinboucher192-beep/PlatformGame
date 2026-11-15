@@ -15,7 +15,7 @@ utilisé, l'origine de l'adresse et le client HTTP :
 | « Réponse du serveur illisible » | un portail captif ou un proxy renvoie autre chose que l'API : ce n'est jamais traité comme un succès. Connectez-vous au réseau puis *Actualiser*. |
 | Déconnecté tout seul | session expirée (30 jours sans activité), révoquée (déconnexion de tous les appareils) ou jeton de renouvellement réutilisé (sécurité) : reconnectez-vous. |
 | « Trop d'échecs de connexion » | 10 mauvais mots de passe : compte verrouillé 15 minutes. |
-| Record « LOCAL » qui ne part pas | pas connecté (*ENVOYER LE RECORD* l'attribue au compte connecté), synchronisation automatique désactivée, ou serveur injoignable. |
+| Record « LOCAL » qui ne part pas | pas connecté (*Envoyer le record* l'attribue au compte connecté), synchronisation automatique désactivée, ou serveur injoignable. |
 | « Version du niveau différente de celle du serveur » | votre niveau n'a pas la même empreinte que la révision classée (jeu modifié, version différente) : la performance reste locale, elle n'est jamais mélangée. |
 | Record « EN ATTENTE » | replay pas encore envoyé, catégorie SPEEDRUN sans replay, ou record mondial en revue manuelle sur un classement établi ([RULES.md](RULES.md)). La revue manuelle demande un `ADMIN_TOKEN` sur le serveur (routes `/api/v1/admin/*`) : sans lui, ces records restent en attente. |
 | Pas de notification de demande d'ami | les demandes sont relevées une minute après la connexion puis toutes les minutes ; pendant une partie, les notifications attendent la fin du niveau. |

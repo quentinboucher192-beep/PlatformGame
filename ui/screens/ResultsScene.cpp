@@ -76,7 +76,7 @@ void ResultsScene::drawOnlineStatus(const Rect& panel) {
     }
     std::string hint;
     if (!g_.online.usable()) hint = std::string(onlineStateLabel(g_.online.state())) + " : performance gardée en local.";
-    else if (!g_.online.loggedIn()) hint = "Non connecté : envoyez-la depuis CLASSEMENTS (ENVOYER LE RECORD).";
+    else if (!g_.online.loggedIn()) hint = "Non connecté : envoyez-la depuis CLASSEMENTS (« Envoyer le record »).";
     else if (g_.online.state() == OnlineState::Offline) hint = "Hors ligne : envoi automatique au retour de la connexion.";
     else if (g_.online.syncing()) hint = "Envoi et vérification en cours…";
     if (!hint.empty())

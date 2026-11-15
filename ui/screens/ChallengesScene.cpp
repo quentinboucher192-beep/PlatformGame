@@ -19,6 +19,7 @@
 #include "packaging/PackageImporter.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/GameScene.h"
+#include "ui/screens/LevelPowerKeysScene.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/Thumbnail.h"
@@ -1021,6 +1022,7 @@ public:
             if (!place_.localId.empty()) {
                 level_ = g_.content.loadLevel(place_.localId);
                 if (level_) {
+                    hasKeyPowers_ = !playerPowerKeys(g_, *level_, challenge_->rules.powers).powers.empty();
                     std::string root;
                     if (const LevelEntry* e = g_.content.level(place_.localId)) root = Paths::toUtf8(e->assetRoot);
                     auto png = renderLevelThumbnail(g_, *level_, root);
@@ -1101,8 +1103,21 @@ public:
             go = ui.button("go", goR, downloadingGhost_ ? "Fantôme…" : practice_ ? "Lancer l'entraînement" : "Lancer le défi", primary);
             Rect cancelR{goR.x - ui.s(16) - ui.s(200), by, ui.s(200), ui.s(56)};
             cancel = ui.button("cancel", cancelR, "Annuler");
+            float leftEnd = cancelR.x;
+            // The keys of the powers of this run (the level's and the imposed ones), for this
+            // player: the same as the level's « Touches… » (also in the pause menu).
+            if (hasKeyPowers_ && level_) {
+                Rect keysR{cancelR.x - ui.s(16) - ui.s(220), by, ui.s(220), ui.s(56)};
+                UIContext::ButtonStyle ks;
+                const std::string label = "Touches…";
+                ks.fontSize = ui.fitFont(label, FontFace::Bold, 26, keysR.w - ui.s(24), 0.6f);
+                bool openKeys = ui.button("keys", keysR, label, ks);
+                ui.newBadge("keys", keysR, "challenges.keys");  // « NOUVEAU » (2.32.1)
+                if (openKeys) g_.app.pushScene(makeLevelPowerKeys(g_, *level_, c.rules.powers));
+                leftEnd = keysR.x;
+            }
             std::string line = msgTimer_ > 0.0f ? msg_ : place_.problem;
-            float room = cancelR.x - ui.s(24) - x;
+            float room = leftEnd - ui.s(24) - x;
             if (!line.empty() && room > ui.s(120)) {
                 float f = fit(ui, line, FontFace::Body, 17, room, 0.7f);
                 if (ui.text().measure(line, FontFace::Body, ui.s(f)).x <= room) {
@@ -1276,6 +1291,7 @@ private:
     std::optional<DailyChallenge> challenge_;
     LevelPlace place_;
     std::optional<LevelData> level_;
+    bool hasKeyPowers_ = false;  // the run has powers with a key of their own (« Touches… »)
     TexturePtr thumb_;
     int ghost_ = 0;  // 0 none, 1 my best, 2 the first of the day
     int64_t bestMs_ = 0;

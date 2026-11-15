@@ -1010,15 +1010,19 @@ private:
         // Five actions, one under the other (36 px apart).
         const float ah = ui.s(30);
         auto actionY = [&](int i) { return zoneD_.y + ui.s(12) + ui.s(36) * static_cast<float>(i); };
+        // One font and one size for the five: the largest at which every label fits whole.
+        static const char* const kActions[] = {"Voir le replay", "Comparer…", "Défier ce temps", "Envoyer le record", "Jouer ce niveau"};
+        st.fontSize = 18.0f;
+        for (const char* a : kActions) st.fontSize = std::min(st.fontSize, ui.fitFont(a, FontFace::Bold, 18.0f, bw - ui.s(24), 0.5f));
         std::string replayRecord = replayCandidate();
         st.enabled = !replayRecord.empty() && l->entry != nullptr;
-        if (ui.button("replay", {bx, actionY(0), bw, ah}, "VOIR LE REPLAY", st))
+        if (ui.button("replay", {bx, actionY(0), bw, ah}, kActions[0], st))
             g_.app.pushScene(makeReplayViewer(g_, replayRecord));
         // Two records of this level side by side: the selected one (A) and the best other one
         // with a replay (B), downloaded before the comparison (read only).
         std::vector<Json> pair = comparePair(replayRecord);
         st.enabled = pair.size() == 2 && l->entry != nullptr;
-        if (ui.button("compare", {bx, actionY(1), bw, ah}, "Comparer…", st)) {
+        if (ui.button("compare", {bx, actionY(1), bw, ah}, kActions[1], st)) {
             ReplayCompareRequest req;
             req.levelId = l->id;
             for (const Json& e : pair) req.preselect.push_back(jstr(e, "record_id"));
@@ -1027,7 +1031,7 @@ private:
         }
         st.enabled = !replayRecord.empty() && l->entry != nullptr;
         // Ghost Racing: race the selected record (or the world record) as a ghost.
-        if (ui.button("ghost", {bx, actionY(2), bw, ah}, "Course contre ce temps", st)) {
+        if (ui.button("ghost", {bx, actionY(2), bw, ah}, kActions[2], st)) {
             GhostSetupRequest req;
             req.recordId = replayRecord;
             req.fromOnline = true;
@@ -1039,13 +1043,13 @@ private:
                 for (const auto& s2 : a.submissions) unsent += s2.status == RecordStatus::Local && !s2.blocked ? 1 : 0;
         st.enabled = unsent > 0 && g_.online.usable();
         st.primary = unsent > 0;
-        if (ui.button("submit", {bx, actionY(3), bw, ah}, "ENVOYER LE RECORD", st)) {
+        if (ui.button("submit", {bx, actionY(3), bw, ah}, kActions[3], st)) {
             if (!g_.online.loggedIn()) g_.app.pushScene(makeOnlineAccount(g_, false));
             else g_.online.syncNow(true);
         }
         st.primary = false;
         st.enabled = l->entry != nullptr;
-        if (ui.button("play", {bx, actionY(4), bw, ah}, "Jouer ce niveau", st)) {
+        if (ui.button("play", {bx, actionY(4), bw, ah}, kActions[4], st)) {
             PlayOptions po;
             po.fromOnline = true;
             g_.app.switchScene(makeGameScene(g_, l->id, po));

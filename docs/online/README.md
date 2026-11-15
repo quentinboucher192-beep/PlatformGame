@@ -66,7 +66,7 @@ disparaissent avant la réponse ne sont jamais rappelés (`OnlineService::guard`
 3. Connecté et synchronisation automatique active : la file est envoyée
    (`POST /records/submit`, une fois par catégorie), puis le replay (`PUT /records/{id}/replay`).
    Hors ligne, rien n'est perdu : envoi automatique au retour de la connexion (reconnexion
-   avec temporisation exponentielle) ou bouton *Synchroniser* / *ENVOYER LE RECORD*.
+   avec temporisation exponentielle) ou bouton *Synchroniser* / *Envoyer le record*.
 4. Le serveur valide (schéma, niveau et révision exacts, version du jeu, règles de catégorie,
    cohérence, doublons, temps impossibles, analyse du replay, niveau de confiance) et répond
    **PENDING**, **VERIFIED** ou **REJECTED**. Seuls les records **VERIFIED** entrent dans les
