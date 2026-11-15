@@ -1,5 +1,5 @@
 {
- "version": 1,
+ "version": 2,
  "player_max_hearts": 10,
  "powers": {
   "air_dash": "dash",
@@ -25,6 +25,8 @@
   "aethra_01": {
    "name": "Le Bosquet Englouti",
    "planet": "aethra",
+   "order": 1,
+   "last": false,
    "revision": 8,
    "slots": 4,
    "start_powers": [
@@ -45,6 +47,8 @@
   "aethra_02": {
    "name": "Le Lac aux Reflets",
    "planet": "aethra",
+   "order": 2,
+   "last": false,
    "revision": 8,
    "slots": 4,
    "start_powers": [
@@ -65,6 +69,8 @@
   "aethra_03": {
    "name": "La Caldeira",
    "planet": "aethra",
+   "order": 3,
+   "last": false,
    "revision": 8,
    "slots": 4,
    "start_powers": [
@@ -86,6 +92,8 @@
   "aethra_04": {
    "name": "L'Horizon des événements",
    "planet": "aethra",
+   "order": 4,
+   "last": true,
    "revision": 8,
    "slots": 4,
    "start_powers": [
@@ -106,6 +114,8 @@
   "glacior_01": {
    "name": "Les Plaines de Givre",
    "planet": "glacior",
+   "order": 1,
+   "last": false,
    "revision": 8,
    "slots": 4,
    "start_powers": [
@@ -130,6 +140,8 @@
   "glacior_02": {
    "name": "Les Grottes de Cristal",
    "planet": "glacior",
+   "order": 2,
+   "last": false,
    "revision": 8,
    "slots": 4,
    "start_powers": [
@@ -155,6 +167,8 @@
   "glacior_03": {
    "name": "Le Bastion Gelé",
    "planet": "glacior",
+   "order": 3,
+   "last": false,
    "revision": 8,
    "slots": 4,
    "start_powers": [
@@ -180,6 +194,8 @@
   "glacior_04": {
    "name": "La Crevasse Hurlante",
    "planet": "glacior",
+   "order": 4,
+   "last": true,
    "revision": 8,
    "slots": 4,
    "start_powers": [
@@ -201,6 +217,8 @@
   "noyau_01": {
    "name": "L'Arène des Échos",
    "planet": "noyau",
+   "order": 1,
+   "last": false,
    "revision": 9,
    "slots": 4,
    "start_powers": [
@@ -228,6 +246,8 @@
   "noyau_02": {
    "name": "Le Cœur de l'Étoile",
    "planet": "noyau",
+   "order": 2,
+   "last": true,
    "revision": 8,
    "slots": 4,
    "start_powers": [
@@ -257,6 +277,8 @@
   "pyralis_01": {
    "name": "Les Forges Englouties",
    "planet": "pyralis",
+   "order": 1,
+   "last": false,
    "revision": 8,
    "slots": 4,
    "start_powers": [
@@ -280,6 +302,8 @@
   "pyralis_02": {
    "name": "Le Fleuve de Lave",
    "planet": "pyralis",
+   "order": 2,
+   "last": false,
    "revision": 8,
    "slots": 4,
    "start_powers": [
@@ -304,6 +328,8 @@
   "pyralis_03": {
    "name": "La Fonderie Primordiale",
    "planet": "pyralis",
+   "order": 3,
+   "last": false,
    "revision": 8,
    "slots": 4,
    "start_powers": [
@@ -329,6 +355,8 @@
   "pyralis_04": {
    "name": "Le Creuset Profond",
    "planet": "pyralis",
+   "order": 4,
+   "last": true,
    "revision": 8,
    "slots": 4,
    "start_powers": [
@@ -350,6 +378,8 @@
   "sylvanox_01": {
    "name": "Les Ruines Suspendues",
    "planet": "sylvanox",
+   "order": 1,
+   "last": false,
    "revision": 8,
    "slots": 4,
    "start_powers": [],
@@ -367,6 +397,8 @@
   "sylvanox_02": {
    "name": "La Canopée des Spores",
    "planet": "sylvanox",
+   "order": 2,
+   "last": false,
    "revision": 8,
    "slots": 4,
    "start_powers": [
@@ -390,6 +422,8 @@
   "sylvanox_03": {
    "name": "Le Cœur de la Machine",
    "planet": "sylvanox",
+   "order": 3,
+   "last": false,
    "revision": 8,
    "slots": 4,
    "start_powers": [
@@ -413,6 +447,8 @@
   "sylvanox_04": {
    "name": "Les Catacombes des Anciens",
    "planet": "sylvanox",
+   "order": 4,
+   "last": true,
    "revision": 8,
    "slots": 4,
    "start_powers": [

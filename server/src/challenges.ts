@@ -1,18 +1,22 @@
-// Daily challenges (« Défis du jour », game 2.32). The contract with the game is
-// docs/online/DAILY_CHALLENGES.md: one challenge per UTC day (`daily-AAAA-MM-JJ`), drawn by
-// the server among the ranked campaign levels or chosen by the administrator
-// (scripts/challenge-set.mjs, campaign or community level), with its rules (hearts, power
-// slots, imposed powers, stations, checkpoints), the canonical form of the rules and its
-// SHA-256, and the tiers. The challenges exist from today to 7 days ahead (drawn in advance so
-// that the administrator can replace them) but a challenge is never shown before its day, and
-// once its day has begun it never changes.
+// Challenges (« Défis », games 2.32 and 2.33). The contracts with the game are
+// docs/online/DAILY_CHALLENGES.md (2.32) and docs/online/CHALLENGES_PERIODS.md (2.33): three
+// kinds of challenges, each over a UTC period — the day (`daily-AAAA-MM-JJ`), the ISO 8601
+// week (`weekly-AAAA-Www`) and the month (`monthly-AAAA-MM`) — drawn by the server among the
+// ranked campaign levels (the week and the month from the hardest ones) or chosen by the
+// administrator (scripts/challenge-set.mjs, campaign or community level), with their rules
+// (hearts, power slots, imposed powers, stations, checkpoints), the canonical form of the
+// rules and its SHA-256, and the tiers. Challenges are drawn ahead (days to J+7, weeks to
+// S+2, months to M+1) so that the administrator can replace them, but a challenge is never
+// shown before its period begins, and once begun it never changes.
 //
 // Runs follow the records: the player comes from the session, idempotence by attempt_id,
 // tier computed by the server, statuses PENDING / VERIFIED / REJECTED with the decision and
 // trust rules of the records, and the replay (format 4 with the challenge section) checked by
 // the server (structure, level revision, duration, plausible trajectory, health never above
 // the challenge's hearts, section identical to the canonical rules). « Vérifié » means
-// « replay checked by the server », not re-simulated.
+// « replay checked by the server », not re-simulated. A run received after the end of its
+// challenge (+ 10 min) is accepted « hors délai » (late): it is ranked only in the board
+// « Depuis » (period=all) and never counts for a streak.
 
 import catalogJson from "./challengeCatalog.json";
 import { audit, requireAuth, type AuthInfo } from "./auth";
@@ -33,6 +37,10 @@ import { COUNTRY_RE, HASH_RE, SEMVER_RE, UUID_RE, Validator, compareVersions, pa
 export interface CatalogLevel {
     name: string;
     planet: string;
+    /** Place in its planet (1 = first level). */
+    order: number;
+    /** The planet's last level (the « Épreuves » of each planet, the final level). */
+    last: boolean;
     /** Revision (metadata.revision): the number the server registers for the level. */
     revision: number;
     /** Power slots of the level (LevelData::powerSlots). */
@@ -61,11 +69,16 @@ export const CATALOG = catalogJson as ChallengeCatalog;
 
 /** Oldest game that plays challenges (format 4 replays, simulation 11). */
 export const CHALLENGE_MIN_GAME_VERSION = "2.32.0";
-/** Challenges exist from today to today + DAYS_AHEAD. */
-export const DAYS_AHEAD = 7;
-/** An automatic draw avoids the levels of the challenges this many days around it. */
-const RECENT_DAYS = 10;
-/** Runs are accepted until this long after the end of the day (a run finished at 23:59). */
+
+export const KINDS = ["daily", "weekly", "monthly"] as const;
+export type ChallengeKind = (typeof KINDS)[number];
+
+/** Challenges exist from the current period to this many periods ahead (J+7, S+2, M+1). */
+export const AHEAD: Record<ChallengeKind, number> = { daily: 7, weekly: 2, monthly: 1 };
+export const DAYS_AHEAD = AHEAD.daily;
+/** An automatic draw avoids the levels of the challenges of its kind this many periods around it. */
+const RECENT: Record<ChallengeKind, number> = { daily: 10, weekly: 4, monthly: 2 };
+/** Runs received later than this after the end of their challenge are « hors délai » (late). */
 export const LATE_SUBMIT_MS = 10 * 60 * 1000;
 /**
  * Powers an automatic draw may add: they only help moving or surviving, and one is added
@@ -73,8 +86,31 @@ export const LATE_SUBMIT_MS = 10 * 60 * 1000;
  * replaced, whatever the replacement rule).
  */
 export const SAFE_EXTRA_POWERS = ["dash", "glide", "triple_jump", "shield", "wave", "grapple"] as const;
-const HEART_CHOICES = [1, 2, 3, 5] as const;
 const MAX_SLOTS = 8;
+
+/**
+ * Rules of an automatic draw per kind: the week's and the month's are more demanding (fewer
+ * hearts, fewer extra powers). Stations always stay on: the level keeps its powers.
+ */
+export const RULE_PROFILES: Record<ChallengeKind, { hearts: readonly number[]; playerMax: boolean; extras: number }> = {
+    daily: { hearts: [1, 2, 3, 5], playerMax: true, extras: 2 },
+    weekly: { hearts: [1, 2, 3], playerMax: false, extras: 1 },
+    monthly: { hearts: [1, 2, 3], playerMax: false, extras: 0 },
+};
+
+/**
+ * Campaign levels an automatic draw may take: the day any drawable level, the week the
+ * longer or harder ones (3rd and 4th level of a planet, its last level), the month the
+ * hardest (the last level of each planet: the « Épreuves » and the final level). A level that
+ * is not `auto` (EXTRÊME, counted lives: the boss rush) and a community level are only ever
+ * chosen by the administrator.
+ */
+export function drawable(kind: ChallengeKind, level: CatalogLevel): boolean {
+    if (!level.auto) return false;
+    if (kind === "weekly") return level.order >= 3 || level.last;
+    if (kind === "monthly") return level.last;
+    return true;
+}
 
 export const TIERS = ["bronze", "silver", "gold"] as const;
 export type Tier = (typeof TIERS)[number];
@@ -104,40 +140,103 @@ export function rulesHash(challengeId: string, r: ChallengeRules): Promise<strin
     return sha256Hex(canonicalRules(challengeId, r));
 }
 
-// --------------------------------------------------------------------- dates
+// ------------------------------------------------------------------- periods
 
+const DAY_MS = 86400000;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-const CHALLENGE_ID_RE = /^daily-(\d{4}-\d{2}-\d{2})$/;
+const WEEK_RE = /^(\d{4})-W(\d{2})$/;
+const MONTH_RE = /^(\d{4})-(\d{2})$/;
+const CHALLENGE_ID_RE = /^(daily|weekly|monthly)-([0-9W-]{7,10})$/;
 
 /** UTC day of an instant ('AAAA-MM-JJ'). */
 export function utcDate(ms: number = Date.now()): string {
     return new Date(ms).toISOString().slice(0, 10);
 }
 
+const dayMs = (date: string) => Date.parse(`${date}T00:00:00Z`);
+
 export function addDays(date: string, n: number): string {
-    return utcDate(Date.parse(`${date}T00:00:00Z`) + n * 86400000);
+    return utcDate(dayMs(date) + n * DAY_MS);
 }
 
 function isDate(s: string): boolean {
-    return DATE_RE.test(s) && !Number.isNaN(Date.parse(`${s}T00:00:00Z`)) && utcDate(Date.parse(`${s}T00:00:00Z`)) === s;
+    return DATE_RE.test(s) && !Number.isNaN(dayMs(s)) && utcDate(dayMs(s)) === s;
 }
 
-export const challengeIdOf = (date: string) => `daily-${date}`;
-const startsAt = (date: string) => `${date}T00:00:00Z`;
-const endsAt = (date: string) => `${addDays(date, 1)}T00:00:00Z`;
+function addMonths(month: string, n: number): string {
+    const [y, m] = month.split("-").map(Number) as [number, number];
+    const i = y * 12 + (m - 1) + n;
+    return `${String(Math.floor(i / 12)).padStart(4, "0")}-${String((i % 12) + 1).padStart(2, "0")}`;
+}
 
-/** The date of a well-formed challenge id, else null. */
-function dateOfId(id: string): string | null {
+/** ISO 8601 week of a UTC day ('AAAA-Www'): a week (Monday to Sunday) belongs to the year of its Thursday. */
+export function isoWeek(date: string): string {
+    const t = dayMs(date);
+    const thursday = new Date(t - ((new Date(t).getUTCDay() + 6) % 7) * DAY_MS + 3 * DAY_MS);
+    const year = thursday.getUTCFullYear();
+    const week = Math.floor((thursday.getTime() - Date.UTC(year, 0, 1)) / (7 * DAY_MS)) + 1;
+    return `${year}-W${String(week).padStart(2, "0")}`;
+}
+
+/** A challenge's period: its kind, its name and its UTC days (`end` excluded). */
+export interface Period {
+    kind: ChallengeKind;
+    period: string;
+    start: string;
+    end: string;
+}
+
+/** The period of `kind` that contains the UTC day `date`. */
+export function periodOf(kind: ChallengeKind, date: string): string {
+    return kind === "daily" ? date : kind === "weekly" ? isoWeek(date) : date.slice(0, 7);
+}
+
+/** The days of a period ('AAAA-MM-JJ', 'AAAA-Www', 'AAAA-MM'); null when malformed or nonexistent (W53 of a short year). */
+export function periodBounds(kind: ChallengeKind, period: string): Period | null {
+    if (kind === "daily") return isDate(period) ? { kind, period, start: period, end: addDays(period, 1) } : null;
+    if (kind === "weekly") {
+        const m = WEEK_RE.exec(period);
+        const year = Number(m?.[1]);
+        const week = Number(m?.[2]);
+        if (!m || year < 2000 || year > 2999 || week < 1 || week > 53) return null;
+        const jan4 = Date.UTC(year, 0, 4);
+        const start = utcDate(jan4 - ((new Date(jan4).getUTCDay() + 6) % 7) * DAY_MS + (week - 1) * 7 * DAY_MS);
+        return isoWeek(start) === period ? { kind, period, start, end: addDays(start, 7) } : null;
+    }
+    const m = MONTH_RE.exec(period);
+    const year = Number(m?.[1]);
+    const month = Number(m?.[2]);
+    if (!m || year < 2000 || year > 2999 || month < 1 || month > 12) return null;
+    return { kind, period, start: `${period}-01`, end: `${addMonths(period, 1)}-01` };
+}
+
+/** The period `n` periods after (before when negative) a valid `period` of `kind`. */
+export function shiftPeriod(kind: ChallengeKind, period: string, n: number): string {
+    if (kind === "daily") return addDays(period, n);
+    if (kind === "monthly") return addMonths(period, n);
+    return isoWeek(addDays(periodBounds(kind, period)!.start, 7 * n));
+}
+
+/** The period of a well-formed challenge id ('daily-…', 'weekly-…', 'monthly-…'), else null. */
+export function parseChallengeId(id: string): Period | null {
     const m = CHALLENGE_ID_RE.exec(id);
-    return m && isDate(m[1]!) ? m[1]! : null;
+    return m ? periodBounds(m[1] as ChallengeKind, m[2]!) : null;
 }
+
+export const challengeIdOf = (kind: ChallengeKind, period: string) => `${kind}-${period}`;
+const instant = (date: string) => `${date}T00:00:00Z`;
+const kindOrder = (col: string) => `CASE ${col} WHEN 'monthly' THEN 0 WHEN 'weekly' THEN 1 ELSE 2 END`;
 
 // ------------------------------------------------------------------ rows
 
 interface ChallengeRow {
     id: string;
-    kind: string;
+    kind: ChallengeKind;
+    period: string;
+    /** First UTC day of the period. */
     date: string;
+    /** First UTC day after the period. */
+    end_date: string;
     source: "auto" | "admin";
     level_source: "campaign" | "community";
     level_id: string;
@@ -173,6 +272,7 @@ interface RunRow {
     game_version: string;
     tier: Tier;
     status: "PENDING" | "VERIFIED" | "REJECTED";
+    late: number;
     rejection_reason: string | null;
     verification_notes: string | null;
     replay_key: string | null;
@@ -186,7 +286,7 @@ interface RunRow {
     verified_at: string | null;
 }
 
-const CHALLENGE_SQL = "SELECT c.*, p.username AS author_name FROM daily_challenges c LEFT JOIN players p ON p.id = c.featured_player_id";
+const CHALLENGE_SQL = "SELECT c.*, p.username AS author_name FROM challenges c LEFT JOIN players p ON p.id = c.featured_player_id";
 
 function powersOf(c: Pick<ChallengeRow, "powers">): string[] {
     try {
@@ -201,14 +301,16 @@ function rulesOf(c: ChallengeRow): ChallengeRules {
     return { hearts: c.hearts, slots: c.slots, powers: powersOf(c), stations: c.stations === 1, checkpoints: c.checkpoints === 1 };
 }
 
-/** The challenge as the game reads it (docs/online/DAILY_CHALLENGES.md §1). */
+/** The challenge as the game reads it (DAILY_CHALLENGES.md §1, CHALLENGES_PERIODS.md §1). */
 export function challengeJson(c: ChallengeRow) {
     return {
         id: c.id,
-        kind: "daily",
+        kind: c.kind,
+        period: c.period,
+        // The first day: the 2.32 games read it.
         date: c.date,
-        starts_at: startsAt(c.date),
-        ends_at: endsAt(c.date),
+        starts_at: instant(c.date),
+        ends_at: instant(c.end_date),
         source: c.source,
         level: {
             source: c.level_source,
@@ -232,7 +334,7 @@ export function tierOf(c: Pick<ChallengeRow, "silver_ms" | "gold_ms" | "gold_no_
 }
 
 function runJson(r: RunRow) {
-    return { id: r.id, status: r.status, tier: r.tier, time_ms: r.time_ms };
+    return { id: r.id, status: r.status, tier: r.tier, time_ms: r.time_ms, late: r.late === 1 };
 }
 
 // ------------------------------------------------------------------ draw
@@ -258,14 +360,16 @@ function shuffled<T>(a: readonly T[]): T[] {
 
 /**
  * Safe rules for a campaign level: stations kept (the level keeps its powers, so it stays
- * finishable), the level's start powers plus 0 to 2 extra powers of the safe list whose
- * input no power of the level uses, at least the level's slots plus one per extra power,
- * hearts among 1, 2, 3, 5 or the player's maximum, checkpoints or not.
+ * finishable), the level's start powers plus up to the kind's number of extra powers of the
+ * safe list whose input no power of the level uses, at least the level's slots plus one per
+ * extra power, hearts among the kind's choices (the day: 1, 2, 3, 5 or the player's maximum;
+ * the week and the month: 1, 2 or 3), checkpoints or not.
  */
-export function drawRules(level: CatalogLevel, catalog: ChallengeCatalog = CATALOG): ChallengeRules {
+export function drawRules(level: CatalogLevel, catalog: ChallengeCatalog = CATALOG, kind: ChallengeKind = "daily"): ChallengeRules {
+    const profile = RULE_PROFILES[kind];
     const inputs = new Set(level.level_powers.map((p) => catalog.powers[p] ?? p));
     const extras: string[] = [];
-    const wanted = randomInt(3);
+    const wanted = randomInt(profile.extras + 1);
     for (const p of shuffled(SAFE_EXTRA_POWERS)) {
         if (extras.length >= wanted) break;
         const input = catalog.powers[p];
@@ -275,7 +379,7 @@ export function drawRules(level: CatalogLevel, catalog: ChallengeCatalog = CATAL
     }
     const powers = [...new Set([...level.start_powers, ...extras])].sort();
     const slots = Math.min(MAX_SLOTS, Math.max(level.slots + extras.length, powers.length));
-    const hearts = [...new Set([...HEART_CHOICES, catalog.player_max_hearts])];
+    const hearts = [...new Set([...profile.hearts, ...(profile.playerMax ? [catalog.player_max_hearts] : [])])];
     return { hearts: hearts[randomInt(hearts.length)]!, slots, powers, stations: true, checkpoints: randomInt(2) === 1 };
 }
 
@@ -286,57 +390,68 @@ interface CandidateRow {
     content_hash: string;
 }
 
-/**
- * Draws the challenge of `date` (campaign levels only, never a community level) and inserts
- * it unless one exists already (concurrent draws: the first one wins). Returns false when no
- * level can be drawn (no ranked level whose active revision is in the catalogue).
- */
-async function drawChallenge(ctx: Ctx, date: string): Promise<boolean> {
-    const db = ctx.env.DB;
-    const rows = await db
-        .prepare(
-            `SELECT l.id, l.name, l.current_version, l.content_hash FROM levels l
-             JOIN level_versions v ON v.level_id = l.id AND v.content_hash = l.content_hash
-             WHERE l.ranking_enabled = 1 AND v.compatibility_status = 'active' ORDER BY l.id`,
-        )
-        .all<CandidateRow>();
+/** Ranked campaign levels whose active revision is the one the catalogue describes. */
+async function drawCandidates(ctx: Ctx): Promise<CandidateRow[]> {
+    const rows = await ctx.env.DB.prepare(
+        `SELECT l.id, l.name, l.current_version, l.content_hash FROM levels l
+         JOIN level_versions v ON v.level_id = l.id AND v.content_hash = l.content_hash
+         WHERE l.ranking_enabled = 1 AND v.compatibility_status = 'active' ORDER BY l.id`,
+    ).all<CandidateRow>();
     // The catalogue must describe the very revision registered on the server (its medals,
     // slots and powers), otherwise the level is left out until the catalogue is regenerated.
-    const candidates = rows.results.filter((l) => {
+    return rows.results.filter((l) => {
         const c = CATALOG.levels[l.id];
-        return c !== undefined && c.auto && c.revision === l.current_version;
+        return c !== undefined && c.revision === l.current_version;
     });
+}
+
+/**
+ * Draws the challenge of a period (campaign levels of the kind's pool only, never a
+ * community level) and inserts it unless one exists already (concurrent draws: the first one
+ * wins). Returns false when no level can be drawn.
+ */
+async function drawChallenge(ctx: Ctx, p: Period, all: CandidateRow[]): Promise<boolean> {
+    const db = ctx.env.DB;
+    const candidates = all.filter((l) => drawable(p.kind, CATALOG.levels[l.id]!));
     if (candidates.length === 0) {
-        log("warn", "challenge_draw_no_level", { date });
+        log("warn", "challenge_draw_no_level", { kind: p.kind, period: p.period });
         return false;
     }
-    // Not a level of the challenges around this day: among the candidates, those used the
-    // longest ago (never used within the window first).
+    const id = challengeIdOf(p.kind, p.period);
+    // Not a level of the challenges of this kind around this period: among the candidates,
+    // those used the longest ago (never used within the window first).
     const near = await db
-        .prepare("SELECT level_id, date FROM daily_challenges WHERE level_source = 'campaign' AND date <> ?1 AND date BETWEEN ?2 AND ?3")
-        .bind(date, addDays(date, -RECENT_DAYS), addDays(date, RECENT_DAYS))
+        .prepare("SELECT level_id, date FROM challenges WHERE kind = ?1 AND level_source = 'campaign' AND id <> ?2 AND date BETWEEN ?3 AND ?4")
+        .bind(
+            p.kind,
+            id,
+            periodBounds(p.kind, shiftPeriod(p.kind, p.period, -RECENT[p.kind]))!.start,
+            periodBounds(p.kind, shiftPeriod(p.kind, p.period, RECENT[p.kind]))!.start,
+        )
         .all<{ level_id: string; date: string }>();
-    const day = Date.parse(`${date}T00:00:00Z`);
-    const distance = (id: string) =>
-        near.results.filter((n) => n.level_id === id).reduce((m, n) => Math.min(m, Math.abs(Date.parse(`${n.date}T00:00:00Z`) - day)), Infinity);
+    const day = dayMs(p.start);
+    const distance = (lid: string) =>
+        near.results.filter((n) => n.level_id === lid).reduce((m, n) => Math.min(m, Math.abs(dayMs(n.date) - day)), Infinity);
     const far = Math.max(...candidates.map((l) => distance(l.id)));
     const pool = candidates.filter((l) => distance(l.id) === far);
     const level = pool[randomInt(pool.length)]!;
     const info = CATALOG.levels[level.id]!;
-    const id = challengeIdOf(date);
-    const rules = drawRules(info);
+    const rules = drawRules(info, CATALOG, p.kind);
     const now = nowIso();
     const res = await db
         .prepare(
-            `INSERT INTO daily_challenges (id, kind, date, source, level_source, level_id, level_version, level_hash, level_title,
+            `INSERT INTO challenges (id, kind, period, date, end_date, source, level_source, level_id, level_version, level_hash, level_title,
                hearts, slots, powers, stations, checkpoints, rules_hash, silver_ms, gold_ms, gold_no_damage, featured_player_id,
                featured_notified_at, created_at, updated_at)
-             VALUES (?1, 'daily', ?2, 'auto', 'campaign', ?3, ?4, ?5, ?6, ?7, ?8, ?9, 1, ?10, ?11, ?12, ?13, 1, NULL, NULL, ?14, ?14)
+             VALUES (?1, ?2, ?3, ?4, ?5, 'auto', 'campaign', ?6, ?7, ?8, ?9, ?10, ?11, ?12, 1, ?13, ?14, ?15, ?16, 1, NULL, NULL, ?17, ?17)
              ON CONFLICT DO NOTHING`,
         )
         .bind(
             id,
-            date,
+            p.kind,
+            p.period,
+            p.start,
+            p.end,
             level.id,
             level.current_version,
             level.content_hash,
@@ -356,41 +471,59 @@ async function drawChallenge(ctx: Ctx, date: string): Promise<boolean> {
 }
 
 /**
- * The challenge of the day features a community level: its author is told, once (the claim
- * on featured_notified_at makes concurrent calls send a single notification).
+ * A challenge that has begun features a community level: its author is told, once (the claim
+ * on featured_notified_at makes concurrent calls send a single notification), with the
+ * sentence of its kind (« … est le défi du jour / de la semaine / du mois ! »).
  */
 async function notifyFeatured(ctx: Ctx, today: string): Promise<void> {
-    const c = await ctx.env.DB.prepare(
-        `SELECT id, level_id, level_title, featured_player_id FROM daily_challenges
-         WHERE date = ?1 AND level_source = 'community' AND featured_player_id IS NOT NULL AND featured_notified_at IS NULL`,
+    const rows = await ctx.env.DB.prepare(
+        `SELECT id, kind, period, date, level_id, level_title, featured_player_id FROM challenges
+         WHERE date <= ?1 AND end_date > ?1 AND level_source = 'community' AND featured_player_id IS NOT NULL AND featured_notified_at IS NULL`,
     )
         .bind(today)
-        .first<{ id: string; level_id: string; level_title: string; featured_player_id: string }>();
-    if (!c) return;
-    const claim = await ctx.env.DB.prepare("UPDATE daily_challenges SET featured_notified_at = ?2 WHERE id = ?1 AND featured_notified_at IS NULL")
-        .bind(c.id, nowIso())
-        .run();
-    if (claim.meta.changes !== 1) return;
-    await notify(ctx, c.featured_player_id, "challenge_featured", {
-        levelId: c.level_id,
-        data: { title: c.level_title, challenge_id: c.id, date: today, level_id: c.level_id },
+        .all<{ id: string; kind: ChallengeKind; period: string; date: string; level_id: string; level_title: string; featured_player_id: string }>();
+    for (const c of rows.results) {
+        const claim = await ctx.env.DB.prepare("UPDATE challenges SET featured_notified_at = ?2 WHERE id = ?1 AND featured_notified_at IS NULL")
+            .bind(c.id, nowIso())
+            .run();
+        if (claim.meta.changes !== 1) continue;
+        await notify(ctx, c.featured_player_id, "challenge_featured", {
+            levelId: c.level_id,
+            data: { title: c.level_title, challenge_id: c.id, challenge_kind: c.kind, period: c.period, date: c.date, level_id: c.level_id },
+        });
+    }
+}
+
+/** The periods that must exist now: of each kind, the current one to AHEAD[kind] ahead. */
+function wantedPeriods(today: string): Period[][] {
+    return KINDS.map((kind) => {
+        const current = periodOf(kind, today);
+        return Array.from({ length: AHEAD[kind] + 1 }, (_, i) => periodBounds(kind, shiftPeriod(kind, current, i))!);
     });
 }
 
 /**
- * The challenges of today to today + 7 exist (missing ones are drawn) and the creator of a
- * community level of the day is told. Called by every read of the current challenge and by
- * the daily maintenance; an existing challenge is never touched (ON CONFLICT DO NOTHING).
+ * The challenges of the current periods and of the coming ones exist (missing ones are
+ * drawn) and the creator of a community level that has just begun is told. Called by the
+ * reads of the current challenges and by the daily maintenance; an existing challenge is
+ * never touched (ON CONFLICT DO NOTHING).
  */
 export async function ensureChallenges(ctx: Ctx): Promise<void> {
     const today = utcDate();
-    const last = addDays(today, DAYS_AHEAD);
-    const have = await ctx.env.DB.prepare("SELECT date FROM daily_challenges WHERE date BETWEEN ?1 AND ?2").bind(today, last).all<{ date: string }>();
-    const existing = new Set(have.results.map((r) => r.date));
-    for (let i = 0; i <= DAYS_AHEAD; ++i) {
-        const date = addDays(today, i);
-        if (!existing.has(date) && !(await drawChallenge(ctx, date))) break;
-    }
+    const wanted = wantedPeriods(today);
+    const ids = wanted.flat().map((p) => challengeIdOf(p.kind, p.period));
+    const have = await ctx.env.DB.prepare(`SELECT id FROM challenges WHERE id IN (${ids.map((_, i) => `?${i + 1}`).join(", ")})`)
+        .bind(...ids)
+        .all<{ id: string }>();
+    const existing = new Set(have.results.map((r) => r.id));
+    let candidates: CandidateRow[] | null = null;
+    for (const periods of wanted)
+        for (const p of periods) {
+            if (existing.has(challengeIdOf(p.kind, p.period))) continue;
+            candidates ??= await drawCandidates(ctx);
+            // No level for this kind: the next periods of the kind cannot be drawn either.
+            if (!(await drawChallenge(ctx, p, candidates))) break;
+        }
     await notifyFeatured(ctx, today);
 }
 
@@ -398,38 +531,77 @@ export async function ensureChallenges(ctx: Ctx): Promise<void> {
 
 /** A challenge that has begun; a future or unknown one is « not found » (never revealed). */
 async function startedChallenge(ctx: Ctx, id: string): Promise<ChallengeRow> {
-    const date = dateOfId(id);
-    if (!date || date > utcDate()) throw Errors.notFound("CHALLENGE_NOT_FOUND", "Défi introuvable.");
+    const p = parseChallengeId(id);
+    if (!p || p.start > utcDate()) throw Errors.notFound("CHALLENGE_NOT_FOUND", "Défi introuvable.");
     const c = await ctx.env.DB.prepare(`${CHALLENGE_SQL} WHERE c.id = ?1`).bind(id).first<ChallengeRow>();
     if (!c) throw Errors.notFound("CHALLENGE_NOT_FOUND", "Défi introuvable.");
     return c;
 }
 
-/** GET /challenges/daily/current: { server_time, challenge, previous } (today's and yesterday's). */
-export async function current(ctx: Ctx): Promise<Response> {
+async function ensureQuietly(ctx: Ctx): Promise<void> {
     try {
         await ensureChallenges(ctx);
     } catch (e) {
         // The read still answers with what exists.
         log("error", "challenge_ensure_failed", { request_id: ctx.requestId, error: e instanceof Error ? e.message : String(e) });
     }
-    const now = Date.now();
-    const today = utcDate(now);
-    const yesterday = addDays(today, -1);
-    const rows = await ctx.env.DB.prepare(`${CHALLENGE_SQL} WHERE c.date IN (?1, ?2)`).bind(today, yesterday).all<ChallengeRow>();
-    const of = (d: string) => rows.results.find((c) => c.date === d);
-    const t = of(today);
-    const y = of(yesterday);
-    return json(ctx, { server_time: new Date(now).toISOString(), challenge: t ? challengeJson(t) : null, previous: y ? challengeJson(y) : null });
 }
 
-/** GET /challenges/daily?before=AAAA-MM-JJ&limit=N: challenges that have begun, most recent first. */
+async function challengesById(ctx: Ctx, ids: string[]): Promise<Map<string, ChallengeRow>> {
+    const rows = await ctx.env.DB.prepare(`${CHALLENGE_SQL} WHERE c.id IN (${ids.map((_, i) => `?${i + 1}`).join(", ")})`)
+        .bind(...ids)
+        .all<ChallengeRow>();
+    return new Map(rows.results.map((c) => [c.id, c]));
+}
+
+/** GET /challenges/daily/current (2.32): { server_time, challenge, previous } (today's and yesterday's daily challenges). */
+export async function current(ctx: Ctx): Promise<Response> {
+    await ensureQuietly(ctx);
+    const now = Date.now();
+    const today = utcDate(now);
+    const ids = [challengeIdOf("daily", today), challengeIdOf("daily", addDays(today, -1))];
+    const rows = await challengesById(ctx, ids);
+    const of = (id: string) => {
+        const c = rows.get(id);
+        return c ? challengeJson(c) : null;
+    };
+    return json(ctx, { server_time: new Date(now).toISOString(), challenge: of(ids[0]!), previous: of(ids[1]!) });
+}
+
+/**
+ * GET /challenges/current (2.33): `{ server_time, daily, weekly, monthly, previous: { daily,
+ * weekly, monthly } }`: the challenge of each kind's current period and of the period before
+ * (`null` when there is none).
+ */
+export async function currentAll(ctx: Ctx): Promise<Response> {
+    await ensureQuietly(ctx);
+    const now = Date.now();
+    const today = utcDate(now);
+    const cur = Object.fromEntries(KINDS.map((k) => [k, challengeIdOf(k, periodOf(k, today))])) as Record<ChallengeKind, string>;
+    const prev = Object.fromEntries(KINDS.map((k) => [k, challengeIdOf(k, shiftPeriod(k, periodOf(k, today), -1))])) as Record<ChallengeKind, string>;
+    const rows = await challengesById(ctx, [...Object.values(cur), ...Object.values(prev)]);
+    const of = (id: string) => {
+        const c = rows.get(id);
+        return c ? challengeJson(c) : null;
+    };
+    return json(ctx, {
+        server_time: new Date(now).toISOString(),
+        daily: of(cur.daily),
+        weekly: of(cur.weekly),
+        monthly: of(cur.monthly),
+        previous: { daily: of(prev.daily), weekly: of(prev.weekly), monthly: of(prev.monthly) },
+    });
+}
+
+/** GET /challenges/daily?before=AAAA-MM-JJ&limit=N (2.32): daily challenges that have begun, most recent first. */
 export async function archive(ctx: Ctx): Promise<Response> {
     const before = queryString(ctx.url, "before", DATE_RE);
     if (before !== undefined && !isDate(before)) throw Errors.validation([{ field: "before", message: "date AAAA-MM-JJ attendue" }]);
     const { limit } = paging(ctx.url, 30, 30);
     const today = utcDate();
-    const rows = await ctx.env.DB.prepare(`${CHALLENGE_SQL} WHERE c.date <= ?1 AND (?2 IS NULL OR c.date < ?2) ORDER BY c.date DESC LIMIT ?3`)
+    const rows = await ctx.env.DB.prepare(
+        `${CHALLENGE_SQL} WHERE c.kind = 'daily' AND c.date <= ?1 AND (?2 IS NULL OR c.date < ?2) ORDER BY c.date DESC LIMIT ?3`,
+    )
         .bind(today, before ?? null, limit)
         .all<ChallengeRow>();
     const last = rows.results[rows.results.length - 1];
@@ -439,9 +611,51 @@ export async function archive(ctx: Ctx): Promise<Response> {
     });
 }
 
+/** GET /challenges/{challengeId}: a challenge that has begun (the challenge object itself). */
+export async function getChallenge(ctx: Ctx): Promise<Response> {
+    return json(ctx, challengeJson(await startedChallenge(ctx, ctx.params.challengeId!)));
+}
+
+const MONTH_QUERY_RE = /^\d{4}-\d{2}$/;
+
+/**
+ * GET /challenges/calendar?month=AAAA-MM (default: the current month): `{ month, first_month,
+ * challenges, me }`: every challenge that has begun and touches the month (its days, the
+ * weeks that overlap it, the month itself), by first day (the month, then the week, then the
+ * day for one same day); `first_month` = month of the oldest challenge (the current month
+ * when there is none); `me` (signed in only, else null) = my result per challenge id.
+ */
+export async function calendar(ctx: Ctx, viewer: AuthInfo | null): Promise<Response> {
+    await ensureQuietly(ctx);
+    const today = utcDate();
+    const month = queryString(ctx.url, "month", MONTH_QUERY_RE) ?? periodOf("monthly", today);
+    const b = periodBounds("monthly", month);
+    if (!b) throw Errors.validation([{ field: "month", message: "mois AAAA-MM attendu" }]);
+    const rows = await ctx.env.DB.prepare(
+        `${CHALLENGE_SQL} WHERE c.date <= ?1 AND c.date < ?3 AND c.end_date > ?2 ORDER BY c.date, ${kindOrder("c.kind")}`,
+    )
+        .bind(today, b.start, b.end)
+        .all<ChallengeRow>();
+    const first = await ctx.env.DB.prepare("SELECT MIN(date) AS d FROM challenges WHERE date <= ?1").bind(today).first<{ d: string | null }>();
+    let me: Record<string, ReturnType<typeof resultView>> | null = null;
+    if (viewer) {
+        me = {};
+        for (const r of await playerResults(ctx, viewer.player.id, { span: b, limit: 100 })) me[r.challenge_id] = resultView(r);
+    }
+    return json(ctx, {
+        month,
+        first_month: first?.d ? first.d.slice(0, 7) : periodOf("monthly", today),
+        challenges: rows.results.map(challengeJson),
+        me,
+    });
+}
+
 // ----------------------------------------------------------------- leaderboard
 
 export const SCOPES = ["world", "country", "friends"] as const;
+/** live: runs received during the challenge (+ 10 min); all: also the late ones (« Depuis »). */
+export const BOARD_PERIODS = ["live", "all"] as const;
+export const BOARDS = ["time"] as const;
 
 interface BoardRow {
     run_id: string;
@@ -450,6 +664,7 @@ interface BoardRow {
     tier: Tier;
     created_at: string;
     has_replay: number;
+    late: number;
     username: string;
     avatar: string;
     avatar_custom_key: string | null;
@@ -459,11 +674,14 @@ interface BoardRow {
     total: number;
 }
 
-/** Best VERIFIED run of each active player on a challenge; ?1 = challenge, filters from ?2. */
+/**
+ * Best VERIFIED run of each active player on a challenge; ?1 = challenge, ?2 = 1 to take the
+ * late runs too (period=all), filters from ?3.
+ */
 function boardSql(filter: { country?: string; friendsOf?: string }): { sql: string; extra: unknown[] } {
     const where: string[] = [];
     const extra: unknown[] = [];
-    let n = 2;
+    let n = 3;
     if (filter.country) {
         // Players hiding their location never appear in a country board.
         where.push(`p.country_code = ?${n++} AND p.location_visibility <> 'hidden'`);
@@ -476,11 +694,11 @@ function boardSql(filter: { country?: string; friendsOf?: string }): { sql: stri
     }
     const sql = `
       WITH best AS (
-        SELECT run_id, player_id, time_ms, tier, created_at, has_replay FROM (
-          SELECT r.id AS run_id, r.player_id, r.time_ms, r.tier, r.created_at,
+        SELECT run_id, player_id, time_ms, tier, created_at, has_replay, late FROM (
+          SELECT r.id AS run_id, r.player_id, r.time_ms, r.tier, r.created_at, r.late,
                  (r.replay_key IS NOT NULL AND r.replay_status = 'VERIFIED') AS has_replay,
                  ROW_NUMBER() OVER (PARTITION BY r.player_id ORDER BY r.time_ms, r.created_at, r.id) AS rn
-          FROM challenge_runs r WHERE r.challenge_id = ?1 AND r.status = 'VERIFIED') WHERE rn = 1),
+          FROM challenge_runs r WHERE r.challenge_id = ?1 AND r.status = 'VERIFIED' AND (?2 = 1 OR r.late = 0)) WHERE rn = 1),
       ranked AS (
         SELECT b.*, p.username, p.avatar, p.avatar_custom_key, p.country_code, p.location_visibility
         FROM best b JOIN players p ON p.id = b.player_id
@@ -507,14 +725,16 @@ function playerJson(
 }
 
 /**
- * GET /challenges/{id}/leaderboard?scope=world|country|friends&country=&limit=50:
- * `{ entries: [{ rank, run_id, player, time_ms, tier, status }], me, total }`. `me` is the
- * viewer's best run: VERIFIED (with its rank in this scope) or, when better, PENDING (rank
- * null).
+ * GET /challenges/{id}/leaderboard?scope=world|country|friends&country=&period=live|all&board=time&limit=50:
+ * `{ challenge_id, scope, period, board, country_code, entries: [{ rank, run_id, player,
+ * time_ms, tier, status, has_replay, is_me, late }], me, total }`. `me` is the viewer's best
+ * run: VERIFIED (with its rank in this scope) or, when better, PENDING (rank null).
  */
 export async function leaderboard(ctx: Ctx, viewer: AuthInfo | null): Promise<Response> {
     const c = await startedChallenge(ctx, ctx.params.challengeId!);
     const scope = queryEnum(ctx.url, "scope", SCOPES, "world");
+    const period = queryEnum(ctx.url, "period", BOARD_PERIODS, "live");
+    const board = queryEnum(ctx.url, "board", BOARDS, "time");
     const page = paging(ctx.url, 50, 100);
     let country = queryString(ctx.url, "country", COUNTRY_RE);
     const filter: { country?: string; friendsOf?: string } = {};
@@ -526,29 +746,32 @@ export async function leaderboard(ctx: Ctx, viewer: AuthInfo | null): Promise<Re
         if (!viewer) throw Errors.unauthorized();
         filter.friendsOf = viewer.player.id;
     }
+    const all = period === "all" ? 1 : 0;
     const { sql, extra } = boardSql(filter);
-    const n = 2 + extra.length;
+    const n = 3 + extra.length;
     const rows = await ctx.env.DB.prepare(`${sql} ORDER BY rank LIMIT ?${n} OFFSET ?${n + 1}`)
-        .bind(c.id, ...extra, page.limit, page.offset)
+        .bind(c.id, all, ...extra, page.limit, page.offset)
         .all<BoardRow>();
     let total = rows.results[0]?.total ?? 0;
     if (rows.results.length === 0 && page.offset > 0) {
-        const t = await ctx.env.DB.prepare(`SELECT COUNT(*) AS total FROM (${sql})`).bind(c.id, ...extra).first<{ total: number }>();
+        const t = await ctx.env.DB.prepare(`SELECT COUNT(*) AS total FROM (${sql})`).bind(c.id, all, ...extra).first<{ total: number }>();
         total = t?.total ?? 0;
     }
+    type Best = { id: string; time_ms: number; tier: Tier; late: number };
     let mine: BoardRow | null = null;
-    let pending: { id: string; time_ms: number; tier: Tier } | null = null;
-    let verified: { id: string; time_ms: number; tier: Tier } | null = null;
+    let pending: Best | null = null;
+    let verified: Best | null = null;
     if (viewer) {
-        mine = await ctx.env.DB.prepare(`${sql} WHERE player_id = ?${n}`).bind(c.id, ...extra, viewer.player.id).first<BoardRow>();
+        mine = await ctx.env.DB.prepare(`${sql} WHERE player_id = ?${n}`).bind(c.id, all, ...extra, viewer.player.id).first<BoardRow>();
         const best = (status: string) =>
             ctx.env.DB.prepare(
-                "SELECT id, time_ms, tier FROM challenge_runs WHERE challenge_id = ?1 AND player_id = ?2 AND status = ?3 ORDER BY time_ms, created_at, id LIMIT 1",
+                `SELECT id, time_ms, tier, late FROM challenge_runs WHERE challenge_id = ?1 AND player_id = ?2 AND status = ?3 AND (?4 = 1 OR late = 0)
+                 ORDER BY time_ms, created_at, id LIMIT 1`,
             )
-                .bind(c.id, viewer.player.id, status)
-                .first<{ id: string; time_ms: number; tier: Tier }>();
+                .bind(c.id, viewer.player.id, status, all)
+                .first<Best>();
         pending = await best("PENDING");
-        verified = mine ? { id: mine.run_id, time_ms: mine.time_ms, tier: mine.tier } : await best("VERIFIED");
+        verified = mine ? { id: mine.run_id, time_ms: mine.time_ms, tier: mine.tier, late: mine.late } : await best("VERIFIED");
     }
     const looks = await boardCosmetics(ctx, [...rows.results.map((r) => r.player_id), ...(viewer ? [viewer.player.id] : [])]);
     const entry = (r: BoardRow) => ({
@@ -560,18 +783,29 @@ export async function leaderboard(ctx: Ctx, viewer: AuthInfo | null): Promise<Re
         status: "VERIFIED" as const,
         has_replay: r.has_replay === 1,
         is_me: viewer?.player.id === r.player_id,
+        late: r.late === 1,
     });
     let me = null;
     if (viewer) {
         const who = playerJson(viewer.player, looks);
-        if (pending && (!verified || pending.time_ms < verified.time_ms))
-            me = { rank: null, run_id: pending.id, player: who, time_ms: pending.time_ms, tier: pending.tier, status: "PENDING" as const };
+        const unranked = (b: Best, status: "PENDING" | "VERIFIED") => ({
+            rank: null,
+            run_id: b.id,
+            player: who,
+            time_ms: b.time_ms,
+            tier: b.tier,
+            status,
+            late: b.late === 1,
+        });
+        if (pending && (!verified || pending.time_ms < verified.time_ms)) me = unranked(pending, "PENDING");
         else if (mine) me = entry(mine);
-        else if (verified) me = { rank: null, run_id: verified.id, player: who, time_ms: verified.time_ms, tier: verified.tier, status: "VERIFIED" as const };
+        else if (verified) me = unranked(verified, "VERIFIED");
     }
     return json(ctx, {
         challenge_id: c.id,
         scope,
+        period,
+        board,
         country_code: filter.country ?? null,
         entries: rows.results.map(entry),
         me,
@@ -581,15 +815,18 @@ export async function leaderboard(ctx: Ctx, viewer: AuthInfo | null): Promise<Re
 
 // ----------------------------------------------------------------- decisions
 
-/** Position this time would take among the other players' verified bests of the challenge. */
-async function boardContext(ctx: Ctx, challengeId: string, timeMs: number, playerId: string): Promise<BoardContext> {
+/**
+ * Position this time would take among the other players' verified bests of the challenge:
+ * the board of the challenge's period for a run in time, the board « Depuis » for a late one.
+ */
+async function boardContext(ctx: Ctx, challengeId: string, timeMs: number, playerId: string, late: boolean): Promise<BoardContext> {
     const row = await ctx.env.DB.prepare(
         `SELECT SUM(CASE WHEN b.t <= ?2 THEN 1 ELSE 0 END) AS better, COUNT(*) AS size, MIN(b.t) AS wr FROM (
            SELECT r.player_id, MIN(r.time_ms) AS t FROM challenge_runs r JOIN players p ON p.id = r.player_id
-           WHERE r.challenge_id = ?1 AND r.status = 'VERIFIED' AND r.player_id <> ?3 AND p.account_status = 'active'
+           WHERE r.challenge_id = ?1 AND r.status = 'VERIFIED' AND r.player_id <> ?3 AND p.account_status = 'active' AND (?4 = 1 OR r.late = 0)
            GROUP BY r.player_id) b`,
     )
-        .bind(challengeId, timeMs, playerId)
+        .bind(challengeId, timeMs, playerId, late ? 1 : 0)
         .first<{ better: number | null; size: number; wr: number | null }>();
     return { rank: (row?.better ?? 0) + 1, size: row?.size ?? 0, worldRecordMs: row?.wr ?? null };
 }
@@ -630,7 +867,7 @@ export async function recheckHeldRuns(ctx: Ctx, playerId: string | null, limit =
         .all<RunRow & { trust_level: number }>();
     let changed = 0;
     for (const r of held.results) {
-        const board = await boardContext(ctx, r.challenge_id, r.time_ms, r.player_id);
+        const board = await boardContext(ctx, r.challenge_id, r.time_ms, r.player_id, r.late === 1);
         const d = decideRun(r.trust_level, "valid", r.time_ms, board);
         if (d.status === "PENDING" && d.note === r.verification_notes) continue;
         await applyDecision(ctx, r, d);
@@ -657,13 +894,18 @@ async function levelOf(ctx: Ctx, c: ChallengeRow): Promise<LevelVersionRow> {
     throw Errors.notFound("LEVEL_VERSION_NOT_FOUND", "Le niveau de ce défi n'est plus disponible.");
 }
 
+/** Whether a submission received at `now` comes after the end of its challenge (+ 10 min). */
+function isLate(c: Pick<ChallengeRow, "end_date">, now: number): boolean {
+    return now > Date.parse(instant(c.end_date)) + LATE_SUBMIT_MS;
+}
+
 /** POST /challenges/{challengeId}/runs: a run of the challenge; idempotent by attempt_id. */
 export async function submitRun(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
     await rateLimit(ctx, RULES.challengeSubmit, "player:" + auth.player.id);
     const id = ctx.params.challengeId!;
-    const date = dateOfId(id);
-    if (!date) throw Errors.notFound("CHALLENGE_NOT_FOUND", "Défi introuvable.");
+    const period = parseChallengeId(id);
+    if (!period) throw Errors.notFound("CHALLENGE_NOT_FOUND", "Défi introuvable.");
     const body = await readJsonObject(ctx, 4 * 1024);
     // `player_id` is deliberately not accepted: the player comes from the session.
     const v = new Validator(body, ["attempt_id", "time_ms", "deaths", "damage_taken", "level_hash", "rules_hash", "game_version", "has_replay"]);
@@ -679,12 +921,11 @@ export async function submitRun(ctx: Ctx): Promise<Response> {
 
     const now = Date.now();
     // A future challenge is never revealed: whether it exists or not, it has not begun.
-    if (date > utcDate(now)) throw Errors.conflict("CHALLENGE_NOT_STARTED", "Ce défi n'a pas encore commencé.");
+    if (period.start > utcDate(now)) throw Errors.conflict("CHALLENGE_NOT_STARTED", "Ce défi n'a pas encore commencé.");
     const c = await ctx.env.DB.prepare(`${CHALLENGE_SQL} WHERE c.id = ?1`).bind(id).first<ChallengeRow>();
     if (!c) throw Errors.notFound("CHALLENGE_NOT_FOUND", "Défi introuvable.");
 
-    // Idempotence: the same attempt can be sent again (lost response, offline queue), even
-    // after the end of the challenge.
+    // Idempotence: the same attempt can be sent again (lost response, offline queue).
     const existing = await ctx.env.DB.prepare("SELECT * FROM challenge_runs WHERE player_id = ?1 AND attempt_id = ?2")
         .bind(auth.player.id, attemptId)
         .first<RunRow>();
@@ -705,12 +946,13 @@ export async function submitRun(ctx: Ctx): Promise<Response> {
         });
     }
 
-    if (now > Date.parse(endsAt(c.date)) + LATE_SUBMIT_MS)
-        throw Errors.conflict("CHALLENGE_ENDED", "Ce défi est terminé.", { ends_at: endsAt(c.date) });
+    // After the end (+ 10 min) the run is still taken, « hors délai » (2.33: never
+    // CHALLENGE_ENDED any more; a 2.32 game that sends one is answered the same way).
+    const late = isLate(c, now);
     const level = await levelOf(ctx, c);
     const minGame = [CHALLENGE_MIN_GAME_VERSION, ctx.env.MIN_GAME_VERSION, level.min_game_version].reduce((a, b) => (compareVersions(a, b) >= 0 ? a : b));
     if (compareVersions(gameVersion!, minGame) < 0)
-        throw new ApiError(426, "GAME_VERSION_UNSUPPORTED", "Version du jeu trop ancienne pour les défis du jour.", { min_game_version: minGame });
+        throw new ApiError(426, "GAME_VERSION_UNSUPPORTED", "Version du jeu trop ancienne pour les défis.", { min_game_version: minGame });
     if (levelHash !== c.level_hash) throw Errors.conflict("LEVEL_MISMATCH", "Ce n'est pas la version du niveau de ce défi.", { level_hash: c.level_hash });
     if (hash !== c.rules_hash) throw Errors.conflict("RULES_MISMATCH", "Ces règles ne sont pas celles du défi.", { rules_hash: c.rules_hash });
 
@@ -727,6 +969,7 @@ export async function submitRun(ctx: Ctx): Promise<Response> {
         game_version: gameVersion!,
         tier: tierOf(c, timeMs!, damage!),
         status: "PENDING",
+        late: late ? 1 : 0,
         rejection_reason: null,
         verification_notes: null,
         replay_key: null,
@@ -742,11 +985,11 @@ export async function submitRun(ctx: Ctx): Promise<Response> {
     try {
         await ctx.env.DB.prepare(
             `INSERT INTO challenge_runs (id, challenge_id, player_id, attempt_id, time_ms, deaths, damage_taken, level_hash, rules_hash,
-               game_version, tier, status, created_at)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, 'PENDING', ?12)`,
+               game_version, tier, status, late, created_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, 'PENDING', ?12, ?13)`,
         )
             .bind(run.id, run.challenge_id, run.player_id, run.attempt_id, run.time_ms, run.deaths, run.damage_taken, run.level_hash,
-                run.rules_hash, run.game_version, run.tier, run.created_at)
+                run.rules_hash, run.game_version, run.tier, run.late, run.created_at)
             .run();
     } catch (e) {
         // Two identical submissions racing each other.
@@ -759,7 +1002,7 @@ export async function submitRun(ctx: Ctx): Promise<Response> {
         decision = { status: "REJECTED", reason: "IMPOSSIBLE_TIME", note: null };
         await audit(ctx, auth.player.id, "challenge_run_rejected_impossible_time", { run_id: run.id, time_ms: run.time_ms });
     } else if (run.time_ms > level.time_limit_ms) decision = { status: "REJECTED", reason: "TIME_OVER_LIMIT", note: null };
-    else decision = decideRun(auth.player.trust_level, "none", run.time_ms, await boardContext(ctx, c.id, run.time_ms, auth.player.id));
+    else decision = decideRun(auth.player.trust_level, "none", run.time_ms, await boardContext(ctx, c.id, run.time_ms, auth.player.id, late));
     await applyDecision(ctx, run, decision);
     return json(
         ctx,
@@ -855,7 +1098,7 @@ export async function uploadRunReplay(ctx: Ctx): Promise<Response> {
     if (!analysis.ok) await audit(ctx, r.player_id, "challenge_replay_rejected", { run_id: r.id, reasons: analysis.reasons.slice(0, 5) });
 
     if (r.status === "PENDING") {
-        const board = await boardContext(ctx, c.id, r.time_ms, r.player_id);
+        const board = await boardContext(ctx, c.id, r.time_ms, r.player_id, r.late === 1);
         const d = decideRun(r.trust_level, analysis.ok ? "valid" : "invalid", r.time_ms, board);
         if (!analysis.ok) d.note = analysis.reasons.join(" ; ").slice(0, 500);
         await applyDecision(ctx, r, d);
@@ -863,7 +1106,7 @@ export async function uploadRunReplay(ctx: Ctx): Promise<Response> {
     return json(ctx, { run: runJson(r), replay: { verification_status: replayStatus }, analysis }, { status: 201 });
 }
 
-/** GET /challenges/runs/{runId}/replay: public for a VERIFIED run (ghost of the day's first), else its owner. */
+/** GET /challenges/runs/{runId}/replay: public for a VERIFIED run (ghost of the challenge's first), else its owner. */
 export async function downloadRunReplay(ctx: Ctx, viewer: AuthInfo | null): Promise<Response> {
     const r = await loadRun(ctx, ctx.params.runId!);
     const isOwner = viewer?.player.id === r.player_id;
@@ -885,30 +1128,110 @@ export async function downloadRunReplay(ctx: Ctx, viewer: AuthInfo | null): Prom
 
 // ------------------------------------------------------------------- my results
 
+export interface Streak {
+    current: number;
+    best: number;
+    last_period: string | null;
+}
+
 /**
- * Streak: consecutive UTC days, up to today or yesterday, on which the player has at least
- * one run of that day's challenge that was not rejected. `dates`: sorted, distinct.
+ * Streak of a kind: consecutive periods (days, ISO weeks, months), up to the current one or
+ * the one before, on which the player has at least one run of that period's challenge that
+ * was received in time and not rejected. `periods`: sorted, distinct.
  */
-export function streakOf(dates: string[], today: string): { current: number; best: number; last_date: string | null } {
+export function periodStreak(kind: ChallengeKind, periods: string[], current: string): Streak {
     let best = 0;
     let run = 0;
     let prev: string | null = null;
-    for (const d of dates) {
-        run = prev !== null && addDays(prev, 1) === d ? run + 1 : 1;
+    for (const p of periods) {
+        run = prev !== null && shiftPeriod(kind, prev, 1) === p ? run + 1 : 1;
         best = Math.max(best, run);
-        prev = d;
+        prev = p;
     }
-    const current = prev !== null && (prev === today || prev === addDays(today, -1)) ? run : 0;
-    return { current, best, last_date: prev };
+    const cur = prev !== null && (prev === current || prev === shiftPeriod(kind, current, -1)) ? run : 0;
+    return { current: cur, best, last_period: prev };
+}
+
+/** The 2.32 streak (days): `{ current, best, last_date }`. */
+export function streakOf(dates: string[], today: string): { current: number; best: number; last_date: string | null } {
+    const s = periodStreak("daily", dates, today);
+    return { current: s.current, best: s.best, last_date: s.last_period };
 }
 
 const TIER_RANK_SQL = "CASE r.tier WHEN 'gold' THEN 3 WHEN 'silver' THEN 2 ELSE 1 END";
 
+interface PlayerResult {
+    challenge_id: string;
+    kind: ChallengeKind;
+    period: string;
+    date: string;
+    best_time_ms: number;
+    tier: Tier | null;
+    status: RunRow["status"];
+    late: boolean;
+    best_progress: number | null;
+}
+
 /**
- * GET /challenges/me?limit=60: `{ streak: { current, best, last_date }, results: [{
- * challenge_id, date, best_time_ms, tier, status }] }` (most recent first). A result is the
- * best run that was not rejected (its status; its tier is the best one reached that day), or
- * the best rejected run (tier null) when every run was rejected.
+ * The player's result on each challenge played (most recent first; `span`: only the
+ * challenges that touch these days). The runs received in time come first: the result is
+ * the best of them that was not rejected (its time and status; its tier is the best one
+ * reached in time); with only late runs, the best late one (`late: true`, its tier the best
+ * one reached late); with only rejected runs, the best rejected one (tier null).
+ * `best_progress` belongs to « Plus loin » (2.34): null here.
+ */
+async function playerResults(ctx: Ctx, playerId: string, o: { span?: { start: string; end: string }; limit: number }): Promise<PlayerResult[]> {
+    const rows = await ctx.env.DB.prepare(
+        `WITH runs AS (
+           SELECT r.challenge_id, r.time_ms, r.status, r.late,
+                  ROW_NUMBER() OVER (PARTITION BY r.challenge_id
+                                     ORDER BY (r.status = 'REJECTED'), r.late, r.time_ms, (r.status <> 'VERIFIED'), r.created_at, r.id) AS rn,
+                  MAX(CASE WHEN r.status <> 'REJECTED' AND r.late = 0 THEN ${TIER_RANK_SQL} ELSE 0 END) OVER (PARTITION BY r.challenge_id) AS live_tier,
+                  MAX(CASE WHEN r.status <> 'REJECTED' THEN ${TIER_RANK_SQL} ELSE 0 END) OVER (PARTITION BY r.challenge_id) AS any_tier
+           FROM challenge_runs r WHERE r.player_id = ?1)
+         SELECT runs.challenge_id, c.kind, c.period, c.date, runs.time_ms, runs.status, runs.late, runs.live_tier, runs.any_tier
+         FROM runs JOIN challenges c ON c.id = runs.challenge_id
+         WHERE runs.rn = 1 AND (?2 IS NULL OR (c.date < ?3 AND c.end_date > ?2))
+         ORDER BY c.date DESC, ${kindOrder("c.kind")} DESC LIMIT ?4`,
+    )
+        .bind(playerId, o.span?.start ?? null, o.span?.end ?? null, o.limit)
+        .all<{
+            challenge_id: string;
+            kind: ChallengeKind;
+            period: string;
+            date: string;
+            time_ms: number;
+            status: RunRow["status"];
+            late: number;
+            live_tier: number;
+            any_tier: number;
+        }>();
+    return rows.results.map((r) => {
+        const rank = r.status === "REJECTED" ? 0 : r.late === 1 ? r.any_tier : r.live_tier;
+        return {
+            challenge_id: r.challenge_id,
+            kind: r.kind,
+            period: r.period,
+            date: r.date,
+            best_time_ms: r.time_ms,
+            tier: rank > 0 ? TIERS[rank - 1]! : null,
+            status: r.status,
+            late: r.late === 1,
+            best_progress: null,
+        };
+    });
+}
+
+/** A result as the calendar's `me` gives it. */
+function resultView(r: PlayerResult) {
+    return { best_time_ms: r.best_time_ms, tier: r.tier, status: r.status, late: r.late, best_progress: r.best_progress };
+}
+
+/**
+ * GET /challenges/me?limit=60: `{ streak: { current, best, last_date }, streaks: { daily,
+ * weekly, monthly } ({ current, best, last_period }), results: [{ challenge_id, kind, period,
+ * date, best_time_ms, tier, status, late, best_progress }] }` (most recent first). `streak`
+ * is the days' streak of the 2.32 games.
  */
 export async function mine(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
@@ -916,36 +1239,37 @@ export async function mine(ctx: Ctx): Promise<Response> {
     const me = auth.player.id;
     // The game polls its results: a run held by an outdated board is decided again.
     await recheckHeldRuns(ctx, me, 20);
-    const results = await ctx.env.DB.prepare(
-        `WITH runs AS (
-           SELECT r.challenge_id, r.time_ms, r.status,
-                  ROW_NUMBER() OVER (PARTITION BY r.challenge_id
-                                     ORDER BY (r.status = 'REJECTED'), r.time_ms, (r.status <> 'VERIFIED'), r.created_at, r.id) AS rn,
-                  MAX(CASE WHEN r.status <> 'REJECTED' THEN ${TIER_RANK_SQL} ELSE 0 END) OVER (PARTITION BY r.challenge_id) AS tier_rank
-           FROM challenge_runs r WHERE r.player_id = ?1)
-         SELECT runs.challenge_id, c.date, runs.time_ms, runs.status, runs.tier_rank
-         FROM runs JOIN daily_challenges c ON c.id = runs.challenge_id
-         WHERE runs.rn = 1 ORDER BY c.date DESC LIMIT ?2`,
-    )
-        .bind(me, limit)
-        .all<{ challenge_id: string; date: string; time_ms: number; status: RunRow["status"]; tier_rank: number }>();
-    const days = await ctx.env.DB.prepare(
-        `SELECT DISTINCT c.date FROM challenge_runs r JOIN daily_challenges c ON c.id = r.challenge_id
-         WHERE r.player_id = ?1 AND r.status <> 'REJECTED' ORDER BY c.date`,
+    const results = await playerResults(ctx, me, { limit });
+    const played = await ctx.env.DB.prepare(
+        `SELECT DISTINCT c.kind, c.period FROM challenge_runs r JOIN challenges c ON c.id = r.challenge_id
+         WHERE r.player_id = ?1 AND r.status <> 'REJECTED' AND r.late = 0 ORDER BY c.kind, c.period`,
     )
         .bind(me)
-        .all<{ date: string }>();
+        .all<{ kind: ChallengeKind; period: string }>();
+    const today = utcDate();
+    const streaks = Object.fromEntries(
+        KINDS.map((k) => [
+            k,
+            periodStreak(
+                k,
+                played.results.filter((p) => p.kind === k).map((p) => p.period),
+                periodOf(k, today),
+            ),
+        ]),
+    ) as Record<ChallengeKind, Streak>;
     return json(ctx, {
-        streak: streakOf(
-            days.results.map((d) => d.date),
-            utcDate(),
-        ),
-        results: results.results.map((r) => ({
+        streak: { current: streaks.daily.current, best: streaks.daily.best, last_date: streaks.daily.last_period },
+        streaks,
+        results: results.map((r) => ({
             challenge_id: r.challenge_id,
+            kind: r.kind,
+            period: r.period,
             date: r.date,
-            best_time_ms: r.time_ms,
-            tier: r.tier_rank > 0 ? TIERS[r.tier_rank - 1]! : null,
+            best_time_ms: r.best_time_ms,
+            tier: r.tier,
             status: r.status,
+            late: r.late,
+            best_progress: r.best_progress,
         })),
     });
 }
@@ -960,7 +1284,7 @@ export async function challengeReplayKeys(ctx: Ctx, playerId: string): Promise<s
     return rows.results.map((r) => r.replay_key);
 }
 
-/** Daily maintenance: missing challenges, the creator of the day, runs held for review. */
+/** Daily maintenance: missing challenges, the creators featured, runs held for review. */
 export async function maintenance(ctx: Ctx): Promise<{ rechecked: number }> {
     await ensureChallenges(ctx);
     return { rechecked: await recheckHeldRuns(ctx, null) };

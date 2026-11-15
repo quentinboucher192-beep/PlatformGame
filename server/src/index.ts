@@ -258,11 +258,15 @@ route("POST", `${V}/projects/{projectId}/live/heartbeat`, (ctx) => liveRoute(ctx
 route("POST", `${V}/projects/{projectId}/live/ops`, (ctx) => liveRoute(ctx, "ops"));
 route("POST", `${V}/projects/{projectId}/live/leave`, (ctx) => liveRoute(ctx, "leave"));
 
-// Daily challenges (2.31, docs/online/DAILY_CHALLENGES.md): a future challenge is never shown
+// Challenges (2.32 docs/online/DAILY_CHALLENGES.md, 2.33 docs/online/CHALLENGES_PERIODS.md):
+// a future challenge is never shown. The literal routes come before /challenges/{challengeId}.
+route("GET", `${V}/challenges/current`, (ctx) => challenges.currentAll(ctx));
+route("GET", `${V}/challenges/calendar`, challenges.calendar, { viewer: true, cacheable: true });
 route("GET", `${V}/challenges/daily/current`, (ctx) => challenges.current(ctx));
 route("GET", `${V}/challenges/daily`, (ctx) => challenges.archive(ctx), { cacheable: true });
 route("GET", `${V}/challenges/me`, (ctx) => challenges.mine(ctx));
 route("GET", `${V}/challenges/{challengeId}/leaderboard`, challenges.leaderboard, { viewer: true, cacheable: true });
+route("GET", `${V}/challenges/{challengeId}`, (ctx) => challenges.getChallenge(ctx), { cacheable: true });
 route("POST", `${V}/challenges/{challengeId}/runs`, (ctx) => challenges.submitRun(ctx));
 route("PUT", `${V}/challenges/runs/{runId}/replay`, (ctx) => challenges.uploadRunReplay(ctx));
 route("GET", `${V}/challenges/runs/{runId}/replay`, challenges.downloadRunReplay, { viewer: true });
@@ -354,7 +358,7 @@ async function recheckHeldRecords(env: Bindings, exec: ExecutionContext): Promis
 
 /**
  * Daily maintenance: expired sessions, stale rate-limit windows, old audit entries, held
- * records; the daily challenges of the coming week and the creator of today's challenge.
+ * records; the challenges of the coming days, weeks and months, the featured creators.
  */
 async function maintenance(env: Bindings, exec: ExecutionContext): Promise<void> {
     const now = Date.now();

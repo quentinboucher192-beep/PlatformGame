@@ -323,7 +323,7 @@ export async function exportMe(ctx: Ctx): Promise<Response> {
         // 2.31: runs of the daily challenges.
         challenge_runs: (
             await ctx.env.DB.prepare(
-                `SELECT id, challenge_id, attempt_id, time_ms, deaths, damage_taken, tier, status, rejection_reason, replay_status,
+                `SELECT id, challenge_id, attempt_id, time_ms, deaths, damage_taken, tier, status, late, rejection_reason, replay_status,
                    game_version, created_at, verified_at FROM challenge_runs WHERE player_id = ?1 ORDER BY created_at`,
             )
                 .bind(id)

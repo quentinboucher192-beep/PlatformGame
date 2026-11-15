@@ -209,7 +209,7 @@ prévu est coupé et refusé (`413 PAYLOAD_TOO_LARGE`). Un `Content-Length` inva
 | 404 | `PLANET_NOT_FOUND` | Aucun niveau classé sur cette planète |
 | 404 | `RECORD_NOT_FOUND` | Record inconnu ou non visible par ce lecteur |
 | 404 | `REPLAY_NOT_FOUND` | Pas de replay (ou replay non vérifié pour un tiers, ou fichier absent) |
-| 404 | `CHALLENGE_NOT_FOUND` | Défi inconnu, identifiant mal formé, ou défi dont le jour n'a pas commencé (jamais révélé) |
+| 404 | `CHALLENGE_NOT_FOUND` | Défi inconnu, identifiant mal formé, ou défi dont la période n'a pas commencé (jamais révélé) |
 | 404 | `RUN_NOT_FOUND` | Partie de défi inconnue, ou non visible par ce lecteur |
 | 404 | `AVATAR_NOT_FOUND` | Pas d'avatar personnalisé |
 | 404 | `REQUEST_NOT_FOUND` | Aucune demande d'ami de ce joueur |
@@ -224,8 +224,8 @@ prévu est coupé et refusé (`413 PAYLOAD_TOO_LARGE`). Un `Content-Length` inva
 | 409 | `REPLAY_EXISTS` | Un replay est déjà associé à la tentative |
 | 409 | `RECORD_REJECTED` | Replay envoyé pour un record refusé |
 | 409 | `RUN_REJECTED` | Replay envoyé pour une partie de défi refusée |
-| 409 | `CHALLENGE_NOT_STARTED` | Partie envoyée pour un défi dont le jour n'a pas commencé (qu'il existe ou non) |
-| 409 | `CHALLENGE_ENDED` | Partie reçue plus de 10 minutes après la fin du défi ; `details.ends_at` |
+| 409 | `CHALLENGE_NOT_STARTED` | Partie envoyée pour un défi dont la période n'a pas commencé (qu'il existe ou non) |
+| 409 | `CHALLENGE_ENDED` | (2.32 seulement) plus jamais renvoyé depuis 2.33 : une partie reçue plus de 10 minutes après la fin du défi est acceptée hors délai (`late: true`) |
 | 409 | `RULES_MISMATCH` | `rules_hash` différent de celui du défi ; `details.rules_hash` |
 | 409 | `LEVEL_MISMATCH` | `level_hash` différent de celui du niveau du défi ; `details.level_hash` |
 | 409 | `ALREADY_FRIENDS` | Déjà amis |
@@ -950,7 +950,7 @@ même commentaire, abonnés…).
 | GET | `/notifications/unread` | `{ unread }` |
 | POST | `/notifications/{id}/read`, `/notifications/read-all` | lu |
 | DELETE | `/notifications/{id}` | supprimée |
-| GET / PUT | `/notifications/settings` `{ <kind>: bool }` | catégories reçues (`new_level`, `level_update`, `comment_reply`, `comment_reaction`, `level_comment`, `new_follower`, `project_invite`, `project_role`, `project_version`, `project_mention`, `project_reply`, `project_removed`, `race_verified` et, depuis 2.19, `run_comment` : commentaire sur une de mes courses ; depuis 2.32, `challenge_featured` : un de mes niveaux est le défi du jour) |
+| GET / PUT | `/notifications/settings` `{ <kind>: bool }` | catégories reçues (`new_level`, `level_update`, `comment_reply`, `comment_reaction`, `level_comment`, `new_follower`, `project_invite`, `project_role`, `project_version`, `project_mention`, `project_reply`, `project_removed`, `race_verified` et, depuis 2.19, `run_comment` : commentaire sur une de mes courses ; depuis 2.32, `challenge_featured` : un de mes niveaux est le défi du jour — depuis 2.33, aussi de la semaine ou du mois) |
 
 Le jeu lit les notifications non lues à la connexion puis chaque minute ; les nouvelles sont
 annoncées une fois. Les notifications lues de plus de 60 jours sont purgées (500 au plus par
@@ -1233,74 +1233,98 @@ toujours des noms du catalogue du serveur, jamais un texte du client. La tenue f
 l'export des données (`cosmetics`) et disparaît avec le compte (table `player_cosmetics`,
 migration 0039).
 
-### 8.9 duodecies Défis du jour (2.32)
+### 8.9 duodecies Défis du jour, de la semaine et du mois (2.32, 2.33)
 
-Contrat complet entre le jeu et le serveur (règles, forme canonique, paliers, replay format
-4) : [DAILY_CHALLENGES.md](DAILY_CHALLENGES.md). Un défi par jour UTC, identifiant
-`daily-AAAA-MM-JJ`, de `AAAA-MM-JJT00:00:00Z` à minuit UTC suivant.
+Contrats complets entre le jeu et le serveur : [DAILY_CHALLENGES.md](DAILY_CHALLENGES.md)
+(2.32 : règles, forme canonique, paliers, replay format 4) et
+[CHALLENGES_PERIODS.md](CHALLENGES_PERIODS.md) (2.33 : semaine, mois, calendrier, parties
+hors délai). Trois sortes de défis, chacune sur une période UTC :
 
-**Tirage et choix.** Le serveur garantit que les défis existent d'aujourd'hui à J+7 (à chaque
-lecture de `GET /challenges/daily/current` et par la tâche planifiée quotidienne ; des tirages
-simultanés ne créent jamais de doublon) mais **aucune route ne montre un défi avant son
-jour** ; un défi dont le jour a commencé ne change plus (conditions SQL et déclencheur
-`daily_challenges_frozen`). Le tirage automatique (`crypto.getRandomValues`) ne prend que des
+| sorte | identifiant | période |
+|---|---|---|
+| `daily` | `daily-AAAA-MM-JJ` | le jour, 00:00Z → 00:00Z |
+| `weekly` | `weekly-AAAA-Www` (semaine ISO 8601, `W01` à `W52` ou `W53`) | lundi 00:00Z → lundi suivant 00:00Z |
+| `monthly` | `monthly-AAAA-MM` | le 1er 00:00Z → le 1er du mois suivant 00:00Z |
+
+**Tirage et choix.** Le serveur garantit que les défis existent de la période en cours jusqu'à
+J+7 (jours), S+2 (semaines) et M+1 (mois) — à chaque lecture de `GET /challenges/current`, de
+`GET /challenges/daily/current` ou du calendrier, et par la tâche planifiée quotidienne ; des
+tirages simultanés ne créent jamais de doublon — mais **aucune route ne montre un défi avant
+le début de sa période** ; un défi commencé ne change plus (conditions SQL et déclencheur
+`challenges_frozen`). Le tirage automatique (`crypto.getRandomValues`) ne prend que des
 niveaux de la campagne classés dont la révision active est celle du catalogue
 `src/challengeCatalog.json` (généré depuis les fichiers du jeu par
-`scripts/challenge-catalog.mjs`), jamais un niveau EXTRÊME ou à vies comptées ni un niveau de
-la communauté, en évitant les niveaux des défis des 10 jours autour. Règles sûres : stations
-actives, pouvoirs = pouvoirs de départ du niveau + 0 à 2 pouvoirs de la liste sûre (`dash`,
-`glide`, `triple_jump`, `shield`, `wave`, `grapple`) dont l'entrée n'est utilisée par aucun
-pouvoir du niveau, emplacements = ceux du niveau + un par pouvoir ajouté, cœurs parmi 1, 2, 3,
-5 ou le maximum du joueur (10), points de passage au hasard ; paliers : Argent = temps de la
-médaille d'or, Or = temps de la médaille de platine, sans dégât. L'administrateur choisit un
-jour à venir avec `scripts/challenge-set.mjs` (migration SQL, voir
-[DEPLOYMENT.md](DEPLOYMENT.md)) ; un niveau de la communauté doit avoir une version publiée,
-dont l'empreinte, le titre et l'auteur viennent de la base. Le jour où un niveau de la
-communauté est le défi, son auteur reçoit une seule fois la notification `challenge_featured`
-(« Votre niveau « … » est le défi du jour ! », groupe `creators`) ; le défi garde
-`featured_player_id`.
+`scripts/challenge-catalog.mjs`), jamais un niveau EXTRÊME ou à vies comptées (dont le boss
+rush `noyau_01`) ni un niveau de la communauté : le jour, tout niveau tirable ; la semaine, le
+3e, le 4e ou le dernier niveau d'une planète ; le mois, le dernier niveau de chaque planète
+(les Épreuves et le niveau final). Il évite les niveaux des défis de la même sorte des 10
+jours, 4 semaines ou 2 mois autour. Règles sûres : stations actives, pouvoirs = pouvoirs de
+départ du niveau + des pouvoirs de la liste sûre (`dash`, `glide`, `triple_jump`, `shield`,
+`wave`, `grapple`) dont l'entrée n'est utilisée par aucun pouvoir du niveau (0 à 2 le jour, 0
+ou 1 la semaine, aucun le mois), emplacements = ceux du niveau + un par pouvoir ajouté, cœurs
+parmi 1, 2, 3, 5 ou le maximum du joueur (10) le jour, parmi 1, 2 ou 3 la semaine et le mois,
+points de passage au hasard ; paliers : Argent = temps de la médaille d'or, Or = temps de la
+médaille de platine, sans dégât. L'administrateur choisit un jour, une semaine ou un mois à
+venir avec `scripts/challenge-set.mjs` (migration SQL, voir [DEPLOYMENT.md](DEPLOYMENT.md)) ;
+un niveau de la communauté doit avoir une version publiée, dont l'empreinte, le titre et
+l'auteur viennent de la base. Quand la période d'un défi sur un niveau de la communauté
+commence, son auteur reçoit une seule fois la notification `challenge_featured` (« Votre
+niveau « … » est le défi du jour ! », « … de la semaine ! », « … du mois ! », groupe
+`creators` ; `data` : `title`, `challenge_id`, `challenge_kind`, `period`, `date`,
+`level_id`) ; le défi garde `featured_player_id`.
 
 | Méthode | Route | Auth | Réponse |
 |---|---|---|---|
-| GET | `/challenges/daily/current` | aucune | `{ server_time, challenge, previous }` : défi du jour et celui d'hier (`null` s'il n'y en a pas) |
-| GET | `/challenges/daily?before=AAAA-MM-JJ&limit=N` · cache | aucune | `{ challenges: [Challenge], next_before }` : défis commencés, du plus récent au plus ancien, `before` exclu ; `limit` 1 à 30 (défaut 30) ; `next_before` : la valeur de `before` de la page suivante (`null` à la fin) |
-| GET | `/challenges/{challengeId}/leaderboard?scope=world\|country\|friends&country=XX&limit=50&offset=0` · cache | facultative (`friends` : requise) | `{ challenge_id, scope, country_code, entries: [{ rank, run_id, player, time_ms, tier, status, has_replay, is_me }], me, total }` |
-| POST | `/challenges/{challengeId}/runs` | requise · `challenge_submit` | `201 { duplicate: false, run: { id, status, tier, time_ms }, replay: { required, accepted, upload_path } }` ; `200` avec `duplicate: true` pour une tentative déjà reçue |
-| PUT | `/challenges/runs/{runId}/replay` | requise, propriétaire · `replay_upload` | `201 { run: { id, status, tier, time_ms }, replay: { verification_status }, analysis }` |
-| GET | `/challenges/runs/{runId}/replay` | facultative | le replay (`application/octet-stream`, en-tête `x-replay-sha256`) : public pour une partie `VERIFIED` (fantôme du 1er du jour ; `403 PROFILE_PRIVATE` si son auteur a masqué son profil), sinon son propriétaire seulement |
-| GET | `/challenges/me?limit=60` | requise | `{ streak: { current, best, last_date }, results: [{ challenge_id, date, best_time_ms, tier, status }] }` (du plus récent au plus ancien, `limit` 1 à 366) |
+| GET | `/challenges/current` | aucune | `{ server_time, daily, weekly, monthly, previous: { daily, weekly, monthly } }` : le défi de la période en cours de chaque sorte et celui de la période précédente (`null` s'il n'y en a pas) |
+| GET | `/challenges/calendar?month=AAAA-MM` · cache | facultative | `{ month, first_month, challenges: [Challenge], me }` : défis commencés qui touchent le mois (ses jours, les semaines qui le chevauchent, le mois), par premier jour (mois, puis semaine, puis jour) ; `month` par défaut : le mois en cours ; `first_month` : mois du plus ancien défi ; `me` : `null` en anonyme, sinon `{ "<challenge id>": { best_time_ms, tier, status, late, best_progress } }` pour les défis où le joueur a une partie |
+| GET | `/challenges/{challengeId}` · cache | aucune | le défi (`Challenge`) s'il a commencé, sinon `404 CHALLENGE_NOT_FOUND` |
+| GET | `/challenges/daily/current` | aucune | (2.32) `{ server_time, challenge, previous }` : défi du jour et celui d'hier (`null` s'il n'y en a pas) |
+| GET | `/challenges/daily?before=AAAA-MM-JJ&limit=N` · cache | aucune | (2.32) `{ challenges: [Challenge], next_before }` : défis **du jour** commencés, du plus récent au plus ancien, `before` exclu ; `limit` 1 à 30 (défaut 30) ; `next_before` : la valeur de `before` de la page suivante (`null` à la fin) |
+| GET | `/challenges/{challengeId}/leaderboard?scope=world\|country\|friends&country=XX&period=live\|all&board=time&limit=50&offset=0` · cache | facultative (`friends` : requise) | `{ challenge_id, scope, period, board, country_code, entries: [{ rank, run_id, player, time_ms, tier, status, has_replay, is_me, late }], me, total }` |
+| POST | `/challenges/{challengeId}/runs` | requise · `challenge_submit` | `201 { duplicate: false, run: { id, status, tier, time_ms, late }, replay: { required, accepted, upload_path } }` ; `200` avec `duplicate: true` pour une tentative déjà reçue |
+| PUT | `/challenges/runs/{runId}/replay` | requise, propriétaire · `replay_upload` | `201 { run: { id, status, tier, time_ms, late }, replay: { verification_status }, analysis }` |
+| GET | `/challenges/runs/{runId}/replay` | facultative | le replay (`application/octet-stream`, en-tête `x-replay-sha256`) : public pour une partie `VERIFIED` (fantôme du 1er ; `403 PROFILE_PRIVATE` si son auteur a masqué son profil), sinon son propriétaire seulement |
+| GET | `/challenges/me?limit=60` | requise | `{ streak: { current, best, last_date }, streaks: { daily, weekly, monthly }, results: [{ challenge_id, kind, period, date, best_time_ms, tier, status, late, best_progress }] }` (du plus récent au plus ancien, `limit` 1 à 366 ; chaque série : `{ current, best, last_period }`) |
 
-`Challenge` : `{ id, kind: "daily", date, starts_at, ends_at, source: "auto" | "admin", level: {
-source: "campaign" | "community", level_id, level_version, level_hash, title, author: { id,
-username } | null }, rules: { hearts, slots, powers, stations, checkpoints }, rules_hash, tiers:
-{ silver_ms, gold_ms, gold_no_damage } }` (`powers` triés ; `author` : auteur d'un niveau de la
-communauté, `null` sinon). `tier` vaut `bronze`, `silver` ou `gold`.
+`Challenge` : `{ id, kind: "daily" | "weekly" | "monthly", period, date, starts_at, ends_at,
+source: "auto" | "admin", level: { source: "campaign" | "community", level_id, level_version,
+level_hash, title, author: { id, username } | null }, rules: { hearts, slots, powers,
+stations, checkpoints }, rules_hash, tiers: { silver_ms, gold_ms, gold_no_damage } }`
+(`period` : `AAAA-MM-JJ`, `AAAA-Www` ou `AAAA-MM` ; `date` : premier jour de la période, lu
+par les jeux 2.32 ; `powers` triés ; `author` : auteur d'un niveau de la communauté, `null`
+sinon). `tier` vaut `bronze`, `silver` ou `gold`. La forme canonique des règles et
+`rules_hash` sont les mêmes pour les trois sortes (la clé `challenge` porte l'identifiant).
 
 **Classement.** Meilleur temps `VERIFIED` de chaque joueur actif sur le défi ; égalité : la
-partie envoyée la première, puis l'identifiant du joueur. `scope=country` : pays `country`
-(par défaut celui du lecteur connecté ; `400` sans pays), joueurs qui ne masquent pas leur
-localisation ; `scope=friends` : le lecteur et ses amis. `player` a la forme des classements
-(§8.4 : `country_code` masqué selon la confidentialité, `frame`, `title`, `suit` si le profil
-est visible). `me` : la meilleure partie du lecteur, `VERIFIED` (avec son rang dans ce
-classement, `null` s'il n'en fait pas partie) ou, si elle est meilleure, `PENDING` (`rank:
-null`) ; `null` en anonyme ou sans partie. Un défi inconnu ou futur donne `404
-CHALLENGE_NOT_FOUND`.
+partie envoyée la première, puis l'identifiant du joueur. `period=live` (défaut, et ce que
+lit un jeu 2.32) : les parties reçues pendant le défi (+ 10 min) ; `period=all` (« Depuis ») :
+aussi les parties hors délai, marquées `late: true`. `board=time` seulement (`progress` : 2.34).
+`scope=country` : pays `country` (par défaut celui du lecteur connecté ; `400` sans pays),
+joueurs qui ne masquent pas leur localisation ; `scope=friends` : le lecteur et ses amis.
+`player` a la forme des classements (§8.4 : `country_code` masqué selon la confidentialité,
+`frame`, `title`, `suit` si le profil est visible). `me` : la meilleure partie du lecteur dans
+cette période de classement, `VERIFIED` (avec son rang dans ce classement, `null` s'il n'en
+fait pas partie) ou, si elle est meilleure, `PENDING` (`rank: null`) ; `null` en anonyme ou
+sans partie. Un défi inconnu ou futur donne `404 CHALLENGE_NOT_FOUND`.
 
 **Soumission.** Corps `{ attempt_id, time_ms, deaths, damage_taken, level_hash, rules_hash,
 game_version, has_replay? }` (aucun autre champ : ni joueur, ni palier). Contrôles dans
-l'ordre : défi dont le jour n'a pas commencé → `409 CHALLENGE_NOT_STARTED` (même s'il n'existe
-pas : rien n'est révélé) ; défi inconnu → `404` ; tentative déjà reçue → réponse idempotente
-(`409 ATTEMPT_CONFLICT` si les données diffèrent), même après la fin du défi ; reçue plus de
-10 minutes après `ends_at` → `409 CHALLENGE_ENDED` ; jeu plus ancien que 2.32.0 (ou que la
-version minimale du niveau) → `426 GAME_VERSION_UNSUPPORTED` ; `409 LEVEL_MISMATCH`, `409
-RULES_MISMATCH`. Le **palier est calculé par le serveur** : Or si `time_ms <= gold_ms` (et
+l'ordre : défi dont la période n'a pas commencé → `409 CHALLENGE_NOT_STARTED` (même s'il
+n'existe pas : rien n'est révélé) ; défi inconnu → `404` ; tentative déjà reçue → réponse
+idempotente (`409 ATTEMPT_CONFLICT` si les données diffèrent) ; jeu plus ancien que 2.32.0 (ou
+que la version minimale du niveau) → `426 GAME_VERSION_UNSUPPORTED` ; `409 LEVEL_MISMATCH`,
+`409 RULES_MISMATCH`. Une partie reçue plus de 10 minutes après `ends_at` est **acceptée hors
+délai** (`late: true` ; depuis 2.33, `CHALLENGE_ENDED` n'est plus jamais renvoyé, y compris à
+un jeu 2.32) et contrôlée comme les autres, tant que la version du niveau du défi existe
+(même `level_hash`). Le **palier est calculé par le serveur** : Or si `time_ms <= gold_ms` (et
 `damage_taken == 0` si `gold_no_damage`), Argent si `time_ms <= silver_ms`, sinon Bronze.
 Statut : temps sous `min_time_ms` de la révision → `REJECTED` (`IMPOSSIBLE_TIME`), au-delà de
 sa limite → `REJECTED` (`TIME_OVER_LIMIT`), sinon les règles de décision des records (§7) pour
 une catégorie qui exige son replay : `PENDING` jusqu'au replay, `VERIFIED` quand le replay est
-valide ; la première place d'un classement d'au moins 5 joueurs par un compte de confiance
-< 2 (ou plus de 20 % sous la première, confiance < 3) reste `PENDING` ; la tâche quotidienne
-et `GET /challenges/me` revoient ces parties quand le classement a changé.
+valide ; la première place d'un classement d'au moins 5 joueurs (`live` pour une partie à
+l'heure, `all` pour une partie hors délai) par un compte de confiance < 2 (ou plus de 20 %
+sous la première, confiance < 3) reste `PENDING` ; la tâche quotidienne et `GET
+/challenges/me` revoient ces parties quand le classement a changé.
 
 **Replay.** Format 4 obligatoire (section défi, voir DAILY_CHALLENGES.md §3) ; en plus de
 l'analyse des records (structure, révision — ou version du niveau de la communauté et ses
@@ -1313,15 +1337,18 @@ un replay de défi n'est jamais accepté pour un record, pour la fin de niveau o
 niveau de la communauté, ni pour une course à la vérification. « Vérifié » veut dire « replay
 contrôlé par le serveur » : la re-simulation complète viendra à l'étape 3.
 
-**Série** (`streak`) : jours UTC consécutifs, jusqu'à aujourd'hui ou hier, où le joueur a au
-moins une partie non rejetée du défi de ce jour ; `best` : la plus longue, `last_date` : le
-dernier de ces jours. `results` : par défi joué, la meilleure partie non rejetée (son temps et
-son statut ; `tier` : meilleur palier non rejeté du jour) ou, si toutes sont rejetées, la
-meilleure partie rejetée (`tier: null`, `status: "REJECTED"`).
+**Séries.** `streaks.<sorte>` : périodes consécutives (jours UTC, semaines ISO, mois) jusqu'à
+la période en cours ou la précédente, où le joueur a au moins une partie **à l'heure** et non
+rejetée du défi de cette période ; `best` : la plus longue, `last_period` : la dernière de ces
+périodes. `streak` (2.32) = la série des jours, avec `last_date`. Une partie hors délai ne
+compte jamais. `results` : par défi joué, les parties à l'heure d'abord — la meilleure partie
+à l'heure non rejetée (son temps et son statut ; `tier` : meilleur palier à l'heure, `late:
+false`), sinon la meilleure partie hors délai non rejetée (`late: true`), sinon la meilleure
+partie rejetée (`tier: null`, `status: "REJECTED"`) ; `best_progress` : `null` (2.34).
 
-Les parties de défi figurent dans l'export des données (`challenge_runs`) et disparaissent
-avec le compte, leurs replays compris (tables `daily_challenges` et `challenge_runs`,
-migration 0049).
+Les parties de défi figurent dans l'export des données (`challenge_runs`, avec `late`) et
+disparaissent avec le compte, leurs replays compris (tables `challenges` et `challenge_runs`,
+migrations 0049 et 0054).
 
 ### 8.9 bis Installateurs du jeu (notification « nouvelle version »)
 

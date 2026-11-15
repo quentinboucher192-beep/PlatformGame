@@ -63,6 +63,57 @@ Gardées telles quelles pour les jeux 2.32 : `GET /challenges/daily/current`,
 Série d'une sorte : périodes consécutives (jours, semaines ISO, mois) jusqu'à la période en
 cours ou la précédente, avec au moins une partie **non hors délai** et non rejetée.
 
+### Précisions du serveur (2.33, lecture la plus simple de ce qui précède)
+
+- `GET /challenges/{challengeId}` : `data` est **l'objet défi lui-même** (même forme que dans
+  `/challenges/current`), `404 CHALLENGE_NOT_FOUND` pour un défi futur, inconnu ou mal formé
+  (`weekly-2027-W53` n'existe pas : 2027 a 52 semaines).
+- `/challenges/current` : `previous.<sorte>` = le défi de la période précédente (hier, la
+  semaine dernière, le mois dernier) ; `null` quand il n'y en a pas.
+- `/challenges/calendar` : `month` facultatif (défaut : le mois en cours), `400
+  VALIDATION_ERROR` s'il n'est pas `AAAA-MM` (années 2000 à 2999). `challenges` triés par
+  premier jour, le mois puis la semaine puis le jour pour un même premier jour. `me` vaut
+  `null` sans connexion, `{}` connecté sans partie ; seuls les défis où j'ai une partie y
+  figurent. `first_month` = le mois en cours tant qu'aucun défi n'existe.
+- Résultat d'un défi (`me` du calendrier, `results[]`) : les parties **à l'heure** d'abord.
+  Avec au moins une partie à l'heure non rejetée : la meilleure d'entre elles (son temps, son
+  statut ; `tier` = meilleur palier à l'heure), `late: false`. Sinon, avec seulement des
+  parties hors délai non rejetées : la meilleure d'entre elles, `late: true`. Sinon (tout est
+  rejeté) : la meilleure partie rejetée, `tier: null`, `status: "REJECTED"`. `best_progress`
+  vaut toujours `null` en 2.33 (« Plus loin » : §5, 2.34). `results[]` garde `date` (= premier
+  jour) et contient aussi les défis de la semaine et du mois (un jeu 2.32 les range par
+  `challenge_id`, sans effet).
+- Classement : la réponse rappelle `period` et `board` ; chaque entrée et `me` ont `late`
+  (toujours `false` avec `period=live`). Un joueur qui n'a que des parties hors délai n'est
+  pas dans `period=live` (son `me` y vaut `null`). `board` n'accepte que `time` en 2.33
+  (`400` sinon).
+- Partie : `run.late` aussi dans la réponse idempotente (`duplicate: true`) et dans celle du
+  replay. Le contrôle de la partie (paliers, replay, première place en revue) est le même ;
+  la position utilisée pour la revue est celle du classement `live` pour une partie à
+  l'heure, `all` pour une partie hors délai. Le message de `426` dit « défis » (plus « défis
+  du jour »).
+- Tirage automatique (le serveur seul, depuis `src/challengeCatalog.json`, version 2 : place
+  du niveau dans sa planète). Tous les niveaux de la campagne ont un boss, donc « niveaux à
+  boss » ne distingue rien : **semaine** = 3e, 4e ou dernier niveau d'une planète (avec le
+  catalogue actuel : `*_03`, `*_04` et `noyau_02`), **mois** = dernier niveau de chaque
+  planète (les Épreuves `*_04` et le niveau final `noyau_02`). Le boss rush `noyau_01`
+  (EXTRÊME, une seule vie) n'est jamais tiré : comme tout niveau non tirable du catalogue et
+  tout niveau de la communauté, seul l'administrateur peut le choisir. Règles « plus
+  exigeantes » : semaine = cœurs 1, 2 ou 3 et 0 ou 1 pouvoir en plus ; mois = cœurs 1, 2 ou 3
+  et aucun pouvoir en plus ; stations toujours actives, points de passage au hasard, paliers
+  comme le jour. Le tirage évite les niveaux des défis de la même sorte des 10 jours / 4
+  semaines / 2 mois autour.
+- Script : `--kind` vaut `daily` par défaut ; `--date X` = `--kind daily --period X`
+  (`--date` avec une autre sorte est refusé). Le nom de fichier conseillé devient
+  `NNNN_challenge_<sorte>_<période>.sql`. La migration n'écrit que si le premier jour de la
+  période n'a pas commencé quand elle est appliquée.
+- Notification `challenge_featured` : envoyée une fois quand la période commence ; `data`
+  ajoute `challenge_kind` et `period` (le texte vient du serveur ; une ancienne notification
+  sans `challenge_kind` reste « du jour »).
+- Base : la table `daily_challenges` devient `challenges` (colonnes `period`, `end_date` ;
+  déclencheur `challenges_frozen`), `challenge_runs` gagne `late` (migration
+  `0054_challenge_periods.sql`, qui recopie les défis et parties de 2.32).
+
 ## 4. Côté jeu (2.33.0)
 
 - Écran « Défis » : onglets **Jour**, **Semaine**, **Mois**, **Calendrier** (remplace
