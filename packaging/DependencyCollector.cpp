@@ -100,6 +100,16 @@ void DependencyCollector::enemy(const std::string& id) {
         sound(a.sound);
         sound(a.telegraphSound);
         if (a.type == AttackType::Summon) enemy(a.summonId);
+        // 2.33: the look of its lasting effects (a tide of plasma, walls of starlight).
+        if (a.look == "plasma") animation("animations/plasma_flood.json");
+        if (a.look == "star") animation("animations/star_wall.json");
+    }
+    // 2.33: the sheets and sounds of its phases (a boss that changes look).
+    for (const auto& p : d->phases) {
+        if (!d->assetRoot.empty()) res_.pushMount(d->assetRoot);
+        animation(p.animation);
+        if (!d->assetRoot.empty()) res_.popMount();
+        sound(p.enterSound);
     }
     if (d->deathSpawnCount > 0) enemy(d->deathSpawnId);
 }

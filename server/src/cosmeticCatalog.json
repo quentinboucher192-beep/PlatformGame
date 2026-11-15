@@ -282,6 +282,13 @@
    "achievement": "voyage_horizon"
   },
   {
+   "id": "title_briseur_etoiles",
+   "category": "title",
+   "look": "Briseur d'étoiles",
+   "name": "Briseur d'étoiles",
+   "achievement": "gardiens_singularis"
+  },
+  {
    "id": "title_analyste",
    "category": "title",
    "look": "Analyste",

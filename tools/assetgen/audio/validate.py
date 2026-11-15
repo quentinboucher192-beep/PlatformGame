@@ -15,7 +15,7 @@ Checks
                 count for loops; decoded peak <= -1 dBFS; integrated loudness (ffmpeg ebur128) and
                 true peak; DC; dropouts; stereo correlation; octave-band balance; loop seam
                 (boundary step, envelope and spectral continuity, high-frequency splice energy);
-                total size < 24 MB.
+                total size < 26 MB (24 MB until 2.33: the giga boss's track).
   fonts/        files exist, sfnt magic, required tables, PIL/FreeType can load them, cmap covers
                 English + French glyphs, OFL licence texts present.
 Exit status 1 if any FAIL.
@@ -74,6 +74,12 @@ SOUNDS_V3 = {
     'shadow_step': (0.5, 1.4, -15.5, -12.5), 'eclipse_ring': (1.2, 2.8, -14.0, -11.0),
 }
 SOUNDS_V2.update(SOUNDS_V3)
+# 2.33: Singularis, le Coeur Effondre
+SOUNDS_V4 = {
+    'star_roar': (2.2, 4.8, -11.5, -8.5), 'shell_shatter': (1.8, 3.6, -12.0, -8.5),
+    'supernova': (3.0, 5.8, -11.5, -8.5),
+}
+SOUNDS_V2.update(SOUNDS_V4)
 
 # name: (loop?, min s, max s, LUFS low, LUFS high)
 MUSIC = {
@@ -98,6 +104,8 @@ MUSIC = {
     'nyxara_boss': (True, 60, 80, -16.0, -11.5),
     'aethra_level': (True, 90, 110, -16.5, -12.0),
     'aethra_ambience': (True, 55, 65, -30.0, -19.0),
+    # 2.33: Singularis, the giga boss of the Noyau stellaire
+    'singularis_boss': (True, 60, 80, -16.0, -11.5),
 }
 FONTS = {'Orbitron.ttf': 'title', 'ChakraPetch-Regular.ttf': 'ui', 'ChakraPetch-SemiBold.ttf': 'ui'}
 LICENCES = ['OFL-Orbitron.txt', 'OFL-ChakraPetch.txt']
@@ -106,7 +114,7 @@ LICENCES = ['OFL-Orbitron.txt', 'OFL-ChakraPetch.txt']
 QUIET = {'ui_move', 'ui_confirm', 'ui_back', 'ui_error', 'timer_tick', 'score_tick',
          'footstep_a', 'footstep_b'}
 LOUD = {'explosion', 'boss_roar', 'golem_slam', 'boss_phase', 'pound_impact', 'bomb_explode',
-        'boss_roar_fire', 'boss_roar_ice', 'wyrm_roar'}
+        'boss_roar_fire', 'boss_roar_ice', 'wyrm_roar', 'star_roar', 'shell_shatter', 'supernova'}
 
 
 class Report:
@@ -424,8 +432,8 @@ def check_music(rep):
                  f'peak {pk:5.2f}  corr {corr:4.2f}  {seam}')
         rep.line(' ' * 18 + ' octave bands dB: ' + ' '.join(f'{c:g}:{b:.0f}' for c, b in zip(cen, bands)))
     rep.line(f'total music size {total / 1024 / 1024:.2f} MB')
-    if total > 24 * 1024 * 1024:
-        rep.fail('music', f'total size {total / 1024 / 1024:.1f} MB > 24 MB')
+    if total > 26 * 1024 * 1024:
+        rep.fail('music', f'total size {total / 1024 / 1024:.1f} MB > 26 MB')
 
 
 # --------------------------------------------------------------------------- fonts

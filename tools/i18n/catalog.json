@@ -652,6 +652,18 @@
    ]
   },
   {
+   "fr": "Action « Activer » : elle s'effondre",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Action « Faire apparaître »",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
    "fr": "Actionner",
    "where": [
     "game/gameplay/entities/Entities.h"
@@ -674,6 +686,12 @@
     "game/gameplay/entities/InteractiveEntities.cpp",
     "game/gameplay/entities/PlatformEntities.cpp",
     "game/levels/DifficultyRating.cpp",
+    "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Active au départ",
+   "where": [
     "game/levels/ObjectTypes.cpp"
    ]
   },
@@ -1328,6 +1346,12 @@
    "fr": "Anneau des ancrages",
    "where": [
     "data/levels/sylvanox_03.json"
+   ]
+  },
+  {
+   "fr": "Anneaux de la couronne",
+   "where": [
+    "data/enemies/singularis.json"
    ]
   },
   {
@@ -1991,6 +2015,12 @@
    "fr": "Au cœur de Pyralis, la fonderie primordiale forge encore des machines sans maître. Réunissez tous vos pouvoirs pour atteindre le fourneau et éteindre le Forgeron Primordial.",
    "where": [
     "data/levels/pyralis_03.json"
+   ]
+  },
+  {
+   "fr": "Au fond de l'étoile, un cœur mort s'est éveillé. Deux minutes d'épreuves sans pardon, puis Singularis et ses huit phases. Une seule vie, aucun checkpoint.",
+   "where": [
+    "data/levels/noyau_03.json"
    ]
   },
   {
@@ -3144,6 +3174,12 @@
    ]
   },
   {
+   "fr": "Battre chaque phase de Singularis sans être touché (pas forcément dans le même combat).",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Battre son meilleur segment entre deux points de sauvegarde.",
    "where": [
     "data/achievements/achievements.json"
@@ -3454,7 +3490,19 @@
    ]
   },
   {
+   "fr": "Boss : entre en rage",
+   "where": [
+    "game/levels/EventSystem.cpp"
+   ]
+  },
+  {
    "fr": "Boss : nouvelle phase",
+   "where": [
+    "game/levels/EventSystem.cpp"
+   ]
+  },
+  {
+   "fr": "Boss : sa dernière attaque",
    "where": [
     "game/levels/EventSystem.cpp"
    ]
@@ -3655,6 +3703,12 @@
    ]
   },
   {
+   "fr": "Briseur d'étoiles",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Briseur de colosses",
    "where": [
     "data/achievements/achievements.json",
@@ -3699,6 +3753,12 @@
   },
   {
    "fr": "Brume glacée (Glacior)",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Brume toxique",
    "where": [
     "game/levels/ObjectTypes.cpp"
    ]
@@ -3802,6 +3862,12 @@
    ]
   },
   {
+   "fr": "Cachée jusqu'à un événement",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
    "fr": "Cadre",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -3867,6 +3933,12 @@
     "data/enemies/echo_mycelia.json",
     "data/enemies/mycelia.json",
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Cage stellaire",
+   "where": [
+    "data/enemies/singularis.json"
    ]
   },
   {
@@ -4507,6 +4579,12 @@
    "fr": "Ce sol fissuré cédera sous une Frappe sismique (Bas + Attaque en l'air).",
    "where": [
     "game/gameplay/entities/PlatformEntities.cpp"
+   ]
+  },
+  {
+   "fr": "Ceinture d'astéroïdes",
+   "where": [
+    "data/enemies/singularis.json"
    ]
   },
   {
@@ -5284,6 +5362,12 @@
    ]
   },
   {
+   "fr": "Chute d'astre",
+   "where": [
+    "data/enemies/singularis.json"
+   ]
+  },
+  {
    "fr": "Chute d'étoiles",
    "where": [
     "data/enemies/echo_nyxara.json",
@@ -5816,6 +5900,12 @@
   },
   {
    "fr": "Combat contre Pyrogyre",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Combat contre Singularis",
    "where": [
     "data/music/tracks.json"
    ]
@@ -7264,6 +7354,12 @@
    ]
   },
   {
+   "fr": "Croûte d'étoile",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
    "fr": "Cryowyrm",
    "where": [
     "data/achievements/achievements.json",
@@ -7919,6 +8015,12 @@
    "fr": "Dernière ascension",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "Dernière lumière",
+   "where": [
+    "data/enemies/singularis.json"
    ]
   },
   {
@@ -8667,7 +8769,7 @@
    ]
   },
   {
-   "fr": "Débloquer les 19 morceaux du juke-box.",
+   "fr": "Débloquer les 20 morceaux du juke-box.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -8825,6 +8927,7 @@
     "data/levels/glacior_04.json",
     "data/levels/noyau_01.json",
     "data/levels/noyau_02.json",
+    "data/levels/noyau_03.json",
     "data/levels/pyralis_01.json",
     "data/levels/pyralis_02.json",
     "data/levels/pyralis_03.json",
@@ -8849,6 +8952,7 @@
     "data/levels/glacior_04.json",
     "data/levels/noyau_01.json",
     "data/levels/noyau_02.json",
+    "data/levels/noyau_03.json",
     "data/levels/pyralis_01.json",
     "data/levels/pyralis_02.json",
     "data/levels/pyralis_03.json",
@@ -9466,6 +9570,18 @@
    ]
   },
   {
+   "fr": "Effondrement",
+   "where": [
+    "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Effondrement : le sol cède",
+   "where": [
+    "data/levels/noyau_03.json"
+   ]
+  },
+  {
    "fr": "El Salvador",
    "where": [
     "data/online/countries.json",
@@ -9707,6 +9823,12 @@
    "fr": "en mouvement",
    "where": [
     "game/gameplay/entities/PlatformEntities.cpp"
+   ]
+  },
+  {
+   "fr": "En orbite (dx, dy = rayons)",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
    ]
   },
   {
@@ -10249,7 +10371,20 @@
    "fr": "Escorte",
    "where": [
     "data/enemies/echo_prime_sentinel.json",
-    "data/enemies/prime_sentinel.json"
+    "data/enemies/prime_sentinel.json",
+    "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Escorte : un soin",
+   "where": [
+    "data/levels/noyau_03.json"
+   ]
+  },
+  {
+   "fr": "Escorte d'astres",
+   "where": [
+    "data/enemies/singularis.json"
    ]
   },
   {
@@ -11518,6 +11653,7 @@
     "data/levels/glacior_04.json",
     "data/levels/noyau_01.json",
     "data/levels/noyau_02.json",
+    "data/levels/noyau_03.json",
     "data/levels/pyralis_01.json",
     "data/levels/pyralis_02.json",
     "data/levels/pyralis_03.json",
@@ -11715,6 +11851,12 @@
    "where": [
     "data/enemies/echo_pyrogyre.json",
     "data/enemies/pyrogyre.json"
+   ]
+  },
+  {
+   "fr": "Geysers stellaires",
+   "where": [
+    "data/enemies/singularis.json"
    ]
   },
   {
@@ -11973,6 +12115,7 @@
    "where": [
     "data/levels/aethra_01.json",
     "data/levels/noyau_02.json",
+    "data/levels/noyau_03.json",
     "data/levels/sylvanox_04.json"
    ]
   },
@@ -12004,7 +12147,14 @@
   {
    "fr": "Gravité",
    "where": [
+    "data/enemies/singularis.json",
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Gravité : les débris en orbite",
+   "where": [
+    "data/levels/noyau_03.json"
    ]
   },
   {
@@ -13953,7 +14103,7 @@
    ]
   },
   {
-   "fr": "L'étoile au centre du système s'ouvre quand ses trois mondes sont libérés. Ses gardiens y reviennent en échos de lumière, et en son cœur veille l'Astrarque.",
+   "fr": "L'étoile au centre du système s'ouvre quand ses trois mondes sont libérés. Ses gardiens y reviennent en échos de lumière, en son cœur veille l'Astrarque, et plus loin encore une étoile morte s'est éveillée.",
    "where": [
     "data/planets/noyau.json"
    ]
@@ -13965,9 +14115,27 @@
    ]
   },
   {
+   "fr": "L'étoile morte s'est éteinte. Le système respire.",
+   "where": [
+    "data/levels/noyau_03.json"
+   ]
+  },
+  {
+   "fr": "L'étoile morte s'éteint. La sortie est ouverte.",
+   "where": [
+    "data/levels/noyau_03.json"
+   ]
+  },
+  {
    "fr": "L'étoile s'apaise. Le système Kepler-Voss est libre.",
    "where": [
     "data/levels/noyau_02.json"
+   ]
+  },
+  {
+   "fr": "L'ÉTOILE S'ÉTEINT",
+   "where": [
+    "data/levels/noyau_03.json"
    ]
   },
   {
@@ -14117,6 +14285,12 @@
    ]
   },
   {
+   "fr": "La coquille éclate : le sol s'effondre !",
+   "where": [
+    "data/enemies/singularis.json"
+   ]
+  },
+  {
    "fr": "La cour est à vous. La Tour des Vents vous attend.",
    "where": [
     "data/levels/glacior_03.json"
@@ -14138,6 +14312,12 @@
    "fr": "La Crevasse Hurlante",
    "where": [
     "data/levels/glacior_04.json"
+   ]
+  },
+  {
+   "fr": "La croûte en fusion.",
+   "where": [
+    "data/levels/noyau_03.json"
    ]
   },
   {
@@ -14196,6 +14376,12 @@
    "fr": "La glace ne retient personne : le vent décide.",
    "where": [
     "data/levels/glacior_04.json"
+   ]
+  },
+  {
+   "fr": "La gravité de Singularis vous attire !",
+   "where": [
+    "data/enemies/singularis.json"
    ]
   },
   {
@@ -14748,6 +14934,24 @@
    ]
   },
   {
+   "fr": "LE CŒUR D'UNE ÉTOILE MOURANTE",
+   "where": [
+    "data/levels/noyau_03.json"
+   ]
+  },
+  {
+   "fr": "Le Cœur d'une Étoile Mourante",
+   "where": [
+    "data/levels/noyau_03.json"
+   ]
+  },
+  {
+   "fr": "Le Cœur d'une Étoile Mourante : une seule vie, aucun checkpoint. Singularis attend au bout.",
+   "where": [
+    "data/levels/noyau_03.json"
+   ]
+  },
+  {
    "fr": "LE CŒUR DE L'ÉTOILE",
    "where": [
     "data/levels/noyau_02.json"
@@ -14814,6 +15018,12 @@
    "fr": "Le cœur du grand arbre !",
    "where": [
     "data/levels/sylvanox_02.json"
+   ]
+  },
+  {
+   "fr": "Le Cœur effondré",
+   "where": [
+    "data/music/tracks.json"
    ]
   },
   {
@@ -15170,7 +15380,13 @@
    ]
   },
   {
-   "fr": "Le platine sur les 18 niveaux.",
+   "fr": "Le plasma referme l'arène !",
+   "where": [
+    "data/levels/noyau_03.json"
+   ]
+  },
+  {
+   "fr": "Le platine sur les 19 niveaux.",
    "where": [
     "data/cosmetics/cosmetics.json"
    ]
@@ -15373,6 +15589,12 @@
    ]
   },
   {
+   "fr": "Le seuil du cœur. Choisissez les pouvoirs du combat : celui que vous laissez reste ici.",
+   "where": [
+    "data/levels/noyau_03.json"
+   ]
+  },
+  {
    "fr": "Le signal bat comme un cœur... Il vient du fond de cette machine.",
    "where": [
     "data/levels/sylvanox_03.json"
@@ -15569,7 +15791,7 @@
    ]
   },
   {
-   "fr": "Les 19 morceaux du juke-box débloqués.",
+   "fr": "Les 20 morceaux du juke-box débloqués.",
    "where": [
     "data/cosmetics/cosmetics.json"
    ]
@@ -15587,7 +15809,7 @@
    ]
   },
   {
-   "fr": "Les boss : chaque gardien, ses échos et l'Astrarque.",
+   "fr": "Les boss : chaque gardien, ses échos, l'Astrarque et Singularis.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -15695,6 +15917,12 @@
    ]
   },
   {
+   "fr": "Les débris entrent en orbite !",
+   "where": [
+    "data/levels/noyau_03.json"
+   ]
+  },
+  {
    "fr": "Les défis sont demandés au serveur.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -15749,10 +15977,17 @@
    ]
   },
   {
+   "fr": "Les huit lumières",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Les lasers battent la mesure : un saut par temps, sans s'arrêter.",
    "where": [
     "data/levels/aethra_04.json",
     "data/levels/noyau_02.json",
+    "data/levels/noyau_03.json",
     "data/levels/sylvanox_04.json"
    ]
   },
@@ -15998,6 +16233,12 @@
    ]
   },
   {
+   "fr": "Les veines de l'étoile.",
+   "where": [
+    "data/levels/noyau_03.json"
+   ]
+  },
+  {
    "fr": "Les éclats, reliques et orbes proches filent vers vous (passif).",
    "where": [
     "data/powers/magnet.json"
@@ -16007,6 +16248,12 @@
    "fr": "Les étoiles déjà gagnées comptent aussi.",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Les étoiles tombent du ciel mort !",
+   "where": [
+    "data/enemies/singularis.json"
    ]
   },
   {
@@ -16385,6 +16632,12 @@
    ]
   },
   {
+   "fr": "Lumière intacte",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Lumières & effets",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -16736,6 +16989,12 @@
     "data/enemies/echo_pyrogyre.json",
     "data/enemies/pyrogyre.json",
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Marée de plasma",
+   "where": [
+    "data/enemies/singularis.json"
    ]
   },
   {
@@ -17337,6 +17596,12 @@
    ]
   },
   {
+   "fr": "Miroirs",
+   "where": [
+    "data/enemies/singularis.json"
+   ]
+  },
+  {
    "fr": "mis en favori",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -17817,6 +18082,7 @@
    "where": [
     "data/levels/aethra_01.json",
     "data/levels/noyau_02.json",
+    "data/levels/noyau_03.json",
     "data/levels/sylvanox_04.json"
    ]
   },
@@ -18044,6 +18310,12 @@
    "fr": "Ne compte pas pour les succès ni les statistiques",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ne cède qu'à un événement",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
    ]
   },
   {
@@ -18768,7 +19040,7 @@
    ]
   },
   {
-   "fr": "Noter les 18 niveaux de la campagne en ligne.",
+   "fr": "Noter les 19 niveaux de la campagne en ligne.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -19196,6 +19468,8 @@
    "where": [
     "data/levels/noyau_01.json",
     "data/levels/noyau_02.json",
+    "data/levels/noyau_03.json",
+    "data/music/tracks.json",
     "data/planets/noyau.json"
    ]
   },
@@ -19209,6 +19483,12 @@
    "fr": "Noyau stellaire — L'Arène des Échos",
    "where": [
     "data/levels/noyau_01.json"
+   ]
+  },
+  {
+   "fr": "Noyau stellaire — Le Cœur d'une Étoile Mourante",
+   "where": [
+    "data/levels/noyau_03.json"
    ]
   },
   {
@@ -19455,7 +19735,7 @@
    ]
   },
   {
-   "fr": "Obtenir l'or sur les 18 niveaux.",
+   "fr": "Obtenir l'or sur les 19 niveaux.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -19497,7 +19777,7 @@
    ]
   },
   {
-   "fr": "Obtenir le platine sur les 18 niveaux.",
+   "fr": "Obtenir le platine sur les 19 niveaux.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -19631,6 +19911,12 @@
    "fr": "Onde de choc au sol",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Onde de marée",
+   "where": [
+    "data/enemies/singularis.json"
    ]
   },
   {
@@ -21202,6 +21488,7 @@
    "where": [
     "data/levels/aethra_03.json",
     "data/levels/noyau_02.json",
+    "data/levels/noyau_03.json",
     "data/levels/pyralis_04.json"
    ]
   },
@@ -21347,7 +21634,14 @@
   {
    "fr": "plasma",
    "where": [
-    "game/gameplay/BeamRenderer.cpp"
+    "game/gameplay/BeamRenderer.cpp",
+    "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Plasma d'étoile",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
    ]
   },
   {
@@ -21483,7 +21777,8 @@
   {
    "fr": "Pluie d'étoiles",
    "where": [
-    "data/cosmetics/cosmetics.json"
+    "data/cosmetics/cosmetics.json",
+    "data/enemies/singularis.json"
    ]
   },
   {
@@ -21494,6 +21789,12 @@
     "data/enemies/echo_crucible_heart.json",
     "data/enemies/echo_forge_core.json",
     "data/enemies/forge_core.json"
+   ]
+  },
+  {
+   "fr": "Pluie de cendres stellaires",
+   "where": [
+    "data/enemies/singularis.json"
    ]
   },
   {
@@ -22093,6 +22394,12 @@
    ]
   },
   {
+   "fr": "Pour avoir vaincu Singularis, le Cœur Effondré.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Pour celles et ceux qui ont presque tout.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -22445,6 +22752,12 @@
    ]
   },
   {
+   "fr": "Prismes croisés",
+   "where": [
+    "data/enemies/singularis.json"
+   ]
+  },
+  {
    "fr": "Privé",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -22662,6 +22975,12 @@
    "fr": "Projette un croissant d'énergie qui traverse un ennemi, active les récepteurs et dissout les barrières d'énergie.",
    "where": [
     "data/powers/wave.json"
+   ]
+  },
+  {
+   "fr": "Projette vers le haut",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
    ]
   },
   {
@@ -22939,6 +23258,12 @@
    "fr": "Publié sans vérification : la course la fera",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
+   ]
+  },
+  {
+   "fr": "Puits d'effondrement",
+   "where": [
+    "data/enemies/singularis.json"
    ]
   },
   {
@@ -23319,6 +23644,18 @@
    ]
   },
   {
+   "fr": "Rage : l'arène se resserre encore",
+   "where": [
+    "data/levels/noyau_03.json"
+   ]
+  },
+  {
+   "fr": "Rage dans la phase (s, 0 = non)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Raison",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -23431,6 +23768,12 @@
    "where": [
     "data/enemies/echo_prime_sentinel.json",
     "data/enemies/prime_sentinel.json"
+   ]
+  },
+  {
+   "fr": "Rayon de la naine rouge",
+   "where": [
+    "data/enemies/singularis.json"
    ]
   },
   {
@@ -23953,6 +24296,12 @@
    "fr": "Reflets bleu glacier, écharpe blanche.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Reflets d'étoile",
+   "where": [
+    "data/enemies/singularis.json"
    ]
   },
   {
@@ -25656,6 +26005,7 @@
   {
    "fr": "Salve d'orbes",
    "where": [
+    "data/enemies/eclat_stellaire.json",
     "data/enemies/fire_wisp.json",
     "data/enemies/frost_wisp.json",
     "data/enemies/wisp.json"
@@ -25846,6 +26196,12 @@
    "fr": "Saut + double saut + Impulsion pour gravir la falaise.",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "Saut quantique",
+   "where": [
+    "data/enemies/singularis.json"
    ]
   },
   {
@@ -26487,6 +26843,12 @@
    ]
   },
   {
+   "fr": "Sillage de plasma",
+   "where": [
+    "data/enemies/singularis.json"
+   ]
+  },
+  {
    "fr": "Sillon de ronces",
    "where": [
     "data/enemies/archon_catacombs.json",
@@ -26518,6 +26880,49 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Singularis",
+   "where": [
+    "data/achievements/achievements.json",
+    "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Singularis appelle son escorte d'astres !",
+   "where": [
+    "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Singularis se multiplie dans ses reflets !",
+   "where": [
+    "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Singularis vaincu",
+   "where": [
+    "data/levels/noyau_03.json"
+   ]
+  },
+  {
+   "fr": "SINGULARIS, LE CŒUR EFFONDRÉ",
+   "where": [
+    "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Singularis, le Cœur Effondré.",
+   "where": [
+    "data/levels/noyau_03.json"
+   ]
+  },
+  {
+   "fr": "Sinon, un événement l'active",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
    ]
   },
   {
@@ -26959,6 +27364,12 @@
    "fr": "SPEEDRUN",
    "where": [
     "game/online/OnlineTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Spirale de naine blanche",
+   "where": [
+    "data/enemies/singularis.json"
    ]
   },
   {
@@ -27470,7 +27881,20 @@
     "data/cosmetics/cosmetics.json",
     "data/enemies/astrarque.json",
     "data/enemies/echo_pyrogyre.json",
-    "data/enemies/pyrogyre.json"
+    "data/enemies/pyrogyre.json",
+    "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Supernova ! L'étoile va exploser !",
+   "where": [
+    "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Supernova : l'arène se resserre",
+   "where": [
+    "data/levels/noyau_03.json"
    ]
   },
   {
@@ -28550,13 +28974,13 @@
    ]
   },
   {
-   "fr": "Terminer les 18 niveaux de la campagne sans mourir.",
+   "fr": "Terminer les 19 niveaux de la campagne sans mourir.",
    "where": [
     "data/achievements/achievements.json"
    ]
   },
   {
-   "fr": "Terminer les 18 niveaux de la campagne.",
+   "fr": "Terminer les 19 niveaux de la campagne.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -28718,6 +29142,7 @@
     "data/levels/glacior_04.json",
     "data/levels/noyau_01.json",
     "data/levels/noyau_02.json",
+    "data/levels/noyau_03.json",
     "data/levels/pyralis_01.json",
     "data/levels/pyralis_02.json",
     "data/levels/pyralis_03.json",
@@ -28904,6 +29329,7 @@
    "where": [
     "data/levels/aethra_03.json",
     "data/levels/noyau_02.json",
+    "data/levels/noyau_03.json",
     "data/levels/pyralis_04.json"
    ]
   },
@@ -29152,6 +29578,12 @@
    "fr": "Tourelle",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Tourne autour de sa place ; Décalage = angle de départ",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
    ]
   },
   {
@@ -30241,6 +30673,12 @@
    ]
   },
   {
+   "fr": "Un éclat de l'étoile morte, détaché par Singularis pour l'escorter. Il tire des éclats de lumière.",
+   "where": [
+    "data/enemies/eclat_stellaire.json"
+   ]
+  },
+  {
    "fr": "Une alcôve de cristal derrière le plasma !",
    "where": [
     "data/levels/glacior_02.json"
@@ -30274,6 +30712,12 @@
    "fr": "Une cache sous le sol fissuré !",
    "where": [
     "data/levels/pyralis_01.json"
+   ]
+  },
+  {
+   "fr": "Une cage de lumière se referme !",
+   "where": [
+    "data/enemies/singularis.json"
    ]
   },
   {
@@ -30452,6 +30896,12 @@
    ]
   },
   {
+   "fr": "Une seule vie. Une étoile morte. Huit phases.",
+   "where": [
+    "data/levels/noyau_03.json"
+   ]
+  },
+  {
    "fr": "Une tablette des sanctuaires : la Balise de rappel vous ramène là où vous l'avez posée.",
    "where": [
     "data/levels/aethra_04.json"
@@ -30515,6 +30965,18 @@
    "fr": "Une étagère oubliée sous la voûte !",
    "where": [
     "data/levels/sylvanox_03.json"
+   ]
+  },
+  {
+   "fr": "Une étoile morte devenue conscience, au cœur du Noyau. Huit phases, huit couleurs : sa coquille éclate, le sol s'effondre, et sa dernière lumière doit être survécue.",
+   "where": [
+    "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Une étoile morte ouvre son œil.",
+   "where": [
+    "data/enemies/singularis.json"
    ]
   },
   {
@@ -30994,13 +31456,25 @@
    ]
   },
   {
+   "fr": "Vaincre Singularis sans être touché.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre Singularis, le Cœur Effondré.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Vaincre Thornwarden.",
    "where": [
     "data/achievements/achievements.json"
    ]
   },
   {
-   "fr": "Vaincre tous les ennemis des 18 niveaux de la campagne.",
+   "fr": "Vaincre tous les ennemis des 19 niveaux de la campagne.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -34950,6 +35424,12 @@
    ]
   },
   {
+   "fr": "Éclat stellaire",
+   "where": [
+    "data/enemies/eclat_stellaire.json"
+   ]
+  },
+  {
    "fr": "Éclats",
    "where": [
     "data/enemies/aurorax.json",
@@ -35463,9 +35943,21 @@
    ]
   },
   {
+   "fr": "Étoiles filantes",
+   "where": [
+    "data/enemies/singularis.json"
+   ]
+  },
+  {
    "fr": "étoiles sur {0} · rien ne s'achète, tout se gagne avec les succès",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Étoiles traqueuses",
+   "where": [
+    "data/enemies/singularis.json"
    ]
   },
   {
@@ -35474,7 +35966,14 @@
     "data/enemies/echo_mycelia.json",
     "data/enemies/echo_thornwarden.json",
     "data/enemies/mycelia.json",
+    "data/enemies/singularis.json",
     "data/enemies/thornwarden.json"
+   ]
+  },
+  {
+   "fr": "Éventail d'étoiles",
+   "where": [
+    "data/enemies/singularis.json"
    ]
   },
   {

@@ -195,6 +195,7 @@ TEST_CASE("bosses: they read the fight — moving players get hit, campers get p
     struct Row {
         std::string id;
         FightStats moving, camping, late;
+        bool rageInPhase = false;  // 2.33: Singularis enrages in its last phase only (test_singularis.cpp)
     };
     std::vector<Row> rows;
     for (const EnemyDefinition* def : content.enemies()) {
@@ -202,6 +203,8 @@ TEST_CASE("bosses: they read the fight — moving players get hit, campers get p
         // "Long" = 90 s, or longer for a boss whose rage comes later (the Astrarque: 90 s).
         float longFight = std::max(90.0f, def->enrageTime + 10.0f);
         Row r{def->id, fight(*def, false, 40.0f), fight(*def, true, 20.0f), fight(*def, false, longFight)};
+        r.rageInPhase = def->enrageTime <= 0.0f && std::any_of(def->phases.begin(), def->phases.end(),
+                                                               [](const BossPhase& p) { return p.enrageTime > 0.0f; });
         std::printf("  %-15s mobile : %2d coups / 40 s, %2d attaques (%zu diff.) | perché : %d coups / 20 s | 90 s : %d coups%s\n", r.id.c_str(),
                     r.moving.hits, r.moving.attacks, r.moving.used.size(), r.camping.hits, r.late.hits, r.late.enraged ? ", rage" : "");
         rows.push_back(r);
@@ -211,6 +214,6 @@ TEST_CASE("bosses: they read the fight — moving players get hit, campers get p
         CHECK(r.moving.used.size() >= 3);  // varied (phase 1 only here)
         CHECK(r.moving.hits >= 4);         // aimed where the player goes
         CHECK(r.camping.hits >= 2);        // no safe spot
-        CHECK(r.late.enraged);             // a fight that drags on enrages it
+        CHECK(r.late.enraged || r.rageInPhase);  // a fight that drags on enrages it
     }
 }

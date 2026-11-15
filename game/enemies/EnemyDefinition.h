@@ -110,6 +110,10 @@ struct AttackDef {
     int bounces = 0;        // Prism: bounces off walls and ceiling
     int arms = 0;           // Spiral (and Orbit with a spiral): arms of shots
     float grip = 0.0f;      // FrostFloor: grip of the frozen ground (1 = normal)
+    // Prism: `arms` 2 fires two beams mirrored on both sides of the enemy, which cross (2.33).
+    /// Look of a lasting effect (2.33, appearance only, not in the fingerprints): Flood
+    /// "plasma" (a tide of star plasma instead of lava), Cage "star" (walls of starlight).
+    std::string look;
 
     bool isProjectileType() const {
         return type == AttackType::Projectile || type == AttackType::Spread || type == AttackType::Arc ||
@@ -132,6 +136,13 @@ struct BossPhase {
     bool summonOnEnter = false;
     int combo = 1;                    // attacks chained without a full recovery
     float telegraphMultiplier = 1.0f; // < 1: shorter wind-ups
+    /// Seconds in this phase after which the boss enrages (2.33, the giga boss's last phase);
+    /// 0 = only the boss's own enrageTime.
+    float enrageTime = 0.0f;
+    // Appearance only (2.33, not in the fingerprints):
+    std::string animation;           // sheet of this phase ("" = the enemy's own): a new look
+    Color lightColor{0, 0, 0, 0};    // its light during this phase (alpha 0 = the enemy's own)
+    std::string enterSound;          // played when the phase starts, with the roar
     Json toJson() const;
     static BossPhase fromJson(const Json& j);
 };
@@ -203,6 +214,11 @@ struct EnemyDefinition {
     /// For variants of another enemy (the echoes of the bosses): the original's id. The
     /// news of the main menu announce the original only.
     std::string variantOf;
+    /// Its last stand (2.33, Singularis's « Dernière lumière »): when its health runs out the
+    /// boss does not die at once: it cannot be hurt any more, goes to the middle of its arena
+    /// and performs these attacks one after the other, then dies. Empty = it dies at once.
+    std::vector<std::string> finalAttacks;
+    std::string finalText;  // the message shown when the last stand begins
 
     // Runtime bookkeeping
     std::string sourcePath;

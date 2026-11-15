@@ -36,6 +36,9 @@ struct PlayOptions {
     float pauseAfter = 0.0f;  // screenshots: open the pause menu after this many seconds of play
     /// Automated screenshots: the active boss uses this attack whenever it can.
     std::string forceBossAttack;
+    /// Automated screenshots (2.33): the active boss jumps to this phase (1 = the first) as
+    /// soon as its fight starts; one more than its phases = its last stand.
+    int forceBossPhase = 0;
     /// Ghost Racing: the ghosts chosen before the start (`ghostsChosen` false: the default
     /// ones, i.e. my best time if the setting asks for it). Kept when the run restarts.
     std::vector<GhostEntry> ghosts;

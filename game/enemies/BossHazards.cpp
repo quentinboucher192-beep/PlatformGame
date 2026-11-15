@@ -70,8 +70,10 @@ void BossHazards::addFlood(const Flood& f) {
     floods_.push_back(f);
 }
 
-void BossHazards::addWall(GameWorld& w, uint32_t owner, const Rect& rect, float seconds, float damage, float inside) {
+void BossHazards::addWall(GameWorld& w, uint32_t owner, const Rect& rect, float seconds, float damage, float inside,
+                          const std::string& look) {
     Wall wall;
+    wall.look = look;
     wall.owner = owner;
     wall.rect = rect;
     wall.time = seconds;
@@ -279,16 +281,20 @@ void BossHazards::render(RenderContext& ctx) const {
         }
     }
 
-    // Lava tide.
-    AnimationSetPtr lavaFx = sheetOf("lava_flood");
-    const AnimationClip* lava = clipIn(lavaFx, "surface");
+    // Lava tide (or star plasma, 2.33).
+    AnimationSetPtr lavaSheet = sheetOf("lava_flood");
+    AnimationSetPtr plasmaFx = sheetOf("plasma_flood");
     for (const Flood& f : floods_) {
         float level = f.level();
         if (level < 0.5f) continue;
+        const bool plasma = f.look == "plasma";
+        const AnimationSetPtr& lavaFx = plasma && clipIn(plasmaFx, "surface") ? plasmaFx : lavaSheet;
+        const AnimationClip* lava = clipIn(lavaFx, "surface");
         float top = f.surfaceY();
         Rect body{f.left, top, f.right - f.left, f.floorY + 64.0f - top};
-        ctx.r.fillWorldRect(body, Color{170, 40, 18, 225});
-        ctx.r.fillWorldRect({body.x, top + 6.0f, body.w, std::max(0.0f, body.h - 6.0f)}, Color{255, 110, 40, 60}, BlendMode::Additive);
+        ctx.r.fillWorldRect(body, plasma ? Color{120, 20, 92, 225} : Color{170, 40, 18, 225});
+        ctx.r.fillWorldRect({body.x, top + 6.0f, body.w, std::max(0.0f, body.h - 6.0f)},
+                            plasma ? Color{255, 110, 210, 60} : Color{255, 110, 40, 60}, BlendMode::Additive);
         if (lava) {
             int frame = static_cast<int>(t * 10.0f) % std::max(1, lava->frameCount());
             Rect src = lavaFx->frameRect(*lava, frame);
@@ -305,17 +311,22 @@ void BossHazards::render(RenderContext& ctx) const {
                 ctx.r.fillWorldRect({x, top - 2.0f + wave, 12.0f, 4.0f}, Color{255, 200, 90, 240}, BlendMode::Additive);
             }
         }
-        for (float x = f.left + 48.0f; x < f.right; x += 120.0f) ctx.lights.add({x, top}, 110.0f, Color{255, 120, 50, 255});
+        for (float x = f.left + 48.0f; x < f.right; x += 120.0f)
+            ctx.lights.add({x, top}, 110.0f, plasma ? Color{255, 120, 220, 255} : Color{255, 120, 50, 255});
     }
 
-    // Walls of thorns, rising out of the ground.
-    AnimationSetPtr thornFx = sheetOf("thorn_wall");
-    const AnimationClip* thorn = clipIn(thornFx, "idle");
+    // Walls of thorns (or of starlight, 2.33), rising out of the ground.
+    AnimationSetPtr thornSheet = sheetOf("thorn_wall");
+    AnimationSetPtr starFx = sheetOf("star_wall");
     for (const Wall& wl : walls_) {
         float grow = std::min(1.0f, wl.age / 0.2f) * std::min(1.0f, wl.time / 0.25f);
         Rect r = wl.rect;
         float h = r.h * grow;
         Rect vis{r.x, r.bottom() - h, r.w, h};
+        const bool star = wl.look == "star";
+        const AnimationSetPtr& thornFx = star && clipIn(starFx, "idle") ? starFx : thornSheet;
+        const AnimationClip* thorn = clipIn(thornFx, "idle");
+        if (star) ctx.r.drawWorldGlow(vis.center(), std::max(vis.w * 2.5f, vis.h * 0.6f), Color{120, 255, 190, 70});
         if (thorn) {
             int frame = static_cast<int>(t * 8.0f) % std::max(1, thorn->frameCount());
             Rect src = thornFx->frameRect(*thorn, frame);
@@ -338,7 +349,7 @@ void BossHazards::render(RenderContext& ctx) const {
                 ctx.r.drawWorldLine(base, tip, Color{170, 210, 120, 255}, std::max(1.0f, 2.0f * ctx.r.view().scale / 3.0f));
             }
         }
-        ctx.lights.add(vis.center(), 46.0f, Color{120, 255, 140, 160});
+        ctx.lights.add(vis.center(), star ? 90.0f : 46.0f, star ? Color{150, 255, 200, 220} : Color{120, 255, 140, 160});
     }
 
     // Pulls: a black hole (well) or air rushing in (vortex).

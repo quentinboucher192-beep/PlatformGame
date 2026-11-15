@@ -12,7 +12,9 @@
 #include "engine/core/Random.h"
 #include "engine/resources/ResourceManager.h"
 #include "game/content/ContentDatabase.h"
+#include "game/gameplay/BossTraining.h"
 #include "game/gameplay/GameWorld.h"
+#include "game/gameplay/entities/Entities.h"
 #include "game/gameplay/InputFrame.h"
 #include "game/online/LevelFingerprint.h"
 #include "game/online/Replay.h"
@@ -171,6 +173,32 @@ TEST_CASE("determinism: golden digests are identical on every platform") {
         }
     }
     CHECK(mismatches == 0);
+}
+
+// 2.33: the giga boss's fight (its arena changed by its phases: debris in orbit, the crust floor
+// collapsed into the plasma, tides of plasma, rings, cages...): 30 s of scripted play from its
+// fifth phase in « Le Cœur d'une Étoile Mourante ». Computed by the Linux build.
+TEST_CASE("determinism: the giga boss's fight has its golden digest on every platform") {
+    Sim s("noyau_03");
+    std::string bossObject;
+    Rect zone;
+    for (const LevelObject& o : s.w->level().objects)
+        if (o.type == "enemy" && o.propStr("enemy") == "singularis") bossObject = o.id;
+    for (const LevelObject& o : s.w->level().objects)
+        if (o.type == "combat_zone" && !bossObject.empty() && o.propStr("waves").find(bossObject) != std::string::npos) zone = o.rect;
+    CHECK(!bossObject.empty() && zone.w > 0.0f);
+    auto* spawn = dynamic_cast<EnemySpawnEntity*>(s.w->entity(bossObject));
+    Enemy* boss = spawn ? spawn->enemy(*s.w) : nullptr;
+    CHECK(boss != nullptr);
+    if (!boss) return;
+    s.w->startAt({zone.x + 18.0f * 16.0f, zone.bottom() - 14.0f * 16.0f});
+    s.w->startBoss(*boss);
+    jumpBossToPhase(*s.w, *boss, 4);
+    auto checks = s.run(scriptedInputs(11, 30 * 120));
+    std::string got = checks.empty() ? "" : hex(checks.back());
+    const char* golden = "5c74a5aa723db584";
+    if (got != golden) std::printf("  noyau_03 (Singularis, phase 5) : %s (attendu %s)\n", got.c_str(), golden);
+    CHECK(got == golden);
 }
 
 TEST_CASE("determinism: a recorded replay plays the run again exactly") {

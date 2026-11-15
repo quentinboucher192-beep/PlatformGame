@@ -156,7 +156,8 @@ std::vector<ObjectTypeInfo> build() {
                    pFloat("phase", "Décalage de départ (0-1)", 0, 0, 1, 0.05f),
                    pBool("active", "Actif au départ", true, "Peut être activé par un événement"),
                    pBool("oneway", "Traversable par dessous", false),
-                   pBool("triggered", "Démarre quand on monte dessus", false)};
+                   pBool("triggered", "Démarre quand on monte dessus", false),
+                   pBool("orbit", "En orbite (dx, dy = rayons)", false, "Tourne autour de sa place ; Décalage = angle de départ")};
         t.assets = {"sprites/objects/moving_platform.png"};
         add(t);
     }
@@ -169,8 +170,9 @@ std::vector<ObjectTypeInfo> build() {
         t.editorColor = {170, 150, 110, 255};
         t.props = {pFloat("delay", "Délai avant chute (s)", 0.45f, 0.05f, 5, 0.05f),
                    pFloat("respawn", "Réapparition (s, 0 = jamais)", 3.0f, 0, 60, 0.5f),
-                   pEnum("style", "Apparence", "ruins", {"ruins", "basalt", "ice"},
-                         {"Pierre des ruines", "Basalte", "Glace"})};
+                   pBool("onEvent", "Ne cède qu'à un événement", false, "Action « Activer » : elle s'effondre"),
+                   pEnum("style", "Apparence", "ruins", {"ruins", "basalt", "ice", "star"},
+                         {"Pierre des ruines", "Basalte", "Glace", "Croûte d'étoile"})};
         t.assets = {};  // texture per style, collected by the exporter
         add(t);
     }
@@ -252,7 +254,10 @@ std::vector<ObjectTypeInfo> build() {
         t.defaultLayer = "gameplay";
         t.props = {pInt("damage", "Dégâts", 1, 1, 10), pFloat("interval", "Intervalle (s)", 0.8f, 0.1f, 10, 0.1f),
                    pBool("visible", "Visible (brume toxique)", true),
-                   pBool("shieldProtects", "Le bouclier protège", true)};
+                   pBool("shieldProtects", "Le bouclier protège", true),
+                   pBool("active", "Active au départ", true, "Sinon, un événement l'active"),
+                   pEnum("style", "Apparence", "toxic", {"toxic", "plasma"}, {"Brume toxique", "Plasma d'étoile"}),
+                   pBool("bounce", "Projette vers le haut", false)};
         add(t);
     }
     {
@@ -372,7 +377,7 @@ std::vector<ObjectTypeInfo> build() {
         t.resizable = false;
         t.snap = 8;
         t.editorColor = {255, 77, 109, 255};
-        t.props = {pInt("amount", "Soin", 2, 1, 10)};
+        t.props = {pInt("amount", "Soin", 2, 1, 10), pBool("hidden", "Cachée jusqu'à un événement", false, "Action « Faire apparaître »")};
         t.assets = {"animations/health_orb.json", "sprites/objects/health_orb.png"};
         add(t);
     }

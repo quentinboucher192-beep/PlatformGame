@@ -584,6 +584,8 @@ void EnemyEditorScene::tabBoss(float x, float& y, float w) {
             float cb = static_cast<float>(p.combo);
             if (ui.numberField("pcombo", pr.field("Attaques enchaînées (combo)"), cb, 1, 1, 5, "%.0f")) p.combo = static_cast<int>(cb), c = true;
             c |= ui.numberField("ptel", pr.field("Durée d'annonce x"), p.telegraphMultiplier, 0.05f, 0.4f, 2, "%.2f");
+            // 2.33: rage counted from the start of this phase (Singularis's Supernova).
+            c |= ui.numberField("prage", pr.field("Rage dans la phase (s, 0 = non)"), p.enrageTime, 5, 0, 600, "%.0f");
         }
         ui.label("Attaques de la phase (le boss choisit selon la situation)", {x, y}, 18, ui.theme().textDim);
         y += ui.s(30);

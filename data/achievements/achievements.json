@@ -24,7 +24,7 @@
    "id": "gardiens",
    "name": "Gardiens",
    "color": "#FF9F4A",
-   "description": "Les boss : chaque gardien, ses échos et l'Astrarque."
+   "description": "Les boss : chaque gardien, ses échos, l'Astrarque et Singularis."
   },
   {
    "id": "maitrise",
@@ -229,7 +229,7 @@
    "id": "voyage_all",
    "category": "voyage",
    "name": "Système conquis",
-   "description": "Terminer les 18 niveaux de la campagne.",
+   "description": "Terminer les 19 niveaux de la campagne.",
    "stars": 5,
    "condition": {
     "type": "all_levels"
@@ -357,12 +357,12 @@
    "id": "chrono_gold_all",
    "category": "chrono",
    "name": "Tout en or",
-   "description": "Obtenir l'or sur les 18 niveaux.",
+   "description": "Obtenir l'or sur les 19 niveaux.",
    "stars": 4,
    "condition": {
     "type": "medal_count",
     "medal": 3,
-    "count": 18
+    "count": 19
    },
    "requires": [
     "chrono_gold_5"
@@ -402,12 +402,12 @@
    "id": "chrono_platinum_all",
    "category": "chrono",
    "name": "Chronomaître",
-   "description": "Obtenir le platine sur les 18 niveaux.",
+   "description": "Obtenir le platine sur les 19 niveaux.",
    "stars": 5,
    "condition": {
     "type": "medal_count",
     "medal": 4,
-    "count": 18
+    "count": 19
    },
    "requires": [
     "chrono_platinum_5",
@@ -668,12 +668,12 @@
    "id": "combat_clear_all",
    "category": "combat",
    "name": "Silence total",
-   "description": "Vaincre tous les ennemis des 18 niveaux de la campagne.",
+   "description": "Vaincre tous les ennemis des 19 niveaux de la campagne.",
    "stars": 5,
    "condition": {
     "type": "set",
     "key": "cleared_levels",
-    "count": 18,
+    "count": 19,
     "campaign": true
    },
    "requires": [
@@ -1107,6 +1107,20 @@
    ]
   },
   {
+   "id": "gardiens_singularis",
+   "category": "gardiens",
+   "name": "Singularis",
+   "description": "Vaincre Singularis, le Cœur Effondré.",
+   "stars": 5,
+   "condition": {
+    "type": "boss",
+    "boss": "singularis"
+   },
+   "requires": [
+    "gardiens_astrarque"
+   ]
+  },
+  {
    "id": "gardiens_50",
    "category": "gardiens",
    "name": "Tueur de titans",
@@ -1207,11 +1221,11 @@
    "id": "maitrise_nodeath_all",
    "category": "maitrise",
    "name": "Immortel",
-   "description": "Terminer les 18 niveaux de la campagne sans mourir.",
+   "description": "Terminer les 19 niveaux de la campagne sans mourir.",
    "stars": 4,
    "condition": {
     "type": "levels_no_death",
-    "count": 18
+    "count": 19
    },
    "requires": [
     "maitrise_nodeath_5"
@@ -1384,6 +1398,35 @@
    },
    "requires": [
     "gardiens_nyxara"
+   ]
+  },
+  {
+   "id": "maitrise_singularis_nohit",
+   "category": "maitrise",
+   "name": "Lumière intacte",
+   "description": "Vaincre Singularis sans être touché.",
+   "stars": 5,
+   "condition": {
+    "type": "boss",
+    "boss": "singularis",
+    "nohit": true
+   },
+   "requires": [
+    "gardiens_singularis"
+   ]
+  },
+  {
+   "id": "maitrise_phases_singularis",
+   "category": "maitrise",
+   "name": "Les huit lumières",
+   "description": "Battre chaque phase de Singularis sans être touché (pas forcément dans le même combat).",
+   "stars": 5,
+   "condition": {
+    "type": "boss_phases_nohit",
+    "boss": "singularis"
+   },
+   "requires": [
+    "gardiens_singularis"
    ]
   },
   {
@@ -3070,12 +3113,12 @@
    "id": "communaute_rate_campaign_all",
    "category": "communaute",
    "name": "Guide stellaire",
-   "description": "Noter les 18 niveaux de la campagne en ligne.",
+   "description": "Noter les 19 niveaux de la campagne en ligne.",
    "stars": 4,
    "condition": {
     "type": "set",
     "key": "rated_campaign",
-    "count": 18
+    "count": 19
    },
    "requires": [
     "communaute_rate_campaign"
@@ -3138,11 +3181,11 @@
    "id": "collection_tracks_all",
    "category": "collection",
    "name": "Mélomane",
-   "description": "Débloquer les 19 morceaux du juke-box.",
+   "description": "Débloquer les 20 morceaux du juke-box.",
    "stars": 3,
    "condition": {
     "type": "tracks_heard",
-    "count": 19
+    "count": 20
    },
    "requires": [
     "collection_tracks_10"

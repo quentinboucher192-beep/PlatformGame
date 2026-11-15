@@ -57,7 +57,7 @@ bool Camera::scriptBusy() const { return (scripted_ && scriptT_ < scriptDur_) ||
 void Camera::addTrauma(float amount) { trauma_ = std::clamp(trauma_ + amount, 0.0f, 1.0f); }
 
 Vec2 Camera::desiredCenter() const {
-    Vec2 d{target_.x + lookAhead_, focusY_};
+    Vec2 d{target_.x + lookAhead_ + lean_.x, focusY_ + lean_.y};
     if (zone_ && zone_->lockCenter) d = zone_->center;
     return d;
 }

@@ -203,11 +203,27 @@ V3_EFFECTS = {
     "shadow_mark": ("projectiles", 32, 32, [16, 16], [("appear", 4), ("idle", 4), ("strike", 4)], {"idle"}, {}),
     "frost_floor": ("objects", 16, 16, [0, 4], [("form", 4), ("idle", 6), ("melt", 4)], {"idle"}, {}),
     "lava_flood": ("objects", 16, 16, [0, 0], [("surface", 8), ("body", 8)], {"surface", "body"}, {}),
+    # 2.33: Singularis (boss_d_effects.py)
+    "plasma_flood": ("objects", 16, 16, [0, 0], [("surface", 8), ("body", 8)], {"surface", "body"}, {}),
+    "star_wall": ("projectiles", 32, 96, [16, 96], [("rise", 5), ("idle", 4), ("wither", 5)], {"idle"}, {}),
 }
 for _id, (_dir, _w, _h, _pv, _clips, _loop, _ev) in V3_EFFECTS.items():
     ANIMS[_id] = (_w, _h, _pv, _clips, _ev, {})
     TEXTURES[_id] = f"sprites/{_dir}/{_id}.png"
     LOOPING[_id] = set(_loop)
+
+# ------------------------------------------------------------------ 2.33: Singularis (giga boss)
+# Eight sheets, one per phase, clips packed several per row (`start`); `move` shares `walk`.
+GIGA_CLIPS = [("idle", 8), ("telegraph", 6), ("walk", 8), ("move", 8), ("attack", 5), ("telegraph_special", 6),
+              ("special", 4), ("hurt", 2), ("summon", 6), ("roar", 8), ("death", 14), ("teleport_out", 5),
+              ("teleport_in", 5)]
+for _k in range(8):
+    _id = "singularis" if _k == 0 else "singularis_p%d" % (_k + 1)
+    ANIMS[_id] = (192, 192, [96, 124], GIGA_CLIPS, {"attack": [(1, "fire")]}, {})
+    TEXTURES[_id] = f"sprites/enemies/{_id}.png"
+    LOOPING[_id] = {"idle", "walk", "move", "special"}
+ANIMS["projectiles"][3].extend([("star_shard", 4), ("meteor", 4)])
+LOOPING["projectiles"] |= {"star_shard", "meteor"}
 
 STATIC = {
     "sprites/objects/moving_platform.png": (48, 32),
@@ -218,6 +234,8 @@ STATIC = {
     "sprites/objects/liquid_water.png": (128, 32),
     "sprites/objects/liquid_lava.png": (128, 32),
     "sprites/objects/lava_flood.png": (128, 32),
+    "sprites/objects/plasma_flood.png": (128, 32),
+    "sprites/objects/crumble_platform_star.png": (48, 48),
     "textures/fx/glow.png": (64, 64), "textures/fx/particle.png": (8, 8), "textures/fx/spark.png": (8, 8),
     "textures/fx/star.png": (8, 8), "textures/fx/ring.png": (64, 64), "textures/fx/smoke.png": (64, 16),
     "textures/fx/dust.png": (80, 16), "textures/fx/slash.png": (192, 32), "textures/fx/hit.png": (120, 24),
@@ -247,7 +265,7 @@ def check_anim(name, errors):
     got = meta["clips"]
     if list(got.keys()) != [c for c, _ in clips]:
         errors.append(f"{name}: clips {list(got.keys())} != {[c for c, _ in clips]}")
-    rows = set()
+    cells = {}  # (row, column) -> clip: clips may share a row (packed sheets), never a frame
     max_col, max_row = 0, 0
     for cname, count in clips:
         c = got.get(cname)
@@ -258,9 +276,14 @@ def check_anim(name, errors):
         start = c.get("start", 0)
         max_col = max(max_col, start + c["count"])
         max_row = max(max_row, c["row"])
-        if c["row"] in rows:
-            errors.append(f"{name}.{cname}: duplicate row {c['row']}")
-        rows.add(c["row"])
+        for col in range(start, start + c["count"]):
+            other = cells.get((c["row"], col))
+            alias = other is not None and (got[other]["row"], got[other].get("start", 0), got[other]["count"]) == (
+                c["row"], start, c["count"])
+            if other is not None and not alias:
+                errors.append(f"{name}.{cname}: frame {col} of row {c['row']} already used by {other}")
+                break
+            cells[(c["row"], col)] = cname
         if "durations" in c:
             if len(c["durations"]) != c["count"] or any(d <= 0 for d in c["durations"]):
                 errors.append(f"{name}.{cname}: bad durations")

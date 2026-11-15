@@ -274,6 +274,33 @@
    "gold_ms": 267000,
    "auto": true
   },
+  "noyau_03": {
+   "name": "Le Cœur d'une Étoile Mourante",
+   "planet": "noyau",
+   "revision": 8,
+   "slots": 4,
+   "start_powers": [
+    "dash",
+    "grapple",
+    "glide",
+    "charge_shot"
+   ],
+   "level_powers": [
+    "charge_shot",
+    "dash",
+    "glide",
+    "grapple",
+    "impulse",
+    "plasma_bomb",
+    "shield",
+    "time_slow",
+    "triple_jump",
+    "wave"
+   ],
+   "silver_ms": 495000,
+   "gold_ms": 413000,
+   "auto": false
+  },
   "pyralis_01": {
    "name": "Les Forges Englouties",
    "planet": "pyralis",

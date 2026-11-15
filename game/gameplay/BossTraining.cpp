@@ -114,10 +114,18 @@ bool applyBossTraining(GameWorld& w, const BossTrainingSetup& s) {
     for (const std::string& id : fitTrainingPowers(w.content(), s.powers, slots))
         if (const PowerDefinition* d = w.content().power(id)) p.grantPower(*d);
     // A single phase: the boss starts it with the life it has when it enters it.
-    const auto& phases = boss->def().phases;
-    if (s.phase > 0 && s.phase < static_cast<int>(phases.size()))
-        boss->setWounds(boss->maxHp() * phases[static_cast<size_t>(s.phase)].hpThreshold, s.phase);
+    jumpBossToPhase(w, *boss, s.phase);
     return true;
+}
+
+void jumpBossToPhase(GameWorld& w, Enemy& boss, int phase) {
+    const auto& phases = boss.def().phases;
+    if (phase <= 0 || phase >= static_cast<int>(phases.size())) return;
+    boss.setWounds(boss.maxHp() * phases[static_cast<size_t>(phase)].hpThreshold, phase);
+    // The arena as the phases before left it (2.33: Singularis's floor collapsed, its plasma,
+    // its platforms in orbit): the level's answers to those phases, at once.
+    if (!boss.objectId().empty())
+        for (int k = 1; k <= phase; ++k) w.emit(boss.objectId(), "bossPhase", {{"phase", k + 1}});
 }
 
 const Enemy* bossTrainingEnemy(GameWorld& w, const BossTrainingSetup& s) {

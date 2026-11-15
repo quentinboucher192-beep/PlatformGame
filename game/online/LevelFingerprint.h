@@ -22,7 +22,7 @@ struct LevelData;
 /// Version of the simulation rules. Bump it whenever a code change can alter how a run
 /// plays out (physics, AI, damage, timers...), with the reference digests of
 /// tests/test_determinism.cpp.
-constexpr int kSimulationVersion = 11;  // 6: energy 150, time slow, magnet, air dash, plasma bomb (special button),
+constexpr int kSimulationVersion = 12;  // 6: energy 150, time slow, magnet, air dash, plasma bomb (special button),
                                        //    arena bosses keep their wounds when the player dies
                                        // 7: crouch in place (Down on the ground)
                                        // 8: energy costs by strength (charge shot = reference),
@@ -43,6 +43,13 @@ constexpr int kSimulationVersion = 11;  // 6: energy 150, time slow, magnet, air
                                        //    back to the start with the challenge's start state).
                                        //    A run without a challenge plays exactly as before
                                        //    (same digests)
+                                       // 12: the giga boss of the Noyau (2.33): rage counted in a
+                                       //    phase, a last stand before dying, prisms with two
+                                       //    beams, platforms in orbit, crust floors broken by an
+                                       //    event, damage zones switched on by an event (and
+                                       //    throwing Nova up), pickups shown by an event, the
+                                       //    rage heard by the level. Earlier levels play exactly
+                                       //    as before (same digests)
 /// Generation of the rankings, part of every ranked fingerprint. It follows
 /// kSimulationVersion when a change makes earlier runs incomparable (records and replays of
 /// different generations are never mixed). A change that only adds a possibility and
@@ -51,8 +58,9 @@ constexpr int kSimulationVersion = 11;  // 6: energy 150, time slow, magnet, air
 ///   8 -> simulation 8 (2.17: energy costs and minions changed: the rankings start again),
 ///        9 (2.20: only additions — new guardians, attacks and powers — the records stay)
 ///        10 (2.24: keys per power slot; the moves and powers are the same, earlier runs
-///        stay valid and comparable) and 11 (2.32: the challenge rules only apply to a
-///        challenge run; every other run plays as before, the records stay).
+///        stay valid and comparable), 11 (2.32: the challenge rules only apply to a
+///        challenge run; every other run plays as before, the records stay) and 12 (2.33:
+///        only additions for the giga boss's level; every earlier run plays as before).
 constexpr int kRankingGeneration = 8;
 
 struct LevelFingerprint {

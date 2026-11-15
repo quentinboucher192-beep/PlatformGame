@@ -630,6 +630,14 @@ void Enemy::render(RenderContext& ctx) const {
         ctx.r.drawWorldTexture(tex, &src, dst, Color{255, 60, 90, static_cast<uint8_t>(60 + 120 * pulse)},
                                BlendMode::Additive, flip);
     }
+    if (lastStand_) {
+        // Its last light: a white glare that throbs faster and faster (2.33).
+        float pulse = 0.5f + 0.5f * dmath::sin(ctx.time * 16.0f);
+        Color lc = lightColor();
+        ctx.r.drawWorldGlow(feet + Vec2{0, -box.h * 0.5f}, std::max(box.w, box.h) * def_.scale * (1.1f + 0.3f * pulse),
+                            Color{lc.r, lc.g, lc.b, static_cast<uint8_t>(120 + 100 * pulse)});
+        ctx.r.drawWorldTexture(tex, &src, dst, Color{255, 255, 255, static_cast<uint8_t>(40 + 80 * pulse)}, BlendMode::Additive, flip);
+    }
     if (doubles_ > 0 && state_ != EnemyState::Dead) {
         // « Reflets »: the true guardian wears a green aura (only it loses health).
         float pulse = 0.5f + 0.5f * dmath::sin(ctx.time * 5.0f);
@@ -648,7 +656,7 @@ void Enemy::render(RenderContext& ctx) const {
     }
     if (state_ != EnemyState::Dead && state_ != EnemyState::Dormant) {
         Vec2 eye = feet + Vec2{facing * box.w * 0.2f, -box.h * 0.6f};
-        ctx.lights.add(eye, def_.lightRadius, def_.lightColor);
+        ctx.lights.add(eye, def_.lightRadius, lightColor());
     }
 }
 

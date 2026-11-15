@@ -41,7 +41,12 @@ private:
     float t_ = 0.0f, dir_ = 1.0f, wait_ = 0.0f, length_ = 1.0f;
     bool moving_ = true;
     bool triggered_ = false;
+    // 2.33: in orbit around its starting place (an ellipse of radii |dx|, |dy|).
+    bool orbit_ = false;
+    Vec2 center_;
+    float angle_ = 0.0f;
     TexturePtr tex_;
+    Vec2 orbitPos(float angle) const;
 };
 
 class CrumblePlatformEntity : public LevelEntity {
@@ -51,8 +56,11 @@ public:
     void fixedUpdate(GameWorld& w, float dt) override;
     void render(RenderContext& ctx) override;
     void onPlayerRespawn(GameWorld& w) override;
+    /// 2.33: "break" (or "activate", "open"): it gives way at once, by an event.
+    bool handleAction(GameWorld& w, const std::string& action, const Json& params) override;
 
 private:
+    void giveWay(GameWorld& w);
     enum class Phase { Solid, Shaking, Fallen } phase_ = Phase::Solid;
     uint32_t collider_ = 0;
     float timer_ = 0.0f;
@@ -145,6 +153,7 @@ private:
 class DamageZoneEntity : public LevelEntity {
 public:
     using LevelEntity::LevelEntity;
+    void init(GameWorld& w) override;
     void fixedUpdate(GameWorld& w, float dt) override;
     void render(RenderContext& ctx) override;
     bool wantsPlayerOverlap() const override { return true; }
@@ -152,8 +161,10 @@ public:
     bool handleAction(GameWorld& w, const std::string& action, const Json& params) override;
 
 private:
+    void renderPlasma(RenderContext& ctx) const;
     float tick_ = 0.0f;
     float fxTimer_ = 0.0f;
+    float shown_ = 0.0f;  // display: fades in when enabled (2.33)
 };
 
 class SlowZoneEntity : public LevelEntity {
@@ -201,6 +212,8 @@ public:
     bool wantsPlayerOverlap() const override { return true; }
     Rect overlapBox() const override { return box.expanded(3); }
     void onPlayerEnter(GameWorld& w) override;
+    /// 2.33: a pickup hidden until an event ("spawn", "activate", "enable") shows it.
+    bool handleAction(GameWorld& w, const std::string& action, const Json& params) override;
     void makeDrop(float vx, float vy);
     /// Brought back by the boomerang blade (2.19): moved with it, picked up on reaching Nova.
     bool carriable() const { return type() == "shard" || type() == "energy_orb" || type() == "health_orb"; }
