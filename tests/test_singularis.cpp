@@ -21,6 +21,7 @@
 #include "game/gameplay/entities/Entities.h"
 #include "game/online/LevelFingerprint.h"
 #include "game/progression/Progression.h"
+#include "game/race/Race.h"
 #include "tests/TestFramework.h"
 
 using namespace cosmic;
@@ -246,6 +247,21 @@ TEST_CASE("singularis: Le Cœur d'une Étoile Mourante, EXTRÊME, third level of
     CHECK(!prog.levelUnlocked(*e, content()));
     prog.markCompleted("noyau_02");
     CHECK(prog.levelUnlocked(*e, content()));
+}
+
+TEST_CASE("singularis: its level has a verification race like the other EXTRÊME levels") {
+    auto l = content().loadLevel("noyau_03");
+    REQUIRE(l.has_value());
+    RaceLayout race = buildRaceLayout(*l, content(), true);
+    REQUIRE(race.bosses.size() == 1);
+    CHECK(race.bosses[0].name == "Singularis");
+    CHECK(race.ambushes.empty());
+    CHECK(race.route.size() >= 2);
+    // Ranked like the others: a fingerprint of the level and of everything it uses.
+    LevelFingerprints fps;
+    const LevelFingerprint* fp = fps.get(content(), "noyau_03");
+    REQUIRE(fp != nullptr);
+    CHECK(fp->hash.size() == 64);
 }
 
 // ===================================================================== the fight

@@ -820,6 +820,8 @@ void GameScene::update(float dt) {
             b->forceAttack(*world_, opt_.forceBossAttack);
     if (opt_.forceBossPhase > 0)
         if (Enemy* b = world_->activeBoss(); b && b->alive() && !b->dormant()) {
+            // A capture never counts (boss statistics, achievements, records), as a training.
+            world_->setTraining(true);
             const int n = static_cast<int>(b->def().phases.size());
             if (b->phaseIndex() < std::min(opt_.forceBossPhase, n) - 1) jumpBossToPhase(*world_, *b, std::min(opt_.forceBossPhase, n) - 1);
             if (opt_.forceBossPhase <= n || b->lastStand()) {

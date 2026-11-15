@@ -128,9 +128,9 @@ absente prend sa valeur par défaut.
 | Catégorie | Types |
 |---|---|
 | Terrain | `solid` — `material` : `ruin_stone`, `ancient_metal`, `crystal`, `root` (Sylvanox), `basalt`, `obsidian`, `forge_metal` (Pyralis), `glacier_ice` (glissante), `snow_rock`, `frost_metal` (Glacior) |
-| Plateformes | `oneway` (`style` : `ruin_bridge`, `tech_ledge`, `root_branch`, `basalt_ledge`, `chain_grate`, `ice_ledge`, `snow_bridge`), `moving_platform`, `crumble_platform` (`style` : `ruins`, `basalt`, `ice`), `power_gate` (`power` : `dash` mur de cristal, `teleport` barrière de phase, `wave` barrière d'énergie — aussi dissoute par le Tir chargé —, `impulse` rocher fissuré, `shield` rideau de plasma, `ground_pound` sol fissuré), `bounce_pad`, `ladder` |
-| Dangers | `spikes`, `liquid` (`kind` : `acid`, `water`, `lava`, `icewater` — l'eau et l'eau glacée se nagent), `damage_zone`, `slow_zone` (`style` du nuage : `spores`, `frost`, `ash`), `laser` |
-| Gameplay | `player_start`, `checkpoint` (`label` ; `optional` : point d'une route alternative ou d'un détour, que le détecteur de raccourcis n'exige pas), `exit`, `shard`, `relic`, `health_orb` (`amount`, 2 par défaut), `energy_orb`, `power_unlock` (`power` parmi les 10 pouvoirs), `heart_container` (`hearts` : cœurs maximum en plus pour le niveau) |
+| Plateformes | `oneway` (`style` : `ruin_bridge`, `tech_ledge`, `root_branch`, `basalt_ledge`, `chain_grate`, `ice_ledge`, `snow_bridge`), `moving_platform` (2.33 : `orbit` — elle tourne autour de sa place, `dx` / `dy` = rayons de l'ellipse, `phase` = angle de départ, signe de `dx` = sens), `crumble_platform` (`style` : `ruins`, `basalt`, `ice`, `star` ; 2.33 : `onEvent` — elle ne cède qu'à une action `activate` / `break`, et reste cassée), `power_gate` (`power` : `dash` mur de cristal, `teleport` barrière de phase, `wave` barrière d'énergie — aussi dissoute par le Tir chargé —, `impulse` rocher fissuré, `shield` rideau de plasma, `ground_pound` sol fissuré), `bounce_pad`, `ladder` |
+| Dangers | `spikes`, `liquid` (`kind` : `acid`, `water`, `lava`, `icewater` — l'eau et l'eau glacée se nagent), `damage_zone` (2.33 : `active` faux = éteinte jusqu'à un `enable` ; `style` : `toxic`, `plasma` ; `bounce` : projette vers le haut), `slow_zone` (`style` du nuage : `spores`, `frost`, `ash`), `laser` |
+| Gameplay | `player_start`, `checkpoint` (`label` ; `optional` : point d'une route alternative ou d'un détour, que le détecteur de raccourcis n'exige pas), `exit`, `shard`, `relic`, `health_orb` (`amount`, 2 par défaut ; 2.33 : `hidden` — invisible et intouchable jusqu'à une action `spawn` / `activate`), `energy_orb`, `power_unlock` (`power` parmi les 10 pouvoirs), `heart_container` (`hearts` : cœurs maximum en plus pour le niveau) |
 | Interactifs | `door`, `lever`, `receptor` (activé par l'Onde ou le Tir chargé), `sign`, `grapple_point` (point d'ancrage du Grappin) |
 | Ennemis | `enemy` (`enemy` = identifiant de définition, `patrol`, `faceLeft`, `dormant`, `boss`) |
 | Zones | `trigger`, `combat_zone` (`doors`, `waves` = vagues d'ennemis séparées par `;`, `lockCamera`, `music`, `announce`, `skullColor` couleur de la tête de mort sur la barre de progression, `bossKeepsDamage` — vrai par défaut — le boss de l'arène garde ses blessures et sa phase quand le joueur meurt ; un boss vaincu le reste), `camera_zone`, `secret_area`, `updraft` (courant ascendant : `strength` vitesse de montée, `vent` grille au sol ; activable par événements) |
@@ -150,8 +150,11 @@ les `id` d'objets.
 * `source` : `id` de l'objet surveillé, `level` pour les déclencheurs globaux, ou
   identifiant de pouvoir pour `powerUsed` / `unlocked`.
 * `trigger` : `enter`, `exit`, `activate`, `cleared`, `start`, `killed`, `bossStart`,
-  `bossPhase`, `bossDefeated`, `collected`, `checkpoint`, `powerUsed`, `unlocked`,
-  `levelStart`, `time` (avec `params.seconds`).
+  `bossPhase` (avec `params.phase`, 1 = la première), `bossEnrage` (2.33 : le boss entre en
+  rage), `bossLastStand` (2.33 : son dernier souffle commence), `bossDefeated`, `collected`,
+  `checkpoint`, `powerUsed`, `unlocked`, `levelStart`, `time` (avec `params.seconds`).
+  Un entraînement qui commence à une phase rejoue d'un coup les `bossPhase` d'avant : l'arène
+  est dans l'état où le combat l'aurait laissée (Singularis, 2.33).
 * `actions[].type` : `open`, `close`, `toggle`, `activate`, `disable`, `enable`, `spawn`,
   `startBoss`, `showText`, `hint`, `dialogue`, `cameraPan`, `lockCamera`, `unlockCamera`,
   `shake`, `flash`, `playMusic`, `playSound`, `effect`, `addTime`, `givePower`, `heal`,

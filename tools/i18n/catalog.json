@@ -23094,6 +23094,12 @@
    ]
   },
   {
+   "fr": "Rage dans la phase (s, 0 = non)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Raison",
    "where": [
     "ui/screens/ChallengesScene.cpp"

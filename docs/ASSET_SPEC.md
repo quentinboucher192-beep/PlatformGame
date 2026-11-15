@@ -445,3 +445,38 @@ Music (seamless loops): `mycelia_boss` (68.6 s), `aurorax_boss` (66.0 s, 3/4), `
   (`#4a3474`), §7 format.
 * One-way platform style `sanctum_ledge` = row 7 of `textures/tiles/platforms.png` (48x128).
 * `ui/planets/aethra.png` (256x256) and `ui/planets/aethra_banner.png` (480x270).
+
+## 16. 2.33 content: Singularis, the giga boss of the Noyau stellaire
+
+Generators: `tools/assetgen/characters/boss_d_singularis.py` (entry `bosses_d.py`, called by
+`boss.py`), `boss_d_effects.py`, `boss_d_projectiles.py`, `audio/sfx/giga.py`,
+`audio/music/songs/singularis_boss.py`; its data: `tools/contentgen/singularis.py`.
+
+### 16.1 Singularis (`sprites/enemies/singularis.png` + `singularis_p2..p8.png`)
+
+| Sheet | Frame | Pivot | Collision | Clips |
+|---|---|---|---|---|
+| one per phase (`animations/singularis.json` = phase 1, `singularis_p<k>.json`) | 192x192, drawn x1.25 | [96,124] | 90x90 world px (flying) | idle 8, telegraph 6, walk 8 (= move, same frames), attack 5 (`fire` f1, right palm), telegraph_special 6, special 4 (loop), hurt 2, summon 6, roar 8, death 14, teleport_out 5, teleport_in 5 |
+
+* Clips are **packed** several per row (`start` = first column; 14 columns): the validator
+  accepts shared rows, never a shared frame (`move` is an alias of `walk`).
+* The plasma (cracks, core, corona, palms, tethers) uses five tones P0..P4 of the phase ramp
+  plus white; each phase sheet is the phase-1 sheet with those five colours swapped (exact
+  LUT; flashes applied after the swap). Phases 1-4: the shell whole; 5-8: burst open. The
+  roar of the phase-5 sheet is the shattering of the shell, the phase-8 one the ignition of
+  the supernova. Ramps: ember red, amber, violet, cyan, magenta, emerald, blue, white.
+
+### 16.2 Effects and projectiles
+
+* `sprites/objects/plasma_flood.png` 128x32, liquid format (`surface` / `body`, 8 frames): the
+  tide of star plasma (Flood `look: plasma`) and the plasma zones of the arena.
+* `sprites/projectiles/star_wall.png` 32x96, pivot [16,96]: rise 5, idle 4 (loop), wither 5 —
+  the walls of starlight (Cage `look: star`).
+* `sprites/objects/crumble_platform_star.png` 48x48: the crust floor (`crumble_platform`
+  style `star`), three rows intact / shaking / giving way.
+* Projectiles (rows 24-25 of `projectiles.png`): `star_shard`, `meteor`.
+
+### 16.3 Audio
+
+`star_roar` (its voice), `shell_shatter` (phase 5), `supernova` (phase 8, its death) and the
+loop `singularis_boss` (72.7 s, -13 LUFS). The music budget of the validator is 26 MB.
