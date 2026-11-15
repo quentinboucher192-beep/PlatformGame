@@ -103,6 +103,40 @@ struct GlobeMarker {
 enum class MarkerTier { Gold, Silver, Bronze, Cyan };
 MarkerTier markerTier(int rank);
 
+/// Opacity of a marker from its view depth: 1 on the visible face, fading out over the
+/// last degrees before the limb, 0 on the hidden side (a marker never shows through).
+float markerFade(double depth);
+/// Size factor of the markers: follows the screen (`uiScale`) and grows gently with the
+/// zoom, so that a dot stays clearly visible on the textured Earth at any size.
+float markerScale(float uiScale, double zoom);
+
+/// A country of the globe of players (GET /globe/players): a number of players at the
+/// approximate centre of the country, never a person.
+struct GlobeCountryCount {
+    std::string code;
+    std::string nameFr;
+    std::string nameEn;
+    GeoPoint location;
+    int players = 0;
+
+    static std::optional<GlobeCountryCount> fromJson(const Json& j);
+};
+
+/// A country count placed on screen.
+struct GlobeCountryPoint {
+    int index = 0;  // into the country list
+    Vec2 screen;
+    double depth = 0.0;
+    float fade = 1.0f;  // markerFade(depth)
+};
+/// The countries on the visible face (the hidden side is left out), back to front so that
+/// the nearest ones are drawn last.
+std::vector<GlobeCountryPoint> projectCountries(const std::vector<GlobeCountryCount>& countries, const GlobeCamera& cam,
+                                                const GlobeView& view);
+/// Point under `screen` (index into `points`), -1 if none within `radius` pixels; the
+/// nearest wins.
+int pickCountryPoint(const std::vector<GlobeCountryPoint>& points, Vec2 screen, float radius);
+
 /// Spreads markers sharing a location on a small spiral whose angular size keeps a
 /// constant on-screen spacing (`spacingPx`) at the current zoom. With `spread` false
 /// (zoomed out) every marker stays on its country centre, so clustering aggregates them

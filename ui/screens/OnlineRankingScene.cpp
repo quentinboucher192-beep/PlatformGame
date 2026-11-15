@@ -327,6 +327,7 @@ private:
         zoneB_ = {bx, zoneA_.y, bw, zoneD_.y - ui.s(14) - zoneA_.y};
         globeView_.center = zoneB_.center();
         globeView_.baseRadius = std::min(zoneB_.w, zoneB_.h) * 0.42f;
+        statusRect_ = {zoneB_.x, zoneB_.bottom() - ui.s(30), zoneB_.w, ui.s(28)};
     }
 
     // ---------------------------------------------------------------- globe
@@ -334,50 +335,19 @@ private:
         if (g_.app.topScene() != this || g_.ui.editingText()) return;
         InputManager& in = g_.app.input();
         Vec2 mp = in.mousePos();
-        bool inside = zoneB_.contains(mp);
         bool overUi = infoRect_.contains(mp) || globeButtons_.contains(mp);
-        if (inside && !overUi && in.wheel() != 0.0f) {
-            cam_.cancelFlight();
-            cam_.zoomBy(std::pow(1.15, in.wheel()));
-            idle_ = 0.0f;
-        }
-        if (in.mousePressed(SDL_BUTTON_LEFT) && inside && !overUi) {
-            pressing_ = true;
-            dragged_ = false;
-            pressPos_ = mp;
-        }
-        if (pressing_ && in.mouseDown(SDL_BUTTON_LEFT)) {
-            Vec2 d = in.mouseDelta();
-            if ((mp - pressPos_).length() > g_.ui.s(5)) dragged_ = true;
-            if (dragged_ && (d.x != 0.0f || d.y != 0.0f)) {
-                float R = globeView_.radius(cam_);
-                cam_.rotate(d.x / R * 57.3, d.y / R * 57.3);
-                idle_ = 0.0f;
-            }
-        }
-        if (pressing_ && in.mouseReleased(SDL_BUTTON_LEFT)) {
-            pressing_ = false;
-            if (!dragged_) clickGlobe(mp);
-        }
-        // Gamepad: right stick turns the globe, triggers zoom.
-        Vec2 rs = in.rightStick();
-        if (std::abs(rs.x) > 0.05f || std::abs(rs.y) > 0.05f) {
-            cam_.rotate(rs.x * dt * 90.0 / cam_.zoom, -rs.y * dt * 70.0 / cam_.zoom);
-            idle_ = 0.0f;
-        }
-        float zt = in.rightTrigger() - in.leftTrigger();
-        if (std::abs(zt) > 0.1f) {
-            cam_.cancelFlight();
-            cam_.zoomBy(std::pow(1.9, zt * dt));
-            idle_ = 0.0f;
-        }
-        Vec2 hoverPos = mp;
-        hoverCluster_ = inside && !overUi ? pickCluster(clusters_, hoverPos, g_.ui.s(16)) : -1;
+        bool click = GlobeRenderer::handleInput(in, globeInput_, cam_, globeView_, zoneB_, overUi, dt, g_.ui.s(5));
+        if (globeInput_.touched) idle_ = 0.0f;
+        if (click) clickGlobe(mp);
+        hoverCluster_ = zoneB_.contains(mp) && !overUi ? pickCluster(clusters_, mp, pickRadius()) : -1;
     }
+
+    /// Pointer distance at which a marker is hovered / clicked: its dot and a margin.
+    float pickRadius() const { return std::max(g_.ui.s(16), 4.6f * markerScale(g_.ui.scale(), cam_.zoom) + g_.ui.s(7)); }
 
     void clickGlobe(Vec2 mp) {
         idle_ = 0.0f;
-        int c = pickCluster(clusters_, mp, g_.ui.s(16));
+        int c = pickCluster(clusters_, mp, pickRadius());
         if (c >= 0) {
             const GlobeCluster& cl = clusters_[static_cast<size_t>(c)];
             if (cl.single() || cam_.zoom >= GlobeCamera::kMaxZoom * 0.95) {
@@ -427,22 +397,44 @@ private:
         globe_.renderBackdrop(r, globeView_, cam_, t_);
         globe_.renderEarth(r, globeView_, cam_, sun);
         globe_.renderAtmosphere(r, globeView_, cam_, sun, t_);
-        // Markers: layout at the current zoom, clustering, then drawing back to front.
-        layoutMarkers(markers_, globeView_.radius(cam_), 15.0f, cam_.zoom >= 1.8);
-        clusters_ = clusterMarkers(markers_, cam_, globeView_, ui.s(cam_.zoom > 2.5 ? 10.0f : 18.0f),
+        // Markers: layout at the current zoom, clustering, then drawing back to front. Their
+        // size follows the screen and the zoom; the spacing keeps two dots apart.
+        const float ms = markerScale(ui.scale(), cam_.zoom), dotR = 4.6f * ms;
+        layoutMarkers(markers_, globeView_.radius(cam_), dotR * 2.8f, cam_.zoom >= 1.8);
+        clusters_ = clusterMarkers(markers_, cam_, globeView_, std::max(dotR * 2.6f, ui.s(cam_.zoom > 2.5 ? 10.0f : 18.0f)),
                                    g_.settings.online.bandwidth == 0 ? 120 : 400);
-        for (size_t i = 0; i < clusters_.size(); ++i) {
+        std::vector<size_t> order(clusters_.size());
+        for (size_t i = 0; i < order.size(); ++i) order[i] = i;
+        std::stable_sort(order.begin(), order.end(), [&](size_t a, size_t b) { return clusters_[a].depth < clusters_[b].depth; });
+        std::vector<Rect> taken;
+        std::vector<float> radii(clusters_.size(), 0.0f);
+        for (size_t i : order) {
             const GlobeCluster& c = clusters_[i];
             const GlobeMarker& best = markers_[static_cast<size_t>(c.members.front())];
             bool sel = std::find(c.members.begin(), c.members.end(), selected_) != c.members.end();
             bool me = std::any_of(c.members.begin(), c.members.end(), [&](int k) { return markers_[static_cast<size_t>(k)].isMe; });
             float pulse = std::sin(t_ * 2.4f + static_cast<float>(i) * 0.7f) * 0.5f + 0.5f;
-            float scale = ui.scale() * (c.single() ? 1.0f : 1.0f + std::min(0.9f, 0.18f * std::log2(static_cast<float>(c.members.size()))));
+            float scale = ms * (c.single() ? 1.0f : 1.0f + std::min(0.6f, 0.12f * std::log2(static_cast<float>(c.members.size()))));
             if (static_cast<int>(i) == hoverCluster_) scale *= 1.25f;
-            globe_.renderMarker(r, c.screen, markerTier(best.rank), scale, pulse, sel, me, static_cast<float>(c.depth));
-            if (!c.single())
-                ui.label(std::to_string(c.members.size()), c.screen + Vec2{ui.s(9), -ui.s(11)}, 15, Color{255, 255, 255, 235}, Align::Left,
-                         FontFace::Bold, VAlign::Middle);
+            float fade = markerFade(c.depth);
+            // Room taken by the marker: its dot and the rings of « me » / of the selection.
+            radii[i] = globe_.renderMarker(r, c.screen, markerTier(best.rank), scale, pulse, sel, me, fade) + (sel ? 11.0f : me ? 5.0f : 0.0f) * scale;
+            float rr = radii[i] + ui.s(2);
+            taken.push_back({c.screen.x - rr, c.screen.y - rr, rr * 2, rr * 2});
+        }
+        // Size of the groups: a measured pill beside the dot, the biggest groups first; one
+        // that would cover a dot, another pill or a control is left to the tooltip.
+        taken.push_back(globeButtons_);
+        if (infoRect_.w > 0.0f) taken.push_back(infoRect_);  // the window of the selected marker (last frame)
+        std::vector<size_t> bySize(order);
+        std::stable_sort(bySize.begin(), bySize.end(), [&](size_t a, size_t b) { return clusters_[a].members.size() > clusters_[b].members.size(); });
+        Rect pillZone{zoneB_.x + ui.s(6), zoneB_.y + ui.s(6), zoneB_.w - ui.s(12), statusRect_.y - zoneB_.y - ui.s(10)};
+        for (size_t i : bySize) {
+            const GlobeCluster& c = clusters_[i];
+            if (c.single()) continue;
+            Color col = GlobeRenderer::tierColor(markerTier(markers_[static_cast<size_t>(c.members.front())].rank));
+            // Placed beyond the dot's own rectangle (which is in `taken`), never over it.
+            GlobeRenderer::renderCount(ui, c.screen, radii[i], static_cast<int>(c.members.size()), col, markerFade(c.depth), pillZone, &taken);
         }
         // Glow of a new record of the player at their country.
         if (shockT_ < 1.0f && !shockCountry_.empty())
@@ -461,12 +453,22 @@ private:
         if (hoverCluster_ >= 0 && hoverCluster_ < static_cast<int>(clusters_.size()) && selected_ < 0) {
             const GlobeCluster& c = clusters_[static_cast<size_t>(hoverCluster_)];
             const GlobeMarker& m = markers_[static_cast<size_t>(c.members.front())];
+            bool oneCountry = std::all_of(c.members.begin(), c.members.end(),
+                                          [&](int k) { return markers_[static_cast<size_t>(k)].countryCode == m.countryCode; });
+            std::string where = oneCountry && !m.countryCode.empty() ? ui_.countryName(m.countryCode) + " · " : std::string();
             std::string t = c.single() ? ui_.displayName(m.playerName, m.rank, m.isMe) + " · " + formatRunTime(m.timeMs)
-                                       : std::to_string(c.members.size()) + " joueurs · meilleur n°" + std::to_string(m.rank);
-            Vec2 sz = ui.text().measure(t, FontFace::Body, ui.s(17));
-            Rect tip{c.screen.x + ui.s(14), c.screen.y - ui.s(36), sz.x + ui.s(18), ui.s(28)};
-            ui.r().fillRoundedRect(tip, ui.s(6), Color{8, 12, 26, 225});
-            ui.label(t, {tip.x + ui.s(9), tip.center().y}, 17, ui.theme().text, Align::Left, FontFace::Body, VAlign::Middle);
+                                       : where + std::to_string(c.members.size()) + " joueurs · meilleur n°" + std::to_string(m.rank);
+            // Measured, beside the dot, kept inside the globe zone.
+            float fs = ui.fitFont(t, FontFace::Body, 17, zoneB_.w - ui.s(40));
+            Vec2 sz = ui.text().measure(t, FontFace::Body, ui.s(fs));
+            float off = pickRadius();
+            Rect tip{c.screen.x + off, c.screen.y - off - ui.s(28), sz.x + ui.s(18), ui.s(28)};
+            if (tip.right() > zoneB_.right() - ui.s(6)) tip.x = c.screen.x - off - tip.w;
+            tip.x = std::clamp(tip.x, zoneB_.x + ui.s(6), std::max(zoneB_.x + ui.s(6), zoneB_.right() - ui.s(6) - tip.w));
+            tip.y = std::clamp(tip.y, zoneB_.y + ui.s(6), zoneB_.bottom() - ui.s(6) - tip.h);
+            ui.r().fillRoundedRect(tip, ui.s(6), Color{8, 12, 26, 235});
+            ui.r().drawRoundedRect(tip, ui.s(6), ui.theme().border, ui.s(1));
+            ui.label(t, {tip.x + ui.s(9), tip.center().y}, fs, ui.theme().text, Align::Left, FontFace::Body, VAlign::Middle);
         }
         // Information window of the selected marker.
         if (selected_ >= 0 && selected_ < static_cast<int>(markers_.size())) {
@@ -475,7 +477,8 @@ private:
             Projected p = projectGeo(cam_, globeView_, m.display);
             float a = std::clamp(selectT_ * 4.0f, 0.0f, 1.0f);
             float w = ui.s(300), h = ui.s(232);
-            Vec2 anchor = p.visible() ? p.screen : globeView_.center;
+            const bool shown = markerFade(p.depth) > 0.0f;  // on the hidden side: no leader line
+            Vec2 anchor = shown ? p.screen : globeView_.center;
             Rect box{anchor.x + ui.s(26), anchor.y - h - ui.s(10), w, h};
             box.x = std::clamp(box.x, zoneB_.x + ui.s(8), zoneB_.right() - w - ui.s(8));
             box.y = std::clamp(box.y, zoneB_.y + ui.s(8), zoneB_.bottom() - h - ui.s(8));
@@ -484,7 +487,7 @@ private:
             Color tier = GlobeRenderer::tierColor(markerTier(m.rank));
             ui.r().fillRoundedRect(box, ui.s(12), Color{8, 13, 30, static_cast<uint8_t>(235 * a)});
             ui.r().drawRoundedRect(box, ui.s(12), tier.withAlphaF(0.8f * a), ui.s(1.5f));
-            if (p.visible()) ui.r().drawLine(anchor, {box.x, box.bottom() - ui.s(20)}, tier.withAlphaF(0.6f * a), ui.s(1.5f));
+            if (shown) ui.r().drawLine(anchor, {box.x, box.bottom() - ui.s(20)}, tier.withAlphaF(0.6f * a), ui.s(1.5f));
             ui_.drawAvatar(m.avatar, m.playerId, {box.x + ui.s(14), box.y + ui.s(14), ui.s(56), ui.s(56)});
             ui.label(ui_.displayName(m.playerName, m.rank, m.isMe), {box.x + ui.s(82), box.y + ui.s(30)}, 22, ui.theme().text,
                      Align::Left, FontFace::Bold, VAlign::Middle);
@@ -549,10 +552,17 @@ private:
         else if (globeFromCache_) status = "Hors ligne · données " + OnlineUi::ageText(globeAge_);
         else if (markers_.empty()) status = "Aucun joueur visible sur le globe pour ce classement";
         else status = std::to_string(markers_.size()) + " record" + (markers_.size() > 1 ? "s" : "") + " sur le globe";
-        ui.label(status, {zoneB_.x + ui.s(12), zoneB_.bottom() - ui.s(16)}, 16, globeFromCache_ || !globeError_.empty() ? ui.theme().warm : ui.theme().textDim,
-                 Align::Left, FontFace::Body, VAlign::Middle);
-        ui.label("Positions approximatives : centre du pays", {zoneB_.right() - ui.s(12), zoneB_.bottom() - ui.s(16)}, 14,
-                 ui.theme().textDim.withAlphaF(0.8f), Align::Right, FontFace::Body, VAlign::Middle);
+        // One row: the state at the left, the privacy note at the right when both fit side by side.
+        const char* note = "Positions approximatives : centre du pays";
+        const float rowW = statusRect_.w - ui.s(24), noteW = ui.text().measure(note, FontFace::Body, ui.s(14)).x;
+        const float statusW = ui.text().measure(status, FontFace::Body, ui.s(16)).x;
+        const bool withNote = statusW + ui.s(24) + noteW <= rowW;
+        float sfs = ui.fitFont(status, FontFace::Body, 16, withNote ? rowW - noteW - ui.s(24) : rowW);
+        ui.label(ui.elide(status, FontFace::Body, sfs, withNote ? rowW - noteW - ui.s(24) : rowW), {statusRect_.x + ui.s(12), statusRect_.center().y}, sfs,
+                 globeFromCache_ || !globeError_.empty() ? ui.theme().warm : ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        if (withNote)
+            ui.label(note, {statusRect_.right() - ui.s(12), statusRect_.center().y}, 14, ui.theme().textDim.withAlphaF(0.8f), Align::Right, FontFace::Body,
+                     VAlign::Middle);
     }
 
     // --------------------------------------------------------------- header
@@ -1202,8 +1212,8 @@ private:
     int selected_ = -1;
     int hoverCluster_ = -1;
     float selectT_ = 0.0f;
-    bool pressing_ = false, dragged_ = false;
-    Vec2 pressPos_;
+    GlobeRenderer::Input globeInput_;
+    Rect statusRect_;
 
 
     std::optional<OnlineService::RankChange> rankAnim_;

@@ -138,6 +138,61 @@ MarkerTier markerTier(int rank) {
     }
 }
 
+float markerFade(double depth) {
+    // Hidden below 0.02 (about 1 degree before the limb), fully opaque from 0.25 on.
+    constexpr double kHidden = 0.02, kFull = 0.25;
+    if (depth <= kHidden) return 0.0f;
+    double t = std::clamp((depth - kHidden) / (kFull - kHidden), 0.0, 1.0);
+    return static_cast<float>(smoothstep(t));
+}
+
+float markerScale(float uiScale, double zoom) {
+    double z = std::clamp(zoom, GlobeCamera::kMinZoom, GlobeCamera::kMaxZoom);
+    return std::max(0.5f, uiScale) * static_cast<float>(1.45 * std::pow(z, 0.3));
+}
+
+std::optional<GlobeCountryCount> GlobeCountryCount::fromJson(const Json& j) {
+    if (!j.is_object() || !j.contains("latitude") || !j["latitude"].is_number() || !j.contains("longitude") || !j["longitude"].is_number())
+        return std::nullopt;
+    GlobeCountryCount c;
+    c.code = jstr(j, "country_code");
+    if (c.code.size() != 2) return std::nullopt;
+    c.nameFr = jstr(j, "name_fr", c.code);
+    c.nameEn = jstr(j, "name_en", c.nameFr);
+    c.location = {std::clamp(j["latitude"].get<double>(), -90.0, 90.0), wrapLon(j["longitude"].get<double>())};
+    c.players = jget<int>(j, "players", 0);
+    if (c.players <= 0) return std::nullopt;
+    return c;
+}
+
+std::vector<GlobeCountryPoint> projectCountries(const std::vector<GlobeCountryCount>& countries, const GlobeCamera& cam,
+                                                const GlobeView& view) {
+    std::vector<GlobeCountryPoint> out;
+    out.reserve(countries.size());
+    for (size_t i = 0; i < countries.size(); ++i) {
+        Projected p = projectGeo(cam, view, countries[i].location);
+        float fade = markerFade(p.depth);
+        if (fade <= 0.0f) continue;
+        out.push_back({static_cast<int>(i), p.screen, p.depth, fade});
+    }
+    std::stable_sort(out.begin(), out.end(), [](const GlobeCountryPoint& a, const GlobeCountryPoint& b) { return a.depth < b.depth; });
+    return out;
+}
+
+int pickCountryPoint(const std::vector<GlobeCountryPoint>& points, Vec2 screen, float radius) {
+    int best = -1;
+    float bestD = radius * radius;
+    for (size_t i = 0; i < points.size(); ++i) {
+        float dx = points[i].screen.x - screen.x, dy = points[i].screen.y - screen.y;
+        float d = dx * dx + dy * dy;
+        if (d <= bestD) {
+            bestD = d;
+            best = static_cast<int>(i);
+        }
+    }
+    return best;
+}
+
 void layoutMarkers(std::vector<GlobeMarker>& markers, float radiusPx, float spacingPx, bool spread) {
     if (!spread) {
         for (auto& m : markers) m.display = m.location;
@@ -175,7 +230,7 @@ std::vector<GlobeCluster> clusterMarkers(const std::vector<GlobeMarker>& markers
     float r2 = pixelRadius * pixelRadius;
     for (int i : order) {
         Projected p = projectGeo(cam, view, markers[i].display);
-        if (p.depth < 0.06) continue;  // hidden behind the globe (or on the very edge)
+        if (markerFade(p.depth) <= 0.0f) continue;  // hidden behind the globe (or on the very edge)
         GlobeCluster* hit = nullptr;
         for (auto& c : out) {
             float dx = c.screen.x - p.screen.x, dy = c.screen.y - p.screen.y;

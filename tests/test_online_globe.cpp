@@ -168,3 +168,73 @@ TEST_CASE("globe: country tables and the hit-test map") {
     CHECK(tiny.indexAt({45, -180}) == 0);
     CHECK(tiny.indexAt({-45, 179}) == 7);
 }
+
+TEST_CASE("globe: markers fade before the limb, never show through, and grow with the zoom") {
+    CHECK(markerFade(1.0) == 1.0f);
+    CHECK(markerFade(0.3) == 1.0f);
+    CHECK(markerFade(0.1) > 0.0f);
+    CHECK(markerFade(0.1) < 1.0f);
+    CHECK(markerFade(0.02) == 0.0f);
+    CHECK(markerFade(-0.5) == 0.0f);
+    // Monotonic towards the viewer.
+    float last = 0.0f;
+    for (double d = 0.0; d <= 1.0; d += 0.01) {
+        CHECK(markerFade(d) >= last);
+        last = markerFade(d);
+    }
+    // Bigger on a bigger screen and when zoomed in, bounded by the zoom limits.
+    CHECK(markerScale(1.0f, 1.0) > markerScale(0.667f, 1.0));
+    CHECK(markerScale(1.0f, 3.0) > markerScale(1.0f, 1.0));
+    CHECK_NEAR(markerScale(1.0f, 100.0), markerScale(1.0f, GlobeCamera::kMaxZoom), 1e-6);
+    // A dot of 4.6 x scale stays clearly visible (at least 4 px of radius) at 1280 x 720.
+    CHECK(4.6f * markerScale(0.667f, GlobeCamera::kMinZoom) >= 4.0f);
+}
+
+TEST_CASE("globe: player counts per country are validated, projected on the visible face and picked") {
+    Json fr = {{"country_code", "FR"}, {"name_fr", "France"}, {"name_en", "France"}, {"latitude", 46.5}, {"longitude", 362.5}, {"players", 4}};
+    auto c = GlobeCountryCount::fromJson(fr);
+    CHECK(c.has_value());
+    if (c) {
+        CHECK(c->code == "FR");
+        CHECK(c->players == 4);
+        CHECK_NEAR(c->location.lon, 2.5, 1e-9);
+    }
+    // Malformed entries are left out (never a point at 0,0).
+    CHECK(!GlobeCountryCount::fromJson({{"country_code", "FR"}, {"players", 3}}).has_value());
+    CHECK(!GlobeCountryCount::fromJson({{"country_code", "FRA"}, {"latitude", 1}, {"longitude", 2}, {"players", 3}}).has_value());
+    CHECK(!GlobeCountryCount::fromJson({{"country_code", "FR"}, {"latitude", 1}, {"longitude", 2}, {"players", 0}}).has_value());
+    CHECK(!GlobeCountryCount::fromJson(Json::array()).has_value());
+
+    std::vector<GlobeCountryCount> list;
+    auto add = [&](const char* code, double lat, double lon, int n) {
+        GlobeCountryCount x;
+        x.code = code;
+        x.location = {lat, lon};
+        x.players = n;
+        list.push_back(x);
+    };
+    add("FR", 46.5, 2.5, 4);
+    add("NZ", -41.8, 172.7, 2);  // hidden side when facing Europe (nearly antipodal)
+    add("DE", 51.0, 10.4, 1);
+    add("BR", -10.6, -53.3, 1);  // near the limb
+    GlobeCamera cam;
+    cam.center = {46.5, 2.5};
+    GlobeView view{{400, 300}, 200};
+    auto pts = projectCountries(list, cam, view);
+    bool hidden = false;
+    for (const auto& p : pts) {
+        hidden |= list[static_cast<size_t>(p.index)].code == "NZ";
+        CHECK(p.fade > 0.0f);
+        CHECK(p.depth > 0.0);
+    }
+    CHECK(!hidden);
+    // Back to front: the country facing the viewer comes last (drawn on top).
+    CHECK(!pts.empty());
+    if (!pts.empty()) CHECK(list[static_cast<size_t>(pts.back().index)].code == "FR");
+    for (size_t i = 1; i < pts.size(); ++i) CHECK(pts[i - 1].depth <= pts[i].depth);
+    // France is at the centre of the view; picking finds it, not Germany next to it.
+    int hit = pickCountryPoint(pts, {401, 299}, 12.0f);
+    CHECK(hit >= 0);
+    if (hit >= 0) CHECK(list[static_cast<size_t>(pts[static_cast<size_t>(hit)].index)].code == "FR");
+    CHECK(pickCountryPoint(pts, {5, 5}, 12.0f) == -1);
+}
