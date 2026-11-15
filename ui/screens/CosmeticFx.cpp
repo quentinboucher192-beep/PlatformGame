@@ -28,6 +28,17 @@ Color mix(Color a, Color b, float k) {
     return Color{m(a.r, b.r), m(a.g, b.g), m(a.b, b.b), m(a.a, b.a)};
 }
 
+/// 0..255 from a 0..1 opacity (clamped).
+uint8_t alpha(float f) { return static_cast<uint8_t>(std::clamp(f, 0.0f, 1.0f) * 255.0f); }
+
+/// A bright colour of the rainbow (`h` in turns, 0..1).
+Color rainbow(float h) {
+    h = h - std::floor(h);
+    float x = h * 6.0f;
+    auto ch = [&](float off) { return static_cast<uint8_t>(110 + 145 * std::clamp(std::abs(std::fmod(x + off, 6.0f) - 3.0f) - 1.0f, 0.0f, 1.0f)); };
+    return Color{ch(0.0f), ch(4.0f), ch(2.0f), 255};
+}
+
 /// Draws in world space or in screen pixels, with one set of calls.
 struct Canvas {
     Renderer& r;
@@ -122,6 +133,77 @@ void drawAvatarFrame(Renderer& r, Vec2 center, float radius, const std::string& 
             fillStar(r, p, 5.2f * scale, Color{20, 16, 48, 255});  // a dark edge: visible on the rings
             fillStar(r, p, 4.4f * scale * tw, i % 2 == 0 ? Color{255, 255, 255, 255} : Color{255, 214, 90, 255});
         }
+    } else if (look == "emerald") {
+        r.drawGlow(center, radius + 16 * scale, Color{80, 230, 140, 110});
+        ring(main, 5, Color{46, 190, 110, 255});
+        shine(main, Color{170, 255, 200, 230});
+        ring(radius + 6 * scale, 2, Color{12, 52, 30, 255});
+        // Eight cut gems set in the ring, a light and a dark face each.
+        for (int i = 0; i < 8; ++i) {
+            float a = kFxPi / 8.0f + static_cast<float>(i) * kFxPi / 4.0f;
+            Vec2 d{std::cos(a), std::sin(a)}, t{-d.y, d.x};
+            Vec2 p = center + d * main;
+            Vec2 out = p + d * (4.2f * scale), in = p - d * (4.2f * scale), l = p + t * (2.6f * scale), rr = p - t * (2.6f * scale);
+            r.fillTriangle(out, l, rr, Color{170, 255, 205, 255});
+            r.fillTriangle(in, l, rr, Color{30, 150, 85, 255});
+        }
+    } else if (look == "orbit") {
+        r.drawGlow(center, radius + 16 * scale, Color{110, 214, 255, 100});
+        ring(main, 4, Color{190, 230, 255, 255});
+        shine(main, Color{255, 255, 255, 230});
+        // The orbit, and two moons going round it.
+        const float orbit = radius + 11 * scale;
+        ring(orbit, 1.2f, Color{110, 214, 255, 170});
+        float a = -kFxPi * 0.5f + time * 0.9f;
+        Vec2 moon{center.x + std::cos(a) * orbit, center.y + std::sin(a) * orbit};
+        Vec2 moon2{center.x - std::cos(a) * orbit, center.y - std::sin(a) * orbit};
+        r.drawGlow(moon, 9 * scale, Color{180, 230, 255, 190});
+        r.fillCircle(moon, 3.4f * scale, Color{235, 248, 255, 255});
+        r.drawGlow(moon2, 7 * scale, Color{255, 214, 90, 160});
+        r.fillCircle(moon2, 2.4f * scale, Color{255, 214, 90, 255});
+    } else if (look == "nebula") {
+        r.drawGlow(center, radius + 26 * scale, Color{255, 110, 210, 110});
+        r.drawGlow(center, radius + 18 * scale, Color{140, 110, 255, 120});
+        ring(main, 5, Color{200, 130, 255, 255});
+        ring(radius + 6 * scale, 1.5f, Color{40, 16, 60, 255});
+        // Three clouds of colour turning around, and sparkles turning the other way.
+        const Color clouds[3] = {{255, 140, 220, 235}, {120, 220, 255, 235}, {180, 140, 255, 235}};
+        for (int i = 0; i < 3; ++i) {
+            float a = time * 0.8f + static_cast<float>(i) * 2.0f * kFxPi / 3.0f;
+            r.drawArc(center, radius + 9 * scale, 3 * scale, a, a + 1.3f, clouds[i]);
+        }
+        for (int i = 0; i < 5; ++i) {
+            float a = -time * 0.5f + static_cast<float>(i) * 2.0f * kFxPi / 5.0f;
+            Vec2 p{center.x + std::cos(a) * (radius + 13 * scale), center.y + std::sin(a) * (radius + 13 * scale)};
+            float tw = 0.6f + 0.4f * std::sin(time * 4.0f + static_cast<float>(i) * 2.1f);
+            r.drawGlow(p, 5 * scale, Color{255, 255, 255, alpha(0.6f * tw)});
+            r.fillCircle(p, 1.2f * scale, Color{255, 255, 255, 255});
+        }
+    } else if (look == "laurels") {
+        r.drawGlow(center, radius + 18 * scale, Color{255, 214, 90, 110});
+        ring(main, 4, Color{255, 214, 90, 255});
+        shine(main, Color{255, 246, 200, 235});
+        // Two branches climbing each side from the bottom, open at the top: a stem, and leaves
+        // alternately outside and inside it, pointing up the branch.
+        const float stem = radius + 8.5f * scale;
+        for (int side = -1; side <= 1; side += 2) {
+            float a0 = kFxPi * 0.5f + static_cast<float>(side) * 0.22f, a1 = kFxPi * 0.5f + static_cast<float>(side) * 2.55f;
+            r.drawArc(center, stem, 1.4f * scale, std::min(a0, a1), std::max(a0, a1), Color{110, 150, 50, 255});
+            for (int i = 0; i < 9; ++i) {
+                float a = kFxPi * 0.5f + static_cast<float>(side) * (0.34f + static_cast<float>(i) * 0.26f);
+                Vec2 d{std::cos(a), std::sin(a)};
+                Vec2 up = Vec2{-d.y, d.x} * static_cast<float>(side);  // along the branch, towards the top
+                float out = i % 2 == 0 ? 1.0f : -1.0f;                // outside, then inside the stem
+                Vec2 axis = (up + d * (0.55f * out)).normalized();
+                Vec2 perp{-axis.y, axis.x};
+                Vec2 base = center + d * (stem + out * 1.2f * scale);
+                Vec2 tip = base + axis * (5.8f * scale), back = base - axis * (1.6f * scale);
+                Vec2 l = base + perp * (2.4f * scale), rr = base - perp * (2.4f * scale);
+                r.fillTriangle(tip, l, rr, Color{176, 220, 96, 255});
+                r.fillTriangle(back, l, rr, Color{118, 168, 58, 255});
+            }
+        }
+        r.fillCircle({center.x, center.y + stem}, 2.4f * scale, Color{255, 214, 90, 255});
     } else {
         ring(radius + 1.5f * scale, 3, Color{57, 240, 216, 255});
     }
@@ -145,6 +227,61 @@ void TrailFx::update(Vec2 center, float dt, bool emit) {
     while (pts_.size() > 40) pts_.pop_front();
 }
 
+namespace {
+
+/// One sample of a trail: `k` 1 = fresh, 0 = gone; `prev`: the older sample before it (the
+/// ribbons join them); `fade` dims everything (a locked item's thumbnail).
+void drawTrailPoint(const Canvas& cv, const std::string& look, Vec2 p, float k, float age, uint32_t seed, const Vec2* prev, float fade) {
+    const float f = k * fade;
+    if (look == "stardust") {
+        Vec2 j{(noise(seed) - 0.5f) * 10.0f, (noise(seed * 7u + 3u) - 0.5f) * 12.0f};
+        Vec2 q = cv.off(p, j);
+        cv.glow(q, 5.0f * k, Color{57, 240, 216, alpha(0.59f * f)});
+        if (seed % 2 == 0) cv.dot(q, 1.3f * k + 0.4f, Color{143, 255, 240, alpha(0.9f * f)}, BlendMode::Additive);
+    } else if (look == "comet") {
+        Color c = mix(Color{110, 214, 255, 255}, Color{245, 250, 255, 255}, k);
+        cv.glow(p, 9.0f * k + 2.0f, c.withAlpha(alpha(0.67f * f)));
+        cv.dot(p, 2.6f * k, Color{255, 255, 255, alpha(0.78f * f)}, BlendMode::Additive);
+    } else if (look == "aurora") {
+        float wave = std::sin(age * 14.0f + static_cast<float>(seed) * 0.6f) * 5.0f;
+        Vec2 q = cv.off(p, {0, wave});
+        Color c = mix(Color{184, 140, 255, 255}, Color{120, 255, 156, 255}, k);
+        cv.glow(q, 8.0f * k + 1.5f, c.withAlpha(alpha(0.63f * f)));
+    } else if (look == "eclipse") {
+        cv.dot(p, 6.0f * k + 1.0f, Color{18, 10, 4, alpha(0.67f * f)});
+        cv.ring(p, 6.0f * k + 1.5f, 1.2f, Color{255, 214, 90, alpha(0.75f * f)});
+    } else if (look == "flame") {
+        // Embers rising from the trail: yellow when fresh, then red, then gone.
+        Vec2 j{(noise(seed) - 0.5f) * 8.0f + std::sin(age * 18.0f + static_cast<float>(seed)) * 2.5f,
+               -age * 50.0f - noise(seed * 5u + 1u) * 4.0f};
+        Vec2 q = cv.off(p, j);
+        Color c = mix(Color{235, 70, 30, 255}, Color{255, 226, 120, 255}, k);
+        cv.glow(q, 8.0f * k + 2.0f, c.withAlpha(alpha(0.8f * f)));
+        cv.dot(q, 2.2f * k + 0.6f, Color{255, 245, 200, alpha(0.9f * f)}, BlendMode::Additive);
+    } else if (look == "prism") {
+        // A ribbon whose colour runs through the rainbow along the trail, and keeps turning.
+        Color c = rainbow(static_cast<float>(seed) * 0.06f + age * 0.8f);
+        if (prev) cv.line(*prev, p, c.withAlpha(alpha(0.9f * f)), 4.5f * k + 1.2f);
+        cv.glow(p, 5.0f * k + 1.5f, c.withAlpha(alpha(0.45f * f)));
+    } else if (look == "runes") {
+        // One turning rune of Aethra every three samples: a violet diamond, a gold heart.
+        if (seed % 3 != 0) return;
+        float turn = age * 5.0f + static_cast<float>(seed) * 0.9f;
+        float size = 5.5f * (0.6f + 0.4f * k);
+        Vec2 q = cv.off(p, {0, -3.0f * (1.0f - k)});
+        Vec2 v[4];
+        for (int i = 0; i < 4; ++i) {
+            float a = turn + static_cast<float>(i) * kFxPi * 0.5f;
+            v[i] = cv.off(q, {std::cos(a) * size, std::sin(a) * size});
+        }
+        cv.glow(q, 7.0f * k + 1.0f, Color{180, 140, 255, alpha(0.32f * f)});
+        for (int i = 0; i < 4; ++i) cv.line(v[i], v[(i + 1) % 4], Color{205, 175, 255, alpha(0.9f * f)}, 1.3f);
+        cv.dot(q, 1.2f, Color{255, 214, 90, alpha(0.95f * f)}, BlendMode::Additive);
+    }
+}
+
+}  // namespace
+
 void TrailFx::draw(Renderer& r, const std::string& look, bool world, float scale) const {
     if (look.empty() || look == "none" || pts_.empty()) return;
     Canvas cv{r, world, {}, scale};
@@ -154,25 +291,25 @@ void TrailFx::draw(Renderer& r, const std::string& look, bool world, float scale
         const Pt& pt = pts_[i];
         float k = 1.0f - pt.age / kTrailLife;  // 1 = fresh, 0 = gone
         if (k <= 0.0f) continue;
-        Vec2 p = pt.p;
-        if (look == "stardust") {
-            Vec2 j{(noise(pt.seed) - 0.5f) * 10.0f, (noise(pt.seed * 7u + 3u) - 0.5f) * 12.0f};
-            Vec2 q = cv.off(p, j);
-            cv.glow(q, 5.0f * k, Color{57, 240, 216, static_cast<uint8_t>(150 * k)});
-            if (pt.seed % 2 == 0) cv.dot(q, 1.3f * k + 0.4f, Color{143, 255, 240, static_cast<uint8_t>(230 * k)}, BlendMode::Additive);
-        } else if (look == "comet") {
-            Color c = mix(Color{110, 214, 255, 255}, Color{245, 250, 255, 255}, k);
-            cv.glow(p, 9.0f * k + 2.0f, c.withAlpha(static_cast<uint8_t>(170 * k)));
-            cv.dot(p, 2.6f * k, Color{255, 255, 255, static_cast<uint8_t>(200 * k)}, BlendMode::Additive);
-        } else if (look == "aurora") {
-            float wave = std::sin(pt.age * 14.0f + static_cast<float>(pt.seed) * 0.6f) * 5.0f;
-            Vec2 q = cv.off(p, {0, wave});
-            Color c = mix(Color{184, 140, 255, 255}, Color{120, 255, 156, 255}, k);
-            cv.glow(q, 8.0f * k + 1.5f, c.withAlpha(static_cast<uint8_t>(160 * k)));
-        } else if (look == "eclipse") {
-            cv.dot(p, 6.0f * k + 1.0f, Color{18, 10, 4, static_cast<uint8_t>(170 * k)});
-            cv.ring(p, 6.0f * k + 1.5f, 1.2f, Color{255, 214, 90, static_cast<uint8_t>(190 * k)});
-        }
+        // The sample before it, unless Nova jumped away in between (teleport, respawn).
+        const Vec2* prev = i > 0 && (pt.p - pts_[i - 1].p).lengthSq() < 48.0f * 48.0f ? &pts_[i - 1].p : nullptr;
+        drawTrailPoint(cv, look, pt.p, k, pt.age, pt.seed, prev, 1.0f);
+    }
+}
+
+void drawTrailSample(Renderer& r, const std::string& look, const Rect& box, float time, float fade) {
+    if (look.empty() || look == "none") return;
+    // Samples from the oldest (left) to the newest (right), on a gentle wave, sized to the box.
+    const int n = 16;
+    const float scale = box.h / 60.0f;
+    Canvas cv{r, false, {}, scale};
+    Vec2 prev;
+    for (int i = 0; i < n; ++i) {
+        float u = static_cast<float>(i) / static_cast<float>(n - 1);
+        float age = kTrailLife * (1.0f - u) * 0.95f;
+        Vec2 p{box.x + box.w * (0.12f + 0.72f * u), box.center().y + box.h * 0.12f + std::sin(u * 5.0f + time * 1.5f) * box.h * 0.08f};
+        drawTrailPoint(cv, look, p, 1.0f - age / kTrailLife, age, static_cast<uint32_t>(i) + 1u, i > 0 ? &prev : nullptr, fade);
+        prev = p;
     }
 }
 
@@ -215,6 +352,49 @@ void drawVictoryFx(Renderer& r, const std::string& look, Vec2 at, float t, bool 
         Color ringC = mix(Color{180, 140, 255, 255}, Color{57, 240, 216, 255}, k);
         cv.ring(cv.off(at, {0, -16}), ringR, 5.0f, ringC.withAlpha(static_cast<uint8_t>(230 * (1.0f - k) * fade)));
         cv.ring(cv.off(at, {0, -16}), ringR * 0.7f, 2.5f, Color{255, 255, 255, static_cast<uint8_t>(160 * (1.0f - k) * fade)});
+    } else if (look == "vortex") {
+        // Three arms of sparks turning around Nova, opening wide, then fading.
+        Vec2 o = cv.off(at, {0, -24});
+        float open = 1.0f - std::exp(-2.2f * t);
+        float in = std::clamp(t / 0.2f, 0.0f, 1.0f);
+        if (t < 0.4f) cv.glow(o, 14.0f + 40.0f * (t / 0.4f), Color{184, 140, 255, alpha(0.8f * (1.0f - t / 0.4f))});
+        for (int arm = 0; arm < 3; ++arm)
+            for (int i = 0; i < 14; ++i) {
+                float f = static_cast<float>(i) / 13.0f;
+                float ang = static_cast<float>(arm) * 2.0f * kFxPi / 3.0f + f * 3.2f + t * 5.0f;
+                float rad = (10.0f + f * 80.0f) * open;
+                Vec2 q = cv.off(o, {std::cos(ang) * rad, std::sin(ang) * rad * 0.8f});
+                float a = fade * in * (1.0f - f * 0.5f);
+                cv.glow(q, 5.0f * (1.0f - f * 0.4f), mix(Color{57, 240, 216, 255}, Color{184, 140, 255, 255}, f).withAlpha(alpha(0.75f * a)));
+                if (i % 2 == 0) cv.dot(q, 1.3f, Color{255, 255, 255, alpha(0.86f * a)}, BlendMode::Additive);
+            }
+    } else if (look == "borealis") {
+        // Curtains of light rising above the portal and waving, green below, violet above.
+        float in = std::clamp(t / 0.6f, 0.0f, 1.0f);
+        for (int c = 0; c < 5; ++c) {
+            float x0 = -100.0f + 50.0f * static_cast<float>(c);
+            float h = 120.0f + 30.0f * noise(static_cast<uint32_t>(c) * 31u + 7u);
+            for (int i = 0; i < 12; ++i) {
+                float f = static_cast<float>(i) / 11.0f;
+                float x = x0 + std::sin(f * 4.0f + t * 2.6f + static_cast<float>(c) * 1.3f) * 12.0f;
+                float y = -20.0f - f * h * in;
+                float a = fade * in * (1.0f - f * 0.6f);
+                cv.glow(cv.off(at, {x, y}), 9.0f - f * 3.0f, mix(Color{120, 255, 156, 255}, Color{184, 140, 255, 255}, f).withAlpha(alpha(0.5f * a)));
+            }
+        }
+    } else if (look == "corona") {
+        // An eclipse above the portal: a dark disc ringed with light, its rays turning.
+        Vec2 o = cv.off(at, {0, -70});
+        float grow = 1.0f - std::exp(-3.0f * t);
+        cv.glow(o, 60.0f * grow + 4.0f, Color{255, 190, 80, alpha(0.6f * fade)});
+        for (int i = 0; i < 16; ++i) {
+            float ang = static_cast<float>(i) * 2.0f * kFxPi / 16.0f + t * 0.6f;
+            float len = (34.0f + 22.0f * noise(static_cast<uint32_t>(i) * 13u + 5u)) * grow;
+            Vec2 d{std::cos(ang), std::sin(ang)};
+            cv.line(cv.off(o, d * (21.0f * grow)), cv.off(o, d * (21.0f * grow + len)), Color{255, 200, 90, alpha(0.8f * fade)}, 2.0f);
+        }
+        cv.dot(o, 18.0f * grow, Color{20, 10, 24, alpha(0.95f * fade)});
+        cv.ring(o, 19.0f * grow, 2.0f, Color{255, 240, 200, alpha(0.9f * fade)});
     }
 }
 

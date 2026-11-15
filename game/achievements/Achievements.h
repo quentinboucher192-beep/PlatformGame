@@ -29,6 +29,8 @@ struct AchievementCategory {
 struct AchievementCondition {
     std::string type;     // levels_completed, planet, medal_count, stat, boss, power_uses...
     std::string key;      // stat / set / max name
+    /// `planet` also narrows levels_no_death, levels_full_collect and levels_all_secrets to
+    /// that planet's levels (2.24).
     std::string level, planet, boss, power, variant;
     std::vector<std::string> planets;
     int64_t count = 1;
@@ -95,7 +97,10 @@ struct AchievementInputs {
     int communityLevelsFinished = 0;  // from the records of installed community levels
     bool onlineAccount = false;
     int friends = 0;
-    std::vector<std::string> campaignLevels;  // the 14 levels of the campaign
+    std::vector<std::string> campaignLevels;  // the 18 levels of the campaign
+    /// Collection (2.24): tracks of the jukebox already heard, creatures of the bestiary met.
+    int tracksHeard = 0;
+    int creaturesMet = 0;
 };
 
 struct AchievementProgress {

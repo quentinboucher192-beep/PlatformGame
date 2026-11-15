@@ -72,6 +72,9 @@ public:
     /// What the player wears goes to the online profile (2.23): at start, after each
     /// « Équiper » and when the achievements change what is unlocked.
     void syncCosmetics();
+    /// After an « Équiper » (and at start): the achievements of the Collection count the
+    /// rewards worn (2.24). Checks the achievements (`announce` false: silently, at start).
+    void noteOutfit(bool announce = true);
     /// Discoveries proven by the saves (tracks and creatures of the completed levels).
     void discoverFromSaves();
     /// Music of the main menu (the jukebox's choice, else the theme).

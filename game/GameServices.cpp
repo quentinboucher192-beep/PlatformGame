@@ -1,5 +1,7 @@
 #include "game/GameServices.h"
 
+#include <set>
+
 #include "engine/core/I18n.h"
 
 #include "engine/core/FileUtil.h"
@@ -26,21 +28,25 @@ void GameServices::loadAll() {
         checkAchievements();
         achievements.save();
     };
+    // The Collection before the first check: its achievements read the tracks heard and the
+    // creatures met, also those the saves prove (2.24).
+    collection.load();
+    discoverFromSaves();
     checkAchievements(false);  // what the existing saves already prove (no toast at startup)
     if (std::string err; !cosmetics.loadDefault(&err)) Log::warn("Collection : {}", err);
-    collection.load();
     if (collection.firstStart()) {
         // Rewards already earned before 2.19: equipped by nobody, announced once by a toast.
         auto p = cosmeticProgress();
         auto already = collection.fresh(cosmetics, p);
         for (const CosmeticItem* i : already) collection.markAnnounced(i->id);
+        collection.save();
         if (!already.empty())
             online.notify(OnlineService::Notification::Kind::Success,
                           std::to_string(already.size()) + (already.size() > 1 ? " récompenses débloquées" : " récompense débloquée"),
                           "Avec vos étoiles · menu principal → Collection");
     }
+    noteOutfit(false);  // what was already worn before 2.24 counts too
     syncCosmetics();
-    discoverFromSaves();
     app.audio().onMusicStarted = [this](const std::string& path) {
         // The jukebox: a track becomes listenable once heard in the game.
         std::string rel = app.resources().relativeSoundPath(path);
@@ -71,6 +77,48 @@ void GameServices::syncCosmetics() {
     if (cosmetics.items().empty()) return;  // catalogue not loaded (yet)
     online.setCosmetics(collection.equippedIds(cosmetics, cosmeticProgress()));
 }
+
+void GameServices::noteOutfit(bool announce) {
+    if (cosmetics.items().empty()) return;
+    const CosmeticProgress p = cosmeticProgress();
+    AchievementStats& a = achievements.stats();
+    int worn = 0;  // categories wearing an unlocked reward (not their default)
+    bool changed = false;
+    for (const auto& c : cosmetics.categories()) {
+        const CosmeticItem* i = collection.equipped(cosmetics, c.id, p);
+        if (!i || i->isDefault) continue;
+        ++worn;
+        if (!a.setHas("equipped_items", i->id)) {
+            a.insert("equipped_items", i->id);
+            changed = true;
+        }
+    }
+    if (worn > a.maximum("outfit_categories")) {
+        a.raise("outfit_categories", worn);
+        changed = true;
+    }
+    if (!changed) return;
+    achievements.save();
+    checkAchievements(announce);
+}
+
+namespace {
+
+/// Files of the jukebox's tracks (data/music/tracks.json), read once.
+const std::vector<std::string>& jukeboxTracks() {
+    static const std::vector<std::string> tracks = [] {
+        std::vector<std::string> out;
+        auto j = FileUtil::loadJson(Paths::dataDir() / "music" / "tracks.json");
+        if (j && j->is_object())
+            if (auto it = j->find("tracks"); it != j->end() && it->is_array())
+                for (const auto& t : *it)
+                    if (std::string f = jstr(t, "file"); !f.empty()) out.push_back(f);
+        return out;
+    }();
+    return tracks;
+}
+
+}  // namespace
 
 std::string GameServices::menuMusic() const {
     // Only a track already heard, and still shipped with the game.
@@ -136,6 +184,15 @@ AchievementInputs GameServices::achievementInputs() const {
         }
     in.onlineAccount = online.loggedIn();
     in.friends = online.friendCount();
+    // Collection (2.24): the jukebox's tracks heard, the bestiary's creatures met (the game's
+    // own creatures, guardians and the small slimes born from a split aside: the gallery's
+    // Bestiaire).
+    for (const std::string& f : jukeboxTracks()) in.tracksHeard += collection.heard.count(f) ? 1 : 0;
+    std::set<std::string> splitChildren;
+    for (const EnemyDefinition* d : content.enemies())
+        if (d->deathSpawnCount > 0 && d->deathSpawnId != d->id) splitChildren.insert(d->deathSpawnId);
+    for (const std::string& id : collection.met)
+        if (const EnemyDefinition* d = content.enemy(id); d && d->builtin && !d->isBoss && !splitChildren.count(id)) ++in.creaturesMet;
     return in;
 }
 

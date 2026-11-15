@@ -395,7 +395,7 @@ local sans compte Cloudflare. Documentation complète : [docs/online/](docs/onli
 ## Menu principal
 
 *Continuer* (dernier niveau joué) · *Campagne* (planètes et niveaux) · *En ligne* ·
-*Notifications* · *Succès* (toile des 146 succès et de leurs étoiles) · *Collection*
+*Notifications* · *Succès* (toile des 218 succès et de leurs 597 étoiles) · *Collection*
 (vestiaire, route des étoiles, musiques, galerie) · *Statistiques* (les boss : victoires,
 combats et phases sans dégât) · *Paramètres* · *Quitter*.
 

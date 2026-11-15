@@ -11,6 +11,7 @@ bool noteRunCounters(AchievementStats& a, const GameWorld& w, bool completed) {
     if (w.training()) return false;
     const RunStats& s = w.stats();
     a.add("kills", s.kills);
+    for (const auto& [family, n] : s.familyKills) a.add("kills_" + family, n);  // 2.29: by family
     a.add("deaths", s.deaths);
     a.add("shards", s.shards);
     a.add("relics", s.relics);

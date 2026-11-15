@@ -614,6 +614,7 @@ void GameWorld::onEnemyKilled(Enemy& e) {
     hazards_.removeOwner(*this, e.uid());  // its cage, frost, lava and pulls go with it
     if (e.countsForStats && !e.vanishing) {
         stats_.kills++;
+        stats_.familyKills[familyId(e.def().family)]++;  // achievements only (2.24)
         stats_.scoreBonus += e.def().scoreValue;
     }
     if (!e.vanishing)

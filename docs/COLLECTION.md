@@ -10,11 +10,17 @@ Catalogue : `data/cosmetics/cosmetics.json` (catégories, éléments, paliers).
 
 | Catégorie | Éléments | Ce qui change |
 |---|---|---|
-| Combinaisons | Standard, Givre (20), Braise (40), Sève (60), Noyau (100), Spectre (160), Or stellaire (300), Écho (succès « Silence des échos ») | la feuille de Nova, recolorée par `tools/assetgen/characters/nova_suits.py` (`assets/sprites/player/suits/`) |
-| Traînées | Aucune, Poussière d'étoiles (30), Comète (100), Aurore (180), Éclipse (250) | effet dessiné derrière Nova quand elle court vite |
-| Cadres d'avatar | Simple, Bronze (10), Argent (50), Or (120), Platine (200), Constellation (toutes les étoiles) | cadre de l'avatar |
-| Titres | Sans titre, puis un titre par succès précis (Explorateur, Gardien de Sylvanox, …) | titre sous le nom |
-| Effets de victoire | Classique, Feu d'artifice (70), Pluie d'étoiles (140), Supernova (220) | effet à l'arrivée |
+| Combinaisons (12) | Standard, Givre (20), Braise (40), Sève (60), Noyau (100), Spectre (160), Or stellaire (300), Nébuleuse (350), Abysse (440), Éruption (520), Écho (succès « Silence des échos »), Sanctuaire (succès « Or des sanctuaires ») | la feuille de Nova, recolorée par `tools/assetgen/characters/nova_suits.py` (`assets/sprites/player/suits/` ; `nova_suits.py nebuleuse abysse` ne refait que ces combinaisons) |
+| Traînées (8) | Aucune, Poussière d'étoiles (30), Comète (100), Aurore (180), Éclipse (250), Flammèches (290), Prisme (410), Runes d'Aethra (succès « Secrets des sanctuaires ») | effet dessiné derrière Nova quand elle court vite |
+| Cadres d'avatar (10) | Simple, Bronze (10), Argent (50), Or (120), Platine (200), Émeraude (270), Orbite (380), Nébuleuse (500), Lauriers (succès « Chasseur de légendes »), Constellation (toutes les étoiles) | cadre de l'avatar |
+| Titres (16) | Sans titre, puis un titre par succès précis (Explorateur, Gardien de Sylvanox, Mélomane, Encyclopédiste, Légende du cosmos…) | titre sous le nom |
+| Effets de victoire (7) | Classique, Feu d'artifice (70), Pluie d'étoiles (140), Supernova (220), Vortex (320), Aurore boréale (470), Couronne solaire (540) | effet à l'arrivée |
+
+53 récompenses ; la *Route des étoiles* compte 28 paliers, de 10 étoiles à toutes les étoiles
+(597). Les paliers en nombre d'étoiles restent à la portée d'un joueur sans compte en ligne
+(au plus 540 ; les succès qui demandent Cosmic Online en valent 50) ; seule *Constellation*
+demande toutes les étoiles. La route défile (molette, clavier, manette) ; une récompense choisie s'ouvre dans le
+*Vestiaire*.
 
 * Un élément se débloque quand le nombre d'**étoiles des succès** atteint son palier, ou
   quand son **succès** est obtenu ; les étoiles déjà gagnées comptent (déblocage rétroactif).
@@ -60,3 +66,15 @@ comme musique du menu. Le volume est celui de la musique (Paramètres → Audio)
   animations défilent et ses statistiques (victoires, sans dégât) sont celles de *Statistiques*.
 * **Bestiaire** : une créature y entre dès qu'elle a été vue éveillée à l'écran dans un
   niveau ; celles des niveaux déjà terminés sont comptées d'après les sauvegardes.
+
+## Succès de la Collection (2.24)
+
+La catégorie **Collection** de l'écran *Succès* (10 succès, 18 étoiles) suit ce que l'on fait
+ici : récompenses différentes équipées (*Équiper* du Vestiaire ou de la carte de fin de
+niveau ; ce qui était déjà porté compte au démarrage), une tenue complète (une récompense
+débloquée dans chacune des cinq catégories en même temps), les morceaux du juke-box entendus
+(10, puis les 19), la musique du menu choisie, les créatures du bestiaire rencontrées (15,
+puis 30 : les créatures de la campagne, sans les gardiens ni les petites gelées nées d'une
+division) et les images des planètes enregistrées (une, puis les 5). Compteurs gardés dans
+`saves/achievements.json` (`equipped_items`, `outfit_categories`, `menu_music`,
+`photographed_planets`) ; les morceaux et les créatures sont lus dans `saves/collection.json`.

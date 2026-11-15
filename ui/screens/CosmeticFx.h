@@ -13,7 +13,9 @@ namespace cosmic {
 
 class Renderer;
 
-/// Trail behind Nova (« stardust », « comet », « aurora », « eclipse »; « none »: nothing).
+/// Trail behind Nova (« stardust », « comet », « aurora », « eclipse », and since 2.24
+/// « flame » (embers rising), « prism » (a rainbow ribbon), « runes » (turning runes of
+/// Aethra); « none »: nothing).
 class TrailFx {
 public:
     void reset() {
@@ -40,10 +42,17 @@ private:
     uint32_t counter_ = 0;
 };
 
+/// A still sample of a trail across `box` (screen pixels), drawn as the game draws it: the
+/// thumbnails of the Collection and of the rewards card. `fade` dims it (locked item),
+/// `time` waves it gently.
+void drawTrailSample(Renderer& r, const std::string& look, const Rect& box, float time, float fade = 1.0f);
+
 /// Length of a victory effect (seconds).
 constexpr float kVictoryFxTime = 2.6f;
 /// Victory effect around `at` (Nova at the exit), `t` seconds after the finish
-/// (« fireworks », « starfall », « supernova »; « classic »: nothing more than the game's own).
+/// (« fireworks », « starfall », « supernova », and since 2.24 « vortex » (turning arms of
+/// sparks), « borealis » (curtains of light), « corona » (an eclipse and its rays);
+/// « classic »: nothing more than the game's own).
 void drawVictoryFx(Renderer& r, const std::string& look, Vec2 at, float t, bool world, float scale = 1.0f);
 
 /// How far an avatar frame reaches beyond the avatar's radius, in units of `scale` (glows
@@ -51,8 +60,10 @@ void drawVictoryFx(Renderer& r, const std::string& look, Vec2 at, float t, bool 
 constexpr float kAvatarFrameMargin = 15.5f;
 /// Avatar frame (2.23) around a round avatar of `radius` centred on `center`, in screen
 /// pixels: « simple », « bronze », « silver », « gold » (with a halo), « platinum »
-/// (iridescent), « constellation » (small stars around); anything else draws « simple ».
-/// `scale` sizes the rings, `time` (seconds) moves the platinum sheen and the stars.
+/// (iridescent), « constellation » (small stars around), and since 2.24 « emerald » (cut
+/// gems), « orbit » (two moons going round), « nebula » (turning clouds of colour),
+/// « laurels » (a crown of leaves); anything else draws « simple ».
+/// `scale` sizes the rings, `time` (seconds) moves the sheens, stars and moons.
 /// Shared by the Collection, the leaderboards and the profiles.
 void drawAvatarFrame(Renderer& r, Vec2 center, float radius, const std::string& look, float scale, float time = 0.0f);
 

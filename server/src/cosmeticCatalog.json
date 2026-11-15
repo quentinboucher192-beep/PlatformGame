@@ -65,6 +65,34 @@
    "achievement": "gardiens_echoes"
   },
   {
+   "id": "suit_nebuleuse",
+   "category": "suit",
+   "look": "nebuleuse",
+   "name": "Nébuleuse",
+   "stars": 350
+  },
+  {
+   "id": "suit_abysse",
+   "category": "suit",
+   "look": "abysse",
+   "name": "Abysse",
+   "stars": 440
+  },
+  {
+   "id": "suit_eruption",
+   "category": "suit",
+   "look": "eruption",
+   "name": "Éruption",
+   "stars": 520
+  },
+  {
+   "id": "suit_sanctuaire",
+   "category": "suit",
+   "look": "sanctuaire",
+   "name": "Sanctuaire",
+   "achievement": "chrono_aethra_gold"
+  },
+  {
    "id": "trail_none",
    "category": "trail",
    "look": "none",
@@ -98,6 +126,27 @@
    "look": "eclipse",
    "name": "Éclipse",
    "stars": 250
+  },
+  {
+   "id": "trail_flame",
+   "category": "trail",
+   "look": "flame",
+   "name": "Flammèches",
+   "stars": 290
+  },
+  {
+   "id": "trail_prism",
+   "category": "trail",
+   "look": "prism",
+   "name": "Prisme",
+   "stars": 410
+  },
+  {
+   "id": "trail_runes",
+   "category": "trail",
+   "look": "runes",
+   "name": "Runes d'Aethra",
+   "achievement": "tresors_aethra_secrets"
   },
   {
    "id": "frame_simple",
@@ -140,6 +189,34 @@
    "look": "constellation",
    "name": "Constellation",
    "stars": "all"
+  },
+  {
+   "id": "frame_emerald",
+   "category": "frame",
+   "look": "emerald",
+   "name": "Émeraude",
+   "stars": 270
+  },
+  {
+   "id": "frame_orbit",
+   "category": "frame",
+   "look": "orbit",
+   "name": "Orbite",
+   "stars": 380
+  },
+  {
+   "id": "frame_nebula",
+   "category": "frame",
+   "look": "nebula",
+   "name": "Nébuleuse",
+   "stars": 500
+  },
+  {
+   "id": "frame_laurels",
+   "category": "frame",
+   "look": "laurels",
+   "name": "Lauriers",
+   "achievement": "gardiens_100"
   },
   {
    "id": "title_none",
@@ -198,6 +275,62 @@
    "achievement": "fantomes_world_win"
   },
   {
+   "id": "title_horizon",
+   "category": "title",
+   "look": "Voyageur de l'horizon",
+   "name": "Voyageur de l'horizon",
+   "achievement": "voyage_horizon"
+  },
+  {
+   "id": "title_analyste",
+   "category": "title",
+   "look": "Analyste",
+   "name": "Analyste",
+   "achievement": "fantomes_compare"
+  },
+  {
+   "id": "title_melomane",
+   "category": "title",
+   "look": "Mélomane",
+   "name": "Mélomane",
+   "achievement": "collection_tracks_all"
+  },
+  {
+   "id": "title_encyclopediste",
+   "category": "title",
+   "look": "Encyclopédiste",
+   "name": "Encyclopédiste",
+   "achievement": "collection_creatures_30"
+  },
+  {
+   "id": "title_briseur",
+   "category": "title",
+   "look": "Briseur de colosses",
+   "name": "Briseur de colosses",
+   "achievement": "combat_heavy_100"
+  },
+  {
+   "id": "title_maitre_quinze",
+   "category": "title",
+   "look": "Maître des quinze",
+   "name": "Maître des quinze",
+   "achievement": "pouvoirs_distinct_15"
+  },
+  {
+   "id": "title_ombre",
+   "category": "title",
+   "look": "Ombre insaisissable",
+   "name": "Ombre insaisissable",
+   "achievement": "maitrise_phase_100"
+  },
+  {
+   "id": "title_legende",
+   "category": "title",
+   "look": "Légende du cosmos",
+   "name": "Légende du cosmos",
+   "achievement": "endurance_100h"
+  },
+  {
    "id": "victory_classic",
    "category": "victory",
    "look": "classic",
@@ -224,6 +357,27 @@
    "look": "supernova",
    "name": "Supernova",
    "stars": 220
+  },
+  {
+   "id": "victory_vortex",
+   "category": "victory",
+   "look": "vortex",
+   "name": "Vortex",
+   "stars": 320
+  },
+  {
+   "id": "victory_borealis",
+   "category": "victory",
+   "look": "borealis",
+   "name": "Aurore boréale",
+   "stars": 470
+  },
+  {
+   "id": "victory_corona",
+   "category": "victory",
+   "look": "corona",
+   "name": "Couronne solaire",
+   "stars": 540
   }
  ]
 }

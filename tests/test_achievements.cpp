@@ -56,8 +56,9 @@ bool has(const std::vector<std::string>& v, const std::string& id) { return std:
 
 TEST_CASE("achievements: a large catalogue, every category, every star level") {
     Fixture f;
-    CHECK(f.catalog.achievements().size() >= 120);
-    CHECK(f.catalog.categories().size() >= 10);
+    CHECK(f.catalog.achievements().size() >= 218);  // 2.24: 72 more, and the Collection category
+    CHECK(f.catalog.totalStars() >= 597);
+    CHECK(f.catalog.categories().size() >= 13);
     std::set<std::string> ids;
     std::map<std::string, int> perCategory;
     std::set<int> stars;
@@ -106,7 +107,51 @@ TEST_CASE("achievements: every condition is known and names real content") {
                                          "medal_planet_any", "stat", "max", "set", "levels_no_death", "level_no_death",
                                          "levels_full_collect", "levels_all_secrets", "boss", "boss_distinct", "boss_nohit_distinct",
                                          "boss_total", "boss_phase_nohit", "power_uses", "powers_distinct", "playtime", "user_levels",
-                                         "user_enemies", "completion_proofs", "online_account", "friends"};
+                                         "user_enemies", "completion_proofs", "online_account", "friends",
+                                         // 2.24
+                                         "medal_planet", "boss_phases_nohit", "tracks_heard", "creatures_met"};
+    // Every counter, set and maximum the game really writes (GameScene, ReplayScene,
+    // CollectionScene, CommentsPanel, RatingWidgets, OnlineService…): a name nobody writes
+    // would never unlock.
+    std::set<std::string> counters = {"kills", "deaths", "shards", "relics", "secrets", "jumps", "power_uses", "runs_completed",
+                                      "extreme_attempts", "extreme_finished", "pb_improved", "ghost_races", "ghost_pack_races",
+                                      "gold_segments", "pb_ghost_wins", "world_ghost_wins", "friend_ghost_wins", "world_ghost_races",
+                                      "photo_finish", "exports", "completion_proofs", "race_verified", "replay_compares", "replay_aligns",
+                                      "comments_posted", "menu_music"};
+    for (const char* family : {"ground", "robot", "flying", "turret", "fast", "heavy", "caster", "miniboss"}) counters.insert(std::string("kills_") + family);
+    for (const PowerDefinition* p : f.content.powers()) counters.insert("carried_" + p->id);
+    const std::set<std::string> sets = {"cleared_levels", "no_death_levels", "no_damage_levels", "no_power_levels", "full_collect_levels",
+                                        "all_secrets_levels", "powers_owned", "powers_used", "community_levels", "rated_levels",
+                                        "published_levels", "published_extreme", "rated_campaign", "equipped_items", "photographed_planets"};
+    const std::set<std::string> maxima = {"run_kills", "level_attempts", "outfit_categories"};
+    // What the campaign holds, for the counts below.
+    std::map<std::string, int> withCollectibles, withSecrets;  // per planet ("" = the whole campaign)
+    std::set<std::string> bestiary;                             // creatures placed in the campaign (and what they summon)
+    for (const PlanetData* p : f.content.planets())
+        for (const LevelEntry* e : f.content.levelsForPlanet(p->id)) {
+            auto lv = f.content.loadLevel(e->id);
+            CHECK(lv.has_value());
+            if (!lv) continue;
+            bool col = false, sec = false;
+            for (const auto& o : lv->objects) {
+                col = col || o.type == "shard" || o.type == "relic";
+                sec = sec || o.type == "secret_area";
+                if (o.type != "enemy") continue;
+                if (const EnemyDefinition* d = f.content.enemy(jstr(o.props, "enemy")); d && !d->isBoss) {
+                    bestiary.insert(d->id);
+                    for (const auto& atk : d->attacks)
+                        if (atk.type == AttackType::Summon && !atk.summonId.empty()) bestiary.insert(atk.summonId);
+                }
+            }
+            for (const std::string& k : {std::string(), p->id}) {
+                withCollectibles[k] += col ? 1 : 0;
+                withSecrets[k] += sec ? 1 : 0;
+            }
+        }
+    int activePowers = 0;
+    for (const PowerDefinition* p : f.content.powers()) activePowers += p->id == "triple_jump" || p->id == "air_dash" || p->id == "magnet" ? 0 : 1;
+    int tracks = 0;
+    if (auto j = FileUtil::loadJson(Paths::dataDir() / "music" / "tracks.json"); j && j->contains("tracks")) tracks = static_cast<int>((*j)["tracks"].size());
     for (const auto& a : f.catalog.achievements()) {
         const AchievementCondition& c = a.condition;
         if (!known.count(c.type)) std::printf("  condition inconnue : %s (%s)\n", c.type.c_str(), a.id.c_str());
@@ -121,7 +166,32 @@ TEST_CASE("achievements: every condition is known and names real content") {
         if (!c.power.empty()) CHECK(f.content.power(c.power) != nullptr);
         if (c.type == "medal_count" || c.type == "levels_no_death" || c.type == "levels_full_collect" || c.type == "levels_all_secrets")
             CHECK(c.count <= 18);  // the campaign has 18 levels (2.19: Aethra)
+        if (!c.planet.empty() && (c.type == "levels_no_death" || c.type == "levels_full_collect" || c.type == "levels_all_secrets"))
+            CHECK(c.count <= static_cast<int64_t>(f.content.levelsForPlanet(c.planet).size()));
+        // Reachable: only levels with something to find count for « tout ramasser » and
+        // « tous les secrets » (the boss levels and the Noyau have neither).
+        if (c.type == "levels_full_collect") CHECK(c.count <= withCollectibles[c.planet]);
+        if (c.type == "levels_all_secrets") CHECK(c.count <= withSecrets[c.planet]);
+        if (c.type == "medal_planet") CHECK(!c.planet.empty() && c.medal >= 1);
+        if (c.type == "boss_phases_nohit") {
+            const EnemyDefinition* e = f.content.enemy(c.boss);
+            CHECK(e != nullptr && !e->phases.empty());
+        }
+        if (c.type == "powers_distinct") CHECK(c.count <= activePowers);  // passive powers never fire « powerUsed »
+        if (c.type == "tracks_heard") CHECK(c.count <= tracks);
+        if (c.type == "creatures_met") CHECK(c.count <= static_cast<int64_t>(bestiary.size()));
+        if (c.type == "stat") {
+            if (!counters.count(c.key)) std::printf("  compteur inconnu : %s (%s)\n", c.key.c_str(), a.id.c_str());
+            CHECK(counters.count(c.key) == 1);
+        }
+        if (c.type == "set") CHECK(sets.count(c.key) == 1);
+        if (c.type == "max") CHECK(maxima.count(c.key) == 1);
+        if (c.type == "set" && c.key == "rated_campaign") CHECK(c.count <= 18);
+        if (c.type == "set" && c.key == "photographed_planets") CHECK(c.count <= static_cast<int64_t>(f.content.planets().size()));
+        if (c.type == "max" && c.key == "outfit_categories") CHECK(c.count <= 5);  // the five categories of the Collection
     }
+    CHECK(bestiary.size() >= 30);
+    CHECK(tracks >= 19);
     // Every power of the game has its achievement: used (active powers, counted from their
     // « powerUsed » event) or owned at the end of levels (passive ones never fire it).
     const std::set<std::string> passive = {"triple_jump", "air_dash", "magnet"};
@@ -205,6 +275,143 @@ TEST_CASE("achievements: counters, sets and the required threads") {
     CHECK(g.evaluate().empty());
 }
 
+TEST_CASE("achievements (2.24): Aethra's medals and levels, a guardian phase by phase, enemies by family") {
+    Fixture f;
+    std::vector<std::string> aethra;
+    for (const LevelEntry* e : f.content.levelsForPlanet("aethra")) aethra.push_back(e->id);
+    CHECK(aethra.size() == 4);
+    if (aethra.size() != 4) return;
+    // Gold on three of the four levels of Aethra: 3 / 4, not yet.
+    for (size_t i = 0; i < aethra.size(); ++i) {
+        f.progression.markCompleted(aethra[i]);
+        LevelRecord& r = f.records.getOrCreate(aethra[i]);
+        r.completions = 1;
+        r.bestMedal = i < 3 ? Medal::Gold : Medal::Silver;
+    }
+    const AchievementDef* gold = f.catalog.find("chrono_aethra_gold");
+    CHECK(gold != nullptr);
+    if (!gold) return;
+    AchievementProgress p = AchievementBook::progress(*gold, f.inputs());
+    CHECK(p.value == 3);
+    CHECK(p.target == 4);
+    auto got = f.evaluate();
+    CHECK(!has(got, "chrono_aethra_gold"));
+    CHECK(has(got, "voyage_aethra_first") == false);  // its thread (« Le cœur s'ouvre ») is not open
+    f.records.getOrCreate(aethra[3]).bestMedal = Medal::Gold;
+    got = f.evaluate();
+    CHECK(has(got, "chrono_aethra_gold"));
+    CHECK(!has(got, "chrono_aethra_platinum"));
+    // Without dying: the levels of another planet never count for Aethra, each level once.
+    AchievementStats& s = f.book.stats();
+    for (const char* other : {"sylvanox_01", "sylvanox_02", "glacior_01", "pyralis_01"}) s.insert("no_death_levels", other);
+    s.insert("no_death_levels", aethra[0]);
+    f.records.getOrCreate(aethra[0]).fewestDeaths = 0;  // the same level, also from its record
+    f.records.getOrCreate(aethra[1]).fewestDeaths = 0;
+    const AchievementDef* nd = f.catalog.find("maitrise_aethra_nodeath");
+    CHECK(nd != nullptr);
+    if (nd) {
+        p = AchievementBook::progress(*nd, f.inputs());
+        CHECK(p.value == 2);
+        CHECK(p.target == 4);
+    }
+    // Everything collected, every secret: only Aethra's levels again.
+    const AchievementDef* col = f.catalog.find("tresors_aethra_full");
+    CHECK(col != nullptr);
+    if (col) {
+        LevelRecord& r = f.records.getOrCreate(aethra[2]);
+        r.totalCollectibles = 50;
+        r.mostCollectibles = 50;
+        s.insert("full_collect_levels", "glacior_02");
+        CHECK(AchievementBook::progress(*col, f.inputs()).value == 1);
+    }
+    // A guardian phase by phase: each phase once without being hit, in any fight.
+    const AchievementDef* ph = f.catalog.find("maitrise_phases_mycelia");
+    CHECK(ph != nullptr);
+    if (ph) {
+        BossRecord& b = f.bosses.at("mycelia");
+        b.kills = 2;
+        b.phaseNoHit = {1, 0, 2};
+        p = AchievementBook::progress(*ph, f.inputs());
+        CHECK(p.value == 2);
+        CHECK(p.target == static_cast<int64_t>(f.content.enemy("mycelia")->phases.size()));
+        got = f.evaluate();
+        CHECK(has(got, "gardiens_mycelia"));
+        CHECK(!has(got, "maitrise_phases_mycelia"));
+        b.phaseNoHit = {1, 1, 2};
+        got = f.evaluate();
+        CHECK(has(got, "maitrise_phases_mycelia"));
+        CHECK(!has(got, "maitrise_mycelia_nohit"));  // the whole fight without a hit is the next step
+        b.noHitKills = 1;
+        CHECK(has(f.evaluate(), "maitrise_mycelia_nohit"));
+    }
+    // Enemies by family (GameWorld counts them, GameScene adds them up at the end of a run).
+    s.add("kills", 150);
+    s.add("kills_robot", 149);
+    got = f.evaluate();
+    CHECK(has(got, "combat_100"));
+    CHECK(!has(got, "combat_robot_150"));
+    s.add("kills_robot", 1);
+    CHECK(has(f.evaluate(), "combat_robot_150"));
+}
+
+TEST_CASE("achievements (2.24): the Collection, the replays and Cosmic Online") {
+    Fixture f;
+    AchievementInputs in = f.inputs();
+    in.tracksHeard = 9;
+    in.creaturesMet = 14;
+    auto run = [&](AchievementInputs i) {
+        std::vector<std::string> ids;
+        for (const AchievementDef* a : f.book.evaluate(f.catalog, i, "2026-11-15 10:00")) ids.push_back(a->id);
+        return ids;
+    };
+    auto got = run(in);
+    CHECK(!has(got, "collection_tracks_10"));
+    CHECK(!has(got, "collection_creatures_15"));
+    in.tracksHeard = 19;
+    in.creaturesMet = 30;
+    got = run(in);
+    for (const char* id : {"collection_tracks_10", "collection_tracks_all", "collection_creatures_15", "collection_creatures_30"}) CHECK(has(got, id));
+    // Worn rewards: distinct items, and the most categories worn at once.
+    AchievementStats& s = f.book.stats();
+    s.insert("equipped_items", "suit_givre");
+    s.insert("equipped_items", "suit_givre");
+    s.raise("outfit_categories", 4);
+    got = run(in);
+    CHECK(has(got, "collection_equip"));
+    CHECK(!has(got, "collection_equip_10"));
+    CHECK(!has(got, "collection_outfit"));
+    s.raise("outfit_categories", 5);
+    CHECK(has(run(in), "collection_outfit"));
+    // The jukebox's menu music, the gallery's pictures (each planet once).
+    s.add("menu_music");
+    for (const char* p : {"sylvanox", "glacior", "pyralis", "noyau", "noyau"}) s.insert("photographed_planets", p);
+    got = run(in);
+    CHECK(has(got, "collection_menu_music"));
+    CHECK(has(got, "collection_photo"));
+    CHECK(!has(got, "collection_photo_all"));
+    s.insert("photographed_planets", "aethra");
+    CHECK(has(run(in), "collection_photo_all"));
+    // Replays compared and aligned.
+    s.add("replay_compares");
+    got = run(in);
+    CHECK(has(got, "fantomes_compare"));
+    CHECK(!has(got, "fantomes_align"));
+    s.add("replay_aligns");
+    CHECK(has(run(in), "fantomes_align"));
+    // Cosmic Online: comments and the campaign's ratings need the account's achievement first.
+    s.add("comments_posted");
+    s.insert("rated_campaign", "sylvanox_01");
+    got = run(in);
+    CHECK(!has(got, "communaute_comment"));
+    CHECK(!has(got, "communaute_rate_campaign"));
+    in.onlineAccount = true;
+    got = run(in);
+    CHECK(has(got, "communaute_account"));
+    CHECK(has(got, "communaute_comment"));
+    CHECK(has(got, "communaute_rate_campaign"));
+    CHECK(!has(got, "communaute_rate_campaign_all"));
+}
+
 TEST_CASE("achievements: the save survives a restart and resists damage") {
     fs::path file = fs::temp_directory_path() / ("cosmic_ach_" + makeUuidV4().substr(0, 8) + ".json");
     {
@@ -261,7 +468,7 @@ TEST_CASE("collection: the items sent to the online profile, the looks of other 
     CHECK(c.loadDefault(&err));
     CollectionBook book(fs::temp_directory_path() / ("cosmic_col_" + makeUuidV4().substr(0, 8) + ".json"));
     CosmeticProgress p;
-    p.totalStars = 383;
+    p.totalStars = 597;
     // Nothing chosen: the default of each of the five categories.
     auto ids = book.equippedIds(c, p);
     CHECK(ids.size() == 5);
@@ -292,4 +499,74 @@ TEST_CASE("collection: the items sent to the online profile, the looks of other 
     CHECK(c.lookOr("suit", "../givre") == "standard");
     CHECK(c.lookOr("suit", "gold") == "standard");  // a frame's look is not a suit
     CHECK(c.lookOr("nothing", "gold").empty());
+    // 2.24: the new looks are known too.
+    CHECK(c.lookOr("frame", "laurels") == "laurels");
+    CHECK(c.lookOr("trail", "runes") == "runes");
+    CHECK(c.lookOr("suit", "sanctuaire") == "sanctuaire");
+    CHECK(c.lookOr("victory", "corona") == "corona");
+}
+
+TEST_CASE("collection (2.24): every reward can be won and is drawn") {
+    CosmeticCatalog c;
+    std::string err;
+    CHECK(c.loadDefault(&err));
+    AchievementCatalog a;
+    CHECK(a.loadDefault(&err));
+    const int total = a.totalStars();
+    // Stars every player can win without Cosmic Online: every star milestone but « toutes les
+    // étoiles » stays below them. Online: the Communauté category, publishing, the
+    // verification race, the ghosts of the world record and of friends, and what follows them.
+    std::set<std::string> online = {"createur_publish", "extreme_verify", "fantomes_world", "fantomes_friend"};
+    for (const auto& d : a.achievements())
+        if (d.category == "communaute") online.insert(d.id);
+    for (bool grew = true; grew;) {
+        grew = false;
+        for (const auto& d : a.achievements())
+            if (!online.count(d.id))
+                for (const auto& r : d.after)
+                    if (online.count(r)) grew = online.insert(d.id).second || grew;
+    }
+    int offline = total;
+    for (const auto& d : a.achievements()) offline -= online.count(d.id) ? d.stars : 0;
+    // The looks the game draws (CosmeticFx, the suits' sheets).
+    const std::map<std::string, std::set<std::string>> drawn = {
+        {"trail", {"none", "stardust", "comet", "aurora", "eclipse", "flame", "prism", "runes"}},
+        {"frame", {"simple", "bronze", "silver", "gold", "platinum", "constellation", "emerald", "orbit", "nebula", "laurels"}},
+        {"victory", {"classic", "fireworks", "starfall", "supernova", "vortex", "borealis", "corona"}}};
+    std::map<std::string, int> perCategory, defaults;
+    std::set<int> thresholds;
+    for (const CosmeticItem& it : c.items()) {
+        ++perCategory[it.category];
+        defaults[it.category] += it.isDefault ? 1 : 0;
+        CHECK(!it.name.empty());
+        CHECK(!it.description.empty());
+        if (!it.achievement.empty()) {
+            if (!a.find(it.achievement)) std::printf("  succès inconnu : %s (%s)\n", it.achievement.c_str(), it.id.c_str());
+            CHECK(a.find(it.achievement) != nullptr);
+        } else if (!it.isDefault && !it.allStars) {
+            CHECK(it.stars > 0);
+            CHECK(it.stars <= offline);
+            thresholds.insert(it.stars);
+        }
+        if (it.category == "suit" && !it.isDefault) {
+            std::error_code ec;
+            CHECK(fs::exists(Paths::assetsDir() / "sprites" / "player" / "suits" / ("nova_" + it.look + ".png"), ec));
+        }
+        if (auto d = drawn.find(it.category); d != drawn.end()) {
+            if (!d->second.count(it.look)) std::printf("  apparence non dessinée : %s (%s)\n", it.look.c_str(), it.id.c_str());
+            CHECK(d->second.count(it.look) == 1);
+        }
+        if (it.category == "title") CHECK(it.isDefault ? it.look.empty() : !it.look.empty());
+    }
+    for (const auto& cat : c.categories()) CHECK(defaults[cat.id] == 1);
+    CHECK(perCategory["suit"] >= 12);
+    CHECK(perCategory["trail"] >= 8);
+    CHECK(perCategory["frame"] >= 10);
+    CHECK(perCategory["title"] >= 16);
+    CHECK(perCategory["victory"] >= 7);
+    // The route of the stars: one milestone per threshold, and the last one is every star.
+    auto ms = c.milestones(total);
+    CHECK(ms.size() == thresholds.size() + 1);
+    CHECK(!ms.empty() && ms.back().stars == total);
+    std::printf("  %zu récompenses, %zu paliers (jusqu'à %d étoiles, %d sans compte en ligne)\n", c.items().size(), ms.size(), total, offline);
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <set>
 #include <string>
 
@@ -15,6 +16,9 @@ struct RunStats {
     int secrets = 0;
     int totalSecrets = 0;
     int kills = 0;
+    /// The same kills by enemy family ("ground", "robot", "flying"...): counted for the
+    /// achievements only, never read by the simulation (2.24).
+    std::map<std::string, int> familyKills;
     int totalEnemies = 0;
     int scoreBonus = 0;  // collectible / enemy values
     int damageTaken = 0;

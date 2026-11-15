@@ -168,7 +168,7 @@ void GameScene::noteAchievementStats(bool completed, const RecordUpdate* upd) {
     statsNoted_ = true;
     AchievementStats& a = g_.achievements.stats();
     const RunStats& s = world_->stats();
-    // The world's counters (kills, deaths, collectibles, powers carried): none for a training.
+    // The world's counters (kills, by family too, deaths, collectibles, powers carried): none for a training.
     if (!noteRunCounters(a, *world_, completed)) return;
     a.add("jumps", runJumps_);
     int64_t uses = 0;

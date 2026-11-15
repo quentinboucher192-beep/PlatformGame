@@ -164,6 +164,22 @@ bool allSecrets(const LevelRecord& r) {
     return false;
 }
 
+bool noDeath(const LevelRecord& r) { return r.fewestDeaths == 0; }
+bool fullCollect(const LevelRecord& r) { return r.totalCollectibles > 0 && r.mostCollectibles >= r.totalCollectibles; }
+
+/// Levels done in a way (`pred` on their record, or the run counters' `set`): the campaign's,
+/// counted as before 2.24; with a planet, that planet's levels only, each once.
+int64_t levelsDone(const AchievementInputs& in, const AchievementStats& st, const std::string& planet, bool (*pred)(const LevelRecord&),
+                   const char* set) {
+    if (planet.empty()) return std::max<int64_t>(completedWith(in, pred), static_cast<int64_t>(st.setSize(set)));
+    int64_t n = 0;
+    for (const auto& id : planetLevels(in, planet)) {
+        const LevelRecord* r = in.records ? in.records->get(id) : nullptr;
+        n += (r && r->completions > 0 && pred(*r)) || st.setHas(set, id) ? 1 : 0;
+    }
+    return n;
+}
+
 }  // namespace
 
 AchievementProgress AchievementBook::progress(const AchievementDef& def, const AchievementInputs& in) {
@@ -227,19 +243,21 @@ AchievementProgress AchievementBook::progress(const AchievementDef& def, const A
     } else if (t == "set") {
         p.value = static_cast<int64_t>(st.setSize(c.key));
         if (c.key == "community_levels") p.value = std::max<int64_t>(p.value, in.communityLevelsFinished);
+    } else if (t == "medal_planet") {
+        // Every level of one planet with the medal (2.24).
+        auto levels = planetLevels(in, c.planet);
+        p.target = std::max<int64_t>(1, static_cast<int64_t>(levels.size()));
+        for (const auto& id : levels) p.value += medalOf(in, id) >= c.medal ? 1 : 0;
     } else if (t == "levels_no_death") {
-        int n = completedWith(in, [](const LevelRecord& r) { return r.fewestDeaths == 0; });
-        p.value = std::max<int64_t>(n, static_cast<int64_t>(st.setSize("no_death_levels")));
+        p.value = levelsDone(in, st, c.planet, noDeath, "no_death_levels");
     } else if (t == "level_no_death") {
         p.target = 1;
         const LevelRecord* r = in.records ? in.records->get(c.level) : nullptr;
         p.value = (r && r->completions > 0 && r->fewestDeaths == 0) || st.setHas("no_death_levels", c.level) ? 1 : 0;
     } else if (t == "levels_full_collect") {
-        int n = completedWith(in, [](const LevelRecord& r) { return r.totalCollectibles > 0 && r.mostCollectibles >= r.totalCollectibles; });
-        p.value = std::max<int64_t>(n, static_cast<int64_t>(st.setSize("full_collect_levels")));
+        p.value = levelsDone(in, st, c.planet, fullCollect, "full_collect_levels");
     } else if (t == "levels_all_secrets") {
-        int n = completedWith(in, allSecrets);
-        p.value = std::max<int64_t>(n, static_cast<int64_t>(st.setSize("all_secrets_levels")));
+        p.value = levelsDone(in, st, c.planet, allSecrets, "all_secrets_levels");
     } else if (t == "boss") {
         p.target = 1;
         const BossRecord* b = in.bosses ? in.bosses->find(c.boss) : nullptr;
@@ -254,6 +272,21 @@ AchievementProgress AchievementBook::progress(const AchievementDef& def, const A
                 else if (t == "boss_total") p.value += b.kills;
                 else p.value += b.noHitPhases();
             }
+    } else if (t == "boss_phases_nohit") {
+        // Each phase of this boss beaten at least once without being hit, not necessarily in
+        // the same fight (2.24); its phases are those of its definition.
+        const BossRecord* b = in.bosses ? in.bosses->find(c.boss) : nullptr;
+        int64_t phases = 0;
+        if (in.content)
+            if (const EnemyDefinition* d = in.content->enemy(c.boss)) phases = static_cast<int64_t>(d->phases.size());
+        if (phases <= 0 && b) phases = b->phaseCount();
+        p.target = std::max<int64_t>(1, phases);
+        if (b)
+            for (size_t i = 0; i < b->phaseNoHit.size() && static_cast<int64_t>(i) < p.target; ++i) p.value += b->phaseNoHit[i] > 0 ? 1 : 0;
+    } else if (t == "tracks_heard") {
+        p.value = in.tracksHeard;
+    } else if (t == "creatures_met") {
+        p.value = in.creaturesMet;
     } else if (t == "power_uses") {
         auto it = st.powerUses.find(c.power);
         p.value = it == st.powerUses.end() ? 0 : it->second;

@@ -1218,7 +1218,7 @@ automatique : le jeu renvoie son choix).
 qui n'a rien envoyé ; `null` pour un profil masqué vu par un autre joueur). Chaque entrée de
 classement (§8.4, et `ranking` de la course à la vérification) ajoute à `player` :
 `frame` (apparence du cadre : `simple`, `bronze`, `silver`, `gold`, `platinum`,
-`constellation`), `title` (`{id, name}` ou `null` sans titre) et `suit` (apparence de la
+`constellation`, et depuis la 2.24 `emerald`, `orbit`, `nebula`, `laurels`), `title` (`{id, name}` ou `null` sans titre) et `suit` (apparence de la
 combinaison : `standard`, `givre`…), **seulement si le profil n'est pas masqué** (sinon aucun
 de ces champs : le jeu dessine alors le cadre simple, sans titre). Les titres affichés sont
 toujours des noms du catalogue du serveur, jamais un texte du client. La tenue figure dans

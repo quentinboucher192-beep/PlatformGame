@@ -73,6 +73,12 @@
    "name": "Communauté",
    "color": "#8CA8FF",
    "description": "Cosmic Online : niveaux des joueurs et amis (compte facultatif)."
+  },
+  {
+   "id": "collection",
+   "name": "Collection",
+   "color": "#C6F26B",
+   "description": "Le vestiaire, le juke-box et la galerie de la Collection."
   }
  ],
  "achievements": [
@@ -232,6 +238,48 @@
     "voyage_echoes",
     "voyage_star",
     "voyage_aethra"
+   ]
+  },
+  {
+   "id": "voyage_15",
+   "category": "voyage",
+   "name": "Long-courrier",
+   "description": "Terminer 15 niveaux de la campagne.",
+   "stars": 3,
+   "condition": {
+    "type": "levels_completed",
+    "count": 15
+   },
+   "requires": [
+    "voyage_10"
+   ]
+  },
+  {
+   "id": "voyage_aethra_first",
+   "category": "voyage",
+   "name": "Premiers pas sur Aethra",
+   "description": "Terminer Le Bosquet Englouti, premier niveau d'Aethra.",
+   "stars": 2,
+   "condition": {
+    "type": "level",
+    "level": "aethra_01"
+   },
+   "requires": [
+    "voyage_core_open"
+   ]
+  },
+  {
+   "id": "voyage_horizon",
+   "category": "voyage",
+   "name": "Au-delà de l'horizon",
+   "description": "Terminer L'Horizon des événements, dernier niveau d'Aethra.",
+   "stars": 3,
+   "condition": {
+    "type": "level",
+    "level": "aethra_04"
+   },
+   "requires": [
+    "voyage_aethra_first"
    ]
   },
   {
@@ -409,6 +457,82 @@
    ]
   },
   {
+   "id": "chrono_gold_10",
+   "category": "chrono",
+   "name": "Lingot",
+   "description": "Obtenir l'or sur 10 niveaux.",
+   "stars": 3,
+   "condition": {
+    "type": "medal_count",
+    "medal": 3,
+    "count": 10
+   },
+   "requires": [
+    "chrono_gold_5"
+   ]
+  },
+  {
+   "id": "chrono_platinum_10",
+   "category": "chrono",
+   "name": "Horloger",
+   "description": "Obtenir le platine sur 10 niveaux.",
+   "stars": 4,
+   "condition": {
+    "type": "medal_count",
+    "medal": 4,
+    "count": 10
+   },
+   "requires": [
+    "chrono_platinum_5"
+   ]
+  },
+  {
+   "id": "chrono_aethra_gold",
+   "category": "chrono",
+   "name": "Or des sanctuaires",
+   "description": "Obtenir l'or sur les 4 niveaux d'Aethra.",
+   "stars": 3,
+   "condition": {
+    "type": "medal_planet",
+    "planet": "aethra",
+    "medal": 3
+   },
+   "requires": [
+    "chrono_gold"
+   ]
+  },
+  {
+   "id": "chrono_aethra_platinum",
+   "category": "chrono",
+   "name": "Platine des sanctuaires",
+   "description": "Obtenir le platine sur les 4 niveaux d'Aethra.",
+   "stars": 5,
+   "condition": {
+    "type": "medal_planet",
+    "planet": "aethra",
+    "medal": 4
+   },
+   "requires": [
+    "chrono_aethra_gold",
+    "chrono_platinum"
+   ]
+  },
+  {
+   "id": "chrono_pb_25",
+   "category": "chrono",
+   "name": "Chasseur de centièmes",
+   "description": "Battre 25 fois un de ses meilleurs temps.",
+   "stars": 3,
+   "condition": {
+    "type": "stat",
+    "key": "pb_improved",
+    "count": 25
+   },
+   "requires": [
+    "chrono_pb_10"
+   ]
+  },
+  {
    "id": "combat_10",
    "category": "combat",
    "name": "Premiers combats",
@@ -554,6 +678,111 @@
    },
    "requires": [
     "combat_clear_5"
+   ]
+  },
+  {
+   "id": "combat_ground_500",
+   "category": "combat",
+   "name": "Débroussailleur",
+   "description": "Vaincre 500 créatures terrestres.",
+   "stars": 3,
+   "condition": {
+    "type": "stat",
+    "key": "kills_ground",
+    "count": 500
+   },
+   "requires": [
+    "combat_100"
+   ]
+  },
+  {
+   "id": "combat_robot_150",
+   "category": "combat",
+   "name": "Ferrailleur",
+   "description": "Vaincre 150 robots.",
+   "stars": 2,
+   "condition": {
+    "type": "stat",
+    "key": "kills_robot",
+    "count": 150
+   },
+   "requires": [
+    "combat_100"
+   ]
+  },
+  {
+   "id": "combat_flying_150",
+   "category": "combat",
+   "name": "Chasseur de ciel",
+   "description": "Vaincre 150 créatures volantes.",
+   "stars": 2,
+   "condition": {
+    "type": "stat",
+    "key": "kills_flying",
+    "count": 150
+   },
+   "requires": [
+    "combat_100"
+   ]
+  },
+  {
+   "id": "combat_heavy_100",
+   "category": "combat",
+   "name": "Briseur de colosses",
+   "description": "Vaincre 100 ennemis lourds (golems et remparts).",
+   "stars": 3,
+   "condition": {
+    "type": "stat",
+    "key": "kills_heavy",
+    "count": 100
+   },
+   "requires": [
+    "combat_100"
+   ]
+  },
+  {
+   "id": "combat_caster_100",
+   "category": "combat",
+   "name": "Brise-sorts",
+   "description": "Vaincre 100 feux follets et autres utilisateurs de pouvoirs.",
+   "stars": 2,
+   "condition": {
+    "type": "stat",
+    "key": "kills_caster",
+    "count": 100
+   },
+   "requires": [
+    "combat_100"
+   ]
+  },
+  {
+   "id": "combat_fast_100",
+   "category": "combat",
+   "name": "Plus vif que l'éclair",
+   "description": "Vaincre 100 ennemis rapides (traqueurs).",
+   "stars": 2,
+   "condition": {
+    "type": "stat",
+    "key": "kills_fast",
+    "count": 100
+   },
+   "requires": [
+    "combat_100"
+   ]
+  },
+  {
+   "id": "combat_turret_40",
+   "category": "combat",
+   "name": "Désherbeur",
+   "description": "Vaincre 40 tourelles (fleurs à spores, de cendre ou de givre).",
+   "stars": 2,
+   "condition": {
+    "type": "stat",
+    "key": "kills_turret",
+    "count": 40
+   },
+   "requires": [
+    "combat_100"
    ]
   },
   {
@@ -906,6 +1135,50 @@
    ]
   },
   {
+   "id": "gardiens_echo_first",
+   "category": "gardiens",
+   "name": "Premier écho",
+   "description": "Vaincre un écho de gardien.",
+   "stars": 2,
+   "condition": {
+    "type": "boss_distinct",
+    "variant": "echo",
+    "count": 1
+   },
+   "requires": [
+    "gardiens_first"
+   ]
+  },
+  {
+   "id": "gardiens_echoes_8",
+   "category": "gardiens",
+   "name": "Moitié des échos",
+   "description": "Vaincre 8 échos de gardiens différents.",
+   "stars": 3,
+   "condition": {
+    "type": "boss_distinct",
+    "variant": "echo",
+    "count": 8
+   },
+   "requires": [
+    "gardiens_echo_first"
+   ]
+  },
+  {
+   "id": "gardiens_100",
+   "category": "gardiens",
+   "name": "Chasseur de légendes",
+   "description": "Remporter 100 combats contre des boss.",
+   "stars": 4,
+   "condition": {
+    "type": "boss_total",
+    "count": 100
+   },
+   "requires": [
+    "gardiens_50"
+   ]
+  },
+  {
    "id": "maitrise_nodeath",
    "category": "maitrise",
    "name": "Sans faux pas",
@@ -1055,6 +1328,151 @@
    },
    "requires": [
     "gardiens_nyxara"
+   ]
+  },
+  {
+   "id": "maitrise_phases_mycelia",
+   "category": "maitrise",
+   "name": "Chorégraphie de Mycélia",
+   "description": "Battre chaque phase de Mycélia sans être touché (pas forcément dans le même combat).",
+   "stars": 3,
+   "condition": {
+    "type": "boss_phases_nohit",
+    "boss": "mycelia"
+   },
+   "requires": [
+    "gardiens_mycelia"
+   ]
+  },
+  {
+   "id": "maitrise_phases_aurorax",
+   "category": "maitrise",
+   "name": "Chorégraphie d'Aurorax",
+   "description": "Battre chaque phase d'Aurorax sans être touché (pas forcément dans le même combat).",
+   "stars": 3,
+   "condition": {
+    "type": "boss_phases_nohit",
+    "boss": "aurorax"
+   },
+   "requires": [
+    "gardiens_aurorax"
+   ]
+  },
+  {
+   "id": "maitrise_phases_pyrogyre",
+   "category": "maitrise",
+   "name": "Chorégraphie de Pyrogyre",
+   "description": "Battre chaque phase de Pyrogyre sans être touché (pas forcément dans le même combat).",
+   "stars": 3,
+   "condition": {
+    "type": "boss_phases_nohit",
+    "boss": "pyrogyre"
+   },
+   "requires": [
+    "gardiens_pyrogyre"
+   ]
+  },
+  {
+   "id": "maitrise_phases_nyxara",
+   "category": "maitrise",
+   "name": "Chorégraphie de Nyxara",
+   "description": "Battre chaque phase de Nyxara sans être touché (pas forcément dans le même combat).",
+   "stars": 4,
+   "condition": {
+    "type": "boss_phases_nohit",
+    "boss": "nyxara"
+   },
+   "requires": [
+    "gardiens_nyxara"
+   ]
+  },
+  {
+   "id": "maitrise_mycelia_nohit",
+   "category": "maitrise",
+   "name": "Racines intactes",
+   "description": "Vaincre Mycélia sans être touché.",
+   "stars": 4,
+   "condition": {
+    "type": "boss",
+    "boss": "mycelia",
+    "nohit": true
+   },
+   "requires": [
+    "maitrise_phases_mycelia"
+   ]
+  },
+  {
+   "id": "maitrise_aurorax_nohit",
+   "category": "maitrise",
+   "name": "Miroir sans tache",
+   "description": "Vaincre Aurorax sans être touché.",
+   "stars": 4,
+   "condition": {
+    "type": "boss",
+    "boss": "aurorax",
+    "nohit": true
+   },
+   "requires": [
+    "maitrise_phases_aurorax"
+   ]
+  },
+  {
+   "id": "maitrise_pyrogyre_nohit",
+   "category": "maitrise",
+   "name": "Hors de l'anneau",
+   "description": "Vaincre Pyrogyre sans être touché.",
+   "stars": 4,
+   "condition": {
+    "type": "boss",
+    "boss": "pyrogyre",
+    "nohit": true
+   },
+   "requires": [
+    "maitrise_phases_pyrogyre"
+   ]
+  },
+  {
+   "id": "maitrise_phase_100",
+   "category": "maitrise",
+   "name": "Ombre insaisissable",
+   "description": "Battre 100 phases de boss sans être touché.",
+   "stars": 4,
+   "condition": {
+    "type": "boss_phase_nohit",
+    "count": 100
+   },
+   "requires": [
+    "maitrise_phase_25"
+   ]
+  },
+  {
+   "id": "maitrise_aethra_nodeath",
+   "category": "maitrise",
+   "name": "Sanctuaires sans chute",
+   "description": "Terminer les 4 niveaux d'Aethra sans mourir.",
+   "stars": 4,
+   "condition": {
+    "type": "levels_no_death",
+    "planet": "aethra",
+    "count": 4
+   },
+   "requires": [
+    "maitrise_nodeath_5"
+   ]
+  },
+  {
+   "id": "maitrise_boss_nohit_16",
+   "category": "maitrise",
+   "name": "Perfection d'Aethra",
+   "description": "Vaincre les 16 gardiens des planètes sans être touché.",
+   "stars": 5,
+   "condition": {
+    "type": "boss_nohit_distinct",
+    "variant": "original",
+    "count": 16
+   },
+   "requires": [
+    "maitrise_boss_nohit_12"
    ]
   },
   {
@@ -1397,6 +1815,94 @@
    }
   },
   {
+   "id": "pouvoirs_distinct_5",
+   "category": "pouvoirs",
+   "name": "Polyvalent",
+   "description": "Utiliser 5 pouvoirs différents.",
+   "stars": 1,
+   "condition": {
+    "type": "powers_distinct",
+    "count": 5
+   },
+   "requires": [
+    "pouvoirs_first"
+   ]
+  },
+  {
+   "id": "pouvoirs_distinct_15",
+   "category": "pouvoirs",
+   "name": "Maître des quinze",
+   "description": "Utiliser chacun des 15 pouvoirs actifs.",
+   "stars": 4,
+   "condition": {
+    "type": "powers_distinct",
+    "count": 15
+   },
+   "requires": [
+    "pouvoirs_distinct_5"
+   ]
+  },
+  {
+   "id": "pouvoirs_boomerang_300",
+   "category": "pouvoirs",
+   "name": "Virtuose : Lame boomerang",
+   "description": "Utiliser Lame boomerang 300 fois.",
+   "stars": 3,
+   "condition": {
+    "type": "power_uses",
+    "power": "boomerang",
+    "count": 300
+   },
+   "requires": [
+    "pouvoirs_boomerang"
+   ]
+  },
+  {
+   "id": "pouvoirs_frost_nova_300",
+   "category": "pouvoirs",
+   "name": "Virtuose : Nova de givre",
+   "description": "Utiliser Nova de givre 300 fois.",
+   "stars": 3,
+   "condition": {
+    "type": "power_uses",
+    "power": "frost_nova",
+    "count": 300
+   },
+   "requires": [
+    "pouvoirs_frost_nova"
+   ]
+  },
+  {
+   "id": "pouvoirs_decoy_300",
+   "category": "pouvoirs",
+   "name": "Virtuose : Leurre holographique",
+   "description": "Utiliser Leurre holographique 300 fois.",
+   "stars": 3,
+   "condition": {
+    "type": "power_uses",
+    "power": "decoy",
+    "count": 300
+   },
+   "requires": [
+    "pouvoirs_decoy"
+   ]
+  },
+  {
+   "id": "pouvoirs_recall_300",
+   "category": "pouvoirs",
+   "name": "Virtuose : Balise de rappel",
+   "description": "Utiliser Balise de rappel 300 fois.",
+   "stars": 3,
+   "condition": {
+    "type": "power_uses",
+    "power": "recall",
+    "count": 300
+   },
+   "requires": [
+    "pouvoirs_recall"
+   ]
+  },
+  {
    "id": "tresors_shards_50",
    "category": "tresors",
    "name": "Glaneur",
@@ -1497,11 +2003,11 @@
    "id": "tresors_full_all",
    "category": "tresors",
    "name": "Inventaire complet",
-   "description": "Tout ramasser dans les 18 niveaux de la campagne.",
+   "description": "Tout ramasser dans les 13 niveaux de la campagne qui ont des éclats et des reliques.",
    "stars": 5,
    "condition": {
     "type": "levels_full_collect",
-    "count": 18
+    "count": 13
    },
    "requires": [
     "tresors_full_5"
@@ -1552,11 +2058,86 @@
    "id": "tresors_secrets_all",
    "category": "tresors",
    "name": "Cartographe des ombres",
-   "description": "Découvrir tous les secrets des 18 niveaux de la campagne.",
+   "description": "Découvrir tous les secrets des 13 niveaux de la campagne qui en cachent.",
    "stars": 5,
    "condition": {
     "type": "levels_all_secrets",
-    "count": 18
+    "count": 13
+   },
+   "requires": [
+    "tresors_secrets_level"
+   ]
+  },
+  {
+   "id": "tresors_shards_10000",
+   "category": "tresors",
+   "name": "Pluie d'éclats",
+   "description": "Ramasser 10 000 éclats.",
+   "stars": 5,
+   "condition": {
+    "type": "stat",
+    "key": "shards",
+    "count": 10000
+   },
+   "requires": [
+    "tresors_shards_3000"
+   ]
+  },
+  {
+   "id": "tresors_relic_100",
+   "category": "tresors",
+   "name": "Conservateur",
+   "description": "Trouver 100 reliques.",
+   "stars": 4,
+   "condition": {
+    "type": "stat",
+    "key": "relics",
+    "count": 100
+   },
+   "requires": [
+    "tresors_relic_25"
+   ]
+  },
+  {
+   "id": "tresors_secret_40",
+   "category": "tresors",
+   "name": "Passe-muraille",
+   "description": "Découvrir 40 secrets.",
+   "stars": 3,
+   "condition": {
+    "type": "stat",
+    "key": "secrets",
+    "count": 40
+   },
+   "requires": [
+    "tresors_secret_15"
+   ]
+  },
+  {
+   "id": "tresors_aethra_full",
+   "category": "tresors",
+   "name": "Reliquaire d'Aethra",
+   "description": "Tout ramasser dans les 4 niveaux d'Aethra.",
+   "stars": 4,
+   "condition": {
+    "type": "levels_full_collect",
+    "planet": "aethra",
+    "count": 4
+   },
+   "requires": [
+    "tresors_full"
+   ]
+  },
+  {
+   "id": "tresors_aethra_secrets",
+   "category": "tresors",
+   "name": "Secrets des sanctuaires",
+   "description": "Découvrir tous les secrets des 4 niveaux d'Aethra.",
+   "stars": 4,
+   "condition": {
+    "type": "levels_all_secrets",
+    "planet": "aethra",
+    "count": 4
    },
    "requires": [
     "tresors_secrets_level"
@@ -1710,6 +2291,64 @@
    }
   },
   {
+   "id": "endurance_5h",
+   "category": "endurance",
+   "name": "Escale prolongée",
+   "description": "Jouer cinq heures.",
+   "stars": 1,
+   "condition": {
+    "type": "playtime",
+    "seconds": 18000
+   },
+   "requires": [
+    "endurance_1h"
+   ]
+  },
+  {
+   "id": "endurance_100h",
+   "category": "endurance",
+   "name": "Légende du cosmos",
+   "description": "Jouer cent heures.",
+   "stars": 5,
+   "condition": {
+    "type": "playtime",
+    "seconds": 360000
+   },
+   "requires": [
+    "endurance_50h"
+   ]
+  },
+  {
+   "id": "endurance_runs_1000",
+   "category": "endurance",
+   "name": "Inépuisable",
+   "description": "Terminer 1 000 parties.",
+   "stars": 4,
+   "condition": {
+    "type": "stat",
+    "key": "runs_completed",
+    "count": 1000
+   },
+   "requires": [
+    "endurance_runs_500"
+   ]
+  },
+  {
+   "id": "endurance_attempts_100",
+   "category": "endurance",
+   "name": "Entêté",
+   "description": "Tenter 100 fois le même niveau.",
+   "stars": 3,
+   "condition": {
+    "type": "max",
+    "key": "level_attempts",
+    "count": 100
+   },
+   "requires": [
+    "endurance_attempts"
+   ]
+  },
+  {
    "id": "fantomes_first",
    "category": "fantomes",
    "name": "Course contre soi",
@@ -1857,6 +2496,123 @@
    ]
   },
   {
+   "id": "fantomes_races_25",
+   "category": "fantomes",
+   "name": "Habitué des courses",
+   "description": "Terminer 25 courses contre des fantômes.",
+   "stars": 2,
+   "condition": {
+    "type": "stat",
+    "key": "ghost_races",
+    "count": 25
+   },
+   "requires": [
+    "fantomes_first"
+   ]
+  },
+  {
+   "id": "fantomes_gold_100",
+   "category": "fantomes",
+   "name": "Ruée vers l'or",
+   "description": "Battre 100 fois un de ses meilleurs segments.",
+   "stars": 4,
+   "condition": {
+    "type": "stat",
+    "key": "gold_segments",
+    "count": 100
+   },
+   "requires": [
+    "fantomes_gold_25"
+   ]
+  },
+  {
+   "id": "fantomes_pb_50",
+   "category": "fantomes",
+   "name": "Toujours devant",
+   "description": "Arriver 50 fois avant le fantôme de son meilleur temps.",
+   "stars": 4,
+   "condition": {
+    "type": "stat",
+    "key": "pb_ghost_wins",
+    "count": 50
+   },
+   "requires": [
+    "fantomes_pb_10"
+   ]
+  },
+  {
+   "id": "fantomes_close_5",
+   "category": "fantomes",
+   "name": "Au millimètre",
+   "description": "Arriver 5 fois à moins d'un dixième de seconde d'un fantôme.",
+   "stars": 4,
+   "condition": {
+    "type": "stat",
+    "key": "photo_finish",
+    "count": 5
+   },
+   "requires": [
+    "fantomes_close"
+   ]
+  },
+  {
+   "id": "fantomes_pack_10",
+   "category": "fantomes",
+   "name": "Meneur de peloton",
+   "description": "Terminer 10 courses contre 3 fantômes ou plus.",
+   "stars": 3,
+   "condition": {
+    "type": "stat",
+    "key": "ghost_pack_races",
+    "count": 10
+   },
+   "requires": [
+    "fantomes_pack"
+   ]
+  },
+  {
+   "id": "fantomes_friend_10",
+   "category": "fantomes",
+   "name": "Rival amical",
+   "description": "Arriver 10 fois avant le fantôme d'un ami.",
+   "stars": 3,
+   "condition": {
+    "type": "stat",
+    "key": "friend_ghost_wins",
+    "count": 10
+   },
+   "requires": [
+    "fantomes_friend"
+   ]
+  },
+  {
+   "id": "fantomes_compare",
+   "category": "fantomes",
+   "name": "Analyste",
+   "description": "Comparer deux replays dans le lecteur de replays.",
+   "stars": 1,
+   "condition": {
+    "type": "stat",
+    "key": "replay_compares",
+    "count": 1
+   }
+  },
+  {
+   "id": "fantomes_align",
+   "category": "fantomes",
+   "name": "Synchronisé",
+   "description": "Recaler un replay sur un point de sauvegarde pendant une comparaison.",
+   "stars": 2,
+   "condition": {
+    "type": "stat",
+    "key": "replay_aligns",
+    "count": 1
+   },
+   "requires": [
+    "fantomes_compare"
+   ]
+  },
+  {
    "id": "extreme_first",
    "category": "extreme",
    "name": "Une seule vie",
@@ -1937,6 +2693,66 @@
    },
    "requires": [
     "extreme_first"
+   ]
+  },
+  {
+   "id": "extreme_echoes_gold",
+   "category": "extreme",
+   "name": "Or des échos",
+   "description": "Obtenir l'or dans L'Arène des Échos.",
+   "stars": 4,
+   "condition": {
+    "type": "medal_level",
+    "level": "noyau_01",
+    "medal": 3
+   },
+   "requires": [
+    "extreme_first"
+   ]
+  },
+  {
+   "id": "extreme_star_platinum",
+   "category": "extreme",
+   "name": "Platine de l'étoile",
+   "description": "Obtenir le platine dans Le Cœur de l'Étoile.",
+   "stars": 5,
+   "condition": {
+    "type": "medal_level",
+    "level": "noyau_02",
+    "medal": 4
+   },
+   "requires": [
+    "extreme_star_nodeath"
+   ]
+  },
+  {
+   "id": "extreme_attempts_100",
+   "category": "extreme",
+   "name": "Increvable",
+   "description": "Tenter 100 fois un niveau EXTRÊME.",
+   "stars": 3,
+   "condition": {
+    "type": "stat",
+    "key": "extreme_attempts",
+    "count": 100
+   },
+   "requires": [
+    "extreme_attempts"
+   ]
+  },
+  {
+   "id": "extreme_10",
+   "category": "extreme",
+   "name": "Vétéran de l'extrême",
+   "description": "Terminer 10 fois un niveau EXTRÊME.",
+   "stars": 5,
+   "condition": {
+    "type": "stat",
+    "key": "extreme_finished",
+    "count": 10
+   },
+   "requires": [
+    "extreme_5"
    ]
   },
   {
@@ -2053,6 +2869,49 @@
    ]
   },
   {
+   "id": "createur_levels_10",
+   "category": "createur",
+   "name": "Urbaniste",
+   "description": "Créer 10 niveaux.",
+   "stars": 3,
+   "condition": {
+    "type": "user_levels",
+    "count": 10
+   },
+   "requires": [
+    "createur_levels_5"
+   ]
+  },
+  {
+   "id": "createur_enemies_5",
+   "category": "createur",
+   "name": "Bestiaire personnel",
+   "description": "Créer 5 ennemis dans l'éditeur d'ennemis.",
+   "stars": 3,
+   "condition": {
+    "type": "user_enemies",
+    "count": 5
+   },
+   "requires": [
+    "createur_enemy"
+   ]
+  },
+  {
+   "id": "createur_export_5",
+   "category": "createur",
+   "name": "Cartographe émérite",
+   "description": "Exporter 5 planètes (.cplanet).",
+   "stars": 2,
+   "condition": {
+    "type": "stat",
+    "key": "exports",
+    "count": 5
+   },
+   "requires": [
+    "createur_export"
+   ]
+  },
+  {
    "id": "communaute_account",
    "category": "communaute",
    "name": "Citoyen cosmique",
@@ -2160,6 +3019,200 @@
    },
    "requires": [
     "communaute_rate"
+   ]
+  },
+  {
+   "id": "communaute_comment",
+   "category": "communaute",
+   "name": "Première réaction",
+   "description": "Publier un commentaire sur Cosmic Online.",
+   "stars": 1,
+   "condition": {
+    "type": "stat",
+    "key": "comments_posted",
+    "count": 1
+   },
+   "requires": [
+    "communaute_account"
+   ]
+  },
+  {
+   "id": "communaute_comment_25",
+   "category": "communaute",
+   "name": "Bavard cosmique",
+   "description": "Publier 25 commentaires sur Cosmic Online.",
+   "stars": 3,
+   "condition": {
+    "type": "stat",
+    "key": "comments_posted",
+    "count": 25
+   },
+   "requires": [
+    "communaute_comment"
+   ]
+  },
+  {
+   "id": "communaute_rate_campaign",
+   "category": "communaute",
+   "name": "Avis officiel",
+   "description": "Noter un niveau de la campagne en ligne.",
+   "stars": 1,
+   "condition": {
+    "type": "set",
+    "key": "rated_campaign",
+    "count": 1
+   },
+   "requires": [
+    "communaute_account"
+   ]
+  },
+  {
+   "id": "communaute_rate_campaign_all",
+   "category": "communaute",
+   "name": "Guide stellaire",
+   "description": "Noter les 18 niveaux de la campagne en ligne.",
+   "stars": 4,
+   "condition": {
+    "type": "set",
+    "key": "rated_campaign",
+    "count": 18
+   },
+   "requires": [
+    "communaute_rate_campaign"
+   ]
+  },
+  {
+   "id": "collection_equip",
+   "category": "collection",
+   "name": "Essayage",
+   "description": "Équiper une récompense de la Collection.",
+   "stars": 1,
+   "condition": {
+    "type": "set",
+    "key": "equipped_items",
+    "count": 1
+   }
+  },
+  {
+   "id": "collection_equip_10",
+   "category": "collection",
+   "name": "Garde-robe",
+   "description": "Équiper 10 récompenses différentes.",
+   "stars": 2,
+   "condition": {
+    "type": "set",
+    "key": "equipped_items",
+    "count": 10
+   },
+   "requires": [
+    "collection_equip"
+   ]
+  },
+  {
+   "id": "collection_outfit",
+   "category": "collection",
+   "name": "Tenue de gala",
+   "description": "Porter en même temps une combinaison, une traînée, un cadre, un titre et un effet de victoire débloqués.",
+   "stars": 3,
+   "condition": {
+    "type": "max",
+    "key": "outfit_categories",
+    "count": 5
+   },
+   "requires": [
+    "collection_equip"
+   ]
+  },
+  {
+   "id": "collection_tracks_10",
+   "category": "collection",
+   "name": "Oreille curieuse",
+   "description": "Débloquer 10 morceaux du juke-box.",
+   "stars": 1,
+   "condition": {
+    "type": "tracks_heard",
+    "count": 10
+   }
+  },
+  {
+   "id": "collection_tracks_all",
+   "category": "collection",
+   "name": "Mélomane",
+   "description": "Débloquer les 19 morceaux du juke-box.",
+   "stars": 3,
+   "condition": {
+    "type": "tracks_heard",
+    "count": 19
+   },
+   "requires": [
+    "collection_tracks_10"
+   ]
+  },
+  {
+   "id": "collection_menu_music",
+   "category": "collection",
+   "name": "Programmateur",
+   "description": "Choisir la musique du menu principal dans le juke-box.",
+   "stars": 1,
+   "condition": {
+    "type": "stat",
+    "key": "menu_music",
+    "count": 1
+   },
+   "requires": [
+    "collection_tracks_10"
+   ]
+  },
+  {
+   "id": "collection_creatures_15",
+   "category": "collection",
+   "name": "Naturaliste",
+   "description": "Rencontrer 15 créatures du bestiaire.",
+   "stars": 1,
+   "condition": {
+    "type": "creatures_met",
+    "count": 15
+   }
+  },
+  {
+   "id": "collection_creatures_30",
+   "category": "collection",
+   "name": "Encyclopédiste",
+   "description": "Rencontrer 30 créatures du bestiaire.",
+   "stars": 3,
+   "condition": {
+    "type": "creatures_met",
+    "count": 30
+   },
+   "requires": [
+    "collection_creatures_15"
+   ]
+  },
+  {
+   "id": "collection_photo",
+   "category": "collection",
+   "name": "Photographe",
+   "description": "Enregistrer l'image d'une planète depuis la Galerie.",
+   "stars": 1,
+   "condition": {
+    "type": "set",
+    "key": "photographed_planets",
+    "count": 1
+   }
+  },
+  {
+   "id": "collection_photo_all",
+   "category": "collection",
+   "name": "Album des planètes",
+   "description": "Enregistrer l'image des 5 planètes depuis la Galerie.",
+   "stars": 2,
+   "condition": {
+    "type": "set",
+    "key": "photographed_planets",
+    "count": 5
+   },
+   "requires": [
+    "collection_photo"
    ]
   }
  ]
