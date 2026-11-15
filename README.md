@@ -5,6 +5,11 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.30.1** :
+* **Replays recadrés** : la partie tient dans la place que laissent le panneau et les commandes,
+  rien n'est caché dessous ; **« Masquer les infos »** (touche I, Select à la manette) lui donne
+  toute la largeur. Les noms A et B ne s'écrivent plus sur la jauge du boss ni sur le HUD.
+
 **Nouveau dans la version 2.30.0** :
 * **Pastilles « NOUVEAU » sur tout le chemin** jusqu'à chaque nouveauté, même très profonde : menu
   principal, onglets, catégories des succès et de la Collection, cartes, fiches du Guide des

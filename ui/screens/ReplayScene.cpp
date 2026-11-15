@@ -165,12 +165,15 @@ public:
         if (!playback_) drawGhost(r, view, animA_, poseA(), kColorA, 0.95f);
         if (comparing_) drawGhost(r, view, animB_, poseB(), kColorB, ghostAlpha());
         r.setView(WorldView{});
+        hudRects_.clear();
         if (playback_) drawGameHud(view);
         if (comparing_) drawCompareProgress();
         if (comparing_) drawTags(view);
         drawSeekOverlay();
-        if (comparing_) drawComparePanel(layout_.panel);
-        else drawSplitsPanel(layout_.panel);
+        if (showInfo_) {
+            if (comparing_) drawComparePanel(layout_.panel);
+            else drawSplitsPanel(layout_.panel);
+        }
         drawStrip(layout_.strip);
         handleShortcuts();
         ui.end();
@@ -538,7 +541,7 @@ private:
     void updateCamera(float dt) {
         if (layout_.worldArea.w <= 0.0f) return;
         Renderer& r = g_.app.renderer();
-        float normal = static_cast<float>(r.height()) / Camera::kViewHeight * std::max(0.5f, level_.cameraZoom);
+        float normal = static_cast<float>(r.height()) / Camera::kViewHeight * std::max(0.5f, level_.cameraZoom) * fitScale(r);
         Vec2 a = feetA() - Vec2{0, 12};
         Vec2 target = a;
         float scale = normal;
@@ -568,7 +571,15 @@ private:
         // Following A in an exact replay: the game's own camera (zones, boss arenas).
         if (playback_ && (!comparing_ || camMode_ == 0)) {
             float alpha = playing_ ? std::clamp(acc_ / kSimDt, 0.0f, 1.0f) : 1.0f;
-            return world().camera().view(r.width(), r.height(), alpha);
+            WorldView g = world().camera().view(r.width(), r.height(), alpha);
+            const float k = fitScale(r);
+            if (k >= 0.999f) return g;
+            // Recadré : the centre of what the player saw at the centre of the free part,
+            // smaller so that all of it fits there.
+            Vec2 centre = g.topLeft + Vec2{static_cast<float>(r.width()), static_cast<float>(r.height())} * (0.5f / g.scale);
+            g.scale *= k;
+            g.topLeft = centre - layout_.worldArea.center() / g.scale;
+            return g;
         }
         WorldView v;
         v.screenW = r.width();
@@ -595,6 +606,18 @@ private:
         layout_.strip = {0, H - stripH, W, stripH};
         layout_.panel = {W - m - pw, m, pw, H - stripH - 2 * m};
         layout_.worldArea = {0, 0, layout_.panel.x - m, H - stripH};
+        if (!showInfo_) {  // « Masquer les infos »: the run on the whole width
+            layout_.panel = {};
+            layout_.worldArea = {0, 0, W, H - stripH};
+        }
+    }
+
+    /// The run's field of view fitted into the part of the screen the panels leave free:
+    /// everything the player saw stays visible, never under the panel or the controls.
+    float fitScale(const Renderer& r) const {
+        const Rect& f = layout_.worldArea;
+        if (f.w <= 0.0f || f.h <= 0.0f || r.width() <= 0 || r.height() <= 0) return 1.0f;
+        return std::clamp(std::min(f.w / static_cast<float>(r.width()), f.h / static_cast<float>(r.height())), 0.3f, 1.0f);
     }
 
     float px(float size) const { return g_.ui.s(fz(g_.ui, size)); }
@@ -722,7 +745,11 @@ private:
             Rect boss = hud_.area(ui, w, HudElement::Boss, hud_.place(ui, w, hs, HudElement::Boss));
             if (boss.x < m || boss.right() > free.right() - m || (powers.w > 0.0f && boss.intersects(powers)) || (vitals.w > 0.0f && boss.intersects(vitals)))
                 setHudVisible(hs, HudElement::Boss, false);
+            else if (boss.w > 0.0f && w.activeBoss())
+                hudRects_.push_back(boss.expanded(ui.s(6)));
         }
+        for (const Rect& a : {vitals, powers})
+            if (a.w > 0.0f) hudRects_.push_back(a.expanded(ui.s(6)));
         hud_.render(ui, w, view, nullptr, hs);
     }
 
@@ -775,6 +802,8 @@ private:
                                (poseB().flags & ReplayFrame::FacingLeft) != 0));
         hud_.setProgressRacers(std::move(racers));
         hud_.drawProgressAt(ui, w, {(left + right) * 0.5f, y}, 1.0f, right - left);
+        const float above = Hud::progressAbove(ui.s(1), true), below = Hud::progressBelow(ui.s(1), true);
+        hudRects_.push_back({left - ui.s(40), y - above, right - left + ui.s(80), above + below});
         hud_.setProgressRacers({});
     }
 
@@ -795,6 +824,8 @@ private:
                 if (!area.containsRect(b)) return false;
                 for (int j = 0; j < n; ++j)
                     if (b.intersects(placed[j])) return false;
+                for (const Rect& hr : hudRects_)  // never on the boss gauge, the vitals, the progress bar
+                    if (b.intersects(hr)) return false;
                 return true;
             };
             if (!ok(box)) box.y -= box.h + ui.s(2);
@@ -1252,6 +1283,7 @@ private:
                                  {"speed", std::string("Vitesse ") + kSpeedLabels[static_cast<size_t>(speedIdx_)], 2}};
         std::vector<Btn> right;
         if (playback_ && playback_->desynced()) right.push_back({"trace", "Voir la trajectoire", 8});
+        right.push_back({"info", showInfo_ ? "Masquer les infos" : "Afficher les infos", 6});
         right.push_back({"compare", comparing_ ? "Changer A / B…" : "Comparer…", 5});
         right.push_back({"close", "Retour", 9});
         const float fs = fz(ui, 18), gap = ui.s(8), h = buttonH();
@@ -1285,6 +1317,7 @@ private:
             float bw = natural(*it);
             rx -= bw;
             if (ui.button(it->id, {rx, y, bw, h}, it->label, st)) pressed = it->id;
+            if (std::string(it->id) == "info") ui.newBadge(it->id, {rx, y, bw, h}, "replay.info_toggle");  // « NOUVEAU » (2.30.1)
             rx -= gap;
         }
         ui.popId();
@@ -1299,6 +1332,7 @@ private:
         else if (pressed == "speed") speedIdx_ = (speedIdx_ + 1) % static_cast<int>(kSpeeds.size());
         else if (pressed == "trace") switchToTrace();
         else if (pressed == "compare") openCompare();
+        else if (pressed == "info") toggleInfo();
         else if (pressed == "close") closeRequested_ = true;
     }
 
@@ -1370,6 +1404,7 @@ private:
                      {{{"", {}, Action::MenuTabPrev}, {"", {}, Action::MenuTabNext}}, "point"},
                      {{{"", B::axisPos(SDL_GAMEPAD_AXIS_RIGHTX)}}, "±5 s"}};
             if (comparing_) hints.push_back({{{"", B::button(SDL_GAMEPAD_BUTTON_NORTH)}}, "caméra"});
+            hints.push_back({{{"", B::button(SDL_GAMEPAD_BUTTON_BACK)}}, "infos"});
         } else {
             hints = {{{{"K", {}}}, "lecture"}, {{{",", {}}, {".", {}}}, "image"}, {{{"J", {}}, {"L", {}}}, "±5 s"},
                      {{{"", {}, Action::MenuTabPrev}, {"", {}, Action::MenuTabNext}}, "point"}, {{{"−", {}}, {"+", {}}}, "vitesse"}};
@@ -1377,6 +1412,7 @@ private:
                 hints.push_back({{{"C", {}}}, "caméra"});
                 hints.push_back({{{"R", {}}}, "recaler"});
             }
+            hints.push_back({{{"I", {}}}, "infos"});
         }
         const float h = std::max(ui.s(22), px(13) * 1.5f);
         const float fs = fz(ui, 13), gap = ui.s(4), sep = ui.s(14);
@@ -1422,6 +1458,14 @@ private:
 
     // ------------------------------------------------------------ input
     /// Shortcuts of the player (keyboard and gamepad), besides the buttons (mouse, focus).
+    /// « Masquer / Afficher les infos »: the side panel out of the way, the run framed again
+    /// on the whole width (the camera follows at once).
+    void toggleInfo() {
+        showInfo_ = !showInfo_;
+        snapCam_ = true;
+        g_.uiSound("ui_confirm");
+    }
+
     void handleShortcuts() {
         UIContext& ui = g_.ui;
         InputManager& in = g_.app.input();
@@ -1445,6 +1489,7 @@ private:
         if (key(SDLK_MINUS) || in.keyPressed(SDL_SCANCODE_KP_MINUS)) speedIdx_ = std::max(0, speedIdx_ - 1);
         if (key(SDLK_PLUS) || key(SDLK_EQUALS) || in.keyPressed(SDL_SCANCODE_KP_PLUS))
             speedIdx_ = std::min(static_cast<int>(kSpeeds.size()) - 1, speedIdx_ + 1);
+        if (key(SDLK_I)) toggleInfo();
         if (comparing_) {
             if (key(SDLK_C)) cycleCamera();
             if (key(SDLK_T)) showPaths_ = !showPaths_;
@@ -1460,6 +1505,7 @@ private:
         };
         if (edge(in.rawPadButton(SDL_GAMEPAD_BUTTON_WEST), padX_)) togglePlay();
         if (edge(in.rawPadButton(SDL_GAMEPAD_BUTTON_NORTH), padY_) && comparing_) cycleCamera();
+        if (edge(in.rawPadButton(SDL_GAMEPAD_BUTTON_BACK), padBack_)) toggleInfo();
         auto repeat = [&](bool held, float& timer, float first, float next) {
             if (!held) {
                 timer = -1.0f;
@@ -1551,6 +1597,8 @@ private:
     std::string offsetText_;
     int camMode_ = 0;  // 0 A, 1 B, 2 both
     bool showPaths_ = true;  // comparison: both trajectories (a replay alone shows its player)
+    bool showInfo_ = true;   // the side panel (splits / comparison); hidden: the run on the whole width
+    std::vector<Rect> hudRects_;  // HUD drawn this frame (vitals, powers, boss gauge, progress): the tags avoid them
     // Clock and playback.
     double t_ = 0.0;      // trace mode: A's run time
     double extra_ = 0.0;  // exact mode: time after A's finish (comparison)
@@ -1573,7 +1621,7 @@ private:
     float msgTimer_ = 0.0f;
     bool closeRequested_ = false;
     bool editedThisFrame_ = false;
-    bool padX_ = false, padY_ = false;
+    bool padX_ = false, padY_ = false, padBack_ = false;
     float ltTimer_ = -1.0f, rtTimer_ = -1.0f, rsLeft_ = -1.0f, rsRight_ = -1.0f;
 };
 

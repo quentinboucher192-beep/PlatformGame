@@ -827,6 +827,12 @@
    ]
   },
   {
+   "fr": "Afficher les infos",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Afficher les pseudonymes",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
@@ -6123,6 +6129,12 @@
   },
   {
    "fr": "Corrigé : changer une touche ou un bouton dans les paramètres déclenchait aussi une action (Entrée relançait la modification, Échap fermait les paramètres, Q / E changeaient d'onglet) ; la touche choisie ne sert plus qu'à la nouvelle commande, jusqu'à ce qu'elle soit relâchée.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Corrigé : les noms A et B des joueurs ne s'écrivent plus sur la jauge du boss, les cœurs ou la barre de progression.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -11529,6 +11541,12 @@
    ]
   },
   {
+   "fr": "I",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "IA",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -11992,6 +12010,12 @@
    "fr": "informations",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "infos",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -15325,6 +15349,12 @@
    ]
   },
   {
+   "fr": "Masquer les infos",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Masquer les réponses",
    "where": [
     "ui/online/CommentsPanel.cpp"
@@ -17243,6 +17273,12 @@
    "fr": "Nouveau boss : {0}",
    "where": [
     "game/progression/NewsCenter.cpp"
+   ]
+  },
+  {
+   "fr": "Nouveau bouton « Masquer les infos » (touche I, bouton Select de la manette) : le panneau de droite disparaît et la partie prend toute la largeur.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -22388,6 +22424,12 @@
    "fr": "replay vérifié (structure, version du niveau, durée, trajectoire), non re-simulé",
    "where": [
     "server/src/community.ts"
+   ]
+  },
+  {
+   "fr": "Replays : la partie est recadrée dans la place que laissent le panneau et les commandes ; tout ce que voyait le joueur reste visible, plus rien n'est caché sous le panneau.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
