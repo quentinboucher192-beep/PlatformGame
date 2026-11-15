@@ -66,7 +66,7 @@ struct ReplayData {
     /// 3 since 2.24: the recorded actions take 32 bits (keys of the power slots) and the
     /// input section says how the powers were used (keysPerSlot). Versions 1 and 2 are read.
     static constexpr uint16_t kFormatVersion = 3;
-    /// 4 since 2.31: version 3 + the rules of a daily challenge (input flag 2 and a section
+    /// 4 since 2.32: version 3 + the rules of a daily challenge (input flag 2 and a section
     /// after the state digests: u16 length, then the canonical form of the rules). Written
     /// only for a challenge run; every other run stays in version 3.
     static constexpr uint16_t kFormatChallenge = 4;

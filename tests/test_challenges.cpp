@@ -1,4 +1,4 @@
-// Daily challenges (2.31, docs/online/DAILY_CHALLENGES.md): the canonical form of the rules
+// Daily challenges (2.32, docs/online/DAILY_CHALLENGES.md): the canonical form of the rules
 // and its SHA-256 (the fixture shared with the server), the rules in the simulation (hearts,
 // slots, imposed powers, stations, checkpoints, a death going back to the start), the
 // determinism of a challenge run and the replay format 4 (written, read, played again).

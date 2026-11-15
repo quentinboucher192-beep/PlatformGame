@@ -1,4 +1,4 @@
-// Main menu → « Défis » (2.31, docs/online/DAILY_CHALLENGES.md): the challenge of the day
+// Main menu → « Défis » (2.32, docs/online/DAILY_CHALLENGES.md): the challenge of the day
 // (« Aujourd'hui »: level, countdown, rules, tiers, my best time and its state, Jouer / Revoir
 // mon meilleur replay / S'entraîner, the day's leaderboard) and the past ones (« Archives »:
 // my tier per day, Rejouer hors classement); before a run, what changes today, the tiers,
@@ -183,10 +183,14 @@ std::vector<std::pair<std::string, std::string>> ruleExplanations(GameServices& 
     std::vector<std::pair<std::string, std::string>> out;
     std::string hearts = std::to_string(r.hearts) + (r.hearts > 1 ? " cœurs" : " cœur");
     out.push_back({"Cœurs", hearts + " pour tout le niveau, pleins au départ ; les cœurs de cristal du niveau ne donnent rien."});
-    std::string slots = std::to_string(r.slots) + (r.slots > 1 ? " emplacements de pouvoirs" : " emplacement de pouvoir");
+    // Whole sentences (one template each for the translation).
+    std::string slots;
     if (level && level->powerSlots() > 0 && level->powerSlots() != r.slots)
-        slots += " (le niveau en a " + std::to_string(level->powerSlots()) + ")";
-    out.push_back({"Emplacements", slots + "."});
+        slots = r.slots > 1 ? std::to_string(r.slots) + " emplacements de pouvoirs (le niveau en a " + std::to_string(level->powerSlots()) + ")."
+                            : std::to_string(r.slots) + " emplacement de pouvoir (le niveau en a " + std::to_string(level->powerSlots()) + ").";
+    else
+        slots = r.slots > 1 ? std::to_string(r.slots) + " emplacements de pouvoirs." : std::to_string(r.slots) + " emplacement de pouvoir.";
+    out.push_back({"Emplacements", slots});
     std::string powers = r.powers.empty() ? std::string("Vous partez sans aucun pouvoir.")
                                           : "Vous partez avec : " + powerList(g, r.powers) + " (à la place des pouvoirs de départ du niveau).";
     out.push_back({"Pouvoirs", powers});
@@ -661,7 +665,7 @@ private:
             boardOk_ = r.ok;
             boardCached_ = r.fromCache;
             boardMsg_ = r.ok ? std::string() : r.message;
-            boardCode_ = r.code;
+            boardCode_ = r.status == 400 ? std::string("BAD_REQUEST") : r.code;  // scope=country without a country: 400
             boardOffline_ = !r.ok && (r.networkFailure() || r.status >= 500);
             if (r.ok) board_ = r.data;
         }));
@@ -725,7 +729,7 @@ private:
         }
         if (!boardOk_) {
             std::string text = boardOffline_ ? "Hors ligne : classement indisponible pour l'instant."
-                               : boardCode_ == "VALIDATION_ERROR" && scope_ == 1
+                               : boardCode_ == "BAD_REQUEST" && scope_ == 1
                                    ? "Pays inconnu : choisissez votre pays dans votre compte (EN LIGNE) pour ce classement."
                                    : "Classement indisponible : " + boardMsg_;
             Vec2 s = ui.labelWrapped(text, {x, y}, w, fz(ui, 17), ui.theme().textDim);
@@ -1182,6 +1186,13 @@ private:
 
     void launch() {
         if (!challenge_ || !level_) return;
+        // Ended while this screen was open: the run can only be a practice now.
+        if (!practice_ && g_.challenges.nowMs() >= challenge_->endsAtMs) {
+            practice_ = true;
+            g_.uiSound("ui_error");
+            say("Ce défi vient de se terminer : la partie sera hors classement.");
+            return;
+        }
         PlayOptions o;
         o.challenge = PlayOptions::Challenge{*challenge_, practice_};
         o.ghostsChosen = true;
@@ -1318,7 +1329,7 @@ public:
         float bw = (w - 2 * gap) / 3.0f;
         UIContext::ButtonStyle primary;
         primary.primary = true;
-        bool again = ui.button("again", {x, by, bw, ui.s(60)}, "Rejouer", primary);
+        bool again = ui.button("again", {x, by, bw, ui.s(60)}, "Recommencer", primary);
         UIContext::ButtonStyle rs;
         rs.enabled = d_.completed && d_.replay != nullptr;
         bool watch = ui.button("watch", {x + bw + gap, by, bw, ui.s(60)}, "Revoir la partie", rs);

@@ -109,7 +109,7 @@ void CollectibleEntity::onPlayerEnter(GameWorld& w) {
         w.playSound("sounds/collect_orb.wav", box.center(), 0.8f, 0.9f);
         w.particles().emit("heal", p.center(), 1.0f);
     } else if (t == "heart_container" && w.challenge()) {
-        // A daily challenge sets the hearts of the run: the container gives nothing (2.31).
+        // A daily challenge sets the hearts of the run: the container gives nothing (2.32).
         w.playSound("sounds/collect_orb.wav", box.center(), 0.6f, 0.8f);
         WorldMessage m;
         m.style = WorldMessage::Style::Secret;
@@ -186,7 +186,7 @@ void PowerUnlockEntity::restore(GameWorld& w) {
 void PowerUnlockEntity::onPlayerEnter(GameWorld& w) {
     const PowerDefinition* def = w.content().power(power_);
     if (!def || w.mode() == WorldMode::Editor) return;
-    if (disabledByChallenge(w)) return;  // 2.31: a challenge without stations
+    if (disabledByChallenge(w)) return;  // 2.32: a challenge without stations
     switch (w.player().offerPower(*def)) {
         case Player::Offer::AlreadyOwned: return;
         case Player::Offer::NeedsChoice:

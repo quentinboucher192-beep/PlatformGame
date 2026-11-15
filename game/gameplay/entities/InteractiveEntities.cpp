@@ -40,7 +40,7 @@ void CheckpointEntity::update(GameWorld& /*w*/, float dt) { sprite_.anim.update(
 
 void CheckpointEntity::activate(GameWorld& w, bool silent) {
     if (activated_) return;
-    // 2.31: a daily challenge without checkpoints (a death goes back to the start).
+    // 2.32: a daily challenge without checkpoints (a death goes back to the start).
     if (w.challenge() && !w.challenge()->checkpoints) return;
     activated_ = true;
     sprite_.anim.play("activate", true);

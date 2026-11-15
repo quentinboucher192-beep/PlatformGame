@@ -214,7 +214,7 @@ void GameScene::drawChallengeBanner() {
     // Always: what this run is, at the bottom left.
     UIContext& ui = g_.ui;
     const ChallengeRules& r = opt_.challenge->challenge.rules;
-    std::string tag = opt_.challenge->practice ? "DÉFI · HORS CLASSEMENT" : "DÉFI DU JOUR";
+    std::string tag = opt_.challenge->practice ? "DÉFI HORS CLASSEMENT" : "DÉFI DU JOUR";
     tag += " · " + std::to_string(r.hearts) + (r.hearts > 1 ? " cœurs" : " cœur");
     if (!r.checkpoints) tag += " · sans points de passage";
     tag += " · " + keyName(SDL_SCANCODE_R) + " / Vue : recommencer";

@@ -73,7 +73,7 @@ public:
         bool canContinue = !g_.progression.lastLevel.empty() && g_.content.level(g_.progression.lastLevel) &&
                            !g_.content.campaignPlanetOf(g_.progression.lastLevel).empty();
         int rows = canContinue ? 10 : 9;
-        // Ten rows (2.31: « Défis »): a little tighter so that the menu keeps clear of the footer.
+        // Ten rows (2.32: « Défis »): a little tighter so that the menu keeps clear of the footer.
         float x = ui.s(120), w = ui.s(470), h = ui.s(rows > 9 ? 62 : 66), gap = ui.s(rows > 9 ? 12 : 14);
         float y = ui.screenH() * 0.5f - (rows * (h + gap)) * 0.5f + ui.s(40);
         Rect side{x - ui.s(40), y - ui.s(40), w + ui.s(80), rows * (h + gap) + ui.s(70)};

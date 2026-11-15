@@ -810,7 +810,7 @@ void GameWorld::respawnPlayer() {
     lockedZone_.reset();
     bossZone_.reset();
     for (size_t i = 0; i < entities_.size(); ++i) entities_[i]->onPlayerRespawn(*this);
-    // A challenge without checkpoints: back to its start state (2.31, simulation 11).
+    // A challenge without checkpoints: back to its start state (2.32, simulation 11).
     if (challenge_ && !challenge_->checkpoints) restartChallenge();
     playSound("sounds/respawn.wav", 0.8f);
     if (boss_ && boss_->alive()) {

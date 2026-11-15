@@ -29,7 +29,7 @@ class GameScene;
 /// Boss training: the end of a training run (Recommencer, Changer les réglages, Retour).
 std::unique_ptr<Scene> makeBossTrainingEnd(GameServices& g, GameScene& game, const BossTrainingResult& result);
 
-/// The end of a daily challenge run (2.31): time, new best, tier, streak, sending state.
+/// The end of a daily challenge run (2.32): time, new best, tier, streak, sending state.
 struct ChallengeEndData {
     DailyChallenge challenge;
     bool practice = false;

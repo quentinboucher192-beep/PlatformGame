@@ -51,7 +51,7 @@ constexpr int kSimulationVersion = 11;  // 6: energy 150, time slow, magnet, air
 ///   8 -> simulation 8 (2.17: energy costs and minions changed: the rankings start again),
 ///        9 (2.20: only additions — new guardians, attacks and powers — the records stay)
 ///        10 (2.24: keys per power slot; the moves and powers are the same, earlier runs
-///        stay valid and comparable) and 11 (2.31: the challenge rules only apply to a
+///        stay valid and comparable) and 11 (2.32: the challenge rules only apply to a
 ///        challenge run; every other run plays as before, the records stay).
 constexpr int kRankingGeneration = 8;
 

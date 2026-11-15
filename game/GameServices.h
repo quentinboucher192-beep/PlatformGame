@@ -88,7 +88,7 @@ public:
     void checkForUpdate();
     /// Cosmic Online (rankings, globe, account). Fully optional: offline play never needs it.
     OnlineService online;
-    /// « Défis du jour » (2.31): the challenges (cached, playable offline until their end),
+    /// « Défis du jour » (2.32): the challenges (cached, playable offline until their end),
     /// local results and streak, runs waiting to be sent.
     ChallengeService challenges;
     UIContext ui;

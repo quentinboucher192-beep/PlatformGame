@@ -1,6 +1,6 @@
 #pragma once
 
-// « Défis du jour » (2.31), the game's side of docs/online/DAILY_CHALLENGES.md: the challenge
+// « Défis du jour » (2.32), the game's side of docs/online/DAILY_CHALLENGES.md: the challenge
 // as the server describes it, the cache that keeps it playable offline until its end
 // (saves/challenges/), the player's local results and streak, and the runs waiting to be sent
 // (the same offline-queue pattern as the records: kept on disk, sent when the connection and
@@ -227,6 +227,7 @@ private:
     bool archivesBusy_ = false;
     bool archivesDone_ = false;
     bool sending_ = false;
+    bool wasOffline_ = false;
     float sendTimer_ = 2.0f;
     float mineTimer_ = 0.0f;
     bool mineBusy_ = false;

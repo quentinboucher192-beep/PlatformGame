@@ -48,7 +48,7 @@ struct PlayOptions {
     std::vector<std::string> trainingPowers; // tablets picked up before the start, in route order
     /// Boss training (boss statistics → Entraînement): set up with the world, never recorded.
     std::optional<BossTrainingSetup> bossTraining;
-    /// A daily challenge (2.31): its rules apply to the world (GameWorld::setChallenge). A
+    /// A daily challenge (2.32): its rules apply to the world (GameWorld::setChallenge). A
     /// run of the day's challenge is kept as a local result and sent; `practice` (« S'entraîner »,
     /// « Rejouer » an archive) keeps nothing: hors classement. Never a level record either way.
     struct Challenge {
@@ -121,7 +121,7 @@ std::unique_ptr<Scene> makeNewRewards(GameServices& g);
 std::unique_ptr<Scene> makeBossStats(GameServices& g, const std::string& bossId = {});
 /// Boss statistics → Entraînement: hearts, power slots, powers and phase, then the boss's arena.
 std::unique_ptr<Scene> makeBossTraining(GameServices& g, const std::string& bossId);
-/// Main menu → Défis (2.31): `tab` 0 « Aujourd'hui », 1 « Archives » (`select`: the
+/// Main menu → Défis (2.32): `tab` 0 « Aujourd'hui », 1 « Archives » (`select`: the
 /// challenge selected there).
 std::unique_ptr<Scene> makeChallenges(GameServices& g, int tab = 0, const std::string& select = {});
 /// Before a challenge run (pushed over the Défis screen): the level, what changes today,

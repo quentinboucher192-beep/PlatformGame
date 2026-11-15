@@ -123,7 +123,7 @@ public:
     /// progression, creatures met). Never read by the simulation.
     void setTraining(bool on) { training_ = on; }
     bool training() const { return training_ || challenge_.has_value(); }
-    /// A daily challenge (2.31, simulation 11): its rules apply now (call it right after
+    /// A daily challenge (2.32, simulation 11): its rules apply now (call it right after
     /// load(), before the first step: hearts, slots, imposed powers) and for the rest of the
     /// run (heart containers give nothing; stations off; checkpoints off, a death going back
     /// to the start with the challenge's start state). The run then counts for nothing else

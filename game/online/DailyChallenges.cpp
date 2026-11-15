@@ -772,6 +772,9 @@ void ChallengeService::update(float dt) {
     if (!online_->loggedIn()) return;
     sendTimer_ -= dt;
     bool offline = online_->state() == OnlineState::Offline;
+    // The connection is back: what waits goes at once.
+    if (wasOffline_ && online_->state() == OnlineState::Online) sendTimer_ = 0.0f;
+    wasOffline_ = offline;
     if (!sending_ && sendTimer_ <= 0.0f) {
         bool any = false;
         for (const auto& s : submissions_)

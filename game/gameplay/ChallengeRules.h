@@ -1,6 +1,6 @@
 #pragma once
 
-// Rules of a daily challenge (« Défis du jour », 2.31; contract: docs/online/DAILY_CHALLENGES.md):
+// Rules of a daily challenge (« Défis du jour », 2.32; contract: docs/online/DAILY_CHALLENGES.md):
 // the hearts of the run, the power slots, the powers carried from the start, whether the
 // power stations offer anything and whether the checkpoints activate. They are part of the
 // simulation (kSimulationVersion 11): GameWorld::setChallenge applies them right after the
