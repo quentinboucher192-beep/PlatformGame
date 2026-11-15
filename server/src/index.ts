@@ -9,6 +9,7 @@ import { ApiError, errorResponse, json, log, type Bindings, type Ctx } from "./h
 import * as boards from "./leaderboards";
 import * as creators from "./creators";
 import * as achievements from "./achievements";
+import * as campaign from "./campaign";
 import * as notifications from "./notifications";
 import * as race from "./race";
 import * as workshop from "./workshop";
@@ -129,6 +130,17 @@ route("GET", `${V}/leaderboards/planet/{planetId}`, boards.routePlanet, { viewer
 route("GET", `${V}/leaderboards/country/{countryCode}`, boards.routeCountry, { viewer: true, cacheable: true });
 route("GET", `${V}/leaderboards/friends`, (ctx) => boards.routeFriends(ctx));
 route("GET", `${V}/leaderboards/weekly`, boards.routeWeekly, { viewer: true, cacheable: true });
+
+// Campaign social side (2.19): ratings of the official levels, comments of the official
+// levels (ONLINE) and of the runs (their comments then use the /community/comments routes)
+route("GET", `${V}/levels/ratings`, (ctx) => campaign.listRatings(ctx), { cacheable: true });
+route("GET", `${V}/levels/{levelId}/rating`, (ctx) => campaign.getRating(ctx), { cacheable: true });
+route("PUT", `${V}/levels/{levelId}/rating`, (ctx) => campaign.putRating(ctx));
+route("DELETE", `${V}/levels/{levelId}/rating`, (ctx) => campaign.deleteRating(ctx));
+route("GET", `${V}/levels/{levelId}/comments`, (ctx) => campaign.listLevelComments(ctx));
+route("POST", `${V}/levels/{levelId}/comments`, (ctx) => campaign.postLevelComment(ctx));
+route("GET", `${V}/records/{recordId}/comments`, (ctx) => campaign.listRunComments(ctx));
+route("POST", `${V}/records/{recordId}/comments`, (ctx) => campaign.postRunComment(ctx));
 
 // Records
 route("POST", `${V}/records/submit`, (ctx) => records.submit(ctx));

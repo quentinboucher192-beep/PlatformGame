@@ -7,6 +7,7 @@ import { audit, countryExists, requireAuth, type AuthInfo } from "./auth";
 import { verifyPassword } from "./crypto";
 import { ApiError, Errors, json, nowIso, readJsonObject, readLimited, type Ctx } from "./http";
 import { playerSummary, privateProfile, recordJson, visibleCountry, type PlayerRow, type RecordRow } from "./model";
+import { campaignAfterAccountDeletion, campaignBeforeAccountDeletion, campaignExport } from "./campaign";
 import { communityKeys } from "./community";
 import { ownedProjectKeys } from "./projects";
 import { RULES, rateLimit } from "./ratelimit";
@@ -310,6 +311,8 @@ export async function exportMe(ctx: Ctx): Promise<Response> {
         project_messages: projectMessages?.results ?? [],
         race_attempts: raceRows?.results ?? [],
         achievements: achievementRows?.results ?? [],
+        // 2.19: ratings of the official levels, comments of the campaign and of the runs.
+        ...(await campaignExport(ctx, id)),
         notes: "Le mot de passe n'est stocké que sous forme d'empreinte PBKDF2 et n'est pas exportable. Les adresses IP ne sont jamais stockées en clair.",
     });
 }
@@ -354,7 +357,10 @@ export async function deleteMe(ctx: Ctx): Promise<Response> {
         ctx.env.DB.prepare(
             "DELETE FROM race_victors WHERE EXISTS (SELECT 1 FROM community_levels l WHERE l.author_id = ?1 AND race_victors.board LIKE 'c:' || l.id || ':%')",
         ).bind(id),
+        // Averages and counters of the campaign recomputed without the player (2.19).
+        ...campaignBeforeAccountDeletion(ctx, id),
         ctx.env.DB.prepare("DELETE FROM players WHERE id = ?1").bind(id),
+        ...campaignAfterAccountDeletion(ctx),
         // Groups the player owned go to their oldest member; emptied conversations disappear.
         ctx.env.DB.prepare(
             `UPDATE conversation_members SET role = 'owner' WHERE rowid IN (

@@ -151,8 +151,9 @@ de `wrangler.jsonc`, plafonnée à 1 000) multiplie toutes les limites.
 | `community_rate` / `community_report` | 60 / 20 | 1 h | joueur | notes, signalements |
 | `community_record` | 30 | 1 min | joueur | `POST /community/levels/{id}/records` |
 | `community_favorite` | 120 | 1 h | joueur | `POST`/`DELETE /community/levels/{id}/favorite` |
-| `community_comment` | 8 | 10 min | joueur | `POST /community/levels/{id}/comments`, `PATCH /community/comments/{id}` |
+| `community_comment` | 8 | 10 min | joueur | `POST /community/levels/{id}/comments`, `POST /levels/{id}/comments`, `POST /records/{id}/comments`, `PATCH /community/comments/{id}` (compteur partagé par tous les fils) |
 | `community_reaction` | 120 | 10 min | joueur | `PUT /community/comments/{id}/reaction` |
+| `level_rate` | 60 | 1 h | joueur | `PUT` / `DELETE /levels/{id}/rating` (notes des niveaux de la campagne) |
 | `follow` | 60 | 1 h | joueur | `POST /players/{id}/follow` |
 | `playtime` | 40 | 1 h | joueur | `POST /players/me/playtime` |
 | `project_create` / `project_invite` | 10 / 30 | 1 h | joueur | `POST /projects`, `POST /projects/{id}/invites` |
@@ -192,10 +193,12 @@ prévu est coupé et refusé (`413 PAYLOAD_TOO_LARGE`). Un `Content-Length` inva
 | 401 | `SESSION_REVOKED` | Jeton de renouvellement réutilisé après la grâce, ou session révoquée entre-temps |
 | 401 | `SESSION_EXPIRED` | Jeton de renouvellement expiré : se reconnecter |
 | 403 | `ACCOUNT_SUSPENDED` | Compte suspendu |
-| 403 | `PROFILE_PRIVATE` | Profil privé (historique, statistiques, replay d'un autre joueur) |
+| 403 | `PROFILE_PRIVATE` | Profil privé (historique, statistiques, replay ou commentaires des courses d'un autre joueur) |
 | 403 | `NOT_OWNER` | Envoi d'un replay pour le record d'un autre joueur |
 | 403 | `RANKING_DISABLED` | Classement désactivé pour ce niveau |
 | 403 | `FRIEND_REQUESTS_DISABLED` | Le joueur n'accepte pas les demandes d'amis |
+| 403 | `LEVEL_NOT_COMPLETED` | Note d'un niveau officiel sans temps vérifié sur ce niveau (§8.9 decies) |
+| 403 | `RUN_NOT_VERIFIED` | Commentaire sur une course pas encore vérifiée |
 | 404 | `NOT_FOUND` | Route inconnue ; routes d'administration désactivées |
 | 404 | `PLAYER_NOT_FOUND` | Joueur inconnu, suspendu, ou identifiant mal formé |
 | 404 | `LEVEL_NOT_FOUND` | Niveau inconnu du serveur |
@@ -538,14 +541,16 @@ Réponse d'un **classement de niveau** :
     "period": "all", "week_start": null, "week_end": null, "country_code": null, "friends": false },
   "entries": [{ "rank": 1, "world_rank": 1,
     "player": { "id": "…", "username": "NovaRider", "avatar": "avatar_07", "avatar_url": null, "country_code": "FR" },
-    "time_ms": 61000, "record_id": "…", "achieved_at": "…", "has_replay": true, "is_me": false }],
+    "time_ms": 61000, "record_id": "…", "achieved_at": "…", "has_replay": true, "is_me": false, "comments": 3 }],
   "me": { "entry": null, "pending": { "record_id": "…", "time_ms": 59000, "created_at": "…",
     "note": "En attente du replay.", "status": "PENDING" } } },
   "meta": { "limit": 25, "offset": 0, "total": 1, "next_offset": null }, "request_id": "…" }
 ```
 `rank` = position dans ce classement (filtré), `world_rank` = position mondiale ;
-`has_replay` = un replay vérifié existe ; `me` vaut `null` en anonyme, sinon la ligne du
-lecteur (même hors de la page) et son meilleur temps en attente. Erreurs communes : 400
+`has_replay` = un replay vérifié existe ; `comments` (2.19) = nombre de commentaires visibles
+de la course (`record_id`), `null` quand son auteur a masqué son profil (§8.9 decies) ;
+`me` vaut `null` en anonyme, sinon la ligne du lecteur (même hors de la page) et son meilleur
+temps en attente. Erreurs communes : 400
 (paramètre invalide), 401 (jeton envoyé mais invalide), 403 `ACCOUNT_SUSPENDED`, 404
 (`LEVEL_NOT_FOUND`, `LEVEL_VERSION_NOT_FOUND`), 429.
 
@@ -914,7 +919,7 @@ même commentaire, abonnés…).
 | GET | `/notifications/unread` | `{ unread }` |
 | POST | `/notifications/{id}/read`, `/notifications/read-all` | lu |
 | DELETE | `/notifications/{id}` | supprimée |
-| GET / PUT | `/notifications/settings` `{ <kind>: bool }` | catégories reçues (`new_level`, `level_update`, `comment_reply`, `comment_reaction`, `level_comment`, `new_follower`, `project_invite`, `project_role` ; `project_version` et `project_mention` arriveront avec l'historique et l'éditeur en direct) |
+| GET / PUT | `/notifications/settings` `{ <kind>: bool }` | catégories reçues (`new_level`, `level_update`, `comment_reply`, `comment_reaction`, `level_comment`, `new_follower`, `project_invite`, `project_role`, `project_version`, `project_mention`, `project_reply`, `project_removed`, `race_verified` et, depuis 2.19, `run_comment` : commentaire sur une de mes courses) |
 
 Le jeu lit les notifications non lues à la connexion puis chaque minute ; les nouvelles sont
 annoncées une fois. Les notifications lues de plus de 60 jours sont purgées (500 au plus par
@@ -1096,6 +1101,69 @@ records déjà servis par `GET /api/v1/records/{id}/replay` (records vérifiés)
 `GET /api/v1/community/records/{id}/replay`. Le nouvel événement de replay `Split` (type 14,
 temps de passage) est ignoré par l'analyse du serveur (voir l'annexe).
 
+### 8.9 decies Campagne : notes des niveaux, commentaires des niveaux et des courses (2.19)
+
+Le joueur est toujours celui de la session (jamais un identifiant envoyé). Trois ajouts autour
+des niveaux officiels (`levels`) et de leurs classements :
+
+**Notes des joueurs** (1 à 5 étoiles, distinctes de la difficulté /5 calculée par le jeu).
+Seul un joueur qui a **terminé le niveau** peut le noter : le serveur exige un record
+`VERIFIED` de ce niveau (toute révision, toute catégorie) ou une tentative terminée et
+vérifiée de sa course à la vérification (niveaux EXTRÊME). Un temps `PENDING` (replay pas
+encore envoyé ou vérification manuelle) ne suffit pas. La moyenne et le nombre de notes sont
+recalculés par le serveur à partir des notes enregistrées (table `level_rating_stats`, mise à
+jour dans le même lot que chaque changement et à la suppression d'un compte) ; le jeu n'envoie
+jamais de moyenne.
+
+| Méthode | Route | Auth | Réponse |
+|---|---|---|---|
+| GET | `/levels/ratings` · cache | facultative | `{ levels: [{ level_id, average, count }], my_ratings: { <level_id>: étoiles } \| null }` (niveaux notés seulement ; `my_ratings` : `null` en anonyme) |
+| GET | `/levels/{levelId}/rating` · cache | facultative | `RatingView` |
+| PUT | `/levels/{levelId}/rating` `{ stars }` | requise · `level_rate` | `RatingView` ; donne ou change sa note ; `403 LEVEL_NOT_COMPLETED` sans temps vérifié |
+| DELETE | `/levels/{levelId}/rating` | requise · `level_rate` | `RatingView` ; retire sa note (idempotent) |
+
+`RatingView` : `{ level_id, name, rating: { average, count }, my_stars, can_rate, reason,
+comments }` — `average` arrondie au dixième (`null` sans note), `my_stars` (`null` sans note
+du lecteur), `can_rate` (le lecteur a terminé le niveau), `reason` : `NOT_LOGGED_IN`,
+`LEVEL_NOT_COMPLETED` ou `null`, `comments` = commentaires principaux visibles du niveau.
+`stars` : entier de 1 à 5, aucun autre champ accepté. Erreurs : 400, 401, 403, 404
+`LEVEL_NOT_FOUND`, 429.
+```sh
+curl -s -X PUT "$API/levels/sylvanox_01/rating" -H "authorization: Bearer $TOKEN" \
+  -H 'content-type: application/json' -d '{"stars":4}'
+```
+```json
+{ "ok": true, "data": { "level_id": "sylvanox_01", "name": "Les Ruines Suspendues",
+  "rating": { "average": 4.3, "count": 128 }, "my_stars": 4, "can_rate": true, "reason": null,
+  "comments": 12 }, "request_id": "…" }
+```
+
+**Commentaires** : mêmes règles que ceux des niveaux de la communauté (§8.9 ter : 1 000
+caractères, 2 liens, même texte refusé 24 h dans le même fil, une seule profondeur de
+réponses, réactions, signalements — masqué après 3 —, modération, suppression par l'auteur
+seulement, blocages, limite `community_comment` partagée). Le jeu ne montre ceux des niveaux
+officiels que dans ONLINE.
+
+| Méthode | Route | Auth | Règle |
+|---|---|---|---|
+| GET | `/levels/{levelId}/comments?sort=recent\|popular\|oldest` | facultative | fil d'un niveau officiel : `{ comments, comment_count }` paginé |
+| POST | `/levels/{levelId}/comments` `{ body, parent_id? }` | requise | `201 { comment }` ; tout joueur connecté ; personne n'y épingle |
+| GET | `/records/{recordId}/comments?sort=…` | facultative | fil d'une course (un record des classements) |
+| POST | `/records/{recordId}/comments` `{ body, parent_id? }` | requise | `201 { comment }` ; l'auteur de la course est notifié (`run_comment`) et peut épingler 3 commentaires |
+
+Les autres actions sur un commentaire, quel que soit son fil, passent par les routes
+existantes : `GET /community/comments/{id}/replies`, `PATCH` / `DELETE
+/community/comments/{id}`, `POST` / `DELETE …/pin`, `PUT` / `DELETE …/reaction`, `POST
+…/report`. Chaque commentaire porte en plus `thread` (`community`, `level` ou `run`) ;
+`level_author` y désigne le propriétaire du sujet (créateur du niveau, auteur de la course).
+Une course n'est visible et commentable par les autres que si elle est `VERIFIED`, d'un
+compte actif, et que son auteur n'a pas masqué son profil (`403 PROFILE_PRIVATE` ; son
+auteur garde l'accès à son fil). Un parent d'un autre fil donne `400`. Le fil d'une course
+disparaît avec elle (suppression du compte de son auteur). Les notifications de ces fils
+(`comment_reply`, `comment_reaction`, `run_comment`) portent `data.thread`
+(`level:<id>` ou `run:<record>`), `data.level_id` et, pour une course, `data.record_id` et
+`data.level_name`, pour que le jeu ouvre le bon écran.
+
 ### 8.9 bis Installateurs du jeu (notification « nouvelle version »)
 
 Publics (aucun compte, rien de personnel n'est envoyé : le jeu ne transmet pas sa version, il
@@ -1115,7 +1183,9 @@ puis `wrangler d1 migrations apply`.
 ### 8.10 Administration
 
 Modération des commentaires : `GET /admin/comments` (commentaires masqués ou signalés, avec
-les motifs) et `POST /admin/comments/{id}/moderate { action: "restore" | "remove" }`.
+les motifs, de tous les fils : `thread` vaut `community` — avec `level_id` — ou
+`level:<niveau officiel>` / `run:<record>`) et `POST /admin/comments/{id}/moderate { action:
+"restore" | "remove" }`.
 
 
 Réservé aux opérateurs : actif seulement si le secret `ADMIN_TOKEN` (≥ 32 caractères, posé
