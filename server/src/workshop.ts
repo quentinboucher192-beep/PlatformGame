@@ -1,7 +1,9 @@
 // Workshop (Cosmic Online 2.9): favorites, comments, replies, reactions and their moderation
 // on the community levels. A level's creator can pin comments but never delete the comments
 // of others (negative reviews stay): only their authors can, or the moderation after
-// reports. The player is always identified by the session.
+// reports. Since 2.19 the same comment engine serves the official levels of the campaign and
+// the runs of the leaderboards (src/campaign.ts). The player is always identified by the
+// session.
 
 import { audit, optionalAuth, requireAuth } from "./auth";
 import { sha256Hex } from "./crypto";
@@ -9,7 +11,7 @@ import { ApiError, Errors, json, nowIso, readJsonObject, type Ctx } from "./http
 import { playerSummary, type PlayerRow } from "./model";
 import { notify } from "./notifications";
 import { RULES, rateLimit } from "./ratelimit";
-import { Validator, paging } from "./validate";
+import { LEVEL_ID_RE, Validator, paging } from "./validate";
 
 const ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 export const REACTIONS = ["like", "love", "funny", "impressive", "not_useful"] as const;
@@ -139,10 +141,60 @@ export async function listFavorites(ctx: Ctx): Promise<Response> {
 }
 
 // ----------------------------------------------------------------- comments
+//
+// One comment engine for every thread: a community level, an official level of the campaign
+// (shown in ONLINE only) and a run of the leaderboards (2.19). Same length, links, anti-spam,
+// rate limits, replies, reactions, reports, moderation and deletion rules everywhere; threads
+// only differ by where their comments are stored and by who owns their subject.
+
+/** Where the comments of a kind of thread are stored. */
+export interface Store {
+    name: "community" | "campaign";
+    comments: string;
+    reactions: string;
+    reports: string;
+    /** Column holding the thread's key. */
+    threadCol: string;
+}
+export const COMMUNITY_STORE: Store = {
+    name: "community",
+    comments: "community_comments",
+    reactions: "community_comment_reactions",
+    reports: "community_comment_reports",
+    threadCol: "level_id",
+};
+export const CAMPAIGN_STORE: Store = {
+    name: "campaign",
+    comments: "campaign_comments",
+    reactions: "campaign_comment_reactions",
+    reports: "campaign_comment_reports",
+    threadCol: "thread",
+};
+
+/** What a thread is about, resolved by the server (never described by the client). */
+export interface Thread {
+    store: Store;
+    /** Value of the store's thread column: community level id, 'level:<id>' or 'run:<record id>'. */
+    key: string;
+    kind: "community" | "level" | "run";
+    /** Owner of the subject (level creator, run author): badge, pins, notifications. Null: official level. */
+    ownerId: string | null;
+    /** Name of the subject in notifications. */
+    title: string;
+    /** Level of the subject (community or official level id): notifications.level_id. */
+    levelId: string;
+    recordId: string | null;
+    /** Why new comments are refused, or null. */
+    closed: { code: string; message: string } | null;
+    /** Copied into the notifications (campaign threads: where to open them). */
+    notifyData: Record<string, unknown>;
+}
 
 interface CommentRow {
     id: string;
     level_id: string;
+    thread?: string;
+    record_id?: string | null;
     author_id: string;
     parent_id: string | null;
     body: string;
@@ -163,14 +215,98 @@ interface CommentRow {
 type CommentJoin = CommentRow &
     Partial<PlayerRow> & { my_reaction: string | null; is_creator: number; reported_by_me: number };
 
-const COMMENT_SQL = `SELECT c.*, p.username, p.avatar, p.avatar_custom_key, p.country_code, p.location_visibility,
-    (SELECT kind FROM community_comment_reactions x WHERE x.comment_id = c.id AND x.player_id = ?1) AS my_reaction,
-    (SELECT 1 FROM community_comment_reports x WHERE x.comment_id = c.id AND x.reporter_id = ?1) AS reported_by_me,
+const commentSql = (s: Store) => `SELECT c.*, p.username, p.avatar, p.avatar_custom_key, p.country_code, p.location_visibility,
+    (SELECT kind FROM ${s.reactions} x WHERE x.comment_id = c.id AND x.player_id = ?1) AS my_reaction,
+    (SELECT 1 FROM ${s.reports} x WHERE x.comment_id = c.id AND x.reporter_id = ?1) AS reported_by_me,
     EXISTS (SELECT 1 FROM community_levels cl WHERE cl.author_id = c.author_id AND cl.status = 'published') AS is_creator
-  FROM community_comments c JOIN players p ON p.id = c.author_id`;
+  FROM ${s.comments} c JOIN players p ON p.id = c.author_id`;
+
+// ------------------------------------------------------------------ threads
+
+/** A community level's thread. `strict`: the viewer must be able to see the level. */
+async function communityThread(ctx: Ctx, levelId: string, viewer: string | null, strict: boolean): Promise<Thread> {
+    let l: LevelRow | null;
+    if (strict) l = await publishedLevel(ctx, levelId, viewer);
+    else
+        l = await ctx.env.DB.prepare("SELECT id, author_id, title, status, current_version FROM community_levels WHERE id = ?1").bind(levelId).first<LevelRow>();
+    const level = l ?? { id: levelId, author_id: "", title: "", status: "deleted", current_version: 0 };
+    return {
+        store: COMMUNITY_STORE,
+        key: level.id,
+        kind: "community",
+        ownerId: level.author_id || null,
+        title: level.title,
+        levelId: level.id,
+        recordId: null,
+        closed: level.status !== "published" ? { code: "LEVEL_NOT_PUBLISHED", message: "Les commentaires s'ouvrent quand le niveau est publié." } : null,
+        notifyData: {},
+    };
+}
+
+/** The thread of an official level of the campaign (ONLINE): open to every connected player. */
+export async function officialLevelThread(ctx: Ctx, levelId: string): Promise<Thread> {
+    const l = LEVEL_ID_RE.test(levelId)
+        ? await ctx.env.DB.prepare("SELECT id, name FROM levels WHERE id = ?1").bind(levelId).first<{ id: string; name: string }>()
+        : null;
+    if (!l) throw Errors.notFound("LEVEL_NOT_FOUND", "Niveau inconnu du serveur.");
+    const key = "level:" + l.id;
+    return { store: CAMPAIGN_STORE, key, kind: "level", ownerId: null, title: l.name, levelId: l.id, recordId: null, closed: null, notifyData: { thread: key, level_id: l.id } };
+}
+
+/**
+ * The thread of a run (a record of the leaderboards). Others only see the verified runs of
+ * active accounts, and nothing of a player who hid their profile (`strict`); its author
+ * always sees it. Comments open once the run is verified.
+ */
+export async function runThread(ctx: Ctx, recordId: string, viewer: string | null, strict: boolean): Promise<Thread> {
+    if (!ID_RE.test(recordId)) throw Errors.notFound("RECORD_NOT_FOUND", "Record introuvable.");
+    const r = await ctx.env.DB.prepare(
+        `SELECT r.id, r.player_id, r.level_id, r.verification_status, p.username, p.profile_visibility, p.account_status, l.name AS level_name
+         FROM records r JOIN players p ON p.id = r.player_id JOIN levels l ON l.id = r.level_id WHERE r.id = ?1`,
+    )
+        .bind(recordId)
+        .first<{
+            id: string;
+            player_id: string;
+            level_id: string;
+            verification_status: string;
+            username: string;
+            profile_visibility: string;
+            account_status: string;
+            level_name: string;
+        }>();
+    if (!r) throw Errors.notFound("RECORD_NOT_FOUND", "Record introuvable.");
+    if (strict && viewer !== r.player_id) {
+        if (r.verification_status !== "VERIFIED" || r.account_status !== "active") throw Errors.notFound("RECORD_NOT_FOUND", "Record introuvable.");
+        if (r.profile_visibility === "private")
+            throw Errors.forbidden("PROFILE_PRIVATE", "Le joueur a masqué son profil : les commentaires de ses courses sont fermés.");
+    }
+    const key = "run:" + r.id;
+    return {
+        store: CAMPAIGN_STORE,
+        key,
+        kind: "run",
+        ownerId: r.player_id,
+        title: `${r.level_name} (course de ${r.username})`,
+        levelId: r.level_id,
+        recordId: r.id,
+        closed: r.verification_status !== "VERIFIED" ? { code: "RUN_NOT_VERIFIED", message: "Les commentaires s'ouvrent quand la course est vérifiée." } : null,
+        notifyData: { thread: key, level_id: r.level_id, level_name: r.level_name, record_id: r.id },
+    };
+}
+
+async function campaignThread(ctx: Ctx, key: string, viewer: string | null, strict: boolean): Promise<Thread> {
+    if (key.startsWith("level:")) return officialLevelThread(ctx, key.slice(6));
+    if (key.startsWith("run:")) return runThread(ctx, key.slice(4), viewer, strict);
+    throw Errors.notFound("COMMENT_NOT_FOUND", "Commentaire introuvable.");
+}
+
+function threadOf(ctx: Ctx, store: Store, c: CommentRow, viewer: string | null, strict: boolean): Promise<Thread> {
+    return store.name === "community" ? communityThread(ctx, c.level_id, viewer, strict) : campaignThread(ctx, c.thread ?? "", viewer, strict);
+}
 
 /** What a viewer may see of a comment: hidden ones only by their author; deleted ones as a placeholder. */
-function commentView(c: CommentJoin, me: string, levelAuthor: string) {
+function commentView(c: CommentJoin, me: string, t: Thread) {
     const deleted = c.deleted_at !== null;
     const reactions = Object.fromEntries(REACTIONS.map((r) => [r, c[COLUMN[r] as keyof CommentRow] as number]));
     return {
@@ -187,7 +323,9 @@ function commentView(c: CommentJoin, me: string, levelAuthor: string) {
                   location_visibility: c.location_visibility ?? "hidden",
               } as PlayerRow),
         creator: !deleted && c.is_creator === 1,
-        level_author: !deleted && c.author_id === levelAuthor,
+        // The owner of the subject: the level's creator, or the run's author.
+        level_author: !deleted && t.ownerId !== null && c.author_id === t.ownerId,
+        thread: t.kind,
         body: deleted ? "" : c.body,
         deleted,
         hidden: c.hidden === 1,
@@ -201,7 +339,7 @@ function commentView(c: CommentJoin, me: string, levelAuthor: string) {
         reported: c.reported_by_me === 1,
         mine: c.author_id === me,
         can_edit: !deleted && c.author_id === me,
-        can_pin: !deleted && levelAuthor === me && c.parent_id === null,
+        can_pin: !deleted && me !== "" && t.kind !== "level" && t.ownerId === me && c.parent_id === null,
     };
 }
 
@@ -210,11 +348,9 @@ const VISIBLE = `(c.hidden = 0 OR c.author_id = ?1)
   AND c.author_id NOT IN (SELECT blocked_id FROM player_blocks WHERE player_id = ?1)
   AND c.author_id NOT IN (SELECT player_id FROM player_blocks WHERE blocked_id = ?1)`;
 
-/** GET /community/levels/{id}/comments?sort=recent|popular|oldest&limit=&offset= : top-level comments, pinned first. */
-export async function listComments(ctx: Ctx): Promise<Response> {
-    const viewer = await optionalAuth(ctx);
-    const me = viewer?.player.id ?? "";
-    const l = await publishedLevel(ctx, ctx.params.levelId!, me || null);
+/** Top-level comments of a thread, pinned first: `?sort=recent|popular|oldest&limit=&offset=`. */
+export async function listThread(ctx: Ctx, t: Thread, me: string): Promise<Response> {
+    const s = t.store;
     const sort = ctx.url.searchParams.get("sort") ?? "recent";
     const order = {
         recent: "c.created_at DESC",
@@ -223,38 +359,55 @@ export async function listComments(ctx: Ctx): Promise<Response> {
     }[sort];
     if (!order) throw Errors.validation([{ field: "sort", message: "recent, popular ou oldest" }]);
     const { limit, offset } = paging(ctx.url, 20, 50);
-    const where = `c.level_id = ?2 AND c.parent_id IS NULL AND ${VISIBLE}`;
-    const total = await ctx.env.DB.prepare(`SELECT COUNT(*) AS n FROM community_comments c WHERE ${where}`).bind(me, l.id).first<{ n: number }>();
-    const rows = await ctx.env.DB.prepare(`${COMMENT_SQL} WHERE ${where} ORDER BY (c.pinned_at IS NOT NULL) DESC, c.pinned_at DESC, ${order} LIMIT ?3 OFFSET ?4`)
-        .bind(me, l.id, limit, offset)
+    const where = `c.${s.threadCol} = ?2 AND c.parent_id IS NULL AND ${VISIBLE}`;
+    const total = await ctx.env.DB.prepare(`SELECT COUNT(*) AS n FROM ${s.comments} c WHERE ${where}`).bind(me, t.key).first<{ n: number }>();
+    const rows = await ctx.env.DB.prepare(`${commentSql(s)} WHERE ${where} ORDER BY (c.pinned_at IS NOT NULL) DESC, c.pinned_at DESC, ${order} LIMIT ?3 OFFSET ?4`)
+        .bind(me, t.key, limit, offset)
         .all<CommentJoin>();
     const n = total?.n ?? 0;
-    return json(ctx, { comments: rows.results.map((c) => commentView(c, me, l.author_id)), sort, comment_count: n }, {
+    return json(ctx, { comments: rows.results.map((c) => commentView(c, me, t)), sort, comment_count: n }, {
         meta: { limit, offset, total: n, next_offset: offset + limit < n ? offset + limit : null },
     });
 }
 
-/** GET /community/comments/{id}/replies?limit=&offset= (oldest first) */
+/** GET /community/levels/{id}/comments?sort=recent|popular|oldest&limit=&offset= : top-level comments, pinned first. */
+export async function listComments(ctx: Ctx): Promise<Response> {
+    const viewer = await optionalAuth(ctx);
+    const me = viewer?.player.id ?? "";
+    return listThread(ctx, await communityThread(ctx, ctx.params.levelId!, me || null, true), me);
+}
+
+/** GET /community/comments/{id}/replies?limit=&offset= (oldest first), in any thread. */
 export async function listReplies(ctx: Ctx): Promise<Response> {
     const viewer = await optionalAuth(ctx);
     const me = viewer?.player.id ?? "";
-    const parent = await loadComment(ctx, ctx.params.commentId!);
-    const l = await publishedLevel(ctx, parent.level_id, me || null);
+    const { c: parent, store } = await loadComment(ctx, ctx.params.commentId!);
+    const t = await threadOf(ctx, store, parent, me || null, true);
     const { limit, offset } = paging(ctx.url, 20, 50);
     const where = `c.parent_id = ?2 AND ${VISIBLE}`;
-    const total = await ctx.env.DB.prepare(`SELECT COUNT(*) AS n FROM community_comments c WHERE ${where}`).bind(me, parent.id).first<{ n: number }>();
-    const rows = await ctx.env.DB.prepare(`${COMMENT_SQL} WHERE ${where} ORDER BY c.created_at ASC LIMIT ?3 OFFSET ?4`)
+    const total = await ctx.env.DB.prepare(`SELECT COUNT(*) AS n FROM ${store.comments} c WHERE ${where}`).bind(me, parent.id).first<{ n: number }>();
+    const rows = await ctx.env.DB.prepare(`${commentSql(store)} WHERE ${where} ORDER BY c.created_at ASC LIMIT ?3 OFFSET ?4`)
         .bind(me, parent.id, limit, offset)
         .all<CommentJoin>();
     const n = total?.n ?? 0;
-    return json(ctx, { replies: rows.results.map((c) => commentView(c, me, l.author_id)) }, {
+    return json(ctx, { replies: rows.results.map((c) => commentView(c, me, t)) }, {
         meta: { limit, offset, total: n, next_offset: offset + limit < n ? offset + limit : null },
     });
 }
 
-async function loadComment(ctx: Ctx, id: string): Promise<CommentRow> {
+/** A comment of any thread, with the store that holds it. */
+async function loadComment(ctx: Ctx, id: string): Promise<{ c: CommentRow; store: Store }> {
     if (!ID_RE.test(id)) throw Errors.notFound("COMMENT_NOT_FOUND", "Commentaire introuvable.");
-    const c = await ctx.env.DB.prepare("SELECT * FROM community_comments WHERE id = ?1").bind(id).first<CommentRow>();
+    for (const store of [COMMUNITY_STORE, CAMPAIGN_STORE]) {
+        const c = await ctx.env.DB.prepare(`SELECT * FROM ${store.comments} WHERE id = ?1`).bind(id).first<CommentRow>();
+        if (c) return { c, store };
+    }
+    throw Errors.notFound("COMMENT_NOT_FOUND", "Commentaire introuvable.");
+}
+
+async function loadIn(ctx: Ctx, store: Store, id: string): Promise<CommentRow> {
+    if (!ID_RE.test(id)) throw Errors.notFound("COMMENT_NOT_FOUND", "Commentaire introuvable.");
+    const c = await ctx.env.DB.prepare(`SELECT * FROM ${store.comments} WHERE id = ?1`).bind(id).first<CommentRow>();
     if (!c) throw Errors.notFound("COMMENT_NOT_FOUND", "Commentaire introuvable.");
     return c;
 }
@@ -268,120 +421,158 @@ function cleanBody(v: Validator, field = "body"): string {
     return body;
 }
 
-/** POST /community/levels/{id}/comments {body, parent_id?} */
-export async function postComment(ctx: Ctx): Promise<Response> {
-    const auth = await requireAuth(ctx);
-    const me = auth.player.id;
-    await rateLimit(ctx, RULES.communityComment, "player:" + me);
-    const l = await publishedLevel(ctx, ctx.params.levelId!, me);
-    if (l.status !== "published") throw Errors.forbidden("LEVEL_NOT_PUBLISHED", "Les commentaires s'ouvrent quand le niveau est publié.");
-    if (await blocked(ctx, me, l.author_id)) throw Errors.forbidden("BLOCKED", "Vous ne pouvez pas commenter ce niveau.");
+/**
+ * Posts `{body, parent_id?}` in a thread for `me` (connected, rate limit already counted).
+ * A reply to a reply goes under the same comment; the subject's owner (level creator, run
+ * author) is notified of new top-level comments, a comment's author of the replies.
+ */
+export async function postToThread(ctx: Ctx, t: Thread, me: string): Promise<Response> {
+    const s = t.store;
+    if (t.closed) throw Errors.forbidden(t.closed.code, t.closed.message);
+    if (t.ownerId && (await blocked(ctx, me, t.ownerId)))
+        throw Errors.forbidden("BLOCKED", t.kind === "run" ? "Vous ne pouvez pas commenter cette course." : "Vous ne pouvez pas commenter ce niveau.");
     const v = new Validator(await readJsonObject(ctx), ["body", "parent_id"]);
     const body = cleanBody(v);
     const parentId = v.str("parent_id", { max: 36, optional: true });
     v.done();
     let parent: CommentRow | null = null;
     if (parentId) {
-        parent = await loadComment(ctx, parentId);
-        if (parent.level_id !== l.id) throw Errors.validation([{ field: "parent_id", message: "commentaire d'un autre niveau" }]);
-        if (parent.parent_id) parent = await loadComment(ctx, parent.parent_id); // one level of replies
+        parent = await loadIn(ctx, s, parentId);
+        if ((parent as unknown as Record<string, unknown>)[s.threadCol] !== t.key)
+            throw Errors.validation([{ field: "parent_id", message: t.kind === "community" ? "commentaire d'un autre niveau" : "commentaire d'un autre fil" }]);
+        if (parent.parent_id) parent = await loadIn(ctx, s, parent.parent_id); // one level of replies
         if (parent.deleted_at || parent.hidden) throw Errors.forbidden("COMMENT_CLOSED", "On ne peut plus répondre à ce commentaire.");
         if (await blocked(ctx, me, parent.author_id)) throw Errors.forbidden("BLOCKED", "Vous ne pouvez pas répondre à ce commentaire.");
     }
-    // Anti-spam: the same text twice in a day on the same level is refused.
+    // Anti-spam: the same text twice in a day in the same thread is refused.
     const hash = await sha256Hex(new TextEncoder().encode(body.toLowerCase().replace(/\s+/g, " ")));
     const since = new Date(Date.now() - 86400 * 1000).toISOString();
     const dup = await ctx.env.DB.prepare(
-        "SELECT 1 AS x FROM community_comments WHERE author_id = ?1 AND level_id = ?2 AND body_hash = ?3 AND created_at > ?4 AND deleted_at IS NULL",
+        `SELECT 1 AS x FROM ${s.comments} WHERE author_id = ?1 AND ${s.threadCol} = ?2 AND body_hash = ?3 AND created_at > ?4 AND deleted_at IS NULL`,
     )
-        .bind(me, l.id, hash, since)
+        .bind(me, t.key, hash, since)
         .first();
     if (dup) throw Errors.conflict("COMMENT_DUPLICATE", "Vous avez déjà publié ce commentaire.");
     const id = crypto.randomUUID();
     const now = nowIso();
-    const stmts = [
-        ctx.env.DB.prepare(
-            "INSERT INTO community_comments (id, level_id, author_id, parent_id, body, body_hash, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
-        ).bind(id, l.id, me, parent?.id ?? null, body, hash, now),
-    ];
-    if (parent) stmts.push(ctx.env.DB.prepare("UPDATE community_comments SET reply_count = reply_count + 1 WHERE id = ?1").bind(parent.id));
-    else stmts.push(ctx.env.DB.prepare("UPDATE community_levels SET comment_count = comment_count + 1 WHERE id = ?1").bind(l.id));
+    const stmts =
+        s.name === "community"
+            ? [
+                  ctx.env.DB.prepare(
+                      "INSERT INTO community_comments (id, level_id, author_id, parent_id, body, body_hash, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+                  ).bind(id, t.key, me, parent?.id ?? null, body, hash, now),
+              ]
+            : [
+                  ctx.env.DB.prepare(
+                      `INSERT INTO campaign_comments (id, thread, level_id, record_id, author_id, parent_id, body, body_hash, created_at)
+                       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)`,
+                  ).bind(id, t.key, t.levelId, t.recordId, me, parent?.id ?? null, body, hash, now),
+              ];
+    if (parent) stmts.push(ctx.env.DB.prepare(`UPDATE ${s.comments} SET reply_count = reply_count + 1 WHERE id = ?1`).bind(parent.id));
+    else if (s.name === "community") stmts.push(ctx.env.DB.prepare("UPDATE community_levels SET comment_count = comment_count + 1 WHERE id = ?1").bind(t.key));
     await ctx.env.DB.batch(stmts);
     if (parent)
         await notify(ctx, parent.author_id, "comment_reply", {
             actor: me,
-            levelId: l.id,
+            levelId: t.levelId,
             commentId: parent.id,
-            data: { title: l.title },
+            data: { title: t.title, ...t.notifyData },
             groupKey: "reply:" + parent.id,
         });
-    else await notify(ctx, l.author_id, "level_comment", { actor: me, levelId: l.id, commentId: id, data: { title: l.title }, groupKey: "comments:" + l.id });
-    const row = await ctx.env.DB.prepare(`${COMMENT_SQL} WHERE c.id = ?2`).bind(me, id).first<CommentJoin>();
-    return json(ctx, { comment: commentView(row!, me, l.author_id) }, { status: 201 });
+    else if (t.kind === "community" && t.ownerId)
+        await notify(ctx, t.ownerId, "level_comment", { actor: me, levelId: t.levelId, commentId: id, data: { title: t.title }, groupKey: "comments:" + t.key });
+    else if (t.kind === "run" && t.ownerId)
+        await notify(ctx, t.ownerId, "run_comment", {
+            actor: me,
+            levelId: t.levelId,
+            commentId: id,
+            data: { title: t.title, ...t.notifyData },
+            groupKey: "comments:" + t.key,
+        });
+    const row = await ctx.env.DB.prepare(`${commentSql(s)} WHERE c.id = ?2`).bind(me, id).first<CommentJoin>();
+    return json(ctx, { comment: commentView(row!, me, t) }, { status: 201 });
 }
 
-/** PATCH /community/comments/{id} {body}: its author only. */
+/** POST /community/levels/{id}/comments {body, parent_id?} */
+export async function postComment(ctx: Ctx): Promise<Response> {
+    const auth = await requireAuth(ctx);
+    const me = auth.player.id;
+    await rateLimit(ctx, RULES.communityComment, "player:" + me);
+    return postToThread(ctx, await communityThread(ctx, ctx.params.levelId!, me, true), me);
+}
+
+/** PATCH /community/comments/{id} {body}: its author only, in any thread. */
 export async function editComment(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
     const me = auth.player.id;
     await rateLimit(ctx, RULES.communityComment, "player:" + me);
-    const c = await loadComment(ctx, ctx.params.commentId!);
+    const { c, store } = await loadComment(ctx, ctx.params.commentId!);
     if (c.author_id !== me) throw Errors.forbidden("NOT_COMMENT_AUTHOR", "Ce commentaire ne vous appartient pas.");
     if (c.deleted_at) throw Errors.notFound("COMMENT_NOT_FOUND", "Commentaire introuvable.");
     const v = new Validator(await readJsonObject(ctx), ["body"]);
     const body = cleanBody(v);
     v.done();
     const hash = await sha256Hex(new TextEncoder().encode(body.toLowerCase().replace(/\s+/g, " ")));
-    await ctx.env.DB.prepare("UPDATE community_comments SET body = ?2, body_hash = ?3, edited_at = ?4 WHERE id = ?1").bind(c.id, body, hash, nowIso()).run();
-    const l = await ctx.env.DB.prepare("SELECT author_id FROM community_levels WHERE id = ?1").bind(c.level_id).first<{ author_id: string }>();
-    const row = await ctx.env.DB.prepare(`${COMMENT_SQL} WHERE c.id = ?2`).bind(me, c.id).first<CommentJoin>();
-    return json(ctx, { comment: commentView(row!, me, l?.author_id ?? "") });
+    await ctx.env.DB.prepare(`UPDATE ${store.comments} SET body = ?2, body_hash = ?3, edited_at = ?4 WHERE id = ?1`).bind(c.id, body, hash, nowIso()).run();
+    const t = await threadOf(ctx, store, c, me, false);
+    const row = await ctx.env.DB.prepare(`${commentSql(store)} WHERE c.id = ?2`).bind(me, c.id).first<CommentJoin>();
+    return json(ctx, { comment: commentView(row!, me, t) });
 }
 
 /**
- * DELETE /community/comments/{id}: its author only (the level's creator cannot delete the
- * comments of others). With replies, the comment stays as "deleted" to keep the thread.
+ * DELETE /community/comments/{id}: its author only (the level's creator or the run's author
+ * cannot delete the comments of others). With replies, the comment stays as "deleted" to
+ * keep the thread.
  */
 export async function deleteComment(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
-    const c = await loadComment(ctx, ctx.params.commentId!);
+    const { c, store } = await loadComment(ctx, ctx.params.commentId!);
     if (c.author_id !== auth.player.id) throw Errors.forbidden("NOT_COMMENT_AUTHOR", "Seul l'auteur d'un commentaire peut le supprimer.");
     if (c.deleted_at) return json(ctx, { deleted: true });
-    await removeComment(ctx, c);
+    await removeComment(ctx, store, c);
     return json(ctx, { deleted: true });
 }
 
-async function removeComment(ctx: Ctx, c: CommentRow): Promise<void> {
+async function removeComment(ctx: Ctx, store: Store, c: CommentRow): Promise<void> {
     const db = ctx.env.DB;
     if (c.reply_count > 0) {
-        await db.prepare("UPDATE community_comments SET deleted_at = ?2, body = '', pinned_at = NULL WHERE id = ?1").bind(c.id, nowIso()).run();
+        await db.prepare(`UPDATE ${store.comments} SET deleted_at = ?2, body = '', pinned_at = NULL WHERE id = ?1`).bind(c.id, nowIso()).run();
         return;
     }
-    const stmts = [db.prepare("DELETE FROM community_comments WHERE id = ?1").bind(c.id)];
-    if (c.parent_id) stmts.push(db.prepare("UPDATE community_comments SET reply_count = MAX(0, reply_count - 1) WHERE id = ?1").bind(c.parent_id));
-    else stmts.push(db.prepare("UPDATE community_levels SET comment_count = MAX(0, comment_count - 1) WHERE id = ?1").bind(c.level_id));
+    const stmts = [db.prepare(`DELETE FROM ${store.comments} WHERE id = ?1`).bind(c.id)];
+    if (c.parent_id) stmts.push(db.prepare(`UPDATE ${store.comments} SET reply_count = MAX(0, reply_count - 1) WHERE id = ?1`).bind(c.parent_id));
+    else if (store.name === "community")
+        stmts.push(db.prepare("UPDATE community_levels SET comment_count = MAX(0, comment_count - 1) WHERE id = ?1").bind(c.level_id));
     await db.batch(stmts);
     // A deleted reply may leave its "deleted" parent with nothing left to show.
     if (c.parent_id) {
-        const p = await db.prepare("SELECT * FROM community_comments WHERE id = ?1").bind(c.parent_id).first<CommentRow>();
-        if (p && p.deleted_at && p.reply_count === 0) await removeComment(ctx, p);
+        const p = await db.prepare(`SELECT * FROM ${store.comments} WHERE id = ?1`).bind(c.parent_id).first<CommentRow>();
+        if (p && p.deleted_at && p.reply_count === 0) await removeComment(ctx, store, p);
     }
 }
 
-/** POST /community/comments/{id}/pin and DELETE …/pin: the level's creator, top-level comments, 3 at most. */
+/**
+ * POST /community/comments/{id}/pin and DELETE …/pin: the owner of the subject (the level's
+ * creator, the run's author; nobody on an official level), top-level comments, 3 at most.
+ */
 export async function pinComment(ctx: Ctx, pin: boolean): Promise<Response> {
     const auth = await requireAuth(ctx);
-    const c = await loadComment(ctx, ctx.params.commentId!);
-    const l = await ctx.env.DB.prepare("SELECT author_id FROM community_levels WHERE id = ?1").bind(c.level_id).first<{ author_id: string }>();
-    if (!l || l.author_id !== auth.player.id) throw Errors.forbidden("NOT_AUTHOR", "Seul le créateur du niveau peut épingler un commentaire.");
+    const { c, store } = await loadComment(ctx, ctx.params.commentId!);
+    const t = await threadOf(ctx, store, c, auth.player.id, false);
+    if (t.kind === "level") throw Errors.forbidden("NOT_AUTHOR", "Les commentaires d'un niveau officiel ne s'épinglent pas.");
+    if (!t.ownerId || t.ownerId !== auth.player.id)
+        throw Errors.forbidden(
+            "NOT_AUTHOR",
+            t.kind === "run" ? "Seul l'auteur de la course peut épingler un commentaire." : "Seul le créateur du niveau peut épingler un commentaire.",
+        );
     if (c.parent_id || c.deleted_at || c.hidden) throw Errors.forbidden("COMMENT_NOT_PINNABLE", "Ce commentaire ne peut pas être épinglé.");
     if (pin && !c.pinned_at) {
-        const n = await ctx.env.DB.prepare("SELECT COUNT(*) AS n FROM community_comments WHERE level_id = ?1 AND pinned_at IS NOT NULL")
-            .bind(c.level_id)
+        const n = await ctx.env.DB.prepare(`SELECT COUNT(*) AS n FROM ${store.comments} WHERE ${store.threadCol} = ?1 AND pinned_at IS NOT NULL`)
+            .bind(t.key)
             .first<{ n: number }>();
         if ((n?.n ?? 0) >= MAX_PINNED) throw Errors.conflict("TOO_MANY_PINNED", `${MAX_PINNED} commentaires épinglés au plus.`);
     }
-    await ctx.env.DB.prepare("UPDATE community_comments SET pinned_at = ?2 WHERE id = ?1").bind(c.id, pin ? nowIso() : null).run();
+    await ctx.env.DB.prepare(`UPDATE ${store.comments} SET pinned_at = ?2 WHERE id = ?1`).bind(c.id, pin ? nowIso() : null).run();
     return json(ctx, { pinned: pin });
 }
 
@@ -390,53 +581,53 @@ export async function reactComment(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
     const me = auth.player.id;
     await rateLimit(ctx, RULES.communityReaction, "player:" + me);
-    const c = await loadComment(ctx, ctx.params.commentId!);
+    const { c, store } = await loadComment(ctx, ctx.params.commentId!);
     if (c.deleted_at || (c.hidden && c.author_id !== me)) throw Errors.notFound("COMMENT_NOT_FOUND", "Commentaire introuvable.");
-    const l = await publishedLevel(ctx, c.level_id, me);
+    const t = await threadOf(ctx, store, c, me, true);
     if (await blocked(ctx, me, c.author_id)) throw Errors.forbidden("BLOCKED", "Vous ne pouvez pas réagir à ce commentaire.");
     const v = new Validator(await readJsonObject(ctx), ["kind"]);
     const kind = v.oneOf("kind", REACTIONS as unknown as string[]) as Reaction;
     v.done();
-    const before = await ctx.env.DB.prepare("SELECT kind FROM community_comment_reactions WHERE comment_id = ?1 AND player_id = ?2")
+    const before = await ctx.env.DB.prepare(`SELECT kind FROM ${store.reactions} WHERE comment_id = ?1 AND player_id = ?2`)
         .bind(c.id, me)
         .first<{ kind: Reaction }>();
     await ctx.env.DB.batch([
         ctx.env.DB.prepare(
-            `INSERT INTO community_comment_reactions (comment_id, player_id, kind, created_at) VALUES (?1, ?2, ?3, ?4)
+            `INSERT INTO ${store.reactions} (comment_id, player_id, kind, created_at) VALUES (?1, ?2, ?3, ?4)
              ON CONFLICT (comment_id, player_id) DO UPDATE SET kind = excluded.kind`,
         ).bind(c.id, me, kind, nowIso()),
-        recount(ctx, c.id),
+        recount(ctx, store, c.id),
     ]);
     if (!before && c.author_id !== me)
         await notify(ctx, c.author_id, "comment_reaction", {
             actor: me,
-            levelId: c.level_id,
+            levelId: t.levelId,
             commentId: c.id,
-            data: { title: l.title, reaction: kind },
+            data: { title: t.title, reaction: kind, ...t.notifyData },
             groupKey: "reaction:" + c.id,
         });
-    return reactionResult(ctx, c.id, me);
+    return reactionResult(ctx, store, c.id, me);
 }
 
 /** DELETE /community/comments/{id}/reaction */
 export async function unreactComment(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
-    const c = await loadComment(ctx, ctx.params.commentId!);
+    const { c, store } = await loadComment(ctx, ctx.params.commentId!);
     await ctx.env.DB.batch([
-        ctx.env.DB.prepare("DELETE FROM community_comment_reactions WHERE comment_id = ?1 AND player_id = ?2").bind(c.id, auth.player.id),
-        recount(ctx, c.id),
+        ctx.env.DB.prepare(`DELETE FROM ${store.reactions} WHERE comment_id = ?1 AND player_id = ?2`).bind(c.id, auth.player.id),
+        recount(ctx, store, c.id),
     ]);
-    return reactionResult(ctx, c.id, auth.player.id);
+    return reactionResult(ctx, store, c.id, auth.player.id);
 }
 
-function recount(ctx: Ctx, id: string) {
-    const sets = REACTIONS.map((r) => `${COLUMN[r]} = (SELECT COUNT(*) FROM community_comment_reactions WHERE comment_id = ?1 AND kind = '${r}')`);
-    return ctx.env.DB.prepare(`UPDATE community_comments SET ${sets.join(", ")} WHERE id = ?1`).bind(id);
+function recount(ctx: Ctx, store: Store, id: string) {
+    const sets = REACTIONS.map((r) => `${COLUMN[r]} = (SELECT COUNT(*) FROM ${store.reactions} WHERE comment_id = ?1 AND kind = '${r}')`);
+    return ctx.env.DB.prepare(`UPDATE ${store.comments} SET ${sets.join(", ")} WHERE id = ?1`).bind(id);
 }
 
-async function reactionResult(ctx: Ctx, id: string, me: string): Promise<Response> {
-    const c = await loadComment(ctx, id);
-    const mine = await ctx.env.DB.prepare("SELECT kind FROM community_comment_reactions WHERE comment_id = ?1 AND player_id = ?2").bind(id, me).first<{ kind: string }>();
+async function reactionResult(ctx: Ctx, store: Store, id: string, me: string): Promise<Response> {
+    const c = await loadIn(ctx, store, id);
+    const mine = await ctx.env.DB.prepare(`SELECT kind FROM ${store.reactions} WHERE comment_id = ?1 AND player_id = ?2`).bind(id, me).first<{ kind: string }>();
     return json(ctx, {
         reactions: Object.fromEntries(REACTIONS.map((r) => [r, c[COLUMN[r] as keyof CommentRow] as number])),
         my_reaction: mine?.kind ?? null,
@@ -448,19 +639,17 @@ export async function reportComment(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
     const me = auth.player.id;
     await rateLimit(ctx, RULES.communityReport, "player:" + me);
-    const c = await loadComment(ctx, ctx.params.commentId!);
+    const { c, store } = await loadComment(ctx, ctx.params.commentId!);
     if (c.author_id === me) throw Errors.forbidden("OWN_COMMENT", "Vous ne pouvez pas signaler votre propre commentaire.");
     const v = new Validator(await readJsonObject(ctx), ["reason"]);
     const reason = v.oneOf("reason", COMMENT_REPORT_REASONS);
     v.done();
-    const res = await ctx.env.DB.prepare(
-        "INSERT OR IGNORE INTO community_comment_reports (comment_id, reporter_id, reason, created_at) VALUES (?1, ?2, ?3, ?4)",
-    )
+    const res = await ctx.env.DB.prepare(`INSERT OR IGNORE INTO ${store.reports} (comment_id, reporter_id, reason, created_at) VALUES (?1, ?2, ?3, ?4)`)
         .bind(c.id, me, reason, nowIso())
         .run();
     if (res.meta.changes > 0) {
         await ctx.env.DB.prepare(
-            `UPDATE community_comments SET report_count = report_count + 1, hidden = CASE WHEN report_count + 1 >= ?2 THEN 1 ELSE hidden END WHERE id = ?1`,
+            `UPDATE ${store.comments} SET report_count = report_count + 1, hidden = CASE WHEN report_count + 1 >= ?2 THEN 1 ELSE hidden END WHERE id = ?1`,
         )
             .bind(c.id, REPORTS_TO_HIDE)
             .run();
@@ -471,30 +660,39 @@ export async function reportComment(ctx: Ctx): Promise<Response> {
 
 // --------------------------------------------------------------- moderation
 
-/** GET /admin/comments?status=reported (admin token): comments waiting for a decision. */
+/** GET /admin/comments?status=reported (admin token): comments of every thread waiting for a decision. */
 export async function adminListComments(ctx: Ctx): Promise<Response> {
-    const rows = await ctx.env.DB.prepare(
-        `SELECT c.id, c.level_id, c.author_id, c.body, c.created_at, c.report_count, c.hidden, p.username,
-                (SELECT group_concat(reason) FROM community_comment_reports r WHERE r.comment_id = c.id) AS reasons
-         FROM community_comments c JOIN players p ON p.id = c.author_id
-         WHERE c.report_count > 0 AND c.deleted_at IS NULL ORDER BY c.hidden DESC, c.report_count DESC LIMIT 100`,
-    ).all();
-    return json(ctx, { comments: rows.results });
+    const query = (store: Store) =>
+        ctx.env.DB.prepare(
+            `SELECT c.id, c.${store.threadCol} AS thread_key, c.author_id, c.body, c.created_at, c.report_count, c.hidden, p.username,
+                    (SELECT group_concat(reason) FROM ${store.reports} r WHERE r.comment_id = c.id) AS reasons
+             FROM ${store.comments} c JOIN players p ON p.id = c.author_id
+             WHERE c.report_count > 0 AND c.deleted_at IS NULL ORDER BY c.hidden DESC, c.report_count DESC LIMIT 100`,
+        ).all<Record<string, unknown>>();
+    const [community, campaign] = await Promise.all([query(COMMUNITY_STORE), query(CAMPAIGN_STORE)]);
+    const rows: Record<string, unknown>[] = [
+        // Community comments keep their level_id; campaign ones say their thread (level:… or run:…).
+        ...community.results.map(({ thread_key, ...r }) => ({ ...r, level_id: thread_key, thread: "community" })),
+        ...campaign.results.map(({ thread_key, ...r }) => ({ ...r, level_id: null, thread: thread_key })),
+    ];
+    rows.sort((a, b) => Number(b.hidden) - Number(a.hidden) || Number(b.report_count) - Number(a.report_count));
+    rows.splice(100);
+    return json(ctx, { comments: rows });
 }
 
-/** POST /admin/comments/{id}/moderate {action: restore|remove} (admin token). */
+/** POST /admin/comments/{id}/moderate {action: restore|remove} (admin token), in any thread. */
 export async function adminModerateComment(ctx: Ctx): Promise<Response> {
-    const c = await loadComment(ctx, ctx.params.commentId!);
+    const { c, store } = await loadComment(ctx, ctx.params.commentId!);
     const v = new Validator(await readJsonObject(ctx), ["action"]);
     const action = v.oneOf("action", ["restore", "remove"]);
     v.done();
     if (action === "restore") {
         await ctx.env.DB.batch([
-            ctx.env.DB.prepare("UPDATE community_comments SET hidden = 0, report_count = 0 WHERE id = ?1").bind(c.id),
-            ctx.env.DB.prepare("DELETE FROM community_comment_reports WHERE comment_id = ?1").bind(c.id),
+            ctx.env.DB.prepare(`UPDATE ${store.comments} SET hidden = 0, report_count = 0 WHERE id = ?1`).bind(c.id),
+            ctx.env.DB.prepare(`DELETE FROM ${store.reports} WHERE comment_id = ?1`).bind(c.id),
         ]);
     } else {
-        await removeComment(ctx, c);
+        await removeComment(ctx, store, c);
     }
     await audit(ctx, null, "comment_moderated", { comment_id: c.id, action });
     return json(ctx, { action });

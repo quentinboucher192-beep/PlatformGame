@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <chrono>
 
 #include "engine/core/FileUtil.h"
 #include "engine/core/Log.h"
@@ -60,6 +61,10 @@ void OnlineService::init(const OnlineSettings& settings, const std::string& serv
         Json j = Json::parse(*t, nullptr, false);
         if (j.is_object()) communityInstalls_ = j;
     }
+    if (auto t = FileUtil::readText(userDir_ / "online" / "level_ratings.json")) {
+        Json j = Json::parse(*t, nullptr, false);
+        if (!levelRatings_.fromJson(j, config_.serverUrl)) levelRatings_.clear();
+    }
     if (auto t = FileUtil::readText(userDir_ / "online" / "playtime.json")) {
         Json j = Json::parse(*t, nullptr, false);
         if (j.is_object() && j.contains("levels") && j["levels"].is_object()) playtime_ = j;
@@ -78,6 +83,8 @@ void OnlineService::setSettings(const OnlineSettings& s) {
         config_ = OnlineConfig::load({}, s.serverOverride);
         tokens_.clear();
         profile_ = Json();
+        // The averages of another server are never shown for this one.
+        if (levelRatings_.server() != config_.serverUrl) levelRatings_.clear();
     }
     if (!s.enabled && client_) client_->cancelAll();
 }
@@ -427,6 +434,8 @@ void OnlineService::deleteAccount(const std::string& password, ApiCallback cb) {
             attempts_.removeOwner(owner);
             saveAttempts();
             cache_.clear();
+            levelRatings_.clear();
+            saveLevelRatings();
             notify(Notification::Kind::Info, "Compte supprimé", "Votre compte et vos données en ligne ont été effacés.");
         }
         if (cb) cb(r);
@@ -607,7 +616,50 @@ void OnlineService::getBinary(const std::string& path, std::function<void(const 
 
 std::optional<OnlineCache::Entry> OnlineService::cached(const std::string& pathAndQuery) { return cache_.get(cacheKey(pathAndQuery)); }
 
-size_t OnlineService::clearCache() { return cache_.clear(); }
+size_t OnlineService::clearCache() {
+    levelRatings_.clear();
+    std::error_code ec;
+    size_t extra = fs::remove(userDir_ / "online" / "level_ratings.json", ec) ? 1 : 0;
+    return cache_.clear() + extra;
+}
+
+// ---------------------------------------------------------- campaign ratings
+
+void OnlineService::saveLevelRatings() {
+    std::error_code ec;
+    fs::create_directories(userDir_ / "online", ec);
+    if (levelRatings_.server().empty()) {
+        fs::remove(userDir_ / "online" / "level_ratings.json", ec);
+        return;
+    }
+    FileUtil::writeTextAtomic(userDir_ / "online" / "level_ratings.json", levelRatings_.toJson().dump());
+}
+
+void OnlineService::refreshLevelRatings(bool force, ApiCallback cb) {
+    if (!usable() || !loggedIn()) {
+        if (cb) cb(!usable() ? unusableResult() : localError("NOT_LOGGED_IN", "Connectez-vous à Cosmic Online."));
+        return;
+    }
+    double now = std::chrono::duration<double>(std::chrono::steady_clock::now().time_since_epoch()).count();
+    if (ratingsBusy_ || (!force && levelRatings_.fresh() && now - ratingsReadAt_ < 600.0)) {
+        if (cb) cb(localError("NOT_NEEDED", ""));
+        return;
+    }
+    ratingsBusy_ = true;
+    call("GET", "/api/v1/levels/ratings", {}, {}, true, [this, cb, now](const ApiResult& r) {
+        ratingsBusy_ = false;
+        int64_t unix = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        if (r.ok && levelRatings_.applyList(r.data, config_.serverUrl, tokens_.playerId, unix)) {
+            ratingsReadAt_ = now;
+            saveLevelRatings();
+        }
+        if (cb) cb(r);
+    });
+}
+
+void OnlineService::noteLevelRating(const Json& view) {
+    if (levelRatings_.applyOne(view, config_.serverUrl, tokens_.playerId)) saveLevelRatings();
+}
 
 // ------------------------------------------------------------------ records
 

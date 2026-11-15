@@ -65,6 +65,7 @@ const std::vector<OnlineKind>& onlineKinds() {
         {"project_reply", "R", {176, 76, 255, 255}, "Projet", "Réponse à mes messages d'un projet"},
         {"project_removed", "P", {255, 120, 120, 255}, "Projet", "Retrait d'un projet"},
         {"race_verified", "X", {255, 140, 60, 255}, "EXTRÊME", "Vérification d'un niveau EXTRÊME que j'ai tenté"},
+        {"run_comment", "C", {150, 170, 255, 255}, "Commentaire", "Commentaire sur une de mes courses"},
     };
     return k;
 }
@@ -268,7 +269,8 @@ private:
     std::string openLabel(const Json& n) const {
         std::string kind = jstr(n, "kind");
         if ((kind == "new_level" || kind == "level_update") && !jstr(n, "level_id").empty()) return "Voir le niveau";
-        if ((kind == "comment_reply" || kind == "comment_reaction" || kind == "level_comment") && !jstr(n, "level_id").empty()) return "Voir les commentaires";
+        if ((kind == "comment_reply" || kind == "comment_reaction" || kind == "level_comment" || kind == "run_comment") && !jstr(n, "level_id").empty())
+            return "Voir les commentaires";
         if (kind == "new_follower" && n.contains("actor") && n["actor"].is_object()) return "Voir le profil";
         if (kind == "project_invite") return "Voir l'invitation";
         if ((kind == "project_role" || kind == "project_version" || kind == "project_mention" || kind == "project_reply") && n.contains("data") &&
@@ -307,6 +309,14 @@ private:
                 if (!official.empty()) g_.app.switchScene(makeOnlineRanking(g_, official));
                 return;
             }
+            // Comments of the campaign (2.19): an official level or a run, opened from its ranking.
+            std::string thread = n.contains("data") ? jstr(n["data"], "thread") : std::string{};
+            if (thread.rfind("level:", 0) == 0 || thread.rfind("run:", 0) == 0) {
+                g_.onlineOpen = "thread:" + thread;
+                g_.app.switchScene(makeOnlineRanking(g_, jstr(n, "level_id")));
+                return;
+            }
+            if (kind == "run_comment") return;  // always has its thread
             if (kind == "comment_reply" || kind == "comment_reaction" || kind == "level_comment") g_.onlineOpen = "comments";
             g_.app.switchScene(makeOnlineLevels(g_, jstr(n, "level_id")));
         };
