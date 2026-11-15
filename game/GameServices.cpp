@@ -23,9 +23,71 @@ void GameServices::loadAll() {
         achievements.save();
     };
     checkAchievements(false);  // what the existing saves already prove (no toast at startup)
+    if (std::string err; !cosmetics.loadDefault(&err)) Log::warn("Collection : {}", err);
+    collection.load();
+    if (collection.firstStart()) {
+        // Rewards already earned before 2.19: equipped by nobody, announced once by a toast.
+        auto p = cosmeticProgress();
+        auto already = collection.fresh(cosmetics, p);
+        for (const CosmeticItem* i : already) collection.markAnnounced(i->id);
+        if (!already.empty())
+            online.notify(OnlineService::Notification::Kind::Success,
+                          std::to_string(already.size()) + (already.size() > 1 ? " récompenses débloquées" : " récompense débloquée"),
+                          "Avec vos étoiles · menu principal → Collection");
+    }
+    discoverFromSaves();
+    app.audio().onMusicStarted = [this](const std::string& path) {
+        // The jukebox: a track becomes listenable once heard in the game.
+        std::string rel = app.resources().relativeSoundPath(path);
+        if (!rel.empty() && collection.heard.insert(rel).second) collection.save();
+    };
     news.load();
     news.startScan(content);
     applySettings();
+}
+
+CosmeticProgress GameServices::cosmeticProgress() const {
+    CosmeticProgress p;
+    p.stars = achievements.stars(achievementCatalog);
+    p.totalStars = achievementCatalog.totalStars();
+    p.book = &achievements;
+    return p;
+}
+
+std::string GameServices::menuMusic() const {
+    // Only a track already heard, and still shipped with the game.
+    if (!collection.menuMusic.empty() && collection.heard.count(collection.menuMusic) &&
+        !app.resources().soundPath(collection.menuMusic).empty())
+        return collection.menuMusic;
+    return "music/menu_theme.ogg";
+}
+
+void GameServices::discoverFromSaves() {
+    bool changed = false;
+    auto hear = [&](const std::string& rel) {
+        if (!rel.empty() && collection.heard.insert(rel).second) changed = true;
+    };
+    hear("music/menu_theme.ogg");
+    for (const PlanetData* p : content.planets()) {
+        if (!progression.planetUnlocked(*p, content)) continue;
+        hear(p->music);
+        for (const LevelEntry* e : content.levelsForPlanet(p->id)) {
+            if (!progression.levelCompleted(e->id) || collection.met.count("@" + e->id)) continue;
+            auto lv = content.loadLevel(e->id);
+            if (!lv) continue;
+            // A completed level: its music, ambience, boss music and creatures were met.
+            hear(lv->music);
+            hear(lv->ambience);
+            hear(lv->bossMusic);
+            hear("music/victory.ogg");
+            for (const auto& o : lv->objects)
+                if (o.type == "enemy")
+                    if (std::string id = jstr(o.props, "enemy"); !id.empty()) collection.met.insert(id);
+            collection.met.insert("@" + e->id);  // this level was scanned
+            changed = true;
+        }
+    }
+    if (changed) collection.save();
 }
 
 AchievementInputs GameServices::achievementInputs() const {

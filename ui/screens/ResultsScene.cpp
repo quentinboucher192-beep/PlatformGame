@@ -33,6 +33,11 @@ void ResultsScene::update(float dt) {
         medalPlayed_ = true;
         g_.uiSound("medal", 0.9f);
     }
+    // Collection (2.19): rewards just unlocked by the stars, once the score has rolled up.
+    if (!rewardsChecked_ && t_ > 2.8f) {
+        rewardsChecked_ = true;
+        if (!g_.collection.fresh(g_.cosmetics, g_.cosmeticProgress()).empty()) g_.app.pushScene(makeNewRewards(g_));
+    }
 }
 
 void ResultsScene::drawOnlineStatus(const Rect& panel) {

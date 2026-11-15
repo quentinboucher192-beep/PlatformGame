@@ -7,7 +7,7 @@ Run from the repository root:
 Regenerates (deterministically) everything in docs/ASSET_SPEC.md sections
 3, 4, 5, 6 and 10, plus ui/app_icon.png and installer/app.ico.
 Optional arguments restrict the run to some groups:
-    nova enemies boss projectiles objects fx icon
+    nova nova_suits enemies boss projectiles objects fx icon
 """
 import os
 import sys
@@ -25,12 +25,14 @@ def main(argv):
     import fx
     import icon
     import nova
+    import nova_suits
     import objects
     import projectiles
     import validate
 
     groups = [
         ("nova", nova.build),
+        ("nova_suits", nova_suits.build),  # after nova: recolours its sheet
         ("enemies", enemies.build),
         ("boss", boss.build),
         ("projectiles", projectiles.build),

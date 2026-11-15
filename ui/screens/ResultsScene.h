@@ -56,6 +56,7 @@ public:
     bool updatesSceneBelow() const override { return true; }
 
 private:
+    bool rewardsChecked_ = false;
     void drawOnlineStatus(const Rect& panel);
     void drawRace(const Rect& panel);
     void drawBosses(const Rect& panel);

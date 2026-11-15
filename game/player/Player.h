@@ -154,6 +154,9 @@ public:
 
     // ---------------------------------------------------- animation
     Animator anim;
+    /// Suit (2.19 cosmetics): a recoloured copy of the animation set's sheet, same layout.
+    /// Display only, never read by the simulation.
+    const Texture* skin = nullptr;
     float hurtFlash() const { return hurtFlash_; }
 
 private:

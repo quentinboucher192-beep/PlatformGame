@@ -329,7 +329,7 @@ void Player::update(GameWorld& w, float dt) {
 
 void Player::render(RenderContext& ctx) const {
     if (state_ == PlayerState::Hidden || !anim.set() || !anim.set()->texture) return;
-    const Texture& tex = *anim.set()->texture;
+    const Texture& tex = skin ? *skin : *anim.set()->texture;
     Vec2 f = renderFeet(ctx.alpha);
     bool flip = facing < 0.0f;
 

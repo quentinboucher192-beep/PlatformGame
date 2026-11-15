@@ -118,9 +118,14 @@ void AudioSystem::applyMusicGain() {
     if (ambience_) MIX_SetTrackGain(ambience_, volumes_.ambience);
 }
 
-void AudioSystem::playMusic(const std::string& path, int fadeMs) {
-    if (path == musicPath_) return;
+void AudioSystem::playMusic(const std::string& path, int fadeMs, bool loop) {
+    if (path == musicPath_ && (loop || !musicEnded())) {
+        // Same music: a paused jukebox track simply resumes.
+        if (musicPaused()) resumeMusic();
+        return;
+    }
     musicPath_ = path;
+    if (!path.empty() && onMusicStarted) onMusicStarted(path);
     if (!mixer_) return;
     MusicTrack& old = music_[activeMusic_];
     if (old.track && MIX_TrackPlaying(old.track))
@@ -133,7 +138,52 @@ void AudioSystem::playMusic(const std::string& path, int fadeMs) {
     cur.path = path;
     MIX_SetTrackAudio(cur.track, a);
     applyMusicGain();
-    playTrack(cur.track, -1, fadeMs);
+    playTrack(cur.track, loop ? -1 : 0, fadeMs);
+}
+
+void AudioSystem::pauseMusic() {
+    if (mixer_ && music_[activeMusic_].track) MIX_PauseTrack(music_[activeMusic_].track);
+}
+
+void AudioSystem::resumeMusic() {
+    if (mixer_ && music_[activeMusic_].track) MIX_ResumeTrack(music_[activeMusic_].track);
+}
+
+bool AudioSystem::musicPaused() const {
+    return mixer_ && music_[activeMusic_].track && MIX_TrackPaused(music_[activeMusic_].track);
+}
+
+int64_t AudioSystem::musicPositionMs() const {
+    MIX_Track* t = mixer_ ? music_[activeMusic_].track : nullptr;
+    if (!t || musicPath_.empty()) return 0;
+    Sint64 f = MIX_GetTrackPlaybackPosition(t);
+    return f < 0 ? 0 : MIX_TrackFramesToMS(t, f);
+}
+
+int64_t AudioSystem::musicDurationMs() const {
+    if (!mixer_ || musicPath_.empty()) return 0;
+    auto it = cache_.find(musicPath_);
+    if (it == cache_.end() || !it->second) return 0;
+    Sint64 f = MIX_GetAudioDuration(it->second);
+    return f < 0 ? 0 : MIX_AudioFramesToMS(it->second, f);
+}
+
+void AudioSystem::seekMusicMs(int64_t ms) {
+    MIX_Track* t = mixer_ ? music_[activeMusic_].track : nullptr;
+    if (!t) return;
+    MIX_SetTrackPlaybackPosition(t, MIX_TrackMSToFrames(t, std::max<int64_t>(0, ms)));
+}
+
+int64_t AudioSystem::fileDurationMs(const std::string& path) {
+    MIX_Audio* a = load(path, false);
+    if (!a) return 0;
+    Sint64 f = MIX_GetAudioDuration(a);
+    return f < 0 ? 0 : MIX_AudioFramesToMS(a, f);
+}
+
+bool AudioSystem::musicEnded() const {
+    MIX_Track* t = mixer_ ? music_[activeMusic_].track : nullptr;
+    return t && !musicPath_.empty() && !MIX_TrackPlaying(t) && !MIX_TrackPaused(t);
 }
 
 void AudioSystem::stopMusic(int fadeMs) {
@@ -151,6 +201,7 @@ void AudioSystem::setMusicDuck(float factor) {
 void AudioSystem::playAmbience(const std::string& path, int fadeMs) {
     if (path == ambiencePath_) return;
     ambiencePath_ = path;
+    if (!path.empty() && onMusicStarted) onMusicStarted(path);
     if (!mixer_ || !ambience_) return;
     if (MIX_TrackPlaying(ambience_)) MIX_StopTrack(ambience_, 0);
     if (path.empty()) return;

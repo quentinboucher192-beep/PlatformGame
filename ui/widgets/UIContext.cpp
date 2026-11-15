@@ -1,5 +1,7 @@
 #include "ui/widgets/UIContext.h"
 
+#include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <cstdio>
 
@@ -451,8 +453,52 @@ bool UIContext::passwordField(const std::string& name, const Rect& rc, std::stri
 
 void UIContext::editText(const std::string& name) {
     focus_ = editing_ = id(name);
+    caret_ = anchor_ = static_cast<size_t>(-1);  // at the end (clamped by the field)
+    dragSelect_ = false;
     if (app_) input().startTextInput(app_->window());
 }
+
+namespace {
+// UTF-8 helpers of the text fields (byte offsets that never split a code point).
+size_t utf8Prev(const std::string& s, size_t i) {
+    if (i == 0) return 0;
+    --i;
+    while (i > 0 && (static_cast<unsigned char>(s[i]) & 0xC0) == 0x80) --i;
+    return i;
+}
+size_t utf8Next(const std::string& s, size_t i) {
+    if (i >= s.size()) return s.size();
+    ++i;
+    while (i < s.size() && (static_cast<unsigned char>(s[i]) & 0xC0) == 0x80) ++i;
+    return i;
+}
+bool wordChar(unsigned char c) { return c >= 0x80 || std::isalnum(c) || c == '_' || c == '-'; }
+size_t wordLeft(const std::string& s, size_t i) {
+    while (i > 0 && !wordChar(static_cast<unsigned char>(s[utf8Prev(s, i)]))) i = utf8Prev(s, i);
+    while (i > 0 && wordChar(static_cast<unsigned char>(s[utf8Prev(s, i)]))) i = utf8Prev(s, i);
+    return i;
+}
+size_t wordRight(const std::string& s, size_t i) {
+    while (i < s.size() && !wordChar(static_cast<unsigned char>(s[i]))) i = utf8Next(s, i);
+    while (i < s.size() && wordChar(static_cast<unsigned char>(s[i]))) i = utf8Next(s, i);
+    return i;
+}
+/// Keeps printable characters only (one line), within `room` bytes, whole code points.
+std::string cleanInsert(const char* text, size_t room) {
+    std::string out;
+    for (const char* p = text; *p; ++p) {
+        unsigned char c = static_cast<unsigned char>(*p);
+        if (c < 32) continue;
+        out.push_back(*p);
+    }
+    if (out.size() > room) {
+        out.resize(room);
+        while (!out.empty() && (static_cast<unsigned char>(out.back()) & 0xC0) == 0x80) out.pop_back();
+        if (!out.empty() && (static_cast<unsigned char>(out.back()) & 0x80)) out.pop_back();  // lead byte left alone
+    }
+    return out;
+}
+}  // namespace
 
 bool UIContext::textFieldImpl(const std::string& name, const Rect& rc, std::string& value, const std::string& placeholder,
                               size_t maxLen, bool mask) {
@@ -462,36 +508,158 @@ bool UIContext::textFieldImpl(const std::string& name, const Rect& rc, std::stri
     bool isFocus = focus_ == wid;
     InputManager& in = input();
     bool changedNow = false;
+    const float fs = s(20);
+    const float padX = s(10);
+    // What is drawn: the text itself, or one dot per code point (passwords).
+    auto shownOf = [&](const std::string& v) {
+        if (!mask) return v;
+        std::string m;
+        for (unsigned char ch : v)
+            if ((ch & 0xC0) != 0x80) m += "\xE2\x80\xA2";
+        return m;
+    };
+    // Byte offset of `v` <-> offset in its shown form (identical unless masked).
+    auto shownOffset = [&](const std::string& v, size_t i) {
+        if (!mask) return i;
+        size_t n = 0;
+        for (size_t k = 0; k < i && k < v.size(); ++k)
+            if ((static_cast<unsigned char>(v[k]) & 0xC0) != 0x80) ++n;
+        return n * 3;
+    };
+    auto widthTo = [&](const std::string& v, size_t i) {
+        std::string shown = shownOf(v);
+        size_t j = std::min(shownOffset(v, i), shown.size());
+        return j == 0 ? 0.0f : text().measure(shown.substr(0, j), FontFace::Body, fs).x;
+    };
+    auto clampCaret = [&]() {
+        caret_ = std::min(caret_, value.size());
+        anchor_ = std::min(anchor_, value.size());
+    };
+    // Scroll of a long text so that the caret stays visible.
+    auto shiftFor = [&]() {
+        if (editing_ != wid || value.empty()) return 0.0f;
+        float cx = widthTo(value, caret_);
+        float room = rc.w - s(26);
+        float total = text().measure(shownOf(value), FontFace::Body, fs).x;
+        float sh = std::max(0.0f, total - room);           // the end visible by default
+        sh = std::min(sh, std::max(0.0f, cx - s(8)));      // caret not hidden on the left
+        return std::max(sh, cx - room);                     // nor on the right
+    };
+    auto caretAtMouse = [&]() {
+        float x = in.mousePos().x - (rc.x + padX - shiftFor());
+        size_t best = 0;
+        float bestD = 1e9f;
+        for (size_t i = 0;; i = utf8Next(value, i)) {
+            float d = std::abs(widthTo(value, i) - x);
+            if (d < bestD) {
+                bestD = d;
+                best = i;
+            }
+            if (i >= value.size()) break;
+        }
+        return best;
+    };
+    auto deleteSelection = [&]() {
+        if (caret_ == anchor_) return false;
+        size_t a = std::min(caret_, anchor_), b = std::max(caret_, anchor_);
+        value.erase(a, b - a);
+        caret_ = anchor_ = a;
+        return true;
+    };
+    auto insertText = [&](const char* t) {
+        clampCaret();
+        deleteSelection();
+        std::string ins = cleanInsert(t, maxLen > value.size() ? maxLen - value.size() : 0);
+        if (ins.empty()) return false;
+        value.insert(caret_, ins);
+        caret_ += ins.size();
+        anchor_ = caret_;
+        return true;
+    };
+
     if (clicked && editing_ != wid) {
         editing_ = wid;
         in.startTextInput(app_->window());
+        // Clicked: the caret where the click was; reached by keyboard / pad: at the end.
+        caret_ = anchor_ = in.mousePressed(SDL_BUTTON_LEFT) && mouseOver(rc) ? caretAtMouse() : value.size();
+        dragSelect_ = in.mousePressed(SDL_BUTTON_LEFT) && mouseOver(rc);
     } else if (editing_ == wid) {
-        if (!in.textInput().empty()) {
-            for (char c : in.textInput())
-                if (value.size() < maxLen && static_cast<unsigned char>(c) >= 32) value.push_back(c);
-            changedNow = true;
+        clampCaret();
+        const bool ctrl = in.ctrl(), shift = in.shift();
+        // Mouse: click to place the caret, shift-click or drag to select.
+        if (in.mousePressed(SDL_BUTTON_LEFT) && mouseOver(rc)) {
+            caret_ = caretAtMouse();
+            if (!shift) anchor_ = caret_;
+            dragSelect_ = true;
+        } else if (dragSelect_ && in.mouseDown(SDL_BUTTON_LEFT)) {
+            caret_ = caretAtMouse();
+        } else if (!in.mouseDown(SDL_BUTTON_LEFT)) {
+            dragSelect_ = false;
         }
-        if (in.keyPressed(SDL_SCANCODE_BACKSPACE) && !value.empty()) {
-            // Remove a full UTF-8 code point.
-            size_t i = value.size() - 1;
-            while (i > 0 && (static_cast<unsigned char>(value[i]) & 0xC0) == 0x80) --i;
-            value.erase(i);
-            changedNow = true;
+        // Typed text (AltGr = Ctrl+Alt on Windows keyboards: never filtered by Ctrl).
+        if (!in.textInput().empty()) changedNow |= insertText(in.textInput().c_str());
+        if (ctrl && in.shortcutPressed(SDLK_A)) {
+            anchor_ = 0;
+            caret_ = value.size();
         }
-        if (!mask && in.ctrl() && in.shortcutPressed(SDLK_V)) {
-            if (char* clip = SDL_GetClipboardText()) {
-                for (const char* p = clip; *p && value.size() < maxLen; ++p)
-                    if (static_cast<unsigned char>(*p) >= 32) value.push_back(*p);
-                SDL_free(clip);
-                changedNow = true;
+        if (ctrl && (in.shortcutPressed(SDLK_C) || in.shortcutPressed(SDLK_X)) && !mask) {
+            size_t a = std::min(caret_, anchor_), b = std::max(caret_, anchor_);
+            // Nothing selected: the whole text (as many editors do for a one-line field).
+            std::string part = a == b ? value : value.substr(a, b - a);
+            if (!part.empty()) SDL_SetClipboardText(part.c_str());
+            if (in.shortcutPressed(SDLK_X)) {
+                if (a == b) {
+                    value.clear();
+                    caret_ = anchor_ = 0;
+                    changedNow = !part.empty() || changedNow;
+                } else {
+                    changedNow |= deleteSelection();
+                }
             }
         }
+        if (ctrl && in.shortcutPressed(SDLK_V)) {
+            if (char* clip = SDL_GetClipboardText()) {
+                changedNow |= insertText(clip);
+                SDL_free(clip);
+            }
+        }
+        if (in.keyPressed(SDL_SCANCODE_BACKSPACE)) {
+            if (!deleteSelection() && caret_ > 0) {
+                size_t from = ctrl ? wordLeft(value, caret_) : utf8Prev(value, caret_);
+                value.erase(from, caret_ - from);
+                caret_ = anchor_ = from;
+            }
+            changedNow = true;
+        }
+        if (in.keyPressed(SDL_SCANCODE_DELETE)) {
+            if (!deleteSelection() && caret_ < value.size()) {
+                size_t to = ctrl ? wordRight(value, caret_) : utf8Next(value, caret_);
+                value.erase(caret_, to - caret_);
+            }
+            changedNow = true;
+        }
+        auto move = [&](size_t to) {
+            caret_ = to;
+            if (!shift) anchor_ = caret_;
+        };
+        if (in.keyPressed(SDL_SCANCODE_LEFT)) {
+            if (!shift && caret_ != anchor_) move(std::min(caret_, anchor_));
+            else move(ctrl ? wordLeft(value, caret_) : utf8Prev(value, caret_));
+        }
+        if (in.keyPressed(SDL_SCANCODE_RIGHT)) {
+            if (!shift && caret_ != anchor_) move(std::max(caret_, anchor_));
+            else move(ctrl ? wordRight(value, caret_) : utf8Next(value, caret_));
+        }
+        if (in.keyPressed(SDL_SCANCODE_HOME)) move(0);
+        if (in.keyPressed(SDL_SCANCODE_END)) move(value.size());
         bool clickedOutside = in.mousePressed(SDL_BUTTON_LEFT) && !mouseOver(rc);
         if (in.keyPressed(SDL_SCANCODE_RETURN) || in.keyPressed(SDL_SCANCODE_ESCAPE) || in.keyPressed(SDL_SCANCODE_TAB) ||
             clickedOutside || !acceptsInput()) {
             editing_ = 0;
+            dragSelect_ = false;
             in.stopTextInput(app_->window());
         }
+        clampCaret();
     }
     if (changedNow) changed_ = true;
     float hot = anim(wid, hovered || isFocus || editing_ == wid);
@@ -501,18 +669,18 @@ bool UIContext::textFieldImpl(const std::string& name, const Rect& rc, std::stri
     rr.drawRoundedRect(rc, s(6), editing_ == wid ? theme_.accent : Color::lerp(theme_.border, theme_.accent, hot * 0.6f),
                        std::max(1.0f, s(1.5f)));
     rr.pushClip(rc.expanded(-s(4)));
-    std::string masked;
-    if (mask)
-        for (unsigned char ch : value)
-            if ((ch & 0xC0) != 0x80) masked += "\xE2\x80\xA2";  // one dot per code point
-    std::string shown = value.empty() && editing_ != wid ? placeholder : (mask ? masked : value);
+    std::string shown = value.empty() && editing_ != wid ? placeholder : shownOf(value);
     Color c = value.empty() && editing_ != wid ? theme_.textDim : theme_.text;
-    // A text longer than the field slides left while it is edited, so the caret stays visible.
-    float shift = 0.0f;
-    if (editing_ == wid && !value.empty()) shift = std::max(0.0f, text().measure(shown, FontFace::Body, s(20)).x - (rc.w - s(26)));
-    Vec2 sz = label(shown, {rc.x + s(10) - shift, rc.center().y}, 20, c, Align::Left, FontFace::Body, VAlign::Middle);
+    float shift = shiftFor();
+    float x0 = rc.x + padX - shift;
+    if (editing_ == wid && caret_ != anchor_) {
+        // The selection, behind the text.
+        float a = widthTo(value, std::min(caret_, anchor_)), b = widthTo(value, std::max(caret_, anchor_));
+        rr.fillRect({x0 + a, rc.center().y - s(12), b - a, s(24)}, theme_.accent.withAlpha(90));
+    }
+    label(shown, {x0, rc.center().y}, 20, c, Align::Left, FontFace::Body, VAlign::Middle);
     if (editing_ == wid && std::fmod(time_, 1.0f) < 0.6f) {
-        float cx = rc.x + s(10) - shift + (shown.empty() || value.empty() ? 0.0f : sz.x) + s(2);
+        float cx = x0 + widthTo(value, caret_) + s(1);
         rr.fillRect({cx, rc.center().y - s(11), s(2), s(22)}, theme_.accent);
     }
     rr.popClip();

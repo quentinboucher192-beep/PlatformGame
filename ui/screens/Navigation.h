@@ -96,6 +96,10 @@ class GameScene;
 std::unique_ptr<Scene> makeGhostOptions(GameServices& g, GameScene* game);
 /// Main menu → Succès: every achievement on a spider web (categories, stars), or as a list.
 std::unique_ptr<Scene> makeAchievements(GameServices& g);
+/// Main menu → Collection: Vestiaire, Route des étoiles, Musiques (jukebox), Galerie.
+std::unique_ptr<Scene> makeCollection(GameServices& g, int tab = 0);
+/// End of a level: the rewards just unlocked by the stars (equip now or later).
+std::unique_ptr<Scene> makeNewRewards(GameServices& g);
 /// Main menu → Statistiques: the bosses (victories, without being hit, per phase).
 std::unique_ptr<Scene> makeBossStats(GameServices& g);
 /// Help: every power of the player with a live example (pushed over the current screen).

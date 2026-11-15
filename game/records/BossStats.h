@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <map>
+#include <set>
 #include <optional>
 #include <string>
 #include <vector>
@@ -82,6 +83,9 @@ private:
         int phase = 0;
         int hitsAtPhase = 0;
         int hitsAtStart = 0;
+        /// Fight resumed after a death or a hit against this boss: the phase it resumes in
+        /// was started before, it cannot count « sans dégât » (-1: none).
+        int taintedPhase = -1;
     };
     void begin(GameWorld& w, Enemy& boss, BossStats& stats, int hits);
     void phaseDone(BossStats& stats, int hits);
@@ -89,6 +93,8 @@ private:
     std::map<std::string, bool> hitBefore_;    // per boss object: hit or dead since its first fight
     std::map<std::string, bool> diedBefore_;   // per boss object: the player died against it
     std::map<std::string, float> firstStart_;  // per boss object: time of its first fight
+    std::set<std::string> engaged_;            // per boss object: fought in this run, not beaten yet
+    std::map<std::string, std::string> interrupted_;  // fights left unbeaten since the last death: key → boss id
     bool defeatedEvent_ = false;
     int lastDeaths_ = 0;
     std::vector<Event> events_, kills_;

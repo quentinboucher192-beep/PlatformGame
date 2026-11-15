@@ -503,6 +503,16 @@ int main(int argc, char** argv) {
         if (std::string a = value("--achievements"); !a.empty())
             game.onlineOpen = a == "list" ? "ach-list" : a.rfind("zoom:", 0) == 0 ? "ach-" + a : "ach:" + a;
         app.pushScene(makeAchievements(game));
+    } else if (has("--collection")) {
+        // --collection [0-3][:detail] (tabs: Vestiaire, Route, Musiques, Galerie)
+        std::string c = value("--collection");
+        int tab = c.empty() ? 0 : std::atoi(c.c_str());
+        if (auto colon = c.find(':'); colon != std::string::npos) game.onlineOpen = c.substr(colon + 1);
+        app.pushScene(makeMainMenu(game));
+        app.pushScene(makeCollection(game, tab));
+    } else if (has("--new-rewards")) {
+        app.pushScene(makeMainMenu(game));
+        app.pushScene(makeNewRewards(game));
     } else if (has("--boss-stats")) {
         if (std::string b = value("--boss-stats"); !b.empty()) game.onlineOpen = "boss:" + b;
         app.pushScene(makeBossStats(game));
