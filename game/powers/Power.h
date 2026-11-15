@@ -43,6 +43,9 @@ public:
     /// Animation clip imposed while the power is in use (nullptr = automatic).
     virtual const char* animationClip(const Player& /*p*/) const { return nullptr; }
 
+    /// Energy the next activation costs: the definition's cost, except for powers whose
+    /// first use is free (the recall beacon is placed for nothing, coming back costs).
+    virtual float activationCost(const Player& /*p*/) const { return def_.energyCost; }
     /// Cooldown / energy / situational checks.
     bool ready(const Player& p) const;
     virtual bool canActivate(const Player& /*p*/, const GameWorld& /*w*/) const { return true; }

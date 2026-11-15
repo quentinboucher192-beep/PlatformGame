@@ -1,0 +1,48 @@
+{
+  "format": "cosmic.cosmetics",
+  "version": 1,
+  "categories": [
+    {"id": "suit", "name": "Combinaisons"},
+    {"id": "trail", "name": "Traînées"},
+    {"id": "frame", "name": "Cadres d'avatar"},
+    {"id": "title", "name": "Titres"},
+    {"id": "victory", "name": "Effets de victoire"}
+  ],
+  "items": [
+    {"id": "suit_standard", "category": "suit", "name": "Standard", "description": "La combinaison de Nova, avec son écharpe orange.", "default": true, "look": "standard"},
+    {"id": "suit_givre", "category": "suit", "name": "Givre", "description": "Reflets bleu glacier, écharpe blanche.", "stars": 20, "look": "givre"},
+    {"id": "suit_braise", "category": "suit", "name": "Braise", "description": "Combinaison cuivrée, visière orange, écharpe rouge.", "stars": 40, "look": "braise"},
+    {"id": "suit_seve", "category": "suit", "name": "Sève", "description": "Vert de Sylvanox, écharpe violette.", "stars": 60, "look": "seve"},
+    {"id": "suit_noyau", "category": "suit", "name": "Noyau", "description": "Combinaison sombre et visière dorée du Noyau stellaire.", "stars": 100, "look": "noyau"},
+    {"id": "suit_spectre", "category": "suit", "name": "Spectre", "description": "Violet translucide, comme un fantôme.", "stars": 160, "look": "spectre"},
+    {"id": "suit_or", "category": "suit", "name": "Or stellaire", "description": "Pour celles et ceux qui ont presque tout.", "stars": 300, "look": "or"},
+    {"id": "suit_echo", "category": "suit", "name": "Écho", "description": "Noire et rouge, comme les échos des gardiens.", "achievement": "gardiens_echoes", "look": "echo"},
+
+    {"id": "trail_none", "category": "trail", "name": "Aucune", "description": "Pas de traînée derrière Nova.", "default": true, "look": "none"},
+    {"id": "trail_stardust", "category": "trail", "name": "Poussière d'étoiles", "description": "Des étincelles cyan quand Nova court ou fait un dash.", "stars": 30, "look": "stardust"},
+    {"id": "trail_comet", "category": "trail", "name": "Comète", "description": "Une longue queue blanche et bleue.", "stars": 100, "look": "comet"},
+    {"id": "trail_aurora", "category": "trail", "name": "Aurore", "description": "Un ruban vert et violet qui ondule.", "stars": 180, "look": "aurora"},
+    {"id": "trail_eclipse", "category": "trail", "name": "Éclipse", "description": "Une ombre bordée d'or.", "stars": 250, "look": "eclipse"},
+
+    {"id": "frame_simple", "category": "frame", "name": "Simple", "description": "Le cadre de base, sur le profil et dans les classements.", "default": true, "look": "simple"},
+    {"id": "frame_bronze", "category": "frame", "name": "Bronze", "description": "Cadre bronze.", "stars": 10, "look": "bronze"},
+    {"id": "frame_silver", "category": "frame", "name": "Argent", "description": "Cadre argent.", "stars": 50, "look": "silver"},
+    {"id": "frame_gold", "category": "frame", "name": "Or", "description": "Cadre or, avec un halo.", "stars": 120, "look": "gold"},
+    {"id": "frame_platinum", "category": "frame", "name": "Platine", "description": "Cadre platine irisé.", "stars": 200, "look": "platinum"},
+    {"id": "frame_constellation", "category": "frame", "name": "Constellation", "description": "Toutes les étoiles : le cadre ultime.", "stars": "all", "look": "constellation"},
+
+    {"id": "title_none", "category": "title", "name": "Sans titre", "description": "Aucun titre sous votre nom.", "default": true, "look": ""},
+    {"id": "title_explorateur", "category": "title", "name": "Explorateur", "description": "Sous votre nom, sur le profil et dans les classements.", "achievement": "voyage_5", "look": "Explorateur"},
+    {"id": "title_gardien_sylvanox", "category": "title", "name": "Gardien de Sylvanox", "description": "Pour avoir terminé Sylvanox.", "achievement": "voyage_sylvanox", "look": "Gardien de Sylvanox"},
+    {"id": "title_architecte", "category": "title", "name": "Architecte", "description": "Pour avoir créé un niveau.", "achievement": "createur_level", "look": "Architecte"},
+    {"id": "title_globe_trotteur", "category": "title", "name": "Globe-trotteur", "description": "Dix niveaux de joueurs terminés.", "achievement": "communaute_level_10", "look": "Globe-trotteur"},
+    {"id": "title_chronomaitre", "category": "title", "name": "Chronomaître", "description": "Le platine sur les 18 niveaux.", "achievement": "chrono_platinum_all", "look": "Chronomaître"},
+    {"id": "title_perfection", "category": "title", "name": "Perfection gardienne", "description": "Les 12 gardiens sans être touché.", "achievement": "maitrise_boss_nohit_12", "look": "Perfection gardienne"},
+    {"id": "title_nouveau_maitre", "category": "title", "name": "Nouveau maître", "description": "Arrivé avant le fantôme d'un record mondial.", "achievement": "fantomes_world_win", "look": "Nouveau maître"},
+
+    {"id": "victory_classic", "category": "victory", "name": "Classique", "description": "L'arrivée habituelle au portail.", "default": true, "look": "classic"},
+    {"id": "victory_fireworks", "category": "victory", "name": "Feu d'artifice", "description": "Des gerbes de couleurs à l'arrivée.", "stars": 70, "look": "fireworks"},
+    {"id": "victory_starfall", "category": "victory", "name": "Pluie d'étoiles", "description": "Des étoiles tombent sur le portail.", "stars": 140, "look": "starfall"},
+    {"id": "victory_supernova", "category": "victory", "name": "Supernova", "description": "Une onde de lumière à la fin du niveau.", "stars": 220, "look": "supernova"}
+  ]
+}

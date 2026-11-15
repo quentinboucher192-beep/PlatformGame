@@ -1,7 +1,7 @@
-"""One-way platforms atlas (ASSET_SPEC section 7): textures/tiles/platforms.png 48x112.
+"""One-way platforms atlas (ASSET_SPEC section 7): textures/tiles/platforms.png 48x128.
 
 Rows: 0 ruin_bridge, 1 tech_ledge, 2 root_branch (Sylvanox), 3 basalt_ledge, 4 chain_grate
-(Pyralis), 5 ice_ledge, 6 snow_bridge (Glacior). Columns: left cap, middle (tileable), right cap.
+(Pyralis), 5 ice_ledge, 6 snow_bridge (Glacior), 7 sanctum_ledge (Aethra, 2.19). Columns: left cap, middle (tileable), right cap.
 The walkable top is on the first 2 pixel rows of each cell.
 
 Each style is painted into a long strip (cap + 3 periodic middles + cap) so the outline pass
@@ -407,9 +407,55 @@ def snow_bridge():
     return s
 
 
+# ---------------------------------------------------------------------------
+# Aethra style (row 7, 2.19)
+# ---------------------------------------------------------------------------
+SA = ["#161028", "#262040", "#38305a", "#4e4678", "#6e6698", "#958ec0"]   # sanctum marble
+GD = ["#6a4220", "#a8702a", "#e0a848", "#ffd27a"]
+VGR = ["#3e2068", "#62369a", "#8e58c8", "#c08cf0"]
+OA = "#0c0718"
+
+
+def sanctum_ledge():
+    """A floating marble slab of the sanctuaries: violet grass on top, a gold band, a lantern
+    flower hanging under it every 16 px."""
+    s = new(SW, TS)
+    for x in range(SW):
+        m = x % TS
+        e = end_dist(x)
+        if e == 0:
+            continue
+        bot = 7 if e >= 3 else 5 + e // 2
+        for y in range(0, bot + 1):
+            if y == 0:
+                c = VGR[3] if m % 4 == 1 else VGR[2]
+            elif y == 1:
+                c = VGR[1] if m % 3 else VGR[2]
+            elif y == 3:
+                c = GD[2] if m % 8 not in (0, 7) else GD[1]        # gold band with joints
+            elif y == bot:
+                c = SA[1]
+            else:
+                c = SA[4] if y == 2 else SA[3]
+                if m in (0, 15) and y >= 4:
+                    c = SA[2]                                       # slab joints
+            if e == 1:
+                c = VGR[2] if y < 2 else (GD[1] if y == 3 else SA[3])
+            s[y, x] = col(c)
+        if e >= 3 and m == 8:                                       # hanging lantern flower
+            put(s, x, bot + 1, VGR[1])
+            put(s, x, bot + 2, GD[1])
+            put(s, x, bot + 3, GD[3])
+            put(s, x - 1, bot + 3, GD[2])
+            put(s, x + 1, bot + 3, GD[2])
+            put(s, x, bot + 4, GD[2])
+    outline(s, OA)
+    return s
+
+
 STYLES = [("ruin_bridge", ruin_bridge), ("tech_ledge", tech_ledge), ("root_branch", root_branch),
           ("basalt_ledge", basalt_ledge), ("chain_grate", chain_grate), ("ice_ledge", ice_ledge),
-          ("snow_bridge", snow_bridge)]
+          ("snow_bridge", snow_bridge), ("sanctum_ledge", sanctum_ledge)]
 
 
 def generate():

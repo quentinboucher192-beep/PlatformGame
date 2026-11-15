@@ -11,8 +11,10 @@
 #include "game/GameServices.h"
 #include "ui/online/GlobeRenderer.h"
 #include "ui/online/OnlineWidgets.h"
+#include "ui/online/RatingWidgets.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/ReplayCompareNav.h"
 #include "ui/screens/OnlineNav.h"
 #include "ui/screens/Thumbnail.h"
 #include "ui/widgets/Glyphs.h"
@@ -50,7 +52,7 @@ struct BoardState {
 
 class OnlineRankingScene : public Scene {
 public:
-    OnlineRankingScene(GameServices& g, std::string levelId) : g_(g), ui_(g), wantedLevel_(std::move(levelId)) {}
+    OnlineRankingScene(GameServices& g, std::string levelId) : g_(g), ui_(g), levelRating_(g), wantedLevel_(std::move(levelId)) {}
 
     void onEnter() override {
         g_.playMusic("music/menu_theme.ogg");
@@ -75,6 +77,13 @@ public:
             int tab = g_.onlineOpen == "friends" ? 2 : 0;
             g_.onlineOpen.clear();
             g_.app.pushScene(makeOnlineSettings(g_, tab));
+        } else if (g_.onlineOpen.rfind("thread:", 0) == 0 && g_.online.loggedIn()) {
+            // A notification of a campaign thread (2.19): "thread:level:<id>" or "thread:run:<record>".
+            std::string thread = g_.onlineOpen.substr(7);
+            g_.onlineOpen = g_.onlineOpen.find("|replies") != std::string::npos ? "comments-replies" : std::string{};
+            thread = thread.substr(0, thread.find('|'));
+            if (thread.rfind("level:", 0) == 0 || thread.rfind("run:", 0) == 0)
+                g_.app.pushScene(makeOnlineThread(g_, thread, level() ? level()->id : std::string{}));
         }
         requireAccount();
     }
@@ -83,6 +92,7 @@ public:
         g_.playMusic("music/menu_theme.ogg");
         accountAsked_ = false;
         requestAll();
+        levelRating_.refresh();
     }
 
     void update(float dt) override {
@@ -188,6 +198,8 @@ private:
         requestBoard(false);
         requestGlobe();
         if (!g_.online.usable()) return;
+        // The players' rating of the selected level and its number of comments (2.19).
+        if (const RankedLevel* l = level(); l && l->id != levelRating_.levelId()) levelRating_.open(l->id);
         g_.online.get("/api/v1/meta", OnlineService::guard(life_, [this](const ApiResult& r) {
             if (!r.ok) return;
             meta_ = r.data;
@@ -239,8 +251,8 @@ private:
             board_.nextOffset = r.meta.contains("next_offset") && r.meta["next_offset"].is_number() ? r.meta["next_offset"].get<int>() : -1;
             if (!r.fromCache && !more && board_.me.is_object() && board_.me.contains("entry") && board_.me["entry"].is_object())
                 g_.online.observeBoard(boardKey, jget<int>(board_.me["entry"], "rank", 0), board_.total);
-            // Automated checks: open a player's profile or replay from the board.
-            for (const char* kind : {"profile:", "replay:"}) {
+            // Automated checks: open a player's profile, replay or run comments from the board.
+            for (const char* kind : {"profile:", "replay:", "comments:"}) {
                 std::string prefix = kind;
                 if (g_.onlineOpen.rfind(prefix, 0) != 0) continue;
                 std::string who = g_.onlineOpen.substr(prefix.size());
@@ -250,6 +262,7 @@ private:
                     g_.onlineOpen.clear();
                     selectedRow_ = static_cast<int>(i);
                     if (prefix == "profile:") openProfile(jstr(e["player"], "id"));
+                    else if (prefix == "comments:") openRunComments(e);
                     else g_.app.pushScene(makeReplayViewer(g_, jstr(e, "record_id")));
                     break;
                 }
@@ -309,7 +322,7 @@ private:
         zoneC_ = {W - m - ui.s(460), zoneA_.y, ui.s(460), zoneA_.h};
         float bx = zoneA_.right() + ui.s(18);
         float bw = zoneC_.x - ui.s(18) - bx;
-        zoneD_ = {bx, H - m - ui.s(206), bw, ui.s(206)};
+        zoneD_ = {bx, H - m - ui.s(252), bw, ui.s(252)};
         zoneB_ = {bx, zoneA_.y, bw, zoneD_.y - ui.s(14) - zoneA_.y};
         globeView_.center = zoneB_.center();
         globeView_.baseRadius = std::min(zoneB_.w, zoneB_.h) * 0.42f;
@@ -723,13 +736,35 @@ private:
             ui_.drawFlag(cc, {nx, row.center().y - ui.s(8), ui.s(22), ui.s(16)});
             nx += ui.s(28);
         }
-        std::string name = ui_.displayName(jstr(p, "username"), rank, me);
-        ui.label(name, {nx, row.center().y}, 18, me ? ui.theme().accent : ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
         float rx = row.right() - ui.s(10);
+        std::string value = entryValue(e);
+        float right = rx - ui.text().measure(value, FontFace::Bold, ui.s(18)).x - ui.s(12);
         if (me) {
-            ui.label("PB", {rx - ui.s(110), row.center().y}, 13, ui.theme().violet, Align::Right, FontFace::Bold, VAlign::Middle);
+            ui.label("PB", {right, row.center().y}, 13, ui.theme().violet, Align::Right, FontFace::Bold, VAlign::Middle);
+            right -= ui.text().measure("PB", FontFace::Bold, ui.s(13)).x + ui.s(10);
         }
-        ui.label(entryValue(e), {rx, row.center().y}, 18, rank == 1 ? GlobeRenderer::tierColor(MarkerTier::Gold) : ui.theme().text, Align::Right,
+        // Comments of the run (2.19): their number, opens its thread. Null: its author hid
+        // their profile (no comments by others).
+        if (e.contains("comments") && e["comments"].is_number_integer()) {
+            std::string count = std::to_string(e["comments"].get<int>());
+            float cw = ui.text().measure(count, FontFace::Bold, ui.s(14)).x + ui.s(40);
+            Rect cb{right - cw, row.center().y - ui.s(14), cw, ui.s(28)};
+            UIContext::ButtonStyle cst;
+            cst.small = true;
+            if (ui.button((pinned ? std::string("pinnedcom") : "com" + std::to_string(index)), cb, "", cst)) openRunComments(e);
+            // A speech bubble, then the count.
+            Rect bubble{cb.x + ui.s(9), cb.center().y - ui.s(7), ui.s(16), ui.s(11)};
+            ui.r().drawRoundedRect(bubble, ui.s(3), ui.theme().textDim, ui.s(1.5f));
+            ui.r().fillTriangle({bubble.x + ui.s(4), bubble.bottom()}, {bubble.x + ui.s(9), bubble.bottom()}, {bubble.x + ui.s(3), bubble.bottom() + ui.s(5)},
+                                ui.theme().textDim);
+            ui.label(count, {bubble.right() + ui.s(6), cb.center().y}, 14, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+            right = cb.x - ui.s(8);
+        }
+        std::string name = ui_.displayName(jstr(p, "username"), rank, me);
+        float nf = ui.fitFont(name, FontFace::Bold, 18, std::max(ui.s(40), right - nx), 0.75f);
+        ui.label(ui.elide(name, FontFace::Bold, nf, std::max(ui.s(40), right - nx)), {nx, row.center().y}, nf, me ? ui.theme().accent : ui.theme().text,
+                 Align::Left, FontFace::Bold, VAlign::Middle);
+        ui.label(value, {rx, row.center().y}, 18, rank == 1 ? GlobeRenderer::tierColor(MarkerTier::Gold) : ui.theme().text, Align::Right,
                  FontFace::Bold, VAlign::Middle);
     }
 
@@ -935,12 +970,27 @@ private:
             ui_.drawStatusChip(s->status, {x + ui.s(190), zoneD_.y + ui.s(126)}, ui.s(22));
         }
         // Actions
+        // Five actions, one under the other (36 px apart).
+        const float ah = ui.s(30);
+        auto actionY = [&](int i) { return zoneD_.y + ui.s(12) + ui.s(36) * static_cast<float>(i); };
         std::string replayRecord = replayCandidate();
         st.enabled = !replayRecord.empty() && l->entry != nullptr;
-        if (ui.button("replay", {bx, zoneD_.y + ui.s(14), bw, ui.s(36)}, "VIEW REPLAY", st))
+        if (ui.button("replay", {bx, actionY(0), bw, ah}, "VIEW REPLAY", st))
             g_.app.pushScene(makeReplayViewer(g_, replayRecord));
+        // Two records of this level side by side: the selected one (A) and the best other one
+        // with a replay (B), downloaded before the comparison (read only).
+        std::vector<Json> pair = comparePair(replayRecord);
+        st.enabled = pair.size() == 2 && l->entry != nullptr;
+        if (ui.button("compare", {bx, actionY(1), bw, ah}, "Comparer…", st)) {
+            ReplayCompareRequest req;
+            req.levelId = l->id;
+            for (const Json& e : pair) req.preselect.push_back(jstr(e, "record_id"));
+            req.onlineEntries = pair;
+            g_.app.pushScene(makeReplayCompareSetup(g_, std::move(req)));
+        }
+        st.enabled = !replayRecord.empty() && l->entry != nullptr;
         // Ghost Racing: race the selected record (or the world record) as a ghost.
-        if (ui.button("ghost", {bx, zoneD_.y + ui.s(58), bw, ui.s(36)}, "Course contre ce temps", st)) {
+        if (ui.button("ghost", {bx, actionY(2), bw, ah}, "Course contre ce temps", st)) {
             GhostSetupRequest req;
             req.recordId = replayRecord;
             req.fromOnline = true;
@@ -952,28 +1002,85 @@ private:
                 for (const auto& s2 : a.submissions) unsent += s2.status == RecordStatus::Local && !s2.blocked ? 1 : 0;
         st.enabled = unsent > 0 && g_.online.usable();
         st.primary = unsent > 0;
-        if (ui.button("submit", {bx, zoneD_.y + ui.s(102), bw, ui.s(36)}, "SUBMIT RECORD", st)) {
+        if (ui.button("submit", {bx, actionY(3), bw, ah}, "SUBMIT RECORD", st)) {
             if (!g_.online.loggedIn()) g_.app.pushScene(makeOnlineAccount(g_, false));
             else g_.online.syncNow(true);
         }
         st.primary = false;
         st.enabled = l->entry != nullptr;
-        if (ui.button("play", {bx, zoneD_.y + ui.s(146), bw, ui.s(36)}, "Jouer ce niveau", st)) {
+        if (ui.button("play", {bx, actionY(4), bw, ah}, "Jouer ce niveau", st)) {
             PlayOptions po;
             po.fromOnline = true;
             g_.app.switchScene(makeGameScene(g_, l->id, po));
         }
         if (unsent > 0)
-            ui.label(std::to_string(unsent) + " performance(s) à envoyer", {bx + bw * 0.5f, zoneD_.y + ui.s(194)}, 13, ui.theme().warm, Align::Center,
+            ui.label(std::to_string(unsent) + " performance(s) à envoyer", {bx + bw * 0.5f, actionY(4) + ah + ui.s(10)}, 13, ui.theme().warm, Align::Center,
                      FontFace::Body, VAlign::Middle);
+        drawLevelSocial({x, zoneD_.y + ui.s(186), bx - ui.s(14) - x, ui.s(38)}, *l);
         // Different revision locally and on the server: warn (records are never mixed).
         if (meta_.is_object())
             for (const auto& ml : meta_.value("levels", Json::array()))
                 if (jstr(ml, "id") == l->id)
                     if (const LevelFingerprint* fp = g_.online.fingerprints().get(g_.content, l->id); fp && fp->hash != jstr(ml, "content_hash"))
-                        ui.label("Version du niveau différente de celle du serveur", {x, zoneD_.bottom() - ui.s(14)}, 14, ui.theme().danger,
+                        ui.label("Version du niveau différente de celle du serveur", {x, zoneD_.bottom() - ui.s(12)}, 14, ui.theme().danger,
                                  Align::Left, FontFace::Body, VAlign::Middle);
         ui.popId();
+    }
+
+    /// « Comparer… »: the record VIEW REPLAY opens (A) and the best other one with a replay
+    /// (B): their board entries, or nothing when there are not two.
+    std::vector<Json> comparePair(const std::string& first) const {
+        std::vector<Json> out;
+        if (first.empty()) return out;
+        for (const auto& e : board_.entries)
+            if (jstr(e, "record_id") == first) out.push_back(e);
+        for (const auto& e : board_.entries)
+            if (out.size() == 1 && jget<bool>(e, "has_replay", false) && jstr(e, "record_id") != first) out.push_back(e);
+        return out;
+    }
+
+    /// The players' rating of the level (computed by the server, not the difficulty /5 of the
+    /// game) and the button of its « Avis et commentaires » page (2.19).
+    void drawLevelSocial(const Rect& r, const RankedLevel& l) {
+        UIContext& ui = g_.ui;
+        const Json& v = levelRating_.view();
+        bool known = levelRating_.loaded() && levelRating_.levelId() == l.id;
+        bool missing = levelRating_.errorCode() == "LEVEL_NOT_FOUND";
+        std::string label = known ? "Avis et commentaires (" + std::to_string(levelRating_.comments()) + ")" : "Avis et commentaires";
+        UIContext::ButtonStyle st;
+        st.small = true;
+        st.fontSize = 16;
+        st.enabled = g_.online.usable() && !missing;
+        float bw = std::min(r.w * 0.5f, ui.text().measure(label, FontFace::Bold, ui.s(16)).x + ui.s(36));
+        Rect b{r.right() - bw, r.y, bw, r.h};
+        if (ui.button("social", b, label, st)) g_.app.pushScene(makeOnlineThread(g_, "level:" + l.id, l.id));
+        float room = b.x - ui.s(14) - r.x;
+        const std::string head = "Note des joueurs : ";
+        float hf = ui.fitFont(head, FontFace::Body, 16, room * 0.45f);
+        Vec2 hs = ui.label(head, {r.x, r.center().y}, hf, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        float vx = r.x + hs.x, vroom = room - hs.x;
+        if (known) {
+            const Json& rt = v.value("rating", Json::object());
+            int count = jget<int>(rt, "count", 0);
+            double avg = rt.contains("average") && rt["average"].is_number() ? rt["average"].get<double>() : 0.0;
+            std::string tail = levelRating_.fromCache() ? " (hors ligne)" : "";
+            float tw = tail.empty() ? 0.0f : ui.text().measure(tail, FontFace::Body, ui.s(14)).x;
+            float used = drawRatingSummary(ui, {vx, r.center().y}, avg, count, 16, ui.theme().text, vroom - tw);
+            if (!tail.empty()) ui.label(tail, {vx + used, r.center().y}, 14, ui.theme().warm, Align::Left, FontFace::Body, VAlign::Middle);
+        } else {
+            std::string t = !g_.online.usable() ? "en ligne"
+                            : missing           ? "niveau inconnu du serveur"
+                            : levelRating_.busy() || levelRating_.error().empty() ? "chargement…"
+                                                                                   : "indisponible";
+            ui.label(t, {vx, r.center().y}, ui.fitFont(t, FontFace::Body, 16, vroom), ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        }
+    }
+
+    /// The comments of a run of the board (its author is notified of new ones).
+    void openRunComments(const Json& e) {
+        std::string rid = jstr(e, "record_id");
+        if (rid.empty() || !g_.online.usable()) return;
+        g_.app.pushScene(makeOnlineThread(g_, "run:" + rid, level() ? level()->id : std::string{}));
     }
 
     /// Record whose replay VIEW REPLAY opens: selected row, else the world record.
@@ -1033,6 +1140,7 @@ private:
 
     GameServices& g_;
     OnlineUi ui_;
+    LevelRatingPanel levelRating_;
     std::string wantedLevel_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     MenuBackground bg_;

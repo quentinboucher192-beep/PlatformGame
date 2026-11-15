@@ -200,6 +200,62 @@ GLYPHS.update({
     ],
 })
 
+# 2.19 powers (one per sanctuary)
+GLYPHS.update({
+    "boomerang": [      # curved V blade with its motion arc
+        ".......##..",
+        "#........#.",
+        "#.........#",
+        "##.........",
+        ".##........",
+        "..+#.......",
+        "...++....#.",
+        "....+++##..",
+        "......##...",
+        "...........",
+        "...........",
+    ],
+    "frost_nova": [     # snow crystal bursting out
+        ".....#.....",
+        "..#..#..#..",
+        "...#.#.#...",
+        "....+++....",
+        ".#..+++..#.",
+        "####+++####",
+        ".#..+++..#.",
+        "....+++....",
+        "...#.#.#...",
+        "..#..#..#..",
+        ".....#.....",
+    ],
+    "decoy": [          # Nova and her hologram beside her
+        "......+....",
+        "..#..+++...",
+        ".#.#..+....",
+        "..#..+++...",
+        ".###+++++..",
+        "#.#.#+++.+.",
+        "..#..+++...",
+        ".#.#.+.+...",
+        ".#.#.+.+...",
+        "#...#+..+..",
+        "...........",
+    ],
+    "recall": [         # beacon flag over a return arc
+        "...+.......",
+        "...+##.....",
+        "...+###....",
+        "...+##.....",
+        "...+.......",
+        "...+.......",
+        "...+.......",
+        "#..+.....#.",
+        "#.......#..",
+        ".#.....#...",
+        "..#####....",
+    ],
+})
+
 COLORS = {
     "dash": (CYAN[1], CYAN[3], CYAN[0]),
     "wave": (CYAN[2], CYAN[3], CYAN[0]),
@@ -215,12 +271,17 @@ COLORS = {
     "magnet": (AMBER[1], AMBER[2], AMBER[0]),
     "air_dash": (CYAN[1], CYAN[3], CYAN[0]),
     "plasma_bomb": (AMBER[1], AMBER[2], AMBER[0]),
+    "boomerang": (CYAN[2], CYAN[3], CYAN[0]),
+    "frost_nova": (CYAN[1], CYAN[3], CYAN[0]),
+    "decoy": (CYAN[1], CYAN[3], CYAN[0]),
+    "recall": (VIOLET[1], VIOLET[2], VIOLET[0]),
 }
 
 # clip order of animations/power_unlock.json (v1 rows first, unchanged)
 POWERS = ("dash", "wave", "shield", "impulse", "teleport",
           "glide", "ground_pound", "charge_shot", "grapple", "triple_jump",
-          "time_slow", "magnet", "air_dash", "plasma_bomb")
+          "time_slow", "magnet", "air_dash", "plasma_bomb",
+          "boomerang", "frost_nova", "decoy", "recall")
 
 
 def tablet(name, i):

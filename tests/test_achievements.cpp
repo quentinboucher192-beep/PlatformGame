@@ -119,7 +119,7 @@ TEST_CASE("achievements: every condition is known and names real content") {
         }
         if (!c.power.empty()) CHECK(f.content.power(c.power) != nullptr);
         if (c.type == "medal_count" || c.type == "levels_no_death" || c.type == "levels_full_collect" || c.type == "levels_all_secrets")
-            CHECK(c.count <= 14);  // the campaign has 14 levels
+            CHECK(c.count <= 18);  // the campaign has 18 levels (2.19: Aethra)
     }
     // Every power of the game has its achievement: used (active powers, counted from their
     // « powerUsed » event) or owned at the end of levels (passive ones never fire it).
@@ -171,7 +171,7 @@ TEST_CASE("achievements: campaign, medals and bosses come from the saves") {
     const AchievementDef* all = f.catalog.find("voyage_all");
     AchievementProgress p = AchievementBook::progress(*all, f.inputs());
     CHECK(p.value == 12);
-    CHECK(p.target == 14);
+    CHECK(p.target == 18);  // 2.19: the four levels of Aethra
 }
 
 TEST_CASE("achievements: counters, sets and the required threads") {

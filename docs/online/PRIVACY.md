@@ -42,6 +42,8 @@
 | Commentaires et réponses (texte, dates, empreinte du texte contre le spam) | D1 `community_comments` | tous (sauf blocages et commentaires masqués) | jusqu'à leur suppression par l'auteur, la suppression du niveau ou du compte |
 | Réactions aux commentaires | D1 `community_comment_reactions` | nombres agrégés ; la sienne pour le joueur | jusqu'au retrait |
 | Signalements de commentaires | D1 `community_comment_reports` | opérateurs | tant que le commentaire existe |
+| Notes des niveaux de la campagne (étoiles, dates ; seulement après un temps vérifié du niveau) | D1 `level_ratings` (+ moyennes `level_rating_stats`, recalculées par le serveur) | moyenne et nombre agrégés ; la sienne pour le joueur | jusqu'au retrait de la note ou la suppression du compte (moyennes alors recalculées) ; incluses dans l'export (`level_ratings`) |
+| Commentaires des niveaux de la campagne (affichés dans ONLINE seulement) et des courses des classements (texte, dates, empreinte du texte contre le spam, fil, réactions, signalements) | D1 `campaign_comments`, `campaign_comment_reactions`, `campaign_comment_reports` | tous (sauf blocages et commentaires masqués) ; les courses d'un profil masqué ne sont ni lisibles ni commentables par les autres | jusqu'à leur suppression par l'auteur ou la modération ; supprimés avec le compte de leur auteur, et le fil d'une course avec cette course (compte de son auteur supprimé) ; inclus dans l'export (`campaign_comments`, `campaign_comment_reactions`) |
 | Joueurs d'un niveau (téléchargement ou temps envoyé) | D1 `community_level_players` | nombre agrégé (« joueurs uniques » du créateur) | tant que le niveau existe |
 | Abonnements aux créateurs | D1 `player_follows` | listes publiques ou privées (réglage `follows_visibility`) | jusqu'au désabonnement ou à un blocage |
 | Notifications (type, acteur, niveau, date, lu) et catégories désactivées | D1 `notifications`, `players.notifications_off` | le joueur | lues : 60 jours ; 500 au plus |
@@ -63,8 +65,9 @@
 
 * **Accès / portabilité** : *Exporter mes données* → `GET /api/v1/players/me/export`, enregistré
   en JSON dans le dossier `exports/` du joueur (dont les conversations, les messages envoyés,
-  les joueurs bloqués, les favoris, commentaires, réactions, abonnements, notifications et le
-  temps joué).
+  les joueurs bloqués, les favoris, commentaires, réactions, abonnements, notifications, le
+  temps joué et, depuis 2.19, les notes des niveaux de la campagne et les commentaires des
+  niveaux officiels et des courses).
 * **Rectification** : pseudonyme, avatar, pays, visibilités (`PATCH /api/v1/players/me`).
 * **Opposition / limitation** : masquer le profil, le pays, la présence sur le globe, refuser
   les demandes d'amis, rendre privées ses listes d'abonnés et d'abonnements, désactiver des
@@ -73,7 +76,10 @@
   `DELETE /api/v1/players/me` : suppression des fichiers R2 (replays, avatar) puis du compte et,
   en cascade, des sessions, records, meilleurs temps, replays, amis, messages envoyés,
   appartenances aux groupes, blocages, niveaux publiés (packages, vignettes, replays des
-  joueurs sur ces niveaux), temps, notes et signalements, et du journal d'audit rattaché ; une seule trace anonyme « compte supprimé » est conservée. Les records locaux
+  joueurs sur ces niveaux), temps, notes et signalements, notes des niveaux de la campagne
+  (moyennes recalculées sans elles), commentaires et réactions de la campagne (compteurs
+  recalculés ; les fils des courses du joueur partent avec elles), et du journal d'audit
+  rattaché ; une seule trace anonyme « compte supprimé » est conservée. Les records locaux
   restent sur l'ordinateur du joueur.
 * **Déconnexion de tous les appareils** : révocation de toutes les sessions.
 
@@ -94,6 +100,7 @@ vérification de son empreinte SHA-256.
 | `online/cache/` | dernières réponses du serveur (classements, globe, profils) ; *Effacer le cache en ligne* |
 | `saves/online_attempts.json`, `online/replays/` | performances en attente ou suivies et leurs replays |
 | `online/known_ranks.json` | derniers rangs vus (notifications « record battu ») |
+| `online/level_ratings.json` | dernières moyennes reçues des notes des niveaux de la campagne (affichées « reçues il y a … » hors ligne) et vos notes ; lues seulement quand vous êtes connecté |
 | `online/playtime.json` | temps joué pas encore envoyé (seulement pour le compte connecté) |
 | `online/projects.json` | liens entre les copies locales (WORKSHOP → Mes niveaux) et les projets, révision de départ |
 | `online/live_<projet>.json` | modifications faites en direct pas encore confirmées par le serveur (supprimé une fois vide) |

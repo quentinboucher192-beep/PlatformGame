@@ -1,0 +1,19 @@
+{
+  "format": "cosmic.power",
+  "id": "frost_nova",
+  "behavior": "frost_nova",
+  "name": "Nova de givre",
+  "description": "Une onde de froid gèle les ennemis proches : un ennemi gelé devient une plateforme. Les boss sont ralentis et les tirs ennemis pris dans l'onde volent en éclats.",
+  "icon": 15,
+  "input": "special",
+  "energyCost": 30,
+  "cooldown": 6,
+  "duration": 0,
+  "color": "#9fe8ff",
+  "sound": "sounds/frost_nova.wav",
+  "params": {
+    "radius": 110,
+    "freeze": 1.5,
+    "bossSlow": 2
+  }
+}

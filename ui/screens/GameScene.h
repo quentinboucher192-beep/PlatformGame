@@ -16,6 +16,7 @@
 #include "game/race/Race.h"
 #include "game/records/BossStats.h"
 #include "game/records/Records.h"
+#include "ui/screens/CosmeticFx.h"
 #include "ui/screens/GhostRun.h"
 #include "ui/screens/PauseMap.h"
 #include "ui/screens/Navigation.h"
@@ -110,6 +111,17 @@ private:
     void startGhosts();
     void saveGhosts(const RunResult& r);
     GhostRun ghostRun_;
+    // Collection (2.19, display only): the equipped suit, trail and victory effect, and the
+    // creatures met during this run (the gallery).
+    void applyCosmetics();
+    void noteCreaturesMet();
+    TexturePtr suitTexture_;
+    std::string trailLook_, victoryLook_;
+    TrailFx trail_;
+    float victoryT_ = -1.0f;
+    Vec2 victoryAt_;
+    float metTimer_ = 0.0f;
+    bool collectionDirty_ = false;
     std::string ghostHash_;
     int64_t pbGhostMs_ = 0;
     // Achievements: what this run adds to the lifetime counters (once, at its end).

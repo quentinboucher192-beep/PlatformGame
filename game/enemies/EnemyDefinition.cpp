@@ -21,7 +21,15 @@ constexpr Named kAttacks[] = {{"contact", "Contact"},           {"melee", "Corps
                               {"projectile", "Projectile visé"}, {"spread", "Salve en éventail"}, {"arc", "Tir en cloche"},
                               {"slam", "Onde de choc au sol"}, {"charge", "Charge"},      {"laser", "Rayon laser"},
                               {"summon", "Appel de renforts"}, {"rain", "Pluie de projectiles"},
-                              {"eruption", "Éruption au sol"}, {"leap", "Saut sur le joueur"}};
+                              {"eruption", "Éruption au sol"}, {"leap", "Saut sur le joueur"},
+                              // 2.19: the guardians of Aethra
+                              {"tracker", "Racine traqueuse"},   {"cage", "Cage de ronces"},
+                              {"vortex", "Aspiration"},          {"mirror", "Reflets (doubles)"},
+                              {"frost_floor", "Sol gelé"},       {"prism", "Prisme rebondissant"},
+                              {"orbit", "Couronne de flammes"},  {"spiral", "Spirale de tirs"},
+                              {"flood", "Marée de lave"},        {"well", "Puits gravitationnel"},
+                              {"blink", "Pas de l'ombre"},       {"ring", "Onde en anneau"}};
+static_assert(sizeof(kAttacks) / sizeof(kAttacks[0]) == static_cast<size_t>(AttackType::Count), "one label per attack type");
 }  // namespace
 
 const char* familyId(EnemyFamily f) { return kFamilies[static_cast<int>(f)].id; }
@@ -105,6 +113,29 @@ Json AttackDef::toJson() const {
     }
     if (stagger > 0) j["stagger"] = stagger;
     if (type == AttackType::Leap) j["leapTime"] = leapTime;
+    if (isGuardianType()) {
+        // Written only for the new types: the definitions of before keep their fingerprints.
+        j["projectile"] = projectile;
+        j["projectileSpeed"] = projectileSpeed;
+        j["count"] = count;
+        j["spread"] = spread;
+        j["burstInterval"] = burstInterval;
+        if (projectileRadius > 0) j["projectileRadius"] = projectileRadius;
+        if (!hitEffect.empty()) j["hitEffect"] = hitEffect;
+        if (duration > 0) j["duration"] = duration;
+        if (pull > 0) j["pull"] = pull;
+        if (radius > 0) j["radius"] = radius;
+        if (height > 0) j["height"] = height;
+        if (bounces > 0) j["bounces"] = bounces;
+        if (arms > 0) j["arms"] = arms;
+        if (grip > 0) j["grip"] = grip;
+        if (type == AttackType::Prism) {
+            j["laserLength"] = laserLength;
+            j["color"] = beamColor.toHex();
+            if (!beamTexture.empty()) j["beamTexture"] = beamTexture;
+            if (beamWidth != 14.0f) j["beamWidth"] = beamWidth;
+        }
+    }
     return j;
 }
 
@@ -159,6 +190,13 @@ AttackDef AttackDef::fromJson(const Json& j) {
     a.beamColor = colorFromJson(j.value("color", Json()), a.beamColor);
     a.beamTexture = jstr(j, "beamTexture", "");
     a.beamWidth = std::clamp(jget<float>(j, "beamWidth", 14.0f), 4.0f, 48.0f);
+    a.duration = std::clamp(jget<float>(j, "duration", 0.0f), 0.0f, 60.0f);
+    a.pull = std::clamp(jget<float>(j, "pull", 0.0f), 0.0f, 140.0f);  // never as fast as the player runs
+    a.radius = std::clamp(jget<float>(j, "radius", 0.0f), 0.0f, 600.0f);
+    a.height = std::clamp(jget<float>(j, "height", 0.0f), 0.0f, 600.0f);
+    a.bounces = std::clamp(jget<int>(j, "bounces", 0), 0, 6);
+    a.arms = std::clamp(jget<int>(j, "arms", 0), 0, 8);
+    a.grip = std::clamp(jget<float>(j, "grip", 0.0f), 0.0f, 1.0f);
     return a;
 }
 
@@ -248,6 +286,7 @@ Json EnemyDefinition::toJson() const {
         if (enrageTime > 0) j["boss"]["enrageTime"] = enrageTime;
         if (barIcon != "portrait") j["boss"]["barIcon"] = barIcon;
         if (!barColor.empty()) j["boss"]["barColor"] = barColor;
+        if (darkPhase > 0) j["boss"]["darkPhase"] = darkPhase;
     }
     return j;
 }
@@ -327,6 +366,7 @@ EnemyDefinition EnemyDefinition::fromJson(const Json& j) {
         d.enrageTime = std::clamp(jget<float>(j["boss"], "enrageTime", 0.0f), 0.0f, 3600.0f);
         d.barIcon = jstr(j["boss"], "barIcon", "portrait");
         d.barColor = jstr(j["boss"], "barColor", "");
+        d.darkPhase = std::clamp(jget<int>(j["boss"], "darkPhase", 0), 0, 8);
         if (j["boss"].contains("phases") && j["boss"]["phases"].is_array())
             for (const auto& p : j["boss"]["phases"]) d.phases.push_back(BossPhase::fromJson(p));
         std::stable_sort(d.phases.begin(), d.phases.end(), [](const auto& a, const auto& b) { return a.hpThreshold > b.hpThreshold; });

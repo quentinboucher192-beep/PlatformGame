@@ -16,6 +16,7 @@ namespace cosmic {
 
 class GameServices;
 class GameScene;
+class LevelRatingPanel;
 
 struct ResultsData {
     RunResult run;
@@ -56,6 +57,7 @@ public:
     bool updatesSceneBelow() const override { return true; }
 
 private:
+    bool rewardsChecked_ = false;
     void drawOnlineStatus(const Rect& panel);
     void drawRace(const Rect& panel);
     void drawBosses(const Rect& panel);
@@ -66,6 +68,8 @@ private:
     float t_ = 0.0f;
     int lastTick_ = -1;
     bool medalPlayed_ = false;
+    /// Rating of the official level just finished (Cosmic Online, logged in only).
+    std::shared_ptr<LevelRatingPanel> rating_;
 };
 
 }  // namespace cosmic

@@ -1,4 +1,26 @@
 {
+  "2.21.0": [
+    "Notes des joueurs pour les niveaux de la campagne : après avoir terminé un niveau (temps vérifié en ligne), notez-le de 1 à 5 étoiles depuis l'écran de fin ou ONLINE ; la moyenne s'affiche sur la fiche du niveau et dans ONLINE (distincte de la difficulté calculée).",
+    "Commentaires des niveaux de la campagne, visibles uniquement dans ONLINE (réponses, réactions, signalement, modération, comme pour les niveaux des joueurs).",
+    "Commentaires sur les runs des classements : une bulle sur chaque ligne ouvre le fil de la course ; son auteur est notifié.",
+    "Confidentialité : notes et commentaires inclus dans l'export de vos données et supprimés avec le compte."
+  ],
+  "2.20.0": [
+    "Nouvelle planète : Aethra, la planète des sanctuaires (après Sylvanox, Glacior et Pyralis) — 4 niveaux complets, chacun gardé par un nouveau gardien.",
+    "4 nouveaux gardiens : Mycélia la Mère-Racine, Aurorax le Miroir boréal, Pyrogyre l'Anneau solaire, Nyxara la Dévoreuse d'étoiles — 12 attaques inédites (racine traqueuse, cage de ronces, reflets, lac gelé, prisme, couronne de feu, marée de lave, puits gravitationnel, onde d'éclipse…). Les 12 gardiens classiques ne changent pas.",
+    "4 nouveaux pouvoirs (bouton Spécial) : Lame boomerang, Nova de givre (les ennemis gelés deviennent des plateformes), Leurre holographique, Balise de rappel ; aide animée, fiches, éditeur.",
+    "L'Arène des Échos enchaîne maintenant les 16 gardiens (nouvelle révision : son classement repart de zéro).",
+    "12 nouveaux succès (Aethra, les 4 gardiens, les 16 gardiens et échos, Nyxara sans être touché, les nouveaux pouvoirs) : 146 succès, 383 étoiles. Les succès « tous les niveaux » comptent désormais les 18 niveaux.",
+    "Statistiques des boss et galerie : les nouveaux gardiens et leurs échos y figurent. Musiques : 4 thèmes de combat et la musique d'Aethra."
+  ],
+  "2.19.0": [
+    "Collection (menu principal) : des récompenses visuelles débloquées par les étoiles des succès — combinaisons de Nova, traînées, cadres d'avatar, titres et effets de victoire. Rien ne s'achète, rien ne change dans la partie.",
+    "Route des étoiles : les 17 paliers de récompenses, et celles qui demandent un succès précis ; à la fin d'un niveau, les nouvelles récompenses à équiper tout de suite ou plus tard.",
+    "Musiques : un juke-box des morceaux déjà entendus en jeu (lecture, pause, avance, répéter, aléatoire) et la musique du menu principal au choix.",
+    "Galerie : les planètes atteintes (à enregistrer en image), les gardiens battus avec leurs animations et statistiques, les créatures rencontrées.",
+    "Lecteur de replay avancé : vitesses, image par image, barre de temps, sauts aux points de sauvegarde, entrées du joueur ; comparer deux replays avec un décalage de temps ou un recalage sur un point.",
+    "Corrigé : mourir contre un boss puis le finir sans être touché n'est plus compté « sans dégât ». Champs de texte : Ctrl+A, Ctrl+C, Ctrl+X, Ctrl+V, sélection et curseur."
+  ],
   "2.18.0": [
     "Ghost Racing : courez contre vos fantômes (meilleur temps, record précédent, dernière course), le record mondial, les records de vos amis ou un replay importé, jusqu'à 8 à la fois.",
     "Fantômes translucides colorés avec contour lumineux, nom et temps de référence ; aucune collision, aucun déclenchement : purement visuels. Touche G (clic du stick gauche) pour les masquer.",

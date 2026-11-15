@@ -5,7 +5,9 @@
 #include <initializer_list>
 
 #include "engine/input/InputManager.h"
+#include "game/enemies/Enemy.h"
 #include "game/gameplay/GameWorld.h"
+#include "game/powers/Powers.h"
 
 namespace cosmic {
 
@@ -45,6 +47,19 @@ Json stone() { return {{"material", "ruin_stone"}}; }
 
 float feetX(const GameWorld& w) { return w.player().box.center().x; }
 float feetY(const GameWorld& w) { return w.player().box.bottom(); }
+
+template <typename T>
+const T* powerOf(const GameWorld& w) {
+    for (const auto& p : w.player().powers())
+        if (const auto* t = dynamic_cast<const T*>(p.get())) return t;
+    return nullptr;
+}
+
+bool anyFrozen(const GameWorld& w) {
+    for (const auto& e : w.enemies())
+        if (e->frozen()) return true;
+    return false;
+}
 
 }  // namespace
 
@@ -189,6 +204,62 @@ std::vector<PowerDemo> powerDemos() {
         };
         d.script = [](int s) { return s < 6 ? in(1) : s == 30 ? in(0, {Action::Special}) : s > 150 && s < 320 ? in(1) : in(0); };
         d.success = [](const GameWorld& w) { return w.stats().kills >= 1 && feetX(w) > 370.0f; };
+    }
+    // 2.19: the powers of the sanctuaries.
+    {
+        PowerDemo& d = add("boomerang");  // hits on the way out and back, brings a shard back
+        d.layout = [](LevelData& l) {
+            put(l, "enemy", {296, 788, 18, 12}, {{"enemy", "glowmite"}, {"patrol", 16}});
+            put(l, "shard", {388, 774, 12, 12});
+        };
+        // (Actions from step 60: the guide starts its demos up to 59 steps in, out of phase.)
+        d.script = [](int s) { return s == 64 ? in(0, {Action::Special}) : in(0); };
+        d.success = [](const GameWorld& w) {
+            const auto* b = powerOf<BoomerangPower>(w);
+            return b && b->caught() >= 1 && w.stats().kills >= 1 && w.stats().shards >= 1;
+        };
+        d.cam = {290, 750};
+        d.viewH = 190.0f;
+    }
+    {
+        PowerDemo& d = add("frost_nova");  // a frozen enemy is a platform
+        d.layout = [](LevelData& l) { put(l, "enemy", {226, 776, 16, 24}, {{"enemy", "bulwark"}, {"patrol", 0}}); };
+        d.script = [](int s) {
+            if (s == 60) return in(0, {Action::Special});
+            if (s == 84) return in(1, {Action::Jump}, {Action::Jump});
+            if (s > 70 && s < 84) return in(1);
+            return s > 84 && s < 112 ? in(1, {}, {Action::Jump}) : in(0);
+        };
+        d.success = [](const GameWorld& w) { return anyFrozen(w) && w.player().grounded() && feetY(w) < 790.0f; };
+        d.cam = {220, 745};
+        d.period = 235;  // starts again just before the ice melts (1,5 s after the nova)
+    }
+    {
+        PowerDemo& d = add("decoy");  // the enemy shoots at the hologram, not at Nova
+        d.layout = [](LevelData& l) { put(l, "enemy", {382, 780, 16, 20}, {{"enemy", "sporeflower"}}); };
+        d.script = [](int s) { return s == 60 ? in(0, {Action::Special}) : s > 78 && s < 158 ? in(1) : in(0); };
+        d.success = [](const GameWorld& w) { return w.decoysBroken() >= 1 && w.stats().damageTaken == 0; };
+        d.cam = {290, 745};
+        d.viewH = 190.0f;
+        d.period = 480;
+    }
+    {
+        PowerDemo& d = add("recall");  // a beacon, a run away, back in an instant
+        d.layout = [](LevelData& l) {
+            put(l, "solid", {250, 760, 40, 40}, stone(), "terrain");
+        };
+        d.script = [](int s) {
+            if (s == 60) return in(0, {Action::Special});
+            if (s == 80) return in(1, {Action::Jump}, {Action::Jump});
+            if (s > 80 && s < 180) return in(1, {}, {Action::Jump});
+            return s == 210 ? in(0, {Action::Special}) : in(0);
+        };
+        d.success = [](const GameWorld& w) {
+            const auto* r = powerOf<RecallPower>(w);
+            return r && r->warps() >= 1 && feetX(w) < 175.0f;
+        };
+        d.cam = {260, 750};
+        d.viewH = 190.0f;
     }
     return v;
 }

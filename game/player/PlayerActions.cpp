@@ -112,7 +112,7 @@ void Player::handlePowers(GameWorld& w, const PlayerInput& in, float dt) {
     for (auto& p : powers_) {
         if (p->passive() || !p->wantsActivation(*this, w, in)) continue;
         if (!p->ready(*this)) {
-            if (energy < p->def().energyCost) {
+            if (energy < p->activationCost(*this)) {
                 w.playSound("sounds/energy_low.wav", 0.5f);
                 w.hint("Énergie insuffisante", 1.2f);
             }
@@ -329,7 +329,7 @@ void Player::update(GameWorld& w, float dt) {
 
 void Player::render(RenderContext& ctx) const {
     if (state_ == PlayerState::Hidden || !anim.set() || !anim.set()->texture) return;
-    const Texture& tex = *anim.set()->texture;
+    const Texture& tex = skin ? *skin : *anim.set()->texture;
     Vec2 f = renderFeet(ctx.alpha);
     bool flip = facing < 0.0f;
 

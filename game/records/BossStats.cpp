@@ -116,6 +116,9 @@ void BossFightTracker::begin(GameWorld& w, Enemy& boss, BossStats& stats, int hi
     stats.touch();
     std::string key = f.objectId.empty() ? f.bossId : f.objectId;
     if (!firstStart_.count(key)) firstStart_[key] = w.time();
+    else if (hitBefore_[key]) f.taintedPhase = boss.phaseIndex();  // resumed: this phase began before
+    engaged_.insert(key);
+    interrupted_.erase(key);
     fight_ = f;
     defeatedEvent_ = false;
 }
@@ -126,7 +129,7 @@ void BossFightTracker::phaseDone(BossStats& stats, int hits) {
     grow(r.phaseClears, p + 1);
     grow(r.phaseNoHit, p + 1);
     r.phaseClears[p]++;
-    if (hits == fight_->hitsAtPhase) {
+    if (hits == fight_->hitsAtPhase && fight_->phase != fight_->taintedPhase) {
         r.phaseNoHit[p]++;
         Event e;
         e.kind = Event::Kind::PhaseNoHit;
@@ -143,6 +146,22 @@ void BossFightTracker::step(GameWorld& w, BossStats& stats) {
     const int deaths = w.stats().deaths;
     const int hits = w.stats().damageTaken + deaths;
     Enemy* b = w.activeBoss();
+    if (deaths > lastDeaths_) {
+        // Any death taints every boss of this run not beaten yet — even when it is counted
+        // after the fight was left (instant death, boss already back to sleep): finishing that
+        // boss later is never « sans dégât ».
+        for (const auto& k : engaged_) {
+            hitBefore_[k] = true;
+            diedBefore_[k] = true;
+        }
+        // A fight left just before the death (boss gone back to sleep first): a defeat too.
+        if (!fight_)
+            for (const auto& [k, bossId] : interrupted_) {
+                stats.at(bossId).defeats++;
+                stats.touch();
+            }
+        interrupted_.clear();
+    }
     if (fight_) {
         std::string key = fight_->objectId.empty() ? fight_->bossId : fight_->objectId;
         if (deaths > lastDeaths_) {
@@ -169,7 +188,9 @@ void BossFightTracker::step(GameWorld& w, BossStats& stats) {
                         beaten = !e->alive();
                         break;
                     }
+            if (!beaten) interrupted_[key] = fight_->bossId;
             if (beaten) {
+                engaged_.erase(key);
                 phaseDone(stats, hits);
                 BossRecord& r = stats.at(fight_->bossId);
                 r.kills++;

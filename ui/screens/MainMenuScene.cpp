@@ -48,12 +48,12 @@ class MainMenuScene : public Scene {
 public:
     explicit MainMenuScene(GameServices& g) : g_(g) {}
     void onEnter() override {
-        g_.playMusic("music/menu_theme.ogg");
+        g_.playMusic(g_.menuMusic());
         g_.ui.setFocus(!g_.progression.lastLevel.empty() && !g_.content.campaignPlanetOf(g_.progression.lastLevel).empty()
                            ? "main/continue"
                            : "main/campaign");
     }
-    void onResume() override { g_.playMusic("music/menu_theme.ogg"); }
+    void onResume() override { g_.playMusic(g_.menuMusic()); }
     void update(float dt) override {
         t_ += dt;
         bg_.update(dt);
@@ -64,13 +64,13 @@ public:
         bg_.render(g_, 0.15f);
         float appear = std::clamp(t_ / 0.7f, 0.0f, 1.0f);
         drawGameTitle(g_, {ui.screenW() * 0.66f, ui.screenH() * 0.36f}, 110, appear);
-        ui.label("Sylvanox · Pyralis · Glacior", {ui.screenW() * 0.66f, ui.screenH() * 0.36f + ui.s(120)}, 26,
+        ui.label("Sylvanox · Pyralis · Glacior · Aethra", {ui.screenW() * 0.66f, ui.screenH() * 0.36f + ui.s(120)}, 26,
                  ui.theme().text.withAlphaF(appear * 0.85f), Align::Center, FontFace::Body, VAlign::Middle);
 
         // Only a campaign level: WORKSHOP levels are reached from the WORKSHOP.
         bool canContinue = !g_.progression.lastLevel.empty() && g_.content.level(g_.progression.lastLevel) &&
                            !g_.content.campaignPlanetOf(g_.progression.lastLevel).empty();
-        int rows = canContinue ? 8 : 7;
+        int rows = canContinue ? 9 : 8;
         float x = ui.s(120), w = ui.s(470), h = ui.s(66), gap = ui.s(14);
         float y = ui.screenH() * 0.5f - (rows * (h + gap)) * 0.5f + ui.s(40);
         Rect side{x - ui.s(40), y - ui.s(40), w + ui.s(80), rows * (h + gap) + ui.s(70)};
@@ -82,8 +82,14 @@ public:
             st.align = Align::Left;
             float slide = (1.0f - applyEase(Ease::OutCubic, std::clamp((t_ - 0.1f) * 3.0f, 0.0f, 1.0f))) * ui.s(-60);
             bool c = ui.button(id, {x + slide, y, w, h}, label, st);
-            if (!sub.empty())
-                ui.label(sub, {x + slide + w - ui.s(20), y + h * 0.5f}, 16, ui.theme().textDim, Align::Right, FontFace::Body, VAlign::Middle);
+            if (!sub.empty()) {
+                // Never under the button's own label.
+                float labelW = ui.text().measure(label, FontFace::Bold, ui.s(26)).x;
+                float room = w - ui.s(40) - labelW - ui.s(24);
+                if (room > ui.s(40))
+                    ui.label(ui.elide(sub, FontFace::Body, 16, room), {x + slide + w - ui.s(20), y + h * 0.5f}, 16, ui.theme().textDim, Align::Right,
+                             FontFace::Body, VAlign::Middle);
+            }
             y += h + gap;
             return c;
         };
@@ -110,6 +116,16 @@ public:
             std::string sub = std::to_string(g_.achievements.stars(g_.achievementCatalog)) + " / " +
                               std::to_string(g_.achievementCatalog.totalStars()) + " étoiles";
             if (btn("achievements", "Succès", sub)) g_.app.switchScene(makeAchievements(g_), 0.3f);
+        }
+        {
+            auto p = g_.cosmeticProgress();
+            int got = 0, all = 0;
+            for (const auto& it : g_.cosmetics.items()) {
+                ++all;
+                got += cosmeticUnlocked(it, p) ? 1 : 0;
+            }
+            std::string sub = std::to_string(got) + " / " + std::to_string(all) + " récompenses";
+            if (btn("collection", "Collection", sub)) g_.app.switchScene(makeCollection(g_), 0.3f);
         }
         {
             int kills = 0;

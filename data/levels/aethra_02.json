@@ -1,0 +1,4986 @@
+{
+ "format": "cosmic.level",
+ "formatVersion": 1,
+ "id": "aethra_02",
+ "name": "Le Lac aux Reflets",
+ "description": "Un lac de Glacior flotte sous l'aurore d'Aethra. Ses rives de cristal renvoient chaque geste, et sur la glace, Aurorax se bat avec ses propres reflets.",
+ "planet": "aethra",
+ "author": "Cosmic Studio",
+ "version": "1.0",
+ "difficulty": 4,
+ "music": "music/aethra_level.ogg",
+ "bossMusic": "music/aurorax_boss.ogg",
+ "ambience": "music/aethra_ambience.ogg",
+ "bounds": [
+  0,
+  0,
+  8192,
+  896
+ ],
+ "ambientLight": "#a294c8",
+ "backgroundColor": "#0c0a1c",
+ "background": [
+  {
+   "texture": "backgrounds/aethra/sky.png",
+   "factor": [
+    0.0,
+    0.0
+   ],
+   "fill": true
+  },
+  {
+   "texture": "backgrounds/aethra/far.png",
+   "factor": [
+    0.1,
+    0.05
+   ],
+   "offset": [
+    0,
+    -20
+   ]
+  },
+  {
+   "texture": "backgrounds/aethra/mid.png",
+   "factor": [
+    0.25,
+    0.12
+   ],
+   "offset": [
+    0,
+    10
+   ]
+  },
+  {
+   "texture": "backgrounds/aethra/abyss.png",
+   "factor": [
+    0.4,
+    0.3
+   ],
+   "offset": [
+    0,
+    210
+   ],
+   "fillBelow": "#2a1c4a"
+  },
+  {
+   "texture": "backgrounds/aethra/near.png",
+   "factor": [
+    0.5,
+    0.25
+   ],
+   "offset": [
+    0,
+    60
+   ]
+  },
+  {
+   "texture": "backgrounds/aethra/fg_petals.png",
+   "factor": [
+    1.15,
+    1.0
+   ],
+   "offset": [
+    0,
+    -330
+   ],
+   "foreground": true,
+   "tint": "#ffffffc0"
+  }
+ ],
+ "timer": {
+  "mode": "limited",
+  "limit": 900,
+  "onExpire": "gameover",
+  "referenceTime": 166,
+  "challengeMaxDeaths": 0
+ },
+ "medals": {
+  "bronze": {},
+  "silver": {
+   "maxTime": 332
+  },
+  "gold": {
+   "maxTime": 224
+  },
+  "platinum": {
+   "maxTime": 166,
+   "maxDeaths": 0
+  }
+ },
+ "startPowers": [
+  "glide",
+  "dash",
+  "triple_jump"
+ ],
+ "cameraZoom": 1.0,
+ "layers": [
+  {
+   "id": "bg_decor",
+   "name": "Décor arrière",
+   "order": 0,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "terrain",
+   "name": "Terrain",
+   "order": 10,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "gameplay",
+   "name": "Gameplay",
+   "order": 20,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "fg_decor",
+   "name": "Décor avant",
+   "order": 30,
+   "visible": true,
+   "locked": false,
+   "foreground": true
+  }
+ ],
+ "objects": [
+  {
+   "id": "o1",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    0.0,
+    608.0,
+    288.0,
+    288.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o2",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    0.0,
+    0.0,
+    288.0,
+    384.0
+   ],
+   "props": {
+    "material": "glacier_ice",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o3",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    12.0,
+    384.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o4",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    92.0,
+    384.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o5",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    176.0,
+    384.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o6",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    0.0,
+    0.0,
+    16.0,
+    896.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o7",
+   "type": "player_start",
+   "layer": "gameplay",
+   "rect": [
+    59.0,
+    586.0,
+    10.0,
+    22.0
+   ]
+  },
+  {
+   "id": "o8",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    116.0,
+    584.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Une tablette des sanctuaires : la Nova de givre fige tout ce qui vous entoure.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o9",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    180.0,
+    572.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "frost_nova",
+    "message": "Une tablette des sanctuaires : la Nova de givre fige tout ce qui vous entoure."
+   }
+  },
+  {
+   "id": "o10",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    184.0,
+    536.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd65a",
+    "radius": 90,
+    "flicker": 0.08,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o11",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    88.0,
+    520.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fe8ff",
+    "radius": 80,
+    "flicker": 0.12,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o12",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    288.0,
+    608.0,
+    352.0,
+    288.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o13",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    288.0,
+    0.0,
+    352.0,
+    384.0
+   ],
+   "props": {
+    "material": "glacier_ice",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o14",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    384.0,
+    384.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o15",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    352.0,
+    544.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o16",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    496.0,
+    496.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o17",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    346.0,
+    506.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o18",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    372.6666666666667,
+    477.55555555555554,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o19",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    399.3333333333333,
+    477.55555555555554,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o20",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    426.0,
+    506.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o21",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    490.0,
+    458.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o22",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    516.6666666666666,
+    429.55555555555554,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o23",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    543.3333333333334,
+    429.55555555555554,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o24",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    570.0,
+    458.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o25",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    314.0,
+    578.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o26",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    386.0,
+    578.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o27",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    458.0,
+    578.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o28",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    530.0,
+    578.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o29",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    602.0,
+    578.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o30",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    455.0,
+    596.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "snow_stalker",
+    "faceLeft": false,
+    "patrol": 48,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o31",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    537.0,
+    422.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_wing",
+    "faceLeft": false,
+    "patrol": 48,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o32",
+   "type": "energy_orb",
+   "layer": "gameplay",
+   "rect": [
+    530.0,
+    466.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 40
+   }
+  },
+  {
+   "id": "o33",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    304.0,
+    596.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o34",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    368.0,
+    596.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o35",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    496.0,
+    584.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o36",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    640.0,
+    608.0,
+    64.0,
+    288.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o37",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    640.0,
+    0.0,
+    304.0,
+    256.0
+   ],
+   "props": {
+    "material": "glacier_ice",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o38",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    652.0,
+    256.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o39",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    812.0,
+    256.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o40",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    892.0,
+    256.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o41",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    704.0,
+    672.0,
+    112.0,
+    224.0
+   ],
+   "props": {
+    "material": "sanctum_stone",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o42",
+   "type": "spikes",
+   "layer": "gameplay",
+   "rect": [
+    704.0,
+    656.0,
+    112.0,
+    16.0
+   ],
+   "props": {
+    "damage": 3
+   }
+  },
+  {
+   "id": "o43",
+   "type": "updraft",
+   "layer": "gameplay",
+   "rect": [
+    720.0,
+    288.0,
+    80.0,
+    368.0
+   ],
+   "props": {
+    "strength": 240,
+    "vent": true
+   }
+  },
+  {
+   "id": "o44",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    816.0,
+    384.0,
+    128.0,
+    512.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o45",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    871.0,
+    372.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "snow_stalker",
+    "faceLeft": true,
+    "patrol": 32,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o46",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    944.0,
+    384.0,
+    64.0,
+    512.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o47",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1008.0,
+    416.0,
+    64.0,
+    480.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o48",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1072.0,
+    448.0,
+    64.0,
+    448.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o49",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1136.0,
+    480.0,
+    64.0,
+    416.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o50",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1200.0,
+    512.0,
+    64.0,
+    384.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o51",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    944.0,
+    0.0,
+    640.0,
+    160.0
+   ],
+   "props": {
+    "material": "glacier_ice",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o52",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1036.0,
+    160.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o53",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1280.0,
+    160.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o54",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1520.0,
+    160.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o55",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1264.0,
+    576.0,
+    160.0,
+    320.0
+   ],
+   "props": {
+    "material": "sanctum_stone",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o56",
+   "type": "spikes",
+   "layer": "gameplay",
+   "rect": [
+    1264.0,
+    560.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "damage": 3
+   }
+  },
+  {
+   "id": "o57",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    1338.0,
+    404.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "frost_wisp",
+    "faceLeft": false,
+    "patrol": 48,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o58",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1424.0,
+    512.0,
+    160.0,
+    384.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o59",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    1513.0,
+    502.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_mite",
+    "faceLeft": true,
+    "patrol": 32,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o60",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    948.0,
+    360.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Glace vive : impossible de s'arrêter net.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o61",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1584.0,
+    512.0,
+    48.0,
+    384.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o62",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1584.0,
+    0.0,
+    816.0,
+    288.0
+   ],
+   "props": {
+    "material": "glacier_ice",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o63",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1756.0,
+    288.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o64",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2160.0,
+    288.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o65",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2236.0,
+    288.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o66",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2316.0,
+    288.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o67",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1632.0,
+    576.0,
+    720.0,
+    320.0
+   ],
+   "props": {
+    "material": "sanctum_stone",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o68",
+   "type": "spikes",
+   "layer": "gameplay",
+   "rect": [
+    1632.0,
+    560.0,
+    720.0,
+    16.0
+   ],
+   "props": {
+    "damage": 3
+   }
+  },
+  {
+   "id": "o69",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    1696.0,
+    512.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.3,
+    "respawn": 2.0,
+    "style": "ice"
+   }
+  },
+  {
+   "id": "o70",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    1792.0,
+    496.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.3,
+    "respawn": 2.0,
+    "style": "ice"
+   }
+  },
+  {
+   "id": "o71",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    1888.0,
+    512.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.3,
+    "respawn": 2.0,
+    "style": "ice"
+   }
+  },
+  {
+   "id": "o72",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    1984.0,
+    496.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.3,
+    "respawn": 2.0,
+    "style": "ice"
+   }
+  },
+  {
+   "id": "o73",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    2080.0,
+    512.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.3,
+    "respawn": 2.0,
+    "style": "ice"
+   }
+  },
+  {
+   "id": "o74",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    2176.0,
+    496.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.3,
+    "respawn": 2.0,
+    "style": "ice"
+   }
+  },
+  {
+   "id": "o75",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    2272.0,
+    512.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.3,
+    "respawn": 2.0,
+    "style": "ice"
+   }
+  },
+  {
+   "id": "o76",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    1929.0,
+    374.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_wing",
+    "faceLeft": true,
+    "patrol": 96,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o77",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    2057.0,
+    406.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_wing",
+    "faceLeft": false,
+    "patrol": 64,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o78",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    2352.0,
+    512.0,
+    48.0,
+    384.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o79",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    2410.0,
+    474.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o80",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    2442.0,
+    445.55555555555554,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o81",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    2474.0,
+    445.55555555555554,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o82",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    2506.0,
+    474.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o83",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    2400.0,
+    512.0,
+    128.0,
+    384.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o84",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    2400.0,
+    0.0,
+    128.0,
+    288.0
+   ],
+   "props": {
+    "material": "glacier_ice",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o85",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2416.0,
+    288.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o86",
+   "type": "checkpoint",
+   "layer": "gameplay",
+   "rect": [
+    2452.0,
+    464.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "label": "Rive"
+   }
+  },
+  {
+   "id": "o87",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2456.0,
+    424.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fe8ff",
+    "radius": 80,
+    "flicker": 0.12,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o88",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    2528.0,
+    512.0,
+    64.0,
+    384.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o89",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    2528.0,
+    0.0,
+    640.0,
+    288.0
+   ],
+   "props": {
+    "material": "glacier_ice",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o90",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2624.0,
+    288.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o91",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2700.0,
+    288.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o92",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2780.0,
+    288.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o93",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2940.0,
+    288.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o94",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3020.0,
+    288.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o95",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3104.0,
+    288.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o96",
+   "type": "liquid",
+   "layer": "gameplay",
+   "rect": [
+    2592.0,
+    512.0,
+    512.0,
+    112.0
+   ],
+   "props": {
+    "kind": "icewater"
+   }
+  },
+  {
+   "id": "o97",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    2592.0,
+    624.0,
+    512.0,
+    272.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o98",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    2640.0,
+    496.0,
+    176.0,
+    32.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o99",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    2864.0,
+    496.0,
+    192.0,
+    32.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o100",
+   "type": "spikes",
+   "layer": "gameplay",
+   "rect": [
+    2672.0,
+    608.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "damage": 2
+   }
+  },
+  {
+   "id": "o101",
+   "type": "spikes",
+   "layer": "gameplay",
+   "rect": [
+    2912.0,
+    608.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "damage": 2
+   }
+  },
+  {
+   "id": "o102",
+   "type": "spikes",
+   "layer": "gameplay",
+   "rect": [
+    2736.0,
+    528.0,
+    48.0,
+    16.0
+   ],
+   "rotation": 180,
+   "props": {
+    "damage": 2
+   }
+  },
+  {
+   "id": "o103",
+   "type": "spikes",
+   "layer": "gameplay",
+   "rect": [
+    2976.0,
+    528.0,
+    48.0,
+    16.0
+   ],
+   "rotation": 180,
+   "props": {
+    "damage": 2
+   }
+  },
+  {
+   "id": "o104",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    2841.0,
+    422.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_wing",
+    "faceLeft": false,
+    "patrol": 48,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o105",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    3001.0,
+    422.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_wing",
+    "faceLeft": true,
+    "patrol": 48,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o106",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3104.0,
+    512.0,
+    64.0,
+    384.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o107",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    2532.0,
+    488.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Le lac gelé se traverse par-dessous.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o108",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3168.0,
+    512.0,
+    256.0,
+    384.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o109",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3168.0,
+    0.0,
+    80.0,
+    288.0
+   ],
+   "props": {
+    "material": "glacier_ice",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o110",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3184.0,
+    288.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o111",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3344.0,
+    0.0,
+    80.0,
+    288.0
+   ],
+   "props": {
+    "material": "glacier_ice",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o112",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3248.0,
+    0.0,
+    96.0,
+    208.0
+   ],
+   "props": {
+    "material": "glacier_ice",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o113",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3216.0,
+    432.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o114",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3280.0,
+    352.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o115",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3264.0,
+    272.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o116",
+   "type": "relic",
+   "layer": "gameplay",
+   "rect": [
+    3288.0,
+    240.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "value": 1000,
+    "name": "Éclat du premier reflet"
+   }
+  },
+  {
+   "id": "o117",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    3226.0,
+    394.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o118",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    3274.0,
+    354.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o119",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    3322.0,
+    314.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o120",
+   "type": "secret_area",
+   "layer": "gameplay",
+   "rect": [
+    3248.0,
+    208.0,
+    96.0,
+    80.0
+   ],
+   "props": {
+    "message": "Un sanctuaire caché dans la voûte !"
+   }
+  },
+  {
+   "id": "o121",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    81.6,
+    208.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.0
+   }
+  },
+  {
+   "id": "o122",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    103.2,
+    208.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.0
+   }
+  },
+  {
+   "id": "o123",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    128.8,
+    208.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.0
+   }
+  },
+  {
+   "id": "o124",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    154.4,
+    208.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.0
+   }
+  },
+  {
+   "id": "o125",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    3369.0,
+    502.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_mite",
+    "faceLeft": false,
+    "patrol": 32,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o126",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3424.0,
+    512.0,
+    544.0,
+    384.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o127",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3424.0,
+    0.0,
+    544.0,
+    288.0
+   ],
+   "props": {
+    "material": "glacier_ice",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o128",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3440.0,
+    288.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o129",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3516.0,
+    288.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o130",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3836.0,
+    288.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o131",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3916.0,
+    288.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o132",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    3545.0,
+    502.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_mite",
+    "faceLeft": true,
+    "patrol": 48,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o133",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    3657.0,
+    502.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "ice_gloop",
+    "faceLeft": true,
+    "patrol": 48,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o134",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    3767.0,
+    500.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "snow_stalker",
+    "faceLeft": true,
+    "patrol": 48,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o135",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    3881.0,
+    502.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_mite",
+    "faceLeft": true,
+    "patrol": 48,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o136",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    3705.0,
+    390.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_wing",
+    "faceLeft": true,
+    "patrol": 64,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o137",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    3450.0,
+    482.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 2
+   }
+  },
+  {
+   "id": "o138",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3496.0,
+    464.0,
+    32.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "ice_crystal_big",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o139",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3696.0,
+    496.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o140",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    3978.0,
+    474.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o141",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4010.0,
+    445.55555555555554,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o142",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4042.0,
+    445.55555555555554,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o143",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4074.0,
+    474.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o144",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3968.0,
+    512.0,
+    128.0,
+    384.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o145",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3968.0,
+    0.0,
+    128.0,
+    288.0
+   ],
+   "props": {
+    "material": "glacier_ice",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o146",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3984.0,
+    288.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o147",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4064.0,
+    288.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o148",
+   "type": "checkpoint",
+   "layer": "gameplay",
+   "rect": [
+    4020.0,
+    464.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "label": "Miroir"
+   }
+  },
+  {
+   "id": "o149",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    4024.0,
+    424.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fe8ff",
+    "radius": 80,
+    "flicker": 0.12,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o150",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    4096.0,
+    512.0,
+    352.0,
+    384.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o151",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    4096.0,
+    0.0,
+    352.0,
+    288.0
+   ],
+   "props": {
+    "material": "glacier_ice",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o152",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4192.0,
+    288.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o153",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    4160.0,
+    448.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o154",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    4304.0,
+    400.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o155",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4154.0,
+    410.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o156",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4180.666666666667,
+    381.55555555555554,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o157",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4207.333333333333,
+    381.55555555555554,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o158",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4234.0,
+    410.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o159",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4298.0,
+    362.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o160",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4324.666666666667,
+    333.55555555555554,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o161",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4351.333333333333,
+    333.55555555555554,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o162",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4378.0,
+    362.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o163",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4122.0,
+    482.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o164",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4194.0,
+    482.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o165",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4266.0,
+    482.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o166",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4338.0,
+    482.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o167",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    4410.0,
+    482.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o168",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    4265.0,
+    502.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "ice_gloop",
+    "faceLeft": true,
+    "patrol": 48,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o169",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    4346.0,
+    324.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "frost_wisp",
+    "faceLeft": false,
+    "patrol": 48,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o170",
+   "type": "energy_orb",
+   "layer": "gameplay",
+   "rect": [
+    4338.0,
+    370.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 40
+   }
+  },
+  {
+   "id": "o171",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4104.0,
+    464.0,
+    32.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "ice_crystal_big",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o172",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4176.0,
+    496.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o173",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    4448.0,
+    512.0,
+    64.0,
+    384.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o174",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    4448.0,
+    0.0,
+    736.0,
+    224.0
+   ],
+   "props": {
+    "material": "glacier_ice",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o175",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4460.0,
+    224.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o176",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4544.0,
+    224.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o177",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4704.0,
+    224.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o178",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4864.0,
+    224.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o179",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    4940.0,
+    224.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o180",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5020.0,
+    224.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o181",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5104.0,
+    224.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o182",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    4512.0,
+    576.0,
+    576.0,
+    320.0
+   ],
+   "props": {
+    "material": "sanctum_stone",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o183",
+   "type": "spikes",
+   "layer": "gameplay",
+   "rect": [
+    4512.0,
+    560.0,
+    576.0,
+    16.0
+   ],
+   "props": {
+    "damage": 3
+   }
+  },
+  {
+   "id": "o184",
+   "type": "updraft",
+   "layer": "gameplay",
+   "rect": [
+    4560.0,
+    240.0,
+    64.0,
+    320.0
+   ],
+   "props": {
+    "strength": 210,
+    "vent": true
+   }
+  },
+  {
+   "id": "o185",
+   "type": "updraft",
+   "layer": "gameplay",
+   "rect": [
+    4736.0,
+    240.0,
+    64.0,
+    320.0
+   ],
+   "props": {
+    "strength": 210,
+    "vent": true
+   }
+  },
+  {
+   "id": "o186",
+   "type": "updraft",
+   "layer": "gameplay",
+   "rect": [
+    4912.0,
+    240.0,
+    64.0,
+    320.0
+   ],
+   "props": {
+    "strength": 210,
+    "vent": true
+   }
+  },
+  {
+   "id": "o187",
+   "type": "laser",
+   "layer": "gameplay",
+   "rect": [
+    4512.0,
+    408.0,
+    560.0,
+    16.0
+   ],
+   "props": {
+    "onTime": 1.0,
+    "offTime": 1.8,
+    "warnTime": 0.45,
+    "phase": 0.0,
+    "active": true,
+    "damage": 2
+   }
+  },
+  {
+   "id": "o188",
+   "type": "laser",
+   "layer": "gameplay",
+   "rect": [
+    4512.0,
+    312.0,
+    560.0,
+    16.0
+   ],
+   "props": {
+    "onTime": 1.0,
+    "offTime": 1.8,
+    "warnTime": 0.45,
+    "phase": 1.4,
+    "active": true,
+    "damage": 2
+   }
+  },
+  {
+   "id": "o189",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    4826.0,
+    356.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "frost_wisp",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o190",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    4650.0,
+    452.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "frost_wisp",
+    "faceLeft": false,
+    "patrol": 48,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o191",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5088.0,
+    448.0,
+    96.0,
+    448.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o192",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    4452.0,
+    488.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Couloir des vents : planez, et surveillez les rayons de givre.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o193",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    5194.0,
+    410.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o194",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    5226.0,
+    381.55555555555554,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o195",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    5258.0,
+    381.55555555555554,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o196",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    5290.0,
+    410.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o197",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5184.0,
+    448.0,
+    128.0,
+    448.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o198",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5184.0,
+    0.0,
+    128.0,
+    224.0
+   ],
+   "props": {
+    "material": "glacier_ice",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o199",
+   "type": "checkpoint",
+   "layer": "gameplay",
+   "rect": [
+    5236.0,
+    400.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "label": "Vents"
+   }
+  },
+  {
+   "id": "o200",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    5240.0,
+    360.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fe8ff",
+    "radius": 80,
+    "flicker": 0.12,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o201",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5312.0,
+    448.0,
+    64.0,
+    448.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o202",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5312.0,
+    0.0,
+    832.0,
+    192.0
+   ],
+   "props": {
+    "material": "glacier_ice",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o203",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5408.0,
+    192.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o204",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5568.0,
+    192.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o205",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5644.0,
+    192.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o206",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5724.0,
+    192.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o207",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5804.0,
+    192.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o208",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5884.0,
+    192.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o209",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    5964.0,
+    192.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o210",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6044.0,
+    192.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o211",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5376.0,
+    512.0,
+    672.0,
+    384.0
+   ],
+   "props": {
+    "material": "sanctum_stone",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o212",
+   "type": "spikes",
+   "layer": "gameplay",
+   "rect": [
+    5376.0,
+    496.0,
+    672.0,
+    16.0
+   ],
+   "props": {
+    "damage": 3
+   }
+  },
+  {
+   "id": "o213",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5456.0,
+    448.0,
+    32.0,
+    448.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o214",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5568.0,
+    416.0,
+    32.0,
+    480.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o215",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    5577.0,
+    326.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_wing",
+    "faceLeft": true,
+    "patrol": 32,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o216",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5664.0,
+    464.0,
+    32.0,
+    432.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o217",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5776.0,
+    400.0,
+    32.0,
+    496.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o218",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5872.0,
+    448.0,
+    32.0,
+    448.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o219",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    5881.0,
+    358.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_wing",
+    "faceLeft": false,
+    "patrol": 32,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o220",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    5984.0,
+    416.0,
+    32.0,
+    480.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o221",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6048.0,
+    448.0,
+    96.0,
+    448.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o222",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6144.0,
+    448.0,
+    256.0,
+    448.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o223",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6144.0,
+    0.0,
+    80.0,
+    224.0
+   ],
+   "props": {
+    "material": "glacier_ice",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o224",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6320.0,
+    0.0,
+    80.0,
+    224.0
+   ],
+   "props": {
+    "material": "glacier_ice",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o225",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6224.0,
+    0.0,
+    96.0,
+    144.0
+   ],
+   "props": {
+    "material": "glacier_ice",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o226",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    6192.0,
+    368.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o227",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    6256.0,
+    288.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o228",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    6240.0,
+    208.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o229",
+   "type": "relic",
+   "layer": "gameplay",
+   "rect": [
+    6248.0,
+    176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "value": 1000,
+    "name": "Larme d'aurore"
+   }
+  },
+  {
+   "id": "o230",
+   "type": "heart_container",
+   "layer": "gameplay",
+   "rect": [
+    6280.0,
+    176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "hearts": 1
+   }
+  },
+  {
+   "id": "o231",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    6202.0,
+    330.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o232",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    6250.0,
+    290.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o233",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    6298.0,
+    250.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o234",
+   "type": "secret_area",
+   "layer": "gameplay",
+   "rect": [
+    6224.0,
+    144.0,
+    96.0,
+    80.0
+   ],
+   "props": {
+    "message": "Un cœur de cristal dormait dans la voûte !"
+   }
+  },
+  {
+   "id": "o235",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    81.6,
+    144.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.0
+   }
+  },
+  {
+   "id": "o236",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    103.2,
+    144.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.0
+   }
+  },
+  {
+   "id": "o237",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    132.8,
+    144.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.0
+   }
+  },
+  {
+   "id": "o238",
+   "type": "decor",
+   "layer": "fg_decor",
+   "rect": [
+    158.4,
+    144.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 1.0
+   }
+  },
+  {
+   "id": "o239",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6345.0,
+    438.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "ice_gloop",
+    "faceLeft": false,
+    "patrol": 32,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o240",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6352.0,
+    424.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o241",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    6410.0,
+    410.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o242",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    6442.0,
+    381.55555555555554,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o243",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    6474.0,
+    381.55555555555554,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o244",
+   "type": "shard",
+   "layer": "gameplay",
+   "rect": [
+    6506.0,
+    410.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "value": 50
+   }
+  },
+  {
+   "id": "o245",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6400.0,
+    448.0,
+    128.0,
+    448.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o246",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6400.0,
+    0.0,
+    128.0,
+    224.0
+   ],
+   "props": {
+    "material": "glacier_ice",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o247",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6412.0,
+    224.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o248",
+   "type": "checkpoint",
+   "layer": "gameplay",
+   "rect": [
+    6452.0,
+    400.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "label": "Porte du lac"
+   }
+  },
+  {
+   "id": "o249",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    6456.0,
+    360.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fe8ff",
+    "radius": 80,
+    "flicker": 0.12,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o250",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6528.0,
+    448.0,
+    96.0,
+    448.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o251",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6528.0,
+    0.0,
+    144.0,
+    224.0
+   ],
+   "props": {
+    "material": "glacier_ice",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o252",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6540.0,
+    224.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o253",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6624.0,
+    576.0,
+    48.0,
+    320.0
+   ],
+   "props": {
+    "material": "sanctum_stone",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o254",
+   "type": "spikes",
+   "layer": "gameplay",
+   "rect": [
+    6624.0,
+    560.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "damage": 3
+   }
+  },
+  {
+   "id": "o255",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6672.0,
+    512.0,
+    96.0,
+    384.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o256",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6672.0,
+    0.0,
+    144.0,
+    288.0
+   ],
+   "props": {
+    "material": "glacier_ice",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o257",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6768.0,
+    640.0,
+    48.0,
+    256.0
+   ],
+   "props": {
+    "material": "sanctum_stone",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o258",
+   "type": "spikes",
+   "layer": "gameplay",
+   "rect": [
+    6768.0,
+    624.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "damage": 3
+   }
+  },
+  {
+   "id": "o259",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6816.0,
+    576.0,
+    96.0,
+    320.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o260",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6816.0,
+    0.0,
+    144.0,
+    352.0
+   ],
+   "props": {
+    "material": "glacier_ice",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o261",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6912.0,
+    704.0,
+    48.0,
+    192.0
+   ],
+   "props": {
+    "material": "sanctum_stone",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o262",
+   "type": "spikes",
+   "layer": "gameplay",
+   "rect": [
+    6912.0,
+    688.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "damage": 3
+   }
+  },
+  {
+   "id": "o263",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6960.0,
+    640.0,
+    128.0,
+    256.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o264",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    6960.0,
+    0.0,
+    128.0,
+    416.0
+   ],
+   "props": {
+    "material": "glacier_ice",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o265",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    6976.0,
+    416.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o266",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    7033.0,
+    630.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "ice_gloop",
+    "faceLeft": true,
+    "patrol": 32,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o267",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7088.0,
+    640.0,
+    832.0,
+    256.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o268",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7088.0,
+    0.0,
+    832.0,
+    352.0
+   ],
+   "props": {
+    "material": "glacier_ice",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o269",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7100.0,
+    352.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "icicles_long",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o270",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7184.0,
+    352.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o271",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7264.0,
+    352.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o272",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7664.0,
+    352.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o273",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    7824.0,
+    352.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o274",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7088.0,
+    352.0,
+    16.0,
+    160.0
+   ],
+   "props": {
+    "material": "frost_metal",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o275",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7904.0,
+    352.0,
+    16.0,
+    160.0
+   ],
+   "props": {
+    "material": "frost_metal",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o276",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    7088.0,
+    512.0,
+    16.0,
+    128.0
+   ],
+   "props": {
+    "open": true
+   }
+  },
+  {
+   "id": "o277",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    7904.0,
+    512.0,
+    16.0,
+    128.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o278",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    7184.0,
+    544.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o279",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    7728.0,
+    544.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o280",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    7440.0,
+    480.0,
+    128.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o281",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    7675.0,
+    560.0,
+    42.0,
+    80.0
+   ],
+   "props": {
+    "enemy": "aurorax",
+    "faceLeft": true,
+    "patrol": 96,
+    "dormant": true,
+    "boss": true
+   }
+  },
+  {
+   "id": "o282",
+   "type": "combat_zone",
+   "layer": "gameplay",
+   "rect": [
+    7104.0,
+    352.0,
+    800.0,
+    288.0
+   ],
+   "props": {
+    "doors": "o276,o277",
+    "waves": "o281",
+    "lockCamera": false,
+    "music": "music/aurorax_boss.ogg",
+    "announce": false
+   }
+  },
+  {
+   "id": "o283",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    7146.0,
+    610.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 2
+   }
+  },
+  {
+   "id": "o284",
+   "type": "energy_orb",
+   "layer": "gameplay",
+   "rect": [
+    7498.0,
+    610.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 40
+   }
+  },
+  {
+   "id": "o285",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    7496.0,
+    408.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fe8ff",
+    "radius": 140,
+    "flicker": 0.06,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o286",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7920.0,
+    640.0,
+    256.0,
+    256.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o287",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7920.0,
+    0.0,
+    256.0,
+    416.0
+   ],
+   "props": {
+    "material": "glacier_ice",
+    "decorTop": false
+   }
+  },
+  {
+   "id": "o288",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    8096.0,
+    416.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "icicles",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o289",
+   "type": "exit",
+   "layer": "gameplay",
+   "rect": [
+    8060.0,
+    576.0,
+    40.0,
+    64.0
+   ],
+   "props": {
+    "locked": false
+   }
+  },
+  {
+   "id": "o290",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    8072.0,
+    552.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fe8ff",
+    "radius": 80,
+    "flicker": 0.12,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o291",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    8176.0,
+    0.0,
+    16.0,
+    896.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  }
+ ],
+ "events": [
+  {
+   "id": "ev1",
+   "source": "o281",
+   "trigger": "bossPhase",
+   "once": false,
+   "actions": [
+    {
+     "type": "shake",
+     "params": {
+      "amount": 0.45
+     }
+    }
+   ]
+  },
+  {
+   "id": "ev2",
+   "source": "o281",
+   "trigger": "bossDefeated",
+   "once": true,
+   "actions": [
+    {
+     "type": "hint",
+     "params": {
+      "text": "Le gardien du sanctuaire est vaincu : le portail s'éveille.",
+      "duration": 4
+     }
+    }
+   ],
+   "delay": 1.5
+  },
+  {
+   "id": "ev3",
+   "source": "level",
+   "trigger": "levelStart",
+   "once": true,
+   "actions": [
+    {
+     "type": "hint",
+     "params": {
+      "text": "Prenez la tablette du sanctuaire.",
+      "duration": 4
+     }
+    }
+   ]
+  }
+ ],
+ "intro": {
+  "skippable": true,
+  "letterbox": true,
+  "steps": [
+   {
+    "type": "fade",
+    "duration": 0.01,
+    "params": {
+     "to": 1
+    }
+   },
+   {
+    "type": "cut",
+    "duration": 0.01,
+    "params": {
+     "x": 96,
+     "y": 512
+    }
+   },
+   {
+    "type": "fade",
+    "duration": 1.4,
+    "wait": false,
+    "params": {
+     "to": 0
+    }
+   },
+   {
+    "type": "text",
+    "duration": 3.5,
+    "wait": false,
+    "params": {
+     "text": "AETHRA",
+     "subtitle": "Le Lac aux Reflets"
+    }
+   },
+   {
+    "type": "camera",
+    "duration": 4.0,
+    "params": {
+     "x": 960,
+     "y": 512,
+     "ease": "inOutSine"
+    }
+   },
+   {
+    "type": "text",
+    "duration": 3.0,
+    "wait": false,
+    "params": {
+     "text": "Sur le lac, chaque reflet peut mordre.",
+     "style": "caption"
+    }
+   },
+   {
+    "type": "camera",
+    "duration": 2.5,
+    "params": {
+     "start": true,
+     "ease": "inOutCubic"
+    }
+   }
+  ]
+ },
+ "outro": {
+  "skippable": true,
+  "letterbox": true,
+  "steps": [
+   {
+    "type": "zoom",
+    "duration": 1.4,
+    "wait": false,
+    "params": {
+     "zoom": 1.4
+    }
+   },
+   {
+    "type": "camera",
+    "duration": 1.4,
+    "params": {
+     "player": true
+    }
+   },
+   {
+    "type": "text",
+    "duration": 3.5,
+    "wait": false,
+    "params": {
+     "text": "LE LAC S'APAISE",
+     "subtitle": "Aethra — Le Lac aux Reflets"
+    }
+   },
+   {
+    "type": "playerAnim",
+    "duration": 2.2,
+    "params": {
+     "anim": "victory"
+    }
+   },
+   {
+    "type": "fade",
+    "duration": 0.9,
+    "params": {
+     "to": 1
+    }
+   }
+  ]
+ },
+ "metadata": {
+  "generator": "tools/levelgen/aethra.py",
+  "revision": 8,
+  "rooms": [
+   {
+    "type": "garden",
+    "x": 18,
+    "floor": 38
+   },
+   {
+    "type": "updraft",
+    "x": 40,
+    "floor": 38
+   },
+   {
+    "type": "ice_slope",
+    "x": 59,
+    "floor": 24
+   },
+   {
+    "type": "frail_bridges",
+    "x": 99,
+    "floor": 32
+   },
+   {
+    "type": "under_ice",
+    "x": 158,
+    "floor": 32
+   },
+   {
+    "type": "secret",
+    "x": 198,
+    "floor": 32
+   },
+   {
+    "type": "gauntlet",
+    "x": 214,
+    "floor": 32
+   },
+   {
+    "type": "garden",
+    "x": 256,
+    "floor": 32
+   },
+   {
+    "type": "wind",
+    "x": 278,
+    "floor": 32
+   },
+   {
+    "type": "ice_peaks",
+    "x": 332,
+    "floor": 28
+   },
+   {
+    "type": "secret_heart",
+    "x": 384,
+    "floor": 28
+   },
+   {
+    "type": "boss",
+    "x": 443,
+    "floor": 40,
+    "boss": "aurorax"
+   }
+  ]
+ },
+ "killY": 880,
+ "maxPowers": 4
+}

@@ -131,6 +131,16 @@ std::string ResourceManager::soundPath(const std::string& rel) {
     return out;
 }
 
+std::string ResourceManager::relativeSoundPath(const std::string& absolute) const {
+    if (absolute.empty()) return {};
+    for (const auto& [key, abs] : soundPaths_)
+        if (abs == absolute) {
+            size_t semi = key.rfind(';');
+            return semi == std::string::npos ? key : key.substr(semi + 1);
+        }
+    return {};
+}
+
 void ResourceManager::playSound(const std::string& rel, float volume, float pitch, float pan) {
     if (!audio_ || rel.empty()) return;
     std::string p = soundPath(rel);

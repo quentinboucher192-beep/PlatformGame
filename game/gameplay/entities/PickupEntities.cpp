@@ -10,6 +10,7 @@
 #include "game/gameplay/entities/Entities.h"
 #include "game/powers/Powers.h"
 #include "engine/core/DetMath.h"
+#include "engine/core/Log.h"
 
 namespace cosmic {
 
@@ -150,6 +151,9 @@ void CollectibleEntity::render(RenderContext& ctx) {
 void PowerUnlockEntity::init(GameWorld& w) {
     power_ = obj_.propStr("power", "dash");
     sprite_.load(w.resources(), "animations/power_unlock.json", power_);
+    // A power this game does not know (a level made for a newer version): the tablet stays
+    // inert, the level still loads.
+    if (!w.content().power(power_)) Log::warn("Tablette {} : pouvoir inconnu « {} », ignorée", id(), power_);
     // A tablet of a power already carried stays (power stations, swaps): it is shown dimmed.
 }
 

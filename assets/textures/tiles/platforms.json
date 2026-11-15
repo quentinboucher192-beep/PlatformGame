@@ -8,6 +8,7 @@
     "basalt_ledge": 3,
     "chain_grate": 4,
     "ice_ledge": 5,
-    "snow_bridge": 6
+    "snow_bridge": 6,
+    "sanctum_ledge": 7
   }
 }

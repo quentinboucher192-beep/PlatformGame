@@ -54,6 +54,7 @@ bool AchievementCatalog::load(const fs::path& file, std::string* error) {
                 k.count = std::max<int64_t>(1, jget<int64_t>(c, "count", 1));
                 k.medal = std::clamp(jget<int>(c, "medal", 0), 0, 4);
                 k.seconds = jget<double>(c, "seconds", 0.0);
+                k.noHit = jget<bool>(c, "nohit", false);
             }
             d.after = jget<std::vector<std::string>>(a, "requires", {});
             if (d.id.empty() || index_.count(d.id) || !category(d.category)) continue;
@@ -242,7 +243,8 @@ AchievementProgress AchievementBook::progress(const AchievementDef& def, const A
     } else if (t == "boss") {
         p.target = 1;
         const BossRecord* b = in.bosses ? in.bosses->find(c.boss) : nullptr;
-        p.value = b && b->kills > 0 ? 1 : 0;
+        // "nohit": this boss beaten without being hit at least once (2.19).
+        p.value = b && (c.noHit ? b->noHitKills > 0 : b->kills > 0) ? 1 : 0;
     } else if (t == "boss_distinct" || t == "boss_nohit_distinct" || t == "boss_total" || t == "boss_phase_nohit") {
         if (in.bosses)
             for (const auto& [id, b] : in.bosses->all()) {

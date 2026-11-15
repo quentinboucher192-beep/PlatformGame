@@ -51,6 +51,7 @@ struct PlayOptions {
 struct SegmentSummary {
     std::string levelName;
     std::string levelKey;                 // GhostStore::levelKey (history)
+    std::string levelId;                  // the level played (« Comparer des replays »)
     std::vector<std::string> names;       // checkpoint names, in the order reached
     std::vector<float> splits;            // this run (cumulative)
     float time = 0.0f;
@@ -96,6 +97,10 @@ class GameScene;
 std::unique_ptr<Scene> makeGhostOptions(GameServices& g, GameScene* game);
 /// Main menu → Succès: every achievement on a spider web (categories, stars), or as a list.
 std::unique_ptr<Scene> makeAchievements(GameServices& g);
+/// Main menu → Collection: Vestiaire, Route des étoiles, Musiques (jukebox), Galerie.
+std::unique_ptr<Scene> makeCollection(GameServices& g, int tab = 0);
+/// End of a level: the rewards just unlocked by the stars (equip now or later).
+std::unique_ptr<Scene> makeNewRewards(GameServices& g);
 /// Main menu → Statistiques: the bosses (victories, without being hit, per phase).
 std::unique_ptr<Scene> makeBossStats(GameServices& g);
 /// Help: every power of the player with a live example (pushed over the current screen).
@@ -142,6 +147,10 @@ std::unique_ptr<Scene> makeOnlineSettings(GameServices& g, int tab = 0);
 /// `version` 0 = the current one).
 std::unique_ptr<Scene> makeRaceBoard(GameServices& g, const std::string& kind, const std::string& levelId, int version = 0,
                                      const std::string& levelHash = {});
+/// « Avis et commentaires » (pushed over ONLINE, 2.19): `thread` = "level:<official level
+/// id>" (the players' rating and the level's comments) or "run:<record id>" (the comments of
+/// a run of the leaderboards; `levelId` names its level until the record is read).
+std::unique_ptr<Scene> makeOnlineThread(GameServices& g, const std::string& thread, const std::string& levelId = {});
 /// Downloads and plays back the replay of a verified record.
 std::unique_ptr<Scene> makeReplayViewer(GameServices& g, const std::string& recordId);
 /// Plays a replay already in memory (the run just finished, a .cprz file).

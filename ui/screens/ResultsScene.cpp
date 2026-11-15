@@ -1,6 +1,7 @@
 #include "ui/screens/ResultsScene.h"
 
 #include "ui/online/OnlineWidgets.h"
+#include "ui/online/RatingWidgets.h"
 
 #include <cmath>
 #include <cstdio>
@@ -19,7 +20,18 @@ namespace {
 const Color kMedalColors[5] = {{120, 130, 150, 255}, {205, 127, 50, 255}, {205, 215, 230, 255}, {255, 210, 90, 255}, {150, 240, 255, 255}};
 }
 
-void ResultsScene::onEnter() { g_.ui.setFocus(d_.run.completed && !d_.nextLevel.empty() ? "results/next" : "results/retry"); }
+void ResultsScene::onEnter() {
+    g_.ui.setFocus(d_.run.completed && !d_.nextLevel.empty() ? "results/next" : "results/retry");
+    // Cosmic Online (2.19): a finished official level of the campaign can be rated by a
+    // connected player once the server has verified one of their times on it.
+    const LevelEntry* e = g_.content.level(d_.run.levelId);
+    if (d_.run.completed && !d_.editorTest && e && e->source == ContentSource::Builtin && !g_.online.communityInstall(d_.run.levelId) &&
+        g_.online.usable() && g_.online.loggedIn()) {
+        rating_ = std::make_shared<LevelRatingPanel>(g_);
+        if (d_.online) rating_->watchAttempt(d_.online->attemptId);
+        rating_->open(d_.run.levelId);
+    }
+}
 
 void ResultsScene::update(float dt) {
     t_ += dt;
@@ -32,6 +44,11 @@ void ResultsScene::update(float dt) {
     if (!medalPlayed_ && t_ > 2.4f && d_.run.medal != Medal::None) {
         medalPlayed_ = true;
         g_.uiSound("medal", 0.9f);
+    }
+    // Collection (2.19): rewards just unlocked by the stars, once the score has rolled up.
+    if (!rewardsChecked_ && t_ > 2.8f) {
+        rewardsChecked_ = true;
+        if (!g_.collection.fresh(g_.cosmetics, g_.cosmeticProgress()).empty()) g_.app.pushScene(makeNewRewards(g_));
     }
 }
 
@@ -261,6 +278,12 @@ void ResultsScene::render(float /*alpha*/) {
             UIContext::ButtonStyle rs;
             rs.small = true;
             if (ui.button("segments", {panel.x + ui.s(30), topY, ui.s(250), ui.s(44)}, "Segments", rs)) g_.app.pushScene(makeSegments(g_, d_.segments));
+        }
+        if (rating_) {
+            // Under « Classement en ligne », above the ghosts' line (top right of the panel).
+            ui.pushId("rating");
+            rating_->drawCompact({panel.right() - ui.s(300), panel.y + ui.s(76), ui.s(270), ui.s(62)});
+            ui.popId();
         }
         if (d_.online && !d_.fromOnline) {
             UIContext::ButtonStyle os;

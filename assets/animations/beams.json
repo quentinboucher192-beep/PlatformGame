@@ -44,6 +44,12 @@
       "count": 4,
       "fps": 14,
       "loop": true
+    },
+    "prism": {
+      "row": 5,
+      "count": 4,
+      "fps": 14,
+      "loop": true
     }
   }
 }

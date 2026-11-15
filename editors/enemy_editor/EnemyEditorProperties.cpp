@@ -321,6 +321,88 @@ void EnemyEditorScene::tabAttacks(float x, float& y, float w) {
                 y += pv.h + ui.s(10);
             }
         }
+        if (a.isGuardianType()) {
+            // 2.19: the attacks of the guardians of Aethra. A value left at 0 takes the type's
+            // default (see game/enemies/GuardianAttacks.cpp).
+            auto num = [&](const char* id, const char* label, float& v, float step, float lo, float hi, const char* fmt) {
+                c |= ui.numberField(id, row.field(label), v, step, lo, hi, fmt);
+            };
+            auto whole = [&](const char* id, const char* label, int& v, int lo, int hi) {
+                float f = static_cast<float>(v);
+                if (ui.numberField(id, row.field(label), f, 1, static_cast<float>(lo), static_cast<float>(hi), "%.0f")) {
+                    v = static_cast<int>(f);
+                    c = true;
+                }
+            };
+            bool shots = a.type == AttackType::Cage || a.type == AttackType::Orbit || a.type == AttackType::Spiral;
+            if (shots) {
+                std::vector<std::string> proj;
+                if (auto pa = g_.app.resources().animation("animations/projectiles.json"))
+                    for (const auto& [k, _] : pa->clips) proj.push_back(k);
+                std::sort(proj.begin(), proj.end());
+                c |= stringCycle(ui, "gproj", {x, y, w, ui.s(46)}, a.type == AttackType::Orbit ? "Flammes" : "Projectile", a.projectile, proj);
+                y += ui.s(54);
+            }
+            switch (a.type) {
+                case AttackType::Tracker:
+                    num("gdur", "Poursuite sous le sol (s)", a.duration, 0.1f, 0, 10, "%.1f");
+                    num("gspd", "Vitesse de la racine (max 130)", a.projectileSpeed, 5, 20, 130, "%.0f");
+                    num("grad", "Demi-largeur du pic", a.radius, 1, 0, 60, "%.0f");
+                    num("ghgt", "Hauteur du pic", a.height, 2, 0, 200, "%.0f");
+                    break;
+                case AttackType::Cage:
+                    num("gdur", "Durée de la cage (s)", a.duration, 0.1f, 0, 20, "%.1f");
+                    num("grad", "Demi-écart des murs", a.radius, 5, 0, 400, "%.0f");
+                    num("ghgt", "Hauteur des murs", a.height, 4, 0, 400, "%.0f");
+                    num("gspd", "Chute des spores", a.projectileSpeed, 5, 10, 300, "%.0f");
+                    num("gint", "Intervalle des spores (s)", a.burstInterval, 0.05f, 0.05f, 3, "%.2f");
+                    break;
+                case AttackType::Vortex:
+                case AttackType::Well:
+                    num("gdur", "Durée (s)", a.duration, 0.1f, 0, 20, "%.1f");
+                    num("gpull", "Attraction (px/s, max 140)", a.pull, 5, 0, 140, "%.0f");
+                    if (a.type == AttackType::Well) num("grad", "Rayon du cœur", a.radius, 1, 0, 80, "%.0f");
+                    break;
+                case AttackType::Mirror:
+                    num("gdur", "Vie des doubles (s, 0 = jusqu'au coup)", a.duration, 0.5f, 0, 60, "%.1f");
+                    break;
+                case AttackType::FrostFloor:
+                    num("gdur", "Durée du verglas (s)", a.duration, 0.1f, 0, 20, "%.1f");
+                    num("ggrip", "Adhérence (1 = normale)", a.grip, 0.05f, 0, 1, "%.2f");
+                    break;
+                case AttackType::Prism:
+                    whole("gbounce", "Rebonds", a.bounces, 0, 6);
+                    num("glen", "Longueur d'un segment", a.laserLength, 10, 20, 2000, "%.0f");
+                    break;
+                case AttackType::Orbit:
+                    num("gdur", "Durée de la couronne (s)", a.duration, 0.1f, 0, 20, "%.1f");
+                    whole("gcnt", "Flammes", a.count, 1, 24);
+                    num("grad", "Rayon le plus large", a.radius, 5, 0, 600, "%.0f");
+                    num("gspr", "Rotation (°/s)", a.spread, 5, 0, 360, "%.0f");
+                    whole("garms", "Bras de spirale (0 = aucun)", a.arms, 0, 8);
+                    break;
+                case AttackType::Spiral:
+                    num("gdur", "Durée de la spirale (s)", a.duration, 0.1f, 0, 20, "%.1f");
+                    whole("garms", "Bras", a.arms, 0, 8);
+                    num("gspr", "Rotation par salve (°)", a.spread, 1, 0, 90, "%.0f");
+                    num("gint", "Intervalle des salves (s)", a.burstInterval, 0.02f, 0.05f, 3, "%.2f");
+                    num("gspd", "Vitesse des tirs", a.projectileSpeed, 5, 10, 1000, "%.0f");
+                    break;
+                case AttackType::Flood:
+                    num("gdur", "Lave haute pendant (s)", a.duration, 0.1f, 0, 20, "%.1f");
+                    num("ghgt", "Hauteur de la lave", a.height, 4, 0, 400, "%.0f");
+                    break;
+                case AttackType::Blink:
+                    num("grad", "Rayon du coup", a.radius, 2, 0, 200, "%.0f");
+                    break;
+                case AttackType::Ring:
+                    num("grad", "Rayon final", a.radius, 10, 0, 1200, "%.0f");
+                    num("gspd", "Vitesse de l'anneau", a.projectileSpeed, 5, 40, 600, "%.0f");
+                    num("gspr", "Ouverture (°)", a.spread, 2, 0, 180, "%.0f");
+                    break;
+                default: break;
+            }
+        }
         auto sounds = PropertyEditor::assetFiles("sounds", ".wav");
         sounds.insert(sounds.begin(), "");
         c |= stringCycle(ui, "asnd", {x, y, w, ui.s(46)}, "Son de l'attaque", a.sound, sounds);

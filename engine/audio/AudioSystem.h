@@ -2,6 +2,7 @@
 
 #include <SDL3_mixer/SDL_mixer.h>
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -33,8 +34,21 @@ public:
     void playSound(const std::string& path, float volume = 1.0f, float pitch = 1.0f, float pan = 0.0f,
                    AudioBus bus = AudioBus::Effects);
 
-    /// Starts a looping music with a cross-fade from the current one.
-    void playMusic(const std::string& path, int fadeMs = 1200);
+    /// Starts a music with a cross-fade from the current one (looping unless `loop` is false).
+    void playMusic(const std::string& path, int fadeMs = 1200, bool loop = true);
+    /// Jukebox (2.19): pause / resume the current music, its position and length (ms),
+    /// jump to a position, and whether it has reached its end (non-looping play).
+    void pauseMusic();
+    void resumeMusic();
+    bool musicPaused() const;
+    int64_t musicPositionMs() const;
+    int64_t musicDurationMs() const;
+    void seekMusicMs(int64_t ms);
+    bool musicEnded() const;
+    /// Length of a sound file in ms (loaded and cached; 0 if unknown or no audio device).
+    int64_t fileDurationMs(const std::string& path);
+    /// Called with the file path of each music or ambience that starts (the collection).
+    std::function<void(const std::string&)> onMusicStarted;
     void stopMusic(int fadeMs = 800);
     const std::string& currentMusic() const { return musicPath_; }
     /// Temporarily lowers music (e.g. pause menu); 1 = normal.

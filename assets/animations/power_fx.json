@@ -1,0 +1,10 @@
+{
+  "texture": "sprites/projectiles/power_fx.png",
+  "frameWidth": 24,
+  "frameHeight": 24,
+  "pivot": [12, 24],
+  "clips": {
+    "boomerang": {"row": 0, "count": 8, "fps": 22, "loop": true},
+    "beacon": {"row": 1, "count": 8, "fps": 10, "loop": true}
+  }
+}

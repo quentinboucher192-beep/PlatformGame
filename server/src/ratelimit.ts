@@ -36,6 +36,8 @@ export const RULES = {
     communityFavorite: { name: "community_favorite", limit: 120, windowSeconds: 3600 },
     communityComment: { name: "community_comment", limit: 8, windowSeconds: 600 },
     communityReaction: { name: "community_reaction", limit: 120, windowSeconds: 600 },
+    // Ratings of the official levels (2.19); their comments share community_comment.
+    levelRate: { name: "level_rate", limit: 60, windowSeconds: 3600 },
     follow: { name: "follow", limit: 60, windowSeconds: 3600 },
     playtime: { name: "playtime", limit: 40, windowSeconds: 3600 },
     achievements: { name: "achievements", limit: 30, windowSeconds: 3600 },

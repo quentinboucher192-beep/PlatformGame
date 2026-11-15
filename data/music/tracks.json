@@ -1,0 +1,147 @@
+{
+  "format": "cosmic.tracks",
+  "version": 1,
+  "groups": [
+    {
+      "id": "menus",
+      "name": "Menus",
+      "planet": "noyau"
+    },
+    {
+      "id": "sylvanox",
+      "name": "Sylvanox",
+      "planet": "sylvanox"
+    },
+    {
+      "id": "glacior",
+      "name": "Glacior",
+      "planet": "glacior"
+    },
+    {
+      "id": "pyralis",
+      "name": "Pyralis",
+      "planet": "pyralis"
+    },
+    {
+      "id": "aethra",
+      "name": "Aethra",
+      "planet": "aethra"
+    }
+  ],
+  "tracks": [
+    {
+      "file": "music/menu_theme.ogg",
+      "group": "menus",
+      "title": "Thème principal",
+      "where": "Menu principal"
+    },
+    {
+      "file": "music/planet_map.ogg",
+      "group": "menus",
+      "title": "La carte des planètes",
+      "where": "Carte des planètes"
+    },
+    {
+      "file": "music/victory.ogg",
+      "group": "menus",
+      "title": "Victoire",
+      "where": "Fin de niveau"
+    },
+    {
+      "file": "music/sylvanox_level.ogg",
+      "group": "sylvanox",
+      "title": "Les ruines",
+      "where": "Ruines Suspendues, Cœur de la Machine, Catacombes"
+    },
+    {
+      "file": "music/sylvanox_depths.ogg",
+      "group": "sylvanox",
+      "title": "Les profondeurs",
+      "where": "Canopée des Spores, Arène des Échos, Cœur de l'Étoile"
+    },
+    {
+      "file": "music/sylvanox_ambience.ogg",
+      "group": "sylvanox",
+      "title": "Souffle de la forêt",
+      "where": "Ambiance de Sylvanox"
+    },
+    {
+      "file": "music/sylvanox_boss.ogg",
+      "group": "sylvanox",
+      "title": "Gardiens de Sylvanox",
+      "where": "Combats de Sylvanox"
+    },
+    {
+      "file": "music/glacior_level.ogg",
+      "group": "glacior",
+      "title": "Plaines de givre",
+      "where": "Les quatre niveaux de Glacior"
+    },
+    {
+      "file": "music/glacior_ambience.ogg",
+      "group": "glacior",
+      "title": "Vent des aurores",
+      "where": "Ambiance de Glacior"
+    },
+    {
+      "file": "music/glacior_boss.ogg",
+      "group": "glacior",
+      "title": "Gardiens de Glacior",
+      "where": "Combats de Glacior"
+    },
+    {
+      "file": "music/pyralis_level.ogg",
+      "group": "pyralis",
+      "title": "Forges englouties",
+      "where": "Les quatre niveaux de Pyralis"
+    },
+    {
+      "file": "music/pyralis_ambience.ogg",
+      "group": "pyralis",
+      "title": "Grondement de lave",
+      "where": "Ambiance de Pyralis"
+    },
+    {
+      "file": "music/pyralis_boss.ogg",
+      "group": "pyralis",
+      "title": "Gardiens de Pyralis",
+      "where": "Combats de Pyralis et du Noyau"
+    },
+    {
+      "file": "music/aethra_level.ogg",
+      "group": "aethra",
+      "title": "Les sanctuaires",
+      "where": "Les quatre niveaux d'Aethra"
+    },
+    {
+      "file": "music/aethra_ambience.ogg",
+      "group": "aethra",
+      "title": "Océan de nébuleuse",
+      "where": "Ambiance d'Aethra"
+    },
+    {
+      "file": "music/mycelia_boss.ogg",
+      "group": "aethra",
+      "title": "La Mère-Racine",
+      "where": "Combat contre Mycélia"
+    },
+    {
+      "file": "music/aurorax_boss.ogg",
+      "group": "aethra",
+      "title": "Le Miroir boréal",
+      "where": "Combat contre Aurorax"
+    },
+    {
+      "file": "music/pyrogyre_boss.ogg",
+      "group": "aethra",
+      "title": "L'Anneau solaire",
+      "where": "Combat contre Pyrogyre"
+    },
+    {
+      "file": "music/nyxara_boss.ogg",
+      "group": "aethra",
+      "title": "La Dévoreuse d'étoiles",
+      "where": "Combat contre Nyxara"
+    }
+  ]
+}

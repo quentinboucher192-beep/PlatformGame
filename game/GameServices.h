@@ -6,6 +6,7 @@
 
 #include "engine/core/Application.h"
 #include "game/achievements/Achievements.h"
+#include "game/cosmetics/Collection.h"
 #include "game/content/ContentDatabase.h"
 #include "game/ghost/GhostStore.h"
 #include "game/ghost/SegmentHistory.h"
@@ -58,6 +59,19 @@ public:
     /// Unlocks what is done, saves, and announces the new ones (`announce` false: silently,
     /// e.g. the first check of saves made before achievements existed... still listed).
     void checkAchievements(bool announce = true);
+    /// Collection (2.19): cosmetic rewards unlocked by the stars, equipped items, and the
+    /// discoveries of the jukebox and the gallery. Display only.
+    CosmeticCatalog cosmetics;
+    CollectionBook collection;
+    CosmeticProgress cosmeticProgress() const;
+    /// Look of the equipped item of a category (« givre », « comet »…).
+    std::string cosmeticLook(const std::string& category) const {
+        return collection.look(cosmetics, category, cosmeticProgress());
+    }
+    /// Discoveries proven by the saves (tracks and creatures of the completed levels).
+    void discoverFromSaves();
+    /// Music of the main menu (the jukebox's choice, else the theme).
+    std::string menuMusic() const;
     /// Notifications of the main menu (new content, records dropped, new installer).
     NewsCenter news;
     /// Asks the server once for a newer installer (no account needed, nothing personal sent).

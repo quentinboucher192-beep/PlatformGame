@@ -11,10 +11,10 @@ bool Power::wantsActivation(const Player& /*p*/, const GameWorld& /*w*/, const P
     return in.isPressed(def_.input);
 }
 
-bool Power::ready(const Player& p) const { return cooldown_ <= 0.0f && p.energy + 0.001f >= def_.energyCost; }
+bool Power::ready(const Player& p) const { return cooldown_ <= 0.0f && p.energy + 0.001f >= activationCost(p); }
 
 void Power::activate(Player& p, GameWorld& w) {
-    p.spendEnergy(def_.energyCost);
+    p.spendEnergy(activationCost(p));
     cooldown_ = def_.cooldown;
     if (!def_.sound.empty()) w.playSound(def_.sound, p.center(), 0.9f);
     onActivate(p, w);
@@ -42,6 +42,11 @@ PowerRegistry::PowerRegistry() {
     registerBehavior("magnet", [](const PowerDefinition& d) { return std::make_unique<MagnetPower>(d); });
     registerBehavior("air_dash", [](const PowerDefinition& d) { return std::make_unique<AirDashPower>(d); });
     registerBehavior("plasma_bomb", [](const PowerDefinition& d) { return std::make_unique<PlasmaBombPower>(d); });
+    // 2.19: the powers of the four sanctuaries.
+    registerBehavior("boomerang", [](const PowerDefinition& d) { return std::make_unique<BoomerangPower>(d); });
+    registerBehavior("frost_nova", [](const PowerDefinition& d) { return std::make_unique<FrostNovaPower>(d); });
+    registerBehavior("decoy", [](const PowerDefinition& d) { return std::make_unique<DecoyPower>(d); });
+    registerBehavior("recall", [](const PowerDefinition& d) { return std::make_unique<RecallPower>(d); });
 }
 
 void PowerRegistry::registerBehavior(const std::string& behavior, Factory f) { factories_[behavior] = std::move(f); }

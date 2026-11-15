@@ -52,9 +52,15 @@ const char* CommentsPanel::reactionLabel(const std::string& kind) {
 CommentsPanel::CommentsPanel(GameServices& g, OnlineUi& ui) : g_(g), ui_(ui) {}
 
 void CommentsPanel::open(const std::string& levelId, const std::string& title) {
-    bool same = levelId == levelId_;
-    levelId_ = levelId;
+    openThread(Kind::Community, levelId, "/api/v1/community/levels/" + levelId, title);
+}
+
+void CommentsPanel::openThread(Kind kind, const std::string& key, const std::string& basePath, const std::string& title) {
+    bool same = key == levelId_;
+    levelId_ = key;
     title_ = title;
+    kind_ = kind;
+    basePath_ = basePath;
     if (!same) {
         comments_ = Json::array();
         replies_.clear();
@@ -76,7 +82,7 @@ void CommentsPanel::say(const std::string& m, bool error) {
 
 void CommentsPanel::load(bool more) {
     if (levelId_.empty()) return;
-    std::string path = "/api/v1/community/levels/" + levelId_ + "/comments?limit=20&sort=" + kSorts[sort_];
+    std::string path = basePath_ + "/comments?limit=20&sort=" + kSorts[sort_];
     if (more && nextOffset_ > 0) path += "&offset=" + std::to_string(nextOffset_);
     busy_ = true;
     int gen = ++generation_;
@@ -86,7 +92,13 @@ void CommentsPanel::load(bool more) {
             if (gen != generation_ || level != levelId_) return;
             busy_ = false;
             loaded_ = true;
-            if (!r.ok) return say(r.message, true);
+            if (!r.ok) {
+                // Shown in place of the list when there is nothing to show yet.
+                loadError_ = r.message;
+                if (!comments_.empty()) say(r.message, true);
+                return;
+            }
+            loadError_.clear();
             Json list = r.data.value("comments", Json::array());
             if (more)
                 for (auto& c : list) comments_.push_back(c);
@@ -155,7 +167,7 @@ void CommentsPanel::submit() {
         parent = replyTo_;
         if (const Json* c = find(replyTo_); c && c->contains("parent_id") && (*c)["parent_id"].is_string()) parent = (*c)["parent_id"].get<std::string>();
     }
-    g_.online.send("POST", "/api/v1/community/levels/" + levelId_ + "/comments", req,
+    g_.online.send("POST", basePath_ + "/comments", req,
                    done(replyTo_.empty() ? "Commentaire publié." : "Réponse publiée.", parent));
 }
 
@@ -217,7 +229,9 @@ float CommentsPanel::item(const Json& c, float x, float y, float w, bool reply, 
                 Color color;
             };
             std::vector<Chip> chips;
-            if (jget<bool>(c, "level_author", false)) chips.push_back({"AUTEUR DU NIVEAU", ui.theme().accent});
+            // The owner of the subject: the level's creator, or the run's author.
+            if (jget<bool>(c, "level_author", false))
+                chips.push_back({kind_ == Kind::Run ? "AUTEUR DE LA COURSE" : "AUTEUR DU NIVEAU", ui.theme().accent});
             else if (jget<bool>(c, "creator", false)) chips.push_back({"CRÉATEUR", ui.theme().warm});
             if (pinned) chips.push_back({"ÉPINGLÉ", ui.theme().success});
             float chipsW = 0.0f;
@@ -354,8 +368,10 @@ bool CommentsPanel::draw(const Rect& area) {
     // Header: back to the list, title, sort.
     UIContext::ButtonStyle back;
     back.small = true;
-    float bw = ui.s(200);
-    if (ui.button("back", {x, y, bw, ui.s(40)}, "Retour à la liste", back)) stay = false;
+    // A page that has its own « Fermer » (the thread pages of ONLINE) hides this one.
+    float bw = showBack_ ? ui.s(200) : 0.0f;
+    if (showBack_ && ui.button("back", {x, y, bw, ui.s(40)}, kind_ == Kind::Community ? "Retour à la liste" : "Retour au classement", back))
+        stay = false;
     float sortW = std::min(ui.s(380), w * 0.42f);
     int sort = sort_;
     ui.tabs("sort", {x + w - sortW, y, sortW, ui.s(40)}, {"Récents", "Populaires", "Anciens"}, sort);
@@ -363,13 +379,18 @@ bool CommentsPanel::draw(const Rect& area) {
         sort_ = sort;
         load(false);
     }
-    std::string head = "Commentaires (" + std::to_string(total_) + ") · " + title_;
-    float room = w - bw - sortW - ui.s(32);
-    ui.label(head, {x + bw + ui.s(16), y + ui.s(20)}, ui.fitFont(head, FontFace::Bold, 19, room), ui.theme().text, Align::Left, FontFace::Bold,
-             VAlign::Middle);
+    // The count only once the server gave it (never "(0)" for a thread that could not be read).
+    std::string count = loaded_ && loadError_.empty() ? " (" + std::to_string(total_) + ")" : std::string{};
+    std::string head = "Commentaires" + count + (title_.empty() ? std::string{} : " · " + title_);
+    float hx = x + (showBack_ ? bw + ui.s(16) : 0.0f);
+    float room = x + w - sortW - ui.s(16) - hx;
+    float hf = ui.fitFont(head, FontFace::Bold, 19, room, 0.7f);
+    ui.label(ui.elide(head, FontFace::Bold, hf, room), {hx, y + ui.s(20)}, hf, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
     y += ui.s(52);
-    // Composer.
-    if (!g_.online.loggedIn()) {
+    // Composer (not for a thread that could not be read: closed, or no network).
+    if (!loadError_.empty() && comments_.empty()) {
+        // Nothing to answer: the list area says why.
+    } else if (!g_.online.loggedIn()) {
         ui.label("Connectez-vous pour commenter.", {x, y + ui.s(16)}, 16, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
         y += ui.s(40);
     } else {
@@ -401,8 +422,11 @@ bool CommentsPanel::draw(const Rect& area) {
     // List.
     Rect view{x, y, w, area.bottom() - y - ui.s(40)};
     if (comments_.empty()) {
-        ui.labelWrapped(!loaded_ || busy_ ? "Chargement…" : "Aucun commentaire pour l'instant : donnez le premier avis sur ce niveau.", {x + ui.s(4), y + ui.s(8)},
-                        w - ui.s(8), 16, ui.theme().textDim);
+        std::string empty = kind_ == Kind::Run ? "Aucun commentaire pour l'instant : félicitez ou interrogez l'auteur de cette course."
+                                               : "Aucun commentaire pour l'instant : donnez le premier avis sur ce niveau.";
+        if (!loadError_.empty()) empty = "Commentaires indisponibles : " + loadError_;
+        ui.labelWrapped(!loaded_ || busy_ ? "Chargement…" : empty, {x + ui.s(4), y + ui.s(8)}, w - ui.s(8), 16,
+                        loadError_.empty() ? ui.theme().textDim : ui.theme().warm);
     } else {
         float cw = view.w - ui.s(14);
         ui.beginScroll("list", view, listHeight(cw));

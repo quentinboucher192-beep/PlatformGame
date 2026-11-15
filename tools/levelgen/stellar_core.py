@@ -2,7 +2,7 @@
 """Builds the two levels of the Stellar Core (Noyau stellaire, version 2.7), the star at the
 centre of the system, opened once Sylvanox, Glacior and Pyralis are completed:
 
-  data/levels/noyau_01.json  "L'Arène des Échos"     the twelve guardians in a row (boss rush):
+  data/levels/noyau_01.json  "L'Arène des Échos"     the sixteen guardians in a row (boss rush):
                                                        no healing, no checkpoint, one life
   data/levels/noyau_02.json  "Le Cœur de l'Étoile"   the final level (plan: maquette
                                                        NiveauFinal): echoes of the three planets,
@@ -17,11 +17,17 @@ import os
 
 from challenge import Builder, H, HEADROOM, THEMES
 from levelkit import Level, ROOT, T
+from aethra import LEVELS as AETHRA_LEVELS, STONE as AETHRA_STONE, tile
+
+# Aethra (2.19) in the star's light: the void island's theme, on the islands' rock.
+THEMES["aethra"] = dict(AETHRA_LEVELS["aethra_04"], floor=tile(AETHRA_STONE, "obsidian"))
 
 ECHO_ORDER = [("sylvanox", ["thornwarden", "spore_queen", "prime_sentinel", "archon_catacombs"]),
               ("glacior", ["cryowyrm", "frost_hydra", "glaciarch", "howling_wyrm"]),
-              ("pyralis", ["magmaroth", "ignivore", "forge_core", "crucible_heart"])]
-SKULL = {"sylvanox": "#39f0d8", "glacior": "#9fe8ff", "pyralis": "#ff8a5c", "noyau": "#ffd98a"}
+              ("pyralis", ["magmaroth", "ignivore", "forge_core", "crucible_heart"]),
+              ("aethra", ["mycelia", "aurorax", "pyrogyre", "nyxara"])]
+ECHOES = sum(len(b) for _, b in ECHO_ORDER)
+SKULL = {"sylvanox": "#39f0d8", "glacior": "#9fe8ff", "pyralis": "#ff8a5c", "noyau": "#ffd98a", "aethra": "#c9a2ff"}
 
 
 def enemy_def(eid):
@@ -101,7 +107,7 @@ class Star(Builder):
         self.x = x + w
         return zid
 
-    def boss_arena(self, boss, w=46, head=18, health=True, movers=False, music=""):
+    def boss_arena(self, boss, w=46, head=18, health=True, movers=False, music="", ledges=False):
         x, f = self.x, self.f
         door_h = 8
         self.ground(x, x + w, f)
@@ -118,6 +124,13 @@ class Star(Builder):
             for i, (px, py, dx, dy, ph) in enumerate([(10, f - 5, 8, 0, 0.0), (w - 18, f - 5, -8, 0, 0.0),
                                                       (16, f - 10, 0, 3, 0.5), (w - 22, f - 10, 0, -3, 0.5)]):
                 self.L.moving(x + px, py, 4, dx, dy, speed=55, wait=0.5, phase=ph, oneway=True)
+        if ledges:
+            # The guardians of Aethra (2.19): ledges above the lava tide and the roots, high
+            # ones above the great tide.
+            for a, b in ((4, 11), (19, 27), (35, 42)):
+                self.L.oneway(x + a, x + b, f - 5, self.th["oneway"])
+            for a, b in ((12, 18), (28, 34)):
+                self.L.oneway(x + a, x + b, f - 10, self.th["oneway"])
         self.L.combat(x + 1, f - head, x + w - 1, f, doors=left + "," + right, waves=bid, lock=False,
                       music=music or self.L.data.get("bossMusic", ""))
         if movers:
@@ -192,13 +205,13 @@ class Star(Builder):
 def boss_rush():
     b = Star("noyau_01", "L'Arène des Échos", "sylvanox", seed=7101)
     L, d = b.L, b.L.data
-    d["description"] = ("Les douze gardiens du système reviennent, l'un après l'autre, en échos de lumière. "
+    d["description"] = ("Les seize gardiens du système reviennent, l'un après l'autre, en échos de lumière. "
                         "Aucun soin, aucun checkpoint : une seule vie pour les vaincre tous.")
     d["difficulty"] = 5
     # EXTRÊME: one life (the challenge mode below allows no death) and a race online.
     d["extreme"] = True
     b.f = 40
-    b.opening("L'Arène des Échos : douze gardiens à la suite. Ni soin ni checkpoint, une seule vie. "
+    b.opening("L'Arène des Échos : seize gardiens à la suite. Ni soin ni checkpoint, une seule vie. "
               "Choisissez vos quatre pouvoirs.")
     # Combat powers to choose from (4 carried; the start set is in levelkit.START_POWERS).
     b.tablets(["time_slow", "plasma_bomb", "impulse", "ground_pound", "triple_jump", "glide"])
@@ -208,23 +221,24 @@ def boss_rush():
         for boss in bosses:
             n += 1
             name = enemy_def(boss)["name"]
-            b.zone_sign("Écho %d / 12 : %s." % (n, name))
+            b.zone_sign("Écho %d / %d : %s." % (n, ECHOES, name))
             b.rooms.append({"type": "echo", "x": b.x, "floor": b.f, "boss": "echo_" + boss})
-            b.boss_arena("echo_" + boss, health=False)
+            b.boss_arena("echo_" + boss, health=False, ledges=planet == "aethra")
             # A breath between two fights: energy only.
             b.ground(b.x, b.x + 6, b.f)
             b.roof(b.x, b.x + 6, b.f - HEADROOM)
             L.orb("energy_orb", b.x + 3, b.f - 1.5)
             b.x += 6
     b.use("pyralis")
-    width = b.finish("Les douze échos se sont tus.")
+    width = b.finish("Les seize échos se sont tus.")
     # One life: the challenge mode ends the run at the first fall.
-    ref = 12 * 75
+    ref = ECHOES * 75
     d["timer"] = {"mode": "challenge", "limit": 3600, "onExpire": "gameover", "referenceTime": ref, "challengeMaxDeaths": 0}
     d["medals"] = {"bronze": {}, "silver": {"maxTime": int(ref * 1.6)}, "gold": {"maxTime": int(ref * 1.2)},
                    "platinum": {"maxTime": ref, "maxDeaths": 0}}
-    b.cinematics("L'ARÈNE DES ÉCHOS", "Noyau stellaire", "Douze gardiens, aucun soin, une seule vie.", "ÉCHOS VAINCUS")
-    d["metadata"] = {"generator": "tools/levelgen/stellar_core.py", "revision": 7, "rooms": b.rooms, "noHealing": True}
+    b.cinematics("L'ARÈNE DES ÉCHOS", "Noyau stellaire", "Seize gardiens, aucun soin, une seule vie.", "ÉCHOS VAINCUS")
+    # 2.19: sixteen guardians (a new version of the level: its rankings start again).
+    d["metadata"] = {"generator": "tools/levelgen/stellar_core.py", "revision": 9, "rooms": b.rooms, "noHealing": True}
     L.save(os.path.join(ROOT, "data/levels/noyau_01.json"))
     return width
 

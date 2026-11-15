@@ -48,6 +48,7 @@ void GameScene::onEnter() {
                      g_.settings.graphics.particleQuality == 0 ? 0.4f : g_.settings.graphics.particleQuality == 1 ? 0.7f : 1.0f};
     world_ = std::make_unique<GameWorld>(ws, WorldMode::Play);
     world_->load(level_);
+    applyCosmetics();
     // Same randomness for every player of this level (and in its replays).
     world_->seedGameplay(levelSeed(levelId_));
     if (opt_.spawn) world_->startAt(*opt_.spawn);
@@ -249,6 +250,7 @@ void GameScene::onExit() {
         g_.records.save();
         g_.bossStats.save();
     }
+    if (collectionDirty_) g_.collection.save();  // creatures met (the gallery)
 }
 
 void GameScene::applyGhostSettings() { ghostRun_.setSettings(g_.settings.ghosts); }
@@ -586,6 +588,7 @@ void GameScene::finishRun(bool completed) {
         auto seg = std::make_shared<SegmentSummary>();
         seg->levelName = level_.name;
         seg->levelKey = GhostStore::levelKey(levelId_, ghostHash_);
+        seg->levelId = levelId_;
         for (const std::string& id : runCheckpoints_) {
             std::string label;
             for (const LevelObject& o : level_.objects)
@@ -632,6 +635,22 @@ void GameScene::update(float dt) {
     if (trackFuture_.valid() && trackFuture_.wait_for(std::chrono::seconds(0)) == std::future_status::ready) hud_.setProgressTrack(trackFuture_.get());
     if (raceRouteFuture_.valid() && raceRouteFuture_.wait_for(std::chrono::seconds(0)) == std::future_status::ready) race_.setRoute(raceRouteFuture_.get());
     hud_.update(*world_, dt);
+    // Collection (display only): trail, victory effect, creatures met.
+    {
+        const Player& pl = world_->player();
+        bool fast = std::abs(pl.vel.x) > 150.0f || std::abs(pl.vel.y) > 420.0f;
+        trail_.update(pl.center(), dt, fast && pl.alive() && world_->state() == WorldState::Playing);
+        if (victoryT_ < 0.0f && world_->state() == WorldState::Completed) {
+            victoryT_ = 0.0f;
+            victoryAt_ = pl.box.bottomCenter();
+        } else if (victoryT_ >= 0.0f) {
+            victoryT_ += dt;
+        }
+        if ((metTimer_ -= dt) <= 0.0f) {
+            metTimer_ = 0.25f;
+            noteCreaturesMet();
+        }
+    }
     InputManager& in = g_.app.input();
     // « Mode concentré »: the reduced HUD chosen in the HUD editor (display only).
     if (in.menuPressed(Action::FocusToggle) && !ended_) {
@@ -707,6 +726,27 @@ void GameScene::trainingSegmentDone() {
     g_.uiSound(segmentBest_ < 0.0f || t < segmentBest_ ? "medal" : "ui_confirm", 0.6f);
 }
 
+void GameScene::applyCosmetics() {
+    // The equipped suit: the same sheet recoloured (assets/sprites/player/suits).
+    std::string suit = g_.cosmeticLook("suit");
+    suitTexture_.reset();
+    if (!suit.empty() && suit != "standard") suitTexture_ = g_.app.resources().texture("sprites/player/suits/nova_" + suit + ".png");
+    world_->player().skin = suitTexture_ ? suitTexture_.get() : nullptr;
+    trailLook_ = g_.cosmeticLook("trail");
+    victoryLook_ = g_.cosmeticLook("victory");
+    trail_.reset();
+    victoryT_ = -1.0f;
+}
+
+void GameScene::noteCreaturesMet() {
+    // A creature enters the gallery once it has been on screen, awake, in a level.
+    Rect seen = world_->camera().visibleArea(g_.app.renderer().width(), g_.app.renderer().height());
+    for (const auto& e : world_->enemies()) {
+        if (!e->alive() || e->dormant() || !seen.intersects(e->box)) continue;
+        if (g_.collection.met.insert(e->def().id).second) collectionDirty_ = true;
+    }
+}
+
 void GameScene::render(float alpha) {
     Renderer& r = g_.app.renderer();
     g_.ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
@@ -724,6 +764,8 @@ void GameScene::render(float alpha) {
     opt.debug = g_.app.debugOverlay;
     renderer_.render(r, g_.app.resources(), *world_, view, alpha, opt);
     if (ghostRun_.active()) ghostRun_.drawWorld(r, view, world_->player().anim.set());
+    trail_.draw(r, trailLook_, true);
+    if (victoryT_ >= 0.0f) drawVictoryFx(r, victoryLook_, victoryAt_, victoryT_, true);
     hud_.render(g_.ui, *world_, view, g_.records.get(levelId_), g_.settings.gameplay);
     // The ghosts' HUD: not under the results screen (nor under its notifications).
     if (ghostRun_.active() && !world_->cinematic().active() && world_->state() != WorldState::Intro && (!ended_ || opt_.training)) {

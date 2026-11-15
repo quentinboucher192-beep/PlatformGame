@@ -14,7 +14,23 @@ namespace cosmic {
 enum class EnemyFamily { Ground, Robot, Flying, Turret, Fast, Heavy, Caster, MiniBoss, Count };
 enum class MovementType { Idle, Patrol, Guard, Fly, Hop, Stationary, Count };
 enum class ReactionType { None, Chase, KeepDistance, Flee, GuardZone, Count };
-enum class AttackType { Contact, Melee, Lunge, Projectile, Spread, Arc, Slam, Charge, Laser, Summon, Rain, Eruption, Leap, Count };
+enum class AttackType {
+    Contact, Melee, Lunge, Projectile, Spread, Arc, Slam, Charge, Laser, Summon, Rain, Eruption, Leap,
+    // 2.19: the attacks of the guardians of Aethra (game/enemies/GuardianAttacks.cpp).
+    Tracker,     // a bump runs under the ground toward the target, then a spike bursts out
+    Cage,        // two walls of thorns rise on both sides of the target; spores fall between them
+    Vortex,      // the target is pulled toward the enemy (a limited pull: running away is enough)
+    Mirror,      // two translucent doubles copy its attacks (reduced damage, one hit breaks them)
+    FrostFloor,  // the ground of the arena turns to ice for a while (less grip)
+    Prism,       // a beam that bounces off walls and ceiling, its path shown during the wind-up
+    Orbit,       // flames circle around the enemy, the ring widening then closing
+    Spiral,      // shots in a turning spiral of several arms
+    Flood,       // lava rises up to the platforms for a while, then goes down
+    Well,        // a black hole pulls the target and bends the player's shots
+    Blink,       // a mark behind the target; the enemy teleports there and strikes
+    Ring,        // a ring expands from the enemy, with a single opening
+    Count
+};
 
 const char* familyId(EnemyFamily f);
 const char* familyLabel(EnemyFamily f);
@@ -85,11 +101,22 @@ struct AttackDef {
     float homingTime = 1.2f;     // ... during this many seconds
     float stagger = 0.0f;        // rain / eruption: impacts one after another along a line (s between impacts)
     float leapTime = 0.8f;       // Leap: flight time to the predicted landing point
+    // v4 (2.19, guardians of Aethra): parameters of the new attack types. 0 = the type's
+    // default (see GuardianAttacks.cpp), so an attack made in the editor works at once.
+    float duration = 0.0f;  // how long the effect lasts (s); Mirror: life of the doubles (0 = until broken)
+    float pull = 0.0f;      // Vortex / Well: pull speed (px/s), always below the player's run speed
+    float radius = 0.0f;    // Cage: half the gap; Orbit: widest ring; Well: core; Blink: strike; Tracker: spike half-width
+    float height = 0.0f;    // Cage: walls; Flood: lava above the floor; Tracker: spike
+    int bounces = 0;        // Prism: bounces off walls and ceiling
+    int arms = 0;           // Spiral (and Orbit with a spiral): arms of shots
+    float grip = 0.0f;      // FrostFloor: grip of the frozen ground (1 = normal)
 
     bool isProjectileType() const {
         return type == AttackType::Projectile || type == AttackType::Spread || type == AttackType::Arc ||
                type == AttackType::Rain || type == AttackType::Eruption;
     }
+    /// The attack types of the guardians of Aethra (2.19).
+    bool isGuardianType() const { return type >= AttackType::Tracker && type < AttackType::Count; }
 
     Json toJson() const;
     static AttackDef fromJson(const Json& j);
@@ -167,6 +194,9 @@ struct EnemyDefinition {
     /// sprite) or a symbol (crown, skull, flame, snowflake, eye, star); colour "" = gold.
     std::string barIcon = "portrait";
     std::string barColor;
+    /// From this phase on (1 = the first), the arena darkens around the boss (Nyxara, 2.19);
+    /// 0 = never. Appearance only.
+    int darkPhase = 0;
     /// Colour the sprite is multiplied by (white = its own colours): spectral echoes, the
     /// Astrarque's starlight. Appearance only.
     Color tint = Color::white();

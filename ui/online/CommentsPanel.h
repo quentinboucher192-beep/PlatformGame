@@ -13,18 +13,30 @@ namespace cosmic {
 class GameServices;
 class OnlineUi;
 
-/// Comments of a community level (ONLINE LEVELS): one level of replies, five reactions
-/// (one per player, changeable), pinned comments of the creator first, edit / delete of
-/// one's own comments, reports. Everything comes from and goes to the server; the panel
-/// only shows what the server allows (can_edit, can_pin...), and the server checks again.
+/// Comments of a thread: a community level (ONLINE LEVELS) or, since 2.19, an official level
+/// of the campaign or a run of the leaderboards (ONLINE, same rules on the server). One level
+/// of replies, five reactions (one per player, changeable), pinned comments first, edit /
+/// delete of one's own comments, reports. Everything comes from and goes to the server; the
+/// panel only shows what the server allows (can_edit, can_pin...), and the server checks again.
 class CommentsPanel {
 public:
+    enum class Kind { Community, Level, Run };
+
     CommentsPanel(GameServices& g, OnlineUi& ui);
 
+    /// A community level's comments.
     void open(const std::string& levelId, const std::string& title);
+    /// Another thread: `key` identifies it ("level:<id>", "run:<record id>"), `basePath` is
+    /// the API path its comments hang from ("/api/v1/levels/<id>", "/api/v1/records/<id>").
+    void openThread(Kind kind, const std::string& key, const std::string& basePath, const std::string& title);
     void close() { levelId_.clear(); }
     bool isOpen() const { return !levelId_.empty(); }
+    /// The community level id, or the thread key.
     const std::string& levelId() const { return levelId_; }
+    /// Visible top-level comments (after the first load).
+    int total() const { return total_; }
+    /// false: no « Retour » button in the header (the page has its own way back).
+    void setBackButton(bool on) { showBack_ = on; }
     /// Draws the panel in `area`. Returns false when the player goes back to the list.
     bool draw(const Rect& area);
     /// A confirmation (delete, report) is open: the rest of the screen must not react.
@@ -50,7 +62,10 @@ private:
     GameServices& g_;
     OnlineUi& ui_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
-    std::string levelId_, title_;
+    std::string levelId_, title_, basePath_;
+    Kind kind_ = Kind::Community;
+    bool showBack_ = true;
+    std::string loadError_;
     int sort_ = 0;
     Json comments_ = Json::array();
     std::map<std::string, Json> replies_;

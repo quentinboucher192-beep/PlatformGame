@@ -384,3 +384,64 @@ Sounds: `glide_open`, `glide_loop` (loop), `pound_dive`, `pound_impact`, `charge
     (anim 4), ice_arch, frozen_machine, frost_banner, frozen_bones, snow_rock_small, snow_rock_big,
     ice_floating (pivot centre).
 * Banners `ui/planets/pyralis_banner.png`, `ui/planets/glacior_banner.png` (480x270).
+
+## 15. 2.19 content: the sanctuary guardians and the planet Aethra
+
+Generators: `characters/bosses_c.py` (called by `boss.py`) with one module per guardian
+(`boss_c_mycelia.py`, `boss_c_aurorax.py`, `boss_c_pyrogyre.py`, `boss_c_nyxara.py`, helpers in
+`boss_c_common.py`), `characters/boss_c_effects.py` (attack effects), `characters/boss_c_projectiles.py`
+(projectile rows), `characters/beams.py` (`prism`), `environment/bg_aethra.py`, `tiles_aethra.py`,
+`planet_aethra.py`, `audio/sfx/guardians.py`, `audio/music/songs/{mycelia,aurorax,pyrogyre,nyxara}_boss.py`,
+`aethra_level.py`, `aethra_ambience.py`.
+
+### 15.1 Guardians (`sprites/enemies/<id>.png`, `animations/<id>.json`)
+
+Common clips, in row order: `idle` 6 (loop), `walk` (loop), `move` (same cycle, for flying enemies),
+`telegraph` 6, `attack` 5, `telegraph_special` 6, `special` 4 (loop), `summon` 6, `roar` 8
+(phase change), `hurt` 2, `death` 14.
+
+| id | frame | pivot | collision | walk | attack event | extras | meaning of the clips |
+|---|---|---|---|---|---|---|---|
+| `mycelia` | 128x112 | [64,112] | 60x64 | 8 (`footstep` f0, f4) | `impact` f2 | `teleport_out` 6, `teleport_in` 6 (burrows / resurfaces) | telegraph: rears, roots glow in the ground; attack: root slammed into the ground; telegraph_special/special: inhale; summon: buds sprout |
+| `aurorax` | 128x128 | [64,128] | 48x76 | 8 (`footstep` f1, f5) | `fire` f1 | — | telegraph: lance raised, prism light; attack: lance thrust + prismatic flash; telegraph_special/special: stag charge; summon: lance planted, frost and aurora (mirror doubles, frozen lake) |
+| `pyrogyre` | 128x128 | [64,92] | 52x52 (flying) | 6 | `fire` f1 | — | telegraph: ring spins up and widens; attack: ring flare; telegraph_special/special: solar ray (muzzle only); summon: the ring pours lava |
+| `nyxara` | 128x128 | [64,92] | 52x52 (flying) | 6 | `fire` f1 | `teleport_out` 5, `teleport_in` 5 (shadow step) | telegraph: eyes flare, stars gather; attack: tentacle lash + star burst; telegraph_special/special: the disc falls in / dark pulses (well, eclipse wave); summon: void rifts |
+
+Useful origins (sprite pixels from the pivot, x mirrored with the facing): Mycelia mouth (2, -37),
+cap top (0, -90); Aurorax lance tip at the thrust (50, -105), at the charge (49, -58), heart (3, -70);
+Pyrogyre eye (0, -26), ring radii 46 x 15; Nyxara sphere (0, -28), radius 21, disc radii 50 x 8.5.
+The mirror doubles of Aurorax are this sheet drawn translucent (only the real one has the green eye).
+
+### 15.2 Projectiles and effects
+
+* `animations/projectiles.json` rows 19-23 (16x16, pivot [8,8], 4-frame loops, travelling right):
+  `pollen`, `aurora_shard`, `solar_flame`, `solar_bolt`, `void_star`.
+* `animations/beams.json` row 5: `prism` (same 64x16 strip layout as the other beams).
+* Dedicated sheets:
+
+| sheet | frame | pivot | clips |
+|---|---|---|---|
+| `projectiles/root_spike` | 32x64 | [16,64] (ground) | `travel` 4 loop (the bump running under the ground), `erupt` 5 (`hit` f1), `retract` 4 |
+| `projectiles/thorn_wall` | 32x96 | [16,96] (ground) | `rise` 5, `idle` 4 loop, `wither` 5 |
+| `projectiles/void_well` | 64x64 | [32,32] | `open` 5, `idle` 6 loop, `close` 4 |
+| `projectiles/eclipse_ring` | 16x16 | [8,8] | `segment` 4 loop, `edge` 4 loop — tiles laid along the circle, each rotated to the tangent, frame top = outside, row 8 = radius; `edge` closes the band at each side of the opening (band on the left, cap facing +x; mirror it for the other side) |
+| `projectiles/shadow_mark` | 32x32 | [16,16] | `appear` 4, `idle` 4 loop, `strike` 4 |
+| `objects/frost_floor` | 16x16 | [0,4] | `form` 4, `idle` 6 loop, `melt` 4 — translucent veil tiled every 16 px over the floor, row 4 = floor surface |
+| `objects/lava_flood` | 16x16 | [0,0] | `surface` 8, `body` 8 (128x32 PNG in the `liquid_<kind>.png` layout) |
+
+### 15.3 Audio
+
+Sounds (16-bit mono 44.1 kHz): `root_burst`, `thorn_wall`, `inhale`, `mirror_split`, `ice_floor`,
+`prism`, `orbit_flames`, `spiral`, `lava_rise`, `gravity_well`, `shadow_step`, `eclipse_ring`.
+Music (seamless loops): `mycelia_boss` (68.6 s), `aurorax_boss` (66.0 s, 3/4), `pyrogyre_boss`
+(65.8 s), `nyxara_boss` (73.1 s) at -13.5 LUFS like the other boss tracks; `aethra_level` (99.0 s,
+-14 LUFS); `aethra_ambience` (60 s, -24 LUFS).
+
+### 15.4 Planet Aethra
+
+* Backgrounds `backgrounds/aethra/{sky,far,mid,near,abyss,fg_petals}.png`, same roles and parallax as
+  the other planets; suggested level colours: sky top `#0a0618`, abyss fill `#3a1c5e`.
+* Tilesets `textures/tiles/sanctum_stone` (main, map colour `#6e6698`) and `nebula_rock`
+  (`#4a3474`), §7 format.
+* One-way platform style `sanctum_ledge` = row 7 of `textures/tiles/platforms.png` (48x128).
+* `ui/planets/aethra.png` (256x256) and `ui/planets/aethra_banner.png` (480x270).

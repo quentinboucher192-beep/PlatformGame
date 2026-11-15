@@ -6,6 +6,7 @@
 #include "game/enemies/Enemy.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/entities/Entities.h"
+#include "game/powers/PowerFx.h"
 
 namespace cosmic {
 
@@ -67,7 +68,11 @@ void GameRenderer::render(Renderer& r, ResourceManager& res, GameWorld& world, c
         actorsDrawn = true;
         world.particles().render(r, false, view.visibleWorld());
         for (const auto& e : world.enemies())
-            if (e->box.expanded(64).intersects(vis)) e->render(ctx);
+            if (e->box.expanded(64).intersects(vis)) {
+                e->render(ctx);
+                renderFrozenEnemy(ctx, *e);  // Nova de givre (2.19)
+            }
+        renderDecoy(ctx, world);  // Leurre holographique (2.19)
         world.player().render(ctx);
         drawProjectiles(r, world, alpha, lights_);
         world.particles().render(r, true, view.visibleWorld());
@@ -81,9 +86,11 @@ void GameRenderer::render(Renderer& r, ResourceManager& res, GameWorld& world, c
     drawActors();
 
     if (!opt.mapView) {
+        // Lasting effects of the guardians' attacks (frost, lava, thorns, wells).
+        world.hazards().render(ctx);
         // Telegraphs read on top of everything in the world.
         for (const auto& e : world.enemies())
-            if (e->box.expanded(200).intersects(vis)) e->renderTelegraph(ctx);
+            if (e->box.expanded(200).intersects(vis) && !e->frozen()) e->renderTelegraph(ctx);  // frozen: no threat
         parallax_.render(r, view, true);
     }
 
@@ -92,6 +99,9 @@ void GameRenderer::render(Renderer& r, ResourceManager& res, GameWorld& world, c
     if (opt.lighting) {
         Color ambient = lvl.ambientLight;
         if (opt.editor) ambient = Color::lerp(ambient, Color::white(), 0.45f);
+        // A guardian that swallows the light (Nyxara, 2.19): the arena darkens from its phase.
+        if (const Enemy* b = world.activeBoss(); b && b->alive() && b->def().darkPhase > 0 && b->phaseIndex() + 1 >= b->def().darkPhase)
+            ambient = Color::lerp(ambient, Color{6, 4, 14, 255}, 0.6f);
         lights_.apply(r, view, ambient);
     }
 

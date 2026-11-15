@@ -1,0 +1,19 @@
+{
+  "format": "cosmic.power",
+  "id": "recall",
+  "behavior": "recall",
+  "name": "Balise de rappel",
+  "description": "1re pression : pose une balise (gratuit). 2e pression dans les 5 s : retour instantané à la balise, à l'arrêt et brièvement invulnérable.",
+  "icon": 17,
+  "input": "special",
+  "energyCost": 15,
+  "cooldown": 0.3,
+  "duration": 0,
+  "color": "#b48cff",
+  "sound": "",
+  "params": {
+    "placeCost": 0,
+    "window": 5,
+    "invulnerability": 0.2
+  }
+}

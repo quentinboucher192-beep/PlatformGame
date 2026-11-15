@@ -166,7 +166,11 @@ private:
     WidgetId focus_ = 0;
     WidgetId active_ = 0;   // mouse pressed on
     WidgetId editing_ = 0;  // text field being edited
+    // The edited field's caret and selection (byte offsets on UTF-8 boundaries): the
+    // selection runs from anchor_ to caret_ (empty when equal).
     size_t caret_ = 0;
+    size_t anchor_ = 0;
+    bool dragSelect_ = false;
     bool focusSeen_ = false;
     bool confirm_ = false;
     bool navConsumedH_ = false;

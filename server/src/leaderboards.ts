@@ -11,6 +11,7 @@ import type { AuthInfo } from "./auth";
 import { requireAuth } from "./auth";
 import { ApiError, Errors, json, weekStart, type Ctx, type PageMeta } from "./http";
 import { resolveBoard, versionJson, type Board } from "./levels";
+import { runCommentCounts } from "./campaign";
 import { avatarUrl } from "./model";
 import {
     CATEGORIES,
@@ -42,6 +43,7 @@ interface BoardRow {
     avatar_custom_key: string | null;
     country_code: string | null;
     location_visibility: string;
+    profile_visibility: string;
     record_id: string;
     time_ms: number;
     achieved_at: string;
@@ -85,7 +87,7 @@ function boardSql(period: Period, filter: BoardFilter): { sql: string; extra: un
     const sql = `
       WITH src AS (${source}),
       ranked AS (
-        SELECT s.*, p.username, p.username_normalized, p.avatar, p.avatar_custom_key, p.country_code, p.location_visibility,
+        SELECT s.*, p.username, p.username_normalized, p.avatar, p.avatar_custom_key, p.country_code, p.location_visibility, p.profile_visibility,
                (SELECT COUNT(*) FROM replay_metadata m JOIN records rr ON rr.replay_id = m.id
                  WHERE rr.id = s.record_id AND m.verification_status = 'VERIFIED') AS has_replay,
                ROW_NUMBER() OVER (ORDER BY s.time_ms, s.achieved_at, s.player_id) AS world_rank
@@ -97,7 +99,12 @@ function boardSql(period: Period, filter: BoardFilter): { sql: string; extra: un
     return { sql, extra };
 }
 
-function entryJson(r: BoardRow, viewer: AuthInfo | null) {
+/**
+ * A row of a level board. `comments`: visible comments of the run (2.19), null when its
+ * author hid their profile (their runs are not commented by others).
+ */
+function entryJson(r: BoardRow, viewer: AuthInfo | null, comments: Map<string, number> = new Map()) {
+    const mine = viewer?.player.id === r.player_id;
     return {
         rank: r.rank,
         world_rank: r.world_rank,
@@ -112,7 +119,8 @@ function entryJson(r: BoardRow, viewer: AuthInfo | null) {
         record_id: r.record_id,
         achieved_at: r.achieved_at,
         has_replay: r.has_replay > 0,
-        is_me: viewer?.player.id === r.player_id,
+        is_me: mine,
+        comments: r.profile_visibility === "private" && !mine ? null : (comments.get(r.record_id) ?? 0),
     };
 }
 
@@ -149,12 +157,13 @@ export async function levelBoard(ctx: Ctx, viewer: AuthInfo | null, levelId: str
         total = c?.total ?? 0;
     }
     let me = null;
-    if (viewer) {
-        const mine = await ctx.env.DB.prepare(`${sql} WHERE player_id = ?${4 + extra.length}`)
+    let mine: BoardRow | null = null;
+    if (viewer)
+        mine = await ctx.env.DB.prepare(`${sql} WHERE player_id = ?${4 + extra.length}`)
             .bind(board.version.content_hash, category, ws.toISOString(), ...extra, viewer.player.id)
             .first<BoardRow>();
-        me = { entry: mine ? entryJson(mine, viewer) : null, pending: await pendingOf(ctx, viewer, board, category) };
-    }
+    const comments = await runCommentCounts(ctx, [...rows.results.map((r) => r.record_id), ...(mine ? [mine.record_id] : [])]);
+    if (viewer) me = { entry: mine ? entryJson(mine, viewer, comments) : null, pending: await pendingOf(ctx, viewer, board, category) };
     const meta: PageMeta = { limit: page.limit, offset: page.offset, total, next_offset: page.offset + page.limit < total ? page.offset + page.limit : null };
     return json(
         ctx,
@@ -169,7 +178,7 @@ export async function levelBoard(ctx: Ctx, viewer: AuthInfo | null, levelId: str
                 country_code: filter.country ?? null,
                 friends: filter.friendsOf !== undefined,
             },
-            entries: rows.results.map((r) => entryJson(r, viewer)),
+            entries: rows.results.map((r) => entryJson(r, viewer, comments)),
             me,
         },
         { meta },

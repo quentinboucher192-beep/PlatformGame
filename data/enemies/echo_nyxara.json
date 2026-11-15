@@ -1,0 +1,225 @@
+{
+  "format": "cosmic.enemy",
+  "id": "echo_nyxara",
+  "name": "Écho : Nyxara",
+  "description": "Reflet de Nyxara, rappelé par le cœur de l'étoile. Il ne laisse aucun soin derrière lui.",
+  "family": "miniboss",
+  "animation": "animations/nyxara.json",
+  "size": [
+    52,
+    52
+  ],
+  "scale": 1.0,
+  "hp": 140,
+  "contactDamage": 2,
+  "speed": 48,
+  "chaseSpeedMultiplier": 1.2,
+  "flying": true,
+  "knockbackResist": 1,
+  "detectionRange": 360,
+  "attackRange": 200,
+  "loseRange": 2000,
+  "needsLineOfSight": false,
+  "movement": "fly",
+  "reaction": "keepDistance",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 180,
+  "hopVelocity": 0,
+  "attacks": [
+    {
+      "id": "shadow_step",
+      "name": "Pas de l'ombre",
+      "type": "blink",
+      "damage": 2,
+      "range": 660,
+      "telegraph": 0.6,
+      "active": 0.35,
+      "recover": 0.6,
+      "cooldown": 3.2,
+      "telegraphAnim": "teleport_out",
+      "attackAnim": "attack",
+      "radius": 46,
+      "knockback": 260
+    },
+    {
+      "id": "seekers",
+      "name": "Étoiles chercheuses",
+      "type": "projectile",
+      "damage": 1,
+      "range": 620,
+      "telegraph": 0.6,
+      "active": 0.25,
+      "recover": 0.5,
+      "cooldown": 3.2,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "void_star",
+      "projectileSpeed": 140,
+      "count": 3,
+      "spread": 30,
+      "homing": 2.2,
+      "homingTime": 1.6,
+      "hitEffect": "projectile_burst"
+    },
+    {
+      "id": "star_fall",
+      "name": "Chute d'étoiles",
+      "type": "rain",
+      "damage": 1,
+      "range": 620,
+      "telegraph": 0.7,
+      "active": 0.3,
+      "recover": 0.5,
+      "cooldown": 3.4,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "void_star",
+      "projectileSpeed": 170,
+      "count": 6,
+      "spread": 46,
+      "gravity": 200,
+      "rainHeight": 250,
+      "hitEffect": "projectile_burst",
+      "lead": 0.7
+    },
+    {
+      "id": "well",
+      "name": "Puits gravitationnel",
+      "type": "well",
+      "damage": 2,
+      "range": 540,
+      "telegraph": 0.9,
+      "active": 0.2,
+      "recover": 0.7,
+      "cooldown": 9.0,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "special",
+      "pull": 85,
+      "radius": 22,
+      "duration": 4.0,
+      "knockback": 240
+    },
+    {
+      "id": "eclipse",
+      "name": "Onde d'éclipse",
+      "type": "ring",
+      "damage": 2,
+      "range": 660,
+      "telegraph": 0.8,
+      "active": 0.2,
+      "recover": 0.6,
+      "cooldown": 5.5,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "special",
+      "projectileSpeed": 165,
+      "radius": 600,
+      "spread": 52,
+      "knockback": 240
+    },
+    {
+      "id": "void_call",
+      "name": "Appel du vide",
+      "type": "summon",
+      "damage": 0,
+      "range": 640,
+      "telegraph": 0.9,
+      "active": 0.4,
+      "recover": 0.8,
+      "cooldown": 12,
+      "telegraphAnim": "summon",
+      "attackAnim": "summon",
+      "summonId": "nightwing",
+      "summonCount": 2,
+      "maxSummoned": 3
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "charge_shot": 1.2
+  },
+  "rewards": {
+    "score": 7000,
+    "drops": [
+      {
+        "type": "energy_orb",
+        "chance": 1.0
+      }
+    ]
+  },
+  "light": {
+    "color": "#ff7696",
+    "radius": 100
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/boss_roar.wav",
+    "alert": "sounds/boss_roar.wav"
+  },
+  "boss": {
+    "title": "ÉCHO — NYXARA, LA DÉVOREUSE D'ÉTOILES",
+    "phases": [
+      {
+        "name": "Crépuscule",
+        "hpThreshold": 1.0,
+        "attacks": [
+          "shadow_step",
+          "seekers",
+          "star_fall"
+        ],
+        "speedMultiplier": 1.0,
+        "cooldownMultiplier": 1.0,
+        "combo": 1,
+        "telegraphMultiplier": 1.0
+      },
+      {
+        "name": "Horizon",
+        "hpThreshold": 0.66,
+        "attacks": [
+          "shadow_step",
+          "seekers",
+          "star_fall",
+          "well",
+          "eclipse",
+          "void_call"
+        ],
+        "speedMultiplier": 1.1,
+        "cooldownMultiplier": 0.9,
+        "combo": 2,
+        "telegraphMultiplier": 0.95,
+        "enterText": "Nyxara ouvre l'horizon des événements !",
+        "summonOnEnter": true
+      },
+      {
+        "name": "Éclipse",
+        "hpThreshold": 0.33,
+        "attacks": [
+          "shadow_step",
+          "seekers",
+          "star_fall",
+          "well",
+          "eclipse",
+          "void_call"
+        ],
+        "speedMultiplier": 1.2,
+        "cooldownMultiplier": 0.8,
+        "combo": 3,
+        "telegraphMultiplier": 0.85,
+        "enterText": "Nyxara avale la lumière !"
+      }
+    ],
+    "enrageTime": 80,
+    "darkPhase": 3
+  },
+  "variantOf": "nyxara",
+  "tint": "#a894ff"
+}

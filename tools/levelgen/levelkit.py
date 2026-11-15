@@ -86,6 +86,34 @@ PLANETS = {
 }
 
 
+def _aethra_background():
+    """Parallax planes of Aethra (2.19, made by tools/assetgen): the usual stack of the other
+    planets, read from the files present in assets/backgrounds/aethra (its foreground plane
+    is whichever fg_*.png the art provides). Run the Aethra levels again after the art changes."""
+    folder = os.path.join(ROOT, "assets", "backgrounds", "aethra")
+    fg = sorted(f for f in os.listdir(folder) if f.startswith("fg_") and f.endswith(".png")) if os.path.isdir(folder) else []
+    planes = [
+        {"texture": "backgrounds/aethra/sky.png", "factor": [0.0, 0.0], "fill": True},
+        {"texture": "backgrounds/aethra/far.png", "factor": [0.1, 0.05], "offset": [0, -20]},
+        {"texture": "backgrounds/aethra/mid.png", "factor": [0.25, 0.12], "offset": [0, 10]},
+        {"texture": "backgrounds/aethra/abyss.png", "factor": [0.4, 0.3], "offset": [0, 210], "fillBelow": "#2a1c4a"},
+        {"texture": "backgrounds/aethra/near.png", "factor": [0.5, 0.25], "offset": [0, 60]},
+    ]
+    if fg:
+        planes.append({"texture": "backgrounds/aethra/" + fg[0], "factor": [1.15, 1.0], "offset": [0, -330],
+                       "foreground": True, "tint": "#ffffffc0"})
+    return planes
+
+
+# Aethra (2.19): the planet of the sanctuaries, islands over an ocean of nebula, violet and
+# gold light; each level brings one element (roots, frost, magma, void) and its guardian's
+# music (the level sets bossMusic).
+PLANETS["aethra"] = {
+    "music": "music/aethra_level.ogg", "bossMusic": "",
+    "ambience": "music/aethra_ambience.ogg", "ambientLight": "#a294c8", "backgroundColor": "#0c0a1c",
+    "background": _aethra_background(),
+}
+
 
 # Power slots (version 2.3): powers carried at once in every campaign level, and the
 # start set of each level (the other powers come from tablets and power stations).
@@ -105,12 +133,20 @@ START_POWERS = {
     "pyralis_04": ["glide", "ground_pound", "charge_shot", "dash"],
     "noyau_01": ["dash", "wave", "shield", "charge_shot"],
     "noyau_02": ["dash", "wave", "shield", "grapple"],
+    # Aethra (2.19): three powers, the fourth slot for the new power whose tablet waits at the
+    # start of the level.
+    "aethra_01": ["dash", "wave", "grapple"],
+    "aethra_02": ["glide", "dash", "triple_jump"],
+    "aethra_03": ["glide", "dash", "charge_shot"],
+    "aethra_04": ["dash", "grapple", "glide"],
 }
 POWER_NAMES = {
     "dash": "le Dash", "wave": "l'Onde", "shield": "le Bouclier", "impulse": "l'Impulsion", "teleport": "la Téléportation",
     "glide": "le Planeur", "grapple": "le Grappin", "ground_pound": "la Frappe sismique", "charge_shot": "le Tir chargé",
     "triple_jump": "le Triple saut", "time_slow": "le Ralenti", "magnet": "l'Aimant", "air_dash": "la Ruée aérienne",
     "plasma_bomb": "la Bombe plasma",
+    "boomerang": "la Lame boomerang", "frost_nova": "la Nova de givre", "decoy": "le Leurre holographique",
+    "recall": "la Balise de rappel",
 }
 
 class Level:
@@ -398,7 +434,8 @@ class Level:
         self.data["objects"] = [o for o in self.data["objects"] if id(o) not in drop]
 
     def save(self, path):
-        if self.data.get("metadata", {}).get("generator") not in ("tools/levelgen/challenge.py", "tools/levelgen/stellar_core.py"):
+        if self.data.get("metadata", {}).get("generator") not in ("tools/levelgen/challenge.py", "tools/levelgen/stellar_core.py",
+                                                                  "tools/levelgen/aethra.py"):
             self.harden()
         self.apply_seals()
         self.apply_power_slots()

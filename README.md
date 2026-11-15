@@ -5,6 +5,56 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.21.0** :
+* **Notes des joueurs** pour les niveaux de la campagne : un niveau terminé avec un temps
+  **vérifié** en ligne peut être noté de 1 à 5 étoiles (écran de fin ou ONLINE) ; la moyenne
+  (« 4,3 ★ · 128 notes »), calculée par le serveur, s'affiche sur la fiche du niveau et dans
+  ONLINE, à côté de la difficulté calculée (qui ne change pas). Hors ligne : la dernière
+  moyenne reçue, marquée comme telle.
+* **Commentaires des niveaux de la campagne**, visibles **uniquement dans ONLINE** (bouton
+  *Avis et commentaires*), et **commentaires sur les runs** des classements (une bulle sur
+  chaque ligne ; l'auteur du run est notifié). Mêmes règles que les commentaires des niveaux
+  des joueurs : réponses, réactions, signalement, modération, profils masqués, export et
+  suppression des données.
+
+**Nouveau dans la version 2.20.0** :
+* **Aethra**, cinquième planète (ouverte avec le Noyau, après Sylvanox, Glacior et Pyralis) :
+  la planète des sanctuaires, des îles flottant sur un océan de nébuleuse. **4 niveaux
+  complets** (secrets, reliques, médailles), chacun avec la tablette d'un nouveau pouvoir au
+  départ et un **nouveau gardien** à la fin.
+* **4 gardiens** et **12 attaques inédites**, toutes annoncées avant de frapper :
+  *Mycélia, la Mère-Racine* (racine traqueuse, cage de ronces, inspiration), *Aurorax, le Miroir
+  boréal* (reflets, lac gelé, prisme qui rebondit), *Pyrogyre, l'Anneau solaire* (couronne de
+  feu, spirale, marée de lave) et *Nyxara, la Dévoreuse d'étoiles* (puits gravitationnel, pas de
+  l'ombre, onde d'éclipse ; l'arène s'assombrit en phase 3). Les 12 gardiens classiques ne
+  changent pas. **L'Arène des Échos** enchaîne maintenant les **16** gardiens.
+* **4 pouvoirs** (bouton *Spécial*) : **Lame boomerang** (touche à l'aller et au retour,
+  rapporte éclats et orbes), **Nova de givre** (gèle les ennemis proches, qui deviennent des
+  plateformes ; ralentit les boss), **Leurre holographique** (ennemis et boss le visent 3 s),
+  **Balise de rappel** (retour instantané à la balise dans les 5 s).
+* **12 nouveaux succès** (146 au total, 383 étoiles), nouveaux gardiens dans les
+  *Statistiques* et la *Galerie*, et 6 nouvelles musiques dans le juke-box.
+
+**Nouveau dans la version 2.19.0** :
+* **Collection** (menu principal → *Collection*) : des **récompenses visuelles** débloquées par
+  les étoiles des succès — 7 **combinaisons** de Nova, 4 **traînées**, 5 **cadres d'avatar**,
+  des **titres** tirés des succès et 3 **effets de victoire**. Le *Vestiaire* les montre sur
+  Nova et les équipe ; la *Route des étoiles* présente les 17 paliers et les récompenses de
+  succès précis. Rien ne s'achète, tout se débloque aussi après coup, et rien ne change dans la
+  partie (ni simulation, ni replay, ni record). À la fin d'un niveau, une carte présente les
+  nouvelles récompenses : *Équiper* ou *Plus tard*.
+* **Musiques** : un juke-box des morceaux déjà entendus en jeu (lecture, pause, position,
+  précédent / suivant, répéter, aléatoire) ; un morceau peut devenir la musique du menu.
+* **Galerie** : les planètes atteintes (enregistrables en PNG dans le dossier *Galerie*),
+  les gardiens battus (animations, victoires et combats sans dégât) et les créatures
+  rencontrées.
+* **Lecteur de replay avancé** : vitesses ×0,25 à ×4, image par image (avant et arrière),
+  barre de temps, sauts aux points de sauvegarde, entrées du joueur ; **comparer deux
+  replays** avec un **décalage de temps** (±10 ms à ±1 s, saisie directe) ou un **recalage sur
+  un point de sauvegarde**, tableau des segments (voir `docs/GHOST_RACING.md`).
+* Corrigé : mourir contre un boss puis le finir sans être touché n'est plus annoncé « sans
+  dégât » (ni la phase reprise). Champs de texte : curseur, sélection, **Ctrl+A / C / X / V**.
+
 **Nouveau dans la version 2.18.0** :
 * **Ghost Racing** : courez contre des **fantômes** : vos propres courses (meilleur temps,
   record précédent, dernière course de cette version du niveau), le **record mondial**, les
@@ -22,7 +72,7 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
   entraînement** (un segment depuis un point de sauvegarde, répété contre les fantômes, sans
   aucun record). En fin de course : écart sur chaque fantôme et écran **Segments** (durées,
   temps cumulés, meilleurs segments, record, fantômes, historique).
-* **Succès** (menu principal → *Succès*) : **134 succès** en 12 catégories, avec 1 à 5
+* **Succès** (menu principal → *Succès*) : **134 succès** (146 depuis la 2.20) en 12 catégories, avec 1 à 5
   **étoiles** de difficulté, présentés sur une **toile d'araignée** (un secteur par catégorie,
   les étoiles du dehors vers le cœur, des fils entre les étapes, zoom et déplacement) ou en
   liste. Ils se débloquent d'après vos vraies sauvegardes ; vos étoiles s'affichent sur votre
@@ -232,8 +282,9 @@ Sur Glacior, la glace est glissante et les attaques gelées ralentissent ; sur P
 lave, les éruptions et les bombes sont mortelles.
 
 Chaque pouvoir actif coûte de l'énergie selon sa force (jauge de 150) : Dash 5, Impulsion 8,
-Onde 10, Frappe sismique 10, Tir chargé 20 (la référence), Bombe plasma 20, Bouclier 20,
-Téléportation 25, Ralenti 60 ; les pouvoirs passifs sont gratuits. Le *Guide des pouvoirs*
+Onde 10, Frappe sismique 10, Lame boomerang 12, Balise de rappel 15 (pour revenir ; la poser est
+gratuit), Tir chargé 20 (la référence), Bombe plasma 20, Bouclier 20, Téléportation 25, Leurre
+holographique 25, Nova de givre 30, Ralenti 60 ; les pouvoirs passifs sont gratuits. Le *Guide des pouvoirs*
 (menu pause) montre chaque pouvoir joué en boucle par le moteur avec son coût ; sa fiche donne
 toutes ses caractéristiques.
 
@@ -261,8 +312,9 @@ local sans compte Cloudflare. Documentation complète : [docs/online/](docs/onli
 ## Menu principal
 
 *Continuer* (dernier niveau joué) · *Campagne* (planètes et niveaux) · *Online* ·
-*Notifications* · *Succès* (toile des 134 succès et de leurs étoiles) · *Statistiques* (les
-boss : victoires, combats et phases sans dégât) · *Paramètres* · *Quitter*.
+*Notifications* · *Succès* (toile des 146 succès et de leurs étoiles) · *Collection*
+(vestiaire, route des étoiles, musiques, galerie) · *Statistiques* (les boss : victoires,
+combats et phases sans dégât) · *Paramètres* · *Quitter*.
 
 **Online** (compte requis) : **ONLINE LEVELS** (les niveaux publiés par les joueurs : Populaires,
 Plus durs, Récents, Mieux notés, Amis, Recherche, Les miens ; télécharger et jouer, noter,
@@ -350,6 +402,7 @@ L'exécutable est dans `build/bin/`. Installateur Windows : `installer\build_ins
 
 ## Documentation
 
+* [docs/COLLECTION.md](docs/COLLECTION.md) – récompenses de la collection, juke-box et galerie (2.19)
 * [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) – modules, boucle de jeu, flux de données
 * [docs/LEVEL_FORMAT.md](docs/LEVEL_FORMAT.md) – format JSON des niveaux, objets, événements
 * [docs/PACKAGE_FORMAT.md](docs/PACKAGE_FORMAT.md) – format `.cplanet` et vérifications à l'import

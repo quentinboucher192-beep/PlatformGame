@@ -1,6 +1,7 @@
 // Notification centre (Cosmic Online 2.9): new levels of followed creators, new versions of
-// favorite levels, replies and reactions to comments, comments on one's levels, new
-// followers (and, with the collaborative projects, invitations, roles and versions).
+// favorite levels, replies and reactions to comments, comments on one's levels and (2.19)
+// on one's runs of the leaderboards, new followers (and, with the collaborative projects,
+// invitations, roles and versions).
 // Repeated events merge while unread (group_key) so that a busy comment never floods the
 // list; players turn categories off in their settings. The player is always the session.
 
@@ -22,13 +23,14 @@ export const NOTIFICATION_KINDS = [
     "project_reply", //     an answer to my message in a project's chat
     "project_removed", //   an administrator removed me from a project
     "race_verified", //     someone finished first an EXTRÊME level I raced on (or created)
+    "run_comment", //       comments on one of my runs of the leaderboards (2.19)
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
 /** Filter groups of the notification screen. */
 const GROUPS: Record<string, NotificationKind[]> = {
     creators: ["new_level", "level_update", "new_follower", "race_verified"],
-    comments: ["comment_reply", "comment_reaction", "level_comment"],
+    comments: ["comment_reply", "comment_reaction", "level_comment", "run_comment"],
     projects: ["project_invite", "project_role", "project_version", "project_mention", "project_reply", "project_removed"],
 };
 const MAX_PER_PLAYER = 500;
@@ -144,6 +146,10 @@ function sentence(n: NotificationRow, d: Record<string, string>): string {
             return `${who} a vérifié ${d.title ?? ""} : premier à finir ce niveau EXTRÊME`;
         case "project_removed":
             return `Vous avez été retiré du projet ${d.project ?? ""}`;
+        case "run_comment":
+            return n.count > 1
+                ? `${n.count} nouveaux commentaires sur votre course : ${d.level_name ?? d.title ?? ""}`
+                : `${who} a commenté votre course : ${d.level_name ?? d.title ?? ""}`;
     }
 }
 

@@ -10,6 +10,7 @@
 #include "game/gameplay/Damage.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/entities/Entities.h"
+#include "game/player/Player.h"
 #include "game/records/BossStats.h"
 #include "tests/TestFramework.h"
 
@@ -138,4 +139,45 @@ TEST_CASE("boss stats: a hit spoils its phase and the whole fight, a death is a 
     d.run(30);
     const BossRecord* rd = d.stats.find("thornwarden");
     CHECK(rd && rd->defeats == 1 && rd->kills == 0);
+}
+
+TEST_CASE("boss stats: killed by the boss, back and a clean finish is not « sans dégât »") {
+    // Reported in 2.18: die against a boss, come back, finish it without a hit — the game
+    // announced « vaincu sans dégât » (and the resumed phase « sans dégât »).
+    Arena a;
+    a.run(2);
+    CHECK(a.boss() != nullptr);
+    if (!a.boss()) return;
+    a.keepPlayerSafe();
+    a.woundTo(a.boss()->def().phases[1].hpThreshold - 0.02f);  // now in the second phase
+    int phaseAtDeath = a.boss() ? a.boss()->phaseIndex() : 1;
+    a.tracker.takeEvents();
+    a.w->player().kill(*a.w);
+    // Back after the respawn; the boss keeps its wounds and its phase.
+    for (int i = 0; i < 12 && !(a.w->player().alive() && a.boss() && a.boss()->alive()); ++i) {
+        a.run(60);
+        if (!a.boss())
+            if (auto* es = dynamic_cast<EnemySpawnEntity*>(a.w->entity("boss_1"))) es->handleAction(*a.w, "activate", Json::object());
+    }
+    CHECK(a.boss() != nullptr);
+    if (!a.boss()) return;
+    // The respawn animation ends, then the fight resumes (as when the player walks back in).
+    for (int i = 0; i < 6 && a.w->player().state() == PlayerState::Respawn; ++i) a.run(60);
+    a.run(30);
+    a.keepPlayerSafe();
+    if (Enemy* e = a.boss()) e->kill(*a.w);
+    a.run(4);
+    const BossRecord* r = a.stats.find("thornwarden");
+    CHECK(r != nullptr);
+    if (!r) return;
+    CHECK(r->kills == 1);
+    CHECK(r->defeats >= 1);
+    CHECK(r->noHitKills == 0);
+    CHECK(r->phaseNoHit[static_cast<size_t>(phaseAtDeath)] == 0);  // the phase it killed me in
+    bool announced = false;
+    for (const auto& e : a.tracker.takeEvents())
+        if ((e.kind == BossFightTracker::Event::Kind::Kill && e.noHit) ||
+            (e.kind == BossFightTracker::Event::Kind::PhaseNoHit && e.phase == phaseAtDeath))
+            announced = true;
+    CHECK(!announced);
 }
