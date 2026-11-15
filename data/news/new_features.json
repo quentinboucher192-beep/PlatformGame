@@ -5,6 +5,8 @@
   "features": [
     {"id": "settings.slots.keyboard", "version": "2.25.0", "parents": ["settings.tab.keyboard"]},
     {"id": "settings.slots.gamepad", "version": "2.25.0", "parents": ["settings.tab.gamepad"]},
+    {"id": "settings.reset_one.keyboard", "version": "2.29.1", "parents": ["settings.tab.keyboard"]},
+    {"id": "settings.reset_one.gamepad", "version": "2.29.1", "parents": ["settings.tab.gamepad"]},
     {"id": "settings.tab.keyboard", "parents": ["menu.settings"]},
     {"id": "settings.tab.gamepad", "parents": ["menu.settings"]},
     {"id": "powers.guide.glide", "version": "2.25.0", "parents": ["powers.guide"]},

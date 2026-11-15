@@ -139,7 +139,6 @@ PadBinding builtInPadAlternate(Action a) {
 void InputBindings::keepOneBinding() {
     // Game commands only: the menus keep their two keys (arrows and ZQSD, Entrée and Espace…).
     for (int i = 0; i < kFirstMenuAction; ++i) {
-        const Action a = static_cast<Action>(i);
         auto& k = keys[i];
         if (k[0] == SDL_SCANCODE_UNKNOWN) k[0] = k[1];
         k[1] = SDL_SCANCODE_UNKNOWN;

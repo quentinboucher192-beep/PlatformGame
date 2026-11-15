@@ -1,4 +1,10 @@
 {
+  "2.30.0": [
+    "Pastilles « NOUVEAU » sur tout le chemin : chaque bouton qui mène à une nouveauté la porte (menu principal, onglets, catégories, cartes), même très en profondeur. Celle d'un bouton parent ne part que quand tout ce qui est nouveau en dessous a été vu.",
+    "Succès : chaque succès ajouté porte la pastille dans la liste et le panneau ; sur la toile, un point doré marque les nouveaux et la pastille apparaît près du nom en zoomant.",
+    "Collection : pastilles sur le Vestiaire, la Route des étoiles, chaque catégorie et chaque nouvelle récompense ; Guide des pouvoirs : sur chaque fiche au cadre pointillé doré et sur le bouton de page qui y mène.",
+    "Paramètres : pastille sur le nouveau bouton « Par défaut » de la 2.29.1. Statistiques des boss : le cadre de l'animation se choisit aussi au clavier et à la manette."
+  ],
   "2.29.1": [
     "Paramètres › Clavier / souris et Manette : une seule touche (ou un seul bouton) par commande, en une colonne ; les secondes touches cachées sont retirées, seule la touche affichée fonctionne. Les flèches du clavier et la croix de la manette déplacent toujours Nova.",
     "Un bouton « Par défaut » sur chaque ligne remet cette commande seule à sa touche d'origine ; « Réinitialiser » remet toutes les touches."

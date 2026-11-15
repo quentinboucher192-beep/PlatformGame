@@ -210,7 +210,12 @@ private:
             st.enabled = !same;
             const std::string label = "Par défaut";
             st.fontSize = ui.fitFont(label, FontFace::Bold, 16, std::max(ui.s(30), rb.w - ui.s(14)), 0.6f);
-            if (ui.button(std::string(pad ? "pr" : "kr") + actionId(a), rb, label, st) && !same) {
+            const std::string resetId = std::string(pad ? "pr" : "kr") + actionId(a);
+            const bool resetClicked = ui.button(resetId, rb, label, st);
+            // « NOUVEAU » (2.29.1): seen as soon as any « Par défaut » gets the focus or a click (a
+            // disabled one too); the pill itself only on the first row, not on every line.
+            ui.newBadge(resetId, rb, pad ? "settings.reset_one.gamepad" : "settings.reset_one.keyboard", a == Action::PowerSlot1, true);
+            if (resetClicked && !same) {
                 if (pad) {
                     const PadBinding def = d.pad[i][0];
                     for (int o = 0; o < kFirstMenuAction; ++o)

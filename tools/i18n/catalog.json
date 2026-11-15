@@ -5205,6 +5205,12 @@
    ]
   },
   {
+   "fr": "Collection : pastilles sur le Vestiaire, la Route des étoiles, chaque catégorie et chaque nouvelle récompense ; Guide des pouvoirs : sur chaque fiche au cadre pointillé doré et sur le bouton de page qui y mène.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Collection en ligne : le cadre d'avatar et le titre équipés vous suivent dans les CLASSEMENTS et sur votre profil public, qui montre aussi votre tenue (combinaison, traînée, cadre, effet de victoire).",
    "where": [
     "data/news/changelog.json"
@@ -18555,6 +18561,12 @@
    ]
   },
   {
+   "fr": "Paramètres : pastille sur le nouveau bouton « Par défaut » de la 2.29.1. Statistiques des boss : le cadre de l'animation se choisit aussi au clavier et à la manette.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Paramètres de confidentialité enregistrés.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
@@ -18844,6 +18856,12 @@
   },
   {
    "fr": "Pastille « NOUVEAU » sur chaque nouveauté d'une mise à jour (et sur le menu qui y mène) ; elle part dès que l'élément a le focus ou un clic.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Pastilles « NOUVEAU » sur tout le chemin : chaque bouton qui mène à une nouveauté la porte (menu principal, onglets, catégories, cartes), même très en profondeur. Celle d'un bouton parent ne part que quand tout ce qui est nouveau en dessous a été vu.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -25099,6 +25117,12 @@
   },
   {
    "fr": "Succès : 134 succès en 12 catégories avec des étoiles de difficulté (344 étoiles), sur une toile d'araignée avec zoom (menu principal → Succès) ou en liste. Les étoiles apparaissent sur votre profil en ligne, comme déclarées par le jeu.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Succès : chaque succès ajouté porte la pastille dans la liste et le panneau ; sur la toile, un point doré marque les nouveaux et la pastille apparaît près du nom en zoomant.",
    "where": [
     "data/news/changelog.json"
    ]
