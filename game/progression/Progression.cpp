@@ -5,6 +5,7 @@
 
 #include "engine/core/Paths.h"
 #include "game/content/ContentDatabase.h"
+#include "game/records/Records.h"
 #include "saves/SaveFile.h"
 
 namespace cosmic {
@@ -55,6 +56,11 @@ void Progression::load() {
 }
 
 bool Progression::save() const { return progressFile().save(progressPath(), toJson()); }
+
+bool Progression::noteRun(const RunResult& run) {
+    if (run.training || !run.completed || run.levelId.empty()) return false;
+    return completed_.insert(run.levelId).second;
+}
 
 bool Progression::planetCompleted(const PlanetData& p, const ContentDatabase& content) const {
     auto levels = content.levelsForPlanet(p.id);

@@ -1644,7 +1644,8 @@
   {
    "fr": "Arène",
    "where": [
-    "game/gameplay/entities/ZoneEntities.cpp"
+    "game/gameplay/entities/ZoneEntities.cpp",
+    "ui/screens/BossTrainingScene.cpp"
    ]
   },
   {
@@ -1946,6 +1947,7 @@
    "where": [
     "game/online/HttpTransportNone.cpp",
     "game/online/OnlineService.h",
+    "ui/screens/BossTrainingScene.cpp",
     "ui/screens/PlanetMapScene.cpp"
    ]
   },
@@ -3114,6 +3116,12 @@
    ]
   },
   {
+   "fr": "BOSS VAINCU",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Boss vaincu",
    "where": [
     "game/levels/EventSystem.cpp"
@@ -3678,9 +3686,21 @@
    ]
   },
   {
+   "fr": "Ce boss n'est placé dans aucun niveau du jeu : pas d'arène où s'entraîner.",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Ce boss n'est placé dans aucun niveau du jeu.",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce boss n'existe plus.",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
    ]
   },
   {
@@ -4165,6 +4185,12 @@
    "fr": "Changer de planète",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Changer les réglages",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
    ]
   },
   {
@@ -6597,6 +6623,12 @@
    ]
   },
   {
+   "fr": "Cœurs",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Cœurs maximum en plus",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -6607,6 +6639,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Dans aucun niveau du jeu : pas d'arène",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -7784,6 +7822,12 @@
    ]
   },
   {
+   "fr": "DÉFAITE",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Défaite",
    "where": [
     "ui/screens/CreatureArt.cpp"
@@ -7885,6 +7929,12 @@
    ]
   },
   {
+   "fr": "Dégâts reçus",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Dégâts reçus : ×{0}   —   Vies : illimitées",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
@@ -7955,6 +8005,24 @@
    "fr": "Démiurge",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Départ : devant son arène",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Départ : le point de contrôle avant son arène",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Départ : point de contrôle « {0} »",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
    ]
   },
   {
@@ -8170,6 +8238,12 @@
    "fr": "Embuscades (vagues battues)",
    "where": [
     "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
+   "fr": "Emplacements de pouvoirs",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
    ]
   },
   {
@@ -8589,8 +8663,15 @@
    ]
   },
   {
+   "fr": "ENTRAÎNEMENT",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Entraînement",
    "where": [
+    "ui/screens/BossStatsScene.cpp",
     "ui/screens/GhostSetupScene.cpp"
    ]
   },
@@ -8598,6 +8679,19 @@
    "fr": "ENTRAÎNEMENT · aucun record · R / Vue : recommencer",
    "where": [
     "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Entraînement — ne compte pas pour les succès ni les statistiques",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp",
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Entrer dans l'arène",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
    ]
   },
   {
@@ -10768,7 +10862,8 @@
   {
    "fr": "Hors campagne",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "ui/screens/BossStatsScene.cpp",
+    "ui/screens/BossTrainingScene.cpp"
    ]
   },
   {
@@ -15708,6 +15803,12 @@
    ]
   },
   {
+   "fr": "Ne compte pas pour les succès ni les statistiques",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "Ne pas indiquer de pays",
    "where": [
     "ui/screens/OnlineAccountScene.cpp",
@@ -16008,7 +16109,8 @@
   {
    "fr": "niveau {0}",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "ui/screens/BossStatsScene.cpp",
+    "ui/screens/BossTrainingScene.cpp"
    ]
   },
   {
@@ -17751,6 +17853,12 @@
    ]
   },
   {
+   "fr": "Pas d'arène : rien à régler.",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Pas d'avatar personnalisé.",
    "where": [
     "server/src/players.ts"
@@ -18135,7 +18243,8 @@
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/enemies/Enemy.cpp",
     "game/enemies/EnemyDefinition.cpp",
-    "game/enemies/EnemyDefinition.h"
+    "game/enemies/EnemyDefinition.h",
+    "ui/screens/BossTrainingScene.cpp"
    ]
   },
   {
@@ -18143,11 +18252,24 @@
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/enemies/Enemy.cpp",
+    "game/gameplay/BossTraining.cpp",
     "game/gameplay/entities/HazardEntities.cpp",
     "game/gameplay/entities/PlatformEntities.cpp",
     "game/levels/EventSystem.cpp",
     "game/levels/ObjectTypes.cpp",
     "game/planets/PlanetData.cpp"
+   ]
+  },
+  {
+   "fr": "Phase atteinte",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "PHASE RÉUSSIE",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
    ]
   },
   {
@@ -18159,9 +18281,22 @@
    ]
   },
   {
+   "fr": "Phase {0} : sans nom",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Phase {0} : {1}",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Phases",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "ui/screens/BossStatsScene.cpp",
+    "ui/screens/BossTrainingScene.cpp"
    ]
   },
   {
@@ -19292,7 +19427,8 @@
    "where": [
     "data/achievements/achievements.json",
     "editors/enemy_editor/EnemyEditorProperties.cpp",
-    "saves/HudLayout.cpp"
+    "saves/HudLayout.cpp",
+    "ui/screens/BossTrainingScene.cpp"
    ]
   },
   {
@@ -20093,6 +20229,12 @@
    ]
   },
   {
+   "fr": "R / Vue : recommencer",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
    "fr": "R1",
    "where": [
     "engine/input/InputTypes.cpp"
@@ -20495,6 +20637,18 @@
    ]
   },
   {
+   "fr": "Recherche de son arène dans les niveaux…",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Recherche de son arène…",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "Recherche des fantômes en ligne…",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
@@ -20533,6 +20687,7 @@
   {
    "fr": "Recommencer",
    "where": [
+    "ui/screens/BossTrainingScene.cpp",
     "ui/screens/PauseScene.cpp",
     "ui/screens/ResultsScene.cpp"
    ]
@@ -21009,6 +21164,12 @@
    ]
   },
   {
+   "fr": "Rencontrez-le d'abord dans son niveau : l'entraînement s'ouvre ensuite.",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Rend transparents les décors avant au-dessus de la zone et compte comme secret trouvé.",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -21353,6 +21514,7 @@
     "engine/input/InputTypes.cpp",
     "ui/screens/AchievementsScene.cpp",
     "ui/screens/BossStatsScene.cpp",
+    "ui/screens/BossTrainingScene.cpp",
     "ui/screens/CollectionScene.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/OnlineAccountScene.cpp",
@@ -22646,8 +22808,8 @@
   {
    "fr": "secrets",
    "where": [
-    "game/records/Records.cpp",
-    "ui/screens/GameScene.cpp"
+    "game/gameplay/RunCounters.cpp",
+    "game/records/Records.cpp"
    ]
   },
   {
@@ -23186,6 +23348,12 @@
    "fr": "Son de télégraphie",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Son niveau ne peut pas être lu.",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
    ]
   },
   {
@@ -24604,6 +24772,12 @@
    ]
   },
   {
+   "fr": "Temps du combat",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Temps illimité",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
@@ -25381,6 +25555,12 @@
    ]
   },
   {
+   "fr": "Tous les emplacements sont pris : retirez d'abord un pouvoir, ou ajoutez un emplacement.",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "tous les objets ne sont pas récupérés",
    "where": [
     "server/src/records.ts"
@@ -25468,6 +25648,12 @@
    "fr": "Toutes les dépendances sont présentes ({0} ennemis, {1} pouvoirs)",
    "where": [
     "packaging/PackageImporter.cpp"
+   ]
+  },
+  {
+   "fr": "Toutes les phases",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
    ]
   },
   {
@@ -26263,6 +26449,12 @@
    "fr": "Un pouvoir différent porte déjà cet identifiant",
    "where": [
     "packaging/PackageImporter.cpp"
+   ]
+  },
+  {
+   "fr": "Un pouvoir sur la même touche qu'un autre le remplace.",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
    ]
   },
   {
@@ -28493,9 +28685,27 @@
    ]
   },
   {
+   "fr": "{0}  ·  Phase {1}",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0}  ·  Phase {1} : {2}",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "{0}  ·  rejoint {1}",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0}  ·  toutes les phases",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
    ]
   },
   {
@@ -28974,6 +29184,18 @@
    "fr": "{0} compris",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} cœur",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} cœurs",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
    ]
   },
   {
@@ -29781,6 +30003,18 @@
    ]
   },
   {
+   "fr": "{0}. Phase {1} · {2} % de vie",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0}. {1} · {2} % de vie",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "{0}/{1} niveaux · {2}/{3} planètes terminés",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
@@ -29877,6 +30111,12 @@
    ]
   },
   {
+   "fr": "« {0} » remplace « {1} » (même touche).",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "±5 s",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -29940,6 +30180,12 @@
    "fr": "à obtenir",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "À rencontrer d'abord dans son niveau",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {

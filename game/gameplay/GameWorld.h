@@ -105,6 +105,11 @@ public:
         rng_.reseed(seed);
     }
     uint64_t gameplaySeed() const { return seed_; }
+    /// A training run (boss statistics → Entraînement): nothing it does counts. Every recorder
+    /// checks it (boss statistics, achievement counters, records, progression, creatures met).
+    /// Never read by the simulation.
+    void setTraining(bool on) { training_ = on; }
+    bool training() const { return training_; }
     uint64_t gameplayRngState() const { return rng_.state(); }
 
     std::vector<std::unique_ptr<LevelEntity>>& entities() { return entities_; }
@@ -285,6 +290,7 @@ private:
     Random rng_{0xC0FFEE};
     Random fxRng_{0xF1F1F1};
     uint64_t seed_ = 0xC0FFEE;
+    bool training_ = false;
     uint32_t nextEnemyUid_ = 1;
     int dropCounter_ = 0;
 

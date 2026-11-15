@@ -24,6 +24,10 @@
 namespace cosmic {
 
 class GameServices;
+class GameScene;
+
+/// Boss training: the end of a training run (Recommencer, Changer les réglages, Retour).
+std::unique_ptr<Scene> makeBossTrainingEnd(GameServices& g, GameScene& game, const BossTrainingResult& result);
 
 /// Plays a level: simulation, rendering, HUD, pause menu and end of level.
 class GameScene : public Scene {
@@ -127,6 +131,14 @@ private:
     // Achievements: what this run adds to the lifetime counters (once, at its end).
     void noteAchievementStats(bool completed, const RecordUpdate* upd);
     bool statsNoted_ = false;
+    // Boss training (PlayOptions::bossTraining): ends when the phase chosen (or the boss) is
+    // beaten, or at the player's first death; then its end screen. Never a record.
+    void updateBossTraining();
+    void endBossTraining(bool won);
+    float fightStart_ = -1.0f;
+    int trainingPhase_ = 0;
+    std::optional<BossTrainingResult> bossTrainingEnd_;
+    float bossTrainingDelay_ = 0.0f;
     // Training (Ghost Racing): a segment from a checkpoint, again and again, never a record.
     void startTraining();
     void trainingSegmentDone();

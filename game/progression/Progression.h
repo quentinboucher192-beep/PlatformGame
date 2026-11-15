@@ -11,6 +11,7 @@ namespace cosmic {
 class ContentDatabase;
 struct PlanetData;
 struct LevelEntry;
+struct RunResult;
 
 /// "0 min", "45 min", "3 h 05 min": time played, in hours and minutes.
 std::string playTimeText(double seconds);
@@ -26,6 +27,9 @@ public:
 
     bool levelCompleted(const std::string& levelId) const { return completed_.count(levelId) > 0; }
     void markCompleted(const std::string& levelId) { completed_.insert(levelId); }
+    /// A finished run completes its level, never a training run (RunResult::training).
+    /// Returns true when the level was not completed before.
+    bool noteRun(const RunResult& run);
     bool planetUnlocked(const PlanetData& p, const ContentDatabase& content) const;
     bool planetCompleted(const PlanetData& p, const ContentDatabase& content) const;
     bool levelUnlocked(const LevelEntry& level, const ContentDatabase& content) const;

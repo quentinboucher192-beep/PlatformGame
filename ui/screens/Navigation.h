@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "engine/core/Scene.h"
+#include "game/gameplay/BossTraining.h"
 #include "game/ghost/GhostStore.h"
 #include "game/levels/LevelData.h"
 
@@ -44,6 +45,8 @@ struct PlayOptions {
     std::string trainingCheckpoint;
     std::string trainingEnd;                 // the checkpoint ending the segment ("" = the exit)
     std::vector<std::string> trainingPowers; // tablets picked up before the start, in route order
+    /// Boss training (boss statistics → Entraînement): set up with the world, never recorded.
+    std::optional<BossTrainingSetup> bossTraining;
 };
 
 /// A finished run's segments (results screen → Segments): this run, my best segments, my
@@ -107,6 +110,8 @@ std::unique_ptr<Scene> makeNewRewards(GameServices& g);
 /// Main menu → Statistiques: the bosses (victories, without being hit, per phase, how they
 /// look, where to fight them). `bossId`: the boss selected on arrival.
 std::unique_ptr<Scene> makeBossStats(GameServices& g, const std::string& bossId = {});
+/// Boss statistics → Entraînement: hearts, power slots, powers and phase, then the boss's arena.
+std::unique_ptr<Scene> makeBossTraining(GameServices& g, const std::string& bossId);
 /// Help: every power of the player with a live example (pushed over the current screen).
 std::unique_ptr<Scene> makePowerGuide(GameServices& g, int page = 0);
 std::unique_ptr<Scene> makeLevelEditor(GameServices& g, const std::string& levelId);

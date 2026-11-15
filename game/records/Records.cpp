@@ -196,6 +196,7 @@ std::optional<LevelRecord> RecordsManager::invalidateBest(const std::string& lev
 
 RecordUpdate RecordsManager::submit(const RunResult& run) {
     RecordUpdate u;
+    if (run.training) return u;  // a training run never makes a record (nor an attempt)
     LevelRecord& r = getOrCreate(run.levelId);
     u.previousBestTime = r.bestTime;
     u.previousBestScore = r.bestScore;

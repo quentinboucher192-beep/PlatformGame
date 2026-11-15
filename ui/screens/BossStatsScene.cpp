@@ -3,15 +3,18 @@
 // hit, and for each phase how many times it was beaten and beaten without a hit. The boss is
 // shown with its own animations (once beaten, as in the Collection's gallery: a silhouette
 // before), with every place of the game's levels where it can be fought (read from the levels
-// on a worker thread, game/content/CreaturePlaces.h); a place opens its level's page.
+// on a worker thread, game/content/CreaturePlaces.h); a place opens its level's page. A boss
+// met can be trained against (« Entraînement », ui/screens/BossTrainingScene.cpp).
 
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
 
+#include "engine/core/I18n.h"
 #include "game/GameServices.h"
 #include "game/content/CreaturePlaces.h"
+#include "game/gameplay/BossTraining.h"
 #include "game/gameplay/BossBadge.h"
 #include "ui/screens/CreatureArt.h"
 #include "ui/screens/MenuBackground.h"
@@ -268,7 +271,9 @@ private:
         float bh = p.bottom() - ui.s(22) - y;
         float colGap = ui.s(28);
         float leftW = std::floor((w - colGap) * 0.44f);
-        drawPhases({x, y, leftW, bh}, d, r, rec && r.fights > 0);
+        const float trainH = ui.s(60);
+        drawPhases({x, y, leftW, bh - trainH - ui.s(14)}, d, r, rec && r.fights > 0);
+        drawTraining({x, y + bh - trainH, leftW, trainH}, d, rec);
         drawPlaces({x + leftW + colGap, y, w - leftW - colGap, bh}, d);
     }
 
@@ -353,6 +358,51 @@ private:
         if (!met)
             ui.labelWrapped("Pas encore affronté : ses statistiques commenceront au premier combat.", {area.x, y + ui.s(6)}, area.w, fz(ui, 16),
                             ui.theme().textDim);
+    }
+
+    /// « Entraînement »: for a boss already met (as the gallery, nothing is given away before);
+    /// otherwise the reason, and nothing starts.
+    void drawTraining(const Rect& area, const EnemyDefinition& d, const BossRecord* rec) {
+        UIContext& ui = g_.ui;
+        std::string reason;
+        if (!atlas_) reason = "Recherche de son arène…";
+        else if (!bossTrainingPlace(*atlas_, g_.content, d.id)) reason = "Dans aucun niveau du jeu : pas d'arène";
+        else if (!g_.collection.met.count(d.id) && !(rec && rec->fights > 0)) reason = "À rencontrer d'abord dans son niveau";
+        UIContext::ButtonStyle st;
+        st.enabled = reason.empty();
+        float bw = std::min(ui.s(250), area.w * 0.48f);
+        if (ui.button("train", {area.x, area.y, bw, area.h}, "Entraînement", st) && reason.empty())
+            g_.app.switchScene(makeBossTraining(g_, d.id), 0.3f);
+        std::string note = reason.empty() ? "Ne compte pas pour les succès ni les statistiques" : reason;
+        float tx = area.x + bw + ui.s(16), room = area.right() - tx;
+        if (room < ui.s(60)) return;
+        // One or two lines, centred on the button.
+        float f = fz(ui, 15);
+        float one = ui.text().measure(note, FontFace::Body, ui.s(f)).x;
+        Color c = reason.empty() ? ui.theme().textDim : ui.theme().warm;
+        if (one <= room) {
+            ui.label(note, {tx, area.center().y}, f, c, Align::Left, FontFace::Body, VAlign::Middle);
+            return;
+        }
+        // Two lines, cut at the space that balances them best, each fitted to the room (the text
+        // as displayed, translated first: its halves are drawn as they are).
+        const std::string shown = i18n::tr(note);
+        i18n::Verbatim asShown;
+        std::string a = shown, b;
+        float best = 1e30f;
+        for (size_t i = shown.find(' '); i != std::string::npos; i = shown.find(' ', i + 1)) {
+            std::string l1 = shown.substr(0, i), l2 = shown.substr(i + 1);
+            float wmax = std::max(ui.text().measure(l1, FontFace::Body, ui.s(f)).x, ui.text().measure(l2, FontFace::Body, ui.s(f)).x);
+            if (wmax < best) {
+                best = wmax;
+                a = l1;
+                b = l2;
+            }
+        }
+        float f2 = std::min(fit(ui, a, FontFace::Body, f, room), fit(ui, b, FontFace::Body, f, room));
+        float lineH = ui.s(f2) * 1.3f;
+        ui.label(ui.elide(a, FontFace::Body, f2, room), {tx, area.center().y - lineH * 0.5f}, f2, c, Align::Left, FontFace::Body, VAlign::Middle);
+        ui.label(ui.elide(b, FontFace::Body, f2, room), {tx, area.center().y + lineH * 0.5f}, f2, c, Align::Left, FontFace::Body, VAlign::Middle);
     }
 
     /// Every place of the game's levels where it can be fought; each opens its level's page.
