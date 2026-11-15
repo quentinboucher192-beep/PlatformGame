@@ -23,6 +23,27 @@ Catalogue : `data/cosmetics/cosmetics.json` (catégories, éléments, paliers).
 * À la fin d'un niveau, si de nouvelles récompenses sont débloquées, une carte les présente :
   on coche ce qu'on équipe (une seule par catégorie), *Équiper* ou *Plus tard*.
 
+### En ligne (2.21)
+
+Connecté à Cosmic Online, le jeu envoie ce qui est équipé (`PUT /api/v1/players/me/cosmetics`,
+les identifiants des cinq éléments) après la liste des succès, puis à chaque *Équiper* ; en cas
+d'échec il réessaie une minute plus tard ; hors ligne ou sans compte, rien n'est envoyé et le
+jeu reste entièrement jouable. Le serveur revérifie chaque élément avec sa copie du catalogue
+(`server/src/cosmeticCatalog.json`, régénérée par `node scripts/cosmetics-catalog.mjs`) et les
+succès déclarés : un élément inconnu ou verrouillé devient l'élément de base.
+
+* **Classements** : le cadre autour de l'avatar et le titre sous le pseudonyme (plus petit et
+  atténué). Un profil masqué garde le cadre simple, sans titre.
+* **Profil** : le cadre, le titre sous le nom et un bloc *Tenue* (Nova dans sa combinaison,
+  noms de la combinaison, de la traînée, du cadre et de l'effet de victoire). Rien de cela pour
+  un profil masqué ; son propre profil montre ce qu'on porte en ligne.
+* **Fantômes** : un fantôme porte la combinaison de son joueur, toujours teintée de sa couleur
+  de fantôme. Les siens (meilleur temps, précédent, dernière course) portent la combinaison
+  équipée ; un fantôme lancé depuis un classement, celle de l'entrée du classement (une
+  apparence que le jeu connaît, sinon la combinaison standard). Affichage seulement : ni la
+  simulation ni le format des replays ne changent (la description `.json` du fantôme garde
+  `suit`).
+
 ## Musiques
 
 Liste : `data/music/tracks.json`. Un morceau devient écoutable la **première fois qu'il est

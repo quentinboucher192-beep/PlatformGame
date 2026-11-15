@@ -123,6 +123,24 @@ void OnlineService::setAchievements(std::vector<std::string> ids) {
     achievements_ = std::move(ids);
     achievementsSentFor_.clear();  // to send again
     achievementsTimer_ = 5.0f;
+    ++achievementsGen_;
+}
+
+void OnlineService::setCosmetics(std::map<std::string, std::string> equipped) {
+    if (equipped == cosmetics_) return;
+    cosmetics_ = std::move(equipped);
+    cosmeticsSentFor_.clear();  // to send again
+    cosmeticsTimer_ = 3.0f;     // a few « Équiper » in a row: one request
+    ++cosmeticsGen_;
+}
+
+Json OnlineService::cosmeticsBody(const std::map<std::string, std::string>& equipped) {
+    Json body = Json::object();
+    for (const char* c : {"suit", "trail", "frame", "title", "victory"}) {
+        auto it = equipped.find(c);
+        body[c] = it == equipped.end() ? std::string() : it->second;
+    }
+    return body;
 }
 
 void OnlineService::update(float dt) {
@@ -181,9 +199,29 @@ void OnlineService::update(float dt) {
             achievementsTimer_ = 60.0f;  // after a failure: a minute later
             achievementsBusy_ = true;
             std::string who = tokens_.playerId;
-            send("PUT", "/api/v1/players/me/achievements", {{"unlocked", achievements_}}, [this, who](const ApiResult& r) {
+            unsigned gen = achievementsGen_;
+            send("PUT", "/api/v1/players/me/achievements", {{"unlocked", achievements_}}, [this, who, gen](const ApiResult& r) {
                 achievementsBusy_ = false;
-                if (r.ok) achievementsSentFor_ = who;
+                if (!r.ok || gen != achievementsGen_) return;
+                achievementsSentFor_ = who;
+                // The server checks the items worn against these achievements: sent again.
+                cosmeticsSentFor_.clear();
+                cosmeticsTimer_ = std::min(cosmeticsTimer_, 1.0f);
+            });
+        }
+    }
+    // What the player wears (2.21): after the achievements of this player, then on change.
+    if (netState_ == OnlineState::Online && loggedIn() && !cosmetics_.empty() && !cosmeticsBusy_ &&
+        achievementsSentFor_ == tokens_.playerId && cosmeticsSentFor_ != tokens_.playerId) {
+        cosmeticsTimer_ -= dt;
+        if (cosmeticsTimer_ <= 0.0f) {
+            cosmeticsTimer_ = 60.0f;  // after a failure: a minute later
+            cosmeticsBusy_ = true;
+            std::string who = tokens_.playerId;
+            unsigned gen = cosmeticsGen_;
+            send("PUT", "/api/v1/players/me/cosmetics", cosmeticsBody(cosmetics_), [this, who, gen](const ApiResult& r) {
+                cosmeticsBusy_ = false;
+                if (r.ok && gen == cosmeticsGen_) cosmeticsSentFor_ = who;
             });
         }
     }

@@ -156,6 +156,7 @@ de `wrangler.jsonc`, plafonnée à 1 000) multiplie toutes les limites.
 | `level_rate` | 60 | 1 h | joueur | `PUT` / `DELETE /levels/{id}/rating` (notes des niveaux de la campagne) |
 | `follow` | 60 | 1 h | joueur | `POST /players/{id}/follow` |
 | `playtime` | 40 | 1 h | joueur | `POST /players/me/playtime` |
+| `cosmetics` | 60 | 1 h | joueur | `PUT /players/me/cosmetics` (tenue portée en ligne) |
 | `project_create` / `project_invite` | 10 / 30 | 1 h | joueur | `POST /projects`, `POST /projects/{id}/invites` |
 | `project_join` | 20 | 1 h | joueur | `POST /projects/join`, `POST /projects/{id}/join` |
 | `project_save` | 120 | 1 h | joueur | `PUT /projects/{id}/content` |
@@ -170,6 +171,7 @@ d'administration n'ont pas de limite propre.
 |---|---|
 | Corps JSON (par défaut) | 8 Kio (8 192 octets) |
 | `POST /records/submit` | 4 Kio |
+| `PUT /players/me/cosmetics` | 1 Kio |
 | `POST /admin/levels` | 256 Kio, 1 à 500 niveaux |
 | Avatar `PUT /players/me/avatar` | 64 Kio, PNG carré 32 à 256 px, profondeur 8 bits |
 | Replay `PUT /records/{recordId}/replay` | 1 Mio compressé, 72 o à 4 Mio décompressé |
@@ -540,7 +542,8 @@ Réponse d'un **classement de niveau** :
     "is_current": true, "ranking_enabled": true, "category": "ANY_PERCENT", "mode": "STANDARD",
     "period": "all", "week_start": null, "week_end": null, "country_code": null, "friends": false },
   "entries": [{ "rank": 1, "world_rank": 1,
-    "player": { "id": "…", "username": "NovaRider", "avatar": "avatar_07", "avatar_url": null, "country_code": "FR" },
+    "player": { "id": "…", "username": "NovaRider", "avatar": "avatar_07", "avatar_url": null, "country_code": "FR",
+      "frame": "gold", "title": { "id": "title_explorateur", "name": "Explorateur" }, "suit": "givre" },
     "time_ms": 61000, "record_id": "…", "achieved_at": "…", "has_replay": true, "is_me": false, "comments": 3 }],
   "me": { "entry": null, "pending": { "record_id": "…", "time_ms": 59000, "created_at": "…",
     "note": "En attente du replay.", "status": "PENDING" } } },
@@ -549,6 +552,9 @@ Réponse d'un **classement de niveau** :
 `rank` = position dans ce classement (filtré), `world_rank` = position mondiale ;
 `has_replay` = un replay vérifié existe ; `comments` (2.19) = nombre de commentaires visibles
 de la course (`record_id`), `null` quand son auteur a masqué son profil (§8.9 decies) ;
+`player.frame`, `player.title` et `player.suit` (2.21) = la tenue du joueur (§8.9 undecies),
+absents quand il a masqué son profil, dans tous les classements (niveau, pays, amis, semaine,
+planète, points cosmiques, course à la vérification) ;
 `me` vaut `null` en anonyme, sinon la ligne du lecteur (même hors de la page) et son meilleur
 temps en attente. Erreurs communes : 400
 (paramètre invalide), 401 (jeton envoyé mais invalide), 403 `ACCOUNT_SUSPENDED`, 404
@@ -1163,6 +1169,44 @@ disparaît avec elle (suppression du compte de son auteur). Les notifications de
 (`comment_reply`, `comment_reaction`, `run_comment`) portent `data.thread`
 (`level:<id>` ou `run:<record>`), `data.level_id` et, pour une course, `data.record_id` et
 `data.level_name`, pour que le jeu ouvre le bon écran.
+
+### 8.9 undecies Tenue en ligne : cadre, titre, combinaison (2.21)
+
+Ce que le joueur porte dans la Collection du jeu le suit en ligne : le **cadre d'avatar** et le
+**titre** sur son profil et dans les classements, la **combinaison** sur son profil et sur ses
+fantômes (les fantômes d'un classement la reprennent).
+
+`PUT /api/v1/players/me/cosmetics` (authentifié, joueur de la session uniquement, 60 fois par
+heure, corps de 1 Kio au plus) — corps `{"suit": "suit_givre", "trail": "trail_comet",
+"frame": "frame_gold", "title": "title_explorateur", "victory": "victory_classic"}` : les
+cinq identifiants d'éléments, obligatoires (`[a-z0-9_]`, 64 caractères au plus ; aucun autre
+champ accepté, jamais d'identifiant de joueur). Le serveur ne fait pas confiance au jeu : chaque
+identifiant doit exister **dans sa catégorie** dans sa copie du catalogue
+(`src/cosmeticCatalog.json`, générée depuis `data/cosmetics/cosmetics.json` par
+`scripts/cosmetics-catalog.mjs`) et être débloqué par les succès **déclarés** du joueur
+(§8.9 nonies, table `player_achievements`) : étoiles recomptées par le serveur ≥ seuil,
+`"all"` = toutes les étoiles du catalogue des succès du serveur, ou succès requis dans la liste
+déclarée ; les éléments par défaut sont toujours permis. Un identifiant inconnu (jeu plus
+récent), d'une autre catégorie ou verrouillé est **remplacé par l'élément par défaut** de la
+catégorie avant d'être enregistré, jamais conservé tel quel. Réponse : la tenue effective,
+`{"cosmetics": {"suit": {id, look, name}, "trail": {…}, "frame": {…}, "title": {…},
+"victory": {…}}}` (`look` : ce que le jeu dessine, `name` : nom du catalogue du serveur). Le
+jeu envoie sa tenue après ses succès, puis à chaque changement. Erreurs : 400, 401, 413, 429.
+
+Quand `PUT /players/me/achievements` déclare moins de succès, la tenue enregistrée est
+revérifiée : ce qui n'est plus débloqué redevient l'élément par défaut (l'inverse n'est jamais
+automatique : le jeu renvoie son choix).
+
+`GET /api/v1/players/{id}` ajoute `cosmetics` (même objet ; éléments par défaut pour un joueur
+qui n'a rien envoyé ; `null` pour un profil masqué vu par un autre joueur). Chaque entrée de
+classement (§8.4, et `ranking` de la course à la vérification) ajoute à `player` :
+`frame` (apparence du cadre : `simple`, `bronze`, `silver`, `gold`, `platinum`,
+`constellation`), `title` (`{id, name}` ou `null` sans titre) et `suit` (apparence de la
+combinaison : `standard`, `givre`…), **seulement si le profil n'est pas masqué** (sinon aucun
+de ces champs : le jeu dessine alors le cadre simple, sans titre). Les titres affichés sont
+toujours des noms du catalogue du serveur, jamais un texte du client. La tenue figure dans
+l'export des données (`cosmetics`) et disparaît avec le compte (table `player_cosmetics`,
+migration 0039).
 
 ### 8.9 bis Installateurs du jeu (notification « nouvelle version »)
 

@@ -68,34 +68,6 @@ void drawNova(GameServices& g, const std::string& suitLook, const std::string& c
     g.app.renderer().drawTexture(*tex, &src, dst, tint);
 }
 
-/// An avatar frame (ring) of a given look around `center`.
-void drawFrameRing(Renderer& r, Vec2 center, float radius, const std::string& look, float scale) {
-    auto ring = [&](float rad, float th, Color c) { r.drawRing(center, rad, th * scale, c); };
-    if (look == "bronze") {
-        ring(radius + 2 * scale, 5, Color{205, 127, 50, 255});
-        ring(radius + 6 * scale, 2, Color{59, 36, 16, 255});
-    } else if (look == "silver") {
-        r.drawGlow(center, radius + 14 * scale, Color{200, 210, 225, 90});
-        ring(radius + 2 * scale, 5, Color{200, 210, 225, 255});
-        ring(radius + 6 * scale, 2, Color{43, 50, 64, 255});
-    } else if (look == "gold") {
-        r.drawGlow(center, radius + 20 * scale, Color{255, 214, 90, 120});
-        ring(radius + 2 * scale, 5, kGold);
-        ring(radius + 6 * scale, 2, Color{74, 58, 16, 255});
-    } else if (look == "platinum") {
-        r.drawGlow(center, radius + 24 * scale, Color{170, 240, 255, 140});
-        ring(radius + 2 * scale, 5, Color{170, 240, 255, 255});
-        ring(radius + 6 * scale, 2, Color{27, 59, 70, 255});
-    } else if (look == "constellation") {
-        r.drawGlow(center, radius + 30 * scale, Color{180, 140, 255, 150});
-        ring(radius + 2 * scale, 5, Color{255, 255, 255, 255});
-        ring(radius + 7 * scale, 3, Color{57, 240, 216, 255});
-        ring(radius + 11 * scale, 3, Color{180, 140, 255, 255});
-    } else {
-        ring(radius + 1.5f * scale, 3, Color{57, 240, 216, 255});
-    }
-}
-
 /// A title as a gold chip centred on `c` (its size grows with the text).
 void drawTitleChip(UIContext& ui, Vec2 c, const std::string& text, float size, bool on = true) {
     if (text.empty()) return;
@@ -327,7 +299,7 @@ private:
         float fr = ui.s(40);
         Vec2 fc{prev.right() - fr - ui.s(30), ground - fr - ui.s(28)};
         online_.drawAvatar("avatar_01", "", Rect::fromCenter(fc, {fr * 2, fr * 2}));
-        drawFrameRing(r, fc, fr, lookOf("frame"), ui.s(1));
+        drawAvatarFrame(r, fc, fr, lookOf("frame"), ui.s(1), t_);
         ui.label("cadre", {fc.x, fc.y + fr + ui.s(18)}, fz(ui, 13), ui.theme().textDim, Align::Center, FontFace::Body, VAlign::Middle);
 
         // Detail of the selected item.
@@ -350,6 +322,7 @@ private:
                     g_.collection.equip(catId, sel->id);
                     g_.collection.markAnnounced(sel->id);
                     g_.collection.save();
+                    g_.syncCosmetics();
                     g_.uiSound("ui_confirm", 0.6f);
                 }
                 ui.label(ui.elide(req, FontFace::Body, fz(ui, 15), det.right() - dx - ui.s(210)), {dx + ui.s(186), by + ui.s(24)}, fz(ui, 15),
@@ -414,7 +387,7 @@ private:
         } else if (it.category == "frame") {
             float rad = box.h * 0.32f;
             online_.drawAvatar("avatar_01", "", Rect::fromCenter(box.center(), {rad * 2, rad * 2}));
-            drawFrameRing(r, box.center(), rad, it.look, ui.s(0.8f));
+            drawAvatarFrame(r, box.center(), rad, it.look, ui.s(0.8f), t_);
             if (!unlocked) r.fillRoundedRect(box, ui.s(8), Color{11, 18, 38, 150});
         } else if (it.category == "title") {
             drawTitleChip(ui, box.center(), it.isDefault ? "Sans titre" : it.look, 13, unlocked && !it.isDefault);

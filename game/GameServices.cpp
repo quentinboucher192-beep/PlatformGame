@@ -39,6 +39,7 @@ void GameServices::loadAll() {
                           std::to_string(already.size()) + (already.size() > 1 ? " récompenses débloquées" : " récompense débloquée"),
                           "Avec vos étoiles · menu principal → Collection");
     }
+    syncCosmetics();
     discoverFromSaves();
     app.audio().onMusicStarted = [this](const std::string& path) {
         // The jukebox: a track becomes listenable once heard in the game.
@@ -56,6 +57,11 @@ CosmeticProgress GameServices::cosmeticProgress() const {
     p.totalStars = achievementCatalog.totalStars();
     p.book = &achievements;
     return p;
+}
+
+void GameServices::syncCosmetics() {
+    if (cosmetics.items().empty()) return;  // catalogue not loaded (yet)
+    online.setCosmetics(collection.equippedIds(cosmetics, cosmeticProgress()));
 }
 
 std::string GameServices::menuMusic() const {
@@ -133,6 +139,7 @@ void GameServices::checkAchievements(bool announce) {
     for (const auto& a : achievementCatalog.achievements())
         if (achievements.unlocked(a.id)) ids.push_back(a.id);
     online.setAchievements(std::move(ids));
+    syncCosmetics();  // an item locked again (or unlocked) changes what is worn
     if (fresh.empty()) return;
     achievements.save();
     if (!announce) {

@@ -8,6 +8,7 @@
 
 import { optionalAuth, requireAuth } from "./auth";
 import { pseudoVersionOf } from "./community";
+import { boardCosmetics, withCosmetics } from "./cosmetics";
 import { ApiError, Errors, json, nowIso, readJsonObject, readLimited, type Ctx } from "./http";
 import type { LevelVersionRow } from "./model";
 import { notify } from "./notifications";
@@ -381,6 +382,8 @@ export async function getBoard(ctx: Ctx): Promise<Response> {
     const participants = await ctx.env.DB.prepare("SELECT COUNT(DISTINCT player_id) AS n FROM race_runs WHERE board = ?1 AND status = 'VERIFIED'")
         .bind(board.key)
         .first<{ n: number }>();
+    // Frame, title and suit of each ranked player (2.21), when their profile is visible.
+    const looks = await boardCosmetics(ctx, rows.results.map((r) => String(r.player_id)));
     return json(ctx, {
         race: {
             kind: board.kind,
@@ -394,7 +397,7 @@ export async function getBoard(ctx: Ctx): Promise<Response> {
         verifier: victor ? { player: victor.pid ? { id: victor.pid, username: victor.username, avatar: victor.avatar } : null, at: victor.at } : null,
         ranking: rows.results.map((r, i) => ({
             rank: i + 1,
-            player: { id: r.player_id, username: r.username, avatar: r.avatar },
+            player: withCosmetics({ id: String(r.player_id), username: r.username, avatar: r.avatar }, looks),
             score: r.score,
             route: r.route,
             bosses_beaten: r.bosses_beaten,

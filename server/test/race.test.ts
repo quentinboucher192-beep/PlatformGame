@@ -112,6 +112,8 @@ describe("course à la vérification", () => {
         expect(board.body.data.verifier.player.username).toBe("Cyd");
         expect(board.body.data.ranking.map((r: { player: { username: string } }) => r.player.username)).toEqual(["Cyd", "Ana"]);
         expect(board.body.data.ranking[1].detail.bosses[0]).toMatchObject({ name: "Gardien", removed: 0.5 });
+        // Like the leaderboards (2.21): the frame, title and suit of each player.
+        expect(board.body.data.ranking[0].player).toMatchObject({ frame: "simple", title: null, suit: "standard" });
         for (const who of [ana!, author]) {
             const n = await api("GET", `${V}/notifications`, { token: who.token });
             expect(n.body.data.notifications.some((x: { kind: string }) => x.kind === "race_verified")).toBe(true);

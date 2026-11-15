@@ -187,6 +187,7 @@ public:
         if (equip && n > 0) {
             for (size_t i = 0; i < items_.size(); ++i)
                 if (picked_[i]) g_.collection.equip(items_[i]->category, items_[i]->id);
+            g_.syncCosmetics();
             close();
         } else if (later || ui.backPressed()) {
             close();

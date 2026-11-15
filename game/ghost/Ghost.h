@@ -30,7 +30,13 @@ struct GhostMeta {
     bool validated = false;     // verified by the server (not a proof by itself)
     bool community = false;     // a community level's record
     std::string gameVersion;
+    /// Look of the suit its player wore online (2.21: « givre »…, from the leaderboard entry
+    /// it was started from). Display only, never part of the replay; the player's own runs
+    /// wear the suit equipped now instead.
+    std::string suit;
 
+    /// The player's own run on this computer (best, previous best, last).
+    bool mine() const { return source == "pb" || source == "prev" || source == "last"; }
     Json toJson() const;
     static GhostMeta fromJson(const Json& j);
     /// "Record mondial", "Mon meilleur temps"... (menus).

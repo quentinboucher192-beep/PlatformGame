@@ -13,6 +13,7 @@ import { ApiError, Errors, json, weekStart, type Ctx, type PageMeta } from "./ht
 import { resolveBoard, versionJson, type Board } from "./levels";
 import { runCommentCounts } from "./campaign";
 import { avatarUrl } from "./model";
+import { boardCosmetics, withCosmetics, type BoardCosmetics } from "./cosmetics";
 import {
     CATEGORIES,
     COUNTRY_RE,
@@ -103,18 +104,21 @@ function boardSql(period: Period, filter: BoardFilter): { sql: string; extra: un
  * A row of a level board. `comments`: visible comments of the run (2.19), null when its
  * author hid their profile (their runs are not commented by others).
  */
-function entryJson(r: BoardRow, viewer: AuthInfo | null, comments: Map<string, number> = new Map()) {
+function entryJson(r: BoardRow, viewer: AuthInfo | null, comments: Map<string, number> = new Map(), looks: Map<string, BoardCosmetics> = new Map()) {
     const mine = viewer?.player.id === r.player_id;
     return {
         rank: r.rank,
         world_rank: r.world_rank,
-        player: {
-            id: r.player_id,
-            username: r.username,
-            avatar: r.avatar,
-            avatar_url: avatarUrl({ id: r.player_id, avatar: r.avatar, avatar_custom_key: r.avatar_custom_key }),
-            country_code: r.location_visibility === "hidden" ? null : r.country_code,
-        },
+        player: withCosmetics(
+            {
+                id: r.player_id,
+                username: r.username,
+                avatar: r.avatar,
+                avatar_url: avatarUrl({ id: r.player_id, avatar: r.avatar, avatar_custom_key: r.avatar_custom_key }),
+                country_code: r.location_visibility === "hidden" ? null : r.country_code,
+            },
+            looks,
+        ),
         time_ms: r.time_ms,
         record_id: r.record_id,
         achieved_at: r.achieved_at,
@@ -163,7 +167,9 @@ export async function levelBoard(ctx: Ctx, viewer: AuthInfo | null, levelId: str
             .bind(board.version.content_hash, category, ws.toISOString(), ...extra, viewer.player.id)
             .first<BoardRow>();
     const comments = await runCommentCounts(ctx, [...rows.results.map((r) => r.record_id), ...(mine ? [mine.record_id] : [])]);
-    if (viewer) me = { entry: mine ? entryJson(mine, viewer, comments) : null, pending: await pendingOf(ctx, viewer, board, category) };
+    // Frame, title and suit of each player (2.21), when their profile is visible.
+    const looks = await boardCosmetics(ctx, [...rows.results.map((r) => r.player_id), ...(mine ? [mine.player_id] : [])]);
+    if (viewer) me = { entry: mine ? entryJson(mine, viewer, comments, looks) : null, pending: await pendingOf(ctx, viewer, board, category) };
     const meta: PageMeta = { limit: page.limit, offset: page.offset, total, next_offset: page.offset + page.limit < total ? page.offset + page.limit : null };
     return json(
         ctx,
@@ -178,7 +184,7 @@ export async function levelBoard(ctx: Ctx, viewer: AuthInfo | null, levelId: str
                 country_code: filter.country ?? null,
                 friends: filter.friendsOf !== undefined,
             },
-            entries: rows.results.map((r) => entryJson(r, viewer, comments)),
+            entries: rows.results.map((r) => entryJson(r, viewer, comments, looks)),
             me,
         },
         { meta },
@@ -248,23 +254,26 @@ export async function routeGlobal(ctx: Ctx, viewer: AuthInfo | null): Promise<Re
     const toEntry = (r: (typeof rows.results)[number]) => ({
         rank: r.rank,
         world_rank: r.world_rank,
-        player: {
-            id: r.player_id,
-            username: r.username,
-            avatar: r.avatar,
-            avatar_url: avatarUrl({ id: r.player_id, avatar: r.avatar, avatar_custom_key: r.avatar_custom_key }),
-            country_code: r.location_visibility === "hidden" ? null : r.country_code,
-        },
+        player: withCosmetics(
+            {
+                id: r.player_id,
+                username: r.username,
+                avatar: r.avatar,
+                avatar_url: avatarUrl({ id: r.player_id, avatar: r.avatar, avatar_custom_key: r.avatar_custom_key }),
+                country_code: r.location_visibility === "hidden" ? null : r.country_code,
+            },
+            looks,
+        ),
         points: r.points,
         levels_completed: r.levels,
         total_time_ms: r.total_time,
         is_me: viewer?.player.id === r.player_id,
     });
-    let me = null;
-    if (viewer) {
-        const mine = await ctx.env.DB.prepare(`${sql} WHERE player_id = ?${n + 1}`).bind(...binds, viewer.player.id).first<(typeof rows.results)[number]>();
-        me = { entry: mine ? toEntry(mine) : null, pending: null };
-    }
+    const mine = viewer
+        ? await ctx.env.DB.prepare(`${sql} WHERE player_id = ?${n + 1}`).bind(...binds, viewer.player.id).first<(typeof rows.results)[number]>()
+        : null;
+    const looks = await boardCosmetics(ctx, [...rows.results.map((r) => r.player_id), ...(mine ? [mine.player_id] : [])]);
+    const me = viewer ? { entry: mine ? toEntry(mine) : null, pending: null } : null;
     const total = rows.results[0]?.total ?? 0;
     return json(
         ctx,
@@ -308,22 +317,25 @@ export async function routePlanet(ctx: Ctx, viewer: AuthInfo | null): Promise<Re
     const toEntry = (r: (typeof rows.results)[number]) => ({
         rank: r.rank,
         world_rank: r.world_rank,
-        player: {
-            id: r.player_id,
-            username: r.username,
-            avatar: r.avatar,
-            avatar_url: avatarUrl({ id: r.player_id, avatar: r.avatar, avatar_custom_key: r.avatar_custom_key }),
-            country_code: r.location_visibility === "hidden" ? null : r.country_code,
-        },
+        player: withCosmetics(
+            {
+                id: r.player_id,
+                username: r.username,
+                avatar: r.avatar,
+                avatar_url: avatarUrl({ id: r.player_id, avatar: r.avatar, avatar_custom_key: r.avatar_custom_key }),
+                country_code: r.location_visibility === "hidden" ? null : r.country_code,
+            },
+            looks,
+        ),
         total_time_ms: r.total_time,
         levels_completed: r.levels,
         is_me: viewer?.player.id === r.player_id,
     });
-    let me = null;
-    if (viewer) {
-        const mine = await ctx.env.DB.prepare(`${sql} WHERE player_id = ?${n + 1}`).bind(...binds, viewer.player.id).first<(typeof rows.results)[number]>();
-        me = { entry: mine ? toEntry(mine) : null, pending: null };
-    }
+    const mine = viewer
+        ? await ctx.env.DB.prepare(`${sql} WHERE player_id = ?${n + 1}`).bind(...binds, viewer.player.id).first<(typeof rows.results)[number]>()
+        : null;
+    const looks = await boardCosmetics(ctx, [...rows.results.map((r) => r.player_id), ...(mine ? [mine.player_id] : [])]);
+    const me = viewer ? { entry: mine ? toEntry(mine) : null, pending: null } : null;
     const total = rows.results[0]?.total ?? 0;
     return json(
         ctx,

@@ -12,6 +12,7 @@
 #include "game/progression/Progression.h"
 #include "ui/online/GlobeRenderer.h"
 #include "ui/online/OnlineWidgets.h"
+#include "ui/screens/CosmeticFx.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/Thumbnail.h"
 
@@ -39,6 +40,9 @@ std::string runTime(int64_t ms) {
 }
 
 const char* kCreationSorts[] = {"popular", "recent", "top"};
+
+/// Never below 11.5 px on screen (the font loses its spaces under that).
+float fz(const UIContext& ui, float size) { return std::max(size, 11.5f / ui.s(1.0f)); }
 
 class PlayerProfileScene : public Scene {
 public:
@@ -204,10 +208,14 @@ private:
         const float x = box_.x + ui.s(28);
         const float w = box_.w - ui.s(56);
         float y = box_.y + ui.s(24);
-        // Identity.
+        // Identity. What the player wears (2.21): null for a profile hidden from the reader.
+        const Json& worn = data_.value("cosmetics", Json());
+        const bool dressed = !hidden && worn.is_object();
         const float av = ui.s(112);
         ui_.drawAvatar(jstr(p, "avatar", "avatar_01"), playerId_, {x, y, av, av});
-        float nx = x + av + ui.s(24);
+        drawAvatarFrame(ui.r(), {x + av * 0.5f, y + av * 0.5f}, av * 0.5f, dressed ? g_.cosmetics.lookOr("frame", wornLook(worn, "frame")) : "simple",
+                        ui.s(1.0f), ui.time());
+        float nx = x + av + ui.s(kAvatarFrameMargin + 14);
         // Actions on the right of the header, under "Fermer".
         std::vector<std::pair<std::string, std::string>> acts;  // key, label
         const bool logged = g_.online.loggedIn();
@@ -273,8 +281,19 @@ private:
                 ui.label("CRÉATEUR", chip.center(), 14, ui.theme().warm, Align::Center, FontFace::Bold, VAlign::Middle);
             }
         }
-        std::string cc = jstr(p, "country_code");
         float ly = y + ui.s(62);
+        // The title under the name, as a gold chip (2.21).
+        if (std::string title = dressed ? wornName(worn, "title") : std::string(); !title.empty()) {
+            float tf = fz(ui, 15), tw = std::min(ui.text().measure(title, FontFace::Bold, ui.s(tf)).x + ui.s(24), nameRoom);
+            Rect chip{nx, ly - ui.s(13), tw, std::max(ui.s(26), ui.s(tf) + ui.s(8))};
+            chip.y = ly - chip.h * 0.5f;
+            Color gold{255, 214, 90, 255};
+            ui.r().fillRoundedRect(chip, chip.h * 0.5f, gold.withAlpha(28));
+            ui.r().drawRoundedRect(chip, chip.h * 0.5f, gold.withAlpha(160), std::max(1.0f, ui.s(1.2f)));
+            ui.label(ui.elide(title, FontFace::Bold, tf, tw - ui.s(24)), chip.center(), tf, gold, Align::Center, FontFace::Bold, VAlign::Middle);
+            ly += ui.s(34);
+        }
+        std::string cc = jstr(p, "country_code");
         if (!cc.empty()) {
             ui_.drawFlag(cc, {nx, ly - ui.s(10), ui.s(28), ui.s(21)});
             ui.label(ui_.countryName(cc), {nx + ui.s(36), ly}, ui.fitFont(ui_.countryName(cc), FontFace::Body, 17, nameRoom - ui.s(36)), ui.theme().textDim,
@@ -284,8 +303,11 @@ private:
         std::string sub;
         if (!hidden && p.contains("created_at")) sub = "Inscrit le " + dateFr(jstr(p, "created_at"));
         if (jget<bool>(fstate, "followed_by", false)) sub += (sub.empty() ? "" : "  ·  ") + std::string("vous suit");
-        if (!sub.empty()) ui.label(sub, {nx, ly}, ui.fitFont(sub, FontFace::Body, 15, nameRoom), ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
-        float headerBottom = std::max(y + av, ay + ((acts.size() + cols - 1) / std::max(cols, 1)) * (bh + bgap) - bgap);
+        if (!sub.empty()) {
+            ui.label(sub, {nx, ly}, ui.fitFont(sub, FontFace::Body, 15, nameRoom), ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+            ly += ui.s(14);
+        }
+        float headerBottom = std::max({y + av + ui.s(kAvatarFrameMargin), ly, ay + ((acts.size() + cols - 1) / std::max(cols, 1)) * (bh + bgap) - bgap});
         y = headerBottom + ui.s(18);
         // Statistics.
         const Json& s = data_.value("statistics", Json::object());
@@ -329,6 +351,8 @@ private:
                          FontFace::Body, VAlign::Middle);
             y += band.h + ui.s(10);
         }
+        // « Tenue »: the suit (drawn), the trail, the frame and the victory effect worn (2.21).
+        if (dressed) y = drawOutfit(worn, x, y, w) + ui.s(10);
         if (isCreator) {
             const Json& rt = creator.value("rating", Json::object());
             std::vector<Tile> ct = {
@@ -368,6 +392,77 @@ private:
         if (!foot.empty())
             ui.label(foot, {x, box_.bottom() - ui.s(24)}, ui.fitFont(foot, FontFace::Body, 15, w), statusError_ && foot == status_ ? ui.theme().danger : ui.theme().success,
                      Align::Left, FontFace::Body, VAlign::Middle);
+    }
+
+    /// Look of a worn item ("" if absent): checked by lookOr() before being drawn.
+    static std::string wornLook(const Json& worn, const char* category) {
+        const Json& i = worn.value(category, Json::object());
+        return i.is_object() ? jstr(i, "look") : std::string();
+    }
+
+    /// Name of a worn item: the game's catalogue by id, the server's name for an id this game
+    /// does not know (a newer one); "" for no title.
+    std::string wornName(const Json& worn, const char* category) const {
+        const Json& i = worn.value(category, Json::object());
+        if (!i.is_object()) return {};
+        if (const CosmeticItem* it = g_.cosmetics.find(jstr(i, "id")); it && it->category == category)
+            return std::string(category) == "title" && it->isDefault ? std::string() : it->name;
+        std::string n = jstr(i, "name");
+        for (char& c : n)
+            if (static_cast<unsigned char>(c) < 0x20) c = ' ';
+        if (std::string(category) == "title" && jstr(i, "look").empty()) return {};
+        return n;
+    }
+
+    float drawOutfit(const Json& worn, float x, float y, float w) {
+        UIContext& ui = g_.ui;
+        Rect band{x, y, w, ui.s(70)};
+        ui.r().fillRoundedRect(band, ui.s(10), Color{18, 28, 54, 230});
+        ui.r().drawRoundedRect(band, ui.s(10), ui.theme().accent.withAlpha(70), ui.s(1.2f));
+        // Nova in the player's suit (the same sheet recoloured), idle.
+        float ns = band.h - ui.s(4);
+        Rect nova = Rect::fromCenter({band.x + ui.s(14) + ns * 0.5f, band.center().y}, {ns, ns});
+        if (AnimationSetPtr set = g_.app.resources().animation("animations/nova.json"); set && set->texture) {
+            if (const AnimationClip* c = set->clip("idle"); c && c->frameCount() > 0) {
+                TexturePtr tex = set->texture;
+                std::string suit = g_.cosmetics.lookOr("suit", wornLook(worn, "suit"));
+                if (!suit.empty() && suit != "standard")
+                    if (TexturePtr t = g_.app.resources().texture("sprites/player/suits/nova_" + suit + ".png")) tex = t;
+                float local = std::fmod(ui.time(), std::max(0.01f, c->totalDuration())), acc = 0.0f;
+                int frame = 0;
+                for (int i = 0; i < c->frameCount(); ++i) {
+                    acc += c->durations[static_cast<size_t>(i)];
+                    if (local < acc) {
+                        frame = i;
+                        break;
+                    }
+                }
+                Rect src = set->frameRect(*c, frame);
+                ui.r().drawTexture(*tex, &src, nova);
+            }
+        }
+        float cx = nova.right() + ui.s(10);
+        Vec2 hs = ui.label("Tenue", {cx, band.center().y}, 18, ui.theme().accent, Align::Left, FontFace::Bold, VAlign::Middle);
+        cx += hs.x + ui.s(24);
+        struct Cell {
+            const char* key;
+            const char* category;
+        };
+        const Cell cells[] = {{"Combinaison", "suit"}, {"Traînée", "trail"}, {"Cadre", "frame"}, {"Victoire", "victory"}};
+        float cw = (band.right() - ui.s(14) - cx) / 4.0f;
+        for (int i = 0; i < 4; ++i) {
+            float px = cx + i * cw;
+            if (i > 0) ui.r().fillRect({px - ui.s(10), band.y + ui.s(14), std::max(1.0f, ui.s(1)), band.h - ui.s(28)}, ui.theme().accent.withAlpha(50));
+            float room = cw - ui.s(20);
+            float kf = fz(ui, 13);
+            ui.label(ui.elide(cells[i].key, FontFace::Body, kf, room), {px, band.center().y - ui.s(12)}, kf, ui.theme().textDim, Align::Left,
+                     FontFace::Body, VAlign::Middle);
+            std::string name = wornName(worn, cells[i].category);
+            float nf = std::max(fz(ui, 12), ui.fitFont(name, FontFace::Bold, 17, room, 0.8f));
+            ui.label(ui.elide(name, FontFace::Bold, nf, room), {px, band.center().y + ui.s(12)}, nf, ui.theme().text, Align::Left, FontFace::Bold,
+                     VAlign::Middle);
+        }
+        return band.bottom();
     }
 
     template <typename T>

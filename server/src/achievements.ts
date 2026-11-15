@@ -3,6 +3,7 @@
 // only keeps the ids it knows and counts the stars from its own copy of the catalogue.
 import catalog from "./achievementCatalog.json";
 import { requireAuth } from "./auth";
+import { revalidateCosmetics } from "./cosmetics";
 import { Errors, json, readJsonObject, type Ctx } from "./http";
 import { rateLimit, RULES } from "./ratelimit";
 
@@ -56,5 +57,7 @@ export async function putAchievements(ctx: Ctx): Promise<Response> {
     )
         .bind(me, JSON.stringify(ids), stars, ids.length, now)
         .run();
+    // Fewer achievements: what they no longer unlock is taken off (frame, title, suit...).
+    await revalidateCosmetics(ctx, me);
     return json(ctx, { achievements: await achievementSummary(ctx, me) });
 }

@@ -578,3 +578,23 @@ TEST_CASE("ghost: a record made on another version is kept as a non-official gho
     std::error_code ec;
     fs::remove_all(root, ec);
 }
+
+TEST_CASE("ghost: the suit of its player goes with the description, checked when read back") {
+    GhostMeta m;
+    m.source = "world";
+    m.suit = "givre";
+    CHECK(GhostMeta::fromJson(m.toJson()).suit == "givre");
+    Json j = m.toJson();
+    j["suit"] = "../../nova_or";
+    CHECK(GhostMeta::fromJson(j).suit.empty());
+    j["suit"] = 42;
+    CHECK(GhostMeta::fromJson(j).suit.empty());
+    // Descriptions written before 2.21 have none; nothing is written without a suit.
+    CHECK(!GhostMeta{}.toJson().contains("suit"));
+    CHECK(!m.mine());
+    for (const char* s : {"pb", "prev", "last"}) {
+        GhostMeta own;
+        own.source = s;
+        CHECK(own.mine());
+    }
+}
