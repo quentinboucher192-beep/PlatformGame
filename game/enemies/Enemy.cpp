@@ -47,6 +47,8 @@ Enemy::Enemy(const EnemyDefinition& def, AnimationSetPtr anim, Vec2 feet, bool f
     attackCooldowns_.assign(def_.attacks.size(), 0.0f);
     for (size_t i = 0; i < attackCooldowns_.size(); ++i) attackCooldowns_[i] = 0.4f + 0.25f * static_cast<float>(i);
     hoverPhase_ = static_cast<float>(uid % 17) * 0.37f;
+    for (const auto& a : def_.attacks)
+        if (a.type == AttackType::Mirror) hasMirror_ = true;
     teleportTimer_ = def_.teleportCooldown;
     state_ = def_.movement == MovementType::Patrol || def_.movement == MovementType::Fly || def_.movement == MovementType::Hop
                  ? EnemyState::Patrol
@@ -215,6 +217,23 @@ void Enemy::fixedUpdate(GameWorld& w, float dt) {
         return;
     }
 
+    if (mirrorOf_ != 0) {
+        // A double of a guardian (2.19): it fades with time, or with its original.
+        const Enemy* original = w.findEnemy(mirrorOf_);
+        if (lifeTimer_ > 0.0f) lifeTimer_ = std::max(0.0f, lifeTimer_ - dt);
+        if (!original || !original->alive() || (expires_ && lifeTimer_ <= 0.0f)) {
+            vanishing = true;
+            countsForStats = false;
+            w.particles().emit("frost_burst", box.center(), 1.2f);
+            kill(w);
+            return;
+        }
+    }
+    if (hasMirror_) {
+        doubles_ = 0;
+        for (const auto& e : w.enemies())
+            if (e->mirrorOf_ == uid_ && e->alive()) ++doubles_;
+    }
     sense(w);
     checkPhase(w);
     stateTimer_ -= dt;
@@ -503,6 +522,7 @@ void Enemy::checkPhase(GameWorld& w) {
     if (hpRatio() > def_.phases[next].hpThreshold) return;
     phase_ = next;
     const BossPhase& ph = def_.phases[phase_];
+    if (attack_ && attack_->isGuardianType()) guardianEnd(w);  // a channel stops with the roar
     state_ = EnemyState::PhaseTransition;
     stateTimer_ = 1.6f;
     invuln_ = 1.6f;

@@ -77,7 +77,7 @@ TEST_CASE("race: a boss's health removed counts, not only the bosses beaten") {
     CHECK(a.bossesBeaten() == 0 && b.bossesBeaten() == 0);
 }
 
-TEST_CASE("race: the boss chain of the campaign is EXTRÊME, one life, twelve bosses") {
+TEST_CASE("race: the boss chain of the campaign is EXTRÊME, one life, sixteen bosses") {
     ContentDatabase content;
     content.reload();
     auto level = content.loadLevel("noyau_01");
@@ -86,14 +86,14 @@ TEST_CASE("race: the boss chain of the campaign is EXTRÊME, one life, twelve bo
     CHECK(level->extreme);
     CHECK(level->oneLife());
     RaceLayout l = buildRaceLayout(*level, content, true);
-    CHECK(l.bosses.size() == 12);
+    CHECK(l.bosses.size() == 16);  // the twelve guardians and, since 2.19, the four of Aethra
     CHECK(l.ambushes.empty());  // the arenas hold only their boss: counted by its health
     CHECK(l.route.size() >= 2);
     CHECK(l.route.size() <= 401);
     // The layout sent to the server keeps whole coordinates.
     Json j = l.toJson();
     CHECK(j["route"].size() == l.route.size());
-    CHECK(j["bosses"].size() == 12);
+    CHECK(j["bosses"].size() == 16);
 }
 
 TEST_CASE("race: the final level's ambushes are in its race") {

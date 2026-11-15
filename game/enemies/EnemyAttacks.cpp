@@ -27,6 +27,7 @@ std::vector<const AttackDef*> Enemy::availableAttacks() const {
 }
 
 bool Enemy::chooseAttack(GameWorld& w) {
+    if (mirrorOf_ != 0) return false;  // a double only copies its guardian (2.19)
     auto list = availableAttacks();
     if (def_.isBoss) return chooseBossAttack(w, list);
     std::vector<const AttackDef*> candidates;
@@ -100,7 +101,8 @@ bool Enemy::chooseBossAttack(GameWorld& w, const std::vector<const AttackDef*>& 
         if (a->type == AttackType::Summon && alive >= a->maxSummoned) continue;
         if (a->type == AttackType::Leap && def_.flying) continue;
         if (underneath && a->type != AttackType::Leap && a->type != AttackType::Rain && a->type != AttackType::Eruption &&
-            a->type != AttackType::Arc && a->type != AttackType::Summon)
+            a->type != AttackType::Arc && a->type != AttackType::Summon &&
+            !(a->isGuardianType() && a->type != AttackType::Tracker && a->type != AttackType::Cage && a->type != AttackType::Orbit))
             continue;
         float fit = a->weight;
         switch (a->type) {
@@ -116,8 +118,11 @@ bool Enemy::chooseBossAttack(GameWorld& w, const std::vector<const AttackDef*>& 
             case AttackType::Eruption: fit *= (air ? 0.7f : 1.0f) * (far ? 1.2f : 1.0f); break;
             case AttackType::Leap: fit *= (far ? 1.8f : 0.6f) * (above > 48.0f ? 2.0f : 1.0f); break;
             case AttackType::Summon: fit *= alive > 0 ? 0.3f : 0.7f; break;
-            default: break;
+            default:
+                if (a->isGuardianType()) fit *= guardianFit(w, *a, near, far, air);
+                break;
         }
+        if (fit <= 0.0f) continue;
         if (!inRange) {
             if (!punish) continue;
             float k = 0.0f;
@@ -131,6 +136,14 @@ bool Enemy::chooseBossAttack(GameWorld& w, const std::vector<const AttackDef*>& 
                 case AttackType::Spread:
                 case AttackType::Lunge: k = 1.5f; break;
                 case AttackType::Charge: k = std::abs(above) < 32.0f ? 1.2f : 0.0f; break;
+                case AttackType::Blink: k = 2.5f; break;
+                case AttackType::Vortex:
+                case AttackType::Well: k = 1.8f; break;
+                case AttackType::Tracker: k = above > 48.0f ? 0.0f : 1.5f; break;  // runs on the floor only
+                case AttackType::Prism:
+                case AttackType::Ring:
+                case AttackType::Spiral:
+                case AttackType::Flood: k = 1.5f; break;
                 default: break;
             }
             if (k <= 0.0f) continue;
@@ -238,6 +251,8 @@ void Enemy::beginAttack(GameWorld& w) {
         warnTimer_ = 0.0f;
     }
     if (attack_->type == AttackType::Laser) w.playSound("sounds/laser_charge.wav", box.center(), 0.8f);
+    if (attack_->isGuardianType()) guardianBegin(w);
+    if (hasMirror_ && doubles_ > 0) copyToDoubles(w);  // « Reflets »: the doubles strike too
 }
 
 Vec2 Enemy::attackOrigin() const {
@@ -381,6 +396,10 @@ void Enemy::performAttackStart(GameWorld& w) {
     const AttackDef& a = *attack_;
     attackStarted_ = true;
     if (!a.sound.empty()) w.playSound(a.sound, box.center(), 0.9f);
+    if (a.isGuardianType()) {
+        guardianStart(w);
+        return;
+    }
     switch (a.type) {
         case AttackType::Rain:
         case AttackType::Eruption: {
@@ -481,6 +500,10 @@ void Enemy::performAttackActive(GameWorld& w, float dt) {
     const AttackDef& a = *attack_;
     Player& p = w.player();
     attackClock_ += dt;
+    if (a.isGuardianType()) {
+        guardianActive(w, dt);
+        return;
+    }
     // Staggered impacts (eruption lines) and further volleys (bursts), re-aimed each time.
     for (size_t k = 0; k < staged_.size();) {
         if (attackClock_ >= staged_[k].time) {
@@ -572,7 +595,7 @@ void Enemy::stepAttack(GameWorld& w, float dt) {
 }
 
 void Enemy::finishAttack(GameWorld& w) {
-    (void)w;
+    if (attack_ && attack_->isGuardianType()) guardianEnd(w);
     if (attackIndex_ >= 0 && attackIndex_ < static_cast<int>(attackCooldowns_.size()))
         attackCooldowns_[attackIndex_] = attack_->cooldown * phaseCooldown();
     state_ = EnemyState::Recover;
@@ -607,6 +630,18 @@ void Enemy::render(RenderContext& ctx) const {
         ctx.r.drawWorldTexture(tex, &src, dst, Color{255, 60, 90, static_cast<uint8_t>(60 + 120 * pulse)},
                                BlendMode::Additive, flip);
     }
+    if (doubles_ > 0 && state_ != EnemyState::Dead) {
+        // « Reflets »: the true guardian wears a green aura (only it loses health).
+        float pulse = 0.5f + 0.5f * dmath::sin(ctx.time * 5.0f);
+        ctx.r.drawWorldGlow(feet + Vec2{0, -box.h * 0.5f}, std::max(box.w, box.h) * def_.scale * (0.9f + 0.15f * pulse),
+                            Color{120, 230, 140, static_cast<uint8_t>(110 + 60 * pulse)});
+        ctx.r.drawWorldTexture(tex, &src, dst, Color{120, 230, 140, static_cast<uint8_t>(40 + 40 * pulse)}, BlendMode::Additive, flip);
+    }
+    if (mirrorOf_ != 0 && state_ != EnemyState::Dead) {
+        // A double: an icy shimmer over its translucent body.
+        float sh = 0.5f + 0.5f * dmath::sin(ctx.time * 7.0f + static_cast<float>(uid_));
+        ctx.r.drawWorldTexture(tex, &src, dst, Color{170, 230, 255, static_cast<uint8_t>(30 + 50 * sh)}, BlendMode::Additive, flip);
+    }
     if (state_ == EnemyState::Defend) {
         Vec2 c = feet + Vec2{facing * box.w * 0.55f, -box.h * 0.5f};
         ctx.r.drawWorldGlow(c, 14.0f, {255, 179, 71, 120});
@@ -633,6 +668,10 @@ void Enemy::renderTelegraph(RenderContext& ctx) const {
     float prog = state_ == EnemyState::Telegraph ? 1.0f - std::max(0.0f, stateTimer_) / std::max(0.01f, attack_->telegraph)
                                                  : 1.0f;
     Color warnCol{255, 77, 109, static_cast<uint8_t>(80 + 140 * prog)};
+    if (attack_->isGuardianType()) {
+        renderGuardian(ctx, prog);
+        return;
+    }
     switch (attack_->type) {
         case AttackType::Laser: {
             Vec2 origin = attackOrigin();

@@ -1,0 +1,28 @@
+{
+  "format": "cosmic.planet",
+  "id": "aethra",
+  "name": "Aethra",
+  "subtitle": "La planète des sanctuaires",
+  "description": "Des îles-sanctuaires flottent sur un océan de nébuleuse, dans une lumière violette et or où se mêlent racines, cristal de givre, magma et vide. Quatre gardiens nouveaux y veillent sur des pouvoirs oubliés.",
+  "type": "alien",
+  "difficulty": 5,
+  "color": "#c9a2ff",
+  "atmosphere": "#b48cff70",
+  "illustration": "ui/planets/aethra.png",
+  "banner": "ui/planets/aethra_banner.png",
+  "music": "music/planet_map.ogg",
+  "levels": [
+    "aethra_01",
+    "aethra_02",
+    "aethra_03",
+    "aethra_04"
+  ],
+  "unlock": "planets:sylvanox,glacior,pyralis",
+  "teaser": false,
+  "orbit": {
+    "radius": 540,
+    "speed": 0.02,
+    "phase": 1.9
+  },
+  "size": 1.0
+}

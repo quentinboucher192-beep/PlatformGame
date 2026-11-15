@@ -1,0 +1,234 @@
+{
+  "format": "cosmic.enemy",
+  "id": "echo_aurorax",
+  "name": "Écho : Aurorax",
+  "description": "Reflet de Aurorax, rappelé par le cœur de l'étoile. Il ne laisse aucun soin derrière lui.",
+  "family": "miniboss",
+  "animation": "animations/aurorax.json",
+  "size": [
+    42,
+    80
+  ],
+  "scale": 1.0,
+  "hp": 110,
+  "contactDamage": 2,
+  "speed": 40,
+  "chaseSpeedMultiplier": 1.2,
+  "flying": false,
+  "knockbackResist": 1,
+  "detectionRange": 360,
+  "attackRange": 200,
+  "loseRange": 2000,
+  "needsLineOfSight": false,
+  "movement": "guard",
+  "reaction": "chase",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 150,
+  "hopVelocity": 0,
+  "attacks": [
+    {
+      "id": "prism",
+      "name": "Prisme",
+      "type": "prism",
+      "damage": 2,
+      "range": 660,
+      "telegraph": 1.0,
+      "active": 0.9,
+      "recover": 0.6,
+      "cooldown": 3.6,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "bounces": 2,
+      "laserLength": 1100,
+      "color": "#9fe8ff",
+      "beamTexture": "prism",
+      "beamWidth": 12,
+      "knockback": 220
+    },
+    {
+      "id": "prism_night",
+      "name": "Prisme de la nuit polaire",
+      "type": "prism",
+      "damage": 2,
+      "range": 660,
+      "telegraph": 0.95,
+      "active": 0.9,
+      "recover": 0.7,
+      "cooldown": 4.0,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "bounces": 3,
+      "laserLength": 1100,
+      "color": "#9fe8ff",
+      "beamTexture": "prism",
+      "beamWidth": 12,
+      "knockback": 220
+    },
+    {
+      "id": "charge",
+      "name": "Charge de cristal",
+      "type": "charge",
+      "damage": 2,
+      "range": 440,
+      "telegraph": 0.6,
+      "active": 2.0,
+      "recover": 0.7,
+      "cooldown": 3.4,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "special",
+      "minRange": 70,
+      "lungeSpeed": 280,
+      "knockback": 270
+    },
+    {
+      "id": "shards",
+      "name": "Éclats",
+      "type": "spread",
+      "damage": 1,
+      "range": 480,
+      "telegraph": 0.6,
+      "active": 0.25,
+      "recover": 0.45,
+      "cooldown": 2.2,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "aurora_shard",
+      "projectileSpeed": 210,
+      "count": 5,
+      "spread": 11,
+      "slow": 0.5,
+      "slowDuration": 1.4,
+      "hitEffect": "ice_burst",
+      "lead": 0.7
+    },
+    {
+      "id": "mirror",
+      "name": "Reflets",
+      "type": "mirror",
+      "damage": 0,
+      "range": 800,
+      "telegraph": 0.9,
+      "active": 0.4,
+      "recover": 0.6,
+      "cooldown": 9.0,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "summon",
+      "duration": 16
+    },
+    {
+      "id": "mirror_night",
+      "name": "Reflets éternels",
+      "type": "mirror",
+      "damage": 0,
+      "range": 800,
+      "telegraph": 0.8,
+      "active": 0.4,
+      "recover": 0.6,
+      "cooldown": 4.0,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "summon",
+      "weight": 1.5
+    },
+    {
+      "id": "frozen_lake",
+      "name": "Lac gelé",
+      "type": "frost_floor",
+      "damage": 0,
+      "range": 800,
+      "telegraph": 1.0,
+      "active": 0.4,
+      "recover": 0.6,
+      "cooldown": 12.0,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "summon",
+      "duration": 5.0,
+      "grip": 0.15
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "dash": 0.6,
+    "ground_pound": 1.3
+  },
+  "rewards": {
+    "score": 5500,
+    "drops": [
+      {
+        "type": "energy_orb",
+        "chance": 1.0
+      }
+    ]
+  },
+  "light": {
+    "color": "#9fe8ff",
+    "radius": 100
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/boss_roar_ice.wav",
+    "alert": "sounds/boss_roar_ice.wav"
+  },
+  "boss": {
+    "title": "ÉCHO — AURORAX, LE MIROIR BORÉAL",
+    "phases": [
+      {
+        "name": "Aurore",
+        "hpThreshold": 1.0,
+        "attacks": [
+          "prism",
+          "charge",
+          "shards"
+        ],
+        "speedMultiplier": 1.0,
+        "cooldownMultiplier": 1.0,
+        "combo": 1,
+        "telegraphMultiplier": 1.0
+      },
+      {
+        "name": "Reflets",
+        "hpThreshold": 0.66,
+        "attacks": [
+          "prism",
+          "charge",
+          "shards",
+          "mirror",
+          "frozen_lake"
+        ],
+        "speedMultiplier": 1.1,
+        "cooldownMultiplier": 0.9,
+        "combo": 2,
+        "telegraphMultiplier": 0.95,
+        "enterText": "Aurorax se dédouble sur le lac !"
+      },
+      {
+        "name": "Nuit polaire",
+        "hpThreshold": 0.33,
+        "attacks": [
+          "prism_night",
+          "charge",
+          "shards",
+          "mirror_night",
+          "frozen_lake"
+        ],
+        "speedMultiplier": 1.2,
+        "cooldownMultiplier": 0.8,
+        "combo": 2,
+        "telegraphMultiplier": 0.9,
+        "enterText": "La nuit polaire tombe sur le lac !"
+      }
+    ],
+    "enrageTime": 75
+  },
+  "variantOf": "aurorax",
+  "tint": "#a894ff"
+}

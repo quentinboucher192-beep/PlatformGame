@@ -1,5 +1,6 @@
 // The Stellar Core (2.7): the star at the centre of the system, opened once the three planets
-// are completed. "L'Arène des Échos" chains the twelve guardians without any healing and with
+// are completed. "L'Arène des Échos" chains the sixteen guardians (the four of Aethra since 2.19)
+// without any healing and with
 // one life; "Le Cœur de l'Étoile" is the final level of the plan (maquette NiveauFinal).
 
 #include <algorithm>
@@ -38,7 +39,7 @@ TEST_CASE("stellar core: the star opens once the three planets are completed") {
     CHECK(p.planetUnlocked(*star, content));
 }
 
-TEST_CASE("stellar core: the boss rush chains the twelve guardians, no healing, one life") {
+TEST_CASE("stellar core: the boss rush chains the sixteen guardians, no healing, one life") {
     ContentDatabase content;
     content.reload();
     auto level = content.loadLevel("noyau_01");
@@ -57,7 +58,7 @@ TEST_CASE("stellar core: the boss rush chains the twelve guardians, no healing, 
         originals.insert(d->variantOf);
         for (const auto& drop : d->drops) CHECK(drop.type != "health_orb");
     }
-    CHECK(originals.size() == 12);
+    CHECK(originals.size() == 16);
     for (const EnemyDefinition* e : content.enemies())
         if (e->isBoss && e->variantOf.empty() && e->id != "astrarque") CHECK(originals.count(e->id) == 1);
     CHECK(level->timerMode == TimerMode::Challenge);

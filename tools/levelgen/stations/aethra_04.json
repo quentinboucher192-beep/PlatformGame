@@ -1,0 +1,82 @@
+{
+  "level": "aethra_04",
+  "sections": [
+    {
+      "label": "",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        64.0,
+        608.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Seuil",
+      "movement": [],
+      "needs": [
+        [
+          "grapple"
+        ]
+      ],
+      "pos": [
+        1328.0,
+        608.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Ancrages",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        3280.0,
+        608.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Leviers",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        4448.0,
+        608.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Porte de l'horizon",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        5760.0,
+        608.0
+      ],
+      "reachable": true
+    }
+  ],
+  "slots": 4,
+  "stations": [
+    {
+      "mid": false,
+      "section": "Seuil",
+      "sign": [
+        1408.0,
+        608.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            1864.0,
+            542.0
+          ],
+          "power": "grapple"
+        }
+      ],
+      "upcoming": [
+        "grapple"
+      ]
+    }
+  ]
+}
