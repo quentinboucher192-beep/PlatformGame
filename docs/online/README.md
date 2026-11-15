@@ -100,7 +100,8 @@ Terminé et testé :
   vérifié, notes, signalements, classement par niveau ; publication depuis l'ATELIER avec le
   replay de fin de l'auteur), CLASSEMENTS (navigation, globe, classements avec onglets, filtres et recherche,
   niveau, carte du joueur), SOCIAL (conversations privées entre amis, groupes, amis, joueurs
-  bloqués, signalements), compte et consentement, paramètres en ligne (confidentialité, amis,
+  bloqués, signalements, compteurs de messages non lus par conversation et par groupe, globe
+  de tous les joueurs par pays — `GET /globe/players`), compte et consentement, paramètres en ligne (confidentialité, amis,
   export et suppression des données), replays, statut en ligne sur l'écran de résultats,
   notifications (records, demandes d'amis, nouveaux messages).
 

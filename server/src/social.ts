@@ -148,16 +148,31 @@ export async function listConversations(ctx: Ctx): Promise<Response> {
     return json(ctx, { conversations, unread_total: total });
 }
 
-/** GET /social/unread: what the game polls (counts and the newest unread messages). */
+/**
+ * GET /social/unread: what the game polls (counts and the newest unread messages). The
+ * counts are derived from each member's read marker (`last_read_at`): in total, for the
+ * private conversations and the groups, and per conversation (only those with unread
+ * messages), so that the badges of the game follow without reloading the lists.
+ */
 export async function unread(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
     const me = auth.player.id;
-    const total = await ctx.env.DB.prepare(
-        `SELECT COALESCE(SUM(${UNREAD_SQL}), 0) AS n FROM conversations c
-         JOIN conversation_members m ON m.conversation_id = c.id AND m.player_id = ?1`,
+    const perConversation = await ctx.env.DB.prepare(
+        `SELECT conversation_id, kind, unread FROM (
+           SELECT c.id AS conversation_id, c.kind, ${UNREAD_SQL} AS unread FROM conversations c
+           JOIN conversation_members m ON m.conversation_id = c.id AND m.player_id = ?1)
+         WHERE unread > 0 ORDER BY unread DESC, conversation_id`,
     )
         .bind(me)
-        .first<{ n: number }>();
+        .all<{ conversation_id: string; kind: "direct" | "group"; unread: number }>();
+    let total = 0;
+    let direct = 0;
+    let groups = 0;
+    for (const r of perConversation.results) {
+        total += r.unread;
+        if (r.kind === "group") groups += r.unread;
+        else direct += r.unread;
+    }
     const latest = await ctx.env.DB.prepare(
         `SELECT x.id, x.conversation_id, x.created_at, substr(x.body, 1, 120) AS body, c.kind, c.name, p.username AS sender
          FROM messages x JOIN conversations c ON c.id = x.conversation_id
@@ -169,7 +184,13 @@ export async function unread(ctx: Ctx): Promise<Response> {
     )
         .bind(me)
         .all<{ id: string; conversation_id: string; created_at: string; body: string; kind: string; name: string | null; sender: string }>();
-    return json(ctx, { total: total?.n ?? 0, latest: latest.results });
+    return json(ctx, {
+        total,
+        direct,
+        groups,
+        conversations: perConversation.results,
+        latest: latest.results,
+    });
 }
 
 /** POST /social/direct {player_id}: the private conversation with a friend (created once). */

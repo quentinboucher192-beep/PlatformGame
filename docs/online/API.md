@@ -120,7 +120,7 @@ passe : PBKDF2-HMAC-SHA256, 100 000 itérations par défaut, sel aléatoire.
 Les routes à session **facultative** (mention « Auth : facultative » plus bas) fonctionnent
 anonymement, mais si un en-tête `Authorization` est présent il doit être valide : un jeton
 expiré y donne aussi `401`. Les routes sans session (santé, méta, recherche, avatar,
-`/globe/countries`) ignorent l'en-tête.
+`/globe/countries`, `/globe/players`) ignorent l'en-tête.
 
 ## 3. Limites de débit
 
@@ -245,7 +245,7 @@ prévu est coupé et refusé (`413 PAYLOAD_TOO_LARGE`). Un `Content-Length` inva
 |---|---|---|---|
 | `hidden` (défaut) | non (`country_code: null`, `region_code: null`) | exclu | absent |
 | `country` | oui | inclus | absent |
-| `globe` | oui | inclus | marqueur au centre du pays |
+| `globe` | oui | inclus | marqueur au centre du pays ; compté dans `GET /globe/players` si le profil est public |
 
 - Un joueur `hidden` reste classé dans les classements mondiaux, de planète, d'amis et par
   points ; il garde son rang mais n'a pas de marqueur sur le globe.
@@ -257,7 +257,8 @@ prévu est coupé et refusé (`413 PAYLOAD_TOO_LARGE`). Un `Content-Length` inva
 - `profile_visibility: private` : les autres ne voient que l'identité publique
   (`PlayerSummary`) avec `hidden: true` et `statistics: null` ; l'historique, les
   statistiques et le téléchargement de replays leur répondent `403 PROFILE_PRIVATE`. Le joueur
-  reste présent dans les classements, la recherche et (s'il l'a choisi) le globe, et ses
+  reste présent dans les classements, la recherche et (s'il l'a choisi) le globe des
+  records, mais n'est jamais compté dans le globe des joueurs de SOCIAL, et ses
   records vérifiés restent lisibles par `GET /records/{recordId}`.
 - `allow_friend_requests: false` refuse les nouvelles demandes (`403`).
 - Jamais visibles des autres joueurs : niveau de confiance, réglages de confidentialité,
@@ -755,6 +756,22 @@ Exemple : `curl -s "$API/globe/countries?level_id=sylvanox_01"`
 ```
 Erreurs : 400, 404.
 
+#### `GET /globe/players` — tous les joueurs par pays (globe de SOCIAL) · cache
+Auth : aucune (l'en-tête est ignoré ; la réponse est la même pour tous). Nombre de joueurs
+par pays, **sans identifiant, pseudonyme ni record** : seuls comptent les comptes actifs qui
+ont choisi `location_visibility: globe` **et** un profil public (`profile_visibility:
+public`), au **centre approximatif de leur pays** (un pays sans coordonnées n'est pas
+listé). Un joueur qui masque sa position ou son profil disparaît du compte à la réponse
+suivante (au plus `EDGE_CACHE_SECONDS` plus tard pour les requêtes anonymes). Limite `reads`
+comme toute lecture. Triés par nombre de joueurs décroissant.
+Exemple : `curl -s "$API/globe/players"`
+```json
+{ "ok": true, "data": { "countries": [{ "country_code": "FR", "name_fr": "France", "name_en": "France",
+    "latitude": 46.6, "longitude": 2.4, "players": 2 }],
+  "total_players": 2, "total_countries": 1, "generated_at": "…" }, "request_id": "…" }
+```
+Erreurs : 405 (autre méthode que `GET`/`HEAD`), 429.
+
 ### 8.7 Amis
 
 Les amitiés sont réciproques ; une demande est en attente jusqu'à acceptation. Les comptes
@@ -807,7 +824,7 @@ supprimés, sauts de ligne conservés, 3 lignes vides au plus, espaces de bord r
 | Route | Rôle |
 |---|---|
 | `GET /social/conversations` | conversations du joueur (100 dernières actives) : `id`, `kind` (`direct`/`group`), `name` (nom du groupe ou pseudonyme de l'ami), `members[]` (profil public + `role`), `role`, `unread`, `last_message` ; `unread_total` |
-| `GET /social/unread` | `total` des messages non lus et les 5 plus récents (`id`, `conversation_id`, `created_at`, `body` tronqué à 120, `kind`, `name`, `sender`) — interrogé par le jeu toutes les 30 s pour les notifications |
+| `GET /social/unread` | `total` des messages non lus, dont `direct` (conversations privées) et `groups` (groupes) ; `conversations[]` : `conversation_id`, `kind`, `unread` des seules conversations qui ont des messages non lus (les plus nombreux d'abord) ; `latest[]` : les 5 plus récents (`id`, `conversation_id`, `created_at`, `body` tronqué à 120, `kind`, `name`, `sender`) — interrogé par le jeu toutes les 30 s pour les badges (bouton SOCIAL, entrée « En ligne » du menu, onglet « Discussions », chaque conversation et groupe) et les notifications |
 | `POST /social/direct` `{player_id}` | ouvre (ou crée une fois) la conversation privée avec un ami — `403 NOT_FRIENDS` / `403 BLOCKED` |
 | `POST /social/groups` `{name, member_ids}` | crée un groupe (nom 1-40, 1 à 19 amis : 20 membres au plus) ; le créateur en est le propriétaire |
 | `PATCH /social/groups/{id}` `{name}` | renommer (propriétaire) |
@@ -815,7 +832,7 @@ supprimés, sauts de ligne conservés, 3 lignes vides au plus, espaces de bord r
 | `DELETE /social/groups/{id}/members/{playerId}` | quitter (soi-même) ou retirer un membre (propriétaire). Le propriétaire qui part transmet le groupe au membre le plus ancien ; un groupe vide est supprimé |
 | `GET /social/conversations/{id}/messages?limit=1..100&before=<date ISO>` | messages du plus ancien au plus récent (`id`, `sender`, `mine`, `body`, `deleted`, `created_at`), `has_more` |
 | `POST /social/conversations/{id}/messages` `{body}` | envoie un message (`201`) ; dans une conversation privée, il faut être encore amis et sans blocage |
-| `POST /social/conversations/{id}/read` | marque tout comme lu |
+| `POST /social/conversations/{id}/read` | marque tout comme lu (le compteur de la conversation retombe à 0) |
 | `DELETE /social/messages/{id}` | l'auteur efface son message (le texte est supprimé, la bulle « Message supprimé » reste) |
 | `POST /social/messages/{id}/report` `{reason?}` | signale le message d'un autre membre aux modérateurs (une fois par joueur et par message, journal d'audit) |
 | `GET /social/blocks` · `POST /social/blocks` `{player_id}` · `DELETE /social/blocks/{playerId}` | joueurs bloqués, bloquer, débloquer (le joueur bloqué n'est pas prévenu) |

@@ -134,6 +134,36 @@ export async function globeCountryRecords(ctx: Ctx, viewer: AuthInfo | null): Pr
     });
 }
 
+/**
+ * GET /globe/players: every player of Cosmic Online on the globe, as counts per country (the
+ * globe of SOCIAL). Only players who chose `location_visibility = 'globe'` with a public
+ * profile are counted, at the approximate centre of their country: no identifier, no name,
+ * no record. The same answer for everybody, so it is cached at the edge.
+ */
+export async function globePlayers(ctx: Ctx): Promise<Response> {
+    const rows = await ctx.env.DB.prepare(
+        `SELECT c.code, c.name_fr, c.name_en, c.latitude, c.longitude, COUNT(*) AS players
+         FROM players p JOIN countries c ON c.code = p.country_code
+         WHERE p.account_status = 'active' AND p.location_visibility = 'globe' AND p.profile_visibility = 'public'
+           AND c.latitude IS NOT NULL AND c.longitude IS NOT NULL
+         GROUP BY c.code ORDER BY players DESC, c.code`,
+    ).all<{ code: string; name_fr: string; name_en: string; latitude: number; longitude: number; players: number }>();
+    let total = 0;
+    const countries = rows.results.map((r) => {
+        total += r.players;
+        return {
+            country_code: r.code,
+            name_fr: r.name_fr,
+            name_en: r.name_en,
+            // Approximate representation point of the country, never a personal position.
+            latitude: r.latitude,
+            longitude: r.longitude,
+            players: r.players,
+        };
+    });
+    return json(ctx, { countries, total_players: total, total_countries: countries.length, generated_at: new Date().toISOString() });
+}
+
 /** GET /globe/countries: aggregation per country (used when the globe is zoomed out). */
 export async function globeCountries(ctx: Ctx): Promise<Response> {
     const category = queryEnum(ctx.url, "category", CATEGORIES, "ANY_PERCENT");

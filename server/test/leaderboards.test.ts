@@ -179,6 +179,50 @@ describe("globe", () => {
         ]);
     });
 
+    it("counts every visible player per country, without identifying anyone", async () => {
+        // With or without a record: the globe of SOCIAL shows all the players.
+        await registerPlayer("Amelie", { country_code: "FR", location_visibility: "globe" });
+        await registerPlayer("Agathe", { country_code: "FR", location_visibility: "globe" });
+        await registerPlayer("Bastien", { country_code: "FR", location_visibility: "country" });
+        await registerPlayer("Carter", { country_code: "US", location_visibility: "globe" });
+        await registerPlayer("Daichi", { country_code: "JP", location_visibility: "hidden" });
+        const priv = await registerPlayer("Elke", { country_code: "DE", location_visibility: "globe" });
+        await api("PATCH", "/api/v1/players/me", { token: priv.token, body: { profile_visibility: "private" } });
+        const gone = await registerPlayer("Gustav", { country_code: "DE", location_visibility: "globe" });
+        await env.DB.prepare("UPDATE players SET account_status = 'suspended' WHERE id = ?1").bind(gone.id).run();
+        // A country without coordinates never produces a point.
+        await registerPlayer("Pingu", { country_code: "AQ", location_visibility: "globe" });
+        await registerPlayer("Anonyme");
+
+        const res = await api("GET", "/api/v1/globe/players");
+        expect(res.status).toBe(200);
+        expect(res.body.data).toMatchObject({ total_players: 3, total_countries: 2 });
+        expect(res.body.data.countries).toEqual([
+            { country_code: "FR", name_fr: "France", name_en: "France", latitude: 46.6, longitude: 2.4, players: 2 },
+            { country_code: "US", name_fr: "États-Unis", name_en: "United States", latitude: 39.8, longitude: -98.6, players: 1 },
+        ]);
+        expect(res.body.data.generated_at).toMatch(/Z$/);
+        // Counts only: no identifier, no pseudonym, no record anywhere in the answer.
+        const raw = JSON.stringify(res.body.data);
+        for (const word of ["Amelie", "Agathe", "Carter", "player_id", "username", "record"]) expect(raw).not.toContain(word);
+        // The same public answer with or without a session.
+        const asViewer = await api("GET", "/api/v1/globe/players", { token: priv.token });
+        expect(asViewer.body.data.countries).toEqual(res.body.data.countries);
+        // Turning the location off removes the player at once.
+        const fr = await registerPlayer("Hugo", { country_code: "FR", location_visibility: "globe" });
+        expect((await api("GET", "/api/v1/globe/players")).body.data.countries[0].players).toBe(3);
+        await api("PATCH", "/api/v1/players/me", { token: fr.token, body: { location_visibility: "country" } });
+        expect((await api("GET", "/api/v1/globe/players")).body.data.countries[0].players).toBe(2);
+        expect((await api("POST", "/api/v1/globe/players")).status).toBe(405);
+        // A read route like the others: refused beyond the per-IP read limit.
+        const ip = "10.250.0.1";
+        expect((await api("GET", "/api/v1/globe/players", { ip })).status).toBe(200);
+        await env.DB.prepare("UPDATE rate_limits SET count = 300 WHERE bucket LIKE 'reads:%'").run();
+        const limited = await api("GET", "/api/v1/globe/players", { ip });
+        expect(limited.status).toBe(429);
+        expect(limited.body.error.code).toBe("RATE_LIMITED");
+    });
+
     it("hides a player who turns location off", async () => {
         const ps = await field();
         await api("PATCH", "/api/v1/players/me", { token: ps.fr1!.token, body: { location_visibility: "hidden" } });
