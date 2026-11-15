@@ -53,7 +53,9 @@ for (const { id, planet, order, last } of campaign.sort((a, b) => (a.id < b.id ?
     levels[id] = {
         name: l.name,
         planet,
-        // Place in the planet (1 = first level) and whether it is the planet's last one.
+        // Place in the planet (1 = first level) and whether it is the planet's last one
+        // (among the levels drawn automatically: an EXTRÊME level added after the planet's
+        // final level, such as noyau_03 in 2.34, leaves that final level the last one).
         order,
         last,
         revision: Math.max(1, l.metadata?.revision | 0 || 1),
@@ -66,6 +68,11 @@ for (const { id, planet, order, last } of campaign.sort((a, b) => (a.id < b.id ?
         // rules already decide how many times the player may fall.
         auto: l.extreme !== true && timerMode !== "challenge" && !((l.lives | 0) > 0),
     };
+}
+
+for (const l of Object.values(levels)) {
+    const later = Object.values(levels).some((o) => o.planet === l.planet && o.auto && o.order > l.order);
+    l.last = l.auto && !later;
 }
 
 const player = read("data", "player.json");

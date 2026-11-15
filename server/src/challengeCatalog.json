@@ -277,6 +277,8 @@
   "noyau_03": {
    "name": "Le Cœur d'une Étoile Mourante",
    "planet": "noyau",
+   "order": 3,
+   "last": false,
    "revision": 8,
    "slots": 4,
    "start_powers": [
