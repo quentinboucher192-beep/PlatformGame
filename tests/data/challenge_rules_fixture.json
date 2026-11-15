@@ -1,0 +1,48 @@
+{
+ "comment": "Forme canonique des règles d'un défi (docs/online/DAILY_CHALLENGES.md) : le jeu et le serveur doivent produire exactement ces chaînes et empreintes.",
+ "cases": [
+  {
+   "input": {
+    "challenge": "daily-2026-11-16",
+    "hearts": 2,
+    "slots": 3,
+    "powers": [
+     "grapple",
+     "glide",
+     "dash"
+    ],
+    "stations": true,
+    "checkpoints": false
+   },
+   "canonical": "{\"challenge\":\"daily-2026-11-16\",\"hearts\":2,\"slots\":3,\"powers\":[\"dash\",\"glide\",\"grapple\"],\"stations\":true,\"checkpoints\":false}",
+   "sha256": "8b01187ecc43f80f36d7a9ff7b22942e1c2e727b281df7fd69578b71417e4e0c"
+  },
+  {
+   "input": {
+    "challenge": "daily-2026-11-22",
+    "hearts": 1,
+    "slots": 2,
+    "powers": [],
+    "stations": false,
+    "checkpoints": true
+   },
+   "canonical": "{\"challenge\":\"daily-2026-11-22\",\"hearts\":1,\"slots\":2,\"powers\":[],\"stations\":false,\"checkpoints\":true}",
+   "sha256": "b30f5bf37bd3536c21b8f991ace7828eb5b29b63d06816e5fcbce7dae12e3b28"
+  },
+  {
+   "input": {
+    "challenge": "daily-2027-01-01",
+    "hearts": 20,
+    "slots": 8,
+    "powers": [
+     "wave",
+     "air_dash"
+    ],
+    "stations": true,
+    "checkpoints": true
+   },
+   "canonical": "{\"challenge\":\"daily-2027-01-01\",\"hearts\":20,\"slots\":8,\"powers\":[\"air_dash\",\"wave\"],\"stations\":true,\"checkpoints\":true}",
+   "sha256": "1d00cf451cd119cfa45ae94ac229dc0a549689c235d01bda5d3c3140f91bc8e8"
+  }
+ ]
+}
