@@ -4,6 +4,7 @@
 
 #include "game/GameServices.h"
 #include "game/levels/LevelTimer.h"
+#include "ui/online/RatingWidgets.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
 #include "ui/widgets/Glyphs.h"
@@ -253,6 +254,8 @@ public:
         for (size_t i = 0; i < levels_.size(); ++i)
             if (levels_[i]->id == g_.progression.lastLevel) selected_ = static_cast<int>(i);
         if (!levels_.empty()) g_.ui.setFocus("levels/l" + std::to_string(selected_));
+        // Players' ratings of the levels (Cosmic Online, only when logged in; cached on disk).
+        g_.online.refreshLevelRatings();
     }
     void update(float dt) override {
         t_ += dt;
@@ -345,6 +348,9 @@ public:
                 Vec2 rs = ui.labelWrapped(rating->summary(), {x, cy}, colW - ui.s(10), 16, ui.theme().textDim);
                 cy += rs.y + ui.s(8);
             }
+            // The players' rating (Cosmic Online, average computed by the server): a separate
+            // line, never mixed with the difficulty computed above. Official levels only.
+            if (l.source == ContentSource::Builtin) cy += drawCampaignRating(g_, l.id, {x, cy}, colW - ui.s(10), 19) + ui.s(6);
             if (d.timerMode == TimerMode::Limited || d.timerMode == TimerMode::Challenge) {
                 ui.label("Durée maximale : " + LevelTimer::format(d.timeLimit, false), {x, cy}, 21, ui.theme().text);
                 cy += ui.s(32);

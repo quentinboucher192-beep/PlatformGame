@@ -142,6 +142,10 @@ std::unique_ptr<Scene> makeOnlineSettings(GameServices& g, int tab = 0);
 /// `version` 0 = the current one).
 std::unique_ptr<Scene> makeRaceBoard(GameServices& g, const std::string& kind, const std::string& levelId, int version = 0,
                                      const std::string& levelHash = {});
+/// « Avis et commentaires » (pushed over ONLINE, 2.19): `thread` = "level:<official level
+/// id>" (the players' rating and the level's comments) or "run:<record id>" (the comments of
+/// a run of the leaderboards; `levelId` names its level until the record is read).
+std::unique_ptr<Scene> makeOnlineThread(GameServices& g, const std::string& thread, const std::string& levelId = {});
 /// Downloads and plays back the replay of a verified record.
 std::unique_ptr<Scene> makeReplayViewer(GameServices& g, const std::string& recordId);
 /// Plays a replay already in memory (the run just finished, a .cprz file).

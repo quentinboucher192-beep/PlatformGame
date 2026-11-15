@@ -11,6 +11,7 @@
 #include "engine/core/Json.h"
 #include "engine/core/Paths.h"
 #include "game/online/LevelFingerprint.h"
+#include "game/online/LevelRatings.h"
 #include "game/online/OnlineCache.h"
 #include "game/online/OnlineClient.h"
 #include "game/online/OnlineRecord.h"
@@ -129,6 +130,16 @@ public:
     /// Seconds waiting to be sent (tests, settings).
     double pendingPlaytime() const;
     void flushPlaytime(ApiCallback cb = {});
+
+    // ------------------------------------------------------ campaign ratings
+    /// Players' ratings of the official levels (2.19): the last averages received, kept on
+    /// disk (online/level_ratings.json) and shown offline as received earlier. Read from the
+    /// server only while logged in.
+    const LevelRatingCache& levelRatings() const { return levelRatings_; }
+    /// Reads GET /levels/ratings (logged in only; at most every 10 minutes unless `force`).
+    void refreshLevelRatings(bool force = false, ApiCallback cb = {});
+    /// A screen received a rating view (GET / PUT / DELETE /levels/{id}/rating): cached.
+    void noteLevelRating(const Json& view);
 
     // ------------------------------------------------------ community levels
     /// Community level installed from ONLINE LEVELS under this local id: {id, version,
@@ -256,6 +267,11 @@ private:
 
     Json communityInstalls_ = Json::object();
     void saveCommunityInstalls();
+
+    LevelRatingCache levelRatings_;
+    bool ratingsBusy_ = false;
+    double ratingsReadAt_ = -1e9;  // steady seconds of the last successful read
+    void saveLevelRatings();
 
     float socialTimer_ = 5.0f;
     bool socialBusy_ = false;
