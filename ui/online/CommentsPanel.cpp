@@ -92,8 +92,10 @@ void CommentsPanel::load(bool more) {
             busy_ = false;
             loaded_ = true;
             if (!r.ok) {
+                // Shown in place of the list when there is nothing to show yet.
                 loadError_ = r.message;
-                return say(r.message, true);
+                if (!comments_.empty()) say(r.message, true);
+                return;
             }
             loadError_.clear();
             Json list = r.data.value("comments", Json::array());
@@ -383,8 +385,10 @@ bool CommentsPanel::draw(const Rect& area) {
     float hf = ui.fitFont(head, FontFace::Bold, 19, room, 0.7f);
     ui.label(ui.elide(head, FontFace::Bold, hf, room), {hx, y + ui.s(20)}, hf, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
     y += ui.s(52);
-    // Composer.
-    if (!g_.online.loggedIn()) {
+    // Composer (not for a thread that could not be read: closed, or no network).
+    if (!loadError_.empty() && comments_.empty()) {
+        // Nothing to answer: the list area says why.
+    } else if (!g_.online.loggedIn()) {
         ui.label("Connectez-vous pour commenter.", {x, y + ui.s(16)}, 16, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
         y += ui.s(40);
     } else {
