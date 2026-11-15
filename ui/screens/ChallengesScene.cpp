@@ -546,7 +546,7 @@ private:
         const ChallengeResult* res = g_.challenges.result(c.id);
         fitLabel(ui, "Paliers", {x, y + ui.s(11)}, 18, w, ui.theme().accent, Align::Left, FontFace::Bold);
         y += ui.s(30);
-        drawTierCards(ui, c, {x, y, w, ui.s(96)}, res ? res->tier : ChallengeTier::None, true);
+        drawTierCards(ui, c, {x, y, w, ui.s(96)}, myDay(c.id).tier, true);
         y += ui.s(96) + ui.s(18);
         // My best time, its state, the streak.
         Rect box{x, y, w, std::max(ui.s(60), std::min(ui.s(84), by - ui.s(16) - y))};
@@ -598,15 +598,21 @@ private:
         sw = std::min(sw, w * 0.5f);
         fitLabel(ui, streak, {x + w, top}, 15, sw, s.current > 0 ? ui.theme().warm : ui.theme().textDim, Align::Right, FontFace::Bold);
         fitLabel(ui, "Mon meilleur temps", {x, top}, 15, w - sw - ui.s(16), ui.theme().textDim);
-        if (!res || res->bestMs <= 0) {
+        // This computer's best, or the server's when it is better (a run made elsewhere).
+        const MyDay day = myDay(c.id);
+        if (day.bestMs <= 0) {
             fitLabel(ui, "Pas encore de temps sur ce défi.", {x, bottom}, 19, w, ui.theme().text, Align::Left, FontFace::Bold);
             return;
         }
-        Vec2 t = ui.label(formatRunTime(res->bestMs), {x, bottom}, fz(ui, 24), ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+        Vec2 t = ui.label(formatRunTime(day.bestMs), {x, bottom}, fz(ui, 24), ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
         float cx = x + t.x + ui.s(14);
         float h = ui.s(28);
-        cx += chip(ui, challengeTierLabel(res->tier), cx, bottom, h, tierColor(res->tier), x + w - cx, true) + ui.s(10);
+        cx += chip(ui, challengeTierLabel(day.tier), cx, bottom, h, tierColor(day.tier), x + w - cx, true) + ui.s(10);
         auto [state, note] = bestState(c);
+        if (!res || res->bestMs <= 0 || day.bestMs < res->bestMs) {
+            state = day.state;
+            note.clear();
+        }
         std::string label = challengeRunStateLabel(state);
         if (cx < x + w - ui.s(60)) cx += chip(ui, label, cx, bottom, h, stateColor(ui.theme(), state), x + w - cx) + ui.s(10);
         if (!note.empty() && cx < x + w - ui.s(60)) fitLabel(ui, note, {cx, bottom}, 14, x + w - cx, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle, 0.7f);
@@ -810,6 +816,31 @@ private:
 
     // ------------------------------------------------------------------ Archives
 
+    /// My result of a challenge's day: the best of this computer's and the server's (a run
+    /// made on another computer counts too), with the state of that time.
+    struct MyDay {
+        int64_t bestMs = 0;
+        ChallengeTier tier = ChallengeTier::None;
+        ChallengeRunState state = ChallengeRunState::LocalOnly;
+    };
+    MyDay myDay(const std::string& id) const {
+        MyDay d;
+        if (const ChallengeResult* r = g_.challenges.result(id); r && r->bestMs > 0) {
+            d.bestMs = r->bestMs;
+            d.tier = r->tier;
+            if (const ChallengeSubmission* s = g_.challenges.bestSubmission(id); s && g_.online.loggedIn() && s->ownerId == g_.online.playerId())
+                d.state = s->state;
+        }
+        if (auto s = g_.challenges.serverResult(id); s && s->bestMs > 0) {
+            if (d.bestMs <= 0 || s->bestMs <= d.bestMs) {
+                d.bestMs = s->bestMs;
+                d.state = s->status;
+            }
+            d.tier = std::max(d.tier, s->tier);
+        }
+        return d;
+    }
+
     void loadMore() {
         g_.challenges.loadArchives([this, life = std::weak_ptr<int>(life_)](bool ok, const std::string& m) {
             if (!life.lock()) return;
@@ -860,10 +891,9 @@ private:
                 bool on = selected_ == c.id;
                 ui.r().fillRoundedRect(row, ui.s(10), on ? Color{28, 64, 84, 240} : hovered ? Color{20, 30, 56, 230} : Color{12, 18, 38, 220});
                 if (on || ui.focused("row" + c.id)) ui.r().drawRoundedRect(row, ui.s(10), ui.theme().accent.withAlpha(180), std::max(1.0f, ui.s(1.5f)));
-                const ChallengeResult* res = g_.challenges.result(c.id);
                 float rx = row.x + ui.s(16), rroom = row.w - ui.s(32);
-                // My tier at the right (or « — » when I did not finish it).
-                ChallengeTier t = res ? res->tier : ChallengeTier::None;
+                // My tier at the right (« Non joué » when I did not finish it).
+                ChallengeTier t = myDay(c.id).tier;
                 float h = ui.s(28);
                 std::string tl = t == ChallengeTier::None ? std::string("Non joué") : challengeTierLabel(t);
                 float tw = chipWidth(ui, tl, h);
@@ -905,22 +935,20 @@ private:
         y += drawLevelHeader(*c, place, x, y, w, std::clamp(by - y - below, ui.s(84), ui.s(330))) + ui.s(18);
         y += drawChipRows(ui, chips, x, y, w, chipH, ui.theme().accent) + ui.s(18);
         const ChallengeResult* res = g_.challenges.result(c->id);
-        drawTierCards(ui, *c, {x, y, w, ui.s(92)}, res ? res->tier : ChallengeTier::None, true);
+        const MyDay day = myDay(c->id);
+        drawTierCards(ui, *c, {x, y, w, ui.s(92)}, day.tier, true);
         y += ui.s(92) + ui.s(18);
-        // My result that day.
+        // My result that day (this computer's, or the server's: a run made elsewhere).
         Rect box{x, y, w, std::max(ui.s(56), std::min(ui.s(80), by - ui.s(46) - y))};
         ui.r().fillRoundedRect(box, ui.s(10), Color{12, 18, 38, 220});
         float bx = box.x + ui.s(18), bw = box.w - ui.s(36), cy = box.center().y;
-        if (!res || res->bestMs <= 0) {
+        if (day.bestMs <= 0) {
             fitLabel(ui, "Vous n'avez pas fini ce défi le jour même.", {bx, cy}, 18, bw, ui.theme().textDim);
         } else {
             Vec2 l = ui.label("Mon temps : ", {bx, cy}, fz(ui, 18), ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
-            Vec2 t = ui.label(formatRunTime(res->bestMs), {bx + l.x, cy}, fz(ui, 22), ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+            Vec2 t = ui.label(formatRunTime(day.bestMs), {bx + l.x, cy}, fz(ui, 22), ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
             float cx = bx + l.x + t.x + ui.s(14);
-            ChallengeRunState st = ChallengeRunState::LocalOnly;
-            if (const ChallengeSubmission* s = g_.challenges.bestSubmission(c->id); s && g_.online.loggedIn() && s->ownerId == g_.online.playerId()) st = s->state;
-            else if (auto ss = g_.challenges.serverStatus(c->id)) st = *ss;
-            if (cx < bx + bw - ui.s(60)) chip(ui, challengeRunStateLabel(st), cx, cy, ui.s(28), stateColor(ui.theme(), st), bx + bw - cx);
+            if (cx < bx + bw - ui.s(60)) chip(ui, challengeRunStateLabel(day.state), cx, cy, ui.s(28), stateColor(ui.theme(), day.state), bx + bw - cx);
         }
         y = box.bottom() + ui.s(8);
         std::string note = msgTimer_ > 0.0f ? msg_ : place.problem;

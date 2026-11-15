@@ -493,7 +493,16 @@ ChallengeService::Streak ChallengeService::streak() const {
         Streak s = *serverStreak_;
         auto last = dayNumber(s.lastDate), today = dayNumber(utcDate(nowMs()));
         if (last && today && *last < *today - 1) s.current = 0;
-        // A run finished here since that reading: the local streak may be further on.
+        // Today's challenge finished here since that reading (the server counts it once it
+        // has the run): the streak goes on by today.
+        const std::string todayDate = utcDate(nowMs());
+        bool playedToday = false;
+        for (const auto& [id, r] : results_) playedToday = playedToday || (r.finishes > 0 && r.date == todayDate);
+        if (last && today && *last == *today - 1 && playedToday) {
+            ++s.current;
+            s.best = std::max(s.best, s.current);
+            s.lastDate = todayDate;
+        }
         Streak local = localStreak();
         if (local.current > s.current) return local;
         return s;
@@ -516,11 +525,12 @@ void ChallengeService::refreshMine(ApiCallback cb) {
     online_->get("/api/v1/challenges/me?limit=60", OnlineService::guard(life_, [this, cb, who](const ApiResult& r) {
         mineBusy_ = false;
         if (r.ok && online_->playerId() == who) {
+            if (serverStreakFor_ != who) serverResults_.clear();  // another account's
+            serverStreakFor_ = who;
             const Json& s = r.data.value("streak", Json::object());
-            if (s.is_object()) {
+            if (s.is_object())
                 serverStreak_ = Streak{std::max(0, jget<int>(s, "current", 0)), std::max(0, jget<int>(s, "best", 0)), jstr(s, "last_date"), true};
-                serverStreakFor_ = who;
-            }
+            else serverStreak_.reset();
             const Json& results = r.data.value("results", Json::array());
             bool changed = false;
             if (results.is_array())
@@ -528,8 +538,8 @@ void ChallengeService::refreshMine(ApiCallback cb) {
                     std::string id = jstr(x, "challenge_id");
                     if (!safeId(id)) continue;
                     ChallengeRunState st = challengeRunStateFromServer(jstr(x, "status"));
-                    serverStatus_[id] = st;
                     int64_t best = jget<int64_t>(x, "best_time_ms", 0);
+                    serverResults_[id] = ServerResult{std::max<int64_t>(0, best), challengeTierFromJson(x.value("tier", Json())), st};
                     // My run of that time: its state is the server's.
                     for (auto& sub : submissions_)
                         if (sub.challengeId == id && sub.ownerId == who && sub.timeMs == best && !sub.runId.empty() && sub.state != st &&
@@ -545,11 +555,17 @@ void ChallengeService::refreshMine(ApiCallback cb) {
     }), true);
 }
 
-std::optional<ChallengeRunState> ChallengeService::serverStatus(const std::string& challengeId) const {
-    if (!online_ || !online_->loggedIn()) return std::nullopt;
-    auto it = serverStatus_.find(challengeId);
-    if (it == serverStatus_.end()) return std::nullopt;
+std::optional<ChallengeService::ServerResult> ChallengeService::serverResult(const std::string& challengeId) const {
+    if (!online_ || !online_->loggedIn() || serverStreakFor_ != online_->playerId()) return std::nullopt;
+    auto it = serverResults_.find(challengeId);
+    if (it == serverResults_.end()) return std::nullopt;
     return it->second;
+}
+
+std::optional<ChallengeRunState> ChallengeService::serverStatus(const std::string& challengeId) const {
+    auto r = serverResult(challengeId);
+    if (!r) return std::nullopt;
+    return r->status;
 }
 
 // ------------------------------------------------------------------ runs

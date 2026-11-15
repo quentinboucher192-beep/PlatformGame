@@ -167,6 +167,14 @@ public:
     void refreshMine(ApiCallback cb = {});
     /// The server's status of my best run of a challenge (/challenges/me), if read.
     std::optional<ChallengeRunState> serverStatus(const std::string& challengeId) const;
+    /// My best run of a challenge as the server knows it (/challenges/me: also the runs made on
+    /// another computer), if read.
+    struct ServerResult {
+        int64_t bestMs = 0;
+        ChallengeTier tier = ChallengeTier::None;
+        ChallengeRunState status = ChallengeRunState::Pending;
+    };
+    std::optional<ServerResult> serverResult(const std::string& challengeId) const;
 
     // ------------------------------------------------------------------- runs
     struct RunReport {
@@ -233,7 +241,7 @@ private:
     bool mineBusy_ = false;
     std::optional<Streak> serverStreak_;
     std::string serverStreakFor_;
-    std::map<std::string, ChallengeRunState> serverStatus_;
+    std::map<std::string, ServerResult> serverResults_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
 };
 

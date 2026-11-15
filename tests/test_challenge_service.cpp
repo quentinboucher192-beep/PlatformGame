@@ -311,6 +311,17 @@ TEST_CASE("challenge service: a run waits for the connection, then goes with its
     CHECK(rig.pump([&] { return done; }));
     CHECK(rig.challenges.streak().fromServer);
     CHECK(rig.challenges.streak().current == 4);
+    // My result of the day as the server knows it (also a run made on another computer).
+    auto sr = rig.challenges.serverResult(c->id);
+    CHECK(sr.has_value());
+    CHECK(sr->bestMs == 70000);
+    CHECK(sr->tier == ChallengeTier::Gold);
+    CHECK(sr->status == ChallengeRunState::Verified);
+    // Another account: nothing of it.
+    rig.online.logout(false);
+    CHECK(rig.pump([&] { return !rig.online.loggedIn(); }));
+    CHECK(!rig.challenges.serverResult(c->id).has_value());
+    CHECK(!rig.challenges.streak().fromServer);
 }
 
 TEST_CASE("challenge service: a run refused by the server is not sent again") {
