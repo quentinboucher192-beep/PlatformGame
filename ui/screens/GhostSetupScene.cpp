@@ -17,6 +17,7 @@
 #include "game/ghost/GhostRace.h"
 #include "game/online/LevelFingerprint.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/ReplayCompareNav.h"
 #include "ui/widgets/FileDialogs.h"
 #include "ui/widgets/Glyphs.h"
 
@@ -421,6 +422,9 @@ private:
         UIContext::ButtonStyle st;
         st.small = true;
         if (ui.button("options", {area.x, y, std::min(area.w, ui.s(300)), ui.s(46)}, "Options d'affichage…", st)) g_.app.pushScene(makeGhostOptions(g_, nullptr));
+        y += ui.s(56);
+        // Two of these replays side by side, B shifted in time (read only).
+        if (ui.button("compare", {area.x, y, std::min(area.w, ui.s(300)), ui.s(46)}, "Comparer deux replays…", st)) openCompare();
         y += ui.s(66);
         ui.separator({area.x, y}, area.w);
         y += ui.s(16);
@@ -458,6 +462,19 @@ private:
                                  "Aucun record, aucune progression, rien n'est envoyé en ligne.",
                                  {area.x, y}, area.w, fz(ui, 15), th.textDim).y;
         }
+    }
+
+    /// « Comparer deux replays »: the ghosts chosen here are offered first (A, then B).
+    void openCompare() {
+        ReplayCompareRequest req;
+        req.levelId = levelId_;
+        for (size_t i : order_) {
+            if (i >= rows_.size() || !rows_[i].selected) continue;
+            const GhostMeta& m = rows_[i].entry.meta;
+            bool mine = m.source == "pb" || m.source == "prev" || m.source == "last";
+            req.preselect.push_back(mine ? m.source : !rows_[i].recordId.empty() ? rows_[i].recordId : Paths::toUtf8(rows_[i].entry.file));
+        }
+        g_.app.pushScene(makeReplayCompareSetup(g_, std::move(req)));
     }
 
     // -------------------------------------------------------------- start

@@ -10,6 +10,7 @@ namespace {
 /// The last steps before a jump's target are also shown to the display update (particles,
 /// animations: never the simulation), so the picture arrived at looks like a playback.
 constexpr uint32_t kSettleSteps = 45;
+constexpr double kHalfMs = 0.0005;
 }  // namespace
 
 ReplayPlayback::ReplayPlayback(WorldServices services, LevelData level, const ReplayData& replay)
@@ -90,9 +91,10 @@ void ReplayPlayback::seekTick(uint32_t tick) {
 void ReplayPlayback::seekTime(double seconds) {
     seconds = std::max(0.0, seconds);
     // Already simulated once: the step is known, the jump is a plain step jump.
-    if (known_ > 0 && static_cast<double>(chrono_[known_]) + 1e-4 >= seconds) {
+    // Half a millisecond of tolerance: a split given in ms lands on the step that made it.
+    if (known_ > 0 && static_cast<double>(chrono_[known_]) + kHalfMs >= seconds) {
         auto begin = chrono_.begin(), end = chrono_.begin() + static_cast<std::ptrdiff_t>(known_) + 1;
-        auto it = std::lower_bound(begin, end, static_cast<float>(seconds - 1e-4));
+        auto it = std::lower_bound(begin, end, static_cast<float>(seconds - kHalfMs));
         seekTick(static_cast<uint32_t>(it - begin));
         return;
     }
@@ -107,7 +109,7 @@ bool ReplayPlayback::arrived() const {
     switch (mode_) {
         case Mode::None: return true;
         case Mode::Tick: return main_.sim->tick() >= targetTick_;
-        case Mode::Time: return static_cast<double>(main_.world->timer().elapsed()) + 1e-4 >= targetTime_;
+        case Mode::Time: return static_cast<double>(main_.world->timer().elapsed()) + kHalfMs >= targetTime_;
     }
     return true;
 }

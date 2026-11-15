@@ -373,8 +373,8 @@ TEST_CASE("replay: a jump in time gives the same state as playing continuously")
     double at = chrono[1700];
     p.seekTime(at);
     p.finishSeek();
-    CHECK(p.runTime() + 1e-4 >= at);
-    CHECK(p.tick() == 0 || chrono[p.tick() - 1] + 1e-4 < at);
+    CHECK(p.runTime() + 5e-4 >= at);
+    CHECK(p.tick() == 0 || chrono[p.tick() - 1] + 5e-4 < at);
     CHECK(simulationStateHash(p.world()) == digest[p.tick()]);
     ReplayPlayback q(fx().services(), *level, replay);
     q.seekTime(chrono[2600]);
@@ -382,7 +382,17 @@ TEST_CASE("replay: a jump in time gives the same state as playing continuously")
     while (!q.advance(500)) ++pieces;
     CHECK(pieces >= 4);
     CHECK(simulationStateHash(q.world()) == digest[q.tick()]);
-    CHECK(std::abs(q.runTime() - chrono[2600]) < 1e-4 || chrono[q.tick() - 1] + 1e-4 < chrono[2600]);
+    CHECK(std::abs(q.runTime() - chrono[2600]) < 5e-4 || chrono[q.tick() - 1] + 5e-4 < chrono[2600]);
+    // A split given to the millisecond lands on the step that made it.
+    size_t firstRunning = 1;
+    while (firstRunning < total && chrono[firstRunning] <= 0.0f) ++firstRunning;
+    for (size_t k : {firstRunning + 7, firstRunning + 500, static_cast<size_t>(2222)}) {
+        double ms = static_cast<double>(std::llround(static_cast<double>(chrono[k]) * 1000.0)) / 1000.0;
+        q.seekTime(ms);
+        q.finishSeek();
+        CHECK(std::llround(static_cast<double>(q.runTime()) * 1000.0) == std::llround(ms * 1000.0));
+        CHECK(simulationStateHash(q.world()) == digest[q.tick()]);
+    }
     auto t1 = std::chrono::steady_clock::now();
     ReplayPlayback full(fx().services(), *level, replay);
     full.seekTick(total);

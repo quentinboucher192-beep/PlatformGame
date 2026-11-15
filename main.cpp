@@ -34,6 +34,11 @@
 //                           the « course à la vérification » of an EXTRÊME level, over
 //                           ONLINE RANKING (official) or ONLINE LEVELS (community)
 //   --replay <file.cprz>    play a replay file (exact replays are re-simulated)
+//   --compare <a.cprz>,<b.cprz>
+//                           compare two replay files (A played, B as a ghost)
+//   --compare-setup <level> open « Comparer deux replays » for a level
+//   --replay-view <options> with --replay / --compare (screenshots): at=<s>,offset=<ms>,
+//                           align=<row>,cam=<0..2>,pause
 //   --analyze-levels <dir>  shortcut detector on the campaign levels (report + PPM maps)
 //   --seal-levels <dir>     add gates against the shortcuts found (tools/levelgen/seals)
 //   --save-replay <file.cprz>
@@ -65,6 +70,7 @@
 #include "packaging/PackageExporter.h"
 #include "ui/online/OnlineToasts.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/ReplayCompareNav.h"
 
 using namespace cosmic;
 
@@ -521,7 +527,35 @@ int main(int argc, char** argv) {
         app.pushScene(makeSocial(game, value("--social")));
     } else if (has("--online")) {
         app.pushScene(makeOnlineRanking(game, value("--online")));
+    } else if (std::string cf = value("--compare"); !cf.empty()) {
+        // Two replay files side by side (automated screenshots and checks).
+        if (std::string v = value("--replay-view"); !v.empty()) game.onlineOpen = "rview:" + v;
+        ReplayChoice ab[2];
+        size_t comma = cf.find(',');
+        std::string files[2] = {cf.substr(0, comma), comma == std::string::npos ? std::string{} : cf.substr(comma + 1)};
+        for (int i = 0; i < 2; ++i) {
+            std::string err;
+            if (auto bytes = FileUtil::readBinary(Paths::fromUtf8(files[i]))) {
+                if (auto rep = ReplayData::decode(*bytes, &err)) {
+                    ab[i].meta.source = "file";
+                    ab[i].meta.label = Paths::toUtf8(Paths::fromUtf8(files[i]).stem());
+                    ab[i].meta.levelId = rep->levelId;
+                    ab[i].meta.levelHash = rep->levelHash;
+                    ab[i].meta.timeMs = rep->durationMs;
+                    ab[i].replay = std::make_shared<const ReplayData>(std::move(*rep));
+                }
+            }
+            if (!ab[i].valid()) Log::error("Replay {} : {}", files[i], err.empty() ? "lecture impossible" : err);
+        }
+        if (ab[0].valid() && ab[1].valid()) app.pushScene(makeReplayCompare(game, ab[0].replay->levelId, ab[0], ab[1]));
+        else app.pushScene(makeSplashScene(game));
+    } else if (std::string cs = value("--compare-setup"); !cs.empty()) {
+        app.pushScene(makeMainMenu(game));
+        ReplayCompareRequest req;
+        req.levelId = cs;
+        app.pushScene(makeReplayCompareSetup(game, std::move(req)));
     } else if (std::string rf = value("--replay"); !rf.empty()) {
+        if (std::string v = value("--replay-view"); !v.empty()) game.onlineOpen = "rview:" + v;
         std::string err;
         std::optional<ReplayData> rep;
         if (auto bytes = FileUtil::readBinary(Paths::fromUtf8(rf))) rep = ReplayData::decode(*bytes, &err);

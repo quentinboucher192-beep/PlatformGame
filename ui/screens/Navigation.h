@@ -51,6 +51,7 @@ struct PlayOptions {
 struct SegmentSummary {
     std::string levelName;
     std::string levelKey;                 // GhostStore::levelKey (history)
+    std::string levelId;                  // the level played (« Comparer des replays »)
     std::vector<std::string> names;       // checkpoint names, in the order reached
     std::vector<float> splits;            // this run (cumulative)
     float time = 0.0f;

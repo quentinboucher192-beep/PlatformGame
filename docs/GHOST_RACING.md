@@ -106,6 +106,132 @@ téléchargements se font avant le départ.
 * Les classements en ligne ne gardent un replay que pour les records vérifiés : un joueur
   sans record vérifié n'a pas de fantôme en ligne.
 
+## Lecteur de replay avancé (2.19)
+
+*VIEW REPLAY*, *Revoir la partie*, `CosmicPlatformer --replay fichier.cprz` : un replay exact
+(format 2, même version du niveau) est **re-simulé** (voir `docs/online/REPLAY_FORMAT.md`).
+
+* **Lecture / pause**, **image par image** en avant et en arrière (une image = un pas de
+  simulation, 1/120 s), **vitesses** ×0,25, ×0,5, ×1, ×2, ×4.
+* **Barre de temps** : un clic ou un glissement va à n'importe quel instant (le replay saute
+  quand on relâche le bouton) ; repères des points de sauvegarde au-dessus.
+* **Sauts** au point de sauvegarde précédent / suivant (et à l'arrivée), ±5 s, début, fin.
+* **Chronomètre exact** (celui du niveau, à la milliseconde), **temps de passage** de chaque
+  point (temps cumulé et durée du segment ; un clic y va), **entrées du joueur** du pas en
+  cours (touches maintenues), HUD du jeu (vie, énergie, pouvoirs, objets, boss).
+* **Aller en arrière sans jamais fausser l'image** : la simulation ne sait qu'avancer et un
+  monde ne se copie pas. Le lecteur garde donc des **points de reprise** : trois autres
+  copies du niveau rejouées avec les mêmes entrées, à environ 0,75 s, 3 s et 12 s derrière
+  l'instant montré (entretenues pendant la lecture). Un retour en arrière repart de la plus
+  proche (quelques dizaines de pas à simuler : immédiat) ; sans point de reprise, le niveau
+  est rechargé et rejoué depuis le début (« Recherche de l'instant… », quelques milliers de
+  pas par image). Dans tous les cas, l'état montré est celui de la simulation à ce pas :
+  le même qu'en lecture continue (test `replay: a jump in time gives the same state as
+  playing continuously`). Un saut vers un temps va au premier pas où le chronomètre
+  l'atteint (le chronomètre s'arrête pendant l'intro et les arrêts sur image).
+* Un replay ancien (format 1) ou désynchronisé montre sa trajectoire enregistrée, sans les
+  entrées.
+
+| Action | Clavier | Manette | Souris |
+|---|---|---|---|
+| Lecture / pause | K (ou Entrée / Espace sur « Lecture ») | X (ou A sur « Lecture ») | bouton |
+| Image précédente / suivante | `,` / `.` (`;` en AZERTY) | LT / RT (maintenus : répétés) | boutons « ‹ Image » / « Image › » |
+| −5 s / +5 s | J / L | stick droit ← / → | boutons |
+| Point précédent / suivant | Q / E (Page préc. / Page suiv.) | LB / RB | boutons, lignes des temps de passage |
+| Vitesse | − / + | bouton « Vitesse » | bouton |
+| Début / fin | Origine / Fin | bouton « Début » | barre de temps |
+| Retour | Échap | B | bouton |
+
+Les flèches (croix directionnelle, stick gauche) déplacent le choix entre les boutons, comme
+dans tous les menus.
+
+## Comparer deux replays (2.19)
+
+Deux courses du même niveau côte à côte, pour voir où l'une gagne du temps sur l'autre.
+
+### Accès et choix des replays
+
+* Lecteur de replay → **Comparer…** (le replay en cours est A) ;
+* écran **Segments** de fin de course → **Comparer des replays…** (A : cette course, B : mon
+  record, ou celui qu'elle vient de battre) ;
+* écran d'avant course des fantômes → **Comparer deux replays…** (les fantômes cochés) ;
+* **classement en ligne** (niveau) → **Comparer…** (A : le record choisi, B : le meilleur autre
+  record avec replay).
+
+L'écran « Comparer deux replays » propose les mêmes sources que l'avant-course : mes courses
+de ce niveau (meilleur temps, record précédent, dernière course), les replays téléchargés
+(cache) ou importés, les records en ligne (record mondial, amis, 10 premiers ; téléchargés
+quand on les choisit, **avant** la lecture), plus le replay en lecture. Chaque ligne a ses
+boutons **A** et **B** ; « Échanger A et B » ; chaque fichier est relu et vérifié (mêmes
+vérifications que les fantômes) avant l'ouverture.
+
+### Ce qui est montré (et ce qui est exact)
+
+* **A est rejoué** : re-simulé à l'identique s'il est un replay exact de la version installée
+  du niveau (ennemis, HUD et caméra du jeu, contrôles d'empreinte) ; sinon sa trajectoire
+  enregistrée.
+* **B est un fantôme** : sa trajectoire enregistrée (positions à 30 Hz interpolées, comme en
+  Ghost Racing), sur le chronomètre de A. Re-simuler deux mondes à la fois n'apporterait rien
+  de plus exact pour B : sa trajectoire *est* ce que son monde a produit.
+* Leurs **trajectoires** sont tracées (toute la course en léger, les 2 dernières secondes en
+  vif, les points de sauvegarde passés entourés) ; « Tracés » les masque.
+* **Caméra** : « Suivre A » (la caméra du jeu en re-simulation), « Suivre B », « Les deux »
+  (cadre les deux, en dézoomant si besoin, dans la partie de l'écran que les panneaux
+  laissent libre).
+
+### Décalage de B
+
+Le décalage **d** déplace B sur le chronomètre de A : à l'instant t de A, B est montré où il
+était à t − d. « décalage +1,250 s » : B est montré 1,25 s plus tard qu'il n'a couru ;
+« décalage -0,500 s » : 0,5 s plus tôt.
+
+* Réglage fin ±10 ms, ±100 ms, gros ±1 s, **saisie directe** (« +1,250 », « -0,5 s »,
+  « 250 ms », « 1:02,5 »), **Zéro** ;
+* **Recaler B** sur un point de sauvegarde choisi (ou l'arrivée) : d = (passage de A) −
+  (passage de B) à ce point, à la milliseconde. B y passe en même temps que A (écart 0,000).
+* Le décalage est borné (± la somme des deux durées). Le chronomètre de la comparaison
+  continue après l'arrivée de A tant que B (décalé) n'a pas fini.
+
+**Tous les écarts affichés tiennent compte du décalage** et le disent : « décalage +1,250 s
+compris », « B recalé sur Grand saut ». Le décalage ne change pas les durées des segments
+(ce que chaque course a mis), seulement les passages de B sur l'horloge de A et les écarts.
+
+### Écart et tableau
+
+* **Écart A − B en direct** : le temps de A pour atteindre le point le plus avancé de la route
+  qu'il a atteint, moins celui de B (décalage compris) — l'estimation du Ghost Racing ; exact
+  quand les deux ont fini. Positif : A en retard ; négatif : A en avance.
+* **Tableau segment par segment** (points appariés par position, comme en Ghost Racing) :
+  durée de A, durée de B, **A − B** sur le segment, **écart** au point (A − (B + d)) ; la
+  durée la plus rapide des deux est en **or** ; la ligne du point de recalage est marquée.
+  Un point que B n'a pas passé laisse « — » (et la durée suivante de B, qui couvrirait deux
+  segments, n'est pas comparée). Ligne **Total** : les deux temps, leur différence, l'écart
+  final. Un clic sur une ligne va au passage de A à ce point.
+
+### Versions du niveau
+
+Deux replays de versions différentes du niveau restent comparables, marqués « **autre
+version : comparaison non officielle** ». Un replay A d'une autre version que celle
+installée ne peut pas être re-simulé : sa trajectoire est montrée.
+
+### Lecture seule
+
+Aucun record, aucune progression, aucun succès, rien n'est envoyé au serveur : la
+comparaison ne fait que lire. Les replays en ligne sont téléchargés (dans le cache des
+fantômes) avant la lecture ; aucune requête réseau pendant la lecture.
+
+| Action (comparaison) | Clavier | Manette |
+|---|---|---|
+| Caméra A / B / les deux | C | Y |
+| Recaler B sur le point choisi | R | bouton « Recaler B » |
+| Afficher / masquer les tracés | T | bouton « Tracés » |
+| Décalage, saisie, points | boutons du panneau (flèches + Entrée) | croix + A |
+
+Code : `game/ghost/ReplayCompare.*` (décalage, recalage, tableau, écart),
+`game/ghost/ReplayPlayback.*` (re-simulation avec sauts et points de reprise),
+`ui/screens/ReplayScene.cpp` (lecteur et comparaison), `ui/screens/ReplayCompareSetupScene.cpp`
+(choix de A et B). Tests : `tests/test_replay_compare.cpp`.
+
 ## Succès
 
 134 succès en 12 catégories (`data/achievements/achievements.json`), chacun avec 1 à 5 étoiles
