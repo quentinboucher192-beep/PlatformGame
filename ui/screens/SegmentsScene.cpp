@@ -9,6 +9,7 @@
 #include "game/GameServices.h"
 #include "game/ghost/GhostRace.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/ReplayCompareNav.h"
 #include "ui/widgets/Glyphs.h"
 
 namespace cosmic {
@@ -36,21 +37,38 @@ public:
         ui.label("SEGMENTS", {x, y + ui.s(20)}, 34, th.text, Align::Left, FontFace::Title, VAlign::Middle);
         std::string sub = s_->levelName + "  ·  " + formatGhostTime(s_->time);
         if (s_->pbTime > 0.0f) sub += "  (" + formatGhostDelta(s_->time - s_->pbTime) + " sur mon record d'avant)";
-        ui.label(ui.elide(sub, FontFace::Body, fz(ui, 18), w - ui.s(260)), {x, y + ui.s(58)}, fz(ui, 18), th.textDim, Align::Left, FontFace::Body,
-                 VAlign::Middle);
         UIContext::ButtonStyle cs;
         cs.small = true;
         bool close = ui.button("close", {panel.right() - ui.s(30) - ui.s(200), y, ui.s(200), ui.s(46)}, "Fermer", cs);
+        // Two replays of this level side by side (this run, my record, downloads, online).
+        float cmpW = ui.s(300);
+        bool compare = false;
+        if (!s_->levelId.empty())
+            compare = ui.button("compare", {panel.right() - ui.s(30) - ui.s(200) - ui.s(16) - cmpW, y, cmpW, ui.s(46)}, "Comparer des replays…", cs);
+        float subRoom = w - ui.s(200) - ui.s(16) - (s_->levelId.empty() ? 0.0f : cmpW + ui.s(16));
+        ui.label(ui.elide(sub, FontFace::Body, fz(ui, 18), subRoom), {x, y + ui.s(58)}, fz(ui, 18), th.textDim, Align::Left, FontFace::Body,
+                 VAlign::Middle);
         y += ui.s(92);
         float histH = std::min(ui.s(230), (panel.bottom() - y) * 0.36f);
         drawTable({x, y, w, panel.bottom() - y - histH - ui.s(40)});
         drawHistory({x, panel.bottom() - histH - ui.s(20), w, histH});
         ui.popId();
-        if (close || ui.backPressed()) g_.app.popScene();
+        if (compare) openCompare();
+        else if (close || ui.backPressed()) g_.app.popScene();
         ui.end();
     }
 
 private:
+    /// « Comparer des replays »: this run (my last one) against my record, or the record it
+    /// replaced when it is the new one.
+    void openCompare() {
+        ReplayCompareRequest req;
+        req.levelId = s_->levelId;
+        bool newRecord = s_->pbTime <= 0.0f || s_->time < s_->pbTime;
+        req.preselect = {"last", newRecord ? "prev" : "pb"};
+        g_.app.pushScene(makeReplayCompareSetup(g_, std::move(req)));
+    }
+
     /// Duration of segment `i` from cumulative splits and a final time (-1 if unknown).
     static float seg(const std::vector<float>& splits, float final, size_t i) {
         if (i < splits.size()) return splits[i] - (i > 0 ? splits[i - 1] : 0.0f);

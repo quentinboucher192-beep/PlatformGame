@@ -78,6 +78,9 @@ public:
     float nearestTime(Vec2 p) const;
     /// First time the ghost reached `progress` (0..1) of the route; -1 if never or unmapped.
     float timeAtProgress(float progress) const;
+    /// The furthest part of the route (0..1) the ghost had reached `t` seconds after its
+    /// start; -1 if unmapped (the inverse of timeAtProgress, replay comparison).
+    float progressAtTime(float t) const;
     bool mapped() const { return !progressTimes_.empty(); }
     bool empty() const { return frames_.empty(); }
 

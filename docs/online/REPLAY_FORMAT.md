@@ -139,6 +139,14 @@ la partie : le lecteur l'indique (« Désynchronisé à … ») et propose la tr
 Le lecteur refuse d'emblée un replay dont l'empreinte de niveau (niveau, ennemis, pouvoirs,
 configuration du joueur, version de la simulation) ne correspond pas au jeu installé.
 
+Depuis la 2.19, le lecteur va à n'importe quel instant, en avant comme en arrière, image par
+image (`ReplayPlayback`) : pour revenir en arrière, il repart d'un **point de reprise** (une
+autre copie du niveau rejouée avec les mêmes entrées, gardée un peu derrière l'instant
+montré) ou recharge le niveau et rejoue les entrées depuis le début. L'état montré est
+toujours celui de la simulation à ce pas (aucune interpolation, aucune estimation). La
+comparaison de deux replays (`docs/GHOST_RACING.md`) rejoue A ainsi et montre B en
+fantôme.
+
 ## Déterminisme
 
 * Pas fixe de 1/120 s ; tout ce qui modifie le gameplay se passe dans `fixedUpdate`. Les mises

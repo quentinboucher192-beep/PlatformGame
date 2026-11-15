@@ -588,6 +588,7 @@ void GameScene::finishRun(bool completed) {
         auto seg = std::make_shared<SegmentSummary>();
         seg->levelName = level_.name;
         seg->levelKey = GhostStore::levelKey(levelId_, ghostHash_);
+        seg->levelId = levelId_;
         for (const std::string& id : runCheckpoints_) {
             std::string label;
             for (const LevelObject& o : level_.objects)

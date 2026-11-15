@@ -13,6 +13,7 @@
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/ReplayCompareNav.h"
 #include "ui/screens/OnlineNav.h"
 #include "ui/screens/Thumbnail.h"
 #include "ui/widgets/Glyphs.h"
@@ -935,12 +936,27 @@ private:
             ui_.drawStatusChip(s->status, {x + ui.s(190), zoneD_.y + ui.s(126)}, ui.s(22));
         }
         // Actions
+        // Five actions, one under the other (36 px apart).
+        const float ah = ui.s(30);
+        auto actionY = [&](int i) { return zoneD_.y + ui.s(12) + ui.s(36) * static_cast<float>(i); };
         std::string replayRecord = replayCandidate();
         st.enabled = !replayRecord.empty() && l->entry != nullptr;
-        if (ui.button("replay", {bx, zoneD_.y + ui.s(14), bw, ui.s(36)}, "VIEW REPLAY", st))
+        if (ui.button("replay", {bx, actionY(0), bw, ah}, "VIEW REPLAY", st))
             g_.app.pushScene(makeReplayViewer(g_, replayRecord));
+        // Two records of this level side by side: the selected one (A) and the best other one
+        // with a replay (B), downloaded before the comparison (read only).
+        std::vector<Json> pair = comparePair(replayRecord);
+        st.enabled = pair.size() == 2 && l->entry != nullptr;
+        if (ui.button("compare", {bx, actionY(1), bw, ah}, "Comparer…", st)) {
+            ReplayCompareRequest req;
+            req.levelId = l->id;
+            for (const Json& e : pair) req.preselect.push_back(jstr(e, "record_id"));
+            req.onlineEntries = pair;
+            g_.app.pushScene(makeReplayCompareSetup(g_, std::move(req)));
+        }
+        st.enabled = !replayRecord.empty() && l->entry != nullptr;
         // Ghost Racing: race the selected record (or the world record) as a ghost.
-        if (ui.button("ghost", {bx, zoneD_.y + ui.s(58), bw, ui.s(36)}, "Course contre ce temps", st)) {
+        if (ui.button("ghost", {bx, actionY(2), bw, ah}, "Course contre ce temps", st)) {
             GhostSetupRequest req;
             req.recordId = replayRecord;
             req.fromOnline = true;
@@ -952,19 +968,19 @@ private:
                 for (const auto& s2 : a.submissions) unsent += s2.status == RecordStatus::Local && !s2.blocked ? 1 : 0;
         st.enabled = unsent > 0 && g_.online.usable();
         st.primary = unsent > 0;
-        if (ui.button("submit", {bx, zoneD_.y + ui.s(102), bw, ui.s(36)}, "SUBMIT RECORD", st)) {
+        if (ui.button("submit", {bx, actionY(3), bw, ah}, "SUBMIT RECORD", st)) {
             if (!g_.online.loggedIn()) g_.app.pushScene(makeOnlineAccount(g_, false));
             else g_.online.syncNow(true);
         }
         st.primary = false;
         st.enabled = l->entry != nullptr;
-        if (ui.button("play", {bx, zoneD_.y + ui.s(146), bw, ui.s(36)}, "Jouer ce niveau", st)) {
+        if (ui.button("play", {bx, actionY(4), bw, ah}, "Jouer ce niveau", st)) {
             PlayOptions po;
             po.fromOnline = true;
             g_.app.switchScene(makeGameScene(g_, l->id, po));
         }
         if (unsent > 0)
-            ui.label(std::to_string(unsent) + " performance(s) à envoyer", {bx + bw * 0.5f, zoneD_.y + ui.s(194)}, 13, ui.theme().warm, Align::Center,
+            ui.label(std::to_string(unsent) + " performance(s) à envoyer", {bx + bw * 0.5f, actionY(4) + ah + ui.s(10)}, 13, ui.theme().warm, Align::Center,
                      FontFace::Body, VAlign::Middle);
         // Different revision locally and on the server: warn (records are never mixed).
         if (meta_.is_object())
@@ -974,6 +990,18 @@ private:
                         ui.label("Version du niveau différente de celle du serveur", {x, zoneD_.bottom() - ui.s(14)}, 14, ui.theme().danger,
                                  Align::Left, FontFace::Body, VAlign::Middle);
         ui.popId();
+    }
+
+    /// « Comparer… »: the record VIEW REPLAY opens (A) and the best other one with a replay
+    /// (B): their board entries, or nothing when there are not two.
+    std::vector<Json> comparePair(const std::string& first) const {
+        std::vector<Json> out;
+        if (first.empty()) return out;
+        for (const auto& e : board_.entries)
+            if (jstr(e, "record_id") == first) out.push_back(e);
+        for (const auto& e : board_.entries)
+            if (out.size() == 1 && jget<bool>(e, "has_replay", false) && jstr(e, "record_id") != first) out.push_back(e);
+        return out;
     }
 
     /// Record whose replay VIEW REPLAY opens: selected row, else the world record.
