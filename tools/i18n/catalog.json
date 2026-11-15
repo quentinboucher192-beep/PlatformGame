@@ -8732,6 +8732,12 @@
    ]
   },
   {
+   "fr": "Entraînement contre les boss (Statistiques › un boss › « Entraînement ») : choisissez vos cœurs, votre nombre d'emplacements de pouvoirs et les pouvoirs équipés, puis toutes les phases ou une seule ; le combat a lieu dans le vrai niveau du boss, juste avant son arène.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "ENTRAÎNEMENT · aucun record · R / Vue : recommencer",
    "where": [
     "ui/screens/GameScene.cpp"
@@ -12188,6 +12194,12 @@
    "fr": "L'eau du lac est glaciale et mord la chair ! Passez par les blocs de glace ou au grappin.",
    "where": [
     "data/levels/glacior_01.json"
+   ]
+  },
+  {
+   "fr": "L'entraînement ne compte jamais : ni succès, ni statistiques des boss, ni records, ni progression, ni récompenses, rien en ligne. Il est indiqué à l'écran pendant tout le combat.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -26917,6 +26929,12 @@
    "fr": "Une onde de lumière à la fin du niveau.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Une phase seule : le boss commence à cette phase et l'entraînement s'arrête quand elle est battue. Fin d'entraînement : temps, dégâts reçus, phase atteinte ; Recommencer, Changer les réglages, Retour. Les derniers réglages sont gardés pour chaque boss.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {

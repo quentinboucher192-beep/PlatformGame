@@ -5,6 +5,14 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.28.0** :
+* **Entraînement contre les boss** (*Statistiques › un boss › Entraînement*) : cœurs, nombre
+  d'emplacements et pouvoirs au choix, toutes les phases ou une seule, dans le vrai niveau du
+  boss juste avant son arène ; fin d'entraînement avec temps, dégâts et phase atteinte.
+* **Ne compte jamais** : ni succès, ni statistiques des boss, ni records, ni progression, ni
+  récompenses, rien en ligne (`GameWorld::training()`, vérifié par chaque enregistrement ;
+  tests dédiés). Les derniers réglages sont gardés pour chaque boss (`saves/boss_training.json`).
+
 **Nouveau dans la version 2.27.0** :
 * **Statistiques des boss** : le boss choisi s'anime avec ses vraies animations, l'une après
   l'autre (attaques et préparations comprises) ; avant de l'avoir battu, une silhouette.

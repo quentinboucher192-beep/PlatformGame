@@ -52,6 +52,13 @@
       "parents": [
         "menu.stats"
       ]
+    },
+    {
+      "id": "stats.training",
+      "version": "2.28.0",
+      "parents": [
+        "menu.stats"
+      ]
     }
   ]
 }

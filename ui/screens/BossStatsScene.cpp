@@ -373,7 +373,9 @@ private:
         UIContext::ButtonStyle st;
         st.enabled = reason.empty();
         float bw = std::min(ui.s(250), area.w * 0.48f);
-        if (ui.button("train", {area.x, area.y, bw, area.h}, "Entraînement", st) && reason.empty())
+        bool trainClicked = ui.button("train", {area.x, area.y, bw, area.h}, "Entraînement", st);
+        ui.newBadge("train", {area.x, area.y, bw, area.h}, "stats.training");  // « NOUVEAU » (2.28)
+        if (trainClicked && reason.empty())
             g_.app.switchScene(makeBossTraining(g_, d.id), 0.3f);
         std::string note = reason.empty() ? "Ne compte pas pour les succès ni les statistiques" : reason;
         float tx = area.x + bw + ui.s(16), room = area.right() - tx;

@@ -1,4 +1,9 @@
 {
+  "2.28.0": [
+    "Entraînement contre les boss (Statistiques › un boss › « Entraînement ») : choisissez vos cœurs, votre nombre d'emplacements de pouvoirs et les pouvoirs équipés, puis toutes les phases ou une seule ; le combat a lieu dans le vrai niveau du boss, juste avant son arène.",
+    "Une phase seule : le boss commence à cette phase et l'entraînement s'arrête quand elle est battue. Fin d'entraînement : temps, dégâts reçus, phase atteinte ; Recommencer, Changer les réglages, Retour. Les derniers réglages sont gardés pour chaque boss.",
+    "L'entraînement ne compte jamais : ni succès, ni statistiques des boss, ni records, ni progression, ni récompenses, rien en ligne. Il est indiqué à l'écran pendant tout le combat."
+  ],
   "2.27.0": [
     "Statistiques des boss : le boss choisi s'anime avec ses vraies animations (repos, déplacement, chaque attaque et sa préparation, invocation, rugissement, blessure, défaite), une à la suite de l'autre ; activez l'image pour passer à la suivante. Avant de l'avoir battu, une silhouette.",
     "« Où l'affronter » : tous les lieux où combattre chaque boss — son niveau de la campagne (planète, niveau, dernier point de sauvegarde avant lui, pouvoirs trouvés en route) et son écho dans L'Arène des Échos ; un lieu ouvre la page du niveau, un lieu verrouillé dit pourquoi.",
