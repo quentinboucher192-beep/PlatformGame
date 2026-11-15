@@ -21,6 +21,25 @@ GameWorld::GameWorld(WorldServices services, WorldMode mode) : services_(service
 
 GameWorld::~GameWorld() = default;
 
+void GameWorld::setKeysPerSlot(bool on) {
+    if (keysPerSlot_ == on) return;
+    keysPerSlot_ = on;
+    player_.setKeysPerSlot(on);
+    if (time_ > 0.0f || level_.startPowers.empty()) return;
+    // Loaded but not started: the start powers as the new rule grants them (two powers on
+    // the same old button are both kept with keys per slot). Untouched when it is the same.
+    Player probe;
+    probe.setKeysPerSlot(on);
+    for (const auto& pid : level_.startPowers)
+        if (const PowerDefinition* d = services_.content.power(pid)) probe.grantPower(*d);
+    bool same = probe.powers().size() == player_.powers().size();
+    for (size_t i = 0; same && i < probe.powers().size(); ++i) same = probe.powers()[i]->id() == player_.powers()[i]->id();
+    if (same) return;
+    player_.clearPowers();
+    for (const auto& pid : level_.startPowers)
+        if (const PowerDefinition* d = services_.content.power(pid)) player_.grantPower(*d);
+}
+
 bool GameWorld::load(const LevelData& level) {
     level_ = level;
     hazards_ = BossHazards{};  // its colliders go with the physics below
@@ -55,6 +74,7 @@ bool GameWorld::load(const LevelData& level) {
     PlayerConfig cfg = PlayerConfig::fromJson(services_.content.playerConfig());
     player_.configure(cfg, services_.res.animation("animations/nova.json"));
     player_.clearPowers();
+    player_.setKeysPerSlot(keysPerSlot_);
     for (const auto& pid : level_.startPowers)
         if (const PowerDefinition* d = services_.content.power(pid)) player_.grantPower(*d);
     player_.setPowerSlots(level_.powerSlots());

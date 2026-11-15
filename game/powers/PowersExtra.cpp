@@ -269,7 +269,7 @@ const LevelEntity* GrapplePower::findTarget(const Player& p, const GameWorld& w,
 }
 
 bool GrapplePower::wantsActivation(const Player& p, const GameWorld& w, const PlayerInput& in) const {
-    if (!in.isPressed(def_.input)) return false;
+    if (!keyPressed(in)) return false;
     if (p.grounded() && w.nearestInteractable()) return false;  // levers and signs keep priority
     return findTarget(p, w, def_.param("range", 170.0f), recentAnchor()) != nullptr;
 }

@@ -11,6 +11,7 @@ namespace cosmic {
 
 class GameWorld;
 class UIContext;
+struct PowerDefinition;
 struct LevelRecord;
 struct GameplaySettings;
 
@@ -44,6 +45,9 @@ private:
     void drawCollectibles(UIContext& ui, GameWorld& w, Vec2 o, float k);
     void drawBoss(UIContext& ui, GameWorld& w, Vec2 o, float k);
     void drawMessages(UIContext& ui, GameWorld& w);
+    /// How to use a power just picked up, centred on `center`: the key of its slot, or its
+    /// move / « passif » in the dashed gold frame of the powers off their slot key.
+    void drawPowerUse(UIContext& ui, const PowerDefinition& def, int slot, Vec2 center, float h, float alpha);
     void drawCinematic(UIContext& ui, GameWorld& w);
     void drawInteractPrompt(UIContext& ui, GameWorld& w, const WorldView& view);
     /// Level progress bar (placement 1 top, 2 bottom): route %, checkpoints, ambushes,

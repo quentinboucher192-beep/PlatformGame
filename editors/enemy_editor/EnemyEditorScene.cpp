@@ -2,12 +2,14 @@
 
 #include "editors/enemy_editor/EnemyEditorScene.h"
 
+#include <algorithm>
 #include <cmath>
 #include <format>
 
 #include "engine/core/FileUtil.h"
 #include "game/GameServices.h"
 #include "game/enemies/Enemy.h"
+#include "game/powers/Power.h"
 #include "ui/screens/Navigation.h"
 
 namespace cosmic {
@@ -218,8 +220,20 @@ void EnemyEditorScene::resetArena() {
     l.ambientLight = {215, 220, 235, 255};
     WorldServices ws{g_.app.resources(), g_.app.audio(), g_.content, &g_.app.input(), g_.settings.graphics.screenShake, 1.0f};
     arena_ = std::make_unique<GameWorld>(ws, WorldMode::Arena);
+    arena_->setKeysPerSlot(true);
     arena_->load(l);
-    for (const auto* p : g_.content.powers()) arena_->player().grantPower(*p);
+    // Every power. The slots with a key by default first (Pouvoir 1 to 6: the dash, wave,
+    // shield, impulse, teleport and time slow of the arena before 2.24, on the same keys),
+    // then the other powers that use the key of their slot (7, 8: keys to choose; beyond:
+    // none), then the powers used with a move or passive, which need no slot key.
+    std::vector<const PowerDefinition*> order;
+    for (const char* id : {"dash", "wave", "shield", "impulse", "teleport", "time_slow"})
+        if (const PowerDefinition* d = g_.content.power(id)) order.push_back(d);
+    for (bool slotKey : {true, false})
+        for (const auto* p : g_.content.powers())
+            if ((powerTriggerInfo(*p).kind == PowerTrigger::SlotKey) == slotKey && std::find(order.begin(), order.end(), p) == order.end())
+                order.push_back(p);
+    for (const auto* p : order) arena_->player().grantPower(*p);
     float y = work_.flying ? 250.0f : 320.0f;
     arena_->spawnEnemy(work_, {640, y}, true, "test", 120);
     arenaRenderer_.build(g_.app.renderer(), g_.app.resources(), *arena_);

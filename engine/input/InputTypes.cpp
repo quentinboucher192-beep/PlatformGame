@@ -13,6 +13,9 @@ constexpr ActionInfo kActions[kActionCount] = {
     {"dash", "Dash"},                 {"wave", "Onde énergétique"},    {"shield", "Bouclier"},
     {"impulse", "Impulsion"},         {"teleport", "Téléportation"},   {"interact", "Interagir"},
     {"special", "Pouvoir spécial"},
+    {"power_slot_1", "Pouvoir 1"},    {"power_slot_2", "Pouvoir 2"},   {"power_slot_3", "Pouvoir 3"},
+    {"power_slot_4", "Pouvoir 4"},    {"power_slot_5", "Pouvoir 5"},   {"power_slot_6", "Pouvoir 6"},
+    {"power_slot_7", "Pouvoir 7"},    {"power_slot_8", "Pouvoir 8"},
     {"pause", "Pause"},               {"ghost_toggle", "Afficher / masquer les fantômes"},
     {"focus_toggle", "Mode concentré (HUD réduit)"},
     {"menu_up", "Menu haut"},        {"menu_down", "Menu bas"},
@@ -23,7 +26,19 @@ constexpr ActionInfo kActions[kActionCount] = {
 
 const char* actionId(Action a) { return kActions[static_cast<int>(a)].id; }
 const char* actionLabel(Action a) { return kActions[static_cast<int>(a)].label; }
-bool actionIsRebindable(Action a) { return static_cast<int>(a) < kFirstMenuAction; }
+bool actionIsLegacyPowerKey(Action a) {
+    switch (a) {
+        case Action::Dash:
+        case Action::Wave:
+        case Action::Shield:
+        case Action::Impulse:
+        case Action::Teleport:
+        case Action::Special: return true;
+        default: return false;
+    }
+}
+bool actionIsRebindable(Action a) { return static_cast<int>(a) < kFirstMenuAction && !actionIsLegacyPowerKey(a); }
+bool actionIsPowerInput(Action a) { return static_cast<int>(a) >= 0 && static_cast<int>(a) <= static_cast<int>(Action::Special); }
 
 Action actionFromId(const std::string& id) {
     for (int i = 0; i < kActionCount; ++i)
@@ -42,13 +57,16 @@ void InputBindings::resetKeyboard() {
     set(Action::MoveDown, SDL_SCANCODE_S, SDL_SCANCODE_DOWN);
     set(Action::Jump, SDL_SCANCODE_SPACE, SDL_SCANCODE_Z);
     set(Action::Attack, SDL_SCANCODE_J, SDL_SCANCODE_X);
-    set(Action::Dash, SDL_SCANCODE_K, SDL_SCANCODE_LSHIFT);
-    set(Action::Wave, SDL_SCANCODE_L, SDL_SCANCODE_C);
-    set(Action::Shield, SDL_SCANCODE_O, SDL_SCANCODE_V);
-    set(Action::Impulse, SDL_SCANCODE_I, SDL_SCANCODE_B);
-    set(Action::Teleport, SDL_SCANCODE_U, SDL_SCANCODE_N);
     set(Action::Interact, SDL_SCANCODE_E, SDL_SCANCODE_RETURN);
-    set(Action::Special, SDL_SCANCODE_F, SDL_SCANCODE_H);
+    // Power slots: the keys of the six power buttons before 2.24, in their order (Dash,
+    // Onde, Bouclier, Impulsion, Téléportation, Spécial). Slots 7 and 8 (levels allowing
+    // more powers) are free for the player to choose.
+    set(Action::PowerSlot1, SDL_SCANCODE_K, SDL_SCANCODE_LSHIFT);
+    set(Action::PowerSlot2, SDL_SCANCODE_L, SDL_SCANCODE_C);
+    set(Action::PowerSlot3, SDL_SCANCODE_O, SDL_SCANCODE_V);
+    set(Action::PowerSlot4, SDL_SCANCODE_I, SDL_SCANCODE_B);
+    set(Action::PowerSlot5, SDL_SCANCODE_U, SDL_SCANCODE_N);
+    set(Action::PowerSlot6, SDL_SCANCODE_F, SDL_SCANCODE_H);
     set(Action::Pause, SDL_SCANCODE_ESCAPE, SDL_SCANCODE_P);
     set(Action::GhostToggle, SDL_SCANCODE_G);
     set(Action::FocusToggle, SDL_SCANCODE_T);
@@ -72,13 +90,14 @@ void InputBindings::resetGamepad() {
     set(Action::MoveDown, B::axisPos(SDL_GAMEPAD_AXIS_LEFTY), B::button(SDL_GAMEPAD_BUTTON_DPAD_DOWN));
     set(Action::Jump, B::button(SDL_GAMEPAD_BUTTON_SOUTH));
     set(Action::Attack, B::button(SDL_GAMEPAD_BUTTON_WEST));
-    set(Action::Dash, B::button(SDL_GAMEPAD_BUTTON_EAST));
-    set(Action::Wave, B::axisPos(SDL_GAMEPAD_AXIS_RIGHT_TRIGGER));
-    set(Action::Shield, B::button(SDL_GAMEPAD_BUTTON_LEFT_SHOULDER));
-    set(Action::Impulse, B::button(SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER));
-    set(Action::Teleport, B::axisPos(SDL_GAMEPAD_AXIS_LEFT_TRIGGER));
     set(Action::Interact, B::button(SDL_GAMEPAD_BUTTON_NORTH));
-    set(Action::Special, B::button(SDL_GAMEPAD_BUTTON_RIGHT_STICK));
+    // Power slots: the buttons of the six powers before 2.24, in the same order as the keys.
+    set(Action::PowerSlot1, B::button(SDL_GAMEPAD_BUTTON_EAST));
+    set(Action::PowerSlot2, B::axisPos(SDL_GAMEPAD_AXIS_RIGHT_TRIGGER));
+    set(Action::PowerSlot3, B::button(SDL_GAMEPAD_BUTTON_LEFT_SHOULDER));
+    set(Action::PowerSlot4, B::button(SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER));
+    set(Action::PowerSlot5, B::axisPos(SDL_GAMEPAD_AXIS_LEFT_TRIGGER));
+    set(Action::PowerSlot6, B::button(SDL_GAMEPAD_BUTTON_RIGHT_STICK));
     set(Action::Pause, B::button(SDL_GAMEPAD_BUTTON_START));
     set(Action::GhostToggle, B::button(SDL_GAMEPAD_BUTTON_LEFT_STICK));
     // Share (Xbox Series) / capture (Switch) / microphone (PS5), or the PlayStation touchpad.
@@ -134,6 +153,9 @@ Json InputBindings::toJson() const {
     Json j;
     Json k = Json::object(), p = Json::object();
     for (int i = 0; i < kActionCount; ++i) {
+        // The power buttons before 2.24 are bound to nothing: not written (an older version
+        // reading this file keeps its own defaults for them).
+        if (actionIsLegacyPowerKey(static_cast<Action>(i))) continue;
         Json ka = Json::array();
         for (auto sc : keys[i]) ka.push_back(sc == SDL_SCANCODE_UNKNOWN ? "" : SDL_GetScancodeName(sc));
         k[actionId(static_cast<Action>(i))] = ka;
@@ -150,24 +172,69 @@ Json InputBindings::toJson() const {
     return j;
 }
 
+namespace {
+/// The power buttons before 2.24, in the order of the slots they became (see defaults).
+constexpr Action kLegacyPowerOrder[] = {Action::Dash, Action::Wave, Action::Shield, Action::Impulse, Action::Teleport, Action::Special};
+
+/// Where an action of a settings file goes: itself, or for a file without power slot keys
+/// (before 2.24) the slot that replaced a power button. Action::Count: ignored.
+Action bindingTarget(const std::string& id, bool hasSlots) {
+    Action a = actionFromId(id);
+    if (a == Action::Count) return a;
+    if (actionIsLegacyPowerKey(a)) {
+        if (hasSlots) return Action::Count;
+        for (int s = 0; s < 6; ++s)
+            if (kLegacyPowerOrder[s] == a) return powerSlotAction(s);
+    }
+    return a;
+}
+
+bool hasSlotKeys(const Json& device) {
+    for (int s = 0; s < kPowerSlotKeys; ++s)
+        if (device.contains(actionId(powerSlotAction(s)))) return true;
+    return false;
+}
+}  // namespace
+
 InputBindings InputBindings::fromJson(const Json& j) {
     InputBindings b = defaults();
     if (!j.is_object()) return b;
     if (j.contains("keyboard") && j["keyboard"].is_object()) {
-        for (auto& [id, arr] : j["keyboard"].items()) {
-            Action a = actionFromId(id);
+        const Json& kb = j["keyboard"];
+        const bool slots = hasSlotKeys(kb);
+        for (auto& [id, arr] : kb.items()) {
+            Action a = bindingTarget(id, slots);
             if (a == Action::Count || !arr.is_array()) continue;
             for (size_t s = 0; s < 2 && s < arr.size(); ++s) {
                 std::string name = arr[s].is_string() ? arr[s].get<std::string>() : "";
                 b.keys[static_cast<int>(a)][s] = name.empty() ? SDL_SCANCODE_UNKNOWN : SDL_GetScancodeFromName(name.c_str());
             }
         }
+        if (!slots) {
+            // A default slot key the player gave to another action before: the action keeps it.
+            for (int s = 0; s < kPowerSlotKeys; ++s)
+                for (auto& sc : b.keys[static_cast<int>(powerSlotAction(s))])
+                    for (int a = 0; a < kFirstMenuAction && sc != SDL_SCANCODE_UNKNOWN; ++a)
+                        if (powerSlotOf(static_cast<Action>(a)) < 0)
+                            for (auto other : b.keys[a])
+                                if (other == sc) sc = SDL_SCANCODE_UNKNOWN;
+        }
     }
     if (j.contains("gamepad") && j["gamepad"].is_object()) {
-        for (auto& [id, arr] : j["gamepad"].items()) {
-            Action a = actionFromId(id);
+        const Json& gp = j["gamepad"];
+        const bool slots = hasSlotKeys(gp);
+        for (auto& [id, arr] : gp.items()) {
+            Action a = bindingTarget(id, slots);
             if (a == Action::Count || !arr.is_array()) continue;
             for (size_t s = 0; s < 2 && s < arr.size(); ++s) b.pad[static_cast<int>(a)][s] = padFromJson(arr[s]);
+        }
+        if (!slots) {
+            for (int s = 0; s < kPowerSlotKeys; ++s)
+                for (auto& pb : b.pad[static_cast<int>(powerSlotAction(s))])
+                    for (int a = 0; a < kFirstMenuAction && pb.kind != PadBinding::Kind::None; ++a)
+                        if (powerSlotOf(static_cast<Action>(a)) < 0)
+                            for (const auto& other : b.pad[a])
+                                if (other == pb) pb = PadBinding{};
         }
     }
     if (j.contains("gamepadSettings")) {

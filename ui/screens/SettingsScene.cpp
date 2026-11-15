@@ -23,9 +23,11 @@ public:
 
     void onEnter() override {
         working_ = g_.settings;
-        // Automated screenshots: --settings-tab <n>.
+        // Automated screenshots: --settings-tab <n>, <n>:slots for the list of the controls
+        // scrolled to the keys of the power slots, <n>:end to its end.
         if (g_.onlineOpen.rfind("settings-tab:", 0) == 0) {
             tab_ = std::clamp(std::atoi(g_.onlineOpen.c_str() + 13), 0, 4);
+            scrollTo_ = g_.onlineOpen.find(":slots") != std::string::npos ? 1 : g_.onlineOpen.find(":end") != std::string::npos ? 2 : 0;
             g_.onlineOpen.clear();
         }
         g_.ui.setFocus("settings/tabs");
@@ -152,16 +154,24 @@ private:
     void bindingRow(const Rect& r, Action a, bool pad) {
         UIContext& ui = g_.ui;
         int i = static_cast<int>(a);
-        ui.label(actionLabel(a), {r.x + ui.s(10), r.center().y}, 22, ui.theme().text, Align::Left, FontFace::Body, VAlign::Middle);
+        // The name never reaches the buttons (long names are drawn smaller).
+        const std::string name = actionLabel(a);
+        const float nameRoom = r.w * 0.42f - ui.s(20);
+        ui.label(name, {r.x + ui.s(10), r.center().y}, ui.fitFont(name, FontFace::Body, 22, nameRoom), ui.theme().text, Align::Left,
+                 FontFace::Body, VAlign::Middle);
         for (int slot = 0; slot < 2; ++slot) {
             Rect b{r.x + r.w * 0.42f + slot * (r.w * 0.29f), r.y, r.w * 0.27f, r.h};
             std::string label;
-            if (pad) label = padBindingName(working_.input.pad[i][slot], g_.app.input().gamepadStyle());
+            const PadBinding& pb = working_.input.pad[i][slot];
+            // A gamepad button with its icon (drawn on the left): the name stays clear of it.
+            const bool icon = pad && pb.kind != PadBinding::Kind::None && glyphIndex(pb) >= 0;
+            if (pad) label = padBindingName(pb, g_.app.input().gamepadStyle());
             else label = keyName(working_.input.keys[i][slot]);
             std::string id = std::string(pad ? "p" : "k") + actionId(a) + std::to_string(slot);
             UIContext::ButtonStyle st;
             st.small = true;
-            st.fontSize = 20;
+            float labelRoom = b.w - ui.s(16) - (icon ? 2.0f * (ui.s(8) + ui.s(32) + ui.s(4)) : 0.0f);
+            st.fontSize = ui.fitFont(label, FontFace::Bold, 20, std::max(ui.s(30), labelRoom));
             if (ui.button(id, b, label, st)) {
                 captureAction_ = a;
                 captureSlot_ = slot;
@@ -169,22 +179,78 @@ private:
                 captureTimer_ = 6.0f;
                 g_.app.input().beginCapture(pad ? InputDevice::Gamepad : InputDevice::Keyboard);
             }
-            if (pad && working_.input.pad[i][slot].kind != PadBinding::Kind::None) {
-                Glyphs::drawPadButton(ui, working_.input.pad[i][slot], {b.x + ui.s(8), b.center().y}, ui.s(32));
-            }
+            if (icon) Glyphs::drawPadButton(ui, pb, {b.x + ui.s(8), b.center().y}, ui.s(32));
         }
+    }
+
+    /// A line of the binding list: an action, or a text that introduces the power slots.
+    struct ListItem {
+        Action action = Action::Count;  // Count: a text
+        std::string title;              // bold, accent (may be empty)
+        std::string text;               // dim, wrapped
+        float h = 0.0f;
+    };
+
+    std::vector<ListItem> bindingItems(float width) {
+        UIContext& ui = g_.ui;
+        std::vector<ListItem> items;
+        auto text = [&](std::string title, std::string body) {
+            ListItem it;
+            it.title = std::move(title);
+            it.text = std::move(body);
+            float h = ui.s(10);
+            if (!it.title.empty()) h += ui.text().measure(it.title, FontFace::Bold, ui.s(20)).y + ui.s(4);
+            if (!it.text.empty()) h += ui.text().measureWrapped(it.text, FontFace::Body, ui.s(16), width).y;
+            it.h = h + ui.s(10);
+            items.push_back(std::move(it));
+        };
+        for (int i = 0; i < kFirstMenuAction; ++i) {
+            Action a = static_cast<Action>(i);
+            if (!actionIsRebindable(a)) continue;  // the power buttons before 2.24
+            if (a == Action::PowerSlot1)
+                text("Pouvoirs équipés",
+                     "Une touche par emplacement du HUD : elle utilise le pouvoir équipé dans cet emplacement, quel qu'il soit. "
+                     "Les pouvoirs au cadre pointillé doré (passifs, ou utilisés avec le saut, l'attaque, Bas + Attaque, "
+                     "Interagir) n'utilisent pas la touche de leur emplacement.");
+            if (a == Action::PowerSlot5) text("", "Pouvoirs 5 à 8 : seulement dans les niveaux qui permettent d'en porter plus de 4.");
+            if (a == Action::Pause) text("Partie", "");
+            ListItem it;
+            it.action = a;
+            it.h = ui.s(52);
+            items.push_back(std::move(it));
+        }
+        return items;
     }
 
     void bindingList(const Rect& c, bool pad) {
         UIContext& ui = g_.ui;
-        int n = kFirstMenuAction;
-        float rh = ui.s(52), gap = ui.s(8);
+        float gap = ui.s(8);
         Rect list{c.x, c.y, std::min(c.w, ui.s(900)), c.h - ui.s(70)};
-        ui.beginScroll(pad ? "padscroll" : "kbscroll", list, n * (rh + gap));
+        const float rowW = list.w - ui.s(16);
+        auto items = bindingItems(rowW - ui.s(20));
+        float total = 0.0f, slotsAt = 0.0f;
+        for (const auto& it : items) {
+            if (it.action == Action::Count && !it.title.empty() && slotsAt == 0.0f) slotsAt = total;
+            total += it.h + gap;
+        }
+        if (scrollTo_ != 0) {
+            ui.setScroll(pad ? "padscroll" : "kbscroll", scrollTo_ == 1 ? slotsAt : total);
+            scrollTo_ = 0;
+        }
+        ui.beginScroll(pad ? "padscroll" : "kbscroll", list, total);
         float y = list.y - ui.scrollOffset();
-        for (int i = 0; i < n; ++i) {
-            bindingRow({list.x, y, list.w - ui.s(16), rh}, static_cast<Action>(i), pad);
-            y += rh + gap;
+        for (const auto& it : items) {
+            if (it.action != Action::Count) {
+                bindingRow({list.x, y, rowW, it.h}, it.action, pad);
+            } else {
+                float ty = y + ui.s(10);
+                if (!it.title.empty()) {
+                    Vec2 sz = ui.label(it.title, {list.x + ui.s(10), ty}, 20, ui.theme().accent, Align::Left, FontFace::Bold);
+                    ty += sz.y + ui.s(4);
+                }
+                if (!it.text.empty()) ui.labelWrapped(it.text, {list.x + ui.s(10), ty}, rowW - ui.s(20), 16, ui.theme().textDim);
+            }
+            y += it.h + gap;
         }
         ui.endScroll();
         Rect reset{c.x, c.bottom() - ui.s(54), ui.s(360), ui.s(54)};
@@ -375,6 +441,7 @@ private:
     Settings working_;
     MenuBackground bg_;
     int tab_ = 0;
+    int scrollTo_ = 0;  // automated screenshots: 1 the power slots, 2 the end
     float t_ = 0.0f;
     Action captureAction_ = Action::Count;
     int captureSlot_ = 0;

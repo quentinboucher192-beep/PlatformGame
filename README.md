@@ -278,11 +278,12 @@ l'ordre.
 | Glissade | Bas en courant au sol | Bas (stick / croix) en courant |
 | S'accroupir | Bas seul au sol (même sur place) | Bas (stick / croix) sans direction |
 | Attaque | J / X | X / Carré |
-| Dash | K / Maj gauche | B / Rond |
-| Onde d'énergie | L / C | RT / R2 |
-| Bouclier | O / V | LB / L1 |
-| Impulsion | I / B | RB / R1 |
-| Téléportation courte | U / N | LT / L2 |
+| Pouvoir 1 (1er emplacement du HUD) | K / Maj gauche | B / Rond |
+| Pouvoir 2 | L / C | RT / R2 |
+| Pouvoir 3 | O / V | LB / L1 |
+| Pouvoir 4 | I / B | RB / R1 |
+| Pouvoir 5 et 6 (niveaux à plus de 4 pouvoirs) | U / N, F / H | LT / L2, R3 |
+| Pouvoir 7 et 8 | à choisir | à choisir |
 | Planeur | maintenir Saut en tombant | maintenir A / Croix |
 | Frappe sismique | Bas + Attaque en l'air | Bas + X / Carré |
 | Tir chargé | maintenir Attaque, relâcher | maintenir X / Carré |
@@ -291,9 +292,22 @@ l'ordre.
 | Interagir | E / Entrée | Y / Triangle |
 | Pause | Échap / P | Menu / Options |
 
+**Touches des pouvoirs (2.24)** : chaque emplacement de pouvoir du HUD a sa touche, que le
+joueur choisit (*Paramètres → Clavier / souris* et *Manette*, « Pouvoir 1 » à « Pouvoir 8 ») ;
+elle utilise le pouvoir équipé dans cet emplacement, quel qu'il soit (Dash, Onde, Bouclier,
+Impulsion, Téléportation, Ralenti, Bombe plasma, Lame boomerang, Nova de givre, Leurre,
+Balise de rappel). Deux pouvoirs de l'ancien bouton Spécial se portent donc ensemble. Les
+pouvoirs passifs (Aimant, Ruée aérienne) et ceux qui s'utilisent avec un mouvement (Planeur,
+Triple saut, Frappe sismique, Tir chargé, Grappin) n'utilisent pas la touche de leur
+emplacement : un **cadre pointillé doré** les distingue dans le HUD, le choix du pouvoir à
+remplacer et le guide des pouvoirs, avec leur mouvement (ou « passif ») à la place de la
+touche. Les paramètres d'avant la 2.24 sont repris : les touches choisies pour les six
+pouvoirs d'alors (Dash, Onde, Bouclier, Impulsion, Téléportation, Spécial) deviennent celles
+des emplacements 1 à 6.
+
 Les touches sont des **positions physiques** (scancodes) : les déplacements tombent sur ZQSD
 en AZERTY et sur WASD en QWERTY, et le jeu affiche toujours le nom réel de la touche. Toutes les commandes se reconfigurent dans
-*Paramètres → Clavier* et *Paramètres → Manette* (profils indépendants, zones mortes,
+*Paramètres → Clavier / souris* et *Paramètres → Manette* (profils indépendants, zones mortes,
 sensibilité, inversion des axes, vibrations, réinitialisation). Les icônes affichées
 s'adaptent à la manette utilisée (Xbox, PlayStation ou générique) et basculent
 automatiquement entre clavier et manette.

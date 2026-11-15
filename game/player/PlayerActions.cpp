@@ -13,11 +13,24 @@ namespace cosmic {
 
 // ------------------------------------------------------------------ powers
 
-namespace {
-bool sharesExclusiveInput(const Power& owned, const PowerDefinition& def, const Power& created) {
+bool Player::sharesExclusiveInput(const Power& owned, const PowerDefinition& def, const Power& created) const {
+    // Keys per slot: every slot has its own key, two powers never compete for one.
+    if (keysPerSlot_) return false;
     return owned.def().input == def.input && owned.exclusiveInput() && created.exclusiveInput();
 }
-}  // namespace
+
+void Player::setKeysPerSlot(bool on) {
+    keysPerSlot_ = on;
+    assignPowerKeys();
+}
+
+void Player::assignPowerKeys() {
+    for (size_t i = 0; i < powers_.size(); ++i) {
+        Power& p = *powers_[i];
+        bool slotKey = keysPerSlot_ && p.trigger() == PowerTrigger::SlotKey;
+        p.setKey(slotKey ? powerSlotAction(static_cast<int>(i)) : p.def().input);
+    }
+}
 
 void Player::grantPower(const PowerDefinition& def) {
     auto created = PowerRegistry::instance().create(def);
@@ -31,6 +44,7 @@ void Player::grantPower(const PowerDefinition& def) {
         }
     }
     if (!replaced) powers_.push_back(std::move(created));
+    assignPowerKeys();
     refreshPassivePowers();
 }
 
@@ -49,6 +63,7 @@ Player::Offer Player::offerPower(const PowerDefinition& def) {
     auto created = PowerRegistry::instance().create(def);
     if (!created) return Offer::AlreadyOwned;
     powers_.push_back(std::move(created));
+    assignPowerKeys();
     refreshPassivePowers();
     return Offer::Granted;
 }
@@ -59,6 +74,7 @@ std::string Player::replacePower(int slot, const PowerDefinition& def) {
     if (!created) return {};
     std::string removed = powers_[static_cast<size_t>(slot)]->id();
     powers_[static_cast<size_t>(slot)] = std::move(created);
+    assignPowerKeys();
     refreshPassivePowers();
     return removed;
 }
@@ -67,6 +83,7 @@ bool Player::removePower(const std::string& id) {
     auto it = std::find_if(powers_.begin(), powers_.end(), [&](const auto& p) { return p->id() == id; });
     if (it == powers_.end()) return false;
     powers_.erase(it);
+    assignPowerKeys();  // the powers after it move down a slot
     refreshPassivePowers();
     return true;
 }
@@ -108,7 +125,14 @@ Power* Player::power(const std::string& id) {
 void Player::handlePowers(GameWorld& w, const PlayerInput& in, float dt) {
     for (auto& p : powers_) p->handleInput(*this, w, in, dt);
     if (movementPower()) return;
-    if (state_ == PlayerState::Climb && !in.isPressed(Action::Dash) && !in.isPressed(Action::Interact)) return;
+    if (state_ == PlayerState::Climb) {
+        // On a ladder only the dash (a power on the Dash button) and the interact button
+        // (grapple) can be used: with keys per slot, the key of the slot holding a dash.
+        bool allowed = in.isPressed(Action::Dash) || in.isPressed(Action::Interact);
+        for (const auto& p : powers_)
+            if (p->def().input == Action::Dash && p->key() != Action::Count && in.isPressed(p->key())) allowed = true;
+        if (!allowed) return;
+    }
     for (auto& p : powers_) {
         if (p->passive() || !p->wantsActivation(*this, w, in)) continue;
         if (!p->ready(*this)) {

@@ -259,7 +259,7 @@ bool RecallPower::blocked(const Player& p, const GameWorld& w) const {
 bool RecallPower::canActivate(const Player& p, const GameWorld& w) const { return !beacon_ || !blocked(p, w); }
 
 void RecallPower::handleInput(Player& p, GameWorld& w, const PlayerInput& in, float /*dt*/) {
-    if (beacon_ && in.isPressed(def_.input) && ready(p) && blocked(p, w))
+    if (beacon_ && keyPressed(in) && ready(p) && blocked(p, w))
         w.hint("La balise est bloquée : impossible d'y revenir.", 1.6f);
 }
 

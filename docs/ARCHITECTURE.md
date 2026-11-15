@@ -28,7 +28,7 @@ server/                     Cosmic Online : API Cloudflare Workers + D1 + R2 (Ty
 | `animation/` | Feuilles de sprites JSON : clips, durées par image, boucles, enchaînements, **événements** (pas, impacts, sons, VFX). |
 | `physics/` | `PhysicsWorld` : AABB, grille spatiale uniforme, résolution par axes séparés, plateformes traversables, étiquettes (phase, friable, mobile, porte, rebond, ennemi seul, passage bouclier), SAT pour les boîtes orientées. |
 | `camera/` | Suivi avec anticipation, zones de caméra (verrouillage, bornes, zoom), scripts (déplacement, zoom), tremblement par traumatisme. |
-| `input/` | Actions abstraites, profils clavier et manette indépendants, zones mortes, sensibilité, inversion, vibrations, réaffectation, glyphes dynamiques, bascule automatique clavier ↔ manette, scripts d'entrée pour les tests. |
+| `input/` | Actions abstraites, profils clavier et manette indépendants, zones mortes, sensibilité, inversion, vibrations, réaffectation, glyphes dynamiques, bascule automatique clavier ↔ manette, scripts d'entrée pour les tests. Depuis la 2.24, les pouvoirs n'ont plus de touche chacun : le joueur règle une touche par **emplacement** (`Action::PowerSlot1` à `PowerSlot8`, « Pouvoir 1 » à « Pouvoir 8 ») ; les anciennes actions Dash, Onde, Bouclier, Impulsion, Téléportation et Spécial ne sont plus liées à aucune touche et ne servent qu'aux replays d'avant (voir [REPLAY_FORMAT.md](online/REPLAY_FORMAT.md)). |
 | `audio/` | Mixeur : 32 pistes d'effets, musique en fondu enchaîné sur 2 pistes, ambiance, volumes indépendants (général, musique, effets, ambiance), atténuation (« ducking »). |
 | `resources/` | Cache de textures / animations / JSON / sons avec **pile de points de montage** : assets de base, assets utilisateur, assets d'un package importé. |
 
@@ -51,7 +51,19 @@ server/                     Cosmic Online : API Cloudflare Workers + D1 + R2 (Ty
 * `powers/` – `PowerRegistry` : chaque pouvoir (Dash, Onde, Bouclier, Impulsion,
   Téléportation) est une classe de comportement configurée par `data/powers/*.json`
   (durée, recharge, énergie, VFX, sons, paramètres). Ajouter un pouvoir = une classe + un
-  JSON.
+  JSON. **Touches (2.24)** : `Power::trigger()` dit comment le joueur l'utilise —
+  `SlotKey`, la touche de l'emplacement où il est équipé (comportement par défaut : Dash,
+  Onde, Bouclier, Impulsion, Téléportation, Ralenti, Bombe plasma, Lame boomerang, Nova de
+  givre, Leurre, Balise de rappel) ; `StandardKeys`, un mouvement du personnage
+  (`standardKeys()` : Planeur et Triple saut — Saut, Frappe sismique — Bas + Attaque, Tir
+  chargé — Attaque, Grappin — Interagir) ; `Passive` (Aimant, Ruée aérienne). Le joueur
+  (`Player::assignPowerKeys`) donne à chaque pouvoir `SlotKey` la touche de son emplacement
+  (`Power::key()`) quand la partie a des touches par emplacement
+  (`GameWorld::setKeysPerSlot(true)` : toute partie jouée depuis la 2.24) ; sinon (replays
+  d'avant) chaque pouvoir garde son bouton `input` et l'ancienne règle « deux pouvoirs sur le
+  même bouton ne se portent pas ensemble » s'applique. Les pouvoirs `StandardKeys` et
+  `Passive` portent un cadre pointillé doré (`Glyphs::drawFreePowerFrame`) dans le HUD, le
+  choix du pouvoir à remplacer et le guide des pouvoirs.
 * `enemies/` – `EnemyDefinition` (JSON), `Enemy` (IA : déplacement × réaction × attaques
   télégraphiées, phases de boss), `EnemyAttacks`.
 * `planets/`, `progression/`, `records/` – planètes data-driven, déverrouillages, records

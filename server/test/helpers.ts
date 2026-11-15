@@ -156,6 +156,8 @@ export interface ReplaySpec {
     /** Format 2: number of simulation steps recorded (defaults to the duration + 3 s of intro). */
     exactTicks?: number;
     exact?: boolean;
+    /** Format of the input section: 2 (until game 2.23) or 3 (2.24: actions on 32 bits, keys per slot). */
+    inputFormat?: 2 | 3;
     /** false: an attempt that does not reach the exit (no Finish event). */
     finish?: boolean;
     extraEvents?: { frame: number; type: number; arg: number; value: number }[];
@@ -195,12 +197,14 @@ export async function buildReplay(spec: ReplaySpec): Promise<Uint8Array> {
     const runs: number[] = [];
     for (let left = ticks; left > 0; left -= Math.min(left, 1000)) runs.push(Math.min(left, 1000));
     const checks = Math.floor(ticks / 60);
-    const trailer = exact ? 20 + runs.length * 12 + 4 + checks * 12 : 0;
+    const v3 = spec.inputFormat === 3;
+    const runBytes = v3 ? 18 : 12;
+    const trailer = exact ? 20 + runs.length * runBytes + 4 + checks * 12 : 0;
     const size = 68 + 1 + levelId.length + 1 + gameVersion.length + frames * 12 + events.length * 8 + trailer;
     const raw = new Uint8Array(size);
     const view = new DataView(raw.buffer);
     raw.set(new TextEncoder().encode(spec.corrupt === "magic" ? "XXXX" : "CPRP"), 0);
-    view.setUint16(4, exact ? 2 : 1, true);
+    view.setUint16(4, exact ? (v3 ? 3 : 2) : 1, true);
     view.setUint16(6, hz, true);
     view.setUint32(8, frames, true);
     view.setUint32(12, spec.durationMs, true);
@@ -237,14 +241,20 @@ export async function buildReplay(spec: ReplaySpec): Promise<Uint8Array> {
         view.setUint32(at, 0x1234, true);
         view.setUint32(at + 4, 0, true);
         view.setUint16(at + 8, 120, true);
+        if (v3) view.setUint16(at + 10, 1, true); // keys per power slot
         view.setUint32(at + 12, ticks, true);
         view.setUint32(at + 16, runs.length, true);
         at += 20;
         for (const r of runs) {
             view.setUint16(at, r, true);
-            view.setUint16(at + 2, 2, true); // MoveRight held
-            raw[at + 8] = 127;
-            at += 12;
+            if (v3) {
+                view.setUint32(at + 2, 2 | (1 << 13), true); // MoveRight and the key of power slot 1 held
+                raw[at + 14] = 127;
+            } else {
+                view.setUint16(at + 2, 2, true); // MoveRight held
+                raw[at + 8] = 127;
+            }
+            at += runBytes;
         }
         view.setUint32(at, checks, true);
         at += 4;

@@ -51,6 +51,10 @@ struct WorldMessage {
     std::string text;
     std::string subtitle;
     std::string detail;  // a power picked up: its characteristics (energy, damage, reach...)
+    /// A power picked up: its id and the slot it went to; the HUD shows how to use it (the
+    /// key of that slot, or the move / « passif » for a power that does not use it).
+    std::string power;
+    int powerSlot = -1;
     float duration = 3.0f;
     float age = 0.0f;
 };
@@ -72,6 +76,14 @@ public:
     bool load(const LevelData& level);
     void fixedUpdate(const PlayerInput& in, float dt);
     void update(float dt);
+
+    /// Keys of the powers in this run (see Player::setKeysPerSlot): true for every run
+    /// played since 2.24 (each power slot has its key, InputFrame bits PowerSlot1..8), false
+    /// (the default, and the tests written before) for the replays recorded before, where
+    /// each power had its own button. Set it before load(); set after load and before the
+    /// first step, the start powers are granted again under the new rule if it changes them.
+    void setKeysPerSlot(bool on);
+    bool keysPerSlot() const { return keysPerSlot_; }
 
     // ------------------------------------------------------------ access
     const LevelData& level() const { return level_; }
@@ -296,6 +308,7 @@ private:
     float timeSlow_ = 0.0f;
     float timeSlowFactor_ = 1.0f;
     std::optional<PowerOffer> powerOffer_;
+    bool keysPerSlot_ = false;
     Color flash_{255, 255, 255, 0};
     float flashTimer_ = 0.0f, flashDuration_ = 0.0f;
     Enemy* boss_ = nullptr;

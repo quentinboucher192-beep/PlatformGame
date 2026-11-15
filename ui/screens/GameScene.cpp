@@ -47,6 +47,8 @@ void GameScene::onEnter() {
     WorldServices ws{res, g_.app.audio(), g_.content, &g_.app.input(), g_.settings.graphics.screenShake,
                      g_.settings.graphics.particleQuality == 0 ? 0.4f : g_.settings.graphics.particleQuality == 1 ? 0.7f : 1.0f};
     world_ = std::make_unique<GameWorld>(ws, WorldMode::Play);
+    // 2.24: each power slot has its key (Paramètres › Clavier / souris, Manette).
+    world_->setKeysPerSlot(true);
     world_->load(level_);
     applyCosmetics();
     // Same randomness for every player of this level (and in its replays).

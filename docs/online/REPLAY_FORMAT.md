@@ -1,4 +1,4 @@
-# Format des replays (CPRP v2 / CPRZ)
+# Format des replays (CPRP v3 / CPRZ)
 
 Depuis la version 2.1.2, un replay permet de **rejouer exactement** la partie : il contient la
 graine du gameplay et l'**entrée de chaque pas de simulation** (120 par seconde), ce que le
@@ -24,7 +24,7 @@ et `server/src/replay.ts` (lecture, analyse).
 | Champ | Type | Notes |
 |---|---|---|
 | magic | char[4] | `"CPRP"` |
-| format_version | u16 | 2 (1 : trajectoire seule, anciens replays et enregistrements sans entrées) |
+| format_version | u16 | 3 depuis le jeu 2.24 (2 : jeu 2.1.2 à 2.23 ; 1 : trajectoire seule, anciens replays et enregistrements sans entrées) |
 | sample_hz | u16 | 30 (10 à 120 acceptés) |
 | frame_count | u32 | ≥ 1 |
 | duration_ms | u32 | temps du chronomètre à la fin |
@@ -36,8 +36,8 @@ et `server/src/replay.ts` (lecture, analyse).
 | frames | frame_count × 12 octets | voir ci-dessous |
 | events | event_count × 8 octets | voir ci-dessous |
 
-En version 1, le fichier se termine exactement après le dernier événement. En version 2, la
-section des entrées suit (voir plus bas) et le fichier se termine exactement après elle.
+En version 1, le fichier se termine exactement après le dernier événement. En versions 2 et
+3, la section des entrées suit (voir plus bas) et le fichier se termine exactement après elle.
 
 ### Échantillon (12 octets)
 
@@ -82,30 +82,52 @@ Un lecteur ignore les types qu'il ne connaît pas (le serveur ignore le type 14)
 
 Les éclats et reliques (arg 0 et 1) forment le nombre d'objets comparé au record.
 
-## Section des entrées (version 2)
+## Section des entrées (versions 2 et 3)
 
 | Champ | Type | Notes |
 |---|---|---|
 | seed | u64 | graine du gameplay (identique pour tous les joueurs d'un niveau) |
 | tick_hz | u16 | 120 |
-| réservé | u16 | 0 |
+| input_flags | u16 | version 3 : bit 0 = touches par emplacement de pouvoir (voir plus bas) ; tout autre bit refusé. Version 2 : réservé, 0 |
 | tick_count | u32 | nombre de pas simulés depuis le chargement du niveau (intro comprise), ≤ 864 000 (2 h) |
 | run_count | u32 | nombre de plages, 1 à tick_count |
-| runs | run_count × 12 octets | entrées compressées par plages (voir ci-dessous) |
+| runs | run_count × 18 octets (version 3) ou × 12 octets (version 2) | entrées compressées par plages (voir ci-dessous) |
 | check_count | u32 | ≤ tick_count / 60 + 2 |
 | checks | check_count × 12 octets | empreintes de l'état |
 
-### Plage d'entrées (12 octets)
+### Plage d'entrées (18 octets en version 3, 12 en version 2)
 
 | Champ | Type | Notes |
 |---|---|---|
 | repeat | u16 | nombre de pas identiques consécutifs (≥ 1) ; la somme vaut tick_count |
-| held | u16 | actions maintenues (bit = `Action` : 0 gauche, 1 droite, 2 haut, 3 bas, 4 saut, 5 attaque, 6 dash, 7 onde, 8 bouclier, 9 impulsion, 10 téléportation, 11 interagir, 12 spécial — ralenti, bombe plasma — depuis la simulation 6) |
-| pressed | u16 | actions enfoncées pendant ce pas |
-| released | u16 | actions relâchées pendant ce pas |
+| held | u32 (version 2 : u16) | actions maintenues (bit = `Action` : 0 gauche, 1 droite, 2 haut, 3 bas, 4 saut, 5 attaque, 6 dash, 7 onde, 8 bouclier, 9 impulsion, 10 téléportation, 11 interagir, 12 spécial — ralenti, bombe plasma — depuis la simulation 6 ; 13 à 20 : touches des emplacements de pouvoirs « Pouvoir 1 » à « Pouvoir 8 », version 3) |
+| pressed | u32 (version 2 : u16) | actions enfoncées pendant ce pas |
+| released | u32 (version 2 : u16) | actions relâchées pendant ce pas |
 | move_x, move_y | i8, i8 | stick analogique quantifié (−127 à 127, soit ±1) |
 | flags | u8 | 1 : saut de la cinématique en cours |
 | choice | u8 | réponse à une offre de pouvoir (jeu 2.3) : 0 aucune, 1 à 8 remplace ce pouvoir porté, 255 laisse le nouveau pouvoir sur sa tablette (octet réservé, toujours 0, avant 2.3) |
+
+### Touches par emplacement (version 3, simulation 10, jeu 2.24)
+
+Depuis la 2.24, le joueur choisit une touche (et un bouton de manette) pour chaque
+emplacement de pouvoir du HUD — *Paramètres › Clavier / souris* et *Manette*, « Pouvoir 1 »
+à « Pouvoir 8 » — au lieu d'une touche par pouvoir fixée par le jeu. La touche d'un
+emplacement utilise le pouvoir qui y est équipé, quel qu'il soit : le jeu enregistre la
+**touche d'emplacement enfoncée** (bits 13 à 20) et la simulation, qui connaît l'ordre des
+pouvoirs portés, en déduit le pouvoir. Deux pouvoirs de l'ancien bouton Spécial (Lame
+boomerang et Nova de givre…) peuvent donc être portés ensemble, chacun sur son emplacement :
+l'ancienne règle « même bouton, il faut remplacer » ne s'applique plus.
+
+Les pouvoirs passifs (Aimant, Ruée aérienne) et ceux qui s'utilisent avec un mouvement du
+personnage (Planeur, Triple saut, Frappe sismique, Tir chargé, Grappin) n'utilisent pas la
+touche de leur emplacement ; ils ont leur cadre pointillé doré dans le HUD, le choix du
+pouvoir à remplacer et le guide des pouvoirs.
+
+Le bit 0 de `input_flags` dit quelles règles rejouer : 1 pour une partie jouée depuis la
+2.24 (touches par emplacement), 0 pour un fichier de version 2 (un bouton par pouvoir, bits 6
+à 10 et 12). `ReplaySimulator` donne ces règles au monde qu'il rejoue
+(`GameWorld::setKeysPerSlot`) : un replay de version 2 se rejoue exactement comme avant,
+avec les mêmes empreintes.
 
 En jeu, la simulation ne reçoit **que** cette forme quantifiée : le rejeu lui donne donc
 exactement les mêmes entrées.
@@ -171,7 +193,10 @@ fantôme.
 
 `format_version` est vérifié par le jeu et par le serveur. Les replays v1 (jeu 2.1.0 et
 2.1.1) restent lisibles : le lecteur affiche leur trajectoire, s'ils correspondent à la
-révision installée du niveau. Le serveur analyse la trajectoire des deux versions et vérifie
-en plus, en version 2, la cohérence de la section des entrées (nombre de pas compatible avec
-le temps, empreintes présentes). Il conserve les entrées pour une future re-simulation côté
+révision installée du niveau. Les replays v2 (jeu 2.1.2 à 2.23) restent lisibles et se
+rejouent à l'identique (un bouton par pouvoir). Le serveur analyse la trajectoire de toutes
+les versions et vérifie en plus, en versions 2 et 3, la cohérence de la section des entrées
+(nombre de pas compatible avec le temps, empreintes présentes, `input_flags` connus) : il
+doit accepter la version 3 **avant** que les joueurs aient le jeu 2.24 (sinon leurs replays
+seraient refusés). Il conserve les entrées pour une future re-simulation côté
 serveur (pas encore faite : un replay v2 n'est donc pas encore « prouvé » par le serveur).

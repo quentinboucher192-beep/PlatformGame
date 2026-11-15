@@ -262,6 +262,18 @@ describe("replays", () => {
         expect(bad.body.data.analysis.reasons.join(" ")).toContain("plus courtes");
     });
 
+    it("accepts exact replays of format 3 (2.24: keys of the power slots)", async () => {
+        const sub = submission();
+        const { p, recordId } = await pending("Slots", sub);
+        const good = await buildReplay({ attemptId: sub.attempt_id as string, durationMs: sub.time_ms as number, exact: true, inputFormat: 3 });
+        const up = await uploadReplay(p.token, recordId, good);
+        expect(up.status).toBe(201);
+        expect(up.body.data.verification_status).toBe("VERIFIED");
+        expect(up.body.data.analysis.stats.exact).toBe(true);
+        const meta = await env.DB.prepare("SELECT format_version FROM replay_metadata WHERE record_id = ?1").bind(recordId).first("format_version");
+        expect(meta).toBe(3);
+    });
+
     it("rejects a replay inconsistent with the submitted run", async () => {
         const { p, sub, recordId } = await pending("Nova");
         const replay = await buildReplay({ attemptId: sub.attempt_id as string, durationMs: 60000, deaths: 3 });

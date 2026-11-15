@@ -246,7 +246,7 @@ TEST_CASE("determinism: replay files reject inconsistent input sections") {
     d.checks.push_back({60, 1});
     auto raw = d.serialize();
     CHECK(ReplayData::parse(raw).has_value());
-    CHECK(ReplayData::parse(raw)->formatVersion == 2);
+    CHECK(ReplayData::parse(raw)->formatVersion == ReplayData::kFormatVersion);
     // Truncated.
     auto cut = raw;
     cut.resize(cut.size() - 5);

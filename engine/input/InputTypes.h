@@ -11,6 +11,8 @@ namespace cosmic {
 
 /// Logical actions. Gameplay actions are rebindable; menu actions have fixed defaults
 /// plus whatever device the player uses (keyboard arrows/Enter, gamepad D-pad/A/B).
+/// The order of MoveLeft .. PowerSlot8 is the bit order of the recorded inputs
+/// (InputFrame, replays): never reorder them.
 enum class Action : int {
     MoveLeft,
     MoveRight,
@@ -18,13 +20,26 @@ enum class Action : int {
     MoveDown,
     Jump,
     Attack,
+    // One button per power until 2.23. Since 2.24 the player binds the power slots instead
+    // (PowerSlot1..8): these are bound to nothing; they stay for the replays recorded before
+    // (their bits) and for the power definitions, which still name them (`input`).
     Dash,
     Wave,
     Shield,
     Impulse,
     Teleport,
     Interact,
-    Special,  // power on the special button (time slow, plasma bomb...)
+    Special,  // power on the special button (time slow, plasma bomb...), see Dash
+    // 2.24: the key of each power slot, in the order of the HUD: it uses the power equipped
+    // in that slot, whatever it is (Paramètres › Clavier / souris, Manette).
+    PowerSlot1,
+    PowerSlot2,
+    PowerSlot3,
+    PowerSlot4,
+    PowerSlot5,
+    PowerSlot6,
+    PowerSlot7,
+    PowerSlot8,
     Pause,
     GhostToggle,  // 2.18: show / hide the ghosts of Ghost Racing (display only, never recorded)
     FocusToggle,  // 2.18: « mode concentré », the reduced HUD (display only, never recorded)
@@ -41,10 +56,30 @@ enum class Action : int {
 
 constexpr int kActionCount = static_cast<int>(Action::Count);
 constexpr int kFirstMenuAction = static_cast<int>(Action::MenuUp);
+/// Power slots with a key (LevelData::kMaxPowerSlots): « Pouvoir 1 » .. « Pouvoir 8 ».
+constexpr int kPowerSlotKeys = 8;
+static_assert(static_cast<int>(Action::PowerSlot8) - static_cast<int>(Action::PowerSlot1) + 1 == kPowerSlotKeys);
+
+/// The key of a power slot (0-based, the order of the HUD); Action::Count beyond the last.
+constexpr Action powerSlotAction(int slot) {
+    return slot >= 0 && slot < kPowerSlotKeys ? static_cast<Action>(static_cast<int>(Action::PowerSlot1) + slot) : Action::Count;
+}
+/// The slot (0-based) whose key `a` is, -1 for any other action.
+constexpr int powerSlotOf(Action a) {
+    int i = static_cast<int>(a) - static_cast<int>(Action::PowerSlot1);
+    return i >= 0 && i < kPowerSlotKeys ? i : -1;
+}
 
 const char* actionId(Action a);
 const char* actionLabel(Action a);  // French display name
+/// The player binds it in the settings: the gameplay actions (moves, jump, attack,
+/// interact, power slots, pause...), except the buttons of the powers before 2.24.
 bool actionIsRebindable(Action a);
+/// One of the buttons of the powers before 2.24 (Dash, Onde, Bouclier, Impulsion,
+/// Téléportation, Spécial): bound to nothing, read only from old replays and scripts.
+bool actionIsLegacyPowerKey(Action a);
+/// What a power definition may name as its `input` (MoveLeft .. Special).
+bool actionIsPowerInput(Action a);
 Action actionFromId(const std::string& id);
 
 enum class InputDevice { Keyboard, Gamepad };
@@ -82,6 +117,9 @@ struct InputBindings {
     void resetKeyboard();
     void resetGamepad();
     Json toJson() const;
+    /// Settings saved before 2.24 have no power slot keys: the six power buttons of the time
+    /// (Dash, Onde, Bouclier, Impulsion, Téléportation, Spécial) become slots 1 to 6, so the
+    /// player keeps the keys they chose; a key already used by another action is dropped.
     static InputBindings fromJson(const Json& j);
 };
 

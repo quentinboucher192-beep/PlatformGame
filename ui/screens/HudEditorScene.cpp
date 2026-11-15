@@ -160,9 +160,11 @@ private:
         WorldServices s{g_.app.resources(), g_.app.audio(), g_.content, nullptr, 0.0f, 0.6f};
         world_ = std::make_unique<GameWorld>(s, WorldMode::Arena);
         world_->silent = true;
+        world_->setKeysPerSlot(true);
         world_->load(*level);
-        // A representative HUD: four powers carried (and a boss fight, see fixedUpdate).
-        for (const char* id : {"dash", "wave", "shield", "time_slow"})
+        // A representative HUD: four powers carried, one of them on a move (the glider: its
+        // frame says that the key of its slot does nothing), and a boss fight (fixedUpdate).
+        for (const char* id : {"dash", "wave", "glide", "time_slow"})
             if (const PowerDefinition* d = g_.content.power(id)) world_->player().grantPower(*d);
         renderer_.build(g_.app.renderer(), g_.app.resources(), *world_);
         track_ = std::async(std::launch::async, [l = *level, &content = g_.content] { return buildProgressTrack(l, content); });
