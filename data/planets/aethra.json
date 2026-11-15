@@ -20,9 +20,9 @@
   "unlock": "planets:sylvanox,glacior,pyralis",
   "teaser": false,
   "orbit": {
-    "radius": 540,
-    "speed": 0.02,
-    "phase": 1.9
+    "radius": 480,
+    "speed": 0.015,
+    "phase": 3.9
   },
   "size": 1.0
 }
