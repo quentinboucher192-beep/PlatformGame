@@ -78,6 +78,7 @@ void InputBindings::resetKeyboard() {
     set(Action::MenuBack, SDL_SCANCODE_ESCAPE, SDL_SCANCODE_BACKSPACE);
     set(Action::MenuTabPrev, SDL_SCANCODE_Q, SDL_SCANCODE_PAGEUP);
     set(Action::MenuTabNext, SDL_SCANCODE_E, SDL_SCANCODE_PAGEDOWN);
+    keepOneBinding();
 }
 
 void InputBindings::resetGamepad() {
@@ -111,6 +112,55 @@ void InputBindings::resetGamepad() {
     set(Action::MenuTabPrev, B::button(SDL_GAMEPAD_BUTTON_LEFT_SHOULDER));
     set(Action::MenuTabNext, B::button(SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER));
     gamepad = GamepadSettings{};
+    keepOneBinding();
+}
+
+SDL_Scancode builtInKeyAlternate(Action a) {
+    switch (a) {
+        case Action::MoveLeft: return SDL_SCANCODE_LEFT;
+        case Action::MoveRight: return SDL_SCANCODE_RIGHT;
+        case Action::MoveUp: return SDL_SCANCODE_UP;
+        case Action::MoveDown: return SDL_SCANCODE_DOWN;
+        default: return SDL_SCANCODE_UNKNOWN;
+    }
+}
+
+PadBinding builtInPadAlternate(Action a) {
+    switch (a) {
+        case Action::MoveLeft: return PadBinding::button(SDL_GAMEPAD_BUTTON_DPAD_LEFT);
+        case Action::MoveRight: return PadBinding::button(SDL_GAMEPAD_BUTTON_DPAD_RIGHT);
+        case Action::MoveUp: return PadBinding::button(SDL_GAMEPAD_BUTTON_DPAD_UP);
+        case Action::MoveDown: return PadBinding::button(SDL_GAMEPAD_BUTTON_DPAD_DOWN);
+        case Action::FocusToggle: return PadBinding::button(SDL_GAMEPAD_BUTTON_TOUCHPAD);
+        default: return {};
+    }
+}
+
+void InputBindings::keepOneBinding() {
+    // Game commands only: the menus keep their two keys (arrows and ZQSD, Entrée and Espace…).
+    for (int i = 0; i < kFirstMenuAction; ++i) {
+        const Action a = static_cast<Action>(i);
+        auto& k = keys[i];
+        if (k[0] == SDL_SCANCODE_UNKNOWN) k[0] = k[1];
+        k[1] = SDL_SCANCODE_UNKNOWN;
+        auto& p = pad[i];
+        if (p[0].kind == PadBinding::Kind::None) p[0] = p[1];
+        p[1] = PadBinding{};
+    }
+    // The fixed alternates, unless the player gave that key / button to another command.
+    for (int i = 0; i < kFirstMenuAction; ++i) {
+        const Action a = static_cast<Action>(i);
+        SDL_Scancode alt = builtInKeyAlternate(a);
+        bool taken = alt == SDL_SCANCODE_UNKNOWN || keys[i][0] == alt;
+        for (int o = 0; o < kFirstMenuAction && !taken; ++o)
+            if (o != i && keys[o][0] == alt) taken = true;
+        if (!taken) keys[i][1] = alt;
+        PadBinding palt = builtInPadAlternate(a);
+        bool ptaken = palt.kind == PadBinding::Kind::None || pad[i][0] == palt;
+        for (int o = 0; o < kFirstMenuAction && !ptaken; ++o)
+            if (o != i && pad[o][0] == palt) ptaken = true;
+        if (!ptaken) pad[i][1] = palt;
+    }
 }
 
 InputBindings InputBindings::defaults() {
@@ -247,6 +297,7 @@ InputBindings InputBindings::fromJson(const Json& j) {
         b.gamepad.rumble = jget<bool>(g, "rumble", true);
         b.gamepad.swapSticks = jget<bool>(g, "swapSticks", false);
     }
+    b.keepOneBinding();
     return b;
 }
 

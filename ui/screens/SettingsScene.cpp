@@ -173,8 +173,9 @@ private:
         const float nameRoom = r.w * 0.42f - ui.s(20);
         ui.label(name, {r.x + ui.s(10), r.center().y}, ui.fitFont(name, FontFace::Body, 22, nameRoom), ui.theme().text, Align::Left,
                  FontFace::Body, VAlign::Middle);
-        for (int slot = 0; slot < 2; ++slot) {
-            Rect b{r.x + r.w * 0.42f + slot * (r.w * 0.29f), r.y, r.w * 0.27f, r.h};
+        // One key / one button per command (2.29): a single column.
+        for (int slot = 0; slot < 1; ++slot) {
+            Rect b{r.x + r.w * 0.42f, r.y, r.w * 0.56f, r.h};
             std::string label;
             const PadBinding& pb = working_.input.pad[i][slot];
             // A gamepad button with its icon (drawn on the left): the name stays clear of it.
@@ -226,6 +227,8 @@ private:
         for (int i = 0; i < kFirstMenuAction; ++i) {
             Action a = static_cast<Action>(i);
             if (!actionIsRebindable(a)) continue;  // the power buttons before 2.24
+            if (a == Action::Jump)
+                text("", "Les flèches du clavier et la croix de la manette déplacent aussi Nova, en plus des commandes choisies ci-dessus.");
             if (a == Action::PowerSlot1)
                 text("Pouvoirs équipés",
                      "Une touche par emplacement du HUD : elle utilise le pouvoir équipé dans cet emplacement, quel qu'il soit. "
@@ -435,6 +438,7 @@ private:
                     }
             working_.input.pad[i][captureSlot_] = b;
         }
+        working_.input.keepOneBinding();  // one key per command, the arrows / d-pad still move
         g_.app.input().setBindings(working_.input);
         g_.app.input().consumePlayerInput();
         captureAction_ = Action::Count;

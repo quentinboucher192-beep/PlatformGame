@@ -121,7 +121,17 @@ struct InputBindings {
     /// (Dash, Onde, Bouclier, Impulsion, Téléportation, Spécial) become slots 1 to 6, so the
     /// player keeps the keys they chose; a key already used by another action is dropped.
     static InputBindings fromJson(const Json& j);
+    /// One key and one button per command (2.29: the settings show a single column). The
+    /// second place holds only the fixed alternates: the arrows (keyboard) and the d-pad
+    /// (gamepad) for moving, the touchpad for the focus mode on PlayStation pads; anything else
+    /// there is dropped (a lone second key becomes the first).
+    void keepOneBinding();
 };
+
+/// The fixed alternate of a command (always active, not shown as a choice): an arrow for
+/// moving, SDL_SCANCODE_UNKNOWN for the others.
+SDL_Scancode builtInKeyAlternate(Action a);
+PadBinding builtInPadAlternate(Action a);
 
 /// Index in the glyph sheets (assets/ui/glyphs/*.png, docs/ASSET_SPEC.md section 11).
 int glyphIndex(const PadBinding& b);
