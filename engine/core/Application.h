@@ -54,7 +54,11 @@ public:
     /// Replaces the top scene after a fade.
     void replaceTop(std::unique_ptr<Scene> scene, float fade = 0.35f);
     Scene* topScene() const { return scenes_.empty() ? nullptr : scenes_.back().get(); }
+    size_t sceneCount() const { return scenes_.size(); }
     bool transitioning() const { return fadeState_ != Fade::None; }
+    /// The screen shown when a « Retour » takes away the last scene (the main menu): only
+    /// quit() closes the game, never an empty stack.
+    void setRootScene(std::function<std::unique_ptr<Scene>()> make) { rootScene_ = std::move(make); }
 
     // Window
     void setFullscreen(bool on);
@@ -109,6 +113,7 @@ private:
     AudioSystem audio_;
     ResourceManager resources_;
     std::vector<std::unique_ptr<Scene>> scenes_;
+    std::function<std::unique_ptr<Scene>()> rootScene_;
     std::vector<PendingOp> pending_;
     std::unique_ptr<Scene> fadeTarget_;
     PendingOp::Kind fadeKind_ = PendingOp::Switch;

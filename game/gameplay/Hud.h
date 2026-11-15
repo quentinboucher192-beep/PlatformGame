@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include "engine/rendering/Renderer.h"
 #include "game/gameplay/LevelProgress.h"
 #include "saves/HudLayout.h"
@@ -67,6 +70,28 @@ public:
         track_ = std::move(t);
         trackHint_ = 0;
     }
+    bool hasProgressTrack() const { return track_.valid(); }
+    /// Runners shown on the progress bar instead of the player's head (replay comparison):
+    /// the first one stands on the rail, the second one below it, each with its letter.
+    struct ProgressRacer {
+        float at = 0.0f;  // 0..1 along the route
+        Color color{57, 240, 216, 255};
+        std::string letter;
+        const Texture* texture = nullptr;  // its current animation frame
+        Rect src;
+        bool flip = false;
+    };
+    void setProgressRacers(std::vector<ProgressRacer> r) { racers_ = std::move(r); }
+    /// The progress bar alone, centred on `o` (`width` px of rail), e.g. outside the HUD.
+    void drawProgressAt(UIContext& ui, GameWorld& w, Vec2 o, float k, float width) { drawProgress(ui, w, o, k, width); }
+    /// Room the progress bar needs around its rail (above, below), runners included.
+    static float progressAbove(float scaledUnit, bool racing) { return scaledUnit * (racing ? 66.0f : 40.0f); }
+    static float progressBelow(float scaledUnit, bool racing) { return scaledUnit * (racing ? 66.0f : 46.0f); }
+
+private:
+    std::vector<ProgressRacer> racers_;
+
+public:
     float skipProgress() const { return skipHold_; }
     void setSkipHold(float v) { skipHold_ = v; }
 };

@@ -1002,7 +1002,7 @@ private:
         auto actionY = [&](int i) { return zoneD_.y + ui.s(12) + ui.s(36) * static_cast<float>(i); };
         std::string replayRecord = replayCandidate();
         st.enabled = !replayRecord.empty() && l->entry != nullptr;
-        if (ui.button("replay", {bx, actionY(0), bw, ah}, "VIEW REPLAY", st))
+        if (ui.button("replay", {bx, actionY(0), bw, ah}, "VOIR LE REPLAY", st))
             g_.app.pushScene(makeReplayViewer(g_, replayRecord));
         // Two records of this level side by side: the selected one (A) and the best other one
         // with a replay (B), downloaded before the comparison (read only).
@@ -1029,7 +1029,7 @@ private:
                 for (const auto& s2 : a.submissions) unsent += s2.status == RecordStatus::Local && !s2.blocked ? 1 : 0;
         st.enabled = unsent > 0 && g_.online.usable();
         st.primary = unsent > 0;
-        if (ui.button("submit", {bx, actionY(3), bw, ah}, "SUBMIT RECORD", st)) {
+        if (ui.button("submit", {bx, actionY(3), bw, ah}, "ENVOYER LE RECORD", st)) {
             if (!g_.online.loggedIn()) g_.app.pushScene(makeOnlineAccount(g_, false));
             else g_.online.syncNow(true);
         }

@@ -103,7 +103,7 @@ public:
             onlineSub += " · " + std::to_string(n) + (n > 1 ? " demandes d'amis" : " demande d'ami");
         if (int n = g_.online.unreadMessages(); n > 0 && g_.online.loggedIn())
             onlineSub += " · " + std::to_string(n) + (n > 1 ? " messages" : " message");
-        if (btn("online", "Online", onlineSub)) g_.app.switchScene(makeOnlineRanking(g_));
+        if (btn("online", "En ligne", onlineSub)) g_.app.switchScene(makeOnlineRanking(g_));
         {
             int n = g_.news.unread();
             int online = g_.online.loggedIn() ? g_.online.unreadNotifications() : 0;

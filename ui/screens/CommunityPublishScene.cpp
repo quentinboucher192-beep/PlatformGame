@@ -53,7 +53,7 @@ public:
         ui.pushId("publish");
         ui.label(communityId_.empty() ? "PUBLIER EN LIGNE" : "PUBLIER UNE NOUVELLE VERSION", {box.x + ui.s(36), box.y + ui.s(44)}, 28,
                  ui.theme().accent, Align::Left, FontFace::Title, VAlign::Middle);
-        ui.label("ONLINE LEVELS · Cosmic Online", {box.right() - ui.s(36), box.y + ui.s(44)}, 16, ui.theme().textDim, Align::Right,
+        ui.label("NIVEAUX EN LIGNE · Cosmic Online", {box.right() - ui.s(36), box.y + ui.s(44)}, 16, ui.theme().textDim, Align::Right,
                  FontFace::Body, VAlign::Middle);
         float x = box.x + ui.s(36), w = box.w * 0.5f - ui.s(56), y = box.y + ui.s(96);
         if (!level_) {
@@ -280,7 +280,7 @@ private:
         }
         communityId_ = id;
         publishedVersion_ = version;
-        status_ = "Publié ! Version " + std::to_string(version) + " visible dans ONLINE LEVELS (Récents).";
+        status_ = "Publié ! Version " + std::to_string(version) + " visible dans NIVEAUX EN LIGNE (Récents).";
         if (level_ && level_->extreme) status_ += " Sa course à la vérification est ouverte.";
         g_.online.notify(OnlineService::Notification::Kind::Success, "Niveau publié", "« " + title_ + " » est en ligne.");
         // Achievements: a level published (a new version of the same level counts once).

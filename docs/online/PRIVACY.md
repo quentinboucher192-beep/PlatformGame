@@ -43,7 +43,7 @@
 | Réactions aux commentaires | D1 `community_comment_reactions` | nombres agrégés ; la sienne pour le joueur | jusqu'au retrait |
 | Signalements de commentaires | D1 `community_comment_reports` | opérateurs | tant que le commentaire existe |
 | Notes des niveaux de la campagne (étoiles, dates ; seulement après un temps vérifié du niveau) | D1 `level_ratings` (+ moyennes `level_rating_stats`, recalculées par le serveur) | moyenne et nombre agrégés ; la sienne pour le joueur | jusqu'au retrait de la note ou la suppression du compte (moyennes alors recalculées) ; incluses dans l'export (`level_ratings`) |
-| Commentaires des niveaux de la campagne (affichés dans ONLINE seulement) et des courses des classements (texte, dates, empreinte du texte contre le spam, fil, réactions, signalements) | D1 `campaign_comments`, `campaign_comment_reactions`, `campaign_comment_reports` | tous (sauf blocages et commentaires masqués) ; les courses d'un profil masqué ne sont ni lisibles ni commentables par les autres | jusqu'à leur suppression par l'auteur ou la modération ; supprimés avec le compte de leur auteur, et le fil d'une course avec cette course (compte de son auteur supprimé) ; inclus dans l'export (`campaign_comments`, `campaign_comment_reactions`) |
+| Commentaires des niveaux de la campagne (affichés dans la section En ligne seulement) et des courses des classements (texte, dates, empreinte du texte contre le spam, fil, réactions, signalements) | D1 `campaign_comments`, `campaign_comment_reactions`, `campaign_comment_reports` | tous (sauf blocages et commentaires masqués) ; les courses d'un profil masqué ne sont ni lisibles ni commentables par les autres | jusqu'à leur suppression par l'auteur ou la modération ; supprimés avec le compte de leur auteur, et le fil d'une course avec cette course (compte de son auteur supprimé) ; inclus dans l'export (`campaign_comments`, `campaign_comment_reactions`) |
 | Joueurs d'un niveau (téléchargement ou temps envoyé) | D1 `community_level_players` | nombre agrégé (« joueurs uniques » du créateur) | tant que le niveau existe |
 | Abonnements aux créateurs | D1 `player_follows` | listes publiques ou privées (réglage `follows_visibility`) | jusqu'au désabonnement ou à un blocage |
 | Notifications (type, acteur, niveau, date, lu) et catégories désactivées | D1 `notifications`, `players.notifications_off` | le joueur | lues : 60 jours ; 500 au plus |
@@ -103,7 +103,7 @@ vérification de son empreinte SHA-256.
 | `online/known_ranks.json` | derniers rangs vus (notifications « record battu ») |
 | `online/level_ratings.json` | dernières moyennes reçues des notes des niveaux de la campagne (affichées « reçues il y a … » hors ligne) et vos notes ; lues seulement quand vous êtes connecté |
 | `online/playtime.json` | temps joué pas encore envoyé (seulement pour le compte connecté) |
-| `online/projects.json` | liens entre les copies locales (WORKSHOP → Mes niveaux) et les projets, révision de départ |
+| `online/projects.json` | liens entre les copies locales (ATELIER → Mes niveaux) et les projets, révision de départ |
 | `online/live_<projet>.json` | modifications faites en direct pas encore confirmées par le serveur (supprimé une fois vide) |
 | `saves/progress.json` | temps joué par niveau (affiché sur la fiche de chaque niveau, même sans compte) |
 | `saves/boss_stats.json` | statistiques des boss (victoires, défaites, combats et phases sans dégât) : jamais envoyées au serveur |

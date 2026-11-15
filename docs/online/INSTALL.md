@@ -70,7 +70,7 @@ CosmicPlatformer --online-server http://127.0.0.1:8787
 COSMIC_ONLINE_ENV=development CosmicPlatformer
 ```
 
-Menu principal → **Online** (un compte est demandé pour cette section). Au premier passage, l'écran d'accueil explique ce qui
+Menu principal → **En ligne** (un compte est demandé pour cette section). Au premier passage, l'écran d'accueil explique ce qui
 est partagé et propose de créer un compte, de se connecter ou de rester hors ligne.
 
 ## 3. Tests
@@ -116,7 +116,7 @@ variables vers un serveur de production** : ce sont des comptes de test.
 
 | Option | Effet |
 |---|---|
-| `--online [<niveau>]` | démarre sur l'écran ONLINE RANKING |
+| `--online [<niveau>]` | démarre sur l'écran CLASSEMENTS |
 | `--online-focus <pseudo>` | sélectionne le marqueur de ce joueur sur le globe |
 | `--online-open register[=pseudo]\|login\|settings\|friends\|profile:<pseudo>\|replay:<pseudo>` | ouvre la fenêtre correspondante (`register=Nom` préremplit le pseudonyme) |
 | `--online-manifest <fichier>` | écrit le manifeste des niveaux (sans fenêtre) |

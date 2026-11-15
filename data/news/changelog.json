@@ -1,6 +1,6 @@
 {
   "2.23.0": [
-    "Collection en ligne : le cadre d'avatar et le titre équipés vous suivent dans les classements ONLINE RANKING et sur votre profil public, qui montre aussi votre tenue (combinaison, traînée, cadre, effet de victoire).",
+    "Collection en ligne : le cadre d'avatar et le titre équipés vous suivent dans les CLASSEMENTS et sur votre profil public, qui montre aussi votre tenue (combinaison, traînée, cadre, effet de victoire).",
     "Les fantômes portent la combinaison de leur joueur, toujours teintés de leur couleur : la vôtre pour vos propres fantômes, celle du joueur pour un fantôme lancé depuis un classement.",
     "Le serveur n'accepte que les récompenses débloquées par les succès déclarés par votre jeu ; un profil privé ne montre ni tenue, ni cadre, ni titre (cadre simple dans les classements). Le cadre et le titre ne sont qu'un affichage : ils n'entrent pas dans la vérification des records."
   ],
@@ -11,8 +11,8 @@
     "En anglais : badge EXTREME, nombres (2.45 ; 12,345) et pluriels à l'anglaise."
   ],
   "2.21.0": [
-    "Notes des joueurs pour les niveaux de la campagne : après avoir terminé un niveau (temps vérifié en ligne), notez-le de 1 à 5 étoiles depuis l'écran de fin ou ONLINE ; la moyenne s'affiche sur la fiche du niveau et dans ONLINE (distincte de la difficulté calculée).",
-    "Commentaires des niveaux de la campagne, visibles uniquement dans ONLINE (réponses, réactions, signalement, modération, comme pour les niveaux des joueurs).",
+    "Notes des joueurs pour les niveaux de la campagne : après avoir terminé un niveau (temps vérifié en ligne), notez-le de 1 à 5 étoiles depuis l'écran de fin ou la section En ligne ; la moyenne s'affiche sur la fiche du niveau et dans la section En ligne (distincte de la difficulté calculée).",
+    "Commentaires des niveaux de la campagne, visibles uniquement dans la section En ligne (réponses, réactions, signalement, modération, comme pour les niveaux des joueurs).",
     "Commentaires sur les runs des classements : une bulle sur chaque ligne ouvre le fil de la course ; son auteur est notifié.",
     "Confidentialité : notes et commentaires inclus dans l'export de vos données et supprimés avec le compte."
   ],
@@ -33,11 +33,11 @@
     "Corrigé : mourir contre un boss puis le finir sans être touché n'est plus compté « sans dégât ». Champs de texte : Ctrl+A, Ctrl+C, Ctrl+X, Ctrl+V, sélection et curseur."
   ],
   "2.18.0": [
-    "Ghost Racing : courez contre vos fantômes (meilleur temps, record précédent, dernière course), le record mondial, les records de vos amis ou un replay importé, jusqu'à 8 à la fois.",
+    "Course contre les fantômes : courez contre vos fantômes (meilleur temps, record précédent, dernière course), le record mondial, les records de vos amis ou un replay importé, jusqu'à 8 à la fois.",
     "Fantômes translucides colorés avec contour lumineux, nom et temps de référence ; aucune collision, aucun déclenchement : purement visuels. Touche G (clic du stick gauche) pour les masquer.",
     "Écart en direct (« +2,450 s » retard, « -1,230 s » avance), temps du fantôme au même endroit, fin estimée ; écarts exacts à chaque point de sauvegarde, meilleurs segments en or, animation de nouveau record.",
     "Panneau des segments façon LiveSplit : un élément « Fantômes » de l'éditeur du HUD (place, taille, affichage).",
-    "Avant le départ (bouton « Fantômes… » des niveaux, « Course contre ce temps » d'ONLINE RANKING, « Course contre un fantôme… » d'ONLINE LEVELS) : choix des fantômes, options d'affichage, mode entraînement.",
+    "Avant le départ (bouton « Fantômes… » des niveaux, « Course contre ce temps » des CLASSEMENTS, « Course contre un fantôme… » des NIVEAUX EN LIGNE) : choix des fantômes, options d'affichage, mode entraînement.",
     "Mode entraînement : un segment depuis un point de sauvegarde, répété automatiquement contre les fantômes ; aucun record, aucune progression, rien n'est envoyé.",
     "Fin de course : écart final sur chaque fantôme et écran « Segments » (durées, temps cumulés, meilleurs segments, record, fantômes, historique de vos courses).",
     "Succès : 134 succès en 12 catégories avec des étoiles de difficulté (344 étoiles), sur une toile d'araignée avec zoom (menu principal → Succès) ou en liste. Les étoiles apparaissent sur votre profil en ligne, comme déclarées par le jeu.",
@@ -52,11 +52,11 @@
     "Correction : un profil ouvert depuis un classement ne se recharge plus quand on clique sur ses onglets."
   ],
   "2.16.0": [
-    "Niveaux EXTRÊME : une seule vie, sans possibilité de la changer, et un badge EXTRÊME dans la campagne, ONLINE LEVELS et ONLINE RANKING. L'enchaînement des boss (L'Arène des Échos) devient EXTRÊME.",
+    "Niveaux EXTRÊME : une seule vie, sans possibilité de la changer, et un badge EXTRÊME dans la campagne, NIVEAUX EN LIGNE et CLASSEMENTS. L'enchaînement des boss (L'Arène des Échos) devient EXTRÊME.",
     "Course à la vérification : chaque tentative d'un niveau EXTRÊME est classée selon sa progression, même sans arriver au bout : parcours (40 points), vie retirée aux boss et vagues d'embuscade battues (60 points). Le serveur recalcule le score à partir du replay.",
-    "Le premier joueur qui termine un niveau EXTRÊME en devient le vérificateur ; les autres participants et l'auteur sont prévenus. Le classement s'ouvre depuis la fiche du niveau, ONLINE RANKING et l'écran de fin.",
+    "Le premier joueur qui termine un niveau EXTRÊME en devient le vérificateur ; les autres participants et l'auteur sont prévenus. Le classement s'ouvre depuis la fiche du niveau, CLASSEMENTS et l'écran de fin.",
     "Éditeur : réglage « Niveau EXTRÊME (une seule vie) ». Un niveau EXTRÊME se publie sans fin de niveau de son auteur, avec le tracé de sa course (parcours prévu, boss, embuscades).",
-    "WORKSHOP : supprimer un niveau publié propose aussi de le retirer d'ONLINE LEVELS. Notifications : niveau EXTRÊME vérifié, réponse dans un projet, retrait d'un projet."
+    "ATELIER : supprimer un niveau publié propose aussi de le retirer des NIVEAUX EN LIGNE. Notifications : niveau EXTRÊME vérifié, réponse dans un projet, retrait d'un projet."
   ],
   "2.15.0": [
     "Éditeur en direct : discussion du projet (bouton Discussion avec compteur de messages non lus), messages gardés avec le projet, « Répondre » à un message ; l'auteur est prévenu.",
@@ -93,13 +93,13 @@
     "Sélection multiple présentée en tableau (type, calque, position, groupe, liens) ; l'entité montre ses relations (« Activé par… », événements qui l'utilisent) ; avertissements dans la barre d'état."
   ],
   "2.10.0": [
-    "ONLINE → PROJETS : des niveaux construits à plusieurs, avec des rôles (lecteur, testeur, éditeur, administrateur, propriétaire) vérifiés par le serveur.",
+    "En ligne → PROJETS : des niveaux construits à plusieurs, avec des rôles (lecteur, testeur, éditeur, administrateur, propriétaire) vérifiés par le serveur.",
     "Invitations : clés et liens cosmic:// (nombre d'utilisations, durée, révocation), invitations directes, demandes d'adhésion, projets ouverts à tous.",
     "Chaque membre travaille sur sa copie dans l'éditeur habituel ; chaque envoi crée une révision, et une copie faite d'après une ancienne révision n'écrase jamais la plus récente.",
     "Membres, rôles, transfert du projet, journal d'activité et révisions ; notifications des invitations et des changements de rôle."
   ],
   "2.9.0": [
-    "ONLINE LEVELS : favoris (onglet Favoris trié et filtré, niveaux retirés conservés comme indisponibles) et compteurs de favoris et de commentaires sur chaque niveau.",
+    "NIVEAUX EN LIGNE : favoris (onglet Favoris trié et filtré, niveaux retirés conservés comme indisponibles) et compteurs de favoris et de commentaires sur chaque niveau.",
     "Commentaires sur les niveaux de la communauté : réponses, réactions (J'aime, J'adore, Drôle, Impressionnant, Pas utile), épinglage par le créateur, modification, suppression, signalement.",
     "Profils complets : badge CRÉATEUR, statistiques de créateur, créations, abonnés et abonnements, SUIVRE, ami, blocage ; recherche de créateurs.",
     "Temps joué en heures et minutes : sur la fiche de chaque niveau et dans les profils en ligne (total et par niveau).",

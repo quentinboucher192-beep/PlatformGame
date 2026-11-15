@@ -548,7 +548,7 @@ void OnlineService::submitCommunityRun(const std::string& localLevelId, int64_t 
     std::string title = jstr(*info, "title", localLevelId);
     if (!jget<bool>(*info, "verified", false)) {
         notify(Notification::Kind::Warning, "Temps non classé",
-               "Votre copie de « " + title + " » diffère de la version publiée : retéléchargez-la depuis ONLINE LEVELS.");
+               "Votre copie de « " + title + " » diffère de la version publiée : retéléchargez-la depuis NIVEAUX EN LIGNE.");
         return;
     }
     if (!loggedIn() || !usable()) {
@@ -1079,10 +1079,10 @@ void OnlineService::noteFriends(const Json& data) {
     for (const auto& [id, name] : incoming)
         if (!seenIncoming.count(id)) newRequests.push_back(name);
     if (newRequests.size() == 1)
-        notify(Notification::Kind::Friend, "Demande d'ami", newRequests.front() + " veut devenir votre ami (ONLINE → SOCIAL → Amis).");
+        notify(Notification::Kind::Friend, "Demande d'ami", newRequests.front() + " veut devenir votre ami (En ligne → SOCIAL → Amis).");
     else if (newRequests.size() > 1)
         notify(Notification::Kind::Friend, "Demandes d'amis",
-               std::to_string(newRequests.size()) + " joueurs veulent devenir vos amis (ONLINE → SOCIAL → Amis).");
+               std::to_string(newRequests.size()) + " joueurs veulent devenir vos amis (En ligne → SOCIAL → Amis).");
     for (const auto& [id, name] : friends)
         if (wasOutgoing.count(id)) notify(Notification::Kind::Friend, "Demande acceptée", name + " a accepté votre demande d'ami.");
 
@@ -1150,7 +1150,7 @@ void OnlineService::noteUnread(const Json& data) {
         std::string who = names.front();
         for (size_t i = 1; i < names.size() && i < 3; ++i) who += ", " + names[i];
         if (names.size() > 3) who += "…";
-        notify(Notification::Kind::Message, std::to_string(fresh.size()) + " nouveaux messages", "De " + who + " (ONLINE → SOCIAL).");
+        notify(Notification::Kind::Message, std::to_string(fresh.size()) + " nouveaux messages", "De " + who + " (En ligne → SOCIAL).");
     }
     if (newest != seen) {
         friendNotices_[key] = newest;

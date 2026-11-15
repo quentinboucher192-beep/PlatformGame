@@ -364,7 +364,13 @@ void Hud::drawProgress(UIContext& ui, GameWorld& w, Vec2 o, float k, float width
     float railH = S(14);
     Rect rail{o.x - width * 0.5f, o.y - railH * 0.5f, width, railH};
     auto xAt = [&](float f) { return rail.x + rail.w * std::clamp(f, 0.0f, 1.0f); };
-    float fill = shownProgress_;
+    const bool racing = !racers_.empty();
+    float fill = racing ? std::clamp(racers_.front().at, 0.0f, 1.0f) : shownProgress_;
+    float reached = bestProgress_;
+    if (racing) {
+        reached = 0.0f;
+        for (const auto& rc : racers_) reached = std::max(reached, rc.at);
+    }
     float headX = xAt(fill);
 
     // No frame around the bar (the player's choice): only a halo that breathes along the rail,
@@ -376,7 +382,7 @@ void Hud::drawProgress(UIContext& ui, GameWorld& w, Vec2 o, float k, float width
     }
     r.drawGlow({rail.right() + S(30), rail.center().y}, S(70), violet.withAlpha(static_cast<uint8_t>(60 * breathe)));
 
-    // Header: section on the left, percentage on the right.
+    // Header: section on the left, percentage on the right (not with runners: they stand there).
     std::string section = w.level().name;
     for (const auto& m : track_.markers)
         if (m.kind == LevelProgressTrack::Marker::Kind::Checkpoint && m.at <= bestProgress_ + 0.002f && !m.label.empty()) section = m.label;
@@ -388,12 +394,12 @@ void Hud::drawProgress(UIContext& ui, GameWorld& w, Vec2 o, float k, float width
     std::string pctText = std::to_string(pct) + " %";
     float pctW = ui.text().measure(pctText, FontFace::Title, ps.size).x;
     float headerY = rail.y - S(14);
-    ui.text().draw(pctText, {rail.right() + S(62), headerY + S(2)}, ps);
+    if (!racing) ui.text().draw(pctText, {rail.right() + S(62), headerY + S(2)}, ps);
     float room = rail.w + S(62) - pctW - S(30);
     TextStyle ss = style(ui, k * ui.fitFont(section, FontFace::Bold, 16, room / k, 0.6f), Color{214, 226, 242, 255}, FontFace::Bold, Align::Left,
                          VAlign::Bottom);
     ss.shadow = true;
-    ui.text().draw(section, {rail.x, headerY}, ss);
+    if (!racing) ui.text().draw(section, {rail.x, headerY}, ss);
 
     // Aura of the filled part: a wide bloom brighter towards the head, and sparks rising off it.
     for (float x = rail.x; x <= headX; x += S(18)) {
@@ -466,6 +472,7 @@ void Hud::drawProgress(UIContext& ui, GameWorld& w, Vec2 o, float k, float width
     }
     std::vector<std::pair<float, float>> labelSpans;  // no two labels overlap
     auto label = [&](const std::string& text, float x, Color c) {
+        if (racing) return;
         float fs = 14.0f;
         float tw = ui.text().measure(text, FontFace::Bold, S(fs)).x;
         float a = x - tw * 0.5f, b = x + tw * 0.5f;
@@ -488,7 +495,7 @@ void Hud::drawProgress(UIContext& ui, GameWorld& w, Vec2 o, float k, float width
         const auto& m = track_.markers[i];
         if (m.kind != Kind::Checkpoint || nearMajor(iconX[i])) continue;
         Vec2 c{iconX[i], rail.center().y};
-        bool on = w.checkpointId() == m.objectId || m.at <= bestProgress_ + 0.002f;
+        bool on = (!racing && w.checkpointId() == m.objectId) || m.at <= reached + 0.002f;
         float s = S(8);
         if (on) r.drawGlow(c, S(22), cyan.withAlpha(140));
         std::vector<Vec2> o = {{c.x, c.y - s - S(2)}, {c.x + s + S(2), c.y}, {c.x, c.y + s + S(2)}, {c.x - s - S(2), c.y}};
@@ -569,7 +576,7 @@ void Hud::drawProgress(UIContext& ui, GameWorld& w, Vec2 o, float k, float width
     // Exit portal at the end of the rail: turning rings in a violet glow.
     {
         Vec2 c{rail.right() + S(22), rail.center().y};
-        bool done = shownProgress_ >= 0.995f;
+        bool done = (racing ? reached : shownProgress_) >= 0.995f;
         float pulse = 1.0f + 0.12f * std::sin(t * 2.0f);
         r.drawGlow(c, S(84) * pulse, violet.withAlpha(done ? 240 : 180));
         r.drawGlow(c, S(36), cyan.withAlpha(170));
@@ -583,6 +590,38 @@ void Hud::drawProgress(UIContext& ui, GameWorld& w, Vec2 o, float k, float width
         }
         r.fillCircle(c, S(4), Color{240, 255, 252, 255});
         label("portail", c.x, Color{212, 166, 255, 255});
+    }
+
+    // Runners (replay comparison): each one's character on the rail, the first above it,
+    // the second below it, so they never cover each other; a letter in their colour.
+    if (racing) {
+        for (size_t i = 0; i < racers_.size() && i < 2; ++i) {
+            const ProgressRacer& rc = racers_[i];
+            float x = xAt(rc.at);
+            bool above = i == 0;
+            float bodyH = S(40);
+            r.drawGlow({x, rail.center().y}, S(30), rc.color.withAlpha(200));
+            r.fillCircle({x, rail.center().y}, S(5), rc.color);
+            float top = above ? rail.y - S(2) - bodyH : rail.bottom() + S(2);
+            if (rc.texture && rc.src.w > 0.0f && rc.src.h > 0.0f) {
+                float bw = bodyH * rc.src.w / rc.src.h;
+                Rect dst{x - bw * 0.5f, top, bw, bodyH};
+                r.drawGlow(dst.center(), S(26), rc.color.withAlpha(90));
+                const float o = std::max(1.0f, S(1.4f));
+                const Vec2 offs[4] = {{-o, 0}, {o, 0}, {0, -o}, {0, o}};
+                for (Vec2 d : offs)
+                    r.drawTexture(*rc.texture, &rc.src, {dst.x + d.x, dst.y + d.y, dst.w, dst.h}, rc.color.withAlpha(150), BlendMode::Additive,
+                                  rc.flip);
+                r.drawTexture(*rc.texture, &rc.src, dst, Color::lerp(Color{255, 255, 255, 255}, rc.color, 0.35f), BlendMode::Alpha, rc.flip);
+            }
+            // The letter: above the first one's head, under the second one's feet.
+            Vec2 bc{x, above ? top - S(11) : top + bodyH + S(11)};
+            r.fillCircle(bc, S(10), rc.color);
+            r.drawRing(bc, S(10), S(1.5f), Color{8, 12, 26, 230});
+            TextStyle ls = style(ui, k * 13, Color{8, 12, 26, 255}, FontFace::Bold, Align::Center, VAlign::Middle);
+            ui.text().draw(rc.letter, bc, ls);
+        }
+        return;
     }
 
     // The player: bright head, pulsing halo, expanding ring, orbiting sparks and a trail.

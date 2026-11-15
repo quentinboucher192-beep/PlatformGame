@@ -550,7 +550,7 @@ void GameScene::finishRun(bool completed) {
                          {"deaths", s.deaths}, {"date", FileUtil::nowString()}};
             if (FileUtil::writeBinary(rp, bytes) && FileUtil::writeTextAtomic(sp, side.dump(1)) && (g_.achievements.stats().add("completion_proofs"), true))
                 g_.online.notify(OnlineService::Notification::Kind::Success, "Fin de niveau enregistrée",
-                                 "Cette version peut être publiée : WORKSHOP → Mes niveaux → Publier en ligne.");
+                                 "Cette version peut être publiée : ATELIER → Mes niveaux → Publier en ligne.");
         }
     } else if (!completed && race_.active() && recorder_.active()) {
         // EXTRÊME: a failed attempt is ranked by how far it went.

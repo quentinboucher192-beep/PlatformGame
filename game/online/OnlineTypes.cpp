@@ -32,8 +32,8 @@ const char* categoryLabel(RunCategory c) {
     switch (c) {
         case RunCategory::AnyPercent: return "ANY%";
         case RunCategory::HundredPercent: return "100%";
-        case RunCategory::NoDeath: return "NO DEATH";
-        case RunCategory::NoDamage: return "NO DAMAGE";
+        case RunCategory::NoDeath: return "SANS MORT";
+        case RunCategory::NoDamage: return "SANS DÉGÂT";
         case RunCategory::Speedrun: return "SPEEDRUN";
     }
     return "ANY%";

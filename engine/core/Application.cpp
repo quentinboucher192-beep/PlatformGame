@@ -92,6 +92,15 @@ void Application::applyPending() {
                     scenes_.back()->onExit();
                     scenes_.pop_back();
                     if (!scenes_.empty()) scenes_.back()->onResume();
+                    // A « Retour » from a screen that replaced the whole stack: back to the
+                    // root screen (main menu) instead of an empty stack, which would end the game.
+                    else if (rootScene_ && running_) {
+                        if (std::unique_ptr<Scene> root = rootScene_()) {
+                            root->attach(this);
+                            scenes_.push_back(std::move(root));
+                            scenes_.back()->onEnter();
+                        }
+                    }
                 }
                 break;
             case PendingOp::Switch:

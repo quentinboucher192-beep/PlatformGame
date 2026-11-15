@@ -40,11 +40,11 @@ float drawOnlineNav(GameServices& g, const Rect& area, OnlineSection current) {
     };
     // The levels are played from the level card ("Jouer ce niveau"); the campaign and the
     // settings are reached from the main menu. The WORKSHOP lives here only.
-    if (item("levels", "ONLINE LEVELS", current == OnlineSection::Levels)) g.app.switchScene(makeOnlineLevels(g));
-    if (item("ranking", "ONLINE RANKING", current == OnlineSection::Ranking)) g.app.switchScene(makeOnlineRanking(g));
+    if (item("levels", "NIVEAUX EN LIGNE", current == OnlineSection::Levels)) g.app.switchScene(makeOnlineLevels(g));
+    if (item("ranking", "CLASSEMENTS", current == OnlineSection::Ranking)) g.app.switchScene(makeOnlineRanking(g));
     if (item("social", "SOCIAL", current == OnlineSection::Social, onlineSocialBadge(g))) g.app.switchScene(makeSocial(g));
     if (item("projects", "PROJETS", current == OnlineSection::Projects)) g.app.switchScene(makeProjects(g));
-    if (item("workshop", "WORKSHOP", current == OnlineSection::Workshop)) g.app.switchScene(makeContentManager(g));
+    if (item("workshop", "ATELIER", current == OnlineSection::Workshop)) g.app.switchScene(makeContentManager(g));
     if (item("back", "RETOUR", false)) g.app.switchScene(makeMainMenu(g));
     ui.popId();
     return nav.h;

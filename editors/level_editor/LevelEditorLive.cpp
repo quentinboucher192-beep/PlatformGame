@@ -76,7 +76,7 @@ void LevelEditorScene::updateLive(float dt) {
         std::string why = live_->failedStatus() == 404 ? "Vous ne faites plus partie de ce projet (ou il a été supprimé)."
                                                        : "Accès au projet perdu : " + live_->error();
         g_.online.notify(OnlineService::Notification::Kind::Warning, "Édition en direct terminée",
-                         why + (kept ? " Votre version est gardée dans WORKSHOP → Mes niveaux : « " + mine.name + " »." : ""));
+                         why + (kept ? " Votre version est gardée dans l'ATELIER → Mes niveaux : « " + mine.name + " »." : ""));
         g_.app.switchScene(makeMainMenu(g_));
         return;
     }

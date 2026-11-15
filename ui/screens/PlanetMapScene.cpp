@@ -396,7 +396,7 @@ public:
             line("Meilleur temps", LevelTimer::format(rec->bestTime));
             line("Meilleur score", std::to_string(rec->bestScore));
             line("Moins de morts", std::to_string(std::max(0, rec->fewestDeaths)));
-            line("Collectibles", std::to_string(rec->mostCollectibles) + " / " + std::to_string(rec->totalCollectibles));
+            line("Objets collectés", std::to_string(rec->mostCollectibles) + " / " + std::to_string(rec->totalCollectibles));
             line("Ennemis éliminés", std::to_string(rec->mostKills));
             line("Réalisé le", rec->bestTimeDate);
             line("Victoires / essais", std::to_string(rec->completions) + " / " + std::to_string(rec->attempts));

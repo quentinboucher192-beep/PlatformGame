@@ -1,6 +1,6 @@
 # Projets collaboratifs — guide
 
-Un **projet** est un niveau construit à plusieurs dans Cosmic Online (ONLINE → PROJETS). Ce
+Un **projet** est un niveau construit à plusieurs dans Cosmic Online (En ligne → PROJETS). Ce
 guide décrit ce que voit le joueur, ce que garantit le serveur, et comment tout cela est testé.
 Référence des routes : [API.md](API.md) §8.9 quater à sexies. Données conservées :
 [PRIVACY.md](PRIVACY.md).
@@ -73,7 +73,7 @@ dernier signe de vie ; seules les opérations sont conservées.
   enregistrée, puis tous les membres présents reçoivent le document restauré.
 * **Versions nommées** (« Bêta 1 ») : définitives, nom unique, SHA-256 vérifié à la création et à
   chaque téléchargement ; les autres membres sont prévenus.
-* **Télécharger une copie** d'une révision ou d'une version : elle arrive dans WORKSHOP → Mes
+* **Télécharger une copie** d'une révision ou d'une version : elle arrive dans l'ATELIER → Mes
   niveaux comme niveau indépendant (la copie liée au projet n'est pas touchée).
 
 ## 5. Limites de charge

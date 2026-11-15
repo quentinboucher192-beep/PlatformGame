@@ -164,7 +164,7 @@ private:
             Vec2 sz = ui.labelWrapped(text, {x + ui.s(22), y + ui.s(30)}, w - ui.s(22), 16, ui.theme().textDim);
             y += ui.s(40) + sz.y;
         };
-        point("Compte", "La section ONLINE (classements et WORKSHOP) demande un compte. Le jeu, lui, n'en a jamais besoin : la "
+        point("Compte", "La section En ligne (classements et ATELIER) demande un compte. Le jeu, lui, n'en a jamais besoin : la "
                         "campagne et les records locaux restent jouables hors ligne.");
         point("Ce qui est partagé", "Votre pseudonyme, votre avatar, vos temps et le replay de vos meilleurs runs (les commandes de jeu "
                                     "et la trajectoire de votre personnage pendant le niveau, pas une vidéo). Le mot de passe n'est "

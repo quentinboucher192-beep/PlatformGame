@@ -125,6 +125,7 @@ public:
             route_ = routeFuture_.get();
             routeReady_ = true;
             trackA_.mapProgress(route_);
+            hud_.setProgressTrack(route_);
             if (comparing_) cmp_.setRoute(route_);
         }
         if (!loaded()) return;
@@ -165,6 +166,7 @@ public:
         if (comparing_) drawGhost(r, view, animB_, poseB(), kColorB, ghostAlpha());
         r.setView(WorldView{});
         if (playback_) drawGameHud(view);
+        if (comparing_) drawCompareProgress();
         if (comparing_) drawTags(view);
         drawSeekOverlay();
         if (comparing_) drawComparePanel(layout_.panel);
@@ -714,6 +716,58 @@ private:
                 setHudVisible(hs, HudElement::Boss, false);
         }
         hud_.render(ui, w, view, nullptr, hs);
+    }
+
+    /// The level's progress bar with both runners on it (A on the rail, B under it), at the
+    /// top of the free part, right of the vitals and powers.
+    void drawCompareProgress() {
+        if (!routeReady_ || !route_.valid() || !hud_.hasProgressTrack()) return;
+        UIContext& ui = g_.ui;
+        GameWorld& w = world();
+        const Rect& free = layout_.worldArea;
+        float left = free.x + ui.s(40);
+        float bottomOfHud = ui.s(76);  // the collectibles counter (top centre)
+        if (playback_ && !w.cinematic().active() && w.state() == WorldState::Playing) {
+            GameplaySettings hs = g_.settings.gameplay;
+            for (HudElement e : {HudElement::Vitals, HudElement::Powers}) {
+                hs.hud[e].custom = false;
+                if (!hudVisible(hs, e)) continue;
+                Rect a = hud_.area(ui, w, e, hud_.place(ui, w, hs, e));
+                if (a.w <= 0.0f) continue;
+                left = std::max(left, a.right() + ui.s(40));
+            }
+        }
+        float right = free.right() - ui.s(80);  // the exit portal and its glow
+        float y = std::max(ui.s(156), bottomOfHud + Hud::progressAbove(ui.s(1), true));
+        if (right - left < ui.s(260)) {  // narrow screen: under the vitals and powers
+            left = free.x + ui.s(40);
+            y = ui.s(260) + Hud::progressAbove(ui.s(1), true);
+        }
+        if (right - left < ui.s(160)) return;
+        auto racer = [](float at, Color c, const char* letter, const Animator& anim, const Texture* skin, bool flip) {
+            Hud::ProgressRacer rc;
+            rc.at = std::clamp(at, 0.0f, 1.0f);
+            rc.color = c;
+            rc.letter = letter;
+            rc.texture = skin ? skin : (anim.set() ? anim.set()->texture.get() : nullptr);
+            if (rc.texture) rc.src = anim.sourceRect();
+            rc.flip = flip;
+            return rc;
+        };
+        float tA = static_cast<float>(std::min(clock(), aEnd()));
+        double tb = std::clamp(cmp_.bTime(clock()), 0.0, static_cast<double>(cmp_.b().duration()));
+        std::vector<Hud::ProgressRacer> racers;
+        if (playback_) {
+            const Player& p = w.player();
+            racers.push_back(racer(trackA_.progressAtTime(tA), kColorA, "A", p.anim, p.skin, p.facing < 0.0f));
+        } else {
+            racers.push_back(racer(trackA_.progressAtTime(tA), kColorA, "A", animA_, nullptr, (poseA().flags & ReplayFrame::FacingLeft) != 0));
+        }
+        racers.push_back(racer(cmp_.b().track.progressAtTime(static_cast<float>(tb)), kColorB, "B", animB_, nullptr,
+                               (poseB().flags & ReplayFrame::FacingLeft) != 0));
+        hud_.setProgressRacers(std::move(racers));
+        hud_.drawProgressAt(ui, w, {(left + right) * 0.5f, y}, 1.0f, right - left);
+        hud_.setProgressRacers({});
     }
 
     /// "A · Astrid" / "B · Record mondial" above each of them, in the free part, never on

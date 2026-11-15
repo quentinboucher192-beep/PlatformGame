@@ -863,7 +863,7 @@ private:
                 }
             } else if (!editor()) {
                 if (ui.button("copy", {bx, y, half, ui.s(44)}, "Télécharger une copie", st))
-                    download(false, [this](const std::string&) { say("Copie ajoutée à WORKSHOP → Mes niveaux.", false); });
+                    download(false, [this](const std::string&) { say("Copie ajoutée à l'ATELIER → Mes niveaux.", false); });
             }
         }
         if (tester() || !editor()) y += ui.s(54);
@@ -1208,7 +1208,7 @@ private:
             lvl->name = name + " (" + what + ")";
             if (!g_.content.saveUserLevel(*lvl)) return say("Impossible d'écrire la copie.", true);
             g_.ratings.contentChanged();
-            say("« " + lvl->name + " » est dans WORKSHOP → Mes niveaux.", false);
+            say("« " + lvl->name + " » est dans l'ATELIER → Mes niveaux.", false);
         });
     }
 
@@ -1534,7 +1534,7 @@ private:
         std::vector<std::string> levels;
         for (const LevelEntry* e : myLevels_) levels.push_back(e->name);
         if (levels.empty()) {
-            Vec2 s = ui.labelWrapped("Vous n'avez aucun niveau personnel : créez d'abord un niveau dans WORKSHOP → Mes niveaux, puis faites-en un projet.",
+            Vec2 s = ui.labelWrapped("Vous n'avez aucun niveau personnel : créez d'abord un niveau dans l'ATELIER → Mes niveaux, puis faites-en un projet.",
                                      {x, y}, w, 16, ui.theme().warm);
             y += s.y + ui.s(10);
         } else {

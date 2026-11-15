@@ -52,7 +52,7 @@ const std::vector<std::pair<std::string, std::string>>& EventSystem::triggerType
         {"bossPhase", "Boss : nouvelle phase"},
         {"bossDefeated", "Boss vaincu"},
         {"collected", "Objet ramassé"},
-        {"checkpoint", "Checkpoint atteint"},
+        {"checkpoint", "Point de sauvegarde atteint"},
         {"powerUsed", "Pouvoir utilisé (source = id du pouvoir)"},
         {"unlocked", "Pouvoir débloqué (source = id du pouvoir)"},
         {"levelStart", "Début du niveau (source = level)"},

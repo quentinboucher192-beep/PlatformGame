@@ -67,7 +67,7 @@ public:
         float W = ui.screenW(), H = ui.screenH();
         Rect panel{ui.s(50), ui.s(40), W - ui.s(100), H - ui.s(120)};
         ui.panel(panel, false, 18);
-        Vec2 titleSize = ui.label("WORKSHOP", {panel.x + ui.s(36), panel.y + ui.s(22)}, 38, ui.theme().text, Align::Left,
+        Vec2 titleSize = ui.label("ATELIER", {panel.x + ui.s(36), panel.y + ui.s(22)}, 38, ui.theme().text, Align::Left,
                                   FontFace::Title);
         ui.label("Vos niveaux, les niveaux importés, le partage en .cplanet et l'éditeur d'ennemis",
                  {panel.x + ui.s(36) + titleSize.x + ui.s(24), panel.y + ui.s(40)}, 19, ui.theme().textDim);
@@ -87,7 +87,7 @@ public:
             ui.label(message_, {panel.center().x, panel.bottom() - ui.s(26)}, 22, messageColor_, Align::Center, FontFace::Bold,
                      VAlign::Middle);
         // The WORKSHOP is part of ONLINE: going back returns there.
-        Glyphs::drawHint(ui, Action::MenuBack, "ONLINE", {ui.s(60), H - ui.s(40)}, ui.s(30));
+        Glyphs::drawHint(ui, Action::MenuBack, "En ligne", {ui.s(60), H - ui.s(40)}, ui.s(30));
         if (ui.backPressed()) g_.app.switchScene(makeOnlineRanking(g_));
         ui.end();
     }
@@ -173,13 +173,13 @@ private:
                 k.fontSize = 17;
                 k.enabled = !removing_;
                 float bx = row.right() - ui.s(558);
-                if (ui.button(id + "delonline", {bx, row.y + ui.s(18), ui.s(240), ui.s(56)}, removing_ ? "Retrait…" : "Supprimer et retirer d'ONLINE", d))
+                if (ui.button(id + "delonline", {bx, row.y + ui.s(18), ui.s(240), ui.s(56)}, removing_ ? "Retrait…" : "Supprimer et retirer en ligne", d))
                     removeEverywhere(l->id, confirmCommunityId_);
                 if (ui.button(id + "dellocal", {bx + ui.s(248), row.y + ui.s(18), ui.s(176), ui.s(56)}, "Ma copie seulement", k)) {
                     std::string lid = l->id;
                     confirmDelete_.clear();
                     confirmCommunityId_.clear();
-                    if (g_.content.deleteUserLevel(lid)) notify("Copie locale supprimée ; le niveau reste dans ONLINE LEVELS.", ui.theme().warm);
+                    if (g_.content.deleteUserLevel(lid)) notify("Copie locale supprimée ; le niveau reste dans NIVEAUX EN LIGNE.", ui.theme().warm);
                     else notify("Suppression impossible", ui.theme().danger);
                     break;
                 }
@@ -219,7 +219,7 @@ private:
                 confirmCommunityId_.clear();
                 if (auto lvl = g_.content.loadLevel(l->id)) confirmCommunityId_ = jstr(lvl->metadata.value("community", Json::object()), "id");
                 if (!confirmCommunityId_.empty())
-                    notify("Ce niveau est publié dans ONLINE LEVELS : le retirer aussi, ou ne supprimer que votre copie ?", ui.theme().warm);
+                    notify("Ce niveau est publié dans NIVEAUX EN LIGNE : le retirer aussi, ou ne supprimer que votre copie ?", ui.theme().warm);
             }
             y += rh + ui.s(10);
         }
@@ -229,7 +229,7 @@ private:
     /// Removes the publication first (the server says it is done), then the local copy.
     void removeEverywhere(const std::string& levelId, const std::string& communityId) {
         if (!g_.online.loggedIn()) {
-            notify("Connectez-vous à Cosmic Online pour le retirer d'ONLINE LEVELS : rien n'a été supprimé.", g_.ui.theme().danger);
+            notify("Connectez-vous à Cosmic Online pour le retirer des NIVEAUX EN LIGNE : rien n'a été supprimé.", g_.ui.theme().danger);
             return;
         }
         removing_ = true;
@@ -237,13 +237,13 @@ private:
                            removing_ = false;
                            // Already gone online (404): only the local copy remains to delete.
                            if (!r.ok && r.status != 404) {
-                               notify("Retrait d'ONLINE LEVELS impossible (" + r.message + ") : rien n'a été supprimé.", g_.ui.theme().danger);
+                               notify("Retrait des NIVEAUX EN LIGNE impossible (" + r.message + ") : rien n'a été supprimé.", g_.ui.theme().danger);
                                return;
                            }
                            confirmDelete_.clear();
                            confirmCommunityId_.clear();
                            g_.content.deleteUserLevel(levelId);
-                           notify("Niveau supprimé et retiré d'ONLINE LEVELS.", g_.ui.theme().warm);
+                           notify("Niveau supprimé et retiré des NIVEAUX EN LIGNE.", g_.ui.theme().warm);
                        }));
     }
 

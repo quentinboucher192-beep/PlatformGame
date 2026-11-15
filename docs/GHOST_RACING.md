@@ -108,7 +108,7 @@ téléchargements se font avant le départ.
 
 ## Lecteur de replay avancé (2.19)
 
-*VIEW REPLAY*, *Revoir la partie*, `CosmicPlatformer --replay fichier.cprz` : un replay exact
+*VOIR LE REPLAY*, *Revoir la partie*, `CosmicPlatformer --replay fichier.cprz` : un replay exact
 (format 2, même version du niveau) est **re-simulé** (voir `docs/online/REPLAY_FORMAT.md`).
 
 * **Lecture / pause**, **image par image** en avant et en arrière (une image = un pas de

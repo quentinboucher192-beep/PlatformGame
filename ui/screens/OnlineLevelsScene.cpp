@@ -418,10 +418,10 @@ private:
                                 : tab_ == kSearchTab && searchCreators_ ? "Aucun créateur ne correspond."
                                 : tab_ == kSearchTab ? (query_.size() < 2 ? "Tapez au moins deux lettres." : "Aucun niveau ne correspond.")
                                 : tab_ == kFriendsTab ? "Vos amis n'ont pas encore publié de niveau."
-                                : tab_ == kMineTab ? "Vous n'avez rien publié : WORKSHOP → Mes niveaux → Publier."
+                                : tab_ == kMineTab ? "Vous n'avez rien publié : ATELIER → Mes niveaux → Publier."
                                 : tab_ == kFavoritesTab ? (favFilter_ == 0 ? "Aucun favori : ouvrez un niveau et choisissez « Ajouter aux favoris »."
                                                                            : "Aucun favori dans cette catégorie.")
-                                            : "Aucun niveau publié pour l'instant : soyez le premier (WORKSHOP → Mes niveaux → Publier).";
+                                            : "Aucun niveau publié pour l'instant : soyez le premier (ATELIER → Mes niveaux → Publier).";
             ui.labelWrapped(empty, {view.x + ui.s(8), view.y + ui.s(8)}, view.w - ui.s(16), 17, ui.theme().textDim);
             drawStatus({view.x, view.bottom() - ui.s(30), view.w, ui.s(28)});
             ui.popId();
@@ -586,7 +586,7 @@ private:
         if (selected_.empty() || !detail_.contains("level")) {
             ui.label(selected_.empty() ? "Choisissez un niveau" : "Chargement…", {zoneD_.center().x, zoneD_.y + ui.s(60)}, 20, ui.theme().textDim,
                      Align::Center, FontFace::Bold, VAlign::Middle);
-            ui.labelWrapped("Les niveaux sont créés par les joueurs dans le WORKSHOP. Chacun a été terminé par son auteur avant d'être "
+            ui.labelWrapped("Les niveaux sont créés par les joueurs dans l'ATELIER. Chacun a été terminé par son auteur avant d'être "
                             "publié. Les temps de chaque niveau sont classés après vérification de leur replay.",
                             {x, zoneD_.y + ui.s(100)}, w, 15, ui.theme().textDim);
             drawStatus({x, zoneD_.bottom() - ui.s(70), w, ui.s(60)});
@@ -741,7 +741,7 @@ private:
             UIContext::ButtonStyle d;
             d.small = true;
             d.danger = true;
-            if (ui.button("remove", {x, y, w, ui.s(40)}, confirmRemove_ ? "Confirmer : retirer ce niveau d'ONLINE LEVELS" : "Retirer de la publication", d)) {
+            if (ui.button("remove", {x, y, w, ui.s(40)}, confirmRemove_ ? "Confirmer : retirer ce niveau des NIVEAUX EN LIGNE" : "Retirer de la publication", d)) {
                 if (!confirmRemove_) confirmRemove_ = true;
                 else {
                     confirmRemove_ = false;

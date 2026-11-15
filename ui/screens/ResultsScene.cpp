@@ -76,7 +76,7 @@ void ResultsScene::drawOnlineStatus(const Rect& panel) {
     }
     std::string hint;
     if (!g_.online.usable()) hint = std::string(onlineStateLabel(g_.online.state())) + " : performance gardée en local.";
-    else if (!g_.online.loggedIn()) hint = "Non connecté : envoyez-la depuis ONLINE RANKING (SUBMIT RECORD).";
+    else if (!g_.online.loggedIn()) hint = "Non connecté : envoyez-la depuis CLASSEMENTS (ENVOYER LE RECORD).";
     else if (g_.online.state() == OnlineState::Offline) hint = "Hors ligne : envoi automatique au retour de la connexion.";
     else if (g_.online.syncing()) hint = "Envoi et vérification en cours…";
     if (!hint.empty())
@@ -188,7 +188,7 @@ void ResultsScene::render(float /*alpha*/) {
         run.completed && d_.previous.bestTime > 0 && run.time < d_.previous.bestTime ? ui.theme().success : Color{});
     row(2, "Temps de référence", LevelTimer::format(d_.level.referenceTime));
     row(3, "Morts", std::to_string(run.deaths), run.deaths == 0 ? ui.theme().success : Color{});
-    row(4, "Collectibles", std::to_string(run.collectibles) + " / " + std::to_string(run.totalCollectibles));
+    row(4, "Objets collectés", std::to_string(run.collectibles) + " / " + std::to_string(run.totalCollectibles));
     row(5, "Ennemis éliminés", std::to_string(run.kills));
     row(6, "Secrets", std::to_string(run.secrets) + " / " + std::to_string(run.totalSecrets));
     int scoreShown = static_cast<int>(run.score * std::clamp((t_ - 0.9f) / 1.3f, 0.0f, 1.0f));
@@ -263,7 +263,7 @@ void ResultsScene::render(float /*alpha*/) {
                 g_.app.pushScene(makeRaceBoard(g_, d_.raceKind, d_.raceLevelId, d_.raceVersion, d_.raceHash));
             bx += bw + ui.s(24);
         }
-        std::string back = d_.editorTest ? "Retour à l'éditeur" : d_.fromOnline ? "Retour à ONLINE"
+        std::string back = d_.editorTest ? "Retour à l'éditeur" : d_.fromOnline ? "Retour au menu En ligne"
                            : d_.fromWorkshop ? "Retour à l'Atelier"
                                              : "Sélection des niveaux";
         float topY = panel.y + ui.s(24);

@@ -820,7 +820,7 @@ supprimés, sauts de ligne conservés, 3 lignes vides au plus, espaces de bord r
 | `POST /social/messages/{id}/report` `{reason?}` | signale le message d'un autre membre aux modérateurs (une fois par joueur et par message, journal d'audit) |
 | `GET /social/blocks` · `POST /social/blocks` `{player_id}` · `DELETE /social/blocks/{playerId}` | joueurs bloqués, bloquer, débloquer (le joueur bloqué n'est pas prévenu) |
 
-### 8.9 Niveaux de la communauté (ONLINE LEVELS)
+### 8.9 Niveaux de la communauté (NIVEAUX EN LIGNE)
 
 Les joueurs publient leurs niveaux ; le serveur ne fait confiance à rien de ce qui est envoyé.
 
@@ -860,9 +860,9 @@ version passe `superseded` (ses temps restent dans son classement).
 | `GET /community/levels/{id}/leaderboard?version=` | meilleur temps de chaque joueur ; `verification` rappelle que ces temps ne sont pas re-simulés |
 | `GET /community/records/{id}/replay` | replay d'un temps classé |
 
-Côté jeu : *WORKSHOP → Mes niveaux → Publier* (le niveau doit avoir été terminé depuis son départ
+Côté jeu : *ATELIER → Mes niveaux → Publier* (le niveau doit avoir été terminé depuis son départ
 dans l'éditeur, F5 ; le package ne contient que le niveau et ses fichiers propres, les fichiers
-du jeu étant sur chaque installation de la même version) ; *ONLINE → ONLINE LEVELS* (Populaires,
+du jeu étant sur chaque installation de la même version) ; *En ligne → NIVEAUX EN LIGNE* (Populaires,
 Plus durs, Récents, Mieux notés, Amis, Recherche, Les miens ; *Télécharger et jouer* passe le
 package par les mêmes vérifications que tout import `.cplanet` et contrôle l'empreinte de
 gameplay de la copie installée).
@@ -942,7 +942,7 @@ joueur).
 personnels, jamais détaillés). Le jeu garde le temps à envoyer dans `online/playtime.json`
 tant qu'il n'a pas été accepté.
 
-### 8.9 quater Projets collaboratifs (ONLINE → PROJETS)
+### 8.9 quater Projets collaboratifs (En ligne → PROJETS)
 
 Un projet est un niveau construit à plusieurs. Rôles, du moins au plus étendu, **tous vérifiés
 par le serveur** : `viewer` (lecteur : voit le projet, ses membres, son activité, télécharge une
@@ -973,7 +973,7 @@ copie) < `tester` (joue la dernière version) < `editor` (envoie de nouvelles r�
 | GET | `/projects/{id}/revisions?author=&q=`, `/projects/{id}/activity` | viewer | révisions (auteur, message, empreinte, `live` pour l'édition en direct, `version` si elle est nommée), filtrées par auteur ou par mots du message ; journal du projet |
 
 Un joueur bloqué par le propriétaire (ou qui l'a bloqué) ne peut ni rejoindre ni être invité.
-Dans le jeu, chaque membre travaille sur une copie locale (un niveau de WORKSHOP → Mes niveaux,
+Dans le jeu, chaque membre travaille sur une copie locale (un niveau de ATELIER → Mes niveaux,
 lié au projet dans `online/projects.json`) ; « Récupérer la dernière version » garde d'abord une
 copie modifiée sous un autre nom. L'installateur peut associer les liens `cosmic://` au jeu :
 ouvrir un lien place la clé dans PROJETS → Rejoindre, sans rejoindre automatiquement.
@@ -1048,7 +1048,7 @@ Une révision ne change jamais : son contenu (R2) est relu avec son SHA-256 à c
 
 Dans le jeu (PROJETS → onglets « Révisions » et « Versions ») : filtres par auteur et par texte,
 comparaison de deux révisions, restauration (éditeurs, après confirmation), téléchargement d'une
-révision ou d'une version comme niveau indépendant (WORKSHOP → Mes niveaux), création d'une
+révision ou d'une version comme niveau indépendant (ATELIER → Mes niveaux), création d'une
 version nommée.
 
 ### 8.9 octies Course à la vérification (niveaux EXTRÊME)
@@ -1084,7 +1084,7 @@ retirée aux boss et les vagues déclarées correspondent aux événements du re
 arrive dans la sortie. Le parcours est la plus lointaine projection de la trajectoire sur le
 tracé déclaré. Le premier joueur dont la tentative finie est acceptée devient le vérificateur
 (une seule fois par version, jamais remplacé) ; les autres participants et l'auteur reçoivent
-la notification `race_verified`. Les cartes d'ONLINE LEVELS donnent `extreme`,
+la notification `race_verified`. Les cartes des NIVEAUX EN LIGNE donnent `extreme`,
 `verified { player, at }` (pour la version courante) et `race_best`.
 
 ### 8.9 nonies Succès déclarés (profil)
@@ -1148,7 +1148,7 @@ curl -s -X PUT "$API/levels/sylvanox_01/rating" -H "authorization: Bearer $TOKEN
 caractères, 2 liens, même texte refusé 24 h dans le même fil, une seule profondeur de
 réponses, réactions, signalements — masqué après 3 —, modération, suppression par l'auteur
 seulement, blocages, limite `community_comment` partagée). Le jeu ne montre ceux des niveaux
-officiels que dans ONLINE.
+officiels que dans la section En ligne.
 
 | Méthode | Route | Auth | Règle |
 |---|---|---|---|

@@ -591,6 +591,8 @@ int main(int argc, char** argv) {
         app.pushScene(makeSplashScene(game));
     }
 
+    // « Retour » from a screen that replaced the main menu never closes the game.
+    app.setRootScene([&game] { return makeMainMenu(game); });
     app.run();
     game.progression.save();
     game.records.save();

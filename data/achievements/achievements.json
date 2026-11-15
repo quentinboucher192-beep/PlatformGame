@@ -54,7 +54,7 @@
    "id": "fantomes",
    "name": "Fantômes",
    "color": "#9FD8FF",
-   "description": "Ghost Racing : courir contre ses fantômes et ceux des autres."
+   "description": "Course contre les fantômes : courir contre ses fantômes et ceux des autres."
   },
   {
    "id": "extreme",
@@ -2011,7 +2011,7 @@
    "id": "createur_publish",
    "category": "createur",
    "name": "Publié !",
-   "description": "Publier un niveau dans ONLINE LEVELS.",
+   "description": "Publier un niveau dans NIVEAUX EN LIGNE.",
    "stars": 3,
    "condition": {
     "type": "set",

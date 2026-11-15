@@ -510,7 +510,7 @@ private:
         area.y += ui.s(46);
         area.h -= ui.s(46);
         Json list = tabData_.is_object() ? tabData_.value("creations", Json::array()) : Json::array();
-        if (tabEmptyOrBusy(area, list, me() ? "Vous n'avez publié aucun niveau : WORKSHOP → Mes niveaux → Publier."
+        if (tabEmptyOrBusy(area, list, me() ? "Vous n'avez publié aucun niveau : ATELIER → Mes niveaux → Publier."
                                              : "Ce joueur n'a publié aucun niveau pour l'instant."))
             return;
         const float rh = ui.s(84), gap = ui.s(8);

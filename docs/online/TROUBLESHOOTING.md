@@ -15,13 +15,13 @@ utilisé, l'origine de l'adresse et le client HTTP :
 | « Réponse du serveur illisible » | un portail captif ou un proxy renvoie autre chose que l'API : ce n'est jamais traité comme un succès. Connectez-vous au réseau puis *Actualiser*. |
 | Déconnecté tout seul | session expirée (30 jours sans activité), révoquée (déconnexion de tous les appareils) ou jeton de renouvellement réutilisé (sécurité) : reconnectez-vous. |
 | « Trop d'échecs de connexion » | 10 mauvais mots de passe : compte verrouillé 15 minutes. |
-| Record « LOCAL » qui ne part pas | pas connecté (*SUBMIT RECORD* l'attribue au compte connecté), synchronisation automatique désactivée, ou serveur injoignable. |
+| Record « LOCAL » qui ne part pas | pas connecté (*ENVOYER LE RECORD* l'attribue au compte connecté), synchronisation automatique désactivée, ou serveur injoignable. |
 | « Version du niveau différente de celle du serveur » | votre niveau n'a pas la même empreinte que la révision classée (jeu modifié, version différente) : la performance reste locale, elle n'est jamais mélangée. |
 | Record « EN ATTENTE » | replay pas encore envoyé, catégorie SPEEDRUN sans replay, ou record mondial en revue manuelle sur un classement établi ([RULES.md](RULES.md)). La revue manuelle demande un `ADMIN_TOKEN` sur le serveur (routes `/api/v1/admin/*`) : sans lui, ces records restent en attente. |
 | Pas de notification de demande d'ami | les demandes sont relevées une minute après la connexion puis toutes les minutes ; pendant une partie, les notifications attendent la fin du niveau. |
 | Record « REFUSÉ » | temps impossible, au-delà de la limite, ou replay incohérent : la raison s'affiche dans la notification et sur la fiche du record. |
 | Pas de marqueur à mon nom sur le globe | visibilité réglée sur *Masqué* ou *Classements* : choisissez *Classements et globe* (avec un pays). Seuls les records vérifiés apparaissent. |
-| VIEW REPLAY grisé | aucun record du classement affiché n'a de replay vérifié, ou le niveau n'est pas installé. |
+| VOIR LE REPLAY grisé | aucun record du classement affiché n'a de replay vérifié, ou le niveau n'est pas installé. |
 
 ## Le serveur
 

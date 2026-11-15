@@ -66,7 +66,7 @@ disparaissent avant la réponse ne sont jamais rappelés (`OnlineService::guard`
 3. Connecté et synchronisation automatique active : la file est envoyée
    (`POST /records/submit`, une fois par catégorie), puis le replay (`PUT /records/{id}/replay`).
    Hors ligne, rien n'est perdu : envoi automatique au retour de la connexion (reconnexion
-   avec temporisation exponentielle) ou bouton *Synchroniser* / *SUBMIT RECORD*.
+   avec temporisation exponentielle) ou bouton *Synchroniser* / *ENVOYER LE RECORD*.
 4. Le serveur valide (schéma, niveau et révision exacts, version du jeu, règles de catégorie,
    cohérence, doublons, temps impossibles, analyse du replay, niveau de confiance) et répond
    **PENDING**, **VERIFIED** ou **REJECTED**. Seuls les records **VERIFIED** entrent dans les
@@ -96,9 +96,9 @@ Terminé et testé :
   file de synchronisation, replays, tests unitaires, tests sur sockets réelles (refus, délai,
   coupure, réponse illisible, annulation) et test d'intégration de bout en bout contre un
   vrai serveur (Linux / libcurl et Windows / WinHTTP sous Wine) ;
-* écrans : ONLINE LEVELS (niveaux de la communauté : listes, recherche, fiche, téléchargement
-  vérifié, notes, signalements, classement par niveau ; publication depuis le WORKSHOP avec le
-  replay de fin de l'auteur), ONLINE RANKING (navigation, globe, classements avec onglets, filtres et recherche,
+* écrans : NIVEAUX EN LIGNE (niveaux de la communauté : listes, recherche, fiche, téléchargement
+  vérifié, notes, signalements, classement par niveau ; publication depuis l'ATELIER avec le
+  replay de fin de l'auteur), CLASSEMENTS (navigation, globe, classements avec onglets, filtres et recherche,
   niveau, carte du joueur), SOCIAL (conversations privées entre amis, groupes, amis, joueurs
   bloqués, signalements), compte et consentement, paramètres en ligne (confidentialité, amis,
   export et suppression des données), replays, statut en ligne sur l'écran de résultats,

@@ -37,8 +37,8 @@ s'accroupir). La caméra et l'affichage ne font pas partie de la simulation.
 |---|---|---|
 | ANY% | `ANY_PERCENT` | terminer le niveau, le plus vite possible |
 | 100% | `HUNDRED_PERCENT` | terminer avec **tous** les éclats et reliques du niveau (`collectibles == total_collectibles` de la révision) |
-| NO DEATH | `NO_DEATH` | terminer sans mourir (`deaths == 0`) |
-| NO DAMAGE | `NO_DAMAGE` | terminer sans mourir ni subir de dégâts (`deaths == 0`, `damage_taken == 0`) |
+| SANS MORT | `NO_DEATH` | terminer sans mourir (`deaths == 0`) |
+| SANS DÉGÂT | `NO_DAMAGE` | terminer sans mourir ni subir de dégâts (`deaths == 0`, `damage_taken == 0`) |
 | SPEEDRUN | `SPEEDRUN` | run d'une traite depuis le début, **replay obligatoire et validé** pour être vérifié |
 
 Un même run compte dans toutes les catégories qu'il remplit (une soumission par catégorie,
@@ -90,7 +90,7 @@ décompression), lit le format (voir [REPLAY_FORMAT.md](REPLAY_FORMAT.md)) et v�
 
 * même niveau, même révision, même tentative que le record ;
 * durée du replay = temps soumis (± 0,5 s) et nombre d'échantillons cohérent ;
-* nombre de morts et d'objets du replay = valeurs du record ; pas de dégâts pour NO DAMAGE ;
+* nombre de morts et d'objets du replay = valeurs du record ; pas de dégâts pour SANS DÉGÂT ;
 * présence de l'événement de fin ; départ à moins de 96 px du point de départ mesuré du
   niveau ; arrivée dans la sortie (± 160 px) ;
 * positions dans les limites du niveau ;

@@ -1708,6 +1708,19 @@
    ]
   },
   {
+   "fr": "ATELIER",
+   "where": [
+    "ui/screens/ContentManagerScene.cpp",
+    "ui/screens/OnlineNav.cpp"
+   ]
+  },
+  {
+   "fr": "ATELIER : supprimer un niveau publié propose aussi de le retirer des NIVEAUX EN LIGNE. Notifications : niveau EXTRÊME vérifié, réponse dans un projet, retrait d'un projet.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Attack",
    "where": [
     "game/enemies/Enemy.cpp"
@@ -2037,7 +2050,7 @@
    ]
   },
   {
-   "fr": "Aucun niveau publié pour l'instant : soyez le premier (WORKSHOP → Mes niveaux → Publier).",
+   "fr": "Aucun niveau publié pour l'instant : soyez le premier (ATELIER → Mes niveaux → Publier).",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
    ]
@@ -2422,7 +2435,7 @@
    ]
   },
   {
-   "fr": "Avant le départ (bouton « Fantômes… » des niveaux, « Course contre ce temps » d'ONLINE RANKING, « Course contre un fantôme… » d'ONLINE LEVELS) : choix des fantômes, options d'affichage, mode entraînement.",
+   "fr": "Avant le départ (bouton « Fantômes… » des niveaux, « Course contre ce temps » des CLASSEMENTS, « Course contre un fantôme… » des NIVEAUX EN LIGNE) : choix des fantômes, options d'affichage, mode entraînement.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -3723,7 +3736,7 @@
    ]
   },
   {
-   "fr": "Ce niveau est publié dans ONLINE LEVELS : le retirer aussi, ou ne supprimer que votre copie ?",
+   "fr": "Ce niveau est publié dans NIVEAUX EN LIGNE : le retirer aussi, ou ne supprimer que votre copie ?",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
    ]
@@ -4045,7 +4058,7 @@
    ]
   },
   {
-   "fr": "Cette version peut être publiée : WORKSHOP → Mes niveaux → Publier en ligne.",
+   "fr": "Cette version peut être publiée : ATELIER → Mes niveaux → Publier en ligne.",
    "where": [
     "ui/screens/GameScene.cpp"
    ]
@@ -4276,12 +4289,6 @@
     "game/levels/EventSystem.cpp",
     "game/levels/ObjectTypes.cpp",
     "packaging/DependencyCollector.cpp"
-   ]
-  },
-  {
-   "fr": "Checkpoint atteint",
-   "where": [
-    "game/levels/EventSystem.cpp"
    ]
   },
   {
@@ -4652,6 +4659,12 @@
    ]
   },
   {
+   "fr": "CLASSEMENTS",
+   "where": [
+    "ui/screens/OnlineNav.cpp"
+   ]
+  },
+  {
    "fr": "Classements",
    "where": [
     "ui/screens/OnlineAccountScene.cpp",
@@ -4805,13 +4818,6 @@
    ]
   },
   {
-   "fr": "Collectibles",
-   "where": [
-    "ui/screens/PlanetMapScene.cpp",
-    "ui/screens/ResultsScene.cpp"
-   ]
-  },
-  {
    "fr": "COLLECTION",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -4836,7 +4842,7 @@
    ]
   },
   {
-   "fr": "Collection en ligne : le cadre d'avatar et le titre équipés vous suivent dans les classements ONLINE RANKING et sur votre profil public, qui montre aussi votre tenue (combinaison, traînée, cadre, effet de victoire).",
+   "fr": "Collection en ligne : le cadre d'avatar et le titre équipés vous suivent dans les CLASSEMENTS et sur votre profil public, qui montre aussi votre tenue (combinaison, traînée, cadre, effet de victoire).",
    "where": [
     "data/news/changelog.json"
    ]
@@ -5106,7 +5112,7 @@
    ]
   },
   {
-   "fr": "Commentaires des niveaux de la campagne, visibles uniquement dans ONLINE (réponses, réactions, signalement, modération, comme pour les niveaux des joueurs).",
+   "fr": "Commentaires des niveaux de la campagne, visibles uniquement dans la section En ligne (réponses, réactions, signalement, modération, comme pour les niveaux des joueurs).",
    "where": [
     "data/news/changelog.json"
    ]
@@ -5351,7 +5357,7 @@
    ]
   },
   {
-   "fr": "Confirmer : retirer ce niveau d'ONLINE LEVELS",
+   "fr": "Confirmer : retirer ce niveau des NIVEAUX EN LIGNE",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
    ]
@@ -5436,7 +5442,7 @@
    ]
   },
   {
-   "fr": "Connectez-vous à Cosmic Online (menu ONLINE) pour recevoir les notifications des créateurs que vous suivez, de vos favoris et de vos commentaires. Le jeu reste entièrement jouable sans compte.",
+   "fr": "Connectez-vous à Cosmic Online (menu En ligne) pour recevoir les notifications des créateurs que vous suivez, de vos favoris et de vos commentaires. Le jeu reste entièrement jouable sans compte.",
    "where": [
     "ui/screens/NotificationsScene.cpp"
    ]
@@ -5455,7 +5461,7 @@
    ]
   },
   {
-   "fr": "Connectez-vous à Cosmic Online pour le retirer d'ONLINE LEVELS : rien n'a été supprimé.",
+   "fr": "Connectez-vous à Cosmic Online pour le retirer des NIVEAUX EN LIGNE : rien n'a été supprimé.",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
    ]
@@ -5639,7 +5645,7 @@
    ]
   },
   {
-   "fr": "Copie ajoutée à WORKSHOP → Mes niveaux.",
+   "fr": "Copie ajoutée à l'ATELIER → Mes niveaux.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
    ]
@@ -5669,7 +5675,7 @@
    ]
   },
   {
-   "fr": "Copie locale supprimée ; le niveau reste dans ONLINE LEVELS.",
+   "fr": "Copie locale supprimée ; le niveau reste dans NIVEAUX EN LIGNE.",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
    ]
@@ -6024,6 +6030,18 @@
    "fr": "COURSE CONTRE DES FANTÔMES",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Course contre les fantômes : courez contre vos fantômes (meilleur temps, record précédent, dernière course), le record mondial, les records de vos amis ou un replay importé, jusqu'à 8 à la fois.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Course contre les fantômes : courir contre ses fantômes et ceux des autres.",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -6624,7 +6642,7 @@
    ]
   },
   {
-   "fr": "De {0} (ONLINE → SOCIAL).",
+   "fr": "De {0} (En ligne → SOCIAL).",
    "where": [
     "game/online/OnlineService.cpp"
    ]
@@ -8183,7 +8201,9 @@
   {
    "fr": "En ligne",
    "where": [
-    "game/online/OnlineTypes.cpp"
+    "game/online/OnlineTypes.cpp",
+    "ui/screens/ContentManagerScene.cpp",
+    "ui/screens/MainMenuScene.cpp"
    ]
   },
   {
@@ -8204,6 +8224,12 @@
    "where": [
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "En ligne → PROJETS : des niveaux construits à plusieurs, avec des rôles (lecteur, testeur, éditeur, administrateur, propriétaire) vérifiés par le serveur.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -8586,6 +8612,12 @@
    "where": [
     "editors/level_editor/LevelEditorChat.cpp",
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "ENVOYER LE RECORD",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp"
    ]
   },
   {
@@ -9982,18 +10014,6 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
-   ]
-  },
-  {
-   "fr": "Ghost Racing : courez contre vos fantômes (meilleur temps, record précédent, dernière course), le record mondial, les records de vos amis ou un replay importé, jusqu'à 8 à la fois.",
-   "where": [
-    "data/news/changelog.json"
-   ]
-  },
-  {
-   "fr": "Ghost Racing : courir contre ses fantômes et ceux des autres.",
-   "where": [
-    "data/achievements/achievements.json"
    ]
   },
   {
@@ -12312,7 +12332,7 @@
    ]
   },
   {
-   "fr": "La section ONLINE (classements et WORKSHOP) demande un compte. Le jeu, lui, n'en a jamais besoin : la campagne et les records locaux restent jouables hors ligne.",
+   "fr": "La section En ligne (classements et ATELIER) demande un compte. Le jeu, lui, n'en a jamais besoin : la campagne et les records locaux restent jouables hors ligne.",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
    ]
@@ -13120,7 +13140,7 @@
    ]
   },
   {
-   "fr": "Le premier joueur qui termine un niveau EXTRÊME en devient le vérificateur ; les autres participants et l'auteur sont prévenus. Le classement s'ouvre depuis la fiche du niveau, ONLINE RANKING et l'écran de fin.",
+   "fr": "Le premier joueur qui termine un niveau EXTRÊME en devient le vérificateur ; les autres participants et l'auteur sont prévenus. Le classement s'ouvre depuis la fiche du niveau, CLASSEMENTS et l'écran de fin.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -13646,7 +13666,7 @@
    ]
   },
   {
-   "fr": "Les niveaux sont créés par les joueurs dans le WORKSHOP. Chacun a été terminé par son auteur avant d'être publié. Les temps de chaque niveau sont classés après vérification de leur replay.",
+   "fr": "Les niveaux sont créés par les joueurs dans l'ATELIER. Chacun a été terminé par son auteur avant d'être publié. Les temps de chaque niveau sont classés après vérification de leur replay.",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
    ]
@@ -15817,7 +15837,7 @@
    ]
   },
   {
-   "fr": "Niveau supprimé et retiré d'ONLINE LEVELS.",
+   "fr": "Niveau supprimé et retiré des NIVEAUX EN LIGNE.",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
    ]
@@ -15883,7 +15903,25 @@
    ]
   },
   {
-   "fr": "Niveaux EXTRÊME : une seule vie, sans possibilité de la changer, et un badge EXTRÊME dans la campagne, ONLINE LEVELS et ONLINE RANKING. L'enchaînement des boss (L'Arène des Échos) devient EXTRÊME.",
+   "fr": "NIVEAUX EN LIGNE",
+   "where": [
+    "ui/screens/OnlineNav.cpp"
+   ]
+  },
+  {
+   "fr": "NIVEAUX EN LIGNE : favoris (onglet Favoris trié et filtré, niveaux retirés conservés comme indisponibles) et compteurs de favoris et de commentaires sur chaque niveau.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "NIVEAUX EN LIGNE · Cosmic Online",
+   "where": [
+    "ui/screens/CommunityPublishScene.cpp"
+   ]
+  },
+  {
+   "fr": "Niveaux EXTRÊME : une seule vie, sans possibilité de la changer, et un badge EXTRÊME dans la campagne, NIVEAUX EN LIGNE et CLASSEMENTS. L'enchaînement des boss (L'Arène des Échos) devient EXTRÊME.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -15898,18 +15936,6 @@
    "fr": "niveaux publiés",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
-   ]
-  },
-  {
-   "fr": "NO DAMAGE",
-   "where": [
-    "game/online/OnlineTypes.cpp"
-   ]
-  },
-  {
-   "fr": "NO DEATH",
-   "where": [
-    "game/online/OnlineTypes.cpp"
    ]
   },
   {
@@ -16057,7 +16083,7 @@
    ]
   },
   {
-   "fr": "Non connecté : envoyez-la depuis ONLINE RANKING (SUBMIT RECORD).",
+   "fr": "Non connecté : envoyez-la depuis CLASSEMENTS (ENVOYER LE RECORD).",
    "where": [
     "ui/screens/ResultsScene.cpp"
    ]
@@ -16194,7 +16220,7 @@
    ]
   },
   {
-   "fr": "Notes des joueurs pour les niveaux de la campagne : après avoir terminé un niveau (temps vérifié en ligne), notez-le de 1 à 5 étoiles depuis l'écran de fin ou ONLINE ; la moyenne s'affiche sur la fiche du niveau et dans ONLINE (distincte de la difficulté calculée).",
+   "fr": "Notes des joueurs pour les niveaux de la campagne : après avoir terminé un niveau (temps vérifié en ligne), notez-le de 1 à 5 étoiles depuis l'écran de fin ou la section En ligne ; la moyenne s'affiche sur la fiche du niveau et dans la section En ligne (distincte de la difficulté calculée).",
    "where": [
     "data/news/changelog.json"
    ]
@@ -16692,6 +16718,13 @@
    ]
   },
   {
+   "fr": "Objets collectés",
+   "where": [
+    "ui/screens/PlanetMapScene.cpp",
+    "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "objets du replay ({0}) ≠ record ({1})",
    "where": [
     "server/src/replay.ts"
@@ -16922,48 +16955,6 @@
    "fr": "Onglets",
    "where": [
     "ui/screens/SettingsScene.cpp"
-   ]
-  },
-  {
-   "fr": "ONLINE",
-   "where": [
-    "ui/screens/ContentManagerScene.cpp"
-   ]
-  },
-  {
-   "fr": "Online",
-   "where": [
-    "ui/screens/MainMenuScene.cpp"
-   ]
-  },
-  {
-   "fr": "ONLINE LEVELS",
-   "where": [
-    "ui/screens/OnlineNav.cpp"
-   ]
-  },
-  {
-   "fr": "ONLINE LEVELS : favoris (onglet Favoris trié et filtré, niveaux retirés conservés comme indisponibles) et compteurs de favoris et de commentaires sur chaque niveau.",
-   "where": [
-    "data/news/changelog.json"
-   ]
-  },
-  {
-   "fr": "ONLINE LEVELS · Cosmic Online",
-   "where": [
-    "ui/screens/CommunityPublishScene.cpp"
-   ]
-  },
-  {
-   "fr": "ONLINE RANKING",
-   "where": [
-    "ui/screens/OnlineNav.cpp"
-   ]
-  },
-  {
-   "fr": "ONLINE → PROJETS : des niveaux construits à plusieurs, avec des rôles (lecteur, testeur, éditeur, administrateur, propriétaire) vérifiés par le serveur.",
-   "where": [
-    "data/news/changelog.json"
    ]
   },
   {
@@ -18714,6 +18705,12 @@
    ]
   },
   {
+   "fr": "Point de sauvegarde atteint",
+   "where": [
+    "game/levels/EventSystem.cpp"
+   ]
+  },
+  {
    "fr": "Point {0}",
    "where": [
     "ui/screens/GameScene.cpp",
@@ -19667,7 +19664,7 @@
    ]
   },
   {
-   "fr": "Publier un niveau dans ONLINE LEVELS.",
+   "fr": "Publier un niveau dans NIVEAUX EN LIGNE.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -19697,7 +19694,7 @@
    ]
   },
   {
-   "fr": "Publié ! Version {0} visible dans ONLINE LEVELS (Récents).",
+   "fr": "Publié ! Version {0} visible dans NIVEAUX EN LIGNE (Récents).",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
    ]
@@ -21214,6 +21211,12 @@
    ]
   },
   {
+   "fr": "Retour au menu En ligne",
+   "where": [
+    "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "Retour à l'Atelier",
    "where": [
     "ui/screens/ResultsScene.cpp"
@@ -21233,12 +21236,6 @@
    ]
   },
   {
-   "fr": "Retour à ONLINE",
-   "where": [
-    "ui/screens/ResultsScene.cpp"
-   ]
-  },
-  {
    "fr": "retournement",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -21251,15 +21248,15 @@
    ]
   },
   {
-   "fr": "Retrait d'ONLINE LEVELS impossible ({0}) : rien n'a été supprimé.",
-   "where": [
-    "ui/screens/ContentManagerScene.cpp"
-   ]
-  },
-  {
    "fr": "Retrait d'un projet",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Retrait des NIVEAUX EN LIGNE impossible ({0}) : rien n'a été supprimé.",
+   "where": [
+    "ui/screens/ContentManagerScene.cpp"
    ]
   },
   {
@@ -22176,6 +22173,12 @@
    ]
   },
   {
+   "fr": "SANS DÉGÂT",
+   "where": [
+    "game/online/OnlineTypes.cpp"
+   ]
+  },
+  {
    "fr": "Sans faux pas",
    "where": [
     "data/achievements/achievements.json"
@@ -22185,6 +22188,12 @@
    "fr": "Sans limite",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "SANS MORT",
+   "where": [
+    "game/online/OnlineTypes.cpp"
    ]
   },
   {
@@ -23596,12 +23605,6 @@
    ]
   },
   {
-   "fr": "SUBMIT RECORD",
-   "where": [
-    "ui/screens/OnlineRankingScene.cpp"
-   ]
-  },
-  {
    "fr": "SUCCÈS",
    "where": [
     "ui/screens/AchievementsScene.cpp"
@@ -23728,7 +23731,7 @@
    ]
   },
   {
-   "fr": "Supprimer et retirer d'ONLINE",
+   "fr": "Supprimer et retirer en ligne",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
    ]
@@ -27147,12 +27150,6 @@
    ]
   },
   {
-   "fr": "VIEW REPLAY",
-   "where": [
-    "ui/screens/OnlineRankingScene.cpp"
-   ]
-  },
-  {
    "fr": "Vignette",
    "where": [
     "editors/level_editor/LevelEditorScene.cpp"
@@ -27382,6 +27379,12 @@
    ]
   },
   {
+   "fr": "VOIR LE REPLAY",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
    "fr": "Voir le replay",
    "where": [
     "ui/screens/OnlineThreadScene.cpp"
@@ -27479,7 +27482,7 @@
    ]
   },
   {
-   "fr": "Votre copie de « {0} » diffère de la version publiée : retéléchargez-la depuis ONLINE LEVELS.",
+   "fr": "Votre copie de « {0} » diffère de la version publiée : retéléchargez-la depuis NIVEAUX EN LIGNE.",
    "where": [
     "game/online/OnlineService.cpp"
    ]
@@ -27662,7 +27665,7 @@
    ]
   },
   {
-   "fr": "Vous n'avez aucun niveau personnel : créez d'abord un niveau dans WORKSHOP → Mes niveaux, puis faites-en un projet.",
+   "fr": "Vous n'avez aucun niveau personnel : créez d'abord un niveau dans l'ATELIER → Mes niveaux, puis faites-en un projet.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
    ]
@@ -27674,13 +27677,13 @@
    ]
   },
   {
-   "fr": "Vous n'avez publié aucun niveau : WORKSHOP → Mes niveaux → Publier.",
+   "fr": "Vous n'avez publié aucun niveau : ATELIER → Mes niveaux → Publier.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
-   "fr": "Vous n'avez rien publié : WORKSHOP → Mes niveaux → Publier.",
+   "fr": "Vous n'avez rien publié : ATELIER → Mes niveaux → Publier.",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
    ]
@@ -28030,19 +28033,6 @@
    "fr": "WinHTTP indisponible",
    "where": [
     "game/online/HttpTransportWinHttp.cpp"
-   ]
-  },
-  {
-   "fr": "WORKSHOP",
-   "where": [
-    "ui/screens/ContentManagerScene.cpp",
-    "ui/screens/OnlineNav.cpp"
-   ]
-  },
-  {
-   "fr": "WORKSHOP : supprimer un niveau publié propose aussi de le retirer d'ONLINE LEVELS. Notifications : niveau EXTRÊME vérifié, réponse dans un projet, retrait d'un projet.",
-   "where": [
-    "data/news/changelog.json"
    ]
   },
   {
@@ -28969,7 +28959,7 @@
    ]
   },
   {
-   "fr": "{0} joueurs veulent devenir vos amis (ONLINE → SOCIAL → Amis).",
+   "fr": "{0} joueurs veulent devenir vos amis (En ligne → SOCIAL → Amis).",
    "where": [
     "game/online/OnlineService.cpp"
    ]
@@ -29356,7 +29346,7 @@
    ]
   },
   {
-   "fr": "{0} veut devenir votre ami (ONLINE → SOCIAL → Amis).",
+   "fr": "{0} veut devenir votre ami (En ligne → SOCIAL → Amis).",
    "where": [
     "game/online/OnlineService.cpp"
    ]
@@ -29404,7 +29394,7 @@
    ]
   },
   {
-   "fr": "{0} Votre version est gardée dans WORKSHOP → Mes niveaux : « {1} ».",
+   "fr": "{0} Votre version est gardée dans l'ATELIER → Mes niveaux : « {1} ».",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
    ]
@@ -29627,7 +29617,7 @@
    ]
   },
   {
-   "fr": "« {0} » est dans WORKSHOP → Mes niveaux.",
+   "fr": "« {0} » est dans l'ATELIER → Mes niveaux.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
    ]

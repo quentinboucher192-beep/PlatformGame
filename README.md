@@ -7,7 +7,7 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
 
 **Nouveau dans la version 2.23.0** :
 * **Collection en ligne** : le cadre d'avatar et le titre équipés suivent le joueur dans les
-  classements ONLINE RANKING et sur son profil public, qui montre aussi sa tenue
+  CLASSEMENTS et sur son profil public, qui montre aussi sa tenue
   (combinaison, traînée, cadre, effet de victoire). Les fantômes portent la combinaison de
   leur joueur, teintés de leur couleur.
 * Le serveur n'accepte que les récompenses débloquées par les succès déclarés par le jeu
@@ -30,11 +30,11 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
 
 **Nouveau dans la version 2.21.0** :
 * **Notes des joueurs** pour les niveaux de la campagne : un niveau terminé avec un temps
-  **vérifié** en ligne peut être noté de 1 à 5 étoiles (écran de fin ou ONLINE) ; la moyenne
+  **vérifié** en ligne peut être noté de 1 à 5 étoiles (écran de fin ou la section En ligne) ; la moyenne
   (« 4,3 ★ · 128 notes »), calculée par le serveur, s'affiche sur la fiche du niveau et dans
   ONLINE, à côté de la difficulté calculée (qui ne change pas). Hors ligne : la dernière
   moyenne reçue, marquée comme telle.
-* **Commentaires des niveaux de la campagne**, visibles **uniquement dans ONLINE** (bouton
+* **Commentaires des niveaux de la campagne**, visibles **uniquement dans la section En ligne** (bouton
   *Avis et commentaires*), et **commentaires sur les runs** des classements (une bulle sur
   chaque ligne ; l'auteur du run est notifié). Mêmes règles que les commentaires des niveaux
   des joueurs : réponses, réactions, signalement, modération, profils masqués, export et
@@ -90,7 +90,7 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
   LiveSplit (durée et écart de chaque segment, temps cumulé et écart cumulé, meilleurs
   segments en or, animation de nouveau record) — un élément « Fantômes » de l'éditeur du HUD.
 * **Avant le départ** (« Fantômes… » sur la fiche d'un niveau, « Course contre ce temps »
-  dans ONLINE RANKING, « Course contre un fantôme… » dans ONLINE LEVELS) : choix des
+  dans CLASSEMENTS, « Course contre un fantôme… » dans NIVEAUX EN LIGNE) : choix des
   fantômes, version et type de record affichés, options d'affichage, et le **mode
   entraînement** (un segment depuis un point de sauvegarde, répété contre les fantômes, sans
   aucun record). En fin de course : écart sur chaque fantôme et écran **Segments** (durées,
@@ -123,7 +123,7 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
 * Correction : un profil ouvert depuis un classement ne se recharge plus quand on clique sur
   ses onglets (un écran recouvert par un autre ne reçoit plus aucun clic).
 
-**Depuis la version 2.9** (résumé) : **ONLINE LEVELS** s'enrichit de favoris, commentaires
+**Depuis la version 2.9** (résumé) : **NIVEAUX EN LIGNE** s'enrichit de favoris, commentaires
 avec réponses et réactions, profils de créateurs, abonnés et notifications en ligne, et du
 temps joué par niveau ; **PROJETS** permet de créer un niveau à plusieurs (rôles, invitations
 à clé, demandes d'adhésion, **édition en direct** avec présence des autres, verrous et
@@ -317,9 +317,9 @@ pouvoirs utilisés, date) avec comparaison au meilleur essai.
 
 ## Cosmic Online (classements en ligne)
 
-Menu principal → **Online** (compte obligatoire pour cette section, jamais pour jouer) : globe 3D interactif (rotation à la souris ou au stick
+Menu principal → **En ligne** (compte obligatoire pour cette section, jamais pour jouer) : globe 3D interactif (rotation à la souris ou au stick
 droit, zoom molette / gâchettes, clic sur un marqueur ou un pays), classements par niveau,
-pays, amis, planète et points cosmiques, catégories ANY% / 100% / NO DEATH / NO DAMAGE /
+pays, amis, planète et points cosmiques, catégories ANY% / 100% / SANS MORT / SANS DÉGÂT /
 SPEEDRUN, période historique ou hebdomadaire, profils publics, amis (avec notifications des
 demandes) et **replays exacts** : le moteur est déterministe (pas fixe de 1/120 s, hasard du
 gameplay à graine fixe par niveau, mathématiques identiques sous Windows et Linux), un replay
@@ -334,18 +334,18 @@ local sans compte Cloudflare. Documentation complète : [docs/online/](docs/onli
 
 ## Menu principal
 
-*Continuer* (dernier niveau joué) · *Campagne* (planètes et niveaux) · *Online* ·
+*Continuer* (dernier niveau joué) · *Campagne* (planètes et niveaux) · *En ligne* ·
 *Notifications* · *Succès* (toile des 146 succès et de leurs étoiles) · *Collection*
 (vestiaire, route des étoiles, musiques, galerie) · *Statistiques* (les boss : victoires,
 combats et phases sans dégât) · *Paramètres* · *Quitter*.
 
-**Online** (compte requis) : **ONLINE LEVELS** (les niveaux publiés par les joueurs : Populaires,
+**En ligne** (compte requis) : **NIVEAUX EN LIGNE** (les niveaux publiés par les joueurs : Populaires,
 Plus durs, Récents, Mieux notés, Amis, Recherche, Les miens ; télécharger et jouer, noter,
-signaler, classement par niveau ; *WORKSHOP → Mes niveaux → Publier* après avoir terminé son
-niveau depuis le départ dans l'éditeur), **ONLINE RANKING** (classements, globe, profils), **SOCIAL**
+signaler, classement par niveau ; *ATELIER → Mes niveaux → Publier* après avoir terminé son
+niveau depuis le départ dans l'éditeur), **CLASSEMENTS** (classements, globe, profils), **SOCIAL**
 (messagerie privée avec vos amis, groupes de discussion jusqu'à 20 membres, amis et demandes,
 joueurs bloqués, signalement de messages ; notifications des nouveaux messages et demandes,
-gardées pendant une partie et affichées ensuite) et le **WORKSHOP** (vos niveaux,
+gardées pendant une partie et affichées ensuite) et l'**ATELIER** (vos niveaux,
 niveaux importés, export / import `.cplanet`, éditeur d'ennemis). Dans ONLINE, un niveau se
 joue depuis sa fiche (*Jouer ce niveau*) ; à la fin (ou en quittant), on revient à ONLINE sur
 ce niveau.

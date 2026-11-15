@@ -327,7 +327,7 @@ private:
     void drawOnline(float x0, float y, float W) {
         UIContext& ui = g_.ui;
         if (!g_.online.loggedIn()) {
-            ui.labelWrapped("Connectez-vous à Cosmic Online (menu ONLINE) pour recevoir les notifications des créateurs que vous suivez, de vos "
+            ui.labelWrapped("Connectez-vous à Cosmic Online (menu En ligne) pour recevoir les notifications des créateurs que vous suivez, de vos "
                             "favoris et de vos commentaires. Le jeu reste entièrement jouable sans compte.",
                             {x0, y}, W, 20, ui.theme().textDim);
             return;

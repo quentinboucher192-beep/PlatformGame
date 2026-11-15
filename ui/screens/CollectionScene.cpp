@@ -227,7 +227,9 @@ public:
         ui.popId();
         if (back || ui.backPressed()) {
             g_.collection.save();
-            g_.app.popScene();
+            // Opened from the main menu (it replaced it) or on top of another screen.
+            if (g_.app.sceneCount() > 1) g_.app.popScene();
+            else g_.app.switchScene(makeMainMenu(g_), 0.3f);
         }
         ui.end();
     }
