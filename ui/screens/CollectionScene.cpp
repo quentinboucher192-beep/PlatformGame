@@ -16,6 +16,7 @@
 #include "game/GameServices.h"
 #include "game/content/CreaturePlaces.h"
 #include "ui/online/OnlineWidgets.h"
+#include "ui/screens/ChallengeRewardsUi.h"
 #include "ui/screens/CosmeticFx.h"
 #include "ui/screens/CreatureArt.h"
 #include "ui/screens/Navigation.h"
@@ -95,11 +96,12 @@ struct Track {
 
 class CollectionScene : public Scene {
 public:
-    CollectionScene(GameServices& g, int tab) : g_(g), tab_(std::clamp(tab, 0, 3)), online_(g) {}
+    CollectionScene(GameServices& g, int tab, std::string select = {}) : g_(g), tab_(std::clamp(tab, 0, 3)), online_(g), select_(std::move(select)) {}
 
     void onEnter() override {
         loadTracks();
         progress_ = g_.cosmeticProgress();
+        if (!select_.empty()) showItem(select_);  // opened on a reward (2.35: from the challenges)
         // Automated screenshots: "col:<tab>[:detail]".
         const std::string& o = g_.onlineOpen;
         if (o.rfind("col-cat:", 0) == 0) cat_ = std::clamp(std::atoi(o.c_str() + 8), 0, 4);
@@ -267,6 +269,19 @@ private:
             ui.label(cats[static_cast<size_t>(cat_)].name, {dx + nsz.x + ui.s(12), dy + ui.s(8)}, fz(ui, 15), ui.theme().textDim);
             ui.labelWrapped(sel->description, {dx, dy + ui.s(44)}, det.w - ui.s(40), fz(ui, 16), Color{185, 200, 218, 255});
             float by = det.bottom() - ui.s(66);
+            if (sel->challengeReward()) {
+                // 2.35: a reward of the challenges: its whole condition between the description and
+                // the button, when it fits (else the short one stays beside the button).
+                float descH = ui.text().measureWrapped(sel->description, FontFace::Body, ui.s(fz(ui, 16)), det.w - ui.s(40)).y;
+                float cy = dy + ui.s(44) + descH + ui.s(8);
+                std::string cond = challengeConditionText(*sel) + " " + challengeConditionNote(*sel);
+                for (float size : {15.0f, 13.5f, 12.0f}) {
+                    float fs = fz(ui, size);
+                    if (cy + ui.text().measureWrapped(cond, FontFace::Body, ui.s(fs), det.w - ui.s(40)).y > by - ui.s(8)) continue;
+                    ui.labelWrapped(cond, {dx, cy}, det.w - ui.s(40), fs, kGold);
+                    break;
+                }
+            }
             std::string req = reqText(*sel);
             if (unlocked) {
                 bool isEq = equipped == sel;
@@ -382,17 +397,21 @@ private:
     std::string shortReq(const CosmeticItem& it) const {
         bool unlocked = cosmeticUnlocked(it, progress_);
         if (!it.achievement.empty()) return unlocked ? "Succès obtenu" : "« " + achievementName(it.achievement) + " »";
+        if (it.challengeReward()) return unlocked ? "Défis : obtenu" : "Défis : " + challengeConditionShort(it);
         if (it.isDefault) return "Dès le départ";
         return starsText(cosmeticThreshold(it, progress_.totalStars));
     }
     std::string reqText(const CosmeticItem& it) const {
         if (!it.achievement.empty()) return "Récompense du succès « " + achievementName(it.achievement) + " »";
+        if (it.challengeReward())
+            return cosmeticUnlocked(it, progress_) ? "Récompense des défis : obtenue" : challengeProgressText(it, progress_);
         if (it.isDefault) return "Disponible dès le départ";
         if (it.allStars) return "Palier : toutes les étoiles (" + std::to_string(progress_.totalStars) + ")";
         return "Palier : " + std::to_string(it.stars) + " étoiles";
     }
     std::string lockText(const CosmeticItem& it) const {
         if (!it.achievement.empty()) return "Succès requis";
+        if (it.challengeReward()) return "Défis requis";
         int missing = std::max(0, cosmeticThreshold(it, progress_.totalStars) - progress_.stars);
         return "Encore " + std::to_string(missing) + (missing > 1 ? " étoiles" : " étoile");
     }
@@ -458,9 +477,16 @@ private:
         // Milestones, then the rewards of a precise achievement, in one scrolling list (mouse
         // wheel; the keyboard and the gamepad go from reward to reward). A reward opens in the
         // Vestiaire.
-        std::vector<const CosmeticItem*> ach;
-        for (const auto& it : g_.cosmetics.items())
+        std::vector<const CosmeticItem*> ach, chal;  // 2.35: then those of the challenges
+        for (const auto& it : g_.cosmetics.items()) {
             if (!it.achievement.empty()) ach.push_back(&it);
+            if (it.challengeReward()) chal.push_back(&it);
+        }
+        auto cardText = [&](const CosmeticItem* it) {
+            if (it->challengeReward()) return challengeConditionText(*it);
+            const AchievementDef* a = g_.achievementCatalog.find(it->achievement);
+            return a ? a->description : std::string();
+        };
         Rect view{area.x, band.bottom() + ui.s(16), area.w, area.bottom() - band.bottom() - ui.s(16)};
         // Under each heading, room for a « NOUVEAU » on the top edge of the first cards.
         const float gap = ui.s(12), inner = view.w - ui.s(16), headH = ui.s(40) + ui.newPillHeight(true) * 0.5f;
@@ -481,19 +507,23 @@ private:
         // Achievement cards: wide enough for the longest title's chip (its font never goes
         // below what stays readable).
         float cardMin = ui.s(210);
-        for (const CosmeticItem* it : ach)
-            if (it->category == "title")
-                cardMin = std::max(cardMin, ui.text().measure(it->look, FontFace::Bold, ui.s(fz(ui, 13))).x + ui.s(22 + 16 + 12));
+        for (const auto* list : {&ach, &chal})
+            for (const CosmeticItem* it : *list)
+                if (it->category == "title")
+                    cardMin = std::max(cardMin, ui.text().measure(it->look, FontFace::Bold, ui.s(fz(ui, 13))).x + ui.s(22 + 16 + 12));
         const int acols = std::clamp(static_cast<int>((inner + gap) / (cardMin + gap)), 2, 8);
         const float aw = (inner - gap * static_cast<float>(acols - 1)) / static_cast<float>(acols);
+        // Both sections' cards are as high as the longest text of either.
         float descH = 0.0f;
-        for (const CosmeticItem* it : ach)
-            if (const AchievementDef* a = g_.achievementCatalog.find(it->achievement))
-                descH = std::max(descH, ui.text().measureWrapped(a->description, FontFace::Body, ui.s(fz(ui, 12.5f)), aw - ui.s(20)).y);
+        for (const auto* list : {&ach, &chal})
+            for (const CosmeticItem* it : *list)
+                descH = std::max(descH, ui.text().measureWrapped(cardText(it), FontFace::Body, ui.s(fz(ui, 12.5f)), aw - ui.s(20)).y);
         const float ah = ui.s(80) + descH + ui.s(36);
         const float arows = std::ceil(static_cast<float>(ach.size()) / static_cast<float>(acols));
+        const float crows = std::ceil(static_cast<float>(chal.size()) / static_cast<float>(acols));
         float content = headH + rows * (ch + rowGap);
         if (!ach.empty()) content += ui.s(10) + headH + arows * (ah + rowGap);
+        if (!chal.empty()) content += ui.s(10) + headH + crows * (ah + rowGap);
         if (routeEnd_) ui.setScroll("route", 1e9f);
         routeEnd_ = false;
         ui.beginScroll("route", view, content);
@@ -568,32 +598,32 @@ private:
             if (!fresh.empty()) ui.drawNewPill(c.right() - ui.s(8), c.y - ui.s(3), true);
         }
         y += rows * (ch + rowGap);
-        // Rewards of a precise achievement.
-        if (!ach.empty()) {
+        // Rewards of a precise achievement, then (2.35) those of the challenges: the same cards,
+        // the achievement's stars or the tier asked for at their bottom.
+        auto section = [&](const std::vector<const CosmeticItem*>& list, const std::string& head, const std::string& sub, const std::string& prefix,
+                           float sectionRows) {
+            if (list.empty()) return;
             y += ui.s(10);
-            const std::string head = "Récompenses de succès précis";
             ui.label(head, {view.x, y + ui.s(4)}, 21, ui.theme().text, Align::Left, FontFace::Bold);
             float hw = ui.text().measure(head, FontFace::Bold, ui.s(21)).x;
-            std::string sub = "Elles ne dépendent pas du nombre d'étoiles : il faut le succès lui-même.";
             float subRoom = inner - hw - ui.s(14);
             if (subRoom > ui.s(120))
                 ui.label(ui.elide(sub, FontFace::Body, fz(ui, 14), subRoom), {view.x + hw + ui.s(14), y + ui.s(8)}, fz(ui, 14), ui.theme().textDim);
             y += headH;
-            for (size_t i = 0; i < ach.size(); ++i) {
-                const CosmeticItem& it = *ach[i];
-                const AchievementDef* a = g_.achievementCatalog.find(it.achievement);
+            for (size_t i = 0; i < list.size(); ++i) {
+                const CosmeticItem& it = *list[i];
                 bool got = cosmeticUnlocked(it, progress_);
                 Rect c{view.x + (aw + gap) * static_cast<float>(i % static_cast<size_t>(acols)), y + (ah + rowGap) * static_cast<float>(i / static_cast<size_t>(acols)),
                        aw, ah};
-                bool open = ui.hotspot("ach" + it.id, c);
-                const bool fresh = ui.newBadge("ach" + it.id, c, "cos." + it.id, false, true);
+                bool open = ui.hotspot(prefix + it.id, c);
+                const bool fresh = ui.newBadge(prefix + it.id, c, "cos." + it.id, false, true);
                 if (open) {
                     showItem(it.id);
                     tab_ = 0;
                     g_.ui.setFocus("tab0");
                 }
                 if (!visible(c)) continue;
-                bool on = ui.focused("ach" + it.id);
+                bool on = ui.focused(prefix + it.id);
                 r.fillRoundedRect(c, ui.s(12), on ? ui.theme().accent.withAlpha(36) : Color{14, 20, 40, 235});
                 r.drawRoundedRect(c, ui.s(12), on ? ui.theme().accent : got ? kGreen.withAlpha(120) : ui.theme().accent.withAlpha(36), std::max(1.0f, ui.s(1.5f)));
                 drawThumb(it, {c.x + ui.s(8), c.y + ui.s(8), c.w - ui.s(16), ui.s(46)}, got);
@@ -603,15 +633,33 @@ private:
                                  : it.category == "victory" ? "Effet " + it.name
                                                             : std::string("Titre");
                 ui.label(ui.elide(nm, FontFace::Bold, 15, c.w - ui.s(20)), {c.x + ui.s(10), c.y + ui.s(58)}, 15, ui.theme().text, Align::Left, FontFace::Bold);
-                std::string desc = a ? a->description : "";
-                ui.labelWrapped(desc, {c.x + ui.s(10), c.y + ui.s(80)}, c.w - ui.s(20), fz(ui, 12.5f), ui.theme().textDim);
-                int st = a ? a->stars : 0;
-                for (int s = 0; s < st; ++s) drawStar(r, {c.x + ui.s(16) + ui.s(14) * s, c.bottom() - ui.s(16)}, ui.s(6), got ? kGold : kGold.withAlpha(110));
-                ui.label(got ? "obtenu" : "à obtenir", {c.right() - ui.s(10), c.bottom() - ui.s(16)}, fz(ui, 12), got ? kGreen : ui.theme().textDim, Align::Right,
-                         FontFace::Bold, VAlign::Middle);
+                ui.labelWrapped(cardText(&it), {c.x + ui.s(10), c.y + ui.s(80)}, c.w - ui.s(20), fz(ui, 12.5f), ui.theme().textDim);
+                const std::string state = got ? "obtenu" : "à obtenir";
+                const float stateW = ui.text().measure(state, FontFace::Bold, ui.s(fz(ui, 12))).x;
+                if (it.challengeReward()) {
+                    // The tier's medal, then how far my verified results go (« 3 / 10 »).
+                    Vec2 mc{c.x + ui.s(16), c.bottom() - ui.s(16)};
+                    r.fillCircle(mc, ui.s(7.5f), Color{8, 12, 26, 255});
+                    r.fillCircle(mc, ui.s(6), challengeTierColor(challengeRewardTier(it)));
+                    auto [have, need] = cosmeticChallengeProgress(it, progress_);
+                    std::string pr = std::to_string(have) + " / " + std::to_string(need);
+                    float room = c.w - ui.s(20) - ui.s(18) - stateW - ui.s(12);
+                    if (!got && room > ui.s(20))
+                        ui.label(ui.elide(pr, FontFace::Bold, fz(ui, 12), room), {mc.x + ui.s(14), mc.y}, fz(ui, 12), ui.theme().text, Align::Left,
+                                 FontFace::Bold, VAlign::Middle);
+                } else {
+                    const AchievementDef* a = g_.achievementCatalog.find(it.achievement);
+                    int st = a ? a->stars : 0;
+                    for (int s = 0; s < st; ++s) drawStar(r, {c.x + ui.s(16) + ui.s(14) * s, c.bottom() - ui.s(16)}, ui.s(6), got ? kGold : kGold.withAlpha(110));
+                }
+                ui.label(state, {c.right() - ui.s(10), c.bottom() - ui.s(16)}, fz(ui, 12), got ? kGreen : ui.theme().textDim, Align::Right, FontFace::Bold,
+                         VAlign::Middle);
                 if (fresh) ui.drawNewPill(c.right() - ui.s(8), c.y - ui.s(3), true);
             }
-        }
+            y += sectionRows * (ah + rowGap);
+        };
+        section(ach, "Récompenses de succès précis", "Elles ne dépendent pas du nombre d'étoiles : il faut le succès lui-même.", "ach", arows);
+        section(chal, "Récompenses des défis", "Menu principal → Défis : seules les parties vérifiées par Cosmic Online comptent.", "chal", crows);
         ui.endScroll();
     }
 
@@ -1089,6 +1137,7 @@ private:
     GameServices& g_;
     int tab_ = 0;
     OnlineUi online_;
+    std::string select_;  // the reward to show on arrival ("" = none)
     CosmeticProgress progress_;
     float t_ = 0.0f;
     // Vestiaire
@@ -1119,5 +1168,9 @@ private:
 }  // namespace
 
 std::unique_ptr<Scene> makeCollection(GameServices& g, int tab) { return std::make_unique<CollectionScene>(g, tab); }
+
+std::unique_ptr<Scene> makeCollectionOn(GameServices& g, const std::string& itemId) {
+    return std::make_unique<CollectionScene>(g, 0, itemId);
+}
 
 }  // namespace cosmic

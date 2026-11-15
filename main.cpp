@@ -20,6 +20,7 @@
 //   --realtime              headless: frames paced at real time (checks against a server)
 //   --click <frame>:<x>,<y> left click at a screen position at a given frame (repeatable;
 //                           automated checks of the menus)
+//   --hover <frame>:<x>,<y> the mouse moved there without a click (tooltips in screenshots)
 //   --input <script>        scripted gameplay input, e.g. "0:right;90:right,jump;120:"
 //   --user-dir <path>       use another folder for saves and user content
 //   --lang <fr|en>          language of the texts (as the setting « Langue / Language »)
@@ -465,6 +466,7 @@ int main(int argc, char** argv) {
     // Daily challenges: the cached ones at once (offline), the current one asked for when
     // Cosmic Online is on (public, nothing personal sent).
     game.challenges.init(game.online, Paths::savesDir() / "challenges");
+    game.challengeRewardsChanged(false);  // 2.34: the rewards of the challenges kept on this computer are worn too
     game.updates.init(game.online, game.news, COSMIC_VERSION_STRING);
     if (!has("--headless") || has("--realtime")) game.challenges.refresh();
     OnlineToasts toasts;
@@ -474,19 +476,28 @@ int main(int argc, char** argv) {
         int frame;
         float x, y;
     };
-    std::vector<Click> clicks;
+    std::vector<Click> clicks, hovers;
     for (size_t i = 0; i + 1 < args.size(); ++i) {
-        if (args[i] != "--click") continue;
+        if (args[i] != "--click" && args[i] != "--hover") continue;
         const std::string& s = args[i + 1];
         size_t c = s.find(':'), k = s.find(',');
         if (c != std::string::npos && k != std::string::npos && k > c)
-            clicks.push_back({std::atoi(s.substr(0, c).c_str()), std::strtof(s.substr(c + 1, k - c - 1).c_str(), nullptr),
-                              std::strtof(s.substr(k + 1).c_str(), nullptr)});
+            (args[i] == "--click" ? clicks : hovers)
+                .push_back({std::atoi(s.substr(0, c).c_str()), std::strtof(s.substr(c + 1, k - c - 1).c_str(), nullptr),
+                            std::strtof(s.substr(k + 1).c_str(), nullptr)});
     }
     // Presence for friends: a real window, or a headless run against a server (--realtime).
     const bool sendPresence = !has("--headless") || has("--realtime");
-    app.onUpdate = [&game, &toasts, &app, clicks, sendPresence](float dt) {
+    app.onUpdate = [&game, &toasts, &app, clicks, hovers, sendPresence](float dt) {
         int f = static_cast<int>(app.frameIndex());
+        for (const auto& h : hovers) {
+            if (f != h.frame) continue;
+            SDL_Event e{};
+            e.type = SDL_EVENT_MOUSE_MOTION;
+            e.motion.x = h.x;
+            e.motion.y = h.y;
+            SDL_PushEvent(&e);
+        }
         for (const auto& c : clicks) {
             if (f != c.frame && f != c.frame + 2) continue;
             SDL_Event e{};

@@ -1,12 +1,13 @@
 #pragma once
 
-// Collection (2.19): cosmetic rewards unlocked by the achievements' stars, and what the
-// player has discovered (tracks heard, creatures met). Display only: nothing here ever
-// changes a run, a replay or a record.
+// Collection (2.19): cosmetic rewards unlocked by the achievements' stars (2.35: or by the
+// challenge results Cosmic Online verified), and what the player has discovered (tracks heard,
+// creatures met). Display only: nothing here ever changes a run, a replay or a record.
 
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "engine/core/Json.h"
@@ -21,6 +22,17 @@ struct CosmeticCategory {
     std::string name;  // « Combinaisons »...
 };
 
+/// 2.35: a reward of the challenges, unlocked by results that Cosmic Online verified (never by
+/// a run kept on this computer only): `count` challenges of `kind` (daily, weekly, monthly or
+/// any) with a verified run at `tier` or better, received in time or late (« challenge »), or
+/// `count` periods of `kind` in a row with a verified run received in time (« challengeStreak »).
+struct ChallengeUnlock {
+    bool streak = false;
+    std::string kind;  // "daily", "weekly", "monthly", "any" (results only); "": not a challenge reward
+    int tier = 0;      // results: 1 bronze, 2 silver, 3 gold (that tier or better); a streak: any (1)
+    int count = 0;
+};
+
 struct CosmeticItem {
     std::string id;
     std::string category;
@@ -31,7 +43,23 @@ struct CosmeticItem {
     int stars = 0;             // star milestone (0: from the start)
     bool allStars = false;     // every star of the catalogue (« Constellation »)
     std::string achievement;   // unlocked by this achievement instead of stars
+    ChallengeUnlock challenge; // 2.35: or by verified challenge results
     bool isDefault = false;    // the category's starting item
+    bool challengeReward() const { return !challenge.kind.empty(); }
+};
+
+/// What Cosmic Online verified of the player's challenge runs (GET /challenges/me, kept on this
+/// computer for offline play): per kind (daily, weekly, monthly), the challenges with a
+/// verified run at each tier or better and the longest series of periods in time.
+struct ChallengeRewardProgress {
+    bool known = false;               // read from the server (else: nothing counts)
+    int atLeast[3][3] = {};           // [kind][tier - 1]
+    int bestStreak[3] = {};           // [kind]
+    /// Challenges of `kind` ("any": every kind) with a verified run at `tier` or better.
+    int results(const std::string& kind, int tier) const;
+    int streak(const std::string& kind) const;
+    bool operator==(const ChallengeRewardProgress& o) const;
+    bool operator!=(const ChallengeRewardProgress& o) const { return !(*this == o); }
 };
 
 /// data/cosmetics/cosmetics.json
@@ -65,12 +93,22 @@ struct CosmeticProgress {
     int stars = 0;
     int totalStars = 0;
     const AchievementBook* book = nullptr;
+    const ChallengeRewardProgress* challenges = nullptr;  // 2.35: nullptr / unknown: locked
 };
 
 /// Stars needed for an item (its milestone; every star for « all »), -1 when an
-/// achievement unlocks it instead.
+/// achievement (or, 2.35, challenge results) unlocks it instead.
 int cosmeticThreshold(const CosmeticItem& item, int totalStars);
 bool cosmeticUnlocked(const CosmeticItem& item, const CosmeticProgress& p);
+/// « Combinaison », « Traînée », « Cadre d'avatar », « Titre », « Effet de victoire ».
+std::string cosmeticCategorySingular(const std::string& category);
+/// A reward of the challenges: how far the verified results go ({have, need}, `have` never
+/// above `need`); {0, 0} for any other item.
+std::pair<int, int> cosmeticChallengeProgress(const CosmeticItem& item, const CosmeticProgress& p);
+/// The rewards of the challenges a run of a challenge of `kind` ("daily", "weekly",
+/// "monthly") can advance, in catalogue order: those of its kind or of any kind; the series
+/// only while the challenge runs (`late` false: a run « hors délai » never counts for one).
+std::vector<const CosmeticItem*> challengeRewardsFor(const CosmeticCatalog& catalog, const std::string& kind, bool late);
 
 /// saves/collection.json: equipped rewards, rewards already announced, the jukebox and the
 /// gallery's discoveries.

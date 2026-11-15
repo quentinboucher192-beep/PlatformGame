@@ -58,7 +58,10 @@ void OnlineToasts::render(GameServices& g) {
         ui.r().fillRoundedRect(r, ui.s(10), Color{10, 15, 34, static_cast<uint8_t>(252 * a)});
         ui.r().fillRoundedRect({r.x, r.y, ui.s(5), r.h}, ui.s(2), c.withAlphaF(a));
         ui.r().drawRoundedRect(r, ui.s(10), c.withAlphaF(0.5f * a), ui.s(1.2f));
-        ui.label(t.n.title, {r.x + ui.s(18), r.y + ui.s(22)}, 18, c.withAlphaF(a), Align::Left, FontFace::Bold, VAlign::Middle);
+        // The title on its line: smaller when long (a reward's name), never past the toast.
+        float tf = ui.fitFont(t.n.title, FontFace::Bold, 18, textW, 0.7f);
+        ui.label(ui.elide(t.n.title, FontFace::Bold, tf, textW), {r.x + ui.s(18), r.y + ui.s(22)}, tf, c.withAlphaF(a), Align::Left, FontFace::Bold,
+                 VAlign::Middle);
         ui.labelWrapped(t.n.text, {r.x + ui.s(18), r.y + ui.s(38)}, textW, 15, ui.theme().text.withAlphaF(a));
         y += (h + ui.s(10)) * std::max(a, 0.2f);
     }

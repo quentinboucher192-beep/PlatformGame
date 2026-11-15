@@ -18,13 +18,14 @@
 // challenge (+ 10 min) is accepted « hors délai » (late): it is ranked only in the board
 // « Depuis » (period=all) and never counts for a streak.
 //
-// « Plus loin » (2.34): on a challenge whose level version has a race layout, an attempt that
+// « Plus loin » (2.33): on a challenge whose level version has a race layout, an attempt that
 // does not reach the end is sent with its replay; the server computes its progress score from
 // the replay with the analysis of the « course à la vérification » (race.ts), never taking
 // the game's, and a finished run counts 100. Only the player's best attempt keeps its replay.
 
 import catalogJson from "./challengeCatalog.json";
 import { audit, requireAuth, type AuthInfo } from "./auth";
+import { challengeRewardProgress } from "./challengeRewards";
 import { pseudoVersionOf } from "./community";
 import { boardCosmetics, withCosmetics, type BoardCosmetics } from "./cosmetics";
 import { sha256Hex } from "./crypto";
@@ -337,7 +338,7 @@ export function challengeJson(c: ChallengeRow) {
         rules: rulesOf(c),
         rules_hash: c.rules_hash,
         tiers: { silver_ms: c.silver_ms, gold_ms: c.gold_ms, gold_no_damage: c.gold_no_damage === 1 },
-        // 2.34: the board « Plus loin » exists (the level version has a race layout).
+        // 2.33: the board « Plus loin » exists (the level version has a race layout).
         progress_available: c.has_race === 1,
     };
 }
@@ -671,7 +672,7 @@ export async function calendar(ctx: Ctx, viewer: AuthInfo | null): Promise<Respo
 export const SCOPES = ["world", "country", "friends"] as const;
 /** live: runs received during the challenge (+ 10 min); all: also the late ones (« Depuis »). */
 export const BOARD_PERIODS = ["live", "all"] as const;
-/** time: best times; progress: « Plus loin », best progress of each player (2.34). */
+/** time: best times; progress: « Plus loin », best progress of each player (2.33). */
 export const BOARDS = ["time", "progress"] as const;
 
 interface BoardRow {
@@ -896,7 +897,7 @@ export async function leaderboard(ctx: Ctx, viewer: AuthInfo | null): Promise<Re
     });
 }
 
-/** board=progress of the leaderboard (« Plus loin », 2.34). */
+/** board=progress of the leaderboard (« Plus loin », 2.33). */
 async function progressBoard(
     ctx: Ctx,
     c: ChallengeRow,
@@ -1277,7 +1278,7 @@ export async function downloadRunReplay(ctx: Ctx, viewer: AuthInfo | null): Prom
     });
 }
 
-// ------------------------------------------------------- attempts (« Plus loin », 2.34)
+// ------------------------------------------------------- attempts (« Plus loin », 2.33)
 
 interface AttemptRow {
     id: string;
@@ -1725,9 +1726,10 @@ function resultView(r: PlayerResult) {
 
 /**
  * GET /challenges/me?limit=60: `{ streak: { current, best, last_date }, streaks: { daily,
- * weekly, monthly } ({ current, best, last_period }), results: [{ challenge_id, kind, period,
- * date, best_time_ms, tier, status, late, best_progress }] }` (most recent first). `streak`
- * is the days' streak of the 2.32 games.
+ * weekly, monthly } ({ current, best, last_period }), verified: { daily, weekly, monthly }
+ * ({ gold, silver, bronze, best_streak }, 2.35: the rewards' counts, challengeRewards.ts),
+ * results: [{ challenge_id, kind, period, date, best_time_ms, tier, status, late,
+ * best_progress }] }` (most recent first). `streak` is the days' streak of the 2.32 games.
  */
 export async function mine(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
@@ -1756,6 +1758,8 @@ export async function mine(ctx: Ctx): Promise<Response> {
     return json(ctx, {
         streak: { current: streaks.daily.current, best: streaks.daily.best, last_date: streaks.daily.last_period },
         streaks,
+        // 2.35: what the rewards of the challenges count (VERIFIED runs only, all of them).
+        verified: await challengeRewardProgress(ctx, me),
         results: results.map((r) => ({
             challenge_id: r.challenge_id,
             kind: r.kind,
@@ -1772,7 +1776,7 @@ export async function mine(ctx: Ctx): Promise<Response> {
 
 // ------------------------------------------------------------------- account
 
-/** R2 keys of a player's challenge replays: runs and (2.34) attempts (account deletion). */
+/** R2 keys of a player's challenge replays: runs and (2.33) attempts (account deletion). */
 export async function challengeReplayKeys(ctx: Ctx, playerId: string): Promise<string[]> {
     const rows = await ctx.env.DB.prepare(
         `SELECT replay_key FROM challenge_runs WHERE player_id = ?1 AND replay_key IS NOT NULL

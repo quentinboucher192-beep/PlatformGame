@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -84,6 +85,11 @@ public:
     /// After an « Équiper » (and at start): the achievements of the Collection count the
     /// rewards worn (2.24). Checks the achievements (`announce` false: silently, at start).
     void noteOutfit(bool announce = true);
+    /// 2.34: Cosmic Online's verified challenge results changed (ChallengeService): what is worn
+    /// is sent again and, `announce`, a reward of the challenges just unlocked gets its toast
+    /// (false: at start, the results kept on this computer).
+    void challengeRewardsChanged(bool announce = true);
+    std::set<std::string> challengeRewardsUnlocked_;  // the rewards of the challenges unlocked at the last reading
     /// Discoveries proven by the saves (tracks and creatures of the completed levels).
     void discoverFromSaves();
     /// Music of the main menu (the jukebox's choice, else the theme).
