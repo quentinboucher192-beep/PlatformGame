@@ -305,8 +305,11 @@ private:
             Action a;
             const char* label;
         };
-        static const Key keys[] = {{Action::MoveLeft, "G"},  {Action::MoveRight, "D"}, {Action::MoveUp, "H"},
-                                   {Action::MoveDown, "B"},  {Action::Jump, "Saut"},   {Action::Attack, "Att."},
+        // Initials of the directions, with a context ("\x1F" "contexte|texte", engine/core/I18n.cpp):
+        // « D » is Right here, but the D key elsewhere.
+        static const Key keys[] = {{Action::MoveLeft, "\x1F" "direction|G"},  {Action::MoveRight, "\x1F" "direction|D"},
+                                   {Action::MoveUp, "\x1F" "direction|H"},    {Action::MoveDown, "\x1F" "direction|B"},
+                                   {Action::Jump, "Saut"},   {Action::Attack, "Att."},
                                    {Action::Dash, "Dash"},   {Action::Wave, "Onde"},   {Action::Shield, "Boucl."},
                                    {Action::Impulse, "Imp."}, {Action::Teleport, "Télép."}};
         float x = area.x, h = area.h;

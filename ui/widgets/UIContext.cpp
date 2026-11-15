@@ -242,7 +242,11 @@ void UIContext::icon(const std::string& texture, int index, int cell, const Rect
 
 float UIContext::extremeBadge(Vec2 leftMid, float height, float alpha) {
     if (height <= 0.0f) return 0.0f;
-    if (auto tex = app_->resources().texture("ui/badge_extreme.png"); tex && tex->height() > 0) {
+    // The picture holds its words: its English version when the game is in English.
+    TexturePtr tex;
+    if (i18n::language() == Language::English) tex = app_->resources().texture("ui/badge_extreme_en.png");
+    if (!tex) tex = app_->resources().texture("ui/badge_extreme.png");
+    if (tex && tex->height() > 0) {
         float w = height * static_cast<float>(tex->width()) / static_cast<float>(tex->height());
         r().drawTexture(*tex, nullptr, {leftMid.x, leftMid.y - height * 0.5f, w, height}, Color::white().withAlphaF(alpha));
         return w;

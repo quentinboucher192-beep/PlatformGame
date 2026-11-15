@@ -1,6 +1,7 @@
 """EXTRÊME badge (assets/ui/badge_extreme.png): the mark of a one-life level with a
 « course à la vérification ». Drawn large then reduced (smooth edges), in the game's colours
-and fonts.
+and fonts. Its English version (assets/ui/badge_extreme_en.png: « EXTREME / ONLY ONE LIFE »)
+is shown when the game is in English (UIContext::extremeBadge).
 
     python3 tools/assetgen/badge_extreme.py
 """
@@ -11,6 +12,8 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 OUT = os.path.join(ROOT, "assets", "ui", "badge_extreme.png")
+OUT_EN = os.path.join(ROOT, "assets", "ui", "badge_extreme_en.png")
+WORDS = {OUT: ("EXTRÊME", "UNE SEULE VIE"), OUT_EN: ("EXTREME", "ONLY ONE LIFE")}
 S = 4  # supersampling
 W, H = 512, 176
 
@@ -62,6 +65,11 @@ def flame(draw, cx, cy, size, colors):
 
 
 def main():
+    for out, (word, sub) in WORDS.items():
+        badge(out, word, sub)
+
+
+def badge(path, word, sub):
     w, h = W * S, H * S
     img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     pad = 14 * S
@@ -109,24 +117,24 @@ def main():
     size = 64
     while True:
         title = ImageFont.truetype(os.path.join(ROOT, "assets", "fonts", "Orbitron.ttf"), size * S)
-        if title.getlength("EXTRÊME") + 2 * S <= room or size <= 30:
+        if title.getlength(word) + 2 * S <= room or size <= 30:
             break
         size -= 1
     small = ImageFont.truetype(os.path.join(ROOT, "assets", "fonts", "ChakraPetch-SemiBold.ttf"), 24 * S)
     text = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     td = ImageDraw.Draw(text)
-    td.text((tx, h * 0.5 - 6 * S), "EXTRÊME", font=title, fill=(255, 255, 255, 255), anchor="lm", stroke_width=1 * S, stroke_fill=(255, 255, 255, 255))
+    td.text((tx, h * 0.5 - 6 * S), word, font=title, fill=(255, 255, 255, 255), anchor="lm", stroke_width=1 * S, stroke_fill=(255, 255, 255, 255))
     tglow = text.filter(ImageFilter.GaussianBlur(6 * S))
     r, g, b, a = tglow.split()
     tglow = Image.merge("RGBA", (r.point(lambda v: 255), g.point(lambda v: 70), b.point(lambda v: 50), a))
     img = Image.alpha_composite(img, tglow)
     img = Image.alpha_composite(img, text)
-    ImageDraw.Draw(img).text((tx + 4 * S, h * 0.5 + 40 * S), "UNE SEULE VIE", font=small, fill=(255, 176, 90, 255), anchor="lm")
+    ImageDraw.Draw(img).text((tx + 4 * S, h * 0.5 + 40 * S), sub, font=small, fill=(255, 176, 90, 255), anchor="lm")
 
     out = img.resize((W, H), Image.LANCZOS)
-    os.makedirs(os.path.dirname(OUT), exist_ok=True)
-    out.save(OUT)
-    print("wrote", OUT, out.size)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    out.save(path)
+    print("wrote", path, out.size)
 
 
 if __name__ == "__main__":

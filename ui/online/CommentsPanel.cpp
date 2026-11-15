@@ -395,7 +395,7 @@ bool CommentsPanel::draw(const Rect& area) {
         ps.primary = true;
         ps.small = true;
         ps.enabled = !sending_ && !trimmed(draft_).empty();
-        if (ui.button("send", {x + w - pw, y, pw, ui.s(44)}, sending_ ? "Envoi…" : (editing_.empty() ? "Publier" : "Enregistrer"), ps)) submit();
+        if (ui.button("send", {x + w - pw, y, pw, ui.s(44)}, sending_ ? "Envoi…" : (editing_.empty() ? "\x1F" "commentaire|Publier" : "Enregistrer"), ps)) submit();
         y += ui.s(54);
     }
     // List.

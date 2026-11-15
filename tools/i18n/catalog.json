@@ -2163,8 +2163,7 @@
    "fr": "B",
    "where": [
     "engine/input/InputTypes.cpp",
-    "ui/screens/NotificationsScene.cpp",
-    "ui/screens/ReplayScene.cpp"
+    "ui/screens/NotificationsScene.cpp"
    ]
   },
   {
@@ -4369,6 +4368,12 @@
    ]
   },
   {
+   "fr": "commentaire|Publier",
+   "where": [
+    "ui/online/CommentsPanel.cpp"
+   ]
+  },
+  {
    "fr": "Communauté",
    "where": [
     "data/achievements/achievements.json"
@@ -5646,12 +5651,6 @@
    ]
   },
   {
-   "fr": "D",
-   "where": [
-    "ui/screens/ReplayScene.cpp"
-   ]
-  },
-  {
    "fr": "Danemark",
    "where": [
     "data/online/countries.json",
@@ -6097,6 +6096,30 @@
    "fr": "dimensions du niveau invalides",
    "where": [
     "game/levels/LevelData.cpp"
+   ]
+  },
+  {
+   "fr": "direction|B",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "direction|D",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "direction|G",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "direction|H",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -8559,12 +8582,6 @@
    ]
   },
   {
-   "fr": "G",
-   "where": [
-    "ui/screens/ReplayScene.cpp"
-   ]
-  },
-  {
    "fr": "Gabon",
    "where": [
     "data/online/countries.json",
@@ -9250,12 +9267,6 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
-   ]
-  },
-  {
-   "fr": "H",
-   "where": [
-    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -17332,7 +17343,6 @@
   {
    "fr": "Publier",
    "where": [
-    "ui/online/CommentsPanel.cpp",
     "ui/screens/CommunityPublishScene.cpp",
     "ui/screens/ContentManagerScene.cpp"
    ]
