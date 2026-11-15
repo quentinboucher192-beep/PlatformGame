@@ -234,19 +234,29 @@ Code : `game/ghost/ReplayCompare.*` (décalage, recalage, tableau, écart),
 
 ## Succès
 
-146 succès en 12 catégories (`data/achievements/achievements.json`), chacun avec 1 à 5 étoiles
-de difficulté (383 étoiles). Ils se débloquent d'après les vraies sauvegardes
+218 succès en 13 catégories (`data/achievements/achievements.json`), chacun avec 1 à 5 étoiles
+de difficulté (597 étoiles). Ils se débloquent d'après les vraies sauvegardes
 (progression, records, statistiques des boss) — y compris rétroactivement — et des compteurs
 de partie gardés dans `saves/achievements.json` (ennemis vaincus, sauts, chutes, pouvoirs
 utilisés, segments en or…). Certains succès en suivent d'autres (les fils de la toile) : un
 succès ne se débloque qu'une fois les précédents obtenus.
 
 * Les succès « niveau » (sans mourir, sans dégât, tout ramasser, tous les secrets, tous les
-  ennemis) comptent les niveaux de la **campagne** joués depuis le départ.
+  ennemis) comptent les niveaux de la **campagne** joués depuis le départ. « Tout ramasser »
+  et « tous les secrets » ne comptent que les 13 niveaux qui ont des éclats, des reliques ou
+  des secrets (ni les niveaux des gardiens, ni le Noyau) ; certains se limitent à une planète
+  (Aethra).
 * Les pouvoirs passifs (Triple saut, Ruée aérienne, Aimant) se comptent en niveaux terminés
   en les possédant ; le Planeur à chaque ouverture.
-* Les succès de la catégorie Communauté demandent Cosmic Online ; aucun n'est nécessaire au
-  reste du jeu.
+* Depuis la 2.24 : les ennemis vaincus par famille (créatures terrestres, robots, créatures
+  volantes, ennemis lourds, rapides, tourelles, utilisateurs de pouvoirs), l'or et le platine
+  sur tous les niveaux d'une planète (Aethra), chaque phase d'un gardien d'Aethra battue
+  sans être touché (pas forcément dans le même combat), les replays comparés et recalés
+  (lecteur de replays), et la catégorie **Collection** : récompenses équipées, tenue complète,
+  morceaux du juke-box entendus, créatures du bestiaire rencontrées, images des planètes
+  enregistrées depuis la Galerie, musique du menu choisie.
+* Les succès de la catégorie Communauté demandent Cosmic Online (commentaires publiés, niveaux
+  notés : comptés quand le serveur les a acceptés) ; aucun n'est nécessaire au reste du jeu.
 
 **Profil en ligne** : quand vous êtes connecté, la liste des succès débloqués est envoyée
 (`PUT /api/v1/players/me/achievements`). Le serveur ne garde que les identifiants qu'il
