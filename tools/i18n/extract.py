@@ -562,6 +562,10 @@ def extract_cpp(path, words, out):
 def add(out, text, where, words, source=None):
     if not text or text in ("{0}",):
         return
+    # "\x1F" "contexte|texte": a word whose translation depends on the place (« édition|Annuler »).
+    if text.startswith("\x1f") and "|" in text:
+        out.setdefault(text[1:], {"where": set()})["where"].add(where)
+        return
     # Two slots side by side (« {0}{1} ») cannot be told apart at display: not a model.
     if re.search(r"\}\{\d", text):
         return

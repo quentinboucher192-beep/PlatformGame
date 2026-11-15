@@ -1063,7 +1063,6 @@
    "where": [
     "editors/level_editor/LevelEditorChat.cpp",
     "editors/level_editor/LevelEditorDialogs.cpp",
-    "editors/level_editor/LevelEditorLayout.cpp",
     "ui/online/CommentsPanel.cpp",
     "ui/screens/ContentManagerScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
@@ -26940,6 +26939,12 @@
    "fr": "Édition en direct terminée",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
+   ]
+  },
+  {
+   "fr": "édition|Annuler",
+   "where": [
+    "editors/level_editor/LevelEditorLayout.cpp"
    ]
   },
   {

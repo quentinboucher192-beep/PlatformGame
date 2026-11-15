@@ -415,10 +415,14 @@ bool Dictionary::byParts(std::string_view s, std::string& out, int depth) const 
         b = p;
     }
     if ((a != 0 || b != s.size()) && a < b) {
-        std::string core;
-        bool full = translateInto(s.substr(a, b - a), core, depth + 1);
-        if (!core.empty()) {
-            decorated = englishTypography(s.substr(0, a)) + core + englishTypography(s.substr(b));
+        // Signs before only (« • Phrase complète. »), after only, then both.
+        const std::pair<size_t, size_t> cuts[] = {{a, s.size()}, {0, b}, {a, b}};
+        for (auto [ca, cb] : cuts) {
+            if (ca == 0 && cb == s.size()) continue;
+            std::string core;
+            bool full = translateInto(s.substr(ca, cb - ca), core, depth + 1);
+            if (core.empty()) continue;
+            if (decorated.empty() || full) decorated = englishTypography(s.substr(0, ca)) + core + englishTypography(s.substr(cb));
             if (full) {
                 out = decorated;
                 return true;
@@ -680,20 +684,30 @@ bool unchangedNumbers(std::string_view s) {
     return true;
 }
 
-std::string_view display(std::string_view french) {
+std::string_view display(std::string_view source) {
+    // « \x1F contexte|texte »: a word translated according to where it is shown (« Annuler »
+    // is Cancel in a dialog, Undo in the editor). The context is never shown.
+    std::string_view french = source, context;
+    if (!source.empty() && source[0] == '\x1F') {
+        size_t bar = source.find('|');
+        context = source.substr(1);
+        french = bar == std::string_view::npos ? source.substr(1) : source.substr(bar + 1);
+    }
     if (french.empty() || g_verbatim > 0) return french;
     State& st = state();
     std::lock_guard lock(st.mutex);
-    if (st.language == Language::French || unchangedNumbers(french)) return french;
-    auto it = st.cache.find(french);
+    if (st.language == Language::French || (context.empty() && unchangedNumbers(french))) return french;
+    auto it = st.cache.find(source);
     if (it != st.cache.end()) return it->second;
-    std::string key(french), out;
-    if (auto old = st.previous.find(french); old != st.previous.end()) {
+    std::string key(source), out;
+    if (auto old = st.previous.find(source); old != st.previous.end()) {
         out = old->second;  // seen in the previous generation: kept
+    } else if (const std::string* v = context.empty() ? nullptr : st.english.exact(context)) {
+        out = *v;
     } else {
         bool full = st.english.lookup(french, out);
         if (!full) {
-            if (out.empty()) out = key;
+            if (out.empty()) out = std::string(french);
             if (letterCount(french) >= 2) noteMissing(st, french);
         }
     }

@@ -99,10 +99,14 @@ TEST_CASE("i18n: display in the language in use, cached, player texts verbatim")
         i18n::Verbatim mine;  // a pseudonym, a comment…
         CHECK(i18n::tr("Jouer") == "Jouer");
     }
+    // A word translated according to its place: the context is never shown.
+    CHECK(i18n::tr("\x1F" "édition|Annuler") == "Undo");
+    CHECK(i18n::tr("Annuler") == "Cancel");
     CHECK(i18n::keep("Pla…") == "Pla…");
     CHECK(i18n::tr("Pla…") == "Pla…");
     i18n::setLanguage(Language::French);
     CHECK(i18n::tr("Jouer") == "Jouer");
+    CHECK(i18n::tr("\x1F" "édition|Annuler") == "Annuler");
     CHECK(i18n::parse("english") == Language::English);
     CHECK(i18n::parse("FR") == Language::French);
     CHECK(!i18n::parse("klingon"));
@@ -144,6 +148,9 @@ TEST_CASE("i18n: the whole dictionary loads and its models are usable") {
     CHECK(d.translate("0 niveau créé") == "0 levels created");
     CHECK(d.translate("1 niveau créé") == "1 level created");
     CHECK(d.translate("Platine : < 3:20, 0 mort") == "Platinum: < 3:20, 0 deaths");
+    // A news line: « • » + a sentence of the dictionary (with its final period).
+    CHECK(d.translate("• Barre de progression sans encadré.\n• Éditeur d'ennemis : teinte du sprite.") ==
+          "• Progress bar without a frame.\n• Enemy editor: sprite tint.");
 }
 
 TEST_CASE("i18n: the language is a setting; the installer's choice applies once") {
