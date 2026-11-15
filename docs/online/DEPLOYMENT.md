@@ -136,43 +136,69 @@ La migration a le même effet que `POST /admin/levels` : les nouvelles révision
 courantes, les anciennes passent « legacy », une révision existante n'est jamais modifiée.
 
 
-## Défis du jour (2.31)
+## Défis du jour, de la semaine et du mois (2.32, 2.33)
 
-Les défis du jour (contrat : [DAILY_CHALLENGES.md](DAILY_CHALLENGES.md), routes : API.md
-§8.9 duodecies) ont besoin de la migration `0049_daily_challenges.sql` puis du Worker ; la
-tâche planifiée quotidienne (`17 3 * * *`) et chaque lecture du défi courant tirent ensuite les
-défis d'aujourd'hui à J+7. Aucun secret n'est nécessaire.
+Les défis (contrats : [DAILY_CHALLENGES.md](DAILY_CHALLENGES.md) et
+[CHALLENGES_PERIODS.md](CHALLENGES_PERIODS.md), routes : API.md §8.9 duodecies) ont besoin des
+migrations `0049_daily_challenges.sql` (2.32) et `0058_challenge_periods.sql` (2.33 : la table
+`daily_challenges` devient `challenges`, avec les semaines et les mois, et `challenge_runs`
+gagne `late` ; les défis et les parties existants sont recopiés tels quels) puis du Worker. La
+migration 0054 reconstruit les deux tables : appliquez-la **avant** de déployer le Worker 2.33
+(l'ancien Worker lit `daily_challenges` et ne fonctionne plus après elle ; le nouveau a besoin
+d'elle), c'est-à-dire migration puis déploiement l'un juste après l'autre. La tâche planifiée
+quotidienne (`17 3 * * *`) et chaque lecture des défis en cours tirent ensuite les défis
+d'aujourd'hui à J+7, de la semaine en cours à S+2 et du mois en cours à M+1. Aucun secret
+n'est nécessaire.
+
+**« Plus loin » (2.34)** : migration `0059_challenge_progress.sql` (nouvelle table
+`challenge_attempts`, rien d'autre ne change : elle peut être appliquée avant le Worker). Un
+défi n'a ce classement que si la version de son niveau a un tracé (`level_versions.race`,
+écrit par `levels-migration.mjs` quand le manifeste du jeu en donne un ;
+`community_level_versions.race` pour un niveau EXTRÊME de la communauté). Aujourd'hui seul
+`noyau_01` en a un dans la campagne : pour un défi « Plus loin » sur la campagne, choisissez-le
+avec `challenge-set.mjs`, ou un niveau EXTRÊME de la communauté. Vérifier qu'un défi l'a :
+`progress_available` dans `GET /api/v1/challenges/{id}`.
 
 **Catalogue des niveaux.** Le tirage automatique ne prend un niveau de la campagne que si sa
-révision active sur le serveur est celle de `src/challengeCatalog.json`. À chaque nouvelle
-révision des niveaux (migration `levels-migration.mjs`), régénérez-le depuis les fichiers du
-jeu et redéployez le Worker :
+révision active sur le serveur est celle de `src/challengeCatalog.json` (version 2 depuis
+2.33 : il donne aussi la place de chaque niveau dans sa planète, pour les semaines et les
+mois). À chaque nouvelle révision des niveaux (migration `levels-migration.mjs`),
+régénérez-le depuis les fichiers du jeu et redéployez le Worker :
 
 ```bash
 node scripts/challenge-catalog.mjs
 ```
 
-Sans niveau utilisable, aucun défi n'est tiré (journal `challenge_draw_no_level`) jusqu'au
-déploiement du catalogue à jour ; le défi manquant est alors tiré à la lecture suivante.
+Sans niveau utilisable pour une sorte, aucun défi de cette sorte n'est tiré (journal
+`challenge_draw_no_level` avec `kind` et `period`) jusqu'au déploiement du catalogue à jour ;
+le défi manquant est alors tiré à la lecture suivante.
 
-**Choisir le défi d'un jour à venir** (niveau de la campagne ou version publiée d'un niveau
-ONLINE LEVELS) :
+**Choisir un défi à venir** — d'un jour, d'une semaine ISO ou d'un mois — (niveau de la
+campagne ou version publiée d'un niveau ONLINE LEVELS ; un niveau de la communauté ou le boss
+rush ne sont jamais tirés automatiquement, seul ce script les choisit) :
 
 ```bash
-node scripts/challenge-set.mjs --date 2026-11-20 --level campaign:glacior_02 --hearts 3 \
-    > migrations/0050_challenge_2026_11_20.sql
-node scripts/challenge-set.mjs --date 2026-11-21 --level community:<uuid>@<version> \
-    --silver 2:30 --gold 1:50 > migrations/0051_challenge_2026_11_21.sql
+node scripts/challenge-set.mjs --kind daily --period 2026-11-20 --level campaign:glacior_02 --hearts 3 \
+    > migrations/0055_challenge_daily_2026_11_20.sql
+node scripts/challenge-set.mjs --kind weekly --period 2026-W49 --level campaign:noyau_01 --hearts 5 \
+    > migrations/0056_challenge_weekly_2026_W49.sql
+node scripts/challenge-set.mjs --kind monthly --period 2027-01 --level community:<uuid>@<version> \
+    --silver 2:30 --gold 1:50 > migrations/0057_challenge_monthly_2027_01.sql
 npx wrangler d1 migrations apply cosmic-online-staging --remote --env staging
 ```
 
-Options : `--hearts N`, `--slots N`, `--powers a,b`, `--no-stations`, `--no-checkpoints`,
-`--silver m:ss`, `--gold m:ss`, `--gold-damage-ok`. Le script refuse une date passée ou du
-jour et affiche les règles, le nom de fichier conseillé et des avertissements (pouvoirs de
-départ absents, moins d'emplacements que le niveau…). La migration ne modifie le défi que si
-son jour n'a pas commencé **au moment où elle est appliquée**, et un niveau de la communauté
-doit alors avoir cette version publiée ; sinon elle ne change rien, sans échouer. Le
-résultat est dans `audit_log` (`challenge_set_applied` ou `challenge_set_skipped`) :
+`--period` : `AAAA-MM-JJ` (jour), `AAAA-Www` (semaine ISO 8601, du lundi au dimanche, UTC) ou
+`AAAA-MM` (mois). L'ancienne forme `--date AAAA-MM-JJ` reste acceptée pour un jour (`--kind`
+vaut `daily` par défaut). Options : `--hearts N`, `--slots N`, `--powers a,b`,
+`--no-stations`, `--no-checkpoints`, `--silver m:ss`, `--gold m:ss`, `--gold-damage-ok`. Le
+script refuse une période commencée ou passée (ou qui n'existe pas, comme `2027-W53`) et
+affiche les dates de la période, les règles, le nom de fichier conseillé et des
+avertissements (pouvoirs de départ absents, moins d'emplacements que le niveau…). La migration
+ne modifie le défi que si sa période n'a pas commencé **au moment où elle est appliquée**, et
+un niveau de la communauté doit alors avoir cette version publiée ; sinon elle ne change rien,
+sans échouer. Quand la période commence, l'auteur d'un niveau de la communauté reçoit la
+notification « … est le défi du jour / de la semaine / du mois ! ». Le résultat est dans
+`audit_log` (`challenge_set_applied` ou `challenge_set_skipped`) :
 
 ```bash
 npx wrangler d1 execute cosmic-online-staging --remote --env staging \

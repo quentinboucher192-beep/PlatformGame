@@ -2,9 +2,11 @@
 // campaign level (data/planets/*.json lists them, data/levels/<id>.json describes them) its
 // revision (metadata.revision, the number the server registers), power slots, start powers,
 // every power the level offers or asks for, and the times of its gold and platinum medals
-// (the Silver and Gold tiers of an automatic challenge); per power (data/powers) its input;
-// the player's maximum health (data/player.json). The server draws the automatic challenges
-// from this copy and never from client data.
+// (the Silver and Gold tiers of an automatic challenge), its place in its planet (2.33: the
+// weeks draw the 3rd / 4th / last level of a planet, the months the last one: the « Épreuves »
+// and the final level); per power (data/powers) its input; the player's maximum health
+// (data/player.json). The server draws the automatic challenges from this copy and never
+// from client data.
 //     node scripts/challenge-catalog.mjs
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -27,11 +29,12 @@ const campaign = [];
 for (const f of readdirSync(join(root, "data", "planets")).sort()) {
     if (!f.endsWith(".json")) continue;
     const planet = read("data", "planets", f);
-    for (const id of planet.levels ?? []) campaign.push({ id, planet: planet.id });
+    const list = planet.levels ?? [];
+    list.forEach((id, i) => campaign.push({ id, planet: planet.id, order: i + 1, last: i === list.length - 1 }));
 }
 
 const levels = {};
-for (const { id, planet } of campaign.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))) {
+for (const { id, planet, order, last } of campaign.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))) {
     const l = read("data", "levels", `${id}.json`);
     if (l.format !== "cosmic.level" || l.id !== id) throw new Error(`${id} : fichier de niveau inattendu`);
     const start = (l.startPowers ?? []).filter((p) => typeof p === "string" && p in powers);
@@ -50,6 +53,9 @@ for (const { id, planet } of campaign.sort((a, b) => (a.id < b.id ? -1 : a.id > 
     levels[id] = {
         name: l.name,
         planet,
+        // Place in the planet (1 = first level) and whether it is the planet's last one.
+        order,
+        last,
         revision: Math.max(1, l.metadata?.revision | 0 || 1),
         slots,
         start_powers: start,
@@ -63,7 +69,7 @@ for (const { id, planet } of campaign.sort((a, b) => (a.id < b.id ? -1 : a.id > 
 }
 
 const player = read("data", "player.json");
-const out = { version: 1, player_max_hearts: Math.max(1, Math.min(20, player.maxHealth | 0)), powers, levels };
+const out = { version: 2, player_max_hearts: Math.max(1, Math.min(20, player.maxHealth | 0)), powers, levels };
 writeFileSync(join(root, "server", "src", "challengeCatalog.json"), JSON.stringify(out, null, 1) + "\n");
 const auto = Object.values(levels).filter((l) => l.auto).length;
 console.log(`${Object.keys(levels).length} niveaux (${auto} tirables), ${Object.keys(powers).length} pouvoirs`);

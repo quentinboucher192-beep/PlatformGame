@@ -4,19 +4,37 @@ import fixture from "../../tests/data/challenge_rules_fixture.json";
 import catalogJson from "../src/challengeCatalog.json";
 import {
     CATALOG,
+    KINDS,
+    RULE_PROFILES,
     SAFE_EXTRA_POWERS,
     addDays,
     canonicalRules,
     drawRules,
+    drawable,
+    isoWeek,
+    parseChallengeId,
+    periodBounds,
+    periodOf,
+    periodStreak,
     rulesHash,
+    shiftPeriod,
     streakOf,
     tierOf,
     utcDate,
+    type ChallengeKind,
     type ChallengeRules,
 } from "../src/challenges";
 import worker from "../src/index";
+import { raceScore } from "../src/race";
 import { inflateContainer, parseReplay } from "../src/replay";
-import { buildChallengeSql, canonicalRules as scriptCanonical, sha256Hex as scriptSha256 } from "../scripts/challenge-sql.mjs";
+import {
+    buildChallengeSql,
+    isoWeek as scriptIsoWeek,
+    parseArgs,
+    periodBounds as scriptPeriodBounds,
+    canonicalRules as scriptCanonical,
+    sha256Hex as scriptSha256,
+} from "../scripts/challenge-sql.mjs";
 import { EXIT, SPAWN, api, buildReplay, registerPlayer, seedAll, submission, uploadReplay, type ReplaySpec, type TestPlayer } from "./helpers";
 import { LH, publish } from "./publish";
 
@@ -29,9 +47,16 @@ const CAMPAIGN: Record<string, string> = {
     noyau_01: "4".repeat(64),
 };
 
-async function seedCampaign(): Promise<void> {
+/** The hardest levels (3rd / 4th / last of a planet), for the draws of the weeks and months. */
+const HARD: Record<string, string> = {
+    sylvanox_03: "5".repeat(64),
+    glacior_04: "6".repeat(64),
+    noyau_02: "7".repeat(64),
+};
+
+async function seedCampaign(levels: Record<string, string> = CAMPAIGN): Promise<void> {
     const stmts = [];
-    for (const [id, hash] of Object.entries(CAMPAIGN)) {
+    for (const [id, hash] of Object.entries(levels)) {
         const info = CATALOG.levels[id]!;
         stmts.push(
             env.DB.prepare("INSERT INTO levels VALUES (?1, ?2, ?3, ?3, 1, ?4, ?5, 1)").bind(id, info.name, info.planet, info.revision, hash),
@@ -54,6 +79,8 @@ const today = () => utcDate();
 
 interface TestChallenge {
     id: string;
+    kind: ChallengeKind;
+    period: string;
     date: string;
     level_id: string;
     level_hash: string;
@@ -62,12 +89,21 @@ interface TestChallenge {
     canonical: string;
 }
 
-/** Inserts a challenge directly (past days, today: the admin script refuses them). */
+/**
+ * Inserts a challenge directly (past or begun periods: the admin script refuses them): the
+ * challenge of `kind` (daily by default) whose period contains the day `date`.
+ */
 async function insertChallenge(
     date: string,
-    o: Partial<ChallengeRules> & { level?: string; community?: { id: string; version: number; hash: string; author: string; title: string } } = {},
+    o: Partial<ChallengeRules> & {
+        kind?: ChallengeKind;
+        level?: string;
+        community?: { id: string; version: number; hash: string; author: string; title: string };
+    } = {},
 ): Promise<TestChallenge> {
-    const id = `daily-${date}`;
+    const kind = o.kind ?? "daily";
+    const p = periodBounds(kind, periodOf(kind, date))!;
+    const id = `${kind}-${p.period}`;
     const rules: ChallengeRules = {
         hearts: o.hearts ?? 3,
         slots: o.slots ?? 4,
@@ -79,13 +115,13 @@ async function insertChallenge(
     const levelHash = o.community?.hash ?? CAMPAIGN[levelId]!;
     const hash = await rulesHash(id, rules);
     await env.DB.prepare(
-        `INSERT INTO daily_challenges (id, kind, date, source, level_source, level_id, level_version, level_hash, level_title, hearts, slots,
-           powers, stations, checkpoints, rules_hash, silver_ms, gold_ms, gold_no_damage, featured_player_id, created_at, updated_at)
-         VALUES (?1, 'daily', ?2, 'admin', ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, 90000, 70000, 1, ?14, ?15, ?15)`,
+        `INSERT INTO challenges (id, kind, period, date, end_date, source, level_source, level_id, level_version, level_hash, level_title, hearts,
+           slots, powers, stations, checkpoints, rules_hash, silver_ms, gold_ms, gold_no_damage, featured_player_id, created_at, updated_at)
+         VALUES (?1, ?16, ?17, ?2, ?18, 'admin', ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, 90000, 70000, 1, ?14, ?15, ?15)`,
     )
         .bind(
             id,
-            date,
+            p.start,
             o.community ? "community" : "campaign",
             levelId,
             o.community?.version ?? CATALOG.levels[levelId]?.revision ?? 1,
@@ -99,9 +135,20 @@ async function insertChallenge(
             hash,
             o.community?.author ?? null,
             new Date().toISOString(),
+            kind,
+            p.period,
+            p.end,
         )
         .run();
-    return { id, date, level_id: levelId, level_hash: levelHash, rules, hash, canonical: canonicalRules(id, rules) };
+    return { id, kind, period: p.period, date: p.start, level_id: levelId, level_hash: levelHash, rules, hash, canonical: canonicalRules(id, rules) };
+}
+
+/** A run inserted directly (any status, in time or late), for the results and the streaks. */
+function insertRun(ch: TestChallenge, who: TestPlayer, time: number, tier: string, status: string, late = 0, at = `${ch.date}T12:00:00.000Z`) {
+    return env.DB.prepare(
+        `INSERT INTO challenge_runs (id, challenge_id, player_id, attempt_id, time_ms, deaths, damage_taken, level_hash, rules_hash, game_version,
+           tier, status, late, created_at) VALUES (?1, ?2, ?3, ?4, ?5, 0, 0, ?6, ?7, '2.32.0', ?8, ?9, ?10, ?11)`,
+    ).bind(crypto.randomUUID(), ch.id, who.id, crypto.randomUUID(), time, ch.level_hash, ch.hash, tier, status, late, at);
 }
 
 function runBody(ch: TestChallenge, o: Record<string, unknown> = {}): Record<string, any> {
@@ -228,7 +275,7 @@ describe("daily challenges: generation", () => {
             gold_no_damage: true,
         });
 
-        const rows = (await env.DB.prepare("SELECT * FROM daily_challenges ORDER BY date").all<any>()).results;
+        const rows = (await env.DB.prepare("SELECT * FROM challenges WHERE kind = 'daily' ORDER BY date").all<any>()).results;
         expect(rows.map((r) => r.date)).toEqual(Array.from({ length: 8 }, (_, i) => addDays(t, i)));
         for (const r of rows) {
             expect(r).toMatchObject({ source: "auto", level_source: "campaign", stations: 1, featured_player_id: null });
@@ -247,7 +294,7 @@ describe("daily challenges: generation", () => {
         // Reading again draws nothing new and changes nothing.
         const again = await api("GET", "/api/v1/challenges/daily/current");
         expect(again.body.data.challenge).toEqual(res.body.data.challenge);
-        expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM daily_challenges").first<{ n: number }>())?.n).toBe(8);
+        expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM challenges WHERE kind = 'daily'").first<{ n: number }>())?.n).toBe(8);
 
         // No route shows a challenge before its day.
         const tomorrow = `daily-${addDays(t, 1)}`;
@@ -275,24 +322,35 @@ describe("daily challenges: generation", () => {
         for (const r of reads) expect(r.status).toBe(200);
         const ids = new Set(reads.map((r) => JSON.stringify(r.body.data.challenge)));
         expect(ids.size).toBe(1);
-        const rows = await env.DB.prepare("SELECT date, COUNT(*) AS n FROM daily_challenges GROUP BY date").all<{ date: string; n: number }>();
-        expect(rows.results).toHaveLength(8);
+        const rows = await env.DB.prepare("SELECT kind, period, COUNT(*) AS n FROM challenges GROUP BY kind, period").all<{ kind: string; n: number }>();
+        // Days J to J+7, weeks S to S+2, months M to M+1.
+        expect(rows.results.filter((r) => r.kind === "daily")).toHaveLength(8);
+        expect(rows.results.filter((r) => r.kind === "weekly")).toHaveLength(3);
+        expect(rows.results.filter((r) => r.kind === "monthly")).toHaveLength(2);
         for (const r of rows.results) expect(r.n).toBe(1);
     });
 
     it("never changes a challenge that has begun; missing days are drawn again", async () => {
         await api("GET", "/api/v1/challenges/daily/current");
         const t = today();
-        await expect(env.DB.prepare("UPDATE daily_challenges SET hearts = 1 WHERE date = ?1").bind(t).run()).rejects.toThrow(/already started/);
-        await expect(env.DB.prepare("UPDATE daily_challenges SET level_id = 'pyralis_04' WHERE date = ?1").bind(t).run()).rejects.toThrow();
+        const daily = (d: string) => `daily-${d}`;
+        await expect(env.DB.prepare("UPDATE challenges SET hearts = 1 WHERE id = ?1").bind(daily(t)).run()).rejects.toThrow(/already started/);
+        await expect(env.DB.prepare("UPDATE challenges SET level_id = 'pyralis_04' WHERE id = ?1").bind(daily(t)).run()).rejects.toThrow();
         // A coming day may still change (the administrator's choice), and the bookkeeping of today may.
-        await env.DB.prepare("UPDATE daily_challenges SET hearts = 1 WHERE date = ?1").bind(addDays(t, 2)).run();
-        await env.DB.prepare("UPDATE daily_challenges SET featured_notified_at = 'x' WHERE date = ?1").bind(t).run();
-        const before = await env.DB.prepare("SELECT * FROM daily_challenges WHERE date = ?1").bind(t).first();
-        await env.DB.prepare("DELETE FROM daily_challenges WHERE date = ?1").bind(addDays(t, 5)).run();
+        await env.DB.prepare("UPDATE challenges SET hearts = 1 WHERE id = ?1").bind(daily(addDays(t, 2))).run();
+        await env.DB.prepare("UPDATE challenges SET featured_notified_at = 'x' WHERE id = ?1").bind(daily(t)).run();
+        const before = await env.DB.prepare("SELECT * FROM challenges WHERE id = ?1").bind(daily(t)).first();
+        await env.DB.prepare("DELETE FROM challenges WHERE id = ?1").bind(daily(addDays(t, 5))).run();
         await api("GET", "/api/v1/challenges/daily/current");
-        expect(await env.DB.prepare("SELECT date FROM daily_challenges WHERE date = ?1").bind(addDays(t, 5)).first()).not.toBeNull();
-        expect(await env.DB.prepare("SELECT * FROM daily_challenges WHERE date = ?1").bind(t).first()).toEqual(before);
+        expect(await env.DB.prepare("SELECT date FROM challenges WHERE id = ?1").bind(daily(addDays(t, 5))).first()).not.toBeNull();
+        expect(await env.DB.prepare("SELECT * FROM challenges WHERE id = ?1").bind(daily(t)).first()).toEqual(before);
+        // The same for the week and the month that have begun; the next ones may still change.
+        const week = `weekly-${isoWeek(t)}`;
+        const month = `monthly-${t.slice(0, 7)}`;
+        await expect(env.DB.prepare("UPDATE challenges SET hearts = 1 WHERE id = ?1").bind(week).run()).rejects.toThrow(/already started/);
+        await expect(env.DB.prepare("UPDATE challenges SET rules_hash = 'x' WHERE id = ?1").bind(month).run()).rejects.toThrow(/already started/);
+        const nextWeek = `weekly-${shiftPeriod("weekly", isoWeek(t), 1)}`;
+        expect((await env.DB.prepare("UPDATE challenges SET hearts = 1 WHERE id = ?1").bind(nextWeek).run()).meta.changes).toBe(1);
     });
 
     it("lists the challenges that have begun, most recent first", async () => {
@@ -345,21 +403,28 @@ describe("daily challenges: runs", () => {
         expect(fast.body.data.replay.required).toBe(false);
     });
 
-    it("refuses runs outside the challenge's window and runs of other rules, levels or games", async () => {
+    it("refuses runs before the challenge and runs of other rules, levels or games; a run after its end is late", async () => {
         const t = today();
         const ch = await insertChallenge(t);
         const old = await insertChallenge(addDays(t, -2));
         const next = await insertChallenge(addDays(t, 1));
         const p = await registerPlayer("Nova");
+        // 2.33: an ended challenge takes the run « hors délai » (a 2.32 game sends the same body).
         const ended = await submit(p, old, runBody(old));
-        expect(ended.status).toBe(409);
-        expect(ended.body.error.code).toBe("CHALLENGE_ENDED");
+        expect(ended.status).toBe(201);
+        expect(ended.body.data.run).toMatchObject({ status: "PENDING", late: true });
+        const inTime = await submit(p, ch, runBody(ch));
+        expect(inTime.body.data.run.late).toBe(false);
+        await env.DB.prepare("DELETE FROM challenge_runs").run();
         const early = await submit(p, next, runBody(next));
         expect(early.status).toBe(409);
         expect(early.body.error.code).toBe("CHALLENGE_NOT_STARTED");
         expect((await submit(p, "daily-2020-01-01", runBody(ch))).body.error.code).toBe("CHALLENGE_NOT_FOUND");
         expect((await submit(p, "daily-2026-02-30", runBody(ch))).status).toBe(404);
         expect((await submit(p, "weekly-1", runBody(ch))).status).toBe(404);
+        expect((await submit(p, "weekly-2021-W53", runBody(ch))).status).toBe(404);
+        expect((await submit(p, "monthly-2026-13", runBody(ch))).status).toBe(404);
+        expect((await submit(p, "yearly-2026", runBody(ch))).status).toBe(404);
         const rules = await submit(p, ch, runBody(ch, { rules_hash: "f".repeat(64) }));
         expect(rules.status).toBe(409);
         expect(rules.body.error.code).toBe("RULES_MISMATCH");
@@ -527,11 +592,7 @@ describe("daily challenges: leaderboard and results", () => {
         for (const d of days) chs.push(await insertChallenge(d));
         const p = await registerPlayer("Nova");
         const other = await registerPlayer("Orion");
-        const run = (ch: TestChallenge, time: number, tier: string, status: string, who = p) =>
-            env.DB.prepare(
-                `INSERT INTO challenge_runs (id, challenge_id, player_id, attempt_id, time_ms, deaths, damage_taken, level_hash, rules_hash, game_version,
-                   tier, status, created_at) VALUES (?1, ?2, ?3, ?4, ?5, 0, 0, ?6, ?7, '2.32.0', ?8, ?9, ?10)`,
-            ).bind(crypto.randomUUID(), ch.id, who.id, crypto.randomUUID(), time, ch.level_hash, ch.hash, tier, status, `${ch.date}T12:00:00.000Z`);
+        const run = (ch: TestChallenge, time: number, tier: string, status: string, who = p) => insertRun(ch, who, time, tier, status);
         await env.DB.batch([
             run(chs[0]!, 80000, "silver", "VERIFIED"),
             // Day -3: only a rejected run, the streak breaks there.
@@ -547,11 +608,13 @@ describe("daily challenges: leaderboard and results", () => {
         expect(me.status).toBe(200);
         // Played -2 and -1, not today yet: the streak still holds.
         expect(me.body.data.streak).toEqual({ current: 2, best: 2, last_date: days[3] });
+        // 2.34: a VERIFIED finished run counts 100 for « Plus loin ».
+        const more = (d: string, best: number | null = 100) => ({ kind: "daily", period: d, late: false, best_progress: best });
         expect(me.body.data.results).toEqual([
-            { challenge_id: chs[3]!.id, date: days[3], best_time_ms: 88000, tier: "silver", status: "VERIFIED" },
-            { challenge_id: chs[2]!.id, date: days[2], best_time_ms: 66000, tier: "gold", status: "PENDING" },
-            { challenge_id: chs[1]!.id, date: days[1], best_time_ms: 50000, tier: null, status: "REJECTED" },
-            { challenge_id: chs[0]!.id, date: days[0], best_time_ms: 80000, tier: "silver", status: "VERIFIED" },
+            { challenge_id: chs[3]!.id, date: days[3], best_time_ms: 88000, tier: "silver", status: "VERIFIED", ...more(days[3]!) },
+            { challenge_id: chs[2]!.id, date: days[2], best_time_ms: 66000, tier: "gold", status: "PENDING", ...more(days[2]!) },
+            { challenge_id: chs[1]!.id, date: days[1], best_time_ms: 50000, tier: null, status: "REJECTED", ...more(days[1]!, null) },
+            { challenge_id: chs[0]!.id, date: days[0], best_time_ms: 80000, tier: "silver", status: "VERIFIED", ...more(days[0]!) },
         ]);
         // Today's run extends the streak.
         await submit(p, chs[4]!, runBody(chs[4]!));
@@ -586,9 +649,13 @@ describe("daily challenges: administrator and creator", () => {
         );
         expect(out.warnings).toEqual([]);
         await apply(out.sql);
-        const row = await env.DB.prepare("SELECT * FROM daily_challenges WHERE date = ?1").bind(date).first<any>();
+        const row = await env.DB.prepare("SELECT * FROM challenges WHERE id = ?1").bind(`daily-${date}`).first<any>();
         expect(row).toMatchObject({
             id: `daily-${date}`,
+            kind: "daily",
+            period: date,
+            date,
+            end_date: addDays(date, 1),
             source: "admin",
             level_source: "campaign",
             level_id: "pyralis_04",
@@ -615,15 +682,15 @@ describe("daily challenges: administrator and creator", () => {
         expect(defaults.rules.powers).toEqual([...CATALOG.levels.glacior_02!.start_powers].sort());
 
         // Generated yesterday for today: by the time it is applied the day has begun.
-        const before = await env.DB.prepare("SELECT * FROM daily_challenges WHERE date = ?1").bind(t).first();
+        const before = await env.DB.prepare("SELECT * FROM challenges WHERE id = ?1").bind(`daily-${t}`).first();
         const late = await buildChallengeSql({ date: t, level: "campaign:sylvanox_01", hearts: "1" }, catalogJson, addDays(t, -1));
         await apply(late.sql);
-        expect(await env.DB.prepare("SELECT * FROM daily_challenges WHERE date = ?1").bind(t).first()).toEqual(before);
+        expect(await env.DB.prepare("SELECT * FROM challenges WHERE id = ?1").bind(`daily-${t}`).first()).toEqual(before);
         expect((await lastAudit())?.action).toBe("challenge_set_skipped");
         // A day in the past that never had a challenge is not created either.
         const past = await buildChallengeSql({ date: addDays(t, -5), level: "campaign:sylvanox_01" }, catalogJson, addDays(t, -6));
         await apply(past.sql);
-        expect(await env.DB.prepare("SELECT 1 AS x FROM daily_challenges WHERE date = ?1").bind(addDays(t, -5)).first()).toBeNull();
+        expect(await env.DB.prepare("SELECT 1 AS x FROM challenges WHERE id = ?1").bind(`daily-${addDays(t, -5)}`).first()).toBeNull();
     });
 
     it("takes a published community version, its fingerprint, title and author, and tells the creator once", async () => {
@@ -634,7 +701,7 @@ describe("daily challenges: administrator and creator", () => {
         const out = await buildChallengeSql({ date: addDays(t, 2), level: `community:${id}@1`, silver: "2:30", gold: "1:50", goldNoDamage: false }, catalogJson, t);
         expect(out.rules).toMatchObject({ slots: 4, powers: [] });
         await apply(out.sql);
-        const row = await env.DB.prepare("SELECT * FROM daily_challenges WHERE date = ?1").bind(addDays(t, 2)).first<any>();
+        const row = await env.DB.prepare("SELECT * FROM challenges WHERE id = ?1").bind(`daily-${addDays(t, 2)}`).first<any>();
         expect(row).toMatchObject({
             source: "admin",
             level_source: "community",
@@ -651,7 +718,9 @@ describe("daily challenges: administrator and creator", () => {
         const unpublished = await buildChallengeSql({ date: addDays(t, 6), level: `community:${id}@7`, silver: "2:30", gold: "1:50" }, catalogJson, t);
         await apply(unpublished.sql);
         expect((await lastAudit())?.action).toBe("challenge_set_skipped");
-        expect((await env.DB.prepare("SELECT level_source FROM daily_challenges WHERE date = ?1").bind(addDays(t, 6)).first<any>())?.level_source ?? "campaign").toBe("campaign");
+        expect((await env.DB.prepare("SELECT level_source FROM challenges WHERE id = ?1").bind(`daily-${addDays(t, 6)}`).first<any>())?.level_source ?? "campaign").toBe(
+            "campaign",
+        );
         // Nothing of it shows before its day.
         expect(JSON.stringify((await api("GET", `/api/v1/challenges/daily?before=${addDays(t, 30)}`)).body)).not.toContain(id);
         expect((await api("GET", `/api/v1/challenges/daily-${addDays(t, 2)}/leaderboard`)).status).toBe(404);
@@ -689,14 +758,812 @@ describe("daily challenges: administrator and creator", () => {
         // The author leaves: the challenge that has begun keeps everything but the link.
         const del = await api("DELETE", "/api/v1/players/me", { token: author.token, body: { password: author.password, confirm: "DELETE" } });
         expect(del.status).toBe(200);
-        const kept = await env.DB.prepare("SELECT featured_player_id, level_title, rules_hash FROM daily_challenges WHERE id = ?1").bind(ch.id).first<any>();
+        const kept = await env.DB.prepare("SELECT featured_player_id, level_title, rules_hash FROM challenges WHERE id = ?1").bind(ch.id).first<any>();
         expect(kept).toEqual({ featured_player_id: null, level_title: "La Tour Ardente", rules_hash: ch.hash });
     });
 
-    it("the daily cron draws the coming week", async () => {
+    it("the daily cron draws the coming days, weeks and months", async () => {
         const exec = createExecutionContext();
         await worker.scheduled!(createScheduledController({ scheduledTime: Date.now(), cron: "17 3 * * *" }), env as never, exec);
         await waitOnExecutionContext(exec);
-        expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM daily_challenges WHERE source = 'auto'").first<{ n: number }>())?.n).toBe(8);
+        const counts = await env.DB.prepare("SELECT kind, COUNT(*) AS n FROM challenges WHERE source = 'auto' GROUP BY kind ORDER BY kind").all<{ kind: string; n: number }>();
+        expect(counts.results).toEqual([
+            { kind: "daily", n: 8 },
+            { kind: "monthly", n: 2 },
+            { kind: "weekly", n: 3 },
+        ]);
+    });
+});
+
+// ------------------------------------------------------------------------------------------
+// 2.33: challenges of the week and of the month, calendar, late runs (CHALLENGES_PERIODS.md)
+
+describe("periods (2.33)", () => {
+    it("names the ISO 8601 weeks and the months, with their UTC days, on the server and in the admin script", () => {
+        expect(isoWeek("2026-11-16")).toBe("2026-W47"); // a Monday (the contract's example)
+        expect(isoWeek("2026-11-22")).toBe("2026-W47"); // its Sunday
+        expect(isoWeek("2026-11-23")).toBe("2026-W48");
+        expect(isoWeek("2026-12-31")).toBe("2026-W53"); // 2026 has 53 weeks
+        expect(isoWeek("2027-01-03")).toBe("2026-W53");
+        expect(isoWeek("2027-01-04")).toBe("2027-W01");
+        expect(isoWeek("2024-12-30")).toBe("2025-W01"); // a Monday that belongs to the next year
+        expect(periodBounds("weekly", "2026-W47")).toEqual({ kind: "weekly", period: "2026-W47", start: "2026-11-16", end: "2026-11-23" });
+        expect(periodBounds("weekly", "2026-W53")).toMatchObject({ start: "2026-12-28", end: "2027-01-04" });
+        expect(periodBounds("weekly", "2025-W01")).toMatchObject({ start: "2024-12-30", end: "2025-01-06" });
+        expect(periodBounds("monthly", "2026-12")).toEqual({ kind: "monthly", period: "2026-12", start: "2026-12-01", end: "2027-01-01" });
+        expect(periodBounds("monthly", "2027-02")).toMatchObject({ start: "2027-02-01", end: "2027-03-01" });
+        expect(periodBounds("daily", "2026-11-16")).toEqual({ kind: "daily", period: "2026-11-16", start: "2026-11-16", end: "2026-11-17" });
+        for (const [kind, bad] of [
+            ["weekly", "2027-W53"], // 2027 has 52 weeks
+            ["weekly", "2026-W00"],
+            ["weekly", "2026-W54"],
+            ["weekly", "2026-47"],
+            ["monthly", "2026-13"],
+            ["monthly", "2026-00"],
+            ["monthly", "1999-12"],
+            ["daily", "2026-02-30"],
+        ] as const)
+            expect(periodBounds(kind, bad), `${kind} ${bad}`).toBeNull();
+        expect(parseChallengeId("weekly-2026-W47")).toMatchObject({ kind: "weekly", start: "2026-11-16" });
+        expect(parseChallengeId("monthly-2026-11")).toMatchObject({ kind: "monthly", end: "2026-12-01" });
+        for (const bad of ["weekly-2026-47", "daily-2026-W47", "monthly-2026-11-01", "Weekly-2026-W47", "weekly-2026-W47 ", "event-2026-11"])
+            expect(parseChallengeId(bad), bad).toBeNull();
+        expect(shiftPeriod("weekly", "2026-W53", 1)).toBe("2027-W01");
+        expect(shiftPeriod("weekly", "2027-W01", -1)).toBe("2026-W53");
+        expect(shiftPeriod("monthly", "2026-12", 1)).toBe("2027-01");
+        expect(shiftPeriod("monthly", "2026-01", -1)).toBe("2025-12");
+        expect(periodOf("weekly", "2027-01-02")).toBe("2026-W53");
+        expect(periodOf("monthly", "2027-01-02")).toBe("2027-01");
+        // The admin script computes the same periods (four years of days, every week, every month).
+        for (let d = "2024-12-20"; d < "2029-01-10"; d = addDays(d, 1)) {
+            expect(scriptIsoWeek(d), d).toBe(isoWeek(d));
+            const w = periodBounds("weekly", isoWeek(d))!;
+            expect(scriptPeriodBounds("weekly", isoWeek(d)), d).toEqual({ start: w.start, end: w.end });
+            const m = periodBounds("monthly", d.slice(0, 7))!;
+            expect(scriptPeriodBounds("monthly", d.slice(0, 7)), d).toEqual({ start: m.start, end: m.end });
+        }
+        expect(scriptPeriodBounds("weekly", "2027-W53")).toBeNull();
+    });
+
+    it("counts the streaks over consecutive weeks and months, across the years", () => {
+        expect(periodStreak("weekly", ["2026-W51", "2026-W52", "2026-W53", "2027-W01"], "2027-W02")).toEqual({ current: 4, best: 4, last_period: "2027-W01" });
+        expect(periodStreak("weekly", ["2026-W50", "2026-W52"], "2026-W52")).toEqual({ current: 1, best: 1, last_period: "2026-W52" });
+        expect(periodStreak("weekly", ["2026-W40", "2026-W41"], "2026-W47")).toEqual({ current: 0, best: 2, last_period: "2026-W41" });
+        expect(periodStreak("monthly", ["2026-11", "2026-12", "2027-01"], "2027-01")).toEqual({ current: 3, best: 3, last_period: "2027-01" });
+        expect(periodStreak("monthly", ["2026-10", "2026-12"], "2027-02")).toEqual({ current: 0, best: 1, last_period: "2026-12" });
+        expect(periodStreak("monthly", [], "2027-02")).toEqual({ current: 0, best: 0, last_period: null });
+    });
+
+    it("draws the weeks and the months from the hardest levels, with more demanding rules", () => {
+        const pools = Object.fromEntries(
+            KINDS.map((k) => [
+                k,
+                Object.entries(CATALOG.levels)
+                    .filter(([, l]) => drawable(k, l))
+                    .map(([id]) => id)
+                    .sort(),
+            ]),
+        );
+        expect(pools.monthly).toEqual(["aethra_04", "glacior_04", "noyau_02", "pyralis_04", "sylvanox_04"]);
+        expect(pools.weekly).toEqual(["aethra_03", "aethra_04", "glacior_03", "glacior_04", "noyau_02", "pyralis_03", "pyralis_04", "sylvanox_03", "sylvanox_04"]);
+        // The boss rush (EXTRÊME) is never drawn: only the administrator chooses it.
+        for (const k of KINDS) expect(pools[k]).not.toContain("noyau_01");
+        for (const kind of ["weekly", "monthly"] as const)
+            for (const id of pools[kind]!) {
+                const level = CATALOG.levels[id]!;
+                for (let i = 0; i < 40; ++i) {
+                    const r = drawRules(level, CATALOG, kind);
+                    expect(RULE_PROFILES[kind].hearts).toContain(r.hearts);
+                    expect(r.stations).toBe(true);
+                    const extras = r.powers.filter((p) => !level.start_powers.includes(p));
+                    expect(extras.length).toBeLessThanOrEqual(RULE_PROFILES[kind].extras);
+                    for (const p of level.start_powers) expect(r.powers).toContain(p);
+                    expect(r.slots).toBeGreaterThanOrEqual(level.slots);
+                }
+            }
+    });
+});
+
+describe("challenges of the week and of the month (2.33)", () => {
+    it("draws days to J+7, weeks to S+2 and months to M+1, and shows the current and previous ones only", async () => {
+        await seedCampaign(HARD);
+        const res = await api("GET", "/api/v1/challenges/current");
+        expect(res.status).toBe(200);
+        const t = today();
+        const week = periodBounds("weekly", isoWeek(t))!;
+        const month = periodBounds("monthly", t.slice(0, 7))!;
+        const d = res.body.data;
+        expect(Object.keys(d).sort()).toEqual(["daily", "monthly", "previous", "server_time", "weekly"]);
+        expect(d.daily).toMatchObject({ id: `daily-${t}`, kind: "daily", period: t, date: t, starts_at: `${t}T00:00:00Z`, ends_at: `${addDays(t, 1)}T00:00:00Z` });
+        expect(d.weekly).toMatchObject({
+            id: `weekly-${week.period}`,
+            kind: "weekly",
+            period: week.period,
+            date: week.start,
+            starts_at: `${week.start}T00:00:00Z`,
+            ends_at: `${week.end}T00:00:00Z`,
+            source: "auto",
+        });
+        expect(d.monthly).toMatchObject({
+            id: `monthly-${month.period}`,
+            kind: "monthly",
+            period: month.period,
+            date: month.start,
+            starts_at: `${month.start}T00:00:00Z`,
+            ends_at: `${month.end}T00:00:00Z`,
+        });
+        // Nothing was played before: no previous challenge of any kind.
+        expect(d.previous).toEqual({ daily: null, weekly: null, monthly: null });
+        for (const c of [d.weekly, d.monthly]) expect(c.rules_hash).toBe(await rulesHash(c.id, c.rules));
+
+        const rows = (await env.DB.prepare("SELECT * FROM challenges ORDER BY kind, date").all<any>()).results;
+        const weeks = rows.filter((r) => r.kind === "weekly");
+        const months = rows.filter((r) => r.kind === "monthly");
+        expect(weeks.map((r) => r.period)).toEqual([0, 1, 2].map((i) => shiftPeriod("weekly", week.period, i)));
+        expect(months.map((r) => r.period)).toEqual([month.period, shiftPeriod("monthly", month.period, 1)]);
+        for (const r of weeks) {
+            expect(["pyralis_04", "sylvanox_03", "glacior_04", "noyau_02"]).toContain(r.level_id);
+            expect(r.end_date).toBe(addDays(r.date, 7));
+            expect([1, 2, 3]).toContain(r.hearts);
+        }
+        for (const r of months) {
+            expect(["pyralis_04", "glacior_04", "noyau_02"]).toContain(r.level_id);
+            expect(JSON.parse(r.powers)).toEqual([...CATALOG.levels[r.level_id]!.start_powers].sort());
+            expect([1, 2, 3]).toContain(r.hearts);
+        }
+        // Consecutive weeks never repeat a level (four candidates).
+        for (let i = 1; i < weeks.length; ++i) expect(weeks[i].level_id).not.toBe(weeks[i - 1].level_id);
+
+        // The next week and the next month exist but are never shown.
+        const nextWeek = `weekly-${weeks[1].period}`;
+        const nextMonth = `monthly-${months[1].period}`;
+        expect(JSON.stringify(res.body)).not.toContain(nextWeek);
+        expect(JSON.stringify(res.body)).not.toContain(nextMonth);
+        for (const id of [nextWeek, nextMonth]) {
+            expect((await api("GET", `/api/v1/challenges/${id}`)).status).toBe(404);
+            expect((await api("GET", `/api/v1/challenges/${id}/leaderboard`)).status).toBe(404);
+        }
+        const cal = await api("GET", `/api/v1/challenges/calendar?month=${months[1].period}`);
+        expect(cal.body.data.challenges).toEqual([]);
+        // The challenge itself, by its id.
+        const one = await api("GET", `/api/v1/challenges/${d.weekly.id}`);
+        expect(one.status).toBe(200);
+        expect(one.body.data).toEqual(d.weekly);
+        for (const bad of ["weekly-2021-W53", "monthly-2026-13", "daily-x", "current2"])
+            expect((await api("GET", `/api/v1/challenges/${bad}`)).body.error.code, bad).toBe("CHALLENGE_NOT_FOUND");
+
+        // Reading again draws nothing and changes nothing.
+        const again = await api("GET", "/api/v1/challenges/current");
+        expect(again.body.data.weekly).toEqual(d.weekly);
+        expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM challenges").first<{ n: number }>())?.n).toBe(13);
+    });
+
+    it("shows the previous day, week and month", async () => {
+        const t = today();
+        const lastWeek = periodBounds("weekly", shiftPeriod("weekly", isoWeek(t), -1))!;
+        const lastMonth = periodBounds("monthly", shiftPeriod("monthly", t.slice(0, 7), -1))!;
+        const y = await insertChallenge(addDays(t, -1));
+        const w = await insertChallenge(lastWeek.start, { kind: "weekly", level: "pyralis_04" });
+        const m = await insertChallenge(lastMonth.start, { kind: "monthly", level: "pyralis_04" });
+        const res = await api("GET", "/api/v1/challenges/current");
+        expect(res.body.data.previous.daily.id).toBe(y.id);
+        expect(res.body.data.previous.weekly).toMatchObject({ id: w.id, period: lastWeek.period, ends_at: `${lastWeek.end}T00:00:00Z` });
+        expect(res.body.data.previous.monthly).toMatchObject({ id: m.id, period: lastMonth.period, ends_at: `${lastMonth.end}T00:00:00Z` });
+        expect(res.body.data.weekly.id).toBe(`weekly-${isoWeek(t)}`);
+    });
+
+    it("gives the calendar of a month: its days, the weeks that overlap it, the month, and my results", async () => {
+        const p = await registerPlayer("Nova");
+        const other = await registerPlayer("Orion");
+        const w40 = await insertChallenge("2026-09-30", { kind: "weekly", level: "pyralis_04" }); // 2026-09-28 -> 10-05
+        const sept = await insertChallenge("2026-09-30");
+        const oct5 = await insertChallenge("2026-10-05");
+        const oct31 = await insertChallenge("2026-10-31");
+        const w44 = await insertChallenge("2026-10-27", { kind: "weekly", level: "pyralis_04" }); // 2026-10-26 -> 11-02
+        const month = await insertChallenge("2026-10-12", { kind: "monthly", level: "pyralis_04" });
+        await insertChallenge("2026-09-03", { kind: "monthly", level: "pyralis_04" });
+        await env.DB.batch([
+            insertRun(oct5, p, 80000, "silver", "VERIFIED"),
+            // A better time, but late: my result stays the one in time.
+            insertRun(oct5, p, 60000, "gold", "VERIFIED", 1, "2026-11-10T08:00:00.000Z"),
+            insertRun(w44, p, 95000, "bronze", "PENDING", 1, "2026-11-10T08:00:00.000Z"),
+            insertRun(oct31, p, 50000, "gold", "REJECTED"),
+            insertRun(month, other, 70000, "gold", "VERIFIED"),
+        ]);
+        const anon = await api("GET", "/api/v1/challenges/calendar?month=2026-10");
+        expect(anon.status).toBe(200);
+        expect(anon.body.data.month).toBe("2026-10");
+        expect(anon.body.data.first_month).toBe("2026-09");
+        expect(anon.body.data.me).toBeNull();
+        expect(anon.body.data.challenges.map((c: any) => c.id)).toEqual([w40.id, month.id, oct5.id, w44.id, oct31.id]);
+        expect(anon.body.data.challenges[0]).toMatchObject({ kind: "weekly", period: "2026-W40", date: "2026-09-28", ends_at: "2026-10-05T00:00:00Z" });
+        const mine = await api("GET", "/api/v1/challenges/calendar?month=2026-10", { token: p.token });
+        expect(mine.body.data.challenges).toEqual(anon.body.data.challenges);
+        expect(mine.body.data.me).toEqual({
+            [oct5.id]: { best_time_ms: 80000, tier: "silver", status: "VERIFIED", late: false, best_progress: 100 },
+            [w44.id]: { best_time_ms: 95000, tier: "bronze", status: "PENDING", late: true, best_progress: null },
+            [oct31.id]: { best_time_ms: 50000, tier: null, status: "REJECTED", late: false, best_progress: null },
+        });
+        const september = await api("GET", "/api/v1/challenges/calendar?month=2026-09", { token: p.token });
+        expect(september.body.data.challenges.map((c: any) => c.id)).toEqual([`monthly-2026-09`, w40.id, sept.id]);
+        expect(september.body.data.me).toEqual({});
+        // Default: the current month.
+        const cur = await api("GET", "/api/v1/challenges/calendar");
+        expect(cur.body.data.month).toBe(today().slice(0, 7));
+        expect(cur.body.data.challenges.map((c: any) => c.id)).toContain(`daily-${today()}`);
+        expect(cur.body.data.challenges.every((c: any) => c.date <= today())).toBe(true);
+        for (const bad of ["2026-13", "2026-1", "26-10", "1999-12", "2026-10-01"])
+            expect((await api("GET", `/api/v1/challenges/calendar?month=${bad}`)).status, bad).toBe(400);
+    });
+
+    it("takes late runs: ranked only in « Depuis », marked late, never in a streak", async () => {
+        const t = today();
+        const old = await insertChallenge(addDays(t, -3), { hearts: 3 });
+        const [a, b] = [await registerPlayer("Alpha"), await registerPlayer("Bravo")];
+        // In time (inserted: the day is over) for Bravo, late for Alpha through the API.
+        await env.DB.batch([insertRun(old, b, 85000, "silver", "VERIFIED")]);
+        const late = await verifiedRun(a, old, 70000);
+        expect(late.status).toBe("VERIFIED");
+        expect(late.body.data.run.late).toBe(true);
+        expect((await env.DB.prepare("SELECT late FROM challenge_runs WHERE id = ?1").bind(late.runId).first<any>())?.late).toBe(1);
+
+        const live = await api("GET", `/api/v1/challenges/${old.id}/leaderboard`);
+        expect(live.body.data.period).toBe("live");
+        expect(live.body.data.entries.map((e: any) => [e.player.username, e.late])).toEqual([["Bravo", false]]);
+        const since = await api("GET", `/api/v1/challenges/${old.id}/leaderboard?period=all`, { token: a.token });
+        expect(since.body.data.period).toBe("all");
+        expect(since.body.data.entries.map((e: any) => [e.rank, e.player.username, e.time_ms, e.late])).toEqual([
+            [1, "Alpha", 70000, true],
+            [2, "Bravo", 85000, false],
+        ]);
+        expect(since.body.data.me).toMatchObject({ rank: 1, late: true, status: "VERIFIED" });
+        const liveMe = await api("GET", `/api/v1/challenges/${old.id}/leaderboard`, { token: a.token });
+        expect(liveMe.body.data.me).toBeNull();
+        expect((await api("GET", `/api/v1/challenges/${old.id}/leaderboard?period=later`)).status).toBe(400);
+        expect((await api("GET", `/api/v1/challenges/${old.id}/leaderboard?board=points`)).status).toBe(400);
+
+        const me = await api("GET", "/api/v1/challenges/me", { token: a.token });
+        expect(me.body.data.streak).toEqual({ current: 0, best: 0, last_date: null });
+        expect(me.body.data.streaks.daily).toEqual({ current: 0, best: 0, last_period: null });
+        expect(me.body.data.results).toEqual([
+            { challenge_id: old.id, kind: "daily", period: old.period, date: old.date, best_time_ms: 70000, tier: "gold", status: "VERIFIED", late: true, best_progress: 100 },
+        ]);
+    });
+
+    it("keeps a streak per kind: consecutive days, ISO weeks and months with a run in time", async () => {
+        const t = today();
+        const p = await registerPlayer("Nova");
+        const w = isoWeek(t);
+        const weeks = [-3, -2, -1, 0].map((i) => periodBounds("weekly", shiftPeriod("weekly", w, i))!);
+        const months = [-3, -2, -1].map((i) => periodBounds("monthly", shiftPeriod("monthly", t.slice(0, 7), i))!);
+        const wc: TestChallenge[] = [];
+        for (const x of weeks) wc.push(await insertChallenge(x.start, { kind: "weekly", level: "pyralis_04" }));
+        const mc: TestChallenge[] = [];
+        for (const x of months) mc.push(await insertChallenge(x.start, { kind: "monthly", level: "pyralis_04" }));
+        const day = await insertChallenge(addDays(t, -1));
+        await env.DB.batch([
+            insertRun(wc[0]!, p, 90000, "silver", "VERIFIED"),
+            // Week -2: only a late run, the streak breaks there.
+            insertRun(wc[1]!, p, 90000, "silver", "VERIFIED", 1),
+            insertRun(wc[2]!, p, 90000, "silver", "PENDING"),
+            insertRun(wc[3]!, p, 90000, "silver", "VERIFIED"),
+            insertRun(mc[0]!, p, 90000, "silver", "VERIFIED"),
+            insertRun(mc[1]!, p, 90000, "silver", "VERIFIED"),
+            // Last month: only a rejected run.
+            insertRun(mc[2]!, p, 90000, "silver", "REJECTED"),
+            insertRun(day, p, 90000, "silver", "VERIFIED"),
+        ]);
+        const me = await api("GET", "/api/v1/challenges/me", { token: p.token });
+        expect(me.body.data.streaks).toEqual({
+            daily: { current: 1, best: 1, last_period: day.period },
+            weekly: { current: 2, best: 2, last_period: w },
+            monthly: { current: 0, best: 2, last_period: months[1]!.period },
+        });
+        expect(me.body.data.streak).toEqual({ current: 1, best: 1, last_date: day.period });
+        const ids = me.body.data.results.map((r: any) => r.challenge_id);
+        expect(ids).toEqual(expect.arrayContaining([...wc, ...mc, day].map((c) => c.id)));
+        expect(me.body.data.results.find((r: any) => r.challenge_id === wc[1]!.id)).toMatchObject({ kind: "weekly", period: weeks[1]!.period, late: true });
+    });
+
+    it("plays a weekly challenge like a daily one: runs, replay, tier, board", async () => {
+        const t = today();
+        const ch = await insertChallenge(t, { kind: "weekly", level: "pyralis_04", hearts: 2 });
+        const p = await registerPlayer("Nova");
+        const ok = await verifiedRun(p, ch, 65000);
+        expect(ok.status).toBe("VERIFIED");
+        expect(ok.body.data.run).toMatchObject({ tier: "gold", late: false });
+        const board = await api("GET", `/api/v1/challenges/${ch.id}/leaderboard`);
+        expect(board.body.data.entries.map((e: any) => [e.player.username, e.time_ms, e.late])).toEqual([["Nova", 65000, false]]);
+        // The rules of another kind of challenge (same level) are refused.
+        const daily = await insertChallenge(t, { level: "pyralis_04", hearts: 2 });
+        const body = runBody(ch, { time_ms: 70000 });
+        const run = await submit(p, ch, body);
+        const up = await putReplay(p, run.body.data.run.id, await challengeReplay(ch, body, { challengeRules: daily.canonical }));
+        expect(up.body.data.run.status).toBe("REJECTED");
+        expect((await submit(p, ch, runBody(ch, { rules_hash: daily.hash }))).body.error.code).toBe("RULES_MISMATCH");
+    });
+});
+
+describe("2.32 games keep working (2.33)", () => {
+    it("keeps the daily routes and their answers", async () => {
+        const t = today();
+        await seedCampaign(HARD);
+        await insertChallenge(addDays(t, -1));
+        await insertChallenge(addDays(t, -1), { kind: "weekly", level: "pyralis_04" });
+        const cur = await api("GET", "/api/v1/challenges/daily/current");
+        expect(cur.status).toBe(200);
+        expect(Object.keys(cur.body.data).sort()).toEqual(["challenge", "previous", "server_time"]);
+        const c = cur.body.data.challenge;
+        for (const k of ["id", "kind", "date", "starts_at", "ends_at", "source", "level", "rules", "rules_hash", "tiers"]) expect(c, k).toHaveProperty(k);
+        expect(c).toMatchObject({ id: `daily-${t}`, kind: "daily", date: t });
+        expect(cur.body.data.previous).toMatchObject({ id: `daily-${addDays(t, -1)}`, kind: "daily" });
+        // The archive lists the days only (the weeks and the months exist too).
+        const list = await api("GET", "/api/v1/challenges/daily?limit=30");
+        expect(list.body.data.challenges.map((x: any) => x.id)).toEqual([`daily-${t}`, `daily-${addDays(t, -1)}`]);
+        expect(list.body.data.challenges.every((x: any) => x.kind === "daily")).toBe(true);
+        expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM challenges WHERE kind <> 'daily'").first<{ n: number }>())?.n).toBeGreaterThan(0);
+    });
+
+    it("takes a 2.32 run sent after the end (no CHALLENGE_ENDED), keeps the days' streak and the default board", async () => {
+        const t = today();
+        const ch = await insertChallenge(addDays(t, -1));
+        const old = await insertChallenge(addDays(t, -2));
+        const week = await insertChallenge(t, { kind: "weekly", level: "pyralis_04" });
+        const p = await registerPlayer("Nova");
+        // The body of a 2.32 game, unchanged.
+        const body = {
+            attempt_id: crypto.randomUUID(),
+            time_ms: 80000,
+            deaths: 0,
+            damage_taken: 0,
+            level_hash: old.level_hash,
+            rules_hash: old.hash,
+            game_version: "2.32.0",
+            has_replay: true,
+        };
+        const res = await submit(p, old, body);
+        expect(res.status).toBe(201);
+        expect(res.body.data).toMatchObject({ duplicate: false, run: { status: "PENDING", tier: "silver", time_ms: 80000 }, replay: { required: true } });
+        expect((await putReplay(p, res.body.data.run.id, await challengeReplay(old, body))).body.data.run.status).toBe("VERIFIED");
+        // Sent again from its offline queue: the same run.
+        expect((await submit(p, old, body)).body.data).toMatchObject({ duplicate: true, run: { id: res.body.data.run.id } });
+        // The leaderboard read by a 2.32 game (no period): the runs in time only.
+        expect((await api("GET", `/api/v1/challenges/${old.id}/leaderboard`)).body.data.entries).toEqual([]);
+        // The streak of the days: yesterday in time counts, the late run and the week do not.
+        await env.DB.batch([insertRun(ch, p, 90000, "bronze", "VERIFIED"), insertRun(week, p, 90000, "bronze", "VERIFIED")]);
+        const me = await api("GET", "/api/v1/challenges/me", { token: p.token });
+        expect(me.body.data.streak).toEqual({ current: 1, best: 1, last_date: ch.date });
+        for (const r of me.body.data.results) for (const k of ["challenge_id", "date", "best_time_ms", "tier", "status"]) expect(r, k).toHaveProperty(k);
+    });
+});
+
+describe("administrator: weeks and months (2.33)", () => {
+    const sqlStatements = (sql: string) => sql.split("\n").filter((l) => l.trim() && !l.startsWith("--"));
+    async function apply(sql: string) {
+        for (const s of sqlStatements(sql)) await env.DB.prepare(s).run();
+    }
+    const lastAudit = () => env.DB.prepare("SELECT action, details FROM audit_log WHERE action LIKE 'challenge_set_%' ORDER BY id DESC LIMIT 1").first<any>();
+
+    it("reads --kind and --period (and the 2.32 --date)", () => {
+        expect(parseArgs(["--kind", "weekly", "--period", "2026-W48", "--level", "campaign:pyralis_04", "--hearts", "2"])).toMatchObject({
+            kind: "weekly",
+            period: "2026-W48",
+            level: "campaign:pyralis_04",
+            hearts: "2",
+        });
+        expect(parseArgs(["--date", "2026-11-20", "--level", "campaign:glacior_02"])).toMatchObject({ date: "2026-11-20" });
+        expect(() => parseArgs(["--kind"])).toThrow(/manquante/);
+    });
+
+    it("writes the SQL of a coming week or month, refuses a period that has begun", async () => {
+        const t = today();
+        await seedCampaign(HARD);
+        const w = isoWeek(t);
+        const next = shiftPeriod("weekly", w, 1);
+        const nextBounds = periodBounds("weekly", next)!;
+        await expect(buildChallengeSql({ kind: "weekly", period: w, level: "campaign:pyralis_04" }, catalogJson, t)).rejects.toThrow(/refusée/);
+        await expect(buildChallengeSql({ kind: "monthly", period: t.slice(0, 7), level: "campaign:pyralis_04" }, catalogJson, t)).rejects.toThrow(/refusée/);
+        await expect(buildChallengeSql({ kind: "weekly", period: "2027-W53", level: "campaign:pyralis_04" }, catalogJson, t)).rejects.toThrow(/invalide/);
+        await expect(buildChallengeSql({ kind: "weekly", date: addDays(t, 9), level: "campaign:pyralis_04" }, catalogJson, t)).rejects.toThrow(/--date/);
+        await expect(buildChallengeSql({ kind: "yearly", period: "2027", level: "campaign:pyralis_04" }, catalogJson, t)).rejects.toThrow(/--kind/);
+        await expect(buildChallengeSql({ kind: "weekly", level: "campaign:pyralis_04" }, catalogJson, t)).rejects.toThrow(/--period/);
+
+        await api("GET", "/api/v1/challenges/current"); // the coming weeks and months are drawn
+        const out = await buildChallengeSql({ kind: "weekly", period: next, level: "campaign:glacior_04", hearts: "1", checkpoints: false }, catalogJson, t);
+        expect(out).toMatchObject({ id: `weekly-${next}`, kind: "weekly", period: next, start: nextBounds.start, end: nextBounds.end });
+        expect(out.sql).toContain("de la semaine");
+        await apply(out.sql);
+        const row = await env.DB.prepare("SELECT * FROM challenges WHERE id = ?1").bind(`weekly-${next}`).first<any>();
+        expect(row).toMatchObject({
+            kind: "weekly",
+            period: next,
+            date: nextBounds.start,
+            end_date: nextBounds.end,
+            source: "admin",
+            level_id: "glacior_04",
+            level_hash: HARD.glacior_04,
+            hearts: 1,
+            checkpoints: 0,
+        });
+        expect(row.rules_hash).toBe(await rulesHash(`weekly-${next}`, out.rules));
+        expect((await lastAudit())?.action).toBe("challenge_set_applied");
+        expect(JSON.parse((await lastAudit())!.details)).toMatchObject({ challenge: `weekly-${next}`, kind: "weekly" });
+
+        // A month chosen ahead: a community level (only the administrator chooses one).
+        const author = await registerPlayer("Createur");
+        const { id } = await publish(author);
+        const nextMonth = shiftPeriod("monthly", t.slice(0, 7), 1);
+        const m = await buildChallengeSql({ kind: "monthly", period: nextMonth, level: `community:${id}@1`, silver: "3:00", gold: "2:00" }, catalogJson, t);
+        expect(m.sql).toContain("du mois");
+        await apply(m.sql);
+        expect(
+            await env.DB.prepare("SELECT kind, level_source, level_id, featured_player_id, end_date FROM challenges WHERE id = ?1").bind(`monthly-${nextMonth}`).first(),
+        ).toEqual({
+            kind: "monthly",
+            level_source: "community",
+            level_id: id,
+            featured_player_id: author.id,
+            end_date: `${shiftPeriod("monthly", nextMonth, 1)}-01`,
+        });
+
+        // Generated before the current week began, applied once it has: nothing changes.
+        const before = await env.DB.prepare("SELECT * FROM challenges WHERE id = ?1").bind(`weekly-${w}`).first();
+        const lateSql = await buildChallengeSql({ kind: "weekly", period: w, level: "campaign:sylvanox_03" }, catalogJson, addDays(periodBounds("weekly", w)!.start, -1));
+        await apply(lateSql.sql);
+        expect(await env.DB.prepare("SELECT * FROM challenges WHERE id = ?1").bind(`weekly-${w}`).first()).toEqual(before);
+        expect((await lastAudit())?.action).toBe("challenge_set_skipped");
+    });
+
+    it("tells the creator with the sentence of the kind, once", async () => {
+        const t = today();
+        const author = await registerPlayer("Createur");
+        const { id } = await publish(author);
+        const community = { id, version: 1, hash: LH, author: author.id, title: "La Tour Ardente" };
+        const week = await insertChallenge(t, { kind: "weekly", community, powers: [] });
+        const month = await insertChallenge(t, { kind: "monthly", community, powers: [] });
+        await api("GET", "/api/v1/challenges/current");
+        await api("GET", "/api/v1/challenges/current");
+        const exec = createExecutionContext();
+        await worker.scheduled!(createScheduledController({ scheduledTime: Date.now(), cron: "17 3 * * *" }), env as never, exec);
+        await waitOnExecutionContext(exec);
+        const notes = await api("GET", "/api/v1/notifications", { token: author.token });
+        const featured = notes.body.data.notifications.filter((n: any) => n.kind === "challenge_featured");
+        expect(featured.map((n: any) => n.text).sort()).toEqual([
+            "Votre niveau « La Tour Ardente » est le défi de la semaine !",
+            "Votre niveau « La Tour Ardente » est le défi du mois !",
+        ]);
+        expect(featured.map((n: any) => n.data.challenge_id).sort()).toEqual([month.id, week.id].sort());
+        const cur = await api("GET", "/api/v1/challenges/current");
+        expect(cur.body.data.weekly.level.author).toEqual({ id: author.id, username: "Createur" });
+    });
+});
+
+// ------------------------------------------------------------------------------------------
+// 2.34: « Plus loin » — attempts scored by the server from their replay (CHALLENGES_PERIODS.md §5)
+
+/** The race layout of glacior_02 in these tests: a straight route, one boss, one ambush of 2 waves. */
+const ROUTE: [number, number][] = Array.from({ length: 60 }, (_, i) => [SPAWN.x + ((EXIT.x + 10 - SPAWN.x) * i) / 59, SPAWN.y + ((EXIT.y + 40 - SPAWN.y) * i) / 59]);
+const LAYOUT = { route: ROUTE, bosses: [{ id: "b1", name: "Gardien" }], ambushes: [{ id: "z1", waves: 2 }] };
+
+async function withLayout(levelId = "glacior_02"): Promise<void> {
+    await env.DB.prepare("UPDATE level_versions SET race = ?2 WHERE level_id = ?1").bind(levelId, JSON.stringify(LAYOUT)).run();
+}
+
+/** The score of an attempt that reached route point `k` (of 59), with the boss's ‰ and the waves. */
+const scoreAt = (k: number, boss = 0, waves = 0) => raceScore(LAYOUT, k / 59, [boss / 1000], [waves], false);
+
+function attemptBody(ch: TestChallenge, o: Record<string, unknown> = {}): Record<string, any> {
+    return {
+        attempt_id: crypto.randomUUID(),
+        time_ms: 40000,
+        level_hash: ch.level_hash,
+        rules_hash: ch.hash,
+        game_version: "2.34.0",
+        claim: { finished: false, bosses: [0], waves: [0] },
+        ...o,
+    };
+}
+
+interface AttemptSpec {
+    /** Route point reached (0..59) at the end of the attempt. */
+    k: number;
+    boss?: number;
+    waves?: number;
+    /** Checkpoints on: died at a third of the attempt and came back to route point `back`. */
+    back?: number;
+    replay?: Partial<ReplaySpec>;
+}
+
+function attemptReplay(ch: TestChallenge, body: Record<string, any>, o: AttemptSpec) {
+    const extra: ReplaySpec["extraEvents"] = [];
+    if (o.boss) extra.push({ frame: 200, type: 12, arg: 0, value: o.boss });
+    if (o.waves) extra.push({ frame: 300, type: 13, arg: 0, value: o.waves });
+    if (o.back === undefined) extra.push({ frame: 1_000_000, type: 3, arg: 0, value: 0 }); // the death that ends it
+    const at = (t: number) => ({ x: SPAWN.x + (EXIT.x + 10 - SPAWN.x) * t, y: SPAWN.y + (EXIT.y + 40 - SPAWN.y) * t });
+    return buildReplay({
+        levelId: ch.level_id,
+        levelHash: ch.level_hash,
+        attemptId: body.attempt_id,
+        durationMs: body.time_ms,
+        collectibles: 0,
+        finish: false,
+        challengeRules: ch.canonical,
+        health: ch.rules.hearts,
+        extraEvents: extra,
+        // With `back`: one death (and its return) at a third, back to an earlier point, then on.
+        ...(o.back !== undefined ? { deaths: 1 } : {}),
+        path: (i, n) => {
+            if (o.back === undefined) return at(((o.k / 59) * i) / (n - 1));
+            const f = Math.floor(n / 3);
+            return i <= f ? at(((o.k / 59) * i) / f) : at((o.back! / 59) * (1 + (0.1 * (i - f)) / (n - f)));
+        },
+        ...o.replay,
+    });
+}
+
+function postAttempt(p: TestPlayer, ch: TestChallenge | string, body: Record<string, unknown>) {
+    return api("POST", `/api/v1/challenges/${typeof ch === "string" ? ch : ch.id}/attempts`, { token: p.token, body });
+}
+
+function putAttemptReplay(p: TestPlayer, attemptId: string, data: Uint8Array) {
+    return api("PUT", `/api/v1/challenges/attempts/${attemptId}/replay`, { token: p.token, raw: data, headers: { "content-type": "application/octet-stream" } });
+}
+
+/** Declares an attempt (its claim matching the replay) and sends its replay; returns the upload's answer. */
+async function tryAttempt(p: TestPlayer, ch: TestChallenge, o: AttemptSpec, claim?: { bosses: number[]; waves: number[] }) {
+    const body = attemptBody(ch, { claim: { finished: false, bosses: claim?.bosses ?? [o.boss ?? 0], waves: claim?.waves ?? [o.waves ?? 0] } });
+    const res = await postAttempt(p, ch, body);
+    expect(res.status, JSON.stringify(res.body)).toBe(201);
+    const up = await putAttemptReplay(p, body.attempt_id, await attemptReplay(ch, body, o));
+    expect(up.status, JSON.stringify(up.body)).toBe(201);
+    return { attemptId: body.attempt_id as string, data: up.body.data };
+}
+
+function insertAttempt(ch: TestChallenge, who: TestPlayer, progress: number, late = 0, at = `${ch.date}T12:00:00.000Z`) {
+    return env.DB.prepare(
+        `INSERT INTO challenge_attempts (id, challenge_id, player_id, attempt_id, time_ms, level_hash, rules_hash, game_version, claim, late, status,
+           progress, created_at, verified_at) VALUES (?1, ?2, ?3, ?4, 40000, ?5, ?6, '2.34.0', '{}', ?7, 'VERIFIED', ?8, ?9, ?9)`,
+    ).bind(crypto.randomUUID(), ch.id, who.id, crypto.randomUUID(), ch.level_hash, ch.hash, late, progress, at);
+}
+
+describe("« Plus loin » (2.34)", () => {
+    it("scores an attempt from its replay, never from the game's claim", async () => {
+        await withLayout();
+        const t = today();
+        const ch = await insertChallenge(t, { level: "glacior_02", hearts: 3, checkpoints: false });
+        const plain = await insertChallenge(t, { kind: "weekly", level: "pyralis_04" });
+        expect((await api("GET", `/api/v1/challenges/${ch.id}`)).body.data.progress_available).toBe(true);
+        expect((await api("GET", `/api/v1/challenges/${plain.id}`)).body.data.progress_available).toBe(false);
+        const p = await registerPlayer("Nova");
+        const other = await registerPlayer("Orion");
+
+        expect((await api("POST", `/api/v1/challenges/${ch.id}/attempts`, { body: attemptBody(ch) })).status).toBe(401);
+        for (const bad of [
+            { progress: 99 },
+            { player_id: other.id },
+            { claim: { finished: true, bosses: [0], waves: [0] } },
+            { claim: { finished: false, bosses: [1001], waves: [0] } },
+            { claim: { finished: false, bosses: [0], waves: [0], score: 80 } },
+            { claim: { finished: false, bosses: [0, 0], waves: [0] } },
+            { claim: "tout" },
+            { attempt_id: "pas-un-uuid" },
+        ]) {
+            const r = await postAttempt(p, ch, attemptBody(ch, bad));
+            expect(r.status, JSON.stringify(bad)).toBe(400);
+        }
+        const body = attemptBody(ch, { claim: { finished: false, bosses: [500], waves: [1] } });
+        const res = await postAttempt(p, ch, body);
+        expect(res.status).toBe(201);
+        expect(res.body.data).toEqual({
+            duplicate: false,
+            attempt: { attempt_id: body.attempt_id, status: "PENDING", progress: null, finished: false, late: false },
+            replay: { required: true, upload_path: `/api/v1/challenges/attempts/${body.attempt_id}/replay` },
+        });
+        // Sent again: the same attempt; other data: refused.
+        expect((await postAttempt(p, ch, body)).body.data).toMatchObject({ duplicate: true, replay: { required: true } });
+        expect((await postAttempt(p, ch, { ...body, claim: { finished: false, bosses: [900], waves: [1] } })).body.error.code).toBe("ATTEMPT_CONFLICT");
+        // Only its player sends its replay (looked up among the session's attempts).
+        const replay = await attemptReplay(ch, body, { k: 30, boss: 500, waves: 1 });
+        expect((await putAttemptReplay(other, body.attempt_id, replay)).body.error.code).toBe("ATTEMPT_NOT_FOUND");
+        const up = await putAttemptReplay(p, body.attempt_id, replay);
+        expect(up.status).toBe(201);
+        expect(up.body.data).toEqual({
+            attempt: { attempt_id: body.attempt_id, status: "VERIFIED", progress: scoreAt(30, 500, 1), finished: false, late: false, rank: 1, reasons: [] },
+            new_best: true,
+            best_progress: scoreAt(30, 500, 1),
+        });
+        expect(scoreAt(30, 500, 1)).toBeGreaterThan(40);
+        expect((await putAttemptReplay(p, body.attempt_id, replay)).body.error.code).toBe("REPLAY_EXISTS");
+        const row = await env.DB.prepare("SELECT status, progress, replay_key, player_id FROM challenge_attempts WHERE attempt_id = ?1").bind(body.attempt_id).first<any>();
+        expect(row).toMatchObject({ status: "VERIFIED", progress: scoreAt(30, 500, 1), player_id: p.id });
+        expect(await env.STORAGE.get(row.replay_key)).not.toBeNull();
+
+        // The game claims more than the replay shows: refused.
+        const liar = await tryAttempt(p, ch, { k: 40, boss: 300 }, { bosses: [900], waves: [0] });
+        expect(liar.data.attempt).toMatchObject({ status: "REJECTED", progress: null, rank: null });
+        expect(liar.data.attempt.reasons.join(" ")).toContain("boss");
+        // No layout for the level of the week: no « Plus loin ».
+        const none = await postAttempt(p, plain, attemptBody(plain));
+        expect(none.status).toBe(409);
+        expect(none.body.error.code).toBe("PROGRESS_UNAVAILABLE");
+        expect((await api("GET", `/api/v1/challenges/${plain.id}/leaderboard?board=progress`)).body.error.code).toBe("PROGRESS_UNAVAILABLE");
+        // A future challenge stays hidden.
+        const next = `daily-${addDays(t, 2)}`;
+        expect((await postAttempt(p, next, attemptBody(ch))).body.error.code).toBe("CHALLENGE_NOT_STARTED");
+    });
+
+    it("checks the rules: one life without checkpoints, deaths and returns with them, the challenge's section and hearts", async () => {
+        await withLayout();
+        const t = today();
+        const oneLife = await insertChallenge(t, { level: "glacior_02", hearts: 2, checkpoints: false });
+        const lives = await insertChallenge(t, { kind: "weekly", level: "glacior_02", hearts: 2, checkpoints: true });
+        const p = await registerPlayer("Nova");
+        const died = await tryAttempt(p, oneLife, { k: 35, back: 10 });
+        expect(died.data.attempt.status).toBe("REJECTED");
+        expect(died.data.attempt.reasons.join(" ")).toContain("une seule vie");
+        // Checkpoints on: died at route point 35, back at 10: the furthest point counts.
+        const back = await tryAttempt(p, lives, { k: 35, back: 10 });
+        expect(back.data.attempt).toMatchObject({ status: "VERIFIED", progress: scoreAt(35) });
+        // Another challenge's rules, too much health, too long for the level.
+        const otherRules = await tryAttempt(p, oneLife, { k: 20, replay: { challengeRules: lives.canonical } });
+        expect(otherRules.data.attempt.reasons.join(" ")).toContain("règles");
+        const health = await tryAttempt(p, oneLife, { k: 20, replay: { health: 3 } });
+        expect(health.data.attempt.reasons.join(" ")).toContain("santé");
+        const format3 = await tryAttempt(p, oneLife, { k: 20, replay: { challengeRules: undefined, inputFormat: 3, exact: true } });
+        expect(format3.data.attempt.reasons.join(" ")).toContain("format 4");
+        const tooLong = await postAttempt(p, oneLife, attemptBody(oneLife, { time_ms: 900001 }));
+        expect(tooLong.body.data).toMatchObject({ attempt: { status: "REJECTED" }, replay: { required: false } });
+        const refused = await putAttemptReplay(p, tooLong.body.data.attempt.attempt_id, await attemptReplay(oneLife, attemptBody(oneLife), { k: 1 }));
+        expect(refused.body.error.code).toBe("ATTEMPT_REJECTED");
+        const bad = await postAttempt(p, oneLife, attemptBody(oneLife));
+        expect((await putAttemptReplay(p, bad.body.data.attempt.attempt_id, new TextEncoder().encode("pas un replay"))).body.error.code).toBe("REPLAY_MALFORMED");
+    });
+
+    it("keeps only the replay of my best attempt", async () => {
+        await withLayout();
+        const ch = await insertChallenge(today(), { level: "glacior_02", hearts: 3 });
+        const p = await registerPlayer("Nova");
+        const key = (attemptId: string) =>
+            env.DB.prepare("SELECT replay_key FROM challenge_attempts WHERE attempt_id = ?1").bind(attemptId).first<{ replay_key: string | null }>();
+        const first = await tryAttempt(p, ch, { k: 20 });
+        const firstKey = (await key(first.attemptId))!.replay_key!;
+        expect(await env.STORAGE.get(firstKey)).not.toBeNull();
+        const better = await tryAttempt(p, ch, { k: 40 });
+        expect(better.data).toMatchObject({ new_best: true, best_progress: scoreAt(40) });
+        expect((await key(better.attemptId))!.replay_key).not.toBeNull();
+        expect((await key(first.attemptId))!.replay_key).toBeNull();
+        expect(await env.STORAGE.get(firstKey)).toBeNull();
+        const worse = await tryAttempt(p, ch, { k: 10 });
+        expect(worse.data).toMatchObject({ attempt: { status: "VERIFIED", progress: scoreAt(10), rank: 1 }, new_best: false, best_progress: scoreAt(40) });
+        expect((await key(worse.attemptId))!.replay_key).toBeNull();
+        // The replays leave with the account.
+        const bestKey = (await key(better.attemptId))!.replay_key!;
+        const exp = await api("GET", "/api/v1/players/me/export", { token: p.token });
+        expect(exp.body.data.challenge_attempts.map((a: any) => a.attempt_id).sort()).toEqual([first.attemptId, better.attemptId, worse.attemptId].sort());
+        const del = await api("DELETE", "/api/v1/players/me", { token: p.token, body: { password: p.password, confirm: "DELETE" } });
+        expect(del.status).toBe(200);
+        expect(await env.STORAGE.get(bestKey)).toBeNull();
+        expect(await env.DB.prepare("SELECT COUNT(*) AS n FROM challenge_attempts").first<{ n: number }>()).toEqual({ n: 0 });
+    });
+
+    it("ranks the best progress of each player: finished runs count 100, ties by the earlier one, late ones in « Depuis » only", async () => {
+        await withLayout();
+        const t = today();
+        const ch = await insertChallenge(addDays(t, -3), { level: "glacior_02", hearts: 3 });
+        const [ana, ben, cleo, dan] = [await registerPlayer("Ana"), await registerPlayer("Ben"), await registerPlayer("Cleo"), await registerPlayer("Dan")];
+        await env.DB.batch([
+            insertAttempt(ch, ana, 50.3, 0, `${ch.date}T08:00:00.000Z`),
+            insertAttempt(ch, ana, 20.1, 0, `${ch.date}T07:00:00.000Z`),
+            insertRun(ch, ben, 85000, "silver", "VERIFIED", 0, `${ch.date}T10:00:00.000Z`),
+            insertAttempt(ch, ben, 70, 0, `${ch.date}T09:00:00.000Z`),
+            insertAttempt(ch, dan, 50.3, 0, `${ch.date}T11:00:00.000Z`),
+        ]);
+        // Cleo plays it now: late.
+        const late = await tryAttempt(cleo, ch, { k: 45, boss: 1000, waves: 2 });
+        expect(late.data.attempt).toMatchObject({ status: "VERIFIED", late: true, progress: scoreAt(45, 1000, 2), rank: 2 });
+
+        const live = await api("GET", `/api/v1/challenges/${ch.id}/leaderboard?board=progress`, { token: cleo.token });
+        expect(live.status).toBe(200);
+        expect(live.body.data).toMatchObject({ board: "progress", period: "live", total: 3, me: null });
+        expect(live.body.data.entries.map((e: any) => [e.rank, e.player.username, e.progress, e.finished, e.late])).toEqual([
+            [1, "Ben", 100, true, false],
+            [2, "Ana", 50.3, false, false],
+            [3, "Dan", 50.3, false, false],
+        ]);
+        expect(Object.keys(live.body.data.entries[0]).sort()).toEqual([
+            "attempt_id",
+            "finished",
+            "has_replay",
+            "is_me",
+            "late",
+            "player",
+            "progress",
+            "rank",
+            "run_id",
+            "status",
+            "time_ms",
+        ]);
+        expect(live.body.data.entries[0]).toMatchObject({ time_ms: 85000, status: "VERIFIED" });
+        const since = await api("GET", `/api/v1/challenges/${ch.id}/leaderboard?board=progress&period=all`, { token: cleo.token });
+        expect(since.body.data.entries.map((e: any) => [e.rank, e.player.username, e.late])).toEqual([
+            [1, "Ben", false],
+            [2, "Cleo", true],
+            [3, "Ana", false],
+            [4, "Dan", false],
+        ]);
+        expect(since.body.data.me).toMatchObject({ rank: 2, progress: scoreAt(45, 1000, 2), late: true, is_me: true });
+        expect((await api("GET", `/api/v1/challenges/${ch.id}/leaderboard?board=progress&scope=friends`)).status).toBe(401);
+        // The time board is unchanged: Ben's run only.
+        const times = await api("GET", `/api/v1/challenges/${ch.id}/leaderboard?period=all`);
+        expect(times.body.data.entries.map((e: any) => e.player.username)).toEqual(["Ben"]);
+
+        // My results: a challenge only tried has no time nor tier, its best progress.
+        const me = await api("GET", "/api/v1/challenges/me", { token: cleo.token });
+        expect(me.body.data.results).toEqual([
+            { challenge_id: ch.id, kind: "daily", period: ch.period, date: ch.date, best_time_ms: null, tier: null, status: "VERIFIED", late: true, best_progress: scoreAt(45, 1000, 2) },
+        ]);
+        expect(me.body.data.streak.current).toBe(0);
+        const cal = await api("GET", `/api/v1/challenges/calendar?month=${ch.date.slice(0, 7)}`, { token: ana.token });
+        expect(cal.body.data.me[ch.id]).toEqual({ best_time_ms: null, tier: null, status: "VERIFIED", late: false, best_progress: 50.3 });
+        const benCal = await api("GET", `/api/v1/challenges/calendar?month=${ch.date.slice(0, 7)}`, { token: ben.token });
+        expect(benCal.body.data.me[ch.id]).toMatchObject({ best_time_ms: 85000, tier: "silver", best_progress: 100 });
+    });
+});
+
+describe("« Plus loin »: the replays of the ranked players (2.34)", () => {
+    it("serves the kept replay of each ranked attempt and points finished runs to their run replay", async () => {
+        await withLayout();
+        const ch = await insertChallenge(today(), { level: "glacior_02", hearts: 3 });
+        const [ana, ben, cleo] = [await registerPlayer("Ana"), await registerPlayer("Ben"), await registerPlayer("Cleo")];
+        const serverId = async (attemptId: string) =>
+            (await env.DB.prepare("SELECT id FROM challenge_attempts WHERE attempt_id = ?1").bind(attemptId).first<{ id: string }>())!.id;
+        const first = await tryAttempt(ana, ch, { k: 20 });
+        const best = await tryAttempt(ana, ch, { k: 40 });
+        const rejected = await tryAttempt(ana, ch, { k: 30, boss: 300 }, { bosses: [900], waves: [0] });
+        expect(rejected.data.attempt.status).toBe("REJECTED");
+        const finished = await verifiedRun(ben, ch, 80000);
+        await tryAttempt(cleo, ch, { k: 10 });
+
+        const board = await api("GET", `/api/v1/challenges/${ch.id}/leaderboard?board=progress`);
+        const byName = Object.fromEntries(board.body.data.entries.map((e: any) => [e.player.username, e]));
+        expect(byName.Ben).toMatchObject({ progress: 100, finished: true, attempt_id: null, run_id: finished.runId, has_replay: true });
+        expect(byName.Ana).toMatchObject({ progress: scoreAt(40), finished: false, attempt_id: await serverId(best.attemptId), run_id: null, has_replay: true });
+        expect(byName.Cleo).toMatchObject({ finished: false, run_id: null, has_replay: true });
+
+        // Anyone watches a ranked attempt (its SHA-256 in a header).
+        const dl = await api("GET", `/api/v1/challenges/attempts/${byName.Ana.attempt_id}/replay`);
+        expect(dl.status).toBe(200);
+        expect(dl.headers.get("content-type")).toBe("application/octet-stream");
+        const row = await env.DB.prepare("SELECT replay_key, replay_sha256 FROM challenge_attempts WHERE id = ?1").bind(byName.Ana.attempt_id).first<any>();
+        expect(dl.headers.get("x-replay-sha256")).toBe(row.replay_sha256);
+        expect(row.replay_sha256).toMatch(/^[0-9a-f]{64}$/);
+        // The finished run's replay is the run's route.
+        expect((await api("GET", `/api/v1/challenges/runs/${byName.Ben.run_id}/replay`)).status).toBe(200);
+
+        // A worse attempt kept no replay; a rejected one, an unknown or malformed id: not found.
+        const firstId = await serverId(first.attemptId);
+        expect((await api("GET", `/api/v1/challenges/attempts/${firstId}/replay`)).body.error.code).toBe("REPLAY_NOT_FOUND");
+        const rejectedId = await serverId(rejected.attemptId);
+        expect((await api("GET", `/api/v1/challenges/attempts/${rejectedId}/replay`)).body.error.code).toBe("ATTEMPT_NOT_FOUND");
+        expect((await api("GET", `/api/v1/challenges/attempts/${rejectedId}/replay`, { token: ana.token })).body.error.code).toBe("REPLAY_NOT_FOUND");
+        expect((await api("GET", `/api/v1/challenges/attempts/${crypto.randomUUID()}/replay`)).status).toBe(404);
+        expect((await api("GET", "/api/v1/challenges/attempts/pas-un-id/replay")).status).toBe(404);
+        // The game's own attempt_id is not the server's id: not found for the others.
+        expect((await api("GET", `/api/v1/challenges/attempts/${best.attemptId}/replay`)).status).toBe(404);
+
+        // A private profile: no replay for the others (403), its player still watches it.
+        await env.DB.prepare("UPDATE players SET profile_visibility = 'private' WHERE id = ?1").bind(ana.id).run();
+        const priv = await api("GET", `/api/v1/challenges/attempts/${byName.Ana.attempt_id}/replay`, { token: cleo.token });
+        expect(priv.status).toBe(403);
+        expect(priv.body.error.code).toBe("PROFILE_PRIVATE");
+        expect((await api("GET", `/api/v1/challenges/attempts/${byName.Ana.attempt_id}/replay`, { token: ana.token })).status).toBe(200);
+        const seen = await api("GET", `/api/v1/challenges/${ch.id}/leaderboard?board=progress`, { token: cleo.token });
+        expect(seen.body.data.entries.find((e: any) => e.player.username === "Ana").has_replay).toBe(false);
+        const own = await api("GET", `/api/v1/challenges/${ch.id}/leaderboard?board=progress`, { token: ana.token });
+        expect(own.body.data.entries.find((e: any) => e.player.username === "Ana").has_replay).toBe(true);
+        expect(own.body.data.me).toMatchObject({ attempt_id: byName.Ana.attempt_id, has_replay: true, is_me: true });
+        // A suspended account's attempt is not found for the others.
+        await env.DB.prepare("UPDATE players SET profile_visibility = 'public', account_status = 'suspended' WHERE id = ?1").bind(ana.id).run();
+        expect((await api("GET", `/api/v1/challenges/attempts/${byName.Ana.attempt_id}/replay`)).body.error.code).toBe("ATTEMPT_NOT_FOUND");
     });
 });

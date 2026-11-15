@@ -5,6 +5,9 @@
 // the bosses' health removed and the ambushes' waves beaten (60 points: 2 shares per boss,
 // 1 per ambush) come from the replay's events. Limit (honestly): the server does not
 // re-simulate the run; it checks the replay's consistency and plausibility, as for records.
+// The same analysis scores the attempts of a challenge (« Plus loin », challenges.ts): with
+// RaceOptions, the replay carries the challenge's rules, and deaths with returns to the
+// checkpoints are allowed when the challenge has its checkpoints on.
 
 import { optionalAuth, requireAuth } from "./auth";
 import { pseudoVersionOf } from "./community";
@@ -97,7 +100,7 @@ export function routeReached(route: [number, number][], frames: { x: number; y: 
     return best;
 }
 
-interface Claim {
+export interface Claim {
     finished: boolean;
     bosses: number[]; // per mille removed, per boss of the layout
     waves: number[];
@@ -111,14 +114,47 @@ export interface RaceAnalysis {
     finished: boolean;
 }
 
-/** Checks an attempt's replay (one life, plausible trajectory) and reads its progress from it. */
-export function analyzeRace(rep: Replay, attemptId: string, timeMs: number, claim: Claim, layout: RaceLayout, level: LevelVersionRow): RaceAnalysis {
+/** An attempt of a challenge (« Plus loin ») instead of a race attempt. */
+export interface RaceOptions {
+    /** Canonical form of the challenge's rules: the replay's section (format 4) must be exactly this. */
+    challengeRules: string;
+    /** The challenge's hearts: the sampled health never goes above. */
+    hearts: number;
+    /** The challenge's checkpoints are on: deaths and returns to a checkpoint are allowed. */
+    respawns: boolean;
+}
+
+/**
+ * Checks an attempt's replay (one life, plausible trajectory) and reads its progress from it.
+ * With `challenge`, an attempt of a challenge: its rules in the replay, health within its
+ * hearts, the level's time limit, and (checkpoints on) as many lives as needed — the
+ * trajectory may then jump at a death or a return to a checkpoint, and the progress is the
+ * furthest reached.
+ */
+export function analyzeRace(
+    rep: Replay,
+    attemptId: string,
+    timeMs: number,
+    claim: Claim,
+    layout: RaceLayout,
+    level: LevelVersionRow,
+    challenge?: RaceOptions,
+): RaceAnalysis {
     const reasons: string[] = [];
     if (rep.levelHash !== level.content_hash) reasons.push("version de niveau différente");
     if (rep.attemptId !== attemptId) reasons.push("tentative différente");
     if (Math.abs(rep.durationMs - timeMs) > 500) reasons.push("durée du replay différente de la tentative");
     if (rep.frames.length === 0) reasons.push("replay vide");
-    if (rep.challengeRules !== null) reasons.push(CHALLENGE_REPLAY_ELSEWHERE);
+    if (!challenge) {
+        if (rep.challengeRules !== null) reasons.push(CHALLENGE_REPLAY_ELSEWHERE);
+    } else {
+        if (rep.formatVersion < 4 || rep.challengeRules === null) reasons.push("replay sans les règles du défi (format 4 attendu)");
+        else if (rep.challengeRules !== challenge.challengeRules) reasons.push("règles du replay différentes de celles du défi");
+        const maxHealth = rep.frames.reduce((m, f) => Math.max(m, f.health), 0);
+        if (maxHealth > challenge.hearts) reasons.push(`santé du replay (${maxHealth}) au-dessus des cœurs du défi (${challenge.hearts})`);
+        if (rep.frames.length > (level.time_limit_ms / 1000 + 5) * rep.sampleHz) reasons.push("replay plus long que la limite du niveau");
+    }
+    const lives = challenge?.respawns === true;
     const expectedFrames = (rep.durationMs * rep.sampleHz) / 1000;
     if (Math.abs(rep.frames.length - expectedFrames) > rep.sampleHz * 1.5) reasons.push("nombre d'images incohérent avec la durée");
     const bossRemoved = layout.bosses.map(() => 0);
@@ -126,15 +162,19 @@ export function analyzeRace(rep: Replay, attemptId: string, timeMs: number, clai
     let deaths = 0;
     let finishFrame = -1;
     let lastFrame = 0;
+    // Frames where the trajectory may jump (several lives only): a death, a return, a teleport.
+    const jumps = new Set<number>();
     for (const e of rep.events) {
         if (e.frame < lastFrame || e.frame >= rep.frames.length) {
             reasons.push("événements incohérents");
             break;
         }
         lastFrame = e.frame;
+        if (lives && (e.type === EventType.Death || e.type === EventType.Respawn || e.type === EventType.Teleport)) jumps.add(e.frame);
         if (e.type === EventType.Death) ++deaths;
-        else if (e.type === EventType.Respawn) reasons.push("une seule vie : retour à un point de passage impossible");
-        else if (e.type === EventType.Finish) finishFrame = e.frame;
+        else if (e.type === EventType.Respawn) {
+            if (!lives) reasons.push("une seule vie : retour à un point de passage impossible");
+        } else if (e.type === EventType.Finish) finishFrame = e.frame;
         else if (e.type === 12 /* BossHit */) {
             if (e.arg >= bossRemoved.length || e.value > 1000) reasons.push("boss inconnu");
             else bossRemoved[e.arg] = Math.max(bossRemoved[e.arg]!, e.value);
@@ -143,7 +183,7 @@ export function analyzeRace(rep: Replay, attemptId: string, timeMs: number, clai
             else wavesDone[e.arg] = Math.max(wavesDone[e.arg]!, e.value);
         }
     }
-    if (deaths > 1) reasons.push("plusieurs vies utilisées");
+    if (deaths > 1 && !lives) reasons.push("plusieurs vies utilisées");
     // What the game declared must be what the replay shows.
     if (claim.bosses.length !== bossRemoved.length || claim.bosses.some((v, i) => Math.abs(v - bossRemoved[i]!) > 10))
         reasons.push("dégâts aux boss différents du replay");
@@ -159,7 +199,7 @@ export function analyzeRace(rep: Replay, attemptId: string, timeMs: number, clai
             reasons.push("position hors du niveau");
             break;
         }
-        if (i > 0) {
+        if (i > 0 && !(jumps.has(i) || jumps.has(i - 1) || jumps.has(i + 1))) {
             const p = rep.frames[i - 1]!;
             if (Math.hypot(f.x - p.x, f.y - p.y) > step + 200) ++tooFast;
         }
@@ -227,7 +267,8 @@ async function loadBoard(ctx: Ctx, kind: string, levelId: string, version: numbe
     throw Errors.validation([{ field: "kind", message: "community ou official" }]);
 }
 
-function detailOf(layout: RaceLayout, a: RaceAnalysis) {
+/** What an attempt did, per boss and ambush of the layout (for the boards). */
+export function detailOf(layout: RaceLayout, a: RaceAnalysis) {
     return {
         bosses: layout.bosses.map((b, i) => ({ name: b.name, removed: Math.round((a.bossRemoved[i] ?? 0) * 1000) / 1000 })),
         ambushes: layout.ambushes.map((x, i) => ({ waves: x.waves, done: a.wavesDone[i] ?? 0 })),

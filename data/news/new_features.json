@@ -145,6 +145,11 @@
     {"id": "challenges.tab.today", "version": "2.32.0", "parents": ["menu.challenges"]},
     {"id": "challenges.tab.archives", "version": "2.32.0", "parents": ["menu.challenges"]},
     {"id": "challenges.keys", "version": "2.32.1", "parents": ["menu.challenges", "challenges.tab.today"]},
-    {"id": "profile.races", "version": "2.32.2", "parents": ["menu.online"]}
+    {"id": "profile.races", "version": "2.32.2", "parents": ["menu.online"]},
+    {"id": "challenges.tab.week", "version": "2.33.0", "parents": ["menu.challenges"]},
+    {"id": "challenges.tab.month", "version": "2.33.0", "parents": ["menu.challenges"]},
+    {"id": "challenges.tab.calendar", "version": "2.33.0", "parents": ["menu.challenges"]},
+    {"id": "challenges.board.period", "version": "2.33.0", "parents": ["challenges.tab.calendar"]},
+    {"id": "challenges.board.progress", "version": "2.34.0", "parents": ["menu.challenges"]}
   ]
 }

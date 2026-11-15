@@ -1,6 +1,8 @@
 #include "ui/screens/GameScene.h"
 
+#include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <format>
 
 #include "engine/core/FileUtil.h"
@@ -160,6 +162,12 @@ void GameScene::startChallenge() {
     attemptId_ = makeUuidV4();
     recorder_.begin(levelId_, challengeHash_, attemptId_, world_->gameplaySeed());
     recordMode_ = RecordMode::Challenge;
+    // « Plus loin » (2.34): the route of the level (the one declared online, same
+    // computation), off the main thread; practice runs rank nothing.
+    if (c.progressAvailable && !opt_.challenge->practice) {
+        challengeTrack_.begin(buildRaceLayout(level_, g_.content, false));
+        challengeRouteFuture_ = std::async(std::launch::async, [level = level_, &content = g_.content] { return raceRoute(intendedRoute(level, content)); });
+    }
     // The ghosts chosen before the start (mine, the first of the day): display only.
     if (opt_.ghostsChosen && !opt_.ghosts.empty()) {
         ghostHash_ = challengeHash_;
@@ -186,6 +194,13 @@ void GameScene::finishChallenge(bool completed) {
     d.timeMs = static_cast<int64_t>(std::llround(static_cast<double>(time) * 1000.0));
     d.deaths = s.deaths;
     d.damageTaken = s.damageTaken;
+    // « Plus loin »: a fall ends the attempt (already decided at the first death without
+    // checkpoints); a finished run counts 100 by itself.
+    if (!completed && !d.practice) takeChallengeAttempt(false);
+    if (!completed && attemptReport_) {
+        d.attempt = attemptReport_;
+        d.attemptId = attemptId_;  // its sending state, followed live
+    }
     if (completed && recorder_.active()) {
         recorder_.finish(*world_, time);
         lastReplay_ = std::make_shared<ReplayData>(recorder_.take());
@@ -200,8 +215,8 @@ void GameScene::finishChallenge(bool completed) {
     if (completed) {
         d.tier = c.tierFor(d.timeMs, d.damageTaken);
         ghostRun_.finish(time);
-        // The day's challenge: kept here (best time, its replay) and sent when it can be.
-        // Practice keeps nothing.
+        // The challenge: kept here (best time, its replay) and sent when it can be (« hors
+        // délai » once it is over). Practice keeps nothing.
         if (!d.practice) {
             d.attemptId = attemptId_;
             std::string whyNot = challengeSendable_ ? std::string() : "Votre version du niveau diffère de celle du défi : temps gardé sur ce PC.";
@@ -210,16 +225,53 @@ void GameScene::finishChallenge(bool completed) {
         std::string victory = g_.app.resources().soundPath("music/victory.ogg");
         if (!victory.empty()) g_.app.audio().playSound(victory, 0.9f, 1.0f, 0.0f, AudioBus::Music);
     }
-    d.streak = g_.challenges.streak();
+    d.streak = g_.challenges.streak(c.kind);
     d.replay = lastReplay_;
     g_.app.pushScene(makeChallengeEnd(g_, *this, std::move(d)));
+}
+
+void GameScene::takeChallengeAttempt(bool firstLife) {
+    if (attemptDone_ || !challengeTrack_.active() || !recorder_.active() || !world_ || !opt_.challenge || opt_.challenge->practice) return;
+    attemptDone_ = true;
+    const DailyChallenge& c = opt_.challenge->challenge;
+    const RaceProgress& p = challengeTrack_.progress();
+    const float time = world_->timer().elapsed();
+    // Its replay up to now: the first life is copied (the run goes on), else it ends here.
+    ReplayData replay;
+    if (firstLife) {
+        ReplayRecorder copy = recorder_;
+        copy.finishAttempt(*world_, time);
+        replay = copy.take();
+    } else {
+        recorder_.finishAttempt(*world_, time);
+        replay = recorder_.take();
+    }
+    std::vector<int> bosses;
+    for (float b : p.bossRemoved) bosses.push_back(static_cast<int>(std::clamp(std::lround(b * 1000.0f), 0L, 1000L)));
+    std::string whyNot = challengeSendable_ ? std::string() : "Votre version du niveau diffère de celle du défi : essai gardé sur ce PC.";
+    attemptReport_ = g_.challenges.recordAttempt(c, raceScore(challengeTrack_.layout(), p), static_cast<int64_t>(std::llround(static_cast<double>(time) * 1000.0)),
+                                                 std::move(bosses), p.wavesDone, challengeHash_, attemptId_, &replay, challengeSendable_, whyNot);
+    Log::info("Défi {} : essai à {:.1f} %{}", c.id, attemptReport_->progress, attemptReport_->newBest ? " (nouveau record de progression)" : "");
+    // Without checkpoints the run goes on after the first life: said on screen.
+    if (firstLife && attemptReport_->newBest) {
+        char pct[32];
+        std::snprintf(pct, sizeof pct, "%.1f", attemptReport_->progress);
+        std::string s = pct;
+        std::replace(s.begin(), s.end(), '.', ',');
+        world_->hint("Nouveau record de progression : " + s + " %", 3.0f);
+    }
 }
 
 void GameScene::drawChallengeBanner() {
     // Always: what this run is, at the bottom left.
     UIContext& ui = g_.ui;
-    const ChallengeRules& r = opt_.challenge->challenge.rules;
-    std::string tag = opt_.challenge->practice ? "DÉFI HORS CLASSEMENT" : "DÉFI DU JOUR";
+    const DailyChallenge& c = opt_.challenge->challenge;
+    const ChallengeRules& r = c.rules;
+    std::string tag = opt_.challenge->practice      ? "DÉFI HORS CLASSEMENT"
+                      : g_.challenges.ended(c)      ? "DÉFI HORS DÉLAI"
+                      : c.kind == ChallengeKind::Weekly  ? "DÉFI DE LA SEMAINE"
+                      : c.kind == ChallengeKind::Monthly ? "DÉFI DU MOIS"
+                                                         : "DÉFI DU JOUR";
     tag += " · " + std::to_string(r.hearts) + (r.hearts > 1 ? " cœurs" : " cœur");
     if (!r.checkpoints) tag += " · sans points de passage";
     tag += " · " + keyName(SDL_SCANCODE_R) + " / Vue : recommencer";
@@ -440,6 +492,7 @@ void GameScene::abandonRaceAttempt() {
 
 void GameScene::restart() {
     abandonRaceAttempt();
+    if (!ended_) takeChallengeAttempt(false);  // « Plus loin »: restarting ends the attempt
     PlayOptions o = opt_;
     if (!o.level && !opt_.editorTest) o.level.reset();
     g_.app.replaceTop(makeGameScene(g_, levelId_, o), 0.3f);
@@ -447,15 +500,14 @@ void GameScene::restart() {
 
 void GameScene::quitToMenu() {
     abandonRaceAttempt();
+    if (!ended_) takeChallengeAttempt(false);  // « Plus loin »: leaving ends the attempt
     if (opt_.bossTraining) {
         g_.app.switchScene(makeBossStats(g_, opt_.bossTraining->bossId), 0.4f);
         return;
     }
     if (opt_.challenge) {
-        // Back to the challenges: today's, or the archive it was replayed from.
-        const DailyChallenge& c = opt_.challenge->challenge;
-        bool archive = opt_.challenge->practice && g_.challenges.nowMs() >= c.endsAtMs;
-        g_.app.switchScene(makeChallenges(g_, archive ? 1 : 0, c.id), 0.4f);
+        // Back to the challenges: its kind's tab while it runs, else the calendar on its card.
+        g_.app.switchScene(makeChallengesOn(g_, opt_.challenge->challenge.id), 0.4f);
         return;
     }
     if (opt_.editorTest) {
@@ -538,6 +590,13 @@ void GameScene::fixedUpdate(float dt) {
     if (!ended_ && race_.active()) {
         race_.update(*world_);
         recorder_.raceProgress(race_.progress().bossRemoved, race_.progress().wavesDone);
+    }
+    // « Plus loin »: how far the challenge attempt goes (its bosses and waves in the replay);
+    // without checkpoints, the attempt is the first life only.
+    if (!ended_ && challengeTrack_.active() && !attemptDone_) {
+        challengeTrack_.update(*world_);
+        recorder_.raceProgress(challengeTrack_.progress().bossRemoved, challengeTrack_.progress().wavesDone);
+        if (!opt_.challenge->challenge.rules.checkpoints && world_->stats().deaths > 0 && world_->state() == WorldState::Playing) takeChallengeAttempt(true);
     }
     if (!ended_ && opt_.bossTraining) updateBossTraining();
     playTime_ += dt;
@@ -777,6 +836,8 @@ void GameScene::update(float dt) {
     explored_.mark(world_->camera().visibleArea(1920, 1080));
     if (trackFuture_.valid() && trackFuture_.wait_for(std::chrono::seconds(0)) == std::future_status::ready) hud_.setProgressTrack(trackFuture_.get());
     if (raceRouteFuture_.valid() && raceRouteFuture_.wait_for(std::chrono::seconds(0)) == std::future_status::ready) race_.setRoute(raceRouteFuture_.get());
+    if (challengeRouteFuture_.valid() && challengeRouteFuture_.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+        challengeTrack_.setRoute(challengeRouteFuture_.get());
     hud_.update(*world_, dt);
     // Collection (display only): trail, victory effect, creatures met.
     {

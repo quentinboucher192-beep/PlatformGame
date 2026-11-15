@@ -327,8 +327,17 @@ export async function exportMe(ctx: Ctx): Promise<Response> {
         // 2.31: runs of the daily challenges.
         challenge_runs: (
             await ctx.env.DB.prepare(
-                `SELECT id, challenge_id, attempt_id, time_ms, deaths, damage_taken, tier, status, rejection_reason, replay_status,
+                `SELECT id, challenge_id, attempt_id, time_ms, deaths, damage_taken, tier, status, late, rejection_reason, replay_status,
                    game_version, created_at, verified_at FROM challenge_runs WHERE player_id = ?1 ORDER BY created_at`,
+            )
+                .bind(id)
+                .all()
+        ).results,
+        // 2.34: attempts of « Plus loin » (progress computed by the server from their replay).
+        challenge_attempts: (
+            await ctx.env.DB.prepare(
+                `SELECT id, challenge_id, attempt_id, time_ms, claim, late, status, progress, route, detail, reasons, game_version, created_at,
+                   verified_at FROM challenge_attempts WHERE player_id = ?1 ORDER BY created_at`,
             )
                 .bind(id)
                 .all()

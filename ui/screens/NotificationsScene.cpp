@@ -290,8 +290,10 @@ private:
         std::string id = jstr(n, "id");
         bool unread = !jget<bool>(n, "read", false);
         auto go = [this, n, kind]() {
-            if (kind == "challenge_featured") {  // 2.32: my level is (or will be) a daily challenge
-                g_.app.switchScene(makeChallenges(g_), 0.3f);
+            if (kind == "challenge_featured") {  // 2.32: my level is (or will be) a challenge
+                // 2.33: of the day, of the week or of the month (its tab, or its card once over).
+                std::string cid = n.contains("data") && n["data"].is_object() ? jstr(n["data"], "challenge_id") : std::string();
+                g_.app.switchScene(cid.empty() ? makeChallenges(g_) : makeChallengesOn(g_, cid), 0.3f);
                 return;
             }
             if (kind == "new_follower") {
