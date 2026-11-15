@@ -73,6 +73,11 @@ uint64_t simulationStateHash(const GameWorld& w) {
     for (const auto& pw : p.powers()) f.bytes(pw->id().data(), pw->id().size());
     f.i32(w.powerOffer() ? 1 : 0);
     f.f32(w.timeSlowRemaining());
+    if (w.decoyActive()) {  // 2.19 (Leurre holographique), hashed only while there is one
+        f.f32(w.decoyRemaining());
+        f.f32(w.decoyPos().x);
+        f.f32(w.decoyPos().y);
+    }
     f.i32(static_cast<int32_t>(w.enemies().size()));
     for (const auto& e : w.enemies()) {
         f.rect(e->box);
@@ -80,6 +85,9 @@ uint64_t simulationStateHash(const GameWorld& w) {
         f.f32(e->vel.y);
         f.f32(e->hp());
         f.i32(static_cast<int32_t>(e->state()));
+        // 2.19 (Nova de givre): only hashed while it applies, so the digests of runs
+        // without it are unchanged.
+        if (e->frozen() || e->slowed()) f.i32((e->frozen() ? 1 : 0) | (e->slowed() ? 2 : 0));
     }
     f.i32(static_cast<int32_t>(w.projectiles().size()));
     for (const auto& pr : w.projectiles()) {

@@ -39,6 +39,10 @@ const Known kKnown[] = {
     {"chargeTime", "Charge", " s"},
     {"fuse", "Mèche", " s"},
     {"duration", "Durée", " s"},
+    {"freeze", "Ennemis gelés", " s"},
+    {"bossSlow", "Boss ralentis", " s"},
+    {"window", "Fenêtre de retour", " s"},
+    {"invulnerability", "Invulnérable à l'arrivée", " s"},
     {"factor", "Vitesse du temps", ""},
     {"speed", "Vitesse", " px/s"},
     {"velocity", "Élan", " px/s"},
@@ -61,6 +65,12 @@ const Known kKnown[] = {
 std::vector<PowerStat> powerStats(const PowerDefinition& d) {
     std::vector<PowerStat> out;
     out.push_back({"energy", "Énergie", d.energyCost > 0.0f ? number(d.energyCost) : "gratuit"});
+    // A power whose first press is free (the recall beacon): what each press costs.
+    if (d.params.contains("placeCost") && d.params["placeCost"].is_number()) {
+        float place = d.params["placeCost"].get<float>();
+        out.front().label = "Énergie au retour";
+        out.push_back({"placeCost", "Poser la balise", place > 0.0f ? number(place) : "gratuit"});
+    }
     for (const auto& k : kKnown) {
         if (!d.params.contains(k.key) || !d.params[k.key].is_number()) continue;
         float v = d.params[k.key].get<float>();

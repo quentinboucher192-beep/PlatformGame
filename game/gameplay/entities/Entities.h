@@ -202,6 +202,13 @@ public:
     Rect overlapBox() const override { return box.expanded(3); }
     void onPlayerEnter(GameWorld& w) override;
     void makeDrop(float vx, float vy);
+    /// Brought back by the boomerang blade (2.19): moved with it, picked up on reaching Nova.
+    bool carriable() const { return type() == "shard" || type() == "energy_orb" || type() == "health_orb"; }
+    void carryTo(Vec2 center) {
+        box = Rect::fromCenter(center, box.size());
+        base_ = center;
+        dropping_ = false;
+    }
 
 private:
     AnimatedSprite sprite_;

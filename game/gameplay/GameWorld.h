@@ -148,14 +148,22 @@ public:
     float timeSlowRemaining() const { return timeSlow_; }
     /// Decoy (power « Leurre holographique », 2.19): for `seconds`, the enemies aim at `center`
     /// instead of Nova. Part of the simulation (set from the player's inputs only).
-    void setDecoy(Vec2 center, float seconds) {
+    void setDecoy(Vec2 center, float seconds, float facing = 1.0f) {
         decoyPos_ = center;
         decoyTimer_ = seconds;
+        decoyDuration_ = seconds;
+        decoyFacing_ = facing < 0.0f ? -1.0f : 1.0f;
     }
     void clearDecoy() { decoyTimer_ = 0.0f; }
     bool decoyActive() const { return decoyTimer_ > 0.0f; }
     Vec2 decoyPos() const { return decoyPos_; }
     float decoyRemaining() const { return decoyTimer_; }
+    float decoyDuration() const { return decoyDuration_; }
+    float decoyFacing() const { return decoyFacing_; }
+    /// What an attack must touch to break the decoy: Nova's standing box around it.
+    Rect decoyBox() const;
+    /// Decoys broken by an attack (an enemy shot or blow reached the hologram).
+    int decoysBroken() const { return decoysBroken_; }
     /// What the enemies aim at: the decoy while there is one, else Nova's centre.
     Vec2 enemyAim() const;
     void flash(Color c, float duration);
@@ -234,9 +242,21 @@ private:
     void carryBodies();
     void checkKillPlane();
     void computeEnvironment();
+    /// 2.19: an enemy shot or blow touching the decoy breaks it.
+    void updateDecoy();
+    /// 2.19: a frozen enemy is a platform (a one-way collider on the top of its box).
+    void syncFrozenPlatforms();
 
     Vec2 decoyPos_;
     float decoyTimer_ = 0.0f;
+    float decoyDuration_ = 0.0f;
+    float decoyFacing_ = 1.0f;
+    int decoysBroken_ = 0;
+    struct FrozenPlatform {
+        uint32_t enemy = 0;     // Enemy::uid()
+        uint32_t collider = 0;  // physics collider on its top
+    };
+    std::vector<FrozenPlatform> frozenPlatforms_;
     WorldServices services_;
     WorldMode mode_;
     WorldState state_ = WorldState::Intro;

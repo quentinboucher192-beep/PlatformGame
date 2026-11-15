@@ -1,0 +1,21 @@
+{
+  "format": "cosmic.power",
+  "id": "boomerang",
+  "behavior": "boomerang",
+  "name": "Lame boomerang",
+  "description": "Lance une lame d'énergie qui revient vers vous : elle touche à l'aller et au retour, traverse les ennemis, rapporte éclats et orbes et active les récepteurs.",
+  "icon": 14,
+  "input": "special",
+  "energyCost": 12,
+  "cooldown": 0.25,
+  "duration": 0,
+  "color": "#8ffff0",
+  "sound": "sounds/boomerang_throw.wav",
+  "params": {
+    "damage": 1,
+    "radius": 9,
+    "range": 260,
+    "speed": 600,
+    "knockback": 150
+  }
+}

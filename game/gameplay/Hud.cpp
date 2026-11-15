@@ -250,7 +250,7 @@ void Hud::drawPowers(UIContext& ui, GameWorld& w, Vec2 o, float k) {
     for (const auto& pw : p.powers()) {
         Rect box{x, y, size, size};
         bool ready = pw->ready(p);
-        bool enough = p.energy + 0.01f >= pw->def().energyCost;
+        bool enough = p.energy + 0.01f >= pw->activationCost(p);
         r.fillRoundedRect(box.expanded(S(4)), S(10), {8, 12, 26, 210});
         ui.icon("ui/icons_powers.png", pw->def().icon, 32, box, ready ? Color::white() : Color{110, 120, 140, 255});
         float cd = pw->cooldownRatio();

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "engine/core/Math.h"
@@ -243,6 +244,123 @@ public:
 
 protected:
     void onActivate(Player& p, GameWorld& w) override;
+};
+
+// ------------------------------------------------- 2.19: powers of the sanctuaries
+
+/// Lame boomerang: an energy blade thrown ahead (aimed like the Wave) that slows down,
+/// turns back and returns to Nova. It hits every enemy it crosses once on the way out and
+/// once on the way back (it goes through them), switches receptors on, and brings back the
+/// shards and orbs it touches. A wall on the way out sends it back early; on the way back
+/// nothing stops it. One blade at a time.
+class BoomerangPower : public Power {
+public:
+    using Power::Power;
+    bool canActivate(const Player& p, const GameWorld& w) const override;
+    void fixedUpdate(Player& p, GameWorld& w, float dt) override;
+    void render(const Player& p, RenderContext& ctx) const override;
+    bool active() const override { return flying_; }
+    void cancel(Player& p, GameWorld& w) override;
+    bool flying() const { return flying_; }
+    bool returning() const { return returning_; }
+    Vec2 bladePos() const { return pos_; }
+    /// Enemies hit by the blade in flight (out, back): tests, demos.
+    int hitsOut() const { return static_cast<int>(hitOut_.size()); }
+    int hitsBack() const { return static_cast<int>(hitBack_.size()); }
+    /// Blades caught back by Nova since the power was granted.
+    int caught() const { return caught_; }
+
+protected:
+    void onActivate(Player& p, GameWorld& w) override;
+
+private:
+    void turnBack(GameWorld& w);
+    void strike(GameWorld& w);
+    float range() const { return def_.param("range", 260.0f); }
+    float speed() const { return def_.param("speed", 600.0f); }
+    bool flying_ = false;
+    bool returning_ = false;
+    Vec2 pos_, prevPos_, dir_;
+    float speed_ = 0.0f;
+    float age_ = 0.0f;
+    float spin_ = 0.0f, prevSpin_ = 0.0f;
+    float trailTimer_ = 0.0f;
+    int caught_ = 0;
+    std::vector<uint32_t> hitOut_, hitBack_;  // enemy uids hit on each leg
+    std::vector<std::string> carried_;        // collectibles brought back (entity ids)
+};
+
+/// Nova de givre: a burst of cold around Nova. Enemies in the radius freeze (a frozen
+/// enemy is a platform, see GameWorld), bosses are only slowed, and the enemy shots in the
+/// radius shatter.
+class FrostNovaPower : public Power {
+public:
+    using Power::Power;
+    void fixedUpdate(Player& p, GameWorld& w, float dt) override;
+    void render(const Player& p, RenderContext& ctx) const override;
+    /// Enemies frozen and shots destroyed by the last nova (tests, demos).
+    int lastFrozen() const { return lastFrozen_; }
+    int lastShattered() const { return lastShattered_; }
+
+protected:
+    void onActivate(Player& p, GameWorld& w) override;
+
+private:
+    Vec2 center_;
+    float ring_ = 10.0f;  // seconds since the last nova (the ring is drawn for a moment)
+    int lastFrozen_ = 0, lastShattered_ = 0;
+};
+
+/// Leurre holographique: a hologram of Nova left where she stands; for a few seconds the
+/// enemies and bosses aim at it instead of her (GameWorld::setDecoy), until an attack
+/// touches it.
+class DecoyPower : public Power {
+public:
+    using Power::Power;
+    bool active() const override;
+    void fixedUpdate(Player& p, GameWorld& w, float dt) override;
+    void cancel(Player& p, GameWorld& w) override;
+
+protected:
+    void onActivate(Player& p, GameWorld& w) override;
+
+private:
+    bool decoyUp_ = false;  // a decoy of this power is in the world
+};
+
+/// Balise de rappel: a first press drops a beacon where Nova stands (free); a second press
+/// within the window brings her back to it at once (energy cost), speed reset and briefly
+/// invulnerable. After the window the beacon fades and the next press drops a new one.
+class RecallPower : public Power {
+public:
+    using Power::Power;
+    float activationCost(const Player& /*p*/) const override {
+        return beacon_ ? def_.energyCost : def_.param("placeCost", 0.0f);
+    }
+    bool canActivate(const Player& p, const GameWorld& w) const override;
+    void handleInput(Player& p, GameWorld& w, const PlayerInput& in, float dt) override;
+    void fixedUpdate(Player& p, GameWorld& w, float dt) override;
+    void render(const Player& p, RenderContext& ctx) const override;
+    bool active() const override { return beacon_; }
+    void cancel(Player& p, GameWorld& w) override;
+    bool beaconPlaced() const { return beacon_; }
+    Vec2 beaconFeet() const { return feet_; }
+    float beaconRemaining() const { return beacon_ ? timer_ : 0.0f; }
+    /// Returns to the beacon since the power was granted (tests, demos).
+    int warps() const { return warps_; }
+
+protected:
+    void onActivate(Player& p, GameWorld& w) override;
+
+private:
+    bool blocked(const Player& p, const GameWorld& w) const;
+    bool beacon_ = false;
+    Vec2 feet_;
+    float timer_ = 0.0f;
+    float anim_ = 0.0f;
+    float warpFx_ = 10.0f;  // seconds since the last return (trail drawn for a moment)
+    Vec2 warpFrom_, warpTo_;
+    int warps_ = 0;
 };
 
 }  // namespace cosmic

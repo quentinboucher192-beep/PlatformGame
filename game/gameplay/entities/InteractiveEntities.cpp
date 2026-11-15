@@ -208,7 +208,7 @@ void ReceptorEntity::init(GameWorld& w) { sprite_.load(w.resources(), "animation
 void ReceptorEntity::update(GameWorld& /*w*/, float dt) { sprite_.anim.update(dt); }
 
 bool ReceptorEntity::onPowerHit(GameWorld& w, const std::string& power, const Rect& area) {
-    if ((power != "wave" && power != "charge_shot") || !area.intersects(box.expanded(2))) return false;
+    if ((power != "wave" && power != "charge_shot" && power != "boomerang") || !area.intersects(box.expanded(2))) return false;
     float duration = obj_.prop<float>("duration", 0.0f);
     if (on_) {
         timer_ = duration;

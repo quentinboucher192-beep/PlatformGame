@@ -112,7 +112,7 @@ void Player::handlePowers(GameWorld& w, const PlayerInput& in, float dt) {
     for (auto& p : powers_) {
         if (p->passive() || !p->wantsActivation(*this, w, in)) continue;
         if (!p->ready(*this)) {
-            if (energy < p->def().energyCost) {
+            if (energy < p->activationCost(*this)) {
                 w.playSound("sounds/energy_low.wav", 0.5f);
                 w.hint("Énergie insuffisante", 1.2f);
             }
