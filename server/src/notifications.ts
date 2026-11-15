@@ -24,12 +24,13 @@ export const NOTIFICATION_KINDS = [
     "project_removed", //   an administrator removed me from a project
     "race_verified", //     someone finished first an EXTRÊME level I raced on (or created)
     "run_comment", //       comments on one of my runs of the leaderboards (2.19)
+    "challenge_featured", // one of my community levels is the daily challenge (2.31)
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
 /** Filter groups of the notification screen. */
 const GROUPS: Record<string, NotificationKind[]> = {
-    creators: ["new_level", "level_update", "new_follower", "race_verified"],
+    creators: ["new_level", "level_update", "new_follower", "race_verified", "challenge_featured"],
     comments: ["comment_reply", "comment_reaction", "level_comment", "run_comment"],
     projects: ["project_invite", "project_role", "project_version", "project_mention", "project_reply", "project_removed"],
 };
@@ -150,6 +151,8 @@ function sentence(n: NotificationRow, d: Record<string, string>): string {
             return n.count > 1
                 ? `${n.count} nouveaux commentaires sur votre course : ${d.level_name ?? d.title ?? ""}`
                 : `${who} a commenté votre course : ${d.level_name ?? d.title ?? ""}`;
+        case "challenge_featured":
+            return `Votre niveau « ${d.title ?? ""} » est le défi du jour !`;
     }
 }
 

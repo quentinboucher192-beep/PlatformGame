@@ -134,3 +134,47 @@ npx wrangler d1 migrations apply cosmic-online-staging --remote --env staging
 
 La migration a le même effet que `POST /admin/levels` : les nouvelles révisions deviennent
 courantes, les anciennes passent « legacy », une révision existante n'est jamais modifiée.
+
+
+## Défis du jour (2.31)
+
+Les défis du jour (contrat : [DAILY_CHALLENGES.md](DAILY_CHALLENGES.md), routes : API.md
+§8.9 duodecies) ont besoin de la migration `0049_daily_challenges.sql` puis du Worker ; la
+tâche planifiée quotidienne (`17 3 * * *`) et chaque lecture du défi courant tirent ensuite les
+défis d'aujourd'hui à J+7. Aucun secret n'est nécessaire.
+
+**Catalogue des niveaux.** Le tirage automatique ne prend un niveau de la campagne que si sa
+révision active sur le serveur est celle de `src/challengeCatalog.json`. À chaque nouvelle
+révision des niveaux (migration `levels-migration.mjs`), régénérez-le depuis les fichiers du
+jeu et redéployez le Worker :
+
+```bash
+node scripts/challenge-catalog.mjs
+```
+
+Sans niveau utilisable, aucun défi n'est tiré (journal `challenge_draw_no_level`) jusqu'au
+déploiement du catalogue à jour ; le défi manquant est alors tiré à la lecture suivante.
+
+**Choisir le défi d'un jour à venir** (niveau de la campagne ou version publiée d'un niveau
+ONLINE LEVELS) :
+
+```bash
+node scripts/challenge-set.mjs --date 2026-11-20 --level campaign:glacior_02 --hearts 3 \
+    > migrations/0050_challenge_2026_11_20.sql
+node scripts/challenge-set.mjs --date 2026-11-21 --level community:<uuid>@<version> \
+    --silver 2:30 --gold 1:50 > migrations/0051_challenge_2026_11_21.sql
+npx wrangler d1 migrations apply cosmic-online-staging --remote --env staging
+```
+
+Options : `--hearts N`, `--slots N`, `--powers a,b`, `--no-stations`, `--no-checkpoints`,
+`--silver m:ss`, `--gold m:ss`, `--gold-damage-ok`. Le script refuse une date passée ou du
+jour et affiche les règles, le nom de fichier conseillé et des avertissements (pouvoirs de
+départ absents, moins d'emplacements que le niveau…). La migration ne modifie le défi que si
+son jour n'a pas commencé **au moment où elle est appliquée**, et un niveau de la communauté
+doit alors avoir cette version publiée ; sinon elle ne change rien, sans échouer. Le
+résultat est dans `audit_log` (`challenge_set_applied` ou `challenge_set_skipped`) :
+
+```bash
+npx wrangler d1 execute cosmic-online-staging --remote --env staging \
+    --command "SELECT action, details, created_at FROM audit_log WHERE action LIKE 'challenge_set_%' ORDER BY id DESC LIMIT 5"
+```

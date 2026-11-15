@@ -9,7 +9,8 @@
 // plausible trace. Podium records of new accounts therefore stay PENDING for review.
 //
 // Layout (little-endian), see docs/online/REPLAY_FORMAT.md (formats 2 and 3 add an input
-// section after the events):
+// section after the events; format 4 adds the rules of a daily challenge after the state
+// digests, see docs/online/DAILY_CHALLENGES.md):
 //   char[4] "CPRP" | u16 format_version | u16 sample_hz | u32 frame_count | u32 duration_ms
 //   u32 event_count | u8[32] level_hash | u8[16] attempt_id (UUID bytes)
 //   u8 len + level_id | u8 len + game_version
@@ -20,12 +21,17 @@ import { toHex } from "./crypto";
 import type { LevelVersionRow, RecordRow } from "./model";
 
 /**
- * Latest format written by the game (3 since 2.24: actions on 32 bits, keys of the power
- * slots). Versions 1 (trajectory only) and 2 (actions on 16 bits) are still accepted.
+ * Latest format written by the game (4 since 2.31, only for the runs of a daily challenge:
+ * format 3 plus the challenge rules; 3 since 2.24: actions on 32 bits, keys of the power
+ * slots). Versions 1 (trajectory only), 2 (actions on 16 bits) and 3 are still accepted.
  */
-export const REPLAY_FORMAT_VERSION = 3;
+export const REPLAY_FORMAT_VERSION = 4;
 /** Format 3: input flags of the input section (bit 0: keys per power slot). */
 export const REPLAY_INPUT_KEYS_PER_SLOT = 1;
+/** Format 4: bit 1 of the input flags, a challenge section follows the state digests. */
+export const REPLAY_INPUT_CHALLENGE = 2;
+/** Format 4: bounds of the challenge section (canonical form of the rules, UTF-8). */
+export const MAX_CHALLENGE_RULES = 1024;
 /** Version 2: simulation steps per second and the longest run accepted (2 h of steps). */
 export const REPLAY_TICK_HZ = 120;
 export const REPLAY_MAX_TICKS = 120 * 7200;
@@ -92,6 +98,11 @@ export interface Replay {
     gameVersion: string;
     frames: ReplayFrame[];
     events: ReplayEvent[];
+    /**
+     * Format 4: the canonical form of the challenge rules the run was played with (null
+     * for every other run).
+     */
+    challengeRules: string | null;
 }
 
 export class ReplayError extends Error {}
@@ -183,6 +194,7 @@ export function parseReplay(raw: Uint8Array): Replay {
         at += 8;
     }
     let inputs: ReplayInputs | null = null;
+    let challengeRules: string | null = null;
     if (formatVersion >= 2) {
         // Seed, run-length encoded inputs (12 bytes per run in format 2, 18 in format 3: the
         // actions on 32 bits), state digests (12 bytes each).
@@ -194,8 +206,11 @@ export function parseReplay(raw: Uint8Array): Replay {
         const runs = view.getUint32(at + 16, true);
         at += 20;
         const runBytes = formatVersion >= 3 ? 18 : 12;
+        // Format 4 knows the challenge bit; formats 2 and 3 are read exactly as before.
+        const knownFlags = formatVersion >= 4 ? REPLAY_INPUT_KEYS_PER_SLOT | REPLAY_INPUT_CHALLENGE : REPLAY_INPUT_KEYS_PER_SLOT;
+        const challenge = (inputFlags & REPLAY_INPUT_CHALLENGE) !== 0 && formatVersion >= 4;
         if (tickHz !== REPLAY_TICK_HZ) throw new ReplayError("fréquence de simulation invalide");
-        if ((inputFlags & ~REPLAY_INPUT_KEYS_PER_SLOT) !== 0) throw new ReplayError("section des entrées incohérente");
+        if ((inputFlags & ~knownFlags) !== 0) throw new ReplayError("section des entrées incohérente");
         if (ticks === 0 || ticks > REPLAY_MAX_TICKS || runs === 0 || runs > ticks) throw new ReplayError("section des entrées incohérente");
         need(runs * runBytes + 4);
         let total = 0;
@@ -208,7 +223,9 @@ export function parseReplay(raw: Uint8Array): Replay {
         if (total !== ticks) throw new ReplayError("nombre d'entrées incohérent");
         const checks = view.getUint32(at, true);
         at += 4;
-        if (checks > Math.floor(ticks / REPLAY_CHECK_TICKS) + 2 || at + checks * 12 !== raw.byteLength)
+        // The file ends right after the digests, or (format 4) after the challenge section.
+        const digestsEnd = at + checks * 12;
+        if (checks > Math.floor(ticks / REPLAY_CHECK_TICKS) + 2 || (challenge ? digestsEnd + 2 > raw.byteLength : digestsEnd !== raw.byteLength))
             throw new ReplayError("sommes de contrôle incohérentes");
         let prev = 0;
         for (let c = 0; c < checks; ++c) {
@@ -217,9 +234,21 @@ export function parseReplay(raw: Uint8Array): Replay {
             prev = tick;
             at += 12;
         }
+        if (challenge) {
+            // u16 rules_len, then the canonical form of the rules (1 .. 1024 bytes of UTF-8).
+            const len = view.getUint16(at, true);
+            at += 2;
+            if (len < 1 || len > MAX_CHALLENGE_RULES || at + len !== raw.byteLength) throw new ReplayError("section du défi incohérente");
+            try {
+                challengeRules = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(raw.subarray(at, at + len));
+            } catch {
+                throw new ReplayError("section du défi incohérente");
+            }
+            at += len;
+        }
         inputs = { seed, tickHz, ticks, runs, checks, keysPerSlot: (inputFlags & REPLAY_INPUT_KEYS_PER_SLOT) !== 0 };
     }
-    return { formatVersion, inputs, sampleHz, durationMs, levelHash, attemptId, levelId, gameVersion, frames, events };
+    return { formatVersion, inputs, sampleHz, durationMs, levelHash, attemptId, levelId, gameVersion, frames, events, challengeRules };
 }
 
 export interface ReplayAnalysis {
@@ -236,15 +265,37 @@ export interface ReplayAnalysis {
         /** Format 2: simulation steps recorded (null for a format 1 trajectory). */
         ticks: number | null;
         exact: boolean;
+        /** Highest health sampled in the trace. */
+        max_health: number;
     };
 }
 
+/** What a daily challenge run is checked against, on top of the usual analysis. */
+export interface ChallengeCheck {
+    /** Canonical form of the challenge rules: the replay's section must be exactly this. */
+    canonical: string;
+    /** Maximum hearts of the challenge: the sampled health never goes above. */
+    hearts: number;
+}
+
+/** Reason given when a challenge run's replay is used anywhere else (records, levels...). */
+export const CHALLENGE_REPLAY_ELSEWHERE = "partie de défi (règles imposées) : elle ne compte que pour son défi";
+
 /**
  * Checks a replay against its record and the level revision. Returns every problem found
- * (an empty list means the trace is consistent and plausible).
+ * (an empty list means the trace is consistent and plausible). With `challenge`, the run of
+ * a daily challenge: a format 4 replay carrying exactly these rules, health within the
+ * challenge's hearts. Without it, a challenge run is refused (it never counts elsewhere).
  */
-export function analyzeReplay(rep: Replay, record: RecordRow, level: LevelVersionRow): ReplayAnalysis {
+export function analyzeReplay(rep: Replay, record: RecordRow, level: LevelVersionRow, challenge?: ChallengeCheck): ReplayAnalysis {
     const reasons: string[] = [];
+    let maxHealth = 0;
+    for (const f of rep.frames) maxHealth = Math.max(maxHealth, f.health);
+    if (challenge) {
+        if (rep.formatVersion < 4 || rep.challengeRules === null) reasons.push("replay sans les règles du défi (format 4 attendu)");
+        else if (rep.challengeRules !== challenge.canonical) reasons.push("règles du replay différentes de celles du défi");
+        if (maxHealth > challenge.hearts) reasons.push(`santé du replay (${maxHealth}) au-dessus des cœurs du défi (${challenge.hearts})`);
+    } else if (rep.challengeRules !== null) reasons.push(CHALLENGE_REPLAY_ELSEWHERE);
     if (rep.levelId !== record.level_id) reasons.push("niveau différent du record");
     if (rep.levelHash !== record.level_hash) reasons.push("version de niveau différente du record");
     if (rep.attemptId !== record.attempt_id) reasons.push("tentative différente du record");
@@ -353,6 +404,7 @@ export function analyzeReplay(rep: Replay, record: RecordRow, level: LevelVersio
             jumps,
             ticks: rep.inputs ? rep.inputs.ticks : null,
             exact: rep.inputs !== null,
+            max_health: maxHealth,
         },
     };
 }

@@ -49,6 +49,8 @@ export const RULES = {
     projectSave: { name: "project_save", limit: 120, windowSeconds: 3600 },
     projectChat: { name: "project_chat", limit: 30, windowSeconds: 60 },
     raceSubmit: { name: "race_submit", limit: 240, windowSeconds: 3600 },
+    // Runs of the daily challenges (2.31), like the records; their replays share replay_upload.
+    challengeSubmit: { name: "challenge_submit", limit: 30, windowSeconds: 60 },
 } as const satisfies Record<string, RateRule>;
 
 /** RATE_LIMIT_SCALE multiplies every limit (development only: repeated local test runs). */
