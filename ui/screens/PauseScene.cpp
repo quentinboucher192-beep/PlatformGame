@@ -3,6 +3,7 @@
 #include "engine/core/Easing.h"
 #include "game/GameServices.h"
 #include "ui/screens/GameScene.h"
+#include "ui/screens/LevelPowerKeysScene.h"
 #include "ui/screens/Navigation.h"
 #include "ui/widgets/Glyphs.h"
 
@@ -16,7 +17,14 @@ void PauseScene::onEnter() {
 
 void PauseScene::onExit() { g_.app.audio().setMusicDuck(1.0f); }
 
-void PauseScene::update(float dt) { t_ += dt; }
+void PauseScene::update(float dt) {
+    t_ += dt;
+    // Automated screenshots: --pause --online-open powerkeys[:…] opens « Touches de ce niveau ».
+    if (!keysOpened_ && g_.onlineOpen.rfind("powerkeys", 0) == 0) {
+        keysOpened_ = true;
+        g_.app.pushScene(makeLevelPowerKeys(g_, game_.level(), game_.powerKeyExtra()));
+    }
+}
 
 void PauseScene::drawMapPanel(const Rect& panel) {
     UIContext& ui = g_.ui;
@@ -95,7 +103,9 @@ void PauseScene::render(float /*alpha*/) {
     ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{4, 6, 14, 255}.withAlphaF(0.65f * k));
 
     const bool ghosts = game_.hasGhosts();
-    float w = ui.s(560), h = ui.s(ghosts ? 860 : 780);
+    // « Touches de ce niveau » (2.31): when the level has powers used with a key of their own.
+    const bool keys = !game_.powerKeys().powers.empty();
+    float w = ui.s(560), h = ui.s((ghosts ? 860 : 780) + (keys ? 80 : 0));
     // The map of what was explored sits on the right of the menu when the window has room.
     GameWorld* mapWorld = game_.world();
     const float gap = ui.s(24);
@@ -138,6 +148,13 @@ void PauseScene::render(float /*alpha*/) {
     ui.newBadge("guide", {bx, y, bw, bh}, "powers.guide");  // « NOUVEAU »: cards of the guide changed (2.25)
     if (openGuide) g_.app.pushScene(makePowerGuide(g_));
     y += bh + ui.s(16);
+    if (keys) {
+        // The keys of this level's powers, for this player (each power keeps its own key).
+        bool openKeys = ui.button("levelkeys", {bx, y, bw, bh}, "Touches de ce niveau");
+        ui.newBadge("levelkeys", {bx, y, bw, bh}, "pause.level_keys");  // « NOUVEAU » (2.31)
+        if (openKeys) g_.app.pushScene(makeLevelPowerKeys(g_, game_.level(), game_.powerKeyExtra()));
+        y += bh + ui.s(16);
+    }
     {
         // « Mode concentré »: the reduced HUD (also T / Partage in game).
         bool focus = g_.settings.gameplay.focusMode;

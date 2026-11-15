@@ -11,6 +11,7 @@
   "duration": 0,
   "color": "#8ffff0",
   "sound": "sounds/boomerang_throw.wav",
+  "suggestedKey": "P", "suggestedPad": {"button": "leftshoulder"},
   "params": {
     "damage": 1,
     "radius": 9,

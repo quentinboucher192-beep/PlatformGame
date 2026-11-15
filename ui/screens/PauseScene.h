@@ -28,6 +28,7 @@ private:
     float t_ = 0.0f;
     bool confirmQuit_ = false;
     float mapPan_ = 0.0f;  // world units the map was scrolled by
+    bool keysOpened_ = false;  // automated screenshots: « Touches de ce niveau » opened once
 };
 
 }  // namespace cosmic

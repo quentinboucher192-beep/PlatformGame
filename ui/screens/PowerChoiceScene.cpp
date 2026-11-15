@@ -68,8 +68,8 @@ void PowerChoiceScene::render(float /*alpha*/) {
     ui.panel(panel, true, 18);
     ui.r().drawRoundedRect(panel, ui.s(18), def->color.withAlpha(170), ui.s(2));
 
-    // The new power, and how it is used: the key of the slot it takes, or (dashed gold
-    // frame) its move / « passif ».
+    // The new power, and how it is used: its own key in this level (2.31: whatever the slot it
+    // takes), or (dashed gold frame) its move / « passif ».
     float x = panel.x + ui.s(40), y = panel.y + ui.s(34);
     Rect icon{x, y, ui.s(84), ui.s(84)};
     ui.r().fillRoundedRect(icon, ui.s(14), {7, 11, 24, 255});
@@ -85,8 +85,13 @@ void PowerChoiceScene::render(float /*alpha*/) {
         const std::string how = newUse.kind == PowerTrigger::Passive ? "Passif : toujours actif" : newUse.how;
         Glyphs::drawFreePowerUse(ui, newUse.keys, how, {tx, uy}, ui.s(24));
     } else {
-        const std::string t = "Il prendra la touche de l'emplacement où vous le mettez.";
-        ui.label(t, {tx, uy}, ui.fitFont(t, FontFace::Body, 18, textRoom), ui.theme().text, Align::Left, FontFace::Body, VAlign::Middle);
+        const ResolvedPowerKey none;
+        const ResolvedPowerKey* nk = game_.powerKeys().find(def->id);
+        const float kh = ui.s(30), kw = Glyphs::drawPowerKey(ui, nk ? *nk : none, {tx, uy}, kh);
+        const std::string t = "sa touche dans ce niveau, quel que soit son emplacement";
+        const float troom = textRoom - kw - ui.s(10);
+        ui.label(ui.elide(t, FontFace::Body, ui.fitFont(t, FontFace::Body, 18, troom), troom), {tx + kw + ui.s(10), uy}, ui.fitFont(t, FontFace::Body, 18, troom),
+                 ui.theme().text, Align::Left, FontFace::Body, VAlign::Middle);
     }
     y += headH + ui.s(16);
     ui.separator({panel.x + ui.s(40), y}, panel.w - ui.s(80));
@@ -99,8 +104,8 @@ void PowerChoiceScene::render(float /*alpha*/) {
     ui.label(question, {panel.x + ui.s(40), y}, ui.fitFont(question, FontFace::Body, 22, panel.w - ui.s(80)), ui.theme().text);
     y += ui.s(48);
 
-    // Carried powers, each in its slot with the key of that slot (or, dashed gold frame,
-    // the move that uses it / « passif »).
+    // Carried powers, each with its own key (or, dashed gold frame, the move that uses it /
+    // « passif »).
     ui.pushId("pchoice");
     float total = n * cardW + (n - 1) * gap;
     float cx = panel.center().x - total * 0.5f;
@@ -130,14 +135,14 @@ void PowerChoiceScene::render(float /*alpha*/) {
             bw = Glyphs::drawFreePowerUse(ui, use.keys, t, {0.0f, 0.0f}, h, 1.0f, false);
             Glyphs::drawFreePowerUse(ui, use.keys, t, {card.center().x - bw * 0.5f, ky}, h, st.enabled ? 1.0f : 0.5f);
         } else {
-            const Action key = powerSlotAction(i);
-            const std::string t = key == Action::Count ? "sans touche" : actionLabel(key);
-            const float kw = Glyphs::measureAction(ui, key, kh), gap2 = ui.s(8);
-            float lf = ui.fitFont(t, FontFace::Body, 16, std::max(ui.s(20), room - kw - gap2));
-            float tw = ui.text().measure(t, FontFace::Body, ui.s(lf)).x;
-            float kx = card.center().x - (kw + gap2 + tw) * 0.5f;
-            Glyphs::drawAction(ui, key, {kx, ky}, kh);
-            ui.label(t, {kx + kw + gap2, ky}, lf, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+            const ResolvedPowerKey none;
+            const ResolvedPowerKey* pk = game_.powerKeys().find(pd.id);
+            float h = kh, kw = Glyphs::drawPowerKey(ui, pk ? *pk : none, {0.0f, 0.0f}, h, false);
+            if (kw > room) {
+                h = kh * room / kw;
+                kw = Glyphs::drawPowerKey(ui, pk ? *pk : none, {0.0f, 0.0f}, h, false);
+            }
+            Glyphs::drawPowerKey(ui, pk ? *pk : none, {card.center().x - kw * 0.5f, ky}, h);
         }
         bool focusedNow = ui.focused("slot" + std::to_string(i));
         const std::string action = st.enabled ? (focusedNow ? "Remplacer" : "Laisser ici en échange") : "Autre bouton";

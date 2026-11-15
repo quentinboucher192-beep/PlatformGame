@@ -1,6 +1,8 @@
 #include "ui/widgets/Glyphs.h"
 
 #include "engine/core/Application.h"
+#include "game/powers/Power.h"
+#include "game/powers/PowerKeys.h"
 #include "ui/widgets/UIContext.h"
 
 namespace cosmic::Glyphs {
@@ -167,6 +169,39 @@ float drawFreePowerUse(UIContext& ui, const std::vector<Action>& keys, const std
         ui.text().draw(text, {x, pos.y}, st);
     }
     return w;
+}
+
+bool showsPad(UIContext& ui) {
+    const InputManager& in = ui.input();
+    return in.lastDevice() == InputDevice::Gamepad && in.hasGamepad();
+}
+
+float drawBinding(UIContext& ui, SDL_Scancode key, const PadBinding& padBinding, bool pad, Vec2 pos, float height, bool draw) {
+    if (pad) {
+        if (padBinding.kind != PadBinding::Kind::None && glyphIndex(padBinding) >= 0) {
+            if (draw) drawPadButton(ui, padBinding, pos, height);
+            return height;
+        }
+        const std::string name = padBinding.kind == PadBinding::Kind::None ? keyName(SDL_SCANCODE_UNKNOWN) : padBindingName(padBinding, ui.input().gamepadStyle());
+        return draw ? drawKeycap(ui, name, pos, height) : keycapWidth(ui, name, height);
+    }
+    return draw ? drawKeycap(ui, keyName(key), pos, height) : keycapWidth(ui, keyName(key), height);
+}
+
+float drawPowerKey(UIContext& ui, const ResolvedPowerKey& key, Vec2 pos, float height, bool draw) {
+    return drawBinding(ui, key.key, key.pad, showsPad(ui), pos, height, draw);
+}
+
+float drawPowerUse(UIContext& ui, const PowerDefinition& def, const PowerKeyMap& keys, Vec2 pos, float height, float alpha, bool draw,
+                   const std::string& passiveText) {
+    const PowerTriggerInfo use = powerTriggerInfo(def);
+    if (use.kind == PowerTrigger::SlotKey) {
+        ResolvedPowerKey none;
+        const ResolvedPowerKey* k = keys.find(def.id);
+        return drawPowerKey(ui, k ? *k : none, pos, height, draw);
+    }
+    const std::string t = use.kind == PowerTrigger::Passive ? passiveText : "";
+    return drawFreePowerUse(ui, use.keys, t, pos, height, alpha, draw);
 }
 
 float drawHint(UIContext& ui, Action a, const std::string& text, Vec2 pos, float height) {

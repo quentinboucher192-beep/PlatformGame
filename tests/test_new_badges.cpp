@@ -181,11 +181,12 @@ TEST_CASE("new badges: the shipped catalogue leads every novelty to a menu") {
         else CHECK(!parents[id].empty());  // a step leads somewhere
     }
     // Every path from a novelty ends on a widget drawn by a screen (a main menu entry, the
-    // guide's button), never in a loop.
+    // guide's button, a button of the pause menu, of the level editor's toolbar), never in a loop.
     std::function<bool(const std::string&, int)> reaches = [&](const std::string& id, int depth) {
         if (depth > 16) return false;
         auto it = parents.find(id);
-        if (it == parents.end() || it->second.empty()) return id.rfind("menu.", 0) == 0 || id == "powers.guide";
+        if (it == parents.end() || it->second.empty())
+            return id.rfind("menu.", 0) == 0 || id.rfind("pause.", 0) == 0 || id.rfind("editor.", 0) == 0 || id == "powers.guide";
         for (const auto& p : it->second)
             if (!reaches(p, depth + 1)) return false;
         return true;

@@ -15,6 +15,7 @@
 #include "game/gameplay/GameWorld.h"
 #include "game/powers/Power.h"
 #include "game/powers/PowerDemos.h"
+#include "game/powers/PowerKeys.h"
 #include "game/powers/PowerStats.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
@@ -25,6 +26,15 @@ namespace cosmic {
 namespace {
 
 constexpr float kDt = 1.0f / 120.0f;
+
+/// A power's suggested key and button (2.31), shown as its key in a level would be.
+ResolvedPowerKey suggested(const PowerDefinition& def) {
+    ResolvedPowerKey k;
+    k.power = def.id;
+    k.key = def.suggestedKey;
+    k.pad = def.suggestedPad;
+    return k;
+}
 
 struct Demo {
     PowerDemo def;
@@ -90,7 +100,7 @@ public:
         ui.popId();
         // What the dashed gold frame means (the same as in the HUD), after the intro.
         {
-            const std::string legend = "Cadre pointillé doré : pouvoir passif ou utilisé avec un mouvement, pas avec la touche de son emplacement.";
+            const std::string legend = "Cadre pointillé doré : pouvoir passif ou utilisé avec un mouvement, sans touche à lui.";
             float lx = margin + introSz.x + ui.s(36);
             float swatch = ui.s(26), room = backR.x - ui.s(24) - (lx + swatch + ui.s(10));
             float lf = ui.fitFont(legend, FontFace::Body, 16, room, 0.7f);
@@ -146,9 +156,9 @@ public:
                 else r.drawRoundedRect(vp, ui.s(6), def ? def->color.withAlpha(120) : ui.theme().border, ui.s(1.5f));
             }
             if (!def) continue;
-            // Name row: icon, name. A power used with the key of its slot shows no key (the
-            // player chooses it, Paramètres); the others show their move or « passif », in
-            // the dashed gold frame, on the right.
+            // Name row: icon, name, and on the right its suggested key (2.31: each level may
+            // choose another one, and the player too) or, in the dashed gold frame, its move or
+            // « passif ».
             float ty = vp.bottom() + ui.s(10);
             Rect icon{card.x + ui.s(12), ty, ui.s(34), ui.s(34)};
             ui.icon("ui/icons_powers.png", def->icon, 32, icon);
@@ -165,6 +175,11 @@ public:
                 }
                 keyX -= bw;
                 Glyphs::drawFreePowerUse(ui, use.keys, t, {keyX, icon.center().y}, keyH);
+            } else {
+                const ResolvedPowerKey k = suggested(*def);
+                float keyH = ui.s(26);
+                keyX -= Glyphs::drawPowerKey(ui, k, {0.0f, 0.0f}, keyH, false);
+                Glyphs::drawPowerKey(ui, k, {keyX, icon.center().y}, keyH);
             }
             float nameX = icon.right() + ui.s(10);
             float nameRoom = keyX - ui.s(10) - nameX;
@@ -307,9 +322,14 @@ private:
             }
             Glyphs::drawFreePowerUse(ui, use.keys, how, {nx, y + ui.s(60)}, h);
         } else {
-            // No key: the player gives one to each slot.
-            const std::string t = "Touche : celle de l'emplacement où il est équipé (Paramètres › Clavier / souris, Manette).";
-            ui.label(t, {nx, y + ui.s(54)}, ui.fitFont(t, FontFace::Body, 17, nroom), ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+            // Its suggested key; a level may give it another one (editor), the player too.
+            const ResolvedPowerKey k = suggested(*def);
+            const float kh = ui.s(28), kw = Glyphs::drawPowerKey(ui, k, {nx, y + ui.s(58)}, kh);
+            const std::string t = "touche suggérée : chaque niveau peut en choisir une autre, et vous aussi (choix du niveau, pause).";
+            const float room = nroom - kw - ui.s(12);
+            const float f = ui.fitFont(t, FontFace::Body, 17, room, 0.7f);
+            ui.label(ui.elide(t, FontFace::Body, f, room), {nx + kw + ui.s(12), y + ui.s(58)}, f, ui.theme().textDim, Align::Left, FontFace::Body,
+                     VAlign::Middle);
         }
         y += ui.s(92);
         // Left: the example, larger. Right: what it does and its characteristics.

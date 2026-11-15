@@ -11,6 +11,7 @@
   "duration": 0,
   "color": "#39f0d8",
   "sound": "sounds/decoy_spawn.wav",
+  "suggestedKey": "M", "suggestedPad": {"axis": "lefttrigger", "dir": 1},
   "params": {
     "duration": 3
   }

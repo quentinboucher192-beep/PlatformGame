@@ -46,6 +46,8 @@
 //                           align=<row>,cam=<0..2>,pause
 //   --analyze-levels <dir>  shortcut detector on the campaign levels (report + PPM maps)
 //   --seal-levels <dir>     add gates against the shortcuts found (tools/levelgen/seals)
+//   --plan-power-keys <dir> the keys of the powers of every campaign level, for
+//                           tools/levelgen (tools/levelgen/power_keys)
 //   --save-replay <file.cprz>
 //                           with --level: save the replay of the run when the level is completed
 //   --online-manifest <file.json>
@@ -73,6 +75,7 @@
 #include "game/GameServices.h"
 #include "game/content/ContentDatabase.h"
 #include "game/online/LevelFingerprint.h"
+#include "game/powers/PowerKeys.h"
 #include "packaging/PackageExporter.h"
 #include "ui/online/OnlineToasts.h"
 #include "ui/screens/Navigation.h"
@@ -230,6 +233,42 @@ int planStationsFromCommandLine(const std::string& folder) {
     return 0;
 }
 
+/// `--plan-power-keys <dir>`: the keys of the powers of every campaign level (2.31), written by
+/// tools/levelgen/levelkit.py into the level (`powerKeys`): each power's suggestion, conflicts
+/// resolved as for a level without its own choice, so that a power has the same key in every
+/// level whenever possible (the report says when it does not).
+int planPowerKeysFromCommandLine(const std::string& folder) {
+    ContentDatabase content;
+    content.reload();
+    std::error_code ec;
+    fs::create_directories(Paths::fromUtf8(folder), ec);
+    std::map<std::string, std::map<std::string, int>> used;  // power -> its keys ("key / pad") -> levels
+    for (const LevelEntry* e : content.levels()) {
+        if (e->source != ContentSource::Builtin) continue;
+        auto level = content.loadLevel(e->id);
+        if (!level) continue;
+        Json keys = planLevelPowerKeys(*level, content);
+        std::printf("%-14s", e->id.c_str());
+        for (const auto& [power, k] : keys.items()) {
+            std::string both = jstr(k, "key") + " / " + (k.contains("pad") ? k["pad"].dump() : std::string("-"));
+            std::printf("  %s=%s", power.c_str(), both.c_str());
+            ++used[power][both];
+        }
+        std::printf("\n");
+        FileUtil::saveJson(Paths::fromUtf8(folder) / (e->id + ".json"), Json{{"level", e->id}, {"powerKeys", keys}});
+    }
+    int split = 0;
+    for (const auto& [power, keys] : used)
+        if (keys.size() > 1) {
+            ++split;
+            std::printf("!! %s n'a pas la même touche partout :", power.c_str());
+            for (const auto& [k, n] : keys) std::printf("  %s (%d)", k.c_str(), n);
+            std::printf("\n");
+        }
+    std::printf("%zu pouvoirs, %d sans touche commune\n", used.size(), split);
+    return 0;
+}
+
 /// `--rate-levels [file]`: computes the difficulty of every campaign level (breakdown on the
 /// console); with a file, writes them as data/levels/ratings.json does.
 int rateFromCommandLine(const std::string& file) {
@@ -336,6 +375,12 @@ int main(int argc, char** argv) {
 
     if (std::string dir = value("--plan-stations"); !dir.empty()) {
         int rc = planStationsFromCommandLine(dir);
+        Log::shutdown();
+        return rc;
+    }
+
+    if (std::string dir = value("--plan-power-keys"); !dir.empty()) {
+        int rc = planPowerKeysFromCommandLine(dir);
         Log::shutdown();
         return rc;
     }

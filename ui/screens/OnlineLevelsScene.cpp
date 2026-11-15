@@ -16,6 +16,7 @@
 #include "packaging/PackageImporter.h"
 #include "ui/online/CommentsPanel.h"
 #include "ui/online/OnlineWidgets.h"
+#include "ui/screens/LevelPowerKeysScene.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/OnlineNav.h"
@@ -680,6 +681,25 @@ private:
             }
             y += ui.s(52);
         }
+        if (!local.empty() && ver == current) {
+            // The keys of its powers (2.31), for this player, before playing (installed only).
+            if (keysLevelId_ != local) {
+                keysLevelId_ = local;
+                keysLevel_ = g_.content.loadLevel(local);
+                if (keysLevel_ && levelKeyPowers(*keysLevel_, g_.content).empty()) keysLevel_.reset();
+            }
+            if (keysLevel_) {
+                UIContext::ButtonStyle ks;
+                ks.small = true;
+                ks.enabled = !working_;
+                const std::string label = "Touches des pouvoirs…";
+                ks.fontSize = ui.fitFont(label, FontFace::Bold, 20, w - ui.s(24), 0.6f);
+                bool openKeys = ui.button("powerkeys", {x, y, w, ui.s(42)}, label, ks);
+                ui.newBadge("powerkeys", {x, y, w, ui.s(42)}, "pause.level_keys");  // « NOUVEAU » (2.31)
+                if (openKeys && ks.enabled) g_.app.pushScene(makeLevelPowerKeys(g_, *keysLevel_));
+                y += ui.s(52);
+            }
+        }
         if (extreme) {
             UIContext::ButtonStyle rs;
             rs.small = true;
@@ -835,7 +855,9 @@ private:
     Json detail_ = Json::object();
     std::map<std::string, TexturePtr> thumbs_;
     bool working_ = false, autoPlay_ = false;
-    bool ghostAfterInstall_ = false;  // « Course contre un fantôme » on a level to install first
+    bool ghostAfterInstall_ = false;
+    std::string keysLevelId_;               // the installed level whose power keys can be set (2.31)
+    std::optional<LevelData> keysLevel_;    // loaded once; empty when none of its powers has a key  // « Course contre un fantôme » on a level to install first
     bool confirmReport_ = false, confirmRemove_ = false;
     int reportReason_ = 0;
     std::string status_;

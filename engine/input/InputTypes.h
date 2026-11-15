@@ -31,7 +31,9 @@ enum class Action : int {
     Interact,
     Special,  // power on the special button (time slow, plasma bomb...), see Dash
     // 2.24: the key of each power slot, in the order of the HUD: it uses the power equipped
-    // in that slot, whatever it is (Paramètres › Clavier / souris, Manette).
+    // in that slot (InputFrame bits, replays). Since 2.31 the settings give these no key: the
+    // scene that plays binds each one to the key of the power carried there, chosen per
+    // level (game/powers/PowerKeys.h), so a power keeps its key whatever its slot.
     PowerSlot1,
     PowerSlot2,
     PowerSlot3,
@@ -73,7 +75,8 @@ constexpr int powerSlotOf(Action a) {
 const char* actionId(Action a);
 const char* actionLabel(Action a);  // French display name
 /// The player binds it in the settings: the gameplay actions (moves, jump, attack,
-/// interact, power slots, pause...), except the buttons of the powers before 2.24.
+/// interact, pause...), except the buttons of the powers before 2.24 and, since 2.31, the
+/// power slots (their keys follow the powers carried, see PowerSlot1).
 bool actionIsRebindable(Action a);
 /// One of the buttons of the powers before 2.24 (Dash, Onde, Bouclier, Impulsion,
 /// Téléportation, Spécial): bound to nothing, read only from old replays and scripts.
@@ -116,10 +119,11 @@ struct InputBindings {
     static InputBindings defaults();
     void resetKeyboard();
     void resetGamepad();
+    /// The commands of the settings only: never the power slots (2.31) nor the buttons of the
+    /// powers before 2.24.
     Json toJson() const;
-    /// Settings saved before 2.24 have no power slot keys: the six power buttons of the time
-    /// (Dash, Onde, Bouclier, Impulsion, Téléportation, Spécial) become slots 1 to 6, so the
-    /// player keeps the keys they chose; a key already used by another action is dropped.
+    /// The keys of the power slots (2.24 to 2.31) and the buttons of the powers (before 2.24)
+    /// of older files are ignored: the keys of the powers are chosen per level since 2.31.
     static InputBindings fromJson(const Json& j);
     /// One key and one button per command (2.29: the settings show a single column). The
     /// second place holds only the fixed alternates: the arrows (keyboard) and the d-pad
@@ -159,5 +163,15 @@ inline bool isKeyboardScancode(SDL_Scancode sc) { return sc > SDL_SCANCODE_UNKNO
 /// What a mouse binding is, in words, for the settings (« clic gauche », « bouton latéral »…);
 /// "" for a key.
 std::string mouseBindingDetail(SDL_Scancode sc);
+
+/// A keyboard / mouse binding as files write it (settings, levels' `powerKeys`): the SDL
+/// name of a key (« K », « Left Shift »), « Mouse4 », « WheelUp », « WheelDown »; "" for none.
+std::string bindingName(SDL_Scancode sc);
+/// The binding of such a name; SDL_SCANCODE_UNKNOWN for "" or a name this game does not know.
+SDL_Scancode bindingFromName(const std::string& name);
+/// A gamepad binding as files write it: {"button": "b"}, {"axis": "righttrigger", "dir": 1},
+/// null for none.
+Json padBindingToJson(const PadBinding& b);
+PadBinding padBindingFromJson(const Json& j);
 
 }  // namespace cosmic

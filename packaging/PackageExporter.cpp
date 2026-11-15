@@ -51,7 +51,7 @@ ExportPlan PackageExporter::plan(const LevelData& level, const ExportOptions& op
             p.items.push_back({"enemies/" + FileUtil::slugify(id) + ".json", {}, bytes(d->toJson().dump(1)), "enemy", 0, id});
     for (const auto& id : deps.powers)
         if (const PowerDefinition* d = content_.power(id))
-            p.items.push_back({"powers/" + FileUtil::slugify(id) + ".json", {}, bytes(d->toJson().dump(1)), "power", 0, id});
+            p.items.push_back({"powers/" + FileUtil::slugify(id) + ".json", {}, bytes(d->toFileJson().dump(1)), "power", 0, id});
     Json effects = {{"format", "cosmic.effects"}, {"presets", content_.effects()}};
     p.items.push_back({"effects/effects.json", {}, bytes(effects.dump(1)), "effects"});
 

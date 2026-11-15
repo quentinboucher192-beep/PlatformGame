@@ -53,8 +53,9 @@ struct BossTrainingResult {
 /// official place of it. nullopt: it is in no level of the game.
 std::optional<CreaturePlace> bossTrainingPlace(const CreatureAtlas& atlas, const ContentDatabase& content, const std::string& bossId);
 
-/// The powers really carried with `wanted` granted in order (a power on the same input as an
-/// earlier one replaces it, as in a level), at most `slots` of them (the first ones kept).
+/// The powers really carried with `wanted` granted in order, as in a level since 2.24 (each
+/// power on a key of its own: none replaces another; each once), at most `slots` of them (the
+/// first ones kept).
 std::vector<std::string> fitTrainingPowers(const ContentDatabase& content, const std::vector<std::string>& wanted, int slots);
 
 /// Hearts a training can give (the player's own maximum is the default).

@@ -1,6 +1,7 @@
-// Keys of the power slots (2.24): the player binds a key to each slot of the HUD
-// (« Pouvoir 1 » … « Pouvoir 8 », Paramètres › Clavier / souris, Manette) and that key uses
-// the power equipped there, whatever it is. Passive powers and powers used with a move of
+// Keys of the power slots (2.24): each slot of the HUD has its action (InputFrame bits
+// PowerSlot1..8, replays) and that action uses the power equipped there, whatever it is; since
+// 2.31 the game binds it to the key of that power in the level (test_level_power_keys.cpp),
+// not to a key of the settings. Passive powers and powers used with a move of
 // the character (glider, triple jump, ground pound, charged shot, grapple) do not use the
 // key of their slot. Replays recorded before (format 2, one button per power) still load and
 // play exactly as before.
@@ -512,23 +513,20 @@ TEST_CASE("power keys: a run with slot keys plays back identically from its repl
     CHECK(simulationStateHash(v) == liveFinal);
 }
 
-TEST_CASE("power keys: settings saved before 2.24 get slot keys from the buttons of the powers") {
-    // Defaults: the six power buttons of before, in their order, on slots 1 to 6.
+TEST_CASE("power keys: the settings give no key to the power slots any more (2.31)") {
+    // Defaults: the commands only; the slots and the old power buttons have no key (the keys
+    // of the powers are chosen per level: tests/test_level_power_keys.cpp).
     InputBindings d = InputBindings::defaults();
-    CHECK(d.keys[static_cast<int>(Action::PowerSlot1)][0] == SDL_SCANCODE_K);
-    CHECK(d.keys[static_cast<int>(Action::PowerSlot2)][0] == SDL_SCANCODE_L);
-    CHECK(d.keys[static_cast<int>(Action::PowerSlot6)][0] == SDL_SCANCODE_F);
-    CHECK(d.pad[static_cast<int>(Action::PowerSlot1)][0] == PadBinding::button(SDL_GAMEPAD_BUTTON_EAST));
-    CHECK(d.pad[static_cast<int>(Action::PowerSlot2)][0] == PadBinding::axisPos(SDL_GAMEPAD_AXIS_RIGHT_TRIGGER));
-    // No default key used twice by gameplay actions; the old power buttons have none.
     std::set<int> keys;
     std::vector<PadBinding> pads;
     for (int a = 0; a < kFirstMenuAction; ++a) {
-        if (actionIsLegacyPowerKey(static_cast<Action>(a))) {
+        if (actionIsLegacyPowerKey(static_cast<Action>(a)) || powerSlotOf(static_cast<Action>(a)) >= 0) {
             CHECK(d.keys[a][0] == SDL_SCANCODE_UNKNOWN && d.keys[a][1] == SDL_SCANCODE_UNKNOWN);
             CHECK(d.pad[a][0].kind == PadBinding::Kind::None);
+            CHECK(!actionIsRebindable(static_cast<Action>(a)));
             continue;
         }
+        // No default key used twice by gameplay actions.
         for (auto sc : d.keys[a])
             if (sc != SDL_SCANCODE_UNKNOWN) {
                 CHECK(keys.count(sc) == 0);
@@ -540,56 +538,42 @@ TEST_CASE("power keys: settings saved before 2.24 get slot keys from the buttons
                 pads.push_back(pb);
             }
     }
-    // A file of 2.23: Dash rebound on Q, Onde on R, the gamepad's Dash on Y (north) after
-    // moving Interact to the right stick; the power buttons become the slot keys.
+    // A file of 2.23 (one button per power) and of 2.24-2.31 (keys per slot): those entries are
+    // ignored, the commands keep what the player chose.
     Json old = Json::parse(R"({
         "keyboard": {"jump": ["Space", "Z"], "attack": ["J", "X"], "dash": ["Q", ""], "wave": ["R", "C"],
-                     "shield": ["O", "V"], "impulse": ["I", "B"], "teleport": ["U", "N"], "special": ["F", "H"],
-                     "interact": ["E", "Return"]},
-        "gamepad": {"interact": [{"button": "rightstick"}, null], "dash": [{"button": "y"}, null],
-                    "special": [{"button": "leftshoulder"}, null], "shield": [null, null]}
+                     "interact": ["E", "Return"], "power_slot_3": ["G", ""]},
+        "gamepad": {"interact": [{"button": "rightstick"}, null], "dash": [{"button": "y"}, null]}
     })");
     InputBindings b = InputBindings::fromJson(old);
-    CHECK(b.keys[static_cast<int>(Action::PowerSlot1)][0] == SDL_SCANCODE_Q);
-    CHECK(b.keys[static_cast<int>(Action::PowerSlot1)][1] == SDL_SCANCODE_UNKNOWN);
-    CHECK(b.keys[static_cast<int>(Action::PowerSlot2)][0] == SDL_SCANCODE_R);
-    // One key per command (2.29): the second key of before is dropped.
-    CHECK(b.keys[static_cast<int>(Action::PowerSlot6)][0] == SDL_SCANCODE_F);
-    CHECK(b.keys[static_cast<int>(Action::PowerSlot6)][1] == SDL_SCANCODE_UNKNOWN);
-    CHECK(b.keys[static_cast<int>(Action::Dash)][0] == SDL_SCANCODE_UNKNOWN);  // bound to nothing now
-    CHECK(b.pad[static_cast<int>(Action::PowerSlot1)][0] == PadBinding::button(SDL_GAMEPAD_BUTTON_NORTH));
+    CHECK(b.keys[static_cast<int>(Action::PowerSlot1)][0] == SDL_SCANCODE_UNKNOWN);
+    CHECK(b.keys[static_cast<int>(Action::PowerSlot3)][0] == SDL_SCANCODE_UNKNOWN);
+    CHECK(b.keys[static_cast<int>(Action::Dash)][0] == SDL_SCANCODE_UNKNOWN);
+    CHECK(b.pad[static_cast<int>(Action::PowerSlot1)][0].kind == PadBinding::Kind::None);
     CHECK(b.pad[static_cast<int>(Action::Interact)][0] == PadBinding::button(SDL_GAMEPAD_BUTTON_RIGHT_STICK));
-    // The old special (left shoulder) goes to slot 6; slot 3 (old shield) was unbound.
-    CHECK(b.pad[static_cast<int>(Action::PowerSlot6)][0] == PadBinding::button(SDL_GAMEPAD_BUTTON_LEFT_SHOULDER));
-    CHECK(b.pad[static_cast<int>(Action::PowerSlot3)][0].kind == PadBinding::Kind::None);
-    // A default slot key the player gave to another action stays with that action.
-    Json clash = Json::parse(R"({"keyboard": {"attack": ["K", ""]}, "gamepad": {}})");
-    InputBindings c = InputBindings::fromJson(clash);
-    CHECK(c.keys[static_cast<int>(Action::Attack)][0] == SDL_SCANCODE_K);
-    // One key per command (2.29): its only key taken, the slot waits for the player's choice.
-    CHECK(c.keys[static_cast<int>(Action::PowerSlot1)][0] == SDL_SCANCODE_UNKNOWN);
-    CHECK(c.keys[static_cast<int>(Action::PowerSlot1)][1] == SDL_SCANCODE_UNKNOWN);
-    // Saved again: the slots are written, the old buttons are not; read back the same.
+    // One key per command (2.29): the second key of before is dropped.
+    CHECK(b.keys[static_cast<int>(Action::Attack)][0] == SDL_SCANCODE_J);
+    CHECK(b.keys[static_cast<int>(Action::Attack)][1] == SDL_SCANCODE_UNKNOWN);
+    // Saved again: neither the slots nor the old buttons are written; read back the same.
     Json saved = b.toJson();
-    CHECK(saved["keyboard"].contains("power_slot_1"));
+    CHECK(!saved["keyboard"].contains("power_slot_1"));
     CHECK(!saved["keyboard"].contains("dash"));
     InputBindings again = InputBindings::fromJson(saved);
     for (int a = 0; a < kActionCount; ++a) {
         CHECK(again.keys[a] == b.keys[a]);
         CHECK(again.pad[a] == b.pad[a]);
     }
-    // Once there are slot keys, an old button left in the file is ignored.
-    saved["keyboard"]["dash"] = Json::array({"M", ""});
-    CHECK(InputBindings::fromJson(saved).keys[static_cast<int>(Action::PowerSlot1)][0] == SDL_SCANCODE_Q);
 }
 
 TEST_CASE("power keys: a key pressed gives the slot's action, never the old power button") {
     InputManager in;
     in.setBindings(InputBindings::defaults());
+    // The game binds the slot to the key of the power carried there (here the dash's, K).
+    in.setPowerSlotKey(0, SDL_SCANCODE_K, PadBinding::button(SDL_GAMEPAD_BUTTON_EAST));
     in.beginFrame();
     SDL_Event e{};
     e.type = SDL_EVENT_KEY_DOWN;
-    e.key.scancode = SDL_SCANCODE_K;  // « Pouvoir 1 » by default (the Dash key before 2.24)
+    e.key.scancode = SDL_SCANCODE_K;
     in.handleEvent(e);
     PlayerInput p = in.consumePlayerInput();
     CHECK(p.isPressed(Action::PowerSlot1));

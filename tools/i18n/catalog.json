@@ -1484,12 +1484,16 @@
   {
    "fr": "Appuyez sur un bouton ou une gâchette de la manette",
    "where": [
+    "editors/level_editor/LevelEditorPowerKeys.cpp",
+    "ui/screens/LevelPowerKeysScene.cpp",
     "ui/screens/SettingsScene.cpp"
    ]
   },
   {
    "fr": "Appuyez sur une touche ou un bouton de la souris, ou tournez la molette (Échap : annuler)",
    "where": [
+    "editors/level_editor/LevelEditorPowerKeys.cpp",
+    "ui/screens/LevelPowerKeysScene.cpp",
     "ui/screens/SettingsScene.cpp"
    ]
   },
@@ -2198,6 +2202,18 @@
    "fr": "Aucun point de passage : une erreur renvoie au départ",
    "where": [
     "editors/level_editor/LevelEditorTools.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun pouvoir de ce niveau ne s'utilise avec une touche à lui : ajoutez des pouvoirs au départ (Niveau) ou des tablettes de pouvoir.",
+   "where": [
+    "editors/level_editor/LevelEditorPowerKeys.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun pouvoir de ce niveau ne s'utilise avec une touche à lui.",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
    ]
   },
   {
@@ -3413,6 +3429,12 @@
    ]
   },
   {
+   "fr": "Bouton de manette : {0}",
+   "where": [
+    "editors/level_editor/LevelEditorPowerKeys.cpp"
+   ]
+  },
+  {
    "fr": "bouton latéral arrière",
    "where": [
     "engine/input/InputTypes.cpp"
@@ -3670,7 +3692,7 @@
    ]
   },
   {
-   "fr": "Cadre pointillé doré : pouvoir passif ou utilisé avec un mouvement, pas avec la touche de son emplacement.",
+   "fr": "Cadre pointillé doré : pouvoir passif ou utilisé avec un mouvement, sans touche à lui.",
    "where": [
     "ui/screens/PowerGuideScene.cpp"
    ]
@@ -4487,6 +4509,12 @@
    ]
   },
   {
+   "fr": "Changer",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
    "fr": "Changer A / B…",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -4539,6 +4567,12 @@
    "fr": "Chaque modification est envoyée au serveur, qui la range dans un même ordre pour tous ; « Annuler » ne défait que vos propres modifications.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Chaque pouvoir garde sa touche dans tout le niveau, quel que soit son emplacement. Vos choix ne valent que pour vous et pour ce niveau ; « Par défaut » reprend la touche du niveau.",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
    ]
   },
   {
@@ -4830,6 +4864,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "choisie pour ce niveau",
+   "where": [
+    "editors/level_editor/LevelEditorPowerKeys.cpp"
    ]
   },
   {
@@ -5172,8 +5212,34 @@
   {
    "fr": "Clavier / souris",
    "where": [
+    "editors/level_editor/LevelEditorPowerKeys.cpp",
+    "ui/screens/LevelPowerKeysScene.cpp",
     "ui/screens/MainMenuScene.cpp",
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Clavier : même touche que « {0} » ({1})",
+   "where": [
+    "editors/level_editor/LevelEditorPowerKeys.cpp"
+   ]
+  },
+  {
+   "fr": "Clavier : « {0} » est déjà prise par « {1} » : « {2} » à la place.",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "Clavier : « {0} » est la touche de « {1} » : la commande l'emporte, ce pouvoir n'a pas de touche.",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "Clavier : « {0} » est la touche de « {1} » par défaut",
+   "where": [
+    "editors/level_editor/LevelEditorPowerKeys.cpp"
    ]
   },
   {
@@ -5228,6 +5294,12 @@
    "fr": "Cliquez sur un objet du niveau pour l'ajouter (Échap pour annuler)",
    "where": [
     "editors/level_editor/LevelEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Cliquez sur une touche puis appuyez sur la nouvelle (Échap : annuler).",
+   "where": [
+    "editors/level_editor/LevelEditorPowerKeys.cpp"
    ]
   },
   {
@@ -9879,6 +9951,7 @@
    "where": [
     "editors/level_editor/LevelEditorChat.cpp",
     "editors/level_editor/LevelEditorDialogs.cpp",
+    "editors/level_editor/LevelEditorPowerKeys.cpp",
     "game/levels/EventSystem.cpp",
     "ui/screens/CommunityPublishScene.cpp",
     "ui/screens/GhostOptionsScene.cpp",
@@ -11918,12 +11991,6 @@
    "where": [
     "server/src/live.ts",
     "server/src/projects.ts"
-   ]
-  },
-  {
-   "fr": "Il prendra la touche de l'emplacement où vous le mettez.",
-   "where": [
-    "ui/screens/PowerChoiceScene.cpp"
    ]
   },
   {
@@ -14859,6 +14926,12 @@
    ]
   },
   {
+   "fr": "Les touches des pouvoirs se règlent pour chaque niveau : éditeur, choix du niveau › Touches…, pause › Touches de ce niveau.",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
    "fr": "Les trois mondes, une dernière fois.",
    "where": [
     "data/levels/noyau_02.json"
@@ -15430,14 +15503,40 @@
   {
    "fr": "Manette",
    "where": [
+    "editors/level_editor/LevelEditorPowerKeys.cpp",
     "engine/input/InputManager.cpp",
+    "ui/screens/LevelPowerKeysScene.cpp",
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Manette : même bouton que « {0} » ({1})",
+   "where": [
+    "editors/level_editor/LevelEditorPowerKeys.cpp"
    ]
   },
   {
    "fr": "Manette : {0}",
    "where": [
     "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "Manette : « {0} » est déjà pris par « {1} » : « {2} » à la place.",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "Manette : « {0} » est le bouton de « {1} » : la commande l'emporte, ce pouvoir n'a pas de bouton.",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "Manette : « {0} » est le bouton de « {1} » par défaut",
+   "where": [
+    "editors/level_editor/LevelEditorPowerKeys.cpp"
    ]
   },
   {
@@ -16210,6 +16309,8 @@
   {
    "fr": "Modification annulée",
    "where": [
+    "editors/level_editor/LevelEditorPowerKeys.cpp",
+    "ui/screens/LevelPowerKeysScene.cpp",
     "ui/screens/SettingsScene.cpp"
    ]
   },
@@ -16838,6 +16939,12 @@
    ]
   },
   {
+   "fr": "Niveau : {0}",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
    "fr": "niveau créé avec une version plus récente du jeu",
    "where": [
     "game/levels/LevelData.cpp"
@@ -16866,6 +16973,12 @@
    "fr": "niveau différent du record",
    "where": [
     "server/src/replay.ts"
+   ]
+  },
+  {
+   "fr": "Niveau en lecture seule : dupliquez-le pour choisir ses touches.",
+   "where": [
+    "editors/level_editor/LevelEditorPowerKeys.cpp"
    ]
   },
   {
@@ -17512,6 +17625,12 @@
    ]
   },
   {
+   "fr": "Nouveau bouton : {0}",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
    "fr": "Nouveau bouton « Masquer les infos » (touche I, bouton Select de la manette) : le panneau de droite disparaît et la partie prend toute la largeur.",
    "where": [
     "data/news/changelog.json"
@@ -17701,6 +17820,12 @@
    "fr": "Nouvelle planète : Aethra, la planète des sanctuaires (après Sylvanox, Glacior et Pyralis) — 4 niveaux complets, chacun gardé par un nouveau gardien.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Nouvelle touche : {0}",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
    ]
   },
   {
@@ -18724,6 +18849,7 @@
    "fr": "Par défaut",
    "where": [
     "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/LevelPowerKeysScene.cpp",
     "ui/screens/SettingsScene.cpp"
    ]
   },
@@ -19164,7 +19290,8 @@
    "fr": "Passif",
    "where": [
     "ui/screens/PowerChoiceScene.cpp",
-    "ui/screens/PowerGuideScene.cpp"
+    "ui/screens/PowerGuideScene.cpp",
+    "ui/widgets/Glyphs.h"
    ]
   },
   {
@@ -20606,7 +20733,9 @@
    "fr": "Pouvoir",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
+    "editors/level_editor/LevelEditorPowerKeys.cpp",
     "game/levels/ObjectTypes.cpp",
+    "ui/screens/LevelPowerKeysScene.cpp",
     "ui/screens/NotificationsScene.cpp"
    ]
   },
@@ -20707,19 +20836,14 @@
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "saves/HudLayout.cpp",
     "ui/screens/BossTrainingScene.cpp",
-    "ui/screens/GhostSetupScene.cpp"
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/SettingsScene.cpp"
    ]
   },
   {
    "fr": "Pouvoirs (record)",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
-   ]
-  },
-  {
-   "fr": "Pouvoirs 5 à 8 : seulement dans les niveaux qui permettent d'en porter plus de 4.",
-   "where": [
-    "ui/screens/SettingsScene.cpp"
    ]
   },
   {
@@ -20762,12 +20886,6 @@
    "fr": "Pouvoirs portés au maximum",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
-   ]
-  },
-  {
-   "fr": "Pouvoirs équipés",
-   "where": [
-    "ui/screens/SettingsScene.cpp"
    ]
   },
   {
@@ -21090,6 +21208,12 @@
    "fr": "Projette un croissant d'énergie qui traverse un ennemi, active les récepteurs et dissout les barrières d'énergie.",
    "where": [
     "data/powers/wave.json"
+   ]
+  },
+  {
+   "fr": "Proposer",
+   "where": [
+    "editors/level_editor/LevelEditorPowerKeys.cpp"
    ]
   },
   {
@@ -22046,6 +22170,7 @@
   {
    "fr": "Recommencer",
    "where": [
+    "game/powers/PowerKeys.cpp",
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/PauseScene.cpp",
     "ui/screens/ResultsScene.cpp"
@@ -22918,6 +23043,7 @@
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/CollectionScene.cpp",
+    "ui/screens/LevelPowerKeysScene.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/OnlineAccountScene.cpp",
     "ui/screens/PowerGuideScene.cpp",
@@ -23806,6 +23932,12 @@
    ]
   },
   {
+   "fr": "sa touche dans ce niveau, quel que soit son emplacement",
+   "where": [
+    "ui/screens/PowerChoiceScene.cpp"
+   ]
+  },
+  {
    "fr": "Sahara occidental",
    "where": [
     "data/online/countries.json",
@@ -24009,12 +24141,6 @@
    "where": [
     "data/cosmetics/cosmetics.json",
     "ui/screens/CollectionScene.cpp"
-   ]
-  },
-  {
-   "fr": "sans touche",
-   "where": [
-    "ui/screens/PowerChoiceScene.cpp"
    ]
   },
   {
@@ -25526,6 +25652,24 @@
    "fr": "Succès requis",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Suggéré : {0}",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "suggérée",
+   "where": [
+    "editors/level_editor/LevelEditorPowerKeys.cpp"
+   ]
+  },
+  {
+   "fr": "Suggérée : {0}",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
    ]
   },
   {
@@ -27083,9 +27227,9 @@
    ]
   },
   {
-   "fr": "Touche : celle de l'emplacement où il est équipé (Paramètres › Clavier / souris, Manette).",
+   "fr": "Touche : {0}",
    "where": [
-    "ui/screens/PowerGuideScene.cpp"
+    "editors/level_editor/LevelEditorPowerKeys.cpp"
    ]
   },
   {
@@ -27095,15 +27239,76 @@
    ]
   },
   {
+   "fr": "touche suggérée : chaque niveau peut en choisir une autre, et vous aussi (choix du niveau, pause).",
+   "where": [
+    "ui/screens/PowerGuideScene.cpp"
+   ]
+  },
+  {
    "fr": "Touches : les boutons de la souris (gauche, droit, molette, latéraux et boutons en plus des souris de jeu) et la molette se lient aux commandes dans Clavier / souris.",
    "where": [
     "data/news/changelog.json"
    ]
   },
   {
+   "fr": "TOUCHES DE CE NIVEAU",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "Touches de ce niveau",
+   "where": [
+    "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
+   "fr": "Touches de son niveau (à changer au choix du niveau ou en pause)",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Touches des pouvoirs",
+   "where": [
+    "editors/level_editor/LevelEditorLayout.cpp",
+    "editors/level_editor/LevelEditorPowerKeys.cpp"
+   ]
+  },
+  {
    "fr": "Touches des pouvoirs par emplacement : « Pouvoir 1 » à « Pouvoir 8 » se règlent dans Paramètres › Clavier / souris et Manette ; la touche d'un emplacement utilise le pouvoir qui y est équipé, quel qu'il soit. Vos anciennes touches de pouvoirs deviennent celles des emplacements 1 à 6.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Touches des pouvoirs…",
+   "where": [
+    "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Touches du niveau",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "Touches proposées : les suggestions des pouvoirs, sans conflit",
+   "where": [
+    "editors/level_editor/LevelEditorPowerKeys.cpp"
+   ]
+  },
+  {
+   "fr": "Touches suggérées",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "Touches…",
+   "where": [
+    "ui/screens/PlanetMapScene.cpp"
    ]
   },
   {
@@ -28117,7 +28322,6 @@
   {
    "fr": "Un pouvoir sur la même touche qu'un autre le remplace.",
    "where": [
-    "ui/screens/BossTrainingScene.cpp",
     "ui/screens/GhostSetupScene.cpp"
    ]
   },
@@ -28426,9 +28630,9 @@
    ]
   },
   {
-   "fr": "Une touche par emplacement du HUD : elle utilise le pouvoir équipé dans cet emplacement, quel qu'il soit. Les pouvoirs au cadre pointillé doré (passifs, ou utilisés avec le saut, l'attaque, Bas + Attaque, Interagir) n'utilisent pas la touche de leur emplacement.",
+   "fr": "Une touche et un bouton de manette pour chaque pouvoir du niveau qui s'utilise avec une touche à lui : les mêmes quel que soit l'emplacement du pouvoir. Sans choix ici, un pouvoir garde sa touche suggérée. Chaque joueur peut changer les siennes (choix du niveau, pause).",
    "where": [
-    "ui/screens/SettingsScene.cpp"
+    "editors/level_editor/LevelEditorPowerKeys.cpp"
    ]
   },
   {
@@ -29772,6 +29976,12 @@
    "fr": "Vos performances ont été envoyées à Cosmic Online.",
    "where": [
     "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "Vos touches",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
    ]
   },
   {
@@ -32030,6 +32240,12 @@
    ]
   },
   {
+   "fr": "« {0} » : « {1} » dans ce niveau.",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
    "fr": "« {0} » est dans l'ATELIER → Mes niveaux.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -32042,16 +32258,45 @@
    ]
   },
   {
+   "fr": "« {0} » est la touche de « {1} » : la commande l'emporte, choisissez une autre touche.",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "« {0} » est le bouton de « {1} » : la commande l'emporte, choisissez un autre bouton.",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
    "fr": "« {0} » et « {1} » se chevauchent : déplacez ou réduisez l'un des deux pour enregistrer.",
    "where": [
     "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
+   "fr": "« {0} » prend « {1} » : les deux pouvoirs échangent leurs boutons.",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "« {0} » prend « {1} » : les deux pouvoirs échangent leurs touches.",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
    "fr": "« {0} » remplace « {1} » (même touche).",
    "where": [
-    "ui/screens/BossTrainingScene.cpp",
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "« {0} » reprend les touches du niveau.",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
    ]
   },
   {

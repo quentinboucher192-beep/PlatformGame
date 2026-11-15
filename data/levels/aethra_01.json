@@ -5282,5 +5282,26 @@
   ]
  },
  "killY": 880,
- "maxPowers": 4
+ "maxPowers": 4,
+ "powerKeys": {
+  "boomerang": {
+   "key": "P",
+   "pad": {
+    "button": "leftshoulder"
+   }
+  },
+  "dash": {
+   "key": "K",
+   "pad": {
+    "button": "b"
+   }
+  },
+  "wave": {
+   "key": "L",
+   "pad": {
+    "axis": "righttrigger",
+    "dir": 1
+   }
+  }
+ }
 }

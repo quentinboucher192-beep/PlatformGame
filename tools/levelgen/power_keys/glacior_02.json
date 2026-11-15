@@ -1,0 +1,31 @@
+{
+  "level": "glacior_02",
+  "powerKeys": {
+    "dash": {
+      "key": "K",
+      "pad": {
+        "button": "b"
+      }
+    },
+    "shield": {
+      "key": "O",
+      "pad": {
+        "button": "leftshoulder"
+      }
+    },
+    "teleport": {
+      "key": "U",
+      "pad": {
+        "axis": "lefttrigger",
+        "dir": 1
+      }
+    },
+    "wave": {
+      "key": "L",
+      "pad": {
+        "axis": "righttrigger",
+        "dir": 1
+      }
+    }
+  }
+}

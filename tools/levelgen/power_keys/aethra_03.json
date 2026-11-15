@@ -1,0 +1,25 @@
+{
+  "level": "aethra_03",
+  "powerKeys": {
+    "dash": {
+      "key": "K",
+      "pad": {
+        "button": "b"
+      }
+    },
+    "decoy": {
+      "key": "M",
+      "pad": {
+        "axis": "lefttrigger",
+        "dir": 1
+      }
+    },
+    "wave": {
+      "key": "L",
+      "pad": {
+        "axis": "righttrigger",
+        "dir": 1
+      }
+    }
+  }
+}

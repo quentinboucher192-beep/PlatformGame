@@ -10,6 +10,7 @@
 #include "game/enemies/EnemyDefinition.h"
 #include "game/gameplay/GameRenderer.h"
 #include "game/gameplay/GameWorld.h"
+#include "game/powers/PowerKeys.h"
 
 namespace cosmic {
 
@@ -74,6 +75,7 @@ private:
     fs::path animMount_;
 
     std::unique_ptr<GameWorld> arena_;
+    PowerKeyMap arenaKeys_;  // the arena's powers on their suggested keys (2.31)
     GameRenderer arenaRenderer_;
     bool arenaDirty_ = true;
     bool controlPlayer_ = false;

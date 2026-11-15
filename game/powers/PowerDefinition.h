@@ -28,9 +28,19 @@ struct PowerDefinition {
     std::string soundEnd;
     Json params = Json::object();
     std::string sourcePath;
+    /// 2.31: the key suggested for this power when it uses a key of its own (keyboard / mouse
+    /// binding as the settings write it, `suggestedKey`; gamepad binding, `suggestedPad`): what
+    /// a level without its own choice (powerKeys) gives it. Chosen so that the powers met
+    /// together never share a key and never take the key of a command (see data/powers).
+    /// Not part of the gameplay: toJson() leaves them out (the fingerprints hash it).
+    SDL_Scancode suggestedKey = SDL_SCANCODE_UNKNOWN;
+    PadBinding suggestedPad;
 
     float param(const char* key, float def) const { return jget<float>(params, key, def); }
+    /// What the power plays like (fingerprints, package conflicts): never the suggested keys.
     Json toJson() const;
+    /// The whole file (data/powers, packages): toJson() and the suggested keys.
+    Json toFileJson() const;
     static PowerDefinition fromJson(const Json& j);
 };
 

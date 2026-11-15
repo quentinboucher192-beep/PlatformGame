@@ -38,7 +38,7 @@ public:
 private:
     enum class Tool { Select, Place, Pan };
     enum class Drag { None, Move, Resize, BoxSelect, Pan, Create };
-    enum class Modal { None, Open, New, Settings, Events, Cinematics, Help, ConfirmQuit };
+    enum class Modal { None, Open, New, Settings, Events, Cinematics, Help, ConfirmQuit, PowerKeys };
     enum class LeftTab { Explorer, History, Check };
     enum class Menu { None, File, Test };
     struct Issue {
@@ -134,6 +134,12 @@ private:
     void modalEvents(const Rect& r);
     void modalCinematics(const Rect& r);
     void modalHelp(const Rect& r);
+    /// « Touches des pouvoirs » (2.31, LevelEditorPowerKeys.cpp): the key and gamepad button of
+    /// each power of the level used with a key of its own (LevelData::powerKeys).
+    void modalPowerKeys(const Rect& r);
+    std::string powerKeyCapture_;  // the power whose key (or button) is being captured
+    bool powerKeyCapturePad_ = false;
+    float powerKeyCaptureTimer_ = 0.0f;
     void flash(const std::string& msg, bool error = false);
 
     GameServices& g_;

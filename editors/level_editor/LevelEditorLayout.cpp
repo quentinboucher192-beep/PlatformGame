@@ -94,6 +94,14 @@ void LevelEditorScene::drawToolbar(const Rect& r) {
     }
     if (btn("events", "Événements", 124)) modal_ = Modal::Events;
     if (btn("cine", "Cinématiques", 136)) modal_ = Modal::Cinematics;
+    {
+        // « Touches des pouvoirs » (2.31): the keys of the level's powers.
+        const std::string label = "Touches des pouvoirs";
+        const float w = (ui.text().measure(label, FontFace::Bold, ui.s(18)).x + ui.s(30)) / ui.s(1.0f);
+        Rect kb{x, y, ui.s(w), h};
+        if (btn("powerkeys", label, w)) modal_ = Modal::PowerKeys;
+        ui.newBadge("powerkeys", kb, "editor.power_keys");  // « NOUVEAU » (2.31)
+    }
     // Right: test (with its menu), help; between them, live editing presence.
     float presenceX = x + ui.s(10);
     x = r.right() - ui.s(14) - ui.s(40) - ui.s(6) - ui.s(36) - ui.s(2) - ui.s(128);

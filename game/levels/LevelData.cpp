@@ -302,6 +302,8 @@ Json LevelData::toJson() const {
     j["startPowers"] = startPowers;
     j["maxPowers"] = maxPowers;
     j["cameraZoom"] = cameraZoom;
+    // Written only when chosen, so that the levels of before stay byte for byte the same.
+    if (powerKeys.is_object() && !powerKeys.empty()) j["powerKeys"] = powerKeys;
     Json ls = Json::array();
     for (const auto& l : layers) ls.push_back(l.toJson());
     j["layers"] = ls;
@@ -371,6 +373,7 @@ std::optional<LevelData> LevelData::fromJson(const Json& j, std::string* error) 
             if (p.is_string()) d.startPowers.push_back(p.get<std::string>());
     d.maxPowers = std::clamp(jget<int>(j, "maxPowers", kDefaultMaxPowers), 0, kMaxPowerSlots);
     d.cameraZoom = std::clamp(jget<float>(j, "cameraZoom", 1.0f), 0.5f, 2.0f);
+    if (j.contains("powerKeys")) d.powerKeys = sanitizePowerKeys(j["powerKeys"]);
     if (j.contains("layers") && j["layers"].is_array())
         for (const auto& l : j["layers"]) d.layers.push_back(LevelLayer::fromJson(l));
     d.ensureDefaultLayers();
@@ -389,6 +392,26 @@ std::optional<LevelData> LevelData::fromJson(const Json& j, std::string* error) 
     if (j.contains("outro")) d.outro = CinematicDef::fromJson(j["outro"]);
     if (j.contains("metadata") && j["metadata"].is_object()) d.metadata = j["metadata"];
     return d;
+}
+
+Json sanitizePowerKeys(const Json& j) {
+    Json out = Json::object();
+    if (!j.is_object()) return out;
+    auto shortString = [](const Json& v, size_t max) { return v.is_string() && !v.get<std::string>().empty() && v.get<std::string>().size() <= max; };
+    for (const auto& [power, v] : j.items()) {
+        if (out.size() >= 64) break;
+        if (power.empty() || power.size() > 64 || !v.is_object()) continue;
+        Json e = Json::object();
+        if (v.contains("key") && shortString(v["key"], 32)) e["key"] = v["key"];
+        if (v.contains("pad") && v["pad"].is_object()) {
+            const Json& p = v["pad"];
+            if (p.contains("button") && shortString(p["button"], 32)) e["pad"] = {{"button", p["button"]}};
+            else if (p.contains("axis") && shortString(p["axis"], 32))
+                e["pad"] = {{"axis", p["axis"]}, {"dir", p.contains("dir") && p["dir"].is_number() && p["dir"].get<double>() < 0.0 ? -1 : 1}};
+        }
+        if (!e.empty()) out[power] = e;
+    }
+    return out;
 }
 
 LevelData LevelData::makeEmpty(const std::string& id, const std::string& name, const std::string& planet) {

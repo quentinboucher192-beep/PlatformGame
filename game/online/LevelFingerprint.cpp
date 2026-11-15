@@ -25,6 +25,9 @@ std::optional<LevelFingerprint> fingerprintLevelJson(const Json& level) {
     // online presentation only (the one life it needs is in the level's rules): left out.
     Json canonical = level;
     canonical.erase("extreme");
+    // The keys of the powers (2.31) are each player's comfort, not the gameplay: left out, so
+    // that choosing them never changes a level's fingerprint (records, replays, ghosts kept).
+    canonical.erase("powerKeys");
     f.hash = Sha256::hex(canonical.dump());
     return f;
 }
@@ -54,6 +57,7 @@ std::optional<LevelFingerprint> fingerprintRankedLevel(const ContentDatabase& co
         if (const PowerDefinition* d = content.power(id)) powers[id] = d->toJson();
     Json levelPart = levelJson;
     levelPart.erase("extreme");
+    levelPart.erase("powerKeys");  // the keys of the powers (2.31): see fingerprintLevelJson
     Json bundle = {{"format", "cosmic.ranked-level"}, {"simulation", kRankingGeneration}, {"level", levelPart},
                    {"enemies", enemies},          {"powers", powers},                  {"player", content.playerConfig()}};
     base->hash = Sha256::hex(bundle.dump());

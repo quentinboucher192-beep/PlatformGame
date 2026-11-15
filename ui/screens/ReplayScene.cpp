@@ -34,6 +34,7 @@
 #include "game/ghost/ReplayPlayback.h"
 #include "game/online/LevelFingerprint.h"
 #include "game/online/Replay.h"
+#include "ui/screens/LevelPowerKeysScene.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/ReplayCompareNav.h"
 #include "ui/widgets/Glyphs.h"
@@ -117,6 +118,7 @@ public:
     void onExit() override {
         if (mounted_) g_.app.resources().popMount();
         mounted_ = false;
+        g_.app.input().clearPowerSlotKeys();
     }
 
     void update(float dt) override {
@@ -131,6 +133,12 @@ public:
         if (!loaded()) return;
         if (playback_) updateExact(dt);
         else updateTrace(dt);
+        if (playback_) {
+            // The HUD shows each power with its key in this level for this player (2.31).
+            if (!powerKeysReady_) powerKeys_ = playerPowerKeys(g_, level_);
+            powerKeysReady_ = true;
+            applyPowerSlotKeys(g_.app.input(), world().player(), powerKeys_);
+        }
         updateGhosts(dt);
         updateCamera(dt);
     }
@@ -1573,6 +1581,8 @@ private:
     std::string levelId_;
     ReplayChoice a_, b_;
     LevelData level_;
+    PowerKeyMap powerKeys_;  // the keys of the level's powers, for the HUD (2.31)
+    bool powerKeysReady_ = false;
     std::string rankedHash_, gameplayHash_;
     bool mounted_ = false;
     std::unique_ptr<ReplayPlayback> playback_;

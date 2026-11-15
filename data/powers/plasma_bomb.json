@@ -11,6 +11,7 @@
   "duration": 0,
   "color": "#ff8a3c",
   "sound": "sounds/bomb_explode.wav",
+  "suggestedKey": "H", "suggestedPad": {"axis": "righty", "dir": 1},
   "params": {
     "speed": 300,
     "gravity": 820,

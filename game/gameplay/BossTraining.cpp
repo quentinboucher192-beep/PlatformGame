@@ -26,8 +26,10 @@ std::optional<CreaturePlace> bossTrainingPlace(const CreatureAtlas& atlas, const
 }
 
 std::vector<std::string> fitTrainingPowers(const ContentDatabase& content, const std::vector<std::string>& wanted, int slots) {
-    // The same rules as in a level: granted one after the other on a player of its own.
+    // The same rules as in a level: granted one after the other on a player of its own, each
+    // power on a key of its own (so two powers of the old special button go together).
     Player probe;
+    probe.setKeysPerSlot(true);
     for (const std::string& id : wanted)
         if (const PowerDefinition* d = content.power(id)) probe.grantPower(*d);
     std::vector<std::string> out;

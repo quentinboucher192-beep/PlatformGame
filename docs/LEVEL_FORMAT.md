@@ -24,6 +24,7 @@ L'éditeur de niveaux lit et écrit ce format ; le niveau officiel
   "medals": { "bronze": {}, "silver": { "maxTime": 420 }, "gold": { "maxTime": 270 },
               "platinum": { "maxTime": 200, "maxDeaths": 0 } },
   "startPowers": [],
+  "powerKeys": { "dash": { "key": "K", "pad": { "button": "b" } }, … },
   "layers": [ … ], "objects": [ … ], "events": [ … ],
   "intro": { … }, "outro": { … }, "metadata": { … }
 }
@@ -45,6 +46,49 @@ L'éditeur de niveaux lit et écrit ce format ; le niveau officiel
 * Propriété `needsPower` (tout objet) : pouvoir que cet obstacle demande, pour le calcul des
   stations de pouvoirs (`CosmicPlatformer --plan-stations`), quand le type de l'objet ne le
   dit pas (chute de lave que seul le bouclier traverse, récepteur hors de portée de l'onde…).
+
+### Touches des pouvoirs (`powerKeys`, 2.31)
+
+Un pouvoir qui s'utilise avec une touche à lui (pas un pouvoir passif, ni un pouvoir utilisé
+avec un mouvement : planeur, triple saut, frappe sismique, tir chargé, grappin) garde la même
+touche dans tout le niveau, quel que soit son emplacement dans le HUD. Facultatif :
+
+```json
+"powerKeys": {
+  "dash": { "key": "K", "pad": { "button": "b" } },
+  "wave": { "key": "Mouse4", "pad": { "axis": "righttrigger", "dir": 1 } },
+  "shield": { "key": "O" }
+}
+```
+
+* Clé : l'identifiant d'un pouvoir du niveau qui utilise une touche (pouvoirs de départ,
+  tablettes et stations `power_unlock`, pouvoirs donnés par l'action `givePower`).
+* `key` : une touche du clavier ou de la souris, écrite comme dans les paramètres : le nom SDL
+  de la touche (`"K"`, `"Left Shift"`, `"Space"`…), `"Mouse1"` à `"Mouse32"`, `"WheelUp"`,
+  `"WheelDown"`. Les touches sont des positions physiques : `"Q"` est la touche A d'un
+  clavier AZERTY (le jeu affiche toujours le nom de la disposition du joueur).
+* `pad` : un bouton (`{"button": "b"}`, noms SDL : `a`, `b`, `x`, `y`, `leftshoulder`,
+  `rightstick`…) ou une direction d'axe (`{"axis": "lefttrigger", "dir": 1}`).
+* Un pouvoir absent (ou sans `key` / `pad`) prend la **touche suggérée** de sa définition
+  (`suggestedKey`, `suggestedPad` dans `data/powers/<id>.json`) : les suggestions ne se
+  chevauchent dans aucun niveau de la campagne et ne prennent aucune touche par défaut des
+  commandes de base (déplacements, saut, attaque, interagir, pause, mode concentré,
+  fantômes, R / Vue pour recommencer). Les anciens niveaux, sans `powerKeys`, utilisent ces
+  suggestions.
+* Chaque joueur peut changer les touches d'un niveau pour lui seul (choix du niveau ›
+  *Touches…*, pause › *Touches de ce niveau*, `saves/power_keys.json`), puis revenir à
+  celles du niveau (*Par défaut*). Ordre : le choix du joueur, puis celui du niveau, puis la
+  suggestion. Une touche d'une commande de base du joueur reste à la commande (le pouvoir
+  n'a alors pas de touche, signalé). Deux pouvoirs sur la même touche : le choix du joueur,
+  puis celui du niveau, puis le premier pouvoir dans l'ordre du niveau la garde ; l'autre
+  reçoit la première touche libre d'une liste fixe (déterministe, signalé).
+* **Hors du jeu proprement dit** : `powerKeys` ne fait partie d'aucune empreinte (classée,
+  communauté, fantômes) ; le choisir ou le changer garde les records, replays et fantômes du
+  niveau. Les entrées enregistrées restent les bits des emplacements (`PowerSlot1..8`) : la
+  scène de jeu relie chaque emplacement à la touche du pouvoir qu'il porte.
+* Campagne : `CosmicPlatformer --plan-power-keys tools/levelgen/power_keys` écrit les touches
+  de chaque niveau (les suggestions, sans conflit, les mêmes d'un niveau à l'autre), que
+  `tools/levelgen` recopie dans les niveaux générés.
 
 ### Stations de pouvoirs (campagne)
 
