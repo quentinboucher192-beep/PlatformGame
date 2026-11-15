@@ -153,6 +153,7 @@ route("PUT", `${V}/records/{recordId}/replay`, (ctx) => records.uploadReplay(ctx
 // Globe
 route("GET", `${V}/globe/records`, globe.globeRecords, { viewer: true, cacheable: true });
 route("GET", `${V}/globe/countries`, (ctx) => globe.globeCountries(ctx), { cacheable: true });
+route("GET", `${V}/globe/players`, (ctx) => globe.globePlayers(ctx), { cacheable: true });
 route("GET", `${V}/globe/records/{countryCode}`, globe.globeCountryRecords, { viewer: true, cacheable: true });
 
 // Friends

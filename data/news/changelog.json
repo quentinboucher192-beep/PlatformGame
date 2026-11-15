@@ -1,4 +1,10 @@
 {
+  "2.26.0": [
+    "Globe des classements : les points des pays sont bien visibles (taille selon l'écran et le zoom, contour, halo, nombre de joueurs dans une pastille) et s'effacent avant le bord du globe.",
+    "SOCIAL : un globe de tous les joueurs de Cosmic Online par pays (centre du pays seulement, uniquement les joueurs qui ont choisi d'apparaître sur le globe avec un profil public), avec le total de joueurs et de pays.",
+    "Messages non lus : un compteur rouge sur SOCIAL et sur « En ligne » dans le menu principal, et un compteur sur chaque conversation et chaque groupe ; il disparaît à l'ouverture. Les demandes d'ami ont leur propre compteur orange.",
+    "En anglais, les noms de groupes et les messages des joueurs restent tels qu'ils ont été écrits."
+  ],
   "2.25.0": [
     "Touches des pouvoirs par emplacement : « Pouvoir 1 » à « Pouvoir 8 » se règlent dans Paramètres › Clavier / souris et Manette ; la touche d'un emplacement utilise le pouvoir qui y est équipé, quel qu'il soit. Vos anciennes touches de pouvoirs deviennent celles des emplacements 1 à 6.",
     "Les pouvoirs qui n'utilisent pas la touche de leur emplacement ont un cadre pointillé doré dans le HUD, au choix d'un pouvoir et dans le guide : passifs (aimant, dash aérien) ou utilisés avec un mouvement (planeur, triple saut, frappe au sol, tir chargé, grappin), avec la touche concernée.",

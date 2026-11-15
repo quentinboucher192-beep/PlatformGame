@@ -4,6 +4,7 @@
 
 #include "engine/core/Easing.h"
 #include "game/GameServices.h"
+#include "ui/online/OnlineWidgets.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
 #include "ui/widgets/Glyphs.h"
@@ -76,20 +77,23 @@ public:
         Rect side{x - ui.s(40), y - ui.s(40), w + ui.s(80), rows * (h + gap) + ui.s(70)};
         ui.r().fillRoundedRect(side, ui.s(18), Color{6, 10, 22, 150});
         ui.pushId("main");
-        auto btn = [&](const char* id, const std::string& label, const std::string& sub, bool primary = false) {
+        // `badge`: unread messages, in a red pill at the right edge (the subtitle keeps the room left of it).
+        auto btn = [&](const char* id, const std::string& label, const std::string& sub, bool primary = false, int badge = 0) {
             UIContext::ButtonStyle st;
             st.primary = primary;
             st.align = Align::Left;
             float slide = (1.0f - applyEase(Ease::OutCubic, std::clamp((t_ - 0.1f) * 3.0f, 0.0f, 1.0f))) * ui.s(-60);
             bool c = ui.button(id, {x + slide, y, w, h}, label, st);
             ui.newBadge(id, {x + slide, y, w, h}, std::string("menu.") + id);
+            float right = x + slide + w - ui.s(20);
+            if (badge > 0) right = OnlineUi::countPill(ui, right, y + h * 0.5f, badge, ui.theme().danger, Color::white(), 28, 16) - ui.s(12);
             if (!sub.empty()) {
-                // Never under the button's own label.
+                // Never under the button's own label nor under the counter.
                 float labelW = ui.text().measure(label, FontFace::Bold, ui.s(26)).x;
-                float room = w - ui.s(40) - labelW - ui.s(24);
+                float room = right - (x + slide + ui.s(20) + labelW + ui.s(24));
                 if (room > ui.s(40))
-                    ui.label(ui.elide(sub, FontFace::Body, 16, room), {x + slide + w - ui.s(20), y + h * 0.5f}, 16, ui.theme().textDim, Align::Right,
-                             FontFace::Body, VAlign::Middle);
+                    ui.label(ui.elide(sub, FontFace::Body, 16, room), {right, y + h * 0.5f}, 16, ui.theme().textDim, Align::Right, FontFace::Body,
+                             VAlign::Middle);
             }
             y += h + gap;
             return c;
@@ -102,9 +106,9 @@ public:
         std::string onlineSub = g_.online.loggedIn() ? g_.online.username() : "compte requis";
         if (int n = g_.online.loggedIn() ? g_.online.pendingFriendRequests() : 0; n > 0)
             onlineSub += " · " + std::to_string(n) + (n > 1 ? " demandes d'amis" : " demande d'ami");
-        if (int n = g_.online.unreadMessages(); n > 0 && g_.online.loggedIn())
-            onlineSub += " · " + std::to_string(n) + (n > 1 ? " messages" : " message");
-        if (btn("online", "En ligne", onlineSub)) g_.app.switchScene(makeOnlineRanking(g_));
+        // Unread messages: the red counter of the button (as on SOCIAL and on each conversation).
+        if (btn("online", "En ligne", onlineSub, false, g_.online.loggedIn() ? g_.online.unreadMessages() : 0))
+            g_.app.switchScene(makeOnlineRanking(g_));
         {
             int n = g_.news.unread();
             int online = g_.online.loggedIn() ? g_.online.unreadNotifications() : 0;

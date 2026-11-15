@@ -9,6 +9,7 @@
 #include "game/GameServices.h"
 #include "game/online/OnlineSession.h"
 #include "ui/screens/Thumbnail.h"
+#include "ui/widgets/UIContext.h"
 
 namespace cosmic {
 
@@ -164,6 +165,20 @@ bool OnlineUi::avatarPicker(const std::string& id, const Rect& area, std::string
     }
     ui.popId();
     return picked;
+}
+
+float OnlineUi::countPillWidth(UIContext& ui, int count, float height, float fontSize) {
+    std::string t = count > 99 ? "99+" : std::to_string(std::max(0, count));
+    return std::max(ui.s(height), ui.text().measure(t, FontFace::Bold, ui.s(fontSize)).x + ui.s(height * 0.5f));
+}
+
+float OnlineUi::countPill(UIContext& ui, float right, float cy, int count, Color fill, Color text, float height, float fontSize) {
+    std::string t = count > 99 ? "99+" : std::to_string(std::max(0, count));
+    float w = countPillWidth(ui, count, height, fontSize);
+    Rect b{right - w, cy - ui.s(height) * 0.5f, w, ui.s(height)};
+    ui.r().fillRoundedRect(b, b.h * 0.5f, fill);
+    ui.label(t, b.center(), fontSize, text, Align::Center, FontFace::Bold, VAlign::Middle);
+    return b.x;
 }
 
 std::string OnlineUi::ageText(double seconds) {

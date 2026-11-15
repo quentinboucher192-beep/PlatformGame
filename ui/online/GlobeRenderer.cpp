@@ -3,8 +3,10 @@
 #include <algorithm>
 #include <cmath>
 
+#include "engine/input/InputManager.h"
 #include "engine/rendering/Renderer.h"
 #include "engine/resources/ResourceManager.h"
+#include "ui/widgets/UIContext.h"
 
 namespace cosmic {
 
@@ -136,20 +138,54 @@ Color GlobeRenderer::tierColor(MarkerTier t) {
     return {57, 240, 216, 255};
 }
 
-void GlobeRenderer::renderMarker(Renderer& r, Vec2 pos, MarkerTier tier, float scale, float pulse, bool selected, bool me, float depth) const {
-    Color c = tierColor(tier);
-    // Markers near the limb fade and shrink (they are seen at a grazing angle).
-    float edge = std::clamp(depth * 3.0f, 0.25f, 1.0f);
-    float s = scale * (0.6f + 0.4f * edge);
-    float glow = (selected ? 26.0f : 15.0f) * s * (1.0f + 0.18f * pulse);
-    r.drawGlow(pos, glow, c.withAlphaF((selected ? 0.75f : 0.45f) * edge));
-    r.fillCircle(pos, 4.2f * s, c.withAlphaF(edge));
-    r.fillCircle(pos, 2.0f * s, Color{255, 255, 255, static_cast<uint8_t>(230 * edge)});
-    if (me) r.drawRing(pos, 8.0f * s, 1.8f * s, Color{176, 76, 255, static_cast<uint8_t>(230 * edge)});
+float GlobeRenderer::renderMarker(Renderer& r, Vec2 pos, Color c, float scale, float pulse, bool selected, bool me, float fade) const {
+    if (fade <= 0.0f) return 0.0f;
+    // Towards the limb a marker is seen at a grazing angle: a little smaller, then gone.
+    float s = scale * (0.75f + 0.25f * fade);
+    float dot = 4.6f * s;
+    auto a8 = [&](float a) { return static_cast<uint8_t>(std::clamp(a * fade, 0.0f, 1.0f) * 255.0f); };
+    // Wide soft halo, then a tight bright one: the dot catches the eye on the textured Earth.
+    float halo = (selected ? 30.0f : 21.0f) * s * (1.0f + 0.16f * pulse);
+    r.drawGlow(pos, halo, c.withAlphaF((selected ? 0.85f : 0.6f) * fade));
+    r.drawGlow(pos, dot * 2.3f, c.withAlphaF(0.75f * fade));
+    // Dark outline: the colour stays readable on deserts, ice and city lights alike.
+    r.fillCircle(pos, dot + 1.7f * s, Color{4, 8, 20, a8(0.82f)});
+    r.fillCircle(pos, dot, c.withAlphaF(fade));
+    r.fillCircle(pos, dot * 0.45f, Color{255, 255, 255, a8(0.95f)});
+    if (me) r.drawRing(pos, dot + 4.0f * s, 1.8f * s, Color{176, 76, 255, a8(0.95f)});
     if (selected) {
-        r.drawRing(pos, (10.0f + 4.0f * pulse) * s, 2.0f * s, Color{255, 255, 255, 220});
-        r.drawLine(pos + Vec2{0, -14 * s}, pos + Vec2{0, -34 * s}, c.withAlphaF(0.8f), 2.0f);
+        r.drawRing(pos, dot + (6.0f + 4.0f * pulse) * s, 2.0f * s, Color{255, 255, 255, a8(0.9f)});
+        r.drawLine(pos + Vec2{0, -dot - 8 * s}, pos + Vec2{0, -dot - 26 * s}, c.withAlphaF(0.8f * fade), 2.0f);
     }
+    return dot;
+}
+
+Rect GlobeRenderer::renderCount(UIContext& ui, Vec2 pos, float dotRadius, int count, Color accent, float fade, const Rect& clip,
+                                std::vector<Rect>* taken) {
+    if (count <= 1 || fade <= 0.05f) return {};
+    std::string t = count > 999 ? "999+" : std::to_string(count);
+    // Readable down to 1280 x 720 (about 11 px of text in a 16 px pill).
+    const float fs = 16.0f;
+    float h = ui.s(24);
+    float w = std::max(h, ui.text().measure(t, FontFace::Bold, ui.s(fs)).x + ui.s(12));
+    float gap = ui.s(4);
+    // At the right of the dot, or at its left near the edge of the zone (never over it).
+    Rect right{pos.x + dotRadius + gap, pos.y - h * 0.5f, w, h};
+    Rect left{pos.x - dotRadius - gap - w, pos.y - h * 0.5f, w, h};
+    auto fits = [&](const Rect& b) {
+        if (b.x < clip.x || b.y < clip.y || b.right() > clip.right() || b.bottom() > clip.bottom()) return false;
+        if (taken)
+            for (const Rect& o : *taken)
+                if (b.intersects(o)) return false;
+        return true;
+    };
+    Rect b = fits(right) ? right : fits(left) ? left : Rect{};
+    if (b.w <= 0.0f) return {};  // no free room: the count stays in the tooltip / info card
+    if (taken) taken->push_back(b);
+    ui.r().fillRoundedRect(b, h * 0.5f, Color{8, 12, 26, static_cast<uint8_t>(230 * fade)});
+    ui.r().drawRoundedRect(b, h * 0.5f, accent.withAlphaF(0.9f * fade), ui.s(1.3f));
+    ui.label(t, b.center(), fs, Color{255, 255, 255, static_cast<uint8_t>(245 * fade)}, Align::Center, FontFace::Bold, VAlign::Middle);
+    return b;
 }
 
 void GlobeRenderer::renderShockwave(Renderer& r, Vec2 pos, float t, Color c) {
@@ -157,6 +193,50 @@ void GlobeRenderer::renderShockwave(Renderer& r, Vec2 pos, float t, Color c) {
     float rad = 12.0f + 90.0f * t;
     r.drawRing(pos, rad, 3.0f * (1.0f - t) + 1.0f, c.withAlphaF(1.0f - t));
     r.drawGlow(pos, rad * 0.8f, c.withAlphaF(0.5f * (1.0f - t)));
+}
+
+bool GlobeRenderer::handleInput(InputManager& in, Input& st, GlobeCamera& cam, const GlobeView& view, const Rect& zone, bool blocked, float dt,
+                                float dragThreshold) {
+    st.touched = false;
+    Vec2 mp = in.mousePos();
+    bool inside = zone.contains(mp) && !blocked;
+    if (inside && in.wheel() != 0.0f) {
+        cam.cancelFlight();
+        cam.zoomBy(std::pow(1.15, in.wheel()));
+        st.touched = true;
+    }
+    if (in.mousePressed(SDL_BUTTON_LEFT) && inside) {
+        st.pressing = true;
+        st.dragged = false;
+        st.pressPos = mp;
+    }
+    if (st.pressing && in.mouseDown(SDL_BUTTON_LEFT)) {
+        Vec2 d = in.mouseDelta();
+        if ((mp - st.pressPos).length() > dragThreshold) st.dragged = true;
+        if (st.dragged && (d.x != 0.0f || d.y != 0.0f)) {
+            float R = view.radius(cam);
+            cam.rotate(d.x / R * 57.3, d.y / R * 57.3);
+            st.touched = true;
+        }
+    }
+    bool click = false;
+    if (st.pressing && in.mouseReleased(SDL_BUTTON_LEFT)) {
+        st.pressing = false;
+        click = !st.dragged && zone.contains(mp);
+    }
+    // Gamepad: right stick turns the globe, triggers zoom.
+    Vec2 rs = in.rightStick();
+    if (std::abs(rs.x) > 0.05f || std::abs(rs.y) > 0.05f) {
+        cam.rotate(rs.x * dt * 90.0 / cam.zoom, -rs.y * dt * 70.0 / cam.zoom);
+        st.touched = true;
+    }
+    float zt = in.rightTrigger() - in.leftTrigger();
+    if (std::abs(zt) > 0.1f) {
+        cam.cancelFlight();
+        cam.zoomBy(std::pow(1.9, zt * dt));
+        st.touched = true;
+    }
+    return click;
 }
 
 }  // namespace cosmic

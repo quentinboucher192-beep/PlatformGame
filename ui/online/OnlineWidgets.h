@@ -40,6 +40,13 @@ public:
     /// 16 preset avatars; returns true when one was clicked (`avatar` updated).
     bool avatarPicker(const std::string& id, const Rect& area, std::string& avatar);
 
+    /// A counter (unread messages, requests…) in a pill whose right edge is at `right`,
+    /// centred on `cy`; « 99+ » beyond 99. Sizes are unscaled. Returns its left edge, so
+    /// that the caller fits its label (or another pill) in the room left of it.
+    static float countPill(UIContext& ui, float right, float cy, int count, Color fill, Color text, float height = 24.0f,
+                           float fontSize = 14.0f);
+    static float countPillWidth(UIContext& ui, int count, float height = 24.0f, float fontSize = 14.0f);
+
     static std::string ageText(double seconds);
     /// ageText() of an ISO-8601 UTC date from the server ("" if unreadable).
     static std::string ageOf(const std::string& iso);

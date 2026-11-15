@@ -13,6 +13,15 @@
   (table `countries`, calculée à partir de Natural Earth) ; plusieurs joueurs d'un même pays
   sont écartés sur une petite spirale purement visuelle. Aucune adresse n'est jamais déduite.
   Un joueur masqué reste dans les classements sous son pseudonyme, sans drapeau ni marqueur.
+* **Globe des joueurs (SOCIAL)** : un second globe montre l'ensemble des joueurs de Cosmic
+  Online **sous forme de nombres par pays** (`GET /api/v1/globe/players`), toujours au centre
+  approximatif du pays, jamais plus précis. Seuls comptent les joueurs qui ont choisi
+  *classements et globe* **et** gardent un profil public : un profil masqué n'y est jamais
+  compté, même avec la présence sur le globe activée. La réponse ne contient ni identifiant,
+  ni pseudonyme, ni record — uniquement le pays, ses coordonnées approximatives et un
+  nombre ; elle est identique pour tous et peut être mise en cache quelques secondes.
+  Masquer sa position ou son profil retire le joueur du compte dès la réponse suivante. Hors
+  ligne ou sans compte, l'écran l'indique et n'affiche aucune donnée inventée.
 * **Transparence et consentement** : écran d'accueil de Cosmic Online, conditions
   d'utilisation (`data/online/terms_fr.txt`, version `2026-11`) acceptées explicitement à
   l'inscription.
@@ -33,6 +42,7 @@
 | Avatar personnalisé (PNG contrôlé) | R2 `avatars/` | tous | jusqu'au changement d'avatar |
 | Amis et demandes | D1 `player_friends` | les deux joueurs concernés | jusqu'au retrait |
 | Messages (texte, date, auteur) et conversations | D1 `messages`, `conversations`, `conversation_members` | les membres de la conversation | vie du compte de l'auteur (le texte d'un message effacé par son auteur est supprimé) |
+| Marque de lecture d'une conversation (date jusqu'à laquelle le joueur a lu ; donne les compteurs de messages non lus) | D1 `conversation_members.last_read_at` | le joueur seul (les autres membres ne voient pas si vous avez lu) | tant que le joueur est membre de la conversation |
 | Joueurs bloqués | D1 `player_blocks` | le joueur qui bloque | jusqu'au déblocage |
 | Niveaux publiés (package `.cplanet`, vignette, replay de fin de l'auteur, titre, description, note calculée) | R2 `community/` + D1 `community_levels`, `community_level_versions` | tous (niveaux publiés) | jusqu'au retrait par l'auteur ou la suppression du compte |
 | Temps sur les niveaux de la communauté (et leurs replays) | D1 `community_records` + R2 | temps acceptés : tous | vie du compte |

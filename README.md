@@ -5,6 +5,15 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.26.0** :
+* **Globe** : les points des pays sont bien visibles (taille selon l'écran et le zoom,
+  contour, nombre de joueurs dans une pastille). **SOCIAL** montre un globe de tous les
+  joueurs par pays (centre du pays seulement ; uniquement ceux qui ont choisi d'apparaître sur
+  le globe avec un profil public ; route publique `GET /globe/players`, sans identifiant).
+* **Messages non lus** : un compteur sur SOCIAL, sur « En ligne » au menu principal, sur
+  l'onglet Discussions et sur chaque conversation ou groupe (`GET /social/unread` détaillé).
+* En anglais, les noms de groupes et les messages des joueurs restent tels qu'ils ont été écrits.
+
 **Nouveau dans la version 2.25.0** :
 * **Touches des pouvoirs par emplacement** : « Pouvoir 1 » à « Pouvoir 8 » se règlent dans
   *Paramètres › Clavier / souris* et *Manette* ; la touche d'un emplacement utilise le pouvoir

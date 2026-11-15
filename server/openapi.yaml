@@ -2511,6 +2511,37 @@ paths:
         '404': {$ref: '#/components/responses/LevelNotFound'}
         '429': {$ref: '#/components/responses/RateLimited'}
         '500': {$ref: '#/components/responses/InternalError'}
+  /globe/players:
+    get:
+      tags: [Globe]
+      operationId: getGlobePlayers
+      summary: Every player of Cosmic Online as counts per country (globe of SOCIAL)
+      security: []
+      description: 'Counts only, never an identifier, a pseudonym or a record: active players who chose location_visibility = globe and a public profile, at the
+        approximate centre of their country (countries without coordinates are left out), ordered by players. The Authorization header is ignored; the answer is
+        the same for everybody. Edge-cacheable; rate limited like every read.'
+      responses:
+        '200':
+          description: Countries.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/components/schemas/GlobePlayers'}
+              example:
+                ok: true
+                data:
+                  countries:
+                  - {country_code: FR, name_fr: France, name_en: France, latitude: 46.6, longitude: 2.4, players: 2}
+                  total_players: 2
+                  total_countries: 1
+                  generated_at: '2026-11-13T10:00:00.000Z'
+                request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
   /friends:
     get:
       tags: [Friends]
@@ -2812,7 +2843,9 @@ paths:
     get:
       tags: [Social]
       operationId: socialUnread
-      summary: Unread total and the 5 newest unread messages (polled for notifications)
+      summary: Unread counts (total, private conversations, groups, per conversation) and the 5 newest unread messages (polled for the badges and notifications)
+      description: 'Derived from the read marker of the player in each conversation; messages of blocked players and the player''s own are never unread.
+        `conversations` lists only the conversations with unread messages (most unread first).'
       security:
       - {bearerAuth: []}
       responses:
@@ -2820,7 +2853,12 @@ paths:
           description: OK.
           content:
             application/json:
-              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+              schema:
+                allOf:
+                - {$ref: '#/components/schemas/SuccessEnvelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/components/schemas/SocialUnread'}
         '401': {$ref: '#/components/responses/Unauthorized'}
         '429': {$ref: '#/components/responses/RateLimited'}
         '500': {$ref: '#/components/responses/InternalError'}
@@ -4330,6 +4368,54 @@ components:
           type: array
           items: {$ref: '#/components/schemas/GlobeCountry'}
         generated_at: {type: string, format: date-time}
+    GlobePlayers:
+      type: object
+      required: [countries, total_players, total_countries, generated_at]
+      properties:
+        countries:
+          type: array
+          items:
+            type: object
+            required: [country_code, name_fr, name_en, latitude, longitude, players]
+            properties:
+              country_code: {type: string, pattern: '^[A-Z]{2}$'}
+              name_fr: {type: string}
+              name_en: {type: string}
+              latitude: {type: number, description: Approximate centre of the country.}
+              longitude: {type: number, description: Approximate centre of the country.}
+              players: {type: integer, minimum: 1}
+        total_players: {type: integer, minimum: 0}
+        total_countries: {type: integer, minimum: 0}
+        generated_at: {type: string, format: date-time}
+    SocialUnread:
+      type: object
+      required: [total, direct, groups, conversations, latest]
+      properties:
+        total: {type: integer, minimum: 0}
+        direct: {type: integer, minimum: 0, description: Unread messages of the private conversations.}
+        groups: {type: integer, minimum: 0, description: Unread messages of the groups.}
+        conversations:
+          type: array
+          items:
+            type: object
+            required: [conversation_id, kind, unread]
+            properties:
+              conversation_id: {type: string, format: uuid}
+              kind: {type: string, enum: [direct, group]}
+              unread: {type: integer, minimum: 1}
+        latest:
+          type: array
+          maxItems: 5
+          items:
+            type: object
+            properties:
+              id: {type: string, format: uuid}
+              conversation_id: {type: string, format: uuid}
+              created_at: {type: string, format: date-time}
+              body: {type: string, maxLength: 120}
+              kind: {type: string, enum: [direct, group]}
+              name: {type: [string, 'null']}
+              sender: {type: string}
     FriendEntry:
       type: object
       required: [player, since]

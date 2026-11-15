@@ -151,6 +151,60 @@ describe("groups", () => {
     });
 });
 
+describe("unread counts", () => {
+    it("are given per conversation, for private conversations and groups, and follow the read marks", async () => {
+        const [a, b, c] = [await registerPlayer("Nova"), await registerPlayer("Orion"), await registerPlayer("Lyra")];
+        await befriend(a, b);
+        await befriend(a, c);
+        const d1 = await direct(a, b);
+        const d2 = await direct(a, c);
+        // The creator of a group has read it up to its creation.
+        const g = (await api("POST", "/api/v1/social/groups", { token: a.token, body: { name: "Trio", member_ids: [b.id, c.id] } })).body.data.conversation.id;
+        const say = (p: TestPlayer, id: string, text: string) => api("POST", `/api/v1/social/conversations/${id}/messages`, { token: p.token, body: { body: text } });
+
+        const empty = (await api("GET", "/api/v1/social/unread", { token: a.token })).body.data;
+        expect(empty).toMatchObject({ total: 0, direct: 0, groups: 0, conversations: [] });
+
+        await say(b, d1, "un");
+        await say(b, d1, "deux");
+        await say(b, d1, "trois");
+        await say(c, d2, "coucou");
+        await say(b, g, "groupe 1");
+        await say(c, g, "groupe 2");
+
+        const un = (await api("GET", "/api/v1/social/unread", { token: a.token })).body.data;
+        expect(un).toMatchObject({ total: 6, direct: 4, groups: 2 });
+        // Only the conversations with unread messages, the most unread first.
+        expect(un.conversations).toEqual([
+            { conversation_id: d1, kind: "direct", unread: 3 },
+            { conversation_id: g, kind: "group", unread: 2 },
+            { conversation_id: d2, kind: "direct", unread: 1 },
+        ]);
+        // The list of conversations gives the same counts.
+        const list = (await api("GET", "/api/v1/social/conversations", { token: a.token })).body.data;
+        expect(Object.fromEntries(list.conversations.map((x: any) => [x.id, x.unread]))).toEqual({ [d1]: 3, [d2]: 1, [g]: 2 });
+        expect(list.unread_total).toBe(6);
+
+        // Reading one conversation clears only its counter.
+        expect((await api("POST", `/api/v1/social/conversations/${d1}/read`, { token: a.token })).status).toBe(200);
+        const after = (await api("GET", "/api/v1/social/unread", { token: a.token })).body.data;
+        expect(after).toMatchObject({ total: 3, direct: 1, groups: 2 });
+        expect(after.conversations.map((x: any) => x.conversation_id)).toEqual([g, d2]);
+        // Writing in a conversation marks what came before as read.
+        await say(a, g, "me voilà");
+        const written = (await api("GET", "/api/v1/social/unread", { token: a.token })).body.data;
+        expect(written).toMatchObject({ total: 1, direct: 1, groups: 0 });
+        expect(written.conversations).toEqual([{ conversation_id: d2, kind: "direct", unread: 1 }]);
+
+        // A player's own messages are never unread for them, and another player's
+        // conversations never show up.
+        const forB = (await api("GET", "/api/v1/social/unread", { token: b.token })).body.data;
+        expect(forB.direct).toBe(0);
+        expect(forB.conversations.some((x: any) => x.conversation_id === d1 || x.conversation_id === d2)).toBe(false);
+        expect((await api("GET", "/api/v1/social/unread")).status).toBe(401);
+    });
+});
+
 describe("blocks", () => {
     it("ends the friendship, hides messages and stops new requests", async () => {
         const [a, b, c] = [await registerPlayer("Nova"), await registerPlayer("Orion"), await registerPlayer("Lyra")];
