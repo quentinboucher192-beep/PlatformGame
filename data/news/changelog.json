@@ -1,4 +1,12 @@
 {
+  "2.19.0": [
+    "Collection (menu principal) : des récompenses visuelles débloquées par les étoiles des succès — combinaisons de Nova, traînées, cadres d'avatar, titres et effets de victoire. Rien ne s'achète, rien ne change dans la partie.",
+    "Route des étoiles : les 17 paliers de récompenses, et celles qui demandent un succès précis ; à la fin d'un niveau, les nouvelles récompenses à équiper tout de suite ou plus tard.",
+    "Musiques : un juke-box des morceaux déjà entendus en jeu (lecture, pause, avance, répéter, aléatoire) et la musique du menu principal au choix.",
+    "Galerie : les planètes atteintes (à enregistrer en image), les gardiens battus avec leurs animations et statistiques, les créatures rencontrées.",
+    "Lecteur de replay avancé : vitesses, image par image, barre de temps, sauts aux points de sauvegarde, entrées du joueur ; comparer deux replays avec un décalage de temps ou un recalage sur un point.",
+    "Corrigé : mourir contre un boss puis le finir sans être touché n'est plus compté « sans dégât ». Champs de texte : Ctrl+A, Ctrl+C, Ctrl+X, Ctrl+V, sélection et curseur."
+  ],
   "2.18.0": [
     "Ghost Racing : courez contre vos fantômes (meilleur temps, record précédent, dernière course), le record mondial, les records de vos amis ou un replay importé, jusqu'à 8 à la fois.",
     "Fantômes translucides colorés avec contour lumineux, nom et temps de référence ; aucune collision, aucun déclenchement : purement visuels. Touche G (clic du stick gauche) pour les masquer.",

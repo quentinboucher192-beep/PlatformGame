@@ -5,6 +5,26 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.19.0** :
+* **Collection** (menu principal → *Collection*) : des **récompenses visuelles** débloquées par
+  les étoiles des succès — 7 **combinaisons** de Nova, 4 **traînées**, 5 **cadres d'avatar**,
+  des **titres** tirés des succès et 3 **effets de victoire**. Le *Vestiaire* les montre sur
+  Nova et les équipe ; la *Route des étoiles* présente les 17 paliers et les récompenses de
+  succès précis. Rien ne s'achète, tout se débloque aussi après coup, et rien ne change dans la
+  partie (ni simulation, ni replay, ni record). À la fin d'un niveau, une carte présente les
+  nouvelles récompenses : *Équiper* ou *Plus tard*.
+* **Musiques** : un juke-box des morceaux déjà entendus en jeu (lecture, pause, position,
+  précédent / suivant, répéter, aléatoire) ; un morceau peut devenir la musique du menu.
+* **Galerie** : les planètes atteintes (enregistrables en PNG dans le dossier *Galerie*),
+  les gardiens battus (animations, victoires et combats sans dégât) et les créatures
+  rencontrées.
+* **Lecteur de replay avancé** : vitesses ×0,25 à ×4, image par image (avant et arrière),
+  barre de temps, sauts aux points de sauvegarde, entrées du joueur ; **comparer deux
+  replays** avec un **décalage de temps** (±10 ms à ±1 s, saisie directe) ou un **recalage sur
+  un point de sauvegarde**, tableau des segments (voir `docs/GHOST_RACING.md`).
+* Corrigé : mourir contre un boss puis le finir sans être touché n'est plus annoncé « sans
+  dégât » (ni la phase reprise). Champs de texte : curseur, sélection, **Ctrl+A / C / X / V**.
+
 **Nouveau dans la version 2.18.0** :
 * **Ghost Racing** : courez contre des **fantômes** : vos propres courses (meilleur temps,
   record précédent, dernière course de cette version du niveau), le **record mondial**, les
@@ -261,8 +281,9 @@ local sans compte Cloudflare. Documentation complète : [docs/online/](docs/onli
 ## Menu principal
 
 *Continuer* (dernier niveau joué) · *Campagne* (planètes et niveaux) · *Online* ·
-*Notifications* · *Succès* (toile des 134 succès et de leurs étoiles) · *Statistiques* (les
-boss : victoires, combats et phases sans dégât) · *Paramètres* · *Quitter*.
+*Notifications* · *Succès* (toile des 134 succès et de leurs étoiles) · *Collection*
+(vestiaire, route des étoiles, musiques, galerie) · *Statistiques* (les boss : victoires,
+combats et phases sans dégât) · *Paramètres* · *Quitter*.
 
 **Online** (compte requis) : **ONLINE LEVELS** (les niveaux publiés par les joueurs : Populaires,
 Plus durs, Récents, Mieux notés, Amis, Recherche, Les miens ; télécharger et jouer, noter,
@@ -340,6 +361,7 @@ L'exécutable est dans `build/bin/`. Installateur Windows : `installer\build_ins
 
 ## Documentation
 
+* [docs/COLLECTION.md](docs/COLLECTION.md) – récompenses de la collection, juke-box et galerie (2.19)
 * [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) – modules, boucle de jeu, flux de données
 * [docs/LEVEL_FORMAT.md](docs/LEVEL_FORMAT.md) – format JSON des niveaux, objets, événements
 * [docs/PACKAGE_FORMAT.md](docs/PACKAGE_FORMAT.md) – format `.cplanet` et vérifications à l'import
