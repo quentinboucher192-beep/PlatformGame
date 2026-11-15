@@ -37,6 +37,21 @@ bool CosmeticCatalog::load(const fs::path& file, std::string* error) {
                 if (s->is_string() && s->get<std::string>() == "all") item.allStars = true;
                 else if (s->is_number_integer()) item.stars = std::max(0, s->get<int>());
             }
+            // 2.34: rewards of the challenges. A malformed condition never unlocks anything.
+            auto kindOk = [](const std::string& k, bool any) { return k == "daily" || k == "weekly" || k == "monthly" || (any && k == "any"); };
+            if (const Json& c = jfield(e, "challenge", Json()); c.is_object()) {
+                const std::string tier = jstr(c, "tier");
+                item.challenge.kind = jstr(c, "kind");
+                item.challenge.tier = tier == "gold" ? 3 : tier == "silver" ? 2 : tier == "bronze" ? 1 : 0;
+                item.challenge.count = jget<int>(c, "count", 0);
+                if (!kindOk(item.challenge.kind, true) || item.challenge.tier == 0 || item.challenge.count < 1) continue;
+            } else if (const Json& c2 = jfield(e, "challengeStreak", Json()); c2.is_object()) {
+                item.challenge.streak = true;
+                item.challenge.kind = jstr(c2, "kind");
+                item.challenge.tier = 1;
+                item.challenge.count = jget<int>(c2, "days", 0);
+                if (!kindOk(item.challenge.kind, false) || item.challenge.count < 1) continue;
+            }
             if (item.id.empty() || !category(item.category)) continue;
             if (find(item.id)) continue;  // duplicate id: the first wins
             items_.push_back(std::move(item));
@@ -85,7 +100,7 @@ std::string CosmeticCatalog::lookOr(const std::string& category, const std::stri
 std::vector<CosmeticCatalog::Milestone> CosmeticCatalog::milestones(int totalStars) const {
     std::map<int, Milestone> m;
     for (const auto& i : items_) {
-        if (i.isDefault || !i.achievement.empty()) continue;
+        if (i.isDefault || !i.achievement.empty() || i.challengeReward()) continue;
         int t = cosmeticThreshold(i, totalStars);
         if (t <= 0) continue;
         m[t].stars = t;
@@ -97,16 +112,80 @@ std::vector<CosmeticCatalog::Milestone> CosmeticCatalog::milestones(int totalSta
 }
 
 int cosmeticThreshold(const CosmeticItem& item, int totalStars) {
-    if (!item.achievement.empty()) return -1;
+    if (!item.achievement.empty() || item.challengeReward()) return -1;
     if (item.isDefault) return 0;
     if (item.allStars) return std::max(1, totalStars);
     return item.stars;
 }
 
+namespace {
+
+int kindIndex(const std::string& kind) { return kind == "daily" ? 0 : kind == "weekly" ? 1 : kind == "monthly" ? 2 : -1; }
+
+}  // namespace
+
+int ChallengeRewardProgress::results(const std::string& kind, int tier) const {
+    if (tier < 1 || tier > 3) return 0;
+    if (kind == "any") return atLeast[0][tier - 1] + atLeast[1][tier - 1] + atLeast[2][tier - 1];
+    int k = kindIndex(kind);
+    return k < 0 ? 0 : atLeast[k][tier - 1];
+}
+
+int ChallengeRewardProgress::streak(const std::string& kind) const {
+    int k = kindIndex(kind);
+    return k < 0 ? 0 : bestStreak[k];
+}
+
+bool ChallengeRewardProgress::operator==(const ChallengeRewardProgress& o) const {
+    if (known != o.known) return false;
+    for (int k = 0; k < 3; ++k) {
+        if (bestStreak[k] != o.bestStreak[k]) return false;
+        for (int t = 0; t < 3; ++t)
+            if (atLeast[k][t] != o.atLeast[k][t]) return false;
+    }
+    return true;
+}
+
+std::string cosmeticCategorySingular(const std::string& category) {
+    if (category == "suit") return "Combinaison";
+    if (category == "trail") return "Traînée";
+    if (category == "frame") return "Cadre d'avatar";
+    if (category == "title") return "Titre";
+    if (category == "victory") return "Effet de victoire";
+    return category;
+}
+
+std::pair<int, int> cosmeticChallengeProgress(const CosmeticItem& item, const CosmeticProgress& p) {
+    if (!item.challengeReward()) return {0, 0};
+    const int need = std::max(1, item.challenge.count);
+    if (!p.challenges || !p.challenges->known) return {0, need};
+    int have = item.challenge.streak ? p.challenges->streak(item.challenge.kind) : p.challenges->results(item.challenge.kind, item.challenge.tier);
+    return {std::clamp(have, 0, need), need};
+}
+
 bool cosmeticUnlocked(const CosmeticItem& item, const CosmeticProgress& p) {
     if (item.isDefault) return true;
     if (!item.achievement.empty()) return p.book && p.book->unlocked(item.achievement);
+    if (item.challengeReward()) {
+        auto [have, need] = cosmeticChallengeProgress(item, p);
+        return p.challenges && p.challenges->known && have >= need;
+    }
     return p.stars >= cosmeticThreshold(item, p.totalStars);
+}
+
+std::vector<const CosmeticItem*> challengeRewardsFor(const CosmeticCatalog& catalog, const std::string& kind, bool late) {
+    std::vector<const CosmeticItem*> out;
+    for (const auto& i : catalog.items()) {
+        if (!i.challengeReward()) continue;
+        if (i.challenge.streak ? (!late && i.challenge.kind == kind) : (i.challenge.kind == kind || i.challenge.kind == "any")) out.push_back(&i);
+    }
+    // Those of this kind first, then those of any kind, the nearest (fewest results) first.
+    std::stable_sort(out.begin(), out.end(), [](const CosmeticItem* a, const CosmeticItem* b) {
+        bool anyA = a->challenge.kind == "any", anyB = b->challenge.kind == "any";
+        if (anyA != anyB) return !anyA;
+        return a->challenge.count < b->challenge.count;
+    });
+    return out;
 }
 
 void CollectionBook::load() {

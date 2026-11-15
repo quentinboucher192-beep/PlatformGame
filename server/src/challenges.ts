@@ -25,6 +25,7 @@
 
 import catalogJson from "./challengeCatalog.json";
 import { audit, requireAuth, type AuthInfo } from "./auth";
+import { challengeRewardProgress } from "./challengeRewards";
 import { pseudoVersionOf } from "./community";
 import { boardCosmetics, withCosmetics, type BoardCosmetics } from "./cosmetics";
 import { sha256Hex } from "./crypto";
@@ -1725,9 +1726,10 @@ function resultView(r: PlayerResult) {
 
 /**
  * GET /challenges/me?limit=60: `{ streak: { current, best, last_date }, streaks: { daily,
- * weekly, monthly } ({ current, best, last_period }), results: [{ challenge_id, kind, period,
- * date, best_time_ms, tier, status, late, best_progress }] }` (most recent first). `streak`
- * is the days' streak of the 2.32 games.
+ * weekly, monthly } ({ current, best, last_period }), verified: { daily, weekly, monthly }
+ * ({ gold, silver, bronze, best_streak }, 2.34: the rewards' counts, challengeRewards.ts),
+ * results: [{ challenge_id, kind, period, date, best_time_ms, tier, status, late,
+ * best_progress }] }` (most recent first). `streak` is the days' streak of the 2.32 games.
  */
 export async function mine(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
@@ -1756,6 +1758,8 @@ export async function mine(ctx: Ctx): Promise<Response> {
     return json(ctx, {
         streak: { current: streaks.daily.current, best: streaks.daily.best, last_date: streaks.daily.last_period },
         streaks,
+        // 2.34: what the rewards of the challenges count (VERIFIED runs only, all of them).
+        verified: await challengeRewardProgress(ctx, me),
         results: results.map((r) => ({
             challenge_id: r.challenge_id,
             kind: r.kind,

@@ -212,7 +212,7 @@ TEST_CASE("new badges: the shipped catalogue leads every novelty to a menu") {
         }
     }
     CHECK(achievements == 72);
-    CHECK(rewards == 22);
+    CHECK(rewards == 22 + 5);  // 2.29, and the five rewards of the challenges of 2.34
     // The whole « Collection » category of achievements came with 2.29.
     for (const auto& a : ach.achievements())
         if (a.category == "collection") CHECK(leaves.count("ach." + a.id));

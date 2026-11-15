@@ -8,7 +8,8 @@ confiance au client, un défi futur n'est jamais révélé, un défi commencé n
 Deux livraisons :
 
 - **2.33.0** : défis de la semaine et du mois, calendrier, anciens défis jouables (§1 à §4).
-- **2.34.0** : classement « Plus loin » (essais qui vont le plus loin, finis ou non) (§5).
+- **2.34.0** : classement « Plus loin » (essais qui vont le plus loin, finis ou non) (§5) et
+  récompenses des défis (cosmétiques de la Collection, §6).
 
 Les jeux 2.32.x continuent de fonctionner sans changement (routes et réponses existantes
 gardées, voir §3).
@@ -265,3 +266,39 @@ tracé, pas de « Plus loin » pour ce défi (`progress_available: false` dans l
   VERIFIED).
 - `PROGRESS_UNAVAILABLE` (409), `ATTEMPT_REJECTED` (409), `ATTEMPT_NOT_FOUND` (404) : l'essai
   est refusé, avec sa raison, et n'est pas renvoyé.
+
+## 6. Récompenses des défis (2.34.0)
+
+Des cosmétiques de la Collection se gagnent avec les défis. Seules comptent les parties
+**VERIFIED par le serveur** (jamais une partie gardée sur un PC seulement, ni un essai « Plus
+loin ») : le serveur les compte lui-même dans `challenge_runs`, le jeu affiche ce qu'il lit.
+
+- Conditions (`data/cosmetics/cosmetics.json`, recopiées par `server/scripts/cosmetics-catalog.mjs`) :
+  - `"challenge": { "kind": "daily|weekly|monthly|any", "tier": "gold|silver|bronze", "count": N }` :
+    N défis de cette sorte (`any` : toutes) où j'ai une partie vérifiée à ce palier **ou mieux**,
+    reçue à l'heure ou hors délai ;
+  - `"challengeStreak": { "kind": "daily", "days": N }` : N périodes de suite (jours) avec une
+    partie vérifiée reçue **à l'heure** (une partie hors délai ne compte pas), à n'importe quel
+    palier ; la meilleure série compte (une récompense gagnée le reste).
+- Récompenses : titre « Défiant » (1 Or, toute sorte) ; cadre « Couronne de la semaine » (1 Or
+  sur un défi de la semaine) ; traînée « Comète du mois » (1 Or sur un défi du mois) ;
+  combinaison « Champion des défis » (10 Or, toute sorte) ; effet de victoire « Série de feu »
+  (défi du jour 7 jours de suite).
+- `GET /challenges/me` ajoute `verified: { daily, weekly, monthly }`, chacun `{ gold, silver,
+  bronze, best_streak }` : `gold` = défis de cette sorte avec une partie vérifiée en Or, `silver`
+  = en Argent ou mieux, `bronze` = finis (tous paliers), sur tout l'historique (pas seulement les
+  `limit` résultats) ; `best_streak` = la plus longue suite de périodes consécutives avec une
+  partie vérifiée à l'heure.
+- `PUT /players/me/cosmetics` : une récompense des défis n'est gardée que si ces mêmes comptes
+  du serveur la débloquent (sinon : l'élément par défaut de la catégorie), comme les étoiles et
+  les succès déclarés pour les autres.
+- Jeu : la ligne « Récompenses » de la fiche du défi et de l'écran avant le départ montre, en
+  icônes (aperçu de la récompense, marque du palier, « obtenu »), celles que ce défi peut faire
+  avancer (sa sorte et « toute sorte » ; pas la série pour une partie hors délai ; rien pour un
+  entraînement), avec une infobulle (souris ou focus clavier / manette) : nom, catégorie,
+  condition, ma progression « 3 / 10 », « Obtenu ». Une icône ouvre la récompense dans la
+  Collection. Les comptes lus sont gardés sur le PC (`saves/challenges/state.json`, avec le
+  compte qui les a lus) pour jouer hors ligne ; un autre compte ne les reprend pas. Serveur 2.33
+  (sans `verified`) : le jeu compte les `results` dont le statut est `VERIFIED`. Après une partie
+  vérifiée, le jeu relit `/challenges/me` ; une récompense débloquée est annoncée (notification,
+  puis la carte « Nouvelles récompenses » à la fin du défi).

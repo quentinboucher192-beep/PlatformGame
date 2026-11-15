@@ -204,6 +204,38 @@ void drawAvatarFrame(Renderer& r, Vec2 center, float radius, const std::string& 
             }
         }
         r.fillCircle({center.x, center.y + stem}, 2.4f * scale, Color{255, 214, 90, 255});
+    } else if (look == "crown") {
+        // « Couronne de la semaine » (2.34): the gold ring, seven studs on its lower half (the
+        // days of the week) and a crown on top: a band, five points, three gems, pearls.
+        const Color gold{255, 204, 84, 255}, dark{70, 46, 8, 255};
+        r.drawGlow(center, radius + 18 * scale, Color{255, 204, 84, 120});
+        ring(main, 5, gold);
+        shine(main, Color{255, 246, 200, 235});
+        ring(radius + 6 * scale, 2, Color{74, 52, 12, 255});
+        for (int i = 0; i < 7; ++i) {
+            float a = kFxPi * (0.5f + (static_cast<float>(i) - 3.0f) * 0.17f);
+            Vec2 p{center.x + std::cos(a) * main, center.y + std::sin(a) * main};
+            r.fillCircle(p, 2.2f * scale, dark);
+            r.fillCircle(p, 1.5f * scale, Color{255, 240, 190, 255});
+        }
+        const float top = center.y - main;  // the top of the ring
+        auto pt = [&](float x, float y) { return Vec2{center.x + x * scale, top + y * scale}; };
+        // Points (x of the tip, its height over the band), the middle one the tallest.
+        // Within kAvatarFrameMargin: the highest pearl ends 14.3 units above the avatar.
+        const float px[5] = {-10.5f, -5.25f, 0.0f, 5.25f, 10.5f}, ph[5] = {4.0f, 5.5f, 6.5f, 5.5f, 4.0f};
+        const float bandTop = -4.5f, bandBottom = 1.0f;
+        for (int pass = 0; pass < 2; ++pass) {
+            // A dark edge first (visible on any background), then the gold.
+            const float e = pass == 0 ? 1.0f : 0.0f;
+            const Color c = pass == 0 ? dark : gold;
+            for (int i = 0; i < 5; ++i)
+                r.fillTriangle(pt(px[i] - 3.2f - e, bandTop + 0.5f), pt(px[i] + 3.2f + e, bandTop + 0.5f), pt(px[i], bandTop - ph[i] - e), c);
+            r.fillRect({center.x - (12.5f + e) * scale, top + (bandTop - e) * scale, (25.0f + 2 * e) * scale, (bandBottom - bandTop + 2 * e) * scale}, c);
+        }
+        r.fillRect({center.x - 12.5f * scale, top + bandTop * scale, 25.0f * scale, 1.2f * scale}, Color{255, 246, 200, 255});
+        const Color gems[3] = {{230, 60, 90, 255}, {90, 175, 255, 255}, {80, 220, 140, 255}};
+        for (int i = 0; i < 3; ++i) r.fillCircle(pt(-7.0f + 7.0f * static_cast<float>(i), (bandTop + bandBottom) * 0.5f), 1.7f * scale, gems[i]);
+        for (int i = 0; i < 5; ++i) r.fillCircle(pt(px[i], bandTop - ph[i]), 1.3f * scale, Color{255, 252, 240, 255});
     } else {
         ring(radius + 1.5f * scale, 3, Color{57, 240, 216, 255});
     }
@@ -277,6 +309,16 @@ void drawTrailPoint(const Canvas& cv, const std::string& look, Vec2 p, float k, 
         cv.glow(q, 7.0f * k + 1.0f, Color{180, 140, 255, alpha(0.32f * f)});
         for (int i = 0; i < 4; ++i) cv.line(v[i], v[(i + 1) % 4], Color{205, 175, 255, alpha(0.9f * f)}, 1.3f);
         cv.dot(q, 1.2f, Color{255, 214, 90, alpha(0.95f * f)}, BlendMode::Additive);
+    } else if (look == "month_comet") {
+        // « Comète du mois » (2.34): a gold head fading into a long violet tail, a small star
+        // now and then along it.
+        Color c = mix(Color{150, 70, 255, 255}, Color{255, 214, 90, 255}, k * k);
+        cv.glow(p, 10.0f * k + 2.5f, c.withAlpha(alpha(0.72f * f)));
+        cv.dot(p, 2.8f * k + 0.5f, mix(Color{215, 165, 255, 255}, Color{255, 250, 225, 255}, k).withAlpha(alpha(0.85f * f)), BlendMode::Additive);
+        if (seed % 4 == 0) {
+            Vec2 j{(noise(seed) - 0.5f) * 14.0f, (noise(seed * 3u + 7u) - 0.5f) * 14.0f};
+            star(cv, cv.off(p, j), 2.4f + 1.4f * k, Color{255, 236, 170, alpha(0.9f * f)});
+        }
     }
 }
 
@@ -395,6 +437,32 @@ void drawVictoryFx(Renderer& r, const std::string& look, Vec2 at, float t, bool 
         }
         cv.dot(o, 18.0f * grow, Color{20, 10, 24, alpha(0.95f * fade)});
         cv.ring(o, 19.0f * grow, 2.0f, Color{255, 240, 200, alpha(0.9f * fade)});
+    } else if (look == "fire_streak") {
+        // « Série de feu » (2.34): seven flames, one per day of the series, light up one after
+        // the other on an arc above Nova, then flare together.
+        Vec2 o = cv.off(at, {0, -34});
+        float flare = t > 1.0f ? 1.0f + 0.3f * std::sin(std::min(1.0f, (t - 1.0f) / 0.6f) * kFxPi) : 1.0f;
+        for (int i = 0; i < 7; ++i) {
+            float on = t - 0.12f * static_cast<float>(i);
+            if (on < 0.0f) continue;
+            float grow = std::min(1.0f, on / 0.25f) * flare;
+            float a = kFxPi * (1.12f + 0.76f * static_cast<float>(i) / 6.0f);  // from the left, over the top, to the right
+            Vec2 base = cv.off(o, {std::cos(a) * 46.0f, std::sin(a) * 30.0f});
+            float h = 24.0f * grow;
+            float flick = std::sin(t * 17.0f + static_cast<float>(i) * 1.7f) * 2.0f;
+            cv.glow(base, 16.0f * grow, Color{255, 110, 40, alpha(0.6f * fade)});
+            // The flame: a red base, an orange body, a yellow tip, swaying; a white heart.
+            for (int s = 0; s < 4; ++s) {
+                float u = static_cast<float>(s) / 3.0f;
+                Color c = mix(Color{255, 70, 30, 255}, Color{255, 232, 120, 255}, u);
+                cv.glow(cv.off(base, {flick * u, -h * u}), (9.0f - 5.0f * u) * grow, c.withAlpha(alpha(0.9f * fade)));
+            }
+            cv.dot(cv.off(base, {flick * 0.1f, -h * 0.12f}), 5.0f * grow, Color{240, 85, 30, alpha(0.95f * fade)});
+            cv.dot(cv.off(base, {flick * 0.35f, -h * 0.36f}), 3.8f * grow, Color{255, 160, 50, alpha(0.95f * fade)});
+            cv.dot(cv.off(base, {flick * 0.65f, -h * 0.62f}), 2.6f * grow, Color{255, 220, 100, alpha(0.95f * fade)});
+            cv.dot(cv.off(base, {flick, -h * 0.86f}), 1.4f * grow, Color{255, 245, 170, alpha(0.95f * fade)});
+            cv.dot(cv.off(base, {0, -h * 0.2f}), 2.0f * grow, Color{255, 250, 225, alpha(0.95f * fade)}, BlendMode::Additive);
+        }
     }
 }
 

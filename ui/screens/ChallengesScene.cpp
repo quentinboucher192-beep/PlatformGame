@@ -21,6 +21,7 @@
 #include "game/online/LevelFingerprint.h"
 #include "packaging/PackageImporter.h"
 #include "ui/online/OnlineWidgets.h"
+#include "ui/screens/ChallengeRewardsUi.h"
 #include "ui/screens/GameScene.h"
 #include "ui/screens/LevelPowerKeysScene.h"
 #include "ui/screens/MenuBackground.h"
@@ -285,6 +286,27 @@ void drawTierCards(UIContext& ui, const DailyChallenge& c, const Rect& area, Cha
     }
 }
 
+/// Height of the « Récompenses » section (its title, then its tiles `tileH` high).
+float rewardsSectionHeight(const UIContext& ui, float tileH) { return ui.s(32) + tileH; }
+
+/// « Récompenses » (2.34): the title (and, when it fits, what counts at its right), then the
+/// tiles of the rewards of the challenges a run can advance (ChallengeRewardsUi.h), from `y`.
+/// Returns the reward activated (it opens in the Collection).
+const CosmeticItem* drawRewardsSection(GameServices& g, ChallengeRewardRow& row, const std::vector<const CosmeticItem*>& items, float x, float y,
+                                       float w, float titleSize, float tileH) {
+    UIContext& ui = g.ui;
+    Vec2 ts = fitLabel(ui, "Récompenses", {x, y + ui.s(11)}, titleSize, w, ui.theme().accent, Align::Left, FontFace::Bold);
+    const CosmeticItem* hit = row.draw(g, "reward_", items, x, y + ui.s(32), tileH, w, "challenges.rewards");
+    float after = x + ts.x + ui.s(14);
+    // « NOUVEAU » (2.34) after the title, until a reward gets the focus.
+    if (row.newDue()) after = ui.drawNewPill(after + ui.newPillWidth(true), y + ui.s(11), true).right() + ui.s(14);
+    const std::string caption = "Parties vérifiées par Cosmic Online";
+    float cf = fz(ui, 14);
+    if (ui.text().measure(caption, FontFace::Body, ui.s(cf)).x <= x + w - after)
+        ui.label(caption, {x + w, y + ui.s(11)}, cf, ui.theme().textDim, Align::Right, FontFace::Body, VAlign::Middle);
+    return hit;
+}
+
 /// Chips laid out from `x`, wrapping in `w`; returns the height used.
 float drawChipRows(UIContext& ui, const std::vector<std::string>& chips, float x, float y, float w, float h, Color c) {
     float cx = x, cy = y;
@@ -446,6 +468,7 @@ public:
         bool leave = ui.button("back", back, "Retour", bs);
         drawConnection({x + ui.s(16), y0 + ui.s(25)}, back.x - ui.s(20) - (x + ui.s(16)));
         Rect body{m, ui.s(92), W - 2 * m, H - ui.s(92) - ui.s(26)};
+        rewardsShown_ = false;
         if (tab_ < 3) {
             drawKind(static_cast<ChallengeKind>(tab_), body);
         } else if (const DailyChallenge* c = detail_.empty() ? nullptr : g_.challenges.find(detail_)) {
@@ -454,6 +477,8 @@ public:
             detail_.clear();
             drawCalendar(body);
         }
+        // The tooltip of a reward, over the card and the leaderboard.
+        if (rewardsShown_) rewardRow_.drawTooltip(g_);
         ui.popId();
         // Back: from a challenge's card to the calendar, else to the main menu.
         if (!leave && ui.backPressed() && tab_ == 3 && !detail_.empty()) closeDetail();
@@ -666,8 +691,14 @@ private:
         const float by = area.bottom() - ui.s(24) - ui.s(58);
         const std::vector<std::string> chips = ruleChips(g_, c);
         const float chipH = ui.s(32);
+        // 2.34: the rewards of the challenges a run of this one can advance (a run « hors
+        // délai » never counts for a series).
+        const std::vector<const CosmeticItem*> rewards = challengeRewardsFor(g_.cosmetics, c.kindId(), over);
+        const float rewardTileH = ui.s(76);
+        const float rewardsH = rewards.empty() ? 0.0f : rewardsSectionHeight(ui, rewardTileH) + ui.s(16);
         const float below = ui.s(30) + chipRowsHeight(ui, chips, w, chipH) + ui.s(18)  // rules
                             + ui.s(30) + ui.s(96) + ui.s(18)                           // tiers
+                            + rewardsH                                                  // rewards
                             + ui.s(84) + ui.s(36);                                      // my best, note
         y += drawLevelHeader(c, place, x, y, w, std::clamp(by - y - below, ui.s(84), ui.s(330))) + ui.s(16);
         // The rules (chips).
@@ -680,6 +711,13 @@ private:
         y += ui.s(30);
         drawTierCards(ui, c, {x, y, w, ui.s(96)}, myDay(c.id).tier, true);
         y += ui.s(96) + ui.s(18);
+        // The rewards (tiles with their tooltip, drawn over everything at the end of the frame).
+        if (!rewards.empty()) {
+            if (const CosmeticItem* it = drawRewardsSection(g_, rewardRow_, rewards, x, y, w, 18, rewardTileH))
+                g_.app.pushScene(makeCollectionOn(g_, it->id));
+            rewardsShown_ = true;
+            y += rewardsH;
+        }
         // My best time, its state, the streak of this kind.
         Rect box{x, y, w, std::max(ui.s(60), std::min(ui.s(84), by - ui.s(16) - y))};
         drawMyBest(c, res, box);
@@ -1342,6 +1380,8 @@ private:
     int scope_ = 0;
     int period_ = 0;  // 0: « Pendant le défi » (period=live), 1: « Depuis » (period=all)
     int boardKind_ = 0;  // 0: « Meilleurs temps », 1: « Plus loin » (board=progress, 2.34)
+    ChallengeRewardRow rewardRow_;  // the rewards of the card shown (2.34)
+    bool rewardsShown_ = false;
     Json board_;
     std::string boardFor_, boardId_;
     std::string boardMsg_, boardCode_;
@@ -1418,6 +1458,7 @@ public:
         ui.pushId("cstart");
         float x = panel.x + ui.s(32), w = panel.w - ui.s(64), y = panel.y + ui.s(26);
         bool cancel = false, go = false;
+        rewardsShown_ = false;
         if (!challenge_) {
             fitLabel(ui, "Ce défi n'est plus sur ce PC.", {x, y + ui.s(20)}, 26, w, ui.theme().danger, Align::Left, FontFace::Bold);
             cancel = ui.button("cancel", {panel.right() - ui.s(32) - ui.s(220), panel.bottom() - ui.s(80), ui.s(220), ui.s(54)}, "Retour");
@@ -1493,6 +1534,8 @@ public:
                 }
             }
         }
+        // The tooltip of a reward, over everything else.
+        if (rewardsShown_) rewardRow_.drawTooltip(g_);
         ui.popId();
         if (go) launch();
         else if (cancel || ui.backPressed()) g_.app.popScene();
@@ -1519,10 +1562,22 @@ private:
         y = prev.bottom() + ui.s(22);
         fitLabel(ui, "Paliers", {x, y + ui.s(11)}, 19, w, ui.theme().accent, Align::Left, FontFace::Bold);
         y += ui.s(32);
+        // 2.34: under the tiers, the rewards of the challenges this run can advance (none for a
+        // practice run; a run « hors délai » never counts for a series).
+        std::vector<const CosmeticItem*> rewards;
+        if (!practice_) rewards = challengeRewardsFor(g_.cosmetics, c.kindId(), late_);
+        const float tileH = ui.s(76);
+        float rewardsH = rewards.empty() ? 0.0f : ui.s(18) + rewardsSectionHeight(ui, tileH);
         // One row per tier: its name at the left, its condition at the right, « obtenu » mark.
         const ChallengeResult* res = practice_ ? nullptr : g_.challenges.result(c.id);
         const ChallengeTier tiers[3] = {ChallengeTier::Bronze, ChallengeTier::Silver, ChallengeTier::Gold};
-        float rowH = std::min(ui.s(56), (area.bottom() - y - 2 * ui.s(10)) / 3.0f);
+        float rowH = std::min(ui.s(56), (area.bottom() - rewardsH - y - 2 * ui.s(10)) / 3.0f);
+        if (rowH < ui.s(34) && rewardsH > 0.0f) {
+            // Too low for both: the tiers first (the rewards stay on the challenge's card).
+            rewards.clear();
+            rewardsH = 0.0f;
+            rowH = std::min(ui.s(56), (area.bottom() - y - 2 * ui.s(10)) / 3.0f);
+        }
         if (rowH < ui.s(34)) return;
         for (ChallengeTier t : tiers) {
             Rect r{x, y, w, rowH};
@@ -1540,6 +1595,10 @@ private:
                      FontFace::Body, VAlign::Middle, 0.7f);
             y += rowH + ui.s(10);
         }
+        rewardsShown_ = !rewards.empty();
+        if (rewardsShown_)
+            if (const CosmeticItem* it = drawRewardsSection(g_, rewardRow_, rewards, x, y + ui.s(8), w, 19, tileH))
+                g_.app.pushScene(makeCollectionOn(g_, it->id));
     }
 
     void drawRight(const DailyChallenge& c, const Rect& area) {
@@ -1660,6 +1719,8 @@ private:
     LevelPlace place_;
     std::optional<LevelData> level_;
     bool hasKeyPowers_ = false;  // the run has powers with a key of their own (« Touches… »)
+    ChallengeRewardRow rewardRow_;  // the rewards this run can advance (2.34)
+    bool rewardsShown_ = false;
     TexturePtr thumb_;
     int ghost_ = 0;  // 0 none, 1 my best, 2 the first of the day
     int64_t bestMs_ = 0;
@@ -1680,6 +1741,17 @@ public:
     bool updatesSceneBelow() const override { return true; }
 
     void onEnter() override { g_.ui.setFocus("cend/again"); }
+
+    void update(float dt) override {
+        t_ += dt;
+        // 2.34: once the server has verified the run, a reward of the challenges it unlocks (or
+        // any reward not announced yet) gets the card « Nouvelles récompenses », as at the end
+        // of a level. Checked again at each new reading of the server's results.
+        if (t_ > 1.2f && g_.app.topScene() == this && g_.challenges.rewardsRevision() != rewardsSeen_) {
+            rewardsSeen_ = g_.challenges.rewardsRevision();
+            if (!g_.collection.fresh(g_.cosmetics, g_.cosmeticProgress()).empty()) g_.app.pushScene(makeNewRewards(g_));
+        }
+    }
 
     void render(float) override {
         UIContext& ui = g_.ui;
@@ -1803,6 +1875,8 @@ private:
     GameServices& g_;
     GameScene& game_;
     ChallengeEndData d_;
+    float t_ = 0.0f;
+    int rewardsSeen_ = -1;  // the reading of the rewards already checked
 };
 
 }  // namespace

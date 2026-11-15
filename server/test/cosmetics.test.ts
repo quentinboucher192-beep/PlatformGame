@@ -161,15 +161,27 @@ describe("cosmetics worn online", () => {
     });
 
     it("the server's catalogue is the game's", () => {
-        type GameItem = { id: string; category: string; name: string; look?: string; default?: boolean; stars?: number | "all"; achievement?: string };
-        const items = (game as { items: GameItem[] }).items.map((i) => {
+        type GameItem = {
+            id: string;
+            category: string;
+            name: string;
+            look?: string;
+            default?: boolean;
+            stars?: number | "all";
+            achievement?: string;
+            challenge?: unknown;
+            challengeStreak?: unknown;
+        };
+        const items = (game as unknown as { items: GameItem[] }).items.map((i) => {
             const o: Record<string, unknown> = { id: i.id, category: i.category, look: i.look ?? "", name: i.name };
             if (i.default) o.default = true;
             else if (i.achievement) o.achievement = i.achievement;
+            else if (i.challenge) o.challenge = i.challenge;
+            else if (i.challengeStreak) o.challengeStreak = i.challengeStreak;
             else o.stars = i.stars;
             return o;
         });
-        expect((catalog as { items: unknown[] }).items).toEqual(items);
+        expect((catalog as unknown as { items: unknown[] }).items).toEqual(items);
         // Every achievement that unlocks something exists on the server.
         for (const i of (catalog as { items: GameItem[] }).items) if (i.achievement) expect(STARS[i.achievement]).toBeGreaterThan(0);
     });

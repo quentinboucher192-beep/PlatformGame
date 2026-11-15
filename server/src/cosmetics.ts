@@ -2,10 +2,13 @@
 // title follow them on their profile and in the leaderboards, the suit on their profile and
 // their ghosts. The server never trusts the game: each id must exist in its own catalogue
 // (src/cosmeticCatalog.json, generated from the game's data) and be unlocked by the
-// achievements the player declared (player_achievements). Anything else becomes the
-// category's default before it is stored; names shown are always the catalogue's.
+// achievements the player declared (player_achievements) or, from 2.34, by the challenge
+// results this server verified itself (challenge_runs, challengeRewards.ts: never the game's
+// word). Anything else becomes the category's default before it is stored; names shown are
+// always the catalogue's.
 import achievementCatalog from "./achievementCatalog.json";
 import catalog from "./cosmeticCatalog.json";
+import { challengeRewardProgress, resultsMet, streakMet, type ChallengeRewardProgress, type ResultsCondition, type StreakCondition } from "./challengeRewards";
 import { requireAuth } from "./auth";
 import { json, nowIso, readJsonObject, type Ctx } from "./http";
 import { rateLimit, RULES } from "./ratelimit";
@@ -22,9 +25,13 @@ export interface CosmeticItem {
     default?: boolean;
     stars?: number | "all";
     achievement?: string;
+    /** 2.34: challenges with a verified run at a tier or better. */
+    challenge?: ResultsCondition;
+    /** 2.34: periods in a row with a verified run received in time. */
+    challengeStreak?: StreakCondition;
 }
 
-const ITEMS: CosmeticItem[] = (catalog as { items: CosmeticItem[] }).items;
+const ITEMS: CosmeticItem[] = (catalog as unknown as { items: CosmeticItem[] }).items;
 const BY_ID = new Map(ITEMS.map((i) => [i.id, i]));
 const DEFAULTS = new Map(ITEMS.filter((i) => i.default).map((i) => [i.category, i]));
 /** Every star of the server's achievement catalogue (« Constellation »). */
@@ -33,10 +40,14 @@ const ID_RE = /^[a-z0-9_]{1,64}$/;
 
 export type Equipped = Record<CosmeticCategory, string>;
 
-/** What the declared achievements unlock: their stars (counted by the server) and their ids. */
+/**
+ * What unlocks the rewards: the declared achievements (their stars, counted by the server, and
+ * their ids) and the challenge results the server verified (none known: those stay locked).
+ */
 export interface CosmeticProgress {
     stars: number;
     ids: Set<string>;
+    challenges?: ChallengeRewardProgress;
 }
 
 export function defaultItem(category: CosmeticCategory): CosmeticItem {
@@ -46,6 +57,8 @@ export function defaultItem(category: CosmeticCategory): CosmeticItem {
 export function unlocked(item: CosmeticItem, p: CosmeticProgress): boolean {
     if (item.default) return true;
     if (item.achievement) return p.ids.has(item.achievement);
+    if (item.challenge) return !!p.challenges && resultsMet(p.challenges, item.challenge);
+    if (item.challengeStreak) return !!p.challenges && streakMet(p.challenges, item.challengeStreak);
     if (item.stars === "all") return ALL_STARS > 0 && p.stars >= ALL_STARS;
     return p.stars >= (item.stars ?? Number.MAX_SAFE_INTEGER);
 }
@@ -74,7 +87,11 @@ export async function progressOf(ctx: Ctx, playerId: string): Promise<CosmeticPr
     } catch {
         ids = [];
     }
-    return { stars: r?.stars ?? 0, ids: new Set(Array.isArray(ids) ? ids.filter((v): v is string => typeof v === "string") : []) };
+    return {
+        stars: r?.stars ?? 0,
+        ids: new Set(Array.isArray(ids) ? ids.filter((v): v is string => typeof v === "string") : []),
+        challenges: await challengeRewardProgress(ctx, playerId),
+    };
 }
 
 type StoredRow = Record<CosmeticCategory, string>;

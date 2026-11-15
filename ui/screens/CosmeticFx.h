@@ -15,7 +15,8 @@ class Renderer;
 
 /// Trail behind Nova (« stardust », « comet », « aurora », « eclipse », and since 2.24
 /// « flame » (embers rising), « prism » (a rainbow ribbon), « runes » (turning runes of
-/// Aethra); « none »: nothing).
+/// Aethra), since 2.34 « month_comet » (a gold head, a violet tail with stars); « none »:
+/// nothing).
 class TrailFx {
 public:
     void reset() {
@@ -51,8 +52,9 @@ void drawTrailSample(Renderer& r, const std::string& look, const Rect& box, floa
 constexpr float kVictoryFxTime = 2.6f;
 /// Victory effect around `at` (Nova at the exit), `t` seconds after the finish
 /// (« fireworks », « starfall », « supernova », and since 2.24 « vortex » (turning arms of
-/// sparks), « borealis » (curtains of light), « corona » (an eclipse and its rays);
-/// « classic »: nothing more than the game's own).
+/// sparks), « borealis » (curtains of light), « corona » (an eclipse and its rays), since 2.34
+/// « fire_streak » (seven flames lit one after the other); « classic »: nothing more than the
+/// game's own).
 void drawVictoryFx(Renderer& r, const std::string& look, Vec2 at, float t, bool world, float scale = 1.0f);
 
 /// How far an avatar frame reaches beyond the avatar's radius, in units of `scale` (glows
@@ -62,7 +64,8 @@ constexpr float kAvatarFrameMargin = 15.5f;
 /// pixels: « simple », « bronze », « silver », « gold » (with a halo), « platinum »
 /// (iridescent), « constellation » (small stars around), and since 2.24 « emerald » (cut
 /// gems), « orbit » (two moons going round), « nebula » (turning clouds of colour),
-/// « laurels » (a crown of leaves); anything else draws « simple ».
+/// « laurels » (a crown of leaves), since 2.34 « crown » (a gold crown on top, seven studs);
+/// anything else draws « simple ».
 /// `scale` sizes the rings, `time` (seconds) moves the sheens, stars and moons.
 /// Shared by the Collection, the leaderboards and the profiles.
 void drawAvatarFrame(Renderer& r, Vec2 center, float radius, const std::string& look, float scale, float time = 0.0f);
