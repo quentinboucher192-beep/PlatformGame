@@ -232,6 +232,10 @@ public:
     /// The player took this tablet's power and left `dropped` in exchange: the tablet now
     /// offers the dropped power (nothing is ever lost, the player can come back for it).
     void exchange(GameWorld& w, const std::string& dropped);
+    /// A challenge without checkpoints restarting: the tablet offers its own power again.
+    void restore(GameWorld& w);
+    /// A power station (tools/levelgen) that the challenge turned off: it offers nothing.
+    bool disabledByChallenge(const GameWorld& w) const;
     /// Feedback of a power just obtained (title, sound, particles).
     static void celebrate(GameWorld& w, const PowerDefinition& def, Vec2 at, const std::string& message,
                           const std::string& dropped = {});
@@ -241,6 +245,7 @@ private:
     std::string power_;
     float t_ = 0.0f;
     bool owned_ = false;  // display only (the player carries this power)
+    bool stationOff_ = false;  // display only (a station a challenge turned off: dimmed)
 };
 
 // ============================================================= interactive

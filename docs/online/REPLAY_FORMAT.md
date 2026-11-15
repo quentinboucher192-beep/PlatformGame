@@ -1,4 +1,4 @@
-# Format des replays (CPRP v3 / CPRZ)
+# Format des replays (CPRP v3 et v4 / CPRZ)
 
 Depuis la version 2.1.2, un replay permet de **rejouer exactement** la partie : il contient la
 graine du gameplay et l'**entrée de chaque pas de simulation** (120 par seconde), ce que le
@@ -24,7 +24,7 @@ et `server/src/replay.ts` (lecture, analyse).
 | Champ | Type | Notes |
 |---|---|---|
 | magic | char[4] | `"CPRP"` |
-| format_version | u16 | 3 depuis le jeu 2.24 (2 : jeu 2.1.2 à 2.23 ; 1 : trajectoire seule, anciens replays et enregistrements sans entrées) |
+| format_version | u16 | 4 pour une partie de défi du jour (jeu 2.32, voir « Règles d'un défi ») ; 3 pour toute autre partie depuis le jeu 2.24 (2 : jeu 2.1.2 à 2.23 ; 1 : trajectoire seule, anciens replays et enregistrements sans entrées) |
 | sample_hz | u16 | 30 (10 à 120 acceptés) |
 | frame_count | u32 | ≥ 1 |
 | duration_ms | u32 | temps du chronomètre à la fin |
@@ -37,7 +37,8 @@ et `server/src/replay.ts` (lecture, analyse).
 | events | event_count × 8 octets | voir ci-dessous |
 
 En version 1, le fichier se termine exactement après le dernier événement. En versions 2 et
-3, la section des entrées suit (voir plus bas) et le fichier se termine exactement après elle.
+3, la section des entrées suit (voir plus bas) et le fichier se termine exactement après elle ;
+en version 4, la section des règles du défi suit encore la section des entrées.
 
 ### Échantillon (12 octets)
 
@@ -88,7 +89,7 @@ Les éclats et reliques (arg 0 et 1) forment le nombre d'objets comparé au reco
 |---|---|---|
 | seed | u64 | graine du gameplay (identique pour tous les joueurs d'un niveau) |
 | tick_hz | u16 | 120 |
-| input_flags | u16 | version 3 : bit 0 = touches par emplacement de pouvoir (voir plus bas) ; tout autre bit refusé. Version 2 : réservé, 0 |
+| input_flags | u16 | version 3 : bit 0 = touches par emplacement de pouvoir (voir plus bas) ; tout autre bit refusé. Version 4 : bit 1 = règles de défi, obligatoire (voir « Règles d'un défi »). Version 2 : réservé, 0 |
 | tick_count | u32 | nombre de pas simulés depuis le chargement du niveau (intro comprise), ≤ 864 000 (2 h) |
 | run_count | u32 | nombre de plages, 1 à tick_count |
 | runs | run_count × 18 octets (version 3) ou × 12 octets (version 2) | entrées compressées par plages (voir ci-dessous) |
@@ -149,6 +150,38 @@ Une empreinte tous les 60 pas (0,5 s), plus une au dernier pas. L'état couvre l
 le temps, le chronomètre, le générateur aléatoire du gameplay, le joueur (boîte, vitesse, vie,
 état, morts), chaque ennemi (boîte, vitesse, vie, état), chaque projectile et chaque entité
 (boîte, actif, retiré).
+
+## Règles d'un défi (version 4, simulation 11, jeu 2.32)
+
+Une partie d'un **défi du jour** (`docs/online/DAILY_CHALLENGES.md`) se joue avec les règles du
+défi : cœurs, emplacements de pouvoirs, pouvoirs imposés, stations éteintes ou non, points de
+passage éteints ou non. Son replay est écrit en **version 4** : la version 3, plus le bit 1
+de `input_flags` (`2` : règles de défi) et une dernière section, après les empreintes :
+
+| Champ | Type | Notes |
+|---|---|---|
+| rules_len | u16 | 1 à 1024 |
+| rules | rules_len octets | forme canonique UTF-8 des règles, exactement (`ChallengeRules::canonical`) |
+
+```
+{"challenge":"daily-2026-11-16","hearts":2,"slots":3,"powers":["dash","glide","grapple"],"stations":true,"checkpoints":false}
+```
+
+Le fichier se termine exactement après elle. Règles de lecture (jeu et serveur) :
+
+* version 4 ⇔ bit 1 de `input_flags` : une version 3 avec ce bit, ou une version 4 sans lui,
+  est refusée ; aucun autre bit n'existe (bit 0 : touches par emplacement, toujours 1 en
+  pratique) ;
+* la section n'est acceptée que si elle est **exactement** la forme canonique de ce qu'elle
+  contient (clés dans cet ordre, `powers` trié, sans espace, valeurs dans les bornes du
+  contrat) ; le serveur vérifie en plus qu'elle est identique à celle du défi soumis ;
+* seule une partie de défi est écrite en version 4 : toute autre partie reste en version 3
+  (un serveur pas encore à jour continue de les accepter).
+
+Au rejeu, `ReplaySimulator` donne ces règles au monde qu'il rejoue
+(`GameWorld::setChallenge`), juste après le chargement du niveau, comme la partie l'a fait :
+le lecteur (« Revoir mon meilleur replay », `--replay`) rejoue donc une partie de défi à
+l'identique. Une partie sans défi se joue exactement comme avant (mêmes empreintes).
 
 ## Rejeu
 

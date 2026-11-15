@@ -88,3 +88,8 @@ WheelUp
 ms
 segments
 best
+"checkpoints":
+],"stations":
+required
+station
+{"challenge":"{0}","hearts":{1},"slots":{2},"powers":[

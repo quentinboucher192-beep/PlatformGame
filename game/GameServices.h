@@ -12,6 +12,7 @@
 #include "game/ghost/SegmentHistory.h"
 #include "game/ghost/TrainingSegments.h"
 #include "game/levels/RatingService.h"
+#include "game/online/DailyChallenges.h"
 #include "game/online/OnlineService.h"
 #include "game/progression/NewBadges.h"
 #include "game/progression/NewsCenter.h"
@@ -94,6 +95,9 @@ public:
     void checkForUpdate();
     /// Cosmic Online (rankings, globe, account). Fully optional: offline play never needs it.
     OnlineService online;
+    /// « Défis du jour » (2.32): the challenges (cached, playable offline until their end),
+    /// local results and streak, runs waiting to be sent.
+    ChallengeService challenges;
     UIContext ui;
     /// Scripted input for automated runs (see InputScript), applied to the next level started.
     std::string inputScript;

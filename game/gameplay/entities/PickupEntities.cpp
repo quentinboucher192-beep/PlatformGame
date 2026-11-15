@@ -108,6 +108,14 @@ void CollectibleEntity::onPlayerEnter(GameWorld& w) {
         p.heal(obj_.prop<int>("amount", 1));
         w.playSound("sounds/collect_orb.wav", box.center(), 0.8f, 0.9f);
         w.particles().emit("heal", p.center(), 1.0f);
+    } else if (t == "heart_container" && w.challenge()) {
+        // A daily challenge sets the hearts of the run: the container gives nothing (2.32).
+        w.playSound("sounds/collect_orb.wav", box.center(), 0.6f, 0.8f);
+        WorldMessage m;
+        m.style = WorldMessage::Style::Secret;
+        m.text = "Cœur de cristal : sans effet pendant le défi";
+        m.duration = 2.4f;
+        w.message(m);
     } else if (t == "heart_container") {
         int hearts = std::max(1, obj_.prop<int>("hearts", 1));
         p.bonusHealth += hearts;
@@ -160,12 +168,25 @@ void PowerUnlockEntity::init(GameWorld& w) {
 void PowerUnlockEntity::update(GameWorld& w, float dt) {
     t_ += dt;
     owned_ = w.mode() != WorldMode::Editor && w.player().hasPower(power_);
+    stationOff_ = disabledByChallenge(w);
     sprite_.anim.update(dt);
+}
+
+bool PowerUnlockEntity::disabledByChallenge(const GameWorld& w) const {
+    return w.challenge() && !w.challenge()->stations && obj_.prop<bool>("station", false);
+}
+
+void PowerUnlockEntity::restore(GameWorld& w) {
+    std::string own = obj_.propStr("power", "dash");
+    if (own == power_) return;
+    power_ = own;
+    sprite_.load(w.resources(), "animations/power_unlock.json", power_);
 }
 
 void PowerUnlockEntity::onPlayerEnter(GameWorld& w) {
     const PowerDefinition* def = w.content().power(power_);
     if (!def || w.mode() == WorldMode::Editor) return;
+    if (disabledByChallenge(w)) return;  // 2.32: a challenge without stations
     switch (w.player().offerPower(*def)) {
         case Player::Offer::AlreadyOwned: return;
         case Player::Offer::NeedsChoice:
@@ -216,7 +237,7 @@ void PowerUnlockEntity::celebrate(GameWorld& w, const PowerDefinition& def, Vec2
 
 void PowerUnlockEntity::render(RenderContext& ctx) {
     Vec2 c = box.center() + Vec2{0, dmath::sin(t_ * 2.0f) * 3.0f};
-    if (owned_ && !ctx.editor) {
+    if ((owned_ || stationOff_) && !ctx.editor) {
         // Already carried: a faint tablet, available again if the power is left elsewhere.
         sprite_.draw(ctx, c, false, Color{140, 150, 175, 140});
         return;
