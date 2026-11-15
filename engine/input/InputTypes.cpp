@@ -17,7 +17,7 @@ constexpr ActionInfo kActions[kActionCount] = {
     {"power_slot_4", "Pouvoir 4"},    {"power_slot_5", "Pouvoir 5"},   {"power_slot_6", "Pouvoir 6"},
     {"power_slot_7", "Pouvoir 7"},    {"power_slot_8", "Pouvoir 8"},
     {"pause", "Pause"},               {"ghost_toggle", "Afficher / masquer les fantômes"},
-    {"focus_toggle", "Mode concentré (HUD réduit)"},
+    {"focus_toggle", "Mode concentré"},
     {"menu_up", "Menu haut"},        {"menu_down", "Menu bas"},
     {"menu_left", "Menu gauche"},     {"menu_right", "Menu droite"},   {"menu_confirm", "Valider"},
     {"menu_back", "Retour"},          {"menu_tab_prev", "Onglet précédent"}, {"menu_tab_next", "Onglet suivant"},

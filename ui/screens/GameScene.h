@@ -143,6 +143,12 @@ private:
     void startTraining();
     void trainingSegmentDone();
     void drawTrainingBanner();
+    /// Section training: the segment's references (best segment, in my record, best training
+    /// time), always in view, clear of the HUD, of the tag `tagRect` and of the banner.
+    void drawTrainingRefs(const Rect& tagRect, const Rect& banner);
+    Rect trainingRefsRect_, trainingTagRect_, trainingBannerRect_;  // where they were drawn last
+    float trainingBestBefore_ = -1.0f;  // best training time before this attempt (-1: none)
+    bool trainingNewBest_ = false;
     float segmentBanner_ = 0.0f;
     float segmentTime_ = 0.0f;
     float segmentBest_ = -1.0f;

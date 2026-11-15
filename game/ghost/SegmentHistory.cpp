@@ -29,6 +29,21 @@ std::vector<float> readFloats(const Json& j, size_t max) {
     return out;
 }
 
+/// Checkpoint ids as read back: as many as `count`, short, no control character; else none.
+std::vector<std::string> readIds(const Json& j, size_t count) {
+    std::vector<std::string> out;
+    if (!j.is_array() || j.size() != count) return out;
+    for (const Json& v : j) {
+        if (!v.is_string()) return {};
+        std::string s = v.get<std::string>();
+        if (s.empty() || s.size() > 96) return {};
+        for (unsigned char c : s)
+            if (c < 0x20 || c == 0x7f) return {};
+        out.push_back(std::move(s));
+    }
+    return out;
+}
+
 }  // namespace
 
 SegmentHistory::SegmentHistory(fs::path file) : file_(std::move(file)) {}
@@ -48,6 +63,7 @@ void SegmentHistory::load() {
         if (lj.contains("best")) l.best = readFloats(lj["best"], 256);
         for (float& b : l.best)
             if (!std::isfinite(b) || b < 0.0f || b > 7200.0f) b = -1.0f;
+        if (lj.contains("best_checkpoints")) l.bestCheckpoints = readIds(lj["best_checkpoints"], l.bestSplitCount);
         if (lj.contains("runs") && lj["runs"].is_array()) {
             for (const Json& rj : lj["runs"]) {
                 if (l.runs.size() >= kRunsKept) break;
@@ -56,6 +72,7 @@ void SegmentHistory::load() {
                 r.time = jget<float>(rj, "time", 0.0f);
                 if (rj.contains("splits")) r.splits = readFloats(rj["splits"], 255);
                 if (!std::isfinite(r.time) || r.time <= 0.0f || r.time > 7200.0f || !validTimes(r.splits, r.time)) continue;
+                if (rj.contains("checkpoints")) r.checkpoints = readIds(rj["checkpoints"], r.splits.size());
                 l.runs.push_back(std::move(r));
             }
         }
@@ -68,18 +85,27 @@ bool SegmentHistory::save() const {
     Json levels = Json::object();
     for (const auto& [key, l] : levels_) {
         Json runs = Json::array();
-        for (const Run& r : l.runs) runs.push_back({{"date", r.date}, {"time", r.time}, {"splits", r.splits}});
+        for (const Run& r : l.runs) {
+            Json rj{{"date", r.date}, {"time", r.time}, {"splits", r.splits}};
+            if (!r.checkpoints.empty()) rj["checkpoints"] = r.checkpoints;
+            runs.push_back(std::move(rj));
+        }
         levels[key] = {{"touched", l.touched}, {"best", l.best}, {"best_split_count", l.bestSplitCount}, {"runs", runs}};
+        if (!l.bestCheckpoints.empty()) levels[key]["best_checkpoints"] = l.bestCheckpoints;
     }
     std::error_code ec;
     fs::create_directories(file_.parent_path(), ec);
-    return FileUtil::writeTextAtomic(file_, Json{{"format", "cosmic.segments"}, {"version", 1}, {"levels", levels}}.dump(1));
+    // Version 1 still: the checkpoints (2.30.2) are optional fields older games ignore.
+    return FileUtil::writeTextAtomic(file_, Json{{"format", "cosmic.segments"}, {"version", 1}, {"levels", levels}}
+                                                .dump(1, ' ', false, Json::error_handler_t::replace));
 }
 
-void SegmentHistory::add(const std::string& levelKey, const std::vector<float>& splits, float time, const std::string& date) {
+void SegmentHistory::add(const std::string& levelKey, const std::vector<float>& splits, float time, const std::string& date,
+                         const std::vector<std::string>& checkpoints) {
     if (levelKey.empty() || time <= 0.0f || !validTimes(splits, time)) return;
     Level& l = levels_[levelKey];
-    l.runs.insert(l.runs.begin(), Run{date, splits, time});
+    std::vector<std::string> ids = checkpoints.size() == splits.size() ? checkpoints : std::vector<std::string>{};
+    l.runs.insert(l.runs.begin(), Run{date, splits, time, ids});
     if (l.runs.size() > kRunsKept) l.runs.resize(kRunsKept);
     l.touched = date;
     std::vector<float> seg = segmentDurations(splits, time);
@@ -89,8 +115,12 @@ void SegmentHistory::add(const std::string& levelKey, const std::vector<float>& 
         if (l.best.empty() || l.bestSplitCount < splits.size()) {
             l.best = seg;
             l.bestSplitCount = splits.size();
+            l.bestCheckpoints = ids;
         }
     } else {
+        // Same number of splits: the same route (as the gold segments always assumed); its
+        // checkpoints are noted when they were not known yet. The best values never change here.
+        if (l.bestCheckpoints.empty()) l.bestCheckpoints = ids;
         for (size_t i = 0; i < seg.size() && i < l.best.size(); ++i)
             if (l.best[i] < 0.0f || seg[i] < l.best[i]) l.best[i] = seg[i];
     }
@@ -104,6 +134,19 @@ void SegmentHistory::add(const std::string& levelKey, const std::vector<float>& 
 const std::vector<SegmentHistory::Run>* SegmentHistory::runs(const std::string& levelKey) const {
     auto it = levels_.find(levelKey);
     return it == levels_.end() ? nullptr : &it->second.runs;
+}
+
+std::vector<float> SegmentHistory::goldSegments(const std::string& levelKey) const {
+    auto it = levels_.find(levelKey);
+    if (it == levels_.end() || it->second.best.empty()) return {};
+    std::vector<float> b = it->second.best;
+    b.resize(it->second.bestSplitCount + 1, -1.0f);
+    return b;
+}
+
+std::vector<std::string> SegmentHistory::goldCheckpoints(const std::string& levelKey) const {
+    auto it = levels_.find(levelKey);
+    return it == levels_.end() ? std::vector<std::string>{} : it->second.bestCheckpoints;
 }
 
 std::vector<float> SegmentHistory::bestSegments(const std::string& levelKey, size_t splitCount) const {

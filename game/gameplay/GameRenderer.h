@@ -25,6 +25,10 @@ struct RenderOptions {
 class GameRenderer {
 public:
     void build(Renderer& r, ResourceManager& res, const GameWorld& world);
+    /// The same, its terrain baked over several frames (a level drawn small in a menu): call
+    /// bakeTerrain() each frame until it returns 0 (chunks left; those meeting `first` first).
+    void buildProgressive(ResourceManager& res, const GameWorld& world);
+    size_t bakeTerrain(Renderer& r, double budgetMs, const Rect* first = nullptr) { return terrain_.bakeSome(r, budgetMs, first); }
     void rebuildTerrain(Renderer& r, ResourceManager& res, const GameWorld& world);
     void render(Renderer& r, ResourceManager& res, GameWorld& world, const WorldView& view, float alpha,
                 const RenderOptions& opt);

@@ -1,5 +1,7 @@
 #include "game/levels/TerrainRenderer.h"
 
+#include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <set>
 #include <unordered_map>
@@ -78,8 +80,24 @@ size_t TerrainRenderer::chunkCount() const {
     return n;
 }
 
+struct TerrainRenderer::Layer {
+    Grid g;
+    struct Platform {
+        Rect rect;
+        std::string style;
+    };
+    std::vector<Platform> plats;
+};
+
 void TerrainRenderer::build(Renderer& r, ResourceManager& res, const LevelData& level) {
+    prepare(res, level);
+    bakeSome(r, -1.0);
+}
+
+void TerrainRenderer::prepare(ResourceManager& res, const LevelData& level) {
     chunks_.clear();
+    layers_.clear();
+    todo_.clear();
     loadTilesets(res);
 
     std::map<std::string, std::vector<const LevelObject*>> solidsByLayer, platformsByLayer;
@@ -96,8 +114,9 @@ void TerrainRenderer::build(Renderer& r, ResourceManager& res, const LevelData& 
     for (const auto& layerId : layers) {
         const auto& solids = solidsByLayer[layerId];
         const auto& plats = platformsByLayer[layerId];
+        auto layer = std::make_shared<Layer>();
         // Tile grid covering every solid of the layer.
-        Grid g;
+        Grid& g = layer->g;
         if (!solids.empty()) {
             int minX = INT32_MAX, minY = INT32_MAX, maxX = INT32_MIN, maxY = INT32_MIN;
             for (const auto* o : solids) {
@@ -145,81 +164,121 @@ void TerrainRenderer::build(Renderer& r, ResourceManager& res, const LevelData& 
             for (int x = tx0; x < tx1; ++x) used.insert({floorDiv(x, kChunkTiles), floorDiv(ty, kChunkTiles)});
         }
 
-        const int chunkPx = kChunkTiles * kTile;
-        const int texSize = chunkPx + 2 * kMargin;
-        for (const auto& [cx, cy] : used) {
-            TexturePtr tex = r.createTarget(texSize, texSize, false);
-            if (!tex) continue;
-            r.setTarget(tex);
-            SDL_SetRenderDrawColor(r.sdl(), 0, 0, 0, 0);
-            SDL_SetRenderDrawBlendMode(r.sdl(), SDL_BLENDMODE_NONE);
-            SDL_RenderClear(r.sdl());
-            const float ox = static_cast<float>(cx * chunkPx - kMargin);
-            const float oy = static_cast<float>(cy * chunkPx - kMargin);
-            auto draw = [&](const Tileset& ts, int col, int row, float wx, float wy) {
-                Rect src{static_cast<float>(col * ts.tileSize), static_cast<float>(row * ts.tileSize),
-                         static_cast<float>(ts.tileSize), static_cast<float>(ts.tileSize)};
-                r.drawTexture(*ts.texture, &src, {wx - ox, wy - oy, static_cast<float>(kTile), static_cast<float>(kTile)});
-            };
-            // Pass 1: tiles + inner corners
-            for (int ty = cy * kChunkTiles; ty < (cy + 1) * kChunkTiles; ++ty) {
-                for (int tx = cx * kChunkTiles; tx < (cx + 1) * kChunkTiles; ++tx) {
-                    uint8_t m = g.at(tx, ty);
-                    if (!m) continue;
-                    const Tileset* ts = tileset(kMaterials[m - 1]);
-                    if (!ts || !ts->texture) continue;
-                    int mask = (g.at(tx, ty - 1) == m ? 1 : 0) | (g.at(tx + 1, ty) == m ? 2 : 0) |
-                               (g.at(tx, ty + 1) == m ? 4 : 0) | (g.at(tx - 1, ty) == m ? 8 : 0);
-                    float wx = static_cast<float>(tx * kTile), wy = static_cast<float>(ty * kTile);
-                    if (mask == 15) {
-                        uint32_t h = hash2(tx, ty, 7);
-                        // Mostly the first variants, occasional details.
-                        int v = (h % 100) < 70 ? static_cast<int>(h % 4) : static_cast<int>((h >> 8) % ts->variantCount);
-                        draw(*ts, v, ts->variantRow, wx, wy);
-                        if (g.at(tx - 1, ty - 1) != m) draw(*ts, 0, ts->innerCornerRow, wx, wy);
-                        if (g.at(tx + 1, ty - 1) != m) draw(*ts, 1, ts->innerCornerRow, wx, wy);
-                        if (g.at(tx - 1, ty + 1) != m) draw(*ts, 2, ts->innerCornerRow, wx, wy);
-                        if (g.at(tx + 1, ty + 1) != m) draw(*ts, 3, ts->innerCornerRow, wx, wy);
-                    } else {
-                        draw(*ts, mask, ts->maskRow, wx, wy);
-                    }
+        for (const auto* p : plats) layer->plats.push_back({p->rect, p->propStr("style", "ruin_bridge")});
+        layers_[layerId] = layer;
+        // In the order build() always baked them (layer, then chunk): the same drawing order.
+        for (const auto& c : used) todo_.push_back({layerId, c});
+    }
+}
+
+size_t TerrainRenderer::bakeSome(Renderer& r, double budgetMs, const Rect* first) {
+    const auto start = std::chrono::steady_clock::now();
+    const float chunkPx = static_cast<float>(kChunkTiles * kTile);
+    size_t done = 0;
+    while (!todo_.empty()) {
+        if (budgetMs >= 0.0 && done > 0 &&
+            std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count() >= budgetMs)
+            break;
+        size_t pick = 0;
+        if (first) {
+            // The chunks of the area asked first (the part shown), else the next one.
+            for (size_t i = 0; i < todo_.size(); ++i) {
+                const auto& [cx, cy] = todo_[i].second;
+                Rect world{cx * chunkPx - kMargin, cy * chunkPx - kMargin, chunkPx + 2 * kMargin, chunkPx + 2 * kMargin};
+                if (world.intersects(*first)) {
+                    pick = i;
+                    break;
                 }
             }
-            // Pass 2: surface decoration on exposed tops (drawn over neighbours' tiles)
-            for (int ty = cy * kChunkTiles; ty < (cy + 1) * kChunkTiles; ++ty) {
-                for (int tx = cx * kChunkTiles; tx < (cx + 1) * kChunkTiles; ++tx) {
-                    uint8_t m = g.at(tx, ty);
-                    if (!m || g.at(tx, ty - 1) || !g.decoAt(tx, ty)) continue;
-                    const Tileset* ts = tileset(kMaterials[m - 1]);
-                    if (!ts || !ts->texture) continue;
-                    uint32_t h = hash2(tx, ty, 99);
-                    if (h % 10 < 2) continue;  // leave some bare spots
-                    int v = static_cast<int>((h >> 4) % ts->topDecorCount);
-                    draw(*ts, v, ts->topDecorRow, static_cast<float>(tx * kTile),
-                         static_cast<float>(ty * kTile + ts->topDecorOffsetY));
-                }
+        }
+        auto [layerId, c] = todo_[pick];
+        todo_.erase(todo_.begin() + static_cast<std::ptrdiff_t>(pick));
+        auto it = layers_.find(layerId);
+        if (it != layers_.end()) bake(r, layerId, *it->second, c.first, c.second);
+        ++done;
+    }
+    if (todo_.empty()) layers_.clear();  // every chunk baked: the layout is no longer needed
+    return todo_.size();
+}
+
+void TerrainRenderer::bake(Renderer& r, const std::string& layerId, const Layer& layer, int cx, int cy) {
+    const Grid& g = layer.g;
+    const int chunkPx = kChunkTiles * kTile;
+    const int texSize = chunkPx + 2 * kMargin;
+    TexturePtr tex = r.createTarget(texSize, texSize, false);
+    if (!tex) return;
+    r.setTarget(tex);
+    SDL_SetRenderDrawColor(r.sdl(), 0, 0, 0, 0);
+    SDL_SetRenderDrawBlendMode(r.sdl(), SDL_BLENDMODE_NONE);
+    SDL_RenderClear(r.sdl());
+    const float ox = static_cast<float>(cx * chunkPx - kMargin);
+    const float oy = static_cast<float>(cy * chunkPx - kMargin);
+    auto draw = [&](const Tileset& ts, int col, int row, float wx, float wy) {
+        Rect src{static_cast<float>(col * ts.tileSize), static_cast<float>(row * ts.tileSize),
+                 static_cast<float>(ts.tileSize), static_cast<float>(ts.tileSize)};
+        r.drawTexture(*ts.texture, &src, {wx - ox, wy - oy, static_cast<float>(kTile), static_cast<float>(kTile)});
+    };
+    // Pass 1: tiles + inner corners
+    for (int ty = cy * kChunkTiles; ty < (cy + 1) * kChunkTiles; ++ty) {
+        for (int tx = cx * kChunkTiles; tx < (cx + 1) * kChunkTiles; ++tx) {
+            uint8_t m = g.at(tx, ty);
+            if (!m) continue;
+            const Tileset* ts = tileset(kMaterials[m - 1]);
+            if (!ts || !ts->texture) continue;
+            int mask = (g.at(tx, ty - 1) == m ? 1 : 0) | (g.at(tx + 1, ty) == m ? 2 : 0) |
+                       (g.at(tx, ty + 1) == m ? 4 : 0) | (g.at(tx - 1, ty) == m ? 8 : 0);
+            float wx = static_cast<float>(tx * kTile), wy = static_cast<float>(ty * kTile);
+            if (mask == 15) {
+                uint32_t h = hash2(tx, ty, 7);
+                // Mostly the first variants, occasional details.
+                int v = (h % 100) < 70 ? static_cast<int>(h % 4) : static_cast<int>((h >> 8) % ts->variantCount);
+                draw(*ts, v, ts->variantRow, wx, wy);
+                if (g.at(tx - 1, ty - 1) != m) draw(*ts, 0, ts->innerCornerRow, wx, wy);
+                if (g.at(tx + 1, ty - 1) != m) draw(*ts, 1, ts->innerCornerRow, wx, wy);
+                if (g.at(tx - 1, ty + 1) != m) draw(*ts, 2, ts->innerCornerRow, wx, wy);
+                if (g.at(tx + 1, ty + 1) != m) draw(*ts, 3, ts->innerCornerRow, wx, wy);
+            } else {
+                draw(*ts, mask, ts->maskRow, wx, wy);
             }
-            // One-way platforms
-            if (platforms_) {
-                for (const auto* p : plats) {
-                    int ty = static_cast<int>(std::floor(p->rect.y / kTile));
-                    if (floorDiv(ty, kChunkTiles) != cy) continue;
-                    auto it = platformRows_.find(p->propStr("style", "ruin_bridge"));
-                    int row = it == platformRows_.end() ? 0 : it->second;
-                    int cols = std::max(1, static_cast<int>(std::round(p->rect.w / kTile)));
-                    for (int i = 0; i < cols; ++i) {
-                        int tx = static_cast<int>(std::floor(p->rect.x / kTile)) + i;
-                        if (floorDiv(tx, kChunkTiles) != cx) continue;
-                        int col = cols == 1 ? 1 : (i == 0 ? 0 : (i == cols - 1 ? 2 : 1));
-                        Rect src{col * 16.0f, row * 16.0f, 16, 16};
-                        r.drawTexture(*platforms_, &src, {p->rect.x + i * 16.0f - ox, p->rect.y - oy, 16, 16});
-                    }
-                }
-            }
-            r.setTarget(nullptr);
-            chunks_[layerId].push_back({cx, cy, tex});
         }
     }
+    // Pass 2: surface decoration on exposed tops (drawn over neighbours' tiles)
+    for (int ty = cy * kChunkTiles; ty < (cy + 1) * kChunkTiles; ++ty) {
+        for (int tx = cx * kChunkTiles; tx < (cx + 1) * kChunkTiles; ++tx) {
+            uint8_t m = g.at(tx, ty);
+            if (!m || g.at(tx, ty - 1) || !g.decoAt(tx, ty)) continue;
+            const Tileset* ts = tileset(kMaterials[m - 1]);
+            if (!ts || !ts->texture) continue;
+            uint32_t h = hash2(tx, ty, 99);
+            if (h % 10 < 2) continue;  // leave some bare spots
+            int v = static_cast<int>((h >> 4) % ts->topDecorCount);
+            draw(*ts, v, ts->topDecorRow, static_cast<float>(tx * kTile),
+                 static_cast<float>(ty * kTile + ts->topDecorOffsetY));
+        }
+    }
+    // One-way platforms
+    if (platforms_) {
+        for (const auto& p : layer.plats) {
+            int ty = static_cast<int>(std::floor(p.rect.y / kTile));
+            if (floorDiv(ty, kChunkTiles) != cy) continue;
+            auto it = platformRows_.find(p.style);
+            int row = it == platformRows_.end() ? 0 : it->second;
+            int cols = std::max(1, static_cast<int>(std::round(p.rect.w / kTile)));
+            for (int i = 0; i < cols; ++i) {
+                int tx = static_cast<int>(std::floor(p.rect.x / kTile)) + i;
+                if (floorDiv(tx, kChunkTiles) != cx) continue;
+                int col = cols == 1 ? 1 : (i == 0 ? 0 : (i == cols - 1 ? 2 : 1));
+                Rect src{col * 16.0f, row * 16.0f, 16, 16};
+                r.drawTexture(*platforms_, &src, {p.rect.x + i * 16.0f - ox, p.rect.y - oy, 16, 16});
+            }
+        }
+    }
+    r.setTarget(nullptr);
+    // Kept in the order build() bakes them (layer, then chunk), whatever the baking order.
+    std::vector<Chunk>& list = chunks_[layerId];
+    auto at = std::lower_bound(list.begin(), list.end(), std::make_pair(cx, cy),
+                               [](const Chunk& a, const std::pair<int, int>& b) { return std::make_pair(a.cx, a.cy) < b; });
+    list.insert(at, {cx, cy, tex});
 }
 
 void TerrainRenderer::render(Renderer& r, const std::string& layerId) const {

@@ -1,7 +1,9 @@
 #pragma once
 
 #include <map>
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "engine/rendering/Renderer.h"
@@ -30,6 +32,13 @@ public:
     static constexpr int kMargin = 16;  // room for surface decoration overhang
 
     void build(Renderer& r, ResourceManager& res, const LevelData& level);
+    /// The same, baked over several frames (a level drawn small in a menu): `prepare` lays
+    /// the tiles out, then each `bakeSome` bakes chunks for about `budgetMs`, those meeting
+    /// `first` (world area) before the others; render() draws the ones baked so far. Returns
+    /// how many chunks are left. Once all are baked, the result is the one of build().
+    void prepare(ResourceManager& res, const LevelData& level);
+    size_t bakeSome(Renderer& r, double budgetMs, const Rect* first = nullptr);
+    size_t pendingChunks() const { return todo_.size(); }
     /// True if `material` has a tileset slot in the renderer.
     static bool supportsMaterial(const std::string& material);
     void render(Renderer& r, const std::string& layerId) const;
@@ -43,6 +52,10 @@ private:
         TexturePtr tex;
     };
     void loadTilesets(ResourceManager& res);
+    struct Layer;  // a layer's tiles and one-way platforms, laid out (TerrainRenderer.cpp)
+    void bake(Renderer& r, const std::string& layerId, const Layer& layer, int cx, int cy);
+    std::map<std::string, std::shared_ptr<Layer>> layers_;
+    std::vector<std::pair<std::string, std::pair<int, int>>> todo_;  // chunks to bake (layer, cx, cy)
     std::map<std::string, Tileset> tilesets_;
     TexturePtr platforms_;
     std::map<std::string, int> platformRows_;

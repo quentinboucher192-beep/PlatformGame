@@ -141,7 +141,7 @@ void PauseScene::render(float /*alpha*/) {
     {
         // « Mode concentré »: the reduced HUD (also T / Partage in game).
         bool focus = g_.settings.gameplay.focusMode;
-        if (ui.toggle("focus", {bx, y, bw, bh}, "Mode concentré (HUD réduit)", focus)) {
+        if (ui.toggle("focus", {bx, y, bw, bh}, "Mode concentré", focus)) {
             g_.settings.gameplay.focusMode = focus;
             g_.saveSettings();
         }

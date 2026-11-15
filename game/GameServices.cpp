@@ -21,6 +21,7 @@ void GameServices::loadAll() {
     ghosts.open(Paths::userDir() / "ghosts");
     ghosts.trimCache(static_cast<uint64_t>(settings.ghosts.cacheMB) * 1024 * 1024);
     segments.load();
+    training.load();
     if (std::string err; !achievementCatalog.loadDefault(&err)) Log::warn("Succès : {}", err);
     achievements.load();
     online.onAchievementEvent = [this](const std::string& key) {
