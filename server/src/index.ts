@@ -9,6 +9,7 @@ import { ApiError, errorResponse, json, log, type Bindings, type Ctx } from "./h
 import * as boards from "./leaderboards";
 import * as creators from "./creators";
 import * as achievements from "./achievements";
+import * as cosmetics from "./cosmetics";
 import * as campaign from "./campaign";
 import * as notifications from "./notifications";
 import * as race from "./race";
@@ -102,6 +103,7 @@ route("DELETE", `${V}/players/me`, (ctx) => players.deleteMe(ctx));
 route("PUT", `${V}/players/me/avatar`, (ctx) => players.putAvatar(ctx));
 route("POST", `${V}/players/me/playtime`, (ctx) => creators.reportPlaytime(ctx));
 route("PUT", `${V}/players/me/achievements`, (ctx) => achievements.putAchievements(ctx));
+route("PUT", `${V}/players/me/cosmetics`, (ctx) => cosmetics.putCosmetics(ctx));
 route("GET", `${V}/players/{playerId}`, players.getPlayer, { viewer: true });
 route("GET", `${V}/players/{playerId}/creations`, creators.creations, { viewer: true });
 route("GET", `${V}/players/{playerId}/followers`, creators.followers, { viewer: true });
