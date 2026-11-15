@@ -5,6 +5,11 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.29.1** :
+* **Une touche par commande** (*Paramètres › Clavier / souris* et *Manette*, une seule colonne) :
+  plus de seconde touche cachée ; les flèches et la croix déplacent toujours Nova. Un bouton
+  **« Par défaut »** par ligne remet cette commande seule à sa touche d'origine.
+
 **Nouveau dans la version 2.29.0** :
 * **72 nouveaux succès** (218 en tout, **597 étoiles**, 13 catégories dont « Collection ») :
   médailles par planète, chaque phase d'un boss sans être touché, ennemis par famille,

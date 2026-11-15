@@ -175,7 +175,7 @@ private:
                  FontFace::Body, VAlign::Middle);
         // One key / one button per command (2.29): a single column.
         for (int slot = 0; slot < 1; ++slot) {
-            Rect b{r.x + r.w * 0.42f, r.y, r.w * 0.56f, r.h};
+            Rect b{r.x + r.w * 0.42f, r.y, r.w * 0.38f, r.h};
             std::string label;
             const PadBinding& pb = working_.input.pad[i][slot];
             // A gamepad button with its icon (drawn on the left): the name stays clear of it.
@@ -200,6 +200,42 @@ private:
                 g_.app.input().beginCapture(pad ? InputDevice::Gamepad : InputDevice::Keyboard);
             }
             if (icon) Glyphs::drawPadButton(ui, pb, {b.x + ui.s(8), b.center().y}, ui.s(32));
+        }
+        // « Par défaut »: this command alone back to its key / button of origin (active only when
+        // it was changed). A command that used that key loses it, as when a key is chosen.
+        {
+            const InputBindings d = InputBindings::defaults();
+            const bool same = pad ? working_.input.pad[i] == d.pad[i] : working_.input.keys[i] == d.keys[i];
+            Rect rb{r.x + r.w * 0.82f, r.y, r.w * 0.18f, r.h};
+            UIContext::ButtonStyle st;
+            st.small = true;
+            st.enabled = !same;
+            const std::string label = "Par défaut";
+            st.fontSize = ui.fitFont(label, FontFace::Bold, 16, std::max(ui.s(30), rb.w - ui.s(14)), 0.6f);
+            if (ui.button(std::string(pad ? "pr" : "kr") + actionId(a), rb, label, st) && !same) {
+                if (pad) {
+                    const PadBinding def = d.pad[i][0];
+                    for (int o = 0; o < kFirstMenuAction; ++o)
+                        for (auto& p : working_.input.pad[o])
+                            if (o != i && def.kind != PadBinding::Kind::None && p == def) {
+                                p = PadBinding{};
+                                flash(std::string("Bouton retiré de « ") + actionLabel(static_cast<Action>(o)) + " »");
+                            }
+                    working_.input.pad[i] = d.pad[i];
+                } else {
+                    const SDL_Scancode def = d.keys[i][0];
+                    for (int o = 0; o < kFirstMenuAction; ++o)
+                        for (auto& k : working_.input.keys[o])
+                            if (o != i && def != SDL_SCANCODE_UNKNOWN && k == def) {
+                                k = SDL_SCANCODE_UNKNOWN;
+                                flash(std::string("Touche retirée de « ") + actionLabel(static_cast<Action>(o)) + " »");
+                            }
+                    working_.input.keys[i] = d.keys[i];
+                }
+                working_.input.keepOneBinding();
+                g_.app.input().setBindings(working_.input);
+                g_.uiSound("ui_confirm");
+            }
         }
     }
 

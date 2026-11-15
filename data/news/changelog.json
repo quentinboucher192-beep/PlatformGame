@@ -1,4 +1,8 @@
 {
+  "2.29.1": [
+    "Paramètres › Clavier / souris et Manette : une seule touche (ou un seul bouton) par commande, en une colonne ; les secondes touches cachées sont retirées, seule la touche affichée fonctionne. Les flèches du clavier et la croix de la manette déplacent toujours Nova.",
+    "Un bouton « Par défaut » sur chaque ligne remet cette commande seule à sa touche d'origine ; « Réinitialiser » remet toutes les touches."
+  ],
   "2.29.0": [
     "72 nouveaux succès (218 en tout, 597 étoiles) et une nouvelle catégorie « Collection » : médailles par planète, chaque phase d'un boss sans être touché, ennemis vaincus par famille, comparaisons de replays, musiques entendues, créatures rencontrées, tenues équipées, notes et commentaires… Du plus simple au plus difficile.",
     "22 nouvelles récompenses dans la Collection (53 en tout) : combinaisons Nébuleuse, Abysse, Éruption et Sanctuaire ; traînées Flammèches, Prisme et Runes d'Aethra ; cadres Émeraude, Orbite, Nébuleuse et Lauriers ; 8 nouveaux titres ; effets de victoire Vortex, Aurore boréale et Couronne solaire.",

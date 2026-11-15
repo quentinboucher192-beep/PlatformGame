@@ -14410,6 +14410,12 @@
    ]
   },
   {
+   "fr": "Les flèches du clavier et la croix de la manette déplacent aussi Nova, en plus des commandes choisies ci-dessus.",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
    "fr": "Les forges des Anciens sombrent dans la lave... mais leurs marteaux battent encore.",
    "where": [
     "data/levels/pyralis_01.json"
@@ -18426,6 +18432,12 @@
    ]
   },
   {
+   "fr": "Par défaut",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
    "fr": "Par type",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -18572,6 +18584,12 @@
    "where": [
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Paramètres › Clavier / souris et Manette : une seule touche (ou un seul bouton) par commande, en une colonne ; les secondes touches cachées sont retirées, seule la touche affichée fonctionne. Les flèches du clavier et la croix de la manette déplacent toujours Nova.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -27450,6 +27468,12 @@
    "fr": "Un autre membre a créé au même moment un objet du même nom : le sien est gardé.",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
+   ]
+  },
+  {
+   "fr": "Un bouton « Par défaut » sur chaque ligne remet cette commande seule à sa touche d'origine ; « Réinitialiser » remet toutes les touches.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {

@@ -553,7 +553,9 @@ TEST_CASE("power keys: settings saved before 2.24 get slot keys from the buttons
     CHECK(b.keys[static_cast<int>(Action::PowerSlot1)][0] == SDL_SCANCODE_Q);
     CHECK(b.keys[static_cast<int>(Action::PowerSlot1)][1] == SDL_SCANCODE_UNKNOWN);
     CHECK(b.keys[static_cast<int>(Action::PowerSlot2)][0] == SDL_SCANCODE_R);
-    CHECK(b.keys[static_cast<int>(Action::PowerSlot6)][1] == SDL_SCANCODE_H);
+    // One key per command (2.29): the second key of before is dropped.
+    CHECK(b.keys[static_cast<int>(Action::PowerSlot6)][0] == SDL_SCANCODE_F);
+    CHECK(b.keys[static_cast<int>(Action::PowerSlot6)][1] == SDL_SCANCODE_UNKNOWN);
     CHECK(b.keys[static_cast<int>(Action::Dash)][0] == SDL_SCANCODE_UNKNOWN);  // bound to nothing now
     CHECK(b.pad[static_cast<int>(Action::PowerSlot1)][0] == PadBinding::button(SDL_GAMEPAD_BUTTON_NORTH));
     CHECK(b.pad[static_cast<int>(Action::Interact)][0] == PadBinding::button(SDL_GAMEPAD_BUTTON_RIGHT_STICK));
@@ -564,8 +566,9 @@ TEST_CASE("power keys: settings saved before 2.24 get slot keys from the buttons
     Json clash = Json::parse(R"({"keyboard": {"attack": ["K", ""]}, "gamepad": {}})");
     InputBindings c = InputBindings::fromJson(clash);
     CHECK(c.keys[static_cast<int>(Action::Attack)][0] == SDL_SCANCODE_K);
+    // One key per command (2.29): its only key taken, the slot waits for the player's choice.
     CHECK(c.keys[static_cast<int>(Action::PowerSlot1)][0] == SDL_SCANCODE_UNKNOWN);
-    CHECK(c.keys[static_cast<int>(Action::PowerSlot1)][1] == SDL_SCANCODE_LSHIFT);
+    CHECK(c.keys[static_cast<int>(Action::PowerSlot1)][1] == SDL_SCANCODE_UNKNOWN);
     // Saved again: the slots are written, the old buttons are not; read back the same.
     Json saved = b.toJson();
     CHECK(saved["keyboard"].contains("power_slot_1"));
