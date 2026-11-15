@@ -34,15 +34,20 @@ ArchitecturesInstallIn64BitMode=x64compatible
 PrivilegesRequired=admin
 PrivilegesRequiredOverridesAllowed=dialog
 ChangesAssociations=yes
-LicenseFile=license_fr.txt
 MinVersion=10.0
 ; Saves live in the user's profile; the shortcut to them and the uninstall question
 ; intentionally refer to the installing user's folder.
 UsedUserAreasWarning=no
+; Language: chosen in the first window of the installer (preselected from the language of
+; Windows). The installer is shown in that language, and the game starts in it: the choice
+; is written to {app}\language.ini (see [INI]), read by the game at start when it is new;
+; the game then keeps it in its settings (Settings > Game > "Langue / Language").
+ShowLanguageDialog=yes
+LanguageDetectionMethod=uilanguage
 
 [Languages]
-Name: "french"; MessagesFile: "compiler:Languages\French.isl"
-Name: "english"; MessagesFile: "compiler:Default.isl"
+Name: "french"; MessagesFile: "compiler:Languages\French.isl"; LicenseFile: "license_fr.txt"
+Name: "english"; MessagesFile: "compiler:Default.isl"; LicenseFile: "license_en.txt"
 
 [CustomMessages]
 french.TaskDesktop=Créer un raccourci sur le Bureau
@@ -71,6 +76,8 @@ french.DeleteSaves=Voulez-vous aussi supprimer vos sauvegardes, records, niveaux
 english.DeleteSaves=Do you also want to delete your saves, records, created levels and imported packages?
 french.KeepSavesHint=Choisissez « Non » pour les conserver.
 english.KeepSavesHint=Choose "No" to keep them.
+french.LanguageNote=Langue du jeu : français (modifiable à tout moment dans Paramètres › Jeu › « Langue / Language »).
+english.LanguageNote=Game language: English (can be changed at any time in Settings › Game › "Langue / Language").
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:TaskDesktop}"; GroupDescription: "{cm:GroupShortcuts}"
@@ -79,6 +86,10 @@ Name: "links"; Description: "{cm:TaskLinks}"; GroupDescription: "{cm:GroupFiles}
 
 [Files]
 Source: "{#StageDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+
+[INI]
+; The language of the installation, for the game (Language=french or Language=english).
+Filename: "{app}\language.ini"; Section: "Language"; Key: "Language"; String: "{language}"; Flags: uninsdeletesection
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
@@ -108,8 +119,20 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#MyAppName}}
 ; Only files the game may create inside its own folder (none by design). Saves live in
 ; %APPDATA%\CosmicStudio\CosmicPlatformer and are preserved unless the user asks.
 Type: filesandordirs; Name: "{app}\user"
+Type: files; Name: "{app}\language.ini"
 
 [Code]
+// "Ready to install" page: also says in which language the game will start.
+function UpdateReadyMemo(Space, NewLine, MemoUserInfoInfo, MemoDirInfo, MemoTypeInfo, MemoComponentsInfo,
+  MemoGroupInfo, MemoTasksInfo: String): String;
+begin
+  Result := '';
+  if MemoDirInfo <> '' then Result := Result + MemoDirInfo + NewLine + NewLine;
+  if MemoGroupInfo <> '' then Result := Result + MemoGroupInfo + NewLine + NewLine;
+  if MemoTasksInfo <> '' then Result := Result + MemoTasksInfo + NewLine + NewLine;
+  Result := Result + CustomMessage('LanguageNote');
+end;
+
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 var
   SaveDir: String;

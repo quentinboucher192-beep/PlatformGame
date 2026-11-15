@@ -10,6 +10,7 @@
 #include <map>
 
 #include "engine/input/InputManager.h"
+#include "engine/core/I18n.h"
 #include "game/GameServices.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/MenuBackground.h"
@@ -795,7 +796,11 @@ private:
             prevSender = sender;
             bool deleted = jget<bool>(m, "deleted", false);
             std::string body = deleted ? "Message supprimé" : jstr(m, "body");
-            Vec2 sz = ui.text().measureWrapped(body, FontFace::Body, ui.s(fs), maxW - 2 * pad);
+            // A message is shown as its author wrote it (only « Message supprimé » is translated).
+            Vec2 sz = [&] {
+                i18n::Verbatim playerWords(!deleted);
+                return ui.text().measureWrapped(body, FontFace::Body, ui.s(fs), maxW - 2 * pad);
+            }();
             float h = sz.y + 2 * pad - ui.s(4) + ui.s(18);  // text + time line
             float w = std::max(sz.x + 2 * pad, ui.s(90));
             if (showName) y += ui.s(20);
@@ -839,8 +844,11 @@ private:
             if (sel) ui.r().drawRoundedRect(r, ui.s(12), ui.theme().accent, ui.s(1.5f));
             if (!deleted && ui.inputEnabled && ui.mouseClicked(r)) selectedMsg_ = sel ? std::string{} : id;
             const float pad = ui.s(12);
-            ui.labelWrapped(deleted ? "Message supprimé" : jstr(m, "body"), {r.x + pad, r.y + pad - ui.s(2)}, b.w - 2 * pad + ui.s(2), 17,
-                            deleted ? ui.theme().textDim : ui.theme().text);
+            {
+                i18n::Verbatim playerWords(!deleted);
+                ui.labelWrapped(deleted ? "Message supprimé" : jstr(m, "body"), {r.x + pad, r.y + pad - ui.s(2)}, b.w - 2 * pad + ui.s(2), 17,
+                                deleted ? ui.theme().textDim : ui.theme().text);
+            }
             ui.label(clockText(jstr(m, "created_at")), {r.right() - pad, r.bottom() - ui.s(12)}, 13, ui.theme().textDim.withAlphaF(0.9f), Align::Right,
                      FontFace::Body, VAlign::Middle);
             if (sel) {

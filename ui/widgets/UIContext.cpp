@@ -4,6 +4,7 @@
 #include <cstdio>
 
 #include "engine/core/Application.h"
+#include "engine/core/I18n.h"
 
 namespace cosmic {
 
@@ -193,8 +194,11 @@ float UIContext::fitFont(const std::string& t, FontFace face, float size, float 
     return fs;
 }
 
-std::string UIContext::elide(const std::string& t, FontFace face, float size, float room) {
+std::string UIContext::elide(const std::string& source, FontFace face, float size, float room) {
+    // Shortened in the language shown (the pieces of a translated text are not translated again).
+    const std::string t = i18n::tr(source);
     if (room <= 0.0f || text().measure(t, face, s(size)).x <= room) return t;
+    i18n::Verbatim pieces;
     std::string cut = t;
     while (!cut.empty()) {
         // Drop one character (UTF-8: its continuation bytes too) and trailing spaces.
@@ -202,7 +206,7 @@ std::string UIContext::elide(const std::string& t, FontFace face, float size, fl
         while (n > 0 && (static_cast<unsigned char>(cut[n]) & 0xC0) == 0x80) --n;
         cut.resize(n);
         while (!cut.empty() && cut.back() == ' ') cut.pop_back();
-        if (text().measure(cut + "…", face, s(size)).x <= room) return cut + "…";
+        if (text().measure(cut + "…", face, s(size)).x <= room) return i18n::keep(cut + "…");
     }
     return "…";
 }
@@ -506,6 +510,8 @@ bool UIContext::textFieldImpl(const std::string& name, const Rect& rc, std::stri
         for (unsigned char ch : value)
             if ((ch & 0xC0) != 0x80) masked += "\xE2\x80\xA2";  // one dot per code point
     std::string shown = value.empty() && editing_ != wid ? placeholder : (mask ? masked : value);
+    // What the player typed is shown as typed (only the placeholder is translated).
+    i18n::Verbatim typed(shown != placeholder || !value.empty());
     Color c = value.empty() && editing_ != wid ? theme_.textDim : theme_.text;
     // A text longer than the field slides left while it is edited, so the caret stays visible.
     float shift = 0.0f;

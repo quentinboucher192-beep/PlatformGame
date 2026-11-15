@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+#include "engine/core/I18n.h"
 #include "engine/core/Log.h"
 
 namespace cosmic {
@@ -73,6 +74,7 @@ const TextRenderer::Cached* TextRenderer::get(std::string_view text, FontFace fa
 }
 
 void TextRenderer::endFrame() {
+    i18n::endFrame();
     ++frame_;
     if (frame_ % 60 != 0) return;
     for (auto it = cache_.begin(); it != cache_.end();) {
@@ -83,7 +85,11 @@ void TextRenderer::endFrame() {
     }
 }
 
+// Every text is measured and drawn in the language in use (i18n::display: French → the
+// language chosen), so that a measure always matches what is drawn.
+
 Vec2 TextRenderer::measure(std::string_view text, FontFace face, float size) {
+    text = i18n::display(text);
     TTF_Font* f = font(face, static_cast<int>(std::lround(size)));
     if (!f || text.empty()) return {0.0f, size};
     int w = 0, h = 0;
@@ -92,6 +98,7 @@ Vec2 TextRenderer::measure(std::string_view text, FontFace face, float size) {
 }
 
 Vec2 TextRenderer::measureWrapped(std::string_view text, FontFace face, float size, float maxWidth) {
+    text = i18n::display(text);
     const Cached* c = get(text, face, static_cast<int>(std::lround(size)), std::max(1, static_cast<int>(maxWidth)));
     if (!c) return {0.0f, 0.0f};
     return {static_cast<float>(c->texture->width()), static_cast<float>(c->texture->height())};
@@ -107,6 +114,7 @@ Vec2 TextRenderer::place(Vec2 pos, Vec2 size, const TextStyle& style) const {
 }
 
 Vec2 TextRenderer::draw(std::string_view text, Vec2 pos, const TextStyle& style) {
+    text = i18n::display(text);
     const Cached* c = get(text, style.face, static_cast<int>(std::lround(style.size)), 0);
     if (!c) return {0.0f, style.size};
     Vec2 size{static_cast<float>(c->texture->width()), static_cast<float>(c->texture->height())};
@@ -126,6 +134,7 @@ Vec2 TextRenderer::draw(std::string_view text, Vec2 pos, const TextStyle& style)
 }
 
 Vec2 TextRenderer::drawWrapped(std::string_view text, Vec2 pos, float maxWidth, const TextStyle& style) {
+    text = i18n::display(text);
     const Cached* c =
         get(text, style.face, static_cast<int>(std::lround(style.size)), std::max(1, static_cast<int>(maxWidth)));
     if (!c) return {0.0f, 0.0f};

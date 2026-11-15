@@ -3,6 +3,8 @@
 #include <string>
 
 #include "engine/audio/AudioSystem.h"
+#include "engine/core/I18n.h"
+#include "engine/core/Paths.h"
 #include "engine/core/Json.h"
 #include "engine/input/InputTypes.h"
 #include "saves/HudLayout.h"
@@ -82,6 +84,12 @@ float ghostOpacity(int level);
 
 /// Every user preference (stored in saves/settings.json, versioned).
 struct Settings {
+    /// Language of the texts ("fr", "en"; empty: never chosen, French unless the installer
+    /// says otherwise). Display only.
+    std::string language;
+    /// Last choice of the Windows installer applied (language.ini), so that a reinstall in
+    /// another language switches the game to it, and only then.
+    std::string installerLanguage;
     GraphicsSettings graphics;
     AudioVolumes audio;
     GameplaySettings gameplay;
@@ -92,6 +100,13 @@ struct Settings {
     Json toJson() const;
     static Settings fromJson(const Json& j);
 };
+
+/// The language of `s` (French when none was chosen).
+Language settingsLanguage(const Settings& s);
+/// The language chosen in the Windows installer (`iniFile`: language.ini next to the game,
+/// « Language=english »), applied when it is new: first launch, or the game reinstalled in
+/// another language. Returns true when `s` changed (to be saved).
+bool applyInstallerLanguage(Settings& s, const fs::path& iniFile);
 
 /// Loads / saves settings and controls with SaveFile versioning.
 class SettingsStore {

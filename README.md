@@ -310,6 +310,16 @@ CosmicPlatformer --import MonNiveau.cplanet
 
 Voir [docs/PACKAGE_FORMAT.md](docs/PACKAGE_FORMAT.md).
 
+## Langue / Language
+
+Le jeu est **en français ou en anglais**. L'installateur Windows demande la langue (il
+s'affiche lui-même dans cette langue) et le jeu démarre dans celle-ci ; elle se change à
+tout moment dans *Paramètres › Jeu › « Langue / Language »*, avec effet immédiat (ou
+`--lang en|fr` en ligne de commande). Le français reste la source de tous les textes ;
+l'anglais vient du dictionnaire `data/i18n/en.json`, appliqué à l'affichage. Les contenus
+des joueurs (niveaux de la communauté, pseudonymes, commentaires, messages) ne sont jamais
+traduits. Ajouter ou compléter une traduction : [docs/I18N.md](docs/I18N.md).
+
 ## Données utilisateur
 
 Sauvegardes, paramètres, records, niveaux créés, packages importés, exports, captures et
@@ -346,6 +356,7 @@ L'exécutable est dans `build/bin/`. Installateur Windows : `installer\build_ins
 * [docs/EDITORS.md](docs/EDITORS.md) – guide des éditeurs
 * [docs/BUILDING.md](docs/BUILDING.md) – compilation, tests, installateur
 * [docs/ASSET_SPEC.md](docs/ASSET_SPEC.md) – contrat des assets (sprites, animations, tuiles, audio)
+* [docs/I18N.md](docs/I18N.md) – langues (français / anglais) : choix, fonctionnement, ajouter une traduction
 * [docs/GHOST_RACING.md](docs/GHOST_RACING.md) – fantômes, écarts, entraînement, succès, mode concentré (et leurs limites)
 * [docs/online/](docs/online/README.md) – Cosmic Online : installation, déploiement, secrets, API, règles, confidentialité, dépannage
 

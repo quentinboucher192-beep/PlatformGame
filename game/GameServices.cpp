@@ -1,5 +1,7 @@
 #include "game/GameServices.h"
 
+#include "engine/core/I18n.h"
+
 #include "engine/core/FileUtil.h"
 #include "engine/core/Log.h"
 
@@ -7,6 +9,8 @@ namespace cosmic {
 
 void GameServices::loadAll() {
     settings = SettingsStore::load();
+    // The language chosen in the Windows installer, when it is new (see Settings.h).
+    if (applyInstallerLanguage(settings, Paths::installDir() / "language.ini")) saveSettings();
     content.reload();
     ratings.init(content);
     progression.load();
@@ -97,6 +101,7 @@ void GameServices::checkForUpdate() {
 }
 
 void GameServices::applySettings() {
+    i18n::setLanguage(settingsLanguage(settings));
     app.input().setBindings(settings.input);
     app.audio().setVolumes(settings.audio);
     if (!app.headless()) {
