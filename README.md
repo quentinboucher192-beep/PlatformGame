@@ -5,6 +5,15 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.24.0** :
+* **Version française entièrement en français** : les boutons et titres restés en anglais
+  (NIVEAUX EN LIGNE, CLASSEMENTS, ATELIER, VOIR LE REPLAY, ENVOYER LE RECORD, SANS MORT,
+  SANS DÉGÂT, En ligne…) sont traduits ; la version anglaise ne change pas.
+* **Corrigé** : « Retour » dans la Collection fermait le jeu. Il ramène au menu principal, et
+  aucun « Retour » ne peut plus fermer le jeu (seul « Quitter » le fait).
+* **Replay de comparaison** : la barre de progression du niveau montre les deux personnages
+  (A sur la barre, B dessous, avec leur lettre et leur couleur).
+
 **Nouveau dans la version 2.23.0** :
 * **Collection en ligne** : le cadre d'avatar et le titre équipés suivent le joueur dans les
   CLASSEMENTS et sur son profil public, qui montre aussi sa tenue

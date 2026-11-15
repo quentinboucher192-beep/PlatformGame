@@ -5741,6 +5741,12 @@
    ]
   },
   {
+   "fr": "Corrigé : « Retour » dans la Collection fermait le jeu ; il ramène au menu principal. Plus aucun « Retour » ne peut fermer le jeu, seul « Quitter » le fait.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Corée du Nord",
    "where": [
     "data/online/countries.json",
@@ -20913,6 +20919,12 @@
    ]
   },
   {
+   "fr": "Replay de comparaison : la barre de progression du niveau montre les deux personnages, A sur la barre et B dessous, chacun avec sa lettre et sa couleur.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Replay en cours de lecture",
    "where": [
     "ui/screens/ReplayCompareSetupScene.cpp"
@@ -26971,6 +26983,12 @@
    "fr": "Version du projet gardée",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
+   ]
+  },
+  {
+   "fr": "Version française : les boutons et titres restés en anglais sont traduits (NIVEAUX EN LIGNE, CLASSEMENTS, ATELIER, VOIR LE REPLAY, ENVOYER LE RECORD, SANS MORT, SANS DÉGÂT, En ligne…). En anglais, rien ne change.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {

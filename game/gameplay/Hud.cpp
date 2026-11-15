@@ -599,7 +599,7 @@ void Hud::drawProgress(UIContext& ui, GameWorld& w, Vec2 o, float k, float width
             const ProgressRacer& rc = racers_[i];
             float x = xAt(rc.at);
             bool above = i == 0;
-            float bodyH = S(40);
+            float bodyH = S(72);
             r.drawGlow({x, rail.center().y}, S(30), rc.color.withAlpha(200));
             r.fillCircle({x, rail.center().y}, S(5), rc.color);
             float top = above ? rail.y - S(2) - bodyH : rail.bottom() + S(2);
@@ -615,7 +615,7 @@ void Hud::drawProgress(UIContext& ui, GameWorld& w, Vec2 o, float k, float width
                 r.drawTexture(*rc.texture, &rc.src, dst, Color::lerp(Color{255, 255, 255, 255}, rc.color, 0.35f), BlendMode::Alpha, rc.flip);
             }
             // The letter: above the first one's head, under the second one's feet.
-            Vec2 bc{x, above ? top - S(11) : top + bodyH + S(11)};
+            Vec2 bc{x, above ? top - S(9) : top + bodyH + S(9)};
             r.fillCircle(bc, S(10), rc.color);
             r.drawRing(bc, S(10), S(1.5f), Color{8, 12, 26, 230});
             TextStyle ls = style(ui, k * 13, Color{8, 12, 26, 255}, FontFace::Bold, Align::Center, VAlign::Middle);

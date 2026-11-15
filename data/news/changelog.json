@@ -1,4 +1,9 @@
 {
+  "2.24.0": [
+    "Version française : les boutons et titres restés en anglais sont traduits (NIVEAUX EN LIGNE, CLASSEMENTS, ATELIER, VOIR LE REPLAY, ENVOYER LE RECORD, SANS MORT, SANS DÉGÂT, En ligne…). En anglais, rien ne change.",
+    "Corrigé : « Retour » dans la Collection fermait le jeu ; il ramène au menu principal. Plus aucun « Retour » ne peut fermer le jeu, seul « Quitter » le fait.",
+    "Replay de comparaison : la barre de progression du niveau montre les deux personnages, A sur la barre et B dessous, chacun avec sa lettre et sa couleur."
+  ],
   "2.23.0": [
     "Collection en ligne : le cadre d'avatar et le titre équipés vous suivent dans les CLASSEMENTS et sur votre profil public, qui montre aussi votre tenue (combinaison, traînée, cadre, effet de victoire).",
     "Les fantômes portent la combinaison de leur joueur, toujours teintés de leur couleur : la vôtre pour vos propres fantômes, celle du joueur pour un fantôme lancé depuis un classement.",

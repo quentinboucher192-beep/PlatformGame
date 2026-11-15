@@ -85,8 +85,8 @@ public:
     /// The progress bar alone, centred on `o` (`width` px of rail), e.g. outside the HUD.
     void drawProgressAt(UIContext& ui, GameWorld& w, Vec2 o, float k, float width) { drawProgress(ui, w, o, k, width); }
     /// Room the progress bar needs around its rail (above, below), runners included.
-    static float progressAbove(float scaledUnit, bool racing) { return scaledUnit * (racing ? 66.0f : 40.0f); }
-    static float progressBelow(float scaledUnit, bool racing) { return scaledUnit * (racing ? 66.0f : 46.0f); }
+    static float progressAbove(float scaledUnit, bool racing) { return scaledUnit * (racing ? 96.0f : 40.0f); }
+    static float progressBelow(float scaledUnit, bool racing) { return scaledUnit * (racing ? 96.0f : 46.0f); }
 
 private:
     std::vector<ProgressRacer> racers_;

@@ -738,7 +738,7 @@ private:
             }
         }
         float right = free.right() - ui.s(80);  // the exit portal and its glow
-        float y = std::max(ui.s(156), bottomOfHud + Hud::progressAbove(ui.s(1), true));
+        float y = std::max(ui.s(176), bottomOfHud + Hud::progressAbove(ui.s(1), true));
         if (right - left < ui.s(260)) {  // narrow screen: under the vitals and powers
             left = free.x + ui.s(40);
             y = ui.s(260) + Hud::progressAbove(ui.s(1), true);
