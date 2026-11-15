@@ -223,12 +223,14 @@ private:
         m.date = jstr(entry, "achieved_at");
         m.validated = true;
         m.community = !officialBoard;
+        m.suit = jstr(p, "suit");  // the suit of its player (2.21), checked when drawn
         Row r;
         r.recordId = rid;
         r.sameVersion = true;
         if (auto cached = g_.ghosts.cached(rid)) {
             r.entry = std::move(*cached);
             r.entry.meta.source = source;  // what it is to this player now (world / friend)
+            r.entry.meta.suit = m.suit;      // and what they wear now
             r.sameVersion = r.entry.meta.levelHash == hash_;
         } else {
             r.entry.meta = m;

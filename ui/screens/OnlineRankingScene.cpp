@@ -12,6 +12,7 @@
 #include "ui/online/GlobeRenderer.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/online/RatingWidgets.h"
+#include "ui/screens/CosmeticFx.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/ReplayCompareNav.h"
@@ -700,6 +701,19 @@ private:
         ui.popId();
     }
 
+    /// A leaderboard player's title (2.21): the name of the catalogue's item, the server's
+    /// name for an item this game does not know; "" without a title (or a hidden profile).
+    std::string titleOf(const Json& player) const {
+        if (!player.contains("title") || !player["title"].is_object()) return {};
+        const Json& t = player["title"];
+        if (const CosmeticItem* i = g_.cosmetics.find(jstr(t, "id")); i && i->category == "title")
+            return i->isDefault ? std::string() : i->name;
+        std::string n = jstr(t, "name");  // elided when drawn
+        for (char& c : n)
+            if (static_cast<unsigned char>(c) < 0x20) c = ' ';
+        return n;
+    }
+
     std::string entryValue(const Json& e) const {
         if (e.contains("points")) return std::to_string(jget<int>(e, "points", 0)) + " pts";
         if (e.contains("total_time_ms")) return formatRunTime(jget<int64_t>(e, "total_time_ms", 0));
@@ -729,8 +743,12 @@ private:
         } else {
             ui.label(std::to_string(rank), badge, 16, ui.theme().text, Align::Center, FontFace::Bold, VAlign::Middle);
         }
-        ui_.drawAvatar(jstr(p, "avatar", "avatar_01"), pid, {row.x + ui.s(46), row.y + ui.s(5), row.h - ui.s(10), row.h - ui.s(10)});
-        float nx = row.x + ui.s(52) + row.h - ui.s(10);
+        // The avatar in the player's frame (2.21; the simple one for a hidden profile).
+        float avs = row.h - ui.s(14);
+        Vec2 avc{row.x + ui.s(46) + (row.h - ui.s(10)) * 0.5f, row.center().y};
+        ui_.drawAvatar(jstr(p, "avatar", "avatar_01"), pid, Rect::fromCenter(avc, {avs, avs}));
+        drawAvatarFrame(ui.r(), avc, avs * 0.5f, g_.cosmetics.lookOr("frame", jstr(p, "frame")), ui.s(0.5f), t_);
+        float nx = avc.x + avs * 0.5f + ui.s(kAvatarFrameMargin * 0.5f + 6);
         std::string cc = jstr(p, "country_code");
         if (!cc.empty()) {
             ui_.drawFlag(cc, {nx, row.center().y - ui.s(8), ui.s(22), ui.s(16)});
@@ -761,9 +779,18 @@ private:
             right = cb.x - ui.s(8);
         }
         std::string name = ui_.displayName(jstr(p, "username"), rank, me);
-        float nf = ui.fitFont(name, FontFace::Bold, 18, std::max(ui.s(40), right - nx), 0.75f);
-        ui.label(ui.elide(name, FontFace::Bold, nf, std::max(ui.s(40), right - nx)), {nx, row.center().y}, nf, me ? ui.theme().accent : ui.theme().text,
-                 Align::Left, FontFace::Bold, VAlign::Middle);
+        float room = std::max(ui.s(40), right - nx);
+        // The player's title under the name (2.21), smaller and dimmed.
+        std::string title = titleOf(p);
+        float nameY = title.empty() ? row.center().y : row.center().y - ui.s(8);
+        float nf = std::max(11.5f / ui.s(1.0f), ui.fitFont(name, FontFace::Bold, title.empty() ? 18 : 17, room, 0.75f));
+        ui.label(ui.elide(name, FontFace::Bold, nf, room), {nx, nameY}, nf, me ? ui.theme().accent : ui.theme().text, Align::Left, FontFace::Bold,
+                 VAlign::Middle);
+        if (!title.empty()) {
+            float tf = std::max(12.5f, 11.5f / ui.s(1.0f));  // never under 11.5 px on screen
+            ui.label(ui.elide(title, FontFace::Body, tf, room), {nx, row.center().y + ui.s(10)}, tf, ui.theme().textDim, Align::Left, FontFace::Body,
+                     VAlign::Middle);
+        }
         ui.label(value, {rx, row.center().y}, 18, rank == 1 ? GlobeRenderer::tierColor(MarkerTier::Gold) : ui.theme().text, Align::Right,
                  FontFace::Bold, VAlign::Middle);
     }

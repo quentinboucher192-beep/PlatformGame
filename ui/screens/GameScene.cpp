@@ -136,6 +136,13 @@ void GameScene::startGhosts() {
     if (opt_.ghostsChosen) choices = opt_.ghosts;
     else if (gs.enabled && gs.personalByDefault && pb) choices.push_back(*pb);
     if (choices.empty()) return;
+    // Each ghost wears its player's suit (2.21): mine the one equipped now, the others the one
+    // their leaderboard entry gave (a look this game knows, else the normal sheet).
+    ghostRun_.setSuitSheet([this](const GhostMeta& m) -> TexturePtr {
+        std::string look = m.mine() ? g_.cosmeticLook("suit") : g_.cosmetics.lookOr("suit", m.suit);
+        if (look.empty() || look == "standard") return nullptr;
+        return g_.app.resources().texture("sprites/player/suits/nova_" + look + ".png");
+    });
     ghostRun_.begin(std::move(choices), level_, g_.content, ghostHash_, gs, opt_.training);
     if (opt_.training && opt_.spawn) ghostRun_.setTrainingFrom(*opt_.spawn);
     if (pb) {

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <future>
 #include <string>
 #include <vector>
@@ -44,6 +45,13 @@ public:
     void update(const GameWorld& w, float dt);
     void finish(float runTime) { race_.finish(runTime); }
 
+    /// Sheet of the suit a ghost wears (2.21), nullptr for the normal one: asked once per
+    /// ghost, the first time it is drawn. Display only.
+    using SuitSheet = std::function<TexturePtr(const GhostMeta&)>;
+    void setSuitSheet(SuitSheet f) {
+        suitSheet_ = std::move(f);
+        sheets_.clear();
+    }
     void drawWorld(Renderer& r, const WorldView& view, const AnimationSetPtr& set);
     /// The gap and the segments panel inside `area` (the HUD place « Fantômes », size factor
     /// `k`; `boxShown` false: hidden in the HUD settings), then the names above the ghosts,
@@ -89,6 +97,8 @@ private:
     GhostSettings settings_;
     std::future<Prepared> loading_;
     std::vector<Animator> anims_;
+    SuitSheet suitSheet_;
+    std::vector<std::pair<bool, TexturePtr>> sheets_;  // per ghost: asked yet, its suit's sheet
     std::vector<std::string> labels_;  // "Astrid · 2:05,12" (built once)
     std::vector<std::string> refused_;
     struct Checkpoint {

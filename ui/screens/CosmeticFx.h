@@ -46,4 +46,14 @@ constexpr float kVictoryFxTime = 2.6f;
 /// (« fireworks », « starfall », « supernova »; « classic »: nothing more than the game's own).
 void drawVictoryFx(Renderer& r, const std::string& look, Vec2 at, float t, bool world, float scale = 1.0f);
 
+/// How far an avatar frame reaches beyond the avatar's radius, in units of `scale` (glows
+/// aside): layouts keep this much room around a framed avatar.
+constexpr float kAvatarFrameMargin = 15.5f;
+/// Avatar frame (2.21) around a round avatar of `radius` centred on `center`, in screen
+/// pixels: « simple », « bronze », « silver », « gold » (with a halo), « platinum »
+/// (iridescent), « constellation » (small stars around); anything else draws « simple ».
+/// `scale` sizes the rings, `time` (seconds) moves the platinum sheen and the stars.
+/// Shared by the Collection, the leaderboards and the profiles.
+void drawAvatarFrame(Renderer& r, Vec2 center, float radius, const std::string& look, float scale, float time = 0.0f);
+
 }  // namespace cosmic

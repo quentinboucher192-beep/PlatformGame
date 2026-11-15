@@ -64,7 +64,68 @@ void star(const Canvas& cv, Vec2 p, float size, Color c) {
     cv.dot(p, size * 0.45f, Color{255, 255, 255, c.a}, BlendMode::Additive);
 }
 
+/// A filled five-pointed star (screen pixels).
+void fillStar(Renderer& r, Vec2 c, float radius, Color col) {
+    Vec2 pts[10];
+    for (int i = 0; i < 10; ++i) {
+        float a = -kFxPi * 0.5f + static_cast<float>(i) * kFxPi / 5.0f;
+        float rr = i % 2 == 0 ? radius : radius * 0.45f;
+        pts[i] = {c.x + std::cos(a) * rr, c.y + std::sin(a) * rr};
+    }
+    for (int i = 0; i < 10; ++i) r.fillTriangle(c, pts[i], pts[(i + 1) % 10], col);
+}
+
 }  // namespace
+
+void drawAvatarFrame(Renderer& r, Vec2 center, float radius, const std::string& look, float scale, float time) {
+    auto ring = [&](float rad, float th, Color c) { r.drawRing(center, rad, th * scale, c); };
+    // A polished edge: a lighter arc on the upper left of the main ring.
+    auto shine = [&](float rad, Color c) { r.drawArc(center, rad, 1.6f * scale, kFxPi * 1.05f, kFxPi * 1.45f, c); };
+    const float main = radius + 2 * scale;
+    if (look == "bronze") {
+        ring(main, 5, Color{205, 127, 50, 255});
+        shine(main, Color{240, 186, 130, 220});
+        ring(radius + 6 * scale, 2, Color{59, 36, 16, 255});
+    } else if (look == "silver") {
+        r.drawGlow(center, radius + 14 * scale, Color{200, 210, 225, 90});
+        ring(main, 5, Color{200, 210, 225, 255});
+        shine(main, Color{255, 255, 255, 230});
+        ring(radius + 6 * scale, 2, Color{43, 50, 64, 255});
+    } else if (look == "gold") {
+        // The halo of the gold frame.
+        r.drawGlow(center, radius + 22 * scale, Color{255, 214, 90, 140});
+        ring(main, 5, Color{255, 214, 90, 255});
+        shine(main, Color{255, 246, 200, 235});
+        ring(radius + 6 * scale, 2, Color{74, 58, 16, 255});
+    } else if (look == "platinum") {
+        r.drawGlow(center, radius + 24 * scale, Color{170, 240, 255, 140});
+        ring(main, 5, Color{170, 240, 255, 255});
+        // Iridescence: arcs of pale colours turning slowly over the ring.
+        const Color sheen[4] = {{255, 190, 240, 200}, {170, 240, 255, 200}, {200, 185, 255, 200}, {190, 255, 220, 200}};
+        const int arcs = 12;
+        float step = 2.0f * kFxPi / arcs, turn = time * 0.6f;
+        for (int i = 0; i < arcs; ++i)
+            r.drawArc(center, main, 2.4f * scale, turn + i * step, turn + (i + 1) * step, sheen[i % 4]);
+        ring(radius + 6 * scale, 2, Color{27, 59, 70, 255});
+    } else if (look == "constellation") {
+        r.drawGlow(center, radius + 30 * scale, Color{180, 140, 255, 150});
+        ring(main, 5, Color{255, 255, 255, 255});
+        ring(radius + 7 * scale, 3, Color{57, 240, 216, 255});
+        ring(radius + 11 * scale, 3, Color{180, 140, 255, 255});
+        // Small stars around, slowly turning and twinkling.
+        const int stars = 6;
+        for (int i = 0; i < stars; ++i) {
+            float a = -kFxPi * 0.5f + time * 0.15f + i * 2.0f * kFxPi / stars;
+            Vec2 p{center.x + std::cos(a) * (radius + 10 * scale), center.y + std::sin(a) * (radius + 10 * scale)};
+            float tw = 0.85f + 0.15f * std::sin(time * 3.0f + i * 1.7f);
+            r.drawGlow(p, 10 * scale, Color{255, 255, 255, static_cast<uint8_t>(170 * tw)});
+            fillStar(r, p, 5.2f * scale, Color{20, 16, 48, 255});  // a dark edge: visible on the rings
+            fillStar(r, p, 4.4f * scale * tw, i % 2 == 0 ? Color{255, 255, 255, 255} : Color{255, 214, 90, 255});
+        }
+    } else {
+        ring(radius + 1.5f * scale, 3, Color{57, 240, 216, 255});
+    }
+}
 
 void TrailFx::update(Vec2 center, float dt, bool emit) {
     for (auto& p : pts_) p.age += dt;

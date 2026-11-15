@@ -2,6 +2,7 @@
 
 #include <deque>
 #include <functional>
+#include <map>
 #include <memory>
 #include <optional>
 #include <set>
@@ -127,6 +128,13 @@ public:
     /// The achievements unlocked in this game (ids). Sent to the profile when the player is
     /// connected (and again after a change or another login): shown as declared by the game.
     void setAchievements(std::vector<std::string> ids);
+    /// What the player wears (2.21): category → equipped item id (suit, trail, frame, title,
+    /// victory). Sent to the profile once the achievements of the same player are there (the
+    /// server checks the ids against them), again after each change or another login, a
+    /// minute later after a failure; never while offline or logged out.
+    void setCosmetics(std::map<std::string, std::string> equipped);
+    /// Body of PUT /players/me/cosmetics for these ids (tests).
+    static Json cosmeticsBody(const std::map<std::string, std::string>& equipped);
     /// Seconds waiting to be sent (tests, settings).
     double pendingPlaytime() const;
     void flushPlaytime(ApiCallback cb = {});
@@ -290,6 +298,12 @@ private:
     std::string achievementsSentFor_;  // player whose profile has the current list
     bool achievementsBusy_ = false;
     float achievementsTimer_ = 5.0f;
+    unsigned achievementsGen_ = 0;  // a change while a list is on its way: sent again
+    std::map<std::string, std::string> cosmetics_;
+    std::string cosmeticsSentFor_;  // player whose profile wears the current items
+    bool cosmeticsBusy_ = false;
+    float cosmeticsTimer_ = 3.0f;
+    unsigned cosmeticsGen_ = 0;
     bool playtimeBusy_ = false;
     void savePlaytime();
 

@@ -75,6 +75,13 @@ const CosmeticCategory* CosmeticCatalog::category(const std::string& id) const {
     return nullptr;
 }
 
+std::string CosmeticCatalog::lookOr(const std::string& category, const std::string& look) const {
+    for (const auto& i : items_)
+        if (i.category == category && i.look == look && !look.empty()) return look;
+    const CosmeticItem* d = defaultItem(category);
+    return d ? d->look : std::string();
+}
+
 std::vector<CosmeticCatalog::Milestone> CosmeticCatalog::milestones(int totalStars) const {
     std::map<int, Milestone> m;
     for (const auto& i : items_) {
@@ -134,6 +141,13 @@ void CollectionBook::equip(const std::string& category, const std::string& id) {
 std::string CollectionBook::look(const CosmeticCatalog& catalog, const std::string& category, const CosmeticProgress& p) const {
     const CosmeticItem* i = equipped(catalog, category, p);
     return i ? i->look : std::string();
+}
+
+std::map<std::string, std::string> CollectionBook::equippedIds(const CosmeticCatalog& catalog, const CosmeticProgress& p) const {
+    std::map<std::string, std::string> out;
+    for (const auto& c : catalog.categories())
+        if (const CosmeticItem* i = equipped(catalog, c.id, p)) out[c.id] = i->id;
+    return out;
 }
 
 std::vector<const CosmeticItem*> CollectionBook::fresh(const CosmeticCatalog& catalog, const CosmeticProgress& p) const {

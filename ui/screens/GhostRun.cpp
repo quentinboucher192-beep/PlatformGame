@@ -26,6 +26,7 @@ void GhostRun::begin(std::vector<GhostEntry> choices, const LevelData& level, co
     training_ = training;
     race_.clear();
     anims_.clear();
+    sheets_.clear();
     labels_.clear();
     refused_.clear();
     seenSplits_ = 0;
@@ -169,6 +170,11 @@ void GhostRun::drawWorld(Renderer& r, const WorldView& view, const AnimationSetP
             a.play("idle");
         }
         if (!g.pose.visible || static_cast<PlayerState>(g.pose.state) == PlayerState::Hidden) continue;
+        // The suit of its player (2.21), still tinted with the ghost's colour below.
+        if (sheets_.size() < static_cast<size_t>(race_.size())) sheets_.resize(static_cast<size_t>(race_.size()));
+        auto& sheet = sheets_[static_cast<size_t>(i)];
+        if (!sheet.first) sheet = {true, suitSheet_ ? suitSheet_(g.meta) : nullptr};
+        const Texture& tex = sheet.second ? *sheet.second : *set->texture;
         // A ghost that has finished waits a moment at the exit, then fades out.
         float fade = std::clamp(1.0f - (t - g.track.duration() - 1.5f) / 0.6f, 0.0f, 1.0f);
         if (fade <= 0.0f) continue;
@@ -185,10 +191,10 @@ void GhostRun::drawWorld(Renderer& r, const WorldView& view, const AnimationSetP
             Rect od = dst;
             od.x += d.x;
             od.y += d.y;
-            r.drawWorldTexture(*set->texture, &src, od, c.withAlpha(static_cast<uint8_t>(120 * al)), BlendMode::Additive, flip);
+            r.drawWorldTexture(tex, &src, od, c.withAlpha(static_cast<uint8_t>(120 * al)), BlendMode::Additive, flip);
         }
         Color body = Color::lerp(Color{255, 255, 255, 255}, c, 0.55f);
-        r.drawWorldTexture(*set->texture, &src, dst, body.withAlpha(static_cast<uint8_t>(255 * al)), BlendMode::Alpha, flip);
+        r.drawWorldTexture(tex, &src, dst, body.withAlpha(static_cast<uint8_t>(255 * al)), BlendMode::Alpha, flip);
         if (g.pose.flags & ReplayFrame::Shield)
             r.drawWorldCircle({g.pose.feet.x, g.pose.feet.y - 14.0f}, 24.0f, c.withAlpha(static_cast<uint8_t>(200 * al)), 2.0f);
     }

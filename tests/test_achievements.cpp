@@ -8,6 +8,7 @@
 
 #include "engine/core/FileUtil.h"
 #include "game/achievements/Achievements.h"
+#include "game/cosmetics/Collection.h"
 #include "game/content/ContentDatabase.h"
 #include "game/online/Replay.h"
 #include "game/progression/Progression.h"
@@ -252,4 +253,43 @@ TEST_CASE("achievements: an unknown condition (newer catalogue) never unlocks") 
     d.condition.count = 1;
     AchievementInputs in;
     CHECK(!AchievementBook::progress(d, in).done());
+}
+
+TEST_CASE("collection: the items sent to the online profile, the looks of other players checked") {
+    CosmeticCatalog c;
+    std::string err;
+    CHECK(c.loadDefault(&err));
+    CollectionBook book(fs::temp_directory_path() / ("cosmic_col_" + makeUuidV4().substr(0, 8) + ".json"));
+    CosmeticProgress p;
+    p.totalStars = 383;
+    // Nothing chosen: the default of each of the five categories.
+    auto ids = book.equippedIds(c, p);
+    CHECK(ids.size() == 5);
+    CHECK(ids["suit"] == "suit_standard");
+    CHECK(ids["trail"] == "trail_none");
+    CHECK(ids["frame"] == "frame_simple");
+    CHECK(ids["title"] == "title_none");
+    CHECK(ids["victory"] == "victory_classic");
+    // A locked or unknown choice is never sent: the default goes instead.
+    book.equip("frame", "frame_gold");
+    book.equip("suit", "suit_futur");
+    book.equip("title", "title_explorateur");
+    book.equip("trail", "frame_bronze");  // an item of another category
+    p.stars = 40;
+    ids = book.equippedIds(c, p);
+    CHECK(ids["frame"] == "frame_simple");
+    CHECK(ids["suit"] == "suit_standard");
+    CHECK(ids["title"] == "title_none");  // its achievement is not unlocked
+    CHECK(ids["trail"] == "trail_none");
+    p.stars = 150;
+    CHECK(book.equippedIds(c, p)["frame"] == "frame_gold");
+    // What another player's data may make the game draw: only looks of the category.
+    CHECK(c.lookOr("frame", "gold") == "gold");
+    CHECK(c.lookOr("frame", "constellation") == "constellation");
+    CHECK(c.lookOr("frame", "rainbow") == "simple");
+    CHECK(c.lookOr("frame", "") == "simple");
+    CHECK(c.lookOr("suit", "givre") == "givre");
+    CHECK(c.lookOr("suit", "../givre") == "standard");
+    CHECK(c.lookOr("suit", "gold") == "standard");  // a frame's look is not a suit
+    CHECK(c.lookOr("nothing", "gold").empty());
 }

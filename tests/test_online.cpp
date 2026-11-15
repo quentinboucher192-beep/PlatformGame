@@ -4,6 +4,7 @@
 // on the real network worker thread, so threading is exercised too. Positive answers are
 // never assumed: most scenarios script failures.
 
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <cmath>
@@ -69,6 +70,8 @@ struct FakeServer {
     Json notifications = Json::array();  // unread notifications, newest first
     std::vector<Json> playtimeReports;
     int playtimeStatus = 200;
+    std::vector<Json> cosmeticsReports;  // bodies of PUT /players/me/cosmetics
+    int cosmeticsStatus = 200;
     std::set<std::string> takenNames = {"orion"};
     int friendsCalls = 0;
     bool levelPending = false;  // the server does not know the game's level revision yet
@@ -147,6 +150,12 @@ struct FakeServer {
             int total = 0;
             for (const auto& x : b["sessions"]) total += x["seconds"].get<int>();
             return okData({{"accepted_seconds", total}});
+        }
+        if (path == "/api/v1/players/me/achievements") return okData({{"achievements", {{"stars", 0}}}});
+        if (path == "/api/v1/players/me/cosmetics") {
+            if (cosmeticsStatus != 200) return apiError(cosmeticsStatus, "RATE_LIMITED");
+            cosmeticsReports.push_back(Json::parse(rq.body));
+            return okData({{"cosmetics", Json::object()}});
         }
         if (path == "/api/v1/friends") {
             ++friendsCalls;
@@ -1019,4 +1028,61 @@ TEST_CASE("online: time played is kept until sent, whole seconds only, never whi
     }
     CHECK(std::abs(again.pendingPlaytime() - 0.5) < 1e-6);  // the fraction waits for the next session
     again.shutdown();
+}
+
+TEST_CASE("online: the items worn go to the profile after the achievements, again after a change") {
+    Harness h("cosmetics");
+    std::map<std::string, std::string> worn = {{"suit", "suit_givre"}, {"trail", "trail_none"}, {"frame", "frame_gold"},
+                                               {"title", "title_explorateur"}, {"victory", "victory_classic"}};
+    // The body: the five categories, an empty id for a missing one (refused by the server).
+    Json body = OnlineService::cosmeticsBody({{"suit", "suit_givre"}});
+    CHECK(body.size() == 5);
+    CHECK(body["suit"] == "suit_givre");
+    CHECK(body["frame"] == "");
+    h.svc.setAchievements({"voyage_5"});
+    h.svc.setCosmetics(worn);
+    // Logged out: nothing is sent.
+    pump(h.svc, [] { return false; }, 300, 1.0f);
+    auto sent = [&] {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        return h.server->cosmeticsReports.size();
+    };
+    CHECK(sent() == 0);
+    CHECK(h.login());
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        h.server->cosmeticsStatus = 429;  // refused at first: tried again later
+    }
+    CHECK(pump(h.svc, [&] {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        return std::count(h.server->log.begin(), h.server->log.end(), "PUT /api/v1/players/me/cosmetics") >= 1;
+    }, 4000, 1.0f));
+    CHECK(sent() == 0);
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        h.server->cosmeticsStatus = 200;
+    }
+    CHECK(pump(h.svc, [&] { return sent() == 1; }, 4000, 5.0f));
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        // The achievements first: the server checks the items against them.
+        auto a = std::find(h.server->log.begin(), h.server->log.end(), "PUT /api/v1/players/me/achievements");
+        auto c = std::find(h.server->log.begin(), h.server->log.end(), "PUT /api/v1/players/me/cosmetics");
+        CHECK(a != h.server->log.end());
+        CHECK(a < c);
+        CHECK(h.server->cosmeticsReports[0] == OnlineService::cosmeticsBody(worn));
+    }
+    // Nothing more while nothing changes; a change is sent again.
+    pump(h.svc, [] { return false; }, 300, 1.0f);
+    CHECK(sent() == 1);
+    worn["frame"] = "frame_silver";
+    h.svc.setCosmetics(worn);
+    CHECK(pump(h.svc, [&] { return sent() == 2; }, 4000, 1.0f));
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        CHECK(h.server->cosmeticsReports.back()["frame"] == "frame_silver");
+    }
+    // New achievements: the items are checked again by the server, so sent again after them.
+    h.svc.setAchievements({"voyage_5", "voyage_10"});
+    CHECK(pump(h.svc, [&] { return sent() == 3; }, 4000, 1.0f));
 }
