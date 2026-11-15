@@ -673,7 +673,7 @@ void LevelEditorScene::modalHelp(const Rect& c) {
         "Glisser un objet sélectionné : déplacer (aimanté à la grille) · poignées : redimensionner",
         "Terrain, liquides, zones : tracez un rectangle pour les créer",
         "Clic droit / molette enfoncée / Espace+glisser : déplacer la vue · molette : zoom · Origine : zoom 100 %",
-        "ZQSD / WASD / flèches : déplacer la vue (Maj : plus vite) · Alt+flèches : décaler la sélection",
+        "{0} / flèches : déplacer la vue (Maj : plus vite) · Alt+flèches : décaler la sélection",
         "Ctrl+Z / Ctrl+Y : annuler / rétablir · Ctrl+C / Ctrl+V / Ctrl+D : copier, coller, dupliquer · Ctrl+A : tout",
         "Suppr : supprimer · R / Maj+R : rotation · F : miroir · G : aimanter à la grille · V : sélection · H : main",
         "Ctrl+S : enregistrer · F5 : tester depuis le départ · Maj+F5 : depuis la vue · menu de Tester : depuis la sélection",
@@ -686,7 +686,12 @@ void LevelEditorScene::modalHelp(const Rect& c) {
         "Sauvegarde automatique régulière dans le dossier utilisateur (levels/autosave).",
     };
     float y = c.y + ui.s(60);
-    for (const char* l : lines) {
+    // The view keys by their place on the keyboard (W A S D positions), named as the player's
+    // layout names them: « ZQSD » on AZERTY, « WASD » on QWERTY.
+    const std::string viewKeys = keyName(SDL_SCANCODE_W) + keyName(SDL_SCANCODE_A) + keyName(SDL_SCANCODE_S) + keyName(SDL_SCANCODE_D);
+    for (const char* raw : lines) {
+        std::string l = raw;
+        if (size_t at = l.find("{0}"); at != std::string::npos) l.replace(at, 3, viewKeys);
         Vec2 s = ui.labelWrapped(l, {c.x, y}, c.w, 19, ui.theme().text);
         y += s.y + ui.s(10);
     }

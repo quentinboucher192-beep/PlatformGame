@@ -26,6 +26,18 @@
 namespace cosmic {
 
 namespace {
+/// « {0} » replaced by the key bound to `a`, as the player's keyboard layout names it
+/// (QWERTY, AZERTY…): never a letter written in the text.
+std::string withKey(std::string text, const InputBindings& b, Action a) {
+    const auto& keys = b.keys[static_cast<int>(a)];
+    std::string name = keyName(keys[0] != SDL_SCANCODE_UNKNOWN ? keys[0] : keys[1]);
+    if (size_t at = text.find("{0}"); at != std::string::npos) text.replace(at, 3, name);
+    return text;
+}
+}  // namespace
+
+
+namespace {
 
 constexpr const char* kPreviewLevel = "sylvanox_01";
 
@@ -105,9 +117,10 @@ public:
 
         // Below the preview: status, then how to use it.
         float y = P.bottom() + ui.s(18);
-        Vec2 used = ui.labelWrapped(mode_ == 1 ? "Mode concentré (touche T, Partage à la manette, ou le menu pause) : choisissez les éléments "
-                                                 "gardés. Les places et les tailles sont les mêmes dans les deux modes ; deux éléments ne peuvent "
-                                                 "jamais se chevaucher."
+        Vec2 used = ui.labelWrapped(mode_ == 1 ? withKey("Mode concentré (touche {0}, Partage à la manette, ou le menu pause) : choisissez les éléments "
+                                                         "gardés. Les places et les tailles sont les mêmes dans les deux modes ; deux éléments ne peuvent "
+                                                         "jamais se chevaucher.",
+                                                         g_.app.input().bindings(), Action::FocusToggle)
                                                : "Souris : glissez un élément pour le déplacer, molette pour changer sa taille. Clavier et "
                                                  "manette : choisissez un élément dans la liste, puis réglez sa taille et sa position avec "
                                                  "les curseurs. Deux éléments ne peuvent jamais se chevaucher.",

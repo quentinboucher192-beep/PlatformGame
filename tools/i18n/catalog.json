@@ -5061,6 +5061,12 @@
    ]
   },
   {
+   "fr": "Claviers AZERTY et QWERTY : les touches sont gardées par leur place sur le clavier et affichées avec le nom que leur donne votre clavier (ZQSD sur AZERTY, WASD sur QWERTY), partout, y compris dans les aides du mode concentré, de l'entraînement et de l'éditeur.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Clic droit / molette enfoncée / Espace+glisser : déplacer la vue · molette : zoom · Origine : zoom 100 %",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -9120,7 +9126,7 @@
    ]
   },
   {
-   "fr": "ENTRAÎNEMENT · aucun record · R / Vue : recommencer",
+   "fr": "ENTRAÎNEMENT · aucun record · {0} / Vue : recommencer",
    "where": [
     "ui/screens/GameScene.cpp"
    ]
@@ -15920,7 +15926,7 @@
    ]
   },
   {
-   "fr": "Mode concentré (touche T, Partage à la manette, ou le menu pause) : choisissez les éléments gardés. Les places et les tailles sont les mêmes dans les deux modes ; deux éléments ne peuvent jamais se chevaucher.",
+   "fr": "Mode concentré (touche {0}, Partage à la manette, ou le menu pause) : choisissez les éléments gardés. Les places et les tailles sont les mêmes dans les deux modes ; deux éléments ne peuvent jamais se chevaucher.",
    "where": [
     "ui/screens/HudEditorScene.cpp"
    ]
@@ -21204,12 +21210,6 @@
    "where": [
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/ReplayScene.cpp"
-   ]
-  },
-  {
-   "fr": "R / Vue : recommencer",
-   "where": [
-    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -30073,12 +30073,6 @@
    ]
   },
   {
-   "fr": "ZQSD / WASD / flèches : déplacer la vue (Maj : plus vite) · Alt+flèches : décaler la sélection",
-   "where": [
-    "editors/level_editor/LevelEditorDialogs.cpp"
-   ]
-  },
-  {
    "fr": "Zénith",
    "where": [
     "data/enemies/echo_pyrogyre.json",
@@ -30260,6 +30254,18 @@
    "fr": "{0} ({1} étoiles)",
    "where": [
     "game/GameServices.cpp"
+   ]
+  },
+  {
+   "fr": "{0} / flèches : déplacer la vue (Maj : plus vite) · Alt+flèches : décaler la sélection",
+   "where": [
+    "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "{0} / Vue : recommencer",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {

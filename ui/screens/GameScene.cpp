@@ -809,7 +809,7 @@ void GameScene::drawTrainingBanner() {
     if (opt_.bossTraining) {
         // Boss training: what this run is, always in view (bottom left), in a dark pill.
         const std::string tag = "Entraînement — ne compte pas pour les succès ni les statistiques";
-        const std::string keys = "R / Vue : recommencer";
+        const std::string keys = keyName(SDL_SCANCODE_R) + " / Vue : recommencer";  // R as the keyboard layout names it
         float fs = std::max(15.0f, 11.5f / ui.s(1.0f));
         const float room = W * 0.62f;
         float tw = ui.text().measure(tag, FontFace::Bold, ui.s(fs)).x;
@@ -830,7 +830,7 @@ void GameScene::drawTrainingBanner() {
         return;
     }
     // Always: what this run is (no record), at the bottom left.
-    std::string tag = "ENTRAÎNEMENT · aucun record · R / Vue : recommencer";
+    std::string tag = "ENTRAÎNEMENT · aucun record · " + keyName(SDL_SCANCODE_R) + " / Vue : recommencer";
     ui.label(ui.elide(tag, FontFace::Bold, 15, W * 0.5f), {ui.s(24), ui.screenH() - ui.s(28)}, 15, ui.theme().warm, Align::Left, FontFace::Bold,
              VAlign::Middle);
     if (segmentBanner_ <= 0.0f) return;

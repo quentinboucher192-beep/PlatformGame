@@ -16,6 +16,8 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
   demandés, 13 en ont).
 * Corrigé : changer une touche ou un bouton dans les paramètres ne déclenche plus d'autre action
   (la touche choisie ne sert qu'à la nouvelle commande, jusqu'à ce qu'elle soit relâchée).
+* Claviers AZERTY / QWERTY : touches gardées par leur place sur le clavier et toujours affichées
+  avec le nom que leur donne le clavier du joueur (ZQSD ou WASD), aides comprises.
 
 **Nouveau dans la version 2.28.0** :
 * **Entraînement contre les boss** (*Statistiques › un boss › Entraînement*) : cœurs, nombre
