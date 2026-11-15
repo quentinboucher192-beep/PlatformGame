@@ -73,6 +73,12 @@ TEST_CASE("i18n: plural words, numbers, case, pieces around a known text") {
     CHECK(d.translate("« Paramètres »") == "\"Settings\"");
     CHECK(d.translate("Jouer  ·  Paramètres  ·  Niveau 4") == "Play  ·  Settings  ·  Level 4");
     CHECK(d.translate("Jouer\nParamètres") == "Play\nSettings");
+    // A model never swallows a separator with unknown words: the pieces are translated.
+    d.add("{0} énergie", "{0} energy");
+    d.add("Vie et énergie", "Health and energy");
+    CHECK(d.translate("20 énergie") == "20 energy");
+    CHECK(d.translate("Paramètres : Vie et énergie") == "Settings: Health and energy");
+    CHECK(d.translate("« Jouer », « Paramètres »") == "\"Play\", \"Settings\"");
     // Last resort: known words between signs and numbers.
     CHECK(d.translate("Or < 3:20") == "Gold < 3:20");
     CHECK(d.translate("Paramètres : 3 / 4") == "Settings: 3 / 4");

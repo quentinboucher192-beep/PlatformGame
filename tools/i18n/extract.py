@@ -288,6 +288,8 @@ def operand_alternatives(toks, a, b, depth=0):
             inner = [toks[j] for j in range(k + 1, b - 1)]
             if all(t.kind == "str" for t in inner):  # std::string() is an empty text
                 return [["".join(t.value for t in inner)]]
+            if find_top(toks, k + 1, b - 1, "?") >= 0 and depth < 4:  # std::string(c ? "" : ", ")
+                return expression_alternatives(toks, k + 1, b - 1, depth + 1)
     # ( … ): a ternary or a chain inside.
     if toks[a].text == "(" and matching(toks, a) == b - 1 and depth < 4:
         return expression_alternatives(toks, a + 1, b - 1, depth + 1)
@@ -314,7 +316,7 @@ def chain_alternatives(toks, a, b, depth=0):
     return combos
 
 
-SEPARATORS = ["  ·  ", " · ", " — ", " – ", " | ", " • "]
+SEPARATORS = ["  ·  ", " · ", " — ", " – ", " | ", " • ", ", ", " ; "]
 
 
 def render(pieces):
@@ -491,6 +493,10 @@ def extract_cpp(path, words, out):
         if t.kind != "str" or i in done:
             continue
         a, b = span_of(toks, i)
+        # std::string("Réglages : ") + x: the text is the whole expression around the call.
+        if a >= 4 and b < len(toks) and toks[a - 1].text in ("(", "{") and toks[b].text in (")", "}") \
+                and toks[a - 2].text in ("string", "string_view") and toks[a - 3].text == "::" and toks[a - 4].text == "std":
+            a, b = span_of(toks, a - 4)
         for k in range(a, b):
             if toks[k].kind == "str":
                 done.add(k)
@@ -627,6 +633,10 @@ def extract_server(words, out):
 
 # ----------------------------------------------------------------------------- main
 
+# Lowercase French words shown alone that no sentence of the game contains.
+EXTRA_WORDS = {"argent", "brouillon", "gratuit", "informations", "normale", "oui", "non", "profondeur", "retournement"}
+
+
 def french_words():
     """Lowercase words used in sentences of the code and the data (to tell a shown word
     such as « portail » from a key such as « username »)."""
@@ -644,7 +654,7 @@ def french_words():
                 if " " in s.strip() and (FR_ACCENT.search(s) or re.search(r"\b(le|la|les|de|du|des|un|une|et|est|pour|sur|dans)\b", s)):
                     for w in re.findall(r"[A-Za-zÀ-ÿœ']+", s):
                         words.add(w.lower())
-    return words
+    return words | EXTRA_WORDS
 
 
 def extract():

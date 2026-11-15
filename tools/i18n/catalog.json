@@ -47,12 +47,6 @@
    ]
   },
   {
-   "fr": "(médaille",
-   "where": [
-    "game/progression/NewsCenter.cpp"
-   ]
-  },
-  {
    "fr": "(médaille {0})",
    "where": [
     "game/progression/NewsCenter.cpp"
@@ -320,12 +314,6 @@
    "fr": ": vérification manuelle.",
    "where": [
     "server/src/records.ts"
-   ]
-  },
-  {
-   "fr": "; nombreux soins",
-   "where": [
-    "game/levels/DifficultyRating.cpp"
    ]
   },
   {
@@ -1312,6 +1300,12 @@
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/gameplay/Hud.cpp",
     "game/levels/LevelData.cpp"
+   ]
+  },
+  {
+   "fr": "argent",
+   "where": [
+    "game/progression/NewsCenter.cpp"
    ]
   },
   {
@@ -2717,12 +2711,6 @@
    ]
   },
   {
-   "fr": "Bouton retiré de «",
-   "where": [
-    "ui/screens/SettingsScene.cpp"
-   ]
-  },
-  {
    "fr": "Bouton retiré de « {0} »",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -2774,6 +2762,13 @@
    "where": [
     "game/levels/LevelData.cpp",
     "game/progression/NewsCenter.cpp"
+   ]
+  },
+  {
+   "fr": "brouillon",
+   "where": [
+    "ui/screens/OnlineLevelsScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -4964,7 +4959,6 @@
    "fr": "Cosmic Platformer",
    "where": [
     "data/levels/glacior_03.json",
-    "editors/level_editor/LevelEditorScene.cpp",
     "engine/core/Application.cpp",
     "engine/core/Application.h",
     "main.cpp"
@@ -4973,6 +4967,7 @@
   {
    "fr": "Cosmic Platformer {0}",
    "where": [
+    "editors/level_editor/LevelEditorScene.cpp",
     "packaging/PackageExporter.cpp"
    ]
   },
@@ -5002,12 +4997,6 @@
    "fr": "Couleur (#rrggbb)",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
-   ]
-  },
-  {
-   "fr": "Couleur :",
-   "where": [
-    "ui/screens/GhostOptionsScene.cpp"
    ]
   },
   {
@@ -6797,12 +6786,6 @@
    ]
   },
   {
-   "fr": "Dégâts reçus : ×",
-   "where": [
-    "ui/screens/PlanetMapScene.cpp"
-   ]
-  },
-  {
    "fr": "Dégâts reçus : ×{0}   —   Vies : illimitées",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
@@ -7133,7 +7116,13 @@
    ]
   },
   {
-   "fr": "En direct · révision {0} · opération {1} · lecture seule ({2})",
+   "fr": "En direct · révision {0} · opération {1} · lecture seule (lecteur)",
+   "where": [
+    "editors/level_editor/LevelEditorPanels.cpp"
+   ]
+  },
+  {
+   "fr": "En direct · révision {0} · opération {1} · lecture seule (testeur)",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
    ]
@@ -9020,6 +9009,13 @@
    ]
   },
   {
+   "fr": "gratuit",
+   "where": [
+    "game/powers/PowerStats.cpp",
+    "ui/screens/PowerGuideScene.cpp"
+   ]
+  },
+  {
    "fr": "Gravissez le Bastion Gelé et rallumez le dernier relais.",
    "where": [
     "data/levels/glacior_03.json"
@@ -9771,12 +9767,6 @@
    ]
   },
   {
-   "fr": "Impossible : «",
-   "where": [
-    "ui/screens/HudEditorScene.cpp"
-   ]
-  },
-  {
    "fr": "Impossible : « {0} » toucherait {1}.",
    "where": [
     "ui/screens/HudEditorScene.cpp"
@@ -9901,6 +9891,12 @@
    "fr": "Infatigable",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "informations",
+   "where": [
+    "ui/screens/ProjectsScene.cpp"
    ]
   },
   {
@@ -12367,7 +12363,6 @@
   {
    "fr": "local",
    "where": [
-    "game/ghost/GhostStore.cpp",
     "ui/screens/GhostSetupScene.cpp"
    ]
   },
@@ -13626,7 +13621,7 @@
    ]
   },
   {
-   "fr": "Médaille",
+   "fr": "Médaille {0}",
    "where": [
     "ui/screens/ResultsScene.cpp"
    ]
@@ -14229,6 +14224,12 @@
    ]
   },
   {
+   "fr": "normale",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
    "fr": "Norvège",
    "where": [
     "data/online/countries.json",
@@ -14482,7 +14483,7 @@
    ]
   },
   {
-   "fr": "Nouvelle commande :",
+   "fr": "Nouvelle commande : {0}",
    "where": [
     "ui/screens/SettingsScene.cpp"
    ]
@@ -14944,8 +14945,7 @@
    "fr": "Opacité",
    "where": [
     "game/levels/ObjectTypes.cpp",
-    "ui/screens/GhostOptionsScene.cpp",
-    "ui/screens/GhostSetupScene.cpp"
+    "ui/screens/GhostOptionsScene.cpp"
    ]
   },
   {
@@ -15113,6 +15113,13 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "oui",
+   "where": [
+    "editors/level_editor/LevelEditorLayout.cpp",
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -17015,6 +17022,12 @@
    ]
   },
   {
+   "fr": "profondeur",
+   "where": [
+    "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
    "fr": "PROGRESSION",
    "where": [
     "ui/screens/RaceScene.cpp"
@@ -18690,6 +18703,12 @@
    ]
   },
   {
+   "fr": "retournement",
+   "where": [
+    "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
    "fr": "Retourner",
    "where": [
     "editors/level_editor/LevelEditorViewport.cpp"
@@ -19076,7 +19095,7 @@
    ]
   },
   {
-   "fr": "Réglages :",
+   "fr": "Réglages : {0}",
    "where": [
     "ui/screens/HudEditorScene.cpp"
    ]
@@ -19224,7 +19243,7 @@
    ]
   },
   {
-   "fr": "Réseau :",
+   "fr": "Réseau : {0}",
    "where": [
     "game/online/OnlineTypes.cpp",
     "ui/screens/ReplayScene.cpp"
@@ -19954,12 +19973,6 @@
    "fr": "Service en ligne indisponible.",
    "where": [
     "game/online/OnlineService.cpp"
-   ]
-  },
-  {
-   "fr": "Service indisponible :",
-   "where": [
-    "ui/screens/OnlineAccountScene.cpp"
    ]
   },
   {
@@ -22244,12 +22257,6 @@
    ]
   },
   {
-   "fr": "Touche retirée de «",
-   "where": [
-    "ui/screens/SettingsScene.cpp"
-   ]
-  },
-  {
    "fr": "Touche retirée de « {0} »",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -23052,12 +23059,6 @@
    "fr": "Un niveau EXTRÊME se joue avec une seule vie : réglez-la dans Niveau → Paramètres.",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
-   ]
-  },
-  {
-   "fr": "Un niveau «",
-   "where": [
-    "packaging/PackageImporter.cpp"
    ]
   },
   {
@@ -24359,12 +24360,6 @@
    "fr": "Votre pseudonyme, votre avatar, vos temps et le replay de vos meilleurs runs (les commandes de jeu et la trajectoire de votre personnage pendant le niveau, pas une vidéo). Le mot de passe n'est conservé que sous forme d'empreinte irréversible.",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
-   ]
-  },
-  {
-   "fr": "Votre rôle dans le projet :",
-   "where": [
-    "editors/level_editor/LevelEditorLive.cpp"
    ]
   },
   {
@@ -25735,9 +25730,16 @@
    ]
   },
   {
+   "fr": "{0} mort",
+   "where": [
+    "game/records/Records.cpp"
+   ]
+  },
+  {
    "fr": "{0} morts",
    "where": [
-    "editors/level_editor/LevelEditorDialogs.cpp"
+    "editors/level_editor/LevelEditorDialogs.cpp",
+    "game/records/Records.cpp"
    ]
   },
   {
@@ -26118,6 +26120,12 @@
    "fr": "{0} — vaincu",
    "where": [
     "game/gameplay/Hud.cpp"
+   ]
+  },
+  {
+   "fr": "{0}% objets",
+   "where": [
+    "game/records/Records.cpp"
    ]
   },
   {

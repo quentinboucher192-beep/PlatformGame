@@ -184,7 +184,7 @@ bool isOne(std::string_view s) {
     return n == "1";
 }
 
-const char* const kSeparators[] = {"  ·  ", " · ", " — ", " – ", " | ", " • ", " : "};
+const char* const kSeparators[] = {"  ·  ", " · ", " — ", " – ", " | ", " • ", " : ", " ; ", ", "};
 
 struct SvHash {
     using is_transparent = void;
@@ -355,18 +355,21 @@ bool Dictionary::byModel(std::string_view s, std::string& out, int depth, bool g
         }
         if (!ok || end <= pos) continue;
         caps.push_back(s.substr(pos, end - pos));
-        if (m.generic) {
-            // Only when every inserted part is known (a number, a known name…).
-            bool known = true;
-            for (auto c : caps) {
-                std::string tmp;
-                if (hasLetter(c) && !translateInto(c, tmp, depth + 1)) {
-                    known = false;
-                    break;
-                }
+        // A generic model only applies when every inserted part is known (a number, a known
+        // name…); any model, when an inserted part runs over a separator (« Réglages : Vie
+        // et » in « {0} énergie »): the text is rather made of pieces.
+        bool known = true;
+        for (auto c : caps) {
+            bool spans = false;
+            for (const char* sep : kSeparators)
+                if (std::string_view(sep) != ", " && c.find(sep) != std::string_view::npos) spans = true;
+            std::string tmp;
+            if ((m.generic || spans) && hasLetter(c) && !translateInto(c, tmp, depth + 1)) {
+                known = false;
+                break;
             }
-            if (!known) continue;
         }
+        if (!known) continue;
         out = fill(m, caps, depth);
         return true;  // models are sorted: the first that fits is the most specific
     }
@@ -417,7 +420,7 @@ bool Dictionary::byParts(std::string_view s, std::string& out, int depth) const 
             }
             all &= full || !hasLetter(part);
             if (f == std::string_view::npos) break;
-            res += sep == " : " ? std::string(": ") : std::string(sep);
+            res += sep == " : " ? std::string(": ") : sep == " ; " ? std::string("; ") : std::string(sep);
             start = f + sep.size();
         }
         if (!any) return false;
@@ -524,9 +527,8 @@ bool Dictionary::byWords(std::string_view s, std::string& out) const {
         }
         std::string_view run = s.substr(i, j - i);
         std::string t;
-        if (letterCount(run) < 2) {  // a lone letter (« D », « x ») is no word to translate
+        if (letterCount(run) < 2) {  // a lone letter (« s », « x », « D ») is no word to translate
             res.append(run);
-            all = false;
         } else if (const std::string* v = exact(run)) {
             res += *v;
             any = true;
@@ -540,7 +542,7 @@ bool Dictionary::byWords(std::string_view s, std::string& out) const {
         i = j;
     }
     if (!any) return false;
-    out = res;
+    out = localizeNumbers(res);
     return all;
 }
 
