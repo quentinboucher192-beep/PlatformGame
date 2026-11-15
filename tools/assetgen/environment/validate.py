@@ -52,7 +52,7 @@ DECOR_GLOW = {"pyralis": ["lava_vent", "forge_brazier", "lava_fall", "fire_plant
               "glacior": ["ice_crystal", "ice_crystal_big", "aurora_lamp", "frost_flower"]}
 SIZES = {
     "textures/tiles/platforms.png": (48, 16 * len(PLATFORM_STYLES)),
-    "ui/icons_powers.png": (320, 32),
+    "ui/icons_powers.png": (576, 32),  # 18 powers (2.19)
     "ui/icons_medals.png": (160, 32),
     "ui/icons_hud.png": (176, 16),
     "ui/glyphs/xbox.png": (608, 32),
@@ -258,7 +258,7 @@ def check():
                 if x1 < x2 + w2 and x2 < x1 + w1 and y1 < y2 + h2 and y2 < y1 + h1:
                     errs.append(f"{planet} decor: {n1} overlaps {n2}")
     # ui cells
-    for rel, cw, ch, n in [("ui/icons_powers.png", 32, 32, 10), ("ui/icons_medals.png", 32, 32, 5),
+    for rel, cw, ch, n in [("ui/icons_powers.png", 32, 32, 18), ("ui/icons_medals.png", 32, 32, 5),
                            ("ui/icons_hud.png", 16, 16, 11), ("ui/glyphs/xbox.png", 32, 32, 19),
                            ("ui/glyphs/playstation.png", 32, 32, 19), ("ui/glyphs/generic.png", 32, 32, 19)]:
         if os.path.exists(os.path.join(ASSETS, rel)):

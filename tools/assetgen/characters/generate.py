@@ -7,7 +7,7 @@ Run from the repository root:
 Regenerates (deterministically) everything in docs/ASSET_SPEC.md sections
 3, 4, 5, 6 and 10, plus ui/app_icon.png and installer/app.ico.
 Optional arguments restrict the run to some groups:
-    nova enemies boss projectiles objects fx icon
+    nova enemies boss projectiles objects fx icon power_fx
 """
 import os
 import sys
@@ -26,6 +26,7 @@ def main(argv):
     import icon
     import nova
     import objects
+    import power_fx
     import projectiles
     import validate
 
@@ -37,6 +38,7 @@ def main(argv):
         ("objects", objects.build),
         ("fx", fx.build),
         ("icon", icon.build),
+        ("power_fx", power_fx.build),  # 2.19: boomerang blade, recall beacon
     ]
     only = set(argv)
     for name, fn in groups:

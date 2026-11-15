@@ -17,6 +17,10 @@
     "time_slow": {"row": 10, "count": 8, "fps": 8, "loop": true},
     "magnet": {"row": 11, "count": 8, "fps": 8, "loop": true},
     "air_dash": {"row": 12, "count": 8, "fps": 8, "loop": true},
-    "plasma_bomb": {"row": 13, "count": 8, "fps": 8, "loop": true}
+    "plasma_bomb": {"row": 13, "count": 8, "fps": 8, "loop": true},
+    "boomerang": {"row": 14, "count": 8, "fps": 8, "loop": true},
+    "frost_nova": {"row": 15, "count": 8, "fps": 8, "loop": true},
+    "decoy": {"row": 16, "count": 8, "fps": 8, "loop": true},
+    "recall": {"row": 17, "count": 8, "fps": 8, "loop": true}
   }
 }
