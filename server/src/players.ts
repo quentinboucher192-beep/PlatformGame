@@ -9,6 +9,7 @@ import { verifyPassword } from "./crypto";
 import { ApiError, Errors, json, nowIso, readJsonObject, readLimited, type Ctx } from "./http";
 import { playerSummary, privateProfile, recordJson, visibleCountry, type PlayerRow, type RecordRow } from "./model";
 import { campaignAfterAccountDeletion, campaignBeforeAccountDeletion, campaignExport } from "./campaign";
+import { challengeReplayKeys } from "./challenges";
 import { communityKeys } from "./community";
 import { ownedProjectKeys } from "./projects";
 import { RULES, rateLimit } from "./ratelimit";
@@ -319,6 +320,15 @@ export async function exportMe(ctx: Ctx): Promise<Response> {
         cosmetics: cosmeticRows?.results ?? [],
         // 2.19: ratings of the official levels, comments of the campaign and of the runs.
         ...(await campaignExport(ctx, id)),
+        // 2.31: runs of the daily challenges.
+        challenge_runs: (
+            await ctx.env.DB.prepare(
+                `SELECT id, challenge_id, attempt_id, time_ms, deaths, damage_taken, tier, status, rejection_reason, replay_status,
+                   game_version, created_at, verified_at FROM challenge_runs WHERE player_id = ?1 ORDER BY created_at`,
+            )
+                .bind(id)
+                .all()
+        ).results,
         notes: "Le mot de passe n'est stocké que sous forme d'empreinte PBKDF2 et n'est pas exportable. Les adresses IP ne sont jamais stockées en clair.",
     });
 }
@@ -352,6 +362,8 @@ export async function deleteMe(ctx: Ctx): Promise<Response> {
     // Replays of the player's attempts in the races of EXTRÊME levels.
     const race = await ctx.env.DB.prepare("SELECT replay_key FROM race_runs WHERE player_id = ?1 AND replay_key IS NOT NULL").bind(id).all<{ replay_key: string }>();
     for (const r of race.results) if (!toDelete.includes(r.replay_key)) toDelete.push(r.replay_key);
+    // Replays of the player's daily challenge runs (the runs follow the account: ON DELETE CASCADE).
+    for (const k of await challengeReplayKeys(ctx, id)) if (!toDelete.includes(k)) toDelete.push(k);
     for (let i = 0; i < toDelete.length; i += 500) await ctx.env.STORAGE.delete(toDelete.slice(i, i + 500));
     await ctx.env.DB.batch([
         ctx.env.DB.prepare("DELETE FROM audit_log WHERE player_id = ?1").bind(id),

@@ -13,7 +13,7 @@ import { ApiError, Errors, json, nowIso, readJsonObject, readLimited, type Ctx }
 import type { LevelVersionRow } from "./model";
 import { notify } from "./notifications";
 import { RULES, rateLimit } from "./ratelimit";
-import { EventType, inflateContainer, MAX_REPLAY_UPLOAD, parseReplay, ReplayError, type Replay } from "./replay";
+import { CHALLENGE_REPLAY_ELSEWHERE, EventType, inflateContainer, MAX_REPLAY_UPLOAD, parseReplay, ReplayError, type Replay } from "./replay";
 import { Validator } from "./validate";
 
 export interface RaceLayout {
@@ -118,6 +118,7 @@ export function analyzeRace(rep: Replay, attemptId: string, timeMs: number, clai
     if (rep.attemptId !== attemptId) reasons.push("tentative différente");
     if (Math.abs(rep.durationMs - timeMs) > 500) reasons.push("durée du replay différente de la tentative");
     if (rep.frames.length === 0) reasons.push("replay vide");
+    if (rep.challengeRules !== null) reasons.push(CHALLENGE_REPLAY_ELSEWHERE);
     const expectedFrames = (rep.durationMs * rep.sampleHz) / 1000;
     if (Math.abs(rep.frames.length - expectedFrames) > rep.sampleHz * 1.5) reasons.push("nombre d'images incohérent avec la durée");
     const bossRemoved = layout.bosses.map(() => 0);

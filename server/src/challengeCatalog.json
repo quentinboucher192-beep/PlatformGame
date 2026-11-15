@@ -1,0 +1,435 @@
+{
+ "version": 1,
+ "player_max_hearts": 10,
+ "powers": {
+  "air_dash": "dash",
+  "boomerang": "special",
+  "charge_shot": "attack",
+  "dash": "dash",
+  "decoy": "special",
+  "frost_nova": "special",
+  "glide": "jump",
+  "grapple": "interact",
+  "ground_pound": "attack",
+  "impulse": "impulse",
+  "magnet": "special",
+  "plasma_bomb": "special",
+  "recall": "special",
+  "shield": "shield",
+  "teleport": "teleport",
+  "time_slow": "special",
+  "triple_jump": "jump",
+  "wave": "wave"
+ },
+ "levels": {
+  "aethra_01": {
+   "name": "Le Bosquet Englouti",
+   "planet": "aethra",
+   "revision": 8,
+   "slots": 4,
+   "start_powers": [
+    "dash",
+    "wave",
+    "grapple"
+   ],
+   "level_powers": [
+    "boomerang",
+    "dash",
+    "grapple",
+    "wave"
+   ],
+   "silver_ms": 218000,
+   "gold_ms": 162000,
+   "auto": true
+  },
+  "aethra_02": {
+   "name": "Le Lac aux Reflets",
+   "planet": "aethra",
+   "revision": 8,
+   "slots": 4,
+   "start_powers": [
+    "glide",
+    "dash",
+    "triple_jump"
+   ],
+   "level_powers": [
+    "dash",
+    "frost_nova",
+    "glide",
+    "triple_jump"
+   ],
+   "silver_ms": 224000,
+   "gold_ms": 166000,
+   "auto": true
+  },
+  "aethra_03": {
+   "name": "La Caldeira",
+   "planet": "aethra",
+   "revision": 8,
+   "slots": 4,
+   "start_powers": [
+    "glide",
+    "dash",
+    "charge_shot"
+   ],
+   "level_powers": [
+    "charge_shot",
+    "dash",
+    "decoy",
+    "glide",
+    "wave"
+   ],
+   "silver_ms": 207000,
+   "gold_ms": 154000,
+   "auto": true
+  },
+  "aethra_04": {
+   "name": "L'Horizon des événements",
+   "planet": "aethra",
+   "revision": 8,
+   "slots": 4,
+   "start_powers": [
+    "dash",
+    "grapple",
+    "glide"
+   ],
+   "level_powers": [
+    "dash",
+    "glide",
+    "grapple",
+    "recall"
+   ],
+   "silver_ms": 214000,
+   "gold_ms": 159000,
+   "auto": true
+  },
+  "glacior_01": {
+   "name": "Les Plaines de Givre",
+   "planet": "glacior",
+   "revision": 8,
+   "slots": 4,
+   "start_powers": [
+    "ground_pound",
+    "glide",
+    "grapple",
+    "dash"
+   ],
+   "level_powers": [
+    "dash",
+    "glide",
+    "grapple",
+    "ground_pound",
+    "shield",
+    "teleport",
+    "triple_jump"
+   ],
+   "silver_ms": 400000,
+   "gold_ms": 300000,
+   "auto": true
+  },
+  "glacior_02": {
+   "name": "Les Grottes de Cristal",
+   "planet": "glacior",
+   "revision": 8,
+   "slots": 4,
+   "start_powers": [
+    "triple_jump",
+    "grapple",
+    "teleport",
+    "dash"
+   ],
+   "level_powers": [
+    "dash",
+    "glide",
+    "grapple",
+    "ground_pound",
+    "shield",
+    "teleport",
+    "triple_jump",
+    "wave"
+   ],
+   "silver_ms": 480000,
+   "gold_ms": 360000,
+   "auto": true
+  },
+  "glacior_03": {
+   "name": "Le Bastion Gelé",
+   "planet": "glacior",
+   "revision": 8,
+   "slots": 4,
+   "start_powers": [
+    "triple_jump",
+    "grapple",
+    "ground_pound",
+    "glide"
+   ],
+   "level_powers": [
+    "dash",
+    "glide",
+    "grapple",
+    "ground_pound",
+    "shield",
+    "teleport",
+    "triple_jump",
+    "wave"
+   ],
+   "silver_ms": 570000,
+   "gold_ms": 430000,
+   "auto": true
+  },
+  "glacior_04": {
+   "name": "La Crevasse Hurlante",
+   "planet": "glacior",
+   "revision": 8,
+   "slots": 4,
+   "start_powers": [
+    "glide",
+    "triple_jump",
+    "dash",
+    "shield"
+   ],
+   "level_powers": [
+    "dash",
+    "glide",
+    "shield",
+    "triple_jump"
+   ],
+   "silver_ms": 135000,
+   "gold_ms": 100000,
+   "auto": true
+  },
+  "noyau_01": {
+   "name": "L'Arène des Échos",
+   "planet": "noyau",
+   "revision": 9,
+   "slots": 4,
+   "start_powers": [
+    "dash",
+    "wave",
+    "shield",
+    "charge_shot"
+   ],
+   "level_powers": [
+    "charge_shot",
+    "dash",
+    "glide",
+    "ground_pound",
+    "impulse",
+    "plasma_bomb",
+    "shield",
+    "time_slow",
+    "triple_jump",
+    "wave"
+   ],
+   "silver_ms": 1440000,
+   "gold_ms": 1200000,
+   "auto": false
+  },
+  "noyau_02": {
+   "name": "Le Cœur de l'Étoile",
+   "planet": "noyau",
+   "revision": 8,
+   "slots": 4,
+   "start_powers": [
+    "dash",
+    "wave",
+    "shield",
+    "grapple"
+   ],
+   "level_powers": [
+    "charge_shot",
+    "dash",
+    "glide",
+    "grapple",
+    "ground_pound",
+    "impulse",
+    "plasma_bomb",
+    "shield",
+    "teleport",
+    "time_slow",
+    "triple_jump",
+    "wave"
+   ],
+   "silver_ms": 360000,
+   "gold_ms": 267000,
+   "auto": true
+  },
+  "pyralis_01": {
+   "name": "Les Forges Englouties",
+   "planet": "pyralis",
+   "revision": 8,
+   "slots": 4,
+   "start_powers": [
+    "glide",
+    "grapple",
+    "dash",
+    "shield"
+   ],
+   "level_powers": [
+    "dash",
+    "glide",
+    "grapple",
+    "ground_pound",
+    "shield",
+    "teleport"
+   ],
+   "silver_ms": 420000,
+   "gold_ms": 330000,
+   "auto": true
+  },
+  "pyralis_02": {
+   "name": "Le Fleuve de Lave",
+   "planet": "pyralis",
+   "revision": 8,
+   "slots": 4,
+   "start_powers": [
+    "ground_pound",
+    "wave",
+    "glide",
+    "grapple"
+   ],
+   "level_powers": [
+    "charge_shot",
+    "glide",
+    "grapple",
+    "ground_pound",
+    "shield",
+    "teleport",
+    "wave"
+   ],
+   "silver_ms": 460000,
+   "gold_ms": 360000,
+   "auto": true
+  },
+  "pyralis_03": {
+   "name": "La Fonderie Primordiale",
+   "planet": "pyralis",
+   "revision": 8,
+   "slots": 4,
+   "start_powers": [
+    "grapple",
+    "shield",
+    "glide",
+    "teleport"
+   ],
+   "level_powers": [
+    "charge_shot",
+    "dash",
+    "glide",
+    "grapple",
+    "ground_pound",
+    "shield",
+    "teleport",
+    "wave"
+   ],
+   "silver_ms": 570000,
+   "gold_ms": 450000,
+   "auto": true
+  },
+  "pyralis_04": {
+   "name": "Le Creuset Profond",
+   "planet": "pyralis",
+   "revision": 8,
+   "slots": 4,
+   "start_powers": [
+    "glide",
+    "ground_pound",
+    "charge_shot",
+    "dash"
+   ],
+   "level_powers": [
+    "charge_shot",
+    "dash",
+    "glide",
+    "ground_pound"
+   ],
+   "silver_ms": 121000,
+   "gold_ms": 90000,
+   "auto": true
+  },
+  "sylvanox_01": {
+   "name": "Les Ruines Suspendues",
+   "planet": "sylvanox",
+   "revision": 8,
+   "slots": 4,
+   "start_powers": [],
+   "level_powers": [
+    "dash",
+    "impulse",
+    "shield",
+    "teleport",
+    "wave"
+   ],
+   "silver_ms": 270000,
+   "gold_ms": 200000,
+   "auto": true
+  },
+  "sylvanox_02": {
+   "name": "La Canopée des Spores",
+   "planet": "sylvanox",
+   "revision": 8,
+   "slots": 4,
+   "start_powers": [
+    "teleport",
+    "wave",
+    "dash",
+    "impulse"
+   ],
+   "level_powers": [
+    "dash",
+    "glide",
+    "impulse",
+    "shield",
+    "teleport",
+    "wave"
+   ],
+   "silver_ms": 420000,
+   "gold_ms": 330000,
+   "auto": true
+  },
+  "sylvanox_03": {
+   "name": "Le Cœur de la Machine",
+   "planet": "sylvanox",
+   "revision": 8,
+   "slots": 4,
+   "start_powers": [
+    "wave",
+    "dash",
+    "glide",
+    "teleport"
+   ],
+   "level_powers": [
+    "dash",
+    "glide",
+    "grapple",
+    "shield",
+    "teleport",
+    "wave"
+   ],
+   "silver_ms": 420000,
+   "gold_ms": 330000,
+   "auto": true
+  },
+  "sylvanox_04": {
+   "name": "Les Catacombes des Anciens",
+   "planet": "sylvanox",
+   "revision": 8,
+   "slots": 4,
+   "start_powers": [
+    "dash",
+    "wave",
+    "grapple",
+    "shield"
+   ],
+   "level_powers": [
+    "dash",
+    "grapple",
+    "shield",
+    "wave"
+   ],
+   "silver_ms": 120000,
+   "gold_ms": 89000,
+   "auto": true
+  }
+ }
+}

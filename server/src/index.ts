@@ -11,6 +11,7 @@ import * as creators from "./creators";
 import * as achievements from "./achievements";
 import * as cosmetics from "./cosmetics";
 import * as campaign from "./campaign";
+import * as challenges from "./challenges";
 import * as notifications from "./notifications";
 import * as race from "./race";
 import * as workshop from "./workshop";
@@ -257,6 +258,15 @@ route("POST", `${V}/projects/{projectId}/live/heartbeat`, (ctx) => liveRoute(ctx
 route("POST", `${V}/projects/{projectId}/live/ops`, (ctx) => liveRoute(ctx, "ops"));
 route("POST", `${V}/projects/{projectId}/live/leave`, (ctx) => liveRoute(ctx, "leave"));
 
+// Daily challenges (2.31, docs/online/DAILY_CHALLENGES.md): a future challenge is never shown
+route("GET", `${V}/challenges/daily/current`, (ctx) => challenges.current(ctx));
+route("GET", `${V}/challenges/daily`, (ctx) => challenges.archive(ctx), { cacheable: true });
+route("GET", `${V}/challenges/me`, (ctx) => challenges.mine(ctx));
+route("GET", `${V}/challenges/{challengeId}/leaderboard`, challenges.leaderboard, { viewer: true, cacheable: true });
+route("POST", `${V}/challenges/{challengeId}/runs`, (ctx) => challenges.submitRun(ctx));
+route("PUT", `${V}/challenges/runs/{runId}/replay`, (ctx) => challenges.uploadRunReplay(ctx));
+route("GET", `${V}/challenges/runs/{runId}/replay`, challenges.downloadRunReplay, { viewer: true });
+
 // Moderation (only with the ADMIN_TOKEN secret)
 route("GET", `${V}/admin/records`, (ctx) => admin.listForReview(ctx));
 route("POST", `${V}/admin/records/{recordId}/review`, (ctx) => admin.review(ctx));
@@ -325,10 +335,14 @@ async function handle(request: Request, env: Bindings, exec: ExecutionContext, r
     return response;
 }
 
+function maintenanceCtx(env: Bindings, exec: ExecutionContext): Ctx {
+    const url = new URL("https://maintenance.invalid/");
+    return { request: new Request(url), env, exec, url, params: {}, requestId: crypto.randomUUID(), ip: "maintenance" };
+}
+
 /** Records held PENDING with a verified replay are re-decided with the current rules. */
 async function recheckHeldRecords(env: Bindings, exec: ExecutionContext): Promise<number> {
-    const url = new URL("https://maintenance.invalid/");
-    const ctx: Ctx = { request: new Request(url), env, exec, url, params: {}, requestId: crypto.randomUUID(), ip: "maintenance" };
+    const ctx = maintenanceCtx(env, exec);
     await notifications.pruneNotifications(ctx);
     const held = await env.DB.prepare(
         "SELECT * FROM records WHERE verification_status = 'PENDING' AND replay_id IS NOT NULL ORDER BY created_at LIMIT 200",
@@ -338,7 +352,10 @@ async function recheckHeldRecords(env: Bindings, exec: ExecutionContext): Promis
     return changed;
 }
 
-/** Daily maintenance: expired sessions, stale rate-limit windows, old audit entries. */
+/**
+ * Daily maintenance: expired sessions, stale rate-limit windows, old audit entries, held
+ * records; the daily challenges of the coming week and the creator of today's challenge.
+ */
 async function maintenance(env: Bindings, exec: ExecutionContext): Promise<void> {
     const now = Date.now();
     const iso = (ms: number) => new Date(ms).toISOString();
@@ -351,7 +368,13 @@ async function maintenance(env: Bindings, exec: ExecutionContext): Promise<void>
         env.DB.prepare("DELETE FROM audit_log WHERE created_at < ?1").bind(iso(now - 180 * 86400000)),
     ]);
     const rechecked = await recheckHeldRecords(env, exec);
-    log("info", "maintenance", { deleted: results.map((r) => r.meta.changes), rechecked });
+    let challengeRuns: number | null = null;
+    try {
+        challengeRuns = (await challenges.maintenance(maintenanceCtx(env, exec))).rechecked;
+    } catch (e) {
+        log("error", "challenge_maintenance_failed", { error: e instanceof Error ? e.message : String(e) });
+    }
+    log("info", "maintenance", { deleted: results.map((r) => r.meta.changes), rechecked, challenge_runs_rechecked: challengeRuns });
 }
 
 export default {

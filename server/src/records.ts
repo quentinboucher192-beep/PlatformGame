@@ -25,9 +25,9 @@ import {
     type Category,
 } from "./validate";
 
-type ReplayState = "none" | "valid" | "invalid";
+export type ReplayState = "none" | "valid" | "invalid";
 
-interface Decision {
+export interface Decision {
     status: RecordRow["verification_status"];
     reason: string | null;
     note: string | null;

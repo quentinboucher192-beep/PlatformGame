@@ -83,7 +83,7 @@ export async function publishV2(): Promise<void> {
 
 /** Empties every table (storage persists between tests of a file). */
 export async function resetDb(): Promise<void> {
-    const tables = ["player_cosmetics", "campaign_comment_reports", "campaign_comment_reactions", "campaign_comments", "level_rating_stats", "level_ratings", "player_achievements", "race_victors", "race_runs", "project_messages", "project_versions", "project_ops", "project_activity", "project_revisions", "project_join_requests", "project_invites", "project_members", "projects", "notifications", "player_playtime", "player_follows", "community_level_players", "community_comment_reports", "community_comment_reactions",
+    const tables = ["challenge_runs", "daily_challenges", "player_cosmetics", "campaign_comment_reports", "campaign_comment_reactions", "campaign_comments", "level_rating_stats", "level_ratings", "player_achievements", "race_victors", "race_runs", "project_messages", "project_versions", "project_ops", "project_activity", "project_revisions", "project_join_requests", "project_invites", "project_members", "projects", "notifications", "player_playtime", "player_follows", "community_level_players", "community_comment_reports", "community_comment_reactions",
         "community_comments", "community_favorites", "client_releases", "rate_limits", "audit_log", "community_records", "community_reports", "community_ratings", "community_level_versions",
         "community_levels", "message_reports", "messages", "conversation_members", "conversations", "player_blocks", "player_friends", "player_bests", "replay_metadata", "records", "player_sessions",
         "player_credentials", "players", "level_versions", "levels", "countries"];
@@ -158,6 +158,10 @@ export interface ReplaySpec {
     exact?: boolean;
     /** Format of the input section: 2 (until game 2.23) or 3 (2.24: actions on 32 bits, keys per slot). */
     inputFormat?: 2 | 3;
+    /** Format 4 (2.31): the challenge section after the state digests (canonical rules). */
+    challengeRules?: string;
+    /** Health of every sample (10 by default). */
+    health?: number;
     /** false: an attempt that does not reach the exit (no Finish event). */
     finish?: boolean;
     extraEvents?: { frame: number; type: number; arg: number; value: number }[];
@@ -191,20 +195,21 @@ export async function buildReplay(spec: ReplaySpec): Promise<Uint8Array> {
     if (spec.finish !== false) events.push({ frame: frames - 1, type: 11, arg: 0, value: 0 });
     for (const e of spec.extraEvents ?? []) events.push({ ...e, frame: Math.min(e.frame, frames - 1) });
     events.sort((a, b) => a.frame - b.frame);
-    const exact = spec.exact || spec.exactTicks !== undefined;
+    const challenge = spec.challengeRules !== undefined ? new TextEncoder().encode(spec.challengeRules) : null;
+    const exact = spec.exact || spec.exactTicks !== undefined || challenge !== null;
     const ticks = spec.exactTicks ?? Math.round((spec.durationMs / 1000 + 3) * 120);
     // Inputs: one run of 1000 steps at most (u16 repeat), then a digest every 60 steps.
     const runs: number[] = [];
     for (let left = ticks; left > 0; left -= Math.min(left, 1000)) runs.push(Math.min(left, 1000));
     const checks = Math.floor(ticks / 60);
-    const v3 = spec.inputFormat === 3;
+    const v3 = spec.inputFormat === 3 || challenge !== null;
     const runBytes = v3 ? 18 : 12;
-    const trailer = exact ? 20 + runs.length * runBytes + 4 + checks * 12 : 0;
+    const trailer = exact ? 20 + runs.length * runBytes + 4 + checks * 12 + (challenge ? 2 + challenge.length : 0) : 0;
     const size = 68 + 1 + levelId.length + 1 + gameVersion.length + frames * 12 + events.length * 8 + trailer;
     const raw = new Uint8Array(size);
     const view = new DataView(raw.buffer);
     raw.set(new TextEncoder().encode(spec.corrupt === "magic" ? "XXXX" : "CPRP"), 0);
-    view.setUint16(4, exact ? (v3 ? 3 : 2) : 1, true);
+    view.setUint16(4, exact ? (challenge ? 4 : v3 ? 3 : 2) : 1, true);
     view.setUint16(6, hz, true);
     view.setUint32(8, frames, true);
     view.setUint32(12, spec.durationMs, true);
@@ -227,7 +232,7 @@ export async function buildReplay(spec: ReplaySpec): Promise<Uint8Array> {
         view.setFloat32(at + 4, p.y, true);
         raw[at + 8] = 1;
         raw[at + 9] = 2;
-        raw[at + 10] = 10;
+        raw[at + 10] = spec.health ?? 10;
         at += 12;
     }
     for (const e of events) {
@@ -241,7 +246,7 @@ export async function buildReplay(spec: ReplaySpec): Promise<Uint8Array> {
         view.setUint32(at, 0x1234, true);
         view.setUint32(at + 4, 0, true);
         view.setUint16(at + 8, 120, true);
-        if (v3) view.setUint16(at + 10, 1, true); // keys per power slot
+        if (v3) view.setUint16(at + 10, challenge ? 1 | 2 : 1, true); // keys per power slot (+ challenge section)
         view.setUint32(at + 12, ticks, true);
         view.setUint32(at + 16, runs.length, true);
         at += 20;
@@ -262,6 +267,11 @@ export async function buildReplay(spec: ReplaySpec): Promise<Uint8Array> {
             view.setUint32(at, c * 60, true);
             view.setUint32(at + 4, c, true);
             at += 12;
+        }
+        if (challenge) {
+            view.setUint16(at, challenge.length, true);
+            raw.set(challenge, at + 2);
+            at += 2 + challenge.length;
         }
     }
     const body = await deflate(spec.corrupt === "truncated" ? raw.subarray(0, raw.length - 20) : raw);
