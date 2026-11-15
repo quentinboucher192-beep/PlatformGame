@@ -185,6 +185,35 @@ describe("record submission", () => {
         expect(history.body.data.records).toHaveLength(3);
     });
 
+    it("tells the former holder once their world record is beaten by a verified time", async () => {
+        const holder = await registerPlayer("Holder1");
+        const rival = await registerPlayer("Rival1");
+        const third = await registerPlayer("Third1");
+        await verifiedRun(holder, 70000);
+        await verifiedRun(third, 75000);  // slower: nobody is told
+        let n = await api("GET", "/api/v1/notifications", { token: holder.token });
+        expect(n.body.data.notifications.filter((x: any) => x.kind === "record_beaten")).toHaveLength(0);
+        await verifiedRun(rival, 66000);  // takes first place
+        n = await api("GET", "/api/v1/notifications", { token: holder.token });
+        const beaten = n.body.data.notifications.filter((x: any) => x.kind === "record_beaten");
+        expect(beaten).toHaveLength(1);
+        expect(beaten[0].text).toContain("record mondial");
+        expect(beaten[0].text).toContain("1:06,000");
+        expect(beaten[0].text).toContain("1:10,000");
+        // The third player never held it; the new holder improving their own record tells nobody else.
+        const t = await api("GET", "/api/v1/notifications", { token: third.token });
+        expect(t.body.data.notifications.filter((x: any) => x.kind === "record_beaten")).toHaveLength(0);
+        await verifiedRun(rival, 64000);
+        n = await api("GET", "/api/v1/notifications", { token: holder.token });
+        expect(n.body.data.notifications.filter((x: any) => x.kind === "record_beaten")).toHaveLength(1);
+        // A pending time never dethrones anyone.
+        const fresh = await registerPlayer("Pending1");
+        const res = await api("POST", "/api/v1/records/submit", { token: fresh.token, body: submission({ time_ms: 60000 }) });
+        expect(res.body.data.record.verification_status).toBe("PENDING");
+        const r = await api("GET", "/api/v1/notifications", { token: rival.token });
+        expect(r.body.data.notifications.filter((x: any) => x.kind === "record_beaten")).toHaveLength(0);
+    });
+
     it("does not hold a fast run on a young board: the replay and the time floor decide", async () => {
         const first = await registerPlayer("FirstOne");
         await verifiedRun(first, 233000);

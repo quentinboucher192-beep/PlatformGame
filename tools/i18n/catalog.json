@@ -16220,6 +16220,12 @@
    ]
   },
   {
+   "fr": "Mon record mondial battu par un autre joueur",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
    "fr": "Mon record précédent",
    "where": [
     "game/ghost/Ghost.cpp"
@@ -21890,7 +21896,8 @@
   {
    "fr": "Record battu",
    "where": [
-    "game/online/OnlineService.cpp"
+    "game/online/OnlineService.cpp",
+    "ui/screens/NotificationsScene.cpp"
    ]
   },
   {
@@ -23792,6 +23799,12 @@
    "fr": "SANS DÉGÂT",
    "where": [
     "game/online/OnlineTypes.cpp"
+   ]
+  },
+  {
+   "fr": "sans dégât",
+   "where": [
+    "server/src/records.ts"
    ]
   },
   {
@@ -29419,6 +29432,12 @@
    "fr": "Voir la trajectoire",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Voir le classement",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
    ]
   },
   {

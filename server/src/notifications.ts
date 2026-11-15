@@ -25,6 +25,7 @@ export const NOTIFICATION_KINDS = [
     "race_verified", //     someone finished first an EXTRÊME level I raced on (or created)
     "run_comment", //       comments on one of my runs of the leaderboards (2.19)
     "challenge_featured", // one of my community levels is the daily challenge (2.31)
+    "record_beaten", //     my world record (first place of a campaign leaderboard) was beaten (2.32)
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
@@ -153,6 +154,8 @@ function sentence(n: NotificationRow, d: Record<string, string>): string {
                 : `${who} a commenté votre course : ${d.level_name ?? d.title ?? ""}`;
         case "challenge_featured":
             return `Votre niveau « ${d.title ?? ""} » est le défi du jour !`;
+        case "record_beaten":
+            return `${who} a battu votre record mondial sur ${d.title ?? ""} (${d.category_label ?? ""}) : ${d.time ?? ""} contre ${d.previous ?? ""}`;
     }
 }
 

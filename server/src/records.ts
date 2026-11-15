@@ -11,6 +11,7 @@ import { sha256Hex } from "./crypto";
 import { ApiError, Errors, json, nowIso, readJsonObject, readLimited, type Ctx } from "./http";
 import { ensureRankingEnabled, getLevel } from "./levels";
 import { playerSummary, recordJson, type LevelVersionRow, type PlayerRow, type RecordRow } from "./model";
+import { notify } from "./notifications";
 import { RULES, rateLimit } from "./ratelimit";
 import { MAX_REPLAY_UPLOAD, ReplayError, analyzeReplay, inflateContainer, parseReplay, type ReplayAnalysis } from "./replay";
 import {
@@ -101,6 +102,57 @@ async function boardSize(ctx: Ctx, levelHash: string, category: string): Promise
     return row?.n ?? 0;
 }
 
+const CATEGORY_LABELS: Record<string, string> = {
+    ANY_PERCENT: "Any%",
+    HUNDRED_PERCENT: "100 %",
+    NO_DEATH: "sans mort",
+    NO_DAMAGE: "sans dégât",
+    SPEEDRUN: "speedrun",
+};
+
+/** m:ss,mmm, as the game shows times. */
+export function formatRunTime(ms: number): string {
+    const m = Math.floor(ms / 60000);
+    const s = Math.floor((ms % 60000) / 1000);
+    const r = ms % 1000;
+    return `${m}:${String(s).padStart(2, "0")},${String(r).padStart(3, "0")}`;
+}
+
+/** The current world record of a leaderboard (verified bests of active accounts), or null. */
+async function worldRecord(ctx: Ctx, levelHash: string, category: string): Promise<{ player_id: string; time_ms: number } | null> {
+    return await ctx.env.DB.prepare(
+        `SELECT b.player_id, b.time_ms FROM player_bests b JOIN players p ON p.id = b.player_id
+         WHERE b.level_hash = ?1 AND b.category = ?2 AND p.account_status = 'active'
+         ORDER BY b.time_ms ASC, b.achieved_at ASC LIMIT 1`,
+    )
+        .bind(levelHash, category)
+        .first<{ player_id: string; time_ms: number }>();
+}
+
+/**
+ * A verified time takes the world record from another player: the former holder is told
+ * (notification « record_beaten », can be turned off). Never for a PENDING time.
+ */
+async function tellDethroned(ctx: Ctx, r: RecordRow, before: { player_id: string; time_ms: number } | null): Promise<void> {
+    if (!before || before.player_id === r.player_id || r.time_ms >= before.time_ms) return;
+    const now = await worldRecord(ctx, r.level_hash, r.category);
+    if (!now || now.player_id !== r.player_id) return;
+    const level = await ctx.env.DB.prepare("SELECT name FROM levels WHERE id = ?1").bind(r.level_id).first<{ name: string }>();
+    await notify(ctx, before.player_id, "record_beaten", {
+        actor: r.player_id,
+        data: {
+            official: r.level_id,
+            title: level?.name ?? r.level_id,
+            category: r.category,
+            category_label: CATEGORY_LABELS[r.category] ?? r.category,
+            time: formatRunTime(r.time_ms),
+            previous: formatRunTime(before.time_ms),
+            time_ms: r.time_ms,
+            previous_ms: before.time_ms,
+        },
+    });
+}
+
 /** Updates the historic best of the player if this verified record improves it. */
 async function updateBest(ctx: Ctx, r: RecordRow): Promise<{ improved: boolean; previousMs: number | null }> {
     const prev = await ctx.env.DB.prepare("SELECT time_ms FROM player_bests WHERE player_id = ?1 AND level_hash = ?2 AND category = ?3")
@@ -164,7 +216,11 @@ export async function applyDecision(ctx: Ctx, r: RecordRow, d: Decision): Promis
     r.verified_at = d.status === "VERIFIED" ? now : null;
     let improved = false;
     let previousMs: number | null = null;
-    if (d.status === "VERIFIED") ({ improved, previousMs } = await updateBest(ctx, r));
+    if (d.status === "VERIFIED") {
+        const before = await worldRecord(ctx, r.level_hash, r.category);
+        ({ improved, previousMs } = await updateBest(ctx, r));
+        if (improved) await tellDethroned(ctx, r, before);
+    }
     else {
         const best = await ctx.env.DB.prepare("SELECT time_ms FROM player_bests WHERE player_id = ?1 AND level_hash = ?2 AND category = ?3")
             .bind(r.player_id, r.level_hash, r.category)

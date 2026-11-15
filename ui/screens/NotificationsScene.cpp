@@ -66,6 +66,7 @@ const std::vector<OnlineKind>& onlineKinds() {
         {"project_removed", "P", {255, 120, 120, 255}, "Projet", "Retrait d'un projet"},
         {"race_verified", "X", {255, 140, 60, 255}, "EXTRÊME", "Vérification d'un niveau EXTRÊME que j'ai tenté"},
         {"run_comment", "C", {150, 170, 255, 255}, "Commentaire", "Commentaire sur une de mes courses"},
+        {"record_beaten", "R", {255, 214, 90, 255}, "Record battu", "Mon record mondial battu par un autre joueur"},
     };
     return k;
 }
@@ -278,6 +279,7 @@ private:
             return "Voir le projet";
         if (kind == "project_removed") return "Mes projets";
         if (kind == "race_verified" && (!jstr(n, "level_id").empty() || (n.contains("data") && !jstr(n["data"], "official").empty()))) return "Voir le niveau";
+        if (kind == "record_beaten" && n.contains("data") && !jstr(n["data"], "official").empty()) return "Voir le classement";
         return {};
     }
 
@@ -301,6 +303,12 @@ private:
             }
             if (kind == "project_removed") {
                 g_.app.switchScene(makeProjects(g_));
+                return;
+            }
+            if (kind == "record_beaten") {
+                // My world record taken: the level's world ranking, where the new record is.
+                std::string official = n.contains("data") ? jstr(n["data"], "official") : std::string{};
+                if (!official.empty()) g_.app.switchScene(makeOnlineRanking(g_, official));
                 return;
             }
             if (kind == "race_verified" && jstr(n, "level_id").empty()) {
