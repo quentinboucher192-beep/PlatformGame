@@ -26,6 +26,8 @@
 //   --import <file.cplanet> open the import screen with this package (also: file as argument)
 //   --export <level> <file.cplanet> [--author <name>]
 //                           export a level and all its dependencies without opening a window
+//   --boss-stats [<boss>[:<clip>]]
+//                           open the boss statistics (that boss, that clip of its animation)
 //   --online [<level>]      start on the ONLINE RANKING screen
 //   --online-focus <name>   with --online: select the globe marker of this player
 //   --online-open <what>    with --online: open register | login | settings |
@@ -531,6 +533,7 @@ int main(int argc, char** argv) {
         app.pushScene(makeMainMenu(game));
         app.pushScene(makeNewRewards(game));
     } else if (has("--boss-stats")) {
+        // --boss-stats [<boss id>[:<clip>]]: that boss selected (and that clip of its animation).
         if (std::string b = value("--boss-stats"); !b.empty()) game.onlineOpen = "boss:" + b;
         app.pushScene(makeBossStats(game));
     } else if (std::string race = value("--race"); !race.empty()) {

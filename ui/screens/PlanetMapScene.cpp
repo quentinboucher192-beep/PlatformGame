@@ -245,14 +245,16 @@ private:
 
 class LevelSelectScene : public Scene {
 public:
-    LevelSelectScene(GameServices& g, std::string planet) : g_(g), planetId_(std::move(planet)) {}
+    LevelSelectScene(GameServices& g, std::string planet, std::string level, std::string fromBoss)
+        : g_(g), planetId_(std::move(planet)), levelId_(std::move(level)), fromBoss_(std::move(fromBoss)) {}
 
     void onEnter() override {
         planet_ = g_.content.planet(planetId_);
         levels_ = g_.content.levelsForPlanet(planetId_);
         g_.playMusic(planet_ && !planet_->music.empty() ? planet_->music : "music/planet_map.ogg");
+        const std::string& wanted = levelId_.empty() ? g_.progression.lastLevel : levelId_;
         for (size_t i = 0; i < levels_.size(); ++i)
-            if (levels_[i]->id == g_.progression.lastLevel) selected_ = static_cast<int>(i);
+            if (levels_[i]->id == wanted) selected_ = static_cast<int>(i);
         if (!levels_.empty()) g_.ui.setFocus("levels/l" + std::to_string(selected_));
         // Players' ratings of the levels (Cosmic Online, only when logged in; cached on disk).
         g_.online.refreshLevelRatings();
@@ -304,8 +306,11 @@ public:
         float fy = ui.screenH() - ui.s(44);
         float x = ui.s(60);
         x += Glyphs::drawHint(ui, Action::MenuConfirm, "Jouer", {x, fy}, ui.s(30)) + ui.s(40);
-        Glyphs::drawHint(ui, Action::MenuBack, "Carte des planètes", {x, fy}, ui.s(30));
-        if (ui.backPressed()) g_.app.switchScene(makePlanetMap(g_));
+        Glyphs::drawHint(ui, Action::MenuBack, fromBoss_.empty() ? "Carte des planètes" : "Statistiques des boss", {x, fy}, ui.s(30));
+        if (ui.backPressed()) {
+            if (fromBoss_.empty()) g_.app.switchScene(makePlanetMap(g_));
+            else g_.app.switchScene(makeBossStats(g_, fromBoss_), 0.3f);
+        }
         ui.end();
     }
 
@@ -447,6 +452,8 @@ public:
 private:
     GameServices& g_;
     std::string planetId_;
+    std::string levelId_;   // selected on arrival ("" = the last one played)
+    std::string fromBoss_;  // opened from the boss statistics (« Retour » goes back there)
     const PlanetData* planet_ = nullptr;
     std::vector<const LevelEntry*> levels_;
     int selected_ = 0;
@@ -459,8 +466,8 @@ private:
 }  // namespace
 
 std::unique_ptr<Scene> makePlanetMap(GameServices& g) { return std::make_unique<PlanetMapScene>(g); }
-std::unique_ptr<Scene> makeLevelSelect(GameServices& g, const std::string& planetId) {
-    return std::make_unique<LevelSelectScene>(g, planetId);
+std::unique_ptr<Scene> makeLevelSelect(GameServices& g, const std::string& planetId, const std::string& levelId, const std::string& fromBoss) {
+    return std::make_unique<LevelSelectScene>(g, planetId, levelId, fromBoss);
 }
 
 }  // namespace cosmic
