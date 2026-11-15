@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Builds the two levels of the Stellar Core (Noyau stellaire, version 2.7), the star at the
+"""Builds the three levels of the Stellar Core (Noyau stellaire, version 2.7), the star at the
 centre of the system, opened once Sylvanox, Glacior and Pyralis are completed:
 
   data/levels/noyau_01.json  "L'Arène des Échos"     the sixteen guardians in a row (boss rush):
@@ -7,6 +7,9 @@ centre of the system, opened once Sylvanox, Glacior and Pyralis are completed:
   data/levels/noyau_02.json  "Le Cœur de l'Étoile"   the final level (plan: maquette
                                                        NiveauFinal): echoes of the three planets,
                                                        5 ambushes, 4 bosses, the Astrarque last
+  data/levels/noyau_03.json  "Le Cœur d'une Étoile Mourante" (2.33, EXTRÊME): very hard
+                                                       platforming, one life, no checkpoint, then
+                                                       the giant arena of Singularis (8 phases)
 
 The rooms are the calibrated rooms of the trials (challenge.py), built with the materials and
 the enemies of the planet each zone echoes. Run from the repository root after
@@ -141,6 +144,102 @@ class Star(Builder):
             self.L.orb("health_orb", x + 4, f - 1.5)
         self.L.light(x + w // 2, f - head + 4, "#fff1c9" if boss == "astrarque" else self.th["light"], 120, flicker=0.08)
         self.x = x + w
+        return bid
+
+    # The giant arena of Singularis (2.33): 96 x 36 tiles inside (about 3.2 x 2.1 screens:
+    # the camera follows Nova at its widest instead of showing it all). Heights `h` are in
+    # tiles above the floor. Phases 1-4: the whole arena (a crust floor over an empty basin,
+    # ledges at h 5, 10, 15, 20, a crown at h 23, three debris platforms parked on a ring);
+    # phase 3: the debris start orbiting; phase 5: the crust floor collapses into the basin of
+    # plasma (2 damage and a bounce); phase 8: curtains of plasma close in from both sides,
+    # then further at the boss's rage. Health orbs appear when phases 3, 5 and 7 start.
+    GIANT_W, GIANT_H = 96, 36
+    GIANT_BASIN = (22, 74)  # inside columns of the crust floor over the basin
+    GIANT_LEDGES = {5: [(6, 8), (26, 8), (62, 8), (82, 8)], 10: [(14, 8), (74, 8)],
+                    15: [(4, 8), (26, 8), (62, 8), (84, 8)], 20: [(14, 8), (74, 8)], 23: [(40, 16)]}
+    GIANT_ORBIT = (48, 12, 10, 6)  # centre x, h, radii (tiles)
+    GIANT_ORBS = [(3, 18, 10), (5, 48, 23), (7, 78, 10)]  # phase, x, h of the ledge it rests on
+
+    def giant_arena(self, boss, music=""):
+        L, f = self.L, self.f
+        x0 = self.x
+        X = x0 + 1                      # first inside column
+        W, Hh = self.GIANT_W, self.GIANT_H
+        door_h = 8
+        ledge = "sanctum_ledge"
+        b0, b1 = self.GIANT_BASIN
+        # Shell of the arena: roof, walls with their doors, the side floors that stay, the basin.
+        self.roof(x0, X + W + 1, f - Hh)
+        L.solid(x0, f - Hh, x0 + 1, f - door_h, self.th["accent"], deco=False)
+        L.solid(X + W, f - Hh, X + W + 1, f - door_h, self.th["accent"], deco=False)
+        left = L.door(x0, f - door_h, door_h, open_=True)
+        right = L.door(X + W, f - door_h, door_h, open_=False)
+        self.ground(x0, X + b0, f)
+        self.ground(X + b1, X + W + 1, f)
+        self.ground(X + b0, X + b1, f + 4)
+        # The crust floor over the basin: it gives way only to the fight (phase 5).
+        crust = []
+        for cx in range(b0, b1, 4):
+            oid = L.crumble(X + cx, f, 4, delay=0.3, respawn=0.0, style="star")
+            L.data["objects"][-1]["props"]["onEvent"] = True
+            crust.append(oid)
+        # Its plasma (off until the collapse): 2 damage and a bounce out of the basin.
+        basin = L.obj("damage_zone", [(X + b0) * T, (f + 2) * T, (b1 - b0) * T, 2 * T], "gameplay",
+                      {"damage": 2, "interval": 0.6, "visible": True, "shieldProtects": True, "active": False,
+                       "style": "plasma", "bounce": True})
+        for h, ls in self.GIANT_LEDGES.items():
+            for (lx, lw) in ls:
+                L.oneway(X + lx, X + lx + lw, f - h, ledge)
+        # Debris on a ring around the middle: parked, then in orbit from phase 3.
+        ocx, och, orx, ory = self.GIANT_ORBIT
+        debris = []
+        for k in range(3):
+            oid = L.moving(X + ocx - 2, f - och - 0.5, 4, orx, ory, speed=46, wait=0.0, phase=round(0.25 + k / 3.0, 3),
+                           active=False, oneway=True)
+            L.data["objects"][-1]["props"]["orbit"] = True
+            debris.append(oid)
+        # Health orbs hidden on the ledges, one per phase 3, 5 and 7.
+        orbs = {}
+        for (ph, ox, oh) in self.GIANT_ORBS:
+            L.orb("health_orb", X + ox, f - oh - 1.5)
+            L.data["objects"][-1]["props"] = {"amount": 4, "hidden": True}
+            orbs[ph] = L.data["objects"][-1]["id"]
+        # Phase 8: curtains of plasma close in (then further at its rage).
+        def curtain(a, b):
+            return L.obj("damage_zone", [(X + a) * T, (f - Hh) * T, (b - a) * T, Hh * T], "gameplay",
+                         {"damage": 2, "interval": 0.5, "visible": True, "shieldProtects": True, "active": False,
+                          "style": "plasma", "bounce": False})
+        curtain1 = [curtain(0, 12), curtain(W - 12, W)]
+        curtain2 = [curtain(12, 22), curtain(W - 22, W - 12)]
+        bid = L.enemy(boss, X + 70, f - 20, patrol_tiles=6, face_left=True, dormant=True, boss=True)
+        L.combat(X, f - Hh, X + W, f + 4, doors=left + "," + right, waves=bid, lock=False,
+                 music=music or L.data.get("bossMusic", ""))
+        L.data["objects"][-1]["props"]["announce"] = False
+        for (lx, lh, col) in ((10, 26, "#ffd98a"), (48, 30, "#fff1c9"), (86, 26, "#ffd98a"), (30, 8, "#ff7ad2"),
+                              (66, 8, "#ff7ad2")):
+            L.light(X + lx, f - lh, col, 160, flicker=0.08)
+        # The arena answers the fight.
+        plasma = [basin] + curtain1 + curtain2
+        L.event(bid, "bossPhase", [{"type": "activate", "target": ",".join(debris)},
+                                   {"type": "spawn", "target": orbs[3]},
+                                   {"type": "hint", "params": {"text": "Les débris entrent en orbite !", "duration": 3}}],
+                params={"phase": 3}, name="Gravité : les débris en orbite")
+        L.event(bid, "bossPhase", [{"type": "activate", "target": ",".join(crust)},
+                                   {"type": "enable", "target": basin},
+                                   {"type": "spawn", "target": orbs[5]},
+                                   {"type": "shake", "params": {"amount": 0.8}}],
+                params={"phase": 5}, name="Effondrement : le sol cède")
+        L.event(bid, "bossPhase", [{"type": "spawn", "target": orbs[7]}], params={"phase": 7}, name="Escorte : un soin")
+        L.event(bid, "bossPhase", [{"type": "enable", "target": ",".join(curtain1)},
+                                   {"type": "hint", "params": {"text": "Le plasma referme l'arène !", "duration": 3}}],
+                params={"phase": 8}, name="Supernova : l'arène se resserre")
+        L.event(bid, "bossEnrage", [{"type": "enable", "target": ",".join(curtain2)},
+                                    {"type": "shake", "params": {"amount": 0.6}}], name="Rage : l'arène se resserre encore")
+        L.event(bid, "bossDefeated", [{"type": "disable", "target": ",".join(plasma)},
+                                      {"type": "hint", "params": {"text": "L'étoile morte s'éteint. La sortie est ouverte.",
+                                                                 "duration": 4}}],
+                delay=1.5, name="Singularis vaincu")
+        self.x = X + W + 1
         return bid
 
     def rooms_of(self, rooms):
@@ -310,6 +409,46 @@ def final_level():
     return width
 
 
+# ---------------------------------------------------------------- the dying star (2.33)
+def dying_star():
+    b = Star("noyau_03", "Le Cœur d'une Étoile Mourante", "pyralis", seed=7301)
+    L, d = b.L, b.L.data
+    d["description"] = ("Au fond de l'étoile, un cœur mort s'est éveillé. Deux minutes d'épreuves sans pardon, "
+                        "puis Singularis et ses huit phases. Une seule vie, aucun checkpoint.")
+    d["difficulty"] = 5
+    # EXTRÊME: one life (the challenge mode below allows no death) and a race online.
+    d["extreme"] = True
+    b.f = 40
+    b.opening("Le Cœur d'une Étoile Mourante : une seule vie, aucun checkpoint. Singularis attend au bout.")
+    # The crust of the dying star: its hardest rooms, one after the other (dash, grapple, glide
+    # and the charged shot are carried from the start: levelkit.START_POWERS).
+    b.zone_sign("La croûte en fusion.")
+    b.rooms_of(["metronome_fast", "dash_walls", "vents", "anchors"])
+    b.zone_sign("Les veines de l'étoile.")
+    b.rooms_of(["pistons", "frail_bridges_fast", "foundry", "lasers"])
+    # Before the heart: the powers of the fight (four carried; what is left stays here).
+    b.use("aethra")
+    b.th.update(floor="obsidian", roof="obsidian", accent="obsidian")  # the dead star's crust
+    b.zone_sign("Le seuil du cœur. Choisissez les pouvoirs du combat : celui que vous laissez reste ici.")
+    b.tablets(["time_slow", "plasma_bomb", "impulse", "shield", "triple_jump", "wave"])
+    platforming = b.x
+    b.zone_sign("Singularis, le Cœur Effondré.")
+    b.rooms.append({"type": "boss", "x": b.x, "floor": b.f, "boss": "singularis"})
+    b.giant_arena("singularis", music="music/singularis_boss.ogg")
+    width = b.finish("L'étoile morte s'est éteinte. Le système respire.")
+    # Reference: the rooms at a good pace, then about six minutes of fight.
+    ref = int(round(platforming * T / 125.0 + 360))
+    d["timer"] = {"mode": "challenge", "limit": 3600, "onExpire": "gameover", "referenceTime": ref, "challengeMaxDeaths": 0}
+    d["medals"] = {"bronze": {}, "silver": {"maxTime": int(ref * 1.6)}, "gold": {"maxTime": int(ref * 1.2)},
+                   "platinum": {"maxTime": ref, "maxDeaths": 0}}
+    b.cinematics("LE CŒUR D'UNE ÉTOILE MOURANTE", "Noyau stellaire", "Une seule vie. Une étoile morte. Huit phases.",
+                 "L'ÉTOILE S'ÉTEINT")
+    d["metadata"] = {"generator": "tools/levelgen/stellar_core.py", "revision": 1, "rooms": b.rooms, "noHealing": True}
+    L.save(os.path.join(ROOT, "data/levels/noyau_03.json"))
+    return width
+
+
 if __name__ == "__main__":
     print("noyau_01 :", boss_rush(), "tuiles")
     print("noyau_02 :", final_level(), "tuiles")
+    print("noyau_03 :", dying_star(), "tuiles")

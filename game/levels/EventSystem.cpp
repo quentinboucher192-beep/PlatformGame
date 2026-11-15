@@ -50,6 +50,8 @@ const std::vector<std::pair<std::string, std::string>>& EventSystem::triggerType
         {"killed", "Ennemi vaincu"},
         {"bossStart", "Combat de boss commencé"},
         {"bossPhase", "Boss : nouvelle phase"},
+        {"bossEnrage", "Boss : entre en rage"},
+        {"bossLastStand", "Boss : sa dernière attaque"},
         {"bossDefeated", "Boss vaincu"},
         {"collected", "Objet ramassé"},
         {"checkpoint", "Point de sauvegarde atteint"},

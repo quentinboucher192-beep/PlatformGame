@@ -35,6 +35,8 @@ public:
 
     /// Follow target: position of the player's centre, its velocity and facing.
     void setTarget(Vec2 pos, Vec2 velocity, float facing, bool grounded);
+    /// Offset of the framing from the target (2.33: in a giant boss arena, toward the boss).
+    void setLean(Vec2 lean) { lean_ = lean; }
     void setZone(const CameraZone* zone);
 
     // Scripted control (intro/outro cinematics, event pans).
@@ -67,6 +69,7 @@ private:
     Vec2 target_, targetVel_;
     float facing_ = 1.0f;
     bool grounded_ = true;
+    Vec2 lean_;
     float lookAhead_ = 0.0f;
     float focusY_ = 0.0f;
     Rect bounds_;

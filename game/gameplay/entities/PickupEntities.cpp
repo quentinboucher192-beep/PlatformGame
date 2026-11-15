@@ -21,6 +21,21 @@ void CollectibleEntity::init(GameWorld& w) {
     sprite_.load(w.resources(), anim, clip);
     base_ = box.center();
     seed_ = static_cast<float>((static_cast<int>(base_.x) * 13 + static_cast<int>(base_.y) * 7) % 100) * 0.07f;
+    if (obj_.prop<bool>("hidden", false)) {
+        // 2.33: shown by an event (a boss phase): neither seen nor taken before.
+        active = false;
+        visible = false;
+    }
+}
+
+bool CollectibleEntity::handleAction(GameWorld& w, const std::string& action, const Json&) {
+    if (action != "spawn" && action != "activate" && action != "enable") return false;
+    if (active || removed) return true;
+    active = true;
+    visible = true;
+    w.particles().emit("enemy_spawn", box.center(), 0.8f);
+    w.playSound("sounds/collect_orb.wav", box.center(), 0.6f, 0.7f);
+    return true;
 }
 
 void CollectibleEntity::makeDrop(float vx, float vy) {

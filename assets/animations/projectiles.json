@@ -27,6 +27,8 @@
     "aurora_shard": {"row": 20, "count": 4, "fps": 12, "loop": true},
     "solar_flame": {"row": 21, "count": 4, "fps": 14, "loop": true},
     "solar_bolt": {"row": 22, "count": 4, "fps": 16, "loop": true},
-    "void_star": {"row": 23, "count": 4, "fps": 12, "loop": true}
+    "void_star": {"row": 23, "count": 4, "fps": 12, "loop": true},
+    "star_shard": {"row": 24, "count": 4, "fps": 14, "loop": true},
+    "meteor": {"row": 25, "count": 4, "fps": 12, "loop": true}
   }
 }

@@ -38,6 +38,14 @@ Json gameplayEnemyJson(const EnemyDefinition& d) {
         for (auto& a : j["attacks"]) {
             a.erase("beamTexture");
             a.erase("beamWidth");
+            a.erase("look");  // 2.33: the look of a lasting effect
+        }
+    // 2.33: the look of a boss phase (its sheet, light and sound).
+    if (j.contains("boss") && j["boss"].contains("phases") && j["boss"]["phases"].is_array())
+        for (auto& p : j["boss"]["phases"]) {
+            p.erase("animation");
+            p.erase("lightColor");
+            p.erase("enterSound");
         }
     return j;
 }

@@ -8,6 +8,7 @@ import numpy as np
 
 import effects as FX
 import boss_c_projectiles
+import boss_d_projectiles
 import player_projectiles
 from common.palette import AMBER, CYAN, DANGER, MOSS, VIOLET, hex_rgba
 from raster import Canvas, Mat, put
@@ -165,4 +166,5 @@ def build():
     s.add("boss_orb", boss_orb(), fps=12, loop=True)
     player_projectiles.add_rows(s)  # v2 rows 6-18
     boss_c_projectiles.add_rows(s)  # 2.19 rows 19-23 (sanctuary guardians)
+    boss_d_projectiles.add_rows(s)  # 2.33 rows 24-25 (Singularis)
     s.save("animations/projectiles.json")

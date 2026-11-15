@@ -28,7 +28,7 @@ TEST_CASE("stellar core: the star opens once the three planets are completed") {
     const PlanetData* star = content.planet("noyau");
     CHECK(star != nullptr);
     if (!star) return;
-    CHECK(star->levels.size() == 2);
+    CHECK(star->levels.size() == 3);  // 2.33: Le Cœur d'une Étoile Mourante
     Progression p;
     p.unlockAll = false;
     CHECK(!p.planetUnlocked(*star, content));
@@ -60,7 +60,8 @@ TEST_CASE("stellar core: the boss rush chains the sixteen guardians, no healing,
     }
     CHECK(originals.size() == 16);
     for (const EnemyDefinition* e : content.enemies())
-        if (e->isBoss && e->variantOf.empty() && e->id != "astrarque") CHECK(originals.count(e->id) == 1);
+        // The Astrarque and Singularis (2.33) have no echo here.
+        if (e->isBoss && e->variantOf.empty() && e->id != "astrarque" && e->id != "singularis") CHECK(originals.count(e->id) == 1);
     CHECK(level->timerMode == TimerMode::Challenge);
     CHECK(level->challengeMaxDeaths == 0);
     CHECK(level->powerSlots() == 4);

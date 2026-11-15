@@ -241,6 +241,30 @@
       "score": 5.0,
       "version": 2
     },
+    "noyau_03": {
+      "components": {
+        "boss": 30.09,
+        "checkpoints": 5.63,
+        "enemies": 2.22,
+        "hazards": 5.5,
+        "healing": -0.27,
+        "jumps": 2.82,
+        "length": 0.81,
+        "timer": 0.0
+      },
+      "facts": {
+        "deadly_jumps": 7,
+        "enemies": 20,
+        "hazards": 41,
+        "heal_per_100_tiles": 2.22,
+        "longest_checkpoint_gap": 541.08,
+        "precise_jumps": 7
+      },
+      "raw": 46.81,
+      "route_tiles": 541.08,
+      "score": 5.0,
+      "version": 2
+    },
     "pyralis_01": {
       "components": {
         "boss": 4.11,

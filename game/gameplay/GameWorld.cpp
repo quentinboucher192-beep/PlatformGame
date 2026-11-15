@@ -536,6 +536,17 @@ void GameWorld::updateCamera(float dt) {
         }
     }
     camera_.setZone(activeZone_);
+    // A giant arena (2.33: Singularis): it cannot be seen whole even at the widest, so the
+    // camera follows Nova at its widest, leaning toward the boss (Nova always well inside the
+    // view; the boss arrow shows it when it is out of sight). Other arenas fit: no lean.
+    Vec2 lean;
+    if (const CameraZone* bz = bossCameraZone(); bz && bz == activeZone_ && boss_ && boss_->alive() &&
+                                                  camera_.fitZoom(bz->area) < Camera::kMinFitZoom - 0.001f) {
+        Vec2 d = boss_->center() - player_.center();
+        const float hw = Camera::kViewWidth / Camera::kMinFitZoom * 0.5f, hh = Camera::kViewHeight / Camera::kMinFitZoom * 0.5f;
+        lean = {std::clamp(d.x * 0.4f, -hw * 0.45f, hw * 0.45f), std::clamp(d.y * 0.25f, -hh * 0.3f, hh * 0.3f)};
+    }
+    camera_.setLean(lean);
     camera_.setTarget(player_.center(), player_.vel, player_.facing, player_.grounded());
     camera_.fixedUpdate(dt);
 }

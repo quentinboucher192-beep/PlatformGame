@@ -3,6 +3,7 @@
 #include <cmath>
 #include <format>
 
+#include "engine/resources/ResourceManager.h"
 #include "game/gameplay/GameWorld.h"
 #include "engine/core/DetMath.h"
 
@@ -235,12 +236,25 @@ void Enemy::fixedUpdate(GameWorld& w, float dt) {
             if (e->mirrorOf_ == uid_ && e->alive()) ++doubles_;
     }
     sense(w);
+    if (lastStand_) {
+        // « Dernière lumière » (2.33): its final attacks, then it dies.
+        stateTimer_ -= dt;
+        simDt_ = dt;
+        stepLastStand(w, dt);
+        applyPhysics(w, dt);
+        contactDamage(w);
+        return;
+    }
     checkPhase(w);
     stateTimer_ -= dt;
     simDt_ = dt;
     if (def_.isBoss && engaged_) {
         fightTime_ += dt;
-        if (!enraged_ && def_.enrageTime > 0.0f && fightTime_ >= def_.enrageTime && state_ != EnemyState::PhaseTransition) {
+        phaseTime_ += dt;
+        // Rage: after the boss's own time in the fight, or after its phase's time (2.33).
+        const float phaseRage = phase_ < static_cast<int>(def_.phases.size()) ? def_.phases[phase_].enrageTime : 0.0f;
+        const bool due = (def_.enrageTime > 0.0f && fightTime_ >= def_.enrageTime) || (phaseRage > 0.0f && phaseTime_ >= phaseRage);
+        if (!enraged_ && due && state_ != EnemyState::PhaseTransition) {
             // A fight that drags on: the boss gets faster and hits more often.
             enraged_ = true;
             WorldMessage m;
@@ -253,6 +267,8 @@ void Enemy::fixedUpdate(GameWorld& w, float dt) {
             w.flash({255, 60, 40, 255}, 0.2f);
             w.shake(0.5f);
             w.particles().emit("boss_phase", box.center(), 1.5f);
+            // The level may answer (2.33: the arena of Singularis closes in).
+            if (!objectId_.empty()) w.emit(objectId_, "bossEnrage");
         }
     }
 
@@ -511,6 +527,7 @@ void Enemy::tryTeleport(GameWorld& w) {
 }
 
 void Enemy::setWounds(float hp, int phase) {
+    phaseTime_ = 0.0f;
     hp_ = std::clamp(hp, 1.0f, maxHp_);
     phase_ = def_.phases.empty() ? 0 : std::clamp(phase, 0, static_cast<int>(def_.phases.size()) - 1);
 }
@@ -521,7 +538,9 @@ void Enemy::checkPhase(GameWorld& w) {
     if (next >= static_cast<int>(def_.phases.size())) return;
     if (hpRatio() > def_.phases[next].hpThreshold) return;
     phase_ = next;
+    phaseTime_ = 0.0f;
     const BossPhase& ph = def_.phases[phase_];
+    if (!ph.enterSound.empty()) w.playSound(ph.enterSound, box.center(), 1.0f);
     if (attack_ && attack_->isGuardianType()) guardianEnd(w);  // a channel stops with the roar
     state_ = EnemyState::PhaseTransition;
     stateTimer_ = 1.6f;
@@ -612,6 +631,11 @@ void Enemy::contactDamage(GameWorld& w) {
 
 bool Enemy::takeDamage(GameWorld& w, const DamageInfo& dmg) {
     if (!alive() || dormant() || invuln_ > 0.0f) return false;
+    if (lastStand_) {
+        // Nothing hurts it any more: its last light must be survived.
+        if (hurtFlash_ <= 0.0f) w.particles().emit("block_sparks", box.center(), 0.6f);
+        return false;
+    }
     if (state_ == EnemyState::TeleportOut || state_ == EnemyState::TeleportIn) return false;
     // Guard-breaking hits: impulse, dash, ground pound (from above) and the charged shot.
     bool breaksGuard = dmg.type == DamageType::Impulse || dmg.type == DamageType::Dash ||
@@ -651,7 +675,8 @@ bool Enemy::takeDamage(GameWorld& w, const DamageInfo& dmg) {
         vel.x = dir * kb, vel.y = std::min(vel.y, -kb * 0.35f);
     w.particles().emit(mult > 1.2f ? "hit_weak" : "hit_spark", box.center(), 1.0f);
     if (hp_ <= 0.0f) {
-        kill(w);
+        if (def_.isBoss && !def_.finalAttacks.empty() && mirrorOf_ == 0) beginLastStand(w);
+        else kill(w);
         return true;
     }
     w.playSound(def_.hurtSound, box.center(), 0.8f, w.fxRng().range(0.95f, 1.1f));
@@ -693,7 +718,114 @@ void Enemy::freeze(float seconds) {
 }
 
 void Enemy::update(GameWorld& w, float dt) {
+    if (def_.isBoss && shownLook_ != phase_) refreshLook(w);
     anim_.update(dt, [&](const std::string& e) { onAnimEvent(w, e); });
+}
+
+// ============================================================ the giga boss (2.33)
+
+std::string Enemy::phaseAnimation() const {
+    std::string path = def_.animation;
+    for (int i = 0; i <= phase_ && i < static_cast<int>(def_.phases.size()); ++i)
+        if (!def_.phases[static_cast<size_t>(i)].animation.empty()) path = def_.phases[static_cast<size_t>(i)].animation;
+    return path;
+}
+
+Color Enemy::lightColor() const {
+    if (def_.isBoss && phase_ < static_cast<int>(def_.phases.size()) && def_.phases[static_cast<size_t>(phase_)].lightColor.a > 0)
+        return def_.phases[static_cast<size_t>(phase_)].lightColor;
+    return def_.lightColor;
+}
+
+void Enemy::refreshLook(GameWorld& w) {
+    // Display only: a boss whose phase has its own sheet changes look (the roar of the new
+    // phase plays on it). The simulation never reads the animation.
+    shownLook_ = phase_;
+    std::string path = phaseAnimation();
+    if (path == shownAnim_) return;
+    bool first = shownAnim_.empty();
+    shownAnim_ = path;
+    if (first && path == def_.animation) return;  // the sheet it was made with
+    if (!def_.assetRoot.empty()) w.resources().pushMount(def_.assetRoot);
+    AnimationSetPtr set = w.resources().animation(path);
+    if (!def_.assetRoot.empty()) w.resources().popMount();
+    if (!set) return;
+    std::string clip = anim_.current();
+    anim_.setSet(std::move(set));
+    playClip(clip.empty() ? "idle" : clip, true);
+}
+
+void Enemy::beginLastStand(GameWorld& w) {
+    // Out of health: it cannot be hurt any more, flies to the middle of its arena and gives
+    // its last light (its final attacks), then dies.
+    lastStand_ = true;
+    hp_ = 0.0f;
+    finalIndex_ = 0;
+    if (attack_ && attack_->isGuardianType()) guardianEnd(w);
+    attack_ = nullptr;
+    staged_.clear();
+    comboLeft_ = 0;
+    burstsLeft_ = 0;
+    state_ = EnemyState::PhaseTransition;
+    stateTimer_ = 1.8f;
+    playClip("roar", true);
+    w.playSound("sounds/boss_phase.wav", 1.0f);
+    w.playSound(def_.alertSound, box.center(), 1.0f);
+    w.shake(0.9f);
+    w.flash({255, 255, 255, 255}, 0.35f);
+    w.particles().emit("boss_phase", box.center(), 2.5f);
+    if (!def_.finalText.empty()) {
+        WorldMessage m;
+        m.style = WorldMessage::Style::Boss;
+        m.text = def_.finalText;
+        m.subtitle = def_.name;
+        m.duration = 2.6f;
+        w.message(m);
+    }
+    if (!objectId_.empty()) w.emit(objectId_, "bossLastStand");
+}
+
+void Enemy::stepLastStand(GameWorld& w, float dt) {
+    switch (state_) {
+        case EnemyState::PhaseTransition: {
+            // To the middle of its arena, a little above (its rings reach every corner).
+            Rect arena = arenaArea(w);
+            Vec2 spot{arena.center().x, arena.y + arena.h * 0.42f};
+            if (def_.flying) moveTowards(w, spot, std::max(def_.speed, 90.0f) * 1.6f, dt);
+            else vel.x = approach(vel.x, 0.0f, 900.0f * dt);
+            face(playerPos_.x - box.center().x);
+            if (stateTimer_ <= 0.0f) state_ = EnemyState::Chase;
+            break;
+        }
+        case EnemyState::Telegraph:
+            stepTelegraph(w, dt);
+            break;
+        case EnemyState::Attack:
+            stepAttack(w, dt);
+            if (state_ == EnemyState::Recover) stateTimer_ = std::min(stateTimer_, 0.3f);
+            break;
+        case EnemyState::Recover:
+            if (def_.flying) vel = lerpv(vel, {}, damp(4.0f, dt));
+            if (stateTimer_ <= 0.0f) state_ = EnemyState::Chase;
+            break;
+        default:
+            // Between two attacks: the next one, or its end.
+            if (def_.flying) vel = lerpv(vel, {}, damp(4.0f, dt));
+            if (finalIndex_ < def_.finalAttacks.size()) {
+                const std::string& id = def_.finalAttacks[finalIndex_++];
+                for (size_t i = 0; i < def_.attacks.size(); ++i)
+                    if (def_.attacks[i].id == id) {
+                        attack_ = &def_.attacks[i];
+                        attackIndex_ = static_cast<int>(i);
+                        beginAttack(w);
+                        break;
+                    }
+            } else {
+                lastStand_ = false;
+                kill(w);
+            }
+            break;
+    }
 }
 
 }  // namespace cosmic

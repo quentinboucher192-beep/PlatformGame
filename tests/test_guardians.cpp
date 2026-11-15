@@ -590,9 +590,9 @@ TEST_CASE("aethra: a fifth planet of four levels, opened by the three planets") 
         for (const auto& id : c.planet(planet)->levels) p.markCompleted(id);
     }
     CHECK(p.planetUnlocked(*a, c));
-    // The rest of the campaign is untouched: four levels per planet, two in the star.
+    // The rest of the campaign is untouched: four levels per planet, three in the star (2.33).
     for (const char* planet : {"sylvanox", "glacior", "pyralis"}) CHECK(c.planet(planet)->levels.size() == 4);
-    CHECK(c.planet("noyau")->levels.size() == 2);
+    CHECK(c.planet("noyau")->levels.size() == 3);
     CHECK(c.planet("noyau")->unlock == "planets:sylvanox,glacior,pyralis");
 }
 

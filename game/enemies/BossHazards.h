@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -52,6 +53,7 @@ public:
         float rise = 1.0f, hold = 4.0f, fall = 1.0f;
         float damage = 2.0f;
         float age = 0.0f;
+        std::string look;  // display: "" = lava, "plasma" = star plasma (2.33)
         /// Surface height above the floor (0 .. height) at the current age.
         float level() const;
         float surfaceY() const { return floorY - level(); }
@@ -64,6 +66,7 @@ public:
         float time = 4.0f;
         float age = 0.0f;
         float damage = 1.0f;
+        std::string look;  // display: "" = thorns, "star" = starlight (2.33)
     };
 
     void addPull(const Pull& p);
@@ -71,7 +74,8 @@ public:
     void addIce(GameWorld& w, uint32_t owner, const Rect& area, float grip, float seconds);
     void addFlood(const Flood& f);
     /// A solid wall; Nova standing where it rises is pushed to the `inside` side (+1: right).
-    void addWall(GameWorld& w, uint32_t owner, const Rect& rect, float seconds, float damage, float inside);
+    void addWall(GameWorld& w, uint32_t owner, const Rect& rect, float seconds, float damage, float inside,
+                 const std::string& look = {});
     /// Ends what an enemy channels (pulls and walls); the ice and the lava keep their time.
     void endChannel(GameWorld& w, uint32_t owner);
     /// Ends every effect of an enemy (it died or left the world).

@@ -42,6 +42,11 @@ void drawThreeSlice(RenderContext& ctx, const Texture& tex, int row, const Rect&
 
 // ----------------------------------------------------------- moving platform
 
+Vec2 MovingPlatformEntity::orbitPos(float angle) const {
+    float rx = std::abs(obj_.prop<float>("dx", 128.0f)), ry = std::abs(obj_.prop<float>("dy", 0.0f));
+    return Vec2{center_.x + dmath::cos(angle) * rx - box.w * 0.5f, center_.y + dmath::sin(angle) * ry - box.h * 0.5f};
+}
+
 void MovingPlatformEntity::init(GameWorld& w) {
     start_ = box.pos();
     end_ = start_ + Vec2{obj_.prop<float>("dx", 128.0f), obj_.prop<float>("dy", 0.0f)};
@@ -51,6 +56,15 @@ void MovingPlatformEntity::init(GameWorld& w) {
     if (triggered_) moving_ = false;
     t_ = std::clamp(obj_.prop<float>("phase", 0.0f), 0.0f, 1.0f);
     box = Rect{lerpf(start_.x, end_.x, t_), lerpf(start_.y, end_.y, t_), box.w, box.h};
+    orbit_ = obj_.prop<bool>("orbit", false);
+    if (orbit_) {
+        // 2.33: around its place (the centre of its rectangle), from the angle `phase` (0..1).
+        center_ = obj_.rect.center();
+        angle_ = t_ * 2.0f * kPi;
+        Vec2 p = orbitPos(angle_);
+        box.x = p.x;
+        box.y = p.y;
+    }
     prevPos_ = box.pos();
     bool oneway = obj_.prop<bool>("oneway", false);
     Rect col = oneway ? Rect{box.x, box.y, box.w, 4.0f} : box;
@@ -61,6 +75,25 @@ void MovingPlatformEntity::init(GameWorld& w) {
 void MovingPlatformEntity::fixedUpdate(GameWorld& w, float dt) {
     prevPos_ = box.pos();
     if (triggered_ && !moving_ && w.player().groundCollider() == collider_) moving_ = true;
+    if (orbit_) {
+        // In orbit: the speed along the ellipse (px/s), the sign of dx giving the direction.
+        if (moving_) {
+            float rx = std::abs(obj_.prop<float>("dx", 128.0f)), ry = std::abs(obj_.prop<float>("dy", 0.0f));
+            float r = std::max(8.0f, (rx + ry) * 0.5f);
+            float dir = obj_.prop<float>("dx", 128.0f) < 0.0f ? -1.0f : 1.0f;
+            angle_ += dir * obj_.prop<float>("speed", 60.0f) / r * dt;
+            if (angle_ > 2.0f * kPi) angle_ -= 2.0f * kPi;
+            if (angle_ < 0.0f) angle_ += 2.0f * kPi;
+        }
+        Vec2 p = orbitPos(angle_);
+        delta_ = p - box.pos();
+        box.x = p.x;
+        box.y = p.y;
+        bool oneway = obj_.prop<bool>("oneway", false);
+        Rect col = oneway ? Rect{box.x, box.y, box.w, 4.0f} : box;
+        w.physics().setDynamicBox(collider_, col, delta_ / std::max(dt, 1e-4f));
+        return;
+    }
     if (moving_) {
         if (wait_ > 0.0f) {
             wait_ -= dt;
@@ -94,7 +127,16 @@ void MovingPlatformEntity::render(RenderContext& ctx) {
     Color glow = moving_ ? Color{255, 179, 71, 140} : Color{120, 90, 60, 80};
     ctx.r.drawWorldGlow({r.center().x, r.bottom() + 2}, box.w * 0.45f, glow);
     ctx.lights.add({r.center().x, r.bottom()}, box.w * 0.9f, {255, 160, 80, 255});
-    if (ctx.editor) {
+    if (ctx.editor && orbit_) {
+        float rx = std::abs(obj_.prop<float>("dx", 0)), ry = std::abs(obj_.prop<float>("dy", 0));
+        Vec2 c = obj_.rect.center(), last = c + Vec2{rx, 0.0f};
+        for (int k = 1; k <= 32; ++k) {
+            float a = 2.0f * kPi * static_cast<float>(k) / 32.0f;
+            Vec2 q = c + Vec2{dmath::cos(a) * rx, dmath::sin(a) * ry};
+            ctx.r.drawWorldLine(last, q, {255, 179, 71, 160}, 1.0f);
+            last = q;
+        }
+    } else if (ctx.editor) {
         Vec2 a = obj_.rect.center(), b = a + Vec2{obj_.prop<float>("dx", 0), obj_.prop<float>("dy", 0)};
         ctx.r.drawWorldLine(a, b, {255, 179, 71, 160}, 1.0f);
         ctx.r.drawWorldRect(Rect::fromCenter(b, box.size()), {255, 179, 71, 90});
@@ -122,9 +164,25 @@ void CrumblePlatformEntity::init(GameWorld& w) {
     if (!tex_) tex_ = w.resources().texture("sprites/objects/crumble_platform.png");
 }
 
+void CrumblePlatformEntity::giveWay(GameWorld& w) {
+    phase_ = Phase::Fallen;
+    timer_ = obj_.prop<float>("respawn", 3.0f);
+    w.physics().setEnabled(collider_, false);
+    w.particles().emit("crumble_debris", box.center(), std::max(1.0f, box.w / 48.0f));
+    w.playSound("sounds/crumble.wav", box.center(), 0.9f);
+}
+
+bool CrumblePlatformEntity::handleAction(GameWorld& w, const std::string& action, const Json&) {
+    // 2.33: an event breaks it at once (Singularis's floor collapsing).
+    if (action != "break" && action != "activate" && action != "open") return false;
+    if (phase_ != Phase::Fallen) giveWay(w);
+    return true;
+}
+
 void CrumblePlatformEntity::fixedUpdate(GameWorld& w, float dt) {
     switch (phase_) {
         case Phase::Solid:
+            if (obj_.prop<bool>("onEvent", false)) break;  // 2.33: gives way to an event only
             if (w.player().groundCollider() == collider_ && w.player().grounded()) {
                 phase_ = Phase::Shaking;
                 timer_ = obj_.prop<float>("delay", 0.45f);
@@ -159,6 +217,7 @@ void CrumblePlatformEntity::fixedUpdate(GameWorld& w, float dt) {
 }
 
 void CrumblePlatformEntity::onPlayerRespawn(GameWorld& w) {
+    if (obj_.prop<bool>("onEvent", false)) return;  // broken by the fight: stays broken (2.33)
     phase_ = Phase::Solid;
     w.physics().setEnabled(collider_, true);
 }

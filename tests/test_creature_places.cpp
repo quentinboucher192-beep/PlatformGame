@@ -64,7 +64,8 @@ TEST_CASE("boss places: every boss of the game can be fought in at least one of 
 TEST_CASE("boss places: each guardian in its campaign level, then its echo in L'Arène des Échos") {
     int guardians = 0;
     for (const EnemyDefinition* d : content().enemies()) {
-        if (!d->isBoss || !d->builtin || !d->variantOf.empty() || d->id == "astrarque") continue;
+        // The Astrarque and Singularis (2.33) have no echo in L'Arène des Échos.
+        if (!d->isBoss || !d->builtin || !d->variantOf.empty() || d->id == "astrarque" || d->id == "singularis") continue;
         ++guardians;
         auto places = atlas().fightsOf(content(), d->id);
         CHECK(places.size() >= 2);
@@ -112,6 +113,14 @@ TEST_CASE("boss places: the checkpoint before the fight, and the order of the ar
             }
     CHECK(ranks.size() == 16);
     CHECK(*ranks.begin() == 1 && *ranks.rbegin() == 16);
+    // Singularis, in its own level only (no echo in the arena).
+    auto giga = atlas().fightsOf(content(), "singularis");
+    CHECK(giga.size() == 1);
+    if (!giga.empty()) {
+        CHECK(giga.front().levelId == "noyau_03");
+        CHECK(giga.front().planetId == "noyau");
+        CHECK(giga.front().checkpointId.empty());
+    }
     // The Astrarque, at the heart of the star.
     auto astra = atlas().fightsOf(content(), "astrarque");
     CHECK(astra.size() == 1);

@@ -133,6 +133,7 @@ START_POWERS = {
     "pyralis_04": ["glide", "ground_pound", "charge_shot", "dash"],
     "noyau_01": ["dash", "wave", "shield", "charge_shot"],
     "noyau_02": ["dash", "wave", "shield", "grapple"],
+    "noyau_03": ["dash", "grapple", "glide", "charge_shot"],  # 2.33: the rooms of the dying star
     # Aethra (2.19): three powers, the fourth slot for the new power whose tablet waits at the
     # start of the level.
     "aethra_01": ["dash", "wave", "grapple"],

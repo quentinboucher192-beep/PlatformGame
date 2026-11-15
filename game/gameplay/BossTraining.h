@@ -69,6 +69,11 @@ constexpr int kTrainingMaxHearts = 20;
 /// this level.
 bool applyBossTraining(GameWorld& w, const BossTrainingSetup& s);
 
+/// The boss jumps to the start of `phase` (0 = the first) with the life it has there, and the
+/// level answers the phases before it at once (2.33: an arena changed by the fight, as the
+/// giga boss's): the training of a single phase, and the automated captures (--boss-phase).
+void jumpBossToPhase(GameWorld& w, Enemy& boss, int phase);
+
 /// The boss of the training (nullptr when it is gone).
 const Enemy* bossTrainingEnemy(GameWorld& w, const BossTrainingSetup& s);
 /// The training is won: the phase chosen is beaten (or the boss, for every phase).

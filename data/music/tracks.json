@@ -26,6 +26,11 @@
       "id": "aethra",
       "name": "Aethra",
       "planet": "aethra"
+    },
+    {
+      "id": "noyau",
+      "name": "Noyau stellaire",
+      "planet": "noyau"
     }
   ],
   "tracks": [
@@ -142,6 +147,12 @@
       "group": "aethra",
       "title": "La Dévoreuse d'étoiles",
       "where": "Combat contre Nyxara"
+    },
+    {
+      "file": "music/singularis_boss.ogg",
+      "group": "noyau",
+      "title": "Le Cœur effondré",
+      "where": "Combat contre Singularis"
     }
   ]
 }

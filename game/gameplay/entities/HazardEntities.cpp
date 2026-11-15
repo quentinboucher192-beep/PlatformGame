@@ -146,8 +146,19 @@ void LiquidEntity::render(RenderContext& ctx) {
 
 // -------------------------------------------------------------- damage zone
 
+void DamageZoneEntity::init(GameWorld&) {
+    // 2.33: a zone may start off (switched on by an event: the plasma of Singularis's arena).
+    active = obj_.prop<bool>("active", true);
+    shown_ = active ? 1.0f : 0.0f;
+}
+
 void DamageZoneEntity::onPlayerStay(GameWorld& w, float dt) {
     if (!active) return;
+    Player& pl = w.player();
+    if (obj_.prop<bool>("bounce", false) && pl.alive() && pl.vel.y > -200.0f) {
+        // 2.33: it throws Nova back up (plasma: hurt, never stuck in it).
+        pl.launch({pl.vel.x * 0.5f, -390.0f}, false);
+    }
     tick_ -= dt;
     if (tick_ > 0.0f) return;
     tick_ = obj_.prop<float>("interval", 0.8f);
@@ -163,15 +174,22 @@ void DamageZoneEntity::onPlayerStay(GameWorld& w, float dt) {
 
 void DamageZoneEntity::fixedUpdate(GameWorld& w, float dt) {
     if (!playerInside) tick_ = 0.0f;
+    shown_ = active ? std::min(1.0f, shown_ + dt / 0.6f) : std::max(0.0f, shown_ - dt / 0.4f);
     if (!active || !obj_.prop<bool>("visible", true)) return;
     fxTimer_ -= dt;
     if (fxTimer_ <= 0.0f) {
-        fxTimer_ = std::max(0.05f, 2.0f / std::max(1.0f, box.w * box.h / 2000.0f));
-        w.particles().emit("toxic_mist", {w.fxRng().range(box.x, box.right()), w.fxRng().range(box.y, box.bottom())}, 1.0f);
+        bool plasma = obj_.propStr("style", "toxic") == "plasma";
+        fxTimer_ = std::max(0.05f, (plasma ? 1.2f : 2.0f) / std::max(1.0f, box.w * box.h / 2000.0f));
+        w.particles().emit(plasma ? "lava_bubbles" : "toxic_mist",
+                           {w.fxRng().range(box.x, box.right()), w.fxRng().range(box.y, box.bottom())}, 1.0f);
     }
 }
 
-bool DamageZoneEntity::handleAction(GameWorld&, const std::string& action, const Json&) {
+bool DamageZoneEntity::handleAction(GameWorld& w, const std::string& action, const Json&) {
+    if ((action == "enable" || action == "activate") && !active && obj_.propStr("style", "toxic") == "plasma") {
+        w.playSound("sounds/lava_rise.wav", box.center(), 0.9f);
+        w.shake(0.3f);
+    }
     if (action == "enable" || action == "activate") active = true;
     else if (action == "disable") active = false;
     else if (action == "toggle") active = !active;
@@ -184,10 +202,63 @@ void DamageZoneEntity::render(RenderContext& ctx) {
         ctx.r.fillWorldRect(box, {255, 60, 60, 40});
         ctx.r.drawWorldRect(box, {255, 60, 60, 160});
     }
-    if (active && obj_.prop<bool>("visible", true)) {
+    if (!obj_.prop<bool>("visible", true) || shown_ <= 0.0f) return;
+    if (obj_.propStr("style", "toxic") == "plasma") {
+        renderPlasma(ctx);
+        return;
+    }
+    if (active) {
         ctx.r.fillWorldRect(box, {157, 255, 58, 18}, BlendMode::Additive);
         ctx.lights.add(box.center(), std::max(box.w, box.h) * 0.6f, {120, 200, 60, 255});
     }
+}
+
+void DamageZoneEntity::renderPlasma(RenderContext& ctx) const {
+    // Star plasma (2.33): a pool (wider than tall: a boiling surface) or a curtain (taller
+    // than wide: shimmering edges), fading in when switched on.
+    const float a = shown_;
+    auto fx = ctx.res.animation("animations/plasma_flood.json");
+    const AnimationClip* surf = fx && fx->texture ? fx->clip("surface") : nullptr;
+    const AnimationClip* body = fx && fx->texture ? fx->clip("body") : nullptr;
+    const bool pool = box.w >= box.h;
+    if (pool) {
+        ctx.r.fillWorldRect(box, Color{120, 20, 92, static_cast<uint8_t>(225 * a)});
+        if (surf && body) {
+            int frame = static_cast<int>(ctx.time * 10.0f);
+            float fw = static_cast<float>(fx->frameWidth), fh = static_cast<float>(fx->frameHeight);
+            for (float x = box.x; x < box.right(); x += fw) {
+                float wdt = std::min(fw, box.right() - x);
+                Rect s = fx->frameRect(*surf, frame % std::max(1, surf->frameCount()));
+                s.w = s.w * (wdt / fw);
+                ctx.r.drawWorldTexture(*fx->texture, &s, {x, box.y - fh * 0.5f, wdt, fh}, Color{255, 255, 255, static_cast<uint8_t>(255 * a)});
+                for (float y = box.y + fh * 0.5f; y < box.bottom(); y += fh) {
+                    Rect b = fx->frameRect(*body, (frame + static_cast<int>(x / fw)) % std::max(1, body->frameCount()));
+                    float hgt = std::min(fh, box.bottom() - y);
+                    b.w = b.w * (wdt / fw);
+                    b.h = b.h * (hgt / fh);
+                    ctx.r.drawWorldTexture(*fx->texture, &b, {x, y, wdt, hgt}, Color{255, 255, 255, static_cast<uint8_t>(255 * a)});
+                }
+            }
+        }
+    } else {
+        ctx.r.fillWorldRect(box, Color{255, 90, 200, static_cast<uint8_t>(70 * a)}, BlendMode::Additive);
+        ctx.r.fillWorldRect(box, Color{90, 10, 70, static_cast<uint8_t>(90 * a)});
+        // Bright, wavering inner edges and drifting bands of light.
+        for (float y = box.y; y < box.bottom(); y += 6.0f) {
+            float wv = 2.0f * dmath::sin(ctx.time * 5.0f + y * 0.07f);
+            ctx.r.fillWorldRect({box.x - 1.0f + wv, y, 3.0f, 6.0f}, Color{255, 200, 240, static_cast<uint8_t>(200 * a)}, BlendMode::Additive);
+            ctx.r.fillWorldRect({box.right() - 2.0f - wv, y, 3.0f, 6.0f}, Color{255, 200, 240, static_cast<uint8_t>(200 * a)}, BlendMode::Additive);
+        }
+        for (int k = 0; k < 6; ++k) {
+            float ph = std::fmod(ctx.time * 0.25f + static_cast<float>(k) / 6.0f, 1.0f);
+            float y = box.bottom() - ph * box.h;
+            ctx.r.fillWorldRect({box.x, y, box.w, 3.0f}, Color{255, 150, 230, static_cast<uint8_t>(60 * a * (1.0f - ph))}, BlendMode::Additive);
+        }
+    }
+    for (float x = box.x + 40.0f; x < box.right(); x += 120.0f)
+        ctx.lights.add({x, pool ? box.y : box.center().y}, 120.0f, Color{255, 110, 220, static_cast<uint8_t>(255 * a)});
+    if (!pool)
+        for (float y = box.y + 60.0f; y < box.bottom(); y += 140.0f) ctx.lights.add({box.center().x, y}, 140.0f, Color{255, 110, 220, static_cast<uint8_t>(255 * a)});
 }
 
 // ---------------------------------------------------------------- slow zone

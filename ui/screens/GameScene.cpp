@@ -818,6 +818,22 @@ void GameScene::update(float dt) {
         if (Enemy* b = world_->activeBoss(); b && b->alive() && (b->state() == EnemyState::Chase || b->state() == EnemyState::Alert ||
                                                                  b->state() == EnemyState::Idle || b->state() == EnemyState::Patrol))
             b->forceAttack(*world_, opt_.forceBossAttack);
+    if (opt_.forceBossPhase > 0)
+        if (Enemy* b = world_->activeBoss(); b && b->alive() && !b->dormant()) {
+            const int n = static_cast<int>(b->def().phases.size());
+            if (b->phaseIndex() < std::min(opt_.forceBossPhase, n) - 1) jumpBossToPhase(*world_, *b, std::min(opt_.forceBossPhase, n) - 1);
+            if (opt_.forceBossPhase <= n || b->lastStand()) {
+                opt_.forceBossPhase = 0;
+            } else {
+                // Its last stand: the last blow of the fight, as soon as it can be hurt.
+                b->setWounds(1.0f, n - 1);
+                DamageInfo d;
+                d.amount = 1000.0f;
+                d.type = DamageType::Projectile;
+                d.source = b->center();
+                b->takeDamage(*world_, d);
+            }
+        }
     bool autoPause = opt_.openPause && world_->state() == WorldState::Playing &&
                      (opt_.pauseAfter <= 0.0f || world_->timer().elapsed() >= opt_.pauseAfter);
     if (autoPause) opt_.openPause = false;

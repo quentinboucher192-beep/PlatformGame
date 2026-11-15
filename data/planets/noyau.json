@@ -3,7 +3,7 @@
   "id": "noyau",
   "name": "Noyau stellaire",
   "subtitle": "Le cœur de l'étoile",
-  "description": "L'étoile au centre du système s'ouvre quand ses trois mondes sont libérés. Ses gardiens y reviennent en échos de lumière, et en son cœur veille l'Astrarque.",
+  "description": "L'étoile au centre du système s'ouvre quand ses trois mondes sont libérés. Ses gardiens y reviennent en échos de lumière, en son cœur veille l'Astrarque, et plus loin encore une étoile morte s'est éveillée.",
   "type": "star",
   "difficulty": 5,
   "color": "#ffd98a",
@@ -13,7 +13,8 @@
   "music": "music/planet_map.ogg",
   "levels": [
     "noyau_01",
-    "noyau_02"
+    "noyau_02",
+    "noyau_03"
   ],
   "unlock": "planets:sylvanox,glacior,pyralis",
   "teaser": false,

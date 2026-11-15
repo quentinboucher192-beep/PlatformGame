@@ -2,6 +2,9 @@
 
   * singularis - Singularis, le Coeur Effondre   192x192, pivot [96, 124]  (boss_d_singularis.py)
 
+Its effects (boss_d_effects.py): plasma_flood, star_wall, crumble_platform_star; its projectiles
+(boss_d_projectiles.py, rows of projectiles.png): star_shard, meteor.
+
 Eight sheets, one per phase (sprites/enemies/singularis.png for phase 1, singularis_p2..p8.png):
 the same clips, the plasma recoloured per phase; phases 1-4 show the whole shell (form I),
 phases 5-8 the burst one (form II); the phase-5 sheet's roar is the shattering of the shell,
@@ -16,6 +19,8 @@ def build(only=None):
         if only and name not in only:
             continue
         importlib.import_module("boss_d_" + name).build()
+    if not only or "effects" in only:
+        importlib.import_module("boss_d_effects").build()  # plasma tide, starlight walls, crust floor
 
 
 if __name__ == "__main__":

@@ -129,6 +129,7 @@ Json AttackDef::toJson() const {
         if (bounces > 0) j["bounces"] = bounces;
         if (arms > 0) j["arms"] = arms;
         if (grip > 0) j["grip"] = grip;
+        if (!look.empty()) j["look"] = look;
         if (type == AttackType::Prism) {
             j["laserLength"] = laserLength;
             j["color"] = beamColor.toHex();
@@ -197,19 +198,26 @@ AttackDef AttackDef::fromJson(const Json& j) {
     a.bounces = std::clamp(jget<int>(j, "bounces", 0), 0, 6);
     a.arms = std::clamp(jget<int>(j, "arms", 0), 0, 8);
     a.grip = std::clamp(jget<float>(j, "grip", 0.0f), 0.0f, 1.0f);
+    a.look = jstr(j, "look", "");
     return a;
 }
 
 Json BossPhase::toJson() const {
-    return {{"name", name},
-            {"hpThreshold", hpThreshold},
-            {"attacks", attacks},
-            {"speedMultiplier", speedMultiplier},
-            {"cooldownMultiplier", cooldownMultiplier},
-            {"enterText", enterText},
-            {"summonOnEnter", summonOnEnter},
-            {"combo", combo},
-            {"telegraphMultiplier", telegraphMultiplier}};
+    Json j = {{"name", name},
+              {"hpThreshold", hpThreshold},
+              {"attacks", attacks},
+              {"speedMultiplier", speedMultiplier},
+              {"cooldownMultiplier", cooldownMultiplier},
+              {"enterText", enterText},
+              {"summonOnEnter", summonOnEnter},
+              {"combo", combo},
+              {"telegraphMultiplier", telegraphMultiplier}};
+    // 2.33: written only when set (the phases of before keep their fingerprints).
+    if (enrageTime > 0) j["enrageTime"] = enrageTime;
+    if (!animation.empty()) j["animation"] = animation;
+    if (lightColor.a > 0) j["lightColor"] = lightColor.toHex();
+    if (!enterSound.empty()) j["enterSound"] = enterSound;
+    return j;
 }
 
 BossPhase BossPhase::fromJson(const Json& j) {
@@ -225,6 +233,10 @@ BossPhase BossPhase::fromJson(const Json& j) {
     p.summonOnEnter = jget<bool>(j, "summonOnEnter", false);
     p.combo = std::clamp(jget<int>(j, "combo", 1), 1, 5);
     p.telegraphMultiplier = std::clamp(jget<float>(j, "telegraphMultiplier", 1.0f), 0.4f, 2.0f);
+    p.enrageTime = std::clamp(jget<float>(j, "enrageTime", 0.0f), 0.0f, 3600.0f);
+    p.animation = jstr(j, "animation", "");
+    if (j.contains("lightColor")) p.lightColor = colorFromJson(j["lightColor"], Color{0, 0, 0, 0});
+    p.enterSound = jstr(j, "enterSound", "");
     return p;
 }
 
@@ -287,6 +299,8 @@ Json EnemyDefinition::toJson() const {
         if (barIcon != "portrait") j["boss"]["barIcon"] = barIcon;
         if (!barColor.empty()) j["boss"]["barColor"] = barColor;
         if (darkPhase > 0) j["boss"]["darkPhase"] = darkPhase;
+        if (!finalAttacks.empty()) j["boss"]["finalAttacks"] = finalAttacks;
+        if (!finalText.empty()) j["boss"]["finalText"] = finalText;
     }
     return j;
 }
@@ -367,6 +381,10 @@ EnemyDefinition EnemyDefinition::fromJson(const Json& j) {
         d.barIcon = jstr(j["boss"], "barIcon", "portrait");
         d.barColor = jstr(j["boss"], "barColor", "");
         d.darkPhase = std::clamp(jget<int>(j["boss"], "darkPhase", 0), 0, 8);
+        if (j["boss"].contains("finalAttacks") && j["boss"]["finalAttacks"].is_array())
+            for (const auto& a : j["boss"]["finalAttacks"])
+                if (a.is_string() && d.finalAttacks.size() < 12) d.finalAttacks.push_back(a.get<std::string>());
+        d.finalText = jstr(j["boss"], "finalText", "");
         if (j["boss"].contains("phases") && j["boss"]["phases"].is_array())
             for (const auto& p : j["boss"]["phases"]) d.phases.push_back(BossPhase::fromJson(p));
         std::stable_sort(d.phases.begin(), d.phases.end(), [](const auto& a, const auto& b) { return a.hpThreshold > b.hpThreshold; });

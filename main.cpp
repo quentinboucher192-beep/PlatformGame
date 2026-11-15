@@ -551,6 +551,7 @@ int main(int argc, char** argv) {
         opt.openPause = has("--pause") || has("--pause-after");
         opt.pauseAfter = static_cast<float>(std::atof(value("--pause-after").c_str()));
         opt.forceBossAttack = value("--boss-attack");
+        opt.forceBossPhase = std::atoi(value("--boss-phase").c_str());
         // --training-from <checkpoint>: a section training from that checkpoint (automated checks;
         // "start" = from the level's start to its first checkpoint).
         if (std::string tf = value("--training-from"); !tf.empty()) {

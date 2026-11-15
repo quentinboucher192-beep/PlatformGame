@@ -56,8 +56,8 @@ bool has(const std::vector<std::string>& v, const std::string& id) { return std:
 
 TEST_CASE("achievements: a large catalogue, every category, every star level") {
     Fixture f;
-    CHECK(f.catalog.achievements().size() >= 218);  // 2.24: 72 more, and the Collection category
-    CHECK(f.catalog.totalStars() >= 597);
+    CHECK(f.catalog.achievements().size() >= 221);  // 2.24: 72 more, and the Collection category; 2.33: Singularis
+    CHECK(f.catalog.totalStars() >= 612);
     CHECK(f.catalog.categories().size() >= 13);
     std::set<std::string> ids;
     std::map<std::string, int> perCategory;
@@ -165,7 +165,7 @@ TEST_CASE("achievements: every condition is known and names real content") {
         }
         if (!c.power.empty()) CHECK(f.content.power(c.power) != nullptr);
         if (c.type == "medal_count" || c.type == "levels_no_death" || c.type == "levels_full_collect" || c.type == "levels_all_secrets")
-            CHECK(c.count <= 18);  // the campaign has 18 levels (2.19: Aethra)
+            CHECK(c.count <= 19);  // the campaign has 19 levels (2.19: Aethra, 2.33: the dying star)
         if (!c.planet.empty() && (c.type == "levels_no_death" || c.type == "levels_full_collect" || c.type == "levels_all_secrets"))
             CHECK(c.count <= static_cast<int64_t>(f.content.levelsForPlanet(c.planet).size()));
         // Reachable: only levels with something to find count for « tout ramasser » and
@@ -186,7 +186,7 @@ TEST_CASE("achievements: every condition is known and names real content") {
         }
         if (c.type == "set") CHECK(sets.count(c.key) == 1);
         if (c.type == "max") CHECK(maxima.count(c.key) == 1);
-        if (c.type == "set" && c.key == "rated_campaign") CHECK(c.count <= 18);
+        if (c.type == "set" && c.key == "rated_campaign") CHECK(c.count <= 19);  // 2.33: 19 levels
         if (c.type == "set" && c.key == "photographed_planets") CHECK(c.count <= static_cast<int64_t>(f.content.planets().size()));
         if (c.type == "max" && c.key == "outfit_categories") CHECK(c.count <= 5);  // the five categories of the Collection
     }
@@ -242,7 +242,7 @@ TEST_CASE("achievements: campaign, medals and bosses come from the saves") {
     const AchievementDef* all = f.catalog.find("voyage_all");
     AchievementProgress p = AchievementBook::progress(*all, f.inputs());
     CHECK(p.value == 12);
-    CHECK(p.target == 18);  // 2.19: the four levels of Aethra
+    CHECK(p.target == 19);  // 2.19: the four levels of Aethra; 2.33: Le Cœur d'une Étoile Mourante
 }
 
 TEST_CASE("achievements: counters, sets and the required threads") {
@@ -367,7 +367,7 @@ TEST_CASE("achievements (2.24): the Collection, the replays and Cosmic Online") 
     auto got = run(in);
     CHECK(!has(got, "collection_tracks_10"));
     CHECK(!has(got, "collection_creatures_15"));
-    in.tracksHeard = 19;
+    in.tracksHeard = 20;  // 2.33: Singularis's track
     in.creaturesMet = 30;
     got = run(in);
     for (const char* id : {"collection_tracks_10", "collection_tracks_all", "collection_creatures_15", "collection_creatures_30"}) CHECK(has(got, id));

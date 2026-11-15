@@ -105,6 +105,7 @@ float Enemy::guardianFit(const GameWorld& w, const AttackDef& a, bool near, bool
 void Enemy::guardianBegin(GameWorld& w) {
     const AttackDef& a = *attack_;
     path_.clear();
+    path2_.clear();
     burst_ = false;
     ringRadius_ = 0.0f;
     const Rect arena = arenaArea(w);
@@ -156,6 +157,9 @@ void Enemy::guardianBegin(GameWorld& w) {
             MoveOptions solidOnly;
             auto solidAt = [&](Vec2 p) { return w.physics().overlapsSolid({p.x - 0.25f, p.y - 0.25f, 0.5f, 0.5f}, solidOnly); };
             float best = 1e9f;
+            float sideBest[2] = {1e9f, 1e9f};  // 2.33: the best path on each side (two arms)
+            std::vector<Vec2> sidePath[2];
+            float chosenSide = facing;
             for (float side : {facing, -facing})
                 for (float deg : {35.0f, 45.0f, 55.0f, 65.0f}) {
                     Vec2 d{side * dmath::cos(degToRad(deg)), -dmath::sin(degToRad(deg))};
@@ -184,8 +188,16 @@ void Enemy::guardianBegin(GameWorld& w) {
                     if (score < best - 0.01f) {
                         best = score;
                         path_ = pts;
+                        chosenSide = side;
+                    }
+                    int si = side == facing ? 0 : 1;
+                    if (score < sideBest[si] - 0.01f) {
+                        sideBest[si] = score;
+                        sidePath[si] = pts;
                     }
                 }
+            // Two arms: the second beam goes up the other side, mirrored, and the two cross.
+            if (a.arms >= 2) path2_ = sidePath[chosenSide == facing ? 1 : 0];
             break;
         }
         case AttackType::Orbit:
@@ -256,7 +268,7 @@ void Enemy::guardianStart(GameWorld& w) {
             float h = orDefault(a.height, 136.0f);
             float secs = orDefault(a.duration, 4.0f);
             for (const Vec2& base : path_)
-                w.hazards().addWall(w, uid_, {base.x - 8.0f, base.y - h, 16.0f, h}, secs, a.damage, signf(markPos_.x - base.x));
+                w.hazards().addWall(w, uid_, {base.x - 8.0f, base.y - h, 16.0f, h}, secs, a.damage, signf(markPos_.x - base.x), a.look);
             stateTimer_ = secs;
             burstTimer_ = 0.35f;
             w.shake(0.35f);
@@ -306,6 +318,7 @@ void Enemy::guardianStart(GameWorld& w) {
             f.height = orDefault(a.height, 64.0f);
             f.hold = orDefault(a.duration, 4.0f);
             f.damage = a.damage;
+            f.look = a.look;
             w.hazards().addFlood(f);
             w.shake(0.4f);
             if (a.sound.empty()) w.playSound("sounds/lava_rise.wav", box.center(), 1.0f);
@@ -453,16 +466,19 @@ void Enemy::guardianActive(GameWorld& w, float dt) {
             }
             break;
         case AttackType::Prism:
-            if (laserHitTimer_ <= 0.0f)
-                for (size_t k = 1; k < path_.size(); ++k)
-                    if (Collision::segmentIntersectsRect(path_[k - 1], path_[k], p.box)) {
+            for (const std::vector<Vec2>* beam : {&path_, &path2_}) {
+                if (laserHitTimer_ > 0.0f) break;
+                for (size_t k = 1; k < beam->size(); ++k)
+                    if (Collision::segmentIntersectsRect((*beam)[k - 1], (*beam)[k], p.box)) {
                         if (w.damagePlayer(d)) laserHitTimer_ = 0.45f;
                         break;
                     }
+            }
             hopTimer_ -= dt;
             if (hopTimer_ <= 0.0f) {
                 hopTimer_ = 0.1f;
-                for (size_t k = 1; k + 1 < path_.size(); ++k) w.particles().emit("laser_sparks", path_[k], 0.4f);
+                for (const std::vector<Vec2>* beam : {&path_, &path2_})
+                    for (size_t k = 1; k + 1 < beam->size(); ++k) w.particles().emit("laser_sparks", (*beam)[k], 0.4f);
             }
             break;
         case AttackType::Orbit: {
@@ -547,6 +563,7 @@ void Enemy::spawnDoubles(GameWorld& w, const AttackDef& a) {
     // multiply and leave nothing behind. Only the true one has health to lose.
     EnemyDefinition dd = def_;
     dd.name = "Reflet : " + def_.name;
+    dd.animation = phaseAnimation();  // 2.33: the look of its current phase
     dd.isBoss = false;
     dd.phases.clear();
     dd.hp = 1.0f;
@@ -671,13 +688,17 @@ void Enemy::renderGuardian(RenderContext& ctx, float prog) const {
         case AttackType::Prism: {
             if (path_.size() < 2) break;
             if (tele) {
-                for (size_t k = 1; k < path_.size(); ++k)
-                    dashedLine(ctx.r, path_[k - 1], path_[k], Color{220, 250, 255, static_cast<uint8_t>(110 + 140 * prog)}, 3.0f * s, 12.0f, 7.0f);
+                for (const std::vector<Vec2>* beam : {&path_, &path2_})
+                    for (size_t k = 1; k < beam->size(); ++k)
+                        dashedLine(ctx.r, (*beam)[k - 1], (*beam)[k], Color{220, 250, 255, static_cast<uint8_t>(110 + 140 * prog)}, 3.0f * s,
+                                   12.0f, 7.0f);
                 break;
             }
             Color bc = a.beamColor;
-            for (size_t k = 1; k < path_.size(); ++k) {
-                Vec2 p0 = path_[k - 1], p1 = path_[k];
+            std::vector<std::pair<Vec2, Vec2>> segs;
+            for (const std::vector<Vec2>* beam : {&path_, &path2_})
+                for (size_t k = 1; k < beam->size(); ++k) segs.push_back({(*beam)[k - 1], (*beam)[k]});
+            for (const auto& [p0, p1] : segs) {
                 Vec2 dd = p1 - p0;
                 float len = dd.length();
                 float ang = dmath::atan2(dd.y, dd.x);

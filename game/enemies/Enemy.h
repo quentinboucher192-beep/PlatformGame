@@ -81,6 +81,8 @@ public:
     /// Guardian attacks (2.19): the bouncing path of a prism, the mark of a shadow step, the
     /// radius of an eclipse ring... (tests, display).
     const std::vector<Vec2>& attackPath() const { return path_; }
+    /// The second, mirrored beam of a prism with two arms (2.33); empty otherwise.
+    const std::vector<Vec2>& attackPath2() const { return path2_; }
     Vec2 attackMark() const { return markPos_; }
     float ringRadius() const { return ringRadius_; }
     float ringGapAngle() const { return angle_; }
@@ -100,6 +102,15 @@ public:
     /// Boss fights resumed after the player's death: the boss keeps its wounds and its phase.
     void setWounds(float hp, int phase);
     bool enraged() const { return enraged_; }
+    /// Seconds spent in the current phase (fight engaged).
+    float phaseTime() const { return phaseTime_; }
+    /// Its last stand (2.33, EnemyDefinition::finalAttacks): out of health, it cannot be hurt
+    /// and performs its final attacks before dying.
+    bool lastStand() const { return lastStand_; }
+    /// The sheet of its current phase (EnemyDefinition / BossPhase::animation).
+    std::string phaseAnimation() const;
+    /// Its light (the current phase's colour when the phase has one).
+    Color lightColor() const;
     const std::string& currentAttackName() const;
     std::string debugInfo() const;
     Vec2 center() const { return box.center(); }
@@ -128,6 +139,9 @@ private:
     void finishAttack(GameWorld& w);
     void tryTeleport(GameWorld& w);
     void checkPhase(GameWorld& w);
+    void beginLastStand(GameWorld& w);
+    void stepLastStand(GameWorld& w, float dt);
+    void refreshLook(GameWorld& w);  // display: the sheet of the current phase
     void applyPhysics(GameWorld& w, float dt);
     void contactDamage(GameWorld& w);
     bool groundAhead(const GameWorld& w) const;
@@ -197,7 +211,12 @@ private:
     int comboLeft_ = 0;
     int lastAttack_ = -1, prevAttack_ = -1;
     float fightTime_ = 0.0f;
+    float phaseTime_ = 0.0f;  // 2.33: rage counted in a phase
     bool enraged_ = false;
+    bool lastStand_ = false;  // 2.33: « Dernière lumière »
+    size_t finalIndex_ = 0;
+    int shownLook_ = -1;      // display only: the phase whose sheet is shown
+    std::string shownAnim_;
     int burstsLeft_ = 0;
     float burstTimer_ = 0.0f;
     struct Staged {
@@ -221,6 +240,7 @@ private:
     void spawnDoubles(GameWorld& w, const AttackDef& a);
     void fireSpiral(GameWorld& w, const AttackDef& a);
     std::vector<Vec2> path_;   // Prism path, Cage wall bases, Mirror spots
+    std::vector<Vec2> path2_;  // the mirrored beam of a two-armed prism (2.33)
     Vec2 markPos_;             // Tracker bump, Blink mark, Well centre, Ring centre
     float spin_ = 1.0f;        // Orbit / Spiral turning direction
     float angle_ = 0.0f;       // Orbit / Spiral angle, Ring opening

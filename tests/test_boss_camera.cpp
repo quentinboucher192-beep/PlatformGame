@@ -16,7 +16,7 @@
 
 using namespace cosmic;
 
-TEST_CASE("boss camera: every campaign boss fight shows its whole arena") {
+TEST_CASE("boss camera: every campaign boss fight shows its whole arena (the giant one: at its widest)") {
     ContentDatabase content;
     content.reload();
     ResourceManager res;
@@ -58,6 +58,13 @@ TEST_CASE("boss camera: every campaign boss fight shows its whole arena") {
                 if (!z) continue;
                 // It fits on a 16:9 screen without going below the least zoom.
                 (void)w.camera().visibleArea(1920, 1080);  // the screen shape
+                if (spawn->object().propStr("enemy") == "singularis") {
+                    // 2.33: the giant arena of Singularis never fits: the camera follows Nova at
+                    // its widest (tests/test_singularis.cpp).
+                    CHECK(w.camera().fitZoom(z->area) < Camera::kMinFitZoom);
+                    ++fights;
+                    continue;
+                }
                 CHECK(w.camera().fitZoom(z->area) >= Camera::kMinFitZoom);
                 for (int i = 0; i < 300 && w.activeBoss(); ++i) w.fixedUpdate(PlayerInput{}, 1.0f / 120.0f);
                 if (!w.activeBoss()) continue;  // the player fell before the end (respawn)
