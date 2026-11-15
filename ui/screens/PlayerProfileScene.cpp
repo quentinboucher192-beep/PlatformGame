@@ -208,7 +208,7 @@ private:
         const float x = box_.x + ui.s(28);
         const float w = box_.w - ui.s(56);
         float y = box_.y + ui.s(24);
-        // Identity. What the player wears (2.21): null for a profile hidden from the reader.
+        // Identity. What the player wears (2.23): null for a profile hidden from the reader.
         const Json& worn = data_.value("cosmetics", Json());
         const bool dressed = !hidden && worn.is_object();
         const float av = ui.s(112);
@@ -282,7 +282,7 @@ private:
             }
         }
         float ly = y + ui.s(62);
-        // The title under the name, as a gold chip (2.21).
+        // The title under the name, as a gold chip (2.23).
         if (std::string title = dressed ? wornName(worn, "title") : std::string(); !title.empty()) {
             float tf = fz(ui, 15), tw = std::min(ui.text().measure(title, FontFace::Bold, ui.s(tf)).x + ui.s(24), nameRoom);
             Rect chip{nx, ly - ui.s(13), tw, std::max(ui.s(26), ui.s(tf) + ui.s(8))};
@@ -351,7 +351,7 @@ private:
                          FontFace::Body, VAlign::Middle);
             y += band.h + ui.s(10);
         }
-        // « Tenue »: the suit (drawn), the trail, the frame and the victory effect worn (2.21).
+        // « Tenue »: the suit (drawn), the trail, the frame and the victory effect worn (2.23).
         if (dressed) y = drawOutfit(worn, x, y, w) + ui.s(10);
         if (isCreator) {
             const Json& rt = creator.value("rating", Json::object());

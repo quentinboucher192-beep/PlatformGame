@@ -701,7 +701,7 @@ private:
         ui.popId();
     }
 
-    /// A leaderboard player's title (2.21): the name of the catalogue's item, the server's
+    /// A leaderboard player's title (2.23): the name of the catalogue's item, the server's
     /// name for an item this game does not know; "" without a title (or a hidden profile).
     std::string titleOf(const Json& player) const {
         if (!player.contains("title") || !player["title"].is_object()) return {};
@@ -780,7 +780,7 @@ private:
         }
         std::string name = ui_.displayName(jstr(p, "username"), rank, me);
         float room = std::max(ui.s(40), right - nx);
-        // The player's title under the name (2.21), smaller and dimmed.
+        // The player's title under the name (2.23), smaller and dimmed.
         std::string title = titleOf(p);
         float nameY = title.empty() ? row.center().y : row.center().y - ui.s(8);
         float nf = std::max(11.5f / ui.s(1.0f), ui.fitFont(name, FontFace::Bold, title.empty() ? 18 : 17, room, 0.75f));

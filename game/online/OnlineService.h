@@ -128,7 +128,7 @@ public:
     /// The achievements unlocked in this game (ids). Sent to the profile when the player is
     /// connected (and again after a change or another login): shown as declared by the game.
     void setAchievements(std::vector<std::string> ids);
-    /// What the player wears (2.21): category → equipped item id (suit, trail, frame, title,
+    /// What the player wears (2.23): category → equipped item id (suit, trail, frame, title,
     /// victory). Sent to the profile once the achievements of the same player are there (the
     /// server checks the ids against them), again after each change or another login, a
     /// minute later after a failure; never while offline or logged out.

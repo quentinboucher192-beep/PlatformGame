@@ -552,7 +552,7 @@ Réponse d'un **classement de niveau** :
 `rank` = position dans ce classement (filtré), `world_rank` = position mondiale ;
 `has_replay` = un replay vérifié existe ; `comments` (2.19) = nombre de commentaires visibles
 de la course (`record_id`), `null` quand son auteur a masqué son profil (§8.9 decies) ;
-`player.frame`, `player.title` et `player.suit` (2.21) = la tenue du joueur (§8.9 undecies),
+`player.frame`, `player.title` et `player.suit` (2.23) = la tenue du joueur (§8.9 undecies),
 absents quand il a masqué son profil, dans tous les classements (niveau, pays, amis, semaine,
 planète, points cosmiques, course à la vérification) ;
 `me` vaut `null` en anonyme, sinon la ligne du lecteur (même hors de la page) et son meilleur
@@ -1170,7 +1170,7 @@ disparaît avec elle (suppression du compte de son auteur). Les notifications de
 (`level:<id>` ou `run:<record>`), `data.level_id` et, pour une course, `data.record_id` et
 `data.level_name`, pour que le jeu ouvre le bon écran.
 
-### 8.9 undecies Tenue en ligne : cadre, titre, combinaison (2.21)
+### 8.9 undecies Tenue en ligne : cadre, titre, combinaison (2.23)
 
 Ce que le joueur porte dans la Collection du jeu le suit en ligne : le **cadre d'avatar** et le
 **titre** sur son profil et dans les classements, la **combinaison** sur son profil et sur ses

@@ -45,7 +45,7 @@ public:
     void update(const GameWorld& w, float dt);
     void finish(float runTime) { race_.finish(runTime); }
 
-    /// Sheet of the suit a ghost wears (2.21), nullptr for the normal one: asked once per
+    /// Sheet of the suit a ghost wears (2.23), nullptr for the normal one: asked once per
     /// ghost, the first time it is drawn. Display only.
     using SuitSheet = std::function<TexturePtr(const GhostMeta&)>;
     void setSuitSheet(SuitSheet f) {

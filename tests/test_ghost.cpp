@@ -589,7 +589,7 @@ TEST_CASE("ghost: the suit of its player goes with the description, checked when
     CHECK(GhostMeta::fromJson(j).suit.empty());
     j["suit"] = 42;
     CHECK(GhostMeta::fromJson(j).suit.empty());
-    // Descriptions written before 2.21 have none; nothing is written without a suit.
+    // Descriptions written before 2.23 have none; nothing is written without a suit.
     CHECK(!GhostMeta{}.toJson().contains("suit"));
     CHECK(!m.mine());
     for (const char* s : {"pb", "prev", "last"}) {

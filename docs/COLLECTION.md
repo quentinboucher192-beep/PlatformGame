@@ -23,7 +23,7 @@ Catalogue : `data/cosmetics/cosmetics.json` (catégories, éléments, paliers).
 * À la fin d'un niveau, si de nouvelles récompenses sont débloquées, une carte les présente :
   on coche ce qu'on équipe (une seule par catégorie), *Équiper* ou *Plus tard*.
 
-### En ligne (2.21)
+### En ligne (2.23)
 
 Connecté à Cosmic Online, le jeu envoie ce qui est équipé (`PUT /api/v1/players/me/cosmetics`,
 les identifiants des cinq éléments) après la liste des succès, puis à chaque *Équiper* ; en cas

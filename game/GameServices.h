@@ -68,7 +68,7 @@ public:
     std::string cosmeticLook(const std::string& category) const {
         return collection.look(cosmetics, category, cosmeticProgress());
     }
-    /// What the player wears goes to the online profile (2.21): at start, after each
+    /// What the player wears goes to the online profile (2.23): at start, after each
     /// « Équiper » and when the achievements change what is unlocked.
     void syncCosmetics();
     /// Discoveries proven by the saves (tracks and creatures of the completed levels).

@@ -46,7 +46,7 @@ public:
     const CosmeticItem* defaultItem(const std::string& category) const;
     const CosmeticCategory* category(const std::string& id) const;
     /// `look` when an item of the category has it, else the category default's look: what
-    /// another player's data (leaderboards, ghosts) may make this game draw (2.21).
+    /// another player's data (leaderboards, ghosts) may make this game draw (2.23).
     std::string lookOr(const std::string& category, const std::string& look) const;
     /// Star milestones in order, each with its rewards (the route of the stars).
     struct Milestone {
@@ -90,7 +90,7 @@ public:
     /// Look of the equipped item (« givre », « comet »…, a title's text).
     std::string look(const CosmeticCatalog& catalog, const std::string& category, const CosmeticProgress& p) const;
     /// Category → id of the item worn (the default when the saved one is unknown or locked),
-    /// for every category of the catalogue: what the online profile receives (2.21).
+    /// for every category of the catalogue: what the online profile receives (2.23).
     std::map<std::string, std::string> equippedIds(const CosmeticCatalog& catalog, const CosmeticProgress& p) const;
 
     bool announced(const std::string& id) const { return announced_.count(id) > 0; }

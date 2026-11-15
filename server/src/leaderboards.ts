@@ -167,7 +167,7 @@ export async function levelBoard(ctx: Ctx, viewer: AuthInfo | null, levelId: str
             .bind(board.version.content_hash, category, ws.toISOString(), ...extra, viewer.player.id)
             .first<BoardRow>();
     const comments = await runCommentCounts(ctx, [...rows.results.map((r) => r.record_id), ...(mine ? [mine.record_id] : [])]);
-    // Frame, title and suit of each player (2.21), when their profile is visible.
+    // Frame, title and suit of each player (2.23), when their profile is visible.
     const looks = await boardCosmetics(ctx, [...rows.results.map((r) => r.player_id), ...(mine ? [mine.player_id] : [])]);
     if (viewer) me = { entry: mine ? entryJson(mine, viewer, comments, looks) : null, pending: await pendingOf(ctx, viewer, board, category) };
     const meta: PageMeta = { limit: page.limit, offset: page.offset, total, next_offset: page.offset + page.limit < total ? page.offset + page.limit : null };

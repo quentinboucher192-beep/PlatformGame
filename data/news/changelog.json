@@ -1,4 +1,9 @@
 {
+  "2.23.0": [
+    "Collection en ligne : le cadre d'avatar et le titre équipés vous suivent dans les classements ONLINE RANKING et sur votre profil public, qui montre aussi votre tenue (combinaison, traînée, cadre, effet de victoire).",
+    "Les fantômes portent la combinaison de leur joueur, toujours teintés de leur couleur : la vôtre pour vos propres fantômes, celle du joueur pour un fantôme lancé depuis un classement.",
+    "Le serveur n'accepte que les récompenses débloquées par les succès déclarés par votre jeu ; un profil privé ne montre ni tenue, ni cadre, ni titre (cadre simple dans les classements). Le cadre et le titre ne sont qu'un affichage : ils n'entrent pas dans la vérification des records."
+  ],
   "2.22.0": [
     "Langue du jeu : français ou anglais, au choix dans l'installateur Windows, qui s'affiche lui-même dans la langue choisie ; le jeu démarre dans cette langue.",
     "Paramètres › Jeu › « Langue / Language » : changer de langue à tout moment, avec effet immédiat sur tous les écrans, les niveaux, les ennemis, les succès et les actualités.",

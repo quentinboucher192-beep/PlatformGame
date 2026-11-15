@@ -382,7 +382,7 @@ export async function getBoard(ctx: Ctx): Promise<Response> {
     const participants = await ctx.env.DB.prepare("SELECT COUNT(DISTINCT player_id) AS n FROM race_runs WHERE board = ?1 AND status = 'VERIFIED'")
         .bind(board.key)
         .first<{ n: number }>();
-    // Frame, title and suit of each ranked player (2.21), when their profile is visible.
+    // Frame, title and suit of each ranked player (2.23), when their profile is visible.
     const looks = await boardCosmetics(ctx, rows.results.map((r) => String(r.player_id)));
     return json(ctx, {
         race: {

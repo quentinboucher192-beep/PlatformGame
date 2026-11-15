@@ -3337,6 +3337,12 @@
    ]
   },
   {
+   "fr": "Cadre",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
    "fr": "cadre",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -4830,6 +4836,12 @@
    ]
   },
   {
+   "fr": "Collection en ligne : le cadre d'avatar et le titre équipés vous suivent dans les classements ONLINE RANKING et sur votre profil public, qui montre aussi votre tenue (combinaison, traînée, cadre, effet de victoire).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Collectionneur",
    "where": [
     "data/achievements/achievements.json"
@@ -4959,6 +4971,12 @@
    "fr": "Combats sans dégât",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Combinaison",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -13226,6 +13244,12 @@
    ]
   },
   {
+   "fr": "Le serveur n'accepte que les récompenses débloquées par les succès déclarés par votre jeu ; un profil privé ne montre ni tenue, ni cadre, ni titre (cadre simple dans les classements). Le cadre et le titre ne sont qu'un affichage : ils n'entrent pas dans la vérification des records.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Le serveur recalcule chaque score depuis le replay de la tentative ; les tentatives refusées ne sont pas classées.",
    "where": [
     "ui/screens/RaceScene.cpp"
@@ -13551,6 +13575,12 @@
    "fr": "Les ennemis officiels ne peuvent pas être supprimés",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Les fantômes portent la combinaison de leur joueur, toujours teintés de leur couleur : la vôtre pour vos propres fantômes, celle du joueur pour un fantôme lancé depuis un classement.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -24511,6 +24541,12 @@
    ]
   },
   {
+   "fr": "Tenue",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
    "fr": "Terminer 10 niveaux de joueurs différents.",
    "where": [
     "data/achievements/achievements.json"
@@ -25376,6 +25412,12 @@
    "fr": "Traversez les plaines jusqu'au lac de l'aurore.",
    "where": [
     "data/levels/glacior_01.json"
+   ]
+  },
+  {
+   "fr": "Traînée",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -27019,7 +27061,8 @@
   {
    "fr": "Victoire",
    "where": [
-    "data/music/tracks.json"
+    "data/music/tracks.json",
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {

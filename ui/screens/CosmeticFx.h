@@ -49,7 +49,7 @@ void drawVictoryFx(Renderer& r, const std::string& look, Vec2 at, float t, bool 
 /// How far an avatar frame reaches beyond the avatar's radius, in units of `scale` (glows
 /// aside): layouts keep this much room around a framed avatar.
 constexpr float kAvatarFrameMargin = 15.5f;
-/// Avatar frame (2.21) around a round avatar of `radius` centred on `center`, in screen
+/// Avatar frame (2.23) around a round avatar of `radius` centred on `center`, in screen
 /// pixels: « simple », « bronze », « silver », « gold » (with a halo), « platinum »
 /// (iridescent), « constellation » (small stars around); anything else draws « simple ».
 /// `scale` sizes the rings, `time` (seconds) moves the platinum sheen and the stars.

@@ -41,7 +41,7 @@ export const RULES = {
     follow: { name: "follow", limit: 60, windowSeconds: 3600 },
     playtime: { name: "playtime", limit: 40, windowSeconds: 3600 },
     achievements: { name: "achievements", limit: 30, windowSeconds: 3600 },
-    // What the player wears online (2.21): sent after each « Équiper » of the Collection.
+    // What the player wears online (2.23): sent after each « Équiper » of the Collection.
     cosmetics: { name: "cosmetics", limit: 60, windowSeconds: 3600 },
     projectCreate: { name: "project_create", limit: 10, windowSeconds: 3600 },
     projectInvite: { name: "project_invite", limit: 30, windowSeconds: 3600 },

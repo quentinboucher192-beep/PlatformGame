@@ -223,7 +223,7 @@ private:
         m.date = jstr(entry, "achieved_at");
         m.validated = true;
         m.community = !officialBoard;
-        m.suit = jstr(p, "suit");  // the suit of its player (2.21), checked when drawn
+        m.suit = jstr(p, "suit");  // the suit of its player (2.23), checked when drawn
         Row r;
         r.recordId = rid;
         r.sameVersion = true;

@@ -30,7 +30,7 @@ struct GhostMeta {
     bool validated = false;     // verified by the server (not a proof by itself)
     bool community = false;     // a community level's record
     std::string gameVersion;
-    /// Look of the suit its player wore online (2.21: « givre »…, from the leaderboard entry
+    /// Look of the suit its player wore online (2.23: « givre »…, from the leaderboard entry
     /// it was started from). Display only, never part of the replay; the player's own runs
     /// wear the suit equipped now instead.
     std::string suit;

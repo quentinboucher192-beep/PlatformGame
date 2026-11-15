@@ -1,4 +1,4 @@
--- 2.21: what a player wears online (Collection of the game): the frame and the title follow
+-- 2.23: what a player wears online (Collection of the game): the frame and the title follow
 -- them on their profile and in the leaderboards, the suit on their profile and their ghosts.
 -- Item ids of the server's catalogue (src/cosmeticCatalog.json), checked against the
 -- achievements declared in player_achievements: an unknown or locked id is never stored, the

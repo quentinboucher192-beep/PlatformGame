@@ -5,6 +5,16 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.23.0** :
+* **Collection en ligne** : le cadre d'avatar et le titre équipés suivent le joueur dans les
+  classements ONLINE RANKING et sur son profil public, qui montre aussi sa tenue
+  (combinaison, traînée, cadre, effet de victoire). Les fantômes portent la combinaison de
+  leur joueur, teintés de leur couleur.
+* Le serveur n'accepte que les récompenses débloquées par les succès déclarés par le jeu
+  (`PUT /players/me/cosmetics`) ; un profil privé ne montre rien de tout cela. Affichage
+  seulement : rien n'entre dans la vérification des records. Voir
+  [docs/COLLECTION.md](docs/COLLECTION.md).
+
 **Nouveau dans la version 2.22.0** :
 * **Français ou anglais** : l'installateur Windows demande la langue (il s'affiche lui-même
   dans la langue choisie) et le jeu démarre dans celle-ci ; *Paramètres › Jeu › « Langue /

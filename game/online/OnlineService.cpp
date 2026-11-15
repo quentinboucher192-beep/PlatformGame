@@ -210,7 +210,7 @@ void OnlineService::update(float dt) {
             });
         }
     }
-    // What the player wears (2.21): after the achievements of this player, then on change.
+    // What the player wears (2.23): after the achievements of this player, then on change.
     if (netState_ == OnlineState::Online && loggedIn() && !cosmetics_.empty() && !cosmeticsBusy_ &&
         achievementsSentFor_ == tokens_.playerId && cosmeticsSentFor_ != tokens_.playerId) {
         cosmeticsTimer_ -= dt;

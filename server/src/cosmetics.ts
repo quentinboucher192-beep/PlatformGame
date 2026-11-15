@@ -1,4 +1,4 @@
-// What a player wears online (2.21), chosen in the game's Collection: the avatar frame and the
+// What a player wears online (2.23), chosen in the game's Collection: the avatar frame and the
 // title follow them on their profile and in the leaderboards, the suit on their profile and
 // their ghosts. The server never trusts the game: each id must exist in its own catalogue
 // (src/cosmeticCatalog.json, generated from the game's data) and be unlocked by the
