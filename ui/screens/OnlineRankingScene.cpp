@@ -9,6 +9,7 @@
 #include "engine/core/Easing.h"
 #include "engine/core/FileUtil.h"
 #include "game/GameServices.h"
+#include "ui/widgets/ExtremeFrame.h"
 #include "ui/online/GlobeRenderer.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/online/RatingWidgets.h"
@@ -934,7 +935,9 @@ private:
     void drawLevelZone() {
         UIContext& ui = g_.ui;
         const RankedLevel* l = level();
-        ui.panel(zoneD_, false, 14);
+        // An EXTRÊME level's card gets the frame that warns (2.32.3).
+        if (l && isExtreme(*l)) drawExtremeFrame(ui, zoneD_, 14, 1.7f, 22.0f);
+        else ui.panel(zoneD_, false, 14);
         if (!l) return;
         ui.pushId("online/level");
         Rect th{zoneD_.x + ui.s(14), zoneD_.y + ui.s(14), ui.s(240), ui.s(135)};

@@ -9,6 +9,7 @@
 #include "ui/screens/CreatureArt.h"
 #include "ui/screens/LevelPowerKeysScene.h"
 #include "ui/screens/Navigation.h"
+#include "ui/widgets/ExtremeFrame.h"
 #include "ui/widgets/Glyphs.h"
 
 namespace cosmic {
@@ -293,6 +294,7 @@ public:
                 selected_ = static_cast<int>(i);
             }
             if (ui.focused("l" + std::to_string(i))) selected_ = static_cast<int>(i);
+            if (isExtreme(*l)) drawExtremeRowAccent(ui, rr, static_cast<float>(i));
             if (rec) ui.icon("ui/icons_medals.png", static_cast<int>(rec->bestMedal), 32,
                              {rr.right() - ui.s(64), rr.center().y - ui.s(24), ui.s(48), ui.s(48)});
             if (!unlocked) ui.icon("ui/icons_hud.png", 9, 16, {rr.right() - ui.s(56), rr.center().y - ui.s(16), ui.s(32), ui.s(32)});
@@ -378,10 +380,19 @@ public:
         }
     }
 
+    /// EXTRÊME and one life (read once per level).
+    bool isExtreme(const LevelEntry& l) {
+        auto it = extremeOf_.find(l.id);
+        if (it != extremeOf_.end()) return it->second;
+        bool e = false;
+        if (auto data = g_.content.loadLevel(l.id)) e = data->extreme && data->oneLife();
+        return extremeOf_[l.id] = e;
+    }
+    std::map<std::string, bool> extremeOf_;
+
     void drawDetails(const LevelEntry& l) {
         UIContext& ui = g_.ui;
         Rect panel{ui.s(720), ui.s(170), ui.screenW() - ui.s(780), ui.screenH() - ui.s(280)};
-        ui.panel(panel, true, 16);
         if (cachedId_ != l.id) {
             cachedId_ = l.id;
             cached_ = g_.content.loadLevel(l.id);
@@ -399,6 +410,9 @@ public:
         float x = panel.x + ui.s(36), y = panel.y + ui.s(30);
         float colW = (panel.w - ui.s(108)) * 0.5f;
         bool extreme = cached_ && cached_->extreme && cached_->oneLife();
+        // An EXTRÊME level (one life) gets a frame that warns (2.32.3); the others the panel.
+        if (extreme) drawExtremeFrame(ui, panel, 16, 0.0f, 84.0f);
+        else ui.panel(panel, true, 16);
         {
             // The bosses of the level, on the right of the title (2.31.2): as many portraits as
             // fit, the others counted (« +N »); the title keeps room for one at least.
