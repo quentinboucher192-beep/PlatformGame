@@ -22,6 +22,11 @@
     "spore_big": {"row": 15, "count": 4, "fps": 10, "loop": true},
     "energy_disc": {"row": 16, "count": 4, "fps": 16, "loop": true},
     "rock": {"row": 17, "count": 4, "fps": 12, "loop": true},
-    "grapple_hook": {"row": 18, "count": 4, "fps": 12, "loop": true}
+    "grapple_hook": {"row": 18, "count": 4, "fps": 12, "loop": true},
+    "pollen": {"row": 19, "count": 4, "fps": 10, "loop": true},
+    "aurora_shard": {"row": 20, "count": 4, "fps": 12, "loop": true},
+    "solar_flame": {"row": 21, "count": 4, "fps": 14, "loop": true},
+    "solar_bolt": {"row": 22, "count": 4, "fps": 16, "loop": true},
+    "void_star": {"row": 23, "count": 4, "fps": 12, "loop": true}
   }
 }

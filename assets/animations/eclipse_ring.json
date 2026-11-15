@@ -1,0 +1,10 @@
+{
+  "texture": "sprites/projectiles/eclipse_ring.png",
+  "frameWidth": 16,
+  "frameHeight": 16,
+  "pivot": [8, 8],
+  "clips": {
+    "segment": {"row": 0, "count": 4, "fps": 12, "loop": true},
+    "edge": {"row": 1, "count": 4, "fps": 12, "loop": true}
+  }
+}
