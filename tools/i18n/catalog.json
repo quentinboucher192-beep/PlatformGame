@@ -18109,6 +18109,12 @@
    ]
   },
   {
+   "fr": "Niveaux EXTRÊME : un encadrement qui avertit (fond rouge sang, bordure fissurée qui bat comme un cœur, sang qui coule, flammes, braises, griffes) dans le choix du niveau et dans CLASSEMENTS.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Niveaux EXTRÊME : une seule vie, sans possibilité de la changer, et un badge EXTRÊME dans la campagne, NIVEAUX EN LIGNE et CLASSEMENTS. L'enchaînement des boss (L'Arène des Échos) devient EXTRÊME.",
    "where": [
     "data/news/changelog.json"

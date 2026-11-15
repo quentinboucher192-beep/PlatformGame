@@ -8,6 +8,7 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
 **Nouveau dans la version 2.32.2** :
 * **Replays partout** : chaque joueur classé a son replay (CLASSEMENTS, NIVEAUX EN LIGNE, course à
   la vérification EXTRÊME). Profil : onglet « Meilleures progressions », recherche et filtres.
+* **Niveaux EXTRÊME** : un encadrement qui fait peur (rouge sang, flammes, sang qui coule, griffes).
 
 **Nouveau dans la version 2.32.1** :
 * **Alerte de mise à jour** en bas du menu principal : un clic télécharge l'installateur (vérifié
