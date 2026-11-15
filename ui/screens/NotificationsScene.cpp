@@ -495,63 +495,32 @@ private:
             return;
         }
         if (it.kind != "update") return;
-        // Installer: download, check its SHA-256, then run it or open its folder.
-        fs::path file = Paths::userDir() / "telechargements" / ("CosmicPlatformer-Setup-" + it.target + ".exe");
-        bool ready = FileUtil::exists(file) && verified_.count(it.target);
-        if (downloading_ == it.target) {
-            ui.label("Téléchargement…", b.center(), 18, ui.theme().accent, Align::Center, FontFace::Bold, VAlign::Middle);
-        } else if (ready) {
+        // Installer: downloaded and checked (SHA-256) by g_.updates, shared with the main
+        // menu's alert; then run (the game closes) or its folder opened.
+        const std::string version = it.target;
+        UpdateInstaller::State us = g_.updates.state(version);
+        if (us == UpdateInstaller::State::Downloading || us == UpdateInstaller::State::Checking) {
+            const std::string label = us == UpdateInstaller::State::Downloading ? "Téléchargement…" : "Vérification…";
+            ui.label(label, b.center(), 18, ui.theme().accent, Align::Center, FontFace::Bold, VAlign::Middle);
+        } else if (us == UpdateInstaller::State::Ready) {
             st.primary = true;
-            if (ui.button("run" + it.id, b, "Lancer l'installateur", st)) {
-                std::string url = "file:///" + Paths::toUtf8(file);
-                std::replace(url.begin(), url.end(), '\\', '/');
-                SDL_OpenURL(url.c_str());
-            }
+            if (ui.button("run" + it.id, b, "Lancer l'installateur", st) && g_.updates.launch(version)) g_.app.quit();
             UIContext::ButtonStyle s2;
             s2.small = true;
             if (ui.button("dir" + it.id, {b.x, b.bottom() + ui.s(8), b.w, ui.s(42)}, "Ouvrir le dossier", s2)) {
-                std::string url = "file:///" + Paths::toUtf8(file.parent_path());
-                std::replace(url.begin(), url.end(), '\\', '/');
+                std::string path = Paths::toUtf8(g_.updates.file(version).parent_path());
+                std::replace(path.begin(), path.end(), '\\', '/');
+                std::string url = (path.rfind('/', 0) == 0 ? "file://" : "file:///") + path;
                 SDL_OpenURL(url.c_str());
             }
         } else {
             st.primary = true;
-            st.enabled = g_.online.usable() && downloading_.empty() && !it.download.empty();
+            st.enabled = g_.online.usable() && !it.download.empty();
             std::string label = "Télécharger (.exe" + (it.size > 0 ? ", " + sizeText(it.size) : std::string()) + ")";
-            if (ui.button("dl" + it.id, b, label, st)) download(it, file);
-            if (!errors_[it.target].empty())
-                ui.labelWrapped(errors_[it.target], {b.x, b.bottom() + ui.s(6)}, b.w, 15, ui.theme().danger);
+            if (ui.button("dl" + it.id, b, label, st)) g_.updates.download(it, false);
+            if (std::string err = g_.updates.error(version); !err.empty())
+                ui.labelWrapped(err, {b.x, b.bottom() + ui.s(6)}, b.w, 15, ui.theme().danger);
         }
-    }
-
-    void download(const NewsCenter::Item& it, const fs::path& file) {
-        downloading_ = it.target;
-        errors_[it.target].clear();
-        std::string version = it.target, sha = it.sha256;
-        auto alive = life_;
-        g_.online.getBinary(
-            it.download,
-            [this, version, sha, file, alive = std::weak_ptr<int>(alive)](const HttpResponse& r) {
-                if (alive.expired()) return;
-                downloading_.clear();
-                if (r.status != 200 || r.body.empty()) {
-                    errors_[version] = "Échec du téléchargement (" + (r.status ? "erreur " + std::to_string(r.status) : std::string("réseau")) + ").";
-                    return;
-                }
-                std::vector<uint8_t> bytes(r.body.begin(), r.body.end());
-                if (!sha.empty() && Sha256::hex(bytes) != sha) {
-                    errors_[version] = "Fichier refusé : son empreinte SHA-256 ne correspond pas à celle annoncée.";
-                    return;
-                }
-                std::error_code ec;
-                fs::create_directories(file.parent_path(), ec);
-                if (!FileUtil::writeBinary(file, bytes)) {
-                    errors_[version] = "Impossible d'écrire le fichier dans le dossier de l'utilisateur.";
-                    return;
-                }
-                verified_.insert(version);
-            },
-            256u * 1024u * 1024u);
     }
 
     GameServices& g_;
@@ -568,9 +537,6 @@ private:
     bool statusError_ = false;
     float statusT_ = -100.0f;
     float t_ = 0.0f;
-    std::string downloading_;
-    std::set<std::string> verified_;
-    std::map<std::string, std::string> errors_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
 };
 

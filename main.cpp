@@ -464,6 +464,7 @@ int main(int argc, char** argv) {
     // Daily challenges: the cached ones at once (offline), the current one asked for when
     // Cosmic Online is on (public, nothing personal sent).
     game.challenges.init(game.online, Paths::savesDir() / "challenges");
+    game.updates.init(game.online, game.news, COSMIC_VERSION_STRING);
     if (!has("--headless") || has("--realtime")) game.challenges.refresh();
     OnlineToasts toasts;
     game.checkForUpdate();
@@ -506,6 +507,7 @@ int main(int argc, char** argv) {
         game.news.poll(game.content, game.records, COSMIC_VERSION_STRING);
         game.online.update(dt);
         game.challenges.update(dt);
+        game.updates.update();
         toasts.update(game, dt);
     };
     app.onOverlay = [&game, &toasts] { toasts.render(game); };

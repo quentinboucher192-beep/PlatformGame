@@ -103,6 +103,12 @@
    ]
   },
   {
+   "fr": "({0} Mo)",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
    "fr": "({0} sur mon record d'avant)",
    "where": [
     "ui/screens/SegmentsScene.cpp"
@@ -5349,6 +5355,12 @@
    ]
   },
   {
+   "fr": "CLASSEMENTS : les boutons de la fiche du niveau ont la même police et la même taille, sans texte coupé (« Course contre ce temps » devient « Défier ce temps »).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Classements et globe",
    "where": [
     "ui/screens/OnlineAccountScene.cpp",
@@ -5452,6 +5464,12 @@
    "fr": "Climb",
    "where": [
     "game/player/Player.cpp"
+   ]
+  },
+  {
+   "fr": "Cliquez pour télécharger{0} et installer : le jeu se ferme.",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
    ]
   },
   {
@@ -6326,6 +6344,12 @@
    ]
   },
   {
+   "fr": "Connexion à Cosmic Online nécessaire pour la télécharger.",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
    "fr": "Connexion…",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp",
@@ -6874,12 +6898,6 @@
    "fr": "Course : {0} boss, {1} embuscades",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
-   ]
-  },
-  {
-   "fr": "Course contre ce temps",
-   "where": [
-    "ui/screens/OnlineRankingScene.cpp"
    ]
   },
   {
@@ -8837,6 +8855,12 @@
    ]
   },
   {
+   "fr": "Défier ce temps",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
    "fr": "Définition d'ennemi invalide : {0}",
    "where": [
     "packaging/PackageImporter.cpp"
@@ -8858,6 +8882,12 @@
    "fr": "Défis",
    "where": [
     "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "Défis : « Touches… » avant le départ, pour changer les touches des pouvoirs du défi (aussi dans la pause).",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -9919,7 +9949,7 @@
    ]
   },
   {
-   "fr": "ENVOYER LE RECORD",
+   "fr": "Envoyer le record",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
    ]
@@ -10549,9 +10579,9 @@
    ]
   },
   {
-   "fr": "Fichier refusé : son empreinte SHA-256 ne correspond pas à celle annoncée.",
+   "fr": "Fichier refusé (empreinte SHA-256 différente).",
    "where": [
-    "ui/screens/NotificationsScene.cpp"
+    "game/online/UpdateInstaller.cpp"
    ]
   },
   {
@@ -12672,12 +12702,6 @@
    ]
   },
   {
-   "fr": "Impossible d'écrire le fichier dans le dossier de l'utilisateur.",
-   "where": [
-    "ui/screens/NotificationsScene.cpp"
-   ]
-  },
-  {
    "fr": "Impossible d'écrire {0}",
    "where": [
     "editors/level_editor/LevelEditorScene.cpp",
@@ -14046,6 +14070,12 @@
    "fr": "Lance une lame d'énergie qui revient vers vous : elle touche à l'aller et au retour, traverse les ennemis, rapporte éclats et orbes et active les récepteurs.",
    "where": [
     "data/powers/boomerang.json"
+   ]
+  },
+  {
+   "fr": "Lancement impossible : ouvrez-le dans le dossier « telechargements ».",
+   "where": [
+    "game/online/UpdateInstaller.cpp"
    ]
   },
   {
@@ -16909,6 +16939,12 @@
    ]
   },
   {
+   "fr": "Mise à jour : quand une version plus récente existe, une alerte s'affiche en bas du menu principal ; un clic télécharge l'installateur, vérifie son empreinte SHA-256, puis lance l'installation (le jeu se ferme).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Mode",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
@@ -18143,7 +18179,7 @@
    ]
   },
   {
-   "fr": "Non connecté : envoyez-la depuis CLASSEMENTS (ENVOYER LE RECORD).",
+   "fr": "Non connecté : envoyez-la depuis CLASSEMENTS (« Envoyer le record »).",
    "where": [
     "ui/screens/ResultsScene.cpp"
    ]
@@ -18608,6 +18644,12 @@
    "fr": "Nouvelle version nommée d'un projet",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Nouvelle version {0} disponible",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
    ]
   },
   {
@@ -22203,6 +22245,12 @@
    "fr": "Prévisualiser",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Prêt : cliquez pour lancer l'installation (le jeu se ferme).",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
    ]
   },
   {
@@ -28428,6 +28476,7 @@
   {
    "fr": "Touches…",
    "where": [
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/PlanetMapScene.cpp"
    ]
   },
@@ -29068,6 +29117,12 @@
    ]
   },
   {
+   "fr": "Téléchargement de l'installateur{0}…",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
    "fr": "Téléchargement du niveau…",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -29077,6 +29132,12 @@
    "fr": "Téléchargement du replay…",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Téléchargement impossible : pas de connexion.",
+   "where": [
+    "game/online/UpdateInstaller.cpp"
    ]
   },
   {
@@ -31035,14 +31096,9 @@
    ]
   },
   {
-   "fr": "VOIR LE REPLAY",
-   "where": [
-    "ui/screens/OnlineRankingScene.cpp"
-   ]
-  },
-  {
    "fr": "Voir le replay",
    "where": [
+    "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/OnlineThreadScene.cpp"
    ]
   },
@@ -31704,6 +31760,12 @@
    ]
   },
   {
+   "fr": "Vérification de l'installateur (SHA-256)…",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
    "fr": "Vérification impossible pour l'instant",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
@@ -31712,6 +31774,7 @@
   {
    "fr": "Vérification…",
    "where": [
+    "ui/screens/NotificationsScene.cpp",
     "ui/screens/OnlineAccountScene.cpp"
    ]
   },
@@ -32512,6 +32575,12 @@
    "fr": "{0} boss vaincus",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} Cliquez pour réessayer.",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
    ]
   },
   {
@@ -33795,13 +33864,7 @@
   {
    "fr": "Échec du téléchargement (erreur {0}).",
    "where": [
-    "ui/screens/NotificationsScene.cpp"
-   ]
-  },
-  {
-   "fr": "Échec du téléchargement (réseau).",
-   "where": [
-    "ui/screens/NotificationsScene.cpp"
+    "game/online/UpdateInstaller.cpp"
    ]
   },
   {
@@ -34286,6 +34349,12 @@
    "fr": "écriture impossible : {0}",
    "where": [
     "packaging/ZipArchive.cpp"
+   ]
+  },
+  {
+   "fr": "Écriture impossible dans le dossier de l'utilisateur.",
+   "where": [
+    "game/online/UpdateInstaller.cpp"
    ]
   },
   {

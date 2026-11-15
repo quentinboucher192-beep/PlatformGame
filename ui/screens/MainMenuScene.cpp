@@ -59,6 +59,8 @@ public:
     void update(float dt) override {
         t_ += dt;
         bg_.update(dt);
+        // The installer asked from the alert is downloaded and checked: run it, close the game.
+        if (std::string v; g_.updates.takeLaunch(&v) && g_.updates.launch(v)) g_.app.quit();
     }
     void render(float) override {
         UIContext& ui = g_.ui;
@@ -150,6 +152,7 @@ public:
             confirmQuit_ = true;
         }
         if (!ui.focused("quit")) confirmQuit_ = false;
+        drawUpdateAlert(side);
         ui.popId();
 
         // Footer
@@ -163,6 +166,59 @@ public:
     }
 
 private:
+    /// A newer version exists (announced by Cosmic Online): an alert at the bottom of the menu.
+    /// A click downloads the installer, checks it (SHA-256), then runs it and closes the game.
+    void drawUpdateAlert(const Rect& side) {
+        const NewsCenter::Item* it = g_.updates.offer();
+        if (!it) return;
+        UIContext& ui = g_.ui;
+        const std::string version = it->target;
+        const float fy = ui.screenH() - ui.s(44);
+        float left = side.right() + ui.s(40);
+        float w = std::min(ui.s(760), ui.screenW() - ui.s(40) - left);
+        if (w < ui.s(320)) return;
+        Rect r{left + (ui.screenW() - ui.s(40) - left - w) * 0.5f, fy - ui.s(30) - ui.s(76), w, ui.s(76)};
+        UpdateInstaller::State st = g_.updates.state(version);
+        bool usable = g_.online.usable();
+        const std::string size = it->size > 0 ? " (" + std::to_string((it->size + 524288) / 1048576) + " Mo)" : std::string();
+        std::string line;
+        switch (st) {
+            case UpdateInstaller::State::Downloading: line = "Téléchargement de l'installateur" + size + "…"; break;
+            case UpdateInstaller::State::Checking: line = "Vérification de l'installateur (SHA-256)…"; break;
+            case UpdateInstaller::State::Ready:
+                line = g_.updates.error(version);
+                if (line.empty()) line = "Prêt : cliquez pour lancer l'installation (le jeu se ferme).";
+                break;
+            case UpdateInstaller::State::Failed: line = g_.updates.error(version) + " Cliquez pour réessayer."; break;
+            default:
+                line = usable ? "Cliquez pour télécharger" + size + " et installer : le jeu se ferme."
+                              : "Connexion à Cosmic Online nécessaire pour la télécharger.";
+        }
+        UIContext::ButtonStyle bs;
+        bs.primary = true;
+        bool busy = st == UpdateInstaller::State::Downloading || st == UpdateInstaller::State::Checking;
+        bs.enabled = !busy && (usable || st == UpdateInstaller::State::Ready);
+        bool clicked = ui.button("update", r, "", bs);
+        // A warm mark at the left, then the two lines, each fitted to the room left (never cut).
+        float pulse = 0.75f + 0.25f * std::sin(t_ * 3.0f);
+        Vec2 mark{r.x + ui.s(36), r.center().y};
+        ui.r().fillCircle(mark, ui.s(15), ui.theme().warm.withAlphaF(pulse));
+        ui.label("!", mark, 22, Color{20, 14, 4, 255}, Align::Center, FontFace::Bold, VAlign::Middle);
+        float tx = r.x + ui.s(66), room = r.right() - ui.s(18) - tx;
+        const std::string head = "Nouvelle version " + version + " disponible";
+        float f1 = ui.fitFont(head, FontFace::Bold, 22, room, 0.6f);
+        ui.label(head, {tx, r.y + r.h * 0.32f}, f1, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+        float f2 = ui.fitFont(line, FontFace::Body, 16, room, 0.6f);
+        Color c2 = !g_.updates.error(version).empty() ? ui.theme().danger : ui.theme().textDim;
+        ui.label(line, {tx, r.y + r.h * 0.70f}, f2, c2, Align::Left, FontFace::Body, VAlign::Middle);
+        if (!clicked) return;
+        if (st == UpdateInstaller::State::Ready) {
+            if (g_.updates.launch(version)) g_.app.quit();
+        } else {
+            g_.updates.download(*it, true);
+        }
+    }
+
     /// « Défis »: the countdown of the challenge of the day, or a short state.
     std::string challengeSubtitle() const {
         const ChallengeService& c = g_.challenges;

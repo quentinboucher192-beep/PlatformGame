@@ -1,4 +1,9 @@
 {
+  "2.32.1": [
+    "Mise à jour : quand une version plus récente existe, une alerte s'affiche en bas du menu principal ; un clic télécharge l'installateur, vérifie son empreinte SHA-256, puis lance l'installation (le jeu se ferme).",
+    "Défis : « Touches… » avant le départ, pour changer les touches des pouvoirs du défi (aussi dans la pause).",
+    "CLASSEMENTS : les boutons de la fiche du niveau ont la même police et la même taille, sans texte coupé (« Course contre ce temps » devient « Défier ce temps »)."
+  ],
   "2.32.0": [
     "Défis du jour : menu principal › « Défis ». Chaque jour UTC, un niveau avec ses règles (cœurs, emplacements, pouvoirs imposés, stations, points de passage) et trois paliers : Bronze, Argent, Or.",
     "Le défi peut être un niveau de la campagne ou un niveau ONLINE LEVELS choisi par l'administrateur ; « Télécharger » l'installe depuis le défi, et son créateur est prévenu que son niveau est à l'honneur.",

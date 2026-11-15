@@ -14,6 +14,7 @@
 #include "game/levels/RatingService.h"
 #include "game/online/DailyChallenges.h"
 #include "game/online/OnlineService.h"
+#include "game/online/UpdateInstaller.h"
 #include "game/progression/NewBadges.h"
 #include "game/progression/NewsCenter.h"
 #include "game/powers/PowerKeys.h"
@@ -98,6 +99,7 @@ public:
     /// « Défis du jour » (2.32): the challenges (cached, playable offline until their end),
     /// local results and streak, runs waiting to be sent.
     ChallengeService challenges;
+    UpdateInstaller updates;  // the installer of a newer version (main menu alert, Notifications)
     UIContext ui;
     /// Scripted input for automated runs (see InputScript), applied to the next level started.
     std::string inputScript;
