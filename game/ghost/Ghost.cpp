@@ -235,6 +235,16 @@ float GhostTrack::timeAtProgress(float progress) const {
     return a + (b - a) * (f - static_cast<float>(i));
 }
 
+float GhostTrack::progressAtTime(float t) const {
+    if (progressTimes_.empty()) return -1.0f;
+    // First times are in order along the route (filled while the run goes on): the last
+    // step reached by `t` is found by bisection.
+    auto it = std::upper_bound(progressTimes_.begin(), progressTimes_.end(), t);
+    if (it == progressTimes_.begin()) return 0.0f;
+    auto k = static_cast<int>(it - progressTimes_.begin()) - 1;
+    return static_cast<float>(k) / kProgressSteps;
+}
+
 float GhostTrack::nearestTime(Vec2 p) const {
     float best = 1e30f, t = 0.0f;
     for (size_t i = 0; i < frames_.size(); ++i) {
