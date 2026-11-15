@@ -31,6 +31,7 @@
 #include "game/ghost/TrainingSegments.h"
 #include "game/online/LevelFingerprint.h"
 #include "game/player/Player.h"
+#include "ui/screens/LevelPowerKeysScene.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/ReplayCompareNav.h"
 #include "ui/widgets/FileDialogs.h"
@@ -50,6 +51,7 @@ struct PowerPick {
     std::vector<std::string> chosen;
     int slots = 2;
     std::string segment;  // its name (« Seuil I → Galerie II »)
+    PowerKeyMap keys;     // 2.31: the key of each power in this level (the player's, else the level's)
 };
 std::unique_ptr<Scene> makeTrainingPowers(GameServices& g, PowerPick pick, std::function<void(std::vector<std::string>)> done);
 
@@ -632,6 +634,7 @@ private:
         p.chosen = chosenPowers_;
         p.slots = powerSlots();
         p.segment = segmentName(startIdx_);
+        p.keys = playerPowerKeys(g_, level_, p.available);
         auto alive = std::weak_ptr<int>(life_);
         const int k = startIdx_;
         g_.app.pushScene(makeTrainingPowers(g_, std::move(p), [this, alive, k](std::vector<std::string> chosen) {
@@ -986,10 +989,15 @@ private:
         float tagW = ui.text().measure(tag, FontFace::Body, ui.s(tf)).x;
         float room = right - x - tagW - ui.s(12);
         const float ic = std::min(row.h - ui.s(8), ui.s(30));
-        // Icons and names; only the icons when the names do not fit.
+        // Icons, names and their keys in this level (2.31); only the icons and keys when the
+        // names do not fit.
+        const PowerKeyMap keys = playerPowerKeys(g_, level_, chosenPowers_);
+        const float kh = ic * 0.8f;
+        auto keyW = [&](const PowerDefinition& d) { return Glyphs::drawPowerUse(ui, d, keys, {0.0f, 0.0f}, kh, 1.0f, false) + ui.s(6); };
         float full = 0.0f;
         for (const std::string& id : chosenPowers_)
-            if (const PowerDefinition* d = g_.content.power(id)) full += ic + ui.s(6) + ui.text().measure(d->name, FontFace::Body, ui.s(f)).x + ui.s(14);
+            if (const PowerDefinition* d = g_.content.power(id))
+                full += ic + ui.s(6) + ui.text().measure(d->name, FontFace::Body, ui.s(f)).x + keyW(*d) + ui.s(14);
         const bool names = full <= room;
         if (chosenPowers_.empty() && !levelPowers_.empty()) {
             Vec2 ns = ui.label("aucun", {x, row.center().y}, f, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
@@ -998,7 +1006,7 @@ private:
         for (size_t i = 0; i < chosenPowers_.size(); ++i) {
             const PowerDefinition* d = g_.content.power(chosenPowers_[i]);
             if (!d) continue;
-            float need = ic + (names ? ui.s(6) + ui.text().measure(d->name, FontFace::Body, ui.s(f)).x : 0.0f);
+            float need = ic + (names ? ui.s(6) + ui.text().measure(d->name, FontFace::Body, ui.s(f)).x : 0.0f) + keyW(*d);
             if (x + need > row.x + ls.x + ui.s(14) + room) {
                 // No room for the others: how many more.
                 std::string more = "+" + std::to_string(chosenPowers_.size() - i);
@@ -1012,6 +1020,7 @@ private:
                 Vec2 ns = ui.label(d->name, {x + ui.s(6), row.center().y}, f, th.text, Align::Left, FontFace::Body, VAlign::Middle);
                 x += ui.s(6) + ns.x;
             }
+            x += ui.s(6) + Glyphs::drawPowerUse(ui, *d, keys, {x + ui.s(6), row.center().y}, kh);
             x += ui.s(14);
         }
         ui.label(tag, {x, row.center().y}, tf, powersCustom_ ? th.warm : th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
@@ -1231,7 +1240,7 @@ public:
         std::string count = std::to_string(chosen().size()) + " / " + std::to_string(pick_.slots) + " emplacements";
         Vec2 cs = ui.label(count, {x, y + ui.s(14)}, fz(ui, 17), chosen().size() >= static_cast<size_t>(pick_.slots) ? th.warm : th.text, Align::Left,
                            FontFace::Bold, VAlign::Middle);
-        std::string hint = "Un pouvoir sur la même touche qu'un autre le remplace.";
+        std::string hint = "Un pouvoir utilisé de la même façon qu'un autre le remplace.";
         float hx = x + cs.x + ui.s(24), hroom = x + iw - hx;
         if (hroom > ui.s(80)) {
             float f = ui.fitFont(hint, FontFace::Body, fz(ui, 15), hroom, 0.75f);
@@ -1254,16 +1263,14 @@ public:
             Rect icon{c.x + ui.s(10), c.center().y - (cellH - ui.s(18)) * 0.5f, cellH - ui.s(18), cellH - ui.s(18)};
             ui.icon("ui/icons_powers.png", p->icon, 32, icon, on ? Color::white() : Color{150, 160, 180, 255});
             float tx = icon.right() + ui.s(10);
-            float badge = on ? ui.s(34) : 0.0f;
+            // 2.31: the power's own key in this level (or how it is used: the dashed gold frame).
+            const float kh = std::min(cellH - ui.s(24), ui.s(30));
+            float badge = Glyphs::drawPowerUse(ui, *p, pick_.keys, {0.0f, 0.0f}, kh, 1.0f, false) + ui.s(10);
             float room = c.right() - ui.s(12) - badge - tx;
             float f = ui.fitFont(p->name, FontFace::Bold, fz(ui, 17), room, 0.7f);
             ui.label(ui.elide(p->name, FontFace::Bold, f, room), {tx, c.center().y}, f, on ? th.text : th.textDim, Align::Left, FontFace::Bold,
                      VAlign::Middle);
-            if (on) {
-                Vec2 bc{c.right() - ui.s(24), c.center().y};
-                ui.r().fillCircle(bc, ui.s(12), th.accent);
-                ui.label(std::to_string(it - chosen_.begin() + 1), bc, fz(ui, 15), Color{8, 12, 26, 255}, Align::Center, FontFace::Bold, VAlign::Middle);
-            }
+            Glyphs::drawPowerUse(ui, *p, pick_.keys, {c.right() - ui.s(12) - (badge - ui.s(10)), c.center().y}, kh, on ? 1.0f : 0.55f);
         }
         y += rows * (cellH + cgap);
         // What just happened (a power replaced, the slots full), else what « Par défaut » gives.
@@ -1314,7 +1321,7 @@ private:
         const PowerDefinition* added = g_.content.power(id);
         for (const std::string& old : chosen_)
             if (std::find(fitted.begin(), fitted.end(), old) == fitted.end())
-                if (const PowerDefinition* o = g_.content.power(old); o && added) say("« " + added->name + " » remplace « " + o->name + " » (même touche).");
+                if (const PowerDefinition* o = g_.content.power(old); o && added) say("« " + added->name + " » remplace « " + o->name + " » (même façon de l'utiliser).");
         chosen_ = fitted;
     }
 

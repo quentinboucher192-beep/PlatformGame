@@ -436,6 +436,16 @@ int main(int argc, char** argv) {
     }
     GameServices game(app);
     game.loadAll();
+    if (!cfg.headless) {
+        // The window as it really is (--fullscreen / --windowed, or the saved setting): the
+        // settings follow it, and a toggle by F11 / Alt+Entrée is saved too.
+        if (app.fullscreen() != cfg.fullscreen) app.setFullscreen(cfg.fullscreen);
+        game.settings.graphics.fullscreen = cfg.fullscreen;
+        app.onFullscreenToggled = [&game](bool on) {
+            game.settings.graphics.fullscreen = on;
+            game.saveSettings();
+        };
+    }
     if (langArg) {
         game.settings.language = i18n::code(*langArg);
         game.applySettings();

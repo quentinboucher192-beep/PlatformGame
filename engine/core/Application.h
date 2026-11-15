@@ -85,6 +85,9 @@ public:
 
     /// Hook called every frame after the scenes updated (background services).
     std::function<void(float)> onUpdate;
+    /// F11 / Alt+Entrée switched the full screen: the game keeps its setting in step (so that
+    /// leaving the settings, which apply the saved value, never undoes it).
+    std::function<void(bool on)> onFullscreenToggled;
     /// Before each scene is drawn: `covered` when another scene is above it (the UI then
     /// ignores input for it), and once more with false before the overlays.
     std::function<void(bool covered)> onSceneRender;

@@ -143,6 +143,7 @@ void Application::processEvents() {
             if (e.key.scancode == SDL_SCANCODE_F11 ||
                 (e.key.scancode == SDL_SCANCODE_RETURN && (e.key.mod & SDL_KMOD_ALT))) {
                 setFullscreen(!fullscreen_);
+                if (onFullscreenToggled) onFullscreenToggled(fullscreen_);
                 continue;
             }
             if (e.key.scancode == SDL_SCANCODE_F3) {

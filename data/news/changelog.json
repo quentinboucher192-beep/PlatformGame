@@ -1,4 +1,11 @@
 {
+  "2.31.0": [
+    "Touches des pouvoirs par niveau : un pouvoir garde sa touche dans tout le niveau, quel que soit l'ordre dans lequel vous ramassez les pouvoirs.",
+    "Le créateur choisit les touches de son niveau dans l'éditeur (« Touches des pouvoirs ») ; le joueur peut les changer pour lui dans le choix du niveau (« Touches… », juste avant « Jouer ») et dans la pause (« Touches de ce niveau »).",
+    "Les touches d'emplacement disparaissent des paramètres Clavier / souris et Manette ; le guide des pouvoirs, le choix de remplacement et les entraînements (boss et segments) montrent la touche de chaque pouvoir.",
+    "Les niveaux de la campagne gardent leurs records : leurs touches ne changent pas leur empreinte classée.",
+    "Corrigé : « Retour » dans les paramètres ne fait plus sortir du plein écran (passé en plein écran par F11, Alt+Entrée ou au lancement)."
+  ],
   "2.30.2": [
     "Entraînement par segment : aperçu du segment choisi (départ, arrivée, trajet de votre record), votre meilleur segment, son temps dans votre record, votre meilleur temps à l'entraînement (gardé d'une séance à l'autre) et la Somme des meilleurs segments (Sum of Best) avec le gain possible.",
     "Entraînement par segment : choix des pouvoirs portés (« Choisir… »), dernier choix gardé pour chaque segment ; pendant l'essai, un encadré rappelle vos références.",

@@ -6360,6 +6360,12 @@
    ]
   },
   {
+   "fr": "Corrigé : « Retour » dans les paramètres ne fait plus sortir du plein écran (passé en plein écran par F11, Alt+Entrée ou au lancement).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Corée du Nord",
    "where": [
     "data/online/countries.json",
@@ -13767,6 +13773,12 @@
    ]
   },
   {
+   "fr": "Le créateur choisit les touches de son niveau dans l'éditeur (« Touches des pouvoirs ») ; le joueur peut les changer pour lui dans le choix du niveau (« Touches… », juste avant « Jouer ») et dans la pause (« Touches de ce niveau »).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Le Cœur",
    "where": [
     "data/levels/noyau_02.json"
@@ -14757,6 +14769,12 @@
    ]
   },
   {
+   "fr": "Les niveaux de la campagne gardent leurs records : leurs touches ne changent pas leur empreinte classée.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Les niveaux officiels et importés sont protégés : l'éditeur en crée une copie modifiable.",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -14923,6 +14941,12 @@
    "fr": "Les Tisseuses crachent des toiles qui ralentissent : gardez vos distances.",
    "where": [
     "data/levels/glacior_02.json"
+   ]
+  },
+  {
+   "fr": "Les touches d'emplacement disparaissent des paramètres Clavier / souris et Manette ; le guide des pouvoirs, le choix de remplacement et les entraînements (boss et segments) montrent la touche de chaque pouvoir.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -27282,6 +27306,12 @@
    ]
   },
   {
+   "fr": "Touches des pouvoirs par niveau : un pouvoir garde sa touche dans tout le niveau, quel que soit l'ordre dans lequel vous ramassez les pouvoirs.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Touches des pouvoirs…",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -28320,7 +28350,7 @@
    ]
   },
   {
-   "fr": "Un pouvoir sur la même touche qu'un autre le remplace.",
+   "fr": "Un pouvoir utilisé de la même façon qu'un autre le remplace.",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
    ]
@@ -32288,7 +32318,7 @@
    ]
   },
   {
-   "fr": "« {0} » remplace « {1} » (même touche).",
+   "fr": "« {0} » remplace « {1} » (même façon de l'utiliser).",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
    ]

@@ -23,6 +23,8 @@ public:
 
     void onEnter() override {
         working_ = g_.settings;
+        // The window as it is now (full screen by F11, Alt+Entrée or the command line).
+        if (!g_.app.headless()) working_.graphics.fullscreen = g_.app.fullscreen();
         // Automated screenshots: --settings-tab <n>, <n>:slots for the list of the controls
         // scrolled to its first note (where the keys of the powers are set), <n>:end to its end.
         if (g_.onlineOpen.rfind("settings-tab:", 0) == 0) {
