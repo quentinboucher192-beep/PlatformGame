@@ -283,6 +283,17 @@ private:
     void gameplay(const Rect& c) {
         UIContext& ui = g_.ui;
         Rect r{c.x, c.y, std::min(c.w, ui.s(900)), ui.s(54)};
+        // Language of every text, applied at once (the texts are translated when drawn).
+        // The caption and the names stay in both languages, so that anyone finds them.
+        int lang = settingsLanguage(working_) == Language::English ? 1 : 0;
+        if (ui.cycle("language", r, "Langue / Language", lang,
+                     {i18n::nativeName(Language::French), i18n::nativeName(Language::English)})) {
+            const Language l = lang == 1 ? Language::English : Language::French;
+            working_.language = i18n::code(l);
+            i18n::setLanguage(l);
+            flash(l == Language::English ? "Langue : anglais, appliquée immédiatement." : "Langue : français, appliquée immédiatement.");
+        }
+        r.y += row();
         ui.toggle("timer", r, "Afficher le chronomètre", working_.gameplay.showTimer);
         r.y += row();
         ui.toggle("hints", r, "Afficher les touches à l'écran", working_.gameplay.showInputHints);

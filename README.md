@@ -5,6 +5,19 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.22.0** :
+* **Français ou anglais** : l'installateur Windows demande la langue (il s'affiche lui-même
+  dans la langue choisie) et le jeu démarre dans celle-ci ; *Paramètres › Jeu › « Langue /
+  Language »* la change à tout moment, avec effet immédiat. Tout est traduit : menus,
+  écrans, HUD, niveaux et messages du monde, ennemis et gardiens, pouvoirs, succès,
+  Collection, actualités, éditeurs et messages connus du serveur Cosmic Online. Les
+  contenus des joueurs (niveaux de la communauté, pseudonymes, commentaires, messages)
+  restent tels que leurs auteurs les ont écrits. En anglais, le badge EXTREME, les nombres
+  (2.45 ; 12,345) et les pluriels suivent l'usage anglais.
+* Le français reste la source de tous les textes ; l'anglais vient du dictionnaire
+  `data/i18n/en.json`, appliqué à l'affichage (`tools/i18n/extract.py` liste ce qui reste à
+  traduire). Voir [docs/I18N.md](docs/I18N.md).
+
 **Nouveau dans la version 2.21.0** :
 * **Notes des joueurs** pour les niveaux de la campagne : un niveau terminé avec un temps
   **vérifié** en ligne peut être noté de 1 à 5 étoiles (écran de fin ou ONLINE) ; la moyenne
@@ -362,6 +375,16 @@ CosmicPlatformer --import MonNiveau.cplanet
 
 Voir [docs/PACKAGE_FORMAT.md](docs/PACKAGE_FORMAT.md).
 
+## Langue / Language
+
+Le jeu est **en français ou en anglais**. L'installateur Windows demande la langue (il
+s'affiche lui-même dans cette langue) et le jeu démarre dans celle-ci ; elle se change à
+tout moment dans *Paramètres › Jeu › « Langue / Language »*, avec effet immédiat (ou
+`--lang en|fr` en ligne de commande). Le français reste la source de tous les textes ;
+l'anglais vient du dictionnaire `data/i18n/en.json`, appliqué à l'affichage. Les contenus
+des joueurs (niveaux de la communauté, pseudonymes, commentaires, messages) ne sont jamais
+traduits. Ajouter ou compléter une traduction : [docs/I18N.md](docs/I18N.md).
+
 ## Données utilisateur
 
 Sauvegardes, paramètres, records, niveaux créés, packages importés, exports, captures et
@@ -399,6 +422,7 @@ L'exécutable est dans `build/bin/`. Installateur Windows : `installer\build_ins
 * [docs/EDITORS.md](docs/EDITORS.md) – guide des éditeurs
 * [docs/BUILDING.md](docs/BUILDING.md) – compilation, tests, installateur
 * [docs/ASSET_SPEC.md](docs/ASSET_SPEC.md) – contrat des assets (sprites, animations, tuiles, audio)
+* [docs/I18N.md](docs/I18N.md) – langues (français / anglais) : choix, fonctionnement, ajouter une traduction
 * [docs/GHOST_RACING.md](docs/GHOST_RACING.md) – fantômes, écarts, entraînement, succès, mode concentré (et leurs limites)
 * [docs/online/](docs/online/README.md) – Cosmic Online : installation, déploiement, secrets, API, règles, confidentialité, dépannage
 

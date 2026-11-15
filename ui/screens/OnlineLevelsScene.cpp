@@ -9,6 +9,7 @@
 #include <map>
 
 #include "engine/core/FileUtil.h"
+#include "engine/core/I18n.h"
 #include "game/GameServices.h"
 #include "game/progression/NewsCenter.h"
 #include "game/online/LevelFingerprint.h"
@@ -460,9 +461,12 @@ private:
                 if (l.contains("best") && l["best"].is_object())
                     titleRoom -= ui.text().measure("Record " + timeText(jget<int64_t>(l["best"], "time_ms", 0)) + " · " + jstr(l["best"], "player"), FontFace::Bold,
                                                    ui.s(14)).x + ui.s(16);
-                float tf = ui.fitFont(title, FontFace::Bold, 20, titleRoom, 0.75f);
-                ui.label(ui.elide(title, FontFace::Bold, tf, titleRoom), {titleX, row.y + ui.s(24)}, tf, ui.theme().text, Align::Left, FontFace::Bold,
-                         VAlign::Middle);
+                {
+                    i18n::Verbatim playerWords;  // a community level keeps its author's title
+                    float tf = ui.fitFont(title, FontFace::Bold, 20, titleRoom, 0.75f);
+                    ui.label(ui.elide(title, FontFace::Bold, tf, titleRoom), {titleX, row.y + ui.s(24)}, tf, ui.theme().text, Align::Left,
+                             FontFace::Bold, VAlign::Middle);
+                }
                 std::string sub;
                 if (tab_ == kFavoritesTab) {
                     sub = "par " + jstr(l, "author_name") + "  ·  v" + std::to_string(jget<int>(l, "version", 1)) + "  ·  favori " +
@@ -600,6 +604,7 @@ private:
         {
             float tx = x;
             if (extreme) tx += ui.extremeBadge({x, y + ui.s(14)}, ui.s(30)) + ui.s(12);
+            i18n::Verbatim playerWords;  // the author's title
             float tf = ui.fitFont(title, FontFace::Title, 24, x + w - tx, 0.7f);
             ui.label(ui.elide(title, FontFace::Title, tf, x + w - tx), {tx, y + ui.s(14)}, tf, ui.theme().text, Align::Left, FontFace::Title, VAlign::Middle);
         }
@@ -623,6 +628,7 @@ private:
         y += ui.s(38);
         std::string desc = jstr(l, "description");
         if (!desc.empty()) {
+            i18n::Verbatim playerWords;  // the author's description
             Vec2 sz = ui.labelWrapped(desc, {x, y}, w, 15, ui.theme().text);
             y += std::min(sz.y, ui.s(80)) + ui.s(8);
         }

@@ -8,6 +8,7 @@
 #include <SDL3/SDL_scancode.h>
 
 #include "editors/level_editor/LevelEditorScene.h"
+#include "engine/core/I18n.h"
 #include "game/online/OnlineService.h"
 #include "game/GameServices.h"
 #include "ui/online/OnlineWidgets.h"
@@ -182,6 +183,7 @@ void LevelEditorScene::drawChat() {
     float total = chatMore_ ? ui.s(40) : 0.0f;
     for (const auto& m : chatMessages_) {
         bool quote = m.contains("reply_to") && m["reply_to"].is_object();
+        i18n::Verbatim playerWords;  // messages are shown as their authors wrote them
         float bodyH = ui.text().measureWrapped(jstr(m, "body"), FontFace::Body, ui.s(15), textW).y;
         float h = ui.s(8) + ui.s(22) + (quote ? ui.s(22) : 0.0f) + bodyH + ui.s(10);
         items.push_back({&m, h, bodyH, quote});
@@ -244,6 +246,7 @@ void LevelEditorScene::drawChat() {
                 ui.label(ui.elide(qt, FontFace::Body, 13, bw), {bx, by + ui.s(10)}, 13, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
                 by += ui.s(22);
             }
+            i18n::Verbatim playerWords;
             ui.labelWrapped(jstr(m, "body"), {bx, by}, textW, 15, ui.theme().text);
         }
         ui.endScroll();

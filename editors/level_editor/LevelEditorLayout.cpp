@@ -81,7 +81,8 @@ void LevelEditorScene::drawToolbar(const Rect& r) {
         if (menu_ == Menu::File) menuAnchor_ = fb;
     }
     gap();
-    if (btn("undo", "Annuler", 92, false, history_.canUndo())) applyJson(history_.undo());
+    // "\x1F" "contexte|texte": « Annuler » here is Undo, not Cancel (see engine/core/I18n.cpp).
+    if (btn("undo", "\x1F" "édition|Annuler", 92, false, history_.canUndo())) applyJson(history_.undo());
     if (btn("redo", "Rétablir", 96, false, history_.canRedo())) applyJson(history_.redo());
     gap();
     if (btn("sel", "Sélection", 104, false, true, tool_ == Tool::Select)) tool_ = Tool::Select;

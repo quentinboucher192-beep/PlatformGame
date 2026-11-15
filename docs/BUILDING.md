@@ -111,6 +111,10 @@ Le script configure, compile en Release, exécute les tests, prépare l'installa
 
 L'installateur :
 
+* demande d'abord la **langue** (français ou anglais, présélectionnée d'après Windows) :
+  il s'affiche dans cette langue (licence `license_fr.txt` / `license_en.txt` comprise) et
+  l'écrit dans `language.ini` à côté du jeu, qui démarre dans cette langue (voir
+  [I18N.md](I18N.md)) ;
 * installe dans `C:\Program Files\Cosmic Platformer` (ou dans le profil si l'utilisateur
   n'est pas administrateur) ;
 * crée les raccourcis du menu Démarrer (jeu, éditeur de niveaux, éditeur d'ennemis,

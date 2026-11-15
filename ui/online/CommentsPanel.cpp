@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "engine/core/I18n.h"
 #include "game/GameServices.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/Navigation.h"
@@ -258,6 +259,7 @@ float CommentsPanel::item(const Json& c, float x, float y, float w, bool reply, 
     y += av + ui.s(8);
     if (!deleted) {
         std::string body = jstr(c, "body");
+        i18n::Verbatim playerWords;  // a comment is shown as its author wrote it
         Vec2 sz = ui.text().measureWrapped(body, FontFace::Body, ui.s(16), tw);
         if (draw) ui.labelWrapped(body, {tx, y}, tw, 16, ui.theme().text);
         y += sz.y + ui.s(8);
@@ -414,7 +416,7 @@ bool CommentsPanel::draw(const Rect& area) {
         ps.primary = true;
         ps.small = true;
         ps.enabled = !sending_ && !trimmed(draft_).empty();
-        if (ui.button("send", {x + w - pw, y, pw, ui.s(44)}, sending_ ? "Envoi…" : (editing_.empty() ? "Publier" : "Enregistrer"), ps)) submit();
+        if (ui.button("send", {x + w - pw, y, pw, ui.s(44)}, sending_ ? "Envoi…" : (editing_.empty() ? "\x1F" "commentaire|Publier" : "Enregistrer"), ps)) submit();
         y += ui.s(54);
     }
     // List.

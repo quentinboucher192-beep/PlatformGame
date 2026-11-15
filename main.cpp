@@ -22,6 +22,7 @@
 //                           automated checks of the menus)
 //   --input <script>        scripted gameplay input, e.g. "0:right;90:right,jump;120:"
 //   --user-dir <path>       use another folder for saves and user content
+//   --lang <fr|en>          language of the texts (as the setting « Langue / Language »)
 //   --import <file.cplanet> open the import screen with this package (also: file as argument)
 //   --export <level> <file.cplanet> [--author <name>]
 //                           export a level and all its dependencies without opening a window
@@ -58,6 +59,7 @@
 
 #include "engine/core/Application.h"
 #include "engine/core/FileUtil.h"
+#include "engine/core/I18n.h"
 #include "game/levels/DifficultyRating.h"
 #include "game/levels/LevelAnalyzer.h"
 #include "game/online/Replay.h"
@@ -359,6 +361,10 @@ int main(int argc, char** argv) {
     }
 
     Settings initial = SettingsStore::load();
+    applyInstallerLanguage(initial, Paths::installDir() / "language.ini");  // saved by loadAll
+    i18n::setLanguage(settingsLanguage(initial));
+    const std::optional<Language> langArg = i18n::parse(value("--lang"));
+    if (langArg) i18n::setLanguage(*langArg);
     AppConfig cfg;
     cfg.headless = has("--headless");
     // Screenshots without a screen: 1600×900 unless --width / --height say otherwise.
@@ -375,11 +381,16 @@ int main(int argc, char** argv) {
     Application app;
     if (!app.init(cfg)) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Cosmic Platformer",
-                                 "Impossible d'initialiser le jeu. Consultez cosmic.log dans le dossier utilisateur.", nullptr);
+                                 i18n::tr("Impossible d'initialiser le jeu. Consultez cosmic.log dans le dossier utilisateur.").c_str(),
+                                 nullptr);
         return 1;
     }
     GameServices game(app);
     game.loadAll();
+    if (langArg) {
+        game.settings.language = i18n::code(*langArg);
+        game.applySettings();
+    }
     game.inputScript = value("--input");
     game.saveReplayPath = value("--save-replay");
     game.onlineFocus = value("--online-focus");

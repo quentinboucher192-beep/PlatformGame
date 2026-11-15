@@ -1,5 +1,7 @@
 #include "ui/widgets/FileDialogs.h"
 
+#include "engine/core/I18n.h"
+
 #include <map>
 #include <mutex>
 
@@ -31,7 +33,7 @@ Request* make(const char* name, const char* pattern) {
     std::lock_guard lock(g_mutex);
     auto* r = new Request;
     r->id = g_next++;
-    r->name = name ? name : "";
+    r->name = name ? i18n::tr(name) : "";  // shown by the system's dialog: in the game's language
     r->pattern = pattern ? pattern : "";
     r->filter = {r->name.c_str(), r->pattern.c_str()};
     g_results[r->id] = std::nullopt;

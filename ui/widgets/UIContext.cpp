@@ -6,6 +6,7 @@
 #include <cstdio>
 
 #include "engine/core/Application.h"
+#include "engine/core/I18n.h"
 
 namespace cosmic {
 
@@ -195,8 +196,12 @@ float UIContext::fitFont(const std::string& t, FontFace face, float size, float 
     return fs;
 }
 
-std::string UIContext::elide(const std::string& t, FontFace face, float size, float room) {
-    if (room <= 0.0f || text().measure(t, face, s(size)).x <= room) return t;
+std::string UIContext::elide(const std::string& source, FontFace face, float size, float room) {
+    // Shortened in the language shown: the text as displayed is measured and cut (its pieces
+    // are never looked up again). When it fits, the source is returned (translated when drawn).
+    const std::string t = i18n::tr(source);
+    i18n::Verbatim shown;
+    if (room <= 0.0f || text().measure(t, face, s(size)).x <= room) return source;
     std::string cut = t;
     while (!cut.empty()) {
         // Drop one character (UTF-8: its continuation bytes too) and trailing spaces.
@@ -204,7 +209,7 @@ std::string UIContext::elide(const std::string& t, FontFace face, float size, fl
         while (n > 0 && (static_cast<unsigned char>(cut[n]) & 0xC0) == 0x80) --n;
         cut.resize(n);
         while (!cut.empty() && cut.back() == ' ') cut.pop_back();
-        if (text().measure(cut + "…", face, s(size)).x <= room) return cut + "…";
+        if (text().measure(cut + "…", face, s(size)).x <= room) return i18n::keep(cut + "…");
     }
     return "…";
 }
@@ -239,7 +244,11 @@ void UIContext::icon(const std::string& texture, int index, int cell, const Rect
 
 float UIContext::extremeBadge(Vec2 leftMid, float height, float alpha) {
     if (height <= 0.0f) return 0.0f;
-    if (auto tex = app_->resources().texture("ui/badge_extreme.png"); tex && tex->height() > 0) {
+    // The picture holds its words: its English version when the game is in English.
+    TexturePtr tex;
+    if (i18n::language() == Language::English) tex = app_->resources().texture("ui/badge_extreme_en.png");
+    if (!tex) tex = app_->resources().texture("ui/badge_extreme.png");
+    if (tex && tex->height() > 0) {
         float w = height * static_cast<float>(tex->width()) / static_cast<float>(tex->height());
         r().drawTexture(*tex, nullptr, {leftMid.x, leftMid.y - height * 0.5f, w, height}, Color::white().withAlphaF(alpha));
         return w;
@@ -527,6 +536,7 @@ bool UIContext::textFieldImpl(const std::string& name, const Rect& rc, std::stri
         return n * 3;
     };
     auto widthTo = [&](const std::string& v, size_t i) {
+        i18n::Verbatim typed;  // the player's own text, measured as typed
         std::string shown = shownOf(v);
         size_t j = std::min(shownOffset(v, i), shown.size());
         return j == 0 ? 0.0f : text().measure(shown.substr(0, j), FontFace::Body, fs).x;
@@ -538,6 +548,7 @@ bool UIContext::textFieldImpl(const std::string& name, const Rect& rc, std::stri
     // Scroll of a long text so that the caret stays visible.
     auto shiftFor = [&]() {
         if (editing_ != wid || value.empty()) return 0.0f;
+        i18n::Verbatim typed;
         float cx = widthTo(value, caret_);
         float room = rc.w - s(26);
         float total = text().measure(shownOf(value), FontFace::Body, fs).x;
@@ -670,6 +681,8 @@ bool UIContext::textFieldImpl(const std::string& name, const Rect& rc, std::stri
                        std::max(1.0f, s(1.5f)));
     rr.pushClip(rc.expanded(-s(4)));
     std::string shown = value.empty() && editing_ != wid ? placeholder : shownOf(value);
+    // What the player typed is shown as typed (only the placeholder is translated).
+    const bool typedText = !(value.empty() && editing_ != wid);
     Color c = value.empty() && editing_ != wid ? theme_.textDim : theme_.text;
     float shift = shiftFor();
     float x0 = rc.x + padX - shift;
@@ -678,7 +691,10 @@ bool UIContext::textFieldImpl(const std::string& name, const Rect& rc, std::stri
         float a = widthTo(value, std::min(caret_, anchor_)), b = widthTo(value, std::max(caret_, anchor_));
         rr.fillRect({x0 + a, rc.center().y - s(12), b - a, s(24)}, theme_.accent.withAlpha(90));
     }
-    label(shown, {x0, rc.center().y}, 20, c, Align::Left, FontFace::Body, VAlign::Middle);
+    {
+        i18n::Verbatim typed(typedText);
+        label(shown, {x0, rc.center().y}, 20, c, Align::Left, FontFace::Body, VAlign::Middle);
+    }
     if (editing_ == wid && std::fmod(time_, 1.0f) < 0.6f) {
         float cx = x0 + widthTo(value, caret_) + s(1);
         rr.fillRect({cx, rc.center().y - s(11), s(2), s(22)}, theme_.accent);

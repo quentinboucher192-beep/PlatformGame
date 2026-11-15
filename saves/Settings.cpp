@@ -3,6 +3,7 @@
 #include "engine/core/Log.h"
 #include "engine/core/Paths.h"
 #include "saves/SaveFile.h"
+#include "engine/core/FileUtil.h"
 
 #include <algorithm>
 
@@ -23,6 +24,7 @@ void setHudVisible(GameplaySettings& g, HudElement e, bool visible) {
 
 Json Settings::toJson() const {
     Json j;
+    j["language"] = {{"code", language}, {"installer", installerLanguage}};
     j["graphics"] = {{"fullscreen", graphics.fullscreen},
                      {"vsync", graphics.vsync},
                      {"windowWidth", graphics.windowWidth},
@@ -65,6 +67,11 @@ Json Settings::toJson() const {
 
 Settings Settings::fromJson(const Json& j) {
     Settings s;
+    if (j.contains("language") && j["language"].is_object()) {
+        const Json& l = j["language"];
+        if (auto lang = i18n::parse(jstr(l, "code"))) s.language = i18n::code(*lang);
+        if (auto lang = i18n::parse(jstr(l, "installer"))) s.installerLanguage = i18n::code(*lang);
+    }
     if (j.contains("graphics")) {
         const Json& g = j["graphics"];
         s.graphics.fullscreen = jget<bool>(g, "fullscreen", false);
@@ -129,6 +136,37 @@ Settings Settings::fromJson(const Json& j) {
     }
     if (j.contains("input")) s.input = InputBindings::fromJson(j["input"]);
     return s;
+}
+
+Language settingsLanguage(const Settings& s) { return i18n::parse(s.language).value_or(Language::French); }
+
+bool applyInstallerLanguage(Settings& s, const fs::path& iniFile) {
+    auto text = FileUtil::readText(iniFile);
+    if (!text) return false;
+    // Written by Windows (WritePrivateProfileString): ANSI, or UTF-16 for some files.
+    text->erase(std::remove(text->begin(), text->end(), '\0'), text->end());
+    // [Language] / Language=english (Inno Setup [INI] section, value: its language name).
+    std::optional<Language> chosen;
+    size_t pos = 0;
+    while (pos < text->size() && !chosen) {
+        size_t end = text->find('\n', pos);
+        std::string line = text->substr(pos, end == std::string::npos ? std::string::npos : end - pos);
+        pos = end == std::string::npos ? text->size() : end + 1;
+        size_t eq = line.find('=');
+        if (eq == std::string::npos) continue;
+        std::string key = line.substr(0, eq);
+        // Spaces, byte order mark (UTF-8 or UTF-16) at the start of the file: only letters count.
+        key.erase(std::remove_if(key.begin(), key.end(), [](char c) { return !((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')); }),
+                  key.end());
+        if (key == "Language" || key == "language") chosen = i18n::parse(line.substr(eq + 1));
+    }
+    if (!chosen) return false;
+    std::string code = i18n::code(*chosen);
+    if (code == s.installerLanguage) return false;  // already applied: the player's choice wins
+    s.installerLanguage = code;
+    s.language = code;
+    Log::info("Langue choisie à l'installation : {}", code);
+    return true;
 }
 
 Json SettingsStore::migrateV1ToV2(const Json& v1) {
