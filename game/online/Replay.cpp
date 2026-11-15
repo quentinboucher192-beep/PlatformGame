@@ -140,11 +140,11 @@ std::vector<uint8_t> ReplayData::serialize() const {
         putU16(o, e.value);
     }
     if (inputs.empty()) return o;
-    // Version 2: seed, run-length encoded inputs, state digests.
+    // Version 3: seed, run-length encoded inputs, state digests.
     putU32(o, static_cast<uint32_t>(seed & 0xFFFFFFFFu));
     putU32(o, static_cast<uint32_t>(seed >> 32));
     putU16(o, tickHz);
-    putU16(o, 0);
+    putU16(o, keysPerSlot ? kInputKeysPerSlot : 0);  // input flags (reserved, 0, in version 2)
     putU32(o, static_cast<uint32_t>(inputs.size()));
     size_t runCountAt = o.size();
     putU32(o, 0);
@@ -154,9 +154,9 @@ std::vector<uint8_t> ReplayData::serialize() const {
         while (j < inputs.size() && j - i < 0xFFFF && inputs[j] == inputs[i]) ++j;
         const InputFrame& f = inputs[i];
         putU16(o, static_cast<uint16_t>(j - i));
-        putU16(o, f.held);
-        putU16(o, f.pressed);
-        putU16(o, f.released);
+        putU32(o, f.held);
+        putU32(o, f.pressed);
+        putU32(o, f.released);
         o.push_back(static_cast<uint8_t>(f.moveX));
         o.push_back(static_cast<uint8_t>(f.moveY));
         o.push_back(f.flags);
@@ -182,7 +182,7 @@ std::optional<ReplayData> ReplayData::parse(const std::vector<uint8_t>& raw, std
     const uint8_t* p = raw.data();
     ReplayData d;
     d.formatVersion = getU16(p + 4);
-    if (d.formatVersion != 1 && d.formatVersion != 2) {
+    if (d.formatVersion < 1 || d.formatVersion > kFormatVersion) {
         fail(error, "version de format non prise en charge");
         return std::nullopt;
     }
@@ -233,7 +233,7 @@ std::optional<ReplayData> ReplayData::parse(const std::vector<uint8_t>& raw, std
         at += 8;
     }
     if (d.formatVersion == 1) return d;
-    // ---- version 2 trailer
+    // ---- version 2 and 3 trailer
     auto left = [&]() { return raw.size() - at; };
     if (left() < 20) {
         fail(error, "section des entrées absente");
@@ -241,11 +241,16 @@ std::optional<ReplayData> ReplayData::parse(const std::vector<uint8_t>& raw, std
     }
     d.seed = static_cast<uint64_t>(getU32(p + at)) | (static_cast<uint64_t>(getU32(p + at + 4)) << 32);
     d.tickHz = getU16(p + at + 8);
+    // Version 3: input flags (version 2: reserved, one button per power).
+    const uint16_t inputFlags = d.formatVersion >= 3 ? getU16(p + at + 10) : 0;
+    d.keysPerSlot = (inputFlags & kInputKeysPerSlot) != 0;
     uint32_t tickCount = getU32(p + at + 12);
     uint32_t runCount = getU32(p + at + 16);
     at += 20;
+    // A run: 12 bytes in version 2 (actions on 16 bits), 18 in version 3 (32 bits).
+    const size_t runBytes = d.formatVersion >= 3 ? 18 : 12;
     if (d.tickHz != kSimHz || tickCount == 0 || tickCount > kMaxTicks || runCount == 0 || runCount > tickCount ||
-        static_cast<uint64_t>(runCount) * 12 + 4 > left()) {
+        (inputFlags & ~kInputKeysPerSlot) != 0 || static_cast<uint64_t>(runCount) * runBytes + 4 > left()) {
         fail(error, "section des entrées incohérente");
         return std::nullopt;
     }
@@ -253,14 +258,30 @@ std::optional<ReplayData> ReplayData::parse(const std::vector<uint8_t>& raw, std
     for (uint32_t r = 0; r < runCount; ++r) {
         uint16_t repeat = getU16(p + at);
         InputFrame f;
-        f.held = getU16(p + at + 2);
-        f.pressed = getU16(p + at + 4);
-        f.released = getU16(p + at + 6);
-        f.moveX = static_cast<int8_t>(p[at + 8]);
-        f.moveY = static_cast<int8_t>(p[at + 9]);
-        f.flags = p[at + 10];
-        f.choice = p[at + 11];
-        at += 12;
+        size_t k = at + 2;
+        if (runBytes == 18) {
+            f.held = getU32(p + k);
+            f.pressed = getU32(p + k + 4);
+            f.released = getU32(p + k + 8);
+            k += 12;
+        } else {
+            f.held = getU16(p + k);
+            f.pressed = getU16(p + k + 2);
+            f.released = getU16(p + k + 4);
+            k += 6;
+        }
+        // Only the actions recorded by that version (version 2: up to Special).
+        constexpr uint32_t kMask3 = InputFrame::kActions >= 32 ? 0xFFFFFFFFu : (1u << InputFrame::kActions) - 1u;
+        constexpr uint32_t kMask2 = (1u << (static_cast<int>(Action::Special) + 1)) - 1u;
+        const uint32_t mask = runBytes == 18 ? kMask3 : kMask2;
+        f.held &= mask;
+        f.pressed &= mask;
+        f.released &= mask;
+        f.moveX = static_cast<int8_t>(p[k]);
+        f.moveY = static_cast<int8_t>(p[k + 1]);
+        f.flags = p[k + 2];
+        f.choice = p[k + 3];
+        at += runBytes;
         if (repeat == 0 || d.inputs.size() + repeat > tickCount) {
             fail(error, "plages d'entrées incohérentes");
             return std::nullopt;
@@ -403,6 +424,7 @@ void ReplayRecorder::check(const GameWorld& w) {
 
 void ReplayRecorder::tick(const GameWorld& w) {
     if (!active_) return;
+    data_.keysPerSlot = w.keysPerSlot();
     if (!data_.inputs.empty() && data_.inputs.size() % ReplayData::kCheckTicks == 0) check(w);
     const LevelTimer& timer = w.timer();
     if (!started_) {
@@ -496,6 +518,7 @@ void ReplayRecorder::finish(const GameWorld& w, float elapsed) {
 }
 
 ReplaySimulator::ReplaySimulator(const ReplayData& replay, GameWorld& world) : replay_(replay), world_(world) {
+    world_.setKeysPerSlot(replay_.keysPerSlot);
     world_.seedGameplay(replay_.seed);
 }
 

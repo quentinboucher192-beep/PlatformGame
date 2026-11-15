@@ -16,6 +16,9 @@ struct PowerDefinition {
     std::string name;
     std::string description;
     int icon = 0;  // index in ui/icons_powers.png
+    /// Its button before 2.24 (one per power), still what old replays press; what the
+    /// player presses now is the key of the power's slot (Power::key()), or the move of
+    /// the character for a power on a move (grapple: Interact).
     Action input = Action::Dash;
     float energyCost = 20.0f;
     float cooldown = 1.0f;

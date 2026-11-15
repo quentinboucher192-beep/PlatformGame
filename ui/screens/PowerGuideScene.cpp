@@ -1,5 +1,5 @@
 // Power guide (help): every power of the player with a live example, played in a loop by
-// the game engine itself (a small scripted level per power), its button, its energy cost and
+// the game engine itself (a small scripted level per power), how it is used, its energy cost and
 // what it does. A card opens the power's sheet: a larger example and every characteristic
 // (energy, damage, radius, reach, recharge...), read from its definition.
 
@@ -13,6 +13,7 @@
 #include "game/GameServices.h"
 #include "game/gameplay/GameRenderer.h"
 #include "game/gameplay/GameWorld.h"
+#include "game/powers/Power.h"
 #include "game/powers/PowerDemos.h"
 #include "game/powers/PowerStats.h"
 #include "ui/screens/MenuBackground.h"
@@ -79,12 +80,27 @@ public:
         bg_.render(g_, 0.6f);
         float margin = ui.s(48);
         ui.label("GUIDE DES POUVOIRS", {margin, ui.s(34)}, 40, ui.theme().text, Align::Left, FontFace::Title);
-        ui.label("Chaque exemple est joué en boucle par le moteur du jeu.", {margin, ui.s(84)}, 18, ui.theme().textDim);
+        const std::string intro = "Chaque exemple est joué en boucle par le moteur du jeu.";
+        Vec2 introSz = ui.label(intro, {margin, ui.s(84)}, 18, ui.theme().textDim);
         const bool sheetOpen = sheet_ >= 0 && sheet_ < static_cast<int>(demos_.size());
         ui.inputEnabled = !sheetOpen;
         ui.pushId("guide");
-        bool back = ui.button("back", {ui.screenW() - margin - ui.s(180), ui.s(34), ui.s(180), ui.s(52)}, "Retour") || ui.backPressed();
+        Rect backR{ui.screenW() - margin - ui.s(180), ui.s(34), ui.s(180), ui.s(52)};
+        bool back = ui.button("back", backR, "Retour") || ui.backPressed();
         ui.popId();
+        // What the dashed gold frame means (the same as in the HUD), after the intro.
+        {
+            const std::string legend = "Cadre pointillé doré : pouvoir passif ou utilisé avec un mouvement, pas avec la touche de son emplacement.";
+            float lx = margin + introSz.x + ui.s(36);
+            float swatch = ui.s(26), room = backR.x - ui.s(24) - (lx + swatch + ui.s(10));
+            float lf = ui.fitFont(legend, FontFace::Body, 16, room, 0.7f);
+            if (room > ui.s(200) && ui.text().measure(legend, FontFace::Body, ui.s(lf)).x <= room) {
+                float cy = ui.s(84) + introSz.y * 0.5f;
+                Rect sw{lx, cy - swatch * 0.5f, swatch, swatch};
+                Glyphs::drawFreePowerFrame(ui, sw, ui.s(6), ui.s(2));
+                ui.label(legend, {sw.right() + ui.s(10), cy}, lf, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+            }
+        }
         // Pages of 8 large cards (4 x 2): the descriptions stay readable.
         constexpr int cols = 4, rows = 2, perPage = cols * rows;
         int pages = std::max(1, static_cast<int>((demos_.size() + perPage - 1) / perPage));
@@ -123,20 +139,30 @@ public:
                 r.setView(WorldView{});
                 if (d.world->timeSlowRemaining() > 0.0f) r.fillRect(vp, Color{150, 90, 255, 40});
                 r.popClip();
-                r.drawRoundedRect(vp, ui.s(6), def ? def->color.withAlpha(120) : ui.theme().border, ui.s(1.5f));
+                if (def && powerTriggerInfo(*def).kind != PowerTrigger::SlotKey) Glyphs::drawFreePowerFrame(ui, vp, ui.s(6), ui.s(2));
+                else r.drawRoundedRect(vp, ui.s(6), def ? def->color.withAlpha(120) : ui.theme().border, ui.s(1.5f));
             }
             if (!def) continue;
-            // Name row: icon, name, then its button on the right (passive powers have none).
+            // Name row: icon, name. A power used with the key of its slot shows no key (the
+            // player chooses it, Paramètres); the others show their move or « passif », in
+            // the dashed gold frame, on the right.
             float ty = vp.bottom() + ui.s(10);
             Rect icon{card.x + ui.s(12), ty, ui.s(34), ui.s(34)};
             ui.icon("ui/icons_powers.png", def->icon, 32, icon);
-            bool passive = powerIsPassive(d.def.power);
-            float keyH = ui.s(28);
-            float keyW = passive ? ui.text().measure("passif", FontFace::Body, ui.s(15)).x
-                                 : Glyphs::drawAction(ui, def->input, {-10000, -10000}, keyH);  // measure
-            float keyX = card.right() - ui.s(12) - keyW;
-            if (passive) ui.label("passif", {keyX, icon.center().y}, 15, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
-            else Glyphs::drawAction(ui, def->input, {keyX, icon.center().y}, keyH);
+            const PowerTriggerInfo use = powerTriggerInfo(*def);
+            float keyX = card.right() - ui.s(12);
+            if (use.kind != PowerTrigger::SlotKey) {
+                const std::string t = use.kind == PowerTrigger::Passive ? "Passif" : "";
+                float keyH = ui.s(24);
+                float bw = Glyphs::drawFreePowerUse(ui, use.keys, t, {0.0f, 0.0f}, keyH, 1.0f, false);
+                float maxW = card.w * 0.45f;
+                if (bw > maxW) {
+                    keyH *= maxW / bw;
+                    bw = Glyphs::drawFreePowerUse(ui, use.keys, t, {0.0f, 0.0f}, keyH, 1.0f, false);
+                }
+                keyX -= bw;
+                Glyphs::drawFreePowerUse(ui, use.keys, t, {keyX, icon.center().y}, keyH);
+            }
             float nameX = icon.right() + ui.s(10);
             float nameRoom = keyX - ui.s(10) - nameX;
             ui.label(def->name, {nameX, icon.center().y}, ui.fitFont(def->name, FontFace::Bold, 21, nameRoom), def->color, Align::Left,
@@ -216,7 +242,8 @@ private:
         r.setView(WorldView{});
         if (d.world->timeSlowRemaining() > 0.0f) r.fillRect(vp, Color{150, 90, 255, 40});
         r.popClip();
-        r.drawRoundedRect(vp, g_.ui.s(6), def ? def->color.withAlpha(140) : g_.ui.theme().border, g_.ui.s(1.5f));
+        if (def && powerTriggerInfo(*def).kind != PowerTrigger::SlotKey) Glyphs::drawFreePowerFrame(g_.ui, vp, g_.ui.s(6), g_.ui.s(2));
+        else r.drawRoundedRect(vp, g_.ui.s(6), def ? def->color.withAlpha(140) : g_.ui.theme().border, g_.ui.s(1.5f));
     }
 
     /// The power's sheet: a large example, its button, cost against the energy gauge, and
@@ -236,9 +263,12 @@ private:
         ui.pushId("sheet");
         // Header: icon, name, its button.
         float x = box.x + ui.s(32), y = box.y + ui.s(28);
+        const PowerTriggerInfo use = powerTriggerInfo(*def);
+        const bool free = use.kind != PowerTrigger::SlotKey;
         Rect icon{x, y, ui.s(64), ui.s(64)};
         ui.r().fillRoundedRect(icon, ui.s(12), {7, 11, 24, 255});
-        ui.r().drawRoundedRect(icon, ui.s(12), def->color, ui.s(2));
+        if (free) Glyphs::drawFreePowerFrame(ui, icon, ui.s(12), ui.s(2.5f));
+        else ui.r().drawRoundedRect(icon, ui.s(12), def->color, ui.s(2));
         ui.icon("ui/icons_powers.png", def->icon, 32, icon.expanded(-ui.s(8)));
         UIContext::ButtonStyle cs;
         cs.small = true;
@@ -250,8 +280,21 @@ private:
         float nroom = prevB.x - ui.s(20) - nx;
         float nf = ui.fitFont(def->name, FontFace::Title, 34, nroom, 0.6f);
         ui.label(def->name, {nx, y + ui.s(20)}, nf, def->color, Align::Left, FontFace::Title, VAlign::Middle);
-        if (powerIsPassive(d.def.power)) ui.label("Passif : toujours actif", {nx, y + ui.s(52)}, 17, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
-        else Glyphs::drawHint(ui, def->input, "pour l'utiliser", {nx, y + ui.s(52)}, ui.s(30));
+        if (free) {
+            // Its move (or « passif »), in the dashed gold frame of the HUD.
+            const std::string how = use.kind == PowerTrigger::Passive ? "Passif : toujours actif" : use.how;
+            float h = ui.s(26);
+            float bw = Glyphs::drawFreePowerUse(ui, use.keys, how, {0.0f, 0.0f}, h, 1.0f, false);
+            if (bw > nroom) {
+                h *= nroom / bw;
+                bw = Glyphs::drawFreePowerUse(ui, use.keys, how, {0.0f, 0.0f}, h, 1.0f, false);
+            }
+            Glyphs::drawFreePowerUse(ui, use.keys, how, {nx, y + ui.s(60)}, h);
+        } else {
+            // No key: the player gives one to each slot.
+            const std::string t = "Touche : celle de l'emplacement où il est équipé (Paramètres › Clavier / souris, Manette).";
+            ui.label(t, {nx, y + ui.s(54)}, ui.fitFont(t, FontFace::Body, 17, nroom), ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        }
         y += ui.s(92);
         // Left: the example, larger. Right: what it does and its characteristics.
         float leftW = (box.w - ui.s(96)) * 0.56f;

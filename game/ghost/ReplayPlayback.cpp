@@ -32,6 +32,7 @@ ReplayPlayback::Run ReplayPlayback::makeRun() const {
     // The same start as a run: the level loaded, its seed, then the replay's (ReplaySimulator).
     Run r;
     r.world = std::make_unique<GameWorld>(services_, WorldMode::Play);
+    r.world->setKeysPerSlot(replay_.keysPerSlot);  // before the start powers are granted
     r.world->load(level_);
     r.world->seedGameplay(levelSeed(level_.id));
     r.world->silent = true;

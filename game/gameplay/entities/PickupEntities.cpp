@@ -204,7 +204,11 @@ void PowerUnlockEntity::celebrate(GameWorld& w, const PowerDefinition& def, Vec2
     } else {
         m.subtitle = message.empty() ? def.description : message;
     }
-    m.speaker = actionId(def.input);  // the HUD shows the matching button
+    // The HUD shows how to use it: the key of the slot it went to (or its move, « passif »).
+    m.power = def.id;
+    const auto& carried = w.player().powers();
+    for (size_t i = 0; i < carried.size(); ++i)
+        if (carried[i]->id() == def.id) m.powerSlot = static_cast<int>(i);
     m.detail = powerStatsLine(def, 5);
     m.duration = 6.0f;
     w.message(m);

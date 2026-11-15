@@ -104,7 +104,7 @@ TEST_CASE("crouch: a shot at head height passes over a crouching player") {
 }
 
 TEST_CASE("crouch: the rankings generation follows the rules (2.17: a new generation)") {
-    CHECK(kSimulationVersion == 9);  // 2.20: guardians and powers of Aethra (additions only)
+    CHECK(kSimulationVersion == 10);  // 2.24: keys per power slot (old replays: same rules)
     CHECK(kRankingGeneration == 8);  // ... so the 2.17 rankings are kept
     ContentDatabase content;
     content.reload();

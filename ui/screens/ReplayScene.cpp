@@ -1305,12 +1305,22 @@ private:
         }
         struct Key {
             Action a;
-            const char* label;
+            std::string label;
         };
-        static const Key keys[] = {{Action::MoveLeft, "←"},    {Action::MoveRight, "→"},   {Action::MoveUp, "↑"},       {Action::MoveDown, "↓"},
-                                   {Action::Jump, "Saut"},     {Action::Attack, "Tir"},    {Action::Dash, "Dash"},      {Action::Wave, "Onde"},
-                                   {Action::Shield, "Boucl."}, {Action::Impulse, "Imp."},  {Action::Teleport, "Télép."}, {Action::Interact, "Inter."},
-                                   {Action::Special, "Spéc."}};
+        std::vector<Key> keys = {{Action::MoveLeft, "←"}, {Action::MoveRight, "→"}, {Action::MoveUp, "↑"}, {Action::MoveDown, "↓"},
+                                 {Action::Jump, "Saut"},  {Action::Attack, "Tir"}};
+        if (a_.replay && a_.replay->keysPerSlot) {
+            // Since 2.24: the keys of the power slots, P1 to P4 (up to P8 when the level
+            // lets the player carry more powers).
+            keys.push_back({Action::Interact, "Inter."});
+            int slots = level_.powerSlots() <= 0 ? kPowerSlotKeys : std::clamp(level_.powerSlots(), 4, kPowerSlotKeys);
+            for (int s = 0; s < slots; ++s) keys.push_back({powerSlotAction(s), "P" + std::to_string(s + 1)});
+        } else {
+            // A replay recorded before: one button per power.
+            for (const Key& k : {Key{Action::Dash, "Dash"}, Key{Action::Wave, "Onde"}, Key{Action::Shield, "Boucl."}, Key{Action::Impulse, "Imp."},
+                                 Key{Action::Teleport, "Télép."}, Key{Action::Interact, "Inter."}, Key{Action::Special, "Spéc."}})
+                keys.push_back(k);
+        }
         float x = area.x, h = area.h;
         std::string lead = "Entrées";
         ui.label(lead, {x, area.center().y}, fs, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);

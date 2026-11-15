@@ -7,8 +7,23 @@
 
 namespace cosmic {
 
-bool Power::wantsActivation(const Player& /*p*/, const GameWorld& /*w*/, const PlayerInput& in) const {
-    return in.isPressed(def_.input);
+bool Power::keyPressed(const PlayerInput& in) const { return key_ != Action::Count && in.isPressed(key_); }
+
+bool Power::wantsActivation(const Player& /*p*/, const GameWorld& /*w*/, const PlayerInput& in) const { return keyPressed(in); }
+
+PowerTriggerInfo powerTriggerInfo(const Power& p) {
+    PowerTriggerInfo t;
+    t.kind = p.trigger();
+    if (t.kind == PowerTrigger::StandardKeys) {
+        t.keys = p.standardKeys();
+        t.how = p.standardKeysHow();
+    }
+    return t;
+}
+
+PowerTriggerInfo powerTriggerInfo(const PowerDefinition& def) {
+    auto probe = PowerRegistry::instance().create(def);
+    return probe ? powerTriggerInfo(*probe) : PowerTriggerInfo{};
 }
 
 bool Power::ready(const Player& p) const { return cooldown_ <= 0.0f && p.energy + 0.001f >= activationCost(p); }

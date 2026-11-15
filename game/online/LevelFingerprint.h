@@ -22,7 +22,7 @@ struct LevelData;
 /// Version of the simulation rules. Bump it whenever a code change can alter how a run
 /// plays out (physics, AI, damage, timers...), with the reference digests of
 /// tests/test_determinism.cpp.
-constexpr int kSimulationVersion = 9;  // 6: energy 150, time slow, magnet, air dash, plasma bomb (special button),
+constexpr int kSimulationVersion = 10;  // 6: energy 150, time slow, magnet, air dash, plasma bomb (special button),
                                        //    arena bosses keep their wounds when the player dies
                                        // 7: crouch in place (Down on the ground)
                                        // 8: energy costs by strength (charge shot = reference),
@@ -31,13 +31,21 @@ constexpr int kSimulationVersion = 9;  // 6: energy 150, time slow, magnet, air 
                                        //    pull, ice, lava tide, thorn walls) and 4 powers
                                        //    (boomerang, frost nova, decoy, recall); earlier
                                        //    levels play exactly as before (same digests)
+                                       // 10: keys per power slot (InputFrame bits 13-20,
+                                       //    replays version 3): the key of a slot uses the
+                                       //    power carried there, and two powers of the old
+                                       //    special button can be carried together. A run
+                                       //    with one button per power (replays version 2)
+                                       //    plays exactly as before (same digests)
 /// Generation of the rankings, part of every ranked fingerprint. It follows
 /// kSimulationVersion when a change makes earlier runs incomparable (records and replays of
 /// different generations are never mixed). A change that only adds a possibility and
 /// leaves every earlier run valid keeps it, so the records are kept:
 ///   6 -> simulation 6 and 7 (7 adds crouching in place: earlier runs never crouched).
-///   8 -> simulation 8 (2.17: energy costs and minions changed: the rankings start again)
-///        and 9 (2.20: only additions — new guardians, attacks and powers — the records stay).
+///   8 -> simulation 8 (2.17: energy costs and minions changed: the rankings start again),
+///        9 (2.20: only additions — new guardians, attacks and powers — the records stay)
+///        and 10 (2.24: keys per power slot; the moves and powers are the same, earlier runs
+///        stay valid and comparable).
 constexpr int kRankingGeneration = 8;
 
 struct LevelFingerprint {

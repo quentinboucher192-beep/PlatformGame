@@ -4,6 +4,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "game/powers/PowerDefinition.h"
 
@@ -14,18 +15,38 @@ class GameWorld;
 struct RenderContext;
 struct PlayerInput;
 
+/// How the player uses a power (2.24: the keys belong to the power slots).
+enum class PowerTrigger {
+    SlotKey,       // the key of the slot it is equipped in (« Pouvoir 1 » ...)
+    StandardKeys,  // a move of the character: Jump, Attack, Down + Attack, Interact...
+    Passive,       // nothing to press: it works on its own
+};
+
 /// Base class of the player's powers. A power is created from a PowerDefinition
 /// (data) by the PowerRegistry according to its `behavior`. Adding a power means adding
 /// a subclass and registering it: the Player never needs to change.
 class Power {
 public:
-    explicit Power(const PowerDefinition& def) : def_(def) {}
+    explicit Power(const PowerDefinition& def) : def_(def), key_(def.input) {}
     virtual ~Power() = default;
 
     const PowerDefinition& def() const { return def_; }
     const std::string& id() const { return def_.id; }
 
-    /// Input rule. By default a power fires when its action is pressed; context powers
+    /// What the player presses to use it. A power that keeps the default activation uses
+    /// the key of its slot; the others override this (and standardKeys()).
+    virtual PowerTrigger trigger() const { return passive() ? PowerTrigger::Passive : PowerTrigger::SlotKey; }
+    /// StandardKeys: the moves that use it, in order (Bas + Attaque: {MoveDown, Attack}).
+    virtual std::vector<Action> standardKeys() const { return {}; }
+    /// StandardKeys: how they are used, in French, said after the keys (« en l'air »).
+    virtual const char* standardKeysHow() const { return ""; }
+    /// The action that uses the power: the key of its slot (PowerSlot1..8) for a slot-key
+    /// power when the keys are per slot, its own `input` otherwise; Action::Count: none
+    /// (a slot beyond the last key). Set by the Player whenever its powers change.
+    Action key() const { return key_; }
+    void setKey(Action a) { key_ = a; }
+
+    /// Input rule. By default a power fires when its key (key()) is pressed; context powers
     /// (ground pound, grapple...) and passive upgrades override it.
     virtual bool wantsActivation(const Player& p, const GameWorld& w, const PlayerInput& in) const;
     /// Called every controllable step with the input, before activation (hold / release
@@ -66,9 +87,22 @@ public:
 
 protected:
     virtual void onActivate(Player& p, GameWorld& w) = 0;
+    /// Whether key() is pressed in this step.
+    bool keyPressed(const PlayerInput& in) const;
     PowerDefinition def_;
     float cooldown_ = 0.0f;
+    Action key_;
 };
+
+/// How a power of the data is used (HUD, power guide, choice of the power to replace).
+struct PowerTriggerInfo {
+    PowerTrigger kind = PowerTrigger::SlotKey;
+    std::vector<Action> keys;  // StandardKeys only
+    std::string how;           // StandardKeys only, French (« en l'air »)
+};
+PowerTriggerInfo powerTriggerInfo(const Power& p);
+/// Same, for a definition (asks a power built from it; SlotKey for an unknown behaviour).
+PowerTriggerInfo powerTriggerInfo(const PowerDefinition& def);
 
 /// Factory of powers by behaviour name.
 class PowerRegistry {

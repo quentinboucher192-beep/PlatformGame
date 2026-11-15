@@ -80,16 +80,25 @@ public:
     bool spendEnergy(float amount);
 
     // --------------------------------------------------------- powers
-    /// Grants a power outright (start powers, scripted gifts, tests): a power on the same
-    /// exclusive input is replaced, the slot limit is not checked.
+    /// Keys of the powers (rule of the run, set before the start powers are granted):
+    /// true since 2.24, each slot has its key (Action::PowerSlot1..8) and uses the power
+    /// carried there; false for the replays recorded before, where each power had its own
+    /// button (PowerDefinition::input) and two powers on the same button could not be
+    /// carried together.
+    void setKeysPerSlot(bool on);
+    bool keysPerSlot() const { return keysPerSlot_; }
+    /// Grants a power outright (start powers, scripted gifts, tests): the same power, or
+    /// (keys per power) a power on the same exclusive input, is replaced; the slot limit is
+    /// not checked.
     void grantPower(const PowerDefinition& def);
     /// Result of offering a power (tablet picked up).
     enum class Offer { Granted, AlreadyOwned, NeedsChoice };
-    /// Grants the power if a slot is free and no carried power uses the same exclusive
-    /// input; otherwise the player must choose (replace a power or leave the new one).
+    /// Grants the power if a slot is free and (keys per power) no carried power uses the
+    /// same exclusive input; otherwise the player must choose (replace a power or leave the
+    /// new one).
     Offer offerPower(const PowerDefinition& def);
     /// Index of the carried power the new one would have to replace because they share an
-    /// exclusive input (-1 = none: any slot can be replaced).
+    /// exclusive input (-1 = none: any slot can be replaced; always -1 with keys per slot).
     int conflictingPower(const PowerDefinition& def) const;
     /// Replaces the power in `slot` by `def` and returns the id of the power removed.
     std::string replacePower(int slot, const PowerDefinition& def);
@@ -168,6 +177,9 @@ private:
     bool crouchBox_ = false;  // the hitbox is the crouching one
     void tryJump(GameWorld& w, const PlayerInput& in);
     void handlePowers(GameWorld& w, const PlayerInput& in, float dt);
+    /// Gives each carried power its key (slot key or own input), after any change.
+    void assignPowerKeys();
+    bool sharesExclusiveInput(const Power& owned, const PowerDefinition& def, const Power& created) const;
     void handleAttack(GameWorld& w, const PlayerInput& in, float dt);
     void handleInteract(GameWorld& w, const PlayerInput& in);
     void moveAndCollide(GameWorld& w, float dt);
@@ -188,6 +200,7 @@ private:
     int airJumpsLeft_ = 1;
     int extraAirJumps_ = 0;
     int powerSlots_ = 0;
+    bool keysPerSlot_ = false;
     float slowTimer_ = 0.0f;
     float slowMultiplier_ = 1.0f;
     float wallJumpLockTimer_ = 0.0f;

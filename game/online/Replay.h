@@ -63,7 +63,11 @@ struct ReplayCheck {
 };
 
 struct ReplayData {
-    static constexpr uint16_t kFormatVersion = 2;
+    /// 3 since 2.24: the recorded actions take 32 bits (keys of the power slots) and the
+    /// input section says how the powers were used (keysPerSlot). Versions 1 and 2 are read.
+    static constexpr uint16_t kFormatVersion = 3;
+    /// Input flags of the version 3 input section.
+    static constexpr uint16_t kInputKeysPerSlot = 1;
     /// One state digest every kCheckTicks steps (0.5 s).
     static constexpr uint32_t kCheckTicks = 60;
     /// Longest run accepted (2 hours of steps).
@@ -84,6 +88,9 @@ struct ReplayData {
     uint16_t formatVersion = kFormatVersion;  // version read from the file
     uint64_t seed = 0;
     uint16_t tickHz = static_cast<uint16_t>(kSimHz);
+    /// Keys of the powers in the run (GameWorld::setKeysPerSlot): true for a run played
+    /// since 2.24, false for a version 2 file (one button per power).
+    bool keysPerSlot = false;
     std::vector<InputFrame> inputs;  // one per simulation step since the level was loaded
     std::vector<ReplayCheck> checks;
     bool exact() const { return formatVersion >= 2 && !inputs.empty(); }
@@ -114,7 +121,8 @@ public:
     bool active() const { return active_; }
     /// Input of the step about to be simulated (call before stepWorld).
     void recordInput(const InputFrame& f);
-    /// After the step: samples the trace and adds a state digest every kCheckTicks steps.
+    /// After the step: samples the trace and adds a state digest every kCheckTicks steps
+    /// (and notes the world's keys of the powers, ReplayData::keysPerSlot).
     void tick(const GameWorld& w);
     void onWorldEvent(const std::string& source, const std::string& trigger);
     /// Ends the recording when the level is completed (`elapsed` = timer value).
@@ -148,7 +156,8 @@ private:
 /// other engine): the run is then no longer shown as exact.
 class ReplaySimulator {
 public:
-    /// Seeds `world` with the replay's seed. `world` must have just loaded the level.
+    /// Seeds `world` with the replay's seed and gives it the replay's keys of the powers
+    /// (ReplayData::keysPerSlot). `world` must have just loaded the level.
     ReplaySimulator(const ReplayData& replay, GameWorld& world);
     bool finished() const { return tick_ >= replay_.inputs.size(); }
     uint32_t tick() const { return tick_; }

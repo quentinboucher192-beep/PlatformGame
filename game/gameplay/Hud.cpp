@@ -245,26 +245,49 @@ void Hud::drawPowers(UIContext& ui, GameWorld& w, Vec2 o, float k) {
     const Player& p = w.player();
     if (p.powers().empty() && p.powerSlots() <= 0) return;
     float size = S(54);
+    const float pitch = size + S(18);
     float x = o.x, y = o.y;
     Renderer& r = ui.r();
-    for (const auto& pw : p.powers()) {
+    for (size_t i = 0; i < p.powers().size(); ++i) {
+        const auto& pw = p.powers()[i];
         Rect box{x, y, size, size};
         bool ready = pw->ready(p);
         bool enough = p.energy + 0.01f >= pw->activationCost(p);
+        // Powers that do not use the key of their slot (passive, or on a move of the
+        // character) wear the dashed gold frame: the slot key does nothing for them.
+        const PowerTrigger trigger = pw->trigger();
+        const bool free = trigger != PowerTrigger::SlotKey;
         r.fillRoundedRect(box.expanded(S(4)), S(10), {8, 12, 26, 210});
         ui.icon("ui/icons_powers.png", pw->def().icon, 32, box, ready ? Color::white() : Color{110, 120, 140, 255});
         float cd = pw->cooldownRatio();
         if (cd > 0.0f) r.fillRect({box.x, box.y + box.h * (1.0f - cd), box.w, box.h * cd}, {0, 0, 0, 140});
-        if (!enough) r.drawRoundedRect(box.expanded(S(4)), S(10), {255, 77, 109, 160}, S(2));
+        Rect state = free ? box.expanded(S(1)) : box.expanded(S(4));  // inside the dashed frame
+        if (!enough) r.drawRoundedRect(state, S(10), {255, 77, 109, 160}, S(2));
         else if (pw->active()) {
-            r.drawRoundedRect(box.expanded(S(4)), S(10), pw->def().color, S(3));
+            r.drawRoundedRect(state, S(10), pw->def().color, S(free ? 2.0f : 3.0f));
             r.drawGlow(box.center(), size, pw->def().color.withAlpha(60));
-        } else if (ready) {
-            r.drawRoundedRect(box.expanded(S(4)), S(10), {57, 240, 216, 90}, S(1.5f));
+        } else if (ready && !free) {
+            r.drawRoundedRect(state, S(10), {57, 240, 216, 90}, S(1.5f));
         }
-        if (!pw->passive())
-            Glyphs::drawAction(ui, pw->def().input, {box.center().x - S(14), box.bottom() + S(22)}, S(28));
-        x += size + S(18);
+        if (free) Glyphs::drawFreePowerFrame(ui, box.expanded(S(4)), S(10), S(2));
+        // Below: the key of its slot, the move that uses it, or « passif » — never wider
+        // than its column (a long key name is drawn smaller).
+        const float gy = box.bottom() + S(22), room = pitch - S(6);
+        float gh = S(28);
+        if (trigger == PowerTrigger::Passive) {
+            float fs = k * 15.0f;
+            while (fs > k * 9.0f && ui.text().measure("PASSIF", FontFace::Bold, ui.s(fs)).x > room) fs -= 0.5f;
+            ui.text().draw("PASSIF", {box.center().x, gy}, style(ui, fs, Glyphs::freePowerColor(), FontFace::Bold, Align::Center, VAlign::Middle));
+        } else {
+            std::vector<Action> keys = trigger == PowerTrigger::SlotKey ? std::vector<Action>{powerSlotAction(static_cast<int>(i))} : pw->standardKeys();
+            float kw = Glyphs::drawKeys(ui, keys, {0.0f, 0.0f}, gh, false);
+            if (kw > room) {
+                gh *= room / kw;
+                kw = Glyphs::drawKeys(ui, keys, {0.0f, 0.0f}, gh, false);
+            }
+            Glyphs::drawKeys(ui, keys, {box.center().x - kw * 0.5f, gy}, gh);
+        }
+        x += pitch;
     }
     // Power slots of the level: the free ones are shown empty, with the count.
     int slots = p.powerSlots();
@@ -696,6 +719,22 @@ void Hud::drawInteractPrompt(UIContext& ui, GameWorld& w, const WorldView& view)
     Glyphs::drawHint(ui, Action::Interact, prompt, pos, h);
 }
 
+void Hud::drawPowerUse(UIContext& ui, const PowerDefinition& def, int slot, Vec2 center, float h, float alpha) {
+    const PowerTriggerInfo t = powerTriggerInfo(def);
+    if (t.kind == PowerTrigger::SlotKey) {
+        // The key of the slot it went to.
+        const std::string text = "pour l'utiliser";
+        Action key = powerSlotAction(slot);
+        float w = Glyphs::measureAction(ui, key, h) + h * 0.3f + ui.text().measure(text, FontFace::Body, h * 0.62f).x;
+        Glyphs::drawHint(ui, key, text, {center.x - w * 0.5f, center.y}, h);
+        return;
+    }
+    // Not on the key of its slot: its move, or « passif », in the dashed gold frame.
+    const std::string text = t.kind == PowerTrigger::Passive ? "Passif : toujours actif" : t.how;
+    float w = Glyphs::drawFreePowerUse(ui, t.keys, text, {0.0f, 0.0f}, h, alpha, false);
+    Glyphs::drawFreePowerUse(ui, t.keys, text, {center.x - w * 0.5f, center.y}, h, alpha);
+}
+
 void Hud::drawMessages(UIContext& ui, GameWorld& w) {
     float hintY = ui.screenH() - ui.s(w.activeBoss() ? 210 : 150);
     for (const auto& m : w.messages()) {
@@ -744,14 +783,9 @@ void Hud::drawMessages(UIContext& ui, GameWorld& w) {
                     ui.label(m.detail, band.center(), fs, ui.theme().warm.withAlphaF(a), Align::Center, FontFace::Bold, VAlign::Middle);
                     yy += band.h + ui.s(12);
                 }
-                // Power unlock: show the button for the new power.
-                if (!m.speaker.empty()) {
-                    Action act = actionFromId(m.speaker);
-                    if (act != Action::Count) {
-                        float h = ui.s(40);
-                        Glyphs::drawHint(ui, act, "pour l'utiliser", {ui.screenW() * 0.5f - ui.s(110), std::max(y + ui.s(130), yy + h * 0.5f)}, h);
-                    }
-                }
+                // Power unlock: how to use the new power, centred below the rest.
+                if (const PowerDefinition* def = m.power.empty() ? nullptr : w.content().power(m.power))
+                    drawPowerUse(ui, *def, m.powerSlot, {ui.screenW() * 0.5f, std::max(y + ui.s(130), yy + ui.s(30))}, ui.s(40), a);
                 break;
             }
             case WorldMessage::Style::Secret: {

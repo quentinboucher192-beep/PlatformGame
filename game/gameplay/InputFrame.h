@@ -14,17 +14,20 @@ class GameWorld;
 /// Live play goes through this type too (analog stick quantised to 1/127), so a run
 /// replayed from its recorded frames receives bit-identical inputs.
 struct InputFrame {
-    /// Gameplay actions recorded: MoveLeft .. Special (menus and pause never reach the
-    /// simulation).
-    static constexpr int kActions = static_cast<int>(Action::Special) + 1;
+    /// Gameplay actions recorded: MoveLeft .. PowerSlot8, one bit each in the order of
+    /// Action (menus and pause never reach the simulation). Bits 13 to 20, the keys of the
+    /// power slots, exist since 2.24 (replay format 3); before, the powers had their own
+    /// buttons (bits 6 to 10 and 12), which old replays still use.
+    static constexpr int kActions = static_cast<int>(Action::PowerSlot8) + 1;
+    static_assert(kActions <= 32, "the recorded actions fit in 32 bits");
     enum Flag : uint8_t { SkipCinematic = 1 };
     /// Answer to a pending power offer (GameWorld::powerOffer): 1..8 replaces that slot,
     /// kChoiceLeave leaves the new power on its tablet, 0 = no answer this step.
     static constexpr uint8_t kChoiceLeave = 255;
 
-    uint16_t held = 0;
-    uint16_t pressed = 0;
-    uint16_t released = 0;
+    uint32_t held = 0;
+    uint32_t pressed = 0;
+    uint32_t released = 0;
     int8_t moveX = 0;  // -127..127
     int8_t moveY = 0;
     uint8_t flags = 0;
@@ -40,9 +43,9 @@ struct InputFrame {
     static InputFrame fromPlayerInput(const PlayerInput& in) {
         InputFrame f;
         for (int i = 0; i < kActions; ++i) {
-            if (in.held[i]) f.held |= static_cast<uint16_t>(1u << i);
-            if (in.pressed[i]) f.pressed |= static_cast<uint16_t>(1u << i);
-            if (in.released[i]) f.released |= static_cast<uint16_t>(1u << i);
+            if (in.held[i]) f.held |= 1u << i;
+            if (in.pressed[i]) f.pressed |= 1u << i;
+            if (in.released[i]) f.released |= 1u << i;
         }
         f.moveX = quantize(in.move.x);
         f.moveY = quantize(in.move.y);

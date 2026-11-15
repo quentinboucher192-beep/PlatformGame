@@ -3386,6 +3386,12 @@
    ]
   },
   {
+   "fr": "Cadre pointillé doré : pouvoir passif ou utilisé avec un mouvement, pas avec la touche de son emplacement.",
+   "where": [
+    "ui/screens/PowerGuideScene.cpp"
+   ]
+  },
+  {
    "fr": "Cadres d'avatar",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -6601,6 +6607,7 @@
   {
    "fr": "dash",
    "where": [
+    "editors/enemy_editor/EnemyEditorScene.cpp",
     "engine/input/InputTypes.cpp",
     "game/gameplay/Damage.cpp",
     "game/ghost/Ghost.cpp",
@@ -8172,6 +8179,12 @@
    "fr": "En l'air",
    "where": [
     "game/powers/PowerStats.cpp"
+   ]
+  },
+  {
+   "fr": "en l'air",
+   "where": [
+    "game/powers/Powers.h"
    ]
   },
   {
@@ -11005,6 +11018,12 @@
    "where": [
     "server/src/live.ts",
     "server/src/projects.ts"
+   ]
+  },
+  {
+   "fr": "Il prendra la touche de l'emplacement où vous le mettez.",
+   "where": [
+    "ui/screens/PowerChoiceScene.cpp"
    ]
   },
   {
@@ -14281,6 +14300,18 @@
    "fr": "Maintenir pour passer",
    "where": [
     "game/gameplay/Hud.cpp"
+   ]
+  },
+  {
+   "fr": "maintenue en tombant",
+   "where": [
+    "game/powers/Powers.h"
+   ]
+  },
+  {
+   "fr": "maintenue, puis relâchée",
+   "where": [
+    "game/powers/Powers.h"
    ]
   },
   {
@@ -17588,6 +17619,12 @@
    ]
   },
   {
+   "fr": "Partie",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
    "fr": "Partie rejouée à l'identique",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -17746,14 +17783,23 @@
    ]
   },
   {
-   "fr": "passif",
+   "fr": "PASSIF",
    "where": [
+    "game/gameplay/Hud.cpp"
+   ]
+  },
+  {
+   "fr": "Passif",
+   "where": [
+    "ui/screens/PowerChoiceScene.cpp",
     "ui/screens/PowerGuideScene.cpp"
    ]
   },
   {
    "fr": "Passif : toujours actif",
    "where": [
+    "game/gameplay/Hud.cpp",
+    "ui/screens/PowerChoiceScene.cpp",
     "ui/screens/PowerGuideScene.cpp"
    ]
   },
@@ -19040,8 +19086,7 @@
   {
    "fr": "pour l'utiliser",
    "where": [
-    "game/gameplay/Hud.cpp",
-    "ui/screens/PowerGuideScene.cpp"
+    "game/gameplay/Hud.cpp"
    ]
   },
   {
@@ -19086,6 +19131,54 @@
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/levels/ObjectTypes.cpp",
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pouvoir 1",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Pouvoir 2",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Pouvoir 3",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Pouvoir 4",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Pouvoir 5",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Pouvoir 6",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Pouvoir 7",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Pouvoir 8",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -19145,6 +19238,12 @@
    ]
   },
   {
+   "fr": "Pouvoirs 5 à 8 : seulement dans les niveaux qui permettent d'en porter plus de 4.",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
    "fr": "Pouvoirs : coûts d'énergie selon leur force (référence : le tir chargé à 20, une attaque moins forte coûte moins). Leurs caractéristiques (énergie, dégâts, rayon, portée, recharge…) sont affichées dans le guide, dans la fiche de chaque pouvoir et quand on les ramasse.",
    "where": [
     "data/news/changelog.json"
@@ -19178,6 +19277,12 @@
    "fr": "Pouvoirs portés au maximum",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Pouvoirs équipés",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
    ]
   },
   {
@@ -19533,6 +19638,12 @@
    ]
   },
   {
+   "fr": "près d'un point d'ancrage",
+   "where": [
+    "game/powers/Powers.h"
+   ]
+  },
+  {
    "fr": "Près d'un point d'ancrage, appuyez sur Interagir : le Grappin vous y projette.",
    "where": [
     "data/levels/pyralis_01.json"
@@ -19819,6 +19930,12 @@
    "fr": "PYROGYRE, L'ANNEAU SOLAIRE",
    "where": [
     "data/enemies/pyrogyre.json"
+   ]
+  },
+  {
+   "fr": "P{0}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -22207,6 +22324,12 @@
    "where": [
     "data/cosmetics/cosmetics.json",
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "sans touche",
+   "where": [
+    "ui/screens/PowerChoiceScene.cpp"
    ]
   },
   {
@@ -25121,6 +25244,12 @@
    ]
   },
   {
+   "fr": "Touche : celle de l'emplacement où il est équipé (Paramètres › Clavier / souris, Manette).",
+   "where": [
+    "ui/screens/PowerGuideScene.cpp"
+   ]
+  },
+  {
    "fr": "Touche retirée de « {0} »",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -26328,6 +26457,12 @@
    "fr": "Une tablette des sanctuaires : le Leurre holographique attire les coups à votre place.",
    "where": [
     "data/levels/aethra_03.json"
+   ]
+  },
+  {
+   "fr": "Une touche par emplacement du HUD : elle utilise le pouvoir équipé dans cet emplacement, quel qu'il soit. Les pouvoirs au cadre pointillé doré (passifs, ou utilisés avec le saut, l'attaque, Bas + Attaque, Interagir) n'utilisent pas la touche de leur emplacement.",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
    ]
   },
   {

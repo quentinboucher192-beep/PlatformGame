@@ -96,7 +96,9 @@ CosmicPlatformer --headless --level sylvanox_01 --spawn 3200,700 --input "0:righ
 
 `--headless` utilise une fenêtre cachée et des images de 1/60 s fixes ; `--shot <image>:<fichier>`
 enregistre une capture PNG au chemin donné (F12 en jeu écrit dans `screenshots/` du dossier
-utilisateur) ; `--input` rejoue des actions scriptées ; `--user-dir` isole les données.
+utilisateur) ; `--input` rejoue des actions scriptées (identifiants d'`Action` : `jump`,
+`attack`, `interact`… ; depuis la 2.24 les pouvoirs se déclenchent par la touche de leur
+emplacement, `power_slot_1` à `power_slot_8`) ; `--user-dir` isole les données.
 
 ## Installateur Windows
 

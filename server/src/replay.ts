@@ -8,7 +8,8 @@
 // cheating considerably but does not make it impossible: a modified client can forge a
 // plausible trace. Podium records of new accounts therefore stay PENDING for review.
 //
-// Layout (little-endian), see docs/REPLAY_FORMAT.md:
+// Layout (little-endian), see docs/online/REPLAY_FORMAT.md (formats 2 and 3 add an input
+// section after the events):
 //   char[4] "CPRP" | u16 format_version | u16 sample_hz | u32 frame_count | u32 duration_ms
 //   u32 event_count | u8[32] level_hash | u8[16] attempt_id (UUID bytes)
 //   u8 len + level_id | u8 len + game_version
@@ -18,8 +19,13 @@
 import { toHex } from "./crypto";
 import type { LevelVersionRow, RecordRow } from "./model";
 
-/** Latest format written by the game. Version 1 (trajectory only) is still accepted. */
-export const REPLAY_FORMAT_VERSION = 2;
+/**
+ * Latest format written by the game (3 since 2.24: actions on 32 bits, keys of the power
+ * slots). Versions 1 (trajectory only) and 2 (actions on 16 bits) are still accepted.
+ */
+export const REPLAY_FORMAT_VERSION = 3;
+/** Format 3: input flags of the input section (bit 0: keys per power slot). */
+export const REPLAY_INPUT_KEYS_PER_SLOT = 1;
 /** Version 2: simulation steps per second and the longest run accepted (2 h of steps). */
 export const REPLAY_TICK_HZ = 120;
 export const REPLAY_MAX_TICKS = 120 * 7200;
@@ -60,9 +66,10 @@ export interface ReplayEvent {
 }
 
 /**
- * Exact replay data (format 2): the gameplay seed and the input of every simulation step,
- * with a digest of the simulation state every 0.5 s. The game re-simulates the run with it;
- * the server checks its consistency and keeps it for a later server-side re-simulation.
+ * Exact replay data (formats 2 and 3): the gameplay seed and the input of every simulation
+ * step, with a digest of the simulation state every 0.5 s. The game re-simulates the run
+ * with it; the server checks its consistency and keeps it for a later server-side
+ * re-simulation.
  */
 export interface ReplayInputs {
     seed: string; // 16 hex characters
@@ -70,6 +77,8 @@ export interface ReplayInputs {
     ticks: number;
     runs: number;
     checks: number;
+    /** Format 3: the powers were used with the keys of their slots (game 2.24 and later). */
+    keysPerSlot: boolean;
 }
 
 export interface Replay {
@@ -133,7 +142,7 @@ export function parseReplay(raw: Uint8Array): Replay {
     const magic = String.fromCharCode(raw[0]!, raw[1]!, raw[2]!, raw[3]!);
     if (magic !== "CPRP") throw new ReplayError("en-tête CPRP absent");
     const formatVersion = view.getUint16(4, true);
-    if (formatVersion !== 1 && formatVersion !== 2) throw new ReplayError(`version de format ${formatVersion} non prise en charge`);
+    if (formatVersion < 1 || formatVersion > REPLAY_FORMAT_VERSION) throw new ReplayError(`version de format ${formatVersion} non prise en charge`);
     const sampleHz = view.getUint16(6, true);
     const frameCount = view.getUint32(8, true);
     const durationMs = view.getUint32(12, true);
@@ -174,23 +183,27 @@ export function parseReplay(raw: Uint8Array): Replay {
         at += 8;
     }
     let inputs: ReplayInputs | null = null;
-    if (formatVersion === 2) {
-        // Seed, run-length encoded inputs (12 bytes per run), state digests (12 bytes each).
+    if (formatVersion >= 2) {
+        // Seed, run-length encoded inputs (12 bytes per run in format 2, 18 in format 3: the
+        // actions on 32 bits), state digests (12 bytes each).
         need(20);
         const seed = view.getUint32(at + 4, true).toString(16).padStart(8, "0") + view.getUint32(at, true).toString(16).padStart(8, "0");
         const tickHz = view.getUint16(at + 8, true);
+        const inputFlags = formatVersion >= 3 ? view.getUint16(at + 10, true) : 0; // format 2: reserved
         const ticks = view.getUint32(at + 12, true);
         const runs = view.getUint32(at + 16, true);
         at += 20;
+        const runBytes = formatVersion >= 3 ? 18 : 12;
         if (tickHz !== REPLAY_TICK_HZ) throw new ReplayError("fréquence de simulation invalide");
+        if ((inputFlags & ~REPLAY_INPUT_KEYS_PER_SLOT) !== 0) throw new ReplayError("section des entrées incohérente");
         if (ticks === 0 || ticks > REPLAY_MAX_TICKS || runs === 0 || runs > ticks) throw new ReplayError("section des entrées incohérente");
-        need(runs * 12 + 4);
+        need(runs * runBytes + 4);
         let total = 0;
         for (let r = 0; r < runs; ++r) {
             const repeat = view.getUint16(at, true);
             if (repeat === 0) throw new ReplayError("plages d'entrées incohérentes");
             total += repeat;
-            at += 12;
+            at += runBytes;
         }
         if (total !== ticks) throw new ReplayError("nombre d'entrées incohérent");
         const checks = view.getUint32(at, true);
@@ -204,7 +217,7 @@ export function parseReplay(raw: Uint8Array): Replay {
             prev = tick;
             at += 12;
         }
-        inputs = { seed, tickHz, ticks, runs, checks };
+        inputs = { seed, tickHz, ticks, runs, checks, keysPerSlot: (inputFlags & REPLAY_INPUT_KEYS_PER_SLOT) !== 0 };
     }
     return { formatVersion, inputs, sampleHz, durationMs, levelHash, attemptId, levelId, gameVersion, frames, events };
 }

@@ -89,6 +89,9 @@ private:
 class GlidePower : public Power {
 public:
     using Power::Power;
+    PowerTrigger trigger() const override { return PowerTrigger::StandardKeys; }
+    std::vector<Action> standardKeys() const override { return {Action::Jump}; }
+    const char* standardKeysHow() const override { return "maintenue en tombant"; }
     bool exclusiveInput() const override { return false; }
     bool wantsActivation(const Player&, const GameWorld&, const PlayerInput&) const override { return false; }
     void handleInput(Player& p, GameWorld& w, const PlayerInput& in, float dt) override;
@@ -109,6 +112,9 @@ private:
 class GroundPoundPower : public Power {
 public:
     using Power::Power;
+    PowerTrigger trigger() const override { return PowerTrigger::StandardKeys; }
+    std::vector<Action> standardKeys() const override { return {Action::MoveDown, Action::Attack}; }
+    const char* standardKeysHow() const override { return "en l'air"; }
     bool exclusiveInput() const override { return false; }
     bool wantsActivation(const Player& p, const GameWorld& w, const PlayerInput& in) const override;
     bool canActivate(const Player& p, const GameWorld& w) const override;
@@ -134,6 +140,9 @@ private:
 class ChargeShotPower : public Power {
 public:
     using Power::Power;
+    PowerTrigger trigger() const override { return PowerTrigger::StandardKeys; }
+    std::vector<Action> standardKeys() const override { return {Action::Attack}; }
+    const char* standardKeysHow() const override { return "maintenue, puis relâchée"; }
     bool exclusiveInput() const override { return false; }
     bool wantsActivation(const Player&, const GameWorld&, const PlayerInput&) const override { return false; }
     void handleInput(Player& p, GameWorld& w, const PlayerInput& in, float dt) override;
@@ -159,6 +168,10 @@ private:
 class GrapplePower : public Power {
 public:
     using Power::Power;
+    /// Its own button (Interagir in the data), never the key of its slot.
+    PowerTrigger trigger() const override { return PowerTrigger::StandardKeys; }
+    std::vector<Action> standardKeys() const override { return {def_.input}; }
+    const char* standardKeysHow() const override { return "près d'un point d'ancrage"; }
     bool exclusiveInput() const override { return false; }
     bool wantsActivation(const Player& p, const GameWorld& w, const PlayerInput& in) const override;
     bool canActivate(const Player& p, const GameWorld& w) const override;
@@ -188,11 +201,14 @@ private:
     float sinceRelease_ = 10.0f;
 };
 
-/// Passive upgrade: extra air jumps (triple jump).
+/// Passive upgrade: extra air jumps (triple jump), used with Jump in the air.
 class AirJumpPower : public Power {
 public:
     using Power::Power;
     bool passive() const override { return true; }
+    PowerTrigger trigger() const override { return PowerTrigger::StandardKeys; }
+    std::vector<Action> standardKeys() const override { return {Action::Jump}; }
+    const char* standardKeysHow() const override { return "en l'air"; }
     bool exclusiveInput() const override { return false; }
     bool wantsActivation(const Player&, const GameWorld&, const PlayerInput&) const override { return false; }
     int extraJumps() const { return static_cast<int>(def_.param("jumps", 1)); }

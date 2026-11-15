@@ -113,7 +113,8 @@ TEST_CASE("input: bindings serialization") {
     b.gamepad.invertY = true;
     InputBindings c = InputBindings::fromJson(b.toJson());
     CHECK(c.keys[static_cast<int>(Action::Jump)][0] == SDL_SCANCODE_W);
-    CHECK(c.pad[static_cast<int>(Action::Wave)][0] == b.pad[static_cast<int>(Action::Wave)][0]);
+    CHECK(c.pad[static_cast<int>(Action::PowerSlot2)][0] == b.pad[static_cast<int>(Action::PowerSlot2)][0]);
+    CHECK(c.pad[static_cast<int>(Action::PowerSlot2)][0].kind != PadBinding::Kind::None);
     CHECK(c.gamepad.invertY);
 }
 
