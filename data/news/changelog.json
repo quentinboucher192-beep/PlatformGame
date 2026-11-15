@@ -1,4 +1,9 @@
 {
+  "2.27.0": [
+    "Statistiques des boss : le boss choisi s'anime avec ses vraies animations (repos, déplacement, chaque attaque et sa préparation, invocation, rugissement, blessure, défaite), une à la suite de l'autre ; activez l'image pour passer à la suivante. Avant de l'avoir battu, une silhouette.",
+    "« Où l'affronter » : tous les lieux où combattre chaque boss — son niveau de la campagne (planète, niveau, dernier point de sauvegarde avant lui, pouvoirs trouvés en route) et son écho dans L'Arène des Échos ; un lieu ouvre la page du niveau, un lieu verrouillé dit pourquoi.",
+    "La galerie de la Collection utilise la même recherche des lieux."
+  ],
   "2.26.0": [
     "Globe des classements : les points des pays sont bien visibles (taille selon l'écran et le zoom, contour, halo, nombre de joueurs dans une pastille) et s'effacent avant le bord du globe.",
     "SOCIAL : un globe de tous les joueurs de Cosmic Online par pays (centre du pays seulement, uniquement les joueurs qui ont choisi d'apparaître sur le globe avec un profil public), avec le total de joueurs et de pays.",

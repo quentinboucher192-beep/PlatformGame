@@ -5,6 +5,14 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.27.0** :
+* **Statistiques des boss** : le boss choisi s'anime avec ses vraies animations, l'une après
+  l'autre (attaques et préparations comprises) ; avant de l'avoir battu, une silhouette.
+* **« Où l'affronter »** : tous les lieux où combattre chaque boss, lus dans les niveaux du jeu
+  (`game/content/CreaturePlaces`, sur un fil à part) : niveau de la campagne, dernier point de
+  sauvegarde avant lui, pouvoirs trouvés en route, et son écho dans L'Arène des Échos. Un lieu
+  ouvre la page du niveau ; un lieu verrouillé dit pourquoi.
+
 **Nouveau dans la version 2.26.0** :
 * **Globe** : les points des pays sont bien visibles (taille selon l'écran et le zoom,
   contour, nombre de joueurs dans une pastille). **SOCIAL** montre un globe de tous les

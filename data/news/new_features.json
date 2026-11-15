@@ -38,6 +38,20 @@
         "online.nav.social",
         "menu.online"
       ]
+    },
+    {
+      "id": "stats.animations",
+      "version": "2.27.0",
+      "parents": [
+        "menu.stats"
+      ]
+    },
+    {
+      "id": "stats.locations",
+      "version": "2.27.0",
+      "parents": [
+        "menu.stats"
+      ]
     }
   ]
 }

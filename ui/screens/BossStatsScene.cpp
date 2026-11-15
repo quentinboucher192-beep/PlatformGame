@@ -311,6 +311,8 @@ private:
         float f = fit(ui, text, FontFace::Body, 15, room, 0.75f);
         ui.label(ui.elide(text, FontFace::Body, f, room), cap.center(), f, known ? ui.theme().text : ui.theme().textDim, Align::Center,
                  FontFace::Body, VAlign::Middle);
+        // « NOUVEAU » (2.27) on the animated boss; seen once it gets the focus or a click.
+        ui.newBadge("anim", box, "stats.animations");
     }
 
     void drawPhases(const Rect& area, const EnemyDefinition& d, const BossRecord& r, bool met) {
@@ -359,6 +361,9 @@ private:
     void drawPlaces(const Rect& area, const EnemyDefinition& d) {
         UIContext& ui = g_.ui;
         Vec2 hs = ui.label("Où l'affronter", {area.x, area.y + ui.s(14)}, 22, ui.theme().accent, Align::Left, FontFace::Bold, VAlign::Middle);
+        // « NOUVEAU » (2.27) after the title; seen once a place gets the focus or a click.
+        if (ui.isNewFeature && ui.isNewFeature("stats.locations"))
+            ui.drawNewPill(area.x + hs.x + ui.s(14) + ui.newPillWidth(), area.y + ui.s(14));
         Rect view{area.x, area.y + ui.s(40), area.w, area.bottom() - area.y - ui.s(40)};
         if (!atlas_) {
             // Reading the levels (worker thread): a turning arc while it lasts.
@@ -403,7 +408,9 @@ private:
         bool done = g_.progression.levelCompleted(p.levelId);
         std::string id = "p" + std::to_string(index);
         bool hovered = false;
-        if (ui.hotspot(id, row, &hovered)) {
+        bool activated = ui.hotspot(id, row, &hovered);
+        ui.newBadge(id, row, "stats.locations", false);
+        if (activated) {
             if (open) g_.app.switchScene(makeLevelSelect(g_, p.planetId, p.levelId, d.id), 0.3f);
             else g_.uiSound("ui_error");
         }

@@ -1197,7 +1197,8 @@
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "editors/level_editor/LevelEditorDialogs.cpp",
-    "game/levels/Cinematic.cpp"
+    "game/levels/Cinematic.cpp",
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -12407,6 +12408,12 @@
     "data/enemies/echo_archon_catacombs.json",
     "data/enemies/echo_thornwarden.json",
     "data/enemies/thornwarden.json"
+   ]
+  },
+  {
+   "fr": "La galerie de la Collection utilise la même recherche des lieux.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -23984,6 +23991,12 @@
    ]
   },
   {
+   "fr": "Statistiques des boss : le boss choisi s'anime avec ses vraies animations (repos, déplacement, chaque attaque et sa préparation, invocation, rugissement, blessure, défaite), une à la suite de l'autre ; activez l'image pour passer à la suivante. Avant de l'avoir battu, une silhouette.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Statistiques des boss et galerie : les nouveaux gardiens et leurs échos y figurent. Musiques : 4 thèmes de combat et la musique d'Aethra.",
    "where": [
     "data/news/changelog.json"
@@ -29504,6 +29517,12 @@
    ]
   },
   {
+   "fr": "{0} lieux",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} membres",
    "where": [
     "ui/screens/SocialScene.cpp"
@@ -30087,6 +30106,12 @@
    "fr": "« Afficher les pseudonymes » désactivé : les autres joueurs apparaissent sous la forme « Joueur n°X » (diffusion en direct). « Économie » limite le nombre de marqueurs et ne télécharge pas les avatars personnalisés.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "« Où l'affronter » : tous les lieux où combattre chaque boss — son niveau de la campagne (planète, niveau, dernier point de sauvegarde avant lui, pouvoirs trouvés en route) et son écho dans L'Arène des Échos ; un lieu ouvre la page du niveau, un lieu verrouillé dit pourquoi.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
