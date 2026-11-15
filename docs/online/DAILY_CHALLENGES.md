@@ -1,4 +1,4 @@
-# Défis du jour (2.31) — contrat entre le jeu et Cosmic Online
+# Défis du jour (2.32) — contrat entre le jeu et Cosmic Online
 
 Étape 1 de la maquette « Défis et événements » : un défi chaque jour, tiré au sort par le
 serveur ou choisi par l'administrateur (niveau de la campagne **ou niveau ONLINE LEVELS**), un

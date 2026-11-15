@@ -24,8 +24,8 @@ export const NOTIFICATION_KINDS = [
     "project_removed", //   an administrator removed me from a project
     "race_verified", //     someone finished first an EXTRÊME level I raced on (or created)
     "run_comment", //       comments on one of my runs of the leaderboards (2.19)
-    "challenge_featured", // one of my community levels is the daily challenge (2.31)
-    "record_beaten", //     my world record (first place of a campaign leaderboard) was beaten (2.32)
+    "challenge_featured", // one of my community levels is the daily challenge (2.32)
+    "record_beaten", //     my world record (first place of a campaign leaderboard) was beaten (2.30.2)
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 

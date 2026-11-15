@@ -950,7 +950,7 @@ même commentaire, abonnés…).
 | GET | `/notifications/unread` | `{ unread }` |
 | POST | `/notifications/{id}/read`, `/notifications/read-all` | lu |
 | DELETE | `/notifications/{id}` | supprimée |
-| GET / PUT | `/notifications/settings` `{ <kind>: bool }` | catégories reçues (`new_level`, `level_update`, `comment_reply`, `comment_reaction`, `level_comment`, `new_follower`, `project_invite`, `project_role`, `project_version`, `project_mention`, `project_reply`, `project_removed`, `race_verified` et, depuis 2.19, `run_comment` : commentaire sur une de mes courses ; depuis 2.31, `challenge_featured` : un de mes niveaux est le défi du jour) |
+| GET / PUT | `/notifications/settings` `{ <kind>: bool }` | catégories reçues (`new_level`, `level_update`, `comment_reply`, `comment_reaction`, `level_comment`, `new_follower`, `project_invite`, `project_role`, `project_version`, `project_mention`, `project_reply`, `project_removed`, `race_verified` et, depuis 2.19, `run_comment` : commentaire sur une de mes courses ; depuis 2.32, `challenge_featured` : un de mes niveaux est le défi du jour) |
 
 Le jeu lit les notifications non lues à la connexion puis chaque minute ; les nouvelles sont
 annoncées une fois. Les notifications lues de plus de 60 jours sont purgées (500 au plus par
@@ -1233,7 +1233,7 @@ toujours des noms du catalogue du serveur, jamais un texte du client. La tenue f
 l'export des données (`cosmetics`) et disparaît avec le compte (table `player_cosmetics`,
 migration 0039).
 
-### 8.9 duodecies Défis du jour (2.31)
+### 8.9 duodecies Défis du jour (2.32)
 
 Contrat complet entre le jeu et le serveur (règles, forme canonique, paliers, replay format
 4) : [DAILY_CHALLENGES.md](DAILY_CHALLENGES.md). Un défi par jour UTC, identifiant
@@ -1291,7 +1291,7 @@ game_version, has_replay? }` (aucun autre champ : ni joueur, ni palier). Contrô
 l'ordre : défi dont le jour n'a pas commencé → `409 CHALLENGE_NOT_STARTED` (même s'il n'existe
 pas : rien n'est révélé) ; défi inconnu → `404` ; tentative déjà reçue → réponse idempotente
 (`409 ATTEMPT_CONFLICT` si les données diffèrent), même après la fin du défi ; reçue plus de
-10 minutes après `ends_at` → `409 CHALLENGE_ENDED` ; jeu plus ancien que 2.31.0 (ou que la
+10 minutes après `ends_at` → `409 CHALLENGE_ENDED` ; jeu plus ancien que 2.32.0 (ou que la
 version minimale du niveau) → `426 GAME_VERSION_UNSUPPORTED` ; `409 LEVEL_MISMATCH`, `409
 RULES_MISMATCH`. Le **palier est calculé par le serveur** : Or si `time_ms <= gold_ms` (et
 `damage_taken == 0` si `gold_no_damage`), Argent si `time_ms <= silver_ms`, sinon Bronze.

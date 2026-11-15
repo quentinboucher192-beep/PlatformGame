@@ -112,7 +112,7 @@ function runBody(ch: TestChallenge, o: Record<string, unknown> = {}): Record<str
         damage_taken: 0,
         level_hash: ch.level_hash,
         rules_hash: ch.hash,
-        game_version: "2.31.0",
+        game_version: "2.32.0",
         has_replay: true,
         ...o,
     };
@@ -446,7 +446,7 @@ describe("daily challenges: runs", () => {
             level_version: CATALOG.levels.glacior_02!.revision,
             level_hash: CAMPAIGN.glacior_02,
             collectibles: 4,
-            game_version: "2.31.0",
+            game_version: "2.32.0",
         });
         const res = await api("POST", "/api/v1/records/submit", { token: p.token, body: sub });
         expect(res.status).toBe(201);
@@ -530,7 +530,7 @@ describe("daily challenges: leaderboard and results", () => {
         const run = (ch: TestChallenge, time: number, tier: string, status: string, who = p) =>
             env.DB.prepare(
                 `INSERT INTO challenge_runs (id, challenge_id, player_id, attempt_id, time_ms, deaths, damage_taken, level_hash, rules_hash, game_version,
-                   tier, status, created_at) VALUES (?1, ?2, ?3, ?4, ?5, 0, 0, ?6, ?7, '2.31.0', ?8, ?9, ?10)`,
+                   tier, status, created_at) VALUES (?1, ?2, ?3, ?4, ?5, 0, 0, ?6, ?7, '2.32.0', ?8, ?9, ?10)`,
             ).bind(crypto.randomUUID(), ch.id, who.id, crypto.randomUUID(), time, ch.level_hash, ch.hash, tier, status, `${ch.date}T12:00:00.000Z`);
         await env.DB.batch([
             run(chs[0]!, 80000, "silver", "VERIFIED"),

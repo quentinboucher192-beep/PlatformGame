@@ -1,4 +1,4 @@
-// Daily challenges (« Défis du jour », game 2.31). The contract with the game is
+// Daily challenges (« Défis du jour », game 2.32). The contract with the game is
 // docs/online/DAILY_CHALLENGES.md: one challenge per UTC day (`daily-AAAA-MM-JJ`), drawn by
 // the server among the ranked campaign levels or chosen by the administrator
 // (scripts/challenge-set.mjs, campaign or community level), with its rules (hearts, power
@@ -60,7 +60,7 @@ export const CATALOG = catalogJson as ChallengeCatalog;
 // ------------------------------------------------------------------ rules
 
 /** Oldest game that plays challenges (format 4 replays, simulation 11). */
-export const CHALLENGE_MIN_GAME_VERSION = "2.31.0";
+export const CHALLENGE_MIN_GAME_VERSION = "2.32.0";
 /** Challenges exist from today to today + DAYS_AHEAD. */
 export const DAYS_AHEAD = 7;
 /** An automatic draw avoids the levels of the challenges this many days around it. */
