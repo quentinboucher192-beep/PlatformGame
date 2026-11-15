@@ -144,6 +144,7 @@
     {"id": "menu.challenges", "version": "2.32.0"},
     {"id": "challenges.tab.today", "version": "2.32.0", "parents": ["menu.challenges"]},
     {"id": "challenges.tab.archives", "version": "2.32.0", "parents": ["menu.challenges"]},
-    {"id": "challenges.keys", "version": "2.32.1", "parents": ["menu.challenges", "challenges.tab.today"]}
+    {"id": "challenges.keys", "version": "2.32.1", "parents": ["menu.challenges", "challenges.tab.today"]},
+    {"id": "profile.races", "version": "2.32.2", "parents": ["menu.online"]}
   ]
 }

@@ -11,6 +11,7 @@
 #include "engine/core/FileUtil.h"
 #include "engine/core/I18n.h"
 #include "game/GameServices.h"
+#include "game/online/Replay.h"
 #include "game/progression/NewsCenter.h"
 #include "game/online/LevelFingerprint.h"
 #include "packaging/PackageImporter.h"
@@ -658,6 +659,21 @@ private:
         p.primary = true;
         p.enabled = !working_;
         std::string playLabel = local.empty() ? "Télécharger et jouer" : (ver == current ? "Jouer" : "Mettre à jour et jouer (v" + std::to_string(current) + ")");
+        // Every button of the card: one font and one size, the largest at which each label
+        // fits whole in its button (2.32.2).
+        const bool fav = jget<bool>(l, "my_favorite", false);
+        const int favs = jget<int>(l, "favorites", 0), coms = jget<int>(l, "comments", 0);
+        const float half = (w - ui.s(10)) * 0.5f;
+        const std::string favLabel = (fav ? "Dans vos favoris (" : "Ajouter aux favoris (") + std::to_string(favs) + ")";
+        const std::string comLabel = "Commentaires (" + std::to_string(coms) + ")";
+        float cardFont = 20.0f;
+        {
+            std::vector<std::pair<std::string, float>> all = {{working_ ? "Téléchargement…" : playLabel, w}, {"Course contre un fantôme…", w},
+                                                              {"Touches des pouvoirs…", w}, {favLabel, half}, {comLabel, half}};
+            if (extreme) all.push_back({"Course à la vérification (classement de progression)", w});
+            for (const auto& [label, bw] : all) cardFont = std::min(cardFont, ui.fitFont(label, FontFace::Bold, 20.0f, bw - ui.s(24), 0.55f));
+        }
+        p.fontSize = cardFont;
         if (ui.button("play", {x, y, w, ui.s(48)}, working_ ? "Téléchargement…" : playLabel, p)) {
             ghostAfterInstall_ = false;
             if (!local.empty() && ver == current) play(local);
@@ -668,6 +684,7 @@ private:
             // Ghost Racing: the world record, friends' records, mine (installed first if needed).
             UIContext::ButtonStyle gs;
             gs.small = true;
+            gs.fontSize = cardFont;
             gs.enabled = !working_;
             if (ui.button("ghosts", {x, y, w, ui.s(42)}, "Course contre un fantôme…", gs)) {
                 if (!local.empty() && ver == current) {
@@ -693,7 +710,7 @@ private:
                 ks.small = true;
                 ks.enabled = !working_;
                 const std::string label = "Touches des pouvoirs…";
-                ks.fontSize = ui.fitFont(label, FontFace::Bold, 20, w - ui.s(24), 0.6f);
+                ks.fontSize = cardFont;
                 bool openKeys = ui.button("powerkeys", {x, y, w, ui.s(42)}, label, ks);
                 ui.newBadge("powerkeys", {x, y, w, ui.s(42)}, "pause.level_keys");  // « NOUVEAU » (2.31)
                 if (openKeys && ks.enabled) g_.app.pushScene(makeLevelPowerKeys(g_, *keysLevel_));
@@ -703,25 +720,25 @@ private:
         if (extreme) {
             UIContext::ButtonStyle rs;
             rs.small = true;
+            rs.fontSize = cardFont;
             if (ui.button("race", {x, y, w, ui.s(42)}, "Course à la vérification (classement de progression)", rs))
                 g_.app.pushScene(makeRaceBoard(g_, "community", id, current));
             y += ui.s(52);
         }
         // Favorites and comments.
         {
-            bool fav = jget<bool>(l, "my_favorite", false);
-            int favs = jget<int>(l, "favorites", 0), coms = jget<int>(l, "comments", 0);
-            float half = (w - ui.s(10)) * 0.5f;
             UIContext::ButtonStyle fs;
             fs.small = true;
+            fs.fontSize = cardFont;
             fs.selected = fav;
             fs.primary = fav;
-            if (ui.button("favorite", {x, y, half, ui.s(42)}, (fav ? "Dans vos favoris (" : "Ajouter aux favoris (") + std::to_string(favs) + ")", fs))
+            if (ui.button("favorite", {x, y, half, ui.s(42)}, favLabel, fs))
                 setFavorite(id, !fav);
             UIContext::ButtonStyle cs;
             cs.small = true;
+            cs.fontSize = cardFont;
             cs.selected = comments_.isOpen() && comments_.levelId() == id;
-            if (ui.button("comments", {x + half + ui.s(10), y, half, ui.s(42)}, "Commentaires (" + std::to_string(coms) + ")", cs)) {
+            if (ui.button("comments", {x + half + ui.s(10), y, half, ui.s(42)}, comLabel, cs)) {
                 if (cs.selected) comments_.close();
                 else comments_.open(id, title);
             }
@@ -752,6 +769,7 @@ private:
             UIContext::ButtonStyle d;
             d.small = true;
             d.danger = true;
+            d.fontSize = std::min(cardFont, ui.fitFont("Signaler", FontFace::Bold, 20.0f, ui.s(160) - ui.s(24), 0.55f));
             if (ui.button("report", {x, y, ui.s(160), ui.s(36)}, "Signaler", d)) {
                 confirmReport_ = true;
                 reportReason_ = 0;
@@ -797,8 +815,21 @@ private:
                          FontFace::Bold, VAlign::Middle);
                 ui.label(jstr(e["player"], "username"), {x + ui.s(54), ey + ui.s(15)}, 15, me ? ui.theme().accent : ui.theme().text, Align::Left,
                          FontFace::Body, VAlign::Middle);
-                ui.label(timeText(jget<int64_t>(e, "time_ms", 0)), {x + w - ui.s(12), ey + ui.s(15)}, 15, ui.theme().text, Align::Right, FontFace::Bold,
-                         VAlign::Middle);
+                // The replay of each ranked time (2.32.2), left of the time.
+                const std::string tt = timeText(jget<int64_t>(e, "time_ms", 0));
+                float tw = ui.text().measure(tt, FontFace::Bold, ui.s(15)).x;
+                const std::string rid = jstr(e, "record_id");
+                if (!rid.empty()) {
+                    Rect vb{x + w - ui.s(12) - tw - ui.s(12) - ui.s(36), ey + ui.s(3), ui.s(36), ui.s(24)};
+                    UIContext::ButtonStyle vst;
+                    vst.small = true;
+                    vst.enabled = fetchingReplay_.empty();
+                    if (ui.button("rep/" + rid, vb, "", vst)) watchCommunityReplay(rid, jstr(e["player"], "username"));
+                    Vec2 c = vb.center();
+                    Color tc = vst.enabled ? ui.theme().accent : ui.theme().textDim;
+                    ui.r().fillTriangle({c.x - ui.s(4), c.y - ui.s(6)}, {c.x - ui.s(4), c.y + ui.s(6)}, {c.x + ui.s(6), c.y}, tc);
+                }
+                ui.label(tt, {x + w - ui.s(12), ey + ui.s(15)}, 15, ui.theme().text, Align::Right, FontFace::Bold, VAlign::Middle);
                 ey += ui.s(34);
             }
             ui.endScroll();
@@ -808,6 +839,28 @@ private:
                      {x, zoneD_.bottom() - ui.s(64)}, 15, ui.theme().accent, Align::Left, FontFace::Bold, VAlign::Middle);
         drawStatus({x, zoneD_.bottom() - ui.s(46), w, ui.s(40)});
         ui.popId();
+    }
+
+    /// Downloads a ranked time's replay (public once checked), then plays it.
+    void watchCommunityReplay(const std::string& recordId, const std::string& who) {
+        fetchingReplay_ = recordId;
+        say("Téléchargement du replay…", false);
+        g_.online.getBinary(
+            "/api/v1/community/records/" + recordId + "/replay",
+            [this, who, alive = std::weak_ptr<int>(life_)](const HttpResponse& r) {
+                if (alive.expired()) return;
+                fetchingReplay_.clear();
+                if (r.status != 200 || r.body.empty())
+                    return say(r.networkFailure() ? std::string("Connexion impossible : replay indisponible pour l'instant.")
+                                                  : "Replay indisponible (" + std::to_string(r.status) + ").",
+                               true);
+                std::string err;
+                auto rep = ReplayData::decode(std::vector<uint8_t>(r.body.begin(), r.body.end()), &err);
+                if (!rep) return say("Replay illisible : " + err, true);
+                say("", false);
+                g_.app.pushScene(makeLocalReplayViewer(g_, std::move(*rep), "Replay de " + who));
+            },
+            16u << 20);
     }
 
     void drawReport() {
@@ -838,6 +891,7 @@ private:
     OnlineUi ui_;
     CommentsPanel comments_;
     MenuBackground bg_;
+    std::string fetchingReplay_;  // record whose replay is downloading
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     std::string wanted_;
     bool accountAsked_ = false;

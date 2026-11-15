@@ -1,4 +1,9 @@
 {
+  "2.32.2": [
+    "Replays partout : chaque joueur classé a son bouton de replay dans CLASSEMENTS, dans le classement des NIVEAUX EN LIGNE et dans la course à la vérification des niveaux EXTRÊME (« Voir » sur chaque tentative classée).",
+    "Profil : nouvel onglet « Meilleures progressions » (la meilleure tentative sur chaque niveau EXTRÊME, son rang et son replay), et dans chaque onglet une recherche, plus un filtre pour les meilleurs temps (catégorie) et les progressions (terminées ou en cours).",
+    "Les onglets d'une même barre et les boutons de la fiche d'un niveau EN LIGNE ont une seule taille de texte, sans texte coupé."
+  ],
   "2.32.1": [
     "Mise à jour : quand une version plus récente existe, une alerte s'affiche en bas du menu principal ; un clic télécharge l'installateur, vérifie son empreinte SHA-256, puis lance l'installation (le jeu se ferme).",
     "Défis : « Touches… » avant le départ, pour changer les touches des pouvoirs du défi (aussi dans la pause).",

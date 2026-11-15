@@ -845,6 +845,9 @@ bool UIContext::tabs(const std::string& name, const Rect& rc, const std::vector<
         }
     }
     float w = rc.w / n;
+    // One size for every label of the bar (2.32.2): the largest at which each fits its tab.
+    float common = 21.0f;
+    for (const auto& l : labels) common = std::min(common, fitFont(l, FontFace::Bold, 21.0f, w - s(4) - s(10), 0.55f));
     for (int i = 0; i < n; ++i) {
         Rect tr{rc.x + i * w + s(2), rc.y, w - s(4), rc.h};
         WidgetId wid = id(name + "#" + std::to_string(i));
@@ -871,7 +874,7 @@ bool UIContext::tabs(const std::string& name, const Rect& rc, const std::vector<
             label(n, b.center(), 13, urgent ? Color::white() : Color{6, 14, 24, 255}, Align::Center, FontFace::Bold, VAlign::Middle);
             room.w = b.x - s(3) - room.x;
         }
-        float fs = fitFont(labels[i], FontFace::Bold, 21.0f, room.w - s(10), 0.55f);
+        float fs = std::min(common, fitFont(labels[i], FontFace::Bold, 21.0f, room.w - s(10), 0.55f));
         std::string shown = elide(labels[i], FontFace::Bold, fs, room.w - s(8));
         label(shown, room.center(), fs, i == active ? Color::white() : theme_.textDim, Align::Center, FontFace::Bold, VAlign::Middle);
     }

@@ -243,6 +243,8 @@ route("GET", `${V}/projects/{projectId}/activity`, (ctx) => projects.listActivit
 route("POST", `${V}/races/runs`, (ctx) => race.submitRun(ctx));
 route("PUT", `${V}/races/runs/{runId}/replay`, (ctx) => race.uploadRunReplay(ctx));
 route("GET", `${V}/races/board`, (ctx) => race.getBoard(ctx));
+route("GET", `${V}/races/runs/{runId}/replay`, (ctx) => race.downloadRunReplay(ctx));
+route("GET", `${V}/players/{playerId}/races`, (ctx) => race.playerRaces(ctx));
 // Chat of the live editor
 route("GET", `${V}/projects/{projectId}/messages`, (ctx) => projects.listMessages(ctx));
 route("POST", `${V}/projects/{projectId}/messages`, (ctx) => projects.postMessage(ctx));

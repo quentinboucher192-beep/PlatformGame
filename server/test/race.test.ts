@@ -126,6 +126,48 @@ describe("course à la vérification", () => {
         expect(d.verifier).toBe(false);
     });
 
+    it("every ranked attempt's replay can be watched from the board, never a private player's (2.32.2)", async () => {
+        const author = await registerPlayer("Createur");
+        const { id } = await publishExtreme(author);
+        const [ana, ben] = await Promise.all(["Ana", "Ben"].map((n) => registerPlayer(n)));
+        await attempt(ana!, id, { upTo: 0.5, boss: 500, waves: 1 });
+        await attempt(ben!, id, { upTo: 0.3, boss: 0, waves: 0 });
+        const board = await api("GET", `${V}/races/board?kind=community&level_id=${id}`);
+        const rows = board.body.data.ranking as { run_id: string; has_replay: boolean; player: { username: string } }[];
+        expect(rows.map((r) => r.has_replay)).toEqual([true, true]);
+        for (const r of rows) {
+            const rep = await api("GET", `${V}/races/runs/${r.run_id}/replay`);
+            expect(rep.status).toBe(200);
+            expect((rep.body as ArrayBuffer).byteLength).toBeGreaterThan(16);
+        }
+        // Ben hides his profile: his replay is no longer served to others (he still sees it).
+        await env.DB.prepare("UPDATE players SET profile_visibility = 'private' WHERE id = ?1").bind(ben!.id).run();
+        const benRun = rows.find((r) => r.player.username === "Ben")!.run_id;
+        expect((await api("GET", `${V}/races/runs/${benRun}/replay`)).status).toBe(403);
+        expect((await api("GET", `${V}/races/runs/${benRun}/replay`, { token: ben!.token })).status).toBe(200);
+        const again = await api("GET", `${V}/races/board?kind=community&level_id=${id}`);
+        expect(again.body.data.ranking.find((r: { player: { username: string } }) => r.player.username === "Ben").has_replay).toBe(false);
+        expect((await api("GET", `${V}/races/runs/00000000-0000-4000-8000-000000000000/replay`)).status).toBe(404);
+    });
+
+    it("a player's profile lists their best progression on every EXTRÊME level, hidden when private (2.32.2)", async () => {
+        const author = await registerPlayer("Createur");
+        const { id } = await publishExtreme(author);
+        const [ana, ben] = await Promise.all(["Ana", "Ben"].map((n) => registerPlayer(n)));
+        await attempt(ana!, id, { upTo: 0.2, boss: 0, waves: 0 });
+        await attempt(ana!, id, { upTo: 0.5, boss: 500, waves: 1 });
+        await attempt(ben!, id, { upTo: 0.6, boss: 1000, waves: 2 });
+        const list = await api("GET", `${V}/players/${ana!.id}/races`);
+        expect(list.status).toBe(200);
+        expect(list.body.data.races).toHaveLength(1);
+        expect(list.body.data.races[0]).toMatchObject({ kind: "community", level_id: id, version: 1, rank: 2, participants: 2, finished: false, has_replay: true });
+        expect(list.body.data.races[0].score).toBeGreaterThan(48);
+        await env.DB.prepare("UPDATE players SET profile_visibility = 'private' WHERE id = ?1").bind(ana!.id).run();
+        expect((await api("GET", `${V}/players/${ana!.id}/races`)).status).toBe(403);
+        expect((await api("GET", `${V}/players/${ana!.id}/races`, { token: ana!.token })).status).toBe(200);
+        expect((await api("GET", `${V}/players/00000000-0000-4000-8000-000000000000/races`)).status).toBe(404);
+    });
+
     it("a player who comes back counts with his best attempt; ties go to whoever was first", async () => {
         const author = await registerPlayer("Createur");
         const { id } = await publishExtreme(author);

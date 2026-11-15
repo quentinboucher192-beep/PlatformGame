@@ -788,6 +788,17 @@ private:
             ui.label(count, {bubble.right() + ui.s(6), cb.center().y}, 14, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
             right = cb.x - ui.s(8);
         }
+        // The replay of this record (2.32.2): every ranked player's, not only the selected one.
+        if (jget<bool>(e, "has_replay", false) && !jstr(e, "record_id").empty() && right - nx > ui.s(120)) {
+            Rect vb{right - ui.s(40), row.center().y - ui.s(14), ui.s(40), ui.s(28)};
+            UIContext::ButtonStyle vst;
+            vst.small = true;
+            if (ui.button((pinned ? std::string("pinnedrep") : "rep" + std::to_string(index)), vb, "", vst))
+                g_.app.pushScene(makeReplayViewer(g_, jstr(e, "record_id")));
+            Vec2 c = vb.center();
+            ui.r().fillTriangle({c.x - ui.s(5), c.y - ui.s(7)}, {c.x - ui.s(5), c.y + ui.s(7)}, {c.x + ui.s(7), c.y}, ui.theme().accent);
+            right = vb.x - ui.s(8);
+        }
         std::string name = ui_.displayName(jstr(p, "username"), rank, me);
         float room = std::max(ui.s(40), right - nx);
         // The player's title under the name (2.23), smaller and dimmed.

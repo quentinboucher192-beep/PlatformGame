@@ -2186,6 +2186,12 @@
    ]
   },
   {
+   "fr": "Aucun joueur ne correspond à la recherche.",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun joueur ne s'appelle « {0} ».",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -2243,6 +2249,12 @@
    "fr": "Aucun niveau classé pour cette planète.",
    "where": [
     "server/src/leaderboards.ts"
+   ]
+  },
+  {
+   "fr": "Aucun niveau ne correspond à la recherche.",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -2327,6 +2339,12 @@
    "fr": "aucun record",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun record ne correspond à la recherche.",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -2494,6 +2512,12 @@
    ]
   },
   {
+   "fr": "Aucune progression ne correspond.",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucune révision ne correspond.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -2515,6 +2539,12 @@
    "fr": "Aucune sortie : le niveau ne peut pas être terminé",
    "where": [
     "editors/level_editor/LevelEditorTools.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune tentative classée sur un niveau EXTRÊME : chaque tentative compte, même sans arriver au bout.",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -3892,7 +3922,14 @@
   {
    "fr": "campagne",
    "where": [
+    "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
+   "fr": "campagne  ·  {0}",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -4027,7 +4064,8 @@
   {
    "fr": "Catégorie",
    "where": [
-    "ui/screens/OnlineThreadScene.cpp"
+    "ui/screens/OnlineThreadScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -4145,6 +4183,12 @@
    ]
   },
   {
+   "fr": "Ce joueur a masqué son profil : replay indisponible.",
+   "where": [
+    "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
    "fr": "Ce joueur est déjà membre du projet.",
    "where": [
     "server/src/projects.ts"
@@ -4158,6 +4202,12 @@
   },
   {
    "fr": "Ce joueur garde ses listes d'abonnés et d'abonnements privées.",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce joueur n'a pas encore de tentative classée sur un niveau EXTRÊME.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
    ]
@@ -4285,7 +4335,8 @@
   {
    "fr": "Ce profil est privé.",
    "where": [
-    "server/src/creators.ts"
+    "server/src/creators.ts",
+    "server/src/race.ts"
    ]
   },
   {
@@ -6319,6 +6370,14 @@
    ]
   },
   {
+   "fr": "Connexion impossible : replay indisponible pour l'instant.",
+   "where": [
+    "ui/screens/OnlineLevelsScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp",
+    "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
    "fr": "Connexion impossible : {0}",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp",
@@ -6984,6 +7043,13 @@
    "fr": "Course à la vérification : {0} %",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Course à la vérification – {0} – {1} %",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp",
+    "ui/screens/RaceScene.cpp"
    ]
   },
   {
@@ -9364,6 +9430,12 @@
    "fr": "En boucle",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "En cours",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -13325,6 +13397,7 @@
     "server/src/friends.ts",
     "server/src/players.ts",
     "server/src/projects.ts",
+    "server/src/race.ts",
     "server/src/social.ts"
    ]
   },
@@ -14629,6 +14702,7 @@
    "where": [
     "server/src/challenges.ts",
     "server/src/players.ts",
+    "server/src/race.ts",
     "server/src/records.ts"
    ]
   },
@@ -15429,6 +15503,12 @@
    "fr": "Les niveaux sont créés par les joueurs dans l'ATELIER. Chacun a été terminé par son auteur avant d'être publié. Les temps de chaque niveau sont classés après vérification de leur replay.",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Les onglets d'une même barre et les boutons de la fiche d'un niveau EN LIGNE ont une seule taille de texte, sans texte coupé.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -16603,6 +16683,12 @@
    ]
   },
   {
+   "fr": "Meilleures progressions",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
    "fr": "Meilleurs segments {0}",
    "where": [
     "ui/screens/GhostRun.cpp"
@@ -17704,6 +17790,18 @@
    "fr": "Niveau de la campagne : lecture seule. « Dupliquer pour modifier » crée votre copie.",
    "where": [
     "editors/level_editor/LevelEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "niveau de la communauté",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "niveau de la communauté  ·  {0}",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -18834,7 +18932,8 @@
   {
    "fr": "n°{0} / {1}",
    "where": [
-    "ui/screens/OnlineRankingScene.cpp"
+    "ui/screens/OnlineRankingScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -19901,6 +20000,7 @@
   {
    "fr": "participants",
    "where": [
+    "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },
@@ -21943,6 +22043,12 @@
    ]
   },
   {
+   "fr": "Profil : nouvel onglet « Meilleures progressions » (la meilleure tentative sur chaque niveau EXTRÊME, son rang et son replay), et dans chaque onglet une recherche, plus un filtre pour les meilleurs temps (catégorie) et les progressions (terminées ou en cours).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Profil indisponible.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -22006,6 +22112,12 @@
    "fr": "Progression refusée",
    "where": [
     "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "Progressions",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -23092,7 +23204,8 @@
   {
    "fr": "Rechercher…",
    "where": [
-    "editors/level_editor/LevelEditorLayout.cpp"
+    "editors/level_editor/LevelEditorLayout.cpp",
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -23707,6 +23820,12 @@
    ]
   },
   {
+   "fr": "Replay de {0}",
+   "where": [
+    "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
    "fr": "Replay en cours de lecture",
    "where": [
     "ui/screens/ReplayCompareSetupScene.cpp"
@@ -23728,6 +23847,9 @@
    "fr": "Replay illisible : {0}",
    "where": [
     "game/online/DailyChallenges.cpp",
+    "ui/screens/OnlineLevelsScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp",
+    "ui/screens/RaceScene.cpp",
     "ui/screens/ReplayScene.cpp"
    ]
   },
@@ -23742,6 +23864,14 @@
    "fr": "Replay inconnu.",
    "where": [
     "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
+   "fr": "Replay indisponible ({0}).",
+   "where": [
+    "ui/screens/OnlineLevelsScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp",
+    "ui/screens/RaceScene.cpp"
    ]
   },
   {
@@ -23839,6 +23969,12 @@
    "fr": "Replays de ce niveau",
    "where": [
     "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Replays partout : chaque joueur classé a son bouton de replay dans CLASSEMENTS, dans le classement des NIVEAUX EN LIGNE et dans la course à la vérification des niveaux EXTRÊME (« Voir » sur chaque tentative classée).",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -25376,6 +25512,7 @@
     "game/online/OnlineRecord.cpp",
     "game/online/OnlineService.cpp",
     "game/records/Records.cpp",
+    "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },
@@ -28071,6 +28208,12 @@
    ]
   },
   {
+   "fr": "Terminées",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
    "fr": "Terrain",
    "where": [
     "data/levels/aethra_01.json",
@@ -28630,7 +28773,8 @@
   {
    "fr": "Toutes",
    "where": [
-    "ui/screens/NotificationsScene.cpp"
+    "ui/screens/NotificationsScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -29131,6 +29275,9 @@
   {
    "fr": "Téléchargement du replay…",
    "where": [
+    "ui/screens/OnlineLevelsScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp",
+    "ui/screens/RaceScene.cpp",
     "ui/screens/ReplayScene.cpp"
    ]
   },
@@ -31054,6 +31201,13 @@
    ]
   },
   {
+   "fr": "Voir",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp",
+    "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
    "fr": "Voir l'invitation",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -32175,6 +32329,12 @@
    "fr": "{0}  · modifié",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "{0} %  ·  terminé",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {

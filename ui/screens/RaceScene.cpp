@@ -9,6 +9,7 @@
 #include <cstdio>
 
 #include "game/GameServices.h"
+#include "game/online/Replay.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/Navigation.h"
 
@@ -180,7 +181,9 @@ private:
         // ---------------------------------------------------------------- columns
         const Json& list = data_.value("ranking", Json::array());
         float cRank = x + ui.s(14), cPlayer = x + ui.s(84), cScore = x + w * 0.42f, cBar = cScore + ui.s(24), barW = w * 0.30f;
-        float cDate = x + w - ui.s(14);
+        // Last column: « Voir », the replay of the attempt (2.32.2).
+        const float replayW = ui.s(104), replayGap = ui.s(10);
+        float cDate = x + w - ui.s(14) - replayW - replayGap;
         auto head = [&](const std::string& t, float hx, Align a) { ui.label(t, {hx, y + ui.s(10)}, 15, ui.theme().textDim, a, FontFace::Bold, VAlign::Middle); };
         head("RANG", cRank, Align::Left);
         head("JOUEUR", cPlayer, Align::Left);
@@ -200,10 +203,18 @@ private:
             ui.beginScroll("ranking", area, static_cast<float>(list.size()) * (rh + gap));
             float cy = area.y - ui.scrollOffset();
             for (const auto& e : list) {
-                Rect row{area.x, cy, area.w - ui.s(14), rh};
+                Rect row{area.x, cy, area.w - ui.s(14) - replayW - replayGap, rh};
                 cy += rh + gap;
                 if (row.bottom() < area.y || row.y > area.bottom()) continue;
                 drawRow(e, row, cRank, cPlayer, cScore, cBar, barW, chosen);
+                const std::string runId = jstr(e, "run_id");
+                UIContext::ButtonStyle vs;
+                vs.small = true;
+                vs.enabled = jget<bool>(e, "has_replay", false) && !runId.empty() && fetching_.empty();
+                Rect vb{row.right() + replayGap, row.y + (rh - ui.s(46)) * 0.5f, replayW, ui.s(46)};
+                const std::string vl = fetching_ == runId && !runId.empty() ? "…" : "Voir";
+                vs.fontSize = ui.fitFont("Voir", FontFace::Bold, 20, replayW - ui.s(20));
+                if (ui.button("v/" + runId, vb, vl, vs)) watch(e);
             }
             ui.endScroll();
         }
@@ -214,6 +225,7 @@ private:
         if (!g_.online.loggedIn()) foot = "Connectez-vous à Cosmic Online pour entrer dans la course.";
         else if (pending > 0) foot = std::to_string(pending) + (pending > 1 ? " de vos tentatives sont en cours de vérification." : " de vos tentatives est en cours de vérification.");
         else foot = "Le serveur recalcule chaque score depuis le replay de la tentative ; les tentatives refusées ne sont pas classées.";
+        if (!msg_.empty()) foot = msg_;
         ui.label(foot, {x, box_.bottom() - footH * 0.5f - ui.s(6)}, ui.fitFont(foot, FontFace::Body, 16, w), ui.theme().textDim, Align::Left, FontFace::Body,
                  VAlign::Middle);
         if (!chosen.empty()) g_.app.pushScene(makePlayerProfile(g_, chosen));
@@ -315,8 +327,40 @@ private:
                  VAlign::Middle);
     }
 
+    /// Downloads the replay of a ranked attempt, then plays it (the level must be installed).
+    void watch(const Json& e) {
+        const std::string runId = jstr(e, "run_id");
+        const Json& p = jfield(e, "player", Json::object());
+        std::string who = jstr(p, "username");
+        double score = jget<double>(e, "score", 0.0);
+        fetching_ = runId;
+        msg_ = "Téléchargement du replay…";
+        g_.online.getBinary(
+            "/api/v1/races/runs/" + runId + "/replay",
+            [this, who, score, alive = std::weak_ptr<int>(life_)](const HttpResponse& r) {
+                if (alive.expired()) return;
+                fetching_.clear();
+                if (r.status != 200 || r.body.empty()) {
+                    msg_ = r.status == 403 ? "Ce joueur a masqué son profil : replay indisponible."
+                         : r.networkFailure() ? "Connexion impossible : replay indisponible pour l'instant."
+                                              : "Replay indisponible (" + std::to_string(r.status) + ").";
+                    return;
+                }
+                std::string err;
+                auto rep = ReplayData::decode(std::vector<uint8_t>(r.body.begin(), r.body.end()), &err);
+                if (!rep) {
+                    msg_ = "Replay illisible : " + err;
+                    return;
+                }
+                msg_.clear();
+                g_.app.pushScene(makeLocalReplayViewer(g_, std::move(*rep), "Course à la vérification – " + who + " – " + decimal(score) + " %"));
+            },
+            16u << 20);
+    }
+
     GameServices& g_;
     OnlineUi ui_;
+    std::string fetching_, msg_;  // the attempt whose replay is downloading; the foot's message
     std::string kind_, levelId_;
     int version_ = 0;
     std::string levelHash_;

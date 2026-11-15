@@ -366,7 +366,8 @@ export async function getBoard(ctx: Ctx): Promise<Response> {
     const rows = await ctx.env.DB.prepare(
         `WITH best AS (SELECT r.*, ROW_NUMBER() OVER (PARTITION BY r.player_id ORDER BY r.score DESC, r.verified_at ASC) AS n
                        FROM race_runs r WHERE r.board = ?1 AND r.status = 'VERIFIED')
-         SELECT b.player_id, b.score, b.route, b.bosses_beaten, b.waves, b.finished, b.detail, b.time_ms, b.verified_at,
+         SELECT b.id, b.player_id, b.score, b.route, b.bosses_beaten, b.waves, b.finished, b.detail, b.time_ms, b.verified_at,
+                b.replay_key IS NOT NULL AND p.profile_visibility != 'private' AS has_replay,
                 p.username, p.avatar FROM best b JOIN players p ON p.id = b.player_id WHERE b.n = 1
          ORDER BY b.score DESC, b.verified_at ASC LIMIT 100`,
     )
@@ -407,8 +408,104 @@ export async function getBoard(ctx: Ctx): Promise<Response> {
             detail: JSON.parse(String(r.detail ?? "null")),
             time_ms: r.time_ms,
             at: r.verified_at,
+            run_id: String(r.id),
+            has_replay: r.has_replay === 1 || r.player_id === me,
             me: r.player_id === me,
         })),
         my_pending: pending?.n ?? 0,
     });
+}
+
+/**
+ * GET /races/runs/{runId}/replay : the replay of a ranked attempt (2.32.2: watched from the
+ * board). Public for a VERIFIED attempt of an active, non-private player; the owner always.
+ */
+export async function downloadRunReplay(ctx: Ctx): Promise<Response> {
+    const viewer = await optionalAuth(ctx);
+    const id = ctx.params.runId ?? "";
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id)) throw Errors.notFound("RUN_NOT_FOUND", "Tentative introuvable.");
+    const r = await ctx.env.DB.prepare(
+        `SELECT r.player_id, r.status, r.replay_key, p.account_status, p.profile_visibility
+           FROM race_runs r JOIN players p ON p.id = r.player_id WHERE r.id = ?1`,
+    )
+        .bind(id)
+        .first<{ player_id: string; status: string; replay_key: string | null; account_status: string; profile_visibility: string }>();
+    const isOwner = !!r && viewer?.player.id === r.player_id;
+    if (!r || (!isOwner && (r.status !== "VERIFIED" || r.account_status !== "active"))) throw Errors.notFound("RUN_NOT_FOUND", "Tentative introuvable.");
+    if (!isOwner && r.profile_visibility === "private") throw Errors.forbidden("PROFILE_PRIVATE", "Le joueur a masqué son profil.");
+    if (!r.replay_key) throw Errors.notFound("REPLAY_NOT_FOUND", "Aucun replay pour cette tentative.");
+    const obj = await ctx.env.STORAGE.get(r.replay_key);
+    if (!obj) throw Errors.notFound("REPLAY_NOT_FOUND", "Fichier de replay absent.");
+    return new Response(obj.body, {
+        headers: {
+            "content-type": "application/octet-stream",
+            "content-length": String(obj.size),
+            "cache-control": "private, max-age=3600",
+            "x-content-type-options": "nosniff",
+        },
+    });
+}
+
+/**
+ * GET /players/{playerId}/races : a player's best progressions (2.32.2, profile tab
+ * « Meilleures progressions ») — their best VERIFIED attempt on every EXTRÊME level they
+ * raced, with its rank on that board. Hidden for a private profile (except to its owner).
+ */
+export async function playerRaces(ctx: Ctx): Promise<Response> {
+    const viewer = await optionalAuth(ctx);
+    const pid = ctx.params.playerId ?? "";
+    const p = await ctx.env.DB.prepare("SELECT id, account_status, profile_visibility FROM players WHERE id = ?1")
+        .bind(pid)
+        .first<{ id: string; account_status: string; profile_visibility: string }>();
+    if (!p || p.account_status !== "active") throw Errors.notFound("PLAYER_NOT_FOUND", "Joueur introuvable.");
+    const self = viewer?.player.id === p.id;
+    if (!self && p.profile_visibility === "private") throw Errors.forbidden("PROFILE_PRIVATE", "Ce profil est privé.");
+    const rows = await ctx.env.DB.prepare(
+        `WITH best AS (SELECT r.*, ROW_NUMBER() OVER (PARTITION BY r.board ORDER BY r.score DESC, r.verified_at ASC) AS n
+                       FROM race_runs r WHERE r.player_id = ?1 AND r.status = 'VERIFIED')
+         SELECT id, board, score, finished, time_ms, verified_at, replay_key IS NOT NULL AS has_replay FROM best WHERE n = 1
+         ORDER BY verified_at DESC LIMIT 50`,
+    )
+        .bind(p.id)
+        .all<{ id: string; board: string; score: number; finished: number; time_ms: number; verified_at: string; has_replay: number }>();
+    const races = [];
+    for (const r of rows.results) {
+        const [k, levelId, third] = r.board.split(":");
+        if (!levelId || !third) continue;
+        let title: string | null = null;
+        let version: number | null = null;
+        if (k === "c") {
+            const l = await ctx.env.DB.prepare("SELECT title FROM community_levels WHERE id = ?1 AND status = 'published'")
+                .bind(levelId)
+                .first<{ title: string }>();
+            if (!l) continue;  // a level no longer public: not shown
+            title = l.title;
+            version = Number(third);
+        } else if (k === "o") {
+            const l = await ctx.env.DB.prepare("SELECT name FROM levels WHERE id = ?1").bind(levelId).first<{ name: string }>();
+            title = l?.name ?? levelId;
+            const v = await ctx.env.DB.prepare("SELECT version FROM level_versions WHERE level_id = ?1 AND content_hash = ?2")
+                .bind(levelId, third)
+                .first<{ version: number }>();
+            version = v?.version ?? null;
+        } else continue;
+        const participants = await ctx.env.DB.prepare("SELECT COUNT(DISTINCT player_id) AS n FROM race_runs WHERE board = ?1 AND status = 'VERIFIED'")
+            .bind(r.board)
+            .first<{ n: number }>();
+        races.push({
+            kind: k === "c" ? "community" : "official",
+            level_id: levelId,
+            version,
+            title,
+            score: r.score,
+            finished: r.finished === 1,
+            time_ms: r.time_ms,
+            rank: await rankOf(ctx, r.board, p.id),
+            participants: participants?.n ?? 0,
+            run_id: r.id,
+            has_replay: r.has_replay === 1,
+            at: r.verified_at,
+        });
+    }
+    return json(ctx, { player_id: p.id, races });
 }

@@ -8,6 +8,7 @@
 #include <map>
 
 #include "game/GameServices.h"
+#include "game/online/Replay.h"
 #include "game/online/OnlineGlobe.h"
 #include "game/progression/Progression.h"
 #include "ui/online/GlobeRenderer.h"
@@ -53,7 +54,7 @@ public:
     void onEnter() override {
         g_.ui.setFocus("profile/close");
         if (g_.onlineOpen.rfind("profile-tab:", 0) == 0) {  // automated screenshots
-            tab_ = std::clamp(std::atoi(g_.onlineOpen.c_str() + 12), 0, 4);
+            tab_ = std::clamp(std::atoi(g_.onlineOpen.c_str() + 12), 0, 5);
             g_.onlineOpen.clear();
         }
         load();
@@ -132,8 +133,9 @@ private:
         std::string path;
         if (tab_ == 0) path = base + "/creations?limit=30&sort=" + kCreationSorts[creationSort_];
         else if (tab_ == 1) path = base + "/playtime";
-        else if (tab_ == 3) path = base + "/followers?limit=60";
-        else if (tab_ == 4) path = base + "/following?limit=60";
+        else if (tab_ == 3) path = base + "/races";
+        else if (tab_ == 4) path = base + "/followers?limit=60";
+        else if (tab_ == 5) path = base + "/following?limit=60";
         if (path.empty()) return;  // best times: in the profile itself
         int gen = ++tabGeneration_;
         tabLoading_ = true;
@@ -371,20 +373,37 @@ private:
             y += hs.y + ui.s(10);
         }
         // Tabs.
-        std::vector<std::string> labels = {"Créations", "Temps de jeu", "Meilleurs temps", "Abonnés", "Abonnements"};
+        std::vector<std::string> labels = {"Créations", "Temps de jeu", "Meilleurs temps", "Meilleures progressions", "Abonnés", "Abonnements"};
         if (hidden) labels = {"Créations"};
         int tab = tab_;
-        ui.tabs("tabs", {x, y, std::min(w, ui.s(220) * labels.size()), ui.s(42)}, labels, tab);
+        ui.tabs("tabs", {x, y, std::min(w, ui.s(230) * labels.size()), ui.s(42)}, labels, tab);
+        ui.newBadge("tabs", {x + std::min(w, ui.s(230) * labels.size()) / labels.size() * 3, y, std::min(w, ui.s(230) * labels.size()) / labels.size(), ui.s(42)},
+                    "profile.races");  // « NOUVEAU » (2.32.2)
         if (tab != tab_) {
             tab_ = tab;
+            query_.clear();
+            filter_ = 0;
             loadTab();
         }
         y += ui.s(54);
+        // Every tab: a search field (and a filter where it means something), 2.32.2.
+        {
+            float sw = std::min(ui.s(420), w * 0.42f);
+            ui.textField("search", {x, y, sw, ui.s(38)}, query_, "Rechercher…", 40);
+            if (tab_ == 2 || tab_ == 3) {
+                std::vector<std::string> opts = tab_ == 3 ? std::vector<std::string>{"Toutes", "Terminées", "En cours"} : bestCategories();
+                if (filter_ >= static_cast<int>(opts.size())) filter_ = 0;
+                float fw = std::min(ui.s(380), w * 0.36f);
+                ui.cycle("filter", {x + sw + ui.s(14), y, fw, ui.s(38)}, tab_ == 3 ? "Progressions" : "Catégorie", filter_, opts);
+            }
+            y += ui.s(50);
+        }
         Rect area{x, y, w, box_.bottom() - y - ui.s(44)};
         switch (tab_) {
             case 0: drawCreations(area); break;
             case 1: drawPlaytime(area); break;
             case 2: drawBestTimes(area); break;
+            case 3: drawRaces(area); break;
             default: drawPlayers(area); break;
         }
         std::string foot = fromCache_ ? "Hors ligne : profil en cache" : std::string{};
@@ -509,8 +528,8 @@ private:
         }
         area.y += ui.s(46);
         area.h -= ui.s(46);
-        Json list = tabData_.is_object() ? tabData_.value("creations", Json::array()) : Json::array();
-        if (tabEmptyOrBusy(area, list, me() ? "Vous n'avez publié aucun niveau : ATELIER → Mes niveaux → Publier."
+        Json list = filtered(tabData_.is_object() ? tabData_.value("creations", Json::array()) : Json::array(), "title");
+        if (tabEmptyOrBusy(area, list, !query_.empty() ? std::string("Aucun niveau ne correspond à la recherche.") : me() ? "Vous n'avez publié aucun niveau : ATELIER → Mes niveaux → Publier."
                                              : "Ce joueur n'a publié aucun niveau pour l'instant."))
             return;
         const float rh = ui.s(84), gap = ui.s(8);
@@ -547,7 +566,7 @@ private:
     void drawPlaytime(Rect area) {
         UIContext& ui = g_.ui;
         const Json& pt = tabData_.is_object() ? tabData_.value("playtime", Json::object()) : Json::object();
-        Json list = pt.value("levels", Json::array());
+        Json list = filtered(pt.value("levels", Json::array()), "title");
         std::string head = "Temps de jeu total : " + playTimeText(jget<double>(pt, "total_seconds", 0.0));
         if (!tabLoading_ && tabError_.empty() && tabData_.is_object()) {
             ui.label(head, {area.x, area.y + ui.s(14)}, 19, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
@@ -557,7 +576,7 @@ private:
             area.y += ui.s(42) + ns.y;
             area.h = box_.bottom() - ui.s(44) - area.y;
         }
-        if (tabEmptyOrBusy(area, list, "Pas encore de temps de jeu enregistré en ligne.")) return;
+        if (tabEmptyOrBusy(area, list, query_.empty() ? "Pas encore de temps de jeu enregistré en ligne." : "Aucun niveau ne correspond à la recherche.")) return;
         const float rh = ui.s(40);
         ui.beginScroll("playtime", area, list.size() * rh);
         float cy = area.y - ui.scrollOffset();
@@ -581,9 +600,15 @@ private:
     void drawBestTimes(Rect area) {
         UIContext& ui = g_.ui;
         const Json& s = data_.value("statistics", Json::object());
-        Json bests = s.is_object() ? s.value("best_times", Json::array()) : Json::array();
+        Json all = s.is_object() ? s.value("best_times", Json::array()) : Json::array();
+        Json bests = Json::array();
+        const std::vector<std::string> cats = bestCategories();
+        for (const auto& b : filtered(all, "level_name")) {
+            if (filter_ > 0 && filter_ < static_cast<int>(cats.size()) && categoryText(jstr(b, "category")) != cats[static_cast<size_t>(filter_)]) continue;
+            bests.push_back(b);
+        }
         if (bests.empty()) {
-            ui.label("Aucun record vérifié pour l'instant.", {area.x, area.y + ui.s(14)}, 16, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+            ui.label(all.empty() ? "Aucun record vérifié pour l'instant." : "Aucun record ne correspond à la recherche.", {area.x, area.y + ui.s(14)}, 16, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
             return;
         }
         const float rh = ui.s(36);
@@ -605,10 +630,122 @@ private:
         ui.endScroll();
     }
 
+    /// The entries of `list` whose `key` contains the search (case-insensitive, ASCII).
+    Json filtered(const Json& list, const char* key) const {
+        if (query_.empty() || !list.is_array()) return list.is_array() ? list : Json::array();
+        auto lower = [](std::string t) {
+            std::transform(t.begin(), t.end(), t.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+            return t;
+        };
+        const std::string q = lower(query_);
+        Json out = Json::array();
+        for (const auto& e : list)
+            if (lower(jstr(e, key)).find(q) != std::string::npos) out.push_back(e);
+        return out;
+    }
+    static std::string categoryText(const std::string& id) {
+        RunCategory cat;
+        return categoryFromId(id, cat) ? categoryLabel(cat) : id;
+    }
+    /// « Toutes » then the categories of this player's best times (filter of the tab).
+    std::vector<std::string> bestCategories() const {
+        std::vector<std::string> out = {"Toutes"};
+        const Json& s = data_.value("statistics", Json::object());
+        if (s.is_object())
+            for (const auto& b : s.value("best_times", Json::array())) {
+                std::string c = categoryText(jstr(b, "category"));
+                if (std::find(out.begin(), out.end(), c) == out.end()) out.push_back(c);
+            }
+        return out;
+    }
+
+    /// « Meilleures progressions » (2.32.2): the best verified attempt on every EXTRÊME level.
+    void drawRaces(Rect area) {
+        UIContext& ui = g_.ui;
+        Json all = filtered(tabData_.is_object() ? tabData_.value("races", Json::array()) : Json::array(), "title");
+        Json list = Json::array();
+        for (const auto& r : all) {
+            bool fin = jget<bool>(r, "finished", false);
+            if ((filter_ == 1 && !fin) || (filter_ == 2 && fin)) continue;
+            list.push_back(r);
+        }
+        if (tabEmptyOrBusy(area, list, !query_.empty() || filter_ > 0 ? "Aucune progression ne correspond."
+                                       : me() ? "Aucune tentative classée sur un niveau EXTRÊME : chaque tentative compte, même sans arriver au bout."
+                                              : "Ce joueur n'a pas encore de tentative classée sur un niveau EXTRÊME."))
+            return;
+        const float rh = ui.s(64), gap = ui.s(6);
+        const float viewW = ui.s(104), barW = std::min(ui.s(320), area.w * 0.26f);
+        ui.beginScroll("races", area, list.size() * (rh + gap));
+        float cy = area.y - ui.scrollOffset();
+        for (const auto& r : list) {
+            Rect row{area.x, cy, area.w - ui.s(14), rh};
+            cy += rh + gap;
+            if (row.bottom() < area.y || row.y > area.bottom()) continue;
+            ui.r().fillRoundedRect(row, ui.s(10), Color{14, 20, 42, 220});
+            // Right to left: « Voir », the rank, the bar with its score; the title in what is left.
+            const std::string runId = jstr(r, "run_id");
+            Rect vb{row.right() - ui.s(10) - viewW, row.y + (rh - ui.s(42)) * 0.5f, viewW, ui.s(42)};
+            UIContext::ButtonStyle vs;
+            vs.small = true;
+            vs.enabled = jget<bool>(r, "has_replay", false) && fetching_.empty();
+            vs.fontSize = ui.fitFont("Voir", FontFace::Bold, 20, viewW - ui.s(20));
+            if (ui.button("rv/" + runId, vb, fetching_ == runId ? "…" : "Voir", vs)) watchRace(r);
+            int rank = jget<int>(r, "rank", 0), n = jget<int>(r, "participants", 0);
+            std::string rk = rank > 0 ? "n°" + std::to_string(rank) + " / " + std::to_string(n) : "—";
+            float rkw = ui.s(120);
+            ui.label(rk, {vb.x - ui.s(16), row.center().y}, ui.fitFont(rk, FontFace::Bold, 17, rkw), rank > 0 && rank <= 3 ? GlobeRenderer::tierColor(markerTier(rank)) : ui.theme().text,
+                     Align::Right, FontFace::Bold, VAlign::Middle);
+            float bx = vb.x - ui.s(16) - rkw - ui.s(20) - barW;
+            double score = jget<double>(r, "score", 0.0);
+            bool fin = jget<bool>(r, "finished", false);
+            Rect bar{bx, row.center().y + ui.s(4), barW, ui.s(10)};
+            ui.r().fillRoundedRect(bar, ui.s(5), Color{30, 40, 70, 255});
+            ui.r().fillRoundedRect({bar.x, bar.y, bar.w * static_cast<float>(std::clamp(score / 100.0, 0.0, 1.0)), bar.h}, ui.s(5),
+                                   fin ? ui.theme().success : ui.theme().warm);
+            std::string sc = decimal(score) + " %" + (fin ? "  ·  terminé" : "");
+            ui.label(sc, {bx, row.center().y - ui.s(12)}, ui.fitFont(sc, FontFace::Bold, 16, barW), fin ? ui.theme().success : ui.theme().text, Align::Left,
+                     FontFace::Bold, VAlign::Middle);
+            float tx = row.x + ui.s(16), room = bx - ui.s(24) - tx;
+            std::string title = jstr(r, "title");
+            std::string sub = std::string(jstr(r, "kind") == "community" ? "niveau de la communauté" : "campagne") + "  ·  " + OnlineUi::ageOf(jstr(r, "at"));
+            {
+                i18n::Verbatim v;  // the level's name as its author wrote it
+                ui.label(title, {tx, row.y + ui.s(22)}, ui.fitFont(title, FontFace::Bold, 18, room), ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+            }
+            ui.label(sub, {tx, row.y + ui.s(46)}, ui.fitFont(sub, FontFace::Body, 14, room), ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        }
+        ui.endScroll();
+    }
+
+    void watchRace(const Json& r) {
+        const std::string runId = jstr(r, "run_id");
+        const std::string title = jstr(r, "title");
+        double score = jget<double>(r, "score", 0.0);
+        fetching_ = runId;
+        say("Téléchargement du replay…", false);
+        g_.online.getBinary(
+            "/api/v1/races/runs/" + runId + "/replay",
+            [this, title, score, alive = std::weak_ptr<int>(life_)](const HttpResponse& resp) {
+                if (alive.expired()) return;
+                fetching_.clear();
+                if (resp.status != 200 || resp.body.empty())
+                    return say(resp.networkFailure() ? std::string("Connexion impossible : replay indisponible pour l'instant.")
+                                                     : "Replay indisponible (" + std::to_string(resp.status) + ").",
+                               true);
+                std::string err;
+                auto rep = ReplayData::decode(std::vector<uint8_t>(resp.body.begin(), resp.body.end()), &err);
+                if (!rep) return say("Replay illisible : " + err, true);
+                say("", false);
+                g_.app.pushScene(makeLocalReplayViewer(g_, std::move(*rep), "Course à la vérification – " + title + " – " + decimal(score) + " %"));
+            },
+            16u << 20);
+    }
+
     void drawPlayers(const Rect& area) {
         UIContext& ui = g_.ui;
-        Json list = tabData_.is_object() ? tabData_.value("players", Json::array()) : Json::array();
-        if (tabEmptyOrBusy(area, list, tab_ == 3 ? "Personne ne suit encore ce joueur." : "Ce joueur ne suit aucun créateur."))
+        Json list = filtered(tabData_.is_object() ? tabData_.value("players", Json::array()) : Json::array(), "username");
+        if (tabEmptyOrBusy(area, list, !query_.empty() ? "Aucun joueur ne correspond à la recherche."
+                                       : tab_ == 4 ? "Personne ne suit encore ce joueur." : "Ce joueur ne suit aucun créateur."))
             return;
         const float rh = ui.s(58), gap = ui.s(6);
         ui.beginScroll("players", area, list.size() * (rh + gap));
@@ -673,6 +810,9 @@ private:
     bool loading_ = false, fromCache_ = false, busy_ = false, confirmBlock_ = false;
     int generation_ = 0;
     int tab_ = 0, creationSort_ = 0;
+    std::string query_;     // search of the current tab
+    int filter_ = 0;        // filter of the current tab (category, finished or not)
+    std::string fetching_;  // attempt whose replay is downloading
     Json tabData_;
     std::string tabError_;
     bool tabLoading_ = false;
