@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -66,6 +67,23 @@ public:
     void freeze(float seconds);
     bool frozen() const { return frozenTimer_ > 0.0f; }
     bool slowed() const { return slowTimer_ > 0.0f; }
+
+    /// A double of a guardian (« Reflets », 2.19): it never chooses an attack, it copies
+    /// those of `original`; it lives `life` seconds (0 = until a hit breaks it).
+    void makeDouble(uint32_t original, float life) {
+        mirrorOf_ = original;
+        lifeTimer_ = life;
+        expires_ = life > 0.0f;
+    }
+    uint32_t mirrorOf() const { return mirrorOf_; }
+    /// Doubles of this guardian still standing (« Reflets »).
+    int doubles() const { return doubles_; }
+    /// Guardian attacks (2.19): the bouncing path of a prism, the mark of a shadow step, the
+    /// radius of an eclipse ring... (tests, display).
+    const std::vector<Vec2>& attackPath() const { return path_; }
+    Vec2 attackMark() const { return markPos_; }
+    float ringRadius() const { return ringRadius_; }
+    float ringGapAngle() const { return angle_; }
 
     bool alive() const { return state_ != EnemyState::Dead; }
     bool dormant() const { return state_ == EnemyState::Dormant; }
@@ -189,6 +207,30 @@ private:
     std::vector<Staged> staged_;  // staggered impacts still to come
     float attackClock_ = 0.0f;
     bool leapLanded_ = false;
+
+    // Guardians of Aethra (2.19): the new attack types, in GuardianAttacks.cpp.
+    void guardianBegin(GameWorld& w);   // wind-up: targets, marks, paths
+    void guardianStart(GameWorld& w);   // the attack goes off
+    void guardianActive(GameWorld& w, float dt);
+    void guardianEnd(GameWorld& w);     // the attack is over (or interrupted)
+    void renderGuardian(RenderContext& ctx, float prog) const;
+    float guardianFit(const GameWorld& w, const AttackDef& a, bool near, bool far, bool air) const;
+    std::optional<float> groundAt(const GameWorld& w, float x, float fromY) const;
+    Rect arenaArea(const GameWorld& w) const;
+    void copyToDoubles(GameWorld& w);
+    void spawnDoubles(GameWorld& w, const AttackDef& a);
+    void fireSpiral(GameWorld& w, const AttackDef& a);
+    std::vector<Vec2> path_;   // Prism path, Cage wall bases, Mirror spots
+    Vec2 markPos_;             // Tracker bump, Blink mark, Well centre, Ring centre
+    float spin_ = 1.0f;        // Orbit / Spiral turning direction
+    float angle_ = 0.0f;       // Orbit / Spiral angle, Ring opening
+    float ringRadius_ = 0.0f;
+    bool burst_ = false;       // Tracker: the spike is out
+    uint32_t mirrorOf_ = 0;    // a double: the guardian it copies
+    float lifeTimer_ = 0.0f;   // a double: seconds left
+    bool expires_ = false;     // a double with a life (else until broken)
+    int doubles_ = 0;
+    bool hasMirror_ = false;
 };
 
 }  // namespace cosmic

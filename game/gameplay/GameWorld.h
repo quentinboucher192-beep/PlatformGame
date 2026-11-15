@@ -12,6 +12,7 @@
 #include "engine/input/InputManager.h"
 #include "engine/physics/PhysicsWorld.h"
 #include "engine/rendering/ParticleSystem.h"
+#include "game/enemies/BossHazards.h"
 #include "game/gameplay/Damage.h"
 #include "game/gameplay/Entity.h"
 #include "game/gameplay/Projectile.h"
@@ -114,6 +115,10 @@ public:
     std::vector<Projectile>& projectiles() { return projectiles_; }
     const std::vector<Projectile>& projectiles() const { return projectiles_; }
     std::vector<WorldMessage>& messages() { return messages_; }
+    /// Lasting effects of the guardians' attacks (2.19): pulls, frozen ground, lava tide,
+    /// walls of thorns. Part of the simulation; cleared when the player respawns.
+    BossHazards& hazards() { return hazards_; }
+    const BossHazards& hazards() const { return hazards_; }
 
     // --------------------------------------------------------- spawning
     Enemy* spawnEnemy(const EnemyDefinition& def, Vec2 feet, bool faceLeft, const std::string& objectId = {},
@@ -256,6 +261,7 @@ private:
     std::vector<Projectile> projectiles_;
     std::vector<Projectile> pendingProjectiles_;
     std::vector<WorldMessage> messages_;
+    BossHazards hazards_;
     Random rng_{0xC0FFEE};
     Random fxRng_{0xF1F1F1};
     uint64_t seed_ = 0xC0FFEE;

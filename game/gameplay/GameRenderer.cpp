@@ -81,6 +81,8 @@ void GameRenderer::render(Renderer& r, ResourceManager& res, GameWorld& world, c
     drawActors();
 
     if (!opt.mapView) {
+        // Lasting effects of the guardians' attacks (frost, lava, thorns, wells).
+        world.hazards().render(ctx);
         // Telegraphs read on top of everything in the world.
         for (const auto& e : world.enemies())
             if (e->box.expanded(200).intersects(vis)) e->renderTelegraph(ctx);
@@ -92,6 +94,9 @@ void GameRenderer::render(Renderer& r, ResourceManager& res, GameWorld& world, c
     if (opt.lighting) {
         Color ambient = lvl.ambientLight;
         if (opt.editor) ambient = Color::lerp(ambient, Color::white(), 0.45f);
+        // A guardian that swallows the light (Nyxara, 2.19): the arena darkens from its phase.
+        if (const Enemy* b = world.activeBoss(); b && b->alive() && b->def().darkPhase > 0 && b->phaseIndex() + 1 >= b->def().darkPhase)
+            ambient = Color::lerp(ambient, Color{6, 4, 14, 255}, 0.6f);
         lights_.apply(r, view, ambient);
     }
 
