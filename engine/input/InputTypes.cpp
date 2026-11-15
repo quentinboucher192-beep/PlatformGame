@@ -198,6 +198,36 @@ PadBinding padFromJson(const Json& j) {
 }
 }  // namespace
 
+namespace {
+/// A keyboard / mouse binding in the settings file: the SDL name of a key, « Mouse4 »,
+/// « WheelUp », « WheelDown » (2.30.2), "" for none. An older game reading a mouse name
+/// finds no key and keeps none.
+std::string bindingCodeName(SDL_Scancode sc) {
+    if (sc == SDL_SCANCODE_UNKNOWN) return "";
+    if (int b = mouseBindingButton(sc)) return "Mouse" + std::to_string(b);
+    if (static_cast<int>(sc) == kWheelUpBinding) return "WheelUp";
+    if (static_cast<int>(sc) == kWheelDownBinding) return "WheelDown";
+    if (!isKeyboardScancode(sc)) return "";
+    const char* n = SDL_GetScancodeName(sc);
+    return n ? n : "";
+}
+
+SDL_Scancode bindingCodeFromName(const std::string& name) {
+    if (name.empty()) return SDL_SCANCODE_UNKNOWN;
+    if (name == "WheelUp") return static_cast<SDL_Scancode>(kWheelUpBinding);
+    if (name == "WheelDown") return static_cast<SDL_Scancode>(kWheelDownBinding);
+    if (name.size() > 5 && name.size() <= 7 && name.compare(0, 5, "Mouse") == 0) {
+        int b = 0;
+        for (size_t i = 5; i < name.size(); ++i) {
+            if (name[i] < '0' || name[i] > '9') return SDL_SCANCODE_UNKNOWN;
+            b = b * 10 + (name[i] - '0');
+        }
+        return b >= 1 && b <= kMouseButtonsBindable ? mouseButtonBinding(b) : SDL_SCANCODE_UNKNOWN;
+    }
+    return SDL_GetScancodeFromName(name.c_str());
+}
+}  // namespace
+
 Json InputBindings::toJson() const {
     Json j;
     Json k = Json::object(), p = Json::object();
@@ -206,7 +236,7 @@ Json InputBindings::toJson() const {
         // reading this file keeps its own defaults for them).
         if (actionIsLegacyPowerKey(static_cast<Action>(i))) continue;
         Json ka = Json::array();
-        for (auto sc : keys[i]) ka.push_back(sc == SDL_SCANCODE_UNKNOWN ? "" : SDL_GetScancodeName(sc));
+        for (auto sc : keys[i]) ka.push_back(bindingCodeName(sc));
         k[actionId(static_cast<Action>(i))] = ka;
         Json pa = Json::array();
         for (const auto& b : pad[i]) pa.push_back(padToJson(b));
@@ -256,7 +286,7 @@ InputBindings InputBindings::fromJson(const Json& j) {
             if (a == Action::Count || !arr.is_array()) continue;
             for (size_t s = 0; s < 2 && s < arr.size(); ++s) {
                 std::string name = arr[s].is_string() ? arr[s].get<std::string>() : "";
-                b.keys[static_cast<int>(a)][s] = name.empty() ? SDL_SCANCODE_UNKNOWN : SDL_GetScancodeFromName(name.c_str());
+                b.keys[static_cast<int>(a)][s] = bindingCodeFromName(name);
             }
         }
         if (!slots) {
@@ -380,8 +410,30 @@ std::string padBindingName(const PadBinding& b, GamepadStyle style) {
     return "?";
 }
 
+std::string mouseBindingDetail(SDL_Scancode sc) {
+    switch (mouseBindingButton(sc)) {
+        case 0: break;
+        case SDL_BUTTON_LEFT: return "clic gauche";
+        case SDL_BUTTON_MIDDLE: return "clic de la molette";
+        case SDL_BUTTON_RIGHT: return "clic droit";
+        case SDL_BUTTON_X1: return "bouton latéral arrière";
+        case SDL_BUTTON_X2: return "bouton latéral avant";
+        default: return "bouton supplémentaire";
+    }
+    return "";  // a key, or the wheel (its short name says it all)
+}
+
 std::string keyName(SDL_Scancode sc) {
     if (sc == SDL_SCANCODE_UNKNOWN) return "—";
+    // Mouse: « Souris 1 », « Souris 4 »… (short: it is also a keycap in the HUD).
+    if (int b = mouseBindingButton(sc)) {
+        std::string t = "Souris {0}";  // a model of the dictionaries (« Mouse 4 »)
+        t.replace(t.find("{0}"), 3, std::to_string(b));
+        return t;
+    }
+    if (static_cast<int>(sc) == kWheelUpBinding) return "Molette ↑";
+    if (static_cast<int>(sc) == kWheelDownBinding) return "Molette ↓";
+    if (!isKeyboardScancode(sc)) return "?";
     switch (sc) {
         case SDL_SCANCODE_SPACE: return "Espace";
         case SDL_SCANCODE_RETURN: return "Entrée";

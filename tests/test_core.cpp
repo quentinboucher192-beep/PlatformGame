@@ -174,6 +174,80 @@ TEST_CASE("input: a key pressed to rebind a command triggers nothing else") {
     CHECK(in.consumePlayerInput().isPressed(Action::Jump));
 }
 
+TEST_CASE("input: mouse buttons and the wheel can be bound to commands (any button, saved by name)") {
+    InputManager in;
+    InputBindings b = InputBindings::defaults();
+    // Capture: a side button (5), then an extra button of a gaming mouse (9), then the wheel.
+    in.setBindings(b);
+    in.beginFrame();
+    in.beginCapture(InputDevice::Keyboard);
+    SDL_Event e{};
+    e.type = SDL_EVENT_MOUSE_BUTTON_DOWN;
+    e.button.button = 5;
+    in.handleEvent(e);
+    CHECK(in.captureDone());
+    CHECK(in.capturedKey() == mouseButtonBinding(5));
+    CHECK(!in.mousePressed(SDL_BUTTON_X2));  // the capturing click goes to nothing else
+    e.type = SDL_EVENT_MOUSE_BUTTON_UP;
+    in.handleEvent(e);
+    CHECK(!in.mouseReleased(SDL_BUTTON_X2));
+    in.cancelCapture();
+    in.beginFrame();
+    in.beginCapture(InputDevice::Keyboard);
+    e.type = SDL_EVENT_MOUSE_BUTTON_DOWN;
+    e.button.button = 9;
+    in.handleEvent(e);
+    CHECK(in.capturedKey() == mouseButtonBinding(9));
+    e.type = SDL_EVENT_MOUSE_BUTTON_UP;
+    in.handleEvent(e);
+    in.cancelCapture();
+    in.beginFrame();
+    in.beginCapture(InputDevice::Keyboard);
+    SDL_Event w{};
+    w.type = SDL_EVENT_MOUSE_WHEEL;
+    w.wheel.y = -1.0f;
+    in.handleEvent(w);
+    CHECK(static_cast<int>(in.capturedKey()) == kWheelDownBinding);
+    in.cancelCapture();
+
+    // Names: short for the HUD, in words for the settings, saved and read back.
+    CHECK(keyName(mouseButtonBinding(4)) == "Souris 4");
+    CHECK(mouseBindingDetail(mouseButtonBinding(1)) == "clic gauche");
+    CHECK(!mouseBindingDetail(mouseButtonBinding(9)).empty());
+    CHECK(mouseBindingDetail(SDL_SCANCODE_K).empty());
+    b.keys[static_cast<int>(Action::Attack)] = {mouseButtonBinding(1), SDL_SCANCODE_UNKNOWN};
+    b.keys[static_cast<int>(Action::Jump)] = {mouseButtonBinding(9), SDL_SCANCODE_UNKNOWN};
+    b.keys[static_cast<int>(Action::PowerSlot1)] = {static_cast<SDL_Scancode>(kWheelUpBinding), SDL_SCANCODE_UNKNOWN};
+    InputBindings back = InputBindings::fromJson(b.toJson());
+    CHECK(back.keys[static_cast<int>(Action::Attack)][0] == mouseButtonBinding(1));
+    CHECK(back.keys[static_cast<int>(Action::Jump)][0] == mouseButtonBinding(9));
+    CHECK(static_cast<int>(back.keys[static_cast<int>(Action::PowerSlot1)][0]) == kWheelUpBinding);
+
+    // Playing: the bound button is a held command while down, the wheel a one-frame press.
+    in.setBindings(back);
+    in.beginFrame();
+    in.update(0.016f);
+    (void)in.consumePlayerInput();
+    e.type = SDL_EVENT_MOUSE_BUTTON_DOWN;
+    e.button.button = 9;
+    in.handleEvent(e);
+    in.update(0.016f);
+    CHECK(in.held(Action::Jump));
+    CHECK(in.consumePlayerInput().isPressed(Action::Jump));
+    e.type = SDL_EVENT_MOUSE_BUTTON_UP;
+    in.handleEvent(e);
+    in.beginFrame();
+    in.update(0.016f);
+    CHECK(!in.held(Action::Jump));
+    w.wheel.y = 1.0f;
+    in.handleEvent(w);
+    in.update(0.016f);
+    CHECK(in.consumePlayerInput().isPressed(Action::PowerSlot1));
+    in.beginFrame();
+    in.update(0.016f);
+    CHECK(!in.held(Action::PowerSlot1));
+}
+
 #include "game/progression/Progression.h"
 
 TEST_CASE("progression: time played per level, shown in hours and minutes") {

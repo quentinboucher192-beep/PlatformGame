@@ -138,4 +138,26 @@ int glyphIndex(const PadBinding& b);
 std::string padBindingName(const PadBinding& b, GamepadStyle style);
 std::string keyName(SDL_Scancode sc);
 
+/// Mouse buttons and the wheel in the keyboard / mouse bindings (2.30.2). They take codes after
+/// the keyboard's scancodes, so a binding stays one SDL_Scancode. Every button the system
+/// reports counts (1 left, 2 middle, 3 right, 4 and 5 the side buttons, more on mice whose
+/// driver sends them as buttons, such as some Razer or Logitech models).
+constexpr int kMouseBindingBase = static_cast<int>(SDL_SCANCODE_COUNT) + 8;
+constexpr int kMouseButtonsBindable = 32;
+constexpr int kWheelUpBinding = kMouseBindingBase + kMouseButtonsBindable + 1;
+constexpr int kWheelDownBinding = kWheelUpBinding + 1;
+inline SDL_Scancode mouseButtonBinding(int button) { return static_cast<SDL_Scancode>(kMouseBindingBase + button); }
+/// The mouse button of a binding (1..kMouseButtonsBindable), 0 for a key or the wheel.
+inline int mouseBindingButton(SDL_Scancode sc) {
+    int b = static_cast<int>(sc) - kMouseBindingBase;
+    return b >= 1 && b <= kMouseButtonsBindable ? b : 0;
+}
+inline bool isWheelBinding(SDL_Scancode sc) { return static_cast<int>(sc) == kWheelUpBinding || static_cast<int>(sc) == kWheelDownBinding; }
+inline bool isMouseBinding(SDL_Scancode sc) { return mouseBindingButton(sc) != 0 || isWheelBinding(sc); }
+/// A real key of the keyboard (an index of SDL_GetKeyboardState).
+inline bool isKeyboardScancode(SDL_Scancode sc) { return sc > SDL_SCANCODE_UNKNOWN && sc < SDL_SCANCODE_COUNT; }
+/// What a mouse binding is, in words, for the settings (« clic gauche », « bouton latéral »…);
+/// "" for a key.
+std::string mouseBindingDetail(SDL_Scancode sc);
+
 }  // namespace cosmic

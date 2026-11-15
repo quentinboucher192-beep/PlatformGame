@@ -179,7 +179,16 @@ private:
             // A gamepad button with its icon (drawn on the left): the name stays clear of it.
             const bool icon = pad && pb.kind != PadBinding::Kind::None && glyphIndex(pb) >= 0;
             if (pad) label = padBindingName(pb, g_.app.input().gamepadStyle());
-            else label = keyName(working_.input.keys[i][slot]);
+            else {
+                // A mouse binding says which button it is when there is room (« Souris 4 · bouton
+                // latéral arrière »), else its short name, the one the HUD shows.
+                const SDL_Scancode sc = working_.input.keys[i][slot];
+                label = keyName(sc);
+                if (std::string detail = mouseBindingDetail(sc); !detail.empty()) {
+                    std::string full = label + " · " + detail;
+                    if (ui.text().measure(full, FontFace::Bold, ui.s(20)).x <= b.w - ui.s(24)) label = full;
+                }
+            }
             std::string id = std::string(pad ? "p" : "k") + actionId(a) + std::to_string(slot);
             UIContext::ButtonStyle st;
             st.small = true;
@@ -491,8 +500,12 @@ private:
         ui.panel(m, true, 16);
         ui.label(std::string("Nouvelle commande : ") + actionLabel(captureAction_), {m.center().x, m.y + ui.s(40)}, 28,
                  ui.theme().text, Align::Center, FontFace::Bold);
-        ui.label(capturePad_ ? "Appuyez sur un bouton ou une gâchette de la manette" : "Appuyez sur une touche (Échap : annuler)",
-                 {m.center().x, m.y + ui.s(110)}, 22, ui.theme().textDim, Align::Center);
+        // Keyboard / mouse: any key, any mouse button (side buttons and the extra buttons of
+        // gaming mice included) or a notch of the wheel.
+        const std::string ask = capturePad_ ? "Appuyez sur un bouton ou une gâchette de la manette"
+                                            : "Appuyez sur une touche ou un bouton de la souris, ou tournez la molette (Échap : annuler)";
+        const float askW = m.w - ui.s(60);
+        ui.labelWrapped(ask, {m.x + ui.s(30), m.y + ui.s(84)}, askW, ui.fitFont(ask, FontFace::Body, 22, askW * 2.0f, 0.75f), ui.theme().textDim);
         float k = std::max(0.0f, captureTimer_ / 6.0f);
         ui.r().fillRect({m.x + ui.s(40), m.bottom() - ui.s(50), (m.w - ui.s(80)) * k, ui.s(6)}, ui.theme().accent);
     }

@@ -98,6 +98,8 @@ public:
 private:
     static int idx(Action a) { return static_cast<int>(a); }
     float padValue(const PadBinding& b) const;
+    /// The commands bound to `code` (a mouse button or a notch of the wheel) are pressed.
+    void pressBound(SDL_Scancode code);
     void openFirstGamepad();
     void setGamepad(SDL_Gamepad* pad);
     Vec2 applyDeadzone(Vec2 v) const;
@@ -136,6 +138,11 @@ private:
     // The key or button just given to a command (rebinding) is used for that only: it acts
     // as nothing else (no menu, no game action) until it has been released.
     SDL_Scancode swallowKey_ = SDL_SCANCODE_UNKNOWN;
+    int swallowMouse_ = 0;  // the mouse button just given to a command, until released
+    // Mouse buttons held (bit n: button n, any button the system reports) and the wheel's
+    // notches of this frame, for the commands bound to them.
+    uint64_t mouseHeld_ = 0;
+    bool wheelUpPulse_ = false, wheelDownPulse_ = false;
     PadBinding swallowPad_;
     bool swallowingPad_ = false;
 };

@@ -104,17 +104,62 @@ void InputManager::handleEvent(const SDL_Event& e) {
             mouseDelta_ += Vec2{e.motion.xrel, e.motion.yrel};
             mouseMoved_ = true;
             break;
-        case SDL_EVENT_MOUSE_BUTTON_DOWN:
+        case SDL_EVENT_MOUSE_BUTTON_DOWN: {
+            const int b = e.button.button;
             mouse_ = {e.button.x, e.button.y};
-            mouseDown_[e.button.button & 7] = true;
-            mousePressed_[e.button.button & 7] = true;
+            // Rebinding (keyboard / mouse): the button goes to the command being set, and to
+            // nothing else (no click on the interface).
+            if (capturing_ && captureDevice_ == InputDevice::Keyboard && b >= 1 && b <= kMouseButtonsBindable) {
+                capturedKey_ = mouseButtonBinding(b);
+                capturing_ = false;
+                captureDone_ = true;
+                swallowMouse_ = b;
+                break;
+            }
+            if (b == swallowMouse_) break;
+            if (b >= 0 && b < 8) {
+                mouseDown_[b] = true;
+                mousePressed_[b] = true;
+            }
             lastDevice_ = InputDevice::Keyboard;
+            if (b >= 1 && b <= kMouseButtonsBindable) {
+                mouseHeld_ |= uint64_t{1} << b;
+                pressBound(mouseButtonBinding(b));
+            }
             break;
-        case SDL_EVENT_MOUSE_BUTTON_UP:
-            mouseDown_[e.button.button & 7] = false;
-            mouseReleased_[e.button.button & 7] = true;
+        }
+        case SDL_EVENT_MOUSE_BUTTON_UP: {
+            const int b = e.button.button;
+            if (b >= 1 && b <= kMouseButtonsBindable) mouseHeld_ &= ~(uint64_t{1} << b);
+            if (b == swallowMouse_) {  // the button captured for a command: released, nothing else
+                swallowMouse_ = 0;
+                break;
+            }
+            if (b >= 0 && b < 8) {
+                mouseDown_[b] = false;
+                mouseReleased_[b] = true;
+            }
             break;
-        case SDL_EVENT_MOUSE_WHEEL: wheel_ += e.wheel.y; break;
+        }
+        case SDL_EVENT_MOUSE_WHEEL: {
+            const float y = e.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -e.wheel.y : e.wheel.y;
+            if (capturing_ && captureDevice_ == InputDevice::Keyboard && y != 0.0f) {
+                capturedKey_ = static_cast<SDL_Scancode>(y > 0.0f ? kWheelUpBinding : kWheelDownBinding);
+                capturing_ = false;
+                captureDone_ = true;
+                break;
+            }
+            wheel_ += e.wheel.y;
+            if (y > 0.0f) {
+                wheelUpPulse_ = true;
+                pressBound(static_cast<SDL_Scancode>(kWheelUpBinding));
+            } else if (y < 0.0f) {
+                wheelDownPulse_ = true;
+                pressBound(static_cast<SDL_Scancode>(kWheelDownBinding));
+            }
+            break;
+        }
+        case SDL_EVENT_WINDOW_FOCUS_LOST: mouseHeld_ = 0; break;
         case SDL_EVENT_TEXT_INPUT: text_ += e.text.text; break;
         case SDL_EVENT_GAMEPAD_ADDED:
             if (!gamepad_) {
@@ -225,8 +270,16 @@ void InputManager::update(float dt) {
     for (int i = 0; i < kActionCount; ++i) {
         bool h = false;
         if (!blockKeys || i >= kFirstMenuAction) {
-            for (auto sc : bindings_.keys[i])
-                if (sc != SDL_SCANCODE_UNKNOWN && sc != swallowKey_ && kb[sc]) h = true;
+            for (auto sc : bindings_.keys[i]) {
+                if (sc == SDL_SCANCODE_UNKNOWN || sc == swallowKey_) continue;
+                if (isKeyboardScancode(sc)) {
+                    if (kb[sc]) h = true;
+                } else if (int b = mouseBindingButton(sc)) {
+                    if (b != swallowMouse_ && ((mouseHeld_ >> b) & 1u)) h = true;
+                } else if ((static_cast<int>(sc) == kWheelUpBinding && wheelUpPulse_) || (static_cast<int>(sc) == kWheelDownBinding && wheelDownPulse_)) {
+                    h = true;  // a notch of the wheel: held for this frame only
+                }
+            }
         }
         for (const auto& pb : bindings_.pad[i]) {
             if (swallowingPad_ && pb == swallowPad_) continue;
@@ -255,6 +308,7 @@ void InputManager::update(float dt) {
         }
         prevHeld_[i] = h;
     }
+    wheelUpPulse_ = wheelDownPulse_ = false;  // a notch counts for one frame
 }
 
 PlayerInput InputManager::consumePlayerInput() {
@@ -312,6 +366,16 @@ void InputManager::startTextInput(SDL_Window* w) {
 void InputManager::stopTextInput(SDL_Window* w) {
     if (textActive_) SDL_StopTextInput(w);
     textActive_ = false;
+}
+
+void InputManager::pressBound(SDL_Scancode code) {
+    // Event-driven edges (as for the keys) so that a click or a notch shorter than a frame is
+    // never lost.
+    for (int i = 0; i < kActionCount; ++i) {
+        if (textActive_ && i < kFirstMenuAction) continue;
+        for (auto sc : bindings_.keys[i])
+            if (sc == code) gamePressed_[i] = framePressed_[i] = true;
+    }
 }
 
 void InputManager::beginCapture(InputDevice device) {

@@ -1475,7 +1475,7 @@
    ]
   },
   {
-   "fr": "Appuyez sur une touche (Échap : annuler)",
+   "fr": "Appuyez sur une touche ou un bouton de la souris, ou tournez la molette (Échap : annuler)",
    "where": [
     "ui/screens/SettingsScene.cpp"
    ]
@@ -3381,9 +3381,27 @@
    ]
   },
   {
+   "fr": "bouton latéral arrière",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "bouton latéral avant",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
    "fr": "Bouton retiré de « {0} »",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "bouton supplémentaire",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -3940,6 +3958,18 @@
    ]
   },
   {
+   "fr": "Ce défi est terminé.",
+   "where": [
+    "server/src/challenges.ts"
+   ]
+  },
+  {
+   "fr": "Ce défi n'a pas encore commencé.",
+   "where": [
+    "server/src/challenges.ts"
+   ]
+  },
+  {
    "fr": "Ce joueur a choisi de masquer son profil public : seuls son pseudonyme, son avatar et ses niveaux publiés sont visibles.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -4003,6 +4033,12 @@
    "fr": "Ce joueur ne suit aucun créateur.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce n'est pas la version du niveau de ce défi.",
+   "where": [
+    "server/src/challenges.ts"
    ]
   },
   {
@@ -4254,6 +4290,12 @@
    ]
   },
   {
+   "fr": "Ces règles ne sont pas celles du défi.",
+   "where": [
+    "server/src/challenges.ts"
+   ]
+  },
+  {
    "fr": "Cet identifiant existe déjà",
    "where": [
     "editors/level_editor/LevelEditorScene.cpp"
@@ -4290,6 +4332,18 @@
    ]
   },
   {
+   "fr": "Cette partie a été refusée.",
+   "where": [
+    "server/src/challenges.ts"
+   ]
+  },
+  {
+   "fr": "Cette partie ne vous appartient pas.",
+   "where": [
+    "server/src/challenges.ts"
+   ]
+  },
+  {
    "fr": "Cette roche fissurée cédera sous une Impulsion.",
    "where": [
     "game/gameplay/entities/PlatformEntities.cpp"
@@ -4311,6 +4365,7 @@
   {
    "fr": "Cette tentative a déjà été soumise avec d'autres données.",
    "where": [
+    "server/src/challenges.ts",
     "server/src/records.ts"
    ]
   },
@@ -5072,9 +5127,27 @@
    ]
   },
   {
+   "fr": "clic de la molette",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "clic droit",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
    "fr": "Clic droit / molette enfoncée / Espace+glisser : déplacer la vue · molette : zoom · Origine : zoom 100 %",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "clic gauche",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -5175,6 +5248,7 @@
   {
    "fr": "code pays ISO à 2 lettres attendu",
    "where": [
+    "server/src/challenges.ts",
     "server/src/globe.ts",
     "server/src/leaderboards.ts"
    ]
@@ -8276,6 +8350,12 @@
    ]
   },
   {
+   "fr": "Défi introuvable.",
+   "where": [
+    "server/src/challenges.ts"
+   ]
+  },
+  {
    "fr": "Défi échoué : trop de chutes",
    "where": [
     "game/gameplay/GameWorld.cpp"
@@ -8716,6 +8796,7 @@
   {
    "fr": "En attente du replay.",
    "where": [
+    "server/src/challenges.ts",
     "server/src/records.ts"
    ]
   },
@@ -13758,6 +13839,7 @@
   {
    "fr": "Le joueur a masqué son profil.",
    "where": [
+    "server/src/challenges.ts",
     "server/src/players.ts",
     "server/src/records.ts"
    ]
@@ -13887,6 +13969,12 @@
    "fr": "Le niveau a changé depuis votre record de {0}",
    "where": [
     "game/progression/NewsCenter.cpp"
+   ]
+  },
+  {
+   "fr": "Le niveau de ce défi n'est plus disponible.",
+   "where": [
+    "server/src/challenges.ts"
    ]
   },
   {
@@ -14021,6 +14109,7 @@
   {
    "fr": "Le replay doit être envoyé en application/octet-stream.",
    "where": [
+    "server/src/challenges.ts",
     "server/src/community.ts",
     "server/src/race.ts",
     "server/src/records.ts"
@@ -16080,6 +16169,18 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Molette ↑",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Molette ↓",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -18697,6 +18798,18 @@
    "fr": "Partie",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "partie de défi (règles imposées) : elle ne compte que pour son défi",
+   "where": [
+    "server/src/replay.ts"
+   ]
+  },
+  {
+   "fr": "Partie introuvable.",
+   "where": [
+    "server/src/challenges.ts"
    ]
   },
   {
@@ -22415,6 +22528,12 @@
    ]
   },
   {
+   "fr": "replay sans les règles du défi (format 4 attendu)",
+   "where": [
+    "server/src/replay.ts"
+   ]
+  },
+  {
    "fr": "Replay vide ou trop volumineux.",
    "where": [
     "game/ghost/GhostStore.cpp"
@@ -23036,6 +23155,12 @@
    "fr": "Règles de niveau affichées avant de jouer et réglables dans l'éditeur : facteur de dégâts reçus et nombre de vies.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "règles du replay différentes de celles du défi",
+   "where": [
+    "server/src/replay.ts"
    ]
   },
   {
@@ -23720,6 +23845,12 @@
    ]
   },
   {
+   "fr": "santé du replay ({0}) au-dessus des cœurs du défi ({1})",
+   "where": [
+    "server/src/replay.ts"
+   ]
+  },
+  {
    "fr": "Saut",
    "where": [
     "engine/input/InputTypes.cpp",
@@ -23980,6 +24111,12 @@
    "fr": "section des entrées incohérente",
    "where": [
     "game/online/Replay.cpp",
+    "server/src/replay.ts"
+   ]
+  },
+  {
+   "fr": "section du défi incohérente",
+   "where": [
     "server/src/replay.ts"
    ]
   },
@@ -24636,6 +24773,12 @@
    "fr": "Souris : glissez un élément pour le déplacer, molette pour changer sa taille. Clavier et manette : choisissez un élément dans la liste, puis réglez sa taille et sa position avec les curseurs. Deux éléments ne peuvent jamais se chevaucher.",
    "where": [
     "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Souris {0}",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -26082,6 +26225,7 @@
   {
    "fr": "Tentative déjà enregistrée.",
    "where": [
+    "server/src/challenges.ts",
     "server/src/records.ts"
    ]
   },
@@ -27779,6 +27923,12 @@
    ]
   },
   {
+   "fr": "Un replay est déjà associé à cette partie.",
+   "where": [
+    "server/src/challenges.ts"
+   ]
+  },
+  {
    "fr": "Un replay est déjà associé à cette tentative.",
    "where": [
     "server/src/records.ts"
@@ -28831,6 +28981,12 @@
    ]
   },
   {
+   "fr": "Version du jeu trop ancienne pour les défis du jour.",
+   "where": [
+    "server/src/challenges.ts"
+   ]
+  },
+  {
    "fr": "Version du niveau différente de celle du serveur",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
@@ -29440,6 +29596,12 @@
    "where": [
     "editors/level_editor/LevelEditorChat.cpp",
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre niveau « {0} » est le défi du jour !",
+   "where": [
+    "server/src/notifications.ts"
    ]
   },
   {
