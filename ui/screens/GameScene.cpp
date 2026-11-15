@@ -200,8 +200,8 @@ void GameScene::finishChallenge(bool completed) {
     if (completed) {
         d.tier = c.tierFor(d.timeMs, d.damageTaken);
         ghostRun_.finish(time);
-        // The day's challenge: kept here (best time, its replay) and sent when it can be.
-        // Practice keeps nothing.
+        // The challenge: kept here (best time, its replay) and sent when it can be (« hors
+        // délai » once it is over). Practice keeps nothing.
         if (!d.practice) {
             d.attemptId = attemptId_;
             std::string whyNot = challengeSendable_ ? std::string() : "Votre version du niveau diffère de celle du défi : temps gardé sur ce PC.";
@@ -210,7 +210,7 @@ void GameScene::finishChallenge(bool completed) {
         std::string victory = g_.app.resources().soundPath("music/victory.ogg");
         if (!victory.empty()) g_.app.audio().playSound(victory, 0.9f, 1.0f, 0.0f, AudioBus::Music);
     }
-    d.streak = g_.challenges.streak();
+    d.streak = g_.challenges.streak(c.kind);
     d.replay = lastReplay_;
     g_.app.pushScene(makeChallengeEnd(g_, *this, std::move(d)));
 }
@@ -218,8 +218,13 @@ void GameScene::finishChallenge(bool completed) {
 void GameScene::drawChallengeBanner() {
     // Always: what this run is, at the bottom left.
     UIContext& ui = g_.ui;
-    const ChallengeRules& r = opt_.challenge->challenge.rules;
-    std::string tag = opt_.challenge->practice ? "DÉFI HORS CLASSEMENT" : "DÉFI DU JOUR";
+    const DailyChallenge& c = opt_.challenge->challenge;
+    const ChallengeRules& r = c.rules;
+    std::string tag = opt_.challenge->practice      ? "DÉFI HORS CLASSEMENT"
+                      : g_.challenges.ended(c)      ? "DÉFI HORS DÉLAI"
+                      : c.kind == ChallengeKind::Weekly  ? "DÉFI DE LA SEMAINE"
+                      : c.kind == ChallengeKind::Monthly ? "DÉFI DU MOIS"
+                                                         : "DÉFI DU JOUR";
     tag += " · " + std::to_string(r.hearts) + (r.hearts > 1 ? " cœurs" : " cœur");
     if (!r.checkpoints) tag += " · sans points de passage";
     tag += " · " + keyName(SDL_SCANCODE_R) + " / Vue : recommencer";
@@ -452,10 +457,8 @@ void GameScene::quitToMenu() {
         return;
     }
     if (opt_.challenge) {
-        // Back to the challenges: today's, or the archive it was replayed from.
-        const DailyChallenge& c = opt_.challenge->challenge;
-        bool archive = opt_.challenge->practice && g_.challenges.nowMs() >= c.endsAtMs;
-        g_.app.switchScene(makeChallenges(g_, archive ? 1 : 0, c.id), 0.4f);
+        // Back to the challenges: its kind's tab while it runs, else the calendar on its card.
+        g_.app.switchScene(makeChallengesOn(g_, opt_.challenge->challenge.id), 0.4f);
         return;
     }
     if (opt_.editorTest) {

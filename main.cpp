@@ -30,8 +30,9 @@
 //                           open the boss statistics (that boss, that clip of its animation)
 //   --boss-training <boss> [--boss-training-go]
 //                           open the settings of a boss training (and enter its arena)
-//   --challenges [today|archives[:<id>]]
-//                           open the daily challenges (Aujourd'hui, or Archives on a challenge)
+//   --challenges [day|week|month|calendar[:<YYYY-MM>|:<id>]]
+//                           open the challenges (Jour, Semaine, Mois, or the Calendrier on a
+//                           month or on a challenge's card)
 //   --challenge-start <id>[:practice]
 //                           open the screen before a challenge run (cached in saves/challenges)
 //   --challenge-play <id>[:practice]
@@ -611,16 +612,19 @@ int main(int argc, char** argv) {
         if (std::string b = value("--boss-stats"); !b.empty()) game.onlineOpen = "boss:" + b;
         app.pushScene(makeBossStats(game));
     } else if (has("--challenges")) {
-        // --challenges [today | archives[:<challenge id>]]
+        // --challenges [day | week | month | calendar[:<YYYY-MM> | :<challenge id>]] (2.32's
+        // « today » and « archives[:<id>] » still work: the day, the calendar).
         std::string c = value("--challenges");
-        bool archives = c.rfind("archives", 0) == 0;
         auto colon = c.find(':');
-        app.pushScene(makeChallenges(game, archives ? 1 : 0, colon == std::string::npos ? std::string{} : c.substr(colon + 1)));
+        std::string what = c.substr(0, colon), arg = colon == std::string::npos ? std::string{} : c.substr(colon + 1);
+        int tab = what == "week" ? 1 : what == "month" ? 2 : (what == "calendar" || what == "archives") ? 3 : 0;
+        app.pushScene(makeChallenges(game, tab, tab == 3 ? arg : std::string{}));
     } else if (std::string cs = value("--challenge-start"); !cs.empty()) {
-        // --challenge-start <challenge id>[:practice]: the screen before a challenge run.
+        // --challenge-start <challenge id>[:practice]: the screen before a challenge run (over
+        // its kind's tab, or the calendar on its card once it is over).
         auto colon = cs.find(':');
         bool practice = colon != std::string::npos && cs.substr(colon + 1) == "practice";
-        app.pushScene(makeChallenges(game, practice && game.challenges.find(cs.substr(0, colon)) != game.challenges.current() ? 1 : 0, cs.substr(0, colon)));
+        app.pushScene(makeChallengesOn(game, cs.substr(0, colon)));
         app.pushScene(makeChallengeStart(game, cs.substr(0, colon), practice));
     } else if (std::string cp = value("--challenge-play"); !cp.empty()) {
         // --challenge-play <challenge id>[:practice]: a challenge run straight away (with --input).

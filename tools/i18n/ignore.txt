@@ -93,3 +93,4 @@ best
 required
 station
 {"challenge":"{0}","hearts":{1},"slots":{2},"powers":[
+{0}-W{1}

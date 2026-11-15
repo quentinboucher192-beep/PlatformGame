@@ -143,7 +143,10 @@
     {"id": "cos.victory_corona", "version": "2.29.0", "parents": ["collection.cat.victory", "collection.tab.route"]},
     {"id": "menu.challenges", "version": "2.32.0"},
     {"id": "challenges.tab.today", "version": "2.32.0", "parents": ["menu.challenges"]},
-    {"id": "challenges.tab.archives", "version": "2.32.0", "parents": ["menu.challenges"]},
-    {"id": "challenges.keys", "version": "2.32.1", "parents": ["menu.challenges", "challenges.tab.today"]}
+    {"id": "challenges.keys", "version": "2.32.1", "parents": ["menu.challenges", "challenges.tab.today"]},
+    {"id": "challenges.tab.week", "version": "2.33.0", "parents": ["menu.challenges"]},
+    {"id": "challenges.tab.month", "version": "2.33.0", "parents": ["menu.challenges"]},
+    {"id": "challenges.tab.calendar", "version": "2.33.0", "parents": ["menu.challenges"]},
+    {"id": "challenges.board.period", "version": "2.33.0", "parents": ["challenges.tab.calendar"]}
   ]
 }
