@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <cstdio>
 #include <set>
 
@@ -275,6 +276,8 @@ std::optional<DailyChallenge> DailyChallenge::fromJson(const Json& j, std::strin
     c.goldMs = jget<int64_t>(tiers, "gold_ms", 0);
     c.goldNoDamage = jget<bool>(tiers, "gold_no_damage", true);
     if (c.silverMs <= 0 || c.goldMs <= 0 || c.silverMs > 2 * 3600 * 1000LL || c.goldMs > 2 * 3600 * 1000LL) return fail("paliers du défi invalides");
+    // 2.34: the level has a route, its attempts are ranked by how far they go (absent: no).
+    c.progressAvailable = jget<bool>(j, "progress_available", false);
     c.raw = j;
     return c;
 }
@@ -282,13 +285,21 @@ std::optional<DailyChallenge> DailyChallenge::fromJson(const Json& j, std::strin
 // ------------------------------------------------------------------ submissions
 
 Json ChallengeSubmission::toJson() const {
-    return {{"attempt_id", attemptId},   {"challenge_id", challengeId}, {"owner", ownerId},
-            {"time_ms", timeMs},         {"deaths", deaths},            {"damage_taken", damageTaken},
-            {"level_hash", levelHash},   {"rules_hash", rulesHash},     {"game_version", gameVersion},
-            {"has_replay", hasReplay},   {"replay_uploaded", replayUploaded}, {"late", late},
-            {"state", static_cast<int>(state)}, {"tier", static_cast<int>(serverTier)},
-            {"run_id", runId},           {"upload_path", uploadPath},   {"note", note},
-            {"created_at", createdAt}};
+    Json j = {{"attempt_id", attemptId},   {"challenge_id", challengeId}, {"owner", ownerId},
+              {"time_ms", timeMs},         {"deaths", deaths},            {"damage_taken", damageTaken},
+              {"level_hash", levelHash},   {"rules_hash", rulesHash},     {"game_version", gameVersion},
+              {"has_replay", hasReplay},   {"replay_uploaded", replayUploaded}, {"late", late},
+              {"state", static_cast<int>(state)}, {"tier", static_cast<int>(serverTier)},
+              {"run_id", runId},           {"upload_path", uploadPath},   {"note", note},
+              {"created_at", createdAt}};
+    if (attempt) {
+        j["attempt"] = true;
+        j["bosses"] = bosses;
+        j["waves"] = waves;
+        j["progress"] = progress;
+        j["server_progress"] = serverProgress;
+    }
+    return j;
 }
 
 std::optional<ChallengeSubmission> ChallengeSubmission::fromJson(const Json& j) {
@@ -313,13 +324,32 @@ std::optional<ChallengeSubmission> ChallengeSubmission::fromJson(const Json& j) 
     s.uploadPath = jstr(j, "upload_path");
     s.note = jstr(j, "note");
     s.createdAt = jstr(j, "created_at");
+    s.attempt = jget<bool>(j, "attempt", false);
+    if (s.attempt) {
+        for (const Json& b : jfield(j, "bosses", Json::array()))
+            if (b.is_number_integer()) s.bosses.push_back(std::clamp(b.get<int>(), 0, 1000));
+        for (const Json& w : jfield(j, "waves", Json::array()))
+            if (w.is_number_integer()) s.waves.push_back(std::max(0, w.get<int>()));
+        s.progress = jget<float>(j, "progress", 0.0f);
+        s.serverProgress = jget<float>(j, "server_progress", -1.0f);
+    }
     return s;
 }
 
 Json ChallengeSubmission::body() const {
+    if (attempt)
+        // The claim only: the server computes the score from the replay, never takes the game's.
+        return {{"attempt_id", attemptId},
+                {"time_ms", timeMs},
+                {"level_hash", levelHash},
+                {"rules_hash", rulesHash},
+                {"game_version", gameVersion},
+                {"claim", {{"finished", false}, {"bosses", bosses}, {"waves", waves}}}};
     return {{"attempt_id", attemptId}, {"time_ms", timeMs},       {"deaths", deaths},           {"damage_taken", damageTaken},
             {"level_hash", levelHash}, {"rules_hash", rulesHash}, {"game_version", gameVersion}, {"has_replay", hasReplay}};
 }
+
+std::string ChallengeSubmission::postPath() const { return "/api/v1/challenges/" + challengeId + (attempt ? "/attempts" : "/runs"); }
 
 // ------------------------------------------------------------------ service
 
@@ -404,6 +434,8 @@ void ChallengeService::loadAll() {
             r.bestLate = jget<bool>(v, "best_late", false);
             r.bestAttemptId = jstr(v, "best_attempt");
             r.hasReplay = jget<bool>(v, "has_replay", false);
+            r.bestProgress = std::clamp(jget<float>(v, "best_progress", 0.0f), 0.0f, 99.9f);
+            r.bestProgressAttemptId = jstr(v, "best_progress_attempt");
             if (isDate(r.date) && challenge_period::valid(r.kind, r.period)) results_[id] = r;
         }
     }
@@ -446,7 +478,9 @@ void ChallengeService::saveResults() const {
                    {"live_finishes", r.liveFinishes},
                    {"best_late", r.bestLate},
                    {"best_attempt", r.bestAttemptId},
-                   {"has_replay", r.hasReplay}};
+                   {"has_replay", r.hasReplay},
+                   {"best_progress", r.bestProgress},
+                   {"best_progress_attempt", r.bestProgressAttemptId}};
     if (!resultsFile().save(dir_ / "results.json", {{"results", all}})) Log::warn("Défis : impossible d'enregistrer les résultats");
 }
 
@@ -810,7 +844,7 @@ void ChallengeService::refreshMine(ApiCallback cb) {
                     int64_t best = serverResults_[id].bestMs;
                     // My run of that time: its state is the server's.
                     for (auto& sub : submissions_)
-                        if (sub.challengeId == id && sub.ownerId == who && sub.timeMs == best && !sub.runId.empty() && sub.state != st &&
+                        if (!sub.attempt && sub.challengeId == id && sub.ownerId == who && sub.timeMs == best && !sub.runId.empty() && sub.state != st &&
                             (sub.state == ChallengeRunState::Sent || sub.state == ChallengeRunState::Pending)) {
                             sub.state = st;
                             changed = true;
@@ -910,6 +944,27 @@ ChallengeService::RunReport ChallengeService::recordRun(const DailyChallenge& c,
     }
     s.state = ChallengeRunState::Waiting;
     submissions_.push_back(s);
+    trimSubmissions();
+    saveSubmissions();
+    rep.state = ChallengeRunState::Waiting;
+    sendTimer_ = 0.0f;
+    flush();
+    return rep;
+}
+
+const ChallengeSubmission* ChallengeService::submission(const std::string& attemptId, bool attempt) const {
+    for (const auto& s : submissions_)
+        if (s.attemptId == attemptId && s.attempt == attempt) return &s;
+    return nullptr;
+}
+
+ChallengeSubmission* ChallengeService::findSubmission(const std::string& attemptId, bool attempt) {
+    for (auto& s : submissions_)
+        if (s.attemptId == attemptId && s.attempt == attempt) return &s;
+    return nullptr;
+}
+
+void ChallengeService::trimSubmissions() {
     // The oldest decided ones go beyond the limit (the waiting ones always stay).
     while (submissions_.size() > kMaxSubmissions) {
         auto it = std::find_if(submissions_.begin(), submissions_.end(), [](const ChallengeSubmission& x) {
@@ -918,17 +973,6 @@ ChallengeService::RunReport ChallengeService::recordRun(const DailyChallenge& c,
         if (it == submissions_.end()) break;
         submissions_.erase(it);
     }
-    saveSubmissions();
-    rep.state = ChallengeRunState::Waiting;
-    sendTimer_ = 0.0f;
-    flush();
-    return rep;
-}
-
-const ChallengeSubmission* ChallengeService::submission(const std::string& attemptId) const {
-    for (const auto& s : submissions_)
-        if (s.attemptId == attemptId) return &s;
-    return nullptr;
 }
 
 const ChallengeSubmission* ChallengeService::bestSubmission(const std::string& challengeId) const {
@@ -944,15 +988,19 @@ int ChallengeService::waitingCount() const {
     return n;
 }
 
-fs::path ChallengeService::uploadPath(const std::string& attemptId) const { return dir_ / "upload" / (attemptId + ".cprz"); }
+fs::path ChallengeService::uploadPath(const std::string& attemptId, bool attempt) const {
+    return dir_ / "upload" / (attemptId + (attempt ? "-attempt.cprz" : ".cprz"));
+}
 
 void ChallengeService::applyRun(ChallengeSubmission& s, const Json& run) {
     if (!run.is_object()) return;
+    // A run's id is the server's; an attempt is known by the game's own attempt_id.
     std::string id = jstr(run, "id");
-    if (safeId(id)) s.runId = id;
+    if (safeId(id) && !s.attempt) s.runId = id;
     if (run.contains("status") && run["status"].is_string()) s.state = challengeRunStateFromServer(run["status"].get<std::string>());
     if (run.contains("tier")) s.serverTier = challengeTierFromJson(run["tier"]);
     if (run.contains("late") && run["late"].is_boolean()) s.late = run["late"].get<bool>();
+    if (const Json& p = jfield(run, "progress", Json()); p.is_number()) s.serverProgress = std::clamp(p.get<float>(), 0.0f, 100.0f);
 }
 
 void ChallengeService::flush() {
@@ -964,31 +1012,33 @@ void ChallengeService::sendNext() {
     const std::string me = online_->playerId();
     for (auto& s : submissions_) {
         if (s.ownerId != me) continue;
-        if (s.state == ChallengeRunState::Sent && s.hasReplay && !s.replayUploaded && !s.runId.empty()) {
-            upload(s.attemptId);
+        if (s.state == ChallengeRunState::Sent && s.hasReplay && !s.replayUploaded && (s.attempt || !s.runId.empty())) {
+            upload(s.attemptId, s.attempt);
             return;
         }
         if (s.state != ChallengeRunState::Waiting) continue;
         sending_ = true;
         std::string attemptId = s.attemptId;
-        online_->send("POST", "/api/v1/challenges/" + s.challengeId + "/runs", s.body(), OnlineService::guard(life_, [this, attemptId](const ApiResult& r) {
+        bool attempt = s.attempt;
+        online_->send("POST", s.postPath(), s.body(), OnlineService::guard(life_, [this, attemptId, attempt](const ApiResult& r) {
             sending_ = false;
-            ChallengeSubmission* sub = nullptr;
-            for (auto& x : submissions_)
-                if (x.attemptId == attemptId) sub = &x;
+            ChallengeSubmission* sub = findSubmission(attemptId, attempt);
             if (!sub) return;
             if (r.ok) {
-                applyRun(*sub, jfield(r.data, "run", Json()));
+                applyRun(*sub, jfield(r.data, attempt ? "attempt" : "run", Json()));
                 const Json& rp = jfield(r.data, "replay", Json::object());
                 std::string up = rp.is_object() ? jstr(rp, "upload_path") : std::string();
                 bool required = rp.is_object() && jget<bool>(rp, "required", false);
                 bool accepted = rp.is_object() && jget<bool>(rp, "accepted", true);
-                if (sub->hasReplay && !sub->replayUploaded && accepted && up.rfind("/api/v1/challenges/runs/", 0) == 0 && up.find("..") == std::string::npos &&
+                // An attempt's replay goes to PUT /challenges/attempts/{attempt_id}/replay.
+                const std::string prefix = attempt ? "/api/v1/challenges/attempts/" : "/api/v1/challenges/runs/";
+                if (attempt && up.empty()) up = prefix + attemptId + "/replay";
+                if (sub->hasReplay && !sub->replayUploaded && accepted && up.rfind(prefix, 0) == 0 && up.find("..") == std::string::npos &&
                     sub->state != ChallengeRunState::Rejected) {
                     sub->uploadPath = up;
                     sub->state = ChallengeRunState::Sent;  // until its replay is there
                 } else if (required && !sub->hasReplay) {
-                    sub->note = "Replay manquant : le temps ne pourra pas être vérifié.";
+                    sub->note = attempt ? "Replay manquant : l'essai ne pourra pas être classé." : "Replay manquant : le temps ne pourra pas être vérifié.";
                 }
                 saveSubmissions();
                 sendTimer_ = 0.0f;
@@ -1005,21 +1055,22 @@ void ChallengeService::sendNext() {
             else if (r.code == "LEVEL_MISMATCH") sub->note = "Version du niveau différente de celle du défi.";
             else if (r.code == "GAME_VERSION_UNSUPPORTED") sub->note = "Version du jeu trop ancienne : mettez le jeu à jour.";
             else if (r.code == "CHALLENGE_NOT_FOUND") sub->note = "Défi inconnu du serveur.";
+            else if (r.code == "PROGRESS_UNAVAILABLE") sub->note = "Ce défi n'a pas de classement « Plus loin » sur le serveur.";
+            else if (r.code == "ATTEMPT_REJECTED") sub->note = "Essai refusé par le serveur.";
+            else if (attempt && r.status == 404) sub->note = "Ce serveur ne classe pas encore les essais (« Plus loin »).";
             else sub->note = r.message;
             saveSubmissions();
-            online_->notify(OnlineService::Notification::Kind::Warning, "Défi : temps refusé", sub->note);
+            online_->notify(OnlineService::Notification::Kind::Warning, attempt ? "Défi : essai refusé" : "Défi : temps refusé", sub->note);
             sendTimer_ = 0.0f;
         }));
         return;
     }
 }
 
-void ChallengeService::upload(const std::string& attemptId) {
-    ChallengeSubmission* s = nullptr;
-    for (auto& x : submissions_)
-        if (x.attemptId == attemptId) s = &x;
+void ChallengeService::upload(const std::string& attemptId, bool attempt) {
+    ChallengeSubmission* s = findSubmission(attemptId, attempt);
     if (!s) return;
-    auto bytes = FileUtil::readBinary(uploadPath(attemptId));
+    auto bytes = FileUtil::readBinary(uploadPath(attemptId, attempt));
     if (!bytes) {
         // The file is gone: nothing to upload (the server keeps the run without its proof).
         s->replayUploaded = true;
@@ -1028,11 +1079,9 @@ void ChallengeService::upload(const std::string& attemptId) {
         return;
     }
     sending_ = true;
-    online_->sendBytes("PUT", s->uploadPath, std::string(bytes->begin(), bytes->end()), OnlineService::guard(life_, [this, attemptId](const ApiResult& r) {
+    online_->sendBytes("PUT", s->uploadPath, std::string(bytes->begin(), bytes->end()), OnlineService::guard(life_, [this, attemptId, attempt](const ApiResult& r) {
         sending_ = false;
-        ChallengeSubmission* sub = nullptr;
-        for (auto& x : submissions_)
-            if (x.attemptId == attemptId) sub = &x;
+        ChallengeSubmission* sub = findSubmission(attemptId, attempt);
         if (!sub) return;
         if (!r.ok && unreachable(r)) {
             sendTimer_ = kRetrySeconds;
@@ -1040,10 +1089,16 @@ void ChallengeService::upload(const std::string& attemptId) {
         }
         sub->replayUploaded = true;
         std::error_code ec;
-        fs::remove(uploadPath(attemptId), ec);
+        fs::remove(uploadPath(attemptId, attempt), ec);
         if (r.ok) {
-            applyRun(*sub, jfield(r.data, "run", Json()));
+            applyRun(*sub, jfield(r.data, attempt ? "attempt" : "run", Json()));
             if (sub->state == ChallengeRunState::Sent) sub->state = ChallengeRunState::Pending;
+            // The server's best progress on this challenge (« Plus loin »), as it now stands.
+            if (attempt && resultsMine())
+                if (const Json& bp = jfield(r.data, "best_progress", Json()); bp.is_number()) {
+                    ServerResult& sr = serverResults_[sub->challengeId];
+                    sr.bestProgress = std::max(sr.bestProgress, std::clamp(bp.get<float>(), 0.0f, 100.0f));
+                }
             mineTimer_ = 0.0f;  // its status soon
         } else if (r.code != "REPLAY_EXISTS") {
             sub->state = ChallengeRunState::Rejected;
@@ -1056,7 +1111,6 @@ void ChallengeService::upload(const std::string& attemptId) {
         sendTimer_ = 0.0f;
     }), 30000);
 }
-
 void ChallengeService::update(float dt) {
     clock_ += dt;
     if (!online_ || !online_->usable()) return;
@@ -1092,35 +1146,120 @@ void ChallengeService::update(float dt) {
     }
 }
 
+// ------------------------------------------------------------------ « Plus loin » (2.34)
+
+float ChallengeService::bestProgress(const std::string& challengeId) const {
+    float best = 0.0f;
+    if (const ChallengeResult* r = result(challengeId)) best = r->bestMs > 0 ? 100.0f : r->bestProgress;
+    if (auto s = serverResult(challengeId)) {
+        if (s->bestMs > 0) best = 100.0f;
+        if (s->bestProgress > best) best = s->bestProgress;
+    }
+    return best;
+}
+
+bool ChallengeService::beatsBestAttempt(float progress, float best) {
+    // Scores have one decimal (raceScore): compared in tenths, strictly better only.
+    long p = std::lround(progress * 10.0f), b = std::lround(best * 10.0f);
+    return p >= 1 && p < 1000 && p > b;
+}
+
+ChallengeService::AttemptReport ChallengeService::recordAttempt(const DailyChallenge& c, float progress, int64_t timeMs, std::vector<int> bosses,
+                                                                std::vector<int> waves, const std::string& levelHash, const std::string& attemptId,
+                                                                const ReplayData* replay, bool sendable, const std::string& whyNot) {
+    AttemptReport rep;
+    rep.progress = std::clamp(std::floor(progress * 10.0f) / 10.0f, 0.0f, 99.9f);
+    rep.late = lateNow(c);
+    if (!c.progressAvailable) return rep;  // no route: no « Plus loin » for this challenge
+    rep.previousBest = bestProgress(c.id);
+    rep.newBest = beatsBestAttempt(rep.progress, rep.previousBest);
+    if (!rep.newBest) {
+        rep.note = rep.previousBest >= 100.0f ? "Défi déjà fini : un essai qui s'arrête avant ne change rien."
+                                              : "Pas plus loin que votre meilleur essai : rien n'est envoyé.";
+        return rep;
+    }
+    ChallengeResult& r = results_[c.id];
+    r.challengeId = c.id;
+    r.kind = c.kind;
+    r.period = c.period;
+    r.date = c.date;
+    r.bestProgress = rep.progress;
+    r.bestProgressAttemptId = attemptId;
+    saveResults();
+    if (!online_ || !online_->loggedIn()) {
+        rep.note = "Sans compte : gardé sur ce PC. Connectez-vous à Cosmic Online pour entrer dans le classement « Plus loin ».";
+        return rep;
+    }
+    if (!sendable) {
+        rep.note = whyNot.empty() ? std::string("Non envoyé.") : whyNot;
+        return rep;
+    }
+    ChallengeSubmission s;
+    s.attempt = true;
+    s.attemptId = attemptId;
+    s.challengeId = c.id;
+    s.ownerId = online_->playerId();
+    s.timeMs = timeMs;
+    s.levelHash = levelHash;
+    s.rulesHash = c.rulesHash;
+    s.gameVersion = COSMIC_VERSION_STRING;
+    s.late = rep.late;
+    s.bosses = std::move(bosses);
+    s.waves = std::move(waves);
+    s.progress = rep.progress;
+    s.createdAt = FileUtil::nowString();
+    if (replay && safeId(attemptId)) {
+        std::vector<uint8_t> bytes = replay->encode();
+        std::error_code ec;
+        fs::create_directories(uploadPath(attemptId, true).parent_path(), ec);
+        s.hasReplay = !bytes.empty() && FileUtil::writeBinary(uploadPath(attemptId, true), bytes);
+    }
+    // One attempt kept per challenge (the best): an older one still waiting is replaced.
+    submissions_.erase(std::remove_if(submissions_.begin(), submissions_.end(),
+                                      [&](const ChallengeSubmission& x) {
+                                          return x.attempt && x.challengeId == c.id && x.ownerId == s.ownerId && x.state == ChallengeRunState::Waiting;
+                                      }),
+                       submissions_.end());
+    s.state = ChallengeRunState::Waiting;
+    submissions_.push_back(s);
+    trimSubmissions();
+    saveSubmissions();
+    rep.state = ChallengeRunState::Waiting;
+    sendTimer_ = 0.0f;
+    flush();
+    return rep;
+}
+
 // ------------------------------------------------------------------ leaderboard, ghost
 
-std::string ChallengeService::leaderboardPath(const std::string& challengeId, const std::string& scope, bool allPeriod) {
-    // period=live is the default (and the only one a 2.32 server knows): left out.
+std::string ChallengeService::leaderboardPath(const std::string& challengeId, const std::string& scope, bool allPeriod, bool progressBoard) {
+    // period=live and board=time are the defaults (the only ones a 2.32 server knows): left out.
     return "/api/v1/challenges/" + challengeId + "/leaderboard?scope=" + online::encodeQueryValue(scope) + (allPeriod ? "&period=all" : "") +
-           "&limit=50";
+           (progressBoard ? "&board=progress" : "") + "&limit=50";
 }
 
-void ChallengeService::leaderboard(const std::string& challengeId, const std::string& scope, ApiCallback cb, bool allPeriod) {
+void ChallengeService::leaderboard(const std::string& challengeId, const std::string& scope, ApiCallback cb, bool allPeriod, bool progressBoard) {
     if (!online_ || !safeId(challengeId)) return;
-    online_->get(leaderboardPath(challengeId, scope, allPeriod), std::move(cb), true);
+    online_->get(leaderboardPath(challengeId, scope, allPeriod, progressBoard), std::move(cb), true);
 }
 
-fs::path ChallengeService::runReplayPath(const std::string& challengeId, const std::string& runId) const {
-    return dir_ / "ghosts" / (challengeId + "-" + runId + ".cprz");
+fs::path ChallengeService::runReplayPath(const std::string& challengeId, const std::string& runId, bool attempt) const {
+    return dir_ / "ghosts" / (challengeId + (attempt ? "-attempt-" : "-") + runId + ".cprz");
 }
 
 void ChallengeService::downloadRunReplay(const std::string& challengeId, const std::string& runId,
-                                         std::function<void(std::optional<fs::path>, const std::string&)> cb) {
+                                         std::function<void(std::optional<fs::path>, const std::string&)> cb, bool attempt) {
     if (!online_ || !safeId(challengeId) || !safeId(runId)) {
         if (cb) cb(std::nullopt, "Replay inconnu.");
         return;
     }
-    fs::path file = runReplayPath(challengeId, runId);
+    fs::path file = runReplayPath(challengeId, runId, attempt);
     if (FileUtil::exists(file)) {
         if (cb) cb(file, {});
         return;
     }
-    online_->getBinary("/api/v1/challenges/runs/" + runId + "/replay",
+    // A run's replay, or (« Plus loin ») an attempt's, by the server's id of that attempt.
+    online_->getBinary(std::string(attempt ? "/api/v1/challenges/attempts/" : "/api/v1/challenges/runs/") + runId + "/replay",
                        [cb, file, alive = std::weak_ptr<int>(life_)](const HttpResponse& r) {
                            if (!alive.lock()) return;
                            if (r.networkFailure() || r.status != 200) {

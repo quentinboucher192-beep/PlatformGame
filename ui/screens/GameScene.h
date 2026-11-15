@@ -42,6 +42,9 @@ struct ChallengeEndData {
     ChallengeTier tier = ChallengeTier::None;
     std::string attemptId;  // the run (its sending state is followed live)
     ChallengeService::RunReport report;
+    /// « Plus loin » (2.34): the unfinished attempt of this run (a fall; without checkpoints,
+    /// its first life), its progress and whether it went further than my best one.
+    std::optional<ChallengeService::AttemptReport> attempt;
     ChallengeService::Streak streak;
     std::shared_ptr<ReplayData> replay;
 };
@@ -172,6 +175,15 @@ private:
     void drawChallengeBanner();
     std::string challengeHash_;      // fingerprint of the level as installed (sent with the run)
     bool challengeSendable_ = false;  // that fingerprint is the challenge's
+    // « Plus loin » (2.34, a challenge with a route): how far this attempt goes (display and
+    // online only, the simulation is not touched). Without checkpoints an attempt is one
+    // life: it is decided at the first death (the run goes on); else at a fall, a restart or
+    // a return to the menu. Its replay (format 4) goes with it when it beats my best attempt.
+    void takeChallengeAttempt(bool firstLife);
+    RaceTracker challengeTrack_;
+    std::future<std::vector<Vec2>> challengeRouteFuture_;
+    bool attemptDone_ = false;
+    std::optional<ChallengeService::AttemptReport> attemptReport_;
     // Training (Ghost Racing): a segment from a checkpoint, again and again, never a record.
     void startTraining();
     void trainingSegmentDone();

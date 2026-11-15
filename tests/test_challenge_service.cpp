@@ -102,6 +102,11 @@ struct ChallengeServer {
     std::string endedCode;  // POST runs answered with this error ("" = accepted)
     bool lateRuns = false;  // POST runs: the run is « hors délai »
     int posts = 0, uploads = 0;
+    // « Plus loin » (2.34): the attempts declared and their replays.
+    int attemptPosts = 0, attemptUploads = 0;
+    Json lastAttempt;
+    std::vector<uint8_t> lastAttemptReplay;
+    double bestProgress = -1.0;  // /challenges/me: my best attempt on `current` (no finished run)
     std::vector<std::string> paths;  // every GET, in order
     Json lastBody;
     std::vector<uint8_t> lastReplay;
@@ -155,6 +160,24 @@ struct ChallengeServer {
                            {"replay", {{"required", true}, {"accepted", true}, {"upload_path", "/api/v1/challenges/runs/run-1/replay"}}}},
                           201);
         }
+        if (path.rfind("/api/v1/challenges/", 0) == 0 && path.find("/attempts") != std::string::npos && rq.method == "POST") {
+            ++attemptPosts;
+            lastAttempt = Json::parse(rq.body);
+            std::string id = lastAttempt["attempt_id"];
+            return okData({{"duplicate", false},
+                           {"attempt", {{"attempt_id", id}, {"status", "PENDING"}, {"progress", nullptr}}},
+                           {"replay", {{"required", true}, {"upload_path", "/api/v1/challenges/attempts/" + id + "/replay"}}}},
+                          201);
+        }
+        if (path.rfind("/api/v1/challenges/attempts/", 0) == 0 && rq.method == "PUT") {
+            ++attemptUploads;
+            lastAttemptReplay.assign(rq.body.begin(), rq.body.end());
+            auto rep = ReplayData::decode(lastAttemptReplay);
+            if (!rep || rep->challengeRules.empty()) return apiError(422, "REPLAY_MALFORMED");
+            return okData({{"attempt", {{"attempt_id", rep->attemptId}, {"status", "VERIFIED"}, {"progress", 40.9}, {"finished", false}, {"late", false}, {"rank", 3}, {"reasons", Json::array()}}},
+                           {"new_best", true},
+                           {"best_progress", 40.9}});
+        }
         if (path == "/api/v1/challenges/runs/run-1/replay" && rq.method == "PUT") {
             ++uploads;
             lastReplay.assign(rq.body.begin(), rq.body.end());
@@ -166,6 +189,9 @@ struct ChallengeServer {
             Json data = {{"streak", {{"current", 4}, {"best", 6}, {"last_date", ChallengeService::utcDate(serverNow)}}},
                          {"results", Json::array({{{"challenge_id", current.value("id", "")}, {"date", current.value("date", "")},
                                                    {"best_time_ms", 70000}, {"tier", "gold"}, {"status", "VERIFIED"}}})}};
+            if (bestProgress >= 0.0)
+                data["results"] = Json::array({{{"challenge_id", current.value("id", "")}, {"date", current.value("date", "")}, {"best_time_ms", nullptr},
+                                                {"tier", nullptr}, {"status", nullptr}, {"late", false}, {"best_progress", bestProgress}}});
             if (!legacy && weekly.is_object())
                 data["streaks"] = {{"daily", {{"current", 4}, {"best", 6}, {"last_period", ChallengeService::utcDate(serverNow)}}},
                                    {"weekly", {{"current", 2}, {"best", 3}, {"last_period", weekly["period"]}}},
@@ -665,4 +691,104 @@ TEST_CASE("challenge service: a streak per kind (weeks and months in a row), the
     CHECK(w.best == 3);
     CHECK(rig.challenges.streak(ChallengeKind::Daily).fromServer);
     CHECK(!rig.challenges.streak(ChallengeKind::Monthly).fromServer);  // null: the local one
+}
+
+// ------------------------------------------------------------------ 2.34: « Plus loin »
+
+TEST_CASE("challenge service: « Plus loin »: an attempt is sent only when it beats my best one") {
+    // One decimal, strictly better; nothing, or a finish, never.
+    CHECK(ChallengeService::beatsBestAttempt(63.5f, 63.4f));
+    CHECK(!ChallengeService::beatsBestAttempt(63.4f, 63.4f));
+    CHECK(!ChallengeService::beatsBestAttempt(63.44f, 63.4f));
+    CHECK(!ChallengeService::beatsBestAttempt(0.0f, 0.0f));
+    CHECK(ChallengeService::beatsBestAttempt(0.1f, 0.0f));
+    CHECK(!ChallengeService::beatsBestAttempt(99.9f, 100.0f));
+    // progress_available is read; absent (2.33 server): no « Plus loin ».
+    Json j = periodJson(ChallengeKind::Weekly, "2026-W47");
+    CHECK(!DailyChallenge::fromJson(j)->progressAvailable);
+    j["progress_available"] = true;
+    CHECK(DailyChallenge::fromJson(j)->progressAvailable);
+    CHECK(ChallengeService::leaderboardPath("weekly-2026-W47", "world", false, true).find("&board=progress") != std::string::npos);
+    CHECK(ChallengeService::leaderboardPath("weekly-2026-W47", "world", false, false).find("board=") == std::string::npos);
+}
+
+TEST_CASE("challenge service: « Plus loin »: the best unfinished attempt goes with its claim and its format 4 replay") {
+    Rig rig("attempts");
+    rig.server->serverNow = ChallengeService::localNowMs();
+    CHECK(rig.login());
+    const int64_t today = todayNumber();
+    Json cj = periodJson(ChallengeKind::Weekly, challenge_period::ofDay(ChallengeKind::Weekly, today));
+    cj["progress_available"] = true;
+    auto c = DailyChallenge::fromJson(cj);
+    CHECK(c.has_value());
+    ReplayData rep = sampleReplay(*c);
+    auto a = rig.challenges.recordAttempt(*c, 41.27f, 52000, {500, 0}, {2}, c->level.hash, rep.attemptId, &rep, true);
+    CHECK(a.newBest);
+    CHECK_NEAR(a.progress, 41.2f, 0.001f);  // one decimal, never rounded up
+    CHECK(a.state == ChallengeRunState::Waiting);
+    CHECK(rig.pump([&] { return rig.challenges.submission(rep.attemptId, true)->state == ChallengeRunState::Verified; }, 60000));
+    {
+        std::lock_guard<std::mutex> lock(rig.server->m);
+        CHECK(rig.server->attemptPosts == 1);
+        CHECK(rig.server->attemptUploads == 1);
+        const Json& b = rig.server->lastAttempt;
+        CHECK(b["attempt_id"] == rep.attemptId);
+        CHECK(b["time_ms"] == 52000);
+        CHECK(b["level_hash"] == c->level.hash);
+        CHECK(b["rules_hash"] == c->rulesHash);
+        CHECK(b["game_version"] == COSMIC_VERSION_STRING);
+        CHECK(b["claim"]["finished"] == false);
+        CHECK(b["claim"]["bosses"] == Json::array({500, 0}));
+        CHECK(b["claim"]["waves"] == Json::array({2}));
+        CHECK(!b.contains("progress"));  // the server computes the score from the replay
+        auto up = ReplayData::decode(rig.server->lastAttemptReplay);
+        CHECK(up.has_value());
+        CHECK(up->challengeRules == c->rules.canonical());
+        CHECK(up->attemptId == rep.attemptId);
+    }
+    CHECK_NEAR(rig.challenges.submission(rep.attemptId, true)->serverProgress, 40.9f, 0.01f);
+    CHECK_NEAR(rig.challenges.bestProgress(c->id), 41.2f, 0.001f);
+    // Not further: kept nowhere, sent nowhere.
+    ReplayData rep2 = sampleReplay(*c);
+    auto b = rig.challenges.recordAttempt(*c, 41.2f, 60000, {500, 0}, {2}, c->level.hash, rep2.attemptId, &rep2, true);
+    CHECK(!b.newBest);
+    CHECK(rig.challenges.submission(rep2.attemptId, true) == nullptr);
+    // The server knows a better one (another computer): that one is the best.
+    {
+        std::lock_guard<std::mutex> lock(rig.server->m);
+        rig.server->current = cj;
+        rig.server->bestProgress = 70.5;
+    }
+    bool done = false;
+    rig.challenges.refreshMine([&](const ApiResult&) { done = true; });
+    CHECK(rig.pump([&] { return done; }));
+    CHECK_NEAR(rig.challenges.bestProgress(c->id), 70.5f, 0.001f);
+    CHECK(!rig.challenges.recordAttempt(*c, 65.0f, 60000, {}, {}, c->level.hash, makeUuidV4(), &rep2, true).newBest);
+    // Finished: 100, no attempt beats it.
+    rig.challenges.recordRun(*c, 99000, 0, 0, c->level.hash, makeUuidV4(), nullptr, true);
+    CHECK(rig.challenges.bestProgress(c->id) == 100.0f);
+    CHECK(!rig.challenges.recordAttempt(*c, 99.9f, 60000, {}, {}, c->level.hash, makeUuidV4(), &rep2, true).newBest);
+    // A challenge without route: no attempt at all.
+    auto plain = DailyChallenge::fromJson(periodJson(ChallengeKind::Daily, challenge_period::dateOfDay(today)));
+    auto p = rig.challenges.recordAttempt(*plain, 50.0f, 1000, {}, {}, plain->level.hash, makeUuidV4(), &rep2, true);
+    CHECK(!p.newBest);
+    CHECK(rig.challenges.bestProgress(plain->id) == 0.0f);
+    std::lock_guard<std::mutex> lock(rig.server->m);
+    CHECK(rig.server->attemptPosts == 1);
+}
+
+TEST_CASE("challenge service: « Plus loin » without an account: the best attempt stays on this computer") {
+    Rig rig("attemptlocal");
+    rig.server->down = true;
+    Json cj = periodJson(ChallengeKind::Monthly, challenge_period::ofDay(ChallengeKind::Monthly, todayNumber()));
+    cj["progress_available"] = true;
+    auto c = DailyChallenge::fromJson(cj);
+    auto a = rig.challenges.recordAttempt(*c, 12.3f, 9000, {}, {}, c->level.hash, makeUuidV4(), nullptr, true);
+    CHECK(a.newBest);
+    CHECK(a.state == ChallengeRunState::LocalOnly);
+    CHECK(!a.note.empty());
+    CHECK(rig.challenges.waitingCount() == 0);
+    ChallengeService again;
+    again.init(rig.online, rig.dir / "saves" / "challenges");
+    CHECK_NEAR(again.bestProgress(c->id), 12.3f, 0.001f);
 }

@@ -147,6 +147,7 @@
     {"id": "challenges.tab.week", "version": "2.33.0", "parents": ["menu.challenges"]},
     {"id": "challenges.tab.month", "version": "2.33.0", "parents": ["menu.challenges"]},
     {"id": "challenges.tab.calendar", "version": "2.33.0", "parents": ["menu.challenges"]},
-    {"id": "challenges.board.period", "version": "2.33.0", "parents": ["challenges.tab.calendar"]}
+    {"id": "challenges.board.period", "version": "2.33.0", "parents": ["challenges.tab.calendar"]},
+    {"id": "challenges.board.progress", "version": "2.34.0", "parents": ["menu.challenges"]}
   ]
 }

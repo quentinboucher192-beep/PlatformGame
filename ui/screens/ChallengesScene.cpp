@@ -138,6 +138,17 @@ std::string streakCount(ChallengeKind k, int n) {
     return std::to_string(n) + (n > 1 ? " jours" : " jour");
 }
 
+/// "63,4 %", "100 %" (« Plus loin »: how far an attempt went).
+std::string percentText(float p) {
+    p = std::clamp(p, 0.0f, 100.0f);
+    if (p >= 100.0f) return "100 %";
+    char b[32];
+    std::snprintf(b, sizeof b, "%.1f", std::floor(p * 10.0f) / 10.0f);
+    std::string s = b;
+    std::replace(s.begin(), s.end(), '.', ',');
+    return s + " %";
+}
+
 /// "Le 1er du jour" (the first of the board, as a ghost).
 const char* firstOfBoard(ChallengeKind k) {
     return k == ChallengeKind::Weekly ? "Le 1er de la semaine" : k == ChallengeKind::Monthly ? "Le 1er du mois" : "Le 1er du jour";
@@ -460,7 +471,11 @@ private:
     }
     /// « Depuis » (period=all) only for a challenge that is over.
     bool allPeriod(const DailyChallenge& c) const { return period_ == 1 && g_.challenges.ended(c); }
-    std::string boardKey(const DailyChallenge& c) const { return c.id + "/" + scopeId() + (allPeriod(c) ? "/all" : "/live"); }
+    /// « Plus loin » (board=progress) only for a challenge whose level has a route.
+    bool progressBoard(const DailyChallenge& c) const { return boardKind_ == 1 && c.progressAvailable; }
+    std::string boardKey(const DailyChallenge& c) const {
+        return c.id + "/" + scopeId() + (allPeriod(c) ? "/all" : "/live") + (progressBoard(c) ? "/progress" : "/time");
+    }
 
     void switchTab(int t) {
         tab_ = t;
@@ -733,7 +748,16 @@ private:
         // This computer's best, or the server's when it is better (a run made elsewhere).
         const MyDay day = myDay(c.id);
         if (day.bestMs <= 0) {
-            fitLabel(ui, "Pas encore de temps sur ce défi.", {x, bottom}, 19, w, ui.theme().text, Align::Left, FontFace::Bold);
+            // « Plus loin » (2.34): not finished yet, my furthest attempt at the right.
+            float ew = 0.0f;
+            const float best = c.progressAvailable ? g_.challenges.bestProgress(c.id) : 0.0f;
+            if (best > 0.0f && best < 100.0f) {
+                const std::string essai = "Mon meilleur essai : " + percentText(best);
+                ew = std::min(ui.text().measure(essai, FontFace::Bold, ui.s(fz(ui, 18))).x, w * 0.5f);
+                fitLabel(ui, essai, {x + w, bottom}, 18, ew, ui.theme().accent, Align::Right, FontFace::Bold);
+                ew += ui.s(16);
+            }
+            fitLabel(ui, "Pas encore de temps sur ce défi.", {x, bottom}, 19, w - ew, ui.theme().text, Align::Left, FontFace::Bold);
             return;
         }
         Vec2 t = ui.label(formatRunTime(day.bestMs), {x, bottom}, fz(ui, 24), ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
@@ -782,17 +806,18 @@ private:
         g_.app.pushScene(makeLocalReplayViewer(g_, std::move(*rep), "Mon meilleur temps – " + challengeTitle(c, true)));
     }
 
-    /// « Voir » on a leaderboard row: that run's replay (public once verified), downloaded once
-    /// (kept in saves/challenges/ghosts/), then played in the replay viewer.
-    void watchRun(const Json& e) {
+    /// « Voir » on a leaderboard row: that run's replay (or, `attempt`, that attempt's on
+    /// « Plus loin »; public once verified), downloaded once (kept in saves/challenges/ghosts/),
+    /// then played in the replay viewer.
+    void watchRun(const Json& e, const std::string& replayId, bool attempt) {
         const DailyChallenge* c = shown();
         if (!c || !watching_.empty()) return;
-        const std::string runId = jstr(e, "run_id"), id = c->id;
+        const std::string id = c->id;
         const Json& p = jfield(e, "player", Json());
         // The pseudonym as shown on the board (hidden in streaming mode).
         const std::string name = ou_.displayName(p.is_object() ? jstr(p, "username") : std::string(), jget<int>(e, "rank", 0), jget<bool>(e, "is_me", false));
-        watching_ = runId;
-        g_.challenges.downloadRunReplay(id, runId, [this, id, name, life = std::weak_ptr<int>(life_)](std::optional<fs::path> file, const std::string& why) {
+        watching_ = replayId;
+        g_.challenges.downloadRunReplay(id, replayId, [this, id, name, life = std::weak_ptr<int>(life_)](std::optional<fs::path> file, const std::string& why) {
             if (!life.lock()) return;
             watching_.clear();
             std::optional<ReplayData> rep = file ? GhostStore::loadReplay(*file) : std::nullopt;
@@ -813,7 +838,7 @@ private:
             std::string title = challengeTitle(*c, true);
             if (!name.empty()) title = name + " – " + title;
             g_.app.pushScene(makeLocalReplayViewer(g_, std::move(*rep), title));
-        });
+        }, attempt);
     }
 
     void download(const DailyChallenge& c) {
@@ -848,7 +873,7 @@ private:
             boardCode_ = r.status == 400 ? std::string("BAD_REQUEST") : r.code;  // scope=country without a country: 400
             boardOffline_ = !r.ok && (r.networkFailure() || r.status >= 500);
             if (r.ok) board_ = r.data;
-        }), allPeriod(c));
+        }), allPeriod(c), progressBoard(c));
     }
 
     void drawBoard(const DailyChallenge& c, const Rect& area) {
@@ -903,6 +928,26 @@ private:
             }
             y += ui.s(52);
         }
+        // « Meilleurs temps » / « Plus loin » (2.34): the attempts that went the furthest,
+        // finished or not, when the level has a route.
+        if (c.progressAvailable) {
+            static const char* const kBoards[2] = {"Meilleurs temps", "Plus loin"};
+            float bw = (w - ui.s(10)) * 0.5f;
+            for (int i = 0; i < 2; ++i) {
+                UIContext::ButtonStyle st;
+                st.small = true;
+                st.selected = boardKind_ == i;
+                st.fontSize = ui.fitFont(kBoards[i], FontFace::Bold, 17, bw - ui.s(24), 0.7f);
+                Rect br{x + (bw + ui.s(10)) * static_cast<float>(i), y, bw, ui.s(40)};
+                if (ui.button("kind" + std::to_string(i), br, kBoards[i], st) && boardKind_ != i) {
+                    boardKind_ = i;
+                    fetchBoard(c);
+                }
+                if (i == 1) ui.newBadge("kind1", br, "challenges.board.progress", true, true);
+            }
+            y += ui.s(52);
+        }
+        const bool progress = progressBoard(c);
         // Monde, Pays, Amis.
         static const char* const kScopes[3] = {"Monde", "Pays", "Amis"};
         float sw = (w - 2 * ui.s(10)) / 3.0f;
@@ -921,7 +966,8 @@ private:
         const bool fresh = boardFor_ == boardKey(c);
         // The player's own line (its PENDING time too), at the bottom when there is one.
         const Json& me = jfield(board_, "me", Json());
-        bool hasMe = fresh && boardOk_ && me.is_object() && jget<int64_t>(me, "time_ms", 0) > 0;
+        bool hasMe = fresh && boardOk_ && me.is_object() &&
+                     (progress ? jget<float>(me, "progress", 0.0f) > 0.0f : jget<int64_t>(me, "time_ms", 0) > 0);
         // Pinned at the bottom only when my run is not already in the list.
         if (hasMe)
             for (const Json& e : jfield(board_, "entries", Json::array()))
@@ -942,8 +988,11 @@ private:
         }
         const Json& entries = jfield(board_, "entries", Json::array());
         if (!entries.is_array() || entries.empty()) {
-            ui.labelWrapped(scope_ == 2 ? "Aucun ami n'a encore de temps vérifié sur ce défi." : "Aucun temps vérifié pour l'instant : soyez le premier !",
-                            {x, y}, w, fz(ui, 17), ui.theme().textDim);
+            std::string text = progress ? (scope_ == 2 ? "Aucun ami n'a encore d'essai classé sur ce défi."
+                                                       : "Aucun essai classé pour l'instant : allez le plus loin possible !")
+                               : scope_ == 2 ? "Aucun ami n'a encore de temps vérifié sur ce défi."
+                                             : "Aucun temps vérifié pour l'instant : soyez le premier !";
+            ui.labelWrapped(text, {x, y}, w, fz(ui, 17), ui.theme().textDim);
         } else {
             const float rowH = ui.s(46);
             float content = rowH * static_cast<float>(entries.size());
@@ -954,7 +1003,7 @@ private:
                 Rect row{list.x, ry + rowH * static_cast<float>(i), list.w - ui.s(10), rowH - ui.s(4)};
                 ++i;
                 if (row.bottom() < list.y || row.y > list.bottom()) continue;
-                drawBoardRow(e, row, jget<bool>(e, "is_me", false));
+                drawBoardRow(e, row, jget<bool>(e, "is_me", false), progress);
             }
             ui.endScroll();
         }
@@ -963,12 +1012,14 @@ private:
             ui.r().fillRoundedRect(row, ui.s(8), ui.theme().accent.withAlpha(30));
             Json mine = me;
             mine["is_me"] = true;
-            drawBoardRow(mine, row, true);
+            drawBoardRow(mine, row, true, progress);
         }
         if (boardCached_) fitLabel(ui, "Hors ligne : dernier classement reçu", {x + w, area.y + ui.s(38)}, 14, w * 0.45f, ui.theme().warm, Align::Right);
     }
 
-    void drawBoardRow(const Json& e, const Rect& row, bool me) {
+    /// A row of a leaderboard: « Meilleurs temps » (time, tier) or « Plus loin » (`progress`:
+    /// how far, « Fini » for a finished run).
+    void drawBoardRow(const Json& e, const Rect& row, bool me, bool progress) {
         UIContext& ui = g_.ui;
         if (me) ui.r().drawRoundedRect(row, ui.s(8), ui.theme().accent.withAlpha(150), std::max(1.0f, ui.s(1.2f)));
         else ui.r().fillRoundedRect(row, ui.s(8), Color{12, 18, 38, 200});
@@ -977,18 +1028,25 @@ private:
         std::string rk = rank > 0 ? std::to_string(rank) : std::string("—");
         fitLabel(ui, rk, {x + ui.s(34), cy}, 18, ui.s(40), rank == 1 ? tierColor(ChallengeTier::Gold) : ui.theme().text, Align::Right, FontFace::Bold);
         x += ui.s(48);
-        // Right side first: « Voir » (its replay), status, « hors délai », tier, time (each
-        // measured), then the name in what is left.
+        // Right side first: « Voir » (its replay), status, « hors délai », tier (or « Fini »),
+        // time (or progress), each measured, then the name in what is left.
         float right = row.right() - ui.s(10);
-        const std::string runId = jstr(e, "run_id");
-        if (jget<bool>(e, "has_replay", false) && !runId.empty()) {
-            const std::string label = watching_ == runId ? "…" : "Voir";
+        // The replay: a run's (run_id), or on « Plus loin » an attempt's (its server id).
+        std::string replayId = jstr(e, "run_id");
+        bool attemptReplay = false;
+        if (replayId.empty() && progress) {
+            replayId = jstr(e, "attempt_id");
+            attemptReplay = true;
+        }
+        if (jget<bool>(e, "has_replay", false) && !replayId.empty()) {
+            const std::string label = watching_ == replayId ? "…" : "Voir";
             float bw = std::max(ui.text().measure("Voir", FontFace::Bold, ui.s(fz(ui, 15))).x, ui.text().measure("…", FontFace::Bold, ui.s(fz(ui, 15))).x) + ui.s(28);
             UIContext::ButtonStyle st;
             st.small = true;
             st.fontSize = fz(ui, 15);
             st.enabled = watching_.empty();
-            if (ui.button("watch" + runId + (me ? "m" : ""), {right - bw, row.y + ui.s(5), bw, row.h - ui.s(10)}, label, st)) watchRun(e);
+            if (ui.button("watch" + replayId + (me ? "m" : ""), {right - bw, row.y + ui.s(5), bw, row.h - ui.s(10)}, label, st))
+                watchRun(e, replayId, attemptReplay);
             right -= bw + ui.s(10);
         }
         std::string status = jstr(e, "status", "VERIFIED");
@@ -1006,17 +1064,24 @@ private:
                 right -= lw + ui.s(8);
             }
         }
-        ChallengeTier tier = challengeTierFromJson(jfield(e, "tier", Json()));
-        if (tier != ChallengeTier::None) {
+        if (progress) {
+            if (jget<bool>(e, "finished", false)) {
+                float fw = chipWidth(ui, "Fini", h);
+                if (right - fw > x + ui.s(160)) {
+                    chip(ui, "Fini", right - fw, cy, h, ui.theme().success, fw, true);
+                    right -= fw + ui.s(10);
+                }
+            }
+        } else if (ChallengeTier tier = challengeTierFromJson(jfield(e, "tier", Json())); tier != ChallengeTier::None) {
             float tw = chipWidth(ui, challengeTierLabel(tier), h);
             if (right - tw > x + ui.s(160)) {
                 chip(ui, challengeTierLabel(tier), right - tw, cy, h, tierColor(tier), tw, true);
                 right -= tw + ui.s(10);
             }
         }
-        std::string time = formatRunTime(jget<int64_t>(e, "time_ms", 0));
-        float tw = ui.text().measure(time, FontFace::Bold, ui.s(fz(ui, 18))).x;
-        ui.label(time, {right, cy}, fz(ui, 18), ui.theme().text, Align::Right, FontFace::Bold, VAlign::Middle);
+        std::string value = progress ? percentText(jget<float>(e, "progress", 0.0f)) : formatRunTime(jget<int64_t>(e, "time_ms", 0));
+        float tw = ui.text().measure(value, FontFace::Bold, ui.s(fz(ui, 18))).x;
+        ui.label(value, {right, cy}, fz(ui, 18), ui.theme().text, Align::Right, FontFace::Bold, VAlign::Middle);
         right -= tw + ui.s(14);
         // The player: flag, then the name as they chose it (hidden in streaming mode).
         const Json& p = jfield(e, "player", Json());
@@ -1276,6 +1341,7 @@ private:
     std::string pendingFocus_;
     int scope_ = 0;
     int period_ = 0;  // 0: « Pendant le défi » (period=live), 1: « Depuis » (period=all)
+    int boardKind_ = 0;  // 0: « Meilleurs temps », 1: « Plus loin » (board=progress, 2.34)
     Json board_;
     std::string boardFor_, boardId_;
     std::string boardMsg_, boardCode_;
@@ -1622,12 +1688,16 @@ public:
         ui.r().fillRect({0, 0, W, H}, Color{4, 6, 14, 180});
         ui.pushId("cend");
         const bool late = d_.completed && !d_.practice && d_.report.late;
-        // Time, tier, (the streak: not for a run « hors délai »), the sending state.
-        const int rows = d_.completed ? (d_.practice ? 2 : late ? 3 : 4) : 1;
+        // « Plus loin » (2.34): an unfinished attempt, its progress (and, when it went further
+        // than my best one, its sending state).
+        const bool attempt = !d_.completed && d_.attempt.has_value();
+        // Time, tier, (the streak: not for a run « hors délai »), the sending state; a fall:
+        // why, (the attempt's progress and its sending state).
+        const int rows = d_.completed ? (d_.practice ? 2 : late ? 3 : 4) : 1 + (attempt ? (d_.attempt->newBest ? 2 : 1) : 0);
         // The sending state, followed live (and why, when it says more than the state).
-        ChallengeRunState state = d_.report.state;
-        std::string note = d_.completed && !d_.practice ? d_.report.note : std::string();
-        if (const ChallengeSubmission* sub = g_.challenges.submission(d_.attemptId)) {
+        ChallengeRunState state = attempt ? d_.attempt->state : d_.report.state;
+        std::string note = attempt ? d_.attempt->note : d_.completed && !d_.practice ? d_.report.note : std::string();
+        if (const ChallengeSubmission* sub = g_.challenges.submission(d_.attemptId, attempt)) {
             state = sub->state;
             note = sub->note;
         }
@@ -1671,7 +1741,7 @@ public:
             float vf = fit(ui, v, FontFace::Bold, 22, w * 0.42f, 0.7f);
             float vw = ui.text().measure(v, FontFace::Bold, ui.s(vf)).x;
             float ew = 0.0f;
-            if (!extra.empty()) ew = std::min(chipWidth(ui, extra, ui.s(28)), w * 0.3f);
+            if (!extra.empty()) ew = std::min(chipWidth(ui, extra, ui.s(28)), w * 0.45f);
             float kroom = w - ui.s(36) - vw - ui.s(16) - (ew > 0 ? ew + ui.s(12) : 0.0f);
             fitLabel(ui, k, {rr.x + ui.s(18), rr.center().y}, 18, kroom, ui.theme().textDim);
             ui.label(v, {rr.right() - ui.s(18), rr.center().y}, vf, c, Align::Right, FontFace::Bold, VAlign::Middle);
@@ -1681,6 +1751,12 @@ public:
         if (!d_.completed) {
             std::string why = d_.failReason.empty() ? std::string("Partie terminée") : d_.failReason;
             row("Raison", why, ui.theme().danger);
+            if (attempt) {
+                const ChallengeService::AttemptReport& a = *d_.attempt;
+                row("Progression de l'essai", percentText(a.progress), a.newBest ? ui.theme().success : ui.theme().accent,
+                    a.newBest ? std::string("Nouveau record de progression") : std::string(), ui.theme().success);
+                if (a.newBest) row("Envoi", challengeRunStateLabel(state), stateColor(ui.theme(), state));
+            }
         } else {
             std::string newBest = !d_.practice && d_.report.newBest ? "Nouveau meilleur temps" : std::string();
             row("Temps", formatRunTime(d_.timeMs), ui.theme().accent, newBest, ui.theme().success);

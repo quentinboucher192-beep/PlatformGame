@@ -4,7 +4,8 @@
 // docs/online/CHALLENGES_PERIODS.md: the challenges of the day, of the week and of the month as
 // the server describes them, the cache that keeps each playable offline until its end and the
 // past ones playable « hors délai » (saves/challenges/), the calendar of a month, the player's
-// local results and streaks (one per kind), and the runs waiting to be sent (the same
+// local results and streaks (one per kind), and the runs (and, from 2.34, the unfinished
+// attempts that went further than my best one: « Plus loin ») waiting to be sent (the same
 // offline-queue pattern as the records: kept on disk, sent when the connection and the
 // session are there, never blocking the main thread).
 
@@ -86,6 +87,7 @@ struct DailyChallenge {
     int64_t silverMs = 0;
     int64_t goldMs = 0;
     bool goldNoDamage = true;
+    bool progressAvailable = false;  // « Plus loin » (2.34): its level has a route layout
     Json raw;  // as received (cache)
 
     bool community() const { return level.source == "community"; }
@@ -106,7 +108,8 @@ enum class ChallengeRunState {
 const char* challengeRunStateLabel(ChallengeRunState s);
 ChallengeRunState challengeRunStateFromServer(const std::string& status);
 
-/// A challenge run kept until the server has decided (saves/challenges/pending.json).
+/// A challenge run (or, from 2.34, an unfinished attempt that went further than my best one)
+/// kept until the server has decided (saves/challenges/pending.json).
 struct ChallengeSubmission {
     std::string attemptId;
     std::string challengeId;
@@ -118,17 +121,27 @@ struct ChallengeSubmission {
     bool hasReplay = false;
     bool replayUploaded = false;
     bool late = false;  // played after the end: « Depuis » only (the server's word once sent)
+    // « Plus loin » (2.34): an unfinished attempt, POST /challenges/{id}/attempts with its claim,
+    // then its replay to PUT /challenges/attempts/{attempt_id}/replay (the game's own id).
+    bool attempt = false;
+    std::vector<int> bosses;       // per mille of health removed, per boss of the route layout
+    std::vector<int> waves;        // waves beaten, per ambush of the route layout
+    float progress = 0.0f;         // this computer's estimate (only to decide to send it)
+    float serverProgress = -1.0f;  // the server's score, computed from the replay
     ChallengeRunState state = ChallengeRunState::Waiting;
     ChallengeTier serverTier = ChallengeTier::None;  // the tier the server computed
     std::string runId;
-    std::string uploadPath;  // where the server takes its replay (/api/v1/challenges/runs/…)
+    std::string uploadPath;  // where the server takes its replay (/api/v1/challenges/…)
     std::string note;      // why it was refused (French)
     std::string createdAt;
 
     Json toJson() const;
     static std::optional<ChallengeSubmission> fromJson(const Json& j);
-    /// Body of POST /challenges/{id}/runs.
+    /// Body of POST /challenges/{id}/runs, or of POST /challenges/{id}/attempts (an attempt:
+    /// { attempt_id, time_ms, level_hash, rules_hash, game_version, claim }).
     Json body() const;
+    /// Where it is declared: "/api/v1/challenges/{id}/runs" or "…/attempts".
+    std::string postPath() const;
 };
 
 /// The player's best run of a challenge on this computer (saves/challenges/results.json).
@@ -146,6 +159,8 @@ struct ChallengeResult {
     bool bestLate = false;     // the best time was made « hors délai »
     std::string bestAttemptId;
     bool hasReplay = false;  // replays/<challenge>.cprz is that run
+    float bestProgress = 0.0f;  // « Plus loin »: my furthest unfinished attempt here (0..99.9)
+    std::string bestProgressAttemptId;
 };
 
 class ChallengeService {
@@ -251,7 +266,8 @@ public:
     /// account is logged in and `sendable` (the level played is the challenge's version).
     RunReport recordRun(const DailyChallenge& c, int64_t timeMs, int deaths, int damageTaken, const std::string& levelHash,
                         const std::string& attemptId, const ReplayData* replay, bool sendable, const std::string& whyNot = {});
-    const ChallengeSubmission* submission(const std::string& attemptId) const;
+    /// A run (or, `attempt`, an unfinished attempt) kept for the server, by its attempt id.
+    const ChallengeSubmission* submission(const std::string& attemptId, bool attempt = false) const;
     /// The submission of my best local run of a challenge (nullptr when none).
     const ChallengeSubmission* bestSubmission(const std::string& challengeId) const;
     /// Runs of the logged-in player waiting to be sent.
@@ -259,15 +275,43 @@ public:
     /// Tries to send what waits now.
     void flush();
 
+    // ------------------------------------------------------- « Plus loin » (2.34)
+    /// How far I went on a challenge: 100 once finished (here or, as the server knows it, on
+    /// another computer), else the best unfinished attempt kept here or known by the server;
+    /// 0 when none.
+    float bestProgress(const std::string& challengeId) const;
+    /// Whether an attempt of `progress` goes further than `best` (in tenths, strictly; never a
+    /// finish nor nothing).
+    static bool beatsBestAttempt(float progress, float best);
+    struct AttemptReport {
+        bool newBest = false;  // « Nouveau record de progression »
+        bool late = false;
+        float progress = 0.0f;      // this attempt (one decimal)
+        float previousBest = 0.0f;  // my best before it
+        ChallengeRunState state = ChallengeRunState::LocalOnly;
+        std::string note;
+    };
+    /// An unfinished attempt of a challenge with « Plus loin » (a fall, a restart, a return to
+    /// the menu; without checkpoints, its first life): its progress (raceScore) only decides
+    /// whether it beats my best attempt; if so it is kept as such and, logged in and
+    /// `sendable`, queued with its claim and its format 4 replay (the server computes the
+    /// score). `bosses`: per mille of health removed per boss; `waves`: per ambush.
+    AttemptReport recordAttempt(const DailyChallenge& c, float progress, int64_t timeMs, std::vector<int> bosses, std::vector<int> waves,
+                                const std::string& levelHash, const std::string& attemptId, const ReplayData* replay, bool sendable,
+                                const std::string& whyNot = {});
+
     // ----------------------------------------------------- leaderboard, ghost
     /// GET /challenges/{id}/leaderboard: `scope` world|country|friends, `allPeriod` (« Depuis »:
-    /// period=all, the runs « hors délai » too).
-    void leaderboard(const std::string& challengeId, const std::string& scope, ApiCallback cb, bool allPeriod = false);
-    static std::string leaderboardPath(const std::string& challengeId, const std::string& scope, bool allPeriod);
-    /// Downloads the replay of a run (the first of the challenge, as a ghost), kept in ghosts/.
+    /// period=all, the runs « hors délai » too), `progressBoard` (« Plus loin »: board=progress).
+    void leaderboard(const std::string& challengeId, const std::string& scope, ApiCallback cb, bool allPeriod = false,
+                     bool progressBoard = false);
+    static std::string leaderboardPath(const std::string& challengeId, const std::string& scope, bool allPeriod, bool progressBoard = false);
+    /// Downloads the replay of a run (the first of the challenge, as a ghost; a leaderboard's
+    /// « Voir »), or with `attempt` of an attempt of the « Plus loin » board (its server id),
+    /// kept in ghosts/.
     void downloadRunReplay(const std::string& challengeId, const std::string& runId,
-                           std::function<void(std::optional<fs::path>, const std::string&)> cb);
-    fs::path runReplayPath(const std::string& challengeId, const std::string& runId) const;
+                           std::function<void(std::optional<fs::path>, const std::string&)> cb, bool attempt = false);
+    fs::path runReplayPath(const std::string& challengeId, const std::string& runId, bool attempt = false) const;
 
     /// Tests: the clock offset (server − local), as measured from `server_time`.
     void setServerOffsetForTests(int64_t offsetMs) {
@@ -287,9 +331,11 @@ private:
     void noteServerResult(const std::string& id, const Json& x);
     bool resultsMine();
     void sendNext();
-    void upload(const std::string& attemptId);
+    void upload(const std::string& attemptId, bool attempt);
     void applyRun(ChallengeSubmission& s, const Json& run);
-    fs::path uploadPath(const std::string& attemptId) const;
+    ChallengeSubmission* findSubmission(const std::string& attemptId, bool attempt);
+    void trimSubmissions();
+    fs::path uploadPath(const std::string& attemptId, bool attempt = false) const;
 
     OnlineService* online_ = nullptr;
     fs::path dir_;

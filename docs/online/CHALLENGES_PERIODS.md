@@ -127,3 +127,27 @@ tracé, pas de « Plus loin » pour ce défi (`progress_available: false` dans l
   l'envoi.
 - Limites de débit : comme les parties ; un joueur ne garde qu'un replay d'essai par défi
   (le meilleur).
+
+### Précisions (lecture retenue par le jeu 2.34)
+
+- `progress_available` absent (serveur 2.33) = `false` : ni bascule « Plus loin », ni essai envoyé.
+- L'essai n'est envoyé que si son estimation (`raceScore`, une décimale, arrondie vers le bas)
+  dépasse strictement mon meilleur : celui gardé sur ce PC ou le `best_progress` du serveur
+  (100 dès qu'une partie est finie, ici ou ailleurs). Un seul essai en attente par défi : un
+  meilleur remplace celui qui n'est pas encore parti.
+- Sans points de passage (`checkpoints: false`), l'essai est la première vie : son replay
+  s'arrête à la première mort (la partie continue ; finie, elle compte comme une partie). Avec
+  points de passage, l'essai se termine à l'échec du niveau, à « Recommencer » ou au retour au
+  menu.
+- Réponse lue de `POST …/attempts` : `{ duplicate, attempt: { attempt_id, status, progress,
+  late }, replay: { required, upload_path } }` ; sans `upload_path`, le jeu envoie le replay à
+  `PUT /challenges/attempts/{attempt_id}/replay` (son propre `attempt_id`). Réponse du `PUT` :
+  `{ attempt: { attempt_id, status, progress, finished, late, rank, reasons }, new_best,
+  best_progress }` ; le jeu garde `best_progress`.
+- Entrées de `board=progress` (et `me`) : `{ rank, player, progress, finished, time_ms, status,
+  late, is_me, attempt_id, run_id, has_replay }` ; « Voir » si `has_replay` :
+  `GET /challenges/runs/{run_id}/replay` pour une partie finie, sinon
+  `GET /challenges/attempts/{attempt_id}/replay` (identifiant du serveur, public pour un essai
+  VERIFIED).
+- `PROGRESS_UNAVAILABLE` (409), `ATTEMPT_REJECTED` (409), `ATTEMPT_NOT_FOUND` (404) : l'essai
+  est refusé, avec sa raison, et n'est pas renvoyé.

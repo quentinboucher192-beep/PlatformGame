@@ -2078,6 +2078,12 @@
    ]
   },
   {
+   "fr": "Aucun ami n'a encore d'essai classé sur ce défi.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun ami n'a encore de temps vérifié sur ce défi.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -2129,6 +2135,12 @@
    "fr": "aucun départ du joueur",
    "where": [
     "server/src/community.ts"
+   ]
+  },
+  {
+   "fr": "Aucun essai classé pour l'instant : allez le plus loin possible !",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -4115,6 +4127,12 @@
    ]
   },
   {
+   "fr": "Ce défi n'a pas de classement « Plus loin » sur le serveur.",
+   "where": [
+    "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
    "fr": "Ce défi n'a pas encore commencé.",
    "where": [
     "server/src/challenges.ts"
@@ -4395,6 +4413,12 @@
    "fr": "Ce serveur Cosmic Online ne propose encore que le défi du jour.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce serveur ne classe pas encore les essais (« Plus loin »).",
+   "where": [
+    "game/online/DailyChallenges.cpp"
    ]
   },
   {
@@ -8783,6 +8807,12 @@
    ]
   },
   {
+   "fr": "Défi : essai refusé",
+   "where": [
+    "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
    "fr": "Défi : morts autorisées",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -8864,6 +8894,12 @@
    "fr": "Défi du {0}",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Défi déjà fini : un essai qui s'arrête avant ne change rien.",
+   "where": [
+    "game/online/DailyChallenges.cpp"
    ]
   },
   {
@@ -10125,6 +10161,12 @@
    ]
   },
   {
+   "fr": "Essai refusé par le serveur.",
+   "where": [
+    "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
    "fr": "Essayage",
    "where": [
     "data/achievements/achievements.json"
@@ -10735,6 +10777,12 @@
    "fr": "finalisation de l'archive impossible",
    "where": [
     "packaging/ZipArchive.cpp"
+   ]
+  },
+  {
+   "fr": "Fini",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -16779,6 +16827,7 @@
   {
    "fr": "Meilleurs temps",
    "where": [
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/PlayerProfileScene.cpp"
    ]
   },
@@ -17289,6 +17338,12 @@
    "fr": "Mon meilleur",
    "where": [
     "ui/screens/SegmentsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Mon meilleur essai : {0}",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -18710,6 +18765,18 @@
    "where": [
     "ui/screens/GhostRun.cpp",
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Nouveau record de progression",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Nouveau record de progression : {0} %",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -20309,6 +20376,12 @@
    ]
   },
   {
+   "fr": "Pas plus loin que votre meilleur essai : rien n'est envoyé.",
+   "where": [
+    "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
    "fr": "Pas utile",
    "where": [
     "ui/online/CommentsPanel.cpp"
@@ -21286,6 +21359,12 @@
    ]
   },
   {
+   "fr": "Plus loin",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Plus que 5 minutes !",
    "where": [
     "data/levels/glacior_01.json",
@@ -22204,6 +22283,12 @@
    "fr": "PROGRESSION",
    "where": [
     "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
+   "fr": "Progression de l'essai",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -23962,6 +24047,12 @@
    ]
   },
   {
+   "fr": "Replay manquant : l'essai ne pourra pas être classé.",
+   "where": [
+    "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
    "fr": "Replay manquant : le temps ne pourra pas être vérifié.",
    "where": [
     "game/online/DailyChallenges.cpp"
@@ -25348,6 +25439,12 @@
    "fr": "Sans compte",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Sans compte : gardé sur ce PC. Connectez-vous à Cosmic Online pour entrer dans le classement « Plus loin ».",
+   "where": [
+    "game/online/DailyChallenges.cpp"
    ]
   },
   {
@@ -31621,6 +31718,12 @@
    "fr": "Votre temps {0}",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre version du niveau diffère de celle du défi : essai gardé sur ce PC.",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
