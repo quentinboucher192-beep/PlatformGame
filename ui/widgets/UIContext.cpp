@@ -67,42 +67,56 @@ bool UIContext::backPressed() const {
     return acceptsInput() && editing_ == 0 && app_->input().menuPressed(Action::MenuBack) && !app_->input().capturing();
 }
 
-float UIContext::newPillWidth() {
-    const float fs = std::max(11.5f, 12.0f * scale_) / scale_;
-    return text().measure("NOUVEAU", FontFace::Bold, s(fs)).x + s(14);
+float UIContext::newPillFont(bool small) const {
+    // Pixels on screen: never under 11.5 (the font loses its spaces under that).
+    return std::max(11.5f, (small ? 10.5f : 12.0f) * scale_);
 }
 
-Rect UIContext::drawNewPill(float right, float y) {
-    const float fs = std::max(11.5f, 12.0f * scale_) / scale_;
-    Vec2 tw = text().measure("NOUVEAU", FontFace::Bold, s(fs));
-    Rect pill{right - tw.x - s(14), y - s(9), tw.x + s(14), s(18)};
+float UIContext::newPillWidth(bool small) {
+    return text().measure("NOUVEAU", FontFace::Bold, newPillFont(small)).x + (small ? std::max(8.0f, s(10)) : s(14));
+}
+
+float UIContext::newPillHeight(bool small) const {
+    const float px = newPillFont(small);
+    return small ? std::max(s(15), px + 3.0f) : std::max(s(18), px + 4.0f);
+}
+
+Rect UIContext::drawNewPill(float right, float y, bool small) {
+    const float px = newPillFont(small), h = newPillHeight(small), w = newPillWidth(small);
+    Rect pill{right - w, y - h * 0.5f, w, h};
     float pulse = 0.75f + 0.25f * std::sin(time_ * 4.0f);
     r().drawGlow(pill.center(), pill.w * 0.6f, Color{255, 196, 70, static_cast<uint8_t>(90 * pulse)});
-    r().fillRoundedRect(pill, s(9), Color{255, 196, 70, 255});
-    r().drawRoundedRect(pill, s(9), Color{120, 60, 0, 200}, std::max(1.0f, s(1.0f)));
-    label("NOUVEAU", pill.center(), fs, Color{40, 20, 0, 255}, Align::Center, FontFace::Bold, VAlign::Middle);
+    r().fillRoundedRect(pill, h * 0.5f, Color{255, 196, 70, 255});
+    r().drawRoundedRect(pill, h * 0.5f, Color{120, 60, 0, 200}, std::max(1.0f, s(1.0f)));
+    label("NOUVEAU", pill.center(), px / scale_, Color{40, 20, 0, 255}, Align::Center, FontFace::Bold, VAlign::Middle);
     return pill;
 }
 
-void UIContext::newBadge(const std::string& name, const Rect& rc, const std::string& feature, bool drawPill) {
-    if (!isNewFeature || feature.empty() || !isNewFeature(feature)) return;
+bool UIContext::newBadge(const std::string& name, const Rect& rc, const std::string& feature, bool drawPill, bool small) {
+    if (!isNew(feature)) return false;
     WidgetId wid = id(name);
-    uint8_t& armed = badgeArmed_[wid];
+    BadgeState& st = badgeArmed_[wid];
+    // Not drawn on the previous frame (a screen opened again, a list scrolled back): first sight.
+    if (st.frame + 1 < frame_) st.armed = 0;
+    st.frame = frame_;
     bool focusedNow = focus_ == wid;
-    if (armed == 0) armed = focusedNow ? 2 : 1;
-    else if (!focusedNow) armed = 1;
+    if (st.armed == 0) st.armed = focusedNow ? 2 : 1;
+    else if (!focusedNow) st.armed = 1;
     bool clicked = false;
     if (acceptsInput()) {
         InputManager& in = app_->input();
         clicked = (mouseOver(rc) && in.mousePressed(SDL_BUTTON_LEFT)) || (focusedNow && in.menuPressed(Action::MenuConfirm));
     }
-    if ((focusedNow && armed == 1) || clicked) {
+    if ((focusedNow && st.armed == 1) || clicked) {
+        st.armed = 2;  // once per focus
         if (featureSeen) featureSeen(feature);
-        return;
+        // A novelty goes; a parent stays while something under it is still new.
+        if (!isNew(feature)) return false;
     }
-    if (!drawPill || clippedOut(rc)) return;
+    if (!drawPill || clippedOut(rc)) return true;
     // On the top edge, at the right: over the frame, never over the widget's text.
-    drawNewPill(rc.right() - s(6), rc.y);
+    drawNewPill(rc.right() - s(6), rc.y, small);
+    return true;
 }
 
 bool UIContext::mouseOver(const Rect& rc) const {

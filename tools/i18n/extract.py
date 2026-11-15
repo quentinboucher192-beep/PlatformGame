@@ -148,6 +148,7 @@ SKIP_CALLS = {
     "CHECK", "REQUIRE", "TEST_CASE", "static_assert", "assert",
     "get", "post", "send", "del", "patch", "put",  # HTTP paths of OnlineService
     "pushId", "id", "focused", "setFocus", "setScroll", "editText",
+    "newBadge", "isNew", "isNewFeature", "featureSeen",  # « NOUVEAU »: widget ids and novelty ids
     "contains", "find", "rfind", "count", "erase", "starts_with", "ends_with", "jstr", "jget", "propStr", "propNum",
     "propBool", "param", "setHeader", "icon", "fromUtf8", "path",
 }

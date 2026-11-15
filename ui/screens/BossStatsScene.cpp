@@ -284,8 +284,12 @@ private:
         Renderer& r = ui.r();
         bool known = beaten(d);
         bool hovered = false;
-        bool next = known && clips_.size() > 1 && ui.hotspot("anim", box, &hovered);
-        bool focus = known && ui.focused("anim");
+        // Always reachable (keyboard, gamepad, mouse): its « NOUVEAU » can be seen before the
+        // boss is beaten; until then, activating it says no.
+        bool activated = ui.hotspot("anim", box, &hovered);
+        bool next = activated && known && clips_.size() > 1;
+        if (activated && !known) g_.uiSound("ui_error");
+        bool focus = ui.focused("anim");
         r.fillRoundedRect(box, ui.s(12), Color{11, 18, 38, 255});
         r.drawRoundedRect(box, ui.s(12), focus || hovered ? ui.theme().accent : ui.theme().accent.withAlpha(50), std::max(1.0f, ui.s(focus ? 2.0f : 1.2f)));
         if (next) {
@@ -414,7 +418,7 @@ private:
         UIContext& ui = g_.ui;
         Vec2 hs = ui.label("Où l'affronter", {area.x, area.y + ui.s(14)}, 22, ui.theme().accent, Align::Left, FontFace::Bold, VAlign::Middle);
         // « NOUVEAU » (2.27) after the title; seen once a place gets the focus or a click.
-        if (ui.isNewFeature && ui.isNewFeature("stats.locations"))
+        if (ui.isNew("stats.locations"))
             ui.drawNewPill(area.x + hs.x + ui.s(14) + ui.newPillWidth(), area.y + ui.s(14));
         Rect view{area.x, area.y + ui.s(40), area.w, area.bottom() - area.y - ui.s(40)};
         if (!atlas_) {

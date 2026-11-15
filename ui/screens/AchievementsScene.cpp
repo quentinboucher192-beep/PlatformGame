@@ -297,6 +297,16 @@ private:
         }
     }
 
+    /// The mark of a new achievement on the web: a gold dot (the colour of the « NOUVEAU »
+    /// pills, explained in a corner of the web) at the node's upper right.
+    void newDot(const Node& n) {
+        UIContext& ui = g_.ui;
+        const float dr = std::max(ui.s(3.5f), 3.0f) * (0.9f + 0.1f * std::sin(t_ * 4.0f));
+        Vec2 p = n.p + Vec2{n.r * 0.72f, -n.r * 0.72f};
+        ui.r().fillCircle(p, dr, Color{255, 196, 70, 255});
+        ui.r().drawCircle(p, dr, Color{120, 60, 0, 220}, std::max(1.0f, ui.s(1.0f)));
+    }
+
     void thread(Vec2 c, float r0, float a0, float a1, Color col, float thick) {
         // A web thread between two spokes, sagging a little towards the centre.
         Vec2 prev{c.x + std::cos(a0) * r0, c.y + std::sin(a0) * r0};
@@ -433,7 +443,15 @@ private:
             float hs = 2.0f * n.r + nodeGap() * std::min(zoom_, 2.2f) * 0.9f;
             Rect hit = Rect::fromCenter(n.p, {hs, hs});
             // Only the nodes in view can be pointed at or reached (a drag never selects).
-            if (area.contains(n.p) && !(dragging_ && dragMoved_ > ui.s(6))) ui.hotspot(id, hit);
+            // « NOUVEAU » (an achievement added by an update): seen on focus (pointed at) or a click.
+            const std::string feature = "ach." + a.id;
+            bool fresh = false;
+            if (area.contains(n.p) && !(dragging_ && dragMoved_ > ui.s(6))) {
+                ui.hotspot(id, hit);
+                fresh = ui.newBadge(id, hit, feature, false);
+            } else {
+                fresh = ui.isNew(feature);
+            }
             if (ui.focused(id) && selected_ != static_cast<int>(i)) {
                 selected_ = static_cast<int>(i);
                 if (!g_.ui.usingPointer()) centerOn_ = selected_;
@@ -458,6 +476,7 @@ private:
                 float pulse = 1.0f + 0.12f * std::sin(t_ * 6.0f);
                 r.drawCircle(n.p, (n.r + ui.s(5)) * pulse, Color::white(), ui.s(2));
             }
+            if (fresh) newDot(n);
         }
         // The heart: the stars obtained.
         r.fillCircle(c, hub * 0.92f, Color{14, 20, 44, 240});
@@ -469,8 +488,66 @@ private:
         std::string of = "sur " + std::to_string(cat.totalStars());
         ui.label(of, {c.x, c.y + hub * 0.42f}, ui.fitFont(of, FontFace::Body, 13, hub * 1.4f), ui.theme().textDim, Align::Center, FontFace::Body,
                  VAlign::Middle);
-        // Zoomed in: each achievement's name next to its node (when there is room for it).
+        // What the gold dot means, in a corner of the web (while something is new).
         std::vector<Rect> placed;
+        if (ui.isNew("menu.achievements")) {
+            const float ph = ui.newPillHeight(true), dotR = std::max(ui.s(4.5f), 3.5f);
+            Rect legend{area.x + ui.s(6), area.bottom() - ui.s(6) - ph, dotR * 2.0f + ui.s(8) + ui.newPillWidth(true), ph};
+            r.fillCircle({legend.x + dotR, legend.center().y}, dotR, Color{255, 196, 70, 255});
+            r.drawCircle({legend.x + dotR, legend.center().y}, dotR, Color{120, 60, 0, 220}, std::max(1.0f, ui.s(1.0f)));
+            ui.drawNewPill(legend.right(), legend.center().y, true);
+            placed.push_back(legend.expanded(ui.s(4)));
+        }
+        // Category names around the web, kept apart (first: the names of the achievements make
+        // room for them, never the reverse).
+        for (size_t ci = 0; ci < sectors_.size(); ++ci) {
+            const AchievementCategory& k = cat.categories()[ci];
+            float a = (sectors_[ci].a0 + sectors_[ci].a1) * 0.5f;
+            int have = g_.achievements.stars(cat, k.id), tot = 0;
+            for (const auto& x : all) tot += x.category == k.id ? x.stars : 0;
+            std::string sub = std::to_string(have) + " / " + std::to_string(tot);
+            float fs = 16.0f;
+            Vec2 sz = ui.text().measure(k.name, FontFace::Bold, ui.s(fs));
+            Vec2 sz2 = ui.text().measure(sub, FontFace::Body, ui.s(fz(ui, 13)));
+            // « NOUVEAU » on a third line while one of its achievements is new (no wider: the
+            // names keep to the room left around the web); without it where it has no room.
+            bool catNew = ui.isNew("achievements.cat." + k.id);
+            auto place = [&](bool withPill, Rect& box) {
+                const float pillH = withPill ? ui.s(3) + ui.newPillHeight(true) : 0.0f;
+                float bw = std::max({sz.x, sz2.x + ui.s(16), withPill ? ui.newPillWidth(true) : 0.0f}), bh = sz.y + sz2.y + pillH;
+                float rr = R + ui.s(12);
+                for (int tries = 0; tries < 6; ++tries, rr += ui.s(10)) {
+                    Vec2 p{c.x + std::cos(a) * rr, c.y + std::sin(a) * rr};
+                    float cx = std::cos(a);
+                    float x = cx > 0.3f ? p.x : cx < -0.3f ? p.x - bw : p.x - bw * 0.5f;
+                    float y = std::sin(a) < -0.3f ? p.y - bh : std::sin(a) > 0.3f ? p.y : p.y - bh * 0.5f;
+                    // Inside the web's area (at 100 %: never cut by its edges).
+                    if (zoom_ <= 1.0f) {
+                        x = std::clamp(x, area.x, std::max(area.x, area.right() - bw));
+                        y = std::clamp(y, area.y, std::max(area.y, area.bottom() - bh));
+                    }
+                    box = {x, y, bw, bh};
+                    bool hit = false;
+                    for (const Rect& o : placed) hit = hit || o.intersects(box);
+                    if (!hit) return true;
+                }
+                return false;
+            };
+            Rect box;
+            if (!(catNew && place(true, box))) {
+                catNew = false;
+                place(false, box);
+            }
+            placed.push_back(box.expanded(ui.s(3)));  // the names keep a margin off it (their backdrop too)
+            bool on = ci == static_cast<size_t>(categoryIndex(sel().category));
+            ui.label(k.name, {box.x + box.w * 0.5f, box.y}, fs, on ? k.color : k.color.withAlpha(200), Align::Center, FontFace::Bold);
+            if (catNew)
+                ui.drawNewPill(box.x + (box.w + ui.newPillWidth(true)) * 0.5f, box.y + sz.y + sz2.y + ui.s(3) + ui.newPillHeight(true) * 0.5f, true);
+            drawStar(ui.r(), {box.x + (box.w - sz2.x - ui.s(16)) * 0.5f + ui.s(6), box.y + sz.y + sz2.y * 0.5f}, ui.s(6), Color{255, 214, 90, 200}, true);
+            ui.label(sub, {box.x + (box.w - sz2.x - ui.s(16)) * 0.5f + ui.s(16), box.y + sz.y}, fz(ui, 13), ui.theme().textDim, Align::Left);
+        }
+        // Zoomed in: each achievement's name next to its node (when there is room for it), a
+        // « NOUVEAU » after the name of a new one.
         if (zoom_ >= 1.7f) {
             for (const Node& n : nodes_) placed.push_back(Rect::fromCenter(n.p, {n.r * 2.0f, n.r * 2.0f}));
             placed.push_back(Rect::fromCenter(c, {hub * 2.0f, hub * 2.0f}));
@@ -479,6 +556,12 @@ private:
                 if (!area.contains(n.p)) continue;
                 const float fs = std::max(13.0f, 11.5f / ui.s(1.0f));  // never below 11.5 px
                 Vec2 sz = ui.text().measure(all[i].name, FontFace::Body, ui.s(fs));
+                const bool fresh = ui.isNew("ach." + all[i].id);
+                const float nameW = sz.x;
+                if (fresh) {
+                    sz.x += ui.s(6) + ui.newPillWidth(true);
+                    sz.y = std::max(sz.y, ui.newPillHeight(true));
+                }
                 Rect cand[4] = {{n.p.x - sz.x * 0.5f, n.p.y + n.r + ui.s(3), sz.x, sz.y},
                                 {n.p.x - sz.x * 0.5f, n.p.y - n.r - ui.s(3) - sz.y, sz.x, sz.y},
                                 {n.p.x + n.r + ui.s(4), n.p.y - sz.y * 0.5f, sz.x, sz.y},
@@ -495,44 +578,12 @@ private:
                     placed.push_back(b);
                     r.fillRoundedRect(b.expanded(ui.s(2)), ui.s(3), Color{6, 10, 24, 190});
                     bool done = g_.achievements.unlocked(all[i].id);
-                    ui.label(all[i].name, b.pos(), fs, done ? colorOf(all[i].category) : ui.theme().textDim, Align::Left, FontFace::Body);
+                    ui.label(all[i].name, {b.x, b.center().y}, fs, done ? colorOf(all[i].category) : ui.theme().textDim, Align::Left, FontFace::Body,
+                             VAlign::Middle);
+                    if (fresh) ui.drawNewPill(b.x + nameW + ui.s(6) + ui.newPillWidth(true), b.center().y, true);
                     break;
                 }
             }
-        }
-        // Category names around the web, kept apart.
-        for (size_t ci = 0; ci < sectors_.size(); ++ci) {
-            const AchievementCategory& k = cat.categories()[ci];
-            float a = (sectors_[ci].a0 + sectors_[ci].a1) * 0.5f;
-            int have = g_.achievements.stars(cat, k.id), tot = 0;
-            for (const auto& x : all) tot += x.category == k.id ? x.stars : 0;
-            std::string sub = std::to_string(have) + " / " + std::to_string(tot);
-            float fs = 16.0f;
-            Vec2 sz = ui.text().measure(k.name, FontFace::Bold, ui.s(fs));
-            Vec2 sz2 = ui.text().measure(sub, FontFace::Body, ui.s(fz(ui, 13)));
-            float bw = std::max(sz.x, sz2.x + ui.s(16)), bh = sz.y + sz2.y;
-            float rr = R + ui.s(12);
-            Rect box;
-            for (int tries = 0; tries < 6; ++tries, rr += ui.s(10)) {
-                Vec2 p{c.x + std::cos(a) * rr, c.y + std::sin(a) * rr};
-                float cx = std::cos(a);
-                float x = cx > 0.3f ? p.x : cx < -0.3f ? p.x - bw : p.x - bw * 0.5f;
-                float y = std::sin(a) < -0.3f ? p.y - bh : std::sin(a) > 0.3f ? p.y : p.y - bh * 0.5f;
-                // Inside the web's area (at 100 %: never cut by its edges).
-                if (zoom_ <= 1.0f) {
-                    x = std::clamp(x, area.x, std::max(area.x, area.right() - bw));
-                    y = std::clamp(y, area.y, std::max(area.y, area.bottom() - bh));
-                }
-                box = {x, y, bw, bh};
-                bool hit = false;
-                for (const Rect& o : placed) hit = hit || o.intersects(box);
-                if (!hit) break;
-            }
-            placed.push_back(box);
-            bool on = ci == static_cast<size_t>(categoryIndex(sel().category));
-            ui.label(k.name, {box.x + box.w * 0.5f, box.y}, fs, on ? k.color : k.color.withAlpha(200), Align::Center, FontFace::Bold);
-            drawStar(ui.r(), {box.x + (box.w - sz2.x - ui.s(16)) * 0.5f + ui.s(6), box.y + sz.y + sz2.y * 0.5f}, ui.s(6), Color{255, 214, 90, 200}, true);
-            ui.label(sub, {box.x + (box.w - sz2.x - ui.s(16)) * 0.5f + ui.s(16), box.y + sz.y}, fz(ui, 13), ui.theme().textDim, Align::Left);
         }
         r.popClip();
         webArea_ = area;
@@ -626,15 +677,23 @@ private:
         float rw = ui.text().measure(right, FontFace::Body, ui.s(16)).x;
         r().fillCircle({x + ui.s(7), y + ui.s(13)}, ui.s(7), col);
         std::string cname = k ? k->name : a.category;
-        ui.label(ui.elide(cname, FontFace::Bold, 22, w - rw - ui.s(40)), {x + ui.s(22), y}, 22, col, Align::Left, FontFace::Bold);
+        // « NOUVEAU » after the category's name while one of its achievements is new.
+        const bool catNew = ui.isNew("achievements.cat." + a.category);
+        const float catPill = catNew ? ui.s(10) + ui.newPillWidth(true) : 0.0f;
+        std::string shownCat = ui.elide(cname, FontFace::Bold, 22, w - rw - ui.s(40) - catPill);
+        Vec2 csz = ui.label(shownCat, {x + ui.s(22), y}, 22, col, Align::Left, FontFace::Bold);
+        if (catNew) ui.drawNewPill(x + ui.s(22) + csz.x + catPill, y + csz.y * 0.5f, true);
         ui.label(right, {x + w, y + ui.s(3)}, fz(ui, 16), th.textDim, Align::Right);
         y += ui.s(34);
         if (k) y += ui.labelWrapped(k->description, {x, y}, w, std::max(15.0f, 11.5f / ui.s(1.0f)), th.textDim).y + ui.s(10);
         ui.separator({x, y}, w);
         y += ui.s(14);
         // The achievement.
-        float nf = ui.fitFont(a.name, FontFace::Title, 30, w, 0.6f);
-        ui.label(a.name, {x, y}, nf, th.text, Align::Left, FontFace::Title);
+        const bool selNew = ui.isNew("ach." + a.id);
+        const float selPill = selNew ? ui.s(12) + ui.newPillWidth() : 0.0f;
+        float nf = ui.fitFont(a.name, FontFace::Title, 30, w - selPill, 0.6f);
+        Vec2 nsz = ui.label(a.name, {x, y}, nf, th.text, Align::Left, FontFace::Title);
+        if (selNew) ui.drawNewPill(x + nsz.x + selPill, y + nsz.y * 0.5f);
         y += ui.s(44);
         drawStarRow(ui.r(), {x, y + ui.s(10)}, ui.s(20), a.stars, Color{255, 214, 90, 255}, Color{120, 130, 160, 160});
         std::string diff = a.stars == 1 ? "Facile" : a.stars == 2 ? "Moyen" : a.stars == 3 ? "Difficile" : a.stars == 4 ? "Très difficile" : "Extrême";
@@ -691,9 +750,12 @@ private:
             if (done) ui.r().fillCircle(dot, ui.s(6), col);
             else ui.r().drawCircle(dot, ui.s(6), g_.achievements.available(all[i]) ? col : Color{120, 130, 160, 120}, ui.s(1.5f));
             float starsW = ui.s(14) * 1.15f * 4.0f + ui.s(14);
-            float nameRoom = row.w - ui.s(34) - starsW - ui.s(16);
-            ui.label(ui.elide(all[i].name, FontFace::Body, fz(ui, 16), nameRoom), {row.x + ui.s(30), row.center().y}, 16,
-                     done ? th.text : th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+            const bool fresh = ui.isNew("ach." + all[i].id);
+            const float pill = fresh ? ui.s(8) + ui.newPillWidth(true) : 0.0f;
+            float nameRoom = row.w - ui.s(34) - starsW - ui.s(16) - pill;
+            Vec2 nsz = ui.label(ui.elide(all[i].name, FontFace::Body, fz(ui, 16), nameRoom), {row.x + ui.s(30), row.center().y}, fz(ui, 16),
+                                done ? th.text : th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+            if (fresh) ui.drawNewPill(row.x + ui.s(30) + nsz.x + pill, row.center().y, true);
             drawStarRow(ui.r(), {row.right() - starsW - ui.s(6), row.center().y}, ui.s(14), all[i].stars, Color{255, 214, 90, static_cast<uint8_t>(done ? 255 : 150)},
                         Color{90, 100, 130, 110});
         }
@@ -729,6 +791,11 @@ private:
                 std::string s = std::to_string(have) + " / " + std::to_string(tot) + " étoiles";
                 ui.label(s, {area.x + w, y + ui.s(26)}, fz(ui, 16), th.textDim, Align::Right, FontFace::Body, VAlign::Middle);
                 float nw = ui.text().measure(k.name, FontFace::Bold, ui.s(22)).x;
+                // « NOUVEAU » after the name while one of its achievements is new (the description moves after it).
+                if (ui.isNew("achievements.cat." + k.id)) {
+                    nw += ui.s(12) + ui.newPillWidth();
+                    ui.drawNewPill(area.x + nw, y + ui.s(26));
+                }
                 float sw = ui.text().measure(s, FontFace::Body, ui.s(16)).x;
                 float dr = w - nw - sw - ui.s(60);
                 if (dr > ui.s(120))
@@ -743,6 +810,8 @@ private:
                 y += rh;
                 std::string id = "l" + std::to_string(i);
                 ui.hotspot(id, row);
+                // « NOUVEAU » (an achievement added by an update): seen on focus (pointed at) or a click.
+                const bool fresh = ui.newBadge(id, row, "ach." + a.id, false, true);
                 bool focus = ui.focused(id);
                 if (focus) selected_ = static_cast<int>(i);
                 if (row.bottom() < area.y || row.y > area.bottom()) continue;
@@ -751,8 +820,10 @@ private:
                 Vec2 dot{row.x + ui.s(14), row.center().y};
                 if (done) ui.r().fillCircle(dot, ui.s(6), k.color);
                 else ui.r().drawCircle(dot, ui.s(6), g_.achievements.available(a) ? k.color : Color{120, 130, 160, 120}, ui.s(1.5f));
-                ui.label(ui.elide(a.name, FontFace::Bold, fz(ui, 16), cDesc - cName - ui.s(14)), {cName, row.center().y}, fz(ui, 16), done ? th.text : th.textDim,
-                         Align::Left, FontFace::Bold, VAlign::Middle);
+                const float pill = fresh ? ui.s(8) + ui.newPillWidth(true) : 0.0f;
+                Vec2 nsz = ui.label(ui.elide(a.name, FontFace::Bold, fz(ui, 16), cDesc - cName - ui.s(14) - pill), {cName, row.center().y}, fz(ui, 16),
+                                    done ? th.text : th.textDim, Align::Left, FontFace::Bold, VAlign::Middle);
+                if (fresh) ui.drawNewPill(cName + nsz.x + pill, row.center().y, true);
                 ui.label(ui.elide(a.description, FontFace::Body, fz(ui, 15), cProg - cDesc - ui.s(16)), {cDesc, row.center().y}, fz(ui, 15), th.textDim, Align::Left,
                          FontFace::Body, VAlign::Middle);
                 Color sc;

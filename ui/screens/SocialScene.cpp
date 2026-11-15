@@ -937,14 +937,16 @@ private:
         // Header, one line under the other: title, total (or the state), what to do.
         float y = zoneC_.y + ui.s(14);
         const std::string title = "Joueurs de Cosmic Online";
-        // « NOUVEAU » (2.26) after the title; seen once the player clicks or drags on this globe.
-        const bool globeNew = ui.isNewFeature && ui.isNewFeature("social.globe");
+        // « NOUVEAU » (2.26) after the title; seen once the player points at this globe (the
+        // mouse moved over it, a click, a drag) or reaches its buttons.
+        const bool globeNew = ui.isNew("social.globe");
         const float titleRoom = globeNew ? w - ui.newPillWidth() - ui.s(14) : w;
         Vec2 tsz = ui.label(title, {x, y + ui.s(17)}, ui.fitFont(title, FontFace::Title, 26, titleRoom), ui.theme().accent, Align::Left,
                             FontFace::Title, VAlign::Middle);
         if (globeNew) {
             ui.drawNewPill(x + tsz.x + ui.s(14) + ui.newPillWidth(), y + ui.s(17));
-            if (ui.mouseClicked(zoneC_) && ui.featureSeen) ui.featureSeen("social.globe");
+            const bool pointed = ui.acceptsInput() && ui.usingPointer() && g_.app.input().mouseMovedThisFrame() && ui.mouseOver(zoneC_);
+            if ((ui.mouseClicked(zoneC_) || pointed) && ui.featureSeen) ui.featureSeen("social.globe");
         }
         y += ui.s(38);
         std::string total;
@@ -1046,7 +1048,7 @@ private:
         float y = globeButtons_.y;
         ui.pushId("globe");
         // The globe controls focused with the keyboard or the gamepad: the novelty is seen.
-        if (ui.featureSeen && ui.isNewFeature && ui.isNewFeature("social.globe") &&
+        if (ui.featureSeen && ui.isNew("social.globe") &&
             (ui.focused("zoomin") || ui.focused("zoomout") || ui.focused("prev") || ui.focused("next") || ui.focused("home")))
             ui.featureSeen("social.globe");
         const int n = static_cast<int>(globeCountries_.size());
