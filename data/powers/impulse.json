@@ -3,5 +3,6 @@
   "description": "Propulsion verticale libérant une onde de choc : repousse les ennemis, brise la roche fissurée. Une fois par saut.",
   "icon": 3, "input": "impulse", "energyCost": 8, "cooldown": 0.8, "duration": 0,
   "color": "#ffb347", "sound": "sounds/impulse.wav",
+  "suggestedKey": "I", "suggestedPad": {"button": "rightshoulder"},
   "params": { "velocity": 380, "radius": 46, "damage": 1, "knockback": 280, "airUses": 1 }
 }

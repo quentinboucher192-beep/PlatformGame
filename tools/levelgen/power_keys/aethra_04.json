@@ -1,0 +1,17 @@
+{
+  "level": "aethra_04",
+  "powerKeys": {
+    "dash": {
+      "key": "K",
+      "pad": {
+        "button": "b"
+      }
+    },
+    "recall": {
+      "key": "Y",
+      "pad": {
+        "button": "rightstick"
+      }
+    }
+  }
+}

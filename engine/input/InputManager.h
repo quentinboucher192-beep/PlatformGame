@@ -85,7 +85,19 @@ public:
     // ------------------------------------------------------------ bindings
     InputBindings& bindings() { return bindings_; }
     const InputBindings& bindings() const { return bindings_; }
-    void setBindings(const InputBindings& b) { bindings_ = b; }
+    /// The commands of the settings; the keys of the power slots stay as the scene that plays
+    /// set them (setPowerSlotKey).
+    void setBindings(const InputBindings& b);
+
+    /// 2.31: the key and gamepad button of the power carried in slot `slot` (0-based, the order
+    /// of the HUD), set by the scene that plays from the keys of the level's powers
+    /// (game/powers/PowerKeys.h); nothing (UNKNOWN / None) for an empty slot. The slot's
+    /// action (PowerSlot1..8) then follows that key: held, press edges, mouse, wheel. When the
+    /// key changes, a key or button already held counts only once released and pressed again,
+    /// and a press not yet consumed is dropped: a pickup never fires the new power by itself.
+    void setPowerSlotKey(int slot, SDL_Scancode key, const PadBinding& pad);
+    /// Every slot without a key (leaving a level, an editor's arena...).
+    void clearPowerSlotKeys();
 
     /// Rebinding: the next key (or gamepad button/axis) pressed is captured.
     void beginCapture(InputDevice device);
@@ -145,6 +157,8 @@ private:
     bool wheelUpPulse_ = false, wheelDownPulse_ = false;
     PadBinding swallowPad_;
     bool swallowingPad_ = false;
+    // A power slot whose key changed while it was held: nothing until it is released.
+    std::array<bool, kPowerSlotKeys> slotWaitRelease_{};
 };
 
 }  // namespace cosmic

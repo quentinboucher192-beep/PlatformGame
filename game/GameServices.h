@@ -14,6 +14,7 @@
 #include "game/online/OnlineService.h"
 #include "game/progression/NewBadges.h"
 #include "game/progression/NewsCenter.h"
+#include "game/powers/PowerKeys.h"
 #include "game/progression/Progression.h"
 #include "game/records/BossStats.h"
 #include "game/records/Records.h"
@@ -50,6 +51,8 @@ public:
     /// and the history of my segments.
     GhostStore ghosts;
     SegmentHistory segments;
+    /// The keys the player chose for the powers of a level (2.31, saves/power_keys.json).
+    PowerKeyOverrides powerKeyOverrides;
     /// Achievements: the catalogue (data) and what this player has unlocked (saves).
     /// Training attempts of this session (per level and starting checkpoint), never saved.
     std::map<std::string, std::vector<float>> trainingAttempts;

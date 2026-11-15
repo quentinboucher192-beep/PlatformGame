@@ -15,7 +15,9 @@
 #include "game/player/PlayerConfig.h"
 #include "ui/screens/CreatureArt.h"
 #include "ui/screens/GameScene.h"
+#include "ui/screens/LevelPowerKeysScene.h"
 #include "ui/screens/MenuBackground.h"
+#include "ui/widgets/Glyphs.h"
 #include "ui/screens/Navigation.h"
 
 namespace cosmic {
@@ -294,7 +296,7 @@ private:
         std::string count = std::to_string(chosen_.size()) + " / " + std::to_string(slots_);
         Vec2 cs = ui.label(count, {x + hs.x + ui.s(14), y + ui.s(12)}, fz(ui, 20), chosen_.size() >= static_cast<size_t>(slots_) ? ui.theme().warm : ui.theme().text,
                            Align::Left, FontFace::Bold, VAlign::Middle);
-        std::string hint = "Un pouvoir sur la même touche qu'un autre le remplace.";
+        std::string hint = "Touches de son niveau (à changer au choix du niveau ou en pause)";
         float hx = x + hs.x + cs.x + ui.s(40), hroom = x + w - hx;
         if (hroom > ui.s(80)) {
             float f = fit(ui, hint, FontFace::Body, 15, hroom, 0.75f);
@@ -306,6 +308,7 @@ private:
         float cw = (w - cgap * (cols - 1)) / cols;
         int rows = static_cast<int>((powers_.size() + cols - 1) / cols);
         float ch = std::clamp((area.bottom() - ui.s(18) - y - cgap * (rows - 1)) / std::max(1, rows), ui.s(40), ui.s(60));
+        refreshKeys();
         for (size_t i = 0; i < powers_.size(); ++i) {
             const PowerDefinition& p = *powers_[i];
             Rect c{x + (cw + cgap) * static_cast<float>(i % cols), y + (ch + cgap) * static_cast<float>(i / cols), cw, ch};
@@ -317,9 +320,24 @@ private:
             if (ui.button("pw" + std::to_string(i), c, "", st)) toggle(p.id);
             Rect icon{c.x + ui.s(10), c.center().y - (ch - ui.s(16)) * 0.5f, ch - ui.s(16), ch - ui.s(16)};
             ui.icon("ui/icons_powers.png", p.icon, 32, icon, on ? Color::white() : Color{150, 160, 180, 255});
+            // Its key in this level (2.31: the player's, the level's or the suggestion, keyboard
+            // or gamepad as in use); a power without a key of its own: the dashed gold frame.
+            const bool keyed = i < keyed_.size() && i < keys_.size() && keyed_[i];
+            if (!keyed) Glyphs::drawFreePowerFrame(ui, icon.expanded(ui.s(2)), ui.s(6), std::max(1.5f, ui.s(2)), on ? 1.0f : 0.6f);
             float tx = icon.right() + ui.s(10);
             float badge = on ? ui.s(30) : 0.0f;
-            float room = c.right() - ui.s(12) - badge - tx;
+            float keyH = std::min(ui.s(28), ch - ui.s(18)), keyW = 0.0f;
+            if (keyed) {
+                keyW = Glyphs::drawPowerKey(ui, keys_[i], {0.0f, 0.0f}, keyH, false);
+                const float keyRoom = (c.right() - ui.s(12) - badge - tx) * 0.45f;
+                if (keyW > keyRoom) {
+                    keyH *= keyRoom / keyW;
+                    keyW = Glyphs::drawPowerKey(ui, keys_[i], {0.0f, 0.0f}, keyH, false);
+                }
+                Glyphs::drawPowerKey(ui, keys_[i], {c.right() - ui.s(12) - badge - (on ? ui.s(8) : 0.0f) - keyW, c.center().y}, keyH);
+                keyW += ui.s(10) + (on ? ui.s(8) : 0.0f);
+            }
+            float room = c.right() - ui.s(12) - badge - keyW - tx;
             float f = fit(ui, p.name, FontFace::Bold, 17, room, 0.7f);
             ui.label(ui.elide(p.name, FontFace::Bold, f, room), {tx, c.center().y}, f, on ? ui.theme().text : ui.theme().textDim, Align::Left,
                      FontFace::Bold, VAlign::Middle);
@@ -346,19 +364,28 @@ private:
         }
         std::vector<std::string> wanted = chosen_;
         wanted.push_back(id);
-        std::vector<std::string> fitted = fitTrainingPowers(g_.content, wanted, slots_);
-        // A power on the same input as one already chosen replaces it (as in a level).
-        const PowerDefinition* added = g_.content.power(id);
-        for (const std::string& old : chosen_)
-            if (std::find(fitted.begin(), fitted.end(), old) == fitted.end())
-                if (const PowerDefinition* o = g_.content.power(old); o && added)
-                    say("« " + added->name + " » remplace « " + o->name + " » (même touche).");
-        chosen_ = fitted;
+        chosen_ = fitTrainingPowers(g_.content, wanted, slots_);
     }
 
     void say(const std::string& m) {
         msg_ = m;
         msgTimer_ = 4.0f;
+    }
+
+    /// The key of each power of the grid in the arena's level, for this player, with the powers
+    /// chosen (as the training will have them); one not chosen: as it would be once added.
+    void refreshKeys() {
+        if (keysFor_ == chosen_ && keys_.size() == powers_.size()) return;
+        keysFor_ = chosen_;
+        keys_.clear();
+        keyed_.clear();
+        const PowerKeyMap chosenKeys = level_ ? playerPowerKeys(g_, *level_, chosen_) : PowerKeyMap{};
+        for (const PowerDefinition* p : powers_) {
+            const bool keyed = powerUsesKey(*p);
+            keyed_.push_back(keyed);
+            const ResolvedPowerKey* k = keyed ? chosenKeys.find(p->id) : nullptr;
+            keys_.push_back(k ? *k : keyed && level_ ? playerPowerKey(g_, *level_, p->id, chosen_) : ResolvedPowerKey{});
+        }
     }
 
     void launch() {
@@ -404,6 +431,9 @@ private:
     float clipT_ = 0.0f, t_ = 0.0f;
     int hearts_ = 10, slots_ = 2, phase_ = -1;
     std::vector<std::string> chosen_;
+    std::vector<std::string> keysFor_;     // the choice keys_ was computed for
+    std::vector<ResolvedPowerKey> keys_;   // one per power of the grid (2.31)
+    std::vector<bool> keyed_;              // whether it uses a key of its own
     std::string msg_;
     float msgTimer_ = 0.0f;
     bool autoGo_ = false;

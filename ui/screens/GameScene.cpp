@@ -61,6 +61,9 @@ void GameScene::onEnter() {
     } else if (opt_.spawn) {
         world_->startAt(*opt_.spawn);
     }
+    // Keys of the powers (2.31): the level's key powers, and those a training gives.
+    if (opt_.bossTraining) powerKeyExtra_ = opt_.bossTraining->powers;
+    refreshPowerKeys();
     const bool counted = !world_->training();  // a training run records nothing
     if (opt_.training) startTraining();
     if (const LevelRecord* rec = g_.records.get(levelId_); rec && !opt_.training && counted) world_->setReferenceSplits(rec->bestSplits);
@@ -240,6 +243,7 @@ void GameScene::saveGhosts(const RunResult& r) {
 }
 
 void GameScene::onExit() {
+    g_.app.input().clearPowerSlotKeys();  // the keys of this level's powers stay here
     noteAchievementStats(false, nullptr);  // a run left or restarted (a finished one is already counted)
     if (mounted_) g_.app.resources().popMount();
     mounted_ = false;
@@ -265,7 +269,26 @@ void GameScene::applyGhostSettings() { ghostRun_.setSettings(g_.settings.ghosts)
 
 void GameScene::onResume() {
     g_.app.audio().setMusicDuck(1.0f);
+    refreshPowerKeys();  // « Touches de ce niveau », the settings: maybe other keys now
     g_.app.input().consumePlayerInput();
+}
+
+void GameScene::refreshPowerKeys() {
+    if (!world_) return;
+    powerKeys_ = levelPowerKeys(level_, g_.content, g_.settings.input, &g_.powerKeyOverrides, powerKeyExtra_);
+    syncPowerKeys();
+}
+
+void GameScene::syncPowerKeys() {
+    if (!world_) return;
+    // Slot N takes the key of the power carried there (outside the simulation: the inputs
+    // recorded stay the slot bits). A power given by something the level did not list gets
+    // its key too.
+    std::vector<std::string> missing = applyPowerSlotKeys(g_.app.input(), world_->player(), powerKeys_);
+    if (missing.empty()) return;
+    powerKeyExtra_.insert(powerKeyExtra_.end(), missing.begin(), missing.end());
+    powerKeys_ = levelPowerKeys(level_, g_.content, g_.settings.input, &g_.powerKeyOverrides, powerKeyExtra_);
+    applyPowerSlotKeys(g_.app.input(), world_->player(), powerKeys_);
 }
 
 void GameScene::handleEvent(const SDL_Event& e) {
@@ -394,6 +417,7 @@ void GameScene::fixedUpdate(float dt) {
     frame.choice = choice;
     if (!ended_) recorder_.recordInput(frame);
     stepWorld(*world_, frame, kSimDt);
+    syncPowerKeys();  // a power picked up, replaced: its own key on its slot from the next input
     if (!ended_) recorder_.tick(*world_);
     if (!ended_) {
         bool gliding = world_->player().gliding();
@@ -635,6 +659,7 @@ void GameScene::update(float dt) {
         return;
     }
     if (!world_) return;
+    syncPowerKeys();
     world_->update(dt);
     // The pause map: what the camera has shown (display only, outside the simulation).
     if (explored_.cols == 0) explored_.reset(world_->level().bounds);

@@ -3,8 +3,8 @@
   "version": 1,
   "comment": "Novelties of each update and the trail to them (game/progression/NewBadges.h). An entry with a version is a novelty: its « NOUVEAU » pill goes once its widget gets the focus or a click. « parents »: the widgets that lead to it (menu entry, tab, category…); an entry without a version is a step of that trail. A parent shows the pill as long as anything under it is new.",
   "features": [
-    {"id": "settings.slots.keyboard", "version": "2.25.0", "parents": ["settings.tab.keyboard"]},
-    {"id": "settings.slots.gamepad", "version": "2.25.0", "parents": ["settings.tab.gamepad"]},
+    {"id": "pause.level_keys", "version": "2.31.0"},
+    {"id": "editor.power_keys", "version": "2.31.0"},
     {"id": "settings.reset_one.keyboard", "version": "2.29.1", "parents": ["settings.tab.keyboard"]},
     {"id": "settings.reset_one.gamepad", "version": "2.29.1", "parents": ["settings.tab.gamepad"]},
     {"id": "settings.tab.keyboard", "parents": ["menu.settings"]},

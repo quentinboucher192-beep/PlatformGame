@@ -426,6 +426,28 @@ class Level:
             self.obj("sign", [round(sx) - 12, round(sy) - 24, 24, 24], props={"text": text, "auto": True},
                      oid="station_sign_%d" % (i + 1))
 
+    def apply_power_keys(self):
+        """Keys of the powers (version 2.31) computed by CosmicPlatformer --plan-power-keys
+        tools/levelgen/power_keys: each power of the level used with a key of its own gets its
+        key and gamepad button, the same in every campaign level. Not part of the gameplay: the
+        fingerprints leave `powerKeys` out (records, replays and ghosts stay valid)."""
+        plan = os.path.join(os.path.dirname(os.path.abspath(__file__)), "power_keys", self.data["id"] + ".json")
+        if not os.path.exists(plan):
+            return
+        with open(plan, encoding="utf-8") as f:
+            keys = json.load(f).get("powerKeys", {})
+        present = set(self.data.get("startPowers", []))
+        present |= {o.get("props", {}).get("power", "dash") for o in self.data["objects"] if o["type"] == "power_unlock"}
+        for e in self.data.get("events", []):
+            for a in e.get("actions", []):
+                if a.get("type") == "givePower":
+                    present.add(a.get("params", {}).get("power", ""))
+        keys = {p: k for p, k in sorted(keys.items()) if p in present}
+        if keys:
+            self.data["powerKeys"] = keys
+        else:
+            self.data.pop("powerKeys", None)
+
     def harden(self):
         """Campaign difficulty (version 2.1.3): one health orb out of two is removed (hearts
         and energy orbs stay)."""
@@ -439,6 +461,7 @@ class Level:
             self.harden()
         self.apply_seals()
         self.apply_power_slots()
+        self.apply_power_keys()
         meta = self.data.setdefault("metadata", {})
         if meta.get("revision", 0) < 6:
             meta["revision"] = 6  # 2.5: energy 150, new powers (simulation 6)

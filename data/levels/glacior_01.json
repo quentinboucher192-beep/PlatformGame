@@ -10315,5 +10315,26 @@
   "revision": 8
  },
  "killY": 1176,
- "maxPowers": 4
+ "maxPowers": 4,
+ "powerKeys": {
+  "dash": {
+   "key": "K",
+   "pad": {
+    "button": "b"
+   }
+  },
+  "shield": {
+   "key": "O",
+   "pad": {
+    "button": "leftshoulder"
+   }
+  },
+  "teleport": {
+   "key": "U",
+   "pad": {
+    "axis": "lefttrigger",
+    "dir": 1
+   }
+  }
+ }
 }

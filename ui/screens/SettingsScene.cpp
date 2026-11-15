@@ -24,7 +24,7 @@ public:
     void onEnter() override {
         working_ = g_.settings;
         // Automated screenshots: --settings-tab <n>, <n>:slots for the list of the controls
-        // scrolled to the keys of the power slots, <n>:end to its end.
+        // scrolled to its first note (where the keys of the powers are set), <n>:end to its end.
         if (g_.onlineOpen.rfind("settings-tab:", 0) == 0) {
             tab_ = std::clamp(std::atoi(g_.onlineOpen.c_str() + 13), 0, 4);
             scrollTo_ = g_.onlineOpen.find(":slots") != std::string::npos ? 1 : g_.onlineOpen.find(":end") != std::string::npos ? 2 : 0;
@@ -69,7 +69,7 @@ public:
         Rect tabsR{panel.x + ui.s(40), panel.y + ui.s(90), panel.w - ui.s(80), ui.s(54)};
         ui.tabs("settings/tabs", tabsR, {"Graphismes", "Audio", "Clavier / souris", "Manette", "Jeu"}, tab_);
         // « NOUVEAU » on the tabs leading to a novelty (data/news/new_features.json): it stays,
-        // the tab open or not, until everything new in it has been seen (the keys of the slots…).
+        // the tab open or not, until everything new in it has been seen.
         {
             static const char* const kTabFeatures[5] = {"settings.tab.graphics", "settings.tab.audio", "settings.tab.keyboard",
                                                         "settings.tab.gamepad", "settings.tab.game"};
@@ -194,12 +194,7 @@ private:
             st.small = true;
             float labelRoom = b.w - ui.s(16) - (icon ? 2.0f * (ui.s(8) + ui.s(32) + ui.s(4)) : 0.0f);
             st.fontSize = ui.fitFont(label, FontFace::Bold, 20, std::max(ui.s(30), labelRoom));
-            // « NOUVEAU » (2.25): the slot keys; seen as soon as one of them gets the focus or a click
-            // (the pill itself is on the « Pouvoirs équipés » title).
-            bool slotKey = a >= Action::PowerSlot1 && a <= Action::PowerSlot8;
-            bool clickedKey = ui.button(id, b, label, st);
-            if (slotKey) ui.newBadge(id, b, pad ? "settings.slots.gamepad" : "settings.slots.keyboard", false);
-            if (clickedKey) {
+            if (ui.button(id, b, label, st)) {
                 captureAction_ = a;
                 captureSlot_ = slot;
                 capturePad_ = pad;
@@ -223,7 +218,7 @@ private:
             const bool resetClicked = ui.button(resetId, rb, label, st);
             // « NOUVEAU » (2.29.1): seen as soon as any « Par défaut » gets the focus or a click (a
             // disabled one too); the pill itself only on the first row, not on every line.
-            ui.newBadge(resetId, rb, pad ? "settings.reset_one.gamepad" : "settings.reset_one.keyboard", a == Action::PowerSlot1, true);
+            ui.newBadge(resetId, rb, pad ? "settings.reset_one.gamepad" : "settings.reset_one.keyboard", a == Action::MoveLeft, true);
             if (resetClicked && !same) {
                 if (pad) {
                     const PadBinding def = d.pad[i][0];
@@ -251,7 +246,7 @@ private:
         }
     }
 
-    /// A line of the binding list: an action, or a text that introduces the power slots.
+    /// A line of the binding list: an action, or a note.
     struct ListItem {
         Action action = Action::Count;  // Count: a text
         std::string title;              // bold, accent (may be empty)
@@ -274,15 +269,12 @@ private:
         };
         for (int i = 0; i < kFirstMenuAction; ++i) {
             Action a = static_cast<Action>(i);
-            if (!actionIsRebindable(a)) continue;  // the power buttons before 2.24
+            if (!actionIsRebindable(a)) continue;  // the power buttons before 2.24, the power slots
             if (a == Action::Jump)
                 text("", "Les flèches du clavier et la croix de la manette déplacent aussi Nova, en plus des commandes choisies ci-dessus.");
-            if (a == Action::PowerSlot1)
-                text("Pouvoirs équipés",
-                     "Une touche par emplacement du HUD : elle utilise le pouvoir équipé dans cet emplacement, quel qu'il soit. "
-                     "Les pouvoirs au cadre pointillé doré (passifs, ou utilisés avec le saut, l'attaque, Bas + Attaque, "
-                     "Interagir) n'utilisent pas la touche de leur emplacement.");
-            if (a == Action::PowerSlot5) text("", "Pouvoirs 5 à 8 : seulement dans les niveaux qui permettent d'en porter plus de 4.");
+            if (a == Action::Pause)
+                text("Pouvoirs",
+                     "Les touches des pouvoirs se règlent pour chaque niveau : éditeur, choix du niveau › Touches…, pause › Touches de ce niveau.");
             if (a == Action::Pause) text("Partie", "");
             ListItem it;
             it.action = a;
@@ -316,10 +308,6 @@ private:
                 float ty = y + ui.s(10);
                 if (!it.title.empty()) {
                     Vec2 sz = ui.label(it.title, {list.x + ui.s(10), ty}, 20, ui.theme().accent, Align::Left, FontFace::Bold);
-                    const char* feature = pad ? "settings.slots.gamepad" : "settings.slots.keyboard";
-                    if (it.title == "Pouvoirs équipés" && ui.isNew(feature)) {
-                        ui.drawNewPill(list.x + ui.s(10) + sz.x + ui.s(14) + ui.newPillWidth(), ty + sz.y * 0.5f);
-                    }
                     ty += sz.y + ui.s(4);
                 }
                 if (!it.text.empty()) ui.labelWrapped(it.text, {list.x + ui.s(10), ty}, rowW - ui.s(20), 16, ui.theme().textDim);

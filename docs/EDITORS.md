@@ -36,7 +36,7 @@ La campagne et les records restent ainsi identiques pour tous les joueurs.
 * **Barre d'outils** : Ouvrir, Nouveau, Enregistrer (ou *Dupliquer* en lecture seule),
   Annuler, Rétablir, outil Sélection, outil Main, grille (8 / 16 / 32 px ou désactivée),
   zoom − / +, *Niveau* (paramètres, difficulté calculée, vignette), *Événements*,
-  *Cinématiques*, *Tester (F5)*, *Tester (vue)*, aide, Quitter.
+  *Cinématiques*, *Touches des pouvoirs*, *Tester (F5)*, *Tester (vue)*, aide, Quitter.
 * **Panneau gauche** :
   * *Biblio.* – onglets Terrain, Jeu, Ennemis, Décors, **recherche** (sans accents ni
     majuscules), **vignettes** (texture de l'objet, première image de l'animation de
@@ -99,6 +99,18 @@ d'ambiance et de fond, limites, altitude de chute mortelle, zoom de caméra, pou
 départ, **chronomètre** (illimité, limité, contre-la-montre, défi ; durée, conséquence à
 expiration, temps de référence, morts maximum en défi) et **médailles** (seuils de temps
 bronze / argent / or / platine, morts maximum pour le platine).
+
+### Touches des pouvoirs (2.31)
+
+La liste des pouvoirs du niveau qui s'utilisent avec une touche à eux (pouvoirs de départ,
+tablettes et stations, pouvoirs donnés par un événement), chacun avec sa touche du clavier
+ou de la souris et son bouton de manette : un clic (ou Valider) puis la nouvelle touche, comme
+dans les paramètres (toute touche, bouton de souris ou cran de molette ; tout bouton ou
+gâchette ; Échap annule). Un pouvoir sans choix garde sa touche *suggérée*. *Proposer* remplit
+tout avec les suggestions, sans conflit. Sont signalés : deux pouvoirs sur la même touche (ou
+le même bouton), une touche ou un bouton d'une commande de base par défaut. Les touches sont
+enregistrées dans le niveau (`powerKeys`, voir LEVEL_FORMAT.md) et ne changent jamais son
+empreinte ; chaque joueur peut encore changer les siennes (choix du niveau, pause).
 
 ### Événements
 

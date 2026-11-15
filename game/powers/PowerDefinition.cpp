@@ -19,6 +19,13 @@ Json PowerDefinition::toJson() const {
             {"params", params}};
 }
 
+Json PowerDefinition::toFileJson() const {
+    Json j = toJson();
+    if (std::string k = bindingName(suggestedKey); !k.empty()) j["suggestedKey"] = k;
+    if (suggestedPad.kind != PadBinding::Kind::None) j["suggestedPad"] = padBindingToJson(suggestedPad);
+    return j;
+}
+
 PowerDefinition PowerDefinition::fromJson(const Json& j) {
     PowerDefinition d;
     d.id = jstr(j, "id");
@@ -35,6 +42,8 @@ PowerDefinition PowerDefinition::fromJson(const Json& j) {
     d.sound = jstr(j, "sound");
     d.soundEnd = jstr(j, "soundEnd");
     if (j.contains("params") && j["params"].is_object()) d.params = j["params"];
+    d.suggestedKey = bindingFromName(jstr(j, "suggestedKey"));
+    if (j.contains("suggestedPad")) d.suggestedPad = padBindingFromJson(j["suggestedPad"]);
     return d;
 }
 

@@ -76,6 +76,7 @@ void LevelEditorScene::drawModal() {
         case Modal::Events: modalEvents(c); break;
         case Modal::Cinematics: modalCinematics(c); break;
         case Modal::Help: modalHelp(c); break;
+        case Modal::PowerKeys: modalPowerKeys(c); break;
         case Modal::ConfirmQuit: {
             ui.label("Quitter l'éditeur ?", {c.x, c.y}, 30, ui.theme().text, Align::Left, FontFace::Bold);
             ui.labelWrapped("Des modifications ne sont pas enregistrées.", {c.x, c.y + ui.s(60)}, c.w, 22, ui.theme().textDim);
@@ -96,7 +97,7 @@ void LevelEditorScene::drawModal() {
         case Modal::None: break;
     }
     ui.popId();
-    if (ui.backPressed() && modal_ != Modal::None && !ui.editingText()) modal_ = Modal::None;
+    if (ui.backPressed() && modal_ != Modal::None && !ui.editingText() && !ui.input().capturing()) modal_ = Modal::None;
 }
 
 // ====================================================================== open

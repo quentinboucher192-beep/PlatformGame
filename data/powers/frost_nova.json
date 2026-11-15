@@ -11,6 +11,7 @@
   "duration": 0,
   "color": "#9fe8ff",
   "sound": "sounds/frost_nova.wav",
+  "suggestedKey": "N", "suggestedPad": {"button": "rightshoulder"},
   "params": {
     "radius": 110,
     "freeze": 1.5,

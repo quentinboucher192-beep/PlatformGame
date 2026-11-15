@@ -1,0 +1,37 @@
+{
+  "level": "sylvanox_01",
+  "powerKeys": {
+    "dash": {
+      "key": "K",
+      "pad": {
+        "button": "b"
+      }
+    },
+    "impulse": {
+      "key": "I",
+      "pad": {
+        "button": "rightshoulder"
+      }
+    },
+    "shield": {
+      "key": "O",
+      "pad": {
+        "button": "leftshoulder"
+      }
+    },
+    "teleport": {
+      "key": "U",
+      "pad": {
+        "axis": "lefttrigger",
+        "dir": 1
+      }
+    },
+    "wave": {
+      "key": "L",
+      "pad": {
+        "axis": "righttrigger",
+        "dir": 1
+      }
+    }
+  }
+}

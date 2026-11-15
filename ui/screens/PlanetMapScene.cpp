@@ -6,6 +6,7 @@
 #include "game/levels/LevelTimer.h"
 #include "ui/online/RatingWidgets.h"
 #include "ui/screens/MenuBackground.h"
+#include "ui/screens/LevelPowerKeysScene.h"
 #include "ui/screens/Navigation.h"
 #include "ui/widgets/Glyphs.h"
 
@@ -321,6 +322,7 @@ public:
         if (cachedId_ != l.id) {
             cachedId_ = l.id;
             cached_ = g_.content.loadLevel(l.id);
+            cachedKeyPowers_ = cached_ ? !levelKeyPowers(*cached_, g_.content).empty() : false;
         }
         float x = panel.x + ui.s(36), y = panel.y + ui.s(30);
         float colW = (panel.w - ui.s(108)) * 0.5f;
@@ -437,6 +439,16 @@ public:
         gs.enabled = unlocked;
         Rect gbtn{btn.x - ui.s(16) - ui.s(250), btn.y, ui.s(250), btn.h};
         if (ui.button("ghosts_level", gbtn, "Fantômes…", gs) && unlocked) g_.app.pushScene(makeGhostSetup(g_, l.id));
+        // The keys of its powers (2.31), for this player, before playing (also in the pause menu).
+        if (cachedKeyPowers_ && cached_) {
+            Rect kbtn{gbtn.x - ui.s(16) - ui.s(250), btn.y, ui.s(250), btn.h};
+            UIContext::ButtonStyle ks;
+            const std::string label = "Touches…";
+            ks.fontSize = ui.fitFont(label, FontFace::Bold, 26, kbtn.w - ui.s(24), 0.6f);
+            bool openKeys = ui.button("keys_level", kbtn, label, ks);
+            ui.newBadge("keys_level", kbtn, "pause.level_keys");  // « NOUVEAU » (2.31)
+            if (openKeys) g_.app.pushScene(makeLevelPowerKeys(g_, *cached_));
+        }
     }
 
     void play() {
@@ -461,6 +473,7 @@ private:
     MenuBackground bg_;
     std::string cachedId_;
     std::optional<LevelData> cached_;
+    bool cachedKeyPowers_ = false;  // its powers include some used with a key of their own
 };
 
 }  // namespace

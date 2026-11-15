@@ -36,6 +36,7 @@ void EnemyEditorScene::onEnter() {
 void EnemyEditorScene::onExit() {
     discardAnimationEdits();
     g_.app.input().stopTextInput(g_.app.window());
+    g_.app.input().clearPowerSlotKeys();
 }
 
 bool EnemyEditorScene::editingNative() const { return g_.content.isNativeEnemy(selectedId_); }
@@ -222,10 +223,10 @@ void EnemyEditorScene::resetArena() {
     arena_ = std::make_unique<GameWorld>(ws, WorldMode::Arena);
     arena_->setKeysPerSlot(true);
     arena_->load(l);
-    // Every power. The slots with a key by default first (Pouvoir 1 to 6: the dash, wave,
-    // shield, impulse, teleport and time slow of the arena before 2.24, on the same keys),
-    // then the other powers that use the key of their slot (7, 8: keys to choose; beyond:
-    // none), then the powers used with a move or passive, which need no slot key.
+    // Every power. The first six on the keys they had here before 2.24 (dash, wave, shield,
+    // impulse, teleport, time slow: their suggested keys), then the other powers used with a key
+    // of their own (slots 7 and 8 have a key; beyond: none), then the powers used with a move
+    // or passive. Each power on its suggested key (2.31), set while the arena is played.
     std::vector<const PowerDefinition*> order;
     for (const char* id : {"dash", "wave", "shield", "impulse", "teleport", "time_slow"})
         if (const PowerDefinition* d = g_.content.power(id)) order.push_back(d);
@@ -234,6 +235,11 @@ void EnemyEditorScene::resetArena() {
             if ((powerTriggerInfo(*p).kind == PowerTrigger::SlotKey) == slotKey && std::find(order.begin(), order.end(), p) == order.end())
                 order.push_back(p);
     for (const auto* p : order) arena_->player().grantPower(*p);
+    {
+        std::vector<std::string> ids;
+        for (const auto* p : order) ids.push_back(p->id);
+        arenaKeys_ = resolvePowerKeys(ids, g_.content, Json::object(), nullptr, g_.settings.input);
+    }
     float y = work_.flying ? 250.0f : 320.0f;
     arena_->spawnEnemy(work_, {640, y}, true, "test", 120);
     arenaRenderer_.build(g_.app.renderer(), g_.app.resources(), *arena_);
@@ -243,6 +249,7 @@ void EnemyEditorScene::resetArena() {
 
 void EnemyEditorScene::fixedUpdate(float dt) {
     if (!arena_) return;
+    applyPowerSlotKeys(g_.app.input(), arena_->player(), arenaKeys_);
     PlayerInput in = g_.app.input().consumePlayerInput();
     if (!controlPlayer_) in = PlayerInput{};
     if (godMode_) {

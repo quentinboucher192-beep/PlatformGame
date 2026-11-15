@@ -139,8 +139,9 @@ void LevelEditorScene::onEnter() {
     if (o == "events") modal_ = Modal::Events;
     if (o == "cinematics") modal_ = Modal::Cinematics;
     if (o == "open") modal_ = Modal::Open;
+    if (o == "powerkeys") modal_ = Modal::PowerKeys;
     if (o == "check" || o == "history" || o == "objects" || o == "duplicate" || o == "settings" || o == "events" ||
-        o == "cinematics" || o == "open")
+        o == "cinematics" || o == "open" || o == "powerkeys")
         g_.onlineOpen.clear();
     if (openHelpOnEnter) modal_ = Modal::Help;
 }

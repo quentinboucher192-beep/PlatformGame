@@ -163,6 +163,13 @@ struct LevelData {
         return std::max(maxPowers, static_cast<int>(startPowers.size()));
     }
     float cameraZoom = 1.0f;
+    /// 2.31: the key of each power of the level used with a key of its own (start powers,
+    /// tablets and stations): power id → {"key": <keyboard / mouse binding as the settings
+    /// write it>, "pad": <gamepad binding as the settings write it>}, either may be missing.
+    /// Chosen in the editor (« Touches des pouvoirs »); a power without one uses its suggested
+    /// key, and each player may change it for themselves (game/powers/PowerKeys.h). Not part of
+    /// the gameplay: the fingerprints leave it out, so records, replays and ghosts stay valid.
+    Json powerKeys = Json::object();
 
     std::vector<LevelLayer> layers;
     std::vector<LevelObject> objects;
@@ -186,5 +193,10 @@ struct LevelData {
     static std::optional<LevelData> fromJson(const Json& j, std::string* error = nullptr);
     static LevelData makeEmpty(const std::string& id, const std::string& name, const std::string& planet);
 };
+
+/// Keys of powers as a level (`powerKeys`) or a player's file holds them, kept to what they
+/// can be: an object of at most 64 powers, each {"key": short string, "pad": {"button": …} or
+/// {"axis": …, "dir": ±1}}; anything else is dropped (a damaged or hostile file).
+Json sanitizePowerKeys(const Json& j);
 
 }  // namespace cosmic

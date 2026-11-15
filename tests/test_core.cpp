@@ -113,8 +113,8 @@ TEST_CASE("input: bindings serialization") {
     b.gamepad.invertY = true;
     InputBindings c = InputBindings::fromJson(b.toJson());
     CHECK(c.keys[static_cast<int>(Action::Jump)][0] == SDL_SCANCODE_W);
-    CHECK(c.pad[static_cast<int>(Action::PowerSlot2)][0] == b.pad[static_cast<int>(Action::PowerSlot2)][0]);
-    CHECK(c.pad[static_cast<int>(Action::PowerSlot2)][0].kind != PadBinding::Kind::None);
+    CHECK(c.pad[static_cast<int>(Action::Attack)][0] == b.pad[static_cast<int>(Action::Attack)][0]);
+    CHECK(c.pad[static_cast<int>(Action::Attack)][0].kind != PadBinding::Kind::None);
     CHECK(c.gamepad.invertY);
 }
 
@@ -217,11 +217,11 @@ TEST_CASE("input: mouse buttons and the wheel can be bound to commands (any butt
     CHECK(mouseBindingDetail(SDL_SCANCODE_K).empty());
     b.keys[static_cast<int>(Action::Attack)] = {mouseButtonBinding(1), SDL_SCANCODE_UNKNOWN};
     b.keys[static_cast<int>(Action::Jump)] = {mouseButtonBinding(9), SDL_SCANCODE_UNKNOWN};
-    b.keys[static_cast<int>(Action::PowerSlot1)] = {static_cast<SDL_Scancode>(kWheelUpBinding), SDL_SCANCODE_UNKNOWN};
+    b.keys[static_cast<int>(Action::Interact)] = {static_cast<SDL_Scancode>(kWheelUpBinding), SDL_SCANCODE_UNKNOWN};
     InputBindings back = InputBindings::fromJson(b.toJson());
     CHECK(back.keys[static_cast<int>(Action::Attack)][0] == mouseButtonBinding(1));
     CHECK(back.keys[static_cast<int>(Action::Jump)][0] == mouseButtonBinding(9));
-    CHECK(static_cast<int>(back.keys[static_cast<int>(Action::PowerSlot1)][0]) == kWheelUpBinding);
+    CHECK(static_cast<int>(back.keys[static_cast<int>(Action::Interact)][0]) == kWheelUpBinding);
 
     // Playing: the bound button is a held command while down, the wheel a one-frame press.
     in.setBindings(back);
@@ -242,10 +242,20 @@ TEST_CASE("input: mouse buttons and the wheel can be bound to commands (any butt
     w.wheel.y = 1.0f;
     in.handleEvent(w);
     in.update(0.016f);
-    CHECK(in.consumePlayerInput().isPressed(Action::PowerSlot1));
+    CHECK(in.consumePlayerInput().isPressed(Action::Interact));
     in.beginFrame();
     in.update(0.016f);
-    CHECK(!in.held(Action::PowerSlot1));
+    CHECK(!in.held(Action::Interact));
+    // The key of a power slot (2.31: the key of the power carried there) can be a notch too.
+    in.setPowerSlotKey(0, static_cast<SDL_Scancode>(kWheelDownBinding), PadBinding{});
+    in.beginFrame();
+    in.update(0.016f);
+    (void)in.consumePlayerInput();
+    w.wheel.y = -1.0f;
+    in.beginFrame();
+    in.handleEvent(w);
+    in.update(0.016f);
+    CHECK(in.consumePlayerInput().isPressed(Action::PowerSlot1));
 }
 
 #include "game/progression/Progression.h"

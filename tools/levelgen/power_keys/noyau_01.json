@@ -1,0 +1,43 @@
+{
+  "level": "noyau_01",
+  "powerKeys": {
+    "dash": {
+      "key": "K",
+      "pad": {
+        "button": "b"
+      }
+    },
+    "impulse": {
+      "key": "I",
+      "pad": {
+        "button": "rightshoulder"
+      }
+    },
+    "plasma_bomb": {
+      "key": "H",
+      "pad": {
+        "axis": "righty",
+        "dir": 1
+      }
+    },
+    "shield": {
+      "key": "O",
+      "pad": {
+        "button": "leftshoulder"
+      }
+    },
+    "time_slow": {
+      "key": "F",
+      "pad": {
+        "button": "rightstick"
+      }
+    },
+    "wave": {
+      "key": "L",
+      "pad": {
+        "axis": "righttrigger",
+        "dir": 1
+      }
+    }
+  }
+}

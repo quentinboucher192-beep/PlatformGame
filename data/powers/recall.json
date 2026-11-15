@@ -11,6 +11,7 @@
   "duration": 0,
   "color": "#b48cff",
   "sound": "",
+  "suggestedKey": "Y", "suggestedPad": {"button": "rightstick"},
   "params": {
     "placeCost": 0,
     "window": 5,

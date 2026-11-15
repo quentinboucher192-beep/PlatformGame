@@ -269,7 +269,7 @@ bool PackageImporter::install(PackageInspection& insp, ConflictPolicy policy, st
     for (auto d : insp.powers) {
         if (powerRename.count(d.id)) d.id = powerRename[d.id];
         else if (content_.isNativePower(d.id)) continue;
-        ok = ok && writeJson("powers/" + FileUtil::slugify(d.id) + ".json", d.toJson());
+        ok = ok && writeJson("powers/" + FileUtil::slugify(d.id) + ".json", d.toFileJson());
     }
     Json manifest = insp.manifest;
     manifest["packageId"] = pkgId;

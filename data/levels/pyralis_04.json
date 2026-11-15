@@ -3250,5 +3250,13 @@
   ]
  },
  "killY": 880,
- "maxPowers": 4
+ "maxPowers": 4,
+ "powerKeys": {
+  "dash": {
+   "key": "K",
+   "pad": {
+    "button": "b"
+   }
+  }
+ }
 }

@@ -18,6 +18,7 @@
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/Hud.h"
 #include "game/gameplay/LevelProgress.h"
+#include "game/powers/PowerKeys.h"
 #include "ui/screens/GhostRun.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
@@ -82,8 +83,12 @@ public:
             world_->update(dt);
             world_->messages().clear();  // no boss titles over the preview
             hud_.update(*world_, dt);
+            // The preview's powers on their suggested keys (2.31), as a level without its own.
+            applyPowerSlotKeys(g_.app.input(), world_->player(), previewKeys_);
         }
     }
+
+    void onExit() override { g_.app.input().clearPowerSlotKeys(); }
 
     void render(float alpha) override {
         UIContext& ui = g_.ui;
@@ -179,6 +184,7 @@ private:
         // frame says that the key of its slot does nothing), and a boss fight (fixedUpdate).
         for (const char* id : {"dash", "wave", "glide", "time_slow"})
             if (const PowerDefinition* d = g_.content.power(id)) world_->player().grantPower(*d);
+        previewKeys_ = resolvePowerKeys({"dash", "wave", "time_slow"}, g_.content, Json::object(), nullptr, g_.settings.input);
         renderer_.build(g_.app.renderer(), g_.app.resources(), *world_);
         track_ = std::async(std::launch::async, [l = *level, &content = g_.content] { return buildProgressTrack(l, content); });
     }
@@ -502,6 +508,7 @@ private:
     GameplaySettings work_;
     MenuBackground bg_;
     std::unique_ptr<GameWorld> world_;
+    PowerKeyMap previewKeys_;
     GameRenderer renderer_;
     Hud hud_;
     std::future<LevelProgressTrack> track_;

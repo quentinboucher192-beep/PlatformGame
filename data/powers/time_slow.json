@@ -11,6 +11,7 @@
   "duration": 3.5,
   "color": "#b07aff",
   "sound": "sounds/teleport_in.wav",
+  "suggestedKey": "F", "suggestedPad": {"button": "rightstick"},
   "params": {
     "duration": 3.5,
     "factor": 0.35

@@ -95,7 +95,11 @@ void InputManager::handleEvent(const SDL_Event& e) {
                 for (int i = 0; i < kActionCount; ++i) {
                     if (textActive_ && i < kFirstMenuAction) continue;
                     for (auto sc : bindings_.keys[i])
-                        if (sc == e.key.scancode && sc != SDL_SCANCODE_UNKNOWN) gamePressed_[i] = framePressed_[i] = true;
+                        if (sc == e.key.scancode && sc != SDL_SCANCODE_UNKNOWN) {
+                            gamePressed_[i] = framePressed_[i] = true;
+                            // A new press: the key was released since its slot changed.
+                            if (int s = powerSlotOf(static_cast<Action>(i)); s >= 0) slotWaitRelease_[static_cast<size_t>(s)] = false;
+                        }
                 }
             }
             break;
@@ -189,8 +193,10 @@ void InputManager::handleEvent(const SDL_Event& e) {
             if (swallowingPad_ && swallowPad_ == PadBinding::button(static_cast<SDL_GamepadButton>(e.gbutton.button))) break;
             for (int i = 0; i < kActionCount; ++i)
                 for (const auto& pb : bindings_.pad[i])
-                    if (pb.kind == PadBinding::Kind::Button && pb.code == e.gbutton.button)
+                    if (pb.kind == PadBinding::Kind::Button && pb.code == e.gbutton.button) {
                         gamePressed_[i] = framePressed_[i] = true;
+                        if (int s = powerSlotOf(static_cast<Action>(i)); s >= 0) slotWaitRelease_[static_cast<size_t>(s)] = false;
+                    }
             if (gamepad_ == nullptr || e.gbutton.which != gamepadId_) {
                 // A second pad pressed a button: switch to it (live device switching).
                 if (SDL_Gamepad* p = SDL_GetGamepadFromID(e.gbutton.which)) setGamepad(p);
@@ -292,6 +298,11 @@ void InputManager::update(float dt) {
             if (v >= threshold) h = true;
         }
         if (blockKeys && i < kFirstMenuAction) h = h && lastDevice_ == InputDevice::Gamepad;
+        // A power slot whose key changed while held: not held until released.
+        if (int s = powerSlotOf(static_cast<Action>(i)); s >= 0 && slotWaitRelease_[static_cast<size_t>(s)]) {
+            if (h) h = false;
+            else slotWaitRelease_[static_cast<size_t>(s)] = false;
+        }
         held_[i] = h;
         if (h && !prevHeld_[i]) {
             gamePressed_[i] = true;
@@ -374,8 +385,42 @@ void InputManager::pressBound(SDL_Scancode code) {
     for (int i = 0; i < kActionCount; ++i) {
         if (textActive_ && i < kFirstMenuAction) continue;
         for (auto sc : bindings_.keys[i])
-            if (sc == code) gamePressed_[i] = framePressed_[i] = true;
+            if (sc == code) {
+                gamePressed_[i] = framePressed_[i] = true;
+                if (int s = powerSlotOf(static_cast<Action>(i)); s >= 0) slotWaitRelease_[static_cast<size_t>(s)] = false;
+            }
     }
+}
+
+void InputManager::setBindings(const InputBindings& b) {
+    // The settings never hold the keys of the power slots: those of the level stay.
+    InputBindings next = b;
+    for (int s = 0; s < kPowerSlotKeys; ++s) {
+        const int i = idx(powerSlotAction(s));
+        next.keys[i] = bindings_.keys[i];
+        next.pad[i] = bindings_.pad[i];
+    }
+    bindings_ = next;
+}
+
+void InputManager::setPowerSlotKey(int slot, SDL_Scancode key, const PadBinding& pad) {
+    const Action a = powerSlotAction(slot);
+    if (a == Action::Count) return;
+    const int i = idx(a);
+    const std::array<SDL_Scancode, 2> keys{key, SDL_SCANCODE_UNKNOWN};
+    const std::array<PadBinding, 2> pads{pad, PadBinding{}};
+    if (bindings_.keys[i] == keys && bindings_.pad[i] == pads) return;
+    bindings_.keys[i] = keys;
+    bindings_.pad[i] = pads;
+    // Another power (or none) on this slot: what was pressed or held for the one before does
+    // not count for it. Its key, if already held, counts once released and pressed again.
+    gamePressed_[i] = gameReleased_[i] = framePressed_[i] = false;
+    held_[i] = prevHeld_[i] = false;
+    slotWaitRelease_[static_cast<size_t>(slot)] = true;
+}
+
+void InputManager::clearPowerSlotKeys() {
+    for (int s = 0; s < kPowerSlotKeys; ++s) setPowerSlotKey(s, SDL_SCANCODE_UNKNOWN, PadBinding{});
 }
 
 void InputManager::beginCapture(InputDevice device) {

@@ -1,0 +1,17 @@
+{
+  "level": "aethra_02",
+  "powerKeys": {
+    "dash": {
+      "key": "K",
+      "pad": {
+        "button": "b"
+      }
+    },
+    "frost_nova": {
+      "key": "N",
+      "pad": {
+        "button": "rightshoulder"
+      }
+    }
+  }
+}

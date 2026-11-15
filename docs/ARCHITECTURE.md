@@ -28,7 +28,7 @@ server/                     Cosmic Online : API Cloudflare Workers + D1 + R2 (Ty
 | `animation/` | Feuilles de sprites JSON : clips, durées par image, boucles, enchaînements, **événements** (pas, impacts, sons, VFX). |
 | `physics/` | `PhysicsWorld` : AABB, grille spatiale uniforme, résolution par axes séparés, plateformes traversables, étiquettes (phase, friable, mobile, porte, rebond, ennemi seul, passage bouclier), SAT pour les boîtes orientées. |
 | `camera/` | Suivi avec anticipation, zones de caméra (verrouillage, bornes, zoom), scripts (déplacement, zoom), tremblement par traumatisme. |
-| `input/` | Actions abstraites, profils clavier et manette indépendants, zones mortes, sensibilité, inversion, vibrations, réaffectation, glyphes dynamiques, bascule automatique clavier ↔ manette, scripts d'entrée pour les tests. Depuis la 2.24, les pouvoirs n'ont plus de touche chacun : le joueur règle une touche par **emplacement** (`Action::PowerSlot1` à `PowerSlot8`, « Pouvoir 1 » à « Pouvoir 8 ») ; les anciennes actions Dash, Onde, Bouclier, Impulsion, Téléportation et Spécial ne sont plus liées à aucune touche et ne servent qu'aux replays d'avant (voir [REPLAY_FORMAT.md](online/REPLAY_FORMAT.md)). |
+| `input/` | Actions abstraites, profils clavier et manette indépendants, zones mortes, sensibilité, inversion, vibrations, réaffectation, glyphes dynamiques, bascule automatique clavier ↔ manette, scripts d'entrée pour les tests. Depuis la 2.24, chaque **emplacement** de pouvoir a son action (`Action::PowerSlot1` à `PowerSlot8`, bits des entrées et des replays) ; depuis la 2.31 les paramètres ne lui donnent plus de touche : la scène qui joue relie chaque emplacement à la touche du pouvoir qu'il porte, choisie par niveau (`game/powers/PowerKeys.h`, `InputManager::setPowerSlotKey`) ; les anciennes actions Dash, Onde, Bouclier, Impulsion, Téléportation et Spécial ne sont plus liées à aucune touche et ne servent qu'aux replays d'avant (voir [REPLAY_FORMAT.md](online/REPLAY_FORMAT.md)). |
 | `audio/` | Mixeur : 32 pistes d'effets, musique en fondu enchaîné sur 2 pistes, ambiance, volumes indépendants (général, musique, effets, ambiance), atténuation (« ducking »). |
 | `resources/` | Cache de textures / animations / JSON / sons avec **pile de points de montage** : assets de base, assets utilisateur, assets d'un package importé. |
 
@@ -59,7 +59,12 @@ server/                     Cosmic Online : API Cloudflare Workers + D1 + R2 (Ty
   chargé — Attaque, Grappin — Interagir) ; `Passive` (Aimant, Ruée aérienne). Le joueur
   (`Player::assignPowerKeys`) donne à chaque pouvoir `SlotKey` la touche de son emplacement
   (`Power::key()`) quand la partie a des touches par emplacement
-  (`GameWorld::setKeysPerSlot(true)` : toute partie jouée depuis la 2.24) ; sinon (replays
+  (`GameWorld::setKeysPerSlot(true)` : toute partie jouée depuis la 2.24). **Touches par
+  pouvoir (2.31)** : la touche réelle de chaque emplacement est celle du pouvoir qu'il porte
+  dans ce niveau — le choix du joueur (`saves/power_keys.json`), sinon celui du niveau
+  (`powerKeys`), sinon la suggestion du pouvoir (`suggestedKey`, `suggestedPad`) ; la scène de
+  jeu la pose sur l'action de l'emplacement (`applyPowerSlotKeys`), hors de la simulation : les
+  replays restent exacts et aucune empreinte ne change. Sinon (replays
   d'avant) chaque pouvoir garde son bouton `input` et l'ancienne règle « deux pouvoirs sur le
   même bouton ne se portent pas ensemble » s'applique. Les pouvoirs `StandardKeys` et
   `Passive` portent un cadre pointillé doré (`Glyphs::drawFreePowerFrame`) dans le HUD, le

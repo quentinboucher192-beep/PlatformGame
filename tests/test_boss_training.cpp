@@ -166,11 +166,11 @@ TEST_CASE("boss training: one phase alone starts at its threshold and ends when 
     t.run(240, tracker, stats);
     CHECK(t.boss() && t.boss()->phaseIndex() == 2);
     CHECK(bossTrainingWon(*t.w, t.setup));
-    // The powers really carried: a power on the same input as an earlier one replaces it,
-    // never more than the slots.
+    // The powers really carried: as in a level since 2.24, each power on a key of its own (two
+    // powers of the old special button go together), never more than the slots.
     auto fitted = fitTrainingPowers(t.content, {"boomerang", "decoy", "dash", "shield"}, 2);
-    CHECK(fitted.size() <= 2);
-    CHECK(std::find(fitted.begin(), fitted.end(), "boomerang") == fitted.end());  // replaced by the decoy (same input)
+    CHECK(fitted == std::vector<std::string>({"boomerang", "decoy"}));
+    CHECK(fitTrainingPowers(t.content, {"dash", "dash", "wave"}, 4) == std::vector<std::string>({"dash", "wave"}));
 }
 
 TEST_CASE("boss training: a boss beaten in training changes no save (achievements, boss stats, records, progression)") {

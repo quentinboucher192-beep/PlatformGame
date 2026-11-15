@@ -13,6 +13,7 @@
 #include "game/gameplay/Hud.h"
 #include "game/online/LevelFingerprint.h"
 #include "game/online/Replay.h"
+#include "game/powers/PowerKeys.h"
 #include "game/race/Race.h"
 #include "game/records/BossStats.h"
 #include "game/records/Records.h"
@@ -52,6 +53,14 @@ public:
     /// Answer of the power choice window (InputFrame::choice), used by the next step.
     void answerPowerOffer(uint8_t choice) { pendingChoice_ = choice; }
     const std::string& levelId() const { return levelId_; }
+    // Keys of the powers (2.31): each power keeps its own key in the level (the level's, the
+    // player's, the suggestion); the slot keys of the input follow the powers carried.
+    const LevelData& level() const { return level_; }
+    const PowerKeyMap& powerKeys() const { return powerKeys_; }
+    /// Powers given besides the level's own (boss training): « Touches de ce niveau » lists them too.
+    const std::vector<std::string>& powerKeyExtra() const { return powerKeyExtra_; }
+    /// Resolves the keys again (the player changed theirs, or the settings) and binds them.
+    void refreshPowerKeys();
     // Ghost Racing (pause menu → Fantômes).
     bool hasGhosts() const { return ghostRun_.active(); }
     bool ghostsVisible() const { return ghostRun_.visible(); }
@@ -151,6 +160,10 @@ private:
     std::map<std::string, int64_t> runPowers_;
     std::vector<std::string> runCheckpoints_;  // checkpoint ids, in the order reached
     std::string raceKind_, raceLevelId_, raceHash_, raceTitle_;
+    // Keys of the powers (2.31): see refreshPowerKeys.
+    void syncPowerKeys();
+    PowerKeyMap powerKeys_;
+    std::vector<std::string> powerKeyExtra_;
     int raceVersion_ = 0;
 };
 
