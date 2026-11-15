@@ -5,6 +5,16 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.29.0** :
+* **72 nouveaux succès** (218 en tout, **597 étoiles**, 13 catégories dont « Collection ») :
+  médailles par planète, chaque phase d'un boss sans être touché, ennemis par famille,
+  comparaisons de replays, musiques et créatures, tenues équipées, notes et commentaires.
+* **22 nouvelles récompenses** dans la Collection (53 en tout) : 4 combinaisons, 3 traînées,
+  4 cadres, 8 titres, 3 effets de victoire ; Route des étoiles à 28 paliers, toutes les
+  récompenses par étoiles accessibles sans compte.
+* Corrigé : « Inventaire complet » et « Cartographe des ombres » étaient impossibles (18 niveaux
+  demandés, 13 en ont).
+
 **Nouveau dans la version 2.28.0** :
 * **Entraînement contre les boss** (*Statistiques › un boss › Entraînement*) : cœurs, nombre
   d'emplacements et pouvoirs au choix, toutes les phases ou une seule, dans le vrai niveau du

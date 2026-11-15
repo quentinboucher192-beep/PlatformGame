@@ -1,4 +1,10 @@
 {
+  "2.29.0": [
+    "72 nouveaux succès (218 en tout, 597 étoiles) et une nouvelle catégorie « Collection » : médailles par planète, chaque phase d'un boss sans être touché, ennemis vaincus par famille, comparaisons de replays, musiques entendues, créatures rencontrées, tenues équipées, notes et commentaires… Du plus simple au plus difficile.",
+    "22 nouvelles récompenses dans la Collection (53 en tout) : combinaisons Nébuleuse, Abysse, Éruption et Sanctuaire ; traînées Flammèches, Prisme et Runes d'Aethra ; cadres Émeraude, Orbite, Nébuleuse et Lauriers ; 8 nouveaux titres ; effets de victoire Vortex, Aurore boréale et Couronne solaire.",
+    "Route des étoiles : 28 paliers ; toutes les récompenses par étoiles restent accessibles sans compte. La toile des succès s'élargit sans chevauchement ; les vignettes des traînées et des cadres montrent le vrai rendu.",
+    "Corrigé : « Inventaire complet » et « Cartographe des ombres » demandaient 18 niveaux alors que seuls 13 ont des éclats, reliques ou secrets ; ils peuvent maintenant être obtenus."
+  ],
   "2.28.0": [
     "Entraînement contre les boss (Statistiques › un boss › « Entraînement ») : choisissez vos cœurs, votre nombre d'emplacements de pouvoirs et les pouvoirs équipés, puis toutes les phases ou une seule ; le combat a lieu dans le vrai niveau du boss, juste avant son arène.",
     "Une phase seule : le boss commence à cette phase et l'entraînement s'arrête quand elle est battue. Fin d'entraînement : temps, dégâts reçus, phase atteinte ; Recommencer, Changer les réglages, Retour. Les derniers réglages sont gardés pour chaque boss.",

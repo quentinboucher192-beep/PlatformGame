@@ -59,6 +59,16 @@
       "parents": [
         "menu.stats"
       ]
+    },
+    {
+      "id": "menu.achievements",
+      "version": "2.29.0",
+      "parents": []
+    },
+    {
+      "id": "menu.collection",
+      "version": "2.29.0",
+      "parents": []
     }
   ]
 }
