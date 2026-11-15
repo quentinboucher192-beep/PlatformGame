@@ -8,6 +8,7 @@
 #include "engine/core/FileUtil.h"
 #include "game/GameServices.h"
 #include "game/online/OnlineSession.h"
+#include "ui/screens/Navigation.h"
 #include "ui/screens/Thumbnail.h"
 #include "ui/widgets/UIContext.h"
 
@@ -41,6 +42,17 @@ std::string OnlineUi::avatarName(int i) const {
 }
 
 void OnlineUi::drawAvatar(const std::string& avatar, const std::string& playerId, const Rect& dst) {
+    drawAvatarImage(avatar, playerId, dst);
+    if (!avatarsOpenProfile || playerId.empty()) return;
+    UIContext& ui = g_.ui;
+    bool hovered = false;
+    char key[96];
+    std::snprintf(key, sizeof key, "avatar/%s/%d/%d", playerId.c_str(), static_cast<int>(dst.x), static_cast<int>(dst.y));
+    if (ui.mouseClick(key, dst, &hovered)) g_.app.pushScene(makePlayerProfile(g_, playerId));
+    if (hovered) ui.r().drawRoundedRect(dst.expanded(ui.s(2)), dst.w * 0.5f, ui.theme().accent, std::max(1.0f, ui.s(2)));
+}
+
+void OnlineUi::drawAvatarImage(const std::string& avatar, const std::string& playerId, const Rect& dst) {
     if (avatar == "custom" && !playerId.empty() && g_.settings.online.bandwidth > 0) {
         auto it = customAvatars_.find(playerId);
         if (it != customAvatars_.end() && it->second) {

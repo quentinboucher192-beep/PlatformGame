@@ -521,7 +521,6 @@ private:
             st.align = Align::Left;
             if (ui.button("c" + id, row, "", st)) openConversation(id);
             drawConversationAvatar(c, {row.x + ui.s(8), row.y + ui.s(9), ui.s(48), ui.s(48)});
-            avatarToProfile("cav" + id, otherMember(c), {row.x + ui.s(8), row.y + ui.s(9), ui.s(48), ui.s(48)});
             float tx = row.x + ui.s(66);
             int unread = sel ? 0 : jget<int>(c, "unread", 0);
             // Unread: an accent bar at the left of the row and the counter at its right edge,
@@ -566,22 +565,6 @@ private:
             y += rowH + ui.s(6);
         }
         ui.endScroll();
-    }
-
-    /// The other player of a private conversation ("" for a group).
-    std::string otherMember(const Json& c) const {
-        if (jstr(c, "kind") != "direct") return {};
-        for (const auto& m : c.value("members", Json::array()))
-            if (jstr(m, "id") != g_.online.playerId()) return jstr(m, "id");
-        return {};
-    }
-    /// A click on a player's avatar (or its presence pill) opens their profile (2.32.3).
-    void avatarToProfile(const std::string& name, const std::string& playerId, const Rect& r) {
-        if (playerId.empty()) return;
-        UIContext& ui = g_.ui;
-        bool hovered = false;
-        if (ui.hotspot(name, r, &hovered)) g_.app.pushScene(makePlayerProfile(g_, playerId));
-        if (hovered) ui.r().drawRoundedRect(r.expanded(ui.s(2)), r.w * 0.5f, ui.theme().accent, std::max(1.0f, ui.s(2)));
     }
 
     void drawConversationAvatar(const Json& c, const Rect& r) {
@@ -677,7 +660,6 @@ private:
                 Rect row{view.x, y, view.w - ui.s(12), rowH - ui.s(6) + (open ? extra : 0.0f)};
                 ui.r().fillRoundedRect(row, ui.s(6), Color{16, 24, 46, 200});
                 ui_.drawAvatar(jstr(pl, "avatar", "avatar_01"), pid, {row.x + ui.s(5), row.y + ui.s(4), ui.s(38), ui.s(38)});
-                avatarToProfile("fav" + pid, pid, {row.x + ui.s(2), row.y + ui.s(2), ui.s(46), ui.s(44)});
                 // Presence (2.32.3): a pill on the avatar's corner, its word after the name.
                 std::string presence = s.kind == std::string("friend") ? jstr(f, "presence") : std::string();
                 if (!presence.empty()) {
@@ -809,7 +791,6 @@ private:
         Rect bar{zoneC_.x, zoneC_.y, zoneC_.w, ui.s(70)};
         bool group = jstr(current_, "kind") == "group";
         drawConversationAvatar(current_, {bar.x + ui.s(14), bar.y + ui.s(11), ui.s(48), ui.s(48)});
-        avatarToProfile("hav", otherMember(current_), {bar.x + ui.s(14), bar.y + ui.s(11), ui.s(48), ui.s(48)});
         std::string title = jstr(current_, "name");
         {
             i18n::Verbatim playerWords;  // the group's name as its players wrote it

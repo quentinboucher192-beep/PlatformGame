@@ -26,8 +26,10 @@ public:
     std::string countryName(const std::string& code) const;
 
     void drawFlag(const std::string& code, const Rect& dst, float alpha = 1.0f) const;
-    /// `avatar` = "avatar_01".."avatar_16" or "custom" (downloaded once per player).
+    /// `avatar` = "avatar_01".."avatar_16" or "custom" (downloaded once per player). A click on
+    /// it opens the player's profile (2.33: everywhere), unless avatarsOpenProfile is off.
     void drawAvatar(const std::string& avatar, const std::string& playerId, const Rect& dst);
+    bool avatarsOpenProfile = true;
     int avatarCount() const { return 16; }
     std::string avatarName(int i) const;
     void drawStatusChip(RecordStatus s, Vec2 pos, float height) const;
@@ -53,6 +55,7 @@ public:
     static Color statusColor(RecordStatus s);
 
 private:
+    void drawAvatarImage(const std::string& avatar, const std::string& playerId, const Rect& dst);
     GameServices& g_;
     CountryTable countries_;
     CountryIndexMap countryMap_;

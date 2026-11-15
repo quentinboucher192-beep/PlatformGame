@@ -343,6 +343,16 @@ bool UIContext::hotspot(const std::string& name, const Rect& rc, bool* hovered) 
     return interact(wid, rc, hovered);
 }
 
+bool UIContext::mouseClick(const std::string& name, const Rect& rc, bool* hovered) {
+    WidgetId wid = id(name);
+    bool h = acceptsInput() && editing_ == 0 && mouseOver(rc);
+    if (hovered) *hovered = h;
+    if (!h) return false;
+    InputManager& in = app_->input();
+    if (in.mousePressed(SDL_BUTTON_LEFT)) active_ = wid;
+    return active_ == wid && in.mouseReleased(SDL_BUTTON_LEFT);
+}
+
 bool UIContext::button(const std::string& name, const Rect& rc, const std::string& t, const ButtonStyle& st) {
     WidgetId wid = id(name);
     if (clippedOut(rc)) {

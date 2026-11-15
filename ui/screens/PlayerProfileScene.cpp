@@ -214,7 +214,9 @@ private:
         const Json& worn = data_.value("cosmetics", Json());
         const bool dressed = !hidden && worn.is_object();
         const float av = ui.s(112);
+        ui_.avatarsOpenProfile = false;  // this profile's own avatar: already open
         ui_.drawAvatar(jstr(p, "avatar", "avatar_01"), playerId_, {x, y, av, av});
+        ui_.avatarsOpenProfile = true;
         drawAvatarFrame(ui.r(), {x + av * 0.5f, y + av * 0.5f}, av * 0.5f, dressed ? g_.cosmetics.lookOr("frame", wornLook(worn, "frame")) : "simple",
                         ui.s(1.0f), ui.time());
         float nx = x + av + ui.s(kAvatarFrameMargin + 14);

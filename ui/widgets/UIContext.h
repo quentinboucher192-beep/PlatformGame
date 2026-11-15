@@ -103,6 +103,9 @@ public:
     /// A focusable, clickable area drawn by the caller (map nodes, web nodes...): takes part
     /// in keyboard / gamepad navigation like a button. Returns true when activated.
     bool hotspot(const std::string& name, const Rect& r, bool* hovered = nullptr);
+    /// A mouse-only click zone (no keyboard / gamepad stop): a player's avatar anywhere opens
+    /// their profile. Called after a larger button under it, it wins the click.
+    bool mouseClick(const std::string& name, const Rect& r, bool* hovered = nullptr);
     bool listItem(const std::string& name, const Rect& r, const std::string& text, bool selected,
                   const std::string& sub = "", Color accent = {});
     /// `badges` (optional, one per tab): a counter shown in a small pill at the tab's right,
