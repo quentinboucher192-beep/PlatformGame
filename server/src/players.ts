@@ -13,6 +13,7 @@ import { challengeReplayKeys } from "./challenges";
 import { communityKeys } from "./community";
 import { ownedProjectKeys } from "./projects";
 import { RULES, rateLimit } from "./ratelimit";
+import { clearSpectateRoom } from "./spectate";
 import {
     AVATAR_RE,
     CATEGORIES,
@@ -200,7 +201,7 @@ export async function patchMe(ctx: Ctx): Promise<Response> {
     const body = await readJsonObject(ctx);
     const v = new Validator(body, [
         "username", "avatar", "country_code", "region_code", "location_visibility", "profile_visibility", "allow_friend_requests", "follows_visibility",
-        "presence_visible",
+        "presence_visible", "spectate_allowed",
     ]);
     const username = v.str("username", { min: 3, max: 20, pattern: USERNAME_RE, trim: true, optional: true });
     const avatar = v.str("avatar", { max: 16, pattern: AVATAR_RE, optional: true });
@@ -214,6 +215,7 @@ export async function patchMe(ctx: Ctx): Promise<Response> {
     const allowFriends = v.bool("allow_friend_requests", { optional: true });
     const followsVis = v.oneOf("follows_visibility", ["public", "private"], { optional: true });
     const presenceVisible = v.bool("presence_visible", { optional: true });
+    const spectateAllowed = v.bool("spectate_allowed", { optional: true });
     if (username && isReservedUsername(username)) v.fail("username", "pseudonyme réservé");
     v.done();
     const p = auth.player;
@@ -245,13 +247,18 @@ export async function patchMe(ctx: Ctx): Promise<Response> {
     if (followsVis) await ctx.env.DB.prepare("UPDATE players SET follows_visibility = ?2 WHERE id = ?1").bind(p.id, followsVis).run();
     if (presenceVisible !== undefined)
         await ctx.env.DB.prepare("UPDATE players SET presence_visible = ?2 WHERE id = ?1").bind(p.id, presenceVisible ? 1 : 0).run();
+    if (spectateAllowed !== undefined)
+        await ctx.env.DB.prepare("UPDATE players SET spectate_allowed = ?2 WHERE id = ?1").bind(p.id, spectateAllowed ? 1 : 0).run();
+    // Nobody may watch any more (setting off, or the presence hidden): the run kept in the
+    // player's live room is forgotten at once.
+    if (spectateAllowed === false || presenceVisible === false) await clearSpectateRoom(ctx.env, p.id);
     if (avatar && p.avatar === "custom" && p.avatar_custom_key) {
         await ctx.env.STORAGE.delete(p.avatar_custom_key);
         await ctx.env.DB.prepare("UPDATE players SET avatar_custom_key = NULL WHERE id = ?1").bind(p.id).run();
     }
     const changed = Object.keys(body);
     if (username && username !== p.username) await audit(ctx, p.id, "username_changed", { from: p.username, to: username });
-    if (changed.some((k) => k.endsWith("visibility") || k.startsWith("country") || k.startsWith("region")))
+    if (changed.some((k) => k.endsWith("visibility") || k.endsWith("_visible") || k === "spectate_allowed" || k.startsWith("country") || k.startsWith("region")))
         await audit(ctx, p.id, "privacy_changed", { fields: changed });
     const fresh = await ctx.env.DB.prepare("SELECT * FROM players WHERE id = ?1").bind(p.id).first<PlayerRow>();
     return json(ctx, { player: privateProfile(fresh!) });
@@ -401,6 +408,7 @@ export async function deleteMe(ctx: Ctx): Promise<Response> {
         ),
         ctx.env.DB.prepare("DELETE FROM conversations WHERE NOT EXISTS (SELECT 1 FROM conversation_members m WHERE m.conversation_id = conversations.id)"),
     ]);
+    await clearSpectateRoom(ctx.env, id);  // a run being played live (memory only)
     // A trace without any personal identifier.
     await audit(ctx, null, "account_deleted");
     return json(ctx, { deleted: true });

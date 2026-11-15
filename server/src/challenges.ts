@@ -315,6 +315,20 @@ function rulesOf(c: ChallengeRow): ChallengeRules {
     return { hearts: c.hearts, slots: c.slots, powers: powersOf(c), stations: c.stations === 1, checkpoints: c.checkpoints === 1 };
 }
 
+/**
+ * A challenge already begun (never a future one), as a friend's live run of it is shown
+ * (2.35, spectate.ts): its level and the canonical form of its rules, from the server.
+ */
+export async function challengeForSpectate(ctx: Ctx, id: string) {
+    const c = await ctx.env.DB.prepare("SELECT * FROM challenges WHERE id = ?1 AND date <= ?2").bind(id, utcDate()).first<ChallengeRow>();
+    if (!c) return null;
+    return {
+        kind: c.kind,
+        level: { source: c.level_source, id: c.level_id, version: c.level_version, hash: c.level_hash, title: c.level_title },
+        rules: canonicalRules(c.id, rulesOf(c)),
+    };
+}
+
 /** The challenge as the game reads it (DAILY_CHALLENGES.md §1, CHALLENGES_PERIODS.md §1). */
 export function challengeJson(c: ChallengeRow) {
     return {
