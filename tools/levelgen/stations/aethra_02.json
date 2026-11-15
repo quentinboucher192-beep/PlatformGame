@@ -1,0 +1,65 @@
+{
+  "level": "aethra_02",
+  "sections": [
+    {
+      "label": "",
+      "movement": [],
+      "needs": [
+        [
+          "glide"
+        ]
+      ],
+      "pos": [
+        64.0,
+        608.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Rive",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        2464.0,
+        512.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Miroir",
+      "movement": [],
+      "needs": [
+        [
+          "glide"
+        ]
+      ],
+      "pos": [
+        4032.0,
+        512.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Vents",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        5248.0,
+        448.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Porte du lac",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        6464.0,
+        448.0
+      ],
+      "reachable": true
+    }
+  ],
+  "slots": 4,
+  "stations": []
+}

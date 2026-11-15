@@ -1,0 +1,107 @@
+{
+  "level": "aethra_03",
+  "sections": [
+    {
+      "label": "",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        64.0,
+        608.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Basalte",
+      "movement": [],
+      "needs": [
+        [
+          "glide"
+        ]
+      ],
+      "pos": [
+        1504.0,
+        608.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Cheminées",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        3136.0,
+        512.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Pistons",
+      "movement": [],
+      "needs": [
+        [
+          "wave",
+          "charge_shot"
+        ]
+      ],
+      "pos": [
+        4640.0,
+        448.0
+      ],
+      "reachable": true
+    },
+    {
+      "label": "Porte de la caldeira",
+      "movement": [],
+      "needs": [],
+      "pos": [
+        5504.0,
+        448.0
+      ],
+      "reachable": true
+    }
+  ],
+  "slots": 4,
+  "stations": [
+    {
+      "mid": false,
+      "section": "Basalte",
+      "sign": [
+        1584.0,
+        608.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            2184.0,
+            446.0
+          ],
+          "power": "glide"
+        }
+      ],
+      "upcoming": [
+        "glide"
+      ]
+    },
+    {
+      "mid": false,
+      "section": "Pistons",
+      "sign": [
+        4720.0,
+        448.0
+      ],
+      "tablets": [
+        {
+          "center": [
+            4776.0,
+            382.0
+          ],
+          "power": "wave"
+        }
+      ],
+      "upcoming": [
+        "wave"
+      ]
+    }
+  ]
+}
