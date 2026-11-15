@@ -582,7 +582,7 @@ def add(out, text, where, words, source=None):
 DATA_KEYS = {"name", "text", "description", "label", "message", "subtitle", "title", "enterText", "exitText", "speaker", "hint",
              "detail", "prompt", "caption", "tooltip", "summary", "question", "answer", "unlockText", "objective",
              "where"}
-DATA_SKIP_FILES = {"data/online/config.json", "data/online/flags.json", "data/levels/ratings.json"}
+DATA_SKIP_FILES = {"data/online/config.json", "data/online/flags.json", "data/levels/ratings.json", "data/news/new_features.json"}
 
 
 def extract_data(words, out):

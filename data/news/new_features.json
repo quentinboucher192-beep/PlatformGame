@@ -1,0 +1,6 @@
+{
+  "format": "cosmic.new_features",
+  "version": 1,
+  "comment": "Novelties of each update: a « NOUVEAU » pill shows on these widgets until they get the focus or a click (game/progression/NewBadges.h). « parents »: the menu entries and tabs that lead to them.",
+  "features": []
+}

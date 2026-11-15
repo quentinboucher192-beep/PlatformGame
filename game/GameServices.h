@@ -12,6 +12,7 @@
 #include "game/ghost/SegmentHistory.h"
 #include "game/levels/RatingService.h"
 #include "game/online/OnlineService.h"
+#include "game/progression/NewBadges.h"
 #include "game/progression/NewsCenter.h"
 #include "game/progression/Progression.h"
 #include "game/records/BossStats.h"
@@ -77,6 +78,8 @@ public:
     std::string menuMusic() const;
     /// Notifications of the main menu (new content, records dropped, new installer).
     NewsCenter news;
+    /// « NOUVEAU » pills on the novelties of the updates (data/news/new_features.json).
+    NewBadges newBadges;
     /// Asks the server once for a newer installer (no account needed, nothing personal sent).
     void checkForUpdate();
     /// Cosmic Online (rankings, globe, account). Fully optional: offline play never needs it.

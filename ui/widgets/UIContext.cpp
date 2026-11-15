@@ -67,6 +67,39 @@ bool UIContext::backPressed() const {
     return acceptsInput() && editing_ == 0 && app_->input().menuPressed(Action::MenuBack) && !app_->input().capturing();
 }
 
+Rect UIContext::drawNewPill(float right, float y) {
+    const float fs = std::max(11.5f, 12.0f * scale_) / scale_;
+    Vec2 tw = text().measure("NOUVEAU", FontFace::Bold, s(fs));
+    Rect pill{right - tw.x - s(14), y - s(9), tw.x + s(14), s(18)};
+    float pulse = 0.75f + 0.25f * std::sin(time_ * 4.0f);
+    r().drawGlow(pill.center(), pill.w * 0.6f, Color{255, 196, 70, static_cast<uint8_t>(90 * pulse)});
+    r().fillRoundedRect(pill, s(9), Color{255, 196, 70, 255});
+    r().drawRoundedRect(pill, s(9), Color{120, 60, 0, 200}, std::max(1.0f, s(1.0f)));
+    label("NOUVEAU", pill.center(), fs, Color{40, 20, 0, 255}, Align::Center, FontFace::Bold, VAlign::Middle);
+    return pill;
+}
+
+void UIContext::newBadge(const std::string& name, const Rect& rc, const std::string& feature) {
+    if (!isNewFeature || feature.empty() || !isNewFeature(feature)) return;
+    WidgetId wid = id(name);
+    uint8_t& armed = badgeArmed_[wid];
+    bool focusedNow = focus_ == wid;
+    if (armed == 0) armed = focusedNow ? 2 : 1;
+    else if (!focusedNow) armed = 1;
+    bool clicked = false;
+    if (acceptsInput()) {
+        InputManager& in = app_->input();
+        clicked = (mouseOver(rc) && in.mousePressed(SDL_BUTTON_LEFT)) || (focusedNow && in.menuPressed(Action::MenuConfirm));
+    }
+    if ((focusedNow && armed == 1) || clicked) {
+        if (featureSeen) featureSeen(feature);
+        return;
+    }
+    if (clippedOut(rc)) return;
+    // On the top edge, at the right: over the frame, never over the widget's text.
+    drawNewPill(rc.right() - s(6), rc.y);
+}
+
 bool UIContext::mouseOver(const Rect& rc) const {
     Vec2 m = app_->input().mousePos();
     if (!rc.contains(m)) return false;

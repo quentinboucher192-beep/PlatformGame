@@ -47,6 +47,14 @@ void GameServices::loadAll() {
         if (!rel.empty() && collection.heard.insert(rel).second) collection.save();
     };
     news.load();
+    // « NOUVEAU » pills: what came after the version the player had before this update.
+    newBadges.loadCatalog(Paths::dataDir() / "news" / "new_features.json");
+    newBadges.init(Paths::savesDir() / "new_badges.json", news.lastVersion(), COSMIC_VERSION_STRING);
+    ui.isNewFeature = [this](const std::string& id) { return newBadges.isNew(id); };
+    ui.featureSeen = [this](const std::string& id) {
+        newBadges.markSeen(id);
+        newBadges.save();
+    };
     news.startScan(content);
     applySettings();
 }

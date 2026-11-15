@@ -9529,6 +9529,7 @@
     "game/online/OnlineSession.cpp",
     "game/planets/PlanetData.cpp",
     "game/powers/PowerDefinition.cpp",
+    "game/progression/NewBadges.cpp",
     "game/progression/NewsCenter.cpp",
     "main.cpp",
     "packaging/PackageExporter.cpp",
@@ -16271,6 +16272,12 @@
    "fr": "Notifications dans le menu principal : nouveaux niveaux, pouvoirs, monstres et boss, records à refaire quand un niveau change, nouvelles versions à télécharger.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "NOUVEAU",
+   "where": [
+    "ui/widgets/UIContext.cpp"
    ]
   },
   {
@@ -26908,6 +26915,7 @@
     "game/online/OnlineCache.cpp",
     "game/online/OnlineService.cpp",
     "game/online/OnlineSession.cpp",
+    "game/progression/NewBadges.cpp",
     "game/progression/NewsCenter.cpp",
     "main.cpp",
     "packaging/PackageExporter.cpp",

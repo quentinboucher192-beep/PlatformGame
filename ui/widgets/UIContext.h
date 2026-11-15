@@ -138,6 +138,17 @@ public:
     /// Last widget changed this frame (for undo snapshots in editors).
     bool anyChanged() const { return changed_; }
 
+    // ----------------------------------------------------------- « NOUVEAU »
+    /// Pill « NOUVEAU » on the widget `name` (already drawn at `r`) while the novelty
+    /// `feature` is new (data/news/new_features.json); it goes for good as soon as the widget
+    /// gets the focus (keyboard, gamepad, mouse) or a click. The focus a screen gives on
+    /// opening does not count: the player has to come to it.
+    void newBadge(const std::string& name, const Rect& r, const std::string& feature);
+    /// Draws a « NOUVEAU » pill whose right edge is at `right`, centred on `y` (lists, rows).
+    Rect drawNewPill(float right, float y);
+    std::function<bool(const std::string&)> isNewFeature;
+    std::function<void(const std::string&)> featureSeen;
+
 private:
     struct Focusable {
         WidgetId id;
@@ -178,6 +189,7 @@ private:
     bool changed_ = false;
     std::vector<Focusable> focusables_;
     std::unordered_map<WidgetId, float> anims_;
+    std::unordered_map<WidgetId, uint8_t> badgeArmed_;  // 1: may be seen on focus, 2: had the focus at first sight
     std::unordered_map<WidgetId, float> scrolls_;
     std::vector<Scroll> scrollStack_;
     WidgetId scrollToFocus_ = 0;

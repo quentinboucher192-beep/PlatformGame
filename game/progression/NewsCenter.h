@@ -58,6 +58,9 @@ public:
     void markAllRead();
     bool scanned() const { return scanned_; }
 
+    /// The version run before this one ("" on a fresh install), until poll() records the new one.
+    const std::string& lastVersion() const { return lastVersion_; }
+
 private:
     void add(Item it);
     Json known_ = Json::object();
