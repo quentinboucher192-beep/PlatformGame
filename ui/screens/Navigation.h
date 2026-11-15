@@ -81,7 +81,10 @@ struct GhostSetupRequest {
 std::unique_ptr<Scene> makeSplashScene(GameServices& g);
 std::unique_ptr<Scene> makeMainMenu(GameServices& g);
 std::unique_ptr<Scene> makePlanetMap(GameServices& g);
-std::unique_ptr<Scene> makeLevelSelect(GameServices& g, const std::string& planetId);
+/// `levelId`: the level selected on arrival (else the last one played). `fromBoss`: opened
+/// from the statistics of this boss (« Retour » goes back there instead of the planet map).
+std::unique_ptr<Scene> makeLevelSelect(GameServices& g, const std::string& planetId, const std::string& levelId = {},
+                                       const std::string& fromBoss = {});
 std::unique_ptr<Scene> makeGameScene(GameServices& g, const std::string& levelId, PlayOptions opt = {});
 std::unique_ptr<Scene> makeSettingsScene(GameServices& g, bool overlay);
 /// HUD editor: place and size every HUD element; "Enregistrer" writes the layout into `target`.
@@ -101,8 +104,9 @@ std::unique_ptr<Scene> makeAchievements(GameServices& g);
 std::unique_ptr<Scene> makeCollection(GameServices& g, int tab = 0);
 /// End of a level: the rewards just unlocked by the stars (equip now or later).
 std::unique_ptr<Scene> makeNewRewards(GameServices& g);
-/// Main menu → Statistiques: the bosses (victories, without being hit, per phase).
-std::unique_ptr<Scene> makeBossStats(GameServices& g);
+/// Main menu → Statistiques: the bosses (victories, without being hit, per phase, how they
+/// look, where to fight them). `bossId`: the boss selected on arrival.
+std::unique_ptr<Scene> makeBossStats(GameServices& g, const std::string& bossId = {});
 /// Help: every power of the player with a live example (pushed over the current screen).
 std::unique_ptr<Scene> makePowerGuide(GameServices& g, int page = 0);
 std::unique_ptr<Scene> makeLevelEditor(GameServices& g, const std::string& levelId);

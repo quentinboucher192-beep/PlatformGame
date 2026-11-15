@@ -1215,7 +1215,8 @@
   {
    "fr": "Animation",
    "where": [
-    "editors/enemy_editor/EnemyEditorScene.cpp"
+    "editors/enemy_editor/EnemyEditorScene.cpp",
+    "ui/screens/CreatureArt.cpp"
    ]
   },
   {
@@ -1382,6 +1383,12 @@
    ]
   },
   {
+   "fr": "Apparition",
+   "where": [
+    "ui/screens/CreatureArt.cpp"
+   ]
+  },
+  {
    "fr": "Apparition du joueur",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -1440,6 +1447,18 @@
    "fr": "Après (s)",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Après le point de contrôle « {0} »",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Après un point de contrôle",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -1736,7 +1755,14 @@
    "fr": "Attaque",
    "where": [
     "engine/input/InputTypes.cpp",
-    "game/enemies/EnemyDefinition.h"
+    "game/enemies/EnemyDefinition.h",
+    "ui/screens/CreatureArt.cpp"
+   ]
+  },
+  {
+   "fr": "Attaque spéciale",
+   "where": [
+    "ui/screens/CreatureArt.cpp"
    ]
   },
   {
@@ -2662,6 +2688,12 @@
    ]
   },
   {
+   "fr": "Barrage",
+   "where": [
+    "ui/screens/CreatureArt.cpp"
+   ]
+  },
+  {
    "fr": "Barre de progression",
    "where": [
     "saves/HudLayout.cpp"
@@ -2757,6 +2789,12 @@
    "fr": "Bastion de phase",
    "where": [
     "data/levels/glacior_01.json"
+   ]
+  },
+  {
+   "fr": "Battez-le pour le voir en entier",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -3101,6 +3139,12 @@
   },
   {
    "fr": "Boss vaincus",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "boss {0} sur {1}",
    "where": [
     "ui/screens/BossStatsScene.cpp"
    ]
@@ -3652,6 +3696,18 @@
    ]
   },
   {
+   "fr": "Ce boss n'est placé dans aucun niveau du jeu : il vient de l'éditeur d'ennemis ou d'un pack importé.",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce boss n'est placé dans aucun niveau du jeu.",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "Ce commentaire ne peut pas être épinglé.",
    "where": [
     "server/src/workshop.ts"
@@ -4174,14 +4230,16 @@
     "data/enemies/echo_thornwarden.json",
     "data/enemies/thornwarden.json",
     "game/enemies/EnemyDefinition.cpp",
-    "game/powers/PowerStats.cpp"
+    "game/powers/PowerStats.cpp",
+    "ui/screens/CreatureArt.cpp"
    ]
   },
   {
    "fr": "charge",
    "where": [
     "game/enemies/EnemyDefinition.cpp",
-    "game/powers/PowersExtra.cpp"
+    "game/powers/PowersExtra.cpp",
+    "ui/screens/CreatureArt.cpp"
    ]
   },
   {
@@ -6051,6 +6109,12 @@
    ]
   },
   {
+   "fr": "Course",
+   "where": [
+    "ui/screens/CreatureArt.cpp"
+   ]
+  },
+  {
    "fr": "Course : {0} boss, {1} embuscade",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
@@ -6841,6 +6905,12 @@
    ]
   },
   {
+   "fr": "Depuis le départ du niveau, sans point de contrôle",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "Depuis « Paramètres en ligne », vous pouvez à tout moment : modifier votre pseudonyme, votre avatar et votre pays ; masquer votre pays ou votre présence sur le globe ; masquer votre profil public ; refuser les demandes d'amis ; exporter vos données (fichier JSON) ; supprimer définitivement votre compte, vos records, vos replays et vos amis (confirmation par mot de passe). Vous pouvez aussi vous déconnecter de tous vos appareils.",
    "where": [
     "data/online/terms_fr.txt"
@@ -7118,6 +7188,12 @@
    "fr": "Discussions",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Disparition",
+   "where": [
+    "ui/screens/CreatureArt.cpp"
    ]
   },
   {
@@ -7751,6 +7827,12 @@
    ]
   },
   {
+   "fr": "Défaite",
+   "where": [
+    "ui/screens/CreatureArt.cpp"
+   ]
+  },
+  {
    "fr": "Défaites",
    "where": [
     "ui/screens/BossStatsScene.cpp"
@@ -7964,7 +8046,8 @@
   {
    "fr": "Déplacement",
    "where": [
-    "editors/enemy_editor/EnemyEditorProperties.cpp"
+    "editors/enemy_editor/EnemyEditorProperties.cpp",
+    "ui/screens/CreatureArt.cpp"
    ]
   },
   {
@@ -9716,6 +9799,12 @@
    ]
   },
   {
+   "fr": "Frappe",
+   "where": [
+    "ui/screens/CreatureArt.cpp"
+   ]
+  },
+  {
    "fr": "Frappe des ronces",
    "where": [
     "data/enemies/archon_catacombs.json",
@@ -10746,6 +10835,12 @@
    ]
   },
   {
+   "fr": "Hors campagne",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "Hors connexion",
    "where": [
     "game/online/OnlineTypes.cpp"
@@ -11524,6 +11619,12 @@
    "fr": "Invité",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Invocation",
+   "where": [
+    "ui/screens/CreatureArt.cpp"
    ]
   },
   {
@@ -12607,11 +12708,18 @@
    ]
   },
   {
+   "fr": "Laser",
+   "where": [
+    "ui/screens/CreatureArt.cpp"
+   ]
+  },
+  {
    "fr": "laser",
    "where": [
     "game/enemies/EnemyDefinition.cpp",
     "game/gameplay/EntityFactory.cpp",
-    "game/levels/ObjectTypes.cpp"
+    "game/levels/ObjectTypes.cpp",
+    "ui/screens/CreatureArt.cpp"
    ]
   },
   {
@@ -13983,6 +14091,12 @@
    "fr": "Leviers",
    "where": [
     "data/levels/aethra_04.json"
+   ]
+  },
+  {
+   "fr": "Lianes",
+   "where": [
+    "ui/screens/CreatureArt.cpp"
    ]
   },
   {
@@ -15372,7 +15486,8 @@
     "data/enemies/glowmite.json",
     "data/enemies/ice_burrower.json",
     "data/enemies/lava_burrower.json",
-    "data/enemies/weaver.json"
+    "data/enemies/weaver.json",
+    "ui/screens/CreatureArt.cpp"
    ]
   },
   {
@@ -15679,6 +15794,12 @@
    ]
   },
   {
+   "fr": "Météores",
+   "where": [
+    "ui/screens/CreatureArt.cpp"
+   ]
+  },
+  {
    "fr": "N",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -15813,6 +15934,12 @@
    "fr": "Niveau EXTRÊME (une seule vie)",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Niveau hors campagne",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -15973,6 +16100,12 @@
    ]
   },
   {
+   "fr": "Niveau terminé · voir sa page",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "Niveau trop volumineux pour un projet (2 Mo au plus).",
    "where": [
     "server/src/projects.ts"
@@ -15988,6 +16121,12 @@
    "fr": "Niveau vérifié !",
    "where": [
     "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "niveau {0}",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -17270,6 +17409,12 @@
    ]
   },
   {
+   "fr": "Ouvert · voir sa page",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "Ouvert à tous",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -17340,6 +17485,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Où l'affronter",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -18578,6 +18729,12 @@
    ]
   },
   {
+   "fr": "Plongeon",
+   "where": [
+    "ui/screens/CreatureArt.cpp"
+   ]
+  },
+  {
    "fr": "Plongez sous la roche : maintenez Saut pour remonter à la surface.",
    "where": [
     "data/levels/glacior_02.json"
@@ -19792,6 +19949,12 @@
    ]
   },
   {
+   "fr": "Préparation : {0}",
+   "where": [
+    "ui/screens/CreatureArt.cpp"
+   ]
+  },
+  {
    "fr": "Préparation du package…",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
@@ -20372,7 +20535,8 @@
    "fr": "Rayon",
    "where": [
     "game/levels/ObjectTypes.cpp",
-    "game/powers/PowerStats.cpp"
+    "game/powers/PowerStats.cpp",
+    "ui/screens/CreatureArt.cpp"
    ]
   },
   {
@@ -20540,6 +20704,12 @@
    "fr": "Recherche",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Recherche dans les niveaux du jeu…",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -21241,6 +21411,12 @@
    ]
   },
   {
+   "fr": "Repos",
+   "where": [
+    "ui/screens/CreatureArt.cpp"
+   ]
+  },
+  {
    "fr": "Repousse",
    "where": [
     "game/powers/PowerStats.cpp"
@@ -21715,6 +21891,12 @@
    ]
   },
   {
+   "fr": "Rugissement",
+   "where": [
+    "ui/screens/CreatureArt.cpp"
+   ]
+  },
+  {
    "fr": "Ruines Suspendues, Cœur de la Machine, Catacombes",
    "where": [
     "data/music/tracks.json"
@@ -21733,6 +21915,7 @@
     "game/ghost/Ghost.cpp",
     "game/player/PlayerActions.cpp",
     "ui/screens/CollectionScene.cpp",
+    "ui/screens/CreatureArt.cpp",
     "ui/screens/RewardsScene.cpp"
    ]
   },
@@ -22337,6 +22520,12 @@
    "fr": "Salle des reflets",
    "where": [
     "data/levels/glacior_02.json"
+   ]
+  },
+  {
+   "fr": "Salve",
+   "where": [
+    "ui/screens/CreatureArt.cpp"
    ]
   },
   {
@@ -23242,6 +23431,12 @@
    ]
   },
   {
+   "fr": "son écho",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "Sortie",
    "where": [
     "ui/screens/PauseScene.cpp"
@@ -23301,6 +23496,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Souffle",
+   "where": [
+    "ui/screens/CreatureArt.cpp"
    ]
   },
   {
@@ -23503,7 +23704,8 @@
    "where": [
     "data/enemies/cinder_bloom.json",
     "data/enemies/frost_bloom.json",
-    "data/enemies/sporeflower.json"
+    "data/enemies/sporeflower.json",
+    "ui/screens/CreatureArt.cpp"
    ]
   },
   {
@@ -23511,7 +23713,8 @@
    "where": [
     "game/enemies/GuardianAttacks.cpp",
     "game/gameplay/entities/HazardEntities.cpp",
-    "game/levels/ObjectTypes.cpp"
+    "game/levels/ObjectTypes.cpp",
+    "ui/screens/CreatureArt.cpp"
    ]
   },
   {
@@ -23766,6 +23969,12 @@
    "fr": "STATISTIQUES DES BOSS",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Statistiques des boss",
+   "where": [
+    "ui/screens/PlanetMapScene.cpp"
    ]
   },
   {
@@ -25384,6 +25593,12 @@
    "fr": "Touches des pouvoirs par emplacement : « Pouvoir 1 » à « Pouvoir 8 » se règlent dans Paramètres › Clavier / souris et Manette ; la touche d'un emplacement utilise le pouvoir qui y est équipé, quel qu'il soit. Vos anciennes touches de pouvoirs deviennent celles des emplacements 1 à 6.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Touché",
+   "where": [
+    "ui/screens/CreatureArt.cpp"
    ]
   },
   {
@@ -27111,6 +27326,7 @@
   {
    "fr": "Verrouillé",
    "where": [
+    "game/content/CreaturePlaces.cpp",
     "ui/screens/AchievementsScene.cpp",
     "ui/screens/PlanetMapScene.cpp"
    ]
@@ -27122,9 +27338,28 @@
    ]
   },
   {
+   "fr": "Verrouillé : terminez la planète {0}",
+   "where": [
+    "game/content/CreaturePlaces.cpp"
+   ]
+  },
+  {
    "fr": "Verrouillé : terminez le niveau précédent",
    "where": [
+    "game/content/CreaturePlaces.cpp",
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Verrouillé : terminez le niveau « {0} »",
+   "where": [
+    "game/content/CreaturePlaces.cpp"
+   ]
+  },
+  {
+   "fr": "Verrouillé : terminez les planètes {0}",
+   "where": [
+    "game/content/CreaturePlaces.cpp"
    ]
   },
   {
@@ -27678,7 +27913,8 @@
   {
    "fr": "Vol",
    "where": [
-    "game/enemies/EnemyDefinition.cpp"
+    "game/enemies/EnemyDefinition.cpp",
+    "ui/screens/CreatureArt.cpp"
    ]
   },
   {
@@ -29259,6 +29495,12 @@
    "fr": "{0} Ko",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} lieu",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {

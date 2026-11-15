@@ -14,8 +14,10 @@
 #include "engine/core/FileUtil.h"
 #include "engine/core/Log.h"
 #include "game/GameServices.h"
+#include "game/content/CreaturePlaces.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/CosmeticFx.h"
+#include "ui/screens/CreatureArt.h"
 #include "ui/screens/Navigation.h"
 #include "ui/widgets/Glyphs.h"
 
@@ -80,69 +82,10 @@ void drawTitleChip(UIContext& ui, Vec2 c, const std::string& text, float size, b
     ui.label(text, c, fs, col, Align::Center, FontFace::Bold, VAlign::Middle);
 }
 
-/// A planet's backdrop (its parallax layers stacked) in `dst`.
-void drawPlanetBackdrop(GameServices& g, const std::string& planet, const Rect& dst, Color tint = Color::white()) {
-    Renderer& r = g.app.renderer();
-    r.fillRect(dst, Color{8, 11, 24, 255});
-    for (const char* layer : {"sky", "far", "mid", "near"})
-        if (TexturePtr t = g.app.resources().texture("backgrounds/" + planet + "/" + layer + ".png"))
-            r.drawTexture(*t, nullptr, dst, tint);
-}
-
-/// A creature's first idle frame, fitted in `box` (pixel-art multiples when possible).
-void drawCreature(GameServices& g, const EnemyDefinition& def, const Rect& box, float t, Color tintMul, const std::string& clipName = "idle") {
-    AnimationSetPtr set = g.app.resources().animation(def.animation);
-    if (!set || !set->texture) return;
-    const AnimationClip* c = set->clip(clipName);
-    if (!c) c = set->clip("idle");
-    if (!c && !set->clips.empty()) c = &set->clips.begin()->second;
-    if (!c || c->frameCount() == 0) return;
-    float total = std::max(0.01f, c->totalDuration());
-    float local = std::fmod(t, total), acc = 0.0f;
-    int frame = 0;
-    for (int i = 0; i < c->frameCount(); ++i) {
-        acc += c->durations[static_cast<size_t>(i)];
-        if (local < acc) {
-            frame = i;
-            break;
-        }
-    }
-    Rect src = set->frameRect(*c, frame);
-    float k = std::min(box.w / src.w, box.h / src.h);
-    if (k >= 1.0f) k = std::floor(k);
-    Vec2 size{src.w * k, src.h * k};
-    Rect dst = Rect::fromCenter(box.center(), size);
-    Color tint{static_cast<uint8_t>(def.tint.r * tintMul.r / 255), static_cast<uint8_t>(def.tint.g * tintMul.g / 255),
-               static_cast<uint8_t>(def.tint.b * tintMul.b / 255), tintMul.a};
-    g.app.renderer().drawTexture(*set->texture, &src, dst, tint);
-}
-
 /// Where each creature of the game appears in the campaign (planet ids), read from the
-/// levels once, off the main thread.
+/// levels once, off the main thread (game/content/CreaturePlaces.h).
 using PlanetsOf = std::map<std::string, std::vector<std::string>>;
-PlanetsOf scanCampaign(const ContentDatabase& content) {
-    PlanetsOf out;
-    for (const PlanetData* p : content.planets())
-        for (const LevelEntry* e : content.levelsForPlanet(p->id)) {
-            auto lv = content.loadLevel(e->id);
-            if (!lv) continue;
-            for (const auto& o : lv->objects) {
-                if (o.type != "enemy") continue;
-                std::string id = jstr(o.props, "enemy");
-                if (id.empty()) continue;
-                auto& v = out[id];
-                if (std::find(v.begin(), v.end(), p->id) == v.end()) v.push_back(p->id);
-                // What it summons is met there too.
-                if (const EnemyDefinition* d = content.enemy(id))
-                    for (const auto& a : d->attacks)
-                        if (a.type == AttackType::Summon && !a.summonId.empty()) {
-                            auto& w = out[a.summonId];
-                            if (std::find(w.begin(), w.end(), p->id) == w.end()) w.push_back(p->id);
-                        }
-            }
-        }
-    return out;
-}
+PlanetsOf scanCampaign(const ContentDatabase& content) { return scanCreatures(content).planetsByCreature(); }
 
 struct Track {
     std::string file, title, where, group, planet;
@@ -986,10 +929,7 @@ private:
         if (sel->planet) {
             drawPlanetBackdrop(g_, sel->planet->id, big, sel->known ? Color::white() : Color{40, 40, 50, 255});
         } else if (sel->def) {
-            if (AnimationSetPtr set = g_.app.resources().animation(sel->def->animation))
-                for (const auto& [name, c] : set->clips) clips.push_back(name);
-            std::sort(clips.begin(), clips.end());
-            if (auto it = std::find(clips.begin(), clips.end(), "idle"); it != clips.end()) std::rotate(clips.begin(), it, it + 1);
+            clips = creatureClips(g_, *sel->def);
             std::string clip = clips.empty() ? "idle" : clips[static_cast<size_t>(animClip_) % clips.size()];
             drawCreature(g_, *sel->def, big.expanded(-ui.s(16)), t_, sel->known ? Color::white() : Color{0, 0, 0, 110}, sel->known ? clip : "idle");
         }
