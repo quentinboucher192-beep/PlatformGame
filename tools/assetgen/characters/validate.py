@@ -95,6 +95,12 @@ LOOPING["projectiles"] |= set(V2_PROJECTILES)
 V2_POWERS = ["glide", "ground_pound", "charge_shot", "grapple", "triple_jump"]
 ANIMS["power_unlock"][3].extend((n, 8) for n in V2_POWERS)
 LOOPING["power_unlock"] |= set(V2_POWERS)
+# later powers: the tablet rows follow power_symbols.POWERS (single source of the clip order)
+import power_symbols  # noqa: E402
+_LATER_POWERS = [n for n in power_symbols.POWERS if n not in {c for c, _ in ANIMS["power_unlock"][3]}]
+ANIMS["power_unlock"][3].extend((n, 8) for n in _LATER_POWERS)
+LOOPING["power_unlock"] |= set(_LATER_POWERS)
+ANIMS["nova"][3].append(("crouch", 3))  # row 26 (2.17)
 ANIMS.update({
     "grapple_point": (24, 24, [12, 12], [("idle", 6), ("active", 4)], {}, {}),
     "cracked_floor": (32, 16, [16, 16], [("intact", 1), ("cracked", 1)], {}, {}),
@@ -164,6 +170,45 @@ for e in list(V2_SPECIES) + [v for ids in V2_VARIANTS.values() for v in ids] + l
     TEXTURES[e] = f"sprites/enemies/{e}.png"
 LOOPING.update({k: {"idle", "move", "walk"} & {c for c, _ in ANIMS[k][3]} for k in V2_BOSSES})
 
+# ------------------------------------------------------------------ 2.19: sanctuary guardians
+def _guardian(walk, extras=()):
+    return [("idle", 6), ("walk", walk), ("move", walk), ("telegraph", 6), ("attack", 5), ("telegraph_special", 6),
+            ("special", 4), ("summon", 6), ("roar", 8), ("hurt", 2), ("death", 14)] + list(extras)
+
+
+V3_BOSSES = {
+    # id: (frame w, frame h, pivot, clips, events)
+    "mycelia": (128, 112, [64, 112], _guardian(8, [("teleport_out", 6), ("teleport_in", 6)]),
+                {"walk": [(0, "footstep"), (4, "footstep")], "move": [(0, "footstep"), (4, "footstep")],
+                 "attack": [(2, "impact")]}),
+    "aurorax": (128, 128, [64, 128], _guardian(8),
+                {"walk": [(1, "footstep"), (5, "footstep")], "move": [(1, "footstep"), (5, "footstep")],
+                 "attack": [(1, "fire")]}),
+    "pyrogyre": (128, 128, [64, 92], _guardian(6), {"attack": [(1, "fire")]}),
+    "nyxara": (128, 128, [64, 92], _guardian(6, [("teleport_out", 5), ("teleport_in", 5)]), {"attack": [(1, "fire")]}),
+}
+for _id, (_w, _h, _pv, _clips, _ev) in V3_BOSSES.items():
+    ANIMS[_id] = (_w, _h, _pv, _clips, _ev, {})
+    TEXTURES[_id] = f"sprites/enemies/{_id}.png"
+    LOOPING[_id] = {"idle", "walk", "move", "special"}
+V3_PROJECTILES = ["pollen", "aurora_shard", "solar_flame", "solar_bolt", "void_star"]
+ANIMS["projectiles"][3].extend((n, 4) for n in V3_PROJECTILES)
+LOOPING["projectiles"] |= set(V3_PROJECTILES)
+V3_EFFECTS = {
+    "root_spike": ("projectiles", 32, 64, [16, 64], [("travel", 4), ("erupt", 5), ("retract", 4)], {"travel"},
+                   {"erupt": [(1, "hit")]}),
+    "thorn_wall": ("projectiles", 32, 96, [16, 96], [("rise", 5), ("idle", 4), ("wither", 5)], {"idle"}, {}),
+    "void_well": ("projectiles", 64, 64, [32, 32], [("open", 5), ("idle", 6), ("close", 4)], {"idle"}, {}),
+    "eclipse_ring": ("projectiles", 16, 16, [8, 8], [("segment", 4), ("edge", 4)], {"segment", "edge"}, {}),
+    "shadow_mark": ("projectiles", 32, 32, [16, 16], [("appear", 4), ("idle", 4), ("strike", 4)], {"idle"}, {}),
+    "frost_floor": ("objects", 16, 16, [0, 4], [("form", 4), ("idle", 6), ("melt", 4)], {"idle"}, {}),
+    "lava_flood": ("objects", 16, 16, [0, 0], [("surface", 8), ("body", 8)], {"surface", "body"}, {}),
+}
+for _id, (_dir, _w, _h, _pv, _clips, _loop, _ev) in V3_EFFECTS.items():
+    ANIMS[_id] = (_w, _h, _pv, _clips, _ev, {})
+    TEXTURES[_id] = f"sprites/{_dir}/{_id}.png"
+    LOOPING[_id] = set(_loop)
+
 STATIC = {
     "sprites/objects/moving_platform.png": (48, 32),
     "sprites/objects/crumble_platform.png": (48, 48),
@@ -172,6 +217,7 @@ STATIC = {
     "sprites/objects/liquid_acid.png": (128, 32),
     "sprites/objects/liquid_water.png": (128, 32),
     "sprites/objects/liquid_lava.png": (128, 32),
+    "sprites/objects/lava_flood.png": (128, 32),
     "textures/fx/glow.png": (64, 64), "textures/fx/particle.png": (8, 8), "textures/fx/spark.png": (8, 8),
     "textures/fx/star.png": (8, 8), "textures/fx/ring.png": (64, 64), "textures/fx/smoke.png": (64, 16),
     "textures/fx/dust.png": (80, 16), "textures/fx/slash.png": (192, 32), "textures/fx/hit.png": (120, 24),

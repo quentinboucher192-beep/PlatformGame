@@ -1,0 +1,11 @@
+{
+  "texture": "sprites/projectiles/void_well.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "pivot": [32, 32],
+  "clips": {
+    "open": {"row": 0, "count": 5, "durations": [0.06, 0.06, 0.08, 0.08, 0.1], "loop": false},
+    "idle": {"row": 1, "count": 6, "fps": 12, "loop": true},
+    "close": {"row": 2, "count": 4, "durations": [0.06, 0.06, 0.08, 0.1], "loop": false}
+  }
+}

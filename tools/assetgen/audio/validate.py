@@ -64,6 +64,16 @@ SOUNDS_V2 = {
     'wyrm_roar': (1.8, 3.6, -12.0, -9.0), 'updraft_loop': (2.0, 5.0, -24.5, -21.5),
 }
 LOOP_SOUNDS = {'glide_loop', 'charge_loop', 'updraft_loop'}
+# 2.19: attacks of the sanctuary guardians (same windows: duration s, max-momentary LUFS)
+SOUNDS_V3 = {
+    'root_burst': (0.8, 1.6, -14.0, -11.0), 'thorn_wall': (0.6, 1.4, -15.0, -12.0),
+    'inhale': (2.0, 3.4, -17.0, -14.0), 'mirror_split': (1.0, 2.4, -15.5, -12.5),
+    'ice_floor': (1.0, 2.2, -16.0, -13.0), 'prism': (0.7, 1.8, -14.5, -11.5),
+    'orbit_flames': (1.2, 2.6, -15.5, -12.5), 'spiral': (1.2, 2.4, -15.5, -12.5),
+    'lava_rise': (2.0, 3.8, -14.5, -11.5), 'gravity_well': (2.0, 4.0, -15.0, -12.0),
+    'shadow_step': (0.5, 1.4, -15.5, -12.5), 'eclipse_ring': (1.2, 2.8, -14.0, -11.0),
+}
+SOUNDS_V2.update(SOUNDS_V3)
 
 # name: (loop?, min s, max s, LUFS low, LUFS high)
 MUSIC = {
@@ -81,6 +91,13 @@ MUSIC = {
     'glacior_boss': (True, 64, 78, -16.0, -11.5),
     'glacior_ambience': (True, 55, 65, -30.0, -19.0),
     'sylvanox_depths': (True, 88, 104, -16.5, -12.0),
+    # 2.19: the sanctuary guardians (boss loops 60-80 s, boss loudness) and the planet Aethra
+    'mycelia_boss': (True, 60, 80, -16.0, -11.5),
+    'aurorax_boss': (True, 60, 80, -16.0, -11.5),
+    'pyrogyre_boss': (True, 60, 80, -16.0, -11.5),
+    'nyxara_boss': (True, 60, 80, -16.0, -11.5),
+    'aethra_level': (True, 90, 110, -16.5, -12.0),
+    'aethra_ambience': (True, 55, 65, -30.0, -19.0),
 }
 FONTS = {'Orbitron.ttf': 'title', 'ChakraPetch-Regular.ttf': 'ui', 'ChakraPetch-SemiBold.ttf': 'ui'}
 LICENCES = ['OFL-Orbitron.txt', 'OFL-ChakraPetch.txt']

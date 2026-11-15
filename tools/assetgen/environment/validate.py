@@ -18,13 +18,15 @@ from helpers import ASSETS  # noqa: E402
 
 MATERIALS = ["ruin_stone", "ancient_metal", "crystal", "root",
              "basalt", "obsidian", "forge_metal",              # Pyralis
-             "glacier_ice", "snow_rock", "frost_metal"]        # Glacior
+             "glacier_ice", "snow_rock", "frost_metal",        # Glacior
+             "sanctum_stone", "nebula_rock"]                   # Aethra (2.19)
 FRICTION = {"glacier_ice": 0.25}          # required "friction" values (others optional, 0..1)
 PLATFORM_STYLES = {"ruin_bridge": 0, "tech_ledge": 1, "root_branch": 2, "basalt_ledge": 3,
-                   "chain_grate": 4, "ice_ledge": 5, "snow_bridge": 6}
+                   "chain_grate": 4, "ice_ledge": 5, "snow_bridge": 6, "sanctum_ledge": 7}
 BACKGROUNDS = {"sylvanox": ["sky", "far", "mid", "near", "abyss", "fg_vines"],
                "pyralis": ["sky", "far", "mid", "near", "abyss", "fg_embers"],
-               "glacior": ["sky", "far", "mid", "near", "abyss", "fg_icicles"]}
+               "glacior": ["sky", "far", "mid", "near", "abyss", "fg_icicles"],
+               "aethra": ["sky", "far", "mid", "near", "abyss", "fg_petals"]}
 DECOR_REQUIRED = ["mushroom_small", "mushroom_tall", "mushroom_cluster", "glow_fern", "glow_flowers",
                   "crystal_cluster", "crystal_big", "ruin_pillar", "ruin_pillar_broken", "ruin_arch",
                   "statue_head", "tech_panel", "lantern_pod", "hanging_vine_short",
@@ -52,7 +54,6 @@ DECOR_GLOW = {"pyralis": ["lava_vent", "forge_brazier", "lava_fall", "fire_plant
               "glacior": ["ice_crystal", "ice_crystal_big", "aurora_lamp", "frost_flower"]}
 SIZES = {
     "textures/tiles/platforms.png": (48, 16 * len(PLATFORM_STYLES)),
-    "ui/icons_powers.png": (320, 32),
     "ui/icons_medals.png": (160, 32),
     "ui/icons_hud.png": (176, 16),
     "ui/glyphs/xbox.png": (608, 32),
@@ -65,6 +66,8 @@ SIZES = {
     "ui/planets/sylvanox_banner.png": (480, 270),
     "ui/planets/pyralis_banner.png": (480, 270),
     "ui/planets/glacior_banner.png": (480, 270),
+    "ui/planets/aethra.png": (256, 256),
+    "ui/planets/aethra_banner.png": (480, 270),
     "ui/map_background.png": (960, 540),
 }
 for _m in MATERIALS:
@@ -257,20 +260,29 @@ def check():
                 n2, x2, y2, w2, h2 = rects[k]
                 if x1 < x2 + w2 and x2 < x1 + w1 and y1 < y2 + h2 and y2 < y1 + h1:
                     errs.append(f"{planet} decor: {n1} overlaps {n2}")
+    # power icons: one 32x32 cell per power, the strip grows with each new power (>= the 10 of v2)
+    ip = os.path.join(ASSETS, "ui/icons_powers.png")
+    if not os.path.exists(ip):
+        errs.append("missing ui/icons_powers.png")
+    else:
+        im = Image.open(ip)
+        if im.size[1] != 32 or im.size[0] % 32 or im.size[0] < 320:
+            errs.append(f"ui/icons_powers.png: size {im.size} (expected 32 px high, 10+ cells of 32 px)")
+        cells_nonempty(load("ui/icons_powers.png"), 32, 32, im.size[0] // 32, errs, "ui/icons_powers.png")
     # ui cells
-    for rel, cw, ch, n in [("ui/icons_powers.png", 32, 32, 10), ("ui/icons_medals.png", 32, 32, 5),
+    for rel, cw, ch, n in [("ui/icons_medals.png", 32, 32, 5),
                            ("ui/icons_hud.png", 16, 16, 11), ("ui/glyphs/xbox.png", 32, 32, 19),
                            ("ui/glyphs/playstation.png", 32, 32, 19), ("ui/glyphs/generic.png", 32, 32, 19)]:
         if os.path.exists(os.path.join(ASSETS, rel)):
             cells_nonempty(load(rel), cw, ch, n, errs, rel)
-    for p in ["sylvanox", "pyralis", "glacior", "sun"]:
+    for p in ["sylvanox", "pyralis", "glacior", "sun", "aethra"]:
         rel = f"ui/planets/{p}.png"
         if os.path.exists(os.path.join(ASSETS, rel)):
             a = load(rel)
             if a[0, 0, 3] or a[-1, -1, 3] or a[0, -1, 3] or a[-1, 0, 3]:
                 errs.append(f"{rel}: corners should be transparent")
     for rel in ["ui/planets/sylvanox_banner.png", "ui/planets/pyralis_banner.png",
-                "ui/planets/glacior_banner.png", "ui/map_background.png"]:
+                "ui/planets/glacior_banner.png", "ui/planets/aethra_banner.png", "ui/map_background.png"]:
         if os.path.exists(os.path.join(ASSETS, rel)) and (load(rel)[..., 3] < 255).any():
             errs.append(f"{rel}: should be opaque")
     return errs

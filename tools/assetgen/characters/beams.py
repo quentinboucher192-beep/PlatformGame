@@ -13,6 +13,7 @@ One row of 4 frames per style, in the palettes of the bosses' own breaths and be
   plasma  Sylvanox's machines: cyan energy with sparks        (Sentinelle Prime)
   thorn   Sylvanox's guardians: green-cyan sap light, spores  (Thornwarden, Archonte)
   star    the Stellar Core: gold and white starlight           (Astrarque)
+  prism   Aurorax (2.19): white core split into a rainbow edge  (Prisme, bouncing ray)
 
 Run from the repository root:  python3 tools/assetgen/characters/beams.py
 """
@@ -35,7 +36,10 @@ STYLES = [
     ("plasma", ["#ffffff", "#c9fff8", "#39f0d8", "#1fa8c8", "#5b2a9e"], "#ffffff", "smooth"),
     ("thorn", ["#f4ffe0", "#b8ff9a", "#5dffb0", "#2fb37a", "#1e5a3a"], "#d6ff8a", "wave"),
     ("star", ["#ffffff", "#fff6d0", "#ffd98a", "#ffb347", "#d36ad8"], "#ffffff", "smooth"),
+    ("prism", ["#ffffff", "#e8fbff", "#9fe8ff", "#78e68c", "#8a6ae0"], "#ffffff", "prism"),
 ]
+# Edge colours of the prism beam: light split into a spectrum that slides along the ray.
+PRISM_SPECTRUM = ["#9fe8ff", "#78e68c", "#fff6a8", "#ffb4d0", "#b48cff"]
 
 
 def hexc(h):
@@ -53,6 +57,8 @@ def half_width(style, x, i):
         return 3.6 + (0.8 if (x + i * 3) % 8 < 2 else 0.0)
     if style == "wave":
         return 3.8 + 0.8 * math.sin(t * 2 + ph)
+    if style == "prism":
+        return 4.2 + 0.4 * math.sin(t * 2 + ph)
     return 3.9 + 0.5 * math.sin(t * 4 + ph)
 
 
@@ -90,6 +96,12 @@ def frame(style_id, cols, spark, shape, i):
                 continue
             ci = 0 if e < 0.28 else (1 if e < 0.5 else (2 if e < 0.72 else (3 if e < 0.9 else 4)))
             a = 255 if ci < 4 else 190
+            if shape == "prism" and ci >= 2:
+                # spectrum bands, diagonal and sliding by 8 px per frame (periodic over the body)
+                band = ((x - BODY0) + (y if y < 8 else 15 - y) + i * 8) // 4 % len(PRISM_SPECTRUM)
+                img[y, x, :3] = hexc(PRISM_SPECTRUM[band])
+                img[y, x, 3] = 255 if ci < 4 else 200
+                continue
             if x >= BODY1 and (x + y + i) % 3 == 0 and ci >= 3:
                 continue  # fraying end
             img[y, x, :3] = c[ci]

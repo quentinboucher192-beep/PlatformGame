@@ -239,11 +239,12 @@ class Material:
 
 
 def all_materials():
-    """Sylvanox (v1) + Pyralis + Glacior material classes, in atlas generation order."""
+    """Sylvanox (v1) + Pyralis + Glacior + Aethra (2.19) material classes, in atlas generation order."""
     from tile_materials import MATERIALS
     from tiles_pyralis import MATERIALS as PYRALIS
     from tiles_glacior import MATERIALS as GLACIOR
-    return list(MATERIALS) + list(PYRALIS) + list(GLACIOR)
+    from tiles_aethra import MATERIALS as AETHRA
+    return list(MATERIALS) + list(PYRALIS) + list(GLACIOR) + list(AETHRA)
 
 
 def generate(names=None):
