@@ -1,0 +1,236 @@
+{
+  "format": "cosmic.enemy",
+  "id": "mycelia",
+  "name": "Mycélia",
+  "description": "Le champignon-mère qui relie toutes les racines de Sylvanox. Elle s'enfonce sous terre et ressurgit là où on ne l'attend pas.",
+  "family": "miniboss",
+  "animation": "animations/mycelia.json",
+  "size": [
+    60,
+    64
+  ],
+  "scale": 1.0,
+  "hp": 95,
+  "contactDamage": 2,
+  "speed": 40,
+  "chaseSpeedMultiplier": 1.2,
+  "flying": false,
+  "knockbackResist": 1,
+  "detectionRange": 360,
+  "attackRange": 200,
+  "loseRange": 2000,
+  "needsLineOfSight": false,
+  "movement": "guard",
+  "reaction": "chase",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 150,
+  "hopVelocity": 0,
+  "attacks": [
+    {
+      "id": "tracker",
+      "name": "Racine traqueuse",
+      "type": "tracker",
+      "damage": 2,
+      "range": 620,
+      "telegraph": 0.8,
+      "active": 0.2,
+      "recover": 0.5,
+      "cooldown": 3.0,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "root_spike",
+      "projectileSpeed": 105,
+      "duration": 2.5,
+      "radius": 16,
+      "height": 44,
+      "hitEffect": "eruption_spore",
+      "knockback": 240
+    },
+    {
+      "id": "cage",
+      "name": "Cage de ronces",
+      "type": "cage",
+      "damage": 1,
+      "range": 540,
+      "telegraph": 0.9,
+      "active": 0.2,
+      "recover": 0.8,
+      "cooldown": 7.5,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "summon",
+      "projectile": "pollen",
+      "projectileSpeed": 90,
+      "burstInterval": 0.4,
+      "duration": 4.0,
+      "radius": 130,
+      "height": 136,
+      "knockback": 180
+    },
+    {
+      "id": "inhale",
+      "name": "Inspiration",
+      "type": "vortex",
+      "damage": 2,
+      "range": 480,
+      "telegraph": 0.9,
+      "active": 0.2,
+      "recover": 0.9,
+      "cooldown": 7.0,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "special",
+      "pull": 80,
+      "duration": 2.0,
+      "knockback": 280
+    },
+    {
+      "id": "spore_rain",
+      "name": "Pluie de spores",
+      "type": "rain",
+      "damage": 1,
+      "range": 540,
+      "telegraph": 0.8,
+      "active": 0.3,
+      "recover": 0.6,
+      "cooldown": 3.6,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "pollen",
+      "projectileSpeed": 150,
+      "count": 6,
+      "spread": 44,
+      "gravity": 180,
+      "rainHeight": 240,
+      "hitEffect": "acid_burst",
+      "lead": 0.8
+    },
+    {
+      "id": "spore_volley",
+      "name": "Salve de spores",
+      "type": "arc",
+      "damage": 1,
+      "range": 520,
+      "telegraph": 0.6,
+      "active": 0.25,
+      "recover": 0.5,
+      "cooldown": 2.6,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "pollen",
+      "projectileSpeed": 160,
+      "count": 3,
+      "spread": 20,
+      "gravity": 420,
+      "projectileRadius": 6,
+      "hitEffect": "acid_burst",
+      "lead": 0.8
+    },
+    {
+      "id": "buds",
+      "name": "Bourgeons",
+      "type": "summon",
+      "damage": 0,
+      "range": 600,
+      "telegraph": 0.9,
+      "active": 0.4,
+      "recover": 0.8,
+      "cooldown": 11,
+      "telegraphAnim": "summon",
+      "attackAnim": "summon",
+      "summonId": "gloop",
+      "summonCount": 2,
+      "maxSummoned": 3
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": true,
+      "cooldown": 7.0,
+      "range": 170
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "charge_shot": 1.2,
+    "wave": 1.2
+  },
+  "rewards": {
+    "score": 5000,
+    "drops": [
+      {
+        "type": "health_orb",
+        "chance": 1.0
+      },
+      {
+        "type": "energy_orb",
+        "chance": 1.0
+      }
+    ]
+  },
+  "light": {
+    "color": "#b48cff",
+    "radius": 100
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/boss_roar.wav",
+    "alert": "sounds/boss_roar.wav"
+  },
+  "boss": {
+    "title": "MYCÉLIA, LA MÈRE-RACINE",
+    "phases": [
+      {
+        "name": "Éveil",
+        "hpThreshold": 1.0,
+        "attacks": [
+          "tracker",
+          "spore_rain",
+          "spore_volley"
+        ],
+        "speedMultiplier": 1.0,
+        "cooldownMultiplier": 1.0,
+        "combo": 1,
+        "telegraphMultiplier": 1.0
+      },
+      {
+        "name": "Forêt vivante",
+        "hpThreshold": 0.66,
+        "attacks": [
+          "tracker",
+          "spore_rain",
+          "spore_volley",
+          "cage",
+          "buds"
+        ],
+        "speedMultiplier": 1.1,
+        "cooldownMultiplier": 0.9,
+        "combo": 1,
+        "telegraphMultiplier": 0.95,
+        "enterText": "Mycélia réveille la forêt !",
+        "summonOnEnter": true
+      },
+      {
+        "name": "Mère de tout",
+        "hpThreshold": 0.33,
+        "attacks": [
+          "tracker",
+          "spore_rain",
+          "spore_volley",
+          "cage",
+          "buds",
+          "inhale"
+        ],
+        "speedMultiplier": 1.2,
+        "cooldownMultiplier": 0.8,
+        "combo": 2,
+        "telegraphMultiplier": 0.9,
+        "enterText": "Mycélia aspire l'air du bosquet !"
+      }
+    ],
+    "enrageTime": 75
+  }
+}

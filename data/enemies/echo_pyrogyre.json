@@ -1,0 +1,274 @@
+{
+  "format": "cosmic.enemy",
+  "id": "echo_pyrogyre",
+  "name": "Écho : Pyrogyre",
+  "description": "Reflet de Pyrogyre, rappelé par le cœur de l'étoile. Il ne laisse aucun soin derrière lui.",
+  "family": "miniboss",
+  "animation": "animations/pyrogyre.json",
+  "size": [
+    52,
+    52
+  ],
+  "scale": 1.0,
+  "hp": 115,
+  "contactDamage": 2,
+  "speed": 56,
+  "chaseSpeedMultiplier": 1.2,
+  "flying": true,
+  "knockbackResist": 1,
+  "detectionRange": 360,
+  "attackRange": 200,
+  "loseRange": 2000,
+  "needsLineOfSight": false,
+  "movement": "fly",
+  "reaction": "keepDistance",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 170,
+  "hopVelocity": 0,
+  "attacks": [
+    {
+      "id": "crown",
+      "name": "Couronne de feu",
+      "type": "orbit",
+      "damage": 2,
+      "range": 500,
+      "telegraph": 0.8,
+      "active": 0.2,
+      "recover": 0.45,
+      "cooldown": 4.0,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "solar_flame",
+      "projectileRadius": 8,
+      "count": 6,
+      "radius": 150,
+      "spread": 110,
+      "duration": 2.6,
+      "knockback": 220
+    },
+    {
+      "id": "spiral",
+      "name": "Spirale solaire",
+      "type": "spiral",
+      "damage": 1,
+      "range": 640,
+      "telegraph": 0.7,
+      "active": 0.2,
+      "recover": 0.4,
+      "cooldown": 4.0,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "solar_bolt",
+      "projectileSpeed": 125,
+      "arms": 2,
+      "spread": 13,
+      "burstInterval": 0.14,
+      "duration": 3.0,
+      "hitEffect": "fire_burst"
+    },
+    {
+      "id": "ray",
+      "name": "Rayon solaire",
+      "type": "laser",
+      "damage": 2,
+      "range": 500,
+      "telegraph": 1.0,
+      "active": 1.4,
+      "recover": 0.5,
+      "cooldown": 3.6,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "special",
+      "laserLength": 500,
+      "sweepDegrees": 90,
+      "color": "#ffb13b",
+      "beamTexture": "flame",
+      "beamWidth": 16
+    },
+    {
+      "id": "tide",
+      "name": "Marée de lave",
+      "type": "flood",
+      "damage": 2,
+      "range": 1000,
+      "telegraph": 1.4,
+      "active": 0.5,
+      "recover": 0.6,
+      "cooldown": 12.0,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "summon",
+      "duration": 4.0,
+      "height": 64
+    },
+    {
+      "id": "high_tide",
+      "name": "Grande marée",
+      "type": "flood",
+      "damage": 2,
+      "range": 1000,
+      "telegraph": 1.4,
+      "active": 0.5,
+      "recover": 0.6,
+      "cooldown": 11.0,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "summon",
+      "duration": 4.0,
+      "height": 120
+    },
+    {
+      "id": "eruptions",
+      "name": "Éruptions",
+      "type": "eruption",
+      "damage": 2,
+      "range": 560,
+      "telegraph": 0.9,
+      "active": 0.3,
+      "recover": 0.7,
+      "cooldown": 4.2,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "fireball",
+      "projectileSpeed": 420,
+      "count": 5,
+      "spread": 60,
+      "gravity": 700,
+      "warningEffect": "eruption_warning_fire",
+      "eruptionEffect": "eruption_fire",
+      "hitEffect": "fire_burst",
+      "lead": 0.7
+    },
+    {
+      "id": "flare_line",
+      "name": "Gerbe solaire",
+      "type": "arc",
+      "damage": 1,
+      "range": 640,
+      "telegraph": 0.6,
+      "active": 0.25,
+      "recover": 0.4,
+      "cooldown": 2.6,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "solar_bolt",
+      "projectileSpeed": 180,
+      "count": 4,
+      "spread": 18,
+      "gravity": 420,
+      "projectileRadius": 6,
+      "hitEffect": "fire_burst",
+      "lead": 0.8,
+      "weight": 1.4
+    },
+    {
+      "id": "supernova",
+      "name": "Supernova",
+      "type": "orbit",
+      "damage": 2,
+      "range": 480,
+      "telegraph": 0.9,
+      "active": 0.2,
+      "recover": 0.8,
+      "cooldown": 6.0,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "solar_flame",
+      "projectileRadius": 8,
+      "projectileSpeed": 120,
+      "count": 6,
+      "radius": 160,
+      "spread": 95,
+      "duration": 4.5,
+      "arms": 2,
+      "burstInterval": 0.24,
+      "knockback": 220
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "wave": 1.2,
+    "charge_shot": 1.3
+  },
+  "rewards": {
+    "score": 5500,
+    "drops": [
+      {
+        "type": "energy_orb",
+        "chance": 1.0
+      }
+    ]
+  },
+  "light": {
+    "color": "#ffb13b",
+    "radius": 100
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/boss_roar_fire.wav",
+    "alert": "sounds/boss_roar_fire.wav"
+  },
+  "boss": {
+    "title": "ÉCHO — PYROGYRE, L'ANNEAU SOLAIRE",
+    "phases": [
+      {
+        "name": "Aube",
+        "hpThreshold": 1.0,
+        "attacks": [
+          "crown",
+          "spiral",
+          "ray",
+          "flare_line"
+        ],
+        "speedMultiplier": 1.0,
+        "cooldownMultiplier": 1.0,
+        "combo": 1,
+        "telegraphMultiplier": 1.0
+      },
+      {
+        "name": "Zénith",
+        "hpThreshold": 0.66,
+        "attacks": [
+          "crown",
+          "spiral",
+          "ray",
+          "flare_line",
+          "tide",
+          "eruptions"
+        ],
+        "speedMultiplier": 1.1,
+        "cooldownMultiplier": 0.9,
+        "combo": 2,
+        "telegraphMultiplier": 0.95,
+        "enterText": "La caldeira se remplit de lave !"
+      },
+      {
+        "name": "Supernova",
+        "hpThreshold": 0.33,
+        "attacks": [
+          "supernova",
+          "spiral",
+          "ray",
+          "flare_line",
+          "high_tide",
+          "eruptions"
+        ],
+        "speedMultiplier": 1.2,
+        "cooldownMultiplier": 0.8,
+        "combo": 2,
+        "telegraphMultiplier": 0.9,
+        "enterText": "Pyrogyre devient une étoile naissante !"
+      }
+    ],
+    "enrageTime": 75
+  },
+  "variantOf": "pyrogyre",
+  "tint": "#a894ff"
+}

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Bosses of the Stellar Core (Noyau stellaire, version 2.7):
 
-* the echoes of the twelve guardians of the campaign (data/enemies/echo_<id>.json): the
+* the echoes of the sixteen guardians of the campaign (the four of Aethra since 2.19) (data/enemies/echo_<id>.json): the
   same fight, a spectral tint, and no health orb when they fall (the boss rush is played
   without any healing);
 * the Astrarque (data/enemies/astrarque.json), the heart of the star: the Forgeron
   Primordial's body, bigger and gold-lit, with the attacks of the three other flying
   guardians (Sentinelle Prime, Cryowyrm, Ignivore), three phases and rage after 90 s.
 
-Run from the repository root after trial_bosses.py:  python3 tools/levelgen/stellar_bosses.py
+Run from the repository root after trial_bosses.py and tools/contentgen/guardians.py:  python3 tools/levelgen/stellar_bosses.py
 """
 import copy
 import json
@@ -17,7 +17,9 @@ import os
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 GUARDIANS = ["thornwarden", "spore_queen", "prime_sentinel", "archon_catacombs",
              "cryowyrm", "frost_hydra", "glaciarch", "howling_wyrm",
-             "magmaroth", "ignivore", "forge_core", "crucible_heart"]
+             "magmaroth", "ignivore", "forge_core", "crucible_heart",
+             # 2.19: the guardians of Aethra (tools/contentgen/guardians.py)
+             "mycelia", "aurorax", "pyrogyre", "nyxara"]
 ECHO_TINT = "#a894ff"
 
 
