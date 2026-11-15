@@ -1,4 +1,11 @@
 {
+  "2.33.0": [
+    "Défis de la semaine et du mois : à côté du défi du jour, un défi par semaine (lundi → lundi) et un par mois, plus longs et plus durs, chacun avec son classement, ses paliers et sa série.",
+    "Calendrier des défis : chaque jour, semaine et mois avec votre palier et son état ; un défi passé se rejoue « hors délai » (classement « Depuis », sans compter pour la série) ; navigation au clavier, à la manette et à la souris.",
+    "Classement « Plus loin » : pour les défis que peu de joueurs finissent, chaque essai est noté par le serveur selon sa progression (trajet, boss, embuscades), à côté des « Meilleurs temps » ; « Voir » rejoue l'essai de chaque joueur classé.",
+    "SOCIAL : la présence de vos amis (en ligne, absent, hors ligne) sur leur avatar, amis en ligne d'abord ; « Montrer ma présence à mes amis » dans les paramètres en ligne.",
+    "Un clic sur l'avatar d'un joueur ouvre son profil, partout dans le jeu."
+  ],
   "2.32.2": [
     "Niveaux EXTRÊME : un encadrement qui avertit (fond rouge sang, bordure fissurée qui bat comme un cœur, sang qui coule, flammes, braises, griffes) dans le choix du niveau et dans CLASSEMENTS.",
     "Replays partout : chaque joueur classé a son bouton de replay dans CLASSEMENTS, dans le classement des NIVEAUX EN LIGNE et dans la course à la vérification des niveaux EXTRÊME (« Voir » sur chaque tentative classée).",

@@ -95,3 +95,5 @@ station
 {"challenge":"{0}","hearts":{1},"slots":{2},"powers":[
 installer
 {0}-W{1}
+challenges
+false
