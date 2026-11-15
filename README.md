@@ -5,6 +5,10 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.34.0** :
+* **Singularis, le Cœur Effondré** : gardien à huit phases dans une arène géante, au cœur du
+  nouveau niveau EXTRÊME **« Le Cœur d'une Étoile Mourante »** (Noyau stellaire, une seule vie).
+
 **Nouveau dans la version 2.33.1** :
 * Présence des amis aussi dans les discussions privées et dans le profil d'un ami.
 

@@ -4048,6 +4048,12 @@
    ]
   },
   {
+   "fr": "Caméra : une arène trop grande pour l'écran suit le joueur au recul maximal, en penchant vers le boss ; les arènes existantes ne changent pas. Les records des autres niveaux sont conservés.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Caméra fixe",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -5992,6 +5998,12 @@
    "fr": "combo",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Comme les autres gardiens : statistiques, entraînement, succès (vaincre, sans dégât, chaque phase sans dégât), titre « Briseur d'étoiles », musique dans le juke-box, Galerie ; pas d'écho dans L'Arène des Échos.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -19161,6 +19173,12 @@
    ]
   },
   {
+   "fr": "Nouveau gardien : Singularis, le Cœur Effondré — une étoile morte devenue conscience, huit phases (Éveil, Pluie d'étoiles, Gravité, Miroirs, Effondrement, Cage stellaire, Escorte, Supernova) et une « Dernière lumière » à survivre.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "NOUVEAU GROUPE",
    "where": [
     "ui/screens/SocialScene.cpp"
@@ -19228,6 +19246,12 @@
    "fr": "Nouveau niveau dans la campagne : {0}",
    "where": [
     "game/progression/NewsCenter.cpp"
+   ]
+  },
+  {
+   "fr": "Nouveau niveau EXTRÊME du Noyau stellaire : « Le Cœur d'une Étoile Mourante » — une seule vie, huit salles très dures puis une arène géante qui change à chaque phase (plancher qui s'effondre, marée de plasma, plateformes en orbite, arène qui se resserre). Ouvert après « Le Cœur de l'Étoile ».",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
