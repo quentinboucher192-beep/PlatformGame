@@ -33,6 +33,8 @@ struct RunResult {
     std::string player = "Nova";
     /// Gameplay fingerprint of the level played (campaign): a record is only valid for it.
     std::string levelHash;
+    /// A training run (GameWorld::training()): never recorded, never saved.
+    bool training = false;
 
     Json toJson() const;
     static RunResult fromJson(const Json& j);

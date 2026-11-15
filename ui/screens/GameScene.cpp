@@ -7,6 +7,7 @@
 #include "engine/core/Log.h"
 #include "game/GameServices.h"
 #include "game/enemies/Enemy.h"
+#include "game/gameplay/RunCounters.h"
 #include "game/levels/LevelAnalyzer.h"
 #include "game/online/LevelFingerprint.h"
 #include "ui/screens/PauseScene.h"
@@ -53,13 +54,20 @@ void GameScene::onEnter() {
     applyCosmetics();
     // Same randomness for every player of this level (and in its replays).
     world_->seedGameplay(levelSeed(levelId_));
-    if (opt_.spawn) world_->startAt(*opt_.spawn);
+    // Boss training: set up with the world (start, hearts, powers, phase), marked as training.
+    if (opt_.bossTraining) {
+        if (!applyBossTraining(*world_, *opt_.bossTraining))
+            Log::warn("Entraînement : boss {} introuvable dans {}", opt_.bossTraining->bossId, levelId_);
+    } else if (opt_.spawn) {
+        world_->startAt(*opt_.spawn);
+    }
+    const bool counted = !world_->training();  // a training run records nothing
     if (opt_.training) startTraining();
-    if (const LevelRecord* rec = g_.records.get(levelId_); rec && !opt_.training) world_->setReferenceSplits(rec->bestSplits);
+    if (const LevelRecord* rec = g_.records.get(levelId_); rec && !opt_.training && counted) world_->setReferenceSplits(rec->bestSplits);
     renderer_.build(g_.app.renderer(), res, *world_);
     if (g_.settings.gameplay.progressBar > 0)
         trackFuture_ = std::async(std::launch::async, [level = level_, &content = g_.content] { return buildProgressTrack(level, content); });
-    if (!opt_.editorTest && !opt_.training) {
+    if (!opt_.editorTest && !opt_.training && counted) {
         g_.records.registerAttempt(levelId_);
         if (!workshop_) {
             g_.progression.lastLevel = levelId_;
@@ -70,7 +78,7 @@ void GameScene::onEnter() {
     if (!g_.inputScript.empty()) script_.parse(g_.inputScript);
     // Cosmic Online: official levels and community levels played from their start can be
     // ranked; a player level finished in an editor test (from its start) can be published.
-    if (!opt_.spawn) {
+    if (!opt_.spawn && counted) {
         bool community = !opt_.editorTest && !opt_.level && g_.online.communityInstall(levelId_) != nullptr;
         if (opt_.editorTest || community) {
             gameplayHash_ = fingerprintGameplay(g_.content, level_);
@@ -118,7 +126,7 @@ void GameScene::onEnter() {
         else if (trig == "checkpoint") runCheckpoints_.push_back(src);
     };
     // Ghost Racing: the hash of this exact version of the level (the one its replays carry).
-    if (!opt_.editorTest && !opt_.level) {
+    if (!opt_.editorTest && !opt_.level && counted) {
         if (recordMode_ == RecordMode::Official && fingerprint_) ghostHash_ = fingerprint_->hash;
         else if (!gameplayHash_.empty()) ghostHash_ = gameplayHash_;
         else if (const LevelFingerprint* fp = g_.online.fingerprints().get(g_.content, levelId_)) ghostHash_ = fp->hash;
@@ -160,17 +168,10 @@ void GameScene::noteAchievementStats(bool completed, const RecordUpdate* upd) {
     statsNoted_ = true;
     AchievementStats& a = g_.achievements.stats();
     const RunStats& s = world_->stats();
-    a.add("kills", s.kills);
-    a.add("deaths", s.deaths);
-    a.add("shards", s.shards);
-    a.add("relics", s.relics);
-    a.add("secrets", s.secrets);
+    // The world's counters (kills, deaths, collectibles, powers carried): none for a training.
+    if (!noteRunCounters(a, *world_, completed)) return;
     a.add("jumps", runJumps_);
     int64_t uses = 0;
-    for (const auto& pw : world_->player().powers()) {
-        a.insert("powers_owned", pw->id());
-        if (completed) a.add("carried_" + pw->id());  // passive powers: finished while owned
-    }
     for (const auto& [id, n] : runPowers_) {
         if (!g_.content.power(id)) continue;  // only the player's powers
         a.powerUses[id] += n;
@@ -178,10 +179,8 @@ void GameScene::noteAchievementStats(bool completed, const RecordUpdate* upd) {
         uses += n;
     }
     a.add("power_uses", uses);
-    a.raise("run_kills", s.kills);
     if (level_.extreme && !opt_.spawn) a.add("extreme_attempts");
     if (completed) {
-        a.add("runs_completed");
         // Level achievements: a campaign level played from its start.
         if (!workshop_ && !opt_.level && !opt_.spawn && !opt_.training) {
             if (s.deaths == 0) a.insert("no_death_levels", levelId_);
@@ -246,7 +245,7 @@ void GameScene::onExit() {
     mounted_ = false;
     g_.app.audio().stopAmbience(600);
     g_.app.audio().setMusicDuck(1.0f);
-    if (!opt_.editorTest) {
+    if (!opt_.editorTest && !(world_ && world_->training())) {
         g_.progression.addPlayTime(opt_.level ? std::string{} : levelId_, playTime_);
         // Online profile: official levels by id, community levels by their online id.
         if (!opt_.level) {
@@ -334,6 +333,10 @@ void GameScene::restart() {
 
 void GameScene::quitToMenu() {
     abandonRaceAttempt();
+    if (opt_.bossTraining) {
+        g_.app.switchScene(makeBossStats(g_, opt_.bossTraining->bossId), 0.4f);
+        return;
+    }
     if (opt_.editorTest) {
         g_.app.popScene();
         return;
@@ -405,6 +408,7 @@ void GameScene::fixedUpdate(float dt) {
         race_.update(*world_);
         recorder_.raceProgress(race_.progress().bossRemoved, race_.progress().wavesDone);
     }
+    if (!ended_ && opt_.bossTraining) updateBossTraining();
     playTime_ += dt;
     if (!ended_ && world_->state() == WorldState::Completed) finishRun(true);
     if (!ended_ && world_->state() == WorldState::Failed) finishRun(false);
@@ -459,6 +463,11 @@ void GameScene::bossFeedback() {
 }
 
 void GameScene::finishRun(bool completed) {
+    if (opt_.bossTraining) {
+        // The level ended otherwise (its exit, its rules): the training ends with it.
+        if (!ended_) endBossTraining(bossTrainingWon(*world_, *opt_.bossTraining));
+        return;
+    }
     if (opt_.training) {
         // Training never makes a record nor progress: the exit ends the segment, a fall ends
         // the attempt (both start again).
@@ -475,22 +484,11 @@ void GameScene::finishRun(bool completed) {
         bossFights_.step(*world_, g_.bossStats);
         g_.bossStats.save();
     }
-    RunResult r;
+    RunResult r = runResultOf(*world_, completed);
     r.levelId = levelId_;
-    r.completed = completed;
-    r.time = world_->timer().elapsed();
     const RunStats& s = world_->stats();
-    r.deaths = s.deaths;
-    r.collectibles = s.collectibles();
-    r.totalCollectibles = s.totalCollectibles();
-    r.relics = s.relics;
-    r.secrets = s.secrets;
-    r.totalSecrets = s.totalSecrets;
-    r.kills = s.kills;
     r.score = RecordsManager::computeScore(level_, s, r.time, completed);
     r.medal = RecordsManager::evaluateMedal(level_, r);
-    r.powersUsed.assign(s.powersUsed.begin(), s.powersUsed.end());
-    r.splits = world_->timer().splits();
     r.date = FileUtil::nowString();
     // A campaign record belongs to this version of the level (notifications drop it if the
     // level changes later).
@@ -502,7 +500,7 @@ void GameScene::finishRun(bool completed) {
         upd = g_.records.submit(r);
         g_.records.save();
         if (completed) {
-            g_.progression.markCompleted(levelId_);
+            g_.progression.noteRun(r);
             g_.progression.save();
         }
     }
@@ -695,7 +693,7 @@ void GameScene::update(float dt) {
     }
     // Quick restart (contre-la-montre, training): R key or the gamepad View/Back button.
     if (!ended_ && (in.keyPressed(SDL_SCANCODE_R) || in.rawPadButton(SDL_GAMEPAD_BUTTON_BACK)) &&
-        world_->state() == WorldState::Playing && (level_.timerMode == TimerMode::TimeAttack || opt_.training)) {
+        world_->state() == WorldState::Playing && (level_.timerMode == TimerMode::TimeAttack || opt_.training || opt_.bossTraining)) {
         restart();
         return;
     }
@@ -704,6 +702,12 @@ void GameScene::update(float dt) {
     if (segmentBanner_ > 0.0f) {
         segmentBanner_ -= dt;
         if (segmentBanner_ <= 0.0f || in.menuPressed(Action::MenuConfirm)) restart();
+    }
+    // Boss training: its end screen, once the boss's fall (or the player's) has been seen and
+    // the level's messages (the boss's name...) are gone, so that nothing shows under it.
+    if (bossTrainingEnd_ && (bossTrainingDelay_ -= dt) <= 0.0f && (world_->messages().empty() || bossTrainingDelay_ < -4.0f)) {
+        g_.app.pushScene(makeBossTrainingEnd(g_, *this, *bossTrainingEnd_));
+        bossTrainingEnd_.reset();
     }
 }
 
@@ -748,7 +752,9 @@ void GameScene::applyCosmetics() {
 }
 
 void GameScene::noteCreaturesMet() {
-    // A creature enters the gallery once it has been on screen, awake, in a level.
+    // A creature enters the gallery once it has been on screen, awake, in a level (never in a
+    // training run).
+    if (world_->training()) return;
     Rect seen = world_->camera().visibleArea(g_.app.renderer().width(), g_.app.renderer().height());
     for (const auto& e : world_->enemies()) {
         if (!e->alive() || e->dormant() || !seen.intersects(e->box)) continue;
@@ -789,7 +795,7 @@ void GameScene::render(float alpha) {
         ghostRun_.drawHud(g_.ui, view, hud_.area(g_.ui, *world_, HudElement::Splits, sp), sp.k, hudVisible(gs, HudElement::Splits), keepOut, n);
     }
     drawBossArrow(view);
-    if (opt_.training) drawTrainingBanner();
+    if (opt_.training || opt_.bossTraining) drawTrainingBanner();
     if (g_.settings.graphics.showFps) {
         char buf[32];
         std::snprintf(buf, sizeof(buf), "%.0f FPS", g_.app.fps());
@@ -800,6 +806,29 @@ void GameScene::render(float alpha) {
 void GameScene::drawTrainingBanner() {
     UIContext& ui = g_.ui;
     const float W = ui.screenW();
+    if (opt_.bossTraining) {
+        // Boss training: what this run is, always in view (bottom left), in a dark pill.
+        const std::string tag = "Entraînement — ne compte pas pour les succès ni les statistiques";
+        const std::string keys = "R / Vue : recommencer";
+        float fs = std::max(15.0f, 11.5f / ui.s(1.0f));
+        const float room = W * 0.62f;
+        float tw = ui.text().measure(tag, FontFace::Bold, ui.s(fs)).x;
+        float kw = ui.text().measure(keys, FontFace::Body, ui.s(fs)).x;
+        if (tw + kw + ui.s(52) > room) {
+            fs = ui.fitFont(tag + "      " + keys, FontFace::Bold, fs, room - ui.s(52), 0.7f);
+            tw = ui.text().measure(tag, FontFace::Bold, ui.s(fs)).x;
+            kw = ui.text().measure(keys, FontFace::Body, ui.s(fs)).x;
+        }
+        Rect pill{ui.s(16), ui.screenH() - ui.s(16) - ui.s(fs + 18), std::min(room, tw + kw + ui.s(52)), ui.s(fs + 18)};
+        ui.r().fillRoundedRect(pill, pill.h * 0.5f, Color{8, 12, 26, 215});
+        ui.r().drawRoundedRect(pill, pill.h * 0.5f, ui.theme().warm.withAlpha(170), std::max(1.0f, ui.s(1.5f)));
+        Vec2 ts = ui.label(ui.elide(tag, FontFace::Bold, fs, pill.w - ui.s(28)), {pill.x + ui.s(14), pill.center().y}, fs, ui.theme().warm,
+                           Align::Left, FontFace::Bold, VAlign::Middle);
+        float kx = pill.x + ui.s(14) + ts.x + ui.s(24);
+        if (kx + kw <= pill.right() - ui.s(10))
+            ui.label(keys, {kx, pill.center().y}, fs, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        return;
+    }
     // Always: what this run is (no record), at the bottom left.
     std::string tag = "ENTRAÎNEMENT · aucun record · R / Vue : recommencer";
     ui.label(ui.elide(tag, FontFace::Bold, 15, W * 0.5f), {ui.s(24), ui.screenH() - ui.s(28)}, 15, ui.theme().warm, Align::Left, FontFace::Bold,
@@ -831,6 +860,36 @@ void GameScene::drawTrainingBanner() {
     ui.label(ui.elide(line, FontFace::Body, 19, b.w - ui.s(40)), {b.center().x, b.y + ui.s(86)}, 19, ui.theme().textDim, Align::Center,
              FontFace::Body, VAlign::Middle);
     ui.label("Nouvel essai…", {b.center().x, b.y + ui.s(122)}, 16, ui.theme().accent, Align::Center, FontFace::Body, VAlign::Middle);
+}
+
+void GameScene::updateBossTraining() {
+    const BossTrainingSetup& s = *opt_.bossTraining;
+    const Enemy* boss = bossTrainingEnemy(*world_, s);
+    // The fight's time runs from its start (the boss awake and fighting).
+    if (boss && boss->alive() && world_->activeBoss() == boss && fightStart_ < 0.0f) fightStart_ = world_->time();
+    if (boss && boss->alive()) trainingPhase_ = boss->phaseIndex();
+    if (bossTrainingWon(*world_, s)) endBossTraining(true);
+    else if (world_->stats().deaths > 0 || world_->state() == WorldState::Failed) endBossTraining(false);
+}
+
+void GameScene::endBossTraining(bool won) {
+    ended_ = true;
+    const BossTrainingSetup& s = *opt_.bossTraining;
+    BossTrainingResult r;
+    r.won = won;
+    r.setup = s;
+    r.time = fightStart_ >= 0.0f ? world_->time() - fightStart_ : 0.0f;
+    r.damage = world_->stats().damageTaken;
+    r.phase = trainingPhase_;
+    if (const EnemyDefinition* d = g_.content.enemy(s.bossId)) {
+        r.bossName = d->name;
+        r.phases = static_cast<int>(d->phases.size());
+        if (won && s.phase < 0) r.phase = std::max(0, r.phases - 1);
+        if (r.phase >= 0 && r.phase < r.phases) r.phaseName = d->phases[static_cast<size_t>(r.phase)].name;
+    }
+    bossTrainingEnd_ = r;
+    bossTrainingDelay_ = won ? 1.4f : 1.0f;  // the boss's fall (or the player's) is seen first
+    g_.uiSound(won ? "medal" : "ui_back", 0.7f);
 }
 
 void GameScene::renderDebug() {

@@ -28,6 +28,8 @@
 //                           export a level and all its dependencies without opening a window
 //   --boss-stats [<boss>[:<clip>]]
 //                           open the boss statistics (that boss, that clip of its animation)
+//   --boss-training <boss> [--boss-training-go]
+//                           open the settings of a boss training (and enter its arena)
 //   --online [<level>]      start on the ONLINE RANKING screen
 //   --online-focus <name>   with --online: select the globe marker of this player
 //   --online-open <what>    with --online: open register | login | settings |
@@ -536,6 +538,10 @@ int main(int argc, char** argv) {
         // --boss-stats [<boss id>[:<clip>]]: that boss selected (and that clip of its animation).
         if (std::string b = value("--boss-stats"); !b.empty()) game.onlineOpen = "boss:" + b;
         app.pushScene(makeBossStats(game));
+    } else if (std::string bt = value("--boss-training"); !bt.empty()) {
+        // The settings of a boss training; --boss-training-go: enters its arena once it is found.
+        if (has("--boss-training-go")) game.onlineOpen = "train-go";
+        app.pushScene(makeBossTraining(game, bt));
     } else if (std::string race = value("--race"); !race.empty()) {
         auto c1 = race.find(':');
         std::string kind = race.substr(0, c1), rest = c1 == std::string::npos ? std::string{} : race.substr(c1 + 1);

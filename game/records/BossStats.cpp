@@ -143,6 +143,8 @@ void BossFightTracker::phaseDone(BossStats& stats, int hits) {
 }
 
 void BossFightTracker::step(GameWorld& w, BossStats& stats) {
+    // A training run (boss training) never counts: no fight, victory, defeat nor phase.
+    if (w.training()) return;
     const int deaths = w.stats().deaths;
     const int hits = w.stats().damageTaken + deaths;
     Enemy* b = w.activeBoss();
