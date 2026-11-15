@@ -261,13 +261,22 @@ route("POST", `${V}/projects/{projectId}/live/heartbeat`, (ctx) => liveRoute(ctx
 route("POST", `${V}/projects/{projectId}/live/ops`, (ctx) => liveRoute(ctx, "ops"));
 route("POST", `${V}/projects/{projectId}/live/leave`, (ctx) => liveRoute(ctx, "leave"));
 
-// Daily challenges (2.31, docs/online/DAILY_CHALLENGES.md): a future challenge is never shown
+// Challenges (2.32 docs/online/DAILY_CHALLENGES.md, 2.33 docs/online/CHALLENGES_PERIODS.md):
+// a future challenge is never shown. The literal routes come before /challenges/{challengeId}.
+route("GET", `${V}/challenges/current`, (ctx) => challenges.currentAll(ctx));
+route("GET", `${V}/challenges/calendar`, challenges.calendar, { viewer: true, cacheable: true });
 route("GET", `${V}/challenges/daily/current`, (ctx) => challenges.current(ctx));
 route("GET", `${V}/challenges/daily`, (ctx) => challenges.archive(ctx), { cacheable: true });
 route("GET", `${V}/challenges/me`, (ctx) => challenges.mine(ctx));
 route("GET", `${V}/challenges/{challengeId}/leaderboard`, challenges.leaderboard, { viewer: true, cacheable: true });
+route("GET", `${V}/challenges/{challengeId}`, (ctx) => challenges.getChallenge(ctx), { cacheable: true });
 route("POST", `${V}/challenges/{challengeId}/runs`, (ctx) => challenges.submitRun(ctx));
 route("PUT", `${V}/challenges/runs/{runId}/replay`, (ctx) => challenges.uploadRunReplay(ctx));
+// « Plus loin » (2.34): attempts that did not reach the end, scored by the server from their replay
+route("POST", `${V}/challenges/{challengeId}/attempts`, (ctx) => challenges.submitAttempt(ctx));
+route("PUT", `${V}/challenges/attempts/{attemptId}/replay`, (ctx) => challenges.uploadAttemptReplay(ctx));
+// The kept replay of a ranked attempt (GET: {id} is the server's id, `attempt_id` of the board's entries)
+route("GET", `${V}/challenges/attempts/{id}/replay`, challenges.downloadAttemptReplay, { viewer: true });
 route("GET", `${V}/challenges/runs/{runId}/replay`, challenges.downloadRunReplay, { viewer: true });
 
 // Moderation (only with the ADMIN_TOKEN secret)
@@ -357,7 +366,7 @@ async function recheckHeldRecords(env: Bindings, exec: ExecutionContext): Promis
 
 /**
  * Daily maintenance: expired sessions, stale rate-limit windows, old audit entries, held
- * records; the daily challenges of the coming week and the creator of today's challenge.
+ * records; the challenges of the coming days, weeks and months, the featured creators.
  */
 async function maintenance(env: Bindings, exec: ExecutionContext): Promise<void> {
     const now = Date.now();

@@ -1,15 +1,21 @@
-// SQL of an administrator's daily challenge (used by scripts/challenge-set.mjs and by the
-// server tests). Pure: no file, no network; Web Crypto only (Node 18+ and Workers).
+// SQL of an administrator's challenge — of a day, of an ISO week or of a month — (used by
+// scripts/challenge-set.mjs and by the server tests). Pure: no file, no network; Web Crypto
+// only (Node 18+ and Workers).
 //
-// The SQL only ever writes a challenge whose day has not begun when it is APPLIED
-// (`date > date('now')` on the insert and on the update), takes the level revision / the
-// community version's fingerprint, title and author from the database, and records in
-// audit_log whether it was applied or skipped (level not ranked, version not published, day
-// already begun): a migration never fails because of it, so it never blocks the next ones.
+// The SQL only ever writes a challenge whose period has not begun when it is APPLIED
+// (`date > date('now')` on the insert and on the update, `date` being its first UTC day),
+// takes the level revision / the community version's fingerprint, title and author from the
+// database, and records in audit_log whether it was applied or skipped (level not ranked,
+// version not published, period already begun): a migration never fails because of it, so it
+// never blocks the next ones.
 
 export const MAX_SLOTS = 8;
 export const MAX_HEARTS = 20;
+export const KINDS = ["daily", "weekly", "monthly"];
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const WEEK_RE = /^(\d{4})-W(\d{2})$/;
+const MONTH_RE = /^(\d{4})-(\d{2})$/;
+const DAY_MS = 86400000;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const LEVEL_ID_RE = /^[a-z0-9_]{1,64}$/;
 const POWER_RE = /^[a-z0-9_]{1,64}$/;
@@ -34,6 +40,71 @@ function isDate(s) {
     return !Number.isNaN(t) && new Date(t).toISOString().slice(0, 10) === s;
 }
 
+const day = (ms) => new Date(ms).toISOString().slice(0, 10);
+const addDays = (date, n) => day(Date.parse(`${date}T00:00:00Z`) + n * DAY_MS);
+
+function addMonths(month, n) {
+    const [y, m] = month.split("-").map(Number);
+    const i = y * 12 + (m - 1) + n;
+    return `${String(Math.floor(i / 12)).padStart(4, "0")}-${String((i % 12) + 1).padStart(2, "0")}`;
+}
+
+/** ISO 8601 week of a UTC day ('AAAA-Www'), as src/challenges.ts. */
+export function isoWeek(date) {
+    const t = Date.parse(`${date}T00:00:00Z`);
+    const thursday = new Date(t - ((new Date(t).getUTCDay() + 6) % 7) * DAY_MS + 3 * DAY_MS);
+    const year = thursday.getUTCFullYear();
+    const week = Math.floor((thursday.getTime() - Date.UTC(year, 0, 1)) / (7 * DAY_MS)) + 1;
+    return `${year}-W${String(week).padStart(2, "0")}`;
+}
+
+/**
+ * The UTC days of a period, as src/challenges.ts: { start, end } (end excluded), or null when
+ * the period is malformed or does not exist (W53 of a year that has 52 weeks).
+ */
+export function periodBounds(kind, period) {
+    if (kind === "daily") return isDate(period) ? { start: period, end: addDays(period, 1) } : null;
+    if (kind === "weekly") {
+        const m = WEEK_RE.exec(period);
+        const year = Number(m?.[1]);
+        const week = Number(m?.[2]);
+        if (!m || year < 2000 || year > 2999 || week < 1 || week > 53) return null;
+        const jan4 = Date.UTC(year, 0, 4);
+        const start = day(jan4 - ((new Date(jan4).getUTCDay() + 6) % 7) * DAY_MS + (week - 1) * 7 * DAY_MS);
+        return isoWeek(start) === period ? { start, end: addDays(start, 7) } : null;
+    }
+    if (kind === "monthly") {
+        const m = MONTH_RE.exec(period);
+        const year = Number(m?.[1]);
+        const month = Number(m?.[2]);
+        if (!m || year < 2000 || year > 2999 || month < 1 || month > 12) return null;
+        return { start: `${period}-01`, end: `${addMonths(period, 1)}-01` };
+    }
+    return null;
+}
+
+const FORMATS = { daily: "AAAA-MM-JJ", weekly: "AAAA-Www (semaine ISO 8601)", monthly: "AAAA-MM" };
+const LABELS = { daily: "du jour", weekly: "de la semaine", monthly: "du mois" };
+
+/**
+ * The challenge's kind and period from the options: `--kind` and `--period`, or the 2.32 form
+ * `--date AAAA-MM-JJ` (a daily challenge).
+ */
+export function resolvePeriod(opts) {
+    const kind = opts.kind ?? "daily";
+    if (!KINDS.includes(kind)) throw new Error("--kind daily, weekly ou monthly attendu");
+    let period = opts.period;
+    if (opts.date !== undefined) {
+        if (kind !== "daily") throw new Error("--date ne vaut que pour un défi du jour (sinon --period)");
+        if (period !== undefined && period !== opts.date) throw new Error("--date et --period différents");
+        period = opts.date;
+    }
+    if (period === undefined) throw new Error(kind === "daily" ? "--period AAAA-MM-JJ (ou --date AAAA-MM-JJ) obligatoire" : `--period ${FORMATS[kind]} obligatoire`);
+    const bounds = periodBounds(kind, String(period));
+    if (!bounds) throw new Error(`période invalide « ${period} » : ${FORMATS[kind]} attendu`);
+    return { kind, period: String(period), ...bounds };
+}
+
 /** "m:ss" (or "h:mm:ss", or seconds) -> milliseconds. */
 export function parseTime(s) {
     const parts = String(s).trim().split(":");
@@ -53,6 +124,8 @@ export function parseArgs(argv) {
     for (let i = 0; i < argv.length; ++i) {
         const a = argv[i];
         switch (a) {
+            case "--kind": o.kind = value(i++); break;
+            case "--period": o.period = value(i++); break;
             case "--date": o.date = value(i++); break;
             case "--level": o.level = value(i++); break;
             case "--hearts": o.hearts = value(i++); break;
@@ -80,14 +153,15 @@ const NOW = "strftime('%Y-%m-%dT%H:%M:%fZ', 'now')";
 
 /**
  * Builds the migration. `opts` from parseArgs; `catalog` = src/challengeCatalog.json;
- * `today` = the UTC day ('AAAA-MM-JJ') at generation: the date must be later.
- * Returns { sql, id, rules, rulesHash, canonical, warnings }.
+ * `today` = the UTC day ('AAAA-MM-JJ') at generation: the period must begin later.
+ * Returns { sql, id, kind, period, start, end, rules, rulesHash, canonical, warnings }.
  */
 export async function buildChallengeSql(opts, catalog, today) {
-    if (!opts.date || !isDate(opts.date)) throw new Error("--date AAAA-MM-JJ obligatoire");
+    const { kind, period, start, end } = resolvePeriod(opts);
     if (!isDate(today)) throw new Error("date du jour invalide");
-    if (opts.date <= today) throw new Error(`date ${opts.date} refusée : un défi passé ou du jour ne change plus (aujourd'hui : ${today} UTC)`);
-    const id = `daily-${opts.date}`;
+    if (start <= today)
+        throw new Error(`période ${period} (début ${start}) refusée : un défi commencé ou passé ne change plus (aujourd'hui : ${today} UTC)`);
+    const id = `${kind}-${period}`;
     const m = /^(campaign):([a-z0-9_]{1,64})$|^(community):([0-9a-f-]{36})@(\d{1,6})$/.exec(opts.level ?? "");
     if (!m) throw new Error("--level campaign:<id> ou community:<uuid>@<version> obligatoire");
     const community = m[3] === "community";
@@ -122,9 +196,9 @@ export async function buildChallengeSql(opts, catalog, today) {
     } else warnings.push("niveau de la communauté : vérifiez qu'il reste faisable avec ces règles (pouvoirs, emplacements, stations)");
     const canonical = canonicalRules(id, rules);
     const rulesHash = await sha256Hex(canonical);
-    const notStarted = `${q(opts.date)} > date('now')`;
+    const notStarted = `${q(start)} > date('now')`;
     const values = [
-        q(id), "'daily'", q(opts.date), "'admin'",
+        q(id), q(kind), q(period), q(start), q(end), "'admin'",
         community ? "'community'" : "'campaign'",
         community ? "v.level_id" : "l.id",
         community ? "v.version" : "l.current_version",
@@ -137,19 +211,20 @@ export async function buildChallengeSql(opts, catalog, today) {
     const from = community
         ? `FROM community_level_versions v JOIN community_levels l ON l.id = v.level_id WHERE v.level_id = ${q(levelId)} AND v.version = ${version} AND v.published_at IS NOT NULL AND v.status IN ('published', 'superseded') AND l.status = 'published' AND ${notStarted}`
         : `FROM levels l JOIN level_versions lv ON lv.level_id = l.id AND lv.content_hash = l.content_hash WHERE l.id = ${q(levelId)} AND l.ranking_enabled = 1 AND lv.compatibility_status = 'active' AND ${notStarted}`;
-    const columns = "id, kind, date, source, level_source, level_id, level_version, level_hash, level_title, hearts, slots, powers, stations, checkpoints, rules_hash, silver_ms, gold_ms, gold_no_damage, featured_player_id, featured_notified_at, created_at, updated_at";
+    const columns = "id, kind, period, date, end_date, source, level_source, level_id, level_version, level_hash, level_title, hearts, slots, powers, stations, checkpoints, rules_hash, silver_ms, gold_ms, gold_no_damage, featured_player_id, featured_notified_at, created_at, updated_at";
     const updated = ["source", "level_source", "level_id", "level_version", "level_hash", "level_title", "hearts", "slots", "powers", "stations", "checkpoints", "rules_hash", "silver_ms", "gold_ms", "gold_no_damage", "featured_player_id", "featured_notified_at", "updated_at"];
     const level = community ? `community:${levelId}@${version}` : `campaign:${levelId}`;
-    const applied = `EXISTS (SELECT 1 FROM daily_challenges WHERE id = ${q(id)} AND source = 'admin' AND level_id = ${q(levelId)} AND rules_hash = ${q(rulesHash)}${community ? ` AND level_version = ${version}` : ""})`;
-    const details = q(JSON.stringify({ challenge: id, level, rules_hash: rulesHash }));
+    const applied = `EXISTS (SELECT 1 FROM challenges WHERE id = ${q(id)} AND source = 'admin' AND level_id = ${q(levelId)} AND rules_hash = ${q(rulesHash)}${community ? ` AND level_version = ${version}` : ""})`;
+    const details = q(JSON.stringify({ challenge: id, kind, level, rules_hash: rulesHash }));
+    const span = kind === "daily" ? period : `${period} (du ${start} au ${addDays(end, -1)})`;
     const sql = [
-        `-- Défi du jour ${opts.date} choisi par l'administrateur (scripts/challenge-set.mjs) : ${level}.`,
+        `-- Défi ${LABELS[kind]} ${span}, choisi par l'administrateur (scripts/challenge-set.mjs) : ${level}.`,
         `-- Règles : ${canonical}`,
         `-- Paliers : Argent ${silver} ms, Or ${gold} ms${opts.goldNoDamage === false ? "" : " sans dégât"}.`,
-        `-- Ne modifie le défi que si son jour n'a pas commencé à l'application (audit_log : challenge_set_applied ou challenge_set_skipped).`,
-        `INSERT INTO daily_challenges (${columns}) SELECT ${values.join(", ")} ${from} ON CONFLICT (id) DO UPDATE SET ${updated.map((c) => `${c} = excluded.${c}`).join(", ")} WHERE daily_challenges.date > date('now');`,
+        `-- Ne modifie le défi que si sa période n'a pas commencé à l'application (audit_log : challenge_set_applied ou challenge_set_skipped).`,
+        `INSERT INTO challenges (${columns}) SELECT ${values.join(", ")} ${from} ON CONFLICT (id) DO UPDATE SET ${updated.map((c) => `${c} = excluded.${c}`).join(", ")} WHERE challenges.date > date('now');`,
         `INSERT INTO audit_log (player_id, action, details, created_at) SELECT NULL, CASE WHEN ${applied} THEN 'challenge_set_applied' ELSE 'challenge_set_skipped' END, ${details}, ${NOW};`,
         "",
     ].join("\n");
-    return { sql, id, rules, rulesHash, canonical, warnings };
+    return { sql, id, kind, period, start, end, rules, rulesHash, canonical, warnings };
 }
