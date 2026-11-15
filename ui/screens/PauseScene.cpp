@@ -157,11 +157,21 @@ void PauseScene::render(float /*alpha*/) {
     }
     {
         // « Mode concentré »: the reduced HUD (also T / Partage in game).
+        // A button like the others (label centred, same font and size), its state on a small
+        // switch at the right; the label never reaches the switch.
         bool focus = g_.settings.gameplay.focusMode;
-        if (ui.toggle("focus", {bx, y, bw, bh}, "Mode concentré", focus)) {
-            g_.settings.gameplay.focusMode = focus;
+        const Rect fr{bx, y, bw, bh};
+        if (ui.button("focus", fr, "")) {
+            g_.settings.gameplay.focusMode = focus = !focus;
             g_.saveSettings();
         }
+        const Rect track{fr.right() - ui.s(16) - ui.s(48), fr.center().y - ui.s(11), ui.s(48), ui.s(22)};
+        const std::string fl = "Mode concentré";
+        const float half = fr.center().x - (track.x - ui.s(10));
+        const float ffs = ui.fitFont(fl, FontFace::Bold, 26.0f, 2.0f * half, 0.6f);
+        ui.label(fl, fr.center(), ffs, ui.theme().text, Align::Center, FontFace::Bold, VAlign::Middle);
+        ui.r().fillRoundedRect(track, ui.s(11), focus ? ui.theme().accent.withAlpha(210) : Color{40, 50, 70, 255});
+        ui.r().fillCircle({focus ? track.right() - ui.s(11) : track.x + ui.s(11), track.center().y}, ui.s(8.5f), Color::white());
         y += bh + ui.s(16);
     }
     if (ghosts) {

@@ -4958,6 +4958,12 @@
    ]
   },
   {
+   "fr": "Choix du niveau : les boss du niveau apparaissent à droite du titre, avec leur nom quand il y a la place ; quand il y en a beaucoup (Arène des Échos), les derniers sont comptés (« +9 ») et le nom s'affiche au survol.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Chorégraphie d'Aurorax",
    "where": [
     "data/achievements/achievements.json"
@@ -6407,6 +6413,12 @@
    "fr": "Cosmic Online ({0})",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Cosmic Online : deux enregistrements simultanés d'un projet collaboratif annoncent toujours la bonne révision au perdant.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -19384,6 +19396,12 @@
   },
   {
    "fr": "Pause : carte des zones déjà explorées, avec les points de passage, la sortie, les pouvoirs laissés aux stations et les objets restés au sol.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Pause : « Mode concentré » est un bouton comme les autres (texte centré, même police et même taille), son état sur un petit interrupteur à droite.",
    "where": [
     "data/news/changelog.json"
    ]

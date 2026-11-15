@@ -6,6 +6,7 @@
 #include "game/levels/LevelTimer.h"
 #include "ui/online/RatingWidgets.h"
 #include "ui/screens/MenuBackground.h"
+#include "ui/screens/CreatureArt.h"
 #include "ui/screens/LevelPowerKeysScene.h"
 #include "ui/screens/Navigation.h"
 #include "ui/widgets/Glyphs.h"
@@ -315,6 +316,68 @@ public:
         ui.end();
     }
 
+    /// The level's bosses between `left` and `right` (right-aligned), centred on `cy`: a
+    /// portrait each, animated; when they do not all fit, the last place says how many more.
+    /// The mouse over a portrait shows the boss's name under it.
+    void drawBosses(float left, float right, float cy, float box, float gap) {
+        UIContext& ui = g_.ui;
+        const int n = static_cast<int>(cachedBosses_.size());
+        {
+            // Few bosses and room enough: each portrait with its name (on its left).
+            const float nf = 18, ngap = ui.s(10);
+            float need = 0.0f;
+            for (const EnemyDefinition* d : cachedBosses_) need += ui.text().measure(d->name, FontFace::Bold, ui.s(nf)).x + ngap + box + gap * 2.0f;
+            if (n <= 3 && need - gap * 2.0f <= right - left) {
+                float x = right - (need - gap * 2.0f);
+                for (const EnemyDefinition* d : cachedBosses_) {
+                    Vec2 ns = ui.label(d->name, {x, cy}, nf, ui.theme().warm, Align::Left, FontFace::Bold, VAlign::Middle);
+                    x += ns.x + ngap;
+                    Rect b{x, cy - box * 0.5f, box, box};
+                    ui.r().fillRoundedRect(b, ui.s(8), Color{12, 16, 32, 230});
+                    ui.r().drawRoundedRect(b, ui.s(8), ui.theme().warm.withAlpha(170), std::max(1.0f, ui.s(1.5f)));
+                    drawCreature(g_, *d, b.expanded(-ui.s(3)), t_, Color::white());
+                    x += box + gap * 2.0f;
+                }
+                return;
+            }
+        }
+        int fit = static_cast<int>((right - left + gap) / (box + gap));
+        if (fit <= 0) return;
+        const int shown = n <= fit ? n : std::max(0, fit - 1);
+        const int slots = shown + (n > shown ? 1 : 0);
+        float x = right - slots * box - (slots - 1) * gap;
+        const Color frame = ui.theme().warm.withAlpha(170);
+        const EnemyDefinition* hovered = nullptr;
+        Rect hoverBox;
+        for (int i = 0; i < shown; ++i) {
+            Rect b{x, cy - box * 0.5f, box, box};
+            ui.r().fillRoundedRect(b, ui.s(8), Color{12, 16, 32, 230});
+            ui.r().drawRoundedRect(b, ui.s(8), frame, std::max(1.0f, ui.s(1.5f)));
+            drawCreature(g_, *cachedBosses_[static_cast<size_t>(i)], b.expanded(-ui.s(3)), t_, Color::white());
+            if (b.contains(ui.input().mousePos())) {
+                hovered = cachedBosses_[static_cast<size_t>(i)];
+                hoverBox = b;
+            }
+            x += box + gap;
+        }
+        if (n > shown) {
+            Rect b{x, cy - box * 0.5f, box, box};
+            ui.r().fillRoundedRect(b, ui.s(8), Color{12, 16, 32, 230});
+            ui.r().drawRoundedRect(b, ui.s(8), frame, std::max(1.0f, ui.s(1.5f)));
+            std::string more = "+" + std::to_string(n - shown);
+            ui.label(more, b.center(), ui.fitFont(more, FontFace::Bold, 20, box - ui.s(8)), ui.theme().warm, Align::Center, FontFace::Bold, VAlign::Middle);
+        }
+        if (hovered) {
+            const float fs = 17;
+            Vec2 sz = ui.text().measure(hovered->name, FontFace::Bold, ui.s(fs));
+            Rect tip{std::min(hoverBox.center().x - sz.x * 0.5f - ui.s(10), right - sz.x - ui.s(20)), hoverBox.bottom() + ui.s(6), sz.x + ui.s(20),
+                     sz.y + ui.s(10)};
+            ui.r().fillRoundedRect(tip, ui.s(6), Color{8, 12, 26, 245});
+            ui.r().drawRoundedRect(tip, ui.s(6), frame, std::max(1.0f, ui.s(1.0f)));
+            ui.label(hovered->name, tip.center(), fs, ui.theme().text, Align::Center, FontFace::Bold, VAlign::Middle);
+        }
+    }
+
     void drawDetails(const LevelEntry& l) {
         UIContext& ui = g_.ui;
         Rect panel{ui.s(720), ui.s(170), ui.screenW() - ui.s(780), ui.screenH() - ui.s(280)};
@@ -323,15 +386,30 @@ public:
             cachedId_ = l.id;
             cached_ = g_.content.loadLevel(l.id);
             cachedKeyPowers_ = cached_ ? !levelKeyPowers(*cached_, g_.content).empty() : false;
+            // The bosses of the level (placed in it), each once, in the level's order.
+            cachedBosses_.clear();
+            if (cached_)
+                for (const LevelObject& o : cached_->objects) {
+                    if (o.type != "enemy") continue;
+                    const EnemyDefinition* def = g_.content.enemy(o.propStr("enemy"));
+                    if (def && def->isBoss && std::find(cachedBosses_.begin(), cachedBosses_.end(), def) == cachedBosses_.end())
+                        cachedBosses_.push_back(def);
+                }
         }
         float x = panel.x + ui.s(36), y = panel.y + ui.s(30);
         float colW = (panel.w - ui.s(108)) * 0.5f;
         bool extreme = cached_ && cached_->extreme && cached_->oneLife();
         {
-            float room = panel.w - ui.s(72) - (extreme ? ui.s(170) : 0.0f);
+            // The bosses of the level, on the right of the title (2.31.2): as many portraits as
+            // fit, the others counted (« +N »); the title keeps room for one at least.
+            const float bossBox = ui.s(44), bossGap = ui.s(8);
+            const int nb = static_cast<int>(cachedBosses_.size());
+            const float bossMin = nb > 0 ? ui.s(24) + bossBox : 0.0f;
+            float room = panel.w - ui.s(72) - (extreme ? ui.s(170) : 0.0f) - bossMin;
             float tf = ui.fitFont(l.name, FontFace::Title, 40, room, 0.7f);
             Vec2 ts = ui.label(ui.elide(l.name, FontFace::Title, tf, room), {x, y}, tf, ui.theme().text, Align::Left, FontFace::Title);
             if (extreme) ui.extremeBadge({x + ts.x + ui.s(18), y + ts.y * 0.5f}, ui.s(42));
+            if (nb > 0) drawBosses(x + ts.x + (extreme ? ui.s(170) : 0.0f) + ui.s(24), panel.right() - ui.s(36), y + ts.y * 0.5f, bossBox, bossGap);
         }
         y += ui.s(60);
         if (!l.author.empty()) {
@@ -475,6 +553,7 @@ private:
     MenuBackground bg_;
     std::string cachedId_;
     std::optional<LevelData> cached_;
+    std::vector<const EnemyDefinition*> cachedBosses_;  // the bosses placed in it (2.31.2)
     bool cachedKeyPowers_ = false;  // its powers include some used with a key of their own
 };
 

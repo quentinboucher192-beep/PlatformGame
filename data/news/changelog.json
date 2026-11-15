@@ -1,4 +1,9 @@
 {
+  "2.31.2": [
+    "Choix du niveau : les boss du niveau apparaissent à droite du titre, avec leur nom quand il y a la place ; quand il y en a beaucoup (Arène des Échos), les derniers sont comptés (« +9 ») et le nom s'affiche au survol.",
+    "Pause : « Mode concentré » est un bouton comme les autres (texte centré, même police et même taille), son état sur un petit interrupteur à droite.",
+    "Cosmic Online : deux enregistrements simultanés d'un projet collaboratif annoncent toujours la bonne révision au perdant."
+  ],
   "2.31.1": [
     "Entraînement par segment : quitter l'entraînement (pause › « Retour à l'entraînement ») ramène à l'écran d'entraînement, sur le même segment, au lieu du choix des niveaux."
   ],

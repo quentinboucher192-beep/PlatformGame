@@ -201,7 +201,9 @@ async function storeContent(ctx: Ctx, p: ProjectRow, author: string, content: un
         .run();
     if (claim.meta.changes !== 1) {
         const cur = await ctx.env.DB.prepare(
-            `SELECT r.revision, r.created_at, pl.username FROM projects p LEFT JOIN project_revisions r ON r.project_id = p.id AND r.revision = p.revision
+            // The project's own revision (claimed first by the winning save): its revision row may
+            // not be written yet when a concurrent loser reads it (then no author / date yet).
+            `SELECT p.revision AS revision, r.created_at, pl.username FROM projects p LEFT JOIN project_revisions r ON r.project_id = p.id AND r.revision = p.revision
              LEFT JOIN players pl ON pl.id = r.author_id WHERE p.id = ?1`,
         )
             .bind(p.id)
