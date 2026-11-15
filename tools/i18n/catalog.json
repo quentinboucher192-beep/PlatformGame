@@ -618,6 +618,7 @@
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/levels/Cinematic.cpp",
+    "game/online/Spectate.cpp",
     "ui/screens/ProjectsScene.cpp"
    ]
   },
@@ -2477,6 +2478,13 @@
    ]
   },
   {
+   "fr": "aucune entrée attendue",
+   "where": [
+    "game/online/Spectate.cpp",
+    "server/src/spectate.ts"
+   ]
+  },
+  {
    "fr": "Aucune invitation en attente.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -4292,9 +4300,21 @@
    ]
   },
   {
+   "fr": "Ce n'est pas le niveau du défi.",
+   "where": [
+    "server/src/spectate.ts"
+   ]
+  },
+  {
    "fr": "ce n'est pas une archive ZIP valide",
    "where": [
     "packaging/ZipArchive.cpp"
+   ]
+  },
+  {
+   "fr": "Ce niveau de la communauté n'est pas installé.",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
    ]
   },
   {
@@ -4325,6 +4345,12 @@
    "fr": "ce niveau n'en donne aucun",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce niveau n'est pas dans votre jeu.",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
    ]
   },
   {
@@ -4649,6 +4675,12 @@
    ]
   },
   {
+   "fr": "Cette partie est trop longue pour être suivie en direct (30 minutes au plus).",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
    "fr": "Cette partie ne vous appartient pas.",
    "where": [
     "server/src/challenges.ts"
@@ -4703,6 +4735,18 @@
    "fr": "Cette version du jeu ne peut pas accéder au réseau.",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Cette version du niveau n'est pas connue du serveur.",
+   "where": [
+    "server/src/spectate.ts"
+   ]
+  },
+  {
+   "fr": "Cette version du niveau n'est pas publiée.",
+   "where": [
+    "server/src/spectate.ts"
    ]
   },
   {
@@ -4873,6 +4917,12 @@
    ]
   },
   {
+   "fr": "Chargement de la partie…",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
    "fr": "Chargement des fantômes…",
    "where": [
     "ui/screens/GhostRun.cpp"
@@ -4906,6 +4956,12 @@
    "fr": "Chargement du niveau impossible : {0}",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Chargement du niveau impossible.",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
    ]
   },
   {
@@ -5207,6 +5263,12 @@
    "fr": "Choisissez une révision à comparer, puis « Comparer ».",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "choix de pouvoir invalide",
+   "where": [
+    "server/src/spectate.ts"
    ]
   },
   {
@@ -6356,6 +6418,12 @@
    ]
   },
   {
+   "fr": "Connectez-vous à Cosmic Online pour regarder vos amis.",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
    "fr": "Connectez-vous à Cosmic Online pour voir le classement du défi et y entrer. Sans compte, le défi se joue quand même : vos résultats restent sur ce PC.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -6464,6 +6532,18 @@
    ]
   },
   {
+   "fr": "CONNEXION PERDUE",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
+   "fr": "Connexion perdue",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
    "fr": "Connexion rétablie",
    "where": [
     "game/online/OnlineService.cpp"
@@ -6479,6 +6559,12 @@
    "fr": "Connexion à Cosmic Online nécessaire pour la télécharger.",
    "where": [
     "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "Connexion à la partie de {0}…",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
    ]
   },
   {
@@ -6570,6 +6656,12 @@
    "fr": "Contrôle : joueur (Échap)",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "contrôle hors de ce morceau",
+   "where": [
+    "server/src/spectate.ts"
    ]
   },
   {
@@ -8184,6 +8276,18 @@
    ]
   },
   {
+   "fr": "direction invalide",
+   "where": [
+    "server/src/spectate.ts"
+   ]
+  },
+  {
+   "fr": "direct|EN ATTENTE",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
    "fr": "Discrète",
    "where": [
     "ui/screens/GhostOptionsScene.cpp"
@@ -8970,6 +9074,12 @@
    ]
   },
   {
+   "fr": "Défi de la semaine",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
    "fr": "Défi de la semaine du {0}",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -8984,7 +9094,8 @@
   {
    "fr": "Défi du jour",
    "where": [
-    "ui/screens/NotificationsScene.cpp"
+    "ui/screens/NotificationsScene.cpp",
+    "ui/screens/SpectateScene.cpp"
    ]
   },
   {
@@ -9002,7 +9113,8 @@
   {
    "fr": "Défi du mois",
    "where": [
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengesScene.cpp",
+    "ui/screens/SpectateScene.cpp"
    ]
   },
   {
@@ -9044,7 +9156,8 @@
   {
    "fr": "Défi introuvable.",
    "where": [
-    "server/src/challenges.ts"
+    "server/src/challenges.ts",
+    "server/src/spectate.ts"
    ]
   },
   {
@@ -9602,6 +9715,12 @@
    ]
   },
   {
+   "fr": "EN DIRECT",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
    "fr": "En direct · révision {0} · opération {1}",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
@@ -9617,6 +9736,12 @@
    "fr": "En direct · révision {0} · opération {1} · lecture seule (testeur)",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
+   ]
+  },
+  {
+   "fr": "En défi",
+   "where": [
+    "ui/screens/SocialScene.cpp"
    ]
   },
   {
@@ -9703,6 +9828,12 @@
    ]
   },
   {
+   "fr": "En partie",
+   "where": [
+    "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
    "fr": "En pause",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -9724,6 +9855,12 @@
    "fr": "En {0} ou moins, sans dégât",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "en-tête absent",
+   "where": [
+    "game/online/Spectate.cpp"
    ]
   },
   {
@@ -9750,6 +9887,12 @@
    "fr": "en-tête incohérent",
    "where": [
     "game/online/Replay.cpp"
+   ]
+  },
+  {
+   "fr": "en-tête incomplet",
+   "where": [
+    "game/online/Spectate.cpp"
    ]
   },
   {
@@ -10088,6 +10231,12 @@
    ]
   },
   {
+   "fr": "entrée invalide",
+   "where": [
+    "game/online/Spectate.cpp"
+   ]
+  },
+  {
    "fr": "Entrées",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -10109,6 +10258,13 @@
    "fr": "entrées enregistrées plus courtes que la partie",
    "where": [
     "server/src/replay.ts"
+   ]
+  },
+  {
+   "fr": "entrées illisibles",
+   "where": [
+    "game/online/Spectate.cpp",
+    "server/src/spectate.ts"
    ]
   },
   {
@@ -12690,6 +12846,7 @@
     "game/online/LevelFingerprint.cpp",
     "game/online/LiveSession.cpp",
     "game/online/OnlineService.cpp",
+    "game/online/Spectate.cpp",
     "game/planets/PlanetData.cpp",
     "game/powers/PowerDefinition.cpp",
     "game/progression/NewsCenter.cpp",
@@ -12712,7 +12869,8 @@
     "ui/screens/ReplayCompareSetupScene.cpp",
     "ui/screens/ReplayScene.cpp",
     "ui/screens/ResultsScene.cpp",
-    "ui/screens/SocialScene.cpp"
+    "ui/screens/SocialScene.cpp",
+    "ui/screens/SpectateScene.cpp"
    ]
   },
   {
@@ -13040,6 +13198,12 @@
    ]
   },
   {
+   "fr": "Inactif tant que votre présence est masquée.",
+   "where": [
+    "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
    "fr": "inactive",
    "where": [
     "game/gameplay/entities/InteractiveEntities.cpp"
@@ -13157,6 +13321,12 @@
    "fr": "installation impossible : {0}",
    "where": [
     "packaging/PackageImporter.cpp"
+   ]
+  },
+  {
+   "fr": "Installez-le à nouveau depuis NIVEAUX EN LIGNE pour regarder sa partie.",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
    ]
   },
   {
@@ -13647,7 +13817,8 @@
     "server/src/players.ts",
     "server/src/projects.ts",
     "server/src/race.ts",
-    "server/src/social.ts"
+    "server/src/social.ts",
+    "server/src/spectate.ts"
    ]
   },
   {
@@ -14231,6 +14402,36 @@
    "fr": "la partie attend la connexion pour partir.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "La partie de {0} ne nous parvient plus. Elle reprendra ici si sa connexion revient.",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
+   "fr": "La partie de {0} ne se rejoue plus à l'identique.",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
+   "fr": "La partie de {0} s'est arrêtée sur un échec.",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
+   "fr": "La partie est terminée",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
+   "fr": "La partie est terminée.",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
    ]
   },
   {
@@ -14839,6 +15040,18 @@
    ]
   },
   {
+   "fr": "Le direct est désactivé dans vos paramètres en ligne.",
+   "where": [
+    "server/src/spectate.ts"
+   ]
+  },
+  {
+   "fr": "Le direct reprend depuis le début de la partie.",
+   "where": [
+    "server/src/spectate.ts"
+   ]
+  },
+  {
    "fr": "Le défi peut être un niveau de la campagne ou un niveau ONLINE LEVELS choisi par l'administrateur ; « Télécharger » l'installe depuis le défi, et son créateur est prévenu que son niveau est à l'honneur.",
    "where": [
     "data/news/changelog.json"
@@ -15338,6 +15551,12 @@
    "fr": "Le serveur n'accepte que les récompenses débloquées par les succès déclarés par votre jeu ; un profil privé ne montre ni tenue, ni cadre, ni titre (cadre simple dans les classements). Le cadre et le titre ne sont qu'un affichage : ils n'entrent pas dans la vérification des records.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Le serveur ne répond plus. Nouvel essai en cours…",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
    ]
   },
   {
@@ -16270,6 +16489,12 @@
    ]
   },
   {
+   "fr": "liste de contrôles invalide",
+   "where": [
+    "server/src/spectate.ts"
+   ]
+  },
+  {
    "fr": "Liste des fichiers absente du manifeste",
    "where": [
     "packaging/PackageImporter.cpp"
@@ -17141,6 +17366,12 @@
    ]
   },
   {
+   "fr": "Mes amis peuvent me regarder jouer",
+   "where": [
+    "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
    "fr": "Mes créations",
    "where": [
     "game/content/ContentDatabase.cpp"
@@ -17257,6 +17488,18 @@
    "where": [
     "editors/level_editor/LevelEditorChat.cpp",
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Mettez le jeu à jour pour regarder sa partie de « {0} ».",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
+   "fr": "Mettez le jeu à jour pour regarder {0} jouer « {1} ».",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
    ]
   },
   {
@@ -17477,6 +17720,13 @@
    ]
   },
   {
+   "fr": "moins d'entrées qu'annoncé",
+   "where": [
+    "game/online/Spectate.cpp",
+    "server/src/spectate.ts"
+   ]
+  },
+  {
    "fr": "Moins de morts",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
@@ -17661,6 +17911,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "morceau hors de son ordre",
+   "where": [
+    "game/online/Spectate.cpp"
    ]
   },
   {
@@ -19944,6 +20200,12 @@
    ]
   },
   {
+   "fr": "Ouvrir NIVEAUX EN LIGNE",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
    "fr": "Ouvrir un niveau",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -20307,6 +20569,12 @@
    ]
   },
   {
+   "fr": "paramètres de lecture invalides",
+   "where": [
+    "server/src/spectate.ts"
+   ]
+  },
+  {
    "fr": "Paramètres de pagination invalides.",
    "where": [
     "server/src/validate.ts"
@@ -20432,6 +20700,12 @@
    "fr": "Partie terminée",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Partie trop longue pour être suivie en direct.",
+   "where": [
+    "server/src/spectate.ts"
    ]
   },
   {
@@ -21537,6 +21811,13 @@
    "fr": "Plume du puits",
    "where": [
     "data/levels/glacior_02.json"
+   ]
+  },
+  {
+   "fr": "plus d'entrées qu'annoncé",
+   "where": [
+    "game/online/Spectate.cpp",
+    "server/src/spectate.ts"
    ]
   },
   {
@@ -23976,6 +24257,12 @@
    ]
   },
   {
+   "fr": "Regarder",
+   "where": [
+    "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
    "fr": "Regarder l'édition en direct",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -24591,7 +24878,8 @@
     "ui/screens/OnlineAccountScene.cpp",
     "ui/screens/PowerGuideScene.cpp",
     "ui/screens/ReplayScene.cpp",
-    "ui/screens/SettingsScene.cpp"
+    "ui/screens/SettingsScene.cpp",
+    "ui/screens/SpectateScene.cpp"
    ]
   },
   {
@@ -24976,7 +25264,8 @@
    "fr": "runs",
    "where": [
     "game/ghost/SegmentHistory.cpp",
-    "game/online/DailyChallenges.cpp"
+    "game/online/DailyChallenges.cpp",
+    "game/online/Spectate.cpp"
    ]
   },
   {
@@ -25055,7 +25344,8 @@
    "fr": "règles du défi : {0}",
    "where": [
     "game/online/DailyChallenges.cpp",
-    "game/online/Replay.cpp"
+    "game/online/Replay.cpp",
+    "game/online/Spectate.cpp"
    ]
   },
   {
@@ -25538,6 +25828,24 @@
    "fr": "Sa nouvelle version change le parcours : les records sont comparés sur la nouvelle version.",
    "where": [
     "game/progression/NewsCenter.cpp"
+   ]
+  },
+  {
+   "fr": "Sa partie ne peut pas être rejouée à l'identique ici : mettez le jeu à jour ({0} joue en {1}).",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
+   "fr": "Sa prochaine partie s'affichera ici dès qu'elle commencera.",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
+   "fr": "Sa prochaine partie s'affichera ici.",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
    ]
   },
   {
@@ -26400,6 +26708,12 @@
    "fr": "Seuls les défis gardés sur ce PC sont montrés.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Seuls ses amis peuvent regarder un joueur, et seulement s'il l'autorise dans ses paramètres en ligne.",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
    ]
   },
   {
@@ -28670,7 +28984,8 @@
   {
    "fr": "TERMINÉ",
    "where": [
-    "ui/screens/RaceScene.cpp"
+    "ui/screens/RaceScene.cpp",
+    "ui/screens/SpectateScene.cpp"
    ]
   },
   {
@@ -29541,6 +29856,12 @@
    ]
   },
   {
+   "fr": "Trop d'envois, réessayez dans un instant.",
+   "where": [
+    "server/src/spectate.ts"
+   ]
+  },
+  {
    "fr": "Trop d'invitations actives : révoquez-en.",
    "where": [
     "server/src/projects.ts"
@@ -29837,6 +30158,12 @@
    "fr": "Télécharger une copie",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Téléchargez « {0} » dans NIVEAUX EN LIGNE pour regarder {1} y jouer.",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
    ]
   },
   {
@@ -31194,6 +31521,7 @@
     "game/online/OnlineCache.cpp",
     "game/online/OnlineService.cpp",
     "game/online/OnlineSession.cpp",
+    "game/online/Spectate.cpp",
     "game/progression/NewBadges.cpp",
     "game/progression/NewsCenter.cpp",
     "main.cpp",
@@ -31209,7 +31537,8 @@
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/RaceScene.cpp",
-    "ui/screens/ReplayCompareSetupScene.cpp"
+    "ui/screens/ReplayCompareSetupScene.cpp",
+    "ui/screens/SpectateScene.cpp"
    ]
   },
   {
@@ -31858,6 +32187,12 @@
    ]
   },
   {
+   "fr": "Vos versions du jeu ou du niveau diffèrent : mettez le jeu à jour.",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
    "fr": "Votre choix, retenu pour ce segment.",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
@@ -31885,6 +32220,12 @@
    "fr": "Votre copie de « {0} » diffère de la version publiée : retéléchargez-la depuis NIVEAUX EN LIGNE.",
    "where": [
     "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "Votre copie du niveau diffère de celle de {0}.",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
    ]
   },
   {
@@ -32039,6 +32380,18 @@
    ]
   },
   {
+   "fr": "Votre version du jeu diffère de celle de {0}.",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre version du niveau diffère de celle de {0}.",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
    "fr": "Votre version du niveau diffère de celle du défi : essai gardé sur ce PC.",
    "where": [
     "ui/screens/GameScene.cpp"
@@ -32115,6 +32468,12 @@
    ]
   },
   {
+   "fr": "Vous n'avez pas la même version de ce niveau.",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
    "fr": "Vous n'avez publié aucun niveau : ATELIER → Mes niveaux → Publier.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -32134,6 +32493,12 @@
   },
   {
    "fr": "Vous n'êtes pas connecté. Les réglages de confidentialité de votre compte apparaîtront ici après la connexion.",
+   "where": [
+    "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vous n'êtes pas prévenu quand un ami regarde.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
    ]
@@ -32184,6 +32549,18 @@
    "fr": "Vous ne pouvez pas noter votre propre niveau.",
    "where": [
     "server/src/community.ts"
+   ]
+  },
+  {
+   "fr": "Vous ne pouvez pas regarder ce joueur.",
+   "where": [
+    "server/src/spectate.ts"
+   ]
+  },
+  {
+   "fr": "Vous ne pouvez pas regarder la partie de {0}.",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
    ]
   },
   {
@@ -33103,6 +33480,12 @@
    ]
   },
   {
+   "fr": "{0} a quitté la partie.",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} a quitté le projet",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -33154,6 +33537,12 @@
    "fr": "{0} a révoqué une invitation",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} a terminé le niveau.",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
    ]
   },
   {
@@ -33693,6 +34082,18 @@
    "fr": "{0} ne commande aucun objet",
    "where": [
     "editors/level_editor/LevelEditorTools.cpp"
+   ]
+  },
+  {
+   "fr": "{0} ne joue pas en ce moment.",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} ne joue plus.",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
    ]
   },
   {
@@ -34262,6 +34663,12 @@
    ]
   },
   {
+   "fr": "« Regarder » apparaît ici quand un ami joue et vous autorise à le regarder.",
+   "where": [
+    "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
    "fr": "« {0} » : rang {1}.",
    "where": [
     "game/online/OnlineService.cpp"
@@ -34271,6 +34678,12 @@
    "fr": "« {0} » : temps enregistré.",
    "where": [
     "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "« {0} » : vous avez la version {1}, {2} joue la version {3}. Mettez-le à jour dans NIVEAUX EN LIGNE pour regarder.",
+   "where": [
+    "ui/screens/SpectateScene.cpp"
    ]
   },
   {

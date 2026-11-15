@@ -485,6 +485,8 @@ int main(int argc, char** argv) {
     }
     // Presence for friends: a real window, or a headless run against a server (--realtime).
     const bool sendPresence = !has("--headless") || has("--realtime");
+    // Live spectating (2.35): the same (a headless check streams only against a server).
+    game.spectate.setAllowed(sendPresence);
     app.onUpdate = [&game, &toasts, &app, clicks, sendPresence](float dt) {
         int f = static_cast<int>(app.frameIndex());
         for (const auto& c : clicks) {
@@ -512,6 +514,7 @@ int main(int argc, char** argv) {
         game.challenges.update(dt);
         game.updates.update();
         if (sendPresence) game.updatePresence(dt);
+        game.spectate.update(dt);
         toasts.update(game, dt);
     };
     app.onOverlay = [&game, &toasts] { toasts.render(game); };

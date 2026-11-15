@@ -142,6 +142,48 @@ void GameScene::onEnter() {
         else ghostHash_ = fingerprintGameplay(g_.content, level_);
         startGhosts();
     }
+    startSpectate();
+}
+
+void GameScene::startSpectate() {
+    // A run of a campaign level, of an installed community level or of a challenge, from its
+    // start: never an editor test, a training, a boss training or a level given as data.
+    if (opt_.editorTest || opt_.training || opt_.bossTraining || opt_.spawn || opt_.level || !recorder_.active() || !world_) return;
+    SpectateHeader h;
+    if (recordMode_ == RecordMode::Challenge && opt_.challenge) {
+        const DailyChallenge& c = opt_.challenge->challenge;
+        if (!challengeSendable_) return;  // another version of the level: a friend could not follow
+        h.levelSource = c.level.source;
+        h.levelId = c.level.levelId;
+        h.levelVersion = c.level.version;
+        h.levelHash = challengeHash_;
+        h.challengeId = c.id;
+    } else if (recordMode_ == RecordMode::Official && fingerprint_) {
+        h.levelSource = "campaign";
+        h.levelId = levelId_;
+        h.levelVersion = fingerprint_->version;
+        h.levelHash = fingerprint_->hash;
+    } else if (const Json* c = g_.online.communityInstall(levelId_); recordMode_ == RecordMode::Community && c) {
+        h.levelSource = "community";
+        h.levelId = jstr(*c, "id");
+        h.levelVersion = jget<int>(*c, "version", 0);
+        h.levelHash = gameplayHash_;
+    } else {
+        return;
+    }
+    h.runId = makeUuidV4();  // its own id (never the attempt's, sent with a record)
+    h.seed = world_->gameplaySeed();
+    h.keysPerSlot = world_->keysPerSlot();
+    h.simVersion = kSimulationVersion;
+    h.gameVersion = COSMIC_VERSION_STRING;
+    spectateToken_ = g_.spectate.begin(std::move(h));
+    spectateChecks_ = 0;
+}
+
+void GameScene::endSpectate(const char* reason) {
+    if (!spectateToken_) return;
+    g_.spectate.end(spectateToken_, reason);
+    spectateToken_ = 0;
 }
 
 void GameScene::startChallenge() {
@@ -386,6 +428,7 @@ void GameScene::saveGhosts(const RunResult& r) {
 }
 
 void GameScene::onExit() {
+    endSpectate("quit");  // left another way (a finished run has already ended it)
     g_.app.input().clearPowerSlotKeys();  // the keys of this level's powers stay here
     noteAchievementStats(false, nullptr);  // a run left or restarted (a finished one is already counted)
     if (mounted_) g_.app.resources().popMount();
@@ -491,6 +534,7 @@ void GameScene::abandonRaceAttempt() {
 }
 
 void GameScene::restart() {
+    endSpectate("quit");
     abandonRaceAttempt();
     if (!ended_) takeChallengeAttempt(false);  // « Plus loin »: restarting ends the attempt
     PlayOptions o = opt_;
@@ -499,6 +543,7 @@ void GameScene::restart() {
 }
 
 void GameScene::quitToMenu() {
+    endSpectate("quit");
     abandonRaceAttempt();
     if (!ended_) takeChallengeAttempt(false);  // « Plus loin »: leaving ends the attempt
     if (opt_.bossTraining) {
@@ -575,9 +620,13 @@ void GameScene::fixedUpdate(float dt) {
     hud_.setSkipHold(skipHold_);
     frame.choice = choice;
     if (!ended_) recorder_.recordInput(frame);
+    if (!ended_ && spectateToken_) g_.spectate.input(spectateToken_, frame);  // the same step, for the friends watching
     stepWorld(*world_, frame, kSimDt);
     syncPowerKeys();  // a power picked up, replaced: its own key on its slot from the next input
     if (!ended_) recorder_.tick(*world_);
+    if (!ended_ && spectateToken_ && recorder_.active())
+        for (const auto& checks = recorder_.data().checks; spectateChecks_ < checks.size(); ++spectateChecks_)
+            g_.spectate.check(spectateToken_, checks[spectateChecks_]);
     if (!ended_) {
         bool gliding = world_->player().gliding();
         if (gliding && !wasGliding_) ++runPowers_["glide"];
@@ -653,6 +702,7 @@ void GameScene::bossFeedback() {
 }
 
 void GameScene::finishRun(bool completed) {
+    endSpectate(completed ? "finished" : "failed");
     if (opt_.challenge) {
         finishChallenge(completed);
         return;

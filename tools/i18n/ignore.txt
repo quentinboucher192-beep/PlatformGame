@@ -97,3 +97,4 @@ installer
 {0}-W{1}
 challenges
 false
+stream

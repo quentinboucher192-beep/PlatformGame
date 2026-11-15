@@ -80,6 +80,7 @@ private:
         profilePublic_ = jstr(p, "profile_visibility", "public") == "public";
         allowFriends_ = jget<bool>(p, "allow_friend_requests", true);
         showPresence_ = jget<bool>(p, "presence_visible", true);
+        spectate_ = jget<bool>(p, "spectate_allowed", true);
         avatar_ = jstr(p, "avatar", "avatar_01");
         if (avatar_ == "custom") avatar_.clear();
     }
@@ -163,21 +164,36 @@ private:
         ui.pushId("account");
         ui.label("Connecté en tant que " + g_.online.username(), {x, y + ui.s(10)}, 20, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
         y += ui.s(36);
+        const float step = ui.s(47);  // one setting per line (42 high)
         ui.toggle("public", {x, y, w, ui.s(42)}, "Profil public visible", profilePublic_);
         UIContext::ButtonStyle cs;
         cs.align = Align::Left;
-        if (ui.button("country", {x, y + ui.s(50), w, ui.s(42)}, country_.empty() ? "Pays : non indiqué" : "      Pays : " + ui_.countryName(country_), cs))
+        if (ui.button("country", {x, y + step, w, ui.s(42)}, country_.empty() ? "Pays : non indiqué" : "      Pays : " + ui_.countryName(country_), cs))
             pickingCountry_ = true;
-        if (!country_.empty()) ui_.drawFlag(country_, {x + ui.s(14), y + ui.s(62), ui.s(24), ui.s(18)});
+        if (!country_.empty()) ui_.drawFlag(country_, {x + ui.s(14), y + step + ui.s(12), ui.s(24), ui.s(18)});
         int vis = country_.empty() ? 0 : locVis_;
-        if (ui.cycle("locvis", {x, y + ui.s(100), w, ui.s(42)}, "Visibilité du pays", vis, {"Masqué", "Classements", "Classements et globe"}) &&
+        if (ui.cycle("locvis", {x, y + step * 2, w, ui.s(42)}, "Visibilité du pays", vis, {"Masqué", "Classements", "Classements et globe"}) &&
             !country_.empty())
             locVis_ = vis;
-        ui.toggle("friends", {x, y + ui.s(150), w, ui.s(42)}, "Autoriser les demandes d'amis", allowFriends_);
+        ui.toggle("friends", {x, y + step * 3, w, ui.s(42)}, "Autoriser les demandes d'amis", allowFriends_);
         // Presence (2.32.3): « en ligne / absent / hors ligne » shown to friends only.
-        ui.toggle("presence", {x, y + ui.s(200), w, ui.s(42)}, "Montrer ma présence à mes amis", showPresence_);
-        ui.label("Avatar", {x, y + ui.s(256)}, 15, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
-        ui_.avatarPicker("avatars", {x, y + ui.s(270), w, std::min(w / 4.0f, content_.bottom() - ui.s(60) - (y + ui.s(270)))}, avatar_);
+        ui.toggle("presence", {x, y + step * 4, w, ui.s(42)}, "Montrer ma présence à mes amis", showPresence_);
+        // Live spectating (2.35): friends may watch the runs being played, never told to the player.
+        ui.toggle("spectate", {x, y + step * 5, w, ui.s(42)}, "Mes amis peuvent me regarder jouer", spectate_);
+        // Its explanation under it, measured: one line when it fits, else wrapped, and the
+        // avatars after it (never below 11.5 pixels: smaller, the font loses its spaces).
+        float explained = 0.0f;
+        {
+            const std::string why = spectate_ && !showPresence_ ? "Inactif tant que votre présence est masquée."
+                                                                : "Vous n'êtes pas prévenu quand un ami regarde.";
+            const float fs = std::max(14.0f, 11.5f / ui.s(1.0f));
+            const Vec2 sz = ui.text().measureWrapped(why, FontFace::Body, ui.s(fs), w);
+            ui.labelWrapped(why, {x, y + step * 5 + ui.s(46)}, w, fs, spectate_ && !showPresence_ ? ui.theme().warm : ui.theme().textDim);
+            explained = sz.y;
+        }
+        const float avatarY = y + step * 5 + ui.s(46) + explained + ui.s(14);
+        ui.label("Avatar", {x, avatarY}, 15, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        ui_.avatarPicker("avatars", {x, avatarY + ui.s(14), w, std::max(0.0f, std::min(w / 4.0f, content_.bottom() - ui.s(60) - (avatarY + ui.s(14))))}, avatar_);
         UIContext::ButtonStyle p;
         p.primary = true;
         p.enabled = !busy_;
@@ -219,7 +235,8 @@ private:
         Json patch = {{"profile_visibility", profilePublic_ ? "public" : "private"},
                       {"location_visibility", country_.empty() ? "hidden" : vis[locVis_]},
                       {"allow_friend_requests", allowFriends_},
-                      {"presence_visible", showPresence_}};
+                      {"presence_visible", showPresence_},
+                      {"spectate_allowed", spectate_}};
         patch["country_code"] = country_.empty() ? Json(nullptr) : Json(country_);
         if (!avatar_.empty()) patch["avatar"] = avatar_;
         busy_ = true;
@@ -364,7 +381,7 @@ private:
     bool busy_ = false;
     std::string country_, countryFilter_, avatar_ = "avatar_01";
     int locVis_ = 0;
-    bool profilePublic_ = true, allowFriends_ = true, showPresence_ = true;
+    bool profilePublic_ = true, allowFriends_ = true, showPresence_ = true, spectate_ = true;
     bool pickingCountry_ = false;
     std::string deletePassword_;
     bool confirmDelete_ = false;
