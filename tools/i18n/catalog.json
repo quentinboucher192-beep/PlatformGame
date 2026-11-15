@@ -10466,6 +10466,12 @@
    ]
   },
   {
+   "fr": "Guide des pouvoirs : les fiches n'affichent plus de touche, sauf pour les pouvoirs liés à un mouvement. Deux pouvoirs qui utilisaient le même bouton Spécial peuvent maintenant être portés ensemble.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Guinée",
    "where": [
     "data/online/countries.json",
@@ -13722,6 +13728,12 @@
    ]
   },
   {
+   "fr": "Les pouvoirs qui n'utilisent pas la touche de leur emplacement ont un cadre pointillé doré dans le HUD, au choix d'un pouvoir et dans le guide : passifs (aimant, dash aérien) ou utilisés avec un mouvement (planeur, triple saut, frappe au sol, tir chargé, grappin), avec la touche concernée.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Les profondeurs",
    "where": [
     "data/music/tracks.json"
@@ -13767,6 +13779,12 @@
    "fr": "Les Remparts parent de près : abattez-les de loin au Tir chargé, il perce leur garde !",
    "where": [
     "data/levels/pyralis_02.json"
+   ]
+  },
+  {
+   "fr": "Les replays et records des versions précédentes restent valides et rejouables à l'identique.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -17814,6 +17832,12 @@
     "game/gameplay/Hud.cpp",
     "ui/screens/PowerChoiceScene.cpp",
     "ui/screens/PowerGuideScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pastille « NOUVEAU » sur chaque nouveauté d'une mise à jour (et sur le menu qui y mène) ; elle part dès que l'élément a le focus ou un clic.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -25272,6 +25296,12 @@
    "fr": "Touche retirée de « {0} »",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Touches des pouvoirs par emplacement : « Pouvoir 1 » à « Pouvoir 8 » se règlent dans Paramètres › Clavier / souris et Manette ; la touche d'un emplacement utilise le pouvoir qui y est équipé, quel qu'il soit. Vos anciennes touches de pouvoirs deviennent celles des emplacements 1 à 6.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {

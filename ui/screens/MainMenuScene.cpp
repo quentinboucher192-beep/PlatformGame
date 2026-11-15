@@ -82,6 +82,7 @@ public:
             st.align = Align::Left;
             float slide = (1.0f - applyEase(Ease::OutCubic, std::clamp((t_ - 0.1f) * 3.0f, 0.0f, 1.0f))) * ui.s(-60);
             bool c = ui.button(id, {x + slide, y, w, h}, label, st);
+            ui.newBadge(id, {x + slide, y, w, h}, std::string("menu.") + id);
             if (!sub.empty()) {
                 // Never under the button's own label.
                 float labelW = ui.text().measure(label, FontFace::Bold, ui.s(26)).x;

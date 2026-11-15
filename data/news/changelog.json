@@ -1,4 +1,11 @@
 {
+  "2.25.0": [
+    "Touches des pouvoirs par emplacement : « Pouvoir 1 » à « Pouvoir 8 » se règlent dans Paramètres › Clavier / souris et Manette ; la touche d'un emplacement utilise le pouvoir qui y est équipé, quel qu'il soit. Vos anciennes touches de pouvoirs deviennent celles des emplacements 1 à 6.",
+    "Les pouvoirs qui n'utilisent pas la touche de leur emplacement ont un cadre pointillé doré dans le HUD, au choix d'un pouvoir et dans le guide : passifs (aimant, dash aérien) ou utilisés avec un mouvement (planeur, triple saut, frappe au sol, tir chargé, grappin), avec la touche concernée.",
+    "Guide des pouvoirs : les fiches n'affichent plus de touche, sauf pour les pouvoirs liés à un mouvement. Deux pouvoirs qui utilisaient le même bouton Spécial peuvent maintenant être portés ensemble.",
+    "Pastille « NOUVEAU » sur chaque nouveauté d'une mise à jour (et sur le menu qui y mène) ; elle part dès que l'élément a le focus ou un clic.",
+    "Les replays et records des versions précédentes restent valides et rejouables à l'identique."
+  ],
   "2.24.0": [
     "Version française : les boutons et titres restés en anglais sont traduits (NIVEAUX EN LIGNE, CLASSEMENTS, ATELIER, VOIR LE REPLAY, ENVOYER LE RECORD, SANS MORT, SANS DÉGÂT, En ligne…). En anglais, rien ne change.",
     "Corrigé : « Retour » dans la Collection fermait le jeu ; il ramène au menu principal. Plus aucun « Retour » ne peut fermer le jeu, seul « Quitter » le fait.",

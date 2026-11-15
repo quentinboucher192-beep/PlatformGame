@@ -68,6 +68,20 @@ public:
         ui.label("PARAMÈTRES", {panel.x + ui.s(40), panel.y + ui.s(26)}, 40, ui.theme().text, Align::Left, FontFace::Title);
         Rect tabsR{panel.x + ui.s(40), panel.y + ui.s(90), panel.w - ui.s(80), ui.s(54)};
         ui.tabs("settings/tabs", tabsR, {"Graphismes", "Audio", "Clavier / souris", "Manette", "Jeu"}, tab_);
+        // « NOUVEAU » on the tabs holding a novelty (data/news/new_features.json): seen once opened.
+        {
+            static const char* const kTabFeatures[5] = {"settings.tab.graphics", "settings.tab.audio", "settings.tab.keyboard",
+                                                        "settings.tab.gamepad", "settings.tab.game"};
+            float tw = tabsR.w / 5.0f;
+            for (int i = 0; i < 5; ++i) {
+                if (!ui.isNewFeature || !ui.isNewFeature(kTabFeatures[i])) continue;
+                if (tab_ == i) {
+                    if (ui.featureSeen) ui.featureSeen(kTabFeatures[i]);
+                    continue;
+                }
+                ui.drawNewPill(tabsR.x + (i + 1) * tw - ui.s(10), tabsR.y);
+            }
+        }
         Rect content{panel.x + ui.s(40), tabsR.bottom() + ui.s(24), panel.w - ui.s(80), panel.bottom() - tabsR.bottom() - ui.s(110)};
         ui.pushId("tab" + std::to_string(tab_));
         switch (tab_) {
@@ -172,7 +186,12 @@ private:
             st.small = true;
             float labelRoom = b.w - ui.s(16) - (icon ? 2.0f * (ui.s(8) + ui.s(32) + ui.s(4)) : 0.0f);
             st.fontSize = ui.fitFont(label, FontFace::Bold, 20, std::max(ui.s(30), labelRoom));
-            if (ui.button(id, b, label, st)) {
+            // « NOUVEAU » (2.25): the slot keys; seen as soon as one of them gets the focus or a click
+            // (the pill itself is on the « Pouvoirs équipés » title).
+            bool slotKey = a >= Action::PowerSlot1 && a <= Action::PowerSlot8;
+            bool clickedKey = ui.button(id, b, label, st);
+            if (slotKey) ui.newBadge(id, b, pad ? "settings.slots.gamepad" : "settings.slots.keyboard", false);
+            if (clickedKey) {
                 captureAction_ = a;
                 captureSlot_ = slot;
                 capturePad_ = pad;
@@ -246,6 +265,10 @@ private:
                 float ty = y + ui.s(10);
                 if (!it.title.empty()) {
                     Vec2 sz = ui.label(it.title, {list.x + ui.s(10), ty}, 20, ui.theme().accent, Align::Left, FontFace::Bold);
+                    const char* feature = pad ? "settings.slots.gamepad" : "settings.slots.keyboard";
+                    if (it.title == "Pouvoirs équipés" && ui.isNewFeature && ui.isNewFeature(feature)) {
+                        ui.drawNewPill(list.x + ui.s(10) + sz.x + ui.s(14) + ui.newPillWidth(), ty + sz.y * 0.5f);
+                    }
                     ty += sz.y + ui.s(4);
                 }
                 if (!it.text.empty()) ui.labelWrapped(it.text, {list.x + ui.s(10), ty}, rowW - ui.s(20), 16, ui.theme().textDim);

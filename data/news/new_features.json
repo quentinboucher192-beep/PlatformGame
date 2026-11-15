@@ -2,5 +2,10 @@
   "format": "cosmic.new_features",
   "version": 1,
   "comment": "Novelties of each update: a « NOUVEAU » pill shows on these widgets until they get the focus or a click (game/progression/NewBadges.h). « parents »: the menu entries and tabs that lead to them.",
-  "features": []
+  "features": [
+    {"id": "settings.slots.keyboard", "version": "2.25.0", "parents": ["settings.tab.keyboard"]},
+    {"id": "settings.slots.gamepad", "version": "2.25.0", "parents": ["settings.tab.gamepad"]},
+    {"id": "settings.tab.keyboard", "version": "2.25.0", "parents": ["menu.settings"]},
+    {"id": "settings.tab.gamepad", "version": "2.25.0", "parents": ["menu.settings"]}
+  ]
 }

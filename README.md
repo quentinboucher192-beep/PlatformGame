@@ -5,6 +5,18 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.25.0** :
+* **Touches des pouvoirs par emplacement** : « Pouvoir 1 » à « Pouvoir 8 » se règlent dans
+  *Paramètres › Clavier / souris* et *Manette* ; la touche d'un emplacement utilise le pouvoir
+  qui y est équipé. Les anciennes touches de pouvoirs deviennent celles des emplacements 1 à 6.
+* Les pouvoirs qui n'utilisent pas la touche de leur emplacement (passifs, ou liés au saut, à
+  l'attaque, à Bas + Attaque, à Interagir) ont un **cadre pointillé doré** dans le HUD, au choix
+  d'un pouvoir et dans le guide, avec la touche concernée ; les fiches des autres pouvoirs
+  n'affichent plus de touche. Simulation version 10 : les anciens replays et records restent
+  valides et rejouables à l'identique (format de replay 3).
+* Pastille **« NOUVEAU »** sur chaque nouveauté d'une mise à jour et sur le menu qui y mène
+  (`data/news/new_features.json`) ; elle part dès que l'élément a le focus ou un clic.
+
 **Nouveau dans la version 2.24.0** :
 * **Version française entièrement en français** : les boutons et titres restés en anglais
   (NIVEAUX EN LIGNE, CLASSEMENTS, ATELIER, VOIR LE REPLAY, ENVOYER LE RECORD, SANS MORT,

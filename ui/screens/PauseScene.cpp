@@ -130,7 +130,9 @@ void PauseScene::render(float /*alpha*/) {
         game_.restart();
     }
     y += bh + ui.s(16);
-    if (ui.button("settings", {bx, y, bw, bh}, "Paramètres")) g_.app.pushScene(makeSettingsScene(g_, true));
+    bool openSettings = ui.button("settings", {bx, y, bw, bh}, "Paramètres");
+    ui.newBadge("settings", {bx, y, bw, bh}, "menu.settings");
+    if (openSettings) g_.app.pushScene(makeSettingsScene(g_, true));
     y += bh + ui.s(16);
     if (ui.button("guide", {bx, y, bw, bh}, "Guide des pouvoirs")) g_.app.pushScene(makePowerGuide(g_));
     y += bh + ui.s(16);

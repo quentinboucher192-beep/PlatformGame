@@ -143,9 +143,10 @@ public:
     /// `feature` is new (data/news/new_features.json); it goes for good as soon as the widget
     /// gets the focus (keyboard, gamepad, mouse) or a click. The focus a screen gives on
     /// opening does not count: the player has to come to it.
-    void newBadge(const std::string& name, const Rect& r, const std::string& feature);
+    void newBadge(const std::string& name, const Rect& r, const std::string& feature, bool drawPill = true);
     /// Draws a « NOUVEAU » pill whose right edge is at `right`, centred on `y` (lists, rows).
     Rect drawNewPill(float right, float y);
+    float newPillWidth();
     std::function<bool(const std::string&)> isNewFeature;
     std::function<void(const std::string&)> featureSeen;
 

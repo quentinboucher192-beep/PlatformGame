@@ -67,6 +67,11 @@ bool UIContext::backPressed() const {
     return acceptsInput() && editing_ == 0 && app_->input().menuPressed(Action::MenuBack) && !app_->input().capturing();
 }
 
+float UIContext::newPillWidth() {
+    const float fs = std::max(11.5f, 12.0f * scale_) / scale_;
+    return text().measure("NOUVEAU", FontFace::Bold, s(fs)).x + s(14);
+}
+
 Rect UIContext::drawNewPill(float right, float y) {
     const float fs = std::max(11.5f, 12.0f * scale_) / scale_;
     Vec2 tw = text().measure("NOUVEAU", FontFace::Bold, s(fs));
@@ -79,7 +84,7 @@ Rect UIContext::drawNewPill(float right, float y) {
     return pill;
 }
 
-void UIContext::newBadge(const std::string& name, const Rect& rc, const std::string& feature) {
+void UIContext::newBadge(const std::string& name, const Rect& rc, const std::string& feature, bool drawPill) {
     if (!isNewFeature || feature.empty() || !isNewFeature(feature)) return;
     WidgetId wid = id(name);
     uint8_t& armed = badgeArmed_[wid];
@@ -95,7 +100,7 @@ void UIContext::newBadge(const std::string& name, const Rect& rc, const std::str
         if (featureSeen) featureSeen(feature);
         return;
     }
-    if (clippedOut(rc)) return;
+    if (!drawPill || clippedOut(rc)) return;
     // On the top edge, at the right: over the frame, never over the widget's text.
     drawNewPill(rc.right() - s(6), rc.y);
 }
