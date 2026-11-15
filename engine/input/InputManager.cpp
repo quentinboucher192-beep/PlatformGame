@@ -76,6 +76,17 @@ void InputManager::beginFrame() {
 void InputManager::handleEvent(const SDL_Event& e) {
     switch (e.type) {
         case SDL_EVENT_KEY_DOWN:
+            // Rebinding: the key goes to the command being set, and to nothing else.
+            if (capturing_ && captureDevice_ == InputDevice::Keyboard) {
+                if (!e.key.repeat) {
+                    capturedKey_ = e.key.scancode;
+                    capturing_ = false;
+                    captureDone_ = true;
+                    swallowKey_ = e.key.scancode;
+                }
+                break;
+            }
+            if (e.key.scancode == swallowKey_) break;  // still held since it was captured
             keysPressed_.push_back(e.key.scancode);
             keyLabelsPressed_.push_back(SDL_GetKeyFromScancode(e.key.scancode, SDL_KMOD_NONE, false));
             if (!e.key.repeat) {
@@ -86,11 +97,6 @@ void InputManager::handleEvent(const SDL_Event& e) {
                     for (auto sc : bindings_.keys[i])
                         if (sc == e.key.scancode && sc != SDL_SCANCODE_UNKNOWN) gamePressed_[i] = framePressed_[i] = true;
                 }
-            }
-            if (capturing_ && captureDevice_ == InputDevice::Keyboard && !e.key.repeat) {
-                capturedKey_ = e.key.scancode;
-                capturing_ = false;
-                captureDone_ = true;
             }
             break;
         case SDL_EVENT_MOUSE_MOTION:
@@ -127,6 +133,15 @@ void InputManager::handleEvent(const SDL_Event& e) {
             break;
         case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
             lastDevice_ = InputDevice::Gamepad;
+            if (capturing_ && captureDevice_ == InputDevice::Gamepad) {
+                capturedPad_ = PadBinding::button(static_cast<SDL_GamepadButton>(e.gbutton.button));
+                capturing_ = false;
+                captureDone_ = true;
+                swallowPad_ = capturedPad_;
+                swallowingPad_ = true;
+                break;
+            }
+            if (swallowingPad_ && swallowPad_ == PadBinding::button(static_cast<SDL_GamepadButton>(e.gbutton.button))) break;
             for (int i = 0; i < kActionCount; ++i)
                 for (const auto& pb : bindings_.pad[i])
                     if (pb.kind == PadBinding::Kind::Button && pb.code == e.gbutton.button)
@@ -134,11 +149,6 @@ void InputManager::handleEvent(const SDL_Event& e) {
             if (gamepad_ == nullptr || e.gbutton.which != gamepadId_) {
                 // A second pad pressed a button: switch to it (live device switching).
                 if (SDL_Gamepad* p = SDL_GetGamepadFromID(e.gbutton.which)) setGamepad(p);
-            }
-            if (capturing_ && captureDevice_ == InputDevice::Gamepad) {
-                capturedPad_ = PadBinding::button(static_cast<SDL_GamepadButton>(e.gbutton.button));
-                capturing_ = false;
-                captureDone_ = true;
             }
             break;
         case SDL_EVENT_GAMEPAD_AXIS_MOTION:
@@ -149,6 +159,8 @@ void InputManager::handleEvent(const SDL_Event& e) {
                     capturedPad_ = e.gaxis.value > 0 ? PadBinding::axisPos(axis) : PadBinding::axisNeg(axis);
                     capturing_ = false;
                     captureDone_ = true;
+                    swallowPad_ = capturedPad_;
+                    swallowingPad_ = true;
                 }
             }
             break;
@@ -206,14 +218,18 @@ void InputManager::update(float dt) {
     }
 
     const bool* kb = SDL_GetKeyboardState(nullptr);
+    // The key / button just captured for a rebinding counts again once released.
+    if (swallowKey_ != SDL_SCANCODE_UNKNOWN && !kb[swallowKey_]) swallowKey_ = SDL_SCANCODE_UNKNOWN;
+    if (swallowingPad_ && padValue(swallowPad_) < 0.3f) swallowingPad_ = false;
     const bool blockKeys = textActive_;  // typing in a text field must not move the player
     for (int i = 0; i < kActionCount; ++i) {
         bool h = false;
         if (!blockKeys || i >= kFirstMenuAction) {
             for (auto sc : bindings_.keys[i])
-                if (sc != SDL_SCANCODE_UNKNOWN && kb[sc]) h = true;
+                if (sc != SDL_SCANCODE_UNKNOWN && sc != swallowKey_ && kb[sc]) h = true;
         }
         for (const auto& pb : bindings_.pad[i]) {
+            if (swallowingPad_ && pb == swallowPad_) continue;
             float v = padValue(pb);
             bool isTrigger = pb.kind != PadBinding::Kind::Button &&
                              (pb.code == SDL_GAMEPAD_AXIS_LEFT_TRIGGER || pb.code == SDL_GAMEPAD_AXIS_RIGHT_TRIGGER);

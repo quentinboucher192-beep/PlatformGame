@@ -14,6 +14,8 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
   récompenses par étoiles accessibles sans compte.
 * Corrigé : « Inventaire complet » et « Cartographe des ombres » étaient impossibles (18 niveaux
   demandés, 13 en ont).
+* Corrigé : changer une touche ou un bouton dans les paramètres ne déclenche plus d'autre action
+  (la touche choisie ne sert qu'à la nouvelle commande, jusqu'à ce qu'elle soit relâchée).
 
 **Nouveau dans la version 2.28.0** :
 * **Entraînement contre les boss** (*Statistiques › un boss › Entraînement*) : cœurs, nombre

@@ -139,6 +139,41 @@ TEST_CASE("input: key events feed actions and layout-aware shortcuts") {
     CHECK(!in.shortcutPressed(label));
 }
 
+TEST_CASE("input: a key pressed to rebind a command triggers nothing else") {
+    InputManager in;
+    in.setBindings(InputBindings::defaults());
+    in.beginFrame();
+    in.beginCapture(InputDevice::Keyboard);
+    SDL_Event e{};
+    e.type = SDL_EVENT_KEY_DOWN;
+    // Enter (menu « valider ») and Escape (menu « retour ») while a command waits for its key:
+    // only the rebinding sees them, no button, no tab, no « Retour », no game action.
+    e.key.scancode = SDL_SCANCODE_RETURN;
+    in.handleEvent(e);
+    CHECK(in.captureDone());
+    CHECK(in.capturedKey() == SDL_SCANCODE_RETURN);
+    CHECK(!in.menuPressed(Action::MenuConfirm));
+    CHECK(!in.keyPressed(SDL_SCANCODE_RETURN));
+    CHECK(!in.shortcutPressed(SDL_GetKeyFromScancode(SDL_SCANCODE_RETURN, SDL_KMOD_NONE, false)));
+    PlayerInput pi = in.consumePlayerInput();
+    for (int i = 0; i < kFirstMenuAction; ++i) CHECK(!pi.pressed[i]);
+    in.cancelCapture();
+    in.beginFrame();
+    in.beginCapture(InputDevice::Keyboard);
+    e.key.scancode = SDL_SCANCODE_ESCAPE;
+    in.handleEvent(e);
+    CHECK(in.capturedKey() == SDL_SCANCODE_ESCAPE);
+    CHECK(!in.menuPressed(Action::MenuBack));
+    // Once the capture is over, the keys work as usual again.
+    in.cancelCapture();
+    in.beginFrame();
+    in.update(0.016f);  // the captured key is released (no key is down in the tests)
+    e.key.scancode = SDL_SCANCODE_SPACE;
+    in.handleEvent(e);
+    CHECK(in.keyPressed(SDL_SCANCODE_SPACE));
+    CHECK(in.consumePlayerInput().isPressed(Action::Jump));
+}
+
 #include "game/progression/Progression.h"
 
 TEST_CASE("progression: time played per level, shown in hours and minutes") {

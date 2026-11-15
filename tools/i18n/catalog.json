@@ -6111,6 +6111,12 @@
    ]
   },
   {
+   "fr": "Corrigé : changer une touche ou un bouton dans les paramètres déclenchait aussi une action (Entrée relançait la modification, Échap fermait les paramètres, Q / E changeaient d'onglet) ; la touche choisie ne sert plus qu'à la nouvelle commande, jusqu'à ce qu'elle soit relâchée.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Corrigé : mourir contre un boss puis le finir sans être touché n'est plus compté « sans dégât ». Champs de texte : Ctrl+A, Ctrl+C, Ctrl+X, Ctrl+V, sélection et curseur.",
    "where": [
     "data/news/changelog.json"

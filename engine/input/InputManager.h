@@ -133,6 +133,11 @@ private:
     InputDevice captureDevice_ = InputDevice::Keyboard;
     SDL_Scancode capturedKey_ = SDL_SCANCODE_UNKNOWN;
     PadBinding capturedPad_;
+    // The key or button just given to a command (rebinding) is used for that only: it acts
+    // as nothing else (no menu, no game action) until it has been released.
+    SDL_Scancode swallowKey_ = SDL_SCANCODE_UNKNOWN;
+    PadBinding swallowPad_;
+    bool swallowingPad_ = false;
 };
 
 }  // namespace cosmic
