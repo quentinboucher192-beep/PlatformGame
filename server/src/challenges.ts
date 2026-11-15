@@ -698,11 +698,16 @@ interface ProgressRow {
     time_ms: number;
     late: number;
     created_at: string;
+    /** challenge_attempts.id (an attempt) or challenge_runs.id (a finished run). */
+    item_id: string;
+    /** Its replay is kept (an attempt: the player's best; a run: a verified replay). */
+    replay: number;
     username: string;
     avatar: string;
     avatar_custom_key: string | null;
     country_code: string | null;
     location_visibility: string;
+    profile_visibility: string;
     rank: number;
     total: number;
 }
@@ -736,17 +741,17 @@ function progressSql(filter: ScopeFilter): { sql: string; extra: unknown[] } {
     const { where, extra } = scopeWhere(filter);
     const sql = `
       WITH items AS (
-        SELECT a.player_id, a.progress, 0 AS finished, a.time_ms, a.late, a.created_at, a.id AS item_id
+        SELECT a.player_id, a.progress, 0 AS finished, a.time_ms, a.late, a.created_at, a.id AS item_id, (a.replay_key IS NOT NULL) AS replay
         FROM challenge_attempts a WHERE a.challenge_id = ?1 AND a.status = 'VERIFIED' AND (?2 = 1 OR a.late = 0)
         UNION ALL
-        SELECT r.player_id, 100.0, 1, r.time_ms, r.late, r.created_at, r.id
+        SELECT r.player_id, 100.0, 1, r.time_ms, r.late, r.created_at, r.id, (r.replay_key IS NOT NULL AND r.replay_status = 'VERIFIED')
         FROM challenge_runs r WHERE r.challenge_id = ?1 AND r.status = 'VERIFIED' AND (?2 = 1 OR r.late = 0)),
       best AS (
-        SELECT player_id, progress, finished, time_ms, late, created_at FROM (
+        SELECT player_id, progress, finished, time_ms, late, created_at, item_id, replay FROM (
           SELECT items.*, ROW_NUMBER() OVER (PARTITION BY player_id ORDER BY progress DESC, created_at, item_id) AS rn FROM items)
         WHERE rn = 1),
       ranked AS (
-        SELECT b.*, p.username, p.avatar, p.avatar_custom_key, p.country_code, p.location_visibility
+        SELECT b.*, p.username, p.avatar, p.avatar_custom_key, p.country_code, p.location_visibility, p.profile_visibility
         FROM best b JOIN players p ON p.id = b.player_id
         WHERE p.account_status = 'active'${where}),
       filtered AS (SELECT ranked.*, ROW_NUMBER() OVER (ORDER BY progress DESC, created_at, player_id) AS rank FROM ranked)
@@ -801,7 +806,8 @@ const PROGRESS_UNAVAILABLE = () =>
  * entries `{ rank, run_id, player, time_ms, tier, status, has_replay, is_me, late }`, `me` is
  * the viewer's best run: VERIFIED (with its rank in this scope) or, when better, PENDING (rank
  * null). board=progress (« Plus loin »): entries `{ rank, player, progress, finished, time_ms,
- * status, late, is_me }`, `me` the viewer's best VERIFIED progress.
+ * status, late, is_me, attempt_id, run_id, has_replay }`, `me` the viewer's best VERIFIED
+ * progress.
  */
 export async function leaderboard(ctx: Ctx, viewer: AuthInfo | null): Promise<Response> {
     const c = await startedChallenge(ctx, ctx.params.challengeId!);
@@ -924,6 +930,11 @@ async function progressBoard(
         status: "VERIFIED" as const,
         late: r.late === 1,
         is_me: viewer?.player.id === r.player_id,
+        // Its replay: GET /challenges/attempts/{attempt_id}/replay (an attempt) or
+        // GET /challenges/runs/{run_id}/replay (a finished run); never for a private profile but mine.
+        attempt_id: r.finished === 1 ? null : r.item_id,
+        run_id: r.finished === 1 ? r.item_id : null,
+        has_replay: r.replay === 1 && (r.profile_visibility !== "private" || viewer?.player.id === r.player_id),
     });
     const me = mine ? entry(mine) : outside ? { ...entry(outside), rank: null } : null;
     return json(ctx, {
@@ -1556,6 +1567,39 @@ export async function uploadAttemptReplay(ctx: Ctx): Promise<Response> {
         },
         { status: 201 },
     );
+}
+
+/**
+ * GET /challenges/attempts/{id}/replay (`id`: the server's id of the attempt, the `attempt_id`
+ * of a board=progress entry): the kept replay of a VERIFIED best attempt, public like the
+ * replays of the runs (403 PROFILE_PRIVATE for a private profile); its player always.
+ */
+export async function downloadAttemptReplay(ctx: Ctx, viewer: AuthInfo | null): Promise<Response> {
+    const id = ctx.params.id!;
+    const a = UUID_RE.test(id)
+        ? await ctx.env.DB.prepare(
+              `SELECT a.player_id, a.status, a.replay_key, a.replay_sha256, p.account_status AS owner_status, p.profile_visibility AS owner_visibility
+               FROM challenge_attempts a JOIN players p ON p.id = a.player_id WHERE a.id = ?1`,
+          )
+              .bind(id)
+              .first<{ player_id: string; status: string; replay_key: string | null; replay_sha256: string | null; owner_status: string; owner_visibility: string }>()
+        : null;
+    const isOwner = a !== null && viewer?.player.id === a.player_id;
+    if (!a || (!isOwner && (a.status !== "VERIFIED" || a.owner_status !== "active"))) throw Errors.notFound("ATTEMPT_NOT_FOUND", "Essai introuvable.");
+    if (!isOwner && a.owner_visibility === "private") throw Errors.forbidden("PROFILE_PRIVATE", "Le joueur a masqué son profil.");
+    // Only the player's best attempt keeps its replay.
+    if (!a.replay_key) throw Errors.notFound("REPLAY_NOT_FOUND", "Aucun replay pour cet essai.");
+    const obj = await ctx.env.STORAGE.get(a.replay_key);
+    if (!obj) throw Errors.notFound("REPLAY_NOT_FOUND", "Fichier de replay absent.");
+    return new Response(obj.body, {
+        headers: {
+            "content-type": "application/octet-stream",
+            "content-length": String(obj.size),
+            "x-replay-sha256": a.replay_sha256 ?? "",
+            "cache-control": "private, max-age=3600",
+            "x-content-type-options": "nosniff",
+        },
+    });
 }
 
 // ------------------------------------------------------------------- my results

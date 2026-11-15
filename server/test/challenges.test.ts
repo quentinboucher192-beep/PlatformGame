@@ -1470,7 +1470,19 @@ describe("« Plus loin » (2.34)", () => {
             [2, "Ana", 50.3, false, false],
             [3, "Dan", 50.3, false, false],
         ]);
-        expect(Object.keys(live.body.data.entries[0]).sort()).toEqual(["finished", "is_me", "late", "player", "progress", "rank", "status", "time_ms"]);
+        expect(Object.keys(live.body.data.entries[0]).sort()).toEqual([
+            "attempt_id",
+            "finished",
+            "has_replay",
+            "is_me",
+            "late",
+            "player",
+            "progress",
+            "rank",
+            "run_id",
+            "status",
+            "time_ms",
+        ]);
         expect(live.body.data.entries[0]).toMatchObject({ time_ms: 85000, status: "VERIFIED" });
         const since = await api("GET", `/api/v1/challenges/${ch.id}/leaderboard?board=progress&period=all`, { token: cleo.token });
         expect(since.body.data.entries.map((e: any) => [e.rank, e.player.username, e.late])).toEqual([
@@ -1495,5 +1507,63 @@ describe("« Plus loin » (2.34)", () => {
         expect(cal.body.data.me[ch.id]).toEqual({ best_time_ms: null, tier: null, status: "VERIFIED", late: false, best_progress: 50.3 });
         const benCal = await api("GET", `/api/v1/challenges/calendar?month=${ch.date.slice(0, 7)}`, { token: ben.token });
         expect(benCal.body.data.me[ch.id]).toMatchObject({ best_time_ms: 85000, tier: "silver", best_progress: 100 });
+    });
+});
+
+describe("« Plus loin »: the replays of the ranked players (2.34)", () => {
+    it("serves the kept replay of each ranked attempt and points finished runs to their run replay", async () => {
+        await withLayout();
+        const ch = await insertChallenge(today(), { level: "glacior_02", hearts: 3 });
+        const [ana, ben, cleo] = [await registerPlayer("Ana"), await registerPlayer("Ben"), await registerPlayer("Cleo")];
+        const serverId = async (attemptId: string) =>
+            (await env.DB.prepare("SELECT id FROM challenge_attempts WHERE attempt_id = ?1").bind(attemptId).first<{ id: string }>())!.id;
+        const first = await tryAttempt(ana, ch, { k: 20 });
+        const best = await tryAttempt(ana, ch, { k: 40 });
+        const rejected = await tryAttempt(ana, ch, { k: 30, boss: 300 }, { bosses: [900], waves: [0] });
+        expect(rejected.data.attempt.status).toBe("REJECTED");
+        const finished = await verifiedRun(ben, ch, 80000);
+        await tryAttempt(cleo, ch, { k: 10 });
+
+        const board = await api("GET", `/api/v1/challenges/${ch.id}/leaderboard?board=progress`);
+        const byName = Object.fromEntries(board.body.data.entries.map((e: any) => [e.player.username, e]));
+        expect(byName.Ben).toMatchObject({ progress: 100, finished: true, attempt_id: null, run_id: finished.runId, has_replay: true });
+        expect(byName.Ana).toMatchObject({ progress: scoreAt(40), finished: false, attempt_id: await serverId(best.attemptId), run_id: null, has_replay: true });
+        expect(byName.Cleo).toMatchObject({ finished: false, run_id: null, has_replay: true });
+
+        // Anyone watches a ranked attempt (its SHA-256 in a header).
+        const dl = await api("GET", `/api/v1/challenges/attempts/${byName.Ana.attempt_id}/replay`);
+        expect(dl.status).toBe(200);
+        expect(dl.headers.get("content-type")).toBe("application/octet-stream");
+        const row = await env.DB.prepare("SELECT replay_key, replay_sha256 FROM challenge_attempts WHERE id = ?1").bind(byName.Ana.attempt_id).first<any>();
+        expect(dl.headers.get("x-replay-sha256")).toBe(row.replay_sha256);
+        expect(row.replay_sha256).toMatch(/^[0-9a-f]{64}$/);
+        // The finished run's replay is the run's route.
+        expect((await api("GET", `/api/v1/challenges/runs/${byName.Ben.run_id}/replay`)).status).toBe(200);
+
+        // A worse attempt kept no replay; a rejected one, an unknown or malformed id: not found.
+        const firstId = await serverId(first.attemptId);
+        expect((await api("GET", `/api/v1/challenges/attempts/${firstId}/replay`)).body.error.code).toBe("REPLAY_NOT_FOUND");
+        const rejectedId = await serverId(rejected.attemptId);
+        expect((await api("GET", `/api/v1/challenges/attempts/${rejectedId}/replay`)).body.error.code).toBe("ATTEMPT_NOT_FOUND");
+        expect((await api("GET", `/api/v1/challenges/attempts/${rejectedId}/replay`, { token: ana.token })).body.error.code).toBe("REPLAY_NOT_FOUND");
+        expect((await api("GET", `/api/v1/challenges/attempts/${crypto.randomUUID()}/replay`)).status).toBe(404);
+        expect((await api("GET", "/api/v1/challenges/attempts/pas-un-id/replay")).status).toBe(404);
+        // The game's own attempt_id is not the server's id: not found for the others.
+        expect((await api("GET", `/api/v1/challenges/attempts/${best.attemptId}/replay`)).status).toBe(404);
+
+        // A private profile: no replay for the others (403), its player still watches it.
+        await env.DB.prepare("UPDATE players SET profile_visibility = 'private' WHERE id = ?1").bind(ana.id).run();
+        const priv = await api("GET", `/api/v1/challenges/attempts/${byName.Ana.attempt_id}/replay`, { token: cleo.token });
+        expect(priv.status).toBe(403);
+        expect(priv.body.error.code).toBe("PROFILE_PRIVATE");
+        expect((await api("GET", `/api/v1/challenges/attempts/${byName.Ana.attempt_id}/replay`, { token: ana.token })).status).toBe(200);
+        const seen = await api("GET", `/api/v1/challenges/${ch.id}/leaderboard?board=progress`, { token: cleo.token });
+        expect(seen.body.data.entries.find((e: any) => e.player.username === "Ana").has_replay).toBe(false);
+        const own = await api("GET", `/api/v1/challenges/${ch.id}/leaderboard?board=progress`, { token: ana.token });
+        expect(own.body.data.entries.find((e: any) => e.player.username === "Ana").has_replay).toBe(true);
+        expect(own.body.data.me).toMatchObject({ attempt_id: byName.Ana.attempt_id, has_replay: true, is_me: true });
+        // A suspended account's attempt is not found for the others.
+        await env.DB.prepare("UPDATE players SET profile_visibility = 'public', account_status = 'suspended' WHERE id = ?1").bind(ana.id).run();
+        expect((await api("GET", `/api/v1/challenges/attempts/${byName.Ana.attempt_id}/replay`)).body.error.code).toBe("ATTEMPT_NOT_FOUND");
     });
 });

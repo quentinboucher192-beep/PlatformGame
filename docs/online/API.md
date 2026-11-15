@@ -211,7 +211,7 @@ prévu est coupé et refusé (`413 PAYLOAD_TOO_LARGE`). Un `Content-Length` inva
 | 404 | `REPLAY_NOT_FOUND` | Pas de replay (ou replay non vérifié pour un tiers, ou fichier absent) |
 | 404 | `CHALLENGE_NOT_FOUND` | Défi inconnu, identifiant mal formé, ou défi dont la période n'a pas commencé (jamais révélé) |
 | 404 | `RUN_NOT_FOUND` | Partie de défi inconnue, ou non visible par ce lecteur |
-| 404 | `ATTEMPT_NOT_FOUND` | Essai « Plus loin » inconnu parmi ceux du joueur connecté |
+| 404 | `ATTEMPT_NOT_FOUND` | Essai « Plus loin » inconnu : parmi ceux du joueur connecté (envoi du replay), ou essai non `VERIFIED` / d'un compte inactif pour un tiers (téléchargement) |
 | 404 | `AVATAR_NOT_FOUND` | Pas d'avatar personnalisé |
 | 404 | `REQUEST_NOT_FOUND` | Aucune demande d'ami de ce joueur |
 | 404 | `FRIEND_NOT_FOUND` | Aucun lien d'amitié avec ce joueur |
@@ -1283,11 +1283,12 @@ niveau « … » est le défi du jour ! », « … de la semaine ! », « … du
 | GET | `/challenges/{challengeId}` · cache | aucune | le défi (`Challenge`) s'il a commencé, sinon `404 CHALLENGE_NOT_FOUND` |
 | GET | `/challenges/daily/current` | aucune | (2.32) `{ server_time, challenge, previous }` : défi du jour et celui d'hier (`null` s'il n'y en a pas) |
 | GET | `/challenges/daily?before=AAAA-MM-JJ&limit=N` · cache | aucune | (2.32) `{ challenges: [Challenge], next_before }` : défis **du jour** commencés, du plus récent au plus ancien, `before` exclu ; `limit` 1 à 30 (défaut 30) ; `next_before` : la valeur de `before` de la page suivante (`null` à la fin) |
-| GET | `/challenges/{challengeId}/leaderboard?scope=world\|country\|friends&country=XX&period=live\|all&board=time\|progress&limit=50&offset=0` · cache | facultative (`friends` : requise) | `{ challenge_id, scope, period, board, country_code, entries, me, total }` ; `board=time` : entrées `{ rank, run_id, player, time_ms, tier, status, has_replay, is_me, late }` ; `board=progress` (2.34) : entrées `{ rank, player, progress, finished, time_ms, status, late, is_me }` |
+| GET | `/challenges/{challengeId}/leaderboard?scope=world\|country\|friends&country=XX&period=live\|all&board=time\|progress&limit=50&offset=0` · cache | facultative (`friends` : requise) | `{ challenge_id, scope, period, board, country_code, entries, me, total }` ; `board=time` : entrées `{ rank, run_id, player, time_ms, tier, status, has_replay, is_me, late }` ; `board=progress` (2.34) : entrées `{ rank, player, progress, finished, time_ms, status, late, is_me, attempt_id, run_id, has_replay }` |
 | POST | `/challenges/{challengeId}/runs` | requise · `challenge_submit` | `201 { duplicate: false, run: { id, status, tier, time_ms, late }, replay: { required, accepted, upload_path } }` ; `200` avec `duplicate: true` pour une tentative déjà reçue |
 | PUT | `/challenges/runs/{runId}/replay` | requise, propriétaire · `replay_upload` | `201 { run: { id, status, tier, time_ms, late }, replay: { verification_status }, analysis }` |
 | POST | `/challenges/{challengeId}/attempts` | requise · `challenge_submit` | (2.34, « Plus loin ») `201 { duplicate: false, attempt: { attempt_id, status, progress: null, finished: false, late }, replay: { required, upload_path } }` ; `200` avec `duplicate: true` pour un essai déjà reçu |
 | PUT | `/challenges/attempts/{attemptId}/replay` | requise (ses essais seulement) · `replay_upload` | (2.34) `201 { attempt: { attempt_id, status, progress, finished: false, late, rank, reasons }, new_best, best_progress }` |
+| GET | `/challenges/attempts/{id}/replay` | facultative | (2.34) le replay gardé d'un essai (`application/octet-stream`, en-tête `x-replay-sha256`) : `{id}` = `attempt_id` d'une entrée de `board=progress` (identifiant du serveur) ; public pour un essai `VERIFIED` d'un compte actif (`403 PROFILE_PRIVATE` si son auteur a masqué son profil), son joueur toujours ; `404 ATTEMPT_NOT_FOUND` (inconnu, refusé, en attente), `404 REPLAY_NOT_FOUND` (essai qui n'est plus le meilleur de son joueur : son replay n'est pas gardé) |
 | GET | `/challenges/runs/{runId}/replay` | facultative | le replay (`application/octet-stream`, en-tête `x-replay-sha256`) : public pour une partie `VERIFIED` (fantôme du 1er ; `403 PROFILE_PRIVATE` si son auteur a masqué son profil), sinon son propriétaire seulement |
 | GET | `/challenges/me?limit=60` | requise | `{ streak: { current, best, last_date }, streaks: { daily, weekly, monthly }, results: [{ challenge_id, kind, period, date, best_time_ms, tier, status, late, best_progress }] }` (du plus récent au plus ancien, `limit` 1 à 366 ; chaque série : `{ current, best, last_period }`) |
 
@@ -1376,10 +1377,18 @@ exacte, la vie au plus `hearts` et la limite de temps du niveau ; sans points de
 loin atteint). Réponse : `progress` (`null` si refusé, raisons dans `reasons`), `rank` dans
 `board=progress` de la période de l'essai, `new_best` (meilleur que tous mes essais et
 parties finies vérifiés de ce défi), `best_progress`. Un seul replay d'essai est gardé par
-joueur et par défi, celui du meilleur essai vérifié (aucune route ne le télécharge).
+joueur et par défi, celui du meilleur essai vérifié ; tout le monde peut le regarder depuis
+le classement (`GET /challenges/attempts/{id}/replay`, mêmes règles que le replay d'une
+partie).
 `board=progress` : meilleure progression `VERIFIED` de chaque joueur (essais et parties
 finies), de la plus haute à la plus basse, à égalité le plus tôt envoyé d'abord ; `me` : ma
 meilleure progression vérifiée de cette période (`rank: null` hors du `scope`), sinon `null`.
+Chaque entrée dit où regarder son replay : `attempt_id` (identifiant du serveur de l'essai,
+pour `GET /challenges/attempts/{id}/replay` ; `null` pour une partie finie) ou `run_id` (la
+partie finie, pour `GET /challenges/runs/{runId}/replay` ; `null` pour un essai), et
+`has_replay` (le replay est gardé et visible par ce lecteur : `false` pour un profil masqué,
+sauf le sien ; `false` aussi pour un essai qui n'est plus le meilleur de son joueur, son
+replay n'étant pas gardé).
 Les essais ne comptent ni pour les séries ni pour les paliers.
 
 Les parties de défi et les essais « Plus loin » figurent dans l'export des données

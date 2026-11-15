@@ -272,6 +272,8 @@ route("PUT", `${V}/challenges/runs/{runId}/replay`, (ctx) => challenges.uploadRu
 // « Plus loin » (2.34): attempts that did not reach the end, scored by the server from their replay
 route("POST", `${V}/challenges/{challengeId}/attempts`, (ctx) => challenges.submitAttempt(ctx));
 route("PUT", `${V}/challenges/attempts/{attemptId}/replay`, (ctx) => challenges.uploadAttemptReplay(ctx));
+// The kept replay of a ranked attempt (GET: {id} is the server's id, `attempt_id` of the board's entries)
+route("GET", `${V}/challenges/attempts/{id}/replay`, challenges.downloadAttemptReplay, { viewer: true });
 route("GET", `${V}/challenges/runs/{runId}/replay`, challenges.downloadRunReplay, { viewer: true });
 
 // Moderation (only with the ADMIN_TOKEN secret)

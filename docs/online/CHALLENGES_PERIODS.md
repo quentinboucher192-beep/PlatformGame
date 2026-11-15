@@ -196,12 +196,21 @@ tracé, pas de « Plus loin » pour ce défi (`progress_available: false` dans l
   true` : morts et retours permis, la trajectoire peut alors sauter à une mort ou un retour.
   « Vérifié » = replay contrôlé par le serveur, comme les parties.
 - Un seul replay d'essai par joueur et par défi : celui du meilleur essai vérifié ; un essai
-  moins bon n'est pas gardé, l'ancien meilleur perd le sien. Aucune route ne télécharge un
-  replay d'essai.
+  moins bon n'est pas gardé, l'ancien meilleur perd le sien. Ce replay se regarde depuis le
+  classement : `GET /challenges/attempts/{id}/replay` (connexion facultative ; `{id}` =
+  `attempt_id` d'une entrée de `board=progress`, l'**identifiant du serveur** de l'essai, pas
+  celui du jeu), public pour un essai `VERIFIED` d'un compte actif, toujours pour son joueur ;
+  `403 PROFILE_PRIVATE` pour un profil masqué ; `404 ATTEMPT_NOT_FOUND` (inconnu, refusé, en
+  attente) ou `404 REPLAY_NOT_FOUND` (replay non gardé). Réponse :
+  `application/octet-stream`, en-tête `x-replay-sha256`, comme `GET /challenges/runs/{runId}/replay`.
 - `board=progress` : `409 PROGRESS_UNAVAILABLE` sans tracé ; `period`, `scope`, `limit`,
   `offset` comme `board=time`. Entrées `{ rank, player, progress, finished, time_ms, status:
-  "VERIFIED", late, is_me }` : un essai (`finished: false`, son `time_ms`) ou une partie
-  finie vérifiée (`progress: 100`, `finished: true`, son temps). À score égal, le plus tôt
+  "VERIFIED", late, is_me, attempt_id, run_id, has_replay }` : un essai (`finished: false`,
+  son `time_ms`, `attempt_id` = identifiant du serveur pour regarder son replay, `run_id:
+  null`) ou une partie finie vérifiée (`progress: 100`, `finished: true`, son temps,
+  `attempt_id: null`, `run_id` pour `GET /challenges/runs/{runId}/replay`). `has_replay` : le
+  replay est gardé et ce lecteur peut le regarder (`false` pour un profil masqué, sauf le
+  sien ; un essai qui n'est plus le meilleur de son joueur n'a plus de replay). À score égal, le plus tôt
   envoyé d'abord (entre parties finies aussi : la première envoyée, pas la plus rapide).
   `me` : ma meilleure progression vérifiée de cette période (`rank: null` hors de ce
   `scope`), sinon `null` (un essai en attente de son replay n'a pas encore de score).
