@@ -140,6 +140,9 @@
     {"id": "cos.title_legende", "version": "2.29.0", "parents": ["collection.cat.title", "collection.tab.route"]},
     {"id": "cos.victory_vortex", "version": "2.29.0", "parents": ["collection.cat.victory", "collection.tab.route"]},
     {"id": "cos.victory_borealis", "version": "2.29.0", "parents": ["collection.cat.victory", "collection.tab.route"]},
-    {"id": "cos.victory_corona", "version": "2.29.0", "parents": ["collection.cat.victory", "collection.tab.route"]}
+    {"id": "cos.victory_corona", "version": "2.29.0", "parents": ["collection.cat.victory", "collection.tab.route"]},
+    {"id": "menu.challenges", "version": "2.32.0"},
+    {"id": "challenges.tab.today", "version": "2.32.0", "parents": ["menu.challenges"]},
+    {"id": "challenges.tab.archives", "version": "2.32.0", "parents": ["menu.challenges"]}
   ]
 }

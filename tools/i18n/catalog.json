@@ -260,6 +260,12 @@
    ]
   },
   {
+   "fr": "1er du jour",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "1re pression : pose une balise (gratuit). 2e pression dans les 5 s : retour instantané à la balise, à l'arrêt et brièvement invulnérable.",
    "where": [
     "data/powers/recall.json"
@@ -1175,6 +1181,7 @@
   {
    "fr": "Amis",
    "where": [
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/GhostOptionsScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/OnlineSettingsScene.cpp",
@@ -1322,6 +1329,7 @@
     "editors/level_editor/LevelEditorChat.cpp",
     "editors/level_editor/LevelEditorDialogs.cpp",
     "ui/online/CommentsPanel.cpp",
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/ContentManagerScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/HudEditorScene.cpp",
@@ -1414,8 +1422,15 @@
    ]
   },
   {
+   "fr": "août",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Aperçu indisponible",
    "where": [
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/OnlineRankingScene.cpp"
    ]
@@ -1578,6 +1593,18 @@
    ]
   },
   {
+   "fr": "Archives",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Archives indisponibles.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Archonte des Catacombes",
    "where": [
     "data/achievements/achievements.json",
@@ -1596,13 +1623,20 @@
     "data/cosmetics/cosmetics.json",
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/gameplay/Hud.cpp",
-    "game/levels/LevelData.cpp"
+    "game/levels/LevelData.cpp",
+    "game/online/DailyChallenges.cpp"
    ]
   },
   {
    "fr": "argent",
    "where": [
     "game/progression/NewsCenter.cpp"
+   ]
+  },
+  {
+   "fr": "Argent < {0}",
+   "where": [
+    "game/gameplay/Hud.cpp"
    ]
   },
   {
@@ -1647,6 +1681,12 @@
    "fr": "Arriver 50 fois avant le fantôme de son meilleur temps.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Arriver au bout",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -2028,6 +2068,7 @@
   {
    "fr": "Aucun",
    "where": [
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/OnlineSettingsScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
@@ -2049,6 +2090,12 @@
    ]
   },
   {
+   "fr": "Aucun ami n'a encore de temps vérifié sur ce défi.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun commentaire pour l'instant : donnez le premier avis sur ce niveau.",
    "where": [
     "ui/online/CommentsPanel.cpp"
@@ -2064,6 +2111,24 @@
    "fr": "Aucun créateur ne correspond.",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun défi du jour sur ce PC",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun défi passé pour l'instant.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun défi passé sur ce PC. Les archives viennent de Cosmic Online.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -2199,9 +2264,21 @@
    ]
   },
   {
+   "fr": "Aucun point de passage : une chute ramène au départ du niveau, cœurs pleins et pouvoirs du défi.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun point de passage : une erreur renvoie au départ",
    "where": [
     "editors/level_editor/LevelEditorTools.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun pouvoir au départ",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -2304,6 +2381,12 @@
    "fr": "Aucun survivant",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Aucun temps vérifié pour l'instant : soyez le premier !",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -2447,6 +2530,12 @@
    ]
   },
   {
+   "fr": "Aujourd'hui",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Aurorax",
    "where": [
     "data/achievements/achievements.json",
@@ -2528,7 +2617,8 @@
    "fr": "auto",
    "where": [
     "game/gameplay/entities/InteractiveEntities.cpp",
-    "game/levels/ObjectTypes.cpp"
+    "game/levels/ObjectTypes.cpp",
+    "game/online/DailyChallenges.cpp"
    ]
   },
   {
@@ -2660,6 +2750,12 @@
    "fr": "Avec le pont et la porte haute.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Avec un compte",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -3528,7 +3624,8 @@
     "data/cosmetics/cosmetics.json",
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/gameplay/Hud.cpp",
-    "game/levels/LevelData.cpp"
+    "game/levels/LevelData.cpp",
+    "game/online/DailyChallenges.cpp"
    ]
   },
   {
@@ -4024,6 +4121,18 @@
    ]
   },
   {
+   "fr": "Ce défi n'est plus sur ce PC.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce défi vient de se terminer : la partie sera hors classement.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Ce joueur a choisi de masquer son profil public : seuls son pseudonyme, son avatar et ses niveaux publiés sont visibles.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -4144,6 +4253,12 @@
    ]
   },
   {
+   "fr": "Ce niveau n'existe pas dans votre version du jeu : mettez le jeu à jour.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Ce niveau ne vous appartient pas.",
    "where": [
     "server/src/community.ts"
@@ -4190,6 +4305,12 @@
    "fr": "Ce pseudonyme est réservé.",
    "where": [
     "server/src/auth.ts"
+   ]
+  },
+  {
+   "fr": "Ce qui change aujourd'hui",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -4628,6 +4749,12 @@
    ]
   },
   {
+   "fr": "Chargement des défis passés…",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Chargement des fantômes…",
    "where": [
     "ui/screens/GhostRun.cpp"
@@ -4675,6 +4802,7 @@
     "editors/level_editor/LevelEditorChat.cpp",
     "ui/online/CommentsPanel.cpp",
     "ui/online/RatingWidgets.cpp",
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/OnlineRankingScene.cpp",
@@ -4689,6 +4817,12 @@
    "fr": "chargement…",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Charger les défis précédents",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -4907,6 +5041,12 @@
    "fr": "Choisissez les notifications Cosmic Online que vous recevez. Une catégorie désactivée n'est plus enregistrée par le serveur ; les autres joueurs n'en sont pas informés.",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Choisissez un défi dans la liste.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -5148,6 +5288,12 @@
    ]
   },
   {
+   "fr": "Classement du jour",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Classement en ligne",
    "where": [
     "ui/screens/ResultsScene.cpp"
@@ -5157,6 +5303,12 @@
    "fr": "Classement indisponible",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Classement indisponible : {0}",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -6050,6 +6202,12 @@
    ]
   },
   {
+   "fr": "Connectez-vous à Cosmic Online pour voir le classement du jour et y entrer. Sans compte, le défi se joue quand même : vos résultats restent sur ce PC.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Connectez-vous à Cosmic Online pour voir les joueurs sur le globe.",
    "where": [
     "ui/screens/SocialScene.cpp"
@@ -6058,6 +6216,7 @@
   {
    "fr": "Connectez-vous à Cosmic Online.",
    "where": [
+    "game/online/DailyChallenges.cpp",
     "game/online/OnlineService.cpp"
    ]
   },
@@ -6065,6 +6224,12 @@
    "fr": "Connecté",
    "where": [
     "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "Connecté : votre temps sera envoyé à la fin du défi.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -6077,6 +6242,12 @@
    "fr": "Connecté en tant que {0}.",
    "where": [
     "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "Connexion",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -6112,10 +6283,22 @@
    ]
   },
   {
+   "fr": "Connexion impossible : le niveau sera téléchargé plus tard.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Connexion impossible : {0}",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Connexion impossible.",
+   "where": [
+    "game/online/DailyChallenges.cpp"
    ]
   },
   {
@@ -6416,6 +6599,12 @@
    ]
   },
   {
+   "fr": "Cosmic Online : {0}",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Cosmic Online est de nouveau accessible.",
    "where": [
     "game/online/OnlineService.cpp"
@@ -6428,9 +6617,21 @@
    ]
   },
   {
+   "fr": "Cosmic Online est indisponible dans cette version ou désactivé dans les paramètres : le défi du jour vient du serveur.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Cosmic Online est un service facultatif de classements en ligne pour Cosmic Platformer. Le jeu reste entièrement jouable sans compte et sans connexion Internet. Vos records locaux restent sur votre ordinateur.",
    "where": [
     "data/online/terms_fr.txt"
+   ]
+  },
+  {
+   "fr": "Cosmic Online indisponible",
+   "where": [
+    "game/online/DailyChallenges.cpp"
    ]
   },
   {
@@ -7143,6 +7344,12 @@
    ]
   },
   {
+   "fr": "Cœur de cristal : sans effet pendant le défi",
+   "where": [
+    "game/gameplay/entities/PickupEntities.cpp"
+   ]
+  },
+  {
    "fr": "Cœur de forge vivant enchaîné dans des anneaux de fer. Il fond la roche et façonne des machines.",
    "where": [
     "data/enemies/forge_core.json"
@@ -7184,13 +7391,26 @@
   {
    "fr": "Cœurs",
    "where": [
-    "ui/screens/BossTrainingScene.cpp"
+    "ui/screens/BossTrainingScene.cpp",
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "cœurs hors limites",
+   "where": [
+    "game/gameplay/ChallengeRules.cpp"
    ]
   },
   {
    "fr": "Cœurs maximum en plus",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "D",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
    ]
   },
   {
@@ -7314,6 +7534,12 @@
    "fr": "Date",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "dates du défi invalides",
+   "where": [
+    "game/online/DailyChallenges.cpp"
    ]
   },
   {
@@ -8302,6 +8528,12 @@
    ]
   },
   {
+   "fr": "décembre",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "déclarés par le jeu de ce joueur, non vérifiés par le serveur",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -8491,15 +8723,93 @@
    ]
   },
   {
+   "fr": "Défi : replay refusé",
+   "where": [
+    "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
+   "fr": "Défi : temps refusé",
+   "where": [
+    "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
+   "fr": "défi absent",
+   "where": [
+    "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
    "fr": "Défi amical",
    "where": [
     "data/achievements/achievements.json"
    ]
   },
   {
+   "fr": "DÉFI DU JOUR",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Défi du jour",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "défi du jour",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "Défi du {0}",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "défi du {0}",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "défi du {0}  ·  hors classement",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "DÉFI HORS CLASSEMENT",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Défi inconnu du serveur.",
+   "where": [
+    "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
    "fr": "Défi introuvable.",
    "where": [
     "server/src/challenges.ts"
+   ]
+  },
+  {
+   "fr": "DÉFI RÉUSSI",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "DÉFI ÉCHOUÉ",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -8518,6 +8828,24 @@
    "fr": "Définition de pouvoir invalide : {0}",
    "where": [
     "packaging/PackageImporter.cpp"
+   ]
+  },
+  {
+   "fr": "DÉFIS",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Défis",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "Défis passés",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -8898,9 +9226,27 @@
    ]
   },
   {
+   "fr": "Emplacements",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Emplacements de pouvoirs",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "emplacements hors limites",
+   "where": [
+    "game/gameplay/ChallengeRules.cpp"
+   ]
+  },
+  {
+   "fr": "empreinte des règles différente",
+   "where": [
+    "game/online/DailyChallenges.cpp"
    ]
   },
   {
@@ -8938,6 +9284,13 @@
    "fr": "En attente (apparaît par événement)",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "En attente de contrôle",
+   "where": [
+    "game/online/DailyChallenges.cpp",
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -9078,6 +9431,18 @@
    ]
   },
   {
+   "fr": "En {0} ou moins",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "En {0} ou moins, sans dégât",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "En-tête Content-Length invalide.",
    "where": [
     "server/src/http.ts"
@@ -9124,7 +9489,8 @@
   {
    "fr": "encore {0}",
    "where": [
-    "ui/screens/CollectionScene.cpp"
+    "ui/screens/CollectionScene.cpp",
+    "ui/screens/MainMenuScene.cpp"
    ]
   },
   {
@@ -9383,9 +9749,21 @@
    ]
   },
   {
+   "fr": "ENTRAÎNEMENT TERMINÉ",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "ENTRAÎNEMENT · aucun record · {0} / Vue : recommencer",
    "where": [
     "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "ENTRAÎNEMENT — HORS CLASSEMENT",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -9447,6 +9825,12 @@
    "fr": "Entêté",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Envoi",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -9526,6 +9910,18 @@
    "fr": "Envoyez d'abord le package du niveau.",
    "where": [
     "server/src/community.ts"
+   ]
+  },
+  {
+   "fr": "Envoyé",
+   "where": [
+    "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
+   "fr": "Envoyé trop tard : le défi était terminé.",
+   "where": [
+    "game/online/DailyChallenges.cpp"
    ]
   },
   {
@@ -9801,6 +10197,18 @@
    ]
   },
   {
+   "fr": "fait",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "fait · encore {0}",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
    "fr": "Falaise de l'aqueduc",
    "where": [
     "data/levels/pyralis_02.json"
@@ -9833,7 +10241,8 @@
   {
    "fr": "Fantôme",
    "where": [
-    "game/ghost/Ghost.cpp"
+    "game/ghost/Ghost.cpp",
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -9846,6 +10255,12 @@
    "fr": "Fantôme ignoré : {0}",
    "where": [
     "ui/screens/GhostRun.cpp"
+   ]
+  },
+  {
+   "fr": "Fantôme indisponible.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -9931,6 +10346,12 @@
    "fr": "Fantômes…",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Fantôme…",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -10440,6 +10861,7 @@
     "game/ghost/TrainingSegments.cpp",
     "game/levels/LevelData.cpp",
     "game/levels/RatingService.cpp",
+    "game/online/DailyChallenges.cpp",
     "game/online/LevelFingerprint.cpp",
     "game/online/OnlineCache.cpp",
     "game/online/OnlineSession.cpp",
@@ -10681,6 +11103,12 @@
    ]
   },
   {
+   "fr": "février",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Gabon",
    "where": [
     "data/online/countries.json",
@@ -10915,6 +11343,12 @@
    "fr": "Gardiens de Sylvanox",
    "where": [
     "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Gardé sur ce PC",
+   "where": [
+    "game/online/DailyChallenges.cpp"
    ]
   },
   {
@@ -11656,6 +12090,18 @@
    ]
   },
   {
+   "fr": "Hors classement : ce temps n'est ni envoyé ni gardé comme meilleur temps.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Hors classement : rien n'est envoyé ni gardé comme meilleur temps.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Hors connexion",
    "where": [
     "game/online/OnlineTypes.cpp"
@@ -11674,6 +12120,30 @@
    ]
   },
   {
+   "fr": "hors ligne",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "Hors ligne : classement indisponible pour l'instant.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Hors ligne : connectez-vous à Internet pour recevoir le défi du jour. Une fois téléchargé, il reste jouable hors ligne jusqu'à sa fin.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Hors ligne : dernier classement reçu",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Hors ligne : envoi automatique au retour de la connexion.",
    "where": [
     "ui/screens/ResultsScene.cpp"
@@ -11683,6 +12153,12 @@
    "fr": "Hors ligne : la note se donne une fois reconnecté.",
    "where": [
     "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "Hors ligne : les défis passés gardés sur ce PC restent là.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -11733,6 +12209,19 @@
    "fr": "Hors ligne : téléchargement impossible.",
    "where": [
     "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Hors ligne : votre temps partira à la prochaine connexion.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Hors ligne : à l'envoi",
+   "where": [
+    "game/online/DailyChallenges.cpp",
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -11840,6 +12329,7 @@
     "game/cosmetics/Collection.cpp",
     "game/enemies/EnemyDefinition.cpp",
     "game/levels/LevelData.cpp",
+    "game/online/DailyChallenges.cpp",
     "game/online/LevelFingerprint.cpp",
     "game/online/LiveSession.cpp",
     "game/online/OnlineService.cpp",
@@ -11848,6 +12338,7 @@
     "game/progression/NewsCenter.cpp",
     "game/race/Race.cpp",
     "ui/online/CommentsPanel.cpp",
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/CollectionScene.cpp",
     "ui/screens/CommunityPublishScene.cpp",
     "ui/screens/ContentManagerScene.cpp",
@@ -11887,6 +12378,12 @@
    ]
   },
   {
+   "fr": "identifiant de défi invalide",
+   "where": [
+    "game/gameplay/ChallengeRules.cpp"
+   ]
+  },
+  {
    "fr": "identifiant de niveau invalide",
    "where": [
     "server/src/community.ts"
@@ -11896,6 +12393,12 @@
    "fr": "identifiant manquant",
    "where": [
     "game/levels/LevelData.cpp"
+   ]
+  },
+  {
+   "fr": "identifiant ou date du défi invalide",
+   "where": [
+    "game/online/DailyChallenges.cpp"
    ]
   },
   {
@@ -12213,6 +12716,7 @@
   {
    "fr": "indisponible",
    "where": [
+    "ui/screens/MainMenuScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/OnlineRankingScene.cpp"
    ]
@@ -12288,6 +12792,7 @@
   {
    "fr": "Installation impossible : {0}",
    "where": [
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp"
    ]
   },
@@ -12295,6 +12800,12 @@
    "fr": "installation impossible : {0}",
    "where": [
     "packaging/PackageImporter.cpp"
+   ]
+  },
+  {
+   "fr": "Installé, mais cette copie diffère de la version du défi : vos temps n'y seront pas envoyés.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -12631,6 +13142,7 @@
   {
    "fr": "Jouer",
    "where": [
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/ContentManagerScene.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
@@ -13322,6 +13834,12 @@
    ]
   },
   {
+   "fr": "la partie attend la connexion pour partir.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "La planète des sanctuaires",
    "where": [
     "data/planets/aethra.json"
@@ -13503,6 +14021,7 @@
   {
    "fr": "Lancer l'entraînement",
    "where": [
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/GhostSetupScene.cpp"
    ]
   },
@@ -13516,6 +14035,12 @@
    "fr": "Lancer la course",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Lancer le défi",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -13622,6 +14147,12 @@
    ]
   },
   {
+   "fr": "Le 1er du jour · {0}",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Le bastion est tombé. Le fleuve vous attend.",
    "where": [
     "data/levels/pyralis_02.json"
@@ -13710,6 +14241,12 @@
    "fr": "Le classement de ce niveau est désactivé.",
    "where": [
     "server/src/levels.ts"
+   ]
+  },
+  {
+   "fr": "Le classement du jour vient de Cosmic Online, indisponible ici. Le défi se joue quand même : vos résultats restent sur ce PC.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -13881,6 +14418,18 @@
    "fr": "Le dernier relais... Après lui, toute la galaxie sera reliée. On y va.",
    "where": [
     "data/levels/glacior_03.json"
+   ]
+  },
+  {
+   "fr": "Le défi du jour vient du serveur ; une fois téléchargé, il reste jouable hors ligne jusqu'à sa fin.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le défi est demandé au serveur.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -14133,6 +14682,12 @@
    ]
   },
   {
+   "fr": "Le niveau a changé depuis ce défi : la partie se joue sur votre version.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Le niveau a changé depuis votre dernière fin de niveau : enregistrez-le, puis terminez-le de nouveau depuis le départ (F5 dans l'éditeur).",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
@@ -14343,9 +14898,21 @@
    ]
   },
   {
+   "fr": "le serveur a contrôlé le replay de la partie.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Le serveur a refusé une modification ({0}).",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
+   ]
+  },
+  {
+   "fr": "Le serveur n'a pas donné de défi : {0}",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -14433,6 +15000,12 @@
     "data/enemies/echo_crucible_heart.json",
     "data/enemies/echo_magmaroth.json",
     "data/enemies/magmaroth.json"
+   ]
+  },
+  {
+   "fr": "le temps est reçu, son replay pas encore contrôlé.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -14763,6 +15336,12 @@
    ]
   },
   {
+   "fr": "les meilleurs temps du jour, avec leur palier.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Les miens",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -14796,6 +15375,12 @@
    "fr": "Les Plaines de Givre",
    "where": [
     "data/levels/glacior_01.json"
+   ]
+  },
+  {
+   "fr": "Les points de passage fonctionnent comme d'habitude.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -14935,6 +15520,18 @@
    "where": [
     "data/enemies/echo_frost_hydra.json",
     "data/enemies/frost_hydra.json"
+   ]
+  },
+  {
+   "fr": "Les stations de pouvoirs du niveau fonctionnent comme d'habitude.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Les stations de pouvoirs du niveau sont éteintes : elles n'offrent rien.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -15239,6 +15836,12 @@
    "fr": "Liste des fichiers absente du manifeste",
    "where": [
     "packaging/PackageImporter.cpp"
+   ]
+  },
+  {
+   "fr": "liste des pouvoirs absente",
+   "where": [
+    "game/gameplay/ChallengeRules.cpp"
    ]
   },
   {
@@ -16389,6 +16992,7 @@
   {
    "fr": "Moi",
    "where": [
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/GameScene.cpp"
    ]
   },
@@ -16432,13 +17036,32 @@
   {
    "fr": "Mon meilleur temps",
    "where": [
-    "game/ghost/Ghost.cpp"
+    "game/ghost/Ghost.cpp",
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Mon meilleur temps · défi du {0}",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Mon meilleur · {0}",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
    "fr": "Mon niveau",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Mon niveau choisi comme défi du jour",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
    ]
   },
   {
@@ -16473,10 +17096,28 @@
    ]
   },
   {
+   "fr": "Mon temps :",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Monaco",
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Monde",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Monde, Pays, Amis",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -16994,9 +17635,33 @@
    ]
   },
   {
+   "fr": "Niveau de la communauté à télécharger (version {0}).",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Niveau de la communauté, version {0}",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "niveau différent du record",
    "where": [
     "server/src/replay.ts"
+   ]
+  },
+  {
+   "fr": "niveau du défi absent",
+   "where": [
+    "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
+   "fr": "niveau du défi invalide",
+   "where": [
+    "game/online/DailyChallenges.cpp"
    ]
   },
   {
@@ -17068,8 +17733,15 @@
    ]
   },
   {
+   "fr": "Niveau installé : il reste jouable hors ligne.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Niveau installé illisible.",
    "where": [
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp"
    ]
   },
@@ -17208,13 +17880,20 @@
    "fr": "niveau {0}",
    "where": [
     "ui/screens/BossStatsScene.cpp",
-    "ui/screens/BossTrainingScene.cpp"
+    "ui/screens/BossTrainingScene.cpp",
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
    "fr": "Niveau à exporter",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
+   ]
+  },
+  {
+   "fr": "Niveau à télécharger",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -17440,6 +18119,18 @@
    ]
   },
   {
+   "fr": "Non envoyé.",
+   "where": [
+    "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
+   "fr": "Non joué",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Non lues",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -17481,6 +18172,7 @@
   {
    "fr": "note",
    "where": [
+    "game/online/DailyChallenges.cpp",
     "game/online/OnlineRecord.cpp"
    ]
   },
@@ -17683,6 +18375,12 @@
    "where": [
     "data/achievements/achievements.json",
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Nouveau meilleur temps",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -18276,12 +18974,14 @@
   {
    "fr": "Obtenu",
    "where": [
-    "ui/screens/AchievementsScene.cpp"
+    "ui/screens/AchievementsScene.cpp",
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
    "fr": "obtenu",
    "where": [
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/CollectionScene.cpp"
    ]
   },
@@ -18480,6 +19180,7 @@
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/gameplay/Hud.cpp",
     "game/levels/LevelData.cpp",
+    "game/online/DailyChallenges.cpp",
     "saves/Settings.cpp"
    ]
   },
@@ -18487,6 +19188,12 @@
    "fr": "or",
    "where": [
     "game/progression/NewsCenter.cpp"
+   ]
+  },
+  {
+   "fr": "Or < {0}",
+   "where": [
+    "game/gameplay/Hud.cpp"
    ]
   },
   {
@@ -18741,12 +19448,14 @@
   {
    "fr": "Package refusé : invalide",
    "where": [
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp"
    ]
   },
   {
    "fr": "Package refusé : {0}",
    "where": [
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp"
    ]
   },
@@ -18820,6 +19529,12 @@
    ]
   },
   {
+   "fr": "Palier atteint",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Palier de {0} étoiles",
    "where": [
     "ui/screens/RewardsScene.cpp"
@@ -18828,6 +19543,7 @@
   {
    "fr": "Paliers",
    "where": [
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/CollectionScene.cpp"
    ]
   },
@@ -18835,6 +19551,18 @@
    "fr": "Paliers atteints",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "paliers du défi absents",
+   "where": [
+    "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
+   "fr": "paliers du défi invalides",
+   "where": [
+    "game/online/DailyChallenges.cpp"
    ]
   },
   {
@@ -18861,6 +19589,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "par",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -19129,6 +19863,12 @@
    ]
   },
   {
+   "fr": "Partie terminée",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Pas d'arène : rien à régler.",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
@@ -19191,6 +19931,12 @@
    ]
   },
   {
+   "fr": "Pas encore",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Pas encore affronté : ses statistiques commenceront au premier combat.",
    "where": [
     "ui/screens/BossStatsScene.cpp"
@@ -19233,6 +19979,12 @@
    ]
   },
   {
+   "fr": "Pas encore de temps sur ce défi.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Pas encore rencontrée.",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -19260,6 +20012,12 @@
    "fr": "Pas encore vérifié : une seule vie, le premier à finir le vérifie",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pas meilleur que votre temps déjà envoyé : gardé sur ce PC.",
+   "where": [
+    "game/online/DailyChallenges.cpp"
    ]
   },
   {
@@ -19403,6 +20161,7 @@
   {
    "fr": "Pays",
    "where": [
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/OnlineAccountScene.cpp"
    ]
   },
@@ -19422,6 +20181,12 @@
    "fr": "Pays : {0}",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pays inconnu : choisissez votre pays dans votre compte (EN LIGNE) pour ce classement.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -20191,6 +20956,12 @@
    ]
   },
   {
+   "fr": "plus de pouvoirs que d'emplacements",
+   "where": [
+    "game/gameplay/ChallengeRules.cpp"
+   ]
+  },
+  {
    "fr": "Plus de vie",
    "where": [
     "game/gameplay/GameWorld.cpp"
@@ -20399,6 +21170,12 @@
    "fr": "Points cosmiques : 1000 × record mondial / votre temps, sur tous les niveaux",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Points de passage",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -20824,6 +21601,12 @@
    ]
   },
   {
+   "fr": "pouvoir invalide ou en double",
+   "where": [
+    "game/gameplay/ChallengeRules.cpp"
+   ]
+  },
+  {
    "fr": "Pouvoir laissé ici : vous pourrez revenir le prendre.",
    "where": [
     "game/gameplay/GameWorld.cpp"
@@ -20860,6 +21643,7 @@
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "saves/HudLayout.cpp",
     "ui/screens/BossTrainingScene.cpp",
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/SettingsScene.cpp"
    ]
@@ -20874,6 +21658,12 @@
    "fr": "Pouvoirs : coûts d'énergie selon leur force (référence : le tir chargé à 20, une attaque moins forte coûte moins). Leurs caractéristiques (énergie, dégâts, rayon, portée, recharge…) sont affichées dans le guide, dans la fiche de chaque pouvoir et quand on les ramasse.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Pouvoirs : {0}",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -21072,6 +21862,12 @@
    "fr": "Profil indisponible.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Profil privé : pas de fantôme.",
+   "where": [
+    "game/online/DailyChallenges.cpp"
    ]
   },
   {
@@ -21877,6 +22673,12 @@
    ]
   },
   {
+   "fr": "Raison",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Ralenti temporel",
    "where": [
     "data/powers/time_slow.json",
@@ -22174,6 +22976,18 @@
    ]
   },
   {
+   "fr": "Recherche du défi du jour…",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "recherche du défi…",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
    "fr": "Rechercher un pays…",
    "where": [
     "ui/online/OnlineWidgets.cpp"
@@ -22196,6 +23010,7 @@
    "where": [
     "game/powers/PowerKeys.cpp",
     "ui/screens/BossTrainingScene.cpp",
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/PauseScene.cpp",
     "ui/screens/ResultsScene.cpp"
    ]
@@ -22515,6 +23330,12 @@
    ]
   },
   {
+   "fr": "Refusé",
+   "where": [
+    "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
    "fr": "Regarde à gauche",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -22567,6 +23388,18 @@
    "fr": "Rejouer",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Rejouer (hors classement)",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Rejouer un défi passé ne compte pas : hors classement, rien n'est envoyé.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -22803,6 +23636,7 @@
   {
    "fr": "Replay illisible : {0}",
    "where": [
+    "game/online/DailyChallenges.cpp",
     "ui/screens/ReplayScene.cpp"
    ]
   },
@@ -22814,9 +23648,27 @@
    ]
   },
   {
+   "fr": "Replay inconnu.",
+   "where": [
+    "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
+   "fr": "Replay introuvable sur ce PC.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Replay introuvable.",
    "where": [
     "server/src/community.ts"
+   ]
+  },
+  {
+   "fr": "Replay manquant : le temps ne pourra pas être vérifié.",
+   "where": [
+    "game/online/DailyChallenges.cpp"
    ]
   },
   {
@@ -22854,6 +23706,12 @@
    "where": [
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Replay refusé.",
+   "where": [
+    "game/online/DailyChallenges.cpp"
    ]
   },
   {
@@ -23066,6 +23924,7 @@
     "ui/screens/AchievementsScene.cpp",
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/BossTrainingScene.cpp",
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/CollectionScene.cpp",
     "ui/screens/LevelPowerKeysScene.cpp",
     "ui/screens/NotificationsScene.cpp",
@@ -23104,6 +23963,12 @@
    "fr": "Retour au menu En ligne",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Retour aux défis",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -23164,7 +24029,14 @@
   {
    "fr": "Revoir la partie",
    "where": [
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Revoir mon meilleur replay",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -23436,7 +24308,8 @@
   {
    "fr": "runs",
    "where": [
-    "game/ghost/SegmentHistory.cpp"
+    "game/ghost/SegmentHistory.cpp",
+    "game/online/DailyChallenges.cpp"
    ]
   },
   {
@@ -23482,9 +24355,40 @@
    ]
   },
   {
+   "fr": "règles absentes",
+   "where": [
+    "game/gameplay/ChallengeRules.cpp"
+   ]
+  },
+  {
    "fr": "Règles de niveau affichées avant de jouer et réglables dans l'éditeur : facteur de dégâts reçus et nombre de vies.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "règles des stations ou des points de passage absentes",
+   "where": [
+    "game/gameplay/ChallengeRules.cpp"
+   ]
+  },
+  {
+   "fr": "Règles différentes de celles du défi.",
+   "where": [
+    "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
+   "fr": "règles du défi : {0}",
+   "where": [
+    "game/online/DailyChallenges.cpp",
+    "game/online/Replay.cpp"
+   ]
+  },
+  {
+   "fr": "Règles du jour",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -23589,6 +24493,7 @@
   {
    "fr": "Réessayer",
    "where": [
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/OnlineRankingScene.cpp"
    ]
   },
@@ -23809,6 +24714,12 @@
    ]
   },
   {
+   "fr": "Résultat",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Rétablir",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -23941,6 +24852,12 @@
    "fr": "S'accroupir : Bas seul au sol, même sur place, baisse le personnage pour laisser passer les attaques (Bas en courant reste une glissade).",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "S'entraîner (hors classement)",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -24119,6 +25036,24 @@
    ]
   },
   {
+   "fr": "Sans compte",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Sans compte : ni classement ni envoi. Connectez-vous à Cosmic Online pour entrer dans le classement du jour.",
+   "where": [
+    "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
+   "fr": "Sans compte : votre résultat restera sur ce PC (ni classement ni envoi).",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "sans décalage",
    "where": [
     "game/ghost/ReplayCompare.cpp"
@@ -24133,7 +25068,8 @@
   {
    "fr": "sans dégât",
    "where": [
-    "server/src/records.ts"
+    "server/src/records.ts",
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -24158,6 +25094,18 @@
    "fr": "Sans mourir, sans être touché : la précision.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Sans points de passage",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "sans points de passage",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -24353,6 +25301,7 @@
   {
    "fr": "Se connecter",
    "where": [
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/CommunityPublishScene.cpp",
     "ui/screens/OnlineAccountScene.cpp",
     "ui/screens/OnlineRankingScene.cpp"
@@ -24386,6 +25335,12 @@
    "fr": "Se reforme au checkpoint",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Se termine dans {0}",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -24448,6 +25403,30 @@
    "where": [
     "game/online/Replay.cpp",
     "server/src/replay.ts"
+   ]
+  },
+  {
+   "fr": "section des règles de taille invalide",
+   "where": [
+    "game/gameplay/ChallengeRules.cpp"
+   ]
+  },
+  {
+   "fr": "section des règles du défi incohérente",
+   "where": [
+    "game/online/Replay.cpp"
+   ]
+  },
+  {
+   "fr": "section des règles hors de la forme canonique",
+   "where": [
+    "game/gameplay/ChallengeRules.cpp"
+   ]
+  },
+  {
+   "fr": "section des règles illisible",
+   "where": [
+    "game/gameplay/ChallengeRules.cpp"
    ]
   },
   {
@@ -25523,9 +26502,27 @@
    ]
   },
   {
+   "fr": "Stations",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Stations actives",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Stations de pouvoirs dans la campagne, raccourci du Cœur de la Machine supprimé.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Stations éteintes",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -26128,6 +27125,42 @@
    ]
   },
   {
+   "fr": "Série (Cosmic Online)",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Série (sur ce PC)",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Série : {0} jour",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Série : {0} jour (sur ce PC)",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Série : {0} jours",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Série : {0} jours (sur ce PC)",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Tab",
    "where": [
     "engine/input/InputTypes.cpp"
@@ -26373,6 +27406,7 @@
   {
    "fr": "Temps",
    "where": [
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/GhostRun.cpp",
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/OnlineThreadScene.cpp",
@@ -27978,6 +29012,12 @@
    ]
   },
   {
+   "fr": "Téléchargement du niveau…",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Téléchargement du replay…",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -28000,6 +29040,7 @@
   {
    "fr": "Téléchargement refusé ({0}).",
    "where": [
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/ProjectsScene.cpp"
    ]
@@ -28013,10 +29054,17 @@
   {
    "fr": "Téléchargement…",
    "where": [
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Télécharger",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -28041,6 +29089,12 @@
    "fr": "Télécharger et éditer",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Télécharger le niveau",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -29374,6 +30428,7 @@
     "game/levels/DifficultyRating.cpp",
     "game/levels/LevelData.cpp",
     "game/levels/RatingService.cpp",
+    "game/online/DailyChallenges.cpp",
     "game/online/LevelFingerprint.cpp",
     "game/online/LevelRatings.cpp",
     "game/online/OnlineCache.cpp",
@@ -29385,6 +30440,7 @@
     "packaging/PackageExporter.cpp",
     "packaging/PackageImporter.cpp",
     "saves/SaveFile.cpp",
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/CommunityPublishScene.cpp",
     "ui/screens/ContentManagerScene.cpp",
     "ui/screens/GameScene.cpp",
@@ -29434,6 +30490,12 @@
    ]
   },
   {
+   "fr": "Version du jeu trop ancienne : mettez le jeu à jour.",
+   "where": [
+    "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
    "fr": "Version du jeu trop ancienne pour le classement en ligne.",
    "where": [
     "server/src/records.ts"
@@ -29443,6 +30505,12 @@
    "fr": "Version du jeu trop ancienne pour les défis du jour.",
    "where": [
     "server/src/challenges.ts"
+   ]
+  },
+  {
+   "fr": "Version du niveau différente de celle du défi.",
+   "where": [
+    "game/online/DailyChallenges.cpp"
    ]
   },
   {
@@ -29917,7 +30985,19 @@
    ]
   },
   {
+   "fr": "Voir les archives",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Voir les commentaires",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Voir les défis",
    "where": [
     "ui/screens/NotificationsScene.cpp"
    ]
@@ -30136,6 +31216,12 @@
    ]
   },
   {
+   "fr": "Votre partie · défi du {0}",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "votre pays",
    "where": [
     "ui/screens/SocialScene.cpp"
@@ -30190,9 +31276,23 @@
    ]
   },
   {
+   "fr": "Votre version du niveau diffère de celle du défi : temps gardé sur ce PC.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp",
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre version du niveau diffère de celle du défi : vos temps resteront sur ce PC.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Vous",
    "where": [
     "editors/level_editor/LevelEditorChat.cpp",
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/PauseScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
@@ -30243,6 +31343,12 @@
    "fr": "Vous n'avez pas encore créé de niveau. « Nouveau niveau » ouvre l'éditeur ; vos créations sont enregistrées dans votre dossier utilisateur et peuvent être exportées en .cplanet.",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vous n'avez pas fini ce défi le jour même.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -30393,6 +31499,18 @@
    "fr": "Vous ne suivez plus ce créateur.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vous partez avec : {0} (à la place des pouvoirs de départ du niveau).",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vous partez sans aucun pouvoir.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -30563,6 +31681,13 @@
    "fr": "VÉRIFIÉ",
    "where": [
     "game/online/OnlineTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Vérifié",
+   "where": [
+    "game/online/DailyChallenges.cpp",
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -31354,13 +32479,17 @@
   {
    "fr": "{0} cœur",
    "where": [
-    "ui/screens/BossTrainingScene.cpp"
+    "ui/screens/BossTrainingScene.cpp",
+    "ui/screens/ChallengesScene.cpp",
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
    "fr": "{0} cœurs",
    "where": [
-    "ui/screens/BossTrainingScene.cpp"
+    "ui/screens/BossTrainingScene.cpp",
+    "ui/screens/ChallengesScene.cpp",
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -31426,6 +32555,18 @@
    ]
   },
   {
+   "fr": "{0} dégât",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} dégâts",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} départs du joueur (un seul est utilisé)",
    "where": [
     "editors/level_editor/LevelEditorTools.cpp"
@@ -31435,6 +32576,42 @@
    "fr": "{0} déplacement(s) impossible(s)",
    "where": [
     "server/src/replay.ts"
+   ]
+  },
+  {
+   "fr": "{0} emplacement",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} emplacement de pouvoir (le niveau en a {1}).",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} emplacement de pouvoir.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} emplacements",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} emplacements de pouvoirs (le niveau en a {1}).",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} emplacements de pouvoirs.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -31560,7 +32737,9 @@
   {
    "fr": "{0} h {1} min",
    "where": [
-    "game/progression/Progression.cpp"
+    "game/progression/Progression.cpp",
+    "ui/screens/ChallengesScene.cpp",
+    "ui/screens/MainMenuScene.cpp"
    ]
   },
   {
@@ -31597,6 +32776,18 @@
    "fr": "{0} joueurs veulent devenir vos amis (En ligne → SOCIAL → Amis).",
    "where": [
     "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "{0} jour",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} jours",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -31644,7 +32835,14 @@
   {
    "fr": "{0} min",
    "where": [
-    "game/progression/Progression.cpp"
+    "game/progression/Progression.cpp",
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} min {1} s",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -31797,6 +32995,12 @@
    "fr": "{0} pièges sur le parcours",
    "where": [
     "game/levels/DifficultyRating.cpp"
+   ]
+  },
+  {
+   "fr": "{0} pour tout le niveau, pleins au départ ; les cœurs de cristal du niveau ne donnent rien.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -32080,6 +33284,12 @@
    "fr": "{0} · rang mondial n°{1}",
    "where": [
     "ui/screens/OnlineThreadScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · sans compte",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -33020,6 +34230,8 @@
    "fr": "Écriture impossible.",
    "where": [
     "game/ghost/GhostStore.cpp",
+    "game/online/DailyChallenges.cpp",
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp"

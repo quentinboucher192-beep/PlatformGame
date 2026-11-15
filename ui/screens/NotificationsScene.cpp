@@ -67,6 +67,7 @@ const std::vector<OnlineKind>& onlineKinds() {
         {"race_verified", "X", {255, 140, 60, 255}, "EXTRÊME", "Vérification d'un niveau EXTRÊME que j'ai tenté"},
         {"run_comment", "C", {150, 170, 255, 255}, "Commentaire", "Commentaire sur une de mes courses"},
         {"record_beaten", "R", {255, 214, 90, 255}, "Record battu", "Mon record mondial battu par un autre joueur"},
+        {"challenge_featured", "D", {255, 204, 84, 255}, "Défi du jour", "Mon niveau choisi comme défi du jour"},
     };
     return k;
 }
@@ -280,6 +281,7 @@ private:
         if (kind == "project_removed") return "Mes projets";
         if (kind == "race_verified" && (!jstr(n, "level_id").empty() || (n.contains("data") && !jstr(n["data"], "official").empty()))) return "Voir le niveau";
         if (kind == "record_beaten" && n.contains("data") && !jstr(n["data"], "official").empty()) return "Voir le classement";
+        if (kind == "challenge_featured") return "Voir les défis";
         return {};
     }
 
@@ -288,6 +290,10 @@ private:
         std::string id = jstr(n, "id");
         bool unread = !jget<bool>(n, "read", false);
         auto go = [this, n, kind]() {
+            if (kind == "challenge_featured") {  // 2.32: my level is (or will be) a daily challenge
+                g_.app.switchScene(makeChallenges(g_), 0.3f);
+                return;
+            }
             if (kind == "new_follower") {
                 g_.app.pushScene(makePlayerProfile(g_, jstr(n["actor"], "id")));
                 return;
@@ -459,6 +465,8 @@ private:
         float colW = (area.w - ui.s(20)) * 0.5f;
         int i = 0;
         for (const auto& k : onlineKinds()) {
+            // Only the kinds this server knows (a newer kind on an older server: not offered).
+            if (!settings_.contains(k.kind)) continue;
             float cx = area.x + (i % 2) * (colW + ui.s(20));
             float cy = y + (i / 2) * ui.s(56);
             bool on = jget<bool>(settings_, k.kind, true);

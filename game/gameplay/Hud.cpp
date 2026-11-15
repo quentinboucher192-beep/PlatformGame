@@ -332,8 +332,22 @@ void Hud::drawTimer(UIContext& ui, GameWorld& w, const LevelRecord* record, Vec2
         ui.text().draw("Record " + LevelTimer::format(record->bestTime), {x, line}, small);
         line += S(26);
     }
+    // A challenge: its next tier still reachable (the level's medals do not apply).
+    if (tierSilver_ > 0.0f || tierGold_ > 0.0f) {
+        TextStyle ms = small;
+        float e = t.elapsed();
+        if (tierGold_ > 0.0f && e <= tierGold_ && (!tierGoldNoDamage_ || w.stats().damageTaken == 0)) {
+            ms.color = {255, 204, 84, 255};
+            ui.text().draw("Or < " + LevelTimer::format(tierGold_, false), {x, line}, ms);
+            line += S(26);
+        } else if (tierSilver_ > 0.0f && e <= tierSilver_) {
+            ms.color = {198, 210, 228, 255};
+            ui.text().draw("Argent < " + LevelTimer::format(tierSilver_, false), {x, line}, ms);
+            line += S(26);
+        }
+    }
     // Next medal objective still reachable
-    for (int i = 3; i >= 1; --i) {
+    for (int i = 3; i >= 1 && tierSilver_ <= 0.0f && tierGold_ <= 0.0f; --i) {
         const MedalRule& m = lvl.medals[i];
         if (m.maxTime > 0 && t.elapsed() <= m.maxTime) {
             static const char* names[] = {"Bronze", "Argent", "Or", "Platine"};

@@ -13,6 +13,7 @@
 #include "engine/physics/PhysicsWorld.h"
 #include "engine/rendering/ParticleSystem.h"
 #include "game/enemies/BossHazards.h"
+#include "game/gameplay/ChallengeRules.h"
 #include "game/gameplay/Damage.h"
 #include "game/gameplay/Entity.h"
 #include "game/gameplay/Projectile.h"
@@ -117,11 +118,18 @@ public:
         rng_.reseed(seed);
     }
     uint64_t gameplaySeed() const { return seed_; }
-    /// A training run (boss statistics → Entraînement): nothing it does counts. Every recorder
-    /// checks it (boss statistics, achievement counters, records, progression, creatures met).
-    /// Never read by the simulation.
+    /// A training run (boss statistics → Entraînement), or a challenge run: nothing it does
+    /// counts. Every recorder checks it (boss statistics, achievement counters, records,
+    /// progression, creatures met). Never read by the simulation.
     void setTraining(bool on) { training_ = on; }
-    bool training() const { return training_; }
+    bool training() const { return training_ || challenge_.has_value(); }
+    /// A daily challenge (2.32, simulation 11): its rules apply now (call it right after
+    /// load(), before the first step: hearts, slots, imposed powers) and for the rest of the
+    /// run (heart containers give nothing; stations off; checkpoints off, a death going back
+    /// to the start with the challenge's start state). The run then counts for nothing else
+    /// (training()). A world without a challenge plays exactly as before.
+    void setChallenge(const ChallengeRules& rules);
+    const ChallengeRules* challenge() const { return challenge_ ? &*challenge_ : nullptr; }
     uint64_t gameplayRngState() const { return rng_.state(); }
 
     std::vector<std::unique_ptr<LevelEntity>>& entities() { return entities_; }
@@ -303,6 +311,10 @@ private:
     Random fxRng_{0xF1F1F1};
     uint64_t seed_ = 0xC0FFEE;
     bool training_ = false;
+    std::optional<ChallengeRules> challenge_;
+    /// Challenge without checkpoints: a death goes back to the start with its start state,
+    /// the power tablets as the level placed them (none lost, none exchanged).
+    void restartChallenge();
     uint32_t nextEnemyUid_ = 1;
     int dropCounter_ = 0;
 
