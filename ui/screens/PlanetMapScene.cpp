@@ -436,7 +436,9 @@ public:
         UIContext::ButtonStyle gs;
         gs.enabled = unlocked;
         Rect gbtn{btn.x - ui.s(16) - ui.s(250), btn.y, ui.s(250), btn.h};
-        if (ui.button("ghosts_level", gbtn, "Fantômes…", gs) && unlocked) g_.app.pushScene(makeGhostSetup(g_, l.id));
+        bool ghosts = ui.button("ghosts_level", gbtn, "Fantômes…", gs);
+        ui.newBadge("ghosts_level", gbtn, "planet.ghosts");  // « NOUVEAU » (2.30.2): section training
+        if (ghosts && unlocked) g_.app.pushScene(makeGhostSetup(g_, l.id));
     }
 
     void play() {

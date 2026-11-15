@@ -18,6 +18,14 @@ void GameRenderer::build(Renderer& r, ResourceManager& res, const GameWorld& wor
     ringTex_ = res.texture("textures/fx/ring.png", false);
 }
 
+void GameRenderer::buildProgressive(ResourceManager& res, const GameWorld& world) {
+    const LevelData& lvl = world.level();
+    parallax_.load(res, lvl.background, lvl.bounds.center().y);
+    terrain_.prepare(res, lvl);
+    projectiles_ = res.animation("animations/projectiles.json");
+    ringTex_ = res.texture("textures/fx/ring.png", false);
+}
+
 void GameRenderer::rebuildTerrain(Renderer& r, ResourceManager& res, const GameWorld& world) {
     terrain_.build(r, res, world.level());
     const LevelData& lvl = world.level();

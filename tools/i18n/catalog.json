@@ -91,6 +91,18 @@
    ]
   },
   {
+   "fr": "({0} essai)",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "({0} essais)",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
    "fr": "({0} sur mon record d'avant)",
    "where": [
     "ui/screens/SegmentsScene.cpp"
@@ -1398,6 +1410,7 @@
   {
    "fr": "Aperçu indisponible",
    "where": [
+    "ui/screens/GhostSetupScene.cpp",
     "ui/screens/OnlineRankingScene.cpp"
    ]
   },
@@ -2015,6 +2028,7 @@
     "game/online/HttpTransportNone.cpp",
     "game/online/OnlineService.h",
     "ui/screens/BossTrainingScene.cpp",
+    "ui/screens/GhostSetupScene.cpp",
     "ui/screens/PlanetMapScene.cpp"
    ]
   },
@@ -2205,6 +2219,12 @@
    ]
   },
   {
+   "fr": "aucun record",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun record pour l'instant.",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
@@ -2288,6 +2308,12 @@
    "fr": "aucune",
    "where": [
     "game/online/HttpTransport.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune course de cette version : pas de trajet à montrer",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -2507,6 +2533,12 @@
    "fr": "Autre bouton",
    "where": [
     "ui/screens/PowerChoiceScene.cpp"
+   ]
+  },
+  {
+   "fr": "autre parcours",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -4024,7 +4056,13 @@
    ]
   },
   {
-   "fr": "Ce niveau n'a pas de point de sauvegarde : l'entraînement part du début.",
+   "fr": "Ce niveau n'a pas de point de sauvegarde : le segment va du départ à l'arrivée.",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "ce niveau n'en donne aucun",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
    ]
@@ -4154,6 +4192,12 @@
    "fr": "Ce replay ne contient pas de trajectoire.",
    "where": [
     "game/ghost/GhostStore.cpp"
+   ]
+  },
+  {
+   "fr": "CE SEGMENT",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -4477,6 +4521,12 @@
    ]
   },
   {
+   "fr": "Chargement de l'aperçu…",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
    "fr": "Chargement de la course…",
    "where": [
     "ui/screens/OnlineThreadScene.cpp"
@@ -4732,6 +4782,12 @@
    "fr": "Choisir la musique du menu principal dans le juke-box.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Choisir…",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -6990,6 +7046,19 @@
    "fr": "Dans la zone (id, optionnel)",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Dans mon record",
+   "where": [
+    "ui/screens/GameScene.cpp",
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Dans mon record {0}",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -10184,6 +10253,7 @@
     "game/ghost/Ghost.cpp",
     "game/ghost/GhostStore.cpp",
     "game/ghost/SegmentHistory.cpp",
+    "game/ghost/TrainingSegments.cpp",
     "game/levels/LevelData.cpp",
     "game/levels/RatingService.cpp",
     "game/online/LevelFingerprint.cpp",
@@ -10431,6 +10501,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Gain possible",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -11923,6 +11999,12 @@
    "fr": "inactive",
    "where": [
     "game/gameplay/entities/InteractiveEntities.cpp"
+   ]
+  },
+  {
+   "fr": "incomplète",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -14051,7 +14133,7 @@
    ]
   },
   {
-   "fr": "Le segment recommence dès son arrivée. Les pouvoirs des tablettes placées avant le départ sont donnés. Aucun record, aucune progression, rien n'est envoyé en ligne.",
+   "fr": "Le segment recommence dès son arrivée. Aucun record, aucune progression, rien n'est envoyé en ligne.",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
    ]
@@ -14222,6 +14304,12 @@
    "fr": "Lecture du package ou du replay impossible.",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
+   ]
+  },
+  {
+   "fr": "Lecture du trajet…",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -14510,6 +14598,12 @@
    "fr": "Les ponts d'obsidienne s'effritent : ne traînez pas !",
    "where": [
     "data/levels/pyralis_01.json"
+   ]
+  },
+  {
+   "fr": "Les pouvoirs du parcours : ceux du départ et des tablettes placées avant.",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -15542,21 +15636,22 @@
    ]
   },
   {
-   "fr": "meilleur essai !",
-   "where": [
-    "ui/screens/GameScene.cpp"
-   ]
-  },
-  {
-   "fr": "meilleur essai {0}",
-   "where": [
-    "ui/screens/GameScene.cpp"
-   ]
-  },
-  {
    "fr": "Meilleur score",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Meilleur segment",
+   "where": [
+    "ui/screens/GameScene.cpp",
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Meilleur segment {0}",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -15569,6 +15664,19 @@
    "fr": "Meilleur temps mondial",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Meilleur à l'entraînement",
+   "where": [
+    "ui/screens/GameScene.cpp",
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Meilleur à l'entraînement {0} ({1})",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -15925,14 +16033,9 @@
   {
    "fr": "Mode concentré",
    "where": [
-    "ui/screens/GameScene.cpp",
-    "ui/screens/HudEditorScene.cpp"
-   ]
-  },
-  {
-   "fr": "Mode concentré (HUD réduit)",
-   "where": [
     "engine/input/InputTypes.cpp",
+    "ui/screens/GameScene.cpp",
+    "ui/screens/HudEditorScene.cpp",
     "ui/screens/PauseScene.cpp"
    ]
   },
@@ -16085,6 +16188,7 @@
   {
    "fr": "Mon record",
    "where": [
+    "ui/screens/GhostSetupScene.cpp",
     "ui/screens/SegmentsScene.cpp"
    ]
   },
@@ -16566,6 +16670,7 @@
   {
    "fr": "NIVEAU",
    "where": [
+    "ui/screens/GhostSetupScene.cpp",
     "ui/screens/OnlineRankingScene.cpp"
    ]
   },
@@ -17018,6 +17123,12 @@
    ]
   },
   {
+   "fr": "non comparable",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
    "fr": "non configuré",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
@@ -17268,6 +17379,18 @@
    "where": [
     "data/achievements/achievements.json",
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Nouveau meilleur à l'entraînement !",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Nouveau meilleur à l'entraînement ! ({0})",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -18439,7 +18562,14 @@
   {
    "fr": "Par défaut",
    "where": [
+    "ui/screens/GhostSetupScene.cpp",
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "par défaut",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -18688,6 +18818,12 @@
    ]
   },
   {
+   "fr": "pas d'essai",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
    "fr": "Pas de boss (facultatif)",
    "where": [
     "editors/level_editor/LevelEditorTools.cpp"
@@ -18747,6 +18883,18 @@
    "fr": "Pas encore de contenu : un éditeur doit envoyer le niveau.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pas encore de course complète : aucun segment de référence",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pas encore de course complète de cette version du niveau : terminez-la pour voir vos meilleurs segments, votre record et la somme des meilleurs (SoB).",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -20385,7 +20533,8 @@
     "data/achievements/achievements.json",
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "saves/HudLayout.cpp",
-    "ui/screens/BossTrainingScene.cpp"
+    "ui/screens/BossTrainingScene.cpp",
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -20422,6 +20571,12 @@
    "fr": "pouvoirs de départ",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "POUVOIRS DU SEGMENT",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -24400,6 +24555,12 @@
    ]
   },
   {
+   "fr": "Somme des meilleurs (SoB)",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
    "fr": "Somme des meilleurs temps sur tous les niveaux de la planète",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
@@ -26780,6 +26941,12 @@
    ]
   },
   {
+   "fr": "Tous les emplacements sont pris : retirez d'abord un pouvoir.",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
    "fr": "tous les objets ne sont pas récupérés",
    "where": [
     "server/src/records.ts"
@@ -26957,6 +27124,24 @@
    "fr": "Trajectoire enregistrée (simulation désynchronisée)",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Trajet : {0}",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Trajet de ma dernière course",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Trajet de mon record",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -27709,7 +27894,8 @@
   {
    "fr": "Un pouvoir sur la même touche qu'un autre le remplace.",
    "where": [
-    "ui/screens/BossTrainingScene.cpp"
+    "ui/screens/BossTrainingScene.cpp",
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -28568,6 +28754,7 @@
    "fr": "Valider",
    "where": [
     "engine/input/InputTypes.cpp",
+    "ui/screens/GhostSetupScene.cpp",
     "ui/screens/MainMenuScene.cpp",
     "ui/screens/PauseScene.cpp"
    ]
@@ -28720,6 +28907,7 @@
     "game/achievements/Achievements.cpp",
     "game/content/ContentDatabase.cpp",
     "game/ghost/SegmentHistory.cpp",
+    "game/ghost/TrainingSegments.cpp",
     "game/levels/DifficultyRating.cpp",
     "game/levels/LevelData.cpp",
     "game/levels/RatingService.cpp",
@@ -29316,6 +29504,12 @@
    ]
   },
   {
+   "fr": "Vos courses complètes ne passent pas par ces deux points à la suite : ce segment n'a pas de référence.",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
    "fr": "Vos données (RGPD) : pseudonyme, avatar, pays facultatif, temps, replays et journaux de sécurité (adresses IP uniquement sous forme d'empreinte). Vous pouvez les exporter ou supprimer définitivement votre compte.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
@@ -29337,6 +29531,12 @@
    "fr": "Vos performances ont été envoyées à Cosmic Online.",
    "where": [
     "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "Votre choix, retenu pour ce segment.",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -30328,6 +30528,12 @@
    ]
   },
   {
+   "fr": "{0} / {1} emplacements",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} / {1} niveaux terminés",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
@@ -30769,13 +30975,13 @@
    ]
   },
   {
-   "fr": "{0} essai",
+   "fr": "{0} essai cette séance",
    "where": [
     "ui/screens/GameScene.cpp"
    ]
   },
   {
-   "fr": "{0} essais",
+   "fr": "{0} essais cette séance",
    "where": [
     "ui/screens/GameScene.cpp"
    ]
@@ -31591,7 +31797,8 @@
   {
    "fr": "« {0} » remplace « {1} » (même touche).",
    "where": [
-    "ui/screens/BossTrainingScene.cpp"
+    "ui/screens/BossTrainingScene.cpp",
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {

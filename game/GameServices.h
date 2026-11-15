@@ -10,6 +10,7 @@
 #include "game/content/ContentDatabase.h"
 #include "game/ghost/GhostStore.h"
 #include "game/ghost/SegmentHistory.h"
+#include "game/ghost/TrainingSegments.h"
 #include "game/levels/RatingService.h"
 #include "game/online/OnlineService.h"
 #include "game/progression/NewBadges.h"
@@ -50,6 +51,9 @@ public:
     /// and the history of my segments.
     GhostStore ghosts;
     SegmentHistory segments;
+    /// Section training (2.30.2): the best training time of each segment and the powers last
+    /// chosen for it (saves/training.json). Never a record nor a gold segment.
+    TrainingRecords training;
     /// Achievements: the catalogue (data) and what this player has unlocked (saves).
     /// Training attempts of this session (per level and starting checkpoint), never saved.
     std::map<std::string, std::vector<float>> trainingAttempts;

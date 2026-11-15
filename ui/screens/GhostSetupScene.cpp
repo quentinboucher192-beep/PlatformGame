@@ -5,17 +5,32 @@
 // with their category and version; downloaded when chosen, kept in the local cache). Every
 // replay is checked again when the run loads it. Training: start at a checkpoint, race the
 // segment to the next one against the ghosts, again and again; never a record.
+//
+// Section training (2.30.2): the segment chosen is shown on the real level drawn small (its
+// start, its end, the path of my record through it), with its references (best segment of
+// my full runs, its time in my record, my best training time), the Sum of Best of the level,
+// and the powers carried (the route's ones, or chosen, remembered per segment).
 
 #include <algorithm>
 #include <chrono>
+#include <cmath>
+#include <functional>
 #include <future>
+#include <map>
 #include <memory>
+#include <optional>
 
 #include "engine/core/FileUtil.h"
+#include "engine/core/Log.h"
 #include "game/GameServices.h"
+#include "game/gameplay/BossTraining.h"
+#include "game/gameplay/GameRenderer.h"
+#include "game/gameplay/GameWorld.h"
 #include "game/gameplay/LevelProgress.h"
 #include "game/ghost/GhostRace.h"
+#include "game/ghost/TrainingSegments.h"
 #include "game/online/LevelFingerprint.h"
+#include "game/player/Player.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/ReplayCompareNav.h"
 #include "ui/widgets/FileDialogs.h"
@@ -27,6 +42,16 @@ namespace {
 
 /// Never below 11.5 pixels (small windows): below, the font loses its spaces.
 float fz(const UIContext& ui, float size) { return std::max(size, 11.5f / ui.s(1.0f)); }
+
+/// Section training: the powers carried on a segment, chosen among the level's ones.
+struct PowerPick {
+    std::vector<std::string> available;  // the level's powers (start powers, tablets)
+    std::vector<std::string> defaults;   // the route's ones (start powers and tablets before the start)
+    std::vector<std::string> chosen;
+    int slots = 2;
+    std::string segment;  // its name (« Seuil I → Galerie II »)
+};
+std::unique_ptr<Scene> makeTrainingPowers(GameServices& g, PowerPick pick, std::function<void(std::vector<std::string>)> done);
 
 class GhostSetupScene : public Scene {
 public:
@@ -62,6 +87,13 @@ public:
                 select(i, true);
                 break;
             }
+        // Section training: my record of this version (its segments, its path) and my last run.
+        for (const Row& r : rows_) {
+            if (!r.sameVersion || r.state != Row::State::Ready) continue;
+            if (r.entry.meta.source == "pb" && !pbEntry_) pbEntry_ = r.entry;
+            if (r.entry.meta.source == "last" && !lastEntry_) lastEntry_ = r.entry;
+        }
+        levelKey_ = GhostStore::levelKey(levelId_, hash_);
         if (!req_.recordId.empty()) preselectOnline();
         fetchOnline();
         g_.ui.setFocus("gsetup/launch");
@@ -70,7 +102,8 @@ public:
     void update(float dt) override {
         t_ += dt;
         if (route_.valid() && route_.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
-            LevelProgressTrack t = route_.get();
+            routeTrack_ = route_.get();
+            const LevelProgressTrack& t = routeTrack_;
             // Checkpoints in the order of the route.
             std::vector<std::pair<float, const LevelObject*>> cps;
             for (const LevelObject& o : level_.objects)
@@ -81,8 +114,15 @@ public:
             for (const LevelObject& o : level_.objects)
                 if (o.type == "power_unlock") tablets_.push_back({t.valid() ? t.fractionAt(o.rect.center()) : o.rect.x, o.propStr("power", "dash")});
             std::sort(tablets_.begin(), tablets_.end());
+            // The powers of this level (its start powers, then its tablets in the route's order).
+            for (const std::string& id : level_.startPowers)
+                if (g_.content.power(id) && std::find(levelPowers_.begin(), levelPowers_.end(), id) == levelPowers_.end()) levelPowers_.push_back(id);
+            for (const auto& [at, id] : tablets_)
+                if (g_.content.power(id) && std::find(levelPowers_.begin(), levelPowers_.end(), id) == levelPowers_.end()) levelPowers_.push_back(id);
             routeReady_ = true;
+            refsDirty_ = true;
         }
+        if (routeReady_) updateTraining();
         if (importDialog_ >= 0)
             if (auto res = FileDialogs::result(importDialog_)) {
                 importDialog_ = -1;
@@ -125,7 +165,7 @@ public:
         if (!error_.empty()) {
             ui.labelWrapped("Niveau introuvable : " + error_, {x, top}, w, 18, ui.theme().danger);
         } else {
-            float listW = w * 0.58f;
+            float listW = w * 0.52f;
             drawList({x, top, listW, bottom - top});
             drawSide({x + listW + ui.s(24), top, w - listW - ui.s(24), bottom - top});
         }
@@ -420,50 +460,621 @@ private:
         static const char* kOpacity[] = {"discrète", "normale", "marquée"};
         std::string look = std::string("Opacité ") + kOpacity[std::clamp(s.opacity, 0, 2)] + (s.showNames ? " · noms affichés" : "") +
                            (s.showPanel ? " · panneau des segments" : "");
-        y += ui.labelWrapped(look, {area.x, y}, area.w, fz(ui, 15), th.textDim).y + ui.s(10);
+        // One line, the two buttons side by side: the training below needs the room.
+        float lf = ui.fitFont(look, FontFace::Body, fz(ui, 15), area.w, 0.85f);
+        ui.label(ui.elide(look, FontFace::Body, lf, area.w), {area.x, y + ui.s(10)}, lf, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        y += ui.s(30);
         UIContext::ButtonStyle st;
         st.small = true;
-        if (ui.button("options", {area.x, y, std::min(area.w, ui.s(300)), ui.s(46)}, "Options d'affichage…", st)) g_.app.pushScene(makeGhostOptions(g_, nullptr));
-        y += ui.s(56);
+        const float half = (area.w - ui.s(12)) * 0.5f;
+        if (ui.button("options", {area.x, y, half, ui.s(46)}, "Options d'affichage…", st)) g_.app.pushScene(makeGhostOptions(g_, nullptr));
         // Two of these replays side by side, B shifted in time (read only).
-        if (ui.button("compare", {area.x, y, std::min(area.w, ui.s(300)), ui.s(46)}, "Comparer deux replays…", st)) openCompare();
-        y += ui.s(66);
+        if (ui.button("compare", {area.x + half + ui.s(12), y, half, ui.s(46)}, "Comparer deux replays…", st)) openCompare();
+        y += ui.s(60);
         ui.separator({area.x, y}, area.w);
-        y += ui.s(16);
+        y += ui.s(14);
         ui.label("Entraînement", {area.x, y}, 20, th.text, Align::Left, FontFace::Bold);
-        y += ui.s(34);
+        y += ui.s(32);
         bool training = training_;
-        if (ui.toggle("training", {area.x, y, area.w, ui.s(50)}, "Répéter un segment", training)) training_ = training;
-        y += ui.s(62);
-        if (training_) {
-            if (!routeReady_) {
-                ui.label("Calcul du parcours…", {area.x, y}, fz(ui, 16), th.textDim);
-                return;
-            }
-            if (checkpoints_.empty()) {
-                ui.labelWrapped("Ce niveau n'a pas de point de sauvegarde : l'entraînement part du début.", {area.x, y}, area.w, fz(ui, 16), th.textDim);
-                return;
-            }
-            int n = static_cast<int>(checkpoints_.size()) + 1;  // 0 = the start of the level
-            startIdx_ = std::clamp(startIdx_, 0, n - 1);
-            auto name = [&](int k) -> std::string {
-                if (k <= 0) return "Départ du niveau";
-                if (k > static_cast<int>(checkpoints_.size())) return "Arrivée";
-                const Checkpoint& c = checkpoints_[static_cast<size_t>(k - 1)];
-                return c.label.empty() ? "Point " + std::to_string(k) : c.label;
-            };
-            float bw = ui.s(52);
+        const Rect toggleRect{area.x, y, area.w, ui.s(50)};
+        if (ui.toggle("training", toggleRect, "Répéter un segment", training)) training_ = training;
+        // « NOUVEAU » (2.30.2): the preview, the references and the powers are under it.
+        ui.newBadge("training", toggleRect, "ghosts.training");
+        y += ui.s(60);
+        if (!training_) return;
+        if (!routeReady_) {
+            ui.label("Calcul du parcours…", {area.x, y}, fz(ui, 16), th.textDim);
+            return;
+        }
+        const int n = segmentCount();
+        startIdx_ = std::clamp(startIdx_, 0, n - 1);
+        // The segment: its start → its end, the arrows when there are several.
+        float bw = n > 1 ? ui.s(52) : 0.0f;
+        if (n > 1) {
             if (ui.button("prev", {area.x, y, bw, ui.s(46)}, "<", st)) startIdx_ = (startIdx_ + n - 1) % n;
             if (ui.button("next", {area.right() - bw, y, bw, ui.s(46)}, ">", st)) startIdx_ = (startIdx_ + 1) % n;
-            std::string seg = name(startIdx_) + "  →  " + name(startIdx_ + 1);
-            float f = ui.fitFont(seg, FontFace::Bold, 18, area.w - 2 * bw - ui.s(24), 0.6f);
-            ui.label(ui.elide(seg, FontFace::Bold, f, area.w - 2 * bw - ui.s(24)), {area.center().x, y + ui.s(23)}, f, th.accent, Align::Center,
-                     FontFace::Bold, VAlign::Middle);
-            y += ui.s(62);
-            y += ui.labelWrapped("Le segment recommence dès son arrivée. Les pouvoirs des tablettes placées avant le départ sont donnés. "
-                                 "Aucun record, aucune progression, rien n'est envoyé en ligne.",
-                                 {area.x, y}, area.w, fz(ui, 15), th.textDim).y;
         }
+        // What this frame shows is up to date (the toggle or the arrows were just used).
+        if (refsDirty_) computeRefs();
+        if (powersSegment_ != startIdx_) loadPowers();
+        {
+            std::string segText = segmentName(startIdx_);
+            std::string count = std::to_string(startIdx_ + 1) + " / " + std::to_string(n);
+            const float cf = fz(ui, 15);
+            const float cw = ui.text().measure(count, FontFace::Body, ui.s(cf)).x;
+            const float room = area.w - 2 * bw - ui.s(24) - (n > 1 ? cw + ui.s(16) : 0.0f);
+            float f = ui.fitFont(segText, FontFace::Bold, 18, room, 0.6f);
+            std::string shown = ui.elide(segText, FontFace::Bold, f, room);
+            float sw = ui.text().measure(shown, FontFace::Bold, ui.s(f)).x;
+            float total = sw + (n > 1 ? ui.s(16) + cw : 0.0f);
+            float sx = area.center().x - total * 0.5f;
+            ui.label(shown, {sx, y + ui.s(23)}, f, th.accent, Align::Left, FontFace::Bold, VAlign::Middle);
+            if (n > 1) ui.label(count, {sx + sw + ui.s(16), y + ui.s(23)}, cf, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        }
+        y += ui.s(46) + ui.s(18);
+        // Bottom up: the note, the references, the powers; the preview takes the room left.
+        const float gap = ui.s(12);
+        const float nf = fz(ui, 14);
+        std::string note = trainingNote(n);
+        float noteH = ui.text().measureWrapped(note, FontFace::Body, ui.s(nf), area.w).y;
+        const float statsH = drawStats({area.x, 0.0f, area.w, 0.0f}, false);
+        const float powersH = ui.s(44);
+        const float pillRoom = ui.s(18);  // the « NOUVEAU » pill of « Choisir… » stays off the preview
+        float previewH = area.bottom() - y - (powersH + pillRoom) - (statsH + gap) - (noteH + gap);
+        if (previewH < ui.s(130)) {
+            previewH += noteH + gap;  // too small a window: the note goes
+            noteH = 0.0f;
+        }
+        previewH = std::max(previewH, ui.s(80));
+        Rect pv{area.x, y, area.w, previewH};
+        drawPreview(pv);
+        float yy = pv.bottom() + pillRoom;
+        drawPowersRow({area.x, yy, area.w, powersH});
+        yy += powersH + gap;
+        drawStats({area.x, yy, area.w, statsH}, true);
+        yy += statsH + gap;
+        if (noteH > 0.0f) ui.labelWrapped(note, {area.x, yy}, area.w, nf, th.textDim);
+    }
+
+    // -------------------------------------------------------------- section training
+
+    int segmentCount() const { return static_cast<int>(checkpoints_.size()) + 1; }
+    /// The ends of segment `k` (checkpoint ids; "" = the start of the level, its exit).
+    std::string segFrom(int k) const { return k <= 0 || k > static_cast<int>(checkpoints_.size()) ? std::string{} : checkpoints_[static_cast<size_t>(k - 1)].id; }
+    std::string segTo(int k) const { return k < 0 || k >= static_cast<int>(checkpoints_.size()) ? std::string{} : checkpoints_[static_cast<size_t>(k)].id; }
+    /// A boundary's name: 0 the start, 1..n the checkpoints (their label), n + 1 the exit.
+    std::string pointName(int k) const {
+        if (k <= 0) return "Départ du niveau";
+        if (k > static_cast<int>(checkpoints_.size())) return "Arrivée";
+        const Checkpoint& c = checkpoints_[static_cast<size_t>(k - 1)];
+        return c.label.empty() ? "Point " + std::to_string(k) : c.label;
+    }
+    std::string segmentName(int k) const { return pointName(k) + "  →  " + pointName(k + 1); }
+
+    Vec2 segmentStart(int k) const {
+        if (k > 0 && k <= static_cast<int>(checkpoints_.size())) return checkpoints_[static_cast<size_t>(k - 1)].feet;
+        for (const LevelObject& o : level_.objects)
+            if (o.type == "player_start") return o.rect.bottomCenter();
+        if (routeTrack_.valid()) return routeTrack_.route.front();
+        return {level_.bounds.x + 64.0f, level_.bounds.y + 64.0f};
+    }
+    Vec2 segmentEnd(int k) const {
+        if (k >= 0 && k < static_cast<int>(checkpoints_.size())) return checkpoints_[static_cast<size_t>(k)].feet;
+        // The exit the route ends at (the nearest one to its last point).
+        const LevelObject* exit = nullptr;
+        float bd = 1e30f;
+        Vec2 to = routeTrack_.valid() ? routeTrack_.route.back() : Vec2{level_.bounds.right(), level_.bounds.bottom()};
+        for (const LevelObject& o : level_.objects)
+            if (o.type == "exit") {
+                float d = (o.rect.bottomCenter() - to).lengthSq();
+                if (d < bd) {
+                    bd = d;
+                    exit = &o;
+                }
+            }
+        return exit ? exit->rect.bottomCenter() : to;
+    }
+
+    /// The tablets placed on the route before the start of segment `k`, in the route's order.
+    std::vector<std::string> tabletsBefore(int k) const {
+        std::vector<std::string> out;
+        if (k <= 0 || k > static_cast<int>(checkpoints_.size())) return out;
+        const Checkpoint& c = checkpoints_[static_cast<size_t>(k - 1)];
+        for (const auto& [at, power] : tablets_)
+            if (at <= c.at) out.push_back(power);
+        return out;
+    }
+    int powerSlots() const {
+        int sl = level_.powerSlots();
+        return sl > 0 ? std::min(sl, LevelData::kMaxPowerSlots) : LevelData::kMaxPowerSlots;
+    }
+    /// The powers the route gives on segment `k`, as the run sets them up: the level's start
+    /// powers, then the tablets before the start (the last ones when the slots are fewer).
+    std::vector<std::string> defaultPowers(int k) const {
+        Player probe;
+        probe.setKeysPerSlot(true);
+        for (const std::string& id : level_.startPowers)
+            if (const PowerDefinition* d = g_.content.power(id)) probe.grantPower(*d);
+        std::vector<std::string> tabs = tabletsBefore(k);
+        int slots = level_.powerSlots();
+        if (slots > 0 && static_cast<int>(tabs.size()) > slots) tabs.erase(tabs.begin(), tabs.end() - slots);
+        for (const std::string& id : tabs)
+            if (const PowerDefinition* d = g_.content.power(id); d && !probe.hasPower(id)) probe.grantPower(*d);
+        std::vector<std::string> out;
+        for (const auto& p : probe.powers()) out.push_back(p->id());
+        return out;
+    }
+    /// The powers of the segment shown: the ones chosen last time (still in this level), else the route's.
+    void loadPowers() {
+        powersSegment_ = startIdx_;
+        std::vector<std::string> def = defaultPowers(startIdx_);
+        chosenPowers_ = def;
+        powersCustom_ = false;
+        if (const std::vector<std::string>* saved = g_.training.powers(levelKey_, segFrom(startIdx_), segTo(startIdx_))) {
+            std::vector<std::string> keep;
+            for (const std::string& id : *saved)
+                if (std::find(levelPowers_.begin(), levelPowers_.end(), id) != levelPowers_.end()) keep.push_back(id);
+            keep = fitTrainingPowers(g_.content, keep, powerSlots());
+            if (keep != def) {
+                chosenPowers_ = keep;
+                powersCustom_ = true;
+            }
+        }
+    }
+    void rememberPowers() {
+        g_.training.setPowers(levelKey_, segFrom(startIdx_), segTo(startIdx_), powersCustom_ ? &chosenPowers_ : nullptr, FileUtil::nowString());
+        g_.training.save();
+    }
+    void openPowers() {
+        PowerPick p;
+        p.available = levelPowers_;
+        p.defaults = defaultPowers(startIdx_);
+        p.chosen = chosenPowers_;
+        p.slots = powerSlots();
+        p.segment = segmentName(startIdx_);
+        auto alive = std::weak_ptr<int>(life_);
+        const int k = startIdx_;
+        g_.app.pushScene(makeTrainingPowers(g_, std::move(p), [this, alive, k](std::vector<std::string> chosen) {
+            if (!alive.lock() || k != startIdx_) return;
+            powersCustom_ = chosen != defaultPowers(k);
+            chosenPowers_ = std::move(chosen);
+            rememberPowers();
+        }));
+    }
+
+    /// A ghost's track (read off the main thread); nullptr while it loads or when it cannot be read.
+    const GhostTrack* track(const std::string& file) {
+        TrackSlot& t = tracks_[file];
+        if (t.track) return &*t.track;
+        if (t.failed) return nullptr;
+        if (!t.job.valid()) {
+            fs::path f = Paths::fromUtf8(file);
+            t.job = std::async(std::launch::async, [f]() -> std::optional<GhostTrack> {
+                auto rep = GhostStore::loadReplay(f);
+                if (!rep) return std::nullopt;
+                GhostTrack g;
+                g.load(*rep);
+                return g;
+            });
+            return nullptr;
+        }
+        if (t.job.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+            t.track = t.job.get();
+            t.failed = !t.track;
+        }
+        return t.track ? &*t.track : nullptr;
+    }
+    bool trackFailed(const std::string& file) const {
+        auto it = tracks_.find(file);
+        return it != tracks_.end() && it->second.failed;
+    }
+
+    /// Whose path the preview shows: my record, else my last run, else the first ghost
+    /// chosen (this version). File and caption; empty when there is none.
+    std::pair<std::string, std::string> pathCandidate() const {
+        if (pbEntry_ && !trackFailed(Paths::toUtf8(pbEntry_->file))) return {Paths::toUtf8(pbEntry_->file), "Trajet de mon record"};
+        if (lastEntry_ && !trackFailed(Paths::toUtf8(lastEntry_->file))) return {Paths::toUtf8(lastEntry_->file), "Trajet de ma dernière course"};
+        for (size_t i : order_) {
+            if (i >= rows_.size()) continue;
+            const Row& r = rows_[i];
+            if (!r.selected || r.state != Row::State::Ready || !r.sameVersion || r.entry.file.empty()) continue;
+            std::string f = Paths::toUtf8(r.entry.file);
+            if (trackFailed(f)) continue;
+            std::string who = r.entry.meta.sourceLabel();
+            if (!r.entry.meta.label.empty() && r.entry.meta.label != "Moi") who += " · " + r.entry.meta.label;
+            return {f, "Trajet : " + who};
+        }
+        return {};
+    }
+
+    void computeRefs() {
+        refsDirty_ = false;
+        std::vector<std::string> route;
+        for (const Checkpoint& c : checkpoints_) route.push_back(c.id);
+        std::vector<SegmentReferences::RunInput> runs;
+        if (const auto* rs = g_.segments.runs(levelKey_))
+            for (const auto& r : *rs) runs.push_back({r.splits, r.time, r.checkpoints});
+        SegmentReferences::RunInput pb;
+        if (pbEntry_ && pbEntry_->meta.timeMs > 0) {
+            pb.time = static_cast<float>(pbEntry_->meta.timeMs) / 1000.0f;
+            pb.splits = pbEntry_->meta.splits;
+            auto it = tracks_.find(Paths::toUtf8(pbEntry_->file));
+            if (pb.splits.empty() && it != tracks_.end() && it->second.track) pb.splits = it->second.track->splits();
+            if (pbCheckpoints_.size() == pb.splits.size()) pb.checkpoints = pbCheckpoints_;
+        }
+        refs_ = buildSegmentReferences(g_.segments.goldSegments(levelKey_), g_.segments.goldCheckpoints(levelKey_), runs, pb, route);
+    }
+
+    /// Every frame once the route is known.
+    void updateTraining() {
+        if (!training_) return;  // nothing read nor drawn until the training is chosen
+        // My record's checkpoints, read from its replay: which of its segments is which.
+        if (pbEntry_ && !pbCheckpointsRead_) {
+            std::string f = Paths::toUtf8(pbEntry_->file);
+            if (const GhostTrack* t = track(f)) {
+                std::vector<std::pair<std::string, Vec2>> cps;
+                for (const Checkpoint& c : checkpoints_) cps.push_back({c.id, c.feet});
+                pbCheckpoints_ = checkpointsOfTrack(*t, cps);
+                pbCheckpointsRead_ = true;
+                refsDirty_ = true;
+            } else if (trackFailed(f)) {
+                pbCheckpointsRead_ = true;
+            }
+        }
+        if (refsDirty_) computeRefs();
+        startIdx_ = std::clamp(startIdx_, 0, segmentCount() - 1);
+        if (powersSegment_ != startIdx_) loadPowers();
+        if (previewState_ == 1) loadPreview();
+        if (previewState_ == 2 && previewTerrainLeft_ > 0) {
+            // A few milliseconds per frame, the part shown first: the screen stays responsive.
+            if (!previewMount_.empty()) g_.app.resources().pushMount(Paths::fromUtf8(previewMount_));
+            previewTerrainLeft_ = previewRenderer_.bakeTerrain(g_.app.renderer(), 6.0, lastWindow_.w > 0.0f ? &lastWindow_ : nullptr);
+            if (!previewMount_.empty()) g_.app.resources().popMount();
+        }
+        auto [file, label] = pathCandidate();
+        bool pathReady = !file.empty() && track(file) != nullptr;
+        if (seg_.segment != startIdx_ || seg_.pathKey != file || (seg_.pathLoading && (pathReady || trackFailed(file)))) rebuildSeg();
+    }
+
+    /// The level drawn small (main thread: its textures), a frame after its « Chargement » line.
+    void loadPreview() {
+        previewState_ = 3;
+        const auto t0 = std::chrono::steady_clock::now();
+        ResourceManager& res = g_.app.resources();
+        if (const LevelEntry* e = g_.content.level(levelId_)) previewMount_ = Paths::toUtf8(e->assetRoot);
+        if (!previewMount_.empty()) res.pushMount(Paths::fromUtf8(previewMount_));
+        WorldServices ws{res, g_.app.audio(), g_.content, nullptr, 0.0f, 1.0f};
+        previewWorld_ = std::make_unique<GameWorld>(ws, WorldMode::Editor);
+        previewWorld_->load(level_);
+        previewWorld_->player().setHidden(true);
+        // The terrain is baked over the next frames (the part shown first).
+        previewRenderer_.buildProgressive(res, *previewWorld_);
+        if (!previewMount_.empty()) res.popMount();
+        previewState_ = 2;
+        auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - t0).count();
+        Log::info("Entraînement : aperçu de {} chargé en {} ms", levelId_, ms);
+    }
+
+    /// The first split of `t` taken near `p` after `after` (-1: none).
+    static float splitNear(const GhostTrack& t, Vec2 p, float after) {
+        float best = -1.0f, bd = 320.0f * 320.0f;
+        for (float s : t.splits()) {
+            if (s < after) continue;
+            float d = (t.poseAt(s).feet - p).lengthSq();
+            if (d < bd) {
+                bd = d;
+                best = s;
+            }
+        }
+        return best;
+    }
+
+    /// What the preview frames for the segment shown: its ends, the route between them, the path.
+    void rebuildSeg() {
+        const int k = startIdx_, n = segmentCount();
+        seg_ = PreviewSeg{};
+        seg_.segment = k;
+        seg_.startFeet = segmentStart(k);
+        seg_.endFeet = segmentEnd(k);
+        float x0 = std::min(seg_.startFeet.x, seg_.endFeet.x), x1 = std::max(seg_.startFeet.x, seg_.endFeet.x);
+        float y0 = std::min(seg_.startFeet.y, seg_.endFeet.y), y1 = std::max(seg_.startFeet.y, seg_.endFeet.y);
+        auto grow = [&](Vec2 p) {
+            x0 = std::min(x0, p.x);
+            x1 = std::max(x1, p.x);
+            y0 = std::min(y0, p.y);
+            y1 = std::max(y1, p.y);
+        };
+        if (routeTrack_.valid()) {
+            float fa = k <= 0 ? 0.0f : checkpoints_[static_cast<size_t>(k - 1)].at;
+            float fb = k >= n - 1 ? 1.0f : checkpoints_[static_cast<size_t>(k)].at;
+            for (size_t i = 0; i < routeTrack_.route.size() && i < routeTrack_.cumulative.size(); ++i) {
+                float f = routeTrack_.cumulative[i] / routeTrack_.length;
+                if (f >= fa - 0.002f && f <= fb + 0.002f) grow(routeTrack_.route[i]);
+            }
+        }
+        auto [file, label] = pathCandidate();
+        seg_.pathKey = file;
+        if (!file.empty()) {
+            if (const GhostTrack* t = track(file)) {
+                float a = k <= 0 ? 0.0f : splitNear(*t, seg_.startFeet, 0.0f);
+                if (a < 0.0f) a = t->nearestTime(seg_.startFeet);
+                float b = k >= n - 1 ? t->duration() : splitNear(*t, seg_.endFeet, a);
+                if (b < 0.0f) b = t->nearestTime(seg_.endFeet);
+                if (b > a) {
+                    seg_.pathLabel = label;
+                    seg_.pathTime = b - a;
+                    std::vector<Vec2> line;
+                    Vec2 prev;
+                    for (float tt = a;; tt += 1.0f / 20.0f) {
+                        float at = std::min(tt, b);
+                        GhostTrack::Pose p = t->poseAt(at);
+                        bool cut = !p.visible || (!line.empty() && (p.feet - prev).lengthSq() > 120.0f * 120.0f);
+                        if (cut && line.size() > 1) seg_.path.push_back(std::move(line));
+                        if (cut) line.clear();
+                        if (p.visible) {
+                            line.push_back(p.feet + Vec2{0.0f, -14.0f});  // the body, not the feet
+                            grow(p.feet);
+                        }
+                        prev = p.feet;
+                        if (at >= b) break;
+                    }
+                    if (line.size() > 1) seg_.path.push_back(std::move(line));
+                }
+            } else {
+                seg_.pathLoading = !trackFailed(file);
+            }
+        }
+        seg_.bbox = {x0, y0, std::max(1.0f, x1 - x0), std::max(1.0f, y1 - y0)};
+    }
+
+    /// The part of the level shown in `frame`: the segment with some room around (more above,
+    /// for the names), a screen's worth at least, at the frame's proportions, inside the level.
+    Rect previewWindow(const Rect& frame) const {
+        const Rect& b = seg_.bbox;
+        float mx = std::max(160.0f, b.w * 0.08f), my = std::max(150.0f, b.h * 0.12f);
+        Rect win{b.x - mx, b.y - my * 1.4f, b.w + 2 * mx, b.h + my * 2.4f};
+        if (win.w < 720.0f) {
+            win.x -= (720.0f - win.w) * 0.5f;
+            win.w = 720.0f;
+        }
+        if (win.h < 400.0f) {
+            win.y -= (400.0f - win.h) * 0.5f;
+            win.h = 400.0f;
+        }
+        const float aspect = frame.w / std::max(1.0f, frame.h);
+        if (win.w / win.h < aspect) {
+            float nw = win.h * aspect;
+            win.x -= (nw - win.w) * 0.5f;
+            win.w = nw;
+        } else {
+            float nh = win.w / aspect;
+            win.y -= (nh - win.h) * 0.5f;
+            win.h = nh;
+        }
+        // Inside the level (a level smaller than the window: all of it, centred in the frame).
+        const Rect& lb = level_.bounds;
+        if (lb.w > 0.0f && lb.h > 0.0f) {
+            if (win.w >= lb.w) {
+                win.x = lb.x;
+                win.w = lb.w;
+            } else {
+                win.x = std::clamp(win.x, lb.x, lb.right() - win.w);
+            }
+            if (win.h >= lb.h) {
+                win.y = lb.y;
+                win.h = lb.h;
+            } else {
+                win.y = std::clamp(win.y, lb.y, lb.bottom() - win.h);
+            }
+        }
+        return win;
+    }
+
+    void drawPreview(const Rect& box) {
+        UIContext& ui = g_.ui;
+        Renderer& r = ui.r();
+        const UITheme& th = ui.theme();
+        r.fillRoundedRect(box, ui.s(8), Color{5, 8, 18, 255});
+        const float cf = fz(ui, 14);
+        const float capH = ui.s(cf + 16);
+        if (previewState_ == 0) previewState_ = 1;  // loaded by the next update, once this line is seen
+        if (previewState_ < 2 || !previewWorld_) {
+            ui.label(previewState_ == 3 ? "Aperçu indisponible" : "Chargement de l'aperçu…", box.center(), fz(ui, 16), th.textDim, Align::Center,
+                     FontFace::Body, VAlign::Middle);
+        } else {
+            Rect frame{box.x + ui.s(2), box.y + ui.s(2), box.w - ui.s(4), box.h - ui.s(4) - capH};
+            Rect win = previewWindow(frame);
+            lastWindow_ = win;
+            const float k = std::min(frame.w / win.w, frame.h / win.h);
+            Rect dst{std::floor(frame.center().x - win.w * k * 0.5f), std::floor(frame.center().y - win.h * k * 0.5f), std::floor(win.w * k),
+                     std::floor(win.h * k)};
+            WorldView v;
+            v.scale = k;
+            v.screenW = static_cast<int>(dst.w);
+            v.screenH = static_cast<int>(dst.h);
+            v.topLeft = {win.x - dst.x / k, win.y - dst.y / k};
+            v.origin = dst.pos();
+            RenderOptions opt;
+            opt.lighting = false;
+            opt.mapView = true;
+            ResourceManager& res = g_.app.resources();
+            if (!previewMount_.empty()) res.pushMount(Paths::fromUtf8(previewMount_));
+            r.pushClip(dst);
+            previewRenderer_.render(r, res, *previewWorld_, v, 1.0f, opt);
+            r.setView(WorldView{});
+            r.popClip();
+            if (!previewMount_.empty()) res.popMount();
+            r.pushClip(frame);
+            auto toMap = [&](Vec2 p) { return Vec2{dst.x + (p.x - win.x) * k, dst.y + (p.y - win.y) * k}; };
+            // The path through the segment, outlined to read on any art.
+            const Color ink{6, 8, 16, 230};
+            const Color pathColor = ghostPaletteColor(g_.settings.ghosts.colorMine);
+            const float lw = std::max(2.0f, ui.s(3.0f));
+            for (const auto& line : seg_.path)
+                for (size_t i = 1; i < line.size(); ++i) r.drawLine(toMap(line[i - 1]), toMap(line[i]), ink, lw + 3.0f);
+            for (const auto& line : seg_.path)
+                for (size_t i = 1; i < line.size(); ++i) r.drawLine(toMap(line[i - 1]), toMap(line[i]), pathColor, lw);
+            // The two ends, then their names (inside the frame, never over each other).
+            const float u = std::max(ui.s(7), 5.0f);
+            const Color startColor = th.success, endColor{255, 206, 84, 255};
+            Vec2 a = toMap(seg_.startFeet + Vec2{0.0f, -20.0f}), b = toMap(seg_.endFeet + Vec2{0.0f, -20.0f});
+            r.fillCircle(a, u + 2.5f, ink);
+            r.fillCircle(a, u, startColor);
+            r.fillRect({b.x - u - 2.5f, b.y - u * 1.3f - 2.5f, u * 2 + 5.0f, u * 2.6f + 5.0f}, ink);
+            r.fillRect({b.x - u, b.y - u * 1.3f, u * 2, u * 2.6f}, endColor);
+            const float lf = fz(ui, 14);
+            auto pill = [&](const std::string& text, Vec2 at, bool above) {
+                std::string t = ui.elide(text, FontFace::Bold, lf, frame.w * 0.45f);
+                Vec2 ts = ui.text().measure(t, FontFace::Bold, ui.s(lf));
+                Rect p{at.x - ts.x * 0.5f - ui.s(8), 0.0f, ts.x + ui.s(16), ts.y + ui.s(6)};
+                p.y = above ? at.y - u * 2.0f - ui.s(6) - p.h : at.y + u * 2.0f + ui.s(6);
+                p.x = std::clamp(p.x, frame.x + ui.s(4), frame.right() - ui.s(4) - p.w);
+                p.y = std::clamp(p.y, frame.y + ui.s(4), frame.bottom() - ui.s(4) - p.h);
+                return std::make_pair(t, p);
+            };
+            auto [st, sp] = pill(pointName(seg_.segment), a, true);
+            auto [et, ep] = pill(pointName(seg_.segment + 1), b, true);
+            if (sp.intersects(ep)) ep = pill(pointName(seg_.segment + 1), b, false).second;
+            if (sp.intersects(ep)) ep.y = sp.bottom() + ui.s(4);  // the same place: one under the other
+            for (auto [t, p, c] : {std::make_tuple(st, sp, startColor), std::make_tuple(et, ep, endColor)}) {
+                r.fillRoundedRect(p, p.h * 0.5f, Color{6, 10, 22, 225});
+                r.drawRoundedRect(p, p.h * 0.5f, c, std::max(1.0f, ui.s(1.5f)));
+                ui.label(t, p.center(), lf, c, Align::Center, FontFace::Bold, VAlign::Middle);
+            }
+            r.popClip();
+            // Under the drawing: whose path it is.
+            Rect cap{box.x + ui.s(1), box.bottom() - capH, box.w - ui.s(2), capH - ui.s(1)};
+            r.fillRect(cap, Color{6, 10, 22, 235});
+            std::string caption;
+            if (!seg_.pathLabel.empty()) caption = seg_.pathLabel + " · " + formatGhostTime(seg_.pathTime);
+            else if (seg_.pathLoading) caption = "Lecture du trajet…";
+            else caption = "Aucune course de cette version : pas de trajet à montrer";
+            float cx = cap.x + ui.s(12);
+            if (!seg_.pathLabel.empty()) {
+                r.drawLine({cx, cap.center().y}, {cx + ui.s(26), cap.center().y}, ink, lw + 3.0f);
+                r.drawLine({cx, cap.center().y}, {cx + ui.s(26), cap.center().y}, pathColor, lw);
+                cx += ui.s(36);
+            }
+            float room = cap.right() - ui.s(12) - cx;
+            float f = ui.fitFont(caption, FontFace::Body, cf, room, 0.8f);
+            ui.label(ui.elide(caption, FontFace::Body, f, room), {cx, cap.center().y}, f, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        }
+        r.drawRoundedRect(box, ui.s(8), th.border, std::max(1.0f, ui.s(1.0f)));
+        // « NOUVEAU » (2.30.2) on the preview: seen with the segment's arrows (focus) or a click.
+        if (ui.newBadge("prev", box, "ghosts.training.section", false)) ui.newBadge("next", box, "ghosts.training.section");
+    }
+
+    void drawPowersRow(const Rect& row) {
+        UIContext& ui = g_.ui;
+        const UITheme& th = ui.theme();
+        const float f = fz(ui, 16);
+        Vec2 ls = ui.label("Pouvoirs", {row.x, row.center().y}, f, th.text, Align::Left, FontFace::Bold, VAlign::Middle);
+        float right = row.right();
+        if (!levelPowers_.empty()) {
+            UIContext::ButtonStyle st;
+            st.small = true;
+            float bw = std::min(ui.s(190), row.w * 0.3f);
+            Rect br{row.right() - bw, row.y, bw, row.h};
+            bool open = ui.button("powers", br, "Choisir…", st);
+            ui.newBadge("powers", br, "ghosts.training.powers");  // « NOUVEAU » (2.30.2)
+            if (open) openPowers();
+            right = br.x - ui.s(14);
+        }
+        float x = row.x + ls.x + ui.s(14);
+        const float tf = fz(ui, 14);
+        std::string tag = levelPowers_.empty() ? "ce niveau n'en donne aucun" : powersCustom_ ? "choisis" : "par défaut";
+        float tagW = ui.text().measure(tag, FontFace::Body, ui.s(tf)).x;
+        float room = right - x - tagW - ui.s(12);
+        const float ic = std::min(row.h - ui.s(8), ui.s(30));
+        // Icons and names; only the icons when the names do not fit.
+        float full = 0.0f;
+        for (const std::string& id : chosenPowers_)
+            if (const PowerDefinition* d = g_.content.power(id)) full += ic + ui.s(6) + ui.text().measure(d->name, FontFace::Body, ui.s(f)).x + ui.s(14);
+        const bool names = full <= room;
+        if (chosenPowers_.empty() && !levelPowers_.empty()) {
+            Vec2 ns = ui.label("aucun", {x, row.center().y}, f, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+            x += ns.x + ui.s(12);
+        }
+        for (size_t i = 0; i < chosenPowers_.size(); ++i) {
+            const PowerDefinition* d = g_.content.power(chosenPowers_[i]);
+            if (!d) continue;
+            float need = ic + (names ? ui.s(6) + ui.text().measure(d->name, FontFace::Body, ui.s(f)).x : 0.0f);
+            if (x + need > row.x + ls.x + ui.s(14) + room) {
+                // No room for the others: how many more.
+                std::string more = "+" + std::to_string(chosenPowers_.size() - i);
+                ui.label(more, {x, row.center().y}, f, th.textDim, Align::Left, FontFace::Bold, VAlign::Middle);
+                x += ui.text().measure(more, FontFace::Bold, ui.s(f)).x + ui.s(12);
+                break;
+            }
+            ui.icon("ui/icons_powers.png", d->icon, 32, {x, row.center().y - ic * 0.5f, ic, ic});
+            x += ic;
+            if (names) {
+                Vec2 ns = ui.label(d->name, {x + ui.s(6), row.center().y}, f, th.text, Align::Left, FontFace::Body, VAlign::Middle);
+                x += ui.s(6) + ns.x;
+            }
+            x += ui.s(14);
+        }
+        ui.label(tag, {x, row.center().y}, tf, powersCustom_ ? th.warm : th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+    }
+
+    /// The references of the segment and of the level (`draw` false: only its height).
+    float drawStats(const Rect& area, bool draw) {
+        UIContext& ui = g_.ui;
+        const UITheme& th = ui.theme();
+        const float f = fz(ui, 16), hf = fz(ui, 14);
+        const float lineH = ui.s(f + 10.0f);
+        const std::string from = segFrom(startIdx_), to = segTo(startIdx_);
+        const TrainingRecords::Entry* tr = g_.training.get(levelKey_, from, to);
+        std::string trainValue = tr && tr->best > 0.0f ? formatGhostTime(tr->best) : "pas d'essai";
+        if (tr && tr->best > 0.0f) trainValue += "  (" + std::to_string(tr->attempts) + (tr->attempts > 1 ? " essais)" : " essai)");
+        auto cell = [&](float x, float y, float w, const std::string& label, const std::string& value, bool known) {
+            float vw = ui.text().measure(value, FontFace::Bold, ui.s(f)).x;
+            float room = w - vw - ui.s(12);
+            float lf = ui.fitFont(label, FontFace::Body, f, room, 0.8f);
+            ui.label(ui.elide(label, FontFace::Body, lf, room), {x, y}, lf, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+            ui.label(value, {x + w, y}, f, known ? th.text : th.textDim, Align::Right, FontFace::Bold, VAlign::Middle);
+        };
+        if (!refs_.anyRun) {
+            // Nothing to compare with yet: said plainly, and the training time anyway.
+            std::string none = "Pas encore de course complète de cette version du niveau : terminez-la pour voir vos meilleurs segments, "
+                               "votre record et la somme des meilleurs (SoB).";
+            float h = ui.text().measureWrapped(none, FontFace::Body, ui.s(hf), area.w).y;
+            if (draw) {
+                ui.labelWrapped(none, {area.x, area.y}, area.w, hf, th.textDim);
+                cell(area.x, area.y + h + ui.s(8) + lineH * 0.5f, area.w, "Meilleur à l'entraînement", trainValue, tr != nullptr);
+            }
+            return h + ui.s(8) + lineH;
+        }
+        if (!draw) return lineH * 4.0f;
+        const float colGap = ui.s(28);
+        const float colW = (area.w - colGap) * 0.5f;
+        const float x0 = area.x, x1 = area.x + colW + colGap;
+        float y = area.y + lineH * 0.5f;
+        ui.label("CE SEGMENT", {x0, y}, hf, th.accent, Align::Left, FontFace::Bold, VAlign::Middle);
+        ui.label("NIVEAU", {x1, y}, hf, th.accent, Align::Left, FontFace::Bold, VAlign::Middle);
+        const float best = refs_.bestOf(from, to), pb = refs_.pbOf(from, to);
+        y += lineH;
+        cell(x0, y, colW, "Meilleur segment", best >= 0.0f ? formatGhostTime(best) : "non comparable", best >= 0.0f);
+        cell(x1, y, colW, "Somme des meilleurs (SoB)", refs_.sob > 0.0f ? formatGhostTime(refs_.sob) : "incomplète", refs_.sob > 0.0f);
+        y += lineH;
+        std::string pbValue = pb >= 0.0f ? formatGhostTime(pb) : refs_.pbTime > 0.0f ? "non comparable" : "aucun record";
+        cell(x0, y, colW, "Dans mon record", pbValue, pb >= 0.0f);
+        cell(x1, y, colW, "Mon record", refs_.pbTime > 0.0f ? formatGhostTime(refs_.pbTime) : "aucun", refs_.pbTime > 0.0f);
+        y += lineH;
+        cell(x0, y, colW, "Meilleur à l'entraînement", trainValue, tr != nullptr);
+        float gain = refs_.possibleGain();
+        std::string gainValue = gain >= 0.0f ? formatGhostDelta(-gain) : refs_.pbTime > 0.0f && refs_.sob > 0.0f ? "autre parcours" : "—";
+        cell(x1, y, colW, "Gain possible", gainValue, gain >= 0.0f);
+        return lineH * 4.0f;
+    }
+
+    /// Under the references: what the training is, or why this segment has no reference.
+    std::string trainingNote(int n) const {
+        if (n <= 1) return "Ce niveau n'a pas de point de sauvegarde : le segment va du départ à l'arrivée.";
+        const std::string from = segFrom(startIdx_), to = segTo(startIdx_);
+        if (refs_.anyRun && refs_.bestOf(from, to) < 0.0f)
+            return "Vos courses complètes ne passent pas par ces deux points à la suite : ce segment n'a pas de référence.";
+        return "Le segment recommence dès son arrivée. Aucun record, aucune progression, rien n'est envoyé en ligne.";
     }
 
     /// « Comparer deux replays »: the ghosts chosen here are offered first (A, then B).
@@ -500,11 +1111,20 @@ private:
             o.trainingCheckpoint = c.id;
             o.spawn = c.feet;
             if (startIdx_ < static_cast<int>(checkpoints_.size())) o.trainingEnd = checkpoints_[static_cast<size_t>(startIdx_)].id;
-            for (const auto& [at, power] : tablets_)
-                if (at <= c.at) o.trainingPowers.push_back(power);
+            o.trainingPowers = tabletsBefore(startIdx_);
         } else if (training_) {
             o.training = true;  // from the start of the level, to the first checkpoint
             if (!checkpoints_.empty()) o.trainingEnd = checkpoints_.front().id;
+        }
+        if (o.training) {
+            // What the setup showed (display only), and the powers chosen (remembered).
+            o.trainingBest = refs_.bestOf(o.trainingCheckpoint, o.trainingEnd);
+            o.trainingPbSegment = refs_.pbOf(o.trainingCheckpoint, o.trainingEnd);
+            if (powersCustom_) {
+                o.trainingPowers = chosenPowers_;
+                o.trainingPowersChosen = true;
+            }
+            rememberPowers();
         }
         g_.app.switchScene(makeGameScene(g_, levelId_, std::move(o)), 0.4f);
     }
@@ -526,6 +1146,44 @@ private:
     bool routeReady_ = false;
     std::vector<Checkpoint> checkpoints_;
     std::vector<std::pair<float, std::string>> tablets_;
+    // Section training (2.30.2).
+    LevelProgressTrack routeTrack_;
+    std::string levelKey_;
+    std::optional<GhostEntry> pbEntry_, lastEntry_;  // my record and my last run of this version
+    /// Ghost tracks read off the main thread (by replay file): the paths shown on the preview.
+    struct TrackSlot {
+        std::future<std::optional<GhostTrack>> job;
+        std::optional<GhostTrack> track;
+        bool failed = false;
+    };
+    std::map<std::string, TrackSlot> tracks_;
+    std::vector<std::string> pbCheckpoints_;  // the checkpoints of my record's splits (its replay)
+    bool pbCheckpointsRead_ = false;
+    SegmentReferences refs_;
+    bool refsDirty_ = true;
+    /// The level drawn small: loaded on the main thread (textures) once the training is shown,
+    /// a frame after the « Chargement » line.
+    std::unique_ptr<GameWorld> previewWorld_;
+    GameRenderer previewRenderer_;
+    int previewState_ = 0;  // 0 not asked, 1 asked (drawn next frame), 2 ready, 3 failed
+    size_t previewTerrainLeft_ = 1;  // terrain chunks still to bake (a few per frame)
+    Rect lastWindow_;                // the part of the level shown last (baked first)
+    std::string previewMount_;
+    /// What the preview frames for the segment shown (recomputed when the segment or the path changes).
+    struct PreviewSeg {
+        int segment = -1;
+        std::string pathKey;
+        bool pathLoading = false;
+        Vec2 startFeet, endFeet;
+        Rect bbox;
+        std::vector<std::vector<Vec2>> path;  // polylines (cut at deaths, respawns)
+        std::string pathLabel;
+        float pathTime = -1.0f;  // the path's own time on the segment
+    } seg_;
+    std::vector<std::string> levelPowers_;
+    std::vector<std::string> chosenPowers_;
+    bool powersCustom_ = false;
+    int powersSegment_ = -1;  // the segment `chosenPowers_` was read for
     bool training_ = false;
     int startIdx_ = 1;
     std::string msg_;
@@ -533,6 +1191,149 @@ private:
     float msgTimer_ = 0.0f;
     float t_ = 0.0f;
 };
+
+/// Section training → « Choisir… »: the powers carried on the segment, among the level's ones,
+/// at most its power slots (a power on the same input as one already chosen replaces it, as
+/// in a level). « Par défaut »: the route's ones again. Keyboard, gamepad and mouse.
+class TrainingPowersScene : public Scene {
+public:
+    TrainingPowersScene(GameServices& g, PowerPick pick, std::function<void(std::vector<std::string>)> done)
+        : g_(g), pick_(std::move(pick)), done_(std::move(done)) {}
+    bool isOverlay() const override { return true; }
+    void onEnter() override { g_.ui.setFocus("tpow/ok"); }
+    void update(float dt) override {
+        if (msgTimer_ > 0.0f) msgTimer_ -= dt;
+    }
+
+    void render(float) override {
+        UIContext& ui = g_.ui;
+        const UITheme& th = ui.theme();
+        ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
+        ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{2, 4, 10, 200});
+        const int cols = pick_.available.size() > 4 ? 3 : 2;
+        const int rows = static_cast<int>((pick_.available.size() + cols - 1) / cols);
+        const float cellH = ui.s(58), cgap = ui.s(10);
+        const float w = std::min(ui.s(900), ui.screenW() - ui.s(80));
+        const float pad = ui.s(30);
+        const float h = std::min(ui.screenH() - ui.s(60), pad + ui.s(46) + ui.s(34) + ui.s(40) + rows * (cellH + cgap) + ui.s(40) + ui.s(54) + pad);
+        Rect panel{(ui.screenW() - w) * 0.5f, (ui.screenH() - h) * 0.5f, w, h};
+        ui.panel(panel, true, 18);
+        ui.pushId("tpow");
+        const float x = panel.x + pad, iw = panel.w - 2 * pad;
+        float y = panel.y + pad;
+        std::string title = "POUVOIRS DU SEGMENT";
+        ui.label(title, {x, y + ui.s(18)}, ui.fitFont(title, FontFace::Title, 30, iw), th.text, Align::Left, FontFace::Title, VAlign::Middle);
+        y += ui.s(46);
+        ui.label(ui.elide(pick_.segment, FontFace::Bold, fz(ui, 17), iw), {x, y + ui.s(12)}, fz(ui, 17), th.accent, Align::Left, FontFace::Bold,
+                 VAlign::Middle);
+        y += ui.s(34);
+        // How many, and the rule of the inputs.
+        std::string count = std::to_string(chosen().size()) + " / " + std::to_string(pick_.slots) + " emplacements";
+        Vec2 cs = ui.label(count, {x, y + ui.s(14)}, fz(ui, 17), chosen().size() >= static_cast<size_t>(pick_.slots) ? th.warm : th.text, Align::Left,
+                           FontFace::Bold, VAlign::Middle);
+        std::string hint = "Un pouvoir sur la même touche qu'un autre le remplace.";
+        float hx = x + cs.x + ui.s(24), hroom = x + iw - hx;
+        if (hroom > ui.s(80)) {
+            float f = ui.fitFont(hint, FontFace::Body, fz(ui, 15), hroom, 0.75f);
+            ui.label(ui.elide(hint, FontFace::Body, f, hroom), {x + iw, y + ui.s(14)}, f, th.textDim, Align::Right, FontFace::Body, VAlign::Middle);
+        }
+        y += ui.s(40);
+        // The level's powers: the chosen ones numbered by slot.
+        const float cw = (iw - cgap * (cols - 1)) / cols;
+        for (size_t i = 0; i < pick_.available.size(); ++i) {
+            const PowerDefinition* p = g_.content.power(pick_.available[i]);
+            if (!p) continue;
+            Rect c{x + (cw + cgap) * static_cast<float>(i % static_cast<size_t>(cols)), y + (cellH + cgap) * static_cast<float>(i / static_cast<size_t>(cols)), cw,
+                   cellH};
+            auto it = std::find(chosen_.begin(), chosen_.end(), p->id);
+            bool on = it != chosen_.end();
+            UIContext::ButtonStyle st;
+            st.selected = on;
+            st.small = true;
+            if (ui.button("pw" + std::to_string(i), c, "", st)) toggle(p->id);
+            Rect icon{c.x + ui.s(10), c.center().y - (cellH - ui.s(18)) * 0.5f, cellH - ui.s(18), cellH - ui.s(18)};
+            ui.icon("ui/icons_powers.png", p->icon, 32, icon, on ? Color::white() : Color{150, 160, 180, 255});
+            float tx = icon.right() + ui.s(10);
+            float badge = on ? ui.s(34) : 0.0f;
+            float room = c.right() - ui.s(12) - badge - tx;
+            float f = ui.fitFont(p->name, FontFace::Bold, fz(ui, 17), room, 0.7f);
+            ui.label(ui.elide(p->name, FontFace::Bold, f, room), {tx, c.center().y}, f, on ? th.text : th.textDim, Align::Left, FontFace::Bold,
+                     VAlign::Middle);
+            if (on) {
+                Vec2 bc{c.right() - ui.s(24), c.center().y};
+                ui.r().fillCircle(bc, ui.s(12), th.accent);
+                ui.label(std::to_string(it - chosen_.begin() + 1), bc, fz(ui, 15), Color{8, 12, 26, 255}, Align::Center, FontFace::Bold, VAlign::Middle);
+            }
+        }
+        y += rows * (cellH + cgap);
+        // What just happened (a power replaced, the slots full), else what « Par défaut » gives.
+        std::string line = msgTimer_ > 0.0f ? msg_ : chosen_ == pick_.defaults ? "Les pouvoirs du parcours : ceux du départ et des tablettes placées avant."
+                                                                               : "Votre choix, retenu pour ce segment.";
+        float lf = ui.fitFont(line, FontFace::Body, fz(ui, 15), iw, 0.8f);
+        ui.label(ui.elide(line, FontFace::Body, lf, iw), {x, y + ui.s(16)}, lf, msgTimer_ > 0.0f ? th.warm : th.textDim, Align::Left, FontFace::Body,
+                 VAlign::Middle);
+        // Buttons, from the right: Valider, Annuler, Par défaut.
+        const float by = panel.bottom() - pad - ui.s(54);
+        UIContext::ButtonStyle primary;
+        primary.primary = true;
+        const float bw = std::min(ui.s(220), (iw - ui.s(32)) / 3.0f);
+        bool ok = ui.button("ok", {x + iw - bw, by, bw, ui.s(54)}, "Valider", primary);
+        bool cancel = ui.button("cancel", {x + iw - 2 * bw - ui.s(16), by, bw, ui.s(54)}, "Annuler");
+        UIContext::ButtonStyle def;
+        def.enabled = chosen_ != pick_.defaults;
+        if (ui.button("default", {x, by, bw, ui.s(54)}, "Par défaut", def) && def.enabled) chosen_ = pick_.defaults;
+        ui.popId();
+        if (ok) {
+            if (done_) done_(chosen_);
+            g_.uiSound("ui_confirm", 0.5f);
+            g_.app.popScene();
+        } else if (cancel || ui.backPressed()) {
+            g_.app.popScene();
+        }
+        ui.end();
+    }
+
+private:
+    const std::vector<std::string>& chosen() const { return chosen_; }
+
+    void toggle(const std::string& id) {
+        auto it = std::find(chosen_.begin(), chosen_.end(), id);
+        if (it != chosen_.end()) {
+            chosen_.erase(it);
+            return;
+        }
+        if (static_cast<int>(chosen_.size()) >= pick_.slots) {
+            g_.uiSound("ui_error");
+            say("Tous les emplacements sont pris : retirez d'abord un pouvoir.");
+            return;
+        }
+        std::vector<std::string> wanted = chosen_;
+        wanted.push_back(id);
+        std::vector<std::string> fitted = fitTrainingPowers(g_.content, wanted, pick_.slots);
+        // A power on the same input as one already chosen replaces it (as in a level).
+        const PowerDefinition* added = g_.content.power(id);
+        for (const std::string& old : chosen_)
+            if (std::find(fitted.begin(), fitted.end(), old) == fitted.end())
+                if (const PowerDefinition* o = g_.content.power(old); o && added) say("« " + added->name + " » remplace « " + o->name + " » (même touche).");
+        chosen_ = fitted;
+    }
+
+    void say(const std::string& m) {
+        msg_ = m;
+        msgTimer_ = 4.0f;
+    }
+
+    GameServices& g_;
+    PowerPick pick_;
+    std::vector<std::string> chosen_ = pick_.chosen;
+    std::function<void(std::vector<std::string>)> done_;
+    std::string msg_;
+    float msgTimer_ = 0.0f;
+};
+
+std::unique_ptr<Scene> makeTrainingPowers(GameServices& g, PowerPick pick, std::function<void(std::vector<std::string>)> done) {
+    return std::make_unique<TrainingPowersScene>(g, std::move(pick), std::move(done));
+}
 
 }  // namespace
 

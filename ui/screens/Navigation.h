@@ -45,6 +45,13 @@ struct PlayOptions {
     std::string trainingCheckpoint;
     std::string trainingEnd;                 // the checkpoint ending the segment ("" = the exit)
     std::vector<std::string> trainingPowers; // tablets picked up before the start, in route order
+    /// The powers chosen in the training setup (2.30.2): exactly `trainingPowers` are carried
+    /// (the level's start powers only if chosen too). False: the start powers plus the tablets.
+    bool trainingPowersChosen = false;
+    /// What the training setup showed for this segment (display only, -1 unknown): its best
+    /// duration in full runs and its duration in the personal best run.
+    float trainingBest = -1.0f;
+    float trainingPbSegment = -1.0f;
     /// Boss training (boss statistics → Entraînement): set up with the world, never recorded.
     std::optional<BossTrainingSetup> bossTraining;
 };

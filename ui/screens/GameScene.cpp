@@ -7,6 +7,7 @@
 #include "engine/core/Log.h"
 #include "game/GameServices.h"
 #include "game/enemies/Enemy.h"
+#include "game/gameplay/BossTraining.h"
 #include "game/gameplay/RunCounters.h"
 #include "game/levels/LevelAnalyzer.h"
 #include "game/online/LevelFingerprint.h"
@@ -166,6 +167,8 @@ void GameScene::startGhosts() {
 void GameScene::noteAchievementStats(bool completed, const RecordUpdate* upd) {
     if (statsNoted_ || !world_ || opt_.editorTest || loadFailed_) return;
     statsNoted_ = true;
+    // Section training (its powers may be chosen): never counted for the achievements.
+    if (opt_.training) return;
     AchievementStats& a = g_.achievements.stats();
     const RunStats& s = world_->stats();
     // The world's counters (kills, by family too, deaths, collectibles, powers carried): none for a training.
@@ -235,7 +238,7 @@ void GameScene::saveGhosts(const RunResult& r) {
     if (fingerprint_) m.levelVersion = fingerprint_->version;
     bool newBest = pbGhostMs_ <= 0 || m.timeMs < pbGhostMs_;
     g_.ghosts.recordRun(*lastReplay_, m, newBest);
-    g_.segments.add(GhostStore::levelKey(levelId_, ghostHash_), r.splits, r.time, r.date);
+    g_.segments.add(GhostStore::levelKey(levelId_, ghostHash_), r.splits, r.time, r.date, runCheckpoints_);
     g_.segments.save();
 }
 
@@ -715,6 +718,16 @@ void GameScene::startTraining() {
     // The checkpoint the segment starts from is reached (silently): the timer's first split.
     if (!opt_.trainingCheckpoint.empty())
         if (LevelEntity* e = world_->entity(opt_.trainingCheckpoint)) e->handleAction(*world_, "activate", Json::object());
+    if (opt_.trainingPowersChosen) {
+        // The powers chosen in the training setup, exactly these (the level's start powers
+        // only if chosen too), as a boss training does.
+        Player& p = world_->player();
+        p.clearPowers();
+        int slots = p.powerSlots() > 0 ? p.powerSlots() : LevelData::kMaxPowerSlots;
+        for (const std::string& id : fitTrainingPowers(g_.content, opt_.trainingPowers, slots))
+            if (const PowerDefinition* d = g_.content.power(id)) p.grantPower(*d);
+        return;
+    }
     // The powers of the tablets placed before it on the route (the last ones if the slots are
     // fewer: those a player would keep).
     std::vector<std::string> powers = opt_.trainingPowers;
@@ -735,8 +748,18 @@ void GameScene::trainingSegmentDone() {
     tries.push_back(t);
     if (tries.size() > 50) tries.erase(tries.begin());
     segmentTime_ = t;
-    segmentBanner_ = 2.4f;
-    g_.uiSound(segmentBest_ < 0.0f || t < segmentBest_ ? "medal" : "ui_confirm", 0.6f);
+    // The best training time of this segment, kept (saves/training.json): never a record,
+    // never a gold segment of the full runs.
+    trainingBestBefore_ = -1.0f;
+    trainingNewBest_ = false;
+    if (!ghostHash_.empty()) {
+        std::string lk = GhostStore::levelKey(levelId_, ghostHash_);
+        if (const TrainingRecords::Entry* e = g_.training.get(lk, opt_.trainingCheckpoint, opt_.trainingEnd)) trainingBestBefore_ = e->best;
+        trainingNewBest_ = g_.training.add(lk, opt_.trainingCheckpoint, opt_.trainingEnd, t, FileUtil::nowString());
+        g_.training.save();
+    }
+    segmentBanner_ = 3.0f;
+    g_.uiSound(trainingNewBest_ || segmentBest_ < 0.0f || t < segmentBest_ ? "medal" : "ui_confirm", 0.6f);
 }
 
 void GameScene::applyCosmetics() {
@@ -785,11 +808,18 @@ void GameScene::render(float alpha) {
     // The ghosts' HUD: not under the results screen (nor under its notifications).
     if (ghostRun_.active() && !world_->cinematic().active() && world_->state() != WorldState::Intro && (!ended_ || opt_.training)) {
         const GameplaySettings& gs = g_.settings.gameplay;
-        Rect keepOut[kHudElements];
+        Rect keepOut[kHudElements + 3];
         int n = 0;
         for (int e = 0; e < kHudElements; ++e) {
             auto el = static_cast<HudElement>(e);
             if (el != HudElement::Splits && hudVisible(gs, el)) keepOut[n++] = hud_.area(g_.ui, *world_, el, hud_.place(g_.ui, *world_, gs, el));
+        }
+        // Section training: the ghosts' names never go under its references, its tag or the
+        // banner of an attempt (their places of the previous frame).
+        if (opt_.training) {
+            keepOut[n++] = trainingRefsRect_;
+            keepOut[n++] = trainingTagRect_;
+            if (segmentBanner_ > 0.0f) keepOut[n++] = trainingBannerRect_;
         }
         Hud::Place sp = hud_.place(g_.ui, *world_, gs, HudElement::Splits);
         ghostRun_.drawHud(g_.ui, view, hud_.area(g_.ui, *world_, HudElement::Splits, sp), sp.k, hudVisible(gs, HudElement::Splits), keepOut, n);
@@ -830,36 +860,144 @@ void GameScene::drawTrainingBanner() {
         return;
     }
     // Always: what this run is (no record), at the bottom left.
+    const float H = ui.screenH();
+    const float fs = std::max(15.0f, 11.5f / ui.s(1.0f));
     std::string tag = "ENTRAÎNEMENT · aucun record · " + keyName(SDL_SCANCODE_R) + " / Vue : recommencer";
-    ui.label(ui.elide(tag, FontFace::Bold, 15, W * 0.5f), {ui.s(24), ui.screenH() - ui.s(28)}, 15, ui.theme().warm, Align::Left, FontFace::Bold,
-             VAlign::Middle);
+    std::string shownTag = ui.elide(tag, FontFace::Bold, fs, W * 0.5f);
+    Vec2 ts = ui.label(shownTag, {ui.s(24), H - ui.s(28)}, fs, ui.theme().warm, Align::Left, FontFace::Bold, VAlign::Middle);
+    const Rect tagRect{ui.s(24), H - ui.s(28) - ts.y * 0.5f, ts.x, ts.y};
+    // The end of an attempt: centred, above the middle (its place is kept clear even before).
+    const float bw = std::min(ui.s(680), W - ui.s(40));
+    struct Line {
+        std::string text;
+        Color color;
+        bool bold = false;
+    };
+    std::vector<Line> lines;  // under the time, each on its own line
+    if (segmentTime_ >= 0.0f) {
+        const UITheme& th = ui.theme();
+        if (trainingNewBest_)
+            lines.push_back({trainingBestBefore_ > 0.0f ? "Nouveau meilleur à l'entraînement ! (" + formatGhostDelta(segmentTime_ - trainingBestBefore_) + ")"
+                                                        : "Nouveau meilleur à l'entraînement !",
+                             th.success, true});
+        else if (trainingBestBefore_ > 0.0f)
+            lines.push_back({"Meilleur à l'entraînement " + formatGhostTime(trainingBestBefore_) + " (" + formatGhostDelta(segmentTime_ - trainingBestBefore_) + ")",
+                             th.textDim, false});
+        std::string refs;
+        if (opt_.trainingBest > 0.0f) refs = "Meilleur segment " + formatGhostDelta(segmentTime_ - opt_.trainingBest);
+        if (opt_.trainingPbSegment > 0.0f)
+            refs += (refs.empty() ? "" : "   ·   ") + std::string("Dans mon record ") + formatGhostDelta(segmentTime_ - opt_.trainingPbSegment);
+        if (refs.empty()) refs = "Pas encore de course complète : aucun segment de référence";
+        lines.push_back({refs, th.text, false});
+        std::string more;
+        const GhostRace& gr = ghostRun_.race();
+        if (!gr.empty() && !gr.splits().empty() && gr.splits().back().comparable) {
+            float d = gr.splits().back().delta;
+            if (gr.splits().back().ghostSegment >= 0.0f) d = gr.splits().back().segment - gr.splits().back().ghostSegment;
+            more = formatGhostDelta(d) + " sur le fantôme   ·   ";
+        }
+        std::vector<float>& tries = g_.trainingAttempts[levelId_ + ":" + opt_.trainingCheckpoint];
+        more += std::to_string(tries.size()) + (tries.size() > 1 ? " essais cette séance" : " essai cette séance");
+        lines.push_back({more, th.textDim, false});
+    }
+    const float lineH = ui.s(fs + 13.0f);
+    const float bh = segmentTime_ < 0.0f ? ui.s(110) : ui.s(70) + lineH * static_cast<float>(lines.size()) + ui.s(46);
+    const Rect b = Rect::fromCenter({W * 0.5f, H * 0.36f}, {bw, bh});
+    trainingTagRect_ = tagRect;
+    trainingBannerRect_ = b;
+    drawTrainingRefs(tagRect, b);
     if (segmentBanner_ <= 0.0f) return;
-    Rect b = Rect::fromCenter({W * 0.5f, ui.screenH() * 0.36f}, {std::min(ui.s(640), W - ui.s(40)), ui.s(150)});
-    ui.r().fillRoundedRect(b, ui.s(14), Color{8, 12, 26, 220});
+    ui.r().fillRoundedRect(b, ui.s(14), Color{8, 12, 26, 225});
     ui.r().drawRoundedRect(b, ui.s(14), ui.theme().accent.withAlpha(140), ui.s(2));
+    const float room = b.w - ui.s(40);
     if (segmentTime_ < 0.0f) {
-        ui.label("Essai manqué : on recommence", b.center(), 26, ui.theme().text, Align::Center, FontFace::Bold, VAlign::Middle);
+        std::string miss = "Essai manqué : on recommence";
+        ui.label(miss, b.center(), ui.fitFont(miss, FontFace::Bold, 26, room), ui.theme().text, Align::Center, FontFace::Bold, VAlign::Middle);
         return;
     }
     std::string head = "SEGMENT  " + formatGhostTime(segmentTime_);
-    ui.label(head, {b.center().x, b.y + ui.s(40)}, ui.fitFont(head, FontFace::Title, 34, b.w - ui.s(40)), ui.theme().text, Align::Center,
+    ui.label(head, {b.center().x, b.y + ui.s(38)}, ui.fitFont(head, FontFace::Title, 34, room), ui.theme().text, Align::Center,
              FontFace::Title, VAlign::Middle);
-    std::string line;
-    const GhostRace& gr = ghostRun_.race();
-    if (!gr.empty() && !gr.splits().empty() && gr.splits().back().comparable) {
-        float d = gr.splits().back().delta;
-        if (gr.splits().back().ghostSegment >= 0.0f) d = gr.splits().back().segment - gr.splits().back().ghostSegment;
-        line = formatGhostDelta(d) + " sur le fantôme";
+    float y = b.y + ui.s(70) + lineH * 0.5f;
+    for (const Line& l : lines) {
+        FontFace face = l.bold ? FontFace::Bold : FontFace::Body;
+        float f = ui.fitFont(l.text, face, fs + 3.0f, room, 0.75f);
+        ui.label(ui.elide(l.text, face, f, room), {b.center().x, y}, f, l.color, Align::Center, face, VAlign::Middle);
+        y += lineH;
     }
-    if (segmentBest_ >= 0.0f) {
-        std::string best = segmentTime_ < segmentBest_ ? "meilleur essai !" : "meilleur essai " + formatGhostTime(segmentBest_);
-        line += (line.empty() ? "" : "   ·   ") + best;
+    ui.label("Nouvel essai…", {b.center().x, b.bottom() - ui.s(26)}, fs, ui.theme().accent, Align::Center, FontFace::Body, VAlign::Middle);
+}
+
+void GameScene::drawTrainingRefs(const Rect& tagRect, const Rect& banner) {
+    // What this segment is worth, always in view during a section training: its best duration
+    // in full runs, its duration in my record, my best training time. Placed where no HUD
+    // element is (the HUD layout can be moved), never under the attempt's banner.
+    UIContext& ui = g_.ui;
+    const UITheme& th = ui.theme();
+    const float W = ui.screenW(), H = ui.screenH();
+    const float fs = std::max(15.0f, 11.5f / ui.s(1.0f));
+    float train = -1.0f;
+    if (!ghostHash_.empty())
+        if (const TrainingRecords::Entry* e = g_.training.get(GhostStore::levelKey(levelId_, ghostHash_), opt_.trainingCheckpoint, opt_.trainingEnd))
+            train = e->best;
+    const std::pair<std::string, float> rows[3] = {{"Meilleur segment", opt_.trainingBest},
+                                                   {"Dans mon record", opt_.trainingPbSegment},
+                                                   {"Meilleur à l'entraînement", train}};
+    float lw = 0.0f, vw = 0.0f;
+    for (const auto& [label, v] : rows) {
+        lw = std::max(lw, ui.text().measure(label, FontFace::Body, ui.s(fs)).x);
+        vw = std::max(vw, ui.text().measure(v > 0.0f ? formatGhostTime(v) : "—", FontFace::Bold, ui.s(fs)).x);
     }
-    std::vector<float>& tries = g_.trainingAttempts[levelId_ + ":" + opt_.trainingCheckpoint];
-    line += (line.empty() ? "" : "   ·   ") + std::to_string(tries.size()) + (tries.size() > 1 ? " essais" : " essai");
-    ui.label(ui.elide(line, FontFace::Body, 19, b.w - ui.s(40)), {b.center().x, b.y + ui.s(86)}, 19, ui.theme().textDim, Align::Center,
-             FontFace::Body, VAlign::Middle);
-    ui.label("Nouvel essai…", {b.center().x, b.y + ui.s(122)}, 16, ui.theme().accent, Align::Center, FontFace::Body, VAlign::Middle);
+    const float pad = ui.s(12), gap = ui.s(18), lineH = ui.s(fs + 9.0f);
+    const float bw = std::min(pad * 2 + lw + gap + vw, W * 0.4f), bh = pad * 2 + lineH * 3;
+    // Every HUD element shown, the ghosts' box, the tag, the hints' line and the banner.
+    std::vector<Rect> keep;
+    const GameplaySettings& gs = g_.settings.gameplay;
+    for (int e = 0; e < kHudElements; ++e) {
+        auto el = static_cast<HudElement>(e);
+        if (!hudVisible(gs, el)) continue;
+        Rect a = hud_.area(ui, *world_, el, hud_.place(ui, *world_, gs, el));
+        if (a.w > 0.0f && a.h > 0.0f) keep.push_back(a);
+    }
+    if (ghostRun_.active() && ghostRun_.visible() && ghostRun_.hudRect().w > 0.0f) keep.push_back(ghostRun_.hudRect());
+    keep.push_back(tagRect);
+    keep.push_back(banner);
+    keep.push_back(Rect::fromCenter({W * 0.5f, H - ui.s(world_->activeBoss() ? 210 : 150)}, {W * 0.6f, ui.s(64)}));
+    const float m = ui.s(16);
+    const Rect candidates[] = {
+        {m, tagRect.y - ui.s(10) - bh, bw, bh},               // bottom left, above the tag
+        {W - m - bw, H - m - bh, bw, bh},                     // bottom right
+        {m, H * 0.5f - bh * 0.5f, bw, bh},                    // left, half way down
+        {W - m - bw, H * 0.5f - bh * 0.5f, bw, bh},           // right, half way down
+        {W * 0.5f - bw * 0.5f, H - m - bh, bw, bh},           // bottom centre
+        {W * 0.5f - bw * 0.5f, ui.s(110), bw, bh},            // top centre
+    };
+    Rect at = candidates[0];
+    float leastOverlap = 1e30f;
+    for (const Rect& c : candidates) {
+        float overlap = 0.0f;
+        for (const Rect& k : keep)
+            if (c.intersects(k.expanded(ui.s(6)))) {
+                Rect i = c.intersection(k.expanded(ui.s(6)));
+                overlap += std::max(0.0f, i.w) * std::max(0.0f, i.h);
+            }
+        if (overlap < leastOverlap) {
+            leastOverlap = overlap;
+            at = c;
+        }
+        if (overlap <= 0.0f) break;
+    }
+    trainingRefsRect_ = at;
+    ui.r().fillRoundedRect(at, ui.s(10), Color{8, 12, 26, 200});
+    ui.r().drawRoundedRect(at, ui.s(10), th.warm.withAlpha(110), std::max(1.0f, ui.s(1.5f)));
+    float y = at.y + pad + lineH * 0.5f;
+    const float labelRoom = at.w - pad * 2 - gap - vw;
+    for (const auto& [label, v] : rows) {
+        ui.label(ui.elide(label, FontFace::Body, fs, labelRoom), {at.x + pad, y}, fs, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        ui.label(v > 0.0f ? formatGhostTime(v) : "—", {at.right() - pad, y}, fs, v > 0.0f ? th.text : th.textDim, Align::Right, FontFace::Bold,
+                 VAlign::Middle);
+        y += lineH;
+    }
 }
 
 void GameScene::updateBossTraining() {
