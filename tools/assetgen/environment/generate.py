@@ -3,7 +3,7 @@
 
 Run from the repository root:  python3 tools/assetgen/environment/generate.py
 Optional args: names of steps to run (tiles platforms backgrounds bg_pyralis bg_glacior decor
-decor_pyralis decor_glacior ui glyphs planets banners),
+decor_pyralis decor_glacior ui glyphs planets banners bg_aethra aethra_planet),
 --review to also write upscaled review sheets to /tmp/claude-0/assetreview/environment/,
 --no-validate to skip the contract checker.
 
@@ -19,6 +19,9 @@ Produces (paths relative to assets/):
   ui/glyphs/{xbox,playstation,generic}.png                                    (glyphs)
   ui/planets/{sylvanox,pyralis,glacior,sun,sylvanox_banner}.png, ui/map_background.png
   ui/planets/{pyralis,glacior}_banner.png                                     (banners)
+  backgrounds/aethra/{sky,far,mid,near,abyss,fg_petals}.png                   (bg_aethra)
+  textures/tiles/{sanctum_stone,nebula_rock}.png/.json (Aethra, in tiles)
+  ui/planets/aethra.png, ui/planets/aethra_banner.png                         (aethra_planet)
 All generators are deterministic (fixed seeds).
 """
 import os
@@ -43,6 +46,8 @@ MODULES = {
     "glyphs": ("glyphs", "generate"),
     "planets": ("planets", "generate"),
     "banners": ("banners", "generate"),
+    "bg_aethra": ("bg_aethra", "generate"),
+    "aethra_planet": ("planet_aethra", "generate"),
 }
 
 
@@ -53,7 +58,7 @@ def load_step(name):
 
 
 ORDER = ["tiles", "platforms", "backgrounds", "bg_pyralis", "bg_glacior", "decor", "decor_pyralis",
-         "decor_glacior", "ui", "glyphs", "planets", "banners"]
+         "decor_glacior", "ui", "glyphs", "planets", "banners", "bg_aethra", "aethra_planet"]
 
 
 def main(argv):
