@@ -4,6 +4,7 @@
 #include <set>
 
 #include "game/content/ContentDatabase.h"
+#include "game/gameplay/BossTraining.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/player/Player.h"
 #include "packaging/Sha256.h"
@@ -18,10 +19,10 @@ void fail(std::string* error, const std::string& why) {
 
 /// Identifiers are plain ASCII (no escaping ever needed in the canonical form, the same bytes
 /// in every JSON library): a challenge "daily-2026-11-16", a power "air_dash".
-bool plainId(const std::string& s, bool allowDashDot) {
+bool plainId(const std::string& s, bool allowDash) {
     if (s.empty() || s.size() > 64) return false;
     for (char c : s) {
-        bool ok = (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_' || (allowDashDot && (c == '-' || c == '.' || (c >= 'A' && c <= 'Z')));
+        bool ok = (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_' || (allowDash && (c == '-' || (c >= 'A' && c <= 'Z')));
         if (!ok) return false;
     }
     return true;
@@ -132,15 +133,15 @@ void applyChallengeStart(GameWorld& w, const ChallengeRules& rules) {
     int base = p.maxHealth() - p.bonusHealth;
     p.bonusHealth = std::clamp(rules.hearts, ChallengeRules::kMinHearts, ChallengeRules::kMaxHearts) - base;
     p.health = p.maxHealth();
-    // Slots and powers: the imposed ones only, granted in canonical order with the usual rule
-    // (Player::grantPower), never more than the slots.
+    // Slots and powers: exactly the imposed ones (the level's start powers are replaced, not
+    // added: an automatic challenge lists them itself), granted in canonical order with the
+    // usual rule — a power on the same input as an earlier one replaces it, as in a boss
+    // training (fitTrainingPowers) — never more than the slots.
     int slots = std::clamp(rules.slots, ChallengeRules::kMinSlots, ChallengeRules::kMaxSlots);
     p.clearPowers();
     p.setPowerSlots(slots);
-    for (const std::string& id : rules.sortedPowers()) {
-        if (static_cast<int>(p.powers().size()) >= slots) break;
+    for (const std::string& id : fitTrainingPowers(w.content(), rules.sortedPowers(), slots))
         if (const PowerDefinition* d = w.content().power(id)) p.grantPower(*d);
-    }
     p.refreshPassivePowers();
     p.restoreAirJumps();
 }

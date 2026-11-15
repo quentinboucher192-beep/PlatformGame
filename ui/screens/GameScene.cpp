@@ -61,7 +61,9 @@ void GameScene::onEnter() {
     } else if (opt_.spawn) {
         world_->startAt(*opt_.spawn);
     }
-    const bool counted = !world_->training();  // a training run records nothing
+    // Daily challenge: its rules right after the load (simulation 11), its own recording.
+    if (opt_.challenge) startChallenge();
+    const bool counted = !world_->training();  // a training (or challenge) run records nothing
     if (opt_.training) startTraining();
     if (const LevelRecord* rec = g_.records.get(levelId_); rec && !opt_.training && counted) world_->setReferenceSplits(rec->bestSplits);
     renderer_.build(g_.app.renderer(), res, *world_);
@@ -133,6 +135,91 @@ void GameScene::onEnter() {
         else ghostHash_ = fingerprintGameplay(g_.content, level_);
         startGhosts();
     }
+}
+
+void GameScene::startChallenge() {
+    const DailyChallenge& c = opt_.challenge->challenge;
+    world_->setChallenge(c.rules);
+    hud_.setChallengeTiers(static_cast<float>(c.silverMs) / 1000.0f, static_cast<float>(c.goldMs) / 1000.0f, c.goldNoDamage);
+    // The level as installed: its fingerprint goes with the run (the server compares it with
+    // the challenge's); the replay is written in version 4 (the rules after the digests).
+    if (!c.community()) {
+        if (const LevelFingerprint* fp = g_.online.fingerprints().get(g_.content, levelId_)) challengeHash_ = fp->hash;
+    } else {
+        challengeHash_ = fingerprintGameplay(g_.content, level_);
+    }
+    if (challengeHash_.empty()) challengeHash_ = fingerprintGameplay(g_.content, level_);
+    challengeSendable_ = challengeHash_ == c.level.hash;
+    Log::info("Défi {}{} : niveau {} (empreinte {}{})", c.id, opt_.challenge->practice ? " (hors classement)" : "", levelId_, challengeHash_,
+              challengeSendable_ ? ", celle du défi" : ", attendue " + c.level.hash);
+    attemptId_ = makeUuidV4();
+    recorder_.begin(levelId_, challengeHash_, attemptId_, world_->gameplaySeed());
+    recordMode_ = RecordMode::Challenge;
+    // The ghosts chosen before the start (mine, the first of the day): display only.
+    if (opt_.ghostsChosen && !opt_.ghosts.empty()) {
+        ghostHash_ = challengeHash_;
+        ghostRun_.setSuitSheet([this](const GhostMeta& m) -> TexturePtr {
+            std::string look = m.mine() ? g_.cosmeticLook("suit") : g_.cosmetics.lookOr("suit", m.suit);
+            if (look.empty() || look == "standard") return nullptr;
+            return g_.app.resources().texture("sprites/player/suits/nova_" + look + ".png");
+        });
+        ghostRun_.begin(opt_.ghosts, level_, g_.content, ghostHash_, g_.settings.ghosts, false);
+        ghostRun_.setVisible(true);
+    }
+}
+
+void GameScene::finishChallenge(bool completed) {
+    ended_ = true;
+    const DailyChallenge& c = opt_.challenge->challenge;
+    ChallengeEndData d;
+    d.challenge = c;
+    d.practice = opt_.challenge->practice;
+    d.completed = completed;
+    d.failReason = world_->failReason();
+    const RunStats& s = world_->stats();
+    float time = world_->timer().elapsed();
+    d.timeMs = static_cast<int64_t>(std::llround(static_cast<double>(time) * 1000.0));
+    d.deaths = s.deaths;
+    d.damageTaken = s.damageTaken;
+    if (completed && recorder_.active()) {
+        recorder_.finish(*world_, time);
+        lastReplay_ = std::make_shared<ReplayData>(recorder_.take());
+        if (!g_.saveReplayPath.empty()) {
+            auto bytes = lastReplay_->encode();
+            if (FileUtil::writeBinary(Paths::fromUtf8(g_.saveReplayPath), bytes))
+                Log::info("Replay enregistré : {} ({} octets)", g_.saveReplayPath, bytes.size());
+        }
+    } else {
+        recorder_.abort();
+    }
+    if (completed) {
+        d.tier = c.tierFor(d.timeMs, d.damageTaken);
+        ghostRun_.finish(time);
+        // The day's challenge: kept here (best time, its replay) and sent when it can be.
+        // Practice keeps nothing.
+        if (!d.practice) {
+            d.attemptId = attemptId_;
+            std::string whyNot = challengeSendable_ ? std::string() : "Votre version du niveau diffère de celle du défi : temps gardé sur ce PC.";
+            d.report = g_.challenges.recordRun(c, d.timeMs, d.deaths, d.damageTaken, challengeHash_, attemptId_, lastReplay_.get(), challengeSendable_, whyNot);
+        }
+        std::string victory = g_.app.resources().soundPath("music/victory.ogg");
+        if (!victory.empty()) g_.app.audio().playSound(victory, 0.9f, 1.0f, 0.0f, AudioBus::Music);
+    }
+    d.streak = g_.challenges.streak();
+    d.replay = lastReplay_;
+    g_.app.pushScene(makeChallengeEnd(g_, *this, std::move(d)));
+}
+
+void GameScene::drawChallengeBanner() {
+    // Always: what this run is, at the bottom left.
+    UIContext& ui = g_.ui;
+    const ChallengeRules& r = opt_.challenge->challenge.rules;
+    std::string tag = opt_.challenge->practice ? "DÉFI · HORS CLASSEMENT" : "DÉFI DU JOUR";
+    tag += " · " + std::to_string(r.hearts) + (r.hearts > 1 ? " cœurs" : " cœur");
+    if (!r.checkpoints) tag += " · sans points de passage";
+    tag += " · " + keyName(SDL_SCANCODE_R) + " / Vue : recommencer";
+    ui.label(ui.elide(tag, FontFace::Bold, 15, ui.screenW() * 0.5f), {ui.s(24), ui.screenH() - ui.s(28)}, 15,
+             opt_.challenge->practice ? ui.theme().warm : ui.theme().accent, Align::Left, FontFace::Bold, VAlign::Middle);
 }
 
 void GameScene::startGhosts() {
@@ -337,6 +424,13 @@ void GameScene::quitToMenu() {
         g_.app.switchScene(makeBossStats(g_, opt_.bossTraining->bossId), 0.4f);
         return;
     }
+    if (opt_.challenge) {
+        // Back to the challenges: today's, or the archive it was replayed from.
+        const DailyChallenge& c = opt_.challenge->challenge;
+        bool archive = opt_.challenge->practice && g_.challenges.nowMs() >= c.endsAtMs;
+        g_.app.switchScene(makeChallenges(g_, archive ? 1 : 0, c.id), 0.4f);
+        return;
+    }
     if (opt_.editorTest) {
         g_.app.popScene();
         return;
@@ -463,6 +557,10 @@ void GameScene::bossFeedback() {
 }
 
 void GameScene::finishRun(bool completed) {
+    if (opt_.challenge) {
+        finishChallenge(completed);
+        return;
+    }
     if (opt_.bossTraining) {
         // The level ended otherwise (its exit, its rules): the training ends with it.
         if (!ended_) endBossTraining(bossTrainingWon(*world_, *opt_.bossTraining));
@@ -693,7 +791,7 @@ void GameScene::update(float dt) {
     }
     // Quick restart (contre-la-montre, training): R key or the gamepad View/Back button.
     if (!ended_ && (in.keyPressed(SDL_SCANCODE_R) || in.rawPadButton(SDL_GAMEPAD_BUTTON_BACK)) &&
-        world_->state() == WorldState::Playing && (level_.timerMode == TimerMode::TimeAttack || opt_.training || opt_.bossTraining)) {
+        world_->state() == WorldState::Playing && (level_.timerMode == TimerMode::TimeAttack || opt_.training || opt_.bossTraining || opt_.challenge)) {
         restart();
         return;
     }
@@ -781,7 +879,8 @@ void GameScene::render(float alpha) {
     if (ghostRun_.active()) ghostRun_.drawWorld(r, view, world_->player().anim.set());
     trail_.draw(r, trailLook_, true);
     if (victoryT_ >= 0.0f) drawVictoryFx(r, victoryLook_, victoryAt_, victoryT_, true);
-    hud_.render(g_.ui, *world_, view, g_.records.get(levelId_), g_.settings.gameplay);
+    // A challenge has its own rules: the level's record is no reference for it.
+    hud_.render(g_.ui, *world_, view, opt_.challenge ? nullptr : g_.records.get(levelId_), g_.settings.gameplay);
     // The ghosts' HUD: not under the results screen (nor under its notifications).
     if (ghostRun_.active() && !world_->cinematic().active() && world_->state() != WorldState::Intro && (!ended_ || opt_.training)) {
         const GameplaySettings& gs = g_.settings.gameplay;
@@ -796,6 +895,7 @@ void GameScene::render(float alpha) {
     }
     drawBossArrow(view);
     if (opt_.training || opt_.bossTraining) drawTrainingBanner();
+    else if (opt_.challenge && !ended_) drawChallengeBanner();
     if (g_.settings.graphics.showFps) {
         char buf[32];
         std::snprintf(buf, sizeof(buf), "%.0f FPS", g_.app.fps());

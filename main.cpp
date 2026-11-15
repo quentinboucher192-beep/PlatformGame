@@ -30,6 +30,12 @@
 //                           open the boss statistics (that boss, that clip of its animation)
 //   --boss-training <boss> [--boss-training-go]
 //                           open the settings of a boss training (and enter its arena)
+//   --challenges [today|archives[:<id>]]
+//                           open the daily challenges (Aujourd'hui, or Archives on a challenge)
+//   --challenge-start <id>[:practice]
+//                           open the screen before a challenge run (cached in saves/challenges)
+//   --challenge-play <id>[:practice]
+//                           start a challenge run at once (with --input / --save-replay: checks)
 //   --online [<level>]      start on the ONLINE RANKING screen
 //   --online-focus <name>   with --online: select the globe marker of this player
 //   --online-open <what>    with --online: open register | login | settings |
@@ -400,6 +406,10 @@ int main(int argc, char** argv) {
     game.onlineFocus = value("--online-focus");
     game.onlineOpen = value("--online-open");
     game.online.init(game.settings.online, value("--online-server"));
+    // Daily challenges: the cached ones at once (offline), the current one asked for when
+    // Cosmic Online is on (public, nothing personal sent).
+    game.challenges.init(game.online, Paths::savesDir() / "challenges");
+    if (!has("--headless") || has("--realtime")) game.challenges.refresh();
     OnlineToasts toasts;
     game.checkForUpdate();
     // Scripted mouse clicks (automated checks): moved, pressed, released two frames later.
@@ -440,6 +450,7 @@ int main(int argc, char** argv) {
         game.ratings.poll();
         game.news.poll(game.content, game.records, COSMIC_VERSION_STRING);
         game.online.update(dt);
+        game.challenges.update(dt);
         toasts.update(game, dt);
     };
     app.onOverlay = [&game, &toasts] { toasts.render(game); };
@@ -538,6 +549,24 @@ int main(int argc, char** argv) {
         // --boss-stats [<boss id>[:<clip>]]: that boss selected (and that clip of its animation).
         if (std::string b = value("--boss-stats"); !b.empty()) game.onlineOpen = "boss:" + b;
         app.pushScene(makeBossStats(game));
+    } else if (has("--challenges")) {
+        // --challenges [today | archives[:<challenge id>]]
+        std::string c = value("--challenges");
+        bool archives = c.rfind("archives", 0) == 0;
+        auto colon = c.find(':');
+        app.pushScene(makeChallenges(game, archives ? 1 : 0, colon == std::string::npos ? std::string{} : c.substr(colon + 1)));
+    } else if (std::string cs = value("--challenge-start"); !cs.empty()) {
+        // --challenge-start <challenge id>[:practice]: the screen before a challenge run.
+        auto colon = cs.find(':');
+        bool practice = colon != std::string::npos && cs.substr(colon + 1) == "practice";
+        app.pushScene(makeChallenges(game, practice && game.challenges.find(cs.substr(0, colon)) != game.challenges.current() ? 1 : 0, cs.substr(0, colon)));
+        app.pushScene(makeChallengeStart(game, cs.substr(0, colon), practice));
+    } else if (std::string cp = value("--challenge-play"); !cp.empty()) {
+        // --challenge-play <challenge id>[:practice]: a challenge run straight away (with --input).
+        auto colon = cp.find(':');
+        auto run = makeChallengeRun(game, cp.substr(0, colon), colon != std::string::npos && cp.substr(colon + 1) == "practice");
+        if (run) app.pushScene(std::move(run));
+        else app.pushScene(makeChallenges(game));
     } else if (std::string bt = value("--boss-training"); !bt.empty()) {
         // The settings of a boss training; --boss-training-go: enters its arena once it is found.
         if (has("--boss-training-go")) game.onlineOpen = "train-go";

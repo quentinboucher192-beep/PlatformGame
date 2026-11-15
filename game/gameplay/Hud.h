@@ -38,7 +38,17 @@ public:
     /// Anchor of a place whose area has its top-left corner at `topLeft` (dragging).
     Vec2 anchorForArea(UIContext& ui, const GameWorld& w, HudElement e, const Place& p, Vec2 topLeft) const;
 
+    /// A daily challenge run (2.31): under the timer, the next tier still reachable (Or,
+    /// Argent) instead of the level's medals. Seconds; `goldNoDamage`: Or is lost with a hit.
+    void setChallengeTiers(float silver, float gold, bool goldNoDamage) {
+        tierSilver_ = silver;
+        tierGold_ = gold;
+        tierGoldNoDamage_ = goldNoDamage;
+    }
+
 private:
+    float tierSilver_ = 0.0f, tierGold_ = 0.0f;
+    bool tierGoldNoDamage_ = false;
     void drawVitals(UIContext& ui, GameWorld& w, Vec2 o, float k);
     void drawPowers(UIContext& ui, GameWorld& w, Vec2 o, float k);
     void drawTimer(UIContext& ui, GameWorld& w, const LevelRecord* record, Vec2 o, float k);

@@ -29,6 +29,23 @@ class GameScene;
 /// Boss training: the end of a training run (Recommencer, Changer les réglages, Retour).
 std::unique_ptr<Scene> makeBossTrainingEnd(GameServices& g, GameScene& game, const BossTrainingResult& result);
 
+/// The end of a daily challenge run (2.31): time, new best, tier, streak, sending state.
+struct ChallengeEndData {
+    DailyChallenge challenge;
+    bool practice = false;
+    bool completed = false;
+    std::string failReason;
+    int64_t timeMs = 0;
+    int deaths = 0;
+    int damageTaken = 0;
+    ChallengeTier tier = ChallengeTier::None;
+    std::string attemptId;  // the run (its sending state is followed live)
+    ChallengeService::RunReport report;
+    ChallengeService::Streak streak;
+    std::shared_ptr<ReplayData> replay;
+};
+std::unique_ptr<Scene> makeChallengeEnd(GameServices& g, GameScene& game, ChallengeEndData data);
+
 /// Plays a level: simulation, rendering, HUD, pause menu and end of level.
 class GameScene : public Scene {
 public:
@@ -97,7 +114,7 @@ private:
     /// the editor's completion run of a player level (needed to publish it).
     /// Local: any other level played from its start (workshop, imported), recorded for the
     /// ghosts only (nothing is sent).
-    enum class RecordMode { None, Official, Community, EditorCompletion, Local };
+    enum class RecordMode { None, Official, Community, EditorCompletion, Local, Challenge };
     RecordMode recordMode_ = RecordMode::None;
     std::string gameplayHash_;
     // EXTRÊME level (one life) played from its start: the attempt joins the « course à la
@@ -139,6 +156,12 @@ private:
     int trainingPhase_ = 0;
     std::optional<BossTrainingResult> bossTrainingEnd_;
     float bossTrainingDelay_ = 0.0f;
+    // Daily challenge (PlayOptions::challenge): its rules, its replay (format 4), its end.
+    void startChallenge();
+    void finishChallenge(bool completed);
+    void drawChallengeBanner();
+    std::string challengeHash_;      // fingerprint of the level as installed (sent with the run)
+    bool challengeSendable_ = false;  // that fingerprint is the challenge's
     // Training (Ghost Racing): a segment from a checkpoint, again and again, never a record.
     void startTraining();
     void trainingSegmentDone();

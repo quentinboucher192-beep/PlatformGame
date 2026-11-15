@@ -1,6 +1,7 @@
 // Splash screen and main menu.
 
 #include <cmath>
+#include <cstdio>
 
 #include "engine/core/Easing.h"
 #include "game/GameServices.h"
@@ -71,8 +72,9 @@ public:
         // Only a campaign level: WORKSHOP levels are reached from the WORKSHOP.
         bool canContinue = !g_.progression.lastLevel.empty() && g_.content.level(g_.progression.lastLevel) &&
                            !g_.content.campaignPlanetOf(g_.progression.lastLevel).empty();
-        int rows = canContinue ? 9 : 8;
-        float x = ui.s(120), w = ui.s(470), h = ui.s(66), gap = ui.s(14);
+        int rows = canContinue ? 10 : 9;
+        // Ten rows (2.31: « Défis »): a little tighter so that the menu keeps clear of the footer.
+        float x = ui.s(120), w = ui.s(470), h = ui.s(rows > 9 ? 62 : 66), gap = ui.s(rows > 9 ? 12 : 14);
         float y = ui.screenH() * 0.5f - (rows * (h + gap)) * 0.5f + ui.s(40);
         Rect side{x - ui.s(40), y - ui.s(40), w + ui.s(80), rows * (h + gap) + ui.s(70)};
         ui.r().fillRoundedRect(side, ui.s(18), Color{6, 10, 22, 150});
@@ -103,6 +105,7 @@ public:
             if (btn("continue", "Continuer", last->name, true)) g_.app.switchScene(makeGameScene(g_, last->id), 0.5f);
         }
         if (btn("campaign", "Campagne", "planètes et niveaux", !canContinue)) g_.app.switchScene(makePlanetMap(g_));
+        if (btn("challenges", "Défis", challengeSubtitle())) g_.app.switchScene(makeChallenges(g_), 0.3f);
         std::string onlineSub = g_.online.loggedIn() ? g_.online.username() : "compte requis";
         if (int n = g_.online.loggedIn() ? g_.online.pendingFriendRequests() : 0; n > 0)
             onlineSub += " · " + std::to_string(n) + (n > 1 ? " demandes d'amis" : " demande d'ami");
@@ -160,6 +163,26 @@ public:
     }
 
 private:
+    /// « Défis »: the countdown of the challenge of the day, or a short state.
+    std::string challengeSubtitle() const {
+        const ChallengeService& c = g_.challenges;
+        if (const DailyChallenge* d = c.current()) {
+            int64_t left = std::max<int64_t>(0, (d->endsAtMs - c.nowMs()) / 1000);
+            char b[48];
+            if (left >= 3600) std::snprintf(b, sizeof b, "%lld h %02lld min", static_cast<long long>(left / 3600), static_cast<long long>((left / 60) % 60));
+            else std::snprintf(b, sizeof b, "%lld min", static_cast<long long>(std::max<int64_t>(1, left / 60)));
+            const ChallengeResult* r = c.result(d->id);
+            return std::string(r && r->bestMs > 0 ? "fait · " : "") + "encore " + b;
+        }
+        switch (c.fetchState()) {
+            case ChallengeService::Fetch::Loading: return "recherche du défi…";
+            case ChallengeService::Fetch::Offline: return "hors ligne";
+            case ChallengeService::Fetch::Failed: return "indisponible";
+            default: break;
+        }
+        return g_.online.usable() ? "défi du jour" : "hors ligne";
+    }
+
     GameServices& g_;
     MenuBackground bg_;
     float t_ = 0.0f;
