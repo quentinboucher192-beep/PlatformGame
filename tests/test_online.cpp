@@ -898,6 +898,42 @@ TEST_CASE("online: new messages are notified once, never for the conversation on
     CHECK(n.size() == 1);
     if (!n.empty()) CHECK(n[0].title == "Lyra · Équipe");
     CHECK(h.svc.unreadMessages() == 3);
+    // Without the per-conversation counts (an older server): only the total.
+    CHECK(h.svc.unreadIn("c1") == 0);
+    // With them: per conversation and per kind, for the badges of the lists.
+    int revision = h.svc.unreadRevision();
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        h.server->unread["direct"] = 2;
+        h.server->unread["groups"] = 1;
+        h.server->unread["conversations"] = Json::array({Json{{"conversation_id", "c1"}, {"kind", "direct"}, {"unread", 2}},
+                                                         Json{{"conversation_id", "g1"}, {"kind", "group"}, {"unread", 1}},
+                                                         Json{{"conversation_id", ""}, {"kind", "group"}, {"unread", 9}},
+                                                         Json{{"conversation_id", "c9"}, {"kind", "direct"}, {"unread", -4}}});
+    }
+    poll();
+    CHECK(h.svc.unreadRevision() != revision);
+    CHECK(h.svc.unreadIn("c1") == 2);
+    CHECK(h.svc.unreadIn("g1") == 1);
+    CHECK(h.svc.unreadIn("c9") == 0);  // malformed entries are ignored
+    CHECK(h.svc.unreadDirect() == 2);
+    CHECK(h.svc.unreadGroups() == 1);
+    revision = h.svc.unreadRevision();
+    poll();
+    CHECK(h.svc.unreadRevision() == revision);  // nothing changed: the lists are left alone
+    // A conversation read on screen: its counter and the badges drop at once.
+    h.svc.noteConversationRead("c1");
+    CHECK(h.svc.unreadIn("c1") == 0);
+    CHECK(h.svc.unreadMessages() == 1);
+    CHECK(h.svc.unreadDirect() == 0);
+    CHECK(h.svc.unreadGroups() == 1);
+    CHECK(h.svc.unreadRevision() != revision);
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        h.server->unread.erase("direct");
+        h.server->unread.erase("groups");
+        h.server->unread.erase("conversations");
+    }
     // Several at once: one summary. Remembered across restarts.
     h.svc.setOpenConversation({});
     {

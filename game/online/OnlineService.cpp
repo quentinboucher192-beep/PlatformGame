@@ -909,7 +909,12 @@ void OnlineService::resetFriends() {
     pendingFriendRequests_ = 0;
     friendsTimer_ = 3.0f;
     unreadMessages_ = 0;
-    socialTimer_ = 5.0f;
+    unreadDirect_ = 0;
+    unreadGroups_ = 0;
+    unreadByConversation_.clear();
+    unreadGroupIds_.clear();
+    ++unreadRevision_;
+    socialTimer_ = 1.0f;
     openConversation_.clear();
     unreadNotifications_ = 0;
     notificationsTimer_ = 4.0f;
@@ -1112,10 +1117,45 @@ void OnlineService::refreshUnread(ApiCallback cb) {
     });
 }
 
+int OnlineService::unreadIn(const std::string& conversationId) const {
+    auto it = unreadByConversation_.find(conversationId);
+    return it == unreadByConversation_.end() ? 0 : it->second;
+}
+
+void OnlineService::noteConversationRead(const std::string& conversationId) {
+    auto it = unreadByConversation_.find(conversationId);
+    if (it == unreadByConversation_.end()) return;
+    int n = it->second;
+    unreadByConversation_.erase(it);
+    unreadMessages_ = std::max(0, unreadMessages_ - n);
+    if (unreadGroupIds_.erase(conversationId)) unreadGroups_ = std::max(0, unreadGroups_ - n);
+    else unreadDirect_ = std::max(0, unreadDirect_ - n);
+    ++unreadRevision_;
+}
+
 void OnlineService::noteUnread(const Json& data) {
     const std::string me = tokens_.playerId;
     if (me.empty() || !data.is_object()) return;
+    const int oldTotal = unreadMessages_;
     unreadMessages_ = std::max(0, jget<int>(data, "total", 0));
+    // Split and per-conversation counts (an older server sends only the total).
+    std::map<std::string, int> per;
+    std::set<std::string> groupIds;
+    if (auto it = data.find("conversations"); it != data.end() && it->is_array())
+        for (const auto& c : *it) {
+            std::string id = jstr(c, "conversation_id");
+            int n = jget<int>(c, "unread", 0);
+            if (id.empty() || n <= 0) continue;
+            per[id] = std::min(n, 1000000);
+            if (jstr(c, "kind") == "group") groupIds.insert(id);
+        }
+    int direct = std::max(0, jget<int>(data, "direct", 0));
+    int groups = std::max(0, jget<int>(data, "groups", 0));
+    if (oldTotal != unreadMessages_ || per != unreadByConversation_ || direct != unreadDirect_ || groups != unreadGroups_) ++unreadRevision_;
+    unreadByConversation_ = std::move(per);
+    unreadGroupIds_ = std::move(groupIds);
+    unreadDirect_ = direct;
+    unreadGroups_ = groups;
     const std::string key = me + "/messages";
     std::string seen = friendNotices_.contains(key) && friendNotices_[key].is_string() ? friendNotices_[key].get<std::string>() : std::string{};
     std::string newest = seen;

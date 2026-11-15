@@ -4,6 +4,8 @@
 // cache and sending is refused with the server's / network's message.
 
 #include <algorithm>
+#include <chrono>
+#include <cmath>
 #include <cstdio>
 #include <ctime>
 #include <functional>
@@ -12,6 +14,7 @@
 #include "engine/input/InputManager.h"
 #include "engine/core/I18n.h"
 #include "game/GameServices.h"
+#include "ui/online/GlobeRenderer.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
@@ -23,6 +26,7 @@ namespace {
 
 constexpr float kMessagesPoll = 4.0f;       // open conversation
 constexpr float kConversationsPoll = 15.0f;  // conversation list
+constexpr float kGlobePoll = 120.0f;         // globe of the players (shown without a conversation)
 constexpr size_t kMaxMessage = 500;
 
 /// "2026-11-13T21:04:05.123Z" -> seconds since the epoch (UTC), -1 if malformed.
@@ -86,6 +90,7 @@ public:
         if (g_.onlineOpen == "blocked") tab_ = 2;
         if (g_.onlineOpen == "newgroup" || g_.onlineOpen == "members") openModal_ = g_.onlineOpen;
         g_.onlineOpen.clear();
+        globe_.init(g_.app.resources());
         reloadAll();
         requireAccount();
     }
@@ -99,8 +104,22 @@ public:
 
     void update(float dt) override {
         bg_.update(dt);
+        t_ += dt;
         requireAccount();
+        updateGlobe(dt);
         if (!g_.online.loggedIn()) return;
+        // The counters of the conversations follow the unread poll of OnlineService.
+        // (An older server gives only the total: the list keeps its own counts then.)
+        int known = 0;
+        for (const auto& c : convs_) known += g_.online.unreadIn(jstr(c, "id"));
+        const bool perConversation = g_.online.unreadMessages() == 0 || known > 0;
+        if (unreadSeen_ != g_.online.unreadRevision() && perConversation) {
+            unreadSeen_ = g_.online.unreadRevision();
+            for (auto& c : convs_) {
+                std::string id = jstr(c, "id");
+                c["unread"] = id == convId_ ? 0 : g_.online.unreadIn(id);
+            }
+        }
         convTimer_ += dt;
         if (convTimer_ >= kConversationsPoll) loadConversations();
         if (!convId_.empty()) {
@@ -155,6 +174,8 @@ private:
         loadConversations();
         loadFriends();
         loadBlocks();
+        g_.online.refreshUnread();
+        requestGlobe();
     }
 
     void loadConversations() {
@@ -170,6 +191,9 @@ private:
             }
             convs_ = r.data.value("conversations", Json::array());
             convCache_ = r.fromCache;
+            // The conversation on screen is being read: no counter on it.
+            for (auto& c : convs_)
+                if (jstr(c, "id") == convId_) c["unread"] = 0;
             if (!wantedConversation_.empty()) {
                 std::string id = wantedConversation_;
                 wantedConversation_.clear();
@@ -221,6 +245,7 @@ private:
         if (const Json* c = conversation(id)) current_ = *c;
         else current_ = Json::object();
         g_.online.setOpenConversation(id);
+        globeInput_ = {};
         stickBottom_ = true;
         loadMessages(false);
     }
@@ -305,6 +330,9 @@ private:
                            if (!r.ok) return;
                            for (auto& c : convs_)
                                if (jstr(c, "id") == id) c["unread"] = 0;
+                           // The badges (SOCIAL, menu, tab) drop at once; the poll confirms.
+                           g_.online.noteConversationRead(id);
+                           unreadSeen_ = g_.online.unreadRevision();
                            g_.online.refreshUnread();
                        }));
     }
@@ -422,11 +450,25 @@ private:
         ui.r().drawRoundedRect(zoneL_, ui.s(14), ui.theme().border, ui.s(1.2f));
         ui.pushId("social/list");
         int nFriends = static_cast<int>(friends_.value("friends", Json::array()).size());
-        int req = g_.online.pendingFriendRequests();
+        bool in = g_.online.loggedIn();
+        int req = in ? g_.online.pendingFriendRequests() : 0;
         std::string amis = "Amis (" + std::to_string(nFriends) + ")";
-        if (req > 0) amis += " · " + std::to_string(req);
         int tab = tab_;
-        ui.tabs("tabs", {zoneL_.x + ui.s(12), zoneL_.y + ui.s(12), zoneL_.w - ui.s(24), ui.s(40)}, {"Discussions", amis, "Bloqués"}, tab);
+        // Red counters: unread messages on « Discussions », friend requests on « Amis ». A
+        // counter is left out of a tab too narrow for it and a readable label (the same
+        // numbers stay on SOCIAL and on each conversation).
+        const Rect tabsRect{zoneL_.x + ui.s(12), zoneL_.y + ui.s(12), zoneL_.w - ui.s(24), ui.s(40)};
+        const std::vector<std::string> labels = {"Discussions", amis, "Bloqués"};
+        std::vector<int> badges = {in ? unreadTotal() : 0, req, 0};
+        for (size_t i = 0; i < labels.size(); ++i) {
+            if (badges[i] == 0) continue;
+            const float tw = tabsRect.w / static_cast<float>(labels.size()) - ui.s(4);
+            const float bh = std::min(ui.s(20), tabsRect.h - ui.s(8));
+            const std::string n = badges[i] > 99 ? "99+" : std::to_string(badges[i]);
+            const float pill = std::max(bh, ui.text().measure(n, FontFace::Bold, ui.s(13)).x + ui.s(10)) + ui.s(8);
+            if (ui.text().measure(labels[i], FontFace::Bold, ui.s(21) * 0.72f).x > tw - pill - ui.s(10)) badges[i] = 0;
+        }
+        ui.tabs("tabs", tabsRect, labels, tab, badges);
         if (tab != tab_) {
             tab_ = tab;
             expanded_.clear();
@@ -480,34 +522,36 @@ private:
             if (ui.button("c" + id, row, "", st)) openConversation(id);
             drawConversationAvatar(c, {row.x + ui.s(8), row.y + ui.s(9), ui.s(48), ui.s(48)});
             float tx = row.x + ui.s(66);
-            int unread = jget<int>(c, "unread", 0);
+            int unread = sel ? 0 : jget<int>(c, "unread", 0);
+            // Unread: an accent bar at the left of the row and the counter at its right edge,
+            // placed first so that the time and the preview keep the room left of it.
+            if (unread > 0) ui.r().fillRoundedRect({row.x + ui.s(2), row.y + ui.s(10), ui.s(4), row.h - ui.s(20)}, ui.s(2), ui.theme().accent);
+            float pillLeft = row.right() - ui.s(12);
+            if (unread > 0)
+                pillLeft = OnlineUi::countPill(ui, pillLeft, row.y + ui.s(46), unread, ui.theme().danger, Color::white(), 22, 13) - ui.s(8);
             std::string name = jstr(c, "name");
-            float room = row.right() - tx - ui.s(110);
-            ui.label(name, {tx, row.y + ui.s(22)}, ui.fitFont(name, FontFace::Bold, 18, room), ui.theme().text, Align::Left, FontFace::Bold,
-                     VAlign::Middle);
+            std::string when = c.contains("last_message") && c["last_message"].is_object() ? clockText(jstr(c["last_message"], "created_at")) : "";
+            float whenW = when.empty() ? 0.0f : ui.text().measure(when, FontFace::Body, ui.s(13)).x + ui.s(12);
+            float room = row.right() - ui.s(12) - whenW - tx - ui.s(6);
+            const float nfs = ui.fitFont(name, FontFace::Bold, 18, room);
+            ui.label(ui.elide(name, FontFace::Bold, nfs, room), {tx, row.y + ui.s(22)}, nfs, unread > 0 ? Color::white() : ui.theme().text, Align::Left,
+                     FontFace::Bold, VAlign::Middle);
             std::string preview;
             if (c.contains("last_message") && c["last_message"].is_object()) {
                 const Json& lm = c["last_message"];
                 std::string who = jstr(lm, "sender_id") == g_.online.playerId() ? "Vous" : jstr(lm, "sender");
                 preview = (jstr(c, "kind") == "group" || who == "Vous" ? who + " : " : "") + oneLine(jstr(lm, "body"), 70);
                 if (jstr(lm, "body").empty()) preview = who + " : message supprimé";
-                ui.label(clockText(jstr(lm, "created_at")), {row.right() - ui.s(12), row.y + ui.s(22)}, 13, ui.theme().textDim, Align::Right,
+                ui.label(when, {row.right() - ui.s(12), row.y + ui.s(22)}, 13, unread > 0 ? ui.theme().accent : ui.theme().textDim, Align::Right,
                          FontFace::Body, VAlign::Middle);
             } else {
                 preview = jstr(c, "kind") == "group" ? std::to_string(c.value("members", Json::array()).size()) + " membres · aucun message"
                                                      : "Aucun message";
             }
-            ui.r().pushClip({tx, row.y, row.right() - tx - ui.s(50), row.h});
-            ui.label(preview, {tx, row.y + ui.s(46)}, 15, unread > 0 ? ui.theme().text : ui.theme().textDim, Align::Left, FontFace::Body,
-                     VAlign::Middle);
-            ui.r().popClip();
-            if (unread > 0) {
-                std::string t = unread > 99 ? "99+" : std::to_string(unread);
-                float bw = std::max(ui.s(26), ui.text().measure(t, FontFace::Bold, ui.s(14)).x + ui.s(12));
-                Rect b{row.right() - ui.s(12) - bw, row.y + ui.s(34), bw, ui.s(24)};
-                ui.r().fillRoundedRect(b, ui.s(12), ui.theme().accent);
-                ui.label(t, b.center(), 14, Color{6, 10, 22, 255}, Align::Center, FontFace::Bold, VAlign::Middle);
-            }
+            // The preview ends before the counter (shortened with « … »).
+            float previewRoom = pillLeft - tx;
+            ui.label(ui.elide(preview, FontFace::Body, 15, previewRoom), {tx, row.y + ui.s(46)}, 15, unread > 0 ? ui.theme().text : ui.theme().textDim,
+                     Align::Left, FontFace::Body, VAlign::Middle);
             y += rowH + ui.s(6);
         }
         ui.endScroll();
@@ -698,11 +742,8 @@ private:
         ui.r().drawRoundedRect(zoneC_, ui.s(14), ui.theme().border, ui.s(1.2f));
         ui.pushId("social/chat");
         if (convId_.empty()) {
-            ui.label("Messagerie", {zoneC_.center().x, zoneC_.center().y - ui.s(30)}, 28, ui.theme().accent, Align::Center, FontFace::Title,
-                     VAlign::Middle);
-            ui.label("Choisissez une discussion, ou « Écrire » à un ami.", {zoneC_.center().x, zoneC_.center().y + ui.s(14)}, 18,
-                     ui.theme().textDim, Align::Center, FontFace::Body, VAlign::Middle);
-            drawStatus({zoneC_.x + ui.s(20), zoneC_.bottom() - ui.s(40), zoneC_.w - ui.s(40), ui.s(30)});
+            // Without an open conversation: the globe of the players of Cosmic Online.
+            drawPlayersGlobe();
             ui.popId();
             return;
         }
@@ -763,6 +804,302 @@ private:
             ui.label(std::to_string(draft_.size()) + " / " + std::to_string(kMaxMessage), {inputRow.right() - ui.s(160), inputRow.bottom() + ui.s(10)}, 12,
                      ui.theme().textDim, Align::Right, FontFace::Body, VAlign::Middle);
         ui.popId();
+    }
+
+    // ------------------------------------------------------- players globe
+    /// Unread messages shown on the « Discussions » tab: the sum of the rows once the list
+    /// is known (so that both always agree), the last poll before.
+    int unreadTotal() const {
+        if (!convLoaded_) return g_.online.unreadMessages();
+        int n = 0;
+        for (const auto& c : convs_)
+            if (jstr(c, "id") != convId_) n += jget<int>(c, "unread", 0);
+        return n;
+    }
+
+    void requestGlobe() {
+        globeTimer_ = 0.0f;
+        if (!g_.online.loggedIn() || globeLoading_) return;
+        globeLoading_ = true;
+        g_.online.get("/api/v1/globe/players", OnlineService::guard(life_, [this](const ApiResult& r) {
+            globeLoading_ = false;
+            globeLoaded_ = true;
+            if (!r.ok) {
+                // Nothing in the cache either: no point is shown (never an invented one).
+                globeError_ = r.message;
+                globeCountries_.clear();
+                return;
+            }
+            globeError_.clear();
+            globeCache_ = r.fromCache;
+            globeAge_ = r.cacheAgeSeconds;
+            globeCountries_.clear();
+            for (const auto& c : r.data.value("countries", Json::array()))
+                if (auto cc = GlobeCountryCount::fromJson(c)) globeCountries_.push_back(*cc);
+            std::stable_sort(globeCountries_.begin(), globeCountries_.end(),
+                             [](const GlobeCountryCount& a, const GlobeCountryCount& b) { return a.players > b.players; });
+            // Automated checks (--online-focus <country code>): that country is chosen.
+            if (g_.onlineFocus.size() == 2)
+                for (size_t i = 0; i < globeCountries_.size(); ++i)
+                    if (globeCountries_[i].code == g_.onlineFocus) {
+                        g_.onlineFocus.clear();
+                        focusCountry(static_cast<int>(i));
+                        break;
+                    }
+        }));
+    }
+
+    int globePlayers() const {
+        int n = 0;
+        for (const auto& c : globeCountries_) n += c.players;
+        return n;
+    }
+
+    int globeIndexOf(const std::string& code) const {
+        for (size_t i = 0; i < globeCountries_.size(); ++i)
+            if (globeCountries_[i].code == code) return static_cast<int>(i);
+        return -1;
+    }
+
+    /// Chooses a country (« » buttons, click): the globe turns to it and its card stays shown.
+    void focusCountry(int index) {
+        if (index < 0 || index >= static_cast<int>(globeCountries_.size())) return;
+        globeFocus_ = globeCountries_[static_cast<size_t>(index)].code;
+        globeCam_.flyTo(globeCountries_[static_cast<size_t>(index)].location, std::max(globeCam_.zoom, 1.35), 1.0f);
+        globeIdle_ = 0.0f;
+    }
+
+    /// The player's own country, when they are counted on this globe (visible location, public profile).
+    std::string myGlobeCountry() const {
+        const Json& p = g_.online.profile();
+        if (!p.is_object() || jstr(p, "location_visibility") != "globe" || jstr(p, "profile_visibility", "public") != "public") return {};
+        return jstr(p, "country_code");
+    }
+
+    void updateGlobe(float dt) {
+        globeCam_.update(dt);
+        globeIdle_ += dt;
+        if (g_.online.loggedIn() && (globeTimer_ += dt) >= kGlobePoll && convId_.empty()) requestGlobe();
+        globeHover_.clear();
+        if (!convId_.empty() || modal_ != Modal::None || g_.app.topScene() != this || g_.ui.editingText()) {
+            globeInput_ = {};
+            return;
+        }
+        InputManager& in = g_.app.input();
+        Vec2 mp = in.mousePos();
+        bool blocked = globeButtons_.contains(mp) || globeInfo_.contains(mp);
+        bool click = GlobeRenderer::handleInput(in, globeInput_, globeCam_, globeView_, globeArea_, blocked, dt, g_.ui.s(5));
+        if (globeInput_.touched) globeIdle_ = 0.0f;
+        // Hover: a point first, otherwise the country under the pointer (no visible player).
+        if (globeArea_.contains(mp) && !blocked) {
+            int hit = pickCountryPoint(globePoints_, mp, globePickRadius());
+            if (hit >= 0) globeHover_ = globeCountries_[static_cast<size_t>(globePoints_[static_cast<size_t>(hit)].index)].code;
+            else if (auto geo = unprojectScreen(globeCam_, globeView_, mp))
+                if (const CountryInfo* ci = ui_.countries().byIndex(ui_.countryMap().indexAt(*geo))) globeHover_ = ci->code;
+        }
+        if (click) {
+            globeIdle_ = 0.0f;
+            int i = globeIndexOf(globeHover_);
+            if (i >= 0) {
+                focusCountry(i);
+                g_.uiSound("ui_move");
+            } else {
+                globeFocus_ = globeHover_;  // a country without visible players (or the ocean: none)
+            }
+        }
+        // Gentle rotation while nobody touches the globe and no country is chosen.
+        if (globeIdle_ > 6.0f && globeFocus_.empty() && globeHover_.empty() && !globeCam_.flying())
+            globeCam_.center.lon = wrapLon(globeCam_.center.lon + dt * 3.0);
+    }
+
+    float globePickRadius() const { return std::max(g_.ui.s(16), 4.6f * markerScale(g_.ui.scale(), globeCam_.zoom) * 1.6f + g_.ui.s(6)); }
+
+    static std::string playersText(int n) { return n == 1 ? std::string("1 joueur") : std::to_string(n) + " joueurs"; }
+
+    void drawPlayersGlobe() {
+        UIContext& ui = g_.ui;
+        Renderer& r = ui.r();
+        const bool in = g_.online.loggedIn();
+        const float pad = ui.s(18), x = zoneC_.x + pad, w = zoneC_.w - 2 * pad;
+        // Header, one line under the other: title, total (or the state), what to do.
+        float y = zoneC_.y + ui.s(14);
+        const std::string title = "Joueurs de Cosmic Online";
+        ui.label(title, {x, y + ui.s(17)}, ui.fitFont(title, FontFace::Title, 26, w), ui.theme().accent, Align::Left, FontFace::Title, VAlign::Middle);
+        y += ui.s(38);
+        std::string total;
+        Color totalColor = ui.theme().text;
+        const int players = globePlayers(), countries = static_cast<int>(globeCountries_.size());
+        if (!in) {
+            total = "Connectez-vous à Cosmic Online pour voir les joueurs sur le globe.";
+            totalColor = ui.theme().textDim;
+        } else if (!globeError_.empty()) {
+            total = "Globe indisponible : " + globeError_;
+            totalColor = ui.theme().warm;
+        } else if (!globeLoaded_) {
+            total = "Chargement des joueurs…";
+            totalColor = ui.theme().textDim;
+        } else if (players == 0) {
+            total = "Aucun joueur visible sur le globe pour l'instant";
+            totalColor = ui.theme().textDim;
+        } else {
+            total = playersText(players) + " dans " + std::to_string(countries) + " pays";
+        }
+        float tfs = ui.fitFont(total, FontFace::Bold, 19, w);
+        ui.label(ui.elide(total, FontFace::Bold, tfs, w), {x, y + ui.s(12)}, tfs, totalColor, Align::Left, FontFace::Bold, VAlign::Middle);
+        y += ui.s(28);
+        const bool offline = globeCache_ && globeError_.empty() && in;
+        std::string sub = offline ? "Hors ligne · données " + OnlineUi::ageText(globeAge_) : "Choisissez une discussion à gauche, ou « Écrire » à un ami.";
+        float sfs = ui.fitFont(sub, FontFace::Body, 15, w);
+        ui.label(ui.elide(sub, FontFace::Body, sfs, w), {x, y + ui.s(10)}, sfs, offline ? ui.theme().warm : ui.theme().textDim, Align::Left,
+                 FontFace::Body, VAlign::Middle);
+        y += ui.s(28);
+
+        // Footer, from the bottom up: messages of the screen, privacy note, country card.
+        float bottom = zoneC_.bottom() - ui.s(10);
+        Rect statusRow{x, bottom - ui.s(26), w, ui.s(26)};
+        bottom = statusRow.y - ui.s(2);
+        static const char* kNote =
+            "Positions approximatives : centre du pays, jamais plus précis. Seuls sont comptés les joueurs qui ont choisi d'apparaître "
+            "sur le globe avec un profil public ; aucun nom n'est transmis.";
+        float noteH = ui.text().measureWrapped(kNote, FontFace::Body, ui.s(13), w).y;
+        Rect note{x, bottom - noteH, w, noteH};
+        bottom = note.y - ui.s(10);
+        globeInfo_ = {x, bottom - ui.s(64), w, ui.s(64)};
+        bottom = globeInfo_.y - ui.s(10);
+        const float bw = ui.s(44), gap = ui.s(6);
+        globeButtons_ = {zoneC_.right() - pad - bw, y, bw, bw * 5 + gap * 4};
+        globeArea_ = {zoneC_.x + ui.s(4), y, globeButtons_.x - ui.s(8) - (zoneC_.x + ui.s(4)), std::max(ui.s(40), bottom - y)};
+        globeView_.center = globeArea_.center();
+        globeView_.baseRadius = std::min(globeArea_.w, globeArea_.h) * 0.46f;
+
+        // The Earth and the points (clipped to their area).
+        r.pushClip(globeArea_);
+        GeoPoint sun = subsolarPoint(std::chrono::system_clock::now());
+        globe_.renderBackdrop(r, globeView_, globeCam_, t_);
+        globe_.renderEarth(r, globeView_, globeCam_, sun);
+        globe_.renderAtmosphere(r, globeView_, globeCam_, sun, t_);
+        globePoints_ = in && globeError_.empty() ? projectCountries(globeCountries_, globeCam_, globeView_) : std::vector<GlobeCountryPoint>{};
+        const float ms = markerScale(ui.scale(), globeCam_.zoom);
+        const std::string mine = myGlobeCountry();
+        std::vector<Rect> taken = {globeButtons_};
+        std::vector<float> radii(globePoints_.size(), 0.0f);
+        for (size_t k = 0; k < globePoints_.size(); ++k) {
+            const GlobeCountryPoint& pt = globePoints_[k];
+            const GlobeCountryCount& c = globeCountries_[static_cast<size_t>(pt.index)];
+            bool hot = c.code == globeHover_ || c.code == globeFocus_;
+            float scale = ms * (1.0f + std::min(0.7f, 0.16f * std::log2(static_cast<float>(c.players))));
+            if (hot) scale *= 1.2f;
+            float pulse = std::sin(t_ * 2.2f + static_cast<float>(pt.index) * 0.9f) * 0.5f + 0.5f;
+            // Room taken by the point: its dot and the rings of « your country » / of the choice.
+            radii[k] = globe_.renderMarker(r, pt.screen, ui.theme().accent, scale, pulse, hot, c.code == mine, pt.fade) +
+                       (hot ? 11.0f : c.code == mine ? 5.0f : 0.0f) * scale;
+            float rr = radii[k] + ui.s(2);
+            taken.push_back({pt.screen.x - rr, pt.screen.y - rr, rr * 2, rr * 2});
+        }
+        // Number of players beside each point (measured; the biggest countries first; a
+        // number without free room stays in the card below).
+        std::vector<size_t> bySize(globePoints_.size());
+        for (size_t k = 0; k < bySize.size(); ++k) bySize[k] = k;
+        std::stable_sort(bySize.begin(), bySize.end(), [&](size_t a, size_t b) {
+            return globeCountries_[static_cast<size_t>(globePoints_[a].index)].players > globeCountries_[static_cast<size_t>(globePoints_[b].index)].players;
+        });
+        Rect pillZone{globeArea_.x + ui.s(4), globeArea_.y + ui.s(4), globeArea_.w - ui.s(8), globeArea_.h - ui.s(8)};
+        for (size_t k : bySize) {
+            const GlobeCountryPoint& pt = globePoints_[k];
+            GlobeRenderer::renderCount(ui, pt.screen, radii[k], globeCountries_[static_cast<size_t>(pt.index)].players, ui.theme().accent, pt.fade,
+                                       pillZone, &taken);
+        }
+        r.popClip();
+
+        drawGlobeButtons();
+        drawGlobeCard(mine);
+        ui.labelWrapped(kNote, {note.x, note.y}, note.w, 13, ui.theme().textDim.withAlphaF(0.85f));
+        drawStatus(statusRow);
+    }
+
+    void drawGlobeButtons() {
+        UIContext& ui = g_.ui;
+        UIContext::ButtonStyle st;
+        st.small = true;
+        const float bw = globeButtons_.w, gap = ui.s(6);
+        float y = globeButtons_.y;
+        ui.pushId("globe");
+        const int n = static_cast<int>(globeCountries_.size());
+        if (ui.button("zoomin", {globeButtons_.x, y, bw, bw}, "+", st)) {
+            globeCam_.zoomBy(1.3);
+            globeIdle_ = 0.0f;
+        }
+        y += bw + gap;
+        if (ui.button("zoomout", {globeButtons_.x, y, bw, bw}, "−", st)) {
+            globeCam_.zoomBy(1.0 / 1.3);
+            globeIdle_ = 0.0f;
+        }
+        y += bw + gap;
+        UIContext::ButtonStyle nav = st;
+        nav.enabled = n > 0;
+        int cur = globeIndexOf(globeFocus_);
+        if (ui.button("prev", {globeButtons_.x, y, bw, bw}, "«", nav)) focusCountry(cur < 0 ? n - 1 : (cur - 1 + n) % n);
+        y += bw + gap;
+        if (ui.button("next", {globeButtons_.x, y, bw, bw}, "»", nav)) focusCountry(cur < 0 ? 0 : (cur + 1) % n);
+        y += bw + gap;
+        if (ui.button("home", {globeButtons_.x, y, bw, bw}, "", st)) {
+            globeFocus_.clear();
+            globeCam_.flyTo({25.0, globeCam_.center.lon}, 1.0, 0.8f);
+        }
+        // « Recentrer » icon: a small target.
+        Vec2 c{globeButtons_.x + bw * 0.5f, y + bw * 0.5f};
+        ui.r().drawRing(c, ui.s(9), ui.s(2), ui.theme().text);
+        ui.r().fillCircle(c, ui.s(3), ui.theme().text);
+        ui.popId();
+    }
+
+    /// The hovered or chosen country: flag, name, number of players. Without one, what to do
+    /// (and, when the player is not counted, how to appear: their own choice).
+    void drawGlobeCard(const std::string& mine) {
+        UIContext& ui = g_.ui;
+        const Rect& b = globeInfo_;
+        ui.r().fillRoundedRect(b, ui.s(10), Color{10, 16, 34, 225});
+        ui.r().drawRoundedRect(b, ui.s(10), ui.theme().border, ui.s(1.2f));
+        const bool in = g_.online.loggedIn();
+        const std::string code = !globeHover_.empty() ? globeHover_ : globeFocus_;
+        float x = b.x + ui.s(14);
+        if (!code.empty() && in && globeError_.empty()) {
+            ui_.drawFlag(code, {x, b.center().y - ui.s(13), ui.s(34), ui.s(26)});
+            x += ui.s(46);
+            int i = globeIndexOf(code);
+            int n = i >= 0 ? globeCountries_[static_cast<size_t>(i)].players : 0;
+            std::string line = n > 0 ? playersText(n) : std::string("Aucun joueur visible sur le globe");
+            if (code == mine) line += " · votre pays";
+            const float room = b.right() - ui.s(14) - x;
+            std::string name = ui_.countryName(code);
+            ui.label(ui.elide(name, FontFace::Bold, 20, room), {x, b.y + ui.s(22)}, 20, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+            ui.label(ui.elide(line, FontFace::Body, 16, room), {x, b.y + ui.s(45)}, 16, n > 0 ? ui.theme().accent : ui.theme().textDim, Align::Left,
+                     FontFace::Body, VAlign::Middle);
+            return;
+        }
+        // Not counted: say why, with the way to change it.
+        const bool counted = !mine.empty() || !in || g_.online.profile().is_null();
+        float right = b.right() - ui.s(12);
+        if (!counted) {
+            UIContext::ButtonStyle st;
+            st.small = true;
+            st.fontSize = 16;
+            const std::string label = "Paramètres en ligne";
+            float bw = ui.text().measure(label, FontFace::Bold, ui.s(16)).x + ui.s(34);
+            if (ui.button("globe/settings", {right - bw, b.center().y - ui.s(18), bw, ui.s(36)}, label, st)) g_.app.pushScene(makeOnlineSettings(g_, 0));
+            right -= bw + ui.s(12);
+        }
+        std::string t = !in       ? "Le globe montre les joueurs par pays une fois connecté."
+                        : counted ? "Survolez un point, ou parcourez les pays avec les boutons à droite du globe, pour voir leur nombre de joueurs."
+                                  : "Vous n'êtes pas compté : choisissez « Classements et globe » et un profil public pour apparaître.";
+        const float room = right - x;
+        float fs = 15.0f;
+        Vec2 sz = ui.text().measureWrapped(t, FontFace::Body, ui.s(fs), room);
+        if (sz.y > b.h - ui.s(10)) {
+            fs = 13.0f;  // two short lines at most at small sizes
+            sz = ui.text().measureWrapped(t, FontFace::Body, ui.s(fs), room);
+        }
+        ui.labelWrapped(t, {x, b.center().y - sz.y * 0.5f}, room, fs, ui.theme().textDim);
     }
 
     void drawStatus(const Rect& r) {
@@ -1131,6 +1468,21 @@ private:
     std::string status_;
     bool statusError_ = false;
     float statusT_ = 0.0f;
+
+    int unreadSeen_ = -1;
+    float t_ = 0.0f;
+    // Globe of the players (GET /globe/players): counts per country, never a person.
+    GlobeRenderer globe_;
+    GlobeCamera globeCam_;
+    GlobeView globeView_;
+    GlobeRenderer::Input globeInput_;
+    Rect globeArea_, globeButtons_, globeInfo_;
+    std::vector<GlobeCountryCount> globeCountries_;
+    std::vector<GlobeCountryPoint> globePoints_;
+    std::string globeHover_, globeFocus_, globeError_;
+    bool globeLoading_ = false, globeLoaded_ = false, globeCache_ = false;
+    double globeAge_ = 0.0;
+    float globeTimer_ = 0.0f, globeIdle_ = 10.0f;
 };
 
 }  // namespace

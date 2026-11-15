@@ -200,6 +200,12 @@
    ]
   },
   {
+   "fr": "1 joueur",
+   "where": [
+    "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
    "fr": "1 utilisation",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -2002,9 +2008,21 @@
    ]
   },
   {
+   "fr": "Aucun joueur visible sur le globe",
+   "where": [
+    "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun joueur visible sur le globe pour ce classement",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun joueur visible sur le globe pour l'instant",
+   "where": [
+    "ui/screens/SocialScene.cpp"
    ]
   },
   {
@@ -4187,6 +4205,12 @@
    ]
   },
   {
+   "fr": "Chargement des joueurs…",
+   "where": [
+    "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
    "fr": "Chargement des records…",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
@@ -4457,7 +4481,7 @@
    ]
   },
   {
-   "fr": "Choisissez une discussion, ou « Écrire » à un ami.",
+   "fr": "Choisissez une discussion à gauche, ou « Écrire » à un ami.",
    "where": [
     "ui/screens/SocialScene.cpp"
    ]
@@ -5464,6 +5488,12 @@
    "fr": "Connectez-vous à Cosmic Online pour le retirer des NIVEAUX EN LIGNE : rien n'a été supprimé.",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
+   ]
+  },
+  {
+   "fr": "Connectez-vous à Cosmic Online pour voir les joueurs sur le globe.",
+   "where": [
+    "ui/screens/SocialScene.cpp"
    ]
   },
   {
@@ -10150,7 +10180,8 @@
   {
    "fr": "Globe indisponible : {0}",
    "where": [
-    "ui/screens/OnlineRankingScene.cpp"
+    "ui/screens/OnlineRankingScene.cpp",
+    "ui/screens/SocialScene.cpp"
    ]
   },
   {
@@ -10759,7 +10790,8 @@
   {
    "fr": "Hors ligne · données {0}",
    "where": [
-    "ui/screens/OnlineRankingScene.cpp"
+    "ui/screens/OnlineRankingScene.cpp",
+    "ui/screens/SocialScene.cpp"
    ]
   },
   {
@@ -11744,6 +11776,12 @@
    "fr": "Joueur supprimé",
    "where": [
     "server/src/social.ts"
+   ]
+  },
+  {
+   "fr": "Joueurs de Cosmic Online",
+   "where": [
+    "ui/screens/SocialScene.cpp"
    ]
   },
   {
@@ -12900,6 +12938,12 @@
    "fr": "LE GLACIARQUE, SEIGNEUR DE GLACIOR",
    "where": [
     "data/enemies/glaciarch.json"
+   ]
+  },
+  {
+   "fr": "Le globe montre les joueurs par pays une fois connecté.",
+   "where": [
+    "ui/screens/SocialScene.cpp"
    ]
   },
   {
@@ -14908,12 +14952,6 @@
    "fr": "Message à la découverte",
    "where": [
     "game/levels/ObjectTypes.cpp"
-   ]
-  },
-  {
-   "fr": "Messagerie",
-   "where": [
-    "ui/screens/SocialScene.cpp"
    ]
   },
   {
@@ -17530,7 +17568,8 @@
   {
    "fr": "Paramètres en ligne",
    "where": [
-    "ui/screens/OnlineRankingScene.cpp"
+    "ui/screens/OnlineRankingScene.cpp",
+    "ui/screens/SocialScene.cpp"
    ]
   },
   {
@@ -19008,6 +19047,12 @@
    ]
   },
   {
+   "fr": "Positions approximatives : centre du pays, jamais plus précis. Seuls sont comptés les joueurs qui ont choisi d'apparaître sur le globe avec un profil public ; aucun nom n'est transmis.",
+   "where": [
+    "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
    "fr": "Poulpe cosmique",
    "where": [
     "data/online/avatars.json"
@@ -19623,7 +19668,8 @@
    "where": [
     "ui/screens/OnlineAccountScene.cpp",
     "ui/screens/OnlineSettingsScene.cpp",
-    "ui/screens/PlayerProfileScene.cpp"
+    "ui/screens/PlayerProfileScene.cpp",
+    "ui/screens/SocialScene.cpp"
    ]
   },
   {
@@ -23849,6 +23895,12 @@
    ]
   },
   {
+   "fr": "Survolez un point, ou parcourez les pays avec les boutons à droite du globe, pour voir leur nombre de joueurs.",
+   "where": [
+    "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
    "fr": "Suspension",
    "where": [
     "game/powers/PowerStats.cpp"
@@ -27573,6 +27625,12 @@
    ]
   },
   {
+   "fr": "votre pays",
+   "where": [
+    "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
    "fr": "Votre pseudonyme, votre avatar, vos temps et le replay de vos meilleurs runs (les commandes de jeu et la trajectoire de votre personnage pendant le niveau, pas une vidéo). Le mot de passe n'est conservé que sous forme d'empreinte irréversible.",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
@@ -27686,6 +27744,12 @@
    "fr": "Vous n'avez rien publié : ATELIER → Mes niveaux → Publier.",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vous n'êtes pas compté : choisissez « Classements et globe » et un profil public pour apparaître.",
+   "where": [
+    "ui/screens/SocialScene.cpp"
    ]
   },
   {
@@ -28747,6 +28811,12 @@
    ]
   },
   {
+   "fr": "{0} dans {1} pays",
+   "where": [
+    "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} de retard sur {1}",
    "where": [
     "ui/screens/ResultsScene.cpp"
@@ -28947,6 +29017,12 @@
    ]
   },
   {
+   "fr": "{0} joueurs",
+   "where": [
+    "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} joueurs classé · records vérifiés uniquement",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
@@ -28962,12 +29038,6 @@
    "fr": "{0} joueurs veulent devenir vos amis (En ligne → SOCIAL → Amis).",
    "where": [
     "game/online/OnlineService.cpp"
-   ]
-  },
-  {
-   "fr": "{0} joueurs · meilleur n°{1}",
-   "where": [
-    "ui/screens/OnlineRankingScene.cpp"
    ]
   },
   {
@@ -28989,21 +29059,9 @@
    ]
   },
   {
-   "fr": "{0} message",
-   "where": [
-    "ui/screens/MainMenuScene.cpp"
-   ]
-  },
-  {
    "fr": "{0} message non lu",
    "where": [
     "ui/screens/SocialScene.cpp"
-   ]
-  },
-  {
-   "fr": "{0} messages",
-   "where": [
-    "ui/screens/MainMenuScene.cpp"
    ]
   },
   {

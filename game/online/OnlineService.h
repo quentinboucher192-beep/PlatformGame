@@ -102,8 +102,18 @@ public:
     // --------------------------------------------------------------- social
     /// Unread messages of the player's conversations (last known), for the badges.
     int unreadMessages() const { return unreadMessages_; }
-    /// Reads GET /social/unread now. It is also read every 30 seconds while connected:
-    /// each new message is notified once, except in the conversation open on screen.
+    /// The same, split between the private conversations and the groups.
+    int unreadDirect() const { return unreadDirect_; }
+    int unreadGroups() const { return unreadGroups_; }
+    /// Unread messages of one conversation (last known; 0 when none).
+    int unreadIn(const std::string& conversationId) const;
+    /// Changes each time the counters above change (screens refresh their lists).
+    int unreadRevision() const { return unreadRevision_; }
+    /// A conversation read on screen: its counter drops to 0 at once, before the next read.
+    void noteConversationRead(const std::string& conversationId);
+    /// Reads GET /social/unread now. It is also read every 30 seconds while connected
+    /// (the first time a second after the connection): each new message is notified
+    /// once, except in the conversation open on screen.
     void refreshUnread(ApiCallback cb = {});
     /// The conversation shown by the SOCIAL screen ("" when none).
     void setOpenConversation(const std::string& id) { openConversation_ = id; }
@@ -281,9 +291,14 @@ private:
     double ratingsReadAt_ = -1e9;  // steady seconds of the last successful read
     void saveLevelRatings();
 
-    float socialTimer_ = 5.0f;
+    float socialTimer_ = 1.0f;
     bool socialBusy_ = false;
     int unreadMessages_ = 0;
+    int unreadDirect_ = 0;
+    int unreadGroups_ = 0;
+    int unreadRevision_ = 0;
+    std::map<std::string, int> unreadByConversation_;
+    std::set<std::string> unreadGroupIds_;  // which of them are groups
     std::string openConversation_;
 
     float notificationsTimer_ = 4.0f;
