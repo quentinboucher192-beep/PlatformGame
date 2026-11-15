@@ -409,8 +409,8 @@ void ChallengeService::refresh(bool force) {
                 saveState();
             }
         }
-        note(r.data.value("challenge", Json()));
-        note(r.data.value("previous", Json()));
+        note(jfield(r.data, "challenge", Json()));
+        note(jfield(r.data, "previous", Json()));
         fetch_ = r.fromCache ? Fetch::Offline : Fetch::Ok;
         fetchMessage_ = r.fromCache ? r.message : std::string();
     }), false);
@@ -434,11 +434,11 @@ void ChallengeService::loadArchives(std::function<void(bool, const std::string&)
                          if (cb) cb(false, r.message);
                          return;
                      }
-                     const Json& list = r.data.is_array() ? r.data : r.data.value("challenges", Json::array());
+                     const Json& list = r.data.is_array() ? r.data : jfield(r.data, "challenges", Json::array());
                      int n = 0;
                      if (list.is_array())
                          for (const Json& c : list) n += note(c) ? 1 : 0;
-                     const Json& next = r.data.is_object() ? r.data.value("next_before", Json()) : Json();
+                     const Json& next = r.data.is_object() ? jfield(r.data, "next_before", Json()) : Json();
                      archivesDone_ = n == 0 || (r.data.is_object() && r.data.contains("next_before") && next.is_null());
                      if (cb) cb(true, {});
                  }),
@@ -527,11 +527,11 @@ void ChallengeService::refreshMine(ApiCallback cb) {
         if (r.ok && online_->playerId() == who) {
             if (serverStreakFor_ != who) serverResults_.clear();  // another account's
             serverStreakFor_ = who;
-            const Json& s = r.data.value("streak", Json::object());
+            const Json& s = jfield(r.data, "streak", Json::object());
             if (s.is_object())
                 serverStreak_ = Streak{std::max(0, jget<int>(s, "current", 0)), std::max(0, jget<int>(s, "best", 0)), jstr(s, "last_date"), true};
             else serverStreak_.reset();
-            const Json& results = r.data.value("results", Json::array());
+            const Json& results = jfield(r.data, "results", Json::array());
             bool changed = false;
             if (results.is_array())
                 for (const Json& x : results) {
@@ -539,7 +539,7 @@ void ChallengeService::refreshMine(ApiCallback cb) {
                     if (!safeId(id)) continue;
                     ChallengeRunState st = challengeRunStateFromServer(jstr(x, "status"));
                     int64_t best = jget<int64_t>(x, "best_time_ms", 0);
-                    serverResults_[id] = ServerResult{std::max<int64_t>(0, best), challengeTierFromJson(x.value("tier", Json())), st};
+                    serverResults_[id] = ServerResult{std::max<int64_t>(0, best), challengeTierFromJson(jfield(x, "tier", Json())), st};
                     // My run of that time: its state is the server's.
                     for (auto& sub : submissions_)
                         if (sub.challengeId == id && sub.ownerId == who && sub.timeMs == best && !sub.runId.empty() && sub.state != st &&
@@ -701,8 +701,8 @@ void ChallengeService::sendNext() {
                 if (x.attemptId == attemptId) sub = &x;
             if (!sub) return;
             if (r.ok) {
-                applyRun(*sub, r.data.value("run", Json()));
-                const Json& rp = r.data.value("replay", Json::object());
+                applyRun(*sub, jfield(r.data, "run", Json()));
+                const Json& rp = jfield(r.data, "replay", Json::object());
                 std::string up = rp.is_object() ? jstr(rp, "upload_path") : std::string();
                 bool required = rp.is_object() && jget<bool>(rp, "required", false);
                 bool accepted = rp.is_object() && jget<bool>(rp, "accepted", true);
@@ -765,7 +765,7 @@ void ChallengeService::upload(const std::string& attemptId) {
         std::error_code ec;
         fs::remove(uploadPath(attemptId), ec);
         if (r.ok) {
-            applyRun(*sub, r.data.value("run", Json()));
+            applyRun(*sub, jfield(r.data, "run", Json()));
             if (sub->state == ChallengeRunState::Sent) sub->state = ChallengeRunState::Pending;
             mineTimer_ = 0.0f;  // its status soon
         } else if (r.code != "REPLAY_EXISTS") {

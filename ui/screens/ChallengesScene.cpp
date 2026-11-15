@@ -13,6 +13,7 @@
 
 #include "engine/core/FileUtil.h"
 #include "engine/core/I18n.h"
+#include "engine/core/Log.h"
 #include "game/GameServices.h"
 #include "game/online/LevelFingerprint.h"
 #include "packaging/PackageImporter.h"
@@ -291,7 +292,10 @@ void downloadChallengeLevel(GameServices& g, const DailyChallenge& c, std::weak_
             bool verified = !serverHash.empty() && local == serverHash;
             g.online.noteCommunityInstall(installed, {{"id", id}, {"version", version}, {"level_hash", serverHash.empty() ? local : serverHash},
                                                       {"title", title}, {"verified", verified}});
-            if (local != hash) return done(true, "Installé, mais cette copie diffère de la version du défi : vos temps n'y seront pas envoyés.");
+            if (local != hash) {
+                Log::warn("Défi : niveau {} v{} installé, empreinte {} au lieu de {} (défi) / {} (serveur)", id, version, local, hash, serverHash);
+                return done(true, "Installé, mais cette copie diffère de la version du défi : vos temps n'y seront pas envoyés.");
+            }
             done(true, "Niveau installé : il reste jouable hors ligne.");
         },
         16u << 20);
@@ -564,17 +568,25 @@ private:
         primary.primary = true;
         bool needDownload = c.community() && place.localId.empty();
         primary.enabled = needDownload ? (g_.online.usable() && !downloading_) : place.problem.empty();
-        std::string playLabel = needDownload ? (downloading_ ? "Téléchargement…" : "Télécharger") : "Jouer";
+        const std::string playLabel = needDownload ? (downloading_ ? "Téléchargement…" : "Télécharger") : "Jouer";
+        // The three labels share one size: the largest at which each fits its button.
+        const std::string bestLabel = "Revoir mon meilleur replay", practiceLabel = "S'entraîner (hors classement)";
+        float fs = 26.0f;
+        for (auto [label, bw] : {std::pair{&playLabel, b1}, std::pair{&bestLabel, b2}, std::pair{&practiceLabel, b3}})
+            fs = std::min(fs, ui.fitFont(*label, FontFace::Bold, 26.0f, bw - ui.s(28)));
+        primary.fontSize = fs;
         if (ui.button("play", {x, by, b1, ui.s(58)}, playLabel, primary)) {
             if (needDownload) download(c);
             else g_.app.pushScene(makeChallengeStart(g_, c.id, false));
         }
         UIContext::ButtonStyle st;
+        st.fontSize = fs;
         st.enabled = res && res->hasReplay && !place.localId.empty();
-        if (ui.button("best", {x + b1 + gap, by, b2, ui.s(58)}, "Revoir mon meilleur replay", st)) watchBest(c);
+        if (ui.button("best", {x + b1 + gap, by, b2, ui.s(58)}, bestLabel, st)) watchBest(c);
         UIContext::ButtonStyle pr;
+        pr.fontSize = fs;
         pr.enabled = !place.localId.empty();
-        if (ui.button("practice", {x + b1 + b2 + 2 * gap, by, b3, ui.s(58)}, "S'entraîner (hors classement)", pr))
+        if (ui.button("practice", {x + b1 + b2 + 2 * gap, by, b3, ui.s(58)}, practiceLabel, pr))
             g_.app.pushScene(makeChallengeStart(g_, c.id, true));
     }
 
@@ -620,7 +632,8 @@ private:
 
     /// The level's preview (rendered once per challenge), nullptr when it is not installed.
     TexturePtr thumbnail(const DailyChallenge& c, const LevelPlace& place) {
-        auto it = thumbs_.find(c.id);
+        const std::string key = c.id + ":" + c.level.hash;
+        auto it = thumbs_.find(key);
         if (it != thumbs_.end()) return it->second;
         TexturePtr t;
         if (!place.localId.empty())
@@ -631,7 +644,7 @@ private:
                 if (!png.empty()) t = textureFromPng(g_, png);
             }
         // Not kept while the level is missing (it may be downloaded in a moment).
-        if (t || !place.localId.empty()) thumbs_[c.id] = t;
+        if (t || !place.localId.empty()) thumbs_[key] = t;
         return t;
     }
 
@@ -726,8 +739,12 @@ private:
         y += ui.s(52);
         Rect list{x, y, w, area.bottom() - ui.s(20) - y};
         // The player's own line (its PENDING time too), at the bottom when there is one.
-        const Json& me = board_.value("me", Json());
+        const Json& me = jfield(board_, "me", Json());
         bool hasMe = boardOk_ && me.is_object() && jget<int64_t>(me, "time_ms", 0) > 0;
+        // Pinned at the bottom only when my run is not already in the list.
+        if (hasMe)
+            for (const Json& e : jfield(board_, "entries", Json::array()))
+                if (jget<bool>(e, "is_me", false) || (!jstr(me, "run_id").empty() && jstr(e, "run_id") == jstr(me, "run_id"))) hasMe = false;
         if (hasMe) list.h -= ui.s(64);
         if (boardBusy_ && !boardOk_) {
             fitLabel(ui, "Chargement…", {x, y + ui.s(14)}, 17, w, ui.theme().textDim);
@@ -742,7 +759,7 @@ private:
             if (ui.button("retry", {x, y + s.y + ui.s(16), std::min(w, ui.s(240)), ui.s(46)}, "Réessayer")) fetchBoard(c);
             return;
         }
-        const Json& entries = board_.value("entries", Json::array());
+        const Json& entries = jfield(board_, "entries", Json::array());
         if (!entries.is_array() || entries.empty()) {
             ui.labelWrapped(scope_ == 2 ? "Aucun ami n'a encore de temps vérifié sur ce défi." : "Aucun temps vérifié pour l'instant : soyez le premier !",
                             {x, y}, w, fz(ui, 17), ui.theme().textDim);
@@ -789,7 +806,7 @@ private:
             chip(ui, challengeRunStateLabel(st), right - sw, cy, h, stateColor(ui.theme(), st), sw);
             right -= sw + ui.s(8);
         }
-        ChallengeTier tier = challengeTierFromJson(e.value("tier", Json()));
+        ChallengeTier tier = challengeTierFromJson(jfield(e, "tier", Json()));
         if (tier != ChallengeTier::None) {
             float tw = chipWidth(ui, challengeTierLabel(tier), h);
             if (right - tw > x + ui.s(160)) {
@@ -802,7 +819,7 @@ private:
         ui.label(time, {right, cy}, fz(ui, 18), ui.theme().text, Align::Right, FontFace::Bold, VAlign::Middle);
         right -= tw + ui.s(14);
         // The player: flag, then the name as they chose it (hidden in streaming mode).
-        const Json& p = e.value("player", Json());
+        const Json& p = jfield(e, "player", Json());
         std::string name = p.is_object() ? jstr(p, "username") : p.is_string() ? p.get<std::string>() : std::string();
         std::string country = p.is_object() ? jstr(p, "country_code") : std::string();
         if (!country.empty() && right - x > ui.s(80)) {
@@ -1017,13 +1034,13 @@ public:
             if (g_.online.usable())
                 g_.challenges.leaderboard(challenge_->id, "world", OnlineService::guard(life_, [this](const ApiResult& r) {
                     if (!r.ok || r.fromCache) return;
-                    const Json& entries = r.data.value("entries", Json::array());
+                    const Json& entries = jfield(r.data, "entries", Json::array());
                     if (!entries.is_array() || entries.empty()) return;
                     const Json& e = entries.front();
                     if (jget<bool>(e, "is_me", false) || !jget<bool>(e, "has_replay", true) || jstr(e, "run_id").empty()) return;
                     topRun_ = jstr(e, "run_id");
                     topMs_ = jget<int64_t>(e, "time_ms", 0);
-                    const Json& p = e.value("player", Json());
+                    const Json& p = jfield(e, "player", Json());
                     topName_ = p.is_object() ? jstr(p, "username") : std::string();
                 }));
         }

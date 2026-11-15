@@ -26,6 +26,14 @@ inline std::string jstr(const Json& j, const char* key, const std::string& def =
     return jget<std::string>(j, key, def);
 }
 
+/// Returns j[key] as it is, or `def` if j is not an object or has no such key (unlike
+/// Json::value, never throws on a null or an array sent by a server).
+inline Json jfield(const Json& j, const char* key, const Json& def = Json()) {
+    if (!j.is_object()) return def;
+    auto it = j.find(key);
+    return it == j.end() ? def : *it;
+}
+
 Json toJson(Vec2 v);
 Json toJson(const Rect& r);
 Json toJson(Color c);

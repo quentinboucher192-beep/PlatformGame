@@ -1,4 +1,11 @@
 {
+  "2.32.0": [
+    "Défis du jour : menu principal › « Défis ». Chaque jour UTC, un niveau avec ses règles (cœurs, emplacements, pouvoirs imposés, stations, points de passage) et trois paliers : Bronze, Argent, Or.",
+    "Le défi peut être un niveau de la campagne ou un niveau ONLINE LEVELS choisi par l'administrateur ; « Télécharger » l'installe depuis le défi, et son créateur est prévenu que son niveau est à l'honneur.",
+    "Classement du jour (Monde, Pays, Amis) des temps vérifiés, mon meilleur temps avec son état (envoyé, en attente de contrôle, vérifié), série de jours, archives des défis passés, fantôme (mon meilleur ou le 1er du jour).",
+    "Sans compte ou sans Internet, le défi déjà reçu reste jouable jusqu'à sa fin : le résultat est gardé sur le PC et la partie part à la connexion. « S'entraîner » rejoue le défi hors classement.",
+    "Une partie de défi ne compte ni pour les records du niveau, ni pour les médailles, ni pour la progression ; les autres parties se jouent exactement comme avant (records conservés)."
+  ],
   "2.31.2": [
     "Choix du niveau : les boss du niveau apparaissent à droite du titre, avec leur nom quand il y a la place ; quand il y en a beaucoup (Arène des Échos), les derniers sont comptés (« +9 ») et le nom s'affiche au survol.",
     "Pause : « Mode concentré » est un bouton comme les autres (texte centré, même police et même taille), son état sur un petit interrupteur à droite.",
