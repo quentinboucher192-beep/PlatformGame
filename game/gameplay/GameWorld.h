@@ -146,6 +146,18 @@ public:
         timeSlowFactor_ = factor;
     }
     float timeSlowRemaining() const { return timeSlow_; }
+    /// Decoy (power « Leurre holographique », 2.19): for `seconds`, the enemies aim at `center`
+    /// instead of Nova. Part of the simulation (set from the player's inputs only).
+    void setDecoy(Vec2 center, float seconds) {
+        decoyPos_ = center;
+        decoyTimer_ = seconds;
+    }
+    void clearDecoy() { decoyTimer_ = 0.0f; }
+    bool decoyActive() const { return decoyTimer_ > 0.0f; }
+    Vec2 decoyPos() const { return decoyPos_; }
+    float decoyRemaining() const { return decoyTimer_; }
+    /// What the enemies aim at: the decoy while there is one, else Nova's centre.
+    Vec2 enemyAim() const;
     void flash(Color c, float duration);
     void rumble(float low, float high, int ms);
     void message(WorldMessage msg);
@@ -223,6 +235,8 @@ private:
     void checkKillPlane();
     void computeEnvironment();
 
+    Vec2 decoyPos_;
+    float decoyTimer_ = 0.0f;
     WorldServices services_;
     WorldMode mode_;
     WorldState state_ = WorldState::Intro;

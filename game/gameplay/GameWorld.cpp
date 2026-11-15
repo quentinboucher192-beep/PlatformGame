@@ -180,6 +180,8 @@ void GameWorld::beginPlay() {
 
 // ================================================================== update
 
+Vec2 GameWorld::enemyAim() const { return decoyTimer_ > 0.0f ? decoyPos_ : player_.center(); }
+
 void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
     // Waiting for the player to choose which power to keep: nothing moves (see stepWorld).
     if (powerOffer_ && mode_ != WorldMode::Editor) return;
@@ -193,6 +195,7 @@ void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
         camera_.fixedUpdate(dt);
         return;
     }
+    if (decoyTimer_ > 0.0f) decoyTimer_ = std::max(0.0f, decoyTimer_ - dt);
 
     cinematic_.fixedUpdate(*this, dt);  // also animates the letterbox / fades after the end
     if (state_ == WorldState::Intro && !cinematic_.active()) beginPlay();

@@ -79,9 +79,10 @@ std::string Enemy::debugInfo() const {
 }
 
 float Enemy::phaseSpeed() const {
+    float slow = slowTimer_ > 0.0f ? 0.5f : 1.0f;  // 2.19: Nova de givre on a boss
     if (def_.isBoss && phase_ < static_cast<int>(def_.phases.size()))
-        return def_.phases[phase_].speedMultiplier * (enraged_ ? 1.2f : 1.0f);
-    return 1.0f;
+        return def_.phases[phase_].speedMultiplier * (enraged_ ? 1.2f : 1.0f) * slow;
+    return slow;
 }
 
 float Enemy::phaseCooldown() const {
@@ -112,7 +113,7 @@ void Enemy::alert(GameWorld& w) {
 
 void Enemy::sense(GameWorld& w) {
     const Player& p = w.player();
-    playerPos_ = p.center();
+    playerPos_ = w.enemyAim();  // Nova, or the decoy while there is one (2.19)
     playerDist_ = distance(box.center(), playerPos_);
     bool inRange = playerDist_ <= (engaged_ ? def_.loseRange : def_.detectionRange);
     bool los = true;
@@ -196,6 +197,15 @@ void Enemy::fixedUpdate(GameWorld& w, float dt) {
     tick(laserHitTimer_);
     for (auto& c : attackCooldowns_) tick(c);
     hoverPhase_ += dt;
+    tick(slowTimer_);
+    if (frozenTimer_ > 0.0f && state_ != EnemyState::Dead && state_ != EnemyState::Dormant) {
+        // Frozen solid: no thinking, no attack, falls if it was in the air.
+        frozenTimer_ = std::max(0.0f, frozenTimer_ - dt);
+        vel.x = 0.0f;
+        if (def_.flying) vel.y = 0.0f;
+        else applyPhysics(w, dt);
+        return;
+    }
 
     if (state_ == EnemyState::Dormant) return;
     if (state_ == EnemyState::Dead) {
@@ -654,6 +664,12 @@ void Enemy::onAnimEvent(GameWorld& w, const std::string& e) {
         w.playSound("sounds/land.wav", box.bottomCenter(), 0.4f, 0.6f);
         w.shake(0.05f);
     }
+}
+
+void Enemy::freeze(float seconds) {
+    if (state_ == EnemyState::Dead || state_ == EnemyState::Dormant) return;
+    if (def_.isBoss) slowTimer_ = std::max(slowTimer_, seconds);
+    else frozenTimer_ = std::max(frozenTimer_, seconds);
 }
 
 void Enemy::update(GameWorld& w, float dt) {

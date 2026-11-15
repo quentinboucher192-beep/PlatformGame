@@ -61,6 +61,12 @@ public:
     /// Editor preview: plays a clip directly.
     void previewClip(const std::string& clip) { playClip(clip, true); }
 
+    /// Frozen (power « Nova de givre », 2.19): a non-boss enemy stops for `seconds` (no move,
+    /// no attack; its top can be stood on); a boss is only slowed for that time.
+    void freeze(float seconds);
+    bool frozen() const { return frozenTimer_ > 0.0f; }
+    bool slowed() const { return slowTimer_ > 0.0f; }
+
     bool alive() const { return state_ != EnemyState::Dead; }
     bool dormant() const { return state_ == EnemyState::Dormant; }
     bool removable() const { return state_ == EnemyState::Dead && deathTimer_ <= 0.0f; }
@@ -138,6 +144,8 @@ private:
     float defendTimer_ = 0.0f;
     float defendCooldown_ = 0.0f;
     float contactTimer_ = 0.0f;
+    float frozenTimer_ = 0.0f;  // 2.19: Nova de givre (non-boss enemies)
+    float slowTimer_ = 0.0f;    // 2.19: Nova de givre (bosses: half speed)
     float hoverPhase_ = 0.0f;
     std::vector<float> attackCooldowns_;
     const AttackDef* attack_ = nullptr;
