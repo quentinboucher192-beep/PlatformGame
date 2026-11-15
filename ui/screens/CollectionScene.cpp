@@ -148,6 +148,9 @@ public:
             st.selected = tab_ == i;
             st.fontSize = 17;
             if (ui.button("tab" + std::to_string(i), {x, y + ui.s(4), w, ui.s(42)}, kTabs[i], st)) tab_ = i;
+            // « NOUVEAU » while a reward added by an update waits in it (data/news/new_features.json).
+            static const char* const kTabFeatures[4] = {"collection.tab.wardrobe", "collection.tab.route", "collection.tab.music", "collection.tab.gallery"};
+            ui.newBadge("tab" + std::to_string(i), {x, y + ui.s(4), w, ui.s(42)}, kTabFeatures[i], true, true);
             x += w + ui.s(8);
         }
         float backW = ui.s(140);
@@ -207,6 +210,7 @@ private:
                 cat_ = static_cast<int>(i);
                 selItem_.clear();
             }
+            ui.newBadge("cat" + std::to_string(i), b, "collection.cat." + cats[i].id, true, true);
             ui.label(ui.elide(cats[i].name, FontFace::Bold, 19, lw - ui.s(32)), {b.x + ui.s(16), b.y + ui.s(10)}, 19, ui.theme().text, Align::Left, FontFace::Bold);
             ui.label(std::to_string(got) + " / " + std::to_string(items.size()) + " débloqués", {b.x + ui.s(16), b.y + ui.s(38)}, fz(ui, 14), ui.theme().textDim);
             y += ui.s(74);
@@ -301,18 +305,23 @@ private:
         float gap = ui.s(12);
         float ch = ui.s(156);
         float gy = gridA.y + ui.s(36);
-        float gridH = std::ceil(items.size() / static_cast<float>(cols)) * (ch + gap);
+        // The list starts a little above the first cards: a « NOUVEAU » on their top edge stays whole.
+        const float padTop = ui.newPillHeight(true) * 0.5f + ui.s(2);
+        const float rowGap = std::max(gap, ui.newPillHeight(true) * 0.5f + ui.s(5));  // room for the pill of the row below
+        float gridH = padTop + std::ceil(items.size() / static_cast<float>(cols)) * (ch + rowGap);
         // A list longer than the room scrolls: its bar gets a lane of its own, beside the cards.
-        float cardsW = gridA.w - (gridH - gap > gridA.bottom() - gy ? ui.s(14) : 0.0f);
+        float cardsW = gridA.w - (gridH - rowGap > gridA.bottom() - gy + padTop ? ui.s(14) : 0.0f);
         float cw = (cardsW - gap * (cols - 1)) / cols;
-        ui.beginScroll("items", {gridA.x, gy, gridA.w, gridA.bottom() - gy}, gridH);
+        ui.beginScroll("items", {gridA.x, gy - padTop, gridA.w, gridA.bottom() - gy + padTop}, gridH);
         float so = ui.scrollOffset();
         for (size_t i = 0; i < items.size(); ++i) {
             const CosmeticItem& it = *items[i];
-            Rect c{gridA.x + (cw + gap) * static_cast<float>(i % cols), gy - so + (ch + gap) * static_cast<float>(i / cols), cw, ch};
+            Rect c{gridA.x + (cw + gap) * static_cast<float>(i % cols), gy - so + (ch + rowGap) * static_cast<float>(i / cols), cw, ch};
             bool unlocked = cosmeticUnlocked(it, progress_);
             bool on = sel == &it;
             if (ui.hotspot("item" + std::to_string(i), c)) selItem_ = it.id;
+            // « NOUVEAU » (a reward added by an update): seen on focus (mouse over it too) or a click.
+            const bool fresh = ui.newBadge("item" + std::to_string(i), c, "cos." + it.id, false, true);
             r.fillRoundedRect(c, ui.s(12), on ? ui.theme().accent.withAlpha(36) : Color{14, 20, 40, 235});
             r.drawRoundedRect(c, ui.s(12), on ? ui.theme().accent : ui.theme().accent.withAlpha(40), std::max(1.0f, ui.s(1.5f)));
             Rect thumb{c.x + ui.s(10), c.y + ui.s(10), c.w - ui.s(20), ui.s(84)};
@@ -322,13 +331,16 @@ private:
             std::string sh = shortReq(it);
             ui.label(ui.elide(sh, FontFace::Body, fz(ui, 13), c.w - ui.s(20)), {c.x + ui.s(10), c.y + ui.s(128)}, fz(ui, 13),
                      unlocked ? kGreen : kGold);
+            float pillRight = c.right() - ui.s(8);
             if (equipped == &it) {
                 std::string e = "Équipé";
                 float ew = ui.text().measure(e, FontFace::Bold, ui.s(fz(ui, 12))).x + ui.s(14);
                 Rect er{c.right() - ew - ui.s(8), c.y + ui.s(8), ew, ui.s(20)};
                 r.fillRoundedRect(er, er.h * 0.5f, ui.theme().accent);
                 ui.label(e, er.center(), fz(ui, 12), Color{6, 32, 28, 255}, Align::Center, FontFace::Bold, VAlign::Middle);
+                pillRight = er.x - ui.s(6);
             }
+            if (fresh) ui.drawNewPill(pillRight, c.y, true);  // on the top edge (left of « Équipé »)
         }
         ui.endScroll();
     }
@@ -450,7 +462,10 @@ private:
         for (const auto& it : g_.cosmetics.items())
             if (!it.achievement.empty()) ach.push_back(&it);
         Rect view{area.x, band.bottom() + ui.s(16), area.w, area.bottom() - band.bottom() - ui.s(16)};
-        const float gap = ui.s(12), inner = view.w - ui.s(16), headH = ui.s(40);
+        // Under each heading, room for a « NOUVEAU » on the top edge of the first cards.
+        const float gap = ui.s(12), inner = view.w - ui.s(16), headH = ui.s(40) + ui.newPillHeight(true) * 0.5f;
+        // Between two rows of cards, room for the « NOUVEAU » of the lower one (above its top edge).
+        const float rowGap = std::max(gap, ui.newPillHeight(true) * 0.5f + ui.s(7));
         // Milestone cards: as many columns as fit (at least ~170 px each), their height from
         // the longest list of names.
         const int cols = std::clamp(static_cast<int>((inner + gap) / (ui.s(170) + gap)), 3, 10);
@@ -477,8 +492,8 @@ private:
                 descH = std::max(descH, ui.text().measureWrapped(a->description, FontFace::Body, ui.s(fz(ui, 12.5f)), aw - ui.s(20)).y);
         const float ah = ui.s(80) + descH + ui.s(36);
         const float arows = std::ceil(static_cast<float>(ach.size()) / static_cast<float>(acols));
-        float content = headH + rows * (ch + gap);
-        if (!ach.empty()) content += ui.s(10) + headH + arows * (ah + gap);
+        float content = headH + rows * (ch + rowGap);
+        if (!ach.empty()) content += ui.s(10) + headH + arows * (ah + rowGap);
         if (routeEnd_) ui.setScroll("route", 1e9f);
         routeEnd_ = false;
         ui.beginScroll("route", view, content);
@@ -489,7 +504,7 @@ private:
         int reached = 0;
         for (const auto& m : ms) reached += progress_.stars >= m.stars ? 1 : 0;
         for (size_t i = 0; i < cells; ++i) {
-            Rect c{view.x + (cw + gap) * static_cast<float>(i % static_cast<size_t>(cols)), y + (ch + gap) * static_cast<float>(i / static_cast<size_t>(cols)), cw, ch};
+            Rect c{view.x + (cw + gap) * static_cast<float>(i % static_cast<size_t>(cols)), y + (ch + rowGap) * static_cast<float>(i / static_cast<size_t>(cols)), cw, ch};
             if (i == ms.size()) {
                 if (!visible(c)) continue;
                 r.drawRoundedRect(c, ui.s(12), kGold.withAlpha(110), std::max(1.0f, ui.s(1.5f)));
@@ -504,10 +519,13 @@ private:
             Rect th{c.x + ui.s(8), c.y + ui.s(40), c.w - ui.s(16), thumbH};
             float each = th.w / static_cast<float>(m.items.size());
             std::vector<Rect> thumbs;
+            std::vector<size_t> fresh;  // its rewards added by an update, not seen yet
             for (size_t k = 0; k < m.items.size(); ++k) {
                 Rect t{th.x + each * static_cast<float>(k) + (k ? ui.s(3) : 0.0f), th.y, each - (m.items.size() > 1 ? ui.s(3) : 0.0f), th.h};
                 thumbs.push_back(t);
-                if (ui.hotspot("ms" + m.items[k]->id, t)) {
+                bool open = ui.hotspot("ms" + m.items[k]->id, t);
+                if (ui.newBadge("ms" + m.items[k]->id, t, "cos." + m.items[k]->id, false, true)) fresh.push_back(k);
+                if (open) {
                     showItem(m.items[k]->id);
                     tab_ = 0;
                     g_.ui.setFocus("tab0");
@@ -541,10 +559,15 @@ private:
             for (size_t k = 0; k < m.items.size(); ++k) {
                 drawThumb(*m.items[k], thumbs[k], got || isNext);
                 if (ui.focused("ms" + m.items[k]->id)) r.drawRoundedRect(thumbs[k], ui.s(8), ui.theme().accent, std::max(1.0f, ui.s(2.0f)));
+                // Which of several rewards is the new one: its thumbnail outlined in the pill's gold.
+                if (m.items.size() > 1 && std::find(fresh.begin(), fresh.end(), k) != fresh.end())
+                    r.drawRoundedRect(thumbs[k].expanded(-ui.s(2)), ui.s(7), Color{255, 196, 70, 220}, std::max(1.0f, ui.s(1.5f)));
             }
             ui.labelWrapped(namesOf(m), {c.x + ui.s(10), c.y + namesTop}, c.w - ui.s(20), fz(ui, 14), got || isNext ? ui.theme().text : ui.theme().textDim);
+            // « NOUVEAU » on the card's top edge, at the right (over its frame, never over its text).
+            if (!fresh.empty()) ui.drawNewPill(c.right() - ui.s(8), c.y - ui.s(3), true);
         }
-        y += rows * (ch + gap);
+        y += rows * (ch + rowGap);
         // Rewards of a precise achievement.
         if (!ach.empty()) {
             y += ui.s(10);
@@ -560,9 +583,11 @@ private:
                 const CosmeticItem& it = *ach[i];
                 const AchievementDef* a = g_.achievementCatalog.find(it.achievement);
                 bool got = cosmeticUnlocked(it, progress_);
-                Rect c{view.x + (aw + gap) * static_cast<float>(i % static_cast<size_t>(acols)), y + (ah + gap) * static_cast<float>(i / static_cast<size_t>(acols)),
+                Rect c{view.x + (aw + gap) * static_cast<float>(i % static_cast<size_t>(acols)), y + (ah + rowGap) * static_cast<float>(i / static_cast<size_t>(acols)),
                        aw, ah};
-                if (ui.hotspot("ach" + it.id, c)) {
+                bool open = ui.hotspot("ach" + it.id, c);
+                const bool fresh = ui.newBadge("ach" + it.id, c, "cos." + it.id, false, true);
+                if (open) {
                     showItem(it.id);
                     tab_ = 0;
                     g_.ui.setFocus("tab0");
@@ -584,6 +609,7 @@ private:
                 for (int s = 0; s < st; ++s) drawStar(r, {c.x + ui.s(16) + ui.s(14) * s, c.bottom() - ui.s(16)}, ui.s(6), got ? kGold : kGold.withAlpha(110));
                 ui.label(got ? "obtenu" : "à obtenir", {c.right() - ui.s(10), c.bottom() - ui.s(16)}, fz(ui, 12), got ? kGreen : ui.theme().textDim, Align::Right,
                          FontFace::Bold, VAlign::Middle);
+                if (fresh) ui.drawNewPill(c.right() - ui.s(8), c.y - ui.s(3), true);
             }
         }
         ui.endScroll();

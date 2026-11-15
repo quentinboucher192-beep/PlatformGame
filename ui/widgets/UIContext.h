@@ -140,13 +140,20 @@ public:
 
     // ----------------------------------------------------------- « NOUVEAU »
     /// Pill « NOUVEAU » on the widget `name` (already drawn at `r`) while the novelty
-    /// `feature` is new (data/news/new_features.json); it goes for good as soon as the widget
-    /// gets the focus (keyboard, gamepad, mouse) or a click. The focus a screen gives on
-    /// opening does not count: the player has to come to it.
-    void newBadge(const std::string& name, const Rect& r, const std::string& feature, bool drawPill = true);
+    /// `feature` is new (data/news/new_features.json), on its top edge at the right. A novelty
+    /// goes for good as soon as the widget gets the focus (keyboard, gamepad, mouse hover) or a
+    /// click; the focus a screen gives on opening does not count: the player has to come to it.
+    /// A parent (a menu entry, a tab, a category…) keeps its pill, focused or not, as long as
+    /// anything under it is new. `small`: the pill of crowded places (rows, cards, nodes).
+    /// Returns true while the pill is due (drawn, or to be drawn by the caller: `drawPill` false).
+    bool newBadge(const std::string& name, const Rect& r, const std::string& feature, bool drawPill = true, bool small = false);
+    /// Whether `feature` (a novelty, or a parent with something new under it) is new.
+    bool isNew(const std::string& feature) const { return isNewFeature && !feature.empty() && isNewFeature(feature); }
     /// Draws a « NOUVEAU » pill whose right edge is at `right`, centred on `y` (lists, rows).
-    Rect drawNewPill(float right, float y);
-    float newPillWidth();
+    /// `small`: smaller (crowded places), its text never under 11.5 pixels.
+    Rect drawNewPill(float right, float y, bool small = false);
+    float newPillWidth(bool small = false);
+    float newPillHeight(bool small = false) const;
     std::function<bool(const std::string&)> isNewFeature;
     std::function<void(const std::string&)> featureSeen;
 
@@ -190,7 +197,14 @@ private:
     bool changed_ = false;
     std::vector<Focusable> focusables_;
     std::unordered_map<WidgetId, float> anims_;
-    std::unordered_map<WidgetId, uint8_t> badgeArmed_;  // 1: may be seen on focus, 2: had the focus at first sight
+    // « NOUVEAU »: 1: may be seen on focus, 2: had the focus at first sight (or was just seen);
+    // with the frame it was last drawn (a widget back on screen is at first sight again).
+    struct BadgeState {
+        uint8_t armed = 0;
+        uint64_t frame = 0;
+    };
+    std::unordered_map<WidgetId, BadgeState> badgeArmed_;
+    float newPillFont(bool small) const;
     std::unordered_map<WidgetId, float> scrolls_;
     std::vector<Scroll> scrollStack_;
     WidgetId scrollToFocus_ = 0;

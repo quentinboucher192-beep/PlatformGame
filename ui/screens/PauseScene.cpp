@@ -134,7 +134,9 @@ void PauseScene::render(float /*alpha*/) {
     ui.newBadge("settings", {bx, y, bw, bh}, "menu.settings");
     if (openSettings) g_.app.pushScene(makeSettingsScene(g_, true));
     y += bh + ui.s(16);
-    if (ui.button("guide", {bx, y, bw, bh}, "Guide des pouvoirs")) g_.app.pushScene(makePowerGuide(g_));
+    bool openGuide = ui.button("guide", {bx, y, bw, bh}, "Guide des pouvoirs");
+    ui.newBadge("guide", {bx, y, bw, bh}, "powers.guide");  // « NOUVEAU »: cards of the guide changed (2.25)
+    if (openGuide) g_.app.pushScene(makePowerGuide(g_));
     y += bh + ui.s(16);
     {
         // « Mode concentré »: the reduced HUD (also T / Partage in game).

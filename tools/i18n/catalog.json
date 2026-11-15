@@ -1228,8 +1228,7 @@
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "editors/level_editor/LevelEditorDialogs.cpp",
-    "game/levels/Cinematic.cpp",
-    "ui/screens/BossStatsScene.cpp"
+    "game/levels/Cinematic.cpp"
    ]
   },
   {

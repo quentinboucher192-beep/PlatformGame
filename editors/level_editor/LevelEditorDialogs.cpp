@@ -690,8 +690,10 @@ void LevelEditorScene::modalHelp(const Rect& c) {
         Vec2 s = ui.labelWrapped(l, {c.x, y}, c.w, 19, ui.theme().text);
         y += s.y + ui.s(10);
     }
-    if (ui.button("guide", {c.right() - ui.s(180) - ui.s(16) - ui.s(300), c.bottom() - ui.s(58), ui.s(300), ui.s(56)}, "Guide des pouvoirs"))
-        g_.app.pushScene(makePowerGuide(g_));
+    const Rect guide{c.right() - ui.s(180) - ui.s(16) - ui.s(300), c.bottom() - ui.s(58), ui.s(300), ui.s(56)};
+    bool openGuide = ui.button("guide", guide, "Guide des pouvoirs");
+    ui.newBadge("guide", guide, "powers.guide");  // « NOUVEAU »: cards of the guide changed (2.25)
+    if (openGuide) g_.app.pushScene(makePowerGuide(g_));
     if (ui.button("close", {c.right() - ui.s(180), c.bottom() - ui.s(58), ui.s(180), ui.s(56)}, "Fermer")) modal_ = Modal::None;
 }
 

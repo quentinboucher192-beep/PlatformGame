@@ -123,6 +123,9 @@ public:
             // The whole card opens the power's sheet (mouse, keys, gamepad).
             ui.pushId("guide");
             if (ui.button("card" + std::to_string(i), card, "")) sheet_ = static_cast<int>(i);
+            // « NOUVEAU » (2.25): the cards of the powers that do not use their slot key (dashed
+            // gold frame, their move); drawn over the card once it is drawn, at its top edge.
+            const bool cardNew = ui.newBadge("card" + std::to_string(i), card, "powers.guide." + d.def.power, false);
             ui.popId();
             Rect vp{card.x + ui.s(6), card.y + ui.s(6), card.w - ui.s(12), card.h - textH - ui.s(6)};
             if (d.world && vp.h > 10.0f) {
@@ -189,6 +192,7 @@ public:
             r.pushClip({card.x, dy - ui.s(2), card.w, dh + ui.s(4)});
             ui.labelWrapped(def->description, {card.x + ui.s(12), dy}, dw, fs, ui.theme().textDim);
             r.popClip();
+            if (cardNew) ui.drawNewPill(card.right() - ui.s(10), card.y);
         }
         // Footer: pages (buttons, Q / E, LB / RB).
         float fy = ui.screenH() - footH + ui.s(6);
@@ -197,6 +201,18 @@ public:
         bool prev = ui.button("prev", {margin, fy, bw, bh}, "Précédent");
         bool next = ui.button("next", {ui.screenW() - margin - bw, fy, bw, bh}, "Suivant");
         ui.popId();
+        // « NOUVEAU » on the page buttons while a card with a novelty waits before / after this page.
+        {
+            bool before = false, after = false;
+            for (size_t i = 0; i < demos_.size(); ++i)
+                if (ui.isNew("powers.guide." + demos_[i]->def.power)) {
+                    int p = static_cast<int>(i) / perPage;
+                    before = before || p < page_;
+                    after = after || p > page_;
+                }
+            if (before) ui.drawNewPill(margin + bw - ui.s(6), fy);
+            if (after) ui.drawNewPill(ui.screenW() - margin - ui.s(6), fy);
+        }
         if (prev) page_ = (page_ - 1 + pages) % pages;
         if (next) page_ = (page_ + 1) % pages;
         char pg[64];
