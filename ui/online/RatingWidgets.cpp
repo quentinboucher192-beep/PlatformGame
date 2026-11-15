@@ -147,6 +147,12 @@ void LevelRatingPanel::send(int stars) {
         view_ = r.data;
         fromCache_ = false;
         g_.online.noteLevelRating(r.data);
+        // Achievements (2.24): a level of the campaign rated, once the server accepted it.
+        if (const LevelEntry* e = g_.content.level(levelId_); stars > 0 && e && e->source == ContentSource::Builtin) {
+            g_.achievements.stats().insert("rated_campaign", levelId_);
+            g_.checkAchievements();
+            g_.achievements.save();
+        }
         say(stars > 0 ? "Merci : votre note est enregistrée." : "Votre note est retirée.", false);
     });
     if (stars > 0) g_.online.send("PUT", "/api/v1/levels/" + levelId_ + "/rating", {{"stars", stars}}, done);

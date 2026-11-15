@@ -492,6 +492,12 @@
    ]
   },
   {
+   "fr": "Abysse",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Accepter",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp",
@@ -977,6 +983,12 @@
    ]
   },
   {
+   "fr": "Album des planètes",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Alert",
    "where": [
     "game/enemies/Enemy.cpp"
@@ -1150,6 +1162,13 @@
    "fr": "Analyser le package",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
+   ]
+  },
+  {
+   "fr": "Analyste",
+   "where": [
+    "data/achievements/achievements.json",
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -1547,7 +1566,25 @@
    ]
   },
   {
+   "fr": "Arriver 10 fois avant le fantôme d'un ami.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Arriver 10 fois avant le fantôme de son meilleur temps.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Arriver 5 fois à moins d'un dixième de seconde d'un fantôme.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Arriver 50 fois avant le fantôme de son meilleur temps.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -1848,6 +1885,12 @@
    ]
   },
   {
+   "fr": "Au millimètre",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "au moins un ami",
    "where": [
     "server/src/social.ts"
@@ -1869,6 +1912,12 @@
    "fr": "Au sommet du vent !",
    "where": [
     "data/levels/glacior_01.json"
+   ]
+  },
+  {
+   "fr": "Au-delà de l'horizon",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -2320,6 +2369,12 @@
    ]
   },
   {
+   "fr": "Aurore boréale",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "AURORE RALLUMÉE",
    "where": [
     "data/levels/glacior_01.json"
@@ -2527,6 +2582,12 @@
    ]
   },
   {
+   "fr": "Avis officiel",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Avoir 10 amis sur Cosmic Online.",
    "where": [
     "data/achievements/achievements.json"
@@ -2724,6 +2785,12 @@
    ]
   },
   {
+   "fr": "Basalte sombre veiné de lave, écharpe jaune.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Basculer",
    "where": [
     "game/levels/EventSystem.cpp"
@@ -2748,7 +2815,25 @@
    ]
   },
   {
+   "fr": "Battre 100 fois un de ses meilleurs segments.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Battre 100 phases de boss sans être touché.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Battre 25 fois un de ses meilleurs segments.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Battre 25 fois un de ses meilleurs temps.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -2761,6 +2846,30 @@
   },
   {
    "fr": "Battre 50 fois un de ses meilleurs temps.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Battre chaque phase d'Aurorax sans être touché (pas forcément dans le même combat).",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Battre chaque phase de Mycélia sans être touché (pas forcément dans le même combat).",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Battre chaque phase de Nyxara sans être touché (pas forcément dans le même combat).",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Battre chaque phase de Pyrogyre sans être touché (pas forcément dans le même combat).",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -2793,6 +2902,12 @@
    "fr": "battues · dont sans dégât",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Bavard cosmique",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -2838,6 +2953,12 @@
    "fr": "Bestiaire",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Bestiaire personnel",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -2894,6 +3015,18 @@
    "fr": "Blanc",
    "where": [
     "saves/Settings.cpp"
+   ]
+  },
+  {
+   "fr": "Blanc nacré des sanctuaires d'Aethra, visière lavande, écharpe d'or.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Bleu des grands fonds, lueurs vertes et écharpe corail.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -3211,6 +3344,19 @@
    ]
   },
   {
+   "fr": "Brise-sorts",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Briseur de colosses",
+   "where": [
+    "data/achievements/achievements.json",
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Brisez la dalle fissurée (Frappe sismique) pour descendre dans la salle des leviers.",
    "where": [
     "data/levels/glacior_03.json"
@@ -3383,6 +3529,18 @@
    "fr": "Cadre platine irisé.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Cadre vert serti de huit gemmes taillées.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Cadre {0}",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -3575,6 +3733,12 @@
   },
   {
    "fr": "Cartographe des ombres",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Cartographe émérite",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -3896,6 +4060,24 @@
    "fr": "Cendres (Pyralis)",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Cent ennemis lourds vaincus.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Cent heures de jeu.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Cent phases de boss battues sans être touché.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -4251,6 +4433,24 @@
    ]
   },
   {
+   "fr": "Chasseur de centièmes",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Chasseur de ciel",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Chasseur de légendes",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Chat lunaire",
    "where": [
     "data/online/avatars.json"
@@ -4403,6 +4603,12 @@
    ]
   },
   {
+   "fr": "Choisir la musique du menu principal dans le juke-box.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Choisissez ce que vous équipez maintenant",
    "where": [
     "ui/screens/RewardsScene.cpp"
@@ -4466,6 +4672,30 @@
    "fr": "Choisissez une révision à comparer, puis « Comparer ».",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Chorégraphie d'Aurorax",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Chorégraphie de Mycélia",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Chorégraphie de Nyxara",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Chorégraphie de Pyrogyre",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -4826,6 +5056,7 @@
   {
    "fr": "Collection",
    "where": [
+    "data/achievements/achievements.json",
     "ui/screens/MainMenuScene.cpp"
    ]
   },
@@ -5198,6 +5429,12 @@
    ]
   },
   {
+   "fr": "Comparer deux replays dans le lecteur de replays.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Comparer deux replays…",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
@@ -5546,6 +5783,12 @@
    "where": [
     "editors/level_editor/LevelEditorLive.cpp",
     "game/online/OnlineTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Conservateur",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -6009,6 +6252,12 @@
    ]
   },
   {
+   "fr": "Couronne solaire",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Course : {0} boss, {1} embuscade",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
@@ -6348,6 +6597,18 @@
    "fr": "Créer",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Créer 10 niveaux.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Créer 5 ennemis dans l'éditeur d'ennemis.",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -6846,6 +7107,12 @@
    ]
   },
   {
+   "fr": "Des braises qui s'élèvent derrière Nova.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Des gerbes de couleurs à l'arrivée.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -6867,6 +7134,24 @@
    "fr": "Des modifications ont été faites en direct depuis la dernière révision : rejoignez l'édition en direct pour les voir.",
    "where": [
     "server/src/projects.ts"
+   ]
+  },
+  {
+   "fr": "Des nuages de couleur tournent autour du cadre.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Des rideaux de lumière s'élèvent au-dessus du portail.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Des runes violettes et dorées qui tournent sur elles-mêmes.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -6959,6 +7244,18 @@
    "fr": "Deux chemins : la galerie haute, ou le sol fissuré vers le canal englouti.",
    "where": [
     "data/levels/glacior_02.json"
+   ]
+  },
+  {
+   "fr": "Deux lunes tournent autour de l'avatar.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Deux replays comparés.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -7501,6 +7798,24 @@
    ]
   },
   {
+   "fr": "Débloquer 10 morceaux du juke-box.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Débloquer les 19 morceaux du juke-box.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Débroussailleur",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Début",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -7690,13 +8005,25 @@
    ]
   },
   {
+   "fr": "Découvrir 40 secrets.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Découvrir tous les secrets d'un niveau.",
    "where": [
     "data/achievements/achievements.json"
    ]
   },
   {
-   "fr": "Découvrir tous les secrets des 18 niveaux de la campagne.",
+   "fr": "Découvrir tous les secrets des 13 niveaux de la campagne qui en cachent.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Découvrir tous les secrets des 4 niveaux d'Aethra.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -7986,6 +8313,12 @@
    ]
   },
   {
+   "fr": "Désherbeur",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Désynchronisé à {0} : ce replay vient d'une autre version du moteur",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -8038,6 +8371,12 @@
    "fr": "Effet de particules sur la cible",
    "where": [
     "game/levels/EventSystem.cpp"
+   ]
+  },
+  {
+   "fr": "Effet {0}",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -8313,6 +8652,13 @@
    ]
   },
   {
+   "fr": "Encyclopédiste",
+   "where": [
+    "data/achievements/achievements.json",
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Endurance",
    "where": [
     "data/achievements/achievements.json"
@@ -8446,6 +8792,18 @@
    ]
   },
   {
+   "fr": "Enregistrer l'image d'une planète depuis la Galerie.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Enregistrer l'image des 5 planètes depuis la Galerie.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Enregistrer une copie",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
@@ -8560,6 +8918,12 @@
    ]
   },
   {
+   "fr": "Entêté",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Envoi du package ({0} Ko)…",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
@@ -8657,6 +9021,12 @@
    ]
   },
   {
+   "fr": "Escale prolongée",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Escorte",
    "where": [
     "data/enemies/echo_prime_sentinel.json",
@@ -8716,6 +9086,12 @@
    "fr": "Essai manqué : on recommence",
    "where": [
     "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Essayage",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -8810,6 +9186,12 @@
    "fr": "Exporter",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
+   ]
+  },
+  {
+   "fr": "Exporter 5 planètes (.cplanet).",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -9067,6 +9449,12 @@
    ]
   },
   {
+   "fr": "Ferrailleur",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Feu",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -9320,6 +9708,12 @@
    "fr": "Flammes",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Flammèches",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -9852,6 +10246,12 @@
    "where": [
     "data/enemies/echo_glaciarch.json",
     "data/enemies/glaciarch.json"
+   ]
+  },
+  {
+   "fr": "Garde-robe",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -10446,6 +10846,12 @@
    ]
   },
   {
+   "fr": "Guide stellaire",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Guinée",
    "where": [
     "data/online/countries.json",
@@ -10526,6 +10932,12 @@
   },
   {
    "fr": "Habitué",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Habitué des courses",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -10677,9 +11089,21 @@
    ]
   },
   {
+   "fr": "Horloger",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Hors connexion",
    "where": [
     "game/online/OnlineTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Hors de l'anneau",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -11200,6 +11624,12 @@
    ]
   },
   {
+   "fr": "Increvable",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Inde",
    "where": [
     "data/online/countries.json",
@@ -11463,6 +11893,12 @@
    ]
   },
   {
+   "fr": "Inépuisable",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Irak",
    "where": [
     "data/online/countries.json",
@@ -11625,6 +12061,18 @@
    "fr": "Jouer ce niveau",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Jouer cent heures.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Jouer cinq heures.",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -12539,6 +12987,12 @@
    ]
   },
   {
+   "fr": "Lauriers",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Lave",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -13369,6 +13823,12 @@
    ]
   },
   {
+   "fr": "Le vestiaire, le juke-box et la galerie de la Collection.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "le {0}/{1}/{2}",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -13467,6 +13927,12 @@
   },
   {
    "fr": "Les 12 gardiens sans être touché.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Les 19 morceaux du juke-box débloqués.",
    "where": [
     "data/cosmetics/cosmetics.json"
    ]
@@ -13723,6 +14189,12 @@
    "fr": "Les quatre niveaux de Pyralis",
    "where": [
     "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Les quinze pouvoirs actifs utilisés.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -14013,6 +14485,12 @@
    ]
   },
   {
+   "fr": "Lingot",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Lingot d'étoile",
    "where": [
     "data/levels/pyralis_01.json"
@@ -14113,6 +14591,12 @@
    ]
   },
   {
+   "fr": "Long-courrier",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Longueur d'un segment",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -14178,6 +14662,13 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Légende du cosmos",
+   "where": [
+    "data/achievements/achievements.json",
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -14537,6 +15028,13 @@
    ]
   },
   {
+   "fr": "Maître des quinze",
+   "where": [
+    "data/achievements/achievements.json",
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Maître esquiveur",
    "where": [
     "data/achievements/achievements.json"
@@ -14746,6 +15244,12 @@
    "fr": "Membres, rôles, transfert du projet, journal d'activité et révisions ; notifications des invitations et des changements de rôle.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Meneur de peloton",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -14993,6 +15497,12 @@
    ]
   },
   {
+   "fr": "Miroir sans tache",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "mis en favori",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -15140,6 +15650,12 @@
    "fr": "Moins de morts",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Moitié des échos",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -15525,6 +16041,13 @@
    ]
   },
   {
+   "fr": "Mélomane",
+   "where": [
+    "data/achievements/achievements.json",
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Métal ancien",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -15571,6 +16094,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Naturaliste",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -16201,7 +16730,19 @@
    ]
   },
   {
+   "fr": "Noter les 18 niveaux de la campagne en ligne.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Noter un niveau de joueur.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Noter un niveau de la campagne en ligne.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -16663,6 +17204,12 @@
    ]
   },
   {
+   "fr": "Nébuleuse",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Née du vide entre les étoiles, elle avale la lumière. Plus elle est blessée, plus l'arène s'assombrit.",
    "where": [
     "data/enemies/nyxara.json"
@@ -16773,6 +17320,18 @@
    ]
   },
   {
+   "fr": "Obtenir l'or dans L'Arène des Échos.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Obtenir l'or sur 10 niveaux.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Obtenir l'or sur 5 niveaux.",
    "where": [
     "data/achievements/achievements.json"
@@ -16780,6 +17339,12 @@
   },
   {
    "fr": "Obtenir l'or sur les 18 niveaux.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Obtenir l'or sur les 4 niveaux d'Aethra.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -16797,6 +17362,18 @@
    ]
   },
   {
+   "fr": "Obtenir le platine dans Le Cœur de l'Étoile.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Obtenir le platine sur 10 niveaux.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Obtenir le platine sur 5 niveaux.",
    "where": [
     "data/achievements/achievements.json"
@@ -16804,6 +17381,12 @@
   },
   {
    "fr": "Obtenir le platine sur les 18 niveaux.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Obtenir le platine sur les 4 niveaux d'Aethra.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -16879,6 +17462,13 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Ombre insaisissable",
+   "where": [
+    "data/achievements/achievements.json",
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -17042,6 +17632,18 @@
    ]
   },
   {
+   "fr": "Or des sanctuaires",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Or des échos",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Or stellaire",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -17096,9 +17698,21 @@
    ]
   },
   {
+   "fr": "Orbite",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Ordre (z)",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
+   ]
+  },
+  {
+   "fr": "Oreille curieuse",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -17746,6 +18360,12 @@
    ]
   },
   {
+   "fr": "Passe-muraille",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "passif",
    "where": [
     "ui/screens/PowerGuideScene.cpp"
@@ -17871,6 +18491,12 @@
   },
   {
    "fr": "Peloton",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Perfection d'Aethra",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -18035,6 +18661,12 @@
   },
   {
    "fr": "Photo-finish",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Photographe",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -18414,6 +19046,18 @@
    ]
   },
   {
+   "fr": "Platine de l'étoile",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Platine des sanctuaires",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Platine des échos",
    "where": [
     "data/achievements/achievements.json"
@@ -18450,6 +19094,12 @@
    "where": [
     "data/enemies/echo_prime_sentinel.json",
     "data/enemies/prime_sentinel.json"
+   ]
+  },
+  {
+   "fr": "Pluie d'éclats",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -18612,6 +19262,12 @@
    "fr": "Plus téléchargés",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Plus vif que l'éclair",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -18779,6 +19435,12 @@
    ]
   },
   {
+   "fr": "Polyvalent",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Pont de glace fragile sous les stalactites : petits sauts, et ne vous arrêtez pas !",
    "where": [
     "data/levels/glacior_02.json"
@@ -18868,6 +19530,12 @@
    "fr": "porte fermée {0} (x={1}) contournable par un détour de {2} px",
    "where": [
     "game/levels/LevelAnalyzer.cpp"
+   ]
+  },
+  {
+   "fr": "Porter en même temps une combinaison, une traînée, un cadre, un titre et un effet de victoire débloqués.",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -19015,6 +19683,12 @@
   },
   {
    "fr": "Pour avoir créé un niveau.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Pour avoir terminé L'Horizon des événements.",
    "where": [
     "data/cosmetics/cosmetics.json"
    ]
@@ -19217,13 +19891,31 @@
    ]
   },
   {
+   "fr": "Premier écho",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Premiers combats",
    "where": [
     "data/achievements/achievements.json"
    ]
   },
   {
+   "fr": "Premiers pas sur Aethra",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Première médaille",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Première réaction",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -19252,6 +19944,7 @@
   {
    "fr": "Prisme",
    "where": [
+    "data/cosmetics/cosmetics.json",
     "data/enemies/aurorax.json",
     "data/enemies/echo_aurorax.json"
    ]
@@ -19345,6 +20038,12 @@
    "fr": "profondeur",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Programmateur",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -19646,6 +20345,12 @@
    ]
   },
   {
+   "fr": "Publier 25 commentaires sur Cosmic Online.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Publier 5 niveaux.",
    "where": [
     "data/achievements/achievements.json"
@@ -19661,6 +20366,12 @@
    "fr": "PUBLIER EN LIGNE",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
+   ]
+  },
+  {
+   "fr": "Publier un commentaire sur Cosmic Online.",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -19995,6 +20706,12 @@
    ]
   },
   {
+   "fr": "Racines intactes",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Rafale ardente",
    "where": [
     "data/enemies/echo_ignivore.json",
@@ -20093,6 +20810,12 @@
    "fr": "Ralentit les ennemis et leurs tirs pendant quelques secondes : le temps de passer entre deux attaques.",
    "where": [
     "data/powers/time_slow.json"
+   ]
+  },
+  {
+   "fr": "Ramasser 10 000 éclats.",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -20286,6 +21009,12 @@
    "fr": "Recaler B",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Recaler un replay sur un point de sauvegarde pendant une comparaison.",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -20760,6 +21489,12 @@
    ]
   },
   {
+   "fr": "Reliquaire d'Aethra",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Relique ancienne",
    "where": [
     "data/achievements/achievements.json",
@@ -20827,6 +21562,12 @@
    ]
   },
   {
+   "fr": "Remporter 100 combats contre des boss.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Remporter 200 combats contre des boss.",
    "where": [
     "data/achievements/achievements.json"
@@ -20834,6 +21575,18 @@
   },
   {
    "fr": "Remporter 50 combats contre des boss.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Rencontrer 15 créatures du bestiaire.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Rencontrer 30 créatures du bestiaire.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -21326,6 +22079,12 @@
    ]
   },
   {
+   "fr": "Rival amical",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Rive",
    "where": [
     "data/levels/aethra_02.json"
@@ -21393,6 +22152,12 @@
    "fr": "Rose",
    "where": [
     "saves/Settings.cpp"
+   ]
+  },
+  {
+   "fr": "Rose et violet des nébuleuses, visière cyan.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -21513,6 +22278,12 @@
    ]
   },
   {
+   "fr": "Runes d'Aethra",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "runs",
    "where": [
     "game/ghost/SegmentHistory.cpp"
@@ -21539,6 +22310,12 @@
     "data/enemies/echo_crucible_heart.json",
     "data/enemies/echo_magmaroth.json",
     "data/enemies/magmaroth.json"
+   ]
+  },
+  {
+   "fr": "Ruée vers l'or",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -22162,8 +22939,15 @@
   {
    "fr": "Sanctuaire",
    "where": [
+    "data/cosmetics/cosmetics.json",
     "data/levels/glacior_01.json",
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "Sanctuaires sans chute",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -22459,6 +23243,12 @@
    "where": [
     "game/records/Records.cpp",
     "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Secrets des sanctuaires",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -23978,6 +24768,7 @@
   {
    "fr": "Synchronisé",
    "where": [
+    "data/achievements/achievements.json",
     "editors/level_editor/LevelEditorLive.cpp"
    ]
   },
@@ -24532,6 +25323,18 @@
    ]
   },
   {
+   "fr": "Tenter 100 fois le même niveau.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Tenter 100 fois un niveau EXTRÊME.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Tenter 20 fois un niveau EXTRÊME.",
    "where": [
     "data/achievements/achievements.json"
@@ -24550,6 +25353,30 @@
    ]
   },
   {
+   "fr": "Tenue de gala",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Terminer 1 000 parties.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Terminer 10 courses contre 3 fantômes ou plus.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Terminer 10 fois un niveau EXTRÊME.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Terminer 10 niveaux de joueurs différents.",
    "where": [
     "data/achievements/achievements.json"
@@ -24557,6 +25384,18 @@
   },
   {
    "fr": "Terminer 10 niveaux de la campagne.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Terminer 15 niveaux de la campagne.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Terminer 25 courses contre des fantômes.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -24640,6 +25479,18 @@
    ]
   },
   {
+   "fr": "Terminer L'Horizon des événements, dernier niveau d'Aethra.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Terminer Le Bosquet Englouti, premier niveau d'Aethra.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Terminer Le Cœur de l'Étoile sans mourir.",
    "where": [
     "data/achievements/achievements.json"
@@ -24672,6 +25523,12 @@
   },
   {
    "fr": "Terminer les 18 niveaux de la campagne.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Terminer les 4 niveaux d'Aethra sans mourir.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -25127,6 +25984,12 @@
    ]
   },
   {
+   "fr": "Toujours devant",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Toujours plus vite",
    "where": [
     "data/achievements/achievements.json"
@@ -25220,7 +26083,13 @@
    ]
   },
   {
-   "fr": "Tout ramasser dans les 18 niveaux de la campagne.",
+   "fr": "Tout ramasser dans les 13 niveaux de la campagne qui ont des éclats et des reliques.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Tout ramasser dans les 4 niveaux d'Aethra.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -25431,6 +26300,12 @@
    ]
   },
   {
+   "fr": "Traînée {0}",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Traînées",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -25452,6 +26327,12 @@
    "fr": "Tremblements d'écran",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Trente créatures du bestiaire rencontrées.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -25478,6 +26359,12 @@
    "where": [
     "data/powers/triple_jump.json",
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Trois bras d'étincelles tournent autour de Nova.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -25538,6 +26425,12 @@
    "fr": "Trou noir",
    "where": [
     "data/online/avatars.json"
+   ]
+  },
+  {
+   "fr": "Trouver 100 reliques.",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -26087,6 +26980,12 @@
    ]
   },
   {
+   "fr": "Un ruban aux couleurs de l'arc-en-ciel.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Un ruban vert et violet qui ondule.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -26153,6 +27052,12 @@
    "fr": "Une chute de lave barre la route du second radeau : passez-la sous Bouclier.",
    "where": [
     "data/levels/pyralis_02.json"
+   ]
+  },
+  {
+   "fr": "Une couronne de lauriers dorée.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -26343,6 +27248,12 @@
    ]
   },
   {
+   "fr": "Une éclipse et ses rayons au-dessus du portail.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Une épave gît sous l'eau... une barrière de phase en garde l'entrée.",
    "where": [
     "data/levels/glacior_02.json"
@@ -26358,6 +27269,12 @@
    "fr": "Uniquement le pays que vous choisissez, si vous le choisissez. Sur le globe, vous apparaissez au centre de ce pays : jamais de position GPS, jamais d'adresse. Vous pouvez la masquer à tout moment.",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "Urbaniste",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -26387,6 +27304,18 @@
    ]
   },
   {
+   "fr": "Utiliser 5 pouvoirs différents.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Utiliser Balise de rappel 300 fois.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Utiliser Balise de rappel 50 fois.",
    "where": [
     "data/achievements/achievements.json"
@@ -26400,6 +27329,12 @@
   },
   {
    "fr": "Utiliser Bouclier 50 fois.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Utiliser chacun des 15 pouvoirs actifs.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -26447,13 +27382,31 @@
    ]
   },
   {
+   "fr": "Utiliser Lame boomerang 300 fois.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Utiliser Lame boomerang 50 fois.",
    "where": [
     "data/achievements/achievements.json"
    ]
   },
   {
+   "fr": "Utiliser Leurre holographique 300 fois.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Utiliser Leurre holographique 50 fois.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Utiliser Nova de givre 300 fois.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -26561,7 +27514,37 @@
    ]
   },
   {
+   "fr": "Vaincre 100 ennemis lourds (golems et remparts).",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre 100 ennemis rapides (traqueurs).",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Vaincre 100 ennemis.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre 100 feux follets et autres utilisateurs de pouvoirs.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre 150 créatures volantes.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre 150 robots.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -26573,7 +27556,19 @@
    ]
   },
   {
+   "fr": "Vaincre 40 tourelles (fleurs à spores, de cendre ou de givre).",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Vaincre 50 ennemis en une seule partie.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre 500 créatures terrestres.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -26591,7 +27586,19 @@
    ]
   },
   {
+   "fr": "Vaincre 8 échos de gardiens différents.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Vaincre Archonte des Catacombes.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre Aurorax sans être touché.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -26663,6 +27670,12 @@
    ]
   },
   {
+   "fr": "Vaincre les 16 gardiens des planètes sans être touché.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Vaincre les 16 gardiens des planètes, Aethra comprise.",
    "where": [
     "data/achievements/achievements.json"
@@ -26681,6 +27694,12 @@
    ]
   },
   {
+   "fr": "Vaincre Mycélia sans être touché.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Vaincre Mycélia.",
    "where": [
     "data/achievements/achievements.json"
@@ -26694,6 +27713,12 @@
   },
   {
    "fr": "Vaincre Nyxara.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre Pyrogyre sans être touché.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -26736,6 +27761,12 @@
   },
   {
    "fr": "Vaincre un boss.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre un écho de gardien.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -27187,6 +28218,30 @@
    ]
   },
   {
+   "fr": "Virtuose : Balise de rappel",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Virtuose : Lame boomerang",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Virtuose : Leurre holographique",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Virtuose : Nova de givre",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Visibilité du calque",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -27431,6 +28486,12 @@
    "fr": "Volume général",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vortex",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -27906,6 +28967,12 @@
    ]
   },
   {
+   "fr": "Voyageur de l'horizon",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Vue",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
@@ -28014,6 +29081,12 @@
    "fr": "Vérifié par {0}",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vétéran de l'extrême",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -30491,6 +31564,12 @@
    ]
   },
   {
+   "fr": "Émeraude",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Émetteur de particules",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -30592,6 +31671,18 @@
    ]
   },
   {
+   "fr": "Équiper 10 récompenses différentes.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Équiper une récompense de la Collection.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Équipé",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -30600,6 +31691,7 @@
   {
    "fr": "Éruption",
    "where": [
+    "data/cosmetics/cosmetics.json",
     "data/enemies/crucible_heart.json",
     "data/enemies/echo_crucible_heart.json",
     "data/enemies/echo_magmaroth.json",

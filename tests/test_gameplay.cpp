@@ -128,6 +128,9 @@ TEST_CASE("gameplay: enemy detects, attacks and dies") {
     w.damageEnemies(w.enemies().front()->box, d);
     CHECK(!w.enemies().front()->alive());
     CHECK(w.stats().kills == 1);
+    // The same kill by family, for the achievements (2.24): a glowmite is a ground creature.
+    CHECK(w.stats().familyKills.size() == 1);
+    CHECK(w.stats().familyKills.count("ground") == 1 && w.stats().familyKills.at("ground") == 1);
 }
 
 TEST_CASE("levels: first level is complete and round-trips") {

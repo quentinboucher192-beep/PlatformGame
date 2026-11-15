@@ -159,6 +159,7 @@ void GameScene::noteAchievementStats(bool completed, const RecordUpdate* upd) {
     AchievementStats& a = g_.achievements.stats();
     const RunStats& s = world_->stats();
     a.add("kills", s.kills);
+    for (const auto& [family, n] : s.familyKills) a.add("kills_" + family, n);  // 2.24: by family
     a.add("deaths", s.deaths);
     a.add("shards", s.shards);
     a.add("relics", s.relics);

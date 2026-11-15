@@ -17,12 +17,19 @@
     {"id": "suit_spectre", "category": "suit", "name": "Spectre", "description": "Violet translucide, comme un fantôme.", "stars": 160, "look": "spectre"},
     {"id": "suit_or", "category": "suit", "name": "Or stellaire", "description": "Pour celles et ceux qui ont presque tout.", "stars": 300, "look": "or"},
     {"id": "suit_echo", "category": "suit", "name": "Écho", "description": "Noire et rouge, comme les échos des gardiens.", "achievement": "gardiens_echoes", "look": "echo"},
+    {"id": "suit_nebuleuse", "category": "suit", "name": "Nébuleuse", "description": "Rose et violet des nébuleuses, visière cyan.", "stars": 350, "look": "nebuleuse"},
+    {"id": "suit_abysse", "category": "suit", "name": "Abysse", "description": "Bleu des grands fonds, lueurs vertes et écharpe corail.", "stars": 440, "look": "abysse"},
+    {"id": "suit_eruption", "category": "suit", "name": "Éruption", "description": "Basalte sombre veiné de lave, écharpe jaune.", "stars": 520, "look": "eruption"},
+    {"id": "suit_sanctuaire", "category": "suit", "name": "Sanctuaire", "description": "Blanc nacré des sanctuaires d'Aethra, visière lavande, écharpe d'or.", "achievement": "chrono_aethra_gold", "look": "sanctuaire"},
 
     {"id": "trail_none", "category": "trail", "name": "Aucune", "description": "Pas de traînée derrière Nova.", "default": true, "look": "none"},
     {"id": "trail_stardust", "category": "trail", "name": "Poussière d'étoiles", "description": "Des étincelles cyan quand Nova court ou fait un dash.", "stars": 30, "look": "stardust"},
     {"id": "trail_comet", "category": "trail", "name": "Comète", "description": "Une longue queue blanche et bleue.", "stars": 100, "look": "comet"},
     {"id": "trail_aurora", "category": "trail", "name": "Aurore", "description": "Un ruban vert et violet qui ondule.", "stars": 180, "look": "aurora"},
     {"id": "trail_eclipse", "category": "trail", "name": "Éclipse", "description": "Une ombre bordée d'or.", "stars": 250, "look": "eclipse"},
+    {"id": "trail_flame", "category": "trail", "name": "Flammèches", "description": "Des braises qui s'élèvent derrière Nova.", "stars": 290, "look": "flame"},
+    {"id": "trail_prism", "category": "trail", "name": "Prisme", "description": "Un ruban aux couleurs de l'arc-en-ciel.", "stars": 410, "look": "prism"},
+    {"id": "trail_runes", "category": "trail", "name": "Runes d'Aethra", "description": "Des runes violettes et dorées qui tournent sur elles-mêmes.", "achievement": "tresors_aethra_secrets", "look": "runes"},
 
     {"id": "frame_simple", "category": "frame", "name": "Simple", "description": "Le cadre de base, sur le profil et dans les classements.", "default": true, "look": "simple"},
     {"id": "frame_bronze", "category": "frame", "name": "Bronze", "description": "Cadre bronze.", "stars": 10, "look": "bronze"},
@@ -30,6 +37,10 @@
     {"id": "frame_gold", "category": "frame", "name": "Or", "description": "Cadre or, avec un halo.", "stars": 120, "look": "gold"},
     {"id": "frame_platinum", "category": "frame", "name": "Platine", "description": "Cadre platine irisé.", "stars": 200, "look": "platinum"},
     {"id": "frame_constellation", "category": "frame", "name": "Constellation", "description": "Toutes les étoiles : le cadre ultime.", "stars": "all", "look": "constellation"},
+    {"id": "frame_emerald", "category": "frame", "name": "Émeraude", "description": "Cadre vert serti de huit gemmes taillées.", "stars": 270, "look": "emerald"},
+    {"id": "frame_orbit", "category": "frame", "name": "Orbite", "description": "Deux lunes tournent autour de l'avatar.", "stars": 380, "look": "orbit"},
+    {"id": "frame_nebula", "category": "frame", "name": "Nébuleuse", "description": "Des nuages de couleur tournent autour du cadre.", "stars": 500, "look": "nebula"},
+    {"id": "frame_laurels", "category": "frame", "name": "Lauriers", "description": "Une couronne de lauriers dorée.", "achievement": "gardiens_100", "look": "laurels"},
 
     {"id": "title_none", "category": "title", "name": "Sans titre", "description": "Aucun titre sous votre nom.", "default": true, "look": ""},
     {"id": "title_explorateur", "category": "title", "name": "Explorateur", "description": "Sous votre nom, sur le profil et dans les classements.", "achievement": "voyage_5", "look": "Explorateur"},
@@ -39,10 +50,21 @@
     {"id": "title_chronomaitre", "category": "title", "name": "Chronomaître", "description": "Le platine sur les 18 niveaux.", "achievement": "chrono_platinum_all", "look": "Chronomaître"},
     {"id": "title_perfection", "category": "title", "name": "Perfection gardienne", "description": "Les 12 gardiens sans être touché.", "achievement": "maitrise_boss_nohit_12", "look": "Perfection gardienne"},
     {"id": "title_nouveau_maitre", "category": "title", "name": "Nouveau maître", "description": "Arrivé avant le fantôme d'un record mondial.", "achievement": "fantomes_world_win", "look": "Nouveau maître"},
+    {"id": "title_horizon", "category": "title", "name": "Voyageur de l'horizon", "description": "Pour avoir terminé L'Horizon des événements.", "achievement": "voyage_horizon", "look": "Voyageur de l'horizon"},
+    {"id": "title_analyste", "category": "title", "name": "Analyste", "description": "Deux replays comparés.", "achievement": "fantomes_compare", "look": "Analyste"},
+    {"id": "title_melomane", "category": "title", "name": "Mélomane", "description": "Les 19 morceaux du juke-box débloqués.", "achievement": "collection_tracks_all", "look": "Mélomane"},
+    {"id": "title_encyclopediste", "category": "title", "name": "Encyclopédiste", "description": "Trente créatures du bestiaire rencontrées.", "achievement": "collection_creatures_30", "look": "Encyclopédiste"},
+    {"id": "title_briseur", "category": "title", "name": "Briseur de colosses", "description": "Cent ennemis lourds vaincus.", "achievement": "combat_heavy_100", "look": "Briseur de colosses"},
+    {"id": "title_maitre_quinze", "category": "title", "name": "Maître des quinze", "description": "Les quinze pouvoirs actifs utilisés.", "achievement": "pouvoirs_distinct_15", "look": "Maître des quinze"},
+    {"id": "title_ombre", "category": "title", "name": "Ombre insaisissable", "description": "Cent phases de boss battues sans être touché.", "achievement": "maitrise_phase_100", "look": "Ombre insaisissable"},
+    {"id": "title_legende", "category": "title", "name": "Légende du cosmos", "description": "Cent heures de jeu.", "achievement": "endurance_100h", "look": "Légende du cosmos"},
 
     {"id": "victory_classic", "category": "victory", "name": "Classique", "description": "L'arrivée habituelle au portail.", "default": true, "look": "classic"},
     {"id": "victory_fireworks", "category": "victory", "name": "Feu d'artifice", "description": "Des gerbes de couleurs à l'arrivée.", "stars": 70, "look": "fireworks"},
     {"id": "victory_starfall", "category": "victory", "name": "Pluie d'étoiles", "description": "Des étoiles tombent sur le portail.", "stars": 140, "look": "starfall"},
-    {"id": "victory_supernova", "category": "victory", "name": "Supernova", "description": "Une onde de lumière à la fin du niveau.", "stars": 220, "look": "supernova"}
+    {"id": "victory_supernova", "category": "victory", "name": "Supernova", "description": "Une onde de lumière à la fin du niveau.", "stars": 220, "look": "supernova"},
+    {"id": "victory_vortex", "category": "victory", "name": "Vortex", "description": "Trois bras d'étincelles tournent autour de Nova.", "stars": 320, "look": "vortex"},
+    {"id": "victory_borealis", "category": "victory", "name": "Aurore boréale", "description": "Des rideaux de lumière s'élèvent au-dessus du portail.", "stars": 470, "look": "borealis"},
+    {"id": "victory_corona", "category": "victory", "name": "Couronne solaire", "description": "Une éclipse et ses rayons au-dessus du portail.", "stars": 540, "look": "corona"}
   ]
 }

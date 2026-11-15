@@ -7,9 +7,11 @@ or suit (the rest), then recoloured toward the suit's three target colours while
 its lightness, so the shading of the original drawing survives.
 
 Run:  python3 tools/assetgen/characters/generate.py nova_suits
+      python3 tools/assetgen/characters/nova_suits.py nebuleuse abysse   # only these suits
 """
 import colorsys
 import os
+import sys
 
 from PIL import Image
 
@@ -25,6 +27,11 @@ SUITS = {
     "spectre": ((205, 190, 250), (190, 120, 255), (120, 230, 255)),
     "or": ((255, 225, 140), (255, 255, 235), (200, 30, 60)),
     "echo": ((60, 60, 75), (255, 70, 100), (255, 70, 100)),
+    # 2.24
+    "nebuleuse": ((235, 150, 215), (90, 230, 255), (150, 80, 255)),
+    "abysse": ((55, 125, 150), (80, 255, 190), (255, 120, 100)),
+    "eruption": ((105, 70, 65), (255, 120, 30), (255, 215, 60)),
+    "sanctuaire": ((236, 233, 240), (190, 150, 255), (255, 200, 70)),
 }
 
 
@@ -73,13 +80,19 @@ def recolor(img, suit, accent, scarf, suit_mix=0.55):
     return out
 
 
-def build():
+def build(only=None):
+    """Every suit, or only the ids in `only` (the others' sheets are left as they are)."""
     base = Image.open(SRC).convert("RGBA")
     out_dir = os.path.join(ROOT, "assets", "sprites", "player", "suits")
     os.makedirs(out_dir, exist_ok=True)
     for sid, (suit, accent, scarf) in SUITS.items():
+        if only and sid not in only:
+            continue
         recolor(base, suit, accent, scarf).save(os.path.join(out_dir, f"nova_{sid}.png"), optimize=True)
 
 
 if __name__ == "__main__":
-    build()
+    unknown = [s for s in sys.argv[1:] if s not in SUITS]
+    if unknown:
+        sys.exit("combinaisons inconnues : " + ", ".join(unknown))
+    build(sys.argv[1:] or None)

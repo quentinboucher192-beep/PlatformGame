@@ -140,10 +140,17 @@ void CommentsPanel::submit() {
     std::string body = trimmed(draft_);
     if (body.empty() || sending_) return;
     sending_ = true;
-    auto done = [this](const std::string& ok, const std::string& parent) {
-        return OnlineService::guard(life_, [this, ok, parent](const ApiResult& r) {
+    // `posted`: a new comment or reply (not an edit), counted by the achievements once the
+    // server has accepted it (2.24).
+    auto done = [this](const std::string& ok, const std::string& parent, bool posted) {
+        return OnlineService::guard(life_, [this, ok, parent, posted](const ApiResult& r) {
             sending_ = false;
             if (!r.ok) return say(r.message, true);
+            if (posted) {
+                g_.achievements.stats().add("comments_posted");
+                g_.checkAchievements();
+                g_.achievements.save();
+            }
             say(ok, false);
             draft_.clear();
             replyTo_.clear();
@@ -156,7 +163,7 @@ void CommentsPanel::submit() {
         });
     };
     if (!editing_.empty()) {
-        g_.online.send("PATCH", "/api/v1/community/comments/" + editing_, {{"body", body}}, done("Commentaire modifié.", {}));
+        g_.online.send("PATCH", "/api/v1/community/comments/" + editing_, {{"body", body}}, done("Commentaire modifié.", {}, false));
         return;
     }
     Json req = {{"body", body}};
@@ -168,7 +175,7 @@ void CommentsPanel::submit() {
         if (const Json* c = find(replyTo_); c && c->contains("parent_id") && (*c)["parent_id"].is_string()) parent = (*c)["parent_id"].get<std::string>();
     }
     g_.online.send("POST", basePath_ + "/comments", req,
-                   done(replyTo_.empty() ? "Commentaire publié." : "Réponse publiée.", parent));
+                   done(replyTo_.empty() ? "Commentaire publié." : "Réponse publiée.", parent, true));
 }
 
 void CommentsPanel::react(const std::string& id, const std::string& kind, const std::string& mine) {

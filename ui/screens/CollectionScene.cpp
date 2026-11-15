@@ -68,10 +68,12 @@ void drawNova(GameServices& g, const std::string& suitLook, const std::string& c
     g.app.renderer().drawTexture(*tex, &src, dst, tint);
 }
 
-/// A title as a gold chip centred on `c` (its size grows with the text).
-void drawTitleChip(UIContext& ui, Vec2 c, const std::string& text, float size, bool on = true) {
+/// A title as a gold chip centred on `c` (its size grows with the text; a smaller font when
+/// it would be wider than `maxWidth`, 0: no limit).
+void drawTitleChip(UIContext& ui, Vec2 c, const std::string& text, float size, bool on = true, float maxWidth = 0.0f) {
     if (text.empty()) return;
     float fs = fz(ui, size);
+    if (maxWidth > ui.s(22)) fs = fz(ui, ui.fitFont(text, FontFace::Bold, fs, maxWidth - ui.s(22)));
     float w = ui.text().measure(text, FontFace::Bold, ui.s(fs)).x + ui.s(22);
     Rect r = Rect::fromCenter(c, {w, ui.s(fs) + ui.s(10)});
     Color col = on ? kGold : ui.theme().textDim;
@@ -158,9 +160,13 @@ public:
         // Automated screenshots: "col:<tab>[:detail]".
         const std::string& o = g_.onlineOpen;
         if (o.rfind("col-cat:", 0) == 0) cat_ = std::clamp(std::atoi(o.c_str() + 8), 0, 4);
-        if (o.rfind("col-sel:", 0) == 0) selItem_ = o.substr(8);
+        if (o.rfind("col-sel:", 0) == 0) {
+            selItem_ = o.substr(8);
+            showItem(selItem_);  // its category too
+        }
         if (o.rfind("col-gal:", 0) == 0) galTab_ = std::clamp(std::atoi(o.c_str() + 8), 0, 2);
         if (o.rfind("col-track:", 0) == 0) selTrack_ = o.substr(10);
+        routeEnd_ = o == "col-end";  // the route scrolled to its end
         g_.ui.setFocus("col/tab" + std::to_string(tab_));
         scan_ = std::async(std::launch::async, [&content = g_.content] { return scanCampaign(content); });
     }
@@ -325,6 +331,8 @@ private:
                     g_.collection.markAnnounced(sel->id);
                     g_.collection.save();
                     g_.syncCosmetics();
+                    g_.noteOutfit();
+                    progress_ = g_.cosmeticProgress();  // an achievement of the Collection may add stars
                     g_.uiSound("ui_confirm", 0.6f);
                 }
                 ui.label(ui.elide(req, FontFace::Body, fz(ui, 15), det.right() - dx - ui.s(210)), {dx + ui.s(186), by + ui.s(24)}, fz(ui, 15),
@@ -348,9 +356,13 @@ private:
                  ui.theme().textDim, Align::Right, FontFace::Body, VAlign::Middle);
         int cols = 3;
         float gap = ui.s(12);
-        float cw = (gridA.w - gap * (cols - 1)) / cols, ch = ui.s(156);
+        float ch = ui.s(156);
         float gy = gridA.y + ui.s(36);
-        ui.beginScroll("items", {gridA.x, gy, gridA.w, gridA.bottom() - gy}, std::ceil(items.size() / static_cast<float>(cols)) * (ch + gap));
+        float gridH = std::ceil(items.size() / static_cast<float>(cols)) * (ch + gap);
+        // A list longer than the room scrolls: its bar gets a lane of its own, beside the cards.
+        float cardsW = gridA.w - (gridH - gap > gridA.bottom() - gy ? ui.s(14) : 0.0f);
+        float cw = (cardsW - gap * (cols - 1)) / cols;
+        ui.beginScroll("items", {gridA.x, gy, gridA.w, gridA.bottom() - gy}, gridH);
         float so = ui.scrollOffset();
         for (size_t i = 0; i < items.size(); ++i) {
             const CosmeticItem& it = *items[i];
@@ -392,17 +404,12 @@ private:
             drawAvatarFrame(r, box.center(), rad, it.look, ui.s(0.8f), t_);
             if (!unlocked) r.fillRoundedRect(box, ui.s(8), Color{11, 18, 38, 150});
         } else if (it.category == "title") {
-            drawTitleChip(ui, box.center(), it.isDefault ? "Sans titre" : it.look, 13, unlocked && !it.isDefault);
+            drawTitleChip(ui, box.center(), it.isDefault ? "Sans titre" : it.look, 13, unlocked && !it.isDefault, box.w - ui.s(8));
         } else if (it.category == "trail") {
-            // A fixed sample of the trail, from left to right.
-            for (int i = 0; i < 12 && it.look != "none"; ++i) {
-                float k = static_cast<float>(i) / 11.0f;
-                Vec2 p{box.x + box.w * (0.15f + 0.7f * k), box.center().y + std::sin(k * 6.0f) * (it.look == "aurora" ? 6.0f : 0.0f)};
-                Color c = it.look == "comet" ? Color{200, 230, 255, 255} : it.look == "aurora" ? Color{150, 200, 210, 255}
-                          : it.look == "eclipse" ? kGold : Color{57, 240, 216, 255};
-                c.a = static_cast<uint8_t>((unlocked ? 200 : 70) * k);
-                r.drawGlow(p, ui.s(6) * k + ui.s(2), c);
-            }
+            // A sample of the trail, drawn as in the game, from left (oldest) to right.
+            r.pushClip(box);
+            drawTrailSample(r, it.look, box.expanded(-ui.s(4)), t_, unlocked ? 1.0f : 0.35f);
+            r.popClip();
             if (it.look == "none") ui.label("—", box.center(), 20, ui.theme().textDim, Align::Center, FontFace::Bold, VAlign::Middle);
         } else if (it.category == "victory") {
             r.pushClip(box);
@@ -436,6 +443,16 @@ private:
     }
 
     // ================================================================= Route des étoiles
+    /// Opens the Vestiaire on an item (its category, the item selected).
+    void showItem(const std::string& id) {
+        const CosmeticItem* it = g_.cosmetics.find(id);
+        if (!it) return;
+        const auto& cats = g_.cosmetics.categories();
+        for (size_t i = 0; i < cats.size(); ++i)
+            if (cats[i].id == it->category) cat_ = static_cast<int>(i);
+        selItem_ = id;
+    }
+
     void drawRoute(const Rect& area) {
         UIContext& ui = g_.ui;
         Renderer& r = ui.r();
@@ -457,13 +474,17 @@ private:
         ui.panel(band, false, 14);
         float bx = band.x + ui.s(20), bw = band.w - ui.s(40);
         Vec2 sz = ui.label(std::to_string(progress_.stars), {bx, band.y + ui.s(30)}, 24, kGold, Align::Left, FontFace::Bold, VAlign::Middle);
-        ui.label(" étoiles sur " + std::to_string(progress_.totalStars) + " · rien ne s'achète, tout se gagne avec les succès",
-                 {bx + sz.x, band.y + ui.s(30)}, fz(ui, 17), ui.theme().text, Align::Left, FontFace::Body, VAlign::Middle);
+        std::string lead = " étoiles sur " + std::to_string(progress_.totalStars) + " · rien ne s'achète, tout se gagne avec les succès";
         std::string nx = next ? "Prochain palier : " + starsText(next->stars) + ", " + namesOf(*next) + " (encore " +
                                     std::to_string(next->stars - progress_.stars) + ")"
                               : "Toutes les récompenses des paliers sont débloquées";
+        // Both sentences on one line, each in its own half (the left one shrinks first).
         float nxRoom = bw * 0.45f;
         float nxSize = ui.fitFont(nx, FontFace::Body, fz(ui, 16), nxRoom);
+        float nxW = ui.text().measure(nx, FontFace::Body, ui.s(nxSize)).x;
+        float leadRoom = bw - sz.x - nxW - ui.s(24);
+        ui.label(lead, {bx + sz.x, band.y + ui.s(30)}, ui.fitFont(lead, FontFace::Body, fz(ui, 17), leadRoom), ui.theme().text, Align::Left, FontFace::Body,
+                 VAlign::Middle);
         ui.label(nx, {bx + bw, band.y + ui.s(30)}, nxSize, Color{143, 255, 240, 255}, Align::Right, FontFace::Body, VAlign::Middle);
         Rect bar{bx, band.y + ui.s(56), bw, ui.s(12)};
         r.fillRoundedRect(bar, bar.h * 0.5f, Color{20, 28, 52, 255});
@@ -478,22 +499,56 @@ private:
             Align a = v == 0 ? Align::Left : v == total ? Align::Right : Align::Center;
             ui.label(std::to_string(v), {tx, bar.bottom() + ui.s(14)}, fz(ui, 13), ui.theme().textDim, a, FontFace::Body, VAlign::Middle);
         }
-        // Milestones.
-        float y = band.bottom() + ui.s(20);
-        ui.label("Paliers", {area.x, y}, 21, ui.theme().text, Align::Left, FontFace::Bold);
-        y += ui.s(34);
+
+        // Milestones, then the rewards of a precise achievement, in one scrolling list (mouse
+        // wheel; the keyboard and the gamepad go from reward to reward). A reward opens in the
+        // Vestiaire.
+        std::vector<const CosmeticItem*> ach;
+        for (const auto& it : g_.cosmetics.items())
+            if (!it.achievement.empty()) ach.push_back(&it);
+        Rect view{area.x, band.bottom() + ui.s(16), area.w, area.bottom() - band.bottom() - ui.s(16)};
+        const float gap = ui.s(12), inner = view.w - ui.s(16), headH = ui.s(40);
+        // Milestone cards: as many columns as fit (at least ~170 px each), their height from
+        // the longest list of names.
+        const int cols = std::clamp(static_cast<int>((inner + gap) / (ui.s(170) + gap)), 3, 10);
+        const float cw = (inner - gap * static_cast<float>(cols - 1)) / static_cast<float>(cols);
+        const float thumbH = ui.s(72), namesTop = ui.s(40) + thumbH + ui.s(8);
+        float namesH = 0.0f;
+        for (const auto& m : ms) namesH = std::max(namesH, ui.text().measureWrapped(namesOf(m), FontFace::Body, ui.s(fz(ui, 14)), cw - ui.s(20)).y);
+        // The last card (milestones reached) keeps its sentence inside too.
+        float summaryH = ui.s(80) + ui.text().measureWrapped("Les étoiles déjà gagnées comptent aussi.", FontFace::Body, ui.s(fz(ui, 13)), cw - ui.s(24)).y;
+        const float ch = std::max(namesTop + namesH, summaryH) + ui.s(12);
+        const size_t cells = ms.size() + 1;
+        const float rows = std::ceil(static_cast<float>(cells) / static_cast<float>(cols));
+        // Achievement cards: wide enough for the longest title's chip (its font never goes
+        // below what stays readable).
+        float cardMin = ui.s(210);
+        for (const CosmeticItem* it : ach)
+            if (it->category == "title")
+                cardMin = std::max(cardMin, ui.text().measure(it->look, FontFace::Bold, ui.s(fz(ui, 13))).x + ui.s(22 + 16 + 12));
+        const int acols = std::clamp(static_cast<int>((inner + gap) / (cardMin + gap)), 2, 8);
+        const float aw = (inner - gap * static_cast<float>(acols - 1)) / static_cast<float>(acols);
+        float descH = 0.0f;
+        for (const CosmeticItem* it : ach)
+            if (const AchievementDef* a = g_.achievementCatalog.find(it->achievement))
+                descH = std::max(descH, ui.text().measureWrapped(a->description, FontFace::Body, ui.s(fz(ui, 12.5f)), aw - ui.s(20)).y);
+        const float ah = ui.s(80) + descH + ui.s(36);
+        const float arows = std::ceil(static_cast<float>(ach.size()) / static_cast<float>(acols));
+        float content = headH + rows * (ch + gap);
+        if (!ach.empty()) content += ui.s(10) + headH + arows * (ah + gap);
+        if (routeEnd_) ui.setScroll("route", 1e9f);
+        routeEnd_ = false;
+        ui.beginScroll("route", view, content);
+        float y = view.y - ui.scrollOffset();
+        auto visible = [&](const Rect& c) { return c.bottom() >= view.y && c.y <= view.bottom(); };
+        ui.label("Paliers", {view.x, y + ui.s(4)}, 21, ui.theme().text, Align::Left, FontFace::Bold);
+        y += headH;
         int reached = 0;
         for (const auto& m : ms) reached += progress_.stars >= m.stars ? 1 : 0;
-        int cols = std::max(1, std::min(9, static_cast<int>((ms.size() + 2) / 2)));
-        float gap = ui.s(12);
-        size_t cells = ms.size() + 1;
-        float rows = std::ceil(cells / static_cast<float>(cols));
-        // Cards fill the height left above the achievements' rewards.
-        float cw = (area.w - gap * (cols - 1)) / cols;
-        float ch = std::clamp((area.bottom() - y - ui.s(34) - ui.s(186) - ui.s(14) - gap * rows) / rows, ui.s(136), ui.s(230));
         for (size_t i = 0; i < cells; ++i) {
-            Rect c{area.x + (cw + gap) * static_cast<float>(i % static_cast<size_t>(cols)), y + (ch + gap) * static_cast<float>(i / static_cast<size_t>(cols)), cw, ch};
+            Rect c{view.x + (cw + gap) * static_cast<float>(i % static_cast<size_t>(cols)), y + (ch + gap) * static_cast<float>(i / static_cast<size_t>(cols)), cw, ch};
             if (i == ms.size()) {
+                if (!visible(c)) continue;
                 r.drawRoundedRect(c, ui.s(12), kGold.withAlpha(110), std::max(1.0f, ui.s(1.5f)));
                 ui.label("Paliers atteints", {c.x + ui.s(12), c.y + ui.s(14)}, fz(ui, 13), ui.theme().textDim);
                 ui.label(std::to_string(reached) + " / " + std::to_string(ms.size()), {c.x + ui.s(12), c.y + ui.s(36)}, 28, kGold, Align::Left, FontFace::Bold);
@@ -502,6 +557,20 @@ private:
             }
             const auto& m = ms[i];
             bool got = progress_.stars >= m.stars, isNext = next == &m;
+            // Thumbnails of its rewards side by side: each one opens in the Vestiaire.
+            Rect th{c.x + ui.s(8), c.y + ui.s(40), c.w - ui.s(16), thumbH};
+            float each = th.w / static_cast<float>(m.items.size());
+            std::vector<Rect> thumbs;
+            for (size_t k = 0; k < m.items.size(); ++k) {
+                Rect t{th.x + each * static_cast<float>(k) + (k ? ui.s(3) : 0.0f), th.y, each - (m.items.size() > 1 ? ui.s(3) : 0.0f), th.h};
+                thumbs.push_back(t);
+                if (ui.hotspot("ms" + m.items[k]->id, t)) {
+                    showItem(m.items[k]->id);
+                    tab_ = 0;
+                    g_.ui.setFocus("tab0");
+                }
+            }
+            if (!visible(c)) continue;
             r.fillRoundedRect(c, ui.s(12), isNext ? ui.theme().accent.withAlpha(30) : Color{14, 20, 40, 235});
             r.drawRoundedRect(c, ui.s(12), got ? kGreen.withAlpha(120) : isNext ? ui.theme().accent : ui.theme().accent.withAlpha(36),
                               std::max(1.0f, ui.s(1.5f)));
@@ -522,47 +591,59 @@ private:
                 r.drawLine({k.x - ui.s(6), k.y}, {k.x - ui.s(2), k.y + ui.s(4)}, kGreen, ui.s(2.5f));
                 r.drawLine({k.x - ui.s(2), k.y + ui.s(4)}, {k.x + ui.s(6), k.y - ui.s(5)}, kGreen, ui.s(2.5f));
             } else if (isNext) {
-                ui.label("+" + std::to_string(m.stars - progress_.stars), {c.right() - ui.s(10), br.center().y}, fz(ui, 12), Color{143, 255, 240, 255},
-                         Align::Right, FontFace::Bold, VAlign::Middle);
+                std::string plus = "+" + std::to_string(m.stars - progress_.stars);
+                if (ui.text().measure(plus, FontFace::Bold, ui.s(fz(ui, 12))).x <= room)
+                    ui.label(plus, {c.right() - ui.s(10), br.center().y}, fz(ui, 12), Color{143, 255, 240, 255}, Align::Right, FontFace::Bold, VAlign::Middle);
             }
-            // Thumbnails of its rewards side by side.
-            Rect th{c.x + ui.s(8), c.y + ui.s(40), c.w - ui.s(16), c.h - ui.s(104)};
-            float each = th.w / static_cast<float>(m.items.size());
-            for (size_t k = 0; k < m.items.size(); ++k)
-                drawThumb(*m.items[k], {th.x + each * k + (k ? ui.s(3) : 0.0f), th.y, each - (m.items.size() > 1 ? ui.s(3) : 0.0f), th.h}, got || isNext);
-            std::string names = namesOf(m);
-            ui.labelWrapped(names, {c.x + ui.s(10), th.bottom() + ui.s(8)}, c.w - ui.s(20), fz(ui, 14), got || isNext ? ui.theme().text : ui.theme().textDim);
+            for (size_t k = 0; k < m.items.size(); ++k) {
+                drawThumb(*m.items[k], thumbs[k], got || isNext);
+                if (ui.focused("ms" + m.items[k]->id)) r.drawRoundedRect(thumbs[k], ui.s(8), ui.theme().accent, std::max(1.0f, ui.s(2.0f)));
+            }
+            ui.labelWrapped(namesOf(m), {c.x + ui.s(10), c.y + namesTop}, c.w - ui.s(20), fz(ui, 14), got || isNext ? ui.theme().text : ui.theme().textDim);
         }
-        y += (ch + gap) * std::ceil(cells / static_cast<float>(cols));
+        y += rows * (ch + gap);
         // Rewards of a precise achievement.
-        std::vector<const CosmeticItem*> ach;
-        for (const auto& it : g_.cosmetics.items())
-            if (!it.achievement.empty()) ach.push_back(&it);
-        if (ach.empty() || y + ui.s(150) > area.bottom()) return;
-        y += ui.s(6);
-        ui.label("Récompenses de succès précis", {area.x, y}, 21, ui.theme().text, Align::Left, FontFace::Bold);
-        Vec2 hs = ui.text().measure("Récompenses de succès précis", FontFace::Bold, ui.s(21));
-        ui.label("Elles ne dépendent pas du nombre d'étoiles : il faut le succès lui-même.", {area.x + hs.x + ui.s(14), y + ui.s(4)}, fz(ui, 14), ui.theme().textDim);
-        y += ui.s(34);
-        int acols = static_cast<int>(ach.size());
-        float aw = (area.w - gap * (acols - 1)) / acols, ah = std::min(ui.s(186), area.bottom() - y);
-        for (size_t i = 0; i < ach.size(); ++i) {
-            const CosmeticItem& it = *ach[i];
-            const AchievementDef* a = g_.achievementCatalog.find(it.achievement);
-            bool got = cosmeticUnlocked(it, progress_);
-            Rect c{area.x + (aw + gap) * static_cast<float>(i), y, aw, ah};
-            r.fillRoundedRect(c, ui.s(12), Color{14, 20, 40, 235});
-            r.drawRoundedRect(c, ui.s(12), got ? kGreen.withAlpha(120) : ui.theme().accent.withAlpha(36), std::max(1.0f, ui.s(1.5f)));
-            drawThumb(it, {c.x + ui.s(8), c.y + ui.s(8), c.w - ui.s(16), ui.s(46)}, got);
-            std::string nm = it.category == "suit" ? "Combinaison " + it.name : "Titre";
-            ui.label(ui.elide(nm, FontFace::Bold, 15, c.w - ui.s(20)), {c.x + ui.s(10), c.y + ui.s(58)}, 15, ui.theme().text, Align::Left, FontFace::Bold);
-            std::string desc = a ? a->description : "";
-            ui.labelWrapped(desc, {c.x + ui.s(10), c.y + ui.s(80)}, c.w - ui.s(20), fz(ui, 12.5f), ui.theme().textDim);
-            int st = a ? a->stars : 0;
-            for (int s = 0; s < st; ++s) drawStar(r, {c.x + ui.s(16) + ui.s(14) * s, c.bottom() - ui.s(14)}, ui.s(6), got ? kGold : kGold.withAlpha(110));
-            ui.label(got ? "obtenu" : "à obtenir", {c.right() - ui.s(10), c.bottom() - ui.s(14)}, fz(ui, 12), got ? kGreen : ui.theme().textDim, Align::Right,
-                     FontFace::Bold, VAlign::Middle);
+        if (!ach.empty()) {
+            y += ui.s(10);
+            const std::string head = "Récompenses de succès précis";
+            ui.label(head, {view.x, y + ui.s(4)}, 21, ui.theme().text, Align::Left, FontFace::Bold);
+            float hw = ui.text().measure(head, FontFace::Bold, ui.s(21)).x;
+            std::string sub = "Elles ne dépendent pas du nombre d'étoiles : il faut le succès lui-même.";
+            float subRoom = inner - hw - ui.s(14);
+            if (subRoom > ui.s(120))
+                ui.label(ui.elide(sub, FontFace::Body, fz(ui, 14), subRoom), {view.x + hw + ui.s(14), y + ui.s(8)}, fz(ui, 14), ui.theme().textDim);
+            y += headH;
+            for (size_t i = 0; i < ach.size(); ++i) {
+                const CosmeticItem& it = *ach[i];
+                const AchievementDef* a = g_.achievementCatalog.find(it.achievement);
+                bool got = cosmeticUnlocked(it, progress_);
+                Rect c{view.x + (aw + gap) * static_cast<float>(i % static_cast<size_t>(acols)), y + (ah + gap) * static_cast<float>(i / static_cast<size_t>(acols)),
+                       aw, ah};
+                if (ui.hotspot("ach" + it.id, c)) {
+                    showItem(it.id);
+                    tab_ = 0;
+                    g_.ui.setFocus("tab0");
+                }
+                if (!visible(c)) continue;
+                bool on = ui.focused("ach" + it.id);
+                r.fillRoundedRect(c, ui.s(12), on ? ui.theme().accent.withAlpha(36) : Color{14, 20, 40, 235});
+                r.drawRoundedRect(c, ui.s(12), on ? ui.theme().accent : got ? kGreen.withAlpha(120) : ui.theme().accent.withAlpha(36), std::max(1.0f, ui.s(1.5f)));
+                drawThumb(it, {c.x + ui.s(8), c.y + ui.s(8), c.w - ui.s(16), ui.s(46)}, got);
+                std::string nm = it.category == "suit"    ? "Combinaison " + it.name
+                                 : it.category == "trail"  ? "Traînée " + it.name
+                                 : it.category == "frame"  ? "Cadre " + it.name
+                                 : it.category == "victory" ? "Effet " + it.name
+                                                            : std::string("Titre");
+                ui.label(ui.elide(nm, FontFace::Bold, 15, c.w - ui.s(20)), {c.x + ui.s(10), c.y + ui.s(58)}, 15, ui.theme().text, Align::Left, FontFace::Bold);
+                std::string desc = a ? a->description : "";
+                ui.labelWrapped(desc, {c.x + ui.s(10), c.y + ui.s(80)}, c.w - ui.s(20), fz(ui, 12.5f), ui.theme().textDim);
+                int st = a ? a->stars : 0;
+                for (int s = 0; s < st; ++s) drawStar(r, {c.x + ui.s(16) + ui.s(14) * s, c.bottom() - ui.s(16)}, ui.s(6), got ? kGold : kGold.withAlpha(110));
+                ui.label(got ? "obtenu" : "à obtenir", {c.right() - ui.s(10), c.bottom() - ui.s(16)}, fz(ui, 12), got ? kGreen : ui.theme().textDim, Align::Right,
+                         FontFace::Bold, VAlign::Middle);
+            }
         }
+        ui.endScroll();
     }
 
     // ================================================================= Musiques
@@ -790,6 +871,10 @@ private:
         if (ui.button("menu", mb, ml, mst) && !isMenu) {
             g_.collection.menuMusic = cur->file;
             g_.collection.save();
+            g_.achievements.stats().add("menu_music");  // 2.24: « Programmateur »
+            g_.checkAchievements();
+            g_.achievements.save();
+            progress_ = g_.cosmeticProgress();
             g_.uiSound("ui_confirm", 0.6f);
         }
         ui.label("Volume : celui de la musique (Paramètres → Audio).", {art.center().x, player.bottom() - ui.s(28)}, fz(ui, 13), ui.theme().textDim,
@@ -890,6 +975,10 @@ private:
         if (ok) {
             g_.collection.exported++;
             g_.collection.save();
+            g_.achievements.stats().insert("photographed_planets", p.id);  // 2.24: « Photographe »
+            g_.checkAchievements();
+            g_.achievements.save();
+            progress_ = g_.cosmeticProgress();
             exportedMsg_ = "Enregistrée : " + Paths::toUtf8(file);
         } else {
             exportedMsg_ = "Impossible d'enregistrer l'image.";
@@ -1040,6 +1129,7 @@ private:
     int cat_ = 0;
     std::string selItem_;
     TrailFx trailFx_;
+    bool routeEnd_ = false;  // automated screenshots: the Route scrolled to its end
     Vec2 trailCenter_;
     float trailRadius_ = 80.0f;
     // Musiques

@@ -200,6 +200,13 @@ private:
         msgTimer_ = 4.0f;
     }
 
+    /// A counter of the achievements (comparisons, alignments), saved and checked at once.
+    void noteAchievement(const std::string& key) {
+        g_.achievements.stats().add(key);
+        g_.checkAchievements();
+        g_.achievements.save();
+    }
+
     void downloadReplay(const std::string& levelId) {
         status_ = "Téléchargement du replay…";
         g_.online.getBinary("/api/v1/records/" + recordId_ + "/replay", [this, levelId, alive = std::weak_ptr<int>(life_)](const HttpResponse& resp) {
@@ -315,6 +322,7 @@ private:
         cmp_.set(CompareRun::fromReplay(*a_.replay, a_.meta), CompareRun::fromReplay(*b_.replay, b_.meta));
         if (routeReady_) cmp_.setRoute(route_);
         comparing_ = true;
+        noteAchievement("replay_compares");  // 2.24: « Analyste »
         alignRow_ = 0;
         offsetText_.clear();
         if (!playback_ && camMode_ == 0) camMode_ = 0;
@@ -1057,6 +1065,7 @@ private:
     void alignOn(int row) {
         if (cmp_.alignOn(row)) {
             alignRow_ = row;
+            noteAchievement("replay_aligns");  // 2.24: « Synchronisé »
             say("B recalé sur " + rowName(row) + " : " + formatCompareOffset(cmp_.offsetMs()));
         }
         else say("B n'est pas passé par " + rowName(row) + " : recalage impossible");

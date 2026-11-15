@@ -4,6 +4,7 @@
 // Everything shown comes from the player's own saves (game/achievements/Achievements.h).
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdio>
 #include <string>
@@ -92,6 +93,15 @@ public:
         } else if (g_.onlineOpen == "ach-list") {
             view_ = 1;
             g_.onlineOpen.clear();
+        } else if (g_.onlineOpen.rfind("ach-list:", 0) == 0) {
+            // The list, scrolled to this achievement (--online-open ach-list:<id>).
+            std::string id = g_.onlineOpen.substr(9);
+            for (size_t i = 0; i < all.size(); ++i)
+                if (all[i].id == id) selected_ = static_cast<int>(i);
+            view_ = 1;
+            g_.onlineOpen.clear();
+            g_.ui.setFocus("ach/l" + std::to_string(selected_));
+            return;
         }
         g_.ui.setFocus("ach/n" + std::to_string(selected_));
     }
@@ -204,45 +214,83 @@ private:
         float r = 8.0f;
     };
 
-    /// Places every achievement: its category's sector (width by its number of achievements),
-    /// its ring by its stars (1 star outside, 5 stars next to the heart).
+    /// Heart of the web (radius / web radius) and the angle kept free at the top for the
+    /// rings' legend.
+    static constexpr float kHub = 0.30f, kLegend = 0.30f;
+    /// Radial offset of the two staggered rows of a crowded ring (in rings' widths).
+    static constexpr float kZig = 0.25f;
+
+    float ringMid(float hub, float band, int stars) const { return hub + band * (5.0f - static_cast<float>(stars)) + band * 0.5f; }
+    /// Node radius and the free space between two nodes at 100 % (the zoom scales them).
+    float nodeRadius(float band1) const { return std::min(g_.ui.s(9), band1 * 0.24f); }
+    float nodeGap() const { return g_.ui.s(5); }
+
+    /// Places every achievement on its ring (1 star outside, 5 stars next to the heart), in
+    /// its category's sector. Each sector is as wide as its most crowded ring needs (nodes
+    /// side by side, or on two staggered rows when the web is full), with a margin at its
+    /// edges on every ring: no node ever covers another one. Angles are those of 100 %, so the
+    /// zoom only scales the web.
     void layout(Vec2 c, float R, float hub) {
         const AchievementCatalog& cat = g_.achievementCatalog;
         const auto& all = cat.achievements();
+        const auto& cats = cat.categories();
         nodes_.assign(all.size(), Node{});
         sectors_.clear();
-        const float legend = 0.20f;  // radians kept free at the top for the rings' legend
-        float total = 0.0f;
-        std::vector<int> counts;
-        for (const auto& k : cat.categories()) {
-            int n = 0;
-            for (const auto& a : all) n += a.category == k.id ? 1 : 0;
-            counts.push_back(n);
-            total += static_cast<float>(n) + 1.2f;  // + a gap between sectors
+        const float z = std::max(zoom_, 0.01f);
+        const float band = (R - hub) / 5.0f;
+        const float nr = nodeRadius(band / z), gap = nodeGap();
+        // Angle of one node and of the margin at a sector's edge, on the ring of `st` stars.
+        auto step1 = [&](int st) { return (2.0f * nr + gap) / (ringMid(hub, band, st) / z); };
+        auto pad1 = [&](int st) { return (nr + gap * 0.5f) / (ringMid(hub, band, st) / z); };
+        std::vector<std::array<int, 6>> count(cats.size(), std::array<int, 6>{});
+        std::vector<int> total(cats.size(), 0);
+        for (const auto& a : all)
+            for (size_t ci = 0; ci < cats.size(); ++ci)
+                if (cats[ci].id == a.category) {
+                    count[ci][static_cast<size_t>(std::clamp(a.stars, 1, 5))]++;
+                    total[ci]++;
+                }
+        const float span = 2.0f * kPi - kLegend;
+        std::vector<float> one(cats.size(), 0.0f), two(cats.size(), 0.0f);
+        float sumOne = 0.0f, sumTwo = 0.0f;
+        int all1 = 0;
+        for (size_t ci = 0; ci < cats.size(); ++ci) {
+            for (int st = 1; st <= 5; ++st) {
+                float n = static_cast<float>(count[ci][static_cast<size_t>(st)]);
+                if (n <= 0.0f) continue;
+                one[ci] = std::max(one[ci], n * step1(st) + 2.0f * pad1(st));
+                two[ci] = std::max(two[ci], std::max(1.0f, n * 0.5f) * step1(st) + 2.0f * pad1(st));
+            }
+            sumOne += one[ci];
+            sumTwo += two[ci];
+            all1 += total[ci];
         }
-        float a = -kPi / 2.0f + legend * 0.5f;
-        float span = 2.0f * kPi - legend;
-        float band = (R - hub) / 5.0f;
-        for (size_t ci = 0; ci < cat.categories().size(); ++ci) {
-            float w = span * (static_cast<float>(counts[ci]) + 1.2f) / total;
-            Sector s{a + w * 0.6f / (static_cast<float>(counts[ci]) + 1.2f), a + w - w * 0.6f / (static_cast<float>(counts[ci]) + 1.2f), a, a + w};
-            sectors_.push_back(s);
-            const std::string& id = cat.categories()[ci].id;
+        // Side by side when everything fits, else crowded rings on two rows; what is left of
+        // the circle is shared by the number of achievements (too many: all shrink alike).
+        const bool rows2 = sumOne > span;
+        const std::vector<float>& need = rows2 ? two : one;
+        const float sum = rows2 ? sumTwo : sumOne;
+        float a = -kPi / 2.0f + kLegend * 0.5f;
+        for (size_t ci = 0; ci < cats.size(); ++ci) {
+            float w = sum <= span ? need[ci] + (span - sum) * static_cast<float>(total[ci]) / static_cast<float>(std::max(1, all1))
+                                  : need[ci] * span / std::max(sum, 0.001f);
+            sectors_.push_back(Sector{a, a + w, a, a + w});
+            const std::string& id = cats[ci].id;
             for (int st = 1; st <= 5; ++st) {
                 std::vector<size_t> ring;
                 for (size_t i = 0; i < all.size(); ++i)
                     if (all[i].category == id && all[i].stars == st) ring.push_back(i);
                 if (ring.empty()) continue;
-                // Ring of `st` stars: the outermost for 1 star.
-                float mid = hub + band * (5.0f - static_cast<float>(st)) + band * 0.5f;
-                float arc = (s.a1 - s.a0) * mid / static_cast<float>(ring.size());
-                bool zig = arc < g_.ui.s(30);
+                const float mid = ringMid(hub, band, st);
+                const float lo = a + pad1(st), hi = a + w - pad1(st);
+                const float step = (hi - lo) / static_cast<float>(ring.size());
+                const bool zig = ring.size() > 1 && step * (mid / z) < 2.0f * nr + gap - 0.01f;
                 for (size_t k = 0; k < ring.size(); ++k) {
-                    float ang = s.a0 + (s.a1 - s.a0) * (static_cast<float>(k) + 0.5f) / static_cast<float>(ring.size());
-                    float rr = mid + (zig ? (k % 2 ? band * 0.24f : -band * 0.24f) : 0.0f);
+                    float ang = lo + step * (static_cast<float>(k) + 0.5f);
+                    float rr = mid + (zig ? (k % 2 ? band * kZig : -band * kZig) : 0.0f);
                     Node& n = nodes_[ring[k]];
                     n.p = {c.x + std::cos(ang) * rr, c.y + std::sin(ang) * rr};
-                    n.r = std::clamp(std::min(arc * (zig ? 0.62f : 0.4f), band * 0.3f), g_.ui.s(6), g_.ui.s(12) * std::min(zoom_, 2.2f));
+                    n.r = nr * std::min(z, 2.2f);
                 }
             }
             a += w;
@@ -316,7 +364,7 @@ private:
         webInput(area, R0);
         float R = R0 * zoom_;
         Vec2 c = area.center() + pan_;
-        float hub = R * 0.17f;
+        float hub = R * kHub;
         layout(c, R, hub);
         // A node chosen with the keyboard, the gamepad or the list: brought into view.
         if (centerOn_ >= 0 && centerOn_ < static_cast<int>(nodes_.size())) {
@@ -356,11 +404,13 @@ private:
             r.drawLine({c.x + std::cos(a) * hub, c.y + std::sin(a) * hub}, {c.x + std::cos(a) * R, c.y + std::sin(a) * R},
                        k.color.withAlpha(static_cast<uint8_t>(50 + 150 * f)), ui.s(1.5f));
         }
-        // The rings' legend in the free space at the top: 5 stars at the heart, 1 outside.
+        // The rings' legend in the free space at the top: 5 stars at the heart, 1 outside
+        // (smaller where the gap between the first and the last sector is narrow).
         for (int st = 1; st <= 5; ++st) {
-            float mid = hub + band * (5.0f - static_cast<float>(st)) + band * 0.5f;
+            float mid = ringMid(hub, band, st);
             Vec2 p{c.x, c.y - mid};
-            float sz = std::min(ui.s(9), band * 0.22f);
+            float room = kLegend * mid + nodeGap() * std::min(zoom_, 2.2f) - ui.s(4);
+            float sz = std::min({ui.s(9), band * 0.22f, room / (0.95f * static_cast<float>(st - 1) + 1.0f)});
             for (int i = 0; i < st; ++i) drawStar(r, {p.x + (static_cast<float>(i) - (st - 1) * 0.5f) * sz * 0.95f, p.y}, sz * 0.5f, Color{255, 214, 90, 150}, true);
         }
         // Threads between an achievement and the ones it opens.
@@ -379,7 +429,9 @@ private:
             const Node& n = nodes_[i];
             Color col = colorOf(a.category);
             std::string id = "n" + std::to_string(i);
-            Rect hit = Rect::fromCenter(n.p, {std::max(n.r * 2.4f, ui.s(18)), std::max(n.r * 2.4f, ui.s(18))});
+            // The node and half the free space around it: two neighbours never share a point.
+            float hs = 2.0f * n.r + nodeGap() * std::min(zoom_, 2.2f) * 0.9f;
+            Rect hit = Rect::fromCenter(n.p, {hs, hs});
             // Only the nodes in view can be pointed at or reached (a drag never selects).
             if (area.contains(n.p) && !(dragging_ && dragMoved_ > ui.s(6))) ui.hotspot(id, hit);
             if (ui.focused(id) && selected_ != static_cast<int>(i)) {

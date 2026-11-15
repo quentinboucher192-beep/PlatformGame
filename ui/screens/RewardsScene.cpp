@@ -131,9 +131,13 @@ public:
         // Tiles (3 per row; the list scrolls when there are more).
         int cols = 3;
         float gap = ui.s(12);
-        float tw2 = (rw - gap * (cols - 1)) / cols, th = ui.s(176);
+        float th = ui.s(176);
         float listBottom = card.bottom() - bottomBar - ui.s(24);
-        ui.beginScroll("tiles", {rx, ry, rw, listBottom - ry}, std::ceil(items_.size() / static_cast<float>(cols)) * (th + gap));
+        float listH = std::ceil(items_.size() / static_cast<float>(cols)) * (th + gap);
+        // Many rewards at once (2.24 adds a lot): the scroll bar gets its own lane.
+        float tilesW = rw - (listH - gap > listBottom - ry ? ui.s(14) : 0.0f);
+        float tw2 = (tilesW - gap * (cols - 1)) / cols;
+        ui.beginScroll("tiles", {rx, ry, rw, listBottom - ry}, listH);
         float so = ui.scrollOffset();
         for (size_t i = 0; i < items_.size(); ++i) {
             const CosmeticItem& it = *items_[i];
@@ -188,6 +192,7 @@ public:
             for (size_t i = 0; i < items_.size(); ++i)
                 if (picked_[i]) g_.collection.equip(items_[i]->category, items_[i]->id);
             g_.syncCosmetics();
+            g_.noteOutfit();
             close();
         } else if (later || ui.backPressed()) {
             close();
@@ -234,24 +239,20 @@ private:
             r.drawRoundedRect(tr, tr.h * 0.5f, kGold.withAlpha(160), std::max(1.0f, ui.s(1.2f)));
             ui.label(ui.elide(it.look, FontFace::Bold, fs, tr.w - ui.s(12)), tr.center(), fs, kGold, Align::Center, FontFace::Bold, VAlign::Middle);
         } else if (it.category == "trail") {
-            for (int i = 0; i < 12; ++i) {
-                float k = static_cast<float>(i) / 11.0f;
-                Vec2 p{box.x + box.w * (0.15f + 0.7f * k), box.center().y + std::sin(k * 6.0f) * (it.look == "aurora" ? 6.0f : 0.0f)};
-                Color c = it.look == "comet" ? Color{200, 230, 255, 255} : it.look == "aurora" ? Color{150, 200, 210, 255}
-                          : it.look == "eclipse" ? kGold : Color{57, 240, 216, 255};
-                c.a = static_cast<uint8_t>(200 * k);
-                r.drawGlow(p, ui.s(6) * k + ui.s(2), c);
-            }
+            // The trail as the game draws it (2.24: one look per trail, the new ones too).
+            r.pushClip(box);
+            drawTrailSample(r, it.look, box.expanded(-ui.s(4)), t_);
+            r.popClip();
         } else if (it.category == "victory") {
             r.pushClip(box);
             drawVictoryFx(r, it.look, {box.center().x, box.bottom() - ui.s(6)}, std::fmod(t_, 2.4f) + 0.15f, false, box.h / 220.0f);
             r.popClip();
         } else if (it.category == "frame") {
-            Color c = it.look == "bronze" ? Color{205, 127, 50, 255} : it.look == "silver" ? Color{200, 210, 225, 255}
-                      : it.look == "gold" ? kGold : it.look == "platinum" ? Color{170, 240, 255, 255} : Color{255, 255, 255, 255};
-            float rad = box.h * 0.32f;
-            r.drawGlow(box.center(), rad * 1.6f, c.withAlpha(90));
-            r.drawRing(box.center(), rad, ui.s(5), c);
+            // The frame itself around an empty avatar (as on the profile and the leaderboards).
+            float scale = ui.s(0.7f);
+            float rad = std::max(ui.s(8), box.h * 0.5f - kAvatarFrameMargin * scale - ui.s(2));
+            r.fillCircle(box.center(), rad, Color{24, 34, 60, 255});
+            drawAvatarFrame(r, box.center(), rad, it.look, scale, t_);
         }
     }
 
