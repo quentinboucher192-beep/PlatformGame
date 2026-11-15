@@ -5,6 +5,9 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.33.1** :
+* Présence des amis aussi dans les discussions privées et dans le profil d'un ami.
+
 **Nouveau dans la version 2.33.0** :
 * **Défis de la semaine et du mois**, **calendrier** des défis (anciens défis rejouables hors
   délai), classement **« Plus loin »** des essais notés par le serveur.

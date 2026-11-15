@@ -1,4 +1,7 @@
 {
+  "2.33.1": [
+    "Présence des amis aussi sur l'avatar de chaque discussion privée (avec « en ligne », « absent » ou « hors ligne » dans l'en-tête de la discussion) et dans le profil d'un ami ; elle se met à jour toutes les 30 secondes dans SOCIAL."
+  ],
   "2.33.0": [
     "Défis de la semaine et du mois : à côté du défi du jour, un défi par semaine (lundi → lundi) et un par mois, plus longs et plus durs, chacun avec son classement, ses paliers et sa série.",
     "Calendrier des défis : chaque jour, semaine et mois avec votre palier et son état ; un défi passé se rejoue « hors délai » (classement « Depuis », sans compter pour la série) ; navigation au clavier, à la manette et à la souris.",

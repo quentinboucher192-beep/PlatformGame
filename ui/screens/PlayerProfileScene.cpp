@@ -219,6 +219,14 @@ private:
         ui_.avatarsOpenProfile = true;
         drawAvatarFrame(ui.r(), {x + av * 0.5f, y + av * 0.5f}, av * 0.5f, dressed ? g_.cosmetics.lookOr("frame", wornLook(worn, "frame")) : "simple",
                         ui.s(1.0f), ui.time());
+        // A friend's presence (2.33.1): the pill on the avatar, its word on the line under.
+        const std::string presence = jstr(p, "presence");
+        if (!presence.empty()) {
+            float rad = ui.s(13);
+            Vec2 pc{x + av - rad * 0.9f, y + av - rad * 0.9f};
+            ui.r().fillCircle(pc, rad + ui.s(3), Color{10, 14, 30, 255});
+            ui.r().fillCircle(pc, rad, presenceColor(presence));
+        }
         float nx = x + av + ui.s(kAvatarFrameMargin + 14);
         // Actions on the right of the header, under "Fermer".
         std::vector<std::pair<std::string, std::string>> acts;  // key, label
@@ -307,8 +315,16 @@ private:
         std::string sub;
         if (!hidden && p.contains("created_at")) sub = "Inscrit le " + dateFr(jstr(p, "created_at"));
         if (jget<bool>(fstate, "followed_by", false)) sub += (sub.empty() ? "" : "  ·  ") + std::string("vous suit");
-        if (!sub.empty()) {
-            ui.label(sub, {nx, ly}, ui.fitFont(sub, FontFace::Body, 15, nameRoom), ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        if (!presence.empty() || !sub.empty()) {
+            float sx = nx;
+            if (!presence.empty()) {
+                const std::string word = presence == "online" ? "En ligne" : presence == "away" ? "Absent" : "Hors ligne";
+                Vec2 ws = ui.label(word, {sx, ly}, 15, presenceColor(presence), Align::Left, FontFace::Bold, VAlign::Middle);
+                sx += ws.x + ui.s(14);
+            }
+            if (!sub.empty())
+                ui.label(sub, {sx, ly}, ui.fitFont(sub, FontFace::Body, 15, nx + nameRoom - sx), ui.theme().textDim, Align::Left, FontFace::Body,
+                         VAlign::Middle);
             ly += ui.s(14);
         }
         float headerBottom = std::max({y + av + ui.s(kAvatarFrameMargin), ly, ay + ((acts.size() + cols - 1) / std::max(cols, 1)) * (bh + bgap) - bgap});
@@ -413,6 +429,10 @@ private:
         if (!foot.empty())
             ui.label(foot, {x, box_.bottom() - ui.s(24)}, ui.fitFont(foot, FontFace::Body, 15, w), statusError_ && foot == status_ ? ui.theme().danger : ui.theme().success,
                      Align::Left, FontFace::Body, VAlign::Middle);
+    }
+
+    static Color presenceColor(const std::string& p) {
+        return p == "online" ? Color{72, 220, 120, 255} : p == "away" ? Color{255, 176, 60, 255} : Color{120, 128, 150, 255};
     }
 
     /// Look of a worn item ("" if absent): checked by lookOr() before being drawn.

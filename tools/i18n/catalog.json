@@ -528,6 +528,12 @@
    ]
   },
   {
+   "fr": "Absent",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
    "fr": "absent",
    "where": [
     "ui/screens/SocialScene.cpp"
@@ -9666,7 +9672,8 @@
    "where": [
     "game/online/OnlineTypes.cpp",
     "ui/screens/ContentManagerScene.cpp",
-    "ui/screens/MainMenuScene.cpp"
+    "ui/screens/MainMenuScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -12466,7 +12473,8 @@
   {
    "fr": "Hors ligne",
    "where": [
-    "game/online/OnlineTypes.cpp"
+    "game/online/OnlineTypes.cpp",
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -22775,6 +22783,12 @@
    "fr": "Préparation du package…",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
+   ]
+  },
+  {
+   "fr": "Présence des amis aussi sur l'avatar de chaque discussion privée (avec « en ligne », « absent » ou « hors ligne » dans l'en-tête de la discussion) et dans le profil d'un ami ; elle se met à jour toutes les 30 secondes dans SOCIAL.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {

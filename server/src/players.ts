@@ -1,6 +1,7 @@
 // Player profiles, privacy settings, statistics, search, GDPR export and account deletion,
 // custom avatars.
 
+import { presenceOf } from "./friends";
 import { achievementSummary } from "./achievements";
 import { profileCosmetics } from "./cosmetics";
 import { creatorStats, followState, playtime } from "./creators";
@@ -130,7 +131,11 @@ export async function getPlayer(ctx: Ctx, viewer: AuthInfo | null): Promise<Resp
         else if (f.results.length) friendship = "request_received";
     }
     return json(ctx, {
-        player: { ...playerSummary(p), region_code: visibleCountry(p) ? p.region_code : null, created_at: p.created_at, hidden: false, friendship },
+        player: {
+            ...playerSummary(p), region_code: visibleCountry(p) ? p.region_code : null, created_at: p.created_at, hidden: false, friendship,
+            // Presence (2.33.1): friends only, as in the friends list.
+            ...(friendship === "friends" ? { presence: presenceOf(p) } : {}),
+        },
         statistics: await statistics(ctx, p.id),
         creator: await creatorStats(ctx, p.id),
         follow: await followState(ctx, viewer?.player.id ?? null, p.id),

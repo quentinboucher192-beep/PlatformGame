@@ -108,6 +108,12 @@ public:
         requireAccount();
         updateGlobe(dt);
         if (!g_.online.loggedIn()) return;
+        // Friends' presence stays current while SOCIAL is open (2.33.1).
+        presenceRefresh_ += dt;
+        if (presenceRefresh_ > 30.0f) {
+            presenceRefresh_ = 0.0f;
+            loadFriends();
+        }
         // The counters of the conversations follow the unread poll of OnlineService.
         // (An older server gives only the total: the list keeps its own counts then.)
         int known = 0;
@@ -567,12 +573,29 @@ private:
         ui.endScroll();
     }
 
+    /// A friend's presence from the friends list ("" if not a friend or unknown).
+    std::string presenceOfPlayer(const std::string& id) const {
+        for (const auto& f : friends_.value("friends", Json::array()))
+            if (jstr(f["player"], "id") == id) return jstr(f, "presence");
+        return {};
+    }
+    /// The presence pill on an avatar's lower right corner (2.33.1).
+    void drawPresencePill(const std::string& presence, const Rect& avatar) {
+        if (presence.empty()) return;
+        UIContext& ui = g_.ui;
+        float rad = std::max(ui.s(5), avatar.w * 0.13f);
+        Vec2 c{avatar.right() - rad * 0.6f, avatar.bottom() - rad * 0.6f};
+        ui.r().fillCircle(c, rad + ui.s(2), Color{10, 14, 30, 255});
+        ui.r().fillCircle(c, rad, presenceColor(presence));
+    }
+
     void drawConversationAvatar(const Json& c, const Rect& r) {
         UIContext& ui = g_.ui;
         if (jstr(c, "kind") == "direct") {
             for (const auto& m : c.value("members", Json::array()))
                 if (jstr(m, "id") != g_.online.playerId()) {
                     ui_.drawAvatar(jstr(m, "avatar", "avatar_01"), jstr(m, "id"), r);
+                    drawPresencePill(presenceOfPlayer(jstr(m, "id")), r);
                     return;
                 }
             ui.r().fillRoundedRect(r, r.w * 0.5f, Color{40, 46, 66, 255});
@@ -798,8 +821,16 @@ private:
                      Align::Left, FontFace::Bold, VAlign::Middle);
         }
         size_t nMembers = current_.value("members", Json::array()).size();
-        ui.label(group ? std::to_string(nMembers) + " membres" : "Conversation privée", {bar.x + ui.s(74), bar.y + ui.s(50)}, 14, ui.theme().textDim,
-                 Align::Left, FontFace::Body, VAlign::Middle);
+        Vec2 subSize = ui.label(group ? std::to_string(nMembers) + " membres" : "Conversation privée", {bar.x + ui.s(74), bar.y + ui.s(50)}, 14,
+                                ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        if (!group) {
+            std::string other;
+            for (const auto& m : current_.value("members", Json::array()))
+                if (jstr(m, "id") != g_.online.playerId()) other = jstr(m, "id");
+            if (std::string pr = presenceOfPlayer(other); !pr.empty())
+                ui.label("·  " + presenceWord(pr), {bar.x + ui.s(74) + subSize.x + ui.s(8), bar.y + ui.s(50)}, 14, presenceColor(pr), Align::Left,
+                         FontFace::Body, VAlign::Middle);
+        }
         UIContext::ButtonStyle st;
         st.small = true;
         float bx = bar.right() - ui.s(14);
@@ -1487,6 +1518,7 @@ private:
     GameServices& g_;
     OnlineUi ui_;
     MenuBackground bg_;
+    float presenceRefresh_ = 0.0f;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     std::string wantedConversation_;
     std::string openModal_;
