@@ -112,7 +112,7 @@ cours ou la précédente, avec au moins une partie **non hors délai** et non re
   sans `challenge_kind` reste « du jour »).
 - Base : la table `daily_challenges` devient `challenges` (colonnes `period`, `end_date` ;
   déclencheur `challenges_frozen`), `challenge_runs` gagne `late` (migration
-  `0054_challenge_periods.sql`, qui recopie les défis et parties de 2.32).
+  `0058_challenge_periods.sql`, qui recopie les défis et parties de 2.32).
 
 ## 4. Côté jeu (2.33.0)
 
@@ -219,5 +219,5 @@ tracé, pas de « Plus loin » pour ce défi (`progress_available: false` dans l
   tracé), `null` sans. Un défi seulement essayé (aucune partie finie) figure dans les
   résultats avec `best_time_ms: null`, `tier: null`, `status` et `late` de son meilleur essai.
   Les essais ne comptent pas pour les séries.
-- Base : table `challenge_attempts` (migration `0055_challenge_progress.sql`) ; dans l'export
+- Base : table `challenge_attempts` (migration `0059_challenge_progress.sql`) ; dans l'export
   des données (`challenge_attempts`) ; supprimée avec le compte, replays compris.

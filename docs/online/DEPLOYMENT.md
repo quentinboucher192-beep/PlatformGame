@@ -140,7 +140,7 @@ courantes, les anciennes passent « legacy », une révision existante n'est jam
 
 Les défis (contrats : [DAILY_CHALLENGES.md](DAILY_CHALLENGES.md) et
 [CHALLENGES_PERIODS.md](CHALLENGES_PERIODS.md), routes : API.md §8.9 duodecies) ont besoin des
-migrations `0049_daily_challenges.sql` (2.32) et `0054_challenge_periods.sql` (2.33 : la table
+migrations `0049_daily_challenges.sql` (2.32) et `0058_challenge_periods.sql` (2.33 : la table
 `daily_challenges` devient `challenges`, avec les semaines et les mois, et `challenge_runs`
 gagne `late` ; les défis et les parties existants sont recopiés tels quels) puis du Worker. La
 migration 0054 reconstruit les deux tables : appliquez-la **avant** de déployer le Worker 2.33
@@ -150,7 +150,7 @@ quotidienne (`17 3 * * *`) et chaque lecture des défis en cours tirent ensuite 
 d'aujourd'hui à J+7, de la semaine en cours à S+2 et du mois en cours à M+1. Aucun secret
 n'est nécessaire.
 
-**« Plus loin » (2.34)** : migration `0055_challenge_progress.sql` (nouvelle table
+**« Plus loin » (2.34)** : migration `0059_challenge_progress.sql` (nouvelle table
 `challenge_attempts`, rien d'autre ne change : elle peut être appliquée avant le Worker). Un
 défi n'a ce classement que si la version de son niveau a un tracé (`level_versions.race`,
 écrit par `levels-migration.mjs` quand le manifeste du jeu en donne un ;
