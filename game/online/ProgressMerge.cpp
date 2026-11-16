@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "engine/core/FileUtil.h"
 #include "game/records/BossStats.h"
 #include "game/records/Records.h"
 
@@ -183,6 +184,81 @@ Json mergeCollectionJson(const Json& mine, const Json& theirs) {
         out[key] = unionStrings(mine.value(key, Json::array()), theirs.value(key, Json::array()));
     out["exported"] = static_cast<int64_t>(num(mine, "exported") + num(theirs, "exported"));
     return out;
+}
+
+const std::vector<std::string>& progressCopyParts() {
+    static const std::vector<std::string> parts = {"progress", "records", "boss_stats", "achievements", "collection"};
+    return parts;
+}
+
+Json mergeProgressCopyFiles(const Json& mine, const Json& theirs) {
+    Json out = Json::object();
+    for (const std::string& part : progressCopyParts()) {
+        const Json& a = objectOr(mine, part.c_str());
+        const Json& b = objectOr(theirs, part.c_str());
+        if (b.empty()) {
+            out[part] = a;
+            continue;
+        }
+        if (part == "progress") out[part] = mergeProgressJson(a, b);
+        else if (part == "records") out[part] = mergeRecordsJson(a, b);
+        else if (part == "boss_stats") out[part] = mergeBossStatsJson(a, b);
+        else if (part == "achievements") out[part] = mergeAchievementsJson(a, b);
+        else out[part] = mergeCollectionJson(a, b);
+    }
+    return out;
+}
+
+bool backupSaveFiles(const fs::path& savesDir, const std::string& stamp, fs::path* folder, std::string* error) {
+    std::string name = "avant_restauration_" + stamp;
+    for (char& c : name)
+        if (c == ':' || c == ' ' || c == '/' || c == '\\') c = '-';
+    std::error_code ec;
+    fs::path dir = savesDir / name;
+    for (int n = 2; fs::exists(dir, ec) && n < 1000; ++n) dir = savesDir / (name + "_" + std::to_string(n));
+    if (!fs::create_directories(dir, ec) || ec) {
+        if (error) *error = "Impossible de créer le dossier de copie des sauvegardes actuelles.";
+        return false;
+    }
+    for (const std::string& part : progressCopyParts()) {
+        const fs::path from = savesDir / (part + ".json");
+        if (!fs::exists(from, ec)) continue;
+        fs::copy_file(from, dir / (part + ".json"), fs::copy_options::overwrite_existing, ec);
+        if (ec) {
+            if (error) *error = "Impossible de garder une copie des sauvegardes actuelles (" + part + ".json).";
+            return false;
+        }
+    }
+    if (folder) *folder = dir;
+    return true;
+}
+
+namespace {
+std::vector<std::string> restoredList(const fs::path& file) {
+    std::vector<std::string> out;
+    auto j = FileUtil::loadJson(file);
+    if (j && j->is_array())
+        for (const Json& v : *j)
+            if (v.is_string()) out.push_back(v.get<std::string>());
+    return out;
+}
+}  // namespace
+
+bool progressCopyRestored(const fs::path& file, const std::string& sha256) {
+    if (sha256.empty()) return false;
+    const auto list = restoredList(file);
+    return std::find(list.begin(), list.end(), sha256) != list.end();
+}
+
+bool noteProgressCopyRestored(const fs::path& file, const std::string& sha256) {
+    if (sha256.empty()) return false;
+    auto list = restoredList(file);
+    if (std::find(list.begin(), list.end(), sha256) != list.end()) return true;
+    list.push_back(sha256);
+    if (list.size() > 50) list.erase(list.begin(), list.end() - 50);
+    std::error_code ec;
+    fs::create_directories(file.parent_path(), ec);
+    return FileUtil::writeTextAtomic(file, Json(list).dump(1));
 }
 
 }  // namespace cosmic

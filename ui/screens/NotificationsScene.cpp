@@ -272,6 +272,18 @@ private:
                        }));
     }
 
+    static std::string securityReason(const Json& n) { return n.contains("data") && n["data"].is_object() ? jstr(n["data"], "reason") : std::string(); }
+
+    /// 2.50: the progression migrated here, read again from the server (restored meanwhile?).
+    void openRestore() {
+        g_.migration.refreshRestore(g_.online, [this, life = std::weak_ptr<int>(life_)] {
+            if (life.expired()) return;
+            const Json& restore = g_.migration.pendingRestore();
+            if (restore.is_object()) g_.app.pushScene(makeProgressRestore(g_, restore));
+            else say("Aucune progression n'attend plus d'être restaurée sur ce compte.", false);
+        });
+    }
+
     /// Where a notification leads (nothing for kinds that have no screen yet).
     std::string openLabel(const Json& n) const {
         std::string kind = jstr(n, "kind");
@@ -290,7 +302,10 @@ private:
         if (kind == "challenge_reward") return "Voir la Collection";
         if (kind == "security") {
             // 2.50: a refused login was the player on a new computer: the migration starts here.
-            if (g_.migrationAvailable && n.contains("data") && jstr(n["data"], "reason") == "login_refused") return "C'était moi : préparer une migration";
+            if (g_.migration.available() && securityReason(n) == "login_refused") return "C'était moi : préparer une migration";
+            // 2.50: an old account's data migrated here, its computer's progression to restore.
+            if (g_.migration.available() && securityReason(n) == "migration_in" && jstr(n["data"], "action") == "progress_restore")
+                return "Restaurer la progression";
             return "Voir le compte";  // 2.47: ONLINE SETTINGS › Cet ordinateur
         }
         return {};
@@ -302,7 +317,9 @@ private:
         bool unread = !jget<bool>(n, "read", false);
         auto go = [this, n, kind]() {
             if (kind == "security") {  // 2.47: the account and its computer
-                if (g_.migrationAvailable && n.contains("data") && jstr(n["data"], "reason") == "login_refused") g_.app.pushScene(makeMigrationPrepare(g_));
+                if (g_.migration.available() && securityReason(n) == "login_refused") g_.app.pushScene(makeMigrationPrepare(g_));
+                else if (g_.migration.available() && securityReason(n) == "migration_in" && jstr(n["data"], "action") == "progress_restore")
+                    openRestore();
                 else g_.app.pushScene(makeOnlineSettings(g_, 3));
                 return;
             }
