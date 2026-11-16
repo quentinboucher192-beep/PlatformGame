@@ -1524,6 +1524,7 @@
     "editors/level_editor/LevelEditorDialogs.cpp",
     "ui/online/CommentsPanel.cpp",
     "ui/screens/AdminScene.cpp",
+    "ui/screens/BossTrainingScene.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/ContentManagerScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
@@ -2529,6 +2530,18 @@
    ]
   },
   {
+   "fr": "Aucun lieu sûr dans l'arène à cette phase : départ au point habituel.",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun lieu sûr dans l'arène à cette phase : seul le point habituel est possible.",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun message",
    "where": [
     "ui/screens/SocialScene.cpp"
@@ -2781,6 +2794,12 @@
    "fr": "aucune",
    "where": [
     "game/online/HttpTransport.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune arène trouvée pour ce boss.",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
    ]
   },
   {
@@ -3849,6 +3868,12 @@
    ]
   },
   {
+   "fr": "Boss (gardez vos distances)",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Boss (PV retirés)",
    "where": [
     "ui/screens/RaceScene.cpp"
@@ -4325,6 +4350,12 @@
    "fr": "Cage stellaire",
    "where": [
     "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Calcul de l'arène…",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
    ]
   },
   {
@@ -5817,6 +5848,12 @@
    "fr": "Choisir la musique du menu principal dans le juke-box.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Choisir sur la carte",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
    ]
   },
   {
@@ -8479,6 +8516,12 @@
    ]
   },
   {
+   "fr": "d'une plateforme à l'autre",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Danemark",
    "where": [
     "data/online/countries.json",
@@ -8489,6 +8532,12 @@
    "fr": "Dans aucun niveau du jeu : pas d'arène",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Dans l'arène",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
    ]
   },
   {
@@ -10361,6 +10410,30 @@
    "fr": "Démiurge",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Départ : dans l'arène, à droite du boss, au sol",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Départ : dans l'arène, à droite du boss, sur une plateforme",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Départ : dans l'arène, à gauche du boss, au sol",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Départ : dans l'arène, à gauche du boss, sur une plateforme",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
    ]
   },
   {
@@ -15376,6 +15449,12 @@
    ]
   },
   {
+   "fr": "L'arène n'est pas encore prête : réessayez dans un instant.",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "L'ascenseur démarre quand vous montez dessus.",
    "where": [
     "data/levels/sylvanox_03.json"
@@ -16751,6 +16830,12 @@
    ]
   },
   {
+   "fr": "Le lieu d'apparition choisi n'existe plus dans l'arène : retour au point habituel.",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Le lingot caché sur le toit du fleuve !",
    "where": [
     "data/levels/pyralis_01.json"
@@ -16760,6 +16845,12 @@
    "fr": "Le lingot oublié sur la chaîne !",
    "where": [
     "data/levels/pyralis_03.json"
+   ]
+  },
+  {
+   "fr": "le long du sol",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
    ]
   },
   {
@@ -17980,6 +18071,36 @@
    "fr": "Lier {0}",
    "where": [
     "editors/level_editor/LevelEditorViewport.cpp"
+   ]
+  },
+  {
+   "fr": "Lieu choisi",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "LIEU D'APPARITION",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Lieu d'apparition",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Lieu d'apparition déplacé : l'arène n'est plus la même à cette phase.",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Lieux sûrs",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
    ]
   },
   {
@@ -22785,6 +22906,12 @@
    ]
   },
   {
+   "fr": "Pas de lieu sûr ici : choisissez sur une ligne verte.",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Pas de médaille",
    "where": [
     "ui/screens/ResultsScene.cpp"
@@ -24120,6 +24247,18 @@
    "fr": "Point de sauvegarde atteint",
    "where": [
     "game/levels/EventSystem.cpp"
+   ]
+  },
+  {
+   "fr": "Point habituel",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Point habituel (s'il est dans la vue)",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
    ]
   },
   {
@@ -29726,6 +29865,12 @@
    ]
   },
   {
+   "fr": "Souris : cliquez sur un lieu sûr",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Souris : glissez un élément pour le déplacer, molette pour changer sa taille. Clavier et manette : choisissez un élément dans la liste, puis réglez sa taille et sa position avec les curseurs. Deux éléments ne peuvent jamais se chevaucher.",
    "where": [
     "ui/screens/HudEditorScene.cpp"
@@ -34328,6 +34473,7 @@
    "fr": "Valider",
    "where": [
     "engine/input/InputTypes.cpp",
+    "ui/screens/BossTrainingScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/MainMenuScene.cpp",
     "ui/screens/PauseScene.cpp"

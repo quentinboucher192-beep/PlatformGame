@@ -193,6 +193,12 @@ void GameWorld::startAt(Vec2 feet) {
     player_.controlEnabled = true;
 }
 
+void GameWorld::startAt(Vec2 feet, bool faceLeft) {
+    startAt(feet);
+    respawnFaceLeft_ = faceLeft;
+    player_.facing = faceLeft ? -1.0f : 1.0f;
+}
+
 void GameWorld::beginPlay() {
     state_ = WorldState::Playing;
     player_.controlEnabled = true;
@@ -761,6 +767,12 @@ void GameWorld::onPlayerDeathAnimationDone() {
         hazards_.clear(*this);
         if (onPlayerDied) onPlayerDied();
         player_.spawn(*this, respawn_, respawnFaceLeft_, true);
+        return;
+    }
+    if (training_) {
+        // A boss training ends at the first fall (its end screen comes): the player does not
+        // come back, never into an arena that would wake its boss again behind that screen.
+        player_.setHidden(true);
         return;
     }
     if (level_.timerMode == TimerMode::Challenge && stats_.deaths > level_.challengeMaxDeaths) {

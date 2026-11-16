@@ -35,8 +35,10 @@
 //                           tab « Objectif et paliers »)
 //   --boss-stats [<boss>[:<clip>]]
 //                           open the boss statistics (that boss, that clip of its animation)
-//   --boss-training <boss> [--boss-training-go]
-//                           open the settings of a boss training (and enter its arena)
+//   --boss-training <boss> [--boss-training-go] [--boss-training-spawn <where>[:pick]]
+//                           open the settings of a boss training (and enter its arena);
+//                           <where>: usual | suggested | <x>,<y> (« Lieu d'apparition »),
+//                           :pick (or « pick » alone) opens the map of the arena
 //   --challenges [day|week|month|calendar[:<YYYY-MM>|:<id>]]
 //                           open the challenges (Jour, Semaine, Mois, or the Calendrier on a
 //                           month or on a challenge's card)
@@ -698,8 +700,13 @@ int main(int argc, char** argv) {
         if (run) app.pushScene(std::move(run));
         else app.pushScene(makeChallenges(game));
     } else if (std::string bt = value("--boss-training"); !bt.empty()) {
-        // The settings of a boss training; --boss-training-go: enters its arena once it is found.
+        // The settings of a boss training; --boss-training-go: enters its arena once it is found;
+        // --boss-training-spawn: the « Lieu d'apparition » chosen (and its map opened).
         if (has("--boss-training-go")) game.onlineOpen = "train-go";
+        if (std::string sp = value("--boss-training-spawn"); !sp.empty()) {
+            if (game.onlineOpen.empty()) game.onlineOpen = "train";
+            game.onlineOpen += ";spawn=" + sp;
+        }
         app.pushScene(makeBossTraining(game, bt));
     } else if (std::string race = value("--race"); !race.empty()) {
         auto c1 = race.find(':');
