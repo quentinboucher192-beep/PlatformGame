@@ -39,6 +39,9 @@ struct GameplaySettings {
     /// The level's messages (hints, signs, power and boss titles), in each mode.
     bool showMessages = true;
     bool focusMessages = false;
+    /// 2.52: arrows on the screen's border towards the enemies already met that are out of
+    /// view (one per pack, with their number). Display only.
+    bool enemyArrows = true;
     bool debugMode = false;  // debug overlay available in game (F3)
     bool editorAutosave = true;
     int editorAutosaveSeconds = 60;

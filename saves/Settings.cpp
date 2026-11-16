@@ -42,6 +42,7 @@ Json Settings::toJson() const {
                      {"adminInvincible", gameplay.adminInvincible},
                      {"showMessages", gameplay.showMessages},
                      {"focusMessages", gameplay.focusMessages},
+                     {"enemyArrows", gameplay.enemyArrows},
                      {"debugMode", gameplay.debugMode},
                      {"editorAutosave", gameplay.editorAutosave},
                      {"editorAutosaveSeconds", gameplay.editorAutosaveSeconds},
@@ -103,6 +104,7 @@ Settings Settings::fromJson(const Json& j) {
         s.gameplay.adminInvincible = jget<bool>(g, "adminInvincible", false);
         s.gameplay.showMessages = jget<bool>(g, "showMessages", true);
         s.gameplay.focusMessages = jget<bool>(g, "focusMessages", false);
+        s.gameplay.enemyArrows = jget<bool>(g, "enemyArrows", true);
         if (s.gameplay.progressBar == 3 && !s.gameplay.hud[HudElement::Progress].custom) s.gameplay.progressBar = 1;
         s.gameplay.debugMode = jget<bool>(g, "debugMode", false);
         s.gameplay.editorAutosave = jget<bool>(g, "editorAutosave", true);

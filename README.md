@@ -541,6 +541,12 @@ automatiquement entre clavier et manette.
 Touches globales : **F3** mode debug (FPS, dt, colliders, hitboxes, position/vitesse du
 joueur, états des ennemis, chrono, particules), **F11** plein écran, **F12** capture d'écran.
 
+**HUD — ennemis hors écran (2.52)** : un ennemi déjà rencontré qui sort de l'écran est signalé
+par une flèche ambrée sur le bord, tournée vers lui (plus pâle s'il est loin) ; plusieurs ennemis
+dans la même direction n'ont qu'une flèche, vers le centre du groupe, avec leur nombre (« ×5 »).
+Ces flèches ne passent jamais sur le HUD, sur la flèche du boss (qui garde la sienne) ni les unes
+sur les autres ; option *Paramètres → Jeu → Flèches vers les ennemis hors écran* (activée par défaut).
+
 ### Les pouvoirs
 
 Les cinq premiers (Dash, Onde, Bouclier, Impulsion, Téléportation) s'obtiennent dans

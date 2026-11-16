@@ -2,7 +2,8 @@
   "2.52.0": [
     "Succès › Suggestions : 5 succès proposés d'après votre progression (les plus proches du but, faisables maintenant, de catégories variées), avec ce qu'il reste à faire (« Plus que 70 sauts »).",
     "Suivez jusqu'à 5 succès (case « Suivre » dans la liste, la toile ou les suggestions) : leur avancée s'affiche dans le menu pause, avec ce que la partie en cours y ajoute.",
-    "HUD : « Ennemis vaincus X / Y » pour les missions où il faut vaincre tous les ennemis d'un niveau (à placer dans l'éditeur du HUD)."
+    "HUD : « Ennemis vaincus X / Y » pour les missions où il faut vaincre tous les ennemis d'un niveau (à placer dans l'éditeur du HUD).",
+    "Flèches vers les ennemis hors écran : un ennemi déjà rencontré qui sort de l'écran est signalé par une flèche sur le bord, tournée vers lui ; un groupe d'ennemis n'a qu'une flèche, vers son centre, avec leur nombre (« ×5 »). Option dans Paramètres › Jeu, activée par défaut."
   ],
   "2.51.0": [
     "L'histoire des giga-boss : avant votre premier combat contre Singularis, Pyrrhax ou le Monolithe, une cinématique illustrée raconte comment il est devenu ce qu'il est (environ 45 secondes, texte laissé le temps de lire). Espace, Entrée, A ou un clic la passent ; elle ne compte pas dans le chrono.",

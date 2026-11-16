@@ -9,6 +9,7 @@
 #include "engine/core/Scene.h"
 #include "engine/input/InputScript.h"
 #include "game/achievements/Achievements.h"
+#include "game/gameplay/EnemyArrows.h"
 #include "game/gameplay/GameRenderer.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/Hud.h"
@@ -161,6 +162,13 @@ private:
     bool storyOpen_ = false;
     /// A boss out of view: a textured arrow on the screen's border, turned towards it.
     void drawBossArrow(const WorldView& view);
+    Rect bossArrowRect_;  // where it was drawn last (empty: not drawn), kept clear by the enemy arrows
+    /// 2.52: the enemies already met that are out of view (display only): who was seen is noted
+    /// each frame; one arrow per pack on the border (« ×N »), clear of the HUD, of the boss arrow,
+    /// of the ghosts' box and of the banners.
+    void drawEnemyArrows(const WorldView& view);
+    EnemyArrows::Tracker metEnemies_;    // a new attempt is a new scene: nobody met yet
+    std::vector<Rect> enemyArrowAreas_;  // where they were drawn last (the ghosts' names keep clear)
     std::future<std::vector<Vec2>> raceRouteFuture_;
     // Ghost Racing: ghosts of the run, this level version's hash, my best ghost's time.
     void startGhosts();

@@ -14864,6 +14864,18 @@
    ]
   },
   {
+   "fr": "Flèches vers les ennemis hors écran",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Flèches vers les ennemis hors écran : un ennemi déjà rencontré qui sort de l'écran est signalé par une flèche sur le bord, tournée vers lui ; un groupe d'ennemis n'a qu'une flèche, vers son centre, avec leur nombre (« ×5 »). Option dans Paramètres › Jeu, activée par défaut.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Fléau des ombres",
    "where": [
     "data/achievements/achievements.json"
