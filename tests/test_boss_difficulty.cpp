@@ -28,9 +28,12 @@ TEST_CASE("boss difficulty: every boss of the game from 1 to 10 stars, Singulari
     CHECK(stars.count("singularis"));
     if (!(stars.count("singularis"))) return;
     CHECK(stars["singularis"] == 10);
-    // Singularis is the only one at 10, and every other guardian is below it.
-    for (const auto& [id, s] : stars)
-        if (id != "singularis") CHECK(s < 10);
+    // The giga bosses (eight phases: Singularis, 2.48 Pyrrhax) are at 10, every other guardian below.
+    for (const auto& [id, s] : stars) {
+        const EnemyDefinition* d = content.enemy(id);
+        if (d && d->phases.size() >= 8) CHECK(s == 10);
+        else CHECK(s < 10);
+    }
     // An echo is its original (same fight, another colour).
     for (const auto* d : content.enemies())
         if (d->isBoss && !d->variantOf.empty() && stars.count(d->variantOf)) CHECK(stars[d->id] == stars[d->variantOf]);

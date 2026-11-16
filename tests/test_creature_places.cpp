@@ -64,8 +64,9 @@ TEST_CASE("boss places: every boss of the game can be fought in at least one of 
 TEST_CASE("boss places: each guardian in its campaign level, then its echo in L'Arène des Échos") {
     int guardians = 0;
     for (const EnemyDefinition* d : content().enemies()) {
-        // The Astrarque and Singularis (2.33) have no echo in L'Arène des Échos.
-        if (!d->isBoss || !d->builtin || !d->variantOf.empty() || d->id == "astrarque" || d->id == "singularis") continue;
+        // The Astrarque and the giga bosses (eight phases: Singularis 2.33, Pyrrhax 2.48) have no
+        // echo in L'Arène des Échos.
+        if (!d->isBoss || !d->builtin || !d->variantOf.empty() || d->id == "astrarque" || d->phases.size() >= 8) continue;
         ++guardians;
         auto places = atlas().fightsOf(content(), d->id);
         CHECK(places.size() >= 2);

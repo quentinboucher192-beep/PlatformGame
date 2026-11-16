@@ -165,7 +165,7 @@ TEST_CASE("achievements: every condition is known and names real content") {
         }
         if (!c.power.empty()) CHECK(f.content.power(c.power) != nullptr);
         if (c.type == "medal_count" || c.type == "levels_no_death" || c.type == "levels_full_collect" || c.type == "levels_all_secrets")
-            CHECK(c.count <= 19);  // the campaign has 19 levels (2.19: Aethra, 2.33: the dying star)
+            CHECK(c.count <= 20);  // the campaign has 20 levels (2.19: Aethra, 2.33: the dying star, 2.48: Les Confins)
         if (!c.planet.empty() && (c.type == "levels_no_death" || c.type == "levels_full_collect" || c.type == "levels_all_secrets"))
             CHECK(c.count <= static_cast<int64_t>(f.content.levelsForPlanet(c.planet).size()));
         // Reachable: only levels with something to find count for « tout ramasser » and
@@ -186,7 +186,7 @@ TEST_CASE("achievements: every condition is known and names real content") {
         }
         if (c.type == "set") CHECK(sets.count(c.key) == 1);
         if (c.type == "max") CHECK(maxima.count(c.key) == 1);
-        if (c.type == "set" && c.key == "rated_campaign") CHECK(c.count <= 19);  // 2.33: 19 levels
+        if (c.type == "set" && c.key == "rated_campaign") CHECK(c.count <= 20);  // 2.48: 20 levels
         if (c.type == "set" && c.key == "photographed_planets") CHECK(c.count <= static_cast<int64_t>(f.content.planets().size()));
         if (c.type == "max" && c.key == "outfit_categories") CHECK(c.count <= 5);  // the five categories of the Collection
     }
@@ -242,7 +242,7 @@ TEST_CASE("achievements: campaign, medals and bosses come from the saves") {
     const AchievementDef* all = f.catalog.find("voyage_all");
     AchievementProgress p = AchievementBook::progress(*all, f.inputs());
     CHECK(p.value == 12);
-    CHECK(p.target == 19);  // 2.19: the four levels of Aethra; 2.33: Le Cœur d'une Étoile Mourante
+    CHECK(p.target == 20);  // 2.19: the four levels of Aethra; 2.33: Le Cœur d'une Étoile Mourante; 2.48: Les Confins
 }
 
 TEST_CASE("achievements: counters, sets and the required threads") {

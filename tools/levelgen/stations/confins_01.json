@@ -1,0 +1,31 @@
+{
+  "level": "confins_01",
+  "sections": [
+    {
+      "label": "",
+      "movement": [],
+      "needs": [
+        [
+          "dash"
+        ],
+        [
+          "glide"
+        ],
+        [
+          "grapple"
+        ],
+        [
+          "wave",
+          "charge_shot"
+        ]
+      ],
+      "pos": [
+        64.0,
+        640.0
+      ],
+      "reachable": true
+    }
+  ],
+  "slots": 4,
+  "stations": []
+}

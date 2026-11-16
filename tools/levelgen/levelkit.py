@@ -83,6 +83,21 @@ PLANETS = {
              "foreground": True, "tint": "#ffffffc0"},
         ],
     },
+    # 2.48: Les Confins, beyond the dying star: Pyralis' layers in ash and violet embers.
+    "confins": {
+        "music": "music/pyralis_level.ogg", "bossMusic": "music/pyrrhax_boss.ogg",
+        "ambience": "music/pyralis_ambience.ogg", "ambientLight": "#8a6a8e", "backgroundColor": "#0c0610",
+        "background": [
+            {"texture": "backgrounds/pyralis/sky.png", "factor": [0.0, 0.0], "fill": True, "tint": "#9a7ab0"},
+            {"texture": "backgrounds/pyralis/far.png", "factor": [0.1, 0.05], "offset": [0, -20], "tint": "#7a5a8a"},
+            {"texture": "backgrounds/pyralis/mid.png", "factor": [0.25, 0.12], "offset": [0, 10], "tint": "#6a4a70"},
+            {"texture": "backgrounds/pyralis/abyss.png", "factor": [0.4, 0.3], "offset": [0, 210], "fillBelow": "#b04a6a",
+             "tint": "#c07a9a"},
+            {"texture": "backgrounds/pyralis/near.png", "factor": [0.5, 0.25], "offset": [0, 60], "tint": "#584058"},
+            {"texture": "backgrounds/pyralis/fg_embers.png", "factor": [1.15, 1.0], "offset": [0, -330],
+             "foreground": True, "tint": "#ff9ad0c0"},
+        ],
+    },
 }
 
 
@@ -134,6 +149,7 @@ START_POWERS = {
     "noyau_01": ["dash", "wave", "shield", "charge_shot"],
     "noyau_02": ["dash", "wave", "shield", "grapple"],
     "noyau_03": ["dash", "grapple", "glide", "charge_shot"],  # 2.33: the rooms of the dying star
+    "confins_01": ["dash", "grapple", "glide", "charge_shot"],  # 2.48: the rooms of the scorched crust
     # Aethra (2.19): three powers, the fourth slot for the new power whose tablet waits at the
     # start of the level.
     "aethra_01": ["dash", "wave", "grapple"],

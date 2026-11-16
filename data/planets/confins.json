@@ -1,0 +1,25 @@
+{
+  "format": "cosmic.planet",
+  "id": "confins",
+  "name": "Les Confins",
+  "subtitle": "Au bord du système",
+  "description": "Au-delà de l'étoile morte, au bord du système, un monde de verre noir craquelé sur un feu vivant. Ses cendres tombent d'un ciel pourpre ; un dragon d'obsidienne y garde la dernière frontière.",
+  "type": "volcanic",
+  "difficulty": 5,
+  "color": "#ff7a6a",
+  "atmosphere": "#b04a8a70",
+  "illustration": "ui/planets/confins.png",
+  "banner": "ui/planets/confins_banner.png",
+  "music": "music/planet_map.ogg",
+  "levels": [
+    "confins_01"
+  ],
+  "unlock": "level:noyau_03",
+  "teaser": false,
+  "orbit": {
+    "radius": 560,
+    "speed": 0.011,
+    "phase": 1.3
+  },
+  "size": 0.95
+}

@@ -58,9 +58,9 @@ TEST_CASE("boss camera: every campaign boss fight shows its whole arena (the gia
                 if (!z) continue;
                 // It fits on a 16:9 screen without going below the least zoom.
                 (void)w.camera().visibleArea(1920, 1080);  // the screen shape
-                if (spawn->object().propStr("enemy") == "singularis") {
-                    // 2.33: the giant arena of Singularis never fits: the camera follows Nova at
-                    // its widest (tests/test_singularis.cpp).
+                if (const EnemyDefinition* gd = content.enemy(spawn->object().propStr("enemy")); gd && gd->phases.size() >= 8) {
+                    // 2.33: the giant arena of a giga boss (Singularis, 2.48 Pyrrhax) never fits:
+                    // the camera follows Nova at its widest (tests/test_singularis.cpp).
                     CHECK(w.camera().fitZoom(z->area) < Camera::kMinFitZoom);
                     ++fights;
                     continue;

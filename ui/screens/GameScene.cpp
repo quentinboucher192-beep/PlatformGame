@@ -988,7 +988,8 @@ void GameScene::update(float dt) {
     }
     // Quick restart (contre-la-montre, training): R key or the gamepad View/Back button.
     if (!ended_ && (in.keyPressed(SDL_SCANCODE_R) || in.rawPadButton(SDL_GAMEPAD_BUTTON_BACK)) &&
-        world_->state() == WorldState::Playing && (level_.timerMode == TimerMode::TimeAttack || opt_.training || opt_.bossTraining || opt_.challenge)) {
+        world_->state() == WorldState::Playing &&
+        (level_.timerMode == TimerMode::TimeAttack || opt_.training || opt_.bossTraining || opt_.challenge || world_->practiceRespawn())) {
         restart();
         return;
     }
@@ -1117,7 +1118,7 @@ void GameScene::render(float alpha) {
         ghostRun_.drawHud(g_.ui, view, hud_.area(g_.ui, *world_, HudElement::Splits, sp), sp.k, hudVisible(gs, HudElement::Splits), keepOut, n);
     }
     drawBossArrow(view);
-    if (opt_.training || opt_.bossTraining) drawTrainingBanner();
+    if (opt_.training || opt_.bossTraining || (world_ && world_->practiceRespawn())) drawTrainingBanner();
     else if (opt_.challenge && !ended_) drawChallengeBanner();
     if (g_.settings.graphics.showFps) {
         char buf[32];
@@ -1129,9 +1130,13 @@ void GameScene::render(float alpha) {
 void GameScene::drawTrainingBanner() {
     UIContext& ui = g_.ui;
     const float W = ui.screenW();
-    if (opt_.bossTraining) {
-        // Boss training: what this run is, always in view (bottom left), in a dark pill.
-        const std::string tag = "Entraînement — ne compte pas pour les succès ni les statistiques";
+    const bool practice = !opt_.bossTraining && !opt_.training && world_ && world_->practiceRespawn();
+    if (opt_.bossTraining || practice) {
+        // Boss training, or a hardcore level played with respawns (2.48): what this run is,
+        // always in view (bottom left), in a dark pill.
+        const std::string tag = practice ? "Entraînement avec réapparitions — hors classements, aucun record · chutes : " +
+                                               std::to_string(world_->stats().deaths)
+                                         : std::string("Entraînement — ne compte pas pour les succès ni les statistiques");
         const std::string keys = keyName(SDL_SCANCODE_R) + " / Vue : recommencer";  // R as the keyboard layout names it
         float fs = std::max(15.0f, 11.5f / ui.s(1.0f));
         const float room = W * 0.62f;

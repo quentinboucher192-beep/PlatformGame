@@ -60,8 +60,8 @@ TEST_CASE("stellar core: the boss rush chains the sixteen guardians, no healing,
     }
     CHECK(originals.size() == 16);
     for (const EnemyDefinition* e : content.enemies())
-        // The Astrarque and Singularis (2.33) have no echo here.
-        if (e->isBoss && e->variantOf.empty() && e->id != "astrarque" && e->id != "singularis") CHECK(originals.count(e->id) == 1);
+        // The Astrarque and the giga bosses (eight phases: Singularis 2.33, Pyrrhax 2.48) have no echo here.
+        if (e->isBoss && e->variantOf.empty() && e->id != "astrarque" && e->phases.size() < 8) CHECK(originals.count(e->id) == 1);
     CHECK(level->timerMode == TimerMode::Challenge);
     CHECK(level->challengeMaxDeaths == 0);
     CHECK(level->powerSlots() == 4);

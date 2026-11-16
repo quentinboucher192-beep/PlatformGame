@@ -233,7 +233,7 @@
    "id": "voyage_all",
    "category": "voyage",
    "name": "Système conquis",
-   "description": "Terminer les 19 niveaux de la campagne.",
+   "description": "Terminer les 20 niveaux de la campagne.",
    "stars": 5,
    "condition": {
     "type": "all_levels"
@@ -1225,7 +1225,7 @@
    "id": "maitrise_nodeath_all",
    "category": "maitrise",
    "name": "Immortel",
-   "description": "Terminer les 19 niveaux de la campagne sans mourir.",
+   "description": "Terminer les 20 niveaux de la campagne sans mourir.",
    "stars": 4,
    "condition": {
     "type": "levels_no_death",
