@@ -290,7 +290,7 @@ private:
         if (kind == "challenge_reward") return "Voir la Collection";
         if (kind == "security") {
             // 2.50: a refused login was the player on a new computer: the migration starts here.
-            if (n.contains("data") && jstr(n["data"], "reason") == "login_refused") return "C'était moi : préparer une migration";
+            if (g_.migrationAvailable && n.contains("data") && jstr(n["data"], "reason") == "login_refused") return "C'était moi : préparer une migration";
             return "Voir le compte";  // 2.47: ONLINE SETTINGS › Cet ordinateur
         }
         return {};
@@ -302,7 +302,7 @@ private:
         bool unread = !jget<bool>(n, "read", false);
         auto go = [this, n, kind]() {
             if (kind == "security") {  // 2.47: the account and its computer
-                if (n.contains("data") && jstr(n["data"], "reason") == "login_refused") g_.app.pushScene(makeMigrationPrepare(g_));
+                if (g_.migrationAvailable && n.contains("data") && jstr(n["data"], "reason") == "login_refused") g_.app.pushScene(makeMigrationPrepare(g_));
                 else g_.app.pushScene(makeOnlineSettings(g_, 3));
                 return;
             }

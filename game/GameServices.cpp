@@ -574,6 +574,7 @@ void GameServices::noteStartedLocal() {
 }
 
 void GameServices::noteSessionStarted() {
+    online.get("/api/v1/players/me/migration", [this](const ApiResult& r) { migrationAvailable = r.ok; }, false);
     progressCopyDue = true;
     progressCopyWait_ = std::min(progressCopyWait_, 8.0f);
     auto snap = FileUtil::loadJson(localSnapshotPath());

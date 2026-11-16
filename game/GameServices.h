@@ -96,6 +96,9 @@ public:
     /// kept (game/online/ProgressMerge). The saves are copied first to
     /// saves/avant_restauration_<date>/. False (and `error`) when a save could not be written.
     bool restoreProgressCopy(const Json& files, std::string* error = nullptr);
+    /// The server offers the migration (GET /players/me/migration answers): checked at each
+    /// login; until then, nothing about it is shown (no button that a server without it fails).
+    bool migrationAvailable = false;
     void sendProgressCopy(std::function<void(const ApiResult&)> done = {});
     /// Every frame: sends a copy when one is due (connected, 10 minutes after the last one).
     void updateProgressCopy(float dt);
