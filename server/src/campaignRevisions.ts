@@ -33,8 +33,8 @@ import { LEVEL_ID_RE, SEMVER_RE, Validator, compareVersions } from "./validate";
 export const MAX_LEVEL_FILE_BYTES = 2 * 1024 * 1024;
 /** Highest level format the server accepts (LevelData::kFormatVersion of the game, with room to grow). */
 const MAX_FORMAT_VERSION = 50;
-const RECORDS = ["reset", "keep"] as const;
-type RecordsChoice = (typeof RECORDS)[number];
+export const RECORDS = ["reset", "keep"] as const;
+export type RecordsChoice = (typeof RECORDS)[number];
 
 interface FileRow {
     level_id: string;
@@ -64,8 +64,8 @@ interface ChangeRow {
     created_at: string;
 }
 
-const isObject = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
-const finite = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
+export const isObject = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
+export const finite = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
 
 function parseRating(raw: string | null): Record<string, unknown> | null {
     if (!raw) return null;
@@ -77,11 +77,11 @@ function parseRating(raw: string | null): Record<string, unknown> | null {
     }
 }
 
-function fileKey(levelId: string, version: number, sha: string): string {
+export function fileKey(levelId: string, version: number, sha: string): string {
     return `campaign/${levelId}/${version}-${sha}.json`;
 }
 
-function filePath(levelId: string, version: number): string {
+export function filePath(levelId: string, version: number): string {
     return `/api/v1/campaign/levels/${levelId}/revisions/${version}/file`;
 }
 
@@ -303,10 +303,15 @@ export async function adminHistory(ctx: Ctx): Promise<Response> {
  * statements (run in the batch that makes `toHash` current) and the number of bests copied.
  */
 async function carryOver(ctx: Ctx, levelId: string, fromHash: string, toHash: string, guard: string, guardBinds: unknown[]) {
+    const count = await ctx.env.DB.prepare("SELECT COUNT(*) AS n FROM player_bests WHERE level_hash = ?1").bind(fromHash).first<{ n: number }>();
+    return { stmts: carryOverStatements(ctx, levelId, fromHash, toHash, guard, guardBinds), carried: count?.n ?? 0 };
+}
+
+/** The statements of carryOver() (2.46: also used by a publication of an enemy revision). */
+export function carryOverStatements(ctx: Ctx, levelId: string, fromHash: string, toHash: string, guard: string, guardBinds: unknown[]) {
     const n = guardBinds.length;
     const now = nowIso();
-    const count = await ctx.env.DB.prepare("SELECT COUNT(*) AS n FROM player_bests WHERE level_hash = ?1").bind(fromHash).first<{ n: number }>();
-    const stmts = [
+    return [
         ctx.env.DB.prepare(
             `INSERT INTO player_bests (player_id, level_id, level_hash, category, record_id, time_ms, achieved_at)
              SELECT player_id, level_id, ?${n + 2}, category, record_id, time_ms, achieved_at FROM player_bests
@@ -320,7 +325,6 @@ async function carryOver(ctx: Ctx, levelId: string, fromHash: string, toHash: st
              UNION SELECT ?${n + 1}, ?${n + 3}, from_hash, ?${n + 4} FROM campaign_board_links WHERE to_hash = ?${n + 2} AND from_hash <> ?${n + 3} AND ${guard}`,
         ).bind(...guardBinds, levelId, fromHash, toHash, now),
     ];
-    return { stmts, carried: count?.n ?? 0 };
 }
 
 async function refuse(ctx: Ctx, auth: AuthInfo, error: ApiError, details: Record<string, unknown>): Promise<never> {

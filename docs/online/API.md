@@ -1594,6 +1594,14 @@ ADMIN_TOKEN=… node scripts/register-levels.mjs manifest.json http://127.0.0.1:
 Erreurs : 400, 401, 404, 409 `REVISION_CONFLICT` (même numéro, autre contenu ; les niveaux
 précédents de la liste sont déjà enregistrés), 413, 415.
 
+### 8.10 ter Entités natives modifiées par un admin (2.46)
+
+Détails et routes : [ENEMY_REVISIONS.md](ENEMY_REVISIONS.md). Admin : `GET /admin/enemies`,
+`GET /admin/enemies/{id}/revisions`, `POST /admin/enemies/{id}/revisions` (la définition et la
+révision suivante de chaque niveau de la campagne qui l'utilise, chacun avec `records:
+"reset"|"keep"`, en un seul lot). Publiques : `GET /enemies/revisions`,
+`GET /enemies/{id}/revisions/{revision}/file`.
+
 ## Annexe — format du replay (CPRZ / CPRP v1)
 
 Le jeu enregistre une trace compacte du run, pas une vidéo. Conteneur envoyé

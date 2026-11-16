@@ -176,6 +176,7 @@
     {"id": "admin.tab.backups", "version": "2.43.0", "parents": ["menu.admin"]},
     {"id": "admin.calendar.rewards", "version": "2.43.0", "parents": ["menu.admin", "admin.tab.calendar"]},
     {"id": "challenges.prizes", "version": "2.43.0", "parents": ["menu.challenges"]},
-    {"id": "admin.tab.campaign", "version": "2.44.0", "parents": ["menu.admin"]}
+    {"id": "admin.tab.campaign", "version": "2.44.0", "parents": ["menu.admin"]},
+    {"id": "admin.tab.enemies", "version": "2.46.0", "parents": ["menu.admin"]}
   ]
 }
