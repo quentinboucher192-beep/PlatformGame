@@ -4,7 +4,7 @@ Un compte **admin** peut sauvegarder **toutes les données de tous les joueurs**
 Online, télécharger cette sauvegarde dans un fichier **chiffré** avec une phrase secrète de son
 choix, et la réimporter pour **remplacer toutes les données** du serveur (après une perte, ou
 pour revenir en arrière). Code : `server/src/backups.ts` (routes, copies, import),
-`server/src/backupFormat.ts` (format `.cpbk`), migration `server/migrations/XXXX_backups.sql`,
+`server/src/backupFormat.ts` (format `.cpbk`), migration `server/migrations/0077_backups.sql`,
 tests `server/test/backups.test.ts`, outil hors serveur `server/scripts/backup-extract.mjs`.
 
 En résumé :
@@ -124,7 +124,7 @@ tâche planifiée ; `schema` = nom de la dernière migration ; `bytes` = taille 
 chiffrement (lignes en JSON + fichiers) ; `status` vaut `ready` ou `failed`, et `running`
 pendant qu'une copie se fait (une copie interrompue passe `failed`) ; `error` est une phrase en
 français pour une copie échouée. Liste : plus récentes d'abord, 200 au plus.
-`retention` = `{ auto: 14, manual: 10, pre_import_days: 30 }`.
+`retention` = `{ auto: 14, manual: 10, manual_days: 90, pre_import_days: 30 }` (une copie manuelle part aussi après 90 jours).
 `maintenance` = `{ active: true, import_id, since, expires_at }` pendant un import, sinon `null`.
 `imports` = les imports non terminés (même forme que `GET …/imports/{id}`).
 
@@ -239,7 +239,7 @@ Entiers en petit-boutiste (little-endian).
 | 4–5 | version du format, `1` (u16) |
 | 6 | dérivation de clé, `1` = PBKDF2-HMAC-SHA256 |
 | 7 | chiffrement, `1` = AES-256-GCM |
-| 8–11 | nombre d'itérations PBKDF2 (u32) : **300 000** pour les fichiers de ce serveur ; un import accepte de 210 000 à 2 000 000 |
+| 8–11 | nombre d'itérations PBKDF2 (u32) : **100 000** pour les fichiers de ce serveur (le maximum que Web Crypto calcule nativement dans Workers ; phrase de 12 caractères au moins) ; un import accepte de 100 000 à 2 000 000 |
 | 12–27 | sel PBKDF2, 16 octets aléatoires |
 | 28–31 | `chunk_size`, octets en clair par bloc (u32) : 1 048 576 |
 | 32–47 | valeur de contrôle de la clé (16 octets) |
@@ -253,9 +253,10 @@ clé      = HKDF-SHA256(maître, sel vide, info = "cosmic-backup v1 encryption",
 contrôle = HKDF-SHA256(maître, sel vide, info = "cosmic-backup v1 key check", 16 octets)
 ```
 
-Le Worker calcule PBKDF2 au-delà de 100 000 itérations (limite de Web Crypto dans Workers)
-avec une HMAC-SHA256 par itération : c'est le même PBKDF2 standard (testé contre Python
-`hashlib.pbkdf2_hmac`), il coûte environ 1 s de calcul par requête qui déchiffre.
+Les fichiers de ce serveur utilisent 100 000 itérations, calculées nativement par Web Crypto.
+Un fichier qui en annonce davantage (jusqu'à 2 000 000) reste lisible : le Worker calcule alors
+PBKDF2 avec une HMAC-SHA256 par itération (le même PBKDF2 standard, testé contre Python
+`hashlib.pbkdf2_hmac`), au prix d'environ 1 s de calcul par requête qui déchiffre.
 
 ### Blocs
 
@@ -379,7 +380,7 @@ maintenance ; une révision écrite avant le remplacement est remplacée comme l
 | Entrée du fichier | 64 Mio (les fichiers du jeu font 16 Mio au plus) ; une ligne de table : 2 Mo (limite de D1) |
 | Copie (`POST /admin/backups`, tâche, `pre_import`) | une seule requête : ~1 requête D1 par 5 000 lignes et par table, 1 écriture R2 par 4 Mio, la liste du bucket, et la relecture des fichiers dont le SHA-256 n'est pas connu (la première fois seulement) |
 | Téléchargement | une seule réponse en flux : une lecture R2 par fichier (4 en avance), mémoire bornée (~1 Mio + un fichier) |
-| Vérification | une seule requête qui lit tout le fichier (≈ 1 s de PBKDF2, puis SHA-256, AES-GCM et lecture JSON de toutes les lignes) |
+| Vérification | une seule requête qui lit tout le fichier (PBKDF2 natif, puis SHA-256, AES-GCM et lecture JSON de toutes les lignes) |
 | Chaque appel d'`apply` | ≈ 1 s de PBKDF2, puis au plus ~20 s de travail, 800 opérations R2 et 150 lots D1 ; une partie de table = des lots de 4 requêtes de 900 Kio |
 | Remplacement | une transaction D1 : quelques secondes pour quelques centaines de milliers de lignes ; une base trop grosse pour une transaction (limites de durée de D1) fait échouer l'import **sans rien changer** : procédure manuelle |
 

@@ -161,6 +161,12 @@ async function seedWorld() {
     return { admin, kes, orion, conv };
 }
 
+
+/** The schema of a copy: the last migration applied (the newest file of migrations/). */
+function lastMigration(): string {
+    return [...env.TEST_MIGRATIONS].map((m) => m.name).sort().at(-1)!;
+}
+
 describe("backups: access", () => {
     it("every route is a 404 for a player and needs a session", async () => {
         const p = await registerPlayer("Kestrel");
@@ -191,7 +197,7 @@ describe("backups: server-side copies", () => {
     it("creates a copy, lists it, and leaves out sessions, rate limits and installers", async () => {
         const { admin, kes } = await seedWorld();
         const b = await createCopy(admin.token);
-        expect(b).toMatchObject({ kind: "manual", status: "ready", by: { id: admin.id, username: "NovaRider" }, schema: "XXXX_backups.sql" });
+        expect(b).toMatchObject({ kind: "manual", status: "ready", by: { id: admin.id, username: "NovaRider" }, schema: lastMigration() });
         expect(b.tables).toBeGreaterThan(40);
         expect(b.rows).toBeGreaterThan(10);
         expect(b.files).toBe(4); // two replays, the avatar, the level file
@@ -200,7 +206,7 @@ describe("backups: server-side copies", () => {
         expect(list.status).toBe(200);
         expect(list.body.data.backups).toHaveLength(1);
         expect(list.body.data.backups[0]).toEqual(b);
-        expect(list.body.data.retention).toEqual({ auto: 14, manual: 10, pre_import_days: 30 });
+        expect(list.body.data.retention).toEqual({ auto: 14, manual: 10, manual_days: 90, pre_import_days: 30 });
         expect(list.body.data.maintenance).toBeNull();
 
         const manifest = (await (await env.STORAGE.get(`backups/${b.id}/manifest.json`))!.json()) as StoredManifest;
@@ -307,7 +313,7 @@ describe("backups: download and import", () => {
         expect(checked.status, JSON.stringify(checked.body)).toBe(200);
         expect(checked.body.data.compatible).toBe(true);
         expect(checked.body.data.problems).toEqual([]);
-        expect(checked.body.data.backup).toMatchObject({ created_at: b.created_at, schema: "XXXX_backups.sql", tables: b.tables, rows: b.rows, files: 4 });
+        expect(checked.body.data.backup).toMatchObject({ created_at: b.created_at, schema: lastMigration(), tables: b.tables, rows: b.rows, files: 4 });
         // The check changed nothing.
         expect(await env.DB.prepare("SELECT COUNT(*) AS n FROM players WHERE username = 'Intrus'").first<{ n: number }>()).toEqual({ n: 1 });
         expect((await api("GET", `${V}/admin/backups`, { token: admin.token })).body.data.maintenance).toBeNull();

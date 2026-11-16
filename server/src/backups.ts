@@ -26,7 +26,8 @@ import { Validator } from "./validate";
 export type BackupKind = "auto" | "manual" | "pre_import";
 
 /** Kept by the cron: the latest automatic and manual copies, the copies made before an import for some days. */
-export const RETENTION = { auto: 14, manual: 10, pre_import_days: 30 } as const;
+// Manual copies also expire after 90 days, so a deleted account does not stay in them for ever.
+export const RETENTION = { auto: 14, manual: 10, manual_days: 90, pre_import_days: 30 } as const;
 const FAILED_KEEP_DAYS = 7;
 const STALE_RUNNING_MS = 6 * 3600_000;
 
@@ -672,7 +673,7 @@ async function deleteBackup(env: Bindings, id: string): Promise<void> {
     await env.DB.prepare("DELETE FROM backups WHERE id = ?1").bind(id).run();
 }
 
-/** Keeps the 14 latest automatic copies, the 10 latest manual ones, pre_import copies for 30 days. */
+/** Keeps the 14 latest automatic copies, the 10 latest manual ones (90 days at most), pre_import copies for 30 days. */
 export async function applyRetention(env: Bindings, now = Date.now()): Promise<string[]> {
     const rows = await env.DB.prepare("SELECT id, kind, status, created_at FROM backups ORDER BY created_at DESC, id DESC").all<{
         id: string;
@@ -702,7 +703,7 @@ export async function applyRetention(env: Bindings, now = Date.now()): Promise<s
             continue;
         }
         seen[b.kind] += 1;
-        if (seen[b.kind] > RETENTION[b.kind]) doomed.push(b.id);
+        if (seen[b.kind] > RETENTION[b.kind] || (b.kind === "manual" && age > RETENTION.manual_days * 86400_000)) doomed.push(b.id);
     }
     for (const id of doomed) await deleteBackup(env, id);
     return doomed;

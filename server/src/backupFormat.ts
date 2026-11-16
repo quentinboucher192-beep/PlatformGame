@@ -18,8 +18,10 @@ export const IV_SIZE = 12;
 export const TAG_SIZE = 16;
 export const RECORD_OVERHEAD = IV_SIZE + TAG_SIZE;
 /** PBKDF2-HMAC-SHA256 iterations of the files written by this server (stored in each header). */
-export const DEFAULT_ITERATIONS = 300_000;
-export const MIN_ITERATIONS = 210_000;
+// The most Web Crypto derives natively in Workers (no second of CPU per request), with
+// passphrases of 12 characters at least. Files of other servers may carry more (HMAC path).
+export const DEFAULT_ITERATIONS = 100_000;
+export const MIN_ITERATIONS = 100_000;
 export const MAX_ITERATIONS = 2_000_000;
 const MIN_CHUNK = 64 * 1024;
 const MAX_CHUNK = 8 * 1024 * 1024;
