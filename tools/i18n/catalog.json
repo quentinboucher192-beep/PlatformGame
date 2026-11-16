@@ -25682,6 +25682,12 @@
    ]
   },
   {
+   "fr": "Récompenses des défis : cinq cosmétiques à gagner — le titre « Défiant » (un palier Or), le cadre « Couronne de la semaine » (Or à un défi de la semaine), la traînée « Comète du mois » (Or à un défi du mois), la combinaison « Champion des défis » (10 paliers Or) et la victoire « Série de feu » (7 défis du jour d'affilée).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Récupération (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -26971,6 +26977,12 @@
    ]
   },
   {
+   "fr": "Seules les parties vérifiées par Cosmic Online comptent ; une récompense débloquée est annoncée par une notification et dans « Nouvelles récompenses ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Seuls les défis gardés sur ce PC sont montrés.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -28208,6 +28220,12 @@
    "fr": "Sur invitation",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Sur la fiche d'un défi et avant de le jouer : les récompenses qu'il fait avancer, en icônes (aperçu, palier, progression) avec une infobulle ; un clic ouvre l'objet dans la Collection, où la Route les montre aussi.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
