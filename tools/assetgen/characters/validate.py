@@ -225,6 +225,15 @@ for _k in range(8):
 ANIMS["projectiles"][3].extend([("star_shard", 4), ("meteor", 4)])
 LOOPING["projectiles"] |= {"star_shard", "meteor"}
 
+# ------------------------------------------------------------------ Pyrrhax (giga boss, obsidian dragon)
+# Eight sheets like Singularis, without the teleports (it flies).
+DRAGON_CLIPS = [c for c in GIGA_CLIPS if not c[0].startswith("teleport")]
+for _k in range(8):
+    _id = "pyrrhax" if _k == 0 else "pyrrhax_p%d" % (_k + 1)
+    ANIMS[_id] = (256, 192, [128, 152], DRAGON_CLIPS, {"attack": [(1, "fire")]}, {})
+    TEXTURES[_id] = f"sprites/enemies/{_id}.png"
+    LOOPING[_id] = {"idle", "walk", "move", "special"}
+
 STATIC = {
     "sprites/objects/moving_platform.png": (48, 32),
     "sprites/objects/crumble_platform.png": (48, 48),

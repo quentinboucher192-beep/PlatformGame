@@ -369,8 +369,9 @@ def build():
           loop=False)
     s.save("animations/thornwarden.json")
     # v2 bosses (docs/ASSET_SPEC.md section 4b), one module per family of rigs; bosses_d: the
-    # giga boss of the Noyau (Singularis, eight phase sheets).
+    # giga boss of the Noyau (Singularis, eight phase sheets); bosses_e: Pyrrhax, the obsidian
+    # dragon (eight phase sheets).
     import importlib.util
-    for name in ("bosses_a", "bosses_b", "bosses_c", "bosses_d"):
+    for name in ("bosses_a", "bosses_b", "bosses_c", "bosses_d", "bosses_e"):
         if importlib.util.find_spec(name) is not None:
             importlib.import_module(name).build()
