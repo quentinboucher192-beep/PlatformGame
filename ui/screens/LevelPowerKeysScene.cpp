@@ -29,8 +29,8 @@ float fz(const UIContext& ui, float size) { return std::max(size, 11.5f / ui.s(1
 
 class LevelPowerKeysScene : public Scene {
 public:
-    LevelPowerKeysScene(GameServices& g, LevelData level, std::vector<std::string> extra)
-        : g_(g), level_(std::move(level)), extra_(std::move(extra)) {}
+    LevelPowerKeysScene(GameServices& g, LevelData level, std::vector<std::string> extra, std::vector<std::string> carried)
+        : g_(g), level_(std::move(level)), extra_(std::move(extra)), carried_(std::move(carried)) {}
     bool isOverlay() const override { return true; }
 
     void onEnter() override {
@@ -85,7 +85,20 @@ public:
         const float headH = ui.s(26) + ui.s(48) + ui.s(30) + introH + ui.s(18) + ui.s(30);
         const float footH = ui.s(96);
         const float rowsW = innerW - ui.s(14);  // the scroll bar
-        float rowsH = 0.0f;
+        // 2.50: with many powers (a giga boss arena offers them all), compact rows; the powers
+        // in hand first, with the key and the button they use right now.
+        compact_ = keys_.powers.size() > 6;
+        std::vector<int> hand;
+        for (int s = 0; s < static_cast<int>(carried_.size()) && s < kPowerSlotKeys; ++s)
+            if (!carried_[static_cast<size_t>(s)].empty() && keys_.find(carried_[static_cast<size_t>(s)])) hand.push_back(s);
+        const std::string sharedNote =
+            keys_.sharedPad ? "Manette : ce niveau offre plus de pouvoirs que de boutons libres, deux pouvoirs peuvent partager un bouton. Si vous "
+                              "les portez ensemble, le second prend un bouton libre : « En main » montre celui qu'il utilise."
+                            : std::string();
+        const float noteH = sharedNote.empty() ? 0.0f : ui.text().measureWrapped(sharedNote, FontFace::Body, ui.s(fz(ui, 15)), rowsW).y + ui.s(12);
+        const float sectionH = ui.s(34), handRowH = ui.s(52);
+        float rowsH = noteH;
+        if (!hand.empty()) rowsH += sectionH + static_cast<float>(hand.size()) * (handRowH + ui.s(6)) + ui.s(8) + sectionH;
         std::vector<float> heights;
         for (const auto& r : keys_.powers) {
             heights.push_back(rowHeight(r, rowsW));
@@ -122,6 +135,24 @@ public:
         float ry = area.y - ui.scrollOffset();
         if (keys_.powers.empty())
             ui.labelWrapped("Aucun pouvoir de ce niveau ne s'utilise avec une touche à lui.", {x, ry + ui.s(10)}, innerW, fz(ui, 18), th.textDim);
+        if (!sharedNote.empty()) {
+            ui.labelWrapped(sharedNote, {x, ry}, rowsW, fz(ui, 15), th.warm);
+            ry += noteH;
+        }
+        auto section = [&](const std::string& t) {
+            float f = std::max(ui.fitFont(t, FontFace::Bold, fz(ui, 18), rowsW, 0.7f), fz(ui, 11.5f));
+            ui.label(ui.elide(t, FontFace::Bold, f, rowsW), {x, ry + sectionH * 0.5f}, f, th.accent, Align::Left, FontFace::Bold, VAlign::Middle);
+            ry += sectionH;
+        };
+        if (!hand.empty()) {
+            section("En main : les touches utilisées maintenant");
+            for (int s : hand) {
+                drawHandRow(s, *keys_.find(carried_[static_cast<size_t>(s)]), {x, ry, rowsW, handRowH}, c);
+                ry += handRowH + ui.s(6);
+            }
+            ry += ui.s(8);
+            section("Tous les pouvoirs du niveau");
+        }
         for (size_t i = 0; i < keys_.powers.size(); ++i) {
             drawRow(keys_.powers[i], {x, ry, rowsW, heights[i]}, c);
             ry += heights[i] + ui.s(8);
@@ -196,7 +227,7 @@ private:
 
     float rowHeight(const ResolvedPowerKey& r, float w) const {
         UIContext& ui = g_.ui;
-        float h = ui.s(88);
+        float h = compact_ ? ui.s(62) : ui.s(88);
         for (const auto& t : warnings(r)) h += ui.text().measureWrapped(t, FontFace::Body, ui.s(fz(ui, 15)), w - ui.s(24)).y + ui.s(4);
         return h + ui.s(6);
     }
@@ -209,7 +240,8 @@ private:
         ui.r().fillRoundedRect(row, ui.s(10), Color{14, 20, 40, 200});
         if (r.keyConflict() || r.padConflict()) ui.r().drawRoundedRect(row, ui.s(10), th.warm.withAlpha(150), std::max(1.0f, ui.s(1.5f)));
         // Icon and name; under the name, whose keys these are.
-        Rect icon{c.nameX, row.y + ui.s(16), ui.s(48), ui.s(48)};
+        const float isz = compact_ ? ui.s(40) : ui.s(48);
+        Rect icon{c.nameX, row.y + (compact_ ? ui.s(11) : ui.s(16)), isz, isz};
         ui.r().fillRoundedRect(icon, ui.s(8), {7, 11, 24, 255});
         if (def) {
             ui.r().drawRoundedRect(icon, ui.s(8), def->color, std::max(1.0f, ui.s(1.5f)));
@@ -218,13 +250,13 @@ private:
         const float tx = icon.right() + ui.s(12), troom = c.nameX + c.nameW - tx;
         const std::string name = powerName(r.power);
         float nf = std::max(ui.fitFont(name, FontFace::Bold, fz(ui, 20), troom, 0.7f), fz(ui, 11.5f));
-        ui.label(ui.elide(name, FontFace::Bold, nf, troom), {tx, row.y + ui.s(30)}, nf, def ? def->color : th.text, Align::Left, FontFace::Bold,
-                 VAlign::Middle);
+        ui.label(ui.elide(name, FontFace::Bold, nf, troom), {tx, row.y + (compact_ ? ui.s(22) : ui.s(30))}, nf, def ? def->color : th.text, Align::Left,
+                 FontFace::Bold, VAlign::Middle);
         const bool suggested = r.levelKeySource != PowerKeySource::Level && r.levelPadSource != PowerKeySource::Level;
         const std::string whose = mine ? "Vos touches" : suggested ? "Touches suggérées" : "Touches du niveau";
         float wf = std::max(ui.fitFont(whose, FontFace::Body, fz(ui, 15), troom, 0.75f), fz(ui, 11.5f));
-        ui.label(ui.elide(whose, FontFace::Body, wf, troom), {tx, row.y + ui.s(58)}, wf, mine ? th.accent : th.textDim, Align::Left, FontFace::Body,
-                 VAlign::Middle);
+        ui.label(ui.elide(whose, FontFace::Body, wf, troom), {tx, row.y + (compact_ ? ui.s(44) : ui.s(58))}, wf, mine ? th.accent : th.textDim,
+                 Align::Left, FontFace::Body, VAlign::Middle);
 
         const GamepadStyle style = g_.app.input().gamepadStyle();
         const float by = row.y + ui.s(12), bh = ui.s(46);
@@ -243,7 +275,10 @@ private:
             if (ui.button("k" + r.power, b, label, st)) beginCapture(r.power, false);
             const std::string lv = r.levelKeySource == PowerKeySource::Level ? "Niveau : " + keyName(r.levelKey) : "Suggérée : " + keyName(r.levelKey);
             float lf = std::max(ui.fitFont(lv, FontFace::Body, fz(ui, 14), b.w, 0.8f), fz(ui, 11.5f));
-            ui.label(ui.elide(lv, FontFace::Body, lf, b.w), {b.x, b.bottom() + ui.s(14)}, lf, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+            // Compact rows: the level's key only when the player chose another one.
+            if (!compact_ || r.keySource == PowerKeySource::Player)
+                ui.label(ui.elide(lv, FontFace::Body, lf, b.w), {b.x, b.bottom() + ui.s(compact_ ? 8 : 14)}, lf, th.textDim, Align::Left, FontFace::Body,
+                         VAlign::Middle);
         }
         // Gamepad: the button used (its icon on the left), the level's below.
         {
@@ -260,7 +295,9 @@ private:
             const std::string lv =
                 r.levelPadSource == PowerKeySource::Level ? "Niveau : " + padBindingName(r.levelPad, style) : "Suggéré : " + padBindingName(r.levelPad, style);
             float lf = std::max(ui.fitFont(lv, FontFace::Body, fz(ui, 14), b.w, 0.8f), fz(ui, 11.5f));
-            ui.label(ui.elide(lv, FontFace::Body, lf, b.w), {b.x, b.bottom() + ui.s(14)}, lf, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+            if (!compact_ || r.padSource == PowerKeySource::Player)
+                ui.label(ui.elide(lv, FontFace::Body, lf, b.w), {b.x, b.bottom() + ui.s(compact_ ? 8 : 14)}, lf, th.textDim, Align::Left, FontFace::Body,
+                         VAlign::Middle);
         }
         // « Par défaut »: the level's key and button again (only when the player changed them).
         {
@@ -279,10 +316,54 @@ private:
             }
         }
         // Why a key is not the one asked.
-        float wy = row.y + ui.s(88);
+        float wy = row.y + (compact_ ? ui.s(62) : ui.s(88));
         for (const auto& t : warnings(r)) {
             Vec2 sz = ui.labelWrapped(t, {row.x + ui.s(12), wy}, row.w - ui.s(24), fz(ui, 15), th.warm);
             wy += sz.y + ui.s(4);
+        }
+    }
+
+    /// A power in hand: its slot, its name, the key and the button it uses now (read from the
+    /// slots: a shared gamepad button may have been moved to a free one).
+    void drawHandRow(int slot, const ResolvedPowerKey& r, const Rect& row, const Cols& c) {
+        UIContext& ui = g_.ui;
+        const UITheme& th = ui.theme();
+        const PowerDefinition* def = g_.content.power(r.power);
+        const InputBindings& b = g_.app.input().bindings();
+        const size_t a = static_cast<size_t>(powerSlotAction(slot));
+        const SDL_Scancode key = b.keys[a][0];
+        const PadBinding pad = b.pad[a][0];
+        ui.r().fillRoundedRect(row, ui.s(10), Color{20, 34, 60, 220});
+        ui.r().drawRoundedRect(row, ui.s(10), th.accent.withAlpha(90), std::max(1.0f, ui.s(1.0f)));
+        Rect slotR{c.nameX, row.center().y - ui.s(14), ui.s(28), ui.s(28)};
+        ui.r().fillRoundedRect(slotR, ui.s(6), th.accent.withAlpha(60));
+        ui.label(std::to_string(slot + 1), slotR.center(), fz(ui, 16), th.text, Align::Center, FontFace::Bold, VAlign::Middle);
+        Rect icon{slotR.right() + ui.s(8), row.center().y - ui.s(17), ui.s(34), ui.s(34)};
+        if (def) ui.icon("ui/icons_powers.png", def->icon, 32, icon);
+        const float tx = icon.right() + ui.s(10), troom = c.nameX + c.nameW - tx;
+        const std::string name = powerName(r.power);
+        float nf = std::max(ui.fitFont(name, FontFace::Bold, fz(ui, 18), troom, 0.7f), fz(ui, 11.5f));
+        ui.label(ui.elide(name, FontFace::Bold, nf, troom), {tx, row.center().y}, nf, def ? def->color : th.text, Align::Left, FontFace::Bold,
+                 VAlign::Middle);
+        const GamepadStyle style = g_.app.input().gamepadStyle();
+        const std::string k = key == SDL_SCANCODE_UNKNOWN ? std::string("—") : keyName(key);
+        float kf = std::max(ui.fitFont(k, FontFace::Bold, fz(ui, 18), c.keyW, 0.7f), fz(ui, 11.5f));
+        ui.label(ui.elide(k, FontFace::Bold, kf, c.keyW), {c.keyX, row.center().y}, kf, th.text, Align::Left, FontFace::Bold, VAlign::Middle);
+        float px = c.padX;
+        const bool glyph = pad.kind != PadBinding::Kind::None && glyphIndex(pad) >= 0;
+        if (glyph) {
+            Glyphs::drawPadButton(ui, pad, {px, row.center().y}, ui.s(28));
+            px += ui.s(34);
+        }
+        const std::string p = pad.kind == PadBinding::Kind::None ? std::string("—") : padBindingName(pad, style);
+        const float proom = c.padX + c.padW - px;
+        float pf = std::max(ui.fitFont(p, FontFace::Bold, fz(ui, 18), proom, 0.7f), fz(ui, 11.5f));
+        ui.label(ui.elide(p, FontFace::Bold, pf, proom), {px, row.center().y}, pf, th.text, Align::Left, FontFace::Bold, VAlign::Middle);
+        // A shared button given to another power in hand: this one uses a free button for now.
+        if (!(pad == r.pad) && r.pad.kind != PadBinding::Kind::None) {
+            const std::string why = "au lieu de « " + padBindingName(r.pad, style) + " » (partagé)";
+            float wf = std::max(ui.fitFont(why, FontFace::Body, fz(ui, 14), c.resetW, 0.75f), fz(ui, 11.5f));
+            ui.label(ui.elide(why, FontFace::Body, wf, c.resetW), {c.resetX, row.center().y}, wf, th.warm, Align::Left, FontFace::Body, VAlign::Middle);
         }
     }
 
@@ -393,6 +474,8 @@ private:
     GameServices& g_;
     LevelData level_;
     std::vector<std::string> extra_;
+    std::vector<std::string> carried_;
+    bool compact_ = false;
     PowerKeyMap keys_;
     float t_ = 0.0f;
     std::string capPower_;
@@ -405,8 +488,8 @@ private:
 
 }  // namespace
 
-std::unique_ptr<Scene> makeLevelPowerKeys(GameServices& g, LevelData level, std::vector<std::string> extra) {
-    return std::make_unique<LevelPowerKeysScene>(g, std::move(level), std::move(extra));
+std::unique_ptr<Scene> makeLevelPowerKeys(GameServices& g, LevelData level, std::vector<std::string> extra, std::vector<std::string> carried) {
+    return std::make_unique<LevelPowerKeysScene>(g, std::move(level), std::move(extra), std::move(carried));
 }
 
 }  // namespace cosmic

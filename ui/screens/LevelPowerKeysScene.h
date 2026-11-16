@@ -26,6 +26,9 @@ ResolvedPowerKey playerPowerKey(GameServices& g, const LevelData& level, const s
 /// button, notch of the wheel; any button or trigger); « Par défaut » goes back to the level's
 /// key. A key of a base command is flagged (the command wins). Opened from the level panels
 /// (before « Jouer ») and from the pause menu; `extra`: powers given besides the level's own.
-std::unique_ptr<Scene> makeLevelPowerKeys(GameServices& g, LevelData level, std::vector<std::string> extra = {});
+/// `carried` (2.50, from the pause menu): the powers in hand, by slot (index = slot, "" = empty),
+/// shown first with the key and the button they use now (a shared gamepad button moved).
+std::unique_ptr<Scene> makeLevelPowerKeys(GameServices& g, LevelData level, std::vector<std::string> extra = {},
+                                          std::vector<std::string> carried = {});
 
 }  // namespace cosmic

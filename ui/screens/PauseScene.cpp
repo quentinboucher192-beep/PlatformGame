@@ -22,7 +22,7 @@ void PauseScene::update(float dt) {
     // Automated screenshots: --pause --online-open powerkeys[:…] opens « Touches de ce niveau ».
     if (!keysOpened_ && g_.onlineOpen.rfind("powerkeys", 0) == 0) {
         keysOpened_ = true;
-        g_.app.pushScene(makeLevelPowerKeys(g_, game_.level(), game_.powerKeyExtra()));
+        g_.app.pushScene(makeLevelPowerKeys(g_, game_.level(), game_.powerKeyExtra(), game_.carriedPowers()));
     }
 }
 
@@ -152,7 +152,7 @@ void PauseScene::render(float /*alpha*/) {
         // The keys of this level's powers, for this player (each power keeps its own key).
         bool openKeys = ui.button("levelkeys", {bx, y, bw, bh}, "Touches de ce niveau");
         ui.newBadge("levelkeys", {bx, y, bw, bh}, "pause.level_keys");  // « NOUVEAU » (2.31)
-        if (openKeys) g_.app.pushScene(makeLevelPowerKeys(g_, game_.level(), game_.powerKeyExtra()));
+        if (openKeys) g_.app.pushScene(makeLevelPowerKeys(g_, game_.level(), game_.powerKeyExtra(), game_.carriedPowers()));
         y += bh + ui.s(16);
     }
     {

@@ -5,6 +5,14 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.50.0** :
+* **Pyrrhax déchaîné** : Piqué traversant, Atterrissage et souffle au sol, Boules de feu à nuage,
+  Rafale d'ailes ; rester sous lui ne protège plus.
+* Nouveau pouvoir : **le Boomerang chargé** (la lame tourne sur la cible selon la charge, puis revient ;
+  25 d'énergie).
+* Les arènes des giga-boss offrent **tous les pouvoirs**, sans remettre aucun classement à zéro.
+* **Touches de ce niveau** : les pouvoirs en main d'abord, lignes compactes, boutons de manette partagés.
+
 **Nouveau dans la version 2.49.1** :
 * **Records et révisions** : un record fait sur une révision téléchargée n'est plus effacé au
   démarrage (plus de faux « NOUVEAU RECORD ! ») ; une révision **sans changement majeur** ne remet

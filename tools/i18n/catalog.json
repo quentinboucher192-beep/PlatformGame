@@ -2650,6 +2650,12 @@
    ]
   },
   {
+   "fr": "au lieu de « {0} » (partagé)",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
    "fr": "Au millimètre",
    "where": [
     "data/achievements/achievements.json"
@@ -12666,6 +12672,12 @@
    ]
   },
   {
+   "fr": "En main : les touches utilisées maintenant",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
    "fr": "en mouvement",
    "where": [
     "game/gameplay/entities/PlatformEntities.cpp"
@@ -20150,6 +20162,12 @@
    ]
   },
   {
+   "fr": "Les arènes des giga-boss (Singularis, Pyrrhax, le Monolithe) offrent tous les pouvoirs du jeu. Aucun classement n'est remis à zéro : vos records restent valables, en ligne comme dans le jeu.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Les badges du profil s'ouvrent à {0} étoiles ({1} déclarées).",
    "where": [
     "server/src/badges.ts"
@@ -21496,6 +21514,18 @@
     "engine/input/InputManager.cpp",
     "ui/screens/LevelPowerKeysScene.cpp",
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Manette : ce niveau offre plus de pouvoirs que de boutons libres, deux pouvoirs peuvent partager un bouton. Si vous les portez ensemble, le second prend un bouton libre : « En main » montre celui qu'il utilise.",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "Manette : dans ces arènes, deux pouvoirs peuvent partager un bouton ; si vous les portez ensemble, le second prend un bouton libre.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -24383,6 +24413,12 @@
    "fr": "Nouveau niveau…",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "Nouveau pouvoir : le Boomerang chargé. Maintenez pour charger, relâchez pour lancer : la lame s'accroche au premier ennemi touché et tourne sur lui (0,4 à 2 s selon la charge), 1 dégât puis 1 toutes les 0,3 s, puis revient. 25 d'énergie.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -29341,6 +29377,12 @@
    "fr": "Pyrrhax appelle sa couvée !",
    "where": [
     "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Pyrrhax déchaîné : de vraies attaques de dragon. Piqué traversant (sa ligne se verrouille avant le plongeon), Atterrissage et souffle au sol (posé, il prend plus de dégâts), Boules de feu qui laissent un nuage brûlant, Rafale d'ailes qui repousse. Rester sous lui ne protège plus.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -36877,6 +36919,12 @@
    ]
   },
   {
+   "fr": "Touches de ce niveau (menu pause) : les pouvoirs en main d'abord, avec la touche et le bouton qu'ils utilisent maintenant, puis tous les pouvoirs du niveau en lignes compactes.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Touches de son niveau (à changer au choix du niveau ou en pause)",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
@@ -37030,6 +37078,12 @@
    "fr": "tous les paliers sont atteints",
    "where": [
     "ui/screens/RewardsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tous les pouvoirs du niveau",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
    ]
   },
   {

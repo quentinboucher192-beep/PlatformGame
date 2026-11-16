@@ -481,6 +481,13 @@ void GameScene::refreshPowerKeys() {
     syncPowerKeys();
 }
 
+std::vector<std::string> GameScene::carriedPowers() const {
+    std::vector<std::string> out;
+    if (!world_) return out;
+    for (const auto& p : world_->player().powers()) out.push_back(p ? p->id() : std::string());
+    return out;
+}
+
 void GameScene::syncPowerKeys() {
     if (!world_) return;
     // Slot N takes the key of the power carried there (outside the simulation: the inputs

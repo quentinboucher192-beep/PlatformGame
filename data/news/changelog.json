@@ -1,4 +1,11 @@
 {
+  "2.50.0": [
+    "Pyrrhax déchaîné : de vraies attaques de dragon. Piqué traversant (sa ligne se verrouille avant le plongeon), Atterrissage et souffle au sol (posé, il prend plus de dégâts), Boules de feu qui laissent un nuage brûlant, Rafale d'ailes qui repousse. Rester sous lui ne protège plus.",
+    "Nouveau pouvoir : le Boomerang chargé. Maintenez pour charger, relâchez pour lancer : la lame s'accroche au premier ennemi touché et tourne sur lui (0,4 à 2 s selon la charge), 1 dégât puis 1 toutes les 0,3 s, puis revient. 25 d'énergie.",
+    "Les arènes des giga-boss (Singularis, Pyrrhax, le Monolithe) offrent tous les pouvoirs du jeu. Aucun classement n'est remis à zéro : vos records restent valables, en ligne comme dans le jeu.",
+    "Manette : dans ces arènes, deux pouvoirs peuvent partager un bouton ; si vous les portez ensemble, le second prend un bouton libre.",
+    "Touches de ce niveau (menu pause) : les pouvoirs en main d'abord, avec la touche et le bouton qu'ils utilisent maintenant, puis tous les pouvoirs du niveau en lignes compactes."
+  ],
   "2.49.1": [
     "Correction : un record fait sur une révision d'un niveau téléchargée depuis Cosmic Online n'est plus effacé à chaque démarrage du jeu (d'où un faux « NOUVEAU RECORD ! » à l'arrivée suivante).",
     "Une révision publiée sans changement majeur ne remet aucun classement à zéro : votre record local reste le même, comme les classements en ligne, et une actualité l'indique.",
