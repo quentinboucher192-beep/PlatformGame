@@ -1,0 +1,19 @@
+{
+  "texture": "sprites/enemies/phenix_p2.png",
+  "frameWidth": 256,
+  "frameHeight": 192,
+  "pivot": [128, 150],
+  "clips": {
+    "idle": {"row": 0, "count": 8, "fps": 9, "loop": true},
+    "telegraph": {"row": 0, "count": 6, "start": 8, "durations": [0.1, 0.1, 0.1, 0.12, 0.14, 0.2], "loop": false},
+    "walk": {"row": 1, "count": 8, "fps": 10, "loop": true},
+    "move": {"row": 1, "count": 8, "fps": 10, "loop": true},
+    "attack": {"row": 1, "count": 5, "start": 8, "durations": [0.05, 0.06, 0.18, 0.12, 0.14], "loop": false, "events": [{"frame": 1, "name": "fire"}]},
+    "telegraph_special": {"row": 2, "count": 6, "durations": [0.1, 0.1, 0.1, 0.12, 0.14, 0.2], "loop": false},
+    "special": {"row": 2, "count": 4, "start": 6, "fps": 12, "loop": true},
+    "hurt": {"row": 2, "count": 2, "start": 10, "durations": [0.08, 0.14], "loop": false},
+    "summon": {"row": 3, "count": 6, "durations": [0.12, 0.1, 0.12, 0.12, 0.14, 0.16], "loop": false},
+    "roar": {"row": 3, "count": 8, "start": 6, "durations": [0.12, 0.12, 0.1, 0.1, 0.1, 0.12, 0.14, 0.16], "loop": false},
+    "death": {"row": 4, "count": 14, "durations": [0.1, 0.12, 0.12, 0.14, 0.14, 0.14, 0.16, 0.16, 0.12, 0.12, 0.12, 0.14, 0.16, 0.3], "loop": false}
+  }
+}
