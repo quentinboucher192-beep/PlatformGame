@@ -38,7 +38,7 @@ SUITS = {
     "obsidienne": ((52, 44, 60), (255, 110, 40), (190, 40, 110)),
     # 2.49: le Monolithe, le Golem Primordial (speckled granite, amber runes, moss)
     "granit": ((128, 122, 116), (255, 178, 70), (110, 150, 80)),
-    # 2.52: le Kraken des Abysses (ink violet, a cyan photophore visor, a turquoise scarf)
+    # 2.53: le Kraken des Abysses (ink violet, a cyan photophore visor, a turquoise scarf)
     "encre": ((60, 52, 112), (110, 235, 255), (40, 210, 180)),
 }
 

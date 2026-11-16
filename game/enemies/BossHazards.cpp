@@ -289,7 +289,7 @@ void BossHazards::fixedUpdate(GameWorld& w, float dt) {
             Rect r = c.current();
             if (r.w > 2.0f) {
                 Vec2 at{w.fxRng().range(r.x, r.right()), w.fxRng().range(r.y + r.h * 0.3f, r.bottom() - 2.0f)};
-                // 2.52: the Kraken's ink sheds bubbles of its light, no smoke.
+                // 2.53: the Kraken's ink sheds bubbles of its light, no smoke.
                 w.particles().emit(c.ink ? "bubbles" : "fire_cloud", at, 1.0f, {}, &c.color);
                 if (w.fxRng().chance(0.35f) && !c.ink) w.particles().emit("fire_smoke", at + Vec2{0.0f, -r.h * 0.3f}, 1.0f);
             }
@@ -327,7 +327,7 @@ void BossHazards::bendShot(Projectile& p, float dt) const {
 // ================================================================== render
 
 namespace {
-/// A tide of the abyss (2.52, the Kraken): dark water, its crests lit with the boss's light,
+/// A tide of the abyss (2.53, the Kraken): dark water, its crests lit with the boss's light,
 /// foam where the swell peaks, bubbles rising inside. Display only (time-driven).
 void drawTide(RenderContext& ctx, const BossHazards::Flood& f, float t) {
     const float top = f.surfaceY();
@@ -353,7 +353,7 @@ void drawTide(RenderContext& ctx, const BossHazards::Flood& f, float t) {
     for (float x = f.left + 48.0f; x < f.right; x += 120.0f) ctx.lights.add({x, top}, 110.0f, c);
 }
 
-/// A tentacle out of the floor (2.52, the Kraken's « Étau de tentacules »): it sways, its tip
+/// A tentacle out of the floor (2.53, the Kraken's « Étau de tentacules »): it sways, its tip
 /// curls over the cage, a row of suckers lit with the boss's light along its inner side.
 void drawTentacle(RenderContext& ctx, const BossHazards::Wall& wl, const Rect& vis, float t) {
     const float h = vis.h;
@@ -524,7 +524,7 @@ void BossHazards::render(RenderContext& ctx) const {
                 float rad = r.h / static_cast<float>(rows) * (0.55f + 0.12f * dmath::sin(t * 2.3f + seed * 3.1f));
                 Vec2 pc{x + 3.0f * dmath::sin(t * 1.7f + seed), y - 2.0f * dmath::sin(t * 2.9f + seed * 2.0f)};
                 if (c.ink) {
-                    // 2.52, the Kraken: dense ink, only its rim lit by the light of its phase.
+                    // 2.53, the Kraken: dense ink, only its rim lit by the light of its phase.
                     ctx.r.drawWorldGlow(pc, rad * 1.7f, fire.withAlpha(static_cast<uint8_t>(50 * a)));
                     ctx.r.fillWorldCircle(pc, rad, Color{16, 10, 34, static_cast<uint8_t>(210 * a)});
                     ctx.r.fillWorldCircle(pc + Vec2{-rad * 0.3f, -rad * 0.3f}, rad * 0.35f, Color{fire.r, fire.g, fire.b, static_cast<uint8_t>(45 * a)},

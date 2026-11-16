@@ -7,7 +7,7 @@
   "animation": "animations/kraken.json",
   "size": [
     130,
-    135
+    210
   ],
   "scale": 1.25,
   "hp": 800,
@@ -67,7 +67,7 @@
       "projectileRadius": 8,
       "origin": [
         109,
-        -9
+        -69
       ],
       "lead": 0.7,
       "sound": "sounds/slime_split.wav",
@@ -113,7 +113,7 @@
       "sweepDegrees": 100,
       "origin": [
         48,
-        -11
+        -71
       ],
       "color": "#9ae8ff",
       "beamTexture": "frost",
@@ -253,7 +253,7 @@
       "projectileRadius": 8,
       "origin": [
         109,
-        -9
+        -69
       ],
       "lead": 0.7,
       "sound": "sounds/slime_split.wav",
@@ -321,7 +321,7 @@
       "arms": 1,
       "origin": [
         48,
-        -11
+        -71
       ],
       "color": "#fff27a",
       "beamTexture": "plasma",
@@ -347,7 +347,7 @@
       "homingTime": 1.8,
       "origin": [
         109,
-        -9
+        -69
       ],
       "projectile": "solar_bolt",
       "hitEffect": "projectile_burst"
@@ -406,7 +406,7 @@
       "arms": 2,
       "origin": [
         48,
-        -11
+        -71
       ],
       "color": "#ffd6ee",
       "beamTexture": "prism",

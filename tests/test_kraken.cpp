@@ -1,4 +1,4 @@
-// Le Kraken des Abysses (2.52): the third giga boss of Les Confins and « La Fosse des Abysses ».
+// Le Kraken des Abysses (2.53): the third giga boss of Les Confins and « La Fosse des Abysses ».
 // It swims (flying movement) and fights with the attack types of before: its lashes dive through
 // Nova (the dragon's « Piqué »), it comes down to spread ink along the floor, lobs clouds of
 // ink, stirs currents and whirlpools, floods the arena with dark water, and its tentacles burst
@@ -312,8 +312,8 @@ TEST_CASE("kraken: right under it or beside it is no shelter, in every phase") {
                 if (m.boss->diving()) ++lashes;
                 m.w->player().health = m.w->player().maxHealth();
             }
-            std::printf("  phase %d : %d coups en 20 s %s le Kraken (%zu attaques différentes)\n", phase + 1, hits,
-                        beside ? "à côté du" : "sous", by.size());
+            std::printf("  phase %d : %d coups en 20 s %s Kraken (%zu attaques différentes)\n", phase + 1, hits,
+                        beside ? "à côté du" : "sous le", by.size());
             CHECK(hits >= (phase == 0 ? 5 : 4));
             if (phase == 0 && !beside) CHECK(lashes > 0);
         }

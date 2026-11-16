@@ -118,7 +118,7 @@ struct AttackDef {
     // Prism: `arms` 2 fires two beams mirrored on both sides of the enemy, which cross (2.33).
     /// Look of a lasting effect (2.33, appearance only, not in the fingerprints): Flood
     /// "plasma" (a tide of star plasma instead of lava), Cage "star" (walls of starlight).
-    /// 2.52 (the Kraken): Flood "tide" (dark water), Cage "tentacle" (tentacles out of the floor),
+    /// 2.53 (the Kraken): Flood "tide" (dark water), Cage "tentacle" (tentacles out of the floor),
     /// CloudShot / Perch "ink" (clouds of ink instead of fire).
     std::string look;
     // v5 (2.50, the dragon): Perch: damage it takes while landed (0 = the type's default, 1.5).

@@ -162,7 +162,7 @@ public:
 
 private:
     void renderPlasma(RenderContext& ctx) const;
-    void renderAbyss(RenderContext& ctx) const;  // 2.52: the dark water of the Kraken's arena
+    void renderAbyss(RenderContext& ctx) const;  // 2.53: the dark water of the Kraken's arena
     float tick_ = 0.0f;
     float fxTimer_ = 0.0f;
     float shown_ = 0.0f;  // display: fades in when enabled (2.33)

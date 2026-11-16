@@ -180,7 +180,7 @@ void DamageZoneEntity::fixedUpdate(GameWorld& w, float dt) {
     if (fxTimer_ <= 0.0f) {
         const std::string style = obj_.propStr("style", "toxic");
         bool plasma = style == "plasma";
-        bool abyss = style == "abyss";  // 2.52: the dark water of the Kraken's arena
+        bool abyss = style == "abyss";  // 2.53: the dark water of the Kraken's arena
         fxTimer_ = std::max(0.05f, (plasma || abyss ? 1.2f : 2.0f) / std::max(1.0f, box.w * box.h / 2000.0f));
         w.particles().emit(plasma ? "lava_bubbles" : (abyss ? "bubbles" : "toxic_mist"),
                            {w.fxRng().range(box.x, box.right()), w.fxRng().range(box.y, box.bottom())}, 1.0f);
@@ -269,7 +269,7 @@ void DamageZoneEntity::renderPlasma(RenderContext& ctx) const {
 }
 
 void DamageZoneEntity::renderAbyss(RenderContext& ctx) const {
-    // The dark water of the abyss (2.52, the Kraken's arena): a pool (a swell lit in cyan, foam
+    // The dark water of the abyss (2.53, the Kraken's arena): a pool (a swell lit in cyan, foam
     // on its crests, bubbles rising) or a curtain (a wall of falling water, wavering edges),
     // fading in when switched on. Display only (time-driven).
     const float a = shown_;

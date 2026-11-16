@@ -1530,77 +1530,77 @@
   },
   {
    "id": "level.confins_03",
-   "version": "2.52.0",
+   "version": "2.53.0",
    "parents": [
     "planet.confins"
    ]
   },
   {
    "id": "boss.kraken",
-   "version": "2.52.0",
+   "version": "2.53.0",
    "parents": [
     "menu.stats"
    ]
   },
   {
    "id": "gallery.boss.kraken",
-   "version": "2.52.0",
+   "version": "2.53.0",
    "parents": [
     "gallery.tab.bosses"
    ]
   },
   {
    "id": "gallery.creature.photophore",
-   "version": "2.52.0",
+   "version": "2.53.0",
    "parents": [
     "gallery.tab.creatures"
    ]
   },
   {
    "id": "ach.voyage_fosse_abysses",
-   "version": "2.52.0",
+   "version": "2.53.0",
    "parents": [
     "achievements.cat.voyage"
    ]
   },
   {
    "id": "ach.gardiens_kraken",
-   "version": "2.52.0",
+   "version": "2.53.0",
    "parents": [
     "achievements.cat.gardiens"
    ]
   },
   {
    "id": "ach.maitrise_kraken_nohit",
-   "version": "2.52.0",
+   "version": "2.53.0",
    "parents": [
     "achievements.cat.maitrise"
    ]
   },
   {
    "id": "ach.maitrise_phases_kraken",
-   "version": "2.52.0",
+   "version": "2.53.0",
    "parents": [
     "achievements.cat.maitrise"
    ]
   },
   {
    "id": "ach.extreme_abysses_gold",
-   "version": "2.52.0",
+   "version": "2.53.0",
    "parents": [
     "achievements.cat.extreme"
    ]
   },
   {
    "id": "ach.extreme_abysses_platinum",
-   "version": "2.52.0",
+   "version": "2.53.0",
    "parents": [
     "achievements.cat.extreme"
    ]
   },
   {
    "id": "cos.suit_encre",
-   "version": "2.52.0",
+   "version": "2.53.0",
    "parents": [
     "collection.cat.suit",
     "collection.tab.route"
@@ -1608,7 +1608,7 @@
   },
   {
    "id": "cos.trail_bulles",
-   "version": "2.52.0",
+   "version": "2.53.0",
    "parents": [
     "collection.cat.trail",
     "collection.tab.route"
@@ -1616,7 +1616,7 @@
   },
   {
    "id": "cos.frame_tentacules",
-   "version": "2.52.0",
+   "version": "2.53.0",
    "parents": [
     "collection.cat.frame",
     "collection.tab.route"
@@ -1624,7 +1624,7 @@
   },
   {
    "id": "cos.title_chasseur_kraken",
-   "version": "2.52.0",
+   "version": "2.53.0",
    "parents": [
     "collection.cat.title",
     "collection.tab.route"
@@ -1632,7 +1632,7 @@
   },
   {
    "id": "cos.victory_raz_de_maree",
-   "version": "2.52.0",
+   "version": "2.53.0",
    "parents": [
     "collection.cat.victory",
     "collection.tab.route"
@@ -1640,7 +1640,7 @@
   },
   {
    "id": "track.kraken_boss",
-   "version": "2.52.0",
+   "version": "2.53.0",
    "parents": [
     "collection.tab.music"
    ]

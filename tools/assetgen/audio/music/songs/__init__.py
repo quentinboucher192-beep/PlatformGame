@@ -1,5 +1,5 @@
 """All songs of section 12 (+ the v2 planets, + the 2.19 sanctuary guardians, + the 2.33 giga boss,
-+ the giga bosses of Les Confins, 2.48-2.52).
++ the giga bosses of Les Confins, 2.48-2.53).
 Each module exposes NAME and build() -> Song."""
 from music.songs import (menu_theme, planet_map, sylvanox_level, sylvanox_boss, victory,
                          sylvanox_ambience)

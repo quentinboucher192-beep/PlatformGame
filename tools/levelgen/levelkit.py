@@ -151,7 +151,7 @@ START_POWERS = {
     "noyau_03": ["dash", "grapple", "glide", "charge_shot"],  # 2.33: the rooms of the dying star
     "confins_01": ["dash", "grapple", "glide", "charge_shot"],  # 2.48: the rooms of the scorched crust
     "confins_02": ["dash", "grapple", "glide", "charge_shot"],  # 2.49: the granite galleries
-    "confins_03": ["dash", "grapple", "glide", "charge_shot"],  # 2.52: the abyssal trench
+    "confins_03": ["dash", "grapple", "glide", "charge_shot"],  # 2.53: the abyssal trench
     # Aethra (2.19): three powers, the fourth slot for the new power whose tablet waits at the
     # start of the level.
     "aethra_01": ["dash", "wave", "grapple"],

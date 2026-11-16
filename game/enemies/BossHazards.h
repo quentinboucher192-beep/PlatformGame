@@ -56,7 +56,7 @@ public:
         float rise = 1.0f, hold = 4.0f, fall = 1.0f;
         float damage = 2.0f;
         float age = 0.0f;
-        std::string look;  // display: "" = lava, "plasma" = star plasma (2.33), "tide" = dark water (2.52)
+        std::string look;  // display: "" = lava, "plasma" = star plasma (2.33), "tide" = dark water (2.53)
         Color color{122, 230, 255, 255};  // display: the light of its crests ("tide": the boss's phase)
         /// Surface height above the floor (0 .. height) at the current age.
         float level() const;
@@ -70,7 +70,7 @@ public:
         float time = 4.0f;
         float age = 0.0f;
         float damage = 1.0f;
-        std::string look;  // display: "" = thorns, "star" = starlight (2.33), "tentacle" = the Kraken's (2.52)
+        std::string look;  // display: "" = thorns, "star" = starlight (2.33), "tentacle" = the Kraken's (2.53)
         float side = 1.0f;                // display: the cage's side of it (a tentacle curls over it)
         Color color{122, 230, 255, 255};  // display: the light of its suckers ("tentacle")
     };
@@ -85,7 +85,7 @@ public:
         float damage = 1.0f;
         bool ground = false;   // display: a carpet of fire along the ground (else a puff)
         Color color{255, 122, 46, 255};  // display: the fire of the phase
-        bool ink = false;                // display (2.52, the Kraken): a cloud of ink lit by the phase
+        bool ink = false;                // display (2.53, the Kraken): a cloud of ink lit by the phase
         float emitTimer = 0.0f;          // display: its smoke
         /// The part of its area reached at its age.
         Rect current() const;

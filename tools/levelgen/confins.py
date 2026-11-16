@@ -8,7 +8,7 @@ start (data/planets/confins.json):
   data/levels/confins_02.json  "Le Cœur de Pierre" (2.49, EXTRÊME): the same for the Monolithe,
                                 le Golem Primordial (a walker: the crust gives way on the two
                                 sides of its arena)
-  data/levels/confins_03.json  "La Fosse des Abysses" (2.52, EXTRÊME): the same for the Kraken des
+  data/levels/confins_03.json  "La Fosse des Abysses" (2.53, EXTRÊME): the same for the Kraken des
                                 Abysses (tools/contentgen/kraken.py; it swims: the crust gives way
                                 over two trenches of dark water, the middle stays)
 
@@ -51,7 +51,7 @@ class Edge(Star):
         """The giant arena (Star.GIANT_*) of a giga boss: the crust over each pit gives way at
         the 5th phase (magma below), debris orbit from the 3rd, fire closes in at the 8th and at
         the boss's rage. `pits`: (first, last) inside columns of each crust; `flying`: where the
-        boss waits (in the air, or on the floor). 2.52: `style` of what fills the pits and closes
+        boss waits (in the air, or on the floor). 2.53: `style` of what fills the pits and closes
         in (« plasma », or « abyss »: the dark water of the Kraken), the arena's `lights`."""
         L, f = self.L, self.f
         x0 = self.x
@@ -213,7 +213,7 @@ def stone_heart():
     return width
 
 
-# ---------------------------------------------------------------- the abyssal trench (2.52)
+# ---------------------------------------------------------------- the abyssal trench (2.53)
 KRAKEN_TEXTS = {
     3: ("Ses tentacules arrachent la roche : les blocs tournoient !", "Encre : les blocs en orbite"),
     5: "Brisé : les abysses s'ouvrent",
@@ -270,4 +270,4 @@ def abyss_trench():
 if __name__ == "__main__":
     print("confins_01 :", dragon_maw(), "tuiles")
     print("confins_02 :", stone_heart(), "tuiles")  # 2.49
-    print("confins_03 :", abyss_trench(), "tuiles")  # 2.52
+    print("confins_03 :", abyss_trench(), "tuiles")  # 2.53

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Le Kraken des Abysses (version 2.52): the third giga boss of Les Confins, at the end of
+"""Le Kraken des Abysses (version 2.53): the third giga boss of Les Confins, at the end of
 « La Fosse des Abysses » (confins_03, tools/levelgen/confins.py).
 
 A colossal kraken of the black seas buried under the crust of the Confins. It swims (the engine's
@@ -60,8 +60,8 @@ SPECIAL = ("telegraph_special", "special")
 RAISE = ("telegraph_special", "summon")
 LASH = ("telegraph", "attack")          # arms reared, then the lash dives through
 PERCH = ("telegraph_special", "move")   # it inhales, then swims down onto its mark
-TIP = [109, -9]   # the tip of the lashing arm on the attack frame, from the feet (sprite pixels)
-BEAK = [48, -11]  # its beak during the jet (the head does not move on the four frames)
+TIP = [109, -69]  # the tip of the lashing arm on the attack frame, from the feet (sprite pixels)
+BEAK = [48, -71]  # its beak during the jet (the head does not move on the four frames)
 
 # The light of each phase (the P1 tone of each ramp of boss_g_kraken: cyan, turquoise, indigo,
 # jaune électrique, rouge corail, rose nacré, émeraude, blanc incandescent).
@@ -187,7 +187,7 @@ def kraken():
         "format": "cosmic.enemy", "id": "kraken", "name": "Kraken",
         "description": ("Un kraken colossal des mers noires enfouies sous la croûte des Confins. Huit phases, huit "
                         "lueurs : son manteau se déchire, la marée monte, et sa dernière vague doit être survécue."),
-        "family": "miniboss", "animation": SHEETS[0], "size": [130, 135], "scale": 1.25, "hp": 800, "contactDamage": 2,
+        "family": "miniboss", "animation": SHEETS[0], "size": [130, 210], "scale": 1.25, "hp": 800, "contactDamage": 2,
         "speed": 60, "chaseSpeedMultiplier": 1.3, "flying": True, "knockbackResist": 1, "detectionRange": 1000,
         "attackRange": 900, "loseRange": 4000, "needsLineOfSight": False, "movement": "fly",
         "reaction": "keepDistance", "fleeHealthRatio": 0, "preferredDistance": 240, "hopVelocity": 0,

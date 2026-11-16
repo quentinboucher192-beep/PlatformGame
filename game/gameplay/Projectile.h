@@ -43,7 +43,7 @@ struct Projectile {
     float cloudDamage = 0.0f;
     uint32_t cloudOwner = 0;
     Color cloudColor{255, 122, 46, 255};  // display only
-    bool cloudInk = false;                // display only (2.52, the Kraken): a cloud of ink, not of fire
+    bool cloudInk = false;                // display only (2.53, the Kraken): a cloud of ink, not of fire
     std::vector<const void*> hitTargets;  // already damaged (piercing)
 };
 

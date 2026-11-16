@@ -226,7 +226,7 @@ void drawAvatarFrame(Renderer& r, Vec2 center, float radius, const std::string& 
             r.drawLine(p + t * (1.5f * scale), p + t * (1.5f * scale) - d * (2.4f * scale), c, 1.2f * scale, BlendMode::Additive);
         }
     } else if (look == "tentacles") {
-        // « Étreinte du Kraken » (2.52): two tentacles coil around the avatar from below, deep
+        // « Étreinte du Kraken » (2.53): two tentacles coil around the avatar from below, deep
         // violet with a teal sheen, their suckers lighting up in cyan one after the other along
         // them. Within kAvatarFrameMargin: their outer edge stays 12 units beyond the avatar.
         r.drawGlow(center, radius + 16 * scale, Color{80, 200, 255, 70});
@@ -398,7 +398,7 @@ void drawTrailPoint(const Canvas& cv, const std::string& look, Vec2 p, float k, 
         cv.dot(cv.off(q, {-0.5f, -0.5f}), (sz * k + 0.6f) * 0.5f, Color{180, 174, 166, alpha(0.8f * f)});
         if (seed % 3 == 0) cv.glow(q, 4.0f * k + 1.0f, Color{255, 170, 60, alpha(0.6f * f)});
     } else if (look == "bubbles") {
-        // « Bulles des abysses » (2.52, Kraken): bubbles of light rising and wobbling behind
+        // « Bulles des abysses » (2.53, Kraken): bubbles of light rising and wobbling behind
         // Nova, a few curls of ink among them.
         Vec2 j{(noise(seed) - 0.5f) * 10.0f + std::sin(age * 9.0f + static_cast<float>(seed)) * 3.0f,
                -age * 36.0f - noise(seed * 3u + 5u) * 5.0f};
@@ -591,7 +591,7 @@ void drawVictoryFx(Renderer& r, const std::string& look, Vec2 at, float t, bool 
             cv.dot(cv.off(p, {-1.0f, -1.0f}), 2.0f, Color{170, 164, 156, alpha(fade)});
         }
     } else if (look == "tidal_wave") {
-        // « Raz-de-marée » (2.52, Kraken): a giant wave rises behind the portal, its crest leaning
+        // « Raz-de-marée » (2.53, Kraken): a giant wave rises behind the portal, its crest leaning
         // over it, falls back in foam, and leaves bubbles of light rising.
         const float rise = std::clamp(t / 0.9f, 0.0f, 1.0f);
         const float fall = std::clamp((t - 0.9f) / 0.7f, 0.0f, 1.0f);

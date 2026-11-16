@@ -204,7 +204,7 @@ public:
                                                    "Terminez les missions disponibles pour en apprendre davantage.";
         Rect btn{panel.x + ui.s(34), panel.bottom() - ui.s(90), panel.w - ui.s(68), ui.s(62)};
         // The description stays above the progress row (measured: a smaller type rather than an
-        // overlap on a short screen or for a long description, 2.52).
+        // overlap on a short screen or for a long description, 2.53).
         const float descW = panel.w - ui.s(68);
         const float descRoom = btn.y - ui.s(92) - ui.s(8) - y;
         float descSize = 19.0f;
