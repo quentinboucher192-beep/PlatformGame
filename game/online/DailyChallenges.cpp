@@ -208,9 +208,19 @@ int daysInMonth(const std::string& month) {
 
 ChallengeTier DailyChallenge::tierFor(int64_t timeMs, int damageTaken) const {
     if (timeMs <= 0) return ChallengeTier::None;
+    // « Finir le niveau »: the finish is Or (Argent with damage when Or asks for none).
+    if (finishObjective) return !goldNoDamage || damageTaken == 0 ? ChallengeTier::Gold : ChallengeTier::Silver;
     if (goldMs > 0 && timeMs <= goldMs && (!goldNoDamage || damageTaken == 0)) return ChallengeTier::Gold;
     if (silverMs > 0 && timeMs <= silverMs) return ChallengeTier::Silver;
     return ChallengeTier::Bronze;
+}
+
+ChallengeTier DailyChallenge::tierForProgress(float progress) const {
+    if (!finishObjective) return ChallengeTier::None;
+    if (progress >= 100.0f) return goldNoDamage ? ChallengeTier::Silver : ChallengeTier::Gold;
+    if (progress >= static_cast<float>(silverProgress)) return ChallengeTier::Silver;
+    if (progress >= static_cast<float>(bronzeProgress)) return ChallengeTier::Bronze;
+    return ChallengeTier::None;
 }
 
 std::optional<DailyChallenge> DailyChallenge::fromJson(const Json& j, std::string* error) {
@@ -278,6 +288,16 @@ std::optional<DailyChallenge> DailyChallenge::fromJson(const Json& j, std::strin
     if (c.silverMs <= 0 || c.goldMs <= 0 || c.silverMs > 2 * 3600 * 1000LL || c.goldMs > 2 * 3600 * 1000LL) return fail("paliers du défi invalides");
     // 2.33: the level has a route, its attempts are ranked by how far they go (absent: no).
     c.progressAvailable = jget<bool>(j, "progress_available", false);
+    // 2.41: the objective (absent: « Vitesse », as every older challenge). « Finir le niveau »:
+    // the shares of the route of Bronze and Argent (10 to 95 %, Argent above Bronze).
+    const std::string objective = jstr(j, "objective", "speed");
+    if (objective != "speed" && objective != "finish") return fail("objectif du défi inconnu");
+    c.finishObjective = objective == "finish";
+    if (c.finishObjective) {
+        c.bronzeProgress = jget<int>(tiers, "bronze_progress", 50);
+        c.silverProgress = jget<int>(tiers, "silver_progress", 80);
+        if (c.bronzeProgress < 10 || c.silverProgress > 95 || c.silverProgress <= c.bronzeProgress) return fail("paliers du défi invalides");
+    }
     c.raw = j;
     return c;
 }
@@ -438,6 +458,7 @@ void ChallengeService::loadAll() {
             r.hasReplay = jget<bool>(v, "has_replay", false);
             r.bestProgress = std::clamp(jget<float>(v, "best_progress", 0.0f), 0.0f, 99.9f);
             r.bestProgressAttemptId = jstr(v, "best_progress_attempt");
+            r.liveTier = jget<bool>(v, "live_tier", false);
             if (isDate(r.date) && challenge_period::valid(r.kind, r.period)) results_[id] = r;
         }
     }
@@ -489,7 +510,8 @@ void ChallengeService::saveResults() const {
                    {"best_attempt", r.bestAttemptId},
                    {"has_replay", r.hasReplay},
                    {"best_progress", r.bestProgress},
-                   {"best_progress_attempt", r.bestProgressAttemptId}};
+                   {"best_progress_attempt", r.bestProgressAttemptId},
+                   {"live_tier", r.liveTier}};
     if (!resultsFile().save(dir_ / "results.json", {{"results", all}})) Log::warn("Défis : impossible d'enregistrer les résultats");
 }
 
@@ -748,7 +770,7 @@ ChallengeService::Streak ChallengeService::localStreak(ChallengeKind kind) const
     // runs never count).
     std::map<int64_t, std::string> periods;
     for (const auto& [id, r] : results_)
-        if (r.kind == kind && r.liveFinishes > 0)
+        if (r.kind == kind && (r.liveFinishes > 0 || r.liveTier))
             if (auto i = challenge_period::index(kind, r.period)) periods[*i] = r.period;
     Streak s;
     if (periods.empty()) return s;
@@ -1266,6 +1288,7 @@ ChallengeService::AttemptReport ChallengeService::recordAttempt(const DailyChall
     rep.progress = std::clamp(std::floor(progress * 10.0f) / 10.0f, 0.0f, 99.9f);
     rep.late = lateNow(c);
     if (!c.progressAvailable) return rep;  // no route: no « Plus loin » for this challenge
+    rep.tier = c.tierForProgress(rep.progress);
     rep.previousBest = bestProgress(c.id);
     rep.newBest = beatsBestAttempt(rep.progress, rep.previousBest);
     if (!rep.newBest) {
@@ -1280,6 +1303,9 @@ ChallengeService::AttemptReport ChallengeService::recordAttempt(const DailyChall
     r.date = c.date;
     r.bestProgress = rep.progress;
     r.bestProgressAttemptId = attemptId;
+    // « Finir le niveau » (2.41): its tier counts here like a run's (and, in time, for the streak).
+    if (rep.tier > r.tier) r.tier = rep.tier;
+    if (rep.tier != ChallengeTier::None && !rep.late) r.liveTier = true;
     saveResults();
     if (!online_ || !online_->loggedIn()) {
         rep.note = "Sans compte : gardé sur ce PC. Connectez-vous à Cosmic Online pour entrer dans le classement « Plus loin ».";
@@ -1327,15 +1353,18 @@ ChallengeService::AttemptReport ChallengeService::recordAttempt(const DailyChall
 
 // ------------------------------------------------------------------ leaderboard, ghost
 
-std::string ChallengeService::leaderboardPath(const std::string& challengeId, const std::string& scope, bool allPeriod, bool progressBoard) {
-    // period=live and board=time are the defaults (the only ones a 2.32 server knows): left out.
+std::string ChallengeService::leaderboardPath(const std::string& challengeId, const std::string& scope, bool allPeriod, bool progressBoard,
+                                              bool timeExplicit) {
+    // period=live and board=time are the defaults (the only ones a 2.32 server knows): left out,
+    // except board=time on a « Finir le niveau » challenge (2.41: its default board is progress).
     return "/api/v1/challenges/" + challengeId + "/leaderboard?scope=" + online::encodeQueryValue(scope) + (allPeriod ? "&period=all" : "") +
-           (progressBoard ? "&board=progress" : "") + "&limit=50";
+           (progressBoard ? "&board=progress" : timeExplicit ? "&board=time" : "") + "&limit=50";
 }
 
 void ChallengeService::leaderboard(const std::string& challengeId, const std::string& scope, ApiCallback cb, bool allPeriod, bool progressBoard) {
     if (!online_ || !safeId(challengeId)) return;
-    online_->get(leaderboardPath(challengeId, scope, allPeriod, progressBoard), std::move(cb), true);
+    const DailyChallenge* c = find(challengeId);
+    online_->get(leaderboardPath(challengeId, scope, allPeriod, progressBoard, c && c->finishObjective), std::move(cb), true);
 }
 
 fs::path ChallengeService::runReplayPath(const std::string& challengeId, const std::string& runId, bool attempt) const {

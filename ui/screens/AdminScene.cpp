@@ -1,9 +1,12 @@
 // ADMINISTRATION (2.40): the screen of the accounts with the administrator role. It only exists
 // for them (the main menu shows no entry otherwise, and the server answers like an unknown
-// route to any other account, on every request). Two tabs:
+// route to any other account, on every request). Three tabs:
 //   « Joueurs »: search by username, filter (all, admins, online), give or remove the role
 //                after a confirmation (never one's own, never the last admin: refused by the
 //                server), the admins always listed below;
+//   « Calendrier des défis » (2.41, AdminCalendar.cpp): the challenges of a month, the coming
+//                ones too; the challenge of a period that has not begun is chosen here (level,
+//                rules, objective and tiers) or put back to the server's draw;
 //   « Journal »: who did what and when, the server's refusals included; no IP, no e-mail.
 // The country, the last activity and the presence of a player appear only as they share them.
 
@@ -14,9 +17,12 @@
 #include <string>
 #include <vector>
 
+#include "engine/core/I18n.h"
 #include "game/GameServices.h"
 #include "game/online/OnlineSession.h"
 #include "ui/online/OnlineWidgets.h"
+#include "ui/screens/AdminCalendar.h"
+#include "ui/screens/ChallengeUi.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
 
@@ -82,13 +88,35 @@ std::string presenceText(const std::string& p) {
 }
 
 const char* kFilters[] = {"all", "admins", "online"};
-const char* kKinds[] = {"all", "role", "refused"};
+const char* kKinds[] = {"all", "role", "challenge", "refused"};
+
+/// The tabs: Joueurs, Calendrier des défis (2.41), Journal.
+constexpr int kTabPlayers = 0, kTabCalendar = 1, kTabLog = 2;
+
+/// "20/11" of "2026-11-20".
+std::string shortDate(const std::string& date) { return date.size() >= 10 ? date.substr(8, 2) + "/" + date.substr(5, 2) : date; }
+
+/// "1:45" (whole seconds), else "1:45.250".
+std::string tierTimeText(int64_t ms) {
+    if (ms <= 0) return "—";
+    if (ms % 1000 != 0) return formatRunTime(ms);
+    int64_t s = ms / 1000;
+    char b[32];
+    if (s >= 3600) std::snprintf(b, sizeof b, "%d:%02d:%02d", static_cast<int>(s / 3600), static_cast<int>((s / 60) % 60), static_cast<int>(s % 60));
+    else std::snprintf(b, sizeof b, "%d:%02d", static_cast<int>(s / 60), static_cast<int>(s % 60));
+    return b;
+}
 
 class AdminScene : public Scene {
 public:
-    AdminScene(GameServices& g, std::string open) : g_(g), ui_(g) {
-        // Automated screenshots: "players[:<search>[:confirm]]" or "log".
-        if (open.rfind("log", 0) == 0) tab_ = 1;
+    AdminScene(GameServices& g, std::string open)
+        : g_(g), ui_(g), calendar_(g, ui_, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }) {
+        // Automated screenshots: "players[:<search>[:confirm]]", "calendar[:YYYY-MM[:<id>[:objectif]]]" or "log".
+        if (open.rfind("log", 0) == 0) tab_ = kTabLog;
+        if (open.rfind("calendar", 0) == 0) {
+            tab_ = kTabCalendar;
+            if (open.size() > 9) calendar_.open(open.substr(9));
+        }
         if (open.rfind("players:", 0) == 0) {
             std::string rest = open.substr(8);
             size_t c = rest.find(':');
@@ -120,10 +148,11 @@ public:
         UIContext& ui = g_.ui;
         ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
         bg_.render(g_, 0.6f);
-        const bool modal = !confirmId_.empty();
+        const bool modal = !confirmId_.empty() || calendar_.modal();
         const bool top = g_.app.topScene() == this;
         ui.inputEnabled = top && !modal;
-        W_ = std::min(ui.screenW() - ui.s(96), ui.s(1480));
+        // 2.41: wider (the calendar's eight columns and its editor side by side).
+        W_ = std::min(ui.screenW() - ui.s(96), ui.s(1760));
         x0_ = (ui.screenW() - W_) * 0.5f;
         float y = ui.s(36), hh = ui.s(52);
         ui.pushId("admin");
@@ -131,8 +160,12 @@ public:
         ui.label("ADMINISTRATION", {x0_, y + hh * 0.5f}, 40, ui.theme().text, Align::Left, FontFace::Title, VAlign::Middle);
         float backW = ui.s(170);
         bool back = ui.button("back", {x0_ + W_ - backW, y, backW, hh}, "Retour") || (!modal && ui.backPressed());
-        // The tabs after the title when they fit, else on the line below.
-        float tabsW = ui.s(340), tabsX = x0_ + titleW + ui.s(28);
+        // The tabs after the title when they fit, else on the line below. Equal tabs, each as
+        // wide as its longest label needs (« Calendrier des défis »).
+        static const std::vector<std::string> kTabs = {"Joueurs", "Calendrier des défis", "Journal"};
+        float tabW = 0.0f;
+        for (const std::string& t : kTabs) tabW = std::max(tabW, ui.text().measure(t, FontFace::Bold, ui.s(20)).x + ui.s(44));
+        float tabsW = tabW * static_cast<float>(kTabs.size()), tabsX = x0_ + titleW + ui.s(28);
         float bodyY = y + hh + ui.s(22);
         Rect tabsR{tabsX, y, tabsW, hh};
         if (tabsX + tabsW > x0_ + W_ - backW - ui.s(20)) {
@@ -140,21 +173,34 @@ public:
             bodyY += hh + ui.s(16);
         }
         int tab = tab_;
-        ui.tabs("tabs", tabsR, {"Joueurs", "Journal"}, tab);
+        ui.tabs("tabs", tabsR, kTabs, tab);
+        // « NOUVEAU » (2.41) on « Calendrier des défis » until it is opened.
+        Rect calTab{tabsR.x + tabW + ui.s(2), tabsR.y, tabW - ui.s(4), tabsR.h};
+        ui.newBadge("tabcal", calTab, "admin.tab.calendar", true, true);
         if (tab != tab_) {
             tab_ = tab;
-            if (tab_ == 1) loadLog(false);
+            if (tab_ == kTabLog) loadLog(false);
+            if (tab_ == kTabCalendar) {
+                if (ui.featureSeen && ui.isNew("admin.tab.calendar")) ui.featureSeen("admin.tab.calendar");
+                calendar_.enter();
+            }
         }
         Rect body{x0_, bodyY, W_, ui.screenH() - bodyY - ui.s(64)};
-        ui.r().fillRoundedRect(body, ui.s(14), Color{10, 15, 32, 225});
-        ui.r().drawRoundedRect(body, ui.s(14), ui.theme().border, ui.s(1));
-        Rect inner{body.x + ui.s(22), body.y + ui.s(18), body.w - ui.s(44), body.h - ui.s(36)};
-        if (tab_ == 0) drawPlayers(inner);
-        else drawLog(inner);
+        if (tab_ == kTabCalendar) {
+            // Its own two panels: the month and the editor.
+            calendar_.draw(body);
+        } else {
+            ui.r().fillRoundedRect(body, ui.s(14), Color{10, 15, 32, 225});
+            ui.r().drawRoundedRect(body, ui.s(14), ui.theme().border, ui.s(1));
+            Rect inner{body.x + ui.s(22), body.y + ui.s(18), body.w - ui.s(44), body.h - ui.s(36)};
+            if (tab_ == kTabPlayers) drawPlayers(inner);
+            else drawLog(inner);
+        }
         drawStatus();
         ui.popId();
         ui.inputEnabled = top;
-        if (modal) drawConfirm();
+        if (!confirmId_.empty()) drawConfirm();
+        else if (calendar_.modal()) calendar_.drawModal();
         ui.end();
         if (back) g_.app.switchScene(makeMainMenu(g_), 0.3f);
     }
@@ -182,7 +228,8 @@ private:
     void reloadAll() {
         loadPlayers();
         loadAdmins();
-        if (tab_ == 1) loadLog(false);
+        if (tab_ == kTabLog) loadLog(false);
+        if (tab_ == kTabCalendar) calendar_.enter(true);
     }
 
     void loadPlayers() {
@@ -486,58 +533,172 @@ private:
     }
 
     // ------------------------------------------------------------- Journal
+    /// A Journal entry as shown: its pill (kind) and its sentence.
+    struct LogLine {
+        std::string pill;
+        Color color;
+        std::string text;
+    };
+
+    /// "du jour du 20/11", "de la semaine 48", "du mois de décembre 2026".
+    static std::string periodPhrase(const Json& ch) {
+        std::string kind = jstr(ch, "kind"), period = jstr(ch, "period");
+        if (kind == "weekly") return "de la semaine " + std::to_string(period.size() > 6 ? std::atoi(period.substr(6).c_str()) : 0);
+        if (kind == "monthly") return "du mois de " + challenge_ui::frenchMonth(period);
+        return "du jour du " + shortDate(jstr(ch, "start", period));
+    }
+
+    /// "Les Plaines de Givre · 3 cœurs · sans checkpoint · Argent 1:45 · Or 1:20 sans dégât".
+    std::string challengeSummary(const Json& ch) {
+        const Json& lv = jfield(ch, "level", Json());
+        std::string title = jstr(lv, "title");
+        if (jstr(lv, "source") == "campaign")
+            if (const LevelEntry* le = g_.content.level(jstr(lv, "id"))) title = le->name;
+        std::string out = title.empty() ? std::string("?") : title;
+        const Json& rules = jfield(ch, "rules", Json());
+        if (rules.is_object()) {
+            int hearts = jget<int>(rules, "hearts", 0);
+            out += " · " + std::to_string(hearts) + (hearts > 1 ? " cœurs" : " cœur");
+            if (!jget<bool>(rules, "checkpoints", true)) out += " · sans checkpoint";
+            if (!jget<bool>(rules, "stations", true)) out += " · sans station";
+            std::vector<std::string> powers;
+            for (const Json& p : jfield(rules, "powers", Json::array()))
+                if (p.is_string()) powers.push_back(p.get<std::string>());
+            if (powers.size() == 1) out += " · " + challenge_ui::powerList(g_, powers) + " imposé";
+            else if (powers.size() > 1) out += " · " + challenge_ui::powerList(g_, powers) + " imposés";
+        }
+        const Json& tiers = jfield(ch, "tiers", Json());
+        if (tiers.is_object()) {
+            bool noDamage = jget<bool>(tiers, "gold_no_damage", true);
+            if (jstr(ch, "objective") == "finish")
+                out += " · finir le niveau · Bronze " + std::to_string(jget<int>(tiers, "bronze_progress", 50)) + " % · Argent " +
+                       std::to_string(jget<int>(tiers, "silver_progress", 80)) + " % · Or" + (noDamage ? std::string(" sans dégât") : std::string(" en finissant"));
+            else
+                out += " · Argent " + tierTimeText(jget<int64_t>(tiers, "silver_ms", 0)) + " · Or " + tierTimeText(jget<int64_t>(tiers, "gold_ms", 0)) +
+                       (noDamage ? std::string(" sans dégât") : std::string());
+        }
+        return out;
+    }
+
+    LogLine lineOf(const Json& e) {
+        UIContext& ui = g_.ui;
+        std::string action = jstr(e, "action");
+        std::string target = e.contains("target") && e["target"].is_object() ? jstr(e["target"], "username", "un compte supprimé") : "";
+        std::string reason = jstr(e, "reason");
+        const Json& ch = jfield(e, "challenge", Json());
+        if (action == "admin_role_granted")
+            return {"Rôle", ui.theme().warm, jstr(e, "by") == "migration" ? "a nommé " + target + " premier admin (mise en service)" : "a donné le rôle admin à " + target};
+        if (action == "admin_role_revoked") return {"Rôle", ui.theme().danger, "a retiré le rôle admin à " + target};
+        if (action == "admin_challenge_set" && ch.is_object()) {
+            // 2.41: « a choisi le défi du jour du 20/11 : … (remplace le tirage « … ») ».
+            std::string text = "a choisi le défi " + periodPhrase(ch) + " : " + challengeSummary(ch);
+            const Json& rep = jfield(ch, "replaced", Json());
+            if (rep.is_object() && !jstr(rep, "title").empty())
+                text += jstr(rep, "source") == "auto" ? " (remplace le tirage « " + jstr(rep, "title") + " »)" : " (remplace « " + jstr(rep, "title") + " »)";
+            return {"Défi", ui.theme().accent, text};
+        }
+        if (action == "admin_challenge_reset" && ch.is_object()) {
+            std::string text = "a remis au tirage le défi " + periodPhrase(ch);
+            const Json& drawn = jfield(ch, "drawn", Json());
+            if (drawn.is_object() && !jstr(drawn, "title").empty()) text += " (tiré à nouveau : « " + jstr(drawn, "title") + " »)";
+            else if (!jstr(ch, "draws_on").empty()) text += " (tirage le " + shortDate(jstr(ch, "draws_on")) + ")";
+            return {"Défi", Color{185, 200, 218, 255}, text};
+        }
+        if (ch.is_object()) {
+            // A change of the calendar refused by the server.
+            std::string what = (jstr(ch, "action") == "reset" ? "retour au tirage du défi " : "modification du défi ") + periodPhrase(ch);
+            std::string why = reason == "CHALLENGE_STARTED"    ? std::string("déjà commencé")
+                              : reason == "VALIDATION_ERROR"   ? std::string("règles invalides")
+                              : reason == "LEVEL_UNAVAILABLE"  ? std::string("niveau indisponible")
+                              : reason == "FINISH_NEEDS_ROUTE" ? std::string("« Finir le niveau » sans parcours tracé")
+                              : reason == "NOT_CHOSEN"         ? std::string("c'était déjà le tirage")
+                                                               : std::string("refus du serveur");
+            return {"Refus", ui.theme().textDim, what + " refusée : " + why};
+        }
+        bool grant = jstr(e, "role") == "admin";
+        std::string tried = (grant ? "donner le rôle admin à " : "retirer le rôle admin à ") + target;
+        std::string text;
+        if (reason == "OWN_ROLE") text = "a tenté de changer son propre rôle : refusé";
+        else if (reason == "LAST_ADMIN") text = "a tenté de " + tried + " : refusé, il doit rester un admin";
+        else if (reason == "ACCOUNT_SUSPENDED") text = "a tenté de " + tried + " : refusé, compte suspendu";
+        else if (reason == "ROLE_CHANGED") text = "a tenté de " + tried + " : refusé, le rôle avait changé entre-temps";
+        else text = "a tenté de " + tried + " : refusé";
+        return {"Refus", ui.theme().textDim, text};
+    }
+
     void drawLog(const Rect& in) {
         UIContext& ui = g_.ui;
         ui.pushId("log");
         float y = in.y, fh = ui.s(46);
         int kind = kind_;
-        float kr = chips("kind", in.x, y, fh, {"Toutes les actions", "Rôles", "Refus"}, kind);
+        float kr = chips("kind", in.x, y, fh, {"Toutes les actions", "Rôles", "Défis", "Refus"}, kind);
         std::vector<std::string> who{"Tous"};
         for (const auto& a : admins_) who.push_back(jstr(a, "username"));
         int actor = std::min(actor_, static_cast<int>(who.size()) - 1);
-        ui.cycle("actor", {kr + ui.s(16), y, ui.s(400), fh}, "Admin", actor, who);
+        float cycleW = std::min(ui.s(400), in.right() - kr - ui.s(16));
+        ui.cycle("actor", {kr + ui.s(16), y, cycleW, fh}, "Admin", actor, who);
         if (kind != kind_ || actor != actor_) {
             kind_ = kind;
             actor_ = actor;
             loadLog(false);
         }
         std::string keep = "Gardé 6 mois · ni adresse IP ni e-mail";
-        float room = in.right() - (kr + ui.s(436));
-        float ks = ui.fitFont(keep, FontFace::Body, 15, room);
-        ui.label(ui.elide(keep, FontFace::Body, ks, room), {in.right(), y + fh * 0.5f}, ks, ui.theme().textDim, Align::Right, FontFace::Body, VAlign::Middle);
+        float room = in.right() - (kr + ui.s(36) + cycleW);
+        if (room > ui.s(120)) {
+            float ks = ui.fitFont(keep, FontFace::Body, 15, room);
+            ui.label(ui.elide(keep, FontFace::Body, ks, room), {in.right(), y + fh * 0.5f}, ks, ui.theme().textDim, Align::Right, FontFace::Body, VAlign::Middle);
+        }
         y += fh + ui.s(14);
 
-        float c1 = in.x + ui.s(12), c2 = in.x + in.w * 0.17f, c3 = in.x + in.w * 0.36f;
+        float c1 = in.x + ui.s(12), c2 = in.x + in.w * 0.15f, c3 = in.x + in.w * 0.31f;
         ui.label("Quand", {c1, y + ui.s(13)}, 14, ui.theme().textDim, Align::Left, FontFace::Bold, VAlign::Middle);
         ui.label("Admin", {c2, y + ui.s(13)}, 14, ui.theme().textDim, Align::Left, FontFace::Bold, VAlign::Middle);
         ui.label("Action", {c3, y + ui.s(13)}, 14, ui.theme().textDim, Align::Left, FontFace::Bold, VAlign::Middle);
         y += ui.s(30);
-        float rowH = ui.s(50), gap = ui.s(6), moreH = logMore_ ? ui.s(54) : 0.0f;
+        float gap = ui.s(6), moreH = logMore_ ? ui.s(54) : 0.0f;
         Rect list{in.x, y, in.w, in.bottom() - y - moreH};
         int n = log_.is_array() ? static_cast<int>(log_.size()) : 0;
         if (n == 0)
             ui.label(loadedLog_ ? "Rien d'inscrit pour ces filtres." : "Chargement…", {list.center().x, list.y + ui.s(40)}, 18, ui.theme().textDim,
                      Align::Center, FontFace::Body, VAlign::Middle);
-        ui.beginScroll("entries", list, n * (rowH + gap));
+        // Each row as high as its sentence needs (a challenge's wraps, never cut).
+        std::vector<LogLine> lines;
+        std::vector<float> heights;
+        float content = 0.0f;
+        const float rowRight = list.right() - ui.s(16) - ui.s(12);
+        for (int i = 0; i < n; ++i) {
+            lines.push_back(lineOf(log_[i]));
+            float pw = ui.text().measure(lines.back().pill, FontFace::Bold, ui.s(13)).x + ui.s(20);
+            float tw = rowRight - (c3 + pw + ui.s(12));
+            float th = ui.text().measureWrapped(lines.back().text, FontFace::Body, ui.s(16), tw).y;
+            heights.push_back(std::max(ui.s(50), th + ui.s(22)));
+            content += heights.back() + gap;
+        }
+        ui.beginScroll("entries", list, content);
+        float ry = list.y - ui.scrollOffset();
         for (int i = 0; i < n; ++i) {
             const Json& e = log_[i];
-            Rect row{list.x, list.y + i * (rowH + gap) - ui.scrollOffset(), list.w - ui.s(16), rowH};
+            Rect row{list.x, ry, list.w - ui.s(16), heights[static_cast<size_t>(i)]};
+            ry += row.h + gap;
+            if (row.bottom() < list.y || row.y > list.bottom()) continue;
             ui.r().fillRoundedRect(row, ui.s(8), Color{18, 26, 50, 235});
-            float cy = row.y + row.h * 0.5f;
+            // The time and the admin on the first line (centred on a one-line row).
+            float cy = row.y + ui.s(25);
             ui.label(ui.elide(stampText(jstr(e, "at")), FontFace::Body, 16, c2 - c1 - ui.s(10)), {c1, cy}, 16, ui.theme().text, Align::Left, FontFace::Body,
                      VAlign::Middle);
             const Json& who2 = e.contains("actor") ? e["actor"] : Json();
-            float av = row.h - ui.s(16);
+            float av = ui.s(34);
             if (who2.is_object()) {
-                Rect ar{c2, row.y + ui.s(8), av, av};
+                Rect ar{c2, cy - av * 0.5f, av, av};
                 ui_.drawAvatar(jstr(who2, "avatar", "avatar_01"), jstr(who2, "id"), ar);
+                i18n::Verbatim pseudo;  // the pseudonym as its player chose it
                 ui.label(ui.elide(jstr(who2, "username", "compte supprimé"), FontFace::Bold, 16, c3 - ar.right() - ui.s(24)), {ar.right() + ui.s(10), cy}, 16,
                          ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
             } else {
                 ui.r().fillCircle({c2 + av * 0.5f, cy}, av * 0.5f, Color{86, 100, 126, 255});
                 ui.label("Système", {c2 + av + ui.s(10), cy}, 16, ui.theme().textDim, Align::Left, FontFace::Bold, VAlign::Middle);
             }
-            drawAction(e, {c3, row.y, row.right() - c3 - ui.s(12), row.h});
+            drawAction(lines[static_cast<size_t>(i)], {c3, row.y, row.right() - c3 - ui.s(12), row.h});
         }
         ui.endScroll();
         if (logMore_) {
@@ -548,39 +709,18 @@ private:
         ui.popId();
     }
 
-    void drawAction(const Json& e, const Rect& r) {
+    void drawAction(const LogLine& l, const Rect& r) {
         UIContext& ui = g_.ui;
-        std::string action = jstr(e, "action");
-        std::string target = e.contains("target") && e["target"].is_object() ? jstr(e["target"], "username", "un compte supprimé") : "";
-        std::string reason = jstr(e, "reason");
-        std::string pill;
-        Color pc = ui.theme().textDim;
-        std::string text;
-        if (action == "admin_role_granted") {
-            pill = "Rôle";
-            pc = ui.theme().warm;
-            text = jstr(e, "by") == "migration" ? "a nommé " + target + " premier admin (mise en service)" : "a donné le rôle admin à " + target;
-        } else if (action == "admin_role_revoked") {
-            pill = "Rôle";
-            pc = ui.theme().danger;
-            text = "a retiré le rôle admin à " + target;
-        } else {
-            pill = "Refus";
-            bool grant = jstr(e, "role") == "admin";
-            std::string tried = (grant ? "donner le rôle admin à " : "retirer le rôle admin à ") + target;
-            if (reason == "OWN_ROLE") text = "a tenté de changer son propre rôle : refusé";
-            else if (reason == "LAST_ADMIN") text = "a tenté de " + tried + " : refusé, il doit rester un admin";
-            else if (reason == "ACCOUNT_SUSPENDED") text = "a tenté de " + tried + " : refusé, compte suspendu";
-            else if (reason == "ROLE_CHANGED") text = "a tenté de " + tried + " : refusé, le rôle avait changé entre-temps";
-            else text = "a tenté de " + tried + " : refusé";
-        }
-        float ph = ui.s(24), pw = ui.text().measure(pill, FontFace::Bold, ui.s(13)).x + ui.s(20);
-        Rect pr{r.x, r.y + r.h * 0.5f - ph * 0.5f, pw, ph};
-        ui.r().fillRoundedRect(pr, ph * 0.5f, pc.withAlphaF(0.14f));
-        ui.r().drawRoundedRect(pr, ph * 0.5f, pc, ui.s(1));
-        ui.label(pill, pr.center(), 13, pc, Align::Center, FontFace::Bold, VAlign::Middle);
+        float ph = ui.s(24), pw = ui.text().measure(l.pill, FontFace::Bold, ui.s(13)).x + ui.s(20);
+        Rect pr{r.x, r.y + ui.s(25) - ph * 0.5f, pw, ph};
+        ui.r().fillRoundedRect(pr, ph * 0.5f, l.color.withAlphaF(0.14f));
+        ui.r().drawRoundedRect(pr, ph * 0.5f, l.color, ui.s(1));
+        ui.label(l.pill, pr.center(), 13, l.color, Align::Center, FontFace::Bold, VAlign::Middle);
         float tx = pr.right() + ui.s(12), room = r.right() - tx;
-        ui.label(ui.elide(text, FontFace::Body, 16, room), {tx, r.y + r.h * 0.5f}, 16, ui.theme().text, Align::Left, FontFace::Body, VAlign::Middle);
+        float th = ui.text().measureWrapped(l.text, FontFace::Body, ui.s(16), room).y;
+        // One line: centred on the pill; more: from the top of the row.
+        float ty = th <= ui.s(30) ? pr.center().y - th * 0.5f : r.y + ui.s(11);
+        ui.labelWrapped(l.text, {tx, ty}, room, 16, ui.theme().text);
     }
 
     void drawStatus() {
@@ -595,6 +735,7 @@ private:
 
     GameServices& g_;
     OnlineUi ui_;
+    AdminCalendar calendar_;  // « Calendrier des défis » (2.41)
     MenuBackground bg_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     float W_ = 0.0f, x0_ = 0.0f;

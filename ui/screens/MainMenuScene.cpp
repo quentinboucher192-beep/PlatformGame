@@ -147,7 +147,7 @@ public:
             if (btn("stats", "Statistiques", sub)) g_.app.switchScene(makeBossStats(g_), 0.3f);
         }
         if (btn("settings", "Paramètres", "")) g_.app.pushScene(makeSettingsScene(g_, false));
-        if (admin && btn("admin", "Administration", "joueurs · journal")) g_.app.switchScene(makeAdmin(g_), 0.3f);
+        if (admin && btn("admin", "Administration", "joueurs · défis · journal")) g_.app.switchScene(makeAdmin(g_), 0.3f);
         UIContext::ButtonStyle danger;
         danger.danger = true;
         danger.align = Align::Left;

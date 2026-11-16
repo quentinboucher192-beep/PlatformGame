@@ -798,6 +798,75 @@ TEST_CASE("challenge service: « Plus loin » without an account: the best attem
     CHECK_NEAR(again.bestProgress(c->id), 12.3f, 0.001f);
 }
 
+// ------------------------------------------------------------------ 2.41: « Finir le niveau »
+
+TEST_CASE("challenge service: « Finir le niveau »: tiers as shares of the route, Or at the finish") {
+    Json cj = periodJson(ChallengeKind::Daily, challenge_period::dateOfDay(todayNumber()));
+    cj["progress_available"] = true;
+    // Absent (every server before 2.41): « Vitesse », time tiers as before.
+    auto speed = DailyChallenge::fromJson(cj);
+    CHECK(speed.has_value());
+    CHECK(!speed->finishObjective);
+    CHECK(speed->tierForProgress(90.0f) == ChallengeTier::None);
+    cj["objective"] = "finish";
+    cj["tiers"] = {{"silver_ms", 7200000}, {"gold_ms", 7200000}, {"gold_no_damage", true}, {"bronze_progress", 40}, {"silver_progress", 75}};
+    auto c = DailyChallenge::fromJson(cj);
+    CHECK(c.has_value());
+    CHECK(c->finishObjective);
+    CHECK(c->bronzeProgress == 40);
+    CHECK(c->silverProgress == 75);
+    CHECK(c->tierForProgress(39.9f) == ChallengeTier::None);
+    CHECK(c->tierForProgress(40.0f) == ChallengeTier::Bronze);
+    CHECK(c->tierForProgress(75.0f) == ChallengeTier::Silver);
+    CHECK(c->tierForProgress(99.9f) == ChallengeTier::Silver);
+    // A finish: Or, or Argent with damage when Or asks for none (whatever the time).
+    CHECK(c->tierFor(5000000, 0) == ChallengeTier::Gold);
+    CHECK(c->tierFor(60000, 1) == ChallengeTier::Silver);
+    Json ok = cj;
+    ok["tiers"]["gold_no_damage"] = false;
+    CHECK(DailyChallenge::fromJson(ok)->tierFor(60000, 3) == ChallengeTier::Gold);
+    // Tiers out of their bounds, an objective this game does not know: refused.
+    Json bad = cj;
+    bad["tiers"]["silver_progress"] = 30;
+    CHECK(!DailyChallenge::fromJson(bad).has_value());
+    bad = cj;
+    bad["objective"] = "collect";
+    CHECK(!DailyChallenge::fromJson(bad).has_value());
+    // Its best times are asked for explicitly (its board is the progress one by default).
+    CHECK(ChallengeService::leaderboardPath(c->id, "world", false, false, true).find("&board=time") != std::string::npos);
+    CHECK(ChallengeService::leaderboardPath(c->id, "world", false, true, true).find("&board=progress") != std::string::npos);
+}
+
+TEST_CASE("challenge service: « Finir le niveau »: an attempt's tier counts here, and for the streak in time") {
+    Rig rig("finishlocal");
+    rig.server->down = true;
+    Json cj = periodJson(ChallengeKind::Daily, challenge_period::dateOfDay(todayNumber()));
+    cj["progress_available"] = true;
+    cj["objective"] = "finish";
+    cj["tiers"] = {{"silver_ms", 7200000}, {"gold_ms", 7200000}, {"gold_no_damage", true}, {"bronze_progress", 50}, {"silver_progress", 80}};
+    auto c = DailyChallenge::fromJson(cj);
+    CHECK(c.has_value());
+    auto a = rig.challenges.recordAttempt(*c, 55.0f, 9000, {}, {}, c->level.hash, makeUuidV4(), nullptr, true);
+    CHECK(a.newBest);
+    CHECK(a.tier == ChallengeTier::Bronze);
+    CHECK(rig.challenges.result(c->id)->tier == ChallengeTier::Bronze);
+    CHECK(rig.challenges.localStreak(ChallengeKind::Daily).current == 1);
+    auto b = rig.challenges.recordAttempt(*c, 81.0f, 9000, {}, {}, c->level.hash, makeUuidV4(), nullptr, true);
+    CHECK(b.tier == ChallengeTier::Silver);
+    ChallengeService again;
+    again.init(rig.online, rig.dir / "saves" / "challenges");
+    CHECK(again.result(c->id)->tier == ChallengeTier::Silver);
+    CHECK(again.localStreak(ChallengeKind::Daily).current == 1);
+    // A « Vitesse » challenge: no tier without a finish.
+    Json sj = periodJson(ChallengeKind::Weekly, challenge_period::ofDay(ChallengeKind::Weekly, todayNumber()));
+    sj["progress_available"] = true;
+    auto s = DailyChallenge::fromJson(sj);
+    auto x = rig.challenges.recordAttempt(*s, 90.0f, 9000, {}, {}, s->level.hash, makeUuidV4(), nullptr, true);
+    CHECK(x.newBest);
+    CHECK(x.tier == ChallengeTier::None);
+    CHECK(rig.challenges.result(s->id)->tier == ChallengeTier::None);
+}
+
 // ------------------------------------------------------------------ 2.34: rewards of the challenges
 
 namespace {

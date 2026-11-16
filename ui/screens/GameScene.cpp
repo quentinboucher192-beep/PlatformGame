@@ -189,7 +189,7 @@ void GameScene::endSpectate(const char* reason) {
 void GameScene::startChallenge() {
     const DailyChallenge& c = opt_.challenge->challenge;
     world_->setChallenge(c.rules);
-    hud_.setChallengeTiers(static_cast<float>(c.silverMs) / 1000.0f, static_cast<float>(c.goldMs) / 1000.0f, c.goldNoDamage);
+    hud_.setChallengeTiers(static_cast<float>(c.silverMs) / 1000.0f, static_cast<float>(c.goldMs) / 1000.0f, c.goldNoDamage, c.finishObjective);
     // The level as installed: its fingerprint goes with the run (the server compares it with
     // the challenge's); the replay is written in version 4 (the rules after the digests).
     if (!c.community()) {
@@ -314,6 +314,7 @@ void GameScene::drawChallengeBanner() {
                       : c.kind == ChallengeKind::Weekly  ? "DÉFI DE LA SEMAINE"
                       : c.kind == ChallengeKind::Monthly ? "DÉFI DU MOIS"
                                                          : "DÉFI DU JOUR";
+    if (c.finishObjective) tag += " · finir le niveau";
     tag += " · " + std::to_string(r.hearts) + (r.hearts > 1 ? " cœurs" : " cœur");
     if (!r.checkpoints) tag += " · sans points de passage";
     tag += " · " + keyName(SDL_SCANCODE_R) + " / Vue : recommencer";

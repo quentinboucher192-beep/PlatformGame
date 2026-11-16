@@ -40,15 +40,19 @@ public:
 
     /// A daily challenge run (2.32): under the timer, the next tier still reachable (Or,
     /// Argent) instead of the level's medals. Seconds; `goldNoDamage`: Or is lost with a hit.
-    void setChallengeTiers(float silver, float gold, bool goldNoDamage) {
+    /// `finish` (2.41, « Finir le niveau »): no time tier, Or is the finish (the progress bar
+    /// shows the share of the route).
+    void setChallengeTiers(float silver, float gold, bool goldNoDamage, bool finish = false) {
         tierSilver_ = silver;
         tierGold_ = gold;
         tierGoldNoDamage_ = goldNoDamage;
+        tierFinish_ = finish;
     }
 
 private:
     float tierSilver_ = 0.0f, tierGold_ = 0.0f;
     bool tierGoldNoDamage_ = false;
+    bool tierFinish_ = false;
     void drawVitals(UIContext& ui, GameWorld& w, Vec2 o, float k);
     void drawPowers(UIContext& ui, GameWorld& w, Vec2 o, float k);
     void drawTimer(UIContext& ui, GameWorld& w, const LevelRecord* record, Vec2 o, float k);

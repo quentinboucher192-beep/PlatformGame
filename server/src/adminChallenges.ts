@@ -163,6 +163,7 @@ function suggestedTimes(completionMs: number | null): { silver_ms: number; gold_
  * current revision (`available`), its route (`has_race`, needed by « Finir le niveau »), its
  * slots, powers and the times of its medals (the default tiers). community: the published
  * levels (title search from 2 characters, most played first, paged), at their current version.
+ * `player_max_hearts` (campaign): the hearts of a challenge when none are given.
  */
 export async function listLevels(ctx: Ctx): Promise<Response> {
     await requireAdminRole(ctx);
@@ -197,7 +198,7 @@ export async function listLevels(ctx: Ctx): Promise<Response> {
                     gold_ms: Math.min(info.gold_ms, info.silver_ms),
                 };
             });
-        return json(ctx, { source, levels, total: levels.length, has_more: false, offset: 0 });
+        return json(ctx, { source, levels, total: levels.length, has_more: false, offset: 0, player_max_hearts: CATALOG.player_max_hearts });
     }
     const page = paging(ctx.url, 20, 50);
     const binds: unknown[] = [];

@@ -30,7 +30,8 @@ class OnlineService;
 struct ReplayData;
 
 /// Tier of a finished run: Bronze (finished), Argent (time ≤ silver), Or (time ≤ gold and,
-/// when the challenge says so, no damage).
+/// when the challenge says so, no damage). 2.41, « Finir le niveau »: Bronze and Argent are a
+/// share of the route reached, Or the finish.
 enum class ChallengeTier : int { None = 0, Bronze = 1, Silver = 2, Gold = 3 };
 const char* challengeTierLabel(ChallengeTier t);  // "Bronze", "Argent", "Or", "—"
 /// "BRONZE" / "silver" / 3… as the server writes it (None when unknown).
@@ -89,11 +90,21 @@ struct DailyChallenge {
     int64_t goldMs = 0;
     bool goldNoDamage = true;
     bool progressAvailable = false;  // « Plus loin » (2.33): its level has a route layout
+    /// 2.41, objective "finish" (« Finir le niveau »): ranked by progress like « Plus loin »
+    /// (the furthest, then the first to finish), Bronze and Argent at `bronzeProgress` and
+    /// `silverProgress` % of the route, Or the finish (without damage when `goldNoDamage`).
+    /// False: « Vitesse », the time tiers (every challenge before 2.41).
+    bool finishObjective = false;
+    int bronzeProgress = 50;
+    int silverProgress = 80;
     Json raw;  // as received (cache)
 
     bool community() const { return level.source == "community"; }
     const char* kindId() const { return challengeKindId(kind); }
+    /// The tier of a finished run (« Finir le niveau »: Or, or Argent with damage when Or asks for none).
     ChallengeTier tierFor(int64_t timeMs, int damageTaken) const;
+    /// « Finir le niveau »: the tier of an unfinished attempt's progress (0..100); None on « Vitesse ».
+    ChallengeTier tierForProgress(float progress) const;
     static std::optional<DailyChallenge> fromJson(const Json& j, std::string* error = nullptr);
 };
 
@@ -162,6 +173,8 @@ struct ChallengeResult {
     bool hasReplay = false;  // replays/<challenge>.cprz is that run
     float bestProgress = 0.0f;  // « Plus loin »: my furthest unfinished attempt here (0..99.9)
     std::string bestProgressAttemptId;
+    /// « Finir le niveau » (2.41): an attempt reached a tier while the challenge ran (the streak).
+    bool liveTier = false;
 };
 
 class ChallengeService {
@@ -304,6 +317,9 @@ public:
     struct AttemptReport {
         bool newBest = false;  // « Nouveau record de progression »
         bool late = false;
+        /// « Finir le niveau » (2.41): the tier of this progress as computed here (the server's
+        /// comes with its answer: ChallengeSubmission::serverTier); None on « Vitesse ».
+        ChallengeTier tier = ChallengeTier::None;
         float progress = 0.0f;      // this attempt (one decimal)
         float previousBest = 0.0f;  // my best before it
         ChallengeRunState state = ChallengeRunState::LocalOnly;
@@ -323,7 +339,9 @@ public:
     /// period=all, the runs « hors délai » too), `progressBoard` (« Plus loin »: board=progress).
     void leaderboard(const std::string& challengeId, const std::string& scope, ApiCallback cb, bool allPeriod = false,
                      bool progressBoard = false);
-    static std::string leaderboardPath(const std::string& challengeId, const std::string& scope, bool allPeriod, bool progressBoard = false);
+    /// `timeExplicit`: board=time written (a « Finir le niveau » challenge ranks by progress by default).
+    static std::string leaderboardPath(const std::string& challengeId, const std::string& scope, bool allPeriod, bool progressBoard = false,
+                                       bool timeExplicit = false);
     /// Downloads the replay of a run (the first of the challenge, as a ghost; a leaderboard's
     /// « Voir »), or with `attempt` of an attempt of the « Plus loin » board (its server id),
     /// kept in ghosts/.

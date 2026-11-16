@@ -85,9 +85,33 @@
    ]
   },
   {
+   "fr": "(remplace le tirage « {0} »)",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "(remplace « {0} »)",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "(sans message)",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "(tirage le {0})",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "(tiré à nouveau : « {0} »)",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -112,6 +136,18 @@
    "fr": "({0} sur mon record d'avant)",
    "where": [
     "ui/screens/SegmentsScene.cpp"
+   ]
+  },
+  {
+   "fr": "+ Ajouter",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "+ choisir",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -444,6 +480,12 @@
    ]
   },
   {
+   "fr": "a choisi le défi {0} : {1}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "a donné le rôle admin à {0}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -477,6 +519,12 @@
    "fr": "A rejoué à l'identique · {0} contrôles vérifiés",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "a remis au tirage le défi {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -1565,13 +1613,14 @@
   {
    "fr": "Août",
    "where": [
+    "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
    "fr": "août",
    "where": [
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengeUi.cpp"
    ]
   },
   {
@@ -1765,7 +1814,8 @@
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/gameplay/Hud.cpp",
     "game/levels/LevelData.cpp",
-    "game/online/DailyChallenges.cpp"
+    "game/online/DailyChallenges.cpp",
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -1775,9 +1825,33 @@
    ]
   },
   {
+   "fr": "Argent : finir le niveau",
+   "where": [
+    "game/gameplay/Hud.cpp"
+   ]
+  },
+  {
    "fr": "Argent < {0}",
    "where": [
     "game/gameplay/Hud.cpp"
+   ]
+  },
+  {
+   "fr": "Argent {0} · Or {1}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Argent {0} · Or {1} sans dégât",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Argent à {0} %",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -1827,7 +1901,13 @@
   {
    "fr": "Arriver au bout",
    "where": [
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengeUi.cpp"
+   ]
+  },
+  {
+   "fr": "arriver au bout",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -2057,6 +2137,18 @@
    ]
   },
   {
+   "fr": "atteindre",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Atteindre {0} % du parcours",
+   "where": [
+    "ui/screens/ChallengeUi.cpp"
+   ]
+  },
+  {
    "fr": "Attendez la fin du téléchargement (ou décochez ce fantôme).",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
@@ -2226,6 +2318,7 @@
    "where": [
     "game/online/HttpTransportNone.cpp",
     "game/online/OnlineService.h",
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/PlanetMapScene.cpp"
@@ -2283,6 +2376,12 @@
    "fr": "Aucun défi du mois sur ce PC",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun défi pour cette période.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -2412,6 +2511,18 @@
    ]
   },
   {
+   "fr": "Aucun niveau de la campagne ne correspond.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun niveau en ligne publié ne correspond.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Aucun niveau ne correspond à la recherche.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -2433,6 +2544,12 @@
    "fr": "Aucun niveau sur cette planète pour l'instant. Créez-en un avec l'éditeur ou importez un pack .cplanet.",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun niveau.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -3009,6 +3126,7 @@
   {
    "fr": "Avril",
    "where": [
+    "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -3860,7 +3978,8 @@
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/gameplay/Hud.cpp",
     "game/levels/LevelData.cpp",
-    "game/online/DailyChallenges.cpp"
+    "game/online/DailyChallenges.cpp",
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -3868,7 +3987,14 @@
    "where": [
     "game/levels/LevelData.cpp",
     "game/online/DailyChallenges.cpp",
-    "game/progression/NewsCenter.cpp"
+    "game/progression/NewsCenter.cpp",
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Bronze à {0} %",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -3980,6 +4106,12 @@
    "fr": "C'est la dernière",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "c'était déjà le tirage",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -4105,6 +4237,12 @@
    ]
   },
   {
+   "fr": "Calendrier des défis",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Calendrier des défis : chaque case montre l'image du niveau du défi, avec un ruban de sa couleur (jour, semaine) et des balises sur ce qui le rend particulier : EXTRÊME, niveau de la communauté, nombre de cœurs, sans checkpoint, sans station. Le défi du mois aussi.",
    "where": [
     "data/news/changelog.json"
@@ -4119,6 +4257,7 @@
   {
    "fr": "Calendrier indisponible : {0}",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -4170,6 +4309,7 @@
   {
    "fr": "Campagne",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/MainMenuScene.cpp"
    ]
   },
@@ -4420,6 +4560,18 @@
    ]
   },
   {
+   "fr": "Ce défi a déjà commencé : il ne change plus.",
+   "where": [
+    "server/src/adminChallenges.ts"
+   ]
+  },
+  {
+   "fr": "Ce défi est déjà celui du tirage du serveur.",
+   "where": [
+    "server/src/adminChallenges.ts"
+   ]
+  },
+  {
    "fr": "Ce défi n'a pas de classement « Plus loin » sur le serveur.",
    "where": [
     "game/online/DailyChallenges.cpp"
@@ -4582,6 +4734,12 @@
    ]
   },
   {
+   "fr": "Ce niveau n'est pas classé par le serveur : il ne peut pas être un défi.",
+   "where": [
+    "server/src/adminChallenges.ts"
+   ]
+  },
+  {
    "fr": "Ce niveau n'est pas dans votre jeu.",
    "where": [
     "ui/screens/SpectateScene.cpp"
@@ -4602,7 +4760,7 @@
   {
    "fr": "Ce niveau n'existe pas dans votre version du jeu : mettez le jeu à jour.",
    "where": [
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengeUi.cpp"
    ]
   },
   {
@@ -4653,6 +4811,12 @@
    "fr": "Ce pseudonyme est réservé.",
    "where": [
     "server/src/auth.ts"
+   ]
+  },
+  {
+   "fr": "Ce que verront les joueurs",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -4984,6 +5148,12 @@
    ]
   },
   {
+   "fr": "Cette version du niveau n'est pas publiée : elle ne peut pas être un défi.",
+   "where": [
+    "server/src/adminChallenges.ts"
+   ]
+  },
+  {
    "fr": "Cette version du niveau n'est pas publiée.",
    "where": [
     "server/src/spectate.ts"
@@ -5189,6 +5359,7 @@
   {
    "fr": "Chargement du calendrier…",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -5228,6 +5399,7 @@
     "editors/level_editor/LevelEditorChat.cpp",
     "ui/online/CommentsPanel.cpp",
     "ui/online/RatingWidgets.cpp",
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/NotificationsScene.cpp",
@@ -5318,9 +5490,17 @@
    ]
   },
   {
+   "fr": "Checkpoints",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "checkpoints",
    "where": [
-    "game/levels/DifficultyRating.cpp"
+    "game/levels/DifficultyRating.cpp",
+    "ui/screens/AdminCalendar.cpp",
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -5422,6 +5602,24 @@
    ]
   },
   {
+   "fr": "choisi",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Choisi par un admin : remplace le tirage « {0} ».",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Choisi par un admin.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "choisie pour ce niveau",
    "where": [
     "editors/level_editor/LevelEditorPowerKeys.cpp"
@@ -5453,6 +5651,12 @@
    ]
   },
   {
+   "fr": "Choisissez d'abord un niveau : il lui faut un parcours tracé (comme en ont les niveaux EXTRÊME).",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Choisissez de 1 à 5 étoiles.",
    "where": [
     "ui/online/RatingWidgets.cpp"
@@ -5471,9 +5675,21 @@
    ]
   },
   {
+   "fr": "Choisissez un jour, une semaine ou le mois dans le calendrier (clic, Entrée ou bouton A). Un défi qui n'a pas commencé se choisit ici : niveau, règles, objectif et paliers. Un défi commencé ou passé se consulte seulement.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Choisissez un niveau",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Choisissez un niveau.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -5522,6 +5738,18 @@
    "fr": "Choix du niveau : les boss du niveau apparaissent à droite du titre, avec leur nom quand il y a la place ; quand il y en a beaucoup (Arène des Échos), les derniers sont comptés (« +9 ») et le nom s'affiche au survol.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Choix retiré : le serveur tirera ce défi le {0}.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Choix retiré : le serveur tirera ce défi.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -5721,9 +5949,27 @@
    ]
   },
   {
+   "fr": "Classement aux meilleurs temps. Paliers : des temps.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Classement de la semaine",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "classement du défi : la progression (le plus loin, puis le premier à finir) · paliers « {0} % / {1} % / fini » sur sa fiche",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "classement du défi : les meilleurs temps · paliers « fini / {0} / {1} » sur sa fiche",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -5778,6 +6024,12 @@
    "fr": "Classement « Plus loin » : pour les défis que peu de joueurs finissent, chaque essai est noté par le serveur selon sa progression (trajet, boss, embuscades), à côté des « Meilleurs temps » ; « Voir » rejoue l'essai de chaque joueur classé.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Classement à la progression, comme la course à la vérification : le plus loin d'abord, puis le premier à finir. Paliers : une part du parcours.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -6239,6 +6491,12 @@
    ]
   },
   {
+   "fr": "commencé : verrouillé",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Commentaire",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -6380,7 +6638,7 @@
    "fr": "Communauté",
    "where": [
     "data/achievements/achievements.json",
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengeUi.cpp"
    ]
   },
   {
@@ -6746,6 +7004,12 @@
    ]
   },
   {
+   "fr": "Connecté : votre progression sera envoyée à la fin de la partie.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Connecté : votre temps sera envoyé à la fin du défi.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -6813,6 +7077,12 @@
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
+   "fr": "Connexion impossible : rien n'a changé.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -7974,6 +8244,7 @@
   {
    "fr": "Cœurs",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
@@ -8129,6 +8400,12 @@
    "fr": "dates du défi invalides",
    "where": [
     "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
+   "fr": "de la semaine {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -8604,8 +8881,15 @@
    ]
   },
   {
+   "fr": "Dim",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Dimanche",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -8805,6 +9089,18 @@
    ]
   },
   {
+   "fr": "Donnez les temps de l'Argent et de l'Or.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Données",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Données de progression incohérentes avec le niveau.",
    "where": [
     "server/src/records.ts"
@@ -8926,6 +9222,30 @@
    "fr": "Drôle",
    "where": [
     "ui/online/CommentsPanel.cpp"
+   ]
+  },
+  {
+   "fr": "du jour du {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "du mois de {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "du parcours",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "du parcours · Or en finissant",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -9203,13 +9523,14 @@
   {
    "fr": "Décembre",
    "where": [
+    "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
    "fr": "décembre",
    "where": [
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengeUi.cpp"
    ]
   },
   {
@@ -9398,6 +9719,12 @@
    ]
   },
   {
+   "fr": "Défi",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Défi : essai refusé",
    "where": [
     "game/online/DailyChallenges.cpp"
@@ -9434,6 +9761,12 @@
    ]
   },
   {
+   "fr": "Défi commencé : lecture seule. Un défi commencé ne change plus.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "DÉFI DE LA SEMAINE",
    "where": [
     "ui/screens/GameScene.cpp"
@@ -9442,6 +9775,7 @@
   {
    "fr": "Défi de la semaine",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/SpectateScene.cpp"
    ]
   },
@@ -9460,6 +9794,7 @@
   {
    "fr": "Défi du jour",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/SpectateScene.cpp"
    ]
@@ -9479,6 +9814,7 @@
   {
    "fr": "Défi du mois",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/SpectateScene.cpp"
    ]
@@ -9502,6 +9838,12 @@
    ]
   },
   {
+   "fr": "Défi enregistré : il sera proposé aux joueurs à son début.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "DÉFI HORS CLASSEMENT",
    "where": [
     "ui/screens/GameScene.cpp"
@@ -9522,8 +9864,15 @@
   {
    "fr": "Défi introuvable.",
    "where": [
+    "server/src/adminChallenges.ts",
     "server/src/challenges.ts",
     "server/src/spectate.ts"
+   ]
+  },
+  {
+   "fr": "Défi passé : lecture seule.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -9583,6 +9932,7 @@
   {
    "fr": "Défis",
    "where": [
+    "ui/screens/AdminScene.cpp",
     "ui/screens/MainMenuScene.cpp"
    ]
   },
@@ -9709,6 +10059,12 @@
    "fr": "Dégâts reçus : ×{0}   —   Vies : {1} (EXTRÊME : course à la vérification)",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "déjà commencé",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -10027,12 +10383,14 @@
   {
    "fr": "Emplacements",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
    "fr": "Emplacements de pouvoirs",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/BossTrainingScene.cpp"
    ]
   },
@@ -10141,9 +10499,21 @@
    ]
   },
   {
+   "fr": "en cours",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "en cours !",
    "where": [
     "game/gameplay/Hud.cpp"
+   ]
+  },
+  {
+   "fr": "en cours · verrouillé",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -10301,13 +10671,13 @@
   {
    "fr": "En {0} ou moins",
    "where": [
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengeUi.cpp"
    ]
   },
   {
    "fr": "En {0} ou moins, sans dégât",
    "where": [
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengeUi.cpp"
    ]
   },
   {
@@ -10509,6 +10879,7 @@
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
     "ui/online/CommentsPanel.cpp",
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/HudEditorScene.cpp",
     "ui/screens/OnlineSettingsScene.cpp"
    ]
@@ -10565,6 +10936,12 @@
    "fr": "Enregistré à {0}",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
+   ]
+  },
+  {
+   "fr": "Enregistré. Attention : {0}.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -10773,6 +11150,7 @@
    "where": [
     "editors/level_editor/LevelEditorChat.cpp",
     "ui/online/CommentsPanel.cpp",
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
@@ -11073,7 +11451,7 @@
   {
    "fr": "EXTRÊME",
    "where": [
-    "ui/screens/ChallengesScene.cpp",
+    "ui/screens/ChallengeUi.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/widgets/UIContext.cpp"
    ]
@@ -11329,6 +11707,7 @@
     "editors/level_editor/LevelEditorDialogs.cpp",
     "editors/level_editor/LevelEditorPowerKeys.cpp",
     "game/levels/EventSystem.cpp",
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/CommunityPublishScene.cpp",
     "ui/screens/GhostOptionsScene.cpp",
     "ui/screens/OnlineSettingsScene.cpp",
@@ -11582,6 +11961,50 @@
    "fr": "Fini",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Finir le niveau",
+   "where": [
+    "ui/screens/AdminCalendar.cpp",
+    "ui/screens/ChallengeUi.cpp"
+   ]
+  },
+  {
+   "fr": "finir le niveau",
+   "where": [
+    "ui/screens/AdminCalendar.cpp",
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Finir le niveau : le classement suit la progression (le plus loin d'abord, puis le premier à finir). Or en finissant sans dégât.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Finir le niveau : le classement suit la progression (le plus loin d'abord, puis le premier à finir). Or en finissant.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "finir le niveau · Bronze {0} % · Argent {1} % · Or en finissant",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "finir le niveau · Bronze {0} % · Argent {1} % · Or sans dégât",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Finir le niveau, sans dégât",
+   "where": [
+    "ui/screens/ChallengeUi.cpp"
    ]
   },
   {
@@ -12066,13 +12489,14 @@
   {
    "fr": "Février",
    "where": [
+    "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
    "fr": "février",
    "where": [
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengeUi.cpp"
    ]
   },
   {
@@ -13232,6 +13656,12 @@
    ]
   },
   {
+   "fr": "Hors ligne : votre progression partira à la prochaine connexion.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Hors ligne : votre temps partira à la prochaine connexion.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -13261,6 +13691,12 @@
    "fr": "Hors ligne · {0} en attente",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
+   ]
+  },
+  {
+   "fr": "hors tirage",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -13359,7 +13795,9 @@
     "game/progression/NewsCenter.cpp",
     "game/race/Race.cpp",
     "ui/online/CommentsPanel.cpp",
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminScene.cpp",
+    "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/CollectionScene.cpp",
     "ui/screens/CommunityPublishScene.cpp",
@@ -13644,6 +14082,12 @@
    "fr": "Impossible : « {0} » toucherait {1}.",
    "where": [
     "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Impossible avec ce niveau : il n'a pas de parcours tracé (comme en ont les niveaux EXTRÊME). Choisissez-en un qui en a un.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -14137,6 +14581,7 @@
   {
    "fr": "Janvier",
    "where": [
+    "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -14182,12 +14627,14 @@
    "fr": "Jeu",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/SettingsScene.cpp"
    ]
   },
   {
    "fr": "Jeudi",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -14386,7 +14833,7 @@
    ]
   },
   {
-   "fr": "joueurs · journal",
+   "fr": "joueurs · défis · journal",
    "where": [
     "ui/screens/MainMenuScene.cpp"
    ]
@@ -14420,12 +14867,14 @@
   {
    "fr": "Juillet",
    "where": [
+    "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
    "fr": "Juin",
    "where": [
+    "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -14523,6 +14972,12 @@
    "fr": "L'ARCHONTE DES CATACOMBES",
    "where": [
     "data/enemies/archon_catacombs.json"
+   ]
+  },
+  {
+   "fr": "L'Argent doit demander une plus grande part du parcours que le Bronze.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -16259,6 +16714,12 @@
    ]
   },
   {
+   "fr": "Le temps de l'Or doit être inférieur ou égal à celui de l'Argent.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "le temps est reçu, son replay pas encore contrôlé.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -17256,8 +17717,15 @@
    ]
   },
   {
+   "fr": "Lun",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Lundi",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -17297,6 +17765,12 @@
    "fr": "Ma dernière course",
    "where": [
     "game/ghost/Ghost.cpp"
+   ]
+  },
+  {
+   "fr": "Ma progression",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -17351,6 +17825,7 @@
   {
    "fr": "Mai",
    "where": [
+    "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -17525,6 +18000,12 @@
    ]
   },
   {
+   "fr": "Mar",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Marche du joueur",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -17533,6 +18014,7 @@
   {
    "fr": "Mardi",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -17564,6 +18046,7 @@
   {
    "fr": "Mars",
    "where": [
+    "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -17909,6 +18392,7 @@
   {
    "fr": "Meilleurs temps",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/PlayerProfileScene.cpp"
    ]
@@ -18020,6 +18504,12 @@
    ]
   },
   {
+   "fr": "Mer",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Merci : votre note est enregistrée.",
    "where": [
     "ui/online/RatingWidgets.cpp"
@@ -18040,6 +18530,7 @@
   {
    "fr": "Mercredi",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -18097,6 +18588,7 @@
    "where": [
     "game/levels/ObjectTypes.cpp",
     "game/online/OnlineTypes.cpp",
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/OnlineAccountScene.cpp",
     "ui/screens/ProjectsScene.cpp"
    ]
@@ -18361,6 +18853,12 @@
    ]
   },
   {
+   "fr": "modification du défi {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Modification non appliquée",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
@@ -18431,12 +18929,14 @@
   {
    "fr": "Mois précédent",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
    "fr": "Mois suivant",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -19055,6 +19555,7 @@
    "fr": "Niveau",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/ProjectsScene.cpp"
    ]
@@ -19117,7 +19618,7 @@
   {
    "fr": "Niveau de la communauté à télécharger (version {0}).",
    "where": [
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengeUi.cpp"
    ]
   },
   {
@@ -19154,6 +19655,12 @@
    "fr": "Niveau enregistré : {0}",
    "where": [
     "editors/level_editor/LevelEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Niveau et règles",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -19210,6 +19717,12 @@
     "server/src/campaign.ts",
     "server/src/levels.ts",
     "server/src/workshop.ts"
+   ]
+  },
+  {
+   "fr": "niveau indisponible",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -19361,7 +19874,7 @@
    "where": [
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/BossTrainingScene.cpp",
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengeUi.cpp"
    ]
   },
   {
@@ -19404,6 +19917,12 @@
    "fr": "NIVEAUX EN LIGNE",
    "where": [
     "ui/screens/OnlineNav.cpp"
+   ]
+  },
+  {
+   "fr": "Niveaux en ligne",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -19570,6 +20089,7 @@
   {
    "fr": "non classé",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/OnlineRankingScene.cpp"
    ]
   },
@@ -20144,13 +20664,14 @@
   {
    "fr": "Novembre",
    "where": [
+    "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
    "fr": "novembre",
    "where": [
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengeUi.cpp"
    ]
   },
   {
@@ -20313,6 +20834,31 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Objectif",
+   "where": [
+    "ui/screens/AdminCalendar.cpp",
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Objectif : finir le niveau",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "objectif du défi inconnu",
+   "where": [
+    "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
+   "fr": "Objectif et paliers",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -20543,6 +21089,7 @@
   {
    "fr": "Octobre",
    "where": [
+    "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -20736,13 +21283,26 @@
     "game/gameplay/Hud.cpp",
     "game/levels/LevelData.cpp",
     "game/online/DailyChallenges.cpp",
-    "saves/Settings.cpp"
+    "saves/Settings.cpp",
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
    "fr": "or",
    "where": [
     "game/progression/NewsCenter.cpp"
+   ]
+  },
+  {
+   "fr": "Or : finir le niveau",
+   "where": [
+    "game/gameplay/Hud.cpp"
+   ]
+  },
+  {
+   "fr": "Or : finir sans dégât",
+   "where": [
+    "game/gameplay/Hud.cpp"
    ]
   },
   {
@@ -20761,6 +21321,12 @@
    "fr": "Or des échos",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Or en finissant",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -20877,6 +21443,18 @@
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
     "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ouvert aux joueurs le {0} à 00:00 UTC · modifiable jusque-là",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Ouvert depuis le {0} à 00:00 UTC, jusqu'au {1} à 00:00 UTC · verrouillé",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -21104,6 +21682,7 @@
   {
    "fr": "Paliers",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/CollectionScene.cpp"
    ]
@@ -21155,6 +21734,7 @@
   {
    "fr": "par",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -21182,6 +21762,12 @@
    "fr": "Par type",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "par un admin",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -21376,6 +21962,12 @@
    ]
   },
   {
+   "fr": "parcours tracé",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Parcours {0} %",
    "where": [
     "ui/screens/RaceScene.cpp"
@@ -21509,6 +22101,12 @@
    ]
   },
   {
+   "fr": "Pas de défi du mois.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Pas de l'ombre",
    "where": [
     "data/enemies/echo_nyxara.json",
@@ -21526,6 +22124,12 @@
    "fr": "Pas de replay vérifié pour cette course.",
    "where": [
     "ui/screens/OnlineThreadScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pas de tirage prévu : choisissez-le ici.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -21550,6 +22154,12 @@
    "fr": "Pas encore atteinte.",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pas encore d'essai sur ce défi.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -21598,6 +22208,18 @@
    "fr": "Pas encore terminé ({0} essais).",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pas encore tiré : le serveur le tirera le {0}, sauf si un admin le choisit avant.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Pas encore tiré : tirage le {0}, sauf choix d'un admin.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -21692,6 +22314,12 @@
     "game/gameplay/Hud.cpp",
     "ui/screens/PowerChoiceScene.cpp",
     "ui/screens/PowerGuideScene.cpp"
+   ]
+  },
+  {
+   "fr": "passé",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -22630,6 +23258,12 @@
    ]
   },
   {
+   "fr": "Plus de pouvoirs imposés que d'emplacements.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "plus de pouvoirs que d'emplacements",
    "where": [
     "game/gameplay/ChallengeRules.cpp"
@@ -22662,6 +23296,7 @@
   {
    "fr": "Plus loin",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -23335,6 +23970,7 @@
     "data/achievements/achievements.json",
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "saves/HudLayout.cpp",
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
@@ -23381,6 +24017,12 @@
    "fr": "POUVOIRS DU SEGMENT",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pouvoirs imposés",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -23609,6 +24251,12 @@
    "fr": "PROGRESSION",
    "where": [
     "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
+   "fr": "Progression",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -23847,6 +24495,7 @@
   {
    "fr": "Précédents",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminScene.cpp"
    ]
   },
@@ -24777,6 +25426,12 @@
    ]
   },
   {
+   "fr": "Rechercher un niveau",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Rechercher un pays…",
    "where": [
     "ui/online/OnlineWidgets.cpp"
@@ -25124,6 +25779,12 @@
    ]
   },
   {
+   "fr": "refus du serveur",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Refuser",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp",
@@ -25142,6 +25803,12 @@
    "where": [
     "game/online/DailyChallenges.cpp",
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Refusé par le serveur.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -25833,6 +26500,12 @@
    ]
   },
   {
+   "fr": "retour au tirage du défi {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Retour aux défis",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -25897,6 +26570,18 @@
    "fr": "Retrouvez vos records sur cet ordinateur",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "Revenir au tirage",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Revenu au tirage du serveur : « {0} ».",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -26230,6 +26915,12 @@
    ]
   },
   {
+   "fr": "Règles",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "règles absentes",
    "where": [
     "game/gameplay/ChallengeRules.cpp"
@@ -26272,6 +26963,12 @@
    "where": [
     "server/src/race.ts",
     "server/src/replay.ts"
+   ]
+  },
+  {
+   "fr": "règles invalides",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -26400,6 +27097,7 @@
   {
    "fr": "Réessayer",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/OnlineRankingScene.cpp"
    ]
@@ -26983,8 +27681,15 @@
    ]
   },
   {
+   "fr": "Sam",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Samedi",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -27019,7 +27724,13 @@
   {
    "fr": "Sans checkpoint",
    "where": [
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengeUi.cpp"
+   ]
+  },
+  {
+   "fr": "sans checkpoint",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -27068,6 +27779,7 @@
    "fr": "sans dégât",
    "where": [
     "server/src/records.ts",
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -27110,7 +27822,13 @@
   {
    "fr": "Sans station",
    "where": [
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengeUi.cpp"
+   ]
+  },
+  {
+   "fr": "sans station",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -27494,8 +28212,15 @@
    ]
   },
   {
+   "fr": "Sem. {0}",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Semaine",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/OnlineRankingScene.cpp"
    ]
@@ -27505,6 +28230,12 @@
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp",
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Semaine {0} · du {1} au {2}",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -27548,6 +28279,7 @@
   {
    "fr": "Septembre",
    "where": [
+    "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -28627,6 +29359,12 @@
    ]
   },
   {
+   "fr": "Stations de pouvoirs",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Stations de pouvoirs dans la campagne, raccourci du Cœur de la Machine supprimé.",
    "where": [
     "data/news/changelog.json"
@@ -28834,6 +29572,7 @@
   {
    "fr": "Suivants",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminScene.cpp"
    ]
   },
@@ -30130,6 +30869,12 @@
    ]
   },
   {
+   "fr": "Terminé le {0} à 00:00 UTC · verrouillé",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Terminées",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -30342,6 +31087,60 @@
    "fr": "Tir en cloche",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "tirage",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "tirage : jour",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "tirage : jour, semaine",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "tirage : jour, semaine, mois",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "tirage : semaine",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "tirage le {0}",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Tiré au sort par le serveur : un admin peut le remplacer tant qu'il n'a pas commencé.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "tiré au sort par le serveur, remplaçable",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Tiré au sort par le serveur.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -32632,8 +33431,15 @@
    ]
   },
   {
+   "fr": "Ven",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Vendredi",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -32782,6 +33588,8 @@
     "packaging/PackageExporter.cpp",
     "packaging/PackageImporter.cpp",
     "saves/SaveFile.cpp",
+    "ui/screens/AdminCalendar.cpp",
+    "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/CommunityPublishScene.cpp",
     "ui/screens/ContentManagerScene.cpp",
@@ -32903,6 +33711,7 @@
   {
    "fr": "version {0}",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
@@ -33174,6 +33983,7 @@
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
     "game/powers/PowerStats.cpp",
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/BossStatsScene.cpp"
    ]
   },
@@ -34971,7 +35781,9 @@
   {
    "fr": "{0} cœur",
    "where": [
+    "ui/screens/AdminScene.cpp",
     "ui/screens/BossTrainingScene.cpp",
+    "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/GameScene.cpp"
    ]
@@ -34979,7 +35791,9 @@
   {
    "fr": "{0} cœurs",
    "where": [
+    "ui/screens/AdminScene.cpp",
     "ui/screens/BossTrainingScene.cpp",
+    "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/GameScene.cpp"
    ]
@@ -35268,6 +36082,18 @@
     "game/progression/Progression.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} imposé",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} imposés",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -35646,6 +36472,12 @@
    ]
   },
   {
+   "fr": "{0} refusée : {1}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} replay",
    "where": [
     "ui/screens/ReplayCompareSetupScene.cpp"
@@ -35763,6 +36595,18 @@
    "fr": "{0} sur le fantôme",
    "where": [
     "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} sur {1} emplacement · le joueur part avec ces pouvoirs, à la place de ceux du niveau",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "{0} sur {1} emplacements · le joueur part avec ces pouvoirs, à la place de ceux du niveau",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -36107,6 +36951,24 @@
    "fr": "« Afficher les pseudonymes » désactivé : les autres joueurs apparaissent sous la forme « Joueur n°X » (diffusion en direct). « Économie » limite le nombre de marqueurs et ne télécharge pas les avatars personnalisés.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "« Finir le niveau » demande un niveau dont le parcours est tracé (comme les niveaux EXTRÊME).",
+   "where": [
+    "server/src/adminChallenges.ts"
+   ]
+  },
+  {
+   "fr": "« Finir le niveau » demande un niveau dont le parcours est tracé.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "« Finir le niveau » sans parcours tracé",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -37040,6 +37902,12 @@
    "fr": "Éditeur de niveaux refait en panneaux fixes : menus Fichier et Tester (depuis le début, la vue ou la sélection), explorateur à gauche (par calque ou par type), bibliothèque et entité à droite.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Éditeur du défi",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
