@@ -76,6 +76,27 @@ public:
     /// Unlocks what is done, saves, and announces the new ones (`announce` false: silently,
     /// e.g. the first check of saves made before achievements existed... still listed).
     void checkAchievements(bool announce = true);
+
+    // 2.47: an account is private to this computer (docs/online/DEVICES.md). One progression
+    // on the computer, connected or not: what is played in local mode (logged out) goes to the
+    // account at the next login, with a summary; copies of the progression are sent to the
+    // server (after the runs, at most every 10 minutes, at each login, and on demand).
+    /// Hooks of OnlineService (main.cpp).
+    void noteSessionStarted();
+    void noteLoggedOut();
+    /// At startup: a computer bound to an account but logged out plays in local mode.
+    void noteStartedLocal();
+    /// What was played in local mode since the logout, set at the login (levels, runs to send,
+    /// achievements, stars, minutes); null when nothing new. Shown once, then cleared.
+    Json reconnectSummary;
+    /// The copy as the server keeps it: {format, game_version, summary, files}.
+    Json progressCopyBody() const;
+    void sendProgressCopy(std::function<void(const ApiResult&)> done = {});
+    /// Every frame: sends a copy when one is due (connected, 10 minutes after the last one).
+    void updateProgressCopy(float dt);
+    bool progressCopyDue = false;
+    float progressCopyWait_ = 20.0f;
+    bool progressCopyBusy_ = false;
     /// Collection (2.19): cosmetic rewards unlocked by the stars, equipped items, and the
     /// discoveries of the jukebox and the gallery. Display only.
     CosmeticCatalog cosmetics;

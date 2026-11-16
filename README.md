@@ -5,6 +5,14 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.47.0** :
+* **Un compte, un ordinateur** : le compte se lie à son ordinateur ; une connexion depuis un autre
+  est refusée et signalée (alerte « Sécurité »), un seul compte par ordinateur.
+* **Local et en ligne** : déconnecté, on joue en local ; à la reconnexion, « De retour en ligne »
+  montre ce qui part au compte. Copie en ligne de la progression (EN LIGNE › PARAMÈTRES › Cet ordinateur).
+* **Administration** : délier un compte ou le lier au nouvel ordinateur d'un joueur.
+* Éditeur d'entités : le bandeau « lecture seule » des entités natives reprend celui de l'éditeur de niveaux.
+
 **Nouveau dans la version 2.46.0** :
 * **Entités natives en lecture seule** dans l'éditeur d'ennemis (EN LIGNE › ATELIER), avec
   « Dupliquer pour modifier ».

@@ -55,6 +55,7 @@ void OnlineService::init(const OnlineSettings& settings, const std::string& serv
     cache_ = OnlineCache(userDir_ / "online" / "cache");
     attempts_ = AttemptStore(userDir_ / "saves" / "online_attempts.json", userDir_ / "online" / "replays");
     attempts_.load();
+    device_ = DeviceIdentity::loadOrCreate(userDir_ / "online" / "device.json");
     loadKnownRanks();
     loadFriendNotices();
     if (auto t = FileUtil::readText(userDir_ / "online" / "community_installs.json")) {
@@ -410,24 +411,50 @@ void OnlineService::applySession(const Json& data, bool remember) {
     }
     if (remember) store_->save(tokens_, config_.serverUrl);
     else store_->erase();
+    // 2.47: this computer is now bound to this account (the server bound it, or checked it).
+    if (!tokens_.playerId.empty() && (device_.boundPlayer != tokens_.playerId || device_.boundUsername != tokens_.username)) {
+        device_.boundPlayer = tokens_.playerId;
+        device_.boundUsername = tokens_.username;
+        device_.save(userDir_ / "online" / "device.json");
+    }
+}
+
+void OnlineService::renameDevice(const std::string& name, ApiCallback cb) {
+    std::string clean = DeviceIdentity::cleanName(name);
+    if (clean.empty()) {
+        if (cb) cb(localError("VALIDATION_ERROR", "Nom de l'ordinateur : de 1 à 40 caractères."));
+        return;
+    }
+    device_.name = clean;
+    device_.save(userDir_ / "online" / "device.json");
+    if (!loggedIn() || !usable()) {
+        if (cb) cb(localError("OFFLINE", "Nom gardé sur cet ordinateur."));
+        return;
+    }
+    send("PATCH", "/api/v1/players/me/device", {{"name", clean}}, cb);
 }
 
 // ------------------------------------------------------------------ account
 
 void OnlineService::registerAccount(const Json& form, bool remember, ApiCallback cb) {
-    call("POST", "/api/v1/auth/register", form.dump(), "application/json", false, [this, remember, cb](const ApiResult& r) {
+    Json body = form;
+    body["device"] = device_.toApi();  // 2.47: the account is bound to this computer
+    call("POST", "/api/v1/auth/register", body.dump(), "application/json", false, [this, remember, cb](const ApiResult& r) {
         if (r.ok) {
             applySession(r.data, remember);
             notify(Notification::Kind::Success, "Compte créé", "Bienvenue dans Cosmic Online, " + tokens_.username + " !");
+            if (onSessionStarted) onSessionStarted();
         }
         if (cb) cb(r);
     });
 }
 
 void OnlineService::login(const std::string& username, const std::string& password, bool remember, ApiCallback cb) {
-    Json body = {{"username", username}, {"password", password}};
+    Json body = {{"username", username}, {"password", password}, {"device", device_.toApi()}};
     call("POST", "/api/v1/auth/login", body.dump(), "application/json", false, [this, remember, cb](const ApiResult& r) {
         if (r.ok) {
+            // 2.47: what was played in local mode goes to the account (summary: GameServices).
+            if (onSessionStarted) onSessionStarted();
             applySession(r.data, remember);
             notify(Notification::Kind::Success, "Connecté", "Connecté en tant que " + tokens_.username + ".");
             if (settings_.autoSync && unsentCount() > 0) syncNow();
@@ -448,6 +475,7 @@ void OnlineService::logout(bool allDevices, ApiCallback cb) {
         tokens_.clear();
         profile_ = Json();
         store_->erase();
+        if (onLoggedOut) onLoggedOut();
         if (cb) cb(r);
     };
     if (!usable()) {
@@ -513,6 +541,10 @@ void OnlineService::deleteAccount(const std::string& password, ApiCallback cb) {
             store_->erase();
             attempts_.removeOwner(owner);
             saveAttempts();
+            // 2.47: the account is gone, this computer is free again.
+            device_.boundPlayer.clear();
+            device_.boundUsername.clear();
+            device_.save(userDir_ / "online" / "device.json");
             cache_.clear();
             levelRatings_.clear();
             saveLevelRatings();

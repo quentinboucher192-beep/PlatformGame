@@ -302,7 +302,8 @@ export async function putNotificationSettings(ctx: Ctx): Promise<Response> {
         else if (on === false) off.add(k);
     }
     v.done();
-    const list = [...off].filter((k) => (NOTIFICATION_KINDS as readonly string[]).includes(k)).sort();
+    // 2.47: the security alerts are never turned off.
+    const list = [...off].filter((k) => k !== "security" && (NOTIFICATION_KINDS as readonly string[]).includes(k)).sort();
     await ctx.env.DB.prepare("UPDATE players SET notifications_off = ?2 WHERE id = ?1").bind(auth.player.id, list.join(",")).run();
     return json(ctx, { settings: Object.fromEntries(NOTIFICATION_KINDS.map((k) => [k, !list.includes(k)])) });
 }

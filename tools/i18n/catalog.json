@@ -539,6 +539,12 @@
    ]
   },
   {
+   "fr": "a délié {0} de son ordinateur",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "A en avance",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -552,6 +558,12 @@
   },
   {
    "fr": "a fixé les récompenses du défi {0} : {1}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a lié {0} à un nouvel ordinateur",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -1387,9 +1399,21 @@
    ]
   },
   {
+   "fr": "Alerte de sécurité sur votre compte.",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "Alerte les ennemis proches",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Alertes de sécurité",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
    ]
   },
   {
@@ -2691,6 +2715,12 @@
    ]
   },
   {
+   "fr": "Aucun compte n'est lié à cet ordinateur : le premier compte créé ou connecté ici le sera, et ne pourra plus servir ailleurs.",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
    "fr": "Aucun créateur ne correspond.",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -2925,6 +2955,12 @@
    ]
   },
   {
+   "fr": "Aucun ordinateur lié (le compte se liera à sa prochaine connexion).",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun package installé.",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
@@ -3114,6 +3150,12 @@
    ]
   },
   {
+   "fr": "Aucune alerte.",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
    "fr": "Aucune arène trouvée pour ce boss.",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
@@ -3135,6 +3177,12 @@
    "fr": "Aucune combinaison en service : « Archivées » montre les {0} combinaisons archivées.",
    "where": [
     "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune copie pour l'instant : elle part après la prochaine partie.",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
    ]
   },
   {
@@ -3286,6 +3334,12 @@
    "fr": "Aucune version nommée pour l'instant.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune.",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -4225,6 +4279,7 @@
   {
    "fr": "booléen attendu",
    "where": [
+    "server/src/achievements.ts",
     "server/src/race.ts"
    ]
   },
@@ -5092,6 +5147,12 @@
    ]
   },
   {
+   "fr": "Ce compte est lié à un autre ordinateur : il ne s'utilise que sur l'ordinateur où il a été créé.",
+   "where": [
+    "server/src/devices.ts"
+   ]
+  },
+  {
    "fr": "Ce compte est suspendu : il ne peut pas devenir admin.",
    "where": [
     "server/src/adminRoles.ts"
@@ -5108,6 +5169,12 @@
    "where": [
     "editors/enemy_editor/EnemyEditorPublish.cpp",
     "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "Ce compte n'est lié à aucun ordinateur.",
+   "where": [
+    "server/src/devices.ts"
    ]
   },
   {
@@ -5721,6 +5788,44 @@
    ]
   },
   {
+   "fr": "Cet ordinateur",
+   "where": [
+    "ui/screens/OnlineComputer.cpp",
+    "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "cet ordinateur",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
+   "fr": "Cet ordinateur est déjà lié à un compte : un seul compte par ordinateur.",
+   "where": [
+    "server/src/auth.ts",
+    "server/src/devices.ts"
+   ]
+  },
+  {
+   "fr": "Cet ordinateur est lié au compte « {0} » : aucun autre compte ne peut s'y connecter ni y être créé.",
+   "where": [
+    "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "Cet ordinateur est lié au compte « {0} » : seul ce compte peut s'y connecter. Déconnecté, vous jouez en local ; à la reconnexion, tout est rechargé dans le compte.",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
+   "fr": "Cet ordinateur est lié au compte « {0} » : un seul compte par ordinateur.",
+   "where": [
+    "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
    "fr": "Cette barrière de phase semble traversable... par téléportation.",
    "where": [
     "game/gameplay/entities/PlatformEntities.cpp"
@@ -5991,6 +6096,12 @@
    "fr": "Changer les réglages",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Chaque action est inscrite au Journal et le joueur reçoit une notification « Sécurité ».",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -7091,6 +7202,7 @@
   {
    "fr": "collection",
    "where": [
+    "game/GameServices.cpp",
     "ui/screens/MainMenuScene.cpp"
    ]
   },
@@ -7591,6 +7703,7 @@
   {
    "fr": "Compte",
    "where": [
+    "ui/screens/AdminScene.cpp",
     "ui/screens/OnlineAccountScene.cpp"
    ]
   },
@@ -7622,6 +7735,18 @@
    "fr": "Compte et données en ligne supprimés.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Compte lié à cet ordinateur",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
+   "fr": "Compte lié à « {0} »",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
    ]
   },
   {
@@ -8034,6 +8159,18 @@
    ]
   },
   {
+   "fr": "Connexion refusée depuis un autre ordinateur",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
+   "fr": "Connexion refusée depuis un autre ordinateur{0} : quelqu'un a saisi votre mot de passe.",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "Connexion rétablie",
    "where": [
     "game/online/OnlineService.cpp"
@@ -8055,6 +8192,12 @@
    "fr": "Connexion à la partie de {0}…",
    "where": [
     "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
+   "fr": "Connexions refusées depuis un autre ordinateur{0} : {1} tentatives avec votre mot de passe.",
+   "where": [
+    "server/src/notifications.ts"
    ]
   },
   {
@@ -8126,7 +8269,8 @@
    "fr": "Continuer",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
-    "ui/screens/MainMenuScene.cpp"
+    "ui/screens/MainMenuScene.cpp",
+    "ui/screens/OnlineComputer.cpp"
    ]
   },
   {
@@ -8185,6 +8329,12 @@
    ]
   },
   {
+   "fr": "Copie de la progression envoyée.",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
    "fr": "Copie de sécurité de l'état actuel…",
    "where": [
     "server/src/backups.ts"
@@ -8218,6 +8368,18 @@
    "fr": "Copie en cours…",
    "where": [
     "ui/screens/AdminBackups.cpp"
+   ]
+  },
+  {
+   "fr": "Copie en ligne de la progression",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
+   "fr": "Copie impossible : connectez-vous à Cosmic Online.",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
    ]
   },
   {
@@ -9516,6 +9678,12 @@
    ]
   },
   {
+   "fr": "de 1 à {0} caractères",
+   "where": [
+    "server/src/devices.ts"
+   ]
+  },
+  {
    "fr": "de 1 à {0} caractères : lettres, chiffres, ponctuation et espaces",
    "where": [
     "server/src/adminChallenges.ts",
@@ -9523,10 +9691,22 @@
    ]
   },
   {
+   "fr": "de jeu",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
    "fr": "de la semaine {0}",
    "where": [
     "server/src/notifications.ts",
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "DE RETOUR EN LIGNE",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
    ]
   },
   {
@@ -9725,6 +9905,12 @@
    "fr": "Dernière ascension",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "Dernière copie : {0} ({1}, {2}). Envoyée après les parties, au plus toutes les 10 minutes.",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
    ]
   },
   {
@@ -10781,6 +10967,12 @@
    ]
   },
   {
+   "fr": "Déconnecté, vous jouez en local : la progression continue ici. À la reconnexion, tout est rechargé dans le compte (succès, temps en attente, tenue) et une copie de la progression est envoyée.",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
    "fr": "Déconnecté.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
@@ -11373,6 +11565,18 @@
    "fr": "délai {0} s",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Délier (nouvel ordinateur autorisé)",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Délié : la prochaine connexion, depuis n'importe quel ordinateur, le liera de nouveau.",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -11973,6 +12177,12 @@
    ]
   },
   {
+   "fr": "EN LIGNE › PARAMÈTRES › Cet ordinateur : nom de l'ordinateur, copie en ligne de la progression, alertes de sécurité.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "En ligne → PROJETS : des niveaux construits à plusieurs, avec des rôles (lecteur, testeur, éditeur, administrateur, propriétaire) vérifiés par le serveur.",
    "where": [
     "data/news/changelog.json"
@@ -12324,9 +12534,9 @@
    ]
   },
   {
-   "fr": "Entité native de la campagne : lecture seule",
+   "fr": "Entité native de la campagne — lecture seule",
    "where": [
-    "editors/enemy_editor/EnemyEditorProperties.cpp"
+    "editors/enemy_editor/EnemyEditorScene.cpp"
    ]
   },
   {
@@ -12599,6 +12809,12 @@
    "fr": "Envoyer mes modifications",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Envoyer une copie maintenant",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
    ]
   },
   {
@@ -13159,6 +13375,7 @@
     "game/levels/EventSystem.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/AdminCalendar.cpp",
+    "ui/screens/AdminScene.cpp",
     "ui/screens/CommunityPublishScene.cpp",
     "ui/screens/GhostOptionsScene.cpp",
     "ui/screens/OnlineSettingsScene.cpp",
@@ -13792,6 +14009,7 @@
   {
    "fr": "format",
    "where": [
+    "game/GameServices.cpp",
     "game/achievements/Achievements.cpp",
     "game/content/ContentDatabase.cpp",
     "game/ghost/Ghost.cpp",
@@ -13803,6 +14021,7 @@
     "game/levels/RatingService.cpp",
     "game/online/CampaignRevisions.cpp",
     "game/online/DailyChallenges.cpp",
+    "game/online/DeviceIdentity.cpp",
     "game/online/EnemyRevisions.cpp",
     "game/online/LevelFingerprint.cpp",
     "game/online/OnlineCache.cpp",
@@ -15419,6 +15638,8 @@
     "game/levels/LevelData.cpp",
     "game/online/CampaignRevisions.cpp",
     "game/online/DailyChallenges.cpp",
+    "game/online/DeviceIdentity.cpp",
+    "game/online/DeviceIdentity.h",
     "game/online/EnemyRevisions.cpp",
     "game/online/LevelFingerprint.cpp",
     "game/online/LiveSession.cpp",
@@ -15511,6 +15732,12 @@
    "fr": "identifiant du défi invalide",
    "where": [
     "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
+   "fr": "identifiant invalide",
+   "where": [
+    "server/src/devices.ts"
    ]
   },
   {
@@ -16537,6 +16764,7 @@
    "where": [
     "server/src/adminRoles.ts",
     "server/src/creators.ts",
+    "server/src/devices.ts",
     "server/src/friends.ts",
     "server/src/players.ts",
     "server/src/projects.ts",
@@ -19097,6 +19325,13 @@
    ]
   },
   {
+   "fr": "Lecture…",
+   "where": [
+    "ui/screens/AdminScene.cpp",
+    "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
    "fr": "Les 12 gardiens sans être touché.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -19587,6 +19822,12 @@
    ]
   },
   {
+   "fr": "Les temps passent par la vérification habituelle avant d'entrer dans les classements. Une copie de la progression part dans quelques secondes.",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
    "fr": "Les Tisseuses crachent des toiles qui ralentissent : gardez vos distances.",
    "where": [
     "data/levels/glacior_02.json"
@@ -19783,6 +20024,12 @@
    "fr": "Lier {0}",
    "where": [
     "editors/level_editor/LevelEditorViewport.cpp"
+   ]
+  },
+  {
+   "fr": "Lier à cet ordinateur",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -20048,6 +20295,18 @@
    ]
   },
   {
+   "fr": "Lié depuis le {0}. {1}",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
+   "fr": "Lié à « {0} » depuis le {1}.",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "LOCAL",
    "where": [
     "game/online/OnlineRecord.cpp",
@@ -20066,6 +20325,12 @@
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp",
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Local et en ligne : déconnecté, vous jouez en local ; à la reconnexion, « De retour en ligne » montre ce qui part au compte (niveaux, temps, succès).",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -21140,6 +21405,12 @@
    ]
   },
   {
+   "fr": "Mettez le jeu à jour : un compte est maintenant lié à un seul ordinateur (version 2.47).",
+   "where": [
+    "server/src/devices.ts"
+   ]
+  },
+  {
    "fr": "Mettez le jeu à jour pour regarder sa partie de « {0} ».",
    "where": [
     "ui/screens/SpectateScene.cpp"
@@ -21200,6 +21471,13 @@
    "fr": "Mini-boss (phases, jauge de vie)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "minutes",
+   "where": [
+    "game/GameServices.cpp",
+    "ui/screens/OnlineComputer.cpp"
    ]
   },
   {
@@ -21512,6 +21790,12 @@
    ]
   },
   {
+   "fr": "Mon compte et son ordinateur (connexion refusée ailleurs…)",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
    "fr": "Mon meilleur",
    "where": [
     "ui/screens/SegmentsScene.cpp"
@@ -21552,6 +21836,13 @@
    "fr": "Mon niveau choisi comme défi du jour",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Mon ordinateur",
+   "where": [
+    "game/online/DeviceIdentity.h",
+    "ui/screens/OnlineComputer.cpp"
    ]
   },
   {
@@ -22260,6 +22551,12 @@
    ]
   },
   {
+   "fr": "niveau fini",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
    "fr": "Niveau hors campagne",
    "where": [
     "ui/screens/BossStatsScene.cpp"
@@ -22559,6 +22856,12 @@
    ]
   },
   {
+   "fr": "niveaux finis",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
    "fr": "Niveaux importés",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
@@ -22616,6 +22919,18 @@
    ]
   },
   {
+   "fr": "Nom de l'ordinateur",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
+   "fr": "Nom de l'ordinateur : de 1 à 40 caractères.",
+   "where": [
+    "game/online/OnlineService.cpp"
+   ]
+  },
+  {
    "fr": "Nom de la combinaison (32 caractères au plus)",
    "where": [
     "ui/screens/AdminCreations.cpp"
@@ -22661,6 +22976,12 @@
    "fr": "Nom et temps au-dessus des fantômes",
    "where": [
     "ui/screens/GhostOptionsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Nom gardé sur cet ordinateur.",
+   "where": [
+    "game/online/OnlineService.cpp"
    ]
   },
   {
@@ -24107,6 +24428,24 @@
    ]
   },
   {
+   "fr": "Ordinateur",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ordinateur de {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ordinateur renommé « {0} ».",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
    "fr": "Ordre (z)",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
@@ -25284,6 +25623,12 @@
    "fr": "Peloton",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Pendant la déconnexion, vous avez joué en local. C'est maintenant dans le compte « {0} » :",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
    ]
   },
   {
@@ -28554,6 +28899,7 @@
    "where": [
     "editors/enemy_editor/EnemyEditorPublish.cpp",
     "editors/level_editor/LevelEditorCampaign.cpp",
+    "game/GameServices.cpp",
     "game/ghost/GhostStore.cpp",
     "game/records/Records.cpp",
     "ui/screens/AdminCampaign.cpp",
@@ -29092,6 +29438,7 @@
   {
    "fr": "Renommer",
    "where": [
+    "ui/screens/OnlineComputer.cpp",
     "ui/screens/SocialScene.cpp"
    ]
   },
@@ -30084,9 +30431,11 @@
   {
    "fr": "runs",
    "where": [
+    "game/GameServices.cpp",
     "game/ghost/SegmentHistory.cpp",
     "game/online/DailyChallenges.cpp",
-    "game/online/Spectate.cpp"
+    "game/online/Spectate.cpp",
+    "ui/screens/OnlineComputer.cpp"
    ]
   },
   {
@@ -30850,6 +31199,12 @@
    ]
   },
   {
+   "fr": "Rôle · ordinateur",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Rôles",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -31483,6 +31838,12 @@
    ]
   },
   {
+   "fr": "Se déconnecter (jouer en local)",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
    "fr": "Se reforme au checkpoint",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -31760,12 +32121,6 @@
   },
   {
    "fr": "Ses réglages se modifient ici. Ses planches d'animation et la durée de leurs images restent celles du jeu (lecture seule). « Publier… » met la définition en ligne.",
-   "where": [
-    "editors/enemy_editor/EnemyEditorProperties.cpp"
-   ]
-  },
-  {
-   "fr": "Ses réglages sont visibles mais ne se modifient pas. « Dupliquer pour modifier » crée votre copie, que vous pourrez changer.",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
@@ -33025,6 +33380,12 @@
    ]
   },
   {
+   "fr": "succès (+{0} étoiles)",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
    "fr": "Succès : 134 succès en 12 catégories avec des étoiles de difficulté (344 étoiles), sur une toile d'araignée avec zoom (menu principal → Succès) ou en liste. Les étoiles apparaissent sur votre profil en ligne, comme déclarées par le jeu.",
    "where": [
     "data/news/changelog.json"
@@ -33515,6 +33876,12 @@
    "fr": "Sève et ronces",
    "where": [
     "game/gameplay/BeamRenderer.cpp"
+   ]
+  },
+  {
+   "fr": "Sécurité",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
    ]
   },
   {
@@ -34058,6 +34425,12 @@
    ]
   },
   {
+   "fr": "temps à envoyer aux classements",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
    "fr": "Temps écoulé !",
    "where": [
     "game/gameplay/GameWorld.cpp"
@@ -34118,7 +34491,14 @@
   {
    "fr": "Tentative introuvable.",
    "where": [
+    "server/src/devices.ts",
     "server/src/race.ts"
+   ]
+  },
+  {
+   "fr": "Tentatives refusées depuis un autre ordinateur",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -35934,6 +36314,18 @@
    ]
   },
   {
+   "fr": "Un admin a délié votre compte de son ordinateur : la prochaine connexion, depuis n'importe quel ordinateur, le liera de nouveau.",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Un admin a lié votre compte à un nouvel ordinateur.",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "Un ancien membre",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -36023,6 +36415,12 @@
     "ui/screens/AdminCampaign.cpp",
     "ui/screens/AdminEnemies.cpp",
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Un compte, un ordinateur : votre compte se lie à cet ordinateur. Une connexion depuis un autre est refusée et vous recevez une alerte « Sécurité » ; un seul compte par ordinateur.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -36630,6 +37028,12 @@
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Une seule progression sur cet ordinateur",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
    ]
   },
   {
@@ -38059,6 +38463,12 @@
    ]
   },
   {
+   "fr": "Voir le compte",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
    "fr": "Voir le niveau",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -38215,6 +38625,18 @@
    "fr": "Votre choix, retenu pour ce segment.",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre compte est maintenant lié à cet ordinateur (« {0} ») : il ne s'utilise plus ailleurs.",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Votre compte est maintenant lié à un nouvel ordinateur (« {0} »).",
+   "where": [
+    "server/src/notifications.ts"
    ]
   },
   {
@@ -38487,6 +38909,12 @@
    ]
   },
   {
+   "fr": "Vous jouez maintenant en local : à la prochaine connexion, ce que vous ferez sera rechargé dans le compte.",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
    "fr": "Vous n'avez aucun niveau personnel : créez d'abord un niveau dans l'ATELIER → Mes niveaux, puis faites-en un projet.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -38706,6 +39134,12 @@
    "fr": "Vous possédez déjà {0} projets.",
    "where": [
     "server/src/projects.ts"
+   ]
+  },
+  {
+   "fr": "Vous pouvez l'explorer et la tester dans l'arène ; pour la modifier, faites-en votre copie.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorScene.cpp"
    ]
   },
   {
@@ -40075,6 +40509,12 @@
    ]
   },
   {
+   "fr": "{0} est délié : sa prochaine connexion le liera de nouveau.",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} est gardé sur ce PC : à regarder sans connexion dans Collection › Replays.",
    "where": [
     "game/online/ReplayDownloads.cpp"
@@ -40084,6 +40524,12 @@
    "fr": "{0} est hors des limites du niveau",
    "where": [
     "editors/level_editor/LevelEditorTools.cpp"
+   ]
+  },
+  {
+   "fr": "{0} est lié à cet ordinateur.",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -40339,7 +40785,8 @@
    "fr": "{0} min",
    "where": [
     "game/progression/Progression.cpp",
-    "ui/screens/MainMenuScene.cpp"
+    "ui/screens/MainMenuScene.cpp",
+    "ui/screens/OnlineComputer.cpp"
    ]
   },
   {
@@ -40449,6 +40896,12 @@
    ]
   },
   {
+   "fr": "{0} niveau fini",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
    "fr": "{0} niveau publié",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -40476,6 +40929,12 @@
    "fr": "{0} niveaux de la campagne utilisent « {1} » : chacun reçoit une nouvelle révision (même contenu, avec cette définition, note recalculée). Cochée, « Réinitialiser les records » lui donne de nouveaux classements ; décochée, ses meilleurs temps y sont reportés.",
    "where": [
     "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
+   "fr": "{0} niveaux finis",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
    ]
   },
   {
@@ -40746,6 +41205,12 @@
    "fr": "{0} semaines de suite",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "{0} succès",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
    ]
   },
   {
@@ -41398,6 +41863,12 @@
    "fr": "« {0} » et « {1} » se chevauchent : déplacez ou réduisez l'un des deux pour enregistrer.",
    "where": [
     "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "« {0} » ne s'utilise que sur cet ordinateur, et aucun autre compte ne peut s'y connecter ni y être créé.",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
    ]
   },
   {
@@ -42308,6 +42779,12 @@
    "fr": "ÉDITEUR D'ENNEMIS · ADMINISTRATION",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Éditeur d'entités : les entités natives ont le même bandeau « lecture seule » que les niveaux de la campagne, avec « Dupliquer pour modifier ».",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {

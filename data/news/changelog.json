@@ -1,4 +1,10 @@
 {
+  "2.47.0": [
+    "Un compte, un ordinateur : votre compte se lie à cet ordinateur. Une connexion depuis un autre est refusée et vous recevez une alerte « Sécurité » ; un seul compte par ordinateur.",
+    "Local et en ligne : déconnecté, vous jouez en local ; à la reconnexion, « De retour en ligne » montre ce qui part au compte (niveaux, temps, succès).",
+    "EN LIGNE › PARAMÈTRES › Cet ordinateur : nom de l'ordinateur, copie en ligne de la progression, alertes de sécurité.",
+    "Éditeur d'entités : les entités natives ont le même bandeau « lecture seule » que les niveaux de la campagne, avec « Dupliquer pour modifier »."
+  ],
   "2.46.0": [
     "Éditeur d'ennemis (EN LIGNE › ATELIER) : les entités natives sont en lecture seule ; « Dupliquer pour modifier » crée votre copie, que vous modifiez librement.",
     "Administration › Ennemis : un admin modifie une entité native et publie une révision ; chaque niveau de la campagne qui l'utilise reçoit une nouvelle révision, avec une case par niveau pour réinitialiser ses records ou les garder.",

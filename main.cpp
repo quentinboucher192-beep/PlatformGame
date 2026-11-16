@@ -472,6 +472,11 @@ int main(int argc, char** argv) {
     game.onlineFocus = value("--online-focus");
     game.onlineOpen = value("--online-open");
     game.online.init(game.settings.online, value("--online-server"));
+    // 2.47: local and online. What is played logged out (local mode) is summed up at the next
+    // login, and copies of the progression go to the account.
+    game.online.onSessionStarted = [&game] { game.noteSessionStarted(); };
+    game.online.onLoggedOut = [&game] { game.noteLoggedOut(); };
+    game.noteStartedLocal();
     // 2.45: the campaign revisions published online (kept ones at once, offline too; the
     // manifest read when Cosmic Online is on and the window is real).
     game.startCampaignRevisions(!has("--headless") || has("--realtime"));
@@ -570,6 +575,7 @@ int main(int argc, char** argv) {
         game.ratings.poll();
         game.news.poll(game.content, game.records, COSMIC_VERSION_STRING);
         game.online.update(dt);
+        game.updateProgressCopy(dt);  // 2.47: copies of the progression
         game.replayDownloads.update();
         game.challenges.update(dt);
         game.updateCampaignRevisions(dt);

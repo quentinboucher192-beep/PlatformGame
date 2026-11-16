@@ -50,7 +50,7 @@ void EnemyEditorScene::drawProperties(const Rect& r) {
     ui.tabs("tabs", {r.x + ui.s(8), r.y + ui.s(8), r.w - ui.s(16), ui.s(44)}, tabs, tab_);
     Rect area{r.x, r.y + ui.s(60), r.w, r.h - ui.s(70)};
     const EnemyEditAccess acc = access();
-    if (acc.readOnly() || admin_) {
+    if (admin_) {  // (a native for the player: the read-only banner above the preview)
         // 2.45: a native is read-only for the player (the campaign's: usable everywhere, never
         // modified); in the administration its definition is published online.
         std::string head, hint;
@@ -65,9 +65,6 @@ void EnemyEditorScene::drawProperties(const Rect& r) {
             hint = "Ses réglages se modifient ici. Ses planches d'animation et la durée de leurs images restent celles du jeu (lecture seule). "
                    "« Publier… » met la définition en ligne.";
             col = ui.theme().warm;
-        } else {
-            head = "Entité native de la campagne : lecture seule";
-            hint = "Ses réglages sont visibles mais ne se modifient pas. « Dupliquer pour modifier » crée votre copie, que vous pourrez changer.";
         }
         const float bw = r.w - ui.s(20), tw = bw - ui.s(24);
         const float hs = ui.fitFont(head, FontFace::Bold, 19.0f, tw);

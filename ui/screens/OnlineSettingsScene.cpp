@@ -8,6 +8,7 @@
 #include "game/GameServices.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/OnlineComputer.h"
 
 namespace cosmic {
 
@@ -15,13 +16,15 @@ namespace {
 
 class OnlineSettingsScene : public Scene {
 public:
-    OnlineSettingsScene(GameServices& g, int tab) : g_(g), ui_(g), tab_(std::clamp(tab, 0, 2)) {}
+    OnlineSettingsScene(GameServices& g, int tab)
+        : g_(g), ui_(g), computer_(g, ui_, [this](const std::string& m, bool e) { say(m, e); }), tab_(std::clamp(tab, 0, 3)) {}
 
     bool isOverlay() const override { return true; }
 
     void onEnter() override {
         loadProfileFields();
         if (tab_ == 2) loadFriends();
+        if (tab_ == 3) computer_.enter();
         g_.ui.setFocus("osettings/tabs");
         if (g_.online.loggedIn()) g_.online.refreshProfile(OnlineService::guard(life_, [this](const ApiResult& r) {
             if (r.ok) loadProfileFields();
@@ -48,16 +51,18 @@ public:
             return;
         }
         int tab = tab_;
-        ui.tabs("tabs", {box_.x + ui.s(30), box_.y + ui.s(78), box_.w - ui.s(60), ui.s(42)}, {"Préférences", "Compte et confidentialité", friendsTabLabel()}, tab);
+        ui.tabs("tabs", {box_.x + ui.s(30), box_.y + ui.s(78), box_.w - ui.s(60), ui.s(42)}, {"Préférences", "Compte et confidentialité", friendsTabLabel(), "Cet ordinateur"}, tab);
         if (tab != tab_) {
             tab_ = tab;
             message_.clear();
             if (tab_ == 2) loadFriends();
+            if (tab_ == 3) computer_.enter();  // 2.47
         }
         content_ = {box_.x + ui.s(36), box_.y + ui.s(138), box_.w - ui.s(72), box_.h - ui.s(196)};
         if (tab_ == 0) preferences();
         else if (tab_ == 1) account();
-        else friends();
+        else if (tab_ == 2) friends();
+        else computer_.draw(content_);
         if (!message_.empty())
             ui.labelWrapped(message_, {box_.x + ui.s(36), box_.bottom() - ui.s(46)}, box_.w - ui.s(72), 16,
                             messageError_ ? ui.theme().danger : ui.theme().success);
@@ -372,6 +377,7 @@ private:
 
     GameServices& g_;
     OnlineUi ui_;
+    OnlineComputerTab computer_;  // 2.47: « Cet ordinateur »
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     Rect box_, content_;
     float t_ = 0.0f;

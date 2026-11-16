@@ -11,6 +11,7 @@
 
 #include "engine/core/Json.h"
 #include "engine/core/Paths.h"
+#include "game/online/DeviceIdentity.h"
 #include "game/online/LevelFingerprint.h"
 #include "game/online/LevelRatings.h"
 #include "game/online/OnlineCache.h"
@@ -72,6 +73,14 @@ public:
     /// ADMINISTRATION entry; the server checks the role again on every admin request.
     bool isAdmin() const { return loggedIn() && profile_.is_object() && jstr(profile_, "role") == "admin"; }
     std::string username() const { return tokens_.username; }
+    /// 2.47: this computer (its random id, its name) and the account it is bound to: one
+    /// account per computer, an account usable on its own computer only (docs/online/DEVICES.md).
+    const DeviceIdentity& device() const { return device_; }
+    /// Renames this computer (here, and on the server when connected).
+    void renameDevice(const std::string& name, ApiCallback cb = {});
+    /// Called after a login or a registration (the session is open), and after a logout.
+    std::function<void()> onSessionStarted;
+    std::function<void()> onLoggedOut;
     const std::string& lastError() const { return lastError_; }
     size_t requestsInFlight() const { return client_ ? client_->pending() : 0; }
     const char* transportName() const { return client_ ? client_->transportName() : "aucun"; }
@@ -329,6 +338,7 @@ private:
     /// {"player": id, "levels": {key: seconds}} (online/playtime.json).
     Json playtime_ = Json::object();
     float playtimeTimer_ = 20.0f;
+    DeviceIdentity device_;  // 2.47 (online/device.json)
     std::vector<std::string> achievements_;
     std::string achievementsSentFor_;  // player whose profile has the current list
     bool achievementsBusy_ = false;

@@ -173,7 +173,7 @@ public:
         UIContext& ui = g_.ui;
         ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
         bg_.render(g_, 0.6f);
-        const bool modal = !confirmId_.empty() || calendar_.modal() || backups_.modal() || campaign_.modal();
+        const bool modal = !confirmId_.empty() || devicePlayer_.is_object() || calendar_.modal() || backups_.modal() || campaign_.modal();
         const bool top = g_.app.topScene() == this;
         ui.inputEnabled = top && !modal;
         // 2.41: wider (the calendar's eight columns and its editor side by side).
@@ -256,6 +256,7 @@ public:
         ui.popId();
         ui.inputEnabled = top;
         if (!confirmId_.empty()) drawConfirm();
+        else if (devicePlayer_.is_object()) drawDevice();  // 2.47
         else if (calendar_.modal()) calendar_.drawModal();
         else if (backups_.modal()) backups_.drawModal();
         else if (campaign_.modal()) campaign_.drawModal();
@@ -376,7 +377,7 @@ private:
         float x[8];
     };
     Columns columns(const Rect& r) const {
-        static const float share[] = {0.25f, 0.13f, 0.12f, 0.15f, 0.12f, 0.11f, 0.12f};
+        static const float share[] = {0.22f, 0.12f, 0.10f, 0.14f, 0.12f, 0.10f, 0.20f};
         Columns c{};
         c.x[0] = r.x;
         for (int i = 0; i < 7; ++i) c.x[i + 1] = c.x[i] + r.w * share[i];
@@ -467,7 +468,7 @@ private:
     void drawHeader(const Rect& r) {
         UIContext& ui = g_.ui;
         Columns c = columns(r);
-        static const char* titles[] = {"Joueur", "Pays", "Inscrit le", "Dernière activité", "Présence", "Créations", "Rôle"};
+        static const char* titles[] = {"Joueur", "Pays", "Inscrit le", "Dernière activité", "Présence", "Créations", "Rôle · ordinateur"};
         for (int i = 0; i < 7; ++i) {
             float room = c.x[i + 1] - c.x[i] - ui.s(14);
             ui.label(ui.elide(titles[i], FontFace::Bold, 14, room), {c.x[i] + ui.s(12), r.y + r.h * 0.5f}, 14, ui.theme().textDim, Align::Left,
@@ -529,8 +530,17 @@ private:
         }
         int made = jget<int>(p, "creations", 0);
         cell(c, 5, row, made == 0 ? "—" : std::to_string(made) + (made > 1 ? " niveaux" : " niveau"), made == 0 ? ui.theme().textDim : ui.theme().text);
-        // Role: a button (never one's own).
-        Rect rb{c.x[6] + ui.s(8), row.y + ui.s(8), std::min(ui.s(130), row.right() - c.x[6] - ui.s(16)), row.h - ui.s(16)};
+        // Role: a button (never one's own); 2.47: the computer the account is bound to.
+        const float colW = row.right() - c.x[6] - ui.s(16);
+        Rect rb{c.x[6] + ui.s(8), row.y + ui.s(8), std::min(ui.s(110), colW * 0.45f), row.h - ui.s(16)};
+        {
+            UIContext::ButtonStyle ds;
+            ds.small = true;
+            ds.fontSize = 15;
+            Rect db{rb.right() + ui.s(8), rb.y, std::max(0.0f, c.x[6] + ui.s(8) + colW - rb.right() - ui.s(8)), rb.h};
+            std::string label = ui.elide("Ordinateur", FontFace::Bold, 15, db.w - ui.s(16));
+            if (db.w > ui.s(60) && ui.button("device" + prefix + id, db, label, ds)) openDevice(p);
+        }
         if (me) {
             ui.label("admin", {rb.x + ui.s(4), row.y + row.h * 0.5f}, 16, ui.theme().warm, Align::Left, FontFace::Bold, VAlign::Middle);
         } else {
@@ -541,6 +551,95 @@ private:
             st.enabled = !busyRole_;
             if (ui.button("role" + prefix + id, rb, admin ? "admin" : "joueur", st)) askRole(p);
         }
+    }
+
+    // ------------------------------------------------------------- computer (2.47)
+    void openDevice(const Json& p) {
+        devicePlayer_ = p;
+        deviceData_ = Json();
+        loadDevice();
+        g_.ui.setFocus("device/close");
+    }
+
+    void loadDevice() {
+        const std::string id = jstr(devicePlayer_, "id");
+        g_.online.get("/api/v1/admin/players/" + id + "/device", OnlineService::guard(life_, [this, id](const ApiResult& r) {
+                          if (jstr(devicePlayer_, "id") != id) return;
+                          if (lostRole(r)) return;
+                          if (!r.ok) {
+                              say(r.message, true);
+                              devicePlayer_ = Json();
+                              return;
+                          }
+                          deviceData_ = r.data;
+                      }),
+                      false);
+    }
+
+    void deviceAction(const Json& body, const std::string& done) {
+        busyDevice_ = true;
+        g_.online.send("POST", "/api/v1/admin/players/" + jstr(devicePlayer_, "id") + "/device", body,
+                       OnlineService::guard(life_, [this, done](const ApiResult& r) {
+                           busyDevice_ = false;
+                           if (lostRole(r)) return;
+                           if (!r.ok) return say(r.message, true);
+                           say(done, false);
+                           loadDevice();
+                       }));
+    }
+
+    void drawDevice() {
+        UIContext& ui = g_.ui;
+        const std::string name = jstr(devicePlayer_, "username");
+        ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{2, 4, 12, 185});
+        Rect box{ui.screenW() * 0.5f - ui.s(400), ui.screenH() * 0.5f - ui.s(290), ui.s(800), ui.s(580)};
+        ui.r().fillRoundedRect(box, ui.s(18), Color{9, 14, 32, 250});
+        ui.r().drawRoundedRect(box, ui.s(18), ui.theme().accent.withAlphaF(0.6f), ui.s(1.5f));
+        ui.pushId("device");
+        float x = box.x + ui.s(32), w = box.w - ui.s(64), y = box.y + ui.s(28);
+        std::string title = "Ordinateur de " + name;
+        ui.label(title, {x, y + ui.s(16)}, ui.fitFont(title, FontFace::Title, 26, w), ui.theme().accent, Align::Left, FontFace::Title, VAlign::Middle);
+        y += ui.s(52);
+        if (!deviceData_.is_object()) {
+            ui.label("Lecture…", {x, y + ui.s(10)}, 17, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        } else {
+            const Json& d = jfield(deviceData_, "device", Json());
+            std::string bound = d.is_object() ? "Lié à « " + jstr(d, "name") + " » depuis le " + stampText(jstr(d, "bound_at")) + "."
+                                              : std::string("Aucun ordinateur lié (le compte se liera à sa prochaine connexion).");
+            if (jget<bool>(deviceData_, "rebind_allowed", false)) bound += " Délié : la prochaine connexion, depuis n'importe quel ordinateur, le liera de nouveau.";
+            y += ui.labelWrapped(bound, {x, y}, w, 17, ui.theme().text).y + ui.s(16);
+            ui.label("Tentatives refusées depuis un autre ordinateur", {x, y + ui.s(10)}, 16, ui.theme().textDim, Align::Left, FontFace::Bold, VAlign::Middle);
+            y += ui.s(28);
+            const Json& attempts = jfield(deviceData_, "attempts", Json::array());
+            if (attempts.empty()) {
+                ui.label("Aucune.", {x, y + ui.s(10)}, 16, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+                y += ui.s(30);
+            }
+            int shown = 0;
+            for (const Json& a : attempts) {
+                if (++shown > 5) break;
+                std::string c = jstr(a, "country");
+                std::string t = stampText(jstr(a, "created_at")) + (c.empty() ? std::string() : " · " + ui_.countryName(c));
+                float bw = ui.s(250);
+                ui.label(ui.elide(t, FontFace::Body, 16, w - bw - ui.s(12)), {x, y + ui.s(20)}, 16, ui.theme().text, Align::Left, FontFace::Body, VAlign::Middle);
+                UIContext::ButtonStyle st;
+                st.small = true;
+                st.enabled = !busyDevice_;
+                if (ui.button("bind" + std::to_string(jget<int64_t>(a, "id", 0)), {x + w - bw, y, bw, ui.s(40)}, "Lier à cet ordinateur", st))
+                    deviceAction(Json{{"action", "bind"}, {"attempt_id", jget<int64_t>(a, "id", 0)}}, name + " est lié à cet ordinateur.");
+                y += ui.s(48);
+            }
+            y += ui.s(6);
+            ui.labelWrapped("Chaque action est inscrite au Journal et le joueur reçoit une notification « Sécurité ».", {x, y}, w, 15, ui.theme().textDim);
+        }
+        float bh = ui.s(48), by = box.bottom() - bh - ui.s(24);
+        UIContext::ButtonStyle un;
+        un.danger = true;
+        un.enabled = !busyDevice_ && deviceData_.is_object() && !jget<bool>(deviceData_, "rebind_allowed", false);
+        if (ui.button("unbind", {x, by, ui.s(330), bh}, "Délier (nouvel ordinateur autorisé)", un))
+            deviceAction(Json{{"action", "unbind"}}, name + " est délié : sa prochaine connexion le liera de nouveau.");
+        if (ui.button("close", {box.right() - ui.s(32) - ui.s(170), by, ui.s(170), bh}, "Fermer") || ui.backPressed()) devicePlayer_ = Json();
+        ui.popId();
     }
 
     void askRole(const Json& p) {
@@ -691,6 +790,9 @@ private:
         if (action == "admin_role_granted")
             return {"Rôle", ui.theme().warm, jstr(e, "by") == "migration" ? "a nommé " + target + " premier admin (mise en service)" : "a donné le rôle admin à " + target};
         if (action == "admin_role_revoked") return {"Rôle", ui.theme().danger, "a retiré le rôle admin à " + target};
+        // 2.47: the computer an account is bound to.
+        if (action == "admin_device_unbound") return {"Compte", ui.theme().warm, "a délié " + target + " de son ordinateur"};
+        if (action == "admin_device_bound") return {"Compte", ui.theme().warm, "a lié " + target + " à un nouvel ordinateur"};
         if (action == "admin_challenge_set" && ch.is_object()) {
             // 2.41: « a choisi le défi du jour du 20/11 : … (remplace le tirage « … ») ».
             std::string text = "a choisi le défi " + periodPhrase(ch) + " : " + challengeSummary(ch);
@@ -951,6 +1053,8 @@ private:
     Json players_ = Json::object();
     Json admins_ = Json::array();
     std::string confirmId_;
+    Json devicePlayer_, deviceData_;  // 2.47: « Ordinateur de … »
+    bool busyDevice_ = false;
     Json confirmPlayer_;
     // Journal
     int kind_ = 0, actor_ = 0, logGen_ = 0;

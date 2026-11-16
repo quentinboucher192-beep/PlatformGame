@@ -9,6 +9,7 @@
 #include "game/GameServices.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/OnlineComputer.h"
 
 namespace cosmic {
 
@@ -145,7 +146,11 @@ private:
         // ONLINE requires an account: leaving without one goes back to the main menu.
         if (required_ && !connected) g_.app.switchScene(makeMainMenu(g_));
         else g_.app.popScene();
+        // 2.47: what was played in local mode is now in the account: its summary.
+        if (connected && !g_.reconnectSummary.is_null()) g_.app.pushScene(makeReconnectSummary(g_));
     }
+    /// 2.47: the account this computer is bound to ("" : none yet): the only one that may log in here.
+    const std::string& boundUsername() const { return g_.online.device().boundUsername; }
 
     void title(const std::string& t, const std::string& sub) {
         UIContext& ui = g_.ui;
@@ -179,7 +184,10 @@ private:
         float bw = (w - ui.s(40)) / 3, by = box_.bottom() - ui.s(80);
         UIContext::ButtonStyle p;
         p.primary = true;
-        p.enabled = g_.online.usable();
+        p.enabled = g_.online.usable() && boundUsername().empty();
+        if (!boundUsername().empty())
+            ui.labelWrapped("Cet ordinateur est lié au compte « " + boundUsername() + " » : un seul compte par ordinateur.", {x, by - ui.s(46)}, w, 16,
+                            ui.theme().warm);
         if (ui.button("create", {x, by, bw, ui.s(52)}, "Créer un compte", p)) page_ = Page::Register;
         UIContext::ButtonStyle s;
         s.enabled = g_.online.usable();
@@ -211,6 +219,10 @@ private:
 
     void registerPage() {
         UIContext& ui = g_.ui;
+        if (!boundUsername().empty()) {  // 2.47: one account per computer
+            page_ = Page::Login;
+            return;
+        }
         title("Créer un compte", "Votre identité publique dans les classements");
         float x = box_.x + ui.s(36), col = (box_.w - ui.s(96)) / 2, y = box_.y + ui.s(112);
         float x2 = x + col + ui.s(24);
@@ -300,7 +312,16 @@ private:
         float x = box_.x + ui.s(36), w = ui.s(460), y = box_.y + ui.s(140);
         ui.pushId("account/login");
         ui.label("Pseudonyme", {x, y}, 15, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
-        ui.textField("user", {x, y + ui.s(14), w, ui.s(44)}, username_, "NovaRider", 20);
+        if (!boundUsername().empty()) {
+            // 2.47: the only account this computer accepts.
+            username_ = boundUsername();
+            Rect f{x, y + ui.s(14), w, ui.s(44)};
+            ui.r().fillRoundedRect(f, ui.s(8), Color{8, 11, 24, 150});
+            ui.r().drawRoundedRect(f, ui.s(8), ui.theme().border, ui.s(1));
+            ui.label(username_, {f.x + ui.s(14), f.y + f.h * 0.5f}, 18, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        } else {
+            ui.textField("user", {x, y + ui.s(14), w, ui.s(44)}, username_, "NovaRider", 20);
+        }
         ui.label("Mot de passe", {x, y + ui.s(82)}, 15, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
         ui.passwordField("pass", {x, y + ui.s(96), w, ui.s(44)}, password_, "Mot de passe");
         ui.toggle("remember", {x, y + ui.s(160), w, ui.s(40)}, "Connexion automatique sur cet ordinateur", remember_);
@@ -325,7 +346,12 @@ private:
                 }
             }));
         }
-        if (ui.button("create", {x + ui.s(200), by, ui.s(220), ui.s(50)}, "Créer un compte")) page_ = Page::Register;
+        if (boundUsername().empty()) {
+            if (ui.button("create", {x + ui.s(200), by, ui.s(220), ui.s(50)}, "Créer un compte")) page_ = Page::Register;
+        } else {
+            ui.labelWrapped("Cet ordinateur est lié au compte « " + boundUsername() + " » : aucun autre compte ne peut s'y connecter ni y être créé.",
+                            {x, y + ui.s(196)}, w, 15, ui.theme().textDim);
+        }
         if (ui.button("back", {x, by, ui.s(180), ui.s(50)}, required_ && !onboardingVisible() ? "Menu" : "Retour")) back();
         ui.popId();
     }

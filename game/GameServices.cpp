@@ -427,6 +427,7 @@ void GameServices::checkAchievements(bool announce) {
     online.setAchievements(std::move(ids));
     syncCosmetics();  // an item locked again (or unlocked) changes what is worn
     syncBadges();     // and the badges (2.41: their slots come from the stars)
+    if (announce) progressCopyDue = true;  // 2.47: after a run (sent at most every 10 minutes)
     if (fresh.empty()) return;
     achievements.save();
     if (!announce) {
@@ -471,6 +472,87 @@ void GameServices::applySettings() {
 void GameServices::playMusic(const std::string& rel) {
     std::string p = app.resources().soundPath(rel);
     if (!p.empty()) app.audio().playMusic(p, 1200);
+}
+
+// ------------------------------------------------- local and online (2.47)
+
+namespace {
+fs::path localSnapshotPath() { return Paths::userDir() / "online" / "local_snapshot.json"; }
+}  // namespace
+
+Json GameServices::progressCopyBody() const {
+    int bosses = 0;
+    for (const auto& [id, b] : bossStats.all()) bosses += b.kills > 0 ? 1 : 0;
+    Json summary = {{"levels", progression.completedCount()},
+                    {"achievements", achievements.unlockedCount()},
+                    {"stars", achievements.stars(achievementCatalog)},
+                    {"play_seconds", static_cast<int64_t>(std::max(0.0, progression.playTimeSeconds))},
+                    {"bosses", bosses}};
+    Json files = {{"progress", progression.toJson()},
+                  {"records", records.toJson()},
+                  {"boss_stats", bossStats.toJson()},
+                  {"achievements", achievements.toJson()},
+                  {"collection", collection.toJson()}};
+    return {{"format", "cosmic.progress_copy"}, {"game_version", std::string(COSMIC_VERSION_STRING)}, {"summary", summary}, {"files", files}};
+}
+
+void GameServices::sendProgressCopy(std::function<void(const ApiResult&)> done) {
+    if (!online.loggedIn() || !online.usable()) {
+        if (done) done(ApiResult{});
+        return;
+    }
+    progressCopyBusy_ = true;
+    online.send("PUT", "/api/v1/players/me/progress-copy", progressCopyBody(), [this, done](const ApiResult& r) {
+        progressCopyBusy_ = false;
+        if (r.ok) {
+            progressCopyDue = false;
+            progressCopyWait_ = 600.0f;  // at most every 10 minutes
+        } else {
+            progressCopyWait_ = 120.0f;  // again in 2 minutes
+        }
+        if (done) done(r);
+    }, 60000);
+}
+
+void GameServices::updateProgressCopy(float dt) {
+    progressCopyWait_ = std::max(0.0f, progressCopyWait_ - dt);
+    if (!progressCopyDue || progressCopyBusy_ || progressCopyWait_ > 0.0f) return;
+    if (!online.loggedIn() || !online.usable() || online.state() != OnlineState::Online) return;
+    sendProgressCopy();
+}
+
+void GameServices::noteLoggedOut() {
+    // Local mode starts: what is played from now on is shown at the next login.
+    Json snap = {{"levels", progression.completedCount()},
+                 {"achievements", achievements.unlockedCount()},
+                 {"stars", achievements.stars(achievementCatalog)},
+                 {"play_seconds", static_cast<int64_t>(std::max(0.0, progression.playTimeSeconds))}};
+    FileUtil::writeTextAtomic(localSnapshotPath(), snap.dump(1));
+}
+
+void GameServices::noteStartedLocal() {
+    std::error_code ec;
+    if (!online.loggedIn() && !online.device().boundPlayer.empty() && !fs::exists(localSnapshotPath(), ec)) noteLoggedOut();
+}
+
+void GameServices::noteSessionStarted() {
+    progressCopyDue = true;
+    progressCopyWait_ = std::min(progressCopyWait_, 8.0f);
+    auto snap = FileUtil::loadJson(localSnapshotPath());
+    std::error_code ec;
+    fs::remove(localSnapshotPath(), ec);
+    if (!snap || !snap->is_object()) return;
+    const int levels = progression.completedCount() - jget<int>(*snap, "levels", 0);
+    const int ach = achievements.unlockedCount() - jget<int>(*snap, "achievements", 0);
+    const int stars = achievements.stars(achievementCatalog) - jget<int>(*snap, "stars", 0);
+    const int64_t secs = static_cast<int64_t>(std::max(0.0, progression.playTimeSeconds)) - jget<int64_t>(*snap, "play_seconds", 0);
+    const int runs = static_cast<int>(online.unsentCount());
+    if (levels <= 0 && ach <= 0 && runs <= 0 && secs < 60) return;
+    reconnectSummary = {{"levels", std::max(0, levels)},
+                        {"runs", runs},
+                        {"achievements", std::max(0, ach)},
+                        {"stars", std::max(0, stars)},
+                        {"minutes", static_cast<int>(std::max<int64_t>(0, secs) / 60)}};
 }
 
 void GameServices::updatePresence(float dt) {

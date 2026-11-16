@@ -69,6 +69,7 @@ const std::vector<OnlineKind>& onlineKinds() {
         {"record_beaten", "R", {255, 214, 90, 255}, "Record battu", "Mon record mondial battu par un autre joueur"},
         {"challenge_featured", "D", {255, 204, 84, 255}, "Défi du jour", "Mon niveau choisi comme défi du jour"},
         {"challenge_reward", "T", {255, 214, 90, 255}, "Récompense de défi", "Récompense gagnée à un défi"},
+        {"security", "!", {255, 138, 61, 255}, "Sécurité", "Mon compte et son ordinateur (connexion refusée ailleurs…)"},
     };
     return k;
 }
@@ -284,6 +285,7 @@ private:
         if (kind == "record_beaten" && n.contains("data") && !jstr(n["data"], "official").empty()) return "Voir le classement";
         if (kind == "challenge_featured") return "Voir les défis";
         if (kind == "challenge_reward") return "Voir la Collection";
+        if (kind == "security") return "Voir le compte";  // 2.47: ONLINE SETTINGS › Cet ordinateur
         return {};
     }
 
@@ -292,6 +294,10 @@ private:
         std::string id = jstr(n, "id");
         bool unread = !jget<bool>(n, "read", false);
         auto go = [this, n, kind]() {
+            if (kind == "security") {  // 2.47: the account and its computer
+                g_.app.pushScene(makeOnlineSettings(g_, 3));
+                return;
+            }
             if (kind == "challenge_reward") {  // 2.43: rewards won at a challenge, to equip
                 g_.challenges.refreshMine();
                 g_.app.switchScene(makeCollection(g_, 0), 0.3f);
@@ -475,7 +481,7 @@ private:
         int i = 0;
         for (const auto& k : onlineKinds()) {
             // Only the kinds this server knows (a newer kind on an older server: not offered).
-            if (!settings_.contains(k.kind)) continue;
+            if (!settings_.contains(k.kind) || k.kind == "security") continue;  // 2.47: the security alerts are never turned off
             float cx = area.x + (i % 2) * (colW + ui.s(20));
             float cy = y + (i / 2) * ui.s(56);
             bool on = jget<bool>(settings_, k.kind, true);

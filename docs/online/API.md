@@ -1616,6 +1616,12 @@ révision suivante de chaque niveau de la campagne qui l'utilise, chacun avec `r
 "reset"|"keep"`, en un seul lot). Publiques : `GET /enemies/revisions`,
 `GET /enemies/{id}/revisions/{revision}/file`.
 
+### 8.10 quater Un compte, un ordinateur (2.47)
+
+Détails et routes : [DEVICES.md](DEVICES.md). `device: { id, name }` à l'inscription et à la
+connexion (`403 ACCOUNT_BOUND_ELSEWHERE`, `409 DEVICE_BOUND`, `426` sans), `GET/PATCH
+/players/me/device`, `GET/PUT /players/me/progress-copy`, `GET/POST /admin/players/{id}/device`.
+
 ## Annexe — format du replay (CPRZ / CPRP v1)
 
 Le jeu enregistre une trace compacte du run, pas une vidéo. Conteneur envoyé

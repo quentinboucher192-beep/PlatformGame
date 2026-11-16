@@ -392,10 +392,7 @@ void EnemyEditorScene::render(float alpha) {
     } else if (acc.save) {
         mainLabel = dirty_ ? "Enregistrer*" : "Enregistrer";
         p.primary = dirty_;
-    } else if (!admin_ && editingNative()) {
-        mainLabel = "Dupliquer pour modifier";
-        p.primary = true;
-    }
+    }  // a read-only native: « Dupliquer pour modifier » is on its banner (as in the level editor)
     if (!mainLabel.empty()) {
         const float mw = widthOf(mainLabel, ui.s(220));
         bx -= gap + mw;
@@ -417,7 +414,30 @@ void EnemyEditorScene::render(float alpha) {
     Rect center{listW, top, W - listW - propW, H - top};
     if (admin_) drawAdminPanel({0, top, listW, H - top});
     else drawList({0, top, listW, H - top});
-    drawPreview({center.x + ui.s(16), center.y + ui.s(16), center.w - ui.s(32), center.h * 0.36f});
+    // A native of the campaign, for the player: the level editor's read-only banner, with its
+    // « Dupliquer pour modifier », above the preview.
+    float bannerH = 0.0f;
+    if (!admin_ && editingNative()) {
+        Rect bar{0, center.y + ui.s(14), std::min(center.w - ui.s(32), ui.s(900)), ui.s(58)};
+        bar.x = center.x + center.w * 0.5f - bar.w * 0.5f;
+        ui.r().fillRoundedRect(bar, ui.s(10), Color{40, 26, 10, 235});
+        ui.r().drawRoundedRect(bar, ui.s(10), ui.theme().warm, ui.s(1.5f));
+        const std::string dup = "Dupliquer pour modifier";
+        const float bw = std::min(bar.w * 0.4f, ui.text().measure(dup, FontFace::Bold, ui.s(18)).x + ui.s(48));
+        const float room = bar.w - bw - ui.s(50);
+        const std::string head = "Entité native de la campagne — lecture seule";
+        const std::string sub = "Vous pouvez l'explorer et la tester dans l'arène ; pour la modifier, faites-en votre copie.";
+        ui.label(head, {bar.x + ui.s(18), bar.y + ui.s(19)}, ui.fitFont(head, FontFace::Bold, 19, room), ui.theme().warm, Align::Left, FontFace::Bold,
+                 VAlign::Middle);
+        ui.label(sub, {bar.x + ui.s(18), bar.y + ui.s(41)}, ui.fitFont(sub, FontFace::Body, 15, room), ui.theme().textDim, Align::Left, FontFace::Body,
+                 VAlign::Middle);
+        UIContext::ButtonStyle dp;
+        dp.primary = true;
+        dp.small = true;
+        if (ui.button("dupedit", {bar.right() - bw - ui.s(14), bar.y + ui.s(9), bw, bar.h - ui.s(18)}, dup, dp)) duplicateToEdit();
+        bannerH = bar.h + ui.s(12);
+    }
+    drawPreview({center.x + ui.s(16), center.y + ui.s(16) + bannerH, center.w - ui.s(32), center.h * 0.36f - bannerH});
     arenaRect_ = {center.x + ui.s(16), center.y + center.h * 0.36f + ui.s(70), center.w - ui.s(32), center.h * 0.64f - ui.s(86)};
     drawArena(arenaRect_, alpha);
     drawProperties({W - propW, top, propW, H - top});
