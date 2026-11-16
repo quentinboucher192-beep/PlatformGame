@@ -1,4 +1,10 @@
 {
+  "2.43.0": [
+    "Administration › Calendrier des défis : nouvel onglet « Récompenses ». Un défi à venir peut donner des éléments de la Collection ou des titres créés sur le serveur (Or, Argent, Cyan ou Violet), selon le palier atteint, le Top N du classement final ou le niveau fini.",
+    "Le serveur accorde ces récompenses une heure après la fin du défi, d'après les seules parties vérifiées reçues à l'heure, et les annonce par une notification ; la fiche du défi les montre avant et après.",
+    "Collection › Titres : les titres gagnés aux défis s'équipent et s'affichent dans leur couleur sur le profil et dans les classements.",
+    "Administration : nouvel onglet « Sauvegardes » : copies de toutes les données (une chaque nuit, ou à la demande), téléchargement d'une copie chiffrée par une phrase secrète, et import d'une sauvegarde (vérifiée d'abord, puis remplacement de toutes les données après confirmation)."
+  ],
   "2.42.0": [
     "Administration : nouvel onglet « Calendrier des défis » : le mois avec les tirages à venir, choix du niveau (campagne ou en ligne), des règles, de l'objectif et des paliers d'un défi qui n'a pas commencé, ou « Revenir au tirage ».",
     "Nouvel objectif de défi « Finir le niveau » : classement à la progression (le plus loin, puis le premier à finir), paliers Bronze et Argent en % du parcours, Or en finissant ; calculés par le serveur depuis le replay.",

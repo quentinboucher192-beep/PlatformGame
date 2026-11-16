@@ -981,6 +981,18 @@
    ]
   },
   {
+   "fr": "Administration : nouvel onglet « Sauvegardes » : copies de toutes les données (une chaque nuit, ou à la demande), téléchargement d'une copie chiffrée par une phrase secrète, et import d'une sauvegarde (vérifiée d'abord, puis remplacement de toutes les données après confirmation).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Administration › Calendrier des défis : nouvel onglet « Récompenses ». Un défi à venir peut donner des éléments de la Collection ou des titres créés sur le serveur (Or, Argent, Cyan ou Violet), selon le palier atteint, le Top N du classement final ou le niveau fini.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Admins",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -6725,6 +6737,12 @@
   },
   {
    "fr": "Collection en ligne : le cadre d'avatar et le titre équipés vous suivent dans les CLASSEMENTS et sur votre profil public, qui montre aussi votre tenue (combinaison, traînée, cadre, effet de victoire).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Collection › Titres : les titres gagnés aux défis s'équipent et s'affichent dans leur couleur sur le profil et dans les classements.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -17656,6 +17674,12 @@
    "fr": "Le serveur a refusé une modification ({0}).",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
+   ]
+  },
+  {
+   "fr": "Le serveur accorde ces récompenses une heure après la fin du défi, d'après les seules parties vérifiées reçues à l'heure, et les annonce par une notification ; la fiche du défi les montre avant et après.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {

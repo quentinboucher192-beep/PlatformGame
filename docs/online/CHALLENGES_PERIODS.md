@@ -382,7 +382,7 @@ les résultats de **ce** défi reçus à l'heure (`late = 0`) et **vérifiés** 
   partie reçue la première d'abord ; comptes actifs seulement) ;
 - `finished` — au moins une partie finie.
 
-Migration `XXXX_challenge_rewards.sql` : `server_titles` (texte ≤ 32 caractères, couleur
+Migration `0081_challenge_rewards.sql` : `server_titles` (texte ≤ 32 caractères, couleur
 `gold|silver|cyan|violet`, `text_key` unique : même texte aux accents et à la casse près refusé),
 `challenge_reward_rules` (par id de période `<kind>-<period>`, sans clé étrangère : elles restent
 après « Revenir au tirage »), `challenge_reward_grants` (défi accordé, une fois),
