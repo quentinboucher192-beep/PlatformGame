@@ -460,10 +460,10 @@ def shot6():
     seal = Mask().poly([(160, 470), (160, 330), (230, 296), (300, 330), (300, 470)]).get(4)
     c.add("#ff5a2a", seal * (0.4 + 0.6 * fbm(1607, 12, 3)), 0.35)
     # his rock, a tall spire on the right
-    peak = Mask().poly([(540, 545), (630, 360), (700, 334), (770, 352), (870, 545)]).get(0.6)
+    peak = Mask().poly([(540, 545), (630, 384), (700, 360), (770, 376), (870, 545)]).get(0.6)
     c.over(c.gradient_field(0, 300, 0, 545, "#2a1420", "#0a0408"), peak)
     c.add("#ff7a4a", rim(peak, -2, 0, 0.8), 0.5)
-    dragon(c, 706, 284, 1.3, GLASS, flip=True, wings=1.0, light=(1, 0.2), light_color="#ff7a3a", light_k=0.9, cracks=0.8, seed=1609,
+    dragon(c, 706, 306, 1.2, GLASS, flip=True, wings=1.0, light=(1, 0.2), light_color="#ff7a3a", light_k=0.9, cracks=0.8, seed=1609,
            neck_up=0.6)
     ground(c, 470, 1611, "#0a0204", "#1e0808")
     embers(c, 1613, 60, (0, 80, 960, 480), "#ff9a4a", (1.0, 2.6))
