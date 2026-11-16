@@ -202,8 +202,14 @@ public:
         std::string desc = unlocked || !p.teaser ? p.description
                                                  : "Les coordonnées de ce monde sont encore en cours de décodage. "
                                                    "Terminez les missions disponibles pour en apprendre davantage.";
-        ui.labelWrapped(desc, {x, y}, panel.w - ui.s(68), 19, ui.theme().text);
         Rect btn{panel.x + ui.s(34), panel.bottom() - ui.s(90), panel.w - ui.s(68), ui.s(62)};
+        // The description stays above the progress row (measured: a smaller type rather than an
+        // overlap on a short screen or for a long description, 2.52).
+        const float descW = panel.w - ui.s(68);
+        const float descRoom = btn.y - ui.s(92) - ui.s(8) - y;
+        float descSize = 19.0f;
+        while (descSize > 13.0f && ui.text().measureWrapped(desc, FontFace::Body, ui.s(descSize), descW).y > descRoom) descSize -= 1.0f;
+        ui.labelWrapped(desc, {x, y}, descW, descSize, ui.theme().text);
         // Progress row anchored above the button, so long descriptions never push it below.
         y = btn.y - ui.s(92);
         auto levels = g_.content.levelsForPlanet(p.id);

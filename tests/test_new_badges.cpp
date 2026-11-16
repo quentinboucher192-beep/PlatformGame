@@ -285,8 +285,9 @@ TEST_CASE("new badges: every planet, level, boss, creature, achievement, reward 
         for (const auto& x : (*t)["tracks"]) need("track." + fs::path(x.value("file", std::string())).stem().string());
     for (const auto& m : missing) std::printf("  sans pastille NOUVEAU : %s\n", m.c_str());
     CHECK(missing.empty());
-    // Les Confins themselves (2.48 and 2.49).
-    for (const char* id : {"planet.confins", "level.confins_01", "level.confins_02", "boss.pyrrhax", "boss.monolithe", "track.pyrrhax_boss",
-                           "track.monolithe_boss", "gallery.creature.dragonnet", "gallery.creature.eclat_de_roche"})
+    // Les Confins themselves (2.48, 2.49 and 2.52: the Kraken).
+    for (const char* id : {"planet.confins", "level.confins_01", "level.confins_02", "level.confins_03", "boss.pyrrhax", "boss.monolithe",
+                           "boss.kraken", "gallery.boss.kraken", "track.pyrrhax_boss", "track.monolithe_boss", "track.kraken_boss",
+                           "gallery.creature.dragonnet", "gallery.creature.eclat_de_roche", "gallery.creature.photophore"})
         CHECK(leaves.count(id));
 }

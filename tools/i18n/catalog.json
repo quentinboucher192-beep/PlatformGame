@@ -751,6 +751,12 @@
    ]
   },
   {
+   "fr": "Abysses",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Accent",
    "where": [
     "ui/screens/AdminCreations.cpp"
@@ -1742,6 +1748,12 @@
    ]
   },
   {
+   "fr": "Anneaux de nacre",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Annoncer le combat (titres)",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -2644,6 +2656,12 @@
    ]
   },
   {
+   "fr": "Au fond des abysses",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Au fond des forges, le creuset bouillonne : radeaux de basalte sur la lave, cheminées brûlantes, pistons, fonderie à franchir à temps. Son cœur vivant vous attend.",
    "where": [
     "data/levels/pyralis_04.json"
@@ -2698,7 +2716,7 @@
    ]
   },
   {
-   "fr": "Au-delà de l'étoile morte, au bord du système, un monde de verre noir craquelé sur un feu vivant. Ses cendres tombent d'un ciel pourpre ; un dragon d'obsidienne y garde la dernière frontière, et un golem plus ancien que les planètes veille sous sa croûte.",
+   "fr": "Au-delà de l'étoile morte, au bord du système, un monde de verre noir craquelé sur un feu vivant. Ses cendres tombent d'un ciel pourpre ; un dragon d'obsidienne y garde la dernière frontière, un golem plus ancien que les planètes veille sous sa croûte et un kraken hante les mers noires de ses abysses.",
    "where": [
     "data/planets/confins.json"
    ]
@@ -3397,6 +3415,12 @@
    "fr": "Aucune progression ne correspond.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune progression à restaurer.",
+   "where": [
+    "server/src/accountMigration.ts"
    ]
   },
   {
@@ -4137,6 +4161,12 @@
    ]
   },
   {
+   "fr": "Battre chaque phase du Kraken sans être touché (pas forcément dans le même combat).",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Battre chaque phase du Monolithe sans être touché (pas forcément dans le même combat).",
    "where": [
     "data/achievements/achievements.json"
@@ -4772,6 +4802,18 @@
    ]
   },
   {
+   "fr": "Brisé",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Brisé : les abysses s'ouvrent",
+   "where": [
+    "data/levels/confins_03.json"
+   ]
+  },
+  {
    "fr": "Bronze",
    "where": [
     "data/cosmetics/cosmetics.json",
@@ -4857,6 +4899,18 @@
    ]
   },
   {
+   "fr": "Bulles de lumière",
+   "where": [
+    "data/enemies/photophore.json"
+   ]
+  },
+  {
+   "fr": "Bulles des abysses",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Burkina Faso",
    "where": [
     "data/online/countries.json",
@@ -4919,6 +4973,18 @@
    "fr": "C'est la dernière",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "C'est le compte connecté : saisissez le pseudonyme de l'ANCIEN compte.",
+   "where": [
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
+   "fr": "C'est le dernier compte admin : il ne peut pas être fermé.",
+   "where": [
+    "server/src/accountMigration.ts"
    ]
   },
   {
@@ -5371,6 +5437,12 @@
    "fr": "Ce commentaire ne vous appartient pas.",
    "where": [
     "server/src/workshop.ts"
+   ]
+  },
+  {
+   "fr": "Ce compte a été migré vers un autre compte : il est fermé.",
+   "where": [
+    "server/src/auth.ts"
    ]
   },
   {
@@ -6584,6 +6656,12 @@
    ]
   },
   {
+   "fr": "Chasseur de Kraken",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Chasseur de légendes",
    "where": [
     "data/achievements/achievements.json"
@@ -7599,6 +7677,12 @@
    ]
   },
   {
+   "fr": "Combat contre le Kraken",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
    "fr": "Combat contre Monolithe",
    "where": [
     "data/music/tracks.json"
@@ -8018,6 +8102,7 @@
   {
    "fr": "Compte cible introuvable.",
    "where": [
+    "server/src/accountMigration.ts",
     "ui/screens/OnlineMigration.cpp"
    ]
   },
@@ -9127,6 +9212,12 @@
    ]
   },
   {
+   "fr": "Courant des abysses",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Courbe (inOutCubic, linear, outBack…)",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -9181,6 +9272,12 @@
    "fr": "Couronne de la semaine",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Couronne de photophores",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -10130,6 +10227,12 @@
    ]
   },
   {
+   "fr": "Demande de migration de ce compte refusée (code faux ou expiré) : quelqu'un connaît votre mot de passe.",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "Demande déjà envoyée.",
    "where": [
     "server/src/friends.ts"
@@ -10260,6 +10363,12 @@
    ]
   },
   {
+   "fr": "Dernier fouet",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "dernier niveau {0}",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -10339,6 +10448,12 @@
    ]
   },
   {
+   "fr": "Dernière vague",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Dernière version récupérée ; vos modifications sont gardées dans « … (mes modifications) ».",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -10358,6 +10473,12 @@
   },
   {
    "fr": "Des braises qui s'élèvent derrière Nova.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Des bulles de lumière remontent derrière Nova, entre quelques volutes d'encre.",
    "where": [
     "data/cosmetics/cosmetics.json"
    ]
@@ -10424,6 +10545,12 @@
   },
   {
    "fr": "Des runes violettes et dorées qui tournent sur elles-mêmes.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Des tentacules enlacent le cadre, leurs ventouses s'allument tour à tour : pour avoir vaincu le Kraken sans être touché.",
    "where": [
     "data/cosmetics/cosmetics.json"
    ]
@@ -10964,6 +11091,12 @@
    ]
   },
   {
+   "fr": "Double fouet",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Double frappe",
    "where": [
     "data/enemies/monolithe.json"
@@ -11304,7 +11437,7 @@
    ]
   },
   {
-   "fr": "Débloquer les 22 morceaux du juke-box.",
+   "fr": "Débloquer les 23 morceaux du juke-box.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -11466,6 +11599,7 @@
     "data/levels/aethra_04.json",
     "data/levels/confins_01.json",
     "data/levels/confins_02.json",
+    "data/levels/confins_03.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -11493,6 +11627,7 @@
     "data/levels/aethra_04.json",
     "data/levels/confins_01.json",
     "data/levels/confins_02.json",
+    "data/levels/confins_03.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -11582,6 +11717,12 @@
    "fr": "Défense (garde frontale)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Déferlante d'encre",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -12271,6 +12412,12 @@
    ]
   },
   {
+   "fr": "Eaux abyssales",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
    "fr": "Effacer le cache en ligne",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
@@ -12810,6 +12957,24 @@
    "fr": "Encore {0} étoiles",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Encre",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Encre : les blocs en orbite",
+   "where": [
+    "data/levels/confins_03.json"
+   ]
+  },
+  {
+   "fr": "Encre des abysses",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -14656,6 +14821,18 @@
    ]
   },
   {
+   "fr": "Foudre marine",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Fouet des abysses",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Fouineur",
    "where": [
     "data/achievements/achievements.json"
@@ -14969,6 +15146,7 @@
     "data/levels/aethra_04.json",
     "data/levels/confins_01.json",
     "data/levels/confins_02.json",
+    "data/levels/confins_03.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -15197,6 +15375,12 @@
    "fr": "Geysers de roche",
    "where": [
     "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Geysers des abysses",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -15433,6 +15617,7 @@
    "fr": "Grande marée",
    "where": [
     "data/enemies/echo_pyrogyre.json",
+    "data/enemies/kraken.json",
     "data/enemies/pyrogyre.json"
    ]
   },
@@ -16455,6 +16640,12 @@
    ]
   },
   {
+   "fr": "Il crache son encre !",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Il doit toujours rester au moins un admin.",
    "where": [
     "server/src/adminRoles.ts"
@@ -17249,6 +17440,12 @@
    ]
   },
   {
+   "fr": "Jet abyssal",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Jet de rochers",
    "where": [
     "data/enemies/monolithe.json"
@@ -17601,6 +17798,19 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Kraken",
+   "where": [
+    "data/achievements/achievements.json",
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Kraken vaincu",
+   "where": [
+    "data/levels/confins_03.json"
    ]
   },
   {
@@ -18172,6 +18382,24 @@
    ]
   },
   {
+   "fr": "LA FOSSE DES ABYSSES",
+   "where": [
+    "data/levels/confins_03.json"
+   ]
+  },
+  {
+   "fr": "La Fosse des Abysses",
+   "where": [
+    "data/levels/confins_03.json"
+   ]
+  },
+  {
+   "fr": "La Fosse des Abysses : le Kraken seul, une seule vie, aucun checkpoint. Choisissez vos quatre pouvoirs.",
+   "where": [
+    "data/levels/confins_03.json"
+   ]
+  },
+  {
    "fr": "la Frappe sismique",
    "where": [
     "game/levels/CampaignPipeline.cpp"
@@ -18235,6 +18463,12 @@
    "fr": "La machine se tait. Le signal, lui, part vers les étoiles... vers Pyralis.",
    "where": [
     "data/levels/sylvanox_03.json"
+   ]
+  },
+  {
+   "fr": "La marée monte dans l'arène !",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -18502,6 +18736,12 @@
    "fr": "La sauvegarde a échoué : {0}",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "La sauvegarde n'est pas prête : la migration n'a pas été faite.",
+   "where": [
+    "server/src/accountMigration.ts"
    ]
   },
   {
@@ -18955,9 +19195,27 @@
    ]
   },
   {
+   "fr": "Le compte cible est fermé ou suspendu.",
+   "where": [
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
+   "fr": "Le compte cible est le compte source.",
+   "where": [
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
    "fr": "Le compte ne sert que sur cet ordinateur. Sur un autre, créez un nouveau compte : un code préparé ici lui transfère toutes vos données.",
    "where": [
     "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
+   "fr": "Le compte source est fermé ou suspendu.",
+   "where": [
+    "server/src/accountMigration.ts"
    ]
   },
   {
@@ -19234,6 +19492,12 @@
    ]
   },
   {
+   "fr": "Le fichier de la progression à restaurer est introuvable.",
+   "where": [
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
    "fr": "Le fichier du niveau n'est pas valide.",
    "where": [
     "server/src/campaignRevisions.ts"
@@ -19414,6 +19678,48 @@
    "fr": "Le joueur sort de la zone",
    "where": [
     "game/levels/EventSystem.cpp"
+   ]
+  },
+  {
+   "fr": "Le Kraken a sombré. Les abysses se taisent.",
+   "where": [
+    "data/levels/confins_03.json"
+   ]
+  },
+  {
+   "fr": "LE KRAKEN DES ABYSSES",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Le Kraken des Abysses",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Le Kraken des Abysses.",
+   "where": [
+    "data/levels/confins_03.json"
+   ]
+  },
+  {
+   "fr": "Le Kraken remonte des abysses.",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "LE KRAKEN SOMBRE",
+   "where": [
+    "data/levels/confins_03.json"
+   ]
+  },
+  {
+   "fr": "Le Kraken sombre dans les abysses. La sortie est ouverte.",
+   "where": [
+    "data/levels/confins_03.json"
    ]
   },
   {
@@ -20180,7 +20486,7 @@
    ]
   },
   {
-   "fr": "Les 22 morceaux du juke-box débloqués.",
+   "fr": "Les 23 morceaux du juke-box débloqués.",
    "where": [
     "data/cosmetics/cosmetics.json"
    ]
@@ -20286,8 +20592,15 @@
    "where": [
     "data/levels/confins_01.json",
     "data/levels/confins_02.json",
+    "data/levels/confins_03.json",
     "data/music/tracks.json",
     "data/planets/confins.json"
+   ]
+  },
+  {
+   "fr": "Les Confins — La Fosse des Abysses",
+   "where": [
+    "data/levels/confins_03.json"
    ]
   },
   {
@@ -20357,6 +20670,30 @@
    ]
   },
   {
+   "fr": "Les données de ce compte ont été migrées sur le compte {0} : ce compte est fermé.",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Les données de ce compte ont été migrées sur le compte {0}.",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Les données de {0} ont été migrées sur votre compte : restaurez la progression de son ordinateur.",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Les données de {0} ont été migrées sur votre compte.",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "Les données de {0} ont été migrées sur {1} (copie de la progression du {2}).",
    "where": [
     "ui/screens/OnlineMigration.cpp"
@@ -20396,6 +20733,12 @@
    "fr": "Les défis sont demandés au serveur.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Les eaux noires referment l'arène !",
+   "where": [
+    "data/levels/confins_03.json"
    ]
   },
   {
@@ -20460,6 +20803,12 @@
   },
   {
    "fr": "Les huit flammes",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Les huit lueurs",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -21282,6 +21631,12 @@
    ]
   },
   {
+   "fr": "Lueurs détachées",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Lumière",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -21351,6 +21706,24 @@
    ]
   },
   {
+   "fr": "Léviathan",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Léviathan ! Les abysses se déchaînent !",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Léviathan : l'arène se resserre",
+   "where": [
+    "data/levels/confins_03.json"
+   ]
+  },
+  {
    "fr": "M",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -21393,6 +21766,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Maelström",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -21728,6 +22107,12 @@
    ]
   },
   {
+   "fr": "Marée",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Marée de lave",
    "where": [
     "data/enemies/echo_pyrogyre.json",
@@ -21740,6 +22125,12 @@
    "fr": "Marée de plasma",
    "where": [
     "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Marée montante",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -23239,6 +23630,12 @@
    ]
   },
   {
+   "fr": "Méduses électriques",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Mélomane",
    "where": [
     "data/achievements/achievements.json",
@@ -23312,10 +23709,22 @@
    ]
   },
   {
+   "fr": "Nacre",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Namibie",
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Nappe d'encre",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -24769,6 +25178,12 @@
    ]
   },
   {
+   "fr": "Nuage d'encre",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Nuage de feu {0} s",
    "where": [
     "ui/screens/BossStatsScene.cpp"
@@ -24820,6 +25235,12 @@
    "fr": "Nuées ardentes",
    "where": [
     "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Nuées d'encre",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -25062,6 +25483,12 @@
    ]
   },
   {
+   "fr": "Obtenir l'or dans La Fosse des Abysses.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Obtenir l'or dans La Gueule du Dragon.",
    "where": [
     "data/achievements/achievements.json"
@@ -25105,6 +25532,12 @@
   },
   {
    "fr": "Obtenir le platine dans L'Arène des Échos.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Obtenir le platine dans La Fosse des Abysses.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -25302,6 +25735,12 @@
    ]
   },
   {
+   "fr": "Onde sonar",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Onde sur le récepteur : la porte s'ouvre... quelques secondes.",
    "where": [
     "data/levels/sylvanox_04.json"
@@ -25451,6 +25890,12 @@
    "fr": "Or atteint",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Or des abysses",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -26536,6 +26981,12 @@
    ]
   },
   {
+   "fr": "Pas une goutte d'encre",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Pas utile",
    "where": [
     "ui/online/CommentsPanel.cpp"
@@ -27001,6 +27452,12 @@
    ]
   },
   {
+   "fr": "Photophore abyssal",
+   "where": [
+    "data/enemies/photophore.json"
+   ]
+  },
+  {
    "fr": "Phrase secrète",
    "where": [
     "ui/screens/AdminBackups.cpp"
@@ -27436,6 +27893,12 @@
    ]
   },
   {
+   "fr": "Platine des abysses",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Platine des sanctuaires",
    "where": [
     "data/achievements/achievements.json"
@@ -27502,6 +27965,12 @@
    "where": [
     "data/enemies/echo_prime_sentinel.json",
     "data/enemies/prime_sentinel.json"
+   ]
+  },
+  {
+   "fr": "Pluie abyssale",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -28192,6 +28661,12 @@
   },
   {
    "fr": "Pour avoir terminé Sylvanox.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Pour avoir vaincu le Kraken des Abysses.",
    "where": [
     "data/cosmetics/cosmetics.json"
    ]
@@ -29097,10 +29572,22 @@
    ]
   },
   {
+   "fr": "pseudonyme du compte cible attendu",
+   "where": [
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
    "fr": "pseudonyme réservé",
    "where": [
     "server/src/auth.ts",
     "server/src/players.ts"
+   ]
+  },
+  {
+   "fr": "Pseudonyme, mot de passe ou code de migration incorrect, ou code expiré.",
+   "where": [
+    "server/src/accountMigration.ts"
    ]
   },
   {
@@ -29766,6 +30253,7 @@
    "where": [
     "data/levels/confins_01.json",
     "data/levels/confins_02.json",
+    "data/levels/confins_03.json",
     "data/levels/noyau_03.json"
    ]
   },
@@ -29972,6 +30460,12 @@
    "fr": "Rayons des boss texturés et animés : flamme (Pyralis), givre (Glacior), plasma et sève (Sylvanox), lumière d'étoile (Astrarque).",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raz-de-marée",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -30467,6 +30961,12 @@
    "fr": "Reflets d'étoile",
    "where": [
     "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Reflets de nacre",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -31673,6 +32173,12 @@
    "fr": "Rond",
    "where": [
     "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Ronde des fouets",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -33578,9 +34084,21 @@
    ]
   },
   {
+   "fr": "Ses lueurs se détachent et tournoient !",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Ses pas arrachent la roche : les blocs tournoient !",
    "where": [
     "data/levels/confins_02.json"
+   ]
+  },
+  {
+   "fr": "Ses photophores crépitent d'éclairs !",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -33593,6 +34111,12 @@
    "fr": "Ses réglages se modifient ici. Ses planches d'animation et la durée de leurs images restent celles du jeu (lecture seule). « Publier… » met la définition en ligne.",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Ses tentacules arrachent la roche : les blocs tournoient !",
+   "where": [
+    "data/levels/confins_03.json"
    ]
   },
   {
@@ -34123,6 +34647,12 @@
    ]
   },
   {
+   "fr": "Son manteau se déchire : les abysses s'ouvrent !",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Son mot de passe",
    "where": [
     "ui/screens/OnlineMigration.cpp"
@@ -34325,6 +34855,12 @@
    ]
   },
   {
+   "fr": "Sous la croûte des Confins, une mer noire sans fond : le Kraken des Abysses et ses huit phases, dans une arène géante. Une seule vie, aucun checkpoint.",
+   "where": [
+    "data/levels/confins_03.json"
+   ]
+  },
+  {
    "fr": "Sous la glace, la lumière du cristal ne s'éteint jamais.",
    "where": [
     "data/levels/glacior_02.json"
@@ -34430,6 +34966,12 @@
    "fr": "Spectre",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Spirale d'encre",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -36296,6 +36838,12 @@
    ]
   },
   {
+   "fr": "Terminer La Fosse des Abysses, aux Confins.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Terminer La Gueule du Dragon, aux Confins.",
    "where": [
     "data/achievements/achievements.json"
@@ -36339,13 +36887,13 @@
    ]
   },
   {
-   "fr": "Terminer les 21 niveaux de la campagne sans mourir.",
+   "fr": "Terminer les 22 niveaux de la campagne sans mourir.",
    "where": [
     "data/achievements/achievements.json"
    ]
   },
   {
-   "fr": "Terminer les 21 niveaux de la campagne.",
+   "fr": "Terminer les 22 niveaux de la campagne.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -36510,6 +37058,7 @@
     "data/levels/aethra_04.json",
     "data/levels/confins_01.json",
     "data/levels/confins_02.json",
+    "data/levels/confins_03.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -37064,7 +37613,14 @@
     "data/enemies/cryowyrm.json",
     "data/enemies/echo_cryowyrm.json",
     "data/enemies/echo_ignivore.json",
-    "data/enemies/ignivore.json"
+    "data/enemies/ignivore.json",
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Tourbillon : un soin",
+   "where": [
+    "data/levels/confins_03.json"
    ]
   },
   {
@@ -38169,6 +38725,12 @@
    ]
   },
   {
+   "fr": "Un des deux comptes a changé entre-temps : rien n'a été migré (la sauvegarde est faite).",
+   "where": [
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
    "fr": "Un des joueurs ne peut pas être ajouté.",
    "where": [
     "server/src/social.ts"
@@ -38255,6 +38817,7 @@
   {
    "fr": "Un import est en train de remplacer les données : attendez la fin.",
    "where": [
+    "server/src/accountMigration.ts",
     "server/src/backups.ts"
    ]
   },
@@ -38262,6 +38825,12 @@
    "fr": "Un joueur bloqué ne peut plus vous écrire ni vous envoyer de demande d'ami, et ses messages vous sont masqués dans les groupes. Il n'est pas prévenu.",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Un kraken colossal des mers noires enfouies sous la croûte des Confins. Huit phases, huit lueurs : son manteau se déchire, la marée monte, et sa dernière vague doit être survécue.",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -38628,6 +39197,18 @@
    ]
   },
   {
+   "fr": "Une lueur arrachée à un bras du Kraken, qui flotte encore et crache des bulles de lumière.",
+   "where": [
+    "data/enemies/photophore.json"
+   ]
+  },
+  {
+   "fr": "Une lueur de nacre monte de son cœur !",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Une meute de Braisites : écrasez-les d'une Frappe sismique au milieu du groupe !",
    "where": [
     "data/levels/pyralis_01.json"
@@ -38637,6 +39218,12 @@
    "fr": "Une modification refusée (conflit, objet verrouillé ou supprimé) est montrée avec le choix de la réappliquer : rien n'est écrasé sans vous. Hors ligne, vos modifications attendent sur le disque.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "une même partie ne peut être donnée qu'une fois",
+   "where": [
+    "server/src/accountMigration.ts"
    ]
   },
   {
@@ -38809,6 +39396,12 @@
    ]
   },
   {
+   "fr": "Une seule vie. Un kraken venu des mers enfouies. Huit phases.",
+   "where": [
+    "data/levels/confins_03.json"
+   ]
+  },
+  {
    "fr": "Une seule vie. Une étoile morte. Huit phases.",
    "where": [
     "data/levels/noyau_03.json"
@@ -38846,6 +39439,12 @@
   },
   {
    "fr": "Une tête d'or et une longue queue violette semée d'étoiles.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Une vague géante se dresse derrière le portail, retombe en écume et laisse des bulles de lumière.",
    "where": [
     "data/cosmetics/cosmetics.json"
    ]
@@ -39304,6 +39903,18 @@
   },
   {
    "fr": "Vaincre l'Astrarque, au cœur de l'étoile.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre le Kraken des Abysses.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre le Kraken sans être touché.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -40024,6 +40635,12 @@
     "saves/Settings.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Violet d'encre, visière cyan comme un photophore, écharpe turquoise : la tenue du Kraken.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -40847,6 +41464,12 @@
    "fr": "Vous ne pouvez pas donner ce rôle.",
    "where": [
     "server/src/projects.ts"
+   ]
+  },
+  {
+   "fr": "Vous ne pouvez pas fermer votre propre compte.",
+   "where": [
+    "server/src/accountMigration.ts"
    ]
   },
   {
@@ -42207,6 +42830,12 @@
    "where": [
     "ui/screens/MainMenuScene.cpp",
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} demandes de migration de ce compte refusées (code faux ou expiré) : quelqu'un connaît votre mot de passe.",
+   "where": [
+    "server/src/notifications.ts"
    ]
   },
   {
@@ -44464,6 +45093,12 @@
    ]
   },
   {
+   "fr": "Éclair réfléchi",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Éclairage dynamique",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -45030,6 +45665,12 @@
    ]
   },
   {
+   "fr": "Étau de tentacules",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Éthiopie",
    "where": [
     "data/online/countries.json",
@@ -45091,6 +45732,18 @@
    "fr": "Étoiles traqueuses",
    "where": [
     "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Étreinte",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Étreinte du Kraken",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {

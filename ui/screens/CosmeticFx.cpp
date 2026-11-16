@@ -225,6 +225,46 @@ void drawAvatarFrame(Renderer& r, Vec2 center, float radius, const std::string& 
             r.drawLine(p - t * (1.5f * scale), p - t * (1.5f * scale) + d * (2.4f * scale), c, 1.2f * scale, BlendMode::Additive);
             r.drawLine(p + t * (1.5f * scale), p + t * (1.5f * scale) - d * (2.4f * scale), c, 1.2f * scale, BlendMode::Additive);
         }
+    } else if (look == "tentacles") {
+        // « Étreinte du Kraken » (2.52): two tentacles coil around the avatar from below, deep
+        // violet with a teal sheen, their suckers lighting up in cyan one after the other along
+        // them. Within kAvatarFrameMargin: their outer edge stays 12 units beyond the avatar.
+        r.drawGlow(center, radius + 16 * scale, Color{80, 200, 255, 70});
+        ring(main, 2.5f, Color{24, 18, 52, 255});
+        const int n = 26;
+        const float wave = std::fmod(time * 0.7f, 1.0f);
+        for (int side = -1; side <= 1; side += 2) {
+            auto at = [&](int i, Vec2& d, float& th) {
+                const float u = static_cast<float>(i) / static_cast<float>(n - 1);
+                const float a = kFxPi * 0.5f + static_cast<float>(side) * (0.15f + u * 2.55f);
+                d = Vec2{std::cos(a), std::sin(a)};
+                th = (5.0f - 3.4f * u) * scale;
+                const float wob = std::sin(time * 2.2f + u * 6.0f + static_cast<float>(side)) * 1.1f * u;
+                return center + d * (main + (2.5f + wob) * scale);
+            };
+            Vec2 d;
+            float th = 0.0f;
+            for (int i = 0; i < n; ++i) {
+                const Vec2 p = at(i, d, th);
+                r.fillCircle(p, th + 1.2f * scale, Color{20, 12, 40, 255});
+            }
+            for (int i = 0; i < n; ++i) {
+                const Vec2 p = at(i, d, th);
+                r.fillCircle(p, th, Color{70, 64, 130, 255});
+            }
+            for (int i = 0; i < n; ++i) {
+                const Vec2 p = at(i, d, th);
+                r.fillCircle(p + d * (th * 0.4f), th * 0.38f, Color{95, 138, 168, 255});  // the sheen on its outer side
+            }
+            for (int i = 1; i < n - 2; i += 3) {
+                const Vec2 p = at(i, d, th);
+                const float u = static_cast<float>(i) / static_cast<float>(n - 1);
+                const float lit = std::max(0.0f, 1.0f - std::fabs(u - wave) * 5.0f);
+                const Vec2 s = p - d * (th * 0.5f);
+                r.fillCircle(s, std::max(1.0f * scale, th * 0.3f), Color{157, 147, 194, 255});
+                r.drawGlow(s, (3.0f + 5.0f * lit) * scale, Color{110, 235, 255, static_cast<uint8_t>(70 + 170 * lit)});
+            }
+        }
     } else if (look == "laurels") {
         r.drawGlow(center, radius + 18 * scale, Color{255, 214, 90, 110});
         ring(main, 4, Color{255, 214, 90, 255});
@@ -357,6 +397,21 @@ void drawTrailPoint(const Canvas& cv, const std::string& look, Vec2 p, float k, 
         cv.dot(q, sz * k + 0.6f, Color{130, 124, 118, alpha(0.9f * f)});
         cv.dot(cv.off(q, {-0.5f, -0.5f}), (sz * k + 0.6f) * 0.5f, Color{180, 174, 166, alpha(0.8f * f)});
         if (seed % 3 == 0) cv.glow(q, 4.0f * k + 1.0f, Color{255, 170, 60, alpha(0.6f * f)});
+    } else if (look == "bubbles") {
+        // « Bulles des abysses » (2.52, Kraken): bubbles of light rising and wobbling behind
+        // Nova, a few curls of ink among them.
+        Vec2 j{(noise(seed) - 0.5f) * 10.0f + std::sin(age * 9.0f + static_cast<float>(seed)) * 3.0f,
+               -age * 36.0f - noise(seed * 3u + 5u) * 5.0f};
+        Vec2 q = cv.off(p, j);
+        if (seed % 4 == 0) {
+            cv.dot(q, 3.2f * k + 1.2f, Color{40, 30, 80, alpha(0.55f * f)});
+            cv.dot(cv.off(q, {2.0f, -1.0f}), 2.2f * k + 0.8f, Color{62, 50, 112, alpha(0.45f * f)});
+        } else {
+            const float sz = 1.6f + 2.0f * noise(seed * 7u + 1u);
+            cv.glow(q, sz * 2.4f * k + 1.5f, Color{110, 230, 255, alpha(0.35f * f)});
+            cv.ring(q, sz * k + 0.8f, 1.0f, Color{170, 240, 255, alpha(0.85f * f)});
+            cv.dot(cv.off(q, {-sz * 0.35f, -sz * 0.35f}), 0.6f, Color{255, 255, 255, alpha(0.9f * f)}, BlendMode::Additive);
+        }
     } else if (look == "prism") {
         // A ribbon whose colour runs through the rainbow along the trail, and keeps turning.
         Color c = rainbow(static_cast<float>(seed) * 0.06f + age * 0.8f);
@@ -534,6 +589,47 @@ void drawVictoryFx(Renderer& r, const std::string& look, Vec2 at, float t, bool 
             Vec2 p = cv.off(o, {x, -v * tr + 160.0f * tr * tr});
             cv.dot(p, 4.0f, Color{120, 114, 108, alpha(fade)});
             cv.dot(cv.off(p, {-1.0f, -1.0f}), 2.0f, Color{170, 164, 156, alpha(fade)});
+        }
+    } else if (look == "tidal_wave") {
+        // « Raz-de-marée » (2.52, Kraken): a giant wave rises behind the portal, its crest leaning
+        // over it, falls back in foam, and leaves bubbles of light rising.
+        const float rise = std::clamp(t / 0.9f, 0.0f, 1.0f);
+        const float fall = std::clamp((t - 0.9f) / 0.7f, 0.0f, 1.0f);
+        const float hgt = 150.0f * (1.0f - (1.0f - rise) * (1.0f - rise)) * (1.0f - 0.9f * fall);
+        for (int i = 0; i < 24; ++i) {
+            const float u = static_cast<float>(i) / 23.0f;
+            const float shape = std::sin(u * kFxPi) * (0.8f + 0.2f * std::sin(u * 7.0f + t * 4.0f));
+            const float top = hgt * shape;
+            const float lean = 26.0f * rise * (1.0f - fall) * shape;  // the crest leans to the right
+            const float x = -120.0f + 240.0f * u;
+            for (float y = 0.0f; y < top; y += 10.0f) {
+                const float h = y / std::max(1.0f, top);
+                cv.dot(cv.off(at, {x + lean * h * h, -y}), 7.0f, mix(Color{14, 34, 80, 255}, Color{30, 90, 150, 255}, h).withAlpha(alpha(0.7f * fade)));
+            }
+            if (top > 4.0f) {
+                Vec2 crest = cv.off(at, {x + lean, -top});
+                cv.glow(crest, 9.0f, Color{110, 230, 255, alpha(0.7f * fade)});
+                cv.dot(crest, 2.2f, Color{235, 250, 255, alpha(0.9f * fade)}, BlendMode::Additive);
+            }
+        }
+        // The foam thrown when it breaks.
+        for (int i = 0; i < 16; ++i) {
+            const float tf = t - 0.95f - 0.03f * static_cast<float>(i);
+            if (tf < 0.0f || tf > 1.0f) continue;
+            const float x = -100.0f + 200.0f * noise(static_cast<uint32_t>(i) * 29u + 7u);
+            const float v = 90.0f + 70.0f * noise(static_cast<uint32_t>(i) * 13u + 2u);
+            Vec2 q = cv.off(at, {x + 30.0f * tf, -40.0f - v * tf + 140.0f * tf * tf});
+            cv.dot(q, 2.0f, Color{235, 250, 255, alpha(0.85f * fade * (1.0f - tf))}, BlendMode::Additive);
+        }
+        // Bubbles of light rising where it fell.
+        for (int i = 0; i < 14; ++i) {
+            const float tb = t - 1.2f - 0.05f * static_cast<float>(i);
+            if (tb < 0.0f) continue;
+            const float x = -90.0f + 180.0f * noise(static_cast<uint32_t>(i) * 61u + 3u) + std::sin(tb * 6.0f + static_cast<float>(i)) * 5.0f;
+            Vec2 q = cv.off(at, {x, -10.0f - 70.0f * tb});
+            const float a = fade * std::clamp(1.0f - tb / 1.4f, 0.0f, 1.0f);
+            cv.glow(q, 6.0f, Color{110, 230, 255, alpha(0.5f * a)});
+            cv.ring(q, 3.0f, 1.0f, Color{180, 240, 255, alpha(0.9f * a)});
         }
     } else if (look == "corona") {
         // An eclipse above the portal: a dark disc ringed with light, its rays turning.

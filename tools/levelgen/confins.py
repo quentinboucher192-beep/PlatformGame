@@ -8,6 +8,9 @@ start (data/planets/confins.json):
   data/levels/confins_02.json  "Le Cœur de Pierre" (2.49, EXTRÊME): the same for the Monolithe,
                                 le Golem Primordial (a walker: the crust gives way on the two
                                 sides of its arena)
+  data/levels/confins_03.json  "La Fosse des Abysses" (2.52, EXTRÊME): the same for the Kraken des
+                                Abysses (tools/contentgen/kraken.py; it swims: the crust gives way
+                                over two trenches of dark water, the middle stays)
 
 2.49: each level of Les Confins is its giga boss's fight alone (no platforming before it).
 
@@ -42,11 +45,14 @@ class Edge(Star):
         """The giant arena of Pyrrhax: the crust over the middle gives way at the 5th phase."""
         return self.giga_arena(boss, music, pits=[self.GIANT_BASIN], flying=True, texts=self.DRAGON_TEXTS)
 
-    def giga_arena(self, boss, music, pits, flying, texts):
+    FIRE_LIGHTS = ((10, 26, "#ff7a2e"), (48, 30, "#ffc49a"), (86, 26, "#ff7a2e"), (30, 8, "#ff5ad2"), (66, 8, "#ff5ad2"))
+
+    def giga_arena(self, boss, music, pits, flying, texts, style="plasma", lights=FIRE_LIGHTS, flicker=0.12):
         """The giant arena (Star.GIANT_*) of a giga boss: the crust over each pit gives way at
         the 5th phase (magma below), debris orbit from the 3rd, fire closes in at the 8th and at
         the boss's rage. `pits`: (first, last) inside columns of each crust; `flying`: where the
-        boss waits (in the air, or on the floor)."""
+        boss waits (in the air, or on the floor). 2.52: `style` of what fills the pits and closes
+        in (« plasma », or « abyss »: the dark water of the Kraken), the arena's `lights`."""
         L, f = self.L, self.f
         x0 = self.x
         X = x0 + 1
@@ -75,7 +81,7 @@ class Edge(Star):
                 crust.append(oid)
             magma.append(L.obj("damage_zone", [(X + b0) * T, (f + 2) * T, (b1 - b0) * T, 2 * T], "gameplay",
                                {"damage": 2, "interval": 0.6, "visible": True, "shieldProtects": True, "active": False,
-                                "style": "plasma", "bounce": True}))
+                                "style": style, "bounce": True}))
         for h, ls in self.GIANT_LEDGES.items():
             for (lx, lw) in ls:
                 L.oneway(X + lx, X + lx + lw, f - h, ledge)
@@ -95,16 +101,15 @@ class Edge(Star):
         def curtain(a, b):
             return L.obj("damage_zone", [(X + a) * T, (f - Hh) * T, (b - a) * T, Hh * T], "gameplay",
                          {"damage": 2, "interval": 0.5, "visible": True, "shieldProtects": True, "active": False,
-                          "style": "plasma", "bounce": False})
+                          "style": style, "bounce": False})
         curtain1 = [curtain(0, 12), curtain(W - 12, W)]
         curtain2 = [curtain(12, 22), curtain(W - 22, W - 12)]
         bid = L.enemy(boss, X + 70, f - 20 if flying else f, patrol_tiles=6, face_left=True, dormant=True, boss=True)
         L.combat(X, f - Hh, X + W, f + 4, doors=left + "," + right, waves=bid, lock=False,
                  music=music or L.data.get("bossMusic", ""))
         L.data["objects"][-1]["props"]["announce"] = False
-        for (lx, lh, col) in ((10, 26, "#ff7a2e"), (48, 30, "#ffc49a"), (86, 26, "#ff7a2e"), (30, 8, "#ff5ad2"),
-                              (66, 8, "#ff5ad2")):
-            L.light(X + lx, f - lh, col, 160, flicker=0.12)
+        for (lx, lh, col) in lights:
+            L.light(X + lx, f - lh, col, 160, flicker=flicker)
         fire = magma + curtain1 + curtain2
         L.event(bid, "bossPhase", [{"type": "activate", "target": ",".join(debris)},
                                    {"type": "spawn", "target": orbs[3]},
@@ -208,6 +213,61 @@ def stone_heart():
     return width
 
 
+# ---------------------------------------------------------------- the abyssal trench (2.52)
+KRAKEN_TEXTS = {
+    3: ("Ses tentacules arrachent la roche : les blocs tournoient !", "Encre : les blocs en orbite"),
+    5: "Brisé : les abysses s'ouvrent",
+    7: "Tourbillon : un soin",
+    8: ("Les eaux noires referment l'arène !", "Léviathan : l'arène se resserre"),
+    "won": ("Le Kraken sombre dans les abysses. La sortie est ouverte.", "Kraken vaincu"),
+}
+# The lights of the abyss: cyan photophores, indigo glimmers low over the pits.
+KRAKEN_LIGHTS = ((10, 26, "#7ae6ff"), (48, 30, "#b8f2ff"), (86, 26, "#7ae6ff"), (30, 8, "#6a58f0"), (66, 8, "#6a58f0"))
+# The sky of the Confins seen through dark water (display only).
+ABYSS_TINTS = {"sky.png": "#5a6ab0", "far.png": "#465886", "mid.png": "#38466c", "abyss.png": "#4a6aa0",
+               "near.png": "#303c58", "fg_embers.png": "#8ad8ffc0"}
+
+
+def abyss_trench():
+    b = Edge("confins_03", "La Fosse des Abysses", "pyralis", seed=8301)
+    L, d = b.L, b.L.data
+    d["description"] = ("Sous la croûte des Confins, une mer noire sans fond : le Kraken des Abysses et ses huit "
+                        "phases, dans une arène géante. Une seule vie, aucun checkpoint.")
+    d["difficulty"] = 5
+    d["extreme"] = True
+    d["bossMusic"] = "music/kraken_boss.ogg"
+    d["ambientLight"] = "#6a7ab4"
+    d["backgroundColor"] = "#040a1c"
+    for layer in d["background"]:
+        name = layer["texture"].rsplit("/", 1)[-1]
+        if name in ABYSS_TINTS:
+            layer["tint"] = ABYSS_TINTS[name]
+        if "fillBelow" in layer:
+            layer["fillBelow"] = "#1a3a6a"
+    b.f = 40
+    # Only the fight, as the other giga bosses' levels: the choice of the powers, then the arena.
+    b.th.update(floor="obsidian", roof="obsidian", accent="obsidian")
+    b.opening("La Fosse des Abysses : le Kraken seul, une seule vie, aucun checkpoint. Choisissez vos quatre pouvoirs.")
+    b.tablets(giga_powers("confins_03"))  # every power of the game
+    b.zone_sign("Le Kraken des Abysses.")
+    b.rooms.append({"type": "boss", "x": b.x, "floor": b.f, "boss": "kraken"})
+    # It swims (it waits in the air): the crust gives way over two trenches of dark water, the
+    # middle of the arena stays (and its two ends).
+    b.giga_arena("kraken", "music/kraken_boss.ogg", pits=[(10, 38), (58, 86)], flying=True, texts=KRAKEN_TEXTS,
+                 style="abyss", lights=KRAKEN_LIGHTS, flicker=0.08)
+    width = b.finish("Le Kraken a sombré. Les abysses se taisent.")
+    ref = 360  # about six minutes of fight
+    d["timer"] = {"mode": "challenge", "limit": 3600, "onExpire": "gameover", "referenceTime": ref, "challengeMaxDeaths": 0}
+    d["medals"] = {"bronze": {}, "silver": {"maxTime": int(ref * 1.6)}, "gold": {"maxTime": int(ref * 1.2)},
+                   "platinum": {"maxTime": ref, "maxDeaths": 0}}
+    b.cinematics("LA FOSSE DES ABYSSES", "Les Confins", "Une seule vie. Un kraken venu des mers enfouies. Huit phases.",
+                 "LE KRAKEN SOMBRE")
+    d["metadata"] = {"generator": "tools/levelgen/confins.py", "revision": 1, "rooms": b.rooms, "noHealing": True}
+    L.save(os.path.join(ROOT, "data/levels/confins_03.json"))
+    return width
+
+
 if __name__ == "__main__":
     print("confins_01 :", dragon_maw(), "tuiles")
     print("confins_02 :", stone_heart(), "tuiles")  # 2.49
+    print("confins_03 :", abyss_trench(), "tuiles")  # 2.52

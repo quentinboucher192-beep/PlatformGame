@@ -534,8 +534,9 @@ void GameWorld::cloudFromShot(const Projectile& p, Vec2 at) {
     c.time = p.cloudTime > 0.0f ? p.cloudTime : 3.0f;
     c.damage = p.cloudDamage;
     c.color = p.cloudColor;
+    c.ink = p.cloudInk;
     hazards_.addCloud(c);
-    particles_.emit("fire_burst", at, 1.4f);
+    particles_.emit(c.ink ? "splash_water" : "fire_burst", at, 1.4f);
     playSound("sounds/lava_bubble.wav", at, 0.6f, 0.8f);
 }
 
