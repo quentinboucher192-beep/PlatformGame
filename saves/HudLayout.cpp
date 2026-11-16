@@ -22,6 +22,7 @@ const char* HudLayout::id(HudElement e) {
         case HudElement::Progress: return "progress";
         case HudElement::Boss: return "boss";
         case HudElement::Splits: return "splits";
+        case HudElement::Enemies: return "enemies";
         default: return "";
     }
 }
@@ -35,6 +36,7 @@ const char* HudLayout::label(HudElement e) {
         case HudElement::Progress: return "Barre de progression";
         case HudElement::Boss: return "Vie du boss";
         case HudElement::Splits: return "Fantômes : écart et segments";
+        case HudElement::Enemies: return "Ennemis vaincus";
         default: return "";
     }
 }

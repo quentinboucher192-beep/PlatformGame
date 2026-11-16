@@ -24,7 +24,8 @@ Json mergeRecordsJson(const Json& mine, const Json& theirs);
 /// story was seen (2.51) united.
 Json mergeBossStatsJson(const Json& mine, const Json& theirs);
 /// achievements.json: achievements unlocked (union, the earliest date kept); counters and power
-/// uses summed, maxima the highest, sets united.
+/// uses summed, maxima the highest, sets united; the achievements followed united (2.51: this
+/// computer's first, none unlocked, at most 5).
 Json mergeAchievementsJson(const Json& mine, const Json& theirs);
 /// collection.json: what was heard, met and announced (union), the planet pictures saved (summed);
 /// what is worn, the menu music and the profile badges stay those of this computer.
