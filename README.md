@@ -5,6 +5,13 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.48.0** :
+* **Les Confins**, sixième planète, au bord du système (ouverte en terminant « Le Cœur d'une Étoile
+  Mourante »), et son niveau EXTRÊME **« La Gueule du Dragon »** : la croûte brûlée des Confins, une
+  seule vie, aucun checkpoint, puis **Pyrrhax, le Dragon d'Obsidienne**, boss géant à huit phases.
+* **Réessayer en entraînement** après une chute dans un niveau EXTRÊME : réapparition sur place,
+  hors classements, avec un bandeau permanent.
+
 **Nouveau dans la version 2.47.0** :
 * **Un compte, un ordinateur** : le compte se lie à son ordinateur ; une connexion depuis un autre
   est refusée et signalée (alerte « Sécurité »), un seul compte par ordinateur.
@@ -12,6 +19,8 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
   montre ce qui part au compte. Copie en ligne de la progression (EN LIGNE › PARAMÈTRES › Cet ordinateur).
 * **Administration** : délier un compte ou le lier au nouvel ordinateur d'un joueur.
 * Éditeur d'entités : le bandeau « lecture seule » des entités natives reprend celui de l'éditeur de niveaux.
+* Correctifs : « Garder les records » garde aussi la course à la vérification ; présence masquée
+  affichée par un rond barré ; chrono indépendant de l'intro.
 
 **Nouveau dans la version 2.46.0** :
 * **Entités natives en lecture seule** dans l'éditeur d'ennemis (EN LIGNE › ATELIER), avec

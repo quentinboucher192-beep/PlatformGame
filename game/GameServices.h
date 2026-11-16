@@ -91,6 +91,11 @@ public:
     Json reconnectSummary;
     /// The copy as the server keeps it: {format, game_version, summary, files}.
     Json progressCopyBody() const;
+    /// 2.50 « Migrer vers un nouveau compte »: the files of a copy (`files` of the body above,
+    /// sent by the old account's game) added to this computer's saves, the best of each side
+    /// kept (game/online/ProgressMerge). The saves are copied first to
+    /// saves/avant_restauration_<date>/. False (and `error`) when a save could not be written.
+    bool restoreProgressCopy(const Json& files, std::string* error = nullptr);
     void sendProgressCopy(std::function<void(const ApiResult&)> done = {});
     /// Every frame: sends a copy when one is due (connected, 10 minutes after the last one).
     void updateProgressCopy(float dt);

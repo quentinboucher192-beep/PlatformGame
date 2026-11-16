@@ -7,6 +7,7 @@
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/ChallengeUi.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/OnlineMigration.h"
 
 namespace cosmic {
 
@@ -33,6 +34,11 @@ void OnlineComputerTab::enter() {
 void OnlineComputerTab::load() {
     if (loading_ || !g_.online.usable()) return;
     loading_ = true;
+    // 2.50: the progression of an old account migrated here, waiting to be restored.
+    g_.online.get("/api/v1/players/me/progress-restore", OnlineService::guard(life_, [this](const ApiResult& r) {
+                      restore_ = r.ok ? jfield(r.data, "restore", Json()) : Json();
+                  }),
+                  false);
     g_.online.get("/api/v1/players/me/device", OnlineService::guard(life_, [this](const ApiResult& r) {
                       loading_ = false;
                       if (!r.ok) return say_(r.message, true);
@@ -133,8 +139,31 @@ void OnlineComputerTab::draw(const Rect& c) {
                 }
             });
 
-        // ----- security alerts (right column)
+        // ----- 2.50: migrate to a new account (right column, above the alerts)
         float rx = c.x + leftW + ui.s(30), rw = c.right() - rx, ry = c.y;
+        ui.label("Migrer vers un nouveau compte", {rx, ry + ui.s(11)}, 19, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+        ry += ui.s(30);
+        ry += ui.labelWrapped("Le compte ne sert que sur cet ordinateur. Sur un autre, créez un nouveau compte : un code préparé ici lui "
+                              "transfère toutes vos données.",
+                              {rx, ry}, rw, 15, ui.theme().textDim)
+                  .y +
+              ui.s(8);
+        auto sideButton = [&](const char* id, const std::string& text, bool primary) {
+            UIContext::ButtonStyle st;
+            st.small = true;
+            st.primary = primary;
+            st.enabled = !busy_ && g_.online.usable();
+            st.fontSize = ui.fitFont(text, FontFace::Bold, 18, rw - ui.s(24));
+            const bool hit = ui.button(id, {rx, ry, rw, ui.s(42)}, text, st);
+            ry += ui.s(42) + ui.s(8);
+            return hit;
+        };
+        if (restore_.is_object() && sideButton("restore", "Restaurer la progression transférée", true))
+            g_.app.pushScene(makeProgressRestore(g_, restore_));
+        if (sideButton("prepare", "Préparer une migration", false)) g_.app.pushScene(makeMigrationPrepare(g_));
+        if (sideButton("recover", "Récupérer un ancien compte", false)) g_.app.pushScene(makeMigrationRecover(g_));
+        ry += ui.s(10);
+        // ----- security alerts (right column)
         ui.label("Alertes de sécurité", {rx, ry + ui.s(11)}, 19, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
         ry += ui.s(34);
         const Json& events = jfield(data_, "events", Json::array());

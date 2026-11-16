@@ -189,8 +189,10 @@ private:
         // avatars after it (never below 11.5 pixels: smaller, the font loses its spaces).
         float explained = 0.0f;
         {
-            const std::string why = spectate_ && !showPresence_ ? "Inactif tant que votre présence est masquée."
-                                                                : "Vous n'êtes pas prévenu quand un ami regarde.";
+            // 2.47: a hidden presence is shown to friends as a crossed circle.
+            const std::string why = !showPresence_ ? (spectate_ ? "Présence masquée : vos amis voient un rond barré, et ne peuvent pas vous regarder jouer."
+                                                                : "Présence masquée : vos amis voient un rond barré.")
+                                                   : "Vous n'êtes pas prévenu quand un ami regarde.";
             const float fs = std::max(14.0f, 11.5f / ui.s(1.0f));
             const Vec2 sz = ui.text().measureWrapped(why, FontFace::Body, ui.s(fs), w);
             ui.labelWrapped(why, {x, y + step * 5 + ui.s(46)}, w, fs, spectate_ && !showPresence_ ? ui.theme().warm : ui.theme().textDim);

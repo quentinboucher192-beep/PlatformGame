@@ -31,6 +31,7 @@ private:
     std::function<void(const std::string&, bool)> say_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     Json data_;
+    Json restore_;  // 2.50: a progression migrated here, waiting to be restored
     bool loading_ = false, busy_ = false;
     std::string name_;
 };
