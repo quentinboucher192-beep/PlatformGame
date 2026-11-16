@@ -155,7 +155,7 @@ function boolOr(field, raw, def) {
  */
 export function validateChallengeSpec(spec, catalog, today) {
     const kind = spec.kind;
-    if (!KINDS.includes(kind)) throw new ChallengeSpecError("kind", "sorte de défi inconnue (daily, weekly ou monthly)");
+    if (!KINDS.includes(kind)) throw new ChallengeSpecError("kind", "sorte de défi inconnue (jour, semaine ou mois attendu)");
     const bounds = periodBounds(kind, spec.period);
     if (!bounds) throw new ChallengeSpecError("period", `période invalide « ${spec.period} »`);
     if (!isDate(today)) throw new ChallengeSpecError("period", "date du jour invalide");
@@ -195,7 +195,7 @@ export function validateChallengeSpec(spec, catalog, today) {
     };
 
     const objective = spec.objective ?? "speed";
-    if (!OBJECTIVES.includes(objective)) throw new ChallengeSpecError("objective", "objectif speed (Vitesse) ou finish (Finir le niveau) attendu");
+    if (!OBJECTIVES.includes(objective)) throw new ChallengeSpecError("objective", "objectif « Vitesse » ou « Finir le niveau » attendu");
     const goldNoDamage = boolOr("gold_no_damage", spec.gold_no_damage, true);
     let silver = FINISH_TIER_MS;
     let gold = FINISH_TIER_MS;

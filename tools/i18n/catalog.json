@@ -8391,6 +8391,12 @@
    ]
   },
   {
+   "fr": "date du jour invalide",
+   "where": [
+    "server/src/challengeSpec.mjs"
+   ]
+  },
+  {
    "fr": "dates du défi différentes de sa période",
    "where": [
     "game/online/DailyChallenges.cpp"
@@ -13847,6 +13853,7 @@
   {
    "fr": "identifiant de niveau invalide",
    "where": [
+    "server/src/challengeSpec.mjs",
     "server/src/community.ts"
    ]
   },
@@ -14972,6 +14979,12 @@
    "fr": "L'ARCHONTE DES CATACOMBES",
    "where": [
     "data/enemies/archon_catacombs.json"
+   ]
+  },
+  {
+   "fr": "l'Argent doit demander une plus grande part du parcours que le Bronze",
+   "where": [
+    "server/src/challengeSpec.mjs"
    ]
   },
   {
@@ -16711,6 +16724,12 @@
     "data/enemies/echo_crucible_heart.json",
     "data/enemies/echo_magmaroth.json",
     "data/enemies/magmaroth.json"
+   ]
+  },
+  {
+   "fr": "le temps de l'Or doit être inférieur ou égal à celui de l'Argent",
+   "where": [
+    "server/src/challengeSpec.mjs"
    ]
   },
   {
@@ -18920,6 +18939,12 @@
    ]
   },
   {
+   "fr": "moins d'emplacements ({0}) que le niveau ({1})",
+   "where": [
+    "server/src/challengeSpec.mjs"
+   ]
+  },
+  {
    "fr": "moins d'entrées qu'annoncé",
    "where": [
     "game/online/Spectate.cpp",
@@ -19616,6 +19641,12 @@
    ]
   },
   {
+   "fr": "niveau de la campagne ou de la communauté attendu",
+   "where": [
+    "server/src/challengeSpec.mjs"
+   ]
+  },
+  {
    "fr": "niveau de la communauté",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -19625,6 +19656,12 @@
    "fr": "niveau de la communauté  ·  {0}",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "niveau de la communauté : vérifiez qu'il reste faisable avec ces règles (pouvoirs, emplacements, stations)",
+   "where": [
+    "server/src/challengeSpec.mjs"
    ]
   },
   {
@@ -19887,6 +19924,12 @@
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/ChallengeUi.cpp"
+   ]
+  },
+  {
+   "fr": "niveau {0} absent du catalogue (src/challengeCatalog.json)",
+   "where": [
+    "server/src/challengeSpec.mjs"
    ]
   },
   {
@@ -20871,6 +20914,12 @@
    "fr": "Objectif et paliers",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "objectif « Vitesse » ou « Finir le niveau » attendu",
+   "where": [
+    "server/src/challengeSpec.mjs"
    ]
   },
   {
@@ -21983,6 +22032,18 @@
    "fr": "Parcours {0} %",
    "where": [
     "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
+   "fr": "part du parcours de l'Argent (%)",
+   "where": [
+    "server/src/challengeSpec.mjs"
+   ]
+  },
+  {
+   "fr": "part du parcours du Bronze (%)",
+   "where": [
+    "server/src/challengeSpec.mjs"
    ]
   },
   {
@@ -24026,6 +24087,12 @@
    ]
   },
   {
+   "fr": "pouvoirs de départ du niveau absents des règles : {0}",
+   "where": [
+    "server/src/challengeSpec.mjs"
+   ]
+  },
+  {
    "fr": "POUVOIRS DU SEGMENT",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
@@ -24835,6 +24902,18 @@
    "fr": "Pèlerin d'Aethra",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "période invalide « {0} »",
+   "where": [
+    "server/src/challengeSpec.mjs"
+   ]
+  },
+  {
+   "fr": "période {0} (début {1}) refusée : un défi commencé ou passé ne change plus (aujourd'hui : {2} UTC)",
+   "where": [
+    "server/src/challengeSpec.mjs"
    ]
   },
   {
@@ -28836,6 +28915,12 @@
    ]
   },
   {
+   "fr": "sorte de défi inconnue (jour, semaine ou mois attendu)",
+   "where": [
+    "server/src/challengeSpec.mjs"
+   ]
+  },
+  {
    "fr": "Sortie",
    "where": [
     "ui/screens/PauseScene.cpp"
@@ -29380,6 +29465,12 @@
    "fr": "Stations de pouvoirs dans la campagne, raccourci du Cœur de la Machine supprimé.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "stations de pouvoirs désactivées",
+   "where": [
+    "server/src/challengeSpec.mjs"
    ]
   },
   {
@@ -30357,6 +30448,12 @@
    ]
   },
   {
+   "fr": "temps de l'Argent et de l'Or obligatoires pour un niveau de la communauté",
+   "where": [
+    "server/src/challengeSpec.mjs"
+   ]
+  },
+  {
    "fr": "TEMPS DE PASSAGE",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -30403,6 +30500,18 @@
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/levels/LevelData.cpp"
+   ]
+  },
+  {
+   "fr": "temps invalide « {0} »",
+   "where": [
+    "server/src/challengeSpec.mjs"
+   ]
+  },
+  {
+   "fr": "temps invalide « {0} » (m:ss attendu)",
+   "where": [
+    "server/src/challengeSpec.mjs"
    ]
   },
   {
@@ -35482,6 +35591,12 @@
    "fr": "{0} : ennemi « {1} » introuvable",
    "where": [
     "editors/level_editor/LevelEditorTools.cpp"
+   ]
+  },
+  {
+   "fr": "{0} : entier de {1} à {2} attendu",
+   "where": [
+    "server/src/challengeSpec.mjs"
    ]
   },
   {

@@ -632,7 +632,8 @@ def extract_data(words, out):
 def extract_server(words, out):
     """Messages of the Cosmic Online server shown by the game (errors, refusals…)."""
     lit = re.compile(r"\"((?:[^\"\\\n]|\\.)*)\"|'((?:[^'\\\n]|\\.)*)'|`((?:[^`\\]|\\.)*)`")
-    for path in sorted(glob.glob(os.path.join(ROOT, "server", "src", "*.ts"))):
+    # 2.41: the checks shared with the command line (challengeSpec.mjs) too.
+    for path in sorted(glob.glob(os.path.join(ROOT, "server", "src", "*.ts")) + glob.glob(os.path.join(ROOT, "server", "src", "*.mjs"))):
         rel = os.path.relpath(path, ROOT).replace(os.sep, "/")
         with open(path, encoding="utf-8") as f:
             src = f.read()
