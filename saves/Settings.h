@@ -40,6 +40,9 @@ struct GameplaySettings {
     bool editorAutosave = true;
     int editorAutosaveSeconds = 60;
     bool unlockAll = true;  // every planet and level playable without progression
+    /// « Histoire des giga-boss » (2.51): 0 told before the first fight against each giga
+    /// boss, 1 never (game/content/BossStories.h, StorySetting). Display only.
+    int bossStories = 0;
 };
 
 /// Whether a HUD element is shown (the timer and the progress bar have their own settings;

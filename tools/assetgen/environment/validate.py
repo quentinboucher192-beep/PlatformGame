@@ -288,6 +288,9 @@ def check():
                 "ui/planets/confins_banner.png", "ui/map_background.png"]:
         if os.path.exists(os.path.join(ASSETS, rel)) and (load(rel)[..., 3] < 255).any():
             errs.append(f"{rel}: should be opaque")
+    # The giga bosses' story paintings (2.51): every one a story names, 960x540, within budget.
+    import stories
+    errs += stories.check()
     return errs
 
 

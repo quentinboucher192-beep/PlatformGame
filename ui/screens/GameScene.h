@@ -60,6 +60,8 @@ public:
     void onExit() override;
     void onResume() override;
     void handleEvent(const SDL_Event& e) override;
+    /// The giga boss whose story is being told over the run ("" when none): the run waits.
+    const std::string& storyBoss() const { return storyBoss_; }
     void fixedUpdate(float dt) override;
     void update(float dt) override;
     void render(float alpha) override;
@@ -142,6 +144,13 @@ private:
     /// Boss fights of the run: statistics, sound of a phase beaten without a hit.
     BossFightTracker bossFights_;
     void bossFeedback();
+    // « Histoire des giga-boss » (2.51): the fight against a giga boss whose story has not been
+    // seen starts: its story is told over the run, which waits (not a step is simulated nor an
+    // input recorded until it ends, as under the pause menu). `storyBoss_`: the boss whose story
+    // is due or being told; `storyOpen_`: its scene was opened (cleared when it closes).
+    void checkBossStory();
+    std::string storyBoss_;
+    bool storyOpen_ = false;
     /// A boss out of view: a textured arrow on the screen's border, turned towards it.
     void drawBossArrow(const WorldView& view);
     std::future<std::vector<Vec2>> raceRouteFuture_;

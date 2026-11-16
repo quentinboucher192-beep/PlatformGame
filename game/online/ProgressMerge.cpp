@@ -149,6 +149,9 @@ Json mergeBossStatsJson(const Json& mine, const Json& theirs) {
     }
     Json out = mine.is_object() ? mine : Json::object();
     out["bosses"] = bosses;
+    // 2.51: the giga bosses whose story was told on either side (union).
+    out["storiesSeen"] = unionStrings(mine.is_object() ? mine.value("storiesSeen", Json::array()) : Json::array(),
+                                      theirs.is_object() ? theirs.value("storiesSeen", Json::array()) : Json::array());
     return out;
 }
 
