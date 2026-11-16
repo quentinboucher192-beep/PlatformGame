@@ -106,6 +106,8 @@ MUSIC = {
     'aethra_ambience': (True, 55, 65, -30.0, -19.0),
     # 2.33: Singularis, the giga boss of the Noyau stellaire
     'singularis_boss': (True, 60, 80, -16.0, -11.5),
+    # 2.48: Pyrrhax, le Dragon d'Obsidienne, the giga boss of Les Confins
+    'pyrrhax_boss': (True, 60, 80, -16.0, -11.5),
 }
 FONTS = {'Orbitron.ttf': 'title', 'ChakraPetch-Regular.ttf': 'ui', 'ChakraPetch-SemiBold.ttf': 'ui'}
 LICENCES = ['OFL-Orbitron.txt', 'OFL-ChakraPetch.txt']
