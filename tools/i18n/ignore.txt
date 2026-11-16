@@ -144,3 +144,7 @@ move
 set
 settings
 visibility
+banner
+fall
+obsidian
+powers

@@ -14,7 +14,7 @@
   "levels": [
     "confins_01"
   ],
-  "unlock": "level:noyau_03",
+  "unlock": "always",
   "teaser": false,
   "orbit": {
     "radius": 560,

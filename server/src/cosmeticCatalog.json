@@ -86,6 +86,13 @@
    "stars": 520
   },
   {
+   "id": "suit_obsidienne",
+   "category": "suit",
+   "look": "obsidienne",
+   "name": "Obsidienne",
+   "stars": 560
+  },
+  {
    "id": "suit_sanctuaire",
    "category": "suit",
    "look": "sanctuaire",
@@ -151,6 +158,13 @@
    "look": "prism",
    "name": "Prisme",
    "stars": 410
+  },
+  {
+   "id": "trail_cendres",
+   "category": "trail",
+   "look": "ashes",
+   "name": "Cendres de dragon",
+   "stars": 570
   },
   {
    "id": "trail_runes",
@@ -241,6 +255,13 @@
    "achievement": "gardiens_100"
   },
   {
+   "id": "frame_ecailles",
+   "category": "frame",
+   "look": "scales",
+   "name": "Écailles d'obsidienne",
+   "achievement": "maitrise_pyrrhax_nohit"
+  },
+  {
    "id": "frame_couronne",
    "category": "frame",
    "look": "crown",
@@ -320,6 +341,13 @@
    "look": "Briseur d'étoiles",
    "name": "Briseur d'étoiles",
    "achievement": "gardiens_singularis"
+  },
+  {
+   "id": "title_dompteur_dragon",
+   "category": "title",
+   "look": "Dompteur de dragon",
+   "name": "Dompteur de dragon",
+   "achievement": "gardiens_pyrrhax"
   },
   {
    "id": "title_analyste",
@@ -429,6 +457,13 @@
    "look": "corona",
    "name": "Couronne solaire",
    "stars": 540
+  },
+  {
+   "id": "victory_souffle",
+   "category": "victory",
+   "look": "dragon_breath",
+   "name": "Souffle du dragon",
+   "stars": 580
   },
   {
    "id": "victory_serie_feu",

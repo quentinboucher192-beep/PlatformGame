@@ -6,8 +6,7 @@ Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les c
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
 **Nouveau dans la version 2.48.0** :
-* **Les Confins**, sixième planète, au bord du système (ouverte en terminant « Le Cœur d'une Étoile
-  Mourante »), et son niveau EXTRÊME **« La Gueule du Dragon »** : la croûte brûlée des Confins, une
+* **Les Confins**, sixième planète, au bord du système (ouverte dès le départ), et son niveau EXTRÊME **« La Gueule du Dragon »** : la croûte brûlée des Confins, une
   seule vie, aucun checkpoint, puis **Pyrrhax, le Dragon d'Obsidienne**, boss géant à huit phases.
 * **Réessayer en entraînement** après une chute dans un niveau EXTRÊME : réapparition sur place,
   hors classements, avec un bandeau permanent.

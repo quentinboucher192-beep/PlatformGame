@@ -862,6 +862,7 @@
     "game/online/Spectate.cpp",
     "ui/screens/AdminCampaign.cpp",
     "ui/screens/AdminScene.cpp",
+    "ui/screens/OnlineMigration.cpp",
     "ui/screens/ProjectsScene.cpp"
    ]
   },
@@ -1595,6 +1596,12 @@
    ]
   },
   {
+   "fr": "Ancien pseudonyme",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "anciennes couleurs {0}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -1745,11 +1752,18 @@
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/HudEditorScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
+    "ui/screens/OnlineMigration.cpp",
     "ui/screens/OnlineSettingsScene.cpp",
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp",
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Annuler la migration",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -3530,6 +3544,12 @@
    ]
   },
   {
+   "fr": "Aux Confins du système",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Aux Confins du système, une croûte d'obsidienne sur un feu vivant. Ses épreuves les plus dures sans pardon, puis Pyrrhax et ses huit phases. Une seule vie, aucun checkpoint.",
    "where": [
     "data/levels/confins_01.json"
@@ -4008,6 +4028,12 @@
    ]
   },
   {
+   "fr": "Battre chaque phase de Pyrrhax sans être touché (pas forcément dans le même combat).",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Battre chaque phase de Singularis sans être touché (pas forcément dans le même combat).",
    "where": [
     "data/achievements/achievements.json"
@@ -4364,6 +4390,18 @@
    "fr": "Boss : sa dernière attaque",
    "where": [
     "game/levels/EventSystem.cpp"
+   ]
+  },
+  {
+   "fr": "boss battu",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "boss battus",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -4735,6 +4773,12 @@
    "fr": "c'était déjà le tirage",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "C'était moi : préparer une migration",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
    ]
   },
   {
@@ -5683,6 +5727,12 @@
    "fr": "Cendres (Pyralis)",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Cendres de dragon",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -7194,7 +7244,14 @@
     "game/online/OnlineGlobe.cpp",
     "game/online/OnlineService.cpp",
     "game/online/OnlineTypes.cpp",
-    "saves/Settings.cpp"
+    "saves/Settings.cpp",
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Code de migration",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -7347,6 +7404,12 @@
   },
   {
    "fr": "Combat contre Pyrogyre",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Combat contre Pyrrhax",
    "where": [
     "data/music/tracks.json"
    ]
@@ -8034,6 +8097,12 @@
    ]
   },
   {
+   "fr": "Connectez-vous à Cosmic Online pour préparer une migration.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "Connectez-vous à Cosmic Online pour regarder vos amis.",
    "where": [
     "ui/screens/SpectateScene.cpp"
@@ -8360,6 +8429,12 @@
    ]
   },
   {
+   "fr": "Copie de la progression illisible.",
+   "where": [
+    "game/GameServices.cpp"
+   ]
+  },
+  {
    "fr": "Copie de sécurité de l'état actuel…",
    "where": [
     "server/src/backups.ts"
@@ -8641,6 +8716,12 @@
    "fr": "Cosmic Online indisponible : seuls les défis gardés sur ce PC sont montrés.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Cosmic Online ne répond pas : réessayez plus tard.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -9749,7 +9830,8 @@
   {
    "fr": "de jeu",
    "where": [
-    "ui/screens/OnlineComputer.cpp"
+    "ui/screens/OnlineComputer.cpp",
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -10019,6 +10101,12 @@
    ]
   },
   {
+   "fr": "Des cendres grises tombent derrière Nova, quelques braises encore allumées.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "des fichiers manquent dans la sauvegarde",
    "where": [
     "server/src/backups.ts"
@@ -10058,6 +10146,12 @@
    "fr": "des parties de la table {0} manquent",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "Des plaques de verre noir aux jointures de feu : pour avoir vaincu Pyrrhax sans être touché.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -10457,6 +10551,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Dompteur de dragon",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -10900,7 +11000,7 @@
    ]
   },
   {
-   "fr": "Débloquer les 20 morceaux du juke-box.",
+   "fr": "Débloquer les 21 morceaux du juke-box.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -11939,6 +12039,12 @@
    ]
   },
   {
+   "fr": "Elle s'ajoute à la progression de {0} sur cet ordinateur (le meilleur de chaque côté est gardé). Une copie de la progression actuelle est faite avant.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "Elles ne dépendent pas du nombre d'étoiles : il faut le succès lui-même.",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -12812,6 +12918,12 @@
    ]
   },
   {
+   "fr": "Envoi d'une copie de la progression, puis création du code…",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "Envoi du fichier…",
    "where": [
     "ui/screens/AdminBackups.cpp"
@@ -13461,6 +13573,7 @@
     "ui/screens/AdminScene.cpp",
     "ui/screens/CommunityPublishScene.cpp",
     "ui/screens/GhostOptionsScene.cpp",
+    "ui/screens/OnlineMigration.cpp",
     "ui/screens/OnlineSettingsScene.cpp",
     "ui/screens/OnlineThreadScene.cpp",
     "ui/screens/PlayerProfileScene.cpp",
@@ -14127,6 +14240,7 @@
     "game/online/LevelFingerprint.cpp",
     "game/online/OnlineCache.cpp",
     "game/online/OnlineSession.cpp",
+    "game/online/ProgressMerge.cpp",
     "game/planets/PlanetData.cpp",
     "game/powers/PowerDefinition.cpp",
     "game/progression/NewBadges.cpp",
@@ -16206,6 +16320,12 @@
    ]
   },
   {
+   "fr": "Impossible de garder une copie des sauvegardes actuelles.",
+   "where": [
+    "game/GameServices.cpp"
+   ]
+  },
+  {
    "fr": "Impressionnant",
    "where": [
     "ui/online/CommentsPanel.cpp"
@@ -16224,12 +16344,6 @@
    "fr": "Impulsion (rocher fissuré)",
    "where": [
     "game/levels/ObjectTypes.cpp"
-   ]
-  },
-  {
-   "fr": "Inactif tant que votre présence est masquée.",
-   "where": [
-    "ui/screens/OnlineSettingsScene.cpp"
    ]
   },
   {
@@ -17057,6 +17171,12 @@
    ]
   },
   {
+   "fr": "l'ancien compte",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "L'Anneau solaire",
    "where": [
     "data/music/tracks.json"
@@ -17462,6 +17582,12 @@
    "fr": "La copie continue sur le serveur : la liste l'affichera « prête » une fois terminée (Actualiser).",
    "where": [
     "ui/screens/AdminBackups.cpp"
+   ]
+  },
+  {
+   "fr": "La copie de la progression n'a pas pu partir.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -18366,6 +18492,12 @@
    ]
   },
   {
+   "fr": "Le compte ne sert que sur cet ordinateur. Sur un autre, créez un nouveau compte : un code préparé ici lui transfère toutes vos données.",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
    "fr": "Le conduit de la presse : un Tir chargé sur le récepteur appellera le radeau.",
    "where": [
     "data/levels/pyralis_03.json"
@@ -18570,6 +18702,12 @@
    "fr": "Le direct reprend depuis le début de la partie.",
    "where": [
     "server/src/spectate.ts"
+   ]
+  },
+  {
+   "fr": "Le Dragon d'Obsidienne",
+   "where": [
+    "data/music/tracks.json"
    ]
   },
   {
@@ -19513,7 +19651,7 @@
    ]
   },
   {
-   "fr": "Les 20 morceaux du juke-box débloqués.",
+   "fr": "Les 21 morceaux du juke-box débloqués.",
    "where": [
     "data/cosmetics/cosmetics.json"
    ]
@@ -19612,6 +19750,7 @@
    "fr": "Les Confins",
    "where": [
     "data/levels/confins_01.json",
+    "data/music/tracks.json",
     "data/planets/confins.json"
    ]
   },
@@ -19667,6 +19806,18 @@
    "fr": "Les deux phrases sont différentes.",
    "where": [
     "ui/screens/AdminBackups.cpp"
+   ]
+  },
+  {
+   "fr": "Les données de {0} ont été migrées sur {1} (copie de la progression du {2}).",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Les données de {0} sont maintenant sur {1}.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -19757,6 +19908,12 @@
    "fr": "Les grottes de cristal... Le signal du relais résonne sous la glace.",
    "where": [
     "data/levels/glacior_02.json"
+   ]
+  },
+  {
+   "fr": "Les huit flammes",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -21658,6 +21815,30 @@
    ]
   },
   {
+   "fr": "Migration annulée : le code ne fonctionne plus.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Migration en cours…",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Migrer les données",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Migrer vers un nouveau compte",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
    "fr": "Mini-boss",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
@@ -22549,6 +22730,12 @@
    ]
   },
   {
+   "fr": "Ne le donnez à personne. Il faut aussi le mot de passe de {0}.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "Ne pas indiquer de pays",
    "where": [
     "ui/screens/OnlineAccountScene.cpp",
@@ -22756,7 +22943,8 @@
   {
    "fr": "niveau fini",
    "where": [
-    "ui/screens/OnlineComputer.cpp"
+    "ui/screens/OnlineComputer.cpp",
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -23067,7 +23255,8 @@
   {
    "fr": "niveaux finis",
    "where": [
-    "ui/screens/OnlineComputer.cpp"
+    "ui/screens/OnlineComputer.cpp",
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -23777,7 +23966,7 @@
    ]
   },
   {
-   "fr": "Nouvelle planète : Les Confins, au bord du système, débloquée en terminant « Le Cœur d'une Étoile Mourante ».",
+   "fr": "Nouvelle planète : Les Confins, au bord du système, ouverte dès le départ.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -24176,6 +24365,7 @@
   {
    "fr": "Obsidienne",
    "where": [
+    "data/cosmetics/cosmetics.json",
     "game/levels/ObjectTypes.cpp"
    ]
   },
@@ -24205,6 +24395,12 @@
   },
   {
    "fr": "Obtenir l'or dans L'Arène des Échos.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Obtenir l'or dans La Gueule du Dragon.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -24241,6 +24437,12 @@
   },
   {
    "fr": "Obtenir le platine dans L'Arène des Échos.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Obtenir le platine dans La Gueule du Dragon.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -24578,6 +24780,12 @@
   },
   {
    "fr": "Or des échos",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Or du dragon",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -25663,6 +25871,12 @@
    ]
   },
   {
+   "fr": "Passent sur {0} : records et replays, succès, récompenses, temps joué, et la copie de la progression (rechargée sur ce PC). Le meilleur des deux côtés est gardé si {1} a déjà joué.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "PASSIF",
    "where": [
     "game/gameplay/Hud.cpp"
@@ -26504,6 +26718,12 @@
    ]
   },
   {
+   "fr": "Platine du dragon",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "PlayStation",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -26752,6 +26972,7 @@
   {
    "fr": "Plus tard",
    "where": [
+    "ui/screens/OnlineMigration.cpp",
     "ui/screens/RewardsScene.cpp"
    ]
   },
@@ -27223,6 +27444,12 @@
   },
   {
    "fr": "Pour avoir terminé Sylvanox.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Pour avoir vaincu Pyrrhax, le Dragon d'Obsidienne.",
    "where": [
     "data/cosmetics/cosmetics.json"
    ]
@@ -27713,6 +27940,12 @@
    ]
   },
   {
+   "fr": "PROGRESSION MIGRÉE",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "Progression non classée",
    "where": [
     "game/online/OnlineService.cpp"
@@ -27728,6 +27961,12 @@
    "fr": "Progression refusée",
    "where": [
     "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "Progression restaurée : elle s'ajoute à celle de cet ordinateur.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -27995,6 +28234,18 @@
    ]
   },
   {
+   "fr": "PRÉPARER UNE MIGRATION",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Préparer une migration",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
    "fr": "Présence",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -28016,6 +28267,18 @@
    "fr": "présence masquée",
    "where": [
     "ui/online/OnlineWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "Présence masquée : vos amis voient un rond barré, et ne peuvent pas vous regarder jouer.",
+   "where": [
+    "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Présence masquée : vos amis voient un rond barré.",
+   "where": [
+    "ui/screens/OnlineSettingsScene.cpp"
    ]
   },
   {
@@ -28376,6 +28639,7 @@
   {
    "fr": "Pyrrhax",
    "where": [
+    "data/achievements/achievements.json",
     "data/enemies/pyrrhax.json"
    ]
   },
@@ -30164,7 +30428,20 @@
    "fr": "Restaurer",
    "where": [
     "ui/screens/AdminCreations.cpp",
+    "ui/screens/OnlineMigration.cpp",
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "RESTAURER LA PROGRESSION TRANSFÉRÉE",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Restaurer la progression transférée",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
    ]
   },
   {
@@ -31026,6 +31303,18 @@
    "fr": "Récupérer la dernière version",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "RÉCUPÉRER UN ANCIEN COMPTE",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Récupérer un ancien compte",
+   "where": [
+    "ui/screens/OnlineComputer.cpp"
    ]
   },
   {
@@ -32979,6 +33268,12 @@
    ]
   },
   {
+   "fr": "Son mot de passe",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "Son niveau ne peut pas être lu.",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
@@ -33102,6 +33397,12 @@
    "fr": "Souffle de la forêt",
    "where": [
     "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Souffle du dragon",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -33760,6 +34061,12 @@
    ]
   },
   {
+   "fr": "succès",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "succès (+{0} étoiles)",
    "where": [
     "ui/screens/OnlineComputer.cpp"
@@ -33773,6 +34080,12 @@
   },
   {
    "fr": "Succès : chaque succès ajouté porte la pastille dans la liste et le panneau ; sur la toile, un point doré marque les nouveaux et la pastille apparaît près du nom en zoomant.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Succès de Pyrrhax et des Confins (6 nouveaux, 28 étoiles) ; au Vestiaire : la combinaison Obsidienne (560 étoiles), la traînée Cendres de dragon (570), l'effet de victoire Souffle du dragon (580), le cadre Écailles d'obsidienne et le titre Dompteur de dragon.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -33998,9 +34311,21 @@
    ]
   },
   {
+   "fr": "SUR CET ORDINATEUR, AVEC LE COMPTE {0}",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "Sur invitation",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "SUR L'ANCIEN ORDINATEUR ({0})",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -35051,6 +35376,12 @@
   },
   {
    "fr": "Terminer L'Horizon des événements, dernier niveau d'Aethra.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Terminer La Gueule du Dragon, aux Confins.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -36479,6 +36810,12 @@
    ]
   },
   {
+   "fr": "Téléchargement de la progression…",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "Téléchargement de la révision en ligne…",
    "where": [
     "ui/screens/AdminCampaign.cpp"
@@ -37142,6 +37479,12 @@
    ]
   },
   {
+   "fr": "Un souffle de feu balaie le portail, puis retombe en braises.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Un titre créé sur Cosmic Online, gagné à un défi.",
    "where": [
     "game/cosmetics/Collection.cpp"
@@ -37259,6 +37602,12 @@
    "fr": "Une copie automatique chaque nuit · 14 gardées · manuelles 90 jours",
    "where": [
     "ui/screens/AdminBackups.cpp"
+   ]
+  },
+  {
+   "fr": "Une copie de la progression vient d'être envoyée. Ce code permet à un nouveau compte, sur un autre ordinateur, de récupérer toutes vos données.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -37433,6 +37782,12 @@
    "fr": "Une révision publiée ici est téléchargée par les jeux, sans mise à jour. Chaque publication demande de choisir : réinitialiser les records, ou les garder.",
    "where": [
     "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "Une sauvegarde n'a pas pu être écrite (les anciennes sont dans {0}).",
+   "where": [
+    "game/GameServices.cpp"
    ]
   },
   {
@@ -38039,6 +38394,18 @@
    ]
   },
   {
+   "fr": "Vaincre Pyrrhax sans être touché.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre Pyrrhax, le Dragon d'Obsidienne.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Vaincre Reine Sporale.",
    "where": [
     "data/achievements/achievements.json"
@@ -38102,6 +38469,18 @@
    "fr": "VAINCU",
    "where": [
     "game/gameplay/GameWorld.cpp"
+   ]
+  },
+  {
+   "fr": "Valable 24 h · une seule fois",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Valable 24 h · une seule fois · jusqu'au {0}",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -38202,6 +38581,12 @@
    "fr": "Verr.",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "Verre noir veiné de feu, visière braise, écharpe pourpre : la tenue de Pyrrhax.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -40933,6 +41318,12 @@
    ]
   },
   {
+   "fr": "{0} est ensuite fermé ; son pseudonyme se libère après 30 jours.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "{0} est gardé sur ce PC : à regarder sans connexion dans Collection › Replays.",
    "where": [
     "game/online/ReplayDownloads.cpp"
@@ -41204,7 +41595,8 @@
    "where": [
     "game/progression/Progression.cpp",
     "ui/screens/MainMenuScene.cpp",
-    "ui/screens/OnlineComputer.cpp"
+    "ui/screens/OnlineComputer.cpp",
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -42523,6 +42915,18 @@
    "fr": "Écailles brisées : le sol cède",
    "where": [
     "data/levels/confins_01.json"
+   ]
+  },
+  {
+   "fr": "Écailles d'obsidienne",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Écailles intactes",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {

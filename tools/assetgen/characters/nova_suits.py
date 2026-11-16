@@ -34,6 +34,8 @@ SUITS = {
     "sanctuaire": ((236, 233, 240), (190, 150, 255), (255, 200, 70)),
     # 2.34: a reward of the challenges (ten golds)
     "champion": ((140, 20, 48), (255, 205, 80), (245, 245, 255)),
+    # 2.48: Pyrrhax, le Dragon d'Obsidienne (black glass veined with fire)
+    "obsidienne": ((52, 44, 60), (255, 110, 40), (190, 40, 110)),
 }
 
 

@@ -179,6 +179,30 @@ void drawAvatarFrame(Renderer& r, Vec2 center, float radius, const std::string& 
             r.drawGlow(p, 5 * scale, Color{255, 255, 255, alpha(0.6f * tw)});
             r.fillCircle(p, 1.2f * scale, Color{255, 255, 255, 255});
         }
+    } else if (look == "scales") {
+        // « Écailles d'obsidienne » (2.48, Pyrrhax): a ring of black glass plates whose seams glow
+        // with a living fire, pulsing slowly; embers rise from the top.
+        const float pulse = 0.75f + 0.25f * std::sin(time * 2.4f);
+        r.drawGlow(center, radius + 18 * scale, Color{255, 110, 40, static_cast<uint8_t>(110 * pulse)});
+        ring(main, 7, Color{30, 24, 36, 255});
+        ring(main + 2.5f * scale, 1.5f, Color{120, 80, 140, 255});
+        const int plates = 12;
+        for (int i = 0; i < plates; ++i) {
+            const float a = static_cast<float>(i) * 2.0f * kFxPi / plates + 0.08f;
+            // A seam of fire between two plates, brighter on the lower half (the heat rises).
+            const Vec2 d{std::cos(a), std::sin(a)};
+            const float hot = 0.6f + 0.4f * std::max(0.0f, d.y);
+            r.drawLine(center + d * (main - 3.2f * scale), center + d * (main + 3.2f * scale),
+                       Color{255, static_cast<uint8_t>(120 + 80 * hot), 50, static_cast<uint8_t>(230 * pulse)}, 1.6f * scale, BlendMode::Additive);
+            // The glassy light of each plate.
+            r.drawArc(center, main + 1.0f * scale, 1.0f * scale, a + 0.12f, a + 0.28f, Color{200, 170, 230, 150});
+        }
+        for (int i = 0; i < 4; ++i) {
+            float u = std::fmod(time * 0.5f + static_cast<float>(i) * 0.25f, 1.0f);
+            float a = -kFxPi * 0.5f + (static_cast<float>(i) - 1.5f) * 0.35f;
+            Vec2 p{center.x + std::cos(a) * (main + u * 14 * scale), center.y + std::sin(a) * (main + u * 14 * scale)};
+            r.drawGlow(p, (4.0f - 2.0f * u) * scale, Color{255, 160, 60, static_cast<uint8_t>(200 * (1.0f - u))});
+        }
     } else if (look == "laurels") {
         r.drawGlow(center, radius + 18 * scale, Color{255, 214, 90, 110});
         ring(main, 4, Color{255, 214, 90, 255});
@@ -290,6 +314,18 @@ void drawTrailPoint(const Canvas& cv, const std::string& look, Vec2 p, float k, 
         Color c = mix(Color{235, 70, 30, 255}, Color{255, 226, 120, 255}, k);
         cv.glow(q, 8.0f * k + 2.0f, c.withAlpha(alpha(0.8f * f)));
         cv.dot(q, 2.2f * k + 0.6f, Color{255, 245, 200, alpha(0.9f * f)}, BlendMode::Additive);
+    } else if (look == "ashes") {
+        // « Cendres de dragon » (2.48, Pyrrhax): grey flakes of ash drifting down, a few embers
+        // still burning among them.
+        const bool ember = seed % 4 == 0;
+        Vec2 j{(noise(seed) - 0.5f) * 10.0f + std::sin(age * 6.0f + static_cast<float>(seed)) * 3.0f, age * 22.0f + noise(seed * 3u + 2u) * 4.0f};
+        Vec2 q = cv.off(p, j);
+        if (ember) {
+            cv.glow(q, 6.0f * k + 1.5f, Color{255, 120, 40, alpha(0.7f * f)});
+            cv.dot(q, 1.4f * k + 0.5f, Color{255, 220, 150, alpha(0.9f * f)}, BlendMode::Additive);
+        } else {
+            cv.dot(q, 1.8f * k + 0.7f, Color{150, 140, 150, alpha(0.75f * f)});
+        }
     } else if (look == "prism") {
         // A ribbon whose colour runs through the rainbow along the trail, and keeps turning.
         Color c = rainbow(static_cast<float>(seed) * 0.06f + age * 0.8f);
@@ -423,6 +459,28 @@ void drawVictoryFx(Renderer& r, const std::string& look, Vec2 at, float t, bool 
                 float a = fade * in * (1.0f - f * 0.6f);
                 cv.glow(cv.off(at, {x, y}), 9.0f - f * 3.0f, mix(Color{120, 255, 156, 255}, Color{184, 140, 255, 255}, f).withAlpha(alpha(0.5f * a)));
             }
+        }
+    } else if (look == "dragon_breath") {
+        // « Souffle du dragon » (2.48, Pyrrhax): a cone of fire sweeps over the portal from left
+        // to right, then falls as embers.
+        Vec2 o = cv.off(at, {-110, -90});
+        const float sweep = std::clamp(t / 1.4f, 0.0f, 1.0f);
+        const float ang = 0.15f + 0.55f * sweep;  // from almost horizontal toward the portal
+        Vec2 d{std::cos(ang), std::sin(ang)};
+        if (t < 1.6f)
+            for (int i = 0; i < 14; ++i) {
+                const float u = static_cast<float>(i) / 13.0f;
+                const float wob = std::sin(t * 20.0f + static_cast<float>(i) * 1.3f) * 6.0f * u;
+                Vec2 q = cv.off(o, d * (20.0f + 190.0f * u) + Vec2{-d.y, d.x} * wob);
+                Color c = mix(Color{255, 240, 170, 255}, Color{230, 60, 20, 255}, u);
+                cv.glow(q, 10.0f + 22.0f * u, c.withAlpha(alpha(0.75f * fade * (1.0f - sweep * 0.3f))));
+            }
+        for (int i = 0; i < 18; ++i) {
+            const float te = t - 0.6f - 0.06f * static_cast<float>(i);
+            if (te < 0.0f) continue;
+            const float x = -60.0f + 130.0f * noise(static_cast<uint32_t>(i) * 53u + 9u);
+            Vec2 q = cv.off(at, {x + std::sin(te * 3.0f + static_cast<float>(i)) * 6.0f, -110.0f + 70.0f * te});
+            cv.glow(q, 5.0f, Color{255, 140, 50, alpha(0.8f * fade * std::clamp(1.0f - te / 1.6f, 0.0f, 1.0f))});
         }
     } else if (look == "corona") {
         // An eclipse above the portal: a dark disc ringed with light, its rays turning.

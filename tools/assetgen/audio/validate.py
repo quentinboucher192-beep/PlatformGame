@@ -15,7 +15,7 @@ Checks
                 count for loops; decoded peak <= -1 dBFS; integrated loudness (ffmpeg ebur128) and
                 true peak; DC; dropouts; stereo correlation; octave-band balance; loop seam
                 (boundary step, envelope and spectral continuity, high-frequency splice energy);
-                total size < 26 MB (24 MB until 2.33: the giga boss's track).
+                total size < 40 MB (24 MB until 2.33, 26 MB until 2.48: one track per giga boss).
   fonts/        files exist, sfnt magic, required tables, PIL/FreeType can load them, cmap covers
                 English + French glyphs, OFL licence texts present.
 Exit status 1 if any FAIL.
@@ -434,8 +434,8 @@ def check_music(rep):
                  f'peak {pk:5.2f}  corr {corr:4.2f}  {seam}')
         rep.line(' ' * 18 + ' octave bands dB: ' + ' '.join(f'{c:g}:{b:.0f}' for c, b in zip(cen, bands)))
     rep.line(f'total music size {total / 1024 / 1024:.2f} MB')
-    if total > 26 * 1024 * 1024:
-        rep.fail('music', f'total size {total / 1024 / 1024:.1f} MB > 26 MB')
+    if total > 40 * 1024 * 1024:
+        rep.fail('music', f'total size {total / 1024 / 1024:.1f} MB > 40 MB')
 
 
 # --------------------------------------------------------------------------- fonts

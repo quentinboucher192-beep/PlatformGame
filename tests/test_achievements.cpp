@@ -367,7 +367,7 @@ TEST_CASE("achievements (2.24): the Collection, the replays and Cosmic Online") 
     auto got = run(in);
     CHECK(!has(got, "collection_tracks_10"));
     CHECK(!has(got, "collection_creatures_15"));
-    in.tracksHeard = 20;  // 2.33: Singularis's track
+    in.tracksHeard = 21;  // 2.33: Singularis's track; 2.48: Pyrrhax's
     in.creaturesMet = 30;
     got = run(in);
     for (const char* id : {"collection_tracks_10", "collection_tracks_all", "collection_creatures_15", "collection_creatures_30"}) CHECK(has(got, id));
@@ -530,9 +530,9 @@ TEST_CASE("collection (2.24): every reward can be won and is drawn") {
     for (const auto& d : a.achievements()) offline -= online.count(d.id) ? d.stars : 0;
     // The looks the game draws (CosmeticFx, the suits' sheets).
     const std::map<std::string, std::set<std::string>> drawn = {
-        {"trail", {"none", "stardust", "comet", "aurora", "eclipse", "flame", "prism", "runes", "month_comet"}},
-        {"frame", {"simple", "bronze", "silver", "gold", "platinum", "constellation", "emerald", "orbit", "nebula", "laurels", "crown"}},
-        {"victory", {"classic", "fireworks", "starfall", "supernova", "vortex", "borealis", "corona", "fire_streak"}}};
+        {"trail", {"none", "stardust", "comet", "aurora", "eclipse", "flame", "prism", "runes", "month_comet", "ashes"}},
+        {"frame", {"simple", "bronze", "silver", "gold", "platinum", "constellation", "emerald", "orbit", "nebula", "laurels", "crown", "scales"}},
+        {"victory", {"classic", "fireworks", "starfall", "supernova", "vortex", "borealis", "corona", "fire_streak", "dragon_breath"}}};
     std::map<std::string, int> perCategory, defaults;
     std::set<int> thresholds;
     for (const CosmeticItem& it : c.items()) {

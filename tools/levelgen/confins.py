@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Builds the levels of Les Confins (version 2.48), the world beyond the dying star, opened once
-« Le Cœur d'une Étoile Mourante » (noyau_03) is completed:
+"""Builds the levels of Les Confins (version 2.48), the world beyond the dying star, open from the
+start (data/planets/confins.json):
 
   data/levels/confins_01.json  "La Gueule du Dragon" (EXTRÊME): one life, no checkpoint. The
                                 scorched crust of the Confins (its hardest rooms, one after the

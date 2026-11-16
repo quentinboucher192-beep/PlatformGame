@@ -2,8 +2,14 @@
  "format": "cosmic.achievements",
  "version": 1,
  "badgeSlots": [
-  {"stars": 100, "slots": 2},
-  {"stars": 250, "slots": 3}
+  {
+   "stars": 100,
+   "slots": 2
+  },
+  {
+   "stars": 250,
+   "slots": 3
+  }
  ],
  "categories": [
   {
@@ -284,6 +290,20 @@
    },
    "requires": [
     "voyage_aethra_first"
+   ]
+  },
+  {
+   "id": "voyage_confins",
+   "category": "voyage",
+   "name": "Aux Confins du système",
+   "description": "Terminer La Gueule du Dragon, aux Confins.",
+   "stars": 4,
+   "condition": {
+    "type": "level",
+    "level": "confins_01"
+   },
+   "requires": [
+    "voyage_first"
    ]
   },
   {
@@ -1125,6 +1145,20 @@
    ]
   },
   {
+   "id": "gardiens_pyrrhax",
+   "category": "gardiens",
+   "name": "Pyrrhax",
+   "description": "Vaincre Pyrrhax, le Dragon d'Obsidienne.",
+   "stars": 5,
+   "condition": {
+    "type": "boss",
+    "boss": "pyrrhax"
+   },
+   "requires": [
+    "gardiens_first"
+   ]
+  },
+  {
    "id": "gardiens_50",
    "category": "gardiens",
    "name": "Tueur de titans",
@@ -1431,6 +1465,35 @@
    },
    "requires": [
     "gardiens_singularis"
+   ]
+  },
+  {
+   "id": "maitrise_pyrrhax_nohit",
+   "category": "maitrise",
+   "name": "Écailles intactes",
+   "description": "Vaincre Pyrrhax sans être touché.",
+   "stars": 5,
+   "condition": {
+    "type": "boss",
+    "boss": "pyrrhax",
+    "nohit": true
+   },
+   "requires": [
+    "gardiens_pyrrhax"
+   ]
+  },
+  {
+   "id": "maitrise_phases_pyrrhax",
+   "category": "maitrise",
+   "name": "Les huit flammes",
+   "description": "Battre chaque phase de Pyrrhax sans être touché (pas forcément dans le même combat).",
+   "stars": 5,
+   "condition": {
+    "type": "boss_phases_nohit",
+    "boss": "pyrrhax"
+   },
+   "requires": [
+    "gardiens_pyrrhax"
    ]
   },
   {
@@ -2773,6 +2836,36 @@
    ]
   },
   {
+   "id": "extreme_dragon_gold",
+   "category": "extreme",
+   "name": "Or du dragon",
+   "description": "Obtenir l'or dans La Gueule du Dragon.",
+   "stars": 4,
+   "condition": {
+    "type": "medal_level",
+    "level": "confins_01",
+    "medal": 3
+   },
+   "requires": [
+    "extreme_first"
+   ]
+  },
+  {
+   "id": "extreme_dragon_platinum",
+   "category": "extreme",
+   "name": "Platine du dragon",
+   "description": "Obtenir le platine dans La Gueule du Dragon.",
+   "stars": 5,
+   "condition": {
+    "type": "medal_level",
+    "level": "confins_01",
+    "medal": 4
+   },
+   "requires": [
+    "extreme_dragon_gold"
+   ]
+  },
+  {
    "id": "extreme_attempts_100",
    "category": "extreme",
    "name": "Increvable",
@@ -3185,11 +3278,11 @@
    "id": "collection_tracks_all",
    "category": "collection",
    "name": "Mélomane",
-   "description": "Débloquer les 20 morceaux du juke-box.",
+   "description": "Débloquer les 21 morceaux du juke-box.",
    "stars": 3,
    "condition": {
     "type": "tracks_heard",
-    "count": 20
+    "count": 21
    },
    "requires": [
     "collection_tracks_10"

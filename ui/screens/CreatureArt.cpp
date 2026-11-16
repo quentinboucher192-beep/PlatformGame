@@ -2,17 +2,58 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 #include <map>
+#include <vector>
 
 #include "game/GameServices.h"
 
 namespace cosmic {
 
+namespace {
+
+struct BackdropLayer {
+    std::string texture;
+    Color tint = Color::white();
+};
+
+/// The four layers of a planet's backdrop: its own folder (backgrounds/<planet>/), or, for a
+/// planet drawn with another one's layers (2.48 Les Confins: Pyralis' layers in ash and violet),
+/// the sky, far, mid and near layers of its first level, with their tints. Read once per planet.
+const std::vector<BackdropLayer>& backdropOf(GameServices& g, const std::string& planet) {
+    static std::map<std::string, std::vector<BackdropLayer>> cache;
+    auto it = cache.find(planet);
+    if (it != cache.end()) return it->second;
+    std::vector<BackdropLayer> layers;
+    for (const char* layer : {"sky", "far", "mid", "near"}) {
+        const std::string path = "backgrounds/" + planet + "/" + layer + ".png";
+        if (g.app.resources().texture(path)) layers.push_back({path});
+    }
+    if (layers.empty())
+        for (const LevelEntry* e : g.content.levelsForPlanet(planet)) {
+            auto level = g.content.loadLevel(e->id);
+            if (!level) continue;
+            for (const auto& l : level->background)
+                for (const char* name : {"/sky.png", "/far.png", "/mid.png", "/near.png"})
+                    if (l.texture.size() > std::strlen(name) && l.texture.compare(l.texture.size() - std::strlen(name), std::string::npos, name) == 0)
+                        layers.push_back({l.texture, l.tint});
+            break;
+        }
+    return cache.emplace(planet, std::move(layers)).first->second;
+}
+
+Color times(Color a, Color b) {
+    return {static_cast<uint8_t>(a.r * b.r / 255), static_cast<uint8_t>(a.g * b.g / 255), static_cast<uint8_t>(a.b * b.b / 255),
+            static_cast<uint8_t>(a.a * b.a / 255)};
+}
+
+}  // namespace
+
 void drawPlanetBackdrop(GameServices& g, const std::string& planet, const Rect& dst, Color tint) {
     Renderer& r = g.app.renderer();
     r.fillRect(dst, Color{8, 11, 24, 255});
-    for (const char* layer : {"sky", "far", "mid", "near"})
-        if (TexturePtr t = g.app.resources().texture("backgrounds/" + planet + "/" + layer + ".png")) r.drawTexture(*t, nullptr, dst, tint);
+    for (const BackdropLayer& l : backdropOf(g, planet))
+        if (TexturePtr t = g.app.resources().texture(l.texture)) r.drawTexture(*t, nullptr, dst, times(tint, l.tint));
 }
 
 void drawCreature(GameServices& g, const EnemyDefinition& def, const Rect& box, float t, Color tintMul, const std::string& clipName) {
