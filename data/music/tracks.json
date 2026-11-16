@@ -31,6 +31,11 @@
       "id": "noyau",
       "name": "Noyau stellaire",
       "planet": "noyau"
+    },
+    {
+      "id": "confins",
+      "name": "Les Confins",
+      "planet": "confins"
     }
   ],
   "tracks": [
@@ -153,6 +158,12 @@
       "group": "noyau",
       "title": "Le Cœur effondré",
       "where": "Combat contre Singularis"
+    },
+    {
+      "file": "music/pyrrhax_boss.ogg",
+      "group": "confins",
+      "title": "Le Dragon d'Obsidienne",
+      "where": "Combat contre Pyrrhax"
     }
   ]
 }

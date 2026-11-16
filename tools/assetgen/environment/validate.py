@@ -68,6 +68,8 @@ SIZES = {
     "ui/planets/glacior_banner.png": (480, 270),
     "ui/planets/aethra.png": (256, 256),
     "ui/planets/aethra_banner.png": (480, 270),
+    "ui/planets/confins.png": (256, 256),
+    "ui/planets/confins_banner.png": (480, 270),
     "ui/map_background.png": (960, 540),
 }
 for _m in MATERIALS:
@@ -275,14 +277,15 @@ def check():
                            ("ui/glyphs/playstation.png", 32, 32, 19), ("ui/glyphs/generic.png", 32, 32, 19)]:
         if os.path.exists(os.path.join(ASSETS, rel)):
             cells_nonempty(load(rel), cw, ch, n, errs, rel)
-    for p in ["sylvanox", "pyralis", "glacior", "sun", "aethra"]:
+    for p in ["sylvanox", "pyralis", "glacior", "sun", "aethra", "confins"]:
         rel = f"ui/planets/{p}.png"
         if os.path.exists(os.path.join(ASSETS, rel)):
             a = load(rel)
             if a[0, 0, 3] or a[-1, -1, 3] or a[0, -1, 3] or a[-1, 0, 3]:
                 errs.append(f"{rel}: corners should be transparent")
     for rel in ["ui/planets/sylvanox_banner.png", "ui/planets/pyralis_banner.png",
-                "ui/planets/glacior_banner.png", "ui/planets/aethra_banner.png", "ui/map_background.png"]:
+                "ui/planets/glacior_banner.png", "ui/planets/aethra_banner.png",
+                "ui/planets/confins_banner.png", "ui/map_background.png"]:
         if os.path.exists(os.path.join(ASSETS, rel)) and (load(rel)[..., 3] < 255).any():
             errs.append(f"{rel}: should be opaque")
     return errs
