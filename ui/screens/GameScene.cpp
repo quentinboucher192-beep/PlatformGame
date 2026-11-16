@@ -80,6 +80,8 @@ void GameScene::onEnter() {
     }
     // Daily challenge: its rules right after the load (simulation 11), its own recording.
     if (opt_.challenge) startChallenge();
+    // 2.48: a hardcore level played as a practice run (respawn where Nova fell, not ranked).
+    if (opt_.practiceRespawn && level_.extreme && !opt_.challenge && !opt_.bossTraining) world_->setPracticeRespawn(true);
     // Keys of the powers (2.31): the level's key powers, and those a training or a challenge gives.
     if (opt_.bossTraining) powerKeyExtra_ = opt_.bossTraining->powers;
     if (opt_.challenge) powerKeyExtra_ = opt_.challenge->challenge.rules.powers;
@@ -556,6 +558,15 @@ void GameScene::restart() {
     g_.app.replaceTop(makeGameScene(g_, levelId_, o), 0.3f);
 }
 
+void GameScene::restartPractice() {
+    endSpectate("quit");
+    abandonRaceAttempt();
+    PlayOptions o = opt_;
+    if (!o.level && !opt_.editorTest) o.level.reset();
+    o.practiceRespawn = true;
+    g_.app.replaceTop(makeGameScene(g_, levelId_, o), 0.3f);
+}
+
 void GameScene::quitToMenu() {
     endSpectate("quit");
     abandonRaceAttempt();
@@ -841,6 +852,8 @@ void GameScene::finishRun(bool completed) {
     data.previous = previous;
     data.level = level_;
     data.failReason = world_->failReason();
+    data.hardcore = level_.extreme && level_.oneLife() && !opt_.challenge && !opt_.bossTraining && !opt_.training && !opt_.editorTest;
+    data.practice = world_->practiceRespawn();
     data.nextLevel = nextLevelId();
     data.editorTest = opt_.editorTest;
     data.replay = lastReplay_;

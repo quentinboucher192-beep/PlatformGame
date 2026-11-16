@@ -271,6 +271,12 @@ void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
     player_.updraft = 0.0f;
     updatePlayerOverlaps(dt);
     player_.fixedUpdate(*this, effective, dt);
+    // 2.48: the last solid ground under Nova (practice runs of hardcore levels come back there).
+    if (practiceRespawn_ && player_.grounded() && player_.state() != PlayerState::Dead && player_.state() != PlayerState::Respawn &&
+        player_.vel.y >= 0.0f) {
+        safeFeet_ = player_.feet();
+        hasSafeFeet_ = true;
+    }
 
     // Time slow power: enemies (and, in updateProjectiles, their shots) run slower.
     updateEnemies(timeSlow_ > 0.0f ? dt * timeSlowFactor_ : dt);
@@ -789,6 +795,10 @@ void GameWorld::onPlayerDeathAnimationDone() {
         player_.spawn(*this, respawn_, respawnFaceLeft_, true);
         return;
     }
+    if (practiceRespawn_) {  // 2.48: a practice run of a hardcore level goes on where Nova fell
+        practiceRespawnNow();
+        return;
+    }
     if (training_) {
         // A boss training ends at the first fall (its end screen comes): the player does not
         // come back, never into an arena that would wake its boss again behind that screen.
@@ -840,6 +850,20 @@ bool GameWorld::resolvePowerOffer(uint8_t choice) {
     emit(offer.tabletId, "collected");
     emit(offer.powerId, "unlocked");
     return true;
+}
+
+void GameWorld::practiceRespawnNow() {
+    // The level stays as it is (enemies, bosses and their wounds, doors): only the shots in the
+    // air and the hazards about to hit go, so that Nova does not fall again at once.
+    hazards_.clear(*this);
+    projectiles_.clear();
+    pendingProjectiles_.clear();
+    const Vec2 at = hasSafeFeet_ ? safeFeet_ : respawn_;
+    player_.spawn(*this, at, player_.facing < 0.0f, true);
+    player_.setInvulnerable(2.5f);  // after the materialisation (0.75 s): blinking, no damage
+    camera_.reset(at - Vec2{0, 20});
+    playSound("sounds/respawn.wav", 0.8f);
+    hint("Entraînement : réapparition sur place (hors classements)", 2.5f);
 }
 
 void GameWorld::respawnPlayer() {

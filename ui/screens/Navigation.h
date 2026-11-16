@@ -46,6 +46,9 @@ struct PlayOptions {
     /// Training (Ghost Racing): starts at this checkpoint (level object id), compares with
     /// the ghosts from there; never a record, never progression, never sent online.
     bool training = false;
+    /// 2.48: a hardcore (EXTRÊME) level as a practice run: Nova comes back where she fell,
+    /// invulnerable for a moment; never a record, never ranked (GameWorld::setPracticeRespawn).
+    bool practiceRespawn = false;
     std::string trainingCheckpoint;
     std::string trainingEnd;                 // the checkpoint ending the segment ("" = the exit)
     std::vector<std::string> trainingPowers; // tablets picked up before the start, in route order

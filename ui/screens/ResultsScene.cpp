@@ -231,6 +231,15 @@ void ResultsScene::render(float /*alpha*/) {
     if (d_.editorTest)
         ui.label("Test depuis l'éditeur : les records ne sont pas enregistrés", {panel.center().x, panel.bottom() - ui.s(150)}, 20,
                  ui.theme().textDim, Align::Center);
+    else if (d_.practice && !d_.online) {
+        const std::string t = "Entraînement avec réapparitions : hors classements, aucun record";
+        ui.label(t, {panel.center().x, panel.bottom() - ui.s(150)}, ui.fitFont(t, FontFace::Body, 20, panel.w - ui.s(80)), ui.theme().textDim,
+                 Align::Center);
+    } else if (d_.hardcore && !run.completed && !d_.online) {
+        const std::string t = "« Réessayer en entraînement » : réapparition sur place après une chute, hors classements";
+        ui.label(t, {panel.center().x, panel.bottom() - ui.s(150)}, ui.fitFont(t, FontFace::Body, 18, panel.w - ui.s(80)), ui.theme().textDim,
+                 Align::Center);
+    }
     drawRace(panel);
     drawBosses(panel);
     drawOnlineStatus(panel);
@@ -239,7 +248,9 @@ void ResultsScene::render(float /*alpha*/) {
     float bh = ui.s(64), by = panel.bottom() - ui.s(100);
     bool hasNext = run.completed && !d_.nextLevel.empty();
     bool hasRace = d_.raceScore.has_value() && !d_.raceKind.empty();
-    int count = (hasNext ? 3 : 2) + (hasRace ? 1 : 0);
+    // 2.48: a hardcore level lost: try it again as a practice run (respawns, not ranked).
+    bool hasPractice = d_.hardcore && !run.completed && !d_.practice;
+    int count = (hasNext ? 3 : 2) + (hasRace ? 1 : 0) + (hasPractice ? 1 : 0);
     float bw = std::min(ui.s(340), (panel.w - ui.s(120) - (count - 1) * ui.s(24)) / static_cast<float>(count));
     float total = count * bw + (count - 1) * ui.s(24);
     float bx = panel.center().x - total * 0.5f;
@@ -255,6 +266,15 @@ void ResultsScene::render(float /*alpha*/) {
             p.primary = true;
             if (ui.button("next", {bx, by, bw, bh}, "Niveau suivant", p)) {
                 g_.app.switchScene(makeGameScene(g_, d_.nextLevel), 0.4f);
+            }
+            bx += bw + ui.s(24);
+        }
+        if (hasPractice) {
+            UIContext::ButtonStyle ps;
+            ps.fontSize = ui.fitFont("Réessayer en entraînement", FontFace::Bold, 22, bw - ui.s(24));
+            if (ui.button("practice", {bx, by, bw, bh}, "Réessayer en entraînement", ps)) {
+                g_.app.popScene();
+                game_.restartPractice();
             }
             bx += bw + ui.s(24);
         }

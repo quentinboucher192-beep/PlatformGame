@@ -128,6 +128,14 @@ public:
     /// player's first fall (its end screen), the player does not come back (2.41: nobody walks
     /// back into the arena behind that screen). Training runs are never recorded.
     void setTraining(bool on) { training_ = on; }
+    /// 2.48: a hardcore (EXTRÊME) level played as a practice run: after a fall, Nova comes back
+    /// where she last stood on solid ground, invulnerable for a moment, the level as it was
+    /// (bosses keep their wounds). A training run: never a record, never ranked.
+    void setPracticeRespawn(bool on) {
+        practiceRespawn_ = on;
+        if (on) training_ = true;
+    }
+    bool practiceRespawn() const { return practiceRespawn_; }
     bool training() const { return training_ || challenge_.has_value(); }
     /// A daily challenge (2.32, simulation 11): its rules apply now (call it right after
     /// load(), before the first step: hearts, slots, imposed powers) and for the rest of the
@@ -351,7 +359,11 @@ private:
     float lastSplitDelta_ = 0.0f;
     float splitFlash_ = 0.0f;
     bool expiredHandled_ = false;
-    bool timerPending_ = false;  // 2.47.1: the clock waits for the end of Nova's materialisation
+    bool timerPending_ = false;
+    bool practiceRespawn_ = false;  // 2.48 (setPracticeRespawn)
+    Vec2 safeFeet_{};               // where Nova last stood on solid ground (practice respawn)
+    bool hasSafeFeet_ = false;
+    void practiceRespawnNow();  // 2.47.1: the clock waits for the end of Nova's materialisation
     int fallGuard_ = 0;
 
     friend class GameRenderer;

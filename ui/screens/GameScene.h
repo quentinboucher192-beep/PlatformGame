@@ -68,6 +68,8 @@ public:
     bool holdsNotifications() const override { return true; }
 
     void restart();
+    /// 2.48: the same level again as a practice run (hardcore levels).
+    void restartPractice();
     void quitToMenu();
     bool editorTest() const { return opt_.editorTest; }
     bool sectionTraining() const { return opt_.training; }  // « Répéter un segment »: quitting returns to its setup

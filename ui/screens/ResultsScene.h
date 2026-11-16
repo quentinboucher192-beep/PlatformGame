@@ -24,6 +24,9 @@ struct ResultsData {
     LevelRecord previous;
     LevelData level;
     std::string failReason;
+    /// 2.48: a hardcore (EXTRÊME) level: « Réessayer en entraînement » after a fall; `practice`:
+    /// this run was one (respawns where Nova fell, not ranked).
+    bool hardcore = false, practice = false;
     std::string nextLevel;
     bool editorTest = false;
     bool fromOnline = false;  // launched from ONLINE: back goes to ONLINE
