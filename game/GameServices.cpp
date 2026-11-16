@@ -72,6 +72,54 @@ void GameServices::loadAll() {
     applySettings();
 }
 
+// ------------------------------------------------- suits created on Cosmic Online
+
+TexturePtr GameServices::suitSheet(const std::string& look, const SuitColors* colors) {
+    if (look.empty() || look == "standard") return nullptr;
+    if (!isServerSuitRef(look)) return app.resources().texture("sprites/player/suits/nova_" + look + ".png");
+    std::optional<SuitColors> c;
+    if (colors) c = *colors;
+    else if (const ServerSuit* s = serverSuits.find(look)) c = s->colors;
+    else if (const CosmeticItem* w = challenges.wonRewards().suit(look); w && w->suitColors) c = w->suitColors;
+    if (!c) {
+        // Not known yet (created since the last reading): the normal sheet meanwhile, and the
+        // list read again (at most every two minutes).
+        const uint64_t now = SDL_GetTicks();
+        if (serverSuitsFetch_ && online.usable() && (serverSuitsAskedMs_ == 0 || now - serverSuitsAskedMs_ > 120000)) {
+            serverSuitsAskedMs_ = now;
+            refreshServerSuits();
+        }
+        return nullptr;
+    }
+    return suitTextures.get(app.resources(), app.renderer(), *c);
+}
+
+void GameServices::startServerSuits(bool fetch) {
+    serverSuits.setFile(Paths::userDir() / "online" / "creations.json");
+    serverSuits.load();  // drawn offline after one reading
+    serverSuitsFetch_ = fetch;
+    serverSuitsTimer_ = 0.0f;
+    if (fetch) refreshServerSuits();
+}
+
+void GameServices::refreshServerSuits() {
+    if (serverSuitsBusy_ || !online.usable()) return;
+    serverSuitsBusy_ = true;
+    serverSuitsTimer_ = 0.0f;
+    online.get("/api/v1/creations", [this](const ApiResult& r) {
+        serverSuitsBusy_ = false;
+        // A cached answer (no network) changes nothing that the file does not already keep.
+        if (!r.ok || r.fromCache) return;
+        if (serverSuits.applyList(jfield(r.data, "creations", Json()))) serverSuits.save();
+    });
+}
+
+void GameServices::updateServerSuits(float dt) {
+    if (!serverSuitsFetch_ || serverSuitsBusy_ || !online.usable()) return;
+    serverSuitsTimer_ += dt;
+    if (serverSuitsTimer_ >= 30.0f * 60.0f) refreshServerSuits();
+}
+
 // ------------------------------------------------- campaign revisions (2.45)
 
 void GameServices::startCampaignRevisions(bool fetch) {
@@ -182,14 +230,15 @@ void GameServices::challengeRewardsChanged(bool announce) {
     std::set<std::string> now;
     for (const CosmeticItem& i : cosmetics.items())
         if ((i.challengeReward() || (p.won && p.won->has(i.id))) && cosmeticUnlocked(i, p)) now.insert(i.id);
-    // 2.43: the server titles won at a challenge.
+    // 2.43: the server titles (and suits) won at a challenge.
     std::vector<const CosmeticItem*> all;
     for (const CosmeticItem& i : cosmetics.items()) all.push_back(&i);
     if (p.won)
-        for (const CosmeticItem& t : p.won->titles) {
-            now.insert(t.id);
-            all.push_back(&t);
-        }
+        for (const auto* list : {&p.won->titles, &p.won->suits})
+            for (const CosmeticItem& t : *list) {
+                now.insert(t.id);
+                all.push_back(&t);
+            }
     if (announce)
         for (const CosmeticItem* i : all)
             if (now.count(i->id) && !challengeRewardsUnlocked_.count(i->id) && !collection.announced(i->id))

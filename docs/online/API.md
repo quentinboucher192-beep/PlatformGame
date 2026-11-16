@@ -1594,6 +1594,21 @@ ADMIN_TOKEN=… node scripts/register-levels.mjs manifest.json http://127.0.0.1:
 Erreurs : 400, 401, 404, 409 `REVISION_CONFLICT` (même numéro, autre contenu ; les niveaux
 précédents de la liste sont déjà enregistrés), 413, 415.
 
+### 8.10 bis Créations d'un admin : combinaisons recolorées (2.45)
+
+Détails : [CREATIONS.md](CREATIONS.md).
+
+| Méthode | Route | Corps / réponse |
+|---|---|---|
+| GET | `/creations` (public) | `{ creations: [{ id, ref: "srvsuit:<n>", kind: "suit", name, colors: { suit, accent, scarf }, updated_at }] }` : celles en usage, et les archivées encore gagnées ou données par un défi |
+| GET | `/admin/creations` | `{ creations: [{ id, ref, kind, name, colors, created_at, updated_at, created_by, archived, archived_at, uses, owners }], kinds, max_chars }` |
+| POST | `/admin/creations` | `{ kind: "suit", name, colors: { suit, accent, scarf } }` → `201 { creation }` |
+| PUT | `/admin/creations/{id}` | `{ name, colors, updated_at? }` → `{ creation, changed }` ; `409 CREATION_ARCHIVED` / `CREATION_CHANGED` |
+| POST | `/admin/creations/{id}/archive` | `{ archived: true\|false }` → `{ creation, changed }` |
+
+Rôle admin vérifié à chaque requête (`404` pour un autre compte, `401` sans session) ; `400
+VALIDATION_ERROR` (nom, couleurs `#rrggbb`), `409` pour un nom déjà pris.
+
 ## Annexe — format du replay (CPRZ / CPRP v1)
 
 Le jeu enregistre une trace compacte du run, pas une vidéo. Conteneur envoyé

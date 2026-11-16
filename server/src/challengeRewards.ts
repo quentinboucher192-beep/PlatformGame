@@ -128,8 +128,9 @@ export function streakMet(p: ChallengeRewardProgress, c: StreakCondition): boole
 //
 // An administrator gives a challenge that has not begun its own rewards (ADMINISTRATION ›
 // Calendrier des défis › Récompenses, adminChallenges.ts): each one an item of the catalogue
-// (src/cosmeticCatalog.json) or a title created on the server (server_titles, worn as
-// "srv:<id>": no game update needed), and a condition on that challenge's results received in
+// (src/cosmeticCatalog.json), a title created on the server (server_titles, worn as
+// "srv:<id>": no game update needed) or a suit created in ADMINISTRATION › Créations
+// (creations.ts, worn as "srvsuit:<id>", drawn by the game from its three colours), and a condition on that challenge's results received in
 // time and VERIFIED by this server: a tier reached (that tier or better, both objectives: the
 // finished runs and, on « Finir le niveau », the attempts whose progress reached Bronze or
 // Argent), a place of the final ranking (the challenge's main board, ties as the board breaks
@@ -137,7 +138,7 @@ export function streakMet(p: ChallengeRewardProgress, c: StreakCondition): boole
 // and settled (GRANT_DELAY_MS), by the daily cron or a reading of the results; never twice,
 // never taken back. The same items then unlock in the Collection (cosmetics.ts: `won`).
 
-export const PRIZE_KINDS = ["item", "title"] as const;
+export const PRIZE_KINDS = ["item", "title", "suit"] as const;
 export type PrizeKind = (typeof PRIZE_KINDS)[number];
 export const PRIZE_CONDITIONS = ["tier", "top", "finished"] as const;
 export type PrizeCondition = (typeof PRIZE_CONDITIONS)[number];
@@ -181,6 +182,28 @@ export function titleIdOf(ref: string | null | undefined): number | null {
     return m ? Number(m[1]) : null;
 }
 
+export const suitRef = (id: number) => `srvsuit:${id}`;
+/** The creations id of a suit "srvsuit:<id>", null for anything else. */
+export function suitIdOf(ref: string | null | undefined): number | null {
+    const m = /^srvsuit:([1-9]\d{0,9})$/.exec(ref ?? "");
+    return m ? Number(m[1]) : null;
+}
+
+/** A suit created on the server as the games read it: its three colours ("#rrggbb"). */
+export interface SuitColors {
+    suit: string;
+    accent: string;
+    scarf: string;
+}
+export interface SuitJson {
+    id: string;
+    name: string;
+    colors: SuitColors;
+}
+export function suitJson(ref: string, name: string, suit: string, accent: string, scarf: string): SuitJson {
+    return { id: ref, name, colors: { suit, accent, scarf } };
+}
+
 /** Letters, marks, digits, punctuation and spaces: what the game's fonts draw (no emoji, no control). */
 const TITLE_TEXT_RE = /^[\p{L}\p{M}\p{N}\p{P} ]+$/u;
 
@@ -201,16 +224,21 @@ export function titleKey(text: string): string {
         .trim();
 }
 
-/** SQL (a column of challenges `c`): its rewards as a JSON array, the titles' text and colour joined. */
+/** The server titles (`t`) and the suits created on the server (`s`) of the rules `r`. */
+const PRIZE_JOINS = `LEFT JOIN server_titles t ON r.reward_kind = 'title' AND t.id = CAST(substr(r.reward_ref, 5) AS INTEGER)
+     LEFT JOIN creations s ON r.reward_kind = 'suit' AND s.kind = 'suit' AND s.id = CAST(substr(r.reward_ref, 9) AS INTEGER)`;
+
+/** SQL (a column of challenges `c`): its rewards as a JSON array, the titles (text, colour) and suits (name, colours) joined. */
 export const PRIZES_SQL = `(SELECT json_group_array(json_object('position', r.position, 'kind', r.reward_kind, 'ref', r.reward_ref,
-      'condition', r.condition, 'value', r.condition_value, 'title_text', t.text, 'title_color', t.color))
-    FROM challenge_reward_rules r LEFT JOIN server_titles t ON r.reward_kind = 'title' AND t.id = CAST(substr(r.reward_ref, 5) AS INTEGER)
+      'condition', r.condition, 'value', r.condition_value, 'title_text', t.text, 'title_color', t.color,
+      'suit_name', s.name, 'suit_color', s.suit_color, 'accent_color', s.accent_color, 'scarf_color', s.scarf_color))
+    FROM challenge_reward_rules r ${PRIZE_JOINS}
     WHERE r.challenge_id = c.id)`;
 
-/** The rules of some challenges (?1: a JSON array of their ids), the titles joined. */
+/** The rules of some challenges (?1: a JSON array of their ids), the titles and suits joined. */
 export const PRIZE_ROWS_SQL = `SELECT r.challenge_id, r.position, r.reward_kind AS kind, r.reward_ref AS ref, r.condition, r.condition_value AS value,
-       t.text AS title_text, t.color AS title_color
-     FROM challenge_reward_rules r LEFT JOIN server_titles t ON r.reward_kind = 'title' AND t.id = CAST(substr(r.reward_ref, 5) AS INTEGER)`;
+       t.text AS title_text, t.color AS title_color, s.name AS suit_name, s.suit_color, s.accent_color, s.scarf_color
+     FROM challenge_reward_rules r ${PRIZE_JOINS}`;
 
 export interface PrizeRow {
     position: number;
@@ -220,9 +248,17 @@ export interface PrizeRow {
     value: number;
     title_text: string | null;
     title_color: string | null;
+    suit_name?: string | null;
+    suit_color?: string | null;
+    accent_color?: string | null;
+    scarf_color?: string | null;
 }
 
-/** A reward as the game reads it: `item` (its id, category and name) or `title` (its text and colour). */
+/**
+ * A reward as the game reads it: `item` (its id, category and name), `title` (its text and
+ * colour) or `suit` (a suit created on the server: its name and colours; the key is only
+ * present for one, so the earlier forms are unchanged).
+ */
 export interface PrizeJson {
     kind: PrizeKind;
     ref: string;
@@ -230,6 +266,7 @@ export interface PrizeJson {
     value: number;
     item: { id: string; category: string; name: string } | null;
     title: { id: string; text: string; color: string } | null;
+    suit?: SuitJson;
 }
 
 /** The rewards (rows or the JSON of PRIZES_SQL) in their order; an unknown item or title is left out. */
@@ -252,29 +289,33 @@ export function prizesJson(raw: string | PrizeRow[] | null | undefined): PrizeJs
             if (i) out.push({ kind: "item", ...base, item: { id: i.id, category: i.category, name: i.name }, title: null });
         } else if (r.kind === "title" && r.title_text) {
             out.push({ kind: "title", ...base, item: null, title: { id: r.ref, text: r.title_text, color: r.title_color ?? "gold" } });
+        } else if (r.kind === "suit" && r.suit_name && r.suit_color && r.accent_color && r.scarf_color) {
+            out.push({ kind: "suit", ...base, item: null, title: null, suit: suitJson(r.ref, r.suit_name, r.suit_color, r.accent_color, r.scarf_color) });
         }
     }
     return out;
 }
 
 /** The name a reward goes by (notifications, the Journal). */
-export function prizeName(p: { kind: string; ref: string; title_text?: string | null }): string {
+export function prizeName(p: { kind: string; ref: string; title_text?: string | null; suit_name?: string | null }): string {
     if (p.kind === "title") return p.title_text ?? p.ref;
+    if (p.kind === "suit") return p.suit_name ?? p.ref;
     return prizeItem(p.ref)?.name ?? p.ref;
 }
 
-/** What a player won: catalogue items, and server titles ("srv:<id>"). */
+/** What a player won: catalogue items, server titles ("srv:<id>") and suits created on the server ("srvsuit:<id>"). */
 export interface WonRewards {
     items: Set<string>;
     titles: Set<string>;
+    suits: Set<string>;
 }
 
 export async function wonRewards(ctx: Ctx, playerId: string): Promise<WonRewards> {
     const rows = await ctx.env.DB.prepare("SELECT DISTINCT reward_kind AS kind, reward_ref AS ref FROM player_won_rewards WHERE player_id = ?1")
         .bind(playerId)
         .all<{ kind: string; ref: string }>();
-    const out: WonRewards = { items: new Set(), titles: new Set() };
-    for (const r of rows.results) (r.kind === "title" ? out.titles : out.items).add(r.ref);
+    const out: WonRewards = { items: new Set(), titles: new Set(), suits: new Set() };
+    for (const r of rows.results) (r.kind === "title" ? out.titles : r.kind === "suit" ? out.suits : out.items).add(r.ref);
     return out;
 }
 
@@ -306,7 +347,7 @@ export async function grantPrizes(ctx: Ctx, c: PrizeChallenge, rankedSql: string
          SELECT w.pid, ?1, ?3, ?4, ?5 FROM (${select}) w JOIN players p ON p.id = w.pid WHERE p.account_status = 'active'`;
     for (const r of rules.results) {
         // A reward the server no longer knows (an item gone from the catalogue) is not given.
-        if (r.kind === "item" ? !prizeItem(r.ref) : !r.title_text) continue;
+        if (r.kind === "item" ? !prizeItem(r.ref) : r.kind === "suit" ? !r.suit_name : !r.title_text) continue;
         if (r.condition === "tier") {
             const best = `SELECT x.player_id AS pid FROM (
                 SELECT player_id, ${TIER_SQL("tier")} AS t FROM challenge_runs WHERE challenge_id = ?1 AND status = 'VERIFIED' AND late = ?2

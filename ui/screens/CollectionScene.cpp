@@ -53,7 +53,8 @@ void drawStar(Renderer& r, Vec2 c, float radius, Color col) {
 
 // ------------------------------------------------------------------ shared drawing
 
-/// Nova (or a suit) at `dst`: a frame of `clip` from the suit's recoloured sheet.
+/// Nova (or a suit) at `dst`: a frame of `clip` from the suit's recoloured sheet (a suit created
+/// on Cosmic Online: recoloured at run time, GameServices::suitSheet).
 void drawNova(GameServices& g, const std::string& suitLook, const std::string& clip, float t, const Rect& dst, Color tint = Color::white()) {
     AnimationSetPtr set = g.app.resources().animation("animations/nova.json");
     if (!set || !set->texture) return;
@@ -71,8 +72,7 @@ void drawNova(GameServices& g, const std::string& suitLook, const std::string& c
         }
     }
     TexturePtr tex = set->texture;
-    if (!suitLook.empty() && suitLook != "standard")
-        if (TexturePtr s = g.app.resources().texture("sprites/player/suits/nova_" + suitLook + ".png")) tex = s;
+    if (TexturePtr s = g.suitSheet(suitLook)) tex = s;
     Rect src = set->frameRect(*c, frame);
     g.app.renderer().drawTexture(*tex, &src, dst, tint);
 }
@@ -478,16 +478,19 @@ private:
         const WonReward* w = progress_.won ? progress_.won->origin(it.id) : nullptr;
         return w ? wonOriginText(*w) : std::string();
     }
-    /// The catalogue's items of a category, then (titles) the server titles won (2.43).
+    /// The catalogue's items of a category, then the server titles (2.43) or the suits created
+    /// on Cosmic Online that were won.
     std::vector<const CosmeticItem*> itemsOf(const std::string& category) const {
         auto items = g_.cosmetics.items(category);
         if (category == "title" && progress_.won)
             for (const CosmeticItem& t : progress_.won->titles) items.push_back(&t);
+        if (category == "suit" && progress_.won)
+            for (const CosmeticItem& s : progress_.won->suits) items.push_back(&s);
         return items;
     }
     const CosmeticItem* findItem(const std::string& id) const {
         if (const CosmeticItem* it = g_.cosmetics.find(id)) return it;
-        return progress_.won ? progress_.won->title(id) : nullptr;
+        return progress_.won ? progress_.won->item(id) : nullptr;
     }
     std::string shortReq(const CosmeticItem& it) const {
         if (std::string w = wonText(it); !w.empty()) return w;

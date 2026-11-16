@@ -9,7 +9,9 @@
 //                rules, objective and tiers) or put back to the server's draw;
 //   « Journal »: who did what and when, the server's refusals included; no IP, no e-mail;
 //   « Campagne » (2.45, AdminCampaign.cpp): the campaign levels and their revision online,
-//                edited in the game's editor and published without a game update.
+//                edited in the game's editor and published without a game update;
+//   « Créations » (AdminCreations.cpp): the suits an administrator makes (a name, three
+//                colours, a live preview), given as rewards of the challenges.
 // The country, the last activity and the presence of a player appear only as they share them.
 
 #include <algorithm>
@@ -26,6 +28,7 @@
 #include "ui/screens/AdminBackups.h"
 #include "ui/screens/AdminCampaign.h"
 #include "ui/screens/AdminCalendar.h"
+#include "ui/screens/AdminCreations.h"
 #include "ui/screens/ChallengeRewardsUi.h"
 #include "ui/screens/ChallengeUi.h"
 #include "ui/screens/MenuBackground.h"
@@ -93,10 +96,10 @@ std::string presenceText(const std::string& p) {
 }
 
 const char* kFilters[] = {"all", "admins", "online"};
-const char* kKinds[] = {"all", "role", "challenge", "campaign", "refused"};
+const char* kKinds[] = {"all", "role", "challenge", "campaign", "creation", "refused"};
 
-/// The tabs: Joueurs, Calendrier des défis (2.41), Journal.
-constexpr int kTabPlayers = 0, kTabCalendar = 1, kTabLog = 2, kTabBackups = 3, kTabCampaign = 4;
+/// The tabs: Joueurs, Calendrier des défis (2.41), Journal, Sauvegardes, Campagne (2.45), Créations.
+constexpr int kTabPlayers = 0, kTabCalendar = 1, kTabLog = 2, kTabBackups = 3, kTabCampaign = 4, kTabCreations = 5;
 
 /// "20/11" of "2026-11-20".
 std::string shortDate(const std::string& date) { return date.size() >= 10 ? date.substr(8, 2) + "/" + date.substr(5, 2) : date; }
@@ -117,8 +120,14 @@ public:
     AdminScene(GameServices& g, std::string open)
         : g_(g), ui_(g), calendar_(g, ui_, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
           backups_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
-          campaign_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }) {
+          campaign_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
+          creations_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }) {
         if (open.rfind("backups", 0) == 0) tab_ = kTabBackups;
+        // "creations[:new]" (the editor opened on a new suit).
+        if (open.rfind("creations", 0) == 0) {
+            tab_ = kTabCreations;
+            if (open.size() > 10) creations_.open(open.substr(10));
+        }
         // 2.45: "campaign[:<level id>]" (that level's history open).
         if (open.rfind("campaign", 0) == 0) {
             tab_ = kTabCampaign;
@@ -175,13 +184,16 @@ public:
         bool back = ui.button("back", {x0_ + W_ - backW, y, backW, hh}, "Retour") || (!modal && ui.backPressed());
         // The tabs after the title when they fit, else on the line below. Equal tabs, each as
         // wide as its longest label needs (« Calendrier des défis »).
-        static const std::vector<std::string> kTabs = {"Joueurs", "Calendrier des défis", "Journal", "Sauvegardes", "Campagne"};
+        static const std::vector<std::string> kTabs = {"Joueurs", "Calendrier des défis", "Journal", "Sauvegardes", "Campagne", "Créations"};
         float tabW = 0.0f;
         for (const std::string& t : kTabs) tabW = std::max(tabW, ui.text().measure(t, FontFace::Bold, ui.s(20)).x + ui.s(44));
         float tabsW = tabW * static_cast<float>(kTabs.size()), tabsX = x0_ + titleW + ui.s(28);
         float bodyY = y + hh + ui.s(22);
         Rect tabsR{tabsX, y, tabsW, hh};
         if (tabsX + tabsW > x0_ + W_ - backW - ui.s(20)) {
+            // On the line below, never wider than the screen's column (the labels then shrink to their tab).
+            tabW = std::min(tabW, W_ / static_cast<float>(kTabs.size()));
+            tabsW = tabW * static_cast<float>(kTabs.size());
             tabsR = {x0_, bodyY, tabsW, hh};
             bodyY += hh + ui.s(16);
         }
@@ -194,6 +206,8 @@ public:
         ui.newBadge("tabbak", bakTab, "admin.tab.backups", true, true);
         Rect campTab{tabsR.x + 4 * tabW + ui.s(2), tabsR.y, tabW - ui.s(4), tabsR.h};
         ui.newBadge("tabcamp", campTab, "admin.tab.campaign", true, true);
+        Rect creaTab{tabsR.x + 5 * tabW + ui.s(2), tabsR.y, tabW - ui.s(4), tabsR.h};
+        ui.newBadge("tabcrea", creaTab, "admin.tab.creations", true, true);
         if (tab != tab_) {
             tab_ = tab;
             if (tab_ == kTabLog) loadLog(false);
@@ -209,6 +223,10 @@ public:
                 if (ui.featureSeen && ui.isNew("admin.tab.campaign")) ui.featureSeen("admin.tab.campaign");
                 campaign_.enter();
             }
+            if (tab_ == kTabCreations) {
+                if (ui.featureSeen && ui.isNew("admin.tab.creations")) ui.featureSeen("admin.tab.creations");
+                creations_.enter();
+            }
         }
         Rect body{x0_, bodyY, W_, ui.screenH() - bodyY - ui.s(64)};
         if (tab_ == kTabCalendar) {
@@ -221,6 +239,7 @@ public:
             if (tab_ == kTabPlayers) drawPlayers(inner);
             else if (tab_ == kTabBackups) backups_.draw(inner);
             else if (tab_ == kTabCampaign) campaign_.draw(inner);
+            else if (tab_ == kTabCreations) creations_.draw(inner);
             else drawLog(inner);
         }
         drawStatus();
@@ -264,6 +283,7 @@ private:
             campaign_.enter(true, campaignSelect_);
             campaignSelect_.clear();
         }
+        if (tab_ == kTabCreations) creations_.enter(true);
     }
 
     void loadPlayers() {
@@ -619,6 +639,13 @@ private:
         return c == "silver" ? "Argent" : c == "cyan" ? "Cyan" : c == "violet" ? "Violet" : "Or";
     }
 
+    /// « combinaison #c8e1ff, accent #78c8ff, écharpe #ebf5ff »: the colours of a creation as the Journal keeps them.
+    static std::string colorsText(const Json& creation) {
+        const Json& c = jfield(creation, "colors", Json());
+        if (!c.is_object()) return "couleurs inconnues";
+        return "combinaison " + jstr(c, "suit", "?") + ", accent " + jstr(c, "accent", "?") + ", écharpe " + jstr(c, "scarf", "?");
+    }
+
     /// The rewards of a challenge as the Journal keeps them: « Titre « X » (Or atteint) · Cadre Y (Top 10 final) » (2.43).
     static std::string rewardsSummary(const Json& list) {
         std::string out;
@@ -685,6 +712,34 @@ private:
             std::string what = jstr(camp, "action") == "revert" ? "remise en ligne d'une révision de « " + lname + " »" : "publication d'une révision de « " + lname + " »";
             return {"Refus", ui.theme().textDim, what + " refusée : " + why};
         }
+        // A suit made in « Créations »: created, edited, archived, restored, or refused.
+        const Json& crea = jfield(e, "creation", Json());
+        if (crea.is_object()) {
+            const std::string name = "« " + jstr(crea, "name", "?") + " »";
+            if (action == "admin_creation_created") return {"Création", ui.theme().accent, "a créé la combinaison " + name + " (" + colorsText(crea) + ")"};
+            if (action == "admin_creation_updated") {
+                const Json& prev = jfield(crea, "previous", Json());
+                std::string text = "a modifié la combinaison " + name + " (" + colorsText(crea) + ")";
+                if (prev.is_object()) {
+                    if (jstr(prev, "name") != jstr(crea, "name")) text += " · ancien nom « " + jstr(prev, "name") + " »";
+                    if (colorsText(prev) != colorsText(crea)) text += " · anciennes couleurs " + colorsText(prev);
+                }
+                return {"Création", ui.theme().accent, text};
+            }
+            if (action == "admin_creation_archived") return {"Création", Color{185, 200, 218, 255}, "a archivé la combinaison " + name};
+            if (action == "admin_creation_restored") return {"Création", ui.theme().accent, "a restauré la combinaison " + name};
+            const std::string act = jstr(crea, "action");
+            const std::string what = act == "create"    ? "création de la combinaison " + name
+                                     : act == "update"  ? "modification de la combinaison " + name
+                                     : act == "restore" ? "restauration de la combinaison " + name
+                                                        : "archivage de la combinaison " + name;
+            const std::string why = reason == "CREATION_EXISTS"     ? std::string("une combinaison porte déjà ce nom")
+                                    : reason == "CREATION_CHANGED"  ? std::string("elle avait changé entre-temps")
+                                    : reason == "CREATION_ARCHIVED" ? std::string("elle est archivée")
+                                    : reason == "VALIDATION_ERROR"  ? std::string("nom ou couleurs invalides")
+                                                                    : std::string("refus du serveur");
+            return {"Refus", ui.theme().textDim, what + " refusée : " + why};
+        }
         const Json& title = jfield(e, "title", Json());
         if (action == "admin_title_created" && title.is_object())
             return {"Défi", ui.theme().accent, "a créé le titre « " + jstr(title, "text") + " » (" + colorName(jstr(title, "color")) + ")"};
@@ -723,19 +778,25 @@ private:
         ui.pushId("log");
         float y = in.y, fh = ui.s(46);
         int kind = kind_;
-        float kr = chips("kind", in.x, y, fh, {"Toutes les actions", "Rôles", "Défis", "Campagne", "Refus"}, kind);
+        float kr = chips("kind", in.x, y, fh, {"Toutes les actions", "Rôles", "Défis", "Campagne", "Créations", "Refus"}, kind);
         std::vector<std::string> who{"Tous"};
         for (const auto& a : admins_) who.push_back(jstr(a, "username"));
         int actor = std::min(actor_, static_cast<int>(who.size()) - 1);
-        float cycleW = std::min(ui.s(400), in.right() - kr - ui.s(16));
-        ui.cycle("actor", {kr + ui.s(16), y, cycleW, fh}, "Admin", actor, who);
+        // The admin's choice after the chips when it has room there, else on the line below.
+        float cycleX = kr + ui.s(16);
+        if (in.right() - cycleX < ui.s(240)) {
+            y += fh + ui.s(10);
+            cycleX = in.x;
+        }
+        float cycleW = std::min(ui.s(400), in.right() - cycleX);
+        ui.cycle("actor", {cycleX, y, cycleW, fh}, "Admin", actor, who);
         if (kind != kind_ || actor != actor_) {
             kind_ = kind;
             actor_ = actor;
             loadLog(false);
         }
         std::string keep = "Gardé 6 mois · ni adresse IP ni e-mail";
-        float room = in.right() - (kr + ui.s(36) + cycleW);
+        float room = in.right() - (cycleX + ui.s(20) + cycleW);
         if (room > ui.s(120)) {
             float ks = ui.fitFont(keep, FontFace::Body, 15, room);
             ui.label(ui.elide(keep, FontFace::Body, ks, room), {in.right(), y + fh * 0.5f}, ks, ui.theme().textDim, Align::Right, FontFace::Body, VAlign::Middle);
@@ -831,6 +892,7 @@ private:
     AdminBackups backups_;    // « Sauvegardes » (2.43)
     AdminCampaign campaign_;  // « Campagne » (2.45)
     std::string campaignSelect_;
+    AdminCreations creations_;  // « Créations »: the suits made on the server
     MenuBackground bg_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     float W_ = 0.0f, x0_ = 0.0f;

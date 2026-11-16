@@ -157,6 +157,12 @@
    ]
   },
   {
+   "fr": "+ Nouvelle combinaison",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "+ Récompense du jeu",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -498,7 +504,19 @@
    ]
   },
   {
+   "fr": "a archivé la combinaison {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "a choisi le défi {0} : {1}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a créé la combinaison {0} ({1})",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -529,6 +547,12 @@
   },
   {
    "fr": "a fixé les récompenses du défi {0} : {1}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a modifié la combinaison {0} ({1})",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -565,6 +589,12 @@
   },
   {
    "fr": "a remis en ligne la révision {0} de « {1} » (à la place de la révision {2}) · {3}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a restauré la combinaison {0}",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -695,6 +725,12 @@
    "fr": "Abysse",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Accent",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -933,6 +969,7 @@
    "where": [
     "ui/screens/AdminBackups.cpp",
     "ui/screens/AdminCampaign.cpp",
+    "ui/screens/AdminCreations.cpp",
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
@@ -1498,6 +1535,18 @@
    ]
   },
   {
+   "fr": "ancien nom « {0} »",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "anciennes couleurs {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Anciens",
    "where": [
     "ui/online/CommentsPanel.cpp"
@@ -1637,6 +1686,12 @@
    ]
   },
   {
+   "fr": "Annuler les modifications",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Annuler ma demande",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -1728,6 +1783,12 @@
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp",
     "ui/screens/ChallengeUi.cpp"
+   ]
+  },
+  {
+   "fr": "Aperçu : {0}",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -1890,6 +1951,18 @@
    ]
   },
   {
+   "fr": "Archivage",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "archivage de la combinaison {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Archive illisible : {0}",
    "where": [
     "packaging/PackageImporter.cpp"
@@ -1914,9 +1987,34 @@
    ]
   },
   {
+   "fr": "Archiver",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "archivée",
    "where": [
-    "ui/screens/AdminCampaign.cpp"
+    "ui/screens/AdminCampaign.cpp",
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Archivée : elle n'est plus proposée en récompense ; ceux qui l'ont gagnée la gardent. « Restaurer » pour la modifier.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Archivée : restaurez-la pour la modifier.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Archivées",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -2971,6 +3069,24 @@
    ]
   },
   {
+   "fr": "Aucune combinaison créée pour l'instant : « Nouvelle combinaison » pour commencer.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune combinaison en service : « Archivées » montre celle qui est archivée.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune combinaison en service : « Archivées » montre les {0} combinaisons archivées.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Aucune copie pour l'instant.",
    "where": [
     "ui/screens/AdminBackups.cpp"
@@ -3903,6 +4019,12 @@
    "fr": "Blanc nacré des sanctuaires d'Aethra, visière lavande, écharpe d'or.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Bleu",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -5553,6 +5675,18 @@
    ]
   },
   {
+   "fr": "Cette création a changé entre-temps : relisez-la avant de la modifier.",
+   "where": [
+    "server/src/creations.ts"
+   ]
+  },
+  {
+   "fr": "Cette création est archivée : restaurez-la avant de la modifier.",
+   "where": [
+    "server/src/creations.ts"
+   ]
+  },
+  {
    "fr": "Cette invitation n'est plus valable (expirée, épuisée ou révoquée).",
    "where": [
     "server/src/projects.ts"
@@ -5948,6 +6082,7 @@
     "ui/screens/AdminBackups.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminCampaign.cpp",
+    "ui/screens/AdminCreations.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/NotificationsScene.cpp",
@@ -6280,6 +6415,12 @@
    "fr": "Choisissez un pseudonyme d'au moins 3 caractères.",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "Choisissez une combinaison dans la liste pour la modifier, ou « Nouvelle combinaison » pour en créer une : un nom et trois couleurs, appliquées à Nova comme pour les combinaisons du jeu. Elle se donne ensuite en récompense d'un défi (Calendrier des défis › Récompenses) : ceux qui la gagnent la portent, et tous les jeux la dessinent sans mise à jour.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -6829,6 +6970,12 @@
    ]
   },
   {
+   "fr": "Code",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "code",
    "where": [
     "game/online/OnlineGlobe.cpp",
@@ -7048,13 +7195,26 @@
    "fr": "Combinaison",
    "where": [
     "game/cosmetics/Collection.cpp",
+    "ui/screens/AdminCreations.cpp",
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "combinaison archivée : restaurez-la d'abord",
+   "where": [
+    "server/src/adminChallenges.ts"
    ]
   },
   {
    "fr": "Combinaison cuivrée, visière orange, écharpe rouge.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "combinaison inconnue du serveur",
+   "where": [
+    "server/src/adminChallenges.ts"
    ]
   },
   {
@@ -7070,9 +7230,46 @@
    ]
   },
   {
+   "fr": "combinaison {0}, accent {1}, écharpe {2}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Combinaison « {0} » archivée : elle n'est plus proposée en récompense ; ceux qui l'ont gagnée la gardent.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Combinaison « {0} » créée. À donner en récompense : Calendrier des défis › Récompenses.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Combinaison « {0} » enregistrée : les jeux la redessinent à leur prochaine lecture de la liste.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Combinaison « {0} » restaurée : de nouveau proposée en récompense.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Combinaisons",
    "where": [
-    "data/cosmetics/cosmetics.json"
+    "data/cosmetics/cosmetics.json",
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Combinaisons créées indisponibles : {0}",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -7711,6 +7908,12 @@
    ]
   },
   {
+   "fr": "Connexion impossible : rien n'a changé sur le serveur.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Connexion impossible : rien n'a changé.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -8211,6 +8414,24 @@
    ]
   },
   {
+   "fr": "Couleur d'accent",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Couleur de l'écharpe",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Couleur de la combinaison",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Couleur de lueur",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -8226,6 +8447,18 @@
    "fr": "Couleur du rayon",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Couleurs",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "couleurs inconnues",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -8370,6 +8603,12 @@
    "fr": "Course",
    "where": [
     "ui/screens/CreatureArt.cpp"
+   ]
+  },
+  {
+   "fr": "course",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -8693,6 +8932,18 @@
    ]
   },
   {
+   "fr": "Création",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "création de la combinaison {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Création de la publication…",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
@@ -8702,6 +8953,12 @@
    "fr": "création du titre « {0} » refusée : {1}",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Création introuvable.",
+   "where": [
+    "server/src/creations.ts"
    ]
   },
   {
@@ -8733,7 +8990,8 @@
   {
    "fr": "Créer",
    "where": [
-    "editors/level_editor/LevelEditorDialogs.cpp"
+    "editors/level_editor/LevelEditorDialogs.cpp",
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -8831,6 +9089,24 @@
    "fr": "créé par un admin · pas besoin de mise à jour",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Créée le {0}",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "créée par un admin · pas besoin de mise à jour",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Créée par {0} le {1}",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -9103,6 +9379,7 @@
     "game/powers/PowerDemos.cpp",
     "game/powers/Powers.cpp",
     "packaging/DependencyCollector.cpp",
+    "ui/screens/AdminCreations.cpp",
     "ui/screens/HudEditorScene.cpp"
    ]
   },
@@ -9152,7 +9429,8 @@
   {
    "fr": "de 1 à {0} caractères : lettres, chiffres, ponctuation et espaces",
    "where": [
-    "server/src/adminChallenges.ts"
+    "server/src/adminChallenges.ts",
+    "server/src/creations.ts"
    ]
   },
   {
@@ -9543,6 +9821,12 @@
    ]
   },
   {
+   "fr": "Dessinées par tous les jeux, sans mise à jour. À donner en récompense : Calendrier des défis › Récompenses.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Destination",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
@@ -9868,9 +10152,34 @@
    ]
   },
   {
+   "fr": "Donnez-lui un nom.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Donnée par aucun défi",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Donnée par {0} défi",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Donnée par {0} défis",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Données",
    "where": [
-    "ui/screens/AdminCalendar.cpp"
+    "ui/screens/AdminCalendar.cpp",
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -11229,6 +11538,18 @@
    ]
   },
   {
+   "fr": "elle avait changé entre-temps",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "elle est archivée",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Elles ne dépendent pas du nombre d'étoiles : il faut le succès lui-même.",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -11778,6 +12099,7 @@
     "editors/enemy_editor/EnemyEditorScene.cpp",
     "ui/online/CommentsPanel.cpp",
     "ui/screens/AdminCalendar.cpp",
+    "ui/screens/AdminCreations.cpp",
     "ui/screens/HudEditorScene.cpp",
     "ui/screens/OnlineSettingsScene.cpp"
    ]
@@ -12038,6 +12360,12 @@
    ]
   },
   {
+   "fr": "Envoi au serveur…",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Envoi du fichier…",
    "where": [
     "ui/screens/AdminBackups.cpp"
@@ -12087,6 +12415,7 @@
     "ui/online/CommentsPanel.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminCampaign.cpp",
+    "ui/screens/AdminCreations.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
@@ -13326,6 +13655,7 @@
    "fr": "format invalide",
    "where": [
     "server/src/community.ts",
+    "server/src/creations.ts",
     "server/src/leaderboards.ts",
     "server/src/levels.ts",
     "server/src/validate.ts"
@@ -13572,6 +13902,24 @@
    "fr": "Gagnée : à équiper dans la Collection",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "gagnée par personne",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "gagnée par {0} joueur",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "gagnée par {0} joueurs",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -14894,6 +15242,7 @@
     "ui/screens/AdminBackups.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminCampaign.cpp",
+    "ui/screens/AdminCreations.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp",
@@ -19368,6 +19717,12 @@
    ]
   },
   {
+   "fr": "Liste indisponible : {0}",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Liste triée par date, filtre par niveau, Regarder / Comparer / Supprimer ; un replay fait sur une autre version du niveau le signale au lieu d'être mal rejoué.",
    "where": [
     "data/news/changelog.json"
@@ -20381,6 +20736,7 @@
     "game/online/OnlineTypes.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/AdminCalendar.cpp",
+    "ui/screens/AdminCreations.cpp",
     "ui/screens/OnlineAccountScene.cpp",
     "ui/screens/ProjectsScene.cpp"
    ]
@@ -20639,6 +20995,12 @@
    ]
   },
   {
+   "fr": "modification de la combinaison {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Modification de votre commentaire",
    "where": [
     "ui/online/CommentsPanel.cpp"
@@ -20681,6 +21043,18 @@
    ]
   },
   {
+   "fr": "Modifications non enregistrées : « Enregistrer », ou faites le même choix encore une fois pour les abandonner.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Modifications non enregistrées.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "modifie {0}",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
@@ -20696,6 +21070,12 @@
    "fr": "Modifier dans l'éditeur",
    "where": [
     "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "Modifier la combinaison",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -21857,7 +22237,8 @@
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "editors/level_editor/LevelEditorDialogs.cpp",
-    "game/levels/ObjectTypes.cpp"
+    "game/levels/ObjectTypes.cpp",
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -21879,9 +22260,21 @@
    ]
   },
   {
+   "fr": "Nom : 32 caractères au plus.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "nom d'entrée invalide",
    "where": [
     "server/src/backupFormat.ts"
+   ]
+  },
+  {
+   "fr": "Nom de la combinaison (32 caractères au plus)",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -21930,6 +22323,12 @@
    "fr": "nom invalide (1 à 80 caractères)",
    "where": [
     "server/src/campaignRevisions.ts"
+   ]
+  },
+  {
+   "fr": "nom ou couleurs invalides",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -22475,6 +22874,12 @@
    "fr": "Nouvelle attaque",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Nouvelle combinaison",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -23634,6 +24039,12 @@
    ]
   },
   {
+   "fr": "Palette",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Palier : toutes les étoiles ({0})",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -23746,6 +24157,12 @@
    "fr": "par défaut",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "par exemple #c8e1ff",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -24178,6 +24595,12 @@
    ]
   },
   {
+   "fr": "Pas encore créée : « Créer » l'envoie au serveur.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Pas encore d'essai sur ce défi.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -24217,6 +24640,12 @@
    "fr": "Pas encore de temps sur ce défi.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pas encore donnée en récompense",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -27994,7 +28423,8 @@
   {
    "fr": "Refusé par le serveur.",
    "where": [
-    "ui/screens/AdminCalendar.cpp"
+    "ui/screens/AdminCalendar.cpp",
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -28592,6 +29022,12 @@
    ]
   },
   {
+   "fr": "repos",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Repousse",
    "where": [
     "game/powers/PowerStats.cpp"
@@ -28640,6 +29076,12 @@
    ]
   },
   {
+   "fr": "restauration de la combinaison {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Restauration de la révision {0}",
    "where": [
     "server/src/projects.ts"
@@ -28685,6 +29127,7 @@
   {
    "fr": "Restaurer",
    "where": [
+    "ui/screens/AdminCreations.cpp",
     "ui/screens/ProjectsScene.cpp"
    ]
   },
@@ -29022,6 +29465,12 @@
    ]
   },
   {
+   "fr": "Rien à changer : le serveur l'avait déjà ainsi.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Rien à envoyer.",
    "where": [
     "game/online/OnlineService.cpp"
@@ -29149,7 +29598,8 @@
   {
    "fr": "Rouge",
    "where": [
-    "editors/enemy_editor/EnemyEditorProperties.cpp"
+    "editors/enemy_editor/EnemyEditorProperties.cpp",
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -29229,6 +29679,7 @@
     "game/ghost/Ghost.cpp",
     "game/online/DailyChallenges.cpp",
     "game/player/PlayerActions.cpp",
+    "ui/screens/AdminCreations.cpp",
     "ui/screens/CollectionScene.cpp",
     "ui/screens/CreatureArt.cpp",
     "ui/screens/RewardsScene.cpp"
@@ -29253,6 +29704,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "ruée",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -29644,6 +30101,12 @@
    "fr": "Réponse du serveur illisible (HTTP {0}).",
    "where": [
     "game/online/OnlineTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Réponse du serveur illisible : relisez la liste.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -30299,6 +30762,12 @@
    "fr": "Sans mourir, sans être touché : la précision.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Sans nom",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -35512,6 +35981,30 @@
    ]
   },
   {
+   "fr": "Une combinaison créée sur Cosmic Online, gagnée à un défi.",
+   "where": [
+    "game/cosmetics/Collection.cpp"
+   ]
+  },
+  {
+   "fr": "Une combinaison créée sur Cosmic Online.",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "une combinaison porte déjà ce nom",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Une combinaison porte déjà ce nom : choisissez-en un autre.",
+   "where": [
+    "server/src/creations.ts"
+   ]
+  },
+  {
    "fr": "Une copie automatique chaque nuit · 14 gardées · manuelles 90 jours",
    "where": [
     "ui/screens/AdminBackups.cpp"
@@ -36526,6 +37019,7 @@
     "game/GameServices.cpp",
     "game/achievements/Achievements.cpp",
     "game/content/ContentDatabase.cpp",
+    "game/cosmetics/SuitRecolor.cpp",
     "game/ghost/ReplayLibrary.cpp",
     "game/ghost/SegmentHistory.cpp",
     "game/ghost/TrainingSegments.cpp",
@@ -36728,7 +37222,8 @@
   {
    "fr": "Vert",
    "where": [
-    "saves/Settings.cpp"
+    "saves/Settings.cpp",
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -36754,6 +37249,12 @@
    "where": [
     "data/music/tracks.json",
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "victoire",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -37162,6 +37663,12 @@
    "where": [
     "game/enemies/EnemyDefinition.cpp",
     "ui/screens/CreatureArt.cpp"
+   ]
+  },
+  {
+   "fr": "vol plané",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -38850,6 +39357,12 @@
    ]
   },
   {
+   "fr": "{0} créée sur Cosmic Online · récompense de ce défi",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
    "fr": "{0} cœur",
    "where": [
     "ui/screens/AdminScene.cpp",
@@ -39025,6 +39538,24 @@
    "fr": "{0} en ligne",
    "where": [
     "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} en service",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "{0} en service · {1} archivée",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "{0} en service · {1} archivées",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -40496,6 +41027,12 @@
    ]
   },
   {
+   "fr": "Écharpe",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "ÉCHEC",
    "where": [
     "ui/screens/ResultsScene.cpp"
@@ -41728,6 +42265,12 @@
    "fr": "›  {0} objets sélectionnés",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "← → : de 5 en 5 · Maj : de 1 en 1 · souris : glisser",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {

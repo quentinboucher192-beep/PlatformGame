@@ -69,14 +69,18 @@ int daysInMonth(const std::string& month);
 /// challenge's results (Cosmic Online grants it once the challenge is over, from the verified
 /// runs received in time; never taken back).
 struct ChallengePrize {
-    std::string kind;       // "item" (of the catalogue) or "title" (created on the server)
-    std::string ref;        // the item's id, or "srv:<n>"
+    std::string kind;       // "item" (of the catalogue), "title" or "suit" (created on the server)
+    std::string ref;        // the item's id, "srv:<n>" or "srvsuit:<n>"
     std::string condition;  // "tier" (value: 1 Bronze, 2 Argent, 3 Or, that tier or better), "top" (value: N), "finished"
     int value = 0;
-    std::string name;       // the server's name of the item (one this game may not know), or the title's text
-    std::string category;   // the item's category ("title" for a title)
+    std::string name;       // the server's name of the item (one this game may not know), the title's text or the suit's name
+    std::string category;   // the item's category ("title" for a title, "suit" for a suit)
     std::string color;      // a title's colour ("gold", "silver", "cyan", "violet")
+    std::optional<SuitColors> suitColors;  // a suit created on the server (ADMINISTRATION › Créations): its colours
     bool title() const { return kind == "title"; }
+    bool suit() const { return kind == "suit"; }
+    /// Created on the server (a title or a suit): no game update needed, never in the catalogue.
+    bool serverMade() const { return title() || suit(); }
     /// `rewards` of a challenge (or of a period of the calendar), the malformed ones left out (6 at most).
     static std::vector<ChallengePrize> listFromJson(const Json& rewards);
     /// One reward of PUT /admin/challenges/{id}/rewards: { kind, ref, condition, value }.

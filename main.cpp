@@ -475,6 +475,9 @@ int main(int argc, char** argv) {
     // 2.45: the campaign revisions published online (kept ones at once, offline too; the
     // manifest read when Cosmic Online is on and the window is real).
     game.startCampaignRevisions(!has("--headless") || has("--realtime"));
+    // The suits created on Cosmic Online by an administrator (their colours: the list kept on
+    // this computer at once, read again from the server like the campaign revisions).
+    game.startServerSuits(!has("--headless") || has("--realtime"));
     // Daily challenges: the cached ones at once (offline), the current one asked for when
     // Cosmic Online is on (public, nothing personal sent).
     game.challenges.init(game.online, Paths::savesDir() / "challenges");
@@ -570,6 +573,7 @@ int main(int argc, char** argv) {
         game.replayDownloads.update();
         game.challenges.update(dt);
         game.updateCampaignRevisions(dt);
+        game.updateServerSuits(dt);
         game.updates.update();
         if (sendPresence) game.updatePresence(dt);
         game.spectate.update(dt);

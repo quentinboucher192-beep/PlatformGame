@@ -50,6 +50,14 @@ succès déclarés : un élément inconnu ou verrouillé devient l'élément de 
   simulation ni le format des replays ne changent (la description `.json` du fantôme garde
   `suit`).
 
+### Combinaisons créées par un admin (2.45)
+
+Une combinaison créée sur Cosmic Online (ADMINISTRATION › Créations, voir
+[online/CREATIONS.md](online/CREATIONS.md)) est trois couleurs appliquées à la feuille de Nova
+pendant le jeu, comme le fait `nova_suits.py`. Gagnée à un défi, elle rejoint les Combinaisons
+du Vestiaire (identifiant `srvsuit:<n>`) ; la liste des combinaisons créées est gardée sur
+l'ordinateur pour les dessiner hors ligne.
+
 ### Badges du profil (2.41)
 
 Vestiaire › *Badges du profil* : des succès obtenus, affichés comme badges sur le profil Cosmic

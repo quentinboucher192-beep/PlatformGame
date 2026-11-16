@@ -509,9 +509,9 @@ private:
         if (AnimationSetPtr set = g_.app.resources().animation("animations/nova.json"); set && set->texture) {
             if (const AnimationClip* c = set->clip("idle"); c && c->frameCount() > 0) {
                 TexturePtr tex = set->texture;
+                // A suit created on Cosmic Online: drawn from its colours (the public list kept on this computer).
                 std::string suit = g_.cosmetics.lookOr("suit", wornLook(worn, "suit"));
-                if (!suit.empty() && suit != "standard")
-                    if (TexturePtr t = g_.app.resources().texture("sprites/player/suits/nova_" + suit + ".png")) tex = t;
+                if (TexturePtr t = g_.suitSheet(suit)) tex = t;
                 float local = std::fmod(ui.time(), std::max(0.01f, c->totalDuration())), acc = 0.0f;
                 int frame = 0;
                 for (int i = 0; i < c->frameCount(); ++i) {

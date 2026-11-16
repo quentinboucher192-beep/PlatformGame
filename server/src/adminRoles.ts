@@ -23,6 +23,8 @@ export const ADMIN_ACTIONS = {
     refused: ["admin_refused", "backup_refused"],
     // 2.45: ADMINISTRATION › Campagne (campaignRevisions.ts): a revision published, or an earlier one made current again.
     campaign: ["admin_campaign_published", "admin_campaign_reverted"],
+    // ADMINISTRATION › Créations (creations.ts): a suit created, edited, archived or restored.
+    creation: ["admin_creation_created", "admin_creation_updated", "admin_creation_archived", "admin_creation_restored"],
     // Backups (ADMINISTRATION › Sauvegardes, backups.ts): copies, downloads, imports. Never a passphrase.
     backup: [
         "backup_created",
@@ -38,9 +40,16 @@ export const ADMIN_ACTIONS = {
     ],
 } as const;
 const ALL_ADMIN_ACTIONS: readonly string[] = [
-    ...new Set<string>([...ADMIN_ACTIONS.role, ...ADMIN_ACTIONS.challenge, ...ADMIN_ACTIONS.refused, ...ADMIN_ACTIONS.backup, ...ADMIN_ACTIONS.campaign]),
+    ...new Set<string>([
+        ...ADMIN_ACTIONS.role,
+        ...ADMIN_ACTIONS.challenge,
+        ...ADMIN_ACTIONS.refused,
+        ...ADMIN_ACTIONS.backup,
+        ...ADMIN_ACTIONS.campaign,
+        ...ADMIN_ACTIONS.creation,
+    ]),
 ];
-const LOG_KINDS = ["all", "role", "challenge", "refused", "backup", "campaign"] as const;
+const LOG_KINDS = ["all", "role", "challenge", "refused", "backup", "campaign", "creation"] as const;
 
 const ID_RE = /^[A-Za-z0-9-]{8,64}$/;
 
@@ -249,7 +258,25 @@ function campaignOfDetails(d: Record<string, unknown>) {
 }
 
 /**
- * GET /admin/log?kind=all|role|challenge|refused|backup|campaign&actor=<player id>&limit=&offset=
+ * What the Journal shows of a creation (ADMINISTRATION › Créations) created, edited, archived,
+ * restored or refused: its id, kind, name and colours, what it was before an edit, and (a
+ * refusal) what was tried. Only the keys the server writes.
+ */
+function creationOfDetails(d: Record<string, unknown>) {
+    const c = d.creation;
+    if (!isObject(c)) return null;
+    const pick = (o: Record<string, unknown>) => ({
+        id: typeof o.id === "number" ? o.id : null,
+        ref: typeof o.ref === "string" ? o.ref : null,
+        kind: typeof o.kind === "string" ? o.kind : null,
+        name: typeof o.name === "string" ? o.name : null,
+        colors: isObject(o.colors) ? o.colors : null,
+    });
+    return { ...pick(c), action: typeof c.action === "string" ? c.action : null, previous: isObject(c.previous) ? pick(c.previous) : null };
+}
+
+/**
+ * GET /admin/log?kind=all|role|challenge|refused|backup|campaign|creation&actor=<player id>&limit=&offset=
  * The administration's own actions, newest first: who (the admin's current username, or the
  * one written at the time when the account is gone), what, when. Never the IP hash.
  */
@@ -297,6 +324,8 @@ export async function listLog(ctx: Ctx): Promise<Response> {
             title: isObject(d.title) ? d.title : null,
             // 2.45: a campaign revision (published, made current again, or refused).
             campaign: campaignOfDetails(d),
+            // A creation (ADMINISTRATION › Créations): created, edited, archived, restored or refused.
+            creation: creationOfDetails(d),
         };
     });
     return json(ctx, { entries, has_more: rows.results.length > page.limit, offset: page.offset });

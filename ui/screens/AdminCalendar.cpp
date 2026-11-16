@@ -1351,6 +1351,13 @@ void AdminCalendar::loadTitles() {
                       titles_ = jfield(r.data, "titles", Json::array());
                   }),
                   false);
+    // The suits created in « Créations » (those not archived are offered in « Combinaisons »).
+    g_.online.get("/api/v1/admin/creations", OnlineService::guard(life_, [this](const ApiResult& r) {
+                      if (lostRole_(r)) return;
+                      suitsError_ = r.ok ? std::string() : errorText(r);
+                      if (r.ok) suits_ = jfield(r.data, "creations", Json::array());
+                  }),
+                  false);
 }
 
 void AdminCalendar::addPrize(ChallengePrize p) {
@@ -1658,7 +1665,10 @@ bool AdminCalendar::drawPrizeRow(size_t i, const Rect& row, bool editable) {
             ui.label(ui.elide(name, FontFace::Bold, nf, nameRoom), {tx + catW + ui.s(10), row.y + ui.s(20)}, nf,
                      p.title() ? titleColor(p.color) : ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
         }
-        const std::string from = p.title() ? "créé par un admin · pas besoin de mise à jour" : look ? "dans le jeu" : "inconnu de cette version du jeu";
+        const std::string from = p.title()  ? "créé par un admin · pas besoin de mise à jour"
+                                 : p.suit() ? "créée par un admin · pas besoin de mise à jour"
+                                 : look     ? "dans le jeu"
+                                            : "inconnu de cette version du jeu";
         ui.label(ui.elide(from, FontFace::Body, fz(ui, 14), room), {tx, row.y + ui.s(43)}, fz(ui, 14), ui.theme().textDim, Align::Left, FontFace::Body,
                  VAlign::Middle);
     }
@@ -1810,7 +1820,7 @@ void AdminCalendar::drawItemPicker() {
     const float labelW = std::min(w * 0.3f, ui.text().measure("Condition", FontFace::Body, ui.s(17)).x + ui.s(18));
     const float condH = std::max(ui.s(34), conditionChooser("measure", 0, 0, w - labelW, false));
     const float condY = btnY - ui.s(16) - condH;
-    // The items of the category (never a default one; the titles created on the server after the game's).
+    // The items of the category (never a default one; the titles and suits created on the server after the game's).
     const std::string catId = cats[static_cast<size_t>(pickCat_)].id;
     std::vector<CosmeticItem> list;
     for (const CosmeticItem* it : g_.cosmetics.items(catId))
@@ -1825,6 +1835,23 @@ void AdminCalendar::drawItemPicker() {
             it.color = jstr(t, "color", "gold");
             if (it.id.rfind("srv:", 0) == 0 && !it.name.empty()) list.push_back(std::move(it));
         }
+    // The suits created in « Créations » (not archived) after the game's.
+    if (catId == "suit") {
+        for (const Json& c : suits_) {
+            if (jget<bool>(c, "archived", false)) continue;
+            CosmeticItem it;
+            it.id = jstr(c, "ref");
+            it.category = "suit";
+            it.name = jstr(c, "name");
+            it.look = it.id;
+            it.suitColors = suitColorsFromJson(jfield(c, "colors", Json()));
+            if (isServerSuitRef(it.id) && !it.name.empty() && it.suitColors) list.push_back(std::move(it));
+        }
+        if (!suitsError_.empty()) {
+            fitLabel(ui, "Combinaisons créées indisponibles : " + suitsError_, {x, y + ui.s(10)}, 15, w, ui.theme().warm);
+            y += ui.s(28);
+        }
+    }
     Rect grid{x, y, w, condY - ui.s(14) - y};
     const float gap = ui.s(12), tileH = ui.s(124);
     int cols = std::max(2, static_cast<int>((grid.w + gap) / (ui.s(170) + gap)));
@@ -1869,11 +1896,12 @@ void AdminCalendar::drawItemPicker() {
         for (const CosmeticItem& it : list)
             if (it.id == pickRef_) {
                 ChallengePrize p;
-                p.kind = it.serverTitle() ? "title" : "item";
+                p.kind = it.serverTitle() ? "title" : it.serverSuit() ? "suit" : "item";
                 p.ref = it.id;
                 p.name = it.name;
                 p.category = it.category;
                 p.color = it.color;
+                p.suitColors = it.suitColors;
                 p.condition = condKind_;
                 p.value = condValue_;
                 addPrize(p);

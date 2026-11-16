@@ -121,3 +121,5 @@ replays
 change
 manifest
 continue
+<combinaison {0}>
+accent
