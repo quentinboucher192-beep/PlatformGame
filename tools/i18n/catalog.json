@@ -931,6 +931,7 @@
   {
    "fr": "Actualiser",
    "where": [
+    "ui/screens/AdminBackups.cpp",
     "ui/screens/AdminCampaign.cpp",
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/RaceScene.cpp"
@@ -7911,6 +7912,12 @@
   },
   {
    "fr": "Copie en cours : cela peut prendre quelques secondes…",
+   "where": [
+    "ui/screens/AdminBackups.cpp"
+   ]
+  },
+  {
+   "fr": "Copie en cours : {0} %",
    "where": [
     "ui/screens/AdminBackups.cpp"
    ]
@@ -16559,6 +16566,12 @@
    "fr": "La connexion automatique conserve un jeton de session protégé par votre compte Windows (ou lisible seulement par votre utilisateur sous Linux). Le mot de passe n'est jamais enregistré.",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "La copie continue sur le serveur : la liste l'affichera « prête » une fois terminée (Actualiser).",
+   "where": [
+    "ui/screens/AdminBackups.cpp"
    ]
   },
   {
@@ -30468,6 +30481,12 @@
    "fr": "Sauvegardes",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Sauvegardes : la copie complète ne s'arrête plus sur « délai dépassé » (le jeu attend jusqu'à 10 minutes, la vérification et l'import aussi) ; une barre de progression montre son avancement réel, table par table puis fichier par fichier, avec un bouton « Actualiser ».",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {

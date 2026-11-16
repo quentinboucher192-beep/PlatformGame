@@ -1,4 +1,7 @@
 {
+  "2.44.1": [
+    "Sauvegardes : la copie complète ne s'arrête plus sur « délai dépassé » (le jeu attend jusqu'à 10 minutes, la vérification et l'import aussi) ; une barre de progression montre son avancement réel, table par table puis fichier par fichier, avec un bouton « Actualiser »."
+  ],
   "2.44.0": [
     "Replays téléchargés : « Télécharger » à côté des replays en ligne (classements, défis, courses à la vérification, profils) les garde sur le PC ; on les regarde ensuite sans connexion ni compte dans Collection › Replays.",
     "Liste triée par date, filtre par niveau, Regarder / Comparer / Supprimer ; un replay fait sur une autre version du niveau le signale au lieu d'être mal rejoué.",

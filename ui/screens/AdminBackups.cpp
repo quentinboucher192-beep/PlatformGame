@@ -102,13 +102,20 @@ void AdminBackups::load() {
 void AdminBackups::createCopy() {
     creating_ = true;
     say_("Copie en cours : cela peut prendre quelques secondes…", false);
+    // A whole copy takes a while on the server: wait up to ten minutes. If the connection gives
+    // up first, the copy goes on over there: the list shows it « en cours », then « prête ».
     g_.online.send("POST", "/api/v1/admin/backups", Json::object(), OnlineService::guard(life_, [this](const ApiResult& r) {
                        creating_ = false;
                        if (lostRole_(r)) return;
+                       if (r.networkFailure()) {
+                           say_("La copie continue sur le serveur : la liste l'affichera « prête » une fois terminée (Actualiser).", false);
+                           return load();
+                       }
                        if (!r.ok) return say_(r.message, true);
                        say_("Copie terminée.", false);
                        load();
-                   }));
+                   }),
+                   600000);
 }
 
 // ------------------------------------------------------------------ download
@@ -218,7 +225,8 @@ void AdminBackups::check() {
                        stepText_ = jget<bool>(r.data, "compatible", false)
                                        ? "Sauvegarde lisible et compatible. Pour remplacer toutes les données, tapez la phrase de confirmation."
                                        : "Cette sauvegarde ne peut pas être importée sur ce serveur.";
-                   }));
+                   }),
+                   600000);
 }
 
 void AdminBackups::apply() {
@@ -247,7 +255,8 @@ void AdminBackups::apply() {
                        } else {
                            retryAt_ = g_.ui.time() + 0.2f;  // the next step
                        }
-                   }));
+                   }),
+                   180000);
 }
 
 void AdminBackups::abandon(const std::string& id) {
@@ -343,13 +352,47 @@ void AdminBackups::draw(const Rect& in) {
         importStep_ = 1;
         openDialog_ = FileDialogs::openFile(g_.app.window(), "Sauvegarde Cosmic Online", "cpbk", Paths::toUtf8(Paths::userDir()));
     }
+    float w3 = ui.text().measure("Actualiser", FontFace::Bold, ui.s(20)).x + ui.s(48);
+    UIContext::ButtonStyle st3;
+    st3.enabled = !busy_;
+    if (ui.button("refresh", {in.x + w1 + w2 + ui.s(24), y, w3, bh}, "Actualiser", st3)) load();
     {
         std::string info = "Une copie automatique chaque nuit · 14 gardées · manuelles 90 jours";
-        float room = in.right() - (in.x + w1 + w2 + ui.s(36));
+        float room = in.right() - (in.x + w1 + w2 + w3 + ui.s(48));
         float fs = ui.fitFont(info, FontFace::Body, 15, room);
         ui.label(ui.elide(info, FontFace::Body, fs, room), {in.right(), y + bh * 0.5f}, fs, ui.theme().textDim, Align::Right, FontFace::Body, VAlign::Middle);
     }
     y += bh + ui.s(12);
+    // A copy running (this one or another admin's, or the night's): its real progress, read
+    // from the server every 2 seconds.
+    {
+        const Json* running = nullptr;
+        for (const auto& b : list_)
+            if (jstr(b, "status") == "running") {
+                running = &b;
+                break;
+            }
+        if ((running || creating_) && !busy_ && ui.time() - lastPoll_ > 2.0f) {
+            lastPoll_ = ui.time();
+            load();
+        }
+        if (running || creating_) {
+            double p = running ? std::clamp(jget<double>(*running, "progress", 0.0), 0.0, 1.0) : 0.0;
+            std::string step = running ? jstr(*running, "step") : std::string();
+            Rect box{in.x, y, in.w, ui.s(58)};
+            ui.r().fillRoundedRect(box, ui.s(8), Color{18, 30, 56, 240});
+            std::string head = "Copie en cours : " + std::to_string(static_cast<int>(p * 100.0 + 0.5)) + " %";
+            if (!step.empty()) head += " · " + step;
+            float room = box.w - ui.s(24);
+            float fs2 = ui.fitFont(head, FontFace::Bold, 16, room);
+            ui.label(ui.elide(head, FontFace::Bold, fs2, room), {box.x + ui.s(12), box.y + ui.s(17)}, fs2, ui.theme().text, Align::Left, FontFace::Bold,
+                     VAlign::Middle);
+            Rect bar{box.x + ui.s(12), box.y + ui.s(34), box.w - ui.s(24), ui.s(12)};
+            ui.r().fillRoundedRect(bar, ui.s(6), Color{36, 48, 77, 255});
+            if (p > 0.0) ui.r().fillRoundedRect({bar.x, bar.y, bar.w * static_cast<float>(p), bar.h}, ui.s(6), ui.theme().accent);
+            y += box.h + ui.s(10);
+        }
+    }
     if (maintenance_.is_object()) {
         Rect m{in.x, y, in.w, ui.s(36)};
         ui.r().fillRoundedRect(m, ui.s(8), ui.theme().warm.withAlphaF(0.15f));

@@ -328,6 +328,9 @@ interface BackupRow {
     files_count: number;
     bytes: number;
     error: string | null;
+    /** 0..1 while running (2.44.1), 1 once ready. */
+    progress?: number;
+    step?: string | null;
     current_username?: string | null;
 }
 
@@ -345,6 +348,8 @@ function backupJson(b: BackupRow) {
         bytes: b.bytes,
         status: b.status,
         error: b.error,
+        progress: b.status === "ready" ? 1 : Math.max(0, Math.min(1, b.progress ?? 0)),
+        step: b.step ?? null,
     };
 }
 
@@ -526,7 +531,20 @@ async function previousHashes(env: Bindings): Promise<Map<string, FileRecord>> {
     return map;
 }
 
-async function inventoryFiles(env: Bindings, prefix: string): Promise<StoredManifest["files"] & { listBytes: number }> {
+/** Progress of a running copy, for the admin's progress bar (never fails the copy). */
+async function noteProgress(env: Bindings, id: string, progress: number, step: string): Promise<void> {
+    try {
+        await env.DB.prepare("UPDATE backups SET progress = ?2, step = ?3 WHERE id = ?1 AND status = 'running'").bind(id, progress, step).run();
+    } catch {
+        // only a display
+    }
+}
+
+async function inventoryFiles(
+    env: Bindings,
+    prefix: string,
+    onPage: (filesSoFar: number) => Promise<void> = async () => {},
+): Promise<StoredManifest["files"] & { listBytes: number }> {
     const previous = await previousHashes(env);
     const lists: string[] = [];
     let lines: string[] = [];
@@ -587,6 +605,7 @@ async function inventoryFiles(env: Bindings, prefix: string): Promise<StoredMani
             bytes += r.size;
             if (pending >= PART_TARGET_BYTES) await flush();
         }
+        await onPage(count);
     }
     await flush();
     return { count, bytes, lists, excluded_prefixes: EXCLUDED_R2_PREFIXES, listBytes };
@@ -619,14 +638,24 @@ export async function createBackup(env: Bindings, kind: BackupKind, by: Actor | 
         let bytes = 0;
         // Children before parents: a row added while the copy runs is more often a child of a
         // row already copied than the opposite (any orphan is removed when importing).
-        for (const name of [...schema.restorable].reverse()) {
+        // Progress: the tables make the first 85 %, the files (count unknown in advance) the rest,
+        // each page of them halving what is left.
+        const order = [...schema.restorable].reverse();
+        let done = 0;
+        for (const name of order) {
             const ts = schema.tables.get(name)!;
             const t = await dumpTable(env, ts, prefix);
             tables.push({ ...t, ...keysOf(ts, schema) });
             rows += t.rows;
             bytes += t.bytes;
+            done += 1;
+            await noteProgress(env, id, 0.85 * (done / Math.max(1, order.length)), `Tables : ${done} / ${order.length}`);
         }
-        const { listBytes, ...files } = await inventoryFiles(env, prefix);
+        let pages = 0;
+        const { listBytes, ...files } = await inventoryFiles(env, prefix, async (n) => {
+            pages += 1;
+            await noteProgress(env, id, 0.85 + 0.14 * (1 - 0.5 ** pages), `Fichiers : ${n}`);
+        });
         const finishedAt = nowIso();
         const manifest: StoredManifest = {
             format: "cosmic-backup",
@@ -649,7 +678,8 @@ export async function createBackup(env: Bindings, kind: BackupKind, by: Actor | 
         await env.STORAGE.put(prefix + "manifest.json", text, { httpMetadata: { contentType: "application/json" } });
         const total = manifest.totals.bytes + text.byteLength;
         await env.DB.prepare(
-            `UPDATE backups SET status = 'ready', finished_at = ?2, schema_version = ?3, tables_count = ?4, rows_count = ?5, files_count = ?6, bytes = ?7
+            `UPDATE backups SET status = 'ready', finished_at = ?2, schema_version = ?3, tables_count = ?4, rows_count = ?5, files_count = ?6, bytes = ?7,
+               progress = 1, step = NULL
              WHERE id = ?1`,
         )
             .bind(id, finishedAt, schema.version, tables.length, rows, files.count, total)

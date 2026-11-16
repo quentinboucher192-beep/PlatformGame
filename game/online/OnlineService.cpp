@@ -557,8 +557,9 @@ void OnlineService::get(const std::string& pathAndQuery, ApiCallback cb, bool us
     });
 }
 
-void OnlineService::send(const std::string& method, const std::string& path, const Json& body, ApiCallback cb) {
-    call(method, path, body.is_null() ? std::string() : body.dump(), body.is_null() ? std::string() : "application/json", true, cb);
+void OnlineService::send(const std::string& method, const std::string& path, const Json& body, ApiCallback cb, int timeoutMs) {
+    call(method, path, body.is_null() ? std::string() : body.dump(), body.is_null() ? std::string() : "application/json", true, cb, false,
+         timeoutMs);
 }
 
 void OnlineService::sendBytes(const std::string& method, const std::string& path, std::string bytes, ApiCallback cb, int timeoutMs) {

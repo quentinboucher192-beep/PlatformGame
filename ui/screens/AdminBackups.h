@@ -56,6 +56,7 @@ private:
     Json openImports_ = Json::array();
     Json maintenance_;
     bool loaded_ = false, busy_ = false, creating_ = false;
+    float lastPoll_ = -100.0f;  // a copy running: the list is read again every 2 s (progress bar)
 
     // Download: 1 = passphrase dialog, 2 = choosing the file, 3 = downloading, 4 = writing.
     std::string downloadId_, downloadDate_;
