@@ -1,0 +1,21 @@
+{
+  "level": "confins_02",
+  "sections": [
+    {
+      "label": "",
+      "movement": [],
+      "needs": [
+        [
+          "grapple"
+        ]
+      ],
+      "pos": [
+        64.0,
+        640.0
+      ],
+      "reachable": true
+    }
+  ],
+  "slots": 4,
+  "stations": []
+}

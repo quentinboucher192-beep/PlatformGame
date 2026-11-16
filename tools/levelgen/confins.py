@@ -2,6 +2,9 @@
 """Builds the levels of Les Confins (version 2.48), the world beyond the dying star, open from the
 start (data/planets/confins.json):
 
+  data/levels/confins_02.json  "Le Cœur de Pierre" (2.49, EXTRÊME): the granite galleries and the
+                                rune halls, then the Monolithe, le Golem Primordial (a walker:
+                                the crust gives way on the two sides of its arena)
   data/levels/confins_01.json  "La Gueule du Dragon" (EXTRÊME): one life, no checkpoint. The
                                 scorched crust of the Confins (its hardest rooms, one after the
                                 other), the choice of the powers, then the giant arena of Pyrrhax,
@@ -213,7 +216,5 @@ def stone_heart():
 
 
 if __name__ == "__main__":
-    import sys
     print("confins_01 :", dragon_maw(), "tuiles")
-    if "--golem" in sys.argv:  # 2.49: Le Cœur de Pierre (the Monolithe)
-        print("confins_02 :", stone_heart(), "tuiles")
+    print("confins_02 :", stone_heart(), "tuiles")  # 2.49

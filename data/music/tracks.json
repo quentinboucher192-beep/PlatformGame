@@ -164,6 +164,12 @@
       "group": "confins",
       "title": "Le Dragon d'Obsidienne",
       "where": "Combat contre Pyrrhax"
+    },
+    {
+      "file": "music/monolithe_boss.ogg",
+      "group": "confins",
+      "title": "Le Golem Primordial",
+      "where": "Combat contre Monolithe"
     }
   ]
 }

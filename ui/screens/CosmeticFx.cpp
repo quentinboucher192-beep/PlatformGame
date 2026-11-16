@@ -203,6 +203,28 @@ void drawAvatarFrame(Renderer& r, Vec2 center, float radius, const std::string& 
             Vec2 p{center.x + std::cos(a) * (main + u * 14 * scale), center.y + std::sin(a) * (main + u * 14 * scale)};
             r.drawGlow(p, (4.0f - 2.0f * u) * scale, Color{255, 160, 60, static_cast<uint8_t>(200 * (1.0f - u))});
         }
+    } else if (look == "runic") {
+        // « Cercle runique » (2.49, Monolithe): a ring of speckled granite, eight runes lighting up
+        // one after the other in amber.
+        ring(main, 7, Color{96, 90, 86, 255});
+        ring(main + 2.5f * scale, 1.2f, Color{150, 144, 138, 255});
+        ring(main - 3.0f * scale, 1.0f, Color{50, 46, 44, 255});
+        const int runes = 8;
+        const float lit = std::fmod(time * 1.6f, static_cast<float>(runes));
+        for (int i = 0; i < runes; ++i) {
+            const float a = -kFxPi * 0.5f + static_cast<float>(i) * 2.0f * kFxPi / runes;
+            const Vec2 d{std::cos(a), std::sin(a)}, t{-d.y, d.x};
+            const Vec2 p = center + d * main;
+            float glow = 0.25f;
+            const float dist = std::fabs(lit - static_cast<float>(i));
+            if (dist < 1.0f) glow = 1.0f - 0.75f * dist;
+            const Color c{255, 178, 70, static_cast<uint8_t>(255 * glow)};
+            if (glow > 0.5f) r.drawGlow(p, 8 * scale, Color{255, 170, 60, static_cast<uint8_t>(150 * glow)});
+            // A rune: a stroke along the ring and two ticks.
+            r.drawLine(p - t * (3.0f * scale), p + t * (3.0f * scale), c, 1.4f * scale, BlendMode::Additive);
+            r.drawLine(p - t * (1.5f * scale), p - t * (1.5f * scale) + d * (2.4f * scale), c, 1.2f * scale, BlendMode::Additive);
+            r.drawLine(p + t * (1.5f * scale), p + t * (1.5f * scale) - d * (2.4f * scale), c, 1.2f * scale, BlendMode::Additive);
+        }
     } else if (look == "laurels") {
         r.drawGlow(center, radius + 18 * scale, Color{255, 214, 90, 110});
         ring(main, 4, Color{255, 214, 90, 255});
@@ -326,6 +348,15 @@ void drawTrailPoint(const Canvas& cv, const std::string& look, Vec2 p, float k, 
         } else {
             cv.dot(q, 1.8f * k + 0.7f, Color{150, 140, 150, alpha(0.75f * f)});
         }
+    } else if (look == "debris") {
+        // « Éclats de roche » (2.49, Monolithe): chips of granite bouncing behind Nova, a rune
+        // glowing on one in three.
+        const float up = std::fabs(std::sin(age * 7.0f + static_cast<float>(seed))) * 10.0f * (1.0f - std::min(1.0f, age));
+        Vec2 q = cv.off(p, {(noise(seed) - 0.5f) * 12.0f, -up + age * 6.0f});
+        const float sz = 1.4f + 1.4f * noise(seed * 11u + 4u);
+        cv.dot(q, sz * k + 0.6f, Color{130, 124, 118, alpha(0.9f * f)});
+        cv.dot(cv.off(q, {-0.5f, -0.5f}), (sz * k + 0.6f) * 0.5f, Color{180, 174, 166, alpha(0.8f * f)});
+        if (seed % 3 == 0) cv.glow(q, 4.0f * k + 1.0f, Color{255, 170, 60, alpha(0.6f * f)});
     } else if (look == "prism") {
         // A ribbon whose colour runs through the rainbow along the trail, and keeps turning.
         Color c = rainbow(static_cast<float>(seed) * 0.06f + age * 0.8f);
@@ -481,6 +512,28 @@ void drawVictoryFx(Renderer& r, const std::string& look, Vec2 at, float t, bool 
             const float x = -60.0f + 130.0f * noise(static_cast<uint32_t>(i) * 53u + 9u);
             Vec2 q = cv.off(at, {x + std::sin(te * 3.0f + static_cast<float>(i)) * 6.0f, -110.0f + 70.0f * te});
             cv.glow(q, 5.0f, Color{255, 140, 50, alpha(0.8f * fade * std::clamp(1.0f - te / 1.6f, 0.0f, 1.0f))});
+        }
+    } else if (look == "quake") {
+        // « Séisme runique » (2.49, Monolithe): the ground shakes, a ring of runes lights up around
+        // the portal, then rocks burst out of the ground and fall back.
+        const float shake = t < 0.8f ? std::sin(t * 60.0f) * 3.0f * (1.0f - t / 0.8f) : 0.0f;
+        Vec2 o = cv.off(at, {shake, 0});
+        const float grow = 1.0f - std::exp(-3.0f * t);
+        for (int i = 0; i < 10; ++i) {
+            const float a = static_cast<float>(i) * 2.0f * kFxPi / 10.0f;
+            Vec2 p = cv.off(o, {std::cos(a) * 70.0f * grow, std::sin(a) * 22.0f * grow - 4.0f});
+            const float on = std::clamp(t * 4.0f - static_cast<float>(i) * 0.3f, 0.0f, 1.0f);
+            cv.glow(p, 7.0f, Color{255, 170, 60, alpha(0.8f * on * fade)});
+            cv.dot(p, 1.6f, Color{255, 230, 170, alpha(on * fade)}, BlendMode::Additive);
+        }
+        for (int i = 0; i < 8; ++i) {
+            const float tr = t - 0.5f - 0.08f * static_cast<float>(i);
+            if (tr < 0.0f || tr > 1.4f) continue;
+            const float x = (noise(static_cast<uint32_t>(i) * 41u + 3u) - 0.5f) * 150.0f;
+            const float v = 150.0f + 60.0f * noise(static_cast<uint32_t>(i) * 17u + 1u);
+            Vec2 p = cv.off(o, {x, -v * tr + 160.0f * tr * tr});
+            cv.dot(p, 4.0f, Color{120, 114, 108, alpha(fade)});
+            cv.dot(cv.off(p, {-1.0f, -1.0f}), 2.0f, Color{170, 164, 156, alpha(fade)});
         }
     } else if (look == "corona") {
         // An eclipse above the portal: a dark disc ringed with light, its rays turning.

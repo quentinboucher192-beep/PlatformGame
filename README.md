@@ -5,6 +5,13 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.49.0** :
+* **« Le Cœur de Pierre »** (EXTRÊME, Les Confins) : les galeries de granit, puis **le Monolithe,
+  le Golem Primordial**, boss géant à huit phases qui combat au sol.
+* Succès et récompenses du Vestiaire du Monolithe (combinaison Granit, Éclats de roche, Séisme
+  runique, Cercle runique, titre Briseur de pierre).
+* Sa musique, **« Le Golem Primordial »**, au juke-box (22 morceaux).
+
 **Nouveau dans la version 2.48.0** :
 * **Les Confins**, sixième planète, au bord du système (ouverte dès le départ), et son niveau EXTRÊME **« La Gueule du Dragon »** : la croûte brûlée des Confins, une
   seule vie, aucun checkpoint, puis **Pyrrhax, le Dragon d'Obsidienne**, boss géant à huit phases.

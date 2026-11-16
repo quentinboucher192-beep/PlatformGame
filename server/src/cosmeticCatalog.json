@@ -93,6 +93,13 @@
    "stars": 560
   },
   {
+   "id": "suit_granit",
+   "category": "suit",
+   "look": "granit",
+   "name": "Granit",
+   "stars": 590
+  },
+  {
    "id": "suit_sanctuaire",
    "category": "suit",
    "look": "sanctuaire",
@@ -165,6 +172,13 @@
    "look": "ashes",
    "name": "Cendres de dragon",
    "stars": 570
+  },
+  {
+   "id": "trail_eclats",
+   "category": "trail",
+   "look": "debris",
+   "name": "Éclats de roche",
+   "stars": 600
   },
   {
    "id": "trail_runes",
@@ -262,6 +276,13 @@
    "achievement": "maitrise_pyrrhax_nohit"
   },
   {
+   "id": "frame_runique",
+   "category": "frame",
+   "look": "runic",
+   "name": "Cercle runique",
+   "achievement": "maitrise_monolithe_nohit"
+  },
+  {
    "id": "frame_couronne",
    "category": "frame",
    "look": "crown",
@@ -348,6 +369,13 @@
    "look": "Dompteur de dragon",
    "name": "Dompteur de dragon",
    "achievement": "gardiens_pyrrhax"
+  },
+  {
+   "id": "title_briseur_pierre",
+   "category": "title",
+   "look": "Briseur de pierre",
+   "name": "Briseur de pierre",
+   "achievement": "gardiens_monolithe"
   },
   {
    "id": "title_analyste",
@@ -464,6 +492,13 @@
    "look": "dragon_breath",
    "name": "Souffle du dragon",
    "stars": 580
+  },
+  {
+   "id": "victory_seisme",
+   "category": "victory",
+   "look": "quake",
+   "name": "Séisme runique",
+   "stars": 610
   },
   {
    "id": "victory_serie_feu",

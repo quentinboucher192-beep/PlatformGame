@@ -3,7 +3,7 @@
   "id": "confins",
   "name": "Les Confins",
   "subtitle": "Au bord du système",
-  "description": "Au-delà de l'étoile morte, au bord du système, un monde de verre noir craquelé sur un feu vivant. Ses cendres tombent d'un ciel pourpre ; un dragon d'obsidienne y garde la dernière frontière.",
+  "description": "Au-delà de l'étoile morte, au bord du système, un monde de verre noir craquelé sur un feu vivant. Ses cendres tombent d'un ciel pourpre ; un dragon d'obsidienne y garde la dernière frontière, et un golem plus ancien que les planètes veille sous sa croûte.",
   "type": "volcanic",
   "difficulty": 5,
   "color": "#ff7a6a",
@@ -12,7 +12,8 @@
   "banner": "ui/planets/confins_banner.png",
   "music": "music/planet_map.ogg",
   "levels": [
-    "confins_01"
+    "confins_01",
+    "confins_02"
   ],
   "unlock": "always",
   "teaser": false,

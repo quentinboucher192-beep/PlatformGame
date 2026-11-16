@@ -1042,7 +1042,8 @@
   {
    "fr": "ADMINISTRATION",
    "where": [
-    "ui/screens/AdminScene.cpp"
+    "ui/screens/AdminScene.cpp",
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -1536,6 +1537,12 @@
    ]
   },
   {
+   "fr": "Ambre",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
    "fr": "Ami ajouté au groupe.",
    "where": [
     "ui/screens/SocialScene.cpp"
@@ -1717,6 +1724,12 @@
    ]
   },
   {
+   "fr": "Anneaux d'or",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
    "fr": "Anneaux de feu vert",
    "where": [
     "data/enemies/pyrrhax.json"
@@ -1865,6 +1878,12 @@
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp",
     "ui/screens/ChallengeUi.cpp"
+   ]
+  },
+  {
+   "fr": "Aperçu",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -2589,6 +2608,12 @@
    ]
   },
   {
+   "fr": "Au cœur de la pierre",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Au cœur de Pyralis, la fonderie primordiale forge encore des machines sans maître. Réunissez tous vos pouvoirs pour atteindre le fourneau et éteindre le Forgeron Primordial.",
    "where": [
     "data/levels/pyralis_03.json"
@@ -2649,7 +2674,7 @@
    ]
   },
   {
-   "fr": "Au-delà de l'étoile morte, au bord du système, un monde de verre noir craquelé sur un feu vivant. Ses cendres tombent d'un ciel pourpre ; un dragon d'obsidienne y garde la dernière frontière.",
+   "fr": "Au-delà de l'étoile morte, au bord du système, un monde de verre noir craquelé sur un feu vivant. Ses cendres tombent d'un ciel pourpre ; un dragon d'obsidienne y garde la dernière frontière, et un golem plus ancien que les planètes veille sous sa croûte.",
    "where": [
     "data/planets/confins.json"
    ]
@@ -3212,6 +3237,12 @@
    ]
   },
   {
+   "fr": "aucune copie de la progression",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "Aucune copie pour l'instant : elle part après la prochaine partie.",
    "where": [
     "ui/screens/OnlineComputer.cpp"
@@ -3306,6 +3337,12 @@
    "fr": "Aucune notification pour l'instant. Suivez des créateurs, ajoutez des niveaux à vos favoris et commentez : leurs nouveautés apparaîtront ici.",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune progression n'attend plus d'être restaurée.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -3706,6 +3743,18 @@
    ]
   },
   {
+   "fr": "Azur",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Azur : un soin",
+   "where": [
+    "data/levels/confins_02.json"
+   ]
+  },
+  {
    "fr": "B",
    "where": [
     "engine/input/InputTypes.cpp",
@@ -4040,6 +4089,12 @@
    ]
   },
   {
+   "fr": "Battre chaque phase du Monolithe sans être touché (pas forcément dans le même combat).",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Battre son meilleur segment entre deux points de sauvegarde.",
    "where": [
     "data/achievements/achievements.json"
@@ -4318,6 +4373,12 @@
    "where": [
     "data/enemies/echo_glaciarch.json",
     "data/enemies/glaciarch.json"
+   ]
+  },
+  {
+   "fr": "Bond sismique",
+   "where": [
+    "data/enemies/monolithe.json"
    ]
   },
   {
@@ -4614,6 +4675,12 @@
    ]
   },
   {
+   "fr": "Briseur de pierre",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Brisez la dalle fissurée (Frappe sismique) pour descendre dans la salle des leviers.",
    "where": [
     "data/levels/glacior_03.json"
@@ -4863,6 +4930,12 @@
    "fr": "Cadres d'avatar",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Cage de menhirs",
+   "where": [
+    "data/enemies/monolithe.json"
    ]
   },
   {
@@ -5785,6 +5858,18 @@
    ]
   },
   {
+   "fr": "Cercle de runes",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Cercle runique",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Ces champignons rebondissent... que cache la canopée ?",
    "where": [
     "data/levels/sylvanox_01.json"
@@ -6108,6 +6193,12 @@
    ]
   },
   {
+   "fr": "Chacun de ses pas fait trembler les Confins !",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
    "fr": "Chambre noyée",
    "where": [
     "data/levels/sylvanox_02.json"
@@ -6254,6 +6345,12 @@
    "where": [
     "data/enemies/echo_glaciarch.json",
     "data/enemies/glaciarch.json"
+   ]
+  },
+  {
+   "fr": "Charge du colosse",
+   "where": [
+    "data/enemies/monolithe.json"
    ]
   },
   {
@@ -6810,6 +6907,12 @@
    ]
   },
   {
+   "fr": "Chute de la voûte",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
    "fr": "Chute de stalactites",
    "where": [
     "data/enemies/echo_frost_hydra.json",
@@ -7187,6 +7290,7 @@
     "game/gameplay/entities/InteractiveEntities.cpp",
     "game/gameplay/entities/ZoneEntities.cpp",
     "game/levels/EventSystem.cpp",
+    "ui/screens/OnlineMigration.cpp",
     "ui/screens/ReplayScene.cpp"
    ]
   },
@@ -7386,6 +7490,12 @@
   },
   {
    "fr": "Combat contre Aurorax",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Combat contre Monolithe",
    "where": [
     "data/music/tracks.json"
    ]
@@ -7799,6 +7909,12 @@
    "fr": "Compte : {0}",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
+   ]
+  },
+  {
+   "fr": "Compte cible introuvable.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -10022,6 +10138,12 @@
    ]
   },
   {
+   "fr": "Depuis « {0} »",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "dernier niveau {0}",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -10032,6 +10154,12 @@
    "where": [
     "data/enemies/pyrrhax.json",
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Dernier séisme",
+   "where": [
+    "data/enemies/monolithe.json"
    ]
   },
   {
@@ -10050,6 +10178,18 @@
    "fr": "Dernière copie : {0} ({1}, {2}). Envoyée après les parties, au plus toutes les 10 minutes.",
    "where": [
     "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
+   "fr": "dernière copie de la progression : {0}",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "dernière copie de la progression : {0} (« {1} »)",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -10164,6 +10304,18 @@
    "fr": "Des runes violettes et dorées qui tournent sur elles-mêmes.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Des éclats de pierre gravés de runes rebondissent derrière Nova.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Des éclats de son corps prennent vie !",
+   "where": [
+    "data/enemies/monolithe.json"
    ]
   },
   {
@@ -10633,6 +10785,12 @@
    ]
   },
   {
+   "fr": "Données de « {0} » migrées vers « {1} ». Sauvegarde faite avant : {2}.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "données décompressées plus longues qu'annoncé",
    "where": [
     "server/src/replay.ts",
@@ -10681,6 +10839,12 @@
    "fr": "Dossier des sauvegardes :",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Double frappe",
+   "where": [
+    "data/enemies/monolithe.json"
    ]
   },
   {
@@ -11000,7 +11164,7 @@
    ]
   },
   {
-   "fr": "Débloquer les 21 morceaux du juke-box.",
+   "fr": "Débloquer les 22 morceaux du juke-box.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -11161,6 +11325,7 @@
     "data/levels/aethra_03.json",
     "data/levels/aethra_04.json",
     "data/levels/confins_01.json",
+    "data/levels/confins_02.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -11187,6 +11352,7 @@
     "data/levels/aethra_03.json",
     "data/levels/aethra_04.json",
     "data/levels/confins_01.json",
+    "data/levels/confins_02.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -13554,6 +13720,18 @@
    ]
   },
   {
+   "fr": "Fendu",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Fendu : les fissures s'ouvrent",
+   "where": [
+    "data/levels/confins_02.json"
+   ]
+  },
+  {
    "fr": "Fenêtre de retour",
    "where": [
     "game/powers/PowerStats.cpp"
@@ -13580,6 +13758,12 @@
     "ui/screens/RaceScene.cpp",
     "ui/screens/SegmentsScene.cpp",
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Fermer le compte source ensuite (connexion impossible, pseudonyme libéré dans 30 jours)",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -14405,6 +14589,7 @@
   {
    "fr": "Frappe sismique",
    "where": [
+    "data/enemies/eclat_de_roche.json",
     "data/enemies/golem.json",
     "data/enemies/ice_golem.json",
     "data/enemies/magma_golem.json",
@@ -14477,6 +14662,12 @@
    "where": [
     "data/enemies/echo_forge_core.json",
     "data/enemies/forge_core.json"
+   ]
+  },
+  {
+   "fr": "Fusionner : le meilleur de chaque côté est gardé (meilleur temps, succès additionnés)",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -14601,6 +14792,7 @@
     "data/levels/aethra_03.json",
     "data/levels/aethra_04.json",
     "data/levels/confins_01.json",
+    "data/levels/confins_02.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -14830,6 +15022,12 @@
    "fr": "Geysers de magma",
    "where": [
     "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Geysers de roche",
+   "where": [
+    "data/enemies/monolithe.json"
    ]
   },
   {
@@ -15070,6 +15268,18 @@
    ]
   },
   {
+   "fr": "Granit",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Granit intact",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Graphismes",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -15101,7 +15311,8 @@
   {
    "fr": "Grappin : enchaînez les ancrages.",
    "where": [
-    "data/levels/aethra_04.json"
+    "data/levels/aethra_04.json",
+    "data/levels/confins_02.json"
    ]
   },
   {
@@ -15137,6 +15348,12 @@
    ]
   },
   {
+   "fr": "Gravité du noyau",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
    "fr": "Grenade",
    "where": [
     "data/online/countries.json",
@@ -15165,6 +15382,12 @@
    "fr": "Grimpez aux lianes (Haut) ou rebondissez entre les murs avec le saut mural.",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "Gris de granit moucheté, visière ambre, écharpe de mousse : la tenue du Monolithe.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -15887,6 +16110,7 @@
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
+    "ui/screens/OnlineMigration.cpp",
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/OnlineSettingsScene.cpp",
     "ui/screens/OnlineThreadScene.cpp",
@@ -16353,6 +16577,24 @@
    ]
   },
   {
+   "fr": "Incandescent",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Incandescent ! Le Monolithe se consume !",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Incandescent : l'arène se resserre",
+   "where": [
+    "data/levels/confins_02.json"
+   ]
+  },
+  {
    "fr": "incomplète",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
@@ -16804,6 +17046,12 @@
    ]
   },
   {
+   "fr": "Jet de rochers",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
    "fr": "Jeton d'accès invalide.",
    "where": [
     "server/src/auth.ts"
@@ -17078,6 +17326,12 @@
    "where": [
     "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Juke-box : la musique du combat, « Le Golem Primordial » (22 morceaux à débloquer).",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -18126,6 +18380,12 @@
    ]
   },
   {
+   "fr": "La voûte s'effondre sur vous !",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
    "fr": "LA WYRM HURLANTE",
    "where": [
     "data/enemies/howling_wyrm.json"
@@ -18630,6 +18890,24 @@
    ]
   },
   {
+   "fr": "LE CŒUR DE PIERRE",
+   "where": [
+    "data/levels/confins_02.json"
+   ]
+  },
+  {
+   "fr": "Le Cœur de Pierre",
+   "where": [
+    "data/levels/confins_02.json"
+   ]
+  },
+  {
+   "fr": "Le Cœur de Pierre : une seule vie, aucun checkpoint. Le Monolithe attend au bout.",
+   "where": [
+    "data/levels/confins_02.json"
+   ]
+  },
+  {
    "fr": "LE CŒUR DU CREUSET",
    "where": [
     "data/enemies/crucible_heart.json"
@@ -18867,6 +19145,18 @@
    ]
   },
   {
+   "fr": "Le Golem Primordial",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "LE GOLEM S'EFFONDRE",
+   "where": [
+    "data/levels/confins_02.json"
+   ]
+  },
+  {
    "fr": "Le gouffre du gardien : grappin, vent, cristal et triple saut. Tout ce que vous avez appris.",
    "where": [
     "data/levels/glacior_03.json"
@@ -18991,6 +19281,12 @@
    ]
   },
   {
+   "fr": "Le magma referme l'arène !",
+   "where": [
+    "data/levels/confins_02.json"
+   ]
+  },
+  {
    "fr": "Le manifeste ne correspond pas au fichier du niveau.",
    "where": [
     "server/src/campaignRevisions.ts"
@@ -19018,6 +19314,36 @@
    "fr": "Le monde-jardin des Anciens",
    "where": [
     "data/planets/sylvanox.json"
+   ]
+  },
+  {
+   "fr": "Le Monolithe ouvre son œil.",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Le Monolithe s'effondre en un tas de pierres. La sortie est ouverte.",
+   "where": [
+    "data/levels/confins_02.json"
+   ]
+  },
+  {
+   "fr": "Le Monolithe s'est tu. Le cœur des Confins se refroidit.",
+   "where": [
+    "data/levels/confins_02.json"
+   ]
+  },
+  {
+   "fr": "Le Monolithe, boss géant à huit phases qui combat au sol : double frappe, éboulements, bonds sismiques, sol vitrifié, runes, magma des fissures, gravité de son cœur, éclats de son corps, et son dernier séisme à survivre.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Le Monolithe, le Golem Primordial.",
+   "where": [
+    "data/levels/confins_02.json"
    ]
   },
   {
@@ -19394,6 +19720,12 @@
    ]
   },
   {
+   "fr": "Le seuil du cœur de pierre. Choisissez les pouvoirs du combat : celui que vous laissez reste ici.",
+   "where": [
+    "data/levels/confins_02.json"
+   ]
+  },
+  {
    "fr": "Le signal bat comme un cœur... Il vient du fond de cette machine.",
    "where": [
     "data/levels/sylvanox_03.json"
@@ -19448,6 +19780,12 @@
     "data/enemies/echo_crucible_heart.json",
     "data/enemies/echo_magmaroth.json",
     "data/enemies/magmaroth.json"
+   ]
+  },
+  {
+   "fr": "Le sol tremble, des runes s'allument en cercle et des rochers jaillissent autour du portail.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -19651,7 +19989,7 @@
    ]
   },
   {
-   "fr": "Les 21 morceaux du juke-box débloqués.",
+   "fr": "Les 22 morceaux du juke-box débloqués.",
    "where": [
     "data/cosmetics/cosmetics.json"
    ]
@@ -19750,6 +20088,7 @@
    "fr": "Les Confins",
    "where": [
     "data/levels/confins_01.json",
+    "data/levels/confins_02.json",
     "data/music/tracks.json",
     "data/planets/confins.json"
    ]
@@ -19758,6 +20097,18 @@
    "fr": "Les Confins — La Gueule du Dragon",
    "where": [
     "data/levels/confins_01.json"
+   ]
+  },
+  {
+   "fr": "Les Confins — Le Cœur de Pierre",
+   "where": [
+    "data/levels/confins_02.json"
+   ]
+  },
+  {
+   "fr": "Les Confins, deuxième niveau : « Le Cœur de Pierre » (EXTRÊME) : les galeries de granit et les salles des runes, une seule vie, aucun checkpoint, puis le Monolithe, le Golem Primordial.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -19893,6 +20244,12 @@
    ]
   },
   {
+   "fr": "Les galeries de granit.",
+   "where": [
+    "data/levels/confins_02.json"
+   ]
+  },
+  {
    "fr": "Les geysers de la cataracte soulèvent ceux qui planent.",
    "where": [
     "data/levels/pyralis_02.json"
@@ -19918,6 +20275,12 @@
   },
   {
    "fr": "Les huit lumières",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Les huit runes",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -20116,6 +20479,12 @@
    "fr": "les réglages « {0} » du niveau",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
+   ]
+  },
+  {
+   "fr": "Les salles des runes.",
+   "where": [
+    "data/levels/confins_02.json"
    ]
   },
   {
@@ -20840,6 +21209,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Magma des fissures",
+   "where": [
+    "data/enemies/monolithe.json"
    ]
   },
   {
@@ -21827,9 +22202,27 @@
    ]
   },
   {
+   "fr": "Migrer",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "Migrer les données",
    "where": [
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "MIGRER LES DONNÉES D'UN JOUEUR",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Migrer les données…",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -21917,7 +22310,8 @@
    "where": [
     "game/levels/LevelData.cpp",
     "game/levels/ObjectTypes.cpp",
-    "game/online/OnlineRecord.cpp"
+    "game/online/OnlineRecord.cpp",
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -22277,6 +22671,25 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Monolithe",
+   "where": [
+    "data/achievements/achievements.json",
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Monolithe vaincu",
+   "where": [
+    "data/levels/confins_02.json"
+   ]
+  },
+  {
+   "fr": "MONOLITHE, LE GOLEM PRIMORDIAL",
+   "where": [
+    "data/enemies/monolithe.json"
    ]
   },
   {
@@ -23269,6 +23682,12 @@
    "fr": "niveaux publiés",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Niveaux publiés et projets, le créateur change ({0} · {1} projets)",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -24406,6 +24825,12 @@
    ]
   },
   {
+   "fr": "Obtenir l'or dans Le Cœur de Pierre.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Obtenir l'or sur 10 niveaux.",
    "where": [
     "data/achievements/achievements.json"
@@ -24449,6 +24874,12 @@
   },
   {
    "fr": "Obtenir le platine dans Le Cœur de l'Étoile.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Obtenir le platine dans Le Cœur de Pierre.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -24634,6 +25065,12 @@
    ]
   },
   {
+   "fr": "Onde tellurique",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
    "fr": "Onde énergétique",
    "where": [
     "data/powers/wave.json",
@@ -24731,6 +25168,7 @@
    "fr": "Or",
    "where": [
     "data/cosmetics/cosmetics.json",
+    "data/enemies/monolithe.json",
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/gameplay/Hud.cpp",
@@ -24786,6 +25224,12 @@
   },
   {
    "fr": "Or du dragon",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Or du golem",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -26327,6 +26771,12 @@
    ]
   },
   {
+   "fr": "Pics de pierre",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
    "fr": "Pics en ligne",
    "where": [
     "data/enemies/echo_frost_hydra.json",
@@ -26719,6 +27169,12 @@
   },
   {
    "fr": "Platine du dragon",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Platine du golem",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -27449,6 +27905,12 @@
    ]
   },
   {
+   "fr": "Pour avoir vaincu le Monolithe, le Golem Primordial.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Pour avoir vaincu Pyrrhax, le Dragon d'Obsidienne.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -27940,6 +28402,12 @@
    ]
   },
   {
+   "fr": "Progression locale (dernière copie) : le jeu du compte cible propose de la restaurer",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "PROGRESSION MIGRÉE",
    "where": [
     "ui/screens/OnlineMigration.cpp"
@@ -28322,6 +28790,12 @@
    "fr": "Pseudonyme de votre ami",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pseudonyme du compte cible",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -28975,6 +29449,7 @@
    "fr": "Rage : l'arène se resserre encore",
    "where": [
     "data/levels/confins_01.json",
+    "data/levels/confins_02.json",
     "data/levels/noyau_03.json"
    ]
   },
@@ -29469,7 +29944,8 @@
     "game/records/Records.cpp",
     "ui/screens/AdminCampaign.cpp",
     "ui/screens/AdminEnemies.cpp",
-    "ui/screens/AdminScene.cpp"
+    "ui/screens/AdminScene.cpp",
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -29520,6 +29996,12 @@
    "fr": "records vérifiés",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Records, meilleurs temps et replays ({0} · {1} meilleurs temps ; cible : {2})",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -29739,6 +30221,18 @@
    ]
   },
   {
+   "fr": "Regard primordial",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Regard réfléchi",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
    "fr": "Regarde à gauche",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -29931,6 +30425,12 @@
    "fr": "Remplacer (package / ennemis / pouvoirs)",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
+   ]
+  },
+  {
+   "fr": "Remplacer : les données du compte cible sont remplacées",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -31001,6 +31501,12 @@
    ]
   },
   {
+   "fr": "Runes",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
    "fr": "Runes d'Aethra",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -31249,6 +31755,12 @@
    "fr": "Récompenses de ce défi",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Récompenses de défis, titres et combinaisons créées ({0})",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -31825,6 +32337,12 @@
    ]
   },
   {
+   "fr": "Sa cuirasse éclate : le magma monte des fissures !",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
    "fr": "Sa flamme vire au bleu !",
    "where": [
     "data/enemies/pyrrhax.json"
@@ -32219,7 +32737,8 @@
   {
    "fr": "Saut, double saut, puis Dash au sommet.",
    "where": [
-    "data/levels/aethra_04.json"
+    "data/levels/aethra_04.json",
+    "data/levels/confins_02.json"
    ]
   },
   {
@@ -32280,6 +32799,12 @@
    "fr": "Sauvegarde automatique régulière dans le dossier utilisateur (levels/autosave).",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Sauvegarde complète du serveur, puis migration…",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -32735,6 +33260,18 @@
    ]
   },
   {
+   "fr": "Ses pas arrachent la roche : les blocs tournoient !",
+   "where": [
+    "data/levels/confins_02.json"
+   ]
+  },
+  {
+   "fr": "Ses runes s'embrasent !",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
    "fr": "Ses réglages se modifient ici. Ses planches d'animation et la durée de leurs images restent celles du jeu (lecture seule). « Publier… » met la définition en ligne.",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -33164,6 +33701,12 @@
    ]
   },
   {
+   "fr": "Sol vitrifié",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
    "fr": "Soleil noir",
    "where": [
     "data/enemies/pyrrhax.json"
@@ -33253,6 +33796,12 @@
    "fr": "Son : mort",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Son cœur de cristal vous attire !",
+   "where": [
+    "data/enemies/monolithe.json"
    ]
   },
   {
@@ -33464,6 +34013,12 @@
    ]
   },
   {
+   "fr": "Sous la croûte des Confins, une caverne de granit gravé de runes. Ses épreuves les plus dures sans pardon, puis le Monolithe et ses huit phases. Une seule vie, aucun checkpoint.",
+   "where": [
+    "data/levels/confins_02.json"
+   ]
+  },
+  {
    "fr": "Sous la glace, la lumière du cristal ne s'éteint jamais.",
    "where": [
     "data/levels/glacior_02.json"
@@ -33587,6 +34142,12 @@
    "fr": "Spirale de tirs",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Spirale runique",
+   "where": [
+    "data/enemies/monolithe.json"
    ]
   },
   {
@@ -34091,9 +34652,21 @@
    ]
   },
   {
+   "fr": "Succès du Monolithe (6 nouveaux, 28 étoiles) ; au Vestiaire : la combinaison Granit (590 étoiles), la traînée Éclats de roche (600), l'effet de victoire Séisme runique (610), le Cercle runique et le titre Briseur de pierre.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Succès débloqué : {0}",
    "where": [
     "game/GameServices.cpp"
+   ]
+  },
+  {
+   "fr": "Succès déclarés ({0} · {1} étoiles ; cible : {2})",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -34590,6 +35163,24 @@
    ]
   },
   {
+   "fr": "Séisme",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Séisme : les blocs en orbite",
+   "where": [
+    "data/levels/confins_02.json"
+   ]
+  },
+  {
+   "fr": "Séisme runique",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Sélection",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
@@ -34887,6 +35478,12 @@
    ]
   },
   {
+   "fr": "Tapez MIGRER pour confirmer",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "Taux de compression suspect (bombe ZIP) : {0}",
    "where": [
     "packaging/PackageImporter.cpp"
@@ -35066,6 +35663,12 @@
    "fr": "Temps joué",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Temps joué ({0})",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -35405,6 +36008,12 @@
    ]
   },
   {
+   "fr": "Terminer Le Cœur de Pierre, aux Confins.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Terminer le niveau",
    "where": [
     "game/levels/EventSystem.cpp",
@@ -35418,13 +36027,13 @@
    ]
   },
   {
-   "fr": "Terminer les 20 niveaux de la campagne sans mourir.",
+   "fr": "Terminer les 21 niveaux de la campagne sans mourir.",
    "where": [
     "data/achievements/achievements.json"
    ]
   },
   {
-   "fr": "Terminer les 20 niveaux de la campagne.",
+   "fr": "Terminer les 21 niveaux de la campagne.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -35588,6 +36197,7 @@
     "data/levels/aethra_03.json",
     "data/levels/aethra_04.json",
     "data/levels/confins_01.json",
+    "data/levels/confins_02.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -37063,6 +37673,12 @@
    ]
   },
   {
+   "fr": "Un anneau de granit dont les runes s'allument tour à tour : pour avoir vaincu le Monolithe sans être touché.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Un anneau de magma en orbite autour d'un œil solaire. Il fait tourner le feu autour de lui comme une étoile qui naît.",
    "where": [
     "data/enemies/pyrogyre.json"
@@ -37108,6 +37724,12 @@
    "fr": "Un badge est un succès que vous avez obtenu, affiché à côté de votre nom et de votre titre sur votre profil Cosmic Online.",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Un bloc détaché du corps du Monolithe, animé par ses runes. Il frappe le sol en s'approchant.",
+   "where": [
+    "data/enemies/eclat_de_roche.json"
    ]
   },
   {
@@ -37287,6 +37909,12 @@
    "fr": "un gardien redoutable",
    "where": [
     "game/levels/DifficultyRating.cpp"
+   ]
+  },
+  {
+   "fr": "Un golem de granit gravé de runes, plus ancien que les planètes, qui garde le cœur des Confins. Huit phases, huit lumières : sa cuirasse éclate, le magma monte, et son dernier séisme doit être survécu.",
+   "where": [
+    "data/enemies/monolithe.json"
    ]
   },
   {
@@ -37785,6 +38413,12 @@
    ]
   },
   {
+   "fr": "Une sauvegarde complète du serveur est faite juste avant. Chaque migration est inscrite au Journal et les deux joueurs reçoivent une notification.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "Une sauvegarde n'a pas pu être écrite (les anciennes sont dans {0}).",
    "where": [
     "game/GameServices.cpp"
@@ -37825,6 +38459,12 @@
    "fr": "Une seule vie. Un dragon d'obsidienne. Huit phases.",
    "where": [
     "data/levels/confins_01.json"
+   ]
+  },
+  {
+   "fr": "Une seule vie. Un golem plus ancien que les planètes. Huit phases.",
+   "where": [
+    "data/levels/confins_02.json"
    ]
   },
   {
@@ -38311,6 +38951,18 @@
   },
   {
    "fr": "Vaincre l'Astrarque, au cœur de l'étoile.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre le Monolithe sans être touché.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre le Monolithe, le Golem Primordial.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -42893,6 +43545,12 @@
    ]
   },
   {
+   "fr": "Éboulement",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
    "fr": "Ébullition",
    "where": [
     "data/enemies/crucible_heart.json",
@@ -43422,6 +44080,12 @@
    ]
   },
   {
+   "fr": "Éclat de roche",
+   "where": [
+    "data/enemies/eclat_de_roche.json"
+   ]
+  },
+  {
    "fr": "Éclat du premier reflet",
    "where": [
     "data/levels/aethra_02.json"
@@ -43465,6 +44129,18 @@
     "data/enemies/echo_cryowyrm.json",
     "data/enemies/echo_howling_wyrm.json",
     "data/enemies/howling_wyrm.json"
+   ]
+  },
+  {
+   "fr": "Éclats de roche",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Éclats de son corps",
+   "where": [
+    "data/enemies/monolithe.json"
    ]
   },
   {

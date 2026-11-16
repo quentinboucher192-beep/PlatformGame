@@ -1,0 +1,82 @@
+{
+  "format": "cosmic.enemy",
+  "id": "eclat_de_roche",
+  "name": "Éclat de roche",
+  "description": "Un bloc détaché du corps du Monolithe, animé par ses runes. Il frappe le sol en s'approchant.",
+  "family": "heavy",
+  "animation": "animations/golem.json",
+  "size": [
+    26,
+    34
+  ],
+  "scale": 1.0,
+  "hp": 10,
+  "contactDamage": 1,
+  "speed": 22,
+  "chaseSpeedMultiplier": 1.3,
+  "flying": false,
+  "knockbackResist": 0.9,
+  "detectionRange": 900,
+  "attackRange": 70,
+  "loseRange": 2000,
+  "needsLineOfSight": false,
+  "movement": "guard",
+  "reaction": "chase",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 0,
+  "hopVelocity": 0,
+  "attacks": [
+    {
+      "id": "slam",
+      "name": "Frappe sismique",
+      "type": "slam",
+      "damage": 2,
+      "range": 90,
+      "telegraph": 0.85,
+      "active": 0.3,
+      "recover": 0.9,
+      "cooldown": 2.8,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectileSpeed": 170,
+      "knockback": 220
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": true,
+      "duration": 1.4,
+      "cooldown": 3.0
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "melee": 0.6,
+    "dash": 0.5,
+    "impulse": 2.0
+  },
+  "rewards": {
+    "score": 340,
+    "drops": [
+      {
+        "type": "energy_orb",
+        "chance": 0.5
+      }
+    ]
+  },
+  "light": {
+    "color": "#6aa8ff",
+    "radius": 46
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/explosion.wav",
+    "alert": "sounds/enemy_alert.wav"
+  },
+  "tint": "#bcd6ff"
+}

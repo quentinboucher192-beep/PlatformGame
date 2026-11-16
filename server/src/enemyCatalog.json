@@ -117,6 +117,10 @@
    "name": "Écho : Thornwarden"
   },
   {
+   "id": "eclat_de_roche",
+   "name": "Éclat de roche"
+  },
+  {
    "id": "eclat_stellaire",
    "name": "Éclat stellaire"
   },
@@ -243,6 +247,10 @@
   {
    "id": "magmaroth",
    "name": "Magmaroth"
+  },
+  {
+   "id": "monolithe",
+   "name": "Monolithe"
   },
   {
    "id": "mycelia",

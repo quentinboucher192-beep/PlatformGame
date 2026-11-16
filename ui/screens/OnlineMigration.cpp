@@ -1,11 +1,14 @@
 #include "ui/screens/OnlineMigration.h"
 
 #include <algorithm>
+#include <cctype>
+#include <cstdio>
 #include <functional>
 #include <string>
 
 #include "engine/core/Scene.h"
 #include "game/GameServices.h"
+#include "game/online/HttpTransport.h"
 #include "ui/screens/ChallengeUi.h"
 
 namespace cosmic {
@@ -280,26 +283,30 @@ private:
         busy_ = true;
         error_ = false;
         message_ = "Téléchargement de la progression…";
-        g_.online.get("/api/v1/players/me/progress-restore/file", OnlineService::guard(life_, [this](const ApiResult& r) {
-                          busy_ = false;
-                          if (!r.ok) {
-                              error_ = true;
-                              message_ = r.message.empty() ? std::string("Cosmic Online ne répond pas : réessayez plus tard.") : r.message;
-                              return;
-                          }
-                          // The copy as the old game sent it: {format, game_version, summary, files}.
-                          const Json& body = r.data.contains("files") ? r.data : jfield(r.data, "copy", Json::object());
-                          std::string err;
-                          if (!g_.restoreProgressCopy(jfield(body, "files", Json()), &err)) {
-                              error_ = true;
-                              message_ = err;
-                              return;
-                          }
-                          done_ = true;
-                          message_ = "Progression restaurée : elle s'ajoute à celle de cet ordinateur.";
-                          g_.online.send("POST", "/api/v1/players/me/progress-restore", Json{{"action", "done"}}, [](const ApiResult&) {});
-                      }),
-                      false);
+        // The copy as the old game sent it ({format, game_version, summary, files}), served as
+        // the file itself (not in the API envelope): read like a download.
+        g_.online.getBinary("/api/v1/players/me/progress-restore/file",
+                            [this, life = std::weak_ptr<int>(life_)](const HttpResponse& r) {
+                                if (life.expired()) return;
+                                busy_ = false;
+                                Json body = r.status == 200 ? Json::parse(r.body, nullptr, false) : Json();
+                                if (r.networkFailure() || r.status != 200 || !body.is_object()) {
+                                    error_ = true;
+                                    message_ = r.status == 404 ? std::string("Aucune progression n'attend plus d'être restaurée.")
+                                                               : std::string("Cosmic Online ne répond pas : réessayez plus tard.");
+                                    return;
+                                }
+                                std::string err;
+                                if (!g_.restoreProgressCopy(jfield(body, "files", Json()), &err)) {
+                                    error_ = true;
+                                    message_ = err;
+                                    return;
+                                }
+                                done_ = true;
+                                message_ = "Progression restaurée : elle s'ajoute à celle de cet ordinateur.";
+                                g_.online.send("POST", "/api/v1/players/me/progress-restore", Json{{"action", "done"}}, [](const ApiResult&) {});
+                            },
+                            16u << 20);
     }
     GameServices& g_;
     Json restore_;
@@ -308,10 +315,199 @@ private:
     bool busy_ = false, done_ = false, error_ = false;
 };
 
+// ------------------------------------------------------------------ 4. ADMINISTRATION › Joueurs
+
+/// A check box with its caption, reached like a button (keyboard, gamepad, mouse).
+bool tick(UIContext& ui, const std::string& name, const Rect& r, const std::string& caption, bool on, bool enabled = true) {
+    bool hovered = false;
+    const bool clicked = enabled && ui.hotspot(name, r, &hovered);
+    const bool focus = ui.focused(name);
+    if (enabled && (hovered || focus)) ui.r().fillRoundedRect(r, ui.s(6), Color{40, 60, 100, 160});
+    if (focus) ui.r().drawRoundedRect(r, ui.s(6), ui.theme().accent, ui.s(1.5f));
+    const float bs = ui.s(22);
+    Rect box{r.x + ui.s(6), r.center().y - bs * 0.5f, bs, bs};
+    ui.r().fillRoundedRect(box, ui.s(5), on ? ui.theme().accent.withAlpha(220) : Color{20, 28, 50, 255});
+    ui.r().drawRoundedRect(box, ui.s(5), on ? ui.theme().accent : Color{120, 140, 170, 255}, ui.s(1.5f));
+    if (on) {
+        const Color ink{8, 20, 30, 255};
+        ui.r().drawLine({box.x + bs * 0.22f, box.y + bs * 0.52f}, {box.x + bs * 0.42f, box.y + bs * 0.72f}, ink, ui.s(3));
+        ui.r().drawLine({box.x + bs * 0.42f, box.y + bs * 0.72f}, {box.x + bs * 0.78f, box.y + bs * 0.30f}, ink, ui.s(3));
+    }
+    const float tx = box.right() + ui.s(10), room = r.right() - tx - ui.s(6);
+    const float fs = ui.fitFont(caption, FontFace::Body, 16, room, 0.7f);
+    ui.label(ui.elide(caption, FontFace::Body, fs, room), {tx, r.center().y}, fs, enabled ? (on ? ui.theme().text : ui.theme().textDim) : Color{90, 96, 120, 255},
+             Align::Left, FontFace::Body, VAlign::Middle);
+    return clicked;
+}
+
+/// A text at `y` that never goes past `limit`: wrapped when it fits, else one shortened line, else
+/// nothing. Returns its height.
+float boundedText(UIContext& ui, const std::string& t, float x, float y, float w, float limit, float size, Color c) {
+    if (t.empty()) return 0;
+    const float h = ui.text().measureWrapped(t, FontFace::Body, ui.s(size), w).y;
+    if (y + h <= limit) return ui.labelWrapped(t, {x, y}, w, size, c).y;
+    const float line = ui.s(size) * 1.3f;
+    if (y + line > limit) return 0;
+    ui.label(ui.elide(t, FontFace::Body, size, w), {x, y + line * 0.5f}, size, c, Align::Left, FontFace::Body, VAlign::Middle);
+    return line;
+}
+
+class AdminMigrationScene : public Scene {
+public:
+    AdminMigrationScene(GameServices& g, Json source) : g_(g), source_(std::move(source)) { load(); }
+    bool isOverlay() const override { return true; }
+    void onEnter() override { g_.ui.setFocus("admmig/to"); }
+    void render(float) override {
+        UIContext& ui = g_.ui;
+        ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
+        Rect in = modalFrame(ui, ui.s(1000), ui.s(820), "ADMINISTRATION", "MIGRER LES DONNÉES D'UN JOUEUR", ui.theme().warm);
+        ui.pushId("admmig");
+        float y = in.y;
+        const std::string name = jstr(source_, "username");
+        // From: the account and its latest copy of the progression.
+        const Json& copy = jfield(preview_, "copy", Json());
+        std::string from = "Depuis « " + name + " »";
+        from += copy.is_object() ? " · dernière copie de la progression : " + stamp(jstr(copy, "created_at")) +
+                                       (jstr(copy, "device_name").empty() ? std::string() : " (« " + jstr(copy, "device_name") + " »)")
+                                 : std::string(" · aucune copie de la progression");
+        // The confirmation field sits above the buttons; everything else stays above it.
+        const float bh = ui.s(50), fh = ui.s(44);
+        const float cy = in.bottom() - bh - ui.s(14) - fh, limit = cy - ui.s(8);
+        y += boundedText(ui, from, in.x, y, in.w, in.y + ui.s(48), 16, ui.theme().text) + ui.s(10);
+        // To: the target account and its preview.
+        const float bw = ui.s(170);
+        ui.textField("to", {in.x, y, in.w - bw - ui.s(10), fh}, to_, "Pseudonyme du compte cible", 20);
+        UIContext::ButtonStyle ps;
+        ps.small = true;
+        ps.enabled = !busy_ && to_.size() >= 3;
+        if (ui.button("preview", {in.right() - bw, y, bw, fh}, "Aperçu", ps)) load();
+        y += fh + ui.s(12);
+        // The categories: a box each, with what the source has, then what the target has.
+        const Json& sc = jfield(jfield(preview_, "source", Json::object()), "counts", Json::object());
+        const Json& tc = jfield(jfield(preview_, "target", Json::object()), "counts", Json::object());
+        struct Item {
+            const char* id;
+            std::string caption;
+        };
+        auto n = [](const Json& c, const char* cat, const char* key) { return jget<int64_t>(jfield(c, cat, Json::object()), key, 0); };
+        auto hours = [](int64_t secs) { return secs >= 3600 ? std::to_string(secs / 3600) + " h" : std::to_string(secs / 60) + " min"; };
+        const Item items[6] = {
+            {"records", "Records, meilleurs temps et replays (" + std::to_string(n(sc, "records", "records")) + " · " +
+                            std::to_string(n(sc, "records", "bests")) + " meilleurs temps ; cible : " + std::to_string(n(tc, "records", "records")) + ")"},
+            {"achievements", "Succès déclarés (" + std::to_string(n(sc, "achievements", "count")) + " · " + std::to_string(n(sc, "achievements", "stars")) +
+                                 " étoiles ; cible : " + std::to_string(n(tc, "achievements", "count")) + ")"},
+            {"rewards", "Récompenses de défis, titres et combinaisons créées (" + std::to_string(n(sc, "rewards", "won")) + ")"},
+            {"playtime", "Temps joué (" + hours(n(sc, "playtime", "seconds")) + ")"},
+            {"levels", "Niveaux publiés et projets, le créateur change (" + std::to_string(n(sc, "levels", "published")) + " · " +
+                           std::to_string(n(sc, "levels", "projects")) + " projets)"},
+            {"progress", "Progression locale (dernière copie) : le jeu du compte cible propose de la restaurer"},
+        };
+        // Nine rows of boxes and their gaps (38), then the two notes (about 54): the rows shrink to fit.
+        const float rowH = std::clamp((limit - y - ui.s(38) - ui.s(54)) / 9.0f, ui.s(26), ui.s(38));
+        for (int i = 0; i < 6; ++i) {
+            const bool can = i != 5 || copy.is_object();
+            if (tick(ui, std::string("item_") + items[i].id, {in.x, y, in.w, rowH}, items[i].caption, chosen_[i] && can, can)) chosen_[i] = !chosen_[i];
+            y += rowH + ui.s(2);
+        }
+        y += ui.s(8);
+        if (tick(ui, "merge", {in.x, y, in.w, rowH}, "Fusionner : le meilleur de chaque côté est gardé (meilleur temps, succès additionnés)", !replace_))
+            replace_ = false;
+        y += rowH + ui.s(2);
+        if (tick(ui, "replace", {in.x, y, in.w, rowH}, "Remplacer : les données du compte cible sont remplacées", replace_)) replace_ = true;
+        y += rowH + ui.s(8);
+        if (tick(ui, "close", {in.x, y, in.w, rowH}, "Fermer le compte source ensuite (connexion impossible, pseudonyme libéré dans 30 jours)", close_))
+            close_ = !close_;
+        y += rowH + ui.s(8);
+        y += boundedText(ui,
+                         "Une sauvegarde complète du serveur est faite juste avant. Chaque migration est inscrite au Journal et les deux joueurs "
+                         "reçoivent une notification.",
+                         in.x, y, in.w, limit, 14, ui.theme().textDim) +
+             ui.s(6);
+        // What refuses it, or the result.
+        std::string note = message_;
+        if (note.empty())
+            for (const Json& pr : jfield(preview_, "problems", Json::array()))
+                if (pr.is_string()) note += (note.empty() ? "" : " ") + pr.get<std::string>();
+        if (note.empty() && !to_.empty() && preview_.is_object() && !jget<bool>(preview_, "target_found", false)) note = "Compte cible introuvable.";
+        if (!note.empty()) y += boundedText(ui, note, in.x, y, in.w, limit, 15, error_ || message_.empty() ? ui.theme().danger : ui.theme().success) + ui.s(6);
+        // The confirmation, then the buttons.
+        ui.textField("confirm", {in.x, cy, std::min(in.w * 0.5f, ui.s(420)), fh}, confirm_, "Tapez MIGRER pour confirmer", 10);
+        bool any = false;
+        for (int i = 0; i < 6; ++i) any = any || chosen_[i];
+        const bool ready = !busy_ && !done_ && any && confirm_ == "MIGRER" && jget<bool>(preview_, "target_found", false) &&
+                           jfield(preview_, "problems", Json::array()).empty() && jstr(jfield(preview_, "target", Json::object()), "username") == to_;
+        const int b = footer(ui, in, done_ ? "" : "Annuler", done_ ? "Fermer" : "Migrer", done_ || ready, !busy_);
+        ui.popId();
+        if (b == 2 && !done_) migrate();
+        else if (b == 2 || ((b == 1 || ui.backPressed()) && !busy_)) {
+            ui.end();
+            g_.app.popScene();
+            return;
+        }
+        ui.end();
+    }
+
+private:
+    void load() {
+        busy_ = true;
+        message_.clear();
+        error_ = false;
+        std::string q;
+        for (char c : to_) {
+            if (std::isalnum(static_cast<unsigned char>(c)) || c == '_' || c == '-') q += c;
+            else {
+                char buf[4];
+                std::snprintf(buf, sizeof buf, "%%%02X", static_cast<unsigned char>(c));
+                q += buf;
+            }
+        }
+        g_.online.get("/api/v1/admin/players/" + jstr(source_, "id") + "/migration?to=" + q, OnlineService::guard(life_, [this](const ApiResult& r) {
+                          busy_ = false;
+                          if (!r.ok) {
+                              error_ = true;
+                              message_ = r.message;
+                              return;
+                          }
+                          preview_ = r.data;
+                      }),
+                      false);
+    }
+    void migrate() {
+        static const char* ids[6] = {"records", "achievements", "rewards", "playtime", "levels", "progress"};
+        Json list = Json::array();
+        for (int i = 0; i < 6; ++i)
+            if (chosen_[i]) list.push_back(ids[i]);
+        busy_ = true;
+        error_ = false;
+        message_ = "Sauvegarde complète du serveur, puis migration…";
+        g_.online.send("POST", "/api/v1/admin/players/" + jstr(source_, "id") + "/migrate",
+                       Json{{"to_username", to_}, {"mode", replace_ ? "replace" : "merge"}, {"items", list}, {"close_source", close_}, {"confirm", confirm_}},
+                       OnlineService::guard(life_, [this](const ApiResult& r) {
+                           busy_ = false;
+                           if (!r.ok) {
+                               error_ = true;
+                               message_ = r.message;
+                               return;
+                           }
+                           done_ = true;
+                           message_ = "Données de « " + jstr(source_, "username") + " » migrées vers « " + to_ + " ». Sauvegarde faite avant : " +
+                                      jstr(jfield(r.data, "backup", Json::object()), "id") + ".";
+                       }),
+                       180000);
+    }
+    GameServices& g_;
+    Json source_, preview_;
+    std::shared_ptr<int> life_ = std::make_shared<int>(0);
+    std::string to_, confirm_, message_;
+    bool chosen_[6] = {true, true, true, true, false, true};
+    bool replace_ = false, close_ = false, busy_ = false, done_ = false, error_ = false;
+};
+
 }  // namespace
 
 std::unique_ptr<Scene> makeMigrationPrepare(GameServices& g) { return std::make_unique<MigrationPrepareScene>(g); }
 std::unique_ptr<Scene> makeMigrationRecover(GameServices& g) { return std::make_unique<MigrationRecoverScene>(g); }
 std::unique_ptr<Scene> makeProgressRestore(GameServices& g, const Json& restore) { return std::make_unique<ProgressRestoreScene>(g, restore); }
+std::unique_ptr<Scene> makeAdminMigration(GameServices& g, const Json& source) { return std::make_unique<AdminMigrationScene>(g, source); }
 
 }  // namespace cosmic

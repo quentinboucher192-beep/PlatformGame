@@ -25,6 +25,7 @@
 #include "game/GameServices.h"
 #include "game/online/OnlineSession.h"
 #include "ui/online/OnlineWidgets.h"
+#include "ui/screens/OnlineMigration.h"
 #include "ui/screens/AdminBackups.h"
 #include "ui/screens/AdminCampaign.h"
 #include "ui/screens/AdminCalendar.h"
@@ -630,6 +631,18 @@ private:
         un.enabled = !busyDevice_ && deviceData_.is_object() && !jget<bool>(deviceData_, "rebind_allowed", false);
         if (ui.button("unbind", {x, by, ui.s(330), bh}, "Délier (nouvel ordinateur autorisé)", un))
             deviceAction(Json{{"action", "unbind"}}, name + " est délié : sa prochaine connexion le liera de nouveau.");
+        // 2.50: the data of this player moved to another account (when the server offers it).
+        if (g_.migrationAvailable) {
+            const float mx = x + ui.s(330) + ui.s(14), mw = box.right() - ui.s(32) - ui.s(170) - ui.s(14) - mx;
+            UIContext::ButtonStyle ms;
+            ms.enabled = !busyDevice_;
+            ms.fontSize = ui.fitFont("Migrer les données…", FontFace::Bold, 20, mw - ui.s(24));
+            if (mw > ui.s(120) && ui.button("migrate", {mx, by, mw, bh}, "Migrer les données…", ms)) {
+                const Json p = devicePlayer_;
+                devicePlayer_ = Json();
+                g_.app.pushScene(makeAdminMigration(g_, p));
+            }
+        }
         if (ui.button("close", {box.right() - ui.s(32) - ui.s(170), by, ui.s(170), bh}, "Fermer") || ui.backPressed()) devicePlayer_ = Json();
         ui.popId();
     }

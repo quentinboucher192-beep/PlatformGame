@@ -1,0 +1,37 @@
+{
+  "level": "confins_02",
+  "powerKeys": {
+    "dash": {
+      "key": "K",
+      "pad": {
+        "button": "b"
+      }
+    },
+    "plasma_bomb": {
+      "key": "H",
+      "pad": {
+        "axis": "righty",
+        "dir": 1
+      }
+    },
+    "shield": {
+      "key": "O",
+      "pad": {
+        "button": "leftshoulder"
+      }
+    },
+    "time_slow": {
+      "key": "F",
+      "pad": {
+        "button": "rightstick"
+      }
+    },
+    "wave": {
+      "key": "L",
+      "pad": {
+        "axis": "righttrigger",
+        "dir": 1
+      }
+    }
+  }
+}

@@ -20,5 +20,8 @@ std::unique_ptr<Scene> makeMigrationRecover(GameServices& g);
 /// The progression of the old account waiting on the server (`restore` of
 /// GET /players/me/progress-restore): « Plus tard » or « Restaurer ».
 std::unique_ptr<Scene> makeProgressRestore(GameServices& g, const Json& restore);
+/// ADMINISTRATION › Joueurs › Ordinateur › « Migrer les données… »: the data of `source` (a player of
+/// the list: id, username) moved to another account (merge or replace, a full backup first).
+std::unique_ptr<Scene> makeAdminMigration(GameServices& g, const Json& source);
 
 }  // namespace cosmic

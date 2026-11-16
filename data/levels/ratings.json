@@ -121,6 +121,30 @@
       "score": 5.0,
       "version": 2
     },
+    "confins_02": {
+      "components": {
+        "boss": 33.52,
+        "checkpoints": 5.21,
+        "enemies": 0.82,
+        "hazards": 3.52,
+        "healing": -0.19,
+        "jumps": 2.76,
+        "length": 0.76,
+        "timer": 0.0
+      },
+      "facts": {
+        "deadly_jumps": 2,
+        "enemies": 6,
+        "hazards": 28,
+        "heal_per_100_tiles": 1.58,
+        "longest_checkpoint_gap": 505.91,
+        "precise_jumps": 7
+      },
+      "raw": 46.41,
+      "route_tiles": 505.91,
+      "score": 5.0,
+      "version": 2
+    },
     "glacior_01": {
       "components": {
         "boss": 4.44,

@@ -36,6 +36,8 @@ SUITS = {
     "champion": ((140, 20, 48), (255, 205, 80), (245, 245, 255)),
     # 2.48: Pyrrhax, le Dragon d'Obsidienne (black glass veined with fire)
     "obsidienne": ((52, 44, 60), (255, 110, 40), (190, 40, 110)),
+    # 2.49: le Monolithe, le Golem Primordial (speckled granite, amber runes, moss)
+    "granit": ((128, 122, 116), (255, 178, 70), (110, 150, 80)),
 }
 
 

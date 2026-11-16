@@ -140,6 +140,35 @@
    "gold_ms": 413000,
    "auto": false
   },
+  "confins_02": {
+   "name": "Le Cœur de Pierre",
+   "planet": "confins",
+   "order": 2,
+   "last": false,
+   "revision": 8,
+   "slots": 4,
+   "start_powers": [
+    "dash",
+    "grapple",
+    "glide",
+    "charge_shot"
+   ],
+   "level_powers": [
+    "charge_shot",
+    "dash",
+    "glide",
+    "grapple",
+    "ground_pound",
+    "plasma_bomb",
+    "shield",
+    "time_slow",
+    "triple_jump",
+    "wave"
+   ],
+   "silver_ms": 490000,
+   "gold_ms": 409000,
+   "auto": false
+  },
   "glacior_01": {
    "name": "Les Plaines de Givre",
    "planet": "glacior",
