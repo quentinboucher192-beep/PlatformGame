@@ -175,6 +175,9 @@ private:
     void drawChallengeBanner();
     std::string challengeHash_;      // fingerprint of the level as installed (sent with the run)
     bool challengeSendable_ = false;  // that fingerprint is the challenge's
+    /// 2.45: the challenge's revision of a campaign level, played from a file kept on this
+    /// computer (bundled or downloaded) while another revision is current: its fingerprint.
+    std::string challengeRevisionHash_;
     // « Plus loin » (2.34, a challenge with a route): how far this attempt goes (display and
     // online only, the simulation is not touched). Without checkpoints an attempt is one
     // life: it is decided at the first death (the run goes on); else at a fall, a restart or

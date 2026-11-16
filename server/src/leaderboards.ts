@@ -55,6 +55,13 @@ interface BoardRow {
 }
 
 /**
+ * The hashes whose runs a board of hash ?1 counts: its own, and those of the revisions it
+ * carried with « Garder les records » (2.45, campaign_board_links). The bests of those are
+ * copied into player_bests at publication; the weekly boards read the records themselves.
+ */
+export const LINKED_HASHES = "SELECT ?1 UNION SELECT from_hash FROM campaign_board_links WHERE to_hash = ?1";
+
+/**
  * Builds the SQL of a level board. Parameters: ?1 level hash, ?2 category, ?3 week start
  * (weekly only), then filter parameters from ?4.
  */
@@ -66,7 +73,7 @@ function boardSql(period: Period, filter: BoardFilter): { sql: string; extra: un
             : `SELECT player_id, record_id, time_ms, achieved_at FROM (
                  SELECT r.player_id, r.id AS record_id, r.time_ms, r.created_at AS achieved_at,
                         ROW_NUMBER() OVER (PARTITION BY r.player_id ORDER BY r.time_ms, r.created_at) AS rn
-                 FROM records r WHERE r.level_hash = ?1 AND r.category = ?2 AND r.verification_status = 'VERIFIED'
+                 FROM records r WHERE r.level_hash IN (${LINKED_HASHES}) AND r.category = ?2 AND r.verification_status = 'VERIFIED'
                    AND r.created_at >= ?3) WHERE rn = 1`;
     const where: string[] = [];
     const extra: unknown[] = [];
@@ -133,7 +140,8 @@ async function pendingOf(ctx: Ctx, viewer: AuthInfo | null, board: Board, catego
     // The viewer's own pending performance is reported separately, never ranked.
     const row = await ctx.env.DB.prepare(
         `SELECT id, time_ms, created_at, verification_notes FROM records
-         WHERE player_id = ?1 AND level_hash = ?2 AND category = ?3 AND verification_status = 'PENDING'
+         WHERE player_id = ?1 AND level_hash IN (SELECT ?2 UNION SELECT from_hash FROM campaign_board_links WHERE to_hash = ?2)
+           AND category = ?3 AND verification_status = 'PENDING'
          ORDER BY time_ms LIMIT 1`,
     )
         .bind(viewer.player.id, board.version.content_hash, category)

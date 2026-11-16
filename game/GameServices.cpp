@@ -1,5 +1,6 @@
 #include "game/GameServices.h"
 
+#include <memory>
 #include <set>
 
 #include <SDL3/SDL_timer.h>
@@ -8,6 +9,7 @@
 
 #include "engine/core/FileUtil.h"
 #include "engine/core/Log.h"
+#include "game/online/HttpTransport.h"
 
 namespace cosmic {
 
@@ -68,6 +70,97 @@ void GameServices::loadAll() {
     };
     news.startScan(content);
     applySettings();
+}
+
+// ------------------------------------------------- campaign revisions (2.45)
+
+void GameServices::startCampaignRevisions(bool fetch) {
+    campaignRevisions.setDir(Paths::userDir() / "online" / "campaign");
+    campaignRevisions.load();
+    applyCampaignRevisions();  // the revisions kept on this computer: offline too
+    campaignFetch_ = fetch;
+    campaignTimer_ = 0.0f;
+    if (fetch) refreshCampaignRevisions();
+}
+
+void GameServices::updateCampaignRevisions(float dt) {
+    if (campaignApplyPending_ && news.scanned()) applyCampaignRevisions();
+    if (!campaignFetch_ || campaignRefreshing_ || !online.usable()) return;
+    campaignTimer_ += dt;
+    if (campaignTimer_ >= 30.0f * 60.0f) refreshCampaignRevisions();
+}
+
+void GameServices::refreshCampaignRevisions(std::function<void(const std::string&)> done) {
+    if (campaignRefreshing_ || !online.usable()) {
+        if (done) done(online.usable() ? std::string() : std::string("Cosmic Online est indisponible."));
+        return;
+    }
+    campaignRefreshing_ = true;
+    campaignTimer_ = 0.0f;
+    online.get(
+        "/api/v1/campaign/revisions",
+        [this, done](const ApiResult& r) {
+            if (!r.ok) {
+                campaignRefreshing_ = false;
+                campaignTimer_ = 28.0f * 60.0f;  // tried again in two minutes
+                if (done) done(r.message);
+                return;
+            }
+            auto todo = campaignRevisions.applyManifest(r.data, online.config().serverUrl, content, COSMIC_VERSION_STRING);
+            campaignRevisions.save();
+            auto left = std::make_shared<size_t>(todo.size());
+            auto errors = std::make_shared<std::string>();
+            auto finish = [this, done, errors]() {
+                campaignRevisions.prune();
+                campaignRevisions.save();
+                applyCampaignRevisions();
+                campaignRefreshing_ = false;
+                if (done) done(*errors);
+            };
+            if (todo.empty()) return finish();
+            for (const CampaignRevisionFile& f : todo)
+                online.getBinary(
+                    f.path,
+                    [this, f, left, errors, finish](const HttpResponse& h) {
+                        std::string err;
+                        if (h.networkFailure() || h.status != 200) err = "téléchargement impossible";
+                        else campaignRevisions.install(content, f, h.body, &err);
+                        if (!err.empty()) *errors = f.levelId + " : " + err;
+                        if (--*left == 0) finish();
+                    },
+                    static_cast<size_t>(f.size) + 1024);
+        },
+        false);
+}
+
+void GameServices::applyCampaignRevisions() {
+    // The news compare the bundled levels on a worker thread at startup: the entries change
+    // once it is done (a few frames later).
+    if (!news.scanned()) {
+        campaignApplyPending_ = true;
+        return;
+    }
+    campaignApplyPending_ = false;
+    auto files = campaignRevisions.currentFiles(content, online.config().serverUrl, COSMIC_VERSION_STRING);
+    bool changed = false;
+    for (const LevelEntry* e : content.levels()) {
+        if (e->source != ContentSource::Builtin) continue;
+        auto it = files.find(e->id);
+        fs::path want = it == files.end() ? fs::path() : it->second;
+        fs::path now = e->bundledPath.empty() ? fs::path() : e->path;
+        if (want != now) {
+            // A file that is not a level of that id: the bundled one stays.
+            if (!content.setCampaignRevision(e->id, want)) content.setCampaignRevision(e->id, {});
+            changed = true;
+            Log::info("Campagne en ligne : {} -> {}", e->id, want.empty() ? std::string("niveau d'origine") : Paths::toUtf8(want));
+        }
+        std::optional<DifficultyRating> rating;
+        if (!e->bundledPath.empty())
+            if (const Json* r = campaignRevisions.ratingOf(e->id); r && jget<int>(*r, "version", 0) == DifficultyRating::kRatingVersion)
+                rating = DifficultyRating::fromJson(*r);
+        ratings.setCampaignRating(e->id, rating);
+    }
+    if (changed) online.fingerprints().clear();
 }
 
 CosmeticProgress GameServices::cosmeticProgress() const {

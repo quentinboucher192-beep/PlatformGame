@@ -97,6 +97,9 @@ LevelPlace levelPlace(GameServices& g, const DailyChallenge& c) {
         p.localId = e->id;
         const LevelFingerprint* fp = g.online.fingerprints().get(g.content, e->id);
         p.sameVersion = fp && fp->hash == c.level.hash;
+        // 2.45: another revision is current (published online by an administrator); the
+        // challenge keeps the one it was drawn on, when this computer has it.
+        if (!p.sameVersion && g.campaignRevisions.fileFor(g.content, e->id, c.level.hash)) p.sameVersion = true;
         return p;
     }
     // A community level: the copy installed from ONLINE LEVELS at the challenge's version.

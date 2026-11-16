@@ -54,7 +54,10 @@ void LevelEditorScene::drawToolbar(const Rect& r) {
     const float brandW = ui.s(232);
     ui.label("COSMIC STUDIO", {x, r.y + ui.s(19)}, ui.fitFont("COSMIC STUDIO", FontFace::Title, 15, brandW), ui.theme().accent, Align::Left, FontFace::Title,
              VAlign::Middle);
-    std::string doc = level_.name + (readOnly_ ? "  · lecture seule" : dirty_ ? "  · modifié" : "  · enregistré");
+    std::string doc = level_.name + (campaignMode_ ? (dirty_ ? "  · révision en cours" : "  · révision en ligne")
+                                     : readOnly_  ? "  · lecture seule"
+                                     : dirty_     ? "  · modifié"
+                                                  : "  · enregistré");
     ui.label(doc, {x, r.y + ui.s(43)}, ui.fitFont(doc, FontFace::Body, 15, brandW), dirty_ ? ui.theme().warm : ui.theme().textDim, Align::Left,
              FontFace::Body, VAlign::Middle);
     x += brandW + ui.s(12);
@@ -105,6 +108,18 @@ void LevelEditorScene::drawToolbar(const Rect& r) {
     // Right: test (with its menu), help; between them, live editing presence.
     float presenceX = x + ui.s(10);
     x = r.right() - ui.s(14) - ui.s(40) - ui.s(6) - ui.s(36) - ui.s(2) - ui.s(128);
+    if (campaignMode_) {
+        // ADMINISTRATION › Campagne (2.45): « Publier… » in sight (also Fichier, Ctrl+S).
+        const std::string label = "Publier…";
+        float pw = ui.text().measure(label, FontFace::Bold, ui.s(18)).x + ui.s(36);
+        if (presenceX + pw <= x - ui.s(16)) {
+            UIContext::ButtonStyle st;
+            st.small = true;
+            st.fontSize = 18;
+            st.primary = true;
+            if (ui.button("publish", {x - ui.s(16) - pw, y, pw, h}, label, st)) openPublish();
+        }
+    }
     if (live_) {
         // The chat button (with its unread counter), then the members.
         float cw = std::min(ui.s(160), (x - presenceX - ui.s(16)) * 0.4f);
@@ -145,7 +160,10 @@ void LevelEditorScene::drawMenus() {
     if (menu_ == Menu::File) {
         items = {{"open", "Ouvrir un niveau…", true, false},
                  {"new", "Nouveau niveau…", true, false},
-                 {"save", readOnly_ ? "Dupliquer pour modifier" : (dirty_ ? "Enregistrer (Ctrl+S)" : "Enregistré"), readOnly_ || dirty_, false},
+                 {"save",
+                  campaignMode_ ? std::string("Publier la révision… (Ctrl+S)")
+                                : readOnly_ ? "Dupliquer pour modifier" : (dirty_ ? "Enregistrer (Ctrl+S)" : "Enregistré"),
+                  campaignMode_ || readOnly_ || dirty_, false},
                  {"quit", "Quitter l'éditeur", true, true}};
     } else {
         LevelObject* po = primary();
@@ -181,6 +199,7 @@ void LevelEditorScene::drawMenus() {
                 else save();
             } else if (id == "quit") {
                 if (dirty_) modal_ = Modal::ConfirmQuit;
+                else if (campaignMode_) g_.app.popScene();  // back to ADMINISTRATION › Campagne
                 else g_.app.switchScene(makeEditorExit(g_, level_.id));
             }
         } else {

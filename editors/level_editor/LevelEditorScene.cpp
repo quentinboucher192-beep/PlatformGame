@@ -52,6 +52,14 @@ void LevelEditorScene::onEnter() {
     g_.app.audio().stopAmbience(500);
     if (!requestedId_.empty() && g_.content.level(requestedId_)) {
         openLevel(requestedId_);
+        if (campaignMode_) {
+            // ADMINISTRATION › Campagne (2.45): the campaign level itself, editable; it is
+            // published as a new revision, never saved as a player level.
+            readOnly_ = false;
+            builtinSource_ = false;
+            readOnlySource_.clear();
+            flash("Révision de la campagne : vos modifications seront publiées en ligne (Fichier › Publier la révision…).");
+        }
     } else {
         loadDocument(LevelData::makeEmpty("nouveau_niveau", "Nouveau niveau", "sylvanox"), false);
         modal_ = Modal::Open;
@@ -188,6 +196,11 @@ void LevelEditorScene::flash(const std::string& msg, bool error) {
 // ================================================================== document
 
 void LevelEditorScene::openLevel(const std::string& id) {
+    // Another level opened from the campaign editing: it is edited as usual (a copy).
+    if (campaignMode_ && id != requestedId_) {
+        campaignMode_ = false;
+        campaign_.reset();
+    }
     std::string err;
     auto lvl = g_.content.loadLevel(id, &err);
     if (!lvl) {
@@ -255,6 +268,13 @@ void LevelEditorScene::loadDocument(const LevelData& level, bool builtinSource) 
 
 bool LevelEditorScene::save() {
     if (level_.id.empty()) return false;
+    if (campaignMode_) {
+        // A campaign revision is published online (never written as a player level); the draft
+        // stays in the autosave until then.
+        autosave();
+        openPublish();
+        return false;
+    }
     if (readOnly_) {
         flash("Lecture seule : « Dupliquer pour modifier » pour enregistrer votre version", true);
         return false;
@@ -617,6 +637,7 @@ Vec2 LevelEditorScene::snapPoint(Vec2 p, float grid) const {
 void LevelEditorScene::update(float dt) {
     time_ += dt;
     if (live_) updateLive(dt);
+    if (campaignMode_) updatePublish();
     if (messageTimer_ > 0) messageTimer_ -= dt;
     if (previewDelay_ > 0) previewDelay_ -= dt;
     if (previewDirty_ && previewDelay_ <= 0 && drag_ == Drag::None) rebuildPreview();

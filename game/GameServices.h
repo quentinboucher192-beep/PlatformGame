@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <map>
 #include <set>
 #include <string>
@@ -14,6 +15,7 @@
 #include "game/ghost/SegmentHistory.h"
 #include "game/ghost/TrainingSegments.h"
 #include "game/levels/RatingService.h"
+#include "game/online/CampaignRevisions.h"
 #include "game/online/DailyChallenges.h"
 #include "game/online/OnlineService.h"
 #include "game/online/ReplayDownloads.h"
@@ -127,6 +129,22 @@ public:
     /// (« Mes amis peuvent me regarder jouer »). Nothing of it is shown to the player.
     SpectateBroadcaster spectate{online};
     UpdateInstaller updates;  // the installer of a newer version (main menu alert, Notifications)
+    /// 2.45: the campaign revisions published online by an administrator (ADMINISTRATION ›
+    /// Campagne). Those kept on this computer are played at once, offline too; with `fetch`,
+    /// the manifest is read (public, nothing personal sent) and the newer ones downloaded.
+    CampaignRevisionStore campaignRevisions;
+    void startCampaignRevisions(bool fetch);
+    /// Reads GET /campaign/revisions, downloads and checks what is missing, then plays the
+    /// current revisions. `done(error)`: once everything is installed ("" when all went well).
+    void refreshCampaignRevisions(std::function<void(const std::string&)> done = {});
+    /// The levels follow the current revisions kept (content, fingerprints, ratings).
+    void applyCampaignRevisions();
+    /// Every frame: the manifest is read again every 30 minutes (2 after a failure).
+    void updateCampaignRevisions(float dt);
+    bool campaignRefreshing_ = false;
+    bool campaignFetch_ = false;
+    bool campaignApplyPending_ = false;  // waits for the news scan (it reads the level files)
+    float campaignTimer_ = 0.0f;
     UIContext ui;
     /// Scripted input for automated runs (see InputScript), applied to the next level started.
     std::string inputScript;

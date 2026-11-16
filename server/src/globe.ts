@@ -7,7 +7,7 @@ import { Errors, json, weekStart, type Ctx } from "./http";
 import { resolveBoard } from "./levels";
 import { avatarUrl } from "./model";
 import { CATEGORIES, COUNTRY_RE, LEVEL_ID_RE, queryEnum, queryString } from "./validate";
-import { PERIODS, type Period } from "./leaderboards";
+import { LINKED_HASHES, PERIODS, type Period } from "./leaderboards";
 
 interface MarkerRow {
     record_id: string;
@@ -40,7 +40,7 @@ function markersSql(period: Period, countryFilter: boolean): string {
             : `SELECT player_id, record_id, time_ms, achieved_at, level_id FROM (
                  SELECT r.player_id, r.id AS record_id, r.time_ms, r.created_at AS achieved_at, r.level_id,
                         ROW_NUMBER() OVER (PARTITION BY r.player_id ORDER BY r.time_ms, r.created_at) AS rn
-                 FROM records r WHERE r.level_hash = ?1 AND r.category = ?2 AND r.verification_status = 'VERIFIED'
+                 FROM records r WHERE r.level_hash IN (${LINKED_HASHES}) AND r.category = ?2 AND r.verification_status = 'VERIFIED'
                    AND r.created_at >= ?3) WHERE rn = 1`;
     return `
       WITH src AS (${source}),

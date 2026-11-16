@@ -108,7 +108,7 @@ std::unique_ptr<Scene> makeSplashScene(GameServices& g);
 std::unique_ptr<Scene> makeMainMenu(GameServices& g);
 /// ADMINISTRATION (2.40, accounts with the admin role only). `open`: "log" for the Journal,
 /// "players:<search>[:confirm]", "calendar[:<YYYY-MM>[:<challenge id>[:objectif]]]" (2.41,
-/// « Calendrier des défis ») (automated screenshots).
+/// « Calendrier des défis »), "campaign[:<level id>]" (2.45, « Campagne ») (automated screenshots).
 std::unique_ptr<Scene> makeAdmin(GameServices& g, const std::string& open = {});
 std::unique_ptr<Scene> makePlanetMap(GameServices& g);
 /// `levelId`: the level selected on arrival (else the last one played). `fromBoss`: opened
@@ -156,6 +156,9 @@ std::unique_ptr<Scene> makeChallengeRun(GameServices& g, const std::string& chal
 /// Help: every power of the player with a live example (pushed over the current screen).
 std::unique_ptr<Scene> makePowerGuide(GameServices& g, int page = 0);
 std::unique_ptr<Scene> makeLevelEditor(GameServices& g, const std::string& levelId);
+/// ADMINISTRATION › Campagne (2.45): a campaign level edited as a new revision, published online
+/// (« Publier la révision… ») from the revision `baseVersion` that is current on the server.
+std::unique_ptr<Scene> makeLevelEditorCampaign(GameServices& g, const std::string& levelId, int baseVersion, const std::string& baseHash);
 /// Live editing of a collaborative project in the level editor (`levelId`: its local copy).
 std::unique_ptr<Scene> makeLevelEditorLive(GameServices& g, const std::string& levelId, const std::string& projectId, const std::string& role);
 /// Automated screenshots: the level editor with its help open.

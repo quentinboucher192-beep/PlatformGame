@@ -92,8 +92,15 @@ void RatingService::poll() {
     }
 }
 
+void RatingService::setCampaignRating(const std::string& levelId, const std::optional<DifficultyRating>& r) {
+    if (r) campaignRevisions_[levelId] = *r;
+    else campaignRevisions_.erase(levelId);
+}
+
 const DifficultyRating* RatingService::get(const LevelEntry& level) {
     if (level.source == ContentSource::Builtin) {
+        // 2.45: a campaign revision downloaded from Cosmic Online, rated by the game that published it.
+        if (auto it = campaignRevisions_.find(level.id); it != campaignRevisions_.end() && !level.bundledPath.empty()) return &it->second;
         auto it = campaign_.find(level.id);
         if (it != campaign_.end()) return &it->second;
     }

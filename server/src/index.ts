@@ -15,6 +15,7 @@ import * as achievements from "./achievements";
 import * as cosmetics from "./cosmetics";
 import * as badges from "./badges";
 import * as campaign from "./campaign";
+import * as campaignRevisions from "./campaignRevisions";
 import * as challenges from "./challenges";
 import * as notifications from "./notifications";
 import * as race from "./race";
@@ -145,6 +146,9 @@ route("GET", `${V}/leaderboards/weekly`, boards.routeWeekly, { viewer: true, cac
 // Campaign social side (2.19): ratings of the official levels, comments of the official
 // levels (ONLINE) and of the runs (their comments then use the /community/comments routes)
 route("GET", `${V}/levels/ratings`, (ctx) => campaign.listRatings(ctx), { cacheable: true });
+// 2.45: the campaign revisions published by an administrator (public: the games download them).
+route("GET", `${V}/campaign/revisions`, (ctx) => campaignRevisions.manifest(ctx), { cacheable: true });
+route("GET", `${V}/campaign/levels/{levelId}/revisions/{version}/file`, (ctx) => campaignRevisions.file(ctx), { cacheable: true });
 route("GET", `${V}/levels/{levelId}/rating`, (ctx) => campaign.getRating(ctx), { cacheable: true });
 route("PUT", `${V}/levels/{levelId}/rating`, (ctx) => campaign.putRating(ctx));
 route("DELETE", `${V}/levels/{levelId}/rating`, (ctx) => campaign.deleteRating(ctx));
@@ -320,6 +324,11 @@ route("POST", `${V}/admin/backups/imports/{importId}/apply`, (ctx) => backups.ap
 route("POST", `${V}/admin/backups/{backupId}/download`, (ctx) => backups.downloadBackup(ctx));
 // ADMINISTRATION › Calendrier des défis (2.41): the coming challenges too, set or put back to the draw.
 route("GET", `${V}/admin/challenges`, (ctx) => adminChallenges.listChallenges(ctx));
+// ADMINISTRATION › Campagne (2.45): campaign levels edited in the game's editor, published as revisions.
+route("GET", `${V}/admin/campaign`, (ctx) => campaignRevisions.adminList(ctx));
+route("GET", `${V}/admin/campaign/{levelId}/revisions`, (ctx) => campaignRevisions.adminHistory(ctx));
+route("POST", `${V}/admin/campaign/{levelId}/revisions`, (ctx) => campaignRevisions.publish(ctx));
+route("POST", `${V}/admin/campaign/{levelId}/revert`, (ctx) => campaignRevisions.revert(ctx));
 route("GET", `${V}/admin/challenges/levels`, (ctx) => adminChallenges.listLevels(ctx));
 route("PUT", `${V}/admin/challenges/{challengeId}`, (ctx) => adminChallenges.setChallenge(ctx));
 route("DELETE", `${V}/admin/challenges/{challengeId}`, (ctx) => adminChallenges.resetChallenge(ctx));

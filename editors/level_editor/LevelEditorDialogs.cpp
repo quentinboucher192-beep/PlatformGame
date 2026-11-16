@@ -59,6 +59,12 @@ void LevelEditorScene::drawModal() {
     // Large dialogs leave a band at the bottom of the screen for the editor's messages.
     float w = std::min(ui.screenW() - ui.s(120), ui.s(1300)), h = std::min(ui.screenH() - ui.s(170), ui.s(900));
     float y = (ui.screenH() - h) * 0.5f - ui.s(30);
+    if (modal_ == Modal::Publish) {
+        // 2.45: the publication of a campaign revision.
+        w = std::min(ui.screenW() - ui.s(120), ui.s(980));
+        h = std::min(ui.screenH() - ui.s(120), ui.s(760));
+        y = (ui.screenH() - h) * 0.5f;
+    }
     if (modal_ == Modal::New || modal_ == Modal::ConfirmQuit) {
         w = ui.s(760);
         h = ui.s(400);
@@ -77,7 +83,24 @@ void LevelEditorScene::drawModal() {
         case Modal::Cinematics: modalCinematics(c); break;
         case Modal::Help: modalHelp(c); break;
         case Modal::PowerKeys: modalPowerKeys(c); break;
+        case Modal::Publish: modalPublish(c); break;
         case Modal::ConfirmQuit: {
+            if (campaignMode_) {
+                // A campaign revision not published: its draft is kept on this computer.
+                ui.label("Quitter l'éditeur ?", {c.x, c.y}, 30, ui.theme().text, Align::Left, FontFace::Bold);
+                ui.labelWrapped("Ces modifications ne sont pas publiées. Le brouillon reste sur cet ordinateur : rouvrez le niveau depuis Administration › Campagne pour le reprendre.",
+                                {c.x, c.y + ui.s(60)}, c.w, 22, ui.theme().textDim);
+                float by = c.bottom() - ui.s(60);
+                UIContext::ButtonStyle p;
+                p.primary = true;
+                if (ui.button("publishq", {c.x, by, ui.s(260), ui.s(56)}, "Publier…", p)) openPublish();
+                else if (ui.button("leaveq", {c.x + ui.s(276), by, ui.s(220), ui.s(56)}, "Quitter")) {
+                    autosave();
+                    dirty_ = false;
+                    g_.app.popScene();
+                } else if (ui.button("cancelq", {c.right() - ui.s(170), by, ui.s(170), ui.s(56)}, "Annuler")) modal_ = Modal::None;
+                break;
+            }
             ui.label("Quitter l'éditeur ?", {c.x, c.y}, 30, ui.theme().text, Align::Left, FontFace::Bold);
             ui.labelWrapped("Des modifications ne sont pas enregistrées.", {c.x, c.y + ui.s(60)}, c.w, 22, ui.theme().textDim);
             float by = c.bottom() - ui.s(60);

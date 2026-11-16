@@ -1,7 +1,10 @@
 {
   "2.44.0": [
     "Replays téléchargés : « Télécharger » à côté des replays en ligne (classements, défis, courses à la vérification, profils) les garde sur le PC ; on les regarde ensuite sans connexion ni compte dans Collection › Replays.",
-    "Liste triée par date, filtre par niveau, Regarder / Comparer / Supprimer ; un replay fait sur une autre version du niveau le signale au lieu d'être mal rejoué."
+    "Liste triée par date, filtre par niveau, Regarder / Comparer / Supprimer ; un replay fait sur une autre version du niveau le signale au lieu d'être mal rejoué.",
+    "Administration › Campagne : un admin modifie un niveau de la campagne dans l'éditeur et publie une nouvelle révision, téléchargée par les jeux sans mise à jour.",
+    "À chaque publication (ou retour à une ancienne révision), choix obligatoire : réinitialiser les records ou les garder (changement sans effet sur le jeu), inscrit au Journal.",
+    "Avant publication, sceaux, stations de pouvoirs et note de difficulté sont recalculés comme pour les niveaux générés."
   ],
   "2.43.0": [
     "Administration › Calendrier des défis : nouvel onglet « Récompenses ». Un défi à venir peut donner des éléments de la Collection ou des titres créés sur le serveur (Or, Argent, Cyan ou Violet), selon le palier atteint, le Top N du classement final ou le niveau fini.",

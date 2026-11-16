@@ -30,9 +30,23 @@ GameScene::~GameScene() = default;
 
 void GameScene::onEnter() {
     ResourceManager& res = g_.app.resources();
+    // 2.45: a challenge keeps the revision of the campaign level it was drawn on: played from
+    // the file of that revision kept on this computer (bundled or downloaded) when another
+    // revision is current.
+    std::optional<LevelData> challengeRevision;
+    if (!opt_.level && opt_.challenge && !opt_.challenge->challenge.community()) {
+        const std::string& want = opt_.challenge->challenge.level.hash;
+        const LevelFingerprint* fp = g_.online.fingerprints().get(g_.content, levelId_);
+        if (!fp || fp->hash != want)
+            if (auto file = g_.campaignRevisions.fileFor(g_.content, levelId_, want))
+                if (auto j = FileUtil::loadJson(*file))
+                    if ((challengeRevision = LevelData::fromJson(*j))) challengeRevisionHash_ = want;
+    }
     if (opt_.level) {
         level_ = *opt_.level;
         levelId_ = level_.id;
+    } else if (challengeRevision) {
+        level_ = std::move(*challengeRevision);
     } else if (auto lvl = g_.content.loadLevel(levelId_, &loadError_)) {
         level_ = *lvl;
     } else {
@@ -192,7 +206,9 @@ void GameScene::startChallenge() {
     hud_.setChallengeTiers(static_cast<float>(c.silverMs) / 1000.0f, static_cast<float>(c.goldMs) / 1000.0f, c.goldNoDamage, c.finishObjective);
     // The level as installed: its fingerprint goes with the run (the server compares it with
     // the challenge's); the replay is written in version 4 (the rules after the digests).
-    if (!c.community()) {
+    if (!challengeRevisionHash_.empty()) {
+        challengeHash_ = challengeRevisionHash_;  // the challenge's revision, checked by fileFor
+    } else if (!c.community()) {
         if (const LevelFingerprint* fp = g_.online.fingerprints().get(g_.content, levelId_)) challengeHash_ = fp->hash;
     } else {
         challengeHash_ = fingerprintGameplay(g_.content, level_);

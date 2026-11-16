@@ -30,6 +30,9 @@ struct LevelEntry {
     std::string packageId;
     fs::path assetRoot;        // assets folder mounted while playing / editing (packages)
     std::string assetPackage;  // user copy of an imported level: package providing its assets
+    /// 2.45: the file shipped with the game when `path` is a campaign revision published
+    /// online by an administrator and downloaded from Cosmic Online ("" otherwise).
+    fs::path bundledPath;
 };
 
 struct PackageInfo {
@@ -66,6 +69,14 @@ public:
     bool saveUserLevel(const LevelData& level);
     bool deleteUserLevel(const std::string& id);
     bool levelIdExists(const std::string& id) const { return level(id) != nullptr; }
+    /// 2.45: a campaign level reads this file (a revision downloaded from Cosmic Online,
+    /// game/online/CampaignRevisions.h) instead of its bundled one: same id, still a built-in
+    /// level; its name and description come from that file. An empty path: the bundled file
+    /// again. Kept across reload(). False for a level that is not a built-in one, or a file
+    /// that is not a level of that id.
+    bool setCampaignRevision(const std::string& levelId, const fs::path& file);
+    /// The file the game shipped for this built-in level ("" for any other level).
+    fs::path bundledLevelPath(const std::string& levelId) const;
 
     // Enemies. Native (built-in) definitions are the ones the campaign uses: they can be
     // placed in any level but never replaced; a user file or a package that reuses a native
@@ -96,6 +107,7 @@ public:
 private:
     void loadPlanetsFrom(const fs::path& dir, const fs::path& assetRoot);
     void loadLevelFile(const fs::path& file, ContentSource src, const std::string& pkg, const fs::path& assetRoot);
+    bool applyCampaignRevision(LevelEntry& e, const fs::path& file);
     /// A user level copied from an imported package keeps using that package's assets.
     void resolveAssetPackage(LevelEntry& e) const;
     void loadEnemiesFrom(const fs::path& dir, ContentSource src, const fs::path& assetRoot);
@@ -105,6 +117,7 @@ private:
 
     std::map<std::string, PlanetData> planets_;
     std::map<std::string, LevelEntry> levels_;
+    std::map<std::string, fs::path> campaignRevisions_;  // level id -> downloaded revision (2.45)
     std::map<std::string, EnemyDefinition> enemies_;
     std::map<std::string, PowerDefinition> powers_;
     std::vector<PackageInfo> packages_;

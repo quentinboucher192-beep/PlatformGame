@@ -8,6 +8,8 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
 **Nouveau dans la version 2.44.0** :
 * **Replays téléchargés** : gardés sur le PC depuis les classements, défis et profils, et regardés
   sans connexion dans Collection › Replays.
+* **Campagne modifiable** (Administration) : publication d'une nouvelle révision d'un niveau, avec le
+  choix de réinitialiser ou garder les records.
 
 **Nouveau dans la version 2.43.0** :
 * **Récompenses par défi** (Administration) : éléments de la Collection ou titres créés sur le

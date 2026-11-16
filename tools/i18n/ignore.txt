@@ -118,3 +118,5 @@ top
 %d/%m/%Y
 index
 replays
+change
+manifest

@@ -165,6 +165,15 @@ async function updateBest(ctx: Ctx, r: RecordRow): Promise<{ improved: boolean; 
     )
         .bind(r.player_id, r.level_id, r.level_hash, r.category, r.id, r.time_ms, r.created_at)
         .run();
+    // 2.45: the revisions published with « Garder les records » after this one count it too.
+    await ctx.env.DB.prepare(
+        `INSERT INTO player_bests (player_id, level_id, level_hash, category, record_id, time_ms, achieved_at)
+         SELECT ?1, ?2, l.to_hash, ?4, ?5, ?6, ?7 FROM campaign_board_links l WHERE l.from_hash = ?3
+         ON CONFLICT (player_id, level_hash, category) DO UPDATE SET record_id = excluded.record_id, time_ms = excluded.time_ms,
+           achieved_at = excluded.achieved_at WHERE excluded.time_ms < player_bests.time_ms`,
+    )
+        .bind(r.player_id, r.level_id, r.level_hash, r.category, r.id, r.time_ms, r.created_at)
+        .run();
     return { improved: true, previousMs: prev ? prev.time_ms : null };
 }
 
