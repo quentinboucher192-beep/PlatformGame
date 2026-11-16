@@ -251,6 +251,7 @@ prévu est coupé et refusé (`413 PAYLOAD_TOO_LARGE`). Un `Content-Length` inva
 | 429 | `RATE_LIMITED` | Limite de débit ; `Retry-After`, `details.retry_after_seconds` |
 | 500 | `INTERNAL_ERROR` | Erreur inattendue (détails seulement dans les journaux, via `request_id`) |
 | 503 | `SERVICE_UNAVAILABLE` | `GET /health` quand la base D1 ne répond pas ; `details.database`, `Retry-After: 30` |
+| 503 | `MAINTENANCE` | Une restauration de sauvegarde remplace les données : toute écriture (`POST`, `PUT`, `PATCH`, `DELETE`) hors administration et hors `/auth/login`, `/auth/refresh`, `/auth/logout` est refusée quelques minutes ; les lectures marchent ; `Retry-After: 120` (BACKUP.md) |
 
 `FORBIDDEN`, valeur par défaut de `Errors.forbidden` dans `http.ts`, n'est émis par aucune route.
 
@@ -1528,6 +1529,10 @@ envoi du fichier dans le bucket (`wrangler r2 object put <bucket>/releases/Cosmi
 puis `wrangler d1 migrations apply`.
 
 ### 8.10 Administration
+
+Sauvegardes de toutes les données (compte admin, `/admin/backups…`) : copies, téléchargement
+chiffré, import en parties, vérification, application pas à pas : voir [BACKUP.md](BACKUP.md)
+(routes, réponses, codes d'erreur, limites de débit `backup_*`).
 
 Modération des commentaires : `GET /admin/comments` (commentaires masqués ou signalés, avec
 les motifs, de tous les fils : `thread` vaut `community` — avec `level_id` — ou

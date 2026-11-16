@@ -7,6 +7,9 @@ export type Bindings = Env & {
     /** Seconds anonymous GET responses may be cached at the edge ("0" disables it). */
     EDGE_CACHE_SECONDS?: string;
     PBKDF2_ITERATIONS?: string;
+    /** Backups (tests only): wait after setting maintenance, size of the parts of an import. */
+    BACKUP_SETTLE_MS?: string;
+    BACKUP_IMPORT_PART_SIZE?: string;
 };
 
 export interface Ctx {

@@ -18,9 +18,22 @@ export type Role = "player" | "admin";
 /** Actions shown by the Journal (audit_log.action), by kind. */
 export const ADMIN_ACTIONS = {
     role: ["admin_role_granted", "admin_role_revoked"],
-    refused: ["admin_refused"],
+    refused: ["admin_refused", "backup_refused"],
+    // Backups (ADMINISTRATION › Sauvegardes, backups.ts): copies, downloads, imports. Never a passphrase.
+    backup: [
+        "backup_created",
+        "backup_failed",
+        "backup_downloaded",
+        "backup_import_created",
+        "backup_import_checked",
+        "backup_import_started",
+        "backup_import_finished",
+        "backup_import_failed",
+        "backup_import_abandoned",
+        "backup_refused",
+    ],
 } as const;
-const ALL_ADMIN_ACTIONS: readonly string[] = [...ADMIN_ACTIONS.role, ...ADMIN_ACTIONS.refused];
+const ALL_ADMIN_ACTIONS: readonly string[] = [...new Set<string>([...ADMIN_ACTIONS.role, ...ADMIN_ACTIONS.refused, ...ADMIN_ACTIONS.backup])];
 
 const ID_RE = /^[A-Za-z0-9-]{8,64}$/;
 
@@ -176,14 +189,14 @@ function parseDetails(raw: string | null): Record<string, unknown> {
 }
 
 /**
- * GET /admin/log?kind=all|role|refused&actor=<player id>&limit=&offset=
+ * GET /admin/log?kind=all|role|refused|backup&actor=<player id>&limit=&offset=
  * The administration's own actions, newest first: who (the admin's current username, or the
  * one written at the time when the account is gone), what, when. Never the IP hash.
  */
 export async function listLog(ctx: Ctx): Promise<Response> {
     await requireAdminRole(ctx);
     const page = paging(ctx.url, 50, 100);
-    const kind = queryEnum(ctx.url, "kind", ["all", "role", "refused"] as const, "all");
+    const kind = queryEnum(ctx.url, "kind", ["all", "role", "refused", "backup"] as const, "all");
     const actor = queryString(ctx.url, "actor", ID_RE);
     const actions = kind === "all" ? ALL_ADMIN_ACTIONS : ADMIN_ACTIONS[kind];
     const binds: unknown[] = [...actions];
@@ -214,6 +227,10 @@ export async function listLog(ctx: Ctx): Promise<Response> {
             role: str("role"),
             reason: str("reason"),
             by: str("by"),
+            // Backups: which copy, which import, which kind of copy.
+            backup_id: str("backup_id"),
+            backup_kind: str("backup_kind"),
+            import_id: str("import_id"),
         };
     });
     return json(ctx, { entries, has_more: rows.results.length > page.limit, offset: page.offset });

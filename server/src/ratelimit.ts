@@ -23,6 +23,13 @@ export const RULES = {
     presence: { name: "presence", limit: 6, windowSeconds: 60 },
     // ADMINISTRATION (2.40): role changes and, later, the calendar of the challenges.
     adminWrite: { name: "admin_write", limit: 60, windowSeconds: 300 },
+    // Backups (ADMINISTRATION › Sauvegardes): copies, downloads, the parts of an imported file
+    // (1 Gio = 128 parts of 8 Mio), its checks and the steps of its apply.
+    backupCreate: { name: "backup_create", limit: 6, windowSeconds: 3600 },
+    backupDownload: { name: "backup_download", limit: 10, windowSeconds: 3600 },
+    backupUpload: { name: "backup_upload", limit: 400, windowSeconds: 3600 },
+    backupCheck: { name: "backup_check", limit: 20, windowSeconds: 3600 },
+    backupApply: { name: "backup_apply", limit: 600, windowSeconds: 3600 },
     reads: { name: "reads", limit: 300, windowSeconds: 60 },
     accountDelete: { name: "account_delete", limit: 5, windowSeconds: 3600 },
     socialMessage: { name: "social_message", limit: 30, windowSeconds: 60 },
