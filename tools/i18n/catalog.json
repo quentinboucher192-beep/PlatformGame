@@ -1051,6 +1051,12 @@
    ]
   },
   {
+   "fr": "Administration › Créations : un admin crée des combinaisons recolorées (un nom, la couleur de la combinaison, de l'accent et de l'écharpe) avec un aperçu animé de Nova, les modifie ou les archive.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Admins",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -35978,6 +35984,12 @@
    "fr": "Une chute de lave barre la route du second radeau : passez-la sous Bouclier.",
    "where": [
     "data/levels/pyralis_02.json"
+   ]
+  },
+  {
+   "fr": "Une combinaison créée se donne en récompense d'un défi ; gagnée, elle rejoint les Combinaisons du Vestiaire et se voit sur le profil, dans les classements et sur les fantômes, sans mise à jour du jeu, même hors ligne.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
