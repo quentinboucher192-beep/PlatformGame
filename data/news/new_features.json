@@ -168,6 +168,7 @@
     {"id": "challenges.calendar.look", "version": "2.38.0", "parents": ["challenges.tab.calendar"]},
     {"id": "social.watch", "version": "2.36.0", "parents": ["social.tab.friends"]},
     {"id": "social.tab.friends", "parents": ["online.nav.social"]},
-    {"id": "menu.admin", "version": "2.40.0"}
+    {"id": "menu.admin", "version": "2.40.0"},
+    {"id": "collection.cat.badges", "version": "2.41.0", "parents": ["collection.tab.wardrobe"]}
   ]
 }

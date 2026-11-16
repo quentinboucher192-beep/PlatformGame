@@ -222,5 +222,15 @@
   "collection_creatures_30": 3,
   "collection_photo": 1,
   "collection_photo_all": 2
- }
+ },
+ "badgeSlots": [
+  {
+   "stars": 100,
+   "slots": 2
+  },
+  {
+   "stars": 250,
+   "slots": 3
+  }
+ ]
 }

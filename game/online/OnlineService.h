@@ -148,6 +148,18 @@ public:
     void setCosmetics(std::map<std::string, std::string> equipped);
     /// Body of PUT /players/me/cosmetics for these ids (tests).
     static Json cosmeticsBody(const std::map<std::string, std::string>& equipped);
+    /// Profile badges (2.41): the achievement ids shown on the profile, in their order (only
+    /// those the game's own stars allow, shownBadges()). Sent like the items worn: once the
+    /// achievements of the same player are there (the server counts the stars and checks the
+    /// ids itself), again after each change or another login; never while offline or logged
+    /// out (the choice stays in the Collection).
+    void setBadges(std::vector<std::string> ids);
+    /// Where the badges stand online: Local (logged out, offline, not sent yet), Published
+    /// (the profile shows them), Refused (the server said no: badgesError(), not sent again
+    /// until the choice or the achievements change).
+    enum class BadgesState { Local, Published, Refused };
+    BadgesState badgesState() const;
+    const std::string& badgesError() const { return badgesError_; }
     /// Seconds waiting to be sent (tests, settings).
     double pendingPlaytime() const;
     void flushPlaytime(ApiCallback cb = {});
@@ -322,6 +334,13 @@ private:
     bool cosmeticsBusy_ = false;
     float cosmeticsTimer_ = 3.0f;
     unsigned cosmeticsGen_ = 0;
+    std::vector<std::string> badges_;
+    bool badgesSet_ = false;      // the game said what to show (else nothing is sent)
+    std::string badgesSentFor_;   // player whose profile has the current badges (or refused them)
+    std::string badgesError_;     // the server's refusal ("" when accepted)
+    bool badgesBusy_ = false;
+    float badgesTimer_ = 3.0f;
+    unsigned badgesGen_ = 0;
     bool playtimeBusy_ = false;
     void savePlaytime();
 

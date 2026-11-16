@@ -1,7 +1,8 @@
-// Profile of a player (Cosmic Online), pushed over the current screen: identity, records,
-// time played (total and per level, in hours and minutes), creator card (computed by the
-// server from the published levels), creations, followers and followed creators, and the
-// actions FOLLOW / friend / block. Every number comes from the server.
+// Profile of a player (Cosmic Online), pushed over the current screen: identity (frame, title
+// and, 2.41, the badges chosen in the Collection), records, time played (total and per level,
+// in hours and minutes), creator card (computed by the server from the published levels),
+// creations, followers and followed creators, and the actions FOLLOW / friend / block. Every
+// number comes from the server.
 
 #include <algorithm>
 #include <cmath>
@@ -15,6 +16,7 @@
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/CosmeticFx.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/ProfileBadgesUi.h"
 #include "ui/screens/Thumbnail.h"
 
 namespace cosmic {
@@ -294,7 +296,13 @@ private:
             }
         }
         float ly = y + ui.s(62);
-        // The title under the name, as a gold chip (2.23).
+        // The title under the name, as a gold chip (2.23); the badges (2.41) after it on its
+        // line when they fit there, else on a line of their own. Their line starts under the
+        // name as drawn (its descenders), the emblems' focus ring included.
+        const std::vector<const AchievementDef*> badges = hidden ? std::vector<const AchievementDef*>{} : shownBadges();
+        const float bd = ui.s(34), bgap2 = ui.s(8), badgesW = BadgeRow::width(badges.size(), bd, bgap2);
+        if (!badges.empty()) ly = std::max(ly, y + ui.s(24) + ns.y * 0.5f + ui.s(6) + bd * 0.5f + ui.s(3));
+        float badgesX = -1.0f, badgesY = 0.0f;
         if (std::string title = dressed ? wornName(worn, "title") : std::string(); !title.empty()) {
             float tf = fz(ui, 15), tw = std::min(ui.text().measure(title, FontFace::Bold, ui.s(tf)).x + ui.s(24), nameRoom);
             Rect chip{nx, ly - ui.s(13), tw, std::max(ui.s(26), ui.s(tf) + ui.s(8))};
@@ -303,8 +311,19 @@ private:
             ui.r().fillRoundedRect(chip, chip.h * 0.5f, gold.withAlpha(28));
             ui.r().drawRoundedRect(chip, chip.h * 0.5f, gold.withAlpha(160), std::max(1.0f, ui.s(1.2f)));
             ui.label(ui.elide(title, FontFace::Bold, tf, tw - ui.s(24)), chip.center(), tf, gold, Align::Center, FontFace::Bold, VAlign::Middle);
-            ly += ui.s(34);
+            if (!badges.empty() && chip.right() + ui.s(16) + badgesW <= nx + nameRoom) {
+                badgesX = chip.right() + ui.s(16);
+                badgesY = ly;
+            }
+            ly += badgesX < 0.0f ? ui.s(34) : ui.s(38);  // the emblems are a little taller than the chip
         }
+        if (!badges.empty() && badgesX < 0.0f) {
+            badgesX = nx;
+            badgesY = ly + ui.s(4);
+            ly += ui.s(44);
+        }
+        // Each badge: the emblem of an achievement of the player, its name under the mouse or the focus.
+        badgeRow_.draw(g_, "badge", badgesX < 0.0f ? std::vector<const AchievementDef*>{} : badges, badgesX, badgesY, bd, bgap2);
         std::string cc = jstr(p, "country_code");
         if (!cc.empty()) {
             ui_.drawFlag(cc, {nx, ly - ui.s(10), ui.s(28), ui.s(21)});
@@ -429,6 +448,24 @@ private:
         if (!foot.empty())
             ui.label(foot, {x, box_.bottom() - ui.s(24)}, ui.fitFont(foot, FontFace::Body, 15, w), statusError_ && foot == status_ ? ui.theme().danger : ui.theme().success,
                      Align::Left, FontFace::Body, VAlign::Middle);
+        // The name of the badge under the mouse or the focus, over the rest of the profile.
+        badgeRow_.drawTooltip(g_);
+    }
+
+    /// The badges of the profile (2.41): achievements the server checked against the player's
+    /// declared ones and stars, drawn from this game's catalogue (an id it does not know, from
+    /// a newer game, is left out), at most as many as the steps open.
+    std::vector<const AchievementDef*> shownBadges() const {
+        std::vector<const AchievementDef*> out;
+        const Json list = jfield(data_, "badges", Json());
+        if (!list.is_array()) return out;
+        const size_t most = static_cast<size_t>(std::max(0, g_.achievementCatalog.maxBadgeSlots()));
+        for (const auto& b : list) {
+            if (out.size() >= most) break;
+            const AchievementDef* a = g_.achievementCatalog.find(jstr(b, "id"));
+            if (a && std::find(out.begin(), out.end(), a) == out.end()) out.push_back(a);
+        }
+        return out;
     }
 
     static Color presenceColor(const std::string& p) {
@@ -823,6 +860,7 @@ private:
 
     GameServices& g_;
     OnlineUi ui_;
+    BadgeRow badgeRow_;  // the badges of the header (2.41) and their tooltip
     std::string playerId_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     Rect box_;

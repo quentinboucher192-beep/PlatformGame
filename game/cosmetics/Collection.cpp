@@ -245,6 +245,7 @@ Json CollectionBook::toJson() const {
     j["heard"] = heard;
     j["met"] = met;
     j["exported"] = exported;
+    j["badges"] = badges;
     return j;
 }
 
@@ -263,6 +264,12 @@ void CollectionBook::fromJson(const Json& j) {
     strings("met", met);
     menuMusic = jstr(j, "menuMusic");
     exported = std::max(0, jget<int>(j, "exported", 0));
+    badges.clear();
+    if (auto it = j.find("badges"); it != j.end() && it->is_array())
+        for (const auto& v : *it)
+            if (v.is_string() && v.get<std::string>().size() <= 64 && badges.size() < 10 &&
+                std::find(badges.begin(), badges.end(), v.get<std::string>()) == badges.end())
+                badges.push_back(v.get<std::string>());
 }
 
 }  // namespace cosmic

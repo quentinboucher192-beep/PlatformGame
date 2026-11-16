@@ -50,6 +50,27 @@ succès déclarés : un élément inconnu ou verrouillé devient l'élément de 
   simulation ni le format des replays ne changent (la description `.json` du fantôme garde
   `suit`).
 
+### Badges du profil (2.41)
+
+Vestiaire › *Badges du profil* : des succès obtenus, affichés comme badges sur le profil Cosmic
+Online, à côté du nom et du titre. Le nombre de places dépend des étoiles : aucune en dessous de
+**100 étoiles** (l'écran l'explique et montre les paliers, sans place factice), **2 dès 100**,
+**3 dès 250** (paliers : `badgeSlots` de `data/achievements/achievements.json`, les mêmes pour le
+serveur). Un badge est dessiné comme l'emblème de son succès : une médaille à la couleur de sa
+catégorie (celle de la toile des Succès) avec ses étoiles au centre ; sous la souris ou le
+focus, une bulle donne son nom, sa catégorie, ses étoiles et sa description.
+
+* L'aperçu montre l'en-tête du profil (cadre, nom, titre, badges) et les places libres ; une place
+  libre mène au premier succès non affiché, un badge le sélectionne.
+* *Afficher sur le profil* / *Retirer du profil* sur le succès sélectionné ; l'ordre d'ajout est
+  l'ordre d'affichage. Places pleines : il faut d'abord en retirer un.
+* Le choix est gardé dans `saves/collection.json` (`badges`) ; seuls les succès encore obtenus,
+  dans la limite des places, sont montrés et envoyés (`PUT /api/v1/players/me/badges`, après les
+  succès, puis à chaque changement). Sans compte ou hors ligne, rien n'est envoyé : l'écran le
+  dit, et le choix est publié à la connexion. Un refus du serveur est affiché tel quel.
+* Le profil en ligne (le sien et celui des autres, sauf profil masqué) montre les badges sur la
+  ligne du titre quand ils y tiennent, sinon sur une ligne à eux ; jamais dans les classements.
+
 ## Musiques
 
 Liste : `data/music/tracks.json`. Un morceau devient écoutable la **première fois qu'il est

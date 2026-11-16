@@ -159,6 +159,7 @@ de `wrangler.jsonc`, plafonnée à 1 000) multiplie toutes les limites.
 | `follow` | 60 | 1 h | joueur | `POST /players/{id}/follow` |
 | `playtime` | 40 | 1 h | joueur | `POST /players/me/playtime` |
 | `cosmetics` | 60 | 1 h | joueur | `PUT /players/me/cosmetics` (tenue portée en ligne) |
+| `badges` | 60 | 1 h | joueur | `PUT /players/me/badges` (badges du profil, 2.41) |
 | `project_create` / `project_invite` | 10 / 30 | 1 h | joueur | `POST /projects`, `POST /projects/{id}/invites` |
 | `project_join` | 20 | 1 h | joueur | `POST /projects/join`, `POST /projects/{id}/join` |
 | `project_save` | 120 | 1 h | joueur | `PUT /projects/{id}/content` |
@@ -175,6 +176,7 @@ d'administration n'ont pas de limite propre.
 | Corps JSON (par défaut) | 8 Kio (8 192 octets) |
 | `POST /records/submit`, `POST /challenges/{challengeId}/runs`, `POST /challenges/{challengeId}/attempts` | 4 Kio |
 | `PUT /players/me/cosmetics` | 1 Kio |
+| `PUT /players/me/badges` | 2 Kio |
 | `POST /admin/levels` | 256 Kio, 1 à 500 niveaux |
 | Avatar `PUT /players/me/avatar` | 64 Kio, PNG carré 32 à 256 px, profondeur 8 bits |
 | Replay `PUT /records/{recordId}/replay`, `PUT /challenges/runs/{runId}/replay`, `PUT /challenges/attempts/{attemptId}/replay` | 1 Mio compressé, 72 o à 4 Mio décompressé |
@@ -1318,6 +1320,36 @@ de ces champs : le jeu dessine alors le cadre simple, sans titre). Les titres af
 toujours des noms du catalogue du serveur, jamais un texte du client. La tenue figure dans
 l'export des données (`cosmetics`) et disparaît avec le compte (table `player_cosmetics`,
 migration 0039).
+
+### 8.9 undecies bis Badges du profil (2.41)
+
+Des succès obtenus, choisis dans la Collection du jeu (Vestiaire › Badges du profil), affichés
+sur le profil à côté du nom et du titre. Le nombre de badges dépend des **étoiles** : aucun en
+dessous de 100, **2 dès 100 étoiles**, **3 dès 250**. Ces paliers sont écrits une seule fois,
+dans `data/achievements/achievements.json` (`badgeSlots`) ; le serveur lit les mêmes dans sa
+copie `src/achievementCatalog.json` (générée par `scripts/achievements-catalog.mjs`).
+
+`PUT /api/v1/players/me/badges` (authentifié, joueur de la session uniquement, 60 fois par
+heure, corps de 2 Kio au plus) — corps `{"badges": ["voyage_5", "gardiens_first"]}` : des
+identifiants de succès (`[a-z0-9_]`, 64 caractères au plus), dans l'ordre d'affichage, chacun
+une fois, 3 au plus ; aucun autre champ (jamais d'étoiles ni d'identifiant de joueur). Le
+serveur ne fait pas confiance au jeu : chaque identifiant doit être un succès **de son
+catalogue** que **ce joueur a déclaré** (§8.9 nonies, `player_achievements`), sinon
+`403 BADGE_NOT_UNLOCKED` (`details.badges` : les identifiants refusés) ; leur nombre ne peut
+dépasser les places ouvertes par les étoiles **que le serveur recompte lui-même** à partir de
+ces succès, sinon `403 BADGE_SLOTS` (`details` : `{slots, stars}`). Une liste vide est toujours
+acceptée. Le choix remplace le précédent. Réponse : `{"badges": [{id, stars}], "slots", "stars"}`.
+Erreurs : 400 (format, doublon, plus de 3), 401, 403, 413, 429.
+
+`GET /api/v1/players/{id}` ajoute `badges` : `[{id, stars}]` dans l'ordre choisi, **revérifiés
+à chaque lecture** (un succès qui n'est plus déclaré ou plus au catalogue est omis ; avec moins
+d'étoiles, seuls les premiers dans la limite des places) ; `null` pour un profil masqué vu par
+un autre joueur. Le jeu dessine chaque badge avec son propre catalogue (nom, catégorie) ; un
+identifiant qu'il ne connaît pas (jeu plus ancien) n'est pas affiché. Les badges ne figurent
+pas dans les classements. Ils sont dans l'export des données (`badges`) et disparaissent avec le
+compte (table `player_badges`, migration `profile_badges`). Le jeu envoie son choix après ses
+succès, puis à chaque changement ; sans compte ou hors ligne, il le garde
+(`saves/collection.json`) et l'envoie une fois connecté.
 
 ### 8.9 duodecies Défis du jour, de la semaine et du mois (2.32, 2.33)
 

@@ -655,7 +655,8 @@ int main(int argc, char** argv) {
             game.onlineOpen = a == "list" ? "ach-list" : a.rfind("zoom:", 0) == 0 ? "ach-" + a : "ach:" + a;
         app.pushScene(makeAchievements(game));
     } else if (has("--collection")) {
-        // --collection [0-3][:detail] (tabs: Vestiaire, Route, Musiques, Galerie)
+        // --collection [0-3][:detail] (tabs: Vestiaire, Route, Musiques, Galerie; details such as
+        // col-cat:<0-5> (5: Badges du profil) or col-badge:<achievement id>)
         std::string c = value("--collection");
         int tab = c.empty() ? 0 : std::atoi(c.c_str());
         if (auto colon = c.find(':'); colon != std::string::npos) game.onlineOpen = c.substr(colon + 1);

@@ -49,6 +49,14 @@ struct AchievementDef {
     std::vector<std::string> after;  // achievements before this one (threads of the web)
 };
 
+/// Profile badges (2.41): from `stars` stars, `slots` achievements can be shown as badges on
+/// the online profile (data/achievements/achievements.json, "badgeSlots"; the server reads the
+/// same numbers from its copy, server/src/achievementCatalog.json).
+struct BadgeSlotStep {
+    int stars = 0;
+    int slots = 0;
+};
+
 /// Every achievement of the game (read from data/achievements/achievements.json).
 class AchievementCatalog {
 public:
@@ -59,11 +67,18 @@ public:
     const AchievementDef* find(const std::string& id) const;
     const AchievementCategory* category(const std::string& id) const;
     int totalStars() const;
+    /// Profile badges: the steps in increasing order, the slots open with `stars` stars (0
+    /// below the first step), the most there can be, and the next step (nullptr: none left).
+    const std::vector<BadgeSlotStep>& badgeSlotSteps() const { return badgeSlots_; }
+    int badgeSlots(int stars) const;
+    int maxBadgeSlots() const { return badgeSlots_.empty() ? 0 : badgeSlots_.back().slots; }
+    const BadgeSlotStep* nextBadgeStep(int stars) const;
 
 private:
     std::vector<AchievementCategory> categories_;
     std::vector<AchievementDef> achievements_;
     std::map<std::string, size_t> index_;
+    std::vector<BadgeSlotStep> badgeSlots_;
 };
 
 /// Lifetime counters kept for the achievements (local only, never sent).
@@ -145,5 +160,9 @@ private:
     std::vector<std::string> announce_;
     AchievementStats stats_;
 };
+
+/// The badges that may be shown (2.41), from the ones chosen, in their order: achievements of
+/// the catalogue, unlocked, each once, as many as the stars open (the others are left out).
+std::vector<std::string> shownBadges(const std::vector<std::string>& chosen, const AchievementCatalog& catalog, const AchievementBook& book);
 
 }  // namespace cosmic

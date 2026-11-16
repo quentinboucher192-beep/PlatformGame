@@ -134,6 +134,21 @@ void OnlineService::setCosmetics(std::map<std::string, std::string> equipped) {
     ++cosmeticsGen_;
 }
 
+void OnlineService::setBadges(std::vector<std::string> ids) {
+    if (badgesSet_ && ids == badges_) return;
+    badges_ = std::move(ids);
+    badgesSet_ = true;
+    badgesSentFor_.clear();  // to send again
+    badgesError_.clear();
+    badgesTimer_ = 3.0f;     // a few choices in a row: one request
+    ++badgesGen_;
+}
+
+OnlineService::BadgesState OnlineService::badgesState() const {
+    if (!loggedIn() || tokens_.playerId.empty() || badgesSentFor_ != tokens_.playerId) return BadgesState::Local;
+    return badgesError_.empty() ? BadgesState::Published : BadgesState::Refused;
+}
+
 Json OnlineService::cosmeticsBody(const std::map<std::string, std::string>& equipped) {
     Json body = Json::object();
     for (const char* c : {"suit", "trail", "frame", "title", "victory"}) {
@@ -207,6 +222,10 @@ void OnlineService::update(float dt) {
                 // The server checks the items worn against these achievements: sent again.
                 cosmeticsSentFor_.clear();
                 cosmeticsTimer_ = std::min(cosmeticsTimer_, 1.0f);
+                // The badges too (2.41: their slots come from these stars).
+                badgesSentFor_.clear();
+                badgesError_.clear();
+                badgesTimer_ = std::min(badgesTimer_, 1.0f);
             });
         }
     }
@@ -222,6 +241,29 @@ void OnlineService::update(float dt) {
             send("PUT", "/api/v1/players/me/cosmetics", cosmeticsBody(cosmetics_), [this, who, gen](const ApiResult& r) {
                 cosmeticsBusy_ = false;
                 if (r.ok && gen == cosmeticsGen_) cosmeticsSentFor_ = who;
+            });
+        }
+    }
+    // Profile badges (2.41): after the achievements of this player, then on change. A refusal
+    // (an id or a star the server does not count) is not sent again until something changes.
+    if (netState_ == OnlineState::Online && loggedIn() && badgesSet_ && !badgesBusy_ && achievementsSentFor_ == tokens_.playerId &&
+        badgesSentFor_ != tokens_.playerId) {
+        badgesTimer_ -= dt;
+        if (badgesTimer_ <= 0.0f) {
+            badgesTimer_ = 60.0f;  // after a failure: a minute later
+            badgesBusy_ = true;
+            std::string who = tokens_.playerId;
+            unsigned gen = badgesGen_;
+            send("PUT", "/api/v1/players/me/badges", {{"badges", badges_}}, [this, who, gen](const ApiResult& r) {
+                badgesBusy_ = false;
+                if (gen != badgesGen_) return;
+                if (r.ok) {
+                    badgesSentFor_ = who;
+                    badgesError_.clear();
+                } else if (r.status == 400 || r.status == 403 || r.status == 404) {
+                    badgesSentFor_ = who;
+                    badgesError_ = r.message.empty() ? std::string("Refusés par le serveur.") : r.message;
+                }
             });
         }
     }

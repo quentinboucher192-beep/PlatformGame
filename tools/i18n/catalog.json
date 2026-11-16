@@ -1004,6 +1004,12 @@
    ]
   },
   {
+   "fr": "Afficher sur le profil",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Afficher un titre",
    "where": [
     "game/levels/EventSystem.cpp"
@@ -1572,6 +1578,12 @@
    "fr": "août",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aperçu de votre profil",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -2250,6 +2262,12 @@
    ]
   },
   {
+   "fr": "Aucun badge pour l'instant",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun commentaire pour l'instant : donnez le premier avis sur ce niveau.",
    "where": [
     "ui/online/CommentsPanel.cpp"
@@ -2559,6 +2577,18 @@
    "fr": "aucun succès déclaré pour l'instant",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun succès obtenu pour l'instant (menu principal → Succès).",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun succès obtenu pour l'instant : jouez, puis revenez choisir vos badges.",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -2915,6 +2945,7 @@
     "game/online/OnlineGlobe.cpp",
     "ui/online/CommentsPanel.cpp",
     "ui/screens/AdminScene.cpp",
+    "ui/screens/CollectionScene.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/OnlineAccountScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
@@ -3050,6 +3081,36 @@
    "fr": "B · {0}",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Badge {0}",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Badge {0} sur {1} de votre profil",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Badges : {0} / {1} emplacements utilisés",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Badges du profil",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Badges verrouillés",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -5442,6 +5503,12 @@
   },
   {
    "fr": "Choisir…",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "choisis",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
    ]
@@ -9116,6 +9183,12 @@
    ]
   },
   {
+   "fr": "Dès {0} étoiles",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Débloquer",
    "where": [
     "ui/screens/PlayerProfileScene.cpp",
@@ -10101,6 +10174,12 @@
    "fr": "En attente (apparaît par événement)",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "En attente d'envoi vers votre profil Cosmic Online.",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -13437,6 +13516,12 @@
    ]
   },
   {
+   "fr": "identifiants de succès attendus",
+   "where": [
+    "server/src/badges.ts"
+   ]
+  },
+  {
    "fr": "Identifiants manquants dans le manifeste",
    "where": [
     "packaging/PackageImporter.cpp"
@@ -13535,6 +13620,12 @@
    "where": [
     "server/src/live.ts",
     "server/src/projects.ts"
+   ]
+  },
+  {
+   "fr": "Il prendra l'emplacement {0} sur {1}.",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -13777,6 +13868,7 @@
   {
    "fr": "Indisponibles",
    "where": [
+    "ui/screens/CollectionScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp"
    ]
   },
@@ -16416,6 +16508,18 @@
    ]
   },
   {
+   "fr": "Les badges du profil s'ouvrent à {0} étoiles ({1} déclarées).",
+   "where": [
+    "server/src/badges.ts"
+   ]
+  },
+  {
+   "fr": "Les badges ne sont pas disponibles dans cette version.",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Les boss : chaque gardien, ses échos, l'Astrarque et Singularis.",
    "where": [
     "data/achievements/achievements.json"
@@ -16839,6 +16943,12 @@
    ]
   },
   {
+   "fr": "Les {0} emplacements sont pris : retirez d'abord un badge.",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Les éclats, reliques et orbes proches filent vers vous (passif).",
    "where": [
     "data/powers/magnet.json"
@@ -16854,6 +16964,12 @@
    "fr": "Les étoiles tombent du ciel mort !",
    "where": [
     "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Les étoiles viennent des succès (menu principal → Succès).",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -17116,6 +17232,12 @@
    "fr": "liste d'entiers de 0 à {0} attendue (64 au plus)",
    "where": [
     "server/src/challenges.ts"
+   ]
+  },
+  {
+   "fr": "liste d'identifiants de succès attendue",
+   "where": [
+    "server/src/badges.ts"
    ]
   },
   {
@@ -21115,6 +21237,12 @@
    ]
   },
   {
+   "fr": "Paliers des badges",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "paliers du défi absents",
    "where": [
     "game/online/DailyChallenges.cpp"
@@ -24049,6 +24177,12 @@
    ]
   },
   {
+   "fr": "Publiés sur votre profil Cosmic Online : visibles par ceux qui peuvent voir votre profil.",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Puits d'effondrement",
    "where": [
     "data/enemies/singularis.json"
@@ -25145,6 +25279,18 @@
    ]
   },
   {
+   "fr": "Refusés par Cosmic Online : {0}",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Refusés par le serveur.",
+   "where": [
+    "game/online/OnlineService.cpp"
+   ]
+  },
+  {
    "fr": "Regarde à gauche",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -25726,6 +25872,12 @@
    "fr": "Retirer des favoris",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Retirer du profil",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -27044,6 +27196,12 @@
    "fr": "Sans compte : votre résultat restera sur ce PC (ni classement ni envoi).",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Sans compte ou hors ligne, votre choix reste sur cet ordinateur : il sera publié sur votre profil Cosmic Online une fois connecté.",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -28791,7 +28949,8 @@
   {
    "fr": "Succès obtenus",
    "where": [
-    "ui/screens/AchievementsScene.cpp"
+    "ui/screens/AchievementsScene.cpp",
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -29265,6 +29424,12 @@
    "fr": "Sélection multiple présentée en tableau (type, calque, position, groupe, liens) ; l'entité montre ses relations (« Activé par… », événements qui l'utilisent) ; avertissements dans la barre d'état.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "sélectionner ce badge",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -30734,6 +30899,12 @@
    ]
   },
   {
+   "fr": "Toutes les places sont ouvertes : {0} badges au plus.",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Toutes les récompenses des paliers sont débloquées",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -31406,6 +31577,18 @@
    ]
   },
   {
+   "fr": "Un badge doit être un succès obtenu et déclaré par votre jeu.",
+   "where": [
+    "server/src/badges.ts"
+   ]
+  },
+  {
+   "fr": "Un badge est un succès que vous avez obtenu, affiché à côté de votre nom et de votre titre sur votre profil Cosmic Online.",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Un bouton « Par défaut » sur chaque ligne remet cette commande seule à sa touche d'origine ; « Réinitialiser » remet toutes les touches.",
    "where": [
     "data/news/changelog.json"
@@ -31604,6 +31787,12 @@
    "fr": "Un mur de cristal... Foncez dedans avec le Dash !",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "un même succès ne peut être affiché qu'une fois",
+   "where": [
+    "server/src/badges.ts"
    ]
   },
   {
@@ -33466,6 +33655,12 @@
    ]
   },
   {
+   "fr": "Vos {0} succès obtenus pourront être choisis comme badges.",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Votre choix, retenu pour ce segment.",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
@@ -33738,6 +33933,12 @@
    "fr": "Vous n'avez aucun niveau personnel : créez d'abord un niveau dans l'ATELIER → Mes niveaux, puis faites-en un projet.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vous n'avez encore obtenu aucun succès.",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -34590,6 +34791,12 @@
    ]
   },
   {
+   "fr": "{0} / {1} affichés",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} / {1} choisis",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
@@ -34906,6 +35113,18 @@
    "fr": "{0} avertissements",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
+   ]
+  },
+  {
+   "fr": "{0} badges au plus avec {1} étoiles.",
+   "where": [
+    "server/src/badges.ts"
+   ]
+  },
+  {
+   "fr": "{0} badges sur le profil",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -36016,11 +36235,31 @@
   {
    "fr": "{0} étoile",
    "where": [
-    "ui/screens/CollectionScene.cpp"
+    "ui/screens/CollectionScene.cpp",
+    "ui/screens/ProfileBadgesUi.cpp"
    ]
   },
   {
    "fr": "{0} étoiles",
+   "where": [
+    "ui/screens/CollectionScene.cpp",
+    "ui/screens/ProfileBadgesUi.cpp"
+   ]
+  },
+  {
+   "fr": "{0} étoiles : {1} badges",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} étoiles pour choisir {1} badges (encore {2}).",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} étoiles pour un {1}e badge (encore {2}).",
    "where": [
     "ui/screens/CollectionScene.cpp"
    ]
@@ -36029,6 +36268,18 @@
    "fr": "{0} étoiles sur {1}",
    "where": [
     "ui/screens/RewardsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} étoiles · atteint",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} étoiles · encore {1}",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {

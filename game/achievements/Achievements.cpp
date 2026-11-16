@@ -61,11 +61,38 @@ bool AchievementCatalog::load(const fs::path& file, std::string* error) {
             index_[d.id] = achievements_.size();
             achievements_.push_back(std::move(d));
         }
+    // Profile badges (2.41): steps in increasing order (stars and slots), else none at all.
+    badgeSlots_.clear();
+    if (auto it = j->find("badgeSlots"); it != j->end() && it->is_array())
+        for (const Json& b : *it) {
+            BadgeSlotStep st{jget<int>(b, "stars", 0), jget<int>(b, "slots", 0)};
+            bool ok = st.stars > 0 && st.slots > 0 && st.slots <= 10 &&
+                      (badgeSlots_.empty() || (st.stars > badgeSlots_.back().stars && st.slots > badgeSlots_.back().slots));
+            if (!ok) {
+                Log::warn("Succès : paliers des badges invalides (badgeSlots), badges désactivés");
+                badgeSlots_.clear();
+                break;
+            }
+            badgeSlots_.push_back(st);
+        }
     if (achievements_.empty()) {
         if (error) *error = "Aucun succès dans le catalogue.";
         return false;
     }
     return true;
+}
+
+int AchievementCatalog::badgeSlots(int stars) const {
+    int n = 0;
+    for (const auto& st : badgeSlots_)
+        if (stars >= st.stars) n = st.slots;
+    return n;
+}
+
+const BadgeSlotStep* AchievementCatalog::nextBadgeStep(int stars) const {
+    for (const auto& st : badgeSlots_)
+        if (stars < st.stars) return &st;
+    return nullptr;
 }
 
 const AchievementDef* AchievementCatalog::find(const std::string& id) const {
@@ -419,6 +446,19 @@ bool AchievementBook::save() const {
     std::error_code ec;
     fs::create_directories(file_.parent_path(), ec);
     return FileUtil::writeTextAtomic(file_, toJson().dump(1));
+}
+
+// ---------------------------------------------------------------- profile badges
+
+std::vector<std::string> shownBadges(const std::vector<std::string>& chosen, const AchievementCatalog& catalog, const AchievementBook& book) {
+    const size_t slots = static_cast<size_t>(std::max(0, catalog.badgeSlots(book.stars(catalog))));
+    std::vector<std::string> out;
+    for (const std::string& id : chosen) {
+        if (out.size() >= slots) break;
+        if (!catalog.find(id) || !book.unlocked(id) || std::find(out.begin(), out.end(), id) != out.end()) continue;
+        out.push_back(id);
+    }
+    return out;
 }
 
 }  // namespace cosmic
