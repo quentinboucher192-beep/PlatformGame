@@ -1608,6 +1608,13 @@ Détails : [CREATIONS.md](CREATIONS.md).
 
 Rôle admin vérifié à chaque requête (`404` pour un autre compte, `401` sans session) ; `400
 VALIDATION_ERROR` (nom, couleurs `#rrggbb`), `409` pour un nom déjà pris.
+### 8.10 ter Entités natives modifiées par un admin (2.46)
+
+Détails et routes : [ENEMY_REVISIONS.md](ENEMY_REVISIONS.md). Admin : `GET /admin/enemies`,
+`GET /admin/enemies/{id}/revisions`, `POST /admin/enemies/{id}/revisions` (la définition et la
+révision suivante de chaque niveau de la campagne qui l'utilise, chacun avec `records:
+"reset"|"keep"`, en un seul lot). Publiques : `GET /enemies/revisions`,
+`GET /enemies/{id}/revisions/{revision}/file`.
 
 ## Annexe — format du replay (CPRZ / CPRP v1)
 

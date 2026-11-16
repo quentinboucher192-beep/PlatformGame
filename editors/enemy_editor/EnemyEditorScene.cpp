@@ -18,9 +18,18 @@ std::unique_ptr<Scene> makeEnemyEditor(GameServices& g, const std::string& enemy
     return std::make_unique<EnemyEditorScene>(g, enemyId, tab);
 }
 
+std::unique_ptr<Scene> makeEnemyEditorAdmin(GameServices& g, const std::string& enemyId, int baseRevision) {
+    return std::make_unique<EnemyEditorScene>(g, enemyId, 0, true, baseRevision);
+}
+
 void EnemyEditorScene::onEnter() {
     g_.app.audio().stopMusic(500);
     auto list = g_.content.enemies();
+    if (admin_) {
+        // One native, from the definition online (the revision this game downloaded).
+        if (g_.content.isNativeEnemy(startId_)) select(startId_);
+        return;
+    }
     if (!startId_.empty() && g_.content.enemy(startId_)) select(startId_);
     else if (!list.empty()) select(list.front()->id);
     // Automated screenshots (--enemy-attack <id>): that attack selected in its tab.
@@ -34,12 +43,44 @@ void EnemyEditorScene::onEnter() {
 }
 
 void EnemyEditorScene::onExit() {
+    closePublish();
     discardAnimationEdits();
     g_.app.input().stopTextInput(g_.app.window());
     g_.app.input().clearPowerSlotKeys();
 }
 
 bool EnemyEditorScene::editingNative() const { return g_.content.isNativeEnemy(selectedId_); }
+
+EnemyEditAccess EnemyEditorScene::access() const {
+    EnemyEditAccess a = enemyEditAccess(g_.content, selectedId_, admin_);
+    if (admin_ && adminMissing_) a = EnemyEditAccess{};  // the revision online is not in this game
+    return a;
+}
+
+void EnemyEditorScene::duplicateToEdit() {
+    if (selectedId_.empty() || admin_) return;
+    EnemyDefinition d = duplicateForEditing(g_.content, work_);
+    if (!g_.content.saveUserEnemy(d)) {
+        flash("Échec de l'enregistrement", true);
+        return;
+    }
+    g_.ratings.contentChanged();
+    select(d.id);
+    flash("Votre copie modifiable : « " + d.name + " » (" + d.id + ")");
+    g_.uiSound("ui_confirm");
+}
+
+void EnemyEditorScene::quit() {
+    if (admin_) {
+        if (dirty_ && !confirmQuit_) {  // changes not published: asked once more
+            confirmQuit_ = true;
+            return;
+        }
+        g_.app.popScene();  // back to ADMINISTRATION › Ennemis
+        return;
+    }
+    g_.app.switchScene(makeContentManager(g_, {}, 4));
+}
 
 void EnemyEditorScene::discardAnimationEdits() {
     if (!animDirty_) return;
@@ -60,6 +101,12 @@ void EnemyEditorScene::flash(const std::string& m, bool error) {
 void EnemyEditorScene::select(const std::string& id) {
     const EnemyDefinition* d = g_.content.enemy(id);
     if (!d) return;
+    if (admin_ && adminBase_ > 0) {
+        // The definition online: its revision, downloaded by this game.
+        const EnemyDefinition* rev = g_.content.enemyRevision(id, adminBase_);
+        adminMissing_ = rev == nullptr;
+        if (rev) d = rev;
+    }
     discardAnimationEdits();
     work_ = *d;
     selectedId_ = id;
@@ -98,6 +145,11 @@ std::vector<std::string> EnemyEditorScene::clipNames() const {
 }
 
 void EnemyEditorScene::changed() {
+    if (!access().fields) {  // read-only: nothing is kept, not even in the history
+        if (const EnemyDefinition* d = g_.content.enemy(selectedId_); d && !admin_) work_ = *d;
+        return;
+    }
+    confirmQuit_ = false;
     if (history_.commit(work_.toJson(), "Modification")) {
         dirty_ = true;
         arenaDirty_ = true;
@@ -105,21 +157,17 @@ void EnemyEditorScene::changed() {
 }
 
 void EnemyEditorScene::newEnemy(bool duplicate) {
-    EnemyDefinition d = work_;
-    std::string base = duplicate ? work_.id + "_copie" : "ennemi";
-    std::string id = base;
-    int n = 2;
-    while (g_.content.enemy(id)) id = base + "_" + std::to_string(n++);
+    if (admin_) return;
+    EnemyDefinition d = duplicate ? duplicateForEditing(g_.content, work_) : work_;
     if (!duplicate) {
         if (const EnemyDefinition* t = g_.content.enemy("glowmite")) d = *t;
         d.name = "Nouvel ennemi";
         d.description = "";
-    } else {
-        d.name += " (copie)";
+        d.id = g_.content.freeEnemyId("ennemi");
+        d.builtin = false;
+        d.isBoss = false;
     }
-    d.id = id;
-    d.builtin = false;
-    d.isBoss = d.isBoss && duplicate;
+    const std::string id = d.id;
     work_ = d;
     selectedId_ = id;
     g_.content.saveUserEnemy(work_);
@@ -132,12 +180,17 @@ void EnemyEditorScene::newEnemy(bool duplicate) {
 }
 
 void EnemyEditorScene::saveEnemy() {
+    if (!access().save) {
+        // A native entity is never saved (the administration publishes them online).
+        if (!admin_) flash("Entité native en lecture seule : « Dupliquer pour modifier » crée votre copie", true);
+        return;
+    }
     if (work_.id.empty()) {
         flash("Identifiant vide", true);
         return;
     }
     work_.id = FileUtil::slugify(work_.id);
-    // Native entities (the ones the campaign uses) are read-only: the changes go to a copy.
+    // An identifier typed that is a native's: the entity is saved under a free one.
     bool copied = false;
     if (g_.content.isNativeEnemy(work_.id)) {
         if (const EnemyDefinition* native = g_.content.enemy(work_.id); native && work_.name == native->name)
@@ -156,7 +209,7 @@ void EnemyEditorScene::saveEnemy() {
         dirty_ = false;
         history_.reset(work_.toJson());
         if (copied)
-            flash("Entité native non modifiable : votre version est enregistrée sous « " + work_.id + " »");
+            flash("Identifiant d'une entité native : votre entité est enregistrée sous « " + work_.id + " »");
         else
             flash("Enregistré dans " + Paths::toUtf8(Paths::userEnemiesDir() / (work_.id + ".json")));
         g_.uiSound("ui_confirm");
@@ -184,7 +237,7 @@ bool EnemyEditorScene::saveAnimation() {
 
 void EnemyEditorScene::deleteEnemy() {
     const EnemyDefinition* d = g_.content.enemy(selectedId_);
-    if (!d || d->builtin) {
+    if (!d || d->builtin || !access().remove) {
         flash("Les ennemis officiels ne peuvent pas être supprimés", true);
         return;
     }
@@ -277,13 +330,19 @@ void EnemyEditorScene::update(float dt) {
     if (previewPlaying_) previewAnim_.update(dt * previewSpeed_);
     InputManager& in = g_.app.input();
     if (controlPlayer_ && (in.keyPressed(SDL_SCANCODE_ESCAPE) || in.rawPadButton(SDL_GAMEPAD_BUTTON_BACK))) controlPlayer_ = false;
-    if (!g_.ui.editingText() && in.ctrl()) {
-        if (in.shortcutPressed(SDLK_S)) saveEnemy();
-        if (in.shortcutPressed(SDLK_Z)) {
+    updatePublish();
+    const EnemyEditAccess acc = access();
+    if (!g_.ui.editingText() && in.ctrl() && !publish_) {
+        if (in.shortcutPressed(SDLK_S)) {
+            if (acc.publish) openPublish();
+            else saveEnemy();
+        }
+        // Undo / redo: only where something can change (a read-only native has no history).
+        if (acc.fields && in.shortcutPressed(SDLK_Z)) {
             work_ = EnemyDefinition::fromJson(history_.undo());
             dirty_ = arenaDirty_ = true;
         }
-        if (in.shortcutPressed(SDLK_Y)) {
+        if (acc.fields && in.shortcutPressed(SDLK_Y)) {
             work_ = EnemyDefinition::fromJson(history_.redo());
             dirty_ = arenaDirty_ = true;
         }
@@ -296,36 +355,73 @@ void EnemyEditorScene::render(float alpha) {
     float W = ui.screenW(), H = ui.screenH();
     ui.r().fillRect({0, 0, W, H}, {8, 10, 20, 255});
     float listW = ui.s(340), propW = ui.s(520), top = ui.s(70);
-    // Title bar
+    const EnemyEditAccess acc = access();
+    const bool modal = publish_ != nullptr;  // the publication dialog takes the input
+    ui.inputEnabled = !modal;
+    // Title bar: the buttons from the right, each as wide as its label needs, the title in the
+    // room left of them.
     ui.r().fillGradientV({0, 0, W, top}, {18, 26, 50, 255}, {12, 16, 32, 255});
-    ui.label("ÉDITEUR D'ENNEMIS", {ui.s(20), top * 0.5f}, 30, ui.theme().text, Align::Left, FontFace::Title, VAlign::Middle);
     ui.pushId("ee");
-    UIContext::ButtonStyle p;
-    p.primary = dirty_;
-    p.small = true;
-    std::string saveLabel = editingNative() ? "Enregistrer une copie" : "Enregistrer";
-    if (dirty_) saveLabel += "*";
-    if (ui.button("save", {W - ui.s(620), ui.s(12), ui.s(260), top - ui.s(24)}, saveLabel, p)) saveEnemy();
-    UIContext::ButtonStyle s;
-    s.small = true;
-    if (ui.button("level", {W - ui.s(350), ui.s(12), ui.s(200), top - ui.s(24)}, "Éditeur de niveaux", s))
-        g_.app.switchScene(makeLevelEditor(g_, ""));
+    const float bh = top - ui.s(24), gap = ui.s(10);
+    auto widthOf = [&](const std::string& t, float minW) { return std::max(minW, ui.text().measure(t, FontFace::Bold, ui.s(20)).x + ui.s(40)); };
+    float bx = W - ui.s(16);
+    const std::string quitLabel = admin_ ? (confirmQuit_ ? "Quitter sans publier" : "Retour") : "Quitter";
+    const float qw = widthOf(quitLabel, ui.s(124));
+    bx -= qw;
     UIContext::ButtonStyle q;
     q.small = true;
-    q.danger = true;
-    if (ui.button("quit", {W - ui.s(140), ui.s(12), ui.s(124), top - ui.s(24)}, "Quitter", q) ||
-        (ui.backPressed() && !controlPlayer_))
-        g_.app.switchScene(makeContentManager(g_, {}, 4));
+    q.danger = !admin_ || confirmQuit_;
+    if (ui.button("quit", {bx, ui.s(12), qw, bh}, quitLabel, q) || (ui.backPressed() && !controlPlayer_)) quit();
+    if (!admin_) {
+        const std::string lv = "Éditeur de niveaux";
+        const float lw = widthOf(lv, ui.s(200));
+        bx -= gap + lw;
+        UIContext::ButtonStyle s;
+        s.small = true;
+        if (ui.button("level", {bx, ui.s(12), lw, bh}, lv, s)) g_.app.switchScene(makeLevelEditor(g_, ""));
+    }
+    // The main action: publish (administration), save (the player's own entities), or make an
+    // editable copy of a read-only native.
+    std::string mainLabel;
+    UIContext::ButtonStyle p;
+    p.small = true;
+    if (acc.publish) {
+        mainLabel = "Publier…";
+        p.primary = dirty_;
+        p.enabled = dirty_;
+    } else if (acc.save) {
+        mainLabel = dirty_ ? "Enregistrer*" : "Enregistrer";
+        p.primary = dirty_;
+    } else if (!admin_ && editingNative()) {
+        mainLabel = "Dupliquer pour modifier";
+        p.primary = true;
+    }
+    if (!mainLabel.empty()) {
+        const float mw = widthOf(mainLabel, ui.s(220));
+        bx -= gap + mw;
+        if (ui.button("save", {bx, ui.s(12), mw, bh}, mainLabel, p)) {
+            if (acc.publish) openPublish();
+            else if (acc.save) saveEnemy();
+            else duplicateToEdit();
+        }
+    }
+    {
+        const std::string title = admin_ ? "ÉDITEUR D'ENNEMIS · ADMINISTRATION" : "ÉDITEUR D'ENNEMIS";
+        const float room = std::max(ui.s(60), bx - ui.s(40));
+        const float ts = ui.fitFont(title, FontFace::Title, 30, room);
+        ui.label(ui.elide(title, FontFace::Title, ts, room), {ui.s(20), top * 0.5f}, ts, ui.theme().text, Align::Left, FontFace::Title, VAlign::Middle);
+    }
     ui.popId();
 
-    ui.inputEnabled = !controlPlayer_;
+    ui.inputEnabled = !controlPlayer_ && !modal;
     Rect center{listW, top, W - listW - propW, H - top};
-    drawList({0, top, listW, H - top});
+    if (admin_) drawAdminPanel({0, top, listW, H - top});
+    else drawList({0, top, listW, H - top});
     drawPreview({center.x + ui.s(16), center.y + ui.s(16), center.w - ui.s(32), center.h * 0.36f});
     arenaRect_ = {center.x + ui.s(16), center.y + center.h * 0.36f + ui.s(70), center.w - ui.s(32), center.h * 0.64f - ui.s(86)};
     drawArena(arenaRect_, alpha);
     drawProperties({W - propW, top, propW, H - top});
-    ui.inputEnabled = true;
+    ui.inputEnabled = !modal;
     if (messageTimer_ > 0) {
         TextStyle st;
         st.size = ui.s(22);
@@ -333,8 +429,11 @@ void EnemyEditorScene::render(float alpha) {
         st.align = Align::Center;
         st.valign = VAlign::Middle;
         st.shadow = true;
+        st.size = ui.fitFont(message_, FontFace::Body, 22, center.w - ui.s(20)) * ui.scale();
         ui.text().draw(message_, {center.center().x, H - ui.s(30)}, st);
     }
+    ui.inputEnabled = true;
+    if (publish_) drawPublish();
     ui.end();
 }
 
@@ -366,7 +465,7 @@ void EnemyEditorScene::drawList(const Rect& r) {
     d.small = true;
     d.danger = true;
     const EnemyDefinition* cur = g_.content.enemy(selectedId_);
-    d.enabled = cur && !cur->builtin;
+    d.enabled = cur && !cur->builtin && access().remove;
     if (ui.button("del", {r.x + ui.s(10), by + ui.s(62), r.w - ui.s(20), ui.s(52)}, confirmDelete_ ? "Confirmer la suppression" : "Supprimer", d)) {
         if (confirmDelete_) deleteEnemy();
         else confirmDelete_ = true;
@@ -411,7 +510,10 @@ void EnemyEditorScene::drawPreview(const Rect& r) {
         y += ui.s(52);
         ui.slider("speed", {x, y, w, ui.s(44)}, "Vitesse", previewSpeed_, 0.1f, 2.0f, 0.1f, "%.1fx");
         y += ui.s(52);
-        // Clip timing (saved as an animation override in the user folder).
+        // Clip timing (saved as an animation override in the user folder). A native's sheets
+        // and timings stay the game's (2.45): shown, never changed.
+        const bool roBefore = ui.readOnly;
+        ui.readOnly = !access().animation;
         if (anim_) {
             auto it = anim_->clips.find(clips[previewClip_]);
             if (it != anim_->clips.end()) {
@@ -429,6 +531,7 @@ void EnemyEditorScene::drawPreview(const Rect& r) {
                 y += ui.s(52);
             }
         }
+        ui.readOnly = roBefore;
         ui.toggle("ranges", {x, y, w, ui.s(44)}, "Afficher hitbox et portées", showRanges_);
     }
     ui.popId();
@@ -442,7 +545,7 @@ void EnemyEditorScene::drawArena(const Rect& r, float alpha) {
     st.small = true;
     st.selected = controlPlayer_;
     bool en = ui.inputEnabled;
-    ui.inputEnabled = true;
+    ui.inputEnabled = !publish_;  // (behind the publication dialog: nothing)
     if (ui.button("control", {r.x, by, ui.s(300), ui.s(48)}, controlPlayer_ ? "Contrôle : joueur (Échap)" : "Jouer dans l'arène", st))
         controlPlayer_ = !controlPlayer_;
     ui.inputEnabled = en;

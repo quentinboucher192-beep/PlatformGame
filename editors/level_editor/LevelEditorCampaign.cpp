@@ -12,6 +12,7 @@
 #include "editors/level_editor/LevelEditorScene.h"
 #include "engine/core/FileUtil.h"
 #include "game/GameServices.h"
+#include "game/online/EnemyPublication.h"
 #include "game/online/LevelFingerprint.h"
 #include "packaging/Sha256.h"
 #include "ui/screens/Navigation.h"
@@ -65,10 +66,15 @@ void LevelEditorScene::openPublish() {
                       copy.metadata["editedWith"] = std::string("Cosmic Platformer ") + COSMIC_VERSION_STRING;
                       const int rev = campaign_->nextVersion;
                       const ContentDatabase* content = &g_.content;
+                      // 2.45: the native entities it uses at their revision online (ADMINISTRATION ›
+                      // Ennemis), named in the revision (docs/online/ENEMY_REVISIONS.md).
+                      auto current = g_.enemyRevisions.currentRevisions(g_.online.config().serverUrl);
                       // The analyser and the rating take a moment: never on the main thread.
-                      campaign_->preparing = std::async(std::launch::async, [copy, rev, content]() -> std::optional<CampaignEdit::Prepared> {
+                      campaign_->preparing = std::async(std::launch::async, [copy, rev, content, current]() -> std::optional<CampaignEdit::Prepared> {
                           CampaignEdit::Prepared p;
-                          p.level = prepareCampaignRevision(copy, *content, rev, &p.report);
+                          LevelData bound = copy;
+                          setEnemyBinding(bound, enemyBindingFor(*content, copy, {}, 0, current));
+                          p.level = prepareCampaignRevision(bound, *content, rev, &p.report);
                           return p;
                       });
                   }),

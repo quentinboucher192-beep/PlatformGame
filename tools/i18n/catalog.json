@@ -15,6 +15,12 @@
    ]
   },
   {
+   "fr": "(aucun niveau de la campagne ne l'utilise)",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "(aucun)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -37,7 +43,6 @@
   {
    "fr": "(copie)",
    "where": [
-    "editors/enemy_editor/EnemyEditorScene.cpp",
     "editors/level_editor/LevelEditorScene.cpp"
    ]
   },
@@ -564,6 +569,12 @@
    ]
   },
   {
+   "fr": "a publié la révision {0} de l'entité « {1} »",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "a publié la révision {0} de « {1} » (remplace la révision {2}) · {3}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -970,6 +981,7 @@
     "ui/screens/AdminBackups.cpp",
     "ui/screens/AdminCampaign.cpp",
     "ui/screens/AdminCreations.cpp",
+    "ui/screens/AdminEnemies.cpp",
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
@@ -1027,6 +1039,12 @@
    ]
   },
   {
+   "fr": "Administration : définition de l'entité native",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Administration : nouvel onglet « Calendrier des défis » : le mois avec les tirages à venir, choix du niveau (campagne ou en ligne), des règles, de l'objectif et des paliers d'un défi qui n'a pas commencé, ou « Revenir au tirage ».",
    "where": [
     "data/news/changelog.json"
@@ -1052,6 +1070,12 @@
   },
   {
    "fr": "Administration › Créations : un admin crée des combinaisons recolorées (un nom, la couleur de la combinaison, de l'accent et de l'écharpe) avec un aperçu animé de Nova, les modifie ou les archive.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Administration › Ennemis : un admin modifie une entité native et publie une révision ; chaque niveau de la campagne qui l'utilise reçoit une nouvelle révision, avec une case par niveau pour réinitialiser ses records ou les garder.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -1638,6 +1662,12 @@
    ]
   },
   {
+   "fr": "animation invalide",
+   "where": [
+    "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
    "fr": "Animation suivante ({0} / {1})",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -1670,6 +1700,7 @@
   {
    "fr": "Annuler",
    "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp",
     "editors/level_editor/LevelEditorCampaign.cpp",
     "editors/level_editor/LevelEditorChat.cpp",
     "editors/level_editor/LevelEditorDialogs.cpp",
@@ -1694,6 +1725,7 @@
   {
    "fr": "Annuler les modifications",
    "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp",
     "ui/screens/AdminCreations.cpp"
    ]
   },
@@ -2002,7 +2034,8 @@
    "fr": "archivée",
    "where": [
     "ui/screens/AdminCampaign.cpp",
-    "ui/screens/AdminCreations.cpp"
+    "ui/screens/AdminCreations.cpp",
+    "ui/screens/AdminEnemies.cpp"
    ]
   },
   {
@@ -2838,6 +2871,18 @@
    ]
   },
   {
+   "fr": "aucun niveau de la campagne",
+   "where": [
+    "ui/screens/AdminEnemies.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun niveau de la campagne n'utilise « {0} » : seule sa définition est publiée.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
    "fr": "Aucun niveau de la campagne ne correspond.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -3129,6 +3174,12 @@
    ]
   },
   {
+   "fr": "Aucune entité native dans ce jeu.",
+   "where": [
+    "ui/screens/AdminEnemies.cpp"
+   ]
+  },
+  {
    "fr": "aucune entrée attendue",
    "where": [
     "game/online/Spectate.cpp",
@@ -3199,6 +3250,12 @@
    "fr": "Aucune révision ne correspond.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune révision publiée : les jeux jouent la définition livrée avec eux.",
+   "where": [
+    "ui/screens/AdminEnemies.cpp"
    ]
   },
   {
@@ -5049,6 +5106,7 @@
   {
    "fr": "Ce compte n'a plus le rôle admin.",
    "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp",
     "editors/level_editor/LevelEditorCampaign.cpp"
    ]
   },
@@ -5225,6 +5283,12 @@
    "fr": "ce n'est pas une archive ZIP valide",
    "where": [
     "packaging/ZipArchive.cpp"
+   ]
+  },
+  {
+   "fr": "ce n'est pas une définition d'ennemi",
+   "where": [
+    "game/online/EnemyRevisions.cpp"
    ]
   },
   {
@@ -6089,6 +6153,7 @@
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminCampaign.cpp",
     "ui/screens/AdminCreations.cpp",
+    "ui/screens/AdminEnemies.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/NotificationsScene.cpp",
@@ -6451,6 +6516,12 @@
    "fr": "Choisissez « Historique » sur un niveau pour voir ses révisions et revenir à l'une d'elles.",
    "where": [
     "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "Choisissez « Historique » sur une entité pour voir ses révisions publiées et les niveaux qui les ont reçues.",
+   "where": [
+    "ui/screens/AdminEnemies.cpp"
    ]
   },
   {
@@ -7688,6 +7759,18 @@
    "fr": "Confirmer : retirer ce niveau des NIVEAUX EN LIGNE",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Confirmer la publication",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
+   "fr": "Confirmer la publication ?",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
    ]
   },
   {
@@ -9851,6 +9934,12 @@
    ]
   },
   {
+   "fr": "deux niveaux ont la même empreinte",
+   "where": [
+    "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
    "fr": "Deux replays comparés.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -10371,6 +10460,7 @@
   {
    "fr": "Dupliquer pour modifier",
    "where": [
+    "editors/enemy_editor/EnemyEditorScene.cpp",
     "editors/level_editor/LevelEditorLayout.cpp",
     "editors/level_editor/LevelEditorTools.cpp"
    ]
@@ -11078,6 +11168,30 @@
    "fr": "Définition de pouvoir invalide : {0}",
    "where": [
     "packaging/PackageImporter.cpp"
+   ]
+  },
+  {
+   "fr": "Définition du jeu",
+   "where": [
+    "ui/screens/AdminEnemies.cpp"
+   ]
+  },
+  {
+   "fr": "Définition illisible.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
+   "fr": "définition trop grande",
+   "where": [
+    "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
+   "fr": "Définition trop volumineuse (maximum {0} octets).",
+   "where": [
+    "server/src/enemyRevisions.ts"
    ]
   },
   {
@@ -11826,9 +11940,22 @@
    "fr": "en ligne",
    "where": [
     "ui/screens/AdminCampaign.cpp",
+    "ui/screens/AdminEnemies.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "En ligne : la définition du jeu",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
+   "fr": "En ligne : révision {0}",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
    ]
   },
   {
@@ -12021,7 +12148,8 @@
   {
    "fr": "Ennemi",
    "where": [
-    "game/levels/ObjectTypes.cpp"
+    "game/levels/ObjectTypes.cpp",
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -12071,7 +12199,8 @@
    "fr": "Ennemis",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
-    "game/levels/ObjectTypes.cpp"
+    "game/levels/ObjectTypes.cpp",
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -12141,7 +12270,7 @@
    ]
   },
   {
-   "fr": "Enregistrer une copie",
+   "fr": "Enregistrer*",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
    ]
@@ -12189,15 +12318,27 @@
    ]
   },
   {
-   "fr": "Entité native de la campagne : non modifiable",
+   "fr": "Entité native : sa définition est celle de tous les niveaux de la campagne qui l'utilisent. « Publier… » met en ligne une nouvelle révision et une nouvelle révision de chacun de ces niveaux, avec le choix des records pour chacun. Ses planches d'animation et leurs durées restent celles du jeu. Les niveaux de la communauté et les vôtres gardent la définition du jeu.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
+   "fr": "Entité native de la campagne : lecture seule",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
-   "fr": "Entité native non modifiable : votre version est enregistrée sous « {0} »",
+   "fr": "Entité native en lecture seule : « Dupliquer pour modifier » crée votre copie",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Entité native inconnue.",
+   "where": [
+    "server/src/enemyRevisions.ts"
    ]
   },
   {
@@ -12363,6 +12504,12 @@
    "fr": "Envoi",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Envoi au serveur : la définition et {0}, publiées ensemble…",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
    ]
   },
   {
@@ -12602,9 +12749,9 @@
    ]
   },
   {
-   "fr": "Essayez vos réglages dans l'arène ; « Enregistrer une copie » crée votre version.",
+   "fr": "est publiée seule : aucun niveau de la campagne ne l'utilise.",
    "where": [
-    "editors/enemy_editor/EnemyEditorProperties.cpp"
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
    ]
   },
   {
@@ -12643,6 +12790,30 @@
    "fr": "et {0}",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "et {0} sont publiées ensemble. Records réinitialisés : {1} niveau ; records gardés : {2} niveau.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
+   "fr": "et {0} sont publiées ensemble. Records réinitialisés : {1} niveau ; records gardés : {2} niveaux.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
+   "fr": "et {0} sont publiées ensemble. Records réinitialisés : {1} niveaux ; records gardés : {2} niveau.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
+   "fr": "et {0} sont publiées ensemble. Records réinitialisés : {1} niveaux ; records gardés : {2} niveaux.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
    ]
   },
   {
@@ -12980,6 +13151,7 @@
   {
    "fr": "Fermer",
    "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp",
     "editors/level_editor/LevelEditorCampaign.cpp",
     "editors/level_editor/LevelEditorChat.cpp",
     "editors/level_editor/LevelEditorDialogs.cpp",
@@ -13091,7 +13263,8 @@
   {
    "fr": "fichier différent de celui du serveur (SHA-256)",
    "where": [
-    "game/online/CampaignRevisions.cpp"
+    "game/online/CampaignRevisions.cpp",
+    "game/online/EnemyRevisions.cpp"
    ]
   },
   {
@@ -13630,6 +13803,7 @@
     "game/levels/RatingService.cpp",
     "game/online/CampaignRevisions.cpp",
     "game/online/DailyChallenges.cpp",
+    "game/online/EnemyRevisions.cpp",
     "game/online/LevelFingerprint.cpp",
     "game/online/OnlineCache.cpp",
     "game/online/OnlineSession.cpp",
@@ -14873,19 +15047,22 @@
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
     "ui/screens/AdminCampaign.cpp",
+    "ui/screens/AdminEnemies.cpp",
     "ui/screens/OnlineRankingScene.cpp"
    ]
   },
   {
    "fr": "Historique indisponible.",
    "where": [
-    "ui/screens/AdminCampaign.cpp"
+    "ui/screens/AdminCampaign.cpp",
+    "ui/screens/AdminEnemies.cpp"
    ]
   },
   {
    "fr": "Historique · {0}",
    "where": [
-    "ui/screens/AdminCampaign.cpp"
+    "ui/screens/AdminCampaign.cpp",
+    "ui/screens/AdminEnemies.cpp"
    ]
   },
   {
@@ -15148,6 +15325,12 @@
    ]
   },
   {
+   "fr": "hp : de 1 à 10 000 000",
+   "where": [
+    "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
    "fr": "HUD complet",
    "where": [
     "ui/screens/GameScene.cpp",
@@ -15236,6 +15419,7 @@
     "game/levels/LevelData.cpp",
     "game/online/CampaignRevisions.cpp",
     "game/online/DailyChallenges.cpp",
+    "game/online/EnemyRevisions.cpp",
     "game/online/LevelFingerprint.cpp",
     "game/online/LiveSession.cpp",
     "game/online/OnlineService.cpp",
@@ -15292,6 +15476,18 @@
    ]
   },
   {
+   "fr": "Identifiant : {0}",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
+   "fr": "Identifiant d'une entité native : votre entité est enregistrée sous « {0} »",
+   "where": [
+    "editors/enemy_editor/EnemyEditorScene.cpp"
+   ]
+  },
+  {
    "fr": "identifiant de défi invalide",
    "where": [
     "game/gameplay/ChallengeRules.cpp"
@@ -15307,7 +15503,8 @@
   {
    "fr": "identifiant différent",
    "where": [
-    "game/online/CampaignRevisions.cpp"
+    "game/online/CampaignRevisions.cpp",
+    "game/online/EnemyRevisions.cpp"
    ]
   },
   {
@@ -16413,6 +16610,7 @@
    "where": [
     "game/online/LevelFingerprint.cpp",
     "server/src/campaignRevisions.ts",
+    "server/src/enemyRevisions.ts",
     "server/src/live.ts",
     "server/src/projects.ts"
    ]
@@ -16972,6 +17170,42 @@
    ]
   },
   {
+   "fr": "La définition de l'entité n'est pas valide.",
+   "where": [
+    "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
+   "fr": "La définition en ligne a changé depuis l'ouverture (révision {0}) : rouvrez l'entité depuis Administration › Ennemis.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
+   "fr": "La définition en ligne a changé entre-temps : rouvrez l'entité.",
+   "where": [
+    "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
+   "fr": "La définition ou un niveau a changé entre-temps : rouvrez l'entité.",
+   "where": [
+    "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
+   "fr": "la définition ou un niveau en ligne avait changé entre-temps",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "La définition à publier est introuvable.",
+   "where": [
+    "game/online/EnemyPublication.cpp"
+   ]
+  },
+  {
    "fr": "La Dévoreuse d'étoiles",
    "where": [
     "data/music/tracks.json"
@@ -17051,6 +17285,12 @@
    "fr": "la Lame boomerang",
    "where": [
     "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
+   "fr": "La liste du serveur n'est pas encore lue : actualisez.",
+   "where": [
+    "ui/screens/AdminEnemies.cpp"
    ]
   },
   {
@@ -17249,6 +17489,30 @@
    ]
   },
   {
+   "fr": "La révision en ligne de cette entité ne se lit pas avec cette version du jeu : mettez le jeu à jour.",
+   "where": [
+    "ui/screens/AdminEnemies.cpp"
+   ]
+  },
+  {
+   "fr": "La révision en ligne de « {0} » a changé entre-temps : rouvrez l'entité.",
+   "where": [
+    "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
+   "fr": "La révision {0} de cette entité n'est pas téléchargée : revenez à l'administration et actualisez, ou mettez le jeu à jour.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "La révision {0} de « {1} »",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
    "fr": "La révision {0} de « {1} » est en ligne : les jeux la téléchargent au démarrage. Records gardés : {2} meilleur temps reporté.",
    "where": [
     "editors/level_editor/LevelEditorCampaign.cpp"
@@ -17264,6 +17528,12 @@
    "fr": "La révision {0} de « {1} » est en ligne : les jeux la téléchargent au démarrage. Records réinitialisés : les anciens restent archivés avec la révision précédente.",
    "where": [
     "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "La révision {0} de « {1} » n'est pas dans ce jeu : actualisez la liste, ou mettez le jeu à jour.",
+   "where": [
+    "game/online/EnemyPublication.cpp"
    ]
   },
   {
@@ -18517,6 +18787,12 @@
    ]
   },
   {
+   "fr": "Le serveur a publié la révision {0} de « {1} » et {2}. Les jeux les téléchargent au démarrage ; un défi déjà commencé garde sa révision.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
    "fr": "Le serveur a refusé une modification ({0}).",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
@@ -18739,6 +19015,12 @@
    ]
   },
   {
+   "fr": "Lecture de la définition en ligne et des niveaux de la campagne…",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
    "fr": "Lecture des niveaux…",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -18824,6 +19106,12 @@
    "fr": "Les 20 morceaux du juke-box débloqués.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Les anciennes révisions gardent leur définition : records archivés, replays et défis déjà commencés restent exacts. Les niveaux de la communauté et les vôtres gardent les entités du jeu.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -18995,6 +19283,12 @@
    ]
   },
   {
+   "fr": "Les entités natives de la campagne. Une révision publiée ici est téléchargée par les jeux, avec une nouvelle révision de chaque niveau qui l'utilise : le choix des records se fait niveau par niveau.",
+   "where": [
+    "ui/screens/AdminEnemies.cpp"
+   ]
+  },
+  {
    "fr": "Les fantômes portent la combinaison de leur joueur, toujours teintés de leur couleur : la vôtre pour vos propres fantômes, celle du joueur pour un fantôme lancé depuis un classement.",
    "where": [
     "data/news/changelog.json"
@@ -19046,6 +19340,12 @@
    "fr": "Les huit lumières",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Les jeux les téléchargent au démarrage ; les révisions d'avant restent jouables avec leur définition (records archivés, replays, défis déjà commencés). La publication est inscrite au Journal.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
    ]
   },
   {
@@ -19654,6 +19954,12 @@
    "fr": "liste d'identifiants de succès attendue",
    "where": [
     "server/src/badges.ts"
+   ]
+  },
+  {
+   "fr": "liste de 0 à {0} niveaux attendue",
+   "where": [
+    "server/src/enemyRevisions.ts"
    ]
   },
   {
@@ -20735,6 +21041,7 @@
   {
    "fr": "message",
    "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp",
     "editors/level_editor/LevelEditorCampaign.cpp",
     "game/levels/CampaignPipeline.cpp",
     "game/levels/ObjectTypes.cpp",
@@ -20818,6 +21125,18 @@
    "where": [
     "editors/level_editor/LevelEditorChat.cpp",
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "metadata.enemyRevisions.{0} : entité native inconnue",
+   "where": [
+    "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
+   "fr": "metadata.enemyRevisions.{0} : révision inconnue",
+   "where": [
+    "server/src/enemyRevisions.ts"
    ]
   },
   {
@@ -21031,6 +21350,12 @@
    ]
   },
   {
+   "fr": "Modifications annulées",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
    "fr": "Modifications non enregistrées",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
@@ -21061,6 +21386,12 @@
    ]
   },
   {
+   "fr": "Modifications non publiées",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
    "fr": "modifie {0}",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
@@ -21069,7 +21400,8 @@
   {
    "fr": "Modifier",
    "where": [
-    "ui/online/CommentsPanel.cpp"
+    "ui/online/CommentsPanel.cpp",
+    "ui/screens/AdminEnemies.cpp"
    ]
   },
   {
@@ -21976,6 +22308,12 @@
    ]
   },
   {
+   "fr": "Niveau inconnu du serveur : {0}.",
+   "where": [
+    "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
    "fr": "Niveau inconnu du serveur.",
    "where": [
     "server/src/campaign.ts",
@@ -22328,7 +22666,8 @@
   {
    "fr": "nom invalide (1 à 80 caractères)",
    "where": [
-    "server/src/campaignRevisions.ts"
+    "server/src/campaignRevisions.ts",
+    "server/src/enemyRevisions.ts"
    ]
   },
   {
@@ -22493,7 +22832,8 @@
   {
    "fr": "note de difficulté invalide",
    "where": [
-    "server/src/campaignRevisions.ts"
+    "server/src/campaignRevisions.ts",
+    "server/src/enemyRevisions.ts"
    ]
   },
   {
@@ -24712,6 +25052,12 @@
    "fr": "Pas plus loin que votre meilleur essai : rien n'est envoyé.",
    "where": [
     "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
+   "fr": "pas une entité native de ce jeu",
+   "where": [
+    "game/online/EnemyRevisions.cpp"
    ]
   },
   {
@@ -27046,6 +27392,12 @@
    ]
   },
   {
+   "fr": "Préparation des niveaux qui utilisent cette entité : empreintes, manifestes, notes de difficulté…",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
    "fr": "Préparation du package…",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
@@ -27129,6 +27481,12 @@
    ]
   },
   {
+   "fr": "publication d'une révision de l'entité « {0} » refusée : {1}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "publication d'une révision de « {0} »",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -27137,6 +27495,7 @@
   {
    "fr": "Publication impossible.",
    "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp",
     "editors/level_editor/LevelEditorCampaign.cpp"
    ]
   },
@@ -27190,6 +27549,12 @@
    ]
   },
   {
+   "fr": "Publier la révision{0} de « {1} »",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
    "fr": "Publier la révision… (Ctrl+S)",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -27228,6 +27593,8 @@
   {
    "fr": "Publier…",
    "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp",
+    "editors/enemy_editor/EnemyEditorScene.cpp",
     "editors/level_editor/LevelEditorDialogs.cpp",
     "editors/level_editor/LevelEditorLayout.cpp"
    ]
@@ -27271,7 +27638,14 @@
   {
    "fr": "Publiée par {0} le {1}",
    "where": [
-    "ui/screens/AdminCampaign.cpp"
+    "ui/screens/AdminCampaign.cpp",
+    "ui/screens/AdminEnemies.cpp"
+   ]
+  },
+  {
+   "fr": "publiée par {0} le {1}",
+   "where": [
+    "ui/screens/AdminEnemies.cpp"
    ]
   },
   {
@@ -27514,6 +27888,12 @@
    "fr": "Quitter le projet",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Quitter sans publier",
+   "where": [
+    "editors/enemy_editor/EnemyEditorScene.cpp"
    ]
   },
   {
@@ -28172,10 +28552,12 @@
   {
    "fr": "records",
    "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp",
     "editors/level_editor/LevelEditorCampaign.cpp",
     "game/ghost/GhostStore.cpp",
     "game/records/Records.cpp",
     "ui/screens/AdminCampaign.cpp",
+    "ui/screens/AdminEnemies.cpp",
     "ui/screens/AdminScene.cpp"
    ]
   },
@@ -29259,6 +29641,8 @@
   {
    "fr": "Retour",
    "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp",
+    "editors/enemy_editor/EnemyEditorScene.cpp",
     "engine/input/InputTypes.cpp",
     "ui/screens/AchievementsScene.cpp",
     "ui/screens/AdminScene.cpp",
@@ -29997,6 +30381,7 @@
   {
    "fr": "Réessayer",
    "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp",
     "editors/level_editor/LevelEditorCampaign.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp",
@@ -30050,6 +30435,7 @@
   {
    "fr": "Réinitialiser les records",
    "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp",
     "editors/level_editor/LevelEditorCampaign.cpp",
     "ui/screens/AdminCampaign.cpp"
    ]
@@ -30327,6 +30713,12 @@
    ]
   },
   {
+   "fr": "Révision en ligne absente de ce jeu",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "révision entre 1 et {0}",
    "where": [
     "server/src/projects.ts"
@@ -30342,19 +30734,22 @@
    "fr": "Révision introuvable.",
    "where": [
     "server/src/campaignRevisions.ts",
+    "server/src/enemyRevisions.ts",
     "server/src/projects.ts"
    ]
   },
   {
    "fr": "révision invalide",
    "where": [
-    "game/online/CampaignRevisions.cpp"
+    "game/online/CampaignRevisions.cpp",
+    "game/online/EnemyRevisions.cpp"
    ]
   },
   {
    "fr": "Révision {0}",
    "where": [
-    "ui/screens/AdminCampaign.cpp"
+    "ui/screens/AdminCampaign.cpp",
+    "ui/screens/AdminEnemies.cpp"
    ]
   },
   {
@@ -30402,6 +30797,7 @@
   {
    "fr": "Révision {0} publiée",
    "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp",
     "editors/level_editor/LevelEditorCampaign.cpp"
    ]
   },
@@ -31360,6 +31756,18 @@
    "fr": "Service indisponible : {0}.",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ses réglages se modifient ici. Ses planches d'animation et la durée de leurs images restent celles du jeu (lecture seule). « Publier… » met la définition en ligne.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Ses réglages sont visibles mais ne se modifient pas. « Dupliquer pour modifier » crée votre copie, que vous pourrez changer.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -34689,9 +35097,21 @@
    ]
   },
   {
+   "fr": "Tout cocher",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
    "fr": "Tout débloquer : planètes et niveaux (mode test)",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tout décocher",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
    ]
   },
   {
@@ -34813,7 +35233,8 @@
    "fr": "tracé de course invalide",
    "where": [
     "server/src/campaignRevisions.ts",
-    "server/src/community.ts"
+    "server/src/community.ts",
+    "server/src/enemyRevisions.ts"
    ]
   },
   {
@@ -35278,6 +35699,12 @@
    ]
   },
   {
+   "fr": "Téléchargement de la définition en ligne…",
+   "where": [
+    "ui/screens/AdminEnemies.cpp"
+   ]
+  },
+  {
    "fr": "Téléchargement de la révision en ligne…",
    "where": [
     "ui/screens/AdminCampaign.cpp"
@@ -35502,7 +35929,8 @@
   {
    "fr": "un admin",
    "where": [
-    "ui/screens/AdminCampaign.cpp"
+    "ui/screens/AdminCampaign.cpp",
+    "ui/screens/AdminEnemies.cpp"
    ]
   },
   {
@@ -35593,6 +36021,7 @@
    "fr": "un compte supprimé",
    "where": [
     "ui/screens/AdminCampaign.cpp",
+    "ui/screens/AdminEnemies.cpp",
     "ui/screens/AdminScene.cpp"
    ]
   },
@@ -37027,6 +37456,7 @@
   {
    "fr": "version",
    "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp",
     "editors/level_editor/LevelEditorCampaign.cpp",
     "game/GameServices.cpp",
     "game/achievements/Achievements.cpp",
@@ -37127,7 +37557,8 @@
   {
    "fr": "Version du jeu trop ancienne pour publier une révision.",
    "where": [
-    "server/src/campaignRevisions.ts"
+    "server/src/campaignRevisions.ts",
+    "server/src/enemyRevisions.ts"
    ]
   },
   {
@@ -37826,6 +38257,12 @@
    "fr": "Votre copie locale est à jour.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre copie modifiable : « {0} » ({1})",
+   "where": [
+    "editors/enemy_editor/EnemyEditorScene.cpp"
    ]
   },
   {
@@ -38881,6 +39318,7 @@
   {
    "fr": "{0} (copie)",
    "where": [
+    "editors/enemy_editor/EnemyEditAccess.cpp",
     "ui/screens/ProjectsScene.cpp"
    ]
   },
@@ -39015,6 +39453,12 @@
    ]
   },
   {
+   "fr": "{0} : ce contenu est déjà la révision {1} de ce niveau.",
+   "where": [
+    "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
    "fr": "{0} : comparaison…",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -39051,6 +39495,24 @@
    ]
   },
   {
+   "fr": "{0} : le fichier du niveau n'est pas valide.",
+   "where": [
+    "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
+   "fr": "{0} : le manifeste ne correspond pas au fichier du niveau.",
+   "where": [
+    "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
+   "fr": "{0} : nombre invalide",
+   "where": [
+    "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
    "fr": "{0} : performance gardée en local.",
    "where": [
     "ui/screens/ResultsScene.cpp"
@@ -39066,6 +39528,18 @@
    "fr": "{0} : replay d'un autre niveau.",
    "where": [
     "ui/screens/GhostRun.cpp"
+   ]
+  },
+  {
+   "fr": "{0} : trop imbriqué",
+   "where": [
+    "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
+   "fr": "{0} : valeur invalide",
+   "where": [
+    "server/src/enemyRevisions.ts"
    ]
   },
   {
@@ -39969,9 +40443,21 @@
    ]
   },
   {
+   "fr": "{0} niveau de la campagne utilise « {1} » : chacun reçoit une nouvelle révision (même contenu, avec cette définition, note recalculée). Cochée, « Réinitialiser les records » lui donne de nouveaux classements ; décochée, ses meilleurs temps y sont reportés.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
    "fr": "{0} niveau publié",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} niveau republié · records réinitialisés : {1} · gardés : {2}",
+   "where": [
+    "ui/screens/AdminEnemies.cpp"
    ]
   },
   {
@@ -39987,9 +40473,21 @@
    ]
   },
   {
+   "fr": "{0} niveaux de la campagne utilisent « {1} » : chacun reçoit une nouvelle révision (même contenu, avec cette définition, note recalculée). Cochée, « Réinitialiser les records » lui donne de nouveaux classements ; décochée, ses meilleurs temps y sont reportés.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
    "fr": "{0} niveaux publiés",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} niveaux republiés · records réinitialisés : {1} · gardés : {2}",
+   "where": [
+    "ui/screens/AdminEnemies.cpp"
    ]
   },
   {
@@ -40182,6 +40680,18 @@
    "fr": "{0} réponses à votre commentaire sur {1}",
    "where": [
     "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "{0} révision de niveau",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
+   "fr": "{0} révisions de niveaux",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
    ]
   },
   {
@@ -40402,6 +40912,12 @@
    ]
   },
   {
+   "fr": "{0} · Boss",
+   "where": [
+    "ui/screens/AdminEnemies.cpp"
+   ]
+  },
+  {
    "fr": "{0} · clic : suivre sa vue",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
@@ -40465,6 +40981,60 @@
    "fr": "{0} · récompense des défis",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · révision {1} → {2} · aucun meilleur temps · amenée par une autre entité",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · révision {1} → {2} · aucun meilleur temps · {3} exemplaire placé",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · révision {1} → {2} · aucun meilleur temps · {3} exemplaires placés",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · révision {1} → {2} · {3} meilleur temps · amenée par une autre entité",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · révision {1} → {2} · {3} meilleur temps · {4} exemplaire placé",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · révision {1} → {2} · {3} meilleur temps · {4} exemplaires placés",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · révision {1} → {2} · {3} meilleurs temps · amenée par une autre entité",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · révision {1} → {2} · {3} meilleurs temps · {4} exemplaire placé",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · révision {1} → {2} · {3} meilleurs temps · {4} exemplaires placés",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
    ]
   },
   {
@@ -40705,6 +41275,18 @@
    ]
   },
   {
+   "fr": "« {0} » : ce jeu ne joue pas sa révision en ligne (révision {1}) : actualisez, ou mettez le jeu à jour.",
+   "where": [
+    "game/online/EnemyPublication.cpp"
+   ]
+  },
+  {
+   "fr": "« {0} » : empreinte impossible à calculer.",
+   "where": [
+    "game/online/EnemyPublication.cpp"
+   ]
+  },
+  {
    "fr": "« {0} » : la révision {1} est de nouveau en ligne (records gardés).",
    "where": [
     "ui/screens/AdminCampaign.cpp"
@@ -40726,6 +41308,24 @@
    "fr": "« {0} » : rang {1}.",
    "where": [
     "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "« {0} » : révision {1} · records gardés ({2} meilleur temps reporté)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
+   "fr": "« {0} » : révision {1} · records gardés ({2} meilleurs temps reportés)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
+   "fr": "« {0} » : révision {1} · records réinitialisés",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
    ]
   },
   {
@@ -40777,6 +41377,12 @@
    ]
   },
   {
+   "fr": "« {0} » est inconnu du serveur : ses classements ne peuvent pas suivre.",
+   "where": [
+    "game/online/EnemyPublication.cpp"
+   ]
+  },
+  {
    "fr": "« {0} » est la touche de « {1} » : la commande l'emporte, choisissez une autre touche.",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
@@ -40816,6 +41422,24 @@
    "fr": "« {0} » reprend les touches du niveau.",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "« {0} » révision {1} (records gardés, {2} meilleur temps reporté)",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "« {0} » révision {1} (records gardés, {2} meilleurs temps reportés)",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "« {0} » révision {1} (records réinitialisés)",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -41586,7 +42210,8 @@
   {
    "fr": "écriture impossible",
    "where": [
-    "game/online/CampaignRevisions.cpp"
+    "game/online/CampaignRevisions.cpp",
+    "game/online/EnemyRevisions.cpp"
    ]
   },
   {
@@ -41656,6 +42281,12 @@
    ]
   },
   {
+   "fr": "Éditeur d'ennemis (EN LIGNE › ATELIER) : les entités natives sont en lecture seule ; « Dupliquer pour modifier » crée votre copie, que vous modifiez librement.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Éditeur d'ennemis : teinte du sprite.",
    "where": [
     "data/news/changelog.json"
@@ -41671,6 +42302,12 @@
    "fr": "Éditeur d'ennemis : « Aspect » des boss sur la barre de progression (icône et couleur, avec aperçu).",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "ÉDITEUR D'ENNEMIS · ADMINISTRATION",
+   "where": [
+    "editors/enemy_editor/EnemyEditorScene.cpp"
    ]
   },
   {

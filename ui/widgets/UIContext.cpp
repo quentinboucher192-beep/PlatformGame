@@ -371,25 +371,26 @@ bool UIContext::button(const std::string& name, const Rect& rc, const std::strin
         return false;
     }
     bool hovered = false;
-    bool clicked = interact(wid, rc, &hovered) && st.enabled;
+    const bool enabled = st.enabled && !readOnly;  // a read-only form: nothing to do
+    bool clicked = interact(wid, rc, &hovered) && enabled;
     bool isFocus = focus_ == wid;
-    float hot = anim(wid, (hovered || isFocus) && st.enabled);
+    float hot = anim(wid, (hovered || isFocus) && enabled);
     Rect drawn = rc;
     float grow = s(4) * hot;
     drawn.x -= grow * 0.5f;
     drawn.w += grow;
-    drawFrame(drawn, hot, isFocus, st.primary, st.danger, st.enabled, st.selected);
+    drawFrame(drawn, hot, isFocus, st.primary, st.danger, enabled, st.selected);
     float fs = st.fontSize > 0 ? st.fontSize : (st.small ? 20.0f : 26.0f);
     float textX = st.align == Align::Center ? drawn.center().x : drawn.x + s(20);
     if (!st.icon.empty() && st.iconIndex >= 0) {
         float is = rc.h * 0.62f;
         Rect ir{drawn.x + s(14), drawn.center().y - is * 0.5f, is, is};
-        icon(st.icon, st.iconIndex, st.iconCell, ir, st.enabled ? Color::white() : Color{120, 120, 120, 255});
+        icon(st.icon, st.iconIndex, st.iconCell, ir, enabled ? Color::white() : Color{120, 120, 120, 255});
         if (st.align != Align::Center) textX = ir.right() + s(12);
     }
     // The label always stays inside the button: it shrinks to the available width.
     fs = fitFont(t, FontFace::Bold, fs, st.align == Align::Center ? drawn.w - s(20) : drawn.right() - textX - s(12));
-    Color tc = st.enabled ? Color::lerp(theme_.text, Color::white(), hot) : theme_.textDim;
+    Color tc = enabled ? Color::lerp(theme_.text, Color::white(), hot) : theme_.textDim;
     label(t, {textX, drawn.center().y}, fs, tc, st.align, FontFace::Bold, VAlign::Middle);
     if (clicked) app_->resources().playSound(st.danger ? "sounds/ui_back.wav" : "sounds/ui_confirm.wav", 0.6f);
     return clicked;
@@ -401,25 +402,26 @@ bool UIContext::toggle(const std::string& name, const Rect& rc, const std::strin
     bool clicked = interact(wid, rc, &hovered);
     bool isFocus = focus_ == wid;
     float hot = anim(wid, hovered || isFocus);
-    if (isFocus && (input().menuPressed(Action::MenuLeft) || input().menuPressed(Action::MenuRight)) && acceptsInput()) {
+    if (isFocus && (input().menuPressed(Action::MenuLeft) || input().menuPressed(Action::MenuRight)) && acceptsInput() && !readOnly) {
         clicked = true;
         navConsumedH_ = true;
     }
+    if (readOnly) clicked = false;
     if (clicked) {
         value = !value;
         changed_ = true;
         app_->resources().playSound("sounds/ui_move.wav", 0.6f);
     }
     if (clippedOut(rc)) return clicked;
-    drawFrame(rc, hot, isFocus, false, false, true, false);
+    drawFrame(rc, hot, isFocus, false, false, !readOnly, false);
     // The label never runs under the switch: it shrinks to the room left of the track.
     float fs = fitFont(t, FontFace::Body, 22.0f, rc.w - s(20) - s(96), 0.6f);
-    label(t, {rc.x + s(20), rc.center().y}, fs, theme_.text, Align::Left, FontFace::Body, VAlign::Middle);
+    label(t, {rc.x + s(20), rc.center().y}, fs, readOnly ? theme_.textDim : theme_.text, Align::Left, FontFace::Body, VAlign::Middle);
     float on = anim(wid ^ 0x9e3779b9u, value, 10.0f);
     Rect track{rc.right() - s(84), rc.center().y - s(13), s(64), s(26)};
-    r().fillRoundedRect(track, s(13), Color::lerp(Color{40, 50, 70, 255}, theme_.accent.withAlpha(200), on));
+    r().fillRoundedRect(track, s(13), Color::lerp(Color{40, 50, 70, 255}, theme_.accent.withAlpha(readOnly ? 110 : 200), on));
     Vec2 knob{track.x + s(13) + (track.w - s(26)) * on, track.center().y};
-    r().fillCircle(knob, s(10), Color::white());
+    r().fillCircle(knob, s(10), readOnly ? Color{150, 160, 175, 255} : Color::white());
     return clicked;
 }
 
@@ -433,7 +435,7 @@ bool UIContext::slider(const std::string& name, const Rect& rc, const std::strin
     bool changedNow = false;
     Rect track{rc.x + rc.w * 0.45f, rc.center().y - s(4), rc.w * 0.42f, s(8)};
     InputManager& in = input();
-    if (acceptsInput() && isFocus) {
+    if (acceptsInput() && isFocus && !readOnly) {
         if (in.menuPressed(Action::MenuLeft)) {
             value = std::max(minV, value - step);
             changedNow = true;
@@ -445,7 +447,7 @@ bool UIContext::slider(const std::string& name, const Rect& rc, const std::strin
             navConsumedH_ = true;
         }
     }
-    if (acceptsInput() && active_ == wid && in.mouseDown(SDL_BUTTON_LEFT)) {
+    if (acceptsInput() && !readOnly && active_ == wid && in.mouseDown(SDL_BUTTON_LEFT)) {
         float k = std::clamp((in.mousePos().x - track.x) / track.w, 0.0f, 1.0f);
         float v = minV + k * (maxV - minV);
         if (step > 0) v = std::round(v / step) * step;
@@ -457,13 +459,13 @@ bool UIContext::slider(const std::string& name, const Rect& rc, const std::strin
     }
     if (changedNow) changed_ = true;
     if (clippedOut(rc)) return changedNow;
-    drawFrame(rc, hot, isFocus, false, false, true, false);
-    label(t, {rc.x + s(20), rc.center().y}, fitFont(t, FontFace::Body, 22.0f, track.x - rc.x - s(36)), theme_.text, Align::Left,
-          FontFace::Body, VAlign::Middle);
+    drawFrame(rc, hot, isFocus, false, false, !readOnly, false);
+    label(t, {rc.x + s(20), rc.center().y}, fitFont(t, FontFace::Body, 22.0f, track.x - rc.x - s(36)), readOnly ? theme_.textDim : theme_.text,
+          Align::Left, FontFace::Body, VAlign::Middle);
     float k = maxV > minV ? (value - minV) / (maxV - minV) : 0.0f;
     r().fillRoundedRect(track, s(4), {40, 50, 70, 255});
-    r().fillRoundedRect({track.x, track.y, track.w * k, track.h}, s(4), theme_.accent);
-    r().fillCircle({track.x + track.w * k, track.center().y}, s(9) + s(3) * hot, Color::white());
+    r().fillRoundedRect({track.x, track.y, track.w * k, track.h}, s(4), readOnly ? theme_.accent.withAlpha(110) : theme_.accent);
+    r().fillCircle({track.x + track.w * k, track.center().y}, s(9) + s(3) * hot, readOnly ? Color{150, 160, 175, 255} : Color::white());
     char buf[32];
     std::snprintf(buf, sizeof(buf), fmt, value);
     label(buf, {rc.right() - s(16), rc.center().y}, 20, theme_.textDim, Align::Right, FontFace::Body, VAlign::Middle);
@@ -491,7 +493,9 @@ bool UIContext::cycle(const std::string& name, const Rect& rc, const std::string
     // Without a caption the value uses the whole width.
     Rect left{t.empty() ? rc.x + s(6) : rc.x + rc.w * 0.45f, rc.y, s(36), rc.h};
     Rect right{rc.right() - s(44), rc.y, s(36), rc.h};
-    if (acceptsInput() && isFocus && in.menuPressed(Action::MenuLeft)) {
+    if (readOnly) {
+        // Nothing changes (the arrows move the focus instead).
+    } else if (acceptsInput() && isFocus && in.menuPressed(Action::MenuLeft)) {
         index = (index - 1 + n) % n;
         changedNow = true;
         navConsumedH_ = true;
@@ -510,16 +514,16 @@ bool UIContext::cycle(const std::string& name, const Rect& rc, const std::string
         app_->resources().playSound("sounds/ui_move.wav", 0.6f);
     }
     if (clippedOut(rc)) return changedNow;
-    drawFrame(rc, hot, isFocus, false, false, true, false);
-    label(t, {rc.x + s(20), rc.center().y}, fitFont(t, FontFace::Body, 22.0f, left.x - rc.x - s(28)), theme_.text, Align::Left,
-          FontFace::Body, VAlign::Middle);
-    label("<", left.center(), 24, Color::lerp(theme_.textDim, theme_.accent, hot), Align::Center, FontFace::Bold,
-          VAlign::Middle);
-    label(">", right.center(), 24, Color::lerp(theme_.textDim, theme_.accent, hot), Align::Center, FontFace::Bold,
-          VAlign::Middle);
+    drawFrame(rc, hot, isFocus, false, false, !readOnly, false);
+    label(t, {rc.x + s(20), rc.center().y}, fitFont(t, FontFace::Body, 22.0f, left.x - rc.x - s(28)), readOnly ? theme_.textDim : theme_.text,
+          Align::Left, FontFace::Body, VAlign::Middle);
+    if (!readOnly) {  // no arrows on a value that cannot change
+        label("<", left.center(), 24, Color::lerp(theme_.textDim, theme_.accent, hot), Align::Center, FontFace::Bold, VAlign::Middle);
+        label(">", right.center(), 24, Color::lerp(theme_.textDim, theme_.accent, hot), Align::Center, FontFace::Bold, VAlign::Middle);
+    }
     label(options[index], {(left.right() + right.x) * 0.5f, rc.center().y},
-          fitFont(options[index], FontFace::Bold, 22.0f, right.x - left.right() - s(8), 0.5f), theme_.text, Align::Center, FontFace::Bold,
-          VAlign::Middle);
+          fitFont(options[index], FontFace::Bold, 22.0f, right.x - left.right() - s(8), 0.5f),
+          readOnly ? Color::lerp(theme_.textDim, theme_.text, 0.45f) : theme_.text, Align::Center, FontFace::Bold, VAlign::Middle);
     return changedNow;
 }
 
@@ -661,7 +665,14 @@ bool UIContext::textFieldImpl(const std::string& name, const Rect& rc, std::stri
         return true;
     };
 
-    if (clicked && editing_ != wid) {
+    if (readOnly && editing_ == wid) {  // became read-only while edited: the edit ends
+        editing_ = 0;
+        dragSelect_ = false;
+        in.stopTextInput(app_->window());
+    }
+    if (readOnly) {
+        // Shown, never edited.
+    } else if (clicked && editing_ != wid) {
         editing_ = wid;
         in.startTextInput(app_->window());
         // Clicked: the caret where the click was; reached by keyboard / pad: at the end.
@@ -756,7 +767,7 @@ bool UIContext::textFieldImpl(const std::string& name, const Rect& rc, std::stri
     std::string shown = value.empty() && editing_ != wid ? placeholder : shownOf(value);
     // What the player typed is shown as typed (only the placeholder is translated).
     const bool typedText = !(value.empty() && editing_ != wid);
-    Color c = value.empty() && editing_ != wid ? theme_.textDim : theme_.text;
+    Color c = value.empty() && editing_ != wid ? theme_.textDim : readOnly ? Color::lerp(theme_.textDim, theme_.text, 0.45f) : theme_.text;
     float shift = shiftFor();
     float x0 = rc.x + padX - shift;
     if (editing_ == wid && caret_ != anchor_) {
@@ -787,7 +798,7 @@ bool UIContext::numberField(const std::string& name, const Rect& rc, float& valu
     bool changedNow = false;
     Rect minus{rc.x, rc.y, rc.h, rc.h}, plus{rc.right() - rc.h, rc.y, rc.h, rc.h};
     float mult = in.shift() ? 10.0f : (in.ctrl() ? 0.1f : 1.0f);
-    if (acceptsInput()) {
+    if (acceptsInput() && !readOnly) {
         if ((isFocus && in.menuPressed(Action::MenuLeft)) || (mouseClicked(minus))) {
             value = std::max(minV, value - step * mult);
             changedNow = true;
@@ -814,11 +825,13 @@ bool UIContext::numberField(const std::string& name, const Rect& rc, float& valu
     Renderer& rr = r();
     rr.fillRoundedRect(rc, s(6), Color::lerp(Color{14, 20, 38, 235}, Color{24, 36, 64, 245}, hot));
     rr.drawRoundedRect(rc, s(6), Color::lerp(theme_.border, theme_.accent, hot), std::max(1.0f, s(1.5f)));
-    label("-", minus.center(), 22, theme_.textDim, Align::Center, FontFace::Bold, VAlign::Middle);
-    label("+", plus.center(), 22, theme_.textDim, Align::Center, FontFace::Bold, VAlign::Middle);
+    if (!readOnly) {  // no steps on a value that cannot change
+        label("-", minus.center(), 22, theme_.textDim, Align::Center, FontFace::Bold, VAlign::Middle);
+        label("+", plus.center(), 22, theme_.textDim, Align::Center, FontFace::Bold, VAlign::Middle);
+    }
     char buf[48];
     std::snprintf(buf, sizeof(buf), fmt, value);
-    label(buf, rc.center(), 20, theme_.text, Align::Center, FontFace::Body, VAlign::Middle);
+    label(buf, rc.center(), 20, readOnly ? Color::lerp(theme_.textDim, theme_.text, 0.45f) : theme_.text, Align::Center, FontFace::Body, VAlign::Middle);
     return changedNow;
 }
 

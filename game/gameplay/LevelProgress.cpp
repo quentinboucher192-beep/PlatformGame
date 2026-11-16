@@ -56,7 +56,7 @@ LevelProgressTrack buildProgressTrack(const LevelData& level, const ContentDatab
     // A boss's own arena is shown by the boss's badge only (not by a skull as well).
     auto isBoss = [&](const LevelObject& e) {
         if (e.type != "enemy") return false;
-        const EnemyDefinition* d = content.enemy(e.propStr("enemy"));
+        const EnemyDefinition* d = content.enemyFor(e.propStr("enemy"), level);
         return d && d->isBoss;
     };
     auto bossArena = [&](const LevelObject& zone) {
@@ -94,7 +94,7 @@ LevelProgressTrack buildProgressTrack(const LevelData& level, const ContentDatab
             m.color.a = 255;
             m.at = t.fractionAt(o.rect.center());
         } else if (o.type == "enemy") {
-            const EnemyDefinition* d = content.enemy(o.propStr("enemy"));
+            const EnemyDefinition* d = content.enemyFor(o.propStr("enemy"), level);
             if (!d || !d->isBoss) continue;
             m.kind = Kind::Boss;
             m.label = d->name;

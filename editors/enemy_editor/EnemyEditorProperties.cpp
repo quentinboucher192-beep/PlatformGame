@@ -49,17 +49,34 @@ void EnemyEditorScene::drawProperties(const Rect& r) {
     std::vector<std::string> tabs = {"Général", "IA", "Attaques", "Pouvoirs", "Résist.", "Butin", "Boss"};
     ui.tabs("tabs", {r.x + ui.s(8), r.y + ui.s(8), r.w - ui.s(16), ui.s(44)}, tabs, tab_);
     Rect area{r.x, r.y + ui.s(60), r.w, r.h - ui.s(70)};
-    if (editingNative()) {
-        // Native entities are the campaign's: usable everywhere, never modified.
-        const std::string hint = "Essayez vos réglages dans l'arène ; « Enregistrer une copie » crée votre version.";
-        float bw = r.w - ui.s(20);
-        float hintH = ui.text().measureWrapped(hint, FontFace::Body, ui.s(16), bw - ui.s(24)).y;
-        Rect banner{r.x + ui.s(10), area.y, bw, ui.s(42) + hintH + ui.s(8)};
-        ui.r().fillRoundedRect(banner, ui.s(8), ui.theme().accent.withAlpha(40));
-        ui.label("Entité native de la campagne : non modifiable", {banner.x + ui.s(12), banner.y + ui.s(10)},
-                 ui.fitFont("Entité native de la campagne : non modifiable", FontFace::Bold, 19.0f, bw - ui.s(24)), ui.theme().accent,
-                 Align::Left, FontFace::Bold);
-        ui.labelWrapped(hint, {banner.x + ui.s(12), banner.y + ui.s(38)}, bw - ui.s(24), 16, ui.theme().textDim);
+    const EnemyEditAccess acc = access();
+    if (acc.readOnly() || admin_) {
+        // 2.45: a native is read-only for the player (the campaign's: usable everywhere, never
+        // modified); in the administration its definition is published online.
+        std::string head, hint;
+        Color col = ui.theme().accent;
+        if (admin_ && adminMissing_) {
+            head = "Révision en ligne absente de ce jeu";
+            hint = "La révision " + std::to_string(adminBase_) +
+                   " de cette entité n'est pas téléchargée : revenez à l'administration et actualisez, ou mettez le jeu à jour.";
+            col = ui.theme().danger;
+        } else if (admin_) {
+            head = "Administration : définition de l'entité native";
+            hint = "Ses réglages se modifient ici. Ses planches d'animation et la durée de leurs images restent celles du jeu (lecture seule). "
+                   "« Publier… » met la définition en ligne.";
+            col = ui.theme().warm;
+        } else {
+            head = "Entité native de la campagne : lecture seule";
+            hint = "Ses réglages sont visibles mais ne se modifient pas. « Dupliquer pour modifier » crée votre copie, que vous pourrez changer.";
+        }
+        const float bw = r.w - ui.s(20), tw = bw - ui.s(24);
+        const float hs = ui.fitFont(head, FontFace::Bold, 19.0f, tw);
+        const float headH = ui.text().measure(head, FontFace::Bold, ui.s(hs)).y;
+        const float hintH = ui.text().measureWrapped(hint, FontFace::Body, ui.s(16), tw).y;
+        Rect banner{r.x + ui.s(10), area.y, bw, ui.s(10) + headH + ui.s(8) + hintH + ui.s(10)};
+        ui.r().fillRoundedRect(banner, ui.s(8), col.withAlpha(40));
+        ui.label(head, {banner.x + ui.s(12), banner.y + ui.s(10)}, hs, col, Align::Left, FontFace::Bold);
+        ui.labelWrapped(hint, {banner.x + ui.s(12), banner.y + ui.s(10) + headH + ui.s(8)}, tw, 16, ui.theme().textDim);
         area.y += banner.h + ui.s(8);
         area.h -= banner.h + ui.s(8);
     }
@@ -70,6 +87,10 @@ void EnemyEditorScene::drawProperties(const Rect& r) {
     }
     ui.beginScroll("scroll" + std::to_string(tab_), area, ui.s(2200));
     float y = area.y + ui.s(6) - ui.scrollOffset();
+    // Read-only: every field shown greyed, reachable, unchanged (the lists of attacks and phases
+    // still choose what is shown).
+    const bool roBefore = ui.readOnly;
+    ui.readOnly = acc.readOnly();
     switch (tab_) {
         case 0: tabGeneral(x, y, w); break;
         case 1: tabBehaviour(x, y, w); break;
@@ -79,6 +100,7 @@ void EnemyEditorScene::drawProperties(const Rect& r) {
         case 5: tabRewards(x, y, w); break;
         case 6: tabBoss(x, y, w); break;
     }
+    ui.readOnly = roBefore;
     ui.endScroll();
     ui.popId();
 }
@@ -87,18 +109,24 @@ void EnemyEditorScene::tabGeneral(float x, float& y, float w) {
     UIContext& ui = g_.ui;
     FieldRow row{ui, x, w, w * 0.4f, y};
     bool c = false;
+    const bool ro = ui.readOnly;
+    const EnemyEditAccess acc = access();
     c |= ui.textField("name", row.field("Nom"), work_.name);
+    ui.readOnly = ro || !acc.id;  // the administration keeps the native's identifier
     c |= ui.textField("id", row.field("Identifiant"), work_.id, "", 48);
+    ui.readOnly = ro;
     c |= ui.textField("desc", row.field("Description"), work_.description, "", 300);
     c |= enumCycle(ui, "family", {x, y, w, ui.s(46)}, "Famille", work_.family, &familyLabel);
     y += ui.s(54);
     std::vector<std::string> anims;
     for (const auto& a : PropertyEditor::assetFiles("animations", ".json"))
         if (auto j = g_.app.resources().json(a); j && j->contains("clips")) anims.push_back(a);
+    ui.readOnly = ro || !acc.animation;  // a native's sheet stays the game's
     if (stringCycle(ui, "anim", {x, y, w, ui.s(46)}, "Sprites", work_.animation, anims)) {
         c = true;
         loadAnimation();
     }
+    ui.readOnly = ro;
     y += ui.s(54);
     c |= ui.numberField("sw", row.field("Hitbox largeur"), work_.size.x, 1, 2, 400, "%.0f");
     c |= ui.numberField("sh", row.field("Hitbox hauteur"), work_.size.y, 1, 2, 400, "%.0f");

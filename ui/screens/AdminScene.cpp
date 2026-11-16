@@ -29,6 +29,7 @@
 #include "ui/screens/AdminCampaign.h"
 #include "ui/screens/AdminCalendar.h"
 #include "ui/screens/AdminCreations.h"
+#include "ui/screens/AdminEnemies.h"
 #include "ui/screens/ChallengeRewardsUi.h"
 #include "ui/screens/ChallengeUi.h"
 #include "ui/screens/MenuBackground.h"
@@ -96,10 +97,10 @@ std::string presenceText(const std::string& p) {
 }
 
 const char* kFilters[] = {"all", "admins", "online"};
-const char* kKinds[] = {"all", "role", "challenge", "campaign", "creation", "refused"};
+const char* kKinds[] = {"all", "role", "challenge", "campaign", "creation", "enemy", "refused"};
 
-/// The tabs: Joueurs, Calendrier des défis (2.41), Journal, Sauvegardes, Campagne (2.45), Créations.
-constexpr int kTabPlayers = 0, kTabCalendar = 1, kTabLog = 2, kTabBackups = 3, kTabCampaign = 4, kTabCreations = 5;
+/// The tabs: Joueurs, Calendrier des défis (2.41), Journal, Sauvegardes, Campagne (2.44), Créations (2.45), Ennemis (2.46).
+constexpr int kTabPlayers = 0, kTabCalendar = 1, kTabLog = 2, kTabBackups = 3, kTabCampaign = 4, kTabCreations = 5, kTabEnemies = 6;
 
 /// "20/11" of "2026-11-20".
 std::string shortDate(const std::string& date) { return date.size() >= 10 ? date.substr(8, 2) + "/" + date.substr(5, 2) : date; }
@@ -121,13 +122,15 @@ public:
         : g_(g), ui_(g), calendar_(g, ui_, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
           backups_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
           campaign_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
-          creations_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }) {
+          creations_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
+          enemies_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }) {
         if (open.rfind("backups", 0) == 0) tab_ = kTabBackups;
         // "creations[:new]" (the editor opened on a new suit).
         if (open.rfind("creations", 0) == 0) {
             tab_ = kTabCreations;
             if (open.size() > 10) creations_.open(open.substr(10));
         }
+        if (open.rfind("enemies", 0) == 0) tab_ = kTabEnemies;  // 2.46
         // 2.45: "campaign[:<level id>]" (that level's history open).
         if (open.rfind("campaign", 0) == 0) {
             tab_ = kTabCampaign;
@@ -184,7 +187,7 @@ public:
         bool back = ui.button("back", {x0_ + W_ - backW, y, backW, hh}, "Retour") || (!modal && ui.backPressed());
         // The tabs after the title when they fit, else on the line below. Equal tabs, each as
         // wide as its longest label needs (« Calendrier des défis »).
-        static const std::vector<std::string> kTabs = {"Joueurs", "Calendrier des défis", "Journal", "Sauvegardes", "Campagne", "Créations"};
+        static const std::vector<std::string> kTabs = {"Joueurs", "Calendrier des défis", "Journal", "Sauvegardes", "Campagne", "Créations", "Ennemis"};
         float tabW = 0.0f;
         for (const std::string& t : kTabs) tabW = std::max(tabW, ui.text().measure(t, FontFace::Bold, ui.s(20)).x + ui.s(44));
         float tabsW = tabW * static_cast<float>(kTabs.size()), tabsX = x0_ + titleW + ui.s(28);
@@ -208,6 +211,8 @@ public:
         ui.newBadge("tabcamp", campTab, "admin.tab.campaign", true, true);
         Rect creaTab{tabsR.x + 5 * tabW + ui.s(2), tabsR.y, tabW - ui.s(4), tabsR.h};
         ui.newBadge("tabcrea", creaTab, "admin.tab.creations", true, true);
+        Rect enTab{tabsR.x + kTabEnemies * tabW + ui.s(2), tabsR.y, tabW - ui.s(4), tabsR.h};
+        ui.newBadge("tabenemies", enTab, "admin.tab.enemies", true, true);
         if (tab != tab_) {
             tab_ = tab;
             if (tab_ == kTabLog) loadLog(false);
@@ -227,6 +232,10 @@ public:
                 if (ui.featureSeen && ui.isNew("admin.tab.creations")) ui.featureSeen("admin.tab.creations");
                 creations_.enter();
             }
+            if (tab_ == kTabEnemies) {
+                if (ui.featureSeen && ui.isNew("admin.tab.enemies")) ui.featureSeen("admin.tab.enemies");
+                enemies_.enter();
+            }
         }
         Rect body{x0_, bodyY, W_, ui.screenH() - bodyY - ui.s(64)};
         if (tab_ == kTabCalendar) {
@@ -240,6 +249,7 @@ public:
             else if (tab_ == kTabBackups) backups_.draw(inner);
             else if (tab_ == kTabCampaign) campaign_.draw(inner);
             else if (tab_ == kTabCreations) creations_.draw(inner);
+            else if (tab_ == kTabEnemies) enemies_.draw(inner);
             else drawLog(inner);
         }
         drawStatus();
@@ -284,6 +294,7 @@ private:
             campaignSelect_.clear();
         }
         if (tab_ == kTabCreations) creations_.enter(true);
+        if (tab_ == kTabEnemies) enemies_.enter(true);
     }
 
     void loadPlayers() {
@@ -338,14 +349,22 @@ private:
     }
 
     /// A row of small buttons, the chosen one highlighted; returns the right edge.
-    float chips(const std::string& id, float x, float y, float h, const std::vector<std::string>& labels, int& active) {
+    float chips(const std::string& id, float x, float y, float h, const std::vector<std::string>& labels, int& active, float maxRight = 0.0f) {
         UIContext& ui = g_.ui;
+        // The row never passes `maxRight`: the labels get smaller (down to 12) until it fits.
+        int font = 16;
+        auto rowWidth = [&](int f) {
+            float w = 0.0f;
+            for (const std::string& l : labels) w += ui.text().measure(l, FontFace::Bold, ui.s(static_cast<float>(f))).x + ui.s(36) + ui.s(8);
+            return w - ui.s(8);
+        };
+        while (maxRight > 0.0f && font > 12 && x + rowWidth(font) > maxRight) --font;
         for (size_t i = 0; i < labels.size(); ++i) {
             UIContext::ButtonStyle st;
             st.small = true;
             st.selected = static_cast<int>(i) == active;
-            st.fontSize = 16;
-            float w = ui.text().measure(labels[i], FontFace::Bold, ui.s(16)).x + ui.s(36);
+            st.fontSize = font;
+            float w = ui.text().measure(labels[i], FontFace::Bold, ui.s(static_cast<float>(font))).x + ui.s(36);
             if (ui.button(id + std::to_string(i), {x, y, w, h}, labels[i], st)) active = static_cast<int>(i);
             x += w + ui.s(8);
         }
@@ -693,6 +712,30 @@ private:
             if (list.empty()) return {"Défi", Color{185, 200, 218, 255}, "a retiré les récompenses du défi " + periodPhrase(ch)};
             return {"Défi", ui.theme().accent, "a fixé les récompenses du défi " + periodPhrase(ch) + " : " + list};
         }
+        // 2.45: a native entity's revision published with the levels that use it, or refused.
+        const Json& en = jfield(e, "enemy", Json());
+        if (en.is_object()) {
+            std::string ename = jstr(en, "enemy_name", jstr(en, "enemy_id"));
+            if (const EnemyDefinition* d = g_.content.enemy(jstr(en, "enemy_id"))) ename = d->name;
+            if (action == "admin_enemy_published") {
+                std::string text = "a publié la révision " + std::to_string(jget<int>(en, "revision", 0)) + " de l'entité « " + ename + " »";
+                const Json& levels = jfield(en, "levels", Json::array());
+                if (levels.empty()) text += " (aucun niveau de la campagne ne l'utilise)";
+                for (const Json& l : levels) {
+                    std::string lname = jstr(l, "level_name", jstr(l, "level_id"));
+                    if (const LevelEntry* le = g_.content.level(jstr(l, "level_id"))) lname = le->name;
+                    const int carried = jget<int>(l, "carried_bests", 0);
+                    text += " · « " + lname + " » révision " + std::to_string(jget<int>(l, "version", 0)) + " (" +
+                            (jstr(l, "records") == "keep" ? "records gardés, " + std::to_string(carried) +
+                                                                (carried > 1 ? " meilleurs temps reportés)" : " meilleur temps reporté)")
+                                                          : std::string("records réinitialisés)"));
+                }
+                return {"Ennemi", ui.theme().warm, text};
+            }
+            std::string why = reason == "BASE_CHANGED" ? std::string("la définition ou un niveau en ligne avait changé entre-temps")
+                                                       : std::string("refus du serveur");
+            return {"Refus", ui.theme().textDim, "publication d'une révision de l'entité « " + ename + " » refusée : " + why};
+        }
         // 2.45: a campaign revision published, made current again, or refused.
         const Json& camp = jfield(e, "campaign", Json());
         if (camp.is_object()) {
@@ -778,7 +821,7 @@ private:
         ui.pushId("log");
         float y = in.y, fh = ui.s(46);
         int kind = kind_;
-        float kr = chips("kind", in.x, y, fh, {"Toutes les actions", "Rôles", "Défis", "Campagne", "Créations", "Refus"}, kind);
+        float kr = chips("kind", in.x, y, fh, {"Toutes les actions", "Rôles", "Défis", "Campagne", "Créations", "Ennemis", "Refus"}, kind, in.right());
         std::vector<std::string> who{"Tous"};
         for (const auto& a : admins_) who.push_back(jstr(a, "username"));
         int actor = std::min(actor_, static_cast<int>(who.size()) - 1);
@@ -893,6 +936,7 @@ private:
     AdminCampaign campaign_;  // « Campagne » (2.45)
     std::string campaignSelect_;
     AdminCreations creations_;  // « Créations »: the suits made on the server
+    AdminEnemies enemies_;  // « Ennemis » (2.46)
     MenuBackground bg_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     float W_ = 0.0f, x0_ = 0.0f;

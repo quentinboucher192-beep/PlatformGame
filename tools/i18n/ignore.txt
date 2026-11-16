@@ -123,3 +123,4 @@ manifest
 continue
 <combinaison {0}>
 accent
+hp

@@ -1,0 +1,300 @@
+{
+ "enemies": [
+  {
+   "id": "archon_catacombs",
+   "name": "Archonte des Catacombes"
+  },
+  {
+   "id": "ash_wing",
+   "name": "Aile de cendre"
+  },
+  {
+   "id": "astrarque",
+   "name": "Astrarque"
+  },
+  {
+   "id": "aurorax",
+   "name": "Aurorax"
+  },
+  {
+   "id": "bomber",
+   "name": "Bombardier"
+  },
+  {
+   "id": "bulwark",
+   "name": "Rempart"
+  },
+  {
+   "id": "burrower",
+   "name": "Fouisseur"
+  },
+  {
+   "id": "cinder_bloom",
+   "name": "Fleur de cendre"
+  },
+  {
+   "id": "crucible_heart",
+   "name": "Cœur du Creuset"
+  },
+  {
+   "id": "cryo_bomber",
+   "name": "Bombardier cryogénique"
+  },
+  {
+   "id": "cryo_drone",
+   "name": "Drone cryogénique"
+  },
+  {
+   "id": "cryowyrm",
+   "name": "Cryowyrm"
+  },
+  {
+   "id": "echo_archon_catacombs",
+   "name": "Écho : Archonte des Catacombes"
+  },
+  {
+   "id": "echo_aurorax",
+   "name": "Écho : Aurorax"
+  },
+  {
+   "id": "echo_crucible_heart",
+   "name": "Écho : Cœur du Creuset"
+  },
+  {
+   "id": "echo_cryowyrm",
+   "name": "Écho : Cryowyrm"
+  },
+  {
+   "id": "echo_forge_core",
+   "name": "Écho : Forgeron Primordial"
+  },
+  {
+   "id": "echo_frost_hydra",
+   "name": "Écho : Hydre de Givre"
+  },
+  {
+   "id": "echo_glaciarch",
+   "name": "Écho : Glaciarque"
+  },
+  {
+   "id": "echo_howling_wyrm",
+   "name": "Écho : Wyrm Hurlante"
+  },
+  {
+   "id": "echo_ignivore",
+   "name": "Écho : Ignivore"
+  },
+  {
+   "id": "echo_magmaroth",
+   "name": "Écho : Magmaroth"
+  },
+  {
+   "id": "echo_mycelia",
+   "name": "Écho : Mycélia"
+  },
+  {
+   "id": "echo_nyxara",
+   "name": "Écho : Nyxara"
+  },
+  {
+   "id": "echo_prime_sentinel",
+   "name": "Écho : Sentinelle Prime"
+  },
+  {
+   "id": "echo_pyrogyre",
+   "name": "Écho : Pyrogyre"
+  },
+  {
+   "id": "echo_spore_queen",
+   "name": "Écho : Reine Sporale"
+  },
+  {
+   "id": "echo_thornwarden",
+   "name": "Écho : Thornwarden"
+  },
+  {
+   "id": "eclat_stellaire",
+   "name": "Éclat stellaire"
+  },
+  {
+   "id": "ember_mite",
+   "name": "Braisite"
+  },
+  {
+   "id": "ember_weaver",
+   "name": "Tisseuse ardente"
+  },
+  {
+   "id": "fire_wisp",
+   "name": "Feu follet ardent"
+  },
+  {
+   "id": "forge_bomber",
+   "name": "Bombardier de forge"
+  },
+  {
+   "id": "forge_bulwark",
+   "name": "Rempart de forge"
+  },
+  {
+   "id": "forge_core",
+   "name": "Forgeron Primordial"
+  },
+  {
+   "id": "forge_drone",
+   "name": "Drone de forge"
+  },
+  {
+   "id": "frost_bloom",
+   "name": "Fleur de givre"
+  },
+  {
+   "id": "frost_bulwark",
+   "name": "Rempart gelé"
+  },
+  {
+   "id": "frost_hydra",
+   "name": "Hydre de Givre"
+  },
+  {
+   "id": "frost_mite",
+   "name": "Givrite"
+  },
+  {
+   "id": "frost_weaver",
+   "name": "Tisseuse de givre"
+  },
+  {
+   "id": "frost_wing",
+   "name": "Aile de givre"
+  },
+  {
+   "id": "frost_wisp",
+   "name": "Feu follet gelé"
+  },
+  {
+   "id": "glaciarch",
+   "name": "Glaciarque"
+  },
+  {
+   "id": "gloop",
+   "name": "Gloop"
+  },
+  {
+   "id": "gloop_small",
+   "name": "Petit Gloop"
+  },
+  {
+   "id": "glowmite",
+   "name": "Glowmite"
+  },
+  {
+   "id": "golem",
+   "name": "Golem des ruines"
+  },
+  {
+   "id": "howling_wyrm",
+   "name": "Wyrm Hurlante"
+  },
+  {
+   "id": "ice_burrower",
+   "name": "Fouisseur de glace"
+  },
+  {
+   "id": "ice_gloop",
+   "name": "Gloop de glace"
+  },
+  {
+   "id": "ice_gloop_small",
+   "name": "Petit Gloop de glace"
+  },
+  {
+   "id": "ice_golem",
+   "name": "Golem de glace"
+  },
+  {
+   "id": "ignivore",
+   "name": "Ignivore"
+  },
+  {
+   "id": "lava_burrower",
+   "name": "Fouisseur de lave"
+  },
+  {
+   "id": "lava_stalker",
+   "name": "Traqueur de lave"
+  },
+  {
+   "id": "magma_gloop",
+   "name": "Gloop de magma"
+  },
+  {
+   "id": "magma_gloop_small",
+   "name": "Petit Gloop de magma"
+  },
+  {
+   "id": "magma_golem",
+   "name": "Golem de magma"
+  },
+  {
+   "id": "magmaroth",
+   "name": "Magmaroth"
+  },
+  {
+   "id": "mycelia",
+   "name": "Mycélia"
+  },
+  {
+   "id": "nightwing",
+   "name": "Aile-de-nuit"
+  },
+  {
+   "id": "nyxara",
+   "name": "Nyxara"
+  },
+  {
+   "id": "prime_sentinel",
+   "name": "Sentinelle Prime"
+  },
+  {
+   "id": "pyrogyre",
+   "name": "Pyrogyre"
+  },
+  {
+   "id": "sentinel",
+   "name": "Drone sentinelle"
+  },
+  {
+   "id": "singularis",
+   "name": "Singularis"
+  },
+  {
+   "id": "snow_stalker",
+   "name": "Traqueur des neiges"
+  },
+  {
+   "id": "spore_queen",
+   "name": "Reine Sporale"
+  },
+  {
+   "id": "sporeflower",
+   "name": "Fleur à spores"
+  },
+  {
+   "id": "stalker",
+   "name": "Traqueur"
+  },
+  {
+   "id": "thornwarden",
+   "name": "Thornwarden"
+  },
+  {
+   "id": "weaver",
+   "name": "Tisseuse"
+  },
+  {
+   "id": "wisp",
+   "name": "Feu follet arcanique"
+  }
+ ]
+}

@@ -5,6 +5,13 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.46.0** :
+* **Entités natives en lecture seule** dans l'éditeur d'ennemis (EN LIGNE › ATELIER), avec
+  « Dupliquer pour modifier ».
+* **Administration › Ennemis** : un admin modifie une entité native et la publie ; chaque niveau
+  de la campagne qui l'utilise reçoit une nouvelle révision, avec une case par niveau pour
+  réinitialiser ou garder ses records.
+
 **Nouveau dans la version 2.45.0** :
 * **Créations** (Administration) : combinaisons recolorées créées par un admin (nom, trois
   couleurs, aperçu animé), données en récompense des défis et portées partout sans mise à jour.

@@ -84,7 +84,8 @@ void DependencyCollector::animation(const std::string& rel) {
 
 void DependencyCollector::enemy(const std::string& id) {
     if (id.empty() || out_.enemies.count(id)) return;
-    const EnemyDefinition* d = content_.enemy(id);
+    // 2.45: the definition this level plays (a revision published online for a campaign level).
+    const EnemyDefinition* d = content_.enemyFor(id, binding_);
     if (!d) {
         out_.warnings.push_back("Ennemi inconnu : " + id);
         return;
@@ -129,6 +130,7 @@ void DependencyCollector::power(const std::string& id) {
 DependencySet DependencyCollector::collect(const LevelData& level) {
     out_ = DependencySet{};
     out_.planet = level.planet;
+    binding_ = content_.enemyBindingOf(level);
     for (const auto& a : coreRuntimeAssets()) asset(a);
     asset(level.music);
     asset(level.bossMusic);

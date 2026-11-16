@@ -25,6 +25,8 @@ export const ADMIN_ACTIONS = {
     campaign: ["admin_campaign_published", "admin_campaign_reverted"],
     // ADMINISTRATION › Créations (creations.ts): a suit created, edited, archived or restored.
     creation: ["admin_creation_created", "admin_creation_updated", "admin_creation_archived", "admin_creation_restored"],
+    // 2.46: ADMINISTRATION › Ennemis (enemyRevisions.ts): a native entity published as a revision.
+    enemy: ["admin_enemy_published"],
     // Backups (ADMINISTRATION › Sauvegardes, backups.ts): copies, downloads, imports. Never a passphrase.
     backup: [
         "backup_created",
@@ -47,9 +49,10 @@ const ALL_ADMIN_ACTIONS: readonly string[] = [
         ...ADMIN_ACTIONS.backup,
         ...ADMIN_ACTIONS.campaign,
         ...ADMIN_ACTIONS.creation,
+        ...ADMIN_ACTIONS.enemy,
     ]),
 ];
-const LOG_KINDS = ["all", "role", "challenge", "refused", "backup", "campaign", "creation"] as const;
+const LOG_KINDS = ["all", "role", "challenge", "refused", "backup", "campaign", "creation", "enemy"] as const;
 
 const ID_RE = /^[A-Za-z0-9-]{8,64}$/;
 
@@ -276,7 +279,33 @@ function creationOfDetails(d: Record<string, unknown>) {
 }
 
 /**
- * GET /admin/log?kind=all|role|challenge|refused|backup|campaign|creation&actor=<player id>&limit=&offset=
+ * What the Journal shows of a native entity published as a revision, or refused (2.46): the
+ * entity, its revision, and each campaign level given a new revision with its records choice.
+ */
+function enemyOfDetails(d: Record<string, unknown>) {
+    const e = d.enemy;
+    if (!isObject(e) || typeof e.enemy_id !== "string") return null;
+    const num = (o: Record<string, unknown>, k: string) => (typeof o[k] === "number" ? (o[k] as number) : null);
+    const str = (o: Record<string, unknown>, k: string) => (typeof o[k] === "string" ? (o[k] as string) : null);
+    const levels = Array.isArray(e.levels) ? e.levels.filter(isObject).slice(0, 100) : [];
+    return {
+        enemy_id: e.enemy_id,
+        enemy_name: str(e, "enemy_name"),
+        revision: num(e, "revision"),
+        from_revision: num(e, "from_revision"),
+        base_revision: num(e, "base_revision"),
+        levels: levels.map((l) => ({
+            level_id: str(l, "level_id"),
+            level_name: str(l, "level_name"),
+            version: num(l, "version"),
+            records: str(l, "records"),
+            carried_bests: num(l, "carried_bests"),
+        })),
+    };
+}
+
+/**
+ * GET /admin/log?kind=all|role|challenge|refused|backup|campaign|creation|enemy&actor=<player id>&limit=&offset=
  * The administration's own actions, newest first: who (the admin's current username, or the
  * one written at the time when the account is gone), what, when. Never the IP hash.
  */
@@ -324,6 +353,8 @@ export async function listLog(ctx: Ctx): Promise<Response> {
             title: isObject(d.title) ? d.title : null,
             // 2.45: a campaign revision (published, made current again, or refused).
             campaign: campaignOfDetails(d),
+            // 2.46: a native entity published as a revision (or refused).
+            enemy: enemyOfDetails(d),
             // A creation (ADMINISTRATION › Créations): created, edited, archived, restored or refused.
             creation: creationOfDetails(d),
         };

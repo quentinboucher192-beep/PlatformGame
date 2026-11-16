@@ -243,7 +243,7 @@ void SecretAreaEntity::render(RenderContext& ctx) {
 
 void EnemySpawnEntity::init(GameWorld& w) {
     if (w.mode() == WorldMode::Editor) {
-        if (const EnemyDefinition* d = w.content().enemy(obj_.propStr("enemy", "glowmite"))) {
+        if (const EnemyDefinition* d = w.enemyDefinition(obj_.propStr("enemy", "glowmite"))) {
             if (!d->assetRoot.empty()) w.resources().pushMount(d->assetRoot);
             previewAnim_ = w.resources().animation(d->animation);
             if (!d->assetRoot.empty()) w.resources().popMount();

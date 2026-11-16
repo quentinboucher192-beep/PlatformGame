@@ -16,6 +16,7 @@ import * as cosmetics from "./cosmetics";
 import * as badges from "./badges";
 import * as campaign from "./campaign";
 import * as campaignRevisions from "./campaignRevisions";
+import * as enemyRevisions from "./enemyRevisions";
 import * as challenges from "./challenges";
 import * as creations from "./creations";
 import * as notifications from "./notifications";
@@ -152,6 +153,9 @@ route("GET", `${V}/campaign/revisions`, (ctx) => campaignRevisions.manifest(ctx)
 route("GET", `${V}/campaign/levels/{levelId}/revisions/{version}/file`, (ctx) => campaignRevisions.file(ctx), { cacheable: true });
 // The creations of an administrator that every game may have to draw (public: suits' names and colours).
 route("GET", `${V}/creations`, (ctx) => creations.publicCreations(ctx), { cacheable: true });
+// 2.46: the native entities published by an administrator (public: the games download every revision).
+route("GET", `${V}/enemies/revisions`, (ctx) => enemyRevisions.manifest(ctx), { cacheable: true });
+route("GET", `${V}/enemies/{enemyId}/revisions/{revision}/file`, (ctx) => enemyRevisions.file(ctx), { cacheable: true });
 route("GET", `${V}/levels/{levelId}/rating`, (ctx) => campaign.getRating(ctx), { cacheable: true });
 route("PUT", `${V}/levels/{levelId}/rating`, (ctx) => campaign.putRating(ctx));
 route("DELETE", `${V}/levels/{levelId}/rating`, (ctx) => campaign.deleteRating(ctx));
@@ -332,6 +336,10 @@ route("GET", `${V}/admin/campaign`, (ctx) => campaignRevisions.adminList(ctx));
 route("GET", `${V}/admin/campaign/{levelId}/revisions`, (ctx) => campaignRevisions.adminHistory(ctx));
 route("POST", `${V}/admin/campaign/{levelId}/revisions`, (ctx) => campaignRevisions.publish(ctx));
 route("POST", `${V}/admin/campaign/{levelId}/revert`, (ctx) => campaignRevisions.revert(ctx));
+// ADMINISTRATION › Ennemis (2.46): native entities edited in the game's enemy editor, published as revisions.
+route("GET", `${V}/admin/enemies`, (ctx) => enemyRevisions.adminList(ctx));
+route("GET", `${V}/admin/enemies/{enemyId}/revisions`, (ctx) => enemyRevisions.adminHistory(ctx));
+route("POST", `${V}/admin/enemies/{enemyId}/revisions`, (ctx) => enemyRevisions.publish(ctx));
 route("GET", `${V}/admin/challenges/levels`, (ctx) => adminChallenges.listLevels(ctx));
 route("PUT", `${V}/admin/challenges/{challengeId}`, (ctx) => adminChallenges.setChallenge(ctx));
 route("DELETE", `${V}/admin/challenges/{challengeId}`, (ctx) => adminChallenges.resetChallenge(ctx));

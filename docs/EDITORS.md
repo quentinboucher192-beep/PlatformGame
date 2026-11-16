@@ -12,10 +12,12 @@ copie modifiable, l'original n'est jamais écrasé.
 **Entités natives** : les ennemis, boss, pouvoirs, effets et graphismes livrés avec le jeu
 sont ceux de la campagne. Ils sont utilisables dans tous vos niveaux mais jamais modifiables :
 
-* dans l'éditeur d'ennemis, une entité native porte la mention « natif » et un bandeau
-  l'indique ; vous pouvez essayer des réglages dans l'arène, et *Enregistrer une copie* crée
-  votre version (`<id>_perso`, avec sa propre animation `animations/user/<id>.json` si vous
-  avez changé le rythme des images) ;
+* dans l'éditeur d'ennemis (EN LIGNE › ATELIER), une entité native est en **lecture seule**
+  (2.46) : tous ses réglages sont affichés mais rien ne se modifie, ne s'enregistre ni ne se
+  supprime, pas même le rythme de ses images ; l'arène de test reste utilisable, et
+  *Dupliquer pour modifier* crée votre copie, que vous modifiez librement. Seul un compte admin
+  modifie une entité native, dans ADMINISTRATION › Ennemis
+  ([online/ENEMY_REVISIONS.md](online/ENEMY_REVISIONS.md)) ;
 * un fichier du dossier utilisateur qui reprend l'identifiant d'une entité native est ignoré
   au chargement, et un fichier graphique ou sonore du dossier utilisateur ou d'un package ne
   remplace jamais un fichier de l'installation (il peut seulement en ajouter de nouveaux) ;
