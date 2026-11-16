@@ -379,3 +379,4 @@ def build():
     importlib.import_module("bosses_g").build()  # bosses_g: le Kraken des Abysses, abyssal giga boss (8 phase sheets)
     importlib.import_module("bosses_h").build()  # bosses_h: le Phénix Stellaire, the phoenix giga boss (8 phase sheets)
     importlib.import_module("bosses_i").build()  # bosses_i: La Liche des Catacombes, lich giga boss (8 phase sheets)
+    importlib.import_module("bosses_j").build()  # bosses_j: le Titan Mécanique, war machine giga boss (8 phase sheets)
