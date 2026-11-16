@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "engine/core/FileUtil.h"
+#include "game/achievements/Achievements.h"
 #include "game/records/BossStats.h"
 #include "game/records/Records.h"
 
@@ -177,6 +178,17 @@ Json mergeAchievementsJson(const Json& mine, const Json& theirs) {
     Json sets = objectOr(mine, "sets");
     for (const auto& [k, v] : objectOr(theirs, "sets").items()) sets[k] = unionStrings(sets.value(k, Json::array()), v);
     out["sets"] = sets;
+    // 2.52: the achievements followed, this computer's first then the other ones (union),
+    // those now unlocked left out, at most AchievementBook::kMaxTracked.
+    Json tracked = Json::array();
+    for (const Json* side : {&mine, &theirs}) {
+        if (!side->is_object() || !side->contains("tracked") || !(*side)["tracked"].is_array()) continue;
+        for (const Json& id : (*side)["tracked"]) {
+            if (!id.is_string() || unlocked.contains(id.get<std::string>()) || tracked.size() >= AchievementBook::kMaxTracked) continue;
+            if (std::find(tracked.begin(), tracked.end(), id) == tracked.end()) tracked.push_back(id);
+        }
+    }
+    out["tracked"] = tracked;
     return out;
 }
 

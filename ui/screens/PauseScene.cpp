@@ -2,9 +2,11 @@
 
 #include "engine/core/Easing.h"
 #include "game/GameServices.h"
+#include "game/achievements/AchievementSuggestions.h"
 #include "ui/screens/GameScene.h"
 #include "ui/screens/LevelPowerKeysScene.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/PauseLayout.h"
 #include "ui/widgets/Glyphs.h"
 
 namespace cosmic {
@@ -13,9 +15,82 @@ void PauseScene::onEnter() {
     g_.app.audio().setMusicDuck(0.35f);
     g_.uiSound("ui_confirm", 0.5f);
     g_.ui.setFocus("pause/resume");
+    // « Succès suivis » (2.52): the counters with this run's progress, read once (nothing moves
+    // while paused; the inputs scan the user folders).
+    liveStats_ = game_.liveAchievementStats();
+    achInputs_ = g_.achievementInputs();
+    achInputs_.stats = &liveStats_;
+}
+
+void PauseScene::drawTracked(const Rect& r, const PauseLayout& L, const std::vector<const AchievementDef*>& rows, bool note) {
+    UIContext& ui = g_.ui;
+    const UITheme& th = ui.theme();
+    const float fs = std::max(16.0f, 11.5f / ui.s(1.0f));  // never under 11.5 pixels
+    // Title, the count, and « Modifier » (opens Succès over the run, to tick or untick).
+    const float headH = ui.s(L.headerH);
+    const std::string edit = rows.empty() ? "Choisir des succès" : "Modifier";
+    UIContext::ButtonStyle st;
+    st.small = true;
+    st.fontSize = fs;
+    const float ebw = ui.text().measure(edit, FontFace::Bold, ui.s(fs)).x + ui.s(36);
+    const Rect eb{r.right() - ebw, r.y + ui.s(3), ebw, headH - ui.s(8)};
+    if (ui.button("trackedit", eb, edit, st)) {
+        resumeFocus_ = "pause/trackedit";  // back on this button afterwards
+        g_.app.pushScene(makeAchievementsFromPause(g_));
+    }
+    // « NOUVEAU » just left of the button (the button is too low for a pill on its edge).
+    float room = eb.x - ui.s(12) - r.x;
+    if (ui.newBadge("trackedit", eb, "pause.tracked_achievements", false, true)) {
+        ui.drawNewPill(eb.x - ui.s(8), eb.center().y, true);
+        room -= ui.newPillWidth(true) + ui.s(8);
+    }
+    const std::string title = "SUCCÈS SUIVIS";
+    const std::string count = std::to_string(rows.size()) + " / " + std::to_string(AchievementBook::kMaxTracked);
+    const float cw = ui.text().measure(count, FontFace::Body, ui.s(fs)).x;
+    const float tf = std::max(ui.fitFont(title, FontFace::Bold, 18, std::max(ui.s(40), room - cw - ui.s(10)), 0.64f), 11.5f / ui.s(1.0f));
+    const Vec2 tsz = ui.label(title, {r.x, r.y + headH * 0.5f}, tf, th.text, Align::Left, FontFace::Bold, VAlign::Middle);
+    if (tsz.x + ui.s(10) + cw <= room)
+        ui.label(count, {r.x + tsz.x + ui.s(10), r.y + headH * 0.5f}, fs, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+    float y = r.y + headH;
+    if (rows.empty()) {
+        const std::string invite = "Cochez jusqu'à 5 succès dans Succès pour suivre leur avancée ici.";
+        const float f = std::max(ui.fitFont(invite, FontFace::Body, 15, r.w, 0.78f), 11.5f / ui.s(1.0f));
+        ui.label(ui.elide(invite, FontFace::Body, f, r.w), {r.x, y + ui.s(L.emptyH) * 0.5f}, f, th.textDim, Align::Left, FontFace::Body,
+                 VAlign::Middle);
+        return;
+    }
+    const float rowH = ui.s(L.rowH), barH = std::max(3.0f, ui.s(7));
+    for (const AchievementDef* a : rows) {
+        const AchievementProgress p = AchievementBook::progress(*a, achInputs_);
+        const bool live = achievementMovesDuringRun(a->condition);
+        const AchievementCategory* k = g_.achievementCatalog.category(a->category);
+        const Color col = p.done() ? th.success : k ? k->color : th.accent;
+        // Name on the left, numbers on the right (the name gives way), the bar under both.
+        const std::string nums = achievementProgressText(*a, p) + (live ? "" : " *");
+        const float textY = y + (rowH - barH - ui.s(4)) * 0.5f;
+        const float nw = ui.text().measure(nums, FontFace::Bold, ui.s(fs)).x;
+        ui.label(nums, {r.right(), textY}, fs, live ? th.text : th.textDim, Align::Right, FontFace::Bold, VAlign::Middle);
+        ui.label(ui.elide(a->name, FontFace::Body, fs, r.w - nw - ui.s(14)), {r.x, textY}, fs, th.text, Align::Left, FontFace::Body, VAlign::Middle);
+        const float f = std::clamp(static_cast<float>(p.value) / static_cast<float>(std::max<int64_t>(1, p.target)), 0.0f, 1.0f);
+        const Rect bar{r.x, y + rowH - barH - ui.s(4), r.w, barH};
+        ui.r().fillRoundedRect(bar, barH * 0.5f, Color{20, 28, 52, 255});
+        if (f > 0.0f) ui.r().fillRoundedRect({bar.x, bar.y, std::max(bar.h, bar.w * f), bar.h}, barH * 0.5f, col);
+        y += rowH;
+    }
+    if (note) {
+        const std::string n = "* compté après la partie, pas pendant";
+        const float f = std::max(ui.fitFont(n, FontFace::Body, 14, r.w, 0.82f), 11.5f / ui.s(1.0f));
+        ui.label(ui.elide(n, FontFace::Body, f, r.w), {r.x, y + ui.s(L.noteH) * 0.5f}, f, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+    }
 }
 
 void PauseScene::onExit() { g_.app.audio().setMusicDuck(1.0f); }
+
+void PauseScene::onResume() {
+    if (resumeFocus_.empty()) return;
+    g_.ui.setFocus(resumeFocus_);
+    resumeFocus_.clear();
+}
 
 void PauseScene::update(float dt) {
     t_ += dt;
@@ -107,7 +182,18 @@ void PauseScene::render(float /*alpha*/) {
     const bool keys = !game_.powerKeys().powers.empty();
     // 2.51: « Invincible » for administrators in a training run.
     const bool invincible = game_.invincibleAllowed();
-    float w = ui.s(560), h = ui.s((ghosts ? 860 : 780) + (keys ? 80 : 0) + (invincible ? 80 : 0));
+    // 2.52: « Succès suivis » under the buttons; the column is measured (PauseLayout): it shrinks
+    // when the window is short, never overlapping, and the map keeps its place on the right.
+    std::vector<const AchievementDef*> tracked;
+    bool note = false;
+    for (const std::string& id : g_.achievements.tracked())
+        if (const AchievementDef* a = g_.achievementCatalog.find(id); a && !g_.achievements.unlocked(id)) {
+            tracked.push_back(a);
+            note = note || !achievementMovesDuringRun(a->condition);
+        }
+    const int buttons = 6 + (keys ? 1 : 0) + (invincible ? 1 : 0) + (ghosts ? 1 : 0);
+    const PauseLayout L = pauseLayout(buttons, static_cast<int>(tracked.size()), note, ui.scale(), ui.screenH());
+    float w = ui.s(560), h = ui.s(L.height);
     // The map of what was explored sits on the right of the menu when the window has room.
     GameWorld* mapWorld = game_.world();
     const float gap = ui.s(24);
@@ -130,32 +216,33 @@ void PauseScene::render(float /*alpha*/) {
         ui.label(stats, {panel.center().x, panel.y + ui.s(142)}, 20, ui.theme().textDim, Align::Center);
     }
 
-    float bx = panel.x + ui.s(60), bw = panel.w - ui.s(120), bh = ui.s(64);
-    float y = panel.y + ui.s(200);
+    float bx = panel.x + ui.s(60), bw = panel.w - ui.s(120), bh = ui.s(L.buttonH);
+    const float step = bh + ui.s(L.gap);
+    float y = panel.y + ui.s(L.top);
     ui.pushId("pause");
     UIContext::ButtonStyle primary;
     primary.primary = true;
     bool resume = ui.button("resume", {bx, y, bw, bh}, "Reprendre", primary);
-    y += bh + ui.s(16);
+    y += step;
     if (ui.button("restart", {bx, y, bw, bh}, "Recommencer")) {
         g_.app.popScene();
         game_.restart();
     }
-    y += bh + ui.s(16);
+    y += step;
     bool openSettings = ui.button("settings", {bx, y, bw, bh}, "Paramètres");
     ui.newBadge("settings", {bx, y, bw, bh}, "menu.settings");
     if (openSettings) g_.app.pushScene(makeSettingsScene(g_, true));
-    y += bh + ui.s(16);
+    y += step;
     bool openGuide = ui.button("guide", {bx, y, bw, bh}, "Guide des pouvoirs");
     ui.newBadge("guide", {bx, y, bw, bh}, "powers.guide");  // « NOUVEAU »: cards of the guide changed (2.25)
     if (openGuide) g_.app.pushScene(makePowerGuide(g_));
-    y += bh + ui.s(16);
+    y += step;
     if (keys) {
         // The keys of this level's powers, for this player (each power keeps its own key).
         bool openKeys = ui.button("levelkeys", {bx, y, bw, bh}, "Touches de ce niveau");
         ui.newBadge("levelkeys", {bx, y, bw, bh}, "pause.level_keys");  // « NOUVEAU » (2.31)
         if (openKeys) g_.app.pushScene(makeLevelPowerKeys(g_, game_.level(), game_.powerKeyExtra(), game_.carriedPowers()));
-        y += bh + ui.s(16);
+        y += step;
     }
     if (invincible) {
         // Administrators: no damage in this training run, a fall goes back to solid ground.
@@ -166,7 +253,7 @@ void PauseScene::render(float /*alpha*/) {
         st.fontSize = ui.fitFont(label, FontFace::Bold, 26, bw - ui.s(24));
         if (ui.button("invincible", {bx, y, bw, bh}, label, st)) game_.setInvincible(!on);
         ui.newBadge("invincible", {bx, y, bw, bh}, "pause.invincible");
-        y += bh + ui.s(16);
+        y += step;
     }
     {
         // « Mode concentré »: the reduced HUD (also T / Partage in game).
@@ -185,11 +272,11 @@ void PauseScene::render(float /*alpha*/) {
         ui.label(fl, fr.center(), ffs, ui.theme().text, Align::Center, FontFace::Bold, VAlign::Middle);
         ui.r().fillRoundedRect(track, ui.s(11), focus ? ui.theme().accent.withAlpha(210) : Color{40, 50, 70, 255});
         ui.r().fillCircle({focus ? track.right() - ui.s(11) : track.x + ui.s(11), track.center().y}, ui.s(8.5f), Color::white());
-        y += bh + ui.s(16);
+        y += step;
     }
     if (ghosts) {
         if (ui.button("ghosts", {bx, y, bw, bh}, game_.ghostsVisible() ? "Fantômes" : "Fantômes (masqués)")) g_.app.pushScene(makeGhostOptions(g_, &game_));
-        y += bh + ui.s(16);
+        y += step;
     }
     UIContext::ButtonStyle danger;
     danger.danger = true;
@@ -204,6 +291,7 @@ void PauseScene::render(float /*alpha*/) {
             confirmQuit_ = true;
         }
     }
+    drawTracked({bx, panel.y + ui.s(L.sectionTop(buttons)), bw, ui.s(L.sectionHeight(static_cast<int>(tracked.size()), note))}, L, tracked, note);
     ui.popId();
     if (resume || ui.backPressed() || (g_.app.input().menuPressed(Action::Pause) && t_ > 0.1f)) {
         g_.app.popScene();

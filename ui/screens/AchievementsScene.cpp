@@ -7,10 +7,13 @@
 #include <array>
 #include <cmath>
 #include <cstdio>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "game/GameServices.h"
+#include "game/achievements/AchievementSuggestions.h"
+#include "game/content/CreaturePlaces.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
 #include "ui/widgets/Glyphs.h"
@@ -64,12 +67,16 @@ float drawStarRow(Renderer& r, Vec2 left, float size, int stars, Color on, Color
 
 class AchievementsScene : public Scene {
 public:
-    explicit AchievementsScene(GameServices& g) : g_(g) {}
+    explicit AchievementsScene(GameServices& g, bool fromPause = false) : g_(g), fromPause_(fromPause) {}
 
     void onEnter() override {
         bg_.init(g_);
         g_.checkAchievements();
         inputs_ = g_.achievementInputs();
+        // Suggestions (2.52): where each boss is fought is read from the levels on a worker
+        // thread (ready at once after a first visit).
+        atlas_ = officialCreatureAtlas(g_.content);
+        computeSuggestions();
         const auto& all = g_.achievementCatalog.achievements();
         // First focus: the first achievement still to get (or the first one).
         for (size_t i = 0; i < all.size(); ++i)
@@ -77,6 +84,13 @@ public:
                 selected_ = static_cast<int>(i);
                 break;
             }
+        if (fromPause_ || g_.onlineOpen == "ach-suggestions") {
+            // Over a paused run, or automated screenshots (--achievements suggestions).
+            if (!fromPause_) g_.onlineOpen.clear();
+            view_ = 2;
+            g_.ui.setFocus(suggestions_.empty() ? "ach/back" : "ach/sg0");
+            return;
+        }
         // Automated screenshots: "ach:<id>" selects it, "ach-list" opens the list.
         if (g_.onlineOpen.rfind("ach:", 0) == 0) {
             std::string id = g_.onlineOpen.substr(4);
@@ -109,11 +123,19 @@ public:
     void update(float dt) override {
         t_ += dt;
         bg_.update(dt);
+        if (flashT_ > 0.0f) flashT_ -= dt;
         refresh_ -= dt;
         if (refresh_ <= 0.0f) {  // the counters move only between runs; a slow refresh is enough
             inputs_ = g_.achievementInputs();
             refresh_ = 2.0f;
         }
+        // The bosses' levels known: the suggestions are computed again, but never under the
+        // player's eyes (when the tab is not shown; else the next time it is opened).
+        if (!atlas_) {
+            atlas_ = officialCreatureAtlas(g_.content);
+            if (atlas_) suggestionsStale_ = true;
+        }
+        if (suggestionsStale_ && view_ != 2) computeSuggestions();
     }
 
     void render(float) override {
@@ -128,9 +150,17 @@ public:
         bs.small = true;
         Rect back{W - m - ui.s(180), ui.s(30), ui.s(180), ui.s(46)};
         bool leave = ui.button("back", back, "Retour", bs);
-        Rect tabs{back.x - ui.s(20) - ui.s(300), ui.s(30), ui.s(300), ui.s(46)};
+        Rect tabs{back.x - ui.s(20) - ui.s(450), ui.s(30), ui.s(450), ui.s(46)};
         int view = view_;
-        if (ui.tabs("view", tabs, {"Toile", "Liste"}, view)) view_ = view;
+        if (ui.tabs("view", tabs, {"Toile", "Liste", "Suggestions"}, view)) {
+            view_ = view;
+            if (view_ == 2 && suggestionsStale_) computeSuggestions();  // opened again: up to date
+        }
+        // « NOUVEAU » on the Suggestions tab (2.52): gone once the tab is opened.
+        if (ui.isNew("achievements.suggestions")) {
+            if (view_ == 2 && ui.featureSeen) ui.featureSeen("achievements.suggestions");
+            if (ui.isNew("achievements.suggestions")) ui.drawNewPill(tabs.right() - ui.s(10), tabs.y, true);
+        }
         drawSummary({m, ui.s(96), W - 2 * m, ui.s(50)});
         if (cat.achievements().empty()) {
             ui.label("Le catalogue des succès est introuvable (data/achievements).", {W * 0.5f, H * 0.5f}, 22, ui.theme().danger,
@@ -142,8 +172,10 @@ public:
                 Rect web{m, top, side, bottom - top};
                 drawWeb(web);
                 drawDetail({web.right() + ui.s(24), top, W - m - web.right() - ui.s(24), bottom - top});
-            } else {
+            } else if (view_ == 1) {
                 drawList({m, top, W - 2 * m, bottom - top});
+            } else {
+                drawSuggestions({m, top, W - 2 * m, bottom - top});
             }
             // Category jumps (LB / RB, Q / E).
             InputManager& in = g_.app.input();
@@ -152,11 +184,15 @@ public:
         }
         // Footer hints.
         float fy = H - ui.s(30), fx = m;
-        fx += Glyphs::drawHint(ui, Action::MenuConfirm, "Choisir", {fx, fy}, ui.s(30)) + ui.s(36);
+        // On the web and in the list, Valider follows the achievement chosen (or stops).
+        fx += Glyphs::drawHint(ui, Action::MenuConfirm, view_ == 2 ? "Choisir" : "Suivre / ne plus suivre", {fx, fy}, ui.s(30)) + ui.s(36);
         if (view_ == 0) fx += Glyphs::drawHint(ui, Action::MenuTabNext, "Catégorie suivante", {fx, fy}, ui.s(30)) + ui.s(36);
         fx += Glyphs::drawHint(ui, Action::MenuBack, "Retour", {fx, fy}, ui.s(30)) + ui.s(36);
         if (view_ == 0 && !cat.achievements().empty()) drawZoomControls(fx, fy);
-        if (leave || ui.backPressed()) g_.app.switchScene(makeMainMenu(g_), 0.3f);
+        if (leave || ui.backPressed()) {
+            if (fromPause_) g_.app.popScene();  // back to the paused run
+            else g_.app.switchScene(makeMainMenu(g_), 0.3f);
+        }
         ui.popId();
         ui.end();
     }
@@ -173,6 +209,16 @@ private:
 
     void drawSummary(const Rect& r) {
         UIContext& ui = g_.ui;
+        if (flashT_ > 0.0f) {
+            // A message about « Suivre » (the limit of 5...) takes the place of the counters for
+            // a few seconds: it covers nothing.
+            ui.r().fillRoundedRect(r, ui.s(10), Color{40, 26, 8, 235});
+            ui.r().drawRoundedRect(r, ui.s(10), ui.theme().warm.withAlphaF(0.8f), std::max(1.0f, ui.s(1.5f)));
+            const float room = r.w - ui.s(36);
+            const float f = std::max(ui.fitFont(flash_, FontFace::Bold, 19, room, 0.7f), 11.5f / ui.s(1.0f));
+            ui.label(ui.elide(flash_, FontFace::Bold, f, room), r.center(), f, ui.theme().warm, Align::Center, FontFace::Bold, VAlign::Middle);
+            return;
+        }
         const AchievementCatalog& cat = g_.achievementCatalog;
         int stars = g_.achievements.stars(cat), total = cat.totalStars();
         int got = 0, full = 0;
@@ -447,7 +493,9 @@ private:
             const std::string feature = "ach." + a.id;
             bool fresh = false;
             if (area.contains(n.p) && !(dragging_ && dragMoved_ > ui.s(6))) {
-                ui.hotspot(id, hit);
+                // Valider (keyboard, gamepad) follows it; a click only chooses it (the detail
+                // panel has its own « Suivre » button).
+                if (ui.hotspot(id, hit) && !g_.app.input().mouseReleased(SDL_BUTTON_LEFT)) toggleTrack(a);
                 fresh = ui.newBadge(id, hit, feature, false);
             } else {
                 fresh = ui.isNew(feature);
@@ -475,6 +523,8 @@ private:
             if (static_cast<int>(i) == selected_) {
                 float pulse = 1.0f + 0.12f * std::sin(t_ * 6.0f);
                 r.drawCircle(n.p, (n.r + ui.s(5)) * pulse, Color::white(), ui.s(2));
+            } else if (g_.achievements.isTracked(a.id)) {
+                r.drawCircle(n.p, n.r + ui.s(3), ui.theme().accent, ui.s(1.6f));  // followed (2.52)
             }
             if (fresh) newDot(n);
         }
@@ -715,6 +765,24 @@ private:
         } else {
             y += ui.labelWrapped(status, {x, y}, w, 17, sc).y + ui.s(10);
         }
+        // « Suivre » (2.52): its progress is shown in the pause menu (5 at most).
+        if (!g_.achievements.unlocked(a.id)) {
+            const bool on = g_.achievements.isTracked(a.id);
+            const std::string tl = on ? "Ne plus suivre" : "Suivre ce succès";
+            UIContext::ButtonStyle ts;
+            ts.small = true;
+            ts.selected = on;
+            ts.fontSize = fz(ui, 17);
+            const float tw = std::min(w, ui.text().measure(tl, FontFace::Bold, ui.s(ts.fontSize)).x + ui.s(44));
+            const Rect tb{x, y, tw, ui.s(40)};
+            if (ui.button("track", tb, tl, ts)) toggleTrack(a);
+            ui.newBadge("track", tb, "achievements.track", true, true);
+            const std::string cnt = std::to_string(g_.achievements.tracked().size()) + " / " + std::to_string(AchievementBook::kMaxTracked) + " suivis";
+            const float room = w - tw - ui.s(16);
+            if (ui.text().measure(cnt, FontFace::Body, ui.s(fz(ui, 15))).x <= room)
+                ui.label(cnt, {tb.right() + ui.s(16), tb.center().y}, fz(ui, 15), th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+            y += ui.s(52);
+        }
         // What it opens.
         std::string opens;
         for (const auto& o : cat.achievements())
@@ -764,6 +832,204 @@ private:
 
     Renderer& r() { return g_.ui.r(); }
 
+    // ------------------------------------------------------------ suggestions and « Suivre » (2.52)
+
+    void flash(const std::string& message) {
+        flash_ = message;
+        flashT_ = 3.5f;
+    }
+
+    /// Ticks or unticks an achievement (saved at once); a sixth one is refused, and says why.
+    void toggleTrack(const AchievementDef& a) {
+        AchievementBook& book = g_.achievements;
+        if (book.unlocked(a.id)) {
+            flash("« " + a.name + " » est déjà obtenu : rien à suivre.");
+            g_.uiSound("ui_error", 0.5f);
+            return;
+        }
+        if (book.isTracked(a.id)) {
+            book.untrack(a.id);
+        } else if (!book.track(a.id)) {
+            flash("Déjà 5 succès suivis : décochez-en un pour suivre « " + a.name + " ».");
+            g_.uiSound("ui_error", 0.5f);
+            return;
+        }
+        book.save();
+        g_.uiSound("ui_move", 0.5f);
+    }
+
+    /// The box of « Suivre » (ticked: followed).
+    void drawCheckBox(const Rect& b, bool on, bool hot) {
+        UIContext& ui = g_.ui;
+        const Color acc = ui.theme().accent;
+        ui.r().fillRoundedRect(b, ui.s(5), on ? acc.withAlpha(220) : Color{10, 16, 34, 230});
+        ui.r().drawRoundedRect(b, ui.s(5), on ? acc : hot ? Color{226, 236, 245, 230} : Color{140, 160, 185, 170}, std::max(1.0f, ui.s(1.6f)));
+        if (on) {
+            const Color ink{8, 20, 30, 255};
+            const float t = std::max(1.5f, ui.s(2.6f));
+            ui.r().drawLine({b.x + b.w * 0.22f, b.y + b.h * 0.52f}, {b.x + b.w * 0.42f, b.y + b.h * 0.72f}, ink, t);
+            ui.r().drawLine({b.x + b.w * 0.42f, b.y + b.h * 0.72f}, {b.x + b.w * 0.78f, b.y + b.h * 0.30f}, ink, t);
+        }
+    }
+
+    void computeSuggestions() {
+        SuggestionContext ctx;
+        ctx.recentLevel = g_.progression.lastLevel;
+        ctx.recentPlanet = g_.progression.lastPlanet;
+        ctx.online = g_.online.loggedIn();
+        if (atlas_) {
+            ctx.bossLevelsKnown = true;
+            for (const auto& a : g_.achievementCatalog.achievements())
+                if (!a.condition.boss.empty() && !ctx.bossLevels.count(a.condition.boss)) {
+                    auto& levels = ctx.bossLevels[a.condition.boss];
+                    for (const CreaturePlace& p : atlas_->fightsOf(g_.content, a.condition.boss)) levels.push_back(p.levelId);
+                }
+        }
+        suggestions_ = suggestAchievements(g_.achievementCatalog, g_.achievements, inputs_, ctx);
+        suggestionsStale_ = false;
+    }
+
+    /// A progress bar and its numbers on one line from `x`, `w` wide, centred on `cy`.
+    void progressLine(float x, float cy, float w, const AchievementDef& a, Color col) {
+        UIContext& ui = g_.ui;
+        const AchievementProgress p = AchievementBook::progress(a, inputs_);
+        const float f = std::clamp(static_cast<float>(p.value) / static_cast<float>(std::max<int64_t>(1, p.target)), 0.0f, 1.0f);
+        const Rect bar{x, cy - ui.s(5), w * 0.55f, ui.s(10)};
+        ui.r().fillRoundedRect(bar, ui.s(5), Color{20, 28, 52, 255});
+        if (f > 0.0f) ui.r().fillRoundedRect({bar.x, bar.y, std::max(bar.h, bar.w * f), bar.h}, ui.s(5), col);
+        const float room = x + w - bar.right() - ui.s(12);
+        ui.label(ui.elide(achievementProgressText(a, p), FontFace::Bold, fz(ui, 15), room), {bar.right() + ui.s(12), cy}, fz(ui, 15), ui.theme().text,
+                 Align::Left, FontFace::Bold, VAlign::Middle);
+    }
+
+    void drawSuggestions(const Rect& area) {
+        const float gap = g_.ui.s(28);
+        const Rect left{area.x, area.y, std::floor(area.w * 0.58f), area.h};
+        const Rect right{left.right() + gap, area.y, area.right() - left.right() - gap, area.h};
+        drawSuggestionList(left);
+        drawTrackedList(right);
+    }
+
+    void drawSuggestionList(const Rect& p) {
+        UIContext& ui = g_.ui;
+        const UITheme& th = ui.theme();
+        ui.panel(p, false, 14);
+        const float x = p.x + ui.s(22), w = p.w - ui.s(44);
+        float y = p.y + ui.s(16);
+        ui.label("Suggestions", {x, y}, 24, th.text, Align::Left, FontFace::Bold);
+        y += ui.s(36);
+        y += ui.labelWrapped("Calculées d'après votre progression : les plus proches du but, faisables maintenant, de catégories variées.", {x, y}, w,
+                             fz(ui, 15), th.textDim)
+                 .y +
+             ui.s(14);
+        if (suggestions_.empty()) {
+            ui.labelWrapped("Aucune suggestion : tous les succès accessibles sont obtenus.", {x, y}, w, 18, th.text);
+            return;
+        }
+        const float cardGap = ui.s(10);
+        const float n = static_cast<float>(suggestions_.size());
+        const float cardH = std::min(ui.s(150), (p.bottom() - ui.s(16) - y - cardGap * (n - 1.0f)) / n);
+        for (size_t i = 0; i < suggestions_.size(); ++i) {
+            drawSuggestionCard({x, y, w, cardH}, i);
+            y += cardH + cardGap;
+        }
+    }
+
+    void drawSuggestionCard(const Rect& c, size_t i) {
+        UIContext& ui = g_.ui;
+        const UITheme& th = ui.theme();
+        const AchievementSuggestion& s = suggestions_[i];
+        const AchievementDef& a = *s.def;
+        const AchievementCategory* k = g_.achievementCatalog.category(a.category);
+        const Color col = k ? k->color : th.accent;
+        ui.r().fillRoundedRect(c, ui.s(10), Color{10, 16, 34, 220});
+        ui.r().drawRoundedRect(c, ui.s(10), col.withAlphaF(0.45f), std::max(1.0f, ui.s(1.2f)));
+        ui.r().fillRoundedRect({c.x, c.y, ui.s(6), c.h}, ui.s(3), col);
+        // « Suivre » on the right, vertically centred.
+        const bool on = g_.achievements.isTracked(a.id);
+        UIContext::ButtonStyle bs;
+        bs.small = true;
+        bs.selected = on;
+        bs.fontSize = fz(ui, 18);
+        const float bw = ui.s(150), bh = std::min(ui.s(46), c.h - ui.s(20));
+        const Rect b{c.right() - ui.s(14) - bw, c.center().y - bh * 0.5f, bw, bh};
+        const std::string bid = "sg" + std::to_string(i);
+        if (ui.button(bid, b, on ? "Suivi" : "Suivre", bs)) toggleTrack(a);
+        ui.newBadge(bid, b, "achievements.track", true, true);
+        // Name and stars, the category and description, the bar, why.
+        const float x0 = c.x + ui.s(22), cw = b.x - ui.s(18) - x0;
+        const bool roomy = c.h >= ui.s(118);
+        const float l1 = ui.s(26), l2 = roomy ? ui.s(22) : 0.0f, l3 = ui.s(22), l4 = ui.s(22);
+        float y = c.y + (c.h - (l1 + l2 + l3 + l4)) * 0.5f;
+        const float starsW = ui.s(12) * 1.15f * 4.0f + ui.s(12);
+        ui.label(ui.elide(a.name, FontFace::Bold, fz(ui, 19), cw - starsW - ui.s(12)), {x0, y + l1 * 0.5f}, fz(ui, 19), th.text, Align::Left,
+                 FontFace::Bold, VAlign::Middle);
+        drawStarRow(ui.r(), {x0 + cw - starsW, y + l1 * 0.5f}, ui.s(12), a.stars, Color{255, 214, 90, 255}, Color{90, 100, 130, 110});
+        y += l1;
+        if (roomy) {
+            const std::string line = (k ? k->name + " · " : std::string{}) + a.description;
+            ui.label(ui.elide(line, FontFace::Body, fz(ui, 15), cw), {x0, y + l2 * 0.5f}, fz(ui, 15), th.textDim, Align::Left, FontFace::Body,
+                     VAlign::Middle);
+            y += l2;
+        }
+        progressLine(x0, y + l3 * 0.5f, cw, a, col);
+        y += l3;
+        ui.label(ui.elide(s.reason, FontFace::Bold, fz(ui, 15), cw), {x0, y + l4 * 0.5f}, fz(ui, 15), th.warm, Align::Left, FontFace::Bold, VAlign::Middle);
+    }
+
+    void drawTrackedList(const Rect& p) {
+        UIContext& ui = g_.ui;
+        const UITheme& th = ui.theme();
+        ui.panel(p, false, 14);
+        const float x = p.x + ui.s(22), w = p.w - ui.s(44);
+        float y = p.y + ui.s(16);
+        const auto& ids = g_.achievements.tracked();
+        const std::string count = std::to_string(ids.size()) + " / " + std::to_string(AchievementBook::kMaxTracked);
+        const float cw = ui.text().measure(count, FontFace::Bold, ui.s(20)).x;
+        ui.label(ui.elide("Succès suivis", FontFace::Bold, 24, w - cw - ui.s(16)), {x, y}, 24, th.text, Align::Left, FontFace::Bold);
+        ui.label(count, {x + w, y + ui.s(4)}, 20, ids.size() >= AchievementBook::kMaxTracked ? th.warm : th.accent, Align::Right, FontFace::Bold);
+        y += ui.s(36);
+        y += ui.labelWrapped("Leur avancée s'affiche dans le menu pause, avec ce que la partie en cours y ajoute.", {x, y}, w, fz(ui, 15), th.textDim).y +
+             ui.s(14);
+        if (ids.empty()) {
+            ui.labelWrapped("Aucun succès suivi. Choisissez « Suivre » sur une suggestion, cochez la case d'un succès dans la Liste ou "
+                            "validez-le sur la Toile : jusqu'à 5 à la fois.",
+                            {x, y}, w, fz(ui, 17), th.text);
+            return;
+        }
+        const float rowGap = ui.s(10);
+        const float rowH = std::min(ui.s(84), (p.bottom() - ui.s(16) - y - rowGap * 4.0f) / 5.0f);
+        int removed = -1;
+        for (size_t i = 0; i < ids.size(); ++i) {
+            const AchievementDef* a = g_.achievementCatalog.find(ids[i]);
+            const Rect row{x, y, w, rowH};
+            y += rowH + rowGap;
+            if (!a) continue;
+            const AchievementCategory* k = g_.achievementCatalog.category(a->category);
+            const Color col = k ? k->color : th.accent;
+            ui.r().fillRoundedRect(row, ui.s(10), Color{10, 16, 34, 220});
+            ui.r().fillRoundedRect({row.x, row.y, ui.s(6), row.h}, ui.s(3), col);
+            UIContext::ButtonStyle bs;
+            bs.small = true;
+            bs.fontSize = fz(ui, 16);
+            const std::string ul = "Ne plus suivre";
+            const float bw = ui.text().measure(ul, FontFace::Bold, ui.s(bs.fontSize)).x + ui.s(36), bh = std::min(ui.s(42), row.h - ui.s(16));
+            const Rect b{row.right() - ui.s(12) - bw, row.center().y - bh * 0.5f, bw, bh};
+            if (ui.button("tr" + std::to_string(i), b, ul, bs)) removed = static_cast<int>(i);
+            const float x0 = row.x + ui.s(20), cw2 = b.x - ui.s(14) - x0;
+            ui.label(ui.elide(a->name, FontFace::Bold, fz(ui, 17), cw2), {x0, row.y + row.h * 0.32f}, fz(ui, 17), th.text, Align::Left, FontFace::Bold,
+                     VAlign::Middle);
+            progressLine(x0, row.y + row.h * 0.70f, cw2, *a, col);
+        }
+        if (removed >= 0) {
+            g_.achievements.untrack(ids[static_cast<size_t>(removed)]);
+            g_.achievements.save();
+            g_.uiSound("ui_move", 0.5f);
+            const int left = static_cast<int>(g_.achievements.tracked().size());
+            ui.setFocus(left == 0 ? (suggestions_.empty() ? "ach/back" : "ach/sg0") : "ach/tr" + std::to_string(std::min(removed, left - 1)));
+        }
+    }
+
     // ------------------------------------------------------------ list view
 
     void drawList(const Rect& area) {
@@ -782,6 +1048,8 @@ private:
         float w = area.w - ui.s(16);
         float starsW = ui.s(14) * 1.15f * 4.0f + ui.s(14);
         float cName = area.x + ui.s(34), cDesc = area.x + w * 0.27f, cProg = area.x + w * 0.70f, cStars = area.x + w - starsW;
+        // 2.52: the « Suivre » box of each achievement still to get, before its stars.
+        const float box = ui.s(22), cTrack = cStars - ui.s(22) - box;
         for (const auto& k : cat.categories()) {
             if (y + hh >= area.y && y <= area.bottom()) {
                 ui.r().fillRect({area.x, y + hh - ui.s(8), w, std::max(1.0f, ui.s(1.5f))}, k.color.withAlpha(120));
@@ -809,7 +1077,10 @@ private:
                 Rect row{area.x, y, w, rh - ui.s(4)};
                 y += rh;
                 std::string id = "l" + std::to_string(i);
-                ui.hotspot(id, row);
+                const Rect check{cTrack, row.center().y - box * 0.5f, box, box};
+                // Valider follows it (or stops); with the mouse, a click on its box.
+                if (ui.hotspot(id, row) && (!g_.app.input().mouseReleased(SDL_BUTTON_LEFT) || check.expanded(ui.s(6)).contains(g_.app.input().mousePos())))
+                    toggleTrack(a);
                 // « NOUVEAU » (an achievement added by an update): seen on focus (pointed at) or a click.
                 const bool fresh = ui.newBadge(id, row, "ach." + a.id, false, true);
                 bool focus = ui.focused(id);
@@ -834,8 +1105,9 @@ private:
                 } else if (!g_.achievements.available(a)) {
                     st = "Verrouillé";
                 }
-                ui.label(ui.elide(st, FontFace::Body, fz(ui, 15), cStars - cProg - ui.s(16)), {cProg, row.center().y}, fz(ui, 15), sc, Align::Left, FontFace::Body,
+                ui.label(ui.elide(st, FontFace::Body, fz(ui, 15), cTrack - cProg - ui.s(16)), {cProg, row.center().y}, fz(ui, 15), sc, Align::Left, FontFace::Body,
                          VAlign::Middle);
+                if (!done) drawCheckBox(check, g_.achievements.isTracked(a.id), focus || ui.mouseOver(check));
                 drawStarRow(ui.r(), {cStars, row.center().y}, ui.s(14), a.stars, Color{255, 214, 90, static_cast<uint8_t>(done ? 255 : 150)}, Color{90, 100, 130, 110});
             }
         }
@@ -848,8 +1120,15 @@ private:
     };
 
     GameServices& g_;
+    bool fromPause_ = false;  // over a paused run: « Retour » goes back to it
     MenuBackground bg_;
     AchievementInputs inputs_;
+    // 2.52: the suggestions (computed on entry), the bosses' levels, a message about « Suivre ».
+    std::vector<AchievementSuggestion> suggestions_;
+    std::shared_ptr<const CreatureAtlas> atlas_;
+    bool suggestionsStale_ = false;
+    std::string flash_;
+    float flashT_ = 0.0f;
     std::vector<Node> nodes_;
     std::vector<Sector> sectors_;
     int selected_ = 0;
@@ -870,5 +1149,6 @@ private:
 }  // namespace
 
 std::unique_ptr<Scene> makeAchievements(GameServices& g) { return std::make_unique<AchievementsScene>(g); }
+std::unique_ptr<Scene> makeAchievementsFromPause(GameServices& g) { return std::make_unique<AchievementsScene>(g, true); }
 
 }  // namespace cosmic

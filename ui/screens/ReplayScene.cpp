@@ -749,6 +749,7 @@ private:
         hs.focusMessages = false;
         hs.showInputHints = false;
         hs.hud[HudElement::Splits].visible = false;
+        hs.hud[HudElement::Enemies].visible = false;  // 2.52: placed for the game, not for this layout
         const float W = ui.screenW(), H = ui.screenH();
         const Rect& free = layout_.worldArea;
         const float m = ui.s(10);
