@@ -1,6 +1,6 @@
 #pragma once
 
-// 2.53: charts of the « Statistiques » screen, reusable: a smooth monotone curve with a gradient
+// 2.54: charts of the « Statistiques » screen, reusable: a smooth monotone curve with a gradient
 // area, a cloud of points, steps, horizontal and vertical bars with rounded ends, a heat band
 // over a level's relief, and the table that replaces a chart (« Tableau »). Thin strokes (2 px),
 // a discreet grid, axes in dim text, values in the text colours. Every text is measured: the

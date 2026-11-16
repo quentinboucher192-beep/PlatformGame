@@ -1,6 +1,6 @@
 #pragma once
 
-// 2.53 (« Statistiques »): what a run tells its listener (game/records/PlayStats.h). The world
+// 2.54 (« Statistiques »): what a run tells its listener (game/records/PlayStats.h). The world
 // calls these hooks while it steps; nothing they do is ever read back by the simulation (no
 // return value, no state of the world changed), so a run with a listener plays exactly as a
 // run without one (tests/test_play_stats.cpp checks the digests).

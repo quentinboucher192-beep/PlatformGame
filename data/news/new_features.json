@@ -1530,7 +1530,7 @@
   },
   {
    "id": "stats.player",
-   "version": "2.53.0",
+   "version": "2.54.0",
    "parents": [
     "menu.stats"
    ]
@@ -1543,7 +1543,7 @@
   },
   {
    "id": "settings.record_stats",
-   "version": "2.53.0",
+   "version": "2.54.0",
    "parents": [
     "settings.tab.game"
    ]

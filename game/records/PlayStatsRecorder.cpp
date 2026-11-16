@@ -1,4 +1,4 @@
-// 2.53 — the player's statistics: the recorder of a run (a WorldListener that only reads) and
+// 2.54 — the player's statistics: the recorder of a run (a WorldListener that only reads) and
 // the store (saves/stats.json, written on a worker thread). See PlayStats.h.
 
 #include <algorithm>

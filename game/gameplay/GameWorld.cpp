@@ -263,7 +263,7 @@ void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
     events_.fixedUpdate(*this, dt, timer_.elapsed());
 
     {
-        HurtScope traps(*this, HurtOrigin::Hazard);  // 2.53 (statistics): the level's dangers
+        HurtScope traps(*this, HurtOrigin::Hazard);  // 2.54 (statistics): the level's dangers
         for (size_t i = 0; i < entities_.size(); ++i) entities_[i]->fixedUpdate(*this, dt);
     }
     carryBodies();
@@ -287,7 +287,7 @@ void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
     // Time slow power: enemies (and, in updateProjectiles, their shots) run slower.
     updateEnemies(timeSlow_ > 0.0f ? dt * timeSlowFactor_ : dt);
     if (!hazards_.empty()) {
-        // 2.53 (statistics): the lasting effects of the bosses' attacks.
+        // 2.54 (statistics): the lasting effects of the bosses' attacks.
         static const std::string kLasting = "Effets persistants (lave, nuages, ronces…)";
         HurtScope lasting(*this, boss_ ? HurtOrigin::BossAttack : HurtOrigin::EnemyAttack, boss_, 0, &kLasting);
         hazards_.fixedUpdate(*this, timeSlow_ > 0.0f ? dt * timeSlowFactor_ : dt);
@@ -374,7 +374,7 @@ void GameWorld::updatePlayerOverlaps(float dt) {
 void GameWorld::updateEnemies(float dt) {
     for (size_t i = 0; i < enemies_.size(); ++i) {
         Enemy* e = enemies_[i].get();
-        HurtScope blows(*this, e->def().isBoss ? HurtOrigin::BossAttack : HurtOrigin::EnemyAttack, e);  // 2.53 (statistics)
+        HurtScope blows(*this, e->def().isBoss ? HurtOrigin::BossAttack : HurtOrigin::EnemyAttack, e);  // 2.54 (statistics)
         e->fixedUpdate(*this, dt);
     }
     enemies_.erase(std::remove_if(enemies_.begin(), enemies_.end(),
@@ -485,7 +485,7 @@ void GameWorld::updateProjectiles(float frameDt) {
                 d.knockback = p.knockback;
                 d.fromPlayer = true;
                 {
-                    AttackScope shot(*this, p.attackTag);  // 2.53 (statistics)
+                    AttackScope shot(*this, p.attackTag);  // 2.54 (statistics)
                     e->takeDamage(*this, d);
                 }
                 p.hitTargets.push_back(e.get());
@@ -523,7 +523,7 @@ void GameWorld::updateProjectiles(float frameDt) {
             d.slow = p.slow;
             d.slowDuration = p.slowDuration;
             {
-                HurtScope shot(*this, static_cast<HurtOrigin>(p.origin), findEnemy(p.owner), p.uid, &p.attackName);  // 2.53 (statistics)
+                HurtScope shot(*this, static_cast<HurtOrigin>(p.origin), findEnemy(p.owner), p.uid, &p.attackName);  // 2.54 (statistics)
                 damagePlayer(d);
             }
             if (p.clip != "shockwave") {
@@ -575,11 +575,11 @@ void GameWorld::explodeProjectile(const Projectile& p, Vec2 at) {
     d.slowDuration = p.slowDuration;
     if (p.fromPlayer) {
         d.fromPlayer = true;
-        AttackScope shot(*this, p.attackTag);  // 2.53 (statistics)
+        AttackScope shot(*this, p.attackTag);  // 2.54 (statistics)
         damageEnemies(Rect::fromCenter(at, {r * 2, r * 2}), d, nullptr);
         powerHit("impulse", Rect::fromCenter(at, {r * 2, r * 2}));  // breaks cracked rock
     } else if (player_.alive() && Collision::circleIntersectsRect(at, r, player_.box)) {
-        HurtScope shot(*this, static_cast<HurtOrigin>(p.origin), findEnemy(p.owner), p.uid, &p.attackName);  // 2.53 (statistics)
+        HurtScope shot(*this, static_cast<HurtOrigin>(p.origin), findEnemy(p.owner), p.uid, &p.attackName);  // 2.54 (statistics)
         damagePlayer(d);
     }
 }
@@ -587,7 +587,7 @@ void GameWorld::explodeProjectile(const Projectile& p, Vec2 at) {
 void GameWorld::checkKillPlane() {
     if (!player_.alive()) return;
     if (player_.box.y > level_.effectiveKillY()) {
-        HurtScope fall(*this, HurtOrigin::Fall);  // 2.53 (statistics)
+        HurtScope fall(*this, HurtOrigin::Fall);  // 2.54 (statistics)
         player_.kill(*this);
         // Falling death: no point waiting at the bottom of the screen.
         hitStop_ = 0.0f;
@@ -659,7 +659,7 @@ Enemy* GameWorld::spawnEnemy(const std::string& defId, Vec2 feet, bool faceLeft,
 
 void GameWorld::spawnProjectile(const Projectile& p) {
     pendingProjectiles_.push_back(p);
-    // 2.53, statistics only: whose shot it is (nothing of it is read by the simulation).
+    // 2.54, statistics only: whose shot it is (nothing of it is read by the simulation).
     Projectile& q = pendingProjectiles_.back();
     q.uid = ++shotSerial_;
     if (q.fromPlayer) {
@@ -723,7 +723,7 @@ bool GameWorld::damagePlayer(const DamageInfo& dmg) {
     return hurt;
 }
 
-// ------------------------------------------------------- 2.53: statistics
+// ------------------------------------------------------- 2.54: statistics
 
 GameWorld::HurtScope::HurtScope(GameWorld& world, HurtOrigin o, const Enemy* e, uint32_t s, const std::string* a)
     : w(world), origin(world.hurtOrigin_), enemy(world.hurtEnemy_), shot(world.hurtShot_), attack(world.hurtAttack_) {

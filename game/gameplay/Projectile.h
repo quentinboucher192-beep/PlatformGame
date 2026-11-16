@@ -44,7 +44,7 @@ struct Projectile {
     uint32_t cloudOwner = 0;
     Color cloudColor{255, 122, 46, 255};  // display only
     std::vector<const void*> hitTargets;  // already damaged (piercing)
-    // 2.53, statistics only (never read by the simulation): set by GameWorld::spawnProjectile.
+    // 2.54, statistics only (never read by the simulation): set by GameWorld::spawnProjectile.
     uint32_t uid = 0;           // a serial of the run's shots
     uint32_t attackTag = 0;     // Nova's shot: the attack it belongs to (GameWorld::newAttackTag)
     uint32_t owner = 0;         // an enemy's shot: the enemy that fired it (Enemy::uid), 0 unknown

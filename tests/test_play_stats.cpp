@@ -1,4 +1,4 @@
-// 2.53 — the player's statistics (game/records/PlayStats.h): the calculations of the
+// 2.54 — the player's statistics (game/records/PlayStats.h): the calculations of the
 // « Statistiques » screen, the file (format, caps, damaged file, worker thread), and the
 // recorder, which reads a run without ever changing it (same digests with or without it).
 

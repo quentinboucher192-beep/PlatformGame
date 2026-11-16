@@ -1,6 +1,6 @@
 #pragma once
 
-// 2.53 — « Statistiques » (main menu → Statistiques): what the player's own runs say about their
+// 2.54 — « Statistiques » (main menu → Statistiques): what the player's own runs say about their
 // play, kept on this computer only (saves/stats.json), never sent online.
 //
 //  * a summary per day (time played, deaths, attacks that threatened Nova and those she

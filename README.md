@@ -5,7 +5,7 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
-**Nouveau dans la version 2.53.0** :
+**Nouveau dans la version 2.54.0** :
 * **Statistiques** (menu principal) : vos vraies parties en courbes et en chiffres, sur cet ordinateur
   (vue d'ensemble, combat, boss, niveaux classiques avec somme des meilleurs segments, passages
   difficiles avec leur entraînement). Voir [Statistiques](#statistiques).

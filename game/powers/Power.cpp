@@ -32,7 +32,7 @@ void Power::activate(Player& p, GameWorld& w) {
     p.spendEnergy(activationCost(p));
     cooldown_ = def_.cooldown;
     if (!def_.sound.empty()) w.playSound(def_.sound, p.center(), 0.9f);
-    attackTag_ = w.newAttackTag(id());  // 2.53: statistics only (what this use reaches)
+    attackTag_ = w.newAttackTag(id());  // 2.54: statistics only (what this use reaches)
     GameWorld::AttackScope tag(w, attackTag_);
     onActivate(p, w);
 }

@@ -442,7 +442,7 @@ private:
         ui.toggle("autosave", r, "Sauvegarde automatique de l'éditeur", working_.gameplay.editorAutosave);
         r.y += row();
         ui.sliderInt("autosavesec", r, "Intervalle de sauvegarde (s)", working_.gameplay.editorAutosaveSeconds, 10, 600);
-        // 2.53: the player's statistics, in the column at the right (the left one is full).
+        // 2.54: the player's statistics, in the column at the right (the left one is full).
         if (c.w - r.w - ui.s(40) >= ui.s(360)) {
             Rect sr{r.right() + ui.s(40), c.y, c.w - r.w - ui.s(40), ui.s(54)};
             ui.toggle("recordstats", sr, "Enregistrer mes statistiques", working_.gameplay.recordStats);

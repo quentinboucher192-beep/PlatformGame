@@ -124,7 +124,7 @@ Power* Player::power(const std::string& id) {
 
 void Player::handlePowers(GameWorld& w, const PlayerInput& in, float dt) {
     for (auto& p : powers_) {
-        GameWorld::AttackScope tag(w, p->attackTag());  // 2.53 (statistics)
+        GameWorld::AttackScope tag(w, p->attackTag());  // 2.54 (statistics)
         p->handleInput(*this, w, in, dt);
     }
     if (movementPower()) return;
@@ -185,7 +185,7 @@ void Player::handleAttack(GameWorld& w, const PlayerInput& in, float dt) {
             d.fromPlayer = true;
             int hits = 0;
             {
-                GameWorld::AttackScope tag(w, meleeTag_);  // 2.53 (statistics): this swing
+                GameWorld::AttackScope tag(w, meleeTag_);  // 2.54 (statistics): this swing
                 hits = w.damageEnemies(hit, d, this);
             }
             if (hits > 0) {
@@ -205,7 +205,7 @@ void Player::handleAttack(GameWorld& w, const PlayerInput& in, float dt) {
     attackTimer_ = cfg_.attackDuration;
     attackCooldown_ = cfg_.attackCooldown;
     attackHitDone_ = false;
-    meleeTag_ = w.newAttackTag("attack");  // 2.53: statistics only
+    meleeTag_ = w.newAttackTag("attack");  // 2.54: statistics only
     attackAir_ = !grounded_;
     anim.play(attackAir_ ? "air_attack" : "attack", true);
     w.playSound("sounds/slash.wav", center(), 0.8f, w.fxRng().range(0.93f, 1.08f));
@@ -268,7 +268,7 @@ bool Player::hurt(GameWorld& w, const DamageInfo& dmg) {
 void Player::kill(GameWorld& w) {
     if (state_ == PlayerState::Dead) return;
     if (w.rescueInvincible()) return;  // 2.51: an invincible Nova goes back to solid ground
-    w.notePlayerKilled();              // 2.53: statistics only
+    w.notePlayerKilled();              // 2.54: statistics only
     if (state_ == PlayerState::Slide || state_ == PlayerState::Climb) setHitbox(cfg_.size);
     state_ = PlayerState::Dead;
     deathTimer_ = 1.1f;

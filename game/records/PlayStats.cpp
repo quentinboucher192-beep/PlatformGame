@@ -1,4 +1,4 @@
-// 2.53 — the player's statistics: the data kept (saves/stats.json) and what the « Statistiques »
+// 2.54 — the player's statistics: the data kept (saves/stats.json) and what the « Statistiques »
 // screen computes from it. See PlayStats.h; the recorder and the store: PlayStatsRecorder.cpp.
 
 #include "game/records/PlayStats.h"

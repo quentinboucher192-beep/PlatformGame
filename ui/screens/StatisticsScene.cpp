@@ -1,4 +1,4 @@
-// Main menu → Statistiques (2.53): the player's own statistics, computed from their real runs and
+// Main menu → Statistiques (2.54): the player's own statistics, computed from their real runs and
 // kept on this computer (game/records/PlayStats.h, saves/stats.json). Six sections:
 //  * Vue d'ensemble: time played, dodge rate, precision, deaths per hour over 7 / 30 / 90 days,
 //    against the previous period of the same length; stars of the achievements; deaths per hour;
@@ -176,7 +176,7 @@ public:
             }
         }
         if (!focusChart_.empty()) g_.ui.setFocus("stats/" + focusChart_);
-        // « NOUVEAU » (2.53): this screen is seen once opened.
+        // « NOUVEAU » (2.54): this screen is seen once opened.
         if (g_.ui.featureSeen && g_.ui.isNew("stats.player")) g_.ui.featureSeen("stats.player");
     }
 
@@ -407,18 +407,19 @@ private:
 
     float drawEmpty(float x, float y, float w) {
         UIContext& ui = g_.ui;
-        Rect r{x, y + ui.s(30), w, ui.s(230)};
-        ui.r().fillRoundedRect(r, ui.s(14), kCard);
-        ui.r().drawRoundedRect(r, ui.s(14), kLine, std::max(1.0f, ui.s(1.0f)));
-        const std::string head = "Jouez quelques parties pour voir vos statistiques";
-        float hf = ui.fitFont(head, FontFace::Bold, 24, r.w - ui.s(60), 0.6f);
-        ui.label(ui.elide(head, FontFace::Bold, hf, r.w - ui.s(60)), {r.center().x, r.y + ui.s(50)}, hf, ui.theme().text, Align::Center, FontFace::Bold,
-                 VAlign::Middle);
         std::string body = "Tout est calculé à partir de vos vraies parties (campagne, défis, niveaux des joueurs), sur cet ordinateur, sans compte ni Internet. "
                            "L'onglet se remplit au fil des parties.";
         if (!g_.playStats.enabled) body += " L'enregistrement est désactivé : Paramètres › Jeu › « Enregistrer mes statistiques ».";
         if (g_.playStats.damaged()) body += " Le fichier des statistiques était abîmé : il a été gardé dans stats.json.bak et l'onglet repart de zéro.";
-        ui.labelWrapped(body, {r.x + ui.s(30), r.y + ui.s(90)}, r.w - ui.s(60), fz(ui, 16), kText2);
+        const float bf = fz(ui, 16), tw = w - ui.s(60);
+        const float bh = ui.text().measureWrapped(body, FontFace::Body, ui.s(bf), tw).y;
+        Rect r{x, y + ui.s(30), w, ui.s(90) + bh + ui.s(30)};  // as tall as its text
+        ui.r().fillRoundedRect(r, ui.s(14), kCard);
+        ui.r().drawRoundedRect(r, ui.s(14), kLine, std::max(1.0f, ui.s(1.0f)));
+        const std::string head = "Jouez quelques parties pour voir vos statistiques";
+        float hf = ui.fitFont(head, FontFace::Bold, 24, tw, 0.6f);
+        ui.label(ui.elide(head, FontFace::Bold, hf, tw), {r.center().x, r.y + ui.s(50)}, hf, ui.theme().text, Align::Center, FontFace::Bold, VAlign::Middle);
+        ui.labelWrapped(body, {r.x + ui.s(30), r.y + ui.s(90)}, tw, bf, kText2);
         return r.bottom() - y;
     }
 

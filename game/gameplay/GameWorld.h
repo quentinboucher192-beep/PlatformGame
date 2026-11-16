@@ -286,7 +286,7 @@ public:
     /// Callback used by the arena (enemy editor) to reset when the player dies.
     std::function<void()> onPlayerDied;
 
-    // ------------------------------------------- 2.53: statistics (never the simulation)
+    // ------------------------------------------- 2.54: statistics (never the simulation)
     /// The listener of this run (game/records/PlayStats.h), or nullptr. Told what happens (a blow
     /// to Nova and where it came from, an instant fall, an attack of hers and what it reached);
     /// nothing it does is read back: a run plays the same with or without it.
@@ -401,7 +401,7 @@ private:
     bool hasSafeFeet_ = false;
     void practiceRespawnNow();  // 2.47.1: the clock waits for the end of Nova's materialisation
     int fallGuard_ = 0;
-    // 2.53, statistics only (WorldListener): what is stepping now, so that a blow to Nova knows
+    // 2.54, statistics only (WorldListener): what is stepping now, so that a blow to Nova knows
     // where it comes from; the tags of Nova's attacks; the serial of the shots.
     struct HurtScope {
         HurtScope(GameWorld& w, HurtOrigin o, const Enemy* e = nullptr, uint32_t shot = 0, const std::string* attack = nullptr);

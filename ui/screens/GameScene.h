@@ -225,7 +225,7 @@ private:
     PowerKeyMap powerKeys_;
     std::vector<std::string> powerKeyExtra_;
     int raceVersion_ = 0;
-    /// 2.53: the player's statistics of this run (read only, game/records/PlayStats.h). Last
+    /// 2.54: the player's statistics of this run (read only, game/records/PlayStats.h). Last
     /// member: gone before the world it listens to.
     std::unique_ptr<PlayStatsRecorder> playStats_;
 };
