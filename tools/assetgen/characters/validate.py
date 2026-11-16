@@ -246,6 +246,16 @@ for _k in range(8):
     TEXTURES[_id] = f"sprites/enemies/{_id}.png"
     LOOPING[_id] = {"idle", "walk", "move", "special"}
 
+# ------------------------------------------------------------------ Titan Mécanique (war machine giga boss)
+# Eight sheets packed like Monolithe's (same clips, no teleport); a walker: footsteps.
+for _k in range(8):
+    _id = "titan" if _k == 0 else "titan_p%d" % (_k + 1)
+    ANIMS[_id] = (256, 224, [128, 212], MONOLITHE_CLIPS,
+                  {"attack": [(2, "impact")], "walk": [(0, "footstep"), (4, "footstep")],
+                   "move": [(0, "footstep"), (4, "footstep")]}, {})
+    TEXTURES[_id] = f"sprites/enemies/{_id}.png"
+    LOOPING[_id] = {"idle", "walk", "move", "special"}
+
 STATIC = {
     "sprites/objects/moving_platform.png": (48, 32),
     "sprites/objects/crumble_platform.png": (48, 48),
