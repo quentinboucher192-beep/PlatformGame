@@ -694,6 +694,37 @@ void OnlineService::getBinary(const std::string& path, std::function<void(const 
     client_->send(std::move(rq), [cb](const HttpResponse& r) { cb(r); });
 }
 
+void OnlineService::postForBinary(const std::string& path, const Json& body, std::function<void(const HttpResponse&)> cb, size_t maxBytes,
+                                  int timeoutMs) {
+    auto go = [this, path, body, cb, maxBytes, timeoutMs]() {
+        HttpRequest rq;
+        rq.method = "POST";
+        rq.url = config_.serverUrl + path;
+        rq.headers.push_back({"Content-Type", "application/json"});
+        if (loggedIn()) rq.headers.push_back({"Authorization", "Bearer " + tokens_.accessToken});
+        rq.body = body.dump();
+        rq.timeoutMs = timeoutMs;
+        rq.maxResponseBytes = maxBytes;
+        client_->send(std::move(rq), [cb](const HttpResponse& r) { cb(r); });
+    };
+    if (!usable()) {
+        HttpResponse r;
+        r.error = NetError::Unsupported;
+        cb(r);
+        return;
+    }
+    if (loggedIn() && tokens_.accessExpiring())
+        withRefresh([go, cb](const ApiResult& r) {
+            if (r.ok) return go();
+            HttpResponse fail;
+            fail.status = r.status;
+            fail.body = Json{{"error", {{"code", r.code}, {"message", r.message}}}}.dump();
+            cb(fail);
+        });
+    else
+        go();
+}
+
 std::optional<OnlineCache::Entry> OnlineService::cached(const std::string& pathAndQuery) { return cache_.get(cacheKey(pathAndQuery)); }
 
 size_t OnlineService::clearCache() {

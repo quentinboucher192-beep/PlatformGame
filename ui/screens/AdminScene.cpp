@@ -21,6 +21,7 @@
 #include "game/GameServices.h"
 #include "game/online/OnlineSession.h"
 #include "ui/online/OnlineWidgets.h"
+#include "ui/screens/AdminBackups.h"
 #include "ui/screens/AdminCalendar.h"
 #include "ui/screens/ChallengeUi.h"
 #include "ui/screens/MenuBackground.h"
@@ -91,7 +92,7 @@ const char* kFilters[] = {"all", "admins", "online"};
 const char* kKinds[] = {"all", "role", "challenge", "refused"};
 
 /// The tabs: Joueurs, Calendrier des défis (2.41), Journal.
-constexpr int kTabPlayers = 0, kTabCalendar = 1, kTabLog = 2;
+constexpr int kTabPlayers = 0, kTabCalendar = 1, kTabLog = 2, kTabBackups = 3;
 
 /// "20/11" of "2026-11-20".
 std::string shortDate(const std::string& date) { return date.size() >= 10 ? date.substr(8, 2) + "/" + date.substr(5, 2) : date; }
@@ -110,7 +111,9 @@ std::string tierTimeText(int64_t ms) {
 class AdminScene : public Scene {
 public:
     AdminScene(GameServices& g, std::string open)
-        : g_(g), ui_(g), calendar_(g, ui_, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }) {
+        : g_(g), ui_(g), calendar_(g, ui_, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
+          backups_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }) {
+        if (open.rfind("backups", 0) == 0) tab_ = kTabBackups;
         // Automated screenshots: "players[:<search>[:confirm]]", "calendar[:YYYY-MM[:<id>[:objectif]]]" or "log".
         if (open.rfind("log", 0) == 0) tab_ = kTabLog;
         if (open.rfind("calendar", 0) == 0) {
@@ -148,7 +151,7 @@ public:
         UIContext& ui = g_.ui;
         ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
         bg_.render(g_, 0.6f);
-        const bool modal = !confirmId_.empty() || calendar_.modal();
+        const bool modal = !confirmId_.empty() || calendar_.modal() || backups_.modal();
         const bool top = g_.app.topScene() == this;
         ui.inputEnabled = top && !modal;
         // 2.41: wider (the calendar's eight columns and its editor side by side).
@@ -162,7 +165,7 @@ public:
         bool back = ui.button("back", {x0_ + W_ - backW, y, backW, hh}, "Retour") || (!modal && ui.backPressed());
         // The tabs after the title when they fit, else on the line below. Equal tabs, each as
         // wide as its longest label needs (« Calendrier des défis »).
-        static const std::vector<std::string> kTabs = {"Joueurs", "Calendrier des défis", "Journal"};
+        static const std::vector<std::string> kTabs = {"Joueurs", "Calendrier des défis", "Journal", "Sauvegardes"};
         float tabW = 0.0f;
         for (const std::string& t : kTabs) tabW = std::max(tabW, ui.text().measure(t, FontFace::Bold, ui.s(20)).x + ui.s(44));
         float tabsW = tabW * static_cast<float>(kTabs.size()), tabsX = x0_ + titleW + ui.s(28);
@@ -177,9 +180,15 @@ public:
         // « NOUVEAU » (2.41) on « Calendrier des défis » until it is opened.
         Rect calTab{tabsR.x + tabW + ui.s(2), tabsR.y, tabW - ui.s(4), tabsR.h};
         ui.newBadge("tabcal", calTab, "admin.tab.calendar", true, true);
+        Rect bakTab{tabsR.x + 3 * tabW + ui.s(2), tabsR.y, tabW - ui.s(4), tabsR.h};
+        ui.newBadge("tabbak", bakTab, "admin.tab.backups", true, true);
         if (tab != tab_) {
             tab_ = tab;
             if (tab_ == kTabLog) loadLog(false);
+            if (tab_ == kTabBackups) {
+                if (ui.featureSeen && ui.isNew("admin.tab.backups")) ui.featureSeen("admin.tab.backups");
+                backups_.enter();
+            }
             if (tab_ == kTabCalendar) {
                 if (ui.featureSeen && ui.isNew("admin.tab.calendar")) ui.featureSeen("admin.tab.calendar");
                 calendar_.enter();
@@ -194,6 +203,7 @@ public:
             ui.r().drawRoundedRect(body, ui.s(14), ui.theme().border, ui.s(1));
             Rect inner{body.x + ui.s(22), body.y + ui.s(18), body.w - ui.s(44), body.h - ui.s(36)};
             if (tab_ == kTabPlayers) drawPlayers(inner);
+            else if (tab_ == kTabBackups) backups_.draw(inner);
             else drawLog(inner);
         }
         drawStatus();
@@ -201,6 +211,7 @@ public:
         ui.inputEnabled = top;
         if (!confirmId_.empty()) drawConfirm();
         else if (calendar_.modal()) calendar_.drawModal();
+        else if (backups_.modal()) backups_.drawModal();
         ui.end();
         if (back) g_.app.switchScene(makeMainMenu(g_), 0.3f);
     }
@@ -230,6 +241,7 @@ private:
         loadAdmins();
         if (tab_ == kTabLog) loadLog(false);
         if (tab_ == kTabCalendar) calendar_.enter(true);
+        if (tab_ == kTabBackups) backups_.enter(true);
     }
 
     void loadPlayers() {
@@ -735,7 +747,8 @@ private:
 
     GameServices& g_;
     OnlineUi ui_;
-    AdminCalendar calendar_;  // « Calendrier des défis » (2.41)
+    AdminCalendar calendar_;  // « Calendrier des défis » (2.42)
+    AdminBackups backups_;    // « Sauvegardes » (2.43)
     MenuBackground bg_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     float W_ = 0.0f, x0_ = 0.0f;

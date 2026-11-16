@@ -207,6 +207,10 @@ public:
     void get(const std::string& pathAndQuery, ApiCallback cb, bool useCache = true);
     void send(const std::string& method, const std::string& path, const Json& body, ApiCallback cb);
     void getBinary(const std::string& path, std::function<void(const HttpResponse&)> cb, size_t maxBytes = 2 * 1024 * 1024);
+    /// POST of a JSON body whose answer is a file (the encrypted backups, ADMINISTRATION ›
+    /// Sauvegardes): the session is renewed first when needed; errors come back as JSON.
+    void postForBinary(const std::string& path, const Json& body, std::function<void(const HttpResponse&)> cb, size_t maxBytes,
+                       int timeoutMs = 600000);
     std::optional<OnlineCache::Entry> cached(const std::string& pathAndQuery);
     size_t clearCache();
     void checkConnection(ApiCallback cb = {});
