@@ -172,7 +172,7 @@ POWER_NAMES = {
     "glide": "le Planeur", "grapple": "le Grappin", "ground_pound": "la Frappe sismique", "charge_shot": "le Tir chargé",
     "triple_jump": "le Triple saut", "time_slow": "le Ralenti", "magnet": "l'Aimant", "air_dash": "la Ruée aérienne",
     "plasma_bomb": "la Bombe plasma",
-    "boomerang": "la Lame boomerang", "frost_nova": "la Nova de givre", "decoy": "le Leurre holographique",
+    "boomerang": "la Lame boomerang", "boomerang_charge": "le Boomerang chargé", "frost_nova": "la Nova de givre", "decoy": "le Leurre holographique",
     "recall": "la Balise de rappel",
 }
 

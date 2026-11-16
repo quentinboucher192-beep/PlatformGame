@@ -100,10 +100,10 @@
     "confins_01": {
       "components": {
         "boss": 32.91,
-        "checkpoints": 1.56,
+        "checkpoints": 1.59,
         "enemies": 0.0,
-        "hazards": 8.37,
-        "healing": -0.54,
+        "hazards": 8.23,
+        "healing": -0.53,
         "jumps": 0.0,
         "length": 0.27,
         "timer": 0.0
@@ -112,22 +112,22 @@
         "deadly_jumps": 0,
         "enemies": 0,
         "hazards": 18,
-        "heal_per_100_tiles": 4.47,
-        "longest_checkpoint_gap": 179.0,
+        "heal_per_100_tiles": 4.4,
+        "longest_checkpoint_gap": 182.0,
         "precise_jumps": 0
       },
-      "raw": 42.58,
-      "route_tiles": 179.0,
+      "raw": 42.49,
+      "route_tiles": 182.0,
       "score": 5.0,
       "version": 2
     },
     "confins_02": {
       "components": {
         "boss": 33.62,
-        "checkpoints": 1.56,
+        "checkpoints": 1.59,
         "enemies": 0.0,
-        "hazards": 4.98,
-        "healing": -0.54,
+        "hazards": 4.9,
+        "healing": -0.53,
         "jumps": 0.0,
         "length": 0.27,
         "timer": 0.0
@@ -136,12 +136,12 @@
         "deadly_jumps": 0,
         "enemies": 0,
         "hazards": 12,
-        "heal_per_100_tiles": 4.47,
-        "longest_checkpoint_gap": 179.0,
+        "heal_per_100_tiles": 4.4,
+        "longest_checkpoint_gap": 182.0,
         "precise_jumps": 0
       },
-      "raw": 39.9,
-      "route_tiles": 179.0,
+      "raw": 39.86,
+      "route_tiles": 182.0,
       "score": 5.0,
       "version": 2
     },
@@ -292,10 +292,10 @@
     "noyau_03": {
       "components": {
         "boss": 30.09,
-        "checkpoints": 1.56,
+        "checkpoints": 1.59,
         "enemies": 0.0,
-        "hazards": 8.37,
-        "healing": -0.8,
+        "hazards": 8.23,
+        "healing": -0.79,
         "jumps": 0.0,
         "length": 0.27,
         "timer": 0.0
@@ -304,12 +304,12 @@
         "deadly_jumps": 0,
         "enemies": 0,
         "hazards": 18,
-        "heal_per_100_tiles": 6.7,
-        "longest_checkpoint_gap": 179.0,
+        "heal_per_100_tiles": 6.59,
+        "longest_checkpoint_gap": 182.0,
         "precise_jumps": 0
       },
-      "raw": 39.49,
-      "route_tiles": 179.0,
+      "raw": 39.4,
+      "route_tiles": 182.0,
       "score": 5.0,
       "version": 2
     },

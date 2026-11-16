@@ -7,6 +7,13 @@
         "button": "leftshoulder"
       }
     },
+    "boomerang_charge": {
+      "key": "B",
+      "pad": {
+        "axis": "righty",
+        "dir": -1
+      }
+    },
     "dash": {
       "key": "K",
       "pad": {
