@@ -302,3 +302,47 @@ loin ») : le serveur les compte lui-même dans `challenge_runs`, le jeu affiche
   (sans `verified`) : le jeu compte les `results` dont le statut est `VERIFIED`. Après une partie
   vérifiée, le jeu relit `/challenges/me` ; une récompense débloquée est annoncée (notification,
   puis la carte « Nouvelles récompenses » à la fin du défi).
+
+## 7. Calendrier des défis de l'administration, objectif « Finir le niveau » (2.41.0)
+
+Pour les comptes `admin` seulement (écran ADMINISTRATION › Calendrier des défis du jeu). Pour
+tout autre compte ces routes n'existent pas (`404 NOT_FOUND`, comme une route inconnue) ; sans
+session : `401`. L'admin vient de la session, jamais d'une donnée du jeu. Chaque changement et
+chaque refus est inscrit au Journal (`audit_log`, sans IP).
+
+| méthode | route | rôle |
+|---|---|---|
+| GET | `/admin/challenges?month=AAAA-MM` | `{ month, today, server_time, first_month, last_month, ahead, periods }` : le mois, les semaines ISO qui le chevauchent et ses jours, chacun `{ id, kind, period, date, end_date, starts_at, ends_at, state: past\|running\|coming, editable, draws_on, challenge }`. **Les défis à venir aussi** (seule route qui les montre) ; les périodes que le serveur tire à l'avance sont tirées d'abord (`ensureChallenges`). `challenge` = l'objet défi + `replaced_title` (titre du tirage remplacé) et `updated_at` ; `null` sans défi (`draws_on` = jour où une période à venir sera tirée). |
+| GET | `/admin/challenges/levels?source=campaign\|community&q=&limit=&offset=` | niveaux qu'on peut choisir : la campagne (catalogue `src/challengeCatalog.json`, avec `draw_kinds` = sortes où le tirage peut le prendre, `available` = révision classée par le serveur, `has_race`, emplacements, pouvoirs, temps des médailles) ; la communauté (niveaux publiés à leur version courante, recherche par titre dès 2 lettres, paginée, `has_race`, temps proposés d'après le temps de l'auteur). |
+| PUT | `/admin/challenges/{challengeId}` | `{ level: { source, id, version? }, hearts?, slots?, powers?, stations?, checkpoints?, objective?, silver_ms?, gold_ms?, gold_no_damage?, bronze_progress?, silver_progress? }` : le défi d'une période **pas encore commencée** (UTC : premier jour > aujourd'hui), `source = 'admin'`. Mêmes contrôles et mêmes valeurs par défaut que `scripts/challenge-set.mjs` (module partagé `src/challengeSpec.mjs`) ; `rules_hash` = SHA-256 de la forme canonique (inchangée). Réponse `{ challenge, warnings }`. |
+| DELETE | `/admin/challenges/{challengeId}` | « Revenir au tirage » : le choix de l'admin d'une période à venir est retiré et le serveur la tire à nouveau aussitôt si elle est dans la fenêtre de tirage (sinon le jour `draws_on`). Réponse `{ challenge, draws_on }`. |
+
+Refus (inscrits au Journal, action `admin_refused`, `reason` = le code) : `409
+CHALLENGE_STARTED` (période commencée ou passée), `400 VALIDATION_ERROR` (règles invalides :
+pouvoir inconnu ou en double, plus de pouvoirs que d'emplacements, Or plus lent que l'Argent,
+temps manquants pour un niveau de la communauté…), `409 LEVEL_UNAVAILABLE` (niveau non classé,
+version non publiée), `409 FINISH_NEEDS_ROUTE`, `409 NOT_CHOSEN` (« Revenir au tirage » sur un
+défi qui est déjà le tirage). Journal : `GET /admin/log?kind=challenge` (actions
+`admin_challenge_set`, `admin_challenge_reset`) ; chaque entrée a `challenge` : période, niveau,
+règles, objectif, paliers, ce qu'il remplace (`replaced`), ce qui a été retiré (`removed`) et
+tiré à la place (`drawn`).
+
+Objectif d'un défi (`objective`, colonne de `challenges`, migration `XXXX_challenge_objective.sql`) :
+
+- `speed` (« Vitesse », défaut, tous les défis d'avant 2.41) : inchangé.
+- `finish` (« Finir le niveau ») : seulement sur une version de niveau **avec un parcours tracé**
+  (`race`, comme les niveaux EXTRÊME). Le classement du défi est celui de « Plus loin » (§5) : le
+  plus loin d'abord, puis le premier à finir ; `GET …/leaderboard` donne `board=progress` par
+  défaut pour ce défi. Paliers : **Bronze** = `bronze_progress` % de progression (défaut 50),
+  **Argent** = `silver_progress` % (défaut 80 ; 10 à 95, Argent au-dessus du Bronze), **Or** =
+  niveau fini (sans dégât si `gold_no_damage`, sinon Argent). Le palier d'un essai est calculé
+  par le serveur depuis la progression qu'il tire du replay (`challenge_attempts.tier`), jamais
+  d'une valeur du jeu ; il compte pour le résultat (`tier` de `/challenges/me` et du calendrier),
+  la série et les récompenses (§6) comme celui d'une partie. L'objet défi ajoute `objective` et,
+  pour `finish`, `tiers.bronze_progress` / `tiers.silver_progress` ; `silver_ms` / `gold_ms`
+  valent alors 2 h, pour que les anciens jeux (qui ignorent `objective`) montrent pour une
+  partie finie le palier que décide le serveur. Les entrées du classement `progress` d'un défi
+  `finish` ont `tier` ; la réponse du replay d'un essai aussi.
+- L'objectif change le classement, jamais la simulation : il n'entre pas dans la forme
+  canonique des règles ni dans le replay ; `kSimulationVersion` et `kRankingGeneration` ne
+  changent pas.

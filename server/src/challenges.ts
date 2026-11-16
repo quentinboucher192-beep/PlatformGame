@@ -232,11 +232,11 @@ export function parseChallengeId(id: string): Period | null {
 
 export const challengeIdOf = (kind: ChallengeKind, period: string) => `${kind}-${period}`;
 const instant = (date: string) => `${date}T00:00:00Z`;
-const kindOrder = (col: string) => `CASE ${col} WHEN 'monthly' THEN 0 WHEN 'weekly' THEN 1 ELSE 2 END`;
+export const kindOrder = (col: string) => `CASE ${col} WHEN 'monthly' THEN 0 WHEN 'weekly' THEN 1 ELSE 2 END`;
 
 // ------------------------------------------------------------------ rows
 
-interface ChallengeRow {
+export interface ChallengeRow {
     id: string;
     kind: ChallengeKind;
     period: string;
@@ -263,10 +263,23 @@ interface ChallengeRow {
     featured_notified_at: string | null;
     created_at: string;
     updated_at: string;
+    /**
+     * 2.41: what ranks its players: the times (« Vitesse », speed) or the progress (« Finir le
+     * niveau », finish: like « Plus loin », its tiers a share of the route, `bronze_progress`
+     * and `silver_progress` %, Or once finished).
+     */
+    objective: Objective;
+    bronze_progress: number;
+    silver_progress: number;
+    /** The server's draw an administrator's choice replaced (its title), else null. */
+    replaced_title: string | null;
     author_name: string | null;
     /** The level version has a race layout (« Plus loin »). */
     has_race: number;
 }
+
+export const OBJECTIVES = ["speed", "finish"] as const;
+export type Objective = (typeof OBJECTIVES)[number];
 
 interface RunRow {
     id: string;
@@ -295,7 +308,7 @@ interface RunRow {
     verified_at: string | null;
 }
 
-const CHALLENGE_SQL = `SELECT c.*, p.username AS author_name,
+export const CHALLENGE_SQL = `SELECT c.*, p.username AS author_name,
     CASE c.level_source
       WHEN 'campaign' THEN EXISTS (SELECT 1 FROM level_versions lv WHERE lv.level_id = c.level_id AND lv.content_hash = c.level_hash AND lv.race IS NOT NULL)
       ELSE EXISTS (SELECT 1 FROM community_level_versions cv
@@ -351,17 +364,60 @@ export function challengeJson(c: ChallengeRow) {
         },
         rules: rulesOf(c),
         rules_hash: c.rules_hash,
-        tiers: { silver_ms: c.silver_ms, gold_ms: c.gold_ms, gold_no_damage: c.gold_no_damage === 1 },
+        // 2.41, « Finir le niveau »: Bronze and Argent are shares of the route (the times stay
+        // for the older games: every finished run is within them).
+        tiers:
+            c.objective === "finish"
+                ? {
+                      silver_ms: c.silver_ms,
+                      gold_ms: c.gold_ms,
+                      gold_no_damage: c.gold_no_damage === 1,
+                      bronze_progress: c.bronze_progress,
+                      silver_progress: c.silver_progress,
+                  }
+                : { silver_ms: c.silver_ms, gold_ms: c.gold_ms, gold_no_damage: c.gold_no_damage === 1 },
         // 2.33: the board « Plus loin » exists (the level version has a race layout).
         progress_available: c.has_race === 1,
+        // 2.41: "speed" (the best times) or "finish" (the progress board is the challenge's board).
+        objective: c.objective ?? "speed",
     };
 }
 
-/** Tier of a run, computed by the server from the challenge (never taken from the client). */
+/** Tier of a run by its time (« Vitesse »), computed by the server (never taken from the client). */
 export function tierOf(c: Pick<ChallengeRow, "silver_ms" | "gold_ms" | "gold_no_damage">, timeMs: number, damage: number): Tier {
     if (timeMs <= c.gold_ms && (c.gold_no_damage !== 1 || damage === 0)) return "gold";
     if (timeMs <= c.silver_ms) return "silver";
     return "bronze";
+}
+
+/**
+ * Tier of a finished run of a challenge: by its time (« Vitesse »), or (« Finir le niveau »)
+ * Or for any finish, Argent when Or asks for no damage and the run took some (the route is
+ * then entirely reached, above any Argent share).
+ */
+export function runTierOf(
+    c: Pick<ChallengeRow, "objective" | "silver_ms" | "gold_ms" | "gold_no_damage">,
+    timeMs: number,
+    damage: number,
+): Tier {
+    if (c.objective === "finish") return c.gold_no_damage !== 1 || damage === 0 ? "gold" : "silver";
+    return tierOf(c, timeMs, damage);
+}
+
+/**
+ * « Finir le niveau »: the tier of an unfinished attempt from the progress the server computed
+ * from its replay (never the game's): Argent from `silver_progress` %, Bronze from
+ * `bronze_progress` %, else none. Never Or (only a finish reaches it); none on a « Vitesse »
+ * challenge.
+ */
+export function progressTierOf(
+    c: Pick<ChallengeRow, "objective" | "bronze_progress" | "silver_progress">,
+    progress: number | null,
+): "bronze" | "silver" | null {
+    if (c.objective !== "finish" || progress === null) return null;
+    if (progress >= c.silver_progress) return "silver";
+    if (progress >= c.bronze_progress) return "bronze";
+    return null;
 }
 
 function runJson(r: RunRow) {
@@ -717,6 +773,8 @@ interface ProgressRow {
     item_id: string;
     /** Its replay is kept (an attempt: the player's best; a run: a verified replay). */
     replay: number;
+    /** « Finir le niveau » (2.41): the tier of that attempt or finished run (null: none). */
+    tier: Tier | null;
     username: string;
     avatar: string;
     avatar_custom_key: string | null;
@@ -756,13 +814,13 @@ function progressSql(filter: ScopeFilter): { sql: string; extra: unknown[] } {
     const { where, extra } = scopeWhere(filter);
     const sql = `
       WITH items AS (
-        SELECT a.player_id, a.progress, 0 AS finished, a.time_ms, a.late, a.created_at, a.id AS item_id, (a.replay_key IS NOT NULL) AS replay
+        SELECT a.player_id, a.progress, 0 AS finished, a.time_ms, a.late, a.created_at, a.id AS item_id, (a.replay_key IS NOT NULL) AS replay, a.tier
         FROM challenge_attempts a WHERE a.challenge_id = ?1 AND a.status = 'VERIFIED' AND (?2 = 1 OR a.late = 0)
         UNION ALL
-        SELECT r.player_id, 100.0, 1, r.time_ms, r.late, r.created_at, r.id, (r.replay_key IS NOT NULL AND r.replay_status = 'VERIFIED')
+        SELECT r.player_id, 100.0, 1, r.time_ms, r.late, r.created_at, r.id, (r.replay_key IS NOT NULL AND r.replay_status = 'VERIFIED'), r.tier
         FROM challenge_runs r WHERE r.challenge_id = ?1 AND r.status = 'VERIFIED' AND (?2 = 1 OR r.late = 0)),
       best AS (
-        SELECT player_id, progress, finished, time_ms, late, created_at, item_id, replay FROM (
+        SELECT player_id, progress, finished, time_ms, late, created_at, item_id, replay, tier FROM (
           SELECT items.*, ROW_NUMBER() OVER (PARTITION BY player_id ORDER BY progress DESC, created_at, item_id) AS rn FROM items)
         WHERE rn = 1),
       ranked AS (
@@ -828,7 +886,8 @@ export async function leaderboard(ctx: Ctx, viewer: AuthInfo | null): Promise<Re
     const c = await startedChallenge(ctx, ctx.params.challengeId!);
     const scope = queryEnum(ctx.url, "scope", SCOPES, "world");
     const period = queryEnum(ctx.url, "period", BOARD_PERIODS, "live");
-    const board = queryEnum(ctx.url, "board", BOARDS, "time");
+    // 2.41: a « Finir le niveau » challenge is ranked by its progress board first.
+    const board = queryEnum(ctx.url, "board", BOARDS, c.objective === "finish" ? "progress" : "time");
     const page = paging(ctx.url, 50, 100);
     let country = queryString(ctx.url, "country", COUNTRY_RE);
     const filter: ScopeFilter = {};
@@ -950,6 +1009,8 @@ async function progressBoard(
         attempt_id: r.finished === 1 ? null : r.item_id,
         run_id: r.finished === 1 ? r.item_id : null,
         has_replay: r.replay === 1 && (r.profile_visibility !== "private" || viewer?.player.id === r.player_id),
+        // « Finir le niveau » (2.41): the tier this progress reached, computed by the server.
+        ...(c.objective === "finish" ? { tier: r.tier ?? null } : {}),
     });
     const me = mine ? entry(mine) : outside ? { ...entry(outside), rank: null } : null;
     return json(ctx, {
@@ -957,6 +1018,7 @@ async function progressBoard(
         scope: o.scope,
         period: o.period,
         board: "progress",
+        objective: c.objective,
         country_code: o.filter.country ?? null,
         entries: rows.results.map(entry),
         me,
@@ -1131,7 +1193,7 @@ export async function submitRun(ctx: Ctx): Promise<Response> {
         level_hash: c.level_hash,
         rules_hash: c.rules_hash,
         game_version: gameVersion!,
-        tier: tierOf(c, timeMs!, damage!),
+        tier: runTierOf(c, timeMs!, damage!),
         status: "PENDING",
         late: late ? 1 : 0,
         rejection_reason: null,
@@ -1498,6 +1560,8 @@ export async function uploadAttemptReplay(ctx: Ctx): Promise<Response> {
     const ok = analysis.reasons.length === 0;
     // Never 100: only a finished run reaches it.
     const progress = ok ? raceScore(layout, analysis.route, analysis.bossRemoved, analysis.wavesDone, false) : null;
+    // « Finir le niveau » (2.41): the tier of this progress, from the server's score only.
+    const tier = progressTierOf(c, progress);
 
     const db = ctx.env.DB;
     const before = await db
@@ -1524,7 +1588,7 @@ export async function uploadAttemptReplay(ctx: Ctx): Promise<Response> {
     const claim = await db
         .prepare(
             `UPDATE challenge_attempts SET status = ?2, progress = ?3, route = ?4, detail = ?5, reasons = ?6, replay_key = ?7, replay_sha256 = ?8,
-               replay_size = ?9, replay_at = ?10, verified_at = ?11 WHERE id = ?1 AND status = 'PENDING' AND replay_at IS NULL`,
+               replay_size = ?9, replay_at = ?10, verified_at = ?11, tier = ?12 WHERE id = ?1 AND status = 'PENDING' AND replay_at IS NULL`,
         )
         .bind(
             a.id,
@@ -1538,6 +1602,7 @@ export async function uploadAttemptReplay(ctx: Ctx): Promise<Response> {
             key ? data.byteLength : null,
             now,
             ok ? now : null,
+            tier,
         )
         .run();
     if (claim.meta.changes !== 1) {
@@ -1573,6 +1638,7 @@ export async function uploadAttemptReplay(ctx: Ctx): Promise<Response> {
                 late: a.late === 1,
                 rank,
                 reasons: ok ? [] : analysis.reasons.slice(0, 8),
+                ...(c.objective === "finish" ? { tier } : {}),
             },
             // A new record of progress on this challenge (better than every attempt and finished run before).
             new_best: keep && before?.finished !== 1,
@@ -1648,6 +1714,8 @@ export function streakOf(dates: string[], today: string): { current: number; bes
 }
 
 const TIER_RANK_SQL = "CASE r.tier WHEN 'gold' THEN 3 WHEN 'silver' THEN 2 ELSE 1 END";
+/** An attempt's tier (« Finir le niveau », 2.41): never Or; 0 without one. */
+const ATTEMPT_TIER_RANK_SQL = "CASE a.tier WHEN 'silver' THEN 2 WHEN 'bronze' THEN 1 ELSE 0 END";
 
 interface PlayerResult {
     challenge_id: string;
@@ -1683,7 +1751,9 @@ async function playerResults(ctx: Ctx, playerId: string, o: { span?: { start: st
          attempts AS (
            SELECT a.challenge_id, a.status, a.late,
                   ROW_NUMBER() OVER (PARTITION BY a.challenge_id
-                                     ORDER BY (a.status = 'REJECTED'), a.late, (a.status <> 'VERIFIED'), a.progress DESC, a.created_at, a.id) AS rn
+                                     ORDER BY (a.status = 'REJECTED'), a.late, (a.status <> 'VERIFIED'), a.progress DESC, a.created_at, a.id) AS rn,
+                  MAX(CASE WHEN a.status = 'VERIFIED' AND a.late = 0 THEN ${ATTEMPT_TIER_RANK_SQL} ELSE 0 END) OVER (PARTITION BY a.challenge_id) AS live_tier,
+                  MAX(CASE WHEN a.status = 'VERIFIED' THEN ${ATTEMPT_TIER_RANK_SQL} ELSE 0 END) OVER (PARTITION BY a.challenge_id) AS any_tier
            FROM challenge_attempts a WHERE a.player_id = ?1),
          bests AS (
            SELECT challenge_id, MAX(p) AS best FROM (
@@ -1693,7 +1763,8 @@ async function playerResults(ctx: Ctx, playerId: string, o: { span?: { start: st
            GROUP BY challenge_id),
          played AS (SELECT challenge_id FROM runs WHERE rn = 1 UNION SELECT challenge_id FROM attempts WHERE rn = 1)
          SELECT played.challenge_id, c.kind, c.period, c.date, runs.time_ms, runs.status, runs.late, runs.live_tier, runs.any_tier,
-                attempts.status AS attempt_status, attempts.late AS attempt_late, bests.best AS best_progress
+                attempts.status AS attempt_status, attempts.late AS attempt_late, attempts.live_tier AS attempt_live_tier,
+                attempts.any_tier AS attempt_any_tier, bests.best AS best_progress
          FROM played JOIN challenges c ON c.id = played.challenge_id
          LEFT JOIN runs ON runs.challenge_id = played.challenge_id AND runs.rn = 1
          LEFT JOIN attempts ON attempts.challenge_id = played.challenge_id AND attempts.rn = 1
@@ -1714,13 +1785,26 @@ async function playerResults(ctx: Ctx, playerId: string, o: { span?: { start: st
             any_tier: number | null;
             attempt_status: RunRow["status"] | null;
             attempt_late: number | null;
+            attempt_live_tier: number | null;
+            attempt_any_tier: number | null;
             best_progress: number | null;
         }>();
     return rows.results.map((r) => {
         const base = { challenge_id: r.challenge_id, kind: r.kind, period: r.period, date: r.date, best_progress: r.best_progress };
-        if (r.status === null)
-            return { ...base, best_time_ms: null, tier: null, status: r.attempt_status ?? "PENDING", late: r.attempt_late === 1 };
-        const rank = r.status === "REJECTED" ? 0 : r.late === 1 ? (r.any_tier ?? 0) : (r.live_tier ?? 0);
+        // « Finir le niveau » (2.41): an attempt's tier counts too (always 0 on a « Vitesse » challenge).
+        const attemptRank = (late: boolean) => (late ? (r.attempt_any_tier ?? 0) : (r.attempt_live_tier ?? 0));
+        if (r.status === null) {
+            const rank = attemptRank(r.attempt_late === 1);
+            return {
+                ...base,
+                best_time_ms: null,
+                tier: rank > 0 ? TIERS[rank - 1]! : null,
+                status: r.attempt_status ?? "PENDING",
+                late: r.attempt_late === 1,
+            };
+        }
+        const runRank = r.status === "REJECTED" ? 0 : r.late === 1 ? (r.any_tier ?? 0) : (r.live_tier ?? 0);
+        const rank = Math.max(runRank, attemptRank(r.late === 1));
         return {
             ...base,
             best_time_ms: r.time_ms,
@@ -1750,9 +1834,13 @@ export async function mine(ctx: Ctx): Promise<Response> {
     // The game polls its results: a run held by an outdated board is decided again.
     await recheckHeldRuns(ctx, me, 20);
     const results = await playerResults(ctx, me, { limit });
+    // A period counts with a run in time that was not rejected, or (« Finir le niveau », 2.41)
+    // an attempt in time whose verified progress reached a tier.
     const played = await ctx.env.DB.prepare(
-        `SELECT DISTINCT c.kind, c.period FROM challenge_runs r JOIN challenges c ON c.id = r.challenge_id
-         WHERE r.player_id = ?1 AND r.status <> 'REJECTED' AND r.late = 0 ORDER BY c.kind, c.period`,
+        `SELECT DISTINCT c.kind, c.period FROM (
+           SELECT r.challenge_id FROM challenge_runs r WHERE r.player_id = ?1 AND r.status <> 'REJECTED' AND r.late = 0
+           UNION SELECT a.challenge_id FROM challenge_attempts a WHERE a.player_id = ?1 AND a.status = 'VERIFIED' AND a.late = 0 AND a.tier IS NOT NULL) x
+         JOIN challenges c ON c.id = x.challenge_id ORDER BY c.kind, c.period`,
     )
         .bind(me)
         .all<{ kind: ChallengeKind; period: string }>();

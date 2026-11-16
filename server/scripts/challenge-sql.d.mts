@@ -19,6 +19,10 @@ export interface ChallengeSqlOptions {
     stations?: boolean;
     checkpoints?: boolean;
     goldNoDamage?: boolean;
+    /** 2.41: "speed" (default) or "finish" (« Finir le niveau »: a level version with a race layout). */
+    objective?: string;
+    bronzePct?: string | number;
+    silverPct?: string | number;
 }
 export interface ChallengeSqlCatalog {
     player_max_hearts: number;
@@ -49,5 +53,6 @@ export function buildChallengeSql(
     rules: ChallengeSqlRules;
     rulesHash: string;
     canonical: string;
+    objective: string;
     warnings: string[];
 }>;

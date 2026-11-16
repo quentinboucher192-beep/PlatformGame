@@ -18,9 +18,12 @@ export type Role = "player" | "admin";
 /** Actions shown by the Journal (audit_log.action), by kind. */
 export const ADMIN_ACTIONS = {
     role: ["admin_role_granted", "admin_role_revoked"],
+    // 2.41: ADMINISTRATION › Calendrier des défis (adminChallenges.ts).
+    challenge: ["admin_challenge_set", "admin_challenge_reset"],
     refused: ["admin_refused"],
 } as const;
-const ALL_ADMIN_ACTIONS: readonly string[] = [...ADMIN_ACTIONS.role, ...ADMIN_ACTIONS.refused];
+const ALL_ADMIN_ACTIONS: readonly string[] = [...ADMIN_ACTIONS.role, ...ADMIN_ACTIONS.challenge, ...ADMIN_ACTIONS.refused];
+const LOG_KINDS = ["all", "role", "challenge", "refused"] as const;
 
 const ID_RE = /^[A-Za-z0-9-]{8,64}$/;
 
@@ -175,15 +178,43 @@ function parseDetails(raw: string | null): Record<string, unknown> {
     }
 }
 
+const isObject = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
+
 /**
- * GET /admin/log?kind=all|role|refused&actor=<player id>&limit=&offset=
+ * What the Journal shows of a challenge an administrator set, put back to the draw or tried to
+ * change (2.41): the period, and what the server wrote at the time (level, rules, objective,
+ * tiers, what it replaced or what was drawn instead). Only the keys the server writes.
+ */
+function challengeOfDetails(d: Record<string, unknown>) {
+    if (typeof d.challenge !== "string") return null;
+    const pick = (k: string) => (isObject(d[k]) ? d[k] : null);
+    return {
+        id: d.challenge,
+        kind: typeof d.kind === "string" ? d.kind : null,
+        period: typeof d.period === "string" ? d.period : null,
+        start: typeof d.start === "string" ? d.start : null,
+        action: typeof d.action === "string" ? d.action : null,
+        level: pick("level"),
+        rules: pick("rules"),
+        objective: typeof d.objective === "string" ? d.objective : null,
+        tiers: pick("tiers"),
+        replaced: pick("replaced"),
+        removed: pick("removed"),
+        drawn: pick("drawn"),
+        draws_on: typeof d.draws_on === "string" ? d.draws_on : null,
+        field: typeof d.field === "string" ? d.field : null,
+    };
+}
+
+/**
+ * GET /admin/log?kind=all|role|challenge|refused&actor=<player id>&limit=&offset=
  * The administration's own actions, newest first: who (the admin's current username, or the
  * one written at the time when the account is gone), what, when. Never the IP hash.
  */
 export async function listLog(ctx: Ctx): Promise<Response> {
     await requireAdminRole(ctx);
     const page = paging(ctx.url, 50, 100);
-    const kind = queryEnum(ctx.url, "kind", ["all", "role", "refused"] as const, "all");
+    const kind = queryEnum(ctx.url, "kind", LOG_KINDS, "all");
     const actor = queryString(ctx.url, "actor", ID_RE);
     const actions = kind === "all" ? ALL_ADMIN_ACTIONS : ADMIN_ACTIONS[kind];
     const binds: unknown[] = [...actions];
@@ -214,6 +245,8 @@ export async function listLog(ctx: Ctx): Promise<Response> {
             role: str("role"),
             reason: str("reason"),
             by: str("by"),
+            // 2.41: a challenge of the calendar (set, put back to the draw, or refused).
+            challenge: challengeOfDetails(d),
         };
     });
     return json(ctx, { entries, has_more: rows.results.length > page.limit, offset: page.offset });

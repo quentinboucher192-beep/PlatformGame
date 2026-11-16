@@ -2,7 +2,8 @@
 // (docs/online/DAILY_CHALLENGES.md, docs/online/CHALLENGES_PERIODS.md):
 //   node scripts/challenge-set.mjs --kind daily --period 2026-11-20 --level campaign:glacior_02 \
 //       [--hearts N] [--slots N] [--powers a,b] [--no-stations] [--no-checkpoints] \
-//       [--silver m:ss] [--gold m:ss] [--gold-damage-ok] > migrations/00NN_challenge_daily_2026_11_20.sql
+//       [--silver m:ss] [--gold m:ss] [--gold-damage-ok] \
+//       [--objective speed|finish] [--bronze-pct N] [--silver-pct N] > migrations/00NN_challenge_daily_2026_11_20.sql
 //   node scripts/challenge-set.mjs --kind weekly --period 2026-W48 --level campaign:pyralis_04 > …
 //   node scripts/challenge-set.mjs --kind monthly --period 2026-12 --level community:<uuid>@<version> --silver 2:30 --gold 1:50 > …
 // (the 2.32 form `--date AAAA-MM-JJ` still means `--kind daily --period AAAA-MM-JJ`), then
@@ -14,7 +15,11 @@
 // the times of its gold and platinum medals (src/challengeCatalog.json,
 // scripts/challenge-catalog.mjs); a community level gets 4 slots and no imposed power, and
 // needs --silver and --gold. Hearts: the player's maximum. Stations and checkpoints on, Gold
-// without damage.
+// without damage. 2.41: `--objective finish` (« Finir le niveau », only on a level version
+// with a race layout: else the SQL changes nothing) ranks the progress like « Plus loin », its
+// tiers a share of the route (--bronze-pct, default 50; --silver-pct, default 80; Or: finished).
+// The same checks as ADMINISTRATION › Calendrier des défis in the game (src/challengeSpec.mjs),
+// which is the usual way now: this script stays for a migration written by hand.
 import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";

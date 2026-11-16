@@ -2,6 +2,7 @@
 // caching of anonymous reads, and the daily maintenance cron.
 
 import * as admin from "./admin";
+import * as adminChallenges from "./adminChallenges";
 import * as adminRoles from "./adminRoles";
 import { login, logout, me, optionalAuth, refresh, register, usernameAvailable, type AuthInfo } from "./auth";
 import * as friends from "./friends";
@@ -302,6 +303,11 @@ route("POST", `${V}/admin/comments/{commentId}/moderate`, async (ctx) => {
 route("GET", `${V}/admin/players`, (ctx) => adminRoles.listPlayers(ctx));
 route("POST", `${V}/admin/players/{playerId}/role`, (ctx) => adminRoles.setRole(ctx));
 route("GET", `${V}/admin/log`, (ctx) => adminRoles.listLog(ctx));
+// ADMINISTRATION › Calendrier des défis (2.41): the coming challenges too, set or put back to the draw.
+route("GET", `${V}/admin/challenges`, (ctx) => adminChallenges.listChallenges(ctx));
+route("GET", `${V}/admin/challenges/levels`, (ctx) => adminChallenges.listLevels(ctx));
+route("PUT", `${V}/admin/challenges/{challengeId}`, (ctx) => adminChallenges.setChallenge(ctx));
+route("DELETE", `${V}/admin/challenges/{challengeId}`, (ctx) => adminChallenges.resetChallenge(ctx));
 
 function match(method: string, path: string): { route: Route; params: Record<string, string> } | "method" | null {
     let pathMatched = false;

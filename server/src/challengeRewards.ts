@@ -87,14 +87,21 @@ export function rewardProgressFrom(rows: VerifiedChallenge[]): ChallengeRewardPr
     return out;
 }
 
-/** What the player's VERIFIED challenge runs count for the rewards (one row per challenge played). */
+/**
+ * What the player's VERIFIED challenge results count for the rewards (one row per challenge
+ * played): the finished runs, and (2.41) on a « Finir le niveau » challenge the attempts whose
+ * progress, computed by the server from their replay, reached a tier (Bronze or Argent).
+ */
 export async function challengeRewardProgress(ctx: Ctx, playerId: string): Promise<ChallengeRewardProgress> {
     const rows = await ctx.env.DB.prepare(
         `SELECT c.kind, c.date,
-                MAX(CASE r.tier WHEN 'gold' THEN 3 WHEN 'silver' THEN 2 WHEN 'bronze' THEN 1 ELSE 0 END) AS tier,
-                MAX(CASE WHEN r.late = 0 THEN 1 ELSE 0 END) AS in_time
-         FROM challenge_runs r JOIN challenges c ON c.id = r.challenge_id
-         WHERE r.player_id = ?1 AND r.status = 'VERIFIED'
+                MAX(CASE x.tier WHEN 'gold' THEN 3 WHEN 'silver' THEN 2 WHEN 'bronze' THEN 1 ELSE 0 END) AS tier,
+                MAX(CASE WHEN x.late = 0 THEN 1 ELSE 0 END) AS in_time
+         FROM (SELECT r.challenge_id, r.tier, r.late FROM challenge_runs r WHERE r.player_id = ?1 AND r.status = 'VERIFIED'
+               UNION ALL
+               SELECT a.challenge_id, a.tier, a.late FROM challenge_attempts a
+               WHERE a.player_id = ?1 AND a.status = 'VERIFIED' AND a.tier IS NOT NULL) x
+         JOIN challenges c ON c.id = x.challenge_id
          GROUP BY c.id`,
     )
         .bind(playerId)
