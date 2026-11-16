@@ -180,7 +180,7 @@ TEST_CASE("power keys: every power is classified (slot key, move of the characte
     ContentDatabase content;
     content.reload();
     const std::set<std::string> slot = {"dash",      "wave",       "shield", "impulse", "teleport", "time_slow",
-                                        "plasma_bomb", "boomerang", "frost_nova", "decoy", "recall"};
+                                        "plasma_bomb", "boomerang", "frost_nova", "decoy", "recall", "boomerang_charge"};
     const std::set<std::string> moves = {"glide", "triple_jump", "ground_pound", "charge_shot", "grapple"};
     const std::set<std::string> passive = {"magnet", "air_dash"};
     int seen = 0;

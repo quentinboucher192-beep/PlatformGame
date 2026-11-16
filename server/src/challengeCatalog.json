@@ -4,6 +4,7 @@
  "powers": {
   "air_dash": "dash",
   "boomerang": "special",
+  "boomerang_charge": "special",
   "charge_shot": "attack",
   "dash": "dash",
   "decoy": "special",

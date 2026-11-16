@@ -62,6 +62,8 @@ PowerRegistry::PowerRegistry() {
     registerBehavior("frost_nova", [](const PowerDefinition& d) { return std::make_unique<FrostNovaPower>(d); });
     registerBehavior("decoy", [](const PowerDefinition& d) { return std::make_unique<DecoyPower>(d); });
     registerBehavior("recall", [](const PowerDefinition& d) { return std::make_unique<RecallPower>(d); });
+    // 2.50: hold to charge, release to throw; the blade spins on its target.
+    registerBehavior("boomerang_charge", [](const PowerDefinition& d) { return std::make_unique<BoomerangChargePower>(d); });
 }
 
 void PowerRegistry::registerBehavior(const std::string& behavior, Factory f) { factories_[behavior] = std::move(f); }

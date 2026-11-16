@@ -1502,6 +1502,13 @@
    "parents": [
     "gallery.tab.creatures"
    ]
+  },
+  {
+   "id": "powers.guide.boomerang_charge",
+   "version": "2.50.0",
+   "parents": [
+    "powers.guide"
+   ]
   }
  ]
 }

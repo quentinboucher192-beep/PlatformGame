@@ -195,7 +195,14 @@ TEST_CASE("achievements: every condition is known and names real content") {
     // Every power of the game has its achievement: used (active powers, counted from their
     // « powerUsed » event) or owned at the end of levels (passive ones never fire it).
     const std::set<std::string> passive = {"triple_jump", "air_dash", "magnet"};
+    // 2.50: the Boomerang chargé gets its achievements with the catalogue of its release (added
+    // by the integration, not with the power): until then it is only listed.
+    const std::set<std::string> pending = {"boomerang_charge"};
     for (const PowerDefinition* p : f.content.powers()) {
+        if (pending.count(p->id)) {
+            CHECK(f.catalog.find("pouvoirs_" + p->id) == nullptr);  // once added, take it out of `pending`
+            continue;
+        }
         const AchievementDef* a = f.catalog.find("pouvoirs_" + p->id);
         CHECK(a != nullptr);
         if (!a) continue;

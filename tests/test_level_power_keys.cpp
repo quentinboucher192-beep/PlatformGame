@@ -135,7 +135,7 @@ TEST_CASE("level power keys: suggestions never collide in a campaign level nor t
         // Never part of what the power plays like (fingerprints).
         CHECK(!p->toJson().contains("suggestedKey"));
     }
-    CHECK(keys.size() == 11);
+    CHECK(keys.size() == 12);
     // The powers of each campaign level: their suggestions never collide, on either device.
     for (const LevelEntry* e : content.levels()) {
         if (e->source != ContentSource::Builtin) continue;
