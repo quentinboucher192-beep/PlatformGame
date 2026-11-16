@@ -5,6 +5,11 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.53.0** :
+* **Statistiques** (menu principal) : vos vraies parties en courbes et en chiffres, sur cet ordinateur
+  (vue d'ensemble, combat, boss, niveaux classiques avec somme des meilleurs segments, passages
+  difficiles avec leur entraînement). Voir [Statistiques](#statistiques).
+
 **Nouveau dans la version 2.50.0** :
 * **Pyrrhax déchaîné** : Piqué traversant, Atterrissage et souffle au sol, Boules de feu à nuage,
   Rafale d'ailes ; rester sous lui ne protège plus.
@@ -577,8 +582,40 @@ local sans compte Cloudflare. Documentation complète : [docs/online/](docs/onli
 
 *Continuer* (dernier niveau joué) · *Campagne* (planètes et niveaux) · *En ligne* ·
 *Notifications* · *Succès* (toile des 218 succès et de leurs 597 étoiles) · *Collection*
-(vestiaire, route des étoiles, musiques, galerie) · *Statistiques* (les boss : victoires,
-combats et phases sans dégât) · *Paramètres* · *Quitter*.
+(vestiaire, route des étoiles, musiques, galerie) · *Statistiques* (vos statistiques de jeu, et
+les fiches des boss) · *Paramètres* · *Quitter*.
+
+### Statistiques
+
+Calculées à partir de **vos vraies parties**, gardées sur cet ordinateur (`saves/stats.json`, jamais
+envoyé en ligne, ni dans la copie de la progression de Cosmic Online). L'écran démarre vide et se
+remplit au fil des parties. Six sections :
+
+* **Vue d'ensemble** — sur 7, 30 ou 90 jours : temps de jeu et jours joués, taux d'esquive,
+  précision, morts par heure, chacun comparé à la période précédente de même durée (▲ / ▼, l'écart
+  et « en progrès » / « en recul ») ; étoiles de succès cumulées ; morts par heure jour après jour
+  avec la moyenne des 7 derniers jours joués.
+* **Combat** — taux d'esquive (une attaque ennemie vous menace quand elle passe à moins d'une tuile
+  et demie de vous ; esquivée si elle ne vous blesse pas) et précision (un tir, un coup ou une lame
+  touche s'il retire des points de vie à au moins un ennemi), précision par pouvoir, et ce qui vous
+  touche (tirs, attaques d'ennemis, de boss, contacts, pièges, chutes).
+* **Boss** — votre meilleure part des points de vie retirée, tentative après tentative (trois boss
+  à la fois, les plus récents d'abord), une fiche par boss, les défaites par phase ; les fiches des
+  boss d'avant (lieux, animations, entraînement) sont à un clic.
+* **Niveaux** (classiques, hors EXTRÊME, joués depuis le début) — évolution du record (PB) et de la
+  somme des meilleurs segments (SOB), temps gagnable, zones à travailler (temps perdu en moyenne
+  par segment, avec « S'entraîner sur ce segment »), constance de chaque segment et régularité des
+  parties complètes.
+* **Passages difficiles** — où vous tombez dans un niveau (40 tranches sur son vrai relief, avec
+  ses points de passage) et vos 5 passages les plus difficiles, niveaux et phases de boss mêlés,
+  chacun avec son entraînement.
+* **Données et sauvegarde** — ce qui est enregistré, où et quand, et « Réinitialiser les
+  statistiques ». *Paramètres › Jeu › « Enregistrer mes statistiques »* (activé par défaut).
+
+Chaque graphique a une info-bulle à la souris, un curseur au clavier et à la manette (← →) et une
+vue **Tableau**. Les statistiques lisent la partie sans la changer : replays, records et classements
+sont identiques. L'entraînement est compté à part, le mode Invincible (admin), les replays relus et
+les parties d'amis regardées jamais.
 
 **En ligne** (compte requis) : **NIVEAUX EN LIGNE** (les niveaux publiés par les joueurs : Populaires,
 Plus durs, Récents, Mieux notés, Amis, Recherche, Les miens ; télécharger et jouer, noter,

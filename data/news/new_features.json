@@ -116,21 +116,21 @@
    "id": "stats.animations",
    "version": "2.27.0",
    "parents": [
-    "menu.stats"
+    "stats.bosses"
    ]
   },
   {
    "id": "stats.locations",
    "version": "2.27.0",
    "parents": [
-    "menu.stats"
+    "stats.bosses"
    ]
   },
   {
    "id": "stats.training",
    "version": "2.28.0",
    "parents": [
-    "menu.stats"
+    "stats.bosses"
    ]
   },
   {
@@ -1051,7 +1051,7 @@
    "id": "boss.singularis",
    "version": "2.34.0",
    "parents": [
-    "menu.stats"
+    "stats.bosses"
    ]
   },
   {
@@ -1134,7 +1134,7 @@
    "id": "stats.sheet",
    "version": "2.37.0",
    "parents": [
-    "menu.stats"
+    "stats.bosses"
    ]
   },
   {
@@ -1280,14 +1280,14 @@
    "id": "boss.pyrrhax",
    "version": "2.49.0",
    "parents": [
-    "menu.stats"
+    "stats.bosses"
    ]
   },
   {
    "id": "boss.monolithe",
    "version": "2.49.0",
    "parents": [
-    "menu.stats"
+    "stats.bosses"
    ]
   },
   {
@@ -1527,6 +1527,32 @@
   {
    "id": "pause.invincible",
    "version": "2.51.0"
+  },
+  {
+   "id": "stats.player",
+   "version": "2.53.0",
+   "parents": [
+    "menu.stats"
+   ]
+  },
+  {
+   "id": "stats.bosses",
+   "parents": [
+    "menu.stats"
+   ]
+  },
+  {
+   "id": "settings.record_stats",
+   "version": "2.53.0",
+   "parents": [
+    "settings.tab.game"
+   ]
+  },
+  {
+   "id": "settings.tab.game",
+   "parents": [
+    "menu.settings"
+   ]
   }
  ]
 }

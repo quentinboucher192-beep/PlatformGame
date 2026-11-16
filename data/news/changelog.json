@@ -1,4 +1,12 @@
 {
+  "2.53.0": [
+    "Nouveau : l'écran Statistiques (menu principal), calculé à partir de vos vraies parties et gardé sur cet ordinateur. Vue d'ensemble sur 7, 30 ou 90 jours (temps de jeu, taux d'esquive, précision, morts par heure, comparés à la période précédente), étoiles de succès et morts par heure jour après jour.",
+    "Combat : taux d'esquive et précision avec leur moyenne sur 7 jours joués, précision par pouvoir, et ce qui vous touche (tirs, attaques d'ennemis et de boss, contacts, pièges, chutes).",
+    "Boss : votre meilleure progression tentative après tentative, une fiche par boss (victoire après N tentatives, phase la plus dure, attaque fatale la plus fréquente) et les défaites par phase. Les fiches des boss d'avant sont à un clic.",
+    "Niveaux (hors EXTRÊME) : évolution de votre record et de votre somme des meilleurs segments (SOB), zones où vous perdez du temps avec « S'entraîner sur ce segment », constance de chaque segment et régularité de vos parties.",
+    "Passages difficiles : où vous tombez dans chaque niveau, sur son vrai relief, et vos 5 passages les plus difficiles (niveaux et phases de boss) avec l'entraînement qui va avec.",
+    "Chaque graphique a son info-bulle à la souris, un curseur au clavier et à la manette (← →) et une vue « Tableau ». Paramètres › Jeu : « Enregistrer mes statistiques » (activé par défaut) ; « Réinitialiser les statistiques » dans l'écran."
+  ],
   "2.50.0": [
     "Pyrrhax déchaîné : de vraies attaques de dragon. Piqué traversant (sa ligne se verrouille avant le plongeon), Atterrissage et souffle au sol (posé, il prend plus de dégâts), Boules de feu qui laissent un nuage brûlant, Rafale d'ailes qui repousse. Rester sous lui ne protège plus.",
     "Nouveau pouvoir : le Boomerang chargé. Maintenez pour charger, relâchez pour lancer : la lame s'accroche au premier ennemi touché et tourne sur lui (0,4 à 2 s selon la charge), 1 dégât puis 1 toutes les 0,3 s, puis revient. 25 d'énergie.",
