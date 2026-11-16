@@ -45,7 +45,8 @@ Json Settings::toJson() const {
                      {"debugMode", gameplay.debugMode},
                      {"editorAutosave", gameplay.editorAutosave},
                      {"editorAutosaveSeconds", gameplay.editorAutosaveSeconds},
-                     {"unlockAll", gameplay.unlockAll}};
+                     {"unlockAll", gameplay.unlockAll},
+                     {"recordStats", gameplay.recordStats}};
     j["ghosts"] = {{"enabled", ghosts.enabled},
                    {"personalByDefault", ghosts.personalByDefault},
                    {"maxGhosts", ghosts.maxGhosts},
@@ -107,6 +108,7 @@ Settings Settings::fromJson(const Json& j) {
         s.gameplay.editorAutosave = jget<bool>(g, "editorAutosave", true);
         s.gameplay.editorAutosaveSeconds = std::clamp(jget<int>(g, "editorAutosaveSeconds", 60), 10, 600);
         s.gameplay.unlockAll = jget<bool>(g, "unlockAll", true);
+        s.gameplay.recordStats = jget<bool>(g, "recordStats", true);
     }
     if (j.contains("ghosts")) {
         const Json& g = j["ghosts"];

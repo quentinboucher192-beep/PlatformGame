@@ -24,6 +24,8 @@ void GameServices::loadAll() {
     progression.load();
     records.load();
     bossStats.load();
+    playStats.open(Paths::savesDir() / "stats.json");
+    playStats.currentStars = [this] { return achievements.stars(achievementCatalog); };
     ghosts.open(Paths::userDir() / "ghosts");
     ghosts.trimCache(static_cast<uint64_t>(settings.ghosts.cacheMB) * 1024 * 1024);
     replayLibrary.open(Paths::userDir() / "replays" / "downloaded");
@@ -499,6 +501,7 @@ void GameServices::applySettings() {
     }
     app.debugOverlay = app.debugOverlay && settings.gameplay.debugMode;
     progression.unlockAll = settings.gameplay.unlockAll;
+    playStats.enabled = settings.gameplay.recordStats;
 }
 
 void GameServices::playMusic(const std::string& rel) {

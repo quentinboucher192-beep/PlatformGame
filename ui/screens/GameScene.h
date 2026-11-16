@@ -26,6 +26,7 @@ namespace cosmic {
 
 class GameServices;
 class GameScene;
+class PlayStatsRecorder;
 
 /// Boss training: the end of a training run (Recommencer, Changer les réglages, Retour).
 std::unique_ptr<Scene> makeBossTrainingEnd(GameServices& g, GameScene& game, const BossTrainingResult& result);
@@ -224,6 +225,9 @@ private:
     PowerKeyMap powerKeys_;
     std::vector<std::string> powerKeyExtra_;
     int raceVersion_ = 0;
+    /// 2.52: the player's statistics of this run (read only, game/records/PlayStats.h). Last
+    /// member: gone before the world it listens to.
+    std::unique_ptr<PlayStatsRecorder> playStats_;
 };
 
 }  // namespace cosmic
