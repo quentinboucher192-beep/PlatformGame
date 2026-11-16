@@ -24,6 +24,7 @@ std::string powerPhrase(const ContentDatabase& content, const std::string& id) {
         {"air_dash", "la Ruée aérienne"}, {"plasma_bomb", "la Bombe plasma"},
         {"boomerang", "la Lame boomerang"}, {"frost_nova", "la Nova de givre"},
         {"decoy", "le Leurre holographique"}, {"recall", "la Balise de rappel"},
+        {"boomerang_charge", "le Boomerang chargé"},
     };
     if (auto it = kNames.find(id); it != kNames.end()) return it->second;
     if (const PowerDefinition* p = content.power(id)) return p->name;

@@ -21,6 +21,23 @@ std::string number(float v) {
     return s;
 }
 
+/// "0,4 → 2,0 s": both ends with the same decimals.
+std::string span(float a, float b, const char* unit) {
+    std::string x = number(a), y = number(b);
+    bool decimals = x.find(',') != std::string::npos || y.find(',') != std::string::npos;
+    auto oneDecimal = [](float v) {
+        char t[32];
+        std::snprintf(t, sizeof t, "%.1f", v);
+        std::string s = t;
+        for (char& c : s)
+            if (c == '.') c = ',';
+        return s;
+    };
+    if (decimals && x.find(',') == std::string::npos && std::abs(a * 10.0f - std::round(a * 10.0f)) < 0.001f) x = oneDecimal(a);
+    if (decimals && y.find(',') == std::string::npos && std::abs(b * 10.0f - std::round(b * 10.0f)) < 0.001f) y = oneDecimal(b);
+    return x + " → " + y + unit;
+}
+
 struct Known {
     const char* key;
     const char* label;
@@ -29,6 +46,8 @@ struct Known {
 
 // In the order they are shown (after the energy cost, before the recharge).
 const Known kKnown[] = {
+    {"chargeMax", "Charge max", " s"},
+    {"spinTimes", "Rotation", " s"},  // a list (tap … full charge): first → last
     {"damage", "Dégâts", ""},
     {"diveDamage", "Dégâts du piqué", ""},
     {"radius", "Rayon", " px"},
@@ -72,11 +91,29 @@ std::vector<PowerStat> powerStats(const PowerDefinition& d) {
         out.push_back({"placeCost", "Poser la balise", place > 0.0f ? number(place) : "gratuit"});
     }
     for (const auto& k : kKnown) {
-        if (!d.params.contains(k.key) || !d.params[k.key].is_number()) continue;
-        float v = d.params[k.key].get<float>();
+        if (!d.params.contains(k.key)) continue;
+        const Json& j = d.params[k.key];
+        const std::string key = k.key;
+        if (j.is_array()) {
+            // A value that grows with the charge (Boomerang chargé): « 0,4 → 2,0 s ».
+            std::vector<float> v;
+            for (const auto& x : j)
+                if (x.is_number()) v.push_back(x.get<float>());
+            if (v.empty()) continue;
+            out.push_back({key, k.label, v.size() == 1 ? number(v.front()) + k.unit : span(v.front(), v.back(), k.unit)});
+            continue;
+        }
+        if (!j.is_number()) continue;
+        float v = j.get<float>();
         std::string value = number(v) + k.unit;
-        if (std::string(k.key) == "factor") value = "×" + number(v);
-        out.push_back({k.key, k.label, value});
+        if (key == "factor") value = "×" + number(v);
+        // Reach that grows with the charge: « 260 → 360 px ».
+        if (key == "range" && d.params.contains("rangeMax") && d.params["rangeMax"].is_number())
+            value = span(v, d.params["rangeMax"].get<float>(), k.unit);
+        // Repeated blows: « 1 + 1 toutes les 0,3 s ».
+        if (key == "damage" && d.params.contains("tickInterval") && d.params["tickInterval"].is_number())
+            value = number(v) + " + " + number(v) + " toutes les " + number(d.params["tickInterval"].get<float>()) + " s";
+        out.push_back({key, k.label, value});
     }
     if (d.duration > 0.0f && !d.params.contains("duration")) out.push_back({"duration", "Durée", number(d.duration) + " s"});
     if (d.cooldown > 0.0f) out.push_back({"cooldown", "Recharge", number(d.cooldown) + " s"});

@@ -261,6 +261,23 @@ std::vector<PowerDemo> powerDemos() {
         d.cam = {260, 750};
         d.viewH = 190.0f;
     }
+    // 2.50
+    {
+        PowerDemo& d = add("boomerang_charge");  // a full charge, the blade spins on a golem (7 blows), comes back
+        d.layout = [](LevelData& l) { put(l, "enemy", {322, 766, 26, 34}, {{"enemy", "golem"}, {"patrol", 0}}); };
+        // Pressed, held for the whole gauge (1,2 s = 144 steps), then released.
+        d.script = [](int s) {
+            if (s == 64) return in(0, {Action::Special});
+            return s > 64 && s <= 64 + 144 ? in(0, {}, {Action::Special}) : in(0);
+        };
+        d.success = [](const GameWorld& w) {
+            const auto* b = powerOf<BoomerangChargePower>(w);
+            return b && b->caught() >= 1 && b->ticks() >= 6;
+        };
+        d.cam = {255, 750};
+        d.viewH = 190.0f;
+        d.period = 660;
+    }
     return v;
 }
 

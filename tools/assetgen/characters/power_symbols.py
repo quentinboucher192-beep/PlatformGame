@@ -256,6 +256,23 @@ GLYPHS.update({
     ],
 })
 
+# 2.50
+GLYPHS.update({
+    "boomerang_charge": [  # a tri-blade: three straight blades around a bright hub
+        "...........",
+        ".....#.....",
+        ".....#.....",
+        "....###....",
+        "....###....",
+        ".....+.....",
+        "....+++....",
+        "..###.###..",
+        ".###...###.",
+        "##.......##",
+        "...........",
+    ],
+})
+
 COLORS = {
     "dash": (CYAN[1], CYAN[3], CYAN[0]),
     "wave": (CYAN[2], CYAN[3], CYAN[0]),
@@ -275,13 +292,15 @@ COLORS = {
     "frost_nova": (CYAN[1], CYAN[3], CYAN[0]),
     "decoy": (CYAN[1], CYAN[3], CYAN[0]),
     "recall": (VIOLET[1], VIOLET[2], VIOLET[0]),
+    "boomerang_charge": (CYAN[2], CYAN[3], CYAN[0]),
 }
 
 # clip order of animations/power_unlock.json (v1 rows first, unchanged)
 POWERS = ("dash", "wave", "shield", "impulse", "teleport",
           "glide", "ground_pound", "charge_shot", "grapple", "triple_jump",
           "time_slow", "magnet", "air_dash", "plasma_bomb",
-          "boomerang", "frost_nova", "decoy", "recall")
+          "boomerang", "frost_nova", "decoy", "recall",
+          "boomerang_charge")
 
 
 def tablet(name, i):

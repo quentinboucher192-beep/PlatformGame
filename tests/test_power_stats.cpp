@@ -2,6 +2,7 @@
 // picked up, read from the definitions; energy costs follow strength (the charged shot,
 // 20, is the reference: a weaker attack costs less).
 
+#include <cmath>
 #include <string>
 
 #include "game/content/ContentDatabase.h"
@@ -47,6 +48,13 @@ TEST_CASE("power stats: a weaker attack costs less energy than the charged shot"
     for (const auto* p : content.powers()) {
         if (p->id == ref->id || !p->params.contains("damage")) continue;
         float dmg = p->param("damage", 0.0f);
+        // A blade that keeps cutting its target (Boomerang chargé): what one throw deals at most,
+        // the impact and every blow of its longest spin.
+        if (p->params.contains("tickInterval") && p->params.contains("spinTimes") && p->params["spinTimes"].is_array() &&
+            !p->params["spinTimes"].empty()) {
+            float longest = p->params["spinTimes"].back().get<float>();
+            dmg *= 1.0f + std::floor(longest / p->param("tickInterval", 1.0f) + 1e-3f);
+        }
         if (dmg < refDamage) {
             if (p->energyCost > ref->energyCost) std::cout << "  " << p->id << " costs more than the charged shot\n";
             CHECK(p->energyCost <= ref->energyCost);

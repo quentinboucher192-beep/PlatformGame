@@ -4413,6 +4413,13 @@
    ]
   },
   {
+   "fr": "Boomerang chargé",
+   "where": [
+    "data/powers/boomerang_charge.json",
+    "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
    "fr": "Bosnie-Herzégovine",
    "where": [
     "data/online/countries.json",
@@ -6382,6 +6389,12 @@
    "fr": "Charge du colosse",
    "where": [
     "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Charge max",
+   "where": [
+    "game/powers/PowerStats.cpp"
    ]
   },
   {
@@ -18677,6 +18690,12 @@
    ]
   },
   {
+   "fr": "le Boomerang chargé",
+   "where": [
+    "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
    "fr": "le bord de l'écran",
    "where": [
     "ui/screens/HudEditorScene.cpp"
@@ -21277,6 +21296,12 @@
    "fr": "Maintenez Attaque pour concentrer l'énergie, relâchez pour tirer une sphère de plasma perforante qui active aussi les récepteurs.",
    "where": [
     "data/powers/charge_shot.json"
+   ]
+  },
+  {
+   "fr": "Maintenez sa touche pour charger, relâchez pour lancer : la lame tourne sur le premier ennemi touché (1 dégât toutes les 0,3 s, jusqu'à 2 s chargée), puis revient.",
+   "where": [
+    "data/powers/boomerang_charge.json"
    ]
   },
   {
@@ -31401,7 +31426,8 @@
   {
    "fr": "Rotation",
    "where": [
-    "editors/level_editor/LevelEditorScene.cpp"
+    "editors/level_editor/LevelEditorScene.cpp",
+    "game/powers/PowerStats.cpp"
    ]
   },
   {
@@ -35314,6 +35340,12 @@
   },
   {
    "fr": "Tablette : Bombe plasma",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Tablette : Boomerang chargé",
    "where": [
     "game/levels/ObjectTypes.cpp"
    ]
@@ -41290,6 +41322,12 @@
    ]
   },
   {
+   "fr": "{0} + {1} toutes les {2} s",
+   "where": [
+    "game/powers/PowerStats.cpp"
+   ]
+  },
+  {
    "fr": "{0} / flèches : déplacer la vue (Maj : plus vite) · Alt+flèches : décaler la sélection",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -44502,6 +44540,7 @@
    "fr": "Énergie insuffisante",
    "where": [
     "game/player/PlayerActions.cpp",
+    "game/powers/PowersCharged.cpp",
     "game/powers/PowersExtra.cpp"
    ]
   },

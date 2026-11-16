@@ -1,0 +1,25 @@
+{
+  "format": "cosmic.power",
+  "id": "boomerang_charge",
+  "behavior": "boomerang_charge",
+  "name": "Boomerang chargé",
+  "description": "Maintenez sa touche pour charger, relâchez pour lancer : la lame tourne sur le premier ennemi touché (1 dégât toutes les 0,3 s, jusqu'à 2 s chargée), puis revient.",
+  "icon": 18,
+  "input": "special",
+  "energyCost": 25,
+  "cooldown": 0.3,
+  "duration": 0,
+  "color": "#8ffff0",
+  "sound": "sounds/boomerang_throw.wav",
+  "suggestedKey": "B", "suggestedPad": {"axis": "righty", "dir": -1},
+  "params": {
+    "chargeMax": 1.2,
+    "spinTimes": [0.4, 0.9, 1.5, 2.0],
+    "damage": 1,
+    "tickInterval": 0.3,
+    "range": 260,
+    "rangeMax": 360,
+    "speed": 600,
+    "knockback": 150
+  }
+}

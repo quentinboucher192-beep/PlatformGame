@@ -216,21 +216,24 @@ TEST_CASE("new badges: the shipped catalogue leads every novelty to a menu") {
     // The whole « Collection » category of achievements came with 2.29.
     for (const auto& a : ach.achievements())
         if (a.category == "collection") CHECK(leaves.count("ach." + a.id));
-    // The guide's cards with a pill are those of the powers that do not use their slot key.
+    // The guide's cards with a pill: those of the powers that do not use their slot key (2.25),
+    // and the powers added since (2.50: Boomerang chargé).
     ContentDatabase content;
     content.reload();
+    const std::set<std::string> added = {"boomerang_charge"};
     int guide = 0;
     for (const auto& id : leaves)
         if (id.rfind("powers.guide.", 0) == 0) {
             const PowerDefinition* def = content.power(id.substr(13));
             CHECK(def != nullptr);
-            CHECK(powerTriggerInfo(*def).kind != PowerTrigger::SlotKey);
+            if (def && !added.count(def->id)) CHECK(powerTriggerInfo(*def).kind != PowerTrigger::SlotKey);
             ++guide;
         }
     for (const auto& e : fs::directory_iterator(Paths::dataDir() / "powers"))  // the game's own powers
         if (const PowerDefinition* def = content.power(e.path().stem().string()))
-            if (powerTriggerInfo(*def).kind != PowerTrigger::SlotKey) CHECK(leaves.count("powers.guide." + def->id));
-    CHECK(guide == 7);
+            if (powerTriggerInfo(*def).kind != PowerTrigger::SlotKey || added.count(def->id))
+                CHECK(leaves.count("powers.guide." + def->id));
+    CHECK(guide == 7 + 1);
 }
 
 // 2.49: Les Confins came in 2.48 without a single pill. From Les Confins on, every planet,

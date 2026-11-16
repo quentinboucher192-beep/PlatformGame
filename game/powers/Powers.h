@@ -8,6 +8,8 @@
 
 namespace cosmic {
 
+class Enemy;
+
 /// Fast burst in the aimed direction with invulnerability; breaks crystal walls and
 /// damages enemies on the way. Limited air uses, restored on landing.
 class DashPower : public Power {
@@ -377,6 +379,94 @@ private:
     float warpFx_ = 10.0f;  // seconds since the last return (trail drawn for a moment)
     Vec2 warpFrom_, warpTo_;
     int warps_ = 0;
+};
+
+// ------------------------------------------------------------------ 2.50
+
+/// Boomerang chargé: hold the power's key to charge (a ring gauge around Nova fills in
+/// `chargeMax` s, notches at 1/3 and 2/3; Nova moves freely), release to throw a tri-blade in
+/// the aimed direction; the energy is paid at the release (with too little, the gauge stays
+/// grey and nothing is thrown). The blade latches onto the first enemy it touches and spins on
+/// it: `damage` on impact, then `damage` every `tickInterval` s to that enemy only, for a time
+/// read from `spinTimes` (tap, 1/3, 2/3, full charge; linear between them). A target that
+/// dies or can no longer be hurt ends the spin at once. Touching nothing, it flies to its range
+/// (`range` → `rangeMax` with the charge) and turns back; a wall sends it back early. On the
+/// way back it hits each enemy it crosses once (going through), brings back the shards and orbs
+/// it touches and switches receptors on, like the Lame boomerang. One blade at a time; the
+/// recharge starts when Nova catches it. Everything goes through the recorded inputs (hold and
+/// release of the key): the replays stay exact.
+class BoomerangChargePower : public Power {
+public:
+    enum class Phase { None, Out, Spin, Back };
+    using Power::Power;
+    bool wantsActivation(const Player&, const GameWorld&, const PlayerInput&) const override { return false; }
+    bool canActivate(const Player& p, const GameWorld& w) const override;
+    void handleInput(Player& p, GameWorld& w, const PlayerInput& in, float dt) override;
+    void fixedUpdate(Player& p, GameWorld& w, float dt) override;
+    void render(const Player& p, RenderContext& ctx) const override;
+    bool active() const override { return phase_ != Phase::None || charging_; }
+    void cancel(Player& p, GameWorld& w) override;
+
+    /// The charge held so far, 0..1 (1 = `chargeMax` seconds).
+    float chargeRatio() const;
+    bool charging() const { return charging_; }
+    Phase phase() const { return phase_; }
+    bool flying() const { return phase_ != Phase::None; }
+    Vec2 bladePos() const { return pos_; }
+    /// What a throw with `charge` (0..1) does: its range and how long it spins on its target.
+    float rangeFor(float charge) const;
+    float spinFor(float charge) const;
+    /// The last throw: its charge, range and spin time; the enemy it latched onto (0: none) and
+    /// the blows it dealt to it after the impact (ticks).
+    float lastCharge() const { return lastCharge_; }
+    float throwRange() const { return range_; }
+    float throwSpin() const { return spin_; }
+    uint32_t target() const { return target_; }
+    int ticks() const { return ticks_; }
+    /// Seconds it spun on its target (the last throw; game time, the hit stops aside).
+    float spinElapsed() const { return spinTime_; }
+    /// Enemies hit on the way back; blades caught back by Nova since the power was granted.
+    int hitsBack() const { return static_cast<int>(hitBack_.size()); }
+    int caught() const { return caught_; }
+
+protected:
+    void onActivate(Player& p, GameWorld& w) override;
+
+private:
+    bool keyHeld(const PlayerInput& in) const;
+    void latch(GameWorld& w, Enemy& e);
+    void endSpin(GameWorld& w);
+    void turnBack(GameWorld& w);
+    void collect(GameWorld& w);
+    void strikeBack(GameWorld& w);
+    float chargeMax() const { return def_.param("chargeMax", 1.2f); }
+    float speed() const { return def_.param("speed", 600.0f); }
+    // Charge (input).
+    float hold_ = 0.0f;
+    bool charging_ = false;
+    int notch_ = 0;  // notches reached by the charge (0..3): sparks and sound
+    // The blade.
+    Phase phase_ = Phase::None;
+    Vec2 pos_, prevPos_, dir_;
+    float speed_ = 0.0f;
+    float range_ = 260.0f;
+    float spin_ = 0.4f;       // spin time of this throw
+    float lastCharge_ = 0.0f;
+    float flight_ = 0.0f;     // seconds in flight (out and back; the spin is not counted)
+    float spinTime_ = 0.0f;   // seconds spinning on the target
+    float nextTick_ = 0.0f;
+    bool pendingTick_ = false;
+    uint32_t target_ = 0;
+    int ticks_ = 0;
+    int caught_ = 0;
+    std::vector<uint32_t> hitBack_;      // enemy uids hit on the way back (and the target)
+    std::vector<std::string> carried_;   // collectibles brought back (entity ids)
+    // Display only.
+    float angle_ = 0.0f, prevAngle_ = 0.0f;
+    float anim_ = 0.0f;
+    float trailTimer_ = 0.0f;
+    float flash_ = 0.0f;  // a tick just landed (seconds left of its flash)
+    Vec2 flashPos_;
 };
 
 }  // namespace cosmic

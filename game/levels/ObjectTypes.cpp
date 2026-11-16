@@ -94,12 +94,13 @@ const std::vector<std::string> kMaterialLabels = {"Pierre des ruines", "Métal a
 const std::vector<std::string> kPowers = {"dash",         "wave",        "shield",  "impulse", "teleport",
                                           "glide",        "ground_pound", "charge_shot", "grapple", "triple_jump",
                                           "time_slow",    "magnet",      "air_dash", "plasma_bomb",
-                                          "boomerang",    "frost_nova",  "decoy",    "recall"};
+                                          "boomerang",    "frost_nova",  "decoy",    "recall",
+                                          "boomerang_charge"};
 const std::vector<std::string> kPowerLabels = {"Dash",    "Onde énergétique", "Bouclier",   "Impulsion",
                                                "Téléportation", "Planeur",    "Frappe sismique", "Tir chargé",
                                                "Grappin", "Triple saut", "Ralenti temporel", "Aimant",
                                                "Ruée aérienne", "Bombe plasma", "Lame boomerang", "Nova de givre",
-                                               "Leurre holographique", "Balise de rappel"};
+                                               "Leurre holographique", "Balise de rappel", "Boomerang chargé"};
 // Obstacles that a power opens (power_gate).
 const std::vector<std::string> kGatePowers = {"dash", "wave", "shield", "impulse", "teleport", "ground_pound"};
 const std::vector<std::string> kGatePowerLabels = {"Dash (mur de cristal)",        "Onde (barrière d'énergie)",
@@ -667,6 +668,7 @@ std::vector<PaletteEntry> buildPalette() {
     add("Tablette : Nova de givre", "power_unlock", {{"power", "frost_nova"}});
     add("Tablette : Leurre holographique", "power_unlock", {{"power", "decoy"}});
     add("Tablette : Balise de rappel", "power_unlock", {{"power", "recall"}});
+    add("Tablette : Boomerang chargé", "power_unlock", {{"power", "boomerang_charge"}});
     add("", "heart_container");
     add("", "grapple_point");
     add("", "updraft");
