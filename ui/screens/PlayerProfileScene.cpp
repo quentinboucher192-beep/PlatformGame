@@ -229,8 +229,7 @@ private:
         if (!presence.empty()) {
             float rad = ui.s(13);
             Vec2 pc{x + av - rad * 0.9f, y + av - rad * 0.9f};
-            ui.r().fillCircle(pc, rad + ui.s(3), Color{10, 14, 30, 255});
-            ui.r().fillCircle(pc, rad, presenceColor(presence));
+            drawPresenceDot(ui, pc, rad, presence, ui.s(3));
         }
         float nx = x + av + ui.s(kAvatarFrameMargin + 14);
         // Actions on the right of the header, under "Fermer".
@@ -343,7 +342,7 @@ private:
         if (!presence.empty() || !sub.empty()) {
             float sx = nx;
             if (!presence.empty()) {
-                const std::string word = presence == "online" ? "En ligne" : presence == "away" ? "Absent" : "Hors ligne";
+                const std::string word = presenceLabel(presence, true);
                 Vec2 ws = ui.label(word, {sx, ly}, 15, presenceColor(presence), Align::Left, FontFace::Bold, VAlign::Middle);
                 sx += ws.x + ui.s(14);
             }
@@ -474,9 +473,7 @@ private:
         return out;
     }
 
-    static Color presenceColor(const std::string& p) {
-        return p == "online" ? Color{72, 220, 120, 255} : p == "away" ? Color{255, 176, 60, 255} : Color{120, 128, 150, 255};
-    }
+    static Color presenceColor(const std::string& p) { return presenceDotColor(p); }
 
     /// Look of a worn item ("" if absent): checked by lookOr() before being drawn.
     static std::string wornLook(const Json& worn, const char* category) {

@@ -366,7 +366,8 @@ void AdminCampaign::drawModal() {
         "La révision " + v + " revient avec ses propres classements, tels qu'ils étaient. Ceux de la révision " + std::to_string(cur) +
             " restent archivés avec elle, jamais mélangés.",
         "Seulement si les deux révisions se jouent exactement de la même façon (décor seul). Les meilleurs temps de la révision " + std::to_string(cur) +
-            " sont reportés sur la révision " + v + " : le meilleur temps de chaque joueur est gardé.",
+            " sont reportés sur la révision " + v + " : le meilleur temps de chaque joueur est gardé, et sa progression dans la course à la "
+            "vérification (niveau EXTRÊME).",
     };
     // Heights measured first: nothing overlaps whatever the texts.
     const float optH = ui.s(46);

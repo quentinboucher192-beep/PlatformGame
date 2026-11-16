@@ -226,6 +226,10 @@ export function analyzeRace(
 
 interface Board {
     key: string;
+    /** The boards this one counts (2.47.1): itself, and for an official level the boards of the
+     *  revisions it carried with « Garder les records » (campaign_board_links), as the level
+     *  boards count their bests. A race is never copied: it is read where it was run. */
+    keys: string[];
     kind: "community" | "official";
     levelId: string;
     version: number;
@@ -248,7 +252,8 @@ async function loadBoard(ctx: Ctx, kind: string, levelId: string, version: numbe
             .first<Record<string, unknown>>();
         const layout = row ? parseLayout(JSON.parse(String(row.race ?? "null"))) : null;
         if (!row || !layout) throw Errors.notFound("RACE_NOT_FOUND", "Pas de course pour cette version.");
-        return { key: `c:${l.id}:${v}`, kind, levelId: l.id, version: v, title: l.title, layout, level: pseudoVersionOf(row), authorId: l.author_id };
+        const key = `c:${l.id}:${v}`;
+        return { key, keys: [key], kind, levelId: l.id, version: v, title: l.title, layout, level: pseudoVersionOf(row), authorId: l.author_id };
     }
     if (kind === "official") {
         if (!/^[a-z0-9_]{1,64}$/.test(levelId)) throw Errors.notFound("RACE_NOT_FOUND", "Course introuvable.");
@@ -262,10 +267,34 @@ async function loadBoard(ctx: Ctx, kind: string, levelId: string, version: numbe
         const layout = row ? parseLayout(JSON.parse(row.race ?? "null")) : null;
         if (!row || !layout) throw Errors.notFound("RACE_NOT_FOUND", "Ce niveau n'a pas de course à la vérification.");
         const name = await ctx.env.DB.prepare("SELECT name FROM levels WHERE id = ?1").bind(levelId).first<{ name: string }>();
-        return { key: `o:${levelId}:${row.content_hash}`, kind, levelId, version: row.version, title: name?.name ?? levelId, layout, level: row, authorId: null };
+        return {
+            key: `o:${levelId}:${row.content_hash}`,
+            keys: await officialKeys(ctx, levelId, row.content_hash),
+            kind,
+            levelId,
+            version: row.version,
+            title: name?.name ?? levelId,
+            layout,
+            level: row,
+            authorId: null,
+        };
     }
     throw Errors.validation([{ field: "kind", message: "community ou official" }]);
 }
+
+/**
+ * The race boards an official board of hash `hash` counts: its own and those of the revisions
+ * it carried (« Garder les records », campaign_board_links, kept transitive at publication).
+ */
+async function officialKeys(ctx: Ctx, levelId: string, hash: string): Promise<string[]> {
+    const links = await ctx.env.DB.prepare("SELECT from_hash FROM campaign_board_links WHERE level_id = ?1 AND to_hash = ?2 ORDER BY from_hash")
+        .bind(levelId, hash)
+        .all<{ from_hash: string }>();
+    return [`o:${levelId}:${hash}`, ...links.results.map((l) => `o:${levelId}:${l.from_hash}`)];
+}
+
+/** SQL list of the boards of a Board, bound as JSON. */
+const IN_KEYS = (n: number) => `IN (SELECT value FROM json_each(?${n}))`;
 
 /** What an attempt did, per boss and ambush of the layout (for the boards). */
 export function detailOf(layout: RaceLayout, a: RaceAnalysis) {
@@ -359,7 +388,7 @@ export async function uploadRunReplay(ctx: Ctx): Promise<Response> {
         .run();
     let verifier = false;
     if (ok && a.finished) verifier = await crown(ctx, board, me, String(run.id), now);
-    const rank = ok ? await rankOf(ctx, board.key, me) : null;
+    const rank = ok ? await rankOf(ctx, board.keys, me) : null;
     return json(ctx, {
         run: { id: run.id, status: ok ? "VERIFIED" : "REJECTED", score, finished: a.finished, reasons: ok ? [] : a.reasons.slice(0, 8), rank },
         verifier,
@@ -368,13 +397,20 @@ export async function uploadRunReplay(ctx: Ctx): Promise<Response> {
 
 /** The first finished run of a board crowns its player (once); everyone in the race is told. */
 async function crown(ctx: Ctx, board: Board, me: string, runId: string, now: string): Promise<boolean> {
+    // A board that carried an earlier revision keeps its verifier (the race goes on).
+    if (board.keys.length > 1) {
+        const earlier = await ctx.env.DB.prepare(`SELECT 1 AS x FROM race_victors WHERE board ${IN_KEYS(1)} LIMIT 1`).bind(JSON.stringify(board.keys)).first();
+        if (earlier) return false;
+    }
     const r = await ctx.env.DB.prepare("INSERT OR IGNORE INTO race_victors (board, player_id, run_id, at) VALUES (?1, ?2, ?3, ?4)").bind(board.key, me, runId, now).run();
     if (r.meta.changes !== 1) return false;
     if (board.kind === "community")
         await ctx.env.DB.prepare("UPDATE community_levels SET verified_by = ?2, verified_at = ?3, verified_version = ?4 WHERE id = ?1")
             .bind(board.levelId, me, now, board.version)
             .run();
-    const others = await ctx.env.DB.prepare("SELECT DISTINCT player_id FROM race_runs WHERE board = ?1 AND player_id <> ?2").bind(board.key, me).all<{ player_id: string }>();
+    const others = await ctx.env.DB.prepare(`SELECT DISTINCT player_id FROM race_runs WHERE board ${IN_KEYS(1)} AND player_id <> ?2`)
+        .bind(JSON.stringify(board.keys), me)
+        .all<{ player_id: string }>();
     const told = new Set(others.results.map((o) => o.player_id));
     if (board.authorId && board.authorId !== me) told.add(board.authorId);
     for (const pid of told) await notify(ctx, pid, "race_verified", {
@@ -385,14 +421,14 @@ async function crown(ctx: Ctx, board: Board, me: string, runId: string, now: str
     return true;
 }
 
-async function rankOf(ctx: Ctx, key: string, me: string): Promise<number | null> {
+async function rankOf(ctx: Ctx, keys: string[], me: string): Promise<number | null> {
     const r = await ctx.env.DB.prepare(
         `WITH best AS (SELECT player_id, score, verified_at, ROW_NUMBER() OVER (PARTITION BY player_id ORDER BY score DESC, verified_at ASC) AS n
-                       FROM race_runs WHERE board = ?1 AND status = 'VERIFIED'),
+                       FROM race_runs WHERE board ${IN_KEYS(1)} AND status = 'VERIFIED'),
               ranked AS (SELECT player_id, ROW_NUMBER() OVER (ORDER BY score DESC, verified_at ASC) AS rank FROM best WHERE n = 1)
          SELECT rank FROM ranked WHERE player_id = ?2`,
     )
-        .bind(key, me)
+        .bind(JSON.stringify(keys), me)
         .first<{ rank: number }>();
     return r?.rank ?? null;
 }
@@ -406,24 +442,27 @@ export async function getBoard(ctx: Ctx): Promise<Response> {
     const board = await loadBoard(ctx, q.get("kind") ?? "", q.get("level_id") ?? "", ver ? Number(ver) : null, q.get("level_hash"));
     const rows = await ctx.env.DB.prepare(
         `WITH best AS (SELECT r.*, ROW_NUMBER() OVER (PARTITION BY r.player_id ORDER BY r.score DESC, r.verified_at ASC) AS n
-                       FROM race_runs r WHERE r.board = ?1 AND r.status = 'VERIFIED')
+                       FROM race_runs r WHERE r.board ${IN_KEYS(1)} AND r.status = 'VERIFIED')
          SELECT b.id, b.player_id, b.score, b.route, b.bosses_beaten, b.waves, b.finished, b.detail, b.time_ms, b.verified_at,
                 b.replay_key IS NOT NULL AND p.profile_visibility != 'private' AS has_replay,
                 p.username, p.avatar FROM best b JOIN players p ON p.id = b.player_id WHERE b.n = 1
          ORDER BY b.score DESC, b.verified_at ASC LIMIT 100`,
     )
-        .bind(board.key)
+        .bind(JSON.stringify(board.keys))
         .all<Record<string, unknown>>();
     const victor = await ctx.env.DB.prepare(
-        "SELECT v.at, p.id AS pid, p.username, p.avatar FROM race_victors v LEFT JOIN players p ON p.id = v.player_id WHERE v.board = ?1",
+        `SELECT v.at, p.id AS pid, p.username, p.avatar FROM race_victors v LEFT JOIN players p ON p.id = v.player_id
+         WHERE v.board ${IN_KEYS(1)} ORDER BY v.at LIMIT 1`,
     )
-        .bind(board.key)
+        .bind(JSON.stringify(board.keys))
         .first<Record<string, unknown>>();
     const pending = me
-        ? await ctx.env.DB.prepare("SELECT COUNT(*) AS n FROM race_runs WHERE board = ?1 AND player_id = ?2 AND status = 'PENDING'").bind(board.key, me).first<{ n: number }>()
+        ? await ctx.env.DB.prepare(`SELECT COUNT(*) AS n FROM race_runs WHERE board ${IN_KEYS(1)} AND player_id = ?2 AND status = 'PENDING'`)
+              .bind(JSON.stringify(board.keys), me)
+              .first<{ n: number }>()
         : null;
-    const participants = await ctx.env.DB.prepare("SELECT COUNT(DISTINCT player_id) AS n FROM race_runs WHERE board = ?1 AND status = 'VERIFIED'")
-        .bind(board.key)
+    const participants = await ctx.env.DB.prepare(`SELECT COUNT(DISTINCT player_id) AS n FROM race_runs WHERE board ${IN_KEYS(1)} AND status = 'VERIFIED'`)
+        .bind(JSON.stringify(board.keys))
         .first<{ n: number }>();
     // Frame, title and suit of each ranked player (2.23), when their profile is visible.
     const looks = await boardCosmetics(ctx, rows.results.map((r) => String(r.player_id)));
@@ -509,9 +548,33 @@ export async function playerRaces(ctx: Ctx): Promise<Response> {
     )
         .bind(p.id)
         .all<{ id: string; board: string; score: number; finished: number; time_ms: number; verified_at: string; has_replay: number }>();
-    const races = [];
+    // An official race run on a revision the current one carried (« Garder les records ») counts
+    // on the current board (2.47.1): one line per level, its best, ranked on the merged board.
+    type Row = (typeof rows.results)[number];
+    const resolved: { row: Row; key: string; keys: string[] }[] = [];
+    const currentOf = new Map<string, string[] | null>();
     for (const r of rows.results) {
         const [k, levelId, third] = r.board.split(":");
+        if (k !== "o" || !levelId || !third) {
+            resolved.push({ row: r, key: r.board, keys: [r.board] });
+            continue;
+        }
+        if (!currentOf.has(levelId)) {
+            const cur = await ctx.env.DB.prepare("SELECT content_hash FROM levels WHERE id = ?1").bind(levelId).first<{ content_hash: string }>();
+            currentOf.set(levelId, cur ? await officialKeys(ctx, levelId, cur.content_hash) : null);
+        }
+        const cur = currentOf.get(levelId);
+        if (cur && cur.includes(r.board)) resolved.push({ row: r, key: cur[0]!, keys: cur });
+        else resolved.push({ row: r, key: r.board, keys: [r.board] });
+    }
+    const best = new Map<string, { row: Row; key: string; keys: string[] }>();
+    for (const e of resolved) {
+        const b = best.get(e.key);
+        if (!b || e.row.score > b.row.score || (e.row.score === b.row.score && e.row.verified_at < b.row.verified_at)) best.set(e.key, e);
+    }
+    const races = [];
+    for (const { row: r, key: boardKey, keys } of [...best.values()].sort((x, y) => (x.row.verified_at < y.row.verified_at ? 1 : -1))) {
+        const [k, levelId, third] = boardKey.split(":");
         if (!levelId || !third) continue;
         let title: string | null = null;
         let version: number | null = null;
@@ -530,8 +593,8 @@ export async function playerRaces(ctx: Ctx): Promise<Response> {
                 .first<{ version: number }>();
             version = v?.version ?? null;
         } else continue;
-        const participants = await ctx.env.DB.prepare("SELECT COUNT(DISTINCT player_id) AS n FROM race_runs WHERE board = ?1 AND status = 'VERIFIED'")
-            .bind(r.board)
+        const participants = await ctx.env.DB.prepare(`SELECT COUNT(DISTINCT player_id) AS n FROM race_runs WHERE board ${IN_KEYS(1)} AND status = 'VERIFIED'`)
+            .bind(JSON.stringify(keys))
             .first<{ n: number }>();
         races.push({
             kind: k === "c" ? "community" : "official",
@@ -541,7 +604,7 @@ export async function playerRaces(ctx: Ctx): Promise<Response> {
             score: r.score,
             finished: r.finished === 1,
             time_ms: r.time_ms,
-            rank: await rankOf(ctx, r.board, p.id),
+            rank: await rankOf(ctx, keys, p.id),
             participants: participants?.n ?? 0,
             run_id: r.id,
             has_replay: r.has_replay === 1,

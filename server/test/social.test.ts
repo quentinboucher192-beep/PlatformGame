@@ -248,7 +248,7 @@ describe("blocks", () => {
 });
 
 describe("presence of friends (2.32.3)", () => {
-    it("friends see online, away or offline; a hidden presence or a silent game reads offline", async () => {
+    it("friends see online, away or offline (a silent game); a hidden presence reads hidden (2.47)", async () => {
         const [a, b] = await Promise.all([registerPlayer("Prez_a"), registerPlayer("Prez_b")]);
         await befriend(a!, b!);
         const presenceOfB = async () =>
@@ -261,10 +261,10 @@ describe("presence of friends (2.32.3)", () => {
         // Silent for more than 150 s: offline.
         await env.DB.prepare("UPDATE players SET presence_at = ?2 WHERE id = ?1").bind(b!.id, new Date(Date.now() - 200_000).toISOString()).run();
         expect(await presenceOfB()).toBe("offline");
-        // Hidden by its player: always offline to others.
+        // Hidden by its player: « hidden » to others (a crossed circle), whatever the game does.
         await api("POST", "/api/v1/presence", { token: b!.token, body: { state: "active" } });
         expect((await api("PATCH", "/api/v1/players/me", { token: b!.token, body: { presence_visible: false } })).status).toBe(200);
-        expect(await presenceOfB()).toBe("offline");
+        expect(await presenceOfB()).toBe("hidden");
         // Quitting the game: offline at once.
         await api("PATCH", "/api/v1/players/me", { token: b!.token, body: { presence_visible: true } });
         await api("POST", "/api/v1/presence", { token: b!.token, body: { state: "offline" } });

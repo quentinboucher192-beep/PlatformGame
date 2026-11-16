@@ -380,7 +380,7 @@ private:
         title("Pays", "Facultatif : affiché dans les classements selon votre choix");
         Rect area{box_.x + ui.s(36), box_.y + ui.s(110), box_.w - ui.s(72), box_.h - ui.s(200)};
         if (ui_.countryPicker("account/countries", area, countryFilter_, country_)) {
-            if (locVis_ == 0) locVis_ = 1;
+            if (locVis_ == 0) locVis_ = 2;  // a country chosen: shown in the rankings and on the globe (changeable here)
             page_ = Page::Register;
         }
         ui.pushId("account/country");

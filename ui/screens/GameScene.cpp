@@ -749,7 +749,10 @@ void GameScene::finishRun(bool completed) {
         return;
     }
     ended_ = true;
-    if (!opt_.editorTest) {
+    // 2.48: a hardcore level played with respawns (« Réessayer en entraînement ») makes no
+    // record, no progress and no boss statistics; nothing goes online (nothing was recorded).
+    const bool practice = world_->practiceRespawn();
+    if (!opt_.editorTest && !practice) {
         bossFights_.step(*world_, g_.bossStats);
         g_.bossStats.save();
     }
@@ -765,7 +768,7 @@ void GameScene::finishRun(bool completed) {
     const LevelRecord* before = g_.records.get(levelId_);
     LevelRecord previous = before ? *before : LevelRecord{};
     RecordUpdate upd;
-    if (!opt_.editorTest) {
+    if (!opt_.editorTest && !practice) {
         upd = g_.records.submit(r);
         g_.records.save();
         if (completed) {

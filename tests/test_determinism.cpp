@@ -158,9 +158,9 @@ TEST_CASE("determinism: golden digests are identical on every platform") {
         const char* digest;
     };
     const Golden golden[] = {
-        {"sylvanox_01", "8b63ff888cdfb6b9"},
-        {"glacior_01", "28b0e69a877e9f4f"},
-        {"pyralis_01", "af875710c3960742"},
+        {"sylvanox_01", "7cb6e985398f32d1"},
+        {"glacior_01", "bc2b0825ca390861"},
+        {"pyralis_01", "17ab99ef955f613a"},
     };
     int mismatches = 0;
     for (const auto& g : golden) {

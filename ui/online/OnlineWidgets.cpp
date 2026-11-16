@@ -1,5 +1,6 @@
 #include "ui/online/OnlineWidgets.h"
 
+#include <algorithm>
 #include <cctype>
 #include <chrono>
 #include <cmath>
@@ -205,6 +206,34 @@ std::string OnlineUi::ageOf(const std::string& iso) {
     if (!t) return {};
     double secs = std::chrono::duration<double>(std::chrono::system_clock::now() - *t).count();
     return ageText(std::max(0.0, secs));
+}
+
+Color presenceDotColor(const std::string& presence) {
+    if (presence == "online") return {72, 220, 120, 255};
+    if (presence == "away") return {255, 176, 60, 255};
+    if (presence == "hidden") return {150, 156, 176, 255};
+    return {120, 128, 150, 255};
+}
+
+std::string presenceLabel(const std::string& presence, bool capital) {
+    if (presence == "online") return capital ? "En ligne" : "en ligne";
+    if (presence == "away") return capital ? "Absent" : "absent";
+    if (presence == "hidden") return capital ? "Présence masquée" : "présence masquée";
+    return capital ? "Hors ligne" : "hors ligne";
+}
+
+void drawPresenceDot(UIContext& ui, Vec2 centre, float radius, const std::string& presence, float ring) {
+    ui.r().fillCircle(centre, radius + ring, Color{10, 14, 30, 255});
+    if (presence != "hidden") {
+        ui.r().fillCircle(centre, radius, presenceDotColor(presence));
+        return;
+    }
+    // A grey disc crossed out: the player chose not to show whether they are there.
+    ui.r().fillCircle(centre, radius, Color{70, 78, 100, 255});
+    const float a = radius * 0.5f, th = std::max(1.5f, radius * 0.34f);
+    const Color cross{226, 230, 242, 255};
+    ui.r().drawLine({centre.x - a, centre.y - a}, {centre.x + a, centre.y + a}, cross, th);
+    ui.r().drawLine({centre.x - a, centre.y + a}, {centre.x + a, centre.y - a}, cross, th);
 }
 
 }  // namespace cosmic

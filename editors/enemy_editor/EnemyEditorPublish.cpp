@@ -365,7 +365,8 @@ void EnemyEditorScene::drawPublish() {
             const size_t n = p.levels.size();
             para(std::to_string(n) + (n > 1 ? " niveaux de la campagne utilisent « " : " niveau de la campagne utilise « ") + work_.name +
                      " » : chacun reçoit une nouvelle révision (même contenu, avec cette définition, note recalculée). Cochée, « Réinitialiser "
-                     "les records » lui donne de nouveaux classements ; décochée, ses meilleurs temps y sont reportés.",
+                     "les records » lui donne de nouveaux classements ; décochée, ses meilleurs temps et les progressions de sa course à la vérification "
+                     "(EXTRÊME) y sont reportés.",
                  ui.theme().text, 16);
             // « Tout cocher », « Tout décocher ».
             const float ab = ui.s(44);

@@ -40,7 +40,7 @@ export async function listFriends(ctx: Ctx): Promise<Response> {
         .all<{ player_id: string; blocked_id: string }>();
     const blocked = new Set(blocks.results.map((b) => (b.player_id === id ? b.blocked_id : b.player_id)));
     const candidates = rows.results.filter(
-        (r) => r.status === "accepted" && r.a === id && !blocked.has(r.id) && spectatable(r) && presenceOf(r) !== "offline",
+        (r) => r.status === "accepted" && r.a === id && !blocked.has(r.id) && spectatable(r) && (presenceOf(r) === "online" || presenceOf(r) === "away"),
     );
     const playing = candidates.length ? await playingNow(ctx.env, candidates.map((r) => r.id)) : new Map<string, unknown>();
     const withPlaying = friends.map((f) => (playing.has(f.player.id) ? { ...f, playing: playing.get(f.player.id) } : f));
@@ -132,10 +132,16 @@ export async function deleteFriend(ctx: Ctx): Promise<Response> {
     return json(ctx, { removed: true });
 }
 
-/** A friend's presence: « online », « away » (idle), or « offline » (silent for 150 s, or hidden). */
+/**
+ * A friend's presence: « online », « away » (idle), « offline » (silent for 150 s), or « hidden »
+ * (2.47: « Montrer ma présence » unticked — the others see a crossed circle, never whether the
+ * player is there).
+ */
 export const PRESENCE_TIMEOUT_MS = 150_000;
-export function presenceOf(p: Pick<PlayerRow, "presence_state" | "presence_at" | "presence_visible">, now = Date.now()): "online" | "away" | "offline" {
-    if (p.presence_visible === 0 || !p.presence_at || !p.presence_state) return "offline";
+export type Presence = "online" | "away" | "offline" | "hidden";
+export function presenceOf(p: Pick<PlayerRow, "presence_state" | "presence_at" | "presence_visible">, now = Date.now()): Presence {
+    if (p.presence_visible === 0) return "hidden";
+    if (!p.presence_at || !p.presence_state) return "offline";
     const at = Date.parse(p.presence_at);
     if (!Number.isFinite(at) || now - at > PRESENCE_TIMEOUT_MS) return "offline";
     return p.presence_state === "idle" ? "away" : "online";

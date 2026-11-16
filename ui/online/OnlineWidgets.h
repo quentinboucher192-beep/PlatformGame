@@ -65,4 +65,13 @@ private:
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
 };
 
+/// A player's presence as the others see it (2.33.1; 2.47 « hidden »: « Montrer ma présence »
+/// unticked). Colour of the pill and its word (« En ligne », « Absent », « Hors ligne »,
+/// « Présence masquée »), capitalised or not.
+Color presenceDotColor(const std::string& presence);
+std::string presenceLabel(const std::string& presence, bool capital);
+/// The pill: a dark ring of `ring` pixels around a disc of `radius`; a hidden presence is a grey
+/// disc crossed out (never a guess at whether the player is there).
+void drawPresenceDot(UIContext& ui, Vec2 centre, float radius, const std::string& presence, float ring);
+
 }  // namespace cosmic

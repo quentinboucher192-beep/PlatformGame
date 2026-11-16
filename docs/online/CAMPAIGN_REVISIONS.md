@@ -57,9 +57,16 @@ Soit `A` l'empreinte remplacée, `B` la nouvelle (ou celle à laquelle on revien
    contre lui). Une course envoyée *après* la publication avec l'empreinte `A` est refusée
    (`LEVEL_VERSION_RETIRED`), comme pour toute révision : le jeu télécharge la révision en ligne
    au démarrage.
-5. La **course à la vérification** d'un niveau EXTRÊME suit chaque révision (son tracé est
-   envoyé avec elle, `level_versions.race`) : ses classements de course ne sont pas reportés,
-   comme pour une révision d'une mise à jour du jeu.
+5. La **course à la vérification** d'un niveau EXTRÊME (2.47.1) : son tracé est envoyé avec
+   chaque révision (`level_versions.race`), et le classement de course de `B` compte aussi les
+   tentatives des tableaux `o:<niveau>:A` liés (mêmes `campaign_board_links`, `officialKeys`
+   dans `race.ts`) : progressions, rang, participants, vérificateur (le premier à finir reste
+   celui de `A` : la course continue) et profil (« Meilleures progressions » : une ligne par
+   niveau, sur la révision en cours). Rien n'est copié : une tentative reste sur le tableau où
+   elle a été jouée et vérifiée. Avec « Réinitialiser », la course recommence (l'ancien tableau
+   reste archivé). Avant la 2.47.1, « Garder » ne reportait que les meilleurs temps : la course
+   de L'Arène des Échos avait semblé vidée par la publication d'une entité (`ash_wing`) ; les
+   liens existaient, le correctif l'a rétablie sans toucher aux données.
 6. Les **défis** gardent leur révision (`challenges.level_hash` ne change jamais) : leurs
    classements sont ceux du défi, ni réinitialisés ni reportés. Le serveur indique dans le
    manifeste (`pinned`) les révisions encore jouées par un défi pas terminé ; le jeu les garde

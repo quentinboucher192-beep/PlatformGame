@@ -210,3 +210,65 @@ describe("course à la vérification", () => {
         expect(board.body.data.race).toMatchObject({ kind: "official", bosses: [], ambushes: 0 });
     });
 });
+
+// 2.47.1: « Garder les records » on a new revision of an official EXTRÊME level (a campaign
+// revision, or an entity published in ADMINISTRATION › Ennemis) keeps its race: the board of
+// the new revision counts the attempts of the revisions it carried (campaign_board_links), its
+// verifier stays, and a player's profile shows one line for the level. « Réinitialiser » does not.
+describe("course à la vérification et révisions gardées", () => {
+    async function officialRaceWithRun() {
+        const lv = await env.DB.prepare("SELECT * FROM level_versions WHERE compatibility_status = 'active' LIMIT 1").first<Record<string, unknown>>();
+        const levelId = String(lv!.level_id);
+        const oldHash = String(lv!.content_hash);
+        const race = JSON.stringify({ ...LAYOUT, bosses: [], ambushes: [] });
+        await env.DB.prepare("UPDATE level_versions SET race = ?2 WHERE content_hash = ?1").bind(oldHash, race).run();
+        const ana = await registerPlayer("Ana");
+        const now = new Date().toISOString();
+        await env.DB.prepare(
+            `INSERT INTO race_runs (id, board, player_id, attempt_id, claim, time_ms, score, route, bosses_beaten, waves, finished, status, created_at, verified_at)
+             VALUES ('run-old', ?1, ?2, 'attempt-old-1', '{}', 40000, 30.6, 0.32, 0, 0, 1, 'VERIFIED', ?3, ?3)`,
+        )
+            .bind(`o:${levelId}:${oldHash}`, ana.id, now)
+            .run();
+        await env.DB.prepare("INSERT INTO race_victors (board, player_id, run_id, at) VALUES (?1, ?2, 'run-old', ?3)").bind(`o:${levelId}:${oldHash}`, ana.id, now).run();
+        // The next revision (same layout), as a publication writes it.
+        const newHash = "f".repeat(64);
+        const version = Number(lv!.version) + 1;
+        await env.DB.prepare(
+            `INSERT INTO level_versions (level_id, version, content_hash, compatibility_status, min_game_version, total_collectibles, total_enemies,
+               time_limit_ms, min_time_ms, bounds_w, bounds_h, spawn_x, spawn_y, exit_x, exit_y, exit_w, exit_h, created_at, race)
+             SELECT level_id, ?2, ?3, 'active', min_game_version, total_collectibles, total_enemies, time_limit_ms, min_time_ms, bounds_w, bounds_h,
+               spawn_x, spawn_y, exit_x, exit_y, exit_w, exit_h, ?4, race FROM level_versions WHERE content_hash = ?1`,
+        )
+            .bind(oldHash, version, newHash, now)
+            .run();
+        await env.DB.prepare("UPDATE level_versions SET compatibility_status = 'legacy' WHERE content_hash = ?1").bind(oldHash).run();
+        await env.DB.prepare("UPDATE levels SET current_version = ?2, content_hash = ?3 WHERE id = ?1").bind(levelId, version, newHash).run();
+        return { levelId, oldHash, newHash, version, ana, now };
+    }
+
+    it("« Garder les records » keeps the race of the earlier revision (board, verifier, rank, profile)", async () => {
+        const { levelId, oldHash, newHash, version, ana, now } = await officialRaceWithRun();
+        await env.DB.prepare("INSERT INTO campaign_board_links (level_id, to_hash, from_hash, created_at) VALUES (?1, ?2, ?3, ?4)").bind(levelId, newHash, oldHash, now).run();
+        const board = await api("GET", `${V}/races/board?kind=official&level_id=${levelId}`);
+        expect(board.status).toBe(200);
+        expect(board.body.data.race).toMatchObject({ version });
+        expect(board.body.data.ranking.map((e: { player: { username: string }; score: number }) => [e.player.username, e.score])).toEqual([["Ana", 30.6]]);
+        expect(board.body.data.verifier?.player?.username ?? board.body.data.verifier?.username).toBe("Ana");
+        // The profile: one line for the level, on the current revision, ranked there.
+        const races = await api("GET", `${V}/players/${ana.id}/races`, { token: ana.token });
+        expect(races.status).toBe(200);
+        expect(races.body.data.races).toHaveLength(1);
+        expect(races.body.data.races[0]).toMatchObject({ level_id: levelId, version, score: 30.6, rank: 1, participants: 1 });
+    });
+
+    it("« Réinitialiser les records » starts a new race (the old board stays as it was)", async () => {
+        const { levelId, oldHash } = await officialRaceWithRun();
+        const board = await api("GET", `${V}/races/board?kind=official&level_id=${levelId}`);
+        expect(board.status).toBe(200);
+        expect(board.body.data.ranking).toEqual([]);
+        expect(board.body.data.verifier).toBeNull();
+        const old = await api("GET", `${V}/races/board?kind=official&level_id=${levelId}&level_hash=${oldHash}`);
+        expect(old.body.data.ranking).toHaveLength(1);
+    });
+});

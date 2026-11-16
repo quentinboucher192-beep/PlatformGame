@@ -3,7 +3,10 @@
     "Un compte, un ordinateur : votre compte se lie à cet ordinateur. Une connexion depuis un autre est refusée et vous recevez une alerte « Sécurité » ; un seul compte par ordinateur.",
     "Local et en ligne : déconnecté, vous jouez en local ; à la reconnexion, « De retour en ligne » montre ce qui part au compte (niveaux, temps, succès).",
     "EN LIGNE › PARAMÈTRES › Cet ordinateur : nom de l'ordinateur, copie en ligne de la progression, alertes de sécurité.",
-    "Éditeur d'entités : les entités natives ont le même bandeau « lecture seule » que les niveaux de la campagne, avec « Dupliquer pour modifier »."
+    "Éditeur d'entités : les entités natives ont le même bandeau « lecture seule » que les niveaux de la campagne, avec « Dupliquer pour modifier ».",
+    "Correctif : « Garder les records » (révision d'un niveau ou d'une entité) garde aussi la course à la vérification des niveaux EXTRÊME ; la course de L'Arène des Échos est rétablie.",
+    "Correctif : le chrono démarre quand Nova peut bouger, que l'intro soit regardée ou passée (regarder l'intro faisait gagner environ 1 s), en jeu, en entraînement, en EXTRÊME et en ligne.",
+    "À la création d'un compte, la visibilité du pays est réglée sur « Classements et globe » dès qu'un pays est choisi (modifiable dans les paramètres)."
   ],
   "2.46.0": [
     "Éditeur d'ennemis (EN LIGNE › ATELIER) : les entités natives sont en lecture seule ; « Dupliquer pour modifier » crée votre copie, que vous modifiez librement.",

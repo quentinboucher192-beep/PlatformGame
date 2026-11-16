@@ -734,14 +734,14 @@
   {
    "fr": "Absent",
    "where": [
-    "ui/screens/PlayerProfileScene.cpp"
+    "ui/online/OnlineWidgets.cpp"
    ]
   },
   {
    "fr": "absent",
    "where": [
-    "ui/screens/AdminScene.cpp",
-    "ui/screens/SocialScene.cpp"
+    "ui/online/OnlineWidgets.cpp",
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -8449,6 +8449,18 @@
    ]
   },
   {
+   "fr": "Correctif : le chrono démarre quand Nova peut bouger, que l'intro soit regardée ou passée (regarder l'intro faisait gagner environ 1 s), en jeu, en entraînement, en EXTRÊME et en ligne.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Correctif : « Garder les records » (révision d'un niveau ou d'une entité) garde aussi la course à la vérification des niveaux EXTRÊME ; la course de L'Arène des Échos est rétablie.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Correction : un profil ouvert depuis un classement ne se recharge plus quand on clique sur ses onglets.",
    "where": [
     "data/news/changelog.json"
@@ -12134,20 +12146,20 @@
    "fr": "En ligne",
    "where": [
     "game/online/OnlineTypes.cpp",
+    "ui/online/OnlineWidgets.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/ContentManagerScene.cpp",
-    "ui/screens/MainMenuScene.cpp",
-    "ui/screens/PlayerProfileScene.cpp"
+    "ui/screens/MainMenuScene.cpp"
    ]
   },
   {
    "fr": "en ligne",
    "where": [
+    "ui/online/OnlineWidgets.cpp",
     "ui/screens/AdminCampaign.cpp",
     "ui/screens/AdminEnemies.cpp",
     "ui/screens/AdminScene.cpp",
-    "ui/screens/OnlineRankingScene.cpp",
-    "ui/screens/SocialScene.cpp"
+    "ui/screens/OnlineRankingScene.cpp"
    ]
   },
   {
@@ -12568,6 +12580,18 @@
    "where": [
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Entraînement : réapparition sur place (hors classements)",
+   "where": [
+    "game/gameplay/GameWorld.cpp"
+   ]
+  },
+  {
+   "fr": "Entraînement avec réapparitions : hors classements, aucun record",
+   "where": [
+    "ui/screens/ResultsScene.cpp"
    ]
   },
   {
@@ -15396,15 +15420,15 @@
    "fr": "Hors ligne",
    "where": [
     "game/online/OnlineTypes.cpp",
-    "ui/screens/PlayerProfileScene.cpp"
+    "ui/online/OnlineWidgets.cpp"
    ]
   },
   {
    "fr": "hors ligne",
    "where": [
+    "ui/online/OnlineWidgets.cpp",
     "ui/screens/AdminScene.cpp",
-    "ui/screens/MainMenuScene.cpp",
-    "ui/screens/SocialScene.cpp"
+    "ui/screens/MainMenuScene.cpp"
    ]
   },
   {
@@ -27761,6 +27785,18 @@
    ]
   },
   {
+   "fr": "Présence masquée",
+   "where": [
+    "ui/online/OnlineWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "présence masquée",
+   "where": [
+    "ui/online/OnlineWidgets.cpp"
+   ]
+  },
+  {
    "fr": "présente",
    "where": [
     "ui/screens/MainMenuScene.cpp"
@@ -30738,6 +30774,12 @@
    ]
   },
   {
+   "fr": "Réessayer en entraînement",
+   "where": [
+    "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "Référence : le tir chargé coûte 20 ; une attaque moins forte coûte moins.",
    "where": [
     "ui/screens/PowerGuideScene.cpp"
@@ -32255,13 +32297,13 @@
    ]
   },
   {
-   "fr": "Seulement pour un changement sans effet sur le jeu (décor…) : la nouvelle révision est déclarée compatible, les meilleurs temps, classements et records actuels y sont reportés.",
+   "fr": "Seulement pour un changement sans effet sur le jeu (décor…) : la nouvelle révision est déclarée compatible, les meilleurs temps, classements, records actuels et progressions de la course à la vérification (EXTRÊME) y sont reportés.",
    "where": [
     "editors/level_editor/LevelEditorCampaign.cpp"
    ]
   },
   {
-   "fr": "Seulement si les deux révisions se jouent exactement de la même façon (décor seul). Les meilleurs temps de la révision {0} sont reportés sur la révision {1} : le meilleur temps de chaque joueur est gardé.",
+   "fr": "Seulement si les deux révisions se jouent exactement de la même façon (décor seul). Les meilleurs temps de la révision {0} sont reportés sur la révision {1} : le meilleur temps de chaque joueur est gardé, et sa progression dans la course à la vérification (niveau EXTRÊME).",
    "where": [
     "ui/screens/AdminCampaign.cpp"
    ]
@@ -40890,7 +40932,7 @@
    ]
   },
   {
-   "fr": "{0} niveau de la campagne utilise « {1} » : chacun reçoit une nouvelle révision (même contenu, avec cette définition, note recalculée). Cochée, « Réinitialiser les records » lui donne de nouveaux classements ; décochée, ses meilleurs temps y sont reportés.",
+   "fr": "{0} niveau de la campagne utilise « {1} » : chacun reçoit une nouvelle révision (même contenu, avec cette définition, note recalculée). Cochée, « Réinitialiser les records » lui donne de nouveaux classements ; décochée, ses meilleurs temps et les progressions de sa course à la vérification (EXTRÊME) y sont reportés.",
    "where": [
     "editors/enemy_editor/EnemyEditorPublish.cpp"
    ]
@@ -40926,7 +40968,7 @@
    ]
   },
   {
-   "fr": "{0} niveaux de la campagne utilisent « {1} » : chacun reçoit une nouvelle révision (même contenu, avec cette définition, note recalculée). Cochée, « Réinitialiser les records » lui donne de nouveaux classements ; décochée, ses meilleurs temps y sont reportés.",
+   "fr": "{0} niveaux de la campagne utilisent « {1} » : chacun reçoit une nouvelle révision (même contenu, avec cette définition, note recalculée). Cochée, « Réinitialiser les records » lui donne de nouveaux classements ; décochée, ses meilleurs temps et les progressions de sa course à la vérification (EXTRÊME) y sont reportés.",
    "where": [
     "editors/enemy_editor/EnemyEditorPublish.cpp"
    ]
@@ -41740,6 +41782,12 @@
    ]
   },
   {
+   "fr": "« Réessayer en entraînement » : réapparition sur place après une chute, hors classements",
+   "where": [
+    "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "« {0} » : ce jeu ne joue pas sa révision en ligne (révision {1}) : actualisez, ou mettez le jeu à jour.",
    "where": [
     "game/online/EnemyPublication.cpp"
@@ -42001,6 +42049,12 @@
    "fr": "à l'instant",
    "where": [
     "ui/online/OnlineWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "À la création d'un compte, la visibilité du pays est réglée sur « Classements et globe » dès qu'un pays est choisi (modifiable dans les paramètres).",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {

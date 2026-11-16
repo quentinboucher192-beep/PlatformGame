@@ -612,8 +612,7 @@ private:
         UIContext& ui = g_.ui;
         float rad = std::max(ui.s(5), avatar.w * 0.13f);
         Vec2 c{avatar.right() - rad * 0.6f, avatar.bottom() - rad * 0.6f};
-        ui.r().fillCircle(c, rad + ui.s(2), Color{10, 14, 30, 255});
-        ui.r().fillCircle(c, rad, presenceColor(presence));
+        drawPresenceDot(ui, c, rad, presence, ui.s(2));
     }
 
     void drawConversationAvatar(const Json& c, const Rect& r) {
@@ -646,10 +645,8 @@ private:
                  Align::Center, FontFace::Bold, VAlign::Middle);
     }
 
-    static Color presenceColor(const std::string& p) {
-        return p == "online" ? Color{72, 220, 120, 255} : p == "away" ? Color{255, 176, 60, 255} : Color{120, 128, 150, 255};
-    }
-    static std::string presenceWord(const std::string& p) { return p == "online" ? "en ligne" : p == "away" ? "absent" : "hors ligne"; }
+    static Color presenceColor(const std::string& p) { return presenceDotColor(p); }
+    static std::string presenceWord(const std::string& p) { return presenceLabel(p, false); }
 
     void drawFriends(const Rect& area) {
         UIContext& ui = g_.ui;
@@ -740,10 +737,7 @@ private:
                 // Presence (2.32.3): a pill on the avatar's corner, its word after the name.
                 std::string presence = s.kind == std::string("friend") ? jstr(f, "presence") : std::string();
                 if (!presence.empty()) {
-                    Color pc = presenceColor(presence);
-                    Vec2 pd{row.x + ui.s(38), row.y + ui.s(37)};
-                    ui.r().fillCircle(pd, ui.s(7), Color{10, 14, 30, 255});
-                    ui.r().fillCircle(pd, ui.s(5), pc);
+                    drawPresenceDot(ui, {row.x + ui.s(38), row.y + ui.s(37)}, ui.s(5), presence, ui.s(2));
                 }
                 float nx = row.x + ui.s(52);
                 std::string cc = jstr(pl, "country_code");

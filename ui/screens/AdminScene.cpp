@@ -83,12 +83,6 @@ std::string stampText(const std::string& iso) {
     return buf;
 }
 
-Color presenceColorOf(const std::string& p) {
-    if (p == "online") return {120, 230, 140, 255};
-    if (p == "away") return {255, 179, 71, 255};
-    return {86, 100, 126, 255};
-}
-
 std::string presenceText(const std::string& p) {
     if (p == "online") return "en ligne";
     if (p == "away") return "absent";
@@ -495,11 +489,9 @@ private:
         Rect ar{row.x + ui.s(10), row.y + ui.s(7), av, av};
         ui_.drawAvatar(jstr(p, "avatar", "avatar_01"), id, ar);
         std::string pres = jstr(p, "presence");
-        if (pres == "online" || pres == "away") {
+        if (pres == "online" || pres == "away" || pres == "hidden") {
             float rad = std::max(ui.s(5), av * 0.14f);
-            Vec2 pc{ar.right() - rad * 0.6f, ar.bottom() - rad * 0.6f};
-            ui.r().fillCircle(pc, rad + ui.s(2), Color{10, 14, 30, 255});
-            ui.r().fillCircle(pc, rad, presenceColorOf(pres));
+            drawPresenceDot(ui, {ar.right() - rad * 0.6f, ar.bottom() - rad * 0.6f}, rad, pres, ui.s(2));
         }
         float nx = ar.right() + ui.s(12);
         float pillW = me ? ui.text().measure("vous", FontFace::Bold, ui.s(13)).x + ui.s(18) : 0.0f;
@@ -523,7 +515,7 @@ private:
         cell(c, 3, row, seen.empty() ? "masquée" : OnlineUi::ageOf(seen), seen.empty() ? ui.theme().textDim : ui.theme().text);
         {
             float dx = c.x[4] + ui.s(12);
-            ui.r().fillCircle({dx + ui.s(5), row.y + row.h * 0.5f}, ui.s(5), presenceColorOf(pres));
+            drawPresenceDot(ui, {dx + ui.s(5), row.y + row.h * 0.5f}, ui.s(5), pres, 0.0f);
             float r2 = c.x[5] - dx - ui.s(30);
             ui.label(ui.elide(presenceText(pres), FontFace::Body, 16, r2), {dx + ui.s(16), row.y + row.h * 0.5f}, 16,
                      pres == "hidden" ? ui.theme().textDim : ui.theme().text, Align::Left, FontFace::Body, VAlign::Middle);

@@ -233,7 +233,7 @@ void LevelEditorScene::modalPublish(const Rect& c) {
         const std::string desc[2] = {
             "Nouvelle révision avec ses propres classements. Les records actuels restent archivés avec la révision " + base + ", jamais mélangés.",
             "Seulement pour un changement sans effet sur le jeu (décor…) : la nouvelle révision est déclarée compatible, les meilleurs temps, "
-            "classements et records actuels y sont reportés.",
+            "classements, records actuels et progressions de la course à la vérification (EXTRÊME) y sont reportés.",
         };
         const float optH = ui.s(46);
         for (int i = 0; i < 2; ++i) {

@@ -124,3 +124,23 @@ continue
 <combinaison {0}>
 accent
 hp
+uses
+campaign
+current
+definition
+effect
+new
+play
+race
+rating
+revisions
+time
+to
+back
+changed
+country
+intro
+move
+set
+settings
+visibility

@@ -10,6 +10,8 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <string>
+#include <string_view>
 
 #include <SDL3/SDL_misc.h>
 
@@ -481,7 +483,7 @@ private:
         int i = 0;
         for (const auto& k : onlineKinds()) {
             // Only the kinds this server knows (a newer kind on an older server: not offered).
-            if (!settings_.contains(k.kind) || k.kind == "security") continue;  // 2.47: the security alerts are never turned off
+            if (!settings_.contains(k.kind) || std::string_view(k.kind) == "security") continue;  // 2.47: the security alerts are never turned off
             float cx = area.x + (i % 2) * (colW + ui.s(20));
             float cy = y + (i / 2) * ui.s(56);
             bool on = jget<bool>(settings_, k.kind, true);
