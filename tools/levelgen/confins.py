@@ -26,33 +26,52 @@ class Edge(Star):
         super().__init__(level_id, name, first_theme, seed)
         self.L.planet("confins")
 
+    DRAGON_TEXTS = {
+        3: ("Ses ailes arrachent la roche : les blocs tournoient !", "Tempête d'ailes : les blocs en orbite"),
+        5: "Écailles brisées : le sol cède",
+        7: "Couvée : un soin",
+        8: ("Le feu referme l'arène !", "Soleil noir : l'arène se resserre"),
+        "won": ("Le dragon retourne à la pierre. La sortie est ouverte.", "Pyrrhax vaincu"),
+    }
+
     def dragon_arena(self, boss, music=""):
-        """The giant arena (Star.GIANT_*): its floor gives way at the 5th phase, debris torn off
-        by the wings orbit from the 3rd, fire closes in at the 8th and at the dragon's rage."""
+        """The giant arena of Pyrrhax: the crust over the middle gives way at the 5th phase."""
+        return self.giga_arena(boss, music, pits=[self.GIANT_BASIN], flying=True, texts=self.DRAGON_TEXTS)
+
+    def giga_arena(self, boss, music, pits, flying, texts):
+        """The giant arena (Star.GIANT_*) of a giga boss: the crust over each pit gives way at
+        the 5th phase (magma below), debris orbit from the 3rd, fire closes in at the 8th and at
+        the boss's rage. `pits`: (first, last) inside columns of each crust; `flying`: where the
+        boss waits (in the air, or on the floor)."""
         L, f = self.L, self.f
         x0 = self.x
         X = x0 + 1
         W, Hh = self.GIANT_W, self.GIANT_H
         door_h = 8
         ledge = "sanctum_ledge"
-        b0, b1 = self.GIANT_BASIN
         self.roof(x0, X + W + 1, f - Hh)
         L.solid(x0, f - Hh, x0 + 1, f - door_h, self.th["accent"], deco=False)
         L.solid(X + W, f - Hh, X + W + 1, f - door_h, self.th["accent"], deco=False)
         left = L.door(x0, f - door_h, door_h, open_=True)
         right = L.door(X + W, f - door_h, door_h, open_=False)
-        self.ground(x0, X + b0, f)
-        self.ground(X + b1, X + W + 1, f)
-        self.ground(X + b0, X + b1, f + 4)
-        # The obsidian crust over the magma: it gives way when the dragon's scales burst (phase 5).
-        crust = []
-        for cx in range(b0, b1, 4):
-            oid = L.crumble(X + cx, f, 4, delay=0.3, respawn=0.0, style="basalt")
-            L.data["objects"][-1]["props"]["onEvent"] = True
-            crust.append(oid)
-        magma = L.obj("damage_zone", [(X + b0) * T, (f + 2) * T, (b1 - b0) * T, 2 * T], "gameplay",
-                      {"damage": 2, "interval": 0.6, "visible": True, "shieldProtects": True, "active": False,
-                       "style": "plasma", "bounce": True})
+        # The floor between the pits, the pits 4 tiles deep.
+        edge = None
+        for (b0, b1) in pits:
+            self.ground(x0 if edge is None else X + edge, X + b0, f)
+            edge = b1
+        self.ground(X + edge, X + W + 1, f)
+        for (b0, b1) in pits:
+            self.ground(X + b0, X + b1, f + 4)
+        # The obsidian crust over the magma: it gives way at the 5th phase.
+        crust, magma = [], []
+        for (b0, b1) in pits:
+            for cx in range(b0, b1, 4):
+                oid = L.crumble(X + cx, f, 4, delay=0.3, respawn=0.0, style="basalt")
+                L.data["objects"][-1]["props"]["onEvent"] = True
+                crust.append(oid)
+            magma.append(L.obj("damage_zone", [(X + b0) * T, (f + 2) * T, (b1 - b0) * T, 2 * T], "gameplay",
+                               {"damage": 2, "interval": 0.6, "visible": True, "shieldProtects": True, "active": False,
+                                "style": "plasma", "bounce": True}))
         for h, ls in self.GIANT_LEDGES.items():
             for (lx, lw) in ls:
                 L.oneway(X + lx, X + lx + lw, f - h, ledge)
@@ -75,34 +94,32 @@ class Edge(Star):
                           "style": "plasma", "bounce": False})
         curtain1 = [curtain(0, 12), curtain(W - 12, W)]
         curtain2 = [curtain(12, 22), curtain(W - 22, W - 12)]
-        bid = L.enemy(boss, X + 70, f - 20, patrol_tiles=6, face_left=True, dormant=True, boss=True)
+        bid = L.enemy(boss, X + 70, f - 20 if flying else f, patrol_tiles=6, face_left=True, dormant=True, boss=True)
         L.combat(X, f - Hh, X + W, f + 4, doors=left + "," + right, waves=bid, lock=False,
                  music=music or L.data.get("bossMusic", ""))
         L.data["objects"][-1]["props"]["announce"] = False
         for (lx, lh, col) in ((10, 26, "#ff7a2e"), (48, 30, "#ffc49a"), (86, 26, "#ff7a2e"), (30, 8, "#ff5ad2"),
                               (66, 8, "#ff5ad2")):
             L.light(X + lx, f - lh, col, 160, flicker=0.12)
-        fire = [magma] + curtain1 + curtain2
+        fire = magma + curtain1 + curtain2
         L.event(bid, "bossPhase", [{"type": "activate", "target": ",".join(debris)},
                                    {"type": "spawn", "target": orbs[3]},
-                                   {"type": "hint", "params": {"text": "Ses ailes arrachent la roche : les blocs tournoient !",
-                                                              "duration": 3}}],
-                params={"phase": 3}, name="Tempête d'ailes : les blocs en orbite")
+                                   {"type": "hint", "params": {"text": texts[3][0], "duration": 3}}],
+                params={"phase": 3}, name=texts[3][1])
         L.event(bid, "bossPhase", [{"type": "activate", "target": ",".join(crust)},
-                                   {"type": "enable", "target": magma},
+                                   {"type": "enable", "target": ",".join(magma)},
                                    {"type": "spawn", "target": orbs[5]},
                                    {"type": "shake", "params": {"amount": 0.8}}],
-                params={"phase": 5}, name="Écailles brisées : le sol cède")
-        L.event(bid, "bossPhase", [{"type": "spawn", "target": orbs[7]}], params={"phase": 7}, name="Couvée : un soin")
+                params={"phase": 5}, name=texts[5])
+        L.event(bid, "bossPhase", [{"type": "spawn", "target": orbs[7]}], params={"phase": 7}, name=texts[7])
         L.event(bid, "bossPhase", [{"type": "enable", "target": ",".join(curtain1)},
-                                   {"type": "hint", "params": {"text": "Le feu referme l'arène !", "duration": 3}}],
-                params={"phase": 8}, name="Soleil noir : l'arène se resserre")
+                                   {"type": "hint", "params": {"text": texts[8][0], "duration": 3}}],
+                params={"phase": 8}, name=texts[8][1])
         L.event(bid, "bossEnrage", [{"type": "enable", "target": ",".join(curtain2)},
                                     {"type": "shake", "params": {"amount": 0.6}}], name="Rage : l'arène se resserre encore")
         L.event(bid, "bossDefeated", [{"type": "disable", "target": ",".join(fire)},
-                                      {"type": "hint", "params": {"text": "Le dragon retourne à la pierre. La sortie est ouverte.",
-                                                                 "duration": 4}}],
-                delay=1.5, name="Pyrrhax vaincu")
+                                      {"type": "hint", "params": {"text": texts["won"][0], "duration": 4}}],
+                delay=1.5, name=texts["won"][1])
         self.x = X + W + 1
         return bid
 
@@ -152,5 +169,51 @@ def dragon_maw():
     return width
 
 
+# ---------------------------------------------------------------- the heart of stone (2.49)
+GOLEM_TEXTS = {
+    3: ("Ses pas arrachent la roche : les blocs tournoient !", "Séisme : les blocs en orbite"),
+    5: "Fendu : les fissures s'ouvrent",
+    7: "Azur : un soin",
+    8: ("Le magma referme l'arène !", "Incandescent : l'arène se resserre"),
+    "won": ("Le Monolithe s'effondre en un tas de pierres. La sortie est ouverte.", "Monolithe vaincu"),
+}
+
+
+def stone_heart():
+    b = Edge("confins_02", "Le Cœur de Pierre", "pyralis", seed=8201)
+    L, d = b.L, b.L.data
+    d["description"] = ("Sous la croûte des Confins, une caverne de granit gravé de runes. Ses épreuves les plus dures "
+                        "sans pardon, puis le Monolithe et ses huit phases. Une seule vie, aucun checkpoint.")
+    d["difficulty"] = 5
+    d["extreme"] = True
+    b.f = 40
+    b.opening("Le Cœur de Pierre : une seule vie, aucun checkpoint. Le Monolithe attend au bout.")
+    b.zone_sign("Les galeries de granit.")
+    b.rooms_of(["climb", "crumble", "grapple", "gaps"])
+    b.zone_sign("Les salles des runes.")
+    b.rooms_of(["movers", "dash_gap", "spikes", "lasers"])
+    b.th.update(floor="obsidian", roof="obsidian", accent="obsidian")
+    b.zone_sign("Le seuil du cœur de pierre. Choisissez les pouvoirs du combat : celui que vous laissez reste ici.")
+    b.tablets(["ground_pound", "plasma_bomb", "wave", "shield", "triple_jump", "time_slow"])
+    platforming = b.x
+    b.zone_sign("Le Monolithe, le Golem Primordial.")
+    b.rooms.append({"type": "boss", "x": b.x, "floor": b.f, "boss": "monolithe"})
+    # A walker: the crust gives way on the two sides only (the golem fights in the middle).
+    b.giga_arena("monolithe", "music/monolithe_boss.ogg", pits=[(4, 16), (80, 92)], flying=False, texts=GOLEM_TEXTS)
+    width = b.finish("Le Monolithe s'est tu. Le cœur des Confins se refroidit.")
+    ref = int(round(platforming * T / 125.0 + 360))
+    d["timer"] = {"mode": "challenge", "limit": 3600, "onExpire": "gameover", "referenceTime": ref, "challengeMaxDeaths": 0}
+    d["medals"] = {"bronze": {}, "silver": {"maxTime": int(ref * 1.6)}, "gold": {"maxTime": int(ref * 1.2)},
+                   "platinum": {"maxTime": ref, "maxDeaths": 0}}
+    b.cinematics("LE CŒUR DE PIERRE", "Les Confins", "Une seule vie. Un golem plus ancien que les planètes. Huit phases.",
+                 "LE GOLEM S'EFFONDRE")
+    d["metadata"] = {"generator": "tools/levelgen/confins.py", "revision": 1, "rooms": b.rooms, "noHealing": True}
+    L.save(os.path.join(ROOT, "data/levels/confins_02.json"))
+    return width
+
+
 if __name__ == "__main__":
+    import sys
     print("confins_01 :", dragon_maw(), "tuiles")
+    if "--golem" in sys.argv:  # 2.49: Le Cœur de Pierre (the Monolithe)
+        print("confins_02 :", stone_heart(), "tuiles")
