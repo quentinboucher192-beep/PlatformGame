@@ -632,7 +632,7 @@ private:
         if (ui.button("unbind", {x, by, ui.s(330), bh}, "Délier (nouvel ordinateur autorisé)", un))
             deviceAction(Json{{"action", "unbind"}}, name + " est délié : sa prochaine connexion le liera de nouveau.");
         // 2.50: the data of this player moved to another account (when the server offers it).
-        if (g_.migrationAvailable) {
+        if (g_.migration.available()) {
             const float mx = x + ui.s(330) + ui.s(14), mw = box.right() - ui.s(32) - ui.s(170) - ui.s(14) - mx;
             UIContext::ButtonStyle ms;
             ms.enabled = !busyDevice_;
@@ -798,6 +798,39 @@ private:
         // 2.47: the computer an account is bound to.
         if (action == "admin_device_unbound") return {"Compte", ui.theme().warm, "a délié " + target + " de son ordinateur"};
         if (action == "admin_device_bound") return {"Compte", ui.theme().warm, "a lié " + target + " à un nouvel ordinateur"};
+        // 2.50: an account's data migrated to another one, by an admin or by the player with a code.
+        const Json& mig = jfield(e, "migration", Json());
+        if (mig.is_object() && (action == "admin_account_migrated" || action == "account_migrated")) {
+            const std::string from = "« " + jstr(jfield(mig, "from", Json()), "username", "un compte supprimé") + " »";
+            const std::string to = "« " + jstr(jfield(mig, "to", Json()), "username", "un compte supprimé") + " »";
+            std::string text = action == "account_migrated" ? "a récupéré les données de " + from + " avec un code de migration"
+                                                            : std::string(jstr(mig, "mode") == "replace" ? "a remplacé les données de " + to + " par celles de " + from
+                                                                                                         : "a migré les données de " + from + " vers " + to);
+            if (action == "admin_account_migrated") {
+                std::string parts;
+                for (const Json& i : jfield(mig, "items", Json::array())) {
+                    const std::string id = i.is_string() ? i.get<std::string>() : std::string();
+                    const char* p = id == "records" ? "records" : id == "achievements" ? "succès" : id == "rewards" ? "récompenses" : id == "playtime" ? "temps joué"
+                                    : id == "levels" ? "niveaux et projets" : id == "progress" ? "progression" : nullptr;
+                    if (p) parts += (parts.empty() ? "" : ", ") + std::string(p);
+                }
+                if (!parts.empty()) text += " · " + parts;
+            }
+            if (jget<bool>(mig, "close_source", false)) text += " · " + from + " fermé";
+            if (!jstr(mig, "backup_id").empty()) text += " · sauvegarde " + jstr(mig, "backup_id");
+            return {"Compte", ui.theme().warm, text};
+        }
+        if (action == "backup_created" && jstr(e, "reason") == "migration")
+            return {"Sauvegarde", Color{185, 200, 218, 255}, "a fait une sauvegarde complète avant une migration (" + jstr(e, "backup_id") + ")"};
+        if (action == "admin_refused" && jstr(e, "role").empty() && !target.empty() &&
+            (reason == "CONFIRMATION_REQUIRED" || reason == "TARGET_NOT_FOUND" || reason == "SAME_ACCOUNT" || reason == "SOURCE_INACTIVE" ||
+             reason == "TARGET_INACTIVE" || reason == "OWN_ACCOUNT" || reason == "IMPORT_IN_PROGRESS" || reason == "LAST_ADMIN")) {
+            // A migration refused (its details carry no role, unlike a role refused).
+            const std::string why = reason == "CONFIRMATION_REQUIRED" ? std::string("confirmation manquante")
+                                    : reason == "IMPORT_IN_PROGRESS"  ? std::string("un import était en cours")
+                                                                      : migrationProblemText(reason);
+            return {"Refus", ui.theme().textDim, "migration des données de " + target + " refusée : " + why};
+        }
         if (action == "admin_challenge_set" && ch.is_object()) {
             // 2.41: « a choisi le défi du jour du 20/11 : … (remplace le tirage « … ») ».
             std::string text = "a choisi le défi " + periodPhrase(ch) + " : " + challengeSummary(ch);

@@ -557,6 +557,12 @@
    ]
   },
   {
+   "fr": "a fait une sauvegarde complète avant une migration ({0})",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "a fixé les récompenses du défi {0} : {1}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -564,6 +570,12 @@
   },
   {
    "fr": "a lié {0} à un nouvel ordinateur",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a migré les données de {0} vers {1}",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -617,6 +629,12 @@
    ]
   },
   {
+   "fr": "a remplacé les données de {0} par celles de {1}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "a restauré la combinaison {0}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -630,6 +648,12 @@
   },
   {
    "fr": "a retiré les récompenses du défi {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a récupéré les données de {0} avec un code de migration",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -862,6 +886,7 @@
     "game/online/Spectate.cpp",
     "ui/screens/AdminCampaign.cpp",
     "ui/screens/AdminScene.cpp",
+    "ui/screens/NotificationsScene.cpp",
     "ui/screens/OnlineMigration.cpp",
     "ui/screens/ProjectsScene.cpp"
    ]
@@ -1603,12 +1628,6 @@
    ]
   },
   {
-   "fr": "Ancien pseudonyme",
-   "where": [
-    "ui/screens/OnlineMigration.cpp"
-   ]
-  },
-  {
    "fr": "anciennes couleurs {0}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -1987,6 +2006,12 @@
     "editors/level_editor/LevelEditorPowerKeys.cpp",
     "ui/screens/LevelPowerKeysScene.cpp",
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Appuyez sur « Aperçu » pour vérifier le compte cible.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -3388,15 +3413,27 @@
    ]
   },
   {
+   "fr": "Aucune progression n'attend plus d'être restaurée sur ce compte.",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucune progression n'attend plus d'être restaurée.",
    "where": [
-    "ui/screens/OnlineMigration.cpp"
+    "game/online/AccountMigration.cpp"
    ]
   },
   {
    "fr": "Aucune progression ne correspond.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune progression à restaurer.",
+   "where": [
+    "server/src/accountMigration.ts"
    ]
   },
   {
@@ -4922,6 +4959,20 @@
    ]
   },
   {
+   "fr": "C'est le compte connecté : saisissez le pseudonyme de l'ANCIEN compte.",
+   "where": [
+    "server/src/accountMigration.ts",
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "C'est le dernier compte admin : il ne peut pas être fermé.",
+   "where": [
+    "game/online/AccountMigration.cpp",
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
    "fr": "c'était déjà le tirage",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -5371,6 +5422,12 @@
    "fr": "Ce commentaire ne vous appartient pas.",
    "where": [
     "server/src/workshop.ts"
+   ]
+  },
+  {
+   "fr": "Ce compte a été migré vers un autre compte : il est fermé.",
+   "where": [
+    "server/src/auth.ts"
    ]
   },
   {
@@ -6128,6 +6185,12 @@
    "fr": "Cette partie ne vous appartient pas.",
    "where": [
     "server/src/challenges.ts"
+   ]
+  },
+  {
+   "fr": "Cette progression était déjà restaurée sur cet ordinateur.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -7463,6 +7526,12 @@
    ]
   },
   {
+   "fr": "Code de migration (préparé sur l'ancien ordinateur)",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "code pays ISO à 2 lettres attendu",
    "where": [
     "server/src/challenges.ts",
@@ -7493,6 +7562,7 @@
    "fr": "collection",
    "where": [
     "game/GameServices.cpp",
+    "game/online/ProgressMerge.cpp",
     "ui/screens/MainMenuScene.cpp"
    ]
   },
@@ -8018,7 +8088,8 @@
   {
    "fr": "Compte cible introuvable.",
    "where": [
-    "ui/screens/OnlineMigration.cpp"
+    "game/online/AccountMigration.cpp",
+    "server/src/accountMigration.ts"
    ]
   },
   {
@@ -8167,6 +8238,12 @@
    "fr": "Confirmation",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "confirmation manquante",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -8651,7 +8728,8 @@
   {
    "fr": "Copie de la progression illisible.",
    "where": [
-    "game/GameServices.cpp"
+    "game/GameServices.cpp",
+    "game/online/AccountMigration.cpp"
    ]
   },
   {
@@ -8945,8 +9023,15 @@
    ]
   },
   {
+   "fr": "Cosmic Online ne répond pas : réessayez plus tard (HTTP {0}).",
+   "where": [
+    "game/online/AccountMigration.cpp"
+   ]
+  },
+  {
    "fr": "Cosmic Online ne répond pas : réessayez plus tard.",
    "where": [
+    "game/online/AccountMigration.cpp",
     "ui/screens/OnlineMigration.cpp"
    ]
   },
@@ -10130,6 +10215,12 @@
    ]
   },
   {
+   "fr": "Demande de migration de ce compte refusée (code faux ou expiré) : quelqu'un connaît votre mot de passe.",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "Demande déjà envoyée.",
    "where": [
     "server/src/friends.ts"
@@ -10907,7 +10998,13 @@
    ]
   },
   {
-   "fr": "Données de « {0} » migrées vers « {1} ». Sauvegarde faite avant : {2}.",
+   "fr": "Données de « {0} » migrées vers « {1} » ; « {2} » est fermé.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Données de « {0} » migrées vers « {1} ».",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -12351,7 +12448,7 @@
    ]
   },
   {
-   "fr": "Elle s'ajoute à la progression de {0} sur cet ordinateur (le meilleur de chaque côté est gardé). Une copie de la progression actuelle est faite avant.",
+   "fr": "Elle s'ajoute à la progression de cet ordinateur : le meilleur de chaque côté est gardé (meilleurs temps, succès, statistiques des boss) et le temps de jeu s'additionne. Les sauvegardes actuelles sont d'abord copiées dans le dossier saves.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -12514,6 +12611,12 @@
    "fr": "en Bronze",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "En commun : {0} meilleurs temps ({1} meilleurs côté source), {2} succès nouveaux pour la cible.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -14593,6 +14696,7 @@
     "game/ghost/TrainingSegments.cpp",
     "game/levels/LevelData.cpp",
     "game/levels/RatingService.cpp",
+    "game/online/AccountMigration.cpp",
     "game/online/CampaignRevisions.cpp",
     "game/online/DailyChallenges.cpp",
     "game/online/DeviceIdentity.cpp",
@@ -16723,9 +16827,15 @@
    ]
   },
   {
-   "fr": "Impossible de garder une copie des sauvegardes actuelles.",
+   "fr": "Impossible de créer le dossier de copie des sauvegardes actuelles.",
    "where": [
-    "game/GameServices.cpp"
+    "game/online/ProgressMerge.cpp"
+   ]
+  },
+  {
+   "fr": "Impossible de garder une copie des sauvegardes actuelles ({0}.json).",
+   "where": [
+    "game/online/ProgressMerge.cpp"
    ]
   },
   {
@@ -17628,6 +17738,12 @@
    ]
   },
   {
+   "fr": "L'ancien compte",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "l'ancien compte",
    "where": [
     "ui/screens/OnlineMigration.cpp"
@@ -18042,7 +18158,7 @@
    ]
   },
   {
-   "fr": "La copie de la progression n'a pas pu partir.",
+   "fr": "La copie de la progression n'a pas pu partir : {0}",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -18353,6 +18469,12 @@
    ]
   },
   {
+   "fr": "La progression attend d'être restaurée par « {0} ».",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "La préparation du niveau a échoué.",
    "where": [
     "editors/level_editor/LevelEditorCampaign.cpp"
@@ -18502,6 +18624,12 @@
    "fr": "La sauvegarde a échoué : {0}",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "La sauvegarde n'est pas prête : la migration n'a pas été faite.",
+   "where": [
+    "server/src/accountMigration.ts"
    ]
   },
   {
@@ -18955,9 +19083,36 @@
    ]
   },
   {
+   "fr": "Le compte cible est fermé ou suspendu.",
+   "where": [
+    "game/online/AccountMigration.cpp",
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
+   "fr": "Le compte cible est le compte source.",
+   "where": [
+    "game/online/AccountMigration.cpp",
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
    "fr": "Le compte ne sert que sur cet ordinateur. Sur un autre, créez un nouveau compte : un code préparé ici lui transfère toutes vos données.",
    "where": [
     "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
+   "fr": "Le compte source est fermé (ses données ont déjà été migrées).",
+   "where": [
+    "game/online/AccountMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Le compte source est fermé ou suspendu.",
+   "where": [
+    "game/online/AccountMigration.cpp",
+    "server/src/accountMigration.ts"
    ]
   },
   {
@@ -19234,6 +19389,12 @@
    ]
   },
   {
+   "fr": "Le fichier de la progression à restaurer est introuvable.",
+   "where": [
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
    "fr": "Le fichier du niveau n'est pas valide.",
    "where": [
     "server/src/campaignRevisions.ts"
@@ -19249,6 +19410,12 @@
    "fr": "le fichier n'est pas un objet JSON",
    "where": [
     "game/levels/LevelData.cpp"
+   ]
+  },
+  {
+   "fr": "Le fichier reçu est incomplet ou abîmé : réessayez.",
+   "where": [
+    "game/online/AccountMigration.cpp"
    ]
   },
   {
@@ -20085,6 +20252,12 @@
    ]
   },
   {
+   "fr": "Lecture de l'aperçu…",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "Lecture de la définition en ligne et des niveaux de la campagne…",
    "where": [
     "editors/enemy_editor/EnemyEditorPublish.cpp"
@@ -20171,6 +20344,12 @@
    "where": [
     "ui/screens/AdminScene.cpp",
     "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
+   "fr": "lecture…",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -20357,13 +20536,49 @@
    ]
   },
   {
-   "fr": "Les données de {0} ont été migrées sur {1} (copie de la progression du {2}).",
+   "fr": "Les données de ce compte ont été migrées sur le compte {0} : ce compte est fermé.",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Les données de ce compte ont été migrées sur le compte {0}.",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Les données de {0} ont été migrées sur votre compte : restaurez la progression de son ordinateur.",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Les données de {0} ont été migrées sur votre compte.",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Les données de {0} ont été migrées sur {1}. Voici la progression de son ordinateur (« {2} »), copiée le {3}.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
-   "fr": "Les données de {0} sont maintenant sur {1}.",
+   "fr": "Les données de {0} ont été migrées sur {1}. Voici la progression de son ordinateur, copiée le {2}.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Les données de {0} sont maintenant sur {1} ; {2} est fermé. Il reste à restaurer la progression de son ordinateur sur celui-ci.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Les données de {0} sont maintenant sur {1} ; {2} est fermé. Le serveur n'avait aucune copie de la progression de son ordinateur.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -22404,7 +22619,25 @@
    ]
   },
   {
+   "fr": "migration des données de {0} refusée : {1}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Migration en cours…",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Migration refusée par le serveur.",
+   "where": [
+    "game/online/AccountMigration.cpp"
+   ]
+  },
+  {
+   "fr": "MIGRER",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -22519,6 +22752,7 @@
     "game/levels/LevelData.cpp",
     "game/levels/ObjectTypes.cpp",
     "game/online/OnlineRecord.cpp",
+    "ui/screens/AdminScene.cpp",
     "ui/screens/OnlineMigration.cpp"
    ]
   },
@@ -23356,7 +23590,7 @@
    ]
   },
   {
-   "fr": "Ne le donnez à personne. Il faut aussi le mot de passe de {0}.",
+   "fr": "Ne le donnez à personne : avec le mot de passe de {0}, il donne toutes ses données. Une fois la migration faite, ce compte est fermé.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -23864,6 +24098,12 @@
    "fr": "NIVEAUX EN LIGNE · Cosmic Online",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
+   ]
+  },
+  {
+   "fr": "niveaux et projets",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -26578,7 +26818,7 @@
    ]
   },
   {
-   "fr": "Passent sur {0} : records et replays, succès, récompenses, temps joué, et la copie de la progression (rechargée sur ce PC). Le meilleur des deux côtés est gardé si {1} a déjà joué.",
+   "fr": "Passent sur {0} : records et replays, succès, récompenses, temps de jeu, et la progression de l'ancien ordinateur (à restaurer ici ensuite). Le meilleur des deux côtés est gardé.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -28688,9 +28928,21 @@
    ]
   },
   {
+   "fr": "progression",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Progression : {0}",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Progression ajoutée, mais une sauvegarde n'a pas pu être écrite ({0}) : les précédentes sont dans saves › {1}.",
+   "where": [
+    "game/GameServices.cpp"
    ]
   },
   {
@@ -28701,6 +28953,12 @@
   },
   {
    "fr": "Progression locale (dernière copie) : le jeu du compte cible propose de la restaurer",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Progression locale : aucune copie sur le serveur",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -28730,7 +28988,7 @@
    ]
   },
   {
-   "fr": "Progression restaurée : elle s'ajoute à celle de cet ordinateur.",
+   "fr": "Progression restaurée : elle s'ajoute à celle de cet ordinateur (sauvegardes d'avant : saves › {0}).",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -29085,6 +29343,12 @@
    ]
   },
   {
+   "fr": "Pseudonyme de l'ancien compte",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "Pseudonyme de votre ami",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
@@ -29097,10 +29361,22 @@
    ]
   },
   {
+   "fr": "pseudonyme du compte cible attendu",
+   "where": [
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
    "fr": "pseudonyme réservé",
    "where": [
     "server/src/auth.ts",
     "server/src/players.ts"
+   ]
+  },
+  {
+   "fr": "Pseudonyme, mot de passe ou code de migration incorrect, ou code expiré.",
+   "where": [
+    "server/src/accountMigration.ts"
    ]
   },
   {
@@ -30263,6 +30539,7 @@
     "editors/level_editor/LevelEditorCampaign.cpp",
     "game/GameServices.cpp",
     "game/ghost/GhostStore.cpp",
+    "game/online/ProgressMerge.cpp",
     "game/records/Records.cpp",
     "ui/screens/AdminCampaign.cpp",
     "ui/screens/AdminEnemies.cpp",
@@ -30308,6 +30585,12 @@
   },
   {
    "fr": "Records, meilleurs temps et replays ({0} · {1} meilleurs temps ; cible : {2})",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Records, meilleurs temps et replays ({0} · {1} meilleurs temps)",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -31247,6 +31530,13 @@
    ]
   },
   {
+   "fr": "Restaurer la progression",
+   "where": [
+    "ui/screens/NotificationsScene.cpp",
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "RESTAURER LA PROGRESSION TRANSFÉRÉE",
    "where": [
     "ui/screens/OnlineMigration.cpp"
@@ -32073,9 +32363,21 @@
    ]
   },
   {
+   "fr": "récompenses",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Récompenses de ce défi",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Récompenses de défis, titres et combinaisons créées ({0} ; cible : {1})",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -32281,6 +32583,12 @@
    "fr": "Réponse du serveur incohérente.",
    "where": [
     "game/online/OnlineTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Réponse du serveur incomplète : réessayez.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -33102,6 +33410,12 @@
    ]
   },
   {
+   "fr": "Sauvegarde",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Sauvegarde automatique de l'éditeur",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -33138,6 +33452,12 @@
    ]
   },
   {
+   "fr": "Sauvegarde faite avant : {0}.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "Sauvegarde introuvable.",
    "where": [
     "server/src/backups.ts"
@@ -33147,6 +33467,12 @@
    "fr": "Sauvegarde lisible et compatible. Pour remplacer toutes les données, tapez la phrase de confirmation.",
    "where": [
     "ui/screens/AdminBackups.cpp"
+   ]
+  },
+  {
+   "fr": "sauvegarde {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -34930,6 +35256,7 @@
   {
    "fr": "succès",
    "where": [
+    "ui/screens/AdminScene.cpp",
     "ui/screens/OnlineMigration.cpp"
    ]
   },
@@ -34971,6 +35298,12 @@
   },
   {
    "fr": "Succès déclarés ({0} · {1} étoiles ; cible : {2})",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Succès déclarés ({0} · {1} étoiles)",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -35223,6 +35556,12 @@
    "fr": "Sur le lac, chaque reflet peut mordre.",
    "where": [
     "data/levels/aethra_02.json"
+   ]
+  },
+  {
+   "fr": "Sur le nouvel ordinateur, connecté au nouveau compte : PARAMÈTRES EN LIGNE › Cet ordinateur › « Récupérer un ancien compte ».",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -35790,7 +36129,7 @@
    ]
   },
   {
-   "fr": "Tapez MIGRER pour confirmer",
+   "fr": "Tapez {0} pour confirmer",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -35975,6 +36314,18 @@
    "fr": "Temps joué",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "temps joué",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Temps joué ({0} ; cible : {1})",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -38169,6 +38520,12 @@
    ]
   },
   {
+   "fr": "Un des deux comptes a changé entre-temps : rien n'a été migré (la sauvegarde est faite).",
+   "where": [
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
    "fr": "Un des joueurs ne peut pas être ajouté.",
    "where": [
     "server/src/social.ts"
@@ -38255,7 +38612,14 @@
   {
    "fr": "Un import est en train de remplacer les données : attendez la fin.",
    "where": [
+    "server/src/accountMigration.ts",
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "un import était en cours",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -38562,7 +38926,7 @@
    ]
   },
   {
-   "fr": "Une copie de la progression vient d'être envoyée. Ce code permet à un nouveau compte, sur un autre ordinateur, de récupérer toutes vos données.",
+   "fr": "Une copie de la progression vient d'être envoyée. Avec ce code, un nouveau compte, sur un autre ordinateur, récupère toutes vos données.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -38640,6 +39004,12 @@
    ]
   },
   {
+   "fr": "une même partie ne peut être donnée qu'une fois",
+   "where": [
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
    "fr": "Une niche cachée dans le puits !",
    "where": [
     "data/levels/glacior_02.json"
@@ -38649,6 +39019,12 @@
    "fr": "Une niche de cristal au sommet des cimes !",
    "where": [
     "data/levels/sylvanox_02.json"
+   ]
+  },
+  {
+   "fr": "Une nouvelle copie de la progression n'a pas pu partir ({0}) : c'est celle du {1} qui sera transférée.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -38757,12 +39133,6 @@
    "fr": "Une sauvegarde complète du serveur est faite juste avant. Chaque migration est inscrite au Journal et les deux joueurs reçoivent une notification.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
-   ]
-  },
-  {
-   "fr": "Une sauvegarde n'a pas pu être écrite (les anciennes sont dans {0}).",
-   "where": [
-    "game/GameServices.cpp"
    ]
   },
   {
@@ -39477,13 +39847,13 @@
    ]
   },
   {
-   "fr": "Valable 24 h · une seule fois",
+   "fr": "Valable 24 h, une seule fois : jusqu'au {0}.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
-   "fr": "Valable 24 h · une seule fois · jusqu'au {0}",
+   "fr": "Valable 24 h, une seule fois.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -40850,6 +41220,13 @@
    ]
   },
   {
+   "fr": "Vous ne pouvez pas fermer votre propre compte.",
+   "where": [
+    "game/online/AccountMigration.cpp",
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
    "fr": "Vous ne pouvez pas inviter ce joueur.",
    "where": [
     "server/src/projects.ts"
@@ -42038,6 +42415,12 @@
    ]
   },
   {
+   "fr": "{0} Avec ce code, un nouveau compte, sur un autre ordinateur, récupère toutes vos données.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "{0} avertissements",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
@@ -42210,6 +42593,12 @@
    ]
   },
   {
+   "fr": "{0} demandes de migration de ce compte refusées (code faux ou expiré) : quelqu'un connaît votre mot de passe.",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "{0} défis (du jour, de la semaine ou du mois)",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
@@ -42360,7 +42749,7 @@
    ]
   },
   {
-   "fr": "{0} est ensuite fermé ; son pseudonyme se libère après 30 jours.",
+   "fr": "{0} est ensuite fermé : plus de connexion, son pseudonyme se libère après 30 jours.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -42426,9 +42815,21 @@
    ]
   },
   {
+   "fr": "{0} fermé",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} fichier(s) manquant(s)",
    "where": [
     "packaging/PackageExporter.cpp"
+   ]
+  },
+  {
+   "fr": "{0} fichiers de replays remplacés restent sur le serveur.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -43589,6 +43990,12 @@
    "fr": "« Plus tard » garde tout dans Collection → Vestiaire.",
    "where": [
     "ui/screens/RewardsScene.cpp"
+   ]
+  },
+  {
+   "fr": "« Plus tard » la garde sur le serveur : PARAMÈTRES EN LIGNE › Cet ordinateur › « Restaurer la progression transférée ».",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
