@@ -2,6 +2,7 @@
 // caching of anonymous reads, and the daily maintenance cron.
 
 import * as admin from "./admin";
+import * as adminRoles from "./adminRoles";
 import { login, logout, me, optionalAuth, refresh, register, usernameAvailable, type AuthInfo } from "./auth";
 import * as friends from "./friends";
 import * as globe from "./globe";
@@ -296,6 +297,11 @@ route("POST", `${V}/admin/comments/{commentId}/moderate`, async (ctx) => {
     await admin.requireAdmin(ctx);
     return workshop.adminModerateComment(ctx);
 });
+
+// ADMINISTRATION in the game (2.40): accounts with the admin role, checked on every request.
+route("GET", `${V}/admin/players`, (ctx) => adminRoles.listPlayers(ctx));
+route("POST", `${V}/admin/players/{playerId}/role`, (ctx) => adminRoles.setRole(ctx));
+route("GET", `${V}/admin/log`, (ctx) => adminRoles.listLog(ctx));
 
 function match(method: string, path: string): { route: Route; params: Record<string, string> } | "method" | null {
     let pathMatched = false;

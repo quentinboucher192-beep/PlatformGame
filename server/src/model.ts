@@ -7,6 +7,8 @@ export interface PlayerRow {
     presence_visible?: number;
     /** « Mes amis peuvent me regarder jouer » (2.36): 1 by default. */
     spectate_allowed?: number;
+    /** « admin »: the ADMINISTRATION screen (2.40), checked by the server on every request. */
+    role?: "player" | "admin";
     id: string;
     username: string;
     username_normalized: string;
@@ -123,6 +125,7 @@ export function privateProfile(p: PlayerRow) {
         created_at: p.created_at,
         last_seen_at: p.last_seen_at,
         account_status: p.account_status,
+        role: p.role ?? "player",
     };
 }
 
