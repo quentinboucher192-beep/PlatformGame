@@ -18661,6 +18661,12 @@
    ]
   },
   {
+   "fr": "La Lanterne des profondeurs",
+   "where": [
+    "data/stories/kraken.json"
+   ]
+  },
+  {
    "fr": "La Lanterne les recueillit une à une. Il grandit, grandit encore, et ses huit bras s'allumèrent.",
    "where": [
     "data/stories/kraken.json"
@@ -19962,8 +19968,7 @@
   {
    "fr": "Le Kraken des Abysses",
    "where": [
-    "data/music/tracks.json",
-    "data/stories/kraken.json"
+    "data/music/tracks.json"
    ]
   },
   {

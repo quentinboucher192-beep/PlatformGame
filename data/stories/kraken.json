@@ -3,7 +3,7 @@
  "version": 1,
  "comment": "Story of a giga boss (game/content/BossStories.h), told before the first fight against it. Each shot: its painting (assets/, tools/assetgen/environment/stories.py), its line of narration, the point the slow zoom goes to, the live particles over it. A shot lasts max(4.5 s, 1.2 s + characters / 16); then the title card (3 s).",
  "boss": "kraken",
- "title": "Le Kraken des Abysses",
+ "title": "La Lanterne des profondeurs",
  "color": "#7ae6ff",
  "accent": "#c8b8ff",
  "clip": "roar",

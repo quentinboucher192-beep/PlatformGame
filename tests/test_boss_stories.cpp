@@ -90,7 +90,7 @@ TEST_CASE("boss stories: every giga boss of the game has its story of six lines,
     CHECK(stories.find("kraken")->shots[5].text ==
           "Le Kraken allume toujours ses lueurs au fond de la Fosse. Il attend qu'on le suive, comme autrefois.");
     CHECK(stories.find("pyrrhax")->title == "Le Dragon d'Obsidienne");
-    CHECK(stories.find("kraken")->title == "Le Kraken des Abysses");
+    CHECK(stories.find("kraken")->title == "La Lanterne des profondeurs");  // its name on the card: « LE KRAKEN DES ABYSSES »
     // Time to read: max(4.5 s, 1.2 s + characters / 16); 35 to 50 s with the title card.
     CHECK_NEAR(story::shotDuration("court"), 4.5f, 1e-4f);
     CHECK_NEAR(story::shotDuration(std::string(160, 'a')), 11.2f, 1e-4f);
