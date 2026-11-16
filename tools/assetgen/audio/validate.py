@@ -111,6 +111,7 @@ MUSIC = {
     # 2.49: the other giga bosses of Les Confins
     'monolithe_boss': (True, 60, 80, -16.0, -11.5),
     'kraken_boss': (True, 60, 80, -16.0, -11.5),
+    'phenix_boss': (True, 60, 80, -16.0, -11.5),
 }
 FONTS = {'Orbitron.ttf': 'title', 'ChakraPetch-Regular.ttf': 'ui', 'ChakraPetch-SemiBold.ttf': 'ui'}
 LICENCES = ['OFL-Orbitron.txt', 'OFL-ChakraPetch.txt']

@@ -176,6 +176,12 @@
       "group": "confins",
       "title": "Le Kraken des Abysses",
       "where": "Combat contre le Kraken"
+    },
+    {
+      "file": "music/phenix_boss.ogg",
+      "group": "confins",
+      "title": "Le Phénix Stellaire",
+      "where": "Combat contre le Phénix"
     }
   ]
 }
