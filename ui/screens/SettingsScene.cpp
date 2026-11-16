@@ -428,6 +428,10 @@ private:
         r.y += row();
         ui.toggle("hints", r, "Afficher les touches à l'écran", working_.gameplay.showInputHints);
         r.y += row();
+        // 2.52: an arrow on the border towards the enemies already met that are out of view.
+        ui.toggle("enemyarrows", r, "Flèches vers les ennemis hors écran", working_.gameplay.enemyArrows);
+        ui.newBadge("enemyarrows", r, "settings.game.enemy_arrows", true, true);
+        r.y += row();
         std::vector<std::string> bars = {"Masquée", "En haut de l'écran", "En bas de l'écran"};
         if (working_.gameplay.hud[HudElement::Progress].custom) bars.push_back("Placée dans l'éditeur du HUD");
         ui.cycle("progress", r, "Barre de progression du niveau", working_.gameplay.progressBar, bars);
@@ -442,7 +446,7 @@ private:
         ui.toggle("autosave", r, "Sauvegarde automatique de l'éditeur", working_.gameplay.editorAutosave);
         r.y += row();
         ui.sliderInt("autosavesec", r, "Intervalle de sauvegarde (s)", working_.gameplay.editorAutosaveSeconds, 10, 600);
-        r.y += row() + ui.s(20);
+        r.y += row() + ui.s(10);  // ten rows (2.52): the folder stays above the « Retour » button
         ui.label("Dossier des sauvegardes :", {r.x, r.y}, 20, ui.theme().textDim);
         ui.label(Paths::toUtf8(Paths::userDir()), {r.x, r.y + ui.s(28)}, 18, ui.theme().text);
     }

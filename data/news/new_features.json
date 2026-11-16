@@ -1527,6 +1527,19 @@
   {
    "id": "pause.invincible",
    "version": "2.51.0"
+  },
+  {
+   "id": "settings.game.enemy_arrows",
+   "version": "2.52.0",
+   "parents": [
+    "settings.tab.game"
+   ]
+  },
+  {
+   "id": "settings.tab.game",
+   "parents": [
+    "menu.settings"
+   ]
   }
  ]
 }

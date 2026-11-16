@@ -1,4 +1,7 @@
 {
+  "2.52.0": [
+    "Flèches vers les ennemis hors écran : un ennemi déjà rencontré qui sort de l'écran est signalé par une flèche sur le bord, tournée vers lui ; un groupe d'ennemis n'a qu'une flèche, vers son centre, avec leur nombre (« ×5 »). Option dans Paramètres › Jeu, activée par défaut."
+  ],
   "2.50.0": [
     "Pyrrhax déchaîné : de vraies attaques de dragon. Piqué traversant (sa ligne se verrouille avant le plongeon), Atterrissage et souffle au sol (posé, il prend plus de dégâts), Boules de feu qui laissent un nuage brûlant, Rafale d'ailes qui repousse. Rester sous lui ne protège plus.",
     "Nouveau pouvoir : le Boomerang chargé. Maintenez pour charger, relâchez pour lancer : la lame s'accroche au premier ennemi touché et tourne sur lui (0,4 à 2 s selon la charge), 1 dégât puis 1 toutes les 0,3 s, puis revient. 25 d'énergie.",

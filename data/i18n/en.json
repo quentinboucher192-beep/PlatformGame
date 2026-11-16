@@ -2363,6 +2363,8 @@
   "Flèche droite": "Right arrow",
   "Flèche gauche": "Left arrow",
   "Flèche haut": "Up arrow",
+  "Flèches vers les ennemis hors écran": "Arrows to off-screen enemies",
+  "Flèches vers les ennemis hors écran : un ennemi déjà rencontré qui sort de l'écran est signalé par une flèche sur le bord, tournée vers lui ; un groupe d'ennemis n'a qu'une flèche, vers son centre, avec leur nombre (« ×5 »). Option dans Paramètres › Jeu, activée par défaut.": "Arrows to off-screen enemies: an enemy you have already met that leaves the screen is shown by an arrow on the border, pointing at it; a group of enemies gets a single arrow, towards its centre, with their number (“×5”). Option in Settings › Gameplay, on by default.",
   "Fléau des ombres": "Scourge of Shadows",
   "Fléau des titans": "Titan Slayer",
   "fois": "times",
