@@ -23,6 +23,7 @@
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/AdminBackups.h"
 #include "ui/screens/AdminCalendar.h"
+#include "ui/screens/ChallengeRewardsUi.h"
 #include "ui/screens/ChallengeUi.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
@@ -592,6 +593,28 @@ private:
         return out;
     }
 
+    /// « Or », « Argent », « Cyan », « Violet »: a title's colour (2.43).
+    static std::string colorName(const std::string& c) {
+        return c == "silver" ? "Argent" : c == "cyan" ? "Cyan" : c == "violet" ? "Violet" : "Or";
+    }
+
+    /// The rewards of a challenge as the Journal keeps them: « Titre « X » (Or atteint) · Cadre Y (Top 10 final) » (2.43).
+    static std::string rewardsSummary(const Json& list) {
+        std::string out;
+        if (!list.is_array()) return out;
+        for (const Json& r : list) {
+            if (!r.is_object()) continue;
+            ChallengePrize p;
+            p.condition = jstr(r, "condition");
+            p.value = jget<int>(r, "value", 0);
+            const std::string category = jstr(r, "category");
+            std::string one = cosmeticCategorySingular(category == "title" || jstr(r, "kind") == "title" ? "title" : category) + " « " + jstr(r, "name") + " »";
+            one += " (" + prizeConditionShort(p) + ")";
+            out += (out.empty() ? "" : " · ") + one;
+        }
+        return out;
+    }
+
     LogLine lineOf(const Json& e) {
         UIContext& ui = g_.ui;
         std::string action = jstr(e, "action");
@@ -616,11 +639,28 @@ private:
             else if (!jstr(ch, "draws_on").empty()) text += " (tirage le " + shortDate(jstr(ch, "draws_on")) + ")";
             return {"Défi", Color{185, 200, 218, 255}, text};
         }
+        if (action == "admin_challenge_rewards" && ch.is_object()) {
+            // 2.43: « a fixé les récompenses du défi du jour du 20/11 : Titre « … » (Or atteint) · … ».
+            const std::string list = rewardsSummary(jfield(ch, "rewards", Json()));
+            if (list.empty()) return {"Défi", Color{185, 200, 218, 255}, "a retiré les récompenses du défi " + periodPhrase(ch)};
+            return {"Défi", ui.theme().accent, "a fixé les récompenses du défi " + periodPhrase(ch) + " : " + list};
+        }
+        const Json& title = jfield(e, "title", Json());
+        if (action == "admin_title_created" && title.is_object())
+            return {"Défi", ui.theme().accent, "a créé le titre « " + jstr(title, "text") + " » (" + colorName(jstr(title, "color")) + ")"};
+        if (title.is_object() && !ch.is_object()) {
+            // A title refused by the server.
+            std::string why = reason == "TITLE_EXISTS" ? std::string("il existe déjà") : reason == "VALIDATION_ERROR" ? std::string("texte ou couleur invalide")
+                                                                                                                       : std::string("refus du serveur");
+            return {"Refus", ui.theme().textDim, "création du titre « " + jstr(title, "text") + " » refusée : " + why};
+        }
         if (ch.is_object()) {
             // A change of the calendar refused by the server.
-            std::string what = (jstr(ch, "action") == "reset" ? "retour au tirage du défi " : "modification du défi ") + periodPhrase(ch);
+            const std::string act = jstr(ch, "action");
+            std::string what = (act == "reset" ? "retour au tirage du défi " : act == "rewards" ? "modification des récompenses du défi " : "modification du défi ") +
+                               periodPhrase(ch);
             std::string why = reason == "CHALLENGE_STARTED"    ? std::string("déjà commencé")
-                              : reason == "VALIDATION_ERROR"   ? std::string("règles invalides")
+                              : reason == "VALIDATION_ERROR"   ? std::string(act == "rewards" ? "récompenses invalides" : "règles invalides")
                               : reason == "LEVEL_UNAVAILABLE"  ? std::string("niveau indisponible")
                               : reason == "FINISH_NEEDS_ROUTE" ? std::string("« Finir le niveau » sans parcours tracé")
                               : reason == "NOT_CHOSEN"         ? std::string("c'était déjà le tirage")

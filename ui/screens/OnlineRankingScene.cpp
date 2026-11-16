@@ -13,6 +13,7 @@
 #include "ui/online/GlobeRenderer.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/online/RatingWidgets.h"
+#include "ui/screens/ChallengeRewardsUi.h"
 #include "ui/screens/CosmeticFx.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
@@ -810,8 +811,11 @@ private:
                  VAlign::Middle);
         if (!title.empty()) {
             float tf = std::max(12.5f, 11.5f / ui.s(1.0f));  // never under 11.5 px on screen
-            ui.label(ui.elide(title, FontFace::Body, tf, room), {nx, row.center().y + ui.s(10)}, tf, ui.theme().textDim, Align::Left, FontFace::Body,
-                     VAlign::Middle);
+            // 2.43: a title created on Cosmic Online shows in its colour.
+            const Json& tj = jfield(p, "title", Json());
+            const std::string tcol = tj.is_object() ? jstr(tj, "color") : std::string();
+            ui.label(ui.elide(title, FontFace::Body, tf, room), {nx, row.center().y + ui.s(10)}, tf, tcol.empty() ? ui.theme().textDim : titleColor(tcol),
+                     Align::Left, FontFace::Body, VAlign::Middle);
         }
         ui.label(value, {rx, row.center().y}, 18, rank == 1 ? GlobeRenderer::tierColor(MarkerTier::Gold) : ui.theme().text, Align::Right,
                  FontFace::Bold, VAlign::Middle);

@@ -569,8 +569,11 @@ private:
         // 2.35: the rewards of the challenges a run of this one can advance (a run « hors
         // délai » never counts for a series).
         const std::vector<const CosmeticItem*> rewards = challengeRewardsFor(g_.cosmetics, c.kindId(), over);
+        // 2.43: and first, this challenge's own rewards (an administrator's), before and after it.
+        rewardRow_.setPrizes(g_, &c);
+        const bool anyReward = !rewards.empty() || rewardRow_.hasPrizes();
         const float rewardTileH = ui.s(76);
-        const float rewardsH = rewards.empty() ? 0.0f : rewardsSectionHeight(ui, rewardTileH) + ui.s(16);
+        const float rewardsH = anyReward ? rewardsSectionHeight(ui, rewardTileH) + ui.s(16) : 0.0f;
         const float below = ui.s(30) + chipRowsHeight(ui, chips, w, chipH) + ui.s(18)  // rules
                             + ui.s(30) + ui.s(96) + ui.s(18)                           // tiers
                             + rewardsH                                                  // rewards
@@ -587,7 +590,7 @@ private:
         drawTierCards(ui, c, {x, y, w, ui.s(96)}, myDay(c.id).tier, true);
         y += ui.s(96) + ui.s(18);
         // The rewards (tiles with their tooltip, drawn over everything at the end of the frame).
-        if (!rewards.empty()) {
+        if (anyReward) {
             if (const CosmeticItem* it = drawRewardsSection(g_, rewardRow_, rewards, x, y, w, 18, rewardTileH))
                 g_.app.pushScene(makeCollectionOn(g_, it->id));
             rewardsShown_ = true;
@@ -1503,8 +1506,10 @@ private:
         // practice run; a run « hors délai » never counts for a series).
         std::vector<const CosmeticItem*> rewards;
         if (!practice_) rewards = challengeRewardsFor(g_.cosmetics, c.kindId(), late_);
+        // 2.43: and first, this challenge's own rewards (none for a practice run or a late one).
+        rewardRow_.setPrizes(g_, practice_ || late_ ? nullptr : &c);
         const float tileH = ui.s(76);
-        float rewardsH = rewards.empty() ? 0.0f : ui.s(18) + rewardsSectionHeight(ui, tileH);
+        float rewardsH = rewards.empty() && !rewardRow_.hasPrizes() ? 0.0f : ui.s(18) + rewardsSectionHeight(ui, tileH);
         // One row per tier: its name at the left, its condition at the right, « obtenu » mark.
         const ChallengeResult* res = practice_ ? nullptr : g_.challenges.result(c.id);
         const ChallengeTier tiers[3] = {ChallengeTier::Bronze, ChallengeTier::Silver, ChallengeTier::Gold};
@@ -1512,6 +1517,7 @@ private:
         if (rowH < ui.s(34) && rewardsH > 0.0f) {
             // Too low for both: the tiers first (the rewards stay on the challenge's card).
             rewards.clear();
+            rewardRow_.setPrizes(g_, nullptr);
             rewardsH = 0.0f;
             rowH = std::min(ui.s(56), (area.bottom() - y - 2 * ui.s(10)) / 3.0f);
         }
@@ -1534,7 +1540,7 @@ private:
                      FontFace::Body, VAlign::Middle, 0.7f);
             y += rowH + ui.s(10);
         }
-        rewardsShown_ = !rewards.empty();
+        rewardsShown_ = !rewards.empty() || rewardRow_.hasPrizes();
         if (rewardsShown_)
             if (const CosmeticItem* it = drawRewardsSection(g_, rewardRow_, rewards, x, y + ui.s(8), w, 19, tileH))
                 g_.app.pushScene(makeCollectionOn(g_, it->id));

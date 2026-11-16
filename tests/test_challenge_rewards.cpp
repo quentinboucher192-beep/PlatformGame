@@ -201,3 +201,81 @@ TEST_CASE("challenge rewards: the server's counts read strictly; a 2.33 server's
     CHECK(r.streak("daily") == 3);  // the 9th, 10th and 11th (the 12th was late)
     CHECK(r.streak("monthly") == 1);
 }
+
+TEST_CASE("rewards of one challenge (2.43): read strictly, titles of the server as items") {
+    // A challenge's rewards (its JSON `rewards`): the malformed ones are left out.
+    Json rewards = Json::array({
+        {{"kind", "title"}, {"ref", "srv:12"}, {"condition", "tier"}, {"value", 3}, {"title", {{"id", "srv:12"}, {"text", "Pionnier du givre"}, {"color", "cyan"}}}},
+        {{"kind", "item"}, {"ref", "frame_couronne"}, {"condition", "top"}, {"value", 250}, {"item", {{"id", "frame_couronne"}, {"category", "frame"}, {"name", "Couronne"}}}},
+        {{"kind", "item"}, {"ref", "trail_comete_mois"}, {"condition", "finished"}, {"value", 9}},
+        {{"kind", "title"}, {"ref", "srv:13"}, {"condition", "tier"}, {"value", 1}},  // no text: left out
+        {{"kind", "item"}, {"ref", "Bad Id"}, {"condition", "finished"}},
+        {{"kind", "item"}, {"ref", "suit_champion"}, {"condition", "podium"}, {"value", 1}},
+        {{"kind", "emote"}, {"ref", "x"}, {"condition", "finished"}},
+    });
+    std::vector<ChallengePrize> p = ChallengePrize::listFromJson(rewards);
+    CHECK(p.size() == 3);
+    if (p.size() == 3) {
+        CHECK(p[0].title() && p[0].name == "Pionnier du givre" && p[0].color == "cyan" && p[0].value == 3);
+        CHECK(p[1].condition == "top" && p[1].value == 100);  // clamped
+        CHECK(p[2].condition == "finished" && p[2].value == 0);
+        CHECK(p[2].body() == Json({{"kind", "item"}, {"ref", "trail_comete_mois"}, {"condition", "finished"}}));
+        CHECK(p[1].body()["value"] == 100);
+    }
+
+    // What I won: catalogue items unlocked whatever their condition, server titles as items.
+    Json won = Json::array({
+        {{"challenge", {{"id", "daily-2026-11-20"}, {"kind", "daily"}, {"period", "2026-11-20"}, {"date", "2026-11-20"}}},
+         {"kind", "title"},
+         {"ref", "srv:12"},
+         {"granted_at", "2026-11-21T03:17:00.000Z"},
+         {"title", {{"id", "srv:12"}, {"text", "Pionnier du givre"}, {"color", "violet"}}}},
+        {{"challenge", {{"id", "weekly-2026-W47"}, {"kind", "weekly"}, {"period", "2026-W47"}, {"date", "2026-11-16"}}},
+         {"kind", "item"},
+         {"ref", "suit_noyau"},
+         {"granted_at", "2026-11-23T03:17:00.000Z"}},
+        {{"challenge", {{"id", "daily-2026-11-18"}, {"kind", "daily"}, {"period", "2026-11-18"}, {"date", "2026-11-18"}}},
+         {"kind", "title"},
+         {"ref", "srv:12"},
+         {"granted_at", "2026-11-19T03:17:00.000Z"},
+         {"title", {{"id", "srv:12"}, {"text", "Pionnier du givre"}, {"color", "violet"}}}},
+        {{"challenge", {{"id", "daily-2026-11-18"}}}, {"kind", "item"}, {"ref", "srv:99"}},  // an item is never a server title
+    });
+    auto w = WonRewards::fromJson(won);
+    CHECK(w.has_value());
+    if (!w) return;
+    CHECK(w->known);
+    CHECK(w->list.size() == 3);
+    CHECK(w->titles.size() == 1);
+    CHECK(w->has("suit_noyau") && w->has("srv:12") && !w->has("srv:99"));
+    CHECK(w->wonAt("daily-2026-11-20", "srv:12") && !w->wonAt("daily-2026-11-20", "suit_noyau"));
+    const CosmeticItem* t = w->title("srv:12");
+    CHECK(t && t->category == "title" && t->look == "Pionnier du givre" && t->color == "violet" && t->serverTitle());
+    const WonReward* origin = w->origin("srv:12");
+    CHECK(origin && origin->challengeId == "daily-2026-11-18");  // the first time it was won
+    auto again = WonRewards::fromJson(w->toJson());
+    CHECK(again && *again == *w);
+    CHECK(!WonRewards::fromJson(Json::object()).has_value());
+
+    CosmeticCatalog cat;
+    std::string err;
+    CHECK(cat.loadDefault(&err));
+    const CosmeticItem* noyau = cat.find("suit_noyau");
+    CHECK(noyau != nullptr);
+    if (!noyau || !t) return;
+    CosmeticProgress none;
+    CHECK(!cosmeticUnlocked(*noyau, none));
+    CHECK(!cosmeticUnlocked(*t, none));
+    CosmeticProgress mine;
+    mine.won = &*w;
+    CHECK(cosmeticUnlocked(*noyau, mine));
+    CHECK(cosmeticUnlocked(*t, mine));
+    // Equipped: a server title won is worn; one not won falls back to the default.
+    CollectionBook book;
+    book.equip("title", "srv:12");
+    CHECK(book.equipped(cat, "title", mine) == t);
+    CHECK(book.equipped(cat, "title", none)->isDefault);
+    CHECK(book.equippedIds(cat, mine)["title"] == "srv:12");
+    book.equip("title", "srv:77");
+    CHECK(book.equipped(cat, "title", mine)->isDefault);
+}

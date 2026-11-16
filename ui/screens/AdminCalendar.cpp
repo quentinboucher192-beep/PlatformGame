@@ -5,8 +5,11 @@
 // the right the editor of the period selected, in two tabs: « Niveau et règles » (campaign or
 // community level, hearts, slots, imposed powers, stations, checkpoints) and « Objectif et
 // paliers » (« Vitesse »: Argent and Or times, Or without damage; « Finir le niveau »: Bronze
-// and Argent shares of the route, Or the finish; only for a level with a route), then
-// « Revenir au tirage » and « Enregistrer ». Keyboard, gamepad and mouse throughout.
+// and Argent shares of the route, Or the finish; only for a level with a route) and (2.43)
+// « Récompenses » (the period's rewards, each with its condition: an item of the game's
+// Collection, picked in a window over the screen, or a title created on the server; a form
+// under the list for a new title or a reward's condition), then « Revenir au tirage » and
+// « Enregistrer » (the challenge, then its rewards). Keyboard, gamepad and mouse throughout.
 
 #include "ui/screens/AdminCalendar.h"
 
@@ -18,6 +21,7 @@
 #include "engine/core/I18n.h"
 #include "game/GameServices.h"
 #include "ui/online/OnlineWidgets.h"
+#include "ui/screens/ChallengeRewardsUi.h"
 
 namespace cosmic {
 
@@ -27,6 +31,9 @@ namespace {
 
 constexpr float kPi = 3.14159265f;
 constexpr int64_t kMaxTierMs = 2LL * 3600 * 1000;
+/// 2.43: rewards of one challenge, at most; characters of a title created on the server.
+constexpr size_t kMaxPrizes = 6;
+constexpr size_t kTitleMaxChars = 32;
 
 const char* const kDayShort[7] = {"Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"};
 const char* const kDayNames[7] = {"Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"};
@@ -97,6 +104,9 @@ std::string fieldLabel(const std::string& f) {
     if (f == "silver_progress") return "Argent";
     if (f == "objective") return "Objectif";
     if (f.rfind("level", 0) == 0) return "Niveau";
+    if (f.rfind("rewards", 0) == 0) return "Récompenses";
+    if (f == "text") return "Titre";
+    if (f == "color") return "Couleur";
     return "Données";
 }
 
@@ -123,6 +133,7 @@ void AdminCalendar::open(const std::string& arg) {
         size_t b = rest.find(':');
         wantSelect_ = rest.substr(0, b);
         if (b != std::string::npos && rest.substr(b + 1).rfind("obj", 0) == 0) subTab_ = 1;
+        if (b != std::string::npos && rest.substr(b + 1).rfind("rec", 0) == 0) subTab_ = 2;
     }
 }
 
@@ -163,6 +174,8 @@ void AdminCalendar::loadMonth(const std::string& month) {
                           p.editable = jget<bool>(x, "editable", false);
                           p.challenge = jfield(x, "challenge", Json());
                           if (p.challenge.is_object()) p.parsed = DailyChallenge::fromJson(p.challenge);
+                          p.rewards = ChallengePrize::listFromJson(jfield(x, "rewards", Json()));
+                          p.rewardsGrantedAt = jstr(x, "rewards_granted_at");
                           periods_.push_back(std::move(p));
                       }
                       firstMonth_ = jstr(r.data, "first_month");
@@ -172,7 +185,7 @@ void AdminCalendar::loadMonth(const std::string& month) {
                       std::string want = !wantSelect_.empty() ? wantSelect_ : selected_;
                       wantSelect_.clear();
                       if (const Period* p = find(want)) {
-                          if (want != selected_ || !dirty_) {
+                          if (want != selected_ || (!dirty_ && !prizesDirty_)) {
                               selected_ = want;
                               draftFrom(*p);
                           }
@@ -228,7 +241,7 @@ void AdminCalendar::select(const std::string& periodId) {
     const Period* p = find(periodId);
     if (!p || periodId == selected_) return;
     // Changes not saved: said first; the same period chosen again leaves them.
-    if (dirty_ && pendingSwitch_ != periodId) {
+    if ((dirty_ || prizesDirty_) && pendingSwitch_ != periodId) {
         pendingSwitch_ = periodId;
         editorMsg_ = "Modifications non enregistrées : « Enregistrer », ou choisissez encore cette case pour les abandonner.";
         editorError_ = false;
@@ -281,6 +294,11 @@ void AdminCalendar::draftFrom(const Period& p) {
     }
     draft_ = d;
     dirty_ = false;
+    // 2.43: the period's rewards.
+    prizes_ = p.rewards;
+    prizesDirty_ = false;
+    form_ = PrizeForm::None;
+    itemPicker_ = false;
     scrollToChosen_ = true;
     // The list of the chosen level's kind (a community level: read once).
     if (d.level) {
@@ -383,6 +401,9 @@ void AdminCalendar::save() {
                            say_(editorMsg_, true);
                            return;
                        }
+                       // 2.43: rewards changed too: kept through the new draft, then sent.
+                       const bool keepPrizes = prizesDirty_ && selected_ == id;
+                       const std::vector<ChallengePrize> kept = prizes_;
                        for (Period& p : periods_)
                            if (p.id == id) {
                                p.challenge = jfield(r.data, "challenge", Json());
@@ -401,6 +422,11 @@ void AdminCalendar::save() {
                            editorError_ = false;
                        }
                        // Said in the editor (the status line keeps the errors).
+                       if (keepPrizes && selected_ == id) {
+                           prizes_ = kept;
+                           prizesDirty_ = true;
+                           savePrizes();
+                       }
                    }));
 }
 
@@ -703,18 +729,24 @@ void AdminCalendar::drawEditor(const Rect& r) {
         return;
     }
     y = drawEditorHead(*p, x, y, w);
-    // The editor's two tabs.
+    // The editor's three tabs (2.43: « Récompenses »), their font smaller when they do not fit.
     {
-        static const char* const kSub[2] = {"Niveau et règles", "Objectif et paliers"};
+        static const char* const kSub[3] = {"Niveau et règles", "Objectif et paliers", "Récompenses"};
+        const float pad = ui.s(32), gap = ui.s(8);
+        float textW = 0.0f;
+        for (const char* t : kSub) textW += ui.text().measure(t, FontFace::Bold, ui.s(16)).x;
+        const float fs = textW + 3 * pad + 2 * gap <= w ? 16.0f : std::max(11.5f / ui.s(1.0f), 16.0f * (w - 3 * pad - 2 * gap) / textW);
         float sx = x;
-        for (int i = 0; i < 2; ++i) {
+        for (int i = 0; i < 3; ++i) {
             UIContext::ButtonStyle st;
             st.small = true;
             st.selected = subTab_ == i;
-            st.fontSize = 16;
-            float bw = ui.text().measure(kSub[i], FontFace::Bold, ui.s(16)).x + ui.s(32);
-            if (ui.button("sub" + std::to_string(i), {sx, y, bw, ui.s(38)}, kSub[i], st)) subTab_ = i;
-            sx += bw + ui.s(8);
+            st.fontSize = fs;
+            float bw = std::min(ui.text().measure(kSub[i], FontFace::Bold, ui.s(fs)).x + pad, x + w - sx);
+            Rect br{sx, y, bw, ui.s(38)};
+            if (ui.button("sub" + std::to_string(i), br, kSub[i], st)) subTab_ = i;
+            if (i == 2) ui.newBadge("sub2", br, "admin.calendar.rewards", true, true);
+            sx += bw + gap;
         }
         y += ui.s(38) + ui.s(14);
     }
@@ -726,6 +758,10 @@ void AdminCalendar::drawEditor(const Rect& r) {
     Color msgC = editorError_ ? ui.theme().danger : editorWarn_ ? ui.theme().warm : ui.theme().success;
     if (msg.empty() && editable && dirty_) {
         msg = draftProblem();
+        msgC = ui.theme().warm;
+    }
+    if (msg.empty() && editable && !dirty_ && prizesDirty_) {
+        msg = "Récompenses modifiées : « Enregistrer » pour les garder.";
         msgC = ui.theme().warm;
     }
     if (!editable) {
@@ -745,18 +781,23 @@ void AdminCalendar::drawEditor(const Rect& r) {
         float rw = ui.text().measure(resetL, FontFace::Bold, ui.s(20)).x + ui.s(44);
         UIContext::ButtonStyle rs;
         rs.fontSize = std::min(20.0f, ui.fitFont(resetL, FontFace::Bold, 20, std::min(rw, w * 0.55f) - ui.s(24), 0.7f));
-        rs.enabled = !busy_ && p->challenge.is_object() && jstr(p->challenge, "source") == "admin" && !dirty_;
+        rs.enabled = !busy_ && p->challenge.is_object() && jstr(p->challenge, "source") == "admin" && !dirty_ && !prizesDirty_;
         rw = std::min(rw, w * 0.55f);
         if (ui.button("reset", {x + w - sw - ui.s(12) - rw, by, rw, bh}, resetL, rs)) resetToDraw();
         UIContext::ButtonStyle ss;
         ss.primary = true;
         ss.fontSize = 20;
-        ss.enabled = !busy_ && dirty_ && draftProblem().empty();
-        if (ui.button("save", {x + w - sw, by, sw, bh}, saveL, ss)) save();
+        // The challenge (then its rewards, if they changed too), or its rewards alone.
+        ss.enabled = !busy_ && ((dirty_ && draftProblem().empty()) || (!dirty_ && prizesDirty_));
+        if (ui.button("save", {x + w - sw, by, sw, bh}, saveL, ss)) {
+            if (dirty_) save();
+            else savePrizes();
+        }
     }
     Rect content{x, y, w, msgTop - ui.s(6) - y};
     if (subTab_ == 0) drawLevelTab(*p, content, editable && !busy_);
-    else drawObjectiveTab(*p, content, editable && !busy_);
+    else if (subTab_ == 1) drawObjectiveTab(*p, content, editable && !busy_);
+    else drawRewardsTab(*p, content, editable && !busy_);
     ui.popId();
 }
 
@@ -1256,9 +1297,603 @@ void AdminCalendar::drawObjectiveTab(const Period& p, const Rect& r, bool editab
     ui.labelWrapped(text, {box.x + pw + ui.s(26), box.center().y - th * 0.5f}, tw, fz(ui, 15), ui.theme().textDim);
 }
 
+// ------------------------------------------------------------------ Récompenses (2.43)
+
+namespace {
+
+const char* const kTitleColors[4] = {"gold", "silver", "cyan", "violet"};
+const char* const kTitleColorNames[4] = {"Or", "Argent", "Cyan", "Violet"};
+
+/// Characters (code points) of a UTF-8 text.
+size_t codepoints(const std::string& s) {
+    size_t n = 0;
+    for (unsigned char c : s) n += (c & 0xC0) != 0x80 ? 1 : 0;
+    return n;
+}
+
+/// Without the spaces at its ends.
+std::string trimmed(const std::string& s) {
+    size_t a = s.find_first_not_of(" \t"), b = s.find_last_not_of(" \t");
+    return a == std::string::npos ? std::string() : s.substr(a, b - a + 1);
+}
+
+/// "le 21/11 à 01:00 UTC" of an ISO time.
+std::string grantedText(const std::string& iso) {
+    if (iso.size() < 16) return iso;
+    return "le " + iso.substr(8, 2) + "/" + iso.substr(5, 2) + " à " + iso.substr(11, 5) + " UTC";
+}
+
+/// « Top N »: the next N up (`dir` 1) or down (-1): by 1 to 10, by 5 to 50, then by 10.
+int nextTop(int v, int dir) {
+    if (dir > 0) return std::min(100, v + (v < 10 ? 1 : v < 50 ? 5 : 10));
+    return std::max(1, v - (v <= 10 ? 1 : v <= 50 ? 5 : 10));
+}
+
+/// A four-pointed star centred on `c` (a title's icon in the list).
+void titleStar(Renderer& r, Vec2 c, float radius, Color col) {
+    const float k = radius * 0.28f;
+    r.fillTriangle({c.x, c.y - radius}, {c.x - k, c.y}, {c.x + k, c.y}, col);
+    r.fillTriangle({c.x, c.y + radius}, {c.x - k, c.y}, {c.x + k, c.y}, col);
+    r.fillTriangle({c.x - radius, c.y}, {c.x, c.y - k}, {c.x, c.y + k}, col);
+    r.fillTriangle({c.x + radius, c.y}, {c.x, c.y - k}, {c.x, c.y + k}, col);
+}
+
+}  // namespace
+
+void AdminCalendar::loadTitles() {
+    titlesLoaded_ = true;  // asked once (again after a change)
+    g_.online.get("/api/v1/admin/titles", OnlineService::guard(life_, [this](const ApiResult& r) {
+                      if (lostRole_(r)) return;
+                      if (!r.ok) {
+                          titlesLoaded_ = false;
+                          return say_(errorText(r), true);
+                      }
+                      titles_ = jfield(r.data, "titles", Json::array());
+                  }),
+                  false);
+}
+
+void AdminCalendar::addPrize(ChallengePrize p) {
+    for (const ChallengePrize& q : prizes_)
+        if (q.kind == p.kind && q.ref == p.ref) {
+            editorMsg_ = "Cette récompense est déjà dans la liste : changez plutôt sa condition.";
+            editorError_ = false;
+            editorWarn_ = true;
+            return;
+        }
+    if (prizes_.size() >= kMaxPrizes) {
+        editorMsg_ = "Six récompenses au plus par défi.";
+        editorError_ = false;
+        editorWarn_ = true;
+        return;
+    }
+    prizes_.push_back(std::move(p));
+    prizesDirty_ = true;
+    editorMsg_.clear();
+    editorError_ = false;
+    editorWarn_ = false;
+}
+
+void AdminCalendar::savePrizes() {
+    const Period* p = find(selected_);
+    if (!p || busy_) return;
+    busy_ = true;
+    std::string id = p->id;
+    Json list = Json::array();
+    for (const ChallengePrize& z : prizes_) list.push_back(z.body());
+    Json body = Json::object();
+    body["rewards"] = list;
+    g_.online.send("PUT", "/api/v1/admin/challenges/" + id + "/rewards", body, OnlineService::guard(life_, [this, id](const ApiResult& r) {
+                       busy_ = false;
+                       if (lostRole_(r)) return;
+                       if (!r.ok) {
+                           editorMsg_ = errorText(r);
+                           editorError_ = true;
+                           say_(editorMsg_, true);
+                           return;
+                       }
+                       std::vector<ChallengePrize> saved = ChallengePrize::listFromJson(jfield(r.data, "rewards", Json::array()));
+                       for (Period& q : periods_)
+                           if (q.id == id) q.rewards = saved;
+                       if (selected_ == id) {
+                           prizes_ = saved;
+                           prizesDirty_ = false;
+                       }
+                       editorMsg_ = saved.empty() ? std::string("Récompenses retirées de ce défi.")
+                                                  : std::string("Récompenses enregistrées : le serveur les accordera à la fin du défi.");
+                       editorError_ = false;
+                       editorWarn_ = false;
+                       titlesLoaded_ = false;  // their uses changed
+                   }));
+}
+
+void AdminCalendar::createTitle() {
+    const std::string text = trimmed(titleText_);
+    if (titleBusy_ || text.empty() || codepoints(text) > kTitleMaxChars) return;
+    titleBusy_ = true;
+    const std::string cond = condKind_;
+    const int value = condValue_;
+    Json body = Json::object();
+    body["text"] = text;
+    body["color"] = kTitleColors[std::clamp(titleColor_, 0, 3)];
+    g_.online.send("POST", "/api/v1/admin/titles", body, OnlineService::guard(life_, [this, cond, value](const ApiResult& r) {
+                       titleBusy_ = false;
+                       if (lostRole_(r)) return;
+                       // Created, or (TITLE_EXISTS) the same title created before: added as it is.
+                       Json t = r.ok ? jfield(r.data, "title", Json())
+                                     : r.code == "TITLE_EXISTS" && r.details.is_object() ? jfield(r.details, "title", Json()) : Json();
+                       if (!t.is_object() || jstr(t, "id").rfind("srv:", 0) != 0) {
+                           editorMsg_ = errorText(r);
+                           editorError_ = true;
+                           return;
+                       }
+                       ChallengePrize p;
+                       p.kind = "title";
+                       p.ref = jstr(t, "id");
+                       p.name = jstr(t, "text");
+                       p.color = jstr(t, "color", "gold");
+                       p.category = "title";
+                       p.condition = cond;
+                       p.value = value;
+                       addPrize(p);
+                       form_ = PrizeForm::None;
+                       titleText_.clear();
+                       titlesLoaded_ = false;
+                       if (!editorWarn_) {
+                           editorMsg_ = r.ok ? std::string("Titre créé et ajouté : « Enregistrer » pour garder les récompenses.")
+                                             : "Ce titre existait déjà (" + std::string(p.color == "silver" ? "Argent" : p.color == "cyan" ? "Cyan" : p.color == "violet" ? "Violet" : "Or") +
+                                                   ") : il est ajouté tel quel. « Enregistrer » pour garder les récompenses.";
+                           editorWarn_ = !r.ok;
+                       }
+                       g_.ui.setFocus("admin/cal/ed/save");
+                   }));
+}
+
+float AdminCalendar::conditionChooser(const std::string& id, float x, float y, float w, bool draw) {
+    UIContext& ui = g_.ui;
+    struct Opt {
+        const char* kind;
+        int value;
+        std::string label;
+    };
+    const bool top = condKind_ == "top";
+    const std::vector<Opt> opts = {{"tier", 1, "Bronze"},
+                                   {"tier", 2, "Argent"},
+                                   {"tier", 3, "Or"},
+                                   {"top", 0, top ? "Top " + std::to_string(condValue_) : std::string("Top N")},
+                                   {"finished", 0, "Niveau fini"}};
+    const float h = ui.s(34), gap = ui.s(8);
+    float cx = x, cy = y;
+    for (size_t i = 0; i < opts.size(); ++i) {
+        const Opt& o = opts[i];
+        float bw = std::min(w, ui.text().measure(o.label, FontFace::Bold, ui.s(15)).x + ui.s(30));
+        if (cx > x && cx + bw > x + w) {
+            cx = x;
+            cy += h + gap;
+        }
+        if (draw) {
+            UIContext::ButtonStyle st;
+            st.small = true;
+            st.fontSize = 15;
+            st.selected = condKind_ == o.kind && (std::string(o.kind) != "tier" || condValue_ == o.value);
+            if (ui.button(id + std::to_string(i), {cx, cy, bw, h}, o.label, st)) {
+                if (std::string(o.kind) == "top" && !top) condValue_ = 10;
+                else if (std::string(o.kind) == "tier") condValue_ = o.value;
+                else if (std::string(o.kind) == "finished") condValue_ = 0;
+                condKind_ = o.kind;
+            }
+        }
+        cx += bw + gap;
+    }
+    cy += h;
+    if (top) {
+        // The place of the final ranking: − N +.
+        cy += ui.s(8);
+        if (draw) {
+            const float bh = ui.s(32);
+            const float cyMid = cy + ui.s(18);
+            UIContext::ButtonStyle st;
+            st.small = true;
+            st.fontSize = 18;
+            st.enabled = condValue_ > 1;
+            const std::string label = "jusqu'à la place";
+            const float lw = std::min(w * 0.5f, ui.text().measure(label, FontFace::Body, ui.s(fz(ui, 15))).x);
+            fitLabel(ui, label, {x, cyMid}, 15, w * 0.5f, ui.theme().textDim);
+            const float vx = x + lw + ui.s(12);
+            if (ui.button(id + "minus", {vx, cyMid - bh * 0.5f, bh, bh}, "-", st)) condValue_ = nextTop(condValue_, -1);
+            const float vw = ui.text().measure("100", FontFace::Bold, ui.s(18)).x + ui.s(20);
+            ui.label(std::to_string(condValue_), {vx + bh + vw * 0.5f, cyMid}, 18, ui.theme().text, Align::Center, FontFace::Bold, VAlign::Middle);
+            st.enabled = condValue_ < 100;
+            if (ui.button(id + "plus", {vx + bh + vw, cyMid - bh * 0.5f, bh, bh}, "+", st)) condValue_ = nextTop(condValue_, 1);
+        }
+        cy += ui.s(36);
+    }
+    return cy - y;
+}
+
+float AdminCalendar::prizeFormHeight(float w) {
+    UIContext& ui = g_.ui;
+    const float labelW = std::min(w * 0.3f, ui.text().measure("Condition", FontFace::Body, ui.s(17)).x + ui.s(18));
+    const float inner = w - ui.s(32);
+    const float chooser = conditionChooser("measure", 0, 0, inner - labelW, false);
+    float h = ui.s(14) + ui.s(30) + ui.s(10);
+    if (form_ == PrizeForm::Title) h += ui.s(46) + ui.s(46);
+    h += std::max(ui.s(34), chooser) + ui.s(14) + ui.s(44) + ui.s(14);
+    return h;
+}
+
+void AdminCalendar::drawPrizeForm(const Rect& box) {
+    UIContext& ui = g_.ui;
+    Renderer& r = ui.r();
+    const Color warm = ui.theme().warm;
+    r.fillRoundedRect(box, ui.s(12), Color{22, 20, 30, 240});
+    r.drawRoundedRect(box, ui.s(12), warm.withAlphaF(0.85f), std::max(1.0f, ui.s(1.4f)));
+    const float x = box.x + ui.s(16), w = box.w - ui.s(32);
+    float y = box.y + ui.s(14);
+    const float labelW = std::min(w * 0.3f, ui.text().measure("Condition", FontFace::Body, ui.s(17)).x + ui.s(18));
+    const bool title = form_ == PrizeForm::Title;
+    std::string head;
+    if (title) head = "Créer un titre";
+    else if (formIndex_ >= 0 && formIndex_ < static_cast<int>(prizes_.size())) head = "Condition de « " + prizes_[static_cast<size_t>(formIndex_)].name + " »";
+    // The header, and (a title) its characters at the right.
+    std::string count;
+    Color countC = ui.theme().textDim;
+    const std::string text = trimmed(titleText_);
+    if (title) {
+        const size_t n = codepoints(text);
+        count = std::to_string(n) + " / " + std::to_string(kTitleMaxChars) + " caractères";
+        if (n > kTitleMaxChars) countC = ui.theme().danger;
+    }
+    const float countW = count.empty() ? 0.0f : ui.text().measure(count, FontFace::Body, ui.s(fz(ui, 14))).x + ui.s(12);
+    fitLabel(ui, head, {x, y + ui.s(15)}, 19, w - countW, warm, Align::Left, FontFace::Bold);
+    if (!count.empty()) ui.label(count, {x + w, y + ui.s(15)}, fz(ui, 14), countC, Align::Right, FontFace::Body, VAlign::Middle);
+    y += ui.s(30) + ui.s(10);
+    if (title) {
+        // Texte, Couleur.
+        rowLabel("Texte", x, y + ui.s(19), labelW - ui.s(8));
+        ui.textField("ttext", {x + labelW, y, w - labelW, ui.s(38)}, titleText_, "Le titre, 32 caractères au plus", 4 * kTitleMaxChars);
+        y += ui.s(46);
+        rowLabel("Couleur", x, y + ui.s(19), labelW - ui.s(8));
+        float cx = x + labelW;
+        for (int i = 0; i < 4; ++i) {
+            const std::string name = kTitleColorNames[i];
+            float bw = ui.text().measure(name, FontFace::Bold, ui.s(15)).x + ui.s(48);
+            bw = std::min(bw, (w - labelW - ui.s(24)) / 4.0f);
+            UIContext::ButtonStyle st;
+            st.small = true;
+            st.fontSize = std::min(15.0f, ui.fitFont(name, FontFace::Bold, 15, bw - ui.s(44), 0.75f));
+            st.selected = titleColor_ == i;
+            Rect br{cx, y + ui.s(2), bw, ui.s(34)};
+            if (ui.button("tcol" + std::to_string(i), br, name, st)) titleColor_ = i;
+            // Its colour, a dot at the left of the label (the label stays centred, clear of it).
+            r.fillCircle({br.x + ui.s(14), br.center().y}, ui.s(5), titleColor(kTitleColors[i]));
+            cx += bw + ui.s(8);
+        }
+        y += ui.s(46);
+    }
+    rowLabel("Condition", x, y + ui.s(17), labelW - ui.s(8));
+    y += std::max(ui.s(34), conditionChooser("cond", x + labelW, y, w - labelW, true)) + ui.s(14);
+    // Annuler, then Créer et ajouter / Valider at the right.
+    const std::string okL = title ? (titleBusy_ ? "Création…" : "Créer et ajouter") : "Valider", noL = "Annuler";
+    const float okW = std::max(ui.text().measure(okL, FontFace::Bold, ui.s(17)).x, ui.text().measure("Créer et ajouter", FontFace::Bold, ui.s(17)).x) + ui.s(36);
+    const float noW = ui.text().measure(noL, FontFace::Bold, ui.s(17)).x + ui.s(36);
+    UIContext::ButtonStyle ok;
+    ok.primary = true;
+    ok.fontSize = 17;
+    ok.enabled = title ? !titleBusy_ && !text.empty() && codepoints(text) <= kTitleMaxChars && prizes_.size() < kMaxPrizes : true;
+    UIContext::ButtonStyle no;
+    no.fontSize = 17;
+    if (ui.button("fcancel", {x + w - okW - ui.s(10) - noW, y, noW, ui.s(44)}, noL, no)) form_ = PrizeForm::None;
+    if (ui.button("fok", {x + w - okW, y, okW, ui.s(44)}, okL, ok)) {
+        if (title) createTitle();
+        else if (formIndex_ >= 0 && formIndex_ < static_cast<int>(prizes_.size())) {
+            ChallengePrize& p = prizes_[static_cast<size_t>(formIndex_)];
+            if (p.condition != condKind_ || p.value != condValue_) {
+                p.condition = condKind_;
+                p.value = condValue_;
+                prizesDirty_ = true;
+                editorMsg_.clear();
+            }
+            form_ = PrizeForm::None;
+        }
+    }
+}
+
+bool AdminCalendar::drawPrizeRow(size_t i, const Rect& row, bool editable) {
+    UIContext& ui = g_.ui;
+    Renderer& r = ui.r();
+    const ChallengePrize& p = prizes_[i];
+    r.fillRoundedRect(row, ui.s(10), Color{18, 26, 50, 235});
+    // The icon: the item's own preview; a title, a star of its colour.
+    const float ih = row.h - ui.s(16);
+    Rect icon{row.x + ui.s(10), row.center().y - ih * 0.5f, ih, ih};
+    r.fillRoundedRect(icon, ui.s(8), Color{11, 18, 38, 255});
+    r.drawRoundedRect(icon, ui.s(8), Color{57, 70, 100, 200}, std::max(1.0f, ui.s(1.0f)));
+    std::optional<CosmeticItem> look = prizeLook(g_, p);
+    if (p.title()) titleStar(r, icon.center(), ih * 0.3f, titleColor(p.color));
+    else if (look) drawCosmeticPreview(g_, *look, icon.expanded(-ui.s(3)), ui.time(), true);
+    else ui.label("?", icon.center(), 20, ui.theme().textDim, Align::Center, FontFace::Bold, VAlign::Middle);
+    // At the right: × (editable), the condition (a button when editable).
+    float right = row.right() - ui.s(10);
+    bool removed = false;
+    if (editable) {
+        const float xb = ui.s(34);
+        UIContext::ButtonStyle st;
+        st.small = true;
+        st.fontSize = 17;
+        if (ui.button("prx" + std::to_string(i), {right - xb, row.center().y - xb * 0.5f, xb, xb}, "×", st)) removed = true;
+        right -= xb + ui.s(10);
+    }
+    const std::string cond = prizeConditionShort(p);
+    const float condW = std::max(ui.text().measure(cond, FontFace::Bold, ui.s(16)).x, ui.text().measure("condition", FontFace::Body, ui.s(fz(ui, 13))).x) +
+                        (editable ? ui.s(26) : ui.s(4));
+    const float condX = right - condW;
+    ui.label("condition", {right - (editable ? ui.s(13) : 0.0f), row.y + ui.s(13)}, fz(ui, 13), ui.theme().textDim, Align::Right, FontFace::Body,
+             VAlign::Middle);
+    if (editable) {
+        UIContext::ButtonStyle st;
+        st.small = true;
+        st.fontSize = 16;
+        if (ui.button("prc" + std::to_string(i), {condX, row.y + ui.s(24), condW, ui.s(30)}, cond, st)) {
+            form_ = PrizeForm::Condition;
+            formIndex_ = static_cast<int>(i);
+            condKind_ = p.condition;
+            condValue_ = p.condition == "top" ? p.value : p.condition == "tier" ? p.value : 0;
+            ui.setFocus("cond0");
+        }
+    } else {
+        ui.label(cond, {right, row.y + ui.s(39)}, 16, ui.theme().text, Align::Right, FontFace::Bold, VAlign::Middle);
+    }
+    // The text between: « Titre  Pionnier du givre » / where it comes from.
+    const float tx = icon.right() + ui.s(14), room = condX - ui.s(12) - tx;
+    if (room > ui.s(40)) {
+        const std::string cat = p.title() ? std::string("Titre") : cosmeticCategorySingular(look ? look->category : p.category);
+        const float catFs = fz(ui, 15);
+        const float catW = std::min(room * 0.45f, ui.text().measure(cat, FontFace::Body, ui.s(catFs)).x);
+        ui.label(ui.elide(cat, FontFace::Body, catFs, catW), {tx, row.y + ui.s(20)}, catFs, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        const std::string name = look ? look->name : p.name.empty() ? p.ref : p.name;
+        const float nameRoom = room - catW - ui.s(10);
+        if (nameRoom > ui.s(20)) {
+            const float nf = std::max(ui.fitFont(name, FontFace::Bold, 17, nameRoom, 0.75f), 11.5f / ui.s(1.0f));
+            ui.label(ui.elide(name, FontFace::Bold, nf, nameRoom), {tx + catW + ui.s(10), row.y + ui.s(20)}, nf,
+                     p.title() ? titleColor(p.color) : ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+        }
+        const std::string from = p.title() ? "créé par un admin · pas besoin de mise à jour" : look ? "dans le jeu" : "inconnu de cette version du jeu";
+        ui.label(ui.elide(from, FontFace::Body, fz(ui, 14), room), {tx, row.y + ui.s(43)}, fz(ui, 14), ui.theme().textDim, Align::Left, FontFace::Body,
+                 VAlign::Middle);
+    }
+    return removed;
+}
+
+void AdminCalendar::drawRewardsTab(const Period& p, const Rect& r, bool editable) {
+    UIContext& ui = g_.ui;
+    const float x = r.x, w = r.w;
+    float y = r.y;
+    if (editable && !titlesLoaded_) loadTitles();
+    // Title and count.
+    const std::string count = std::to_string(prizes_.size()) + " / " + std::to_string(kMaxPrizes);
+    const float countW = ui.text().measure(count, FontFace::Body, ui.s(fz(ui, 15))).x + ui.s(12);
+    fitLabel(ui, "Récompenses de ce défi", {x, y + ui.s(13)}, 20, w - countW, ui.theme().accent, Align::Left, FontFace::Bold);
+    ui.label(count, {x + w, y + ui.s(13)}, fz(ui, 15), ui.theme().textDim, Align::Right, FontFace::Body, VAlign::Middle);
+    y += ui.s(32);
+    // What happens to them (hidden while a form is open: the list keeps its room).
+    if (form_ == PrizeForm::None || !editable) {
+        std::string info;
+        if (p.editable) info = "Accordées par le serveur à la fin du défi, d'après les parties vérifiées reçues à l'heure. Une récompense gagnée n'est jamais retirée.";
+        else if (!p.rewardsGrantedAt.empty()) info = "Accordées " + grantedText(p.rewardsGrantedAt) + ", d'après les parties vérifiées reçues à l'heure.";
+        else if (p.state == "past") info = "Défi terminé : le serveur les accorde dans l'heure qui suit sa fin.";
+        else info = "Défi commencé : ses récompenses ne changent plus. Elles seront accordées à sa fin.";
+        Vec2 s = ui.labelWrapped(info, {x, y}, w, fz(ui, 15), ui.theme().textDim);
+        y += s.y + ui.s(10);
+    }
+    // The bottom: the add buttons, or the form open.
+    float bottom = r.bottom();
+    if (editable) {
+        if (form_ != PrizeForm::None) {
+            const float fh = std::min(prizeFormHeight(w), r.bottom() - y);
+            drawPrizeForm({x, r.bottom() - fh, w, fh});
+            bottom = r.bottom() - fh - ui.s(10);
+        } else {
+            const float bh = ui.s(40);
+            const std::string a = "+ Récompense du jeu", b = "+ Créer un titre";
+            float aw = ui.text().measure(a, FontFace::Bold, ui.s(16)).x + ui.s(30), bw = ui.text().measure(b, FontFace::Bold, ui.s(16)).x + ui.s(30);
+            float fs = 16.0f;
+            if (aw + bw + ui.s(10) > w) {
+                const float k = (w - ui.s(10)) / (aw + bw);
+                aw *= k;
+                bw *= k;
+                fs = std::min(ui.fitFont(a, FontFace::Bold, 16, aw - ui.s(24), 0.7f), ui.fitFont(b, FontFace::Bold, 16, bw - ui.s(24), 0.7f));
+            }
+            const float by = r.bottom() - bh;
+            UIContext::ButtonStyle st;
+            st.small = true;
+            st.fontSize = fs;
+            st.enabled = prizes_.size() < kMaxPrizes;
+            if (ui.button("addgame", {x, by, aw, bh}, a, st)) {
+                itemPicker_ = true;
+                pickRef_.clear();
+                condKind_ = "tier";
+                condValue_ = 3;
+                if (!titlesLoaded_) loadTitles();
+                ui.setFocus("items/cat" + std::to_string(pickCat_));
+            }
+            if (ui.button("addtitle", {x + aw + ui.s(10), by, bw, bh}, b, st)) {
+                form_ = PrizeForm::Title;
+                titleText_.clear();
+                condKind_ = "tier";
+                condValue_ = 3;
+                ui.setFocus("ttext");
+            }
+            bottom = by - ui.s(10);
+        }
+    }
+    // The list (it scrolls when it is longer than its room).
+    const float rowH = ui.s(62), gap = ui.s(8);
+    if (prizes_.empty()) {
+        if (bottom - y > ui.s(24))
+            ui.labelWrapped(editable ? "Aucune récompense pour ce défi. Ajoutez un élément du jeu ou créez un titre."
+                                     : "Aucune récompense pour ce défi.",
+                            {x, y + ui.s(4)}, w, fz(ui, 16), ui.theme().textDim);
+        return;
+    }
+    if (bottom - y < ui.s(30)) return;
+    const float contentH = static_cast<float>(prizes_.size()) * (rowH + gap) - gap;
+    const bool scrolls = contentH > bottom - y;
+    ui.beginScroll("prizes", {x, y, w, bottom - y}, contentH);
+    const float so = ui.scrollOffset();
+    const float rowW = w - (scrolls ? ui.s(14) : 0.0f);
+    int remove = -1;
+    for (size_t i = 0; i < prizes_.size(); ++i) {
+        Rect row{x, y - so + static_cast<float>(i) * (rowH + gap), rowW, rowH};
+        if (drawPrizeRow(i, row, editable)) remove = static_cast<int>(i);
+    }
+    ui.endScroll();
+    if (remove >= 0) {
+        prizes_.erase(prizes_.begin() + remove);
+        prizesDirty_ = true;
+        editorMsg_.clear();
+        if (form_ == PrizeForm::Condition) form_ = PrizeForm::None;
+    }
+}
+
+// ------------------------------------------------------------------ the game items' picker (2.43)
+
+void AdminCalendar::drawItemPicker() {
+    UIContext& ui = g_.ui;
+    Renderer& r = ui.r();
+    r.fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{2, 4, 12, 185});
+    const auto& cats = g_.cosmetics.categories();
+    if (cats.empty()) {
+        itemPicker_ = false;
+        return;
+    }
+    pickCat_ = std::clamp(pickCat_, 0, static_cast<int>(cats.size()) - 1);
+    const float boxW = std::min(ui.screenW() - ui.s(80), ui.s(1000)), boxH = std::min(ui.screenH() - ui.s(40), ui.s(720));
+    Rect box{ui.screenW() * 0.5f - boxW * 0.5f, ui.screenH() * 0.5f - boxH * 0.5f, boxW, boxH};
+    r.fillRoundedRect(box, ui.s(18), Color{9, 14, 32, 250});
+    r.drawRoundedRect(box, ui.s(18), ui.theme().accent.withAlphaF(0.8f), ui.s(1.5f));
+    ui.pushId("admin");
+    ui.pushId("cal");
+    ui.pushId("ed");
+    ui.pushId("items");
+    const float x = box.x + ui.s(32), w = box.w - ui.s(64);
+    float y = box.y + ui.s(28);
+    fitLabel(ui, "Récompense du jeu", {x, y + ui.s(16)}, 26, w, ui.theme().text, Align::Left, FontFace::Title);
+    y += ui.s(40);
+    fitLabel(ui, "Un élément de la Collection du jeu : les gagnants le débloquent, quelle que soit sa condition habituelle.", {x, y + ui.s(12)}, 16, w,
+             ui.theme().textDim);
+    y += ui.s(34);
+    // The categories.
+    {
+        float cx = x;
+        const float ch = ui.s(38);
+        for (size_t i = 0; i < cats.size(); ++i) {
+            float bw = std::min(w, ui.text().measure(cats[i].name, FontFace::Bold, ui.s(16)).x + ui.s(30));
+            if (cx > x && cx + bw > x + w) {
+                cx = x;
+                y += ch + ui.s(8);
+            }
+            UIContext::ButtonStyle st;
+            st.small = true;
+            st.fontSize = 16;
+            st.selected = pickCat_ == static_cast<int>(i);
+            if (ui.button("cat" + std::to_string(i), {cx, y, bw, ch}, cats[i].name, st) && pickCat_ != static_cast<int>(i)) {
+                pickCat_ = static_cast<int>(i);
+                pickRef_.clear();
+            }
+            cx += bw + ui.s(8);
+        }
+        y += ch + ui.s(14);
+    }
+    // At the bottom: Annuler / Ajouter, the condition above them.
+    const float btnH = ui.s(50), btnY = box.bottom() - ui.s(26) - btnH;
+    const float labelW = std::min(w * 0.3f, ui.text().measure("Condition", FontFace::Body, ui.s(17)).x + ui.s(18));
+    const float condH = std::max(ui.s(34), conditionChooser("measure", 0, 0, w - labelW, false));
+    const float condY = btnY - ui.s(16) - condH;
+    // The items of the category (never a default one; the titles created on the server after the game's).
+    const std::string catId = cats[static_cast<size_t>(pickCat_)].id;
+    std::vector<CosmeticItem> list;
+    for (const CosmeticItem* it : g_.cosmetics.items(catId))
+        if (!it->isDefault) list.push_back(*it);
+    if (catId == "title")
+        for (const Json& t : titles_) {
+            CosmeticItem it;
+            it.id = jstr(t, "id");
+            it.category = "title";
+            it.name = jstr(t, "text");
+            it.look = it.name;
+            it.color = jstr(t, "color", "gold");
+            if (it.id.rfind("srv:", 0) == 0 && !it.name.empty()) list.push_back(std::move(it));
+        }
+    Rect grid{x, y, w, condY - ui.s(14) - y};
+    const float gap = ui.s(12), tileH = ui.s(124);
+    int cols = std::max(2, static_cast<int>((grid.w + gap) / (ui.s(170) + gap)));
+    const float rows = std::ceil(static_cast<float>(list.size()) / static_cast<float>(cols));
+    const float contentH = rows * (tileH + gap) - (rows > 0 ? gap : 0.0f);
+    const float cardsW = grid.w - (contentH > grid.h ? ui.s(14) : 0.0f);
+    const float tw = (cardsW - gap * static_cast<float>(cols - 1)) / static_cast<float>(cols);
+    if (list.empty())
+        fitLabel(ui, "Aucun élément dans cette catégorie.", {grid.x, grid.y + ui.s(20)}, 17, grid.w, ui.theme().textDim);
+    ui.beginScroll("grid", grid, contentH);
+    const float so = ui.scrollOffset();
+    for (size_t i = 0; i < list.size(); ++i) {
+        const CosmeticItem& it = list[i];
+        Rect t{grid.x + (tw + gap) * static_cast<float>(i % static_cast<size_t>(cols)), grid.y - so + (tileH + gap) * static_cast<float>(i / static_cast<size_t>(cols)),
+               tw, tileH};
+        bool taken = false;
+        for (const ChallengePrize& p : prizes_) taken = taken || p.ref == it.id;
+        bool hovered = false;
+        const std::string name = "t" + it.id;
+        if (ui.hotspot(name, t, &hovered) && !taken) pickRef_ = it.id;
+        const bool on = pickRef_ == it.id, focused = ui.focused(name);
+        r.fillRoundedRect(t, ui.s(10), on ? ui.theme().accent.withAlpha(40) : Color{14, 20, 40, 235});
+        r.drawRoundedRect(t, ui.s(10), on || focused || hovered ? ui.theme().accent : Color{57, 70, 100, 160}, std::max(1.0f, ui.s(on || focused ? 2.0f : 1.2f)));
+        drawCosmeticPreview(g_, it, {t.x + ui.s(8), t.y + ui.s(8), t.w - ui.s(16), ui.s(76)}, ui.time(), !taken);
+        const std::string label = taken ? "déjà dans la liste" : it.serverTitle() ? "créé par un admin" : it.name;
+        const Color lc = taken ? ui.theme().textDim : it.serverTitle() ? titleColor(it.color) : ui.theme().text;
+        const float lf = fz(ui, 15);
+        ui.label(ui.elide(label, FontFace::Bold, lf, t.w - ui.s(16)), {t.center().x, t.y + ui.s(102)}, lf, lc, Align::Center, FontFace::Bold, VAlign::Middle);
+    }
+    ui.endScroll();
+    // The condition, the buttons.
+    rowLabel("Condition", x, condY + ui.s(17), labelW - ui.s(8));
+    conditionChooser("cond", x + labelW, condY, w - labelW, true);
+    const std::string addL = "Ajouter", noL = "Annuler";
+    const float bw = std::max(ui.text().measure(addL, FontFace::Bold, ui.s(20)).x, ui.text().measure(noL, FontFace::Bold, ui.s(20)).x) + ui.s(48);
+    UIContext::ButtonStyle add;
+    add.primary = true;
+    add.enabled = !pickRef_.empty() && prizes_.size() < kMaxPrizes;
+    UIContext::ButtonStyle no;
+    bool close = ui.button("close", {x + w - bw * 2 - ui.s(12), btnY, bw, btnH}, noL, no) || ui.backPressed();
+    if (ui.button("add", {x + w - bw, btnY, bw, btnH}, addL, add)) {
+        for (const CosmeticItem& it : list)
+            if (it.id == pickRef_) {
+                ChallengePrize p;
+                p.kind = it.serverTitle() ? "title" : "item";
+                p.ref = it.id;
+                p.name = it.name;
+                p.category = it.category;
+                p.color = it.color;
+                p.condition = condKind_;
+                p.value = condValue_;
+                addPrize(p);
+            }
+        close = true;
+    }
+    ui.popId();
+    ui.popId();
+    ui.popId();
+    ui.popId();
+    if (close) {
+        itemPicker_ = false;
+        ui.setFocus("admin/cal/ed/addgame");
+    }
+}
+
 // ------------------------------------------------------------------ the powers' picker
 
 void AdminCalendar::drawModal() {
+    if (itemPicker_) return drawItemPicker();
     if (!picker_) return;
     UIContext& ui = g_.ui;
     ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{2, 4, 12, 185});

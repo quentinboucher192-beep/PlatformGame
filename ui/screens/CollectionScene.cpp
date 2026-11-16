@@ -75,19 +75,23 @@ void drawNova(GameServices& g, const std::string& suitLook, const std::string& c
     g.app.renderer().drawTexture(*tex, &src, dst, tint);
 }
 
-/// A title as a gold chip centred on `c` (its size grows with the text; a smaller font when
-/// it would be wider than `maxWidth`, 0: no limit).
-void drawTitleChip(UIContext& ui, Vec2 c, const std::string& text, float size, bool on = true, float maxWidth = 0.0f) {
+/// A title as a gold chip (2.43: a server title in its colour) centred on `c` (its size grows
+/// with the text; a smaller font when it would be wider than `maxWidth`, 0: no limit).
+void drawTitleChip(UIContext& ui, Vec2 c, const std::string& text, float size, bool on = true, float maxWidth = 0.0f, Color gold = kGold) {
     if (text.empty()) return;
     float fs = fz(ui, size);
     if (maxWidth > ui.s(22)) fs = fz(ui, ui.fitFont(text, FontFace::Bold, fs, maxWidth - ui.s(22)));
     float w = ui.text().measure(text, FontFace::Bold, ui.s(fs)).x + ui.s(22);
+    if (maxWidth > ui.s(22)) w = std::min(w, maxWidth);
     Rect r = Rect::fromCenter(c, {w, ui.s(fs) + ui.s(10)});
-    Color col = on ? kGold : ui.theme().textDim;
+    Color col = on ? gold : ui.theme().textDim;
     ui.r().fillRoundedRect(r, r.h * 0.5f, col.withAlpha(28));
     ui.r().drawRoundedRect(r, r.h * 0.5f, col.withAlpha(160), std::max(1.0f, ui.s(1.2f)));
-    ui.label(text, c, fs, col, Align::Center, FontFace::Bold, VAlign::Middle);
+    ui.label(ui.elide(text, FontFace::Bold, fs, w - ui.s(14)), c, fs, col, Align::Center, FontFace::Bold, VAlign::Middle);
 }
+
+/// The colour of a title item's chip: gold, a server title's own (2.43).
+Color chipColor(const CosmeticItem* it) { return it && !it->color.empty() ? titleColor(it->color) : kGold; }
 
 /// Where each creature of the game appears in the campaign (planet ids), read from the
 /// levels once, off the main thread (game/content/CreaturePlaces.h).
@@ -229,7 +233,7 @@ private:
         float lw = std::min(ui.s(280), area.w * 0.19f);
         float y = area.y;
         for (size_t i = 0; i < cats.size(); ++i) {
-            auto items = g_.cosmetics.items(cats[i].id);
+            auto items = itemsOf(cats[i].id);
             int got = 0;
             for (auto* it : items) got += cosmeticUnlocked(*it, progress_) ? 1 : 0;
             Rect b{area.x, y, lw, ui.s(64)};
@@ -271,10 +275,10 @@ private:
         }
         const std::string catId = cats[static_cast<size_t>(cat_)].id;
 
-        // Items of the category.
-        auto items = g_.cosmetics.items(catId);
+        // Items of the category (2.43: the titles won at a challenge after the catalogue's).
+        auto items = itemsOf(catId);
         const CosmeticItem* equipped = g_.collection.equipped(g_.cosmetics, catId, progress_);
-        const CosmeticItem* sel = g_.cosmetics.find(selItem_);
+        const CosmeticItem* sel = findItem(selItem_);
         if (!sel || sel->category != catId) sel = equipped;
         float pw = std::min(ui.s(560), area.w * 0.38f);
         Rect prev{area.x + lw + ui.s(24), area.y, pw, area.h * 0.68f};
@@ -303,7 +307,9 @@ private:
         r.popClip();
         ui.label("Nova", {prev.center().x, prev.y + ui.s(30)}, 22, ui.theme().text, Align::Center, FontFace::Title, VAlign::Middle);
         std::string title = lookOf("title");
-        drawTitleChip(ui, {prev.center().x, prev.y + ui.s(62)}, title.empty() ? "Sans titre" : title, 15, !title.empty());
+        const CosmeticItem* titleItem = sel && sel->category == "title" ? sel : g_.collection.equipped(g_.cosmetics, "title", progress_);
+        drawTitleChip(ui, {prev.center().x, prev.y + ui.s(62)}, title.empty() ? "Sans titre" : title, 15, !title.empty(), prev.w - ui.s(24),
+                      chipColor(titleItem));
         float fr = ui.s(40);
         Vec2 fc{prev.right() - fr - ui.s(30), ground - fr - ui.s(28)};
         online_.drawAvatar("avatar_01", "", Rect::fromCenter(fc, {fr * 2, fr * 2}));
@@ -316,8 +322,13 @@ private:
         if (sel) {
             bool unlocked = cosmeticUnlocked(*sel, progress_);
             float dx = det.x + ui.s(20), dy = det.y + ui.s(18);
-            Vec2 nsz = ui.label(sel->name, {dx, dy}, 26, ui.theme().text, Align::Left, FontFace::Bold);
-            ui.label(cats[static_cast<size_t>(cat_)].name, {dx + nsz.x + ui.s(12), dy + ui.s(8)}, fz(ui, 15), ui.theme().textDim);
+            // The name, then the category when there is room (a server title's name may be long).
+            const float nameRoom = det.w - ui.s(40);
+            const float nfs = std::max(ui.fitFont(sel->name, FontFace::Bold, 26, nameRoom, 0.6f), 11.5f / ui.s(1.0f));
+            Vec2 nsz = ui.label(ui.elide(sel->name, FontFace::Bold, nfs, nameRoom), {dx, dy}, nfs, ui.theme().text, Align::Left, FontFace::Bold);
+            const std::string& catName = cats[static_cast<size_t>(cat_)].name;
+            if (dx + nsz.x + ui.s(12) + ui.text().measure(catName, FontFace::Body, ui.s(fz(ui, 15))).x <= det.right() - ui.s(20))
+                ui.label(catName, {dx + nsz.x + ui.s(12), dy + ui.s(8)}, fz(ui, 15), ui.theme().textDim);
             ui.labelWrapped(sel->description, {dx, dy + ui.s(44)}, det.w - ui.s(40), fz(ui, 16), Color{185, 200, 218, 255});
             float by = det.bottom() - ui.s(66);
             if (sel->challengeReward()) {
@@ -364,6 +375,7 @@ private:
         // Grid of the category's items.
         int got = 0;
         for (auto* it : items) got += cosmeticUnlocked(*it, progress_) ? 1 : 0;
+        // 2.43: the titles won at a challenge count too.
         ui.label(cats[static_cast<size_t>(cat_)].name, {gridA.x, gridA.y + ui.s(12)}, 21, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
         ui.label(std::to_string(got) + " / " + std::to_string(items.size()) + " débloqués", {gridA.right(), gridA.y + ui.s(12)}, fz(ui, 15),
                  ui.theme().textDim, Align::Right, FontFace::Body, VAlign::Middle);
@@ -384,7 +396,7 @@ private:
             const CosmeticItem& it = *items[i];
             Rect c{gridA.x + (cw + gap) * static_cast<float>(i % cols), gy - so + (ch + rowGap) * static_cast<float>(i / cols), cw, ch};
             bool unlocked = cosmeticUnlocked(it, progress_);
-            bool on = sel == &it;
+            bool on = sel == &it || (sel && sel->id == it.id);
             if (ui.hotspot("item" + std::to_string(i), c)) selItem_ = it.id;
             // « NOUVEAU » (a reward added by an update): seen on focus (mouse over it too) or a click.
             const bool fresh = ui.newBadge("item" + std::to_string(i), c, "cos." + it.id, false, true);
@@ -398,7 +410,7 @@ private:
             ui.label(ui.elide(sh, FontFace::Body, fz(ui, 13), c.w - ui.s(20)), {c.x + ui.s(10), c.y + ui.s(128)}, fz(ui, 13),
                      unlocked ? kGreen : kGold);
             float pillRight = c.right() - ui.s(8);
-            if (equipped == &it) {
+            if (equipped == &it || (equipped && equipped->id == it.id)) {
                 std::string e = "Équipé";
                 float ew = ui.text().measure(e, FontFace::Bold, ui.s(fz(ui, 12))).x + ui.s(14);
                 Rect er{c.right() - ew - ui.s(8), c.y + ui.s(8), ew, ui.s(20)};
@@ -425,7 +437,7 @@ private:
             drawAvatarFrame(r, box.center(), rad, it.look, ui.s(0.8f), t_);
             if (!unlocked) r.fillRoundedRect(box, ui.s(8), Color{11, 18, 38, 150});
         } else if (it.category == "title") {
-            drawTitleChip(ui, box.center(), it.isDefault ? "Sans titre" : it.look, 13, unlocked && !it.isDefault, box.w - ui.s(8));
+            drawTitleChip(ui, box.center(), it.isDefault ? "Sans titre" : it.look, 13, unlocked && !it.isDefault, box.w - ui.s(8), chipColor(&it));
         } else if (it.category == "trail") {
             // A sample of the trail, drawn as in the game, from left (oldest) to right.
             r.pushClip(box);
@@ -445,7 +457,24 @@ private:
         const AchievementDef* a = g_.achievementCatalog.find(id);
         return a ? a->name : id;
     }
+    /// 2.43: where a reward was won at a challenge (« Défi du jour du 20/11 »), "" when it was not.
+    std::string wonText(const CosmeticItem& it) const {
+        const WonReward* w = progress_.won ? progress_.won->origin(it.id) : nullptr;
+        return w ? wonOriginText(*w) : std::string();
+    }
+    /// The catalogue's items of a category, then (titles) the server titles won (2.43).
+    std::vector<const CosmeticItem*> itemsOf(const std::string& category) const {
+        auto items = g_.cosmetics.items(category);
+        if (category == "title" && progress_.won)
+            for (const CosmeticItem& t : progress_.won->titles) items.push_back(&t);
+        return items;
+    }
+    const CosmeticItem* findItem(const std::string& id) const {
+        if (const CosmeticItem* it = g_.cosmetics.find(id)) return it;
+        return progress_.won ? progress_.won->title(id) : nullptr;
+    }
     std::string shortReq(const CosmeticItem& it) const {
+        if (std::string w = wonText(it); !w.empty()) return w;
         bool unlocked = cosmeticUnlocked(it, progress_);
         if (!it.achievement.empty()) return unlocked ? "Succès obtenu" : "« " + achievementName(it.achievement) + " »";
         if (it.challengeReward()) return unlocked ? "Défis : obtenu" : "Défis : " + challengeConditionShort(it);
@@ -453,6 +482,7 @@ private:
         return starsText(cosmeticThreshold(it, progress_.totalStars));
     }
     std::string reqText(const CosmeticItem& it) const {
+        if (std::string w = wonText(it); !w.empty()) return "Gagné : " + w;
         if (!it.achievement.empty()) return "Récompense du succès « " + achievementName(it.achievement) + " »";
         if (it.challengeReward())
             return cosmeticUnlocked(it, progress_) ? "Récompense des défis : obtenue" : challengeProgressText(it, progress_);
@@ -547,9 +577,10 @@ private:
         if (std::string title = g_.collection.look(g_.cosmetics, "title", progress_); !title.empty()) {
             float tf = fz(ui, 15), tw = std::min(ui.text().measure(title, FontFace::Bold, ui.s(tf)).x + ui.s(24), room);
             Rect chip{nx, ny - ui.s(13), tw, ui.s(26)};
-            r.fillRoundedRect(chip, chip.h * 0.5f, kGold.withAlpha(28));
-            r.drawRoundedRect(chip, chip.h * 0.5f, kGold.withAlpha(160), std::max(1.0f, ui.s(1.2f)));
-            ui.label(ui.elide(title, FontFace::Bold, tf, tw - ui.s(24)), chip.center(), tf, kGold, Align::Center, FontFace::Bold, VAlign::Middle);
+            const Color tc = chipColor(g_.collection.equipped(g_.cosmetics, "title", progress_));
+            r.fillRoundedRect(chip, chip.h * 0.5f, tc.withAlpha(28));
+            r.drawRoundedRect(chip, chip.h * 0.5f, tc.withAlpha(160), std::max(1.0f, ui.s(1.2f)));
+            ui.label(ui.elide(title, FontFace::Bold, tf, tw - ui.s(24)), chip.center(), tf, tc, Align::Center, FontFace::Bold, VAlign::Middle);
             ny += ui.s(26);
         }
         // The slots: the badges shown, then the free places (none below the first step).
@@ -803,7 +834,7 @@ private:
     // ================================================================= Route des étoiles
     /// Opens the Vestiaire on an item (its category, the item selected).
     void showItem(const std::string& id) {
-        const CosmeticItem* it = g_.cosmetics.find(id);
+        const CosmeticItem* it = findItem(id);
         if (!it) return;
         const auto& cats = g_.cosmetics.categories();
         for (size_t i = 0; i < cats.size(); ++i)

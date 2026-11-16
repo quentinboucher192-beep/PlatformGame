@@ -5,7 +5,9 @@
 // sees — and edits the challenge of a period that has not begun: its level (campaign, or a
 // published community level), its rules, its objective and its tiers, or puts back the
 // server's draw. Everything is checked again by the server (PUT / DELETE
-// /api/v1/admin/challenges/{id}); a period that has begun is read-only.
+// /api/v1/admin/challenges/{id}); a period that has begun is read-only. 2.43: a third tab,
+// « Récompenses »: the rewards of the period (an item of the game's Collection, or a title
+// created here on the server), each with its condition (PUT …/{id}/rewards, POST /admin/titles).
 
 #include <functional>
 #include <map>
@@ -31,14 +33,15 @@ public:
     /// knows this account as an administrator (the screen closes).
     AdminCalendar(GameServices& g, OnlineUi& ou, std::function<void(const std::string&, bool)> say, std::function<bool(const ApiResult&)> lostRole);
 
-    /// "YYYY-MM[:<challenge id>[:objectif]]" (automated screenshots): the month, the period
-    /// selected, the editor's second tab.
+    /// "YYYY-MM[:<challenge id>[:objectif|recompenses]]" (automated screenshots): the month, the
+    /// period selected, the editor's second or third tab.
     void open(const std::string& arg);
     /// The tab is shown: its month (and the levels) are read once; `force`: again.
     void enter(bool force = false);
     void draw(const Rect& body);
-    /// The powers' picker is open (it takes the input; drawn by drawModal over everything).
-    bool modal() const { return picker_; }
+    /// The powers' picker or (2.43) the game items' picker is open (it takes the input; drawn by
+    /// drawModal over everything).
+    bool modal() const { return picker_ || itemPicker_; }
     void drawModal();
 
 private:
@@ -47,6 +50,8 @@ private:
         bool editable = false;
         Json challenge;                         // null: none (not drawn yet, or never)
         std::optional<DailyChallenge> parsed;   // its level and rules, for the cells
+        std::vector<ChallengePrize> rewards;    // 2.43: its rewards (set even before its draw)
+        std::string rewardsGrantedAt;           // when the server granted them ("" not yet)
     };
     struct Draft {
         std::string periodId;
@@ -88,6 +93,21 @@ private:
     void drawLevelList(const Rect& r, bool editable);
     void drawRules(float x, float y, float w, bool editable);
     void drawObjectiveTab(const Period& p, const Rect& r, bool editable);
+    // 2.43: « Récompenses »
+    void savePrizes();
+    void loadTitles();
+    void createTitle();
+    void addPrize(ChallengePrize p);
+    void drawRewardsTab(const Period& p, const Rect& r, bool editable);
+    /// One reward of the list in `row`; returns true when its × was used.
+    bool drawPrizeRow(size_t i, const Rect& row, bool editable);
+    /// Bronze / Argent / Or / Top N / Niveau fini (and N), wrapping in `w`; returns its height
+    /// (`draw` false: measured only).
+    float conditionChooser(const std::string& id, float x, float y, float w, bool draw);
+    /// The form under the list (a title to create, or a reward's condition); returns its height.
+    float prizeFormHeight(float w);
+    void drawPrizeForm(const Rect& r);
+    void drawItemPicker();
     /// "−  value  +" at the right of a row; returns true when the value changed.
     bool stepper(const std::string& id, float right, float cy, float h, const std::string& value, int& v, int step, int lo, int hi, bool enabled);
     bool timeStepper(const std::string& id, float right, float cy, float h, int64_t& ms, bool enabled);
@@ -130,6 +150,22 @@ private:
     bool scrollToChosen_ = false;  // the level list brings the chosen level into view
     std::string pendingSwitch_;    // a period chosen while the draft had changes (chosen again: they go)
     bool entered_ = false;
+    // 2.43: « Récompenses »: the draft's rewards (sent apart from the challenge, by « Enregistrer »).
+    std::vector<ChallengePrize> prizes_;
+    bool prizesDirty_ = false;
+    enum class PrizeForm { None, Title, Condition };
+    PrizeForm form_ = PrizeForm::None;
+    int formIndex_ = -1;           // the reward whose condition is changed
+    std::string titleText_;
+    int titleColor_ = 0;           // 0 Or, 1 Argent, 2 Cyan, 3 Violet
+    std::string condKind_ = "tier";
+    int condValue_ = 3;
+    bool titleBusy_ = false;
+    bool itemPicker_ = false;      // the game items' picker (modal)
+    int pickCat_ = 0;
+    std::string pickRef_;          // the item (or server title) chosen in it
+    Json titles_ = Json::array();  // the titles created on the server (GET /admin/titles)
+    bool titlesLoaded_ = false;
 };
 
 }  // namespace cosmic

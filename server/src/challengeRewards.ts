@@ -4,7 +4,8 @@
 // better (received in time or late), and the longest series of consecutive periods (days,
 // ISO weeks, months) with a verified run received in time. The same numbers decide what may
 // be worn online (cosmetics.ts) and go to the game in GET /challenges/me (`verified`).
-import type { Ctx } from "./http";
+import cosmeticCatalog from "./cosmeticCatalog.json";
+import { nowIso, type Ctx } from "./http";
 
 export const REWARD_KINDS = ["daily", "weekly", "monthly"] as const;
 export type RewardKind = (typeof REWARD_KINDS)[number];
@@ -121,4 +122,226 @@ export function resultsMet(p: ChallengeRewardProgress, c: ResultsCondition): boo
 
 export function streakMet(p: ChallengeRewardProgress, c: StreakCondition): boolean {
     return p[c.kind].best_streak >= c.days;
+}
+
+// ------------------------------------------------- rewards of one challenge (2.43)
+//
+// An administrator gives a challenge that has not begun its own rewards (ADMINISTRATION ›
+// Calendrier des défis › Récompenses, adminChallenges.ts): each one an item of the catalogue
+// (src/cosmeticCatalog.json) or a title created on the server (server_titles, worn as
+// "srv:<id>": no game update needed), and a condition on that challenge's results received in
+// time and VERIFIED by this server: a tier reached (that tier or better, both objectives: the
+// finished runs and, on « Finir le niveau », the attempts whose progress reached Bronze or
+// Argent), a place of the final ranking (the challenge's main board, ties as the board breaks
+// them: the earlier submission first), or the level finished. Granted once the period is over
+// and settled (GRANT_DELAY_MS), by the daily cron or a reading of the results; never twice,
+// never taken back. The same items then unlock in the Collection (cosmetics.ts: `won`).
+
+export const PRIZE_KINDS = ["item", "title"] as const;
+export type PrizeKind = (typeof PRIZE_KINDS)[number];
+export const PRIZE_CONDITIONS = ["tier", "top", "finished"] as const;
+export type PrizeCondition = (typeof PRIZE_CONDITIONS)[number];
+export const TITLE_COLORS = ["gold", "silver", "cyan", "violet"] as const;
+export type TitleColor = (typeof TITLE_COLORS)[number];
+/** Rewards of one challenge, at most. */
+export const MAX_PRIZES = 6;
+/** « Top N du classement final »: N from 1 to this. */
+export const MAX_TOP = 100;
+/** A title created on the server: at most this many characters. */
+export const TITLE_MAX_CHARS = 32;
+/** The rewards of a challenge wait this long after its end (runs in time, their replays checked). */
+export const GRANT_DELAY_MS = 60 * 60 * 1000;
+
+/** A reward of a challenge and its condition (value: tier 1..3, top 1..MAX_TOP, finished 0). */
+export interface PrizeRule {
+    kind: PrizeKind;
+    ref: string;
+    condition: PrizeCondition;
+    value: number;
+}
+
+interface CatalogEntry {
+    id: string;
+    category: string;
+    name: string;
+    default?: boolean;
+}
+const CATALOG_ITEMS = new Map((cosmeticCatalog as unknown as { items: CatalogEntry[] }).items.map((i) => [i.id, i]));
+
+/** An item of the catalogue a challenge may give (never a category's default). */
+export function prizeItem(id: string): CatalogEntry | null {
+    const i = CATALOG_ITEMS.get(id);
+    return i && !i.default ? i : null;
+}
+
+export const titleRef = (id: number) => `srv:${id}`;
+/** The server_titles id of "srv:<id>", null for anything else. */
+export function titleIdOf(ref: string | null | undefined): number | null {
+    const m = /^srv:([1-9]\d{0,9})$/.exec(ref ?? "");
+    return m ? Number(m[1]) : null;
+}
+
+/** Letters, marks, digits, punctuation and spaces: what the game's fonts draw (no emoji, no control). */
+const TITLE_TEXT_RE = /^[\p{L}\p{M}\p{N}\p{P} ]+$/u;
+
+/** A title's text as stored: trimmed, inner spaces collapsed; null when not acceptable. */
+export function cleanTitleText(raw: string): string | null {
+    const t = raw.normalize("NFC").replace(/\s+/gu, " ").trim();
+    if (!t || [...t].length > TITLE_MAX_CHARS || !TITLE_TEXT_RE.test(t)) return null;
+    return t;
+}
+
+/** The text compared for duplicates: without accents nor case. */
+export function titleKey(text: string): string {
+    return text
+        .normalize("NFD")
+        .replace(/\p{M}/gu, "")
+        .toLowerCase()
+        .replace(/\s+/gu, " ")
+        .trim();
+}
+
+/** SQL (a column of challenges `c`): its rewards as a JSON array, the titles' text and colour joined. */
+export const PRIZES_SQL = `(SELECT json_group_array(json_object('position', r.position, 'kind', r.reward_kind, 'ref', r.reward_ref,
+      'condition', r.condition, 'value', r.condition_value, 'title_text', t.text, 'title_color', t.color))
+    FROM challenge_reward_rules r LEFT JOIN server_titles t ON r.reward_kind = 'title' AND t.id = CAST(substr(r.reward_ref, 5) AS INTEGER)
+    WHERE r.challenge_id = c.id)`;
+
+/** The rules of some challenges (?1: a JSON array of their ids), the titles joined. */
+export const PRIZE_ROWS_SQL = `SELECT r.challenge_id, r.position, r.reward_kind AS kind, r.reward_ref AS ref, r.condition, r.condition_value AS value,
+       t.text AS title_text, t.color AS title_color
+     FROM challenge_reward_rules r LEFT JOIN server_titles t ON r.reward_kind = 'title' AND t.id = CAST(substr(r.reward_ref, 5) AS INTEGER)`;
+
+export interface PrizeRow {
+    position: number;
+    kind: string;
+    ref: string;
+    condition: string;
+    value: number;
+    title_text: string | null;
+    title_color: string | null;
+}
+
+/** A reward as the game reads it: `item` (its id, category and name) or `title` (its text and colour). */
+export interface PrizeJson {
+    kind: PrizeKind;
+    ref: string;
+    condition: PrizeCondition;
+    value: number;
+    item: { id: string; category: string; name: string } | null;
+    title: { id: string; text: string; color: string } | null;
+}
+
+/** The rewards (rows or the JSON of PRIZES_SQL) in their order; an unknown item or title is left out. */
+export function prizesJson(raw: string | PrizeRow[] | null | undefined): PrizeJson[] {
+    let rows: PrizeRow[] = [];
+    if (Array.isArray(raw)) rows = raw;
+    else if (typeof raw === "string")
+        try {
+            const v = JSON.parse(raw) as unknown;
+            if (Array.isArray(v)) rows = v as PrizeRow[];
+        } catch {
+            rows = [];
+        }
+    const out: PrizeJson[] = [];
+    for (const r of [...rows].sort((a, b) => a.position - b.position)) {
+        if (!(PRIZE_CONDITIONS as readonly string[]).includes(r.condition)) continue;
+        const base = { ref: r.ref, condition: r.condition as PrizeCondition, value: r.value };
+        if (r.kind === "item") {
+            const i = prizeItem(r.ref);
+            if (i) out.push({ kind: "item", ...base, item: { id: i.id, category: i.category, name: i.name }, title: null });
+        } else if (r.kind === "title" && r.title_text) {
+            out.push({ kind: "title", ...base, item: null, title: { id: r.ref, text: r.title_text, color: r.title_color ?? "gold" } });
+        }
+    }
+    return out;
+}
+
+/** The name a reward goes by (notifications, the Journal). */
+export function prizeName(p: { kind: string; ref: string; title_text?: string | null }): string {
+    if (p.kind === "title") return p.title_text ?? p.ref;
+    return prizeItem(p.ref)?.name ?? p.ref;
+}
+
+/** What a player won: catalogue items, and server titles ("srv:<id>"). */
+export interface WonRewards {
+    items: Set<string>;
+    titles: Set<string>;
+}
+
+export async function wonRewards(ctx: Ctx, playerId: string): Promise<WonRewards> {
+    const rows = await ctx.env.DB.prepare("SELECT DISTINCT reward_kind AS kind, reward_ref AS ref FROM player_won_rewards WHERE player_id = ?1")
+        .bind(playerId)
+        .all<{ kind: string; ref: string }>();
+    const out: WonRewards = { items: new Set(), titles: new Set() };
+    for (const r of rows.results) (r.kind === "title" ? out.titles : out.items).add(r.ref);
+    return out;
+}
+
+/** The challenge whose rewards are granted. */
+export interface PrizeChallenge {
+    id: string;
+    kind: string;
+    period: string;
+    date: string;
+}
+
+const TIER_SQL = (col: string) => `CASE ${col} WHEN 'gold' THEN 3 WHEN 'silver' THEN 2 WHEN 'bronze' THEN 1 ELSE 0 END`;
+
+/**
+ * Grants the rewards of an ended challenge, once: `rankedSql` is its main board (the times, or
+ * the progress of « Finir le niveau »), every active player with a `rank`, bound ?1 = the
+ * challenge, ?2 = 0 (the runs received in time). One D1 batch (a transaction): the rewards won
+ * (a reward already won is kept as it was), one notification per player who won something now
+ * (« challenge_reward », unless turned off), and the mark that the challenge is granted.
+ * Returns the rewards newly won.
+ */
+export async function grantPrizes(ctx: Ctx, c: PrizeChallenge, rankedSql: string): Promise<number> {
+    const db = ctx.env.DB;
+    const rules = await db.prepare(`${PRIZE_ROWS_SQL} WHERE r.challenge_id = ?1 ORDER BY r.position`).bind(c.id).all<PrizeRow>();
+    const now = nowIso();
+    const stmts: D1PreparedStatement[] = [];
+    const insert = (select: string) =>
+        `INSERT OR IGNORE INTO player_won_rewards (player_id, challenge_id, reward_kind, reward_ref, granted_at)
+         SELECT w.pid, ?1, ?3, ?4, ?5 FROM (${select}) w JOIN players p ON p.id = w.pid WHERE p.account_status = 'active'`;
+    for (const r of rules.results) {
+        // A reward the server no longer knows (an item gone from the catalogue) is not given.
+        if (r.kind === "item" ? !prizeItem(r.ref) : !r.title_text) continue;
+        if (r.condition === "tier") {
+            const best = `SELECT x.player_id AS pid FROM (
+                SELECT player_id, ${TIER_SQL("tier")} AS t FROM challenge_runs WHERE challenge_id = ?1 AND status = 'VERIFIED' AND late = ?2
+                UNION ALL
+                SELECT player_id, ${TIER_SQL("tier")} FROM challenge_attempts WHERE challenge_id = ?1 AND status = 'VERIFIED' AND late = ?2 AND tier IS NOT NULL) x
+              GROUP BY x.player_id HAVING MAX(x.t) >= ?6`;
+            stmts.push(db.prepare(insert(best)).bind(c.id, 0, r.kind, r.ref, now, Math.min(3, Math.max(1, r.value))));
+        } else if (r.condition === "top") {
+            stmts.push(db.prepare(insert(`SELECT player_id AS pid FROM (${rankedSql}) WHERE rank <= ?6`)).bind(c.id, 0, r.kind, r.ref, now, r.value));
+        } else if (r.condition === "finished") {
+            const done = "SELECT DISTINCT player_id AS pid FROM challenge_runs WHERE challenge_id = ?1 AND status = 'VERIFIED' AND late = ?2";
+            stmts.push(db.prepare(insert(done)).bind(c.id, 0, r.kind, r.ref, now));
+        }
+    }
+    const granted = stmts.length;
+    if (granted > 0) {
+        // The names of what was won, by reference (the notification's sentence).
+        const named = rules.results;
+        const cases = named.map((_r, i) => `WHEN ?${6 + i * 2} THEN ?${7 + i * 2}`).join(" ");
+        stmts.push(
+            db
+                .prepare(
+                    `INSERT INTO notifications (id, player_id, kind, data, count, created_at)
+                     SELECT lower(hex(randomblob(16))), w.player_id, 'challenge_reward',
+                            json_object('challenge_id', ?1, 'challenge_kind', ?2, 'period', ?3, 'date', ?4,
+                                        'rewards', json_group_array(CASE w.reward_ref ${cases} ELSE w.reward_ref END)), 1, ?5
+                     FROM player_won_rewards w
+                     WHERE w.challenge_id = ?1 AND w.granted_at = ?5
+                       AND instr(',' || (SELECT notifications_off FROM players WHERE id = w.player_id) || ',', ',challenge_reward,') = 0
+                     GROUP BY w.player_id`,
+                )
+                .bind(c.id, c.kind, c.period, c.date, now, ...named.flatMap((r) => [r.ref, prizeName(r)])),
+        );
+    }
+    stmts.push(db.prepare("INSERT INTO challenge_reward_grants (challenge_id, granted_at) VALUES (?1, ?2) ON CONFLICT (challenge_id) DO NOTHING").bind(c.id, now));
+    const res = await db.batch(stmts);
+    return res.slice(0, granted).reduce((s, r) => s + (r.meta.changes ?? 0), 0);
 }

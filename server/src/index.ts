@@ -111,6 +111,7 @@ route("PUT", `${V}/players/me/avatar`, (ctx) => players.putAvatar(ctx));
 route("POST", `${V}/players/me/playtime`, (ctx) => creators.reportPlaytime(ctx));
 route("PUT", `${V}/players/me/achievements`, (ctx) => achievements.putAchievements(ctx));
 route("PUT", `${V}/players/me/cosmetics`, (ctx) => cosmetics.putCosmetics(ctx));
+route("GET", `${V}/players/me/rewards`, (ctx) => challenges.myRewards(ctx));
 route("PUT", `${V}/players/me/badges`, (ctx) => badges.putBadges(ctx));
 route("GET", `${V}/players/{playerId}`, players.getPlayer, { viewer: true });
 route("GET", `${V}/players/{playerId}/creations`, creators.creations, { viewer: true });
@@ -322,6 +323,10 @@ route("GET", `${V}/admin/challenges`, (ctx) => adminChallenges.listChallenges(ct
 route("GET", `${V}/admin/challenges/levels`, (ctx) => adminChallenges.listLevels(ctx));
 route("PUT", `${V}/admin/challenges/{challengeId}`, (ctx) => adminChallenges.setChallenge(ctx));
 route("DELETE", `${V}/admin/challenges/{challengeId}`, (ctx) => adminChallenges.resetChallenge(ctx));
+// 2.43: the rewards of a coming challenge, and the titles created on the server.
+route("PUT", `${V}/admin/challenges/{challengeId}/rewards`, (ctx) => adminChallenges.setRewards(ctx));
+route("GET", `${V}/admin/titles`, (ctx) => adminChallenges.listTitles(ctx));
+route("POST", `${V}/admin/titles`, (ctx) => adminChallenges.createTitle(ctx));
 
 function match(method: string, path: string): { route: Route; params: Record<string, string> } | "method" | null {
     let pathMatched = false;
@@ -427,12 +432,20 @@ async function maintenance(env: Bindings, exec: ExecutionContext): Promise<void>
     ]);
     const rechecked = await recheckHeldRecords(env, exec);
     let challengeRuns: number | null = null;
+    let rewardsWon: number | null = null;
     try {
-        challengeRuns = (await challenges.maintenance(maintenanceCtx(env, exec))).rechecked;
+        const m = await challenges.maintenance(maintenanceCtx(env, exec));
+        challengeRuns = m.rechecked;
+        rewardsWon = m.rewards_won;
     } catch (e) {
         log("error", "challenge_maintenance_failed", { error: e instanceof Error ? e.message : String(e) });
     }
-    log("info", "maintenance", { deleted: results.map((r) => r.meta.changes), rechecked, challenge_runs_rechecked: challengeRuns });
+    log("info", "maintenance", {
+        deleted: results.map((r) => r.meta.changes),
+        rechecked,
+        challenge_runs_rechecked: challengeRuns,
+        challenge_rewards_won: rewardsWon,
+    });
 }
 
 export default {

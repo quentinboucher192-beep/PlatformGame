@@ -1,6 +1,7 @@
 #include "game/cosmetics/Collection.h"
 
 #include <algorithm>
+#include <cctype>
 #include <map>
 
 #include "engine/core/FileUtil.h"
@@ -165,6 +166,9 @@ std::pair<int, int> cosmeticChallengeProgress(const CosmeticItem& item, const Co
 
 bool cosmeticUnlocked(const CosmeticItem& item, const CosmeticProgress& p) {
     if (item.isDefault) return true;
+    // 2.43: won at a challenge (never taken back); a server title only so.
+    if (p.won && p.won->has(item.id)) return true;
+    if (item.serverTitle()) return false;
     if (!item.achievement.empty()) return p.book && p.book->unlocked(item.achievement);
     if (item.challengeReward()) {
         auto [have, need] = cosmeticChallengeProgress(item, p);
@@ -205,8 +209,10 @@ bool CollectionBook::save() const {
 
 const CosmeticItem* CollectionBook::equipped(const CosmeticCatalog& catalog, const std::string& category,
                                              const CosmeticProgress& p) const {
-    if (auto it = equipped_.find(category); it != equipped_.end())
+    if (auto it = equipped_.find(category); it != equipped_.end()) {
         if (const CosmeticItem* i = catalog.find(it->second); i && i->category == category && cosmeticUnlocked(*i, p)) return i;
+        if (const CosmeticItem* t = p.won ? p.won->title(it->second) : nullptr; t && t->category == category) return t;
+    }
     return catalog.defaultItem(category);
 }
 
@@ -233,6 +239,117 @@ std::vector<const CosmeticItem*> CollectionBook::fresh(const CosmeticCatalog& ca
     std::vector<const CosmeticItem*> out;
     for (const auto& i : catalog.items())
         if (!i.isDefault && !announced(i.id) && cosmeticUnlocked(i, p)) out.push_back(&i);
+    return out;
+}
+
+// ------------------------------------------------------- rewards won (2.43)
+
+bool WonRewards::has(const std::string& ref) const {
+    for (const auto& w : list)
+        if (w.ref == ref) return true;
+    return false;
+}
+
+bool WonRewards::wonAt(const std::string& challengeId, const std::string& ref) const {
+    for (const auto& w : list)
+        if (w.challengeId == challengeId && w.ref == ref) return true;
+    return false;
+}
+
+const CosmeticItem* WonRewards::title(const std::string& ref) const {
+    for (const auto& t : titles)
+        if (t.id == ref) return &t;
+    return nullptr;
+}
+
+const WonReward* WonRewards::origin(const std::string& ref) const {
+    const WonReward* first = nullptr;
+    for (const auto& w : list)
+        if (w.ref == ref && (!first || w.grantedAt < first->grantedAt || (w.grantedAt == first->grantedAt && w.date < first->date))) first = &w;
+    return first;
+}
+
+namespace {
+
+bool knownTitleColor(const std::string& c) { return c == "gold" || c == "silver" || c == "cyan" || c == "violet"; }
+
+/// At most `maxCodepoints` characters of UTF-8, control characters as spaces.
+std::string cleanText(const std::string& s, size_t maxCodepoints) {
+    std::string out;
+    size_t n = 0;
+    for (size_t i = 0; i < s.size() && n < maxCodepoints;) {
+        unsigned char c = static_cast<unsigned char>(s[i]);
+        size_t len = c < 0x80 ? 1 : (c >> 5) == 6 ? 2 : (c >> 4) == 14 ? 3 : (c >> 3) == 30 ? 4 : 1;
+        if (i + len > s.size()) break;
+        if (c < 0x20 || c == 0x7f) out += ' ';
+        else out.append(s, i, len);
+        i += len;
+        ++n;
+    }
+    return out;
+}
+
+bool safeRef(const std::string& s) {
+    if (s.empty() || s.size() > 64) return false;
+    for (char ch : s) {
+        unsigned char u = static_cast<unsigned char>(ch);
+        if (!(std::islower(u) || std::isdigit(u) || ch == '_' || ch == ':' || ch == '-' || ch == 'W')) return false;
+    }
+    return true;
+}
+
+}  // namespace
+
+std::optional<WonRewards> WonRewards::fromJson(const Json& rewards) {
+    if (!rewards.is_array()) return std::nullopt;
+    WonRewards w;
+    w.known = true;
+    for (const Json& r : rewards) {
+        if (!r.is_object() || w.list.size() >= 1000) continue;
+        WonReward x;
+        const Json& c = jfield(r, "challenge", Json());
+        x.challengeId = jstr(c, "id");
+        x.challengeKind = jstr(c, "kind");
+        x.period = jstr(c, "period");
+        x.date = jstr(c, "date");
+        x.kind = jstr(r, "kind");
+        x.ref = jstr(r, "ref");
+        x.grantedAt = jstr(r, "granted_at");
+        if (!safeRef(x.challengeId) || !safeRef(x.ref) || (x.kind != "item" && x.kind != "title")) continue;
+        if (x.kind == "title") {
+            // A title of the server: its text and colour, as an item of the category « title ».
+            const Json& t = jfield(r, "title", Json());
+            std::string text = cleanText(jstr(t, "text"), 32);
+            if (x.ref.rfind("srv:", 0) != 0 || text.empty()) continue;
+            if (!w.title(x.ref)) {
+                CosmeticItem item;
+                item.id = x.ref;
+                item.category = "title";
+                item.name = text;
+                item.look = text;
+                std::string col = jstr(t, "color");
+                item.color = knownTitleColor(col) ? col : "gold";
+                item.description = "Un titre créé sur Cosmic Online, gagné à un défi.";
+                w.titles.push_back(std::move(item));
+            }
+        } else if (x.ref.rfind("srv:", 0) == 0) {
+            continue;
+        }
+        w.list.push_back(std::move(x));
+    }
+    return w;
+}
+
+Json WonRewards::toJson() const {
+    Json out = Json::array();
+    for (const auto& x : list) {
+        Json r = {{"challenge", {{"id", x.challengeId}, {"kind", x.challengeKind}, {"period", x.period}, {"date", x.date}}},
+                  {"kind", x.kind},
+                  {"ref", x.ref},
+                  {"granted_at", x.grantedAt}};
+        if (const CosmeticItem* t = x.kind == "title" ? title(x.ref) : nullptr) r["title"] = {{"id", t->id}, {"text", t->look}, {"color", t->color}};
+        out.push_back(std::move(r));
+    }
     return out;
 }
 

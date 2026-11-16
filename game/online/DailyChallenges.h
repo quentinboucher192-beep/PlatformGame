@@ -65,6 +65,25 @@ std::string addMonths(const std::string& month, int delta);
 int daysInMonth(const std::string& month);
 }  // namespace challenge_period
 
+/// 2.43: a reward of one challenge, given by an administrator, and its condition on that
+/// challenge's results (Cosmic Online grants it once the challenge is over, from the verified
+/// runs received in time; never taken back).
+struct ChallengePrize {
+    std::string kind;       // "item" (of the catalogue) or "title" (created on the server)
+    std::string ref;        // the item's id, or "srv:<n>"
+    std::string condition;  // "tier" (value: 1 Bronze, 2 Argent, 3 Or, that tier or better), "top" (value: N), "finished"
+    int value = 0;
+    std::string name;       // the server's name of the item (one this game may not know), or the title's text
+    std::string category;   // the item's category ("title" for a title)
+    std::string color;      // a title's colour ("gold", "silver", "cyan", "violet")
+    bool title() const { return kind == "title"; }
+    /// `rewards` of a challenge (or of a period of the calendar), the malformed ones left out (6 at most).
+    static std::vector<ChallengePrize> listFromJson(const Json& rewards);
+    /// One reward of PUT /admin/challenges/{id}/rewards: { kind, ref, condition, value }.
+    Json body() const;
+    bool operator==(const ChallengePrize& o) const { return kind == o.kind && ref == o.ref && condition == o.condition && value == o.value; }
+};
+
 /// A challenge as the server describes it (§1 of the contracts), checked on reading: kind and
 /// period, dates, level, rules (and their hash, recomputed), tiers. Never trusted blindly.
 struct DailyChallenge {
@@ -97,6 +116,8 @@ struct DailyChallenge {
     bool finishObjective = false;
     int bronzeProgress = 50;
     int silverProgress = 80;
+    /// 2.43: its own rewards (an administrator's), in their order; none for most challenges.
+    std::vector<ChallengePrize> prizes;
     Json raw;  // as received (cache)
 
     bool community() const { return level.source == "community"; }
@@ -280,6 +301,10 @@ public:
     /// A 2.33 server: the results whose status is VERIFIED (their tier, in time or late; the
     /// series: periods with such a result in time).
     static ChallengeRewardProgress rewardProgressFromResults(const Json& results);
+    /// 2.43: the rewards I won at single challenges (GET /players/me/rewards, read after each
+    /// reading of /challenges/me and kept with it in state.json), for the same account as
+    /// rewardProgress(); not `known` before a first reading.
+    const WonRewards& wonRewards() const;
 
     // ------------------------------------------------------------------- runs
     struct RunReport {
@@ -398,7 +423,11 @@ private:
     std::string serverStreakFor_;  // the account whose streaks, results and rewards these are
     std::map<std::string, ServerResult> serverResults_;
     void setRewardProgress(const ChallengeRewardProgress& p);
+    void fetchWon();
+    void setWon(WonRewards w);
     ChallengeRewardProgress rewards_;
+    WonRewards won_;
+    bool wonBusy_ = false;
     int rewardsRevision_ = 0;
     bool rewardsStale_ = false;  // a run was just verified: /challenges/me again for its rewards
     std::shared_ptr<int> life_ = std::make_shared<int>(0);

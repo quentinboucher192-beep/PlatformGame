@@ -151,6 +151,18 @@
    ]
   },
   {
+   "fr": "+ Créer un titre",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "+ Récompense du jeu",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "+1 s",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -492,6 +504,12 @@
    ]
   },
   {
+   "fr": "a créé le titre « {0} » ({1})",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "a donné le rôle admin à {0}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -507,6 +525,12 @@
    "fr": "A en retard",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "a fixé les récompenses du défi {0} : {1}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -535,6 +559,12 @@
   },
   {
    "fr": "a retiré le rôle admin à {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a retiré les récompenses du défi {0}",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -673,6 +703,24 @@
    "fr": "Accepter les demandes d'amis",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "Accordée par Cosmic Online à la fin du défi, d'après les parties vérifiées reçues à l'heure. Jamais retirée.",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Accordées par le serveur à la fin du défi, d'après les parties vérifiées reçues à l'heure. Une récompense gagnée n'est jamais retirée.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Accordées {0}, d'après les parties vérifiées reçues à l'heure.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -1155,6 +1203,7 @@
    "fr": "Ajouter",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/SocialScene.cpp"
    ]
   },
@@ -1537,6 +1586,7 @@
     "editors/level_editor/LevelEditorDialogs.cpp",
     "ui/online/CommentsPanel.cpp",
     "ui/screens/AdminBackups.cpp",
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/ChallengesScene.cpp",
@@ -1641,6 +1691,7 @@
   {
    "fr": "août",
    "where": [
+    "ui/screens/ChallengeRewardsUi.cpp",
     "ui/screens/ChallengeUi.cpp"
    ]
   },
@@ -1842,7 +1893,9 @@
     "game/gameplay/Hud.cpp",
     "game/levels/LevelData.cpp",
     "game/online/DailyChallenges.cpp",
-    "ui/screens/AdminCalendar.cpp"
+    "ui/screens/AdminCalendar.cpp",
+    "ui/screens/AdminScene.cpp",
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {
@@ -1861,6 +1914,12 @@
    "fr": "Argent < {0}",
    "where": [
     "game/gameplay/Hud.cpp"
+   ]
+  },
+  {
+   "fr": "Argent atteint",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {
@@ -2167,6 +2226,24 @@
    "fr": "atteindre",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Atteindre le palier Argent (ou Or) sur ce défi.",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Atteindre le palier Or sur ce défi.",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Atteindre un palier (Bronze, Argent ou Or) sur ce défi.",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {
@@ -2790,6 +2867,12 @@
    ]
   },
   {
+   "fr": "Aucun élément dans cette catégorie.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Aucun élément ne correspond.",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -2905,6 +2988,18 @@
    "fr": "Aucune progression ne correspond.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune récompense pour ce défi.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune récompense pour ce défi. Ajoutez un élément du jeu ou créez un titre.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -4151,7 +4246,8 @@
     "game/gameplay/Hud.cpp",
     "game/levels/LevelData.cpp",
     "game/online/DailyChallenges.cpp",
-    "ui/screens/AdminCalendar.cpp"
+    "ui/screens/AdminCalendar.cpp",
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {
@@ -4161,6 +4257,12 @@
     "game/online/DailyChallenges.cpp",
     "game/progression/NewsCenter.cpp",
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Bronze atteint",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {
@@ -5124,6 +5226,36 @@
    ]
   },
   {
+   "fr": "Ce titre existait déjà (Argent) : il est ajouté tel quel. « Enregistrer » pour garder les récompenses.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Ce titre existait déjà (Cyan) : il est ajouté tel quel. « Enregistrer » pour garder les récompenses.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Ce titre existait déjà (Or) : il est ajouté tel quel. « Enregistrer » pour garder les récompenses.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Ce titre existait déjà (Violet) : il est ajouté tel quel. « Enregistrer » pour garder les récompenses.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Ce titre existe déjà : choisissez-le dans la liste des titres.",
+   "where": [
+    "server/src/adminChallenges.ts"
+   ]
+  },
+  {
    "fr": "Ceinture d'astéroïdes",
    "where": [
     "data/enemies/singularis.json"
@@ -5314,6 +5446,18 @@
    "fr": "Cette roche fissurée cédera sous une Impulsion.",
    "where": [
     "game/gameplay/entities/PlatformEntities.cpp"
+   ]
+  },
+  {
+   "fr": "cette récompense est déjà dans la liste",
+   "where": [
+    "server/src/adminChallenges.ts"
+   ]
+  },
+  {
+   "fr": "Cette récompense est déjà dans la liste : changez plutôt sa condition.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -7091,6 +7235,26 @@
    ]
   },
   {
+   "fr": "Condition",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "condition",
+   "where": [
+    "game/online/DailyChallenges.cpp",
+    "ui/screens/AdminCalendar.cpp",
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Condition de « {0} »",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Conditions d'utilisation",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
@@ -7838,7 +8002,8 @@
    "fr": "Couleur",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
-    "game/levels/ObjectTypes.cpp"
+    "game/levels/ObjectTypes.cpp",
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -8335,6 +8500,12 @@
    ]
   },
   {
+   "fr": "création du titre « {0} » refusée : {1}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Créations",
    "where": [
     "ui/screens/AdminScene.cpp",
@@ -8344,6 +8515,7 @@
   {
    "fr": "Création…",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/ProjectsScene.cpp"
    ]
   },
@@ -8381,6 +8553,12 @@
    "fr": "Créer 5 niveaux.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Créer et ajouter",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -8426,6 +8604,12 @@
    ]
   },
   {
+   "fr": "Créer un titre",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Créer une clé d'invitation",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -8436,6 +8620,18 @@
    "where": [
     "data/enemies/echo_nyxara.json",
     "data/enemies/nyxara.json"
+   ]
+  },
+  {
+   "fr": "créé par un admin",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "créé par un admin · pas besoin de mise à jour",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -8486,7 +8682,9 @@
    "fr": "Cyan",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
-    "saves/Settings.cpp"
+    "saves/Settings.cpp",
+    "ui/screens/AdminCalendar.cpp",
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -8623,6 +8821,12 @@
    ]
   },
   {
+   "fr": "dans le jeu",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Dans mon record",
    "where": [
     "ui/screens/GameScene.cpp",
@@ -8746,8 +8950,15 @@
    ]
   },
   {
+   "fr": "de 1 à {0} caractères : lettres, chiffres, ponctuation et espaces",
+   "where": [
+    "server/src/adminChallenges.ts"
+   ]
+  },
+  {
    "fr": "de la semaine {0}",
    "where": [
+    "server/src/notifications.ts",
     "ui/screens/AdminScene.cpp"
    ]
   },
@@ -9598,9 +9809,21 @@
    ]
   },
   {
+   "fr": "du jour du {0}/{1}",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "du mois de {0}",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "du mois {0}/{1}",
+   "where": [
+    "server/src/notifications.ts"
    ]
   },
   {
@@ -9903,6 +10126,7 @@
   {
    "fr": "décembre",
    "where": [
+    "ui/screens/ChallengeRewardsUi.cpp",
     "ui/screens/ChallengeUi.cpp"
    ]
   },
@@ -10140,6 +10364,12 @@
    ]
   },
   {
+   "fr": "Défi commencé : ses récompenses ne changent plus. Elles seront accordées à sa fin.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "DÉFI DE LA SEMAINE",
    "where": [
     "ui/screens/GameScene.cpp"
@@ -10159,6 +10389,12 @@
    ]
   },
   {
+   "fr": "Défi de la semaine {0}",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
    "fr": "DÉFI DU JOUR",
    "where": [
     "ui/screens/GameScene.cpp"
@@ -10168,6 +10404,7 @@
    "fr": "Défi du jour",
    "where": [
     "ui/screens/AdminCalendar.cpp",
+    "ui/screens/ChallengeRewardsUi.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/SpectateScene.cpp"
    ]
@@ -10176,6 +10413,12 @@
    "fr": "défi du jour",
    "where": [
     "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "Défi du jour du {0}/{1}",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {
@@ -10188,6 +10431,7 @@
    "fr": "Défi du mois",
    "where": [
     "ui/screens/AdminCalendar.cpp",
+    "ui/screens/ChallengeRewardsUi.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/SpectateScene.cpp"
    ]
@@ -10196,6 +10440,12 @@
    "fr": "Défi du mois de {0}",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Défi du mois de {0} {1}",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {
@@ -10255,9 +10505,27 @@
    ]
   },
   {
+   "fr": "Défi terminé : le serveur les accorde dans l'heure qui suit sa fin.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Défi terminé : les récompenses sont accordées dans l'heure qui suit.",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
    "fr": "Défi terminé : une partie maintenant est hors délai (classement « Depuis », sans la série).",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Défi {0} : vous avez gagné {1}",
+   "where": [
+    "server/src/notifications.ts"
    ]
   },
   {
@@ -10438,6 +10706,12 @@
    "fr": "déjà commencé",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "déjà dans la liste",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -12478,6 +12752,12 @@
    ]
   },
   {
+   "fr": "Finir dans les {0} premiers du classement final de ce défi.",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
    "fr": "Finir le niveau",
    "where": [
     "ui/screens/AdminCalendar.cpp",
@@ -12504,6 +12784,12 @@
    ]
   },
   {
+   "fr": "Finir le niveau de ce défi pendant qu'il a lieu.",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
    "fr": "finir le niveau · Bronze {0} % · Argent {1} % · Or en finissant",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -12519,6 +12805,12 @@
    "fr": "Finir le niveau, sans dégât",
    "where": [
     "ui/screens/ChallengeUi.cpp"
+   ]
+  },
+  {
+   "fr": "Finir premier du classement final de ce défi.",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {
@@ -13010,6 +13302,7 @@
   {
    "fr": "février",
    "where": [
+    "ui/screens/ChallengeRewardsUi.cpp",
     "ui/screens/ChallengeUi.cpp"
    ]
   },
@@ -13018,6 +13311,18 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Gagné : {0}",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Gagnée : à équiper dans la Collection",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {
@@ -14467,6 +14772,12 @@
    ]
   },
   {
+   "fr": "il existe déjà",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Il faiblit ! Encore un effort !",
    "where": [
     "data/levels/glacior_03.json"
@@ -14753,6 +15064,12 @@
    "fr": "Inconnu",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "inconnu de cette version du jeu",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -15465,6 +15782,12 @@
    "fr": "Juré",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "jusqu'à la place",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -17465,6 +17788,12 @@
    ]
   },
   {
+   "fr": "Le titre, 32 caractères au plus",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Le tracé de la course de ce niveau EXTRÊME manque : publiez-le depuis une version à jour du jeu.",
    "where": [
     "server/src/community.ts"
@@ -17480,6 +17809,12 @@
    "fr": "Le vestiaire, le juke-box et la galerie de la Collection.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "le {0}/{1} à {2} UTC",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -18442,6 +18777,12 @@
    "fr": "liste de fichiers mal placée",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "liste de {0} récompenses au plus attendue",
+   "where": [
+    "server/src/adminChallenges.ts"
    ]
   },
   {
@@ -19738,6 +20079,12 @@
    ]
   },
   {
+   "fr": "modification des récompenses du défi {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "modification du défi {0}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -20600,6 +20947,13 @@
    "fr": "Niveau EXTRÊME (une seule vie)",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Niveau fini",
+   "where": [
+    "ui/screens/AdminCalendar.cpp",
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {
@@ -21628,6 +21982,7 @@
   {
    "fr": "novembre",
    "where": [
+    "ui/screens/ChallengeRewardsUi.cpp",
     "ui/screens/ChallengeUi.cpp"
    ]
   },
@@ -22253,7 +22608,9 @@
     "game/levels/LevelData.cpp",
     "game/online/DailyChallenges.cpp",
     "saves/Settings.cpp",
-    "ui/screens/AdminCalendar.cpp"
+    "ui/screens/AdminCalendar.cpp",
+    "ui/screens/AdminScene.cpp",
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {
@@ -22278,6 +22635,12 @@
    "fr": "Or < {0}",
    "where": [
     "game/gameplay/Hud.cpp"
+   ]
+  },
+  {
+   "fr": "Or atteint",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {
@@ -23249,6 +23612,12 @@
    "fr": "Pas encore vérifié : une seule vie, le premier à finir le vérifie",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pas gagnée sur ce défi.",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {
@@ -28198,9 +28567,21 @@
    ]
   },
   {
+   "fr": "Récompense de défi",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
    "fr": "Récompense des défis : obtenue",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Récompense du jeu",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -28216,9 +28597,22 @@
    ]
   },
   {
+   "fr": "Récompense gagnée à un défi",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
    "fr": "Récompenses",
    "where": [
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Récompenses de ce défi",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -28237,6 +28631,30 @@
    "fr": "Récompenses des défis : cinq cosmétiques à gagner — le titre « Défiant » (un palier Or), le cadre « Couronne de la semaine » (Or à un défi de la semaine), la traînée « Comète du mois » (Or à un défi du mois), la combinaison « Champion des défis » (10 paliers Or) et la victoire « Série de feu » (7 défis du jour d'affilée).",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Récompenses enregistrées : le serveur les accordera à la fin du défi.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "récompenses invalides",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Récompenses modifiées : « Enregistrer » pour les garder.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Récompenses retirées de ce défi.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -29846,6 +30264,12 @@
    ]
   },
   {
+   "fr": "Six récompenses au plus par défi.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Slide",
    "where": [
     "game/player/Player.cpp"
@@ -31287,6 +31711,12 @@
    ]
   },
   {
+   "fr": "T",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
    "fr": "Tab",
    "where": [
     "engine/input/InputTypes.cpp"
@@ -32287,7 +32717,8 @@
    "fr": "Texte",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
-    "game/levels/ObjectTypes.cpp"
+    "game/levels/ObjectTypes.cpp",
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -32300,6 +32731,12 @@
    "fr": "texte invalide dans {0}",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "texte ou couleur invalide",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -32463,6 +32900,7 @@
    "fr": "Titre",
    "where": [
     "game/cosmetics/Collection.cpp",
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/CollectionScene.cpp",
     "ui/screens/CommunityPublishScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp"
@@ -32478,6 +32916,18 @@
    "fr": "Titre affiché",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Titre créé et ajouté : « Enregistrer » pour garder les récompenses.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "titre inconnu du serveur",
+   "where": [
+    "server/src/adminChallenges.ts"
    ]
   },
   {
@@ -32531,6 +32981,25 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Top N",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Top {0}",
+   "where": [
+    "ui/screens/AdminCalendar.cpp",
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Top {0} final",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {
@@ -33901,6 +34370,18 @@
    ]
   },
   {
+   "fr": "Un titre créé sur Cosmic Online, gagné à un défi.",
+   "where": [
+    "game/cosmetics/Collection.cpp"
+   ]
+  },
+  {
+   "fr": "Un titre créé sur Cosmic Online.",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
    "fr": "Un troisième élan en plein vol : le Triple saut vous porte bien plus haut.",
    "where": [
     "data/levels/glacior_01.json"
@@ -33910,6 +34391,12 @@
    "fr": "Un éclat de l'étoile morte, détaché par Singularis pour l'escorter. Il tire des éclats de lumière.",
    "where": [
     "data/enemies/eclat_stellaire.json"
+   ]
+  },
+  {
+   "fr": "Un élément de la Collection du jeu : les gagnants le débloquent, quelle que soit sa condition habituelle.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -34126,6 +34613,12 @@
    "fr": "Une poussée verticale avec onde de choc. Brise la roche fissurée et garde des golems.",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "une récompense",
+   "where": [
+    "server/src/notifications.ts"
    ]
   },
   {
@@ -34795,6 +35288,7 @@
    "fr": "Valider",
    "where": [
     "engine/input/InputTypes.cpp",
+    "ui/screens/AdminCalendar.cpp",
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/MainMenuScene.cpp",
@@ -35284,7 +35778,9 @@
    "fr": "Violet",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
-    "saves/Settings.cpp"
+    "saves/Settings.cpp",
+    "ui/screens/AdminCalendar.cpp",
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -35497,6 +35993,12 @@
   },
   {
    "fr": "Voir l'invitation",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Voir la Collection",
    "where": [
     "ui/screens/NotificationsScene.cpp"
    ]
@@ -36822,6 +37324,12 @@
    ]
   },
   {
+   "fr": "{0} / {1} caractères",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "{0} / {1} choisis",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
@@ -37216,6 +37724,12 @@
    "fr": "{0} compris",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} créé sur Cosmic Online · récompense de ce défi",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {
@@ -38251,6 +38765,12 @@
    ]
   },
   {
+   "fr": "{0} · récompense de ce défi",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
    "fr": "{0} · récompense des défis",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
@@ -38611,6 +39131,12 @@
    "fr": "À découvrir : {0}",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "À gagner jusqu'à la fin du défi.",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {
@@ -39493,6 +40019,12 @@
    "fr": "Éliminez tous les ennemis",
    "where": [
     "game/gameplay/entities/ZoneEntities.cpp"
+   ]
+  },
+  {
+   "fr": "élément inconnu du catalogue (ou élément de départ)",
+   "where": [
+    "server/src/adminChallenges.ts"
    ]
   },
   {

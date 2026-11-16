@@ -68,6 +68,7 @@ const std::vector<OnlineKind>& onlineKinds() {
         {"run_comment", "C", {150, 170, 255, 255}, "Commentaire", "Commentaire sur une de mes courses"},
         {"record_beaten", "R", {255, 214, 90, 255}, "Record battu", "Mon record mondial battu par un autre joueur"},
         {"challenge_featured", "D", {255, 204, 84, 255}, "Défi du jour", "Mon niveau choisi comme défi du jour"},
+        {"challenge_reward", "T", {255, 214, 90, 255}, "Récompense de défi", "Récompense gagnée à un défi"},
     };
     return k;
 }
@@ -282,6 +283,7 @@ private:
         if (kind == "race_verified" && (!jstr(n, "level_id").empty() || (n.contains("data") && !jstr(n["data"], "official").empty()))) return "Voir le niveau";
         if (kind == "record_beaten" && n.contains("data") && !jstr(n["data"], "official").empty()) return "Voir le classement";
         if (kind == "challenge_featured") return "Voir les défis";
+        if (kind == "challenge_reward") return "Voir la Collection";
         return {};
     }
 
@@ -290,6 +292,11 @@ private:
         std::string id = jstr(n, "id");
         bool unread = !jget<bool>(n, "read", false);
         auto go = [this, n, kind]() {
+            if (kind == "challenge_reward") {  // 2.43: rewards won at a challenge, to equip
+                g_.challenges.refreshMine();
+                g_.app.switchScene(makeCollection(g_, 0), 0.3f);
+                return;
+            }
             if (kind == "challenge_featured") {  // 2.32: my level is (or will be) a challenge
                 // 2.33: of the day, of the week or of the month (its tab, or its card once over).
                 std::string cid = n.contains("data") && n["data"].is_object() ? jstr(n["data"], "challenge_id") : std::string();

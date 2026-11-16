@@ -172,6 +172,8 @@
     {"id": "menu.admin", "version": "2.40.0"},
     {"id": "collection.cat.badges", "version": "2.41.0", "parents": ["collection.tab.wardrobe"]},
     {"id": "admin.tab.calendar", "version": "2.42.0", "parents": ["menu.admin"]},
-    {"id": "admin.tab.backups", "version": "2.43.0", "parents": ["menu.admin"]}
+    {"id": "admin.tab.backups", "version": "2.43.0", "parents": ["menu.admin"]},
+    {"id": "admin.calendar.rewards", "version": "2.43.0", "parents": ["menu.admin", "admin.tab.calendar"]},
+    {"id": "challenges.prizes", "version": "2.43.0", "parents": ["menu.challenges"]}
   ]
 }

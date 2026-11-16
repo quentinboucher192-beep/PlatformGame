@@ -14,6 +14,7 @@
 #include "game/progression/Progression.h"
 #include "ui/online/GlobeRenderer.h"
 #include "ui/online/OnlineWidgets.h"
+#include "ui/screens/ChallengeRewardsUi.h"
 #include "ui/screens/CosmeticFx.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/ProfileBadgesUi.h"
@@ -307,7 +308,10 @@ private:
             float tf = fz(ui, 15), tw = std::min(ui.text().measure(title, FontFace::Bold, ui.s(tf)).x + ui.s(24), nameRoom);
             Rect chip{nx, ly - ui.s(13), tw, std::max(ui.s(26), ui.s(tf) + ui.s(8))};
             chip.y = ly - chip.h * 0.5f;
-            Color gold{255, 214, 90, 255};
+            // 2.43: a title created on Cosmic Online in its colour.
+            const Json& wt = worn.value("title", Json::object());
+            const std::string tcol = wt.is_object() ? jstr(wt, "color") : std::string();
+            Color gold = tcol.empty() ? Color{255, 214, 90, 255} : titleColor(tcol);
             ui.r().fillRoundedRect(chip, chip.h * 0.5f, gold.withAlpha(28));
             ui.r().drawRoundedRect(chip, chip.h * 0.5f, gold.withAlpha(160), std::max(1.0f, ui.s(1.2f)));
             ui.label(ui.elide(title, FontFace::Bold, tf, tw - ui.s(24)), chip.center(), tf, gold, Align::Center, FontFace::Bold, VAlign::Middle);

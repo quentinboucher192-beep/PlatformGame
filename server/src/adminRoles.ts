@@ -19,7 +19,7 @@ export type Role = "player" | "admin";
 export const ADMIN_ACTIONS = {
     role: ["admin_role_granted", "admin_role_revoked"],
     // 2.41: ADMINISTRATION › Calendrier des défis (adminChallenges.ts).
-    challenge: ["admin_challenge_set", "admin_challenge_reset"],
+    challenge: ["admin_challenge_set", "admin_challenge_reset", "admin_challenge_rewards", "admin_title_created"],
     refused: ["admin_refused", "backup_refused"],
     // Backups (ADMINISTRATION › Sauvegardes, backups.ts): copies, downloads, imports. Never a passphrase.
     backup: [
@@ -218,6 +218,9 @@ function challengeOfDetails(d: Record<string, unknown>) {
         drawn: pick("drawn"),
         draws_on: typeof d.draws_on === "string" ? d.draws_on : null,
         field: typeof d.field === "string" ? d.field : null,
+        // 2.43: its rewards (set, or tried), and those they replaced.
+        rewards: Array.isArray(d.rewards) ? d.rewards.filter(isObject) : null,
+        previous: Array.isArray(d.previous) ? d.previous.filter(isObject) : null,
     };
 }
 
@@ -266,6 +269,8 @@ export async function listLog(ctx: Ctx): Promise<Response> {
             import_id: str("import_id"),
             // 2.41: a challenge of the calendar (set, put back to the draw, or refused).
             challenge: challengeOfDetails(d),
+            // 2.43: a title created on the server (or refused): { id?, text, color }.
+            title: isObject(d.title) ? d.title : null,
         };
     });
     return json(ctx, { entries, has_more: rows.results.length > page.limit, offset: page.offset });

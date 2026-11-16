@@ -6,18 +6,36 @@
 // « obtenu », and a tooltip on the tile under the mouse or the keyboard / gamepad focus: its
 // name, its category, its condition, my progress (« 3 / 10 »), « Obtenu ». A tile opens the
 // reward in Collection → Vestiaire. The texts of the conditions are shared with the Collection.
+// 2.43: the rewards of one challenge (an administrator's: an item of the catalogue or a title
+// created on Cosmic Online, each with its condition on that challenge) come first in the row,
+// with the mark of their condition and a tooltip of their own.
 
+#include <cstdint>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "engine/core/Math.h"
+#include "game/online/DailyChallenges.h"
 
 namespace cosmic {
 
 class GameServices;
 struct CosmeticItem;
 struct CosmeticProgress;
+
+/// 2.43: a title's colour ("gold", "silver", "cyan", "violet"; anything else: gold).
+Color titleColor(const std::string& color);
+/// « Or atteint », « Top 10 final », « Niveau fini ».
+std::string prizeConditionShort(const ChallengePrize& p);
+/// The whole condition: « Atteindre le palier Or sur ce défi. »…
+std::string prizeConditionText(const ChallengePrize& p);
+/// Where a reward was won: « Défi du jour du 20/11 », « Défi de la semaine 47 », « Défi du mois de novembre 2026 ».
+std::string wonOriginText(const WonReward& w);
+/// What a reward of a challenge looks like, as an item: the catalogue's (copied) or the server
+/// title's; nullopt for an item this game does not know (a newer one).
+std::optional<CosmeticItem> prizeLook(GameServices& g, const ChallengePrize& p);
 
 /// The condition of a reward of the challenges, whole: « Réussir un défi de la semaine en Or. »
 std::string challengeConditionText(const CosmeticItem& it);
@@ -37,6 +55,10 @@ void drawCosmeticPreview(GameServices& g, const CosmeticItem& it, const Rect& bo
 /// A row of reward tiles (focusable) and the tooltip of the one hovered or focused.
 class ChallengeRewardRow {
 public:
+    /// 2.43: the rewards of the challenge `c` (nullptr: none), drawn first by draw(); to call
+    /// each frame before it.
+    void setPrizes(GameServices& g, const DailyChallenge* c);
+    bool hasPrizes() const { return !prizes_.empty(); }
     /// Width of the tile of `it` at height `h`: a square, a title as wide as its chip.
     static float tileWidth(GameServices& g, const CosmeticItem& it, float h);
     /// The row's width (gaps included).
@@ -51,12 +73,23 @@ public:
     /// The tooltip of the tile hovered (mouse) or focused (keyboard, gamepad), over the rest:
     /// to call once everything else of the screen is drawn.
     void drawTooltip(GameServices& g);
-    bool showingTooltip() const { return tip_ != nullptr; }
+    bool showingTooltip() const { return tip_ != nullptr || tipPrize_ >= 0; }
 
 private:
+    struct Prize {
+        CosmeticItem item;
+        ChallengePrize prize;
+        bool won = false;
+    };
+    void drawPrizeTooltip(GameServices& g, const Prize& pz);
+
     const CosmeticItem* tip_ = nullptr;
+    int tipPrize_ = -1;
     Rect tipTile_;
     bool newDue_ = false;
+    std::vector<Prize> prizes_;
+    std::string prizeChallenge_;
+    int64_t prizeEndsMs_ = 0;
 };
 
 }  // namespace cosmic

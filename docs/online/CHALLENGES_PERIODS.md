@@ -366,3 +366,62 @@ Objectif d'un défi (`objective`, colonne de `challenges`, migration `0079_chall
   50 % du parcours » / « 80 % » / « Finir le niveau, sans dégât », classement « Progression »
   d'abord (avec le palier de chaque ligne), « Ma progression » et son palier sur la fiche, palier
   de l'essai à la fin d'une partie ; l'ATH dit « Or : finir sans dégât » au lieu des temps.
+
+## 8. Récompenses d'un défi, titres créés par un admin (2.43.0)
+
+Un admin donne à un défi **pas encore commencé** ses propres récompenses (ADMINISTRATION ›
+Calendrier des défis › « Récompenses ») : chacune est un élément du catalogue du jeu
+(`src/cosmeticCatalog.json`, jamais un élément de départ) ou un **titre créé sur le serveur**
+(`server_titles`, porté sous l'id `srv:<n>` : aucune mise à jour du jeu), avec une condition sur
+les résultats de **ce** défi reçus à l'heure (`late = 0`) et **vérifiés** (`VERIFIED`) :
+
+- `tier` (valeur 1 Bronze, 2 Argent, 3 Or : ce palier ou mieux) — parties finies et, sur
+  « Finir le niveau », essais dont la progression a atteint un palier (`challenge_attempts.tier`) ;
+- `top` (valeur N de 1 à 100) — place au classement final du défi (son classement principal :
+  temps, ou progression pour « Finir le niveau » ; égalité départagée comme le classement, la
+  partie reçue la première d'abord ; comptes actifs seulement) ;
+- `finished` — au moins une partie finie.
+
+Migration `XXXX_challenge_rewards.sql` : `server_titles` (texte ≤ 32 caractères, couleur
+`gold|silver|cyan|violet`, `text_key` unique : même texte aux accents et à la casse près refusé),
+`challenge_reward_rules` (par id de période `<kind>-<period>`, sans clé étrangère : elles restent
+après « Revenir au tirage »), `challenge_reward_grants` (défi accordé, une fois),
+`player_won_rewards` (unique par joueur, défi et récompense).
+
+| méthode | route | rôle |
+|---|---|---|
+| GET | `/admin/titles` | `{ titles: [{ id: "srv:<n>", text, color, created_at, created_by, uses }], max_chars, colors }` |
+| POST | `/admin/titles` | `{ text, color }` → `201 { title }` ; texte nettoyé (espaces), 1 à 32 caractères, lettres, chiffres, ponctuation et espaces (ni contrôle ni emoji) ; `409 TITLE_EXISTS` (`details.title` = le titre existant) |
+| PUT | `/admin/challenges/{challengeId}/rewards` | `{ rewards: [{ kind: item\|title, ref, condition: tier\|top\|finished, value }] }` (6 au plus, dans l'ordre ; `[]` les retire) → `{ rewards }` ; `409 CHALLENGE_STARTED` dès le premier jour (vérifié aussi par chaque écriture), `400` (élément inconnu ou de départ, titre inconnu, valeur hors bornes, récompense en double) |
+| GET | `/players/me/rewards` | `{ rewards: [{ challenge: { id, kind, period, date, title }, kind, ref, item: { id, category, name } \| null, title: { id, text, color } \| null, granted_at }] }`, les plus récentes d'abord |
+
+Toutes les routes admin : `requireAdminRole` (sinon `404`), limite `admin_write`, inscrites au
+Journal (`admin_challenge_rewards` avec `rewards` et `previous`, `admin_title_created` avec
+`title`, refus `admin_refused`). `GET /admin/challenges` donne pour chaque période `rewards` et
+`rewards_granted_at`. L'objet défi public ajoute `rewards` (même forme que la réponse du `PUT`).
+
+**Attribution** : une heure après la fin de la période (`GRANT_DELAY_MS` : parties à l'heure
+reçues, replays contrôlés), par le cron quotidien (après la reprise des parties en attente) ou à
+la lecture (`GET /players/me/rewards`, classement d'un défi terminé). Un seul lot D1 (une
+transaction) : récompenses gagnées (`INSERT OR IGNORE`, jamais retirées), une notification
+`challenge_reward` par gagnant (désactivable comme les autres), marque `challenge_reward_grants`.
+Une seconde passe n'ajoute rien et ne notifie personne ; une partie vérifiée après l'attribution
+ne change plus rien.
+
+**Port** : `PUT /players/me/cosmetics` accepte `title: "srv:<n>"` seulement pour un titre gagné
+(sinon le titre par défaut) ; un élément du catalogue gagné se porte quelle que soit sa condition
+habituelle. Profil : `cosmetics.title = { id, look, name, color }` ; classements :
+`player.title = { id, name, color }`.
+
+### Côté jeu (2.43.0)
+
+- Éditeur du calendrier : 3ᵉ onglet « Récompenses » (liste avec aperçu, condition modifiable, ×) ;
+  « + Récompense du jeu » (fenêtre : catégories, éléments, titres déjà créés, condition) ;
+  « + Créer un titre » (texte ≤ 32 caractères, Or / Argent / Cyan / Violet, condition). « Enregistrer »
+  envoie le défi puis ses récompenses. Captures : `--admin calendar:AAAA-MM:<id>:recompenses`.
+- Fiche d'un défi et fin de partie : les récompenses du défi d'abord dans « Récompenses » (marque de
+  la condition, info-bulle : condition, « Gagnée », « À gagner jusqu'à la fin du défi »…).
+- `GET /players/me/rewards` après chaque lecture de `/challenges/me`, gardé dans
+  `saves/challenges/state.json` (hors ligne). Collection : les titres gagnés dans « Titres »
+  (« Défi du jour du 20/11 »), équipables ; un titre du serveur s'affiche dans sa couleur (profil,
+  classements).

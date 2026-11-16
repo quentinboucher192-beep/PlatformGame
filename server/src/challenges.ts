@@ -25,7 +25,7 @@
 
 import catalogJson from "./challengeCatalog.json";
 import { audit, requireAuth, type AuthInfo } from "./auth";
-import { challengeRewardProgress } from "./challengeRewards";
+import { GRANT_DELAY_MS, PRIZES_SQL, challengeRewardProgress, grantPrizes, prizeItem, prizesJson } from "./challengeRewards";
 import { pseudoVersionOf } from "./community";
 import { boardCosmetics, withCosmetics, type BoardCosmetics } from "./cosmetics";
 import { sha256Hex } from "./crypto";
@@ -276,6 +276,8 @@ export interface ChallengeRow {
     author_name: string | null;
     /** The level version has a race layout (« Plus loin »). */
     has_race: number;
+    /** 2.43: its rewards (challengeRewards.ts, PRIZES_SQL), a JSON array. */
+    rewards_json?: string | null;
 }
 
 export const OBJECTIVES = ["speed", "finish"] as const;
@@ -313,7 +315,8 @@ export const CHALLENGE_SQL = `SELECT c.*, p.username AS author_name,
       WHEN 'campaign' THEN EXISTS (SELECT 1 FROM level_versions lv WHERE lv.level_id = c.level_id AND lv.content_hash = c.level_hash AND lv.race IS NOT NULL)
       ELSE EXISTS (SELECT 1 FROM community_level_versions cv
                    WHERE cv.level_id = c.level_id AND cv.version = c.level_version AND cv.level_hash = c.level_hash AND cv.race IS NOT NULL)
-    END AS has_race
+    END AS has_race,
+    ${PRIZES_SQL} AS rewards_json
   FROM challenges c LEFT JOIN players p ON p.id = c.featured_player_id`;
 
 function powersOf(c: Pick<ChallengeRow, "powers">): string[] {
@@ -380,6 +383,9 @@ export function challengeJson(c: ChallengeRow) {
         progress_available: c.has_race === 1,
         // 2.41: "speed" (the best times) or "finish" (the progress board is the challenge's board).
         objective: c.objective ?? "speed",
+        // 2.43: the rewards an administrator gave it, each with its condition (granted by the
+        // server once the period is over, from the verified results only).
+        rewards: prizesJson(c.rewards_json),
     };
 }
 
@@ -884,6 +890,8 @@ const PROGRESS_UNAVAILABLE = () =>
  */
 export async function leaderboard(ctx: Ctx, viewer: AuthInfo | null): Promise<Response> {
     const c = await startedChallenge(ctx, ctx.params.challengeId!);
+    // 2.43: the final board of an ended challenge is read: its rewards are granted if due.
+    if (c.end_date <= utcDate(Date.now() - GRANT_DELAY_MS)) await grantQuietly(ctx, { onlyId: c.id, limit: 1 });
     const scope = queryEnum(ctx.url, "scope", SCOPES, "world");
     const period = queryEnum(ctx.url, "period", BOARD_PERIODS, "live");
     // board=time stays the default, also on a « Finir le niveau » challenge (2.41): the older
@@ -1888,8 +1896,101 @@ export async function challengeReplayKeys(ctx: Ctx, playerId: string): Promise<s
     return rows.results.map((r) => r.replay_key);
 }
 
-/** Daily maintenance: missing challenges, the creators featured, runs held for review. */
-export async function maintenance(ctx: Ctx): Promise<{ rechecked: number }> {
+/**
+ * Daily maintenance: missing challenges, the creators featured, runs held for review, then
+ * (2.43) the rewards of the challenges that ended.
+ */
+export async function maintenance(ctx: Ctx): Promise<{ rechecked: number; rewards_won: number }> {
     await ensureChallenges(ctx);
-    return { rechecked: await recheckHeldRuns(ctx, null) };
+    const rechecked = await recheckHeldRuns(ctx, null);
+    return { rechecked, rewards_won: await grantDuePrizes(ctx, { limit: 50 }) };
+}
+
+// --------------------------------------------------- rewards of one challenge (2.43)
+
+/**
+ * Grants the rewards of the ended challenges not granted yet, from GRANT_DELAY_MS after their
+ * end (the runs received in time are in and their replays checked): the oldest first, up to
+ * `limit`, or the challenge `onlyId` alone. Each by its main board: the times (« Vitesse »)
+ * or the progress (« Finir le niveau »). Returns the rewards newly won.
+ */
+export async function grantDuePrizes(ctx: Ctx, o: { limit?: number; onlyId?: string } = {}): Promise<number> {
+    const cutoff = utcDate(Date.now() - GRANT_DELAY_MS);
+    const rows = await ctx.env.DB.prepare(
+        `SELECT c.id, c.kind, c.period, c.date, c.objective FROM challenges c
+         WHERE c.end_date <= ?1 AND (?2 IS NULL OR c.id = ?2)
+           AND EXISTS (SELECT 1 FROM challenge_reward_rules r WHERE r.challenge_id = c.id)
+           AND NOT EXISTS (SELECT 1 FROM challenge_reward_grants g WHERE g.challenge_id = c.id)
+         ORDER BY c.end_date, c.id LIMIT ?3`,
+    )
+        .bind(cutoff, o.onlyId ?? null, o.limit ?? 20)
+        .all<{ id: string; kind: ChallengeKind; period: string; date: string; objective: Objective }>();
+    let won = 0;
+    for (const c of rows.results) won += await grantPrizes(ctx, c, (c.objective === "finish" ? progressSql({}) : boardSql({})).sql);
+    return won;
+}
+
+/** The due rewards granted on a reading (a failure is logged; the reading answers all the same). */
+async function grantQuietly(ctx: Ctx, o: { limit?: number; onlyId?: string }): Promise<void> {
+    try {
+        await grantDuePrizes(ctx, o);
+    } catch (e) {
+        log("error", "challenge_rewards_grant_failed", { request_id: ctx.requestId, error: e instanceof Error ? e.message : String(e) });
+    }
+}
+
+interface WonRow {
+    challenge_id: string;
+    kind: string;
+    ref: string;
+    granted_at: string;
+    challenge_kind: ChallengeKind | null;
+    period: string | null;
+    date: string | null;
+    level_title: string | null;
+    title_text: string | null;
+    title_color: string | null;
+}
+
+/**
+ * GET /players/me/rewards (2.43): `{ rewards: [{ challenge: { id, kind, period, date, title },
+ * kind: item|title, ref, item: { id, category, name } | null, title: { id, text, color } |
+ * null, granted_at }] }`: the rewards of challenges I won, the most recent first (the rewards
+ * due are granted first). An item of the catalogue unlocks in the Collection, a title
+ * ("srv:<id>") may be worn (PUT /players/me/cosmetics).
+ */
+export async function myRewards(ctx: Ctx): Promise<Response> {
+    const auth = await requireAuth(ctx);
+    await grantQuietly(ctx, { limit: 5 });
+    const rows = await ctx.env.DB.prepare(
+        `SELECT w.challenge_id, w.reward_kind AS kind, w.reward_ref AS ref, w.granted_at, c.kind AS challenge_kind, c.period, c.date, c.level_title,
+                t.text AS title_text, t.color AS title_color
+         FROM player_won_rewards w LEFT JOIN challenges c ON c.id = w.challenge_id
+         LEFT JOIN server_titles t ON w.reward_kind = 'title' AND t.id = CAST(substr(w.reward_ref, 5) AS INTEGER)
+         WHERE w.player_id = ?1 ORDER BY w.granted_at DESC, w.challenge_id, w.reward_ref LIMIT 500`,
+    )
+        .bind(auth.player.id)
+        .all<WonRow>();
+    const rewards = [];
+    for (const r of rows.results) {
+        const p = parseChallengeId(r.challenge_id);
+        const item = r.kind === "item" ? prizeItem(r.ref) : null;
+        const title = r.kind === "title" && r.title_text ? { id: r.ref, text: r.title_text, color: r.title_color ?? "gold" } : null;
+        if (!item && !title) continue;
+        rewards.push({
+            challenge: {
+                id: r.challenge_id,
+                kind: r.challenge_kind ?? p?.kind ?? null,
+                period: r.period ?? p?.period ?? null,
+                date: r.date ?? p?.start ?? null,
+                title: r.level_title,
+            },
+            kind: r.kind,
+            ref: r.ref,
+            item: item ? { id: item.id, category: item.category, name: item.name } : null,
+            title,
+            granted_at: r.granted_at,
+        });
+    }
+    return json(ctx, { rewards });
 }

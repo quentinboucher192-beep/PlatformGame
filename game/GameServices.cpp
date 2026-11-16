@@ -75,6 +75,7 @@ CosmeticProgress GameServices::cosmeticProgress() const {
     p.totalStars = achievementCatalog.totalStars();
     p.book = &achievements;
     p.challenges = &challenges.rewardProgress();
+    p.won = &challenges.wonRewards();
     return p;
 }
 
@@ -86,12 +87,20 @@ void GameServices::challengeRewardsChanged(bool announce) {
     const CosmeticProgress p = cosmeticProgress();
     std::set<std::string> now;
     for (const CosmeticItem& i : cosmetics.items())
-        if (i.challengeReward() && cosmeticUnlocked(i, p)) now.insert(i.id);
+        if ((i.challengeReward() || (p.won && p.won->has(i.id))) && cosmeticUnlocked(i, p)) now.insert(i.id);
+    // 2.43: the server titles won at a challenge.
+    std::vector<const CosmeticItem*> all;
+    for (const CosmeticItem& i : cosmetics.items()) all.push_back(&i);
+    if (p.won)
+        for (const CosmeticItem& t : p.won->titles) {
+            now.insert(t.id);
+            all.push_back(&t);
+        }
     if (announce)
-        for (const CosmeticItem& i : cosmetics.items())
-            if (now.count(i.id) && !challengeRewardsUnlocked_.count(i.id) && !collection.announced(i.id))
-                online.notify(OnlineService::Notification::Kind::Success, "Récompense débloquée : " + i.name,
-                              cosmeticCategorySingular(i.category) + " · défis · menu principal → Collection");
+        for (const CosmeticItem* i : all)
+            if (now.count(i->id) && !challengeRewardsUnlocked_.count(i->id) && !collection.announced(i->id))
+                online.notify(OnlineService::Notification::Kind::Success, "Récompense débloquée : " + i->name,
+                              cosmeticCategorySingular(i->category) + " · défis · menu principal → Collection");
     challengeRewardsUnlocked_ = std::move(now);
 }
 

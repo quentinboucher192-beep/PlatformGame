@@ -5,6 +5,7 @@
 // creatures met). Display only: nothing here ever changes a run, a replay or a record.
 
 #include <map>
+#include <optional>
 #include <set>
 #include <string>
 #include <utility>
@@ -45,7 +46,41 @@ struct CosmeticItem {
     std::string achievement;   // unlocked by this achievement instead of stars
     ChallengeUnlock challenge; // 2.35: or by verified challenge results
     bool isDefault = false;    // the category's starting item
+    /// 2.43: a title created on Cosmic Online by an administrator (id "srv:<n>", `look` its
+    /// text): its colour, "gold", "silver", "cyan" or "violet"; "" for the catalogue's items.
+    std::string color;
     bool challengeReward() const { return !challenge.kind.empty(); }
+    bool serverTitle() const { return id.rfind("srv:", 0) == 0; }
+};
+
+/// 2.43: a reward won at one challenge, granted by Cosmic Online once the challenge was over
+/// (GET /players/me/rewards, kept on this computer for offline play).
+struct WonReward {
+    std::string challengeId;   // "daily-2026-11-20"
+    std::string challengeKind; // "daily", "weekly", "monthly"
+    std::string period;        // "2026-11-20", "2026-W47", "2026-11"
+    std::string date;          // its first day
+    std::string kind;          // "item" (of the catalogue) or "title" (created on the server)
+    std::string ref;           // the item's id, or "srv:<n>"
+    std::string grantedAt;
+};
+
+/// 2.43: what the player won at single challenges: catalogue items (unlocked whatever their
+/// usual condition) and the server's titles, as items of the category « title ».
+struct WonRewards {
+    bool known = false;               // read from the server (else: nothing won here)
+    std::vector<WonReward> list;      // the most recent first
+    std::vector<CosmeticItem> titles; // the server titles won, once each
+    bool has(const std::string& ref) const;
+    bool wonAt(const std::string& challengeId, const std::string& ref) const;
+    const CosmeticItem* title(const std::string& ref) const;
+    /// The first challenge (the oldest) where `ref` was won, nullptr when never.
+    const WonReward* origin(const std::string& ref) const;
+    /// `rewards` of GET /players/me/rewards; nullopt when malformed.
+    static std::optional<WonRewards> fromJson(const Json& rewards);
+    Json toJson() const;  // the same form (the cache)
+    bool operator==(const WonRewards& o) const { return known == o.known && toJson() == o.toJson(); }
+    bool operator!=(const WonRewards& o) const { return !(*this == o); }
 };
 
 /// What Cosmic Online verified of the player's challenge runs (GET /challenges/me, kept on this
@@ -94,6 +129,7 @@ struct CosmeticProgress {
     int totalStars = 0;
     const AchievementBook* book = nullptr;
     const ChallengeRewardProgress* challenges = nullptr;  // 2.35: nullptr / unknown: locked
+    const WonRewards* won = nullptr;                      // 2.43: rewards won at single challenges
 };
 
 /// Stars needed for an item (its milestone; every star for « all »), -1 when an
@@ -121,7 +157,8 @@ public:
     /// No collection file yet (first start of 2.19, or a new player).
     bool firstStart() const { return !existed_; }
 
-    /// Equipped item of a category, or its default when the saved one is unknown or locked.
+    /// Equipped item of a category, or its default when the saved one is unknown or locked
+    /// (2.43: a title may be a server title won, `p.won`).
     const CosmeticItem* equipped(const CosmeticCatalog& catalog, const std::string& category, const CosmeticProgress& p) const;
     std::string equippedId(const std::string& category) const;
     void equip(const std::string& category, const std::string& id);
@@ -133,7 +170,8 @@ public:
 
     bool announced(const std::string& id) const { return announced_.count(id) > 0; }
     void markAnnounced(const std::string& id) { announced_.insert(id); }
-    /// Unlocked, not default, never announced (the end-of-level card), in catalogue order.
+    /// Unlocked, not default, never announced (the end-of-level card), in catalogue order (2.43:
+    /// the server titles won are announced by a toast and a notification instead).
     std::vector<const CosmeticItem*> fresh(const CosmeticCatalog& catalog, const CosmeticProgress& p) const;
 
     // Jukebox

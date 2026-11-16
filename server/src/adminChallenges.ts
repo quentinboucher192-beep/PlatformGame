@@ -11,6 +11,23 @@
 
 import { audit, type AuthInfo } from "./auth";
 import { requireAdminRole } from "./adminRoles";
+import {
+    MAX_PRIZES,
+    MAX_TOP,
+    PRIZE_CONDITIONS,
+    PRIZE_KINDS,
+    PRIZE_ROWS_SQL,
+    TITLE_COLORS,
+    TITLE_MAX_CHARS,
+    cleanTitleText,
+    prizeItem,
+    prizesJson,
+    titleIdOf,
+    titleKey,
+    titleRef,
+    type PrizeRow,
+    type PrizeRule,
+} from "./challengeRewards";
 import { ChallengeSpecError, MAX_TIER_MS, validateChallengeSpec, type ValidatedChallenge } from "./challengeSpec.mjs";
 import {
     AHEAD,
@@ -87,9 +104,23 @@ export async function listChallenges(ctx: Ctx): Promise<Response> {
     }
     const rows = await ctx.env.DB.prepare(`${CHALLENGE_SQL} WHERE c.date < ?2 AND c.end_date > ?1`).bind(bounds.start, bounds.end).all<ChallengeRow>();
     const byId = new Map(rows.results.map((c) => [c.id, c]));
+    const monthPeriods = periodsOfMonth(bounds);
+    // 2.43: the rewards of each period (set even before the server draws it) and when they were granted.
+    const ids = JSON.stringify(monthPeriods.map((p) => `${p.kind}-${p.period}`));
+    const [prizeRows, grants] = await Promise.all([
+        ctx.env.DB.prepare(`${PRIZE_ROWS_SQL} WHERE r.challenge_id IN (SELECT value FROM json_each(?1)) ORDER BY r.challenge_id, r.position`)
+            .bind(ids)
+            .all<PrizeRow & { challenge_id: string }>(),
+        ctx.env.DB.prepare("SELECT challenge_id, granted_at FROM challenge_reward_grants WHERE challenge_id IN (SELECT value FROM json_each(?1))")
+            .bind(ids)
+            .all<{ challenge_id: string; granted_at: string }>(),
+    ]);
+    const prizesOf = new Map<string, PrizeRow[]>();
+    for (const r of prizeRows.results) prizesOf.set(r.challenge_id, [...(prizesOf.get(r.challenge_id) ?? []), r]);
+    const grantedOf = new Map(grants.results.map((g) => [g.challenge_id, g.granted_at]));
     const first = await ctx.env.DB.prepare("SELECT MIN(date) AS d FROM challenges").first<{ d: string | null }>();
     const current = periodOf("monthly", today);
-    const periods = periodsOfMonth(bounds).map((p) => {
+    const periods = monthPeriods.map((p) => {
         const id = `${p.kind}-${p.period}`;
         const c = byId.get(id);
         const state = stateOf(p, today);
@@ -105,6 +136,8 @@ export async function listChallenges(ctx: Ctx): Promise<Response> {
             editable: state === "coming",
             draws_on: !c && state === "coming" ? drawsOn(p, today) : null,
             challenge: c ? adminChallengeJson(c) : null,
+            rewards: prizesJson(prizesOf.get(id) ?? []),
+            rewards_granted_at: grantedOf.get(id) ?? null,
         };
     });
     const firstMonth = first?.d ? first.d.slice(0, 7) : current;
@@ -555,4 +588,193 @@ export async function resetChallenge(ctx: Ctx): Promise<Response> {
         by_username: auth.player.username,
     });
     return json(ctx, { challenge: drawn ? adminChallengeJson(drawn) : null, draws_on: when });
+}
+
+// ------------------------------------------------- rewards of a challenge (2.43)
+
+/** A server title as the administration lists it. */
+interface TitleRow {
+    id: number;
+    text: string;
+    color: string;
+    created_at: string;
+    created_by_name: string | null;
+    uses: number;
+}
+
+function titleJson(t: Pick<TitleRow, "id" | "text" | "color" | "created_at"> & Partial<TitleRow>) {
+    return {
+        id: titleRef(t.id),
+        text: t.text,
+        color: t.color,
+        created_at: t.created_at,
+        created_by: t.created_by_name ?? null,
+        uses: t.uses ?? 0,
+    };
+}
+
+/**
+ * GET /admin/titles: `{ titles: [{ id: "srv:<n>", text, color, created_at, created_by, uses }],
+ * max_chars, colors }`: the titles created on the server, the newest first (`uses`: the
+ * challenges that give it).
+ */
+export async function listTitles(ctx: Ctx): Promise<Response> {
+    await requireAdminRole(ctx);
+    const rows = await ctx.env.DB.prepare(
+        `SELECT t.id, t.text, t.color, t.created_at, p.username AS created_by_name,
+                (SELECT COUNT(DISTINCT r.challenge_id) FROM challenge_reward_rules r WHERE r.reward_kind = 'title' AND r.reward_ref = 'srv:' || t.id) AS uses
+         FROM server_titles t LEFT JOIN players p ON p.id = t.created_by ORDER BY t.id DESC LIMIT 500`,
+    ).all<TitleRow>();
+    return json(ctx, { titles: rows.results.map(titleJson), max_chars: TITLE_MAX_CHARS, colors: TITLE_COLORS });
+}
+
+/**
+ * POST /admin/titles `{ text, color }`: a title created on the server (worn as "srv:<id>", no
+ * game update needed). The text: trimmed, inner spaces collapsed, 1 to 32 characters, letters,
+ * digits, punctuation and spaces only; the same text (accents and case aside) is refused (409
+ * TITLE_EXISTS, `details.title` the existing one). Written to the Journal, refusals too.
+ * Answers 201 `{ title }`.
+ */
+export async function createTitle(ctx: Ctx): Promise<Response> {
+    const auth = await requireAdminRole(ctx);
+    await rateLimit(ctx, RULES.adminWrite, "player:" + auth.player.id);
+    const body = await readJsonObject(ctx, 1024);
+    const v = new Validator(body, ["text", "color"]);
+    const raw = v.str("text", { min: 1, max: 128, trim: true });
+    const color = v.oneOf("color", TITLE_COLORS);
+    const text = raw === undefined ? null : cleanTitleText(raw);
+    if (raw !== undefined && !text) v.fail("text", `de 1 à ${TITLE_MAX_CHARS} caractères : lettres, chiffres, ponctuation et espaces`);
+    const what = { action: "title", title: { text: (raw ?? "").slice(0, 64), color: color ?? null } };
+    if (v.errors.length > 0 || !text) await refuse(ctx, auth, Errors.validation(v.errors), { ...what, field: v.errors[0]?.field ?? "text" });
+    const key = titleKey(text!);
+    const row = await ctx.env.DB.prepare(
+        `INSERT INTO server_titles (text, text_key, color, created_by, created_at) VALUES (?1, ?2, ?3, ?4, ?5)
+         ON CONFLICT (text_key) DO NOTHING RETURNING id, text, color, created_at`,
+    )
+        .bind(text, key, color, auth.player.id, nowIso())
+        .first<TitleRow>();
+    if (!row) {
+        const existing = await ctx.env.DB.prepare("SELECT id, text, color, created_at FROM server_titles WHERE text_key = ?1").bind(key).first<TitleRow>();
+        return refuse(
+            ctx,
+            auth,
+            Errors.conflict("TITLE_EXISTS", "Ce titre existe déjà : choisissez-le dans la liste des titres.", existing ? { title: titleJson(existing) } : undefined),
+            what,
+        );
+    }
+    const title = titleJson({ ...row, created_by_name: auth.player.username });
+    await audit(ctx, auth.player.id, "admin_title_created", { title: { id: title.id, text: title.text, color: title.color }, by_username: auth.player.username });
+    return json(ctx, { title }, { status: 201 });
+}
+
+type FieldErrors = { field: string; message: string }[];
+
+/** The body's rewards, checked: kinds, references the server knows, conditions and their values, no reward twice. */
+async function readPrizes(ctx: Ctx, body: Record<string, unknown>): Promise<{ rules: PrizeRule[]; errors: FieldErrors }> {
+    const errors: FieldErrors = [...new Validator(body, ["rewards"]).errors];
+    const rules: PrizeRule[] = [];
+    const list = body.rewards;
+    if (!Array.isArray(list) || list.length > MAX_PRIZES) {
+        errors.push({ field: "rewards", message: `liste de ${MAX_PRIZES} récompenses au plus attendue` });
+        return { rules, errors };
+    }
+    const titleIds = new Set<number>();
+    list.forEach((raw: unknown, i) => {
+        const field = `rewards[${i}]`;
+        if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
+            errors.push({ field, message: "objet { kind, ref, condition, value } attendu" });
+            return;
+        }
+        const rv = new Validator(raw as Record<string, unknown>, ["kind", "ref", "condition", "value"]);
+        const kind = rv.oneOf("kind", PRIZE_KINDS);
+        const ref = rv.str("ref", { min: 1, max: 64 });
+        const condition = rv.oneOf("condition", PRIZE_CONDITIONS);
+        const max = condition === "tier" ? 3 : condition === "top" ? MAX_TOP : 0;
+        const value = rv.int("value", { min: condition === "finished" ? 0 : 1, max, optional: condition === "finished" }) ?? 0;
+        for (const e of rv.errors) errors.push({ field: `${field}.${e.field}`, message: e.message });
+        if (rv.errors.length > 0 || !kind || !ref || !condition) return;
+        if (kind === "item" && !prizeItem(ref)) {
+            errors.push({ field: `${field}.ref`, message: "élément inconnu du catalogue (ou élément de départ)" });
+            return;
+        }
+        if (kind === "title") {
+            const id = titleIdOf(ref);
+            if (id === null) {
+                errors.push({ field: `${field}.ref`, message: "titre « srv:<n> » attendu" });
+                return;
+            }
+            titleIds.add(id);
+        }
+        if (rules.some((r) => r.kind === kind && r.ref === ref)) {
+            errors.push({ field: `${field}.ref`, message: "cette récompense est déjà dans la liste" });
+            return;
+        }
+        rules.push({ kind, ref, condition, value });
+    });
+    if (titleIds.size > 0 && errors.length === 0) {
+        const known = await ctx.env.DB.prepare("SELECT id FROM server_titles WHERE id IN (SELECT value FROM json_each(?1))")
+            .bind(JSON.stringify([...titleIds]))
+            .all<{ id: number }>();
+        const have = new Set(known.results.map((r) => r.id));
+        rules.forEach((r, i) => {
+            if (r.kind === "title" && !have.has(titleIdOf(r.ref)!)) errors.push({ field: `rewards[${i}].ref`, message: "titre inconnu du serveur" });
+        });
+    }
+    return { rules, errors };
+}
+
+/**
+ * PUT /admin/challenges/{challengeId}/rewards `{ rewards: [{ kind: item|title, ref, condition:
+ * tier|top|finished, value }] }` (at most MAX_PRIZES, in their order; [] removes them): the
+ * rewards of a period that has not begun, set even before the server draws its challenge
+ * (they stay with the period through « Revenir au tirage »). value: tier 1 Bronze, 2 Argent,
+ * 3 Or (that tier or better); top 1..100; finished: none. Refused, and written to the
+ * Journal: a period that has begun (409 CHALLENGE_STARTED, also guarded by each write),
+ * invalid rewards (400). Answers `{ rewards }`, as the calendar shows them.
+ */
+export async function setRewards(ctx: Ctx): Promise<Response> {
+    const auth = await requireAdminRole(ctx);
+    await rateLimit(ctx, RULES.adminWrite, "player:" + auth.player.id);
+    const p = periodOfId(ctx);
+    const what = { ...periodDetails(p), action: "rewards" };
+    if (p.start <= utcDate()) await refuse(ctx, auth, STARTED(), what);
+    const body = await readJsonObject(ctx, 4 * 1024);
+    const { rules, errors } = await readPrizes(ctx, body);
+    if (errors.length > 0) await refuse(ctx, auth, Errors.validation(errors), { ...what, field: errors[0]!.field });
+    const db = ctx.env.DB;
+    const id = `${p.kind}-${p.period}`;
+    const before = await db.prepare(`${PRIZE_ROWS_SQL} WHERE r.challenge_id = ?1 ORDER BY r.position`).bind(id).all<PrizeRow>();
+    // Each write only while the period has not begun (?2: its first day); the last statement says whether it had not.
+    const res = await db.batch([
+        db.prepare("DELETE FROM challenge_reward_rules WHERE challenge_id = ?1 AND ?2 > date('now')").bind(id, p.start),
+        ...rules.map((r, i) =>
+            db
+                .prepare(
+                    `INSERT INTO challenge_reward_rules (challenge_id, position, reward_kind, reward_ref, condition, condition_value)
+                     SELECT ?1, ?3, ?4, ?5, ?6, ?7 WHERE ?2 > date('now')`,
+                )
+                .bind(id, p.start, i, r.kind, r.ref, r.condition, r.value),
+        ),
+        db.prepare("SELECT ?1 > date('now') AS open").bind(p.start),
+    ]);
+    const open = (res[res.length - 1]!.results as { open: number }[])[0]?.open === 1;
+    if (!open) await refuse(ctx, auth, STARTED(), what);
+    const after = await db.prepare(`${PRIZE_ROWS_SQL} WHERE r.challenge_id = ?1 ORDER BY r.position`).bind(id).all<PrizeRow>();
+    const summary = (rows: PrizeRow[]) =>
+        prizesJson(rows).map((r) => ({
+            kind: r.kind,
+            ref: r.ref,
+            name: r.item?.name ?? r.title?.text ?? r.ref,
+            category: r.item?.category ?? "title",
+            color: r.title?.color ?? null,
+            condition: r.condition,
+            value: r.value,
+        }));
+    await audit(ctx, auth.player.id, "admin_challenge_rewards", {
+        ...periodDetails(p),
+        rewards: summary(after.results),
+        previous: summary(before.results),
+        by_username: auth.player.username,
+    });
+    return json(ctx, { rewards: prizesJson(after.results) });
 }

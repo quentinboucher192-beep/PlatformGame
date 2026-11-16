@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 
 #include "game/GameServices.h"
 #include "ui/screens/CosmeticFx.h"
@@ -39,16 +40,47 @@ void drawNova(GameServices& g, const std::string& suitLook, float t, const Rect&
     g.app.renderer().drawTexture(*tex, &src, dst, tint);
 }
 
-/// The title's gold chip centred in `box` (its font smaller when the text is long).
-void drawTitleChip(UIContext& ui, const Rect& box, const std::string& text, bool on) {
+/// The title's chip centred in `box`, gold (2.43: a server title in its colour; its font smaller when the text is long).
+void drawTitleChip(UIContext& ui, const Rect& box, const std::string& text, bool on, Color gold = kGold) {
     float fs = fz(ui, std::min(14.0f, box.h / ui.s(1.0f) * 0.42f));
     fs = std::max(ui.fitFont(text, FontFace::Bold, fs, box.w - ui.s(18), 0.8f), 11.5f / ui.s(1.0f));
     float w = std::min(box.w - ui.s(4), ui.text().measure(text, FontFace::Bold, ui.s(fs)).x + ui.s(16));
     Rect r = Rect::fromCenter(box.center(), {w, ui.s(fs) + ui.s(10)});
-    Color col = on ? kGold : ui.theme().textDim;
+    Color col = on ? gold : ui.theme().textDim;
     ui.r().fillRoundedRect(r, r.h * 0.5f, col.withAlpha(28));
     ui.r().drawRoundedRect(r, r.h * 0.5f, col.withAlpha(160), std::max(1.0f, ui.s(1.2f)));
     ui.label(ui.elide(text, FontFace::Bold, fs, r.w - ui.s(10)), r.center(), fs, col, Align::Center, FontFace::Bold, VAlign::Middle);
+}
+
+const Color kCyan{110, 220, 255, 255};
+
+/// The colour of a reward's condition (its mark, its tooltip's border).
+Color prizeColor(const ChallengePrize& p) {
+    if (p.condition == "tier") return challengeTierColor(p.value);
+    if (p.condition == "top") return kGold;
+    return kCyan;
+}
+
+/// « Top N » in a small gold badge at the top right corner of `tile` (2.43).
+void drawTopMark(UIContext& ui, const Rect& tile, int n) {
+    const std::string t = "Top " + std::to_string(n);
+    const float fs = fz(ui, 11.5f);
+    const float w = ui.text().measure(t, FontFace::Bold, ui.s(fs)).x + ui.s(10), h = ui.s(fs) + ui.s(6);
+    Rect b{tile.right() - w - ui.s(3), tile.y + ui.s(3), w, h};
+    ui.r().fillRoundedRect(b.expanded(std::max(1.0f, ui.s(1.5f))), h * 0.5f, Color{8, 12, 26, 255});
+    ui.r().fillRoundedRect(b, h * 0.5f, kGold);
+    ui.label(t, b.center(), fs, Color{60, 40, 0, 255}, Align::Center, FontFace::Bold, VAlign::Middle);
+}
+
+/// A finish flag in a disc (« avoir fini le niveau »), centred on `c`.
+void drawFinishMark(UIContext& ui, Vec2 c, float radius) {
+    Renderer& r = ui.r();
+    r.fillCircle(c, radius + std::max(1.0f, ui.s(1.5f)), Color{8, 12, 26, 255});
+    r.fillCircle(c, radius, kCyan);
+    const float k = radius / 7.0f;
+    Color ink{8, 40, 56, 255};
+    r.drawLine({c.x - 2.6f * k, c.y - 4.0f * k}, {c.x - 2.6f * k, c.y + 4.2f * k}, ink, std::max(1.2f, 1.4f * k));
+    r.fillTriangle({c.x - 2.0f * k, c.y - 4.0f * k}, {c.x + 4.0f * k, c.y - 1.9f * k}, {c.x - 2.0f * k, c.y + 0.4f * k}, ink);
 }
 
 /// The size of a title's chip text in a tile `h` high.
@@ -131,6 +163,61 @@ std::string challengeProgressText(const CosmeticItem& it, const CosmeticProgress
 
 int challengeRewardTier(const CosmeticItem& it) { return it.challenge.streak ? 1 : std::clamp(it.challenge.tier, 1, 3); }
 
+Color titleColor(const std::string& color) {
+    if (color == "silver") return {206, 216, 232, 255};
+    if (color == "cyan") return {96, 226, 240, 255};
+    if (color == "violet") return {196, 146, 255, 255};
+    return kGold;
+}
+
+std::string prizeConditionShort(const ChallengePrize& p) {
+    if (p.condition == "tier") return std::string(p.value >= 3 ? "Or" : p.value == 2 ? "Argent" : "Bronze") + " atteint";
+    if (p.condition == "top") return "Top " + std::to_string(p.value) + " final";
+    return "Niveau fini";
+}
+
+std::string prizeConditionText(const ChallengePrize& p) {
+    if (p.condition == "tier") {
+        if (p.value >= 3) return "Atteindre le palier Or sur ce défi.";
+        if (p.value == 2) return "Atteindre le palier Argent (ou Or) sur ce défi.";
+        return "Atteindre un palier (Bronze, Argent ou Or) sur ce défi.";
+    }
+    if (p.condition == "top")
+        return p.value <= 1 ? std::string("Finir premier du classement final de ce défi.")
+                            : "Finir dans les " + std::to_string(p.value) + " premiers du classement final de ce défi.";
+    return "Finir le niveau de ce défi pendant qu'il a lieu.";
+}
+
+std::string wonOriginText(const WonReward& w) {
+    if (w.challengeKind == "weekly") return "Défi de la semaine " + std::to_string(w.period.size() > 6 ? std::atoi(w.period.c_str() + 6) : 0);
+    if (w.challengeKind == "monthly") {
+        static const char* const kMonths[12] = {"janvier", "février", "mars",      "avril",   "mai",      "juin",
+                                                "juillet", "août",    "septembre", "octobre", "novembre", "décembre"};
+        int yy = 0, mm = 0;
+        if (std::sscanf(w.period.c_str(), "%4d-%2d", &yy, &mm) == 2 && mm >= 1 && mm <= 12)
+            return std::string("Défi du mois de ") + kMonths[mm - 1] + " " + std::to_string(yy);
+        return "Défi du mois";
+    }
+    const std::string& d = w.date.size() >= 10 ? w.date : w.period;
+    return d.size() >= 10 ? "Défi du jour du " + d.substr(8, 2) + "/" + d.substr(5, 2) : std::string("Défi du jour");
+}
+
+std::optional<CosmeticItem> prizeLook(GameServices& g, const ChallengePrize& p) {
+    if (p.title()) {
+        CosmeticItem it;
+        it.id = p.ref;
+        it.category = "title";
+        it.name = p.name;
+        it.look = p.name;
+        it.color = p.color;
+        it.description = "Un titre créé sur Cosmic Online.";
+        return it;
+    }
+    const CosmeticItem* it = g.cosmetics.find(p.ref);
+    if (!it || it->isDefault) return std::nullopt;
+    return *it;
+}
+
 Color challengeTierColor(int tier) {
     // As the tiers of the challenge screens.
     if (tier >= 3) return {255, 204, 84, 255};
@@ -159,7 +246,7 @@ void drawCosmeticPreview(GameServices& g, const CosmeticItem& it, const Rect& bo
         drawAvatarFrame(r, c, rad, it.look, scale, time);
         if (!unlocked) r.fillRect(box, Color{11, 18, 38, 100});
     } else if (it.category == "title") {
-        drawTitleChip(ui, box, it.isDefault ? std::string("Sans titre") : it.look, unlocked);
+        drawTitleChip(ui, box, it.isDefault ? std::string("Sans titre") : it.look, unlocked, it.color.empty() ? kGold : titleColor(it.color));
     } else if (it.category == "victory") {
         r.pushClip(box);
         drawVictoryFx(r, it.look, {box.center().x, box.bottom() - box.h * 0.04f}, std::fmod(time, 1.6f) + 0.3f, false, box.h / 105.0f);
@@ -175,6 +262,17 @@ float ChallengeRewardRow::tileWidth(GameServices& g, const CosmeticItem& it, flo
     return std::max(h, ui.text().measure(it.look, FontFace::Bold, ui.s(fs)).x + ui.s(16) + ui.s(14));
 }
 
+void ChallengeRewardRow::setPrizes(GameServices& g, const DailyChallenge* c) {
+    prizes_.clear();
+    prizeChallenge_.clear();
+    if (!c) return;
+    prizeChallenge_ = c->id;
+    prizeEndsMs_ = c->endsAtMs;
+    const WonRewards& won = g.challenges.wonRewards();
+    for (const ChallengePrize& p : c->prizes)
+        if (auto look = prizeLook(g, p)) prizes_.push_back({std::move(*look), p, won.wonAt(c->id, p.ref)});
+}
+
 float ChallengeRewardRow::width(GameServices& g, const std::vector<const CosmeticItem*>& items, float h) {
     float w = 0.0f;
     for (size_t i = 0; i < items.size(); ++i) w += tileWidth(g, *items[i], h) + (i ? g.ui.s(10) : 0.0f);
@@ -186,14 +284,51 @@ const CosmeticItem* ChallengeRewardRow::draw(GameServices& g, const std::string&
     UIContext& ui = g.ui;
     Renderer& r = ui.r();
     tip_ = nullptr;
+    tipPrize_ = -1;
     newDue_ = false;
     const CosmeticProgress p = g.cosmeticProgress();
     const CosmeticItem* activated = nullptr;
     const float gap = ui.s(10), right = x + maxW;
     float cx = x;
+    bool full = false;
+    // 2.43: the rewards of this challenge first.
+    for (size_t k = 0; k < prizes_.size(); ++k) {
+        const Prize& pz = prizes_[k];
+        const float w = tileWidth(g, pz.item, h);
+        if (cx + w > right + 0.5f) {
+            full = true;  // no room: left out rather than overlapping
+            break;
+        }
+        Rect tile{cx, y, w, h};
+        const std::string name = idPrefix + "prize" + std::to_string(k);
+        bool hovered = false;
+        if (ui.hotspot(name, tile, &hovered)) {
+            // A catalogue item opens in the Collection; a server title once won.
+            if (const CosmeticItem* it = g.cosmetics.find(pz.prize.ref); it && !pz.prize.title()) activated = it;
+            else if (const CosmeticItem* t = p.won ? p.won->title(pz.prize.ref) : nullptr) activated = t;
+        }
+        if (ui.newBadge(name, tile, "challenges.prizes", false, true)) newDue_ = true;
+        const bool focused = ui.focused(name);
+        const Color tc = prizeColor(pz.prize);
+        r.fillRoundedRect(tile, ui.s(9), pz.won ? Color{14, 34, 30, 245} : Color{11, 18, 38, 245});
+        drawCosmeticPreview(g, pz.item, tile.expanded(-ui.s(5)), ui.time(), pz.won || pz.prize.title());
+        Color border = focused || hovered ? ui.theme().accent : pz.won ? kGreen.withAlpha(210) : tc.withAlphaF(0.75f);
+        r.drawRoundedRect(tile, ui.s(9), border, std::max(1.0f, ui.s(focused || hovered ? 2.2f : 1.4f)));
+        // The mark of its condition on the top right corner, « obtenu » on the bottom right one.
+        const float mr = std::max(ui.s(5.5f), h * 0.11f);
+        if (pz.prize.condition == "tier") drawTierMark(ui, {tile.right() - mr * 0.55f, tile.y + mr * 0.55f}, mr, pz.prize.value);
+        else if (pz.prize.condition == "top") drawTopMark(ui, tile, pz.prize.value);
+        else drawFinishMark(ui, {tile.right() - mr * 0.55f, tile.y + mr * 0.55f}, mr);
+        if (pz.won) drawObtainedMark(ui, {tile.right() - mr * 0.55f, tile.bottom() - mr * 0.55f}, mr);
+        if ((ui.usingPointer() && hovered) || (!ui.usingPointer() && focused)) {
+            tipPrize_ = static_cast<int>(k);
+            tipTile_ = tile;
+        }
+        cx += w + gap;
+    }
     for (const CosmeticItem* it : items) {
         const float w = tileWidth(g, *it, h);
-        if (cx + w > right + 0.5f) break;  // no room: left out rather than overlapping
+        if (full || cx + w > right + 0.5f) break;  // no room: left out rather than overlapping
         Rect tile{cx, y, w, h};
         const std::string name = idPrefix + it->id;
         bool hovered = false;
@@ -230,6 +365,7 @@ const CosmeticItem* ChallengeRewardRow::draw(GameServices& g, const std::string&
 }
 
 void ChallengeRewardRow::drawTooltip(GameServices& g) {
+    if (tipPrize_ >= 0 && tipPrize_ < static_cast<int>(prizes_.size())) return drawPrizeTooltip(g, prizes_[static_cast<size_t>(tipPrize_)]);
     if (!tip_) return;
     UIContext& ui = g.ui;
     Renderer& r = ui.r();
@@ -297,6 +433,80 @@ void ChallengeRewardRow::drawTooltip(GameServices& g) {
     }
     y += ui.s(12);
     // How to open it: the confirm key of the device in use (a click with the mouse).
+    r.fillRect({x, y - ui.s(6), inner, std::max(1.0f, ui.s(1))}, Color{60, 76, 110, 160});
+    const float gh = ui.s(22);
+    float gw = Glyphs::drawAction(ui, Action::MenuConfirm, {x, y + hintH * 0.5f}, gh);
+    ui.label(ui.elide(hint, FontFace::Body, fsHint, inner - gw - ui.s(8)), {x + gw + ui.s(8), y + hintH * 0.5f}, fsHint, ui.theme().textDim, Align::Left,
+             FontFace::Body, VAlign::Middle);
+}
+
+}  // namespace cosmic
+
+namespace cosmic {
+
+void ChallengeRewardRow::drawPrizeTooltip(GameServices& g, const Prize& pz) {
+    UIContext& ui = g.ui;
+    Renderer& r = ui.r();
+    const CosmeticItem& it = pz.item;
+    const Color tc = prizeColor(pz.prize);
+    const float W = ui.screenW(), H = ui.screenH();
+    const float w = std::min(ui.s(420), W - ui.s(24));
+    const float pad = ui.s(16), inner = w - 2 * pad;
+    // The texts, measured first: the box is as high as they need.
+    const std::string sub = cosmeticCategorySingular(it.category) + (pz.prize.title() ? " créé sur Cosmic Online" : "") + " · récompense de ce défi";
+    const std::string cond = prizeConditionText(pz.prize);
+    const std::string note = "Accordée par Cosmic Online à la fin du défi, d'après les parties vérifiées reçues à l'heure. Jamais retirée.";
+    const int64_t now = g.challenges.nowMs();
+    const WonRewards& won = g.challenges.wonRewards();
+    std::string state;
+    Color stateC = ui.theme().text;
+    if (pz.won) {
+        state = "Gagnée : à équiper dans la Collection";
+        stateC = kGreen;
+    } else if (!g.online.loggedIn()) {
+        state = "Connectez-vous à Cosmic Online pour la gagner.";
+        stateC = ui.theme().warm;
+    } else if (now < prizeEndsMs_) {
+        state = "À gagner jusqu'à la fin du défi.";
+    } else if (now < prizeEndsMs_ + 2LL * 3600 * 1000 || !won.known) {
+        state = "Défi terminé : les récompenses sont accordées dans l'heure qui suit.";
+        stateC = ui.theme().warm;
+    } else {
+        state = "Pas gagnée sur ce défi.";
+        stateC = ui.theme().textDim;
+    }
+    // Opened in the Collection: an item of the catalogue, a title once won.
+    const bool opens = !pz.prize.title() || pz.won;
+    const std::string hint = "voir dans la Collection";
+    const float fsName = 19, fsSub = fz(ui, 14), fsCond = fz(ui, 16), fsNote = fz(ui, 13.5f), fsState = fz(ui, 15.5f), fsHint = fz(ui, 13.5f);
+    const float condH = ui.text().measureWrapped(cond, FontFace::Body, ui.s(fsCond), inner).y;
+    const float noteH = ui.text().measureWrapped(note, FontFace::Body, ui.s(fsNote), inner).y;
+    const float stateH = ui.text().measureWrapped(state, FontFace::Bold, ui.s(fsState), inner).y;
+    const float hintH = opens ? ui.s(26) : 0.0f;
+    float h = pad + ui.s(26) + ui.s(22) + ui.s(10) + condH + ui.s(6) + noteH + ui.s(12) + stateH + (opens ? ui.s(12) + hintH : 0.0f) + pad;
+    Rect box{tipTile_.x, tipTile_.y - ui.s(12) - h, w, h};
+    if (box.y < ui.s(8)) box.y = tipTile_.bottom() + ui.s(12);
+    box.y = std::clamp(box.y, ui.s(8), std::max(ui.s(8), H - h - ui.s(8)));
+    box.x = std::clamp(box.x, ui.s(8), std::max(ui.s(8), W - w - ui.s(8)));
+    r.fillRoundedRect(box.expanded(ui.s(1)), ui.s(13), Color{2, 4, 10, 200});
+    r.fillRoundedRect(box, ui.s(12), Color{10, 15, 32, 250});
+    r.drawRoundedRect(box, ui.s(12), tc.withAlphaF(0.9f), std::max(1.0f, ui.s(1.6f)));
+    float x = box.x + pad, y = box.y + pad;
+    // Name (a title in its colour), then what it is.
+    const Color nameC = it.category == "title" && !it.color.empty() ? titleColor(it.color) : ui.theme().text;
+    float nf = std::max(ui.fitFont(it.name, FontFace::Bold, fsName, inner, 0.75f), 11.5f / ui.s(1.0f));
+    ui.label(ui.elide(it.name, FontFace::Bold, nf, inner), {x, y + ui.s(13)}, nf, nameC, Align::Left, FontFace::Bold, VAlign::Middle);
+    y += ui.s(26);
+    ui.label(ui.elide(sub, FontFace::Body, fsSub, inner), {x, y + ui.s(11)}, fsSub, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+    y += ui.s(22) + ui.s(10);
+    ui.labelWrapped(cond, {x, y}, inner, fsCond, tc);
+    y += condH + ui.s(6);
+    ui.labelWrapped(note, {x, y}, inner, fsNote, ui.theme().textDim);
+    y += noteH + ui.s(12);
+    ui.labelWrapped(state, {x, y}, inner, fsState, stateC);
+    y += stateH;
+    if (!opens) return;
+    y += ui.s(12);
     r.fillRect({x, y - ui.s(6), inner, std::max(1.0f, ui.s(1))}, Color{60, 76, 110, 160});
     const float gh = ui.s(22);
     float gw = Glyphs::drawAction(ui, Action::MenuConfirm, {x, y + hintH * 0.5f}, gh);

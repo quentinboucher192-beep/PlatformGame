@@ -26,6 +26,7 @@ export const NOTIFICATION_KINDS = [
     "run_comment", //       comments on one of my runs of the leaderboards (2.19)
     "challenge_featured", // one of my community levels is a challenge: of the day (2.32), of the week or of the month (2.33)
     "record_beaten", //     my world record (first place of a campaign leaderboard) was beaten (2.30.2)
+    "challenge_reward", //  rewards won at a challenge, once its period is over (2.43)
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
@@ -157,7 +158,24 @@ function sentence(n: NotificationRow, d: Record<string, string>): string {
             return `Votre niveau « ${d.title ?? ""} » est le défi ${d.challenge_kind === "weekly" ? "de la semaine" : d.challenge_kind === "monthly" ? "du mois" : "du jour"} !`;
         case "record_beaten":
             return `${who} a battu votre record mondial sur ${d.title ?? ""} (${d.category_label ?? ""}) : ${d.time ?? ""} contre ${d.previous ?? ""}`;
+        case "challenge_reward":
+            return rewardSentence(d as unknown as Record<string, unknown>);
     }
+}
+
+/** « Défi du jour du 20/11 : vous avez gagné « Pionnier du givre » et « Aurore » » (2.43). */
+function rewardSentence(d: Record<string, unknown>): string {
+    const period = typeof d.period === "string" ? d.period : "";
+    const date = typeof d.date === "string" ? d.date : "";
+    const of =
+        d.challenge_kind === "weekly"
+            ? `de la semaine ${Number(period.slice(6)) || ""}`.trim()
+            : d.challenge_kind === "monthly"
+              ? `du mois ${period.slice(5, 7)}/${period.slice(0, 4)}`
+              : `du jour du ${date.slice(8, 10)}/${date.slice(5, 7)}`;
+    const names = (Array.isArray(d.rewards) ? d.rewards : []).filter((n): n is string => typeof n === "string").map((n) => `« ${n} »`);
+    const list = names.length > 1 ? `${names.slice(0, -1).join(", ")} et ${names[names.length - 1]}` : (names[0] ?? "une récompense");
+    return `Défi ${of} : vous avez gagné ${list}`;
 }
 
 function view(n: NotificationRow) {
