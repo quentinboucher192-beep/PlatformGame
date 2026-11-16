@@ -182,6 +182,12 @@
       "group": "confins",
       "title": "Le Phénix Stellaire",
       "where": "Combat contre le Phénix"
+    },
+    {
+      "file": "music/liche_boss.ogg",
+      "group": "confins",
+      "title": "La Liche des Catacombes",
+      "where": "Combat contre la Liche"
     }
   ]
 }
