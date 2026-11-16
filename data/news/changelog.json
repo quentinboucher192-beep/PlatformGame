@@ -1,4 +1,7 @@
 {
+  "2.38.0": [
+    "Calendrier des défis : chaque case montre l'image du niveau du défi, avec un ruban de sa couleur (jour, semaine) et des balises sur ce qui le rend particulier : EXTRÊME, niveau de la communauté, nombre de cœurs, sans checkpoint, sans station. Le défi du mois aussi."
+  ],
   "2.37.0": [
     "Statistiques des boss : un sous-onglet « Fiche » pour chaque boss, lu dans ses données — points de vie, phases (à quel pourcentage de ses PV chacune commence, son rythme, ses attaques), chaque attaque (type, dégâts, annonce, recharge), vitesse, faiblesses, limite de temps et dernier souffle.",
     "Difficulté de chaque boss de 1 à 10 étoiles, calculée d'après ses PV, ses phases et ses attaques (Singularis : 10/10).",

@@ -1183,6 +1183,13 @@ private:
             }
         }
         ui.r().fillRoundedRect(r, ui.s(8), bg);
+        // 2.38: the challenge's level in the background (its preview, darkened under the text),
+        // and a ribbon of its kind at the top (day: cyan, week: violet).
+        if (c && !future) {
+            drawCellImage(r, *c, hovered || focused);
+            Color kc = c->kind == ChallengeKind::Weekly ? ui.theme().violet : c->kind == ChallengeKind::Monthly ? ui.theme().warm : ui.theme().accent;
+            ui.r().fillRoundedRect({r.x + ui.s(8), r.y, r.w - ui.s(16), std::max(2.0f, ui.s(3))}, ui.s(1.5f), kc.withAlpha(220));
+        }
         if (today) ui.r().drawRoundedRect(r, ui.s(8), ui.theme().accent, std::max(1.5f, ui.s(2.5f)));
         else if (focused) ui.r().drawRoundedRect(r, ui.s(8), ui.theme().accent.withAlpha(190), std::max(1.0f, ui.s(1.5f)));
         const float px = r.x + ui.s(10), room = r.w - ui.s(20);
@@ -1203,17 +1210,106 @@ private:
             if (c->community()) v.emplace();  // a player's level: as its author named it
             fitLabel(ui, levelTitle(g_, *c), {px, l2}, 15, room, Color{185, 200, 218, 255});
         }
-        // Line 3: where my best run stands (nothing when I did not play it).
-        if (day.bestMs <= 0) return;
-        std::string st;
-        Color sc = ui.theme().textDim;
-        if (day.state == ChallengeRunState::Rejected) st = "Refusé", sc = ui.theme().danger;
-        else if (day.late) st = "Hors délai", sc = ui.theme().warm;
-        else if (day.state == ChallengeRunState::Verified) st = "Vérifié", sc = ui.theme().success;
-        else if (day.state == ChallengeRunState::Pending || day.state == ChallengeRunState::Sent) st = "En attente", sc = ui.theme().accent;
-        else if (day.state == ChallengeRunState::Waiting) st = "À l'envoi", sc = ui.theme().warm;
-        else st = "Sur ce PC";
-        fitLabel(ui, st, {px, l3}, 14, room, sc, Align::Left, FontFace::Bold);
+        // Line 3: where my best run stands (nothing when I did not play it), then (2.38) the
+        // tags of what makes this challenge what it is, as many as fit whole.
+        float tx = px;
+        if (day.bestMs > 0) {
+            std::string st;
+            Color sc = ui.theme().textDim;
+            if (day.state == ChallengeRunState::Rejected) st = "Refusé", sc = ui.theme().danger;
+            else if (day.late) st = "Hors délai", sc = ui.theme().warm;
+            else if (day.state == ChallengeRunState::Verified) st = "Vérifié", sc = ui.theme().success;
+            else if (day.state == ChallengeRunState::Pending || day.state == ChallengeRunState::Sent) st = "En attente", sc = ui.theme().accent;
+            else if (day.state == ChallengeRunState::Waiting) st = "À l'envoi", sc = ui.theme().warm;
+            else st = "Sur ce PC";
+            tx += fitLabel(ui, st, {px, l3}, 14, room, sc, Align::Left, FontFace::Bold).x + ui.s(8);
+        }
+        drawTags(*c, tx, l3, r.right() - ui.s(8), std::min(ui.s(20), r.h * 0.2f));
+    }
+
+    /// What makes a challenge what it is, in tags: EXTRÊME, a community level, its hearts,
+    /// no checkpoint, no power station (2.38, the calendar).
+    std::vector<std::pair<std::string, Color>> tagsOf(const DailyChallenge& c) {
+        const UITheme& th = g_.ui.theme();
+        std::vector<std::pair<std::string, Color>> tags;
+        if (extremeLevel(c)) tags.push_back({"EXTRÊME", th.danger});
+        if (c.community()) tags.push_back({"Communauté", th.accent});
+        tags.push_back({std::to_string(c.rules.hearts) + (c.rules.hearts > 1 ? " cœurs" : " cœur"), th.warm});
+        if (!c.rules.checkpoints) tags.push_back({"Sans checkpoint", Color{185, 200, 218, 255}});
+        if (!c.rules.stations) tags.push_back({"Sans station", Color{185, 200, 218, 255}});
+        return tags;
+    }
+
+    /// The tags from `x` to `right` on the line `cy`: each whole (one that does not fit and
+    /// those after it are left out, never cut).
+    void drawTags(const DailyChallenge& c, float x, float cy, float right, float h) {
+        UIContext& ui = g_.ui;
+        for (const auto& [text, color] : tagsOf(c)) {
+            float tw = chipWidth(ui, text, h);
+            if (x + tw > right) break;
+            x += chip(ui, text, x, cy, h, color) + ui.s(5);
+        }
+    }
+
+    /// An EXTRÊME level (one life), read once per level (a community level: as installed).
+    bool extremeLevel(const DailyChallenge& c) {
+        const std::string key = c.level.levelId + ":" + c.level.hash;
+        auto it = extremeOf_.find(key);
+        if (it != extremeOf_.end()) return it->second;
+        LevelPlace place = levelPlace(g_, c);
+        if (place.localId.empty()) return false;  // not installed yet: asked again later
+        bool e = false;
+        if (auto data = g_.content.loadLevel(place.localId)) e = data->extreme && data->oneLife();
+        return extremeOf_[key] = e;
+    }
+
+    /// The level's preview filling the cell (cropped to its shape), darkened so that the text
+    /// above stays readable; nothing while it is not ready (see cellThumb).
+    void drawCellImage(const Rect& r, const DailyChallenge& c, bool lit) {
+        UIContext& ui = g_.ui;
+        TexturePtr t = cellThumb(c);
+        if (!t || t->width() <= 0 || t->height() <= 0) return;
+        Rect in = r.expanded(-std::max(1.0f, ui.s(1)));
+        float tw = static_cast<float>(t->width()), th = static_cast<float>(t->height());
+        float k = std::max(in.w / tw, in.h / th);
+        float sw = in.w / k, sh = in.h / k;
+        Rect src{(tw - sw) * 0.5f, (th - sh) * 0.5f, sw, sh};
+        ui.r().pushClip(in);
+        ui.r().drawTexture(*t, &src, in, Color{255, 255, 255, static_cast<uint8_t>(lit ? 255 : 225)});
+        ui.r().fillGradientV(in, Color{8, 12, 26, lit ? uint8_t(70) : uint8_t(100)}, Color{8, 12, 26, 215});
+        ui.r().popClip();
+    }
+
+    /// The preview of a challenge's level for the calendar, one per level version, kept in
+    /// memory and on disk (cache/calendar). A missing one is rendered at most once per frame
+    /// (the calendar fills in over a few frames, never one long wait); nullptr until then, or
+    /// when the level is not installed.
+    TexturePtr cellThumb(const DailyChallenge& c) {
+        LevelPlace place = levelPlace(g_, c);
+        if (place.localId.empty()) return nullptr;
+        const std::string key = place.localId + "_" + c.level.hash.substr(0, 16);
+        auto it = cellThumbs_.find(key);
+        if (it != cellThumbs_.end()) return it->second;
+        const fs::path file = Paths::userDir() / "cache" / "calendar" / (key + ".png");
+        if (auto png = FileUtil::readBinary(file); png && !png->empty()) {
+            TexturePtr t = textureFromPng(g_, *png);
+            cellThumbs_[key] = t;
+            return t;
+        }
+        if (thumbBudget_ <= 0) return nullptr;
+        --thumbBudget_;
+        TexturePtr t;
+        if (auto level = g_.content.loadLevel(place.localId)) {
+            std::string root;
+            if (const LevelEntry* e = g_.content.level(place.localId)) root = Paths::toUtf8(e->assetRoot);
+            auto png = renderLevelThumbnail(g_, *level, root);
+            if (!png.empty()) {
+                t = textureFromPng(g_, png);
+                FileUtil::writeBinary(file, png);
+            }
+        }
+        cellThumbs_[key] = t;
+        return t;
     }
 
     /// The month's challenge, at the head of the calendar.
@@ -1226,6 +1322,7 @@ private:
             if (hovered || focused) info = challengeTitle(*c, true);
         }
         ui.r().fillRoundedRect(r, ui.s(10), hovered || focused ? Color{26, 44, 76, 240} : Color{14, 22, 46, 225});
+        if (c) drawCellImage(r, *c, hovered || focused);  // 2.38: its level behind
         ui.r().drawRoundedRect(r, ui.s(10), ui.theme().violet.withAlpha(focused ? 230 : 120), std::max(1.0f, ui.s(focused ? 2.0f : 1.2f)));
         float x = r.x + ui.s(16), right = r.right() - ui.s(16), cy = r.center().y, h = std::min(ui.s(30), r.h * 0.6f);
         x += chip(ui, "Défi du mois", x, cy, h, ui.theme().violet, r.w * 0.3f, true) + ui.s(16);
@@ -1247,14 +1344,22 @@ private:
             chip(ui, challengeTierLabel(day.tier), right - tw, cy, h, tierColor(day.tier), tw, true);
             right -= tw + ui.s(14);
         }
-        std::optional<i18n::Verbatim> v;
-        if (c->community()) v.emplace();
-        fitLabel(ui, levelTitle(g_, *c), {x, cy}, 19, right - x, ui.theme().text, Align::Left, FontFace::Bold);
+        float used = 0.0f;
+        {
+            std::optional<i18n::Verbatim> v;
+            if (c->community()) v.emplace();
+            used = fitLabel(ui, levelTitle(g_, *c), {x, cy}, 19, right - x, ui.theme().text, Align::Left, FontFace::Bold).x;
+        }
+        // 2.38: its tags after the title, those that fit whole.
+        drawTags(*c, x + used + ui.s(14), cy, right, std::min(ui.s(24), r.h * 0.45f));
     }
 
     void drawCalendar(const Rect& body) {
         UIContext& ui = g_.ui;
         ChallengeService& cs = g_.challenges;
+        thumbBudget_ = 1;  // one level preview rendered per frame at most (cellThumb)
+        // « NOUVEAU » (2.38) on « Calendrier » until the calendar with its images is seen once.
+        if (ui.isNew("challenges.calendar.look") && ui.featureSeen) ui.featureSeen("challenges.calendar.look");
         ui.panel(body, false, 16);
         const float x = body.x + ui.s(22), w = body.w - ui.s(44);
         float y = body.y + ui.s(16);
@@ -1390,6 +1495,9 @@ private:
     bool downloading_ = false;
     std::string watching_;  // the run whose replay is being downloaded (« Voir »)
     std::map<std::string, TexturePtr> thumbs_;
+    std::map<std::string, TexturePtr> cellThumbs_;  // the calendar's previews (cellThumb)
+    std::map<std::string, bool> extremeOf_;         // level version -> EXTRÊME (extremeLevel)
+    int thumbBudget_ = 0;
     std::string msg_;
     float msgTimer_ = 0.0f;
     float t_ = 0.0f;

@@ -3995,6 +3995,12 @@
    ]
   },
   {
+   "fr": "Calendrier des défis : chaque case montre l'image du niveau du défi, avec un ruban de sa couleur (jour, semaine) et des balises sur ce qui le rend particulier : EXTRÊME, niveau de la communauté, nombre de cœurs, sans checkpoint, sans station. Le défi du mois aussi.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Calendrier des défis : chaque jour, semaine et mois avec votre palier et son état ; un défi passé se rejoue « hors délai » (classement « Depuis », sans compter pour la série) ; navigation au clavier, à la manette et à la souris.",
    "where": [
     "data/news/changelog.json"
@@ -6244,7 +6250,8 @@
   {
    "fr": "Communauté",
    "where": [
-    "data/achievements/achievements.json"
+    "data/achievements/achievements.json",
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
@@ -10905,6 +10912,7 @@
   {
    "fr": "EXTRÊME",
    "where": [
+    "ui/screens/ChallengesScene.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/widgets/UIContext.cpp"
    ]
@@ -26704,6 +26712,12 @@
    ]
   },
   {
+   "fr": "Sans checkpoint",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Sans compte",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -26786,6 +26800,12 @@
    "fr": "sans points de passage",
    "where": [
     "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Sans station",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {

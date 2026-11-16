@@ -5,6 +5,10 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.38.0** :
+* **Calendrier des défis illustré** : l'image du niveau dans chaque case, un ruban par type de
+  défi et des balises (EXTRÊME, communauté, cœurs, sans checkpoint, sans station).
+
 **Nouveau dans la version 2.37.0** :
 * **Fiche de chaque boss** (Statistiques des boss) : PV, phases, attaques, faiblesses, limite de
   temps, et une difficulté de 1 à 10 étoiles calculée d'après ses données.
