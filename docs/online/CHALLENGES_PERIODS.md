@@ -346,3 +346,22 @@ Objectif d'un défi (`objective`, colonne de `challenges`, migration `XXXX_chall
 - L'objectif change le classement, jamais la simulation : il n'entre pas dans la forme
   canonique des règles ni dans le replay ; `kSimulationVersion` et `kRankingGeneration` ne
   changent pas.
+
+### Côté jeu (2.41.0)
+
+- ADMINISTRATION › **Calendrier des défis** (entre « Joueurs » et « Journal ») : le mois (défi du
+  mois en tête, lundi → dimanche, colonne des semaines), chaque case avec l'image de son niveau et
+  une pastille « tirage » (tiré par le serveur, remplaçable), « choisi » (par un admin), cadenas
+  « en cours » / « passé » (lecture seule), « + choisir » et « tirage le JJ/MM » pour une période
+  pas encore tirée. L'éditeur de la période choisie : « Niveau et règles » (campagne ou niveaux en
+  ligne avec recherche, cœurs, emplacements, pouvoirs imposés, stations, checkpoints) et
+  « Objectif et paliers » (Vitesse : temps de l'Argent et de l'Or, Or sans dégât ; Finir le
+  niveau : % du parcours du Bronze et de l'Argent, grisé avec la raison sans parcours tracé),
+  « Revenir au tirage », « Enregistrer ». Les erreurs du serveur sont dites en français.
+  Clavier, manette, souris. Captures : `--admin calendar[:AAAA-MM[:<id>[:objectif]]]`.
+- Journal : filtre « Défis » et phrases « a choisi le défi du jour du 20/11 : … (remplace le
+  tirage « … ») », « a remis au tirage le défi … », refus « modification du défi … refusée : … ».
+- Défi « Finir le niveau » côté joueur : règle « Objectif : finir le niveau », paliers « Atteindre
+  50 % du parcours » / « 80 % » / « Finir le niveau, sans dégât », classement « Progression »
+  d'abord (avec le palier de chaque ligne), « Ma progression » et son palier sur la fiche, palier
+  de l'essai à la fin d'une partie ; l'ATH dit « Or : finir sans dégât » au lieu des temps.

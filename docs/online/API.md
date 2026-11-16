@@ -141,6 +141,7 @@ de `wrangler.jsonc`, plafonnée à 1 000) multiplie toutes les limites.
 | `profile_write` | 20 | 5 min | joueur | `PATCH /players/me`, `PUT /players/me/avatar` (compteur partagé) |
 | `friend_request` | 30 | 1 h | joueur | `POST /friends/request` |
 | `presence` | 6 | 1 min | joueur | `POST /presence` |
+| `admin_write` | 60 | 5 min | admin | `POST /admin/players/{playerId}/role` (2.40), `PUT` / `DELETE /admin/challenges/{challengeId}` (2.41, calendrier des défis : voir CHALLENGES_PERIODS.md §7) |
 | *(salle du joueur, en mémoire)* | 25 | 10 s | joueur | `POST /spectate/broadcast` (2.36, compté par la salle `SpectateRoom`, pas dans D1) |
 | `account_delete` | 5 | 1 h | joueur | `DELETE /players/me` |
 | `social_message` | 30 | 1 min | joueur | `POST /social/conversations/{id}/messages` |

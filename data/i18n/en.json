@@ -5061,6 +5061,7 @@
   "tirage : jour, semaine, mois": "draw: day, week, month",
   "tirage : semaine": "draw: week",
   "tirage le {0}": "drawn on {0}",
+  "tirage {0}": "draw {0}",
   "Tiré au sort par le serveur : un admin peut le remplacer tant qu'il n'a pas commencé.": "Drawn by the server: an admin can replace it as long as it has not started.",
   "tiré au sort par le serveur, remplaçable": "drawn by the server, replaceable",
   "Tiré au sort par le serveur.": "Drawn by the server.",

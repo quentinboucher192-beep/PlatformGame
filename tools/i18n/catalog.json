@@ -31126,6 +31126,12 @@
    ]
   },
   {
+   "fr": "tirage {0}",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Tiré au sort par le serveur : un admin peut le remplacer tant qu'il n'a pas commencé.",
    "where": [
     "ui/screens/AdminCalendar.cpp"

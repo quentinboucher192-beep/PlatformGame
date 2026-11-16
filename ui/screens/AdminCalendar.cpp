@@ -280,6 +280,7 @@ void AdminCalendar::draftFrom(const Period& p) {
     }
     editorMsg_.clear();
     editorError_ = false;
+    editorWarn_ = false;
     picker_ = false;
 }
 
@@ -385,11 +386,12 @@ void AdminCalendar::save() {
                        if (warnings.is_array() && !warnings.empty() && warnings[0].is_string()) {
                            editorMsg_ = "Enregistré. Attention : " + warnings[0].get<std::string>() + ".";
                            editorError_ = false;
+                           editorWarn_ = true;
                        } else {
                            editorMsg_ = msg;
                            editorError_ = false;
                        }
-                       say_(msg, false);
+                       // Said in the editor (the status line keeps the errors).
                    }));
 }
 
@@ -424,7 +426,7 @@ void AdminCalendar::resetToDraw() {
                            }
                        editorMsg_ = msg;
                        editorError_ = false;
-                       say_(msg, false);
+                       // Said in the editor.
                    }));
 }
 
@@ -613,7 +615,13 @@ void AdminCalendar::drawCell(const std::string& name, const Rect& r, const Perio
         if (c->community()) v.emplace();  // a player's level: as its author named it
         fitLabel(ui, levelTitle(g_, *c), {px, l2}, 14, room, Color{185, 200, 218, 255});
     } else {
-        std::string t = !p->drawsOn.empty() ? "tirage le " + std::to_string(std::atoi(p->drawsOn.substr(8).c_str())) : std::string("—");
+        // « tirage le 24/11 », shorter in a narrow cell (never cut: the date stays whole).
+        std::string t = "—";
+        if (!p->drawsOn.empty())
+            for (const std::string& c2 : {"tirage le " + ddmm(p->drawsOn), "tirage " + ddmm(p->drawsOn), ddmm(p->drawsOn)}) {
+                t = c2;
+                if (ui.text().measure(c2, FontFace::Body, ui.s(fit(ui, c2, FontFace::Body, 14, room))).x <= room) break;
+            }
         fitLabel(ui, t, {px, l2}, 14, room, ui.theme().textDim);
     }
     drawPill(p, px, l3, std::min(ui.s(24), r.h * 0.24f), room);
@@ -693,7 +701,7 @@ void AdminCalendar::drawEditor(const Rect& r) {
     const float bh = ui.s(50), by = r.bottom() - ui.s(18) - bh;
     float msgTop = by - ui.s(10);
     std::string msg = editorMsg_;
-    Color msgC = editorError_ ? ui.theme().danger : ui.theme().success;
+    Color msgC = editorError_ ? ui.theme().danger : editorWarn_ ? ui.theme().warm : ui.theme().success;
     if (msg.empty() && editable && dirty_) {
         msg = draftProblem();
         msgC = ui.theme().warm;

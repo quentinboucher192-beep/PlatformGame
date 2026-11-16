@@ -114,6 +114,7 @@ private:
     bool busy_ = false;         // a change on its way
     std::string editorMsg_;
     bool editorError_ = false;
+    bool editorWarn_ = false;   // a warning of the server (saved all the same)
     // Levels
     int levelSource_ = 0;       // 0: campaign, 1: community
     Json campaign_ = Json::array();
