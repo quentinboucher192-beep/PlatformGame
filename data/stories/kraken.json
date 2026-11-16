@@ -1,0 +1,84 @@
+{
+ "format": "cosmic.boss_story",
+ "version": 1,
+ "comment": "Story of a giga boss (game/content/BossStories.h), told before the first fight against it. Each shot: its painting (assets/, tools/assetgen/environment/stories.py), its line of narration, the point the slow zoom goes to, the live particles over it. A shot lasts max(4.5 s, 1.2 s + characters / 16); then the title card (3 s).",
+ "boss": "kraken",
+ "title": "Le Kraken des Abysses",
+ "color": "#7ae6ff",
+ "accent": "#c8b8ff",
+ "clip": "roar",
+ "shots": [
+  {
+   "scene": "birth",
+   "image": "stories/kraken_1.png",
+   "text": "Sous la croûte des Confins dort une mer noire. Un petit poulpe y naquit, avec une seule lueur au bout d'un bras.",
+   "focus": [
+    0.5,
+    0.58
+   ],
+   "zoom": 1.14,
+   "particles": "dust",
+   "glow": "#a8d0e8"
+  },
+  {
+   "scene": "lantern",
+   "image": "stories/kraken_2.png",
+   "text": "Dans le noir, les poissons perdus suivaient sa lueur jusqu'aux sources chaudes. On l'appelait « la Lanterne ».",
+   "focus": [
+    0.42,
+    0.46
+   ],
+   "zoom": 1.1,
+   "particles": "embers",
+   "glow": "#7ae6ff"
+  },
+  {
+   "scene": "star_rain",
+   "image": "stories/kraken_3.png",
+   "text": "La nuit où l'étoile du centre s'effondra, sa lumière tomba dans la mer en une pluie d'étincelles.",
+   "focus": [
+    0.5,
+    0.5
+   ],
+   "zoom": 1.1,
+   "particles": "snow",
+   "glow": "#c8b8ff"
+  },
+  {
+   "scene": "growing",
+   "image": "stories/kraken_4.png",
+   "text": "La Lanterne les recueillit une à une. Il grandit, grandit encore, et ses huit bras s'allumèrent.",
+   "focus": [
+    0.5,
+    0.5
+   ],
+   "zoom": 1.12,
+   "particles": "sparks",
+   "glow": "#7ae6ff"
+  },
+  {
+   "scene": "alone",
+   "image": "stories/kraken_5.png",
+   "text": "Mais il devint si grand que les poissons eurent peur de son ombre et s'enfuirent dans les failles.",
+   "focus": [
+    0.56,
+    0.48
+   ],
+   "zoom": 1.1,
+   "particles": "dust",
+   "glow": "#6a8ab8"
+  },
+  {
+   "scene": "trench",
+   "image": "stories/kraken_6.png",
+   "text": "Le Kraken allume toujours ses lueurs au fond de la Fosse. Il attend qu'on le suive, comme autrefois.",
+   "focus": [
+    0.5,
+    0.56
+   ],
+   "zoom": 1.06,
+   "particles": "embers",
+   "glow": "#7ae6ff"
+  }
+ ]
+}

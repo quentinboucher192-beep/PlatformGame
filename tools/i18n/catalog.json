@@ -10128,6 +10128,12 @@
    ]
   },
   {
+   "fr": "Dans le noir, les poissons perdus suivaient sa lueur jusqu'aux sources chaudes. On l'appelait « la Lanterne ».",
+   "where": [
+    "data/stories/kraken.json"
+   ]
+  },
+  {
    "fr": "Dans mon record",
    "where": [
     "ui/screens/GameScene.cpp",
@@ -17912,6 +17918,12 @@
    ]
   },
   {
+   "fr": "Juke-box : la musique du combat, « Le Kraken des Abysses » (23 morceaux à débloquer).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Jump",
    "where": [
     "game/player/Player.cpp"
@@ -18649,6 +18661,12 @@
    ]
   },
   {
+   "fr": "La Lanterne les recueillit une à une. Il grandit, grandit encore, et ses huit bras s'allumèrent.",
+   "where": [
+    "data/stories/kraken.json"
+   ]
+  },
+  {
    "fr": "La liste du serveur n'est pas encore lue : actualisez.",
    "where": [
     "ui/screens/AdminEnemies.cpp"
@@ -18694,6 +18712,12 @@
    "fr": "la Nova de givre",
    "where": [
     "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
+   "fr": "La nuit où l'étoile du centre s'effondra, sa lumière tomba dans la mer en une pluie d'étincelles.",
+   "where": [
+    "data/stories/kraken.json"
    ]
   },
   {
@@ -19912,9 +19936,21 @@
    ]
   },
   {
+   "fr": "Le Kraken : un fouet qui plonge à travers vous, des tentacules qui jaillissent du sol de part et d'autre, des nuages et des nappes d'encre, des marées d'eau noire, tourbillons et maelström, ondes sonar, éclairs réfléchis, lueurs arrachées à ses bras, et sa dernière vague à survivre. Rester sous lui ou à côté ne protège pas.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Le Kraken a sombré. Les abysses se taisent.",
    "where": [
     "data/levels/confins_03.json"
+   ]
+  },
+  {
+   "fr": "Le Kraken allume toujours ses lueurs au fond de la Fosse. Il attend qu'on le suive, comme autrefois.",
+   "where": [
+    "data/stories/kraken.json"
    ]
   },
   {
@@ -19926,7 +19962,8 @@
   {
    "fr": "Le Kraken des Abysses",
    "where": [
-    "data/music/tracks.json"
+    "data/music/tracks.json",
+    "data/stories/kraken.json"
    ]
   },
   {
@@ -20866,6 +20903,12 @@
   },
   {
    "fr": "Les Confins, deuxième niveau : « Le Cœur de Pierre » (EXTRÊME) : le combat du Monolithe, le Golem Primordial, seul. Une seule vie, aucun checkpoint.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Les Confins, troisième niveau : « La Fosse des Abysses » (EXTRÊME) : le combat seul du Kraken des Abysses, giga-boss à huit phases qui nage. Une seule vie, aucun checkpoint.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -22152,6 +22195,12 @@
    "fr": "Maintien (s)",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Mais il devint si grand que les poissons eurent peur de son ombre et s'enfuirent dans les failles.",
+   "where": [
+    "data/stories/kraken.json"
    ]
   },
   {
@@ -35056,6 +35105,12 @@
    ]
   },
   {
+   "fr": "Son histoire, avant le premier combat : « la Lanterne », le petit poulpe des mers enfouies qui devint le Kraken.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Son manteau se déchire : les abysses s'ouvrent !",
    "where": [
     "data/enemies/kraken.json"
@@ -35255,6 +35310,12 @@
    "fr": "Sous l'aurore éternelle, quelque chose ondule sous la glace du lac...",
    "where": [
     "data/levels/glacior_01.json"
+   ]
+  },
+  {
+   "fr": "Sous la croûte des Confins dort une mer noire. Un petit poulpe y naquit, avec une seule lueur au bout d'un bras.",
+   "where": [
+    "data/stories/kraken.json"
    ]
   },
   {
@@ -35911,6 +35972,12 @@
   },
   {
    "fr": "Succès du Boomerang chargé : « Maîtrise : Boomerang chargé » et « Virtuose : Boomerang chargé ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Succès du Kraken (6 nouveaux, 28 étoiles) ; au Vestiaire : la combinaison Encre des abysses (620 étoiles), la traînée Bulles des abysses (630), l'effet de victoire Raz-de-marée (640), le cadre Étreinte du Kraken et le titre Chasseur de Kraken.",
    "where": [
     "data/news/changelog.json"
    ]
