@@ -18956,6 +18956,12 @@
    ]
   },
   {
+   "fr": "Liste triée par date, filtre par niveau, Regarder / Comparer / Supprimer ; un replay fait sur une autre version du niveau le signale au lieu d'être mal rejoué.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Lituanie",
    "where": [
     "data/online/countries.json",
@@ -27999,6 +28005,12 @@
    "fr": "Replays téléchargés",
    "where": [
     "ui/screens/DownloadedReplaysUi.cpp"
+   ]
+  },
+  {
+   "fr": "Replays téléchargés : « Télécharger » à côté des replays en ligne (classements, défis, courses à la vérification, profils) les garde sur le PC ; on les regarde ensuite sans connexion ni compte dans Collection › Replays.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
