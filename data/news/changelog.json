@@ -1,4 +1,10 @@
 {
+  "2.48.0": [
+    "Nouvelle planète : Les Confins, au bord du système, débloquée en terminant « Le Cœur d'une Étoile Mourante ».",
+    "« La Gueule du Dragon » (EXTRÊME) : une seule vie, aucun checkpoint ; la croûte brûlée des Confins, le choix des pouvoirs, puis Pyrrhax, le Dragon d'Obsidienne.",
+    "Pyrrhax, boss géant à huit phases et huit flammes : souffles, pluies de cendres, tempête d'ailes, écailles qui éclatent et sol qui cède, couvée de dragonnets, et son dernier feu à survivre.",
+    "Niveaux EXTRÊME : « Réessayer en entraînement » après une chute réapparaît sur place, clignotant et protégé un instant ; un bandeau rappelle que la partie est hors classements (R recommence)."
+  ],
   "2.47.0": [
     "Un compte, un ordinateur : votre compte se lie à cet ordinateur. Une connexion depuis un autre est refusée et vous recevez une alerte « Sécurité » ; un seul compte par ordinateur.",
     "Local et en ligne : déconnecté, vous jouez en local ; à la reconnexion, « De retour en ligne » montre ce qui part au compte (niveaux, temps, succès).",

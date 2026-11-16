@@ -49,6 +49,10 @@
    "name": "Cryowyrm"
   },
   {
+   "id": "dragonnet",
+   "name": "Dragonnet de braise"
+  },
+  {
    "id": "echo_archon_catacombs",
    "name": "Écho : Archonte des Catacombes"
   },
@@ -259,6 +263,10 @@
   {
    "id": "pyrogyre",
    "name": "Pyrogyre"
+  },
+  {
+   "id": "pyrrhax",
+   "name": "Pyrrhax"
   },
   {
    "id": "sentinel",

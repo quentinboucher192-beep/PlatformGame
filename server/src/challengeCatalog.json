@@ -111,6 +111,35 @@
    "gold_ms": 159000,
    "auto": true
   },
+  "confins_01": {
+   "name": "La Gueule du Dragon",
+   "planet": "confins",
+   "order": 1,
+   "last": false,
+   "revision": 8,
+   "slots": 4,
+   "start_powers": [
+    "dash",
+    "grapple",
+    "glide",
+    "charge_shot"
+   ],
+   "level_powers": [
+    "charge_shot",
+    "dash",
+    "frost_nova",
+    "glide",
+    "grapple",
+    "plasma_bomb",
+    "shield",
+    "time_slow",
+    "triple_jump",
+    "wave"
+   ],
+   "silver_ms": 495000,
+   "gold_ms": 413000,
+   "auto": false
+  },
   "glacior_01": {
    "name": "Les Plaines de Givre",
    "planet": "glacior",

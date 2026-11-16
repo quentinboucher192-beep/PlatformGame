@@ -1710,6 +1710,12 @@
    ]
   },
   {
+   "fr": "Anneaux de feu vert",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
    "fr": "Anneaux de la couronne",
    "where": [
     "data/enemies/singularis.json"
@@ -2539,6 +2545,12 @@
    ]
   },
   {
+   "fr": "Au bord du système",
+   "where": [
+    "data/planets/confins.json"
+   ]
+  },
+  {
    "fr": "Au bord du vide, la lumière ne revient pas.",
    "where": [
     "data/levels/aethra_04.json"
@@ -2620,6 +2632,12 @@
    "fr": "Au-delà de l'horizon",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Au-delà de l'étoile morte, au bord du système, un monde de verre noir craquelé sur un feu vivant. Ses cendres tombent d'un ciel pourpre ; un dragon d'obsidienne y garde la dernière frontière.",
+   "where": [
+    "data/planets/confins.json"
    ]
   },
   {
@@ -3509,6 +3527,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Aux Confins du système, une croûte d'obsidienne sur un feu vivant. Ses épreuves les plus dures sans pardon, puis Pyrrhax et ses huit phases. Une seule vie, aucun checkpoint.",
+   "where": [
+    "data/levels/confins_01.json"
    ]
   },
   {
@@ -4489,7 +4513,8 @@
   {
    "fr": "Braise",
    "where": [
-    "data/cosmetics/cosmetics.json"
+    "data/cosmetics/cosmetics.json",
+    "data/enemies/pyrrhax.json"
    ]
   },
   {
@@ -8835,6 +8860,7 @@
   {
    "fr": "Couronne de flammes",
    "where": [
+    "data/enemies/pyrrhax.json",
     "game/enemies/EnemyDefinition.cpp"
    ]
   },
@@ -8999,11 +9025,29 @@
    ]
   },
   {
+   "fr": "Couvée",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Couvée : un soin",
+   "where": [
+    "data/levels/confins_01.json"
+   ]
+  },
+  {
    "fr": "Crachat acide",
    "where": [
     "data/enemies/gloop.json",
     "data/enemies/ice_gloop.json",
     "data/enemies/magma_gloop.json"
+   ]
+  },
+  {
+   "fr": "Crachat de braise",
+   "where": [
+    "data/enemies/pyrrhax.json"
    ]
   },
   {
@@ -9904,6 +9948,7 @@
   {
    "fr": "Dernier souffle",
    "where": [
+    "data/enemies/pyrrhax.json",
     "ui/screens/BossStatsScene.cpp"
    ]
   },
@@ -10539,6 +10584,12 @@
    ]
   },
   {
+   "fr": "Dragonnet de braise",
+   "where": [
+    "data/enemies/dragonnet.json"
+   ]
+  },
+  {
    "fr": "Droite",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp",
@@ -11009,6 +11060,7 @@
     "data/levels/aethra_02.json",
     "data/levels/aethra_03.json",
     "data/levels/aethra_04.json",
+    "data/levels/confins_01.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -11034,6 +11086,7 @@
     "data/levels/aethra_02.json",
     "data/levels/aethra_03.json",
     "data/levels/aethra_04.json",
+    "data/levels/confins_01.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -12595,6 +12648,12 @@
    ]
   },
   {
+   "fr": "Entraînement avec réapparitions — hors classements, aucun record · chutes : {0}",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
    "fr": "Entraînement contre les boss (Statistiques › un boss › « Entraînement ») : choisissez vos cœurs, votre nombre d'emplacements de pouvoirs et les pouvoirs équipés, puis toutes les phases ou une seule ; le combat a lieu dans le vrai niveau du boss, juste avant son arène.",
    "where": [
     "data/news/changelog.json"
@@ -13453,6 +13512,12 @@
    ]
   },
   {
+   "fr": "Feu vert",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
    "fr": "Feux follets",
    "where": [
     "data/enemies/echo_ignivore.json",
@@ -13833,9 +13898,21 @@
    ]
   },
   {
+   "fr": "Flamme bleue",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
    "fr": "Flammes",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Flammes bleues",
+   "where": [
+    "data/enemies/pyrrhax.json"
    ]
   },
   {
@@ -14409,6 +14486,7 @@
     "data/levels/aethra_02.json",
     "data/levels/aethra_03.json",
     "data/levels/aethra_04.json",
+    "data/levels/confins_01.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -14632,6 +14710,12 @@
    "where": [
     "data/enemies/echo_pyrogyre.json",
     "data/enemies/pyrogyre.json"
+   ]
+  },
+  {
+   "fr": "Geysers de magma",
+   "where": [
+    "data/enemies/pyrrhax.json"
    ]
   },
   {
@@ -14895,6 +14979,7 @@
    "fr": "Grappin : d'ancrage en ancrage, entre deux tirs.",
    "where": [
     "data/levels/aethra_01.json",
+    "data/levels/confins_01.json",
     "data/levels/noyau_02.json",
     "data/levels/sylvanox_04.json"
    ]
@@ -17422,6 +17507,12 @@
    ]
   },
   {
+   "fr": "La croûte brûlée des Confins.",
+   "where": [
+    "data/levels/confins_01.json"
+   ]
+  },
+  {
    "fr": "La définition de l'entité n'est pas valide.",
    "where": [
     "server/src/enemyRevisions.ts"
@@ -17525,6 +17616,24 @@
    "fr": "La gravité de Singularis vous attire !",
    "where": [
     "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "LA GUEULE DU DRAGON",
+   "where": [
+    "data/levels/confins_01.json"
+   ]
+  },
+  {
+   "fr": "La Gueule du Dragon",
+   "where": [
+    "data/levels/confins_01.json"
+   ]
+  },
+  {
+   "fr": "La Gueule du Dragon : une seule vie, aucun checkpoint. Pyrrhax attend au bout.",
+   "where": [
+    "data/levels/confins_01.json"
    ]
   },
   {
@@ -18226,6 +18335,12 @@
    ]
   },
   {
+   "fr": "Le ciel des Confins pleut des cendres !",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
    "fr": "Le ciel se couvre de spores !",
    "where": [
     "data/enemies/echo_spore_queen.json",
@@ -18458,9 +18573,39 @@
    ]
   },
   {
+   "fr": "Le dragon d'obsidienne s'éveille.",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Le dragon retourne à la pierre. La sortie est ouverte.",
+   "where": [
+    "data/levels/confins_01.json"
+   ]
+  },
+  {
+   "fr": "Le dragon s'est tu. Les Confins s'éteignent.",
+   "where": [
+    "data/levels/confins_01.json"
+   ]
+  },
+  {
+   "fr": "LE DRAGON S'ÉTEINT",
+   "where": [
+    "data/levels/confins_01.json"
+   ]
+  },
+  {
    "fr": "Le défi peut être un niveau de la campagne ou un niveau ONLINE LEVELS choisi par l'administrateur ; « Télécharger » l'installe depuis le défi, et son créateur est prévenu que son niveau est à l'honneur.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Le feu referme l'arène !",
+   "where": [
+    "data/levels/confins_01.json"
    ]
   },
   {
@@ -19105,6 +19250,12 @@
    ]
   },
   {
+   "fr": "Le seuil de la gueule. Choisissez les pouvoirs du combat : celui que vous laissez reste ici.",
+   "where": [
+    "data/levels/confins_01.json"
+   ]
+  },
+  {
    "fr": "Le signal bat comme un cœur... Il vient du fond de cette machine.",
    "where": [
     "data/levels/sylvanox_03.json"
@@ -19458,6 +19609,19 @@
    ]
   },
   {
+   "fr": "Les Confins",
+   "where": [
+    "data/levels/confins_01.json",
+    "data/planets/confins.json"
+   ]
+  },
+  {
+   "fr": "Les Confins — La Gueule du Dragon",
+   "where": [
+    "data/levels/confins_01.json"
+   ]
+  },
+  {
    "fr": "Les contenus des joueurs (niveaux de la communauté, pseudonymes, commentaires, messages) restent tels que leurs auteurs les ont écrits ; les messages connus du serveur Cosmic Online sont traduits par le jeu.",
    "where": [
     "data/news/changelog.json"
@@ -19611,6 +19775,7 @@
    "fr": "Les lasers battent la mesure : un saut par temps, sans s'arrêter.",
    "where": [
     "data/levels/aethra_04.json",
+    "data/levels/confins_01.json",
     "data/levels/noyau_02.json",
     "data/levels/sylvanox_04.json"
    ]
@@ -19873,6 +20038,12 @@
    "fr": "Les trois mondes, une dernière fois.",
    "where": [
     "data/levels/noyau_02.json"
+   ]
+  },
+  {
+   "fr": "Les veines de feu.",
+   "where": [
+    "data/levels/confins_01.json"
    ]
   },
   {
@@ -20827,6 +20998,7 @@
    "where": [
     "data/enemies/echo_pyrogyre.json",
     "data/enemies/pyrogyre.json",
+    "data/enemies/pyrrhax.json",
     "game/enemies/EnemyDefinition.cpp"
    ]
   },
@@ -22006,6 +22178,12 @@
    ]
   },
   {
+   "fr": "Morsure plongeante",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
    "fr": "Mort instantanée",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -22115,6 +22293,7 @@
    "fr": "Murs de cristal : sautez, puis Dash à travers.",
    "where": [
     "data/levels/aethra_01.json",
+    "data/levels/confins_01.json",
     "data/levels/noyau_02.json",
     "data/levels/sylvanox_04.json"
    ]
@@ -22880,6 +23059,12 @@
    ]
   },
   {
+   "fr": "Niveaux EXTRÊME : « Réessayer en entraînement » après une chute réapparaît sur place, clignotant et protégé un instant ; un bandeau rappelle que la partie est hors classements (R recommence).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "niveaux finis",
    "where": [
     "ui/screens/OnlineComputer.cpp"
@@ -23592,6 +23777,12 @@
    ]
   },
   {
+   "fr": "Nouvelle planète : Les Confins, au bord du système, débloquée en terminant « Le Cœur d'une Étoile Mourante ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Nouvelle révision avec ses propres classements. Les records actuels restent archivés avec la révision {0}, jamais mélangés.",
    "where": [
     "editors/level_editor/LevelEditorCampaign.cpp"
@@ -24208,6 +24399,12 @@
    "where": [
     "data/enemies/echo_nyxara.json",
     "data/enemies/nyxara.json"
+   ]
+  },
+  {
+   "fr": "Onde de choc",
+   "where": [
+    "data/enemies/pyrrhax.json"
    ]
   },
   {
@@ -25950,6 +26147,12 @@
    ]
   },
   {
+   "fr": "Piqué du dragon",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
    "fr": "Piqué glacé",
    "where": [
     "data/enemies/cryowyrm.json",
@@ -26061,6 +26264,7 @@
    "fr": "Planeur dans les cheminées. Attention à la voûte.",
    "where": [
     "data/levels/aethra_03.json",
+    "data/levels/confins_01.json",
     "data/levels/noyau_02.json",
     "data/levels/pyralis_04.json"
    ]
@@ -26318,6 +26522,12 @@
    ]
   },
   {
+   "fr": "Plongeon dans le dos",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
    "fr": "Plongez sous la roche : maintenez Saut pour remonter à la surface.",
    "where": [
     "data/levels/glacior_02.json"
@@ -26336,6 +26546,12 @@
    "where": [
     "data/enemies/echo_prime_sentinel.json",
     "data/enemies/prime_sentinel.json"
+   ]
+  },
+  {
+   "fr": "Pluie d'obsidienne",
+   "where": [
+    "data/enemies/pyrrhax.json"
    ]
   },
   {
@@ -26368,6 +26584,12 @@
     "data/enemies/echo_crucible_heart.json",
     "data/enemies/echo_forge_core.json",
     "data/enemies/forge_core.json"
+   ]
+  },
+  {
+   "fr": "Pluie de cendres",
+   "where": [
+    "data/enemies/pyrrhax.json"
    ]
   },
   {
@@ -28152,6 +28374,42 @@
    ]
   },
   {
+   "fr": "Pyrrhax",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Pyrrhax appelle sa couvée !",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Pyrrhax vaincu",
+   "where": [
+    "data/levels/confins_01.json"
+   ]
+  },
+  {
+   "fr": "Pyrrhax, boss géant à huit phases et huit flammes : souffles, pluies de cendres, tempête d'ailes, écailles qui éclatent et sol qui cède, couvée de dragonnets, et son dernier feu à survivre.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "PYRRHAX, LE DRAGON D'OBSIDIENNE",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Pyrrhax, le Dragon d'Obsidienne.",
+   "where": [
+    "data/levels/confins_01.json"
+   ]
+  },
+  {
    "fr": "P{0}",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -28378,6 +28636,12 @@
    ]
   },
   {
+   "fr": "Rafale d'ailes",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
    "fr": "Rafale d'épines",
    "where": [
     "data/enemies/archon_catacombs.json",
@@ -28446,6 +28710,7 @@
   {
    "fr": "Rage : l'arène se resserre encore",
    "where": [
+    "data/levels/confins_01.json",
     "data/levels/noyau_03.json"
    ]
   },
@@ -31271,6 +31536,12 @@
    ]
   },
   {
+   "fr": "Sa flamme vire au bleu !",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
    "fr": "Sa nouvelle version change le parcours : les records sont comparés sur la nouvelle version.",
    "where": [
     "game/progression/NewsCenter.cpp"
@@ -31396,6 +31667,7 @@
   {
    "fr": "Salve d'orbes",
    "where": [
+    "data/enemies/dragonnet.json",
     "data/enemies/eclat_stellaire.json",
     "data/enemies/fire_wisp.json",
     "data/enemies/frost_wisp.json",
@@ -32162,9 +32434,27 @@
    ]
   },
   {
+   "fr": "Ses ailes arrachent la roche : les blocs tournoient !",
+   "where": [
+    "data/levels/confins_01.json"
+   ]
+  },
+  {
+   "fr": "Ses ailes déchaînent la tempête !",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
    "fr": "Ses réglages se modifient ici. Ses planches d'animation et la durée de leurs images restent celles du jeu (lecture seule). « Publier… » met la définition en ligne.",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Ses écailles éclatent : le sol cède !",
+   "where": [
+    "data/enemies/pyrrhax.json"
    ]
   },
   {
@@ -32403,6 +32693,12 @@
    ]
   },
   {
+   "fr": "Sillage de feu",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
    "fr": "Sillage de plasma",
    "where": [
     "data/enemies/singularis.json"
@@ -32576,6 +32872,24 @@
    "fr": "Sol gelé",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Soleil noir",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Soleil noir ! Le dragon brûle tout !",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Soleil noir : l'arène se resserre",
+   "where": [
+    "data/levels/confins_01.json"
    ]
   },
   {
@@ -32764,6 +33078,18 @@
    ]
   },
   {
+   "fr": "Souffle bleu",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Souffle d'obsidienne",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
    "fr": "Souffle de forge",
    "where": [
     "data/enemies/crucible_heart.json",
@@ -32786,6 +33112,12 @@
     "data/enemies/echo_cryowyrm.json",
     "data/enemies/echo_howling_wyrm.json",
     "data/enemies/howling_wyrm.json"
+   ]
+  },
+  {
+   "fr": "Souffle réfléchi",
+   "where": [
+    "data/enemies/pyrrhax.json"
    ]
   },
   {
@@ -32936,6 +33268,12 @@
    "fr": "Spectre",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Spirale de braises",
+   "where": [
+    "data/enemies/pyrrhax.json"
    ]
   },
   {
@@ -34497,6 +34835,18 @@
    ]
   },
   {
+   "fr": "Tempête d'ailes",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Tempête d'ailes : les blocs en orbite",
+   "where": [
+    "data/levels/confins_01.json"
+   ]
+  },
+  {
    "fr": "Tempête de crevasse",
    "where": [
     "data/enemies/echo_howling_wyrm.json",
@@ -34737,13 +35087,13 @@
    ]
   },
   {
-   "fr": "Terminer les 19 niveaux de la campagne sans mourir.",
+   "fr": "Terminer les 20 niveaux de la campagne sans mourir.",
    "where": [
     "data/achievements/achievements.json"
    ]
   },
   {
-   "fr": "Terminer les 19 niveaux de la campagne.",
+   "fr": "Terminer les 20 niveaux de la campagne.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -34906,6 +35256,7 @@
     "data/levels/aethra_02.json",
     "data/levels/aethra_03.json",
     "data/levels/aethra_04.json",
+    "data/levels/confins_01.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -35112,6 +35463,7 @@
    "fr": "Tir chargé sur le récepteur, puis courez.",
    "where": [
     "data/levels/aethra_03.json",
+    "data/levels/confins_01.json",
     "data/levels/noyau_02.json",
     "data/levels/pyralis_04.json"
    ]
@@ -36535,6 +36887,12 @@
    ]
   },
   {
+   "fr": "Un dragon d'obsidienne au feu vivant, gardien des Confins. Huit phases, huit flammes : ses écailles éclatent, le sol cède, et son dernier feu doit être survécu.",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
    "fr": "un défi (du jour, de la semaine ou du mois)",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
@@ -36568,6 +36926,12 @@
    "fr": "Un ennemi différent porte déjà cet identifiant",
    "where": [
     "packaging/PackageImporter.cpp"
+   ]
+  },
+  {
+   "fr": "Un feu vert monte de son cœur de magma !",
+   "where": [
+    "data/enemies/pyrrhax.json"
    ]
   },
   {
@@ -36688,6 +37052,12 @@
    "fr": "un pays est nécessaire pour être visible",
    "where": [
     "server/src/auth.ts"
+   ]
+  },
+  {
+   "fr": "Un petit de la couvée de Pyrrhax, né d'une écaille brûlante. Il crache des boules de feu.",
+   "where": [
+    "data/enemies/dragonnet.json"
    ]
   },
   {
@@ -37094,6 +37464,12 @@
    "fr": "une seule vie : retour à un point de passage impossible",
    "where": [
     "server/src/race.ts"
+   ]
+  },
+  {
+   "fr": "Une seule vie. Un dragon d'obsidienne. Huit phases.",
+   "where": [
+    "data/levels/confins_01.json"
    ]
   },
   {
@@ -41746,6 +42122,12 @@
    ]
   },
   {
+   "fr": "« La Gueule du Dragon » (EXTRÊME) : une seule vie, aucun checkpoint ; la croûte brûlée des Confins, le choix des pouvoirs, puis Pyrrhax, le Dragon d'Obsidienne.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "« Le Cœur d'une Étoile Mourante » est maintenant le combat seul, comme L'Arène des Échos : le choix des quatre pouvoirs, puis directement Singularis dans son arène géante (une seule vie). Nouvelle version du niveau : son classement repart de zéro.",
    "where": [
     "data/news/changelog.json"
@@ -42129,6 +42511,18 @@
    "fr": "Écaille de salamandre",
    "where": [
     "data/levels/pyralis_02.json"
+   ]
+  },
+  {
+   "fr": "Écailles brisées",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Écailles brisées : le sol cède",
+   "where": [
+    "data/levels/confins_01.json"
    ]
   },
   {
