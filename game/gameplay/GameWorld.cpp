@@ -262,14 +262,20 @@ void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
     }
     events_.fixedUpdate(*this, dt, timer_.elapsed());
 
-    for (size_t i = 0; i < entities_.size(); ++i) entities_[i]->fixedUpdate(*this, dt);
+    {
+        HurtScope traps(*this, HurtOrigin::Hazard);  // 2.52 (statistics): the level's dangers
+        for (size_t i = 0; i < entities_.size(); ++i) entities_[i]->fixedUpdate(*this, dt);
+    }
     carryBodies();
 
     player_.onLadder = false;
     player_.inWater = false;
     player_.speedMultiplier = 1.0f;
     player_.updraft = 0.0f;
-    updatePlayerOverlaps(dt);
+    {
+        HurtScope traps(*this, HurtOrigin::Hazard);
+        updatePlayerOverlaps(dt);
+    }
     player_.fixedUpdate(*this, effective, dt);
     // 2.48: the last solid ground under Nova (practice runs of hardcore levels come back there).
     if ((practiceRespawn_ || invincible()) && player_.grounded() && player_.state() != PlayerState::Dead &&
@@ -280,7 +286,12 @@ void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
 
     // Time slow power: enemies (and, in updateProjectiles, their shots) run slower.
     updateEnemies(timeSlow_ > 0.0f ? dt * timeSlowFactor_ : dt);
-    if (!hazards_.empty()) hazards_.fixedUpdate(*this, timeSlow_ > 0.0f ? dt * timeSlowFactor_ : dt);
+    if (!hazards_.empty()) {
+        // 2.52 (statistics): the lasting effects of the bosses' attacks.
+        static const std::string kLasting = "Effets persistants (lave, nuages, ronces…)";
+        HurtScope lasting(*this, boss_ ? HurtOrigin::BossAttack : HurtOrigin::EnemyAttack, boss_, 0, &kLasting);
+        hazards_.fixedUpdate(*this, timeSlow_ > 0.0f ? dt * timeSlowFactor_ : dt);
+    }
     updateProjectiles(dt);
     if (timeSlow_ > 0.0f) timeSlow_ = std::max(0.0f, timeSlow_ - dt);
     if (decoyTimer_ > 0.0f) updateDecoy();
@@ -361,7 +372,11 @@ void GameWorld::updatePlayerOverlaps(float dt) {
 }
 
 void GameWorld::updateEnemies(float dt) {
-    for (size_t i = 0; i < enemies_.size(); ++i) enemies_[i]->fixedUpdate(*this, dt);
+    for (size_t i = 0; i < enemies_.size(); ++i) {
+        Enemy* e = enemies_[i].get();
+        HurtScope blows(*this, e->def().isBoss ? HurtOrigin::BossAttack : HurtOrigin::EnemyAttack, e);  // 2.52 (statistics)
+        e->fixedUpdate(*this, dt);
+    }
     enemies_.erase(std::remove_if(enemies_.begin(), enemies_.end(),
                                   [&](const auto& e) {
                                       if (!e->removable()) return false;
@@ -469,7 +484,10 @@ void GameWorld::updateProjectiles(float frameDt) {
                 d.source = p.pos - p.vel.normalized() * 8.0f;
                 d.knockback = p.knockback;
                 d.fromPlayer = true;
-                e->takeDamage(*this, d);
+                {
+                    AttackScope shot(*this, p.attackTag);  // 2.52 (statistics)
+                    e->takeDamage(*this, d);
+                }
                 p.hitTargets.push_back(e.get());
                 particles_.emit(p.hitEffect, p.pos, 0.8f);
                 if (!p.hitSound.empty()) playSound(p.hitSound, p.pos, 0.7f);
@@ -504,7 +522,10 @@ void GameWorld::updateProjectiles(float frameDt) {
             d.knockback = p.knockback;
             d.slow = p.slow;
             d.slowDuration = p.slowDuration;
-            damagePlayer(d);
+            {
+                HurtScope shot(*this, static_cast<HurtOrigin>(p.origin), findEnemy(p.owner), p.uid, &p.attackName);  // 2.52 (statistics)
+                damagePlayer(d);
+            }
             if (p.clip != "shockwave") {
                 p.alive = false;
                 particles_.emit(p.hitEffect, p.pos, 0.8f);
@@ -554,9 +575,11 @@ void GameWorld::explodeProjectile(const Projectile& p, Vec2 at) {
     d.slowDuration = p.slowDuration;
     if (p.fromPlayer) {
         d.fromPlayer = true;
+        AttackScope shot(*this, p.attackTag);  // 2.52 (statistics)
         damageEnemies(Rect::fromCenter(at, {r * 2, r * 2}), d, nullptr);
         powerHit("impulse", Rect::fromCenter(at, {r * 2, r * 2}));  // breaks cracked rock
     } else if (player_.alive() && Collision::circleIntersectsRect(at, r, player_.box)) {
+        HurtScope shot(*this, static_cast<HurtOrigin>(p.origin), findEnemy(p.owner), p.uid, &p.attackName);  // 2.52 (statistics)
         damagePlayer(d);
     }
 }
@@ -564,6 +587,7 @@ void GameWorld::explodeProjectile(const Projectile& p, Vec2 at) {
 void GameWorld::checkKillPlane() {
     if (!player_.alive()) return;
     if (player_.box.y > level_.effectiveKillY()) {
+        HurtScope fall(*this, HurtOrigin::Fall);  // 2.52 (statistics)
         player_.kill(*this);
         // Falling death: no point waiting at the bottom of the screen.
         hitStop_ = 0.0f;
@@ -633,7 +657,21 @@ Enemy* GameWorld::spawnEnemy(const std::string& defId, Vec2 feet, bool faceLeft,
     return spawnEnemy(*d, feet, faceLeft, objectId, patrol);
 }
 
-void GameWorld::spawnProjectile(const Projectile& p) { pendingProjectiles_.push_back(p); }
+void GameWorld::spawnProjectile(const Projectile& p) {
+    pendingProjectiles_.push_back(p);
+    // 2.52, statistics only: whose shot it is (nothing of it is read by the simulation).
+    Projectile& q = pendingProjectiles_.back();
+    q.uid = ++shotSerial_;
+    if (q.fromPlayer) {
+        q.attackTag = attackTag_;
+    } else {
+        // An enemy's shot (EnemyAttack: a shot), a boss's, a turret's (Hazard); else an enemy shot.
+        HurtOrigin o = hurtOrigin_ == HurtOrigin::BossAttack || hurtOrigin_ == HurtOrigin::Hazard ? hurtOrigin_ : HurtOrigin::EnemyShot;
+        q.origin = static_cast<uint8_t>(o);
+        q.owner = hurtEnemy_ ? hurtEnemy_->uid() : 0;
+        if (hurtEnemy_) q.attackName = hurtEnemy_->currentAttackName();
+    }
+}
 
 Enemy* GameWorld::findEnemy(uint32_t uid) const {
     if (uid == 0) return nullptr;
@@ -677,7 +715,58 @@ bool GameWorld::powerHit(const std::string& power, const Rect& area) {
     return any;
 }
 
-bool GameWorld::damagePlayer(const DamageInfo& dmg) { return player_.hurt(*this, dmg); }
+bool GameWorld::damagePlayer(const DamageInfo& dmg) {
+    ++inDamage_;
+    const bool hurt = player_.hurt(*this, dmg);
+    --inDamage_;
+    if (hurt && listener) listener->playerHurt(*this, dmg, hurtSource(&dmg));
+    return hurt;
+}
+
+// ------------------------------------------------------- 2.52: statistics
+
+GameWorld::HurtScope::HurtScope(GameWorld& world, HurtOrigin o, const Enemy* e, uint32_t s, const std::string* a)
+    : w(world), origin(world.hurtOrigin_), enemy(world.hurtEnemy_), shot(world.hurtShot_), attack(world.hurtAttack_) {
+    w.hurtOrigin_ = o;
+    w.hurtEnemy_ = e;
+    w.hurtShot_ = s;
+    w.hurtAttack_ = a;
+}
+
+GameWorld::HurtScope::~HurtScope() {
+    w.hurtOrigin_ = origin;
+    w.hurtEnemy_ = enemy;
+    w.hurtShot_ = shot;
+    w.hurtAttack_ = attack;
+}
+
+HurtSource GameWorld::hurtSource(const DamageInfo* dmg) const {
+    HurtSource s;
+    s.origin = hurtOrigin_;
+    s.enemy = hurtEnemy_;
+    s.shot = hurtShot_;
+    // Touching an enemy (its body, not one of its attacks) is a contact, a boss's too.
+    if (dmg && dmg->type == DamageType::Contact && hurtEnemy_ && hurtShot_ == 0 &&
+        (s.origin == HurtOrigin::EnemyAttack || s.origin == HurtOrigin::BossAttack))
+        s.origin = HurtOrigin::Contact;
+    if (hurtAttack_) s.attack = *hurtAttack_;
+    else if (hurtEnemy_) s.attack = hurtEnemy_->currentAttackName();
+    return s;
+}
+
+uint32_t GameWorld::newAttackTag(const std::string& power) {
+    ++attackSerial_;
+    if (listener) listener->attackStarted(*this, attackSerial_, power);
+    return attackSerial_;
+}
+
+void GameWorld::noteEnemyDamaged(const Enemy& e, const DamageInfo& dmg) {
+    if (listener && dmg.fromPlayer && attackTag_ != 0) listener->enemyHit(*this, e, attackTag_);
+}
+
+void GameWorld::notePlayerKilled() {
+    if (listener && inDamage_ == 0) listener->playerKilled(*this, hurtSource(nullptr));
+}
 
 void GameWorld::onEnemyKilled(Enemy& e) {
     hazards_.removeOwner(*this, e.uid());  // its cage, frost, lava and pulls go with it

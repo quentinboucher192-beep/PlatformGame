@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <functional>
 #include <map>
 #include <memory>
@@ -83,6 +84,8 @@ public:
     virtual void onLand() {}
 
     float cooldownRemaining() const { return cooldown_; }
+    /// 2.52, statistics only: the tag of its last use (GameWorld::newAttackTag), 0 before.
+    uint32_t attackTag() const { return attackTag_; }
     float cooldownRatio() const { return def_.cooldown > 0 ? cooldown_ / def_.cooldown : 0.0f; }
 
 protected:
@@ -92,6 +95,7 @@ protected:
     PowerDefinition def_;
     float cooldown_ = 0.0f;
     Action key_;
+    uint32_t attackTag_ = 0;
 };
 
 /// How a power of the data is used (HUD, power guide, choice of the power to replace).

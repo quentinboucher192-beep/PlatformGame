@@ -225,7 +225,10 @@ void Player::fixedUpdate(GameWorld& w, const PlayerInput& inRaw, float dt) {
         aim_ = {facing, 0.0f};
     }
 
-    for (auto& p : powers_) p->fixedUpdate(*this, w, dt);
+    for (auto& p : powers_) {
+        GameWorld::AttackScope tag(w, p->attackTag());  // 2.52 (statistics): what it hits is credited to its last use
+        p->fixedUpdate(*this, w, dt);
+    }
 
     if (state_ == PlayerState::Victory) {
         vel.x = approach(vel.x, cinematicWalk_, 900.0f * dt);
@@ -267,6 +270,7 @@ void Player::fixedUpdate(GameWorld& w, const PlayerInput& inRaw, float dt) {
 
     // Ground pound / grapple drive the movement themselves.
     if (Power* mp = movementPower()) {
+        GameWorld::AttackScope tag(w, mp->attackTag());  // 2.52 (statistics)
         mp->movePlayer(*this, w, in, dt);
         return;
     }

@@ -670,6 +670,7 @@ bool Enemy::takeDamage(GameWorld& w, const DamageInfo& dmg) {
     if (perched_ && attack_) mult *= attack_->vulnerability > 0.0f ? attack_->vulnerability : 1.5f;
     float amount = dmg.amount * mult;
     hp_ -= amount;
+    w.noteEnemyDamaged(*this, dmg);  // 2.52: statistics only (which attack of Nova reached it)
     hurtFlash_ = 0.14f;
     invuln_ = 0.12f;
     engaged_ = true;
