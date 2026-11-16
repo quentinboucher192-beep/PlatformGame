@@ -5,15 +5,14 @@
   de son panneau ou de sa fenêtre, ni passer sous un autre élément. Mesurer avant d'écrire
   (`UIContext::fitFont`, `labelWrapped`, `text().measure`), placer les éléments les uns à la
   suite des autres, jamais à des positions « devinées ».
-- Avant chaque livraison, vérifier **par capture d'écran** (rendu sans écran :
-  `SDL_VIDEODRIVER=offscreen CosmicPlatformer --headless --shot N:fichier.png …`) chaque écran,
-  fenêtre et panneau ajouté ou modifié, en 1600×900 au moins, et corriger tout chevauchement.
+- Plus de captures d'écran systématiques (trop coûteuses en temps et en crédits) : le placement
+  se garantit dans le code (mesures, ajustement, troncature) ; une capture seulement sur demande
+  (`SDL_VIDEODRIVER=offscreen CosmicPlatformer --headless --shot N:fichier.png …`).
 - Tout est en français, jouable au clavier, à la manette et à la souris.
 - Pas de bouton décoratif ni de données fictives : une fonction annoncée fonctionne vraiment.
 
 ## Livraison
-- Livrer l'installateur Windows (artefact de la CI) **à la fin de chaque étape**, avec des
-  captures des écrans concernés.
+- Livrer l'installateur Windows (artefact de la CI) **à la fin de chaque étape**.
 - Pousser uniquement sur la branche de développement ; pas de pull request sans demande.
 
 ## Moteur et en ligne
