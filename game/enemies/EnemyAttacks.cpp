@@ -110,7 +110,7 @@ bool Enemy::chooseBossAttack(GameWorld& w, const std::vector<const AttackDef*>& 
         if (underneath && a->type != AttackType::Leap && a->type != AttackType::Rain && a->type != AttackType::Eruption &&
             a->type != AttackType::Arc && a->type != AttackType::Summon &&
             !(a->isGuardianType() && a->type != AttackType::Tracker && a->type != AttackType::Cage && a->type != AttackType::Orbit) &&
-            !(a->isGolemType() && a->type != AttackType::Shell))  // 2.51: its quake and its leap reach her
+            !(a->isGolemType() && a->type != AttackType::Shell))  // 2.52: its quake and its leap reach her
             continue;
         float fit = a->weight;
         switch (a->type) {
@@ -132,7 +132,7 @@ bool Enemy::chooseBossAttack(GameWorld& w, const std::vector<const AttackDef*>& 
                 break;
         }
         if (below) fit *= belowFit(*a);
-        if (hasGolem_) fit *= golemFit(w, *a, near, far, air);  // 2.51: the golem reads its floor too
+        if (hasGolem_) fit *= golemFit(w, *a, near, far, air);  // 2.52: the golem reads its floor too
         if (fit <= 0.0f) continue;
         if (!inRange) {
             if (!punish) continue;
@@ -159,7 +159,7 @@ bool Enemy::chooseBossAttack(GameWorld& w, const std::vector<const AttackDef*>& 
                 case AttackType::Perch: k = 2.0f; break;
                 case AttackType::CloudShot: k = 1.6f; break;
                 case AttackType::Gust: k = 1.2f; break;
-                case AttackType::Shell: k = above > 48.0f ? 0.0f : 1.5f; break;  // 2.51: the golem
+                case AttackType::Shell: k = above > 48.0f ? 0.0f : 1.5f; break;  // 2.52: the golem
                 case AttackType::Quake: k = 2.0f; break;
                 case AttackType::Skyfall: k = 2.5f; break;
                 default: break;
@@ -483,7 +483,7 @@ void Enemy::performAttackStart(GameWorld& w) {
             float groundY = tgt.y;
             Vec2 from{tgt.x, tgt.y - 40.0f}, to{tgt.x, tgt.y + 400.0f};
             if (hasGolem_ && floorKnown_) {
-                // 2.51: the golem lands on its own floor (never into a pit nor on a ledge).
+                // 2.52: the golem lands on its own floor (never into a pit nor on a ledge).
                 const float lo = walkLo(), hi = walkHi();
                 tgt.x = lo <= hi ? std::clamp(tgt.x, lo, hi) : (lo + hi) * 0.5f;
                 groundY = floorY_;
@@ -600,7 +600,7 @@ void Enemy::performAttackActive(GameWorld& w, float dt) {
             float sp = a.lungeSpeed * phaseSpeed();
             vel.x = facing * sp;
             if (hasGolem_ && floorKnown_ && ((facing > 0.0f && box.center().x + sp * dt > walkHi()) || (facing < 0.0f && box.center().x - sp * dt < walkLo()))) {
-                // 2.51: the golem skids to a halt before the end of its floor (a pit, a crust).
+                // 2.52: the golem skids to a halt before the end of its floor (a pit, a crust).
                 vel.x = 0.0f;
                 stateTimer_ = 0.0f;
                 w.particles().emit("slam_dust", box.bottomCenter() + Vec2{facing * box.w * 0.5f, 0.0f}, 1.4f);
@@ -659,7 +659,7 @@ void Enemy::finishAttack(GameWorld& w) {
     if (attack_ && attack_->isDragonType()) dragonEnd(w, false);
     if (attack_ && attack_->isGolemType()) golemEnd(w, false);
     if (hasGolem_) {
-        walkTime_ = 0.0f;  // 2.51: its steps before the next blow
+        walkTime_ = 0.0f;  // 2.52: its steps before the next blow
         dropThrough_ = false;
     }
     if (attackIndex_ >= 0 && attackIndex_ < static_cast<int>(attackCooldowns_.size()))

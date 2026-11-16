@@ -93,7 +93,7 @@ public:
     bool perched() const { return perched_; }
     bool diveLocked() const { return diveLocked_; }
     bool diving() const { return stage_ == Stage::Dash; }
-    /// The golem (2.51, Monolithe): curled in its shell (it takes less damage), rolling, dizzy
+    /// The golem (2.52, Monolithe): curled in its shell (it takes less damage), rolling, dizzy
     /// after a roll (it takes more), out of sight in its titanic leap (it cannot be hurt), and
     /// the firm floor it walks on (no crust that gives way, no pit).
     bool curled() const { return golem_ == GolemStage::Curl || golem_ == GolemStage::Roll || golem_ == GolemStage::Skid; }
@@ -306,7 +306,7 @@ private:
     bool perched_ = false;       // landed: it takes more damage
     bool dropThrough_ = false;   // diving or landing: through the one-way ledges
 
-    // The golem (2.51, the Monolithe): its new attack types and a walker's brain, in GolemAttacks.cpp.
+    // The golem (2.52, the Monolithe): its new attack types and a walker's brain, in GolemAttacks.cpp.
     enum class GolemStage : uint8_t { None, Curl, Roll, Skid, Uncurl, Dizzy, Crouch, Rise, Hang, Fall, Land, Quake };
     void golemBegin(GameWorld& w);                // wind-up: the lane of the roll, the shadow, the first quake
     void golemTelegraph(GameWorld& w, float dt);  // the wind-up, step by step
@@ -318,6 +318,8 @@ private:
     /// Its steps between two attacks: toward the target, back toward the middle of its floor,
     /// never to the edge of a pit; it attacks when placed (or when it has walked enough).
     void golemThink(GameWorld& w, float dt);
+    float golemSpot(GameWorld& w, float dt);  // where it wants to stand (and whether it is pressed at an end)
+    void golemWalk(float dt, float want, float pace);
     /// The firm floor under it, as far as it stays level on both sides (walls, pits and the crust
     /// that may give way end it); `roll` counts the crust too (the shell rolls over it).
     void refreshFloor(GameWorld& w);
@@ -340,7 +342,6 @@ private:
     float floorTimer_ = 0.0f;
     float edgeTime_ = 0.0f;       // pressed at an end of its floor with the target on the inside
     float walkTime_ = 0.0f;       // walking before its next attack
-    float beat_ = 0.0f;           // a beat of steps between two attacks
     bool sheltered_ = false;      // a ledge right over the target's head
     float rollDir_ = 1.0f;
     float rollStop_ = 0.0f;       // where the last leg of its roll ends (toward the middle)

@@ -1,4 +1,4 @@
-// The attacks of the golem (2.51, the Monolithe) and its brain of a walker.
+// The attacks of the golem (2.52, the Monolithe) and its brain of a walker.
 //
 //  * « Carapace roulante » (shell): it curls into a shell of rune-carved stone (it glows, the
 //    lane it will roll along is shown), then rolls at the target at full speed, bouncing off the
@@ -43,7 +43,7 @@ float clampIn(float v, float lo, float hi) { return lo <= hi ? std::clamp(v, lo,
 
 constexpr Vec2 kShell{72.0f, 72.0f};  // the curled golem: a double jump clears it
 constexpr float kComfort = 48.0f;     // its body keeps this far from the ends of its floor
-constexpr float kBeat = 0.4f;         // steps between two blows (scaled by the phase's cooldowns)
+constexpr float kBeat = 0.25f;        // steps between two blows (scaled by the phase's cooldowns)
 constexpr float kRise = 1000.0f;      // titanic leap: up and out of sight
 constexpr float kTrack = 240.0f;      // its shadow follows the target (faster than she runs)
 constexpr float kLock = 0.45f;        // then holds still this long before the fall
@@ -138,7 +138,7 @@ void Enemy::setBody(const GameWorld& w, Vec2 size) {
 
 // ================================================================== its brain
 
-void Enemy::golemThink(GameWorld& w, float dt) {
+float Enemy::golemSpot(GameWorld& w, float dt) {
     floorTimer_ -= dt;
     if (!floorKnown_ || floorTimer_ <= 0.0f) refreshFloor(w);
     const float bx = box.center().x, px = playerPos_.x;
@@ -161,21 +161,31 @@ void Enemy::golemThink(GameWorld& w, float dt) {
     // her; its leaps, its shell or its charge will (golemFit).
     const bool atEnd = (bx < lo + 24.0f && toward > 0.0f) || (bx > hi - 24.0f && toward < 0.0f);
     edgeTime_ = atEnd ? edgeTime_ + dt : 0.0f;
+    return want;
+}
+
+void Enemy::golemWalk(float dt, float want, float pace) {
+    // Its steps (never past the end of its floor). It faces the target (it steps back facing
+    // her); a long way, it turns to walk.
+    const float bx = box.center().x, gap = std::abs(want - bx);
+    float dir = gap > 6.0f ? signf(want - bx) : 0.0f;
+    if ((dir < 0.0f && box.x <= floorL_ + 2.0f) || (dir > 0.0f && box.right() >= floorR_ - 2.0f)) dir = 0.0f;
+    const float speed = def_.speed * def_.chaseSpeedMultiplier * phaseSpeed() * pace;
+    vel.x = approach(vel.x, dir * speed, 900.0f * dt);
+    face(dir != 0.0f && gap > 140.0f ? dir : playerPos_.x - bx);
+}
+
+void Enemy::golemThink(GameWorld& w, float dt) {
+    const float want = golemSpot(w, dt);
     // A beat of steps between two blows (none in a combo), longer when badly placed; pressed at
     // an end it acts at once.
-    const float gap = std::abs(want - bx);
+    const float gap = std::abs(want - box.center().x);
     float beat = kBeat * phaseCooldown();
-    if (gap > 90.0f) beat += std::min(0.8f, gap / 250.0f);
+    if (gap > 90.0f) beat += std::min(0.4f, gap / 350.0f);
     if (comboLeft_ > 0 || edgeTime_ > 0.5f) beat = 0.0f;
     walkTime_ += dt;
     if (playerVisible_ && walkTime_ >= beat && chooseAttack(w)) return;
-    // Its steps (never past the end of its floor).
-    float dir = gap > 6.0f ? signf(want - bx) : 0.0f;
-    if ((dir < 0.0f && box.x <= floorL_ + 2.0f) || (dir > 0.0f && box.right() >= floorR_ - 2.0f)) dir = 0.0f;
-    const float speed = def_.speed * def_.chaseSpeedMultiplier * phaseSpeed();
-    vel.x = approach(vel.x, dir * speed, 900.0f * dt);
-    // It faces the target (it steps back facing her); a long way, it turns to walk.
-    face(dir != 0.0f && gap > 140.0f ? dir : toward);
+    golemWalk(dt, want, 1.0f);
     playClip(std::abs(vel.x) > 5.0f ? "walk" : "idle");
 }
 
@@ -353,10 +363,10 @@ void Enemy::quakeWave(GameWorld& w) {
     for (int k = 0; k < rocks; ++k) {
         const float x = clampIn(playerPos_.x + behind * 110.0f * static_cast<float>(k) + w.rng().range(-16.0f, 16.0f), arena.x + 24.0f,
                                 arena.right() - 24.0f);
-        Vec2 from{x, top + 4.0f}, to{x, arena.bottom() + 120.0f};
-        auto t = w.physics().raycast(from, to, true);
-        if (!t) continue;
-        const float gy = from.y + (to.y - from.y) * *t;
+        // It lands on the surface she stands on (it crashes through the ledges above her).
+        auto ground = groundAt(w, x, playerPos_.y);
+        if (!ground) continue;  // over a pit
+        const float gy = *ground;
         const float r = orDefault(a.projectileRadius, 13.0f);
         const float fall = std::max(8.0f, gy - top - r * 2.0f);
         const float v0 = std::max(0.0f, a.projectileSpeed);
@@ -383,7 +393,7 @@ void Enemy::shockwaves(GameWorld& w, int ring) {
     const float speed = std::max(60.0f, a.projectileSpeed) * (1.0f - 0.12f * static_cast<float>(ring));
     for (float dir : {-1.0f, 1.0f}) {
         Projectile p;
-        p.pos = p.prevPos = {box.center().x + dir * (box.w * 0.5f + 6.0f), box.bottom() - r};
+        p.pos = p.prevPos = {box.center().x + dir * (box.w * 0.5f + 6.0f), box.bottom() - 6.0f};  // the floor right under it
         p.vel = {dir * speed, 0.0f};
         p.damage = a.damage;
         p.type = DamageType::Explosion;
@@ -462,6 +472,7 @@ void Enemy::golemStart(GameWorld& w) {
             golem_ = GolemStage::Rise;
             golemTimer_ = 0.0f;
             vel = {0.0f, -kRise};
+            climbSpot_ = {box.center().x, arenaArea(w).y - 40.0f};  // out of sight: above the roof of its arena
             dropThrough_ = true;
             stateTimer_ = 12.0f;  // it ends itself (safety)
             w.shake(0.4f);
@@ -566,12 +577,11 @@ void Enemy::golemActive(GameWorld& w, float dt) {
             }
             break;
         case AttackType::Skyfall: {
-            const Rect arena = arenaArea(w);
             switch (golem_) {
                 case GolemStage::Rise:
                     vel = {0.0f, -kRise};
                     golemTimer_ += dt;
-                    if (box.bottom() < arena.y - 40.0f || golemTimer_ > 1.2f) {
+                    if (box.bottom() < climbSpot_.y || golemTimer_ > 1.2f) {
                         // Out of sight: its shadow hunts the target.
                         golem_ = GolemStage::Hang;
                         golemTimer_ = orDefault(a.duration, 1.1f);
@@ -589,7 +599,7 @@ void Enemy::golemActive(GameWorld& w, float dt) {
                     }
                     if (golemTimer_ <= 0.0f) {
                         // Over its shadow, it falls.
-                        box = Rect::fromBottomCenter({shadow_.x, std::min(box.bottom(), arena.y - 20.0f)}, box.size());
+                        box = Rect::fromBottomCenter({shadow_.x, std::min(box.bottom(), climbSpot_.y + 20.0f)}, box.size());
                         prevBox = box;
                         golem_ = GolemStage::Fall;
                         vel = {0.0f, kFallStart};
@@ -687,8 +697,13 @@ void Enemy::renderGolem(RenderContext& ctx, float prog) const {
                 ctx.lights.add(c, 120.0f, rune);
             }
             if (rolling() && std::abs(vel.x) > 40.0f) {
-                Vec2 tail = c - Vec2{signf(vel.x) * std::min(150.0f, std::abs(vel.x) * 0.35f), 0.0f};
-                ctx.r.drawWorldLine(tail, c, rune.withAlpha(70), box.h * 0.5f * ctx.r.view().scale, BlendMode::Additive);
+                // Its wake: glows fading behind it, dust low on the ground.
+                const float back = -signf(vel.x), len = std::min(150.0f, std::abs(vel.x) * 0.35f);
+                for (int k = 1; k <= 5; ++k) {
+                    const float f = static_cast<float>(k) / 5.0f;
+                    ctx.r.drawWorldGlow(c + Vec2{back * len * f, box.h * 0.1f * f}, box.w * (0.45f - 0.25f * f),
+                                        rune.withAlpha(static_cast<uint8_t>(90 * (1.0f - f))));
+                }
             }
             if (dizzy()) {
                 // Dizzy: rune pebbles circle over its head; its chest glows (strike it now).

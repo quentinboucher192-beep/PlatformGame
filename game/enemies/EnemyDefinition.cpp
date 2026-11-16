@@ -32,7 +32,7 @@ constexpr Named kAttacks[] = {{"contact", "Contact"},           {"melee", "Corps
                               // 2.50: the dragon (Pyrrhax)
                               {"dive", "Piqué traversant"},      {"perch", "Atterrissage et souffle au sol"},
                               {"cloud_shot", "Boule de feu à nuage"}, {"gust", "Rafale qui repousse"},
-                              // 2.51: the golem (the Monolithe)
+                              // 2.52: the golem (the Monolithe)
                               {"shell", "Carapace roulante"},    {"quake", "Tremblement de terre"},
                               {"skyfall", "Bond titanesque"}};
 static_assert(sizeof(kAttacks) / sizeof(kAttacks[0]) == static_cast<size_t>(AttackType::Count), "one label per attack type");
@@ -162,7 +162,7 @@ Json AttackDef::toJson() const {
         if (vulnerability > 0) j["vulnerability"] = vulnerability;
     }
     if (isGolemType()) {
-        // 2.51, written only for the golem's types (the definitions of before keep their fingerprints).
+        // 2.52, written only for the golem's types (the definitions of before keep their fingerprints).
         j["projectile"] = projectile;
         j["projectileSpeed"] = projectileSpeed;
         j["count"] = count;

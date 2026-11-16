@@ -25,7 +25,7 @@ struct RenderContext;
 ///  * (2.50, the dragon) clouds of fire that linger where its breath or its fireballs left them
 ///    (they hurt inside), and the wind of its wings that pushes Nova away from it (a limited
 ///    push, always below her run speed: running against it still moves her forward);
-///  * (2.51, the golem's quake) cracks in the ground that glow, then burst out of it, and rocks
+///  * (2.52, the golem's quake) cracks in the ground that glow, then burst out of it, and rocks
 ///    falling from the roof onto marked spots.
 /// An effect belongs to the enemy that made it (its uid): it ends with its time, with the
 /// enemy (death, removal) or when the player respawns.
@@ -90,7 +90,7 @@ public:
         /// It hurts after a short flare and until its last quarter second (it fades harmless).
         bool burning() const { return age >= 0.1f && time > 0.25f; }
     };
-    /// A crack of the golem's quake (2.51): marked on the ground, it bursts after `delay` (stone
+    /// A crack of the golem's quake (2.52): marked on the ground, it bursts after `delay` (stone
     /// spikes up to `height` for `burst` seconds); or a rock falling from the roof (`rock`): its
     /// mark on the ground until it lands there after `delay`.
     struct Crack {

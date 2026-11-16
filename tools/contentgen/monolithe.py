@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Monolithe, le Golem Primordial (version 2.49, its brain and its attacks reworked in 2.51): the
+"""Monolithe, le Golem Primordial (version 2.49, its brain and its attacks reworked in 2.52): the
 second giga boss of Les Confins, at the end of « Le Cœur de Pierre » (confins_02, tools/levelgen/confins.py).
 
 A golem of rune-carved granite older than the planets, walking on the ground (the other giga
@@ -8,7 +8,7 @@ fists, the ground and the glare of its single eye. Eight phases, one every 12.5 
 each with its own light (the sheets of tools/assetgen/characters/boss_f_monolithe.py: one per phase,
 phases 5-8 « Fendu », its chest plates gone over a crystal core):
 
-2.51, its own attacks (game/enemies/GolemAttacks.cpp): « Carapace roulante » (it curls into its
+2.52, its own attacks (game/enemies/GolemAttacks.cpp): « Carapace roulante » (it curls into its
 rune shell and rolls at Nova, bouncing off the walls; armoured curled, dizzy after), « Tremblement de
 terre » (cracks burst under Nova, rocks fall from the roof on marked spots) and « Bond titanesque » (it
 leaps out of sight, its shadow hunts Nova, it falls on her: shockwaves along the floor). Its brain
@@ -41,7 +41,7 @@ DATA = os.path.join(ROOT, "data", "enemies")
 
 # Clips of its sheets (boss_f_monolithe.py): telegraph/attack (both fists raised, then the slam,
 # `impact` on frame 2), telegraph_special/special (runes flare, then the eye glares), summon (fists
-# into the ground, rune rocks rise), roar (phase change); 2.51: curl/roll (the shell; uncurl and
+# into the ground, rune rocks rise), roar (phase change); 2.52: curl/roll (the shell; uncurl and
 # dizzy after it), telegraph_special/quake (fists pounding the ground), crouch/leap (fall and land
 # after it).
 CLASSIC = ("telegraph", "attack")
@@ -63,21 +63,21 @@ def attacks():
     rock = dict(projectile="rock", hitEffect="projectile_burst")
     disc = dict(projectile="energy_disc", hitEffect="projectile_burst")
     ring = dict(radius=900, knockback=260)
-    # 2.51: its own attacks (game/enemies/GolemAttacks.cpp).
-    shell = dict(bounces=1, duration=1.6, vulnerability=1.5, armor=0.35, knockback=320)
+    # 2.52: its own attacks (game/enemies/GolemAttacks.cpp).
+    shell = dict(bounces=1, duration=1.2, vulnerability=1.5, armor=0.35, knockback=320, weight=0.55)
     quake = dict(projectile="rock", count=3, spread=150, radius=22, height=46, stagger=0.75, arms=2, projectileRadius=13,
                  gravity=900, projectileSpeed=0, knockback=240)
-    leap = dict(duration=1.1, radius=26, projectileSpeed=300, projectileRadius=10, burstInterval=0.4, knockback=300)
+    leap = dict(duration=0.95, radius=26, projectileSpeed=300, projectileRadius=10, burstInterval=0.4, knockback=300)
     return [
-        # Its own (2.51)
-        _atk("carapace", "Carapace roulante", "shell", 2, 1600, 0.8, 0.3, 0.5, 6.0, *SHELL, lungeSpeed=360, **shell),
+        # Its own (2.52)
+        _atk("carapace", "Carapace roulante", "shell", 2, 1600, 0.8, 0.3, 0.5, 9.0, *SHELL, lungeSpeed=400, **shell),
         _atk("carapace_folle", "Carapace folle", "shell", 2, 1600, 0.75, 0.3, 0.5, 6.0, *SHELL, lungeSpeed=430,
-             **dict(shell, bounces=2, duration=1.3)),
+             **dict(shell, bounces=2, duration=1.2)),
         _atk("seisme", "Tremblement de terre", "quake", 2, 1600, 0.8, 0.2, 0.6, 8.0, *QUAKE, duration=3.4, burstInterval=0.85,
              **quake),
         _atk("bond_titan", "Bond titanesque", "skyfall", 2, 1800, 0.6, 0.6, 0.6, 6.5, *LEAP, count=1, **leap),
         _atk("bond_titan_double", "Double bond titanesque", "skyfall", 2, 1800, 0.55, 0.7, 0.6, 6.5, *LEAP, count=2,
-             **dict(leap, duration=0.95)),
+             **dict(leap, duration=0.85)),
         # 1 Ambre
         _atk("poings", "Double frappe", "slam", 2, 200, 0.7, 0.35, 0.7, 2.0, *CLASSIC, projectileSpeed=230, knockback=280),
         _atk("charge", "Charge du colosse", "charge", 2, 700, 0.65, 2.2, 0.7, 3.4, *CLASSIC, minRange=90, lungeSpeed=300,

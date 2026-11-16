@@ -238,7 +238,7 @@ for _k in range(8):
 # Eight sheets, one per phase, packed like Singularis' (no teleport); a walker: footsteps.
 MONOLITHE_CLIPS = [("idle", 8), ("telegraph", 6), ("walk", 8), ("move", 8), ("attack", 5), ("telegraph_special", 6),
                    ("special", 4), ("hurt", 2), ("summon", 6), ("roar", 8), ("death", 14)]
-# 2.51: its new attacks (shell, quake, titanic leap) add clips packed after the others.
+# 2.52: its new attacks (shell, quake, titanic leap) add clips packed after the others.
 MONOLITHE_V2_CLIPS = MONOLITHE_CLIPS + [("curl", 6), ("roll", 8), ("uncurl", 4), ("dizzy", 6), ("crouch", 4), ("leap", 3),
                                         ("fall", 2), ("land", 5), ("quake", 4)]
 for _k in range(8):

@@ -1004,7 +1004,7 @@ class Monolithe:
         out.append(dimmed(stones.frame(1.0), 9))
         return out
 
-    # ======================================================= 2.51: its new attacks
+    # ======================================================= 2.52: its new attacks
     # « Carapace roulante »: curl (6, it folds into a rune-carved shell), roll (8, loop: the shell
     # rolling right, a full turn), uncurl (4), dizzy (6, loop: reeling, rune pebbles circling its
     # head); « Bond titanesque »: crouch (4), leap (3: up and away), fall (2, loop: coming down,
@@ -1292,7 +1292,7 @@ class Monolithe:
         return out
 
     def new_clips(self, form2=False):
-        """The clips of 2.51, packed after the others (the frames of before do not move)."""
+        """The clips of 2.52, packed after the others (the frames of before do not move)."""
         b = form2
         return [
             ("curl", self.curl(b), dict(durations=[0.1, 0.1, 0.12, 0.08, 0.14, 0.2], loop=False)),

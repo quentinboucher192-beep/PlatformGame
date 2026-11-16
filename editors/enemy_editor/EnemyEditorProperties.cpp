@@ -485,7 +485,7 @@ void EnemyEditorScene::tabAttacks(float x, float& y, float w) {
                 c |= ui.numberField("dlead", row.field("Anticipation (0 = vise le joueur, 1 = où il va)"), a.lead, 0.05f, 0, 1, "%.2f");
         }
         if (a.isGolemType()) {
-            // 2.51: the attacks of the golem (the Monolithe). A value left at 0 takes the type's
+            // 2.52: the attacks of the golem (the Monolithe). A value left at 0 takes the type's
             // default (see game/enemies/GolemAttacks.cpp).
             auto num = [&](const char* id, const char* label, float& v, float step, float lo, float hi, const char* fmt) {
                 c |= ui.numberField(id, row.field(label), v, step, lo, hi, fmt);

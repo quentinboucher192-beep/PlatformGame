@@ -323,7 +323,7 @@ void BossHazards::fixedUpdate(GameWorld& w, float dt) {
     }
     clouds_.erase(std::remove_if(clouds_.begin(), clouds_.end(), [](const Cloud& c) { return c.time <= 0.0f; }), clouds_.end());
 
-    // The golem's quake (2.51): the cracks burst out of the ground, the rocks land on their marks.
+    // The golem's quake (2.52): the cracks burst out of the ground, the rocks land on their marks.
     for (Crack& c : cracks_) {
         const bool was = c.bursting();
         c.age += dt;
@@ -533,7 +533,7 @@ void BossHazards::render(RenderContext& ctx) const {
         }
     }
 
-    // The golem's quake (2.51): glowing cracks that burst into stone spikes, rocks falling from
+    // The golem's quake (2.52): glowing cracks that burst into stone spikes, rocks falling from
     // the roof onto their marks.
     for (const Crack& c : cracks_) {
         const Color col = c.color;

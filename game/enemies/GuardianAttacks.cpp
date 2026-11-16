@@ -393,6 +393,11 @@ void Enemy::guardianActive(GameWorld& w, float dt) {
     const AttackDef& a = *attack_;
     Player& p = w.player();
     if (!def_.flying) vel.x = approach(vel.x, 0.0f, 900.0f * dt);
+    // 2.52: the golem keeps stepping (slowly) while its runes turn, its core pulls or its rings go.
+    if (hasGolem_ && !def_.flying &&
+        (a.type == AttackType::Spiral || a.type == AttackType::Orbit || a.type == AttackType::Well || a.type == AttackType::Cage ||
+         a.type == AttackType::Ring || a.type == AttackType::Flood))
+        golemWalk(dt, golemSpot(w, dt), 0.5f);
     DamageInfo d;
     d.amount = a.damage;
     d.type = DamageType::Projectile;
