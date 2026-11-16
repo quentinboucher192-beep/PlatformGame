@@ -1084,6 +1084,12 @@
    ]
   },
   {
+   "fr": "Administration : mode Invincible pour les comptes admin, en entraînement uniquement (menu pause) ; jamais pris en compte dans les records ni les classements.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Administration : nouvel onglet « Calendrier des défis » : le mois avec les tirages à venir, choix du niveau (campagne ou en ligne), des règles, de l'objectif et des paliers d'un défi qui n'a pas commencé, ou « Revenir au tirage ».",
    "where": [
     "data/news/changelog.json"
@@ -1115,6 +1121,12 @@
   },
   {
    "fr": "Administration › Ennemis : un admin modifie une entité native et publie une révision ; chaque niveau de la campagne qui l'utilise reçoit une nouvelle révision, avec une case par niveau pour réinitialiser ses records ou les garder.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Administration › Joueurs : nouvelle colonne « Version du jeu » (la version installée chez chaque joueur, « à jour » ou « ancienne ») ; le détail est dans la fenêtre « Ordinateur ».",
    "where": [
     "data/news/changelog.json"
    ]
@@ -17957,6 +17969,12 @@
    ]
   },
   {
+   "fr": "L'histoire des giga-boss : avant votre premier combat contre Singularis, Pyrrhax ou le Monolithe, une cinématique illustrée raconte comment il est devenu ce qu'il est (environ 45 secondes, texte laissé le temps de lire). Espace, Entrée, A ou un clic la passent ; elle ne compte pas dans le chrono.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "L'Horizon des événements",
    "where": [
     "data/levels/aethra_04.json"
@@ -22795,6 +22813,12 @@
    "fr": "Migrer vers un nouveau compte",
    "where": [
     "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
+   "fr": "Migrer vers un nouveau compte : l'ancien ordinateur donne un code de migration à usage unique, le nouveau compte récupère records, succès, récompenses et temps de jeu (le meilleur des deux côtés), puis propose de restaurer la progression. Une copie des sauvegardes actuelles est faite avant toute restauration.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -35441,6 +35465,12 @@
    ]
   },
   {
+   "fr": "Succès du Boomerang chargé : « Maîtrise : Boomerang chargé » et « Virtuose : Boomerang chargé ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Succès du Monolithe (6 nouveaux, 28 étoiles) ; au Vestiaire : la combinaison Granit (590 étoiles), la traînée Éclats de roche (600), l'effet de victoire Séisme runique (610), le Cercle runique et le titre Briseur de pierre.",
    "where": [
     "data/news/changelog.json"
@@ -44201,6 +44231,12 @@
    "fr": "« Regarder » apparaît ici quand un ami joue et vous autorise à le regarder.",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "« Revoir l'histoire » sur la fiche de chaque giga-boss déjà rencontré et dans Collection › Galerie › Gardiens ; Paramètres › Jeu : « Histoire des giga-boss : Avant le premier combat / Jamais ».",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {

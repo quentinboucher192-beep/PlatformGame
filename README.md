@@ -5,6 +5,14 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.51.0** :
+* **L'histoire des giga-boss** : une cinématique illustrée avant le premier combat (passable, hors chrono),
+  « Revoir l'histoire » sur la fiche du boss et dans la Galerie, option dans Paramètres › Jeu.
+* **Migrer vers un nouveau compte** : code à usage unique, le meilleur des deux comptes gardé, progression
+  restaurée après une copie de sauvegarde.
+* Succès du Boomerang chargé ; mode **Invincible** des admins en entraînement ; colonne **Version du jeu**
+  dans Administration › Joueurs.
+
 **Nouveau dans la version 2.50.0** :
 * **Pyrrhax déchaîné** : Piqué traversant, Atterrissage et souffle au sol, Boules de feu à nuage,
   Rafale d'ailes ; rester sous lui ne protège plus.
