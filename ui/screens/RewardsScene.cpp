@@ -208,7 +208,7 @@ private:
         g_.collection.save();
         g_.app.popScene();
     }
-    void drawNovaPreview(const std::string& suit, const Rect& dst) {
+    void drawNovaPreview(const std::string& suit, const Rect& dst, const SuitColors* colors = nullptr) {
         AnimationSetPtr set = g_.app.resources().animation("animations/nova.json");
         if (!set || !set->texture) return;
         const AnimationClip* c = set->clip("run");
@@ -223,8 +223,7 @@ private:
             }
         }
         TexturePtr tex = set->texture;
-        if (!suit.empty() && suit != "standard")
-            if (TexturePtr s = g_.app.resources().texture("sprites/player/suits/nova_" + suit + ".png")) tex = s;
+        if (TexturePtr s = g_.suitSheet(suit, colors)) tex = s;
         Rect src = set->frameRect(*c, frame);
         g_.app.renderer().drawTexture(*tex, &src, dst);
     }
@@ -233,7 +232,7 @@ private:
         Renderer& r = ui.r();
         if (it.category == "suit") {
             float s = std::min(box.w, box.h);
-            drawNovaPreview(it.look, Rect::fromCenter(box.center(), {s, s}));
+            drawNovaPreview(it.look, Rect::fromCenter(box.center(), {s, s}), it.suitColors ? &*it.suitColors : nullptr);
         } else if (it.category == "title") {
             float fs = fz(ui, 14);
             float cw = ui.text().measure(it.look, FontFace::Bold, ui.s(fs)).x + ui.s(22);

@@ -84,6 +84,25 @@ public:
     std::string cosmeticLook(const std::string& category) const {
         return collection.look(cosmetics, category, cosmeticProgress());
     }
+    /// The sheet of Nova in the suit `look` (its animation set's frames), nullptr for the normal
+    /// one (« standard », empty). A catalogue suit: its PNG (assets/sprites/player/suits). A suit
+    /// created on Cosmic Online ("srvsuit:<n>"): Nova's sheet recoloured at run time from
+    /// `colors` when given, else from the colours this game knows (the public list kept on
+    /// disk, the suits won); unknown yet: the normal sheet, and the list is read again soon.
+    /// Display only.
+    TexturePtr suitSheet(const std::string& look, const SuitColors* colors = nullptr);
+    /// The suits created on Cosmic Online that this game knows (GET /creations, kept in the user
+    /// folder, online/creations.json), and their recoloured sheets.
+    ServerSuitBook serverSuits;
+    SuitTextureCache suitTextures;
+    /// The list kept on disk at once; with `fetch`, read from the server now and every 30 minutes.
+    void startServerSuits(bool fetch);
+    void refreshServerSuits();
+    void updateServerSuits(float dt);
+    bool serverSuitsFetch_ = false;
+    bool serverSuitsBusy_ = false;
+    float serverSuitsTimer_ = 0.0f;
+    uint64_t serverSuitsAskedMs_ = 0;  // the last reading asked by an unknown suit
     /// What the player wears goes to the online profile (2.23): at start, after each
     /// « Équiper » and when the achievements change what is unlocked.
     void syncCosmetics();

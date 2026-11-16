@@ -13,6 +13,7 @@
 
 #include "engine/core/Json.h"
 #include "engine/core/Paths.h"
+#include "game/cosmetics/SuitRecolor.h"
 
 namespace cosmic {
 
@@ -49,8 +50,12 @@ struct CosmeticItem {
     /// 2.43: a title created on Cosmic Online by an administrator (id "srv:<n>", `look` its
     /// text): its colour, "gold", "silver", "cyan" or "violet"; "" for the catalogue's items.
     std::string color;
+    /// A suit created on Cosmic Online by an administrator (ADMINISTRATION › Créations: id and
+    /// look "srvsuit:<n>"): the three colours Nova's sheet is recoloured with at run time.
+    std::optional<SuitColors> suitColors;
     bool challengeReward() const { return !challenge.kind.empty(); }
     bool serverTitle() const { return id.rfind("srv:", 0) == 0; }
+    bool serverSuit() const { return id.rfind("srvsuit:", 0) == 0; }
 };
 
 /// 2.43: a reward won at one challenge, granted by Cosmic Online once the challenge was over
@@ -60,20 +65,25 @@ struct WonReward {
     std::string challengeKind; // "daily", "weekly", "monthly"
     std::string period;        // "2026-11-20", "2026-W47", "2026-11"
     std::string date;          // its first day
-    std::string kind;          // "item" (of the catalogue) or "title" (created on the server)
-    std::string ref;           // the item's id, or "srv:<n>"
+    std::string kind;          // "item" (of the catalogue), "title" or "suit" (created on the server)
+    std::string ref;           // the item's id, "srv:<n>" or "srvsuit:<n>"
     std::string grantedAt;
 };
 
 /// 2.43: what the player won at single challenges: catalogue items (unlocked whatever their
-/// usual condition) and the server's titles, as items of the category « title ».
+/// usual condition) and the server's titles, as items of the category « title »; and the suits
+/// created on the server (ADMINISTRATION › Créations), as items of the category « suit ».
 struct WonRewards {
     bool known = false;               // read from the server (else: nothing won here)
     std::vector<WonReward> list;      // the most recent first
     std::vector<CosmeticItem> titles; // the server titles won, once each
+    std::vector<CosmeticItem> suits;  // the server suits won, once each (with their colours)
     bool has(const std::string& ref) const;
     bool wonAt(const std::string& challengeId, const std::string& ref) const;
     const CosmeticItem* title(const std::string& ref) const;
+    const CosmeticItem* suit(const std::string& ref) const;
+    /// A server title or suit won (nullptr for anything else).
+    const CosmeticItem* item(const std::string& ref) const;
     /// The first challenge (the oldest) where `ref` was won, nullptr when never.
     const WonReward* origin(const std::string& ref) const;
     /// `rewards` of GET /players/me/rewards; nullopt when malformed.
@@ -109,7 +119,8 @@ public:
     const CosmeticItem* defaultItem(const std::string& category) const;
     const CosmeticCategory* category(const std::string& id) const;
     /// `look` when an item of the category has it, else the category default's look: what
-    /// another player's data (leaderboards, ghosts) may make this game draw (2.23).
+    /// another player's data (leaderboards, ghosts) may make this game draw (2.23). A suit
+    /// created on the server ("srvsuit:<n>") passes as it is: drawn from its colours.
     std::string lookOr(const std::string& category, const std::string& look) const;
     /// Star milestones in order, each with its rewards (the route of the stars).
     struct Milestone {

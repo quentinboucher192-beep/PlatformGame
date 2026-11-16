@@ -22,6 +22,7 @@ import {
     cleanTitleText,
     prizeItem,
     prizesJson,
+    suitIdOf,
     titleIdOf,
     titleKey,
     titleRef,
@@ -47,6 +48,7 @@ import {
     type Period,
 } from "./challenges";
 import { normalizeTitle } from "./community";
+import { knownSuits } from "./creations";
 import { ApiError, Errors, json, log, nowIso, readJsonObject, type Ctx } from "./http";
 import { RULES, rateLimit } from "./ratelimit";
 import { Validator, paging, queryEnum, queryString } from "./validate";
@@ -669,8 +671,12 @@ export async function createTitle(ctx: Ctx): Promise<Response> {
 
 type FieldErrors = { field: string; message: string }[];
 
-/** The body's rewards, checked: kinds, references the server knows, conditions and their values, no reward twice. */
-async function readPrizes(ctx: Ctx, body: Record<string, unknown>): Promise<{ rules: PrizeRule[]; errors: FieldErrors }> {
+/**
+ * The body's rewards, checked: kinds, references the server knows, conditions and their
+ * values, no reward twice. A suit created on the server must exist and not be archived, unless
+ * the challenge `challengeId` already gives it (archived since: kept as it was).
+ */
+async function readPrizes(ctx: Ctx, body: Record<string, unknown>, challengeId: string): Promise<{ rules: PrizeRule[]; errors: FieldErrors }> {
     const errors: FieldErrors = [...new Validator(body, ["rewards"]).errors];
     const rules: PrizeRule[] = [];
     const list = body.rewards;
@@ -679,6 +685,7 @@ async function readPrizes(ctx: Ctx, body: Record<string, unknown>): Promise<{ ru
         return { rules, errors };
     }
     const titleIds = new Set<number>();
+    const suitIds = new Set<number>();
     list.forEach((raw: unknown, i) => {
         const field = `rewards[${i}]`;
         if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
@@ -705,6 +712,14 @@ async function readPrizes(ctx: Ctx, body: Record<string, unknown>): Promise<{ ru
             }
             titleIds.add(id);
         }
+        if (kind === "suit") {
+            const id = suitIdOf(ref);
+            if (id === null) {
+                errors.push({ field: `${field}.ref`, message: "combinaison « srvsuit:<n> » attendue" });
+                return;
+            }
+            suitIds.add(id);
+        }
         if (rules.some((r) => r.kind === kind && r.ref === ref)) {
             errors.push({ field: `${field}.ref`, message: "cette récompense est déjà dans la liste" });
             return;
@@ -720,11 +735,24 @@ async function readPrizes(ctx: Ctx, body: Record<string, unknown>): Promise<{ ru
             if (r.kind === "title" && !have.has(titleIdOf(r.ref)!)) errors.push({ field: `rewards[${i}].ref`, message: "titre inconnu du serveur" });
         });
     }
+    if (suitIds.size > 0 && errors.length === 0) {
+        const known = await knownSuits(ctx, [...suitIds]);
+        const given = await ctx.env.DB.prepare("SELECT reward_ref AS ref FROM challenge_reward_rules WHERE challenge_id = ?1 AND reward_kind = 'suit'")
+            .bind(challengeId)
+            .all<{ ref: string }>();
+        const already = new Set(given.results.map((r) => r.ref));
+        rules.forEach((r, i) => {
+            if (r.kind !== "suit") return;
+            const s = known.get(suitIdOf(r.ref)!);
+            if (!s) errors.push({ field: `rewards[${i}].ref`, message: "combinaison inconnue du serveur" });
+            else if (s.archived && !already.has(r.ref)) errors.push({ field: `rewards[${i}].ref`, message: "combinaison archivée : restaurez-la d'abord" });
+        });
+    }
     return { rules, errors };
 }
 
 /**
- * PUT /admin/challenges/{challengeId}/rewards `{ rewards: [{ kind: item|title, ref, condition:
+ * PUT /admin/challenges/{challengeId}/rewards `{ rewards: [{ kind: item|title|suit, ref, condition:
  * tier|top|finished, value }] }` (at most MAX_PRIZES, in their order; [] removes them): the
  * rewards of a period that has not begun, set even before the server draws its challenge
  * (they stay with the period through « Revenir au tirage »). value: tier 1 Bronze, 2 Argent,
@@ -739,10 +767,10 @@ export async function setRewards(ctx: Ctx): Promise<Response> {
     const what = { ...periodDetails(p), action: "rewards" };
     if (p.start <= utcDate()) await refuse(ctx, auth, STARTED(), what);
     const body = await readJsonObject(ctx, 4 * 1024);
-    const { rules, errors } = await readPrizes(ctx, body);
+    const id = `${p.kind}-${p.period}`;
+    const { rules, errors } = await readPrizes(ctx, body, id);
     if (errors.length > 0) await refuse(ctx, auth, Errors.validation(errors), { ...what, field: errors[0]!.field });
     const db = ctx.env.DB;
-    const id = `${p.kind}-${p.period}`;
     const before = await db.prepare(`${PRIZE_ROWS_SQL} WHERE r.challenge_id = ?1 ORDER BY r.position`).bind(id).all<PrizeRow>();
     // Each write only while the period has not begun (?2: its first day); the last statement says whether it had not.
     const res = await db.batch([
@@ -764,8 +792,8 @@ export async function setRewards(ctx: Ctx): Promise<Response> {
         prizesJson(rows).map((r) => ({
             kind: r.kind,
             ref: r.ref,
-            name: r.item?.name ?? r.title?.text ?? r.ref,
-            category: r.item?.category ?? "title",
+            name: r.item?.name ?? r.title?.text ?? r.suit?.name ?? r.ref,
+            category: r.item?.category ?? (r.kind === "suit" ? "suit" : "title"),
             color: r.title?.color ?? null,
             condition: r.condition,
             value: r.value,

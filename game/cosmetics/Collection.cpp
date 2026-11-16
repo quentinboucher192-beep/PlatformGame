@@ -92,6 +92,7 @@ const CosmeticCategory* CosmeticCatalog::category(const std::string& id) const {
 }
 
 std::string CosmeticCatalog::lookOr(const std::string& category, const std::string& look) const {
+    if (category == "suit" && isServerSuitRef(look)) return look;
     for (const auto& i : items_)
         if (i.category == category && i.look == look && !look.empty()) return look;
     const CosmeticItem* d = defaultItem(category);
@@ -166,9 +167,9 @@ std::pair<int, int> cosmeticChallengeProgress(const CosmeticItem& item, const Co
 
 bool cosmeticUnlocked(const CosmeticItem& item, const CosmeticProgress& p) {
     if (item.isDefault) return true;
-    // 2.43: won at a challenge (never taken back); a server title only so.
+    // 2.43: won at a challenge (never taken back); a server title or suit only so.
     if (p.won && p.won->has(item.id)) return true;
-    if (item.serverTitle()) return false;
+    if (item.serverTitle() || item.serverSuit()) return false;
     if (!item.achievement.empty()) return p.book && p.book->unlocked(item.achievement);
     if (item.challengeReward()) {
         auto [have, need] = cosmeticChallengeProgress(item, p);
@@ -211,7 +212,7 @@ const CosmeticItem* CollectionBook::equipped(const CosmeticCatalog& catalog, con
                                              const CosmeticProgress& p) const {
     if (auto it = equipped_.find(category); it != equipped_.end()) {
         if (const CosmeticItem* i = catalog.find(it->second); i && i->category == category && cosmeticUnlocked(*i, p)) return i;
-        if (const CosmeticItem* t = p.won ? p.won->title(it->second) : nullptr; t && t->category == category) return t;
+        if (const CosmeticItem* t = p.won ? p.won->item(it->second) : nullptr; t && t->category == category) return t;
     }
     return catalog.defaultItem(category);
 }
@@ -260,6 +261,17 @@ const CosmeticItem* WonRewards::title(const std::string& ref) const {
     for (const auto& t : titles)
         if (t.id == ref) return &t;
     return nullptr;
+}
+
+const CosmeticItem* WonRewards::suit(const std::string& ref) const {
+    for (const auto& s : suits)
+        if (s.id == ref) return &s;
+    return nullptr;
+}
+
+const CosmeticItem* WonRewards::item(const std::string& ref) const {
+    if (const CosmeticItem* t = title(ref)) return t;
+    return suit(ref);
 }
 
 const WonReward* WonRewards::origin(const std::string& ref) const {
@@ -315,8 +327,24 @@ std::optional<WonRewards> WonRewards::fromJson(const Json& rewards) {
         x.kind = jstr(r, "kind");
         x.ref = jstr(r, "ref");
         x.grantedAt = jstr(r, "granted_at");
-        if (!safeRef(x.challengeId) || !safeRef(x.ref) || (x.kind != "item" && x.kind != "title")) continue;
-        if (x.kind == "title") {
+        if (!safeRef(x.challengeId) || !safeRef(x.ref) || (x.kind != "item" && x.kind != "title" && x.kind != "suit")) continue;
+        if (x.kind == "suit") {
+            // A suit created on the server: its name and colours, as an item of the category « suit ».
+            const Json& s = jfield(r, "suit", Json());
+            std::string name = cleanText(jstr(s, "name"), 32);
+            auto colors = suitColorsFromJson(jfield(s, "colors", Json()));
+            if (!isServerSuitRef(x.ref) || name.empty() || !colors) continue;
+            if (!w.suit(x.ref)) {
+                CosmeticItem item;
+                item.id = x.ref;
+                item.category = "suit";
+                item.name = name;
+                item.look = x.ref;
+                item.suitColors = *colors;
+                item.description = "Une combinaison créée sur Cosmic Online, gagnée à un défi.";
+                w.suits.push_back(std::move(item));
+            }
+        } else if (x.kind == "title") {
             // A title of the server: its text and colour, as an item of the category « title ».
             const Json& t = jfield(r, "title", Json());
             std::string text = cleanText(jstr(t, "text"), 32);
@@ -332,7 +360,7 @@ std::optional<WonRewards> WonRewards::fromJson(const Json& rewards) {
                 item.description = "Un titre créé sur Cosmic Online, gagné à un défi.";
                 w.titles.push_back(std::move(item));
             }
-        } else if (x.ref.rfind("srv:", 0) == 0) {
+        } else if (x.ref.rfind("srv:", 0) == 0 || x.ref.rfind("srvsuit:", 0) == 0) {
             continue;
         }
         w.list.push_back(std::move(x));
@@ -348,6 +376,8 @@ Json WonRewards::toJson() const {
                   {"ref", x.ref},
                   {"granted_at", x.grantedAt}};
         if (const CosmeticItem* t = x.kind == "title" ? title(x.ref) : nullptr) r["title"] = {{"id", t->id}, {"text", t->look}, {"color", t->color}};
+        if (const CosmeticItem* s = x.kind == "suit" ? suit(x.ref) : nullptr; s && s->suitColors)
+            r["suit"] = {{"id", s->id}, {"name", s->name}, {"colors", suitColorsToJson(*s->suitColors)}};
         out.push_back(std::move(r));
     }
     return out;

@@ -18,8 +18,9 @@ float fz(const UIContext& ui, float size) { return std::max(size, 11.5f / ui.s(1
 const Color kGold{255, 214, 90, 255};
 const Color kGreen{120, 230, 140, 255};
 
-/// Nova in a suit (a frame of its recoloured sheet), as the Collection draws her.
-void drawNova(GameServices& g, const std::string& suitLook, float t, const Rect& dst, Color tint) {
+/// Nova in a suit (a frame of its recoloured sheet), as the Collection draws her (a suit created
+/// on the server: from `colors` when given, else from the colours this game knows).
+void drawNova(GameServices& g, const std::string& suitLook, float t, const Rect& dst, Color tint, const SuitColors* colors = nullptr) {
     AnimationSetPtr set = g.app.resources().animation("animations/nova.json");
     if (!set || !set->texture) return;
     const AnimationClip* c = set->clip("idle");
@@ -34,8 +35,7 @@ void drawNova(GameServices& g, const std::string& suitLook, float t, const Rect&
         }
     }
     TexturePtr tex = set->texture;
-    if (!suitLook.empty() && suitLook != "standard")
-        if (TexturePtr s = g.app.resources().texture("sprites/player/suits/nova_" + suitLook + ".png")) tex = s;
+    if (TexturePtr s = g.suitSheet(suitLook, colors)) tex = s;
     Rect src = set->frameRect(*c, frame);
     g.app.renderer().drawTexture(*tex, &src, dst, tint);
 }
@@ -213,6 +213,17 @@ std::optional<CosmeticItem> prizeLook(GameServices& g, const ChallengePrize& p) 
         it.description = "Un titre créé sur Cosmic Online.";
         return it;
     }
+    if (p.suit()) {
+        if (!p.suitColors) return std::nullopt;
+        CosmeticItem it;
+        it.id = p.ref;
+        it.category = "suit";
+        it.name = p.name;
+        it.look = p.ref;
+        it.suitColors = p.suitColors;
+        it.description = "Une combinaison créée sur Cosmic Online.";
+        return it;
+    }
     const CosmeticItem* it = g.cosmetics.find(p.ref);
     if (!it || it->isDefault) return std::nullopt;
     return *it;
@@ -232,7 +243,8 @@ void drawCosmeticPreview(GameServices& g, const CosmeticItem& it, const Rect& bo
     if (it.category == "suit") {
         float s = std::min(box.w, box.h) * 1.15f;
         r.pushClip(box);
-        drawNova(g, it.look, time, Rect::fromCenter({box.center().x, box.center().y - s * 0.04f}, {s, s}), tint);
+        drawNova(g, it.look, time, Rect::fromCenter({box.center().x, box.center().y - s * 0.04f}, {s, s}), tint,
+                 it.suitColors ? &*it.suitColors : nullptr);
         r.popClip();
     } else if (it.category == "trail") {
         r.pushClip(box);
@@ -303,15 +315,15 @@ const CosmeticItem* ChallengeRewardRow::draw(GameServices& g, const std::string&
         const std::string name = idPrefix + "prize" + std::to_string(k);
         bool hovered = false;
         if (ui.hotspot(name, tile, &hovered)) {
-            // A catalogue item opens in the Collection; a server title once won.
-            if (const CosmeticItem* it = g.cosmetics.find(pz.prize.ref); it && !pz.prize.title()) activated = it;
-            else if (const CosmeticItem* t = p.won ? p.won->title(pz.prize.ref) : nullptr) activated = t;
+            // A catalogue item opens in the Collection; a server title or suit once won.
+            if (const CosmeticItem* it = g.cosmetics.find(pz.prize.ref); it && !pz.prize.serverMade()) activated = it;
+            else if (const CosmeticItem* t = p.won ? p.won->item(pz.prize.ref) : nullptr) activated = t;
         }
         if (ui.newBadge(name, tile, "challenges.prizes", false, true)) newDue_ = true;
         const bool focused = ui.focused(name);
         const Color tc = prizeColor(pz.prize);
         r.fillRoundedRect(tile, ui.s(9), pz.won ? Color{14, 34, 30, 245} : Color{11, 18, 38, 245});
-        drawCosmeticPreview(g, pz.item, tile.expanded(-ui.s(5)), ui.time(), pz.won || pz.prize.title());
+        drawCosmeticPreview(g, pz.item, tile.expanded(-ui.s(5)), ui.time(), pz.won || pz.prize.serverMade());
         Color border = focused || hovered ? ui.theme().accent : pz.won ? kGreen.withAlpha(210) : tc.withAlphaF(0.75f);
         r.drawRoundedRect(tile, ui.s(9), border, std::max(1.0f, ui.s(focused || hovered ? 2.2f : 1.4f)));
         // The mark of its condition on the top right corner, « obtenu » on the bottom right one.
@@ -453,7 +465,9 @@ void ChallengeRewardRow::drawPrizeTooltip(GameServices& g, const Prize& pz) {
     const float w = std::min(ui.s(420), W - ui.s(24));
     const float pad = ui.s(16), inner = w - 2 * pad;
     // The texts, measured first: the box is as high as they need.
-    const std::string sub = cosmeticCategorySingular(it.category) + (pz.prize.title() ? " créé sur Cosmic Online" : "") + " · récompense de ce défi";
+    const std::string sub = cosmeticCategorySingular(it.category) +
+                            (pz.prize.title() ? " créé sur Cosmic Online" : pz.prize.suit() ? " créée sur Cosmic Online" : "") +
+                            " · récompense de ce défi";
     const std::string cond = prizeConditionText(pz.prize);
     const std::string note = "Accordée par Cosmic Online à la fin du défi, d'après les parties vérifiées reçues à l'heure. Jamais retirée.";
     const int64_t now = g.challenges.nowMs();
@@ -475,8 +489,8 @@ void ChallengeRewardRow::drawPrizeTooltip(GameServices& g, const Prize& pz) {
         state = "Pas gagnée sur ce défi.";
         stateC = ui.theme().textDim;
     }
-    // Opened in the Collection: an item of the catalogue, a title once won.
-    const bool opens = !pz.prize.title() || pz.won;
+    // Opened in the Collection: an item of the catalogue, a server title or suit once won.
+    const bool opens = !pz.prize.serverMade() || pz.won;
     const std::string hint = "voir dans la Collection";
     const float fsName = 19, fsSub = fz(ui, 14), fsCond = fz(ui, 16), fsNote = fz(ui, 13.5f), fsState = fz(ui, 15.5f), fsHint = fz(ui, 13.5f);
     const float condH = ui.text().measureWrapped(cond, FontFace::Body, ui.s(fsCond), inner).y;

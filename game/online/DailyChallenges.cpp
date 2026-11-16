@@ -326,7 +326,7 @@ std::vector<ChallengePrize> ChallengePrize::listFromJson(const Json& rewards) {
         p.ref = jstr(r, "ref");
         p.condition = jstr(r, "condition");
         p.value = jget<int>(r, "value", 0);
-        if ((p.kind != "item" && p.kind != "title") || !safe(p.ref)) continue;
+        if ((p.kind != "item" && p.kind != "title" && p.kind != "suit") || !safe(p.ref)) continue;
         if (p.condition == "tier") p.value = std::clamp(p.value, 1, 3);
         else if (p.condition == "top") p.value = std::clamp(p.value, 1, 100);
         else if (p.condition == "finished") p.value = 0;
@@ -338,6 +338,13 @@ std::vector<ChallengePrize> ChallengePrize::listFromJson(const Json& rewards) {
             if (p.color != "gold" && p.color != "silver" && p.color != "cyan" && p.color != "violet") p.color = "gold";
             p.category = "title";
             if (p.name.empty() || p.ref.rfind("srv:", 0) != 0) continue;
+        } else if (p.suit()) {
+            // A suit created on the server (ADMINISTRATION › Créations): its name and colours.
+            const Json& s = jfield(r, "suit", Json());
+            p.name = clean(jstr(s, "name"));
+            p.suitColors = suitColorsFromJson(jfield(s, "colors", Json()));
+            p.category = "suit";
+            if (p.name.empty() || !p.suitColors || !isServerSuitRef(p.ref)) continue;
         } else {
             const Json& it = jfield(r, "item", Json());
             p.name = clean(jstr(it, "name"));

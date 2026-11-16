@@ -17,6 +17,7 @@ import * as badges from "./badges";
 import * as campaign from "./campaign";
 import * as campaignRevisions from "./campaignRevisions";
 import * as challenges from "./challenges";
+import * as creations from "./creations";
 import * as notifications from "./notifications";
 import * as race from "./race";
 import * as workshop from "./workshop";
@@ -149,6 +150,8 @@ route("GET", `${V}/levels/ratings`, (ctx) => campaign.listRatings(ctx), { cachea
 // 2.45: the campaign revisions published by an administrator (public: the games download them).
 route("GET", `${V}/campaign/revisions`, (ctx) => campaignRevisions.manifest(ctx), { cacheable: true });
 route("GET", `${V}/campaign/levels/{levelId}/revisions/{version}/file`, (ctx) => campaignRevisions.file(ctx), { cacheable: true });
+// The creations of an administrator that every game may have to draw (public: suits' names and colours).
+route("GET", `${V}/creations`, (ctx) => creations.publicCreations(ctx), { cacheable: true });
 route("GET", `${V}/levels/{levelId}/rating`, (ctx) => campaign.getRating(ctx), { cacheable: true });
 route("PUT", `${V}/levels/{levelId}/rating`, (ctx) => campaign.putRating(ctx));
 route("DELETE", `${V}/levels/{levelId}/rating`, (ctx) => campaign.deleteRating(ctx));
@@ -336,6 +339,11 @@ route("DELETE", `${V}/admin/challenges/{challengeId}`, (ctx) => adminChallenges.
 route("PUT", `${V}/admin/challenges/{challengeId}/rewards`, (ctx) => adminChallenges.setRewards(ctx));
 route("GET", `${V}/admin/titles`, (ctx) => adminChallenges.listTitles(ctx));
 route("POST", `${V}/admin/titles`, (ctx) => adminChallenges.createTitle(ctx));
+// ADMINISTRATION › Créations: the suits an administrator makes (creations.ts).
+route("GET", `${V}/admin/creations`, (ctx) => creations.listCreations(ctx));
+route("POST", `${V}/admin/creations`, (ctx) => creations.createCreation(ctx));
+route("PUT", `${V}/admin/creations/{creationId}`, (ctx) => creations.updateCreation(ctx));
+route("POST", `${V}/admin/creations/{creationId}/archive`, (ctx) => creations.archiveCreation(ctx));
 
 function match(method: string, path: string): { route: Route; params: Record<string, string> } | "method" | null {
     let pathMatched = false;

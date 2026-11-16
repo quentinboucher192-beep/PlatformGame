@@ -230,9 +230,7 @@ void GameScene::startChallenge() {
     if (opt_.ghostsChosen && !opt_.ghosts.empty()) {
         ghostHash_ = challengeHash_;
         ghostRun_.setSuitSheet([this](const GhostMeta& m) -> TexturePtr {
-            std::string look = m.mine() ? g_.cosmeticLook("suit") : g_.cosmetics.lookOr("suit", m.suit);
-            if (look.empty() || look == "standard") return nullptr;
-            return g_.app.resources().texture("sprites/player/suits/nova_" + look + ".png");
+            return g_.suitSheet(m.mine() ? g_.cosmeticLook("suit") : g_.cosmetics.lookOr("suit", m.suit));
         });
         ghostRun_.begin(opt_.ghosts, level_, g_.content, ghostHash_, g_.settings.ghosts, false);
         ghostRun_.setVisible(true);
@@ -350,11 +348,10 @@ void GameScene::startGhosts() {
     else if (gs.enabled && gs.personalByDefault && pb) choices.push_back(*pb);
     if (choices.empty()) return;
     // Each ghost wears its player's suit (2.23): mine the one equipped now, the others the one
-    // their leaderboard entry gave (a look this game knows, else the normal sheet).
+    // their leaderboard entry gave (a look this game knows — a suit created on Cosmic Online
+    // drawn from its colours — else the normal sheet).
     ghostRun_.setSuitSheet([this](const GhostMeta& m) -> TexturePtr {
-        std::string look = m.mine() ? g_.cosmeticLook("suit") : g_.cosmetics.lookOr("suit", m.suit);
-        if (look.empty() || look == "standard") return nullptr;
-        return g_.app.resources().texture("sprites/player/suits/nova_" + look + ".png");
+        return g_.suitSheet(m.mine() ? g_.cosmeticLook("suit") : g_.cosmetics.lookOr("suit", m.suit));
     });
     ghostRun_.begin(std::move(choices), level_, g_.content, ghostHash_, gs, opt_.training);
     if (opt_.training && opt_.spawn) ghostRun_.setTrainingFrom(*opt_.spawn);
@@ -1042,10 +1039,9 @@ void GameScene::trainingSegmentDone() {
 }
 
 void GameScene::applyCosmetics() {
-    // The equipped suit: the same sheet recoloured (assets/sprites/player/suits).
-    std::string suit = g_.cosmeticLook("suit");
-    suitTexture_.reset();
-    if (!suit.empty() && suit != "standard") suitTexture_ = g_.app.resources().texture("sprites/player/suits/nova_" + suit + ".png");
+    // The equipped suit: the same sheet recoloured (assets/sprites/player/suits, or at run time
+    // for a suit created on Cosmic Online). Display only: the simulation never sees it.
+    suitTexture_ = g_.suitSheet(g_.cosmeticLook("suit"));
     world_->player().skin = suitTexture_ ? suitTexture_.get() : nullptr;
     trailLook_ = g_.cosmeticLook("trail");
     victoryLook_ = g_.cosmeticLook("victory");

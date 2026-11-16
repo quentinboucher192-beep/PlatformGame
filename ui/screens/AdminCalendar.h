@@ -166,6 +166,8 @@ private:
     std::string pickRef_;          // the item (or server title) chosen in it
     Json titles_ = Json::array();  // the titles created on the server (GET /admin/titles)
     bool titlesLoaded_ = false;
+    Json suits_ = Json::array();   // the suits created in « Créations » (GET /admin/creations)
+    std::string suitsError_;       // why that list could not be read ("" when it was)
 };
 
 }  // namespace cosmic
