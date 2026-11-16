@@ -5,6 +5,11 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.42.0** :
+* **Calendrier des défis** dans l'écran Administration (niveau, règles, objectif « Vitesse » ou
+  « Finir le niveau » avec paliers en % du parcours, retour au tirage).
+* **Entraînement de boss** : choix du lieu d'apparition sur la carte de l'arène.
+
 **Nouveau dans la version 2.41.0** :
 * **Badges du profil** : dès 100 étoiles, 2 succès à afficher sur le profil Cosmic Online (3 dès
   250 étoiles), choisis dans Collection › Vestiaire ; le serveur vérifie succès et étoiles.

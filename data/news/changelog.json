@@ -1,4 +1,10 @@
 {
+  "2.42.0": [
+    "Administration : nouvel onglet « Calendrier des défis » : le mois avec les tirages à venir, choix du niveau (campagne ou en ligne), des règles, de l'objectif et des paliers d'un défi qui n'a pas commencé, ou « Revenir au tirage ».",
+    "Nouvel objectif de défi « Finir le niveau » : classement à la progression (le plus loin, puis le premier à finir), paliers Bronze et Argent en % du parcours, Or en finissant ; calculés par le serveur depuis le replay.",
+    "Entraînement de boss : nouveau « Lieu d'apparition » — choisissez sur la carte de l'arène (souris, clavier, manette) l'endroit sûr où commencer, face au boss ; la carte suit la phase choisie.",
+    "L'entraînement s'arrête à la première chute sans faire réapparaître le joueur derrière l'écran de fin."
+  ],
   "2.41.0": [
     "Badges du profil : dès 100 étoiles, choisissez 2 succès à afficher sur votre profil Cosmic Online (3 dès 250 étoiles), dans Collection › Vestiaire › Badges du profil.",
     "Chaque badge est l'emblème du succès (couleur de sa catégorie, ses étoiles) ; au survol ou au focus, une bulle donne son nom.",

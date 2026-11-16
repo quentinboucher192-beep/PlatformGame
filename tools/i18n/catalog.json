@@ -920,6 +920,12 @@
    ]
   },
   {
+   "fr": "Administration : nouvel onglet « Calendrier des défis » : le mois avec les tirages à venir, choix du niveau (campagne ou en ligne), des règles, de l'objectif et des paliers d'un défi qui n'a pas commencé, ou « Revenir au tirage ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Admins",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -11326,6 +11332,12 @@
    ]
   },
   {
+   "fr": "Entraînement de boss : nouveau « Lieu d'apparition » — choisissez sur la carte de l'arène (souris, clavier, manette) l'endroit sûr où commencer, face au boss ; la carte suit la phase choisie.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Entraînement par segment : aperçu du segment choisi (départ, arrivée, trajet de votre record), votre meilleur segment, son temps dans votre record, votre meilleur temps à l'entraînement (gardé d'une séance à l'autre) et la Somme des meilleurs segments (Sum of Best) avec le gain possible.",
    "where": [
     "data/news/changelog.json"
@@ -15480,6 +15492,12 @@
   },
   {
    "fr": "L'entraînement ne compte jamais : ni succès, ni statistiques des boss, ni records, ni progression, ni récompenses, rien en ligne. Il est indiqué à l'écran pendant tout le combat.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "L'entraînement s'arrête à la première chute sans faire réapparaître le joueur derrière l'écran de fin.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -21291,6 +21309,12 @@
    "fr": "Nouvel essai…",
    "where": [
     "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Nouvel objectif de défi « Finir le niveau » : classement à la progression (le plus loin, puis le premier à finir), paliers Bronze et Argent en % du parcours, Or en finissant ; calculés par le serveur depuis le replay.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
