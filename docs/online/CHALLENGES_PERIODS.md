@@ -1,4 +1,4 @@
-# Défis de la semaine et du mois, calendrier, « Plus loin » (2.33 et 2.34)
+# Défis de la semaine et du mois, calendrier, « Plus loin » (2.33), récompenses (2.35)
 
 Suite de `DAILY_CHALLENGES.md` (défi du jour, 2.32), qui reste valable pour tout ce qui n'est
 pas changé ici. Mêmes principes : jouable sans compte et hors ligne, le serveur ne fait jamais
@@ -7,8 +7,9 @@ confiance au client, un défi futur n'est jamais révélé, un défi commencé n
 
 Deux livraisons :
 
-- **2.33.0** : défis de la semaine et du mois, calendrier, anciens défis jouables (§1 à §4).
-- **2.34.0** : classement « Plus loin » (essais qui vont le plus loin, finis ou non) (§5).
+- **2.33.0** : défis de la semaine et du mois, calendrier, anciens défis jouables (§1 à §4),
+  classement « Plus loin » (essais qui vont le plus loin, finis ou non) (§5).
+- **2.35.0** : récompenses des défis (cosmétiques de la Collection, §6).
 
 Les jeux 2.32.x continuent de fonctionner sans changement (routes et réponses existantes
 gardées, voir §3).
@@ -56,7 +57,7 @@ Gardées telles quelles pour les jeux 2.32 : `GET /challenges/daily/current`,
 | GET | `/challenges/current` | public | `{ server_time, daily, weekly, monthly, previous: { daily, weekly, monthly } }` (chacun : un défi ou `null`) |
 | GET | `/challenges/calendar?month=AAAA-MM` | public (+ `me` si connecté) | `{ month, first_month, challenges: [défi…], me: { "<challenge id>": { best_time_ms, tier, status, late, best_progress } } }` : tous les défis **commencés** qui touchent ce mois (jours du mois, semaines qui le chevauchent, le mois). `first_month` = mois du plus ancien défi (pour bloquer la navigation). |
 | GET | `/challenges/{challengeId}` | public | un défi commencé (404 sinon) |
-| GET | `/challenges/{challengeId}/leaderboard?scope=world\|country\|friends&period=live\|all&board=time\|progress&limit=50` | public (`friends` : connecté) | `period=live` (défaut) : parties reçues pendant le défi (+10 min) ; `all` : aussi les parties hors délai, marquées `late: true`. `board=time` (défaut) : comme 2.32. `board=progress` : §5 (2.34). |
+| GET | `/challenges/{challengeId}/leaderboard?scope=world\|country\|friends&period=live\|all&board=time\|progress&limit=50` | public (`friends` : connecté) | `period=live` (défaut) : parties reçues pendant le défi (+10 min) ; `all` : aussi les parties hors délai, marquées `late: true`. `board=time` (défaut) : comme 2.32. `board=progress` : §5 (2.33). |
 | POST | `/challenges/{challengeId}/runs` | connecté | comme 2.32 ; réponse : `run.late` en plus |
 | GET | `/challenges/me?limit=60` | connecté | comme 2.32 (`streak` = série des jours) **+** `streaks: { daily, weekly, monthly }` (mêmes champs `current, best, last_period`), et `results[]` avec `kind`, `period`, `late`, `best_progress` |
 
@@ -85,7 +86,7 @@ cours ou la précédente, avec au moins une partie **non hors délai** et non re
   `challenge_id`, sans effet).
 - Classement : la réponse rappelle `period` et `board` ; chaque entrée et `me` ont `late`
   (toujours `false` avec `period=live`). Un joueur qui n'a que des parties hors délai n'est
-  pas dans `period=live` (son `me` y vaut `null`). `board` : `time` ou (serveur 2.34)
+  pas dans `period=live` (son `me` y vaut `null`). `board` : `time` ou (serveur 2.33)
   `progress`, `400` sinon.
 - Partie : `run.late` aussi dans la réponse idempotente (`duplicate: true`) et dans celle du
   replay. Le contrôle de la partie (paliers, replay, première place en revue) est le même ;
@@ -151,7 +152,7 @@ cours ou la précédente, avec au moins une partie **non hors délai** et non re
 - Le jeu estime qu'une partie est hors délai quand elle finit plus de 10 min après `ends_at`
   (horloge du serveur) ; il garde ensuite le `run.late` que le serveur renvoie.
 
-## 5. « Plus loin » (2.34.0)
+## 5. « Plus loin » (2.33.0)
 
 Pour les défis que peu de joueurs finissent : chaque essai est noté par sa progression, comme
 la course à la vérification (`server/src/race.ts`, `game/race/Race.cpp`) : 40 points pour le
@@ -179,7 +180,7 @@ tracé, pas de « Plus loin » pour ce défi (`progress_available: false` dans l
 - Limites de débit : comme les parties ; un joueur ne garde qu'un replay d'essai par défi
   (le meilleur).
 
-### Précisions du serveur (2.34, lecture la plus simple de ce qui précède)
+### Précisions du serveur (2.33, lecture la plus simple de ce qui précède)
 
 - Objet défi : `progress_available` (booléen) en plus, sur toutes les routes qui le donnent.
   Il est vrai quand la version du niveau du défi a un tracé. **Avec les fichiers actuels,
@@ -242,7 +243,7 @@ tracé, pas de « Plus loin » pour ce défi (`progress_available: false` dans l
 - Base : table `challenge_attempts` (migration `0059_challenge_progress.sql`) ; dans l'export
   des données (`challenge_attempts`) ; supprimée avec le compte, replays compris.
 
-### Précisions (lecture retenue par le jeu 2.34)
+### Précisions (lecture retenue par le jeu 2.33)
 
 - `progress_available` absent (serveur 2.33) = `false` : ni bascule « Plus loin », ni essai envoyé.
 - L'essai n'est envoyé que si son estimation (`raceScore`, une décimale, arrondie vers le bas)
@@ -265,3 +266,39 @@ tracé, pas de « Plus loin » pour ce défi (`progress_available: false` dans l
   VERIFIED).
 - `PROGRESS_UNAVAILABLE` (409), `ATTEMPT_REJECTED` (409), `ATTEMPT_NOT_FOUND` (404) : l'essai
   est refusé, avec sa raison, et n'est pas renvoyé.
+
+## 6. Récompenses des défis (2.35.0)
+
+Des cosmétiques de la Collection se gagnent avec les défis. Seules comptent les parties
+**VERIFIED par le serveur** (jamais une partie gardée sur un PC seulement, ni un essai « Plus
+loin ») : le serveur les compte lui-même dans `challenge_runs`, le jeu affiche ce qu'il lit.
+
+- Conditions (`data/cosmetics/cosmetics.json`, recopiées par `server/scripts/cosmetics-catalog.mjs`) :
+  - `"challenge": { "kind": "daily|weekly|monthly|any", "tier": "gold|silver|bronze", "count": N }` :
+    N défis de cette sorte (`any` : toutes) où j'ai une partie vérifiée à ce palier **ou mieux**,
+    reçue à l'heure ou hors délai ;
+  - `"challengeStreak": { "kind": "daily", "days": N }` : N périodes de suite (jours) avec une
+    partie vérifiée reçue **à l'heure** (une partie hors délai ne compte pas), à n'importe quel
+    palier ; la meilleure série compte (une récompense gagnée le reste).
+- Récompenses : titre « Défiant » (1 Or, toute sorte) ; cadre « Couronne de la semaine » (1 Or
+  sur un défi de la semaine) ; traînée « Comète du mois » (1 Or sur un défi du mois) ;
+  combinaison « Champion des défis » (10 Or, toute sorte) ; effet de victoire « Série de feu »
+  (défi du jour 7 jours de suite).
+- `GET /challenges/me` ajoute `verified: { daily, weekly, monthly }`, chacun `{ gold, silver,
+  bronze, best_streak }` : `gold` = défis de cette sorte avec une partie vérifiée en Or, `silver`
+  = en Argent ou mieux, `bronze` = finis (tous paliers), sur tout l'historique (pas seulement les
+  `limit` résultats) ; `best_streak` = la plus longue suite de périodes consécutives avec une
+  partie vérifiée à l'heure.
+- `PUT /players/me/cosmetics` : une récompense des défis n'est gardée que si ces mêmes comptes
+  du serveur la débloquent (sinon : l'élément par défaut de la catégorie), comme les étoiles et
+  les succès déclarés pour les autres.
+- Jeu : la ligne « Récompenses » de la fiche du défi et de l'écran avant le départ montre, en
+  icônes (aperçu de la récompense, marque du palier, « obtenu »), celles que ce défi peut faire
+  avancer (sa sorte et « toute sorte » ; pas la série pour une partie hors délai ; rien pour un
+  entraînement), avec une infobulle (souris ou focus clavier / manette) : nom, catégorie,
+  condition, ma progression « 3 / 10 », « Obtenu ». Une icône ouvre la récompense dans la
+  Collection. Les comptes lus sont gardés sur le PC (`saves/challenges/state.json`, avec le
+  compte qui les a lus) pour jouer hors ligne ; un autre compte ne les reprend pas. Serveur 2.33
+  (sans `verified`) : le jeu compte les `results` dont le statut est `VERIFIED`. Après une partie
+  vérifiée, le jeu relit `/challenges/me` ; une récompense débloquée est annoncée (notification,
+  puis la carte « Nouvelles récompenses » à la fin du défi).

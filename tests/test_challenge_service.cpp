@@ -107,6 +107,8 @@ struct ChallengeServer {
     Json lastAttempt;
     std::vector<uint8_t> lastAttemptReplay;
     double bestProgress = -1.0;  // /challenges/me: my best attempt on `current` (no finished run)
+    Json verified;               // /challenges/me (2.34): the rewards' counts (null: a 2.33 server)
+    std::string playerId = "11111111-1111-4111-8111-111111111111";  // the account that logs in
     std::vector<std::string> paths;  // every GET, in order
     Json lastBody;
     std::vector<uint8_t> lastReplay;
@@ -127,7 +129,7 @@ struct ChallengeServer {
         if (rq.method == "GET") paths.push_back(path);
         if (path == "/api/v1/health") return okData({{"status", "ok"}});
         if (path == "/api/v1/auth/login")
-            return okData({{"player", {{"id", "11111111-1111-4111-8111-111111111111"}, {"username", "Nova"}, {"country_code", "FR"}}},
+            return okData({{"player", {{"id", playerId}, {"username", "Nova"}, {"country_code", "FR"}}},
                            {"session", {{"access_token", access}, {"access_expires_at", "2099-01-01T00:00:00.000Z"},
                                         {"refresh_token", "refresh-token-00000000000000000"}, {"refresh_expires_at", "2099-02-01T00:00:00.000Z"}}}});
         if (path == "/api/v1/challenges/current" && !legacy)
@@ -186,12 +188,15 @@ struct ChallengeServer {
             return okData({{"run", {{"id", "run-1"}, {"status", "VERIFIED"}, {"tier", "gold"}, {"late", lateRuns}}}});
         }
         if (path.rfind("/api/v1/challenges/me", 0) == 0) {
+            // (Read also after a run just verified, 2.34: `current` may be unset in a test.)
+            const std::string cid = jstr(current, "id"), cdate = jstr(current, "date");
             Json data = {{"streak", {{"current", 4}, {"best", 6}, {"last_date", ChallengeService::utcDate(serverNow)}}},
-                         {"results", Json::array({{{"challenge_id", current.value("id", "")}, {"date", current.value("date", "")},
+                         {"results", Json::array({{{"challenge_id", cid}, {"date", cdate},
                                                    {"best_time_ms", 70000}, {"tier", "gold"}, {"status", "VERIFIED"}}})}};
             if (bestProgress >= 0.0)
-                data["results"] = Json::array({{{"challenge_id", current.value("id", "")}, {"date", current.value("date", "")}, {"best_time_ms", nullptr},
+                data["results"] = Json::array({{{"challenge_id", cid}, {"date", cdate}, {"best_time_ms", nullptr},
                                                 {"tier", nullptr}, {"status", nullptr}, {"late", false}, {"best_progress", bestProgress}}});
+            if (verified.is_object()) data["verified"] = verified;
             if (!legacy && weekly.is_object())
                 data["streaks"] = {{"daily", {{"current", 4}, {"best", 6}, {"last_period", ChallengeService::utcDate(serverNow)}}},
                                    {"weekly", {{"current", 2}, {"best", 3}, {"last_period", weekly["period"]}}},
@@ -791,4 +796,91 @@ TEST_CASE("challenge service: « Plus loin » without an account: the best attem
     ChallengeService again;
     again.init(rig.online, rig.dir / "saves" / "challenges");
     CHECK_NEAR(again.bestProgress(c->id), 12.3f, 0.001f);
+}
+
+// ------------------------------------------------------------------ 2.34: rewards of the challenges
+
+namespace {
+
+Json verifiedJson(int dailyGold, int weeklyGold, int dailyStreak) {
+    return {{"daily", {{"gold", dailyGold}, {"silver", dailyGold + 1}, {"bronze", dailyGold + 3}, {"best_streak", dailyStreak}}},
+            {"weekly", {{"gold", weeklyGold}, {"silver", weeklyGold}, {"bronze", weeklyGold}, {"best_streak", weeklyGold}}},
+            {"monthly", {{"gold", 0}, {"silver", 0}, {"bronze", 0}, {"best_streak", 0}}}};
+}
+
+}  // namespace
+
+TEST_CASE("challenge service: the rewards of the challenges count the server's verified results only, kept for offline play") {
+    Rig rig("rewards");
+    rig.server->current = challengeJson(todayStart());
+    rig.server->serverNow = ChallengeService::localNowMs();
+    int changes = 0;
+    rig.challenges.onRewardsChanged = [&] { ++changes; };
+    // A gold run kept on this computer only counts for nothing.
+    auto c = DailyChallenge::fromJson(rig.server->current);
+    rig.challenges.recordRun(*c, 70000, 0, 0, c->level.hash, makeUuidV4(), nullptr, false);
+    CHECK(!rig.challenges.rewardProgress().known);
+    // The server's counts (`verified`), read with my results.
+    rig.server->verified = verifiedJson(2, 1, 4);
+    CHECK(rig.login());
+    auto readMine = [&] {
+        bool done = false;
+        rig.challenges.refreshMine([&](const ApiResult&) { done = true; });
+        CHECK(rig.pump([&] { return done; }));
+    };
+    readMine();
+    const ChallengeRewardProgress& p = rig.challenges.rewardProgress();
+    CHECK(p.known);
+    CHECK(p.results("daily", 3) == 2);
+    CHECK(p.results("any", 3) == 3);
+    CHECK(p.results("any", 2) == 4);
+    CHECK(p.results("weekly", 1) == 1);
+    CHECK(p.results("monthly", 3) == 0);
+    CHECK(p.streak("daily") == 4);
+    CHECK(changes == 1);
+    const int revision = rig.challenges.rewardsRevision();
+    // The same counts again: nothing new to announce.
+    readMine();
+    CHECK(changes == 1);
+    CHECK(rig.challenges.rewardsRevision() == revision);
+    // One more gold on a week: announced.
+    rig.server->verified = verifiedJson(2, 2, 4);
+    readMine();
+    CHECK(changes == 2);
+    CHECK(rig.challenges.rewardProgress().results("weekly", 3) == 2);
+    // Kept on this computer: a new start knows them before any reading (offline play).
+    {
+        ChallengeService again;
+        again.init(rig.online, rig.dir / "saves" / "challenges");
+        CHECK(again.rewardProgress().known);
+        CHECK(again.rewardProgress().results("weekly", 3) == 2);
+        CHECK(again.rewardProgress().streak("daily") == 4);
+    }
+    // Another account logs in: the first one's counts are not its own.
+    rig.online.logout(false);
+    CHECK(rig.pump([&] { return !rig.online.loggedIn(); }));
+    rig.server->playerId = "22222222-2222-4222-8222-222222222222";
+    rig.server->verified = Json();
+    CHECK(rig.login());
+    CHECK(!rig.challenges.rewardProgress().known);
+    // A 2.33 server (no `verified`): its results whose status is VERIFIED.
+    readMine();
+    CHECK(rig.challenges.rewardProgress().known);
+    CHECK(rig.challenges.rewardProgress().results("daily", 3) == 1);
+    CHECK(rig.challenges.rewardProgress().streak("daily") == 1);
+}
+
+TEST_CASE("challenge service: a run just verified reads the rewards again") {
+    Rig rig("rewardsrun");
+    rig.server->current = challengeJson(todayStart());
+    rig.server->serverNow = ChallengeService::localNowMs();
+    rig.server->verified = verifiedJson(1, 0, 1);
+    CHECK(rig.login());
+    auto c = DailyChallenge::fromJson(rig.server->current);
+    ReplayData rep = sampleReplay(*c);
+    rig.challenges.recordRun(*c, 70000, 0, 0, c->level.hash, rep.attemptId, &rep, true);
+    // Sent, its replay verified by the server: /challenges/me follows by itself.
+    CHECK(rig.pump([&] { return rig.challenges.rewardProgress().known; }, 60000));
+    CHECK(rig.challenges.submission(rep.attemptId)->state == ChallengeRunState::Verified);
+    CHECK(rig.challenges.rewardProgress().results("any", 3) == 1);
 }

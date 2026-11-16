@@ -276,7 +276,7 @@ std::optional<DailyChallenge> DailyChallenge::fromJson(const Json& j, std::strin
     c.goldMs = jget<int64_t>(tiers, "gold_ms", 0);
     c.goldNoDamage = jget<bool>(tiers, "gold_no_damage", true);
     if (c.silverMs <= 0 || c.goldMs <= 0 || c.silverMs > 2 * 3600 * 1000LL || c.goldMs > 2 * 3600 * 1000LL) return fail("paliers du défi invalides");
-    // 2.34: the level has a route, its attempts are ranked by how far they go (absent: no).
+    // 2.33: the level has a route, its attempts are ranked by how far they go (absent: no).
     c.progressAvailable = jget<bool>(j, "progress_available", false);
     c.raw = j;
     return c;
@@ -414,6 +414,8 @@ void ChallengeService::loadAll() {
                 if (const Json& s = jfield((*st)["streaks"], challengeKindId(static_cast<ChallengeKind>(k))); s.is_object()) serverStreaks_[k] = readStreak(s);
         serverStreakFor_ = jstr(*st, "streak_player");
         if (std::string fm = jstr(*st, "first_month"); isMonth(fm)) firstMonth_ = fm;
+        // 2.35: what the server verified for the rewards of the challenges (that account's).
+        if (auto v = rewardProgressFromJson(jfield(*st, "verified", Json())); v && !serverStreakFor_.empty()) rewards_ = *v;
     }
     if (auto d = resultsFile().load(dir_ / "results.json"); d && d->is_object() && d->contains("results") && (*d)["results"].is_object()) {
         for (const auto& [id, v] : (*d)["results"].items()) {
@@ -453,10 +455,17 @@ void ChallengeService::saveState() const {
     for (int k = 0; k < kChallengeKinds; ++k)
         if (const auto& s = serverStreaks_[k])
             streaks[challengeKindId(static_cast<ChallengeKind>(k))] = {{"current", s->current}, {"best", s->best}, {"last_period", s->lastPeriod}};
-    if (!streaks.empty()) {
-        st["streaks"] = streaks;
-        st["streak_player"] = serverStreakFor_;
+    if (!streaks.empty()) st["streaks"] = streaks;
+    if (rewards_.known) {
+        Json v = Json::object();
+        for (int k = 0; k < kChallengeKinds; ++k)
+            v[challengeKindId(static_cast<ChallengeKind>(k))] = {{"gold", rewards_.atLeast[k][2]},
+                                                                  {"silver", rewards_.atLeast[k][1]},
+                                                                  {"bronze", rewards_.atLeast[k][0]},
+                                                                  {"best_streak", rewards_.bestStreak[k]}};
+        st["verified"] = v;
     }
+    if (!streaks.empty() || rewards_.known) st["streak_player"] = serverStreakFor_;
     if (!firstMonth_.empty()) st["first_month"] = firstMonth_;
     FileUtil::writeTextAtomic(dir_ / "state.json", st.dump(1));
 }
@@ -792,8 +801,73 @@ bool ChallengeService::resultsMine() {
         serverResults_.clear();
         for (auto& s : serverStreaks_) s.reset();
         serverStreakFor_ = online_->playerId();
+        setRewardProgress(ChallengeRewardProgress{});
     }
     return true;
+}
+
+const ChallengeRewardProgress& ChallengeService::rewardProgress() const {
+    static const ChallengeRewardProgress none;
+    // The reading of the account logged in (or of the last one, while nobody is).
+    if (!rewards_.known || serverStreakFor_.empty()) return none;
+    if (online_ && online_->loggedIn() && online_->playerId() != serverStreakFor_) return none;
+    return rewards_;
+}
+
+void ChallengeService::setRewardProgress(const ChallengeRewardProgress& p) {
+    if (p == rewards_) return;
+    rewards_ = p;
+    ++rewardsRevision_;
+    if (onRewardsChanged) onRewardsChanged();
+}
+
+std::optional<ChallengeRewardProgress> ChallengeService::rewardProgressFromJson(const Json& v) {
+    if (!v.is_object()) return std::nullopt;
+    ChallengeRewardProgress p;
+    for (int k = 0; k < kChallengeKinds; ++k) {
+        const Json& o = jfield(v, challengeKindId(static_cast<ChallengeKind>(k)));
+        if (!o.is_object()) return std::nullopt;
+        auto num = [&](const char* key) { return std::clamp(jget<int>(o, key, 0), 0, 1000000); };
+        p.atLeast[k][2] = num("gold");
+        // « At that tier or better »: never fewer silvers than golds, nor bronzes than silvers.
+        p.atLeast[k][1] = std::max(num("silver"), p.atLeast[k][2]);
+        p.atLeast[k][0] = std::max(num("bronze"), p.atLeast[k][1]);
+        p.bestStreak[k] = num("best_streak");
+    }
+    p.known = true;
+    return p;
+}
+
+ChallengeRewardProgress ChallengeService::rewardProgressFromResults(const Json& results) {
+    ChallengeRewardProgress p;
+    p.known = true;
+    if (!results.is_array()) return p;
+    std::array<std::set<int64_t>, kChallengeKinds> inTime;
+    std::set<std::string> seen;
+    for (const Json& x : results) {
+        if (jstr(x, "status") != "VERIFIED") continue;
+        std::string id = jstr(x, "challenge_id");
+        if (!safeId(id) || !seen.insert(id).second) continue;
+        // A 2.32 result has neither kind nor period: a day.
+        auto kind = challengeKindFromId(jstr(x, "kind", "daily"));
+        if (!kind) continue;
+        const int k = static_cast<int>(*kind);
+        const int tier = static_cast<int>(challengeTierFromJson(jfield(x, "tier", Json())));
+        for (int t = 1; t <= tier && t <= 3; ++t) ++p.atLeast[k][t - 1];
+        std::string period = jstr(x, "period", *kind == ChallengeKind::Daily ? jstr(x, "date") : std::string());
+        if (tier > 0 && !jget<bool>(x, "late", false))
+            if (auto i = challenge_period::index(*kind, period)) inTime[static_cast<size_t>(k)].insert(*i);
+    }
+    for (int k = 0; k < kChallengeKinds; ++k) {
+        int run = 0;
+        int64_t prev = 0;
+        for (int64_t i : inTime[static_cast<size_t>(k)]) {
+            run = run > 0 && i == prev + 1 ? run + 1 : 1;
+            prev = i;
+            p.bestStreak[k] = std::max(p.bestStreak[k], run);
+        }
+    }
+    return p;
 }
 
 void ChallengeService::noteServerResult(const std::string& id, const Json& x) {
@@ -807,13 +881,19 @@ void ChallengeService::noteServerResult(const std::string& id, const Json& x) {
 }
 
 void ChallengeService::refreshMine(ApiCallback cb) {
-    if (!online_ || !online_->usable() || !online_->loggedIn() || mineBusy_) {
+    if (!online_ || !online_->usable() || !online_->loggedIn()) {
         if (cb) {
             ApiResult r;
             r.code = "NOT_LOGGED_IN";
             r.message = "Connectez-vous à Cosmic Online.";
             cb(r);
         }
+        return;
+    }
+    if (mineBusy_) {
+        // A reading is already on its way (2.35: e.g. after a run just verified): its answer
+        // is this one's too.
+        if (cb) mineWaiters_.push_back(std::move(cb));
         return;
     }
     mineBusy_ = true;
@@ -834,6 +914,10 @@ void ChallengeService::refreshMine(ApiCallback cb) {
                 else serverStreaks_[k].reset();
             }
             const Json& results = jfield(r.data, "results", Json::array());
+            // 2.35: what the rewards of the challenges count (a 2.33 server: its results).
+            if (!r.fromCache) rewardsStale_ = false;
+            if (auto v = rewardProgressFromJson(jfield(r.data, "verified", Json()))) setRewardProgress(*v);
+            else setRewardProgress(rewardProgressFromResults(results));
             bool changed = false;
             if (results.is_array())
                 for (const Json& x : results) {
@@ -853,7 +937,10 @@ void ChallengeService::refreshMine(ApiCallback cb) {
             if (changed) saveSubmissions();
             if (!r.fromCache) saveState();
         }
+        std::vector<ApiCallback> waiters;
+        waiters.swap(mineWaiters_);
         if (cb) cb(r);
+        for (auto& w : waiters) w(r);
     }), true);
 }
 
@@ -997,7 +1084,15 @@ void ChallengeService::applyRun(ChallengeSubmission& s, const Json& run) {
     // A run's id is the server's; an attempt is known by the game's own attempt_id.
     std::string id = jstr(run, "id");
     if (safeId(id) && !s.attempt) s.runId = id;
-    if (run.contains("status") && run["status"].is_string()) s.state = challengeRunStateFromServer(run["status"].get<std::string>());
+    if (run.contains("status") && run["status"].is_string()) {
+        ChallengeRunState was = s.state;
+        s.state = challengeRunStateFromServer(run["status"].get<std::string>());
+        // A run just verified may unlock a reward of the challenges: /challenges/me soon.
+        if (!s.attempt && s.state == ChallengeRunState::Verified && was != ChallengeRunState::Verified) {
+            rewardsStale_ = true;
+            mineTimer_ = 0.0f;
+        }
+    }
     if (run.contains("tier")) s.serverTier = challengeTierFromJson(run["tier"]);
     if (run.contains("late") && run["late"].is_boolean()) s.late = run["late"].get<bool>();
     if (const Json& p = jfield(run, "progress", Json()); p.is_number()) s.serverProgress = std::clamp(p.get<float>(), 0.0f, 100.0f);
@@ -1139,14 +1234,14 @@ void ChallengeService::update(float dt) {
     mineTimer_ -= dt;
     if (!offline && mineTimer_ <= 0.0f) {
         mineTimer_ = kStatusPollSeconds;
-        bool waiting = false;
+        bool waiting = rewardsStale_;
         for (const auto& s : submissions_)
             waiting = waiting || (s.ownerId == online_->playerId() && (s.state == ChallengeRunState::Sent || s.state == ChallengeRunState::Pending));
         if (waiting) refreshMine();
     }
 }
 
-// ------------------------------------------------------------------ « Plus loin » (2.34)
+// ------------------------------------------------------------------ « Plus loin » (2.33)
 
 float ChallengeService::bestProgress(const std::string& challengeId) const {
     float best = 0.0f;

@@ -157,6 +157,12 @@
     {"id": "ach.gardiens_singularis", "version": "2.34.0", "parents": ["achievements.cat.gardiens"]},
     {"id": "ach.maitrise_singularis_nohit", "version": "2.34.0", "parents": ["achievements.cat.maitrise"]},
     {"id": "ach.maitrise_phases_singularis", "version": "2.34.0", "parents": ["achievements.cat.maitrise"]},
-    {"id": "cos.title_briseur_etoiles", "version": "2.34.0", "parents": ["collection.cat.title", "collection.tab.route"]}
+    {"id": "cos.title_briseur_etoiles", "version": "2.34.0", "parents": ["collection.cat.title", "collection.tab.route"]},
+    {"id": "challenges.rewards", "version": "2.35.0", "parents": ["menu.challenges"]},
+    {"id": "cos.suit_champion", "version": "2.35.0", "parents": ["collection.cat.suit", "collection.tab.route"]},
+    {"id": "cos.trail_comete_mois", "version": "2.35.0", "parents": ["collection.cat.trail", "collection.tab.route"]},
+    {"id": "cos.frame_couronne", "version": "2.35.0", "parents": ["collection.cat.frame", "collection.tab.route"]},
+    {"id": "cos.title_defiant", "version": "2.35.0", "parents": ["collection.cat.title", "collection.tab.route"]},
+    {"id": "cos.victory_serie_feu", "version": "2.35.0", "parents": ["collection.cat.victory", "collection.tab.route"]}
   ]
 }

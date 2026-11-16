@@ -32,6 +32,7 @@ void GameServices::loadAll() {
         checkAchievements();
         achievements.save();
     };
+    challenges.onRewardsChanged = [this] { challengeRewardsChanged(); };
     // The Collection before the first check: its achievements read the tracks heard and the
     // creatures met, also those the saves prove (2.24).
     collection.load();
@@ -73,7 +74,25 @@ CosmeticProgress GameServices::cosmeticProgress() const {
     p.stars = achievements.stars(achievementCatalog);
     p.totalStars = achievementCatalog.totalStars();
     p.book = &achievements;
+    p.challenges = &challenges.rewardProgress();
     return p;
+}
+
+void GameServices::challengeRewardsChanged(bool announce) {
+    if (cosmetics.items().empty()) return;
+    syncCosmetics();  // a reward of the challenges unlocked (or not any more) changes what is worn
+    // Unlocked by this reading of the server (not before it): a toast; the card « Nouvelles
+    // récompenses » (end of a challenge or of a level) lets the player equip them.
+    const CosmeticProgress p = cosmeticProgress();
+    std::set<std::string> now;
+    for (const CosmeticItem& i : cosmetics.items())
+        if (i.challengeReward() && cosmeticUnlocked(i, p)) now.insert(i.id);
+    if (announce)
+        for (const CosmeticItem& i : cosmetics.items())
+            if (now.count(i.id) && !challengeRewardsUnlocked_.count(i.id) && !collection.announced(i.id))
+                online.notify(OnlineService::Notification::Kind::Success, "Récompense débloquée : " + i.name,
+                              cosmeticCategorySingular(i.category) + " · défis · menu principal → Collection");
+    challengeRewardsUnlocked_ = std::move(now);
 }
 
 void GameServices::syncCosmetics() {
