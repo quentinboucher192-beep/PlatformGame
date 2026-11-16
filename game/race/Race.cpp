@@ -40,7 +40,7 @@ RaceLayout buildRaceLayout(const LevelData& level, const ContentDatabase& conten
     std::set<std::string> bossIds;
     for (const auto& o : level.objects) {
         if (o.type != "enemy") continue;
-        const EnemyDefinition* d = content.enemy(o.propStr("enemy"));
+        const EnemyDefinition* d = content.enemyFor(o.propStr("enemy"), level);
         if ((d && d->isBoss) || o.prop<bool>("boss", false)) {
             l.bosses.push_back({o.id, d ? d->name : o.propStr("enemy")});
             bossIds.insert(o.id);

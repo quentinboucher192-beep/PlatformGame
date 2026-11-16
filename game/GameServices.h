@@ -16,6 +16,7 @@
 #include "game/ghost/TrainingSegments.h"
 #include "game/levels/RatingService.h"
 #include "game/online/CampaignRevisions.h"
+#include "game/online/EnemyRevisions.h"
 #include "game/online/DailyChallenges.h"
 #include "game/online/OnlineService.h"
 #include "game/online/ReplayDownloads.h"
@@ -141,6 +142,12 @@ public:
     void applyCampaignRevisions();
     /// Every frame: the manifest is read again every 30 minutes (2 after a failure).
     void updateCampaignRevisions(float dt);
+    /// 2.45: the revisions of the native enemies published online (ADMINISTRATION › Ennemis),
+    /// read before the campaign revisions (a level revision names the enemy revisions it plays):
+    /// GET /enemies/revisions, every revision missing downloaded and checked. Offline, those
+    /// kept on this computer are given to the content at start.
+    EnemyRevisionStore enemyRevisions;
+    void fetchCampaignManifest(std::function<void(const std::string&)> done, std::string firstError);
     bool campaignRefreshing_ = false;
     bool campaignFetch_ = false;
     bool campaignApplyPending_ = false;  // waits for the news scan (it reads the level files)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <map>
 #include <memory>
 #include <optional>
 #include <string>
@@ -106,6 +107,9 @@ public:
     ResourceManager& resources() { return services_.res; }
     AudioSystem& audio() { return services_.audio; }
     const ContentDatabase& content() const { return services_.content; }
+    /// The definition an enemy has in this level (2.45): a campaign level bound to an enemy
+    /// revision published online plays that revision, any other level the game's own.
+    const EnemyDefinition* enemyDefinition(const std::string& id) const;
     float time() const { return time_; }
     /// Gameplay randomness (attack choices, drops...). Only used from fixedUpdate: with the
     /// same seed and the same inputs, a run plays out identically (replays, speedruns).
@@ -296,6 +300,7 @@ private:
     WorldMode mode_;
     WorldState state_ = WorldState::Intro;
     LevelData level_;
+    std::map<std::string, int> enemyBinding_;  // the enemy revisions of the level (2.45)
     PhysicsWorld physics_;
     Camera camera_;
     ParticleSystem particles_;

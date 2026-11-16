@@ -42,6 +42,7 @@ void GameWorld::setKeysPerSlot(bool on) {
 
 bool GameWorld::load(const LevelData& level) {
     level_ = level;
+    enemyBinding_ = services_.content.enemyBindingOf(level_);
     hazards_ = BossHazards{};  // its colliders go with the physics below
     physics_.clear();
     entities_.clear();
@@ -571,9 +572,17 @@ Enemy* GameWorld::spawnEnemy(const EnemyDefinition& def, Vec2 feet, bool faceLef
     return raw;
 }
 
+const EnemyDefinition* GameWorld::enemyDefinition(const std::string& id) const {
+    if (const EnemyDefinition* d = services_.content.enemyFor(id, enemyBinding_)) return d;
+    // A revision this game does not have (never for a level it ranks: its fingerprint needs it).
+    if (auto b = enemyBinding_.find(id); b != enemyBinding_.end())
+        Log::warn("Enemy '{}': revision {} unknown, the game's own definition is used", id, b->second);
+    return services_.content.enemy(id);
+}
+
 Enemy* GameWorld::spawnEnemy(const std::string& defId, Vec2 feet, bool faceLeft, const std::string& objectId,
                              float patrol) {
-    const EnemyDefinition* d = services_.content.enemy(defId);
+    const EnemyDefinition* d = enemyDefinition(defId);
     if (!d) {
         Log::warn("Unknown enemy '{}'", defId);
         return nullptr;

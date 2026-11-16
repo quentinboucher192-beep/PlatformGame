@@ -198,7 +198,7 @@ bool PropertyEditor::colorPicker(UIContext& ui, const std::string& id, float x, 
     for (int i = 0; i < 10 && px + sz <= r.right(); ++i) {
         Rect pr{px, y, sz, sz};
         bool on = value == presets[i];
-        if (ui.mouseClicked(pr)) {
+        if (!ui.readOnly && ui.mouseClicked(pr)) {
             value = presets[i];
             changed = true;
         }

@@ -320,7 +320,7 @@ DifficultyRating rateDifficulty(const LevelData& level, const ContentDatabase& c
     std::vector<const EnemyDefinition*> bosses;
     for (const auto& o : level.objects) {
         if (o.type != "enemy") continue;
-        const EnemyDefinition* d = content.enemy(o.propStr("enemy"));
+        const EnemyDefinition* d = content.enemyFor(o.propStr("enemy"), level);
         if (!d) continue;
         if (d->isBoss || o.prop<bool>("boss", false)) {
             bosses.push_back(d);

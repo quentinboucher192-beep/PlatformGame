@@ -145,6 +145,11 @@ public:
     /// each scene): nothing under an overlay reacts to clicks, keys or the gamepad.
     bool sceneInput = true;
     bool acceptsInput() const { return inputEnabled && sceneInput; }
+    /// A read-only form (2.45: a native entity in the enemy editor): the widgets that edit a
+    /// value (toggles, sliders, cycles, text and number fields, buttons) are drawn greyed and
+    /// change nothing, but still take the focus (keyboard and gamepad reach every field, the
+    /// scroll follows); list items and tabs work as usual (choosing what to look at).
+    bool readOnly = false;
     /// Last widget changed this frame (for undo snapshots in editors).
     bool anyChanged() const { return changed_; }
 

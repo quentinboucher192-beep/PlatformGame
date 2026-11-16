@@ -164,6 +164,10 @@ std::unique_ptr<Scene> makeLevelEditorLive(GameServices& g, const std::string& l
 /// Automated screenshots: the level editor with its help open.
 std::unique_ptr<Scene> makeLevelEditorHelp(GameServices& g, const std::string& levelId);
 std::unique_ptr<Scene> makeEnemyEditor(GameServices& g, const std::string& enemyId = {}, int tab = 0);
+/// 2.45, ADMINISTRATION › Ennemis: the enemy editor on one native entity, whose definition is
+/// edited and published online as revision `baseRevision` + 1 (0: the game's own definition),
+/// with the campaign levels that use it. Pushed over the administration (« Retour » pops it).
+std::unique_ptr<Scene> makeEnemyEditorAdmin(GameServices& g, const std::string& enemyId, int baseRevision);
 /// The WORKSHOP (reached from ONLINE): the player's levels, imported levels, .cplanet
 /// export/import, enemy editor.
 /// `importFile`: a .cplanet file to analyse immediately (double-click / command line).

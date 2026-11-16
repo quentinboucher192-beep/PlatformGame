@@ -55,12 +55,18 @@ std::optional<LevelFingerprint> fingerprintRankedLevel(const ContentDatabase& co
     if (!base) return std::nullopt;
     auto level = LevelData::fromJson(levelJson);
     if (!level) return std::nullopt;
+    // 2.45: a campaign level bound to enemy revisions published online (metadata.enemyRevisions,
+    // itself part of the level's bytes) is printed with THOSE definitions: a revision this game
+    // does not have, and the level cannot be ranked here.
+    const auto binding = content.enemyBindingOf(*level);
+    for (const auto& [id, rev] : binding)
+        if (!content.enemyRevision(id, rev)) return std::nullopt;
     ResourceManager res;
     res.init(nullptr, nullptr);
     DependencySet deps = DependencyCollector(content, res).collect(*level);
     Json enemies = Json::object(), powers = Json::object();
     for (const auto& id : deps.enemies)
-        if (const EnemyDefinition* d = content.enemy(id)) enemies[id] = gameplayEnemyJson(*d);
+        if (const EnemyDefinition* d = content.enemyFor(id, binding)) enemies[id] = gameplayEnemyJson(*d);
     for (const auto& id : deps.powers)
         if (const PowerDefinition* d = content.power(id)) powers[id] = d->toJson();
     Json levelPart = levelJson;

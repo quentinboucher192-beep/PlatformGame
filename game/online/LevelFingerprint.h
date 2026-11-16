@@ -73,7 +73,9 @@ std::optional<LevelFingerprint> fingerprintLevelFile(const fs::path& file, std::
 std::optional<LevelFingerprint> fingerprintLevelJson(const Json& level);
 /// Fingerprint of a ranked level: the level, every enemy and power definition it uses
 /// (recursively), the player configuration and kRankingGeneration. Two runs with the same
-/// fingerprint, seed and inputs play out identically.
+/// fingerprint, seed and inputs play out identically. A campaign level bound to enemy
+/// revisions (2.45, `metadata.enemyRevisions`) is printed with those definitions; nullopt when
+/// this game does not have one of them.
 std::optional<LevelFingerprint> fingerprintRankedLevel(const ContentDatabase& content, const Json& level);
 
 /// Fingerprint of what a community level plays like: geometry, objects, events, cinematics,

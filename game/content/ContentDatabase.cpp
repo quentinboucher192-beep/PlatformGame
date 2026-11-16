@@ -333,6 +333,52 @@ std::string ContentDatabase::freeEnemyId(const std::string& base) const {
     return id;
 }
 
+bool ContentDatabase::setEnemyRevision(int revision, EnemyDefinition def) {
+    if (revision < 1 || !isNativeEnemy(def.id)) return false;
+    // A native's sheets and sounds: those of the game (never a package's).
+    def.builtin = true;
+    def.assetRoot.clear();
+    std::lock_guard<std::mutex> lock(*enemyRevisionsMutex_);
+    auto& revs = enemyRevisions_[def.id];
+    if (auto it = revs.find(revision); it != revs.end()) it->second = std::move(def);  // same node: pointers stay valid
+    else revs.emplace(revision, std::move(def));
+    return true;
+}
+
+void ContentDatabase::removeEnemyRevision(const std::string& id, int revision) {
+    std::lock_guard<std::mutex> lock(*enemyRevisionsMutex_);
+    auto it = enemyRevisions_.find(id);
+    if (it == enemyRevisions_.end()) return;
+    it->second.erase(revision);
+    if (it->second.empty()) enemyRevisions_.erase(it);
+}
+
+const EnemyDefinition* ContentDatabase::enemyRevision(const std::string& id, int revision) const {
+    std::lock_guard<std::mutex> lock(*enemyRevisionsMutex_);
+    auto it = enemyRevisions_.find(id);
+    if (it == enemyRevisions_.end()) return nullptr;
+    auto r = it->second.find(revision);
+    return r == it->second.end() ? nullptr : &r->second;
+}
+
+std::map<std::string, int> ContentDatabase::enemyBindingOf(const std::string& levelId, const Json& metadata) const {
+    std::map<std::string, int> out;
+    const LevelEntry* e = level(levelId);
+    // Only the campaign plays revisions: a community level, or one of the player's, never.
+    if (!e || e->source != ContentSource::Builtin || !metadata.is_object()) return out;
+    auto b = metadata.find("enemyRevisions");
+    if (b == metadata.end() || !b->is_object()) return out;
+    for (const auto& [id, rev] : b->items())
+        if (rev.is_number_integer() && rev.get<int64_t>() >= 1 && rev.get<int64_t>() <= 1000000 && isNativeEnemy(id)) out[id] = rev.get<int>();
+    return out;
+}
+
+const EnemyDefinition* ContentDatabase::enemyFor(const std::string& id, const std::map<std::string, int>& binding) const {
+    auto b = binding.find(id);
+    if (b == binding.end()) return enemy(id);
+    return enemyRevision(id, b->second);
+}
+
 bool ContentDatabase::saveUserEnemy(const EnemyDefinition& def) {
     if (def.id.empty() || isNativeEnemy(def.id) || isNativeEnemy(FileUtil::slugify(def.id))) {
         Log::warn("Refusing to save enemy '{}': native entities are read-only", def.id);

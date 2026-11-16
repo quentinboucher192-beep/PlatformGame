@@ -75,6 +75,10 @@ void GameServices::loadAll() {
 // ------------------------------------------------- campaign revisions (2.45)
 
 void GameServices::startCampaignRevisions(bool fetch) {
+    // 2.45: the enemy revisions first (the level revisions bound to them need them).
+    enemyRevisions.setDir(Paths::userDir() / "online" / "enemies");
+    enemyRevisions.load();
+    enemyRevisions.applyTo(content, online.config().serverUrl, COSMIC_VERSION_STRING);
     campaignRevisions.setDir(Paths::userDir() / "online" / "campaign");
     campaignRevisions.load();
     applyCampaignRevisions();  // the revisions kept on this computer: offline too
@@ -97,9 +101,43 @@ void GameServices::refreshCampaignRevisions(std::function<void(const std::string
     }
     campaignRefreshing_ = true;
     campaignTimer_ = 0.0f;
+    // 2.45: the enemy revisions before the campaign's (a level revision is checked with the
+    // definitions it is bound to). A server without them (404) has none: the campaign goes on.
+    online.get(
+        "/api/v1/enemies/revisions",
+        [this, done](const ApiResult& r) {
+            const std::string server = online.config().serverUrl;
+            if (!r.ok) return fetchCampaignManifest(done, r.status == 404 ? std::string() : r.message);
+            auto todo = enemyRevisions.applyManifest(r.data, server, content, COSMIC_VERSION_STRING);
+            enemyRevisions.save();
+            if (todo.empty()) {
+                enemyRevisions.applyTo(content, server, COSMIC_VERSION_STRING);
+                return fetchCampaignManifest(done, {});
+            }
+            auto left = std::make_shared<size_t>(todo.size());
+            auto errors = std::make_shared<std::string>();
+            for (const EnemyRevisionFile& f : todo)
+                online.getBinary(
+                    f.path,
+                    [this, f, left, errors, done, server](const HttpResponse& h) {
+                        std::string err;
+                        if (h.networkFailure() || h.status != 200) err = "téléchargement impossible";
+                        else enemyRevisions.install(content, f, h.body, &err);
+                        if (!err.empty()) *errors = f.enemyId + " : " + err;
+                        if (--*left > 0) return;
+                        enemyRevisions.save();
+                        enemyRevisions.applyTo(content, server, COSMIC_VERSION_STRING);
+                        fetchCampaignManifest(done, *errors);
+                    },
+                    static_cast<size_t>(f.size) + 1024);
+        },
+        false);
+}
+
+void GameServices::fetchCampaignManifest(std::function<void(const std::string&)> done, std::string firstError) {
     online.get(
         "/api/v1/campaign/revisions",
-        [this, done](const ApiResult& r) {
+        [this, done, firstError](const ApiResult& r) {
             if (!r.ok) {
                 campaignRefreshing_ = false;
                 campaignTimer_ = 28.0f * 60.0f;  // tried again in two minutes
@@ -109,7 +147,7 @@ void GameServices::refreshCampaignRevisions(std::function<void(const std::string
             auto todo = campaignRevisions.applyManifest(r.data, online.config().serverUrl, content, COSMIC_VERSION_STRING);
             campaignRevisions.save();
             auto left = std::make_shared<size_t>(todo.size());
-            auto errors = std::make_shared<std::string>();
+            auto errors = std::make_shared<std::string>(firstError);
             auto finish = [this, done, errors]() {
                 campaignRevisions.prune();
                 campaignRevisions.save();

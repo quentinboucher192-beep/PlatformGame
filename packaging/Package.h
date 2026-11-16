@@ -73,6 +73,8 @@ private:
     const ContentDatabase& content_;
     ResourceManager& res_;
     DependencySet out_;
+    /// 2.45: the enemy revisions the collected level is bound to (a campaign level).
+    std::map<std::string, int> binding_;
 };
 
 }  // namespace cosmic

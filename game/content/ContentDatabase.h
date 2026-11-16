@@ -1,6 +1,8 @@
 #pragma once
 
 #include <map>
+#include <memory>
+#include <mutex>
 #include <set>
 #include <optional>
 #include <string>
@@ -90,6 +92,26 @@ public:
     /// A free id derived from `base` (slugified) that is not used by any enemy.
     std::string freeEnemyId(const std::string& base) const;
 
+    // Enemy revisions (2.45, ADMINISTRATION › Ennemis, docs/online/ENEMY_REVISIONS.md): the
+    // definitions of native enemies published online by an administrator. Never global: a
+    // level of the campaign plays a revision only through its binding (`metadata.enemyRevisions`
+    // of its file, {"<enemy id>": <revision>}, part of its fingerprint), so every revision of a
+    // level keeps the definitions it was published with (records, replays, ghosts, challenges).
+    // Any other level (community, the player's own, a campaign level without that binding)
+    // plays the game's own definition (enemy()). Kept across reload(); thread-safe.
+    /// Adds (or replaces) revision `revision` of the native enemy `def.id`. False for a
+    /// non-native id or a revision below 1.
+    bool setEnemyRevision(int revision, EnemyDefinition def);
+    void removeEnemyRevision(const std::string& id, int revision);
+    const EnemyDefinition* enemyRevision(const std::string& id, int revision) const;
+    /// The binding of a level: {} unless it is a built-in level (campaign); only native ids.
+    std::map<std::string, int> enemyBindingOf(const std::string& levelId, const Json& metadata) const;
+    std::map<std::string, int> enemyBindingOf(const LevelData& level) const { return enemyBindingOf(level.id, level.metadata); }
+    /// The definition `id` plays with this binding: the bound revision (nullptr when this game
+    /// does not have it), else the game's own definition.
+    const EnemyDefinition* enemyFor(const std::string& id, const std::map<std::string, int>& binding) const;
+    const EnemyDefinition* enemyFor(const std::string& id, const LevelData& level) const { return enemyFor(id, enemyBindingOf(level)); }
+
     // Powers (native powers cannot be replaced by packages either)
     std::vector<const PowerDefinition*> powers() const;
     const PowerDefinition* power(const std::string& id) const;
@@ -119,6 +141,10 @@ private:
     std::map<std::string, LevelEntry> levels_;
     std::map<std::string, fs::path> campaignRevisions_;  // level id -> downloaded revision (2.45)
     std::map<std::string, EnemyDefinition> enemies_;
+    /// Enemy revisions published online (2.45): id -> revision -> definition. Guarded (a
+    /// revision is prepared off the main thread while the game may download another one).
+    std::map<std::string, std::map<int, EnemyDefinition>> enemyRevisions_;
+    std::shared_ptr<std::mutex> enemyRevisionsMutex_ = std::make_shared<std::mutex>();
     std::map<std::string, PowerDefinition> powers_;
     std::vector<PackageInfo> packages_;
     std::set<std::string> nativePowers_;

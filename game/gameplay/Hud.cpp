@@ -597,7 +597,7 @@ void Hud::drawProgress(UIContext& ui, GameWorld& w, Vec2 o, float k, float width
                 bool alive = false;
                 for (const auto& e : w.enemies())
                     if (e->objectId() == m.objectId && e->alive()) alive = true;
-                const EnemyDefinition* def = w.content().enemy(m.enemyId);
+                const EnemyDefinition* def = w.enemyDefinition(m.enemyId);
                 Color col = !alive ? Color{140, 150, 175, 255} : def ? BossBadge::color(*def) : gold;
                 float rad = S(17);
                 if (alive) {
