@@ -56,6 +56,7 @@ void UIContext::begin(Application& app, float dt) {
     focusSeen_ = false;
     changed_ = false;
     navConsumedH_ = false;
+    navConsumedV_ = false;
     InputManager& in = app.input();
     if (in.mouseMovedThisFrame() || in.mousePressed(SDL_BUTTON_LEFT) || in.wheel() != 0.0f) pointerMode_ = true;
     if (in.anyMenuInput()) pointerMode_ = false;
@@ -192,8 +193,8 @@ void UIContext::end() {
     if (!focusSeen_) focus_ = 0;
     if (editing_ != 0 || !acceptsInput() || focusables_.empty()) return;
     Vec2 dir;
-    if (in.menuPressed(Action::MenuUp)) dir = {0, -1};
-    else if (in.menuPressed(Action::MenuDown)) dir = {0, 1};
+    if (in.menuPressed(Action::MenuUp) && !navConsumedV_) dir = {0, -1};
+    else if (in.menuPressed(Action::MenuDown) && !navConsumedV_) dir = {0, 1};
     else if (in.menuPressed(Action::MenuLeft) && !navConsumedH_) dir = {-1, 0};
     else if (in.menuPressed(Action::MenuRight) && !navConsumedH_) dir = {1, 0};
     if (dir.lengthSq() == 0.0f) return;

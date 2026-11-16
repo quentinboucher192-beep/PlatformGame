@@ -226,5 +226,227 @@ TEST_CASE("boss training: the last choices are kept per boss") {
     if (!b) return;
     CHECK(b->hearts == 4 && b->slots == 3 && b->phase == 2);
     CHECK(b->powers == std::vector<std::string>({"dash", "glide"}));
+    CHECK(!b->spawn);  // the usual start
     CHECK(back.find("aurorax") == nullptr);
+    // « Lieu d'apparition » (2.41): the place picked in the arena is kept too.
+    c.spawn = Vec2{9032.0f, 768.0f};
+    p.set("thornwarden", c);
+    back.fromJson(p.toJson());
+    b = back.find("thornwarden");
+    CHECK(b != nullptr && b->spawn && b->spawn->x == 9032.0f && b->spawn->y == 768.0f);
+    // A damaged value: the usual start.
+    Json j = p.toJson();
+    j["bosses"]["thornwarden"]["spawn"] = "ici";
+    back.fromJson(j);
+    b = back.find("thornwarden");
+    CHECK(b != nullptr && !b->spawn && b->hearts == 4);
+}
+
+// ------------------------------------------------------------ « Lieu d'apparition » (2.41)
+
+namespace {
+
+/// A boss's own level, as its training loads it.
+struct BossLevel {
+    ContentDatabase content;
+    ResourceManager res;
+    AudioSystem audio;
+    std::optional<LevelData> level;
+    BossTrainingSetup setup;
+    BossLevel(const std::string& levelId, const std::string& bossId, int phase = -1) {
+        content.reload();
+        res.init(nullptr, &audio);
+        level = content.loadLevel(levelId);
+        if (!level) return;
+        for (const LevelObject& o : level->objects)
+            if (o.type == "enemy" && o.propStr("enemy") == bossId) setup.bossObject = o.id;
+        setup.bossId = bossId;
+        setup.levelId = levelId;
+        setup.hearts = 5;
+        setup.slots = 2;
+        setup.phase = phase;
+    }
+    std::unique_ptr<GameWorld> world() {
+        WorldServices s{res, audio, content, nullptr, 0.0f, 0.0f};
+        auto w = std::make_unique<GameWorld>(s, WorldMode::Play);
+        w->load(*level);
+        w->seedGameplay(42);
+        return w;
+    }
+    /// The places of its arena, from a world of its own (as the settings screen does).
+    std::optional<TrainingArena> arena() {
+        if (!level) return std::nullopt;
+        auto w = world();
+        return probeTrainingArena(*w, setup);
+    }
+};
+
+bool near(Vec2 a, Vec2 b) { return std::abs(a.x - b.x) < 1.0f && std::abs(a.y - b.y) < 1.0f; }
+
+/// Every place proposed, checked on the arena as the probe left it: the body inside the arena,
+/// on firm ground, in no wall, in no hazard nor pickup, clear of the boss. -1: no place at all.
+int badSpots(BossLevel& lv, int phase) {
+    lv.setup.phase = phase;
+    auto w = lv.world();
+    auto a = probeTrainingArena(*w, lv.setup);
+    if (!a || a->spots.empty()) return -1;
+    const Vec2 size = w->player().config().size;
+    int bad = 0;
+    for (const TrainingSpot& s : a->spots) {
+        const Rect body = Rect::fromBottomCenter(s.feet, size);
+        bool ok = a->zone.containsRect(body) && !w->physics().overlapsSolid(body);
+        const Collider* g = w->physics().groundBelow(body);
+        ok = ok && g && g->enabled && !g->dynamic && std::abs(g->box.y - s.feet.y) < 0.5f &&
+             !(g->tags & (ColliderTag::Moving | ColliderTag::Bounce | ColliderTag::Door | ColliderTag::Breakable));
+        ok = ok && !body.intersects(a->boss.expanded(TrainingArena::kBossMargin - 1.0f));
+        if (const Enemy* b = bossTrainingEnemy(*w, lv.setup)) ok = ok && !body.intersects(b->box);
+        for (const auto& e : w->entities()) {
+            const std::string& t = e->type();
+            const bool hurts = t == "spikes" || t == "liquid" || t == "laser" || (t == "damage_zone" && e->active);
+            const bool sets = t == "health_orb" || t == "energy_orb" || t == "door" || t == "checkpoint" || t == "power_unlock";
+            if ((hurts || (sets && e->active && e->visible)) && (body.intersects(e->box) || body.intersects(e->overlapBox()))) ok = false;
+        }
+        if (!ok) ++bad;
+    }
+    return bad;
+}
+
+}  // namespace
+
+TEST_CASE("boss training: the places to appear in an arena are on firm ground, out of walls, hazards and the boss") {
+    // A guardian (Thornwarden), every phase and its last one.
+    {
+        BossLevel lv("sylvanox_01", "thornwarden");
+        CHECK(lv.level.has_value());
+        if (!lv.level) return;
+        CHECK(badSpots(lv, -1) == 0);
+        CHECK(badSpots(lv, 2) == 0);
+        lv.setup.phase = -1;
+        auto a = lv.arena();
+        CHECK(a.has_value());
+        if (!a) return;
+        CHECK(a->spots.size() >= 20);              // its floor and its platforms
+        CHECK(!a->zone.contains(a->usualStart));  // the usual start is outside, before the arena
+        bool ground = false, ledge = false;
+        for (const TrainingSpot& s : a->spots) (s.ledge ? ledge : ground) = true;
+        CHECK(ground && ledge);
+        // The one proposed first: on the floor, as far from the boss as the floor goes.
+        const int k = a->suggested();
+        CHECK(k >= 0);
+        if (k < 0) return;
+        const Vec2 from = a->spots[static_cast<size_t>(k)].feet;
+        CHECK(!a->spots[static_cast<size_t>(k)].ledge);
+        for (const TrainingSpot& s : a->spots) CHECK(s.feet.y <= from.y + 0.5f);
+        // The arrows: along the floor one place at a time, up onto a platform, back down.
+        const int side = from.x < a->boss.center().x ? 1 : -1;  // towards the boss
+        const int n = a->step(k, side, 0);
+        CHECK(n >= 0);
+        if (n < 0) return;
+        CHECK(std::abs(a->spots[static_cast<size_t>(n)].feet.x - from.x - static_cast<float>(side) * TrainingArena::kStep) < 0.5f);
+        CHECK(std::abs(a->spots[static_cast<size_t>(n)].feet.y - from.y) < 0.5f);
+        int up = -1;
+        for (int i = n, guard = 0; i >= 0 && up < 0 && guard < 200; ++guard) {
+            up = a->step(i, 0, -1);
+            if (up < 0) i = a->step(i, side, 0);
+        }
+        CHECK(up >= 0);
+        if (up >= 0) {
+            CHECK(a->spots[static_cast<size_t>(up)].feet.y < from.y);
+            const int down = a->step(up, 0, 1);
+            CHECK(down >= 0 && a->spots[static_cast<size_t>(down)].feet.y > a->spots[static_cast<size_t>(up)].feet.y);
+        }
+        CHECK(a->find(from) == k);
+        CHECK(a->find(from + Vec2{3.0f, 0.0f}) == -1);
+        CHECK(a->nearest(from + Vec2{3.0f, -a->body.y * 0.5f}) == k);
+    }
+    // Singularis: its arena changes with the phases (its floor collapses into plasma at the
+    // 5th, the plasma closes in on both sides at the 8th).
+    {
+        BossLevel lv("noyau_03", "singularis");
+        CHECK(lv.level.has_value());
+        if (!lv.level) return;
+        for (int phase : {-1, 2, 4, 7}) CHECK(badSpots(lv, phase) == 0);
+        auto onCollapsingFloor = [](const TrainingArena& a) {
+            return std::any_of(a.spots.begin(), a.spots.end(),
+                               [](const TrainingSpot& s) { return s.feet.x > 1120.0f && s.feet.x < 1952.0f && s.feet.y >= 639.0f; });
+        };
+        auto inSides = [](const TrainingArena& a) {
+            return std::any_of(a.spots.begin(), a.spots.end(), [](const TrainingSpot& s) { return s.feet.x < 960.0f || s.feet.x > 2112.0f; });
+        };
+        lv.setup.phase = -1;
+        auto whole = lv.arena();
+        CHECK(whole && onCollapsingFloor(*whole) && inSides(*whole));
+        lv.setup.phase = 4;  // « Effondrement »: the floor is gone, plasma under it
+        auto collapsed = lv.arena();
+        CHECK(collapsed && !collapsed->spots.empty() && !onCollapsingFloor(*collapsed) && inSides(*collapsed));
+        lv.setup.phase = 7;  // « Supernova »: the plasma closes both sides of the arena
+        auto supernova = lv.arena();
+        CHECK(supernova && !supernova->spots.empty() && !onCollapsingFloor(*supernova) && !inSides(*supernova));
+    }
+}
+
+TEST_CASE("boss training: a run started at a place picked in the arena starts there, facing the boss") {
+    BossLevel lv("sylvanox_01", "thornwarden");
+    CHECK(lv.level.has_value());
+    if (!lv.level) return;
+    for (const LevelObject& o : lv.level->objects)
+        if (o.type == "checkpoint" && o.propStr("label") == "Sanctuaire") {
+            lv.setup.checkpointId = o.id;
+            lv.setup.spawn = o.rect.bottomCenter();
+        }
+    auto a = lv.arena();
+    CHECK(a && !a->spots.empty());
+    if (!a || a->spots.empty()) return;
+    for (int side : {-1, 1}) {
+        // A place of the floor on that side of the boss.
+        int k = -1;
+        for (size_t i = 0; i < a->spots.size() && k < 0; ++i)
+            if (!a->spots[i].ledge && (a->spots[i].feet.x - a->boss.center().x) * static_cast<float>(side) > 0.0f) k = static_cast<int>(i);
+        CHECK(k >= 0);
+        if (k < 0) continue;
+        const Vec2 spot = a->spots[static_cast<size_t>(k)].feet;
+        BossTrainingSetup s = lv.setup;
+        s.arenaSpawn = spot;
+        auto w = lv.world();
+        CHECK(applyBossTraining(*w, s));
+        const Player& p = w->player();
+        CHECK(near(p.feet(), spot));
+        CHECK(p.facing * static_cast<float>(side) < 0.0f);  // the boss is on the other side
+        CHECK(near(w->respawnPoint(), spot));              // where the world would bring back
+        CHECK(w->checkpointId().empty());                  // the checkpoint before the arena: not reached
+        CHECK(p.health == 5 && p.powerSlots() == 2);
+        // Standing there, on firm ground: the arena wakes its boss.
+        for (int i = 0; i < 60; ++i) w->fixedUpdate(PlayerInput{}, 1.0f / 120.0f);
+        CHECK(p.grounded());
+        CHECK(near(p.feet(), spot));
+        const Enemy* b = bossTrainingEnemy(*w, s);
+        CHECK(b && b->alive() && !b->dormant());
+        // A fall ends the training: nobody comes back into the arena behind its end screen.
+        w->player().kill(*w);
+        for (int i = 0; i < 240; ++i) w->fixedUpdate(PlayerInput{}, 1.0f / 120.0f);
+        CHECK(w->stats().deaths == 1);
+        CHECK(w->playerHidden());
+        // « Recommencer »: the same start state, the same place, facing the boss again.
+        auto again = lv.world();
+        CHECK(applyBossTraining(*again, s));
+        CHECK(near(again->player().feet(), spot) && again->player().facing * static_cast<float>(side) < 0.0f);
+    }
+    // A run that is not a training still comes back after a fall (to the place it started).
+    {
+        auto w = lv.world();
+        w->startAt(a->spots.front().feet, false);
+        w->player().kill(*w);
+        for (int i = 0; i < 240; ++i) w->fixedUpdate(PlayerInput{}, 1.0f / 120.0f);
+        CHECK(!w->playerHidden());
+        CHECK(near(w->respawnPoint(), a->spots.front().feet));
+    }
+    // A place that cannot hold the player (inside the floor): the usual start, the checkpoint.
+    {
+        BossTrainingSetup s = lv.setup;
+        s.arenaSpawn = a->spots.front().feet + Vec2{0.0f, 40.0f};
+        auto w = lv.world();
+        CHECK(applyBossTraining(*w, s));
+        CHECK(std::abs(w->player().feet().x - lv.setup.spawn.x) < 2.0f);
+        CHECK(w->checkpointId() == lv.setup.checkpointId);
+    }
 }

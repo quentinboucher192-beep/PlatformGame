@@ -120,7 +120,9 @@ public:
     uint64_t gameplaySeed() const { return seed_; }
     /// A training run (boss statistics → Entraînement), or a challenge run: nothing it does
     /// counts. Every recorder checks it (boss statistics, achievement counters, records,
-    /// progression, creatures met). Never read by the simulation.
+    /// progression, creatures met). The simulation reads it once: a boss training ends at the
+    /// player's first fall (its end screen), the player does not come back (2.41: nobody walks
+    /// back into the arena behind that screen). Training runs are never recorded.
     void setTraining(bool on) { training_ = on; }
     bool training() const { return training_ || challenge_.has_value(); }
     /// A daily challenge (2.32, simulation 11): its rules apply now (call it right after
@@ -228,6 +230,9 @@ public:
     void beginPlay();  // after the intro: start the timer, give control
     /// Skips the intro and starts playing at `feet` (editor "test from here").
     void startAt(Vec2 feet);
+    /// The same, facing left or right, the respawn facing that way too (a boss training started
+    /// in its arena, facing the boss: 2.41).
+    void startAt(Vec2 feet, bool faceLeft);
     bool playerHidden() const { return player_.state() == PlayerState::Hidden; }
     void addSecretFound(const std::string& id, const std::string& message);
     float lastSplitDelta() const { return lastSplitDelta_; }

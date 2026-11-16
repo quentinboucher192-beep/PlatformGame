@@ -130,6 +130,12 @@ public:
     bool editingText() const { return editing_ != 0; }
     bool mouseOver(const Rect& r) const;
     bool mouseClicked(const Rect& r) const;
+    /// A widget drawn by the caller used this frame's arrows itself (a marker moved on a map):
+    /// the focus does not move that way.
+    void consumeNavigation(bool horizontal, bool vertical) {
+        navConsumedH_ = navConsumedH_ || horizontal;
+        navConsumedV_ = navConsumedV_ || vertical;
+    }
     bool backPressed() const;        // menu back (Esc / B)
     bool usingPointer() const { return pointerMode_; }
     float time() const { return time_; }
@@ -197,6 +203,7 @@ private:
     bool focusSeen_ = false;
     bool confirm_ = false;
     bool navConsumedH_ = false;
+    bool navConsumedV_ = false;
     bool pointerMode_ = true;
     bool changed_ = false;
     std::vector<Focusable> focusables_;
