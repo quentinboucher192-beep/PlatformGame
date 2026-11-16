@@ -61,6 +61,11 @@ void UIContext::begin(Application& app, float dt) {
     if (in.anyMenuInput()) pointerMode_ = false;
     confirm_ = acceptsInput() && editing_ == 0 && in.menuPressed(Action::MenuConfirm);
     if (!in.mouseDown(SDL_BUTTON_LEFT) && !in.mouseReleased(SDL_BUTTON_LEFT)) active_ = 0;
+    if (!in.mouseDown(SDL_BUTTON_LEFT)) scrollDrag_ = 0;
+    if (focus_ != lastFocus_) {  // a new focus: its scroll region follows it once
+        lastFocus_ = focus_;
+        followedFocus_ = 0;
+    }
 }
 
 bool UIContext::backPressed() const {
@@ -134,8 +139,13 @@ void UIContext::registerFocusable(WidgetId wid, const Rect& rc) {
     if (!acceptsInput()) return;
     Rect vis = rc;
     if (!scrollStack_.empty()) {
-        // Focusable even if scrolled out; the scroll follows the focus.
-        if (focus_ == wid && !scrollStack_.back().view.containsRect(rc)) scrollToFocus_ = wid;
+        // Focusable even if scrolled out; the scroll follows the focus when it moves (keys,
+        // gamepad, a screen opening on an item), once: a list scrolled with the wheel or its
+        // bar (2.39) is not brought back to the focus afterwards.
+        if (focus_ == wid && focus_ != followedFocus_) {
+            if (!scrollStack_.back().view.containsRect(rc)) scrollToFocus_ = wid;
+            else followedFocus_ = wid;
+        }
     }
     focusables_.push_back({wid, vis});
     if (wid == focus_) focusSeen_ = true;
@@ -920,14 +930,36 @@ void UIContext::endScroll() {
             if (f.rect.bottom() > sc.view.bottom()) off += f.rect.bottom() - sc.view.bottom() + s(8);
             off = std::clamp(off, 0.0f, std::max(0.0f, sc.content - sc.view.h));
         }
+        followedFocus_ = scrollToFocus_;
         scrollToFocus_ = 0;
     }
-    // Scrollbar
+    // Scrollbar: held with the mouse (2.39). A press in its lane (the 12 px at the right of the
+    // view, kept free by the lists) grabs the thumb where it is pressed, or makes it jump under
+    // the pointer; while the button stays down the content follows the pointer, also outside
+    // the lane. No other widget reacts to that press (it owns the mouse until released).
     if (sc.content > sc.view.h) {
         float k = sc.view.h / sc.content;
         float barH = std::max(s(30), sc.view.h * k);
-        float y = sc.view.y + (sc.view.h - barH) * (sc.offset / std::max(1.0f, sc.content - sc.view.h));
-        r().fillRoundedRect({sc.view.right() - s(6), y, s(4), barH}, s(2), theme_.accent.withAlpha(120));
+        const float travel = std::max(1.0f, sc.view.h - barH);
+        const float maxOff = sc.content - sc.view.h;
+        float y = sc.view.y + travel * std::clamp(sc.offset / std::max(1.0f, maxOff), 0.0f, 1.0f);
+        InputManager& in = input();
+        const Vec2 m = in.mousePos();
+        const Rect lane{sc.view.right() - s(12), sc.view.y, s(12), sc.view.h};
+        const bool overLane = acceptsInput() && lane.contains(m) && !clippedOut(lane);
+        if (overLane && in.mousePressed(SDL_BUTTON_LEFT) && scrollDrag_ == 0) {
+            scrollDrag_ = sc.id;
+            scrollGrab_ = (m.y >= y && m.y <= y + barH) ? m.y - y : barH * 0.5f;
+        }
+        const bool dragging = scrollDrag_ == sc.id && in.mouseDown(SDL_BUTTON_LEFT) && acceptsInput();
+        if (dragging) {
+            y = std::clamp(m.y - scrollGrab_, sc.view.y, sc.view.y + travel);
+            scrolls_[sc.id] = (y - sc.view.y) / travel * maxOff;
+            active_ = sc.id;  // the press is the bar's: no button fires on its release
+        }
+        const float bw = dragging || overLane ? s(6) : s(4);
+        r().fillRoundedRect({sc.view.right() - s(2) - bw, y, bw, barH}, bw * 0.5f,
+                            theme_.accent.withAlpha(dragging ? 235 : overLane ? 180 : 120));
     }
 }
 

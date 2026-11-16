@@ -100,3 +100,4 @@ false
 angle
 stream
 %.*f
+%d:%f,%f:%f,%f:%d

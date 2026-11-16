@@ -3050,6 +3050,12 @@
    ]
   },
   {
+   "fr": "Barres de défilement à la souris, partout : on attrape la barre et on la fait glisser en gardant le bouton enfoncé (le contenu suit le pointeur), ou on clique dans son couloir pour y sauter ; elle s'élargit au survol.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Barrière d'énergie (Onde)",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -31510,6 +31516,12 @@
    "fr": "Une heure dans les étoiles",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Une liste déplacée à la molette ou à la barre reste où on l'a laissée : elle ne revient plus d'elle-même sur l'élément sélectionné (elle le suit encore quand on change de sélection au clavier ou à la manette).",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {

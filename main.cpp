@@ -21,6 +21,8 @@
 //   --click <frame>:<x>,<y> left click at a screen position at a given frame (repeatable;
 //                           automated checks of the menus)
 //   --hover <frame>:<x>,<y> the mouse moved there without a click (tooltips in screenshots)
+//   --drag <frame>:<x1>,<y1>:<x2>,<y2>[:<frames>]
+//                           press, move and release the left button (scroll bars, sliders)
 //   --input <script>        scripted gameplay input, e.g. "0:right;90:right,jump;120:"
 //   --user-dir <path>       use another folder for saves and user content
 //   --lang <fr|en>          language of the texts (as the setting « Langue / Language »)
@@ -486,12 +488,45 @@ int main(int argc, char** argv) {
                 .push_back({std::atoi(s.substr(0, c).c_str()), std::strtof(s.substr(c + 1, k - c - 1).c_str(), nullptr),
                             std::strtof(s.substr(k + 1).c_str(), nullptr)});
     }
+    // --drag <frame>:<x1>,<y1>:<x2>,<y2>[:<frames>] (screenshots): the left button pressed at
+    // (x1, y1) on that frame, the pointer moved to (x2, y2) over <frames> frames (default 30),
+    // then released.
+    struct Drag {
+        int frame = 0, frames = 30;
+        float x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+    };
+    std::vector<Drag> drags;
+    for (size_t i = 0; i + 1 < args.size(); ++i) {
+        if (args[i] != "--drag") continue;
+        Drag d;
+        if (std::sscanf(args[i + 1].c_str(), "%d:%f,%f:%f,%f:%d", &d.frame, &d.x1, &d.y1, &d.x2, &d.y2, &d.frames) >= 5) drags.push_back(d);
+    }
     // Presence for friends: a real window, or a headless run against a server (--realtime).
     const bool sendPresence = !has("--headless") || has("--realtime");
     // Live spectating (2.36): the same (a headless check streams only against a server).
     game.spectate.setAllowed(sendPresence);
-    app.onUpdate = [&game, &toasts, &app, clicks, hovers, sendPresence](float dt) {
+    app.onUpdate = [&game, &toasts, &app, clicks, hovers, drags, sendPresence](float dt) {
         int f = static_cast<int>(app.frameIndex());
+        for (const auto& d : drags) {
+            int n = std::max(1, d.frames);
+            if (f < d.frame || f > d.frame + n + 1) continue;
+            float t = std::clamp(static_cast<float>(f - d.frame) / static_cast<float>(n), 0.0f, 1.0f);
+            SDL_Event e{};
+            e.type = SDL_EVENT_MOUSE_MOTION;
+            e.motion.x = d.x1 + (d.x2 - d.x1) * t;
+            e.motion.y = d.y1 + (d.y2 - d.y1) * t;
+            e.motion.state = SDL_BUTTON_LMASK;
+            SDL_PushEvent(&e);
+            if (f == d.frame || f == d.frame + n + 1) {
+                SDL_Event b{};
+                b.type = f == d.frame ? SDL_EVENT_MOUSE_BUTTON_DOWN : SDL_EVENT_MOUSE_BUTTON_UP;
+                b.button.down = f == d.frame;
+                b.button.button = SDL_BUTTON_LEFT;
+                b.button.x = e.motion.x;
+                b.button.y = e.motion.y;
+                SDL_PushEvent(&b);
+            }
+        }
         for (const auto& h : hovers) {
             if (f != h.frame) continue;
             SDL_Event e{};

@@ -1,4 +1,8 @@
 {
+  "2.39.0": [
+    "Barres de défilement à la souris, partout : on attrape la barre et on la fait glisser en gardant le bouton enfoncé (le contenu suit le pointeur), ou on clique dans son couloir pour y sauter ; elle s'élargit au survol.",
+    "Une liste déplacée à la molette ou à la barre reste où on l'a laissée : elle ne revient plus d'elle-même sur l'élément sélectionné (elle le suit encore quand on change de sélection au clavier ou à la manette)."
+  ],
   "2.38.0": [
     "Calendrier des défis : chaque case montre l'image du niveau du défi, avec un ruban de sa couleur (jour, semaine) et des balises sur ce qui le rend particulier : EXTRÊME, niveau de la communauté, nombre de cœurs, sans checkpoint, sans station. Le défi du mois aussi."
   ],

@@ -113,7 +113,8 @@ public:
     /// an answer (red pill); negative: a plain count, shown as its absolute value (accent).
     bool tabs(const std::string& name, const Rect& r, const std::vector<std::string>& labels, int& active, const std::vector<int>& badges = {});
 
-    // Scroll regions
+    // Scroll regions. Their bar (at the right of the view, when the content is taller) is
+    // held with the mouse: grabbed and dragged, or clicked in its lane to jump there (2.39).
     void beginScroll(const std::string& name, const Rect& view, float contentHeight);
     void endScroll();
     float scrollOffset() const { return scrollStack_.empty() ? 0.0f : scrollStack_.back().offset; }
@@ -211,6 +212,12 @@ private:
     std::unordered_map<WidgetId, float> scrolls_;
     std::vector<Scroll> scrollStack_;
     WidgetId scrollToFocus_ = 0;
+    // The scroll bar held by the mouse (2.39): its region, and where the thumb was grabbed.
+    WidgetId scrollDrag_ = 0;
+    float scrollGrab_ = 0.0f;
+    // The focus its scroll region was last brought to (followed once per new focus).
+    WidgetId followedFocus_ = 0;
+    WidgetId lastFocus_ = 0;
     uint64_t frame_ = UINT64_MAX;
     bool ended_ = false;
 };
