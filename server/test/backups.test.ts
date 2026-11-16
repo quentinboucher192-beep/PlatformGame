@@ -358,13 +358,22 @@ describe("backups: download and import", () => {
         expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM sqlite_master WHERE name LIKE 'backup\\_stage%' ESCAPE '\\'").first<{ n: number }>())?.n).toBe(0);
         // The newer avatar was kept in the pre_import copy, and its download gives it back.
         expect(await (await env.STORAGE.get(`backups/${pre.id}/objects/avatars/${kes.id}.png`))!.text()).toBe("avatar plus récent");
+        const preEntries = await entriesOf(await download(admin.token, pre.id));
+        const avatar = preEntries.find((e) => e.kind === fmt.ENTRY_FILE && e.name === `avatars/${kes.id}.png`)!;
+        expect(new TextDecoder().decode(avatar.data)).toBe("avatar plus récent");
+        expect(JSON.parse(avatar.meta!)).toEqual({ content_type: "image/png", custom_metadata: {} });
+        expect(preEntries.map((e) => e.kind)).toEqual([...preEntries.map((e) => e.kind)].sort());
+        const players = preEntries.find((e) => e.name.startsWith("d1/players/"))!;
+        expect(new TextDecoder().decode(players.data)).toContain("Intrus");
 
         // The Journal: every step, never the passphrase.
         const log = await api("GET", `${V}/admin/log?kind=backup&limit=100`, { token: admin.token });
         const actions = log.body.data.entries.map((e: { action: string }) => e.action);
         for (const a of ["backup_created", "backup_downloaded", "backup_import_created", "backup_import_checked", "backup_import_started", "backup_import_finished"])
             expect(actions).toContain(a);
-        expect(log.body.data.entries.find((e: { action: string }) => e.action === "backup_downloaded")).toMatchObject({ backup_id: b.id, actor: { username: "NovaRider" } });
+        const downloads = log.body.data.entries.filter((e: { action: string }) => e.action === "backup_downloaded");
+        expect(downloads.map((e: { backup_id: string }) => e.backup_id)).toEqual([pre.id, b.id]);
+        expect(downloads[1]).toMatchObject({ backup_kind: "manual", actor: { username: "NovaRider" } });
         const all = await env.DB.prepare("SELECT * FROM audit_log").all();
         expect(JSON.stringify(all.results)).not.toContain(PASS);
         expect(JSON.stringify(all.results)).not.toContain("phrase secrète");
@@ -465,7 +474,26 @@ describe("backups: download and import", () => {
 
 // ------------------------------------------------------------------ crafted files
 
-async function craft(manifest: Record<string, unknown>, parts: { name: string; text: string }[]): Promise<Uint8Array> {
+/** Every entry of a .cpbk, decrypted here with the format alone. */
+async function entriesOf(file: Uint8Array, passphrase = PASS): Promise<fmt.Entry[]> {
+    const header = fmt.parseHeader(file.subarray(0, fmt.HEADER_SIZE));
+    const keys = await fmt.deriveKeys(passphrase, header.salt, header.iterations);
+    expect(fmt.keyCheckMatches(header, keys)).toBe(true);
+    const layout = fmt.recordLayout(file.byteLength, header.chunkSize);
+    const reader = new fmt.EntryReader(0);
+    const out: fmt.Entry[] = [];
+    for (let i = 0; i < layout.count; ++i) {
+        const at = fmt.recordOffset(i, header.chunkSize);
+        const last = i === layout.count - 1;
+        const rec = file.subarray(at, at + (last ? layout.lastSize : fmt.recordSize(header.chunkSize)));
+        out.push(...reader.push(await fmt.decryptChunk(keys.key, header.bytes, i, last, rec)));
+    }
+    expect(reader.partial).toBe(false);
+    for (const e of out) expect(await fmt.entryIntact(e)).toBe(true);
+    return out;
+}
+
+async function craft(manifest: object, parts: { name: string; text: string }[]): Promise<Uint8Array> {
     const salt = randomData(16);
     const keys = await fmt.deriveKeys(PASS, salt, fmt.DEFAULT_ITERATIONS);
     const header = fmt.encodeHeader(fmt.DEFAULT_ITERATIONS, salt, fmt.CHUNK_SIZE, keys.check);
@@ -545,6 +573,42 @@ describe("backups: compatibility", () => {
         // No admin left in the restored data: the routes are gone for this account too.
         expect((await api("GET", `${V}/admin/backups`, { token: admin.token })).status).toBe(401);
         expect(kes.id).toBeTruthy();
+    }, T);
+});
+
+describe("backups: copies made while players write", () => {
+    it("drops rows whose parent is missing, unlinks SET NULL ones and keeps the last of duplicates", async () => {
+        const admin = await makeAdmin();
+        const b = await createCopy(admin.token);
+        const { manifest, parts } = await copyAsParts(b.id);
+        const now = new Date().toISOString();
+        const add = (table: string, rows: Record<string, unknown>[]) => {
+            const t = manifest.tables.find((x) => x.name === table)!;
+            const lines = rows.map((r) => JSON.stringify(t.columns.map((c) => (c in r ? r[c] : null)))).join("\n") + "\n";
+            const name = `d1/${table}/${String(t.parts.length).padStart(4, "0")}.jsonl`;
+            t.parts.push(name);
+            t.rows += rows.length;
+            parts.push({ name, text: lines });
+        };
+        const note = (id: string, player: string, actor: string | null, kind: string) => ({ id, player_id: player, kind, actor_id: actor, data: "{}", count: 1, created_at: now });
+        add("notifications", [
+            note("n1", admin.id, "compte-disparu", "follow"), // actor gone: link set to NULL
+            note("n2", "compte-disparu", admin.id, "follow"), // owner gone: removed
+            note("n3", admin.id, null, "level_comment"),
+            note("n3", admin.id, null, "follow"), // the same row copied twice: the last one wins
+        ]);
+        add("player_follows", [{ follower_id: admin.id, creator_id: "compte-disparu", notify: 1, created_at: now }]);
+        const id = await upload(admin.token, await craft(manifest, parts));
+        expect((await check(admin.token, id)).body.data.compatible).toBe(true);
+        const done = await applyUntilDone(admin.token, id);
+        expect(done.summary).toMatchObject({ orphans_removed: 3, duplicates_removed: 1, session_kept: true });
+        const notes = await env.DB.prepare("SELECT id, player_id, actor_id, kind FROM notifications ORDER BY id").all();
+        expect(notes.results).toEqual([
+            { id: "n1", player_id: admin.id, actor_id: null, kind: "follow" },
+            { id: "n3", player_id: admin.id, actor_id: null, kind: "follow" },
+        ]);
+        expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM player_follows").first<{ n: number }>())?.n).toBe(0);
+        expect((await env.DB.prepare("PRAGMA foreign_key_check").all()).results).toEqual([]);
     }, T);
 });
 

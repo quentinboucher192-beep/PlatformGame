@@ -89,6 +89,7 @@
 | Partie en cours regardable par les amis (2.36) : niveau et version (titre fourni par le serveur), graine, commandes de jeu de chaque pas de simulation, empreintes d'état toutes les 0,5 s, heure de début | mémoire de la salle du joueur (Durable Object `SpectateRoom`), **jamais écrite** (ni D1, ni R2, ni stockage de l'objet) ; rien sur ceux qui regardent | les amis acceptés, si le réglage est coché et la présence montrée ; jamais un joueur bloqué | la partie en cours seulement (30 minutes de jeu au plus) ; oubliée 1 minute après sa fin, 2 minutes après le dernier envoi du jeu, dès qu'une nouvelle partie commence, que le réglage est décoché, la présence masquée ou le compte supprimé |
 | Journal de sécurité (action, empreinte d'IP) | D1 `audit_log` | opérateurs | 180 jours |
 | Compteurs de limitation (empreintes) | D1 `rate_limits` | personne | 24 heures |
+| Copies de sauvegarde de toutes les données ci-dessus, sauf les sessions et les compteurs (voir [BACKUP.md](BACKUP.md)) | R2 privé `backups/` ; fichier `.cpbk` chiffré quand un admin le télécharge | comptes admin | automatiques : 14 jours ; avant un import : 30 jours ; manuelles : jusqu'à ce que 10 plus récentes existent |
 
 ## Droits du joueur (Paramètres en ligne)
 

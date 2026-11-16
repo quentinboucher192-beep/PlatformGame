@@ -50,6 +50,7 @@ const APPLY_BUDGET_MS = 20_000;
 const APPLY_MAX_R2_OPS = 800;
 const APPLY_MAX_D1_OPS = 150;
 const FILE_GROUP = 16;
+const GROUP_MAX_BYTES = 24 * 1024 * 1024;
 
 const DUMP_PAGE_ROWS = 5000;
 const PART_TARGET_BYTES = 4 * 1024 * 1024;
@@ -367,7 +368,17 @@ export interface StoredManifest {
     environment: string | null;
     schema: string | null;
     migrations: string[];
-    tables: { name: string; columns: string[]; rows: number; bytes: number; parts: string[] }[];
+    /** Children before parents (the order of the copy); restore in the reverse order. */
+    tables: {
+        name: string;
+        columns: string[];
+        rows: number;
+        bytes: number;
+        parts: string[];
+        /** For a restore without the server (scripts/backup-extract.mjs): keys and links of the table. */
+        primary_key?: string[];
+        foreign_keys?: { parent: string; from: string[]; to: string[]; on_delete: string }[];
+    }[];
     excluded_tables: { name: string; reason: string }[];
     files: { count: number; bytes: number; lists: string[]; excluded_prefixes: string[] };
     totals: { tables: number; rows: number; files: number; bytes: number };
@@ -442,6 +453,17 @@ async function dumpTable(env: Bindings, t: TableSchema, prefix: string): Promise
     }
     await flush();
     return { name: t.name, columns: cols, rows, bytes, parts };
+}
+
+function keysOf(t: TableSchema, schema: Schema): { primary_key: string[]; foreign_keys: NonNullable<StoredManifest["tables"][number]["foreign_keys"]> } {
+    return {
+        primary_key: pkColumns(t),
+        foreign_keys: t.fks.map((fk) => {
+            const parent = findCi(schema.tables, fk.parent);
+            const pk = parent ? pkColumns(parent) : [];
+            return { parent: parent?.name ?? fk.parent, from: fk.from, to: fk.to.map((r, i) => r ?? pk[i] ?? "rowid"), on_delete: fk.onDelete };
+        }),
+    };
 }
 
 /** The players' R2 objects, page by page: every top-level prefix except the excluded ones. */
@@ -597,8 +619,9 @@ export async function createBackup(env: Bindings, kind: BackupKind, by: Actor | 
         // Children before parents: a row added while the copy runs is more often a child of a
         // row already copied than the opposite (any orphan is removed when importing).
         for (const name of [...schema.restorable].reverse()) {
-            const t = await dumpTable(env, schema.tables.get(name)!, prefix);
-            tables.push(t);
+            const ts = schema.tables.get(name)!;
+            const t = await dumpTable(env, ts, prefix);
+            tables.push({ ...t, ...keysOf(ts, schema) });
             rows += t.rows;
             bytes += t.bytes;
         }
@@ -1816,11 +1839,14 @@ async function streamEntries(a: ApplyContext, file: ImportFile, header: fmt.Cpbk
     let skip = a.state.pos - startRecord * chunk;
     const reader = new fmt.EntryReader(a.state.pos);
     let group: fmt.Entry[] = [];
+    let groupBytes = 0;
     let groupsSinceSave = 0;
+    let processed = 0;
     const flush = async () => {
         if (group.length === 0) return;
         const g = group;
         group = [];
+        groupBytes = 0;
         await Promise.all(g.map((e) => restoreFile(a, e)));
         a.state.pos = g[g.length - 1]!.end;
         a.state.row_skip = 0;
@@ -1838,11 +1864,13 @@ async function streamEntries(a: ApplyContext, file: ImportFile, header: fmt.Cpbk
             skip = 0;
         }
         for (const e of reader.push(pt)) {
-            if (overBudget(a)) {
+            // Always some progress, then stop at an entry boundary when the budget is spent.
+            if (processed > 0 && overBudget(a)) {
                 await flush();
                 await saveState(a);
                 return false;
             }
+            processed += 1;
             switch (e.kind) {
                 case fmt.ENTRY_TABLE:
                     await flush();
@@ -1851,7 +1879,9 @@ async function streamEntries(a: ApplyContext, file: ImportFile, header: fmt.Cpbk
                 case fmt.ENTRY_FILE:
                     a.state.phase = "files";
                     group.push(e);
-                    if (group.length >= FILE_GROUP) await flush();
+                    groupBytes += e.data.byteLength;
+                    // Memory: Workers have 128 MB, a file of the game up to 16 MiB.
+                    if (group.length >= FILE_GROUP || groupBytes >= GROUP_MAX_BYTES) await flush();
                     break;
                 case fmt.ENTRY_END:
                     await flush();
@@ -2002,9 +2032,16 @@ async function swap(a: ApplyContext): Promise<void> {
         await db.batch(stmts);
         a.ops.d1 += 1;
     } catch (e) {
-        a.state.swapped = false;
-        a.state.step = "swap";
-        throw e;
+        // The transaction wrote the new state with the data: an answer lost after the commit
+        // must not be taken for a failure.
+        const row = await db.prepare("SELECT state FROM backup_imports WHERE id = ?1").bind(a.imp.id).first<{ state: string | null }>();
+        const saved = row?.state ? (JSON.parse(row.state) as ApplyState) : null;
+        if (!saved?.swapped) {
+            a.state.swapped = false;
+            a.state.step = "swap";
+            throw e;
+        }
+        log("warn", "backup_swap_answer_lost", { import_id: a.imp.id });
     }
     if (keepSession && a.sessionId) {
         const kept = await db.prepare("SELECT 1 AS x FROM player_sessions WHERE id = ?1").bind(a.sessionId).first();

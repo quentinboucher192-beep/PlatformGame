@@ -108,8 +108,12 @@ dans le tableau de bord, puis `wrangler r2 bucket create <nom>`).
   du réseau (`EDGE_CACHE_SECONDS`, désactivé en développement).
 * **Domaine personnalisé** : ajoutez une route `custom_domain` dans l'environnement voulu ;
   pensez à mettre à jour `config.json`.
-* **Sauvegardes** : D1 propose la restauration à un instant donné (Time Travel) ; exportez
-  aussi régulièrement : `npx wrangler d1 export cosmic-online-prod --remote --output backup.sql`.
+* **Sauvegardes** : la tâche planifiée fait aussi chaque nuit une copie complète (base et
+  fichiers R2 des joueurs), qu'un compte admin peut télécharger chiffrée et réimporter
+  (ADMINISTRATION › Sauvegardes, voir [BACKUP.md](BACKUP.md), y compris la restauration
+  manuelle avec wrangler). D1 propose en plus la restauration à un instant donné (Time
+  Travel, 30 jours) ; un export SQL reste possible :
+  `npx wrangler d1 export cosmic-online-prod --remote --output backup.sql`.
 
 ## Retour arrière
 

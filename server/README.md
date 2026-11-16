@@ -16,8 +16,9 @@ npm test                          # 55 tests (D1 / R2 locaux via Miniflare)
 | `src/records.ts`, `src/replay.ts` | soumission, validation, analyse des replays, décision |
 | `src/leaderboards.ts`, `src/globe.ts` | classements et données du globe |
 | `src/players.ts`, `src/friends.ts`, `src/admin.ts` | profils, RGPD, amis, modération, niveaux |
+| `src/backups.ts`, `src/backupFormat.ts` | sauvegarde complète, fichier chiffré `.cpbk`, import et maintenance ([BACKUP.md](../docs/online/BACKUP.md)) |
 | `migrations/` | schéma D1 versionné (ne jamais modifier une migration appliquée) |
-| `scripts/` | lancement local, enregistrement des niveaux, génération de la table des pays |
+| `scripts/` | lancement local, enregistrement des niveaux, génération de la table des pays, ouverture d'une sauvegarde hors serveur (`backup-extract.mjs`) |
 | `openapi.yaml` | spécification OpenAPI 3.1 |
 | `wrangler.jsonc` | environnements `dev`, `staging`, production (aucun secret) |
 
