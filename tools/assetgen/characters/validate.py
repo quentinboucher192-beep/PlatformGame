@@ -225,6 +225,18 @@ for _k in range(8):
 ANIMS["projectiles"][3].extend([("star_shard", 4), ("meteor", 4)])
 LOOPING["projectiles"] |= {"star_shard", "meteor"}
 
+# ------------------------------------------------------------------ Monolithe (golem giga boss)
+# Eight sheets, one per phase, packed like Singularis' (no teleport); a walker: footsteps.
+MONOLITHE_CLIPS = [("idle", 8), ("telegraph", 6), ("walk", 8), ("move", 8), ("attack", 5), ("telegraph_special", 6),
+                   ("special", 4), ("hurt", 2), ("summon", 6), ("roar", 8), ("death", 14)]
+for _k in range(8):
+    _id = "monolithe" if _k == 0 else "monolithe_p%d" % (_k + 1)
+    ANIMS[_id] = (224, 224, [112, 212], MONOLITHE_CLIPS,
+                  {"attack": [(2, "impact")], "walk": [(0, "footstep"), (4, "footstep")],
+                   "move": [(0, "footstep"), (4, "footstep")]}, {})
+    TEXTURES[_id] = f"sprites/enemies/{_id}.png"
+    LOOPING[_id] = {"idle", "walk", "move", "special"}
+
 STATIC = {
     "sprites/objects/moving_platform.png": (48, 32),
     "sprites/objects/crumble_platform.png": (48, 48),
