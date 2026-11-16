@@ -31,6 +31,10 @@ public:
     /// Main thread, every frame: collects finished ratings.
     void poll();
 
+    /// 2.45: the rating of a campaign revision downloaded from Cosmic Online (computed by the
+    /// game that published it, as --rate-levels does) replaces the bundled one; nullopt: back
+    /// to data/levels/ratings.json.
+    void setCampaignRating(const std::string& levelId, const std::optional<DifficultyRating>& r);
     /// Rating of a level of the content database; nullptr while it is being computed.
     const DifficultyRating* get(const LevelEntry& level);
     /// Rates a level being edited (the newest request replaces an older one not started).
@@ -57,6 +61,7 @@ private:
     void run();
 
     std::map<std::string, DifficultyRating> campaign_;
+    std::map<std::string, DifficultyRating> campaignRevisions_;
     std::map<std::string, DifficultyRating> cache_;
     std::map<std::string, bool> queued_;
     std::optional<DifficultyRating> draft_;

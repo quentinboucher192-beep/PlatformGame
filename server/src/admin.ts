@@ -55,7 +55,7 @@ export async function review(ctx: Ctx): Promise<Response> {
     return json(ctx, { record_id: r.id, verification_status: decision, ranking });
 }
 
-interface ManifestLevel {
+export interface ManifestLevel {
     id: string;
     name: string;
     planet_id: string;
@@ -72,8 +72,9 @@ interface ManifestLevel {
     exit: [number, number, number, number];
 }
 
-function parseManifestLevel(raw: unknown, index: number): ManifestLevel {
-    const where = `levels[${index}]`;
+/** An entry of `CosmicPlatformer --online-manifest` (also the one of a campaign revision, 2.45). */
+export function parseManifestLevel(raw: unknown, index: number | string): ManifestLevel {
+    const where = typeof index === "number" ? `levels[${index}]` : index;
     if (raw === null || typeof raw !== "object" || Array.isArray(raw)) throw Errors.validation([{ field: where, message: "objet attendu" }]);
     const o = raw as Record<string, unknown>;
     const v = new Validator(o, ["id", "name", "planet_id", "planet_name", "order", "version", "content_hash", "total_collectibles",

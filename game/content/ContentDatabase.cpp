@@ -60,6 +60,9 @@ void ContentDatabase::reload() {
         for (const auto& r : roots) loadPackage(r);
     }
     for (auto& [id, e] : levels_) resolveAssetPackage(e);
+    // 2.45: the campaign revisions downloaded from Cosmic Online stay in use.
+    for (const auto& [id, file] : campaignRevisions_)
+        if (auto it = levels_.find(id); it != levels_.end() && it->second.source == ContentSource::Builtin) applyCampaignRevision(it->second, file);
     Log::info("Content: {} planets, {} levels, {} enemies, {} powers, {} packages", planets_.size(), levels_.size(),
               enemies_.size(), powers_.size(), packages_.size());
 }
@@ -210,6 +213,45 @@ std::string ContentDatabase::campaignPlanetOf(const std::string& levelId) const 
     for (const auto& [id, p] : planets_)
         if (std::find(p.levels.begin(), p.levels.end(), levelId) != p.levels.end() && level(levelId)) return id;
     return {};
+}
+
+bool ContentDatabase::applyCampaignRevision(LevelEntry& e, const fs::path& file) {
+    auto j = FileUtil::loadJson(file);
+    if (!j || jstr(*j, "format") != "cosmic.level" || jstr(*j, "id") != e.id) return false;
+    if (e.bundledPath.empty()) e.bundledPath = e.path;
+    e.path = file;
+    e.name = jstr(*j, "name", e.id);
+    e.description = jstr(*j, "description");
+    e.difficulty = jget<int>(*j, "difficulty", 1);
+    return true;
+}
+
+bool ContentDatabase::setCampaignRevision(const std::string& levelId, const fs::path& file) {
+    auto it = levels_.find(levelId);
+    if (it == levels_.end() || it->second.source != ContentSource::Builtin) return false;
+    LevelEntry& e = it->second;
+    if (file.empty()) {
+        campaignRevisions_.erase(levelId);
+        if (e.bundledPath.empty()) return true;
+        fs::path bundled = e.bundledPath;
+        e.bundledPath.clear();
+        e.path = bundled;
+        if (auto j = FileUtil::loadJson(bundled)) {
+            e.name = jstr(*j, "name", e.id);
+            e.description = jstr(*j, "description");
+            e.difficulty = jget<int>(*j, "difficulty", 1);
+        }
+        return true;
+    }
+    if (!applyCampaignRevision(e, file)) return false;
+    campaignRevisions_[levelId] = file;
+    return true;
+}
+
+fs::path ContentDatabase::bundledLevelPath(const std::string& levelId) const {
+    const LevelEntry* e = level(levelId);
+    if (!e || e->source != ContentSource::Builtin) return {};
+    return e->bundledPath.empty() ? e->path : e->bundledPath;
 }
 
 const LevelEntry* ContentDatabase::level(const std::string& id) const {

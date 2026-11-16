@@ -540,6 +540,12 @@
    ]
   },
   {
+   "fr": "a publié la révision {0} de « {1} » (remplace la révision {2}) · {3}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "A rejoué à l'identique",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -553,6 +559,12 @@
   },
   {
    "fr": "a remis au tirage le défi {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a remis en ligne la révision {0} de « {1} » (à la place de la révision {2}) · {3}",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -789,6 +801,7 @@
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/levels/Cinematic.cpp",
     "game/online/Spectate.cpp",
+    "ui/screens/AdminCampaign.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/ProjectsScene.cpp"
    ]
@@ -918,6 +931,7 @@
   {
    "fr": "Actualiser",
    "where": [
+    "ui/screens/AdminCampaign.cpp",
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
@@ -1594,11 +1608,13 @@
   {
    "fr": "Annuler",
    "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp",
     "editors/level_editor/LevelEditorChat.cpp",
     "editors/level_editor/LevelEditorDialogs.cpp",
     "ui/online/CommentsPanel.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/AdminCalendar.cpp",
+    "ui/screens/AdminCampaign.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/ChallengesScene.cpp",
@@ -1882,6 +1898,12 @@
    "fr": "Archive ZIP lisible",
    "where": [
     "packaging/PackageImporter.cpp"
+   ]
+  },
+  {
+   "fr": "archivée",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
    ]
   },
   {
@@ -2645,6 +2667,12 @@
    ]
   },
   {
+   "fr": "aucun meilleur temps · empreinte {0}",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
    "fr": "Aucun message",
    "where": [
     "ui/screens/SocialScene.cpp"
@@ -2678,6 +2706,12 @@
    "fr": "Aucun niveau classé pour cette planète.",
    "where": [
     "server/src/leaderboards.ts"
+   ]
+  },
+  {
+   "fr": "Aucun niveau de campagne sur le serveur.",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
    ]
   },
   {
@@ -3144,6 +3178,7 @@
    "fr": "auto",
    "where": [
     "game/gameplay/entities/InteractiveEntities.cpp",
+    "game/levels/CampaignPipeline.cpp",
     "game/levels/ObjectTypes.cpp",
     "game/online/DailyChallenges.cpp"
    ]
@@ -4382,6 +4417,12 @@
    ]
   },
   {
+   "fr": "C'est déjà la révision en ligne.",
+   "where": [
+    "server/src/campaignRevisions.ts"
+   ]
+  },
+  {
    "fr": "C'est fait.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp",
@@ -4608,6 +4649,7 @@
    "fr": "Campagne",
    "where": [
     "ui/screens/AdminCalendar.cpp",
+    "ui/screens/AdminScene.cpp",
     "ui/screens/MainMenuScene.cpp"
    ]
   },
@@ -4846,6 +4888,18 @@
    ]
   },
   {
+   "fr": "Ce compte n'a plus le rôle admin.",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "Ce contenu est déjà la révision {0} de ce niveau.",
+   "where": [
+    "server/src/campaignRevisions.ts"
+   ]
+  },
+  {
    "fr": "Ce courant traverse le gouffre : planez dedans pour reprendre de l'altitude.",
    "where": [
     "data/levels/sylvanox_02.json"
@@ -5002,6 +5056,12 @@
    ]
   },
   {
+   "fr": "ce n'est pas un niveau",
+   "where": [
+    "game/online/CampaignRevisions.cpp"
+   ]
+  },
+  {
    "fr": "ce n'est pas une archive ZIP valide",
    "where": [
     "packaging/ZipArchive.cpp"
@@ -5065,6 +5125,12 @@
    "fr": "Ce niveau n'est pas un niveau EXTRÊME publié.",
    "where": [
     "server/src/race.ts"
+   ]
+  },
+  {
+   "fr": "Ce niveau n'existe pas dans cette version du jeu : mettez le jeu à jour.",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
    ]
   },
   {
@@ -5353,6 +5419,12 @@
    ]
   },
   {
+   "fr": "Ces modifications ne sont pas publiées. Le brouillon reste sur cet ordinateur : rouvrez le niveau depuis Administration › Campagne pour le reprendre.",
+   "where": [
+    "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
    "fr": "Ces parois hérissées de givre n'offrent aucune prise. Sautez trois fois pour atteindre la corniche !",
    "where": [
     "data/levels/glacior_01.json"
@@ -5476,6 +5548,18 @@
    "fr": "Cette révision du niveau n'est pas encore enregistrée sur le serveur.",
    "where": [
     "server/src/records.ts"
+   ]
+  },
+  {
+   "fr": "Cette révision est désactivée.",
+   "where": [
+    "server/src/campaignRevisions.ts"
+   ]
+  },
+  {
+   "fr": "Cette révision ne se joue pas avec cette version du jeu : mettez le jeu à jour.",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
    ]
   },
   {
@@ -5813,6 +5897,7 @@
     "ui/online/RatingWidgets.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/AdminCalendar.cpp",
+    "ui/screens/AdminCampaign.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/NotificationsScene.cpp",
@@ -6082,6 +6167,12 @@
    ]
   },
   {
+   "fr": "Choisissez d'abord ce que deviennent les records.",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
    "fr": "Choisissez d'abord un niveau : il lui faut un parcours tracé (comme en ont les niveaux EXTRÊME).",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -6157,6 +6248,12 @@
    "fr": "Choisissez une révision à comparer, puis « Comparer ».",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Choisissez « Historique » sur un niveau pour voir ses révisions et revenir à l'une d'elles.",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
    ]
   },
   {
@@ -7962,6 +8059,12 @@
    ]
   },
   {
+   "fr": "Cosmic Online est indisponible.",
+   "where": [
+    "game/GameServices.cpp"
+   ]
+  },
+  {
    "fr": "Cosmic Online est un service facultatif de classements en ligne pour Cosmic Platformer. Le jeu reste entièrement jouable sans compte et sans connexion Internet. Vos records locaux restent sur votre ordinateur.",
    "where": [
     "data/online/terms_fr.txt"
@@ -7997,6 +8100,7 @@
   {
    "fr": "Cosmic Platformer {0}",
    "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp",
     "editors/level_editor/LevelEditorScene.cpp",
     "packaging/PackageExporter.cpp"
    ]
@@ -8911,6 +9015,7 @@
     "engine/input/InputTypes.cpp",
     "game/gameplay/Damage.cpp",
     "game/ghost/Ghost.cpp",
+    "game/levels/CampaignPipeline.cpp",
     "game/levels/LevelAnalyzer.cpp",
     "game/levels/ObjectTypes.cpp",
     "game/online/Replay.cpp",
@@ -9486,7 +9591,8 @@
   {
    "fr": "dimensions du niveau invalides",
    "where": [
-    "game/levels/LevelData.cpp"
+    "game/levels/LevelData.cpp",
+    "server/src/campaignRevisions.ts"
    ]
   },
   {
@@ -10936,6 +11042,12 @@
    ]
   },
   {
+   "fr": "désactivée",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
    "fr": "Désherbeur",
    "where": [
     "data/achievements/achievements.json"
@@ -11093,6 +11205,18 @@
    "fr": "empreinte des règles différente",
    "where": [
     "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
+   "fr": "empreinte différente dans cette version du jeu",
+   "where": [
+    "game/online/CampaignRevisions.cpp"
+   ]
+  },
+  {
+   "fr": "Empreinte du niveau impossible à calculer.",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
    ]
   },
   {
@@ -11297,6 +11421,7 @@
   {
    "fr": "en ligne",
    "where": [
+    "ui/screens/AdminCampaign.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/SocialScene.cpp"
@@ -11880,9 +12005,11 @@
   {
    "fr": "Envoi…",
    "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp",
     "editors/level_editor/LevelEditorChat.cpp",
     "ui/online/CommentsPanel.cpp",
     "ui/screens/AdminCalendar.cpp",
+    "ui/screens/AdminCampaign.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
@@ -12441,6 +12568,7 @@
   {
    "fr": "Fermer",
    "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp",
     "editors/level_editor/LevelEditorChat.cpp",
     "editors/level_editor/LevelEditorDialogs.cpp",
     "editors/level_editor/LevelEditorPowerKeys.cpp",
@@ -12546,6 +12674,12 @@
    "fr": "Fichier de sauvegarde altéré ou tronqué (bloc {0}) : il ne peut pas être importé.",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "fichier différent de celui du serveur (SHA-256)",
+   "where": [
+    "game/online/CampaignRevisions.cpp"
    ]
   },
   {
@@ -13069,6 +13203,7 @@
     "game/ghost/TrainingSegments.cpp",
     "game/levels/LevelData.cpp",
     "game/levels/RatingService.cpp",
+    "game/online/CampaignRevisions.cpp",
     "game/online/DailyChallenges.cpp",
     "game/online/LevelFingerprint.cpp",
     "game/online/OnlineCache.cpp",
@@ -13104,6 +13239,12 @@
     "server/src/leaderboards.ts",
     "server/src/levels.ts",
     "server/src/validate.ts"
+   ]
+  },
+  {
+   "fr": "formatVersion invalide",
+   "where": [
+    "server/src/campaignRevisions.ts"
    ]
   },
   {
@@ -13462,6 +13603,13 @@
    "fr": "Garder la version du projet",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
+   ]
+  },
+  {
+   "fr": "Garder les records",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp",
+    "ui/screens/AdminCampaign.cpp"
    ]
   },
   {
@@ -14274,7 +14422,20 @@
    "fr": "Historique",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
+    "ui/screens/AdminCampaign.cpp",
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Historique indisponible.",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "Historique · {0}",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
    ]
   },
   {
@@ -14622,6 +14783,7 @@
     "game/cosmetics/Collection.cpp",
     "game/enemies/EnemyDefinition.cpp",
     "game/levels/LevelData.cpp",
+    "game/online/CampaignRevisions.cpp",
     "game/online/DailyChallenges.cpp",
     "game/online/LevelFingerprint.cpp",
     "game/online/LiveSession.cpp",
@@ -14634,6 +14796,7 @@
     "ui/online/CommentsPanel.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/AdminCalendar.cpp",
+    "ui/screens/AdminCampaign.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp",
@@ -14687,6 +14850,12 @@
    "where": [
     "server/src/challengeSpec.mjs",
     "server/src/community.ts"
+   ]
+  },
+  {
+   "fr": "identifiant différent",
+   "where": [
+    "game/online/CampaignRevisions.cpp"
    ]
   },
   {
@@ -14799,6 +14968,18 @@
    "fr": "Il faiblit ! Encore un effort !",
    "where": [
     "data/levels/glacior_03.json"
+   ]
+  },
+  {
+   "fr": "il faut exactement un départ du joueur",
+   "where": [
+    "server/src/campaignRevisions.ts"
+   ]
+  },
+  {
+   "fr": "il faut une sortie du niveau",
+   "where": [
+    "server/src/campaignRevisions.ts"
    ]
   },
   {
@@ -15772,6 +15953,7 @@
    "fr": "JSON invalide",
    "where": [
     "game/online/LevelFingerprint.cpp",
+    "server/src/campaignRevisions.ts",
     "server/src/live.ts",
     "server/src/projects.ts"
    ]
@@ -15866,6 +16048,12 @@
    "fr": "L'action est inscrite au journal avec votre pseudo.",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "l'Aimant",
+   "where": [
+    "game/levels/CampaignPipeline.cpp"
    ]
   },
   {
@@ -16039,6 +16227,12 @@
    ]
   },
   {
+   "fr": "l'Impulsion",
+   "where": [
+    "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
    "fr": "L'installateur est prêt à être téléchargé.",
    "where": [
     "game/progression/NewsCenter.cpp"
@@ -16048,6 +16242,12 @@
    "fr": "l'objet {0}",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
+   ]
+  },
+  {
+   "fr": "l'Onde",
+   "where": [
+    "game/levels/CampaignPipeline.cpp"
    ]
   },
   {
@@ -16132,9 +16332,21 @@
    ]
   },
   {
+   "fr": "la Balise de rappel",
+   "where": [
+    "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
    "fr": "La balise est bloquée : impossible d'y revenir.",
    "where": [
     "game/powers/PowersSanctuary.cpp"
+   ]
+  },
+  {
+   "fr": "la Bombe plasma",
+   "where": [
+    "game/levels/CampaignPipeline.cpp"
    ]
   },
   {
@@ -16341,6 +16553,12 @@
    ]
   },
   {
+   "fr": "la Frappe sismique",
+   "where": [
+    "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
    "fr": "La galerie de la Collection utilise la même recherche des lieux.",
    "where": [
     "data/news/changelog.json"
@@ -16362,6 +16580,12 @@
    "fr": "La herse est close. Son levier est là-haut, sur la tourelle : triple saut, puis Interagir.",
    "where": [
     "data/levels/glacior_03.json"
+   ]
+  },
+  {
+   "fr": "la Lame boomerang",
+   "where": [
+    "game/levels/CampaignPipeline.cpp"
    ]
   },
   {
@@ -16392,6 +16616,12 @@
    "fr": "La niche du gardien !",
    "where": [
     "data/levels/glacior_03.json"
+   ]
+  },
+  {
+   "fr": "la Nova de givre",
+   "where": [
+    "game/levels/CampaignPipeline.cpp"
    ]
   },
   {
@@ -16480,6 +16710,18 @@
    ]
   },
   {
+   "fr": "La préparation du niveau a échoué.",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "La publication est inscrite au journal : votre pseudo, le niveau, la révision et ce choix.",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
    "fr": "La reine des vents de la crevasse, plus vaste et plus rapide que ses sœurs.",
    "where": [
     "data/enemies/howling_wyrm.json"
@@ -16499,10 +16741,70 @@
    ]
   },
   {
+   "fr": "la Ruée aérienne",
+   "where": [
+    "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
    "fr": "la région doit appartenir au pays choisi",
    "where": [
     "server/src/auth.ts",
     "server/src/players.ts"
+   ]
+  },
+  {
+   "fr": "La révision en ligne a changé depuis l'ouverture de ce niveau (révision {0}) : votre brouillon est gardé ; rouvrez le niveau depuis Administration › Campagne.",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "La révision en ligne a changé entre-temps : actualisez la liste.",
+   "where": [
+    "server/src/campaignRevisions.ts"
+   ]
+  },
+  {
+   "fr": "La révision en ligne a changé entre-temps : rouvrez le niveau.",
+   "where": [
+    "server/src/campaignRevisions.ts"
+   ]
+  },
+  {
+   "fr": "la révision en ligne avait changé entre-temps",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "La révision en ligne de ce niveau vient de la version {0} du jeu : mettez le jeu à jour pour la modifier.",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "La révision {0} de « {1} » est en ligne : les jeux la téléchargent au démarrage. Records gardés : {2} meilleur temps reporté.",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "La révision {0} de « {1} » est en ligne : les jeux la téléchargent au démarrage. Records gardés : {2} meilleurs temps reportés.",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "La révision {0} de « {1} » est en ligne : les jeux la téléchargent au démarrage. Records réinitialisés : les anciens restent archivés avec la révision précédente.",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "La révision {0} revient avec ses propres classements, tels qu'ils étaient. Ceux de la révision {1} restent archivés avec elle, jamais mélangés.",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
    ]
   },
   {
@@ -16554,6 +16856,12 @@
    ]
   },
   {
+   "fr": "La sortie n'est pas atteignable d'après l'analyseur : vérifiez le parcours.",
+   "where": [
+    "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
    "fr": "La table {0} contient une valeur binaire ou non finie, que ce format ne sait pas encore sauvegarder.",
    "where": [
     "server/src/backups.ts"
@@ -16587,6 +16895,12 @@
    "fr": "La Tour des Vents : planez dans le courant, ou grimpez de corniche en ancrage.",
    "where": [
     "data/levels/glacior_03.json"
+   ]
+  },
+  {
+   "fr": "la Téléportation",
+   "where": [
+    "game/levels/CampaignPipeline.cpp"
    ]
   },
   {
@@ -16883,6 +17197,12 @@
    ]
   },
   {
+   "fr": "le Bouclier",
+   "where": [
+    "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
    "fr": "Le bouclier absorbe les coups, renvoie les projectiles et traverse les rideaux de plasma.",
    "where": [
     "data/levels/sylvanox_01.json"
@@ -17109,6 +17429,12 @@
    ]
   },
   {
+   "fr": "le Dash",
+   "where": [
+    "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
    "fr": "Le Dash fonctionne aussi en diagonale.",
    "where": [
     "data/levels/sylvanox_01.json"
@@ -17154,6 +17480,12 @@
    "fr": "Le fichier contient les données de tous les joueurs. Il est chiffré avec la phrase secrète choisie ici (12 caractères au moins) : sans elle, personne ne peut le lire, vous non plus. Le serveur ne la garde pas.",
    "where": [
     "ui/screens/AdminBackups.cpp"
+   ]
+  },
+  {
+   "fr": "Le fichier du niveau n'est pas valide.",
+   "where": [
+    "server/src/campaignRevisions.ts"
    ]
   },
   {
@@ -17271,6 +17603,12 @@
    ]
   },
   {
+   "fr": "le Grappin",
+   "where": [
+    "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
    "fr": "Le Grappin rend vos sauts aériens : enchaînez traction, saut et Planeur.",
    "where": [
     "data/levels/sylvanox_03.json"
@@ -17341,6 +17679,12 @@
    ]
   },
   {
+   "fr": "le Leurre holographique",
+   "where": [
+    "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
    "fr": "Le lieu d'apparition choisi n'existe plus dans l'arène : retour au point habituel.",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
@@ -17368,6 +17712,12 @@
    "fr": "Le magma du creuset ancestral a pris forme et défend sa forge.",
    "where": [
     "data/enemies/crucible_heart.json"
+   ]
+  },
+  {
+   "fr": "Le manifeste ne correspond pas au fichier du niveau.",
+   "where": [
+    "server/src/campaignRevisions.ts"
    ]
   },
   {
@@ -17492,6 +17842,12 @@
    ]
   },
   {
+   "fr": "le Planeur",
+   "where": [
+    "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
    "fr": "Le plasma referme l'arène !",
    "where": [
     "data/levels/noyau_03.json"
@@ -17563,6 +17919,12 @@
     "data/levels/aethra_03.json",
     "data/levels/noyau_02.json",
     "data/levels/pyralis_04.json"
+   ]
+  },
+  {
+   "fr": "le Ralenti",
+   "where": [
+    "game/levels/CampaignPipeline.cpp"
    ]
   },
   {
@@ -17806,6 +18168,12 @@
    ]
   },
   {
+   "fr": "le Tir chargé",
+   "where": [
+    "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
    "fr": "Le Tir chargé coûte de l'énergie : ramassez les orbes d'énergie.",
    "where": [
     "data/levels/pyralis_02.json"
@@ -17827,6 +18195,12 @@
    "fr": "Le tracé de la course n'est pas prêt.",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
+   ]
+  },
+  {
+   "fr": "le Triple saut",
+   "where": [
+    "game/levels/CampaignPipeline.cpp"
    ]
   },
   {
@@ -18322,6 +18696,13 @@
    "fr": "Les racines se souviennent de chaque pas.",
    "where": [
     "data/levels/aethra_01.json"
+   ]
+  },
+  {
+   "fr": "Les records (choix obligatoire) :",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp",
+    "ui/screens/AdminCampaign.cpp"
    ]
   },
   {
@@ -18825,6 +19206,12 @@
    "fr": "liste des fichiers incomplète",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "liste des objets attendue (de 1 à 50 000)",
+   "where": [
+    "server/src/campaignRevisions.ts"
    ]
   },
   {
@@ -19834,6 +20221,8 @@
   {
    "fr": "message",
    "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp",
+    "game/levels/CampaignPipeline.cpp",
     "game/levels/ObjectTypes.cpp",
     "game/online/OnlineService.cpp",
     "game/online/OnlineTypes.cpp",
@@ -20148,6 +20537,12 @@
    "fr": "Modifier",
    "where": [
     "ui/online/CommentsPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Modifier dans l'éditeur",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
    ]
   },
   {
@@ -20987,6 +21382,12 @@
    ]
   },
   {
+   "fr": "niveau illisible par ce jeu",
+   "where": [
+    "game/online/CampaignRevisions.cpp"
+   ]
+  },
+  {
    "fr": "Niveau illisible.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -21026,6 +21427,7 @@
    "fr": "Niveau inconnu du serveur.",
    "where": [
     "server/src/campaign.ts",
+    "server/src/campaignRevisions.ts",
     "server/src/levels.ts",
     "server/src/workshop.ts"
    ]
@@ -21359,6 +21761,12 @@
    ]
   },
   {
+   "fr": "nom invalide (1 à 80 caractères)",
+   "where": [
+    "server/src/campaignRevisions.ts"
+   ]
+  },
+  {
    "fr": "Nombre",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -21503,6 +21911,18 @@
    "where": [
     "game/online/DailyChallenges.cpp",
     "game/online/OnlineRecord.cpp"
+   ]
+  },
+  {
+   "fr": "Note de difficulté : {0} / 5",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "note de difficulté invalide",
+   "where": [
+    "server/src/campaignRevisions.ts"
    ]
   },
   {
@@ -21910,6 +22330,12 @@
    ]
   },
   {
+   "fr": "Nouvelle révision avec ses propres classements. Les records actuels restent archivés avec la révision {0}, jamais mélangés.",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
    "fr": "Nouvelle touche : {0}",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
@@ -22076,6 +22502,12 @@
    ]
   },
   {
+   "fr": "numéro de révision différent",
+   "where": [
+    "game/online/CampaignRevisions.cpp"
+   ]
+  },
+  {
    "fr": "Nuée",
    "where": [
     "data/enemies/cryowyrm.json",
@@ -22213,6 +22645,18 @@
    "fr": "Objectifs de médaille",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "objects[{0}].id invalide",
+   "where": [
+    "server/src/campaignRevisions.ts"
+   ]
+  },
+  {
+   "fr": "objects[{0}].type invalide",
+   "where": [
+    "server/src/campaignRevisions.ts"
    ]
   },
   {
@@ -24360,6 +24804,12 @@
    ]
   },
   {
+   "fr": "planète attendue : {0}",
+   "where": [
+    "server/src/campaignRevisions.ts"
+   ]
+  },
+  {
    "fr": "Planète dorée",
    "where": [
     "data/achievements/achievements.json"
@@ -25964,6 +26414,12 @@
    ]
   },
   {
+   "fr": "Préparation : sceaux, stations de pouvoirs, note de difficulté…",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
    "fr": "Préparation : {0}",
    "where": [
     "ui/screens/CreatureArt.cpp"
@@ -26059,6 +26515,18 @@
    ]
   },
   {
+   "fr": "publication d'une révision de « {0} »",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Publication impossible.",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
    "fr": "Publication…",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
@@ -26096,6 +26564,24 @@
    ]
   },
   {
+   "fr": "Publier la révision",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "Publier la révision {0}",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "Publier la révision… (Ctrl+S)",
+   "where": [
+    "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
    "fr": "Publier un commentaire sur Cosmic Online.",
    "where": [
     "data/achievements/achievements.json"
@@ -26117,6 +26603,19 @@
    "fr": "PUBLIER UNE NOUVELLE VERSION",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
+   ]
+  },
+  {
+   "fr": "Publier une révision de la campagne",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "Publier…",
+   "where": [
+    "editors/level_editor/LevelEditorDialogs.cpp",
+    "editors/level_editor/LevelEditorLayout.cpp"
    ]
   },
   {
@@ -26147,6 +26646,18 @@
    "fr": "Publié sans vérification : la course la fera",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
+   ]
+  },
+  {
+   "fr": "Publiée par",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "Publiée par {0} le {1}",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
    ]
   },
   {
@@ -26349,6 +26860,7 @@
    "fr": "Quitter",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
+    "editors/level_editor/LevelEditorDialogs.cpp",
     "ui/screens/MainMenuScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/SocialScene.cpp"
@@ -27044,14 +27556,30 @@
   {
    "fr": "records",
    "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp",
     "game/ghost/GhostStore.cpp",
-    "game/records/Records.cpp"
+    "game/records/Records.cpp",
+    "ui/screens/AdminCampaign.cpp",
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
    "fr": "Records en cours de vérification",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "records gardés ({0} meilleur temps reporté)",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "records gardés ({0} meilleurs temps reportés)",
+   "where": [
+    "ui/screens/AdminCampaign.cpp",
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -27070,6 +27598,13 @@
    "fr": "Records personnels",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "records réinitialisés",
+   "where": [
+    "ui/screens/AdminCampaign.cpp",
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -27407,6 +27942,18 @@
    "fr": "Relié à",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "remise en ligne d'une révision de « {0} »",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Remise en ligne par",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
    ]
   },
   {
@@ -28129,6 +28676,24 @@
    ]
   },
   {
+   "fr": "Revenir à cette révision",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "Revenir à la révision {0}",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "Revenir à la révision {0} ?",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
    "fr": "Revenu au tirage du serveur : « {0} ».",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -28696,6 +29261,7 @@
   {
    "fr": "Réessayer",
    "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/OnlineRankingScene.cpp"
@@ -28743,6 +29309,13 @@
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Réinitialiser les records",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp",
+    "ui/screens/AdminCampaign.cpp"
    ]
   },
   {
@@ -28988,9 +29561,27 @@
    ]
   },
   {
+   "fr": "Révision de la campagne : vos modifications seront publiées en ligne (Fichier › Publier la révision…).",
+   "where": [
+    "editors/level_editor/LevelEditorScene.cpp"
+   ]
+  },
+  {
    "fr": "Révision du niveau pas encore enregistrée sur le serveur : envoi automatique plus tard.",
    "where": [
     "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "révision en cours",
+   "where": [
+    "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "révision en ligne",
+   "where": [
+    "editors/level_editor/LevelEditorLayout.cpp"
    ]
   },
   {
@@ -29000,9 +29591,28 @@
    ]
   },
   {
+   "fr": "Révision inconnue.",
+   "where": [
+    "server/src/campaignRevisions.ts"
+   ]
+  },
+  {
    "fr": "Révision introuvable.",
    "where": [
+    "server/src/campaignRevisions.ts",
     "server/src/projects.ts"
+   ]
+  },
+  {
+   "fr": "révision invalide",
+   "where": [
+    "game/online/CampaignRevisions.cpp"
+   ]
+  },
+  {
+   "fr": "Révision {0}",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
    ]
   },
   {
@@ -29045,6 +29655,12 @@
    "fr": "Révision {0} par {1}, {2} : « {3} »",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Révision {0} publiée",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
    ]
   },
   {
@@ -29613,6 +30229,24 @@
    ]
   },
   {
+   "fr": "Sceaux : aucun raccourci ne contourne un checkpoint",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "Sceaux : {0} porte ajoutée contre les raccourcis qui évitent un checkpoint",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "Sceaux : {0} portes ajoutées contre les raccourcis qui évitent un checkpoint",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
    "fr": "Scintillement",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -30101,6 +30735,18 @@
    "fr": "Seulement ce que vous avez déjà exploré",
    "where": [
     "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
+   "fr": "Seulement pour un changement sans effet sur le jeu (décor…) : la nouvelle révision est déclarée compatible, les meilleurs temps, classements et records actuels y sont reportés.",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "Seulement si les deux révisions se jouent exactement de la même façon (décor seul). Les meilleurs temps de la révision {0} sont reportés sur la révision {1} : le meilleur temps de chaque joueur est gardé.",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
    ]
   },
   {
@@ -30858,6 +31504,12 @@
    ]
   },
   {
+   "fr": "Station de pouvoirs : il faut maintenant {0}. Le pouvoir que vous laissez reste ici.",
+   "where": [
+    "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
    "fr": "Station de pouvoirs. Pour la suite : l'Onde. Vous portez 4 pouvoirs au plus : celui que vous laissez reste ici.",
    "where": [
     "data/levels/aethra_03.json",
@@ -31013,6 +31665,12 @@
    ]
   },
   {
+   "fr": "Station de pouvoirs. Pour la suite : {0}. Vous portez {1} pouvoirs au plus : celui que vous laissez reste ici.",
+   "where": [
+    "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
    "fr": "Stations",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -31028,6 +31686,36 @@
    "fr": "Stations de pouvoirs",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Stations de pouvoirs : ce niveau n'a pas d'emplacements de pouvoirs",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "Stations de pouvoirs : {0} station, {1} tablette (replacées sur le parcours modifié)",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "Stations de pouvoirs : {0} station, {1} tablettes (replacées sur le parcours modifié)",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "Stations de pouvoirs : {0} stations, {1} tablette (replacées sur le parcours modifié)",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "Stations de pouvoirs : {0} stations, {1} tablettes (replacées sur le parcours modifié)",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
    ]
   },
   {
@@ -32651,6 +33339,7 @@
    "fr": "terrain",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
+    "game/levels/CampaignPipeline.cpp",
     "game/levels/LevelData.cpp",
     "game/levels/ObjectTypes.cpp"
    ]
@@ -33356,6 +34045,7 @@
   {
    "fr": "tracé de course invalide",
    "where": [
+    "server/src/campaignRevisions.ts",
     "server/src/community.ts"
    ]
   },
@@ -33821,6 +34511,12 @@
    ]
   },
   {
+   "fr": "Téléchargement de la révision en ligne…",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
    "fr": "Téléchargement du niveau…",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -33839,6 +34535,12 @@
    "fr": "Téléchargement et chiffrement de la sauvegarde…",
    "where": [
     "ui/screens/AdminBackups.cpp"
+   ]
+  },
+  {
+   "fr": "téléchargement impossible",
+   "where": [
+    "game/GameServices.cpp"
    ]
   },
   {
@@ -33998,6 +34700,12 @@
    ]
   },
   {
+   "fr": "un admin",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
    "fr": "Un ancien membre",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -34084,6 +34792,7 @@
   {
    "fr": "un compte supprimé",
    "where": [
+    "ui/screens/AdminCampaign.cpp",
     "ui/screens/AdminScene.cpp"
    ]
   },
@@ -34436,6 +35145,12 @@
    ]
   },
   {
+   "fr": "Une autre révision vient d'être publiée : rouvrez le niveau.",
+   "where": [
+    "server/src/campaignRevisions.ts"
+   ]
+  },
+  {
    "fr": "Une barrière d'énergie : le Tir chargé la dissout aussi.",
    "where": [
     "data/levels/pyralis_02.json"
@@ -34643,6 +35358,12 @@
    "fr": "une récompense",
    "where": [
     "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Une révision publiée ici est téléchargée par les jeux, sans mise à jour. Chaque publication demande de choisir : réinitialiser les records, ou les garder.",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
    ]
   },
   {
@@ -35476,6 +36197,7 @@
   {
    "fr": "version",
    "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp",
     "game/GameServices.cpp",
     "game/achievements/Achievements.cpp",
     "game/content/ContentDatabase.cpp",
@@ -35484,6 +36206,7 @@
     "game/levels/DifficultyRating.cpp",
     "game/levels/LevelData.cpp",
     "game/levels/RatingService.cpp",
+    "game/online/CampaignRevisions.cpp",
     "game/online/DailyChallenges.cpp",
     "game/online/LevelFingerprint.cpp",
     "game/online/LevelRatings.cpp",
@@ -35498,6 +36221,8 @@
     "packaging/PackageImporter.cpp",
     "saves/SaveFile.cpp",
     "ui/screens/AdminCalendar.cpp",
+    "ui/screens/AdminCampaign.cpp",
+    "ui/screens/AdminScene.cpp",
     "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/CommunityPublishScene.cpp",
@@ -35565,6 +36290,18 @@
    "fr": "Version du jeu trop ancienne pour les défis.",
    "where": [
     "server/src/challenges.ts"
+   ]
+  },
+  {
+   "fr": "Version du jeu trop ancienne pour publier une révision.",
+   "where": [
+    "server/src/campaignRevisions.ts"
+   ]
+  },
+  {
+   "fr": "Version du jeu {0} · {1}",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
    ]
   },
   {
@@ -36812,6 +37549,12 @@
    ]
   },
   {
+   "fr": "Vérification de la révision en ligne…",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
    "fr": "Vérification du fichier…",
    "where": [
     "ui/screens/AdminBackups.cpp"
@@ -37256,6 +37999,18 @@
   },
   {
    "fr": "{0}  · modifié",
+   "where": [
+    "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "{0}  · révision en cours",
+   "where": [
+    "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "{0}  · révision en ligne",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
    ]
@@ -38184,6 +38939,18 @@
    ]
   },
   {
+   "fr": "{0} meilleur temps · empreinte {1}",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "{0} meilleurs temps · empreinte {1}",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
    "fr": "{0} membres",
    "where": [
     "ui/screens/SocialScene.cpp"
@@ -39032,6 +39799,24 @@
    ]
   },
   {
+   "fr": "« {0} » : la révision {1} est de nouveau en ligne (records gardés).",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "« {0} » : la révision {1} est de nouveau en ligne (records réinitialisés).",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "« {0} » : la révision {1} remplace la révision {2} en ligne. Les jeux la téléchargent ; un défi déjà commencé garde sa révision.",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
    "fr": "« {0} » : rang {1}.",
    "where": [
     "game/online/OnlineService.cpp"
@@ -39125,6 +39910,18 @@
    "fr": "« {0} » reprend les touches du niveau.",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "« {0} » · révision en ligne {1}",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "« {0} » · révision en ligne {1} → nouvelle révision {2}",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
    ]
   },
   {
@@ -39233,6 +40030,12 @@
    "fr": "À sa mort",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "À vérifier : {0}",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
    ]
   },
   {
@@ -39863,6 +40666,12 @@
    ]
   },
   {
+   "fr": "écriture impossible",
+   "where": [
+    "game/online/CampaignRevisions.cpp"
+   ]
+  },
+  {
    "fr": "écriture impossible : {0}",
    "where": [
     "packaging/ZipArchive.cpp"
@@ -40229,6 +41038,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Étapes de la campagne (comme tools/levelgen) :",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
    ]
   },
   {

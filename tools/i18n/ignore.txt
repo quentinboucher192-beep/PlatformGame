@@ -115,3 +115,5 @@ titles
 cyan
 violet
 top
+change
+manifest

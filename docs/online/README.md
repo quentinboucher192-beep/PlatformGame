@@ -15,6 +15,7 @@ Le jeu reste entièrement jouable sans compte et sans Internet.
 | [REPLAY_FORMAT.md](REPLAY_FORMAT.md) | Format binaire des replays (CPRP / CPRZ) et déterminisme du moteur |
 | [PRIVACY.md](PRIVACY.md) | Données personnelles, localisation, RGPD |
 | [BACKUP.md](BACKUP.md) | Sauvegarde complète et restauration (compte admin) : copies, fichier chiffré `.cpbk`, import, restauration manuelle |
+| [CAMPAIGN_REVISIONS.md](CAMPAIGN_REVISIONS.md) | Révisions de la campagne publiées par un admin (2.45) : éditeur, étapes de la campagne, choix « Réinitialiser » / « Garder les records » et report des classements, routes, téléchargement par le jeu |
 | [COLLABORATION.md](COLLABORATION.md) | Projets collaboratifs : rôles, invitations, édition en direct, historique, versions, limites, tests de charge |
 | [BILAN_ONLINE_2_8.md](BILAN_ONLINE_2_8.md) | Bilan du cahier des charges ONLINE 2.8 : fonctions, tests, limites, migrations, reste à faire |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Dépannage |

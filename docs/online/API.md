@@ -141,7 +141,7 @@ de `wrangler.jsonc`, plafonnée à 1 000) multiplie toutes les limites.
 | `profile_write` | 20 | 5 min | joueur | `PATCH /players/me`, `PUT /players/me/avatar` (compteur partagé) |
 | `friend_request` | 30 | 1 h | joueur | `POST /friends/request` |
 | `presence` | 6 | 1 min | joueur | `POST /presence` |
-| `admin_write` | 60 | 5 min | admin | `POST /admin/players/{playerId}/role` (2.40), `PUT` / `DELETE /admin/challenges/{challengeId}` (2.41, calendrier des défis : voir CHALLENGES_PERIODS.md §7), `PUT /admin/challenges/{challengeId}/rewards` et `POST /admin/titles` (2.43, §8) |
+| `admin_write` | 60 | 5 min | admin | `POST /admin/players/{playerId}/role` (2.40), `PUT` / `DELETE /admin/challenges/{challengeId}` (2.41, calendrier des défis : voir CHALLENGES_PERIODS.md §7), `PUT /admin/challenges/{challengeId}/rewards` et `POST /admin/titles` (2.43, §8), `POST /admin/campaign/{levelId}/revisions` et `…/revert` (2.45, [CAMPAIGN_REVISIONS.md](CAMPAIGN_REVISIONS.md)) |
 | *(salle du joueur, en mémoire)* | 25 | 10 s | joueur | `POST /spectate/broadcast` (2.36, compté par la salle `SpectateRoom`, pas dans D1) |
 | `account_delete` | 5 | 1 h | joueur | `DELETE /players/me` |
 | `social_message` | 30 | 1 min | joueur | `POST /social/conversations/{id}/messages` |
@@ -1534,6 +1534,13 @@ puis `wrangler d1 migrations apply`.
 Sauvegardes de toutes les données (compte admin, `/admin/backups…`) : copies, téléchargement
 chiffré, import en parties, vérification, application pas à pas : voir [BACKUP.md](BACKUP.md)
 (routes, réponses, codes d'erreur, limites de débit `backup_*`).
+
+Révisions de la campagne (2.45, compte admin, `/admin/campaign…`) : liste des niveaux et de
+leur révision en ligne, historique, publication d'une révision depuis l'éditeur du jeu, retour à
+une révision, avec le choix obligatoire « Réinitialiser » / « Garder les records » ; et les
+routes publiques `GET /campaign/revisions` (manifeste) et
+`GET /campaign/levels/{levelId}/revisions/{version}/file` : voir
+[CAMPAIGN_REVISIONS.md](CAMPAIGN_REVISIONS.md).
 
 Modération des commentaires : `GET /admin/comments` (commentaires masqués ou signalés, avec
 les motifs, de tous les fils : `thread` vaut `community` — avec `level_id` — ou

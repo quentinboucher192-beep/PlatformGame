@@ -29,10 +29,11 @@
 //   --import <file.cplanet> open the import screen with this package (also: file as argument)
 //   --export <level> <file.cplanet> [--author <name>]
 //                           export a level and all its dependencies without opening a window
-//   --admin [players[:<search>[:confirm]]|calendar[:<YYYY-MM>[:<challenge id>[:objectif]]]|log]
-//                           open ADMINISTRATION (Joueurs, Calendrier des défis, Journal) with an
-//                           admin account (calendar: that month, that period in the editor, its
-//                           tab « Objectif et paliers »)
+//   --admin [players[:<search>[:confirm]]|calendar[:<YYYY-MM>[:<challenge id>[:objectif]]]|log|
+//            campaign[:<level id>]]
+//                           open ADMINISTRATION (Joueurs, Calendrier des défis, Journal, Campagne)
+//                           with an admin account (calendar: that month, that period in the
+//                           editor, its tab « Objectif et paliers »; campaign: that level's history)
 //   --boss-stats [<boss>[:<clip>]]
 //                           open the boss statistics (that boss, that clip of its animation)
 //   --boss-training <boss> [--boss-training-go] [--boss-training-spawn <where>[:pick]]
@@ -471,6 +472,9 @@ int main(int argc, char** argv) {
     game.onlineFocus = value("--online-focus");
     game.onlineOpen = value("--online-open");
     game.online.init(game.settings.online, value("--online-server"));
+    // 2.45: the campaign revisions published online (kept ones at once, offline too; the
+    // manifest read when Cosmic Online is on and the window is real).
+    game.startCampaignRevisions(!has("--headless") || has("--realtime"));
     // Daily challenges: the cached ones at once (offline), the current one asked for when
     // Cosmic Online is on (public, nothing personal sent).
     game.challenges.init(game.online, Paths::savesDir() / "challenges");
@@ -564,6 +568,7 @@ int main(int argc, char** argv) {
         game.news.poll(game.content, game.records, COSMIC_VERSION_STRING);
         game.online.update(dt);
         game.challenges.update(dt);
+        game.updateCampaignRevisions(dt);
         game.updates.update();
         if (sendPresence) game.updatePresence(dt);
         game.spectate.update(dt);

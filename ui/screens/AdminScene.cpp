@@ -7,7 +7,9 @@
 //   « Calendrier des défis » (2.41, AdminCalendar.cpp): the challenges of a month, the coming
 //                ones too; the challenge of a period that has not begun is chosen here (level,
 //                rules, objective and tiers) or put back to the server's draw;
-//   « Journal »: who did what and when, the server's refusals included; no IP, no e-mail.
+//   « Journal »: who did what and when, the server's refusals included; no IP, no e-mail;
+//   « Campagne » (2.45, AdminCampaign.cpp): the campaign levels and their revision online,
+//                edited in the game's editor and published without a game update.
 // The country, the last activity and the presence of a player appear only as they share them.
 
 #include <algorithm>
@@ -22,6 +24,7 @@
 #include "game/online/OnlineSession.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/AdminBackups.h"
+#include "ui/screens/AdminCampaign.h"
 #include "ui/screens/AdminCalendar.h"
 #include "ui/screens/ChallengeRewardsUi.h"
 #include "ui/screens/ChallengeUi.h"
@@ -90,10 +93,10 @@ std::string presenceText(const std::string& p) {
 }
 
 const char* kFilters[] = {"all", "admins", "online"};
-const char* kKinds[] = {"all", "role", "challenge", "refused"};
+const char* kKinds[] = {"all", "role", "challenge", "campaign", "refused"};
 
 /// The tabs: Joueurs, Calendrier des défis (2.41), Journal.
-constexpr int kTabPlayers = 0, kTabCalendar = 1, kTabLog = 2, kTabBackups = 3;
+constexpr int kTabPlayers = 0, kTabCalendar = 1, kTabLog = 2, kTabBackups = 3, kTabCampaign = 4;
 
 /// "20/11" of "2026-11-20".
 std::string shortDate(const std::string& date) { return date.size() >= 10 ? date.substr(8, 2) + "/" + date.substr(5, 2) : date; }
@@ -113,8 +116,14 @@ class AdminScene : public Scene {
 public:
     AdminScene(GameServices& g, std::string open)
         : g_(g), ui_(g), calendar_(g, ui_, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
-          backups_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }) {
+          backups_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
+          campaign_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }) {
         if (open.rfind("backups", 0) == 0) tab_ = kTabBackups;
+        // 2.45: "campaign[:<level id>]" (that level's history open).
+        if (open.rfind("campaign", 0) == 0) {
+            tab_ = kTabCampaign;
+            if (open.size() > 9) campaignSelect_ = open.substr(9);
+        }
         // Automated screenshots: "players[:<search>[:confirm]]", "calendar[:YYYY-MM[:<id>[:objectif]]]" or "log".
         if (open.rfind("log", 0) == 0) tab_ = kTabLog;
         if (open.rfind("calendar", 0) == 0) {
@@ -152,7 +161,7 @@ public:
         UIContext& ui = g_.ui;
         ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
         bg_.render(g_, 0.6f);
-        const bool modal = !confirmId_.empty() || calendar_.modal() || backups_.modal();
+        const bool modal = !confirmId_.empty() || calendar_.modal() || backups_.modal() || campaign_.modal();
         const bool top = g_.app.topScene() == this;
         ui.inputEnabled = top && !modal;
         // 2.41: wider (the calendar's eight columns and its editor side by side).
@@ -166,7 +175,7 @@ public:
         bool back = ui.button("back", {x0_ + W_ - backW, y, backW, hh}, "Retour") || (!modal && ui.backPressed());
         // The tabs after the title when they fit, else on the line below. Equal tabs, each as
         // wide as its longest label needs (« Calendrier des défis »).
-        static const std::vector<std::string> kTabs = {"Joueurs", "Calendrier des défis", "Journal", "Sauvegardes"};
+        static const std::vector<std::string> kTabs = {"Joueurs", "Calendrier des défis", "Journal", "Sauvegardes", "Campagne"};
         float tabW = 0.0f;
         for (const std::string& t : kTabs) tabW = std::max(tabW, ui.text().measure(t, FontFace::Bold, ui.s(20)).x + ui.s(44));
         float tabsW = tabW * static_cast<float>(kTabs.size()), tabsX = x0_ + titleW + ui.s(28);
@@ -183,6 +192,8 @@ public:
         ui.newBadge("tabcal", calTab, "admin.tab.calendar", true, true);
         Rect bakTab{tabsR.x + 3 * tabW + ui.s(2), tabsR.y, tabW - ui.s(4), tabsR.h};
         ui.newBadge("tabbak", bakTab, "admin.tab.backups", true, true);
+        Rect campTab{tabsR.x + 4 * tabW + ui.s(2), tabsR.y, tabW - ui.s(4), tabsR.h};
+        ui.newBadge("tabcamp", campTab, "admin.tab.campaign", true, true);
         if (tab != tab_) {
             tab_ = tab;
             if (tab_ == kTabLog) loadLog(false);
@@ -193,6 +204,10 @@ public:
             if (tab_ == kTabCalendar) {
                 if (ui.featureSeen && ui.isNew("admin.tab.calendar")) ui.featureSeen("admin.tab.calendar");
                 calendar_.enter();
+            }
+            if (tab_ == kTabCampaign) {
+                if (ui.featureSeen && ui.isNew("admin.tab.campaign")) ui.featureSeen("admin.tab.campaign");
+                campaign_.enter();
             }
         }
         Rect body{x0_, bodyY, W_, ui.screenH() - bodyY - ui.s(64)};
@@ -205,6 +220,7 @@ public:
             Rect inner{body.x + ui.s(22), body.y + ui.s(18), body.w - ui.s(44), body.h - ui.s(36)};
             if (tab_ == kTabPlayers) drawPlayers(inner);
             else if (tab_ == kTabBackups) backups_.draw(inner);
+            else if (tab_ == kTabCampaign) campaign_.draw(inner);
             else drawLog(inner);
         }
         drawStatus();
@@ -213,6 +229,7 @@ public:
         if (!confirmId_.empty()) drawConfirm();
         else if (calendar_.modal()) calendar_.drawModal();
         else if (backups_.modal()) backups_.drawModal();
+        else if (campaign_.modal()) campaign_.drawModal();
         ui.end();
         if (back) g_.app.switchScene(makeMainMenu(g_), 0.3f);
     }
@@ -243,6 +260,10 @@ private:
         if (tab_ == kTabLog) loadLog(false);
         if (tab_ == kTabCalendar) calendar_.enter(true);
         if (tab_ == kTabBackups) backups_.enter(true);
+        if (tab_ == kTabCampaign) {
+            campaign_.enter(true, campaignSelect_);
+            campaignSelect_.clear();
+        }
     }
 
     void loadPlayers() {
@@ -645,6 +666,25 @@ private:
             if (list.empty()) return {"Défi", Color{185, 200, 218, 255}, "a retiré les récompenses du défi " + periodPhrase(ch)};
             return {"Défi", ui.theme().accent, "a fixé les récompenses du défi " + periodPhrase(ch) + " : " + list};
         }
+        // 2.45: a campaign revision published, made current again, or refused.
+        const Json& camp = jfield(e, "campaign", Json());
+        if (camp.is_object()) {
+            std::string lname = jstr(camp, "level_name", jstr(camp, "level_id"));
+            if (const LevelEntry* le = g_.content.level(jstr(camp, "level_id"))) lname = le->name;
+            const std::string records = jstr(camp, "records") == "keep"
+                                            ? "records gardés (" + std::to_string(jget<int>(camp, "carried_bests", 0)) + " meilleurs temps reportés)"
+                                            : std::string("records réinitialisés");
+            const std::string rev = std::to_string(jget<int>(camp, "version", 0));
+            if (action == "admin_campaign_published")
+                return {"Campagne", ui.theme().warm, "a publié la révision " + rev + " de « " + lname + " » (remplace la révision " +
+                                                         std::to_string(jget<int>(camp, "from_version", 0)) + ") · " + records};
+            if (action == "admin_campaign_reverted")
+                return {"Campagne", Color{185, 200, 218, 255}, "a remis en ligne la révision " + rev + " de « " + lname + " » (à la place de la révision " +
+                                                                   std::to_string(jget<int>(camp, "from_version", 0)) + ") · " + records};
+            std::string why = reason == "BASE_CHANGED" ? std::string("la révision en ligne avait changé entre-temps") : std::string("refus du serveur");
+            std::string what = jstr(camp, "action") == "revert" ? "remise en ligne d'une révision de « " + lname + " »" : "publication d'une révision de « " + lname + " »";
+            return {"Refus", ui.theme().textDim, what + " refusée : " + why};
+        }
         const Json& title = jfield(e, "title", Json());
         if (action == "admin_title_created" && title.is_object())
             return {"Défi", ui.theme().accent, "a créé le titre « " + jstr(title, "text") + " » (" + colorName(jstr(title, "color")) + ")"};
@@ -683,7 +723,7 @@ private:
         ui.pushId("log");
         float y = in.y, fh = ui.s(46);
         int kind = kind_;
-        float kr = chips("kind", in.x, y, fh, {"Toutes les actions", "Rôles", "Défis", "Refus"}, kind);
+        float kr = chips("kind", in.x, y, fh, {"Toutes les actions", "Rôles", "Défis", "Campagne", "Refus"}, kind);
         std::vector<std::string> who{"Tous"};
         for (const auto& a : admins_) who.push_back(jstr(a, "username"));
         int actor = std::min(actor_, static_cast<int>(who.size()) - 1);
@@ -789,6 +829,8 @@ private:
     OnlineUi ui_;
     AdminCalendar calendar_;  // « Calendrier des défis » (2.42)
     AdminBackups backups_;    // « Sauvegardes » (2.43)
+    AdminCampaign campaign_;  // « Campagne » (2.45)
+    std::string campaignSelect_;
     MenuBackground bg_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     float W_ = 0.0f, x0_ = 0.0f;

@@ -1,6 +1,8 @@
 #pragma once
 
+#include <future>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <vector>
@@ -11,6 +13,7 @@
 #include "engine/core/Scene.h"
 #include "game/gameplay/GameRenderer.h"
 #include "game/gameplay/GameWorld.h"
+#include "game/levels/CampaignPipeline.h"
 #include "game/levels/LevelData.h"
 
 namespace cosmic {
@@ -26,6 +29,10 @@ public:
     /// Live editing of a collaborative project (the level is its local copy). `role`: the
     /// player's role in the project; below "editor" the level is only watched.
     void goLive(const std::string& projectId, const std::string& role);
+    /// ADMINISTRATION › Campagne (2.45): the campaign level is edited as a new revision of the
+    /// revision `baseVersion` (`baseHash`) current on the server; « Publier la révision… »
+    /// replaces « Enregistrer » (LevelEditorCampaign.cpp).
+    void goCampaign(int baseVersion, const std::string& baseHash);
     bool openHelpOnEnter = false;  // automated screenshots (--editor-help)
     ~LevelEditorScene() override;
 
@@ -38,7 +45,7 @@ public:
 private:
     enum class Tool { Select, Place, Pan };
     enum class Drag { None, Move, Resize, BoxSelect, Pan, Create };
-    enum class Modal { None, Open, New, Settings, Events, Cinematics, Help, ConfirmQuit, PowerKeys };
+    enum class Modal { None, Open, New, Settings, Events, Cinematics, Help, ConfirmQuit, PowerKeys, Publish };
     enum class LeftTab { Explorer, History, Check };
     enum class Menu { None, File, Test };
     struct Issue {
@@ -141,6 +148,33 @@ private:
     bool powerKeyCapturePad_ = false;
     float powerKeyCaptureTimer_ = 0.0f;
     void flash(const std::string& msg, bool error = false);
+    // ---- campaign revision (2.45, LevelEditorCampaign.cpp)
+    /// The publish dialog: the campaign steps run on a copy of the level (off the main
+    /// thread), then the required choice about the records, then the upload.
+    void openPublish();
+    void modalPublish(const Rect& r);
+    void updatePublish();
+    void sendPublish();
+    struct CampaignEdit {
+        int baseVersion = 0;
+        std::string baseHash;
+        int nextVersion = 0;     // from the server when the dialog opens
+        int step = 0;            // 0 asking the server, 1 preparing, 2 ready, 3 sending, 4 published, 5 error
+        int records = -1;        // -1 not chosen (required), 0 « Réinitialiser », 1 « Garder »
+        std::string error;
+        std::string publishedText;
+        struct Prepared {
+            LevelData level;
+            CampaignPipelineReport report;
+            std::string text;      // the file as it will be stored
+            Json manifest;         // its --online-manifest entry
+            std::string hash;      // its ranked fingerprint
+        };
+        std::future<std::optional<Prepared>> preparing;
+        std::optional<Prepared> prepared;
+    };
+    std::unique_ptr<CampaignEdit> campaign_;
+    bool campaignMode_ = false;
 
     GameServices& g_;
     std::string requestedId_;

@@ -37,9 +37,15 @@ for (const l of manifest.levels) {
     out.push(
         `INSERT INTO level_versions (level_id, version, content_hash, compatibility_status, min_game_version, total_collectibles, total_enemies, time_limit_ms, min_time_ms, bounds_w, bounds_h, spawn_x, spawn_y, exit_x, exit_y, exit_w, exit_h, created_at) VALUES (${id(l.id)}, ${n(l.version)}, ${hash(l.content_hash)}, 'active', ${q(game)}, ${n(l.total_collectibles)}, ${n(l.total_enemies)}, ${n(l.time_limit_ms)}, ${n(l.min_time_ms)}, ${n(l.bounds[0])}, ${n(l.bounds[1])}, ${n(l.spawn[0])}, ${n(l.spawn[1])}, ${n(l.exit[0])}, ${n(l.exit[1])}, ${n(l.exit[2])}, ${n(l.exit[3])}, ${q(now)}) ON CONFLICT (level_id, version) DO NOTHING;`,
     );
-    out.push(`UPDATE levels SET current_version = ${n(l.version)}, content_hash = ${hash(l.content_hash)} WHERE id = ${id(l.id)} AND current_version <= ${n(l.version)};`);
+    // 2.45: only when this revision number is really this content (an administrator may have
+    // published a revision of the campaign under that number in between: then nothing changes,
+    // and the release must use a higher metadata.revision, docs/online/CAMPAIGN_REVISIONS.md).
+    const same = `EXISTS (SELECT 1 FROM level_versions WHERE level_id = ${id(l.id)} AND version = ${n(l.version)} AND content_hash = ${hash(l.content_hash)})`;
     out.push(
-        `UPDATE level_versions SET compatibility_status = 'legacy' WHERE level_id = ${id(l.id)} AND version < ${n(l.version)} AND compatibility_status = 'active';`,
+        `UPDATE levels SET current_version = ${n(l.version)}, content_hash = ${hash(l.content_hash)} WHERE id = ${id(l.id)} AND current_version <= ${n(l.version)} AND ${same};`,
+    );
+    out.push(
+        `UPDATE level_versions SET compatibility_status = 'legacy' WHERE level_id = ${id(l.id)} AND version < ${n(l.version)} AND compatibility_status = 'active' AND ${same};`,
     );
     // EXTRÊME level: the layout of its race (« course à la vérification »).
     if (l.race) out.push(`UPDATE level_versions SET race = ${q(JSON.stringify(l.race))} WHERE level_id = ${id(l.id)} AND content_hash = ${hash(l.content_hash)};`);

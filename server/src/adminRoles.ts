@@ -21,6 +21,8 @@ export const ADMIN_ACTIONS = {
     // 2.41: ADMINISTRATION › Calendrier des défis (adminChallenges.ts).
     challenge: ["admin_challenge_set", "admin_challenge_reset", "admin_challenge_rewards", "admin_title_created"],
     refused: ["admin_refused", "backup_refused"],
+    // 2.45: ADMINISTRATION › Campagne (campaignRevisions.ts): a revision published, or an earlier one made current again.
+    campaign: ["admin_campaign_published", "admin_campaign_reverted"],
     // Backups (ADMINISTRATION › Sauvegardes, backups.ts): copies, downloads, imports. Never a passphrase.
     backup: [
         "backup_created",
@@ -36,9 +38,9 @@ export const ADMIN_ACTIONS = {
     ],
 } as const;
 const ALL_ADMIN_ACTIONS: readonly string[] = [
-    ...new Set<string>([...ADMIN_ACTIONS.role, ...ADMIN_ACTIONS.challenge, ...ADMIN_ACTIONS.refused, ...ADMIN_ACTIONS.backup]),
+    ...new Set<string>([...ADMIN_ACTIONS.role, ...ADMIN_ACTIONS.challenge, ...ADMIN_ACTIONS.refused, ...ADMIN_ACTIONS.backup, ...ADMIN_ACTIONS.campaign]),
 ];
-const LOG_KINDS = ["all", "role", "challenge", "refused", "backup"] as const;
+const LOG_KINDS = ["all", "role", "challenge", "refused", "backup", "campaign"] as const;
 
 const ID_RE = /^[A-Za-z0-9-]{8,64}$/;
 
@@ -225,7 +227,29 @@ function challengeOfDetails(d: Record<string, unknown>) {
 }
 
 /**
- * GET /admin/log?kind=all|role|challenge|refused|backup&actor=<player id>&limit=&offset=
+ * What the Journal shows of a campaign revision published, made current again, or refused
+ * (2.45): the level, the revision, the one it replaced, the choice about the records.
+ */
+function campaignOfDetails(d: Record<string, unknown>) {
+    const c = d.campaign;
+    if (!isObject(c) || typeof c.level_id !== "string") return null;
+    const num = (k: string) => (typeof c[k] === "number" ? (c[k] as number) : null);
+    const str = (k: string) => (typeof c[k] === "string" ? (c[k] as string) : null);
+    return {
+        level_id: c.level_id,
+        level_name: str("level_name"),
+        version: num("version"),
+        content_hash: str("content_hash"),
+        from_version: num("from_version"),
+        base_version: num("base_version"),
+        records: str("records"),
+        carried_bests: num("carried_bests"),
+        action: str("action"),
+    };
+}
+
+/**
+ * GET /admin/log?kind=all|role|challenge|refused|backup|campaign&actor=<player id>&limit=&offset=
  * The administration's own actions, newest first: who (the admin's current username, or the
  * one written at the time when the account is gone), what, when. Never the IP hash.
  */
@@ -271,6 +295,8 @@ export async function listLog(ctx: Ctx): Promise<Response> {
             challenge: challengeOfDetails(d),
             // 2.43: a title created on the server (or refused): { id?, text, color }.
             title: isObject(d.title) ? d.title : null,
+            // 2.45: a campaign revision (published, made current again, or refused).
+            campaign: campaignOfDetails(d),
         };
     });
     return json(ctx, { entries, has_more: rows.results.length > page.limit, offset: page.offset });
