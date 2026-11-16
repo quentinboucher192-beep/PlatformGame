@@ -38,13 +38,15 @@ std::string day(const std::string& iso) {
 
 std::string who(const Json& by) { return by.is_object() ? jstr(by, "username", "un compte supprimé") : std::string("un admin"); }
 
-/// « records réinitialisés », « records gardés (12 meilleurs temps reportés) ».
+/// « changement majeur, records réinitialisés », « pas de changement majeur, aucun classement remis à
+/// zéro (12 meilleurs temps reportés) ».
 std::string recordsText(const Json& change) {
     if (jstr(change, "records") == "keep") {
         int n = jget<int>(change, "carried_bests", 0);
-        return "records gardés (" + std::to_string(n) + (n > 1 ? " meilleurs temps reportés)" : " meilleur temps reporté)");
+        return "pas de changement majeur, aucun classement remis à zéro (" + std::to_string(n) +
+               (n > 1 ? " meilleurs temps reportés)" : " meilleur temps reporté)");
     }
-    return "records réinitialisés";
+    return "changement majeur, records réinitialisés";
 }
 
 }  // namespace
@@ -151,7 +153,7 @@ void AdminCampaign::revert() {
                            say_(r.message, true);
                        } else {
                            say_("« " + name + " » : la révision " + std::to_string(target) + " est de nouveau en ligne (" +
-                                    (keep ? std::string("records gardés") : std::string("records réinitialisés")) + ").",
+                                    (keep ? std::string("pas de changement majeur, aucun classement remis à zéro") : std::string("records réinitialisés")) + ").",
                                 false);
                            // This game plays it at once (downloaded if needed).
                            g_.refreshCampaignRevisions();
@@ -361,13 +363,13 @@ void AdminCampaign::drawModal() {
     const std::string title = "Revenir à la révision " + v + " ?";
     const std::string text = "« " + name + " » : la révision " + v + " remplace la révision " + std::to_string(cur) +
                              " en ligne. Les jeux la téléchargent ; un défi déjà commencé garde sa révision.";
-    const std::string opt[2] = {"Réinitialiser les records", "Garder les records"};
+    const std::string opt[2] = {"Changement majeur : réinitialiser les records", "Pas de changement majeur : garder les records"};
     const std::string desc[2] = {
         "La révision " + v + " revient avec ses propres classements, tels qu'ils étaient. Ceux de la révision " + std::to_string(cur) +
             " restent archivés avec elle, jamais mélangés.",
-        "Seulement si les deux révisions se jouent exactement de la même façon (décor seul). Les meilleurs temps de la révision " + std::to_string(cur) +
-            " sont reportés sur la révision " + v + " : le meilleur temps de chaque joueur est gardé, et sa progression dans la course à la "
-            "vérification (niveau EXTRÊME).",
+        "Aucun classement n'est remis à zéro : les classements restent les mêmes. Les meilleurs temps de la révision " + std::to_string(cur) +
+            " passent sur la révision " + v + " (le meilleur temps de chaque joueur, en ligne et dans son jeu, et sa progression dans la course à la "
+            "vérification, EXTRÊME). Seulement si les deux révisions se jouent exactement de la même façon (décor seul).",
     };
     // Heights measured first: nothing overlaps whatever the texts.
     const float optH = ui.s(46);

@@ -12,11 +12,6 @@ namespace cosmic {
 
 namespace {
 
-struct BackdropLayer {
-    std::string texture;
-    Color tint = Color::white();
-};
-
 /// The four layers of a planet's backdrop: its own folder (backgrounds/<planet>/), or, for a
 /// planet drawn with another one's layers (2.48 Les Confins: Pyralis' layers in ash and violet),
 /// the sky, far, mid and near layers of its first level, with their tints. Read once per planet.
@@ -26,8 +21,9 @@ const std::vector<BackdropLayer>& backdropOf(GameServices& g, const std::string&
     if (it != cache.end()) return it->second;
     std::vector<BackdropLayer> layers;
     for (const char* layer : {"sky", "far", "mid", "near"}) {
+        // 2.49.1: exists(), not texture(): a missing file gives the checkerboard, never null.
         const std::string path = "backgrounds/" + planet + "/" + layer + ".png";
-        if (g.app.resources().texture(path)) layers.push_back({path});
+        if (g.app.resources().exists(path)) layers.push_back({path});
     }
     if (layers.empty())
         for (const LevelEntry* e : g.content.levelsForPlanet(planet)) {
@@ -35,12 +31,19 @@ const std::vector<BackdropLayer>& backdropOf(GameServices& g, const std::string&
             if (!level) continue;
             for (const auto& l : level->background)
                 for (const char* name : {"/sky.png", "/far.png", "/mid.png", "/near.png"})
-                    if (l.texture.size() > std::strlen(name) && l.texture.compare(l.texture.size() - std::strlen(name), std::string::npos, name) == 0)
+                    if (l.texture.size() > std::strlen(name) && l.texture.compare(l.texture.size() - std::strlen(name), std::string::npos, name) == 0 &&
+                        g.app.resources().exists(l.texture))
                         layers.push_back({l.texture, l.tint});
             break;
         }
     return cache.emplace(planet, std::move(layers)).first->second;
 }
+
+}  // namespace
+
+const std::vector<BackdropLayer>& planetBackdrop(GameServices& g, const std::string& planet) { return backdropOf(g, planet); }
+
+namespace {
 
 Color times(Color a, Color b) {
     return {static_cast<uint8_t>(a.r * b.r / 255), static_cast<uint8_t>(a.g * b.g / 255), static_cast<uint8_t>(a.b * b.b / 255),

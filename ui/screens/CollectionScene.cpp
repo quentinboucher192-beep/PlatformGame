@@ -1411,11 +1411,15 @@ private:
         if (!out) return;
         SDL_FillSurfaceRect(out, nullptr, SDL_MapSurfaceRGBA(out, 8, 11, 24, 255));
         bool any = false;
-        for (const char* layer : {"sky", "far", "mid", "near"}) {
-            std::string path = g_.app.resources().soundPath("backgrounds/" + p.id + "/" + layer + ".png");
+        // 2.49.1: the layers shown in the gallery, tints included (Les Confins: Pyralis' layers
+        // in ash and violet; before, nothing was exported for a planet without its own folder).
+        for (const BackdropLayer& layer : planetBackdrop(g_, p.id)) {
+            std::string path = g_.app.resources().soundPath(layer.texture);
             if (path.empty()) continue;
             if (SDL_Surface* s = IMG_Load(path.c_str())) {
                 SDL_SetSurfaceBlendMode(s, SDL_BLENDMODE_BLEND);
+                SDL_SetSurfaceColorMod(s, layer.tint.r, layer.tint.g, layer.tint.b);
+                SDL_SetSurfaceAlphaMod(s, layer.tint.a);
                 SDL_Rect dst{0, 0, 1280, 720};
                 SDL_BlitSurfaceScaled(s, nullptr, out, &dst, SDL_SCALEMODE_NEAREST);
                 SDL_DestroySurface(s);

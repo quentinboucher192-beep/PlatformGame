@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <map>
+#include <set>
 #include <optional>
 #include <string>
 #include <vector>
@@ -59,6 +60,9 @@ public:
     std::optional<fs::path> fileFor(const ContentDatabase& content, const std::string& levelId, const std::string& hash) const;
     /// The difficulty the publisher's game computed for the current revision (null when none).
     const Json* ratingOf(const std::string& levelId) const;
+    /// 2.49.1: the ranked fingerprints of the earlier revisions of this level whose records count
+    /// on the current one (published with « Garder les records »), as the last manifest said.
+    std::set<std::string> keptHashes(const std::string& levelId) const;
     /// Removes the files that are neither current nor still played by a challenge.
     int prune();
 
@@ -71,7 +75,7 @@ private:
     fs::path fileOf(const std::string& levelId, int version) const;
 
     fs::path dir_;
-    /// {"format", "server", "current": {id: {version, content_hash, max_version, file?, rating?}},
+    /// {"format", "server", "current": {id: {version, content_hash, max_version, file?, rating?, kept?}},
     ///  "pinned": {id: [hash…]}, "files": {"<id>:<version>": {content_hash, sha256, size, checked_with}}}
     Json index_ = Json::object();
     mutable std::map<std::string, std::string> bundledHash_;  // level id -> fingerprint of its bundled file

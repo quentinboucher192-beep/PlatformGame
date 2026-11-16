@@ -122,6 +122,8 @@ void NewsCenter::add(Item it) {
 
 void NewsCenter::apply(const Snapshot& now, RecordsManager& records, const std::string& gameVersion, const Json& changelog) {
     bool first = known_.empty() || !known_.contains("levels");
+    // The bundled levels seen at the previous start (before this update).
+    const Json previous = known_.value("levels", Json::object());
     // The version just installed, with its changes.
     if (lastVersion_ != gameVersion) {
         Item v;
@@ -161,10 +163,16 @@ void NewsCenter::apply(const Snapshot& now, RecordsManager& records, const std::
                      "Sa nouvelle version change le parcours : les records sont comparés sur la nouvelle version.", "", id});
         }
     }
-    // Best times set on another version of a campaign level no longer count.
+    // Best times set on another version of a campaign level no longer count: the bundled level
+    // of before this update (or a time from before 2.4.0, without fingerprint). 2.49.1: a best
+    // time set on a revision downloaded from Cosmic Online is not compared with the bundled
+    // file (it was dropped at every start): GameServices::checkRevisionRecords() checks it
+    // against the revisions, keeping it on a revision published with « Garder les records ».
     for (const auto& [id, hash] : now.levels) {
         const LevelRecord* r = records.get(id);
         if (!r || r->bestTime <= 0.0f || r->levelHash == hash) continue;
+        const std::string before = previous.contains(id) && previous[id].is_string() ? previous[id].get<std::string>() : std::string();
+        if (!r->levelHash.empty() && r->levelHash != before) continue;
         auto old = records.invalidateBest(id);
         if (!old) continue;
         std::string name = now.levelNames.count(id) ? now.levelNames.at(id) : id;
@@ -183,6 +191,21 @@ void NewsCenter::apply(const Snapshot& now, RecordsManager& records, const std::
     known_ = {{"levels", levels}, {"powers", pw}, {"enemies", en}, {"bosses", bo}};
     lastVersion_ = gameVersion;
     scanned_ = true;
+}
+
+void NewsCenter::noteRevision(const std::string& levelId, const std::string& levelName, const std::string& hash, bool kept,
+                              const std::optional<LevelRecord>& old) {
+    const std::string tag = hash.substr(0, 12);
+    if (kept) {
+        add({"level_kept:" + levelId + ":" + tag, "level_changed", "Niveau modifié sans changement majeur : " + levelName,
+             "Aucun classement n'est remis à zéro : votre record et les classements restent les mêmes.", "", levelId});
+        return;
+    }
+    if (!old || old->bestTime <= 0.0f) return;
+    std::string text = "Une nouvelle version du niveau change le parcours : votre record de " + LevelTimer::format(old->bestTime);
+    if (old->bestMedal != Medal::None) text += std::string(" (médaille ") + medalLabel(old->bestMedal) + ")";
+    text += " ne compte plus. À vous d'en établir un nouveau !";
+    add({"record:" + levelId + ":" + tag, "record", "Record perdu : " + levelName, text, "", levelId});
 }
 
 void NewsCenter::offerRelease(const std::string& version, int64_t size, const std::string& sha256, const std::string& download,

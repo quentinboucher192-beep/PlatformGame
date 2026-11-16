@@ -15,13 +15,14 @@ Json RunResult::toJson() const {
             {"relics", relics},       {"secrets", secrets},       {"totalSecrets", totalSecrets},
             {"kills", kills},         {"score", score},           {"medal", static_cast<int>(medal)},
             {"powersUsed", powersUsed}, {"splits", splits},       {"date", date},
-            {"player", player},       {"levelHash", levelHash}};
+            {"player", player},       {"levelHash", levelHash}, {"rankedHash", rankedHash}};
 }
 
 RunResult RunResult::fromJson(const Json& j) {
     RunResult r;
     r.levelId = jstr(j, "levelId");
     r.levelHash = jstr(j, "levelHash");
+    r.rankedHash = jstr(j, "rankedHash");
     r.completed = jget<bool>(j, "completed", false);
     r.time = jget<float>(j, "time", 0.0f);
     r.deaths = jget<int>(j, "deaths", 0);
@@ -59,7 +60,8 @@ Json LevelRecord::toJson() const {
             {"mostSecrets", mostSecrets},
             {"bestMedal", static_cast<int>(bestMedal)},
             {"leaderboard", lb},
-            {"levelHash", levelHash}};
+            {"levelHash", levelHash},
+            {"rankedHash", rankedHash}};
 }
 
 LevelRecord LevelRecord::fromJson(const Json& j) {
@@ -70,6 +72,7 @@ LevelRecord LevelRecord::fromJson(const Json& j) {
     r.bestTime = jget<float>(j, "bestTime", 0.0f);
     r.bestTimeDate = jstr(j, "bestTimeDate");
     r.levelHash = jstr(j, "levelHash");
+    r.rankedHash = jstr(j, "rankedHash");
     r.bestSplits = jget<std::vector<float>>(j, "bestSplits", {});
     r.bestTimePowers = jget<std::vector<std::string>>(j, "bestTimePowers", {});
     r.firstCompletionTime = jget<float>(j, "firstCompletionTime", 0.0f);
@@ -191,7 +194,15 @@ std::optional<LevelRecord> RecordsManager::invalidateBest(const std::string& lev
     r.bestMedal = Medal::None;
     r.leaderboard.clear();
     r.levelHash.clear();
+    r.rankedHash.clear();
     return before;
+}
+
+bool RecordsManager::carryBest(const std::string& levelId, const std::string& rankedHash) {
+    auto it = records_.find(levelId);
+    if (it == records_.end() || it->second.bestTime <= 0.0f) return false;
+    it->second.rankedHash = rankedHash;
+    return true;
 }
 
 RecordUpdate RecordsManager::submit(const RunResult& run) {
@@ -214,6 +225,7 @@ RecordUpdate RecordsManager::submit(const RunResult& run) {
         r.bestSplits = run.splits;
         r.bestTimePowers = run.powersUsed;
         r.levelHash = run.levelHash;
+        r.rankedHash = run.rankedHash;
     }
     if (run.score > r.bestScore) {
         u.newBestScore = true;

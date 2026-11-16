@@ -33,6 +33,9 @@ struct RunResult {
     std::string player = "Nova";
     /// Gameplay fingerprint of the level played (campaign): a record is only valid for it.
     std::string levelHash;
+    /// 2.49.1: ranked fingerprint of the revision played (Cosmic Online, campaign): a best time
+    /// stays valid on a later revision published with « Garder les records ».
+    std::string rankedHash;
     /// A training run (GameWorld::training()): never recorded, never saved.
     bool training = false;
 
@@ -59,6 +62,8 @@ struct LevelRecord {
     std::vector<RunResult> leaderboard;  // local top runs (by time)
     /// Gameplay fingerprint of the level when the best time was set ("" = before 2.4.0).
     std::string levelHash;
+    /// 2.49.1: ranked fingerprint of the revision of the best time ("" = before 2.49.1).
+    std::string rankedHash;
 
     Json toJson() const;
     static LevelRecord fromJson(const Json& j);
@@ -125,6 +130,9 @@ public:
     /// The level changed since its records were set: best time, medal, score and local
     /// ranking are dropped (attempts and completions stay). Returns the record as it was.
     std::optional<LevelRecord> invalidateBest(const std::string& levelId);
+    /// 2.49.1: the best time of `levelId` counts on the revision `rankedHash` (published with
+    /// « Garder les records »): nothing else changes. False when there is no best time.
+    bool carryBest(const std::string& levelId, const std::string& rankedHash);
 
     const std::vector<std::unique_ptr<ILeaderboardProvider>>& providers() const { return providers_; }
     void addProvider(std::unique_ptr<ILeaderboardProvider> p) { providers_.push_back(std::move(p)); }

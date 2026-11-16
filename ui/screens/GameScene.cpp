@@ -765,6 +765,8 @@ void GameScene::finishRun(bool completed) {
     // A campaign record belongs to this version of the level (notifications drop it if the
     // level changes later).
     if (!workshop_ && !opt_.editorTest) r.levelHash = fingerprintGameplay(g_.content, level_);
+    // 2.49.1: and to its revision on Cosmic Online (kept on a revision « records gardés »).
+    if (!workshop_ && !opt_.editorTest && fingerprint_) r.rankedHash = fingerprint_->hash;
     const LevelRecord* before = g_.records.get(levelId_);
     LevelRecord previous = before ? *before : LevelRecord{};
     RecordUpdate upd;

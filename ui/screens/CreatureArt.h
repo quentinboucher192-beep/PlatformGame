@@ -13,6 +13,16 @@ namespace cosmic {
 class GameServices;
 struct EnemyDefinition;
 
+/// A layer of a planet's backdrop: its texture and the tint it is drawn with.
+struct BackdropLayer {
+    std::string texture;
+    Color tint = Color::white();
+};
+/// The layers of a planet's backdrop: its own folder (backgrounds/<planet>/), or the layers of
+/// its first level (a planet drawn with another one's layers, tinted: Les Confins). Only files
+/// that exist (2.49.1: never the checkerboard of a missing texture).
+const std::vector<BackdropLayer>& planetBackdrop(GameServices& g, const std::string& planet);
+
 /// A planet's backdrop (its parallax layers stacked) in `dst`.
 void drawPlanetBackdrop(GameServices& g, const std::string& planet, const Rect& dst, Color tint = Color::white());
 

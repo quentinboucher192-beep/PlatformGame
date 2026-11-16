@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "engine/core/Json.h"
+#include "game/records/Records.h"
 
 namespace cosmic {
 
@@ -49,6 +50,11 @@ public:
     void poll(const ContentDatabase& content, RecordsManager& records, const std::string& gameVersion);
     /// Compares with what was already seen and adds the notifications.
     void apply(const Snapshot& now, RecordsManager& records, const std::string& gameVersion, const Json& changelog);
+    /// 2.49.1: a revision of a campaign level downloaded from Cosmic Online. `kept`: published
+    /// with « Garder les records » (no major change: the best time stays, the rankings too);
+    /// else the best time `old` set on the revision before no longer counts.
+    void noteRevision(const std::string& levelId, const std::string& levelName, const std::string& hash, bool kept,
+                      const std::optional<LevelRecord>& old);
     /// A newer installer exists on the server (GET /client/latest).
     void offerRelease(const std::string& version, int64_t size, const std::string& sha256, const std::string& download,
                       const std::string& notes);

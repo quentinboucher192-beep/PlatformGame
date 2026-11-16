@@ -319,7 +319,7 @@ describe("campaign revisions (admin)", () => {
         expect(man.status).toBe(200);
         expect(man.body.data.format).toBe("cosmic.campaign_revisions");
         const t1 = () => man.body.data.levels.find((l: any) => l.level_id === "test_01");
-        expect(t1()).toMatchObject({ version: 1, content_hash: LEVEL_HASH, max_version: 1, file: null, pinned: [] });
+        expect(t1()).toMatchObject({ version: 1, content_hash: LEVEL_HASH, max_version: 1, file: null, pinned: [], kept_hashes: [] });
 
         expect((await publish(admin, publishBody(2, NEW_HASH, "reset"))).status).toBe(201);
         // A challenge drawn on revision 2, still running when revision 3 comes.
@@ -343,5 +343,19 @@ describe("campaign revisions (admin)", () => {
         expect((await api("GET", t1().pinned[0].path)).status).toBe(200);
         expect((await api("GET", t1().file.path)).status).toBe(200);
         expect((await api("GET", `${V}/campaign/levels/test_01/revisions/abc/file`)).status).toBe(404);
+        // Records reset: no earlier revision counts on the current one.
+        expect(t1().kept_hashes).toEqual([]);
+    });
+
+    it("the public manifest names the revisions whose records count on the current one (2.49.1)", async () => {
+        const admin = await registerPlayer("NovaRider");
+        await makeAdmin(admin);
+        const t1 = async () => (await api("GET", `${V}/campaign/revisions`)).body.data.levels.find((l: any) => l.level_id === "test_01");
+        // « Garder les records » twice: both earlier revisions count on the current one, so a
+        // game keeps its own best time of either (no false « NOUVEAU RECORD »).
+        expect((await publish(admin, publishBody(2, NEW_HASH, "keep"))).status).toBe(201);
+        expect((await t1()).kept_hashes).toEqual([LEVEL_HASH]);
+        expect((await publish(admin, publishBody(3, NEW_HASH_3, "keep", 2))).status).toBe(201);
+        expect([...(await t1()).kept_hashes].sort()).toEqual([LEVEL_HASH, NEW_HASH].sort());
     });
 });

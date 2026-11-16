@@ -249,6 +249,33 @@ void GameServices::applyCampaignRevisions() {
         ratings.setCampaignRating(e->id, rating);
     }
     if (changed) online.fingerprints().clear();
+    checkRevisionRecords();
+}
+
+void GameServices::checkRevisionRecords() {
+    bool changed = false;
+    for (const LevelEntry* e : content.levels()) {
+        if (e->source != ContentSource::Builtin) continue;
+        const LevelRecord* r = records.get(e->id);
+        // A best time from before 2.49.1 has no revision: the news compare it with the bundled file.
+        if (!r || r->bestTime <= 0.0f || r->rankedHash.empty()) continue;
+        const LevelFingerprint* fp = online.fingerprints().get(content, e->id);
+        if (!fp || fp->hash == r->rankedHash) continue;
+        const bool kept = campaignRevisions.keptHashes(e->id).count(r->rankedHash) > 0;
+        std::optional<LevelRecord> old;
+        if (kept) records.carryBest(e->id, fp->hash);
+        else old = records.invalidateBest(e->id);
+        std::string name = e->name;
+        for (const PlanetData* p : content.planets())
+            if (p->id == e->planet) name += " (" + p->name + ")";
+        news.noteRevision(e->id, name, fp->hash, kept, old);
+        Log::info("Campagne en ligne : record de {} {}", e->id, kept ? "gardé (révision sans changement majeur)" : "remis à zéro (nouvelle révision)");
+        changed = true;
+    }
+    if (changed) {
+        records.save();
+        news.save();
+    }
 }
 
 CosmeticProgress GameServices::cosmeticProgress() const {

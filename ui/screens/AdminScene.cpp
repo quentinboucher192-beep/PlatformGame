@@ -833,7 +833,7 @@ private:
                     if (const LevelEntry* le = g_.content.level(jstr(l, "level_id"))) lname = le->name;
                     const int carried = jget<int>(l, "carried_bests", 0);
                     text += " · « " + lname + " » révision " + std::to_string(jget<int>(l, "version", 0)) + " (" +
-                            (jstr(l, "records") == "keep" ? "records gardés, " + std::to_string(carried) +
+                            (jstr(l, "records") == "keep" ? "pas de changement majeur, classements gardés, " + std::to_string(carried) +
                                                                 (carried > 1 ? " meilleurs temps reportés)" : " meilleur temps reporté)")
                                                           : std::string("records réinitialisés)"));
                 }
@@ -849,7 +849,8 @@ private:
             std::string lname = jstr(camp, "level_name", jstr(camp, "level_id"));
             if (const LevelEntry* le = g_.content.level(jstr(camp, "level_id"))) lname = le->name;
             const std::string records = jstr(camp, "records") == "keep"
-                                            ? "records gardés (" + std::to_string(jget<int>(camp, "carried_bests", 0)) + " meilleurs temps reportés)"
+                                            ? "pas de changement majeur, aucun classement remis à zéro (" +
+                                                  std::to_string(jget<int>(camp, "carried_bests", 0)) + " meilleurs temps reportés)"
                                             : std::string("records réinitialisés");
             const std::string rev = std::to_string(jget<int>(camp, "version", 0));
             if (action == "admin_campaign_published")

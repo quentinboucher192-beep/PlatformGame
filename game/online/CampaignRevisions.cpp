@@ -94,6 +94,14 @@ std::vector<CampaignRevisionFile> CampaignRevisionStore::applyManifest(const Jso
         if (!safeId(id) || !content.level(id) || content.level(id)->source != ContentSource::Builtin) continue;  // not a level of this game
         Json c = {{"version", jget<int>(l, "version", 0)}, {"content_hash", jstr(l, "content_hash")}, {"max_version", jget<int>(l, "max_version", 0)}};
         if (l.contains("rating") && l["rating"].is_object()) c["rating"] = l["rating"];
+        // 2.49.1: the revisions whose records count on this one (64 hexadecimal digits each).
+        Json kept = Json::array();
+        for (const Json& h : l.value("kept_hashes", Json::array()))
+            if (h.is_string() && h.get<std::string>().size() == 64 &&
+                std::all_of(h.get_ref<const std::string&>().begin(), h.get_ref<const std::string&>().end(),
+                            [](char ch) { return (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f'); }) && kept.size() < 64)
+                kept.push_back(h);
+        if (!kept.empty()) c["kept"] = kept;
         auto file = parseRevision(id, l.value("file", Json()));
         if (file && file->contentHash == jstr(l, "content_hash")) {
             c["file"] = l["file"];
@@ -216,6 +224,17 @@ const Json* CampaignRevisionStore::ratingOf(const std::string& levelId) const {
     if (l == c->end() || !l->contains("file")) return nullptr;
     auto r = l->find("rating");
     return r != l->end() && r->is_object() ? &*r : nullptr;
+}
+
+std::set<std::string> CampaignRevisionStore::keptHashes(const std::string& levelId) const {
+    std::set<std::string> out;
+    auto c = index_.find("current");
+    if (c == index_.end() || !c->is_object()) return out;
+    auto l = c->find(levelId);
+    if (l == c->end() || !l->is_object()) return out;
+    for (const Json& h : l->value("kept", Json::array()))
+        if (h.is_string()) out.insert(h.get<std::string>());
+    return out;
 }
 
 int CampaignRevisionStore::prune() {

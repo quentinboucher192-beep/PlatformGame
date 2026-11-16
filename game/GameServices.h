@@ -188,6 +188,10 @@ public:
     void refreshCampaignRevisions(std::function<void(const std::string&)> done = {});
     /// The levels follow the current revisions kept (content, fingerprints, ratings).
     void applyCampaignRevisions();
+    /// 2.49.1: the best times set on a revision of a campaign level, checked against the
+    /// revision played now: kept on a revision published with « Garder les records » (no major
+    /// change: its rankings are the same), dropped otherwise (announced in the news).
+    void checkRevisionRecords();
     /// Every frame: the manifest is read again every 30 minutes (2 after a failure).
     void updateCampaignRevisions(float dt);
     /// 2.45: the revisions of the native enemies published online (ADMINISTRATION › Ennemis),

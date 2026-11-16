@@ -162,8 +162,9 @@ void LevelEditorScene::sendPublish() {
                        int carried = jget<int>(r.data, "carried_bests", 0);
                        campaign_->publishedText =
                            "La révision " + std::to_string(version) + " de « " + level_.name + " » est en ligne : les jeux la téléchargent au démarrage. " +
-                           (keep ? "Records gardés : " + std::to_string(carried) + (carried > 1 ? " meilleurs temps reportés." : " meilleur temps reporté.")
-                                 : std::string("Records réinitialisés : les anciens restent archivés avec la révision précédente."));
+                           (keep ? "Pas de changement majeur : aucun classement n'est remis à zéro, les classements restent les mêmes (" +
+                                       std::to_string(carried) + (carried > 1 ? " meilleurs temps reportés)." : " meilleur temps reporté).")
+                                 : std::string("Changement majeur : records réinitialisés, les anciens restent archivés avec la révision précédente."));
                        campaign_->step = 4;
                        flash("Révision " + std::to_string(version) + " publiée");
                    }));
@@ -229,11 +230,13 @@ void LevelEditorScene::modalPublish(const Rect& c) {
         ui.label("Les records (choix obligatoire) :", {c.x, y}, 19, ui.theme().accent, Align::Left, FontFace::Bold);
         y += ui.s(34);
         const std::string base = std::to_string(ce.baseVersion);
-        const std::string opt[2] = {"Réinitialiser les records", "Garder les records"};
+        const std::string opt[2] = {"Changement majeur : réinitialiser les records", "Pas de changement majeur : garder les records"};
         const std::string desc[2] = {
-            "Nouvelle révision avec ses propres classements. Les records actuels restent archivés avec la révision " + base + ", jamais mélangés.",
-            "Seulement pour un changement sans effet sur le jeu (décor…) : la nouvelle révision est déclarée compatible, les meilleurs temps, "
-            "classements, records actuels et progressions de la course à la vérification (EXTRÊME) y sont reportés.",
+            "Nouvelle révision avec ses propres classements, repartis de zéro. Les records actuels restent archivés avec la révision " + base +
+                ", jamais mélangés.",
+            "Aucun classement n'est remis à zéro : les classements restent les mêmes. Meilleurs temps, records des joueurs (en ligne et dans "
+            "leur jeu) et progressions de la course à la vérification (EXTRÊME) passent à la nouvelle révision. Seulement pour un changement "
+            "sans effet sur le jeu (décor…).",
         };
         const float optH = ui.s(46);
         for (int i = 0; i < 2; ++i) {

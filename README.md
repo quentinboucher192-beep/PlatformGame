@@ -5,6 +5,11 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.49.1** :
+* **Records et révisions** : un record fait sur une révision téléchargée n'est plus effacé au
+  démarrage (plus de faux « NOUVEAU RECORD ! ») ; une révision **sans changement majeur** ne remet
+  aucun classement à zéro, record local compris, et l'écran de publication le dit clairement.
+
 **Nouveau dans la version 2.49.0** :
 * **« Le Cœur de Pierre »** (EXTRÊME, Les Confins) : le combat seul du **Monolithe, le Golem
   Primordial**, boss géant à huit phases qui combat au sol.

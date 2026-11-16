@@ -2760,6 +2760,24 @@
    ]
   },
   {
+   "fr": "Aucun classement n'est remis à zéro : les classements restent les mêmes. Les meilleurs temps de la révision {0} passent sur la révision {1} (le meilleur temps de chaque joueur, en ligne et dans son jeu, et sa progression dans la course à la vérification, EXTRÊME). Seulement si les deux révisions se jouent exactement de la même façon (décor seul).",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun classement n'est remis à zéro : les classements restent les mêmes. Meilleurs temps, records des joueurs (en ligne et dans leur jeu) et progressions de la course à la vérification (EXTRÊME) passent à la nouvelle révision. Seulement pour un changement sans effet sur le jeu (décor…).",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun classement n'est remis à zéro : votre record et les classements restent les mêmes.",
+   "where": [
+    "game/progression/NewsCenter.cpp"
+   ]
+  },
+  {
    "fr": "Aucun commentaire pour l'instant : donnez le premier avis sur ce niveau.",
    "where": [
     "ui/online/CommentsPanel.cpp"
@@ -6229,6 +6247,19 @@
    ]
   },
   {
+   "fr": "Changement majeur : réinitialiser les records",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp",
+    "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "changement majeur, records réinitialisés",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
    "fr": "Changer",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
@@ -8678,6 +8709,12 @@
   },
   {
    "fr": "Correction : un profil ouvert depuis un classement ne se recharge plus quand on clique sur ses onglets.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Correction : un record fait sur une révision d'un niveau téléchargée depuis Cosmic Online n'est plus effacé à chaque démarrage du jeu (d'où un faux « NOUVEAU RECORD ! » à l'arrivée suivante).",
    "where": [
     "data/news/changelog.json"
    ]
@@ -14851,13 +14888,6 @@
    ]
   },
   {
-   "fr": "Garder les records",
-   "where": [
-    "editors/level_editor/LevelEditorCampaign.cpp",
-    "ui/screens/AdminCampaign.cpp"
-   ]
-  },
-  {
    "fr": "Garder pour plus tard",
    "where": [
     "ui/screens/RewardsScene.cpp"
@@ -18246,19 +18276,19 @@
    ]
   },
   {
-   "fr": "La révision {0} de « {1} » est en ligne : les jeux la téléchargent au démarrage. Records gardés : {2} meilleur temps reporté.",
+   "fr": "La révision {0} de « {1} » est en ligne : les jeux la téléchargent au démarrage. Changement majeur : records réinitialisés, les anciens restent archivés avec la révision précédente.",
    "where": [
     "editors/level_editor/LevelEditorCampaign.cpp"
    ]
   },
   {
-   "fr": "La révision {0} de « {1} » est en ligne : les jeux la téléchargent au démarrage. Records gardés : {2} meilleurs temps reportés.",
+   "fr": "La révision {0} de « {1} » est en ligne : les jeux la téléchargent au démarrage. Pas de changement majeur : aucun classement n'est remis à zéro, les classements restent les mêmes ({2} meilleur temps reporté).",
    "where": [
     "editors/level_editor/LevelEditorCampaign.cpp"
    ]
   },
   {
-   "fr": "La révision {0} de « {1} » est en ligne : les jeux la téléchargent au démarrage. Records réinitialisés : les anciens restent archivés avec la révision précédente.",
+   "fr": "La révision {0} de « {1} » est en ligne : les jeux la téléchargent au démarrage. Pas de changement majeur : aucun classement n'est remis à zéro, les classements restent les mêmes ({2} meilleurs temps reportés).",
    "where": [
     "editors/level_editor/LevelEditorCampaign.cpp"
    ]
@@ -23103,6 +23133,12 @@
    ]
   },
   {
+   "fr": "ne compte plus. À vous d'en établir un nouveau !",
+   "where": [
+    "game/progression/NewsCenter.cpp"
+   ]
+  },
+  {
    "fr": "Ne cède qu'à un événement",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -23450,6 +23486,12 @@
   },
   {
    "fr": "Niveau modifié : {0}",
+   "where": [
+    "game/progression/NewsCenter.cpp"
+   ]
+  },
+  {
+   "fr": "Niveau modifié sans changement majeur : {0}",
    "where": [
     "game/progression/NewsCenter.cpp"
    ]
@@ -24357,7 +24399,7 @@
    ]
   },
   {
-   "fr": "Nouvelle révision avec ses propres classements. Les records actuels restent archivés avec la révision {0}, jamais mélangés.",
+   "fr": "Nouvelle révision avec ses propres classements, repartis de zéro. Les records actuels restent archivés avec la révision {0}, jamais mélangés.",
    "where": [
     "editors/level_editor/LevelEditorCampaign.cpp"
    ]
@@ -26024,6 +26066,26 @@
    "fr": "Pas de boss (facultatif)",
    "where": [
     "editors/level_editor/LevelEditorTools.cpp"
+   ]
+  },
+  {
+   "fr": "Pas de changement majeur : garder les records",
+   "where": [
+    "editors/level_editor/LevelEditorCampaign.cpp",
+    "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "pas de changement majeur, aucun classement remis à zéro ({0} meilleur temps reporté)",
+   "where": [
+    "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "pas de changement majeur, aucun classement remis à zéro ({0} meilleurs temps reportés)",
+   "where": [
+    "ui/screens/AdminCampaign.cpp",
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -28896,6 +28958,12 @@
    ]
   },
   {
+   "fr": "Publier une révision : les deux choix disent clairement « Changement majeur : réinitialiser les records » ou « Pas de changement majeur : garder les records » (aucun classement remis à zéro).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Publier une révision de la campagne",
    "where": [
     "editors/level_editor/LevelEditorCampaign.cpp"
@@ -29926,19 +29994,6 @@
    ]
   },
   {
-   "fr": "records gardés ({0} meilleur temps reporté)",
-   "where": [
-    "ui/screens/AdminCampaign.cpp"
-   ]
-  },
-  {
-   "fr": "records gardés ({0} meilleurs temps reportés)",
-   "where": [
-    "ui/screens/AdminCampaign.cpp",
-    "ui/screens/AdminScene.cpp"
-   ]
-  },
-  {
    "fr": "Records locaux",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
@@ -29959,7 +30014,6 @@
   {
    "fr": "records réinitialisés",
    "where": [
-    "ui/screens/AdminCampaign.cpp",
     "ui/screens/AdminScene.cpp"
    ]
   },
@@ -31863,9 +31917,7 @@
   {
    "fr": "Réinitialiser les records",
    "where": [
-    "editors/enemy_editor/EnemyEditorPublish.cpp",
-    "editors/level_editor/LevelEditorCampaign.cpp",
-    "ui/screens/AdminCampaign.cpp"
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
    ]
   },
   {
@@ -33380,18 +33432,6 @@
    "fr": "Seulement ce que vous avez déjà exploré",
    "where": [
     "ui/screens/PauseScene.cpp"
-   ]
-  },
-  {
-   "fr": "Seulement pour un changement sans effet sur le jeu (décor…) : la nouvelle révision est déclarée compatible, les meilleurs temps, classements, records actuels et progressions de la course à la vérification (EXTRÊME) y sont reportés.",
-   "where": [
-    "editors/level_editor/LevelEditorCampaign.cpp"
-   ]
-  },
-  {
-   "fr": "Seulement si les deux révisions se jouent exactement de la même façon (décor seul). Les meilleurs temps de la révision {0} sont reportés sur la révision {1} : le meilleur temps de chaque joueur est gardé, et sa progression dans la course à la vérification (niveau EXTRÊME).",
-   "where": [
-    "ui/screens/AdminCampaign.cpp"
    ]
   },
   {
@@ -38292,6 +38332,12 @@
    ]
   },
   {
+   "fr": "Une nouvelle version du niveau change le parcours : votre record de {0}",
+   "where": [
+    "game/progression/NewsCenter.cpp"
+   ]
+  },
+  {
    "fr": "Une ombre bordée d'or.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -38379,6 +38425,12 @@
    "fr": "Une révision publiée ici est téléchargée par les jeux, sans mise à jour. Chaque publication demande de choisir : réinitialiser les records, ou les garder.",
    "where": [
     "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "Une révision publiée sans changement majeur ne remet aucun classement à zéro : votre record local reste le même, comme les classements en ligne, et une actualité l'indique.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -43195,7 +43247,7 @@
    ]
   },
   {
-   "fr": "« {0} » : la révision {1} est de nouveau en ligne (records gardés).",
+   "fr": "« {0} » : la révision {1} est de nouveau en ligne (pas de changement majeur, aucun classement remis à zéro).",
    "where": [
     "ui/screens/AdminCampaign.cpp"
    ]
@@ -43339,13 +43391,13 @@
    ]
   },
   {
-   "fr": "« {0} » révision {1} (records gardés, {2} meilleur temps reporté)",
+   "fr": "« {0} » révision {1} (pas de changement majeur, classements gardés, {2} meilleur temps reporté)",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
   },
   {
-   "fr": "« {0} » révision {1} (records gardés, {2} meilleurs temps reportés)",
+   "fr": "« {0} » révision {1} (pas de changement majeur, classements gardés, {2} meilleurs temps reportés)",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]

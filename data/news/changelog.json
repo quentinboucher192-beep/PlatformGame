@@ -1,4 +1,9 @@
 {
+  "2.49.1": [
+    "Correction : un record fait sur une révision d'un niveau téléchargée depuis Cosmic Online n'est plus effacé à chaque démarrage du jeu (d'où un faux « NOUVEAU RECORD ! » à l'arrivée suivante).",
+    "Une révision publiée sans changement majeur ne remet aucun classement à zéro : votre record local reste le même, comme les classements en ligne, et une actualité l'indique.",
+    "Publier une révision : les deux choix disent clairement « Changement majeur : réinitialiser les records » ou « Pas de changement majeur : garder les records » (aucun classement remis à zéro)."
+  ],
   "2.49.0": [
     "Les Confins, deuxième niveau : « Le Cœur de Pierre » (EXTRÊME) : le combat du Monolithe, le Golem Primordial, seul. Une seule vie, aucun checkpoint.",
     "Les niveaux des Confins sont désormais le combat du boss seul : « La Gueule du Dragon » commence directement par le choix des pouvoirs puis l'arène de Pyrrhax (nouvelle version du niveau : son classement repart de zéro).",

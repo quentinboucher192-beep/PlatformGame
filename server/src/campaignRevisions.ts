@@ -571,11 +571,13 @@ export async function revert(ctx: Ctx): Promise<Response> {
  * fingerprint, then play it instead of their bundled file); `max_version`: the highest
  * revision the server knows (a game whose bundled level is newer keeps its own); `pinned`:
  * the other revisions with a file that a challenge not over yet still plays (a challenge
- * keeps the revision it was drawn on).
+ * keeps the revision it was drawn on); `kept_hashes` (2.49.1): the fingerprints of the earlier
+ * revisions whose records count on the current one (« Garder les records »: campaign_board_links),
+ * so that a game keeps its own best time of those instead of starting the level from scratch.
  */
 export async function manifest(ctx: Ctx): Promise<Response> {
     const today = new Date().toISOString().slice(0, 10);
-    const [levels, files, maxes, pinned] = await Promise.all([
+    const [levels, files, maxes, pinned, links] = await Promise.all([
         ctx.env.DB.prepare(
             `SELECT l.id, l.current_version, l.content_hash, v.version, v.min_game_version
              FROM levels l JOIN level_versions v ON v.level_id = l.id AND v.content_hash = l.content_hash ORDER BY l.planet_id, l.level_order, l.id`,
@@ -590,6 +592,11 @@ export async function manifest(ctx: Ctx): Promise<Response> {
         )
             .bind(today)
             .all<{ level_id: string; level_hash: string }>(),
+        ctx.env.DB.prepare("SELECT level_id, to_hash, from_hash FROM campaign_board_links ORDER BY level_id, from_hash").all<{
+            level_id: string;
+            to_hash: string;
+            from_hash: string;
+        }>(),
     ]);
     const fileOf = new Map(files.results.map((f) => [`${f.level_id}:${f.content_hash}`, f]));
     const maxOf = new Map(maxes.results.map((m) => [m.level_id, m.max_version]));
@@ -618,6 +625,7 @@ export async function manifest(ctx: Ctx): Promise<Response> {
                 file: f ? fileJson(f) : null,
                 rating: f ? parseRating(f.rating) : null,
                 pinned: pins.map(fileJson),
+                kept_hashes: links.results.filter((k) => k.level_id === l.id && k.to_hash === l.content_hash).map((k) => k.from_hash),
             };
         }),
     });
