@@ -1805,6 +1805,12 @@
    ]
   },
   {
+   "fr": "Appuyez sur « Confirmer » pour supprimer ce replay de ce PC (il reste en ligne s'il y est encore).",
+   "where": [
+    "ui/screens/DownloadedReplaysUi.cpp"
+   ]
+  },
+  {
    "fr": "Après (s)",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -2403,6 +2409,12 @@
    ]
   },
   {
+   "fr": "Au plus {0} replays et {1} Mo sur ce PC ; un replay n'est jamais supprimé sans vous.",
+   "where": [
+    "ui/screens/DownloadedReplaysUi.cpp"
+   ]
+  },
+  {
    "fr": "Au sommet de Glacior se dresse le Bastion Gelé, forteresse du dernier gardien des Anciens. Franchissez remparts, tours et galeries avec tous vos pouvoirs, et affrontez le Glaciarque pour rallumer le dernier relais.",
    "where": [
     "data/levels/glacior_03.json"
@@ -2816,6 +2828,12 @@
    "fr": "Aucun replay pour ce niveau : terminez-le (votre course est gardée), ou importez un replay.",
    "where": [
     "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun replay téléchargé pour l'instant. Sur un classement en ligne, « Télécharger » (ou la flèche à côté de « Voir ») garde un replay sur ce PC pour le regarder plus tard, même sans connexion.",
+   "where": [
+    "ui/screens/DownloadedReplaysUi.cpp"
    ]
   },
   {
@@ -4920,6 +4938,7 @@
   {
    "fr": "Ce joueur a masqué son profil : replay indisponible.",
    "where": [
+    "game/online/ReplayDownloads.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },
@@ -5178,6 +5197,12 @@
    ]
   },
   {
+   "fr": "Ce replay a été fait sur une autre version du niveau : il ne peut pas être rejoué tel quel.",
+   "where": [
+    "ui/screens/DownloadedReplaysUi.cpp"
+   ]
+  },
+  {
    "fr": "Ce replay est celui d'un autre niveau ({0}) : il ne peut pas courir ici.",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
@@ -5193,6 +5218,18 @@
    "fr": "Ce replay n'a pas été joué sur cette version du niveau : terminez la version publiée.",
    "where": [
     "server/src/community.ts"
+   ]
+  },
+  {
+   "fr": "Ce replay n'est plus sur ce PC.",
+   "where": [
+    "game/ghost/ReplayLibrary.cpp"
+   ]
+  },
+  {
+   "fr": "Ce replay n'est plus sur Cosmic Online.",
+   "where": [
+    "game/online/ReplayDownloads.cpp"
    ]
   },
   {
@@ -7113,6 +7150,7 @@
   {
    "fr": "Comparer",
    "where": [
+    "ui/screens/DownloadedReplaysUi.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp"
    ]
@@ -7317,7 +7355,8 @@
   {
    "fr": "Confirmer",
    "where": [
-    "ui/screens/ContentManagerScene.cpp"
+    "ui/screens/ContentManagerScene.cpp",
+    "ui/screens/DownloadedReplaysUi.cpp"
    ]
   },
   {
@@ -7539,6 +7578,12 @@
    "where": [
     "game/online/HttpTransport.cpp",
     "game/online/HttpTransportWinHttp.cpp"
+   ]
+  },
+  {
+   "fr": "Connexion impossible ({0}) : réessayez plus tard.",
+   "where": [
+    "game/online/ReplayDownloads.cpp"
    ]
   },
   {
@@ -7956,6 +8001,12 @@
    ]
   },
   {
+   "fr": "Cosmic Online est hors de portée : une connexion est nécessaire pour télécharger un replay (pas pour le regarder ensuite).",
+   "where": [
+    "game/online/ReplayDownloads.cpp"
+   ]
+  },
+  {
    "fr": "Cosmic Online est indisponible dans cette version ou désactivé dans les paramètres : les défis viennent du serveur.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -8294,6 +8345,13 @@
    "fr": "Course à la vérification : {0} %",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Course à la vérification – {0} %",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp",
+    "ui/screens/RaceScene.cpp"
    ]
   },
   {
@@ -12549,6 +12607,18 @@
    ]
   },
   {
+   "fr": "Fichier du replay introuvable sur ce PC.",
+   "where": [
+    "game/ghost/ReplayLibrary.cpp"
+   ]
+  },
+  {
+   "fr": "Fichier du replay trop volumineux.",
+   "where": [
+    "game/ghost/ReplayLibrary.cpp"
+   ]
+  },
+  {
    "fr": "Fichier en double : {0}",
    "where": [
     "packaging/PackageImporter.cpp"
@@ -13065,6 +13135,7 @@
     "game/content/ContentDatabase.cpp",
     "game/ghost/Ghost.cpp",
     "game/ghost/GhostStore.cpp",
+    "game/ghost/ReplayLibrary.cpp",
     "game/ghost/SegmentHistory.cpp",
     "game/ghost/TrainingSegments.cpp",
     "game/levels/LevelData.cpp",
@@ -13584,6 +13655,12 @@
    "fr": "Gardé sur ce PC",
    "where": [
     "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
+   "fr": "Gardés sur cet ordinateur : ils se regardent sans connexion et sans compte. On les télécharge depuis les classements en ligne, les défis et les courses à la vérification (« Télécharger » ou la flèche à côté de « Voir »).",
+   "where": [
+    "ui/screens/DownloadedReplaysUi.cpp"
    ]
   },
   {
@@ -14621,6 +14698,7 @@
     "game/content/ContentDatabase.cpp",
     "game/cosmetics/Collection.cpp",
     "game/enemies/EnemyDefinition.cpp",
+    "game/ghost/ReplayLibrary.cpp",
     "game/levels/LevelData.cpp",
     "game/online/DailyChallenges.cpp",
     "game/online/LevelFingerprint.cpp",
@@ -15101,6 +15179,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Index des replays non enregistré.",
+   "where": [
+    "game/ghost/ReplayLibrary.cpp"
    ]
   },
   {
@@ -15656,7 +15740,8 @@
    "fr": "Joueur",
    "where": [
     "ui/online/OnlineWidgets.cpp",
-    "ui/screens/AdminScene.cpp"
+    "ui/screens/AdminScene.cpp",
+    "ui/screens/DownloadedReplaysUi.cpp"
    ]
   },
   {
@@ -17157,6 +17242,12 @@
    ]
   },
   {
+   "fr": "Le fichier du replay a été modifié : supprimez-le puis téléchargez-le de nouveau.",
+   "where": [
+    "game/ghost/ReplayLibrary.cpp"
+   ]
+  },
+  {
    "fr": "le fichier n'est pas un objet JSON",
    "where": [
     "game/levels/LevelData.cpp"
@@ -17572,6 +17663,13 @@
    ]
   },
   {
+   "fr": "Le replay",
+   "where": [
+    "game/online/ReplayDownloads.cpp",
+    "ui/screens/ReplayDownloadUi.cpp"
+   ]
+  },
+  {
    "fr": "Le replay de cet essai a déjà été envoyé.",
    "where": [
     "server/src/challenges.ts"
@@ -17587,6 +17685,12 @@
    "fr": "Le replay de fin de niveau n'est pas valable.",
    "where": [
     "server/src/community.ts"
+   ]
+  },
+  {
+   "fr": "Le replay de {0}",
+   "where": [
+    "ui/screens/ReplayDownloadUi.cpp"
    ]
   },
   {
@@ -17896,6 +18000,12 @@
    "fr": "Lecture du package ou du replay impossible.",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
+   ]
+  },
+  {
+   "fr": "Lecture du replay impossible.",
+   "where": [
+    "game/ghost/ReplayLibrary.cpp"
    ]
   },
   {
@@ -18675,6 +18785,18 @@
    "where": [
     "data/enemies/echo_glaciarch.json",
     "data/enemies/glaciarch.json"
+   ]
+  },
+  {
+   "fr": "Limite atteinte : {0} Mo de replays téléchargés au plus. Supprimez-en dans Collection › Replays.",
+   "where": [
+    "game/ghost/ReplayLibrary.cpp"
+   ]
+  },
+  {
+   "fr": "Limite atteinte : {0} replays téléchargés au plus. Supprimez-en dans Collection › Replays.",
+   "where": [
+    "game/ghost/ReplayLibrary.cpp"
    ]
   },
   {
@@ -20848,6 +20970,7 @@
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
     "ui/screens/AdminCalendar.cpp",
+    "ui/screens/DownloadedReplaysUi.cpp",
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/ProjectsScene.cpp"
    ]
@@ -20862,6 +20985,12 @@
    "fr": "Niveau : {0}",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "Niveau absent de ce jeu : installez-le pour regarder ce replay.",
+   "where": [
+    "ui/screens/DownloadedReplaysUi.cpp"
    ]
   },
   {
@@ -20917,6 +21046,12 @@
    "fr": "niveau de la communauté : vérifiez qu'il reste faisable avec ces règles (pouvoirs, emplacements, stations)",
    "where": [
     "server/src/challengeSpec.mjs"
+   ]
+  },
+  {
+   "fr": "Niveau de la communauté · version {0}",
+   "where": [
+    "ui/screens/OnlineLevelsScene.cpp"
    ]
   },
   {
@@ -22844,6 +22979,18 @@
    ]
   },
   {
+   "fr": "Ouverture du replay…",
+   "where": [
+    "ui/screens/DownloadedReplaysUi.cpp"
+   ]
+  },
+  {
+   "fr": "Ouverture…",
+   "where": [
+    "ui/screens/DownloadedReplaysUi.cpp"
+   ]
+  },
+  {
    "fr": "Ouvre la voie à {0}",
    "where": [
     "ui/screens/AchievementsScene.cpp"
@@ -23141,6 +23288,7 @@
   {
    "fr": "par {0}",
    "where": [
+    "ui/screens/DownloadedReplaysUi.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/PlanetMapScene.cpp",
     "ui/screens/ProjectsScene.cpp"
@@ -26947,6 +27095,8 @@
    "where": [
     "game/progression/NewsCenter.cpp",
     "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/OnlineRankingScene.cpp",
+    "ui/screens/OnlineThreadScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp",
     "ui/screens/ReplayScene.cpp"
    ]
@@ -27302,6 +27452,7 @@
   {
    "fr": "Regarder",
    "where": [
+    "ui/screens/DownloadedReplaysUi.cpp",
     "ui/screens/SocialScene.cpp"
    ]
   },
@@ -27608,6 +27759,7 @@
   {
    "fr": "Replay de {0}",
    "where": [
+    "ui/screens/DownloadedReplaysUi.cpp",
     "ui/screens/OnlineLevelsScene.cpp"
    ]
   },
@@ -27624,9 +27776,16 @@
    ]
   },
   {
+   "fr": "Replay illisible ({0}) : supprimez-le puis téléchargez-le de nouveau.",
+   "where": [
+    "game/ghost/ReplayLibrary.cpp"
+   ]
+  },
+  {
    "fr": "Replay illisible ({0}).",
    "where": [
-    "game/ghost/GhostStore.cpp"
+    "game/ghost/GhostStore.cpp",
+    "game/ghost/ReplayLibrary.cpp"
    ]
   },
   {
@@ -27640,6 +27799,12 @@
    ]
   },
   {
+   "fr": "Replay illisible.",
+   "where": [
+    "ui/screens/DownloadedReplaysUi.cpp"
+   ]
+  },
+  {
    "fr": "Replay importé.",
    "where": [
     "ui/screens/GhostSetupScene.cpp",
@@ -27647,9 +27812,17 @@
    ]
   },
   {
+   "fr": "Replay incomplet : il ne peut pas être regardé.",
+   "where": [
+    "game/ghost/ReplayLibrary.cpp"
+   ]
+  },
+  {
    "fr": "Replay inconnu.",
    "where": [
-    "game/online/DailyChallenges.cpp"
+    "game/ghost/ReplayLibrary.cpp",
+    "game/online/DailyChallenges.cpp",
+    "game/online/ReplayDownloads.cpp"
    ]
   },
   {
@@ -27663,6 +27836,7 @@
   {
    "fr": "Replay indisponible.",
    "where": [
+    "game/online/ReplayDownloads.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -27742,15 +27916,59 @@
    ]
   },
   {
+   "fr": "Replay sans niveau.",
+   "where": [
+    "game/ghost/ReplayLibrary.cpp"
+   ]
+  },
+  {
+   "fr": "Replay supprimé de ce PC ({0}).",
+   "where": [
+    "ui/screens/DownloadedReplaysUi.cpp"
+   ]
+  },
+  {
+   "fr": "Replay supprimé de ce PC.",
+   "where": [
+    "ui/screens/DownloadedReplaysUi.cpp"
+   ]
+  },
+  {
+   "fr": "Replay trop volumineux.",
+   "where": [
+    "game/ghost/ReplayLibrary.cpp"
+   ]
+  },
+  {
+   "fr": "Replay téléchargé",
+   "where": [
+    "game/online/ReplayDownloads.cpp",
+    "ui/screens/DownloadedReplaysUi.cpp"
+   ]
+  },
+  {
    "fr": "Replay vide ou trop volumineux.",
    "where": [
     "game/ghost/GhostStore.cpp"
    ]
   },
   {
+   "fr": "Replay vide.",
+   "where": [
+    "game/ghost/ReplayLibrary.cpp",
+    "game/online/ReplayDownloads.cpp"
+   ]
+  },
+  {
    "fr": "replay vérifié (structure, version du niveau, durée, trajectoire), non re-simulé",
    "where": [
     "server/src/community.ts"
+   ]
+  },
+  {
+   "fr": "Replays",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -27775,6 +27993,12 @@
    "fr": "Replays partout : chaque joueur classé a son bouton de replay dans CLASSEMENTS, dans le classement des NIVEAUX EN LIGNE et dans la course à la vérification des niveaux EXTRÊME (« Voir » sur chaque tentative classée).",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Replays téléchargés",
+   "where": [
+    "ui/screens/DownloadedReplaysUi.cpp"
    ]
   },
   {
@@ -28562,6 +28786,18 @@
    "where": [
     "ui/screens/OnlineThreadScene.cpp",
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Réalisé le {0}",
+   "where": [
+    "ui/screens/DownloadedReplaysUi.cpp"
+   ]
+  },
+  {
+   "fr": "Réalisé le {0}  ·  téléchargé le {1}",
+   "where": [
+    "ui/screens/DownloadedReplaysUi.cpp"
    ]
   },
   {
@@ -31309,6 +31545,12 @@
    ]
   },
   {
+   "fr": "Suppression impossible : fichier en cours d'utilisation ?",
+   "where": [
+    "game/ghost/ReplayLibrary.cpp"
+   ]
+  },
+  {
    "fr": "Supprime définitivement le compte, les records, les replays, les amis et l'avatar sur le serveur. Les records locaux restent sur cet ordinateur.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
@@ -31322,6 +31564,7 @@
     "editors/level_editor/LevelEditorPanels.cpp",
     "ui/online/CommentsPanel.cpp",
     "ui/screens/ContentManagerScene.cpp",
+    "ui/screens/DownloadedReplaysUi.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/SocialScene.cpp"
@@ -33215,6 +33458,12 @@
    ]
   },
   {
+   "fr": "Tous les niveaux",
+   "where": [
+    "ui/screens/DownloadedReplaysUi.cpp"
+   ]
+  },
+  {
    "fr": "tous les objets ne sont pas récupérés",
    "where": [
     "server/src/records.ts"
@@ -33827,11 +34076,18 @@
    ]
   },
   {
+   "fr": "Téléchargement du replay impossible",
+   "where": [
+    "game/online/ReplayDownloads.cpp"
+   ]
+  },
+  {
    "fr": "Téléchargement du replay…",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/RaceScene.cpp",
+    "ui/screens/ReplayDownloadUi.cpp",
     "ui/screens/ReplayScene.cpp"
    ]
   },
@@ -33889,13 +34145,15 @@
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
-    "ui/screens/ReplayCompareSetupScene.cpp"
+    "ui/screens/ReplayCompareSetupScene.cpp",
+    "ui/screens/ReplayDownloadUi.cpp"
    ]
   },
   {
    "fr": "Télécharger",
    "where": [
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengesScene.cpp",
+    "ui/screens/ReplayDownloadUi.cpp"
    ]
   },
   {
@@ -33908,6 +34166,12 @@
    "fr": "Télécharger (.exe, {0})",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Télécharger ce replay pour le regarder sans connexion",
+   "where": [
+    "ui/screens/ReplayDownloadUi.cpp"
    ]
   },
   {
@@ -33944,6 +34208,24 @@
    "fr": "Téléchargez « {0} » dans NIVEAUX EN LIGNE pour regarder {1} y jouer.",
    "where": [
     "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
+   "fr": "Téléchargé",
+   "where": [
+    "ui/screens/ReplayDownloadUi.cpp"
+   ]
+  },
+  {
+   "fr": "Téléchargé : à regarder sans connexion dans Collection › Replays",
+   "where": [
+    "ui/screens/ReplayDownloadUi.cpp"
+   ]
+  },
+  {
+   "fr": "Téléchargé le {0}",
+   "where": [
+    "ui/screens/DownloadedReplaysUi.cpp"
    ]
   },
   {
@@ -35479,6 +35761,7 @@
     "game/GameServices.cpp",
     "game/achievements/Achievements.cpp",
     "game/content/ContentDatabase.cpp",
+    "game/ghost/ReplayLibrary.cpp",
     "game/ghost/SegmentHistory.cpp",
     "game/ghost/TrainingSegments.cpp",
     "game/levels/DifficultyRating.cpp",
@@ -36812,6 +37095,12 @@
    ]
   },
   {
+   "fr": "Vérification de la version du niveau…",
+   "where": [
+    "ui/screens/DownloadedReplaysUi.cpp"
+   ]
+  },
+  {
    "fr": "Vérification du fichier…",
    "where": [
     "ui/screens/AdminBackups.cpp"
@@ -37168,6 +37457,12 @@
    "fr": "{0}  ·  image {1}/{2}",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0}  ·  par {1}",
+   "where": [
+    "ui/screens/DownloadedReplaysUi.cpp"
    ]
   },
   {
@@ -37965,6 +38260,12 @@
    ]
   },
   {
+   "fr": "{0} est gardé sur ce PC : à regarder sans connexion dans Collection › Replays.",
+   "where": [
+    "game/online/ReplayDownloads.cpp"
+   ]
+  },
+  {
    "fr": "{0} est hors des limites du niveau",
    "where": [
     "editors/level_editor/LevelEditorTools.cpp"
@@ -38225,6 +38526,7 @@
    "where": [
     "ui/screens/AdminBackups.cpp",
     "ui/screens/ContentManagerScene.cpp",
+    "ui/screens/DownloadedReplaysUi.cpp",
     "ui/screens/NotificationsScene.cpp"
    ]
   },
@@ -38470,9 +38772,21 @@
    ]
   },
   {
+   "fr": "{0} replay · {1} sur {2} Mo",
+   "where": [
+    "ui/screens/DownloadedReplaysUi.cpp"
+   ]
+  },
+  {
    "fr": "{0} replays",
    "where": [
     "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} replays · {1} sur {2} Mo",
+   "where": [
+    "ui/screens/DownloadedReplaysUi.cpp"
    ]
   },
   {
@@ -38915,6 +39229,12 @@
    "fr": "{0}% objets",
    "where": [
     "game/records/Records.cpp"
+   ]
+  },
+  {
+   "fr": "{0},{1} Mo",
+   "where": [
+    "ui/screens/DownloadedReplaysUi.cpp"
    ]
   },
   {
@@ -39872,6 +40192,12 @@
    "fr": "Écriture impossible dans le dossier de l'utilisateur.",
    "where": [
     "game/online/UpdateInstaller.cpp"
+   ]
+  },
+  {
+   "fr": "Écriture impossible sur ce PC.",
+   "where": [
+    "game/ghost/ReplayLibrary.cpp"
    ]
   },
   {

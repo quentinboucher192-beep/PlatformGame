@@ -10,11 +10,13 @@
 #include "game/cosmetics/Collection.h"
 #include "game/content/ContentDatabase.h"
 #include "game/ghost/GhostStore.h"
+#include "game/ghost/ReplayLibrary.h"
 #include "game/ghost/SegmentHistory.h"
 #include "game/ghost/TrainingSegments.h"
 #include "game/levels/RatingService.h"
 #include "game/online/DailyChallenges.h"
 #include "game/online/OnlineService.h"
+#include "game/online/ReplayDownloads.h"
 #include "game/online/Spectate.h"
 #include "game/online/UpdateInstaller.h"
 #include "game/progression/NewBadges.h"
@@ -114,6 +116,10 @@ public:
     std::string presenceSent_;
     /// Cosmic Online (rankings, globe, account). Fully optional: offline play never needs it.
     OnlineService online;
+    /// « Replays téléchargés » (2.45): online replays kept on this computer to be watched
+    /// without a connection (user folder, replays/downloaded/), and their downloads.
+    ReplayLibrary replayLibrary;
+    ReplayDownloads replayDownloads{online, replayLibrary};
     /// « Défis du jour » (2.32): the challenges (cached, playable offline until their end),
     /// local results and streak, runs waiting to be sent.
     ChallengeService challenges;

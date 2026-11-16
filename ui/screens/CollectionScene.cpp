@@ -1,8 +1,9 @@
 // Main menu → Collection (2.19): the cosmetic rewards unlocked by the achievements' stars
 // (Vestiaire, Route des étoiles), the jukebox of the tracks heard in the game (Musiques)
 // and the gallery of the planets and creatures met (Galerie). 2.41: the Vestiaire's « Badges
-// du profil », achievements shown on the online profile (slots opened by the stars). Display
-// only: nothing here changes a run, a replay or a record.
+// du profil », achievements shown on the online profile (slots opened by the stars). 2.45:
+// « Replays », the online replays downloaded to be watched without a connection
+// (ui/screens/DownloadedReplaysUi.h). Nothing here changes a run, a replay or a record.
 
 #include <SDL3_image/SDL_image.h>
 
@@ -22,6 +23,7 @@
 #include "ui/screens/ChallengeRewardsUi.h"
 #include "ui/screens/CosmeticFx.h"
 #include "ui/screens/CreatureArt.h"
+#include "ui/screens/DownloadedReplaysUi.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/ProfileBadgesUi.h"
 #include "ui/widgets/Glyphs.h"
@@ -102,9 +104,13 @@ struct Track {
     std::string file, title, where, group, planet;
 };
 
+/// Vestiaire, Route des étoiles, Musiques, Galerie, Replays.
+constexpr int kTabCount = 5;
+
 class CollectionScene : public Scene {
 public:
-    CollectionScene(GameServices& g, int tab, std::string select = {}) : g_(g), tab_(std::clamp(tab, 0, 3)), online_(g), select_(std::move(select)) {}
+    CollectionScene(GameServices& g, int tab, std::string select = {})
+        : g_(g), tab_(std::clamp(tab, 0, kTabCount - 1)), online_(g), select_(std::move(select)), replays_(g) {}
 
     void onEnter() override {
         loadTracks();
@@ -161,6 +167,7 @@ public:
         float a = t_ * 2.4f;
         trailFx_.update(trailCenter_ + Vec2{std::cos(a) * trailRadius_, std::sin(a * 2.0f) * trailRadius_ * 0.25f}, dt, true);
         if (scan_.valid() && scan_.wait_for(std::chrono::seconds(0)) == std::future_status::ready) planetsOf_ = scan_.get();
+        replays_.update();
     }
 
     void render(float) override {
@@ -174,20 +181,28 @@ public:
         // Header: title, sections, stars, back.
         ui.label("COLLECTION", {m, y + ui.s(24)}, 32, ui.theme().text, Align::Left, FontFace::Title, VAlign::Middle);
         float x = m + ui.text().measure("COLLECTION", FontFace::Title, ui.s(32)).x + ui.s(24);
-        static const char* kTabs[4] = {"Vestiaire", "Route des étoiles", "Musiques", "Galerie"};
-        for (int i = 0; i < 4; ++i) {
-            float w = ui.text().measure(kTabs[i], FontFace::Bold, ui.s(17)).x + ui.s(34);
+        static const char* kTabs[kTabCount] = {"Vestiaire", "Route des étoiles", "Musiques", "Galerie", "Replays"};
+        float backW = ui.s(140);
+        // The tabs fit between the title and « Retour »: a smaller font when the window is narrow.
+        float tabFont = 17.0f;
+        {
+            float room = ui.screenW() - m - backW - ui.s(14) - x, need = 0.0f;
+            for (const char* t : kTabs) need += ui.text().measure(t, FontFace::Bold, ui.s(17)).x + ui.s(34) + ui.s(8);
+            if (need > room && need > 0.0f) tabFont = std::max(17.0f * std::max(room - kTabCount * ui.s(42), 0.0f) / std::max(need - kTabCount * ui.s(42), 1.0f), 11.5f / ui.s(1.0f));
+        }
+        for (int i = 0; i < kTabCount; ++i) {
+            float w = ui.text().measure(kTabs[i], FontFace::Bold, ui.s(tabFont)).x + ui.s(34);
             UIContext::ButtonStyle st;
             st.small = true;
             st.selected = tab_ == i;
-            st.fontSize = 17;
+            st.fontSize = tabFont;
             if (ui.button("tab" + std::to_string(i), {x, y + ui.s(4), w, ui.s(42)}, kTabs[i], st)) tab_ = i;
             // « NOUVEAU » while a reward added by an update waits in it (data/news/new_features.json).
-            static const char* const kTabFeatures[4] = {"collection.tab.wardrobe", "collection.tab.route", "collection.tab.music", "collection.tab.gallery"};
+            static const char* const kTabFeatures[kTabCount] = {"collection.tab.wardrobe", "collection.tab.route", "collection.tab.music",
+                                                                "collection.tab.gallery", "collection.tab.replays"};
             ui.newBadge("tab" + std::to_string(i), {x, y + ui.s(4), w, ui.s(42)}, kTabFeatures[i], true, true);
             x += w + ui.s(8);
         }
-        float backW = ui.s(140);
         UIContext::ButtonStyle bs;
         bs.small = true;
         bool back = ui.button("back", {ui.screenW() - m - backW, y + ui.s(4), backW, ui.s(42)}, "Retour", bs);
@@ -208,7 +223,8 @@ public:
             case 0: drawWardrobe(area); break;
             case 1: drawRoute(area); break;
             case 2: drawMusic(area); break;
-            default: drawGallery(area); break;
+            case 3: drawGallery(area); break;
+            default: replays_.draw(area); break;
         }
         ui.popId();
         if (back || ui.backPressed()) {
@@ -1581,6 +1597,8 @@ private:
     PlanetsOf planetsOf_;
     std::string exportedMsg_;
     float exportedTimer_ = 0.0f;
+    // Replays (2.45)
+    DownloadedReplaysPanel replays_;
 };
 
 }  // namespace

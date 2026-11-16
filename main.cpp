@@ -563,6 +563,7 @@ int main(int argc, char** argv) {
         game.ratings.poll();
         game.news.poll(game.content, game.records, COSMIC_VERSION_STRING);
         game.online.update(dt);
+        game.replayDownloads.update();
         game.challenges.update(dt);
         game.updates.update();
         if (sendPresence) game.updatePresence(dt);
@@ -659,7 +660,7 @@ int main(int argc, char** argv) {
             game.onlineOpen = a == "list" ? "ach-list" : a.rfind("zoom:", 0) == 0 ? "ach-" + a : "ach:" + a;
         app.pushScene(makeAchievements(game));
     } else if (has("--collection")) {
-        // --collection [0-3][:detail] (tabs: Vestiaire, Route, Musiques, Galerie; details such as
+        // --collection [0-4][:detail] (tabs: Vestiaire, Route, Musiques, Galerie, Replays; details such as
         // col-cat:<0-5> (5: Badges du profil) or col-badge:<achievement id>)
         std::string c = value("--collection");
         int tab = c.empty() ? 0 : std::atoi(c.c_str());

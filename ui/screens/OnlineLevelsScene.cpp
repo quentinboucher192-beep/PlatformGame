@@ -21,6 +21,7 @@
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/OnlineNav.h"
+#include "ui/screens/ReplayDownloadUi.h"
 #include "ui/screens/Thumbnail.h"
 
 namespace cosmic {
@@ -132,6 +133,7 @@ public:
             drawList();
         }
         drawDetail();
+        ReplayDownloadUi::drawTip(g_);  // the download icons' tooltip, over the rest
         ui.inputEnabled = top;
         if (confirmReport_) drawReport();
         else if (comments_.modal()) comments_.drawModal();
@@ -813,21 +815,35 @@ private:
                 bool me = jget<bool>(e, "me", false);
                 ui.label("#" + std::to_string(jget<int>(e, "rank", 0)), {x, ey + ui.s(15)}, 15, me ? ui.theme().accent : ui.theme().textDim, Align::Left,
                          FontFace::Bold, VAlign::Middle);
-                ui.label(jstr(e["player"], "username"), {x + ui.s(54), ey + ui.s(15)}, 15, me ? ui.theme().accent : ui.theme().text, Align::Left,
-                         FontFace::Body, VAlign::Middle);
-                // The replay of each ranked time (2.32.2), left of the time.
+                // The replay of each ranked time (2.32.2), left of the time; 2.45: its download
+                // (kept on this computer) left of it. The name takes what they leave.
                 const std::string tt = timeText(jget<int64_t>(e, "time_ms", 0));
                 float tw = ui.text().measure(tt, FontFace::Bold, ui.s(15)).x;
                 const std::string rid = jstr(e, "record_id");
+                const std::string who = jstr(e["player"], "username");
+                float nameRight = x + w - ui.s(12) - tw - ui.s(12);
                 if (!rid.empty()) {
                     Rect vb{x + w - ui.s(12) - tw - ui.s(12) - ui.s(36), ey + ui.s(3), ui.s(36), ui.s(24)};
                     UIContext::ButtonStyle vst;
                     vst.small = true;
                     vst.enabled = fetchingReplay_.empty();
-                    if (ui.button("rep/" + rid, vb, "", vst)) watchCommunityReplay(rid, jstr(e["player"], "username"));
+                    if (ui.button("rep/" + rid, vb, "", vst)) watchCommunityReplay(rid, who);
                     Vec2 c = vb.center();
                     Color tc = vst.enabled ? ui.theme().accent : ui.theme().textDim;
                     ui.r().fillTriangle({c.x - ui.s(4), c.y - ui.s(6)}, {c.x - ui.s(4), c.y + ui.s(6)}, {c.x + ui.s(6), c.y}, tc);
+                    Rect db{vb.x - ui.s(6) - ui.s(36), vb.y, ui.s(36), ui.s(24)};
+                    ReplayDownloadUi::icon(g_, "dl/" + rid, db,
+                                           ReplayDownloadUi::request("community", rid, "/api/v1/community/records/" + rid + "/replay", who, who, local, title,
+                                                                     "Niveau de la communauté · version " + std::to_string(jget<int>(b, "version", current)),
+                                                                     jget<int64_t>(e, "time_ms", 0), jstr(e, "achieved_at", jstr(e, "created_at"))));
+                    nameRight = db.x - ui.s(8);
+                }
+                {
+                    i18n::Verbatim verbatim;  // a pseudonym
+                    const float room = nameRight - (x + ui.s(54));
+                    if (room > ui.s(20))
+                        ui.label(ui.elide(who, FontFace::Body, 15, room), {x + ui.s(54), ey + ui.s(15)}, 15, me ? ui.theme().accent : ui.theme().text,
+                                 Align::Left, FontFace::Body, VAlign::Middle);
                 }
                 ui.label(tt, {x + w - ui.s(12), ey + ui.s(15)}, 15, ui.theme().text, Align::Right, FontFace::Bold, VAlign::Middle);
                 ey += ui.s(34);
@@ -843,6 +859,11 @@ private:
 
     /// Downloads a ranked time's replay (public once checked), then plays it.
     void watchCommunityReplay(const std::string& recordId, const std::string& who) {
+        // 2.45: downloaded on this computer, it plays from its copy (no network needed).
+        if (auto rep = ReplayDownloadUi::localCopy(g_, ReplayLibrary::makeId("community", recordId))) {
+            g_.app.pushScene(makeLocalReplayViewer(g_, std::move(*rep), "Replay de " + who));
+            return;
+        }
         fetchingReplay_ = recordId;
         say("Téléchargement du replay…", false);
         g_.online.getBinary(
