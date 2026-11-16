@@ -5,6 +5,9 @@
 // before), with every place of the game's levels where it can be fought (read from the levels
 // on a worker thread, game/content/CreaturePlaces.h); a place opens its level's page. A boss
 // met can be trained against (« Entraînement », ui/screens/BossTrainingScene.cpp).
+// « Fiche » (2.37): what the boss is, read from its definition (data/enemies): health, contact
+// damage, speed, weaknesses, time limit, each phase (from which share of its health, its rhythm,
+// its attacks) and each attack (type, damage, wind-up, cooldown). Nothing is estimated there.
 
 #include <algorithm>
 #include <cmath>
@@ -14,8 +17,10 @@
 #include "engine/core/I18n.h"
 #include "game/GameServices.h"
 #include "game/content/CreaturePlaces.h"
+#include "game/enemies/BossDifficulty.h"
 #include "game/gameplay/BossTraining.h"
 #include "game/gameplay/BossBadge.h"
+#include "ui/online/RatingWidgets.h"
 #include "ui/screens/CreatureArt.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
@@ -47,6 +52,30 @@ std::string dateFr(const std::string& d) {
     return d.substr(8, 2) + "/" + d.substr(5, 2) + "/" + d.substr(0, 4) + " " + d.substr(11, 5);
 }
 
+/// « ×1,25 »: a multiplier as the sheet shows it (French decimal comma, no useless zero).
+std::string times(float v) {
+    char b[32];
+    std::snprintf(b, sizeof b, "%.2f", v);
+    std::string t = b;
+    while (!t.empty() && t.back() == '0') t.pop_back();
+    if (!t.empty() && t.back() == '.') t.pop_back();
+    if (auto dot = t.find('.'); dot != std::string::npos) t[dot] = ',';
+    return "×" + t;
+}
+
+/// « 0,6 s », « 12 » : a number with at most `decimals` decimals, French decimal comma.
+std::string num(float v, int decimals = 1) {
+    char b[32];
+    std::snprintf(b, sizeof b, "%.*f", decimals, v);
+    std::string t = b;
+    if (t.find('.') != std::string::npos) {
+        while (!t.empty() && t.back() == '0') t.pop_back();
+        if (!t.empty() && t.back() == '.') t.pop_back();
+    }
+    if (auto dot = t.find('.'); dot != std::string::npos) t[dot] = ',';
+    return t;
+}
+
 /// How long a clip is shown before the next one: whole loops, about 2.4 seconds.
 float clipHold(float loop) {
     if (loop <= 0.05f) return 2.4f;
@@ -74,6 +103,10 @@ public:
         // Automated screenshots: "boss:<id>[:<clip>]" (the clip then stays shown).
         if (!g_.onlineOpen.empty() && g_.onlineOpen.rfind("boss:", 0) == 0) {
             std::string v = g_.onlineOpen.substr(5);
+            if (v.size() > 6 && v.compare(v.size() - 6, 6, ":fiche") == 0) {
+                tab_ = 1;
+                v.resize(v.size() - 6);
+            }
             if (auto c = v.find(':'); c != std::string::npos) {
                 forcedClip_ = std::max(0, std::atoi(v.c_str() + c + 1));
                 v = v.substr(0, c);
@@ -267,15 +300,232 @@ private:
             ui.label(ui.elide(cells[i].value, FontFace::Bold, vf, room), {c.x + ui.s(16), c.y + ch * 0.68f}, vf, cells[i].c, Align::Left,
                      FontFace::Bold, VAlign::Middle);
         }
-        // Below: the phases, and where to fight it.
-        y = box.bottom() + ui.s(24);
+        // Below, two sub-tabs: the player's statistics (the phases, where to fight it), and the
+        // boss's sheet.
+        y = box.bottom() + ui.s(18);
+        Rect tabsR{x, y, std::min(w, ui.s(440)), ui.s(40)};
+        ui.tabs("sub", tabsR, {"Mes statistiques", "Fiche"}, tab_);
+        // « NOUVEAU » (2.37) on the sheet's tab until the sheet is shown once.
+        if (tab_ == 1 && ui.isNew("stats.sheet") && ui.featureSeen) ui.featureSeen("stats.sheet");
+        if (ui.isNew("stats.sheet")) ui.drawNewPill(tabsR.right() - ui.s(10), tabsR.y, true);
+        y = tabsR.bottom() + ui.s(14);
         float bh = p.bottom() - ui.s(22) - y;
         float colGap = ui.s(28);
+        if (tab_ == 1) {
+            // Its difficulty in stars (computed from its definition: game/enemies/BossDifficulty.h).
+            const float dh = ui.s(40);
+            drawDifficulty({x, y, w, dh}, bossDifficulty(d));
+            y += dh + ui.s(12);
+            bh -= dh + ui.s(12);
+            float leftW = std::floor((w - colGap) * 0.4f);
+            drawSheetFacts({x, y, leftW, bh}, d);
+            drawSheetPhases({x + leftW + colGap, y, w - leftW - colGap, bh}, d);
+            return;
+        }
         float leftW = std::floor((w - colGap) * 0.44f);
-        const float trainH = ui.s(60);
-        drawPhases({x, y, leftW, bh - trainH - ui.s(14)}, d, r, rec && r.fights > 0);
+        const float trainH = ui.s(56);
+        drawPhases({x, y, leftW, bh - trainH - ui.s(12)}, d, r, rec && r.fights > 0);
         drawTraining({x, y + bh - trainH, leftW, trainH}, d, rec);
         drawPlaces({x + leftW + colGap, y, w - leftW - colGap, bh}, d);
+    }
+
+    // ---------------------------------------------------------------- « Fiche » (2.37)
+
+    /// « Difficulté »: 1 to 10 stars, the number, and (when it fits) where it comes from.
+    void drawDifficulty(const Rect& r, const BossDifficulty& diff) {
+        UIContext& ui = g_.ui;
+        const Color gold{255, 217, 138, 255};
+        ui.r().fillRoundedRect(r, ui.s(8), Color{16, 24, 48, 220});
+        float lx = r.x + ui.s(14);
+        float lf = fz(ui, 18);
+        Vec2 ls = ui.label("Difficulté", {lx, r.center().y}, lf, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+        std::string value = std::to_string(diff.stars) + " / 10";
+        float vf = fz(ui, 18);
+        float vw = ui.text().measure(value, FontFace::Bold, ui.s(vf)).x;
+        ui.label(value, {r.right() - ui.s(14), r.center().y}, vf, gold, Align::Right, FontFace::Bold, VAlign::Middle);
+        float sx = lx + ls.x + ui.s(16);
+        float avail = r.right() - ui.s(14) - vw - ui.s(16) - sx;
+        float step = std::clamp(avail / 10.0f, ui.s(10), ui.s(26));
+        for (int i = 0; i < 10; ++i)
+            drawRatingStar(ui.r(), {sx + step * (static_cast<float>(i) + 0.5f), r.center().y}, step * 0.42f,
+                           i < diff.stars ? gold : Color{90, 104, 130, 255}, i < diff.stars);
+        // Where it comes from, between the stars and the number, when there is room.
+        const std::string hint = "calculée d'après ses PV, ses phases et ses attaques";
+        float hx = sx + step * 10.0f + ui.s(16);
+        float hroom = r.right() - ui.s(14) - vw - ui.s(16) - hx;
+        if (hroom > ui.s(140)) {
+            float hf = fit(ui, hint, FontFace::Body, 14, hroom, 0.8f);
+            ui.label(ui.elide(hint, FontFace::Body, hf, hroom), {hx, r.center().y}, hf, ui.theme().textDim, Align::Left, FontFace::Body,
+                     VAlign::Middle);
+        }
+    }
+
+    /// What the boss is: one line per fact, the value at the right (read from its definition).
+    void drawSheetFacts(const Rect& area, const EnemyDefinition& d) {
+        UIContext& ui = g_.ui;
+        ui.label("Caractéristiques", {area.x, area.y + ui.s(14)}, 22, ui.theme().accent, Align::Left, FontFace::Bold, VAlign::Middle);
+        struct Fact {
+            std::string label, value;
+            Color c;
+        };
+        std::vector<Fact> facts;
+        facts.push_back({"Points de vie", num(d.hp, 0), ui.theme().danger});
+        facts.push_back({"Phases", std::to_string(std::max<size_t>(1, d.phases.size())), ui.theme().text});
+        facts.push_back({"Attaques", std::to_string(d.attacks.size()), ui.theme().text});
+        facts.push_back({"Dégâts au contact", num(d.contactDamage), ui.theme().warm});
+        facts.push_back({"Vitesse", num(d.speed, 0) + (d.chaseSpeedMultiplier != 1.0f ? "  (" + times(d.chaseSpeedMultiplier) + " en poursuite)" : ""),
+                         ui.theme().text});
+        facts.push_back({"Déplacement", d.flying ? std::string("En vol") : std::string(movementLabel(d.movement)), ui.theme().text});
+        facts.push_back({"Résistance au recul", num(std::clamp(d.knockbackResist, 0.0f, 1.0f) * 100.0f, 0) + " %", ui.theme().text});
+        // A time limit: the whole fight's, or the phases' (the boss enrages after it).
+        std::string limit;
+        if (d.enrageTime > 0.0f) limit = num(d.enrageTime, 0) + " s";
+        for (size_t i = 0; i < d.phases.size(); ++i)
+            if (d.phases[i].enrageTime > 0.0f) {
+                if (!limit.empty()) limit += ", ";
+                limit += num(d.phases[i].enrageTime, 0) + " s (phase " + std::to_string(i + 1) + ")";
+            }
+        facts.push_back({"Limite de temps", limit.empty() ? std::string("Aucune") : limit, limit.empty() ? ui.theme().textDim : ui.theme().danger});
+        // What hurts it more (or less) than usual.
+        std::string weak, strong;
+        for (int t = 0; t < static_cast<int>(DamageType::Count); ++t) {
+            float m = d.multiplier(static_cast<DamageType>(t));
+            if (m == 1.0f) continue;
+            std::string& out = m > 1.0f ? weak : strong;
+            if (!out.empty()) out += ", ";
+            out += std::string(damageTypeLabel(static_cast<DamageType>(t))) + " " + times(m);
+        }
+        facts.push_back({"Faiblesses", weak.empty() ? std::string("Aucune") : weak, weak.empty() ? ui.theme().textDim : ui.theme().success});
+        if (!strong.empty()) facts.push_back({"Résistances", strong, ui.theme().danger});
+        if (!d.finalAttacks.empty())
+            facts.push_back({"Dernier souffle", std::to_string(d.finalAttacks.size()) + (d.finalAttacks.size() > 1 ? " attaques à survivre" : " attaque à survivre"),
+                             ui.theme().warm});
+        Rect view{area.x, area.y + ui.s(40), area.w, area.bottom() - area.y - ui.s(40)};
+        float rowH = ui.s(36);
+        ui.beginScroll("facts", view, static_cast<float>(facts.size()) * rowH);
+        float y = view.y - ui.scrollOffset();
+        for (size_t i = 0; i < facts.size(); ++i) {
+            Rect row{view.x, y, view.w - ui.s(14), rowH - ui.s(4)};
+            y += rowH;
+            if (row.bottom() < view.y || row.y > view.bottom()) continue;
+            ui.r().fillRoundedRect(row, ui.s(6), i % 2 ? Color{12, 18, 38, 160} : Color{16, 24, 48, 200});
+            // The value first (as whole as it can be), the label in the room left.
+            float vroom = row.w * 0.62f;
+            float vf = fit(ui, facts[i].value, FontFace::Bold, 17, vroom, 0.7f);
+            std::string value = ui.elide(facts[i].value, FontFace::Bold, vf, vroom);
+            float vw = ui.text().measure(value, FontFace::Bold, ui.s(vf)).x;
+            ui.label(value, {row.right() - ui.s(12), row.center().y}, vf, facts[i].c, Align::Right, FontFace::Bold, VAlign::Middle);
+            float lroom = row.w - ui.s(24) - vw - ui.s(12);
+            float lf = fit(ui, facts[i].label, FontFace::Body, 16, lroom, 0.75f);
+            ui.label(ui.elide(facts[i].label, FontFace::Body, lf, lroom), {row.x + ui.s(12), row.center().y}, lf, ui.theme().textDim, Align::Left,
+                     FontFace::Body, VAlign::Middle);
+        }
+        ui.endScroll();
+    }
+
+    /// Its phases (from which share of its health, its rhythm, its attacks), its last stand,
+    /// then every attack once (type, damage, wind-up, cooldown). One scroll region: the
+    /// content's height is the one measured on the previous frame.
+    void drawSheetPhases(const Rect& area, const EnemyDefinition& d) {
+        UIContext& ui = g_.ui;
+        ui.label("Phases et attaques", {area.x, area.y + ui.s(14)}, 22, ui.theme().accent, Align::Left, FontFace::Bold, VAlign::Middle);
+        Rect view{area.x, area.y + ui.s(40), area.w, area.bottom() - area.y - ui.s(40)};
+        if (sheetOf_ != d.id) {
+            sheetOf_ = d.id;
+            sheetH_ = view.h;
+            ui.setScroll("sheet", 0.0f);
+        }
+        ui.beginScroll("sheet", view, sheetH_);
+        const float top = view.y - ui.scrollOffset();
+        float y = top;
+        const float w = view.w - ui.s(16);
+        auto attackName = [&](const std::string& id) {
+            const AttackDef* a = d.attack(id);
+            return a ? a->name : id;
+        };
+        auto names = [&](const std::vector<std::string>& ids) {
+            std::string out;
+            for (const auto& id : ids) {
+                if (!out.empty()) out += "  ·  ";
+                out += attackName(id);
+            }
+            return out;
+        };
+        // One block: a title line (a right part when it fits), a dim line, the attacks wrapped.
+        auto block = [&](const std::string& title, const std::string& right, const std::string& rhythm, const std::string& attacks, Color accent) {
+            const float pad = ui.s(12);
+            float inner = w - 2 * pad;
+            float af = fz(ui, 15);
+            float ah = attacks.empty() ? 0.0f : ui.text().measureWrapped(attacks, FontFace::Body, ui.s(af), inner).y;
+            float rf = fit(ui, rhythm, FontFace::Body, 14, inner, 0.75f);
+            float h = pad + ui.s(24) + (rhythm.empty() ? 0.0f : ui.s(22)) + (ah > 0.0f ? ah + ui.s(6) : 0.0f) + pad;
+            Rect b{view.x, y, w, h};
+            if (b.bottom() >= view.y && b.y <= view.bottom()) {
+                ui.r().fillRoundedRect(b, ui.s(8), Color{12, 18, 38, 220});
+                ui.r().fillRect({b.x, b.y + ui.s(6), ui.s(3), b.h - ui.s(12)}, accent);
+                float ly = b.y + pad + ui.s(12);
+                float rw = 0.0f;
+                if (!right.empty()) {
+                    float rfz = fit(ui, right, FontFace::Body, 15, inner * 0.45f, 0.7f);
+                    std::string rt = ui.elide(right, FontFace::Body, rfz, inner * 0.45f);
+                    rw = ui.text().measure(rt, FontFace::Body, ui.s(rfz)).x + ui.s(12);
+                    ui.label(rt, {b.right() - pad, ly}, rfz, ui.theme().textDim, Align::Right, FontFace::Body, VAlign::Middle);
+                }
+                float troom = inner - rw;
+                float tf = fit(ui, title, FontFace::Bold, 18, troom, 0.75f);
+                ui.label(ui.elide(title, FontFace::Bold, tf, troom), {b.x + pad, ly}, tf, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+                float cy = b.y + pad + ui.s(24);
+                if (!rhythm.empty()) {
+                    ui.label(ui.elide(rhythm, FontFace::Body, rf, inner), {b.x + pad, cy + ui.s(11)}, rf, Color{170, 188, 210, 255}, Align::Left,
+                             FontFace::Body, VAlign::Middle);
+                    cy += ui.s(22);
+                }
+                if (ah > 0.0f) ui.labelWrapped(attacks, {b.x + pad, cy + ui.s(4)}, inner, af, ui.theme().text);
+            }
+            y += h + ui.s(8);
+        };
+        const size_t phases = d.phases.size();
+        for (size_t i = 0; i < phases; ++i) {
+            const BossPhase& ph = d.phases[i];
+            std::string title = std::to_string(i + 1) + ". " + (ph.name.empty() ? "Phase " + std::to_string(i + 1) : ph.name);
+            std::string from = i == 0 ? std::string("dès le début") : "à " + num(ph.hpThreshold * 100.0f, 1) + " % des PV";
+            std::string rhythm = "Vitesse " + times(ph.speedMultiplier) + "  ·  Recharge " + times(ph.cooldownMultiplier) + "  ·  Annonces " +
+                                 times(ph.telegraphMultiplier);
+            if (ph.combo > 1) rhythm += "  ·  Enchaîne " + std::to_string(ph.combo) + " attaques";
+            if (ph.summonOnEnter) rhythm += "  ·  Appelle des renforts";
+            if (ph.enrageTime > 0.0f) rhythm += "  ·  Rage après " + num(ph.enrageTime, 0) + " s";
+            block(title, from, rhythm, names(ph.attacks), Color{255, 179, 71, 200});
+        }
+        if (phases == 0) {
+            std::vector<std::string> all;
+            for (const auto& a : d.attacks) all.push_back(a.id);
+            block("Phase unique", "dès le début", "", names(all), Color{255, 179, 71, 200});
+        }
+        if (!d.finalAttacks.empty())
+            block("Dernier souffle", "à 0 PV, invincible", d.finalText, names(d.finalAttacks), ui.theme().danger.withAlpha(220));
+        // Every attack once.
+        y += ui.s(6);
+        ui.label("Attaques", {view.x, y + ui.s(12)}, 20, ui.theme().accent, Align::Left, FontFace::Bold, VAlign::Middle);
+        y += ui.s(32);
+        for (const auto& a : d.attacks) {
+            std::string details = std::string(attackTypeLabel(a.type)) + "  ·  Dégâts " + num(a.damage) + "  ·  Annonce " + num(a.telegraph, 2) +
+                                  " s  ·  Recharge " + num(a.cooldown, 2) + " s";
+            if (a.count > 1) details += "  ·  " + std::to_string(a.count) + " projectiles";
+            if (a.bursts > 1) details += "  ·  " + std::to_string(a.bursts) + " salves";
+            Rect row{view.x, y, w, ui.s(52)};
+            y += ui.s(56);
+            if (row.bottom() < view.y || row.y > view.bottom()) continue;
+            ui.r().fillRoundedRect(row, ui.s(6), Color{12, 18, 38, 180});
+            float room = row.w - ui.s(24);
+            float nf = fit(ui, a.name, FontFace::Bold, 16, room, 0.75f);
+            ui.label(ui.elide(a.name, FontFace::Bold, nf, room), {row.x + ui.s(12), row.y + ui.s(16)}, nf, ui.theme().text, Align::Left, FontFace::Bold,
+                     VAlign::Middle);
+            float df = fit(ui, details, FontFace::Body, 14, room, 0.75f);
+            ui.label(ui.elide(details, FontFace::Body, df, room), {row.x + ui.s(12), row.y + ui.s(37)}, df, ui.theme().textDim, Align::Left,
+                     FontFace::Body, VAlign::Middle);
+        }
+        sheetH_ = y - top;
+        ui.endScroll();
     }
 
     /// The boss in motion: every clip in turn once beaten (activate: the next one), its
@@ -533,6 +783,9 @@ private:
     int forcedClip_ = -1;
     bool holdClip_ = false;
     std::shared_ptr<const CreatureAtlas> atlas_;
+    int tab_ = 0;              // 0: « Mes statistiques », 1: « Fiche »
+    std::string sheetOf_;      // the boss whose sheet is shown, and its content's height
+    float sheetH_ = 0.0f;
     std::string placesOf_;
     std::vector<CreaturePlace> places_;
 };
