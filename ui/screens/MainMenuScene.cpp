@@ -74,10 +74,13 @@ public:
         // Only a campaign level: WORKSHOP levels are reached from the WORKSHOP.
         bool canContinue = !g_.progression.lastLevel.empty() && g_.content.level(g_.progression.lastLevel) &&
                            !g_.content.campaignPlanetOf(g_.progression.lastLevel).empty();
-        int rows = canContinue ? 10 : 9;
-        // Ten rows (2.32: « Défis »): a little tighter so that the menu keeps clear of the footer.
-        float x = ui.s(120), w = ui.s(470), h = ui.s(rows > 9 ? 62 : 66), gap = ui.s(rows > 9 ? 12 : 14);
-        float y = ui.screenH() * 0.5f - (rows * (h + gap)) * 0.5f + ui.s(40);
+        // ADMINISTRATION (2.40): only for an account with the admin role, never for the others.
+        const bool admin = g_.online.isAdmin();
+        int rows = (canContinue ? 10 : 9) + (admin ? 1 : 0);
+        // Ten rows (2.32: « Défis »): a little tighter so that the menu keeps clear of the footer;
+        // eleven (an admin's menu): tighter still.
+        float x = ui.s(120), w = ui.s(470), h = ui.s(rows > 10 ? 56 : rows > 9 ? 62 : 66), gap = ui.s(rows > 10 ? 10 : rows > 9 ? 12 : 14);
+        float y = ui.screenH() * 0.5f - (rows * (h + gap)) * 0.5f + ui.s(rows > 10 ? 12 : 40);
         Rect side{x - ui.s(40), y - ui.s(40), w + ui.s(80), rows * (h + gap) + ui.s(70)};
         ui.r().fillRoundedRect(side, ui.s(18), Color{6, 10, 22, 150});
         ui.pushId("main");
@@ -144,6 +147,7 @@ public:
             if (btn("stats", "Statistiques", sub)) g_.app.switchScene(makeBossStats(g_), 0.3f);
         }
         if (btn("settings", "Paramètres", "")) g_.app.pushScene(makeSettingsScene(g_, false));
+        if (admin && btn("admin", "Administration", "joueurs · journal")) g_.app.switchScene(makeAdmin(g_), 0.3f);
         UIContext::ButtonStyle danger;
         danger.danger = true;
         danger.align = Align::Left;

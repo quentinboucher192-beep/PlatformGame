@@ -444,6 +444,12 @@
    ]
   },
   {
+   "fr": "a donné le rôle admin à {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "A en avance",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -456,6 +462,12 @@
    ]
   },
   {
+   "fr": "a nommé {0} premier admin (mise en service)",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "A rejoué à l'identique",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -465,6 +477,42 @@
    "fr": "A rejoué à l'identique · {0} contrôles vérifiés",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "a retiré le rôle admin à {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a tenté de changer son propre rôle : refusé",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a tenté de {0} : refusé",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a tenté de {0} : refusé, compte suspendu",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a tenté de {0} : refusé, il doit rester un admin",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a tenté de {0} : refusé, le rôle avait changé entre-temps",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -542,6 +590,7 @@
   {
    "fr": "absent",
    "where": [
+    "ui/screens/AdminScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
   },
@@ -626,11 +675,18 @@
    ]
   },
   {
+   "fr": "Action",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "action",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/levels/Cinematic.cpp",
     "game/online/Spectate.cpp",
+    "ui/screens/AdminScene.cpp",
     "ui/screens/ProjectsScene.cpp"
    ]
   },
@@ -776,6 +832,22 @@
    ]
   },
   {
+   "fr": "Admin",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "admin",
+   "where": [
+    "editors/level_editor/LevelEditorLive.cpp",
+    "editors/level_editor/LevelEditorScene.cpp",
+    "ui/screens/AdminScene.cpp",
+    "ui/screens/MainMenuScene.cpp",
+    "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
    "fr": "Administrateur",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -785,6 +857,30 @@
    "fr": "administrateur",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
+   ]
+  },
+  {
+   "fr": "ADMINISTRATION",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Administration",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "Admins",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "admins",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -1373,6 +1469,7 @@
     "editors/level_editor/LevelEditorChat.cpp",
     "editors/level_editor/LevelEditorDialogs.cpp",
     "ui/online/CommentsPanel.cpp",
+    "ui/screens/AdminScene.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/ContentManagerScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
@@ -2249,6 +2346,12 @@
    ]
   },
   {
+   "fr": "Aucun joueur ne correspond.",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun joueur ne s'appelle « {0} ».",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -2811,6 +2914,7 @@
     "game/online/LiveSession.cpp",
     "game/online/OnlineGlobe.cpp",
     "ui/online/CommentsPanel.cpp",
+    "ui/screens/AdminScene.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/OnlineAccountScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
@@ -4292,6 +4396,12 @@
    ]
   },
   {
+   "fr": "Ce compte est suspendu : il ne peut pas devenir admin.",
+   "where": [
+    "server/src/adminRoles.ts"
+   ]
+  },
+  {
    "fr": "Ce compte est suspendu.",
    "where": [
     "server/src/auth.ts"
@@ -5118,6 +5228,7 @@
     "editors/level_editor/LevelEditorChat.cpp",
     "ui/online/CommentsPanel.cpp",
     "ui/online/RatingWidgets.cpp",
+    "ui/screens/AdminScene.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
@@ -5783,6 +5894,12 @@
    ]
   },
   {
+   "fr": "Clic sur un pseudo : son profil · Entrée sur le rôle : le changer",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Client HTTP",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
@@ -6382,6 +6499,12 @@
    "where": [
     "game/online/OnlineService.cpp",
     "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
+   "fr": "compte supprimé",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -7614,6 +7737,7 @@
   {
    "fr": "Créations",
    "where": [
+    "ui/screens/AdminScene.cpp",
     "ui/screens/PlayerProfileScene.cpp"
    ]
   },
@@ -8188,6 +8312,12 @@
    ]
   },
   {
+   "fr": "Dernière activité",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Dernière ascension",
    "where": [
     "data/levels/sylvanox_01.json"
@@ -8642,6 +8772,24 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Donner le rôle",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Donner le rôle admin ?",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "donner le rôle admin à {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -10069,6 +10217,7 @@
    "fr": "En ligne",
    "where": [
     "game/online/OnlineTypes.cpp",
+    "ui/screens/AdminScene.cpp",
     "ui/screens/ContentManagerScene.cpp",
     "ui/screens/MainMenuScene.cpp",
     "ui/screens/PlayerProfileScene.cpp"
@@ -10077,6 +10226,7 @@
   {
    "fr": "en ligne",
    "where": [
+    "ui/screens/AdminScene.cpp",
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
@@ -12159,6 +12309,12 @@
    ]
   },
   {
+   "fr": "Gardé 6 mois · ni adresse IP ni e-mail",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Gardé sur ce PC",
    "where": [
     "game/online/DailyChallenges.cpp"
@@ -12973,6 +13129,7 @@
   {
    "fr": "hors ligne",
    "where": [
+    "ui/screens/AdminScene.cpp",
     "ui/screens/MainMenuScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
@@ -13197,6 +13354,7 @@
     "game/progression/NewsCenter.cpp",
     "game/race/Race.cpp",
     "ui/online/CommentsPanel.cpp",
+    "ui/screens/AdminScene.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/CollectionScene.cpp",
     "ui/screens/CommunityPublishScene.cpp",
@@ -13335,6 +13493,12 @@
    "fr": "Il apparaît dans les niveaux et l'éditeur (Bibliothèque › Pouvoirs).",
    "where": [
     "game/progression/NewsCenter.cpp"
+   ]
+  },
+  {
+   "fr": "Il doit toujours rester au moins un admin.",
+   "where": [
+    "server/src/adminRoles.ts"
    ]
   },
   {
@@ -13640,6 +13804,12 @@
    "fr": "initialisation de libcurl impossible",
    "where": [
     "game/online/HttpTransportCurl.cpp"
+   ]
+  },
+  {
+   "fr": "Inscrit le",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -14121,7 +14291,14 @@
   {
    "fr": "Joueur",
    "where": [
-    "ui/online/OnlineWidgets.cpp"
+    "ui/online/OnlineWidgets.cpp",
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "joueur",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -14157,6 +14334,7 @@
   {
    "fr": "Joueur introuvable.",
    "where": [
+    "server/src/adminRoles.ts",
     "server/src/creators.ts",
     "server/src/friends.ts",
     "server/src/players.ts",
@@ -14185,6 +14363,12 @@
    ]
   },
   {
+   "fr": "Joueurs",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Joueurs de Cosmic Online",
    "where": [
     "ui/screens/SocialScene.cpp"
@@ -14197,6 +14381,12 @@
    ]
   },
   {
+   "fr": "joueurs · journal",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
    "fr": "Jour",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -14206,6 +14396,12 @@
    "fr": "Jour {0}",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Journal",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -14292,6 +14488,12 @@
    "fr": "L",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "L'action est inscrite au journal avec votre pseudo.",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -15923,6 +16125,12 @@
    ]
   },
   {
+   "fr": "Le rôle a changé entre-temps : actualisez la liste.",
+   "where": [
+    "server/src/adminRoles.ts"
+   ]
+  },
+  {
    "fr": "Le sas du cœur : bouclier, grappin, téléportation.",
    "where": [
     "data/levels/sylvanox_03.json"
@@ -17423,6 +17631,12 @@
    ]
   },
   {
+   "fr": "masqué",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "masqué (signalements)",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp",
@@ -17439,6 +17653,12 @@
    "fr": "Masquée",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "masquée",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -21564,6 +21784,7 @@
   {
    "fr": "Pays",
    "where": [
+    "ui/screens/AdminScene.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/OnlineAccountScene.cpp"
    ]
@@ -21590,6 +21811,12 @@
    "fr": "Pays inconnu : choisissez votre pays dans votre compte (EN LIGNE) pour ce classement.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "pays masqué · inscrit le {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -22370,6 +22597,12 @@
    "fr": "Plume du puits",
    "where": [
     "data/levels/glacior_02.json"
+   ]
+  },
+  {
+   "fr": "Plus anciens",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -23613,6 +23846,12 @@
    ]
   },
   {
+   "fr": "Précédents",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Prédateur rapide aux rayures bioluminescentes. S'accroupit avant de bondir : esquivez au bon moment.",
    "where": [
     "data/enemies/stalker.json"
@@ -23646,6 +23885,12 @@
    "fr": "Préparation du package…",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
+   ]
+  },
+  {
+   "fr": "Présence",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -23962,6 +24207,12 @@
    "fr": "Qualité des particules",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Quand",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -24533,6 +24784,12 @@
    ]
   },
   {
+   "fr": "Rechercher un pseudo (2 lettres au moins)",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Rechercher un pseudonyme…",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
@@ -24859,6 +25116,12 @@
    "where": [
     "data/enemies/aurorax.json",
     "data/enemies/echo_aurorax.json"
+   ]
+  },
+  {
+   "fr": "Refus",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -25473,6 +25736,24 @@
    ]
   },
   {
+   "fr": "Retirer le rôle",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Retirer le rôle admin ?",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "retirer le rôle admin à {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Retirer ma note",
    "where": [
     "ui/online/RatingWidgets.cpp"
@@ -25507,6 +25788,7 @@
    "where": [
     "engine/input/InputTypes.cpp",
     "ui/screens/AchievementsScene.cpp",
+    "ui/screens/AdminScene.cpp",
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/ChallengesScene.cpp",
@@ -25659,6 +25941,12 @@
    "fr": "Rien d'exploré pour l'instant.",
    "where": [
     "ui/screens/PauseMap.cpp"
+   ]
+  },
+  {
+   "fr": "Rien d'inscrit pour ces filtres.",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -26494,6 +26782,18 @@
    ]
   },
   {
+   "fr": "Rôle",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Rôle administrateur : les comptes admin ont un écran Administration (absent pour tous les autres comptes) — liste des joueurs avec recherche et filtres, rôle admin donné ou retiré après confirmation (jamais le sien, jamais le dernier admin), et un journal de chaque action, sans adresse IP ni e-mail. Le serveur vérifie le rôle à chaque demande.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Rôle de {0} : {1}.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -26503,6 +26803,12 @@
    "fr": "Rôle des nouveaux membres",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Rôles",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -28539,6 +28845,12 @@
    ]
   },
   {
+   "fr": "Suivants",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "SUIVI",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp",
@@ -28897,6 +29209,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Système",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -30147,6 +30465,7 @@
    "fr": "total",
    "where": [
     "game/online/OnlineService.cpp",
+    "ui/screens/AdminScene.cpp",
     "ui/screens/OnlineRankingScene.cpp"
    ]
   },
@@ -30249,6 +30568,12 @@
    ]
   },
   {
+   "fr": "toujours affichés ici, recherche ou pas",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Toujours devant",
    "where": [
     "data/achievements/achievements.json"
@@ -30290,6 +30615,7 @@
   {
    "fr": "Tous",
    "where": [
+    "ui/screens/AdminScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp"
    ]
   },
@@ -30400,6 +30726,12 @@
    "where": [
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Toutes les actions",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -31114,6 +31446,12 @@
    "fr": "Un compte (facultatif) envoie vos temps dans les classements mondiaux.",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "un compte supprimé",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -33368,6 +33706,12 @@
    ]
   },
   {
+   "fr": "vous",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Vous avez déjà publié ce commentaire.",
    "where": [
     "server/src/workshop.ts"
@@ -33461,6 +33805,12 @@
    "fr": "Vous ne faites plus partie de ce projet (ou il a été supprimé).",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
+   ]
+  },
+  {
+   "fr": "Vous ne pouvez pas changer votre propre rôle.",
+   "where": [
+    "server/src/adminRoles.ts"
    ]
   },
   {
@@ -34842,6 +35192,12 @@
    ]
   },
   {
+   "fr": "{0} est maintenant admin.",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} est parti",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
@@ -34946,6 +35302,18 @@
    ]
   },
   {
+   "fr": "{0} joueur trouvé sur {1} · {2} admin",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} joueur trouvé sur {1} · {2} admins",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} joueurs",
    "where": [
     "ui/screens/SocialScene.cpp"
@@ -34961,6 +35329,18 @@
    "fr": "{0} joueurs classés · records vérifiés uniquement",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} joueurs trouvés sur {1} · {2} admin",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} joueurs trouvés sur {1} · {2} admins",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -35081,6 +35461,12 @@
    ]
   },
   {
+   "fr": "{0} n'aura plus accès à l'écran Administration. Il doit toujours rester au moins un admin.",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} n'est pas en UTF-8",
    "where": [
     "server/src/community.ts"
@@ -35090,6 +35476,12 @@
    "fr": "{0} n'est pas un JSON valide",
    "where": [
     "server/src/community.ts"
+   ]
+  },
+  {
+   "fr": "{0} n'est plus admin.",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -35111,6 +35503,12 @@
    ]
   },
   {
+   "fr": "{0} niveau",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} niveau créé",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
@@ -35120,6 +35518,12 @@
    "fr": "{0} niveau publié",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} niveaux",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -35222,6 +35626,12 @@
    "fr": "{0} pour tout le niveau, pleins au départ ; les cœurs de cristal du niveau ne donnent rien.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} pourra ouvrir l'écran Administration : nommer d'autres admins ou leur retirer le rôle, et lire le journal.",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -35529,6 +35939,12 @@
    "fr": "{0} · historique",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · inscrit le {1}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {

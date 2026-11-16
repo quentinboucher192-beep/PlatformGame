@@ -5,6 +5,10 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.40.0** :
+* **Rôle administrateur** : un écran Administration réservé aux comptes admin (joueurs, rôles,
+  journal des actions) ; le serveur vérifie le rôle à chaque demande, aucune clé dans le jeu.
+
 **Nouveau dans la version 2.39.0** :
 * **Barres de défilement à la souris** : attraper et faire glisser chaque barre, ou cliquer dans
   son couloir pour y sauter ; une liste déplacée reste où on l'a laissée.

@@ -68,6 +68,9 @@ public:
     bool loggedIn() const { return !tokens_.refreshToken.empty(); }
     const Json& profile() const { return profile_; }
     std::string playerId() const { return tokens_.playerId; }
+    /// The account has the administrator role (2.40, from the server's profile): only shows the
+    /// ADMINISTRATION entry; the server checks the role again on every admin request.
+    bool isAdmin() const { return loggedIn() && profile_.is_object() && jstr(profile_, "role") == "admin"; }
     std::string username() const { return tokens_.username; }
     const std::string& lastError() const { return lastError_; }
     size_t requestsInFlight() const { return client_ ? client_->pending() : 0; }

@@ -1,4 +1,7 @@
 {
+  "2.40.0": [
+    "Rôle administrateur : les comptes admin ont un écran Administration (absent pour tous les autres comptes) — liste des joueurs avec recherche et filtres, rôle admin donné ou retiré après confirmation (jamais le sien, jamais le dernier admin), et un journal de chaque action, sans adresse IP ni e-mail. Le serveur vérifie le rôle à chaque demande."
+  ],
   "2.39.0": [
     "Barres de défilement à la souris, partout : on attrape la barre et on la fait glisser en gardant le bouton enfoncé (le contenu suit le pointeur), ou on clique dans son couloir pour y sauter ; elle s'élargit au survol.",
     "Une liste déplacée à la molette ou à la barre reste où on l'a laissée : elle ne revient plus d'elle-même sur l'élément sélectionné (elle le suit encore quand on change de sélection au clavier ou à la manette)."

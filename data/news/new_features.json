@@ -167,6 +167,7 @@
     {"id": "stats.sheet", "version": "2.37.0", "parents": ["menu.stats"]},
     {"id": "challenges.calendar.look", "version": "2.38.0", "parents": ["challenges.tab.calendar"]},
     {"id": "social.watch", "version": "2.36.0", "parents": ["social.tab.friends"]},
-    {"id": "social.tab.friends", "parents": ["online.nav.social"]}
+    {"id": "social.tab.friends", "parents": ["online.nav.social"]},
+    {"id": "menu.admin", "version": "2.40.0"}
   ]
 }

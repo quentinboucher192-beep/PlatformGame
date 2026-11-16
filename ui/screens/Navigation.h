@@ -106,6 +106,9 @@ struct GhostSetupRequest {
 // Factories of every screen (implemented next to each scene).
 std::unique_ptr<Scene> makeSplashScene(GameServices& g);
 std::unique_ptr<Scene> makeMainMenu(GameServices& g);
+/// ADMINISTRATION (2.40, accounts with the admin role only). `open`: "log" for the Journal,
+/// "players:<search>[:confirm]" (automated screenshots).
+std::unique_ptr<Scene> makeAdmin(GameServices& g, const std::string& open = {});
 std::unique_ptr<Scene> makePlanetMap(GameServices& g);
 /// `levelId`: the level selected on arrival (else the last one played). `fromBoss`: opened
 /// from the statistics of this boss (« Retour » goes back there instead of the planet map).

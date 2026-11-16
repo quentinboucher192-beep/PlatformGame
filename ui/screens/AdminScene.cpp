@@ -1,0 +1,627 @@
+// ADMINISTRATION (2.40): the screen of the accounts with the administrator role. It only exists
+// for them (the main menu shows no entry otherwise, and the server answers like an unknown
+// route to any other account, on every request). Two tabs:
+//   « Joueurs »: search by username, filter (all, admins, online), give or remove the role
+//                after a confirmation (never one's own, never the last admin: refused by the
+//                server), the admins always listed below;
+//   « Journal »: who did what and when, the server's refusals included; no IP, no e-mail.
+// The country, the last activity and the presence of a player appear only as they share them.
+
+#include <algorithm>
+#include <chrono>
+#include <ctime>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "game/GameServices.h"
+#include "game/online/OnlineSession.h"
+#include "ui/online/OnlineWidgets.h"
+#include "ui/screens/MenuBackground.h"
+#include "ui/screens/Navigation.h"
+
+namespace cosmic {
+
+namespace {
+
+std::tm localTmOf(const std::string& iso, bool* ok) {
+    std::tm tmv{};
+    auto t = parseIsoUtc(iso);
+    *ok = t.has_value();
+    if (!t) return tmv;
+    std::time_t tt = std::chrono::system_clock::to_time_t(*t);
+#ifdef _WIN32
+    localtime_s(&tmv, &tt);
+#else
+    localtime_r(&tt, &tmv);
+#endif
+    return tmv;
+}
+
+/// "02/10/2026" (local date of this computer).
+std::string dayText(const std::string& iso) {
+    bool ok = false;
+    std::tm t = localTmOf(iso, &ok);
+    if (!ok) return "—";
+    char buf[24];
+    std::snprintf(buf, sizeof buf, "%02d/%02d/%04d", t.tm_mday, t.tm_mon + 1, t.tm_year + 1900);
+    return buf;
+}
+
+/// "16/11 · 02:14" (local time), with the year when it is not this one.
+std::string stampText(const std::string& iso) {
+    bool ok = false;
+    std::tm t = localTmOf(iso, &ok);
+    if (!ok) return "—";
+    std::time_t now = std::time(nullptr);
+    std::tm n{};
+#ifdef _WIN32
+    localtime_s(&n, &now);
+#else
+    localtime_r(&now, &n);
+#endif
+    char buf[40];
+    if (t.tm_year == n.tm_year)
+        std::snprintf(buf, sizeof buf, "%02d/%02d · %02d:%02d", t.tm_mday, t.tm_mon + 1, t.tm_hour, t.tm_min);
+    else
+        std::snprintf(buf, sizeof buf, "%02d/%02d/%04d · %02d:%02d", t.tm_mday, t.tm_mon + 1, t.tm_year + 1900, t.tm_hour, t.tm_min);
+    return buf;
+}
+
+Color presenceColorOf(const std::string& p) {
+    if (p == "online") return {120, 230, 140, 255};
+    if (p == "away") return {255, 179, 71, 255};
+    return {86, 100, 126, 255};
+}
+
+std::string presenceText(const std::string& p) {
+    if (p == "online") return "en ligne";
+    if (p == "away") return "absent";
+    if (p == "hidden") return "masquée";
+    return "hors ligne";
+}
+
+const char* kFilters[] = {"all", "admins", "online"};
+const char* kKinds[] = {"all", "role", "refused"};
+
+class AdminScene : public Scene {
+public:
+    AdminScene(GameServices& g, std::string open) : g_(g), ui_(g) {
+        // Automated screenshots: "players[:<search>[:confirm]]" or "log".
+        if (open.rfind("log", 0) == 0) tab_ = 1;
+        if (open.rfind("players:", 0) == 0) {
+            std::string rest = open.substr(8);
+            size_t c = rest.find(':');
+            search_ = rest.substr(0, c);
+            autoConfirm_ = c != std::string::npos && rest.substr(c + 1) == "confirm";
+        }
+    }
+
+    void onEnter() override {
+        g_.ui.setFocus("admin/back");
+        if (!g_.online.loggedIn()) return leave();
+        if (g_.online.profile().is_null()) g_.online.refreshProfile();
+        reloadAll();
+    }
+    void onResume() override { reloadAll(); }
+
+    void update(float dt) override {
+        bg_.update(dt);
+        // The profile known, without the role: nothing to show (the server would refuse anyway).
+        if (g_.online.profile().is_object() && !g_.online.isAdmin()) return leave();
+        if (searchDirty_ && g_.ui.time() - searchT_ > 0.35f) {
+            searchDirty_ = false;
+            offset_ = 0;
+            loadPlayers();
+        }
+    }
+
+    void render(float) override {
+        UIContext& ui = g_.ui;
+        ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
+        bg_.render(g_, 0.6f);
+        const bool modal = !confirmId_.empty();
+        const bool top = g_.app.topScene() == this;
+        ui.inputEnabled = top && !modal;
+        W_ = std::min(ui.screenW() - ui.s(96), ui.s(1480));
+        x0_ = (ui.screenW() - W_) * 0.5f;
+        float y = ui.s(36), hh = ui.s(52);
+        ui.pushId("admin");
+        float titleW = ui.text().measure("ADMINISTRATION", FontFace::Title, ui.s(40)).x;
+        ui.label("ADMINISTRATION", {x0_, y + hh * 0.5f}, 40, ui.theme().text, Align::Left, FontFace::Title, VAlign::Middle);
+        float backW = ui.s(170);
+        bool back = ui.button("back", {x0_ + W_ - backW, y, backW, hh}, "Retour") || (!modal && ui.backPressed());
+        // The tabs after the title when they fit, else on the line below.
+        float tabsW = ui.s(340), tabsX = x0_ + titleW + ui.s(28);
+        float bodyY = y + hh + ui.s(22);
+        Rect tabsR{tabsX, y, tabsW, hh};
+        if (tabsX + tabsW > x0_ + W_ - backW - ui.s(20)) {
+            tabsR = {x0_, bodyY, tabsW, hh};
+            bodyY += hh + ui.s(16);
+        }
+        int tab = tab_;
+        ui.tabs("tabs", tabsR, {"Joueurs", "Journal"}, tab);
+        if (tab != tab_) {
+            tab_ = tab;
+            if (tab_ == 1) loadLog(false);
+        }
+        Rect body{x0_, bodyY, W_, ui.screenH() - bodyY - ui.s(64)};
+        ui.r().fillRoundedRect(body, ui.s(14), Color{10, 15, 32, 225});
+        ui.r().drawRoundedRect(body, ui.s(14), ui.theme().border, ui.s(1));
+        Rect inner{body.x + ui.s(22), body.y + ui.s(18), body.w - ui.s(44), body.h - ui.s(36)};
+        if (tab_ == 0) drawPlayers(inner);
+        else drawLog(inner);
+        drawStatus();
+        ui.popId();
+        ui.inputEnabled = top;
+        if (modal) drawConfirm();
+        ui.end();
+        if (back) g_.app.switchScene(makeMainMenu(g_), 0.3f);
+    }
+
+private:
+    void leave() {
+        if (left_) return;
+        left_ = true;
+        g_.app.switchScene(makeMainMenu(g_), 0.2f);
+    }
+
+    void say(const std::string& m, bool error) {
+        status_ = m;
+        statusError_ = error;
+        statusT_ = g_.ui.time();
+    }
+    /// The server answered « unknown route »: this account is no longer admin.
+    bool lostRole(const ApiResult& r) {
+        if (r.status != 404 || r.code != "NOT_FOUND") return false;
+        g_.online.refreshProfile();
+        leave();
+        return true;
+    }
+
+    void reloadAll() {
+        loadPlayers();
+        loadAdmins();
+        if (tab_ == 1) loadLog(false);
+    }
+
+    void loadPlayers() {
+        std::string path = std::string("/api/v1/admin/players?limit=50&filter=") + kFilters[filter_] + "&offset=" + std::to_string(offset_);
+        if (search_.size() >= 2) path += "&q=" + search_;
+        int gen = ++playersGen_;
+        busy_ = true;
+        g_.online.get(path, OnlineService::guard(life_, [this, gen](const ApiResult& r) {
+                          if (gen != playersGen_) return;
+                          busy_ = false;
+                          if (lostRole(r)) return;
+                          if (!r.ok) return say(r.message, true);
+                          players_ = r.data;
+                          loadedPlayers_ = true;
+                          if (autoConfirm_) {
+                              autoConfirm_ = false;
+                              for (const auto& p : players_.value("players", Json::array()))
+                                  if (jstr(p, "id") != g_.online.playerId()) {
+                                      askRole(p);
+                                      break;
+                                  }
+                          }
+                      }),
+                      false);
+    }
+
+    void loadAdmins() {
+        g_.online.get("/api/v1/admin/players?limit=100&filter=admins", OnlineService::guard(life_, [this](const ApiResult& r) {
+                          if (lostRole(r)) return;
+                          if (r.ok) admins_ = r.data.value("players", Json::array());
+                      }),
+                      false);
+    }
+
+    void loadLog(bool more) {
+        std::string path = std::string("/api/v1/admin/log?limit=50&kind=") + kKinds[kind_];
+        if (actor_ > 0 && actor_ - 1 < static_cast<int>(admins_.size())) path += "&actor=" + jstr(admins_[actor_ - 1], "id");
+        int offset = more ? static_cast<int>(log_.size()) : 0;
+        if (offset > 0) path += "&offset=" + std::to_string(offset);
+        int gen = ++logGen_;
+        g_.online.get(path, OnlineService::guard(life_, [this, gen, more](const ApiResult& r) {
+                          if (gen != logGen_) return;
+                          if (lostRole(r)) return;
+                          if (!r.ok) return say(r.message, true);
+                          Json list = r.data.value("entries", Json::array());
+                          if (!more) log_ = Json::array();
+                          for (auto& e : list) log_.push_back(e);
+                          logMore_ = jget<bool>(r.data, "has_more", false);
+                          loadedLog_ = true;
+                      }),
+                      false);
+    }
+
+    /// A row of small buttons, the chosen one highlighted; returns the right edge.
+    float chips(const std::string& id, float x, float y, float h, const std::vector<std::string>& labels, int& active) {
+        UIContext& ui = g_.ui;
+        for (size_t i = 0; i < labels.size(); ++i) {
+            UIContext::ButtonStyle st;
+            st.small = true;
+            st.selected = static_cast<int>(i) == active;
+            st.fontSize = 16;
+            float w = ui.text().measure(labels[i], FontFace::Bold, ui.s(16)).x + ui.s(36);
+            if (ui.button(id + std::to_string(i), {x, y, w, h}, labels[i], st)) active = static_cast<int>(i);
+            x += w + ui.s(8);
+        }
+        return x - ui.s(8);
+    }
+
+    // ------------------------------------------------------------- Joueurs
+    struct Columns {
+        float x[8];
+    };
+    Columns columns(const Rect& r) const {
+        static const float share[] = {0.25f, 0.13f, 0.12f, 0.15f, 0.12f, 0.11f, 0.12f};
+        Columns c{};
+        c.x[0] = r.x;
+        for (int i = 0; i < 7; ++i) c.x[i + 1] = c.x[i] + r.w * share[i];
+        return c;
+    }
+
+    void drawPlayers(const Rect& in) {
+        UIContext& ui = g_.ui;
+        ui.pushId("players");
+        float y = in.y, fh = ui.s(46);
+        std::string before = search_;
+        ui.textField("search", {in.x, y, ui.s(420), fh}, search_, "Rechercher un pseudo (2 lettres au moins)", 20);
+        if (search_ != before) {
+            searchDirty_ = true;
+            searchT_ = ui.time();
+        }
+        int filter = filter_;
+        float chipsRight = chips("filter", in.x + ui.s(436), y, fh, {"Tous", "Admins", "En ligne"}, filter);
+        if (filter != filter_) {
+            filter_ = filter;
+            offset_ = 0;
+            loadPlayers();
+        }
+        {
+            std::string info;
+            if (loadedPlayers_) {
+                int total = jget<int>(players_, "total", 0), all = jget<int>(players_, "players_total", 0), adm = jget<int>(players_, "admins_total", 0);
+                info = std::to_string(total) + (total > 1 ? " joueurs trouvés" : " joueur trouvé") + " sur " + std::to_string(all) + " · " +
+                       std::to_string(adm) + (adm > 1 ? " admins" : " admin");
+            } else {
+                info = "Chargement…";
+            }
+            float room = in.right() - chipsRight - ui.s(20);
+            float fs = ui.fitFont(info, FontFace::Body, 16, room);
+            ui.label(ui.elide(info, FontFace::Body, fs, room), {in.right(), y + fh * 0.5f}, fs, ui.theme().textDim, Align::Right, FontFace::Body, VAlign::Middle);
+        }
+        y += fh + ui.s(14);
+
+        // The admins, always listed at the bottom; the results above them.
+        int nAdmins = static_cast<int>(admins_.size());
+        float rowH = ui.s(52), gap = ui.s(6), pagerH = ui.s(44);
+        float adminsH = ui.s(36) + std::min(3, std::max(1, nAdmins)) * (rowH + gap);
+        Rect results{in.x, y, in.w, in.bottom() - pagerH - ui.s(14) - adminsH - ui.s(10) - y};
+        drawHeader({results.x, results.y, results.w, ui.s(26)});
+        Rect list{results.x, results.y + ui.s(30), results.w, results.h - ui.s(30)};
+        const Json& rows = players_.is_object() ? players_["players"] : Json();
+        int n = rows.is_array() ? static_cast<int>(rows.size()) : 0;
+        if (n == 0)
+            ui.label(loadedPlayers_ ? "Aucun joueur ne correspond." : "Chargement…", {list.center().x, list.y + ui.s(40)}, 18, ui.theme().textDim,
+                     Align::Center, FontFace::Body, VAlign::Middle);
+        ui.beginScroll("list", list, n * (rowH + gap));
+        for (int i = 0; i < n; ++i) drawPlayerRow(rows[i], {list.x, list.y + i * (rowH + gap) - ui.scrollOffset(), list.w - ui.s(16), rowH}, "r");
+        ui.endScroll();
+
+        // Admins
+        float ay = results.bottom() + ui.s(10);
+        ui.label("Admins", {in.x, ay + ui.s(14)}, 19, ui.theme().accent, Align::Left, FontFace::Bold, VAlign::Middle);
+        float aw = ui.text().measure("Admins", FontFace::Bold, ui.s(19)).x;
+        ui.label("toujours affichés ici, recherche ou pas", {in.x + aw + ui.s(14), ay + ui.s(14)}, 15, ui.theme().textDim, Align::Left,
+                 FontFace::Body, VAlign::Middle);
+        Rect alist{in.x, ay + ui.s(36), in.w, adminsH - ui.s(36)};
+        ui.beginScroll("admins", alist, nAdmins * (rowH + gap));
+        for (int i = 0; i < nAdmins; ++i) drawPlayerRow(admins_[i], {alist.x, alist.y + i * (rowH + gap) - ui.scrollOffset(), alist.w - ui.s(16), rowH}, "a");
+        ui.endScroll();
+
+        // Pager
+        float py = in.bottom() - pagerH;
+        float bw = ui.s(170);
+        UIContext::ButtonStyle st;
+        st.small = true;
+        st.enabled = offset_ > 0 && !busy_;
+        float hintRoom = in.w - 2 * bw - ui.s(40);
+        std::string hint = "Clic sur un pseudo : son profil · Entrée sur le rôle : le changer";
+        float hs = ui.fitFont(hint, FontFace::Body, 15, hintRoom);
+        ui.label(ui.elide(hint, FontFace::Body, hs, hintRoom), {in.x, py + pagerH * 0.5f}, hs, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        if (ui.button("prev", {in.right() - 2 * bw - ui.s(10), py, bw, pagerH}, "Précédents", st)) {
+            offset_ = std::max(0, offset_ - 50);
+            loadPlayers();
+        }
+        st.enabled = jget<bool>(players_, "has_more", false) && !busy_;
+        if (ui.button("next", {in.right() - bw, py, bw, pagerH}, "Suivants", st)) {
+            offset_ += 50;
+            loadPlayers();
+        }
+        ui.popId();
+    }
+
+    void drawHeader(const Rect& r) {
+        UIContext& ui = g_.ui;
+        Columns c = columns(r);
+        static const char* titles[] = {"Joueur", "Pays", "Inscrit le", "Dernière activité", "Présence", "Créations", "Rôle"};
+        for (int i = 0; i < 7; ++i) {
+            float room = c.x[i + 1] - c.x[i] - ui.s(14);
+            ui.label(ui.elide(titles[i], FontFace::Bold, 14, room), {c.x[i] + ui.s(12), r.y + r.h * 0.5f}, 14, ui.theme().textDim, Align::Left,
+                     FontFace::Bold, VAlign::Middle);
+        }
+    }
+
+    void cell(const Columns& c, int col, const Rect& row, const std::string& t, Color color, FontFace face = FontFace::Body) {
+        UIContext& ui = g_.ui;
+        float room = c.x[col + 1] - c.x[col] - ui.s(16);
+        ui.label(ui.elide(t, face, 16, room), {c.x[col] + ui.s(12), row.y + row.h * 0.5f}, 16, color, Align::Left, face, VAlign::Middle);
+    }
+
+    void drawPlayerRow(const Json& p, const Rect& row, const std::string& prefix) {
+        UIContext& ui = g_.ui;
+        std::string id = jstr(p, "id");
+        bool me = id == g_.online.playerId();
+        bool admin = jstr(p, "role") == "admin";
+        Color bgc = admin ? Color{30, 26, 22, 235} : Color{18, 26, 50, 235};
+        ui.r().fillRoundedRect(row, ui.s(8), bgc);
+        Columns c = columns(row);
+        // Player: avatar, name (opens the profile), « vous ».
+        float av = row.h - ui.s(14);
+        Rect ar{row.x + ui.s(10), row.y + ui.s(7), av, av};
+        ui_.drawAvatar(jstr(p, "avatar", "avatar_01"), id, ar);
+        std::string pres = jstr(p, "presence");
+        if (pres == "online" || pres == "away") {
+            float rad = std::max(ui.s(5), av * 0.14f);
+            Vec2 pc{ar.right() - rad * 0.6f, ar.bottom() - rad * 0.6f};
+            ui.r().fillCircle(pc, rad + ui.s(2), Color{10, 14, 30, 255});
+            ui.r().fillCircle(pc, rad, presenceColorOf(pres));
+        }
+        float nx = ar.right() + ui.s(12);
+        float pillW = me ? ui.text().measure("vous", FontFace::Bold, ui.s(13)).x + ui.s(18) : 0.0f;
+        float room = c.x[1] - nx - ui.s(10) - (me ? pillW + ui.s(8) : 0.0f);
+        std::string name = ui.elide(jstr(p, "username"), FontFace::Bold, 17, room);
+        float nw = ui.text().measure(name, FontFace::Bold, ui.s(17)).x;
+        Rect nameR{nx, row.y, nw, row.h};
+        bool hov = false;
+        if (ui.mouseClick("name" + prefix + id, nameR, &hov)) g_.app.pushScene(makePlayerProfile(g_, id));
+        ui.label(name, {nx, row.y + row.h * 0.5f}, 17, hov ? ui.theme().accent : ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+        if (me) {
+            Rect pr{nx + nw + ui.s(8), row.y + row.h * 0.5f - ui.s(11), pillW, ui.s(22)};
+            ui.r().fillRoundedRect(pr, ui.s(11), ui.theme().warm.withAlphaF(0.16f));
+            ui.r().drawRoundedRect(pr, ui.s(11), ui.theme().warm, ui.s(1));
+            ui.label("vous", {pr.center().x, pr.center().y}, 13, ui.theme().warm, Align::Center, FontFace::Bold, VAlign::Middle);
+        }
+        std::string country = jstr(p, "country_code");
+        cell(c, 1, row, country.empty() ? "masqué" : ui_.countryName(country), country.empty() ? ui.theme().textDim : ui.theme().text);
+        cell(c, 2, row, dayText(jstr(p, "created_at")), ui.theme().text);
+        std::string seen = jstr(p, "last_seen_at");
+        cell(c, 3, row, seen.empty() ? "masquée" : OnlineUi::ageOf(seen), seen.empty() ? ui.theme().textDim : ui.theme().text);
+        {
+            float dx = c.x[4] + ui.s(12);
+            ui.r().fillCircle({dx + ui.s(5), row.y + row.h * 0.5f}, ui.s(5), presenceColorOf(pres));
+            float r2 = c.x[5] - dx - ui.s(30);
+            ui.label(ui.elide(presenceText(pres), FontFace::Body, 16, r2), {dx + ui.s(16), row.y + row.h * 0.5f}, 16,
+                     pres == "hidden" ? ui.theme().textDim : ui.theme().text, Align::Left, FontFace::Body, VAlign::Middle);
+        }
+        int made = jget<int>(p, "creations", 0);
+        cell(c, 5, row, made == 0 ? "—" : std::to_string(made) + (made > 1 ? " niveaux" : " niveau"), made == 0 ? ui.theme().textDim : ui.theme().text);
+        // Role: a button (never one's own).
+        Rect rb{c.x[6] + ui.s(8), row.y + ui.s(8), std::min(ui.s(130), row.right() - c.x[6] - ui.s(16)), row.h - ui.s(16)};
+        if (me) {
+            ui.label("admin", {rb.x + ui.s(4), row.y + row.h * 0.5f}, 16, ui.theme().warm, Align::Left, FontFace::Bold, VAlign::Middle);
+        } else {
+            UIContext::ButtonStyle st;
+            st.small = true;
+            st.selected = admin;
+            st.fontSize = 15;
+            st.enabled = !busyRole_;
+            if (ui.button("role" + prefix + id, rb, admin ? "admin" : "joueur", st)) askRole(p);
+        }
+    }
+
+    void askRole(const Json& p) {
+        confirmId_ = jstr(p, "id");
+        confirmPlayer_ = p;
+        g_.ui.setFocus("confirm/cancel");
+    }
+
+    void drawConfirm() {
+        UIContext& ui = g_.ui;
+        bool grant = jstr(confirmPlayer_, "role") != "admin";
+        std::string name = jstr(confirmPlayer_, "username");
+        ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{2, 4, 12, 185});
+        Rect box{ui.screenW() * 0.5f - ui.s(340), ui.screenH() * 0.5f - ui.s(190), ui.s(680), ui.s(380)};
+        Color edge = grant ? ui.theme().warm : ui.theme().danger;
+        ui.r().fillRoundedRect(box, ui.s(18), Color{9, 14, 32, 250});
+        ui.r().drawRoundedRect(box, ui.s(18), edge.withAlphaF(0.8f), ui.s(1.5f));
+        ui.pushId("confirm");
+        float x = box.x + ui.s(32), w = box.w - ui.s(64), y = box.y + ui.s(30);
+        std::string title = grant ? "Donner le rôle admin ?" : "Retirer le rôle admin ?";
+        float ts = ui.fitFont(title, FontFace::Title, 26, w);
+        ui.label(title, {x, y + ui.s(16)}, ts, edge, Align::Left, FontFace::Title, VAlign::Middle);
+        y += ui.s(52);
+        Rect ar{x, y, ui.s(52), ui.s(52)};
+        ui_.avatarsOpenProfile = false;
+        ui_.drawAvatar(jstr(confirmPlayer_, "avatar", "avatar_01"), confirmId_, ar);
+        ui_.avatarsOpenProfile = true;
+        ui.label(ui.elide(name, FontFace::Bold, 22, w - ui.s(70)), {ar.right() + ui.s(14), y + ui.s(16)}, 22, ui.theme().text, Align::Left, FontFace::Bold,
+                 VAlign::Middle);
+        std::string country = jstr(confirmPlayer_, "country_code");
+        std::string sub = (country.empty() ? std::string("pays masqué") : ui_.countryName(country)) + " · inscrit le " + dayText(jstr(confirmPlayer_, "created_at"));
+        ui.label(ui.elide(sub, FontFace::Body, 16, w - ui.s(70)), {ar.right() + ui.s(14), y + ui.s(40)}, 16, ui.theme().textDim, Align::Left, FontFace::Body,
+                 VAlign::Middle);
+        y += ui.s(74);
+        std::string text = grant ? name + " pourra ouvrir l'écran Administration : nommer d'autres admins ou leur retirer le rôle, et lire le journal."
+                                 : name + " n'aura plus accès à l'écran Administration. Il doit toujours rester au moins un admin.";
+        Vec2 used = ui.labelWrapped(text, {x, y}, w, 17, ui.theme().text);
+        y += used.y + ui.s(12);
+        ui.labelWrapped("L'action est inscrite au journal avec votre pseudo.", {x, y}, w, 15, ui.theme().textDim);
+        float bh = ui.s(48), by = box.bottom() - bh - ui.s(26);
+        UIContext::ButtonStyle ok;
+        ok.primary = grant;
+        ok.danger = !grant;
+        if (ui.button("cancel", {box.right() - ui.s(32) - ui.s(170) - ui.s(14) - ui.s(230), by, ui.s(170), bh}, "Annuler") || ui.backPressed()) {
+            confirmId_.clear();
+        } else if (ui.button("ok", {box.right() - ui.s(32) - ui.s(230), by, ui.s(230), bh}, grant ? "Donner le rôle" : "Retirer le rôle", ok)) {
+            setRole(confirmId_, grant, name);
+            confirmId_.clear();
+        }
+        ui.popId();
+    }
+
+    void setRole(const std::string& id, bool admin, const std::string& name) {
+        busyRole_ = true;
+        g_.online.send("POST", "/api/v1/admin/players/" + id + "/role", Json{{"admin", admin}},
+                       OnlineService::guard(life_, [this, admin, name](const ApiResult& r) {
+                           busyRole_ = false;
+                           if (lostRole(r)) return;
+                           if (!r.ok) say(r.message, true);
+                           else say(admin ? name + " est maintenant admin." : name + " n'est plus admin.", false);
+                           reloadAll();
+                       }));
+    }
+
+    // ------------------------------------------------------------- Journal
+    void drawLog(const Rect& in) {
+        UIContext& ui = g_.ui;
+        ui.pushId("log");
+        float y = in.y, fh = ui.s(46);
+        int kind = kind_;
+        float kr = chips("kind", in.x, y, fh, {"Toutes les actions", "Rôles", "Refus"}, kind);
+        std::vector<std::string> who{"Tous"};
+        for (const auto& a : admins_) who.push_back(jstr(a, "username"));
+        int actor = std::min(actor_, static_cast<int>(who.size()) - 1);
+        ui.cycle("actor", {kr + ui.s(16), y, ui.s(400), fh}, "Admin", actor, who);
+        if (kind != kind_ || actor != actor_) {
+            kind_ = kind;
+            actor_ = actor;
+            loadLog(false);
+        }
+        std::string keep = "Gardé 6 mois · ni adresse IP ni e-mail";
+        float room = in.right() - (kr + ui.s(436));
+        float ks = ui.fitFont(keep, FontFace::Body, 15, room);
+        ui.label(ui.elide(keep, FontFace::Body, ks, room), {in.right(), y + fh * 0.5f}, ks, ui.theme().textDim, Align::Right, FontFace::Body, VAlign::Middle);
+        y += fh + ui.s(14);
+
+        float c1 = in.x + ui.s(12), c2 = in.x + in.w * 0.17f, c3 = in.x + in.w * 0.36f;
+        ui.label("Quand", {c1, y + ui.s(13)}, 14, ui.theme().textDim, Align::Left, FontFace::Bold, VAlign::Middle);
+        ui.label("Admin", {c2, y + ui.s(13)}, 14, ui.theme().textDim, Align::Left, FontFace::Bold, VAlign::Middle);
+        ui.label("Action", {c3, y + ui.s(13)}, 14, ui.theme().textDim, Align::Left, FontFace::Bold, VAlign::Middle);
+        y += ui.s(30);
+        float rowH = ui.s(50), gap = ui.s(6), moreH = logMore_ ? ui.s(54) : 0.0f;
+        Rect list{in.x, y, in.w, in.bottom() - y - moreH};
+        int n = log_.is_array() ? static_cast<int>(log_.size()) : 0;
+        if (n == 0)
+            ui.label(loadedLog_ ? "Rien d'inscrit pour ces filtres." : "Chargement…", {list.center().x, list.y + ui.s(40)}, 18, ui.theme().textDim,
+                     Align::Center, FontFace::Body, VAlign::Middle);
+        ui.beginScroll("entries", list, n * (rowH + gap));
+        for (int i = 0; i < n; ++i) {
+            const Json& e = log_[i];
+            Rect row{list.x, list.y + i * (rowH + gap) - ui.scrollOffset(), list.w - ui.s(16), rowH};
+            ui.r().fillRoundedRect(row, ui.s(8), Color{18, 26, 50, 235});
+            float cy = row.y + row.h * 0.5f;
+            ui.label(ui.elide(stampText(jstr(e, "at")), FontFace::Body, 16, c2 - c1 - ui.s(10)), {c1, cy}, 16, ui.theme().text, Align::Left, FontFace::Body,
+                     VAlign::Middle);
+            const Json& who2 = e.contains("actor") ? e["actor"] : Json();
+            float av = row.h - ui.s(16);
+            if (who2.is_object()) {
+                Rect ar{c2, row.y + ui.s(8), av, av};
+                ui_.drawAvatar(jstr(who2, "avatar", "avatar_01"), jstr(who2, "id"), ar);
+                ui.label(ui.elide(jstr(who2, "username", "compte supprimé"), FontFace::Bold, 16, c3 - ar.right() - ui.s(24)), {ar.right() + ui.s(10), cy}, 16,
+                         ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+            } else {
+                ui.r().fillCircle({c2 + av * 0.5f, cy}, av * 0.5f, Color{86, 100, 126, 255});
+                ui.label("Système", {c2 + av + ui.s(10), cy}, 16, ui.theme().textDim, Align::Left, FontFace::Bold, VAlign::Middle);
+            }
+            drawAction(e, {c3, row.y, row.right() - c3 - ui.s(12), row.h});
+        }
+        ui.endScroll();
+        if (logMore_) {
+            UIContext::ButtonStyle st;
+            st.small = true;
+            if (ui.button("more", {in.right() - ui.s(220), in.bottom() - ui.s(44), ui.s(220), ui.s(44)}, "Plus anciens", st)) loadLog(true);
+        }
+        ui.popId();
+    }
+
+    void drawAction(const Json& e, const Rect& r) {
+        UIContext& ui = g_.ui;
+        std::string action = jstr(e, "action");
+        std::string target = e.contains("target") && e["target"].is_object() ? jstr(e["target"], "username", "un compte supprimé") : "";
+        std::string reason = jstr(e, "reason");
+        std::string pill;
+        Color pc = ui.theme().textDim;
+        std::string text;
+        if (action == "admin_role_granted") {
+            pill = "Rôle";
+            pc = ui.theme().warm;
+            text = jstr(e, "by") == "migration" ? "a nommé " + target + " premier admin (mise en service)" : "a donné le rôle admin à " + target;
+        } else if (action == "admin_role_revoked") {
+            pill = "Rôle";
+            pc = ui.theme().danger;
+            text = "a retiré le rôle admin à " + target;
+        } else {
+            pill = "Refus";
+            bool grant = jstr(e, "role") == "admin";
+            std::string tried = (grant ? "donner le rôle admin à " : "retirer le rôle admin à ") + target;
+            if (reason == "OWN_ROLE") text = "a tenté de changer son propre rôle : refusé";
+            else if (reason == "LAST_ADMIN") text = "a tenté de " + tried + " : refusé, il doit rester un admin";
+            else if (reason == "ACCOUNT_SUSPENDED") text = "a tenté de " + tried + " : refusé, compte suspendu";
+            else if (reason == "ROLE_CHANGED") text = "a tenté de " + tried + " : refusé, le rôle avait changé entre-temps";
+            else text = "a tenté de " + tried + " : refusé";
+        }
+        float ph = ui.s(24), pw = ui.text().measure(pill, FontFace::Bold, ui.s(13)).x + ui.s(20);
+        Rect pr{r.x, r.y + r.h * 0.5f - ph * 0.5f, pw, ph};
+        ui.r().fillRoundedRect(pr, ph * 0.5f, pc.withAlphaF(0.14f));
+        ui.r().drawRoundedRect(pr, ph * 0.5f, pc, ui.s(1));
+        ui.label(pill, pr.center(), 13, pc, Align::Center, FontFace::Bold, VAlign::Middle);
+        float tx = pr.right() + ui.s(12), room = r.right() - tx;
+        ui.label(ui.elide(text, FontFace::Body, 16, room), {tx, r.y + r.h * 0.5f}, 16, ui.theme().text, Align::Left, FontFace::Body, VAlign::Middle);
+    }
+
+    void drawStatus() {
+        UIContext& ui = g_.ui;
+        if (status_.empty() || ui.time() - statusT_ > 6.0f) return;
+        float y = ui.screenH() - ui.s(34);
+        float room = W_;
+        float fs = ui.fitFont(status_, FontFace::Bold, 17, room);
+        ui.label(ui.elide(status_, FontFace::Bold, fs, room), {ui.screenW() * 0.5f, y}, fs, statusError_ ? ui.theme().danger : ui.theme().success,
+                 Align::Center, FontFace::Bold, VAlign::Middle);
+    }
+
+    GameServices& g_;
+    OnlineUi ui_;
+    MenuBackground bg_;
+    std::shared_ptr<int> life_ = std::make_shared<int>(0);
+    float W_ = 0.0f, x0_ = 0.0f;
+    int tab_ = 0;
+    bool left_ = false;
+    // Joueurs
+    std::string search_;
+    bool searchDirty_ = false;
+    float searchT_ = 0.0f;
+    int filter_ = 0, offset_ = 0, playersGen_ = 0;
+    bool busy_ = false, busyRole_ = false, loadedPlayers_ = false, autoConfirm_ = false;
+    Json players_ = Json::object();
+    Json admins_ = Json::array();
+    std::string confirmId_;
+    Json confirmPlayer_;
+    // Journal
+    int kind_ = 0, actor_ = 0, logGen_ = 0;
+    bool logMore_ = false, loadedLog_ = false;
+    Json log_ = Json::array();
+    // Messages
+    std::string status_;
+    bool statusError_ = false;
+    float statusT_ = -100.0f;
+};
+
+}  // namespace
+
+std::unique_ptr<Scene> makeAdmin(GameServices& g, const std::string& open) { return std::make_unique<AdminScene>(g, open); }
+
+}  // namespace cosmic

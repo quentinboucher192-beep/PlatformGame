@@ -29,6 +29,8 @@
 //   --import <file.cplanet> open the import screen with this package (also: file as argument)
 //   --export <level> <file.cplanet> [--author <name>]
 //                           export a level and all its dependencies without opening a window
+//   --admin [players[:<search>[:confirm]]|log]
+//                           open ADMINISTRATION (Joueurs, Journal) with an admin account
 //   --boss-stats [<boss>[:<clip>]]
 //                           open the boss statistics (that boss, that clip of its animation)
 //   --boss-training <boss> [--boss-training-go]
@@ -662,6 +664,10 @@ int main(int argc, char** argv) {
     } else if (has("--new-rewards")) {
         app.pushScene(makeMainMenu(game));
         app.pushScene(makeNewRewards(game));
+    } else if (has("--admin")) {
+        // --admin [players[:<search>[:confirm]] | log]: ADMINISTRATION (an admin account's session).
+        app.pushScene(makeMainMenu(game));
+        app.pushScene(makeAdmin(game, value("--admin")));
     } else if (has("--boss-stats")) {
         // --boss-stats [<boss id>[:<clip>]]: that boss selected (and that clip of its animation).
         if (std::string b = value("--boss-stats"); !b.empty()) game.onlineOpen = "boss:" + b;
