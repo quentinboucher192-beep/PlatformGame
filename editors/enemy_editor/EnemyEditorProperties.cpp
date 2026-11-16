@@ -484,6 +484,49 @@ void EnemyEditorScene::tabAttacks(float x, float& y, float w) {
             if (a.type != AttackType::Gust)
                 c |= ui.numberField("dlead", row.field("Anticipation (0 = vise le joueur, 1 = où il va)"), a.lead, 0.05f, 0, 1, "%.2f");
         }
+        if (a.isGolemType()) {
+            // 2.51: the attacks of the golem (the Monolithe). A value left at 0 takes the type's
+            // default (see game/enemies/GolemAttacks.cpp).
+            auto num = [&](const char* id, const char* label, float& v, float step, float lo, float hi, const char* fmt) {
+                c |= ui.numberField(id, row.field(label), v, step, lo, hi, fmt);
+            };
+            auto whole = [&](const char* id, const char* label, int& v, int lo, int hi) {
+                float f = static_cast<float>(v);
+                if (ui.numberField(id, row.field(label), f, 1, static_cast<float>(lo), static_cast<float>(hi), "%.0f")) {
+                    v = static_cast<int>(f);
+                    c = true;
+                }
+            };
+            switch (a.type) {
+                case AttackType::Shell:
+                    num("cspd", "Vitesse de la carapace", a.lungeSpeed, 10, 160, 900, "%.0f");
+                    whole("cbnc", "Rebonds sur les murs (0 = 1)", a.bounces, 0, 4);
+                    num("carm", "Dégâts reçus en carapace (x, 0 = 0,35)", a.armor, 0.05f, 0, 1, "%.2f");
+                    num("cdur", "Étourdi après la roulade (s)", a.duration, 0.1f, 0, 10, "%.1f");
+                    num("cvul", "Dégâts reçus étourdi (x, 0 = 1,5)", a.vulnerability, 0.1f, 0, 4, "%.1f");
+                    break;
+                case AttackType::Quake:
+                    num("qdur", "Durée du séisme (s)", a.duration, 0.1f, 0, 20, "%.1f");
+                    num("qint", "Intervalle des secousses (s)", a.burstInterval, 0.05f, 0.05f, 3, "%.2f");
+                    whole("qcnt", "Fissures par secousse", a.count, 1, 7);
+                    num("qspr", "Écart entre les fissures (px)", a.spread, 5, 0, 400, "%.0f");
+                    num("qdel", "Délai avant l'éruption (s)", a.stagger, 0.05f, 0, 1, "%.2f");
+                    num("qrad", "Demi-largeur d'une fissure", a.radius, 1, 0, 80, "%.0f");
+                    num("qhgt", "Hauteur de l'éruption", a.height, 2, 0, 200, "%.0f");
+                    whole("qarms", "Rochers par secousse (0 = 2)", a.arms, 0, 8);
+                    num("qprad", "Rayon d'un rocher", a.projectileRadius, 1, 0, 40, "%.0f");
+                    break;
+                case AttackType::Skyfall:
+                    num("sdur", "Hors de vue (s)", a.duration, 0.1f, 0, 10, "%.1f");
+                    num("srad", "Écrasement autour de lui (px)", a.radius, 2, 0, 200, "%.0f");
+                    whole("scnt", "Ondes de choc", a.count, 1, 4);
+                    num("sint", "Intervalle des ondes (s)", a.burstInterval, 0.05f, 0.05f, 3, "%.2f");
+                    num("sspd", "Vitesse des ondes", a.projectileSpeed, 10, 60, 1000, "%.0f");
+                    num("sprad", "Hauteur des ondes (rayon)", a.projectileRadius, 1, 0, 40, "%.0f");
+                    break;
+                default: break;
+            }
+        }
         auto sounds = PropertyEditor::assetFiles("sounds", ".wav");
         sounds.insert(sounds.begin(), "");
         c |= stringCycle(ui, "asnd", {x, y, w, ui.s(46)}, "Son de l'attaque", a.sound, sounds);

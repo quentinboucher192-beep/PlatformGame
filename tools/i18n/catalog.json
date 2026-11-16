@@ -3400,6 +3400,12 @@
    ]
   },
   {
+   "fr": "Aucune progression à restaurer.",
+   "where": [
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
    "fr": "Aucune récompense pour ce défi.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -4424,9 +4430,10 @@
    ]
   },
   {
-   "fr": "Bond sismique",
+   "fr": "Bond titanesque",
    "where": [
-    "data/enemies/monolithe.json"
+    "data/enemies/monolithe.json",
+    "game/enemies/EnemyDefinition.cpp"
    ]
   },
   {
@@ -4922,6 +4929,18 @@
    ]
   },
   {
+   "fr": "C'est le compte connecté : saisissez le pseudonyme de l'ANCIEN compte.",
+   "where": [
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
+   "fr": "C'est le dernier compte admin : il ne peut pas être fermé.",
+   "where": [
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
    "fr": "c'était déjà le tirage",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -5246,6 +5265,19 @@
    ]
   },
   {
+   "fr": "Carapace folle",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Carapace roulante",
+   "where": [
+    "data/enemies/monolithe.json",
+    "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
    "fr": "Carré",
    "where": [
     "engine/input/InputTypes.cpp"
@@ -5371,6 +5403,12 @@
    "fr": "Ce commentaire ne vous appartient pas.",
    "where": [
     "server/src/workshop.ts"
+   ]
+  },
+  {
+   "fr": "Ce compte a été migré vers un autre compte : il est fermé.",
+   "where": [
+    "server/src/auth.ts"
    ]
   },
   {
@@ -8018,6 +8056,7 @@
   {
    "fr": "Compte cible introuvable.",
    "where": [
+    "server/src/accountMigration.ts",
     "ui/screens/OnlineMigration.cpp"
    ]
   },
@@ -10130,6 +10169,12 @@
    ]
   },
   {
+   "fr": "Demande de migration de ce compte refusée (code faux ou expiré) : quelqu'un connaît votre mot de passe.",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "Demande déjà envoyée.",
    "where": [
     "server/src/friends.ts"
@@ -10203,6 +10248,12 @@
    "fr": "Demandez à rejoindre ce projet : un administrateur choisira votre rôle.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Demi-largeur d'une fissure",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -10336,6 +10387,12 @@
    "fr": "dernière partie {0}",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Dernière secousse",
+   "where": [
+    "data/enemies/monolithe.json"
    ]
   },
   {
@@ -10964,6 +11021,12 @@
    ]
   },
   {
+   "fr": "Double bond titanesque",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
    "fr": "Double frappe",
    "where": [
     "data/enemies/monolithe.json"
@@ -11214,6 +11277,12 @@
   },
   {
    "fr": "Durée du saut (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Durée du séisme (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
@@ -11996,7 +12065,19 @@
    ]
   },
   {
+   "fr": "Dégâts reçus en carapace (x, 0 = 0,35)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Dégâts reçus posé (x, 0 = 1,5)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Dégâts reçus étourdi (x, 0 = 1,5)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
@@ -12029,6 +12110,12 @@
    "fr": "Délai avant chute (s)",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Délai avant l'éruption (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -14358,6 +14445,12 @@
    ]
   },
   {
+   "fr": "Fissures par secousse",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Fixe (tourelle)",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
@@ -15838,6 +15931,12 @@
    ]
   },
   {
+   "fr": "Hauteur de l'éruption",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Hauteur de la lave",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -15851,6 +15950,12 @@
   },
   {
    "fr": "Hauteur des murs",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Hauteur des ondes (rayon)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
@@ -15991,6 +16096,12 @@
    "fr": "Hors de l'anneau",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Hors de vue (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -16968,7 +17079,19 @@
    ]
   },
   {
+   "fr": "Intervalle des ondes (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Intervalle des salves (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Intervalle des secousses (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
@@ -18505,6 +18628,12 @@
    ]
   },
   {
+   "fr": "La sauvegarde n'est pas prête : la migration n'a pas été faite.",
+   "where": [
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
    "fr": "La sauvegarde n'indique pas la version de son schéma : elle ne peut pas être importée.",
    "where": [
     "server/src/backups.ts"
@@ -18955,9 +19084,27 @@
    ]
   },
   {
+   "fr": "Le compte cible est fermé ou suspendu.",
+   "where": [
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
+   "fr": "Le compte cible est le compte source.",
+   "where": [
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
    "fr": "Le compte ne sert que sur cet ordinateur. Sur un autre, créez un nouveau compte : un code préparé ici lui transfère toutes vos données.",
    "where": [
     "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
+   "fr": "Le compte source est fermé ou suspendu.",
+   "where": [
+    "server/src/accountMigration.ts"
    ]
   },
   {
@@ -19231,6 +19378,12 @@
    "fr": "Le fichier contient les données de tous les joueurs. Il est chiffré avec la phrase secrète choisie ici (12 caractères au moins) : sans elle, personne ne peut le lire, vous non plus. Le serveur ne la garde pas.",
    "where": [
     "ui/screens/AdminBackups.cpp"
+   ]
+  },
+  {
+   "fr": "Le fichier de la progression à restaurer est introuvable.",
+   "where": [
+    "server/src/accountMigration.ts"
    ]
   },
   {
@@ -20354,6 +20507,30 @@
    "fr": "Les deux phrases sont différentes.",
    "where": [
     "ui/screens/AdminBackups.cpp"
+   ]
+  },
+  {
+   "fr": "Les données de ce compte ont été migrées sur le compte {0} : ce compte est fermé.",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Les données de ce compte ont été migrées sur le compte {0}.",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Les données de {0} ont été migrées sur votre compte : restaurez la progression de son ordinateur.",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Les données de {0} ont été migrées sur votre compte.",
+   "where": [
+    "server/src/notifications.ts"
    ]
   },
   {
@@ -25323,6 +25500,12 @@
    ]
   },
   {
+   "fr": "Ondes de choc",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Onglet précédent",
    "where": [
     "engine/input/InputTypes.cpp"
@@ -29097,10 +29280,22 @@
    ]
   },
   {
+   "fr": "pseudonyme du compte cible attendu",
+   "where": [
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
    "fr": "pseudonyme réservé",
    "where": [
     "server/src/auth.ts",
     "server/src/players.ts"
+   ]
+  },
+  {
+   "fr": "Pseudonyme, mot de passe ou code de migration incorrect, ou code expiré.",
+   "where": [
+    "server/src/accountMigration.ts"
    ]
   },
   {
@@ -29882,6 +30077,12 @@
    ]
   },
   {
+   "fr": "Rayon d'un rocher",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Rayon de fusion",
    "where": [
     "data/enemies/astrarque.json",
@@ -29998,6 +30199,12 @@
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "game/powers/PowerStats.cpp"
+   ]
+  },
+  {
+   "fr": "Rebonds sur les murs (0 = 1)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -31658,6 +31865,12 @@
    "fr": "Rocher fissuré (Impulsion)",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Rochers par secousse (0 = 2)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -37470,6 +37683,13 @@
    ]
   },
   {
+   "fr": "Tremblement de terre",
+   "where": [
+    "data/enemies/monolithe.json",
+    "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
    "fr": "Tremblements d'écran",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -38169,6 +38389,12 @@
    ]
   },
   {
+   "fr": "Un des deux comptes a changé entre-temps : rien n'a été migré (la sauvegarde est faite).",
+   "where": [
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
    "fr": "Un des joueurs ne peut pas être ajouté.",
    "where": [
     "server/src/social.ts"
@@ -38255,6 +38481,7 @@
   {
    "fr": "Un import est en train de remplacer les données : attendez la fin.",
    "where": [
+    "server/src/accountMigration.ts",
     "server/src/backups.ts"
    ]
   },
@@ -38637,6 +38864,12 @@
    "fr": "Une modification refusée (conflit, objet verrouillé ou supprimé) est montrée avec le choix de la réappliquer : rien n'est écrasé sans vous. Hors ligne, vos modifications attendent sur le disque.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "une même partie ne peut être donnée qu'une fois",
+   "where": [
+    "server/src/accountMigration.ts"
    ]
   },
   {
@@ -40167,6 +40400,12 @@
    ]
   },
   {
+   "fr": "Vitesse de la carapace",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Vitesse de la descente",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -40192,6 +40431,12 @@
   },
   {
    "fr": "Vitesse des braises",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Vitesse des ondes",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
@@ -40847,6 +41092,12 @@
    "fr": "Vous ne pouvez pas donner ce rôle.",
    "where": [
     "server/src/projects.ts"
+   ]
+  },
+  {
+   "fr": "Vous ne pouvez pas fermer votre propre compte.",
+   "where": [
+    "server/src/accountMigration.ts"
    ]
   },
   {
@@ -42210,6 +42461,12 @@
    ]
   },
   {
+   "fr": "{0} demandes de migration de ce compte refusées (code faux ou expiré) : quelqu'un connaît votre mot de passe.",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "{0} défis (du jour, de la semaine ou du mois)",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
@@ -42459,6 +42716,18 @@
    "fr": "{0} fins",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} fissure par secousse  ·  Séisme {1} s",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} fissures par secousse  ·  Séisme {1} s",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -42874,6 +43143,18 @@
    ]
   },
   {
+   "fr": "{0} onde de choc",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} ondes de choc",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} performance(s) à envoyer",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
@@ -42905,6 +43186,18 @@
   },
   {
    "fr": "{0} projectiles",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} rebond  ·  Carapace : dégâts reçus {1}  ·  Étourdi : dégâts reçus {2}",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} rebonds  ·  Carapace : dégâts reçus {1}  ·  Étourdi : dégâts reçus {2}",
    "where": [
     "ui/screens/BossStatsScene.cpp"
    ]
@@ -44015,6 +44308,12 @@
    ]
   },
   {
+   "fr": "Écart entre les fissures (px)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Écart seg.",
    "where": [
     "ui/screens/GhostRun.cpp"
@@ -44579,6 +44878,12 @@
    ]
   },
   {
+   "fr": "Écrasement autour de lui (px)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Écrire",
    "where": [
     "ui/screens/SocialScene.cpp"
@@ -45091,6 +45396,12 @@
    "fr": "Étoiles traqueuses",
    "where": [
     "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Étourdi après la roulade (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {

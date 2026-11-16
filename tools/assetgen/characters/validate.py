@@ -238,13 +238,16 @@ for _k in range(8):
 # Eight sheets, one per phase, packed like Singularis' (no teleport); a walker: footsteps.
 MONOLITHE_CLIPS = [("idle", 8), ("telegraph", 6), ("walk", 8), ("move", 8), ("attack", 5), ("telegraph_special", 6),
                    ("special", 4), ("hurt", 2), ("summon", 6), ("roar", 8), ("death", 14)]
+# 2.51: its new attacks (shell, quake, titanic leap) add clips packed after the others.
+MONOLITHE_V2_CLIPS = MONOLITHE_CLIPS + [("curl", 6), ("roll", 8), ("uncurl", 4), ("dizzy", 6), ("crouch", 4), ("leap", 3),
+                                        ("fall", 2), ("land", 5), ("quake", 4)]
 for _k in range(8):
     _id = "monolithe" if _k == 0 else "monolithe_p%d" % (_k + 1)
-    ANIMS[_id] = (224, 224, [112, 212], MONOLITHE_CLIPS,
+    ANIMS[_id] = (224, 224, [112, 212], MONOLITHE_V2_CLIPS,
                   {"attack": [(2, "impact")], "walk": [(0, "footstep"), (4, "footstep")],
-                   "move": [(0, "footstep"), (4, "footstep")]}, {})
+                   "move": [(0, "footstep"), (4, "footstep")], "land": [(0, "impact")]}, {})
     TEXTURES[_id] = f"sprites/enemies/{_id}.png"
-    LOOPING[_id] = {"idle", "walk", "move", "special"}
+    LOOPING[_id] = {"idle", "walk", "move", "special", "roll", "dizzy", "fall", "quake"}
 
 # ------------------------------------------------------------------ Kraken des Abysses (abyssal giga boss)
 # Eight sheets packed like Pyrrhax' (no teleport: it swims, flying movement); the lash fires on f1.

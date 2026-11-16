@@ -517,6 +517,15 @@ private:
                 if (a.count > 1) details += "  ·  " + std::to_string(a.count) + " piqués enchaînés";
             } else if (a.type == AttackType::Gust) {
                 details += "  ·  Repousse " + num(a.duration > 0.0f ? a.duration : 2.2f, 1) + " s";
+            } else if (a.type == AttackType::Shell) {  // 2.51: the golem's attacks
+                const int bounces = a.bounces > 0 ? a.bounces : 1;
+                details += "  ·  " + std::to_string(bounces) + (bounces > 1 ? " rebonds" : " rebond") + "  ·  Carapace : dégâts reçus " +
+                           times(a.armor > 0.0f ? a.armor : 0.35f) + "  ·  Étourdi : dégâts reçus " + times(a.vulnerability > 0.0f ? a.vulnerability : 1.5f);
+            } else if (a.type == AttackType::Quake) {
+                details += "  ·  " + std::to_string(a.count) + (a.count > 1 ? " fissures par secousse" : " fissure par secousse") + "  ·  Séisme " +
+                           num(a.duration > 0.0f ? a.duration : 3.6f, 1) + " s";
+            } else if (a.type == AttackType::Skyfall) {
+                details += "  ·  " + std::to_string(a.count) + (a.count > 1 ? " ondes de choc" : " onde de choc");
             } else if (a.count > 1) {
                 details += "  ·  " + std::to_string(a.count) + " projectiles";
             }

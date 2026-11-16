@@ -34,6 +34,10 @@ enum class AttackType {
     Perch,      // it lands where the target stands, breathes a lasting cloud of fire along the ground, takes off
     CloudShot,  // fireballs that leave a burning cloud where they burst
     Gust,       // its wings push the target away (a limited push), ash and embers in the wind
+    // 2.51: the attacks of the Monolithe, the golem of Les Confins (game/enemies/GolemAttacks.cpp).
+    Shell,    // it curls into a stone shell and rolls at the target, bouncing off the walls; armoured, then dizzy
+    Quake,    // the arena shakes: cracks open under the target and burst, rocks fall from the roof on marks
+    Skyfall,  // it leaps out of sight, its shadow follows the target, it falls on it: shockwaves along the floor
     Count
 };
 
@@ -120,7 +124,10 @@ struct AttackDef {
     /// "plasma" (a tide of star plasma instead of lava), Cage "star" (walls of starlight).
     std::string look;
     // v5 (2.50, the dragon): Perch: damage it takes while landed (0 = the type's default, 1.5).
+    // 2.51, the golem: Shell: damage it takes while dizzy after its roll (0 = 1.5).
     float vulnerability = 0.0f;
+    // v6 (2.51, the golem): Shell: damage it takes while curled in its shell (0 = the type's default, 0.35).
+    float armor = 0.0f;
 
     bool isProjectileType() const {
         return type == AttackType::Projectile || type == AttackType::Spread || type == AttackType::Arc ||
@@ -129,7 +136,9 @@ struct AttackDef {
     /// The attack types of the guardians of Aethra (2.19).
     bool isGuardianType() const { return type >= AttackType::Tracker && type <= AttackType::Ring; }
     /// The attack types of the dragon (2.50, Pyrrhax).
-    bool isDragonType() const { return type >= AttackType::Dive && type < AttackType::Count; }
+    bool isDragonType() const { return type >= AttackType::Dive && type <= AttackType::Gust; }
+    /// The attack types of the golem (2.51, the Monolithe).
+    bool isGolemType() const { return type >= AttackType::Shell && type <= AttackType::Skyfall; }
 
     Json toJson() const;
     static AttackDef fromJson(const Json& j);

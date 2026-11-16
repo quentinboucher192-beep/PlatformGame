@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Monolithe, le Golem Primordial (version 2.49): the second giga boss of Les Confins, at the end
-of « Le Cœur de Pierre » (confins_02, tools/levelgen/confins.py).
+"""Monolithe, le Golem Primordial (version 2.49, its brain and its attacks reworked in 2.51): the
+second giga boss of Les Confins, at the end of « Le Cœur de Pierre » (confins_02, tools/levelgen/confins.py).
 
 A golem of rune-carved granite older than the planets, walking on the ground (the other giga
 bosses fly). Its health is the heaviest (840, 105 per phase), contact 2, and it fights with its
@@ -8,15 +8,21 @@ fists, the ground and the glare of its single eye. Eight phases, one every 12.5 
 each with its own light (the sheets of tools/assetgen/characters/boss_f_monolithe.py: one per phase,
 phases 5-8 « Fendu », its chest plates gone over a crystal core):
 
-  1 Ambre        double fist slams (a shockwave on the floor), a charge, the eye's glare
-  2 Éboulement   rocks rain from the roof, spikes of stone run under Nova, rocks thrown in arcs
-  3 Séisme       it leaps and lands on Nova, rings of shock, the floor freezes into glass
-  4 Runes        runes turn around it, a spiral of rune discs, a glare reflected by the walls
-  5 Fendu        its plates burst: magma rises from the cracks of the arena, geysers
-  6 Or           the gravity of its core pulls Nova in, rings, cages of rune stones
-  7 Azur         rock creatures of its body escort it, charges
+2.51, its own attacks (game/enemies/GolemAttacks.cpp): « Carapace roulante » (it curls into its
+rune shell and rolls at Nova, bouncing off the walls; armoured curled, dizzy after), « Tremblement de
+terre » (cracks burst under Nova, rocks fall from the roof on marked spots) and « Bond titanesque » (it
+leaps out of sight, its shadow hunts Nova, it falls on her: shockwaves along the floor). Its brain
+of a walker keeps it on the firm floor between the pits, at its fighting distance (never in a corner).
+
+  1 Ambre        its shell and its titanic leap from the start, double fist slams, rocks in arcs, the glare
+  2 Éboulement   the quake, rocks rain from the roof, spikes of stone run under Nova, its shell
+  3 Séisme       the quake, its titanic leap, rings of shock, the floor freezes into glass, charges
+  4 Runes        runes turn around it, a spiral of rune discs, a reflected glare, its shell, its leap
+  5 Fendu        its plates burst: magma rises, geysers, the quake, a wilder shell (two bounces)
+  6 Or           the gravity of its core, rings, cages of rune stones, a double titanic leap
+  7 Azur         rock creatures of its body escort it, the wild shell, the quake, the glare
   8 Incandescent everything, faster; rage after 40 s in the phase, and its last tremor to
-                 survive when its health runs out.
+                 survive when its health runs out (a ring, a last quake, the vault falling).
 
 Writes data/enemies/monolithe.json and data/enemies/eclat_de_roche.json (its escort).
 Run from the repository root:  python3 tools/contentgen/monolithe.py
@@ -35,10 +41,15 @@ DATA = os.path.join(ROOT, "data", "enemies")
 
 # Clips of its sheets (boss_f_monolithe.py): telegraph/attack (both fists raised, then the slam,
 # `impact` on frame 2), telegraph_special/special (runes flare, then the eye glares), summon (fists
-# into the ground, rune rocks rise), roar (phase change).
+# into the ground, rune rocks rise), roar (phase change); 2.51: curl/roll (the shell; uncurl and
+# dizzy after it), telegraph_special/quake (fists pounding the ground), crouch/leap (fall and land
+# after it).
 CLASSIC = ("telegraph", "attack")
 SPECIAL = ("telegraph_special", "special")
 RAISE = ("telegraph_special", "summon")
+SHELL = ("curl", "roll")
+QUAKE = ("telegraph_special", "quake")
+LEAP = ("crouch", "leap")
 FIST = [65, -20]  # the near fist on the impact frame, from the feet (sprite pixels)
 EYE = [63, -78]   # the eye during the glare (the same on the four frames)
 
@@ -52,7 +63,21 @@ def attacks():
     rock = dict(projectile="rock", hitEffect="projectile_burst")
     disc = dict(projectile="energy_disc", hitEffect="projectile_burst")
     ring = dict(radius=900, knockback=260)
+    # 2.51: its own attacks (game/enemies/GolemAttacks.cpp).
+    shell = dict(bounces=1, duration=1.6, vulnerability=1.5, armor=0.35, knockback=320)
+    quake = dict(projectile="rock", count=3, spread=150, radius=22, height=46, stagger=0.75, arms=2, projectileRadius=13,
+                 gravity=900, projectileSpeed=0, knockback=240)
+    leap = dict(duration=1.1, radius=26, projectileSpeed=300, projectileRadius=10, burstInterval=0.4, knockback=300)
     return [
+        # Its own (2.51)
+        _atk("carapace", "Carapace roulante", "shell", 2, 1600, 0.8, 0.3, 0.5, 6.0, *SHELL, lungeSpeed=360, **shell),
+        _atk("carapace_folle", "Carapace folle", "shell", 2, 1600, 0.75, 0.3, 0.5, 6.0, *SHELL, lungeSpeed=430,
+             **dict(shell, bounces=2, duration=1.3)),
+        _atk("seisme", "Tremblement de terre", "quake", 2, 1600, 0.8, 0.2, 0.6, 8.0, *QUAKE, duration=3.4, burstInterval=0.85,
+             **quake),
+        _atk("bond_titan", "Bond titanesque", "skyfall", 2, 1800, 0.6, 0.6, 0.6, 6.5, *LEAP, count=1, **leap),
+        _atk("bond_titan_double", "Double bond titanesque", "skyfall", 2, 1800, 0.55, 0.7, 0.6, 6.5, *LEAP, count=2,
+             **dict(leap, duration=0.95)),
         # 1 Ambre
         _atk("poings", "Double frappe", "slam", 2, 200, 0.7, 0.35, 0.7, 2.0, *CLASSIC, projectileSpeed=230, knockback=280),
         _atk("charge", "Charge du colosse", "charge", 2, 700, 0.65, 2.2, 0.7, 3.4, *CLASSIC, minRange=90, lungeSpeed=300,
@@ -67,8 +92,6 @@ def attacks():
         _atk("jet", "Jet de rochers", "arc", 1, 900, 0.6, 0.25, 0.5, 2.6, *CLASSIC, count=3, spread=24, gravity=380,
              projectileSpeed=210, lead=0.7, origin=FIST, **rock),
         # 3 Séisme
-        _atk("bond", "Bond sismique", "leap", 2, 700, 0.6, 1.6, 0.6, 4.0, *CLASSIC, projectileSpeed=230, knockback=280,
-             minRange=120, leapTime=0.8, lead=0.9),
         _atk("onde", "Onde tellurique", "ring", 2, 1000, 0.75, 0.2, 0.6, 5.0, *SPECIAL, projectileSpeed=180, spread=54,
              **ring),
         _atk("vitrifie", "Sol vitrifié", "frost_floor", 0, 1200, 0.8, 0.3, 0.6, 12.0, *RAISE, duration=6.0),
@@ -99,6 +122,8 @@ def attacks():
              spread=60, radius=880, knockback=260),
         _atk("derniere_chute", "Chute de la voûte", "rain", 1, 3000, 0.6, 0.3, 0.3, 0.0, *RAISE, projectileSpeed=260,
              count=14, spread=48, gravity=300, rainHeight=360, lead=0.8, **rock),
+        _atk("derniere_secousse", "Dernière secousse", "quake", 2, 3000, 0.6, 0.2, 0.3, 0.0, *QUAKE, duration=4.0,
+             burstInterval=0.7, **dict(quake, count=5, arms=3)),
     ]
 
 
@@ -112,19 +137,21 @@ def phase(i, name, attack_ids, speed, cooldown, telegraph, text, combo=3, **kw):
 
 def phases():
     return [
-        phase(0, "Ambre", ["poings", "jet", "charge", "regard"], 1.0, 0.9, 0.85, "Le Monolithe ouvre son œil."),
-        phase(1, "Éboulement", ["poings", "eboulement", "pics", "jet", "regard"], 1.05, 0.95, 0.82,
+        phase(0, "Ambre", ["carapace", "bond_titan", "poings", "jet", "regard"], 1.0, 0.9, 0.85, "Le Monolithe ouvre son œil."),
+        phase(1, "Éboulement", ["seisme", "poings", "eboulement", "pics", "jet", "carapace"], 1.05, 0.95, 0.82,
               "La voûte s'effondre sur vous !"),
-        phase(2, "Séisme", ["bond", "onde", "vitrifie", "poings", "charge"], 1.1, 0.92, 0.8,
+        phase(2, "Séisme", ["seisme", "bond_titan", "onde", "vitrifie", "poings", "charge"], 1.1, 0.92, 0.8,
               "Chacun de ses pas fait trembler les Confins !"),
-        phase(3, "Runes", ["orbite", "spirale", "reflet", "jet"], 1.12, 0.9, 0.78, "Ses runes s'embrasent !"),
-        phase(4, "Fendu", ["magma", "geysers", "eboulement", "poings", "charge"], 1.15, 0.88, 0.75,
+        phase(3, "Runes", ["orbite", "spirale", "reflet", "carapace", "bond_titan", "jet"], 1.12, 0.9, 0.78,
+              "Ses runes s'embrasent !"),
+        phase(4, "Fendu", ["magma", "geysers", "seisme", "carapace_folle", "poings"], 1.15, 0.88, 0.75,
               "Sa cuirasse éclate : le magma monte des fissures !", enterSound="sounds/shell_shatter.wav"),
-        phase(5, "Or", ["noyau", "anneaux", "cage", "spirale", "bond"], 1.2, 0.85, 0.72, "Son cœur de cristal vous attire !"),
-        phase(6, "Azur", ["eclats", "charge", "pics", "regard", "eboulement"], 1.25, 0.82, 0.7,
+        phase(5, "Or", ["noyau", "anneaux", "cage", "spirale", "bond_titan_double"], 1.2, 0.85, 0.72,
+              "Son cœur de cristal vous attire !"),
+        phase(6, "Azur", ["eclats", "carapace_folle", "seisme", "charge", "regard"], 1.25, 0.82, 0.7,
               "Des éclats de son corps prennent vie !", summonOnEnter=True),
-        phase(7, "Incandescent", ["poings", "charge", "regard", "eboulement", "pics", "bond", "onde", "magma", "geysers",
-                                  "spirale", "noyau", "reflet"], 1.3, 0.75, 0.62,
+        phase(7, "Incandescent", ["carapace_folle", "bond_titan_double", "seisme", "poings", "regard", "eboulement", "pics",
+                                  "onde", "magma", "geysers", "spirale", "noyau", "reflet"], 1.3, 0.75, 0.62,
               "Incandescent ! Le Monolithe se consume !", enrageTime=40, enterSound="sounds/supernova.wav"),
     ]
 
@@ -136,9 +163,9 @@ def monolithe():
                         "Huit phases, huit lumières : sa cuirasse éclate, le magma monte, et son dernier séisme doit "
                         "être survécu."),
         "family": "miniboss", "animation": SHEETS[0], "size": [100, 160], "scale": 1.25, "hp": 840, "contactDamage": 2,
-        "speed": 44, "chaseSpeedMultiplier": 1.35, "flying": False, "knockbackResist": 1, "detectionRange": 1000,
+        "speed": 60, "chaseSpeedMultiplier": 1.35, "flying": False, "knockbackResist": 1, "detectionRange": 1000,
         "attackRange": 900, "loseRange": 4000, "needsLineOfSight": False, "movement": "guard",
-        "reaction": "chase", "fleeHealthRatio": 0, "preferredDistance": 180, "hopVelocity": 0,
+        "reaction": "chase", "fleeHealthRatio": 0, "preferredDistance": 170, "hopVelocity": 0,
         "attacks": attacks(),
         "powers": {"teleport": {"enabled": False}, "defend": {"enabled": False}, "reinforcements": {"enabled": False}},
         "damageMultipliers": {"charge_shot": 1.2, "ground_pound": 1.3, "dash": 0.5},
@@ -146,7 +173,7 @@ def monolithe():
         "light": {"color": LIGHTS[0], "radius": 220},
         "sounds": {"hurt": "sounds/enemy_hurt.wav", "death": "sounds/supernova.wav", "alert": "sounds/boss_roar.wav"},
         "boss": {"title": "MONOLITHE, LE GOLEM PRIMORDIAL", "phases": phases(), "barIcon": "skull", "barColor": "#ffd9a8",
-                 "finalAttacks": ["dernier_seisme", "derniere_chute", "dernier_seisme"],
+                 "finalAttacks": ["dernier_seisme", "derniere_secousse", "derniere_chute"],
                  "finalText": "Son dernier séisme : survivez !"},
     }
 

@@ -51,7 +51,9 @@ Enemy::Enemy(const EnemyDefinition& def, AnimationSetPtr anim, Vec2 feet, bool f
     for (const auto& a : def_.attacks) {
         if (a.type == AttackType::Mirror) hasMirror_ = true;
         if (a.isDragonType()) hasDragon_ = true;
+        if (a.isGolemType()) hasGolem_ = true;  // 2.51: the golem walks with its own brain
     }
+    standSize_ = def_.size;
     teleportTimer_ = def_.teleportCooldown;
     state_ = def_.movement == MovementType::Patrol || def_.movement == MovementType::Fly || def_.movement == MovementType::Hop
                  ? EnemyState::Patrol
@@ -69,6 +71,11 @@ void Enemy::playClip(const std::string& clip, bool restart) {
     else if ((clip == "walk" || clip == "move") && anim_.has("move")) anim_.play("move", restart);
     else if ((clip == "walk" || clip == "move") && anim_.has("run")) anim_.play("run", restart);
     else if (clip == "recover" || clip == "defend" || clip == "summon" || clip == "roar") anim_.play("idle", restart);
+    // 2.51: the golem's clips on a sheet without them (an enemy made in the editor).
+    else if ((clip == "curl" || clip == "crouch") && anim_.has("telegraph")) anim_.play("telegraph", restart);
+    else if ((clip == "roll" || clip == "leap" || clip == "fall" || clip == "land" || clip == "quake") && anim_.has("attack"))
+        anim_.play("attack", restart);
+    else if ((clip == "uncurl" || clip == "dizzy") && anim_.has("hurt")) anim_.play("hurt", restart);
     else if (clip.rfind("telegraph", 0) == 0 && anim_.has("telegraph")) anim_.play("telegraph", restart);
     else if (anim_.has("idle")) anim_.play("idle", restart);
 }
@@ -446,6 +453,12 @@ void Enemy::stepEngaged(GameWorld& w, float dt) {
         return;
     }
 
+    // 2.51: the golem (a walking boss with its attacks) has its own brain (GolemAttacks.cpp).
+    if (hasGolem_ && def_.isBoss && !def_.flying) {
+        golemThink(w, dt);
+        return;
+    }
+
     if (playerVisible_ && chooseAttack(w)) return;
 
     float speed = def_.speed * def_.chaseSpeedMultiplier * phaseSpeed();
@@ -539,12 +552,16 @@ void Enemy::checkPhase(GameWorld& w) {
     int next = phase_ + 1;
     if (next >= static_cast<int>(def_.phases.size())) return;
     if (hpRatio() > def_.phases[next].hpThreshold) return;
+    // 2.51: a rolling or leaping golem roars once back on its floor (a new phase may break the
+    // ground of its arena: never while it is over it).
+    if (hasGolem_ && golemBusy()) return;
     phase_ = next;
     phaseTime_ = 0.0f;
     const BossPhase& ph = def_.phases[phase_];
     if (!ph.enterSound.empty()) w.playSound(ph.enterSound, box.center(), 1.0f);
     if (attack_ && attack_->isGuardianType()) guardianEnd(w);  // a channel stops with the roar
     if (attack_ && attack_->isDragonType()) dragonEnd(w);      // a dive or a landing too (2.50)
+    if (attack_ && attack_->isGolemType()) golemEnd(w);        // its quake, its curl, its crouch (2.51)
     state_ = EnemyState::PhaseTransition;
     stateTimer_ = 1.6f;
     invuln_ = 1.6f;
@@ -584,6 +601,14 @@ void Enemy::applyPhysics(GameWorld& w, float dt) {
     MoveOptions opt;
     opt.isEnemy = true;
     opt.dropThrough = dropThrough_;  // 2.50: the dragon dives and lands through the one-way ledges
+    if (skyborne()) {
+        // 2.51: the golem's titanic leap goes out of sight and comes down on its mark (through
+        // the roof of its arena, out of the camera's view): no collision on the way.
+        box.x += vel.x * dt;
+        box.y += vel.y * dt;
+        grounded_ = false;
+        return;
+    }
     if (def_.flying && state_ != EnemyState::Dead) {
         w.physics().move(box, vel * dt, opt);
         grounded_ = false;
@@ -635,6 +660,7 @@ void Enemy::contactDamage(GameWorld& w) {
 
 bool Enemy::takeDamage(GameWorld& w, const DamageInfo& dmg) {
     if (!alive() || dormant() || invuln_ > 0.0f) return false;
+    if (outOfSight()) return false;  // 2.51: the golem above its arena, out of reach
     if (lastStand_) {
         // Nothing hurts it any more: its last light must be survived.
         if (hurtFlash_ <= 0.0f) w.particles().emit("block_sparks", box.center(), 0.6f);
@@ -668,6 +694,15 @@ bool Enemy::takeDamage(GameWorld& w, const DamageInfo& dmg) {
     }
     // 2.50: the dragon landed by its « Atterrissage » is exposed (a window to punish it).
     if (perched_ && attack_) mult *= attack_->vulnerability > 0.0f ? attack_->vulnerability : 1.5f;
+    // 2.51: the golem curled in its shell is armoured; dizzy after its roll it is exposed.
+    if (hasGolem_ && attack_ && attack_->type == AttackType::Shell) {
+        if (curled()) {
+            mult *= attack_->armor > 0.0f ? attack_->armor : 0.35f;
+            w.particles().emit("block_sparks", box.center(), 0.8f);
+        } else if (dizzy()) {
+            mult *= attack_->vulnerability > 0.0f ? attack_->vulnerability : 1.5f;
+        }
+    }
     float amount = dmg.amount * mult;
     hp_ -= amount;
     hurtFlash_ = 0.14f;
@@ -704,6 +739,12 @@ void Enemy::kill(GameWorld& w) {
     attack_ = nullptr;
     perched_ = dropThrough_ = false;
     stage_ = Stage::None;
+    if (hasGolem_ && golem_ != GolemStage::None) {  // 2.51: it dies standing, on its floor
+        if (skyborne()) box = Rect::fromBottomCenter({box.center().x, floorY_}, box.size());
+        box = Rect::fromBottomCenter(box.bottomCenter(), standSize_);
+        prevBox = box;
+        golem_ = GolemStage::None;
+    }
     playClip(anim_.has("death") ? "death" : "hurt", true);
     w.playSound(def_.deathSound, box.center(), 1.0f);
     w.particles().emit(def_.isBoss ? "boss_death" : "enemy_death", box.center(), def_.isBoss ? 2.5f : 1.0f);
@@ -771,6 +812,7 @@ void Enemy::beginLastStand(GameWorld& w) {
     finalIndex_ = 0;
     if (attack_ && attack_->isGuardianType()) guardianEnd(w);
     if (attack_ && attack_->isDragonType()) dragonEnd(w);
+    if (attack_ && attack_->isGolemType()) golemEnd(w);
     attack_ = nullptr;
     staged_.clear();
     comboLeft_ = 0;

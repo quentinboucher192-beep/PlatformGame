@@ -1004,6 +1004,308 @@ class Monolithe:
         out.append(dimmed(stones.frame(1.0), 9))
         return out
 
+    # ======================================================= 2.51: its new attacks
+    # « Carapace roulante »: curl (6, it folds into a rune-carved shell), roll (8, loop: the shell
+    # rolling right, a full turn), uncurl (4), dizzy (6, loop: reeling, rune pebbles circling its
+    # head); « Bond titanesque »: crouch (4), leap (3: up and away), fall (2, loop: coming down,
+    # fists joined above its head), land (5, `impact` f0: the ground split, shockwaves both ways);
+    # « Tremblement de terre »: quake (4, loop: the fists pound the ground in turn).
+    SHELL_R = 30.0                       # the curled golem: a boulder 60 px wide (75 px in game)
+    SHELL_C = (112.0, GY - 30.0)
+
+    def shell(self, rot, glow=0.8, sx=1.0, sy=1.0, broken=False, seed=0):
+        """The golem curled into a boulder of carved plates (rotated by `rot`, radians,
+        clockwise on screen): a granite sphere, seams between five plates, a rune on each plate,
+        moss on the plate of its back, crystal veins (form II: glowing cracks)."""
+        p = MPose(glow=glow, broken=broken)
+        R = self.SHELL_R
+        cx, cy = self.SHELL_C[0], GY - R * sy
+        cv = TCanvas(W, H)
+        cv.part()
+        mask = cv.ellipse((cx, cy), R * sx, R * sy, GRANITE)
+        self.grain(cv, mask, (cx, cy), rot, 301 + seed)
+
+        def L(r, a):  # polar, in the shell's rotating frame, squashed with it
+            return (cx + math.cos(a + rot) * r * sx, cy + math.sin(a + rot) * r * sy)
+        # the plates: seams from the hub to the rim (a curled back of stone blocks)
+        cv.part(line=False)
+        hub = 0.32 * R
+        for k in range(5):
+            a = TAU * k / 5
+            pts = [L(hub, a), L(0.55 * R, a + 0.08), L(0.8 * R, a - 0.04), L(R - 0.5, a + 0.03)]
+            for q0, q1 in zip(pts[:-1], pts[1:]):
+                cv.line(q0, q1, GRANITE, inten=0.12, decal=True)
+        ring_pts = [L(hub, TAU * k / 10) for k in range(11)]
+        for q0, q1 in zip(ring_pts[:-1], ring_pts[1:]):
+            cv.line(q0, q1, GRANITE, inten=0.16, decal=True)
+        # the hub: the golem's head tucked in, its eye shut to a glowing slit
+        cv.part()
+        hm = cv.ellipse((cx + math.cos(rot) * 2 * sx, cy + math.sin(rot) * 2 * sy), hub * 0.9 * sx, hub * 0.9 * sy, GRANITE,
+                        bias=0.08)
+        self.grain(cv, hm, (cx, cy), rot, 311 + seed)
+        cv.part(line=False)
+        e0, e1 = L(hub * 0.15, PI * 0.5), L(hub * 0.55, PI * 0.5)
+        cv.line(e0, e1, self.light(p), inten=self.li(p, 0.55 + 0.25 * min(1.2, glow)), decal=True)
+        # a rune on every plate, turning with the shell
+        for k in range(5):
+            a = TAU * k / 5 + TAU / 10
+            c = L(0.66 * R, a)
+            ang = a + rot + PI / 2
+            ca, sa = math.cos(ang), math.sin(ang)
+            self.rune(cv, p, k, lambda x, y, c=c, ca=ca, sa=sa: (c[0] + (x * ca - y * sa) * sx, c[1] + (x * sa + y * ca) * sy),
+                      size=1.15, inten=0.55 + 0.35 * min(1.3, glow))
+        # moss on one plate (the top of its back), veins of crystal across two others
+        mc = L(0.7 * R, PI * 1.32)
+        self.moss(cv, mc, 7.5 * sx, 3.2 * sy, rot + PI * 1.32 + PI / 2, seed=321, drips=0)
+        self.vein(cv, p, [L(0.4 * R, 0.55), L(0.6 * R, 0.75), L(0.78 * R, 0.62), L(0.95 * R, 0.8)],
+                  inten=0.55 + 0.25 * min(1.2, glow), wide=broken)
+        self.vein(cv, p, [L(0.42 * R, 2.6), L(0.62 * R, 2.45), L(0.86 * R, 2.62)], inten=0.5 + 0.2 * min(1.2, glow))
+        if broken:
+            # form II: the crystal heart shows between two plates, cracks everywhere
+            for a0 in (1.6, 3.9, 5.2):
+                self.vein(cv, p, [L(0.35 * R, a0), L(0.6 * R, a0 + 0.12), L(0.9 * R, a0 - 0.05)], inten=0.7, wide=True)
+            self.crystal(cv, p, L(0.45 * R, 4.55), rot + 4.55, 9, 2.6)
+        img = cv.render()
+        img[GY:] = 0
+        row = img[GY - 1]
+        row[row[:, 3] > 0] = OUTLINE
+        return img
+
+    def crouch_pose(self, t, broken, i=0, deep=1.0, arms_back=0.0):
+        """Knees bent, hunched, the fists pulled in (t 0..1) - and swung back with `arms_back`."""
+        e = t * t * (3 - 2 * t)
+        d = deep * e
+        nf = (152 - 14 * e - 24 * arms_back * e, 190 + 4 * e - 8 * arms_back * e)
+        nb = (68 + 26 * e - 22 * arms_back * e, 184 + 10 * e - 14 * arms_back * e)
+        return MPose(t=0.7 * i, broken=broken, hip=(114.0 + 2 * d, 164.0 + 16 * d), lean=0.05 + 0.32 * d,
+                     tilt=0.25 * d, head=(1.0 * d, 3.0 * d), fist_f=nf, fist_b=nb,
+                     hump=(1.5 * d, 2.0 * d, 1.5 * d, 2.0 * d), glow=0.7 + 0.5 * e, eye=0.8 - 0.3 * e, lid=1.0 - 0.4 * e,
+                     crack=1.0 + 0.5 * e)
+
+    def curl(self, broken=False):
+        """It folds up (three crouching frames), packs into a boulder, its runes blaze."""
+        out = []
+        for i, t in enumerate((0.35, 0.7, 1.0)):
+            p = self.crouch_pose(t, broken, i)
+            f = self.draw(p)
+            if i == 2:
+                f = aura(f, 1)
+            out.append(f)
+        f = self.shell(0.0, glow=1.0, sx=1.22, sy=0.86, broken=broken, seed=1)
+        self.dust(f, 112 - 34, 9, self.seed + 200)
+        self.dust(f, 112 + 34, 9, self.seed + 201)
+        out.append(f)
+        f = aura(self.shell(0.0, glow=1.25, broken=broken, seed=2), 2)
+        self.charge(f, self.SHELL_C[0], self.SHELL_C[1], 3, 6, self.seed + 202, r0=44, r1=34, count=10)
+        out.append(f)
+        f = aura(self.shell(0.0, glow=1.5, broken=broken, seed=3), 5)
+        self.charge(f, self.SHELL_C[0], self.SHELL_C[1], 5, 6, self.seed + 203, r0=44, r1=33, count=12)
+        self.sparkle(f, self.SHELL_C[0] + 18, self.SHELL_C[1] - 22, 4)
+        out.append(f)
+        return out
+
+    def roll(self, broken=False):
+        """The shell rolling to the right (a full turn in 8 frames): dust thrown up behind it,
+        streaks of light from its runes."""
+        out = []
+        R = self.SHELL_R
+        cx, cy = self.SHELL_C
+        for i in range(8):
+            f = self.shell(TAU * i / 8, glow=1.2 + 0.1 * (i % 2), broken=broken, seed=10 + i)
+            # streaks behind it (left), at the height of its runes
+            for k, (dy, ln) in enumerate(((-16, 22), (-2, 30), (12, 18))):
+                y = int(cy + dy)
+                x0 = int(cx - R - 3 - ((i * 5 + k * 7) % 9))
+                for x in range(x0 - ln, x0):
+                    if 3 <= x < W and f[y, x, 3] == 0 and (x + i) % 4 != 0:
+                        f[y, x] = [PC[1], PC[2], PC[3]][min(2, (x0 - x) * 3 // ln)]
+            self.dust(f, cx - R - 6 - (i % 2) * 3, 6 + (i % 3), self.seed + 210 + i)
+            self.debris(f, self.seed + 220 + i, cx - R - 24, cx - R - 4, GY - 14, GY - 4, 3, sizes=(1, 2))
+            out.append(f)
+        return out
+
+    def uncurl(self, broken=False):
+        """The boulder bursts open: it unfolds and stands, reeling."""
+        out = []
+        f = self.shell(0.0, glow=0.9, sx=1.2, sy=0.88, broken=broken, seed=30)
+        self.dust(f, 112 - 30, 8, self.seed + 230)
+        self.dust(f, 112 + 30, 8, self.seed + 231)
+        out.append(f)
+        for i, t in enumerate((1.0, 0.55)):
+            out.append(self.draw(self.crouch_pose(t, broken, i)))
+        out.append(self.draw(self.dizzy_pose(0, broken)))
+        return out
+
+    def dizzy_pose(self, i, broken):
+        ph = TAU * i / 6
+        s = math.sin(ph)
+        return MPose(t=ph, broken=broken, hip=(114.0 + 4.0 * s, 165.0), lean=0.1 + 0.11 * s, tilt=0.22 + 0.2 * math.sin(ph + 0.8),
+                     head=(2.5 * s, 2.0), fist_f=(150.0 + 4 * s, 196.0), fist_b=(70.0 + 3 * s, 192.0),
+                     hump=(0.0, 1.0 + s, 0.0, 1.0 - s), glow=0.45, eye=0.35 + 0.2 * (i % 2), lid=0.45 + 0.15 * (i % 3 == 0))
+
+    def dizzy(self, broken=False):
+        """Dizzy after its roll: it sways, its eye flickers half shut, rune pebbles circle over
+        its head (the moment to strike it)."""
+        out = []
+        for i in range(6):
+            p = self.dizzy_pose(i, broken)
+            f = self.draw(p)
+            hx, hy = self.head_centre(p)
+            # three pebbles turning (120 degrees apart: 6 frames make the loop seamless)
+            for k in range(3):
+                a = TAU * k / 3 + TAU * i / 18
+                x, y = hx - 2 + math.cos(a) * 24, hy - 24 + math.sin(a) * 7
+                front = math.sin(a) > 0
+                if front or f[int(y), int(x), 3] == 0:
+                    FX.chunk(f, x, y, 3, ROCK_L, ROCK_D)
+                    self.sparkle(f, x + 4, y - 4, 2)
+            out.append(f)
+        return out
+
+    def crouch(self, broken=False):
+        """Titanic leap, wind-up: it squats, swings its fists back, the runes of its legs blaze."""
+        out = []
+        for i, t in enumerate((0.3, 0.6, 0.85, 1.0)):
+            p = self.crouch_pose(t, broken, i, deep=1.1, arms_back=1.0).copy(glow=0.7 + 0.7 * t, eye=0.9 + 0.5 * t, lid=1.0)
+            f = self.draw(p)
+            if i >= 2:
+                f = aura(f, i)
+                self.ground_cracks(f, 112, 10 + 8 * (i - 2), self.seed + 240, level=3 - i)
+            if i == 3:
+                self.dust(f, 88, 8, self.seed + 241)
+                self.dust(f, 138, 8, self.seed + 242)
+            out.append(f)
+        return out
+
+    def leap(self, broken=False):
+        """It springs up: legs stretched, fists thrown up; the ground bursts under it (f0), then
+        streaks of its flight under its feet."""
+        out = []
+        keys = [  # hip, lean, near fist, far fist, toes
+            ((114.0, 156.0), -0.06, (138.0, 52.0), (118.0, 50.0), 0.35),
+            ((114.0, 154.0), -0.08, (134.0, 40.0), (116.0, 40.0), 0.5),
+            ((114.0, 154.0), -0.06, (132.0, 44.0), (115.0, 44.0), 0.55),
+        ]
+        for i, (hip, lean, ff, fb, toe) in enumerate(keys):
+            p = MPose(t=0.6 * i, broken=broken, hip=hip, lean=lean, tilt=-0.2, head=(0.0, -2.0), fist_f=ff, fist_b=fb,
+                      foot_f=(122.0, float(GY)), foot_b=(105.0, float(GY - 3)), toe_f=-toe, toe_b=-toe,
+                      elbow_f=RAISED, elbow_b=RAISED, hump=(0.0, -3.0, 0.0, -3.0), glow=1.2, eye=1.3)
+            f = self.draw(p)
+            if i == 0:
+                back = np.zeros_like(f)
+                FX.burst(back, 112, GY - 3, 16, [WHITE_C, PC[0], PC[1], PC[2]], seed=self.seed + 250, jag=0.45, rays=8)
+                back[GY + 3:] = 0
+                FX.under(f, back)
+                self.dust(f, 80, 12, self.seed + 251)
+                self.dust(f, 146, 12, self.seed + 252)
+                self.debris(f, self.seed + 253, 70, 156, 170, 206, 10, sizes=(2, 3, 2, 1))
+            else:
+                # the air torn behind it: streaks below its feet
+                for k, x in enumerate((96, 108, 120, 130)):
+                    y0 = GY - 30 + (k % 2) * 6
+                    for y in range(y0, min(H - 1, y0 + 26 + 6 * i)):
+                        if f[y, x, 3] == 0 and (y + k + i) % 5 != 0:
+                            f[y, x] = [C("#d8cfc0"), C("#b3a691"), C("#8e8270")][min(2, (y - y0) // 10)]
+            out.append(f)
+        return out
+
+    def fall(self, broken=False):
+        """Coming down on its shadow: knees up, both fists joined above its head, the air
+        rushing past it (streaks above)."""
+        out = []
+        for i in range(2):
+            p = MPose(t=0.8 * i, broken=broken, hip=(114.0, 160.0 + i), lean=0.12, tilt=0.1, head=(1.0, 1.0),
+                      fist_f=(128.0, 50.0 + 2 * i), fist_b=(116.0, 52.0 + 2 * i), foot_f=(126.0, float(GY - 6)),
+                      foot_b=(100.0, float(GY - 3)), toe_f=0.2, toe_b=0.2, elbow_f=RAISED, elbow_b=RAISED,
+                      hump=(0.0, -2.0, 0.0, -2.0), glow=1.3 + 0.1 * i, eye=1.4)
+            f = aura(self.draw(p), 2 + i)
+            for k, x in enumerate((84, 98, 112, 126, 140, 152)):
+                y1 = 30 + ((k * 7 + i * 11) % 18)
+                for y in range(max(1, y1 - 30 - 6 * (k % 2)), y1):
+                    if f[y, x, 3] == 0 and (y + k) % 6 != 0:
+                        f[y, x] = [C("#8e8270"), C("#b3a691"), C("#d8cfc0")][min(2, (y1 - y) // 11)]
+            out.append(f)
+        return out
+
+    def land(self, broken=False):
+        """It lands (impact f0): a deep crouch, fists slammed down on both sides, the floor split,
+        shockwaves leaving both ways; then it straightens."""
+        out = []
+        keys = [  # crouch t, near fist, far fist, wave radius
+            (1.0, (178.0, 194.0), (56.0, 192.0), 26),
+            (1.0, (177.0, 193.0), (57.0, 191.0), 44),
+            (0.75, (170.0, 190.0), (62.0, 188.0), 62),
+            (0.45, (162.0, 190.0), (66.0, 186.0), 0),
+            (0.15, (155.0, 190.0), (68.0, 185.0), 0),
+        ]
+        for i, (t, ff, fb, wave) in enumerate(keys):
+            p = self.crouch_pose(t, broken, i, deep=1.15).copy(fist_f=ff, fist_b=fb, glow=1.3 - 0.15 * i, eye=1.3 - 0.1 * i, lid=1.0,
+                                                               elbow_f=(-10.0, 30.0), elbow_b=(-36.0, 20.0))
+            f = self.draw(p)
+            if i == 0:
+                back = np.zeros_like(f)
+                for k, (bx, br) in enumerate(((60, 12), (112, 16), (172, 12))):
+                    FX.burst(back, bx, GY - 3, br, [WHITE_C, PC[0], PC[1], PC[2]], seed=self.seed + 260 + k, jag=0.45, rays=7)
+                back[GY + 3:] = 0
+                back[:, W - 3:] = 0
+                back[:, :3] = 0
+                FX.under(f, back)
+                f = shake(f, 0, 1)
+            if wave:
+                for cxw in (112 - 40 - wave, 112 + 40 + wave):
+                    if 8 < cxw < W - 8:
+                        self.shock(f, cxw, 14, PC[0 if i == 0 else 1])
+                        self.shock(f, cxw, 20, PC[1 if i == 0 else 2], dotted=True)
+            if i <= 2:
+                self.ground_cracks(f, 112, 70 - 8 * i, self.seed + 263, level=i)
+                self.dust(f, 112 - 52 - 6 * i, 12 - 2 * i, self.seed + 264 + i)
+                self.dust(f, 112 + 52 + 6 * i, 12 - 2 * i, self.seed + 268 + i)
+                self.debris(f, self.seed + 272 + i, 30, 194, 120 + 20 * i, 200, 12 - 3 * i, sizes=(2, 3, 2, 1))
+            out.append(f)
+        return out
+
+    def quake(self, broken=False):
+        """Loop: its fists pound the ground in turn; the ground cracks and shakes, pebbles hop."""
+        out = []
+        keys = [((166.0, 82.0), PLANT_B, 2), (PLANT_F, (140.0, 86.0), 1), ((162.0, 90.0), PLANT_B, 2),
+                (PLANT_F, (136.0, 92.0), 1)]
+        for i, (ff, fb, hit) in enumerate(keys):
+            p = self.plant_pose(1.0, broken, 5, glow=1.2 + 0.15 * (hit == 1)).copy(
+                t=1.1 * i, fist_f=ff, fist_b=fb, eye=1.1, crack=1.8,
+                elbow_f=RAISED if ff[1] < 160 else (-30.0, 14.0), elbow_b=RAISED if fb[1] < 160 else (-30.0, 14.0),
+                hump=(0.0, -1.0 + (i % 2), 0.0, -1.0 - (i % 2)))
+            f = self.draw(p)
+            hx = ff[0] if hit == 1 else fb[0]
+            if hit:
+                self.ground_cracks(f, hx, 34, self.seed + 280 + i, level=0)
+                self.shock(f, hx, 18, PC[0])
+                self.shock(f, hx, 30, PC[1], dotted=True)
+                self.dust(f, hx - 22, 8, self.seed + 284 + i)
+                self.dust(f, min(W - 20, hx + 18), 7, self.seed + 288 + i)
+                f = shake(f, 1 if i % 2 else -1, 0)
+            rng = np.random.default_rng(self.seed + 292)
+            for k in range(8):
+                x = (10 + rng.random() * 40) if k % 2 else (198 + rng.random() * 18)
+                hop = (3 + 7 * rng.random()) * abs(math.sin(PI * (i / 4 + rng.random())))
+                FX.chunk(f, x, GY - 4 - hop, 2 + (k % 3 == 0), ROCK_L, ROCK_D)
+            out.append(f)
+        return out
+
+    def new_clips(self, form2=False):
+        """The clips of 2.51, packed after the others (the frames of before do not move)."""
+        b = form2
+        return [
+            ("curl", self.curl(b), dict(durations=[0.1, 0.1, 0.12, 0.08, 0.14, 0.2], loop=False)),
+            ("roll", self.roll(b), dict(fps=16, loop=True)),
+            ("uncurl", self.uncurl(b), dict(durations=[0.08, 0.08, 0.08, 0.12], loop=False)),
+            ("dizzy", self.dizzy(b), dict(fps=7, loop=True)),
+            ("crouch", self.crouch(b), dict(durations=[0.1, 0.1, 0.12, 0.2], loop=False)),
+            ("leap", self.leap(b), dict(durations=[0.06, 0.1, 0.12], loop=False)),
+            ("fall", self.fall(b), dict(fps=10, loop=True)),
+            ("land", self.land(b), dict(durations=[0.08, 0.1, 0.12, 0.14, 0.16], loop=False, events=[(0, "impact")])),
+            ("quake", self.quake(b), dict(fps=8, loop=True)),
+        ]
+
     # ------------------------------------------------------------ the sheet
     def clips(self, form2=False):
         b = form2
@@ -1018,7 +1320,7 @@ class Monolithe:
             ("summon", self.summon(b), dict(durations=TIMING["summon"], loop=False)),
             ("roar", self.roar(b), dict(durations=TIMING["roar"], loop=False)),
             ("death", self.death(b), dict(durations=TIMING["death"], loop=False)),
-        ]
+        ] + self.new_clips(form2)
 
 
 IMPACT_F, IMPACT_B = (176.0, 192.0), (164.0, 191.0)   # fist centres on the impact frame (attack f2)

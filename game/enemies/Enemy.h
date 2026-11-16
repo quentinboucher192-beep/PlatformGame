@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "engine/animation/Animation.h"
@@ -92,6 +93,18 @@ public:
     bool perched() const { return perched_; }
     bool diveLocked() const { return diveLocked_; }
     bool diving() const { return stage_ == Stage::Dash; }
+    /// The golem (2.51, Monolithe): curled in its shell (it takes less damage), rolling, dizzy
+    /// after a roll (it takes more), out of sight in its titanic leap (it cannot be hurt), and
+    /// the firm floor it walks on (no crust that gives way, no pit).
+    bool curled() const { return golem_ == GolemStage::Curl || golem_ == GolemStage::Roll || golem_ == GolemStage::Skid; }
+    bool rolling() const { return golem_ == GolemStage::Roll; }
+    bool dizzy() const { return golem_ == GolemStage::Dizzy; }
+    bool skyborne() const { return golem_ == GolemStage::Rise || golem_ == GolemStage::Hang || golem_ == GolemStage::Fall; }
+    bool outOfSight() const { return golem_ == GolemStage::Hang; }
+    bool shadowLocked() const { return shadowLocked_; }
+    Vec2 shadow() const { return shadow_; }
+    float floorLeft() const { return floorL_; }
+    float floorRight() const { return floorR_; }
 
     bool alive() const { return state_ != EnemyState::Dead; }
     bool dormant() const { return state_ == EnemyState::Dormant; }
@@ -292,6 +305,49 @@ private:
     Vec2 climbSpot_;
     bool perched_ = false;       // landed: it takes more damage
     bool dropThrough_ = false;   // diving or landing: through the one-way ledges
+
+    // The golem (2.51, the Monolithe): its new attack types and a walker's brain, in GolemAttacks.cpp.
+    enum class GolemStage : uint8_t { None, Curl, Roll, Skid, Uncurl, Dizzy, Crouch, Rise, Hang, Fall, Land, Quake };
+    void golemBegin(GameWorld& w);                // wind-up: the lane of the roll, the shadow, the first quake
+    void golemTelegraph(GameWorld& w, float dt);  // the wind-up, step by step
+    void golemStart(GameWorld& w);
+    void golemActive(GameWorld& w, float dt);
+    void golemEnd(GameWorld& w, bool cut = true);  // the attack is over (or cut short)
+    void renderGolem(RenderContext& ctx, float prog) const;
+    float golemFit(const GameWorld& w, const AttackDef& a, bool near, bool far, bool air) const;
+    /// Its steps between two attacks: toward the target, back toward the middle of its floor,
+    /// never to the edge of a pit; it attacks when placed (or when it has walked enough).
+    void golemThink(GameWorld& w, float dt);
+    /// The firm floor under it, as far as it stays level on both sides (walls, pits and the crust
+    /// that may give way end it); `roll` counts the crust too (the shell rolls over it).
+    void refreshFloor(GameWorld& w);
+    std::pair<float, float> floorSpan(const GameWorld& w, float x, float y, bool crust) const;
+    float walkLo() const;  // where its middle may stand on its floor
+    float walkHi() const;
+    bool golemBusy() const { return golem_ == GolemStage::Roll || golem_ == GolemStage::Skid || skyborne(); }
+    void setBody(const GameWorld& w, Vec2 size);  // its box (curled or standing), on its feet
+    void rollLane(GameWorld& w);  // the way the shell will roll (shown during the wind-up)
+    void quakeWave(GameWorld& w);
+    void landSkyfall(GameWorld& w);
+    void shockwaves(GameWorld& w, int ring);
+    bool hasGolem_ = false;
+    GolemStage golem_ = GolemStage::None;
+    float golemTimer_ = 0.0f;
+    Vec2 standSize_;              // its standing box (the shell is smaller)
+    bool floorKnown_ = false;
+    float floorL_ = 0.0f, floorR_ = 0.0f, floorY_ = 0.0f;  // its firm floor
+    float rollL_ = 0.0f, rollR_ = 0.0f;                    // where the shell can roll (crust too)
+    float floorTimer_ = 0.0f;
+    float edgeTime_ = 0.0f;       // pressed at an end of its floor with the target on the inside
+    float walkTime_ = 0.0f;       // walking before its next attack
+    float beat_ = 0.0f;           // a beat of steps between two attacks
+    bool sheltered_ = false;      // a ledge right over the target's head
+    float rollDir_ = 1.0f;
+    float rollStop_ = 0.0f;       // where the last leg of its roll ends (toward the middle)
+    int bouncesLeft_ = 0;
+    int ringsLeft_ = 0;           // shockwaves still to send after a titanic landing
+    Vec2 shadow_;                 // where it will fall (titanic leap)
+    bool shadowLocked_ = false;
 };
 
 }  // namespace cosmic
