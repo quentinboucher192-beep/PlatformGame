@@ -339,7 +339,7 @@ public:
     /// period=all, the runs « hors délai » too), `progressBoard` (« Plus loin »: board=progress).
     void leaderboard(const std::string& challengeId, const std::string& scope, ApiCallback cb, bool allPeriod = false,
                      bool progressBoard = false);
-    /// `timeExplicit`: board=time written (a « Finir le niveau » challenge ranks by progress by default).
+    /// `timeExplicit`: board=time written (a « Finir le niveau » challenge, whose main board is the progress one).
     static std::string leaderboardPath(const std::string& challengeId, const std::string& scope, bool allPeriod, bool progressBoard = false,
                                        bool timeExplicit = false);
     /// Downloads the replay of a run (the first of the challenge, as a ghost; a leaderboard's

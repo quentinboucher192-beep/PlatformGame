@@ -1356,7 +1356,8 @@ ChallengeService::AttemptReport ChallengeService::recordAttempt(const DailyChall
 std::string ChallengeService::leaderboardPath(const std::string& challengeId, const std::string& scope, bool allPeriod, bool progressBoard,
                                               bool timeExplicit) {
     // period=live and board=time are the defaults (the only ones a 2.32 server knows): left out,
-    // except board=time on a « Finir le niveau » challenge (2.41: its default board is progress).
+    // except board=time on a « Finir le niveau » challenge (2.41), said explicitly: there the
+    // progress board is the main one.
     return "/api/v1/challenges/" + challengeId + "/leaderboard?scope=" + online::encodeQueryValue(scope) + (allPeriod ? "&period=all" : "") +
            (progressBoard ? "&board=progress" : timeExplicit ? "&board=time" : "") + "&limit=50";
 }

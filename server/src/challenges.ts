@@ -886,8 +886,9 @@ export async function leaderboard(ctx: Ctx, viewer: AuthInfo | null): Promise<Re
     const c = await startedChallenge(ctx, ctx.params.challengeId!);
     const scope = queryEnum(ctx.url, "scope", SCOPES, "world");
     const period = queryEnum(ctx.url, "period", BOARD_PERIODS, "live");
-    // 2.41: a « Finir le niveau » challenge is ranked by its progress board first.
-    const board = queryEnum(ctx.url, "board", BOARDS, c.objective === "finish" ? "progress" : "time");
+    // board=time stays the default, also on a « Finir le niveau » challenge (2.41): the older
+    // games read it as their only board; the 2.41 game asks for board=progress, its main board.
+    const board = queryEnum(ctx.url, "board", BOARDS, "time");
     const page = paging(ctx.url, 50, 100);
     let country = queryString(ctx.url, "country", COUNTRY_RE);
     const filter: ScopeFilter = {};

@@ -102,3 +102,5 @@ stream
 %.*f
 %d:%f,%f:%f,%f:%d
 stations
+<month+1
+<month-1

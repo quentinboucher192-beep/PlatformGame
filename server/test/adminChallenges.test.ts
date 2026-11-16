@@ -497,8 +497,15 @@ describe("« Finir le niveau » (2.41)", () => {
         expect(await run(dan, 0)).toMatchObject({ tier: "gold", status: "VERIFIED" });
         expect(await run(cleo, 2)).toMatchObject({ tier: "silver" });
 
-        // The challenge's board is the progress one: finished first (the first to finish), then the furthest.
-        const board = await api("GET", `${V}/challenges/${ch.id}/leaderboard`);
+        // The challenge's board (the 2.41 game's main one) is the progress one: finished first (the
+        // first to finish), then the furthest; board=time stays the default for the older games.
+        const times = await api("GET", `${V}/challenges/${ch.id}/leaderboard`);
+        expect(times.body.data.board).toBe("time");
+        expect(times.body.data.entries.map((e: any) => [e.player.username, e.tier])).toEqual([
+            ["Dan", "gold"],
+            ["Cleo", "silver"],
+        ]);
+        const board = await api("GET", `${V}/challenges/${ch.id}/leaderboard?board=progress`);
         expect(board.status).toBe(200);
         expect(board.body.data.board).toBe("progress");
         expect(board.body.data.entries.map((e: any) => [e.player.username, e.finished, e.tier])).toEqual([

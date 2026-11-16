@@ -128,6 +128,7 @@ private:
     int communityOffset_ = 0, communityGen_ = 0;
     bool picker_ = false;       // the powers' picker
     bool scrollToChosen_ = false;  // the level list brings the chosen level into view
+    std::string pendingSwitch_;    // a period chosen while the draft had changes (chosen again: they go)
     bool entered_ = false;
 };
 

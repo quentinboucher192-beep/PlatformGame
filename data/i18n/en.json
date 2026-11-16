@@ -3076,6 +3076,8 @@
   "modification du défi {0}": "change of the challenge {0}",
   "Modification non appliquée": "Change not applied",
   "Modifications non enregistrées": "Unsaved changes",
+  "Modifications non enregistrées : « Enregistrer », ou changez encore de mois pour les abandonner.": "Unsaved changes: “Save”, or change the month again to drop them.",
+  "Modifications non enregistrées : « Enregistrer », ou choisissez encore cette case pour les abandonner.": "Unsaved changes: “Save”, or choose this cell again to drop them.",
   "modifie {0}": "editing {0}",
   "Modifier": "Edit",
   "Modifier mon profil": "Edit my profile",

@@ -332,8 +332,9 @@ Objectif d'un défi (`objective`, colonne de `challenges`, migration `XXXX_chall
 - `speed` (« Vitesse », défaut, tous les défis d'avant 2.41) : inchangé.
 - `finish` (« Finir le niveau ») : seulement sur une version de niveau **avec un parcours tracé**
   (`race`, comme les niveaux EXTRÊME). Le classement du défi est celui de « Plus loin » (§5) : le
-  plus loin d'abord, puis le premier à finir ; `GET …/leaderboard` donne `board=progress` par
-  défaut pour ce défi. Paliers : **Bronze** = `bronze_progress` % de progression (défaut 50),
+  plus loin d'abord, puis le premier à finir ; le jeu 2.41 en fait son classement principal
+  (`board=progress`). `board=time` reste le défaut de `GET …/leaderboard` (les anciens jeux n'ont
+  que lui : les parties finies, Or ou Argent). Paliers : **Bronze** = `bronze_progress` % de progression (défaut 50),
   **Argent** = `silver_progress` % (défaut 80 ; 10 à 95, Argent au-dessus du Bronze), **Or** =
   niveau fini (sans dégât si `gold_no_damage`, sinon Argent). Le palier d'un essai est calculé
   par le serveur depuis la progression qu'il tire du replay (`challenge_attempts.tier`), jamais

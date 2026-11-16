@@ -226,7 +226,16 @@ const AdminCalendar::Period* AdminCalendar::find(const std::string& id) const {
 
 void AdminCalendar::select(const std::string& periodId) {
     const Period* p = find(periodId);
-    if (!p) return;
+    if (!p || periodId == selected_) return;
+    // Changes not saved: said first; the same period chosen again leaves them.
+    if (dirty_ && pendingSwitch_ != periodId) {
+        pendingSwitch_ = periodId;
+        editorMsg_ = "Modifications non enregistrées : « Enregistrer », ou choisissez encore cette case pour les abandonner.";
+        editorError_ = false;
+        editorWarn_ = true;
+        return;
+    }
+    pendingSwitch_.clear();
     selected_ = periodId;
     draftFrom(*p);
 }
@@ -464,9 +473,22 @@ void AdminCalendar::drawCalendar(const Rect& r) {
         nb.small = true;
         nb.fontSize = 17;
         nb.enabled = !loading_ && (firstMonth_.empty() || month_ > firstMonth_);
-        if (ui.button("prev", {x, y, bw, hh}, prevL, nb)) loadMonth(challenge_period::addMonths(month_, -1));
+        // Changes not saved: said first; the same button again leaves them.
+        auto leave = [this](const std::string& key) {
+            if (!dirty_ || pendingSwitch_ == key) {
+                pendingSwitch_.clear();
+                dirty_ = false;
+                return true;
+            }
+            pendingSwitch_ = key;
+            editorMsg_ = "Modifications non enregistrées : « Enregistrer », ou changez encore de mois pour les abandonner.";
+            editorError_ = false;
+            editorWarn_ = true;
+            return false;
+        };
+        if (ui.button("prev", {x, y, bw, hh}, prevL, nb) && leave("<month-1")) loadMonth(challenge_period::addMonths(month_, -1));
         nb.enabled = !loading_ && (lastMonth_.empty() || month_ < lastMonth_);
-        if (ui.button("next", {x + w - bw, y, bw, hh}, nextL, nb)) loadMonth(challenge_period::addMonths(month_, 1));
+        if (ui.button("next", {x + w - bw, y, bw, hh}, nextL, nb) && leave("<month+1")) loadMonth(challenge_period::addMonths(month_, 1));
         int yy = 0, mm = 0;
         std::sscanf(month_.c_str(), "%4d-%2d", &yy, &mm);
         fitLabel(ui, std::string(monthTitle(mm)) + " " + std::to_string(yy), {x + w * 0.5f, y + hh * 0.5f}, 30, w - 2 * bw - ui.s(40), ui.theme().text,

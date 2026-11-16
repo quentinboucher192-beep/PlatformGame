@@ -18871,6 +18871,18 @@
    ]
   },
   {
+   "fr": "Modifications non enregistrées : « Enregistrer », ou changez encore de mois pour les abandonner.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Modifications non enregistrées : « Enregistrer », ou choisissez encore cette case pour les abandonner.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "modifie {0}",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
