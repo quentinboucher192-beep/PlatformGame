@@ -41,7 +41,7 @@ StatsCounters dayCounters(double minutes, int deaths, int threats, int dodged, i
     return c;
 }
 
-/// Plausible play (the determinism test's): mostly running right, jumps, attacks, dashes.
+/// Plausible play (exactly the determinism test's): mostly running right, jumps, attacks, dashes.
 std::vector<InputFrame> scripted(uint64_t seed, int ticks) {
     Random r(seed);
     std::vector<InputFrame> out;
@@ -58,6 +58,10 @@ std::vector<InputFrame> scripted(uint64_t seed, int ticks) {
             if (r.chance(0.45f)) cur.held |= 1u << static_cast<int>(Action::Jump);
             if (r.chance(0.2f)) cur.held |= 1u << static_cast<int>(Action::Attack);
             if (r.chance(0.08f)) cur.held |= 1u << static_cast<int>(Action::Dash);
+            if (r.chance(0.05f)) {
+                cur.held |= 1u << static_cast<int>(Action::MoveDown);
+                cur.moveY = 127;
+            }
             hold = r.rangeInt(4, 40);
         }
         InputFrame f = cur;
@@ -321,8 +325,8 @@ TEST_CASE("play stats: classic levels — Sum of Best, zones to work on, consist
     CHECK_NEAR(reps[1].lost, 1.0f, 1e-4);     // 20 22 30 20 21 21 21: median 21, best 20
     CHECK(reps[2].to.empty());
     CHECK_NEAR(reps[2].lost, 0.0f, 1e-4);
-    // Within 5 % of the best: segment 2 (best 20 → 21): 20 22 30 20 21 21 21 → 6 of 7.
-    CHECK_NEAR(reps[1].nearBest, 6.0f / 7.0f, 1e-4);
+    // Within 5 % of the best: segment 2 (best 20 → 21): 20 22 30 20 21 21 21 → 5 of 7.
+    CHECK_NEAR(reps[1].nearBest, 5.0f / 7.0f, 1e-4);
     CHECK(reps[1].spread > 0.0f);
     Regularity g = regularity(r, today);
     CHECK(g.attempts == 7 && g.finished == 6);
@@ -396,11 +400,12 @@ TEST_CASE("play stats: the file — written by its worker, read back, damaged, h
         CHECK(!FileUtil::exists(file));
     }
     // Hostile content: wrong types, absurd numbers — read without failing, values kept sane.
+    const int recent = localDay() - 1;  // kept day by day (not merged into a month)
     Json bad = {{"format", "cosmic.stats"},
                 {"version", 1},
                 {"data",
                  {{"names", {1, 2}},
-                  {"days", {"x", {20000, -5, "a", 3, 2, 99, 4, 9}, {20001, 1e300}}},
+                  {"days", {"x", {recent, -5, "a", 3, 2, 99, 4, 9}, {recent - 1, 1e300}}},
                   {"levels", {{"a", {{"p", "no"}, {"d", {1, -4}}}}, {"b", 7}}},
                   {"bosses", {{"z", {{"ph", 1000000}, {"an", {"Piqué", 4}}, {"fc", {{0, 3}, {9, 9}, "x"}}, {"r", "____AABA!"}}}}},
                   {"runs", {{"r", {{"seg", {{{"f", 3}, {"x", "AAB<<<"}}}}, {"fin", 17}, {"h", "~~~~~~~~"}}}}}}}};
@@ -409,7 +414,7 @@ TEST_CASE("play stats: the file — written by its worker, read back, damaged, h
         PlayStatsStore s;
         s.open(file);
         CHECK(!s.damaged());
-        const StatsDay* day = s.data().find(20000);
+        const StatsDay* day = s.data().find(recent);
         CHECK(day != nullptr);
         CHECK(day->c.playSec == 0.0);
         CHECK(day->c.dodged <= day->c.threats);
@@ -488,7 +493,10 @@ TEST_CASE("play stats: the file — written by its worker, read back, damaged, h
     CHECK(full.bosses.size() == kMaxBosses);
     CHECK(full.runs.size() == kMaxRunLevels);
     const size_t bytes = PlayStatsStore::serialize(full).size();
-    std::printf("  statistiques au plafond : %zu octets\n", bytes);
+    std::printf("  statistiques au plafond : %zu octets (", bytes);
+    const Json parts = full.toJson();
+    for (const auto& [k, v] : parts.items()) std::printf(" %s %zu", k.c_str(), v.dump().size());
+    std::printf(" )\n");
     CHECK(bytes < kMaxFileBytes);
 }
 

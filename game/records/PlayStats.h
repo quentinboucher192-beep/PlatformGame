@@ -54,10 +54,10 @@ struct LevelData;
 namespace playstats {
 constexpr int kSlices = 40;               // a level's route cut in 40 slices
 constexpr int kDaysKept = 365;            // days kept one by one (the older ones: by month)
-constexpr int kMonthsKept = 120;          // months kept (ten years; the older ones dropped)
+constexpr int kMonthsKept = 60;           // months kept (five years; the older ones dropped)
 constexpr int kBossAttemptsKept = 200;    // attempts kept per boss
-constexpr size_t kMaxLevels = 60;         // levels kept (the least recently played dropped)
-constexpr size_t kMaxBosses = 40;         // bosses kept (the least recently fought dropped)
+constexpr size_t kMaxLevels = 40;         // levels kept (the least recently played dropped)
+constexpr size_t kMaxBosses = 36;         // bosses kept (the least recently fought dropped)
 constexpr size_t kMaxFatal = 12;          // fatal attacks counted per boss (the rarest dropped)
 constexpr size_t kMaxFileBytes = 300 * 1024;
 constexpr float kHalfLifeDays = 14.0f;    // weight of a passage halves every 14 days
@@ -65,8 +65,8 @@ constexpr int kMinPassages = 5;           // a difficult passage needs at least 
 constexpr float kThreatDistance = 24.0f;  // 1.5 tiles (16 px): an attack this close threatens
 constexpr int kOrigins = static_cast<int>(HurtOrigin::Count);
 // « Niveaux » (classic levels: the segments between checkpoints, Sum of Best, regularity).
-constexpr size_t kMaxRunLevels = 24;      // levels kept (the least recently played dropped)
-constexpr size_t kMaxSegments = 16;       // segments kept per level
+constexpr size_t kMaxRunLevels = 20;      // levels kept (the least recently played dropped)
+constexpr size_t kMaxSegments = 12;       // segments kept per level
 constexpr size_t kSegmentTimesKept = 50;  // the last times of a segment
 constexpr size_t kFinishesKept = 40;      // the last full runs
 constexpr size_t kHistoryKept = 40;       // changes of the PB / Sum of Best

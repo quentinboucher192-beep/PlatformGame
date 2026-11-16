@@ -98,7 +98,6 @@ std::string str(const Json& a, size_t i, size_t maxLen = 120) {
 }
 
 double round1(double v) { return std::round(v * 10.0) / 10.0; }
-double round2(double v) { return std::round(v * 100.0) / 100.0; }
 int centis(float s) { return static_cast<int>(std::lround(static_cast<double>(s) * 100.0)); }
 float fromCentis(int c) { return static_cast<float>(c) / 100.0f; }
 
@@ -340,8 +339,8 @@ Json PlayStatsData::toJson() const {
         for (int i = 0; i < kSlices; ++i) {
             p.push_back(l.passes[static_cast<size_t>(i)]);
             dd.push_back(l.deaths[static_cast<size_t>(i)]);
-            wp.push_back(round2(l.wPasses[static_cast<size_t>(i)]));
-            wd.push_back(round2(l.wDeaths[static_cast<size_t>(i)]));
+            wp.push_back(round1(l.wPasses[static_cast<size_t>(i)]));
+            wd.push_back(round1(l.wDeaths[static_cast<size_t>(i)]));
         }
         jl[id] = {{"n", l.name}, {"s", l.stamp}, {"l", l.lastDay}, {"p", p}, {"d", dd}, {"wp", wp}, {"wd", wd}};
     }
