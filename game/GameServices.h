@@ -59,7 +59,7 @@ public:
     RecordsManager records;
     /// Boss statistics (victories, phases and fights without being hit).
     BossStats bossStats;
-    /// 2.52: the player's statistics (main menu → Statistiques; saves/stats.json, this computer only).
+    /// 2.53: the player's statistics (main menu → Statistiques; saves/stats.json, this computer only).
     PlayStatsStore playStats;
     /// Ghost Racing: the replays kept on this computer (my runs, downloads, chosen files)
     /// and the history of my segments.

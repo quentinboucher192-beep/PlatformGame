@@ -1,4 +1,4 @@
-// 2.52 — the player's statistics: the data kept (saves/stats.json) and what the « Statistiques »
+// 2.53 — the player's statistics: the data kept (saves/stats.json) and what the « Statistiques »
 // screen computes from it. See PlayStats.h; the recorder and the store: PlayStatsRecorder.cpp.
 
 #include "game/records/PlayStats.h"
@@ -101,6 +101,25 @@ double round1(double v) { return std::round(v * 10.0) / 10.0; }
 double round2(double v) { return std::round(v * 100.0) / 100.0; }
 int centis(float s) { return static_cast<int>(std::lround(static_cast<double>(s) * 100.0)); }
 float fromCentis(int c) { return static_cast<float>(c) / 100.0f; }
+
+// A compact text for long lists (the file stays small): base64url digits, `chars` per value.
+const char kB64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+constexpr unsigned kNoTime = 262143;  // 3 digits, all set: no time
+void putB64(std::string& out, unsigned v, int chars) {
+    for (int i = chars - 1; i >= 0; --i) out += kB64[(v >> (6 * i)) & 63u];
+}
+bool getB64(const std::string& in, size_t& pos, int chars, unsigned& v) {
+    if (pos + static_cast<size_t>(chars) > in.size()) return false;
+    v = 0;
+    for (int i = 0; i < chars; ++i) {
+        char c = in[pos++];
+        int d = c >= 'A' && c <= 'Z' ? c - 'A' : c >= 'a' && c <= 'z' ? c - 'a' + 26 : c >= '0' && c <= '9' ? c - '0' + 52 : c == '-' ? 62 : c == '_' ? 63 : -1;
+        if (d < 0) return false;
+        v = (v << 6) | static_cast<unsigned>(d);
+    }
+    return true;
+}
+unsigned centisCode(float s) { return static_cast<unsigned>(std::clamp(std::lround(static_cast<double>(s) * 100.0), 1L, static_cast<long>(kNoTime) - 1L)); }
 
 Json countersJson(const StatsCounters& c, int key, std::map<std::string, int>& names) {
     Json hurt = Json::array();
@@ -329,51 +348,62 @@ Json PlayStatsData::toJson() const {
 
     Json jb = Json::object();
     for (const auto& [id, b] : bosses) {
-        std::map<std::string, int> attacks;
-        Json at = Json::array(), recent = Json::array();
-        int prevDay = b.recent.empty() ? 0 : b.recent.front().day;
+        // Its attempts, 4 characters each: its share taken (or a victory), its phase, its fatal
+        // attack (an index in `an`, the names shared with the counts of `fc`).
+        std::map<std::string, int> index;
+        Json names = Json::array();
+        auto nameOf = [&](const std::string& n) {
+            auto it = index.find(n);
+            if (it != index.end()) return it->second;
+            if (index.size() >= 62) return -1;
+            names.push_back(n);
+            return index.emplace(n, static_cast<int>(index.size())).first->second;
+        };
+        std::string attempts;
         for (const auto& r : b.recent) {
-            int ai = -1;
-            if (!r.attack.empty()) {
-                auto it = attacks.find(r.attack);
-                if (it == attacks.end()) {
-                    it = attacks.emplace(r.attack, static_cast<int>(attacks.size())).first;
-                    at.push_back(r.attack);
-                }
-                ai = it->second;
-            }
-            recent.push_back(Json::array({r.day - prevDay, static_cast<int>(std::lround(r.removed * 1000.0f)), r.phase, ai, r.won ? 1 : 0}));
-            prevDay = r.day;
+            putB64(attempts, r.won ? 1001u : static_cast<unsigned>(std::clamp(std::lround(r.removed * 1000.0f), 0L, 1000L)), 2);
+            putB64(attempts, static_cast<unsigned>(std::clamp(r.phase, 0, 63)), 1);
+            putB64(attempts, r.attack.empty() ? 0u : static_cast<unsigned>(nameOf(r.attack) + 1), 1);
         }
-        Json reached = Json::array(), defeats = Json::array(), fatal = Json::object();
+        Json reached = Json::array(), defeats = Json::array(), fatal = Json::array();
         for (int v : b.reached) reached.push_back(v);
         for (int v : b.defeats) defeats.push_back(v);
-        for (const auto& [a, n] : b.fatal) fatal[a] = n;
-        jb[id] = {{"n", b.name},      {"ph", b.phases}, {"a", b.attempts}, {"w", b.wins},     {"fw", b.firstWin},
-                  {"bb", static_cast<int>(std::lround(b.bestBefore * 1000.0f))}, {"q", b.lastSeq},  {"re", reached},
-                  {"de", defeats},    {"fat", fatal},   {"at", at},        {"r0", b.recent.empty() ? 0 : b.recent.front().day},
-                  {"r", recent}};
+        for (const auto& [a, n] : b.fatal)
+            if (int i = nameOf(a); i >= 0) fatal.push_back(Json::array({i, n}));
+        jb[id] = {{"n", b.name},   {"ph", b.phases}, {"a", b.attempts}, {"w", b.wins}, {"fw", b.firstWin},
+                  {"bb", static_cast<int>(std::lround(b.bestBefore * 1000.0f))}, {"q", b.lastSeq}, {"re", reached},
+                  {"de", defeats}, {"an", names}, {"fc", fatal}, {"r", attempts}};
     }
 
     Json jr = Json::object();
     for (const auto& [id, r] : runs) {
+        // Times in hundredths of a second, 3 characters each; days as gaps from the first one.
         Json segs = Json::array();
         for (const auto& s : r.segments) {
-            Json times = Json::array();
-            for (float t : s.times) times.push_back(centis(t));
+            std::string times;
+            for (float t : s.times) putB64(times, centisCode(t), 3);
             segs.push_back({{"f", s.from}, {"t", s.to}, {"b", s.best > 0.0f ? centis(s.best) : -1}, {"x", times}});
         }
-        Json fin = Json::array(), hist = Json::array(), route = Json::array();
+        std::string fin, hist;
         int prevDay = r.finishes.empty() ? 0 : r.finishes.front().day;
         for (const auto& f : r.finishes) {
-            fin.push_back(Json::array({f.day - prevDay, centis(f.time)}));
+            putB64(fin, static_cast<unsigned>(std::clamp(f.day - prevDay, 0, 4095)), 2);
+            putB64(fin, centisCode(f.time), 3);
             prevDay = f.day;
         }
-        for (const auto& h : r.history) hist.push_back(Json::array({h.day, h.pb > 0.0f ? centis(h.pb) : -1, h.sob > 0.0f ? centis(h.sob) : -1}));
+        const int h0 = r.history.empty() ? 0 : r.history.front().day;
+        prevDay = h0;
+        for (const auto& h : r.history) {
+            putB64(hist, static_cast<unsigned>(std::clamp(h.day - prevDay, 0, 4095)), 2);
+            putB64(hist, h.pb > 0.0f ? centisCode(h.pb) : kNoTime, 3);
+            putB64(hist, h.sob > 0.0f ? centisCode(h.sob) : kNoTime, 3);
+            prevDay = h.day;
+        }
+        Json route = Json::array();
         for (const auto& c : r.pbRoute) route.push_back(c);
         jr[id] = {{"n", r.name}, {"v", r.version}, {"a", r.attempts}, {"f", r.finished}, {"pb", r.pb > 0.0f ? centis(r.pb) : -1},
                   {"route", route}, {"seg", segs}, {"fin0", r.finishes.empty() ? 0 : r.finishes.front().day}, {"fin", fin},
-                  {"h", hist}, {"l", r.lastDay}};
+                  {"h0", h0}, {"h", hist}, {"l", r.lastDay}};
     }
     return {{"names", table}, {"days", jd}, {"months", jm}, {"levels", jl}, {"bosses", jb}, {"runs", jr}, {"seq", seq}};
 }
@@ -438,30 +468,28 @@ PlayStatsData PlayStatsData::fromJson(const Json& j) {
                     b.reached.push_back(std::max(0, num(re, static_cast<size_t>(i))));
                     b.defeats.push_back(std::max(0, num(de, static_cast<size_t>(i))));
                 }
-                const Json& fatal = member(o, "fat");
-                if (fatal.is_object())
-                    for (const auto& [a, n] : fatal.items())
-                        if (n.is_number() && b.fatal.size() < kMaxFatal * 2) b.fatal[a.substr(0, 120)] = std::max(0, n.get<int>());
-                std::vector<std::string> at;
-                const Json& ja = member(o, "at");
-                if (ja.is_array())
-                    for (size_t i = 0; i < ja.size() && i < 256; ++i) at.push_back(str(ja, i));
-                int day = std::max(0, field(o, "r0"));
-                const Json& r = member(o, "r");
-                if (r.is_array())
-                    for (const auto& e : r) {
-                        if (!e.is_array()) continue;
-                        BossAttemptRec rec;
-                        day += std::max(0, num(e, 0));
-                        rec.day = day;
-                        rec.removed = std::clamp(static_cast<float>(num(e, 1)) / 1000.0f, 0.0f, 1.0f);
-                        rec.phase = std::clamp(num(e, 2), 0, b.phases - 1);
-                        int ai = num(e, 3, -1);
-                        if (ai >= 0 && static_cast<size_t>(ai) < at.size()) rec.attack = at[static_cast<size_t>(ai)];
-                        rec.won = num(e, 4) != 0;
-                        if (rec.won) rec.removed = 1.0f;
-                        b.recent.push_back(rec);
+                std::vector<std::string> names;
+                const Json& an = member(o, "an");
+                if (an.is_array())
+                    for (size_t i = 0; i < an.size() && i < 64; ++i) names.push_back(str(an, i));
+                const Json& fc = member(o, "fc");
+                if (fc.is_array())
+                    for (const auto& e : fc) {
+                        int i = num(e, 0, -1);
+                        if (i >= 0 && static_cast<size_t>(i) < names.size() && !names[static_cast<size_t>(i)].empty())
+                            b.fatal[names[static_cast<size_t>(i)]] = std::max(0, num(e, 1));
                     }
+                const std::string r = text(o, "r", 4 * (kBossAttemptsKept + 50));
+                size_t pos = 0;
+                unsigned code = 0, phase = 0, attack = 0;
+                while (getB64(r, pos, 2, code) && getB64(r, pos, 1, phase) && getB64(r, pos, 1, attack)) {
+                    BossAttemptRec rec;
+                    rec.won = code > 1000;
+                    rec.removed = rec.won ? 1.0f : static_cast<float>(code) / 1000.0f;
+                    rec.phase = std::clamp(static_cast<int>(phase), 0, b.phases - 1);
+                    if (attack > 0 && attack <= names.size()) rec.attack = names[attack - 1];
+                    b.recent.push_back(rec);
+                }
                 b.attempts = std::max(b.attempts, static_cast<int>(b.recent.size()));
                 out.bosses[id] = b;
             }
@@ -488,29 +516,28 @@ PlayStatsData PlayStatsData::fromJson(const Json& j) {
                         sr.to = text(s, "t");
                         int b = field(s, "b", -1);
                         sr.best = b > 0 ? fromCentis(b) : -1.0f;
-                        const Json& x = member(s, "x");
-                        if (x.is_array())
-                            for (size_t i = 0; i < x.size(); ++i) {
-                                int c = num(x, i, -1);
-                                if (c > 0) sr.times.push_back(fromCentis(c));
-                            }
+                        const std::string x = text(s, "x", 3 * (kSegmentTimesKept + 10));
+                        size_t pos = 0;
+                        for (unsigned c = 0; getB64(x, pos, 3, c);)
+                            if (c > 0 && c != kNoTime) sr.times.push_back(fromCentis(static_cast<int>(c)));
                         if (sr.times.size() > kSegmentTimesKept) sr.times.erase(sr.times.begin(), sr.times.end() - static_cast<std::ptrdiff_t>(kSegmentTimesKept));
                         r.segments.push_back(std::move(sr));
                     }
                 int day = std::max(0, field(o, "fin0"));
-                const Json& fin = member(o, "fin");
-                if (fin.is_array())
-                    for (const auto& e : fin) {
-                        day += std::max(0, num(e, 0));
-                        int c = num(e, 1, -1);
-                        if (c > 0) r.finishes.push_back({day, fromCentis(c)});
-                    }
-                const Json& h = member(o, "h");
-                if (h.is_array())
-                    for (const auto& e : h) {
-                        int p = num(e, 1, -1), s = num(e, 2, -1);
-                        r.history.push_back({std::max(0, num(e, 0)), p > 0 ? fromCentis(p) : -1.0f, s > 0 ? fromCentis(s) : -1.0f});
-                    }
+                const std::string fin = text(o, "fin", 5 * (kFinishesKept + 10));
+                size_t pos = 0;
+                for (unsigned gap = 0, c = 0; getB64(fin, pos, 2, gap) && getB64(fin, pos, 3, c);) {
+                    day += static_cast<int>(gap);
+                    if (c > 0 && c != kNoTime) r.finishes.push_back({day, fromCentis(static_cast<int>(c))});
+                }
+                day = std::max(0, field(o, "h0"));
+                const std::string h = text(o, "h", 8 * (kHistoryKept + 10));
+                pos = 0;
+                for (unsigned gap = 0, p = 0, so = 0; getB64(h, pos, 2, gap) && getB64(h, pos, 3, p) && getB64(h, pos, 3, so);) {
+                    day += static_cast<int>(gap);
+                    r.history.push_back({day, p != kNoTime && p > 0 ? fromCentis(static_cast<int>(p)) : -1.0f,
+                                         so != kNoTime && so > 0 ? fromCentis(static_cast<int>(so)) : -1.0f});
+                }
                 r.lastDay = std::max(0, field(o, "l"));
                 out.runs[id] = std::move(r);
             }

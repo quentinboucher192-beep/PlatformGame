@@ -1,4 +1,4 @@
-// 2.52 — the player's statistics (game/records/PlayStats.h): the calculations of the
+// 2.53 — the player's statistics (game/records/PlayStats.h): the calculations of the
 // « Statistiques » screen, the file (format, caps, damaged file, worker thread), and the
 // recorder, which reads a run without ever changing it (same digests with or without it).
 
@@ -402,8 +402,8 @@ TEST_CASE("play stats: the file — written by its worker, read back, damaged, h
                  {{"names", {1, 2}},
                   {"days", {"x", {20000, -5, "a", 3, 2, 99, 4, 9}, {20001, 1e300}}},
                   {"levels", {{"a", {{"p", "no"}, {"d", {1, -4}}}}, {"b", 7}}},
-                  {"bosses", {{"z", {{"ph", 1000000}, {"r", {{0, 5000, 99, 7, 1}}}}}}},
-                  {"runs", {{"r", {{"seg", {{{"f", 3}, {"x", {-1, 100}}}}}, {"fin", {{1}}}}}}}}}};
+                  {"bosses", {{"z", {{"ph", 1000000}, {"an", {"Piqué", 4}}, {"fc", {{0, 3}, {9, 9}, "x"}}, {"r", "____AABA!"}}}}},
+                  {"runs", {{"r", {{"seg", {{{"f", 3}, {"x", "AAB<<<"}}}}, {"fin", 17}, {"h", "~~~~~~~~"}}}}}}}};
     CHECK(FileUtil::writeTextAtomic(file, bad.dump()));
     {
         PlayStatsStore s;
@@ -415,7 +415,13 @@ TEST_CASE("play stats: the file — written by its worker, read back, damaged, h
         CHECK(day->c.dodged <= day->c.threats);
         CHECK(day->c.hits <= day->c.attacks);
         CHECK(s.data().bosses.at("z").phases <= 64);
-        CHECK(s.data().bosses.at("z").recent.at(0).removed == 1.0f);
+        const BossHistory& z = s.data().bosses.at("z");
+        CHECK(z.recent.size() == 2);  // "AABA" is the second; "!" ends the list
+        CHECK(z.recent.at(0).won && z.recent.at(0).removed == 1.0f);
+        CHECK(z.recent.at(0).phase < z.phases);
+        CHECK(z.recent.at(1).removed == 0.0f && z.recent.at(1).attack.empty());
+        CHECK(z.fatal.size() == 1 && z.fatal.at("Piqué") == 3);
+        CHECK(s.data().runs.at("r").segments.at(0).times.size() == 1);
     }
     std::error_code ec;
     fs::remove_all(dir, ec);

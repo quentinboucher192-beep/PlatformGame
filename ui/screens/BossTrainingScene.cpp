@@ -740,7 +740,7 @@ private:
             spawn_ = c->spawn;  // checked against the arena as it is now (checkSpawn)
         }
         chosen_ = fitTrainingPowers(g_.content, chosen_, slots_);
-        if (wantPhase_ >= -1) phase_ = wantPhase_;  // 2.52: opened on a phase (« Passages difficiles »)
+        if (wantPhase_ >= -1) phase_ = wantPhase_;  // 2.53: opened on a phase (« Passages difficiles »)
         int phases = def_ ? static_cast<int>(def_->phases.size()) : 0;
         if (phase_ >= phases) phase_ = -1;
         // Automated screenshots (--boss-training-spawn): the usual start, the place proposed

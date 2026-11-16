@@ -1,4 +1,4 @@
-// 2.52 — the player's statistics: the recorder of a run (a WorldListener that only reads) and
+// 2.53 — the player's statistics: the recorder of a run (a WorldListener that only reads) and
 // the store (saves/stats.json, written on a worker thread). See PlayStats.h.
 
 #include <algorithm>
@@ -429,7 +429,7 @@ void PlayStatsStore::open(const fs::path& file) {
 
 std::unique_ptr<PlayStatsRecorder> PlayStatsStore::beginRun(GameWorld& w, const PlayStatsRun& run, const ContentDatabase& content) {
     if (!enabled || run.editorTest || w.invincible() || run.levelId.empty()) return nullptr;
-    const bool training = w.training() && !w.challenge();
+    const bool training = run.training || (w.training() && !w.challenge());
     std::string name = run.level ? run.level->name : std::string();
     if (const LevelEntry* e = content.level(run.levelId); e && !e->name.empty()) name = e->name;
     auto r = std::make_unique<PlayStatsRecorder>(*this, w, run.levelId, name,

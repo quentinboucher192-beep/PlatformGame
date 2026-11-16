@@ -43,7 +43,7 @@ struct GameplaySettings {
     bool editorAutosave = true;
     int editorAutosaveSeconds = 60;
     bool unlockAll = true;  // every planet and level playable without progression
-    /// 2.52: « Enregistrer mes statistiques » (main menu → Statistiques; kept on this computer).
+    /// 2.53: « Enregistrer mes statistiques » (main menu → Statistiques; kept on this computer).
     bool recordStats = true;
 };
 

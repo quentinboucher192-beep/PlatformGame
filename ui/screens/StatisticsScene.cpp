@@ -39,6 +39,8 @@ using charts::Bar;
 using charts::LineSpec;
 using charts::Series;
 using charts::Tip;
+using playstats::kOrigins;
+using playstats::kSlices;
 
 const Color kBossColors[3] = {{57, 135, 229, 255}, {217, 89, 38, 255}, {25, 158, 112, 255}};
 const Color kBlue{57, 135, 229, 255};
@@ -309,6 +311,7 @@ private:
         for (int p : periods) {
             UIContext::ButtonStyle st;
             st.small = true;
+            st.fontSize = 16;
             st.selected = period_ == p;
             std::string t = std::to_string(p) + " j";
             float bw = ui.text().measure(t, FontFace::Bold, ui.s(16)).x + ui.s(30);
@@ -608,6 +611,7 @@ private:
         // The boss statistics of before (BossStatsScene): always reachable from here.
         {
             UIContext::ButtonStyle st;
+            st.fontSize = 20;
             const std::string t = "Fiches des boss : lieux, animations, entraînement";
             float bw = std::min(w, ui.text().measure(t, FontFace::Bold, ui.s(20)).x + ui.s(48));
             Rect br{x, y, bw, ui.s(48)};
@@ -714,12 +718,25 @@ private:
         {
             if (phaseBoss_.empty() || !data().bosses.count(phaseBoss_)) phaseBoss_ = order.front();
             const BossHistory& b = data().bosses.at(phaseBoss_);
-            const float ch = ui.s(360);
+            // The bosses to choose from (wrapping): their rows counted first, the card grows with them.
+            int chipRows = 1;
+            {
+                float cx = 0.0f, inner = w - ui.s(32);
+                for (const auto& id : order) {
+                    float bw = std::min(inner, ui.text().measure(bossName(id), FontFace::Bold, ui.s(16)).x + ui.s(30));
+                    if (cx > 0.0f && cx + bw > inner) {
+                        cx = 0.0f;
+                        ++chipRows;
+                    }
+                    cx += bw + ui.s(8);
+                }
+            }
+            const float ch = ui.s(330) + ui.s(40) * static_cast<float>(chipRows - 1);
             Rect in = card({x, y, w, ch}, "OÙ LE COMBAT S'ARRÊTE", "Défaites par phase — choisissez un boss", "phases");
-            // The bosses to choose from (wrapping).
             float cx = in.x, cy = in.y;
             UIContext::ButtonStyle st;
             st.small = true;
+            st.fontSize = 16;
             for (size_t i = 0; i < order.size(); ++i) {
                 std::string n = bossName(order[i]);
                 float bw = std::min(in.w, ui.text().measure(n, FontFace::Bold, ui.s(16)).x + ui.s(30));
@@ -922,6 +939,7 @@ private:
                 const std::string bt = "S'entraîner sur ce segment";
                 UIContext::ButtonStyle st;
                 st.small = true;
+                st.fontSize = 16;
                 st.enabled = g_.content.level(levelId) != nullptr;
                 float bw = ui.text().measure(bt, FontFace::Bold, ui.s(16)).x + ui.s(30);
                 Rect br{row.right() - ui.s(12) - bw, row.center().y - ui.s(19), bw, ui.s(38)};
@@ -1162,6 +1180,7 @@ private:
                 }
                 UIContext::ButtonStyle st;
                 st.small = true;
+                st.fontSize = 16;
                 st.enabled = can;
                 float bw = ui.text().measure(bt, FontFace::Bold, ui.s(16)).x + ui.s(30);
                 Rect br{row.right() - ui.s(12) - bw, row.center().y - ui.s(19), bw, ui.s(38)};
@@ -1275,11 +1294,13 @@ private:
             }
             UIContext::ButtonStyle danger;
             danger.danger = true;
+            danger.fontSize = 20;
             const std::string rt = "Réinitialiser les statistiques";
             float bw = ui.text().measure(rt, FontFace::Bold, ui.s(20)).x + ui.s(40);
             Rect br{in.x, in.bottom() - ui.s(50), bw, ui.s(50)};
             if (ui.button("reset", br, rt, danger)) confirmReset_ = true;
             UIContext::ButtonStyle st;
+            st.fontSize = 20;
             const std::string ot = "Ouvrir les Paramètres";
             float ow = ui.text().measure(ot, FontFace::Bold, ui.s(20)).x + ui.s(40);
             if (br.right() + ui.s(14) + ow <= in.right() && ui.button("settings", {br.right() + ui.s(14), br.y, ow, br.h}, ot, st))

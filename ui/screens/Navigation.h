@@ -140,14 +140,14 @@ std::unique_ptr<Scene> makeCollection(GameServices& g, int tab = 0);
 std::unique_ptr<Scene> makeCollectionOn(GameServices& g, const std::string& itemId);
 /// End of a level: the rewards just unlocked by the stars (equip now or later).
 std::unique_ptr<Scene> makeNewRewards(GameServices& g);
-/// Main menu → Statistiques (2.52): the player's own statistics, kept on this computer. `tab`:
+/// Main menu → Statistiques (2.53): the player's own statistics, kept on this computer. `tab`:
 /// 0 Vue d'ensemble, 1 Combat, 2 Boss, 3 Niveaux, 4 Passages difficiles, 5 Données et sauvegarde.
 std::unique_ptr<Scene> makeStatistics(GameServices& g, int tab = 0);
 /// Statistiques › Boss › « Fiches des boss »: the bosses (victories, without being hit, per
 /// phase, how they look, where to fight them). `bossId`: the boss selected on arrival.
 std::unique_ptr<Scene> makeBossStats(GameServices& g, const std::string& bossId = {});
 /// Boss statistics → Entraînement: hearts, power slots, powers and phase, then the boss's arena.
-/// `phase` (2.52, « Passages difficiles »): the phase chosen on arrival (0 = the first, -1 every
+/// `phase` (2.53, « Passages difficiles »): the phase chosen on arrival (0 = the first, -1 every
 /// phase; -2: the last choice for this boss).
 std::unique_ptr<Scene> makeBossTraining(GameServices& g, const std::string& bossId, int phase = -2);
 /// Main menu → Défis (2.33): `tab` 0 « Jour », 1 « Semaine », 2 « Mois », 3 « Calendrier »

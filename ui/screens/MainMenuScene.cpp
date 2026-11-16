@@ -144,7 +144,7 @@ public:
             int kills = 0;
             for (const auto& [id, r] : g_.bossStats.all()) kills += r.kills;
             std::string sub = kills > 0 ? std::to_string(kills) + (kills > 1 ? " victoires sur les boss" : " victoire sur un boss") : "boss";
-            if (btn("stats", "Statistiques", sub)) g_.app.switchScene(makeStatistics(g_), 0.3f);  // 2.52: the player's statistics, the bosses' within
+            if (btn("stats", "Statistiques", sub)) g_.app.switchScene(makeStatistics(g_), 0.3f);  // 2.53: the player's statistics, the bosses' within
         }
         if (btn("settings", "Paramètres", "")) g_.app.pushScene(makeSettingsScene(g_, false));
         if (admin && btn("admin", "Administration", "joueurs · défis · journal")) g_.app.switchScene(makeAdmin(g_), 0.3f);

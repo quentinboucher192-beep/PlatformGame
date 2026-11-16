@@ -165,11 +165,12 @@ void GameScene::onEnter() {
         startGhosts();
     }
     startSpectate();
-    // 2.52: the player's statistics (they read the run, never change it); a classic campaign level
+    // 2.53: the player's statistics (they read the run, never change it); a classic campaign level
     // from its start counts its segments too.
-    playStats_ = g_.playStats.beginRun(*world_, PlayStatsRun{levelId_, &level_, opt_.editorTest,
-                                                             counted && !workshop_ && !opt_.spawn && !opt_.level && !level_.extreme, ghostHash_},
-                                       g_.content);
+    playStats_ = g_.playStats.beginRun(
+        *world_, PlayStatsRun{levelId_, &level_, opt_.editorTest, opt_.training,
+                              counted && !opt_.training && !workshop_ && !opt_.spawn && !opt_.level && !level_.extreme, ghostHash_},
+        g_.content);
 }
 
 void GameScene::startSpectate() {
@@ -458,7 +459,7 @@ void GameScene::onExit() {
     endSpectate("quit");  // left another way (a finished run has already ended it)
     g_.app.input().clearPowerSlotKeys();  // the keys of this level's powers stay here
     noteAchievementStats(false, nullptr);  // a run left or restarted (a finished one is already counted)
-    if (playStats_) playStats_->finish();  // 2.52: written on its worker thread
+    if (playStats_) playStats_->finish();  // 2.53: written on its worker thread
     if (mounted_) g_.app.resources().popMount();
     mounted_ = false;
     g_.app.audio().stopAmbience(600);
@@ -680,7 +681,7 @@ void GameScene::fixedUpdate(float dt) {
     if (!ended_) recorder_.recordInput(frame);
     if (!ended_ && spectateToken_) g_.spectate.input(spectateToken_, frame);  // the same step, for the friends watching
     stepWorld(*world_, frame, kSimDt);
-    if (playStats_) playStats_->step(*world_);  // 2.52: statistics (read only)
+    if (playStats_) playStats_->step(*world_);  // 2.53: statistics (read only)
     syncPowerKeys();  // a power picked up, replaced: its own key on its slot from the next input
     if (!ended_) recorder_.tick(*world_);
     if (!ended_ && spectateToken_ && recorder_.active())

@@ -1,6 +1,6 @@
 #pragma once
 
-// 2.52 — « Statistiques » (main menu → Statistiques): what the player's own runs say about their
+// 2.53 — « Statistiques » (main menu → Statistiques): what the player's own runs say about their
 // play, kept on this computer only (saves/stats.json), never sent online.
 //
 //  * a summary per day (time played, deaths, attacks that threatened Nova and those she
@@ -306,6 +306,9 @@ struct PlayStatsRun {
     std::string levelId;
     const LevelData* level = nullptr;
     bool editorTest = false;
+    /// A section training (« Répéter un segment »): its time only, apart (boss trainings and
+    /// practice runs are marked in the world itself).
+    bool training = false;
     /// A classic campaign level (not EXTRÊME) played from its start, neither a challenge nor a
     /// training: its segments count (« Niveaux »).
     bool classic = false;

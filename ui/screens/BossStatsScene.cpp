@@ -151,7 +151,7 @@ public:
             show(d);
             drawDetail(detail, d);
         }
-        if (leave || ui.backPressed()) g_.app.switchScene(makeStatistics(g_, 2), 0.3f);  // 2.52: back to Statistiques › Boss
+        if (leave || ui.backPressed()) g_.app.switchScene(makeStatistics(g_, 2), 0.3f);  // 2.53: back to Statistiques › Boss
         ui.popId();
         ui.end();
     }

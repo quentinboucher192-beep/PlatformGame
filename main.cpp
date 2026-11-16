@@ -526,7 +526,7 @@ int main(int argc, char** argv) {
         game.settings.language = i18n::code(*langArg);
         game.applySettings();
     }
-    // 2.52, automated checks: the day the statistics count this session's runs on.
+    // 2.53, automated checks: the day the statistics count this session's runs on.
     if (std::string sd = value("--stats-day"); sd.size() == 10) {
         int y = std::atoi(sd.substr(0, 4).c_str()), mo = std::atoi(sd.substr(5, 2).c_str()), d = std::atoi(sd.substr(8, 2).c_str());
         if (y > 1970 && mo >= 1 && mo <= 12 && d >= 1 && d <= 31) game.playStats.dayOverride = daysFromCivil(y, mo, d);
@@ -855,7 +855,7 @@ int main(int argc, char** argv) {
     // « Retour » from a screen that replaced the main menu never closes the game.
     app.setRootScene([&game] { return makeMainMenu(game); });
     app.run();
-    game.playStats.flush();  // 2.52: the statistics written by their worker, before the game closes
+    game.playStats.flush();  // 2.53: the statistics written by their worker, before the game closes
     game.progression.save();
     game.records.save();
     game.presenceOffline();  // friends see « hors ligne » at once (else after 150 s)
