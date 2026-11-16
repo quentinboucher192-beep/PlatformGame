@@ -20,6 +20,7 @@
 #include "game/GameServices.h"
 #include "game/content/CreaturePlaces.h"
 #include "ui/online/OnlineWidgets.h"
+#include "ui/screens/BossStoryScene.h"
 #include "ui/screens/ChallengeRewardsUi.h"
 #include "ui/screens/CosmeticFx.h"
 #include "ui/screens/CreatureArt.h"
@@ -1572,10 +1573,38 @@ private:
             if (ui.button("export", {dx, by, dwid, ui.s(46)}, "Enregistrer en image (PNG)", st)) exportPlanet(*sel->planet);
             if (exportedTimer_ > 0.0f)
                 ui.labelWrapped(exportedMsg_, {dx, by - ui.s(46)}, dwid, fz(ui, 13), kGreen);
-        } else if (sel->known && sel->def && clips.size() > 1) {
-            UIContext::ButtonStyle st;
-            std::string lbl = "Animation suivante (" + std::to_string(animClip_ % static_cast<int>(clips.size()) + 1) + " / " + std::to_string(clips.size()) + ")";
-            if (ui.button("anim", {dx, by, dwid, ui.s(46)}, lbl, st)) animClip_ = (animClip_ + 1) % static_cast<int>(clips.size());
+        } else {
+            // 2.51 « Revoir l'histoire »: a giga boss already met (or whose story was told), above
+            // « Animation suivante » (side by side when there is no room above).
+            const BossRecord* br = sel->def ? g_.bossStats.find(sel->id) : nullptr;
+            const bool story = galTab_ == 1 && sel->def && isGigaBoss(*sel->def) && g_.stories.find(sel->id) &&
+                               (g_.bossStats.storySeen(sel->id) || g_.collection.met.count(sel->id) > 0 || (br && br->fights > 0));
+            const bool anim = sel->known && sel->def && clips.size() > 1;
+            Rect animR{dx, by, dwid, ui.s(46)}, storyR{dx, by, dwid, ui.s(46)};
+            if (anim && story) {
+                storyR.y = by - ui.s(56);
+                if (storyR.y < y + ui.s(8)) {
+                    const float half = (dwid - ui.s(10)) * 0.5f;
+                    animR.w = half;
+                    storyR = {dx + half + ui.s(10), by, half, ui.s(46)};
+                }
+            }
+            if (anim) {
+                UIContext::ButtonStyle st;
+                std::string lbl = "Animation suivante (" + std::to_string(animClip_ % static_cast<int>(clips.size()) + 1) + " / " + std::to_string(clips.size()) + ")";
+                if (ui.button("anim", animR, lbl, st)) animClip_ = (animClip_ + 1) % static_cast<int>(clips.size());
+            }
+            if (story) {
+                UIContext::ButtonStyle st;
+                st.primary = true;
+                if (ui.button("story", storyR, "Revoir l'histoire", st))
+                    if (auto scene = makeBossStory(g_, sel->id)) {
+                        g_.bossStats.markStorySeen(sel->id);
+                        g_.bossStats.save();
+                        g_.app.pushScene(std::move(scene));
+                    }
+                ui.newBadge("story", storyR, "gallery.story", true, true);
+            }
         }
     }
 

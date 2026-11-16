@@ -150,6 +150,10 @@ public:
     /// The achievements unlocked in this game (ids). Sent to the profile when the player is
     /// connected (and again after a change or another login): shown as declared by the game.
     void setAchievements(std::vector<std::string> ids);
+    /// 2.50: while the progression of an old account migrated here waits to be restored, the
+    /// list is ADDED to the account's (`merge: true`) instead of replacing it: the achievements
+    /// the migration brought stay on the profile until the restoration brings them here too.
+    void setAchievementsMerge(bool merge) { achievementsMerge_ = merge; }
     /// What the player wears (2.23): category → equipped item id (suit, trail, frame, title,
     /// victory). Sent to the profile once the achievements of the same player are there (the
     /// server checks the ids against them), again after each change or another login, a
@@ -340,6 +344,7 @@ private:
     float playtimeTimer_ = 20.0f;
     DeviceIdentity device_;  // 2.47 (online/device.json)
     std::vector<std::string> achievements_;
+    bool achievementsMerge_ = false;
     std::string achievementsSentFor_;  // player whose profile has the current list
     bool achievementsBusy_ = false;
     float achievementsTimer_ = 5.0f;

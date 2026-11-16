@@ -37,6 +37,17 @@ std::string urlEncode(const std::string& s) {
     }
     return out;
 }
+
+/// The same pseudonym, whatever the case and the spaces around (as the server compares them).
+bool sameUsername(const std::string& a, const std::string& b) {
+    auto norm = [](const std::string& s) {
+        size_t x = s.find_first_not_of(" \t"), y = s.find_last_not_of(" \t");
+        std::string out = x == std::string::npos ? std::string() : s.substr(x, y - x + 1);
+        for (char& c : out) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+        return out;
+    };
+    return norm(a) == norm(b);
+}
 }  // namespace
 
 OnlineService::OnlineService() = default;
@@ -216,7 +227,9 @@ void OnlineService::update(float dt) {
             achievementsBusy_ = true;
             std::string who = tokens_.playerId;
             unsigned gen = achievementsGen_;
-            send("PUT", "/api/v1/players/me/achievements", {{"unlocked", achievements_}}, [this, who, gen](const ApiResult& r) {
+            Json body = {{"unlocked", achievements_}};
+            if (achievementsMerge_) body["merge"] = true;
+            send("PUT", "/api/v1/players/me/achievements", body, [this, who, gen](const ApiResult& r) {
                 achievementsBusy_ = false;
                 if (!r.ok || gen != achievementsGen_) return;
                 achievementsSentFor_ = who;
@@ -451,13 +464,20 @@ void OnlineService::registerAccount(const Json& form, bool remember, ApiCallback
 
 void OnlineService::login(const std::string& username, const std::string& password, bool remember, ApiCallback cb) {
     Json body = {{"username", username}, {"password", password}, {"device", device_.toApi()}};
-    call("POST", "/api/v1/auth/login", body.dump(), "application/json", false, [this, remember, cb](const ApiResult& r) {
+    call("POST", "/api/v1/auth/login", body.dump(), "application/json", false, [this, username, remember, cb](const ApiResult& r) {
         if (r.ok) {
             // 2.47: what was played in local mode goes to the account (summary: GameServices).
             if (onSessionStarted) onSessionStarted();
             applySession(r.data, remember);
             notify(Notification::Kind::Success, "Connecté", "Connecté en tant que " + tokens_.username + ".");
             if (settings_.autoSync && unsentCount() > 0) syncNow();
+        } else if (r.code == "ACCOUNT_CLOSED" && !device_.boundUsername.empty() && sameUsername(username, device_.boundUsername)) {
+            // 2.50: the account this computer was bound to was migrated to another one and closed
+            // (said only after its right password): the server released the computer, so may
+            // this game: another account can be created or connected here.
+            device_.boundPlayer.clear();
+            device_.boundUsername.clear();
+            device_.save(userDir_ / "online" / "device.json");
         }
         if (cb) cb(r);
     });
@@ -719,12 +739,21 @@ void OnlineService::getBinary(const std::string& path, std::function<void(const 
         cb(r);
         return;
     }
-    HttpRequest rq;
-    rq.url = config_.serverUrl + path;
-    if (loggedIn() && !tokens_.accessExpiring()) rq.headers.push_back({"Authorization", "Bearer " + tokens_.accessToken});
-    rq.timeoutMs = maxBytes > (2u << 20) ? 90000 : 20000;
-    rq.maxResponseBytes = maxBytes;
-    client_->send(std::move(rq), [cb](const HttpResponse& r) { cb(r); });
+    auto go = [this, path, cb, maxBytes](bool withSession) {
+        HttpRequest rq;
+        rq.url = config_.serverUrl + path;
+        if (withSession && loggedIn() && !tokens_.accessToken.empty()) rq.headers.push_back({"Authorization", "Bearer " + tokens_.accessToken});
+        rq.timeoutMs = maxBytes > (2u << 20) ? 90000 : 20000;
+        rq.maxResponseBytes = maxBytes;
+        client_->send(std::move(rq), [cb](const HttpResponse& r) { cb(r); });
+    };
+    // A file only the session may read (2.50: the progression to restore, a project's content):
+    // an access token about to expire is renewed first. If that fails, the request still goes,
+    // without the session (a public file is still served; a private one answers its error).
+    if (loggedIn() && tokens_.accessExpiring())
+        withRefresh([go](const ApiResult& r) { go(r.ok); });
+    else
+        go(true);
 }
 
 void OnlineService::postForBinary(const std::string& path, const Json& body, std::function<void(const HttpResponse&)> cb, size_t maxBytes,

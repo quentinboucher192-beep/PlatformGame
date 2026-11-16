@@ -98,6 +98,42 @@ compte est fermé.
 Les niveaux publiés et les projets de l'ancien compte ne bougent pas dans la migration du
 joueur : un admin peut les déplacer (partie « levels » ci-dessous).
 
+### Dans le jeu
+
+Code : `ui/screens/OnlineMigration.*` (les fenêtres), `game/online/AccountMigration.*` (ce que le
+jeu lit des réponses), `game/online/ProgressMerge.*` (la restauration), tests
+`tests/test_account_migration.cpp`.
+
+- **Le serveur la propose-t-il ?** Pour le compte connecté (et son serveur), le jeu demande une
+  fois `GET /players/me/migration`, sans bloquer l'affichage, après la connexion comme après une
+  session reprise au démarrage : une réponse = proposée ; `404` / `405` (serveur d'avant la 2.50)
+  = jamais proposée ; une panne réseau, une erreur du serveur ou une session refusée : nouvel
+  essai une minute plus tard. Rien de la migration n'est montré avant (aucun bouton qui
+  échouerait). Puis il lit la progression à restaurer.
+- PARAMÈTRES EN LIGNE › Cet ordinateur : « Préparer une migration » (copie de la progression,
+  puis le code et son heure d'expiration à l'heure locale ; trop de copies dans l'heure : la
+  dernière copie du serveur est celle qui part, la fenêtre le dit), « Récupérer un ancien
+  compte », « Restaurer la progression transférée » (tant qu'elle attend). La notification
+  « Sécurité » `migration_in` avec l'action de restauration ouvre la restauration ;
+  `login_refused` propose « C'était moi : préparer une migration ».
+- **Restaurer** : le fichier est vérifié (SHA-256 de l'en-tête `x-progress-sha256`, format
+  `cosmic.progress_copy`), les fichiers de sauvegarde actuels sont d'abord copiés tels quels dans
+  `saves/avant_restauration_<date>/` (rien ne change si la copie échoue), puis fusionnés
+  (ProgressMerge) et écrits ; ensuite `done`. Une copie déjà restaurée (empreinte notée dans
+  `saves/restored_copies.json`) n'est jamais ajoutée deux fois : si `done` n'est pas arrivé,
+  « Restaurer » de nouveau ne fait que prévenir le serveur. **« Plus tard »** envoie `later` :
+  elle reste proposée dans Cet ordinateur.
+- Tant qu'une progression migrée attend, les succès du jeu sont envoyés avec `merge: true` : ceux
+  que la migration a apportés au compte restent sur le profil jusqu'à la restauration.
+- L'ancien ordinateur : son compte fermé répond `403 ACCOUNT_CLOSED` au bon mot de passe ; le jeu
+  oublie alors sa liaison locale à ce compte (le serveur a libéré l'ordinateur) et propose de
+  créer ou connecter un autre compte.
+- ADMINISTRATION › Joueurs › Ordinateur › « Migrer les données… » : aperçu du compte cible
+  (refus en français, `LAST_ADMIN` seulement si la source est fermée), « Migrer » possible
+  seulement pour le pseudonyme de l'aperçu ; la partie `progress` n'est envoyée que s'il existe
+  une copie. Le Journal affiche les migrations (`admin_account_migrated`, `account_migrated`), la
+  sauvegarde faite avant et les refus.
+
 ### L'ancien compte fermé
 
 - `account_status = 'suspended'` (la contrainte CHECK de la table ne change pas) et

@@ -1529,6 +1529,40 @@
    "version": "2.51.0"
   },
   {
+   "id": "settings.tab.game",
+   "parents": [
+    "menu.settings"
+   ]
+  },
+  {
+   "id": "settings.boss_stories",
+   "version": "2.51.0",
+   "parents": [
+    "settings.tab.game"
+   ]
+  },
+  {
+   "id": "stats.story",
+   "version": "2.51.0",
+   "parents": [
+    "menu.stats"
+   ]
+  },
+  {
+   "id": "gallery.story",
+   "version": "2.51.0",
+   "parents": [
+    "gallery.tab.bosses"
+   ]
+  },
+  {
+   "id": "admin.players.version",
+   "version": "2.51.0",
+   "parents": [
+    "menu.admin"
+   ]
+  },
+  {
    "id": "level.confins_03",
    "version": "2.53.0",
    "parents": [

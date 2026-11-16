@@ -1,4 +1,12 @@
 {
+  "2.51.0": [
+    "L'histoire des giga-boss : avant votre premier combat contre Singularis, Pyrrhax ou le Monolithe, une cinématique illustrée raconte comment il est devenu ce qu'il est (environ 45 secondes, texte laissé le temps de lire). Espace, Entrée, A ou un clic la passent ; elle ne compte pas dans le chrono.",
+    "« Revoir l'histoire » sur la fiche de chaque giga-boss déjà rencontré et dans Collection › Galerie › Gardiens ; Paramètres › Jeu : « Histoire des giga-boss : Avant le premier combat / Jamais ».",
+    "Migrer vers un nouveau compte : l'ancien ordinateur donne un code de migration à usage unique, le nouveau compte récupère records, succès, récompenses et temps de jeu (le meilleur des deux côtés), puis propose de restaurer la progression. Une copie des sauvegardes actuelles est faite avant toute restauration.",
+    "Succès du Boomerang chargé : « Maîtrise : Boomerang chargé » et « Virtuose : Boomerang chargé ».",
+    "Administration : mode Invincible pour les comptes admin, en entraînement uniquement (menu pause) ; jamais pris en compte dans les records ni les classements.",
+    "Administration › Joueurs : nouvelle colonne « Version du jeu » (la version installée chez chaque joueur, « à jour » ou « ancienne ») ; le détail est dans la fenêtre « Ordinateur »."
+  ],
   "2.50.0": [
     "Pyrrhax déchaîné : de vraies attaques de dragon. Piqué traversant (sa ligne se verrouille avant le plongeon), Atterrissage et souffle au sol (posé, il prend plus de dégâts), Boules de feu qui laissent un nuage brûlant, Rafale d'ailes qui repousse. Rester sous lui ne protège plus.",
     "Nouveau pouvoir : le Boomerang chargé. Maintenez pour charger, relâchez pour lancer : la lame s'accroche au premier ennemi touché et tourne sur lui (0,4 à 2 s selon la charge), 1 dégât puis 1 toutes les 0,3 s, puis revient. 25 d'énergie.",

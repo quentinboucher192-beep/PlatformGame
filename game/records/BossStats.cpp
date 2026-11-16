@@ -69,13 +69,17 @@ const BossRecord* BossStats::find(const std::string& bossId) const {
 Json BossStats::toJson() const {
     Json b = Json::object();
     for (const auto& [id, r] : bosses_) b[id] = r.toJson();
-    return {{"bosses", b}};
+    return {{"bosses", b}, {"storiesSeen", std::vector<std::string>(storiesSeen_.begin(), storiesSeen_.end())}};
 }
 
 void BossStats::fromJson(const Json& j) {
     bosses_.clear();
+    storiesSeen_.clear();
     if (j.contains("bosses") && j["bosses"].is_object())
         for (const auto& [id, r] : j["bosses"].items()) bosses_[id] = BossRecord::fromJson(r);
+    if (j.contains("storiesSeen") && j["storiesSeen"].is_array())
+        for (const auto& id : j["storiesSeen"])
+            if (id.is_string() && !id.get<std::string>().empty()) storiesSeen_.insert(id.get<std::string>());
 }
 
 void BossStats::load() {

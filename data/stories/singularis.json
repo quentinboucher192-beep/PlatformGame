@@ -1,0 +1,84 @@
+{
+ "format": "cosmic.boss_story",
+ "version": 1,
+ "comment": "Story of a giga boss (game/content/BossStories.h), told before the first fight against it. Each shot: its painting (assets/, tools/assetgen/environment/stories.py), its line of narration, the point the slow zoom goes to, the live particles over it. A shot lasts max(4.5 s, 1.2 s + characters / 16); then the title card (3 s).",
+ "boss": "singularis",
+ "title": "Le Cœur effondré",
+ "color": "#c88bff",
+ "accent": "#ffd27a",
+ "clip": "roar",
+ "shots": [
+  {
+   "scene": "young_star",
+   "image": "stories/singularis_1.png",
+   "text": "Il y a très longtemps, au centre de Kepler-Voss, brillait une toute jeune étoile. Elle s'appelait Lyse.",
+   "focus": [
+    0.5,
+    0.46
+   ],
+   "zoom": 1.12,
+   "particles": "sparks",
+   "glow": "#ffe9a8"
+  },
+  {
+   "scene": "three_planets",
+   "image": "stories/singularis_2.png",
+   "text": "Lyse chantait de la lumière, et trois petites planètes venaient se réchauffer autour d'elle.",
+   "focus": [
+    0.5,
+    0.5
+   ],
+   "zoom": 1.08,
+   "particles": "stars",
+   "glow": "#ffe2b0"
+  },
+  {
+   "scene": "gifts",
+   "image": "stories/singularis_3.png",
+   "text": "Elle leur donnait tout : la sève des forêts, le feu des volcans, l'éclat des glaces.",
+   "focus": [
+    0.45,
+    0.5
+   ],
+   "zoom": 1.1,
+   "particles": "sparks",
+   "glow": "#ffd27a"
+  },
+  {
+   "scene": "machines",
+   "image": "stories/singularis_4.png",
+   "text": "Puis des machines vinrent boire sa lumière. Un peu plus chaque jour.",
+   "focus": [
+    0.5,
+    0.42
+   ],
+   "zoom": 1.1,
+   "particles": "sparks",
+   "glow": "#7fe8ff"
+  },
+  {
+   "scene": "last_spark",
+   "image": "stories/singularis_5.png",
+   "text": "Un soir, il ne lui resta qu'une étincelle. Elle eut froid. Elle eut peur d'être seule dans le noir.",
+   "focus": [
+    0.5,
+    0.52
+   ],
+   "zoom": 1.14,
+   "particles": "dust",
+   "glow": "#ffb27a"
+  },
+  {
+   "scene": "collapse",
+   "image": "stories/singularis_6.png",
+   "text": "Alors elle se replia sur elle-même… et s'éveilla affamée. Plus rien ne s'éloignerait jamais d'elle.",
+   "focus": [
+    0.5,
+    0.5
+   ],
+   "zoom": 1.16,
+   "particles": "embers",
+   "glow": "#c88bff"
+  }
+ ]
+}

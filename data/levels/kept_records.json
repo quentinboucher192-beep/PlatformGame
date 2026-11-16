@@ -8,6 +8,12 @@
         "ranked": "342340f85ddefbe94147e7f756b918372a6799308995ca7edef762020df02da5",
         "until": "2.49.1",
         "version": 9
+      },
+      {
+        "gameplay": "cf1d37055c06e4dc6d8fc88998fab63623a537af50cbff6e46d4b642c2759aad",
+        "ranked": "3e066c2b86050e19990f5f1b933b464710600ae7dfe79a668a36905c482931b4",
+        "until": "2.50.0",
+        "version": 10
       }
     ],
     "confins_02": [
@@ -16,6 +22,12 @@
         "ranked": "9012112902c744dd995c47ac885808ff7f004c35e0ac5991724105d34c115fb0",
         "until": "2.49.1",
         "version": 8
+      },
+      {
+        "gameplay": "1bb851c56317704ce4032f091fa0b8a351916fc4c4800c1726d3f1110fa30072",
+        "ranked": "e74e9ef6cca229d7dc9ec658d84566ef5f89225f1625fd390d2c7e5d44992e12",
+        "until": "2.50.0",
+        "version": 9
       }
     ],
     "noyau_03": [
