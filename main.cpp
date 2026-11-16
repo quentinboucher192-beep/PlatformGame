@@ -727,7 +727,10 @@ int main(int argc, char** argv) {
         app.pushScene(makeGhostSetup(game, gs));
     } else if (has("--achievements")) {
         if (std::string a = value("--achievements"); !a.empty())
-            game.onlineOpen = a == "list" ? "ach-list" : a.rfind("zoom:", 0) == 0 ? "ach-" + a : "ach:" + a;
+            game.onlineOpen = a == "list"          ? "ach-list"
+                              : a == "suggestions" ? "ach-suggestions"  // 2.52: the Suggestions tab
+                              : a.rfind("zoom:", 0) == 0 ? "ach-" + a
+                                                         : "ach:" + a;
         app.pushScene(makeAchievements(game));
     } else if (has("--collection")) {
         // --collection [0-4][:detail] (tabs: Vestiaire, Route, Musiques, Galerie, Replays; details such as

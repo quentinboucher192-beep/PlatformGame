@@ -432,8 +432,9 @@ private:
         if (working_.gameplay.hud[HudElement::Progress].custom) bars.push_back("Placée dans l'éditeur du HUD");
         ui.cycle("progress", r, "Barre de progression du niveau", working_.gameplay.progressBar, bars);
         r.y += row();
-        if (ui.button("hudeditor", r, "Personnaliser le HUD (place et taille de chaque élément)"))
-            g_.app.pushScene(makeHudEditor(g_, working_.gameplay));
+        bool openHud = ui.button("hudeditor", r, "Personnaliser le HUD (place et taille de chaque élément)");
+        ui.newBadge("hudeditor", r, "settings.hud_editor", true, true);  // « NOUVEAU » (2.52: « Ennemis vaincus »)
+        if (openHud) g_.app.pushScene(makeHudEditor(g_, working_.gameplay));
         r.y += row();
         ui.toggle("debug", r, "Mode debug (F3 en jeu)", working_.gameplay.debugMode);
         r.y += row();

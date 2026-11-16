@@ -370,17 +370,11 @@ void GameScene::startGhosts() {
     ghostRun_.setVisible(gs.enabled || opt_.ghostsChosen);
 }
 
-void GameScene::noteAchievementStats(bool completed, const RecordUpdate* upd) {
-    if (statsNoted_ || !world_ || opt_.editorTest || loadFailed_) return;
-    statsNoted_ = true;
-    // Section training (its powers may be chosen): never counted for the achievements.
-    if (opt_.training) return;
-    AchievementStats& a = g_.achievements.stats();
-    const RunStats& s = world_->stats();
+bool GameScene::addRunCounters(AchievementStats& a, bool completed, int64_t& uses) const {
     // The world's counters (kills, by family too, deaths, collectibles, powers carried): none for a training.
-    if (!noteRunCounters(a, *world_, completed)) return;
+    if (!noteRunCounters(a, *world_, completed)) return false;
     a.add("jumps", runJumps_);
-    int64_t uses = 0;
+    uses = 0;
     for (const auto& [id, n] : runPowers_) {
         if (!g_.content.power(id)) continue;  // only the player's powers
         a.powerUses[id] += n;
@@ -389,6 +383,26 @@ void GameScene::noteAchievementStats(bool completed, const RecordUpdate* upd) {
     }
     a.add("power_uses", uses);
     if (level_.extreme && !opt_.spawn) a.add("extreme_attempts");
+    return true;
+}
+
+AchievementStats GameScene::liveAchievementStats() const {
+    AchievementStats a = g_.achievements.stats();
+    if (statsNoted_ || !world_ || opt_.editorTest || loadFailed_ || opt_.training) return a;
+    int64_t uses = 0;
+    addRunCounters(a, false, uses);  // as the run would count if it were left now
+    return a;
+}
+
+void GameScene::noteAchievementStats(bool completed, const RecordUpdate* upd) {
+    if (statsNoted_ || !world_ || opt_.editorTest || loadFailed_) return;
+    statsNoted_ = true;
+    // Section training (its powers may be chosen): never counted for the achievements.
+    if (opt_.training) return;
+    AchievementStats& a = g_.achievements.stats();
+    const RunStats& s = world_->stats();
+    int64_t uses = 0;
+    if (!addRunCounters(a, completed, uses)) return;
     if (completed) {
         // Level achievements: a campaign level played from its start.
         if (!workshop_ && !opt_.level && !opt_.spawn && !opt_.training) {

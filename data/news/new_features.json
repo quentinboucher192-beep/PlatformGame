@@ -1527,6 +1527,43 @@
   {
    "id": "pause.invincible",
    "version": "2.51.0"
+  },
+  {
+   "id": "achievements.suggestions",
+   "version": "2.52.0",
+   "parents": [
+    "menu.achievements"
+   ]
+  },
+  {
+   "id": "achievements.track",
+   "version": "2.52.0",
+   "parents": [
+    "menu.achievements"
+   ]
+  },
+  {
+   "id": "pause.tracked_achievements",
+   "version": "2.52.0"
+  },
+  {
+   "id": "hud.enemies",
+   "version": "2.52.0",
+   "parents": [
+    "settings.hud_editor"
+   ]
+  },
+  {
+   "id": "settings.hud_editor",
+   "parents": [
+    "settings.tab.game"
+   ]
+  },
+  {
+   "id": "settings.tab.game",
+   "parents": [
+    "menu.settings"
+   ]
   }
  ]
 }

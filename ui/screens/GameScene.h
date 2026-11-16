@@ -8,6 +8,7 @@
 
 #include "engine/core/Scene.h"
 #include "engine/input/InputScript.h"
+#include "game/achievements/Achievements.h"
 #include "game/gameplay/GameRenderer.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/Hud.h"
@@ -96,6 +97,9 @@ public:
     void setGhostsVisible(bool on) { ghostRun_.setVisible(on); }
     void applyGhostSettings();
     GameWorld* world() { return world_.get(); }
+    /// 2.51: the achievements' counters with what this run has added so far, as leaving it now
+    /// would count them (the pause menu's « Succès suivis »); the saved ones when it counts for nothing.
+    AchievementStats liveAchievementStats() const;
     /// What the player has seen of the level so far (the pause menu's map).
     const ExploredMap& explored() const { return explored_; }
     /// The level as it is, drawn small in `dst` (the pause map): `win` is the part of the world shown.
@@ -168,6 +172,9 @@ private:
     int64_t pbGhostMs_ = 0;
     // Achievements: what this run adds to the lifetime counters (once, at its end).
     void noteAchievementStats(bool completed, const RecordUpdate* upd);
+    /// Adds this run's counters to `a` (false: a run that counts for nothing); `uses`: the
+    /// player's power uses of the run.
+    bool addRunCounters(AchievementStats& a, bool completed, int64_t& uses) const;
     bool statsNoted_ = false;
     // Boss training (PlayOptions::bossTraining): ends when the phase chosen (or the boss) is
     // beaten, or at the player's first death; then its end screen. Never a record.

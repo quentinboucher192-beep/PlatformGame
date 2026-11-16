@@ -144,6 +144,12 @@
    ]
   },
   {
+   "fr": "* compté après la partie, pas pendant",
+   "where": [
+    "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
    "fr": "+ Ajouter",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -1257,6 +1263,12 @@
    ]
   },
   {
+   "fr": "Affronté {0} fois, pas encore vaincu",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Afghanistan",
    "where": [
     "data/online/countries.json",
@@ -1543,6 +1555,12 @@
    ]
   },
   {
+   "fr": "ami",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Ami ajouté au groupe.",
    "where": [
     "ui/screens/SocialScene.cpp"
@@ -1568,6 +1586,12 @@
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/OnlineSettingsScene.cpp",
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "amis",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -2656,6 +2680,18 @@
    ]
   },
   {
+   "fr": "Au mieux {0} chute dans ce niveau",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Au mieux {0} chutes dans ce niveau",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Au millimètre",
    "where": [
     "data/achievements/achievements.json"
@@ -3210,6 +3246,12 @@
    ]
   },
   {
+   "fr": "Aucun succès suivi. Choisissez « Suivre » sur une suggestion, cochez la case d'un succès dans la Liste ou validez-le sur la Toile : jusqu'à 5 à la fois.",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun survivant",
    "where": [
     "data/achievements/achievements.json"
@@ -3400,6 +3442,12 @@
    ]
   },
   {
+   "fr": "Aucune progression à restaurer.",
+   "where": [
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
    "fr": "Aucune récompense pour ce défi.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -3439,6 +3487,12 @@
    "fr": "Aucune sortie : le niveau ne peut pas être terminé",
    "where": [
     "editors/level_editor/LevelEditorTools.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune suggestion : tous les succès accessibles sont obtenus.",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
    ]
   },
   {
@@ -3707,6 +3761,12 @@
    "fr": "avatars",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Avec Cosmic Online (compte gratuit)",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -4521,9 +4581,21 @@
    ]
   },
   {
+   "fr": "Boss de la planète jouée récemment",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Boss du niveau",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Boss jamais affronté",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -4536,6 +4608,12 @@
    "fr": "Boss rencontrés",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "boss sans être touché",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -4572,6 +4650,12 @@
    "fr": "boss {0}/{1}",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "boss à vaincre",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -4922,6 +5006,18 @@
    ]
   },
   {
+   "fr": "C'est le compte connecté : saisissez le pseudonyme de l'ANCIEN compte.",
+   "where": [
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
+   "fr": "C'est le dernier compte admin : il ne peut pas être fermé.",
+   "where": [
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
    "fr": "c'était déjà le tirage",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -5059,6 +5155,12 @@
    "fr": "calculée d'après ses PV, ses phases et ses attaques",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Calculées d'après votre progression : les plus proches du but, faisables maintenant, de catégories variées.",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
    ]
   },
   {
@@ -5371,6 +5473,12 @@
    "fr": "Ce commentaire ne vous appartient pas.",
    "where": [
     "server/src/workshop.ts"
+   ]
+  },
+  {
+   "fr": "Ce compte a été migré vers un autre compte : il est fermé.",
+   "where": [
+    "server/src/auth.ts"
    ]
   },
   {
@@ -6774,6 +6882,12 @@
    ]
   },
   {
+   "fr": "Choisir des succès",
+   "where": [
+    "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
    "fr": "Choisir la musique du menu principal dans le juke-box.",
    "where": [
     "data/achievements/achievements.json"
@@ -6998,6 +7112,12 @@
    ]
   },
   {
+   "fr": "chute",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Chute d'astre",
    "where": [
     "data/enemies/singularis.json"
@@ -7043,6 +7163,12 @@
    "fr": "Chute en planant",
    "where": [
     "game/powers/PowerStats.cpp"
+   ]
+  },
+  {
+   "fr": "chutes",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -7441,6 +7567,12 @@
    ]
   },
   {
+   "fr": "Cochez jusqu'à 5 succès dans Succès pour suivre leur avancée ici.",
+   "where": [
+    "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
    "fr": "Code",
    "where": [
     "ui/screens/AdminCreations.cpp"
@@ -7788,6 +7920,12 @@
    ]
   },
   {
+   "fr": "commentaire",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "commentaire d'un autre fil",
    "where": [
     "server/src/workshop.ts"
@@ -7863,6 +8001,12 @@
    "fr": "Commentaires",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "commentaires",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -8018,6 +8162,7 @@
   {
    "fr": "Compte cible introuvable.",
    "where": [
+    "server/src/accountMigration.ts",
     "ui/screens/OnlineMigration.cpp"
    ]
   },
@@ -9204,6 +9349,7 @@
   {
    "fr": "course",
    "where": [
+    "game/achievements/AchievementSuggestions.cpp",
     "ui/screens/AdminCreations.cpp"
    ]
   },
@@ -9317,6 +9463,12 @@
    "where": [
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
+   "fr": "courses",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -9590,6 +9742,12 @@
    ]
   },
   {
+   "fr": "créature",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Créature terrestre",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
@@ -9599,6 +9757,12 @@
    "fr": "Créature volante",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "créatures",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -10127,6 +10291,12 @@
    "fr": "Demande d'ami envoyée.",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Demande de migration de ce compte refusée (code faux ou expiré) : quelqu'un connaît votre mot de passe.",
+   "where": [
+    "server/src/notifications.ts"
    ]
   },
   {
@@ -12002,6 +12172,12 @@
    ]
   },
   {
+   "fr": "Déjà 5 succès suivis : décochez-en un pour suivre « {0} ».",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
+   ]
+  },
+  {
    "fr": "déjà commencé",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -12855,6 +13031,7 @@
    "fr": "ennemi",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
+    "game/achievements/AchievementSuggestions.cpp",
     "game/content/ContentDatabase.cpp"
    ]
   },
@@ -12862,6 +13039,12 @@
    "fr": "Ennemi créé : {0}",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "ennemi en une partie",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -12895,11 +13078,29 @@
    ]
   },
   {
+   "fr": "ennemi à créer",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Ennemis",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
     "game/levels/ObjectTypes.cpp",
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "ennemis",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "ennemis en une partie",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -12915,9 +13116,27 @@
    ]
   },
   {
+   "fr": "Ennemis vaincus",
+   "where": [
+    "saves/HudLayout.cpp"
+   ]
+  },
+  {
+   "fr": "Ennemis vaincus : {0} / {1}",
+   "where": [
+    "game/gameplay/Hud.h"
+   ]
+  },
+  {
    "fr": "Ennemis vaincus, niveau par niveau et au total.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "ennemis à créer",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -13472,6 +13691,12 @@
    ]
   },
   {
+   "fr": "essai",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Essai déjà enregistré.",
    "where": [
     "server/src/challenges.ts"
@@ -13493,6 +13718,12 @@
    "fr": "Essai refusé par le serveur.",
    "where": [
     "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
+   "fr": "essais",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -13611,6 +13842,12 @@
    "fr": "Explosion",
    "where": [
     "game/gameplay/Damage.cpp"
+   ]
+  },
+  {
+   "fr": "export",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -18505,6 +18742,12 @@
    ]
   },
   {
+   "fr": "La sauvegarde n'est pas prête : la migration n'a pas été faite.",
+   "where": [
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
    "fr": "La sauvegarde n'indique pas la version de son schéma : elle ne peut pas être importée.",
    "where": [
     "server/src/backups.ts"
@@ -18955,9 +19198,27 @@
    ]
   },
   {
+   "fr": "Le compte cible est fermé ou suspendu.",
+   "where": [
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
+   "fr": "Le compte cible est le compte source.",
+   "where": [
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
    "fr": "Le compte ne sert que sur cet ordinateur. Sur un autre, créez un nouveau compte : un code préparé ici lui transfère toutes vos données.",
    "where": [
     "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
+   "fr": "Le compte source est fermé ou suspendu.",
+   "where": [
+    "server/src/accountMigration.ts"
    ]
   },
   {
@@ -19231,6 +19492,12 @@
    "fr": "Le fichier contient les données de tous les joueurs. Il est chiffré avec la phrase secrète choisie ici (12 caractères au moins) : sans elle, personne ne peut le lire, vous non plus. Le serveur ne la garde pas.",
    "where": [
     "ui/screens/AdminBackups.cpp"
+   ]
+  },
+  {
+   "fr": "Le fichier de la progression à restaurer est introuvable.",
+   "where": [
+    "server/src/accountMigration.ts"
    ]
   },
   {
@@ -20357,6 +20624,30 @@
    ]
   },
   {
+   "fr": "Les données de ce compte ont été migrées sur le compte {0} : ce compte est fermé.",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Les données de ce compte ont été migrées sur le compte {0}.",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Les données de {0} ont été migrées sur votre compte : restaurez la progression de son ordinateur.",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Les données de {0} ont été migrées sur votre compte.",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "Les données de {0} ont été migrées sur {1} (copie de la progression du {2}).",
    "where": [
     "ui/screens/OnlineMigration.cpp"
@@ -20810,6 +21101,12 @@
    "fr": "Lettres, chiffres, « _ », « . » ou « - » (3 à 20, pas au début ni à la fin)",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "Leur avancée s'affiche dans le menu pause, avec ce que la partie en cours y ajoute.",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
    ]
   },
   {
@@ -22028,6 +22325,12 @@
    ]
   },
   {
+   "fr": "Meilleure médaille : {0}",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Meilleure série : {0}",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
@@ -22658,7 +22961,8 @@
    "fr": "Modifier",
    "where": [
     "ui/online/CommentsPanel.cpp",
-    "ui/screens/AdminEnemies.cpp"
+    "ui/screens/AdminEnemies.cpp",
+    "ui/screens/PauseScene.cpp"
    ]
   },
   {
@@ -22939,6 +23243,12 @@
    ]
   },
   {
+   "fr": "morceau",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "morceau hors de son ordre",
    "where": [
     "game/online/Spectate.cpp"
@@ -22948,6 +23258,12 @@
    "fr": "Morceaux",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "morceaux",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -23209,6 +23525,12 @@
    ]
   },
   {
+   "fr": "médaille",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Médaille {0}",
    "where": [
     "ui/screens/ResultsScene.cpp"
@@ -23223,6 +23545,7 @@
   {
    "fr": "médailles",
    "where": [
+    "game/achievements/AchievementSuggestions.cpp",
     "ui/screens/ProjectsScene.cpp"
    ]
   },
@@ -23369,6 +23692,12 @@
    ]
   },
   {
+   "fr": "Ne plus suivre",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
+   ]
+  },
+  {
    "fr": "Nettoyage",
    "where": [
     "data/achievements/achievements.json"
@@ -23429,6 +23758,7 @@
   {
    "fr": "niveau",
    "where": [
+    "game/achievements/AchievementSuggestions.cpp",
     "game/ghost/GhostStore.cpp"
    ]
   },
@@ -23454,6 +23784,12 @@
    "fr": "niveau créé avec une version plus récente du jeu",
    "where": [
     "game/levels/LevelData.cpp"
+   ]
+  },
+  {
+   "fr": "niveau de joueur",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -23533,6 +23869,18 @@
    "fr": "niveau du défi invalide",
    "where": [
     "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
+   "fr": "Niveau débloqué, jamais terminé",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Niveau déjà terminé",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -23708,6 +24056,12 @@
    ]
   },
   {
+   "fr": "niveau nettoyé",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Niveau non installé",
    "where": [
     "ui/screens/OnlineRankingScene.cpp",
@@ -23730,6 +24084,24 @@
    "fr": "Niveau retiré.",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "niveau sans dégât",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "niveau sans mourir",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "niveau sans pouvoir",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -23775,6 +24147,12 @@
    ]
   },
   {
+   "fr": "niveau tout ramassé",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Niveau trop volumineux pour un projet (2 Mo au plus).",
    "where": [
     "server/src/projects.ts"
@@ -23807,9 +24185,33 @@
    ]
   },
   {
+   "fr": "niveau à créer",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Niveau à exporter",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
+   ]
+  },
+  {
+   "fr": "niveau à finir",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "niveau à noter",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "niveau à publier",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -23825,9 +24227,21 @@
    ]
   },
   {
+   "fr": "niveaux",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "niveaux classés",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "niveaux de joueurs",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -23898,6 +24312,12 @@
    ]
   },
   {
+   "fr": "niveaux nettoyés",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "niveaux publiés",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -23907,6 +24327,54 @@
    "fr": "Niveaux publiés et projets, le créateur change ({0} · {1} projets)",
    "where": [
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "niveaux sans dégât",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "niveaux sans mourir",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "niveaux sans pouvoir",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "niveaux tout ramassés",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "niveaux à créer",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "niveaux à finir",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "niveaux à noter",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "niveaux à publier",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -26416,6 +26884,12 @@
    ]
   },
   {
+   "fr": "Pas encore commencé",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Pas encore créée : « Créer » l'envoie au serveur.",
    "where": [
     "ui/screens/AdminCreations.cpp"
@@ -26930,6 +27404,12 @@
    ]
   },
   {
+   "fr": "phase sans être touché",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Phase unique",
    "where": [
     "ui/screens/BossStatsScene.cpp"
@@ -26979,6 +27459,12 @@
    "where": [
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "phases sans être touché",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -27271,6 +27757,7 @@
   {
    "fr": "planète",
    "where": [
+    "game/achievements/AchievementSuggestions.cpp",
     "ui/screens/ProjectsScene.cpp"
    ]
   },
@@ -27344,6 +27831,12 @@
    "fr": "Planètes",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "planètes",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -27697,6 +28190,30 @@
    "fr": "plus que la limite : elle passe à {0}",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Plus que {0}",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Plus que {0} phase sans être touché",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Plus que {0} phases sans être touché",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Plus que {0} {1}",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -28291,6 +28808,12 @@
    ]
   },
   {
+   "fr": "pouvoir",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Pouvoir 1",
    "where": [
     "engine/input/InputTypes.cpp"
@@ -28375,6 +28898,12 @@
    ]
   },
   {
+   "fr": "pouvoir utilisé",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Pouvoir utilisé (source = id du pouvoir)",
    "where": [
     "game/levels/EventSystem.cpp"
@@ -28397,6 +28926,12 @@
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "pouvoirs",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -28463,6 +28998,12 @@
    "fr": "Pouvoirs portés au maximum",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "pouvoirs utilisés",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -28550,6 +29091,18 @@
     "data/levels/aethra_02.json",
     "data/levels/aethra_03.json",
     "data/levels/aethra_04.json"
+   ]
+  },
+  {
+   "fr": "preuve de fin",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "preuves de fin",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -29097,10 +29650,22 @@
    ]
   },
   {
+   "fr": "pseudonyme du compte cible attendu",
+   "where": [
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
    "fr": "pseudonyme réservé",
    "where": [
     "server/src/auth.ts",
     "server/src/players.ts"
+   ]
+  },
+  {
+   "fr": "Pseudonyme, mot de passe ou code de migration incorrect, ou code expiré.",
+   "where": [
+    "server/src/accountMigration.ts"
    ]
   },
   {
@@ -30257,6 +30822,12 @@
    ]
   },
   {
+   "fr": "record à battre",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "records",
    "where": [
     "editors/enemy_editor/EnemyEditorPublish.cpp",
@@ -30304,6 +30875,12 @@
    "fr": "records vérifiés",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "records à battre",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -30639,6 +31216,12 @@
    ]
   },
   {
+   "fr": "relique",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Relique ancienne",
    "where": [
     "data/achievements/achievements.json",
@@ -30649,6 +31232,12 @@
    "fr": "Relique secrète",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "reliques",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -32030,6 +32619,12 @@
    ]
   },
   {
+   "fr": "récompense",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Récompense de défi",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -32070,6 +32665,12 @@
    "where": [
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "récompenses",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -33027,6 +33628,12 @@
    ]
   },
   {
+   "fr": "saut",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Saut + double saut + Impulsion pour gravir la falaise.",
    "where": [
     "data/levels/sylvanox_01.json"
@@ -33093,6 +33700,12 @@
    "fr": "Sauts",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "sauts",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -33320,6 +33933,12 @@
    ]
   },
   {
+   "fr": "secret",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Secret découvert !",
    "where": [
     "game/gameplay/GameWorld.cpp"
@@ -33334,6 +33953,7 @@
   {
    "fr": "secrets",
    "where": [
+    "game/achievements/AchievementSuggestions.cpp",
     "game/gameplay/RunCounters.cpp",
     "game/records/Records.cpp"
    ]
@@ -33420,6 +34040,12 @@
    ]
   },
   {
+   "fr": "segment d'or",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "SEGMENTS",
    "where": [
     "ui/screens/SegmentsScene.cpp"
@@ -33429,6 +34055,12 @@
    "fr": "Segments",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "segments d'or",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -34995,6 +35627,24 @@
    ]
   },
   {
+   "fr": "SUCCÈS SUIVIS",
+   "where": [
+    "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
+   "fr": "Succès suivis",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Suggestions",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
+   ]
+  },
+  {
    "fr": "Suggéré : {0}",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
@@ -35040,9 +35690,27 @@
    ]
   },
   {
+   "fr": "Suivi",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
+   ]
+  },
+  {
    "fr": "SUIVRE",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Suivre",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Suivre / ne plus suivre",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
    ]
   },
   {
@@ -35055,6 +35723,12 @@
    "fr": "Suivre B",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Suivre ce succès",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
    ]
   },
   {
@@ -35214,6 +35888,12 @@
    ]
   },
   {
+   "fr": "Sur la planète jouée récemment",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Sur la première île-sanctuaire, un bosquet de Sylvanox s'est enfoncé dans la nébuleuse. Ses racines vivent encore, et la Mère-Racine les entend toutes.",
    "where": [
     "data/levels/aethra_01.json"
@@ -35223,6 +35903,12 @@
    "fr": "Sur le lac, chaque reflet peut mordre.",
    "where": [
     "data/levels/aethra_02.json"
+   ]
+  },
+  {
+   "fr": "Sur le niveau joué en dernier",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -36158,6 +36844,12 @@
    ]
   },
   {
+   "fr": "Tenté {0} fois, jamais terminé",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Tenue",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -36493,6 +37185,12 @@
    "fr": "Terminé le {0} à 00:00 UTC · verrouillé",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Terminé, encore sans médaille",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -38092,6 +38790,12 @@
    ]
   },
   {
+   "fr": "Un compte gratuit suffit",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "un compte supprimé",
    "where": [
     "ui/screens/AdminCampaign.cpp",
@@ -38166,6 +38870,12 @@
    "fr": "Un Dash de plus avant de toucher le sol (passif, avec le Dash).",
    "where": [
     "data/powers/air_dash.json"
+   ]
+  },
+  {
+   "fr": "Un des deux comptes a changé entre-temps : rien n'a été migré (la sauvegarde est faite).",
+   "where": [
+    "server/src/accountMigration.ts"
    ]
   },
   {
@@ -38255,6 +38965,7 @@
   {
    "fr": "Un import est en train de remplacer les données : attendez la fin.",
    "where": [
+    "server/src/accountMigration.ts",
     "server/src/backups.ts"
    ]
   },
@@ -38637,6 +39348,12 @@
    "fr": "Une modification refusée (conflit, objet verrouillé ou supprimé) est montrée avec le choix de la réappliquer : rien n'est écrasé sans vous. Hors ligne, vos modifications attendent sur le disque.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "une même partie ne peut être donnée qu'une fois",
+   "where": [
+    "server/src/accountMigration.ts"
    ]
   },
   {
@@ -39477,6 +40194,12 @@
    ]
   },
   {
+   "fr": "Vaincu {0} fois, jamais sans être touché",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Valable 24 h · une seule fois",
    "where": [
     "ui/screens/OnlineMigration.cpp"
@@ -39909,6 +40632,7 @@
   {
    "fr": "victoire",
    "where": [
+    "game/achievements/AchievementSuggestions.cpp",
     "ui/screens/AdminCreations.cpp"
    ]
   },
@@ -39917,6 +40641,12 @@
    "where": [
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "victoires",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -40850,6 +41580,12 @@
    ]
   },
   {
+   "fr": "Vous ne pouvez pas fermer votre propre compte.",
+   "where": [
+    "server/src/accountMigration.ts"
+   ]
+  },
+  {
    "fr": "Vous ne pouvez pas inviter ce joueur.",
    "where": [
     "server/src/projects.ts"
@@ -41589,6 +42325,12 @@
    ]
   },
   {
+   "fr": "{0} % fait",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "{0} (copie)",
    "where": [
     "editors/enemy_editor/EnemyEditAccess.cpp",
@@ -41710,6 +42452,12 @@
    "fr": "{0} / {1} récompenses",
    "where": [
     "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} / {1} suivis",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
    ]
   },
   {
@@ -42207,6 +42955,12 @@
    "where": [
     "ui/screens/MainMenuScene.cpp",
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} demandes de migration de ce compte refusées (code faux ou expiré) : quelqu'un connaît votre mot de passe.",
+   "where": [
+    "server/src/notifications.ts"
    ]
   },
   {
@@ -43706,6 +44460,12 @@
    ]
   },
   {
+   "fr": "« {0} » est déjà obtenu : rien à suivre.",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
+   ]
+  },
+  {
    "fr": "« {0} » est en ligne.",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
@@ -44470,6 +45230,12 @@
    ]
   },
   {
+   "fr": "éclat",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Éclat d'énergie",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -44498,6 +45264,12 @@
    "where": [
     "data/enemies/aurorax.json",
     "data/enemies/echo_aurorax.json"
+   ]
+  },
+  {
+   "fr": "éclats",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
