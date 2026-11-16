@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import * as fmt from "../src/backupFormat";
 import { applyRetention, type StoredManifest } from "../src/backups";
 import worker from "../src/index";
-import { api, registerPlayer, seedAll, verifiedRun, type TestPlayer } from "./helpers";
+import { api, registerPlayer, seedAll, verifiedRun, type TestPlayer, deviceOf } from "./helpers";
 
 const V = "/api/v1";
 const PASS = "une phrase secrète très longue — 42";
@@ -345,7 +345,7 @@ describe("backups: download and import", () => {
         // Sessions are not restored: players sign in again; the admin who ran the import keeps theirs.
         expect((await api("GET", `${V}/auth/me`, { token: kes.token })).status).toBe(401);
         expect((await api("GET", `${V}/admin/backups`, { token: admin.token })).status).toBe(200);
-        const login = await api("POST", `${V}/auth/login`, { body: { username: "Orion", password: orion.password } });
+        const login = await api("POST", `${V}/auth/login`, { body: { username: "Orion", password: orion.password, device: deviceOf("Orion") } });
         expect(login.status).toBe(200);
         // Maintenance is over: writes work again.
         const write = await api("POST", `${V}/presence`, { token: login.body.data.session.access_token, body: { state: "active" } });

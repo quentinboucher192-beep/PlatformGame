@@ -19,6 +19,7 @@ import * as campaignRevisions from "./campaignRevisions";
 import * as enemyRevisions from "./enemyRevisions";
 import * as challenges from "./challenges";
 import * as creations from "./creations";
+import * as devices from "./devices";
 import * as notifications from "./notifications";
 import * as race from "./race";
 import * as workshop from "./workshop";
@@ -113,6 +114,11 @@ route("DELETE", `${V}/players/me`, (ctx) => players.deleteMe(ctx));
 route("PUT", `${V}/players/me/avatar`, (ctx) => players.putAvatar(ctx));
 route("POST", `${V}/players/me/playtime`, (ctx) => creators.reportPlaytime(ctx));
 route("PUT", `${V}/players/me/achievements`, (ctx) => achievements.putAchievements(ctx));
+// 2.47: the computer the account is bound to, and the copies of the progression (devices.ts).
+route("GET", `${V}/players/me/device`, (ctx) => devices.myDevice(ctx));
+route("PATCH", `${V}/players/me/device`, (ctx) => devices.renameDevice(ctx));
+route("GET", `${V}/players/me/progress-copy`, (ctx) => devices.getProgressCopy(ctx));
+route("PUT", `${V}/players/me/progress-copy`, (ctx) => devices.putProgressCopy(ctx));
 route("PUT", `${V}/players/me/cosmetics`, (ctx) => cosmetics.putCosmetics(ctx));
 route("GET", `${V}/players/me/rewards`, (ctx) => challenges.myRewards(ctx));
 route("PUT", `${V}/players/me/badges`, (ctx) => badges.putBadges(ctx));
@@ -348,6 +354,9 @@ route("PUT", `${V}/admin/challenges/{challengeId}/rewards`, (ctx) => adminChalle
 route("GET", `${V}/admin/titles`, (ctx) => adminChallenges.listTitles(ctx));
 route("POST", `${V}/admin/titles`, (ctx) => adminChallenges.createTitle(ctx));
 // ADMINISTRATION › Créations: the suits an administrator makes (creations.ts).
+// ADMINISTRATION › Joueurs (2.47): the computer an account is bound to; unbind it, or bind it to a refused attempt's.
+route("GET", `${V}/admin/players/{playerId}/device`, (ctx) => devices.adminDevice(ctx));
+route("POST", `${V}/admin/players/{playerId}/device`, (ctx) => devices.adminSetDevice(ctx));
 route("GET", `${V}/admin/creations`, (ctx) => creations.listCreations(ctx));
 route("POST", `${V}/admin/creations`, (ctx) => creations.createCreation(ctx));
 route("PUT", `${V}/admin/creations/{creationId}`, (ctx) => creations.updateCreation(ctx));

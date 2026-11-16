@@ -104,10 +104,22 @@ export interface TestPlayer {
     refresh: string;
 }
 
+/** 2.47: the computer of a test player (one per player, drawn from its name). */
+export function deviceOf(username: string): { id: string; name: string } {
+    let h = 0x811c9dc5;
+    let out = "";
+    for (let round = 0; out.length < 32; round++)
+        for (const c of username + ":" + round) {
+            h = Math.imul(h ^ c.charCodeAt(0), 0x01000193) >>> 0;
+            if (out.length < 32) out += (h & 15).toString(16);
+        }
+    return { id: out, name: "PC de test" };
+}
+
 export async function registerPlayer(username: string, extra: Record<string, unknown> = {}): Promise<TestPlayer> {
     const password = "correct horse battery";
     const res = await api("POST", "/api/v1/auth/register", {
-        body: { username, password, accept_tos: true, tos_version: "2026-11", ...extra },
+        body: { username, password, accept_tos: true, tos_version: "2026-11", device: deviceOf(username), ...extra },
     });
     if (res.status !== 201) throw new Error(`register ${username}: ${res.status} ${JSON.stringify(res.body)}`);
     return {

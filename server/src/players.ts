@@ -1,6 +1,7 @@
 // Player profiles, privacy settings, statistics, search, GDPR export and account deletion,
 // custom avatars.
 
+import { progressCopyKeys } from "./devices";
 import { presenceOf } from "./friends";
 import { achievementSummary } from "./achievements";
 import { profileCosmetics } from "./cosmetics";
@@ -396,6 +397,8 @@ export async function deleteMe(ctx: Ctx): Promise<Response> {
     for (const r of race.results) if (!toDelete.includes(r.replay_key)) toDelete.push(r.replay_key);
     // Replays of the player's daily challenge runs (the runs follow the account: ON DELETE CASCADE).
     for (const k of await challengeReplayKeys(ctx, id)) if (!toDelete.includes(k)) toDelete.push(k);
+    // 2.47: the copies of the progression sent by the game.
+    toDelete.push(...(await progressCopyKeys(ctx, id)));
     for (let i = 0; i < toDelete.length; i += 500) await ctx.env.STORAGE.delete(toDelete.slice(i, i + 500));
     await ctx.env.DB.batch([
         ctx.env.DB.prepare("DELETE FROM audit_log WHERE player_id = ?1").bind(id),

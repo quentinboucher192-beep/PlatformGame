@@ -51,6 +51,11 @@ export const RULES = {
     follow: { name: "follow", limit: 60, windowSeconds: 3600 },
     playtime: { name: "playtime", limit: 40, windowSeconds: 3600 },
     achievements: { name: "achievements", limit: 30, windowSeconds: 3600 },
+    // 2.47: the copy of the progression (after the runs, at most every 10 minutes, and on demand).
+    progressCopy: { name: "progress_copy", limit: 12, windowSeconds: 3600 },
+    // 2.47: the right password typed on another computer than the account's: refused; after 5, that computer waits.
+    loginRefused: { name: "login_refused", limit: 5, windowSeconds: 600 },
+    deviceRename: { name: "device_rename", limit: 10, windowSeconds: 3600 },
     // What the player wears online (2.23): sent after each « Équiper » of the Collection.
     cosmetics: { name: "cosmetics", limit: 60, windowSeconds: 3600 },
     // The badges of the profile (2.41): sent after each choice of the Collection, like the items worn.

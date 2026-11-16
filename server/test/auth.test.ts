@@ -1,6 +1,6 @@
 import { env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
-import { api, freshIp, registerPlayer, seedAll } from "./helpers";
+import { api, freshIp, registerPlayer, seedAll, deviceOf } from "./helpers";
 
 beforeEach(seedAll);
 
@@ -34,7 +34,7 @@ describe("health and meta", () => {
 describe("registration", () => {
     it("creates an account, hashes the password and opens a session", async () => {
         const res = await api("POST", "/api/v1/auth/register", {
-            body: { username: "NovaRider", password: "sup3r secret pass", country_code: "FR", location_visibility: "globe", accept_tos: true, tos_version: "2026-11" },
+            body: { username: "NovaRider", password: "sup3r secret pass", country_code: "FR", location_visibility: "globe", accept_tos: true, tos_version: "2026-11", device: deviceOf("r" + Math.random()) },
         });
         expect(res.status).toBe(201);
         const { player, session } = res.body.data;
@@ -75,27 +75,27 @@ describe("registration", () => {
 
     it("refuses duplicates, reserved names, weak passwords and missing consent", async () => {
         await registerPlayer("Orion");
-        const dup = await api("POST", "/api/v1/auth/register", { body: { username: "orion", password: "another password", accept_tos: true, tos_version: "2026-11" } });
+        const dup = await api("POST", "/api/v1/auth/register", { body: { username: "orion", password: "another password", accept_tos: true, tos_version: "2026-11", device: deviceOf("r" + Math.random()) } });
         expect(dup.status).toBe(409);
         expect(dup.body.error.code).toBe("USERNAME_TAKEN");
-        const reserved = await api("POST", "/api/v1/auth/register", { body: { username: "Admin", password: "another password", accept_tos: true, tos_version: "2026-11" } });
+        const reserved = await api("POST", "/api/v1/auth/register", { body: { username: "Admin", password: "another password", accept_tos: true, tos_version: "2026-11", device: deviceOf("r" + Math.random()) } });
         expect(reserved.status).toBe(400);
-        const weak = await api("POST", "/api/v1/auth/register", { body: { username: "Vega", password: "short", accept_tos: true, tos_version: "2026-11" } });
+        const weak = await api("POST", "/api/v1/auth/register", { body: { username: "Vega", password: "short", accept_tos: true, tos_version: "2026-11", device: deviceOf("r" + Math.random()) } });
         expect(weak.status).toBe(400);
         expect(weak.body.error.details[0].field).toBe("password");
-        const noTos = await api("POST", "/api/v1/auth/register", { body: { username: "Vega", password: "long enough pass", accept_tos: false, tos_version: "2026-11" } });
+        const noTos = await api("POST", "/api/v1/auth/register", { body: { username: "Vega", password: "long enough pass", accept_tos: false, tos_version: "2026-11", device: deviceOf("r" + Math.random()) } });
         expect(noTos.status).toBe(400);
-        const oldTos = await api("POST", "/api/v1/auth/register", { body: { username: "Vega", password: "long enough pass", accept_tos: true, tos_version: "2020-01" } });
+        const oldTos = await api("POST", "/api/v1/auth/register", { body: { username: "Vega", password: "long enough pass", accept_tos: true, tos_version: "2020-01", device: deviceOf("r" + Math.random()) } });
         expect(oldTos.status).toBe(400);
     });
 
     it("validates country and location consent", async () => {
         const unknown = await api("POST", "/api/v1/auth/register", {
-            body: { username: "Lyra", password: "long enough pass", country_code: "ZZ", accept_tos: true, tos_version: "2026-11" },
+            body: { username: "Lyra", password: "long enough pass", country_code: "ZZ", accept_tos: true, tos_version: "2026-11", device: deviceOf("r" + Math.random()) },
         });
         expect(unknown.status).toBe(400);
         const noCountry = await api("POST", "/api/v1/auth/register", {
-            body: { username: "Lyra", password: "long enough pass", location_visibility: "globe", accept_tos: true, tos_version: "2026-11" },
+            body: { username: "Lyra", password: "long enough pass", location_visibility: "globe", accept_tos: true, tos_version: "2026-11", device: deviceOf("r" + Math.random()) },
         });
         expect(noCountry.status).toBe(400);
         const p = await registerPlayer("Lyra", { country_code: "DE" });
@@ -106,7 +106,7 @@ describe("registration", () => {
 
     it("rejects unknown fields and non-JSON bodies", async () => {
         const extra = await api("POST", "/api/v1/auth/register", {
-            body: { username: "Lyra", password: "long enough pass", accept_tos: true, tos_version: "2026-11", is_admin: true },
+            body: { username: "Lyra", password: "long enough pass", accept_tos: true, tos_version: "2026-11", device: deviceOf("r" + Math.random()), is_admin: true },
         });
         expect(extra.status).toBe(400);
         const text = await api("POST", "/api/v1/auth/register", { raw: "username=x", headers: { "content-type": "text/plain" } });
@@ -121,13 +121,13 @@ describe("registration", () => {
         for (let i = 0; i < 5; ++i) {
             const r = await api("POST", "/api/v1/auth/register", {
                 ip,
-                body: { username: `Pilot${i}x`, password: "long enough pass", accept_tos: true, tos_version: "2026-11" },
+                body: { username: `Pilot${i}x`, password: "long enough pass", accept_tos: true, tos_version: "2026-11", device: deviceOf("r" + Math.random()) },
             });
             expect(r.status).toBe(201);
         }
         const blocked = await api("POST", "/api/v1/auth/register", {
             ip,
-            body: { username: "PilotLast", password: "long enough pass", accept_tos: true, tos_version: "2026-11" },
+            body: { username: "PilotLast", password: "long enough pass", accept_tos: true, tos_version: "2026-11", device: deviceOf("r" + Math.random()) },
         });
         expect(blocked.status).toBe(429);
         expect(blocked.body.error.code).toBe("RATE_LIMITED");
@@ -141,12 +141,12 @@ describe("registration", () => {
 describe("login and sessions", () => {
     it("logs in with the right password only, with a generic error", async () => {
         const p = await registerPlayer("Sirius");
-        const ok = await api("POST", "/api/v1/auth/login", { body: { username: "SIRIUS", password: p.password } });
+        const ok = await api("POST", "/api/v1/auth/login", { body: { username: "SIRIUS", password: p.password, device: deviceOf("Sirius") } });
         expect(ok.status).toBe(200);
         expect(ok.body.data.player.id).toBe(p.id);
-        const bad = await api("POST", "/api/v1/auth/login", { body: { username: "Sirius", password: "wrong password" } });
+        const bad = await api("POST", "/api/v1/auth/login", { body: { username: "Sirius", password: "wrong password", device: deviceOf("Sirius") } });
         expect(bad.status).toBe(401);
-        const ghost = await api("POST", "/api/v1/auth/login", { body: { username: "Nobody", password: "wrong password" } });
+        const ghost = await api("POST", "/api/v1/auth/login", { body: { username: "Nobody", password: "wrong password", device: deviceOf("Nobody") } });
         expect(ghost.status).toBe(401);
         expect(ghost.body.error.code).toBe(bad.body.error.code);
         expect(ghost.body.error.message).toBe(bad.body.error.message);
@@ -155,10 +155,10 @@ describe("login and sessions", () => {
     it("locks the account after repeated failures", async () => {
         const p = await registerPlayer("Altair");
         for (let i = 0; i < 10; ++i) {
-            const r = await api("POST", "/api/v1/auth/login", { body: { username: "Altair", password: "nope nope" } });
+            const r = await api("POST", "/api/v1/auth/login", { body: { username: "Altair", password: "nope nope", device: deviceOf("Altair") } });
             expect(r.status).toBe(401);
         }
-        const locked = await api("POST", "/api/v1/auth/login", { body: { username: "Altair", password: p.password } });
+        const locked = await api("POST", "/api/v1/auth/login", { body: { username: "Altair", password: p.password, device: deviceOf("Altair") } });
         expect(locked.status).toBe(423);
         expect(locked.body.error.code).toBe("ACCOUNT_LOCKED");
         const logs = await env.DB.prepare("SELECT action FROM audit_log WHERE player_id = ?1").bind(p.id).all<{ action: string }>();

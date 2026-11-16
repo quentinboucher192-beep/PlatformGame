@@ -2,6 +2,12 @@
 // here, in one place: a hidden location never leaves the server.
 
 export interface PlayerRow {
+    /** 2.47: the computer the account is bound to (an id the game drew at random), its name, since when. */
+    device_id?: string | null;
+    device_name?: string | null;
+    device_bound_at?: string | null;
+    /** 2.47: an admin unbound it: the next login, from any computer, binds it again. */
+    device_rebind?: number;
     presence_state?: string | null;
     presence_at?: string | null;
     presence_visible?: number;

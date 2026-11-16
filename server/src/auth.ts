@@ -4,6 +4,7 @@
 
 import { DEFAULT_PBKDF2_ITERATIONS, dummyPasswordCheck, hashIp, hashPassword, randomToken, sha256Hex, verifyPassword } from "./crypto";
 import { ApiError, Errors, json, log, nowIso, readJsonObject, type Ctx } from "./http";
+import { bindAtLogin, checkFreeDevice, readDevice } from "./devices";
 import { privateProfile, type PlayerRow } from "./model";
 import { RULES, rateLimit } from "./ratelimit";
 import {
@@ -77,14 +78,14 @@ function clientInfo(ctx: Ctx): string {
     return (ctx.request.headers.get("user-agent") ?? "").slice(0, 120);
 }
 
-export async function createSession(ctx: Ctx, playerId: string): Promise<IssuedSession> {
+export async function createSession(ctx: Ctx, playerId: string, deviceId: string | null = null): Promise<IssuedSession> {
     const t = await newTokens(ctx);
     const now = nowIso();
     await ctx.env.DB.prepare(
-        `INSERT INTO player_sessions (id, player_id, token_hash, refresh_hash, created_at, expires_at, refresh_expires_at, last_used_at, client_info)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?5, ?8)`,
+        `INSERT INTO player_sessions (id, player_id, token_hash, refresh_hash, created_at, expires_at, refresh_expires_at, last_used_at, client_info, device_id)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?5, ?8, ?9)`,
     )
-        .bind(crypto.randomUUID(), playerId, t.accessHash, t.refreshHash, now, t.accessExpires, t.refreshExpires, clientInfo(ctx))
+        .bind(crypto.randomUUID(), playerId, t.accessHash, t.refreshHash, now, t.accessExpires, t.refreshExpires, clientInfo(ctx), deviceId)
         .run();
     return { access_token: t.access, access_expires_at: t.accessExpires, refresh_token: t.refresh, refresh_expires_at: t.refreshExpires };
 }
@@ -162,7 +163,7 @@ export async function register(ctx: Ctx): Promise<Response> {
     const body = await readJsonObject(ctx);
     const v = new Validator(body, [
         "username", "password", "avatar", "country_code", "region_code", "location_visibility",
-        "profile_visibility", "allow_friend_requests", "accept_tos", "tos_version",
+        "profile_visibility", "allow_friend_requests", "accept_tos", "tos_version", "device",
     ]);
     const username = v.str("username", { min: 3, max: 20, pattern: USERNAME_RE, trim: true });
     const password = v.str("password", { min: 8, max: 128 });
@@ -182,8 +183,11 @@ export async function register(ctx: Ctx): Promise<Response> {
     if (region && (!country || !region.startsWith(country + "-"))) v.fail("region_code", "la région doit appartenir au pays choisi");
     if (locVis !== "hidden" && !country) v.fail("location_visibility", "un pays est nécessaire pour être visible");
     v.done();
+    // 2.47: the account is bound to this computer, which must not have one already.
+    const device = readDevice(body.device);
     if (country && !(await countryExists(ctx, country)))
         throw Errors.validation([{ field: "country_code", message: "pays inconnu" }]);
+    await checkFreeDevice(ctx, device);
 
     const id = crypto.randomUUID();
     const now = nowIso();
@@ -192,19 +196,20 @@ export async function register(ctx: Ctx): Promise<Response> {
         await ctx.env.DB.batch([
             ctx.env.DB.prepare(
                 `INSERT INTO players (id, username, username_normalized, avatar, country_code, region_code, location_visibility,
-                   profile_visibility, allow_friend_requests, tos_version, tos_accepted_at, created_at, last_seen_at)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?11, ?11)`,
+                   profile_visibility, allow_friend_requests, tos_version, tos_accepted_at, created_at, last_seen_at, device_id, device_name, device_bound_at)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?11, ?11, ?12, ?13, ?11)`,
             ).bind(id, username!, normalizeUsername(username!), avatar, country ?? null, region ?? null, locVis, profVis,
-                allowFriends ? 1 : 0, tos!, now),
+                allowFriends ? 1 : 0, tos!, now, device.id, device.name),
             ctx.env.DB.prepare(
                 "INSERT INTO player_credentials (player_id, password_hash, password_salt, password_iterations, updated_at) VALUES (?1, ?2, ?3, ?4, ?5)",
             ).bind(id, pwd.hash, pwd.salt, pwd.iterations, now),
         ]);
     } catch (e) {
+        if (String(e).includes("device_id")) throw Errors.conflict("DEVICE_BOUND", "Cet ordinateur est déjà lié à un compte : un seul compte par ordinateur.");
         if (String(e).includes("UNIQUE")) throw Errors.conflict("USERNAME_TAKEN", "Ce pseudonyme est déjà utilisé.");
         throw e;
     }
-    const session = await createSession(ctx, id);
+    const session = await createSession(ctx, id, device.id);
     await audit(ctx, id, "register");
     const player = await ctx.env.DB.prepare("SELECT * FROM players WHERE id = ?1").bind(id).first<PlayerRow>();
     return json(ctx, { player: privateProfile(player!), session }, { status: 201 });
@@ -213,10 +218,11 @@ export async function register(ctx: Ctx): Promise<Response> {
 export async function login(ctx: Ctx): Promise<Response> {
     await rateLimit(ctx, RULES.loginIp, ctx.ip);
     const body = await readJsonObject(ctx);
-    const v = new Validator(body, ["username", "password"]);
+    const v = new Validator(body, ["username", "password", "device"]);
     const username = v.str("username", { min: 1, max: 32, trim: true });
     const password = v.str("password", { min: 1, max: 128 });
     v.done();
+    const device = readDevice(body.device);
     const norm = normalizeUsername(username!);
     await rateLimit(ctx, RULES.loginUser, "user:" + norm);
     const row = await ctx.env.DB.prepare(
@@ -248,6 +254,8 @@ export async function login(ctx: Ctx): Promise<Response> {
         throw invalid;
     }
     if (row.account_status !== "active") throw Errors.forbidden("ACCOUNT_SUSPENDED", "Ce compte est suspendu.");
+    // 2.47: the account's own computer (bound at its first login with a 2.47 game), never another one.
+    await bindAtLogin(ctx, row, device);
     const now = nowIso();
     const updates = [
         ctx.env.DB.prepare("UPDATE player_credentials SET failed_attempts = 0, locked_until = NULL WHERE player_id = ?1").bind(row.id),
@@ -262,7 +270,7 @@ export async function login(ctx: Ctx): Promise<Response> {
         );
     }
     await ctx.env.DB.batch(updates);
-    const session = await createSession(ctx, row.id);
+    const session = await createSession(ctx, row.id, device.id);
     await audit(ctx, row.id, "login");
     const player = await ctx.env.DB.prepare("SELECT * FROM players WHERE id = ?1").bind(row.id).first<PlayerRow>();
     return json(ctx, { player: privateProfile(player!), session });

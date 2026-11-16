@@ -27,6 +27,7 @@ export const NOTIFICATION_KINDS = [
     "challenge_featured", // one of my community levels is a challenge: of the day (2.32), of the week or of the month (2.33)
     "record_beaten", //     my world record (first place of a campaign leaderboard) was beaten (2.30.2)
     "challenge_reward", //  rewards won at a challenge, once its period is over (2.43)
+    "security", //          2.47: the account and its computer (login refused elsewhere, bound, unbound by an admin)
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
@@ -160,6 +161,29 @@ function sentence(n: NotificationRow, d: Record<string, string>): string {
             return `${who} a battu votre record mondial sur ${d.title ?? ""} (${d.category_label ?? ""}) : ${d.time ?? ""} contre ${d.previous ?? ""}`;
         case "challenge_reward":
             return rewardSentence(d as unknown as Record<string, unknown>);
+        case "security":
+            return securitySentence(d, n.count);
+    }
+}
+
+/** 2.47: the account and its computer. */
+function securitySentence(d: Record<string, string>, count: number): string {
+    const where = d.country ? ` (${d.country})` : "";
+    switch (d.reason) {
+        case "login_refused":
+            return count > 1
+                ? `Connexions refusées depuis un autre ordinateur${where} : ${count} tentatives avec votre mot de passe.`
+                : `Connexion refusée depuis un autre ordinateur${where} : quelqu'un a saisi votre mot de passe.`;
+        case "device_bound":
+            return `Votre compte est maintenant lié à cet ordinateur (« ${d.device_name ?? "Mon ordinateur"} ») : il ne s'utilise plus ailleurs.`;
+        case "device_rebound":
+            return `Votre compte est maintenant lié à un nouvel ordinateur (« ${d.device_name ?? "Mon ordinateur"} »).`;
+        case "admin_unbound":
+            return "Un admin a délié votre compte de son ordinateur : la prochaine connexion, depuis n'importe quel ordinateur, le liera de nouveau.";
+        case "admin_bound":
+            return "Un admin a lié votre compte à un nouvel ordinateur.";
+        default:
+            return "Alerte de sécurité sur votre compte.";
     }
 }
 

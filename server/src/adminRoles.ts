@@ -27,6 +27,8 @@ export const ADMIN_ACTIONS = {
     creation: ["admin_creation_created", "admin_creation_updated", "admin_creation_archived", "admin_creation_restored"],
     // 2.46: ADMINISTRATION › Ennemis (enemyRevisions.ts): a native entity published as a revision.
     enemy: ["admin_enemy_published"],
+    // 2.47: ADMINISTRATION › Joueurs: the computer an account is bound to (devices.ts).
+    account: ["admin_device_unbound", "admin_device_bound"],
     // Backups (ADMINISTRATION › Sauvegardes, backups.ts): copies, downloads, imports. Never a passphrase.
     backup: [
         "backup_created",
@@ -50,9 +52,10 @@ const ALL_ADMIN_ACTIONS: readonly string[] = [
         ...ADMIN_ACTIONS.campaign,
         ...ADMIN_ACTIONS.creation,
         ...ADMIN_ACTIONS.enemy,
+        ...ADMIN_ACTIONS.account,
     ]),
 ];
-const LOG_KINDS = ["all", "role", "challenge", "refused", "backup", "campaign", "creation", "enemy"] as const;
+const LOG_KINDS = ["all", "role", "challenge", "refused", "backup", "campaign", "creation", "enemy", "account"] as const;
 
 const ID_RE = /^[A-Za-z0-9-]{8,64}$/;
 
