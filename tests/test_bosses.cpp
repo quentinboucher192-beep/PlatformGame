@@ -54,6 +54,7 @@ TEST_CASE("bosses: every boss attacks, changes phase and dies") {
         std::set<std::string> used;
         bool hurt = false;
         int phases = 0;
+        bool wearDue = false;
         // Fight: the player keeps full health so that every attack gets a chance to play.
         for (int step = 0; step < 120 * 40; ++step) {
             int before = w.player().health;
@@ -65,8 +66,12 @@ TEST_CASE("bosses: every boss attacks, changes phase and dies") {
             w.player().health = w.player().maxHealth();
             if (boss->state() == EnemyState::Telegraph || boss->state() == EnemyState::Attack)
                 used.insert(boss->currentAttackName());
-            // Wear it down through its phases (never below a quarter of its health here).
-            if (step % 700 == 699 && boss->hpRatio() > 0.26f) {
+            // Wear it down through its phases (never below a quarter of its health here). The
+            // same blows for every boss: a dragon landed by its « Atterrissage » takes more
+            // (2.50), so the blow waits for it to take off.
+            if (step % 700 == 699 && boss->hpRatio() > 0.26f) wearDue = true;
+            if (wearDue && !boss->perched()) {
+                wearDue = false;
                 DamageInfo d;
                 d.amount = boss->maxHp() * 0.15f;
                 d.type = DamageType::ChargeShot;

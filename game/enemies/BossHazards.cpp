@@ -17,6 +17,14 @@ float smooth(float t) {
 }
 }  // namespace
 
+Rect BossHazards::Cloud::current() const {
+    if (spread <= 0.0f || age >= spread) return area;
+    float k = smooth(age / spread);
+    float o = std::clamp(originX, area.x, area.right());
+    float l = o - (o - area.x) * k, r = o + (area.right() - o) * k;
+    return {l, area.y, r - l, area.h};
+}
+
 float BossHazards::Flood::level() const {
     if (age < rise) return height * smooth(age / std::max(0.05f, rise));
     if (age < rise + hold) return height;
@@ -32,6 +40,27 @@ void BossHazards::addPull(const Pull& p) {
             return;
         }
     pulls_.push_back(p);
+}
+
+void BossHazards::addCloud(const Cloud& c) {
+    // Several at once (a breath, fireballs): the oldest of an enemy go first past a dozen.
+    int mine = cloudCount(c.owner);
+    if (mine >= 12)
+        for (auto it = clouds_.begin(); it != clouds_.end(); ++it)
+            if (it->owner == c.owner) {
+                clouds_.erase(it);
+                break;
+            }
+    clouds_.push_back(c);
+}
+
+void BossHazards::addWind(const Wind& wd) {
+    for (auto& x : winds_)
+        if (x.owner == wd.owner) {
+            x = wd;
+            return;
+        }
+    winds_.push_back(wd);
 }
 
 void BossHazards::addIce(GameWorld& w, uint32_t owner, const Rect& area, float grip, float seconds) {
@@ -104,6 +133,7 @@ void BossHazards::restore(GameWorld& w, Ice& ice) {
 
 void BossHazards::endChannel(GameWorld& w, uint32_t owner) {
     pulls_.erase(std::remove_if(pulls_.begin(), pulls_.end(), [&](const Pull& p) { return p.owner == owner; }), pulls_.end());
+    winds_.erase(std::remove_if(winds_.begin(), winds_.end(), [&](const Wind& x) { return x.owner == owner; }), winds_.end());
     walls_.erase(std::remove_if(walls_.begin(), walls_.end(),
                                 [&](const Wall& wl) {
                                     if (wl.owner != owner) return false;
@@ -120,6 +150,7 @@ void BossHazards::removeOwner(GameWorld& w, uint32_t owner) {
         if (it->owner == owner) restore(w, *it);
     ice_.erase(std::remove_if(ice_.begin(), ice_.end(), [&](const Ice& i) { return i.owner == owner; }), ice_.end());
     floods_.erase(std::remove_if(floods_.begin(), floods_.end(), [&](const Flood& f) { return f.owner == owner; }), floods_.end());
+    clouds_.erase(std::remove_if(clouds_.begin(), clouds_.end(), [&](const Cloud& c) { return c.owner == owner; }), clouds_.end());
 }
 
 void BossHazards::clear(GameWorld& w) {
@@ -129,6 +160,8 @@ void BossHazards::clear(GameWorld& w) {
     ice_.clear();
     floods_.clear();
     walls_.clear();
+    clouds_.clear();
+    winds_.clear();
 }
 
 bool BossHazards::hasIce(uint32_t owner) const {
@@ -139,6 +172,12 @@ bool BossHazards::hasFlood(uint32_t owner) const {
 }
 bool BossHazards::hasPull(uint32_t owner) const {
     return std::any_of(pulls_.begin(), pulls_.end(), [&](const Pull& p) { return p.owner == owner; });
+}
+bool BossHazards::hasWind(uint32_t owner) const {
+    return std::any_of(winds_.begin(), winds_.end(), [&](const Wind& x) { return x.owner == owner; });
+}
+int BossHazards::cloudCount(uint32_t owner) const {
+    return static_cast<int>(std::count_if(clouds_.begin(), clouds_.end(), [&](const Cloud& c) { return c.owner == owner; }));
 }
 
 // ================================================================= stepping
@@ -221,6 +260,46 @@ void BossHazards::fixedUpdate(GameWorld& w, float dt) {
         }
     }
     walls_.erase(std::remove_if(walls_.begin(), walls_.end(), [](const Wall& wl) { return wl.time <= 0.0f; }), walls_.end());
+
+    // The wind of the dragon's wings (2.50): Nova drifts away from it, horizontally (outside her
+    // own movement: running against it still wins, a jump or a dash too).
+    for (Wind& wd : winds_) {
+        wd.age += dt;
+        wd.time -= dt;
+        if (!exposed) continue;
+        Vec2 pc = p.center();
+        float dist = distance(pc, wd.center);
+        if (dist >= wd.range) continue;
+        float side = pc.x >= wd.center.x ? 1.0f : -1.0f;
+        float k = (0.5f + 0.5f * (1.0f - dist / wd.range)) * std::min(1.0f, wd.age / 0.25f);
+        w.physics().move(p.box, Vec2{side * wd.speed * k * dt, 0.0f}, p.moveOptions());
+    }
+    winds_.erase(std::remove_if(winds_.begin(), winds_.end(), [](const Wind& x) { return x.time <= 0.0f; }), winds_.end());
+
+    // Clouds of fire (2.50): they burn inside, then fade.
+    for (Cloud& c : clouds_) {
+        c.age += dt;
+        c.time -= dt;
+        // Display only: smoke and flames rising from it (the effects' own random generator).
+        c.emitTimer -= dt;
+        if (c.emitTimer <= 0.0f && c.time > 0.3f) {
+            c.emitTimer = c.ground ? 0.05f : 0.08f;
+            Rect r = c.current();
+            if (r.w > 2.0f) {
+                Vec2 at{w.fxRng().range(r.x, r.right()), w.fxRng().range(r.y + r.h * 0.3f, r.bottom() - 2.0f)};
+                w.particles().emit("fire_cloud", at, 1.0f, {}, &c.color);
+                if (w.fxRng().chance(0.35f)) w.particles().emit("fire_smoke", at + Vec2{0.0f, -r.h * 0.3f}, 1.0f);
+            }
+        }
+        if (!exposed || c.damage <= 0.0f || !c.burning() || !c.current().intersects(p.box)) continue;
+        DamageInfo dmg;
+        dmg.amount = c.damage;
+        dmg.type = DamageType::Contact;
+        dmg.source = {c.area.center().x, p.center().y + 6.0f};  // out of it by the nearest side
+        dmg.knockback = 150.0f;
+        if (w.damagePlayer(dmg)) w.particles().emit("fire_burst", p.center(), 0.8f);
+    }
+    clouds_.erase(std::remove_if(clouds_.begin(), clouds_.end(), [](const Cloud& c) { return c.time <= 0.0f; }), clouds_.end());
 }
 
 void BossHazards::bendShot(Projectile& p, float dt) const {
@@ -350,6 +429,48 @@ void BossHazards::render(RenderContext& ctx) const {
             }
         }
         ctx.lights.add(vis.center(), star ? 90.0f : 46.0f, star ? Color{150, 255, 200, 220} : Color{120, 255, 140, 160});
+    }
+
+    // Clouds of fire (2.50): puffs of smoke lit from inside, rolling in place, a hot edge below.
+    for (const Cloud& c : clouds_) {
+        Rect r = c.current();
+        float a = std::clamp(std::min(c.age / 0.2f, c.time / 0.7f), 0.0f, 1.0f);
+        if (r.w < 1.0f || a <= 0.0f) continue;
+        const Color fire = c.color;
+        const int rows = std::max(1, static_cast<int>(std::lround(r.h / 30.0f)));
+        const float step = 20.0f;
+        for (int row = 0; row < rows; ++row) {
+            float y = r.bottom() - (static_cast<float>(row) + 0.5f) * r.h / static_cast<float>(rows);
+            for (float x = r.x + step * 0.5f; x < r.right(); x += step) {
+                float seed = x * 0.071f + static_cast<float>(row) * 1.7f;
+                float rad = r.h / static_cast<float>(rows) * (0.55f + 0.12f * dmath::sin(t * 2.3f + seed * 3.1f));
+                Vec2 pc{x + 3.0f * dmath::sin(t * 1.7f + seed), y - 2.0f * dmath::sin(t * 2.9f + seed * 2.0f)};
+                ctx.r.drawWorldGlow(pc, rad * 1.9f, fire.withAlpha(static_cast<uint8_t>(95 * a)));
+                ctx.r.fillWorldCircle(pc, rad, Color{58, 20, 16, static_cast<uint8_t>(120 * a)});
+                ctx.r.fillWorldCircle(pc + Vec2{0.0f, rad * 0.25f}, rad * 0.55f,
+                                      Color{fire.r, fire.g, fire.b, static_cast<uint8_t>(90 * a)}, BlendMode::Additive);
+            }
+        }
+        if (c.ground)
+            ctx.r.fillWorldRect({r.x, r.bottom() - 3.0f, r.w, 3.0f}, Color{255, 214, 120, static_cast<uint8_t>(200 * a)}, BlendMode::Additive);
+        for (float x = r.x + 40.0f; x < r.right(); x += 110.0f)
+            ctx.lights.add({x, r.center().y}, 90.0f, fire.withAlpha(static_cast<uint8_t>(220 * a)));
+        if (r.w < 80.0f) ctx.lights.add(r.center(), 80.0f, fire.withAlpha(static_cast<uint8_t>(220 * a)));
+    }
+
+    // The wind of its wings (2.50): streaks of ash blowing away from it on both sides.
+    for (const Wind& wd : winds_) {
+        float a = std::clamp(std::min(wd.age / 0.25f, wd.time / 0.4f), 0.0f, 1.0f);
+        float reach = std::min(wd.range, 720.0f);
+        for (int k = 0; k < 28; ++k) {
+            float side = k % 2 == 0 ? 1.0f : -1.0f;
+            float ph = std::fmod(t * 1.5f + static_cast<float>(k) * 0.291f, 1.0f);
+            float x = wd.center.x + side * (40.0f + ph * reach);
+            float y = wd.center.y - 70.0f + std::fmod(static_cast<float>(k) * 37.0f, 300.0f);
+            float len = 16.0f + 30.0f * (1.0f - ph);
+            Color c{214, 200, 188, static_cast<uint8_t>(150 * a * (1.0f - ph))};
+            ctx.r.drawWorldLine({x, y}, {x - side * len, y + 2.0f}, c, std::max(1.0f, 2.0f * px * ctx.r.view().scale));
+        }
     }
 
     // Pulls: a black hole (well) or air rushing in (vortex).

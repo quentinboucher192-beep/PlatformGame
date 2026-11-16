@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -86,6 +87,11 @@ public:
     Vec2 attackMark() const { return markPos_; }
     float ringRadius() const { return ringRadius_; }
     float ringGapAngle() const { return angle_; }
+    /// The dragon (2.50): landed by its « Atterrissage » (it takes more damage), and the line
+    /// of a dive shown during its wind-up: locked once it no longer follows the target.
+    bool perched() const { return perched_; }
+    bool diveLocked() const { return diveLocked_; }
+    bool diving() const { return stage_ == Stage::Dash; }
 
     bool alive() const { return state_ != EnemyState::Dead; }
     bool dormant() const { return state_ == EnemyState::Dormant; }
@@ -251,6 +257,41 @@ private:
     bool expires_ = false;     // a double with a life (else until broken)
     int doubles_ = 0;
     bool hasMirror_ = false;
+
+    // The dragon (2.50, Pyrrhax): the new attack types, in DragonAttacks.cpp.
+    enum class Stage : uint8_t { None, Aim, Dash, Climb, Return, Descend, Landed, Hold, TakeOff };
+    void dragonBegin(GameWorld& w);               // wind-up: the dive's line, the landing mark, the impacts
+    void dragonTelegraph(GameWorld& w, float dt);  // the wind-up, step by step
+    void dragonStart(GameWorld& w);
+    void dragonActive(GameWorld& w, float dt);
+    void dragonEnd(GameWorld& w, bool cut = true);  // the attack is over (or cut short)
+    void renderDragon(RenderContext& ctx, float prog) const;
+    float dragonFit(const GameWorld& w, const AttackDef& a, bool near, bool far, bool air) const;
+    /// Right under the dragon: how much an attack is worth (only for the bosses with its attacks).
+    float belowFit(const AttackDef& a) const;
+    float diveSpeed() const;
+    void aimDive(GameWorld& w, float eta);  // a new target for the dive, then its line
+    void traceDive(GameWorld& w);           // the line from where it is, through the target and beyond
+    void startDash(GameWorld& w);
+    void chooseLanding(GameWorld& w);
+    void land(GameWorld& w);
+    void breathe(GameWorld& w);
+    void aimClouds(GameWorld& w);
+    void fireClouds(GameWorld& w);
+    void blowEmbers(GameWorld& w);
+    Vec2 hoverSpot(const GameWorld& w) const;
+    bool hasDragon_ = false;     // it has the dragon's attacks (it reads a target right under it)
+    Stage stage_ = Stage::None;  // Dive / Perch: the step of the attack
+    float stageTimer_ = 0.0f;
+    int divesLeft_ = 0;
+    bool diveLocked_ = false;    // the line holds still: the dash follows it
+    Vec2 diveDir_{0.0f, 1.0f};
+    float diveLength_ = 0.0f;
+    float diveTravel_ = 0.0f;
+    Vec2 lastCenter_;
+    Vec2 climbSpot_;
+    bool perched_ = false;       // landed: it takes more damage
+    bool dropThrough_ = false;   // diving or landing: through the one-way ledges
 };
 
 }  // namespace cosmic

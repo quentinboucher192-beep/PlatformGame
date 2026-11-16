@@ -2566,6 +2566,24 @@
    ]
   },
   {
+   "fr": "Atterrissage brûlant",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Atterrissage embrasé",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Atterrissage et souffle au sol",
+   "where": [
+    "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
    "fr": "Attraction (px/s, max 140)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -2677,6 +2695,12 @@
    "fr": "Au-delà de l'étoile morte, au bord du système, un monde de verre noir craquelé sur un feu vivant. Ses cendres tombent d'un ciel pourpre ; un dragon d'obsidienne y garde la dernière frontière, et un golem plus ancien que les planètes veille sous sa croûte.",
    "where": [
     "data/planets/confins.json"
+   ]
+  },
+  {
+   "fr": "Au-delà de la cible (px)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -4578,6 +4602,24 @@
    ]
   },
   {
+   "fr": "Boule de feu",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Boule de feu à nuage",
+   "where": [
+    "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Boules de feu",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Bourgeons",
    "where": [
     "data/enemies/echo_mycelia.json",
@@ -4639,6 +4681,18 @@
    "where": [
     "data/cosmetics/cosmetics.json",
     "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Braises",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Braises par salve",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -9724,6 +9778,12 @@
    ]
   },
   {
+   "fr": "Côtés du souffle (1 ou 2)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "CŒUR APAISÉ",
    "where": [
     "data/levels/sylvanox_03.json"
@@ -10197,6 +10257,12 @@
    "fr": "dernier niveau {0}",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Dernier piqué",
+   "where": [
+    "data/enemies/pyrrhax.json"
    ]
   },
   {
@@ -10898,6 +10964,12 @@
    ]
   },
   {
+   "fr": "Double piqué",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
    "fr": "Dragonnet de braise",
    "where": [
     "data/enemies/dragonnet.json"
@@ -11093,6 +11165,12 @@
    ]
   },
   {
+   "fr": "Durée de la rafale (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Durée de la spirale (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -11100,6 +11178,12 @@
   },
   {
    "fr": "Durée du guidage (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Durée du nuage (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
@@ -11903,6 +11987,12 @@
    "fr": "Dégâts reçus : ×{0}   —   Vies : {1} (EXTRÊME : course à la vérification)",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Dégâts reçus posé (x, 0 = 1,5)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -13304,6 +13394,12 @@
   },
   {
    "fr": "Espacement (px)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Espacement des impacts (px)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
@@ -15383,6 +15479,12 @@
    ]
   },
   {
+   "fr": "Gravité (0 = tir droit)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Gravité : les débris en orbite",
    "where": [
     "data/levels/noyau_03.json"
@@ -15727,6 +15829,12 @@
    "fr": "Hauteur des vagues",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Hauteur du nuage",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -24577,6 +24685,12 @@
    ]
   },
   {
+   "fr": "Nuage de feu {0} s",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "Nuit polaire",
    "where": [
     "data/enemies/aurorax.json",
@@ -24610,6 +24724,18 @@
     "data/enemies/echo_ignivore.json",
     "data/enemies/howling_wyrm.json",
     "data/enemies/ignivore.json"
+   ]
+  },
+  {
+   "fr": "Nuée ardente",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Nuées ardentes",
+   "where": [
+    "data/enemies/pyrrhax.json"
    ]
   },
   {
@@ -26892,6 +27018,18 @@
    ]
   },
   {
+   "fr": "Piqué traversant",
+   "where": [
+    "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Piqués enchaînés",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Pistons",
    "where": [
     "data/levels/aethra_03.json"
@@ -27860,6 +27998,12 @@
    ]
   },
   {
+   "fr": "Portée du souffle au sol (px)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Portée max",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -27936,6 +28080,12 @@
    "fr": "Positions approximatives : centre du pays, jamais plus précis. Seuls sont comptés les joueurs qui ont choisi d'apparaître sur le globe avec un profil public ; aucun nom n'est transmis.",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Posé : dégâts reçus {0}",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -28038,6 +28188,12 @@
    "fr": "Poussière d'étoiles",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Poussée (px/s, max 140)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -29498,6 +29654,12 @@
    ]
   },
   {
+   "fr": "Rafale qui repousse",
+   "where": [
+    "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
    "fr": "Rage",
    "where": [
     "game/enemies/Enemy.cpp"
@@ -29669,6 +29831,12 @@
     "data/enemies/echo_archon_catacombs.json",
     "data/enemies/echo_thornwarden.json",
     "data/enemies/thornwarden.json",
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Rayon du nuage",
+   "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
@@ -30884,6 +31052,12 @@
    ]
   },
   {
+   "fr": "Repousse {0} s",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "Reprendre",
    "where": [
     "ui/screens/PauseScene.cpp"
@@ -31409,6 +31583,12 @@
    "fr": "Rond",
    "where": [
     "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Ronde des piqués",
+   "where": [
+    "data/enemies/pyrrhax.json"
    ]
   },
   {
@@ -36792,6 +36972,12 @@
    ]
   },
   {
+   "fr": "Tourbillon d'ailes",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
    "fr": "Tourelle",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
@@ -39809,6 +39995,12 @@
    ]
   },
   {
+   "fr": "Visée du piqué suivant (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Vitesse",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
@@ -39855,6 +40047,12 @@
    ]
   },
   {
+   "fr": "Vitesse de la descente",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Vitesse de la racine (max 130)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -39864,6 +40062,18 @@
    "fr": "Vitesse de montée",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Vitesse des boules",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Vitesse des braises",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -39881,6 +40091,7 @@
   {
    "fr": "Vitesse du piqué",
    "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp",
     "game/powers/PowerStats.cpp"
    ]
   },
@@ -42546,6 +42757,12 @@
    "fr": "{0} performance(s) à envoyer",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} piqués enchaînés",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {

@@ -48,8 +48,10 @@ Enemy::Enemy(const EnemyDefinition& def, AnimationSetPtr anim, Vec2 feet, bool f
     attackCooldowns_.assign(def_.attacks.size(), 0.0f);
     for (size_t i = 0; i < attackCooldowns_.size(); ++i) attackCooldowns_[i] = 0.4f + 0.25f * static_cast<float>(i);
     hoverPhase_ = static_cast<float>(uid % 17) * 0.37f;
-    for (const auto& a : def_.attacks)
+    for (const auto& a : def_.attacks) {
         if (a.type == AttackType::Mirror) hasMirror_ = true;
+        if (a.isDragonType()) hasDragon_ = true;
+    }
     teleportTimer_ = def_.teleportCooldown;
     state_ = def_.movement == MovementType::Patrol || def_.movement == MovementType::Fly || def_.movement == MovementType::Hop
                  ? EnemyState::Patrol
@@ -542,6 +544,7 @@ void Enemy::checkPhase(GameWorld& w) {
     const BossPhase& ph = def_.phases[phase_];
     if (!ph.enterSound.empty()) w.playSound(ph.enterSound, box.center(), 1.0f);
     if (attack_ && attack_->isGuardianType()) guardianEnd(w);  // a channel stops with the roar
+    if (attack_ && attack_->isDragonType()) dragonEnd(w);      // a dive or a landing too (2.50)
     state_ = EnemyState::PhaseTransition;
     stateTimer_ = 1.6f;
     invuln_ = 1.6f;
@@ -580,6 +583,7 @@ void Enemy::checkPhase(GameWorld& w) {
 void Enemy::applyPhysics(GameWorld& w, float dt) {
     MoveOptions opt;
     opt.isEnemy = true;
+    opt.dropThrough = dropThrough_;  // 2.50: the dragon dives and lands through the one-way ledges
     if (def_.flying && state_ != EnemyState::Dead) {
         w.physics().move(box, vel * dt, opt);
         grounded_ = false;
@@ -662,6 +666,8 @@ bool Enemy::takeDamage(GameWorld& w, const DamageInfo& dmg) {
         invuln_ = 0.15f;
         return false;
     }
+    // 2.50: the dragon landed by its « Atterrissage » is exposed (a window to punish it).
+    if (perched_ && attack_) mult *= attack_->vulnerability > 0.0f ? attack_->vulnerability : 1.5f;
     float amount = dmg.amount * mult;
     hp_ -= amount;
     hurtFlash_ = 0.14f;
@@ -696,6 +702,8 @@ void Enemy::kill(GameWorld& w) {
     state_ = EnemyState::Dead;
     deathTimer_ = 0.9f;
     attack_ = nullptr;
+    perched_ = dropThrough_ = false;
+    stage_ = Stage::None;
     playClip(anim_.has("death") ? "death" : "hurt", true);
     w.playSound(def_.deathSound, box.center(), 1.0f);
     w.particles().emit(def_.isBoss ? "boss_death" : "enemy_death", box.center(), def_.isBoss ? 2.5f : 1.0f);
@@ -762,6 +770,7 @@ void Enemy::beginLastStand(GameWorld& w) {
     hp_ = 0.0f;
     finalIndex_ = 0;
     if (attack_ && attack_->isGuardianType()) guardianEnd(w);
+    if (attack_ && attack_->isDragonType()) dragonEnd(w);
     attack_ = nullptr;
     staged_.clear();
     comboLeft_ = 0;
