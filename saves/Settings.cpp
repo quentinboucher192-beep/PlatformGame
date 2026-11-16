@@ -39,6 +39,7 @@ Json Settings::toJson() const {
                      {"progressBar", gameplay.progressBar},
                      {"hud", gameplay.hud.toJson()},
                      {"focusMode", gameplay.focusMode},
+                     {"adminInvincible", gameplay.adminInvincible},
                      {"showMessages", gameplay.showMessages},
                      {"focusMessages", gameplay.focusMessages},
                      {"debugMode", gameplay.debugMode},
@@ -98,6 +99,7 @@ Settings Settings::fromJson(const Json& j) {
         s.gameplay.progressBar = std::clamp(jget<int>(g, "progressBar", 1), 0, 3);
         if (g.contains("hud")) s.gameplay.hud = HudLayout::fromJson(g["hud"]);
         s.gameplay.focusMode = jget<bool>(g, "focusMode", false);
+        s.gameplay.adminInvincible = jget<bool>(g, "adminInvincible", false);
         s.gameplay.showMessages = jget<bool>(g, "showMessages", true);
         s.gameplay.focusMessages = jget<bool>(g, "focusMessages", false);
         if (s.gameplay.progressBar == 3 && !s.gameplay.hud[HudElement::Progress].custom) s.gameplay.progressBar = 1;

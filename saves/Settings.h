@@ -33,6 +33,9 @@ struct GameplaySettings {
     /// « Mode concentré »: only the elements chosen for it (HUD editor) are shown; toggled in
     /// game (T / Partage, pause menu). Display only.
     bool focusMode = false;
+    /// 2.51: « Invincible » in training runs (administrators only: boss training, section
+    /// training, practice runs; never a run that counts nor a challenge).
+    bool adminInvincible = false;
     /// The level's messages (hints, signs, power and boss titles), in each mode.
     bool showMessages = true;
     bool focusMessages = false;

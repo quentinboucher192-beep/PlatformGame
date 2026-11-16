@@ -1895,6 +1895,21 @@
    ]
   },
   {
+   "id": "pouvoirs_boomerang_charge",
+   "category": "pouvoirs",
+   "name": "Maîtrise : Boomerang chargé",
+   "description": "Utiliser Boomerang chargé 50 fois.",
+   "stars": 2,
+   "condition": {
+    "type": "power_uses",
+    "power": "boomerang_charge",
+    "count": 50
+   },
+   "requires": [
+    "pouvoirs_first"
+   ]
+  },
+  {
    "id": "pouvoirs_decoy",
    "category": "pouvoirs",
    "name": "Maîtrise : Leurre holographique",
@@ -1928,12 +1943,12 @@
    "id": "pouvoirs_all",
    "category": "pouvoirs",
    "name": "Arsenal complet",
-   "description": "Obtenir chacun des 18 pouvoirs.",
+   "description": "Obtenir chacun des 19 pouvoirs.",
    "stars": 3,
    "condition": {
     "type": "set",
     "key": "powers_owned",
-    "count": 18
+    "count": 19
    },
    "requires": [
     "pouvoirs_first"
@@ -2037,6 +2052,21 @@
    },
    "requires": [
     "pouvoirs_frost_nova"
+   ]
+  },
+  {
+   "id": "pouvoirs_boomerang_charge_300",
+   "category": "pouvoirs",
+   "name": "Virtuose : Boomerang chargé",
+   "description": "Utiliser Boomerang chargé 300 fois.",
+   "stars": 3,
+   "condition": {
+    "type": "power_uses",
+    "power": "boomerang_charge",
+    "count": 300
+   },
+   "requires": [
+    "pouvoirs_boomerang_charge"
    ]
   },
   {

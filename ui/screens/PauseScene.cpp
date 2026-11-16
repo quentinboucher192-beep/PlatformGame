@@ -105,7 +105,9 @@ void PauseScene::render(float /*alpha*/) {
     const bool ghosts = game_.hasGhosts();
     // « Touches de ce niveau » (2.31): when the level has powers used with a key of their own.
     const bool keys = !game_.powerKeys().powers.empty();
-    float w = ui.s(560), h = ui.s((ghosts ? 860 : 780) + (keys ? 80 : 0));
+    // 2.51: « Invincible » for administrators in a training run.
+    const bool invincible = game_.invincibleAllowed();
+    float w = ui.s(560), h = ui.s((ghosts ? 860 : 780) + (keys ? 80 : 0) + (invincible ? 80 : 0));
     // The map of what was explored sits on the right of the menu when the window has room.
     GameWorld* mapWorld = game_.world();
     const float gap = ui.s(24);
@@ -153,6 +155,17 @@ void PauseScene::render(float /*alpha*/) {
         bool openKeys = ui.button("levelkeys", {bx, y, bw, bh}, "Touches de ce niveau");
         ui.newBadge("levelkeys", {bx, y, bw, bh}, "pause.level_keys");  // « NOUVEAU » (2.31)
         if (openKeys) g_.app.pushScene(makeLevelPowerKeys(g_, game_.level(), game_.powerKeyExtra(), game_.carriedPowers()));
+        y += bh + ui.s(16);
+    }
+    if (invincible) {
+        // Administrators: no damage in this training run, a fall goes back to solid ground.
+        const bool on = game_.invincible();
+        UIContext::ButtonStyle st;
+        st.selected = on;
+        const std::string label = std::string("Invincible (admin) : ") + (on ? "activé" : "désactivé");
+        st.fontSize = ui.fitFont(label, FontFace::Bold, 26, bw - ui.s(24));
+        if (ui.button("invincible", {bx, y, bw, bh}, label, st)) game_.setInvincible(!on);
+        ui.newBadge("invincible", {bx, y, bw, bh}, "pause.invincible");
         y += bh + ui.s(16);
     }
     {

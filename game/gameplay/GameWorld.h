@@ -136,6 +136,13 @@ public:
         if (on) training_ = true;
     }
     bool practiceRespawn() const { return practiceRespawn_; }
+    /// 2.51: « Invincible » (administrators, training runs only): Nova takes no damage, and a fall
+    /// into the void brings her back on her last solid ground. Never in a challenge run nor in a
+    /// run that counts: a training run is never recorded nor ranked.
+    void setInvincible(bool on) { invincible_ = on; }
+    bool invincible() const { return invincible_ && training_ && !challenge_.has_value(); }
+    /// Puts an invincible Nova back on her last solid ground (instead of a fall); false when not invincible.
+    bool rescueInvincible();
     bool training() const { return training_ || challenge_.has_value(); }
     /// A daily challenge (2.32, simulation 11): its rules apply now (call it right after
     /// load(), before the first step: hearts, slots, imposed powers) and for the rest of the
@@ -331,6 +338,7 @@ private:
     Random fxRng_{0xF1F1F1};
     uint64_t seed_ = 0xC0FFEE;
     bool training_ = false;
+    bool invincible_ = false;
     std::optional<ChallengeRules> challenge_;
     /// Challenge without checkpoints: a death goes back to the start with its start state,
     /// the power tablets as the level placed them (none lost, none exchanged).

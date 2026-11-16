@@ -13078,6 +13078,12 @@
    ]
   },
   {
+   "fr": "Entraînement avec réapparitions — hors classements, aucun record · chutes : {0} · INVINCIBLE",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
    "fr": "Entraînement contre les boss (Statistiques › un boss › « Entraînement ») : choisissez vos cœurs, votre nombre d'emplacements de pouvoirs et les pouvoirs équipés, puis toutes les phases ou une seule ; le combat a lieu dans le vrai niveau du boss, juste avant son arène.",
    "where": [
     "data/news/changelog.json"
@@ -13120,6 +13126,12 @@
    ]
   },
   {
+   "fr": "ENTRAÎNEMENT · INVINCIBLE · aucun record · {0} / Vue : recommencer",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
    "fr": "ENTRAÎNEMENT — HORS CLASSEMENT",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -13129,6 +13141,12 @@
    "fr": "Entraînement — ne compte pas pour les succès ni les statistiques",
    "where": [
     "ui/screens/BossTrainingScene.cpp",
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Entraînement — ne compte pas pour les succès ni les statistiques · INVINCIBLE",
+   "where": [
     "ui/screens/GameScene.cpp"
    ]
   },
@@ -17001,6 +17019,30 @@
    "fr": "Inverser les joysticks",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Invincible (admin) : activé",
+   "where": [
+    "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
+   "fr": "Invincible (admin) : aucun dégât, une chute ramène sur le sol ferme",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Invincible (admin) : désactivé",
+   "where": [
+    "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
+   "fr": "Invincible désactivé",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -21840,6 +21882,12 @@
    ]
   },
   {
+   "fr": "Maîtrise : Boomerang chargé",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Maîtrise : Bouclier",
    "where": [
     "data/achievements/achievements.json"
@@ -24996,7 +25044,7 @@
    ]
   },
   {
-   "fr": "Obtenir chacun des 18 pouvoirs.",
+   "fr": "Obtenir chacun des 19 pouvoirs.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -38925,6 +38973,18 @@
    ]
   },
   {
+   "fr": "Utiliser Boomerang chargé 300 fois.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Utiliser Boomerang chargé 50 fois.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Utiliser Bouclier 50 fois.",
    "where": [
     "data/achievements/achievements.json"
@@ -39974,6 +40034,12 @@
   },
   {
    "fr": "Virtuose : Balise de rappel",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Virtuose : Boomerang chargé",
    "where": [
     "data/achievements/achievements.json"
    ]

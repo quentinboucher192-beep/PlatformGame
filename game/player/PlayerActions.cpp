@@ -216,6 +216,7 @@ void Player::handleInteract(GameWorld& w, const PlayerInput& in) {
 
 bool Player::hurt(GameWorld& w, const DamageInfo& dmg) {
     if (!alive() || state_ == PlayerState::Respawn || state_ == PlayerState::Victory) return false;
+    if (w.invincible()) return false;  // 2.51: administrators' training runs
     if (invulnerable() && dmg.type != DamageType::Hazard) return false;
     if (shield_ && !dmg.ignoreShield) {
         w.playSound("sounds/shield_block.wav", center(), 0.9f);
@@ -258,6 +259,7 @@ bool Player::hurt(GameWorld& w, const DamageInfo& dmg) {
 
 void Player::kill(GameWorld& w) {
     if (state_ == PlayerState::Dead) return;
+    if (w.rescueInvincible()) return;  // 2.51: an invincible Nova goes back to solid ground
     if (state_ == PlayerState::Slide || state_ == PlayerState::Climb) setHitbox(cfg_.size);
     state_ = PlayerState::Dead;
     deathTimer_ = 1.1f;

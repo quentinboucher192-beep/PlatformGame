@@ -82,6 +82,10 @@ public:
     const PowerKeyMap& powerKeys() const { return powerKeys_; }
     /// Powers given besides the level's own (boss training): « Touches de ce niveau » lists them too.
     const std::vector<std::string>& powerKeyExtra() const { return powerKeyExtra_; }
+    /// 2.51: « Invincible » (administrators, training runs only): can it be switched here, is it on.
+    bool invincibleAllowed() const;
+    bool invincible() const { return world_ && world_->invincible(); }
+    void setInvincible(bool on);
     /// 2.50: the powers in hand, by slot (index = slot), for « Touches de ce niveau ».
     std::vector<std::string> carriedPowers() const;
     /// Resolves the keys again (the player changed theirs, or the settings) and binds them.

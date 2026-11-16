@@ -82,6 +82,11 @@ void GameScene::onEnter() {
     if (opt_.challenge) startChallenge();
     // 2.48: a hardcore level played as a practice run (respawn where Nova fell, not ranked).
     if (opt_.practiceRespawn && level_.extreme && !opt_.challenge && !opt_.bossTraining) world_->setPracticeRespawn(true);
+    // 2.51: « Invincible » (administrators): training runs only, never a run that counts.
+    if (invincibleAllowed() && g_.settings.gameplay.adminInvincible) {
+        world_->setTraining(true);
+        world_->setInvincible(true);
+    }
     // Keys of the powers (2.31): the level's key powers, and those a training or a challenge gives.
     if (opt_.bossTraining) powerKeyExtra_ = opt_.bossTraining->powers;
     if (opt_.challenge) powerKeyExtra_ = opt_.challenge->challenge.rules.powers;
@@ -479,6 +484,20 @@ void GameScene::refreshPowerKeys() {
     if (!world_) return;
     powerKeys_ = levelPowerKeys(level_, g_.content, g_.settings.input, &g_.powerKeyOverrides, powerKeyExtra_);
     syncPowerKeys();
+}
+
+bool GameScene::invincibleAllowed() const {
+    if (!world_ || !g_.online.isAdmin() || opt_.challenge || opt_.editorTest) return false;
+    return opt_.bossTraining || opt_.training || world_->practiceRespawn();
+}
+
+void GameScene::setInvincible(bool on) {
+    if (!invincibleAllowed()) return;
+    g_.settings.gameplay.adminInvincible = on;
+    g_.saveSettings();
+    world_->setTraining(true);
+    world_->setInvincible(on);
+    world_->hint(on ? "Invincible (admin) : aucun dégât, une chute ramène sur le sol ferme" : "Invincible désactivé", 2.0f);
 }
 
 std::vector<std::string> GameScene::carriedPowers() const {
@@ -1143,9 +1162,10 @@ void GameScene::drawTrainingBanner() {
     if (opt_.bossTraining || practice) {
         // Boss training, or a hardcore level played with respawns (2.48): what this run is,
         // always in view (bottom left), in a dark pill.
-        const std::string tag = practice ? "Entraînement avec réapparitions — hors classements, aucun record · chutes : " +
-                                               std::to_string(world_->stats().deaths)
-                                         : std::string("Entraînement — ne compte pas pour les succès ni les statistiques");
+        const std::string tag = (practice ? "Entraînement avec réapparitions — hors classements, aucun record · chutes : " +
+                                                std::to_string(world_->stats().deaths)
+                                          : std::string("Entraînement — ne compte pas pour les succès ni les statistiques")) +
+                                (world_->invincible() ? std::string(" · INVINCIBLE") : std::string());
         const std::string keys = keyName(SDL_SCANCODE_R) + " / Vue : recommencer";  // R as the keyboard layout names it
         float fs = std::max(15.0f, 11.5f / ui.s(1.0f));
         const float room = W * 0.62f;
@@ -1169,7 +1189,8 @@ void GameScene::drawTrainingBanner() {
     // Always: what this run is (no record), at the bottom left.
     const float H = ui.screenH();
     const float fs = std::max(15.0f, 11.5f / ui.s(1.0f));
-    std::string tag = "ENTRAÎNEMENT · aucun record · " + keyName(SDL_SCANCODE_R) + " / Vue : recommencer";
+    std::string tag = std::string("ENTRAÎNEMENT · ") + (world_ && world_->invincible() ? "INVINCIBLE · " : "") + "aucun record · " +
+                      keyName(SDL_SCANCODE_R) + " / Vue : recommencer";
     std::string shownTag = ui.elide(tag, FontFace::Bold, fs, W * 0.5f);
     Vec2 ts = ui.label(shownTag, {ui.s(24), H - ui.s(28)}, fs, ui.theme().warm, Align::Left, FontFace::Bold, VAlign::Middle);
     const Rect tagRect{ui.s(24), H - ui.s(28) - ts.y * 0.5f, ts.x, ts.y};

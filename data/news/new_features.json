@@ -1509,6 +1509,24 @@
    "parents": [
     "powers.guide"
    ]
+  },
+  {
+   "id": "ach.pouvoirs_boomerang_charge",
+   "version": "2.51.0",
+   "parents": [
+    "achievements.cat.pouvoirs"
+   ]
+  },
+  {
+   "id": "ach.pouvoirs_boomerang_charge_300",
+   "version": "2.51.0",
+   "parents": [
+    "achievements.cat.pouvoirs"
+   ]
+  },
+  {
+   "id": "pause.invincible",
+   "version": "2.51.0"
   }
  ]
 }

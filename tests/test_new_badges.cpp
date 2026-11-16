@@ -211,7 +211,7 @@ TEST_CASE("new badges: the shipped catalogue leads every novelty to a menu") {
             ++rewards;
         }
     }
-    CHECK(achievements == 72 + 3 + 12);  // 2.29, Singularis's three of 2.34, Les Confins' twelve (2.48-2.49)
+    CHECK(achievements == 72 + 3 + 12 + 2);  // 2.29, Singularis's three of 2.34, Les Confins' twelve (2.48-2.49), the Boomerang chargé's two (2.51)
     CHECK(rewards == 22 + 1 + 5 + 10);   // 2.29, « Briseur d'étoiles » of 2.34, the five of the challenges of 2.35, Les Confins' ten
     // The whole « Collection » category of achievements came with 2.29.
     for (const auto& a : ach.achievements())

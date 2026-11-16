@@ -272,8 +272,8 @@ void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
     updatePlayerOverlaps(dt);
     player_.fixedUpdate(*this, effective, dt);
     // 2.48: the last solid ground under Nova (practice runs of hardcore levels come back there).
-    if (practiceRespawn_ && player_.grounded() && player_.state() != PlayerState::Dead && player_.state() != PlayerState::Respawn &&
-        player_.vel.y >= 0.0f) {
+    if ((practiceRespawn_ || invincible()) && player_.grounded() && player_.state() != PlayerState::Dead &&
+        player_.state() != PlayerState::Respawn && player_.vel.y >= 0.0f) {
         safeFeet_ = player_.feet();
         hasSafeFeet_ = true;
     }
@@ -890,6 +890,18 @@ void GameWorld::practiceRespawnNow() {
     camera_.reset(at - Vec2{0, 20});
     playSound("sounds/respawn.wav", 0.8f);
     hint("Entraînement : réapparition sur place (hors classements)", 2.5f);
+}
+
+bool GameWorld::rescueInvincible() {
+    if (!invincible()) return false;
+    const Vec2 at = hasSafeFeet_ ? safeFeet_ : respawn_;
+    player_.box.x = at.x - player_.box.w * 0.5f;
+    player_.box.y = at.y - player_.box.h;
+    player_.prevBox = player_.box;
+    player_.vel = {0.0f, 0.0f};
+    player_.setInvulnerable(1.0f);
+    particles_.emit("shield_up", player_.center(), 0.8f);
+    return true;
 }
 
 void GameWorld::respawnPlayer() {
