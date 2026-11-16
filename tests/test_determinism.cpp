@@ -196,7 +196,7 @@ TEST_CASE("determinism: the giga boss's fight has its golden digest on every pla
     jumpBossToPhase(*s.w, *boss, 4);
     auto checks = s.run(scriptedInputs(11, 30 * 120));
     std::string got = checks.empty() ? "" : hex(checks.back());
-    const char* golden = "5c74a5aa723db584";
+    const char* golden = "31d01987f0c4d989";  // 2.34.1: the level is the fight alone (the arena moved)
     if (got != golden) std::printf("  noyau_03 (Singularis, phase 5) : %s (attendu %s)\n", got.c_str(), golden);
     CHECK(got == golden);
 }

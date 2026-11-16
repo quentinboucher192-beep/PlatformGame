@@ -211,8 +211,8 @@ TEST_CASE("new badges: the shipped catalogue leads every novelty to a menu") {
             ++rewards;
         }
     }
-    CHECK(achievements == 72);
-    CHECK(rewards == 22);
+    CHECK(achievements == 72 + 3);  // 2.29, and Singularis's three of 2.34
+    CHECK(rewards == 22 + 1);       // 2.29, and the title « Briseur d'étoiles » of 2.34
     // The whole « Collection » category of achievements came with 2.29.
     for (const auto& a : ach.achievements())
         if (a.category == "collection") CHECK(leaves.count("ach." + a.id));

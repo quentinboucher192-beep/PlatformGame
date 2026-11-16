@@ -4,21 +4,7 @@
     {
       "label": "",
       "movement": [],
-      "needs": [
-        [
-          "dash"
-        ],
-        [
-          "glide"
-        ],
-        [
-          "grapple"
-        ],
-        [
-          "wave",
-          "charge_shot"
-        ]
-      ],
+      "needs": [],
       "pos": [
         64.0,
         640.0

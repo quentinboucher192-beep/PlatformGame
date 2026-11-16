@@ -150,6 +150,13 @@
     {"id": "challenges.tab.month", "version": "2.33.0", "parents": ["menu.challenges"]},
     {"id": "challenges.tab.calendar", "version": "2.33.0", "parents": ["menu.challenges"]},
     {"id": "challenges.board.period", "version": "2.33.0", "parents": ["challenges.tab.calendar"]},
-    {"id": "challenges.board.progress", "version": "2.34.0", "parents": ["menu.challenges"]}
+    {"id": "challenges.board.progress", "version": "2.34.0", "parents": ["menu.challenges"]},
+    {"id": "planet.noyau", "parents": ["menu.campaign"]},
+    {"id": "level.noyau_03", "version": "2.34.0", "parents": ["planet.noyau"]},
+    {"id": "boss.singularis", "version": "2.34.0", "parents": ["menu.stats"]},
+    {"id": "ach.gardiens_singularis", "version": "2.34.0", "parents": ["achievements.cat.gardiens"]},
+    {"id": "ach.maitrise_singularis_nohit", "version": "2.34.0", "parents": ["achievements.cat.maitrise"]},
+    {"id": "ach.maitrise_phases_singularis", "version": "2.34.0", "parents": ["achievements.cat.maitrise"]},
+    {"id": "cos.title_briseur_etoiles", "version": "2.34.0", "parents": ["collection.cat.title", "collection.tab.route"]}
   ]
 }

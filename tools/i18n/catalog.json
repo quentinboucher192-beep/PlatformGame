@@ -2018,7 +2018,7 @@
    ]
   },
   {
-   "fr": "Au fond de l'étoile, un cœur mort s'est éveillé. Deux minutes d'épreuves sans pardon, puis Singularis et ses huit phases. Une seule vie, aucun checkpoint.",
+   "fr": "Au fond de l'étoile, un cœur mort s'est éveillé : Singularis et ses huit phases, dans une arène géante. Une seule vie, aucun checkpoint.",
    "where": [
     "data/levels/noyau_03.json"
    ]
@@ -12127,7 +12127,6 @@
    "where": [
     "data/levels/aethra_01.json",
     "data/levels/noyau_02.json",
-    "data/levels/noyau_03.json",
     "data/levels/sylvanox_04.json"
    ]
   },
@@ -14327,12 +14326,6 @@
    ]
   },
   {
-   "fr": "La croûte en fusion.",
-   "where": [
-    "data/levels/noyau_03.json"
-   ]
-  },
-  {
    "fr": "La Dévoreuse d'étoiles",
    "where": [
     "data/music/tracks.json"
@@ -14958,7 +14951,7 @@
    ]
   },
   {
-   "fr": "Le Cœur d'une Étoile Mourante : une seule vie, aucun checkpoint. Singularis attend au bout.",
+   "fr": "Le Cœur d'une Étoile Mourante : Singularis seul, une seule vie, aucun checkpoint. Choisissez vos quatre pouvoirs.",
    "where": [
     "data/levels/noyau_03.json"
    ]
@@ -15601,12 +15594,6 @@
    ]
   },
   {
-   "fr": "Le seuil du cœur. Choisissez les pouvoirs du combat : celui que vous laissez reste ici.",
-   "where": [
-    "data/levels/noyau_03.json"
-   ]
-  },
-  {
    "fr": "Le signal bat comme un cœur... Il vient du fond de cette machine.",
    "where": [
     "data/levels/sylvanox_03.json"
@@ -15999,7 +15986,6 @@
    "where": [
     "data/levels/aethra_04.json",
     "data/levels/noyau_02.json",
-    "data/levels/noyau_03.json",
     "data/levels/sylvanox_04.json"
    ]
   },
@@ -16242,12 +16228,6 @@
    "fr": "Les trois mondes, une dernière fois.",
    "where": [
     "data/levels/noyau_02.json"
-   ]
-  },
-  {
-   "fr": "Les veines de l'étoile.",
-   "where": [
-    "data/levels/noyau_03.json"
    ]
   },
   {
@@ -18094,7 +18074,6 @@
    "where": [
     "data/levels/aethra_01.json",
     "data/levels/noyau_02.json",
-    "data/levels/noyau_03.json",
     "data/levels/sylvanox_04.json"
    ]
   },
@@ -20999,6 +20978,12 @@
    ]
   },
   {
+   "fr": "Pastilles NOUVEAU sur ce qu'apporte Singularis : le niveau (et sa planète), le boss dans les statistiques des boss, ses trois succès et le titre « Briseur d'étoiles ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Pastilles « NOUVEAU » sur tout le chemin : chaque bouton qui mène à une nouveauté la porte (menu principal, onglets, catégories, cartes), même très en profondeur. Celle d'un bouton parent ne part que quand tout ce qui est nouveau en dessous a été vu.",
    "where": [
     "data/news/changelog.json"
@@ -21512,7 +21497,6 @@
    "where": [
     "data/levels/aethra_03.json",
     "data/levels/noyau_02.json",
-    "data/levels/noyau_03.json",
     "data/levels/pyralis_04.json"
    ]
   },
@@ -29353,7 +29337,6 @@
    "where": [
     "data/levels/aethra_03.json",
     "data/levels/noyau_02.json",
-    "data/levels/noyau_03.json",
     "data/levels/pyralis_04.json"
    ]
   },
@@ -34747,6 +34730,12 @@
    "fr": "« Afficher les pseudonymes » désactivé : les autres joueurs apparaissent sous la forme « Joueur n°X » (diffusion en direct). « Économie » limite le nombre de marqueurs et ne télécharge pas les avatars personnalisés.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "« Le Cœur d'une Étoile Mourante » est maintenant le combat seul, comme L'Arène des Échos : le choix des quatre pouvoirs, puis directement Singularis dans son arène géante (une seule vie). Nouvelle version du niveau : son classement repart de zéro.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {

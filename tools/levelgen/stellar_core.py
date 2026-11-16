@@ -411,39 +411,36 @@ def final_level():
 
 # ---------------------------------------------------------------- the dying star (2.33)
 def dying_star():
+    # 2.34.1: only the fight, as L'Arène des Échos with this one guardian: the choice of the
+    # powers, then the giant arena (no platforming before it).
     b = Star("noyau_03", "Le Cœur d'une Étoile Mourante", "pyralis", seed=7301)
     L, d = b.L, b.L.data
-    d["description"] = ("Au fond de l'étoile, un cœur mort s'est éveillé. Deux minutes d'épreuves sans pardon, "
-                        "puis Singularis et ses huit phases. Une seule vie, aucun checkpoint.")
+    d["description"] = ("Au fond de l'étoile, un cœur mort s'est éveillé : Singularis et ses huit phases, "
+                        "dans une arène géante. Une seule vie, aucun checkpoint.")
     d["difficulty"] = 5
     # EXTRÊME: one life (the challenge mode below allows no death) and a race online.
     d["extreme"] = True
     b.f = 40
-    b.opening("Le Cœur d'une Étoile Mourante : une seule vie, aucun checkpoint. Singularis attend au bout.")
-    # The crust of the dying star: its hardest rooms, one after the other (dash, grapple, glide
-    # and the charged shot are carried from the start: levelkit.START_POWERS).
-    b.zone_sign("La croûte en fusion.")
-    b.rooms_of(["metronome_fast", "dash_walls", "vents", "anchors"])
-    b.zone_sign("Les veines de l'étoile.")
-    b.rooms_of(["pistons", "frail_bridges_fast", "foundry", "lasers"])
-    # Before the heart: the powers of the fight (four carried; what is left stays here).
     b.use("aethra")
     b.th.update(floor="obsidian", roof="obsidian", accent="obsidian")  # the dead star's crust
-    b.zone_sign("Le seuil du cœur. Choisissez les pouvoirs du combat : celui que vous laissez reste ici.")
+    b.opening("Le Cœur d'une Étoile Mourante : Singularis seul, une seule vie, aucun checkpoint. "
+              "Choisissez vos quatre pouvoirs.")
+    # The powers of the fight (four carried; what is left stays here; dash, grapple, glide and
+    # the charged shot are carried from the start: levelkit.START_POWERS).
     b.tablets(["time_slow", "plasma_bomb", "impulse", "shield", "triple_jump", "wave"])
-    platforming = b.x
     b.zone_sign("Singularis, le Cœur Effondré.")
     b.rooms.append({"type": "boss", "x": b.x, "floor": b.f, "boss": "singularis"})
     b.giant_arena("singularis", music="music/singularis_boss.ogg")
     width = b.finish("L'étoile morte s'est éteinte. Le système respire.")
-    # Reference: the rooms at a good pace, then about six minutes of fight.
-    ref = int(round(platforming * T / 125.0 + 360))
+    # Reference: about six minutes of fight.
+    ref = 360
     d["timer"] = {"mode": "challenge", "limit": 3600, "onExpire": "gameover", "referenceTime": ref, "challengeMaxDeaths": 0}
     d["medals"] = {"bronze": {}, "silver": {"maxTime": int(ref * 1.6)}, "gold": {"maxTime": int(ref * 1.2)},
                    "platinum": {"maxTime": ref, "maxDeaths": 0}}
     b.cinematics("LE CŒUR D'UNE ÉTOILE MOURANTE", "Noyau stellaire", "Une seule vie. Une étoile morte. Huit phases.",
                  "L'ÉTOILE S'ÉTEINT")
-    d["metadata"] = {"generator": "tools/levelgen/stellar_core.py", "revision": 1, "rooms": b.rooms, "noHealing": True}
+    # 2.34.1: the fight alone (a new version of the level: its rankings start again).
+    d["metadata"] = {"generator": "tools/levelgen/stellar_core.py", "revision": 9, "rooms": b.rooms, "noHealing": True}
     L.save(os.path.join(ROOT, "data/levels/noyau_03.json"))
     return width
 

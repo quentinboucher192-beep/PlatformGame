@@ -279,7 +279,7 @@
    "planet": "noyau",
    "order": 3,
    "last": false,
-   "revision": 8,
+   "revision": 9,
    "slots": 4,
    "start_powers": [
     "dash",
@@ -299,8 +299,8 @@
     "triple_jump",
     "wave"
    ],
-   "silver_ms": 495000,
-   "gold_ms": 413000,
+   "silver_ms": 432000,
+   "gold_ms": 360000,
    "auto": false
   },
   "pyralis_01": {

@@ -200,6 +200,7 @@ private:
             st.selected = static_cast<int>(i) == selected_;
             if (ui.button(id, row, "", st)) selected_ = static_cast<int>(i);
             if (ui.focused(id)) selected_ = static_cast<int>(i);
+            ui.newBadge(id, row, "boss." + d.id, true, true);  // « NOUVEAU » (2.34.1): a new boss
             if (row.bottom() < area.y || row.y > area.bottom()) continue;
             const BossRecord* rec = g_.bossStats.find(d.id);
             bool met = rec && rec->fights > 0;
@@ -332,15 +333,20 @@ private:
         float hf = fit(ui, hint, FontFace::Body, 15, hroom, 0.7f);
         ui.label(ui.elide(hint, FontFace::Body, hf, hroom), {area.right(), area.y + ui.s(14)}, hf, ui.theme().textDim, Align::Right, FontFace::Body,
                  VAlign::Middle);
-        float y = area.y + ui.s(40);
+        Rect view{area.x, area.y + ui.s(40), area.w, area.bottom() - area.y - ui.s(40)};
         size_t phases = std::max<size_t>(1, d.phases.size());
         const float reserve = met ? 0.0f : ui.s(80);  // the note below
-        float rowH = std::clamp((area.bottom() - y - reserve) / static_cast<float>(phases), ui.s(46), ui.s(74));
+        float rowH = std::clamp((view.h - reserve) / static_cast<float>(phases), ui.s(46), ui.s(74));
+        // Many phases (Singularis: 8) in a short panel: they scroll, the note with them.
+        const float content = rowH * static_cast<float>(phases) + reserve;
+        ui.beginScroll("phases", view, content);
+        float y = view.y - ui.scrollOffset();
+        const float rw = view.w - (content > view.h ? ui.s(14) : 0.0f);
         for (size_t i = 0; i < phases; ++i) {
             std::string name = i < d.phases.size() && !d.phases[i].name.empty() ? d.phases[i].name : "Phase " + std::to_string(i + 1);
             int clears = i < r.phaseClears.size() ? r.phaseClears[i] : 0;
             int perfect = i < r.phaseNoHit.size() ? r.phaseNoHit[i] : 0;
-            Rect row{area.x, y, area.w, rowH - ui.s(8)};
+            Rect row{area.x, y, rw, rowH - ui.s(8)};
             ui.r().fillRoundedRect(row, ui.s(8), Color{12, 18, 38, 220});
             float ly = row.y + row.h * 0.36f;
             std::string counts = std::to_string(clears) + "  ·  " + std::to_string(perfect) + " sans dégât";
@@ -362,8 +368,9 @@ private:
             y += rowH;
         }
         if (!met)
-            ui.labelWrapped("Pas encore affronté : ses statistiques commenceront au premier combat.", {area.x, y + ui.s(6)}, area.w, fz(ui, 16),
+            ui.labelWrapped("Pas encore affronté : ses statistiques commenceront au premier combat.", {area.x, y + ui.s(6)}, rw, fz(ui, 16),
                             ui.theme().textDim);
+        ui.endScroll();
     }
 
     /// « Entraînement »: for a boss already met (as the gallery, nothing is given away before);

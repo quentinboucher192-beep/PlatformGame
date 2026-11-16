@@ -244,24 +244,24 @@
     "noyau_03": {
       "components": {
         "boss": 30.09,
-        "checkpoints": 5.63,
-        "enemies": 2.22,
-        "hazards": 5.5,
-        "healing": -0.27,
-        "jumps": 2.82,
-        "length": 0.81,
+        "checkpoints": 1.29,
+        "enemies": 0.0,
+        "hazards": 9.92,
+        "healing": -0.95,
+        "jumps": 0.0,
+        "length": 0.23,
         "timer": 0.0
       },
       "facts": {
-        "deadly_jumps": 7,
-        "enemies": 20,
-        "hazards": 41,
-        "heal_per_100_tiles": 2.22,
-        "longest_checkpoint_gap": 541.08,
-        "precise_jumps": 7
+        "deadly_jumps": 0,
+        "enemies": 0,
+        "hazards": 18,
+        "heal_per_100_tiles": 7.95,
+        "longest_checkpoint_gap": 151.0,
+        "precise_jumps": 0
       },
-      "raw": 46.81,
-      "route_tiles": 541.08,
+      "raw": 40.57,
+      "route_tiles": 151.0,
       "score": 5.0,
       "version": 2
     },

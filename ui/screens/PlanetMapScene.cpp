@@ -120,8 +120,11 @@ public:
                 g_.uiSound("ui_move");
             }
             // Below the selection ring (radius 0.62 size), never across it.
-            ui.label(unlocked || !p->teaser ? p->name : "Signal inconnu", {sp.x, sp.y + size * 0.66f + ui.s(4)}, 22,
-                     unlocked ? ui.theme().text : ui.theme().textDim, Align::Center, FontFace::Bold);
+            Vec2 ns = ui.label(unlocked || !p->teaser ? p->name : "Signal inconnu", {sp.x, sp.y + size * 0.66f + ui.s(4)}, 22,
+                               unlocked ? ui.theme().text : ui.theme().textDim, Align::Center, FontFace::Bold);
+            // « NOUVEAU » (2.34.1) after the name of a planet with something new in it (a level).
+            if (unlocked && ui.isNew("planet." + p->id))
+                ui.drawNewPill(sp.x + ns.x * 0.5f + ui.s(10) + ui.newPillWidth(true), sp.y + size * 0.66f + ui.s(4) + ns.y * 0.5f, true);
         }
         ui.popId();
 
@@ -222,6 +225,7 @@ public:
         st.primary = true;
         st.enabled = unlocked;
         if (ui.button("planet_open", btn, unlocked ? "Explorer " + p.name : "Verrouillée", st)) open();
+        if (unlocked) ui.newBadge("planet_open", btn, "planet." + p.id);  // « NOUVEAU » (2.34.1): a new level inside
     }
 
     void open() {
@@ -295,6 +299,8 @@ public:
             }
             if (ui.focused("l" + std::to_string(i))) selected_ = static_cast<int>(i);
             if (isExtreme(*l)) drawExtremeRowAccent(ui, rr, static_cast<float>(i));
+            // « NOUVEAU » (2.34.1) on a new level, until it gets the focus or a click.
+            if (unlocked) ui.newBadge("l" + std::to_string(i), rr, "level." + l->id, true, true);
             if (rec) ui.icon("ui/icons_medals.png", static_cast<int>(rec->bestMedal), 32,
                              {rr.right() - ui.s(64), rr.center().y - ui.s(24), ui.s(48), ui.s(48)});
             if (!unlocked) ui.icon("ui/icons_hud.png", 9, 16, {rr.right() - ui.s(56), rr.center().y - ui.s(16), ui.s(32), ui.s(32)});
