@@ -133,6 +133,78 @@ export async function requireAuth(ctx: Ctx): Promise<AuthInfo> {
     return auth;
 }
 
+// ------------------------------------------------------------------ passwords
+
+export type CredentialRow = PlayerRow & {
+    password_hash: string;
+    password_salt: string;
+    password_iterations: number;
+    failed_attempts: number;
+    locked_until: string | null;
+};
+
+/** The account of a normalised username with its password hash (null: no such account). */
+export async function credentialsOf(ctx: Ctx, normalized: string): Promise<CredentialRow | null> {
+    return ctx.env.DB.prepare(
+        `SELECT p.*, c.password_hash, c.password_salt, c.password_iterations, c.failed_attempts, c.locked_until
+         FROM players p JOIN player_credentials c ON c.player_id = p.id WHERE p.username_normalized = ?1`,
+    )
+        .bind(normalized)
+        .first<CredentialRow>();
+}
+
+/**
+ * The password check of the login, shared by the migration to a new account (2.50): the same
+ * PBKDF2 work for an unknown account, nothing checked while the account is locked, a wrong
+ * password counted towards the lock (10 in a row: 15 minutes). « wrong_locked »: that wrong
+ * password locked it.
+ */
+export async function checkPassword(
+    ctx: Ctx,
+    row: CredentialRow | null,
+    password: string,
+): Promise<"ok" | "unknown" | "locked" | "wrong" | "wrong_locked"> {
+    if (!row) {
+        await dummyPasswordCheck(password, iterations(ctx));
+        return "unknown";
+    }
+    if (row.locked_until && Date.parse(row.locked_until) > Date.now()) return "locked";
+    if (await verifyPassword(password, { hash: row.password_hash, salt: row.password_salt, iterations: row.password_iterations })) return "ok";
+    const failed = row.failed_attempts + 1;
+    const lock = failed >= MAX_FAILED_LOGINS ? new Date(Date.now() + LOCK_MINUTES * 60000).toISOString() : null;
+    await ctx.env.DB.prepare("UPDATE player_credentials SET failed_attempts = ?1, locked_until = ?2 WHERE player_id = ?3")
+        .bind(lock ? 0 : failed, lock, row.id)
+        .run();
+    return lock ? "wrong_locked" : "wrong";
+}
+
+// ------------------------------------------------------------------ usernames of closed accounts
+
+/** 2.50: the username of an account closed by a migration stays reserved this long, then is free. */
+export const USERNAME_RESERVED_DAYS = 30;
+
+export function usernameReservedSince(now = Date.now()): string {
+    return new Date(now - USERNAME_RESERVED_DAYS * 86400000).toISOString();
+}
+
+/**
+ * Frees the usernames of the accounts closed more than 30 days ago (every one: the daily
+ * maintenance; or only `normalized`: a registration or a rename that wants it). The closed
+ * account keeps its displayed username; its unique key becomes '~' || id, never a username.
+ */
+export function releaseClosedUsernames(db: D1Database, normalized?: string): D1PreparedStatement {
+    return normalized === undefined
+        ? db
+              .prepare(
+                  `UPDATE players SET username_normalized = '~' || id
+                   WHERE closed_at IS NOT NULL AND closed_at < ?1 AND substr(username_normalized, 1, 1) <> '~'`,
+              )
+              .bind(usernameReservedSince())
+        : db
+              .prepare("UPDATE players SET username_normalized = '~' || id WHERE username_normalized = ?2 AND closed_at IS NOT NULL AND closed_at < ?1")
+              .bind(usernameReservedSince(), normalized);
+}
+
 // ------------------------------------------------------------------- routes
 
 export async function countryExists(ctx: Ctx, code: string): Promise<boolean> {
@@ -151,10 +223,11 @@ export async function usernameAvailable(ctx: Ctx): Promise<Response> {
     if (username.length < 3 || username.length > 20 || !USERNAME_RE.test(username))
         return answer(false, "invalid", "3 à 20 caractères : lettres, chiffres, « _ », « . » ou « - » (pas au début ni à la fin).");
     if (isReservedUsername(username)) return answer(false, "reserved", "Ce pseudonyme est réservé.");
-    const row = await ctx.env.DB.prepare("SELECT 1 AS x FROM players WHERE username_normalized = ?1")
+    // 2.50: an account closed by a migration keeps its username 30 days, no more.
+    const row = await ctx.env.DB.prepare("SELECT closed_at FROM players WHERE username_normalized = ?1")
         .bind(normalizeUsername(username))
-        .first();
-    if (row) return answer(false, "taken", "Ce pseudonyme est déjà utilisé.");
+        .first<{ closed_at: string | null }>();
+    if (row && !(row.closed_at && row.closed_at < usernameReservedSince())) return answer(false, "taken", "Ce pseudonyme est déjà utilisé.");
     return answer(true, null, "Pseudonyme disponible.");
 }
 
@@ -194,6 +267,8 @@ export async function register(ctx: Ctx): Promise<Response> {
     const pwd = await hashPassword(password!, iterations(ctx));
     try {
         await ctx.env.DB.batch([
+            // 2.50: the username of an account closed more than 30 days ago is free again.
+            releaseClosedUsernames(ctx.env.DB, normalizeUsername(username!)),
             ctx.env.DB.prepare(
                 `INSERT INTO players (id, username, username_normalized, avatar, country_code, region_code, location_visibility,
                    profile_visibility, allow_friend_requests, tos_version, tos_accepted_at, created_at, last_seen_at, device_id, device_name, device_bound_at)
@@ -225,34 +300,25 @@ export async function login(ctx: Ctx): Promise<Response> {
     const device = readDevice(body.device);
     const norm = normalizeUsername(username!);
     await rateLimit(ctx, RULES.loginUser, "user:" + norm);
-    const row = await ctx.env.DB.prepare(
-        `SELECT p.*, c.password_hash, c.password_salt, c.password_iterations, c.failed_attempts, c.locked_until
-         FROM players p JOIN player_credentials c ON c.player_id = p.id WHERE p.username_normalized = ?1`,
-    )
-        .bind(norm)
-        .first<PlayerRow & { password_hash: string; password_salt: string; password_iterations: number; failed_attempts: number; locked_until: string | null }>();
+    const row = await credentialsOf(ctx, norm);
     const invalid = new ApiError(401, "INVALID_CREDENTIALS", "Pseudonyme ou mot de passe incorrect.");
-    if (!row) {
-        await dummyPasswordCheck(password!, iterations(ctx));
+    const checked = await checkPassword(ctx, row, password!);
+    if (checked === "unknown" || !row) {
         await audit(ctx, null, "login_failed_unknown_user");
         throw invalid;
     }
-    if (row.locked_until && Date.parse(row.locked_until) > Date.now()) {
+    if (checked === "locked") {
         await audit(ctx, row.id, "login_blocked_locked");
         throw new ApiError(423, "ACCOUNT_LOCKED", "Trop d'échecs de connexion : compte temporairement verrouillé.", {
             locked_until: row.locked_until,
         });
     }
-    const good = await verifyPassword(password!, { hash: row.password_hash, salt: row.password_salt, iterations: row.password_iterations });
-    if (!good) {
-        const failed = row.failed_attempts + 1;
-        const lock = failed >= MAX_FAILED_LOGINS ? new Date(Date.now() + LOCK_MINUTES * 60000).toISOString() : null;
-        await ctx.env.DB.prepare("UPDATE player_credentials SET failed_attempts = ?1, locked_until = ?2 WHERE player_id = ?3")
-            .bind(lock ? 0 : failed, lock, row.id)
-            .run();
-        await audit(ctx, row.id, lock ? "login_failed_locked" : "login_failed");
+    if (checked !== "ok") {
+        await audit(ctx, row.id, checked === "wrong_locked" ? "login_failed_locked" : "login_failed");
         throw invalid;
     }
+    // 2.50: an account whose data was migrated to another one is closed (said only after the right password).
+    if (row.closed_at) throw Errors.forbidden("ACCOUNT_CLOSED", "Ce compte a été migré vers un autre compte : il est fermé.");
     if (row.account_status !== "active") throw Errors.forbidden("ACCOUNT_SUSPENDED", "Ce compte est suspendu.");
     // 2.47: the account's own computer (bound at its first login with a 2.47 game), never another one.
     await bindAtLogin(ctx, row, device);

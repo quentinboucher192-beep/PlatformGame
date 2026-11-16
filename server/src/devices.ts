@@ -139,21 +139,38 @@ async function eventsOf(ctx: Ctx, p: PlayerRow) {
     return events;
 }
 
+/** A copy of the progression as stored (2.50: the name of the computer that sent it, null before). */
+export interface ProgressCopyRow {
+    id: number;
+    file_key: string;
+    size: number;
+    sha256: string;
+    summary: string;
+    game_version: string;
+    created_at: string;
+    device_name: string | null;
+}
+
+/** The most recent copy of a player's progression (null: none sent yet). */
+export async function latestCopyRow(ctx: Ctx, playerId: string): Promise<ProgressCopyRow | null> {
+    return ctx.env.DB.prepare("SELECT * FROM progress_copies WHERE player_id = ?1 ORDER BY id DESC LIMIT 1").bind(playerId).first<ProgressCopyRow>();
+}
+
 async function latestCopy(ctx: Ctx, playerId: string) {
-    const c = await ctx.env.DB.prepare("SELECT id, size, summary, game_version, created_at FROM progress_copies WHERE player_id = ?1 ORDER BY id DESC LIMIT 1")
-        .bind(playerId)
-        .first<{ id: number; size: number; summary: string; game_version: string; created_at: string }>();
+    const c = await latestCopyRow(ctx, playerId);
     return c ? copyJson(c) : null;
 }
 
-function copyJson(c: { id: number; size: number; summary: string; game_version: string; created_at: string }) {
-    let summary: unknown = null;
+export function parseSummary(text: string): unknown {
     try {
-        summary = JSON.parse(c.summary);
+        return JSON.parse(text);
     } catch {
-        summary = null;
+        return null;
     }
-    return { id: c.id, size: c.size, game_version: c.game_version, created_at: c.created_at, summary };
+}
+
+function copyJson(c: Pick<ProgressCopyRow, "id" | "size" | "summary" | "game_version" | "created_at" | "device_name">) {
+    return { id: c.id, size: c.size, game_version: c.game_version, created_at: c.created_at, device_name: c.device_name ?? null, summary: parseSummary(c.summary) };
 }
 
 /** GET /players/me/device: the computer the account is bound to, its security events, the last copy of the progression. */
@@ -219,9 +236,9 @@ export async function putProgressCopy(ctx: Ctx): Promise<Response> {
     const key = `progress/${auth.player.id}/${now.replace(/[:.]/g, "-")}-${sha.slice(0, 12)}.json`;
     await ctx.env.STORAGE.put(key, bytes, { httpMetadata: { contentType: "application/json; charset=utf-8" }, customMetadata: { sha256: sha } });
     await ctx.env.DB.prepare(
-        "INSERT INTO progress_copies (player_id, file_key, size, sha256, summary, game_version, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+        "INSERT INTO progress_copies (player_id, file_key, size, sha256, summary, game_version, created_at, device_name) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
     )
-        .bind(auth.player.id, key, bytes.byteLength, sha, JSON.stringify(summary), gameVersion, now)
+        .bind(auth.player.id, key, bytes.byteLength, sha, JSON.stringify(summary), gameVersion, now, auth.player.device_name ?? null)
         .run();
     // The oldest go (rows and files).
     const old = await ctx.env.DB.prepare("SELECT id, file_key FROM progress_copies WHERE player_id = ?1 ORDER BY id DESC LIMIT -1 OFFSET ?2")
@@ -242,15 +259,19 @@ export async function getProgressCopy(ctx: Ctx): Promise<Response> {
     return json(ctx, { copy: await latestCopy(ctx, auth.player.id) });
 }
 
-/** The R2 keys of a player's copies (account deletion). */
+/** The R2 keys of a player's copies, and (2.50) of the progression to restore after a migration (account deletion). */
 export async function progressCopyKeys(ctx: Ctx, playerId: string): Promise<string[]> {
-    const r = await ctx.env.DB.prepare("SELECT file_key FROM progress_copies WHERE player_id = ?1").bind(playerId).all<{ file_key: string }>();
+    const r = await ctx.env.DB.prepare(
+        "SELECT file_key FROM progress_copies WHERE player_id = ?1 UNION SELECT file_key FROM progress_restores WHERE player_id = ?1",
+    )
+        .bind(playerId)
+        .all<{ file_key: string }>();
     return r.results.map((x) => x.file_key);
 }
 
 // ------------------------------------------------------------------ administration
 
-async function playerOr404(ctx: Ctx): Promise<PlayerRow> {
+export async function playerOr404(ctx: Ctx): Promise<PlayerRow> {
     const id = ctx.params.playerId ?? "";
     const p = /^[A-Za-z0-9-]{8,64}$/.test(id) ? await ctx.env.DB.prepare("SELECT * FROM players WHERE id = ?1").bind(id).first<PlayerRow>() : null;
     if (!p) throw Errors.notFound("PLAYER_NOT_FOUND", "Joueur introuvable.");
@@ -265,9 +286,9 @@ export async function adminDevice(ctx: Ctx): Promise<Response> {
         ctx.env.DB.prepare("SELECT id, country, created_at FROM login_refusals WHERE player_id = ?1 ORDER BY id DESC LIMIT 20")
             .bind(p.id)
             .all<{ id: number; country: string | null; created_at: string }>(),
-        ctx.env.DB.prepare("SELECT id, size, summary, game_version, created_at FROM progress_copies WHERE player_id = ?1 ORDER BY id DESC")
+        ctx.env.DB.prepare("SELECT id, size, summary, game_version, created_at, device_name FROM progress_copies WHERE player_id = ?1 ORDER BY id DESC")
             .bind(p.id)
-            .all<{ id: number; size: number; summary: string; game_version: string; created_at: string }>(),
+            .all<{ id: number; size: number; summary: string; game_version: string; created_at: string; device_name: string | null }>(),
     ]);
     return json(ctx, {
         player: { id: p.id, username: p.username },

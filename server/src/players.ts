@@ -7,7 +7,7 @@ import { achievementSummary } from "./achievements";
 import { profileCosmetics } from "./cosmetics";
 import { profileBadges } from "./badges";
 import { creatorStats, followState, playtime } from "./creators";
-import { audit, countryExists, requireAuth, type AuthInfo } from "./auth";
+import { audit, countryExists, releaseClosedUsernames, requireAuth, type AuthInfo } from "./auth";
 import { verifyPassword } from "./crypto";
 import { ApiError, Errors, json, nowIso, readJsonObject, readLimited, type Ctx } from "./http";
 import { playerSummary, privateProfile, recordJson, visibleCountry, type PlayerRow, type RecordRow } from "./model";
@@ -244,6 +244,8 @@ export async function patchMe(ctx: Ctx): Promise<Response> {
     if (next.region && (!next.country || !next.region.startsWith(next.country + "-")))
         throw Errors.validation([{ field: "region_code", message: "la région doit appartenir au pays choisi" }]);
     if (country && !(await countryExists(ctx, country))) throw Errors.validation([{ field: "country_code", message: "pays inconnu" }]);
+    // 2.50: the username of an account closed by a migration more than 30 days ago is free again.
+    if (username && normalizeUsername(username) !== p.username_normalized) await releaseClosedUsernames(ctx.env.DB, normalizeUsername(username)).run();
     try {
         await ctx.env.DB.prepare(
             `UPDATE players SET username = ?1, username_normalized = ?2, avatar = ?3, country_code = ?4, region_code = ?5,
@@ -362,6 +364,21 @@ export async function exportMe(ctx: Ctx): Promise<Response> {
                 .bind(id)
                 .all()
         ).results,
+        // 2.50: the migrations between this account and another one, the progression to restore.
+        account_migrations: (
+            await ctx.env.DB.prepare(
+                `SELECT id, CASE WHEN source_id = ?1 THEN 'source' ELSE 'target' END AS side, source_username, target_username, mode, items,
+                   close_source, by_player IS NOT NULL AS by_admin, created_at
+                 FROM account_migrations WHERE source_id = ?1 OR target_id = ?1 ORDER BY created_at`,
+            )
+                .bind(id)
+                .all()
+        ).results,
+        progress_restore: await ctx.env.DB.prepare(
+            "SELECT from_username, size, game_version, copy_created_at, created_at, postponed_at FROM progress_restores WHERE player_id = ?1",
+        )
+            .bind(id)
+            .first(),
         notes: "Le mot de passe n'est stocké que sous forme d'empreinte PBKDF2 et n'est pas exportable. Les adresses IP ne sont jamais stockées en clair.",
     });
 }
