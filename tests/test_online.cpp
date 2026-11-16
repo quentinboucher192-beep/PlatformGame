@@ -72,6 +72,8 @@ struct FakeServer {
     int playtimeStatus = 200;
     std::vector<Json> cosmeticsReports;  // bodies of PUT /players/me/cosmetics
     int cosmeticsStatus = 200;
+    std::vector<Json> badgesReports;  // bodies of PUT /players/me/badges (2.41)
+    int badgesStatus = 200;
     std::set<std::string> takenNames = {"orion"};
     int friendsCalls = 0;
     bool levelPending = false;  // the server does not know the game's level revision yet
@@ -156,6 +158,12 @@ struct FakeServer {
             if (cosmeticsStatus != 200) return apiError(cosmeticsStatus, "RATE_LIMITED");
             cosmeticsReports.push_back(Json::parse(rq.body));
             return okData({{"cosmetics", Json::object()}});
+        }
+        if (path == "/api/v1/players/me/badges") {
+            badgesReports.push_back(Json::parse(rq.body));
+            if (badgesStatus == 403) return apiError(403, "BADGE_SLOTS");
+            if (badgesStatus != 200) return apiError(badgesStatus, "RATE_LIMITED");
+            return okData({{"badges", Json::array()}});
         }
         if (path == "/api/v1/friends") {
             ++friendsCalls;
@@ -1121,4 +1129,67 @@ TEST_CASE("online: the items worn go to the profile after the achievements, agai
     // New achievements: the items are checked again by the server, so sent again after them.
     h.svc.setAchievements({"voyage_5", "voyage_10"});
     CHECK(pump(h.svc, [&] { return sent() == 3; }, 4000, 1.0f));
+}
+
+TEST_CASE("online: the profile badges go after the achievements, again after a change, a refusal waits for a change") {
+    Harness h("badges");
+    auto sent = [&] {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        return h.server->badgesReports.size();
+    };
+    h.svc.setAchievements({"voyage_5"});
+    h.svc.setBadges({"voyage_5"});
+    // Logged out: kept here, nothing sent.
+    pump(h.svc, [] { return false; }, 300, 1.0f);
+    CHECK(sent() == 0);
+    CHECK(h.svc.badgesState() == OnlineService::BadgesState::Local);
+    CHECK(h.login());
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        h.server->badgesStatus = 429;  // too many at first: tried again later
+    }
+    CHECK(pump(h.svc, [&] { return sent() == 1; }, 4000, 1.0f));
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        h.server->badgesStatus = 200;
+    }
+    CHECK(pump(h.svc, [&] { return sent() == 2; }, 4000, 5.0f));
+    CHECK(pump(h.svc, [&] { return h.svc.badgesState() == OnlineService::BadgesState::Published; }, 100, 0.1f));
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        // The achievements first: the server counts the slots from them.
+        auto a = std::find(h.server->log.begin(), h.server->log.end(), "PUT /api/v1/players/me/achievements");
+        auto b = std::find(h.server->log.begin(), h.server->log.end(), "PUT /api/v1/players/me/badges");
+        CHECK(a != h.server->log.end());
+        CHECK(a < b);
+        CHECK(h.server->badgesReports.back() == (Json{{"badges", {"voyage_5"}}}));
+    }
+    // Nothing more while nothing changes; a new choice (even an empty one) is sent.
+    pump(h.svc, [] { return false; }, 300, 1.0f);
+    CHECK(sent() == 2);
+    h.svc.setBadges({});
+    CHECK(pump(h.svc, [&] { return sent() == 3; }, 4000, 1.0f));
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        CHECK(h.server->badgesReports.back() == (Json{{"badges", Json::array()}}));
+    }
+    // Refused (more badges than the server's stars open): said, and not sent again in a loop.
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        h.server->badgesStatus = 403;
+    }
+    h.svc.setBadges({"voyage_5", "voyage_10"});
+    CHECK(pump(h.svc, [&] { return sent() == 4; }, 4000, 1.0f));
+    CHECK(pump(h.svc, [&] { return h.svc.badgesState() == OnlineService::BadgesState::Refused; }, 100, 0.1f));
+    CHECK(!h.svc.badgesError().empty());
+    pump(h.svc, [] { return false; }, 300, 1.0f);
+    CHECK(sent() == 4);
+    // New achievements: the slots may have changed, sent again.
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        h.server->badgesStatus = 200;
+    }
+    h.svc.setAchievements({"voyage_5", "voyage_10"});
+    CHECK(pump(h.svc, [&] { return sent() == 5; }, 4000, 1.0f));
+    CHECK(pump(h.svc, [&] { return h.svc.badgesState() == OnlineService::BadgesState::Published; }, 100, 0.1f));
 }

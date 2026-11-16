@@ -4,6 +4,7 @@
 import { presenceOf } from "./friends";
 import { achievementSummary } from "./achievements";
 import { profileCosmetics } from "./cosmetics";
+import { profileBadges } from "./badges";
 import { creatorStats, followState, playtime } from "./creators";
 import { audit, countryExists, requireAuth, type AuthInfo } from "./auth";
 import { verifyPassword } from "./crypto";
@@ -109,6 +110,7 @@ export async function getPlayer(ctx: Ctx, viewer: AuthInfo | null): Promise<Resp
             playtime: await playtime(ctx, p.id),
             achievements: await achievementSummary(ctx, p.id),
             cosmetics: await profileCosmetics(ctx, p.id),
+            badges: await profileBadges(ctx, p.id),
         });
     if (p.profile_visibility === "private")
         return json(ctx, {
@@ -119,6 +121,7 @@ export async function getPlayer(ctx: Ctx, viewer: AuthInfo | null): Promise<Resp
             playtime: null,
             achievements: null,
             cosmetics: null,
+            badges: null,
         });
     let friendship: string | null = null;
     if (viewer) {
@@ -143,6 +146,8 @@ export async function getPlayer(ctx: Ctx, viewer: AuthInfo | null): Promise<Resp
         playtime: await playtime(ctx, p.id),
         achievements: await achievementSummary(ctx, p.id),
         cosmetics: await profileCosmetics(ctx, p.id),
+        // 2.41: the badges chosen in the game, only those still valid (achievements, stars).
+        badges: await profileBadges(ctx, p.id),
     });
 }
 
@@ -275,7 +280,7 @@ export async function patchMe(ctx: Ctx): Promise<Response> {
 export async function exportMe(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
     const id = auth.player.id;
-    const [sessions, records, friends, replays, auditRows, conversations, messages, blocks, cLevels, cRecords, cRatings, favs, comments, reactions, follows, notes, playtimeRows, projectRows, projectMessages, raceRows, achievementRows, cosmeticRows] = await ctx.env.DB.batch([
+    const [sessions, records, friends, replays, auditRows, conversations, messages, blocks, cLevels, cRecords, cRatings, favs, comments, reactions, follows, notes, playtimeRows, projectRows, projectMessages, raceRows, achievementRows, cosmeticRows, badgeRows] = await ctx.env.DB.batch([
         ctx.env.DB.prepare("SELECT id, created_at, last_used_at, expires_at, refresh_expires_at, revoked_at, client_info FROM player_sessions WHERE player_id = ?1").bind(id),
         ctx.env.DB.prepare("SELECT * FROM records WHERE player_id = ?1 ORDER BY created_at").bind(id),
         ctx.env.DB.prepare("SELECT player_id, friend_id, status, created_at FROM player_friends WHERE player_id = ?1 OR friend_id = ?1").bind(id),
@@ -307,6 +312,7 @@ export async function exportMe(ctx: Ctx): Promise<Response> {
         ).bind(id),
         ctx.env.DB.prepare("SELECT ids, stars, count, updated_at FROM player_achievements WHERE player_id = ?1").bind(id),
         ctx.env.DB.prepare("SELECT suit, trail, frame, title, victory, updated_at FROM player_cosmetics WHERE player_id = ?1").bind(id),
+        ctx.env.DB.prepare("SELECT ids, updated_at FROM player_badges WHERE player_id = ?1").bind(id),
     ]);
     await audit(ctx, id, "data_export");
     return json(ctx, {
@@ -334,6 +340,7 @@ export async function exportMe(ctx: Ctx): Promise<Response> {
         race_attempts: raceRows?.results ?? [],
         achievements: achievementRows?.results ?? [],
         cosmetics: cosmeticRows?.results ?? [],
+        badges: badgeRows?.results ?? [],
         // 2.19: ratings of the official levels, comments of the campaign and of the runs.
         ...(await campaignExport(ctx, id)),
         // 2.31: runs of the daily challenges.

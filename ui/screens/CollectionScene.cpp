@@ -1,17 +1,20 @@
 // Main menu → Collection (2.19): the cosmetic rewards unlocked by the achievements' stars
 // (Vestiaire, Route des étoiles), the jukebox of the tracks heard in the game (Musiques)
-// and the gallery of the planets and creatures met (Galerie). Display only: nothing here
-// changes a run, a replay or a record.
+// and the gallery of the planets and creatures met (Galerie). 2.41: the Vestiaire's « Badges
+// du profil », achievements shown on the online profile (slots opened by the stars). Display
+// only: nothing here changes a run, a replay or a record.
 
 #include <SDL3_image/SDL_image.h>
 
 #include <algorithm>
 #include <cmath>
 #include <future>
+#include <initializer_list>
 #include <map>
 #include <set>
 
 #include "engine/core/FileUtil.h"
+#include "engine/core/I18n.h"
 #include "engine/core/Log.h"
 #include "game/GameServices.h"
 #include "game/content/CreaturePlaces.h"
@@ -20,6 +23,7 @@
 #include "ui/screens/CosmeticFx.h"
 #include "ui/screens/CreatureArt.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/ProfileBadgesUi.h"
 #include "ui/widgets/Glyphs.h"
 
 namespace cosmic {
@@ -104,7 +108,11 @@ public:
         if (!select_.empty()) showItem(select_);  // opened on a reward (2.35: from the challenges)
         // Automated screenshots: "col:<tab>[:detail]".
         const std::string& o = g_.onlineOpen;
-        if (o.rfind("col-cat:", 0) == 0) cat_ = std::clamp(std::atoi(o.c_str() + 8), 0, 4);
+        if (o.rfind("col-cat:", 0) == 0) cat_ = std::clamp(std::atoi(o.c_str() + 8), 0, 5);  // 5: the profile badges
+        if (o.rfind("col-badge:", 0) == 0) {  // the profile badges, this achievement selected
+            cat_ = static_cast<int>(g_.cosmetics.categories().size());
+            selBadge_ = o.substr(10);
+        }
         if (o.rfind("col-sel:", 0) == 0) {
             selItem_ = o.substr(8);
             showItem(selItem_);  // its category too
@@ -195,8 +203,8 @@ private:
         Renderer& r = ui.r();
         const auto& cats = g_.cosmetics.categories();
         if (cats.empty()) return;
-        cat_ = std::clamp(cat_, 0, static_cast<int>(cats.size()) - 1);
-        const std::string catId = cats[static_cast<size_t>(cat_)].id;
+        const int badgesCat = static_cast<int>(cats.size());  // 2.41: the profile badges, after the categories
+        cat_ = std::clamp(cat_, 0, badgesCat);
         // Left: categories.
         float lw = std::min(ui.s(280), area.w * 0.19f);
         float y = area.y;
@@ -217,8 +225,31 @@ private:
             ui.label(std::to_string(got) + " / " + std::to_string(items.size()) + " débloqués", {b.x + ui.s(16), b.y + ui.s(38)}, fz(ui, 14), ui.theme().textDim);
             y += ui.s(74);
         }
+        // 2.41: the profile badges, a place of their own under the categories.
+        {
+            Rect b{area.x, y, lw, ui.s(64)};
+            UIContext::ButtonStyle st;
+            st.selected = cat_ == badgesCat;
+            st.align = Align::Left;
+            if (ui.button("catbadges", b, "", st)) cat_ = badgesCat;
+            ui.newBadge("catbadges", b, "collection.cat.badges", true, true);
+            ui.label(ui.elide("Badges du profil", FontFace::Bold, 19, lw - ui.s(32)), {b.x + ui.s(16), b.y + ui.s(10)}, 19, ui.theme().text, Align::Left,
+                     FontFace::Bold);
+            const int slots = g_.achievementCatalog.badgeSlots(progress_.stars);
+            const BadgeSlotStep* first = g_.achievementCatalog.nextBadgeStep(0);
+            std::string sub = slots > 0 ? std::to_string(g_.shownBadges().size()) + " / " + std::to_string(slots) + " affichés"
+                              : first   ? "Dès " + std::to_string(first->stars) + " étoiles"
+                                        : std::string("Indisponibles");
+            ui.label(ui.elide(sub, FontFace::Body, fz(ui, 14), lw - ui.s(32)), {b.x + ui.s(16), b.y + ui.s(38)}, fz(ui, 14), ui.theme().textDim);
+            y += ui.s(74);
+        }
         ui.labelWrapped("Les étoiles viennent des succès (menu principal → Succès). Certaines récompenses demandent un succès précis.",
                         {area.x, area.bottom() - ui.s(86)}, lw, fz(ui, 14), ui.theme().textDim);
+        if (cat_ == badgesCat) {
+            drawBadges(area, lw);
+            return;
+        }
+        const std::string catId = cats[static_cast<size_t>(cat_)].id;
 
         // Items of the category.
         auto items = g_.cosmetics.items(catId);
@@ -414,6 +445,338 @@ private:
         if (it.challengeReward()) return "Défis requis";
         int missing = std::max(0, cosmeticThreshold(it, progress_.totalStars) - progress_.stars);
         return "Encore " + std::to_string(missing) + (missing > 1 ? " étoiles" : " étoile");
+    }
+
+    // ================================================================= Badges du profil (2.41)
+    /// A wrapped text at the first of `sizes` whose lines end above `bottom` (nothing when even
+    /// the smallest does not fit). Returns the height drawn.
+    float wrappedFitting(const std::string& t, Vec2 pos, float width, std::initializer_list<float> sizes, float bottom, Color c) {
+        UIContext& ui = g_.ui;
+        for (float size : sizes) {
+            float fs = fz(ui, size);
+            float h = ui.text().measureWrapped(t, FontFace::Body, ui.s(fs), width).y;
+            if (pos.y + h > bottom) continue;
+            ui.labelWrapped(t, pos, width, fs, c);
+            return h;
+        }
+        return 0.0f;
+    }
+    /// A text beside a button `ui.s(48)` high, centred on `cy`: on two lines at most, smaller
+    /// rather than cut (elided only when even the smallest size needs more).
+    void sideText(const std::string& t, float x, float cy, float room, Color c) {
+        UIContext& ui = g_.ui;
+        if (room <= ui.s(40)) return;
+        for (float size : {15.0f, 13.5f, 12.0f}) {
+            float fs = fz(ui, size), h = ui.text().measureWrapped(t, FontFace::Body, ui.s(fs), room).y;
+            if (h > ui.s(48)) continue;
+            ui.labelWrapped(t, {x, cy - h * 0.5f}, room, fs, c);
+            return;
+        }
+        ui.label(ui.elide(t, FontFace::Body, fz(ui, 12), room), {x, cy}, fz(ui, 12), c, Align::Left, FontFace::Body, VAlign::Middle);
+    }
+
+    /// The achievements shown as badges on the online profile: a preview of the profile's
+    /// header with its slots (as many as the stars open), the selected achievement with
+    /// « Afficher sur le profil » / « Retirer du profil », and every achievement obtained.
+    /// Below the first step: no slot, the steps and how far the stars are from them.
+    void drawBadges(const Rect& area, float lw) {
+        UIContext& ui = g_.ui;
+        Renderer& r = ui.r();
+        const AchievementCatalog& cat = g_.achievementCatalog;
+        const int stars = progress_.stars;
+        const int slots = cat.badgeSlots(stars);
+        const BadgeSlotStep* next = cat.nextBadgeStep(stars);
+        const std::vector<std::string> shown = g_.shownBadges();
+        std::vector<const AchievementDef*> got;
+        for (const auto& a : cat.achievements())
+            if (g_.achievements.unlocked(a.id)) got.push_back(&a);
+        auto shownIndex = [&](const std::string& id) {
+            auto it = std::find(shown.begin(), shown.end(), id);
+            return it == shown.end() ? -1 : static_cast<int>(it - shown.begin());
+        };
+        // The selected achievement: the one chosen, else the first badge, else the first obtained.
+        const AchievementDef* sel = cat.find(selBadge_);
+        if (!sel || !g_.achievements.unlocked(sel->id)) sel = !shown.empty() ? cat.find(shown.front()) : !got.empty() ? got.front() : nullptr;
+        const float pw = std::min(ui.s(560), area.w * 0.38f);
+        const Rect prev{area.x + lw + ui.s(24), area.y, pw, area.h * 0.68f};
+        const Rect det{prev.x, prev.bottom() + ui.s(16), prev.w, area.bottom() - prev.bottom() - ui.s(16)};
+        const Rect gridA{prev.right() + ui.s(24), area.y, area.right() - prev.right() - ui.s(24), area.h};
+        const float px = prev.x + ui.s(22), pwIn = prev.w - ui.s(44);
+
+        // ---- Preview: the header of the online profile (frame, name, title, badges).
+        r.fillRoundedRectGradient(prev, ui.s(16), Color{17, 26, 54, 255}, Color{10, 15, 32, 255});
+        r.drawRoundedRect(prev, ui.s(16), ui.theme().accent.withAlpha(80), std::max(1.0f, ui.s(1.5f)));
+        float y = prev.y + ui.s(18);
+        Vec2 hs = ui.label(ui.elide("Aperçu de votre profil", FontFace::Bold, 20, pwIn), {px, y}, 20, ui.theme().text, Align::Left, FontFace::Bold);
+        y += hs.y + ui.s(16);
+        const bool logged = g_.online.loggedIn();
+        const float ar = ui.s(44), margin = ui.s(kAvatarFrameMargin);
+        const Vec2 ac{px + margin + ar, y + margin + ar};
+        online_.drawAvatar(logged ? jstr(g_.online.profile(), "avatar", "avatar_01") : std::string("avatar_01"), logged ? g_.online.playerId() : std::string(),
+                           Rect::fromCenter(ac, {ar * 2, ar * 2}));
+        drawAvatarFrame(r, ac, ar, g_.collection.look(g_.cosmetics, "frame", progress_), ui.s(1), t_);
+        const float nx = ac.x + ar + margin + ui.s(14), room = prev.right() - ui.s(22) - nx;
+        float ny = ac.y - ar + ui.s(12);
+        {
+            const std::string name = logged && !g_.online.username().empty() ? g_.online.username() : std::string("Nova");
+            i18n::Verbatim v;  // a pseudonym as the player wrote it
+            float nf = ui.fitFont(name, FontFace::Title, 26, room, 0.6f);
+            ui.label(ui.elide(name, FontFace::Title, nf, room), {nx, ny}, nf, ui.theme().text, Align::Left, FontFace::Title, VAlign::Middle);
+        }
+        ny += ui.s(34);
+        if (std::string title = g_.collection.look(g_.cosmetics, "title", progress_); !title.empty()) {
+            float tf = fz(ui, 15), tw = std::min(ui.text().measure(title, FontFace::Bold, ui.s(tf)).x + ui.s(24), room);
+            Rect chip{nx, ny - ui.s(13), tw, ui.s(26)};
+            r.fillRoundedRect(chip, chip.h * 0.5f, kGold.withAlpha(28));
+            r.drawRoundedRect(chip, chip.h * 0.5f, kGold.withAlpha(160), std::max(1.0f, ui.s(1.2f)));
+            ui.label(ui.elide(title, FontFace::Bold, tf, tw - ui.s(24)), chip.center(), tf, kGold, Align::Center, FontFace::Bold, VAlign::Middle);
+            ny += ui.s(26);
+        }
+        // The slots: the badges shown, then the free places (none below the first step).
+        const float slotGap = ui.s(10), slotD = std::min(ui.s(44), (room - slotGap * 2) / 3.0f);
+        ny += ui.s(10);
+        const float rowCy = ny + slotD * 0.5f;
+        std::vector<const AchievementDef*> shownDefs;
+        for (const auto& id : shown) shownDefs.push_back(cat.find(id));
+        if (slots > 0) {
+            int hit = slotsRow_.draw(g_, "slot", shownDefs, nx, rowCy, slotD, slotGap);
+            if (hit >= 0 && shownDefs[static_cast<size_t>(hit)]) selBadge_ = shownDefs[static_cast<size_t>(hit)]->id;
+            for (int i = static_cast<int>(shown.size()); i < slots; ++i) {
+                Rect box{nx + static_cast<float>(i) * (slotD + slotGap), rowCy - slotD * 0.5f, slotD, slotD};
+                const std::string name = "free" + std::to_string(i);
+                bool hovered = false;
+                if (ui.hotspot(name, box, &hovered)) {
+                    // A free place: to the first achievement obtained that is not shown yet.
+                    for (size_t k = 0; k < got.size(); ++k)
+                        if (shownIndex(got[k]->id) < 0) {
+                            selBadge_ = got[k]->id;
+                            ui.setFocus("bdg" + std::to_string(k));
+                            break;
+                        }
+                }
+                drawBadgeSlot(ui, box.center(), slotD * 0.5f, hovered || ui.focused(name));
+            }
+            ny = rowCy + slotD * 0.5f;
+        } else {
+            Vec2 ls = ui.label(ui.elide("Aucun badge pour l'instant", FontFace::Body, fz(ui, 15), room), {nx, ny}, fz(ui, 15), ui.theme().textDim, Align::Left,
+                               FontFace::Body);
+            ny += ls.y;
+        }
+        y = std::max(ac.y + ar + margin, ny) + ui.s(20);
+        ui.separator({px, y}, pwIn);
+        y += ui.s(14);
+        // Where the slots stand, and the next step (« 250 étoiles pour un 3e badge »).
+        const std::string head = slots > 0 ? "Badges : " + std::to_string(shown.size()) + " / " + std::to_string(slots) + " emplacements utilisés"
+                                           : std::string("Badges verrouillés");
+        Vec2 hz = ui.label(head, {px, y}, ui.fitFont(head, FontFace::Bold, 18, pwIn), slots > 0 ? ui.theme().text : kGold, Align::Left, FontFace::Bold);
+        y += hz.y + ui.s(8);
+        std::string step;
+        if (next && slots == 0)
+            step = std::to_string(next->stars) + " étoiles pour choisir " + std::to_string(next->slots) + " badges (encore " + std::to_string(next->stars - stars) + ").";
+        else if (next)
+            step = std::to_string(next->stars) + " étoiles pour un " + std::to_string(next->slots) + "e badge (encore " + std::to_string(next->stars - stars) + ").";
+        else if (slots > 0)
+            step = "Toutes les places sont ouvertes : " + std::to_string(slots) + " badges au plus.";
+        else
+            step = "Les badges ne sont pas disponibles dans cette version.";
+        y += wrappedFitting(step, {px, y}, pwIn, {15.0f, 13.5f, 12.0f}, prev.bottom() - ui.s(12), Color{143, 255, 240, 255}) + ui.s(10);
+        if (next && y + ui.s(10) <= prev.bottom() - ui.s(12)) {
+            // The stars toward the next step.
+            Rect bar{px, y, pwIn, ui.s(10)};
+            r.fillRoundedRect(bar, bar.h * 0.5f, Color{20, 28, 52, 255});
+            float f = std::clamp(static_cast<float>(stars) / static_cast<float>(std::max(1, next->stars)), 0.0f, 1.0f);
+            if (f > 0.0f) r.fillRoundedRect({bar.x, bar.y, std::max(bar.h, bar.w * f), bar.h}, bar.h * 0.5f, kGold);
+            y += bar.h + ui.s(14);
+        }
+        // Published or not: without an account or offline, the choice stays here.
+        if (slots > 0 || !logged) {
+            std::string pub;
+            Color pubC = ui.theme().textDim;
+            if (!logged) {
+                pub = "Sans compte ou hors ligne, votre choix reste sur cet ordinateur : il sera publié sur votre profil Cosmic Online une fois connecté.";
+            } else {
+                switch (g_.online.badgesState()) {
+                    case OnlineService::BadgesState::Published:
+                        pub = "Publiés sur votre profil Cosmic Online : visibles par ceux qui peuvent voir votre profil.";
+                        pubC = kGreen;
+                        break;
+                    case OnlineService::BadgesState::Refused:
+                        pub = "Refusés par Cosmic Online : " + g_.online.badgesError();
+                        pubC = ui.theme().danger;
+                        break;
+                    default: pub = "En attente d'envoi vers votre profil Cosmic Online."; break;
+                }
+            }
+            wrappedFitting(pub, {px, y}, pwIn, {14.5f, 13.0f, 11.5f}, prev.bottom() - ui.s(12), pubC);
+        }
+
+        // ---- The selected achievement: « Afficher sur le profil » / « Retirer du profil ».
+        ui.panel(det, false, 14);
+        const float dx = det.x + ui.s(20), dwIn = det.w - ui.s(40);
+        const float by = det.bottom() - ui.s(66);
+        if (slots == 0) {
+            float dy = det.y + ui.s(18);
+            dy += wrappedFitting("Un badge est un succès que vous avez obtenu, affiché à côté de votre nom et de votre titre sur votre profil Cosmic Online.",
+                                 {dx, dy}, dwIn, {16.0f, 14.0f, 12.5f}, by - ui.s(40), Color{185, 200, 218, 255}) +
+                  ui.s(10);
+            std::string steps;
+            for (const auto& st : cat.badgeSlotSteps())
+                steps += (steps.empty() ? "" : "  ·  ") + std::to_string(st.stars) + " étoiles : " + std::to_string(st.slots) + " badges";
+            if (!steps.empty() && dy + ui.s(24) <= by - ui.s(6))
+                ui.label(ui.elide(steps, FontFace::Bold, fz(ui, 15), dwIn), {dx, dy}, fz(ui, 15), kGold, Align::Left, FontFace::Bold);
+            if (next) {
+                const int missing = next->stars - stars;
+                std::string lock = "Encore " + std::to_string(missing) + (missing > 1 ? " étoiles" : " étoile");
+                float lw2 = ui.text().measure(lock, FontFace::Bold, ui.s(17)).x + ui.s(36);
+                Rect lr{dx, by, lw2, ui.s(48)};
+                r.fillRoundedRect(lr, ui.s(10), kGold.withAlpha(26));
+                ui.label(lock, lr.center(), 17, kGold, Align::Center, FontFace::Bold, VAlign::Middle);
+                sideText("Les étoiles viennent des succès (menu principal → Succès).", lr.right() + ui.s(16), by + ui.s(24),
+                         det.right() - ui.s(20) - (lr.right() + ui.s(16)), ui.theme().textDim);
+            }
+        } else if (!sel) {
+            ui.labelWrapped("Aucun succès obtenu pour l'instant : jouez, puis revenez choisir vos badges.", {dx, det.y + ui.s(18)}, dwIn, fz(ui, 16),
+                            ui.theme().textDim);
+        } else {
+            const AchievementCategory* k = cat.category(sel->category);
+            const float er = ui.s(30);
+            const Vec2 ec{dx + er, det.y + ui.s(18) + er};
+            drawBadgeEmblem(g_, *sel, ec, er);
+            const float tx = ec.x + er + ui.s(16), troom = det.right() - ui.s(20) - tx;
+            const float nf = ui.fitFont(sel->name, FontFace::Bold, 24, troom, 0.6f);
+            ui.label(ui.elide(sel->name, FontFace::Bold, nf, troom), {tx, ec.y - ui.s(12)}, nf, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+            Vec2 cs = ui.label(ui.elide(k ? k->name : sel->category, FontFace::Bold, fz(ui, 15), troom * 0.5f), {tx, ec.y + ui.s(16)}, fz(ui, 15),
+                               k ? k->color : ui.theme().accent, Align::Left, FontFace::Bold, VAlign::Middle);
+            for (int i = 0; i < sel->stars; ++i) drawStar(r, {tx + cs.x + ui.s(18) + ui.s(16) * static_cast<float>(i), ec.y + ui.s(16)}, ui.s(7), kGold);
+            // The description, smaller when it would reach the button.
+            wrappedFitting(sel->description, {dx, ec.y + er + ui.s(14)}, dwIn, {16.0f, 14.0f, 12.5f}, by - ui.s(8), Color{185, 200, 218, 255});
+            const int at = shownIndex(sel->id);
+            UIContext::ButtonStyle st;
+            std::string label, side;
+            if (at >= 0) {
+                label = "Retirer du profil";
+                st.selected = true;
+                side = "Badge " + std::to_string(at + 1) + " sur " + std::to_string(slots) + " de votre profil";
+            } else {
+                label = "Afficher sur le profil";
+                st.primary = true;
+                st.enabled = static_cast<int>(shown.size()) < slots;
+                side = st.enabled ? "Il prendra l'emplacement " + std::to_string(shown.size() + 1) + " sur " + std::to_string(slots) + "."
+                                  : "Les " + std::to_string(slots) + " emplacements sont pris : retirez d'abord un badge.";
+            }
+            const float bw = std::min(dwIn * 0.55f, ui.text().measure(label, FontFace::Bold, ui.s(20)).x + ui.s(48));
+            st.fontSize = ui.fitFont(label, FontFace::Bold, 20, bw - ui.s(24));
+            if (ui.button("badgeact", {dx, by, bw, ui.s(48)}, label, st)) {
+                std::vector<std::string> chosen = shown;
+                if (at >= 0) chosen.erase(chosen.begin() + at);
+                else chosen.push_back(sel->id);
+                setBadges(std::move(chosen));
+            }
+            // Beside the button, on two lines at most (smaller rather than cut).
+            const float sx = dx + bw + ui.s(16);
+            sideText(side, sx, by + ui.s(24), det.right() - ui.s(20) - sx, at >= 0 || st.enabled ? ui.theme().textDim : kGold);
+        }
+
+        // ---- Right: the achievements obtained (locked: the steps).
+        if (slots == 0) {
+            ui.label("Paliers des badges", {gridA.x, gridA.y + ui.s(12)}, 21, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+            float gy = gridA.y + ui.s(40);
+            for (const auto& st : cat.badgeSlotSteps()) {
+                Rect c{gridA.x, gy, gridA.w, ui.s(78)};
+                const bool reached = stars >= st.stars;
+                r.fillRoundedRect(c, ui.s(12), Color{14, 20, 40, 235});
+                r.drawRoundedRect(c, ui.s(12), reached ? kGreen.withAlpha(120) : kGold.withAlpha(110), std::max(1.0f, ui.s(1.5f)));
+                // A medal with the number of badges the step opens.
+                const float mr = ui.s(24);
+                const Vec2 mc{c.x + ui.s(18) + mr, c.center().y};
+                const Color mcol = reached ? kGreen : kGold;
+                r.fillCircle(mc, mr, Color{10, 16, 34, 255});
+                r.drawCircle(mc, mr - ui.s(1), mcol.withAlpha(200), std::max(1.0f, ui.s(2.0f)));
+                const std::string num = std::to_string(st.slots);
+                ui.label(num, mc, ui.fitFont(num, FontFace::Title, 24, mr * 1.4f), mcol, Align::Center, FontFace::Title, VAlign::Middle);
+                const float tx = mc.x + mr + ui.s(18);
+                const float troom = c.right() - ui.s(16) - tx;
+                const std::string what = std::to_string(st.slots) + " badges sur le profil";
+                const std::string when = std::to_string(st.stars) + " étoiles" + (reached ? std::string(" · atteint") : " · encore " + std::to_string(st.stars - stars));
+                ui.label(ui.elide(what, FontFace::Bold, 18, troom), {tx, c.center().y - ui.s(12)}, 18, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+                ui.label(ui.elide(when, FontFace::Body, fz(ui, 15), troom), {tx, c.center().y + ui.s(14)}, fz(ui, 15), reached ? kGreen : kGold, Align::Left,
+                         FontFace::Body, VAlign::Middle);
+                gy += c.h + ui.s(12);
+            }
+            const std::string mine = got.empty() ? std::string("Vous n'avez encore obtenu aucun succès.")
+                                                 : "Vos " + std::to_string(got.size()) + " succès obtenus pourront être choisis comme badges.";
+            wrappedFitting(mine, {gridA.x, gy + ui.s(4)}, gridA.w, {15.0f, 13.0f}, gridA.bottom(), ui.theme().textDim);
+            return;
+        }
+        Vec2 gh = ui.label("Succès obtenus", {gridA.x, gridA.y + ui.s(12)}, 21, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+        const std::string count = std::to_string(got.size()) + " / " + std::to_string(cat.achievements().size());
+        const float countRoom = gridA.w - gh.x - ui.s(16);
+        if (countRoom > ui.s(30))
+            ui.label(ui.elide(count, FontFace::Body, fz(ui, 15), countRoom), {gridA.right(), gridA.y + ui.s(12)}, fz(ui, 15), ui.theme().textDim, Align::Right,
+                     FontFace::Body, VAlign::Middle);
+        const float gy = gridA.y + ui.s(36);
+        if (got.empty()) {
+            ui.labelWrapped("Aucun succès obtenu pour l'instant (menu principal → Succès).", {gridA.x, gy}, gridA.w, fz(ui, 16), ui.theme().textDim);
+            slotsRow_.drawTooltip(g_, "sélectionner ce badge");
+            return;
+        }
+        const float gap = ui.s(10), ch = ui.s(70);
+        const int cols = std::clamp(static_cast<int>((gridA.w + gap) / (ui.s(250) + gap)), 1, 4);
+        const float rows = std::ceil(static_cast<float>(got.size()) / static_cast<float>(cols));
+        const float gridH = rows * (ch + gap);
+        // A list longer than the room scrolls: its bar gets a lane of its own, beside the cards.
+        const float cardsW = gridA.w - (gridH > gridA.bottom() - gy ? ui.s(14) : 0.0f);
+        const float cw = (cardsW - gap * static_cast<float>(cols - 1)) / static_cast<float>(cols);
+        ui.beginScroll("badges", {gridA.x, gy, gridA.w, gridA.bottom() - gy}, gridH);
+        const float so = ui.scrollOffset();
+        for (size_t i = 0; i < got.size(); ++i) {
+            const AchievementDef& a = *got[i];
+            Rect c{gridA.x + (cw + gap) * static_cast<float>(i % static_cast<size_t>(cols)), gy - so + (ch + gap) * static_cast<float>(i / static_cast<size_t>(cols)), cw,
+                   ch};
+            const std::string name = "bdg" + std::to_string(i);
+            if (ui.hotspot(name, c)) selBadge_ = a.id;
+            if (c.bottom() < gy || c.y > gridA.bottom()) continue;
+            const bool on = sel == &a, focus = ui.focused(name);
+            const int at = shownIndex(a.id);
+            r.fillRoundedRect(c, ui.s(10), on ? ui.theme().accent.withAlpha(36) : Color{14, 20, 40, 235});
+            r.drawRoundedRect(c, ui.s(10), on || focus ? ui.theme().accent : at >= 0 ? kGreen.withAlpha(150) : ui.theme().accent.withAlpha(40),
+                              std::max(1.0f, ui.s(on || focus ? 2.0f : 1.4f)));
+            const float er = ui.s(22);
+            drawBadgeEmblem(g_, a, {c.x + ui.s(10) + er, c.center().y}, er);
+            const float tx = c.x + ui.s(10) + er * 2 + ui.s(12);
+            // « Badge 2 » at the top right of a shown one; the name in what is left.
+            float pillW = 0.0f;
+            if (at >= 0) {
+                const std::string p = "Badge " + std::to_string(at + 1);
+                const float pw2 = ui.text().measure(p, FontFace::Bold, ui.s(fz(ui, 12))).x + ui.s(14);
+                Rect pr{c.right() - pw2 - ui.s(8), c.y + ui.s(10), pw2, ui.s(20)};
+                r.fillRoundedRect(pr, pr.h * 0.5f, kGreen);
+                ui.label(p, pr.center(), fz(ui, 12), Color{8, 36, 18, 255}, Align::Center, FontFace::Bold, VAlign::Middle);
+                pillW = pw2 + ui.s(12);
+            }
+            const float nroom = c.right() - ui.s(10) - tx - pillW;
+            ui.label(ui.elide(a.name, FontFace::Bold, 16, nroom), {tx, c.y + ui.s(20)}, 16, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+            const AchievementCategory* k = cat.category(a.category);
+            const float subRoom = c.right() - ui.s(10) - tx;
+            Vec2 ks = ui.label(ui.elide(k ? k->name : a.category, FontFace::Body, fz(ui, 13), subRoom * 0.55f), {tx, c.y + ui.s(48)}, fz(ui, 13),
+                               k ? k->color : ui.theme().accent, Align::Left, FontFace::Body, VAlign::Middle);
+            // Its stars after the category, as many as fit.
+            for (int s2 = 0; s2 < a.stars; ++s2) {
+                const float sx = tx + ks.x + ui.s(14) + ui.s(13) * static_cast<float>(s2);
+                if (sx + ui.s(6) > c.right() - ui.s(8)) break;
+                drawStar(r, {sx, c.y + ui.s(48)}, ui.s(5.5f), kGold);
+            }
+        }
+        ui.endScroll();
+        // The tooltip of a badge of the preview, over everything.
+        slotsRow_.drawTooltip(g_, "sélectionner ce badge");
+    }
+
+    void setBadges(std::vector<std::string> ids) {
+        g_.collection.badges = std::move(ids);
+        g_.collection.save();
+        g_.syncBadges();
+        g_.uiSound("ui_confirm", 0.6f);
     }
 
     // ================================================================= Route des étoiles
@@ -1143,6 +1506,8 @@ private:
     // Vestiaire
     int cat_ = 0;
     std::string selItem_;
+    std::string selBadge_;  // 2.41: the achievement selected among the profile badges
+    BadgeRow slotsRow_;     // the badges of the preview (their tooltip)
     TrailFx trailFx_;
     bool routeEnd_ = false;  // automated screenshots: the Route scrolled to its end
     Vec2 trailCenter_;

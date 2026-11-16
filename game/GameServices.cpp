@@ -100,6 +100,13 @@ void GameServices::syncCosmetics() {
     online.setCosmetics(collection.equippedIds(cosmetics, cosmeticProgress()));
 }
 
+std::vector<std::string> GameServices::shownBadges() const { return cosmic::shownBadges(collection.badges, achievementCatalog, achievements); }
+
+void GameServices::syncBadges() {
+    if (achievementCatalog.achievements().empty()) return;  // catalogue not loaded
+    online.setBadges(shownBadges());
+}
+
 void GameServices::noteOutfit(bool announce) {
     if (cosmetics.items().empty()) return;
     const CosmeticProgress p = cosmeticProgress();
@@ -227,6 +234,7 @@ void GameServices::checkAchievements(bool announce) {
         if (achievements.unlocked(a.id)) ids.push_back(a.id);
     online.setAchievements(std::move(ids));
     syncCosmetics();  // an item locked again (or unlocked) changes what is worn
+    syncBadges();     // and the badges (2.41: their slots come from the stars)
     if (fresh.empty()) return;
     achievements.save();
     if (!announce) {

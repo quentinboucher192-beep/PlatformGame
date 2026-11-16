@@ -1,6 +1,10 @@
 {
  "format": "cosmic.achievements",
  "version": 1,
+ "badgeSlots": [
+  {"stars": 100, "slots": 2},
+  {"stars": 250, "slots": 3}
+ ],
  "categories": [
   {
    "id": "voyage",

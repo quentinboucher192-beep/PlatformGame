@@ -142,6 +142,10 @@ public:
     // Gallery
     std::set<std::string> met;           // enemy ids met in a level
     int exported = 0;                    // planet pictures saved (the counter of the gallery)
+    // Profile badges (2.41): achievement ids chosen for the online profile, in their order
+    // (shownBadges() keeps those still unlocked, as many as the stars open). Kept here even
+    // without an account: published once the player is connected.
+    std::vector<std::string> badges;
 
     Json toJson() const;
     void fromJson(const Json& j);

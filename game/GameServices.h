@@ -83,6 +83,11 @@ public:
     /// What the player wears goes to the online profile (2.23): at start, after each
     /// « Équiper » and when the achievements change what is unlocked.
     void syncCosmetics();
+    /// Profile badges (2.41): the achievements chosen in the Collection that may be shown now
+    /// (unlocked, as many as the stars open), in their order. Sent to the online profile when
+    /// the player is connected (at start, after each choice, when the achievements change).
+    std::vector<std::string> shownBadges() const;
+    void syncBadges();
     /// After an « Équiper » (and at start): the achievements of the Collection count the
     /// rewards worn (2.24). Checks the achievements (`announce` false: silently, at start).
     void noteOutfit(bool announce = true);
