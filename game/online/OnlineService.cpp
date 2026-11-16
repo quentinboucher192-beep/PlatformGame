@@ -714,11 +714,7 @@ OnlineAttempt* OnlineService::recordRun(const RunCandidate& run, const std::stri
         std::vector<uint8_t> bytes = replay->encode();
         std::error_code ec;
         fs::create_directories(attempts_.replayPath(attemptId).parent_path(), ec);
-        if (bytes.empty() || !FileUtil::writeBinary(attempts_.replayPath(attemptId), bytes)) {
-            a->hasReplay = false;
-            for (auto it = a->submissions.begin(); it != a->submissions.end();)
-                it = it->category == RunCategory::Speedrun ? a->submissions.erase(it) : it + 1;
-        }
+        if (bytes.empty() || !FileUtil::writeBinary(attempts_.replayPath(attemptId), bytes)) a->hasReplay = false;
     }
     saveAttempts();
     if (usable() && loggedIn() && settings_.autoSync) syncNow();

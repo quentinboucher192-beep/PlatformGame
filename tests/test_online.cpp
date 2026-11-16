@@ -462,10 +462,10 @@ TEST_CASE("online: the local queue keeps only improvements per category") {
     run.totalCollectibles = 10;
     run.hasReplay = true;
     auto cats = eligibleCategories(run);
-    CHECK(cats.size() == 3);  // ANY%, 100%, SPEEDRUN (deaths exclude NO DEATH / NO DAMAGE)
+    CHECK(cats.size() == 2);  // ANY%, 100% (deaths exclude NO DEATH / NO DAMAGE; no SPEEDRUN since 2.40.1)
     std::string a1 = makeUuidV4();
     CHECK(store.add(run, a1, "me") != nullptr);
-    CHECK(store.unsentCount("me") == 3);
+    CHECK(store.unsentCount("me") == 2);
     // Slower and not better in any category: not kept.
     run.timeMs = 95000;
     CHECK(store.add(run, makeUuidV4(), "me") == nullptr);
@@ -479,7 +479,7 @@ TEST_CASE("online: the local queue keeps only improvements per category") {
     AttemptStore again(dir / "attempts.json", dir / "replays");
     again.load();
     CHECK(again.all().size() == 2);
-    CHECK(again.find(a1)->submissions.size() == 3);
+    CHECK(again.find(a1)->submissions.size() == 2);
     CHECK(again.find(a1)->submitBody(RunCategory::AnyPercent)["attempt_id"] == a1);
     CHECK(!again.find(a1)->submitBody(RunCategory::AnyPercent).contains("player_id"));
     CHECK(*again.bestTime(run.levelHash, RunCategory::AnyPercent) == 90000);

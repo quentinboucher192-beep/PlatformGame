@@ -988,9 +988,7 @@ async function boardContext(ctx: Ctx, challengeId: string, timeMs: number, playe
  * by a recent account waits for a manual review.
  */
 function decideRun(trust: number, replay: ReplayState, timeMs: number, board: BoardContext): Decision {
-    const d = decide(trust, "SPEEDRUN", replay, timeMs, board);
-    if (d.status === "PENDING" && replay !== "valid") d.note = "En attente du replay.";
-    return d;
+    return decide(trust, replay, timeMs, board, { needsReplay: true });
 }
 
 async function applyDecision(ctx: Ctx, r: RunRow, d: Decision): Promise<void> {

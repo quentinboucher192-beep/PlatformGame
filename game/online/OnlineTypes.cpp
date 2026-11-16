@@ -23,7 +23,6 @@ const char* categoryId(RunCategory c) {
         case RunCategory::HundredPercent: return "HUNDRED_PERCENT";
         case RunCategory::NoDeath: return "NO_DEATH";
         case RunCategory::NoDamage: return "NO_DAMAGE";
-        case RunCategory::Speedrun: return "SPEEDRUN";
     }
     return "ANY_PERCENT";
 }
@@ -34,7 +33,6 @@ const char* categoryLabel(RunCategory c) {
         case RunCategory::HundredPercent: return "100%";
         case RunCategory::NoDeath: return "SANS MORT";
         case RunCategory::NoDamage: return "SANS DÉGÂT";
-        case RunCategory::Speedrun: return "SPEEDRUN";
     }
     return "ANY%";
 }
@@ -45,7 +43,6 @@ const char* categoryRule(RunCategory c) {
         case RunCategory::HundredPercent: return "Terminer avec tous les éclats et reliques du niveau.";
         case RunCategory::NoDeath: return "Terminer sans mourir.";
         case RunCategory::NoDamage: return "Terminer sans subir le moindre dégât.";
-        case RunCategory::Speedrun: return "Run d'une traite depuis le début, replay obligatoire et vérifié.";
     }
     return "";
 }

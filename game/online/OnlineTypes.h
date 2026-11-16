@@ -22,10 +22,11 @@ enum class OnlineState {
 };
 const char* onlineStateLabel(OnlineState s);
 
-/// Leaderboard categories (see docs/online/RULES.md).
-enum class RunCategory { AnyPercent, HundredPercent, NoDeath, NoDamage, Speedrun };
-constexpr std::array<RunCategory, 5> kAllCategories = {RunCategory::AnyPercent, RunCategory::HundredPercent, RunCategory::NoDeath,
-                                                       RunCategory::NoDamage, RunCategory::Speedrun};
+/// Leaderboard categories (see docs/online/RULES.md). SPEEDRUN was removed in 2.40.1 (the same
+/// runs as ANY%, twice the notifications): a saved submission of it is dropped on loading.
+enum class RunCategory { AnyPercent, HundredPercent, NoDeath, NoDamage };
+constexpr std::array<RunCategory, 4> kAllCategories = {RunCategory::AnyPercent, RunCategory::HundredPercent, RunCategory::NoDeath,
+                                                       RunCategory::NoDamage};
 const char* categoryId(RunCategory c);     // "ANY_PERCENT"
 const char* categoryLabel(RunCategory c);  // "ANY%"
 const char* categoryRule(RunCategory c);   // French explanation

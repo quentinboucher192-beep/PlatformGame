@@ -23,7 +23,6 @@ import {
     UUID_RE,
     Validator,
     compareVersions,
-    type Category,
 } from "./validate";
 
 export type ReplayState = "none" | "valid" | "invalid";
@@ -52,10 +51,10 @@ export interface BoardContext {
     worldRecordMs: number | null;
 }
 
-export function decide(trust: number, category: Category, replay: ReplayState, timeMs: number, board: BoardContext): Decision {
+/** `opts.needsReplay`: only VERIFIED once the server has checked the replay (the challenges' runs). */
+export function decide(trust: number, replay: ReplayState, timeMs: number, board: BoardContext, opts: { needsReplay?: boolean } = {}): Decision {
     if (replay === "invalid") return { status: "REJECTED", reason: "REPLAY_INVALID", note: null };
-    if (category === "SPEEDRUN" && replay !== "valid")
-        return { status: "PENDING", reason: null, note: "La catégorie SPEEDRUN exige un replay valide." };
+    if (opts.needsReplay && replay !== "valid") return { status: "PENDING", reason: null, note: "En attente du replay." };
     const established = board.size >= ESTABLISHED_BOARD;
     if (established && board.rank === 1 && board.worldRecordMs !== null && timeMs < board.worldRecordMs * 0.8 && trust < 3)
         return { status: "PENDING", reason: null, note: HELD_FOR_REVIEW_PREFIX + " : vérification manuelle." };
@@ -107,7 +106,6 @@ const CATEGORY_LABELS: Record<string, string> = {
     HUNDRED_PERCENT: "100 %",
     NO_DEATH: "sans mort",
     NO_DAMAGE: "sans dégât",
-    SPEEDRUN: "speedrun",
 };
 
 /** m:ss,mmm, as the game shows times. */
@@ -250,7 +248,7 @@ export async function recheckHeld(ctx: Ctx, r: RecordRow): Promise<boolean> {
     if (meta?.verification_status !== "VERIFIED") return false;
     const player = await ctx.env.DB.prepare("SELECT trust_level FROM players WHERE id = ?1").bind(r.player_id).first<{ trust_level: number }>();
     const board = await boardContext(ctx, r.level_hash, r.category, r.time_ms, r.player_id);
-    const d = decide(player?.trust_level ?? 0, r.category as Category, "valid", r.time_ms, board);
+    const d = decide(player?.trust_level ?? 0, "valid", r.time_ms, board);
     if (d.status === "PENDING" && d.note === r.verification_notes) return false;
     await applyDecision(ctx, r, d);
     await audit(ctx, r.player_id, "record_rechecked", { record_id: r.id, status: d.status });
@@ -394,7 +392,7 @@ export async function submit(ctx: Ctx): Promise<Response> {
             replayState = meta?.verification_status === "VERIFIED" ? "valid" : meta?.verification_status === "REJECTED" ? "invalid" : "none";
         }
         const board = await boardContext(ctx, record.level_hash, record.category, record.time_ms, auth.player.id);
-        decision = decide(auth.player.trust_level, record.category as Category, replayState, record.time_ms, board);
+        decision = decide(auth.player.trust_level, replayState, record.time_ms, board);
     }
     const ranking = await applyDecision(ctx, record, decision);
     return json(
@@ -522,7 +520,7 @@ export async function uploadReplay(ctx: Ctx): Promise<Response> {
     for (const s of siblings.results) {
         s.replay_id = replayId;
         const board = await boardContext(ctx, s.level_hash, s.category, s.time_ms, s.player_id);
-        const d = decide(fresh?.trust_level ?? 0, s.category as Category, analysis.ok ? "valid" : "invalid", s.time_ms, board);
+        const d = decide(fresh?.trust_level ?? 0, analysis.ok ? "valid" : "invalid", s.time_ms, board);
         if (!analysis.ok) d.note = analysis.reasons.join(" ; ").slice(0, 500);
         const ranking = await applyDecision(ctx, s, d);
         results.push({ record: recordJson(s, { owner: true }), ranking });

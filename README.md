@@ -5,6 +5,9 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.40.1** :
+* **Plus de catégorie SPEEDRUN** dans les classements : elle doublait ANY% (et ses notifications).
+
 **Nouveau dans la version 2.40.0** :
 * **Rôle administrateur** : un écran Administration réservé aux comptes admin (joueurs, rôles,
   journal des actions) ; le serveur vérifie le rôle à chaque demande, aucune clé dans le jeu.
@@ -486,8 +489,8 @@ pouvoirs utilisés, date) avec comparaison au meilleur essai.
 
 Menu principal → **En ligne** (compte obligatoire pour cette section, jamais pour jouer) : globe 3D interactif (rotation à la souris ou au stick
 droit, zoom molette / gâchettes, clic sur un marqueur ou un pays), classements par niveau,
-pays, amis, planète et points cosmiques, catégories ANY% / 100% / SANS MORT / SANS DÉGÂT /
-SPEEDRUN, période historique ou hebdomadaire, profils publics, amis (avec notifications des
+pays, amis, planète et points cosmiques, catégories ANY% / 100% / SANS MORT / SANS DÉGÂT,
+période historique ou hebdomadaire, profils publics, amis (avec notifications des
 demandes) et **replays exacts** : le moteur est déterministe (pas fixe de 1/120 s, hasard du
 gameplay à graine fixe par niveau, mathématiques identiques sous Windows et Linux), un replay
 contient les commandes de chaque pas et le jeu rejoue la partie à l'identique (mêmes

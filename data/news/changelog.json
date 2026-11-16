@@ -1,4 +1,7 @@
 {
+  "2.40.1": [
+    "Classements : la catégorie SPEEDRUN est retirée. Elle reprenait les mêmes courses qu'ANY% et doublait les notifications de rang ; ses classements, meilleurs temps et notifications disparaissent (les replays restent rattachés aux autres catégories)."
+  ],
   "2.40.0": [
     "Rôle administrateur : les comptes admin ont un écran Administration (absent pour tous les autres comptes) — liste des joueurs avec recherche et filtres, rôle admin donné ou retiré après confirmation (jamais le sien, jamais le dernier admin), et un journal de chaque action, sans adresse IP ni e-mail. Le serveur vérifie le rôle à chaque demande."
   ],

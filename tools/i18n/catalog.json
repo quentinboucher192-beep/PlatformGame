@@ -5794,6 +5794,12 @@
    ]
   },
   {
+   "fr": "Classements : la catégorie SPEEDRUN est retirée. Elle reprenait les mêmes courses qu'ANY% et doublait les notifications de rang ; ses classements, meilleurs temps et notifications disparaissent (les replays restent rattachés aux autres catégories).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "CLASSEMENTS : les boutons de la fiche du niveau ont la même police et la même taille, sans texte coupé (« Course contre ce temps » devient « Défier ce temps »).",
    "where": [
     "data/news/changelog.json"
@@ -10107,7 +10113,6 @@
   {
    "fr": "En attente du replay.",
    "where": [
-    "server/src/challenges.ts",
     "server/src/records.ts"
    ]
   },
@@ -14794,12 +14799,6 @@
    "fr": "La carte des planètes",
    "where": [
     "data/music/tracks.json"
-   ]
-  },
-  {
-   "fr": "La catégorie SPEEDRUN exige un replay valide.",
-   "where": [
-    "server/src/records.ts"
    ]
   },
   {
@@ -26175,12 +26174,6 @@
    ]
   },
   {
-   "fr": "Run d'une traite depuis le début, replay obligatoire et vérifié.",
-   "where": [
-    "game/online/OnlineTypes.cpp"
-   ]
-  },
-  {
    "fr": "Runes d'Aethra",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -28340,12 +28333,6 @@
    "fr": "Spectre",
    "where": [
     "data/cosmetics/cosmetics.json"
-   ]
-  },
-  {
-   "fr": "SPEEDRUN",
-   "where": [
-    "game/online/OnlineTypes.cpp"
    ]
   },
   {

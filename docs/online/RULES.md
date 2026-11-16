@@ -39,7 +39,9 @@ s'accroupir). La caméra et l'affichage ne font pas partie de la simulation.
 | 100% | `HUNDRED_PERCENT` | terminer avec **tous** les éclats et reliques du niveau (`collectibles == total_collectibles` de la révision) |
 | SANS MORT | `NO_DEATH` | terminer sans mourir (`deaths == 0`) |
 | SANS DÉGÂT | `NO_DAMAGE` | terminer sans mourir ni subir de dégâts (`deaths == 0`, `damage_taken == 0`) |
-| SPEEDRUN | `SPEEDRUN` | run d'une traite depuis le début, **replay obligatoire et validé** pour être vérifié |
+
+La catégorie SPEEDRUN a été retirée en 2.40.1 : elle reprenait les mêmes runs qu'ANY% (et doublait
+les notifications). Le serveur la refuse et ses anciens records ont été effacés.
 
 Un même run compte dans toutes les catégories qu'il remplit (une soumission par catégorie,
 même `attempt_id`). Le jeu n'envoie une catégorie que si le temps améliore le meilleur temps
@@ -112,7 +114,6 @@ lisible mais incohérent rend le record **REJECTED** (`REPLAY_INVALID`, raisons 
 Décision (`decide()` dans `server/src/records.ts`) :
 
 * replay invalide → **REJECTED** ;
-* SPEEDRUN sans replay valide → **PENDING** ;
 * sur un classement **établi** (au moins 5 joueurs classés) :
   * nouveau record mondial battant l'ancien de plus de 20 % (confiance < 3) → **PENDING**
     (revue manuelle) ;

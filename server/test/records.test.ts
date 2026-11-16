@@ -157,13 +157,16 @@ describe("record submission", () => {
         expect(over.body.data.record.verification_status).toBe("REJECTED");
     });
 
-    it("lets trusted players skip the replay, except for SPEEDRUN", async () => {
+    it("lets trusted players skip the replay; SPEEDRUN no longer exists (2.40.1)", async () => {
         const p = await registerPlayer("Veteran");
         await setTrust(p.id, 2);
         const any = await api("POST", "/api/v1/records/submit", { token: p.token, body: submission() });
         expect(any.body.data.record.verification_status).toBe("VERIFIED");
         const speed = await api("POST", "/api/v1/records/submit", { token: p.token, body: submission({ category: "SPEEDRUN" }) });
-        expect(speed.body.data.record.verification_status).toBe("PENDING");
+        expect(speed.status).toBe(400);
+        expect((await api("GET", "/api/v1/leaderboards/level/test_01?category=SPEEDRUN")).status).toBe(400);
+        const meta = await api("GET", "/api/v1/meta");
+        if (meta.status === 200) expect(JSON.stringify(meta.body)).not.toContain("SPEEDRUN");
     });
 
     it("updates personal bests and reports rank changes", async () => {

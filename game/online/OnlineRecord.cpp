@@ -109,8 +109,6 @@ std::vector<RunCategory> eligibleCategories(const RunCandidate& run) {
     if (run.totalCollectibles > 0 && run.collectibles >= run.totalCollectibles) out.push_back(RunCategory::HundredPercent);
     if (run.deaths == 0) out.push_back(RunCategory::NoDeath);
     if (run.deaths == 0 && run.damageTaken == 0) out.push_back(RunCategory::NoDamage);
-    // SPEEDRUN: an uninterrupted run from the start of the level with a replay.
-    if (run.fromStart && run.hasReplay) out.push_back(RunCategory::Speedrun);
     return out;
 }
 

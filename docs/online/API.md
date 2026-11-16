@@ -288,7 +288,7 @@ prévu est coupé et refusé (`413 PAYLOAD_TOO_LARGE`). Un `Content-Length` inva
 - Décision du serveur à la soumission (le client n'est jamais cru) :
   temps < `min_time_ms` de la révision → `REJECTED` (`IMPOSSIBLE_TIME`) ;
   temps > `time_limit_ms` → `REJECTED` (`TIME_OVER_LIMIT`) ; replay déjà analysé et invalide →
-  `REJECTED` (`REPLAY_INVALID`) ; `SPEEDRUN` sans replay valide → `PENDING` ; nouveau record
+  `REJECTED` (`REPLAY_INVALID`) ; nouveau record
   du monde plus de 20 % sous l'actuel et confiance < 3 → `PENDING` (vérification manuelle) ;
   nouveau record du monde sur un classement d'au moins 5 joueurs et confiance < 2 →
   `PENDING` ; replay valide → `VERIFIED` ; confiance ≥ 2 → `VERIFIED` ; sinon `PENDING` en
@@ -334,7 +334,7 @@ Exemple : `curl -s $API/meta`
 ```json
 { "ok": true, "data": { "api_version": "1.0.0", "environment": "production", "tos_version": "2026-11",
   "min_game_version": "2.1.0",
-  "categories": ["ANY_PERCENT", "HUNDRED_PERCENT", "NO_DEATH", "NO_DAMAGE", "SPEEDRUN"], "modes": ["STANDARD"],
+  "categories": ["ANY_PERCENT", "HUNDRED_PERCENT", "NO_DEATH", "NO_DAMAGE"], "modes": ["STANDARD"],
   "levels": [{ "id": "sylvanox_01", "name": "Les Ruines Suspendues", "planet_id": "sylvanox",
     "planet_name": "Sylvanox", "order": 1, "version": 1, "content_hash": "0652…7b08",
     "ranking_enabled": true, "min_game_version": "2.1.0", "total_collectibles": 10,
@@ -643,7 +643,7 @@ celui de la session.
 | `level_id` | oui | `^[a-z0-9_]{1,64}$` |
 | `level_version` | oui | entier 1 à 1 000 000 |
 | `level_hash` | oui | 64 caractères hexadécimaux minuscules (révision exacte jouée) |
-| `category` | oui | `ANY_PERCENT`, `HUNDRED_PERCENT`, `NO_DEATH`, `NO_DAMAGE`, `SPEEDRUN` |
+| `category` | oui | `ANY_PERCENT`, `HUNDRED_PERCENT`, `NO_DEATH`, `NO_DAMAGE` (SPEEDRUN retirée en 2.40.1) |
 | `time_ms` | oui | entier 1 à 86 400 000 |
 | `deaths` | oui | entier 0 à 9 999 |
 | `game_version` | oui | `^\d{1,3}\.\d{1,3}\.\d{1,4}$` |

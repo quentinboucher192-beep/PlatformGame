@@ -106,7 +106,8 @@ export class Validator {
 
 // ------------------------------------------------------------------ shared rules
 
-export const CATEGORIES = ["ANY_PERCENT", "HUNDRED_PERCENT", "NO_DEATH", "NO_DAMAGE", "SPEEDRUN"] as const;
+// SPEEDRUN was removed in 2.40.1: the same runs as ANY%, and twice the notifications.
+export const CATEGORIES = ["ANY_PERCENT", "HUNDRED_PERCENT", "NO_DEATH", "NO_DAMAGE"] as const;
 export type Category = (typeof CATEGORIES)[number];
 export const MODES = ["STANDARD"] as const;
 export const LOCATION_VISIBILITY = ["hidden", "country", "globe"] as const;

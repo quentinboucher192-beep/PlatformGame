@@ -950,6 +950,7 @@
   "Classement « Plus loin » : pour les défis que peu de joueurs finissent, chaque essai est noté par le serveur selon sa progression (trajet, boss, embuscades), à côté des « Meilleurs temps » ; « Voir » rejoue l'essai de chaque joueur classé.": "\"Furthest\" leaderboard: for challenges few players finish, each attempt is scored by the server from its progress (route, bosses, ambushes), next to \"Best times\"; \"Watch\" replays every ranked player's attempt.",
   "CLASSEMENTS": "ONLINE RANKING",
   "Classements": "Leaderboards",
+  "Classements : la catégorie SPEEDRUN est retirée. Elle reprenait les mêmes courses qu'ANY% et doublait les notifications de rang ; ses classements, meilleurs temps et notifications disparaissent (les replays restent rattachés aux autres catégories).": "Leaderboards: the SPEEDRUN category is removed. It counted the same runs as ANY% and doubled the rank notifications; its leaderboards, best times and notifications are gone (the replays stay attached to the other categories).",
   "CLASSEMENTS : les boutons de la fiche du niveau ont la même police et la même taille, sans texte coupé (« Course contre ce temps » devient « Défier ce temps »).": "RANKINGS: the buttons of the level card share one font and one size, with no cut text (\"Race against this time\" becomes \"Challenge this time\").",
   "Classements et globe": "Leaderboards and globe",
   "Classements mondiaux": "World leaderboards",
