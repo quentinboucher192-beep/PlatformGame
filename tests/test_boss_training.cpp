@@ -366,12 +366,18 @@ TEST_CASE("boss training: the places to appear in an arena are on firm ground, o
         CHECK(lv.level.has_value());
         if (!lv.level) return;
         for (int phase : {-1, 2, 4, 7}) CHECK(badSpots(lv, phase) == 0);
-        auto onCollapsingFloor = [](const TrainingArena& a) {
+        // Positions from the arena's start (metadata.rooms, boss room: 47 tiles before 2.50, when
+        // the tablets of every power made the way to it longer).
+        float dx = 0.0f;
+        for (const auto& r : lv.level->metadata.value("rooms", Json::array()))
+            if (r.value("type", std::string()) == "boss") dx = (r.value("x", 47.0f) - 47.0f) * 16.0f;  // 16 px tiles
+        auto onCollapsingFloor = [dx](const TrainingArena& a) {
             return std::any_of(a.spots.begin(), a.spots.end(),
-                               [](const TrainingSpot& s) { return s.feet.x > 1120.0f && s.feet.x < 1952.0f && s.feet.y >= 639.0f; });
+                               [dx](const TrainingSpot& s) { return s.feet.x > 1120.0f + dx && s.feet.x < 1952.0f + dx && s.feet.y >= 639.0f; });
         };
-        auto inSides = [](const TrainingArena& a) {
-            return std::any_of(a.spots.begin(), a.spots.end(), [](const TrainingSpot& s) { return s.feet.x < 960.0f || s.feet.x > 2112.0f; });
+        auto inSides = [dx](const TrainingArena& a) {
+            return std::any_of(a.spots.begin(), a.spots.end(),
+                               [dx](const TrainingSpot& s) { return s.feet.x < 960.0f + dx || s.feet.x > 2112.0f + dx; });
         };
         lv.setup.phase = -1;
         auto whole = lv.arena();

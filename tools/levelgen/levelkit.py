@@ -158,6 +158,15 @@ START_POWERS = {
     "aethra_03": ["glide", "dash", "charge_shot"],
     "aethra_04": ["dash", "grapple", "glide"],
 }
+
+
+def giga_powers(level_id):
+    """2.50: the power tablets of a giga boss's arena: every power of the game (data/powers),
+    except those carried from the start (START_POWERS), in a fixed order (by id): a new power of
+    the game joins every giga boss arena when its level is generated again."""
+    start = set(START_POWERS.get(level_id, []))
+    ids = sorted(f[:-5] for f in os.listdir(os.path.join(ROOT, "data", "powers")) if f.endswith(".json"))
+    return [p for p in ids if p not in start]
 POWER_NAMES = {
     "dash": "le Dash", "wave": "l'Onde", "shield": "le Bouclier", "impulse": "l'Impulsion", "teleport": "la Téléportation",
     "glide": "le Planeur", "grapple": "le Grappin", "ground_pound": "la Frappe sismique", "charge_shot": "le Tir chargé",

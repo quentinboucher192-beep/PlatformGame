@@ -142,12 +142,15 @@ TEST_CASE("level power keys: suggestions never collide in a campaign level nor t
         auto level = content.loadLevel(e->id);
         CHECK(level.has_value());
         std::vector<std::string> powers = levelKeyPowers(*level, content);
+        // 2.50: a giga boss arena offers every power: more than a gamepad's free inputs, so
+        // their buttons are shared (two carried powers never share one: see below).
+        const bool shared = padsShared(powers.size());
         for (size_t a = 0; a < powers.size(); ++a)
             for (size_t b = a + 1; b < powers.size(); ++b) {
                 const PowerDefinition* pa = content.power(powers[a]);
                 const PowerDefinition* pb = content.power(powers[b]);
-                if (pa->suggestedPad == pb->suggestedPad) std::printf("  %s : %s / %s\n", e->id.c_str(), pa->id.c_str(), pb->id.c_str());
-                CHECK(!(pa->suggestedPad == pb->suggestedPad));
+                if (!shared && pa->suggestedPad == pb->suggestedPad) std::printf("  %s : %s / %s\n", e->id.c_str(), pa->id.c_str(), pb->id.c_str());
+                CHECK(shared || !(pa->suggestedPad == pb->suggestedPad));
                 CHECK(pa->suggestedKey != pb->suggestedKey);
             }
     }
@@ -332,6 +335,47 @@ TEST_CASE("level power keys: a slot takes the key of the power it holds, never a
         std::vector<std::string> missing = applyPowerSlotKeys(im, w.player(), keys);
         CHECK(missing == std::vector<std::string>({"decoy"}));
         CHECK(im.bindings().keys[at(Action::PowerSlot4)][0] == SDL_SCANCODE_UNKNOWN);
+    }
+
+    // 2.50: a giga boss arena offers every power; their gamepad buttons are shared (shield and
+    // the boomerang blade both suggest LB) but two powers carried together never get the same
+    // one, whatever the order they are picked up in, and the keyboard keeps a key per power.
+    LevelData all = levelWith({}, {"shield", "boomerang", "time_slow", "recall", "frost_nova", "impulse", "decoy", "teleport", "dash", "wave",
+                                   "plasma_bomb"});
+    PowerKeyMap allKeys = levelPowerKeys(all, content, InputBindings::defaults(), nullptr);
+    CHECK(allKeys.sharedPad);
+    CHECK(allKeys.find("shield")->pad == allKeys.find("boomerang")->pad);  // its own button, shared
+    for (const auto& r : allKeys.powers) {
+        CHECK(!r.padConflict());
+        CHECK(!r.keyConflict());
+    }
+    for (const auto& order : {std::vector<std::string>{"shield", "boomerang", "time_slow", "recall"},
+                              std::vector<std::string>{"recall", "time_slow", "boomerang", "shield"},
+                              std::vector<std::string>{"frost_nova", "impulse", "decoy", "teleport"}}) {
+        WorldServices s{res, audio, content, nullptr, 0.0f, 1.0f};
+        GameWorld w(s, WorldMode::Play);
+        w.silent = true;
+        w.setKeysPerSlot(true);
+        w.load(all);
+        InputManager im;
+        for (const auto& id : order) {
+            w.player().grantPower(*content.power(id));
+            CHECK(applyPowerSlotKeys(im, w.player(), allKeys).empty());
+        }
+        std::vector<PadBinding> pads;
+        std::set<SDL_Scancode> keysHeld;
+        for (size_t slot = 0; slot < order.size(); ++slot) {
+            const PadBinding p = im.bindings().pad[at(powerSlotAction(static_cast<int>(slot)))][0];
+            CHECK(p.kind != PadBinding::Kind::None);
+            CHECK(baseCommandOfPad(InputBindings::defaults(), p).empty());
+            for (const auto& q : pads) CHECK(!(q == p));
+            pads.push_back(p);
+            // The first carried power of a shared button keeps it.
+            if (slot == 0) CHECK(p == allKeys.find(order[0])->pad);
+            const SDL_Scancode k = im.bindings().keys[at(powerSlotAction(static_cast<int>(slot)))][0];
+            CHECK(k == allKeys.find(order[slot])->key);
+            CHECK(keysHeld.insert(k).second);
+        }
     }
     CHECK(seen["dash"] == SDL_SCANCODE_K);
     CHECK(seen["wave"] == SDL_SCANCODE_L);

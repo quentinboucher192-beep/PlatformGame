@@ -131,6 +131,7 @@ void GameServices::startCampaignRevisions(bool fetch) {
     enemyRevisions.applyTo(content, online.config().serverUrl, COSMIC_VERSION_STRING);
     campaignRevisions.setDir(Paths::userDir() / "online" / "campaign");
     campaignRevisions.load();
+    keptRecords.loadDefault();
     applyCampaignRevisions();  // the revisions kept on this computer: offline too
     campaignFetch_ = fetch;
     campaignTimer_ = 0.0f;
@@ -261,7 +262,9 @@ void GameServices::checkRevisionRecords() {
         if (!r || r->bestTime <= 0.0f || r->rankedHash.empty()) continue;
         const LevelFingerprint* fp = online.fingerprints().get(content, e->id);
         if (!fp || fp->hash == r->rankedHash) continue;
-        const bool kept = campaignRevisions.keptHashes(e->id).count(r->rankedHash) > 0;
+        // Kept: published online with « Garder les records », or shipped with the game as an
+        // earlier version without a major change (data/levels/kept_records.json, offline too).
+        const bool kept = campaignRevisions.keptHashes(e->id).count(r->rankedHash) > 0 || keptRecords.ranked(e->id).count(r->rankedHash) > 0;
         std::optional<LevelRecord> old;
         if (kept) records.carryBest(e->id, fp->hash);
         else old = records.invalidateBest(e->id);

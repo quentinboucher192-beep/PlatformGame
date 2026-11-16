@@ -69,6 +69,9 @@
 //                           with --level: save the replay of the run when the level is completed
 //   --online-manifest <file.json>
 //                           write the ranking manifest of the built-in levels (server seed)
+//   --keep-records <id,id…> before tools/levelgen changes these levels without a major change:
+//                           their current fingerprints go to data/levels/kept_records.json
+//                           (their records stay valid on the next version, 2.50)
 
 #include <algorithm>
 #include <cstdio>
@@ -146,6 +149,52 @@ int manifestFromCommandLine(const std::string& file) {
     Log::info("Manifeste en ligne : {} niveaux -> {}", manifest["levels"].size(), file);
     return 0;
 }
+/// `--keep-records <id,id…>`: the current fingerprints (gameplay and ranked) of these campaign
+/// levels, added to data/levels/kept_records.json: their records stay valid on the version that
+/// tools/levelgen writes next (to run BEFORE regenerating them; the server links the same
+/// rankings with `node scripts/levels-migration.mjs manifest.json --keep <id,id…>`).
+int keepRecordsFromCommandLine(const std::string& ids) {
+    ContentDatabase content;
+    content.reload();
+    const fs::path file = Paths::dataDir() / "levels" / "kept_records.json";
+    Json j = FileUtil::loadJson(file).value_or(Json::object());
+    if (!j.is_object()) j = Json::object();
+    j["format"] = "cosmic.kept_records";
+    j["comment"] = "Earlier versions of campaign levels whose records count on the shipped version (CosmicPlatformer --keep-records; game/records/KeptRecords.h).";
+    if (!j.contains("levels") || !j["levels"].is_object()) j["levels"] = Json::object();
+    LevelFingerprints fingerprints;  // keeps the fingerprints it returns
+    size_t start = 0;
+    int added = 0;
+    while (start <= ids.size()) {
+        size_t comma = ids.find(',', start);
+        std::string id = ids.substr(start, comma == std::string::npos ? std::string::npos : comma - start);
+        start = comma == std::string::npos ? ids.size() + 1 : comma + 1;
+        if (id.empty()) continue;
+        auto level = content.loadLevel(id);
+        const LevelEntry* e = content.level(id);
+        if (!level || !e || e->source != ContentSource::Builtin) {
+            Log::error("Niveau de la campagne inconnu : {}", id);
+            return 2;
+        }
+        const LevelFingerprint* fp = fingerprints.get(content, id);
+        const std::string gameplay = fingerprintGameplay(content, *level), ranked = fp ? fp->hash : std::string();
+        Json& list = j["levels"][id];
+        if (!list.is_array()) list = Json::array();
+        bool known = false;
+        for (const Json& v : list) known = known || (v.value("gameplay", std::string()) == gameplay && v.value("ranked", std::string()) == ranked);
+        if (known) continue;
+        list.push_back({{"gameplay", gameplay}, {"ranked", ranked}, {"version", fp ? fp->version : 0}, {"until", COSMIC_VERSION_STRING}});
+        ++added;
+        Log::info("Records gardés : {} révision {} ({} / {})", id, fp ? fp->version : 0, gameplay.substr(0, 12), ranked.substr(0, 12));
+    }
+    if (!FileUtil::saveJson(file, j)) {
+        Log::error("Écriture impossible : {}", Paths::toUtf8(file));
+        return 3;
+    }
+    Log::info("{} version(s) ajoutée(s) à {}", added, Paths::toUtf8(file));
+    return 0;
+}
+
 /// `--analyze-levels <folder>`: shortcut detector on the campaign levels (report + maps).
 int analyzeFromCommandLine(const std::string& folder) {
     ContentDatabase content;
@@ -416,6 +465,12 @@ int main(int argc, char** argv) {
 
     if (std::string dir = value("--seal-levels"); !dir.empty()) {
         int rc = sealFromCommandLine(dir);
+        Log::shutdown();
+        return rc;
+    }
+
+    if (std::string k = value("--keep-records"); !k.empty()) {
+        int rc = keepRecordsFromCommandLine(k);
         Log::shutdown();
         return rc;
     }

@@ -9,6 +9,7 @@
 #include "engine/core/Paths.h"
 #include "game/content/ContentDatabase.h"
 #include "game/levels/LevelTimer.h"
+#include "game/records/KeptRecords.h"
 #include "game/online/LevelFingerprint.h"
 #include "game/records/Records.h"
 
@@ -73,6 +74,10 @@ NewsCenter::Snapshot NewsCenter::snapshot(const ContentDatabase& content) {
                 s.levelNames[e->id] = l->name + " (" + p->name + ")";
             }
         }
+    KeptRecords kept;
+    kept.loadDefault();
+    for (const auto& [id, h] : s.levels)
+        if (!kept.gameplay(id).empty()) s.keptLevels[id] = kept.gameplay(id);
     for (const PowerDefinition* p : content.powers()) s.powers.push_back({p->id, p->name});
     for (const EnemyDefinition* e : content.enemies()) {
         if (!content.isNativeEnemy(e->id) || !e->variantOf.empty()) continue;  // echoes: their original is announced
@@ -158,9 +163,15 @@ void NewsCenter::apply(const Snapshot& now, RecordsManager& records, const std::
         for (const auto& [id, hash] : now.levels) {
             std::string name = now.levelNames.count(id) ? now.levelNames.at(id) : id;
             if (!lv.contains(id)) add({"level:" + id, "level", "Nouveau niveau dans la campagne : " + name, "À jouer depuis la carte des planètes.", "", id});
-            else if (lv[id].is_string() && lv[id].get<std::string>() != hash)
-                add({"level_changed:" + id + ":" + hash.substr(0, 12), "level_changed", "Niveau modifié : " + name,
-                     "Sa nouvelle version change le parcours : les records sont comparés sur la nouvelle version.", "", id});
+            else if (lv[id].is_string() && lv[id].get<std::string>() != hash) {
+                auto k = now.keptLevels.find(id);
+                if (k != now.keptLevels.end() && k->second.count(lv[id].get<std::string>()))
+                    add({"level_kept:" + id + ":" + hash.substr(0, 12), "level_changed", "Niveau modifié sans changement majeur : " + name,
+                         "Aucun classement n'est remis à zéro : votre record et les classements restent les mêmes.", "", id});
+                else
+                    add({"level_changed:" + id + ":" + hash.substr(0, 12), "level_changed", "Niveau modifié : " + name,
+                         "Sa nouvelle version change le parcours : les records sont comparés sur la nouvelle version.", "", id});
+            }
         }
     }
     // Best times set on another version of a campaign level no longer count: the bundled level
@@ -173,6 +184,8 @@ void NewsCenter::apply(const Snapshot& now, RecordsManager& records, const std::
         if (!r || r->bestTime <= 0.0f || r->levelHash == hash) continue;
         const std::string before = previous.contains(id) && previous[id].is_string() ? previous[id].get<std::string>() : std::string();
         if (!r->levelHash.empty() && r->levelHash != before) continue;
+        // 2.50: an earlier version kept (no major change): the best time stays.
+        if (auto k = now.keptLevels.find(id); k != now.keptLevels.end() && k->second.count(r->levelHash)) continue;
         auto old = records.invalidateBest(id);
         if (!old) continue;
         std::string name = now.levelNames.count(id) ? now.levelNames.at(id) : id;

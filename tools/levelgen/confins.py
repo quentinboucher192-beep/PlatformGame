@@ -19,7 +19,7 @@ the dragon's phases. Run from the repository root after tools/contentgen/pyrrhax
 import os
 
 from challenge import HEADROOM
-from levelkit import ROOT, T
+from levelkit import ROOT, T, giga_powers
 from stellar_core import Star
 
 
@@ -150,7 +150,7 @@ def dragon_maw():
     # start: levelkit.START_POWERS; four carried, what is left stays here).
     b.th.update(floor="obsidian", roof="obsidian", accent="obsidian")
     b.opening("La Gueule du Dragon : Pyrrhax seul, une seule vie, aucun checkpoint. Choisissez vos quatre pouvoirs.")
-    b.tablets(["frost_nova", "plasma_bomb", "wave", "shield", "triple_jump", "time_slow"])
+    b.tablets(giga_powers("confins_01"))  # 2.50: every power of the game
     b.zone_sign("Pyrrhax, le Dragon d'Obsidienne.")
     b.rooms.append({"type": "boss", "x": b.x, "floor": b.f, "boss": "pyrrhax"})
     b.dragon_arena("pyrrhax", music="music/pyrrhax_boss.ogg")
@@ -162,8 +162,9 @@ def dragon_maw():
                    "platinum": {"maxTime": ref, "maxDeaths": 0}}
     b.cinematics("LA GUEULE DU DRAGON", "Les Confins", "Une seule vie. Un dragon d'obsidienne. Huit phases.",
                  "LE DRAGON S'ÉTEINT")
-    # 2.49: the fight alone (a new version of the level: its rankings start again).
-    d["metadata"] = {"generator": "tools/levelgen/confins.py", "revision": 9, "rooms": b.rooms, "noHealing": True}
+    # 2.49: the fight alone (a new version of the level: its rankings start again). 2.50: every
+    # power (revision 10), the records of revision 9 kept (data/levels/kept_records.json).
+    d["metadata"] = {"generator": "tools/levelgen/confins.py", "revision": 10, "rooms": b.rooms, "noHealing": True}
     L.save(os.path.join(ROOT, "data/levels/confins_01.json"))
     return width
 
@@ -189,7 +190,7 @@ def stone_heart():
     # Only the fight, as Pyrrhax' level: the choice of the powers, then the giant arena.
     b.th.update(floor="obsidian", roof="obsidian", accent="obsidian")
     b.opening("Le Cœur de Pierre : le Monolithe seul, une seule vie, aucun checkpoint. Choisissez vos quatre pouvoirs.")
-    b.tablets(["ground_pound", "plasma_bomb", "wave", "shield", "triple_jump", "time_slow"])
+    b.tablets(giga_powers("confins_02"))  # 2.50: every power of the game
     b.zone_sign("Le Monolithe, le Golem Primordial.")
     b.rooms.append({"type": "boss", "x": b.x, "floor": b.f, "boss": "monolithe"})
     # A walker: the crust gives way on the two sides only (the golem fights in the middle).
@@ -201,7 +202,8 @@ def stone_heart():
                    "platinum": {"maxTime": ref, "maxDeaths": 0}}
     b.cinematics("LE CŒUR DE PIERRE", "Les Confins", "Une seule vie. Un golem plus ancien que les planètes. Huit phases.",
                  "LE GOLEM S'EFFONDRE")
-    d["metadata"] = {"generator": "tools/levelgen/confins.py", "revision": 1, "rooms": b.rooms, "noHealing": True}
+    # 2.50: every power (revision 9), the records of revision 8 kept (data/levels/kept_records.json).
+    d["metadata"] = {"generator": "tools/levelgen/confins.py", "revision": 9, "rooms": b.rooms, "noHealing": True}
     L.save(os.path.join(ROOT, "data/levels/confins_02.json"))
     return width
 

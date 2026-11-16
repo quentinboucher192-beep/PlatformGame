@@ -51,8 +51,16 @@ struct ResolvedPowerKey {
 /// The keys of the powers of a level (in its order).
 struct PowerKeyMap {
     std::vector<ResolvedPowerKey> powers;
+    /// 2.50: more powers than free gamepad inputs (a giga boss arena offers every power): each
+    /// keeps its own button, shared with others; applyPowerSlotKeys() never gives one button to
+    /// two carried powers (only four are carried at once).
+    bool sharedPad = false;
     const ResolvedPowerKey* find(const std::string& power) const;
 };
+
+/// Whether `keyPowers` powers with a key of their own share their gamepad buttons (more than
+/// the free inputs of a gamepad).
+bool padsShared(size_t keyPowers);
 
 /// Whether a power is used with a key of its own (not passive, not on a move of the character).
 bool powerUsesKey(const PowerDefinition& def);

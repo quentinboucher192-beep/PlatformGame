@@ -3,6 +3,7 @@
 #include <future>
 #include <map>
 #include <optional>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -40,6 +41,9 @@ public:
         std::map<std::string, std::string> levels;  // campaign level id -> gameplay fingerprint
         std::map<std::string, std::string> levelNames;
         std::vector<std::pair<std::string, std::string>> powers, enemies, bosses;  // id, name
+        /// 2.50: gameplay fingerprints of earlier versions whose records stay valid
+        /// (data/levels/kept_records.json: no major change).
+        std::map<std::string, std::set<std::string>> keptLevels;
     };
     static Snapshot snapshot(const ContentDatabase& content);
 

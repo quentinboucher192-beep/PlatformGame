@@ -16,6 +16,7 @@
 #include "game/ghost/TrainingSegments.h"
 #include "game/levels/RatingService.h"
 #include "game/online/CampaignRevisions.h"
+#include "game/records/KeptRecords.h"
 #include "game/online/EnemyRevisions.h"
 #include "game/online/DailyChallenges.h"
 #include "game/online/OnlineService.h"
@@ -182,6 +183,8 @@ public:
     /// Campagne). Those kept on this computer are played at once, offline too; with `fetch`,
     /// the manifest is read (public, nothing personal sent) and the newer ones downloaded.
     CampaignRevisionStore campaignRevisions;
+    /// 2.50: earlier versions of campaign levels whose records stay valid (data/levels/kept_records.json).
+    KeptRecords keptRecords;
     void startCampaignRevisions(bool fetch);
     /// Reads GET /campaign/revisions, downloads and checks what is missing, then plays the
     /// current revisions. `done(error)`: once everything is installed ("" when all went well).

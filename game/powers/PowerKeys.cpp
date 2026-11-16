@@ -186,7 +186,19 @@ PowerKeyMap resolvePowerKeys(const std::vector<std::string>& powers, const Conte
         pads.push_back({&r.wantedPad, r.padSource, &r.pad, &r.padCommand, &r.padPower});
     }
     assign(m.powers, std::move(keys), [&](SDL_Scancode k) { return baseCommandOfKey(base, k); }, kKeyFallback);
-    assign(m.powers, std::move(pads), [&](const PadBinding& p) { return baseCommandOfPad(base, p); }, kPadFallback);
+    m.sharedPad = padsShared(m.powers.size());
+    if (!m.sharedPad) {
+        assign(m.powers, std::move(pads), [&](const PadBinding& p) { return baseCommandOfPad(base, p); }, kPadFallback);
+    } else {
+        // 2.50: more powers than free gamepad inputs (a giga boss arena offers every power): each
+        // power keeps its own button, shared with another one; only four are carried at once,
+        // and applyPowerSlotKeys() moves a carried power whose button another carried power has.
+        for (auto& c : pads) {
+            if (isNone(*c.wanted)) continue;
+            if (std::string cmd = baseCommandOfPad(base, *c.wanted); !cmd.empty()) *c.command = cmd;
+            else *c.out = *c.wanted;
+        }
+    }
     return m;
 }
 
@@ -287,25 +299,49 @@ ResolvedPowerKey levelPowerKey(const std::string& power, const LevelData& level,
     return none;
 }
 
+bool padsShared(size_t keyPowers) { return keyPowers > std::size(kPadFallback); }
+
 std::vector<std::string> applyPowerSlotKeys(InputManager& in, const Player& player, const PowerKeyMap& keys) {
     std::vector<std::string> missing;
     const auto& powers = player.powers();
+    SDL_Scancode slotKey[kPowerSlotKeys] = {};
+    PadBinding slotPad[kPowerSlotKeys];
+    bool movable[kPowerSlotKeys] = {};
     for (int s = 0; s < kPowerSlotKeys; ++s) {
-        SDL_Scancode key = SDL_SCANCODE_UNKNOWN;
-        PadBinding pad;
-        if (static_cast<size_t>(s) < powers.size()) {
-            const Power& p = *powers[static_cast<size_t>(s)];
-            if (p.trigger() == PowerTrigger::SlotKey && p.key() == powerSlotAction(s)) {
-                if (const ResolvedPowerKey* r = keys.find(p.id())) {
-                    key = r->key;
-                    pad = r->pad;
-                } else {
-                    missing.push_back(p.id());
+        slotKey[s] = SDL_SCANCODE_UNKNOWN;
+        if (static_cast<size_t>(s) >= powers.size()) continue;
+        const Power& p = *powers[static_cast<size_t>(s)];
+        if (p.trigger() != PowerTrigger::SlotKey || p.key() != powerSlotAction(s)) continue;
+        if (const ResolvedPowerKey* r = keys.find(p.id())) {
+            slotKey[s] = r->key;
+            slotPad[s] = r->pad;
+            movable[s] = r->padCommand.empty();
+        } else {
+            missing.push_back(p.id());
+        }
+    }
+    // 2.50: in a level whose powers share their gamepad buttons (every power offered), two
+    // carried powers never share one: the later slot takes a free button, never the button of
+    // another carried power nor a command's (display and input only, outside the simulation).
+    if (keys.sharedPad) {
+        for (int s = 0; s < kPowerSlotKeys; ++s) {
+            if (!movable[s]) continue;
+            bool clash = isNone(slotPad[s]) && slotKey[s] != SDL_SCANCODE_UNKNOWN;
+            for (int o = 0; o < s && !clash; ++o) clash = !isNone(slotPad[s]) && slotPad[o] == slotPad[s];
+            if (!clash) continue;
+            PadBinding chosen;
+            for (const PadBinding& f : kPadFallback) {
+                bool used = !baseCommandOfPad(in.bindings(), f).empty();
+                for (int o = 0; o < kPowerSlotKeys && !used; ++o) used = o != s && slotPad[o] == f;
+                if (!used) {
+                    chosen = f;
+                    break;
                 }
             }
+            slotPad[s] = chosen;
         }
-        in.setPowerSlotKey(s, key, pad);
     }
+    for (int s = 0; s < kPowerSlotKeys; ++s) in.setPowerSlotKey(s, slotKey[s], slotPad[s]);
     return missing;
 }
 

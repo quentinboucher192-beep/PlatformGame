@@ -4,9 +4,17 @@
 // that a release can be registered with `wrangler d1 migrations apply` without any
 // administration secret.
 //   node scripts/levels-migration.mjs manifest.json > migrations/000N_levels_<version>.sql
+// 2.50: the earlier versions listed in data/levels/kept_records.json (CosmicPlatformer
+// --keep-records: no major change) keep their records on the new revision, as « Garder les
+// records » does for an administrator: their rankings are linked (campaign_board_links: the
+// leaderboards and the verification race read them) and the players' best times carried over.
+// Another list can be given as the second argument.
 import fs from "node:fs";
 
 const manifest = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
+const keptFile = process.argv[3] ?? new URL("../../data/levels/kept_records.json", import.meta.url);
+const kept = fs.existsSync(keptFile) ? JSON.parse(fs.readFileSync(keptFile, "utf8")) : { levels: {} };
+if (kept.levels === null || typeof kept.levels !== "object") throw new Error("liste des records gardés invalide");
 if (manifest.format !== "cosmic.online_manifest" || !Array.isArray(manifest.levels)) throw new Error("manifeste invalide");
 const q = (s) => "'" + String(s).replace(/'/g, "''") + "'";
 const n = (x) => {
@@ -47,6 +55,20 @@ for (const l of manifest.levels) {
     out.push(
         `UPDATE level_versions SET compatibility_status = 'legacy' WHERE level_id = ${id(l.id)} AND version < ${n(l.version)} AND compatibility_status = 'active' AND ${same};`,
     );
+    // 2.50: records kept from earlier versions (no major change).
+    for (const k of kept.levels[l.id] ?? []) {
+        if (typeof k?.ranked !== "string" || k.ranked === l.content_hash) continue;
+        out.push(`-- ${l.id} : records de l'empreinte ${k.ranked.slice(0, 12)} gardés (pas de changement majeur)`);
+        out.push(
+            `INSERT OR IGNORE INTO campaign_board_links (level_id, to_hash, from_hash, created_at) SELECT ${id(l.id)}, ${hash(l.content_hash)}, ${hash(k.ranked)}, ${q(now)} WHERE ${same};`,
+        );
+        out.push(
+            `INSERT OR IGNORE INTO campaign_board_links (level_id, to_hash, from_hash, created_at) SELECT ${id(l.id)}, ${hash(l.content_hash)}, from_hash, ${q(now)} FROM campaign_board_links WHERE level_id = ${id(l.id)} AND to_hash = ${hash(k.ranked)} AND from_hash <> ${hash(l.content_hash)} AND ${same};`,
+        );
+        out.push(
+            `INSERT INTO player_bests (player_id, level_id, level_hash, category, record_id, time_ms, achieved_at) SELECT player_id, level_id, ${hash(l.content_hash)}, category, record_id, time_ms, achieved_at FROM player_bests WHERE level_hash = ${hash(k.ranked)} AND ${same} ON CONFLICT (player_id, level_hash, category) DO UPDATE SET record_id = excluded.record_id, time_ms = excluded.time_ms, achieved_at = excluded.achieved_at WHERE excluded.time_ms < player_bests.time_ms;`,
+        );
+    }
     // EXTRÊME level: the layout of its race (« course à la vérification »).
     if (l.race) out.push(`UPDATE level_versions SET race = ${q(JSON.stringify(l.race))} WHERE level_id = ${id(l.id)} AND content_hash = ${hash(l.content_hash)};`);
     out.push("");

@@ -1,0 +1,30 @@
+{
+  "comment": "Earlier versions of campaign levels whose records count on the shipped version (CosmicPlatformer --keep-records; game/records/KeptRecords.h).",
+  "format": "cosmic.kept_records",
+  "levels": {
+    "confins_01": [
+      {
+        "gameplay": "c8b313b89567ba0011817de6f3c07651a173f4f4b2ac1fb97bb0c9a451d0919a",
+        "ranked": "342340f85ddefbe94147e7f756b918372a6799308995ca7edef762020df02da5",
+        "until": "2.49.1",
+        "version": 9
+      }
+    ],
+    "confins_02": [
+      {
+        "gameplay": "bd9df1fd07c5cab2c40a5c145e657c3bbd2d48d84788d72e4f76b225e41327ff",
+        "ranked": "9012112902c744dd995c47ac885808ff7f004c35e0ac5991724105d34c115fb0",
+        "until": "2.49.1",
+        "version": 8
+      }
+    ],
+    "noyau_03": [
+      {
+        "gameplay": "85ede1656b382fa6fa39c7acee75b460bfdf4661aa6b705119ecf78122cbb6c0",
+        "ranked": "e51015e3e813c222acb04d5416f68236b51df944a20bce0dd33d7bc6b77125c7",
+        "until": "2.49.1",
+        "version": 9
+      }
+    ]
+  }
+}

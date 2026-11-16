@@ -19,7 +19,7 @@ import json
 import os
 
 from challenge import Builder, H, HEADROOM, THEMES
-from levelkit import Level, ROOT, T
+from levelkit import Level, ROOT, T, giga_powers
 from aethra import LEVELS as AETHRA_LEVELS, STONE as AETHRA_STONE, tile
 
 # Aethra (2.19) in the star's light: the void island's theme, on the islands' rock.
@@ -427,7 +427,8 @@ def dying_star():
               "Choisissez vos quatre pouvoirs.")
     # The powers of the fight (four carried; what is left stays here; dash, grapple, glide and
     # the charged shot are carried from the start: levelkit.START_POWERS).
-    b.tablets(["time_slow", "plasma_bomb", "impulse", "shield", "triple_jump", "wave"])
+    # 2.50: every power of the game (giga boss arenas), the records of revision 9 kept.
+    b.tablets(giga_powers("noyau_03"))
     b.zone_sign("Singularis, le Cœur Effondré.")
     b.rooms.append({"type": "boss", "x": b.x, "floor": b.f, "boss": "singularis"})
     b.giant_arena("singularis", music="music/singularis_boss.ogg")
@@ -439,8 +440,9 @@ def dying_star():
                    "platinum": {"maxTime": ref, "maxDeaths": 0}}
     b.cinematics("LE CŒUR D'UNE ÉTOILE MOURANTE", "Noyau stellaire", "Une seule vie. Une étoile morte. Huit phases.",
                  "L'ÉTOILE S'ÉTEINT")
-    # 2.34.1: the fight alone (a new version of the level: its rankings start again).
-    d["metadata"] = {"generator": "tools/levelgen/stellar_core.py", "revision": 9, "rooms": b.rooms, "noHealing": True}
+    # 2.34.1: the fight alone (a new version of the level: its rankings start again). 2.50:
+    # every power (revision 10), the records of revision 9 kept (data/levels/kept_records.json).
+    d["metadata"] = {"generator": "tools/levelgen/stellar_core.py", "revision": 10, "rooms": b.rooms, "noHealing": True}
     L.save(os.path.join(ROOT, "data/levels/noyau_03.json"))
     return width
 
