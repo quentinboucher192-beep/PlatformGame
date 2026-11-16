@@ -103,3 +103,7 @@ stream
 %d:%f,%f:%f,%f:%d
 badge
 badges
+stations
+<month+1
+<month-1
+player

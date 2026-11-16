@@ -333,7 +333,14 @@ void Hud::drawTimer(UIContext& ui, GameWorld& w, const LevelRecord* record, Vec2
         line += S(26);
     }
     // A challenge: its next tier still reachable (the level's medals do not apply).
-    if (tierSilver_ > 0.0f || tierGold_ > 0.0f) {
+    if (tierFinish_) {
+        // « Finir le niveau » (2.41): Or at the finish (without damage when it says so).
+        TextStyle ms = small;
+        bool gold = !tierGoldNoDamage_ || w.stats().damageTaken == 0;
+        ms.color = gold ? Color{255, 204, 84, 255} : Color{198, 210, 228, 255};
+        ui.text().draw(gold ? (tierGoldNoDamage_ ? "Or : finir sans dégât" : "Or : finir le niveau") : "Argent : finir le niveau", {x, line}, ms);
+        line += S(26);
+    } else if (tierSilver_ > 0.0f || tierGold_ > 0.0f) {
         TextStyle ms = small;
         float e = t.elapsed();
         if (tierGold_ > 0.0f && e <= tierGold_ && (!tierGoldNoDamage_ || w.stats().damageTaken == 0)) {
@@ -347,7 +354,7 @@ void Hud::drawTimer(UIContext& ui, GameWorld& w, const LevelRecord* record, Vec2
         }
     }
     // Next medal objective still reachable
-    for (int i = 3; i >= 1 && tierSilver_ <= 0.0f && tierGold_ <= 0.0f; --i) {
+    for (int i = 3; i >= 1 && tierSilver_ <= 0.0f && tierGold_ <= 0.0f && !tierFinish_; --i) {
         const MedalRule& m = lvl.medals[i];
         if (m.maxTime > 0 && t.elapsed() <= m.maxTime) {
             static const char* names[] = {"Bronze", "Argent", "Or", "Platine"};

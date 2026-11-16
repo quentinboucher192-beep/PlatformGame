@@ -2,6 +2,7 @@
 // caching of anonymous reads, and the daily maintenance cron.
 
 import * as admin from "./admin";
+import * as adminChallenges from "./adminChallenges";
 import * as adminRoles from "./adminRoles";
 import * as backups from "./backups";
 import { login, logout, me, optionalAuth, refresh, register, usernameAvailable, type AuthInfo } from "./auth";
@@ -316,6 +317,11 @@ route("PUT", `${V}/admin/backups/imports/{importId}/parts/{n}`, (ctx) => backups
 route("POST", `${V}/admin/backups/imports/{importId}/check`, (ctx) => backups.checkImport(ctx));
 route("POST", `${V}/admin/backups/imports/{importId}/apply`, (ctx) => backups.applyImport(ctx));
 route("POST", `${V}/admin/backups/{backupId}/download`, (ctx) => backups.downloadBackup(ctx));
+// ADMINISTRATION › Calendrier des défis (2.41): the coming challenges too, set or put back to the draw.
+route("GET", `${V}/admin/challenges`, (ctx) => adminChallenges.listChallenges(ctx));
+route("GET", `${V}/admin/challenges/levels`, (ctx) => adminChallenges.listLevels(ctx));
+route("PUT", `${V}/admin/challenges/{challengeId}`, (ctx) => adminChallenges.setChallenge(ctx));
+route("DELETE", `${V}/admin/challenges/{challengeId}`, (ctx) => adminChallenges.resetChallenge(ctx));
 
 function match(method: string, path: string): { route: Route; params: Record<string, string> } | "method" | null {
     let pathMatched = false;

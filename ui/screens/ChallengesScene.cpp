@@ -22,6 +22,7 @@
 #include "packaging/PackageImporter.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/ChallengeRewardsUi.h"
+#include "ui/screens/ChallengeUi.h"
 #include "ui/screens/GameScene.h"
 #include "ui/screens/LevelPowerKeysScene.h"
 #include "ui/screens/MenuBackground.h"
@@ -32,31 +33,7 @@ namespace cosmic {
 
 namespace {
 
-/// Never below 11.5 pixels on screen (the font loses its spaces under that).
-float fz(const UIContext& ui, float size) { return std::max(size, 11.5f / ui.s(1.0f)); }
-
-/// The size (from `size`, never below 11.5 pixels) at which `t` fits `room`.
-float fit(UIContext& ui, const std::string& t, FontFace face, float size, float room, float minScale = 0.75f) {
-    return std::max(ui.fitFont(t, face, fz(ui, size), room, minScale), 11.5f / ui.s(1.0f));
-}
-
-/// `t` fitted (then shortened with « … » if needed) in `room` pixels, drawn; returns its size.
-Vec2 fitLabel(UIContext& ui, const std::string& t, Vec2 pos, float size, float room, Color c, Align a = Align::Left,
-              FontFace face = FontFace::Body, VAlign va = VAlign::Middle, float minScale = 0.75f) {
-    if (room <= ui.s(8)) return {};
-    float f = fit(ui, t, face, size, room, minScale);
-    return ui.label(ui.elide(t, face, f, room), pos, f, c, a, face, va);
-}
-
-Color tierColor(ChallengeTier t) {
-    switch (t) {
-        case ChallengeTier::Bronze: return {214, 140, 82, 255};
-        case ChallengeTier::Silver: return {198, 210, 228, 255};
-        case ChallengeTier::Gold: return {255, 204, 84, 255};
-        case ChallengeTier::None: break;
-    }
-    return {140, 160, 185, 255};
-}
+using namespace challenge_ui;
 
 Color stateColor(const UITheme& th, ChallengeRunState s) {
     switch (s) {
@@ -70,23 +47,6 @@ Color stateColor(const UITheme& th, ChallengeRunState s) {
     return th.textDim;
 }
 
-/// A rounded chip whose left edge is at `x`, centred on `cy`; returns its width.
-float chip(UIContext& ui, const std::string& text, float x, float cy, float h, Color c, float maxW = 1e9f, bool filled = false) {
-    float fs = std::max(h / ui.s(1.0f) * 0.5f, 11.5f / ui.s(1.0f));
-    float tw = ui.text().measure(text, FontFace::Bold, ui.s(fs)).x;
-    float w = std::min(maxW, tw + h);
-    Rect r{x, cy - h * 0.5f, w, h};
-    ui.r().fillRoundedRect(r, h * 0.5f, filled ? c.withAlphaF(0.9f) : c.withAlphaF(0.16f));
-    ui.r().drawRoundedRect(r, h * 0.5f, c.withAlphaF(0.85f), std::max(1.0f, ui.s(1.2f)));
-    ui.label(ui.elide(text, FontFace::Bold, fs, w - h * 0.6f), r.center(), fs, filled ? Color{10, 14, 28, 255} : c, Align::Center, FontFace::Bold,
-             VAlign::Middle);
-    return w;
-}
-float chipWidth(UIContext& ui, const std::string& text, float h) {
-    float fs = std::max(h / ui.s(1.0f) * 0.5f, 11.5f / ui.s(1.0f));
-    return ui.text().measure(text, FontFace::Bold, ui.s(fs)).x + h;
-}
-
 /// "3 j 05 h", "5 h 12 min", "12 min 05 s", "45 s".
 std::string countdown(int64_t ms) {
     int64_t s = std::max<int64_t>(0, ms / 1000);
@@ -96,25 +56,6 @@ std::string countdown(int64_t ms) {
     else if (s >= 60) std::snprintf(b, sizeof b, "%lld min %02lld s", static_cast<long long>(s / 60), static_cast<long long>(s % 60));
     else std::snprintf(b, sizeof b, "%lld s", static_cast<long long>(s));
     return b;
-}
-
-const char* const kMonthNames[12] = {"janvier", "février", "mars",      "avril",   "mai",      "juin",
-                                     "juillet", "août",    "septembre", "octobre", "novembre", "décembre"};
-
-/// "16 novembre 2026" (`year` false: "16 novembre").
-std::string frenchDate(const std::string& ymd, bool year = true) {
-    int y = 0, m = 0, d = 0;
-    if (std::sscanf(ymd.c_str(), "%4d-%2d-%2d", &y, &m, &d) != 3 || m < 1 || m > 12) return ymd;
-    std::string out = std::to_string(d) + " " + kMonthNames[m - 1];
-    if (year) out += " " + std::to_string(y);
-    return out;
-}
-
-/// "novembre 2026" of "2026-11".
-std::string frenchMonth(const std::string& ym) {
-    int y = 0, m = 0;
-    if (std::sscanf(ym.c_str(), "%4d-%2d", &y, &m) != 2 || m < 1 || m > 12) return ym;
-    return std::string(kMonthNames[m - 1]) + " " + std::to_string(y);
 }
 
 /// "Défi du 16 novembre", "Défi de la semaine du 16 novembre", "Défi du mois de novembre 2026".
@@ -139,17 +80,6 @@ std::string streakCount(ChallengeKind k, int n) {
     return std::to_string(n) + (n > 1 ? " jours" : " jour");
 }
 
-/// "63,4 %", "100 %" (« Plus loin »: how far an attempt went).
-std::string percentText(float p) {
-    p = std::clamp(p, 0.0f, 100.0f);
-    if (p >= 100.0f) return "100 %";
-    char b[32];
-    std::snprintf(b, sizeof b, "%.1f", std::floor(p * 10.0f) / 10.0f);
-    std::string s = b;
-    std::replace(s.begin(), s.end(), '.', ',');
-    return s + " %";
-}
-
 /// "Le 1er du jour" (the first of the board, as a ghost).
 const char* firstOfBoard(ChallengeKind k) {
     return k == ChallengeKind::Weekly ? "Le 1er de la semaine" : k == ChallengeKind::Monthly ? "Le 1er du mois" : "Le 1er du jour";
@@ -159,73 +89,11 @@ const char* firstOfBoard(ChallengeKind k) {
 /// the calendar on it.
 int challengeTab(const ChallengeService& s, const DailyChallenge& c) { return s.ended(c) ? 3 : static_cast<int>(c.kind); }
 
-/// Where the challenge's level is on this computer.
-struct LevelPlace {
-    std::string localId;      // "" when it is not installed
-    bool sameVersion = false; // the version of the challenge (its fingerprint)
-    std::string problem;      // why it cannot be played ("" = it can)
-};
-
-LevelPlace levelPlace(GameServices& g, const DailyChallenge& c) {
-    LevelPlace p;
-    if (!c.community()) {
-        const LevelEntry* e = g.content.level(c.level.levelId);
-        if (!e || e->source != ContentSource::Builtin) {
-            p.problem = "Ce niveau n'existe pas dans votre version du jeu : mettez le jeu à jour.";
-            return p;
-        }
-        p.localId = e->id;
-        const LevelFingerprint* fp = g.online.fingerprints().get(g.content, e->id);
-        p.sameVersion = fp && fp->hash == c.level.hash;
-        return p;
-    }
-    // A community level: the copy installed from ONLINE LEVELS at the challenge's version.
-    for (const LevelEntry* e : g.content.levels()) {
-        const Json* info = g.online.communityInstall(e->id);
-        if (!info || jstr(*info, "id") != c.level.levelId) continue;
-        if (jget<int>(*info, "version", 0) != c.level.version) continue;
-        p.localId = e->id;
-        p.sameVersion = jstr(*info, "level_hash") == c.level.hash && jget<bool>(*info, "verified", false);
-        return p;
-    }
-    p.problem = "Niveau de la communauté à télécharger (version " + std::to_string(c.level.version) + ").";
-    return p;
-}
-
-/// "Glacior · niveau 2" (campaign) or "par <auteur> · niveau de la communauté" (the name as
-/// its player wrote it: drawn verbatim by the caller).
-std::string planetLine(GameServices& g, const DailyChallenge& c) {
-    if (c.community()) return {};
-    const LevelEntry* e = g.content.level(c.level.levelId);
-    if (!e) return {};
-    std::string out;
-    if (const PlanetData* p = g.content.planet(e->planet)) out = p->name;
-    auto list = g.content.levelsForPlanet(e->planet);
-    for (size_t i = 0; i < list.size(); ++i)
-        if (list[i]->id == e->id) out += (out.empty() ? "" : " · ") + std::string("niveau ") + std::to_string(i + 1);
-    return out;
-}
-
-/// The level's name as shown (campaign: the game's name, translated; community: verbatim).
-std::string levelTitle(GameServices& g, const DailyChallenge& c) {
-    if (!c.community())
-        if (const LevelEntry* e = g.content.level(c.level.levelId)) return e->name;
-    return c.level.title.empty() ? c.level.levelId : c.level.title;
-}
-
-std::string powerList(GameServices& g, const std::vector<std::string>& ids) {
-    std::string out;
-    for (const std::string& id : ids) {
-        const PowerDefinition* d = g.content.power(id);
-        out += (out.empty() ? "" : ", ") + (d ? d->name : id);
-    }
-    return out;
-}
-
 /// The rules in short (chips).
 std::vector<std::string> ruleChips(GameServices& g, const DailyChallenge& c) {
     const ChallengeRules& r = c.rules;
     std::vector<std::string> out;
+    if (c.finishObjective) out.push_back("Objectif : finir le niveau");
     out.push_back(std::to_string(r.hearts) + (r.hearts > 1 ? " cœurs" : " cœur"));
     out.push_back(std::to_string(r.slots) + (r.slots > 1 ? " emplacements" : " emplacement"));
     out.push_back(r.powers.empty() ? std::string("Aucun pouvoir au départ") : "Pouvoirs : " + powerList(g, r.powers));
@@ -238,6 +106,10 @@ std::vector<std::string> ruleChips(GameServices& g, const DailyChallenge& c) {
 std::vector<std::pair<std::string, std::string>> ruleExplanations(GameServices& g, const DailyChallenge& c, const LevelData* level) {
     const ChallengeRules& r = c.rules;
     std::vector<std::pair<std::string, std::string>> out;
+    // 2.41: « Finir le niveau »: ranked by how far the run goes, its tiers a share of the route.
+    if (c.finishObjective)
+        out.push_back({"Objectif", c.goldNoDamage ? "Finir le niveau : le classement suit la progression (le plus loin d'abord, puis le premier à finir). Or en finissant sans dégât."
+                                                  : "Finir le niveau : le classement suit la progression (le plus loin d'abord, puis le premier à finir). Or en finissant."});
     std::string hearts = std::to_string(r.hearts) + (r.hearts > 1 ? " cœurs" : " cœur");
     out.push_back({"Cœurs", hearts + " pour tout le niveau, pleins au départ ; les cœurs de cristal du niveau ne donnent rien."});
     // Whole sentences (one template each for the translation).
@@ -271,9 +143,7 @@ void drawTierCards(UIContext& ui, const DailyChallenge& c, const Rect& area, Cha
         ui.r().fillRoundedRect(r, ui.s(10), obtained ? col.withAlphaF(0.16f) : Color{12, 18, 38, 230});
         ui.r().drawRoundedRect(r, ui.s(10), col.withAlphaF(obtained ? 0.95f : 0.45f), std::max(1.0f, ui.s(obtained ? 2.0f : 1.2f)));
         float x = r.x + ui.s(14), tw = r.w - ui.s(28);
-        std::string cond = t == ChallengeTier::Bronze ? std::string("Arriver au bout")
-                           : t == ChallengeTier::Silver ? "En " + formatRunTime(c.silverMs) + " ou moins"
-                                                        : "En " + formatRunTime(c.goldMs) + " ou moins" + (c.goldNoDamage ? std::string(", sans dégât") : std::string());
+        std::string cond = tierCondition(c, t);
         // Name, condition and state one under the other, sized to the card's height.
         float rowH = (r.h - ui.s(16)) / 3.0f;
         float y = r.y + ui.s(8) + rowH * 0.5f;
@@ -379,21 +249,22 @@ void downloadChallengeLevel(GameServices& g, const DailyChallenge& c, std::weak_
 }
 
 /// Connection line of the screens (what happens to a run's result).
-std::string connectionLine(GameServices& g, bool practice, bool late, const LevelPlace& place) {
+std::string connectionLine(GameServices& g, bool practice, bool late, const LevelPlace& place, bool finish = false) {
     if (practice) return "Hors classement : rien n'est envoyé ni gardé comme meilleur temps.";
     if (!place.localId.empty() && !place.sameVersion) return "Votre version du niveau diffère de celle du défi : temps gardé sur ce PC.";
     if (!g.online.loggedIn()) return "Sans compte : votre résultat restera sur ce PC (ni classement ni envoi).";
     if (late) return "Hors délai : votre temps ira dans le classement « Depuis », sans compter pour la série.";
+    // 2.41, « Finir le niveau »: how far the run went counts too, not only a finish.
     if (g.online.state() == OnlineState::Online)
-        return "Connecté : votre temps sera envoyé à la fin du défi.";
-    return "Hors ligne : votre temps partira à la prochaine connexion.";
+        return finish ? "Connecté : votre progression sera envoyée à la fin de la partie." : "Connecté : votre temps sera envoyé à la fin du défi.";
+    return finish ? "Hors ligne : votre progression partira à la prochaine connexion." : "Hors ligne : votre temps partira à la prochaine connexion.";
 }
 
 // ======================================================================== the Défis screen
 
 class ChallengesScene : public Scene {
 public:
-    ChallengesScene(GameServices& g, int tab, std::string select) : g_(g), ou_(g), tab_(std::clamp(tab, 0, 3)) {
+    ChallengesScene(GameServices& g, int tab, std::string select) : g_(g), ou_(g), tab_(std::clamp(tab, 0, 3)), art_(g) {
         // The calendar on a month ("2026-10") or on a challenge's card (its id).
         if (tab_ == 3 && !select.empty()) {
             if (challenge_period::valid(ChallengeKind::Monthly, select)) month_ = select;
@@ -496,8 +367,12 @@ private:
     }
     /// « Depuis » (period=all) only for a challenge that is over.
     bool allPeriod(const DailyChallenge& c) const { return period_ == 1 && g_.challenges.ended(c); }
-    /// « Plus loin » (board=progress) only for a challenge whose level has a route.
-    bool progressBoard(const DailyChallenge& c) const { return boardKind_ == 1 && c.progressAvailable; }
+    /// « Plus loin » (board=progress) only for a challenge whose level has a route; a « Finir le
+    /// niveau » challenge (2.41) is ranked by it first (its first button).
+    bool progressBoard(const DailyChallenge& c) const {
+        if (!c.progressAvailable) return false;
+        return c.finishObjective ? boardKind_ == 0 : boardKind_ == 1;
+    }
     std::string boardKey(const DailyChallenge& c) const {
         return c.id + "/" + scopeId() + (allPeriod(c) ? "/all" : "/live") + (progressBoard(c) ? "/progress" : "/time");
     }
@@ -782,9 +657,25 @@ private:
         float sw = ui.text().measure(streak, FontFace::Bold, ui.s(fz(ui, 15))).x;
         sw = std::min(sw, w * 0.5f);
         fitLabel(ui, streak, {x + w, top}, 15, sw, s.current > 0 ? ui.theme().warm : ui.theme().textDim, Align::Right, FontFace::Bold);
-        fitLabel(ui, "Mon meilleur temps", {x, top}, 15, w - sw - ui.s(16), ui.theme().textDim);
+        fitLabel(ui, c.finishObjective ? "Ma progression" : "Mon meilleur temps", {x, top}, 15, w - sw - ui.s(16), ui.theme().textDim);
         // This computer's best, or the server's when it is better (a run made elsewhere).
         const MyDay day = myDay(c.id);
+        if (c.finishObjective && day.bestMs <= 0) {
+            // « Finir le niveau » (2.41): how far I went, and the tier it reached.
+            const float best = g_.challenges.bestProgress(c.id);
+            if (best <= 0.0f) {
+                fitLabel(ui, "Pas encore d'essai sur ce défi.", {x, bottom}, 19, w, ui.theme().text, Align::Left, FontFace::Bold);
+                return;
+            }
+            Vec2 t = ui.label(percentText(best), {x, bottom}, fz(ui, 24), ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+            float cx = x + t.x + ui.s(14);
+            float h = ui.s(28);
+            if (day.tier != ChallengeTier::None)
+                cx += chip(ui, challengeTierLabel(day.tier), cx, bottom, h, tierColor(day.tier), x + w - cx, true) + ui.s(10);
+            std::string left = "du parcours · Or en finissant";
+            if (cx < x + w - ui.s(60)) fitLabel(ui, left, {cx, bottom}, 15, x + w - cx, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle, 0.7f);
+            return;
+        }
         if (day.bestMs <= 0) {
             // « Plus loin » (2.33): not finished yet, my furthest attempt at the right.
             float ew = 0.0f;
@@ -969,19 +860,22 @@ private:
         // « Meilleurs temps » / « Plus loin » (2.33): the attempts that went the furthest,
         // finished or not, when the level has a route.
         if (c.progressAvailable) {
+            // « Finir le niveau » (2.41): its own board (the progress) first.
             static const char* const kBoards[2] = {"Meilleurs temps", "Plus loin"};
+            static const char* const kFinishBoards[2] = {"Progression", "Meilleurs temps"};
+            const char* const* labels = c.finishObjective ? kFinishBoards : kBoards;
             float bw = (w - ui.s(10)) * 0.5f;
             for (int i = 0; i < 2; ++i) {
                 UIContext::ButtonStyle st;
                 st.small = true;
                 st.selected = boardKind_ == i;
-                st.fontSize = ui.fitFont(kBoards[i], FontFace::Bold, 17, bw - ui.s(24), 0.7f);
+                st.fontSize = ui.fitFont(labels[i], FontFace::Bold, 17, bw - ui.s(24), 0.7f);
                 Rect br{x + (bw + ui.s(10)) * static_cast<float>(i), y, bw, ui.s(40)};
-                if (ui.button("kind" + std::to_string(i), br, kBoards[i], st) && boardKind_ != i) {
+                if (ui.button("kind" + std::to_string(i), br, labels[i], st) && boardKind_ != i) {
                     boardKind_ = i;
                     fetchBoard(c);
                 }
-                if (i == 1) ui.newBadge("kind1", br, "challenges.board.progress", true, true);
+                if (i == 1 && !c.finishObjective) ui.newBadge("kind1", br, "challenges.board.progress", true, true);
             }
             y += ui.s(52);
         }
@@ -1103,7 +997,14 @@ private:
             }
         }
         if (progress) {
-            if (jget<bool>(e, "finished", false)) {
+            // « Finir le niveau » (2.41): the tier the server computed for that progress.
+            if (ChallengeTier tier = challengeTierFromJson(jfield(e, "tier", Json())); tier != ChallengeTier::None) {
+                float tw = chipWidth(ui, challengeTierLabel(tier), h);
+                if (right - tw > x + ui.s(160)) {
+                    chip(ui, challengeTierLabel(tier), right - tw, cy, h, tierColor(tier), tw, true);
+                    right -= tw + ui.s(10);
+                }
+            } else if (jget<bool>(e, "finished", false)) {
                 float fw = chipWidth(ui, "Fini", h);
                 if (right - fw > x + ui.s(160)) {
                     chip(ui, "Fini", right - fw, cy, h, ui.theme().success, fw, true);
@@ -1163,6 +1064,13 @@ private:
             }
             d.tier = std::max(d.tier, s->tier);
         }
+        // « Finir le niveau » (2.41): an unfinished attempt reaches a tier too (here, or as the
+        // server computed it). Never on a « Vitesse » challenge (no tier without a time).
+        if (const ChallengeResult* r = g_.challenges.result(id)) d.tier = std::max(d.tier, r->tier);
+        if (auto s = g_.challenges.serverResult(id)) {
+            d.tier = std::max(d.tier, s->tier);
+            if (d.bestMs <= 0) d.state = s->status;
+        }
         return d;
     }
 
@@ -1186,7 +1094,7 @@ private:
         // 2.38: the challenge's level in the background (its preview, darkened under the text),
         // and a ribbon of its kind at the top (day: cyan, week: violet).
         if (c && !future) {
-            drawCellImage(r, *c, hovered || focused);
+            art_.drawCellImage(r, *c, hovered || focused);
             Color kc = c->kind == ChallengeKind::Weekly ? ui.theme().violet : c->kind == ChallengeKind::Monthly ? ui.theme().warm : ui.theme().accent;
             ui.r().fillRoundedRect({r.x + ui.s(8), r.y, r.w - ui.s(16), std::max(2.0f, ui.s(3))}, ui.s(1.5f), kc.withAlpha(220));
         }
@@ -1223,93 +1131,11 @@ private:
             else if (day.state == ChallengeRunState::Waiting) st = "À l'envoi", sc = ui.theme().warm;
             else st = "Sur ce PC";
             tx += fitLabel(ui, st, {px, l3}, 14, room, sc, Align::Left, FontFace::Bold).x + ui.s(8);
+        } else if (float pr = c->finishObjective ? g_.challenges.bestProgress(c->id) : 0.0f; pr > 0.0f) {
+            // « Finir le niveau » (2.41): how far I went.
+            tx += fitLabel(ui, percentText(pr), {px, l3}, 14, room, ui.theme().accent, Align::Left, FontFace::Bold).x + ui.s(8);
         }
-        drawTags(*c, tx, l3, r.right() - ui.s(8), std::min(ui.s(20), r.h * 0.2f));
-    }
-
-    /// What makes a challenge what it is, in tags: EXTRÊME, a community level, its hearts,
-    /// no checkpoint, no power station (2.38, the calendar).
-    std::vector<std::pair<std::string, Color>> tagsOf(const DailyChallenge& c) {
-        const UITheme& th = g_.ui.theme();
-        std::vector<std::pair<std::string, Color>> tags;
-        if (extremeLevel(c)) tags.push_back({"EXTRÊME", th.danger});
-        if (c.community()) tags.push_back({"Communauté", th.accent});
-        tags.push_back({std::to_string(c.rules.hearts) + (c.rules.hearts > 1 ? " cœurs" : " cœur"), th.warm});
-        if (!c.rules.checkpoints) tags.push_back({"Sans checkpoint", Color{185, 200, 218, 255}});
-        if (!c.rules.stations) tags.push_back({"Sans station", Color{185, 200, 218, 255}});
-        return tags;
-    }
-
-    /// The tags from `x` to `right` on the line `cy`: each whole (one that does not fit and
-    /// those after it are left out, never cut).
-    void drawTags(const DailyChallenge& c, float x, float cy, float right, float h) {
-        UIContext& ui = g_.ui;
-        for (const auto& [text, color] : tagsOf(c)) {
-            float tw = chipWidth(ui, text, h);
-            if (x + tw > right) break;
-            x += chip(ui, text, x, cy, h, color) + ui.s(5);
-        }
-    }
-
-    /// An EXTRÊME level (one life), read once per level (a community level: as installed).
-    bool extremeLevel(const DailyChallenge& c) {
-        const std::string key = c.level.levelId + ":" + c.level.hash;
-        auto it = extremeOf_.find(key);
-        if (it != extremeOf_.end()) return it->second;
-        LevelPlace place = levelPlace(g_, c);
-        if (place.localId.empty()) return false;  // not installed yet: asked again later
-        bool e = false;
-        if (auto data = g_.content.loadLevel(place.localId)) e = data->extreme && data->oneLife();
-        return extremeOf_[key] = e;
-    }
-
-    /// The level's preview filling the cell (cropped to its shape), darkened so that the text
-    /// above stays readable; nothing while it is not ready (see cellThumb).
-    void drawCellImage(const Rect& r, const DailyChallenge& c, bool lit) {
-        UIContext& ui = g_.ui;
-        TexturePtr t = cellThumb(c);
-        if (!t || t->width() <= 0 || t->height() <= 0) return;
-        Rect in = r.expanded(-std::max(1.0f, ui.s(1)));
-        float tw = static_cast<float>(t->width()), th = static_cast<float>(t->height());
-        float k = std::max(in.w / tw, in.h / th);
-        float sw = in.w / k, sh = in.h / k;
-        Rect src{(tw - sw) * 0.5f, (th - sh) * 0.5f, sw, sh};
-        ui.r().pushClip(in);
-        ui.r().drawTexture(*t, &src, in, Color{255, 255, 255, static_cast<uint8_t>(lit ? 255 : 225)});
-        ui.r().fillGradientV(in, Color{8, 12, 26, lit ? uint8_t(70) : uint8_t(100)}, Color{8, 12, 26, 215});
-        ui.r().popClip();
-    }
-
-    /// The preview of a challenge's level for the calendar, one per level version, kept in
-    /// memory and on disk (cache/calendar). A missing one is rendered at most once per frame
-    /// (the calendar fills in over a few frames, never one long wait); nullptr until then, or
-    /// when the level is not installed.
-    TexturePtr cellThumb(const DailyChallenge& c) {
-        LevelPlace place = levelPlace(g_, c);
-        if (place.localId.empty()) return nullptr;
-        const std::string key = place.localId + "_" + c.level.hash.substr(0, 16);
-        auto it = cellThumbs_.find(key);
-        if (it != cellThumbs_.end()) return it->second;
-        const fs::path file = Paths::userDir() / "cache" / "calendar" / (key + ".png");
-        if (auto png = FileUtil::readBinary(file); png && !png->empty()) {
-            TexturePtr t = textureFromPng(g_, *png);
-            cellThumbs_[key] = t;
-            return t;
-        }
-        if (thumbBudget_ <= 0) return nullptr;
-        --thumbBudget_;
-        TexturePtr t;
-        if (auto level = g_.content.loadLevel(place.localId)) {
-            std::string root;
-            if (const LevelEntry* e = g_.content.level(place.localId)) root = Paths::toUtf8(e->assetRoot);
-            auto png = renderLevelThumbnail(g_, *level, root);
-            if (!png.empty()) {
-                t = textureFromPng(g_, png);
-                FileUtil::writeBinary(file, png);
-            }
-        }
-        cellThumbs_[key] = t;
-        return t;
+        art_.drawTags(*c, tx, l3, r.right() - ui.s(8), std::min(ui.s(20), r.h * 0.2f));
     }
 
     /// The month's challenge, at the head of the calendar.
@@ -1322,7 +1148,7 @@ private:
             if (hovered || focused) info = challengeTitle(*c, true);
         }
         ui.r().fillRoundedRect(r, ui.s(10), hovered || focused ? Color{26, 44, 76, 240} : Color{14, 22, 46, 225});
-        if (c) drawCellImage(r, *c, hovered || focused);  // 2.38: its level behind
+        if (c) art_.drawCellImage(r, *c, hovered || focused);  // 2.38: its level behind
         ui.r().drawRoundedRect(r, ui.s(10), ui.theme().violet.withAlpha(focused ? 230 : 120), std::max(1.0f, ui.s(focused ? 2.0f : 1.2f)));
         float x = r.x + ui.s(16), right = r.right() - ui.s(16), cy = r.center().y, h = std::min(ui.s(30), r.h * 0.6f);
         x += chip(ui, "Défi du mois", x, cy, h, ui.theme().violet, r.w * 0.3f, true) + ui.s(16);
@@ -1343,6 +1169,11 @@ private:
             float tw = std::min(chipWidth(ui, challengeTierLabel(day.tier), h), (right - x) * 0.3f);
             chip(ui, challengeTierLabel(day.tier), right - tw, cy, h, tierColor(day.tier), tw, true);
             right -= tw + ui.s(14);
+        } else if (day.tier != ChallengeTier::None) {
+            // « Finir le niveau » (2.41): an attempt's tier.
+            float tw = std::min(chipWidth(ui, challengeTierLabel(day.tier), h), (right - x) * 0.3f);
+            chip(ui, challengeTierLabel(day.tier), right - tw, cy, h, tierColor(day.tier), tw, true);
+            right -= tw + ui.s(14);
         }
         float used = 0.0f;
         {
@@ -1351,13 +1182,13 @@ private:
             used = fitLabel(ui, levelTitle(g_, *c), {x, cy}, 19, right - x, ui.theme().text, Align::Left, FontFace::Bold).x;
         }
         // 2.38: its tags after the title, those that fit whole.
-        drawTags(*c, x + used + ui.s(14), cy, right, std::min(ui.s(24), r.h * 0.45f));
+        art_.drawTags(*c, x + used + ui.s(14), cy, right, std::min(ui.s(24), r.h * 0.45f));
     }
 
     void drawCalendar(const Rect& body) {
         UIContext& ui = g_.ui;
         ChallengeService& cs = g_.challenges;
-        thumbBudget_ = 1;  // one level preview rendered per frame at most (cellThumb)
+        art_.beginFrame();  // one level preview rendered per frame at most (CalendarArt::cellThumb)
         // « NOUVEAU » (2.38) on « Calendrier » until the calendar with its images is seen once.
         if (ui.isNew("challenges.calendar.look") && ui.featureSeen) ui.featureSeen("challenges.calendar.look");
         ui.panel(body, false, 16);
@@ -1495,9 +1326,7 @@ private:
     bool downloading_ = false;
     std::string watching_;  // the run whose replay is being downloaded (« Voir »)
     std::map<std::string, TexturePtr> thumbs_;
-    std::map<std::string, TexturePtr> cellThumbs_;  // the calendar's previews (cellThumb)
-    std::map<std::string, bool> extremeOf_;         // level version -> EXTRÊME (extremeLevel)
-    int thumbBudget_ = 0;
+    CalendarArt art_;  // the calendar's previews and tags (ChallengeUi.h)
     std::string msg_;
     float msgTimer_ = 0.0f;
     float t_ = 0.0f;
@@ -1687,15 +1516,17 @@ private:
             rowH = std::min(ui.s(56), (area.bottom() - y - 2 * ui.s(10)) / 3.0f);
         }
         if (rowH < ui.s(34)) return;
+        // The best tier reached here or, as the server knows it, elsewhere (2.41: an attempt's too).
+        ChallengeTier have = res ? res->tier : ChallengeTier::None;
+        if (!practice_)
+            if (auto s = g_.challenges.serverResult(c.id)) have = std::max(have, s->tier);
         for (ChallengeTier t : tiers) {
             Rect r{x, y, w, rowH};
-            bool got = res && res->tier >= t;
+            bool got = have >= t;
             Color col = tierColor(t);
             ui.r().fillRoundedRect(r, ui.s(8), got ? col.withAlphaF(0.16f) : Color{12, 18, 38, 220});
             ui.r().drawRoundedRect(r, ui.s(8), col.withAlphaF(got ? 0.95f : 0.45f), std::max(1.0f, ui.s(1.2f)));
-            std::string cond = t == ChallengeTier::Bronze ? std::string("Arriver au bout")
-                               : t == ChallengeTier::Silver ? "En " + formatRunTime(c.silverMs) + " ou moins"
-                                                            : "En " + formatRunTime(c.goldMs) + " ou moins" + (c.goldNoDamage ? std::string(", sans dégât") : std::string());
+            std::string cond = tierCondition(c, t);
             if (got) cond += " · obtenu";
             float nameW = std::min(ui.s(110), r.w * 0.3f);
             fitLabel(ui, challengeTierLabel(t), {r.x + ui.s(14), r.center().y}, 19, nameW, col, Align::Left, FontFace::Bold);
@@ -1715,7 +1546,7 @@ private:
         fitLabel(ui, "Ce qui change dans ce défi", {x, y + ui.s(12)}, 22, w, ui.theme().text, Align::Left, FontFace::Bold);
         y += ui.s(40);
         // Under the rules: the ghost choice and the connection (what becomes of the result).
-        const std::string conn = connectionLine(g_, practice_, late_, place_);
+        const std::string conn = connectionLine(g_, practice_, late_, place_, c.finishObjective);
         const float connH = ui.s(32) + ui.text().measureWrapped(conn, FontFace::Body, ui.s(fz(ui, 17)), w - ui.s(24)).y;
         const float ghostH = ui.s(32 + 54);
         float rulesBottom = area.bottom() - ghostH - connH - ui.s(36);
@@ -1873,7 +1704,8 @@ public:
         const bool attempt = !d_.completed && d_.attempt.has_value();
         // Time, tier, (the streak: not for a run « hors délai »), the sending state; a fall:
         // why, (the attempt's progress and its sending state).
-        const int rows = d_.completed ? (d_.practice ? 2 : late ? 3 : 4) : 1 + (attempt ? (d_.attempt->newBest ? 2 : 1) : 0);
+        const bool finishTier = attempt && d_.challenge.finishObjective;  // 2.41: an attempt's tier
+        const int rows = d_.completed ? (d_.practice ? 2 : late ? 3 : 4) : 1 + (attempt ? (d_.attempt->newBest ? 2 : 1) : 0) + (finishTier ? 1 : 0);
         // The sending state, followed live (and why, when it says more than the state).
         ChallengeRunState state = attempt ? d_.attempt->state : d_.report.state;
         std::string note = attempt ? d_.attempt->note : d_.completed && !d_.practice ? d_.report.note : std::string();
@@ -1935,6 +1767,15 @@ public:
                 const ChallengeService::AttemptReport& a = *d_.attempt;
                 row("Progression de l'essai", percentText(a.progress), a.newBest ? ui.theme().success : ui.theme().accent,
                     a.newBest ? std::string("Nouveau record de progression") : std::string(), ui.theme().success);
+                if (finishTier) {
+                    // The server's tier once it has scored the replay, else this computer's reading.
+                    ChallengeTier t = a.tier;
+                    if (const ChallengeSubmission* sub = g_.challenges.submission(d_.attemptId, true); sub && sub->serverProgress >= 0.0f) t = sub->serverTier;
+                    std::string next = t == ChallengeTier::Silver   ? std::string("Or en finissant")
+                                       : t == ChallengeTier::Bronze ? "Argent à " + std::to_string(d_.challenge.silverProgress) + " %"
+                                                                    : "Bronze à " + std::to_string(d_.challenge.bronzeProgress) + " %";
+                    row("Palier atteint", t == ChallengeTier::None ? std::string("Aucun") : challengeTierLabel(t), tierColor(t), next, ui.theme().textDim);
+                }
                 if (a.newBest) row("Envoi", challengeRunStateLabel(state), stateColor(ui.theme(), state));
             }
         } else {

@@ -107,7 +107,8 @@ struct GhostSetupRequest {
 std::unique_ptr<Scene> makeSplashScene(GameServices& g);
 std::unique_ptr<Scene> makeMainMenu(GameServices& g);
 /// ADMINISTRATION (2.40, accounts with the admin role only). `open`: "log" for the Journal,
-/// "players:<search>[:confirm]" (automated screenshots).
+/// "players:<search>[:confirm]", "calendar[:<YYYY-MM>[:<challenge id>[:objectif]]]" (2.41,
+/// « Calendrier des défis ») (automated screenshots).
 std::unique_ptr<Scene> makeAdmin(GameServices& g, const std::string& open = {});
 std::unique_ptr<Scene> makePlanetMap(GameServices& g);
 /// `levelId`: the level selected on arrival (else the last one played). `fromBoss`: opened
