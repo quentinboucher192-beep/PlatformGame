@@ -13,6 +13,7 @@
 #include "game/gameplay/RunCounters.h"
 #include "game/levels/LevelAnalyzer.h"
 #include "game/online/LevelFingerprint.h"
+#include "ui/screens/BossStoryScene.h"
 #include "ui/screens/PauseScene.h"
 #include "ui/screens/PowerChoiceScene.h"
 #include "ui/screens/ResultsScene.h"
@@ -475,6 +476,12 @@ void GameScene::onExit() {
 void GameScene::applyGhostSettings() { ghostRun_.setSettings(g_.settings.ghosts); }
 
 void GameScene::onResume() {
+    if (storyOpen_) {
+        // The story of the giga boss is over (or skipped): the fight starts where it was, the
+        // presses made during the story dropped (below) so that nothing jumps or strikes.
+        storyOpen_ = false;
+        storyBoss_.clear();
+    }
     g_.app.audio().setMusicDuck(1.0f);
     refreshPowerKeys();  // « Touches de ce niveau », the settings: maybe other keys now
     g_.app.input().consumePlayerInput();
@@ -642,6 +649,8 @@ std::string GameScene::nextLevelId() const {
 
 void GameScene::fixedUpdate(float dt) {
     if (!world_) return;
+    // The story of a giga boss is due: the run waits for it (no step, no input recorded).
+    if (!storyBoss_.empty()) return;
     // A power offer waits for the player's answer (PowerChoiceScene): nothing is simulated
     // or recorded until it comes. Scripted runs leave the power unless told otherwise.
     uint8_t choice = 0;
@@ -687,6 +696,7 @@ void GameScene::fixedUpdate(float dt) {
         bossFights_.step(*world_, g_.bossStats);
         bossFeedback();
     }
+    if (!ended_) checkBossStory();
     if (!ended_ && race_.active()) {
         race_.update(*world_);
         recorder_.raceProgress(race_.progress().bossRemoved, race_.progress().wavesDone);
@@ -737,6 +747,22 @@ void GameScene::drawBossArrow(const WorldView& view) {
         ui.r().drawTexture(*tex, nullptr, halo, Color{255, 150, 150, 255}.withAlphaF(0.55f), BlendMode::Additive, false, false, angle);
         ui.r().drawTexture(*tex, nullptr, dst, Color::white().withAlphaF(0.5f), BlendMode::Additive, false, false, angle);
     }
+}
+
+void GameScene::checkBossStory() {
+    Enemy* b = world_->activeBoss();
+    if (!b || !b->alive() || !isGigaBoss(b->def())) return;
+    StoryContext ctx;
+    ctx.bossTraining = opt_.bossTraining.has_value();
+    ctx.editorTest = opt_.editorTest;
+    // Automated runs (scripted input, screenshots that force a boss's attack or phase, or open
+    // the pause menu) are never held by a story.
+    ctx.scripted = script_.active() || opt_.forceBossPhase > 0 || !opt_.forceBossAttack.empty() || opt_.openPause || opt_.pauseAfter > 0.0f;
+    if (!storyDue(b->def(), g_.stories, g_.bossStats, g_.settings.gameplay.bossStories, ctx)) return;
+    // Seen from now on (a story skipped counts), kept at once.
+    storyBoss_ = b->def().id;
+    g_.bossStats.markStorySeen(storyBoss_);
+    g_.bossStats.save();
 }
 
 void GameScene::bossFeedback() {
@@ -937,6 +963,18 @@ void GameScene::update(float dt) {
         return;
     }
     if (!world_) return;
+    // The story of a giga boss whose fight just started, over the waiting run.
+    if (!storyBoss_.empty()) {
+        if (!storyOpen_) {
+            if (auto story = makeBossStory(g_, storyBoss_)) {
+                storyOpen_ = true;
+                g_.app.pushScene(std::move(story));
+            } else {
+                storyBoss_.clear();
+            }
+        }
+        if (storyOpen_) return;
+    }
     syncPowerKeys();
     world_->update(dt);
     // The pause map: what the camera has shown (display only, outside the simulation).

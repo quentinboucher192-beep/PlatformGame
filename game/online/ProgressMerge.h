@@ -20,7 +20,8 @@ Json mergeProgressJson(const Json& mine, const Json& theirs);
 /// attempts and completions summed; the local top runs merged (by time, 10 kept).
 Json mergeRecordsJson(const Json& mine, const Json& theirs);
 /// boss_stats.json: fights, victories, defeats, flawless victories summed, per phase too; the best
-/// victory time (the shortest) and the last victory date (the latest).
+/// victory time (the shortest) and the last victory date (the latest); the giga bosses whose
+/// story was seen (2.51) united.
 Json mergeBossStatsJson(const Json& mine, const Json& theirs);
 /// achievements.json: achievements unlocked (union, the earliest date kept); counters and power
 /// uses summed, maxima the highest, sets united.

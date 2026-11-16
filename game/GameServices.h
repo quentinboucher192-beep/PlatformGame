@@ -9,6 +9,7 @@
 #include "engine/core/Application.h"
 #include "game/achievements/Achievements.h"
 #include "game/cosmetics/Collection.h"
+#include "game/content/BossStories.h"
 #include "game/content/ContentDatabase.h"
 #include "game/ghost/GhostStore.h"
 #include "game/ghost/ReplayLibrary.h"
@@ -57,8 +58,12 @@ public:
     Settings settings;
     Progression progression;
     RecordsManager records;
-    /// Boss statistics (victories, phases and fights without being hit).
+    /// Boss statistics (victories, phases and fights without being hit), and the giga bosses
+    /// whose story has been told.
     BossStats bossStats;
+    /// « Histoire des giga-boss » (2.51): the stories told before the first fight against each
+    /// giga boss (data/stories).
+    BossStories stories;
     /// Ghost Racing: the replays kept on this computer (my runs, downloads, chosen files)
     /// and the history of my segments.
     GhostStore ghosts;

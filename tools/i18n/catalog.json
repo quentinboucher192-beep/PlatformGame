@@ -1513,6 +1513,12 @@
    ]
   },
   {
+   "fr": "Alors elle se replia sur elle-même… et s'éveilla affamée. Plus rien ne s'éloignerait jamais d'elle.",
+   "where": [
+    "data/stories/singularis.json"
+   ]
+  },
+  {
    "fr": "Aléatoire",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -3678,6 +3684,12 @@
    ]
   },
   {
+   "fr": "Aux Confins, dans un nid de cendres tièdes, éclot le plus petit d'une couvée de dragonnets.",
+   "where": [
+    "data/stories/pyrrhax.json"
+   ]
+  },
+  {
    "fr": "avance",
    "where": [
     "ui/screens/GhostRun.cpp"
@@ -3687,6 +3699,18 @@
    "fr": "Avant le départ (bouton « Fantômes… » des niveaux, « Course contre ce temps » des CLASSEMENTS, « Course contre un fantôme… » des NIVEAUX EN LIGNE) : choix des fantômes, options d'affichage, mode entraînement.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Avant le premier combat",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Avant les planètes, il n'y avait que de la poussière. Et dans cette poussière, un caillou.",
+   "where": [
+    "data/stories/monolithe.json"
    ]
   },
   {
@@ -4506,6 +4530,7 @@
     "editors/level_editor/LevelEditorDialogs.cpp",
     "editors/level_editor/LevelEditorTools.cpp",
     "game/achievements/Achievements.cpp",
+    "game/content/BossStories.cpp",
     "game/gameplay/entities/ZoneEntities.cpp",
     "game/levels/DifficultyRating.cpp",
     "game/levels/ObjectTypes.cpp",
@@ -6441,6 +6466,12 @@
    "fr": "Chaque exemple est joué en boucle par le moteur du jeu.",
    "where": [
     "ui/screens/PowerGuideScene.cpp"
+   ]
+  },
+  {
+   "fr": "Chaque génération ajouta la sienne. Rune après rune, le caillou grandit… et se leva.",
+   "where": [
+    "data/stories/monolithe.json"
    ]
   },
   {
@@ -10351,6 +10382,12 @@
    ]
   },
   {
+   "fr": "Depuis, il garde la dernière frontière. Plus personne ne se moquera jamais de son feu.",
+   "where": [
+    "data/stories/pyrrhax.json"
+   ]
+  },
+  {
    "fr": "dernier niveau {0}",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -12445,6 +12482,12 @@
    "fr": "elle est archivée",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Elle leur donnait tout : la sève des forêts, le feu des volcans, l'éclat des glaces.",
+   "where": [
+    "data/stories/singularis.json"
    ]
   },
   {
@@ -15323,6 +15366,12 @@
    ]
   },
   {
+   "fr": "GIGA-BOSS · {0} PHASES",
+   "where": [
+    "ui/screens/BossStoryScene.cpp"
+   ]
+  },
+  {
    "fr": "Givre",
    "where": [
     "data/cosmetics/cosmetics.json",
@@ -15991,6 +16040,12 @@
    ]
   },
   {
+   "fr": "Histoire des giga-boss",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
    "fr": "Historique",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
@@ -16626,9 +16681,21 @@
    ]
   },
   {
+   "fr": "Il veilla sur le village de la caverne pendant dix mille ans. Il connaissait chaque rire.",
+   "where": [
+    "data/stories/monolithe.json"
+   ]
+  },
+  {
    "fr": "Il vole trop haut... Tirs chargés quand il plonge !",
    "where": [
     "data/levels/pyralis_02.json"
+   ]
+  },
+  {
+   "fr": "Il y a très longtemps, au centre de Kepler-Voss, brillait une toute jeune étoile. Elle s'appelait Lyse.",
+   "where": [
+    "data/stories/singularis.json"
    ]
   },
   {
@@ -16658,6 +16725,7 @@
   {
    "fr": "image",
    "where": [
+    "game/content/BossStories.cpp",
     "ui/screens/ReplayScene.cpp"
    ]
   },
@@ -17310,6 +17378,12 @@
    "fr": "J'aime",
    "where": [
     "ui/online/CommentsPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Jamais",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
    ]
   },
   {
@@ -18294,6 +18368,12 @@
    ]
   },
   {
+   "fr": "La Fumerolle les avala une à une, jusqu'à ce que son ventre brille comme une forge.",
+   "where": [
+    "data/stories/pyrrhax.json"
+   ]
+  },
+  {
    "fr": "La galerie de la Collection utilise la même recherche des lieux.",
    "where": [
     "data/news/changelog.json"
@@ -18381,6 +18461,12 @@
    "fr": "la Nova de givre",
    "where": [
     "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
+   "fr": "La nuit où l'étoile du centre s'effondra, une pluie de braises tomba sur les Confins.",
+   "where": [
+    "data/stories/pyrrhax.json"
    ]
   },
   {
@@ -19289,7 +19375,8 @@
   {
    "fr": "Le Cœur effondré",
    "where": [
-    "data/music/tracks.json"
+    "data/music/tracks.json",
+    "data/stories/singularis.json"
    ]
   },
   {
@@ -19343,7 +19430,8 @@
   {
    "fr": "Le Dragon d'Obsidienne",
    "where": [
-    "data/music/tracks.json"
+    "data/music/tracks.json",
+    "data/stories/pyrrhax.json"
    ]
   },
   {
@@ -19374,6 +19462,12 @@
    "fr": "Le défi peut être un niveau de la campagne ou un niveau ONLINE LEVELS choisi par l'administrateur ; « Télécharger » l'installe depuis le défi, et son créateur est prévenu que son niveau est à l'honneur.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Le feu d'une étoile mourante n'est pas fait pour un petit dragon : ses écailles devinrent du verre noir.",
+   "where": [
+    "data/stories/pyrrhax.json"
    ]
   },
   {
@@ -19517,7 +19611,8 @@
   {
    "fr": "Le Golem Primordial",
    "where": [
-    "data/music/tracks.json"
+    "data/music/tracks.json",
+    "data/stories/monolithe.json"
    ]
   },
   {
@@ -19684,6 +19779,12 @@
    "fr": "Le monde-jardin des Anciens",
    "where": [
     "data/planets/sylvanox.json"
+   ]
+  },
+  {
+   "fr": "Le Monolithe garde toujours le cœur des Confins. Il ne reconnaît plus personne : tout visiteur est un étranger.",
+   "where": [
+    "data/stories/monolithe.json"
    ]
   },
   {
@@ -20802,6 +20903,12 @@
    ]
   },
   {
+   "fr": "Les premiers enfants des Confins le trouvèrent dans une caverne et y gravèrent une rune, pour jouer : « Protège-nous ».",
+   "where": [
+    "data/stories/monolithe.json"
+   ]
+  },
+  {
    "fr": "Les profondeurs",
    "where": [
     "data/music/tracks.json"
@@ -21550,6 +21657,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Lyse chantait de la lumière, et trois petites planètes venaient se réchauffer autour d'elle.",
+   "where": [
+    "data/stories/singularis.json"
    ]
   },
   {
@@ -26824,6 +26937,12 @@
    ]
   },
   {
+   "fr": "Passer",
+   "where": [
+    "ui/screens/BossStoryScene.cpp"
+   ]
+  },
+  {
    "fr": "PASSIF",
    "where": [
     "game/gameplay/Hud.cpp"
@@ -29575,6 +29694,18 @@
    ]
   },
   {
+   "fr": "Puis des machines vinrent boire sa lumière. Un peu plus chaque jour.",
+   "where": [
+    "data/stories/singularis.json"
+   ]
+  },
+  {
+   "fr": "Puis les gens partirent vers les étoiles. Personne ne pensa à effacer la rune.",
+   "where": [
+    "data/stories/monolithe.json"
+   ]
+  },
+  {
    "fr": "Puits d'effondrement",
    "where": [
     "data/enemies/singularis.json"
@@ -31823,6 +31954,13 @@
    ]
   },
   {
+   "fr": "Revoir l'histoire",
+   "where": [
+    "ui/screens/BossStatsScene.cpp",
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Revoir la partie",
    "where": [
     "ui/screens/ChallengesScene.cpp",
@@ -33901,6 +34039,12 @@
    "fr": "Ses ailes déchaînent la tempête !",
    "where": [
     "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Ses frères crachaient des flammes. Lui ne soufflait qu'un nuage de fumée. On l'appelait « la Fumerolle ».",
+   "where": [
+    "data/stories/pyrrhax.json"
    ]
   },
   {
@@ -38800,6 +38944,12 @@
    ]
   },
   {
+   "fr": "Un soir, il ne lui resta qu'une étincelle. Elle eut froid. Elle eut peur d'être seule dans le noir.",
+   "where": [
+    "data/stories/singularis.json"
+   ]
+  },
+  {
    "fr": "Un souffle de feu balaie le portail, puis retombe en braises.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -41770,6 +41920,7 @@
    "fr": "zoom",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
+    "game/content/BossStories.cpp",
     "game/gameplay/GameWorld.cpp",
     "game/gameplay/entities/ZoneEntities.cpp",
     "game/levels/Cinematic.cpp",
