@@ -211,8 +211,8 @@ TEST_CASE("new badges: the shipped catalogue leads every novelty to a menu") {
             ++rewards;
         }
     }
-    CHECK(achievements == 72 + 3);  // 2.29, and Singularis's three of 2.34
-    CHECK(rewards == 22 + 1 + 5);   // 2.29, the title « Briseur d'étoiles » of 2.34, the five rewards of the challenges of 2.35
+    CHECK(achievements == 72 + 3 + 12);  // 2.29, Singularis's three of 2.34, Les Confins' twelve (2.48-2.49)
+    CHECK(rewards == 22 + 1 + 5 + 10);   // 2.29, « Briseur d'étoiles » of 2.34, the five of the challenges of 2.35, Les Confins' ten
     // The whole « Collection » category of achievements came with 2.29.
     for (const auto& a : ach.achievements())
         if (a.category == "collection") CHECK(leaves.count("ach." + a.id));
@@ -231,4 +231,59 @@ TEST_CASE("new badges: the shipped catalogue leads every novelty to a menu") {
         if (const PowerDefinition* def = content.power(e.path().stem().string()))
             if (powerTriggerInfo(*def).kind != PowerTrigger::SlotKey) CHECK(leaves.count("powers.guide." + def->id));
     CHECK(guide == 7);
+}
+
+// 2.49: Les Confins came in 2.48 without a single pill. From Les Confins on, every planet,
+// campaign level, boss, creature, achievement, reward and jukebox track of the game has its
+// « NOUVEAU » pill in the catalogue; only what existed before (the list below, frozen at 2.47)
+// may have none.
+TEST_CASE("new badges: every planet, level, boss, creature, achievement, reward and track added since 2.48 has its pill") {
+    auto j = FileUtil::loadJson(Paths::dataDir() / "news" / "new_features.json");
+    CHECK(j && j->contains("features"));
+    std::map<std::string, std::vector<std::string>> parents;
+    std::set<std::string> leaves;
+    for (const auto& f : (*j)["features"]) {
+        std::string id = f["id"].get<std::string>();
+        for (const auto& p : f.value("parents", Json::array())) parents[id].push_back(p.get<std::string>());
+        if (f.contains("version")) leaves.insert(id);
+    }
+    auto legacy = FileUtil::loadJson(Paths::fromUtf8("tests/data/content_before_pills.json"));
+    CHECK(legacy && legacy->is_array());
+    std::set<std::string> before;
+    for (const auto& x : *legacy) before.insert(x.get<std::string>());
+    std::vector<std::string> missing;
+    auto need = [&](const std::string& feature) {
+        if (!before.count(feature) && !leaves.count(feature)) missing.push_back(feature);
+    };
+    ContentDatabase content;
+    content.reload();
+    for (const PlanetData* p : content.planets()) {
+        need("planet." + p->id);
+        need("gallery.planet." + p->id);
+        for (const LevelEntry* e : content.levelsForPlanet(p->id))
+            if (e->source == ContentSource::Builtin) need("level." + e->id);
+    }
+    for (const EnemyDefinition* d : content.enemies()) {
+        if (!d->builtin || !content.isNativeEnemy(d->id) || !d->variantOf.empty()) continue;
+        if (d->isBoss) {
+            need("boss." + d->id);
+            need("gallery.boss." + d->id);
+        } else {
+            need("gallery.creature." + d->id);
+        }
+    }
+    AchievementCatalog ach;
+    CHECK(ach.loadDefault());
+    for (const auto& a : ach.achievements()) need("ach." + a.id);
+    CosmeticCatalog cos;
+    CHECK(cos.loadDefault());
+    for (const auto& c : cos.items()) need("cos." + c.id);
+    if (auto t = FileUtil::loadJson(Paths::dataDir() / "music" / "tracks.json"); t && t->contains("tracks"))
+        for (const auto& x : (*t)["tracks"]) need("track." + fs::path(x.value("file", std::string())).stem().string());
+    for (const auto& m : missing) std::printf("  sans pastille NOUVEAU : %s\n", m.c_str());
+    CHECK(missing.empty());
+    // Les Confins themselves (2.48 and 2.49).
+    for (const char* id : {"planet.confins", "level.confins_01", "level.confins_02", "boss.pyrrhax", "boss.monolithe", "track.pyrrhax_boss",
+                           "track.monolithe_boss", "gallery.creature.dragonnet", "gallery.creature.eclat_de_roche"})
+        CHECK(leaves.count(id));
 }

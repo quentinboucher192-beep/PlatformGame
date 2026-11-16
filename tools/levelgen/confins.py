@@ -2,13 +2,14 @@
 """Builds the levels of Les Confins (version 2.48), the world beyond the dying star, open from the
 start (data/planets/confins.json):
 
-  data/levels/confins_02.json  "Le Cœur de Pierre" (2.49, EXTRÊME): the granite galleries and the
-                                rune halls, then the Monolithe, le Golem Primordial (a walker:
-                                the crust gives way on the two sides of its arena)
   data/levels/confins_01.json  "La Gueule du Dragon" (EXTRÊME): one life, no checkpoint. The
-                                scorched crust of the Confins (its hardest rooms, one after the
-                                other), the choice of the powers, then the giant arena of Pyrrhax,
-                                le Dragon d'Obsidienne (8 phases, tools/contentgen/pyrrhax.py)
+                                choice of the powers, then the giant arena of Pyrrhax, le Dragon
+                                d'Obsidienne (8 phases, tools/contentgen/pyrrhax.py)
+  data/levels/confins_02.json  "Le Cœur de Pierre" (2.49, EXTRÊME): the same for the Monolithe,
+                                le Golem Primordial (a walker: the crust gives way on the two
+                                sides of its arena)
+
+2.49: each level of Les Confins is its giga boss's fight alone (no platforming before it).
 
 The rooms are the calibrated rooms of the trials (challenge.py), with Pyralis' materials and the
 obsidian of the dead star; the arena is the giant arena of Singularis (stellar_core.Star) answering
@@ -138,36 +139,31 @@ class Edge(Star):
 def dragon_maw():
     b = Edge("confins_01", "La Gueule du Dragon", "pyralis", seed=8101)
     L, d = b.L, b.L.data
-    d["description"] = ("Aux Confins du système, une croûte d'obsidienne sur un feu vivant. Ses épreuves les plus "
-                        "dures sans pardon, puis Pyrrhax et ses huit phases. Une seule vie, aucun checkpoint.")
+    d["description"] = ("Aux Confins du système, une croûte d'obsidienne sur un feu vivant : Pyrrhax et ses huit phases, "
+                        "dans une arène géante. Une seule vie, aucun checkpoint.")
     d["difficulty"] = 5
     # EXTRÊME: one life (the challenge mode below allows no death) and a race online.
     d["extreme"] = True
     b.f = 40
-    b.opening("La Gueule du Dragon : une seule vie, aucun checkpoint. Pyrrhax attend au bout.")
-    # The scorched crust: hard rooms, one after the other (dash, grapple, glide and the charged
-    # shot are carried from the start: levelkit.START_POWERS).
-    b.zone_sign("La croûte brûlée des Confins.")
-    b.rooms_of(["metronome_fast", "dash_walls", "vents", "anchors"])
-    b.zone_sign("Les veines de feu.")
-    b.rooms_of(["pistons", "frail_bridges_fast", "foundry", "lasers"])
-    # Before the maw: the powers of the fight (four carried; what is left stays here).
+    # 2.49: only the fight, as Singularis' level: the choice of the powers, then the giant arena
+    # (no platforming before it; dash, grapple, glide and the charged shot are carried from the
+    # start: levelkit.START_POWERS; four carried, what is left stays here).
     b.th.update(floor="obsidian", roof="obsidian", accent="obsidian")
-    b.zone_sign("Le seuil de la gueule. Choisissez les pouvoirs du combat : celui que vous laissez reste ici.")
+    b.opening("La Gueule du Dragon : Pyrrhax seul, une seule vie, aucun checkpoint. Choisissez vos quatre pouvoirs.")
     b.tablets(["frost_nova", "plasma_bomb", "wave", "shield", "triple_jump", "time_slow"])
-    platforming = b.x
     b.zone_sign("Pyrrhax, le Dragon d'Obsidienne.")
     b.rooms.append({"type": "boss", "x": b.x, "floor": b.f, "boss": "pyrrhax"})
     b.dragon_arena("pyrrhax", music="music/pyrrhax_boss.ogg")
     width = b.finish("Le dragon s'est tu. Les Confins s'éteignent.")
-    # Reference: the rooms at a good pace, then about six minutes of fight.
-    ref = int(round(platforming * T / 125.0 + 360))
+    # Reference: about six minutes of fight.
+    ref = 360
     d["timer"] = {"mode": "challenge", "limit": 3600, "onExpire": "gameover", "referenceTime": ref, "challengeMaxDeaths": 0}
     d["medals"] = {"bronze": {}, "silver": {"maxTime": int(ref * 1.6)}, "gold": {"maxTime": int(ref * 1.2)},
                    "platinum": {"maxTime": ref, "maxDeaths": 0}}
     b.cinematics("LA GUEULE DU DRAGON", "Les Confins", "Une seule vie. Un dragon d'obsidienne. Huit phases.",
                  "LE DRAGON S'ÉTEINT")
-    d["metadata"] = {"generator": "tools/levelgen/confins.py", "revision": 1, "rooms": b.rooms, "noHealing": True}
+    # 2.49: the fight alone (a new version of the level: its rankings start again).
+    d["metadata"] = {"generator": "tools/levelgen/confins.py", "revision": 9, "rooms": b.rooms, "noHealing": True}
     L.save(os.path.join(ROOT, "data/levels/confins_01.json"))
     return width
 
@@ -185,26 +181,21 @@ GOLEM_TEXTS = {
 def stone_heart():
     b = Edge("confins_02", "Le Cœur de Pierre", "pyralis", seed=8201)
     L, d = b.L, b.L.data
-    d["description"] = ("Sous la croûte des Confins, une caverne de granit gravé de runes. Ses épreuves les plus dures "
-                        "sans pardon, puis le Monolithe et ses huit phases. Une seule vie, aucun checkpoint.")
+    d["description"] = ("Sous la croûte des Confins, une caverne de granit gravé de runes : le Monolithe et ses huit "
+                        "phases, dans une arène géante. Une seule vie, aucun checkpoint.")
     d["difficulty"] = 5
     d["extreme"] = True
     b.f = 40
-    b.opening("Le Cœur de Pierre : une seule vie, aucun checkpoint. Le Monolithe attend au bout.")
-    b.zone_sign("Les galeries de granit.")
-    b.rooms_of(["climb", "crumble", "grapple", "gaps"])
-    b.zone_sign("Les salles des runes.")
-    b.rooms_of(["movers", "dash_gap", "spikes", "lasers"])
+    # Only the fight, as Pyrrhax' level: the choice of the powers, then the giant arena.
     b.th.update(floor="obsidian", roof="obsidian", accent="obsidian")
-    b.zone_sign("Le seuil du cœur de pierre. Choisissez les pouvoirs du combat : celui que vous laissez reste ici.")
+    b.opening("Le Cœur de Pierre : le Monolithe seul, une seule vie, aucun checkpoint. Choisissez vos quatre pouvoirs.")
     b.tablets(["ground_pound", "plasma_bomb", "wave", "shield", "triple_jump", "time_slow"])
-    platforming = b.x
     b.zone_sign("Le Monolithe, le Golem Primordial.")
     b.rooms.append({"type": "boss", "x": b.x, "floor": b.f, "boss": "monolithe"})
     # A walker: the crust gives way on the two sides only (the golem fights in the middle).
     b.giga_arena("monolithe", "music/monolithe_boss.ogg", pits=[(4, 16), (80, 92)], flying=False, texts=GOLEM_TEXTS)
     width = b.finish("Le Monolithe s'est tu. Le cœur des Confins se refroidit.")
-    ref = int(round(platforming * T / 125.0 + 360))
+    ref = 360  # about six minutes of fight
     d["timer"] = {"mode": "challenge", "limit": 3600, "onExpire": "gameover", "referenceTime": ref, "challengeMaxDeaths": 0}
     d["medals"] = {"bronze": {}, "silver": {"maxTime": int(ref * 1.6)}, "gold": {"maxTime": int(ref * 1.2)},
                    "platinum": {"maxTime": ref, "maxDeaths": 0}}

@@ -112,7 +112,7 @@ def phase(i, name, attack_ids, speed, cooldown, telegraph, text, combo=3, **kw):
 
 def phases():
     return [
-        phase(0, "Ambre", ["poings", "charge", "regard"], 1.0, 1.0, 0.85, "Le Monolithe ouvre son œil."),
+        phase(0, "Ambre", ["poings", "jet", "charge", "regard"], 1.0, 0.9, 0.85, "Le Monolithe ouvre son œil."),
         phase(1, "Éboulement", ["poings", "eboulement", "pics", "jet", "regard"], 1.05, 0.95, 0.82,
               "La voûte s'effondre sur vous !"),
         phase(2, "Séisme", ["bond", "onde", "vitrifie", "poings", "charge"], 1.1, 0.92, 0.8,

@@ -1206,6 +1206,8 @@ private:
             Rect row{list.x, yy, list.w - ui.s(14), rowH};
             bool known = heard(t), on = cur == &t;
             if (known && ui.hotspot("trk" + std::to_string(n), row)) play(t);
+            // « NOUVEAU » (2.49): a track added by an update (data/news/new_features.json).
+            ui.newBadge("trk" + std::to_string(n), row, "track." + fs::path(t.file).stem().string(), true, true);
             r.fillRoundedRect(row, ui.s(8), on ? ui.theme().accent.withAlpha(36) : Color{14, 20, 40, 150});
             if (on) r.drawRoundedRect(row, ui.s(8), ui.theme().accent, std::max(1.0f, ui.s(1.5f)));
             char num[8];
@@ -1461,6 +1463,8 @@ private:
                 galSel_.clear();
                 animClip_ = 0;
             }
+            static const char* const kGalFeatures[3] = {"gallery.tab.planets", "gallery.tab.bosses", "gallery.tab.creatures"};
+            ui.newBadge("gal" + std::to_string(i), {x, left.y, w, ui.s(40)}, kGalFeatures[i], true, true);
             x += w + ui.s(10);
         }
         static const char* kHint[3] = {"Une planète s'ouvre quand vous y arrivez.", "Un gardien entre dans la galerie quand vous le battez.",
@@ -1500,6 +1504,9 @@ private:
                 galSel_ = it.id;
                 animClip_ = 0;
             }
+            // « NOUVEAU » (2.49): a planet, a guardian or a creature added by an update.
+            static const char* const kGalKinds[3] = {"gallery.planet.", "gallery.boss.", "gallery.creature."};
+            ui.newBadge("g" + std::to_string(i), c, kGalKinds[galTab_] + it.id, true, true);
             r.fillRoundedRect(c, ui.s(10), on ? ui.theme().accent.withAlpha(36) : Color{14, 20, 40, 235});
             r.drawRoundedRect(c, ui.s(10), on ? ui.theme().accent : ui.theme().accent.withAlpha(30), std::max(1.0f, ui.s(1.5f)));
             Rect th{c.x + ui.s(6), c.y + ui.s(6), c.w - ui.s(12), thumbH};

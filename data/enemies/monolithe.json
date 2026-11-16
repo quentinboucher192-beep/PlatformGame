@@ -451,11 +451,12 @@
         "hpThreshold": 1.0,
         "attacks": [
           "poings",
+          "jet",
           "charge",
           "regard"
         ],
         "speedMultiplier": 1.0,
-        "cooldownMultiplier": 1.0,
+        "cooldownMultiplier": 0.9,
         "combo": 3,
         "telegraphMultiplier": 0.85,
         "enterText": "Le Monolithe ouvre son œil.",

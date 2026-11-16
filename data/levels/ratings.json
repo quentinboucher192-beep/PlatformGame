@@ -100,48 +100,48 @@
     "confins_01": {
       "components": {
         "boss": 32.91,
-        "checkpoints": 5.63,
-        "enemies": 2.58,
-        "hazards": 5.5,
-        "healing": -0.18,
-        "jumps": 2.82,
-        "length": 0.81,
+        "checkpoints": 1.29,
+        "enemies": 0.0,
+        "hazards": 9.92,
+        "healing": -0.64,
+        "jumps": 0.0,
+        "length": 0.23,
         "timer": 0.0
       },
       "facts": {
-        "deadly_jumps": 7,
-        "enemies": 20,
-        "hazards": 41,
-        "heal_per_100_tiles": 1.48,
-        "longest_checkpoint_gap": 541.08,
-        "precise_jumps": 7
+        "deadly_jumps": 0,
+        "enemies": 0,
+        "hazards": 18,
+        "heal_per_100_tiles": 5.3,
+        "longest_checkpoint_gap": 151.0,
+        "precise_jumps": 0
       },
-      "raw": 50.08,
-      "route_tiles": 541.08,
+      "raw": 43.71,
+      "route_tiles": 151.0,
       "score": 5.0,
       "version": 2
     },
     "confins_02": {
       "components": {
-        "boss": 33.52,
-        "checkpoints": 5.21,
-        "enemies": 0.82,
-        "hazards": 3.52,
-        "healing": -0.19,
-        "jumps": 2.76,
-        "length": 0.76,
+        "boss": 33.62,
+        "checkpoints": 1.29,
+        "enemies": 0.0,
+        "hazards": 5.9,
+        "healing": -0.64,
+        "jumps": 0.0,
+        "length": 0.23,
         "timer": 0.0
       },
       "facts": {
-        "deadly_jumps": 2,
-        "enemies": 6,
-        "hazards": 28,
-        "heal_per_100_tiles": 1.58,
-        "longest_checkpoint_gap": 505.91,
-        "precise_jumps": 7
+        "deadly_jumps": 0,
+        "enemies": 0,
+        "hazards": 12,
+        "heal_per_100_tiles": 5.3,
+        "longest_checkpoint_gap": 151.0,
+        "precise_jumps": 0
       },
-      "raw": 46.41,
-      "route_tiles": 505.91,
+      "raw": 40.4,
+      "route_tiles": 151.0,
       "score": 5.0,
       "version": 2
     },

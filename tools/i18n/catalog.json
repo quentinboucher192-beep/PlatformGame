@@ -3587,7 +3587,7 @@
    ]
   },
   {
-   "fr": "Aux Confins du système, une croûte d'obsidienne sur un feu vivant. Ses épreuves les plus dures sans pardon, puis Pyrrhax et ses huit phases. Une seule vie, aucun checkpoint.",
+   "fr": "Aux Confins du système, une croûte d'obsidienne sur un feu vivant : Pyrrhax et ses huit phases, dans une arène géante. Une seule vie, aucun checkpoint.",
    "where": [
     "data/levels/confins_01.json"
    ]
@@ -15303,7 +15303,6 @@
    "fr": "Grappin : d'ancrage en ancrage, entre deux tirs.",
    "where": [
     "data/levels/aethra_01.json",
-    "data/levels/confins_01.json",
     "data/levels/noyau_02.json",
     "data/levels/sylvanox_04.json"
    ]
@@ -15311,8 +15310,7 @@
   {
    "fr": "Grappin : enchaînez les ancrages.",
    "where": [
-    "data/levels/aethra_04.json",
-    "data/levels/confins_02.json"
+    "data/levels/aethra_04.json"
    ]
   },
   {
@@ -17887,12 +17885,6 @@
    ]
   },
   {
-   "fr": "La croûte brûlée des Confins.",
-   "where": [
-    "data/levels/confins_01.json"
-   ]
-  },
-  {
    "fr": "La définition de l'entité n'est pas valide.",
    "where": [
     "server/src/enemyRevisions.ts"
@@ -18011,7 +18003,7 @@
    ]
   },
   {
-   "fr": "La Gueule du Dragon : une seule vie, aucun checkpoint. Pyrrhax attend au bout.",
+   "fr": "La Gueule du Dragon : Pyrrhax seul, une seule vie, aucun checkpoint. Choisissez vos quatre pouvoirs.",
    "where": [
     "data/levels/confins_01.json"
    ]
@@ -18902,7 +18894,7 @@
    ]
   },
   {
-   "fr": "Le Cœur de Pierre : une seule vie, aucun checkpoint. Le Monolithe attend au bout.",
+   "fr": "Le Cœur de Pierre : le Monolithe seul, une seule vie, aucun checkpoint. Choisissez vos quatre pouvoirs.",
    "where": [
     "data/levels/confins_02.json"
    ]
@@ -19714,18 +19706,6 @@
    ]
   },
   {
-   "fr": "Le seuil de la gueule. Choisissez les pouvoirs du combat : celui que vous laissez reste ici.",
-   "where": [
-    "data/levels/confins_01.json"
-   ]
-  },
-  {
-   "fr": "Le seuil du cœur de pierre. Choisissez les pouvoirs du combat : celui que vous laissez reste ici.",
-   "where": [
-    "data/levels/confins_02.json"
-   ]
-  },
-  {
    "fr": "Le signal bat comme un cœur... Il vient du fond de cette machine.",
    "where": [
     "data/levels/sylvanox_03.json"
@@ -20106,7 +20086,7 @@
    ]
   },
   {
-   "fr": "Les Confins, deuxième niveau : « Le Cœur de Pierre » (EXTRÊME) : les galeries de granit et les salles des runes, une seule vie, aucun checkpoint, puis le Monolithe, le Golem Primordial.",
+   "fr": "Les Confins, deuxième niveau : « Le Cœur de Pierre » (EXTRÊME) : le combat du Monolithe, le Golem Primordial, seul. Une seule vie, aucun checkpoint.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -20244,12 +20224,6 @@
    ]
   },
   {
-   "fr": "Les galeries de granit.",
-   "where": [
-    "data/levels/confins_02.json"
-   ]
-  },
-  {
    "fr": "Les geysers de la cataracte soulèvent ceux qui planent.",
    "where": [
     "data/levels/pyralis_02.json"
@@ -20295,7 +20269,6 @@
    "fr": "Les lasers battent la mesure : un saut par temps, sans s'arrêter.",
    "where": [
     "data/levels/aethra_04.json",
-    "data/levels/confins_01.json",
     "data/levels/noyau_02.json",
     "data/levels/sylvanox_04.json"
    ]
@@ -20326,6 +20299,12 @@
   },
   {
    "fr": "Les niveaux de la campagne gardent leurs records : leurs touches ne changent pas leur empreinte classée.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Les niveaux des Confins sont désormais le combat du boss seul : « La Gueule du Dragon » commence directement par le choix des pouvoirs puis l'arène de Pyrrhax (nouvelle version du niveau : son classement repart de zéro).",
    "where": [
     "data/news/changelog.json"
    ]
@@ -20482,12 +20461,6 @@
    ]
   },
   {
-   "fr": "Les salles des runes.",
-   "where": [
-    "data/levels/confins_02.json"
-   ]
-  },
-  {
    "fr": "Les sanctuaires",
    "where": [
     "data/music/tracks.json"
@@ -20564,12 +20537,6 @@
    "fr": "Les trois mondes, une dernière fois.",
    "where": [
     "data/levels/noyau_02.json"
-   ]
-  },
-  {
-   "fr": "Les veines de feu.",
-   "where": [
-    "data/levels/confins_01.json"
    ]
   },
   {
@@ -22887,7 +22854,6 @@
    "fr": "Murs de cristal : sautez, puis Dash à travers.",
    "where": [
     "data/levels/aethra_01.json",
-    "data/levels/confins_01.json",
     "data/levels/noyau_02.json",
     "data/levels/sylvanox_04.json"
    ]
@@ -26361,6 +26327,12 @@
    ]
   },
   {
+   "fr": "Pastilles « NOUVEAU » sur tout ce qu'apportent Les Confins : la planète, ses niveaux, Pyrrhax et le Monolithe (statistiques et galerie), leurs créatures, succès, récompenses du Vestiaire et musiques du juke-box.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Pastilles « NOUVEAU » sur tout le chemin : chaque bouton qui mène à une nouveauté la porte (menu principal, onglets, catégories, cartes), même très en profondeur. Celle d'un bouton parent ne part que quand tout ce qui est nouveau en dessous a été vu.",
    "where": [
     "data/news/changelog.json"
@@ -26928,7 +26900,6 @@
    "fr": "Planeur dans les cheminées. Attention à la voûte.",
    "where": [
     "data/levels/aethra_03.json",
-    "data/levels/confins_01.json",
     "data/levels/noyau_02.json",
     "data/levels/pyralis_04.json"
    ]
@@ -32737,8 +32708,7 @@
   {
    "fr": "Saut, double saut, puis Dash au sommet.",
    "where": [
-    "data/levels/aethra_04.json",
-    "data/levels/confins_02.json"
+    "data/levels/aethra_04.json"
    ]
   },
   {
@@ -34013,7 +33983,7 @@
    ]
   },
   {
-   "fr": "Sous la croûte des Confins, une caverne de granit gravé de runes. Ses épreuves les plus dures sans pardon, puis le Monolithe et ses huit phases. Une seule vie, aucun checkpoint.",
+   "fr": "Sous la croûte des Confins, une caverne de granit gravé de runes : le Monolithe et ses huit phases, dans une arène géante. Une seule vie, aucun checkpoint.",
    "where": [
     "data/levels/confins_02.json"
    ]
@@ -36404,7 +36374,6 @@
    "fr": "Tir chargé sur le récepteur, puis courez.",
    "where": [
     "data/levels/aethra_03.json",
-    "data/levels/confins_01.json",
     "data/levels/noyau_02.json",
     "data/levels/pyralis_04.json"
    ]

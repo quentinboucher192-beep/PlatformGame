@@ -6,8 +6,12 @@ Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les c
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
 **Nouveau dans la version 2.49.0** :
-* **« Le Cœur de Pierre »** (EXTRÊME, Les Confins) : les galeries de granit, puis **le Monolithe,
-  le Golem Primordial**, boss géant à huit phases qui combat au sol.
+* **« Le Cœur de Pierre »** (EXTRÊME, Les Confins) : le combat seul du **Monolithe, le Golem
+  Primordial**, boss géant à huit phases qui combat au sol.
+* Les niveaux des Confins sont le **combat du boss seul** : choix des pouvoirs, puis l'arène
+  (« La Gueule du Dragon » aussi, nouvelle version : son classement repart de zéro).
+* Pastilles **« NOUVEAU »** sur tout ce qu'apportent Les Confins (planète, niveaux, boss, galerie,
+  créatures, succès, Vestiaire, juke-box) ; un test l'exige désormais pour tout nouveau contenu.
 * Succès et récompenses du Vestiaire du Monolithe (combinaison Granit, Éclats de roche, Séisme
   runique, Cercle runique, titre Briseur de pierre).
 * Sa musique, **« Le Golem Primordial »**, au juke-box (22 morceaux).

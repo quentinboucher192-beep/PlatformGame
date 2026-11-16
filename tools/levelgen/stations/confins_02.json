@@ -4,11 +4,7 @@
     {
       "label": "",
       "movement": [],
-      "needs": [
-        [
-          "grapple"
-        ]
-      ],
+      "needs": [],
       "pos": [
         64.0,
         640.0

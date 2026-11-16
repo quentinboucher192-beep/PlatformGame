@@ -1,183 +1,1507 @@
 {
-  "format": "cosmic.new_features",
-  "version": 1,
-  "comment": "Novelties of each update and the trail to them (game/progression/NewBadges.h). An entry with a version is a novelty: its « NOUVEAU » pill goes once its widget gets the focus or a click. « parents »: the widgets that lead to it (menu entry, tab, category…); an entry without a version is a step of that trail. A parent shows the pill as long as anything under it is new.",
-  "features": [
-    {"id": "pause.level_keys", "version": "2.31.0"},
-    {"id": "editor.power_keys", "version": "2.31.0"},
-    {"id": "settings.reset_one.keyboard", "version": "2.29.1", "parents": ["settings.tab.keyboard"]},
-    {"id": "settings.reset_one.gamepad", "version": "2.29.1", "parents": ["settings.tab.gamepad"]},
-    {"id": "settings.tab.keyboard", "parents": ["menu.settings"]},
-    {"id": "settings.tab.gamepad", "parents": ["menu.settings"]},
-    {"id": "powers.guide.glide", "version": "2.25.0", "parents": ["powers.guide"]},
-    {"id": "powers.guide.triple_jump", "version": "2.25.0", "parents": ["powers.guide"]},
-    {"id": "powers.guide.ground_pound", "version": "2.25.0", "parents": ["powers.guide"]},
-    {"id": "powers.guide.charge_shot", "version": "2.25.0", "parents": ["powers.guide"]},
-    {"id": "powers.guide.grapple", "version": "2.25.0", "parents": ["powers.guide"]},
-    {"id": "powers.guide.magnet", "version": "2.25.0", "parents": ["powers.guide"]},
-    {"id": "powers.guide.air_dash", "version": "2.25.0", "parents": ["powers.guide"]},
-    {"id": "social.globe", "version": "2.26.0", "parents": ["online.nav.social"]},
-    {"id": "online.nav.social", "parents": ["menu.online"]},
-    {"id": "online.nav.ranking", "parents": ["menu.online"]},
-    {"id": "replay.info_toggle", "version": "2.30.1", "parents": ["online.nav.ranking"]},
-    {"id": "stats.animations", "version": "2.27.0", "parents": ["menu.stats"]},
-    {"id": "stats.locations", "version": "2.27.0", "parents": ["menu.stats"]},
-    {"id": "stats.training", "version": "2.28.0", "parents": ["menu.stats"]},
-    {"id": "stats.training.spawn", "version": "2.42.0", "parents": ["stats.training"]},
-    {"id": "ghosts.training.section", "version": "2.30.2", "parents": ["ghosts.training"]},
-    {"id": "ghosts.training.powers", "version": "2.30.2", "parents": ["ghosts.training"]},
-    {"id": "ghosts.training", "parents": ["planet.ghosts"]},
-    {"id": "planet.ghosts", "parents": ["menu.campaign"]},
-    {"id": "achievements.cat.voyage", "parents": ["menu.achievements"]},
-    {"id": "achievements.cat.chrono", "parents": ["menu.achievements"]},
-    {"id": "achievements.cat.combat", "parents": ["menu.achievements"]},
-    {"id": "achievements.cat.gardiens", "parents": ["menu.achievements"]},
-    {"id": "achievements.cat.maitrise", "parents": ["menu.achievements"]},
-    {"id": "achievements.cat.pouvoirs", "parents": ["menu.achievements"]},
-    {"id": "achievements.cat.tresors", "parents": ["menu.achievements"]},
-    {"id": "achievements.cat.endurance", "parents": ["menu.achievements"]},
-    {"id": "achievements.cat.fantomes", "parents": ["menu.achievements"]},
-    {"id": "achievements.cat.extreme", "parents": ["menu.achievements"]},
-    {"id": "achievements.cat.createur", "parents": ["menu.achievements"]},
-    {"id": "achievements.cat.communaute", "parents": ["menu.achievements"]},
-    {"id": "achievements.cat.collection", "parents": ["menu.achievements"]},
-    {"id": "ach.voyage_15", "version": "2.29.0", "parents": ["achievements.cat.voyage"]},
-    {"id": "ach.voyage_aethra_first", "version": "2.29.0", "parents": ["achievements.cat.voyage"]},
-    {"id": "ach.voyage_horizon", "version": "2.29.0", "parents": ["achievements.cat.voyage"]},
-    {"id": "ach.chrono_gold_10", "version": "2.29.0", "parents": ["achievements.cat.chrono"]},
-    {"id": "ach.chrono_platinum_10", "version": "2.29.0", "parents": ["achievements.cat.chrono"]},
-    {"id": "ach.chrono_aethra_gold", "version": "2.29.0", "parents": ["achievements.cat.chrono"]},
-    {"id": "ach.chrono_aethra_platinum", "version": "2.29.0", "parents": ["achievements.cat.chrono"]},
-    {"id": "ach.chrono_pb_25", "version": "2.29.0", "parents": ["achievements.cat.chrono"]},
-    {"id": "ach.combat_ground_500", "version": "2.29.0", "parents": ["achievements.cat.combat"]},
-    {"id": "ach.combat_robot_150", "version": "2.29.0", "parents": ["achievements.cat.combat"]},
-    {"id": "ach.combat_flying_150", "version": "2.29.0", "parents": ["achievements.cat.combat"]},
-    {"id": "ach.combat_heavy_100", "version": "2.29.0", "parents": ["achievements.cat.combat"]},
-    {"id": "ach.combat_caster_100", "version": "2.29.0", "parents": ["achievements.cat.combat"]},
-    {"id": "ach.combat_fast_100", "version": "2.29.0", "parents": ["achievements.cat.combat"]},
-    {"id": "ach.combat_turret_40", "version": "2.29.0", "parents": ["achievements.cat.combat"]},
-    {"id": "ach.gardiens_echo_first", "version": "2.29.0", "parents": ["achievements.cat.gardiens"]},
-    {"id": "ach.gardiens_echoes_8", "version": "2.29.0", "parents": ["achievements.cat.gardiens"]},
-    {"id": "ach.gardiens_100", "version": "2.29.0", "parents": ["achievements.cat.gardiens"]},
-    {"id": "ach.maitrise_phases_mycelia", "version": "2.29.0", "parents": ["achievements.cat.maitrise"]},
-    {"id": "ach.maitrise_phases_aurorax", "version": "2.29.0", "parents": ["achievements.cat.maitrise"]},
-    {"id": "ach.maitrise_phases_pyrogyre", "version": "2.29.0", "parents": ["achievements.cat.maitrise"]},
-    {"id": "ach.maitrise_phases_nyxara", "version": "2.29.0", "parents": ["achievements.cat.maitrise"]},
-    {"id": "ach.maitrise_mycelia_nohit", "version": "2.29.0", "parents": ["achievements.cat.maitrise"]},
-    {"id": "ach.maitrise_aurorax_nohit", "version": "2.29.0", "parents": ["achievements.cat.maitrise"]},
-    {"id": "ach.maitrise_pyrogyre_nohit", "version": "2.29.0", "parents": ["achievements.cat.maitrise"]},
-    {"id": "ach.maitrise_phase_100", "version": "2.29.0", "parents": ["achievements.cat.maitrise"]},
-    {"id": "ach.maitrise_aethra_nodeath", "version": "2.29.0", "parents": ["achievements.cat.maitrise"]},
-    {"id": "ach.maitrise_boss_nohit_16", "version": "2.29.0", "parents": ["achievements.cat.maitrise"]},
-    {"id": "ach.pouvoirs_distinct_5", "version": "2.29.0", "parents": ["achievements.cat.pouvoirs"]},
-    {"id": "ach.pouvoirs_distinct_15", "version": "2.29.0", "parents": ["achievements.cat.pouvoirs"]},
-    {"id": "ach.pouvoirs_boomerang_300", "version": "2.29.0", "parents": ["achievements.cat.pouvoirs"]},
-    {"id": "ach.pouvoirs_frost_nova_300", "version": "2.29.0", "parents": ["achievements.cat.pouvoirs"]},
-    {"id": "ach.pouvoirs_decoy_300", "version": "2.29.0", "parents": ["achievements.cat.pouvoirs"]},
-    {"id": "ach.pouvoirs_recall_300", "version": "2.29.0", "parents": ["achievements.cat.pouvoirs"]},
-    {"id": "ach.tresors_shards_10000", "version": "2.29.0", "parents": ["achievements.cat.tresors"]},
-    {"id": "ach.tresors_relic_100", "version": "2.29.0", "parents": ["achievements.cat.tresors"]},
-    {"id": "ach.tresors_secret_40", "version": "2.29.0", "parents": ["achievements.cat.tresors"]},
-    {"id": "ach.tresors_aethra_full", "version": "2.29.0", "parents": ["achievements.cat.tresors"]},
-    {"id": "ach.tresors_aethra_secrets", "version": "2.29.0", "parents": ["achievements.cat.tresors"]},
-    {"id": "ach.endurance_5h", "version": "2.29.0", "parents": ["achievements.cat.endurance"]},
-    {"id": "ach.endurance_100h", "version": "2.29.0", "parents": ["achievements.cat.endurance"]},
-    {"id": "ach.endurance_runs_1000", "version": "2.29.0", "parents": ["achievements.cat.endurance"]},
-    {"id": "ach.endurance_attempts_100", "version": "2.29.0", "parents": ["achievements.cat.endurance"]},
-    {"id": "ach.fantomes_races_25", "version": "2.29.0", "parents": ["achievements.cat.fantomes"]},
-    {"id": "ach.fantomes_gold_100", "version": "2.29.0", "parents": ["achievements.cat.fantomes"]},
-    {"id": "ach.fantomes_pb_50", "version": "2.29.0", "parents": ["achievements.cat.fantomes"]},
-    {"id": "ach.fantomes_close_5", "version": "2.29.0", "parents": ["achievements.cat.fantomes"]},
-    {"id": "ach.fantomes_pack_10", "version": "2.29.0", "parents": ["achievements.cat.fantomes"]},
-    {"id": "ach.fantomes_friend_10", "version": "2.29.0", "parents": ["achievements.cat.fantomes"]},
-    {"id": "ach.fantomes_compare", "version": "2.29.0", "parents": ["achievements.cat.fantomes"]},
-    {"id": "ach.fantomes_align", "version": "2.29.0", "parents": ["achievements.cat.fantomes"]},
-    {"id": "ach.extreme_echoes_gold", "version": "2.29.0", "parents": ["achievements.cat.extreme"]},
-    {"id": "ach.extreme_star_platinum", "version": "2.29.0", "parents": ["achievements.cat.extreme"]},
-    {"id": "ach.extreme_attempts_100", "version": "2.29.0", "parents": ["achievements.cat.extreme"]},
-    {"id": "ach.extreme_10", "version": "2.29.0", "parents": ["achievements.cat.extreme"]},
-    {"id": "ach.createur_levels_10", "version": "2.29.0", "parents": ["achievements.cat.createur"]},
-    {"id": "ach.createur_enemies_5", "version": "2.29.0", "parents": ["achievements.cat.createur"]},
-    {"id": "ach.createur_export_5", "version": "2.29.0", "parents": ["achievements.cat.createur"]},
-    {"id": "ach.communaute_comment", "version": "2.29.0", "parents": ["achievements.cat.communaute"]},
-    {"id": "ach.communaute_comment_25", "version": "2.29.0", "parents": ["achievements.cat.communaute"]},
-    {"id": "ach.communaute_rate_campaign", "version": "2.29.0", "parents": ["achievements.cat.communaute"]},
-    {"id": "ach.communaute_rate_campaign_all", "version": "2.29.0", "parents": ["achievements.cat.communaute"]},
-    {"id": "ach.collection_equip", "version": "2.29.0", "parents": ["achievements.cat.collection"]},
-    {"id": "ach.collection_equip_10", "version": "2.29.0", "parents": ["achievements.cat.collection"]},
-    {"id": "ach.collection_outfit", "version": "2.29.0", "parents": ["achievements.cat.collection"]},
-    {"id": "ach.collection_tracks_10", "version": "2.29.0", "parents": ["achievements.cat.collection"]},
-    {"id": "ach.collection_tracks_all", "version": "2.29.0", "parents": ["achievements.cat.collection"]},
-    {"id": "ach.collection_menu_music", "version": "2.29.0", "parents": ["achievements.cat.collection"]},
-    {"id": "ach.collection_creatures_15", "version": "2.29.0", "parents": ["achievements.cat.collection"]},
-    {"id": "ach.collection_creatures_30", "version": "2.29.0", "parents": ["achievements.cat.collection"]},
-    {"id": "ach.collection_photo", "version": "2.29.0", "parents": ["achievements.cat.collection"]},
-    {"id": "ach.collection_photo_all", "version": "2.29.0", "parents": ["achievements.cat.collection"]},
-    {"id": "collection.tab.wardrobe", "parents": ["menu.collection"]},
-    {"id": "collection.tab.route", "parents": ["menu.collection"]},
-    {"id": "collection.cat.suit", "parents": ["collection.tab.wardrobe"]},
-    {"id": "collection.cat.trail", "parents": ["collection.tab.wardrobe"]},
-    {"id": "collection.cat.frame", "parents": ["collection.tab.wardrobe"]},
-    {"id": "collection.cat.title", "parents": ["collection.tab.wardrobe"]},
-    {"id": "collection.cat.victory", "parents": ["collection.tab.wardrobe"]},
-    {"id": "cos.suit_nebuleuse", "version": "2.29.0", "parents": ["collection.cat.suit", "collection.tab.route"]},
-    {"id": "cos.suit_abysse", "version": "2.29.0", "parents": ["collection.cat.suit", "collection.tab.route"]},
-    {"id": "cos.suit_eruption", "version": "2.29.0", "parents": ["collection.cat.suit", "collection.tab.route"]},
-    {"id": "cos.suit_sanctuaire", "version": "2.29.0", "parents": ["collection.cat.suit", "collection.tab.route"]},
-    {"id": "cos.trail_flame", "version": "2.29.0", "parents": ["collection.cat.trail", "collection.tab.route"]},
-    {"id": "cos.trail_prism", "version": "2.29.0", "parents": ["collection.cat.trail", "collection.tab.route"]},
-    {"id": "cos.trail_runes", "version": "2.29.0", "parents": ["collection.cat.trail", "collection.tab.route"]},
-    {"id": "cos.frame_emerald", "version": "2.29.0", "parents": ["collection.cat.frame", "collection.tab.route"]},
-    {"id": "cos.frame_orbit", "version": "2.29.0", "parents": ["collection.cat.frame", "collection.tab.route"]},
-    {"id": "cos.frame_nebula", "version": "2.29.0", "parents": ["collection.cat.frame", "collection.tab.route"]},
-    {"id": "cos.frame_laurels", "version": "2.29.0", "parents": ["collection.cat.frame", "collection.tab.route"]},
-    {"id": "cos.title_horizon", "version": "2.29.0", "parents": ["collection.cat.title", "collection.tab.route"]},
-    {"id": "cos.title_analyste", "version": "2.29.0", "parents": ["collection.cat.title", "collection.tab.route"]},
-    {"id": "cos.title_melomane", "version": "2.29.0", "parents": ["collection.cat.title", "collection.tab.route"]},
-    {"id": "cos.title_encyclopediste", "version": "2.29.0", "parents": ["collection.cat.title", "collection.tab.route"]},
-    {"id": "cos.title_briseur", "version": "2.29.0", "parents": ["collection.cat.title", "collection.tab.route"]},
-    {"id": "cos.title_maitre_quinze", "version": "2.29.0", "parents": ["collection.cat.title", "collection.tab.route"]},
-    {"id": "cos.title_ombre", "version": "2.29.0", "parents": ["collection.cat.title", "collection.tab.route"]},
-    {"id": "cos.title_legende", "version": "2.29.0", "parents": ["collection.cat.title", "collection.tab.route"]},
-    {"id": "cos.victory_vortex", "version": "2.29.0", "parents": ["collection.cat.victory", "collection.tab.route"]},
-    {"id": "cos.victory_borealis", "version": "2.29.0", "parents": ["collection.cat.victory", "collection.tab.route"]},
-    {"id": "cos.victory_corona", "version": "2.29.0", "parents": ["collection.cat.victory", "collection.tab.route"]},
-    {"id": "menu.challenges", "version": "2.32.0"},
-    {"id": "challenges.tab.today", "version": "2.32.0", "parents": ["menu.challenges"]},
-    {"id": "challenges.tab.archives", "version": "2.32.0", "parents": ["menu.challenges"]},
-    {"id": "challenges.keys", "version": "2.32.1", "parents": ["menu.challenges", "challenges.tab.today"]},
-    {"id": "profile.races", "version": "2.32.2", "parents": ["menu.online"]},
-    {"id": "challenges.tab.week", "version": "2.33.0", "parents": ["menu.challenges"]},
-    {"id": "challenges.tab.month", "version": "2.33.0", "parents": ["menu.challenges"]},
-    {"id": "challenges.tab.calendar", "version": "2.33.0", "parents": ["menu.challenges"]},
-    {"id": "challenges.board.period", "version": "2.33.0", "parents": ["challenges.tab.calendar"]},
-    {"id": "challenges.board.progress", "version": "2.34.0", "parents": ["menu.challenges"]},
-    {"id": "planet.noyau", "parents": ["menu.campaign"]},
-    {"id": "level.noyau_03", "version": "2.34.0", "parents": ["planet.noyau"]},
-    {"id": "boss.singularis", "version": "2.34.0", "parents": ["menu.stats"]},
-    {"id": "ach.gardiens_singularis", "version": "2.34.0", "parents": ["achievements.cat.gardiens"]},
-    {"id": "ach.maitrise_singularis_nohit", "version": "2.34.0", "parents": ["achievements.cat.maitrise"]},
-    {"id": "ach.maitrise_phases_singularis", "version": "2.34.0", "parents": ["achievements.cat.maitrise"]},
-    {"id": "cos.title_briseur_etoiles", "version": "2.34.0", "parents": ["collection.cat.title", "collection.tab.route"]},
-    {"id": "challenges.rewards", "version": "2.35.0", "parents": ["menu.challenges"]},
-    {"id": "cos.suit_champion", "version": "2.35.0", "parents": ["collection.cat.suit", "collection.tab.route"]},
-    {"id": "cos.trail_comete_mois", "version": "2.35.0", "parents": ["collection.cat.trail", "collection.tab.route"]},
-    {"id": "cos.frame_couronne", "version": "2.35.0", "parents": ["collection.cat.frame", "collection.tab.route"]},
-    {"id": "cos.title_defiant", "version": "2.35.0", "parents": ["collection.cat.title", "collection.tab.route"]},
-    {"id": "cos.victory_serie_feu", "version": "2.35.0", "parents": ["collection.cat.victory", "collection.tab.route"]},
-    {"id": "stats.sheet", "version": "2.37.0", "parents": ["menu.stats"]},
-    {"id": "challenges.calendar.look", "version": "2.38.0", "parents": ["challenges.tab.calendar"]},
-    {"id": "social.watch", "version": "2.36.0", "parents": ["social.tab.friends"]},
-    {"id": "social.tab.friends", "parents": ["online.nav.social"]},
-    {"id": "menu.admin", "version": "2.40.0"},
-    {"id": "collection.cat.badges", "version": "2.41.0", "parents": ["collection.tab.wardrobe"]},
-    {"id": "collection.tab.replays", "version": "2.44.0", "parents": ["menu.collection"]},
-    {"id": "admin.tab.calendar", "version": "2.42.0", "parents": ["menu.admin"]},
-    {"id": "admin.tab.backups", "version": "2.43.0", "parents": ["menu.admin"]},
-    {"id": "admin.calendar.rewards", "version": "2.43.0", "parents": ["menu.admin", "admin.tab.calendar"]},
-    {"id": "challenges.prizes", "version": "2.43.0", "parents": ["menu.challenges"]},
-    {"id": "admin.tab.campaign", "version": "2.44.0", "parents": ["menu.admin"]},
-    {"id": "admin.tab.creations", "version": "2.45.0", "parents": ["menu.admin"]},
-    {"id": "admin.tab.enemies", "version": "2.46.0", "parents": ["menu.admin"]}
-  ]
+ "format": "cosmic.new_features",
+ "version": 1,
+ "comment": "Novelties of each update and the trail to them (game/progression/NewBadges.h). An entry with a version is a novelty: its « NOUVEAU » pill goes once its widget gets the focus or a click. « parents »: the widgets that lead to it (menu entry, tab, category…); an entry without a version is a step of that trail. A parent shows the pill as long as anything under it is new.",
+ "features": [
+  {
+   "id": "pause.level_keys",
+   "version": "2.31.0"
+  },
+  {
+   "id": "editor.power_keys",
+   "version": "2.31.0"
+  },
+  {
+   "id": "settings.reset_one.keyboard",
+   "version": "2.29.1",
+   "parents": [
+    "settings.tab.keyboard"
+   ]
+  },
+  {
+   "id": "settings.reset_one.gamepad",
+   "version": "2.29.1",
+   "parents": [
+    "settings.tab.gamepad"
+   ]
+  },
+  {
+   "id": "settings.tab.keyboard",
+   "parents": [
+    "menu.settings"
+   ]
+  },
+  {
+   "id": "settings.tab.gamepad",
+   "parents": [
+    "menu.settings"
+   ]
+  },
+  {
+   "id": "powers.guide.glide",
+   "version": "2.25.0",
+   "parents": [
+    "powers.guide"
+   ]
+  },
+  {
+   "id": "powers.guide.triple_jump",
+   "version": "2.25.0",
+   "parents": [
+    "powers.guide"
+   ]
+  },
+  {
+   "id": "powers.guide.ground_pound",
+   "version": "2.25.0",
+   "parents": [
+    "powers.guide"
+   ]
+  },
+  {
+   "id": "powers.guide.charge_shot",
+   "version": "2.25.0",
+   "parents": [
+    "powers.guide"
+   ]
+  },
+  {
+   "id": "powers.guide.grapple",
+   "version": "2.25.0",
+   "parents": [
+    "powers.guide"
+   ]
+  },
+  {
+   "id": "powers.guide.magnet",
+   "version": "2.25.0",
+   "parents": [
+    "powers.guide"
+   ]
+  },
+  {
+   "id": "powers.guide.air_dash",
+   "version": "2.25.0",
+   "parents": [
+    "powers.guide"
+   ]
+  },
+  {
+   "id": "social.globe",
+   "version": "2.26.0",
+   "parents": [
+    "online.nav.social"
+   ]
+  },
+  {
+   "id": "online.nav.social",
+   "parents": [
+    "menu.online"
+   ]
+  },
+  {
+   "id": "online.nav.ranking",
+   "parents": [
+    "menu.online"
+   ]
+  },
+  {
+   "id": "replay.info_toggle",
+   "version": "2.30.1",
+   "parents": [
+    "online.nav.ranking"
+   ]
+  },
+  {
+   "id": "stats.animations",
+   "version": "2.27.0",
+   "parents": [
+    "menu.stats"
+   ]
+  },
+  {
+   "id": "stats.locations",
+   "version": "2.27.0",
+   "parents": [
+    "menu.stats"
+   ]
+  },
+  {
+   "id": "stats.training",
+   "version": "2.28.0",
+   "parents": [
+    "menu.stats"
+   ]
+  },
+  {
+   "id": "stats.training.spawn",
+   "version": "2.42.0",
+   "parents": [
+    "stats.training"
+   ]
+  },
+  {
+   "id": "ghosts.training.section",
+   "version": "2.30.2",
+   "parents": [
+    "ghosts.training"
+   ]
+  },
+  {
+   "id": "ghosts.training.powers",
+   "version": "2.30.2",
+   "parents": [
+    "ghosts.training"
+   ]
+  },
+  {
+   "id": "ghosts.training",
+   "parents": [
+    "planet.ghosts"
+   ]
+  },
+  {
+   "id": "planet.ghosts",
+   "parents": [
+    "menu.campaign"
+   ]
+  },
+  {
+   "id": "achievements.cat.voyage",
+   "parents": [
+    "menu.achievements"
+   ]
+  },
+  {
+   "id": "achievements.cat.chrono",
+   "parents": [
+    "menu.achievements"
+   ]
+  },
+  {
+   "id": "achievements.cat.combat",
+   "parents": [
+    "menu.achievements"
+   ]
+  },
+  {
+   "id": "achievements.cat.gardiens",
+   "parents": [
+    "menu.achievements"
+   ]
+  },
+  {
+   "id": "achievements.cat.maitrise",
+   "parents": [
+    "menu.achievements"
+   ]
+  },
+  {
+   "id": "achievements.cat.pouvoirs",
+   "parents": [
+    "menu.achievements"
+   ]
+  },
+  {
+   "id": "achievements.cat.tresors",
+   "parents": [
+    "menu.achievements"
+   ]
+  },
+  {
+   "id": "achievements.cat.endurance",
+   "parents": [
+    "menu.achievements"
+   ]
+  },
+  {
+   "id": "achievements.cat.fantomes",
+   "parents": [
+    "menu.achievements"
+   ]
+  },
+  {
+   "id": "achievements.cat.extreme",
+   "parents": [
+    "menu.achievements"
+   ]
+  },
+  {
+   "id": "achievements.cat.createur",
+   "parents": [
+    "menu.achievements"
+   ]
+  },
+  {
+   "id": "achievements.cat.communaute",
+   "parents": [
+    "menu.achievements"
+   ]
+  },
+  {
+   "id": "achievements.cat.collection",
+   "parents": [
+    "menu.achievements"
+   ]
+  },
+  {
+   "id": "ach.voyage_15",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.voyage"
+   ]
+  },
+  {
+   "id": "ach.voyage_aethra_first",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.voyage"
+   ]
+  },
+  {
+   "id": "ach.voyage_horizon",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.voyage"
+   ]
+  },
+  {
+   "id": "ach.chrono_gold_10",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.chrono"
+   ]
+  },
+  {
+   "id": "ach.chrono_platinum_10",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.chrono"
+   ]
+  },
+  {
+   "id": "ach.chrono_aethra_gold",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.chrono"
+   ]
+  },
+  {
+   "id": "ach.chrono_aethra_platinum",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.chrono"
+   ]
+  },
+  {
+   "id": "ach.chrono_pb_25",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.chrono"
+   ]
+  },
+  {
+   "id": "ach.combat_ground_500",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.combat"
+   ]
+  },
+  {
+   "id": "ach.combat_robot_150",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.combat"
+   ]
+  },
+  {
+   "id": "ach.combat_flying_150",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.combat"
+   ]
+  },
+  {
+   "id": "ach.combat_heavy_100",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.combat"
+   ]
+  },
+  {
+   "id": "ach.combat_caster_100",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.combat"
+   ]
+  },
+  {
+   "id": "ach.combat_fast_100",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.combat"
+   ]
+  },
+  {
+   "id": "ach.combat_turret_40",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.combat"
+   ]
+  },
+  {
+   "id": "ach.gardiens_echo_first",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.gardiens"
+   ]
+  },
+  {
+   "id": "ach.gardiens_echoes_8",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.gardiens"
+   ]
+  },
+  {
+   "id": "ach.gardiens_100",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.gardiens"
+   ]
+  },
+  {
+   "id": "ach.maitrise_phases_mycelia",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.maitrise"
+   ]
+  },
+  {
+   "id": "ach.maitrise_phases_aurorax",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.maitrise"
+   ]
+  },
+  {
+   "id": "ach.maitrise_phases_pyrogyre",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.maitrise"
+   ]
+  },
+  {
+   "id": "ach.maitrise_phases_nyxara",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.maitrise"
+   ]
+  },
+  {
+   "id": "ach.maitrise_mycelia_nohit",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.maitrise"
+   ]
+  },
+  {
+   "id": "ach.maitrise_aurorax_nohit",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.maitrise"
+   ]
+  },
+  {
+   "id": "ach.maitrise_pyrogyre_nohit",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.maitrise"
+   ]
+  },
+  {
+   "id": "ach.maitrise_phase_100",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.maitrise"
+   ]
+  },
+  {
+   "id": "ach.maitrise_aethra_nodeath",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.maitrise"
+   ]
+  },
+  {
+   "id": "ach.maitrise_boss_nohit_16",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.maitrise"
+   ]
+  },
+  {
+   "id": "ach.pouvoirs_distinct_5",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.pouvoirs"
+   ]
+  },
+  {
+   "id": "ach.pouvoirs_distinct_15",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.pouvoirs"
+   ]
+  },
+  {
+   "id": "ach.pouvoirs_boomerang_300",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.pouvoirs"
+   ]
+  },
+  {
+   "id": "ach.pouvoirs_frost_nova_300",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.pouvoirs"
+   ]
+  },
+  {
+   "id": "ach.pouvoirs_decoy_300",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.pouvoirs"
+   ]
+  },
+  {
+   "id": "ach.pouvoirs_recall_300",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.pouvoirs"
+   ]
+  },
+  {
+   "id": "ach.tresors_shards_10000",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.tresors"
+   ]
+  },
+  {
+   "id": "ach.tresors_relic_100",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.tresors"
+   ]
+  },
+  {
+   "id": "ach.tresors_secret_40",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.tresors"
+   ]
+  },
+  {
+   "id": "ach.tresors_aethra_full",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.tresors"
+   ]
+  },
+  {
+   "id": "ach.tresors_aethra_secrets",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.tresors"
+   ]
+  },
+  {
+   "id": "ach.endurance_5h",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.endurance"
+   ]
+  },
+  {
+   "id": "ach.endurance_100h",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.endurance"
+   ]
+  },
+  {
+   "id": "ach.endurance_runs_1000",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.endurance"
+   ]
+  },
+  {
+   "id": "ach.endurance_attempts_100",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.endurance"
+   ]
+  },
+  {
+   "id": "ach.fantomes_races_25",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.fantomes"
+   ]
+  },
+  {
+   "id": "ach.fantomes_gold_100",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.fantomes"
+   ]
+  },
+  {
+   "id": "ach.fantomes_pb_50",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.fantomes"
+   ]
+  },
+  {
+   "id": "ach.fantomes_close_5",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.fantomes"
+   ]
+  },
+  {
+   "id": "ach.fantomes_pack_10",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.fantomes"
+   ]
+  },
+  {
+   "id": "ach.fantomes_friend_10",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.fantomes"
+   ]
+  },
+  {
+   "id": "ach.fantomes_compare",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.fantomes"
+   ]
+  },
+  {
+   "id": "ach.fantomes_align",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.fantomes"
+   ]
+  },
+  {
+   "id": "ach.extreme_echoes_gold",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.extreme"
+   ]
+  },
+  {
+   "id": "ach.extreme_star_platinum",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.extreme"
+   ]
+  },
+  {
+   "id": "ach.extreme_attempts_100",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.extreme"
+   ]
+  },
+  {
+   "id": "ach.extreme_10",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.extreme"
+   ]
+  },
+  {
+   "id": "ach.createur_levels_10",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.createur"
+   ]
+  },
+  {
+   "id": "ach.createur_enemies_5",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.createur"
+   ]
+  },
+  {
+   "id": "ach.createur_export_5",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.createur"
+   ]
+  },
+  {
+   "id": "ach.communaute_comment",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.communaute"
+   ]
+  },
+  {
+   "id": "ach.communaute_comment_25",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.communaute"
+   ]
+  },
+  {
+   "id": "ach.communaute_rate_campaign",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.communaute"
+   ]
+  },
+  {
+   "id": "ach.communaute_rate_campaign_all",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.communaute"
+   ]
+  },
+  {
+   "id": "ach.collection_equip",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.collection"
+   ]
+  },
+  {
+   "id": "ach.collection_equip_10",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.collection"
+   ]
+  },
+  {
+   "id": "ach.collection_outfit",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.collection"
+   ]
+  },
+  {
+   "id": "ach.collection_tracks_10",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.collection"
+   ]
+  },
+  {
+   "id": "ach.collection_tracks_all",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.collection"
+   ]
+  },
+  {
+   "id": "ach.collection_menu_music",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.collection"
+   ]
+  },
+  {
+   "id": "ach.collection_creatures_15",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.collection"
+   ]
+  },
+  {
+   "id": "ach.collection_creatures_30",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.collection"
+   ]
+  },
+  {
+   "id": "ach.collection_photo",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.collection"
+   ]
+  },
+  {
+   "id": "ach.collection_photo_all",
+   "version": "2.29.0",
+   "parents": [
+    "achievements.cat.collection"
+   ]
+  },
+  {
+   "id": "collection.tab.wardrobe",
+   "parents": [
+    "menu.collection"
+   ]
+  },
+  {
+   "id": "collection.tab.route",
+   "parents": [
+    "menu.collection"
+   ]
+  },
+  {
+   "id": "collection.cat.suit",
+   "parents": [
+    "collection.tab.wardrobe"
+   ]
+  },
+  {
+   "id": "collection.cat.trail",
+   "parents": [
+    "collection.tab.wardrobe"
+   ]
+  },
+  {
+   "id": "collection.cat.frame",
+   "parents": [
+    "collection.tab.wardrobe"
+   ]
+  },
+  {
+   "id": "collection.cat.title",
+   "parents": [
+    "collection.tab.wardrobe"
+   ]
+  },
+  {
+   "id": "collection.cat.victory",
+   "parents": [
+    "collection.tab.wardrobe"
+   ]
+  },
+  {
+   "id": "cos.suit_nebuleuse",
+   "version": "2.29.0",
+   "parents": [
+    "collection.cat.suit",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.suit_abysse",
+   "version": "2.29.0",
+   "parents": [
+    "collection.cat.suit",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.suit_eruption",
+   "version": "2.29.0",
+   "parents": [
+    "collection.cat.suit",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.suit_sanctuaire",
+   "version": "2.29.0",
+   "parents": [
+    "collection.cat.suit",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.trail_flame",
+   "version": "2.29.0",
+   "parents": [
+    "collection.cat.trail",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.trail_prism",
+   "version": "2.29.0",
+   "parents": [
+    "collection.cat.trail",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.trail_runes",
+   "version": "2.29.0",
+   "parents": [
+    "collection.cat.trail",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.frame_emerald",
+   "version": "2.29.0",
+   "parents": [
+    "collection.cat.frame",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.frame_orbit",
+   "version": "2.29.0",
+   "parents": [
+    "collection.cat.frame",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.frame_nebula",
+   "version": "2.29.0",
+   "parents": [
+    "collection.cat.frame",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.frame_laurels",
+   "version": "2.29.0",
+   "parents": [
+    "collection.cat.frame",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.title_horizon",
+   "version": "2.29.0",
+   "parents": [
+    "collection.cat.title",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.title_analyste",
+   "version": "2.29.0",
+   "parents": [
+    "collection.cat.title",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.title_melomane",
+   "version": "2.29.0",
+   "parents": [
+    "collection.cat.title",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.title_encyclopediste",
+   "version": "2.29.0",
+   "parents": [
+    "collection.cat.title",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.title_briseur",
+   "version": "2.29.0",
+   "parents": [
+    "collection.cat.title",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.title_maitre_quinze",
+   "version": "2.29.0",
+   "parents": [
+    "collection.cat.title",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.title_ombre",
+   "version": "2.29.0",
+   "parents": [
+    "collection.cat.title",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.title_legende",
+   "version": "2.29.0",
+   "parents": [
+    "collection.cat.title",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.victory_vortex",
+   "version": "2.29.0",
+   "parents": [
+    "collection.cat.victory",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.victory_borealis",
+   "version": "2.29.0",
+   "parents": [
+    "collection.cat.victory",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.victory_corona",
+   "version": "2.29.0",
+   "parents": [
+    "collection.cat.victory",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "menu.challenges",
+   "version": "2.32.0"
+  },
+  {
+   "id": "challenges.tab.today",
+   "version": "2.32.0",
+   "parents": [
+    "menu.challenges"
+   ]
+  },
+  {
+   "id": "challenges.tab.archives",
+   "version": "2.32.0",
+   "parents": [
+    "menu.challenges"
+   ]
+  },
+  {
+   "id": "challenges.keys",
+   "version": "2.32.1",
+   "parents": [
+    "menu.challenges",
+    "challenges.tab.today"
+   ]
+  },
+  {
+   "id": "profile.races",
+   "version": "2.32.2",
+   "parents": [
+    "menu.online"
+   ]
+  },
+  {
+   "id": "challenges.tab.week",
+   "version": "2.33.0",
+   "parents": [
+    "menu.challenges"
+   ]
+  },
+  {
+   "id": "challenges.tab.month",
+   "version": "2.33.0",
+   "parents": [
+    "menu.challenges"
+   ]
+  },
+  {
+   "id": "challenges.tab.calendar",
+   "version": "2.33.0",
+   "parents": [
+    "menu.challenges"
+   ]
+  },
+  {
+   "id": "challenges.board.period",
+   "version": "2.33.0",
+   "parents": [
+    "challenges.tab.calendar"
+   ]
+  },
+  {
+   "id": "challenges.board.progress",
+   "version": "2.34.0",
+   "parents": [
+    "menu.challenges"
+   ]
+  },
+  {
+   "id": "planet.noyau",
+   "parents": [
+    "menu.campaign"
+   ]
+  },
+  {
+   "id": "level.noyau_03",
+   "version": "2.34.0",
+   "parents": [
+    "planet.noyau"
+   ]
+  },
+  {
+   "id": "boss.singularis",
+   "version": "2.34.0",
+   "parents": [
+    "menu.stats"
+   ]
+  },
+  {
+   "id": "ach.gardiens_singularis",
+   "version": "2.34.0",
+   "parents": [
+    "achievements.cat.gardiens"
+   ]
+  },
+  {
+   "id": "ach.maitrise_singularis_nohit",
+   "version": "2.34.0",
+   "parents": [
+    "achievements.cat.maitrise"
+   ]
+  },
+  {
+   "id": "ach.maitrise_phases_singularis",
+   "version": "2.34.0",
+   "parents": [
+    "achievements.cat.maitrise"
+   ]
+  },
+  {
+   "id": "cos.title_briseur_etoiles",
+   "version": "2.34.0",
+   "parents": [
+    "collection.cat.title",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "challenges.rewards",
+   "version": "2.35.0",
+   "parents": [
+    "menu.challenges"
+   ]
+  },
+  {
+   "id": "cos.suit_champion",
+   "version": "2.35.0",
+   "parents": [
+    "collection.cat.suit",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.trail_comete_mois",
+   "version": "2.35.0",
+   "parents": [
+    "collection.cat.trail",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.frame_couronne",
+   "version": "2.35.0",
+   "parents": [
+    "collection.cat.frame",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.title_defiant",
+   "version": "2.35.0",
+   "parents": [
+    "collection.cat.title",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.victory_serie_feu",
+   "version": "2.35.0",
+   "parents": [
+    "collection.cat.victory",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "stats.sheet",
+   "version": "2.37.0",
+   "parents": [
+    "menu.stats"
+   ]
+  },
+  {
+   "id": "challenges.calendar.look",
+   "version": "2.38.0",
+   "parents": [
+    "challenges.tab.calendar"
+   ]
+  },
+  {
+   "id": "social.watch",
+   "version": "2.36.0",
+   "parents": [
+    "social.tab.friends"
+   ]
+  },
+  {
+   "id": "social.tab.friends",
+   "parents": [
+    "online.nav.social"
+   ]
+  },
+  {
+   "id": "menu.admin",
+   "version": "2.40.0"
+  },
+  {
+   "id": "collection.cat.badges",
+   "version": "2.41.0",
+   "parents": [
+    "collection.tab.wardrobe"
+   ]
+  },
+  {
+   "id": "collection.tab.replays",
+   "version": "2.44.0",
+   "parents": [
+    "menu.collection"
+   ]
+  },
+  {
+   "id": "admin.tab.calendar",
+   "version": "2.42.0",
+   "parents": [
+    "menu.admin"
+   ]
+  },
+  {
+   "id": "admin.tab.backups",
+   "version": "2.43.0",
+   "parents": [
+    "menu.admin"
+   ]
+  },
+  {
+   "id": "admin.calendar.rewards",
+   "version": "2.43.0",
+   "parents": [
+    "menu.admin",
+    "admin.tab.calendar"
+   ]
+  },
+  {
+   "id": "challenges.prizes",
+   "version": "2.43.0",
+   "parents": [
+    "menu.challenges"
+   ]
+  },
+  {
+   "id": "admin.tab.campaign",
+   "version": "2.44.0",
+   "parents": [
+    "menu.admin"
+   ]
+  },
+  {
+   "id": "admin.tab.creations",
+   "version": "2.45.0",
+   "parents": [
+    "menu.admin"
+   ]
+  },
+  {
+   "id": "admin.tab.enemies",
+   "version": "2.46.0",
+   "parents": [
+    "menu.admin"
+   ]
+  },
+  {
+   "id": "collection.tab.music",
+   "parents": [
+    "menu.collection"
+   ]
+  },
+  {
+   "id": "collection.tab.gallery",
+   "parents": [
+    "menu.collection"
+   ]
+  },
+  {
+   "id": "gallery.tab.planets",
+   "parents": [
+    "collection.tab.gallery"
+   ]
+  },
+  {
+   "id": "gallery.tab.bosses",
+   "parents": [
+    "collection.tab.gallery"
+   ]
+  },
+  {
+   "id": "gallery.tab.creatures",
+   "parents": [
+    "collection.tab.gallery"
+   ]
+  },
+  {
+   "id": "planet.confins",
+   "version": "2.49.0",
+   "parents": [
+    "menu.campaign"
+   ]
+  },
+  {
+   "id": "level.confins_01",
+   "version": "2.49.0",
+   "parents": [
+    "planet.confins"
+   ]
+  },
+  {
+   "id": "level.confins_02",
+   "version": "2.49.0",
+   "parents": [
+    "planet.confins"
+   ]
+  },
+  {
+   "id": "boss.pyrrhax",
+   "version": "2.49.0",
+   "parents": [
+    "menu.stats"
+   ]
+  },
+  {
+   "id": "boss.monolithe",
+   "version": "2.49.0",
+   "parents": [
+    "menu.stats"
+   ]
+  },
+  {
+   "id": "ach.voyage_confins",
+   "version": "2.49.0",
+   "parents": [
+    "achievements.cat.voyage"
+   ]
+  },
+  {
+   "id": "ach.voyage_coeur_pierre",
+   "version": "2.49.0",
+   "parents": [
+    "achievements.cat.voyage"
+   ]
+  },
+  {
+   "id": "ach.gardiens_pyrrhax",
+   "version": "2.49.0",
+   "parents": [
+    "achievements.cat.gardiens"
+   ]
+  },
+  {
+   "id": "ach.gardiens_monolithe",
+   "version": "2.49.0",
+   "parents": [
+    "achievements.cat.gardiens"
+   ]
+  },
+  {
+   "id": "ach.maitrise_pyrrhax_nohit",
+   "version": "2.49.0",
+   "parents": [
+    "achievements.cat.maitrise"
+   ]
+  },
+  {
+   "id": "ach.maitrise_phases_pyrrhax",
+   "version": "2.49.0",
+   "parents": [
+    "achievements.cat.maitrise"
+   ]
+  },
+  {
+   "id": "ach.maitrise_monolithe_nohit",
+   "version": "2.49.0",
+   "parents": [
+    "achievements.cat.maitrise"
+   ]
+  },
+  {
+   "id": "ach.maitrise_phases_monolithe",
+   "version": "2.49.0",
+   "parents": [
+    "achievements.cat.maitrise"
+   ]
+  },
+  {
+   "id": "ach.extreme_dragon_gold",
+   "version": "2.49.0",
+   "parents": [
+    "achievements.cat.extreme"
+   ]
+  },
+  {
+   "id": "ach.extreme_dragon_platinum",
+   "version": "2.49.0",
+   "parents": [
+    "achievements.cat.extreme"
+   ]
+  },
+  {
+   "id": "ach.extreme_golem_gold",
+   "version": "2.49.0",
+   "parents": [
+    "achievements.cat.extreme"
+   ]
+  },
+  {
+   "id": "ach.extreme_golem_platinum",
+   "version": "2.49.0",
+   "parents": [
+    "achievements.cat.extreme"
+   ]
+  },
+  {
+   "id": "cos.suit_obsidienne",
+   "version": "2.49.0",
+   "parents": [
+    "collection.cat.suit",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.trail_cendres",
+   "version": "2.49.0",
+   "parents": [
+    "collection.cat.trail",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.victory_souffle",
+   "version": "2.49.0",
+   "parents": [
+    "collection.cat.victory",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.frame_ecailles",
+   "version": "2.49.0",
+   "parents": [
+    "collection.cat.frame",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.title_dompteur_dragon",
+   "version": "2.49.0",
+   "parents": [
+    "collection.cat.title",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.suit_granit",
+   "version": "2.49.0",
+   "parents": [
+    "collection.cat.suit",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.trail_eclats",
+   "version": "2.49.0",
+   "parents": [
+    "collection.cat.trail",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.victory_seisme",
+   "version": "2.49.0",
+   "parents": [
+    "collection.cat.victory",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.frame_runique",
+   "version": "2.49.0",
+   "parents": [
+    "collection.cat.frame",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.title_briseur_pierre",
+   "version": "2.49.0",
+   "parents": [
+    "collection.cat.title",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "track.pyrrhax_boss",
+   "version": "2.49.0",
+   "parents": [
+    "collection.tab.music"
+   ]
+  },
+  {
+   "id": "track.monolithe_boss",
+   "version": "2.49.0",
+   "parents": [
+    "collection.tab.music"
+   ]
+  },
+  {
+   "id": "gallery.planet.confins",
+   "version": "2.49.0",
+   "parents": [
+    "gallery.tab.planets"
+   ]
+  },
+  {
+   "id": "gallery.boss.pyrrhax",
+   "version": "2.49.0",
+   "parents": [
+    "gallery.tab.bosses"
+   ]
+  },
+  {
+   "id": "gallery.boss.monolithe",
+   "version": "2.49.0",
+   "parents": [
+    "gallery.tab.bosses"
+   ]
+  },
+  {
+   "id": "gallery.creature.dragonnet",
+   "version": "2.49.0",
+   "parents": [
+    "gallery.tab.creatures"
+   ]
+  },
+  {
+   "id": "gallery.creature.eclat_de_roche",
+   "version": "2.49.0",
+   "parents": [
+    "gallery.tab.creatures"
+   ]
+  }
+ ]
 }
