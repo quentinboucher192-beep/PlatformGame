@@ -19,6 +19,7 @@
 #include "ui/screens/Navigation.h"
 #include "ui/screens/ReplayCompareNav.h"
 #include "ui/screens/OnlineNav.h"
+#include "ui/screens/ReplayDownloadUi.h"
 #include "ui/screens/Thumbnail.h"
 #include "ui/widgets/Glyphs.h"
 
@@ -127,6 +128,7 @@ public:
         drawBoardZone();
         drawLevelZone();
         drawRankAnimation();
+        ReplayDownloadUi::drawTip(g_);  // the download icons' tooltip, over the rest
         if (top && ui.backPressed()) g_.app.switchScene(makeMainMenu(g_));
         ui.inputEnabled = true;
         if (top) ui.end();
@@ -800,6 +802,12 @@ private:
             Vec2 c = vb.center();
             ui.r().fillTriangle({c.x - ui.s(5), c.y - ui.s(7)}, {c.x - ui.s(5), c.y + ui.s(7)}, {c.x + ui.s(7), c.y}, ui.theme().accent);
             right = vb.x - ui.s(8);
+            // 2.45: keep it on this computer, to watch it without a connection.
+            if (right - nx > ui.s(120)) {
+                Rect db{right - ui.s(40), row.center().y - ui.s(14), ui.s(40), ui.s(28)};
+                ReplayDownloadUi::icon(g_, pinned ? std::string("pinneddl") : "dl" + std::to_string(index), db, recordDownload(e, levelBoard() ? level() : nullptr));
+                right = db.x - ui.s(8);
+            }
         }
         std::string name = ui_.displayName(jstr(p, "username"), rank, me);
         float room = std::max(ui.s(40), right - nx);
@@ -1030,12 +1038,22 @@ private:
         auto actionY = [&](int i) { return zoneD_.y + ui.s(12) + ui.s(36) * static_cast<float>(i); };
         // One font and one size for the five: the largest at which every label fits whole.
         static const char* const kActions[] = {"Voir le replay", "Comparer…", "Défier ce temps", "Envoyer le record", "Jouer ce niveau"};
+        // « Voir le replay » shares its line with the download icon (2.45).
+        const float dlW = ah + ui.s(6), gapW = ui.s(6);
         st.fontSize = 18.0f;
         for (const char* a : kActions) st.fontSize = std::min(st.fontSize, ui.fitFont(a, FontFace::Bold, 18.0f, bw - ui.s(24), 0.5f));
+        st.fontSize = std::min(st.fontSize, ui.fitFont(kActions[0], FontFace::Bold, 18.0f, bw - dlW - gapW - ui.s(24), 0.5f));
         std::string replayRecord = replayCandidate();
         st.enabled = !replayRecord.empty() && l->entry != nullptr;
-        if (ui.button("replay", {bx, actionY(0), bw, ah}, kActions[0], st))
+        if (ui.button("replay", {bx, actionY(0), bw - dlW - gapW, ah}, kActions[0], st))
             g_.app.pushScene(makeReplayViewer(g_, replayRecord));
+        {
+            Json entry;
+            for (const auto& e : board_.entries)
+                if (!replayRecord.empty() && jstr(e, "record_id") == replayRecord) entry = e;
+            if (entry.is_null() && !replayRecord.empty()) entry = Json{{"record_id", replayRecord}};
+            ReplayDownloadUi::icon(g_, "download", {bx + bw - dlW, actionY(0), dlW, ah}, recordDownload(entry, l), !replayRecord.empty());
+        }
         // Two records of this level side by side: the selected one (A) and the best other one
         // with a replay (B), downloaded before the comparison (read only).
         std::vector<Json> pair = comparePair(replayRecord);
@@ -1084,6 +1102,20 @@ private:
                         ui.label("Version du niveau différente de celle du serveur", {x, zoneD_.bottom() - ui.s(12)}, 14, ui.theme().danger,
                                  Align::Left, FontFace::Body, VAlign::Middle);
         ui.popId();
+    }
+
+    /// « Télécharger » (2.45): the replay of a record of the board, kept on this computer with
+    /// what the board says of it (the level and its version are read from the replay).
+    /// `l`: its level (the board's when it is a level's board).
+    ReplayDownloadRequest recordDownload(const Json& e, const RankedLevel* l) const {
+        const std::string rid = jstr(e, "record_id");
+        const Json& p = jfield(e, "player", Json::object());
+        const std::string name = jstr(p, "username");
+        const int rank = jget<int>(e, "world_rank", jget<int>(e, "rank", 0));
+        return ReplayDownloadUi::request("record", rid, "/api/v1/records/" + rid + "/replay", name,
+                                         name.empty() ? std::string() : ui_.displayName(name, rank, jget<bool>(e, "is_me", false)),
+                                         l ? l->id : std::string(), l ? l->name : std::string(), categoryLabel(category()),
+                                         jget<int64_t>(e, "time_ms", 0), jstr(e, "achieved_at"));
     }
 
     /// « Comparer… »: the record VIEW REPLAY opens (A) and the best other one with a replay

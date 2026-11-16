@@ -18,6 +18,7 @@
 #include "ui/screens/CosmeticFx.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/ProfileBadgesUi.h"
+#include "ui/screens/ReplayDownloadUi.h"
 #include "ui/screens/Thumbnail.h"
 
 namespace cosmic {
@@ -92,6 +93,7 @@ public:
         } else {
             drawProfile(close);
         }
+        ReplayDownloadUi::drawTip(g_);  // the download icons' tooltip, over the rest
         ui.inputEnabled = true;
         if (confirmBlock_) drawConfirmBlock();
         else if (leave || (ui.backPressed() && !ui.editingText())) g_.app.popScene();
@@ -753,12 +755,15 @@ private:
             vs.enabled = jget<bool>(r, "has_replay", false) && fetching_.empty();
             vs.fontSize = ui.fitFont("Voir", FontFace::Bold, 20, viewW - ui.s(20));
             if (ui.button("rv/" + runId, vb, fetching_ == runId ? "…" : "Voir", vs)) watchRace(r);
+            // 2.45: the replay kept on this computer, to watch it without a connection.
+            Rect db{vb.x - ui.s(10) - ui.s(42), vb.y, ui.s(42), ui.s(42)};
+            ReplayDownloadUi::icon(g_, "rd/" + runId, db, raceDownload(r), jget<bool>(r, "has_replay", false) && !runId.empty());
             int rank = jget<int>(r, "rank", 0), n = jget<int>(r, "participants", 0);
             std::string rk = rank > 0 ? "n°" + std::to_string(rank) + " / " + std::to_string(n) : "—";
             float rkw = ui.s(120);
-            ui.label(rk, {vb.x - ui.s(16), row.center().y}, ui.fitFont(rk, FontFace::Bold, 17, rkw), rank > 0 && rank <= 3 ? GlobeRenderer::tierColor(markerTier(rank)) : ui.theme().text,
+            ui.label(rk, {db.x - ui.s(16), row.center().y}, ui.fitFont(rk, FontFace::Bold, 17, rkw), rank > 0 && rank <= 3 ? GlobeRenderer::tierColor(markerTier(rank)) : ui.theme().text,
                      Align::Right, FontFace::Bold, VAlign::Middle);
-            float bx = vb.x - ui.s(16) - rkw - ui.s(20) - barW;
+            float bx = db.x - ui.s(16) - rkw - ui.s(20) - barW;
             double score = jget<double>(r, "score", 0.0);
             bool fin = jget<bool>(r, "finished", false);
             Rect bar{bx, row.center().y + ui.s(4), barW, ui.s(10)};
@@ -780,10 +785,31 @@ private:
         ui.endScroll();
     }
 
+    /// « Télécharger » (2.45): this player's best attempt on a level, kept on this computer.
+    ReplayDownloadRequest raceDownload(const Json& r) const {
+        const std::string runId = jstr(r, "run_id");
+        const Json& p = data_.is_object() ? jfield(data_, "player", Json::object()) : Json::object();
+        const std::string who = jstr(p, "username");
+        const bool official = jstr(r, "kind") != "community";
+        const std::string levelId = jstr(r, "level_id");
+        const bool installed = official && g_.content.level(levelId) != nullptr;
+        ReplayDownloadRequest q = ReplayDownloadUi::request(
+            "race", runId, "/api/v1/races/runs/" + runId + "/replay", who, who.empty() ? std::string() : ui_.displayName(who, 0, me()),
+            installed ? levelId : std::string(), jstr(r, "title"), "Course à la vérification – " + decimal(jget<double>(r, "score", 0.0)) + " %",
+            jget<int64_t>(r, "time_ms", 0), jstr(r, "at"));
+        q.meta.playerId = playerId_;
+        return q;
+    }
+
     void watchRace(const Json& r) {
         const std::string runId = jstr(r, "run_id");
         const std::string title = jstr(r, "title");
         double score = jget<double>(r, "score", 0.0);
+        // 2.45: downloaded on this computer, it plays from its copy (no network needed).
+        if (auto rep = ReplayDownloadUi::localCopy(g_, ReplayLibrary::makeId("race", runId))) {
+            g_.app.pushScene(makeLocalReplayViewer(g_, std::move(*rep), "Course à la vérification – " + title + " – " + decimal(score) + " %"));
+            return;
+        }
         fetching_ = runId;
         say("Téléchargement du replay…", false);
         g_.online.getBinary(

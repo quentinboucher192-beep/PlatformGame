@@ -22,6 +22,7 @@ void GameServices::loadAll() {
     bossStats.load();
     ghosts.open(Paths::userDir() / "ghosts");
     ghosts.trimCache(static_cast<uint64_t>(settings.ghosts.cacheMB) * 1024 * 1024);
+    replayLibrary.open(Paths::userDir() / "replays" / "downloaded");
     segments.load();
     training.load();
     powerKeyOverrides.load();

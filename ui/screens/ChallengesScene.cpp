@@ -27,6 +27,7 @@
 #include "ui/screens/LevelPowerKeysScene.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/ReplayDownloadUi.h"
 #include "ui/screens/Thumbnail.h"
 
 namespace cosmic {
@@ -348,8 +349,9 @@ public:
             detail_.clear();
             drawCalendar(body);
         }
-        // The tooltip of a reward, over the card and the leaderboard.
+        // The tooltip of a reward, over the card and the leaderboard; of a download icon.
         if (rewardsShown_) rewardRow_.drawTooltip(g_);
+        ReplayDownloadUi::drawTip(g_);
         ui.popId();
         // Back: from a challenge's card to the calendar, else to the main menu.
         if (!leave && ui.backPressed() && tab_ == 3 && !detail_.empty()) closeDetail();
@@ -741,6 +743,22 @@ private:
     /// « Voir » on a leaderboard row: that run's replay (or, `attempt`, that attempt's on
     /// « Plus loin »; public once verified), downloaded once (kept in saves/challenges/ghosts/),
     /// then played in the replay viewer.
+    /// « Télécharger » (2.45): a run's replay (or an attempt's, on « Plus loin ») kept on this
+    /// computer, on the level installed here for the challenge of the board.
+    ReplayDownloadRequest runDownload(const Json& e, const std::string& replayId, bool attempt) {
+        const DailyChallenge& c = *boardChallenge_;
+        const Json& p = jfield(e, "player", Json());
+        const std::string who = p.is_object() ? jstr(p, "username") : p.is_string() ? p.get<std::string>() : std::string();
+        const std::string shown = who.empty() ? std::string() : ou_.displayName(who, jget<int>(e, "rank", 0), jget<bool>(e, "is_me", false));
+        const LevelEntry* lvl = boardPlace_.localId.empty() ? nullptr : g_.content.level(boardPlace_.localId);
+        ReplayDownloadRequest q = ReplayDownloadUi::request(
+            attempt ? "challenge-attempt" : "challenge", replayId,
+            std::string(attempt ? "/api/v1/challenges/attempts/" : "/api/v1/challenges/runs/") + replayId + "/replay", who, shown, boardPlace_.localId,
+            lvl ? lvl->name : c.level.title, challengeTitle(c, true), jget<int64_t>(e, "time_ms", 0), jstr(e, "created_at", c.date));
+        if (p.is_object()) q.meta.playerId = jstr(p, "id");
+        return q;
+    }
+
     void watchRun(const Json& e, const std::string& replayId, bool attempt) {
         const DailyChallenge* c = shown();
         if (!c || !watching_.empty()) return;
@@ -748,6 +766,13 @@ private:
         const Json& p = jfield(e, "player", Json());
         // The pseudonym as shown on the board (hidden in streaming mode).
         const std::string name = ou_.displayName(p.is_object() ? jstr(p, "username") : std::string(), jget<int>(e, "rank", 0), jget<bool>(e, "is_me", false));
+        // 2.45: downloaded on this computer, it plays from its copy (no network needed).
+        if (auto rep = ReplayDownloadUi::localCopy(g_, ReplayLibrary::makeId(attempt ? "challenge-attempt" : "challenge", replayId))) {
+            std::string title = challengeTitle(*c, true);
+            if (!name.empty()) title = name + " – " + title;
+            g_.app.pushScene(makeLocalReplayViewer(g_, std::move(*rep), title));
+            return;
+        }
         watching_ = replayId;
         g_.challenges.downloadRunReplay(id, replayId, [this, id, name, life = std::weak_ptr<int>(life_)](std::optional<fs::path> file, const std::string& why) {
             if (!life.lock()) return;
@@ -883,6 +908,9 @@ private:
             y += ui.s(52);
         }
         const bool progress = progressBoard(c);
+        // What the rows' downloads note (2.45): the challenge, the level installed here.
+        boardChallenge_ = &c;
+        boardPlace_ = levelPlace(g_, c);
         // Monde, Pays, Amis.
         static const char* const kScopes[3] = {"Monde", "Pays", "Amis"};
         float sw = (w - 2 * ui.s(10)) / 3.0f;
@@ -983,6 +1011,12 @@ private:
             if (ui.button("watch" + replayId + (me ? "m" : ""), {right - bw, row.y + ui.s(5), bw, row.h - ui.s(10)}, label, st))
                 watchRun(e, replayId, attemptReplay);
             right -= bw + ui.s(10);
+            // 2.45: kept on this computer, to watch it without a connection.
+            if (boardChallenge_) {
+                const float dw = row.h - ui.s(10);
+                ReplayDownloadUi::icon(g_, "dl" + replayId + (me ? "m" : ""), {right - dw, row.y + ui.s(5), dw, dw}, runDownload(e, replayId, attemptReplay));
+                right -= dw + ui.s(10);
+            }
         }
         std::string status = jstr(e, "status", "VERIFIED");
         ChallengeRunState st = challengeRunStateFromServer(status);
@@ -1328,6 +1362,8 @@ private:
     float boardAge_ = 0.0f;
     bool downloading_ = false;
     std::string watching_;  // the run whose replay is being downloaded (« Voir »)
+    const DailyChallenge* boardChallenge_ = nullptr;  // the board drawn this frame (its rows' downloads)
+    LevelPlace boardPlace_;                            // its level here
     std::map<std::string, TexturePtr> thumbs_;
     CalendarArt art_;  // the calendar's previews and tags (ChallengeUi.h)
     std::string msg_;

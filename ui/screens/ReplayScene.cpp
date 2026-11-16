@@ -94,6 +94,8 @@ public:
             loadLevel();
             return;
         }
+        // 2.45: a record downloaded on this computer plays from its copy (no network needed).
+        if (openDownloaded()) return;
         status_ = "Chargement du record…";
         g_.online.get("/api/v1/records/" + recordId_, OnlineService::guard(life_, [this](const ApiResult& r) {
             if (!r.ok) return fail("Record introuvable : " + r.message);
@@ -216,6 +218,31 @@ private:
         g_.achievements.stats().add(key);
         g_.checkAchievements();
         g_.achievements.save();
+    }
+
+    /// The copy of this record kept in « Replays téléchargés », when there is a readable one.
+    bool openDownloaded() {
+        const std::string id = ReplayLibrary::makeId("record", recordId_);
+        const DownloadedReplay* d = g_.replayLibrary.find(id);
+        if (!d) return false;
+        auto rep = g_.replayLibrary.load(id);
+        if (!rep) return false;  // damaged: downloaded again below
+        playerName_ = d->player;
+        timeMs_ = d->timeMs;
+        categoryText_ = d->category;
+        a_.meta.source = "record";
+        a_.meta.label = playerName_;
+        a_.meta.playerId = d->playerId;
+        a_.meta.recordId = recordId_;
+        a_.meta.timeMs = timeMs_;
+        a_.meta.validated = true;
+        auto shared = std::make_shared<const ReplayData>(std::move(*rep));
+        a_.replay = shared;
+        a_.meta.levelId = d->levelId;
+        a_.meta.levelHash = shared->levelHash;
+        levelId_ = d->levelId;
+        loadLevel();
+        return true;
     }
 
     void downloadReplay(const std::string& levelId) {

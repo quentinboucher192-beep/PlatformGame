@@ -12,6 +12,7 @@
 #include "game/online/Replay.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/ReplayDownloadUi.h"
 
 namespace cosmic {
 
@@ -77,6 +78,7 @@ public:
         } else {
             drawBody();
         }
+        ReplayDownloadUi::drawTip(g_);  // the download icons' tooltip, over the rest
         if (leave || (ui.backPressed() && !ui.editingText())) g_.app.popScene();
         ui.popId();
         ui.end();
@@ -180,10 +182,12 @@ private:
 
         // ---------------------------------------------------------------- columns
         const Json& list = data_.value("ranking", Json::array());
-        float cRank = x + ui.s(14), cPlayer = x + ui.s(84), cScore = x + w * 0.42f, cBar = cScore + ui.s(24), barW = w * 0.30f;
-        // Last column: « Voir », the replay of the attempt (2.32.2).
-        const float replayW = ui.s(104), replayGap = ui.s(10);
-        float cDate = x + w - ui.s(14) - replayW - replayGap;
+        // Last columns: « Voir », the replay of the attempt (2.32.2), and its download (2.45).
+        const float replayW = ui.s(104), replayGap = ui.s(10), dlW = ui.s(46);
+        float cDate = x + w - ui.s(14) - replayW - replayGap - dlW - replayGap;
+        // The bar stops before the date (170 px, right-aligned in the row).
+        float cRank = x + ui.s(14), cPlayer = x + ui.s(84), cScore = x + w * 0.42f, cBar = cScore + ui.s(24);
+        float barW = std::max(ui.s(60), std::min(w * 0.30f, cDate - ui.s(14) - ui.s(170) - ui.s(16) - cBar));
         auto head = [&](const std::string& t, float hx, Align a) { ui.label(t, {hx, y + ui.s(10)}, 15, ui.theme().textDim, a, FontFace::Bold, VAlign::Middle); };
         head("RANG", cRank, Align::Left);
         head("JOUEUR", cPlayer, Align::Left);
@@ -203,11 +207,12 @@ private:
             ui.beginScroll("ranking", area, static_cast<float>(list.size()) * (rh + gap));
             float cy = area.y - ui.scrollOffset();
             for (const auto& e : list) {
-                Rect row{area.x, cy, area.w - ui.s(14) - replayW - replayGap, rh};
+                Rect row{area.x, cy, area.w - ui.s(14) - replayW - replayGap - dlW - replayGap, rh};
                 cy += rh + gap;
-                if (row.bottom() < area.y || row.y > area.bottom()) continue;
-                drawRow(e, row, cRank, cPlayer, cScore, cBar, barW, chosen);
                 const std::string runId = jstr(e, "run_id");
+                // Off the view, only the buttons (the keyboard and the gamepad reach them).
+                const bool visible = row.bottom() >= area.y && row.y <= area.bottom();
+                if (visible) drawRow(e, row, cRank, cPlayer, cScore, cBar, barW, chosen);
                 UIContext::ButtonStyle vs;
                 vs.small = true;
                 vs.enabled = jget<bool>(e, "has_replay", false) && !runId.empty() && fetching_.empty();
@@ -215,6 +220,8 @@ private:
                 const std::string vl = fetching_ == runId && !runId.empty() ? "…" : "Voir";
                 vs.fontSize = ui.fitFont("Voir", FontFace::Bold, 20, replayW - ui.s(20));
                 if (ui.button("v/" + runId, vb, vl, vs)) watch(e);
+                Rect db{vb.right() + replayGap, row.y + (rh - ui.s(40)) * 0.5f, dlW, ui.s(40)};
+                ReplayDownloadUi::icon(g_, "dl/" + runId, db, raceDownload(e), jget<bool>(e, "has_replay", false) && !runId.empty());
             }
             ui.endScroll();
         }
@@ -327,12 +334,32 @@ private:
                  VAlign::Middle);
     }
 
+    /// « Télécharger » (2.45): an attempt's replay kept on this computer, with its score.
+    ReplayDownloadRequest raceDownload(const Json& e) {
+        const std::string runId = jstr(e, "run_id");
+        const Json& p = jfield(e, "player", Json::object());
+        const std::string who = jstr(p, "username");
+        const LevelEntry* lvl = kind_ == "official" ? g_.content.level(levelId_) : nullptr;
+        std::string name = lvl ? lvl->name : std::string();
+        if (name.empty() && data_.is_object()) name = jstr(jfield(data_, "race", Json::object()), "title");
+        const std::string shown = who.empty() ? std::string() : ui_.displayName(who, jget<int>(e, "rank", 0), jget<bool>(e, "me", false));
+        // A community level's replay names the level as installed on its player's computer.
+        return ReplayDownloadUi::request("race", runId, "/api/v1/races/runs/" + runId + "/replay", who, shown, lvl ? levelId_ : std::string(), name,
+                                         "Course à la vérification – " + decimal(jget<double>(e, "score", 0.0)) + " %", jget<int64_t>(e, "time_ms", 0),
+                                         jstr(e, "at"));
+    }
+
     /// Downloads the replay of a ranked attempt, then plays it (the level must be installed).
     void watch(const Json& e) {
         const std::string runId = jstr(e, "run_id");
         const Json& p = jfield(e, "player", Json::object());
         std::string who = jstr(p, "username");
         double score = jget<double>(e, "score", 0.0);
+        // 2.45: downloaded on this computer, it plays from its copy (no network needed).
+        if (auto rep = ReplayDownloadUi::localCopy(g_, ReplayLibrary::makeId("race", runId))) {
+            g_.app.pushScene(makeLocalReplayViewer(g_, std::move(*rep), "Course à la vérification – " + who + " – " + decimal(score) + " %"));
+            return;
+        }
         fetching_ = runId;
         msg_ = "Téléchargement du replay…";
         g_.online.getBinary(

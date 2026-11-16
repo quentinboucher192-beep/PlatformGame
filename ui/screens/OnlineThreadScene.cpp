@@ -11,6 +11,7 @@
 #include "ui/online/OnlineWidgets.h"
 #include "ui/online/RatingWidgets.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/ReplayDownloadUi.h"
 #include "ui/screens/Thumbnail.h"
 
 namespace cosmic {
@@ -204,9 +205,22 @@ private:
         y += ui.s(6);
         UIContext::ButtonStyle st;
         st.small = true;
-        st.fontSize = 17;
-        st.enabled = jget<bool>(rec, "has_replay", false) && g_.content.level(levelId_) != nullptr;
-        if (ui.button("replay", {x, y, w, ui.s(40)}, "Voir le replay", st)) g_.app.pushScene(makeReplayViewer(g_, id_));
+        // « Voir le replay » and, beside it (2.45), « Télécharger » to keep it on this computer.
+        const float gap = ui.s(10), half = (w - gap) * 0.5f;
+        st.fontSize = std::min(ui.fitFont("Voir le replay", FontFace::Bold, 17, half - ui.s(24), 0.7f),
+                               ui.fitFont(ReplayDownloadUi::longestLabel(), FontFace::Bold, 17, half - ui.s(24), 0.7f));
+        const bool hasReplay = jget<bool>(rec, "has_replay", false);
+        st.enabled = hasReplay && g_.content.level(levelId_) != nullptr;
+        if (ui.button("replay", {x, y, half, ui.s(40)}, "Voir le replay", st)) g_.app.pushScene(makeReplayViewer(g_, id_));
+        {
+            UIContext::ButtonStyle ds = st;
+            ds.enabled = hasReplay;
+            const LevelEntry* lvl = g_.content.level(levelId_);
+            ReplayDownloadUi::button(g_, "download", {x + half + gap, y, half, ui.s(40)},
+                                     ReplayDownloadUi::request("record", id_, "/api/v1/records/" + id_ + "/replay", name, name, levelId_,
+                                                               lvl ? lvl->name : std::string(), categoryLabel(cat), jget<int64_t>(rec, "time_ms", 0), date),
+                                     ds);
+        }
         y += ui.s(48);
         if (!st.enabled) {
             std::string why = !jget<bool>(rec, "has_replay", false) ? "Pas de replay vérifié pour cette course." : "Niveau non installé : replay illisible ici.";

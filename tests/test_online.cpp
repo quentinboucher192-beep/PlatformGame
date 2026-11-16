@@ -20,8 +20,10 @@
 #include "game/content/ContentDatabase.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/online/LevelFingerprint.h"
+#include "game/ghost/ReplayLibrary.h"
 #include "game/online/OnlineService.h"
 #include "game/online/Replay.h"
+#include "game/online/ReplayDownloads.h"
 #include "tests/TestFramework.h"
 
 #if !defined(_WIN32)
@@ -73,6 +75,7 @@ struct FakeServer {
     std::vector<Json> cosmeticsReports;  // bodies of PUT /players/me/cosmetics
     int cosmeticsStatus = 200;
     std::vector<Json> badgesReports;  // bodies of PUT /players/me/badges (2.41)
+    std::map<std::string, std::string> replayFiles;  // GET <path> of a replay → its bytes (2.45)
     int badgesStatus = 200;
     std::set<std::string> takenNames = {"orion"};
     int friendsCalls = 0;
@@ -120,6 +123,15 @@ struct FakeServer {
             return r;
         }
         if (path == "/api/v1/health") return okData({{"status", "ok"}});
+        if (rq.method == "GET" && path.size() > 7 && path.compare(path.size() - 7, 7, "/replay") == 0) {
+            auto it = replayFiles.find(path);
+            if (it == replayFiles.end()) return apiError(404, "NOT_FOUND");
+            HttpResponse r;
+            r.status = 200;
+            r.body = it->second;
+            r.headers["content-type"] = "application/octet-stream";
+            return r;
+        }
         if (path.rfind("/api/v1/auth/username-available?username=", 0) == 0) {
             std::string name = path.substr(path.find('=') + 1);
             std::string lower;
@@ -1192,4 +1204,88 @@ TEST_CASE("online: the profile badges go after the achievements, again after a c
     h.svc.setAchievements({"voyage_5", "voyage_10"});
     CHECK(pump(h.svc, [&] { return sent() == 5; }, 4000, 1.0f));
     CHECK(pump(h.svc, [&] { return h.svc.badgesState() == OnlineService::BadgesState::Published; }, 100, 0.1f));
+}
+
+TEST_CASE("online: « Télécharger » keeps a checked replay for offline viewing, refuses a damaged one") {
+    Harness h("replay_downloads");
+    ReplayLibrary lib(h.dir / "replays" / "downloaded");
+    ReplayDownloads dl(h.svc, lib);
+    ReplayData rep;
+    rep.levelId = "online_corridor";
+    rep.levelHash = std::string(64, 'e');
+    rep.attemptId = makeUuidV4();
+    rep.durationMs = 14000;
+    for (int i = 0; i < 4; ++i) rep.frames.push_back({160.0f + 10.0f * static_cast<float>(i), 800.0f, 0, ReplayFrame::Grounded, 5});
+    rep.inputs.resize(60);
+    const std::vector<uint8_t> bytes = rep.encode();
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        h.server->replayFiles["/api/v1/records/rec-1/replay"] = std::string(bytes.begin(), bytes.end());
+        h.server->replayFiles["/api/v1/records/rec-bad/replay"] = std::string(bytes.begin(), bytes.begin() + static_cast<std::ptrdiff_t>(bytes.size() / 2));
+    }
+    h.svc.takeNotifications();
+    auto request = [](const std::string& rid) {
+        ReplayDownloadRequest q;
+        q.path = "/api/v1/records/" + rid + "/replay";
+        q.meta.id = ReplayLibrary::makeId("record", rid);
+        q.meta.source = "record";
+        q.meta.player = "Nova";
+        q.title = "Le replay de Nova";
+        return q;
+    };
+    auto finished = [&](const std::string& id) {
+        return pump(h.svc, [&] {
+            dl.update();
+            return dl.state(id) != ReplayDownloads::State::Busy;
+        });
+    };
+    auto lastNote = [&]() {
+        auto notes = h.svc.takeNotifications();
+        return notes.empty() ? OnlineService::Notification{} : notes.back();
+    };
+    // A valid replay: kept, described from its own bytes, announced.
+    CHECK(dl.start(request("rec-1")));
+    CHECK(dl.state("record-rec-1") == ReplayDownloads::State::Busy);
+    CHECK(finished("record-rec-1"));
+    CHECK(dl.state("record-rec-1") == ReplayDownloads::State::Done);
+    const DownloadedReplay* e = lib.find("record-rec-1");
+    CHECK(e != nullptr);
+    CHECK(e->levelHash == rep.levelHash);
+    CHECK(e->levelId == "online_corridor");
+    CHECK(e->timeMs == 14000);
+    CHECK(e->player == "Nova");
+    OnlineService::Notification ok = lastNote();
+    CHECK(ok.kind == OnlineService::Notification::Kind::Success);
+    CHECK(ok.title == "Replay téléchargé");
+    // Already kept: no new request.
+    size_t requests = 0;
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        requests = h.server->log.size();
+    }
+    CHECK(dl.start(request("rec-1")));
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        CHECK(h.server->log.size() == requests);
+    }
+    // Damaged bytes from the server: refused, nothing kept, the reason told.
+    CHECK(dl.start(request("rec-bad")));
+    CHECK(finished("record-rec-bad"));
+    CHECK(dl.state("record-rec-bad") == ReplayDownloads::State::None);
+    CHECK(!lib.has("record-rec-bad"));
+    CHECK(!FileUtil::exists(lib.root() / "record-rec-bad.cprz"));
+    CHECK(lastNote().kind == OnlineService::Notification::Kind::Error);
+    // Gone from the server.
+    CHECK(dl.start(request("rec-404")));
+    CHECK(finished("record-rec-404"));
+    CHECK(!lib.has("record-rec-404"));
+    CHECK(lastNote().kind == OnlineService::Notification::Kind::Error);
+    // The server out of reach: the kept replay still opens, also after a restart.
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        h.server->down = true;
+    }
+    CHECK(lib.load("record-rec-1").has_value());
+    ReplayLibrary reopened(lib.root());
+    CHECK(reopened.load("record-rec-1").has_value());
 }

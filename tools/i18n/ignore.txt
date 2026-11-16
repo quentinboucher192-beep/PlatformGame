@@ -115,3 +115,6 @@ titles
 cyan
 violet
 top
+%d/%m/%Y
+index
+replays
