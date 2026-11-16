@@ -428,6 +428,62 @@ void EnemyEditorScene::tabAttacks(float x, float& y, float w) {
                 default: break;
             }
         }
+        if (a.isDragonType()) {
+            // 2.50: the attacks of the dragon (Pyrrhax). A value left at 0 takes the type's
+            // default (see game/enemies/DragonAttacks.cpp).
+            auto num = [&](const char* id, const char* label, float& v, float step, float lo, float hi, const char* fmt) {
+                c |= ui.numberField(id, row.field(label), v, step, lo, hi, fmt);
+            };
+            auto whole = [&](const char* id, const char* label, int& v, int lo, int hi) {
+                float f = static_cast<float>(v);
+                if (ui.numberField(id, row.field(label), f, 1, static_cast<float>(lo), static_cast<float>(hi), "%.0f")) {
+                    v = static_cast<int>(f);
+                    c = true;
+                }
+            };
+            if (a.type == AttackType::CloudShot || a.type == AttackType::Gust) {
+                std::vector<std::string> proj;
+                if (auto pa = g_.app.resources().animation("animations/projectiles.json"))
+                    for (const auto& [k, _] : pa->clips) proj.push_back(k);
+                std::sort(proj.begin(), proj.end());
+                c |= stringCycle(ui, "dproj", {x, y, w, ui.s(46)}, a.type == AttackType::Gust ? "Braises" : "Boule de feu", a.projectile, proj);
+                y += ui.s(54);
+            }
+            switch (a.type) {
+                case AttackType::Dive:
+                    num("dspd", "Vitesse du piqué", a.lungeSpeed, 10, 300, 1600, "%.0f");
+                    whole("dcnt", "Piqués enchaînés", a.count, 1, 4);
+                    num("drad", "Au-delà de la cible (px)", a.radius, 10, 0, 800, "%.0f");
+                    num("dint", "Visée du piqué suivant (s)", a.burstInterval, 0.05f, 0.05f, 3, "%.2f");
+                    break;
+                case AttackType::Perch:
+                    num("dspd", "Vitesse de la descente", a.lungeSpeed, 10, 240, 1600, "%.0f");
+                    num("drad", "Portée du souffle au sol (px)", a.radius, 10, 0, 800, "%.0f");
+                    num("dhgt", "Hauteur du nuage", a.height, 2, 0, 200, "%.0f");
+                    num("ddur", "Durée du nuage (s)", a.duration, 0.1f, 0, 20, "%.1f");
+                    whole("darms", "Côtés du souffle (1 ou 2)", a.arms, 0, 2);
+                    num("dvul", "Dégâts reçus posé (x, 0 = 1,5)", a.vulnerability, 0.1f, 0, 4, "%.1f");
+                    break;
+                case AttackType::CloudShot:
+                    whole("dcnt", "Boules de feu", a.count, 1, 8);
+                    num("dgrav", "Gravité (0 = tir droit)", a.gravity, 20, 0, 2000, "%.0f");
+                    num("dpspd", "Vitesse des boules", a.projectileSpeed, 10, 40, 1000, "%.0f");
+                    num("dspr", a.gravity > 0.0f ? "Espacement des impacts (px)" : "Écart (°)", a.spread, 1, 0, 200, "%.0f");
+                    num("drad", "Rayon du nuage", a.radius, 2, 0, 200, "%.0f");
+                    num("ddur", "Durée du nuage (s)", a.duration, 0.1f, 0, 20, "%.1f");
+                    break;
+                case AttackType::Gust:
+                    num("ddur", "Durée de la rafale (s)", a.duration, 0.1f, 0, 20, "%.1f");
+                    num("dpull", "Poussée (px/s, max 140)", a.pull, 5, 0, 140, "%.0f");
+                    whole("dcnt", "Braises par salve", a.count, 1, 8);
+                    num("dint", "Intervalle des salves (s)", a.burstInterval, 0.05f, 0.05f, 3, "%.2f");
+                    num("dpspd", "Vitesse des braises", a.projectileSpeed, 10, 40, 1000, "%.0f");
+                    break;
+                default: break;
+            }
+            if (a.type != AttackType::Gust)
+                c |= ui.numberField("dlead", row.field("Anticipation (0 = vise le joueur, 1 = où il va)"), a.lead, 0.05f, 0, 1, "%.2f");
+        }
         auto sounds = PropertyEditor::assetFiles("sounds", ".wav");
         sounds.insert(sounds.begin(), "");
         c |= stringCycle(ui, "asnd", {x, y, w, ui.s(46)}, "Son de l'attaque", a.sound, sounds);

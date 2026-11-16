@@ -138,7 +138,7 @@ Vec2 bossFeet(const char* boss, float x) {
 
 TEST_CASE("guardians: twelve new attack types, named in French, saved only where used") {
     std::set<std::string> ids, labels;
-    for (int i = static_cast<int>(AttackType::Tracker); i < static_cast<int>(AttackType::Count); ++i) {
+    for (int i = static_cast<int>(AttackType::Tracker); i <= static_cast<int>(AttackType::Ring); ++i) {  // 2.50: the dragon's follow
         AttackType t = static_cast<AttackType>(i);
         CHECK(ids.insert(attackTypeId(t)).second);
         CHECK(labels.insert(attackTypeLabel(t)).second);
@@ -173,7 +173,7 @@ TEST_CASE("guardians: twelve new attack types, named in French, saved only where
     // The attacks of before are written as before (their levels keep their fingerprints).
     for (const EnemyDefinition* d : sharedContent().enemies())
         for (const AttackDef& x : d->attacks) {
-            if (x.isGuardianType()) continue;
+            if (x.isGuardianType() || x.isDragonType()) continue;
             Json xj = x.toJson();
             for (const char* k : {"duration", "pull", "radius", "height", "bounces", "arms", "grip"}) CHECK(!xj.contains(k));
         }

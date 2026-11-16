@@ -90,6 +90,13 @@ bool Enemy::chooseBossAttack(GameWorld& w, const std::vector<const AttackDef*>& 
     int alive = 0;
     for (const auto& e : w.enemies())
         if (e->summonedBy == uid_ && e->alive()) ++alive;
+    // 2.50: right under the dragon is no shelter: its dives, its landings and what falls are
+    // preferred there (only for the bosses with its attacks: the others choose as before).
+    bool below = false;
+    if (hasDragon_ && def_.flying) {
+        const float dy = playerPos_.y - box.bottom();
+        below = dy > 0.0f && std::abs(playerPos_.x - box.center().x) < std::max(200.0f, dy * 1.2f);
+    }
     float total = 0.0f;
     for (const AttackDef* a : list) {
         if (a->type == AttackType::Contact) continue;
@@ -120,8 +127,10 @@ bool Enemy::chooseBossAttack(GameWorld& w, const std::vector<const AttackDef*>& 
             case AttackType::Summon: fit *= alive > 0 ? 0.3f : 0.7f; break;
             default:
                 if (a->isGuardianType()) fit *= guardianFit(w, *a, near, far, air);
+                else if (a->isDragonType()) fit *= dragonFit(w, *a, near, far, air);
                 break;
         }
+        if (below) fit *= belowFit(*a);
         if (fit <= 0.0f) continue;
         if (!inRange) {
             if (!punish) continue;
@@ -144,6 +153,10 @@ bool Enemy::chooseBossAttack(GameWorld& w, const std::vector<const AttackDef*>& 
                 case AttackType::Ring:
                 case AttackType::Spiral:
                 case AttackType::Flood: k = 1.5f; break;
+                case AttackType::Dive: k = 2.5f; break;  // 2.50: the dragon
+                case AttackType::Perch: k = 2.0f; break;
+                case AttackType::CloudShot: k = 1.6f; break;
+                case AttackType::Gust: k = 1.2f; break;
                 default: break;
             }
             if (k <= 0.0f) continue;
@@ -252,6 +265,7 @@ void Enemy::beginAttack(GameWorld& w) {
     }
     if (attack_->type == AttackType::Laser) w.playSound("sounds/laser_charge.wav", box.center(), 0.8f);
     if (attack_->isGuardianType()) guardianBegin(w);
+    if (attack_->isDragonType()) dragonBegin(w);
     if (hasMirror_ && doubles_ > 0) copyToDoubles(w);  // « Reflets »: the doubles strike too
 }
 
@@ -283,6 +297,7 @@ void Enemy::stepTelegraph(GameWorld& w, float dt) {
         aimDir_ = (aim - box.center()).normalized();
         face(aimDir_.x);
     }
+    if (attack_ && attack_->isDragonType()) dragonTelegraph(w, dt);
     if (stateTimer_ <= 0.0f && attack_) {
         state_ = EnemyState::Attack;
         stateTimer_ = attack_->active;
@@ -324,8 +339,14 @@ void Enemy::fireProjectiles(GameWorld& w, const AttackDef& a) {
     Vec2 origin = attackOrigin();
     Vec2 baseDir = a.type == AttackType::Spread ? Vec2{facing, 0.0f} : aimDir_;
     if (a.type == AttackType::Spread && a.lead > 0.0f) baseDir = aimDir_;  // aimed fans (bosses)
-    float baseAngle = dmath::atan2(baseDir.y, baseDir.x);
     Vec2 target = a.lead > 0.0f ? predictPlayer(w, distance(origin, playerPos_) / std::max(60.0f, a.projectileSpeed) * a.lead) : playerPos_;
+    if (hasDragon_ && a.type != AttackType::Arc) {
+        // 2.50: the dragon's mouth is far from its middle (a big sprite): its shots leave its jaws
+        // toward the target, so that right under it they still come at it.
+        Vec2 d = (target - origin).normalized();
+        if (d.lengthSq() > 0.01f) baseDir = d;
+    }
+    float baseAngle = dmath::atan2(baseDir.y, baseDir.x);
     for (int i = 0; i < a.count; ++i) {
         float off = a.count > 1 ? (i - (a.count - 1) * 0.5f) * degToRad(a.spread) : 0.0f;
         Projectile p;
@@ -398,6 +419,10 @@ void Enemy::performAttackStart(GameWorld& w) {
     if (!a.sound.empty()) w.playSound(a.sound, box.center(), 0.9f);
     if (a.isGuardianType()) {
         guardianStart(w);
+        return;
+    }
+    if (a.isDragonType()) {
+        dragonStart(w);
         return;
     }
     switch (a.type) {
@@ -504,6 +529,10 @@ void Enemy::performAttackActive(GameWorld& w, float dt) {
         guardianActive(w, dt);
         return;
     }
+    if (a.isDragonType()) {
+        dragonActive(w, dt);
+        return;
+    }
     // Staggered impacts (eruption lines) and further volleys (bursts), re-aimed each time.
     for (size_t k = 0; k < staged_.size();) {
         if (attackClock_ >= staged_[k].time) {
@@ -596,6 +625,7 @@ void Enemy::stepAttack(GameWorld& w, float dt) {
 
 void Enemy::finishAttack(GameWorld& w) {
     if (attack_ && attack_->isGuardianType()) guardianEnd(w);
+    if (attack_ && attack_->isDragonType()) dragonEnd(w, false);
     if (attackIndex_ >= 0 && attackIndex_ < static_cast<int>(attackCooldowns_.size()))
         attackCooldowns_[attackIndex_] = attack_->cooldown * phaseCooldown();
     state_ = EnemyState::Recover;
@@ -678,6 +708,10 @@ void Enemy::renderTelegraph(RenderContext& ctx) const {
     Color warnCol{255, 77, 109, static_cast<uint8_t>(80 + 140 * prog)};
     if (attack_->isGuardianType()) {
         renderGuardian(ctx, prog);
+        return;
+    }
+    if (attack_->isDragonType()) {
+        renderDragon(ctx, std::clamp(prog, 0.0f, 1.0f));
         return;
     }
     switch (attack_->type) {

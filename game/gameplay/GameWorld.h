@@ -284,6 +284,8 @@ private:
     void updatePlayerOverlaps(float dt);
     void updateProjectiles(float dt);
     void explodeProjectile(const Projectile& p, Vec2 at);
+    /// 2.50: an enemy shot that leaves a burning cloud where it bursts (the dragon's fireballs).
+    void cloudFromShot(const Projectile& p, Vec2 at);
     void updateEnemies(float dt);
     void updateCamera(float dt);
     void carryBodies();

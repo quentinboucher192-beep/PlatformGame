@@ -29,6 +29,11 @@ enum class AttackType {
     Well,        // a black hole pulls the target and bends the player's shots
     Blink,       // a mark behind the target; the enemy teleports there and strikes
     Ring,        // a ring expands from the enemy, with a single opening
+    // 2.50: the attacks of Pyrrhax, the dragon of Les Confins (game/enemies/DragonAttacks.cpp).
+    Dive,       // a line toward where the target will be, then a dash through it and beyond; it climbs back
+    Perch,      // it lands where the target stands, breathes a lasting cloud of fire along the ground, takes off
+    CloudShot,  // fireballs that leave a burning cloud where they burst
+    Gust,       // its wings push the target away (a limited push), ash and embers in the wind
     Count
 };
 
@@ -114,13 +119,17 @@ struct AttackDef {
     /// Look of a lasting effect (2.33, appearance only, not in the fingerprints): Flood
     /// "plasma" (a tide of star plasma instead of lava), Cage "star" (walls of starlight).
     std::string look;
+    // v5 (2.50, the dragon): Perch: damage it takes while landed (0 = the type's default, 1.5).
+    float vulnerability = 0.0f;
 
     bool isProjectileType() const {
         return type == AttackType::Projectile || type == AttackType::Spread || type == AttackType::Arc ||
                type == AttackType::Rain || type == AttackType::Eruption;
     }
     /// The attack types of the guardians of Aethra (2.19).
-    bool isGuardianType() const { return type >= AttackType::Tracker && type < AttackType::Count; }
+    bool isGuardianType() const { return type >= AttackType::Tracker && type <= AttackType::Ring; }
+    /// The attack types of the dragon (2.50, Pyrrhax).
+    bool isDragonType() const { return type >= AttackType::Dive && type < AttackType::Count; }
 
     Json toJson() const;
     static AttackDef fromJson(const Json& j);

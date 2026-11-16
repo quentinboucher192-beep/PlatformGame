@@ -21,7 +21,10 @@ struct RenderContext;
 ///  * frozen ground (Lac gelé): the floors and ledges of an area lose their grip for a while;
 ///  * a lava tide (Marée de lave): rises to a height above the arena floor, holds, goes down;
 ///    below its surface Nova is hurt and thrown up;
-///  * walls of thorns (Cage de ronces): solid colliders that hurt on contact.
+///  * walls of thorns (Cage de ronces): solid colliders that hurt on contact;
+///  * (2.50, the dragon) clouds of fire that linger where its breath or its fireballs left them
+///    (they hurt inside), and the wind of its wings that pushes Nova away from it (a limited
+///    push, always below her run speed: running against it still moves her forward).
 /// An effect belongs to the enemy that made it (its uid): it ends with its time, with the
 /// enemy (death, removal) or when the player respawns.
 class BossHazards {
@@ -69,7 +72,34 @@ public:
         std::string look;  // display: "" = thorns, "star" = starlight (2.33)
     };
 
+    struct Cloud {
+        uint32_t owner = 0;
+        Rect area;             // its whole extent
+        float originX = 0.0f;  // it spreads from here to the two ends of its area
+        float spread = 0.0f;   // seconds to cover its area (0 = at once)
+        float time = 3.0f;     // seconds left
+        float age = 0.0f;
+        float damage = 1.0f;
+        bool ground = false;   // display: a carpet of fire along the ground (else a puff)
+        Color color{255, 122, 46, 255};  // display: the fire of the phase
+        float emitTimer = 0.0f;          // display: its smoke
+        /// The part of its area reached at its age.
+        Rect current() const;
+        /// It hurts after a short flare and until its last quarter second (it fades harmless).
+        bool burning() const { return age >= 0.1f && time > 0.25f; }
+    };
+    struct Wind {
+        uint32_t owner = 0;
+        Vec2 center;           // Nova is pushed away from it, horizontally
+        float speed = 100.0f;  // drift at the centre (half of it at the edge of its range)
+        float range = 900.0f;
+        float time = 2.0f;
+        float age = 0.0f;
+    };
+
     void addPull(const Pull& p);
+    void addCloud(const Cloud& c);
+    void addWind(const Wind& wd);
     /// Freezes the floors, ledges and platforms whose top lies in `area` (grip < 1).
     void addIce(GameWorld& w, uint32_t owner, const Rect& area, float grip, float seconds);
     void addFlood(const Flood& f);
@@ -85,14 +115,20 @@ public:
     /// The player's shots near a well curve toward it (turn rate bounded, speed kept).
     void bendShot(Projectile& p, float dt) const;
 
-    bool empty() const { return pulls_.empty() && ice_.empty() && floods_.empty() && walls_.empty(); }
+    bool empty() const {
+        return pulls_.empty() && ice_.empty() && floods_.empty() && walls_.empty() && clouds_.empty() && winds_.empty();
+    }
     bool hasIce(uint32_t owner) const;
     bool hasFlood(uint32_t owner) const;
     bool hasPull(uint32_t owner) const;
+    bool hasWind(uint32_t owner) const;
+    int cloudCount(uint32_t owner) const;
     const std::vector<Pull>& pulls() const { return pulls_; }
     const std::vector<Ice>& ice() const { return ice_; }
     const std::vector<Flood>& floods() const { return floods_; }
     const std::vector<Wall>& walls() const { return walls_; }
+    const std::vector<Cloud>& clouds() const { return clouds_; }
+    const std::vector<Wind>& winds() const { return winds_; }
 
     /// Display only.
     void render(RenderContext& ctx) const;
@@ -103,6 +139,8 @@ private:
     std::vector<Ice> ice_;
     std::vector<Flood> floods_;
     std::vector<Wall> walls_;
+    std::vector<Cloud> clouds_;
+    std::vector<Wind> winds_;
 };
 
 }  // namespace cosmic

@@ -7,15 +7,25 @@ contact 2, shorter wind-ups and combos of three. Eight phases, one every 12.5 % 
 with its own mechanic and its own fire (the sheets of tools/assetgen/characters/boss_e_pyrrhax.py:
 one per phase, phases 5-8 « Brisé », the chest scales torn off over a magma heart):
 
-  1 Braise          fans of fireballs, a sweeping breath, a bite from the air (learn to dodge)
-  2 Pluie de cendres magma rains, geysers from the floor, a trail of fire under Nova
-  3 Tempête d'ailes  its wings pull Nova in, a shock ring with one opening, a dive
-  4 Flamme bleue    homing blue flames, a spiral of embers, flames circling around it
-  5 Écailles brisées its scales burst: the floor of the arena gives way, lava rises
-  6 Feu vert        a breath reflected by the walls, rings, a spiral
-  7 Couvée          two whelps of its brood escort it, dives behind Nova
-  8 Soleil noir     everything (no brood), faster; rage after 40 s in the phase (the arena
-                    closes in), and its last fire to survive when its health runs out.
+  1 Braise          fans of fireballs, a sweeping breath, a dive through Nova, a bite from the air
+  2 Pluie de cendres magma rains, geysers from the floor, fireballs leaving burning clouds, it
+                    lands to breathe fire along the ground, a trail of fire under Nova
+  3 Tempête d'ailes  its wings pull Nova in then blow her away, a shock ring with one opening,
+                    dives two by two
+  4 Flamme bleue    homing blue flames, a spiral of embers, flames circling around it, a dive
+  5 Écailles brisées its scales burst: the floor of the arena gives way, lava rises; it lands
+  6 Feu vert        a breath reflected by the walls, rings, a spiral, green burning clouds, dives
+  7 Couvée          two whelps of its brood escort it, dives behind Nova, it lands among them
+  8 Soleil noir     everything (no brood), faster: dives three by three, a landing breathing
+                    on both sides; rage after 40 s in the phase (the arena closes in), and its
+                    last fire to survive when its health runs out (a last round of dives).
+
+2.50: « si je reste en dessous il m'attaque pas beaucoup » — the dragon got attacks of its own
+(game/enemies/DragonAttacks.cpp): Piqué (dive: a line shown toward where Nova will be, then a
+dash through it and beyond, chained in later phases), Atterrissage (it lands where she stands,
+breathes a lingering cloud of fire along the ground and stays exposed: it takes more damage),
+Boule de feu à nuage (a burning cloud where the fireball bursts) and Rafale d'ailes (its wings
+push her away, embers in the wind). Right under it, it prefers what comes down on its prey.
 
 Writes data/enemies/pyrrhax.json and data/enemies/dragonnet.json (its brood).
 Run from the repository root:  python3 tools/contentgen/pyrrhax.py
@@ -37,6 +47,8 @@ DATA = os.path.join(ROOT, "data", "enemies")
 CLASSIC = ("telegraph", "attack")
 SPECIAL = ("telegraph_special", "special")
 RAISE = ("telegraph_special", "summon")
+DIVE = ("telegraph_special", "attack")  # it inhales, wings raised, then strikes through (2.50)
+PERCH = ("telegraph_special", "move")   # wings spread, then it comes down (2.50)
 JAWS = [110, -52]    # the mouth on the attack frame, from the feet (sprite pixels)
 BREATH = [100, -57]  # the mouth during the breath (the head does not move)
 
@@ -67,12 +79,10 @@ def attacks():
         _atk("sillage", "Sillage de feu", "tracker", 2, 1000, 0.7, 0.2, 0.5, 4.0, *CLASSIC, projectile="fireball",
              projectileSpeed=130, duration=2.8, radius=18, height=64, hitEffect="eruption_fire", knockback=260),
         # 3 Tempête d'ailes
-        _atk("rafale", "Rafale d'ailes", "vortex", 2, 900, 0.8, 0.2, 0.7, 7.0, *RAISE, pull=110, duration=2.4,
+        _atk("tourbillon", "Tourbillon d'ailes", "vortex", 2, 900, 0.8, 0.2, 0.7, 7.0, *RAISE, pull=110, duration=2.4,
              knockback=280),
         _atk("onde", "Onde de choc", "ring", 2, 1000, 0.75, 0.2, 0.6, 5.0, *SPECIAL, projectileSpeed=185, spread=54,
              **ring),
-        _atk("pique", "Piqué du dragon", "lunge", 2, 700, 0.55, 0.9, 0.6, 3.4, *CLASSIC, lungeSpeed=460, minRange=80,
-             knockback=320, lead=0.9),
         # 4 Flamme bleue
         _atk("traqueuses", "Flammes bleues", "projectile", 1, 1000, 0.55, 0.25, 0.45, 3.4, *CLASSIC,
              projectileSpeed=150, count=3, spread=30, homing=2.4, homingTime=1.8, origin=JAWS, projectile="solar_flame",
@@ -95,11 +105,40 @@ def attacks():
              summonCount=2, maxSummoned=4),
         _atk("plongeon", "Plongeon dans le dos", "blink", 2, 1200, 0.6, 0.35, 0.6, 3.8, *CLASSIC, radius=60,
              knockback=280),
+        # 2.50, the dragon's own attacks (game/enemies/DragonAttacks.cpp):
+        # Piqué: the line follows Nova, holds still (0.45 s), then the dash goes through where she
+        # was going and beyond (`radius` px), and the dragon climbs back; `count` dives chained.
+        _atk("pique", "Piqué du dragon", "dive", 2, 1100, 0.7, 0.2, 0.6, 3.2, *DIVE, lungeSpeed=780, count=1,
+             radius=240, burstInterval=0.6, lead=0.6, knockback=340),
+        _atk("double_pique", "Double piqué", "dive", 2, 1100, 0.65, 0.2, 0.6, 5.0, *DIVE, lungeSpeed=820, count=2,
+             radius=240, burstInterval=0.6, lead=0.6, knockback=340),
+        _atk("ronde_piques", "Ronde des piqués", "dive", 2, 1200, 0.6, 0.2, 0.6, 6.5, *DIVE, lungeSpeed=880, count=3,
+             radius=260, burstInterval=0.5, lead=0.65, knockback=340),
+        # Atterrissage: it lands where Nova stands (the mark shown), breathes a cloud of fire that
+        # spreads along the ground (`radius` px, `duration` s), stays landed `active` s (it takes
+        # x`vulnerability` damage), then takes off. `arms` 2: the breath on both sides.
+        _atk("atterrissage", "Atterrissage brûlant", "perch", 1, 1400, 0.85, 1.3, 0.5, 7.5, *PERCH, lungeSpeed=640,
+             radius=260, height=44, duration=3.0, arms=1, vulnerability=1.5, lead=0.5, knockback=280),
+        _atk("atterrissage_double", "Atterrissage embrasé", "perch", 1, 1400, 0.8, 1.2, 0.5, 7.0, *PERCH,
+             lungeSpeed=700, radius=300, height=48, duration=3.5, arms=2, vulnerability=1.5, lead=0.5, knockback=280),
+        # Boule de feu à nuage: lobbed onto the marks shown, a burning cloud stays where it bursts.
+        _atk("nuee", "Nuée ardente", "cloud_shot", 1, 1200, 0.7, 0.3, 0.5, 4.0, *CLASSIC, projectile="fireball",
+             projectileSpeed=300, gravity=520, count=1, spread=0, radius=56, duration=3.2, projectileRadius=8,
+             origin=JAWS, lead=0.7, hitEffect="fire_burst"),
+        _atk("nuees", "Nuées ardentes", "cloud_shot", 1, 1300, 0.7, 0.3, 0.5, 5.5, *CLASSIC, projectile="fireball",
+             projectileSpeed=320, gravity=520, count=3, spread=110, radius=52, duration=3.0, projectileRadius=8,
+             origin=JAWS, lead=0.7, hitEffect="fire_burst"),
+        # Rafale d'ailes: its wings push Nova away (105 px/s, below her run), embers in the wind.
+        _atk("rafale", "Rafale d'ailes", "gust", 1, 1000, 0.8, 0.2, 0.6, 7.0, *RAISE, duration=2.2, pull=105, count=2,
+             burstInterval=0.55, projectileSpeed=230, spread=12, projectile="ember", hitEffect="projectile_burst",
+             knockback=200),
         # 8 Soleil noir: its last fire (never chosen: the last stand, EnemyDefinition::finalAttacks)
         _atk("dernier_souffle", "Dernier souffle", "ring", 2, 3000, 0.6, 0.2, 0.3, 0.0, *SPECIAL, projectileSpeed=320,
              spread=60, radius=880, knockback=260),
         _atk("derniere_pluie", "Pluie d'obsidienne", "rain", 1, 3000, 0.6, 0.3, 0.3, 0.0, *CLASSIC,
              projectileSpeed=260, count=14, spread=48, gravity=300, rainHeight=360, lead=0.8, **magma),
+        _atk("dernier_pique", "Dernier piqué", "dive", 2, 3000, 0.7, 0.2, 0.3, 0.0, *DIVE, lungeSpeed=900, count=3,
+             radius=260, burstInterval=0.55, lead=0.6, knockback=340),
     ]
 
 
@@ -113,22 +152,22 @@ def phase(i, name, attack_ids, speed, cooldown, telegraph, text, combo=3, **kw):
 
 def phases():
     return [
-        phase(0, "Braise", ["crachat", "souffle", "morsure"], 1.0, 1.0, 0.85, "Le dragon d'obsidienne s'éveille."),
-        phase(1, "Pluie de cendres", ["crachat", "cendres", "geysers", "sillage", "souffle"], 1.05, 0.95, 0.82,
-              "Le ciel des Confins pleut des cendres !"),
-        phase(2, "Tempête d'ailes", ["rafale", "onde", "pique", "crachat"], 1.1, 0.92, 0.8,
+        phase(0, "Braise", ["crachat", "souffle", "pique", "morsure"], 1.0, 1.0, 0.85, "Le dragon d'obsidienne s'éveille."),
+        phase(1, "Pluie de cendres", ["cendres", "geysers", "nuee", "atterrissage", "sillage", "crachat"], 1.05, 0.95,
+              0.82, "Le ciel des Confins pleut des cendres !"),
+        phase(2, "Tempête d'ailes", ["tourbillon", "rafale", "onde", "double_pique", "crachat"], 1.1, 0.92, 0.8,
               "Ses ailes déchaînent la tempête !"),
-        phase(3, "Flamme bleue", ["traqueuses", "spirale", "orbite", "souffle_bleu"], 1.12, 0.9, 0.78,
+        phase(3, "Flamme bleue", ["traqueuses", "spirale", "orbite", "souffle_bleu", "pique"], 1.12, 0.9, 0.78,
               "Sa flamme vire au bleu !"),
-        phase(4, "Écailles brisées", ["maree", "geysers", "cendres", "morsure", "crachat"], 1.15, 0.88, 0.75,
-              "Ses écailles éclatent : le sol cède !", enterSound="sounds/shell_shatter.wav"),
-        phase(5, "Feu vert", ["reflet", "anneaux", "spirale", "traqueuses", "orbite"], 1.2, 0.85, 0.72,
+        phase(4, "Écailles brisées", ["maree", "geysers", "cendres", "atterrissage", "morsure", "crachat"], 1.15, 0.88,
+              0.75, "Ses écailles éclatent : le sol cède !", enterSound="sounds/shell_shatter.wav"),
+        phase(5, "Feu vert", ["reflet", "anneaux", "spirale", "nuees", "double_pique", "orbite"], 1.2, 0.85, 0.72,
               "Un feu vert monte de son cœur de magma !"),
-        phase(6, "Couvée", ["couvee", "plongeon", "souffle", "traqueuses", "cendres"], 1.25, 0.82, 0.7,
+        phase(6, "Couvée", ["couvee", "plongeon", "pique", "atterrissage", "souffle", "cendres"], 1.25, 0.82, 0.7,
               "Pyrrhax appelle sa couvée !", summonOnEnter=True),
-        phase(7, "Soleil noir", ["crachat", "cendres", "traqueuses", "rafale", "pique", "plongeon", "maree", "geysers",
-                                 "spirale", "reflet", "souffle"], 1.3, 0.75, 0.62,
-              "Soleil noir ! Le dragon brûle tout !", enrageTime=40, enterSound="sounds/supernova.wav"),
+        phase(7, "Soleil noir", ["crachat", "cendres", "nuees", "rafale", "ronde_piques", "plongeon",
+                                 "atterrissage_double", "maree", "geysers", "spirale", "reflet", "souffle"], 1.3, 0.75,
+              0.62, "Soleil noir ! Le dragon brûle tout !", enrageTime=40, enterSound="sounds/supernova.wav"),
     ]
 
 
@@ -148,7 +187,7 @@ def pyrrhax():
         "light": {"color": LIGHTS[0], "radius": 230},
         "sounds": {"hurt": "sounds/enemy_hurt.wav", "death": "sounds/supernova.wav", "alert": "sounds/boss_roar.wav"},
         "boss": {"title": "PYRRHAX, LE DRAGON D'OBSIDIENNE", "phases": phases(), "barIcon": "flame", "barColor": "#ffc49a",
-                 "finalAttacks": ["dernier_souffle", "derniere_pluie", "dernier_souffle"],
+                 "finalAttacks": ["dernier_souffle", "dernier_pique", "derniere_pluie", "dernier_souffle"],
                  "finalText": "Son dernier feu : survivez !"},
     }
 

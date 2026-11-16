@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -35,6 +36,13 @@ struct Projectile {
     bool spin = false;             // drawn spinning instead of aligned with the velocity
     float homing = 0.0f;           // enemy projectiles: turn rate toward the player (rad/s)
     float homingTime = 0.0f;       // ... while age < homingTime
+    // 2.50 (the dragon's « Boule de feu à nuage »): where it bursts, an enemy shot leaves a
+    // burning cloud of this radius for cloudTime seconds (BossHazards::Cloud). 0 = none.
+    float cloudRadius = 0.0f;
+    float cloudTime = 0.0f;
+    float cloudDamage = 0.0f;
+    uint32_t cloudOwner = 0;
+    Color cloudColor{255, 122, 46, 255};  // display only
     std::vector<const void*> hitTargets;  // already damaged (piercing)
 };
 

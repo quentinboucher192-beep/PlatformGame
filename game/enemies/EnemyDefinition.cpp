@@ -28,7 +28,10 @@ constexpr Named kAttacks[] = {{"contact", "Contact"},           {"melee", "Corps
                               {"frost_floor", "Sol gelé"},       {"prism", "Prisme rebondissant"},
                               {"orbit", "Couronne de flammes"},  {"spiral", "Spirale de tirs"},
                               {"flood", "Marée de lave"},        {"well", "Puits gravitationnel"},
-                              {"blink", "Pas de l'ombre"},       {"ring", "Onde en anneau"}};
+                              {"blink", "Pas de l'ombre"},       {"ring", "Onde en anneau"},
+                              // 2.50: the dragon (Pyrrhax)
+                              {"dive", "Piqué traversant"},      {"perch", "Atterrissage et souffle au sol"},
+                              {"cloud_shot", "Boule de feu à nuage"}, {"gust", "Rafale qui repousse"}};
 static_assert(sizeof(kAttacks) / sizeof(kAttacks[0]) == static_cast<size_t>(AttackType::Count), "one label per attack type");
 }  // namespace
 
@@ -137,6 +140,24 @@ Json AttackDef::toJson() const {
             if (beamWidth != 14.0f) j["beamWidth"] = beamWidth;
         }
     }
+    if (isDragonType()) {
+        // 2.50, written only for the dragon's types (the definitions of before keep their fingerprints).
+        j["projectile"] = projectile;
+        j["projectileSpeed"] = projectileSpeed;
+        j["count"] = count;
+        j["spread"] = spread;
+        j["gravity"] = gravity;
+        j["burstInterval"] = burstInterval;
+        j["lungeSpeed"] = lungeSpeed;
+        if (projectileRadius > 0) j["projectileRadius"] = projectileRadius;
+        if (!hitEffect.empty()) j["hitEffect"] = hitEffect;
+        if (duration > 0) j["duration"] = duration;
+        if (pull > 0) j["pull"] = pull;
+        if (radius > 0) j["radius"] = radius;
+        if (height > 0) j["height"] = height;
+        if (arms > 0) j["arms"] = arms;
+        if (vulnerability > 0) j["vulnerability"] = vulnerability;
+    }
     return j;
 }
 
@@ -199,6 +220,7 @@ AttackDef AttackDef::fromJson(const Json& j) {
     a.arms = std::clamp(jget<int>(j, "arms", 0), 0, 8);
     a.grip = std::clamp(jget<float>(j, "grip", 0.0f), 0.0f, 1.0f);
     a.look = jstr(j, "look", "");
+    a.vulnerability = std::clamp(jget<float>(j, "vulnerability", 0.0f), 0.0f, 4.0f);
     return a;
 }
 

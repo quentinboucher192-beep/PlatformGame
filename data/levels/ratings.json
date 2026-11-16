@@ -99,7 +99,7 @@
     },
     "confins_01": {
       "components": {
-        "boss": 32.91,
+        "boss": 29.93,
         "checkpoints": 1.29,
         "enemies": 0.0,
         "hazards": 9.92,
@@ -116,7 +116,7 @@
         "longest_checkpoint_gap": 151.0,
         "precise_jumps": 0
       },
-      "raw": 43.71,
+      "raw": 40.73,
       "route_tiles": 151.0,
       "score": 5.0,
       "version": 2

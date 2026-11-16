@@ -388,6 +388,7 @@ void GameWorld::updateProjectiles(float frameDt) {
             p.alive = false;
             if (p.explosionRadius > 0.0f) explodeProjectile(p, p.pos);
             else if (p.clip != "shockwave") particles_.emit(p.hitEffect, p.pos, 0.6f);
+            if (p.cloudRadius > 0.0f && !p.fromPlayer) cloudFromShot(p, p.pos);
             continue;
         }
         p.vel.y += p.gravity * dt;
@@ -443,6 +444,7 @@ void GameWorld::updateProjectiles(float frameDt) {
             }
             particles_.emit(p.hitEffect, hit, 0.8f);
             if (!p.hitSound.empty()) playSound(p.hitSound, hit, 0.6f);
+            if (p.cloudRadius > 0.0f && !p.fromPlayer) cloudFromShot(p, hit);
             if (p.fromPlayer && p.type == DamageType::Wave) powerHit("wave", Rect::fromCenter(hit, {12, 12}));
             if (p.fromPlayer && p.type == DamageType::ChargeShot) powerHit("charge_shot", Rect::fromCenter(hit, {16, 16}));
             continue;
@@ -506,11 +508,35 @@ void GameWorld::updateProjectiles(float frameDt) {
             if (p.clip != "shockwave") {
                 p.alive = false;
                 particles_.emit(p.hitEffect, p.pos, 0.8f);
+                if (p.cloudRadius > 0.0f) cloudFromShot(p, p.pos);
             }
         }
     }
     projectiles_.erase(std::remove_if(projectiles_.begin(), projectiles_.end(), [](const auto& p) { return !p.alive; }),
                        projectiles_.end());
+}
+
+void GameWorld::cloudFromShot(const Projectile& p, Vec2 at) {
+    // A puff of burning smoke where it burst; on the ground when it burst just above it.
+    const float r = p.cloudRadius;
+    const float h = std::max(24.0f, r * 1.1f);
+    BossHazards::Cloud c;
+    c.owner = p.cloudOwner;
+    c.area = Rect::fromCenter(at, {r * 2.0f, h});
+    Vec2 from{at.x, at.y - 4.0f}, to{at.x, at.y + h};
+    if (auto t = physics_.raycast(from, to, true)) {
+        float g = from.y + (to.y - from.y) * *t;
+        c.area = {at.x - r, g - h, r * 2.0f, h};
+        c.ground = true;
+    }
+    c.originX = at.x;
+    c.spread = 0.25f;
+    c.time = p.cloudTime > 0.0f ? p.cloudTime : 3.0f;
+    c.damage = p.cloudDamage;
+    c.color = p.cloudColor;
+    hazards_.addCloud(c);
+    particles_.emit("fire_burst", at, 1.4f);
+    playSound("sounds/lava_bubble.wav", at, 0.6f, 0.8f);
 }
 
 void GameWorld::explodeProjectile(const Projectile& p, Vec2 at) {

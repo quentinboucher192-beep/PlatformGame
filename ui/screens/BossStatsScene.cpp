@@ -512,8 +512,19 @@ private:
         for (const auto& a : d.attacks) {
             std::string details = std::string(attackTypeLabel(a.type)) + "  ·  Dégâts " + num(a.damage) + "  ·  Annonce " + num(a.telegraph, 2) +
                                   " s  ·  Recharge " + num(a.cooldown, 2) + " s";
-            if (a.count > 1) details += "  ·  " + std::to_string(a.count) + " projectiles";
+            // 2.50: the dragon's attacks say what they chain or leave behind.
+            if (a.type == AttackType::Dive) {
+                if (a.count > 1) details += "  ·  " + std::to_string(a.count) + " piqués enchaînés";
+            } else if (a.type == AttackType::Gust) {
+                details += "  ·  Repousse " + num(a.duration > 0.0f ? a.duration : 2.2f, 1) + " s";
+            } else if (a.count > 1) {
+                details += "  ·  " + std::to_string(a.count) + " projectiles";
+            }
             if (a.bursts > 1) details += "  ·  " + std::to_string(a.bursts) + " salves";
+            if (a.type == AttackType::Perch || a.type == AttackType::CloudShot)
+                details += "  ·  Nuage de feu " + num(a.duration > 0.0f ? a.duration : (a.type == AttackType::Perch ? 3.5f : 3.0f), 1) + " s";
+            if (a.type == AttackType::Perch)
+                details += "  ·  Posé : dégâts reçus " + times(a.vulnerability > 0.0f ? a.vulnerability : 1.5f);
             Rect row{view.x, y, w, ui.s(52)};
             y += ui.s(56);
             if (row.bottom() < view.y || row.y > view.bottom()) continue;
