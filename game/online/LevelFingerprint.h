@@ -22,7 +22,7 @@ struct LevelData;
 /// Version of the simulation rules. Bump it whenever a code change can alter how a run
 /// plays out (physics, AI, damage, timers...), with the reference digests of
 /// tests/test_determinism.cpp.
-constexpr int kSimulationVersion = 12;  // 6: energy 150, time slow, magnet, air dash, plasma bomb (special button),
+constexpr int kSimulationVersion = 13;  // 6: energy 150, time slow, magnet, air dash, plasma bomb (special button),
                                        //    arena bosses keep their wounds when the player dies
                                        // 7: crouch in place (Down on the ground)
                                        // 8: energy costs by strength (charge shot = reference),
@@ -50,6 +50,10 @@ constexpr int kSimulationVersion = 12;  // 6: energy 150, time slow, magnet, air
                                        //    throwing Nova up), pickups shown by an event, the
                                        //    rage heard by the level. Earlier levels play exactly
                                        //    as before (same digests)
+                                       // 13: (2.47.1) the clock starts when Nova can move: a
+                                       //    skipped intro that shows her appearing no longer
+                                       //    counts her materialisation (watching it gave ~1 s).
+                                       //    The rankings are kept: no run became better.
 /// Generation of the rankings, part of every ranked fingerprint. It follows
 /// kSimulationVersion when a change makes earlier runs incomparable (records and replays of
 /// different generations are never mixed). A change that only adds a possibility and

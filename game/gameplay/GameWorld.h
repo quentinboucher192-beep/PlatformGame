@@ -351,6 +351,7 @@ private:
     float lastSplitDelta_ = 0.0f;
     float splitFlash_ = 0.0f;
     bool expiredHandled_ = false;
+    bool timerPending_ = false;  // 2.47.1: the clock waits for the end of Nova's materialisation
     int fallGuard_ = 0;
 
     friend class GameRenderer;

@@ -205,7 +205,14 @@ void GameWorld::beginPlay() {
     player_.controlEnabled = true;
     if (player_.state() == PlayerState::Hidden) player_.spawn(*this, respawn_, respawnFaceLeft_, true);
     camera_.releaseScript();
-    if (mode_ == WorldMode::Play) timer_.start();
+    // 2.47.1: the clock starts when Nova can move. An intro that shows her appearing (watched to
+    // the end) has played her materialisation already; a skipped one plays it now: the clock
+    // waits for its end (fixedUpdate), so skipping the intro never costs time, watching it never
+    // gives any.
+    if (mode_ == WorldMode::Play) {
+        if (player_.state() == PlayerState::Respawn) timerPending_ = true;
+        else timer_.start();
+    }
     emit("level", "levelStart");
 }
 
@@ -234,6 +241,10 @@ void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
     PlayerInput effective = (state_ == WorldState::Playing && !cinematic_.active()) ? in : PlayerInput{};
 
     if (state_ == WorldState::Playing) {
+        if (timerPending_ && player_.state() != PlayerState::Respawn) {
+            timerPending_ = false;
+            timer_.start();
+        }
         timer_.fixedUpdate(dt);
         if (timer_.expired() && !expiredHandled_) {
             expiredHandled_ = true;
