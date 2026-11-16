@@ -375,3 +375,4 @@ def build():
     for name in ("bosses_a", "bosses_b", "bosses_c", "bosses_d", "bosses_e"):
         if importlib.util.find_spec(name) is not None:
             importlib.import_module(name).build()
+    importlib.import_module("bosses_f").build()  # bosses_f: Monolithe, the golem giga boss (8 phase sheets)
