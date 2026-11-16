@@ -17,8 +17,10 @@ import * as race from "./race";
 import * as workshop from "./workshop";
 import * as projects from "./projects";
 import { liveRoute } from "./live";
-// The Durable Object class of the live editing rooms is exported by the Worker module.
+// The Durable Object classes (live editing rooms, live spectating rooms) are exported by the Worker module.
 export { ProjectRoom } from "./live";
+export { SpectateRoom } from "./spectate";
+import * as spectate from "./spectate";
 import { listLevels } from "./levels";
 import type { RecordRow } from "./model";
 import * as players from "./players";
@@ -163,6 +165,9 @@ route("POST", `${V}/presence`, (ctx) => friends.postPresence(ctx));
 route("POST", `${V}/friends/request`, (ctx) => friends.requestFriend(ctx));
 route("POST", `${V}/friends/accept`, (ctx) => friends.acceptFriend(ctx));
 route("DELETE", `${V}/friends/{playerId}`, (ctx) => friends.deleteFriend(ctx));
+// Live spectating between friends (2.36): the player's own run sent, a friend's run read
+route("POST", `${V}/spectate/broadcast`, (ctx) => spectate.broadcast(ctx));
+route("GET", `${V}/spectate/{playerId}`, (ctx) => spectate.watch(ctx));
 
 // Social: conversations between friends, groups, blocks
 route("GET", `${V}/social/conversations`, (ctx) => social.listConversations(ctx));

@@ -26,6 +26,7 @@ namespace {
 
 constexpr float kMessagesPoll = 4.0f;       // open conversation
 constexpr float kConversationsPoll = 15.0f;  // conversation list
+constexpr float kFriendsPoll = 15.0f;        // friends list on screen (presence, runs being played)
 constexpr float kGlobePoll = 120.0f;         // globe of the players (shown without a conversation)
 constexpr size_t kMaxMessage = 500;
 
@@ -89,6 +90,10 @@ public:
         if (g_.onlineOpen == "friends") tab_ = 1;
         if (g_.onlineOpen == "blocked") tab_ = 2;
         if (g_.onlineOpen == "newgroup" || g_.onlineOpen == "members") openModal_ = g_.onlineOpen;
+        if (g_.onlineOpen.rfind("watch:", 0) == 0) {
+            watchName_ = g_.onlineOpen.substr(6);
+            tab_ = 1;
+        }
         g_.onlineOpen.clear();
         globe_.init(g_.app.resources());
         reloadAll();
@@ -128,6 +133,9 @@ public:
         }
         convTimer_ += dt;
         if (convTimer_ >= kConversationsPoll) loadConversations();
+        // The friends list on screen: presence and runs being played stay current.
+        friendsTimer_ += dt;
+        if ((tab_ == 1 && friendsTimer_ >= kFriendsPoll) || (!watchName_.empty() && friendsTimer_ >= 2.0f)) loadFriends();
         if (!convId_.empty()) {
             msgTimer_ += dt;
             if (msgTimer_ >= kMessagesPoll) loadMessages(false);
@@ -211,12 +219,26 @@ private:
     }
 
     void loadFriends() {
+        friendsTimer_ = 0.0f;
         if (!g_.online.loggedIn()) return;
         g_.online.get("/api/v1/friends", OnlineService::guard(life_, [this](const ApiResult& r) {
             friendsLoaded_ = true;
             if (!r.ok) return;
             friends_ = r.data;
             if (!r.fromCache) g_.online.noteFriends(r.data);  // badges, no repeated notification
+            // A run being played (2.36) is only true now: never from the cache (« Regarder »
+            // shows only when it can work).
+            if (r.fromCache && friends_.contains("friends") && friends_["friends"].is_array())
+                for (auto& f : friends_["friends"])
+                    if (f.is_object()) f.erase("playing");
+            // Automated checks (--online-open watch:<pseudonym>): that friend's run, once playing.
+            if (!watchName_.empty())
+                for (const auto& f : friends_.value("friends", Json::array()))
+                    if (jstr(f["player"], "username") == watchName_ && f.contains("playing")) {
+                        watchName_.clear();
+                        g_.app.pushScene(makeSpectate(g_, jstr(f["player"], "id"), jstr(f["player"], "username"), jstr(f["player"], "avatar", "avatar_01")));
+                        break;
+                    }
             if (openModal_ == "newgroup") {
                 openModal_.clear();
                 for (const auto& f : friends_.value("friends", Json::array()))
@@ -475,6 +497,11 @@ private:
             if (ui.text().measure(labels[i], FontFace::Bold, ui.s(21) * 0.72f).x > tw - pill - ui.s(10)) badges[i] = 0;
         }
         ui.tabs("tabs", tabsRect, labels, tab, badges);
+        {
+            // « NOUVEAU » on the « Amis » tab (2.36): « Regarder » is under it.
+            const float tw = tabsRect.w / static_cast<float>(labels.size());
+            ui.newBadge("tabs", {tabsRect.x + tw + ui.s(2), tabsRect.y, tw - ui.s(4), tabsRect.h}, "social.tab.friends", true, true);
+        }
         if (tab != tab_) {
             tab_ = tab;
             expanded_.clear();
@@ -640,7 +667,26 @@ private:
                 }
             }));
         }
-        Rect view{area.x, area.y + ui.s(52), area.w, area.h - ui.s(52)};
+        // « Regarder » new (2.36) and no friend playing now: one line says where it appears (the
+        // trail of the « NOUVEAU » pills ends here; read for a few seconds, it is seen).
+        float hintH = 0.0f;
+        bool anyPlaying = false;
+        for (const auto& f : friends_.value("friends", Json::array())) anyPlaying = anyPlaying || (f.contains("playing") && f["playing"].is_object());
+        if (friendsLoaded_ && !anyPlaying && ui.isNew("social.watch")) {
+            static const char* kHint = "« Regarder » apparaît ici quand un ami joue et vous autorise à le regarder.";
+            const float pw = ui.newPillWidth(true), top = area.y + ui.s(52);
+            const float tw = area.w - pw - ui.s(10);
+            const float hf = std::max(14.0f, 11.5f / ui.s(1.0f));  // never below 11.5 pixels
+            const Vec2 ts = ui.text().measureWrapped(kHint, FontFace::Body, ui.s(hf), tw);
+            hintH = std::max(ts.y, ui.newPillHeight(true)) + ui.s(10);
+            ui.drawNewPill(area.x + pw, top + ui.newPillHeight(true) * 0.5f + ui.s(1), true);
+            ui.labelWrapped(kHint, {area.x + pw + ui.s(10), top}, tw, hf, ui.theme().textDim);
+            if (hintSince_ < 0.0f) hintSince_ = ui.time();
+            else if (ui.time() - hintSince_ > 3.0f && ui.featureSeen) ui.featureSeen("social.watch");
+        } else {
+            hintSince_ = -1.0f;
+        }
+        Rect view{area.x, area.y + ui.s(52) + hintH, area.w, area.h - ui.s(52) - hintH};
         struct Section {
             const char* title;
             const char* kind;
@@ -658,11 +704,18 @@ private:
                                          {"Amis", "friend", byPresence},
                                          {"Demandes envoyées", "out", friends_.value("outgoing", Json::array())}};
         const float rowH = ui.s(52), extra = ui.s(46);
+        // A friend playing a run that may be watched (2.36): a line more, « Regarder ».
+        const float playH = ui.s(52);
+        auto playing = [](const Section& s, const Json& f) {
+            return s.kind == std::string("friend") && f.contains("playing") && f["playing"].is_object();
+        };
         float total = 0;
         for (auto& s : sections) {
             total += ui.s(34) + std::max<size_t>(1, s.list.size()) * rowH;
-            for (const auto& f : s.list)
+            for (const auto& f : s.list) {
                 if (jstr(f["player"], "id") == expanded_) total += extra;
+                if (playing(s, f)) total += playH;
+            }
         }
         ui.beginScroll("friends", view, total);
         float y = view.y - ui.scrollOffset();
@@ -680,7 +733,8 @@ private:
                 const Json& pl = f["player"];
                 std::string pid = jstr(pl, "id"), name = jstr(pl, "username");
                 bool open = pid == expanded_;
-                Rect row{view.x, y, view.w - ui.s(12), rowH - ui.s(6) + (open ? extra : 0.0f)};
+                const bool isPlaying = playing(s, f);
+                Rect row{view.x, y, view.w - ui.s(12), rowH - ui.s(6) + (isPlaying ? playH : 0.0f) + (open ? extra : 0.0f)};
                 ui.r().fillRoundedRect(row, ui.s(6), Color{16, 24, 46, 200});
                 ui_.drawAvatar(jstr(pl, "avatar", "avatar_01"), pid, {row.x + ui.s(5), row.y + ui.s(4), ui.s(38), ui.s(38)});
                 // Presence (2.32.3): a pill on the avatar's corner, its word after the name.
@@ -733,10 +787,14 @@ private:
                 }
                 if (ww > 0.0f)
                     ui.label(word, {nx + ns.x + ui.s(12), row.y + ui.s(23)}, 14, presenceColor(presence), Align::Left, FontFace::Body, VAlign::Middle);
+                float ay = row.y + rowH - ui.s(4);
+                if (isPlaying) {
+                    drawPlaying(f, pid, name, jstr(pl, "avatar", "avatar_01"), {row.x + ui.s(52), row.y + rowH + ui.s(4), row.right() - ui.s(6) - (row.x + ui.s(52)), ui.s(34)});
+                    ay += playH;
+                }
                 if (open) {
                     UIContext::ButtonStyle d = b;
                     d.danger = true;
-                    float ay = row.y + rowH - ui.s(4);
                     if (ui.button("remove" + pid, {row.x + ui.s(52), ay, ui.s(160), ui.s(34)}, "Retirer l'ami", b))
                         confirm("Retirer " + name + " de vos amis ? Votre conversation privée restera lisible mais vous ne pourrez plus vous écrire.",
                                 "Retirer", [this, pid] {
@@ -745,10 +803,38 @@ private:
                                 });
                     if (ui.button("block" + pid, {row.x + ui.s(222), ay, ui.s(130), ui.s(34)}, "Bloquer", d)) block(pid, name);
                 }
-                y += rowH + (open ? extra : 0.0f);
+                y += rowH + (isPlaying ? playH : 0.0f) + (open ? extra : 0.0f);
             }
         }
         ui.endScroll();
+    }
+
+    /// The line of a friend playing a run they let friends watch: what they play, then
+    /// « Regarder » at the right (its « NOUVEAU » pill on its top edge, clear of the row's
+    /// buttons above). The text is measured into the room the button leaves.
+    void drawPlaying(const Json& f, const std::string& pid, const std::string& name, const std::string& avatar, const Rect& line) {
+        UIContext& ui = g_.ui;
+        const Json& p = f["playing"];
+        const float bw = std::max(ui.s(118), ui.text().measure("Regarder", FontFace::Bold, ui.s(16)).x + ui.s(36));
+        const Rect btn{line.right() - bw, line.y, bw, line.h};
+        UIContext::ButtonStyle st;
+        st.small = true;
+        st.primary = true;
+        if (ui.button("watch" + pid, btn, "Regarder", st)) g_.app.pushScene(makeSpectate(g_, pid, name, avatar));
+        ui.newBadge("watch" + pid, btn, "social.watch", true, true);  // « NOUVEAU » (2.36)
+        const std::string prefix = jstr(p, "kind") == "challenge" ? "En défi · " : "En partie · ";
+        const std::string title = jstr(p, "level_title");
+        // Never below 11.5 pixels (small windows): below, the font loses its spaces.
+        const float fs = std::max(14.0f, 11.5f / ui.s(1.0f)), cy = line.center().y;
+        float room = btn.x - ui.s(12) - line.x;
+        const float pw = ui.text().measure(prefix, FontFace::Body, ui.s(fs)).x;
+        if (pw >= room) return;
+        ui.label(prefix, {line.x, cy}, fs, Color{255, 120, 140, 255}, Align::Left, FontFace::Body, VAlign::Middle);
+        room -= pw;
+        if (title.empty() || room < ui.s(24)) return;
+        // A campaign level's name is translated; a community level's title is its author's.
+        i18n::Verbatim v(jstr(p, "level_source") == "community");
+        ui.label(ui.elide(title, FontFace::Body, fs, room), {line.x + pw, cy}, fs, ui.theme().text, Align::Left, FontFace::Body, VAlign::Middle);
     }
 
     void friendCall(const std::string& method, const std::string& path, const Json& body, const std::string& done) {
@@ -1531,6 +1617,9 @@ private:
     float convTimer_ = 0.0f;
     Json friends_ = Json::object();
     bool friendsLoaded_ = false;
+    float friendsTimer_ = 0.0f;
+    std::string watchName_;   // --online-open watch:<pseudonym>
+    float hintSince_ = -1.0f;  // since when the hint of « Regarder » is shown
     Json blocks_ = Json::array();
     std::string expanded_, addName_;
 

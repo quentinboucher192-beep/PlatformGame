@@ -141,6 +141,7 @@ de `wrangler.jsonc`, plafonnée à 1 000) multiplie toutes les limites.
 | `profile_write` | 20 | 5 min | joueur | `PATCH /players/me`, `PUT /players/me/avatar` (compteur partagé) |
 | `friend_request` | 30 | 1 h | joueur | `POST /friends/request` |
 | `presence` | 6 | 1 min | joueur | `POST /presence` |
+| *(salle du joueur, en mémoire)* | 25 | 10 s | joueur | `POST /spectate/broadcast` (2.36, compté par la salle `SpectateRoom`, pas dans D1) |
 | `account_delete` | 5 | 1 h | joueur | `DELETE /players/me` |
 | `social_message` | 30 | 1 min | joueur | `POST /social/conversations/{id}/messages` |
 | `social_group` | 10 | 1 h | joueur | `POST /social/groups` |
@@ -492,7 +493,10 @@ Auth : requise · limite `profile_write`. Tous les champs sont facultatifs : `us
 (mêmes règles qu'à l'inscription), `avatar` (`avatar_01`…`avatar_16` ; supprime l'avatar
 personnalisé), `country_code` (`null` efface pays **et** région et force `hidden`),
 `region_code` (`null` l'efface ; doit appartenir au pays, nouveau ou actuel),
-`location_visibility`, `profile_visibility`, `allow_friend_requests`.
+`location_visibility`, `profile_visibility`, `allow_friend_requests`, `follows_visibility`,
+`presence_visible` (2.32.3), `spectate_allowed` (2.36 : « Mes amis peuvent me regarder
+jouer », vrai par défaut ; `false`, ou `presence_visible: false`, oublie aussitôt la partie
+en cours diffusée, §8.7 bis). Le profil privé rendu contient `spectate_allowed`.
 ```sh
 curl -s -X PATCH $API/players/me -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' \
   -d '{"country_code":"JP","region_code":null,"location_visibility":"globe","avatar":"avatar_07"}'
@@ -831,6 +835,74 @@ Auth : requise. Retire un ami, refuse une demande reçue ou annule une demande e
 deux sens sont supprimés). Exemple : `curl -s -X DELETE $API/friends/a908a1fb-a574-47c3-b6ed-f550f36cc212 -H "authorization: Bearer $TOKEN"`.
 `200` : `{ "removed": true }`. Erreurs : 401, 403, 404
 (`PLAYER_NOT_FOUND` si identifiant mal formé, `FRIEND_NOT_FOUND`).
+
+### 8.7 bis Regarder un ami jouer (2.36)
+
+Un joueur qui l'autorise (`spectate_allowed`, réglage « Mes amis peuvent me regarder
+jouer » de `PATCH /players/me`, **vrai par défaut**, avec une présence montrée) diffuse la
+partie qu'il joue ; ses amis acceptés la rejouent exactement (même niveau et version, même
+graine, mêmes commandes : les règles des replays exacts, `REPLAY_FORMAT.md`), à environ une
+seconde du direct. Une salle par joueur (Durable Object `SpectateRoom`) garde la partie en
+cours **en mémoire seulement** (jamais dans D1, R2 ni le stockage de l'objet), au plus
+30 minutes de jeu (216 000 pas, 3 Mo de commandes, 6 000 morceaux) ; elle l'oublie une minute
+après sa fin, deux minutes après le dernier envoi, dès qu'une autre partie commence, que le
+réglage est décoché ou la présence masquée (`PATCH /players/me`), ou que le compte est
+supprimé. **Le joueur regardé n'apprend rien des spectateurs** : aucune réponse, aucune
+notification, aucun compteur ni journal ne les mentionne, et la salle ne sait pas qui lit.
+
+Seuls la campagne, les niveaux de la communauté installés et les défis sont diffusés (jamais
+un test de l'éditeur, un entraînement ou un niveau de l'atelier).
+
+#### `POST /spectate/broadcast`
+Auth : requise (la salle du joueur de la session) · au plus **25 envois par 10 s** par
+joueur (le jeu en fait environ 2 par seconde ; au-delà : 429). 403 `SPECTATE_DISABLED` si
+le réglage est décoché ou la présence masquée (le jeu cesse de diffuser). Corps (JSON, 64 Ko
+au plus, champs inconnus refusés), selon `action` :
+
+* `start` — une partie commence (un recommencement est une autre partie) :
+  `{ "action": "start", "run_id": UUIDv4, "level": { "source": "campaign" | "community",
+  "id", "version", "hash" }, "challenge_id"?: "daily-…", "seed": 16 hex, "keys_per_slot": bool,
+  "sim_version": int, "game_version": "2.36.0" }`. Le niveau est vérifié par le serveur
+  (campagne : révision et empreinte classée connues ; communauté : version publiée et son
+  empreinte ; défi : un défi commencé, de ce niveau), qui fournit le titre et, pour un défi,
+  la forme canonique de ses règles : rien de ce que voient les amis ne vient du jeu. Réponse
+  `{ "accepted": true, "run_id" }`. Erreurs : 400, 404 `CHALLENGE_NOT_FOUND`,
+  409 `LEVEL_MISMATCH`, 429.
+* `chunk` — les pas suivants : `{ "action": "chunk", "run_id", "seq": 1, 2…, "from_frame",
+  "count": 0..2400, "runs": base64, "checks"?: [[pas, "16 hex"], …] }`. `runs` : des plages de
+  pas identiques de 18 octets (u16 répétitions, u32 tenu, appuyé, relâché, i8 x, i8 y, u8
+  drapeaux, u8 choix de pouvoir), exactement `count` pas, seulement les actions enregistrées
+  (21 bits), le drapeau « passer la cinématique » et les choix 1..8 ou 255 ; `checks` : les
+  empreintes d'état du replay prises parmi ces pas, croissantes. `count: 0` : signe de vie (le
+  jeu en pause). Le même morceau renvoyé (réponse perdue) est pris une fois. Réponse
+  `{ "accepted": true, "seq", "frames" }`. Erreurs : 400, 409 `SPECTATE_RESYNC` (`details :
+  { seq, frames }` : la salle n'a pas cette partie ou pas à cet endroit, le jeu renvoie la
+  partie depuis le début), 413 `SPECTATE_RUN_TOO_LONG`, 429.
+* `end` — `{ "action": "end", "run_id", "reason": "finished" | "failed" | "quit" }` →
+  `{ "ended": true }`.
+
+#### `GET /spectate/{playerId}?stream=&after=`
+Auth : requise · limite `reads`. La partie que joue cet ami : l'en-tête et les morceaux
+après `after` du même `stream` (un autre `stream`, ou aucun : tout depuis le début ; au plus
+240 morceaux ou 256 Ko par réponse, `more: true` s'il en reste). **403
+`SPECTATE_FORBIDDEN`**, la même réponse quelle que soit la raison, sauf entre amis acceptés,
+sans blocage dans un sens ou dans l'autre, et si le joueur l'autorise (réglage et présence) ;
+on ne se regarde pas soi-même. Le jeu lit toutes les 0,5 s, sans cache.
+```json
+{ "ok": true, "data": { "live": true, "run": { "run_id": "…", "stream": "…", "kind": "campaign",
+    "level": { "source": "campaign", "id": "sylvanox_01", "version": 3, "hash": "…", "title": "…" },
+    "challenge": null, "seed": "0123456789abcdef", "keys_per_slot": true, "sim_version": 11,
+    "game_version": "2.36.0", "started_at": "…" },
+  "chunks": [{ "seq": 1, "from_frame": 0, "count": 60, "runs": "…", "checks": [[60, "…"]] }],
+  "more": false, "last_seq": 1, "frames": 60, "ended": null, "stale": false }, "request_id": "…" }
+```
+`{ "live": false }` quand rien n'est joué. `ended` : `finished`, `failed`, `quit` ou
+`too_long` (la partie reste lisible une minute) ; `stale` : rien reçu du jeu depuis 30 s.
+
+Dans `GET /friends`, un ami accepté qui joue une partie regardable (réglage coché, présence
+montrée, présence « en ligne » ou « absent », pas de blocage, partie ni finie ni silencieuse)
+porte `playing: { level_title, kind: "campaign" | "community" | "challenge", level_source,
+started_at }` : le bouton « Regarder » n'apparaît que lorsqu'il peut servir.
 
 ### 8.8 Social : conversations, groupes, blocages
 

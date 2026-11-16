@@ -202,6 +202,12 @@ private:
     std::map<std::string, int64_t> runPowers_;
     std::vector<std::string> runCheckpoints_;  // checkpoint ids, in the order reached
     std::string raceKind_, raceLevelId_, raceHash_, raceTitle_;
+    // Live spectating (2.36): this run streamed for the friends who may watch (display and
+    // online only: the inputs and digests are the replay's, the simulation is not touched).
+    void startSpectate();
+    void endSpectate(const char* reason);
+    unsigned spectateToken_ = 0;     // 0: not streamed
+    size_t spectateChecks_ = 0;      // digests of the recorder already given
     // Keys of the powers (2.31): see refreshPowerKeys.
     void syncPowerKeys();
     PowerKeyMap powerKeys_;

@@ -5,6 +5,8 @@ export interface PlayerRow {
     presence_state?: string | null;
     presence_at?: string | null;
     presence_visible?: number;
+    /** « Mes amis peuvent me regarder jouer » (2.36): 1 by default. */
+    spectate_allowed?: number;
     id: string;
     username: string;
     username_normalized: string;
@@ -115,6 +117,7 @@ export function privateProfile(p: PlayerRow) {
         profile_visibility: p.profile_visibility,
         allow_friend_requests: p.allow_friend_requests === 1,
         presence_visible: p.presence_visible !== 0,
+        spectate_allowed: p.spectate_allowed !== 0,
         trust_level: p.trust_level,
         tos_version: p.tos_version,
         created_at: p.created_at,

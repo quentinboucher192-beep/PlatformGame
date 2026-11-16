@@ -11,13 +11,14 @@ interface __BaseEnv_Env {
 	REFRESH_TOKEN_TTL_DAYS: "30";
 	IP_HASH_SALT: string;
 	PROJECT_ROOMS: DurableObjectNamespace /* ProjectRoom */;
+	SPECTATE_ROOMS: DurableObjectNamespace /* SpectateRoom */;
 	RATE_LIMIT_SCALE?: "50";
 	ADMIN_TOKEN?: string;
 }
 declare namespace Cloudflare {
 	interface GlobalProps {
 		mainModule: typeof import("./src/index");
-		durableNamespaces: "ProjectRoom";
+		durableNamespaces: "ProjectRoom" | "SpectateRoom";
 	}
 	interface StagingEnv {
 		STORAGE: R2Bucket;
@@ -29,6 +30,7 @@ declare namespace Cloudflare {
 		REFRESH_TOKEN_TTL_DAYS: "30";
 		IP_HASH_SALT: string;
 		PROJECT_ROOMS: DurableObjectNamespace /* ProjectRoom */;
+		SPECTATE_ROOMS: DurableObjectNamespace /* SpectateRoom */;
 	}
 	interface DevEnv {
 		STORAGE: R2Bucket;
@@ -42,6 +44,7 @@ declare namespace Cloudflare {
 		IP_HASH_SALT: string;
 		ADMIN_TOKEN: string;
 		PROJECT_ROOMS: DurableObjectNamespace /* ProjectRoom */;
+		SPECTATE_ROOMS: DurableObjectNamespace /* SpectateRoom */;
 	}
 	interface Env extends __BaseEnv_Env {}
 }

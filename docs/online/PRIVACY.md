@@ -22,6 +22,19 @@
   nombre ; elle est identique pour tous et peut être mise en cache quelques secondes.
   Masquer sa position ou son profil retire le joueur du compte dès la réponse suivante. Hors
   ligne ou sans compte, l'écran l'indique et n'affiche aucune donnée inventée.
+* **Regarder ses amis jouer (2.36)** : vos amis peuvent regarder vos parties en direct ;
+  vous n'êtes pas prévenu quand quelqu'un regarde (ni notification, ni nombre de
+  spectateurs, ni liste : le serveur ne garde aucune trace de qui regarde, la salle de la
+  partie ne sait même pas qui lit). Réglage *Paramètres en ligne › Compte et confidentialité ›
+  « Mes amis peuvent me regarder jouer »*, **activé par défaut** ; décoché, personne ne peut
+  regarder et la partie en cours est oubliée aussitôt. Seuls les **amis acceptés** le
+  peuvent, jamais un joueur bloqué (dans un sens ou dans l'autre), et jamais quand vous
+  masquez votre présence (« Montrer ma présence à mes amis ») : sinon « Regarder » trahirait
+  que vous êtes en ligne. Ce qui est envoyé : le niveau joué (campagne, communauté ou défi)
+  et sa version, la graine de la partie et les commandes de jeu de chaque pas de simulation
+  (ce qu'un replay contient déjà), rien d'autre ; le spectateur, lui, n'envoie rien à votre
+  jeu. Seuls les niveaux de la campagne, de la communauté installés et les défis sont
+  diffusés, jamais un test de l'éditeur, un entraînement ou un niveau de l'atelier.
 * **Transparence et consentement** : écran d'accueil de Cosmic Online, conditions
   d'utilisation (`data/online/terms_fr.txt`, version `2026-11`) acceptées explicitement à
   l'inscription.
@@ -72,6 +85,8 @@
 | Parties des défis du jour, de la semaine et du mois (temps, morts, dégâts, palier, statut, date, envoi hors délai ou non) et leurs replays | D1 `challenge_runs` + R2 `challenges/` | classement du défi (pseudonyme, meilleur temps vérifié, palier, hors délai ; pays selon la confidentialité) ; replay d'un temps vérifié (pas pour un profil masqué) | supprimées avec votre compte (replays compris) ; incluses dans l'export de vos données (`challenge_runs`) ; un défi qui met votre niveau à l'honneur perd ce lien |
 | Essais « Plus loin » des défis (2.34 : temps, boss et vagues déclarés, progression calculée par le serveur, statut, raisons d'un refus, envoi hors délai ou non) et le replay du meilleur essai par défi | D1 `challenge_attempts` + R2 `challenges/` | classement « Plus loin » du défi (pseudonyme, meilleure progression vérifiée, temps, hors délai ; pays selon la confidentialité) ; replay du meilleur essai vérifié, regardable depuis ce classement (pas pour un profil masqué) | supprimés avec votre compte (replay compris) ; inclus dans l'export de vos données (`challenge_attempts`) ; un essai moins bon que votre meilleur ne garde pas son replay |
 | Présence en direct (curseur et vue dans le niveau, sélection, activité) | mémoire de la salle du projet, jamais écrite | les membres présents | 20 secondes après le dernier signe de vie |
+| Réglage « Mes amis peuvent me regarder jouer » (2.36, activé par défaut) | D1 `players.spectate_allowed` | le joueur (profil privé, export) | vie du compte |
+| Partie en cours regardable par les amis (2.36) : niveau et version (titre fourni par le serveur), graine, commandes de jeu de chaque pas de simulation, empreintes d'état toutes les 0,5 s, heure de début | mémoire de la salle du joueur (Durable Object `SpectateRoom`), **jamais écrite** (ni D1, ni R2, ni stockage de l'objet) ; rien sur ceux qui regardent | les amis acceptés, si le réglage est coché et la présence montrée ; jamais un joueur bloqué | la partie en cours seulement (30 minutes de jeu au plus) ; oubliée 1 minute après sa fin, 2 minutes après le dernier envoi du jeu, dès qu'une nouvelle partie commence, que le réglage est décoché, la présence masquée ou le compte supprimé |
 | Journal de sécurité (action, empreinte d'IP) | D1 `audit_log` | opérateurs | 180 jours |
 | Compteurs de limitation (empreintes) | D1 `rate_limits` | personne | 24 heures |
 
@@ -84,7 +99,7 @@
   niveaux officiels et des courses).
 * **Rectification** : pseudonyme, avatar, pays, visibilités (`PATCH /api/v1/players/me`).
 * **Opposition / limitation** : masquer le profil, le pays, la présence sur le globe, refuser
-  les demandes d'amis, rendre privées ses listes d'abonnés et d'abonnements, désactiver des
+  les demandes d'amis, empêcher ses amis de regarder ses parties en direct, rendre privées ses listes d'abonnés et d'abonnements, désactiver des
   catégories de notifications, désactiver Cosmic Online ou la connexion automatique.
 * **Effacement** : *Supprimer mon compte* (mot de passe + confirmation) →
   `DELETE /api/v1/players/me` : suppression des fichiers R2 (replays, avatar) puis du compte et,

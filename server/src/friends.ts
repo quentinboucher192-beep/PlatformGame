@@ -5,6 +5,7 @@ import { audit, requireAuth } from "./auth";
 import { Errors, json, nowIso, readJsonObject, type Ctx } from "./http";
 import { playerSummary, type PlayerRow } from "./model";
 import { RULES, rateLimit } from "./ratelimit";
+import { playingNow, spectatable } from "./spectate";
 import { USERNAME_RE, Validator, normalizeUsername } from "./validate";
 
 const ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -31,7 +32,19 @@ export async function listFriends(ctx: Ctx): Promise<Response> {
         } else if (r.a === id) outgoing.push(entry);
         else incoming.push(entry);
     }
-    return json(ctx, { friends, incoming, outgoing });
+    // Live spectating (2.36): `playing` for a friend playing a run now who lets friends watch
+    // (setting on, presence visible), so « Regarder » only shows when it can work. Only the
+    // rooms of the friends whose game runs (presence online or away) are asked.
+    const blocks = await ctx.env.DB.prepare("SELECT player_id, blocked_id FROM player_blocks WHERE player_id = ?1 OR blocked_id = ?1")
+        .bind(id)
+        .all<{ player_id: string; blocked_id: string }>();
+    const blocked = new Set(blocks.results.map((b) => (b.player_id === id ? b.blocked_id : b.player_id)));
+    const candidates = rows.results.filter(
+        (r) => r.status === "accepted" && r.a === id && !blocked.has(r.id) && spectatable(r) && presenceOf(r) !== "offline",
+    );
+    const playing = candidates.length ? await playingNow(ctx.env, candidates.map((r) => r.id)) : new Map<string, unknown>();
+    const withPlaying = friends.map((f) => (playing.has(f.player.id) ? { ...f, playing: playing.get(f.player.id) } : f));
+    return json(ctx, { friends: withPlaying, incoming, outgoing });
 }
 
 export async function requestFriend(ctx: Ctx): Promise<Response> {
