@@ -246,6 +246,14 @@ for _k in range(8):
     TEXTURES[_id] = f"sprites/enemies/{_id}.png"
     LOOPING[_id] = {"idle", "walk", "move", "special"}
 
+# ------------------------------------------------------------------ La Liche des Catacombes (lich giga boss)
+# Eight sheets, one per phase, packed like Pyrrhax' (no teleport: it floats).
+for _k in range(8):
+    _id = "liche" if _k == 0 else "liche_p%d" % (_k + 1)
+    ANIMS[_id] = (224, 224, [112, 184], DRAGON_CLIPS, {"attack": [(1, "fire")]}, {})
+    TEXTURES[_id] = f"sprites/enemies/{_id}.png"
+    LOOPING[_id] = {"idle", "walk", "move", "special"}
+
 STATIC = {
     "sprites/objects/moving_platform.png": (48, 32),
     "sprites/objects/crumble_platform.png": (48, 48),

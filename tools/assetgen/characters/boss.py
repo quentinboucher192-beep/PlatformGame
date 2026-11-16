@@ -376,3 +376,4 @@ def build():
         if importlib.util.find_spec(name) is not None:
             importlib.import_module(name).build()
     importlib.import_module("bosses_f").build()  # bosses_f: Monolithe, the golem giga boss (8 phase sheets)
+    importlib.import_module("bosses_i").build()  # bosses_i: La Liche des Catacombes, lich giga boss (8 phase sheets)
