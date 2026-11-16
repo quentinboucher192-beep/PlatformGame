@@ -150,3 +150,5 @@ obsidian
 powers
 backup
 golem
+Earlier versions of campaign levels whose records count on the shipped version (CosmicPlatformer --keep-records; game/records/KeptRecords.h).
+ranked
