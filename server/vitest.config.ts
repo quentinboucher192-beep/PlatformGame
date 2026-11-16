@@ -19,6 +19,9 @@ export default defineConfig(async () => {
                         RATE_LIMIT_SCALE: "1",
                         // Faster hashing in tests; production uses 100 000 iterations.
                         PBKDF2_ITERATIONS: "10000",
+                        // Backups: no wait before the pre_import copy; 1 MiB parts (several per file).
+                        BACKUP_SETTLE_MS: "0",
+                        BACKUP_IMPORT_PART_SIZE: "1048576",
                     },
                 },
             }),

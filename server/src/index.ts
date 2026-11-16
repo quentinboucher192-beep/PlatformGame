@@ -3,6 +3,7 @@
 
 import * as admin from "./admin";
 import * as adminRoles from "./adminRoles";
+import * as backups from "./backups";
 import { login, logout, me, optionalAuth, refresh, register, usernameAvailable, type AuthInfo } from "./auth";
 import * as friends from "./friends";
 import * as globe from "./globe";
@@ -302,6 +303,17 @@ route("POST", `${V}/admin/comments/{commentId}/moderate`, async (ctx) => {
 route("GET", `${V}/admin/players`, (ctx) => adminRoles.listPlayers(ctx));
 route("POST", `${V}/admin/players/{playerId}/role`, (ctx) => adminRoles.setRole(ctx));
 route("GET", `${V}/admin/log`, (ctx) => adminRoles.listLog(ctx));
+// Backups of all the data (docs/online/BACKUP.md): server-side copies, encrypted download,
+// import in parts, check, apply step by step (maintenance meanwhile), abandon.
+route("GET", `${V}/admin/backups`, (ctx) => backups.listBackups(ctx));
+route("POST", `${V}/admin/backups`, (ctx) => backups.createBackupRoute(ctx));
+route("POST", `${V}/admin/backups/imports`, (ctx) => backups.createImport(ctx));
+route("GET", `${V}/admin/backups/imports/{importId}`, (ctx) => backups.getImport(ctx));
+route("DELETE", `${V}/admin/backups/imports/{importId}`, (ctx) => backups.deleteImport(ctx));
+route("PUT", `${V}/admin/backups/imports/{importId}/parts/{n}`, (ctx) => backups.putImportPart(ctx));
+route("POST", `${V}/admin/backups/imports/{importId}/check`, (ctx) => backups.checkImport(ctx));
+route("POST", `${V}/admin/backups/imports/{importId}/apply`, (ctx) => backups.applyImport(ctx));
+route("POST", `${V}/admin/backups/{backupId}/download`, (ctx) => backups.downloadBackup(ctx));
 
 function match(method: string, path: string): { route: Route; params: Record<string, string> } | "method" | null {
     let pathMatched = false;
@@ -345,6 +357,8 @@ async function handle(request: Request, env: Bindings, exec: ExecutionContext, r
         const hit = await cache.match(request);
         if (hit) return hit;
     }
+    // While an import replaces the data, the writes of the players answer 503 (reads go on).
+    await backups.assertWritable(ctx);
     // The health check must work even when D1 (which stores the counters) is down.
     if (request.method === "GET" && m.route.template !== `${V}/health`) await rateLimit(ctx, RULES.reads, ctx.ip);
     const viewer = m.route.viewer ? await optionalAuth(ctx) : null;
@@ -377,8 +391,21 @@ async function recheckHeldRecords(env: Bindings, exec: ExecutionContext): Promis
 
 /**
  * Daily maintenance: expired sessions, stale rate-limit windows, old audit entries, held
- * records; the challenges of the coming days, weeks and months, the featured creators.
+ * records; the challenges of the coming days, weeks and months, the featured creators. Then
+ * the backups: the automatic copy and the retention (backups.ts). Nothing of it runs while an
+ * import is replacing the data.
  */
+async function daily(env: Bindings, exec: ExecutionContext): Promise<void> {
+    if (await backups.maintenanceActive(env)) log("info", "maintenance_skipped_import_in_progress");
+    else
+        try {
+            await maintenance(env, exec);
+        } catch (e) {
+            log("error", "maintenance_failed", { error: e instanceof Error ? e.message : String(e) });
+        }
+    await backups.scheduledBackups(env, exec);
+}
+
 async function maintenance(env: Bindings, exec: ExecutionContext): Promise<void> {
     const now = Date.now();
     const iso = (ms: number) => new Date(ms).toISOString();
@@ -426,6 +453,6 @@ export default {
         return response;
     },
     async scheduled(_controller, env, exec): Promise<void> {
-        exec.waitUntil(maintenance(env, exec));
+        exec.waitUntil(daily(env, exec));
     },
 } satisfies ExportedHandler<Bindings>;
