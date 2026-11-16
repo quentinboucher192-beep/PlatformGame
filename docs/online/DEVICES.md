@@ -45,7 +45,7 @@ connexion, et sur demande. Le serveur en garde 5 par compte, dans le bucket priv
 
 ## Migrer vers un nouveau compte (2.50)
 
-Code : `server/src/accountMigration.ts`, `server/migrations/XXXX_account_migrations.sql`
+Code : `server/src/accountMigration.ts`, `server/migrations/0100_account_migrations.sql`
 (numéro donné à l'intégration), tests `server/test/accountMigration.test.ts`.
 
 Un compte ne sert que sur un ordinateur : sur un nouvel ordinateur, le joueur crée un **nouveau
