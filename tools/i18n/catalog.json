@@ -212,6 +212,12 @@
    ]
   },
   {
+   "fr": "1 défi {0}",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
    "fr": "1 heure",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -3735,6 +3741,7 @@
    "fr": "bronze",
    "where": [
     "game/levels/LevelData.cpp",
+    "game/online/DailyChallenges.cpp",
     "game/progression/NewsCenter.cpp"
    ]
   },
@@ -3889,6 +3896,12 @@
    "fr": "Cadre bronze.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Cadre d'avatar",
+   "where": [
+    "game/cosmetics/Collection.cpp"
    ]
   },
   {
@@ -4835,6 +4848,12 @@
    "fr": "Champignon rebond",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Champion des défis",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -5967,6 +5986,7 @@
   {
    "fr": "Combinaison",
    "where": [
+    "game/cosmetics/Collection.cpp",
     "ui/screens/PlayerProfileScene.cpp"
    ]
   },
@@ -6282,6 +6302,12 @@
    ]
   },
   {
+   "fr": "Comète du mois",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Conception, programmation, graphismes et musique",
    "where": [
     "data/levels/glacior_03.json"
@@ -6455,6 +6481,12 @@
    "where": [
     "ui/screens/RaceScene.cpp",
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Connectez-vous à Cosmic Online pour la gagner.",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {
@@ -7114,6 +7146,12 @@
    "fr": "Couronne de givre",
    "where": [
     "data/levels/glacior_01.json"
+   ]
+  },
+  {
+   "fr": "Couronne de la semaine",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -9194,6 +9232,12 @@
    ]
   },
   {
+   "fr": "Défiant",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Défier ce temps",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
@@ -9224,6 +9268,18 @@
    ]
   },
   {
+   "fr": "Défis : obtenu",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Défis : {0}",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Défis : « Touches… » avant le départ, pour changer les touches des pouvoirs du défi (aussi dans la pause).",
    "where": [
     "data/news/changelog.json"
@@ -9239,6 +9295,12 @@
    "fr": "Défis du jour : menu principal › « Défis ». Chaque jour UTC, un niveau avec ses règles (cœurs, emplacements, pouvoirs imposés, stations, points de passage) et trois paliers : Bronze, Argent, Or.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Défis requis",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -9564,6 +9626,12 @@
    ]
   },
   {
+   "fr": "Effet de victoire",
+   "where": [
+    "game/cosmetics/Collection.cpp"
+   ]
+  },
+  {
    "fr": "Effet {0}",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -9673,6 +9741,18 @@
    ]
   },
   {
+   "fr": "en Argent",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "en Argent ou en Or",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
    "fr": "EN ATTENTE",
    "where": [
     "game/online/OnlineTypes.cpp"
@@ -9721,6 +9801,12 @@
    "fr": "En boucle",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "en Bronze",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {
@@ -9835,6 +9921,12 @@
    "fr": "en mouvement",
    "where": [
     "game/gameplay/entities/PlatformEntities.cpp"
+   ]
+  },
+  {
+   "fr": "en Or",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {
@@ -13856,6 +13948,12 @@
    ]
   },
   {
+   "fr": "Jour {0}",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
    "fr": "JSON invalide",
    "where": [
     "game/online/LevelFingerprint.cpp",
@@ -17257,6 +17355,12 @@
    ]
   },
   {
+   "fr": "Meilleure série : {0}",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
    "fr": "Meilleures progressions",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -17367,6 +17471,12 @@
    "where": [
     "data/music/tracks.json",
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Menu principal → Défis : seules les parties vérifiées par Cosmic Online comptent.",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -17763,6 +17873,12 @@
    "fr": "Mois suivant",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Mois {0}",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {
@@ -19830,6 +19946,12 @@
    ]
   },
   {
+   "fr": "Obtenu : à équiper dans la Collection",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
    "fr": "Obtenu le {0}",
    "where": [
     "ui/screens/AchievementsScene.cpp"
@@ -20727,6 +20849,12 @@
   },
   {
    "fr": "Partie terminée",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Parties vérifiées par Cosmic Online",
    "where": [
     "ui/screens/ChallengesScene.cpp"
    ]
@@ -22438,6 +22566,12 @@
    ]
   },
   {
+   "fr": "Pourpre, visière d'or et écharpe blanche : la tenue des champions des défis.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Poursuite",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
@@ -22847,6 +22981,12 @@
    "fr": "PROGRESSION",
    "where": [
     "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
+   "fr": "Progression : {0}",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {
@@ -25506,15 +25646,45 @@
    ]
   },
   {
+   "fr": "Récompense des défis : obtenue",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Récompense du succès « {0} »",
    "where": [
     "ui/screens/CollectionScene.cpp"
    ]
   },
   {
+   "fr": "Récompense débloquée : {0}",
+   "where": [
+    "game/GameServices.cpp"
+   ]
+  },
+  {
+   "fr": "Récompenses",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Récompenses de succès précis",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Récompenses des défis",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Récompenses des défis : cinq cosmétiques à gagner — le titre « Défiant » (un palier Or), le cadre « Couronne de la semaine » (Or à un défi de la semaine), la traînée « Comète du mois » (Or à un défi du mois), la combinaison « Champion des défis » (10 paliers Or) et la victoire « Série de feu » (7 défis du jour d'affilée).",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -25769,6 +25939,30 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Réussir le défi de la semaine {0} semaines de suite.",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Réussir le défi du jour {0} jours de suite.",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Réussir le défi du mois {0} mois de suite.",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Réussir {0} {1}.",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {
@@ -26170,6 +26364,7 @@
    "fr": "Sans titre",
    "where": [
     "data/cosmetics/cosmetics.json",
+    "ui/screens/ChallengeRewardsUi.cpp",
     "ui/screens/CollectionScene.cpp"
    ]
   },
@@ -26555,6 +26750,7 @@
   {
    "fr": "Semaine {0}",
    "where": [
+    "ui/screens/ChallengeRewardsUi.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -26588,6 +26784,12 @@
    "fr": "Sentinelle vaincue",
    "where": [
     "data/levels/sylvanox_03.json"
+   ]
+  },
+  {
+   "fr": "Sept flammes s'allument au-dessus du portail, une par jour de la série.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -26772,6 +26974,12 @@
    "fr": "Seulement visuelles : rien ne change dans la partie.",
    "where": [
     "ui/screens/RewardsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Seules les parties vérifiées par Cosmic Online comptent ; une récompense débloquée est annoncée par une notification et dans « Nouvelles récompenses ».",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -28015,6 +28223,12 @@
    ]
   },
   {
+   "fr": "Sur la fiche d'un défi et avant de le jouer : les récompenses qu'il fait avancer, en icônes (aperçu, palier, progression) avec une infobulle ; un clic ouvre l'objet dans la Collection, où la Route les montre aussi.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Sur la première île-sanctuaire, un bosquet de Sylvanox s'est enfoncé dans la nébuleuse. Ses racines vivent encore, et la Mère-Racine les entend toutes.",
    "where": [
     "data/levels/aethra_01.json"
@@ -28317,6 +28531,12 @@
    "fr": "Série : {0} (sur ce PC)",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Série de feu",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -29367,6 +29587,7 @@
   {
    "fr": "Titre",
    "where": [
+    "game/cosmetics/Collection.cpp",
     "ui/screens/CollectionScene.cpp",
     "ui/screens/CommunityPublishScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp"
@@ -29903,6 +30124,7 @@
   {
    "fr": "Traînée",
    "where": [
+    "game/cosmetics/Collection.cpp",
     "ui/screens/PlayerProfileScene.cpp"
    ]
   },
@@ -30479,6 +30701,36 @@
    ]
   },
   {
+   "fr": "un défi (du jour, de la semaine ou du mois)",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "un défi de la semaine",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "un défi du jour",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "un défi du mois",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Un défi réussi en Or.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Un ennemi différent porte déjà cet identifiant",
    "where": [
     "packaging/PackageImporter.cpp"
@@ -30734,6 +30986,12 @@
    ]
   },
   {
+   "fr": "Une couronne d'or sertie de trois gemmes au-dessus de l'avatar.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Une couronne de lauriers dorée.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -30827,6 +31085,12 @@
    "fr": "Une partie de défi ne compte ni pour les records du niveau, ni pour les médailles, ni pour la progression ; les autres parties se jouent exactement comme avant (records conservés).",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Une partie par jour, à n'importe quel palier, à l'heure : une partie hors délai ne compte pas. Seules les parties vérifiées par Cosmic Online comptent.",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {
@@ -30936,6 +31200,12 @@
    "fr": "Une touche et un bouton de manette pour chaque pouvoir du niveau qui s'utilise avec une touche à lui : les mêmes quel que soit l'emplacement du pouvoir. Sans choix ici, un pouvoir garde sa touche suggérée. Chaque joueur peut changer les siennes (choix du niveau, pause).",
    "where": [
     "editors/level_editor/LevelEditorPowerKeys.cpp"
+   ]
+  },
+  {
+   "fr": "Une tête d'or et une longue queue violette semée d'étoiles.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -32194,6 +32464,12 @@
    ]
   },
   {
+   "fr": "voir dans la Collection",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
    "fr": "Voir l'invitation",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -32344,6 +32620,12 @@
    "fr": "Vos performances ont été envoyées à Cosmic Online.",
    "where": [
     "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "Vos résultats n'ont pas encore été lus sur Cosmic Online.",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {
@@ -33844,6 +34126,36 @@
    ]
   },
   {
+   "fr": "{0} défis (du jour, de la semaine ou du mois)",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "{0} défis de la semaine",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "{0} défis du jour",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "{0} défis du mois",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "{0} défis {1}",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
    "fr": "{0} dégât",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -34086,6 +34398,12 @@
    ]
   },
   {
+   "fr": "{0} jours de suite",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
    "fr": "{0} Ko",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
@@ -34157,6 +34475,12 @@
    "fr": "{0} mois",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} mois de suite",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {
@@ -34407,6 +34731,18 @@
    ]
   },
   {
+   "fr": "{0} semaines",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} semaines de suite",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
    "fr": "{0} succès débloqués",
    "where": [
     "game/GameServices.cpp"
@@ -34564,6 +34900,18 @@
    ]
   },
   {
+   "fr": "{0} · défis",
+   "where": [
+    "ui/screens/RewardsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · défis · menu principal → Collection",
+   "where": [
+    "game/GameServices.cpp"
+   ]
+  },
+  {
    "fr": "{0} · historique",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
@@ -34591,6 +34939,12 @@
    "fr": "{0} · rang mondial n°{1}",
    "where": [
     "ui/screens/OnlineThreadScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · récompense des défis",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {
@@ -34901,6 +35255,12 @@
    ]
   },
   {
+   "fr": "À l'heure ou hors délai. Seules les parties vérifiées par Cosmic Online comptent.",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
    "fr": "à l'instant",
    "where": [
     "ui/online/OnlineWidgets.cpp"
@@ -34916,6 +35276,12 @@
    "fr": "À mains nues",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "à n'importe quel palier",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
    ]
   },
   {

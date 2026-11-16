@@ -5,6 +5,10 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.35.0** :
+* **Récompenses des défis** : cinq cosmétiques (titre, cadre, traînée, combinaison, victoire)
+  gagnés par les parties de défi vérifiées, montrés en icônes avec infobulle avant de jouer.
+
 **Nouveau dans la version 2.34.1** :
 * **« Le Cœur d'une Étoile Mourante »** devient le combat seul contre Singularis (choix des
   pouvoirs puis l'arène géante), comme L'Arène des Échos.

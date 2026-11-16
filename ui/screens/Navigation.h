@@ -128,6 +128,9 @@ std::unique_ptr<Scene> makeGhostOptions(GameServices& g, GameScene* game);
 std::unique_ptr<Scene> makeAchievements(GameServices& g);
 /// Main menu → Collection: Vestiaire, Route des étoiles, Musiques (jukebox), Galerie.
 std::unique_ptr<Scene> makeCollection(GameServices& g, int tab = 0);
+/// The Collection's Vestiaire on one reward (its category, the item selected), over the
+/// screen it was opened from (2.35: a reward of the challenges).
+std::unique_ptr<Scene> makeCollectionOn(GameServices& g, const std::string& itemId);
 /// End of a level: the rewards just unlocked by the stars (equip now or later).
 std::unique_ptr<Scene> makeNewRewards(GameServices& g);
 /// Main menu → Statistiques: the bosses (victories, without being hit, per phase, how they

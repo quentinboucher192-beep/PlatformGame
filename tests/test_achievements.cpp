@@ -530,9 +530,9 @@ TEST_CASE("collection (2.24): every reward can be won and is drawn") {
     for (const auto& d : a.achievements()) offline -= online.count(d.id) ? d.stars : 0;
     // The looks the game draws (CosmeticFx, the suits' sheets).
     const std::map<std::string, std::set<std::string>> drawn = {
-        {"trail", {"none", "stardust", "comet", "aurora", "eclipse", "flame", "prism", "runes"}},
-        {"frame", {"simple", "bronze", "silver", "gold", "platinum", "constellation", "emerald", "orbit", "nebula", "laurels"}},
-        {"victory", {"classic", "fireworks", "starfall", "supernova", "vortex", "borealis", "corona"}}};
+        {"trail", {"none", "stardust", "comet", "aurora", "eclipse", "flame", "prism", "runes", "month_comet"}},
+        {"frame", {"simple", "bronze", "silver", "gold", "platinum", "constellation", "emerald", "orbit", "nebula", "laurels", "crown"}},
+        {"victory", {"classic", "fireworks", "starfall", "supernova", "vortex", "borealis", "corona", "fire_streak"}}};
     std::map<std::string, int> perCategory, defaults;
     std::set<int> thresholds;
     for (const CosmeticItem& it : c.items()) {
@@ -543,6 +543,11 @@ TEST_CASE("collection (2.24): every reward can be won and is drawn") {
         if (!it.achievement.empty()) {
             if (!a.find(it.achievement)) std::printf("  succès inconnu : %s (%s)\n", it.achievement.c_str(), it.id.c_str());
             CHECK(a.find(it.achievement) != nullptr);
+        } else if (it.challengeReward()) {
+            // 2.34: won with challenge results verified by Cosmic Online.
+            CHECK(it.challenge.count >= 1);
+            CHECK(it.challenge.tier >= 1);
+            CHECK(it.stars == 0);
         } else if (!it.isDefault && !it.allStars) {
             CHECK(it.stars > 0);
             CHECK(it.stars <= offline);

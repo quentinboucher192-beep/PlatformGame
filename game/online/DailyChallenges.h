@@ -1,10 +1,10 @@
 #pragma once
 
-// « Défis » (2.32 to 2.34), the game's side of docs/online/DAILY_CHALLENGES.md and
+// « Défis » (2.32 to 2.35), the game's side of docs/online/DAILY_CHALLENGES.md and
 // docs/online/CHALLENGES_PERIODS.md: the challenges of the day, of the week and of the month as
 // the server describes them, the cache that keeps each playable offline until its end and the
 // past ones playable « hors délai » (saves/challenges/), the calendar of a month, the player's
-// local results and streaks (one per kind), and the runs (and, from 2.34, the unfinished
+// local results and streaks (one per kind), and the runs (and, from 2.33, the unfinished
 // attempts that went further than my best one: « Plus loin ») waiting to be sent (the same
 // offline-queue pattern as the records: kept on disk, sent when the connection and the
 // session are there, never blocking the main thread).
@@ -20,6 +20,7 @@
 
 #include "engine/core/Json.h"
 #include "engine/core/Paths.h"
+#include "game/cosmetics/Collection.h"
 #include "game/gameplay/ChallengeRules.h"
 #include "game/online/OnlineTypes.h"
 
@@ -87,7 +88,7 @@ struct DailyChallenge {
     int64_t silverMs = 0;
     int64_t goldMs = 0;
     bool goldNoDamage = true;
-    bool progressAvailable = false;  // « Plus loin » (2.34): its level has a route layout
+    bool progressAvailable = false;  // « Plus loin » (2.33): its level has a route layout
     Json raw;  // as received (cache)
 
     bool community() const { return level.source == "community"; }
@@ -108,7 +109,7 @@ enum class ChallengeRunState {
 const char* challengeRunStateLabel(ChallengeRunState s);
 ChallengeRunState challengeRunStateFromServer(const std::string& status);
 
-/// A challenge run (or, from 2.34, an unfinished attempt that went further than my best one)
+/// A challenge run (or, from 2.33, an unfinished attempt that went further than my best one)
 /// kept until the server has decided (saves/challenges/pending.json).
 struct ChallengeSubmission {
     std::string attemptId;
@@ -121,7 +122,7 @@ struct ChallengeSubmission {
     bool hasReplay = false;
     bool replayUploaded = false;
     bool late = false;  // played after the end: « Depuis » only (the server's word once sent)
-    // « Plus loin » (2.34): an unfinished attempt, POST /challenges/{id}/attempts with its claim,
+    // « Plus loin » (2.33): an unfinished attempt, POST /challenges/{id}/attempts with its claim,
     // then its replay to PUT /challenges/attempts/{attempt_id}/replay (the game's own id).
     bool attempt = false;
     std::vector<int> bosses;       // per mille of health removed, per boss of the route layout
@@ -250,6 +251,23 @@ public:
     };
     std::optional<ServerResult> serverResult(const std::string& challengeId) const;
 
+    // ------------------------------------------ rewards of the challenges (2.35)
+    /// What Cosmic Online verified of my challenge runs, for the rewards of the Collection
+    /// (`verified` of /challenges/me; a 2.33 server: counted from its results whose status is
+    /// VERIFIED), kept on this computer (saves/challenges/state.json) for offline play. It is
+    /// the reading of one account: used while that account is logged in, or nobody is; never a
+    /// run kept on this computer only. Not `known` before a first reading.
+    const ChallengeRewardProgress& rewardProgress() const;
+    /// Grows each time a reading changes it (a screen waiting for a reward to be unlocked).
+    int rewardsRevision() const { return rewardsRevision_; }
+    /// Main thread, after a reading changed it (the Collection, the announcement of a reward).
+    std::function<void()> onRewardsChanged;
+    /// `verified` of /challenges/me (nullopt when absent or malformed: a 2.33 server).
+    static std::optional<ChallengeRewardProgress> rewardProgressFromJson(const Json& v);
+    /// A 2.33 server: the results whose status is VERIFIED (their tier, in time or late; the
+    /// series: periods with such a result in time).
+    static ChallengeRewardProgress rewardProgressFromResults(const Json& results);
+
     // ------------------------------------------------------------------- runs
     struct RunReport {
         bool newBest = false;
@@ -275,7 +293,7 @@ public:
     /// Tries to send what waits now.
     void flush();
 
-    // ------------------------------------------------------- « Plus loin » (2.34)
+    // ------------------------------------------------------- « Plus loin » (2.33)
     /// How far I went on a challenge: 100 once finished (here or, as the server knows it, on
     /// another computer), else the best unfinished attempt kept here or known by the server;
     /// 0 when none.
@@ -357,9 +375,14 @@ private:
     float sendTimer_ = 2.0f;
     float mineTimer_ = 0.0f;
     bool mineBusy_ = false;
+    std::vector<ApiCallback> mineWaiters_;  // refreshMine() called while a reading was on its way
     std::array<std::optional<Streak>, kChallengeKinds> serverStreaks_;
-    std::string serverStreakFor_;
+    std::string serverStreakFor_;  // the account whose streaks, results and rewards these are
     std::map<std::string, ServerResult> serverResults_;
+    void setRewardProgress(const ChallengeRewardProgress& p);
+    ChallengeRewardProgress rewards_;
+    int rewardsRevision_ = 0;
+    bool rewardsStale_ = false;  // a run was just verified: /challenges/me again for its rewards
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
 };
 
