@@ -8,6 +8,9 @@ export interface PlayerRow {
     device_bound_at?: string | null;
     /** 2.47: an admin unbound it: the next login, from any computer, binds it again. */
     device_rebind?: number;
+    /** 2.50: closed after its data was migrated to another account (`merged_into`); account_status is then « suspended ». */
+    closed_at?: string | null;
+    merged_into?: string | null;
     presence_state?: string | null;
     presence_at?: string | null;
     presence_visible?: number;

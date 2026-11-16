@@ -56,6 +56,14 @@ export const RULES = {
     // 2.47: the right password typed on another computer than the account's: refused; after 5, that computer waits.
     loginRefused: { name: "login_refused", limit: 5, windowSeconds: 600 },
     deviceRename: { name: "device_rename", limit: 10, windowSeconds: 3600 },
+    // 2.50: « Migrer vers un nouveau compte ». The code made on the old computer; the failed
+    // attempts with it (wrong username, password or code: one generic answer), counted per new
+    // account and per old account (assertUnderLimit / countFailure: only failures count); the
+    // choice about the progression to restore.
+    migrationCode: { name: "migration_code", limit: 10, windowSeconds: 3600 },
+    migrationFailTarget: { name: "migration_fail_target", limit: 5, windowSeconds: 600 },
+    migrationFailSource: { name: "migration_fail_source", limit: 5, windowSeconds: 600 },
+    progressRestore: { name: "progress_restore", limit: 30, windowSeconds: 3600 },
     // What the player wears online (2.23): sent after each « Équiper » of the Collection.
     cosmetics: { name: "cosmetics", limit: 60, windowSeconds: 3600 },
     // The badges of the profile (2.41): sent after each choice of the Collection, like the items worn.
@@ -76,11 +84,24 @@ function scale(ctx: Ctx): number {
     return Number.isFinite(n) && n >= 1 ? Math.min(n, 1000) : 1;
 }
 
-export async function rateLimit(ctx: Ctx, rule: RateRule, key: string): Promise<void> {
-    const limit = rule.limit * scale(ctx);
-    const hashed = await hashIp(key, ctx.env.IP_HASH_SALT ?? "");
+function windowOf(rule: RateRule): { now: number; windowStart: number } {
     const now = Math.floor(Date.now() / 1000);
-    const windowStart = now - (now % rule.windowSeconds);
+    return { now, windowStart: now - (now % rule.windowSeconds) };
+}
+
+async function bucketOf(ctx: Ctx, rule: RateRule, key: string): Promise<string> {
+    return `${rule.name}:${await hashIp(key, ctx.env.IP_HASH_SALT ?? "")}`;
+}
+
+function limited(rule: RateRule, now: number, windowStart: number): ApiError {
+    const retry = Math.max(1, windowStart + rule.windowSeconds - now);
+    return new ApiError(429, "RATE_LIMITED", "Trop de requêtes, réessayez plus tard.", { retry_after_seconds: retry }, {
+        "retry-after": String(retry),
+    });
+}
+
+/** Counts one use of `key` in the current window; the new count. */
+async function bump(ctx: Ctx, rule: RateRule, key: string, windowStart: number): Promise<number> {
     const row = await ctx.env.DB.prepare(
         `INSERT INTO rate_limits (bucket, window_start, count) VALUES (?1, ?2, 1)
          ON CONFLICT (bucket) DO UPDATE SET
@@ -88,12 +109,29 @@ export async function rateLimit(ctx: Ctx, rule: RateRule, key: string): Promise<
            window_start = ?2
          RETURNING count`,
     )
-        .bind(`${rule.name}:${hashed}`, windowStart)
+        .bind(await bucketOf(ctx, rule, key), windowStart)
         .first<{ count: number }>();
-    if (row && row.count > limit) {
-        const retry = Math.max(1, windowStart + rule.windowSeconds - now);
-        throw new ApiError(429, "RATE_LIMITED", "Trop de requêtes, réessayez plus tard.", { retry_after_seconds: retry }, {
-            "retry-after": String(retry),
-        });
-    }
+    return row?.count ?? 0;
+}
+
+export async function rateLimit(ctx: Ctx, rule: RateRule, key: string): Promise<void> {
+    const { now, windowStart } = windowOf(rule);
+    if ((await bump(ctx, rule, key, windowStart)) > rule.limit * scale(ctx)) throw limited(rule, now, windowStart);
+}
+
+/**
+ * Rules that count FAILURES only (2.50, the migration code): 429 when `key` already failed
+ * `rule.limit` times in this window, without counting this request (countFailure does).
+ */
+export async function assertUnderLimit(ctx: Ctx, rule: RateRule, key: string): Promise<void> {
+    const { now, windowStart } = windowOf(rule);
+    const row = await ctx.env.DB.prepare("SELECT count FROM rate_limits WHERE bucket = ?1 AND window_start = ?2")
+        .bind(await bucketOf(ctx, rule, key), windowStart)
+        .first<{ count: number }>();
+    if (row && row.count >= rule.limit * scale(ctx)) throw limited(rule, now, windowStart);
+}
+
+/** One failure of `key` for a rule checked with assertUnderLimit. */
+export async function countFailure(ctx: Ctx, rule: RateRule, key: string): Promise<void> {
+    await bump(ctx, rule, key, windowOf(rule).windowStart);
 }

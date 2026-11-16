@@ -28,7 +28,8 @@ export const ADMIN_ACTIONS = {
     // 2.46: ADMINISTRATION › Ennemis (enemyRevisions.ts): a native entity published as a revision.
     enemy: ["admin_enemy_published"],
     // 2.47: ADMINISTRATION › Joueurs: the computer an account is bound to (devices.ts).
-    account: ["admin_device_unbound", "admin_device_bound"],
+    // 2.50: an account's data migrated to another one, by an admin or by the player with a code (accountMigration.ts).
+    account: ["admin_device_unbound", "admin_device_bound", "admin_account_migrated", "account_migrated"],
     // Backups (ADMINISTRATION › Sauvegardes, backups.ts): copies, downloads, imports. Never a passphrase.
     backup: [
         "backup_created",
@@ -79,6 +80,8 @@ function adminPlayerJson(p: AdminPlayerRow) {
         country_code: visibleCountry(p),
         role: (p.role ?? "player") as Role,
         account_status: p.account_status,
+        // 2.50: closed after a migration of its data to another account.
+        closed_at: p.closed_at ?? null,
         created_at: p.created_at,
         last_seen_at: presenceHidden ? null : p.last_seen_at,
         presence: presenceHidden ? "hidden" : presenceOf(p),
@@ -308,7 +311,30 @@ function enemyOfDetails(d: Record<string, unknown>) {
 }
 
 /**
- * GET /admin/log?kind=all|role|challenge|refused|backup|campaign|creation|enemy&actor=<player id>&limit=&offset=
+ * What the Journal shows of a migration of an account's data to another one (2.50): both
+ * accounts, the mode, what was migrated, whether the old account was closed, the backup made
+ * before (an admin's migration), a progression to restore. Only the keys the server writes.
+ */
+function migrationOfDetails(d: Record<string, unknown>) {
+    const m = d.migration;
+    if (!isObject(m) || typeof m.id !== "string") return null;
+    const who = (o: unknown) =>
+        isObject(o) && typeof o.id === "string" ? { id: o.id, username: typeof o.username === "string" ? o.username : null } : null;
+    return {
+        id: m.id,
+        from: who(m.from),
+        to: who(m.to),
+        mode: typeof m.mode === "string" ? m.mode : null,
+        items: Array.isArray(m.items) ? m.items.filter((i): i is string => typeof i === "string") : [],
+        close_source: m.close_source === true,
+        restore: m.restore === true,
+        backup_id: typeof m.backup_id === "string" ? m.backup_id : null,
+        by_admin: m.by_admin === true,
+    };
+}
+
+/**
+ * GET /admin/log?kind=all|role|challenge|refused|backup|campaign|creation|enemy|account&actor=<player id>&limit=&offset=
  * The administration's own actions, newest first: who (the admin's current username, or the
  * one written at the time when the account is gone), what, when. Never the IP hash.
  */
@@ -360,6 +386,8 @@ export async function listLog(ctx: Ctx): Promise<Response> {
             enemy: enemyOfDetails(d),
             // A creation (ADMINISTRATION › Créations): created, edited, archived, restored or refused.
             creation: creationOfDetails(d),
+            // 2.50: a migration of an account's data to another one.
+            migration: migrationOfDetails(d),
         };
     });
     return json(ctx, { entries, has_more: rows.results.length > page.limit, offset: page.offset });

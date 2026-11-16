@@ -95,6 +95,13 @@ date), sinon des métadonnées posées par le serveur, sinon calculé en relisan
 restée `running` plus de 6 heures devient `failed`. La tâche ne fait ni copie ni rétention
 pendant un import.
 
+**Avant une migration de compte par un admin** (2.50, [DEVICES.md](DEVICES.md#migrer-vers-un-nouveau-compte-250)) :
+`POST /admin/players/{id}/migrate` fait d'abord une copie complète (`manual`, au nom de l'admin,
+Journal `backup_created` avec `reason: "migration"`), terminée avant que rien ne change ; sans
+elle, rien n'est migré. En mode « replace », les replays du compte cible qui disparaissent sont
+rangés sous `backups/<id>/objects/` de cette copie (comme un import range ce qu'il remplace) :
+son téléchargement les contient encore.
+
 ## 3. API (compte admin)
 
 Toutes les routes sont sous `/api/v1/admin/backups`. Le rôle admin de la **session** est

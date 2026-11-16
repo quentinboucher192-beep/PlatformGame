@@ -27,7 +27,7 @@ export const NOTIFICATION_KINDS = [
     "challenge_featured", // one of my community levels is a challenge: of the day (2.32), of the week or of the month (2.33)
     "record_beaten", //     my world record (first place of a campaign leaderboard) was beaten (2.30.2)
     "challenge_reward", //  rewards won at a challenge, once its period is over (2.43)
-    "security", //          2.47: the account and its computer (login refused elsewhere, bound, unbound by an admin)
+    "security", //          2.47: the account and its computer (login refused elsewhere, bound, unbound by an admin); 2.50: migrations
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
@@ -182,6 +182,21 @@ function securitySentence(d: Record<string, string>, count: number): string {
             return "Un admin a délié votre compte de son ordinateur : la prochaine connexion, depuis n'importe quel ordinateur, le liera de nouveau.";
         case "admin_bound":
             return "Un admin a lié votre compte à un nouvel ordinateur.";
+        // 2.50: « Migrer vers un nouveau compte » (accountMigration.ts).
+        case "migration_in": {
+            const from = d.from_username ?? "votre ancien compte";
+            return d.action === "progress_restore"
+                ? `Les données de ${from} ont été migrées sur votre compte : restaurez la progression de son ordinateur.`
+                : `Les données de ${from} ont été migrées sur votre compte.`;
+        }
+        case "migration_out":
+            return (d as Record<string, unknown>).closed === true
+                ? `Les données de ce compte ont été migrées sur le compte ${d.to_username ?? ""} : ce compte est fermé.`
+                : `Les données de ce compte ont été migrées sur le compte ${d.to_username ?? ""}.`;
+        case "migration_refused":
+            return count > 1
+                ? `${count} demandes de migration de ce compte refusées (code faux ou expiré) : quelqu'un connaît votre mot de passe.`
+                : "Demande de migration de ce compte refusée (code faux ou expiré) : quelqu'un connaît votre mot de passe.";
         default:
             return "Alerte de sécurité sur votre compte.";
     }

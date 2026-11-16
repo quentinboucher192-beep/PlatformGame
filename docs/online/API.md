@@ -141,7 +141,7 @@ de `wrangler.jsonc`, plafonnée à 1 000) multiplie toutes les limites.
 | `profile_write` | 20 | 5 min | joueur | `PATCH /players/me`, `PUT /players/me/avatar` (compteur partagé) |
 | `friend_request` | 30 | 1 h | joueur | `POST /friends/request` |
 | `presence` | 6 | 1 min | joueur | `POST /presence` |
-| `admin_write` | 60 | 5 min | admin | `POST /admin/players/{playerId}/role` (2.40), `PUT` / `DELETE /admin/challenges/{challengeId}` (2.41, calendrier des défis : voir CHALLENGES_PERIODS.md §7), `PUT /admin/challenges/{challengeId}/rewards` et `POST /admin/titles` (2.43, §8), `POST /admin/campaign/{levelId}/revisions` et `…/revert` (2.45, [CAMPAIGN_REVISIONS.md](CAMPAIGN_REVISIONS.md)) |
+| `admin_write` | 60 | 5 min | admin | `POST /admin/players/{playerId}/role` (2.40), `PUT` / `DELETE /admin/challenges/{challengeId}` (2.41, calendrier des défis : voir CHALLENGES_PERIODS.md §7), `PUT /admin/challenges/{challengeId}/rewards` et `POST /admin/titles` (2.43, §8), `POST /admin/campaign/{levelId}/revisions` et `…/revert` (2.45, [CAMPAIGN_REVISIONS.md](CAMPAIGN_REVISIONS.md)), `POST /admin/players/{playerId}/migrate` (2.50, qui compte aussi dans `backup_create` : il fait une sauvegarde complète) |
 | *(salle du joueur, en mémoire)* | 25 | 10 s | joueur | `POST /spectate/broadcast` (2.36, compté par la salle `SpectateRoom`, pas dans D1) |
 | `account_delete` | 5 | 1 h | joueur | `DELETE /players/me` |
 | `social_message` | 30 | 1 min | joueur | `POST /social/conversations/{id}/messages` |
@@ -165,6 +165,10 @@ de `wrangler.jsonc`, plafonnée à 1 000) multiplie toutes les limites.
 | `project_join` | 20 | 1 h | joueur | `POST /projects/join`, `POST /projects/{id}/join` |
 | `project_save` | 120 | 1 h | joueur | `PUT /projects/{id}/content` |
 | `challenge_submit` | 30 | 1 min | joueur | `POST /challenges/{challengeId}/runs`, `POST /challenges/{challengeId}/attempts` (compteur partagé ; leurs replays comptent dans `replay_upload`) |
+| `migration_code` | 10 | 1 h | joueur | `POST /players/me/migration` (2.50, code de migration) |
+| `migration_fail_target` | 5 échecs | 10 min | joueur (nouveau compte) | `POST /players/me/migrate-from` : seuls les échecs comptent ; au-delà, `429` même avec les bons identifiants |
+| `migration_fail_source` | 5 échecs | 10 min | pseudonyme (ancien compte) | `POST /players/me/migrate-from` (idem, quel que soit le compte qui essaie) |
+| `progress_restore` | 30 | 1 h | joueur | `POST /players/me/progress-restore` |
 | `reads` | 300 | 1 min | IP | toute requête `GET` non servie par le cache |
 
 `POST /auth/logout`, `POST /friends/accept`, `DELETE /friends/{playerId}` et les `POST`
@@ -201,6 +205,8 @@ prévu est coupé et refusé (`413 PAYLOAD_TOO_LARGE`). Un `Content-Length` inva
 | 401 | `SESSION_REVOKED` | Jeton de renouvellement réutilisé après la grâce, ou session révoquée entre-temps |
 | 401 | `SESSION_EXPIRED` | Jeton de renouvellement expiré : se reconnecter |
 | 403 | `ACCOUNT_SUSPENDED` | Compte suspendu |
+| 403 | `ACCOUNT_CLOSED` | (2.50) Connexion, avec le bon mot de passe, à un compte fermé après la migration de ses données vers un autre compte |
+| 403 | `MIGRATION_INVALID` | (2.50) `POST /players/me/migrate-from` : pseudonyme, mot de passe ou code de migration incorrect, ou code expiré ou déjà utilisé (une seule réponse pour tous les cas) |
 | 403 | `PROFILE_PRIVATE` | Profil privé (historique, statistiques, replay ou commentaires des courses d'un autre joueur) |
 | 403 | `NOT_OWNER` | Envoi d'un replay pour le record (ou la partie de défi) d'un autre joueur |
 | 403 | `RANKING_DISABLED` | Classement désactivé pour ce niveau |
@@ -220,8 +226,11 @@ prévu est coupé et refusé (`413 PAYLOAD_TOO_LARGE`). Un `Content-Length` inva
 | 404 | `AVATAR_NOT_FOUND` | Pas d'avatar personnalisé |
 | 404 | `REQUEST_NOT_FOUND` | Aucune demande d'ami de ce joueur |
 | 404 | `FRIEND_NOT_FOUND` | Aucun lien d'amitié avec ce joueur |
+| 404 | `RESTORE_NOT_FOUND` | (2.50) Aucune progression à restaurer (ou son fichier absent) |
 | 405 | `METHOD_NOT_ALLOWED` | Méthode non autorisée sur cette route |
-| 409 | `USERNAME_TAKEN` | Pseudonyme déjà utilisé (sans tenir compte de la casse) |
+| 409 | `USERNAME_TAKEN` | Pseudonyme déjà utilisé (sans tenir compte de la casse), ou celui d'un compte fermé par une migration il y a moins de 30 jours |
+| 409 | `SAME_ACCOUNT` | (2.50) Migration d'un compte vers lui-même |
+| 409 | `LAST_ADMIN` | (2.50) Migration qui fermerait le dernier compte admin |
 | 409 | `LEVEL_VERSION_MISMATCH` | `level_version` / `level_hash` inconnus du serveur ; `details.current_version` |
 | 409 | `LEVEL_VERSION_PENDING` | révision plus récente que toutes celles du serveur (jeu mis à jour avant l'enregistrement des niveaux) : le jeu garde la performance et la renvoie plus tard |
 | 409 | `LEVEL_VERSION_RETIRED` | Révision plus classée (legacy) ; `details.current_version` |
@@ -1621,6 +1630,34 @@ révision suivante de chaque niveau de la campagne qui l'utilise, chacun avec `r
 Détails et routes : [DEVICES.md](DEVICES.md). `device: { id, name }` à l'inscription et à la
 connexion (`403 ACCOUNT_BOUND_ELSEWHERE`, `409 DEVICE_BOUND`, `426` sans), `GET/PATCH
 /players/me/device`, `GET/PUT /players/me/progress-copy`, `GET/POST /admin/players/{id}/device`.
+
+### 8.10 quinquies Migrer vers un nouveau compte (2.50)
+
+Détails (règles de fusion, fermeture de l'ancien compte, sauvegarde avant une migration admin) :
+[DEVICES.md](DEVICES.md#migrer-vers-un-nouveau-compte-250). Le joueur est toujours celui de la
+session ; l'ancien compte n'est reconnu que par son mot de passe ET son code.
+
+| Méthode | Route | Corps / réponse |
+|---|---|---|
+| POST | `/players/me/migration` | ancien ordinateur, ancien compte → `201 { code: "K8R-4TZ-9QW", expires_at }` : 9 caractères sans `0 O 1 I L`, 24 h, une fois ; remplace le code précédent ; stocké haché seulement |
+| GET | `/players/me/migration` | `{ active, expires_at \| null }` (jamais le code) |
+| DELETE | `/players/me/migration` | annule le code actif → `{ cancelled, active: false }` |
+| POST | `/players/me/migrate-from` | nouvel ordinateur, nouveau compte : `{ username, password, code }` de l'ancien compte (casse, espaces et tirets du code ignorés) → `{ migration: { id, mode: "merge", items, close_source: true, source: { id, username, closed }, target: { id, username }, restore, files, backup_id: null }, counts }` ; `403 MIGRATION_INVALID` (tout échec), `409 SAME_ACCOUNT`, `409 LAST_ADMIN`, `429` (5 échecs / 10 min par compte) |
+| GET | `/players/me/progress-restore` | `{ restore: { from_username, created_at, postponed_at, copy: { created_at, game_version, size, device_name, summary } } \| null }` |
+| GET | `/players/me/progress-restore/file` | la copie telle que l'ancien ordinateur l'a envoyée (`application/json`, hors enveloppe : `{ format, game_version, player_id, created_at, summary, files }`), `x-progress-sha256` ; `404 RESTORE_NOT_FOUND` |
+| POST | `/players/me/progress-restore` | `{ action: "done" \| "later" }` → `{ restore }` (`null` après `done` : oubliée, fichier supprimé) ; `404 RESTORE_NOT_FOUND` |
+| GET | `/admin/players/{id}/migration?to=<pseudonyme>` | aperçu (admin) : `{ source: { id, username, role, account_status, closed_at, device, counts }, target_found, target \| null, shared: { bests, bests_source_better, playtime_levels, rewards, achievements_new } \| null, copy \| null, problems, items, modes, confirm: "MIGRER" }` |
+| POST | `/admin/players/{id}/migrate` | (admin) `{ to_username, mode: "merge" \| "replace", items: [records, achievements, rewards, playtime, levels, progress], close_source?, confirm: "MIGRER" }` → sauvegarde complète, puis `{ migration, backup: { id, created_at, finished_at, rows, files }, counts: { source, target } }` ; `400 CONFIRMATION_REQUIRED`, `404 TARGET_NOT_FOUND`, `409 SAME_ACCOUNT` / `SOURCE_INACTIVE` / `TARGET_INACTIVE` / `OWN_ACCOUNT` / `LAST_ADMIN` / `IMPORT_IN_PROGRESS` / `MIGRATION_CONFLICT`, `500 BACKUP_FAILED` |
+
+`counts` : `{ records: { records, verified, bests, replays, community_records, race_runs,
+challenge_runs, challenge_attempts }, achievements: { count, stars, badges }, rewards: { won,
+titles, creations, items, look }, playtime: { seconds, levels, boss_stats }, levels: { published,
+total, projects } }` (`boss_stats` : le nombre de la dernière copie de la progression, `null`
+sans copie). Notifications `security` : `data.reason` `migration_in` (avec `from_username` et,
+s'il y a une progression à restaurer, `action: "progress_restore"`), `migration_out`
+(`to_username`, `closed`), `migration_refused` (bon mot de passe, mauvais code). Les copies de
+la progression (`GET /players/me/progress-copy`, `GET /admin/players/{id}/device`) donnent
+aussi `device_name` (2.50, `null` avant).
 
 ## Annexe — format du replay (CPRZ / CPRP v1)
 

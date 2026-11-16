@@ -4,8 +4,9 @@
 import * as admin from "./admin";
 import * as adminChallenges from "./adminChallenges";
 import * as adminRoles from "./adminRoles";
+import * as migration from "./accountMigration";
 import * as backups from "./backups";
-import { login, logout, me, optionalAuth, refresh, register, usernameAvailable, type AuthInfo } from "./auth";
+import { login, logout, me, optionalAuth, refresh, register, releaseClosedUsernames, usernameAvailable, type AuthInfo } from "./auth";
 import * as friends from "./friends";
 import * as globe from "./globe";
 import { ApiError, errorResponse, json, log, type Bindings, type Ctx } from "./http";
@@ -119,6 +120,15 @@ route("GET", `${V}/players/me/device`, (ctx) => devices.myDevice(ctx));
 route("PATCH", `${V}/players/me/device`, (ctx) => devices.renameDevice(ctx));
 route("GET", `${V}/players/me/progress-copy`, (ctx) => devices.getProgressCopy(ctx));
 route("PUT", `${V}/players/me/progress-copy`, (ctx) => devices.putProgressCopy(ctx));
+// 2.50: « Migrer vers un nouveau compte » (accountMigration.ts): the code made on the old computer,
+// the migration asked from the new one, the old computer's progression to restore.
+route("POST", `${V}/players/me/migration`, (ctx) => migration.createCode(ctx));
+route("GET", `${V}/players/me/migration`, (ctx) => migration.getCode(ctx));
+route("DELETE", `${V}/players/me/migration`, (ctx) => migration.cancelCode(ctx));
+route("POST", `${V}/players/me/migrate-from`, (ctx) => migration.migrateFrom(ctx));
+route("GET", `${V}/players/me/progress-restore`, (ctx) => migration.getRestore(ctx));
+route("GET", `${V}/players/me/progress-restore/file`, (ctx) => migration.getRestoreFile(ctx));
+route("POST", `${V}/players/me/progress-restore`, (ctx) => migration.answerRestore(ctx));
 route("PUT", `${V}/players/me/cosmetics`, (ctx) => cosmetics.putCosmetics(ctx));
 route("GET", `${V}/players/me/rewards`, (ctx) => challenges.myRewards(ctx));
 route("PUT", `${V}/players/me/badges`, (ctx) => badges.putBadges(ctx));
@@ -357,6 +367,9 @@ route("POST", `${V}/admin/titles`, (ctx) => adminChallenges.createTitle(ctx));
 // ADMINISTRATION › Joueurs (2.47): the computer an account is bound to; unbind it, or bind it to a refused attempt's.
 route("GET", `${V}/admin/players/{playerId}/device`, (ctx) => devices.adminDevice(ctx));
 route("POST", `${V}/admin/players/{playerId}/device`, (ctx) => devices.adminSetDevice(ctx));
+// 2.50: ADMINISTRATION › Joueurs › « Migrer » : preview, then a full backup and the migration.
+route("GET", `${V}/admin/players/{playerId}/migration`, (ctx) => migration.adminPreview(ctx));
+route("POST", `${V}/admin/players/{playerId}/migrate`, (ctx) => migration.adminMigrate(ctx));
 route("GET", `${V}/admin/creations`, (ctx) => creations.listCreations(ctx));
 route("POST", `${V}/admin/creations`, (ctx) => creations.createCreation(ctx));
 route("PUT", `${V}/admin/creations/{creationId}`, (ctx) => creations.updateCreation(ctx));
@@ -464,6 +477,18 @@ async function maintenance(env: Bindings, exec: ExecutionContext): Promise<void>
         env.DB.prepare("DELETE FROM rate_limits WHERE window_start < ?1").bind(Math.floor(now / 1000) - 86400),
         env.DB.prepare("DELETE FROM audit_log WHERE created_at < ?1").bind(iso(now - 180 * 86400000)),
     ]);
+    // 2.50: expired migration codes; the usernames of accounts closed by a migration 30 days ago
+    // are free again (apart: the cleanup above never depends on that migration being applied).
+    let migrations: number[] | null = null;
+    try {
+        const r = await env.DB.batch([
+            env.DB.prepare("DELETE FROM account_migration_codes WHERE expires_at < ?1").bind(iso(now)),
+            releaseClosedUsernames(env.DB),
+        ]);
+        migrations = r.map((x) => x.meta.changes);
+    } catch (e) {
+        log("error", "migration_maintenance_failed", { error: e instanceof Error ? e.message : String(e) });
+    }
     const rechecked = await recheckHeldRecords(env, exec);
     let challengeRuns: number | null = null;
     let rewardsWon: number | null = null;
@@ -476,6 +501,8 @@ async function maintenance(env: Bindings, exec: ExecutionContext): Promise<void>
     }
     log("info", "maintenance", {
         deleted: results.map((r) => r.meta.changes),
+        // 2.50: [expired migration codes, usernames freed]
+        migrations,
         rechecked,
         challenge_runs_rechecked: challengeRuns,
         challenge_rewards_won: rewardsWon,
