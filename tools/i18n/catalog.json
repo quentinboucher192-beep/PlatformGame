@@ -3108,6 +3108,12 @@
    ]
   },
   {
+   "fr": "Badges du profil : dès 100 étoiles, choisissez 2 succès à afficher sur votre profil Cosmic Online (3 dès 250 étoiles), dans Collection › Vestiaire › Badges du profil.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Badges verrouillés",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -5138,6 +5144,12 @@
    "fr": "Changer les réglages",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Chaque badge est l'emblème du succès (couleur de sa catégorie, ses étoiles) ; au survol ou au focus, une bulle donne son nom.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -16273,6 +16285,12 @@
    "fr": "Le serveur recalcule chaque score depuis le replay de la tentative ; les tentatives refusées ne sont pas classées.",
    "where": [
     "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le serveur vérifie lui-même les succès et les étoiles ; sans compte, le choix reste sur l'ordinateur et est publié à la connexion. Un ordinateur où rien n'a été choisi reprend les badges déjà publiés au lieu de les effacer.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {

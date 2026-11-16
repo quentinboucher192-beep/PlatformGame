@@ -246,6 +246,7 @@ Json CollectionBook::toJson() const {
     j["met"] = met;
     j["exported"] = exported;
     j["badges"] = badges;
+    j["badges_chosen"] = badgesChosen;
     return j;
 }
 
@@ -270,6 +271,8 @@ void CollectionBook::fromJson(const Json& j) {
             if (v.is_string() && v.get<std::string>().size() <= 64 && badges.size() < 10 &&
                 std::find(badges.begin(), badges.end(), v.get<std::string>()) == badges.end())
                 badges.push_back(v.get<std::string>());
+    // Saves of 2.41 betas without the flag: a non-empty choice was a choice.
+    badgesChosen = jget<bool>(j, "badges_chosen", !badges.empty());
 }
 
 }  // namespace cosmic

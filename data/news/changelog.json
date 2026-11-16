@@ -1,4 +1,9 @@
 {
+  "2.41.0": [
+    "Badges du profil : dès 100 étoiles, choisissez 2 succès à afficher sur votre profil Cosmic Online (3 dès 250 étoiles), dans Collection › Vestiaire › Badges du profil.",
+    "Chaque badge est l'emblème du succès (couleur de sa catégorie, ses étoiles) ; au survol ou au focus, une bulle donne son nom.",
+    "Le serveur vérifie lui-même les succès et les étoiles ; sans compte, le choix reste sur l'ordinateur et est publié à la connexion. Un ordinateur où rien n'a été choisi reprend les badges déjà publiés au lieu de les effacer."
+  ],
   "2.40.1": [
     "Classements : la catégorie SPEEDRUN est retirée. Elle reprenait les mêmes courses qu'ANY% et doublait les notifications de rang ; ses classements, meilleurs temps et notifications disparaissent (les replays restent rattachés aux autres catégories)."
   ],

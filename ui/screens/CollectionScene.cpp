@@ -122,6 +122,26 @@ public:
         routeEnd_ = o == "col-end";  // the route scrolled to its end
         g_.ui.setFocus("col/tab" + std::to_string(tab_));
         scan_ = std::async(std::launch::async, [&content = g_.content] { return scanCampaign(content); });
+        adoptPublishedBadges();
+    }
+
+    /// Nothing chosen on this computer yet: the badges already on the profile (chosen on
+    /// another computer) become this computer's choice, instead of being erased by it.
+    void adoptPublishedBadges() {
+        if (g_.collection.badgesChosen || !g_.online.usable() || !g_.online.loggedIn() || g_.online.playerId().empty()) return;
+        g_.online.get("/api/v1/players/" + g_.online.playerId(), OnlineService::guard(life_, [this](const ApiResult& r) {
+                          if (!r.ok || g_.collection.badgesChosen) return;
+                          const Json list = r.data.value("badges", Json());
+                          if (!list.is_array() || list.empty()) return;
+                          std::vector<std::string> ids;
+                          for (const auto& b : list)
+                              if (std::string id = jstr(b, "id"); !id.empty() && g_.achievementCatalog.find(id)) ids.push_back(id);
+                          if (ids.empty()) return;
+                          g_.collection.badges = std::move(ids);
+                          g_.collection.badgesChosen = true;
+                          g_.collection.save();
+                      }),
+                      false);
     }
     void onExit() override {
         // Back to the menu's music (the jukebox may have changed it).
@@ -774,6 +794,7 @@ private:
 
     void setBadges(std::vector<std::string> ids) {
         g_.collection.badges = std::move(ids);
+        g_.collection.badgesChosen = true;
         g_.collection.save();
         g_.syncBadges();
         g_.uiSound("ui_confirm", 0.6f);
@@ -1500,6 +1521,7 @@ private:
     GameServices& g_;
     int tab_ = 0;
     OnlineUi online_;
+    std::shared_ptr<int> life_ = std::make_shared<int>(0);
     std::string select_;  // the reward to show on arrival ("" = none)
     CosmeticProgress progress_;
     float t_ = 0.0f;

@@ -104,6 +104,8 @@ std::vector<std::string> GameServices::shownBadges() const { return cosmic::show
 
 void GameServices::syncBadges() {
     if (achievementCatalog.achievements().empty()) return;  // catalogue not loaded
+    // Never chosen on this computer: the profile keeps the badges chosen elsewhere.
+    if (!collection.badgesChosen) return;
     online.setBadges(shownBadges());
 }
 

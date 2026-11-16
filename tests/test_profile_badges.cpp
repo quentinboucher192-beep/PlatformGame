@@ -131,3 +131,21 @@ TEST_CASE("profile badges: the choice is kept in the Collection's save, damage i
     std::error_code ec;
     fs::remove(f, ec);
 }
+
+TEST_CASE("profile badges: a computer where nothing was chosen never sends (nor erases) the profile's badges") {
+    // Never chosen: nothing to publish (the profile keeps what another computer chose).
+    CollectionBook fresh;
+    fresh.fromJson(Json::object());
+    CHECK(!fresh.badgesChosen);
+    // « None » chosen on purpose is a choice, kept as such.
+    CollectionBook emptied;
+    emptied.badgesChosen = true;
+    CollectionBook back;
+    back.fromJson(emptied.toJson());
+    CHECK(back.badgesChosen);
+    CHECK(back.badges.empty());
+    // Saves written before the flag: a non-empty list was a choice.
+    CollectionBook old;
+    old.fromJson(Json{{"badges", Json::array({"voyage_5"})}});
+    CHECK(old.badgesChosen);
+}

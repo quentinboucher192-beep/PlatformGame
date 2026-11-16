@@ -146,6 +146,9 @@ public:
     // (shownBadges() keeps those still unlocked, as many as the stars open). Kept here even
     // without an account: published once the player is connected.
     std::vector<std::string> badges;
+    /// The player chose badges on this computer (even « none »): only then is the choice sent,
+    /// so a computer where nothing was chosen never erases the badges chosen on another one.
+    bool badgesChosen = false;
 
     Json toJson() const;
     void fromJson(const Json& j);
