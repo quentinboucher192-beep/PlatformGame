@@ -5,6 +5,10 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.37.0** :
+* **Fiche de chaque boss** (Statistiques des boss) : PV, phases, attaques, faiblesses, limite de
+  temps, et une difficulté de 1 à 10 étoiles calculée d'après ses données.
+
 **Nouveau dans la version 2.36.0** :
 * **Regarder un ami jouer** : « Regarder » dans SOCIAL › Amis rejoue en direct la partie d'un
   ami (amis acceptés seulement, sans notification ; réglage « Mes amis peuvent me regarder jouer »).

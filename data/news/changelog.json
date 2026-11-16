@@ -1,4 +1,9 @@
 {
+  "2.37.0": [
+    "Statistiques des boss : un sous-onglet « Fiche » pour chaque boss, lu dans ses données — points de vie, phases (à quel pourcentage de ses PV chacune commence, son rythme, ses attaques), chaque attaque (type, dégâts, annonce, recharge), vitesse, faiblesses, limite de temps et dernier souffle.",
+    "Difficulté de chaque boss de 1 à 10 étoiles, calculée d'après ses PV, ses phases et ses attaques (Singularis : 10/10).",
+    "Statistiques des boss : la liste des phases défile quand un boss en a beaucoup."
+  ],
   "2.36.0": [
     "Regarder un ami jouer : dans SOCIAL › Amis, « Regarder » apparaît à côté d'un ami en partie ; sa partie est rejouée en direct (à environ une seconde), avec sa caméra et son HUD. Seuls les amis acceptés peuvent regarder, et le joueur regardé n'en est jamais prévenu.",
     "Nouveau réglage dans les paramètres en ligne : « Mes amis peuvent me regarder jouer » (activé par défaut). Le décocher, masquer sa présence ou bloquer un joueur arrête aussitôt toute diffusion ; rien de la partie n'est conservé par le serveur."

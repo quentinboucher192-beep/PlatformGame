@@ -409,8 +409,10 @@ private:
             y += rowH;
             if (row.bottom() < view.y || row.y > view.bottom()) continue;
             ui.r().fillRoundedRect(row, ui.s(6), i % 2 ? Color{12, 18, 38, 160} : Color{16, 24, 48, 200});
-            // The value first (as whole as it can be), the label in the room left.
-            float vroom = row.w * 0.62f;
+            // The value first (as whole as it can be: all the room the label leaves), the label
+            // in the room left.
+            float lw0 = ui.text().measure(facts[i].label, FontFace::Body, ui.s(fz(ui, 16))).x;
+            float vroom = std::max(row.w * 0.5f, row.w - ui.s(36) - lw0);
             float vf = fit(ui, facts[i].value, FontFace::Bold, 17, vroom, 0.7f);
             std::string value = ui.elide(facts[i].value, FontFace::Bold, vf, vroom);
             float vw = ui.text().measure(value, FontFace::Bold, ui.s(vf)).x;

@@ -1541,6 +1541,12 @@
    ]
   },
   {
+   "fr": "Appelle des renforts",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "Appliquer",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -1919,7 +1925,8 @@
   {
    "fr": "Attaques",
    "where": [
-    "editors/enemy_editor/EnemyEditorProperties.cpp"
+    "editors/enemy_editor/EnemyEditorProperties.cpp",
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -2480,7 +2487,8 @@
    "where": [
     "data/cosmetics/cosmetics.json",
     "game/enemies/EnemyDefinition.cpp",
-    "game/levels/LevelData.cpp"
+    "game/levels/LevelData.cpp",
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -3969,6 +3977,12 @@
    ]
   },
   {
+   "fr": "calculée d'après ses PV, ses phases et ses attaques",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "calcul…",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
@@ -4133,6 +4147,7 @@
   {
    "fr": "Caractéristiques",
    "where": [
+    "ui/screens/BossStatsScene.cpp",
     "ui/screens/PowerGuideScene.cpp"
    ]
   },
@@ -8154,6 +8169,12 @@
    ]
   },
   {
+   "fr": "Dernier souffle",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "Dernière ascension",
    "where": [
     "data/levels/sylvanox_01.json"
@@ -8373,6 +8394,12 @@
    ]
   },
   {
+   "fr": "Difficulté",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "difficulté",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -8407,6 +8434,12 @@
    "fr": "Difficulté calculée par le jeu : {0}",
    "where": [
     "ui/screens/OnlineThreadScene.cpp"
+   ]
+  },
+  {
+   "fr": "Difficulté de chaque boss de 1 à 10 étoiles, calculée d'après ses PV, ses phases et ses attaques (Singularis : 10/10).",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -8901,6 +8934,12 @@
    "fr": "durée · écart cumulé",
    "where": [
     "ui/screens/SegmentsScene.cpp"
+   ]
+  },
+  {
+   "fr": "dès le début",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -9446,6 +9485,12 @@
    ]
   },
   {
+   "fr": "Dégâts au contact",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "dégâts aux boss différents du replay",
    "where": [
     "server/src/race.ts"
@@ -9613,6 +9658,7 @@
    "fr": "Déplacement",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
+    "ui/screens/BossStatsScene.cpp",
     "ui/screens/CreatureArt.cpp"
    ]
   },
@@ -10079,6 +10125,12 @@
    ]
   },
   {
+   "fr": "En vol",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "En {0} ou moins",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -10138,6 +10190,12 @@
    "fr": "en-tête PNG invalide",
    "where": [
     "server/src/players.ts"
+   ]
+  },
+  {
+   "fr": "Enchaîne {0} attaques",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -10895,6 +10953,12 @@
    ]
   },
   {
+   "fr": "Faiblesses",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "Faire apparaître l'ennemi",
    "where": [
     "game/levels/EventSystem.cpp"
@@ -11153,6 +11217,12 @@
    "where": [
     "data/enemies/echo_ignivore.json",
     "data/enemies/ignivore.json"
+   ]
+  },
+  {
+   "fr": "Fiche",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -16744,6 +16814,12 @@
    ]
   },
   {
+   "fr": "Limite de temps",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "Limiter à la zone",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -17769,6 +17845,12 @@
    "where": [
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Mes statistiques",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -21679,6 +21761,12 @@
    ]
   },
   {
+   "fr": "Phase unique",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "Phase {0}",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
@@ -21709,6 +21797,12 @@
    "fr": "phases",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Phases et attaques",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -22528,7 +22622,8 @@
    "fr": "Points de vie",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
-    "editors/level_editor/LevelEditorDialogs.cpp"
+    "editors/level_editor/LevelEditorDialogs.cpp",
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -24082,6 +24177,12 @@
    "fr": "Rage : l'arène se resserre encore",
    "where": [
     "data/levels/noyau_03.json"
+   ]
+  },
+  {
+   "fr": "Rage après {0} s",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -26215,7 +26316,14 @@
   {
    "fr": "Résistance au recul",
    "where": [
-    "editors/enemy_editor/EnemyEditorProperties.cpp"
+    "editors/enemy_editor/EnemyEditorProperties.cpp",
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Résistances",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -28236,7 +28344,19 @@
    ]
   },
   {
+   "fr": "Statistiques des boss : la liste des phases défile quand un boss en a beaucoup.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Statistiques des boss : le boss choisi s'anime avec ses vraies animations (repos, déplacement, chaque attaque et sa préparation, invocation, rugissement, blessure, défaite), une à la suite de l'autre ; activez l'image pour passer à la suivante. Avant de l'avoir battu, une silhouette.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Statistiques des boss : un sous-onglet « Fiche » pour chaque boss, lu dans ses données — points de vie, phases (à quel pourcentage de ses PV chacune commence, son rythme, ses attaques), chaque attaque (type, dégâts, annonce, recharge), vitesse, faiblesses, limite de temps et dernier souffle.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -32696,7 +32816,8 @@
    "fr": "Vitesse",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
-    "game/powers/PowerStats.cpp"
+    "game/powers/PowerStats.cpp",
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -32794,6 +32915,12 @@
    "fr": "Vitesse {0}",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vitesse {0}  ·  Recharge {1}  ·  Annonces {2}",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -33887,9 +34014,21 @@
    ]
   },
   {
+   "fr": "{0}  ({1} en poursuite)",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0}  ·  A : {1}  ·  B : {2}  ·  {3}",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0}  ·  Dégâts {1}  ·  Annonce {2} s  ·  Recharge {3} s",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -34374,6 +34513,18 @@
    "fr": "{0} abonnés  ·  depuis {1}",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} attaque à survivre",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} attaques à survivre",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -35042,6 +35193,12 @@
    ]
   },
   {
+   "fr": "{0} projectiles",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} record sur le globe",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
@@ -35111,6 +35268,18 @@
    "fr": "{0} réponses à votre commentaire sur {1}",
    "where": [
     "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "{0} s (phase {1})",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} salves",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -35452,6 +35621,12 @@
    ]
   },
   {
+   "fr": "{0}. Phase {1}",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0}. Phase {1} · {2} % de vie",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
@@ -35638,6 +35813,12 @@
    ]
   },
   {
+   "fr": "à 0 PV, invincible",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "À choisir dans la liste",
    "where": [
     "ui/screens/ReplayCompareSetupScene.cpp"
@@ -35725,6 +35906,12 @@
    "fr": "À sa mort",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "à {0} % des PV",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {

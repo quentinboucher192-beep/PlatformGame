@@ -99,3 +99,4 @@ challenges
 false
 angle
 stream
+%.*f

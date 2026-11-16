@@ -25,7 +25,8 @@ TEST_CASE("boss difficulty: every boss of the game from 1 to 10 stars, Singulari
         stars[d->id] = b.stars;
     }
     CHECK(bosses >= 18);
-    REQUIRE(stars.count("singularis"));
+    CHECK(stars.count("singularis"));
+    if (!(stars.count("singularis"))) return;
     CHECK(stars["singularis"] == 10);
     // Singularis is the only one at 10, and every other guardian is below it.
     for (const auto& [id, s] : stars)
@@ -47,7 +48,8 @@ TEST_CASE("boss difficulty: more health or shorter wind-ups never make a boss ea
     ContentDatabase content;
     content.reload();
     const EnemyDefinition* base = content.enemy("astrarque");
-    REQUIRE(base != nullptr);
+    CHECK(base != nullptr);
+    if (!(base != nullptr)) return;
     BossDifficulty ref = bossDifficulty(*base);
     EnemyDefinition tougher = *base;
     tougher.hp *= 2.0f;
