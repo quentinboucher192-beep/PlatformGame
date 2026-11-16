@@ -1634,6 +1634,12 @@
    ]
   },
   {
+   "fr": "ancienne",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "anciennes couleurs {0}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -16967,6 +16973,12 @@
    "fr": "inconnu de cette version du jeu",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "inconnue",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -40269,6 +40281,24 @@
    ]
   },
   {
+   "fr": "Version du jeu",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Version du jeu : inconnue (aucune connexion depuis la version 2.51).",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Version du jeu installée : {0} (déclarée par son jeu {1})",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Version du jeu trop ancienne : mettez le jeu à jour.",
    "where": [
     "game/online/DailyChallenges.cpp"
@@ -44030,6 +44060,18 @@
    ]
   },
   {
+   "fr": "{0}, c'est la dernière publiée.",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0}, la dernière publiée est la {1}.",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "{0},{1} Mo",
    "where": [
     "ui/screens/DownloadedReplaysUi.cpp"
@@ -44405,6 +44447,12 @@
    "fr": "À jouer depuis la carte des planètes.",
    "where": [
     "game/progression/NewsCenter.cpp"
+   ]
+  },
+  {
+   "fr": "à jour",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {

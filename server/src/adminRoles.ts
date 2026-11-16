@@ -86,6 +86,9 @@ function adminPlayerJson(p: AdminPlayerRow) {
         last_seen_at: presenceHidden ? null : p.last_seen_at,
         presence: presenceHidden ? "hidden" : presenceOf(p),
         creations: p.creations ?? 0,
+        // 2.51: the game version its client declared last (null before 2.51 or never connected).
+        client_version: p.client_version ?? null,
+        client_version_at: p.client_version_at ?? null,
     };
 }
 
@@ -126,6 +129,9 @@ export async function listPlayers(ctx: Ctx): Promise<Response> {
             .first<{ n: number }>(),
         ctx.env.DB.prepare("SELECT COUNT(*) AS n, COALESCE(SUM(role = 'admin'), 0) AS a FROM players").first<{ n: number; a: number }>(),
     ]);
+    const latest = await ctx.env.DB.prepare(
+        "SELECT version FROM client_releases WHERE platform = 'windows' ORDER BY version_key DESC LIMIT 1",
+    ).first<{ version: string }>();
     const list = rows.results.slice(0, page.limit);
     return json(ctx, {
         players: list.map(adminPlayerJson),
@@ -134,6 +140,8 @@ export async function listPlayers(ctx: Ctx): Promise<Response> {
         admins_total: totals?.a ?? 0,
         has_more: rows.results.length > page.limit,
         offset: page.offset,
+        // 2.51: the latest published Windows installer, to compare each player's version with.
+        latest_client_version: latest?.version ?? null,
     });
 }
 

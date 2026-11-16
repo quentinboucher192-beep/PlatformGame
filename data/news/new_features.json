@@ -1554,6 +1554,13 @@
    "parents": [
     "gallery.tab.bosses"
    ]
+  },
+  {
+   "id": "admin.players.version",
+   "version": "2.51.0",
+   "parents": [
+    "menu.admin"
+   ]
   }
  ]
 }

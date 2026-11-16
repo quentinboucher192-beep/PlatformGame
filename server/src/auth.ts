@@ -78,6 +78,26 @@ function clientInfo(ctx: Ctx): string {
     return (ctx.request.headers.get("user-agent") ?? "").slice(0, 120);
 }
 
+const CLIENT_VERSION = /^CosmicPlatformer\/(\d{1,3}\.\d{1,3}\.\d{1,4})$/;
+
+/**
+ * 2.51: the game version the client declares (header X-Cosmic-Client, or its User-Agent),
+ * shown to administrators in the Joueurs tab. Declarative only: never used to allow anything.
+ */
+export function declaredClientVersion(ctx: Ctx): string | null {
+    for (const h of ["x-cosmic-client", "user-agent"]) {
+        const m = CLIENT_VERSION.exec((ctx.request.headers.get(h) ?? "").trim());
+        if (m && m[1]) return m[1];
+    }
+    return null;
+}
+
+function rememberClientVersion(ctx: Ctx, playerId: string, now: string): D1PreparedStatement | null {
+    const version = declaredClientVersion(ctx);
+    if (!version) return null;
+    return ctx.env.DB.prepare("UPDATE players SET client_version = ?1, client_version_at = ?2 WHERE id = ?3").bind(version, now, playerId);
+}
+
 export async function createSession(ctx: Ctx, playerId: string, deviceId: string | null = null): Promise<IssuedSession> {
     const t = await newTokens(ctx);
     const now = nowIso();
@@ -87,6 +107,8 @@ export async function createSession(ctx: Ctx, playerId: string, deviceId: string
     )
         .bind(crypto.randomUUID(), playerId, t.accessHash, t.refreshHash, now, t.accessExpires, t.refreshExpires, clientInfo(ctx), deviceId)
         .run();
+    const version = rememberClientVersion(ctx, playerId, now);
+    if (version) await version.run();
     return { access_token: t.access, access_expires_at: t.accessExpires, refresh_token: t.refresh, refresh_expires_at: t.refreshExpires };
 }
 
@@ -113,15 +135,18 @@ export async function optionalAuth(ctx: Ctx): Promise<AuthInfo | null> {
     if (Date.parse(row.session_expires) <= Date.now())
         throw Errors.unauthorized("TOKEN_EXPIRED", "Jeton expiré : utilisez le jeton de renouvellement.");
     if (row.account_status !== "active") throw Errors.forbidden("ACCOUNT_SUSPENDED", "Ce compte est suspendu.");
-    // Activity timestamps are refreshed at most every 5 minutes (fewer writes).
-    if (Date.now() - Date.parse(row.session_used) > 5 * 60 * 1000) {
+    // Activity timestamps are refreshed at most every 5 minutes (fewer writes); the declared
+    // game version right away when it changed (a new installer), otherwise with them.
+    const stale = Date.now() - Date.parse(row.session_used) > 5 * 60 * 1000;
+    const declared = declaredClientVersion(ctx);
+    const versionChanged = declared !== null && declared !== (row.client_version ?? null);
+    if (stale || versionChanged) {
         const now = nowIso();
-        ctx.exec.waitUntil(
-            ctx.env.DB.batch([
-                ctx.env.DB.prepare("UPDATE player_sessions SET last_used_at = ?1 WHERE id = ?2").bind(now, row.session_id),
-                ctx.env.DB.prepare("UPDATE players SET last_seen_at = ?1 WHERE id = ?2").bind(now, row.id),
-            ]),
-        );
+        const writes = [ctx.env.DB.prepare("UPDATE player_sessions SET last_used_at = ?1 WHERE id = ?2").bind(now, row.session_id)];
+        writes.push(ctx.env.DB.prepare("UPDATE players SET last_seen_at = ?1 WHERE id = ?2").bind(now, row.id));
+        const version = rememberClientVersion(ctx, row.id, now);
+        if (version) writes.push(version);
+        ctx.exec.waitUntil(ctx.env.DB.batch(writes));
     }
     const { session_id, session_expires: _e, session_used: _u, ...player } = row;
     return { player: player as PlayerRow, sessionId: session_id };
@@ -389,6 +414,8 @@ export async function refresh(ctx: Ctx): Promise<Response> {
         .bind(t.accessHash, t.refreshHash, hash, now, t.accessExpires, t.refreshExpires, s.id)
         .run();
     if (!res.meta.changes) throw Errors.unauthorized("SESSION_REVOKED", "Session révoquée.");
+    const version = rememberClientVersion(ctx, s.player_id, now);
+    if (version) await version.run();
     return json(ctx, {
         session: { access_token: t.access, access_expires_at: t.accessExpires, refresh_token: t.refresh, refresh_expires_at: t.refreshExpires },
     });
