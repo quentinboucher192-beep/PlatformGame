@@ -2287,6 +2287,17 @@
    "parents": [
     "stats.bosses"
    ]
+  },
+  {
+   "id": "menu.coop",
+   "version": "2.63.0"
+  },
+  {
+   "id": "coop",
+   "version": "2.63.0",
+   "parents": [
+    "menu.coop"
+   ]
   }
  ]
 }

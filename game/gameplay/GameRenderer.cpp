@@ -1,5 +1,6 @@
 #include "game/gameplay/GameRenderer.h"
 
+#include <algorithm>
 #include <cmath>
 
 #include "engine/resources/ResourceManager.h"
@@ -81,7 +82,10 @@ void GameRenderer::render(Renderer& r, ResourceManager& res, GameWorld& world, c
                 renderFrozenEnemy(ctx, *e);  // Nova de givre (2.19)
             }
         renderDecoy(ctx, world);  // Leurre holographique (2.19)
-        world.player().render(ctx);
+        if (world.coop())
+            drawTeam(ctx, world);  // 2.62: every player of the team, souls and ghosts
+        else
+            world.player().render(ctx);
         drawProjectiles(r, world, alpha, lights_, opt.threats);
         world.particles().render(r, true, view.visibleWorld());
     };
@@ -124,6 +128,55 @@ void GameRenderer::render(Renderer& r, ResourceManager& res, GameWorld& world, c
     if (f.a > 0) r.fillRect({0, 0, static_cast<float>(r.width()), static_cast<float>(r.height())}, f, BlendMode::Additive);
 
     if (opt.debug) drawDebug(r, world);
+}
+
+Color GameRenderer::teamColor(int i) const {
+    static const Color kDefault[3] = {{62, 230, 214, 255}, {255, 122, 184, 255}, {255, 210, 122, 255}};
+    if (i >= 0 && i < static_cast<int>(teamColors_.size())) return teamColors_[static_cast<size_t>(i)];
+    return kDefault[std::clamp(i, 0, 2)];
+}
+
+void GameRenderer::drawTeam(RenderContext& ctx, GameWorld& world) {
+    using Presence = GameWorld::Presence;
+    for (int i = 0; i < world.teamSize(); ++i) {
+        const GameWorld::TeamMember& m = world.member(i);
+        const Player& p = world.playerAt(i);
+        const Color c = teamColor(i);
+        if (m.presence == Presence::Playing) {
+            p.render(ctx);
+            continue;
+        }
+        if (m.presence == Presence::Down) {
+            // Its soul: a light of its colour, bobbing; the revival fills a ring around it.
+            const float bob = std::sin(ctx.time * 2.6f + static_cast<float>(i)) * 2.5f;
+            const Vec2 at = m.soul + Vec2{0.0f, -16.0f + bob};
+            const bool canRevive = world.revivesLeft() > 0;
+            const uint8_t a = canRevive ? 220 : 90;
+            ctx.r.drawWorldGlow(at, 16.0f, Color{c.r, c.g, c.b, static_cast<uint8_t>(a / 2)});
+            ctx.r.drawWorldGlow(at, 6.0f, Color{255, 255, 255, a});
+            ctx.lights.add(at, 60.0f, c);
+            if (canRevive) {
+                ctx.r.drawWorldCircle(at, 12.0f, Color{c.r, c.g, c.b, 90}, 1.0f);
+                const float k = std::clamp(m.revive / GameWorld::kReviveSeconds, 0.0f, 1.0f);
+                const int seg = static_cast<int>(24.0f * k);
+                for (int s = 0; s < seg; ++s) {
+                    const float a0 = -1.5707963f + 6.2831853f * static_cast<float>(s) / 24.0f;
+                    const float a1 = -1.5707963f + 6.2831853f * static_cast<float>(s + 1) / 24.0f;
+                    ctx.r.drawWorldLine(at + Vec2{std::cos(a0), std::sin(a0)} * 12.0f, at + Vec2{std::cos(a1), std::sin(a1)} * 12.0f,
+                                        Color{255, 222, 140, 255}, 2.0f);
+                }
+            }
+            continue;
+        }
+        if (m.presence == Presence::Standby && p.anim.set() && p.anim.set()->texture) {
+            // In standby: a grey ghost where it stopped, untouchable.
+            const Texture& tex = p.skin ? *p.skin : *p.anim.set()->texture;
+            const Rect src = p.anim.sourceRect();
+            const Rect dst = p.anim.destRect(p.box.bottomCenter(), p.facing < 0.0f);
+            const uint8_t pulse = static_cast<uint8_t>(70 + 30 * std::sin(ctx.time * 3.0f));
+            ctx.r.drawWorldTexture(tex, &src, dst, Color{150, 165, 200, pulse}, BlendMode::Alpha, p.facing < 0.0f);
+        }
+    }
 }
 
 void GameRenderer::drawAshVeil(Renderer& r, GameWorld& world, const WorldView& view, float alpha) {

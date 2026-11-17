@@ -72,10 +72,12 @@
   "animations/nova.json": {
    "editors/level_editor/LevelEditorViewport.cpp": 1,
    "game/gameplay/GameWorld.cpp": 1,
+   "game/gameplay/GameWorldTeam.cpp": 1,
    "packaging/DependencyCollector.cpp": 1,
    "ui/screens/AdminCreations.cpp": 1,
    "ui/screens/ChallengeRewardsUi.cpp": 1,
    "ui/screens/CollectionScene.cpp": 1,
+   "ui/screens/CoopLobbyScene.cpp": 1,
    "ui/screens/PlayerProfileScene.cpp": 1,
    "ui/screens/RewardsScene.cpp": 1,
    "ui/screens/TutorialScenes.cpp": 1,
@@ -462,6 +464,7 @@
   },
   "sounds/respawn.wav": {
    "game/gameplay/GameWorld.cpp": 3,
+   "game/gameplay/GameWorldTeam.cpp": 2,
    "game/levels/Cinematic.cpp": 1
   },
   "sounds/root_burst.wav": {
@@ -773,6 +776,7 @@
   },
   "ui/icons_hud.png": {
    "game/gameplay/Hud.cpp": 1,
+   "game/gameplay/HudTeam.cpp": 1,
    "packaging/DependencyCollector.cpp": 1,
    "ui/screens/BossStatsScene.cpp": 1,
    "ui/screens/PlanetMapScene.cpp": 2
@@ -785,6 +789,7 @@
   "ui/icons_powers.png": {
    "editors/level_editor/LevelEditorPowerKeys.cpp": 1,
    "game/gameplay/Hud.cpp": 1,
+   "game/gameplay/HudTeam.cpp": 1,
    "game/gameplay/entities/PlatformEntities.cpp": 1,
    "packaging/DependencyCollector.cpp": 2,
    "ui/screens/BossTrainingScene.cpp": 1,

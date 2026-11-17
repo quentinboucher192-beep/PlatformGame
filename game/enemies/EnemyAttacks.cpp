@@ -437,7 +437,7 @@ void Enemy::slam(GameWorld& w, const AttackDef& a) {
     d.type = DamageType::Explosion;
     d.source = base;
     d.knockback = a.knockback;
-    if (Rect::fromCenter(base, {box.w + 30, 24}).intersects(w.player().box)) w.damagePlayer(d);
+    w.hurtPlayersIn(Rect::fromCenter(base, {box.w + 30, 24}), d);  // 2.62: every player it reaches
 }
 
 void Enemy::performAttackStart(GameWorld& w) {
@@ -574,7 +574,6 @@ void Enemy::performAttackStart(GameWorld& w) {
 
 void Enemy::performAttackActive(GameWorld& w, float dt) {
     const AttackDef& a = *attack_;
-    Player& p = w.player();
     attackClock_ += dt;
     if (a.isGuardianType()) {
         guardianActive(w, dt);
@@ -636,11 +635,11 @@ void Enemy::performAttackActive(GameWorld& w, float dt) {
             vel.x = approach(vel.x, 0.0f, 900.0f * dt);
             Rect hit = Rect::fromCenter(box.center() + Vec2{facing * (box.w * 0.5f + a.range * 0.4f), 0},
                                         {a.range * 0.9f, box.h + 4});
-            if (!attackHit_ && hit.intersects(p.box)) attackHit_ = w.damagePlayer(d) || true;
+            if (!attackHit_ && w.playerIn(hit)) attackHit_ = w.hurtPlayersIn(hit, d) || true;
             break;
         }
         case AttackType::Lunge:
-            if (!attackHit_ && box.expanded(2).intersects(p.box)) attackHit_ = w.damagePlayer(d) || true;
+            if (!attackHit_ && w.playerIn(box.expanded(2))) attackHit_ = w.hurtPlayersIn(box.expanded(2), d) || true;
             if (!def_.flying) vel.x = approach(vel.x, 0.0f, 300.0f * dt);
             break;
         case AttackType::Charge: {
@@ -654,7 +653,7 @@ void Enemy::performAttackActive(GameWorld& w, float dt) {
                 break;
             }
             chargeDistance_ += sp * dt;
-            if (!attackHit_ && box.expanded(2).intersects(p.box)) attackHit_ = w.damagePlayer(d) || true;
+            if (!attackHit_ && w.playerIn(box.expanded(2))) attackHit_ = w.hurtPlayersIn(box.expanded(2), d) || true;
             hopTimer_ -= dt;  // reused as dust emission timer while charging
             if (hopTimer_ <= 0.0f && grounded_) {
                 hopTimer_ = 0.06f;
@@ -670,9 +669,10 @@ void Enemy::performAttackActive(GameWorld& w, float dt) {
             Vec2 origin = attackOrigin();
             Vec2 end = origin + Vec2::fromAngle(ang) * a.laserLength;
             if (auto t = w.physics().raycast(origin, end)) end = origin + (end - origin) * *t;
-            if (laserHitTimer_ <= 0.0f && Collision::segmentIntersectsRect(origin, end, p.box)) {
+            auto inBeam = [&](const Player& q) { return Collision::segmentIntersectsRect(origin, end, q.box); };
+            if (laserHitTimer_ <= 0.0f && w.anyPlayerWhere(inBeam)) {
                 d.type = DamageType::Projectile;
-                if (w.damagePlayer(d)) laserHitTimer_ = 0.4f;
+                if (w.hurtPlayersWhere(inBeam, d)) laserHitTimer_ = 0.4f;
             }
             w.particles().emit("laser_sparks", end, 0.4f);
             break;

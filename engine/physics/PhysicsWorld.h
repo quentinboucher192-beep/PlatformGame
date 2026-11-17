@@ -23,6 +23,9 @@ constexpr uint32_t Gate = 1u << 5;       // power gate
 constexpr uint32_t Bounce = 1u << 6;
 constexpr uint32_t EnemyOnly = 1u << 7;  // invisible wall for enemies only
 constexpr uint32_t ShieldPass = 1u << 8; // plasma curtain: passable while the shield is active
+/// 2.62: the body of a player of a team, solid for the other players only (never for the
+/// enemies, the shots or the rays).
+constexpr uint32_t Teammate = 1u << 9;
 }  // namespace ColliderTag
 
 struct Collider {

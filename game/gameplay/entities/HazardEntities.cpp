@@ -535,13 +535,17 @@ void LaserEntity::fixedUpdate(GameWorld& w, float dt) {
     end_ = far;
     if (on_) {
         if (auto t = w.physics().raycast(o + Vec2{dmath::cos(a), dmath::sin(a)} * 9.0f, far)) end_ = o + (far - o) * *t;
-        Player& p = w.player();
-        if (hitTimer_ <= 0.0f && p.alive() && Collision::segmentIntersectsRect(o, end_, p.box.expanded(-1))) {
-            DamageInfo d;
-            d.amount = static_cast<float>(obj_.prop<int>("damage", 1));
-            d.type = DamageType::Hazard;
-            d.source = {p.center().x, p.center().y + 10};
-            if (w.damagePlayer(d)) hitTimer_ = 0.5f;
+        if (hitTimer_ <= 0.0f) {
+            bool hurt = false;
+            w.forEachPlayer([&](Player& p) {  // 2.62: every player in the beam (alone: the only one)
+                if (!p.alive() || !Collision::segmentIntersectsRect(o, end_, p.box.expanded(-1))) return;
+                DamageInfo d;
+                d.amount = static_cast<float>(obj_.prop<int>("damage", 1));
+                d.type = DamageType::Hazard;
+                d.source = {p.center().x, p.center().y + 10};
+                if (w.damagePlayer(d)) hurt = true;
+            });
+            if (hurt) hitTimer_ = 0.5f;
         }
         if (static_cast<int>(cycle_ * 30) % 3 == 0) w.particles().emit("laser_sparks", end_, 0.5f);
     }

@@ -50,11 +50,28 @@ void InputManager::setGamepad(SDL_Gamepad* pad) {
     Log::info("Gamepad connected: {} (type {})", gamepadName_, static_cast<int>(SDL_GetGamepadType(pad)));
 }
 
+bool InputManager::reservedPad(SDL_JoystickID id) const {
+    return std::find(reservedPads_.begin(), reservedPads_.end(), id) != reservedPads_.end();
+}
+
+void InputManager::setReservedPads(std::vector<SDL_JoystickID> ids) {
+    reservedPads_ = std::move(ids);
+    if (gamepad_ && reservedPad(gamepadId_)) {
+        // Its gamepad went to another local player: it takes a free one (or none).
+        SDL_CloseGamepad(gamepad_);  // its own reference (the LocalPad opened its own)
+        gamepad_ = nullptr;
+        gamepadName_.clear();
+        lastDevice_ = InputDevice::Keyboard;
+        openFirstGamepad();
+    }
+}
+
 void InputManager::openFirstGamepad() {
     int count = 0;
     SDL_JoystickID* ids = SDL_GetGamepads(&count);
     if (ids) {
         for (int i = 0; i < count && !gamepad_; ++i) {
+            if (reservedPad(ids[i])) continue;  // 2.62: another local player's
             if (SDL_Gamepad* p = SDL_OpenGamepad(ids[i])) setGamepad(p);
         }
         SDL_free(ids);
@@ -74,6 +91,12 @@ void InputManager::beginFrame() {
 }
 
 void InputManager::handleEvent(const SDL_Event& e) {
+    // 2.62: the gamepads of the other local players act on nothing here.
+    if (!reservedPads_.empty()) {
+        if ((e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN || e.type == SDL_EVENT_GAMEPAD_BUTTON_UP) && reservedPad(e.gbutton.which)) return;
+        if (e.type == SDL_EVENT_GAMEPAD_AXIS_MOTION && reservedPad(e.gaxis.which)) return;
+        if (e.type == SDL_EVENT_GAMEPAD_ADDED && reservedPad(e.gdevice.which)) return;
+    }
     switch (e.type) {
         case SDL_EVENT_KEY_DOWN: case SDL_EVENT_MOUSE_BUTTON_DOWN: case SDL_EVENT_MOUSE_MOTION: case SDL_EVENT_MOUSE_WHEEL:
         case SDL_EVENT_GAMEPAD_BUTTON_DOWN:

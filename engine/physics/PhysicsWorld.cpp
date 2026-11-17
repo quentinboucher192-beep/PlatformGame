@@ -110,6 +110,7 @@ bool PhysicsWorld::ignored(const Collider& c, const MoveOptions& opt) const {
     if (!c.enabled) return true;
     if (c.tags & opt.ignoreTags) return true;
     if ((c.tags & ColliderTag::EnemyOnly) && !opt.isEnemy) return true;
+    if ((c.tags & ColliderTag::Teammate) && opt.isEnemy) return true;  // 2.62: players' bodies
     return false;
 }
 
@@ -204,7 +205,7 @@ std::optional<float> PhysicsWorld::raycast(Vec2 from, Vec2 to, bool includeOneWa
     std::optional<float> best;
     for (uint32_t idx : scratch_) {
         const Collider& c = colliders_[idx];
-        if (!c.enabled || (c.tags & ignoreTags) || (c.tags & ColliderTag::EnemyOnly)) continue;
+        if (!c.enabled || (c.tags & ignoreTags) || (c.tags & (ColliderTag::EnemyOnly | ColliderTag::Teammate))) continue;
         if (c.kind == ColliderKind::OneWay && !includeOneWay) continue;
         float t;
         if (Collision::segmentIntersectsRect(from, to, c.box, &t)) {

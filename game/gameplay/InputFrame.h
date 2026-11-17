@@ -20,7 +20,9 @@ struct InputFrame {
     /// buttons (bits 6 to 10 and 12), which old replays still use.
     static constexpr int kActions = static_cast<int>(Action::PowerSlot8) + 1;
     static_assert(kActions <= 32, "the recorded actions fit in 32 bits");
-    enum Flag : uint8_t { SkipCinematic = 1 };
+    /// Standby (2.62, a team): set by the relay only, on the inputs of a player who is absent
+    /// (disconnected); never accepted from a game (docs/COOP.md).
+    enum Flag : uint8_t { SkipCinematic = 1, Standby = 2 };
     /// Answer to a pending power offer (GameWorld::powerOffer): 1..8 replaces that slot,
     /// kChoiceLeave leaves the new power on its tablet, 0 = no answer this step.
     static constexpr uint8_t kChoiceLeave = 255;
@@ -68,6 +70,11 @@ struct InputFrame {
 /// While a power offer waits for an answer, a frame without one simulates nothing.
 /// Live play, the replay viewer and the tests all advance the simulation through here.
 void stepWorld(GameWorld& world, const InputFrame& frame, float dt);
+
+/// 2.62: one step of a team (docs/COOP.md): one frame per player, in the order of the players.
+/// A cinematic is skipped when any player skips it; a power offer waits for the choice of the
+/// player it was offered to (left on its tablet when that player is in standby).
+void stepTeam(GameWorld& world, const InputFrame* frames, int count, float dt);
 
 /// Gameplay seed of a level: the same for every player, so a level always offers the
 /// same randomness for the same actions (speedrun fairness), and stored in replays.

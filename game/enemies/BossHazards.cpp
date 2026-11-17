@@ -182,8 +182,8 @@ void BossHazards::addWall(GameWorld& w, uint32_t owner, const Rect& rect, float 
     wall.rect = rect;
     wall.time = seconds;
     wall.damage = damage;
-    Player& p = w.player();
-    if (p.alive() && p.box.intersects(rect)) {
+    w.forEachPlayer([&](Player& p) {  // 2.62: every player of a team (alone: the only one)
+        if (!p.alive() || !p.box.intersects(rect)) return;
         // Never inside a wall: Nova is put on the cage's side of it.
         float x = inside >= 0.0f ? rect.right() + 0.5f : rect.x - p.box.w - 0.5f;
         Rect moved = p.box;
@@ -192,7 +192,7 @@ void BossHazards::addWall(GameWorld& w, uint32_t owner, const Rect& rect, float 
             p.box = moved;
             p.prevBox.x = x;
         }
-    }
+    });
     wall.collider = w.physics().add(rect, ColliderKind::Solid);
     walls_.push_back(wall);
 }
@@ -291,32 +291,39 @@ const BossHazards::Belt* BossHazards::beltOn(const Rect& strip) const {
 
 void BossHazards::fixedUpdate(GameWorld& w, float dt) {
     if (empty()) return;
-    Player& p = w.player();
-    const bool exposed = p.alive() && !p.respawning() && w.state() == WorldState::Playing;
+    // 2.62: every player in play (alone: the only one), each exposed or not as at the start of
+    // the step (whatever happens to it during the step, as it always was).
+    bool exposedAt[GameWorld::kMaxTeam] = {};
+    w.forEachPlayer([&](Player& p) {
+        exposedAt[w.currentPlayer()] = p.alive() && !p.respawning() && w.state() == WorldState::Playing;
+    });
+    auto exposed = [&]() { return exposedAt[w.currentPlayer()]; };
 
     // Pulls: Nova drifts toward the centre (outside her own movement, so her controls stay
     // whole: running the other way always wins).
     for (Pull& pl : pulls_) {
         pl.age += dt;
         pl.time -= dt;
-        if (!exposed) continue;
-        Vec2 d = pl.center - p.center();
-        float dist = d.length();
-        if (dist > 1.0f && dist < pl.range) {
-            float k = 0.5f + 0.5f * (1.0f - dist / pl.range);
-            Vec2 drift = d / dist * (pl.speed * k);
-            if (p.grounded()) drift.y = 0.0f;
-            else drift.y = std::clamp(drift.y, -pl.speed * 0.6f, pl.speed * 0.6f);
-            w.physics().move(p.box, drift * dt, p.moveOptions());
-        }
-        if (pl.core > 0.0f && pl.damage > 0.0f && Collision::circleIntersectsRect(pl.center, pl.core, p.box)) {
-            DamageInfo dmg;
-            dmg.amount = pl.damage;
-            dmg.type = DamageType::Contact;
-            dmg.source = pl.center;
-            dmg.knockback = 240.0f;
-            w.damagePlayer(dmg);
-        }
+        w.forEachPlayer([&](Player& p) {
+            if (!exposed()) return;
+            Vec2 d = pl.center - p.center();
+            float dist = d.length();
+            if (dist > 1.0f && dist < pl.range) {
+                float k = 0.5f + 0.5f * (1.0f - dist / pl.range);
+                Vec2 drift = d / dist * (pl.speed * k);
+                if (p.grounded()) drift.y = 0.0f;
+                else drift.y = std::clamp(drift.y, -pl.speed * 0.6f, pl.speed * 0.6f);
+                w.physics().move(p.box, drift * dt, p.moveOptions());
+            }
+            if (pl.core > 0.0f && pl.damage > 0.0f && Collision::circleIntersectsRect(pl.center, pl.core, p.box)) {
+                DamageInfo dmg;
+                dmg.amount = pl.damage;
+                dmg.type = DamageType::Contact;
+                dmg.source = pl.center;
+                dmg.knockback = 240.0f;
+                w.damagePlayer(dmg);
+            }
+        });
     }
     pulls_.erase(std::remove_if(pulls_.begin(), pulls_.end(), [](const Pull& pl) { return pl.time <= 0.0f; }), pulls_.end());
 
@@ -331,21 +338,23 @@ void BossHazards::fixedUpdate(GameWorld& w, float dt) {
     // Lava tide: under its surface Nova is hurt and thrown back up.
     for (Flood& f : floods_) {
         f.age += dt;
-        if (!exposed || f.level() < 2.0f) continue;
-        float cx = p.center().x;
-        if (cx < f.left || cx > f.right) continue;
-        float surface = f.surfaceY();
-        if (p.box.bottom() <= surface + 3.0f) continue;
-        DamageInfo dmg;
-        dmg.amount = f.damage;
-        dmg.type = DamageType::Hazard;
-        dmg.source = {cx, p.box.bottom() + 24.0f};
-        dmg.knockback = 120.0f;
-        bool hurt = w.damagePlayer(dmg);
-        if (p.alive() && p.vel.y > -200.0f) {
-            p.launch({p.vel.x * 0.5f, -390.0f}, false);
-            if (hurt) w.particles().emit("fire_burst", {cx, surface}, 1.0f);
-        }
+        w.forEachPlayer([&](Player& p) {
+            if (!exposed() || f.level() < 2.0f) return;
+            float cx = p.center().x;
+            if (cx < f.left || cx > f.right) return;
+            float surface = f.surfaceY();
+            if (p.box.bottom() <= surface + 3.0f) return;
+            DamageInfo dmg;
+            dmg.amount = f.damage;
+            dmg.type = DamageType::Hazard;
+            dmg.source = {cx, p.box.bottom() + 24.0f};
+            dmg.knockback = 120.0f;
+            bool hurt = w.damagePlayer(dmg);
+            if (p.alive() && p.vel.y > -200.0f) {
+                p.launch({p.vel.x * 0.5f, -390.0f}, false);
+                if (hurt) w.particles().emit("fire_burst", {cx, surface}, 1.0f);
+            }
+        });
     }
     floods_.erase(std::remove_if(floods_.begin(), floods_.end(), [](const Flood& f) { return f.done(); }), floods_.end());
 
@@ -357,14 +366,16 @@ void BossHazards::fixedUpdate(GameWorld& w, float dt) {
             w.physics().remove(wl.collider);
             continue;
         }
-        if (exposed && wl.damage > 0.0f && p.box.expanded(1.5f).intersects(wl.rect)) {
-            DamageInfo dmg;
-            dmg.amount = wl.damage;
-            dmg.type = DamageType::Contact;
-            dmg.source = {wl.rect.center().x, p.center().y};
-            dmg.knockback = 200.0f;
-            w.damagePlayer(dmg);
-        }
+        w.forEachPlayer([&](Player& p) {
+            if (exposed() && wl.damage > 0.0f && p.box.expanded(1.5f).intersects(wl.rect)) {
+                DamageInfo dmg;
+                dmg.amount = wl.damage;
+                dmg.type = DamageType::Contact;
+                dmg.source = {wl.rect.center().x, p.center().y};
+                dmg.knockback = 200.0f;
+                w.damagePlayer(dmg);
+            }
+        });
     }
     walls_.erase(std::remove_if(walls_.begin(), walls_.end(), [](const Wall& wl) { return wl.time <= 0.0f; }), walls_.end());
 
@@ -373,13 +384,15 @@ void BossHazards::fixedUpdate(GameWorld& w, float dt) {
     for (Wind& wd : winds_) {
         wd.age += dt;
         wd.time -= dt;
-        if (!exposed) continue;
-        Vec2 pc = p.center();
-        float dist = distance(pc, wd.center);
-        if (dist >= wd.range) continue;
-        float side = pc.x >= wd.center.x ? 1.0f : -1.0f;
-        float k = (0.5f + 0.5f * (1.0f - dist / wd.range)) * std::min(1.0f, wd.age / 0.25f);
-        w.physics().move(p.box, Vec2{side * wd.speed * k * dt, 0.0f}, p.moveOptions());
+        w.forEachPlayer([&](Player& p) {
+            if (!exposed()) return;
+            Vec2 pc = p.center();
+            float dist = distance(pc, wd.center);
+            if (dist >= wd.range) return;
+            float side = pc.x >= wd.center.x ? 1.0f : -1.0f;
+            float k = (0.5f + 0.5f * (1.0f - dist / wd.range)) * std::min(1.0f, wd.age / 0.25f);
+            w.physics().move(p.box, Vec2{side * wd.speed * k * dt, 0.0f}, p.moveOptions());
+        });
     }
     winds_.erase(std::remove_if(winds_.begin(), winds_.end(), [](const Wind& x) { return x.time <= 0.0f; }), winds_.end());
 
@@ -400,13 +413,15 @@ void BossHazards::fixedUpdate(GameWorld& w, float dt) {
                 if (w.fxRng().chance(0.35f) && !c.ink) w.particles().emit(c.ash ? "embers_rising" : "fire_smoke", at + Vec2{0.0f, -r.h * 0.3f}, 1.0f);
             }
         }
-        if (!exposed || c.damage <= 0.0f || !c.burning() || !c.current().intersects(p.box)) continue;
-        DamageInfo dmg;
-        dmg.amount = c.damage;
-        dmg.type = DamageType::Contact;
-        dmg.source = {c.area.center().x, p.center().y + 6.0f};  // out of it by the nearest side
-        dmg.knockback = 150.0f;
-        if (w.damagePlayer(dmg)) w.particles().emit("fire_burst", p.center(), 0.8f);
+        w.forEachPlayer([&](Player& p) {
+            if (!exposed() || c.damage <= 0.0f || !c.burning() || !c.current().intersects(p.box)) return;
+            DamageInfo dmg;
+            dmg.amount = c.damage;
+            dmg.type = DamageType::Contact;
+            dmg.source = {c.area.center().x, p.center().y + 6.0f};  // out of it by the nearest side
+            dmg.knockback = 150.0f;
+            if (w.damagePlayer(dmg)) w.particles().emit("fire_burst", p.center(), 0.8f);
+        });
     }
     clouds_.erase(std::remove_if(clouds_.begin(), clouds_.end(), [](const Cloud& c) { return c.time <= 0.0f; }), clouds_.end());
 
@@ -434,7 +449,7 @@ void BossHazards::fixedUpdate(GameWorld& w, float dt) {
                 w.shake(0.18f);
             }
         }
-        if (!exposed || c.hit || c.damage <= 0.0f) continue;
+        if (c.hit || c.damage <= 0.0f) continue;
         Rect hurt;
         if (c.rock && !c.bursting()) {
             hurt = Rect::fromCenter(c.rockAt(), {c.half * 1.6f, c.half * 1.6f});  // the stone on its way down
@@ -444,13 +459,15 @@ void BossHazards::fixedUpdate(GameWorld& w, float dt) {
         } else {
             continue;
         }
-        if (!hurt.intersects(p.box)) continue;
-        DamageInfo dmg;
-        dmg.amount = c.damage;
-        dmg.type = DamageType::Contact;
-        dmg.source = c.rock && !c.bursting() ? c.rockAt() + Vec2{0.0f, -c.half} : Vec2{c.at.x, c.at.y + 12.0f};
-        dmg.knockback = c.knockback;
-        if (w.damagePlayer(dmg)) c.hit = true;
+        w.forEachPlayer([&](Player& p) {  // every player it reaches in this step, once
+            if (!exposed() || !hurt.intersects(p.box)) return;
+            DamageInfo dmg;
+            dmg.amount = c.damage;
+            dmg.type = DamageType::Contact;
+            dmg.source = c.rock && !c.bursting() ? c.rockAt() + Vec2{0.0f, -c.half} : Vec2{c.at.x, c.at.y + 12.0f};
+            dmg.knockback = c.knockback;
+            if (w.damagePlayer(dmg)) c.hit = true;
+        });
     }
     cracks_.erase(std::remove_if(cracks_.begin(), cracks_.end(), [](const Crack& c) { return c.done(); }), cracks_.end());
 
@@ -460,7 +477,7 @@ void BossHazards::fixedUpdate(GameWorld& w, float dt) {
         if (r.bursting()) {
             r.burstAge += dt;
         } else {
-            const bool stepped = exposed && r.armed() && r.pad().intersects(p.box);
+            const bool stepped = r.armed() && w.anyPlayerWhere([&](const Player& p) { return exposed() && r.pad().intersects(p.box); });
             if (stepped || r.age >= r.arm + r.time) {
                 r.burstAge = 0.0f;
                 w.particles().emit("eruption_fire", r.at, 1.0f, {}, &r.color);
@@ -469,14 +486,16 @@ void BossHazards::fixedUpdate(GameWorld& w, float dt) {
                 w.shake(0.08f);
             }
         }
-        if (!exposed || r.hit || r.damage <= 0.0f || !r.bursting() || r.burstAge > Rune::kBurst) continue;
-        if (!r.pillar().intersects(p.box)) continue;
-        DamageInfo dmg;
-        dmg.amount = r.damage;
-        dmg.type = DamageType::Contact;
-        dmg.source = {r.at.x, r.at.y + 14.0f};  // from under her: thrown up
-        dmg.knockback = r.knockback;
-        if (w.damagePlayer(dmg)) r.hit = true;
+        if (r.hit || r.damage <= 0.0f || !r.bursting() || r.burstAge > Rune::kBurst) continue;
+        w.forEachPlayer([&](Player& p) {
+            if (!exposed() || !r.pillar().intersects(p.box)) return;
+            DamageInfo dmg;
+            dmg.amount = r.damage;
+            dmg.type = DamageType::Contact;
+            dmg.source = {r.at.x, r.at.y + 14.0f};  // from under her: thrown up
+            dmg.knockback = r.knockback;
+            if (w.damagePlayer(dmg)) r.hit = true;
+        });
     }
     runes_.erase(std::remove_if(runes_.begin(), runes_.end(), [](const Rune& r) { return r.done(); }), runes_.end());
 
@@ -490,25 +509,32 @@ void BossHazards::fixedUpdate(GameWorld& w, float dt) {
             w.playSound("sounds/golem_slam.wav", {pr.x, pr.floor}, 0.75f, 1.25f);
             w.shake(0.18f);
         }
-        if (!exposed || pr.hit || pr.damage <= 0.0f || !pr.crushing()) continue;
-        if (!pr.column().intersects(p.box)) continue;
-        DamageInfo dmg;
-        dmg.amount = pr.damage;
-        dmg.type = DamageType::Contact;
-        dmg.source = {pr.x + (p.center().x >= pr.x ? -1.0f : 1.0f) * pr.half * 0.5f, p.center().y + 6.0f};  // thrown out sideways
-        dmg.knockback = pr.knockback;
-        if (w.damagePlayer(dmg)) pr.hit = true;
+        if (pr.hit || pr.damage <= 0.0f || !pr.crushing()) continue;
+        w.forEachPlayer([&](Player& p) {
+            if (!exposed() || !pr.column().intersects(p.box)) return;
+            DamageInfo dmg;
+            dmg.amount = pr.damage;
+            dmg.type = DamageType::Contact;
+            dmg.source = {pr.x + (p.center().x >= pr.x ? -1.0f : 1.0f) * pr.half * 0.5f, p.center().y + 6.0f};  // thrown out sideways
+            dmg.knockback = pr.knockback;
+            if (w.damagePlayer(dmg)) pr.hit = true;
+        });
     }
     presses_.erase(std::remove_if(presses_.begin(), presses_.end(), [](const Press& pr) { return pr.done(); }), presses_.end());
 
     // 2.58, its missiles: the reticle follows Nova (slower than she runs), locks, the missile falls.
+    // 2.62: in a team, the nearest player in play.
     for (Missile& m : missiles_) {
         const bool wasFlying = !m.landed();
-        if (!m.locked() && exposed) {
-            const Vec2 d = p.center() - m.at;
-            const float len = d.length();
-            const float step = Missile::kTrackSpeed * dt;
-            m.at = len <= step ? p.center() : m.at + d / len * step;
+        {
+            GameWorld::PlayerScope target(w, w.targetIndex(m.at));
+            const Player& p = w.player();
+            if (!m.locked() && exposed()) {
+                const Vec2 d = p.center() - m.at;
+                const float len = d.length();
+                const float step = Missile::kTrackSpeed * dt;
+                m.at = len <= step ? p.center() : m.at + d / len * step;
+            }
         }
         const bool wasTracking = !m.locked();
         m.age += dt;
@@ -517,13 +543,15 @@ void BossHazards::fixedUpdate(GameWorld& w, float dt) {
         w.particles().emit("explosion", m.at, std::max(0.8f, m.radius / 30.0f));
         w.playSound("sounds/bomb_explode.wav", m.at, 0.7f, 1.1f);
         w.shake(0.2f);
-        if (!exposed || m.damage <= 0.0f || !Collision::circleIntersectsRect(m.at, m.radius, p.box)) continue;
-        DamageInfo dmg;
-        dmg.amount = m.damage;
-        dmg.type = DamageType::Explosion;
-        dmg.source = m.at + Vec2{0.0f, 8.0f};
-        dmg.knockback = m.knockback;
-        if (w.damagePlayer(dmg)) m.hit = true;
+        w.forEachPlayer([&](Player& p) {
+            if (!exposed() || m.damage <= 0.0f || !Collision::circleIntersectsRect(m.at, m.radius, p.box)) return;
+            DamageInfo dmg;
+            dmg.amount = m.damage;
+            dmg.type = DamageType::Explosion;
+            dmg.source = m.at + Vec2{0.0f, 8.0f};
+            dmg.knockback = m.knockback;
+            if (w.damagePlayer(dmg)) m.hit = true;
+        });
     }
     missiles_.erase(std::remove_if(missiles_.begin(), missiles_.end(), [](const Missile& m) { return m.done(); }), missiles_.end());
 
@@ -532,11 +560,13 @@ void BossHazards::fixedUpdate(GameWorld& w, float dt) {
     for (Belt& b : belts_) {
         b.age += dt;
         const float k = b.running();
-        if (!exposed || k <= 0.0f || !p.grounded()) continue;
-        const float feet = p.box.bottom();
-        const float cx = p.center().x;
-        if (std::abs(feet - b.strip.y) > 3.0f || cx < b.strip.x || cx > b.strip.right()) continue;
-        w.physics().move(p.box, Vec2{b.speed * k * dt, 0.0f}, p.moveOptions());
+        w.forEachPlayer([&](Player& p) {
+            if (!exposed() || k <= 0.0f || !p.grounded()) return;
+            const float feet = p.box.bottom();
+            const float cx = p.center().x;
+            if (std::abs(feet - b.strip.y) > 3.0f || cx < b.strip.x || cx > b.strip.right()) return;
+            w.physics().move(p.box, Vec2{b.speed * k * dt, 0.0f}, p.moveOptions());
+        });
     }
     belts_.erase(std::remove_if(belts_.begin(), belts_.end(), [](const Belt& b) { return b.done(); }), belts_.end());
 
@@ -545,14 +575,16 @@ void BossHazards::fixedUpdate(GameWorld& w, float dt) {
         const bool wasWarning = s.age < s.warn;
         s.age += dt;
         if (wasWarning && s.blasting()) w.playSound("sounds/lava_rise.wav", s.from, 0.7f, 1.6f);
-        if (!exposed || s.hit || s.damage <= 0.0f || !s.blasting()) continue;
-        if (!s.area().intersects(p.box)) continue;
-        DamageInfo dmg;
-        dmg.amount = s.damage;
-        dmg.type = DamageType::Contact;
-        dmg.source = {s.from.x - s.dir * 20.0f, p.center().y + 4.0f};
-        dmg.knockback = s.knockback;
-        if (w.damagePlayer(dmg)) s.hit = true;
+        if (s.hit || s.damage <= 0.0f || !s.blasting()) continue;
+        w.forEachPlayer([&](Player& p) {
+            if (!exposed() || !s.area().intersects(p.box)) return;
+            DamageInfo dmg;
+            dmg.amount = s.damage;
+            dmg.type = DamageType::Contact;
+            dmg.source = {s.from.x - s.dir * 20.0f, p.center().y + 4.0f};
+            dmg.knockback = s.knockback;
+            if (w.damagePlayer(dmg)) s.hit = true;
+        });
     }
     steams_.erase(std::remove_if(steams_.begin(), steams_.end(), [](const Steam& s) { return s.done(); }), steams_.end());
 }

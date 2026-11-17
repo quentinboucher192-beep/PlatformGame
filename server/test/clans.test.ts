@@ -693,3 +693,56 @@ describe("clans: moderation (ADMINISTRATION › Clans)", () => {
         expect(refused.body.data.entries[0]).toMatchObject({ action: "admin_refused", reason: "TAG_TAKEN", clan: { previous: { tag: "AUBE" } } });
     });
 });
+
+// ---------------------------------------------------------------------- Duo / Trio (2.63)
+
+/** A team attempt of the Duo / Trio boards (coop_runs), confirmed by `confirmed` of its players. */
+async function coopRun(players: TestPlayer[], board: string, score: number, at: string, confirmed: TestPlayer[] = players): Promise<void> {
+    const id = crypto.randomUUID();
+    const attempt = crypto.randomUUID();
+    await env.DB.prepare(
+        `INSERT INTO coop_runs (id, board, size, team_key, attempt_id, submitter_id, mode, claim, time_ms, status, score, route, revives, incomplete, finished, created_at, verified_at)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, 'online', '{}', 40000, 'VERIFIED', ?7, 0.5, 0, 0, 0, ?8, ?8)`,
+    )
+        .bind(id, board, players.length, players.map((p) => p.id).sort().join("+"), attempt, players[0]!.id, score, at)
+        .run();
+    for (const [seat, p] of players.entries())
+        await env.DB.prepare("INSERT INTO coop_run_members (run_id, seat, player_id) VALUES (?1, ?2, ?3)").bind(id, seat, p.id).run();
+    for (const p of confirmed)
+        await env.DB.prepare("INSERT INTO coop_confirms (attempt_id, player_id, created_at) VALUES (?1, ?2, ?3)").bind(attempt, p.id, at).run();
+}
+
+describe("clans: Duo and Trio", () => {
+    it("a team counts for its clan when all its players are members and confirmed; the level keeps its best team", async () => {
+        await makeExtreme(LEVEL_HASH);
+        const B1 = `o:test_01:${LEVEL_HASH}`;
+        const [a1, a2, a3, x] = await Promise.all(["Lyra", "Orion", "Vega", "Rigel"].map((n) => registerPlayer(n)));
+        const A = await createClan(a1!, { tag: "AUBE" });
+        expect((await join(A.clan.id, a2!)).status).toBe(200);
+        expect((await join(A.clan.id, a3!)).status).toBe(200);
+        await verifiedRun(a1!, B1, 50, "2026-11-10T10:00:00.000Z");
+        await coopRun([a1!, a2!], B1, 80, "2026-11-11T10:00:00.000Z");
+        await coopRun([a1!, a2!, a3!], B1, 70, "2026-11-11T11:00:00.000Z");
+        // Not counted: a player outside the clan, a player who did not confirm.
+        await coopRun([a1!, x!], B1, 95, "2026-11-12T10:00:00.000Z");
+        await coopRun([a2!, a3!], B1, 99, "2026-11-12T11:00:00.000Z", [a2!]);
+        await refreshAllClanPoints(env.DB);
+        const view = await page(A.clan.id);
+        const level = (view.body.data.levels as any[]).find((l) => l.level_id === "test_01");
+        expect(level.teams.map((t: any) => [t.mode, t.score])).toEqual([
+            ["solo", 50],
+            ["duo", 80],
+            ["trio", 70],
+        ]);
+        expect(level.best).toMatchObject({ mode: "duo", score: 80 });
+        expect(level.teams[1].players.map((p: any) => p.username)).toEqual(["Lyra", "Orion"]);
+        // The level counts once, for its best team.
+        expect(view.body.data.clan.points).toBe(80);
+        // A member who leaves takes the teams they were in.
+        expect((await leave(A.clan.id, a2!)).status).toBe(200);
+        const after = await page(A.clan.id);
+        const l2 = (after.body.data.levels as any[]).find((l) => l.level_id === "test_01");
+        expect(l2.teams.map((t: any) => t.mode)).toEqual(["solo"]);
+        expect(after.body.data.clan.points).toBe(50);
+    });
+});

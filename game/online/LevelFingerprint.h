@@ -60,6 +60,11 @@ constexpr int kSimulationVersion = 14;  // 6: energy 150, time slow, magnet, air
                                        //    enemy of an ambush being fought that leaves its arena
                                        //    is brought back into it. The rankings are kept: a run
                                        //    without a fall in an ambush plays as before.
+/// 2.62: version of the rules of cooperation (docs/COOP.md): a team of 2 or 3 players in one
+/// world. It changes nothing for a solo run (kSimulationVersion and its digests are the same);
+/// a team's attempts carry it, and any change of the team rules (solid players, revivals,
+/// standby, the team's frame...) bumps it with the reference digests of tests/test_coop.cpp.
+constexpr int kCoopSimulationVersion = 1;
 /// Generation of the rankings, part of every ranked fingerprint. It follows
 /// kSimulationVersion when a change makes earlier runs incomparable (records and replays of
 /// different generations are never mixed). A change that only adds a possibility and

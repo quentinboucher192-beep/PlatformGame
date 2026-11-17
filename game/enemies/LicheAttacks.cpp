@@ -359,23 +359,25 @@ void Enemy::licheEnd(GameWorld& w, bool cut) {
     // Its runes keep their own time; the curse falls only if its circle closed to its end.
     if (cut || !attack_ || attack_->type != AttackType::Hex) return;
     const AttackDef& a = *attack_;
-    Player& p = w.player();
     const Color soul = lightColor();
     w.particles().emit("rune_glow", markPos_, 2.5f, {}, &soul);
     w.playSound("sounds/shadow_step.wav", markPos_, 0.9f, 0.7f);
-    if (!p.alive() || p.respawning() || distance(p.center(), markPos_) > ringRadius_) return;
-    hexLanded_ = true;
-    p.applyCurse(orDefault(a.curse, kHexCurse), orDefault(a.duration, kHexTime));  // the HUD shows it (Hud::drawStatus)
-    if (a.damage > 0.0f) {
-        DamageInfo dmg;
-        dmg.amount = a.damage;
-        dmg.type = DamageType::Contact;
-        dmg.source = markPos_ + Vec2{0.0f, -10.0f};
-        dmg.knockback = a.knockback;
-        w.damagePlayer(dmg);
-    }
-    w.particles().emit("boss_phase", p.center(), 0.6f);
-    w.flash({150, 80, 230, 255}, 0.15f);
+    // 2.62: every player inside the circle (alone: the only one).
+    w.forEachPlayer([&](Player& p) {
+        if (!p.alive() || p.respawning() || distance(p.center(), markPos_) > ringRadius_) return;
+        hexLanded_ = true;
+        p.applyCurse(orDefault(a.curse, kHexCurse), orDefault(a.duration, kHexTime));  // the HUD shows it (Hud::drawStatus)
+        if (a.damage > 0.0f) {
+            DamageInfo dmg;
+            dmg.amount = a.damage;
+            dmg.type = DamageType::Contact;
+            dmg.source = markPos_ + Vec2{0.0f, -10.0f};
+            dmg.knockback = a.knockback;
+            w.damagePlayer(dmg);
+        }
+        w.particles().emit("boss_phase", p.center(), 0.6f);
+        w.flash({150, 80, 230, 255}, 0.15f);
+    });
 }
 
 // ================================================================== render

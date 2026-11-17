@@ -38,6 +38,14 @@ public:
     /// Offset of the framing from the target (2.33: in a giant boss arena, toward the boss).
     void setLean(Vec2 lean) { lean_ = lean; }
     void setZone(const CameraZone* zone);
+    /// 2.62, a team: the area holding the players the camera must show (zoomed out down to
+    /// kMinFitZoom to fit it); nullptr alone. Display only, like the rest of the camera.
+    void setTeamArea(const Rect* area) {
+        if (area)
+            teamArea_ = *area;
+        else
+            teamArea_.reset();
+    }
 
     // Scripted control (intro/outro cinematics, event pans).
     void moveTo(Vec2 center, float duration, Ease ease = Ease::InOutCubic);
@@ -90,6 +98,7 @@ private:
     Rect bounds_;
     bool hasBounds_ = false;
     std::optional<CameraZone> zone_;
+    std::optional<Rect> teamArea_;
 
     bool scripted_ = false;
     Vec2 scriptFrom_, scriptTo_;

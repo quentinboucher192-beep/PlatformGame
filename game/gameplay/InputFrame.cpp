@@ -1,5 +1,6 @@
 #include "game/gameplay/InputFrame.h"
 
+#include <algorithm>
 #include <cstring>
 
 #include "game/enemies/Enemy.h"
@@ -18,6 +19,35 @@ void stepWorld(GameWorld& world, const InputFrame& frame, float dt) {
         return;
     }
     world.fixedUpdate(frame.toPlayerInput(), dt);
+}
+
+void stepTeam(GameWorld& world, const InputFrame* frames, int count, float dt) {
+    if (world.teamSize() <= 1) {
+        stepWorld(world, count > 0 ? frames[0] : InputFrame{}, dt);
+        return;
+    }
+    if (const auto& offer = world.powerOffer()) {
+        const int who = offer->player;
+        uint8_t choice = who < count ? frames[who].choice : 0;
+        if (choice == 0 && (who >= count || (frames[who].flags & InputFrame::Standby))) choice = InputFrame::kChoiceLeave;
+        if (choice == 0) return;
+        world.resolvePowerOffer(choice);
+    }
+    PlayerInput inputs[GameWorld::kMaxTeam];
+    bool standby[GameWorld::kMaxTeam] = {};
+    bool skip = false;
+    const int n = std::min(count, GameWorld::kMaxTeam);
+    for (int i = 0; i < n; ++i) {
+        standby[i] = (frames[i].flags & InputFrame::Standby) != 0;
+        if (!standby[i] && (frames[i].flags & InputFrame::SkipCinematic)) skip = true;
+    }
+    if (skip) {
+        if (world.cinematic().active() && world.cinematic().skippable()) world.cinematic().skip(world);
+    } else {
+        for (int i = 0; i < n; ++i)
+            if (!standby[i]) inputs[i] = frames[i].toPlayerInput();
+    }
+    world.fixedUpdateTeam(inputs, standby, n, dt);
 }
 
 namespace {
@@ -101,6 +131,33 @@ uint64_t simulationStateHash(const GameWorld& w) {
         f.rect(e->box);
         uint8_t bits = static_cast<uint8_t>((e->active ? 1 : 0) | (e->removed ? 2 : 0) | (e->playerInside ? 4 : 0));
         f.bytes(&bits, 1);
+    }
+    if (w.teamSize() > 1) {
+        // 2.62, a team only (the solo digests are unchanged): the other players, everyone's
+        // team state, the revivals left and who is inside what.
+        f.i32(w.teamSize());
+        f.i32(w.revivesLeft());
+        for (int i = 0; i < w.teamSize(); ++i) {
+            const GameWorld::TeamMember& m = w.member(i);
+            if (i > 0) {
+                const Player& q = w.playerAt(i);
+                f.rect(q.box);
+                f.f32(q.vel.x);
+                f.f32(q.vel.y);
+                f.i32(q.health);
+                f.i32(static_cast<int32_t>(q.state()));
+                f.i32(static_cast<int32_t>(q.powers().size()));
+                for (const auto& pw : q.powers()) f.bytes(pw->id().data(), pw->id().size());
+            }
+            f.i32(static_cast<int32_t>(m.presence));
+            f.i32((m.absent ? 1 : 0) | (m.inFrame ? 2 : 0));
+            f.i32(m.standbyTicks);
+            f.f32(m.soul.x);
+            f.f32(m.soul.y);
+            f.f32(m.revive);
+            f.f32(m.offFrame);
+        }
+        for (const auto& e : w.entities()) f.bytes(&e->insideMask, 1);
     }
     return f.h;
 }

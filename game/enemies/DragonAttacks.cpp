@@ -289,15 +289,14 @@ void Enemy::land(GameWorld& w) {
     w.rumble(0.6f, 0.5f, 220);
     w.playSound("sounds/pound_impact.wav", box.bottomCenter(), 1.0f, 0.7f);
     w.particles().emit("slam_dust", box.bottomCenter(), 2.2f);
-    Player& p = w.player();
     Rect stomp = Rect::fromCenter(box.bottomCenter() + Vec2{0.0f, -box.h * 0.5f}, {box.w + 40.0f, box.h + 8.0f});
-    if (stomp.intersects(p.box)) {
+    if (w.playerIn(stomp)) {
         DamageInfo d;
         d.amount = std::max(a.damage, def_.contactDamage);
         d.type = DamageType::Contact;
         d.source = box.bottomCenter();
         d.knockback = std::max(a.knockback, 260.0f);
-        w.damagePlayer(d);
+        w.hurtPlayersIn(stomp, d);  // 2.62: every player under it
     }
 }
 
@@ -458,7 +457,6 @@ void Enemy::dragonStart(GameWorld& w) {
 
 void Enemy::dragonActive(GameWorld& w, float dt) {
     const AttackDef& a = *attack_;
-    Player& p = w.player();
     const Vec2 c = box.center();
     switch (a.type) {
         case AttackType::Dive:
@@ -473,13 +471,13 @@ void Enemy::dragonActive(GameWorld& w, float dt) {
                     Vec2 way = diveDir_;
                     if (path_.size() == 3 && diveTravel_ >= distance(path_[0], path_[1]) - 2.0f) way = (path_[2] - path_[1]).normalized();
                     vel = way * sp;
-                    if (!attackHit_ && box.expanded(4.0f).intersects(p.box)) {
+                    if (!attackHit_ && w.playerIn(box.expanded(4.0f))) {
                         DamageInfo d;
                         d.amount = a.damage;
                         d.type = DamageType::Contact;
                         d.source = c;
                         d.knockback = a.knockback;
-                        attackHit_ = w.damagePlayer(d) || true;
+                        attackHit_ = w.hurtPlayersIn(box.expanded(4.0f), d) || true;
                     }
                     hopTimer_ -= dt;
                     if (hopTimer_ <= 0.0f) {

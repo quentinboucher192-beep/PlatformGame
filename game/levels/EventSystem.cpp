@@ -216,11 +216,12 @@ void EventSystem::runAction(GameWorld& w, const EventAction& a) {
         w.timer().addTime(jget<float>(p, "seconds", 30.0f));
         w.hint("+" + std::to_string(static_cast<int>(jget<float>(p, "seconds", 30.0f))) + " s", 2.0f);
     } else if (t == "givePower") {
-        if (const PowerDefinition* d = w.content().power(jstr(p, "power"))) w.player().grantPower(*d);
+        // 2.62: every player of a team in play (alone: the only one).
+        if (const PowerDefinition* d = w.content().power(jstr(p, "power"))) w.forEachPlayer([&](Player& pl) { pl.grantPower(*d); });
     } else if (t == "heal") {
-        w.player().heal(jget<int>(p, "amount", 10));
+        w.forEachPlayer([&](Player& pl) { pl.heal(jget<int>(p, "amount", 10)); });
     } else if (t == "killPlayer") {
-        w.player().kill(w);
+        w.forEachPlayer([&](Player& pl) { pl.kill(w); });
     } else if (t == "tutorial") {
         // 2.64: an explanation card of the tutorial (the scene pauses the run while it is open).
         w.requestTutorialCard(jstr(p, "card"));
