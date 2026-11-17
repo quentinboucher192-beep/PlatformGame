@@ -20,6 +20,9 @@
 
 namespace cosmic::charts {
 
+/// A tooltip row without a swatch (Color{} is white).
+inline constexpr Color kNoSwatch{0, 0, 0, 0};
+
 /// What a chart's cursor (or the mouse) points at.
 struct Tip {
     struct Row {

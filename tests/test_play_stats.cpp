@@ -170,6 +170,15 @@ TEST_CASE("play stats: daily values and the pooled average of the last 7 days pl
     auto qs = dailySeries(q, DayMetric::DeathsPerHour, t0, t0 + 1, 7);
     CHECK(qs.size() == 1);
     CHECK_NEAR(qs[0].value, 6.0, 1e-9);
+    // The stars: a running total (a day counted under an earlier date never makes it dip).
+    PlayStatsData st;
+    st.at(t0).stars = 5;
+    st.at(t0 + 1).stars = 3;
+    st.at(t0 + 3).stars = 8;
+    auto ss = starsSeries(st, t0 + 1, t0 + 3);
+    CHECK(ss.size() == 2);
+    CHECK(ss[0] == std::make_pair(t0 + 1, 5));
+    CHECK(ss[1] == std::make_pair(t0 + 3, 8));
 }
 
 TEST_CASE("play stats: the bosses' attempts, best progress and phases") {

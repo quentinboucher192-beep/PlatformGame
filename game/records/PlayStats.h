@@ -225,7 +225,8 @@ struct SeriesPoint {
     double rolling = 0.0;
 };
 std::vector<SeriesPoint> dailySeries(const PlayStatsData& d, DayMetric m, int from, int to, int window = 7);
-/// The stars of the achievements at the end of each day of `from`..`to` that knows them.
+/// The stars of the achievements at the end of each day of `from`..`to` that knows them (a running
+/// total: never lower than an earlier day).
 std::vector<std::pair<int, int>> starsSeries(const PlayStatsData& d, int from, int to);
 
 /// The best share taken so far, attempt after attempt (attempt number, best): a victory is 1.

@@ -127,7 +127,7 @@ void drawTip(UIContext& ui, const Tip& t) {
         w = std::max(w, rw);
     }
     const float maxW = ui.screenW() * 0.45f;
-    w = std::min(w, maxW);
+    w = std::min(w + ui.s(2), maxW);  // a little slack: the measured widths are rounded
     const float bw = w + 2 * pad, bh = 2 * pad + th + rh * static_cast<float>(t.rows.size());
     float x = t.anchor.x + ui.s(14);
     if (x + bw > ui.screenW() - ui.s(8)) x = t.anchor.x - ui.s(14) - bw;
@@ -532,9 +532,9 @@ void heatBand(UIContext& ui, const std::string& id, const Rect& r, const Heat& h
     const int a = static_cast<int>(std::lround(at * 2.5f)), b = static_cast<int>(std::lround((at + 1) * 2.5f));
     tip.title = "Tranche " + std::to_string(a) + "–" + std::to_string(b) + " %";
     const size_t k = static_cast<size_t>(at);
-    tip.rows.push_back({{}, "Passages", std::to_string(h.passes[k])});
-    tip.rows.push_back({{}, "Morts", std::to_string(h.deaths[k])});
-    if (h.values[k] >= 0.0f) tip.rows.push_back({{}, "Difficulté (récente)", std::to_string(static_cast<int>(std::lround(h.values[k] * 100.0f))) + " %"});
+    tip.rows.push_back({kNoSwatch, "Passages", std::to_string(h.passes[k])});
+    tip.rows.push_back({kNoSwatch, "Morts", std::to_string(h.deaths[k])});
+    if (h.values[k] >= 0.0f) tip.rows.push_back({kNoSwatch, "Difficulté (récente)", std::to_string(static_cast<int>(std::lround(h.values[k] * 100.0f))) + " %"});
 }
 
 // ------------------------------------------------------------------ table

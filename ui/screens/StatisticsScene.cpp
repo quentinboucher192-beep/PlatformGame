@@ -383,7 +383,7 @@ private:
             ui.hotspot("c/" + c.id, in);
             ui.labelWrapped(e, {in.x, in.center().y - ui.s(10)}, in.w, fz(ui, 15), ui.theme().textDim);
         } else {
-            charts::lineChart(ui, "c/" + c.id, in, c.spec, cursors_[c.id], tip_);
+            charts::lineChart(ui, "c/" + c.id, in, c.spec, cursorOf(c.id), tip_);
         }
     }
     /// Cards two by two (stacked when narrow). Returns the height used.
@@ -514,7 +514,7 @@ private:
             for (const auto& p : se)
                 if (p.day == static_cast<int>(xv)) {
                     t.rows.push_back({color, "Moyenne sur 7 jours joués", fmt(p.rolling)});
-                    t.rows.push_back({{}, "Ce jour-là", fmt(p.value)});
+                    t.rows.push_back({charts::kNoSwatch, "Ce jour-là", fmt(p.value)});
                 }
         };
     }
@@ -544,7 +544,7 @@ private:
             std::string name = id == "attack" ? std::string("Attaque") : id;
             if (const PowerDefinition* p = g_.content.power(id)) name = p->name;
             float acc = static_cast<float>(v[1]) / static_cast<float>(v[0]);
-            powers.push_back({name, acc, pct(acc), ui.theme().accent, name, {{{}, "Touchent", std::to_string(v[1]) + " sur " + std::to_string(v[0])}}});
+            powers.push_back({name, acc, pct(acc), ui.theme().accent, name, {{charts::kNoSwatch, "Touchent", std::to_string(v[1]) + " sur " + std::to_string(v[0])}}});
         }
         std::stable_sort(powers.begin(), powers.end(), [](const Bar& a, const Bar& b) { return a.value > b.value; });
         int total = 0;
@@ -557,7 +557,7 @@ private:
             float share = total > 0 ? static_cast<float>(n) / static_cast<float>(total) : 0.0f;
             std::string label = originLabel(static_cast<HurtOrigin>(i));
             blows.push_back({label, share, pct(share), ui.theme().warm, label,
-                             {{{}, "Part des coups reçus", pct(share)}, {{}, "Coups", std::to_string(n) + " sur " + std::to_string(total)}}});
+                             {{charts::kNoSwatch, "Part des coups reçus", pct(share)}, {charts::kNoSwatch, "Coups", std::to_string(n) + " sur " + std::to_string(total)}}});
         }
         const float gap = ui.s(14);
         const bool two = w >= ui.s(1000);
@@ -573,7 +573,7 @@ private:
                 ui.hotspot("c/" + id, in);
                 ui.labelWrapped(empty, {in.x, in.y + ui.s(10)}, in.w, fz(ui, 15), ui.theme().textDim);
             } else {
-                charts::hBars(ui, "c/" + id, {in.x, in.y, in.w, charts::hBarsHeight(ui, bars.size())}, bars, 1.0f, cursors_[id], tip_);
+                charts::hBars(ui, "c/" + id, {in.x, in.y, in.w, charts::hBarsHeight(ui, bars.size())}, bars, 1.0f, cursorOf(id), tip_);
             }
         };
         const size_t rows = std::max<size_t>(std::max(powers.size(), blows.size()), 4);
@@ -760,11 +760,11 @@ private:
                 std::string pname = def && p < static_cast<int>(def->phases.size()) ? def->phases[static_cast<size_t>(p)].name : std::string();
                 std::string title = bossName(phaseBoss_) + " — phase " + std::to_string(p + 1) + (pname.empty() ? "" : " : " + pname);
                 bars.push_back({"P" + std::to_string(p + 1), static_cast<float>(d), std::to_string(d), ui.theme().warm, title,
-                                {{{}, "Défaites", std::to_string(d)}, {{}, "Tentatives arrivées là", std::to_string(re)}}});
+                                {{charts::kNoSwatch, "Défaites", std::to_string(d)}, {charts::kNoSwatch, "Tentatives arrivées là", std::to_string(re)}}});
                 rows.push_back({"Phase " + std::to_string(p + 1) + (pname.empty() ? "" : " : " + pname), std::to_string(d), std::to_string(re)});
             }
             if (tables_["phases"]) charts::table(ui, "t/phases", plot, {"Phase", "Défaites", "Tentatives arrivées là"}, rows, pages_["phases"]);
-            else charts::vBars(ui, "c/phases", plot, bars, cursors_["phases"], tip_, [](float v) { return std::to_string(static_cast<int>(std::lround(v))); });
+            else charts::vBars(ui, "c/phases", plot, bars, cursorOf("phases"), tip_, [](float v) { return std::to_string(static_cast<int>(std::lround(v))); });
             y += ch + ui.s(14);
         }
         y += note(x, y, w,
@@ -967,10 +967,10 @@ private:
                 std::string label = "Segment " + std::to_string(s.index + 1);
                 std::string title = label + " : " + checkpointName(li, s.from, false) + " → " + checkpointName(li, s.to, true);
                 spread.push_back({label, s.spread, pct(s.spread), ui.theme().accent, title,
-                                  {{{}, "Écart interquartile ÷ médiane", pct(s.spread)}, {{}, "Temps gardés", std::to_string(s.count)}}});
+                                  {{charts::kNoSwatch, "Écart interquartile ÷ médiane", pct(s.spread)}, {charts::kNoSwatch, "Temps gardés", std::to_string(s.count)}}});
                 int n = static_cast<int>(std::lround(s.nearBest * static_cast<float>(s.count)));
                 near.push_back({label, s.nearBest, pct(s.nearBest), kBlue, title,
-                                {{{}, "À moins de 5 % du meilleur", std::to_string(n) + " sur " + std::to_string(s.count)}, {{}, "Meilleur", clockTime(s.best)}}});
+                                {{charts::kNoSwatch, "À moins de 5 % du meilleur", std::to_string(n) + " sur " + std::to_string(s.count)}, {charts::kNoSwatch, "Meilleur", clockTime(s.best)}}});
                 rows.push_back({title, pct(s.spread), pct(s.nearBest), std::to_string(s.count)});
             }
             const float bh = charts::hBarsHeight(ui, std::max<size_t>(1, reps.size()));
@@ -985,10 +985,10 @@ private:
                 const float f = fz(ui, 14);
                 const std::string a = "Dispersion des temps (écart interquartile ÷ médiane)", b = "Passages à moins de 5 % du meilleur temps";
                 ui.label(ui.elide(a, FontFace::Body, f, in.w), {in.x, in.y}, f, ui.theme().textDim);
-                charts::hBars(ui, "c/spread", {in.x, in.y + ui.s(28), in.w, bh}, spread, maxSpread, cursors_["spread"], tip_);
+                charts::hBars(ui, "c/spread", {in.x, in.y + ui.s(28), in.w, bh}, spread, maxSpread, cursorOf("spread"), tip_);
                 float yb = in.y + ui.s(28) + bh + ui.s(18);
                 ui.label(ui.elide(b, FontFace::Body, f, in.w), {in.x, yb}, f, ui.theme().textDim);
-                charts::hBars(ui, "c/near", {in.x, yb + ui.s(28), in.w, bh}, near, 1.0f, cursors_["near"], tip_);
+                charts::hBars(ui, "c/near", {in.x, yb + ui.s(28), in.w, bh}, near, 1.0f, cursorOf("near"), tip_);
             }
             y += ch + ui.s(14);
         }
@@ -1045,7 +1045,7 @@ private:
                 if (i < 0 || i >= static_cast<int>(last.size())) return;
                 t.title = "Partie n° " + std::to_string(static_cast<int>(std::lround(xv))) + " — " + dayLong(last[static_cast<size_t>(i)].day);
                 t.rows.push_back({{57, 240, 216, 255}, "Médiane des 5 dernières", clockTime(medians[static_cast<size_t>(i)])});
-                t.rows.push_back({{}, "Temps", clockTime(last[static_cast<size_t>(i)].time)});
+                t.rows.push_back({charts::kNoSwatch, "Temps", clockTime(last[static_cast<size_t>(i)].time)});
             };
             c.empty = "Aucune partie complète pour l'instant.";
             chartCard({x, y, w, ui.s(330)}, c);
@@ -1138,7 +1138,7 @@ private:
                 }
                 charts::table(ui, "t/heat", in, {"Tranche", "Passages", "Morts", "Difficulté"}, rows, pages_["heat"]);
             } else {
-                charts::heatBand(ui, "c/heat", band, h, cursors_["heat"], tip_);
+                charts::heatBand(ui, "c/heat", band, h, cursorOf("heat"), tip_);
                 // The scale: one hue from dark to light, its two ends written.
                 const float f = fz(ui, 13);
                 const std::string lo = "0 %", hi = pct(h.maxValue) + " de morts par passage";
@@ -1351,6 +1351,8 @@ private:
     Tip tip_;
     std::map<std::string, bool> tables_;
     std::map<std::string, int> pages_, cursors_;
+    /// The keyboard cursor of a chart: -1 until it moves (the chart then starts on its last point).
+    int& cursorOf(const std::string& id) { return cursors_.try_emplace(id, -1).first->second; }
     std::map<std::string, std::shared_future<LevelInfo>> infos_;
     int group_ = 0;
     std::string phaseBoss_, wantSlices_, wantRuns_, focusChart_;

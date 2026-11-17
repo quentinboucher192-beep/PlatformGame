@@ -615,9 +615,16 @@ std::vector<SeriesPoint> dailySeries(const PlayStatsData& d, DayMetric m, int fr
 }
 
 std::vector<std::pair<int, int>> starsSeries(const PlayStatsData& d, int from, int to) {
+    // Stars are never lost: a total, never lower than the day before (a day counted under another
+    // date — the clock changed — cannot make the curve dip).
     std::vector<std::pair<int, int>> out;
-    for (const auto& day : d.days)
-        if (day.day >= from && day.day <= to && day.c.stars >= 0) out.push_back({day.day, day.c.stars});
+    int best = -1;
+    for (const auto& day : d.days) {
+        if (day.day > to) break;
+        if (day.c.stars < 0) continue;
+        best = std::max(best, day.c.stars);
+        if (day.day >= from) out.push_back({day.day, best});
+    }
     return out;
 }
 
