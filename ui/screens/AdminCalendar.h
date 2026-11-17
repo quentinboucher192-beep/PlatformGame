@@ -20,6 +20,7 @@
 #include "engine/core/Math.h"
 #include "game/online/DailyChallenges.h"
 #include "game/online/OnlineTypes.h"
+#include "ui/screens/ChallengeRewardsUi.h"
 #include "ui/screens/ChallengeUi.h"
 
 namespace cosmic {
@@ -43,6 +44,9 @@ public:
     /// drawModal over everything).
     bool modal() const { return picker_ || itemPicker_; }
     void drawModal();
+    /// 2.60: the tooltip of the exclusive reward hovered or focused (the list of a challenge's
+    /// rewards, the game items' picker), over everything: once the screen and its modal are drawn.
+    void drawTooltip();
 
 private:
     struct Period {
@@ -99,8 +103,10 @@ private:
     void createTitle();
     void addPrize(ChallengePrize p);
     void drawRewardsTab(const Period& p, const Rect& r, bool editable);
-    /// One reward of the list in `row`; returns true when its × was used.
-    bool drawPrizeRow(size_t i, const Rect& row, bool editable);
+    /// One reward of the list of `per` in `row`; returns true when its × was used.
+    bool drawPrizeRow(const Period& per, size_t i, const Rect& row, bool editable);
+    /// 2.60: the creation of « Créations » with this reference (GET /admin/creations), nullptr when unknown.
+    const Json* creationByRef(const std::string& ref) const;
     /// Bronze / Argent / Or / Top N / Niveau fini (and N), wrapping in `w`; returns its height
     /// (`draw` false: measured only).
     float conditionChooser(const std::string& id, float x, float y, float w, bool draw);
@@ -168,6 +174,7 @@ private:
     bool titlesLoaded_ = false;
     Json suits_ = Json::array();   // the creations of « Créations » (GET /admin/creations): suits, 2.59 trails, frames, victory effects
     std::string suitsError_;       // why that list could not be read ("" when it was)
+    ExclusiveTip tip_;             // 2.60: the tooltip of the exclusive reward hovered or focused
 };
 
 }  // namespace cosmic

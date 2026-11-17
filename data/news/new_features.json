@@ -1254,6 +1254,20 @@
    ]
   },
   {
+   "id": "admin.creations.reserve",
+   "version": "2.60.0",
+   "parents": [
+    "admin.tab.creations"
+   ]
+  },
+  {
+   "id": "collection.exclusive",
+   "version": "2.60.0",
+   "parents": [
+    "collection.tab.wardrobe"
+   ]
+  },
+  {
    "id": "collection.tab.music",
    "parents": [
     "menu.collection"

@@ -15,6 +15,11 @@
 // « Archiver » / « Restaurer »: each change is sent to the server, which checks everything again
 // and answers (shown as it is: nothing is ever taken for done before its answer). A creation is
 // then given as the reward of a challenge in « Calendrier des défis › Récompenses ».
+// 2.60: the game's own reserve is listed too (« Réserve du jeu » instead of an author); a filter
+// shows those in service, the reserve (never given), those given as a reward and the archives,
+// each row with its label; every preview wears the aura of the exclusive items, and its tooltip
+// says where it stands (« Réserve : pas encore donné en récompense », the first challenge that
+// gives it).
 
 #include <functional>
 #include <memory>
@@ -26,6 +31,7 @@
 #include "game/cosmetics/SuitRecolor.h"
 #include "game/online/OnlineTypes.h"
 #include "ui/online/OnlineWidgets.h"
+#include "ui/screens/ChallengeRewardsUi.h"
 #include "ui/screens/CosmeticFx.h"
 
 namespace cosmic {
@@ -43,6 +49,8 @@ public:
     /// The tab is shown: the list is read once (again with `force`).
     void enter(bool force = false);
     void draw(const Rect& inner);
+    /// 2.60: the tooltip of the row hovered or focused, over everything (once the screen is drawn).
+    void drawTooltip();
 
 private:
     struct Draft {
@@ -112,7 +120,10 @@ private:
     bool loaded_ = false, loading_ = false, saving_ = false;
     std::string loadError_;
     int loadGen_ = 0;
-    bool showArchived_ = false;
+    /// 2.60: the rows shown: 0 in service (the reserve and those given), 1 the reserve (never
+    /// given), 2 those given as a reward, 3 the archives.
+    int filter_ = 0;
+    ExclusiveTip tip_;  // 2.60: the tooltip of the row hovered or focused
     int kind_ = 0;          // the kind shown: 0 suits, 1 trails, 2 frames, 3 victory effects
     int pendingKind_ = -1;  // a kind chosen while the draft had changes
     bool editing_ = false;  // the editor shows a draft

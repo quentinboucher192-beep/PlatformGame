@@ -5,6 +5,13 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.60.0** :
+* **Objets exclusifs** (récompenses de défi seulement) : une **aura** dorée qui pulse autour de leur vignette et
+  une infobulle qui dit d'où ils viennent (« Exclusif : défi du jour du 10/11/2026 · Or atteint ») ;
+  **Administration › Créations** apporte la **réserve du jeu** (40 combinaisons, 30 traînées, 30 cadres, 30
+  effets de victoire), invisible des joueurs tant qu'aucun défi ne la donne, avec un filtre réserve / donnée /
+  archivée.
+
 **Nouveau dans la version 2.59.0** :
 * **Administration › Créations**, trois nouveaux types en plus des combinaisons : des **traînées** (une forme
   que le jeu sait dessiner, la couleur près de Nova et celle du bout, la largeur, la durée, les étincelles),

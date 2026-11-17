@@ -220,6 +220,7 @@ public:
             ui.label("étoiles", {tx + sz.x + ui.s(8), c.y}, 15, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
         }
         Rect area{m, y + ui.s(66), ui.screenW() - 2 * m, ui.screenH() - (y + ui.s(66)) - ui.s(26)};
+        exclusiveTip_.clear();
         switch (tab_) {
             case 0: drawWardrobe(area); break;
             case 1: drawRoute(area); break;
@@ -228,6 +229,10 @@ public:
             default: replays_.draw(area); break;
         }
         ui.popId();
+        // 2.60: the tooltip of the exclusive item hovered or focused, over everything (the novelty
+        // of the aura is then seen).
+        exclusiveTip_.draw(g_);
+        if (exclusiveTip_.active() && ui.featureSeen && ui.isNew("collection.exclusive")) ui.featureSeen("collection.exclusive");
         if (back || ui.backPressed()) {
             g_.collection.save();
             // Opened from the main menu (it replaced it) or on top of another screen.
@@ -414,12 +419,19 @@ private:
             Rect c{gridA.x + (cw + gap) * static_cast<float>(i % cols), gy - so + (ch + rowGap) * static_cast<float>(i / cols), cw, ch};
             bool unlocked = cosmeticUnlocked(it, progress_);
             bool on = sel == &it || (sel && sel->id == it.id);
-            if (ui.hotspot("item" + std::to_string(i), c)) selItem_ = it.id;
+            bool hovered = false;
+            if (ui.hotspot("item" + std::to_string(i), c, &hovered)) selItem_ = it.id;
             // « NOUVEAU » (a reward added by an update): seen on focus (mouse over it too) or a click.
             const bool fresh = ui.newBadge("item" + std::to_string(i), c, "cos." + it.id, false, true);
             r.fillRoundedRect(c, ui.s(12), on ? ui.theme().accent.withAlpha(36) : Color{14, 20, 40, 235});
             r.drawRoundedRect(c, ui.s(12), on ? ui.theme().accent : ui.theme().accent.withAlpha(40), std::max(1.0f, ui.s(1.5f)));
             Rect thumb{c.x + ui.s(10), c.y + ui.s(10), c.w - ui.s(20), ui.s(84)};
+            // 2.60: an exclusive item (only a reward of the challenges): its aura in the card's margin
+            // around the thumbnail (5 of the 8 pixels above the name), and its tooltip.
+            if (exclusiveItem(it)) {
+                drawExclusiveAura(ui, thumb, ui.s(8), ui.s(5));
+                exclusiveTip_.offer(ui, c, hovered, ui.focused("item" + std::to_string(i)), it.name, exclusiveText(g_, it));
+            }
             drawThumb(it, thumb, unlocked);
             ui.label(ui.elide(it.name, FontFace::Bold, 16, c.w - ui.s(20)), {c.x + ui.s(10), c.y + ui.s(102)}, 16,
                      unlocked ? ui.theme().text : ui.theme().textDim, Align::Left, FontFace::Bold);
@@ -436,6 +448,8 @@ private:
                 pillRight = er.x - ui.s(6);
             }
             if (fresh) ui.drawNewPill(pillRight, c.y, true);  // on the top edge (left of « Équipé »)
+            // 2.60: the aura of the exclusive items is new: their pill until one's tooltip is seen.
+            else if (exclusiveItem(it) && ui.isNew("collection.exclusive")) ui.drawNewPill(pillRight, c.y, true);
         }
         ui.endScroll();
     }
@@ -1625,6 +1639,7 @@ private:
     std::string selItem_;
     std::string selBadge_;  // 2.41: the achievement selected among the profile badges
     BadgeRow slotsRow_;     // the badges of the preview (their tooltip)
+    ExclusiveTip exclusiveTip_;  // 2.60: the tooltip of the exclusive item hovered or focused
     TrailFx trailFx_;
     bool routeEnd_ = false;  // automated screenshots: the Route scrolled to its end
     Vec2 trailCenter_;

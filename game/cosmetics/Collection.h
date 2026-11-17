@@ -75,6 +75,10 @@ struct WonReward {
     std::string kind;          // "item" (of the catalogue), "title", "suit", "trail", "frame" or "victory" (created on the server)
     std::string ref;           // the item's id, "srv:<n>", "srvsuit:<n>", "srvtrail:<n>", "srvframe:<n>" or "srvvictory:<n>"
     std::string grantedAt;
+    /// 2.60: the rule of that challenge it was won by ("tier" value 1..3, "top" value N,
+    /// "finished"; "" when the server did not say), for the tooltips of the exclusive items.
+    std::string condition;
+    int value = 0;
 };
 
 /// 2.43: what the player won at single challenges: catalogue items (unlocked whatever their

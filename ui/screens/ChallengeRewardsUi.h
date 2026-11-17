@@ -9,6 +9,11 @@
 // 2.43: the rewards of one challenge (an administrator's: an item of the catalogue or a title
 // created on Cosmic Online, each with its condition on that challenge) come first in the row,
 // with the mark of their condition and a tooltip of their own.
+// 2.60: an « exclusive » item (only obtained as the reward of a challenge: every creation of
+// Cosmic Online, and the catalogue's rewards of the challenges) wears an aura around its
+// thumbnail wherever it is drawn as an item, and its tooltip says where it comes from:
+// « Exclusif : défi du jour du 10/11/2026 · Or atteint » (what the server granted, kept on this
+// computer), « Exclusif aux défis » when nothing more is known.
 
 #include <cstdint>
 #include <optional>
@@ -16,6 +21,7 @@
 #include <utility>
 #include <vector>
 
+#include "engine/core/Json.h"
 #include "engine/core/Math.h"
 #include "game/online/DailyChallenges.h"
 
@@ -52,6 +58,54 @@ Color challengeTierColor(int tier);
 /// The preview of a cosmetic as the Collection draws it, inside `box` (`unlocked` false: dimmed).
 void drawCosmeticPreview(GameServices& g, const CosmeticItem& it, const Rect& box, float time, bool unlocked);
 
+// ------------------------------------------------------------------ exclusive items (2.60)
+
+/// Only obtained as the reward of a challenge: every creation of Cosmic Online (a suit, a trail,
+/// a frame, a victory effect, a title) and the catalogue's items unlocked by challenge results.
+bool exclusiveItem(const CosmeticItem& it);
+/// The colour of the aura and of the tooltips of the exclusive items (a soft gold).
+Color exclusiveColor();
+/// The aura of an exclusive item: a soft glow that pulses around `box` (its thumbnail, corner
+/// `radius`), never beyond `spread` from its edge (the caller keeps that margin clear: no text,
+/// no neighbour in it). Display only.
+void drawExclusiveAura(UIContext& ui, const Rect& box, float radius, float spread);
+/// « défi du jour du 10/11/2026 », « défi de la semaine du 09/11/2026 », « défi du mois de
+/// novembre 2026 » (`kind` "daily", "weekly", "monthly"; `date` its first day); "" when unreadable.
+std::string challengeOriginText(const std::string& kind, const std::string& period, const std::string& date);
+/// « Or atteint », « Top 10 final », « Niveau fini » ("" for an unknown condition).
+std::string conditionShort(const std::string& condition, int value);
+/// « Exclusif : défi du jour du 10/11/2026 · Or atteint » (the condition when known); « Exclusif
+/// aux défis » when the challenge is not readable.
+std::string exclusiveOriginText(const std::string& kind, const std::string& period, const std::string& date, const std::string& condition = {},
+                                int value = 0);
+/// Where an exclusive item comes from, as this game knows it: the challenge where I won it (GET
+/// /players/me/rewards, kept for offline play), else a catalogue reward's condition (« Exclusif
+/// aux défis : Réussir… »), else « Exclusif aux défis ».
+std::string exclusiveText(GameServices& g, const CosmeticItem& it);
+/// An item of the reserve never given yet (seen only by an administrator).
+std::string reserveText();
+/// The administration's tooltip of a creation of GET /admin/creations: the first challenge that
+/// gives it (`given_by`), « Exclusif aux défis » (won, its challenge unknown), else the reserve
+/// (`reserve` set: never given).
+std::string adminCreationTip(const Json& creation, bool* reserve = nullptr);
+
+/// The tooltip of an exclusive item: its name, then where it comes from, by the tile hovered
+/// (mouse) or focused (keyboard, gamepad). offer() while drawing the tiles, draw() once the
+/// rest of the screen is drawn (over everything, always inside the screen, its text measured).
+class ExclusiveTip {
+public:
+    void clear() { text_.clear(); }
+    /// `tile` shows its tooltip this frame when it is hovered (with the mouse) or focused (otherwise).
+    void offer(UIContext& ui, const Rect& tile, bool hovered, bool focused, const std::string& name, const std::string& text, bool reserve = false);
+    bool active() const { return !text_.empty(); }
+    void draw(GameServices& g);
+
+private:
+    Rect tile_;
+    std::string name_, text_;
+    bool reserve_ = false;
+};
+
 /// A row of reward tiles (focusable) and the tooltip of the one hovered or focused.
 class ChallengeRewardRow {
 public:
@@ -80,6 +134,7 @@ private:
         CosmeticItem item;
         ChallengePrize prize;
         bool won = false;
+        std::string exclusive;  // 2.60: « Exclusif : défi du jour du… » ("" for an item that is not exclusive)
     };
     void drawPrizeTooltip(GameServices& g, const Prize& pz);
 

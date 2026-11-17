@@ -335,6 +335,14 @@ std::optional<WonRewards> WonRewards::fromJson(const Json& rewards) {
         x.kind = jstr(r, "kind");
         x.ref = jstr(r, "ref");
         x.grantedAt = jstr(r, "granted_at");
+        // 2.60: what it was won by (a condition this game knows, its value in bounds; else nothing said).
+        if (std::string cond = jstr(r, "condition"); cond == "tier" || cond == "top" || cond == "finished") {
+            const int v = jget<int>(r, "value", 0);
+            if (cond == "finished" || (cond == "tier" && v >= 1 && v <= 3) || (cond == "top" && v >= 1 && v <= 100)) {
+                x.condition = cond;
+                x.value = cond == "finished" ? 0 : v;
+            }
+        }
         if (!safeRef(x.challengeId) || !safeRef(x.ref) || (x.kind != "item" && x.kind != "title" && x.kind != "suit" && !isCreationLookKind(x.kind)))
             continue;
         if (isCreationLookKind(x.kind)) {
@@ -404,6 +412,10 @@ Json WonRewards::toJson() const {
                   {"kind", x.kind},
                   {"ref", x.ref},
                   {"granted_at", x.grantedAt}};
+        if (!x.condition.empty()) {
+            r["condition"] = x.condition;
+            r["value"] = x.value;
+        }
         if (const CosmeticItem* t = x.kind == "title" ? title(x.ref) : nullptr) r["title"] = {{"id", t->id}, {"text", t->look}, {"color", t->color}};
         if (const CosmeticItem* s = x.kind == "suit" ? suit(x.ref) : nullptr; s && s->suitColors)
             r["suit"] = {{"id", s->id}, {"name", s->name}, {"colors", suitColorsToJson(*s->suitColors)}};
