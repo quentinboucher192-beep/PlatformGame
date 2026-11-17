@@ -31329,6 +31329,12 @@
    ]
   },
   {
+   "fr": "Records gardés : la refonte du Monolithe ne remet aucun classement à zéro (vos temps sur « Le Cœur de Pierre » restent valables, en ligne comme dans le jeu) ; sa musique est aussi la bonne en entraînement de boss.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Records locaux",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"

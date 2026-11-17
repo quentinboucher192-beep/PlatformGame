@@ -5120,6 +5120,7 @@
   "Records en cours de vérification": "Records being verified",
   "records gardés ({0} meilleur temps reporté)": "records kept ({0} best time carried over)",
   "records gardés ({0} meilleurs temps reportés)": "records kept ({0} best times carried over)",
+  "Records gardés : la refonte du Monolithe ne remet aucun classement à zéro (vos temps sur « Le Cœur de Pierre » restent valables, en ligne comme dans le jeu) ; sa musique est aussi la bonne en entraînement de boss.": "Records kept: the Monolith rework resets no leaderboard (your times on “The Heart of Stone” stay valid, online and in the game); its music is also the right one in boss training.",
   "Records locaux": "Local records",
   "Records mondiaux": "World records",
   "Records personnels": "Personal records",

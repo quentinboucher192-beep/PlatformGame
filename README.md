@@ -5,6 +5,13 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.52.0** :
+* **Le Monolithe se réveille** : il marche vers vous (fini les coins et les fosses), Carapace roulante,
+  Tremblement de terre, Bond titanesque et ses ondes de choc ; aucun classement remis à zéro.
+* **Flèches vers les ennemis hors écran**, regroupées par paquets avec leur nombre (« ×4 »).
+* **Succès › Suggestions** (5 proposés d'après votre progression), jusqu'à 5 succès suivis avec leur avancée
+  dans le menu pause, et le HUD « Ennemis vaincus X / Y ».
+
 **Nouveau dans la version 2.51.0** :
 * **L'histoire des giga-boss** : une cinématique illustrée avant le premier combat (passable, hors chrono),
   « Revoir l'histoire » sur la fiche du boss et dans la Galerie, option dans Paramètres › Jeu.
