@@ -1687,14 +1687,19 @@ bool AdminCalendar::drawPrizeRow(const Period& per, size_t i, const Rect& row, b
                      p.title() ? titleColor(p.color) : ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
         }
         // 2.60: a creation of the reserve was not made by an administrator.
-        const Json* made = p.suit() || p.creation() ? creationByRef(p.ref) : nullptr;
+        const bool creation = p.suit() || p.creation();
+        const Json* made = creation ? creationByRef(p.ref) : nullptr;
         const bool reserve = made && jget<bool>(*made, "game_reserve", false);
-        const std::string from = reserve                         ? "réserve du jeu · pas besoin de mise à jour"
-                                 : p.title()                     ? "créé par un admin · pas besoin de mise à jour"
-                                 : p.suit() || p.kind == "trail" ? "créée par un admin · pas besoin de mise à jour"
-                                 : p.creation()                  ? "créé par un admin · pas besoin de mise à jour"
-                                 : look                          ? "dans le jeu"
-                                                                 : "inconnu de cette version du jeu";
+        const bool fem = p.suit() || p.kind == "trail";
+        // Who made a creation is said once the list of « Créations » is read (never guessed).
+        const std::string from = reserve                     ? "réserve du jeu · pas besoin de mise à jour"
+                                 : creation && !made && fem  ? "créée sur Cosmic Online · pas besoin de mise à jour"
+                                 : creation && !made         ? "créé sur Cosmic Online · pas besoin de mise à jour"
+                                 : p.title()                 ? "créé par un admin · pas besoin de mise à jour"
+                                 : creation && fem           ? "créée par un admin · pas besoin de mise à jour"
+                                 : creation                  ? "créé par un admin · pas besoin de mise à jour"
+                                 : look                      ? "dans le jeu"
+                                                             : "inconnu de cette version du jeu";
         ui.label(ui.elide(from, FontFace::Body, fz(ui, 14), room), {tx, row.y + ui.s(43)}, fz(ui, 14), ui.theme().textDim, Align::Left, FontFace::Body,
                  VAlign::Middle);
     }
@@ -1705,7 +1710,8 @@ void AdminCalendar::drawRewardsTab(const Period& p, const Rect& r, bool editable
     UIContext& ui = g_.ui;
     const float x = r.x, w = r.w;
     float y = r.y;
-    if (editable && !titlesLoaded_) loadTitles();
+    // 2.60: read for a challenge already begun too (who made each creation: an admin or the game's reserve).
+    if (!titlesLoaded_) loadTitles();
     // Title and count.
     const std::string count = std::to_string(prizes_.size()) + " / " + std::to_string(kMaxPrizes);
     const float countW = ui.text().measure(count, FontFace::Body, ui.s(fz(ui, 15))).x + ui.s(12);

@@ -28,6 +28,7 @@
 namespace cosmic {
 
 class GameServices;
+class UIContext;
 struct CosmeticItem;
 struct CosmeticProgress;
 

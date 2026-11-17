@@ -10920,6 +10920,12 @@
    ]
   },
   {
+   "fr": "créé sur Cosmic Online · pas besoin de mise à jour",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Créée le {0}",
    "where": [
     "ui/screens/AdminCreations.cpp"
@@ -10935,6 +10941,12 @@
    "fr": "Créée par {0} le {1}",
    "where": [
     "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "créée sur Cosmic Online · pas besoin de mise à jour",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
