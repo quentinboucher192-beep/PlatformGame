@@ -1,0 +1,9 @@
+{
+  "texture": "stories/phenix/pics.png",
+  "frameWidth": 800,
+  "frameHeight": 160,
+  "pivot": [0, 0],
+  "clips": {
+    "idle": {"row": 0, "count": 4, "fps": 5, "loop": true}
+  }
+}

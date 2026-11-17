@@ -1,7 +1,7 @@
 {
  "format": "cosmic.boss_story",
- "version": 1,
- "comment": "Story of a giga boss (game/content/BossStories.h), told before the first fight against it. Each shot: its painting (assets/, tools/assetgen/environment/stories.py), its line of narration, the point the slow zoom goes to, the live particles over it. A shot lasts max(4.5 s, 1.2 s + characters / 16); then the title card (3 s).",
+ "version": 2,
+ "comment": "Story of a giga boss (game/content/BossStories.h), told before the first fight against it. Version 2: each shot is an animated scene (« stage »: parallax layers, sprites moved by keyframes, glows, particles, camera, shakes, flashes), written by tools/assetgen/environment/story_phenix_scene.py (edit it there); its image is the still rendered from the scene. A shot lasts max(4.5 s, 1.2 s + characters / 16); then the title card (3 s).",
  "boss": "phenix",
  "title": "Le Porteur d'aube",
  "color": "#ffd04a",
@@ -16,9 +16,580 @@
     0.46,
     0.42
    ],
-   "zoom": 1.12,
-   "particles": "sparks",
-   "glow": "#ffd04a"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#ffd04a",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#04030c",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       300.0,
+       220.0
+      ],
+      "zoom": 1.3
+     },
+     {
+      "t": 1.6,
+      "pos": [
+       330.0,
+       210.0
+      ],
+      "zoom": 1.26
+     },
+     {
+      "t": 4.2,
+      "pos": [
+       560.0,
+       250.0
+      ],
+      "zoom": 1.2
+     },
+     {
+      "t": 8.137,
+      "pos": [
+       720.0,
+       300.0
+      ],
+      "zoom": 1.14
+     }
+    ],
+    "elements": [
+     {
+      "id": "ciel",
+      "sprite": "animations/stories/phenix_ciel_nuit.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "aube",
+      "sprite": "animations/stories/phenix_ciel_aube.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "alpha": 0.0,
+        "clip": "idle"
+       },
+       {
+        "t": 4.0,
+        "alpha": 0.0
+       },
+       {
+        "t": 8.137,
+        "alpha": 0.55
+       }
+      ]
+     },
+     {
+      "id": "etoiles",
+      "sprite": "animations/stories/phenix_etoiles.json",
+      "depth": 0.08,
+      "drift": [
+       4.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -20.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "astre1",
+      "sprite": "animations/stories/phenix_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         828.3,
+         10.7
+        ],
+        "clip": "twinkle",
+        "offset": 0.803,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre2",
+      "sprite": "animations/stories/phenix_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         862.2,
+         166.3
+        ],
+        "clip": "twinkle",
+        "offset": 0.705,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre3",
+      "sprite": "animations/stories/phenix_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         876.8,
+         90.9
+        ],
+        "clip": "twinkle",
+        "offset": 1.182,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre4",
+      "sprite": "animations/stories/phenix_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         608.0,
+         240.0
+        ],
+        "clip": "twinkle",
+        "offset": 0.937,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre5",
+      "sprite": "animations/stories/phenix_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         475.8,
+         162.6
+        ],
+        "clip": "twinkle",
+        "offset": 0.793,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre6",
+      "sprite": "animations/stories/phenix_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         588.5,
+         204.0
+        ],
+        "clip": "twinkle",
+        "offset": 0.816,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre7",
+      "sprite": "animations/stories/phenix_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         307.4,
+         28.3
+        ],
+        "clip": "twinkle",
+        "offset": 1.108,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre8",
+      "sprite": "animations/stories/phenix_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         413.1,
+         14.8
+        ],
+        "clip": "twinkle",
+        "offset": 0.708,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "etoile_lueur",
+      "glow": "#fff2c8",
+      "radius": 260.0,
+      "depth": 0.1,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         180.0,
+         170.0
+        ],
+        "alpha": 0.8
+       }
+      ],
+      "pulse": [
+       0.2,
+       2.4
+      ]
+     },
+     {
+      "id": "etoile_halo",
+      "glow": "#ffd04a",
+      "radius": 140.0,
+      "depth": 0.1,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         180.0,
+         170.0
+        ],
+        "alpha": 0.7
+       }
+      ],
+      "pulse": [
+       0.3,
+       1.3,
+       0.3
+      ]
+     },
+     {
+      "id": "etoile",
+      "sprite": "animations/stories/phenix_etoile.json",
+      "depth": 0.1,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         180.0,
+         170.0
+        ],
+        "clip": "shine",
+        "scale": 2.4
+       }
+      ]
+     },
+     {
+      "id": "nuages_loin",
+      "sprite": "animations/stories/phenix_nuages.json",
+      "depth": 0.15,
+      "drift": [
+       -8.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         200.0
+        ],
+        "alpha": 0.75,
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "volcans_loin",
+      "sprite": "animations/stories/phenix_volcans_loin.json",
+      "depth": 0.3,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -140.0,
+         250.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "aube_horizon",
+      "glow": "#ffb070",
+      "radius": 320.0,
+      "depth": 0.3,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         860.0,
+         470.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 4.6,
+        "alpha": 0.0
+       },
+       {
+        "t": 8.137,
+        "alpha": 0.7,
+        "ease": "out"
+       }
+      ]
+     },
+     {
+      "id": "nuages",
+      "sprite": "animations/stories/phenix_nuages.json",
+      "depth": 0.4,
+      "drift": [
+       14.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         330.0
+        ],
+        "alpha": 0.85,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "oiseau",
+      "sprite": "animations/stories/phenix_oiseau.json",
+      "depth": 0.6,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         190.0,
+         170.0
+        ],
+        "clip": "fly",
+        "alpha": 0.0,
+        "scale": 0.6
+       },
+       {
+        "t": 1.0,
+        "ease": "step",
+        "pos": [
+         200.0,
+         166.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 1.02,
+        "ease": "step",
+        "pos": [
+         202.0,
+         166.0
+        ],
+        "alpha": 1.0
+       },
+       {
+        "t": 2.6,
+        "ease": "inout",
+        "pos": [
+         360.0,
+         150.0
+        ],
+        "scale": 1.0
+       },
+       {
+        "t": 4.2,
+        "ease": "inout",
+        "pos": [
+         560.0,
+         210.0
+        ],
+        "clip": "glide"
+       },
+       {
+        "t": 5.6,
+        "ease": "inout",
+        "pos": [
+         720.0,
+         270.0
+        ],
+        "clip": "fly"
+       },
+       {
+        "t": 8.137,
+        "ease": "inout",
+        "pos": [
+         860.0,
+         330.0
+        ],
+        "clip": "glide",
+        "scale": 0.9
+       }
+      ]
+     },
+     {
+      "id": "oiseau_lueur",
+      "glow": "#ffd04a",
+      "radius": 90.0,
+      "depth": 0.6,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         190.0,
+         170.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 1.0,
+        "pos": [
+         170.0,
+         172.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 1.02,
+        "pos": [
+         172.0,
+         172.0
+        ],
+        "alpha": 0.8
+       },
+       {
+        "t": 2.6,
+        "pos": [
+         330.0,
+         156.0
+        ],
+        "alpha": 0.8
+       },
+       {
+        "t": 4.2,
+        "pos": [
+         530.0,
+         216.0
+        ],
+        "alpha": 0.8
+       },
+       {
+        "t": 5.6,
+        "pos": [
+         690.0,
+         276.0
+        ],
+        "alpha": 0.8
+       },
+       {
+        "t": 8.137,
+        "pos": [
+         830.0,
+         336.0
+        ],
+        "alpha": 0.8
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.6
+      ]
+     },
+     {
+      "id": "etincelles",
+      "particles": "sparks",
+      "color": "#ffd04a",
+      "area": [
+       200.0,
+       100.0,
+       700.0,
+       280.0
+      ],
+      "depth": 0.6,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.4
+       },
+       {
+        "t": 1.0,
+        "alpha": 0.4
+       },
+       {
+        "t": 2.0,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "etoiles_vives",
+      "particles": "stars",
+      "color": "#fff0d8",
+      "area": [
+       0.0,
+       0.0,
+       960.0,
+       300.0
+      ],
+      "depth": 0.1,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.5
+       }
+      ]
+     }
+    ],
+    "flash": [
+     {
+      "t": 1.0,
+      "in": 0.1,
+      "out": 0.4,
+      "color": "#fff2c0",
+      "alpha": 0.35
+     }
+    ]
+   }
   },
   {
    "scene": "waking",
@@ -28,9 +599,501 @@
     0.58,
     0.56
    ],
-   "zoom": 1.1,
-   "particles": "embers",
-   "glow": "#ffb070"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#ffb070",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#04030c",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       220.0,
+       330.0
+      ],
+      "zoom": 1.22
+     },
+     {
+      "t": 3.2,
+      "pos": [
+       440.0,
+       334.0
+      ],
+      "zoom": 1.2
+     },
+     {
+      "t": 7.637,
+      "pos": [
+       760.0,
+       320.0
+      ],
+      "zoom": 1.18
+     }
+    ],
+    "elements": [
+     {
+      "id": "ciel",
+      "sprite": "animations/stories/phenix_ciel_nuit.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "aube",
+      "sprite": "animations/stories/phenix_ciel_aube.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "alpha": 0.0,
+        "clip": "idle"
+       },
+       {
+        "t": 1.0,
+        "alpha": 0.1
+       },
+       {
+        "t": 7.637,
+        "alpha": 1.0,
+        "ease": "inout"
+       }
+      ]
+     },
+     {
+      "id": "etoiles",
+      "sprite": "animations/stories/phenix_etoiles.json",
+      "depth": 0.08,
+      "drift": [
+       4.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -20.0
+        ],
+        "alpha": 0.8,
+        "clip": "idle"
+       },
+       {
+        "t": 4.5,
+        "alpha": 0.3
+       }
+      ]
+     },
+     {
+      "id": "nuages_loin",
+      "sprite": "animations/stories/phenix_nuages.json",
+      "depth": 0.12,
+      "drift": [
+       -8.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         120.0
+        ],
+        "alpha": 0.7,
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "volcans_loin",
+      "sprite": "animations/stories/phenix_volcans_loin.json",
+      "depth": 0.25,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -240.0,
+         170.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "brume",
+      "sprite": "animations/stories/phenix_brume.json",
+      "depth": 0.4,
+      "drift": [
+       12.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -160.0,
+         330.0
+        ],
+        "alpha": 0.8,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "volcans",
+      "sprite": "animations/stories/phenix_volcans.json",
+      "depth": 0.55,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -320.0,
+         140.0
+        ],
+        "clip": "idle",
+        "offset": 0.2
+       }
+      ]
+     },
+     {
+      "id": "verre",
+      "sprite": "animations/stories/phenix_verre.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "rocher1",
+      "sprite": "animations/stories/phenix_rocher.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        160.0,
+        25.6
+       ],
+       "light": [
+        700.0,
+        200.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         260.0,
+         452.0
+        ],
+        "clip": "idle",
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "rocher2",
+      "sprite": "animations/stories/phenix_rocher.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        190.0,
+        30.4
+       ],
+       "light": [
+        700.0,
+        200.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         720.0,
+         456.0
+        ],
+        "clip": "idle",
+        "scale": 1.2,
+        "flip": true,
+        "offset": 0.4
+       }
+      ]
+     },
+     {
+      "id": "oiseau",
+      "sprite": "animations/stories/phenix_oiseau.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -40.0,
+         300.0
+        ],
+        "clip": "fly"
+       },
+       {
+        "t": 1.8,
+        "ease": "inout",
+        "pos": [
+         200.0,
+         360.0
+        ],
+        "clip": "glide"
+       },
+       {
+        "t": 3.2,
+        "ease": "inout",
+        "pos": [
+         420.0,
+         330.0
+        ],
+        "clip": "fly"
+       },
+       {
+        "t": 4.6,
+        "ease": "inout",
+        "pos": [
+         620.0,
+         380.0
+        ],
+        "clip": "glide"
+       },
+       {
+        "t": 6.0,
+        "ease": "inout",
+        "pos": [
+         820.0,
+         330.0
+        ],
+        "clip": "fly"
+       },
+       {
+        "t": 7.637,
+        "ease": "inout",
+        "pos": [
+         1000.0,
+         280.0
+        ]
+       }
+      ]
+     },
+     {
+      "id": "oiseau_lueur",
+      "glow": "#ffd04a",
+      "radius": 80.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -70.0,
+         306.0
+        ],
+        "alpha": 0.8
+       },
+       {
+        "t": 1.8,
+        "pos": [
+         170.0,
+         366.0
+        ]
+       },
+       {
+        "t": 3.2,
+        "pos": [
+         390.0,
+         336.0
+        ]
+       },
+       {
+        "t": 4.6,
+        "pos": [
+         590.0,
+         386.0
+        ]
+       },
+       {
+        "t": 6.0,
+        "pos": [
+         790.0,
+         336.0
+        ]
+       },
+       {
+        "t": 7.637,
+        "pos": [
+         970.0,
+         286.0
+        ]
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.6
+      ]
+     },
+     {
+      "id": "jour",
+      "glow": "#ffc080",
+      "radius": 300.0,
+      "depth": 0.8,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -120.0,
+         380.0
+        ],
+        "alpha": 0.5
+       },
+       {
+        "t": 1.8,
+        "pos": [
+         60.0,
+         400.0
+        ],
+        "alpha": 0.6
+       },
+       {
+        "t": 3.2,
+        "pos": [
+         280.0,
+         400.0
+        ],
+        "alpha": 0.6
+       },
+       {
+        "t": 4.6,
+        "pos": [
+         480.0,
+         400.0
+        ],
+        "alpha": 0.6
+       },
+       {
+        "t": 6.0,
+        "pos": [
+         680.0,
+         400.0
+        ],
+        "alpha": 0.6
+       },
+       {
+        "t": 7.637,
+        "pos": [
+         860.0,
+         400.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.2,
+       2.0
+      ]
+     },
+     {
+      "id": "eclats",
+      "particles": "sparks",
+      "color": "#ffe0a0",
+      "area": [
+       0.0,
+       400.0,
+       960.0,
+       70.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.4
+       },
+       {
+        "t": 7.637,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "etincelles",
+      "particles": "embers",
+      "color": "#ffd04a",
+      "area": [
+       60.0,
+       260.0,
+       840.0,
+       200.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       }
+      ]
+     },
+     {
+      "id": "cendres",
+      "particles": "ash",
+      "color": "#c8a8b8",
+      "area": [
+       0.0,
+       330.0,
+       960.0,
+       150.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/phenix_avant.json",
+      "depth": 1.35,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ]
+   }
   },
   {
    "scene": "long_night",
@@ -40,9 +1103,508 @@
     0.5,
     0.46
    ],
-   "zoom": 1.1,
-   "particles": "dust",
-   "glow": "#c88bff"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#c88bff",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#04030c",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       580.0,
+       220.0
+      ],
+      "zoom": 1.16
+     },
+     {
+      "t": 2.2,
+      "pos": [
+       560.0,
+       240.0
+      ],
+      "zoom": 1.16
+     },
+     {
+      "t": 4.0,
+      "pos": [
+       450.0,
+       340.0
+      ],
+      "zoom": 1.5
+     },
+     {
+      "t": 7.075,
+      "pos": [
+       436.0,
+       346.0
+      ],
+      "zoom": 1.62
+     }
+    ],
+    "elements": [
+     {
+      "id": "ciel",
+      "sprite": "animations/stories/phenix_ciel_nuit.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "etoiles",
+      "sprite": "animations/stories/phenix_etoiles.json",
+      "depth": 0.08,
+      "drift": [
+       4.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -20.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "astre1",
+      "sprite": "animations/stories/phenix_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         214.4,
+         93.7
+        ],
+        "clip": "twinkle",
+        "offset": 0.216,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre2",
+      "sprite": "animations/stories/phenix_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         43.8,
+         217.9
+        ],
+        "clip": "twinkle",
+        "offset": 0.882,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre3",
+      "sprite": "animations/stories/phenix_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         172.5,
+         55.6
+        ],
+        "clip": "twinkle",
+        "offset": 0.549,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre4",
+      "sprite": "animations/stories/phenix_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         256.6,
+         69.1
+        ],
+        "clip": "twinkle",
+        "offset": 0.848,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre5",
+      "sprite": "animations/stories/phenix_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         507.2,
+         27.1
+        ],
+        "clip": "twinkle",
+        "offset": 0.384,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre6",
+      "sprite": "animations/stories/phenix_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         318.4,
+         48.7
+        ],
+        "clip": "twinkle",
+        "offset": 0.548,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "lueur_etoile",
+      "glow": "#fff2c8",
+      "radius": 150.0,
+      "depth": 0.06,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         660.0,
+         120.0
+        ],
+        "alpha": 0.6
+       },
+       {
+        "t": 1.2,
+        "alpha": 0.75
+       },
+       {
+        "t": 1.6,
+        "alpha": 1.0
+       },
+       {
+        "t": 2.0,
+        "alpha": 0.0,
+        "ease": "in"
+       }
+      ]
+     },
+     {
+      "id": "lueur_trou",
+      "glow": "#c06cf0",
+      "radius": 110.0,
+      "depth": 0.06,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         660.0,
+         120.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 1.85,
+        "alpha": 0.0
+       },
+       {
+        "t": 2.0,
+        "alpha": 0.9,
+        "ease": "out"
+       },
+       {
+        "t": 7.075,
+        "alpha": 0.3
+       }
+      ],
+      "pulse": [
+       0.3,
+       1.6
+      ]
+     },
+     {
+      "id": "etoile",
+      "sprite": "animations/stories/phenix_etoile.json",
+      "depth": 0.06,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         660.0,
+         120.0
+        ],
+        "clip": "shine",
+        "scale": 1.5
+       },
+       {
+        "t": 1.2,
+        "clip": "collapse"
+       }
+      ]
+     },
+     {
+      "id": "nuages_loin",
+      "sprite": "animations/stories/phenix_nuages.json",
+      "depth": 0.12,
+      "drift": [
+       -6.0,
+       0.0
+      ],
+      "repeat": true,
+      "tint": "#8080a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         160.0
+        ],
+        "alpha": 0.6,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "volcans_loin",
+      "sprite": "animations/stories/phenix_volcans_loin.json",
+      "depth": 0.25,
+      "tint": "#8888a8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -240.0,
+         170.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "brume",
+      "sprite": "animations/stories/phenix_brume.json",
+      "depth": 0.4,
+      "drift": [
+       8.0,
+       0.0
+      ],
+      "repeat": true,
+      "tint": "#8090b0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -160.0,
+         330.0
+        ],
+        "alpha": 0.6,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "verre",
+      "sprite": "animations/stories/phenix_verre.json",
+      "depth": 1.0,
+      "tint": "#a0a0c0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "rocher",
+      "sprite": "animations/stories/phenix_rocher.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        170.0,
+        27.2
+       ],
+       "light": [
+        660.0,
+        120.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         420.0,
+         456.0
+        ],
+        "clip": "idle",
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "oiseau_lueur",
+      "glow": "#ffd04a",
+      "radius": 80.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         426.0,
+         348.0
+        ],
+        "alpha": 0.7
+       },
+       {
+        "t": 2.6,
+        "alpha": 0.7
+       },
+       {
+        "t": 4.2,
+        "alpha": 0.1
+       }
+      ],
+      "pulse": [
+       0.3,
+       1.0
+      ]
+     },
+     {
+      "id": "oiseau",
+      "sprite": "animations/stories/phenix_oiseau.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        30.0,
+        4.8
+       ],
+       "light": [
+        660.0,
+        120.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         426.0,
+         364.0
+        ],
+        "clip": "look_up"
+       },
+       {
+        "t": 2.6,
+        "clip": "fade"
+       },
+       {
+        "t": 5.4,
+        "clip": "dim"
+       }
+      ]
+     },
+     {
+      "id": "poussiere",
+      "particles": "dust",
+      "color": "#a0a0c0",
+      "area": [
+       100.0,
+       200.0,
+       760.0,
+       260.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       }
+      ]
+     },
+     {
+      "id": "etoiles_vives",
+      "particles": "stars",
+      "color": "#d8d8ff",
+      "area": [
+       0.0,
+       0.0,
+       960.0,
+       260.0
+      ],
+      "depth": 0.1,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       },
+       {
+        "t": 2.0,
+        "alpha": 0.2
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/phenix_avant.json",
+      "depth": 1.35,
+      "tint": "#8888a8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 1.9,
+      "to": 2.5,
+      "amount": 3.0
+     }
+    ],
+    "flash": [
+     {
+      "t": 1.92,
+      "in": 0.06,
+      "out": 0.5,
+      "color": "#e0b0ff",
+      "alpha": 0.4
+     }
+    ]
+   }
   },
   {
    "scene": "burning",
@@ -52,9 +1614,508 @@
     0.5,
     0.46
    ],
-   "zoom": 1.14,
-   "particles": "embers",
-   "glow": "#ff7a3a"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#ff7a3a",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#04030c",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       440.0,
+       350.0
+      ],
+      "zoom": 1.55
+     },
+     {
+      "t": 1.0,
+      "pos": [
+       440.0,
+       346.0
+      ],
+      "zoom": 1.5
+     },
+     {
+      "t": 3.2,
+      "pos": [
+       444.0,
+       320.0
+      ],
+      "zoom": 1.24
+     },
+     {
+      "t": 4.6,
+      "pos": [
+       446.0,
+       330.0
+      ],
+      "zoom": 1.3
+     },
+     {
+      "t": 7.45,
+      "pos": [
+       446.0,
+       366.0
+      ],
+      "zoom": 1.7
+     }
+    ],
+    "elements": [
+     {
+      "id": "ciel",
+      "sprite": "animations/stories/phenix_ciel_nuit.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "aube",
+      "sprite": "animations/stories/phenix_ciel_aube.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "alpha": 0.0,
+        "clip": "idle"
+       },
+       {
+        "t": 1.4,
+        "alpha": 0.0
+       },
+       {
+        "t": 3.4,
+        "alpha": 0.45
+       },
+       {
+        "t": 4.8,
+        "alpha": 0.35
+       },
+       {
+        "t": 5.8,
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "etoiles",
+      "sprite": "animations/stories/phenix_etoiles.json",
+      "depth": 0.08,
+      "drift": [
+       4.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -20.0
+        ],
+        "alpha": 0.8,
+        "clip": "idle"
+       },
+       {
+        "t": 4.5,
+        "alpha": 0.3
+       }
+      ]
+     },
+     {
+      "id": "nuages_loin",
+      "sprite": "animations/stories/phenix_nuages.json",
+      "depth": 0.12,
+      "drift": [
+       -8.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         120.0
+        ],
+        "alpha": 0.7,
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "volcans_loin",
+      "sprite": "animations/stories/phenix_volcans_loin.json",
+      "depth": 0.25,
+      "tint": "#9090b0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -240.0,
+         170.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "brume",
+      "sprite": "animations/stories/phenix_brume.json",
+      "depth": 0.4,
+      "drift": [
+       12.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -160.0,
+         330.0
+        ],
+        "alpha": 0.8,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "verre",
+      "sprite": "animations/stories/phenix_verre.json",
+      "depth": 1.0,
+      "tint": "#9090b0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "rocher",
+      "sprite": "animations/stories/phenix_rocher.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        170.0,
+        27.2
+       ],
+       "light": [
+        446.0,
+        334.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         440.0,
+         456.0
+        ],
+        "clip": "idle",
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "brasier",
+      "glow": "#ff8a3a",
+      "radius": 280.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         446.0,
+         344.0
+        ],
+        "alpha": 0.15
+       },
+       {
+        "t": 1.0,
+        "alpha": 0.15
+       },
+       {
+        "t": 3.0,
+        "alpha": 0.95,
+        "ease": "out"
+       },
+       {
+        "t": 4.6,
+        "alpha": 0.8
+       },
+       {
+        "t": 5.3,
+        "alpha": 0.3
+       },
+       {
+        "t": 7.45,
+        "alpha": 0.2
+       }
+      ],
+      "pulse": [
+       0.2,
+       0.5
+      ]
+     },
+     {
+      "id": "coeur",
+      "glow": "#fff2c0",
+      "radius": 90.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         446.0,
+         348.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 1.0,
+        "alpha": 0.0
+       },
+       {
+        "t": 3.0,
+        "alpha": 0.9
+       },
+       {
+        "t": 5.0,
+        "alpha": 0.0
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.35
+      ]
+     },
+     {
+      "id": "oiseau",
+      "sprite": "animations/stories/phenix_oiseau.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        30.0,
+        4.8
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         446.0,
+         364.0
+        ],
+        "clip": "dim"
+       },
+       {
+        "t": 1.0,
+        "clip": "ignite"
+       },
+       {
+        "t": 4.6,
+        "clip": "collapse"
+       },
+       {
+        "t": 5.6,
+        "alpha": 1.0
+       },
+       {
+        "t": 5.8,
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "cendres",
+      "sprite": "animations/stories/phenix_cendres.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         446.0,
+         366.0
+        ],
+        "alpha": 0.0,
+        "clip": "idle"
+       },
+       {
+        "t": 5.3,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 5.32,
+        "alpha": 1.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "fumee",
+      "sprite": "animations/stories/phenix_fumee.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         446.0,
+         360.0
+        ],
+        "alpha": 0.0,
+        "scale": 1.0
+       },
+       {
+        "t": 5.1,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 5.12,
+        "alpha": 0.9,
+        "clip": "puff",
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "braises",
+      "particles": "embers",
+      "color": "#ffb066",
+      "area": [
+       326.0,
+       164.0,
+       240.0,
+       220.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.0
+       },
+       {
+        "t": 1.4,
+        "alpha": 1.0
+       },
+       {
+        "t": 5.3,
+        "alpha": 0.6
+       }
+      ]
+     },
+     {
+      "id": "etincelles",
+      "particles": "sparks",
+      "color": "#ffd04a",
+      "area": [
+       286.0,
+       204.0,
+       320.0,
+       200.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.0
+       },
+       {
+        "t": 2.0,
+        "alpha": 1.0
+       },
+       {
+        "t": 5.3,
+        "alpha": 0.2
+       }
+      ]
+     },
+     {
+      "id": "cendres_vol",
+      "particles": "ash",
+      "color": "#a8a0a8",
+      "area": [
+       246.0,
+       264.0,
+       400.0,
+       160.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.0
+       },
+       {
+        "t": 4.6,
+        "alpha": 0.0
+       },
+       {
+        "t": 5.3,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/phenix_avant.json",
+      "depth": 1.35,
+      "tint": "#9090b0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 2.4,
+      "to": 3.6,
+      "amount": 2.0
+     }
+    ],
+    "flash": [
+     {
+      "t": 3.0,
+      "in": 0.3,
+      "out": 0.8,
+      "color": "#ffd8a0",
+      "alpha": 0.35
+     }
+    ]
+   }
   },
   {
    "scene": "reborn",
@@ -64,9 +2125,537 @@
     0.5,
     0.48
    ],
-   "zoom": 1.1,
-   "particles": "sparks",
-   "glow": "#ffd04a"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#ffd04a",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#1a1030",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       446.0,
+       366.0
+      ],
+      "zoom": 1.7
+     },
+     {
+      "t": 1.9,
+      "pos": [
+       446.0,
+       356.0
+      ],
+      "zoom": 1.6
+     },
+     {
+      "t": 3.8,
+      "pos": [
+       450.0,
+       300.0
+      ],
+      "zoom": 1.3
+     },
+     {
+      "t": 6.7,
+      "pos": [
+       600.0,
+       250.0
+      ],
+      "zoom": 1.16
+     }
+    ],
+    "elements": [
+     {
+      "id": "ciel",
+      "sprite": "animations/stories/phenix_ciel_nuit.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "aube",
+      "sprite": "animations/stories/phenix_ciel_aube.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "alpha": 0.3,
+        "clip": "idle"
+       },
+       {
+        "t": 6.7,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "etoiles",
+      "sprite": "animations/stories/phenix_etoiles.json",
+      "depth": 0.08,
+      "drift": [
+       4.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -20.0
+        ],
+        "alpha": 0.8,
+        "clip": "idle"
+       },
+       {
+        "t": 4.5,
+        "alpha": 0.3
+       }
+      ]
+     },
+     {
+      "id": "nuages_loin",
+      "sprite": "animations/stories/phenix_nuages.json",
+      "depth": 0.12,
+      "drift": [
+       -8.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         120.0
+        ],
+        "alpha": 0.7,
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "volcans_loin",
+      "sprite": "animations/stories/phenix_volcans_loin.json",
+      "depth": 0.25,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -240.0,
+         170.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "brume",
+      "sprite": "animations/stories/phenix_brume.json",
+      "depth": 0.4,
+      "drift": [
+       12.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -160.0,
+         330.0
+        ],
+        "alpha": 0.8,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "verre",
+      "sprite": "animations/stories/phenix_verre.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "astre1",
+      "sprite": "animations/stories/phenix_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         601.9,
+         135.8
+        ],
+        "clip": "twinkle",
+        "offset": 0.722,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre2",
+      "sprite": "animations/stories/phenix_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         674.5,
+         60.1
+        ],
+        "clip": "twinkle",
+        "offset": 0.416,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre3",
+      "sprite": "animations/stories/phenix_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         747.2,
+         116.7
+        ],
+        "clip": "twinkle",
+        "offset": 0.23,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "soleil",
+      "glow": "#ffd090",
+      "radius": 300.0,
+      "depth": 0.25,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         820.0,
+         440.0
+        ],
+        "alpha": 0.2
+       },
+       {
+        "t": 6.7,
+        "pos": [
+         820.0,
+         400.0
+        ],
+        "alpha": 0.6
+       }
+      ]
+     },
+     {
+      "id": "rocher",
+      "sprite": "animations/stories/phenix_rocher.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        170.0,
+        27.2
+       ],
+       "light": [
+        446.0,
+        304.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         440.0,
+         456.0
+        ],
+        "clip": "idle",
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "braise",
+      "glow": "#ff9a3a",
+      "radius": 120.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         446.0,
+         358.0
+        ],
+        "alpha": 0.3
+       },
+       {
+        "t": 1.9,
+        "alpha": 0.8
+       },
+       {
+        "t": 2.4,
+        "alpha": 1.0,
+        "scale": 2.0
+       },
+       {
+        "t": 5.0,
+        "alpha": 0.6,
+        "scale": 1.4
+       },
+       {
+        "t": 6.7,
+        "alpha": 0.2
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.6
+      ]
+     },
+     {
+      "id": "cendres",
+      "sprite": "animations/stories/phenix_cendres.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         446.0,
+         366.0
+        ],
+        "clip": "idle"
+       },
+       {
+        "t": 0.8,
+        "clip": "stir"
+       },
+       {
+        "t": 1.9,
+        "clip": "burst"
+       },
+       {
+        "t": 3.0,
+        "alpha": 1.0
+       },
+       {
+        "t": 3.6,
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "grand",
+      "sprite": "animations/stories/phenix_grand.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        60.0,
+        9.6
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         446.0,
+         368.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 2.4,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 2.42,
+        "alpha": 1.0,
+        "clip": "rise",
+        "ease": "step"
+       },
+       {
+        "t": 3.8,
+        "pos": [
+         446.0,
+         314.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 5.0,
+        "pos": [
+         466.0,
+         304.0
+        ]
+       },
+       {
+        "t": 6.7,
+        "pos": [
+         866.0,
+         144.0
+        ],
+        "ease": "in"
+       }
+      ]
+     },
+     {
+      "id": "grand_lueur",
+      "glow": "#ffd04a",
+      "radius": 120.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         446.0,
+         324.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 2.4,
+        "alpha": 0.0
+       },
+       {
+        "t": 2.8,
+        "alpha": 0.9
+       },
+       {
+        "t": 3.8,
+        "pos": [
+         446.0,
+         278.0
+        ]
+       },
+       {
+        "t": 5.0,
+        "pos": [
+         466.0,
+         268.0
+        ]
+       },
+       {
+        "t": 6.7,
+        "pos": [
+         866.0,
+         108.0
+        ],
+        "ease": "in"
+       }
+      ],
+      "pulse": [
+       0.25,
+       0.7
+      ]
+     },
+     {
+      "id": "braises",
+      "particles": "embers",
+      "color": "#ffb066",
+      "area": [
+       326.0,
+       144.0,
+       240.0,
+       240.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.3
+       },
+       {
+        "t": 1.9,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "etincelles",
+      "particles": "sparks",
+      "color": "#ffe080",
+      "area": [
+       246.0,
+       124.0,
+       400.0,
+       260.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.0
+       },
+       {
+        "t": 2.4,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/phenix_avant.json",
+      "depth": 1.35,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 1.9,
+      "to": 3.0,
+      "amount": 3.0
+     }
+    ],
+    "flash": [
+     {
+      "t": 2.4,
+      "in": 0.12,
+      "out": 0.7,
+      "color": "#fff0c0",
+      "alpha": 0.8
+     }
+    ]
+   }
   },
   {
    "scene": "nest",
@@ -76,9 +2665,502 @@
     0.5,
     0.6
    ],
-   "zoom": 1.06,
-   "particles": "embers",
-   "glow": "#ff9ac6"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#ff9ac6",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#1a1030",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       520.0,
+       250.0
+      ],
+      "zoom": 1.3
+     },
+     {
+      "t": 3.2,
+      "pos": [
+       520.0,
+       236.0
+      ],
+      "zoom": 1.22
+     },
+     {
+      "t": 8.012,
+      "pos": [
+       520.0,
+       250.0
+      ],
+      "zoom": 1.08
+     }
+    ],
+    "elements": [
+     {
+      "id": "ciel",
+      "sprite": "animations/stories/phenix_ciel_nuit.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "aube",
+      "sprite": "animations/stories/phenix_ciel_aube.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "alpha": 0.2,
+        "clip": "idle"
+       },
+       {
+        "t": 8.012,
+        "alpha": 0.9
+       }
+      ]
+     },
+     {
+      "id": "etoiles",
+      "sprite": "animations/stories/phenix_etoiles.json",
+      "depth": 0.08,
+      "drift": [
+       4.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -20.0
+        ],
+        "alpha": 0.8,
+        "clip": "idle"
+       },
+       {
+        "t": 4.5,
+        "alpha": 0.3
+       }
+      ]
+     },
+     {
+      "id": "nuages_loin",
+      "sprite": "animations/stories/phenix_nuages.json",
+      "depth": 0.12,
+      "drift": [
+       -8.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         120.0
+        ],
+        "alpha": 0.7,
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "volcans_loin",
+      "sprite": "animations/stories/phenix_volcans_loin.json",
+      "depth": 0.25,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -240.0,
+         170.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "brume",
+      "sprite": "animations/stories/phenix_brume.json",
+      "depth": 0.4,
+      "drift": [
+       12.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -160.0,
+         330.0
+        ],
+        "alpha": 0.8,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "volcans",
+      "sprite": "animations/stories/phenix_volcans.json",
+      "depth": 0.55,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -320.0,
+         140.0
+        ],
+        "clip": "idle",
+        "offset": 0.2
+       }
+      ]
+     },
+     {
+      "id": "verre",
+      "sprite": "animations/stories/phenix_verre.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "soleil",
+      "glow": "#ffd090",
+      "radius": 320.0,
+      "depth": 0.25,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         160.0,
+         470.0
+        ],
+        "alpha": 0.2
+       },
+       {
+        "t": 8.012,
+        "pos": [
+         160.0,
+         420.0
+        ],
+        "alpha": 0.7
+       }
+      ],
+      "pulse": [
+       0.2,
+       3.0
+      ]
+     },
+     {
+      "id": "pics",
+      "sprite": "animations/stories/phenix_pics.json",
+      "depth": 0.7,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -320.0,
+         220.0
+        ],
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "pic",
+      "sprite": "animations/stories/phenix_rocher.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         520.0,
+         560.0
+        ],
+        "clip": "idle",
+        "scale": 2.3
+       }
+      ]
+     },
+     {
+      "id": "nid_fond",
+      "sprite": "animations/stories/phenix_nid.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         520.0,
+         330.0
+        ],
+        "clip": "back"
+       }
+      ]
+     },
+     {
+      "id": "nid_lueur",
+      "glow": "#ff8a3a",
+      "radius": 200.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         520.0,
+         260.0
+        ],
+        "alpha": 0.4
+       },
+       {
+        "t": 3.2,
+        "alpha": 0.5
+       },
+       {
+        "t": 3.8,
+        "alpha": 1.0
+       },
+       {
+        "t": 8.012,
+        "alpha": 0.8
+       }
+      ],
+      "pulse": [
+       0.25,
+       0.8
+      ]
+     },
+     {
+      "id": "phenix",
+      "sprite": "animations/phenix.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.35,
+       "size": [
+        150.0,
+        24.0
+       ],
+       "light": [
+        160.0,
+        420.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         520.0,
+         326.0
+        ],
+        "clip": "idle",
+        "scale": 0.82
+       },
+       {
+        "t": 3.2,
+        "alpha": 1.0
+       },
+       {
+        "t": 3.22,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 3.76,
+        "alpha": 0.0
+       },
+       {
+        "t": 3.78,
+        "alpha": 1.0,
+        "clip": "summon",
+        "ease": "step"
+       },
+       {
+        "t": 4.66,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "phenix_brasier",
+      "sprite": "animations/phenix_p5.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         520.0,
+         326.0
+        ],
+        "alpha": 0.0,
+        "scale": 0.82,
+        "clip": "roar"
+       },
+       {
+        "t": 3.2,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 3.22,
+        "alpha": 1.0,
+        "clip": "roar",
+        "ease": "step"
+       },
+       {
+        "t": 3.76,
+        "alpha": 1.0
+       },
+       {
+        "t": 3.78,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "nid_devant",
+      "sprite": "animations/stories/phenix_nid.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         520.0,
+         330.0
+        ],
+        "clip": "front"
+       }
+      ]
+     },
+     {
+      "id": "braises",
+      "particles": "embers",
+      "color": "#ffb066",
+      "area": [
+       320.0,
+       70.0,
+       400.0,
+       260.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       },
+       {
+        "t": 3.2,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "etincelles",
+      "particles": "sparks",
+      "color": "#ffd04a",
+      "area": [
+       260.0,
+       50.0,
+       520.0,
+       300.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.3
+       },
+       {
+        "t": 3.5,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "cendres",
+      "particles": "ash",
+      "color": "#c8a8b8",
+      "area": [
+       0.0,
+       300.0,
+       960.0,
+       200.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.5
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/phenix_avant.json",
+      "depth": 1.35,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 3.2,
+      "to": 4.4,
+      "amount": 4.0
+     }
+    ],
+    "flash": [
+     {
+      "t": 3.25,
+      "in": 0.1,
+      "out": 0.4,
+      "color": "#fff0c0",
+      "alpha": 0.5
+     },
+     {
+      "t": 3.7600000000000002,
+      "in": 0.08,
+      "out": 0.7,
+      "color": "#ffffff",
+      "alpha": 0.8
+     }
+    ]
+   }
   }
  ]
 }

@@ -23356,6 +23356,12 @@
    ]
   },
   {
+   "fr": "L'histoire de la Liche, « Le Gardien des noms », devient elle aussi un petit dessin animé : le vieil Ossian qui allume une bougie pour chaque mort des catacombes, les pierres dont les noms s'illuminent pendant qu'il les raconte à un enfant, la nuit où l'étoile s'effondre et où les vivants s'enfuient tandis qu'il reste, son âme cachée dans le cristal de l'autel, les siècles qui éteignent les bougies et ne laissent que ses os et la flamme verte, puis la Liche qui veille sur sa crypte au milieu des noms. Décors vivants (niches, bougies, toiles d'araignée, brume, poussière), personnages animés image par image ; une pastille NOUVEAU mène à « Revoir l'histoire ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "L'histoire de Pyrrhax, « Le Dragon d'Obsidienne », devient un petit dessin animé : ses six plans sont des scènes animées faites de vrais sprites, dans le style du jeu — la Fumerolle et ses frères et sœurs de feu, l'œuf qui éclot dans le nid de cendres, les flammes, la fumée, la pluie de braises, le ventre qui s'illumine, la transformation en dragon de verre noir, puis le grand Pyrrhax devant la dernière frontière.",
    "where": [
     "data/news/changelog.json"
@@ -23375,6 +23381,18 @@
   },
   {
    "fr": "L'histoire du Monolithe, « Le Golem Primordial », devient à son tour un petit dessin animé : le caillou qui tourne dans la poussière des origines, les enfants de la caverne qui y gravent leur rune, la pierre qui grandit de génération en génération avant de se lever, le village et son feu, les vaisseaux qui partent vers les étoiles, puis le golem seul dans les ruines face à une visiteuse qu'il ne reconnaît pas. Décors vivants (cristaux qui respirent, torches, brume, poussière), personnages animés image par image, caméra qui suit l'action ; une pastille NOUVEAU mène à « Revoir l'histoire ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "L'histoire du Phénix, « Le Porteur d'aube », devient elle aussi un petit dessin animé : le petit oiseau de lumière qui quitte l'étoile du centre, son vol au ras des volcans endormis et des vallées de verre noir où le jour se lève derrière lui, la longue nuit où il attend sur son rocher, ses plumes qui s'embrasent jusqu'aux cendres, sa renaissance plus grand et plus brillant, puis le Phénix qui se consume dans son nid au sommet du pic. Décors vivants (aube qui se lève, fumées des volcans, verre qui scintille, brume), personnages animés image par image ; une pastille NOUVEAU mène à « Revoir l'histoire ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "L'histoire du Titan, « Le Dernier Quart », devient elle aussi un petit dessin animé : la fonderie sous les Confins avec ses fourneaux, le creuset qui coule l'acier et les ouvriers qui martèlent, le colosse qui s'éveille sur son échafaudage, le contremaître qui lui confie les feux le soir où l'étoile s'effondre, la roche qui engloutit la fonderie pendant qu'il entretient seul les feux, la rouille et la vapeur, puis le Titan qui se retourne contre la visiteuse venue « éteindre ses feux ». Décors vivants (fourneaux qui grondent, engrenages, chaînes, fumée, étincelles), personnages animés image par image ; une pastille NOUVEAU mène à « Revoir l'histoire ».",
    "where": [
     "data/news/changelog.json"
    ]

@@ -1,0 +1,10 @@
+{
+  "texture": "stories/liche/toile.png",
+  "frameWidth": 32,
+  "frameHeight": 32,
+  "pivot": [0, 0],
+  "clips": {
+    "grow": {"row": 0, "count": 6, "durations": [0.3, 0.3, 0.3, 0.3, 0.3, 0.3], "loop": false, "next": "sway"},
+    "sway": {"row": 1, "count": 6, "fps": 4, "loop": true}
+  }
+}

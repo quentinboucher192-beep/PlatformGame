@@ -10,7 +10,8 @@ lantern, a hammer, a chisel); `clips(folk, names)` gives its clips:
 
   idle 6, walk 8, run 8, cheer 6 (jumps, arms up), wave 6, carve 6 (kneels, taps a rock in front of
   it), kneel 6 (on one knee, breathing), look_up 4 -> gaze 6, hammer 6 (two hands over the head,
-  strikes), sad 6 (head low), flee 8 (runs, looking back), point 6 (shows something ahead, high).
+  strikes), sad 6 (head low), flee 8 (runs, looking back), point 6 (shows something ahead, high),
+  sit 6 (on a chair whose seat is 12 px high, head low).
 
 Deterministic."""
 import math
@@ -341,12 +342,12 @@ def clips(folk, names=None):
             fr.append(d.draw(Pose(hip=(0, -13.2 - 0.6 * u), lean=0.1 - 0.12 * u, ff=(3.6, 0), fb=(-3.0, 0), hf=(hx, hy),
                                   hb=(hx - 0.8, hy + 1.2), item_ang=ang, mouth=0.6 if i == 0 else 0.0, item_k=i)))
         out.append(("hammer", fr, dict(durations=[0.1, 0.12, 0.16, 0.06, 0.05, 0.14])))
-    if want("sit"):  # seated on a chair (its seat 10 px high), hands on the knees, head low
+    if want("sit"):  # seated on a chair (its seat 12 px high), hands on the knees, head low
         fr = []
         for i in range(6):
             br = math.sin(TAU * i / 6)
-            fr.append(d.draw(Pose(hip=(-1.5, -10.4 + 0.2 * br), lean=-0.04, ff=(6.4, 0.0), fb=(5.0, 0.0), hf=(5.0, -11.4 + 0.2 * br),
-                                  hb=(4.0, -11.6 + 0.2 * br), tilt=0.3, blink=i in (3, 4), item_k=i)))
+            fr.append(d.draw(Pose(hip=(-1.5, -12.4 + 0.2 * br), lean=-0.04, ff=(5.2, 0.0), fb=(4.0, 0.0), hf=(4.6, -13.4 + 0.2 * br),
+                                  hb=(3.6, -13.6 + 0.2 * br), tilt=0.3, blink=i in (3, 4), item_k=i)))
         out.append(("sit", fr, dict(fps=4)))
     if want("sad"):
         fr = []

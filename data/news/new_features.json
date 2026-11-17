@@ -2298,6 +2298,48 @@
    "parents": [
     "menu.coop"
    ]
+  },
+  {
+   "id": "gallery.story.phenix",
+   "version": "2.63.1",
+   "parents": [
+    "gallery.boss.phenix"
+   ]
+  },
+  {
+   "id": "stats.story.phenix",
+   "version": "2.63.1",
+   "parents": [
+    "stats.bosses"
+   ]
+  },
+  {
+   "id": "gallery.story.liche",
+   "version": "2.63.2",
+   "parents": [
+    "gallery.boss.liche"
+   ]
+  },
+  {
+   "id": "stats.story.liche",
+   "version": "2.63.2",
+   "parents": [
+    "stats.bosses"
+   ]
+  },
+  {
+   "id": "gallery.story.titan",
+   "version": "2.63.3",
+   "parents": [
+    "gallery.boss.titan"
+   ]
+  },
+  {
+   "id": "stats.story.titan",
+   "version": "2.63.3",
+   "parents": [
+    "stats.bosses"
+   ]
   }
  ]
 }

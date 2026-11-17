@@ -1,0 +1,11 @@
+{
+  "texture": "stories/phenix/cendres.png",
+  "frameWidth": 64,
+  "frameHeight": 32,
+  "pivot": [32, 31],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 5, "loop": true},
+    "stir": {"row": 1, "count": 6, "fps": 8, "loop": true},
+    "burst": {"row": 2, "count": 6, "fps": 10, "loop": true}
+  }
+}
