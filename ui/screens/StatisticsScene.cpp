@@ -175,7 +175,7 @@ public:
                 else if (k == "period") period_ = std::clamp(std::atoi(v.c_str()), 7, 90);
             }
         }
-        if (!focusChart_.empty()) g_.ui.setFocus("stats/" + focusChart_);
+        if (!focusChart_.empty()) g_.ui.setFocus("stats/c/" + focusChart_);  // the charts are "c/<id>" under "stats"
         // « NOUVEAU » (2.54): this screen is seen once opened.
         if (g_.ui.featureSeen && g_.ui.isNew("stats.player")) g_.ui.featureSeen("stats.player");
     }
@@ -201,10 +201,10 @@ public:
         int before = tab_;
         ui.tabs("tabs", tabsR, {"Vue d'ensemble", "Combat", "Boss", "Niveaux", "Passages difficiles", "Données et sauvegarde"}, tab_);
         if (tab_ != before) tip_ = Tip{};
-        Rect view{m, tabsR.bottom() + ui.s(14), W - 2 * m, H - tabsR.bottom() - ui.s(14) - ui.s(56)};
+        Rect view{m, tabsR.bottom() + ui.s(4), W - 2 * m, H - tabsR.bottom() - ui.s(4) - ui.s(56)};
         ui.beginScroll("page" + std::to_string(tab_), view, contentH_[tab_]);
         const float x = view.x, w = view.w - ui.s(16);
-        float y = view.y - ui.scrollOffset();
+        float y = view.y - ui.scrollOffset() + ui.s(12);  // room for the « NOUVEAU » pill of a first row
         const float startY = y;
         if (tab_ == kTabData) y = drawData(x, y, w);
         else if (noData() && tab_ != kTabBoss) y = drawEmpty(x, y, w);
@@ -380,10 +380,10 @@ private:
             charts::table(ui, "t/" + c.id, in, c.head, c.rows, pages_[c.id]);
         } else if (!any) {
             const std::string e = c.empty.empty() ? "Pas encore de données sur la période." : c.empty;
-            ui.hotspot("stats/" + c.id, in);
+            ui.hotspot("c/" + c.id, in);
             ui.labelWrapped(e, {in.x, in.center().y - ui.s(10)}, in.w, fz(ui, 15), ui.theme().textDim);
         } else {
-            charts::lineChart(ui, "stats/" + c.id, in, c.spec, cursors_[c.id], tip_);
+            charts::lineChart(ui, "c/" + c.id, in, c.spec, cursors_[c.id], tip_);
         }
     }
     /// Cards two by two (stacked when narrow). Returns the height used.
@@ -570,10 +570,10 @@ private:
                 for (const auto& b : bars) rows.push_back({b.label, b.valueText, b.tipRows.empty() ? std::string() : b.tipRows.back().value});
                 charts::table(ui, "t/" + id, in, head, rows, pages_[id]);
             } else if (bars.empty()) {
-                ui.hotspot("stats/" + id, in);
+                ui.hotspot("c/" + id, in);
                 ui.labelWrapped(empty, {in.x, in.y + ui.s(10)}, in.w, fz(ui, 15), ui.theme().textDim);
             } else {
-                charts::hBars(ui, "stats/" + id, {in.x, in.y, in.w, charts::hBarsHeight(ui, bars.size())}, bars, 1.0f, cursors_[id], tip_);
+                charts::hBars(ui, "c/" + id, {in.x, in.y, in.w, charts::hBarsHeight(ui, bars.size())}, bars, 1.0f, cursors_[id], tip_);
             }
         };
         const size_t rows = std::max<size_t>(std::max(powers.size(), blows.size()), 4);
@@ -764,7 +764,7 @@ private:
                 rows.push_back({"Phase " + std::to_string(p + 1) + (pname.empty() ? "" : " : " + pname), std::to_string(d), std::to_string(re)});
             }
             if (tables_["phases"]) charts::table(ui, "t/phases", plot, {"Phase", "Défaites", "Tentatives arrivées là"}, rows, pages_["phases"]);
-            else charts::vBars(ui, "stats/phases", plot, bars, cursors_["phases"], tip_, [](float v) { return std::to_string(static_cast<int>(std::lround(v))); });
+            else charts::vBars(ui, "c/phases", plot, bars, cursors_["phases"], tip_, [](float v) { return std::to_string(static_cast<int>(std::lround(v))); });
             y += ch + ui.s(14);
         }
         y += note(x, y, w,
@@ -978,14 +978,17 @@ private:
             Rect in = card({x, y, w, ch}, "CONSTANCE PAR SEGMENT", "Plus la dispersion est faible, plus vos temps se ressemblent", "consistency");
             if (tables_["consistency"]) {
                 charts::table(ui, "t/consistency", in, {"Segment", "Dispersion", "À moins de 5 % du meilleur", "Temps"}, rows, pages_["consistency"]);
+            } else if (reps.empty()) {
+                ui.hotspot("c/spread", in);
+                ui.labelWrapped("Pas encore de segment chronométré.", {in.x, in.y}, in.w, fz(ui, 15), ui.theme().textDim);
             } else {
                 const float f = fz(ui, 14);
                 const std::string a = "Dispersion des temps (écart interquartile ÷ médiane)", b = "Passages à moins de 5 % du meilleur temps";
                 ui.label(ui.elide(a, FontFace::Body, f, in.w), {in.x, in.y}, f, ui.theme().textDim);
-                charts::hBars(ui, "stats/spread", {in.x, in.y + ui.s(28), in.w, bh}, spread, maxSpread, cursors_["spread"], tip_);
+                charts::hBars(ui, "c/spread", {in.x, in.y + ui.s(28), in.w, bh}, spread, maxSpread, cursors_["spread"], tip_);
                 float yb = in.y + ui.s(28) + bh + ui.s(18);
                 ui.label(ui.elide(b, FontFace::Body, f, in.w), {in.x, yb}, f, ui.theme().textDim);
-                charts::hBars(ui, "stats/near", {in.x, yb + ui.s(28), in.w, bh}, near, 1.0f, cursors_["near"], tip_);
+                charts::hBars(ui, "c/near", {in.x, yb + ui.s(28), in.w, bh}, near, 1.0f, cursors_["near"], tip_);
             }
             y += ch + ui.s(14);
         }
@@ -1135,7 +1138,7 @@ private:
                 }
                 charts::table(ui, "t/heat", in, {"Tranche", "Passages", "Morts", "Difficulté"}, rows, pages_["heat"]);
             } else {
-                charts::heatBand(ui, "stats/heat", band, h, cursors_["heat"], tip_);
+                charts::heatBand(ui, "c/heat", band, h, cursors_["heat"], tip_);
                 // The scale: one hue from dark to light, its two ends written.
                 const float f = fz(ui, 13);
                 const std::string lo = "0 %", hi = pct(h.maxValue) + " de morts par passage";
