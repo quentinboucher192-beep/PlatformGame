@@ -5,7 +5,34 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.60.1** :
+* **Le HUD s'efface quand il cache l'action** : un bloc du HUD (chronomètre, barre de progression, vie et
+  énergie, pouvoirs, éclats et reliques, ennemis vaincus, pastilles d'état, panneau des fantômes) placé
+  au-dessus du **boss**, de **Nova** ou d'une **attaque du boss** (projectiles, télégraphes, réticules, zones
+  dangereuses) descend vers **28 %** d'opacité en 0,15 s, puis revient dès que plus rien n'est dessous. Chaque
+  bloc est mesuré là où il est réellement dessiné (positions de l'éditeur du HUD comprises) ; le boss et Nova,
+  par les pixels visibles de leur image du moment ; les attaques, forme par forme (un laser en diagonale ne
+  compte que là où il passe). Les giga-boss volants (Phénix, Singularis, Pyrrhax, la Liche…) restent visibles.
+* La **barre de vie du boss** ne s'efface que sous Nova ; les **annonces de phase** ne s'effacent jamais.
+* **Paramètres › Jeu** : option « **Effacer le HUD quand il cache l'action** », activée par défaut.
+* **Arènes de boss** : quand l'arène tient à l'écran avec de la hauteur en trop, la caméra la place entre le HUD
+  du haut et la barre de vie du boss (voûte plus basse, sol au-dessus de la barre), sans jamais la couper ni
+  s'éloigner ; les arènes des giga-boss, plus hautes que l'écran, gardent leur cadrage. Affichage seulement :
+  ni la simulation ni les records ne changent.
+
 **Nouveau dans la version 2.60.0** :
+* **Pause › Succès suivis** sous la carte : les cinq places toujours visibles (une place libre en pointillés) et
+  la description de chaque succès, mesurée pour ne jamais déborder.
+* **Touches de ce niveau** : un changement s'applique aussi aux niveaux qui avaient **exactement les mêmes
+  touches** (option, activée par défaut) ; plus besoin de les refaire niveau par niveau.
+* **Invincible (admin)** : « activé · non classé » sur le bouton de la pause.
+* **Administration › Calendrier des défis** : un défi du jour, de la semaine ou du mois **déjà commencé** se
+  change encore (niveau, règles, objectif, paliers, récompenses, ou retour au tirage) **tant qu'aucun joueur n'y
+  a de résultat** ; dès qu'une partie, un essai ou une récompense existe, il est figé et la fiche dit combien de
+  joueurs ont déjà un résultat. Le serveur porte la condition dans l'écriture même (migration `0117`) et refuse
+  toute partie de l'ancienne version ; le jeu reçoit la nouvelle version et dit « ce défi a changé ».
+* **Défis › Calendrier** : chaque défi montre combien de joueurs vérifiés ont atteint le **bronze**, l'**argent**
+  et l'**or** (votre médaille entourée, détail au survol ou au focus), comptés par le serveur.
 * **Statistiques des boss › Fiche** : chaque **attaque se déplie et se replie** (clic, Entrée / A, flèches ;
   « Tout déplier », « Tout replier ») ; dépliée, elle dit ce qu'elle fait et donne ses **caractéristiques
   lues dans la définition du boss** (dégâts, annonce et recharge dans chaque phase où elle sort, récupération,

@@ -45,6 +45,9 @@ struct GameplaySettings {
     /// 2.52: arrows on the screen's border towards the enemies already met that are out of
     /// view (one per pack, with their number). Display only.
     bool enemyArrows = true;
+    /// 2.60: « Effacer le HUD quand il cache l'action »: a block of the HUD fades (to about
+    /// 28 %) while the boss, Nova or an attack of the boss is under it. Display only.
+    bool fadeHud = true;
     bool debugMode = false;  // debug overlay available in game (F3)
     bool editorAutosave = true;
     int editorAutosaveSeconds = 60;

@@ -1180,6 +1180,12 @@
    ]
   },
   {
+   "fr": "Administration › Calendrier des défis : un défi du jour, de la semaine ou du mois déjà commencé se change encore (niveau, règles, objectif, paliers, récompenses, ou retour au tirage) tant qu'aucun joueur n'y a de résultat ; dès qu'une partie, un essai ou une récompense existe, il est figé et la fiche dit combien de joueurs ont déjà un résultat. Un défi terminé ne change jamais.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Administration › Campagne : un admin modifie un niveau de la campagne dans l'éditeur et publie une nouvelle révision, téléchargée par les jeux sans mise à jour.",
    "where": [
     "data/news/changelog.json"
@@ -2629,6 +2635,12 @@
    "fr": "arène neutre",
    "where": [
     "ui/screens/BossAttackPreview.cpp"
+   ]
+  },
+  {
+   "fr": "Arènes de boss : quand l'arène tient à l'écran avec de la hauteur en trop, la caméra s'en sert pour garder la voûte sous le HUD du haut et le sol au-dessus de la barre de vie du boss, sans jamais couper l'arène ni l'éloigner. Les arènes des giga-boss, plus hautes que l'écran, gardent leur cadrage : le HUD s'y efface.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -5098,6 +5110,7 @@
     "editors/level_editor/LevelEditorTools.cpp",
     "game/achievements/Achievements.cpp",
     "game/content/BossStories.cpp",
+    "game/gameplay/Hud.cpp",
     "game/gameplay/entities/ZoneEntities.cpp",
     "game/levels/DifficultyRating.cpp",
     "game/levels/ObjectTypes.cpp",
@@ -6273,13 +6286,31 @@
    ]
   },
   {
-   "fr": "Ce défi a déjà commencé : il ne change plus.",
+   "fr": "Ce défi a changé : cette partie était sur son ancienne version, elle ne compte pas.",
+   "where": [
+    "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
+   "fr": "Ce défi a changé : rejouez sa nouvelle version.",
+   "where": [
+    "server/src/challenges.ts"
+   ]
+  },
+  {
+   "fr": "Ce défi a changé pendant votre partie : elle était sur son ancienne version et ne compte pas. Jouez sa nouvelle version depuis « Défis ».",
+   "where": [
+    "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
+   "fr": "Ce défi est déjà celui du tirage du serveur.",
    "where": [
     "server/src/adminChallenges.ts"
    ]
   },
   {
-   "fr": "Ce défi est déjà celui du tirage du serveur.",
+   "fr": "Ce défi est terminé : il ne change plus.",
    "where": [
     "server/src/adminChallenges.ts"
    ]
@@ -6298,6 +6329,12 @@
   },
   {
    "fr": "Ce défi n'est plus sur ce PC.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce défi vient de changer : revenez aux défis pour jouer sa nouvelle version.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
    ]
@@ -7819,7 +7856,7 @@
    ]
   },
   {
-   "fr": "Choisissez un jour, une semaine ou le mois dans le calendrier (clic, Entrée ou bouton A). Un défi qui n'a pas commencé se choisit ici : niveau, règles, objectif et paliers. Un défi commencé ou passé se consulte seulement.",
+   "fr": "Choisissez un jour, une semaine ou le mois dans le calendrier (clic, Entrée ou bouton A). Un défi à venir, ou en cours tant que personne n'y a de résultat, se choisit ici : niveau, règles, objectif et paliers. Les autres se consultent seulement.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
    ]
@@ -8852,12 +8889,6 @@
    "fr": "Comme les combinaisons, ils se donnent en récompense d'un défi (Calendrier des défis › Récompenses) ; gagnés, ils rejoignent leur catégorie du Vestiaire et s'équipent, sans mise à jour du jeu, même hors ligne : la traînée derrière Nova et derrière vos fantômes, le cadre sur votre profil et dans les classements, l'effet de victoire à la sortie des niveaux.",
    "where": [
     "data/news/changelog.json"
-   ]
-  },
-  {
-   "fr": "commencé : verrouillé",
-   "where": [
-    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -11923,6 +11954,24 @@
    ]
   },
   {
+   "fr": "Des joueurs ont déjà un résultat sur ce défi : il ne change plus.",
+   "where": [
+    "server/src/adminChallenges.ts"
+   ]
+  },
+  {
+   "fr": "Des joueurs ont un résultat sur ce défi : ses récompenses ne changent plus. Elles seront accordées à sa fin.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "des joueurs y ont déjà un résultat",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Des lianes grimpent le long de l'écorce... Un rideau de plasma luit tout là-haut.",
    "where": [
     "data/levels/sylvanox_02.json"
@@ -13393,13 +13442,13 @@
    ]
   },
   {
-   "fr": "Défi commencé : lecture seule. Un défi commencé ne change plus.",
+   "fr": "DÉFI CHANGÉ",
    "where": [
-    "ui/screens/AdminCalendar.cpp"
+    "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
-   "fr": "Défi commencé : ses récompenses ne changent plus. Elles seront accordées à sa fin.",
+   "fr": "Défi commencé : lecture seule. Un défi commencé ne change plus.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
    ]
@@ -13502,6 +13551,12 @@
    ]
   },
   {
+   "fr": "Défi enregistré : les joueurs reçoivent sa nouvelle version dès maintenant.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "DÉFI HORS CLASSEMENT",
    "where": [
     "ui/screens/GameScene.cpp"
@@ -13525,6 +13580,12 @@
     "server/src/adminChallenges.ts",
     "server/src/challenges.ts",
     "server/src/spectate.ts"
+   ]
+  },
+  {
+   "fr": "Défi modifié",
+   "where": [
+    "game/online/DailyChallenges.cpp"
    ]
   },
   {
@@ -13670,6 +13731,12 @@
    "fr": "Défis requis",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Défis › Calendrier : chaque défi commencé montre combien de joueurs vérifiés ont atteint le bronze, l'argent et l'or (votre médaille entourée), avec le détail au survol ou au focus ; les derniers nombres reçus restent affichés hors ligne.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -14093,6 +14160,12 @@
    ]
   },
   {
+   "fr": "Effacer le HUD quand il cache l'action",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
    "fr": "Effet",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
@@ -14438,9 +14511,27 @@
    ]
   },
   {
+   "fr": "en cours · modifiable",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "en cours · verrouillé",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "En cours, personne n'a encore de résultat : vous pouvez encore le changer.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "en cours, sans résultat",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -19448,6 +19539,12 @@
    ]
   },
   {
+   "fr": "Invincible (admin) : le bouton de la pause indique « activé · non classé » ; une partie avec Invincible n'est jamais classée.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Invincible désactivé",
    "where": [
     "ui/screens/GameScene.cpp"
@@ -20460,6 +20557,12 @@
    "fr": "La balise est bloquée : impossible d'y revenir.",
    "where": [
     "game/powers/PowersSanctuary.cpp"
+   ]
+  },
+  {
+   "fr": "La barre de vie du boss, en bas, ne s'efface que lorsque Nova passe dessous ; les annonces de phase au centre de l'écran ne s'effacent jamais.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -22331,6 +22434,12 @@
    ]
   },
   {
+   "fr": "Le HUD s'efface quand il cache l'action : un bloc du HUD (chronomètre, barre de progression, vie et énergie, pouvoirs, éclats et reliques, ennemis vaincus, pastilles d'état, panneau des fantômes) placé au-dessus du boss, de Nova ou d'une attaque du boss (projectiles, télégraphes, réticules, zones dangereuses) devient presque transparent en un instant, puis revient dès que plus rien n'est dessous. Les giga-boss qui volent sous le chronomètre ou la barre de progression (Phénix, Singularis, Pyrrhax, la Liche…) restent visibles, avec leurs attaques.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Le jeu attend votre choix. Un pouvoir remplacé reste sur la tablette : revenez le reprendre quand vous voulez.",
    "where": [
     "ui/screens/PowerChoiceScene.cpp"
@@ -23023,6 +23132,12 @@
    "fr": "Le serveur recalcule chaque score depuis le replay de la tentative ; les tentatives refusées ne sont pas classées.",
    "where": [
     "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le serveur vérifie cette condition dans l'écriture même (un joueur qui vient de jouer l'emporte, et la fiche se rafraîchit) et n'accepte aucune partie envoyée sur l'ancienne version d'un défi changé : le jeu reçoit la nouvelle version dès qu'il ouvre ou rafraîchit les défis, et dit « ce défi a changé » au lieu d'un faux succès.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -26252,6 +26367,12 @@
    ]
   },
   {
+   "fr": "modifiable",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Modification",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
@@ -28630,6 +28751,12 @@
    ]
   },
   {
+   "fr": "Nouvelle version",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Nouvelle version d'un de mes favoris",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -29793,6 +29920,12 @@
    ]
   },
   {
+   "fr": "Ouvert depuis le {0} à 00:00 UTC, jusqu'au {1} à 00:00 UTC",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Ouvert depuis le {0} à 00:00 UTC, jusqu'au {1} à 00:00 UTC · verrouillé",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -30336,6 +30469,12 @@
   },
   {
    "fr": "Paramètres › Clavier / souris et Manette : une seule touche (ou un seul bouton) par commande, en une colonne ; les secondes touches cachées sont retirées, seule la touche affichée fonctionne. Les flèches du clavier et la croix de la manette déplacent toujours Nova.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Paramètres › Jeu : nouvelle option « Effacer le HUD quand il cache l'action », activée par défaut.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -31009,6 +31148,12 @@
   },
   {
    "fr": "Pause : « Mode concentré » est un bouton comme les autres (texte centré, même police et même taille), son état sur un petit interrupteur à droite.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Pause : « Succès suivis » passe sous la carte, avec les cinq places visibles (une place libre est dessinée en pointillés) et la description de chaque succès ; sans la carte, la colonne garde une ligne de description quand il y a la place.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -35495,6 +35640,18 @@
    ]
   },
   {
+   "fr": "Refusé : la période de ce défi vient de se terminer.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Refusé : un joueur vient d'obtenir un résultat sur ce défi.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Refusé par le serveur.",
    "where": [
     "ui/screens/AdminCalendar.cpp",
@@ -37045,12 +37202,6 @@
    "fr": "règles des stations ou des points de passage absentes",
    "where": [
     "game/gameplay/ChallengeRules.cpp"
-   ]
-  },
-  {
-   "fr": "Règles différentes de celles du défi.",
-   "where": [
-    "game/online/DailyChallenges.cpp"
    ]
   },
   {
@@ -42688,7 +42839,7 @@
    ]
   },
   {
-   "fr": "Tiré au sort par le serveur : un admin peut le remplacer tant qu'il n'a pas commencé.",
+   "fr": "Tiré au sort par le serveur : un admin peut le remplacer tant que personne n'y a de résultat.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
    ]
@@ -42917,6 +43068,12 @@
   },
   {
    "fr": "Touches de ce niveau (menu pause) : les pouvoirs en main d'abord, avec la touche et le bouton qu'ils utilisent maintenant, puis tous les pouvoirs du niveau en lignes compactes.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Touches de ce niveau : un changement de touche, de bouton ou « Par défaut » s'applique aussi aux niveaux qui avaient exactement les mêmes touches (option activée par défaut, avec le nombre de niveaux concernés).",
    "where": [
     "data/news/changelog.json"
    ]
@@ -44371,6 +44528,12 @@
    "fr": "un défi du mois",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Un défi que vous avez joué a changé avant que quiconque y ait un résultat : vos parties de son ancienne version ne comptent plus.",
+   "where": [
+    "game/online/DailyChallenges.cpp"
    ]
   },
   {
@@ -46133,6 +46296,12 @@
    ]
   },
   {
+   "fr": "verrouillé : passé, ou des joueurs ont un résultat",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "Verrouillé : terminez la planète {0}",
    "where": [
     "game/content/CreaturePlaces.cpp"
@@ -46326,12 +46495,6 @@
    "fr": "Version du jeu {0} · {1}",
    "where": [
     "ui/screens/AdminCampaign.cpp"
-   ]
-  },
-  {
-   "fr": "Version du niveau différente de celle du défi.",
-   "where": [
-    "game/online/DailyChallenges.cpp"
    ]
   },
   {
@@ -48788,6 +48951,12 @@
    ]
   },
   {
+   "fr": "{0} bronze · {1} argent · {2} or (joueurs vérifiés)",
+   "where": [
+    "ui/screens/ChallengeUi.cpp"
+   ]
+  },
+  {
    "fr": "{0} Cliquez pour réessayer.",
    "where": [
     "ui/screens/MainMenuScene.cpp"
@@ -49293,6 +49462,12 @@
    ]
   },
   {
+   "fr": "{0} joueur a déjà un résultat sur ce défi : il ne change plus.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
    "fr": "{0} joueur classé · records vérifiés uniquement",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
@@ -49332,6 +49507,12 @@
    "fr": "{0} joueurs classés · records vérifiés uniquement",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} joueurs ont déjà un résultat sur ce défi : il ne change plus.",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {

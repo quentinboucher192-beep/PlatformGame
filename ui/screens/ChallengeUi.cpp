@@ -53,6 +53,72 @@ float chipWidth(UIContext& ui, const std::string& text, float h) {
     return ui.text().measure(text, FontFace::Bold, ui.s(fs)).x + h;
 }
 
+MedalPlan planMedals(float room, float h, const std::array<float, 3>& numW) {
+    MedalPlan plan;
+    if (room <= 0.0f || h <= 0.0f) return plan;
+    auto lay = [&](MedalFit fit, std::array<bool, 3> shown, float extra, float gap) {
+        MedalPlan p;
+        p.fit = fit;
+        float x = 0.0f;
+        for (int i = 0; i < 3; ++i) {
+            if (!shown[i]) continue;
+            if (x > 0.0f) x += gap;
+            p.x[i] = x;
+            p.w[i] = numW[i] + extra;
+            x += p.w[i];
+        }
+        p.width = x;
+        return p;
+    };
+    // Three pills: padding, the tier's disk, a gap, its number, padding; then the numbers alone
+    // (room for the outline of mine around each), then the Or one alone.
+    const MedalPlan pills = lay(MedalFit::Pills, {true, true, true}, 2 * MedalPlan::pad(h) + MedalPlan::disk(h) + MedalPlan::inner(h), h * 0.22f);
+    if (pills.width <= room) return pills;
+    const MedalPlan numbers = lay(MedalFit::Numbers, {true, true, true}, h * 0.36f, h * 0.16f);
+    if (numbers.width <= room) return numbers;
+    const MedalPlan gold = lay(MedalFit::GoldOnly, {false, false, true}, h * 0.36f, 0.0f);
+    if (gold.width <= room) return gold;
+    return plan;
+}
+
+float medalFont(const UIContext& ui, float h) { return std::max(h / ui.s(1.0f) * 0.55f, 11.5f / ui.s(1.0f)); }
+
+std::array<float, 3> medalNumberWidths(UIContext& ui, const ChallengeTierCounts& t, float h) {
+    const float fs = ui.s(medalFont(ui, h));
+    return {ui.text().measure(std::to_string(t.bronze), FontFace::Bold, fs).x, ui.text().measure(std::to_string(t.silver), FontFace::Bold, fs).x,
+            ui.text().measure(std::to_string(t.gold), FontFace::Bold, fs).x};
+}
+
+void drawMedals(UIContext& ui, const MedalPlan& plan, const ChallengeTierCounts& t, float x, float cy, float h, ChallengeTier mine) {
+    if (plan.fit == MedalFit::None) return;
+    static const ChallengeTier kTiers[3] = {ChallengeTier::Bronze, ChallengeTier::Silver, ChallengeTier::Gold};
+    const float fs = medalFont(ui, h);
+    for (int i = 0; i < 3; ++i) {
+        if (plan.w[i] <= 0.0f) continue;
+        const Color c = tierColor(kTiers[i]);
+        const Rect r{x + plan.x[i], cy - h * 0.5f, plan.w[i], h};
+        const bool me = mine == kTiers[i];
+        const std::string n = std::to_string(t.of(kTiers[i]));
+        if (plan.fit == MedalFit::Pills) {
+            ui.r().fillRoundedRect(r, h * 0.5f, c.withAlphaF(me ? 0.30f : 0.14f));
+            // Mine: a bright outline, thicker; the others a thin one of their colour.
+            ui.r().drawRoundedRect(r, h * 0.5f, me ? Color::white() : c.withAlphaF(0.7f), std::max(1.0f, ui.s(me ? 2.0f : 1.0f)));
+            const float d = MedalPlan::disk(h);
+            const Vec2 dc{r.x + MedalPlan::pad(h) + d * 0.5f, cy};
+            ui.r().fillCircle(dc, d * 0.5f, c);
+            ui.r().drawCircle(dc, d * 0.5f, Color{40, 30, 10, 200}, std::max(1.0f, ui.s(0.8f)));
+            ui.label(n, {dc.x + d * 0.5f + MedalPlan::inner(h), cy}, fs, c, Align::Left, FontFace::Bold, VAlign::Middle);
+        } else {
+            if (me) ui.r().drawRoundedRect(r, h * 0.3f, Color::white(), std::max(1.0f, ui.s(1.5f)));
+            ui.label(n, r.center(), fs, c, Align::Center, FontFace::Bold, VAlign::Middle);
+        }
+    }
+}
+
+std::string medalsText(const ChallengeTierCounts& t) {
+    return std::to_string(t.bronze) + " bronze · " + std::to_string(t.silver) + " argent · " + std::to_string(t.gold) + " or (joueurs vérifiés)";
+}
+
 std::string percentText(float p) {
     p = std::clamp(p, 0.0f, 100.0f);
     if (p >= 100.0f) return "100 %";
