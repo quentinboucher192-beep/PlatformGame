@@ -434,6 +434,18 @@
    ]
   },
   {
+   "fr": "2, croisés",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "2, à {0} px/s sur {1}",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "2. Le compte",
    "where": [
     "data/online/terms_fr.txt"
@@ -1196,6 +1208,12 @@
    "fr": "Adhérence (1 = normale)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Adhérence du sol gelé",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -2080,6 +2098,12 @@
    ]
   },
   {
+   "fr": "Annonce",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Annonce (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -2856,6 +2880,18 @@
    ]
   },
   {
+   "fr": "Arène neutre",
+   "where": [
+    "game/gameplay/BossAttackDemo.cpp"
+   ]
+  },
+  {
+   "fr": "arène neutre",
+   "where": [
+    "ui/screens/BossAttackPreview.cpp"
+   ]
+  },
+  {
    "fr": "Arènes de boss : quand l'arène tient à l'écran avec de la hauteur en trop, la caméra s'en sert pour garder la voûte sous le HUD du haut et le sol au-dessus de la barre de vie du boss, sans jamais couper l'arène ni l'éloigner. Les arènes des giga-boss, plus hautes que l'écran, gardent leur cadrage : le HUD s'y efface.",
    "where": [
     "data/news/changelog.json"
@@ -2888,6 +2924,7 @@
   {
    "fr": "Aspiration",
    "where": [
+    "game/enemies/BossAttackSheet.cpp",
     "game/enemies/EnemyDefinition.cpp"
    ]
   },
@@ -3959,6 +3996,7 @@
    "fr": "Aucune",
    "where": [
     "data/cosmetics/cosmetics.json",
+    "game/enemies/BossAttackSheet.cpp",
     "game/enemies/EnemyDefinition.cpp",
     "game/levels/LevelData.cpp",
     "ui/screens/BossStatsScene.cpp"
@@ -4035,6 +4073,12 @@
    "fr": "Aucune création ouverte. Choisissez-en une dans l'explorateur (celles du serveur et vos brouillons), « + Nouvelle » pour en commencer une, ou « Importer… » pour découper une planche d'images : glissez un PNG dans la fenêtre, ou déposez-le dans le dossier « Images à importer » du jeu.",
    "where": [
     "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune de ses phases ne l'utilise : le boss ne la lance jamais en combat.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -4151,6 +4195,12 @@
    "fr": "Aucune partie d'un niveau classique n'est encore enregistrée. Jouez un niveau de la campagne (hors EXTRÊME) depuis son début : chaque segment entre deux points de passage est chronométré, ses temps forment votre « somme des meilleurs » (SOB).",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune phase",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -4794,6 +4844,12 @@
    "fr": "Balancement",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Balayage",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -5661,7 +5717,8 @@
   {
    "fr": "Boules de feu",
    "where": [
-    "editors/enemy_editor/EnemyEditorProperties.cpp"
+    "editors/enemy_editor/EnemyEditorProperties.cpp",
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -5778,6 +5835,12 @@
    "fr": "Bras",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Bras de la spirale",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -6657,6 +6720,12 @@
    ]
   },
   {
+   "fr": "Ce boss est introuvable.",
+   "where": [
+    "ui/screens/BossAttackPreview.cpp"
+   ]
+  },
+  {
    "fr": "Ce boss n'est placé dans aucun niveau du jeu : il vient de l'éditeur d'ennemis ou d'un pack importé.",
    "where": [
     "ui/screens/BossStatsScene.cpp"
@@ -7285,6 +7354,12 @@
    ]
   },
   {
+   "fr": "Ce sont les dégâts de son corps au contact : il n'y a pas d'attaque à lancer pour l'exemple.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Ce tag est déjà pris : choisissez-en un autre.",
    "where": [
     "server/src/clans.ts"
@@ -7557,6 +7632,13 @@
    "fr": "Cette animation",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Cette attaque est introuvable dans la définition du boss.",
+   "where": [
+    "game/gameplay/BossAttackDemo.cpp",
+    "ui/screens/BossAttackPreview.cpp"
    ]
   },
   {
@@ -7888,6 +7970,12 @@
    ]
   },
   {
+   "fr": "Chaque attaque dépliée a son exemple animé, joué par le moteur du jeu : le boss dans son arène, à la phase où l'attaque sort (son dernier souffle pour les attaques de sa scène finale), la lance en boucle, et Nova montre comment l'esquiver quand c'est simple. Un seul exemple à la fois : celui de l'attaque dépliée qui a la sélection, ou de la dernière dépliée.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Chaque badge est l'emblème du succès (couleur de sa catégorie, ses étoiles) ; au survol ou au focus, une bulle donne son nom.",
    "where": [
     "data/news/changelog.json"
@@ -8036,6 +8124,12 @@
    "fr": "Chargement de la partie…",
    "where": [
     "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
+   "fr": "Chargement de son arène…",
+   "where": [
+    "ui/screens/BossAttackPreview.cpp"
    ]
   },
   {
@@ -9414,6 +9508,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Colonnes",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -12478,6 +12578,12 @@
    ]
   },
   {
+   "fr": "de {0} à {1}",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "De {0} à {1} images par seconde.",
    "where": [
     "game/cosmetics/CreationImages.cpp",
@@ -12758,7 +12864,15 @@
    "fr": "Dernier souffle",
    "where": [
     "data/enemies/pyrrhax.json",
+    "game/enemies/BossAttackSheet.cpp",
+    "ui/screens/BossAttackPreview.cpp",
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "dernier souffle",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -12918,6 +13032,12 @@
    ]
   },
   {
+   "fr": "Des boules de feu qui laissent un nuage brûlant là où elles éclatent.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Des braises qui s'élèvent derrière Nova.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -12936,9 +13056,21 @@
    ]
   },
   {
+   "fr": "Des colonnes de lumière tombent de la voûte sur des marques, l'une après l'autre.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Des compteurs par jour : temps joué, morts, menaces et esquives, attaques lancées et réussies (par attaque), origine des coups reçus, étoiles des succès. Par niveau : passages et morts dans chacune des 40 tranches. Par boss : chaque tentative (part des points de vie retirés, phase atteinte, attaque fatale). Par niveau classique : les temps de chaque segment, vos arrivées, votre record et votre somme des meilleurs. Aucune donnée personnelle, aucune position.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Des doubles translucides du boss copient ses attaques (dégâts réduits) ; un coup suffit à briser un double.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -13032,9 +13164,21 @@
    ]
   },
   {
+   "fr": "Des projectiles tombent d'en haut sur des points marqués avant l'impact : quittez les marques.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Des rideaux de lumière s'élèvent au-dessus du portail.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Des runes tracées sur le sol où vous vous tenez : armées, elles éclatent quand vous marchez dessus, toutes éclatent à la fin.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -13044,9 +13188,39 @@
    ]
   },
   {
+   "fr": "Des réticules se posent sur vous et vous suivent, puis se verrouillent ; un missile tombe sur chacun. Bouger suffit.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Des tentacules enlacent le cadre, leurs ventouses s'allument tour à tour : pour avoir vaincu le Kraken sans être touché.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Des tirs en cloche qui retombent là où vous êtes : changez de place pendant l'annonce.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Des tirs partent en spirale tournante, sur plusieurs bras.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Des tirs tournent autour du boss ; leur cercle s'élargit puis se resserre.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Des tirs visés sur vous : changez de hauteur ou de place pendant leur vol.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -13166,9 +13340,21 @@
    ]
   },
   {
+   "fr": "Deux murs s'élèvent de part et d'autre de vous et vous enferment, des projectiles tombent entre eux.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "deux niveaux ont la même empreinte",
    "where": [
     "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
+   "fr": "Deux rayons partent de chaque côté et se croisent.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -13988,6 +14174,7 @@
   {
    "fr": "Durée",
    "where": [
+    "game/enemies/BossAttackSheet.cpp",
     "game/powers/PowerStats.cpp",
     "ui/screens/AdminCreations.cpp",
     "ui/screens/CollectionScene.cpp",
@@ -14042,6 +14229,12 @@
    "fr": "Durée de garde (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Durée de l'attaque",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -14111,6 +14304,12 @@
    ]
   },
   {
+   "fr": "Durée du saut",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Durée du saut (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -14174,6 +14373,12 @@
    "fr": "durée · écart cumulé",
    "where": [
     "ui/screens/SegmentsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Durée à son plus haut",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -14919,6 +15124,7 @@
    "fr": "Dégâts",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
+    "game/enemies/BossAttackSheet.cpp",
     "game/levels/ObjectTypes.cpp",
     "game/powers/PowerStats.cpp"
    ]
@@ -14951,6 +15157,12 @@
    "fr": "Dégâts du piqué",
    "where": [
     "game/powers/PowerStats.cpp"
+   ]
+  },
+  {
+   "fr": "Dégâts infligés au simple contact du corps du boss.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -15472,15 +15684,33 @@
    ]
   },
   {
+   "fr": "Elle tire plusieurs salves de suite.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Elle trace ses malédictions : gardez vos distances !",
    "where": [
     "data/enemies/liche.json"
    ]
   },
   {
+   "fr": "Elle vise l'endroit où vous serez.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Elles ne dépendent pas du nombre d'étoiles : il faut le succès lui-même.",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Elles tombent en marche, l'une après l'autre : revenez sous une presse déjà remontée.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -15641,6 +15871,12 @@
    "fr": "en Bronze",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "En carapace : dégâts reçus",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -15837,7 +16073,13 @@
   {
    "fr": "En marche, l'une après l'autre",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "en marche, l'une après l'autre",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -15868,6 +16110,12 @@
    "fr": "En pause",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "en pause",
+   "where": [
+    "ui/screens/BossAttackPreview.cpp"
    ]
   },
   {
@@ -16903,6 +17151,7 @@
   {
    "fr": "et",
    "where": [
+    "game/enemies/BossAttackSheet.cpp",
     "ui/screens/CollectionScene.cpp"
    ]
   },
@@ -16989,6 +17238,24 @@
    "fr": "Exclusif aux défis : {0}",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Exemple en attente",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Exemple indisponible",
+   "where": [
+    "ui/screens/BossAttackPreview.cpp"
+   ]
+  },
+  {
+   "fr": "Exemple indisponible : {0}",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -17912,7 +18179,8 @@
   {
    "fr": "Fissures par secousse",
    "where": [
-    "editors/enemy_editor/EnemyEditorProperties.cpp"
+    "editors/enemy_editor/EnemyEditorProperties.cpp",
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -19664,9 +19932,21 @@
    ]
   },
   {
+   "fr": "Hauteur de chute",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "hauteur de chute",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Hauteur de l'inondation",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -19702,13 +19982,20 @@
   {
    "fr": "Hauteur des murs",
    "where": [
-    "editors/enemy_editor/EnemyEditorProperties.cpp"
+    "editors/enemy_editor/EnemyEditorProperties.cpp",
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
    "fr": "Hauteur des ondes (rayon)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Hauteur des sauts maudits",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -20547,6 +20834,18 @@
    ]
   },
   {
+   "fr": "Ils vous emportent loin de lui.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Ils vous emportent vers lui.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "image",
    "where": [
     "game/content/BossStories.cpp",
@@ -20717,6 +21016,12 @@
    "fr": "Impact au sol",
    "where": [
     "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
+   "fr": "Impacts en ligne",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -21866,9 +22171,21 @@
    ]
   },
   {
+   "fr": "jusqu'à ce qu'un coup les brise",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "jusqu'à la place",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "jusqu'à {0}",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -22050,6 +22367,18 @@
    ]
   },
   {
+   "fr": "L'arène neutre ne peut pas être chargée.",
+   "where": [
+    "game/gameplay/BossAttackDemo.cpp"
+   ]
+  },
+  {
+   "fr": "L'arène tremble : des fissures s'ouvrent sous vous puis éclatent, des rochers tombent du plafond sur des marques.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "L'ascenseur démarre quand vous montez dessus.",
    "where": [
     "data/levels/sylvanox_03.json"
@@ -22119,6 +22448,18 @@
    "fr": "L'Escalier de givre : trois corniches, trois triples sauts. Ne touchez pas la paroi !",
    "where": [
     "data/levels/glacior_01.json"
+   ]
+  },
+  {
+   "fr": "L'exemple ne peut pas être préparé.",
+   "where": [
+    "ui/screens/BossAttackPreview.cpp"
+   ]
+  },
+  {
+   "fr": "L'exemple se prépare sans figer l'écran (un message le dit pendant ce temps), se met en pause d'un clic, et ne compte jamais : ni records, ni statistiques, ni succès. Tous les boss en profitent : boss des planètes, gardiens d'Aethra, giga-boss des Confins et Singularis.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -23375,6 +23716,12 @@
    ]
   },
   {
+   "fr": "Lames",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Lames (basse et haute)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -23613,9 +23960,81 @@
    ]
   },
   {
+   "fr": "Le boss appelle des renforts autour de lui.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Le boss bondit hors de vue, son ombre vous suit puis il retombe dessus : des ondes de choc filent le long du sol.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Le boss bondit sur vous : écartez-vous ou sautez au moment où il s'élance.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Le boss fonce droit devant lui au ras du sol : sautez par-dessus ou montez sur une plateforme.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Le boss frappe au corps à corps, juste devant lui : reculez hors de sa portée pendant l'annonce.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Le boss frappe le sol : un impact sous lui et deux ondes de choc qui filent au ras du sol de chaque côté. Sautez par-dessus.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Le boss garde ses blessures si le joueur meurt",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Le boss ne lance pas cette attaque dans son arène : l'exemple ne peut pas être montré.",
+   "where": [
+    "game/gameplay/BossAttackDemo.cpp"
+   ]
+  },
+  {
+   "fr": "Le boss ne peut pas être placé dans l'arène.",
+   "where": [
+    "game/gameplay/BossAttackDemo.cpp"
+   ]
+  },
+  {
+   "fr": "Le boss saute sur vous et retombe en frappant le sol : deux ondes de choc partent de chaque côté à l'atterrissage.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Le boss se pose là où vous êtes, souffle un nuage de feu durable au ras du sol, puis repart.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Le boss se roule en carapace et fonce sur vous en rebondissant sur les murs : blindé pendant le roulement, étourdi ensuite.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Le boss vous aspire vers lui : une aspiration limitée, courir dans l'autre sens suffit.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -23725,6 +24144,12 @@
    "fr": "Le coffre de phase !",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "Le combat de l'exemple s'est arrêté avant l'attaque.",
+   "where": [
+    "game/gameplay/BossAttackDemo.cpp"
    ]
   },
   {
@@ -24141,6 +24566,12 @@
    "fr": "Le fleuve est trop large pour sauter. Il me faut un radeau.",
    "where": [
     "data/levels/pyralis_02.json"
+   ]
+  },
+  {
+   "fr": "Le fond de l'arène est inondé jusqu'aux plateformes un moment, puis l'inondation redescend : montez.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -25092,6 +25523,18 @@
    ]
   },
   {
+   "fr": "Le sol de l'arène gèle un moment : vous glissez bien plus longtemps.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Le sol jaillit sur des points marqués avant l'éruption : quittez les marques.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Le sol se fissure sous Magmaroth !",
    "where": [
     "data/enemies/crucible_heart.json",
@@ -25409,6 +25852,18 @@
    ]
   },
   {
+   "fr": "Les ailes du boss lancent une lame de plumes à travers l'arène : basse, sautez par-dessus ; haute, restez au sol.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Les ailes du boss vous repoussent : une poussée limitée, que vous pouvez remonter en courant.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Les anciennes révisions gardent leur définition : records archivés, replays et défis déjà commencés restent exacts. Les niveaux de la communauté et les vôtres gardent les entités du jeu.",
    "where": [
     "data/news/changelog.json"
@@ -25502,6 +25957,18 @@
    "fr": "Les clans de Cosmic Online",
    "where": [
     "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Les colonnes avancent en marche.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Les colonnes viennent des deux murs.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -25879,6 +26346,12 @@
    ]
   },
   {
+   "fr": "Les impacts se suivent le long d'une ligne.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Les jeux les téléchargent au démarrage ; les révisions d'avant restent jouables avec leur définition (records archivés, replays, défis déjà commencés). La publication est inscrite au Journal.",
    "where": [
     "editors/enemy_editor/EnemyEditorPublish.cpp"
@@ -26004,6 +26477,12 @@
    "fr": "Les premiers enfants des Confins le trouvèrent dans une caverne et y gravèrent une rune, pour jouer : « Protège-nous ».",
    "where": [
     "data/stories/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Les presses de la fonderie du boss s'abattent de la voûte ; des bandes au sol montrent où avant leur chute.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -26156,6 +26635,12 @@
    "fr": "Les statistiques lisent ce qui se passe sans rien changer à la partie : replays, records et classements ne bougent pas. Les replays relus et les parties d'amis regardées ne sont pas comptés, ni les tests de l'éditeur ni le mode Invincible ; l'entraînement est compté à part.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Les tapis roulants de la fonderie du boss démarrent : ils vous emportent moins vite que vous ne courez, un saut vous libère.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -26746,13 +27231,19 @@
   {
    "fr": "Loin de lui",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "loin de lui",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
    "fr": "Loin de lui  ·  {0} s",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -26770,7 +27261,8 @@
   {
    "fr": "Longueur du rayon",
    "where": [
-    "editors/enemy_editor/EnemyEditorProperties.cpp"
+    "editors/enemy_editor/EnemyEditorProperties.cpp",
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -28260,6 +28752,12 @@
    ]
   },
   {
+   "fr": "Missiles verrouillés",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Missiles à verrouillage",
    "where": [
     "data/enemies/titan.json",
@@ -28885,6 +29383,7 @@
   {
    "fr": "Motif",
    "where": [
+    "game/enemies/BossAttackSheet.cpp",
     "ui/online/CommentsPanel.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/SocialScene.cpp"
@@ -31045,9 +31544,15 @@
    ]
   },
   {
+   "fr": "Nuage de feu",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Nuage de feu {0} s",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -31736,7 +32241,8 @@
   {
    "fr": "Ondes de choc",
    "where": [
-    "editors/enemy_editor/EnemyEditorProperties.cpp"
+    "editors/enemy_editor/EnemyEditorProperties.cpp",
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -32131,7 +32637,8 @@
   {
    "fr": "Ouverture",
    "where": [
-    "editors/shared/EditorHistory.h"
+    "editors/shared/EditorHistory.h",
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -33456,6 +33963,12 @@
    ]
   },
   {
+   "fr": "Pause : clic, Entrée / A",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "Pause : « Mode concentré » est un bouton comme les autres (texte centré, même police et même taille), son état sur un petit interrupteur à droite.",
    "where": [
     "data/news/changelog.json"
@@ -33589,6 +34102,12 @@
    "fr": "Pendant le défi",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "pendant {0}",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -33728,6 +34247,7 @@
    "fr": "Phase",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
+    "game/enemies/BossAttackSheet.cpp",
     "game/enemies/Enemy.cpp",
     "game/enemies/EnemyDefinition.cpp",
     "game/enemies/EnemyDefinition.h",
@@ -33775,6 +34295,7 @@
   {
    "fr": "Phase unique",
    "where": [
+    "game/enemies/BossAttackSheet.cpp",
     "ui/screens/BossStatsScene.cpp"
    ]
   },
@@ -33782,9 +34303,17 @@
    "fr": "Phase {0}",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
+    "game/enemies/BossAttackSheet.cpp",
+    "ui/screens/BossAttackPreview.cpp",
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/GameScene.cpp",
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "phase {0}",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -33803,6 +34332,7 @@
   {
    "fr": "Phases",
    "where": [
+    "game/enemies/BossAttackSheet.cpp",
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/BossTrainingScene.cpp"
    ]
@@ -33832,6 +34362,12 @@
    "fr": "phases sans être touché",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Phases {0}",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -33912,6 +34448,12 @@
    "fr": "Phénix vaincu",
    "where": [
     "data/levels/confins_04.json"
+   ]
+  },
+  {
+   "fr": "Pic",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -34013,7 +34555,8 @@
   {
    "fr": "Piqués enchaînés",
    "where": [
-    "editors/enemy_editor/EnemyEditorProperties.cpp"
+    "editors/enemy_editor/EnemyEditorProperties.cpp",
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -35194,6 +35737,7 @@
   {
    "fr": "Portée",
    "where": [
+    "game/enemies/BossAttackSheet.cpp",
     "game/powers/PowerStats.cpp"
    ]
   },
@@ -35207,6 +35751,12 @@
    "fr": "Portée de détection",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Portée de l'anneau",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -35313,9 +35863,15 @@
    ]
   },
   {
+   "fr": "Posé : dégâts reçus",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Posé : dégâts reçus {0}",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -35473,6 +36029,12 @@
    "where": [
     "data/cosmetics/cosmetics.json",
     "game/cosmetics/CreationLooks.cpp"
+   ]
+  },
+  {
+   "fr": "Poussée",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -36081,6 +36643,12 @@
    ]
   },
   {
+   "fr": "Projectiles",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Projet",
    "where": [
     "ui/screens/NotificationsScene.cpp",
@@ -36334,6 +36902,12 @@
    "fr": "Préparation de l'envoi…",
    "where": [
     "ui/screens/AdminBackups.cpp"
+   ]
+  },
+  {
+   "fr": "Préparation de l'exemple…",
+   "where": [
+    "ui/screens/BossAttackPreview.cpp"
    ]
   },
   {
@@ -37217,6 +37791,12 @@
    ]
   },
   {
+   "fr": "Ralentit",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Ralentit le joueur à (0 = non)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -37322,6 +37902,12 @@
    ]
   },
   {
+   "fr": "Rayon d'explosion",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Rayon d'explosion (bombes)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -37367,6 +37953,12 @@
    ]
   },
   {
+   "fr": "Rayon de la frappe",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Rayon de la naine rouge",
    "where": [
     "data/enemies/singularis.json"
@@ -37387,7 +37979,8 @@
   {
    "fr": "Rayon du cercle",
    "where": [
-    "editors/enemy_editor/EnemyEditorProperties.cpp"
+    "editors/enemy_editor/EnemyEditorProperties.cpp",
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -37403,7 +37996,8 @@
     "data/enemies/echo_archon_catacombs.json",
     "data/enemies/echo_thornwarden.json",
     "data/enemies/thornwarden.json",
-    "editors/enemy_editor/EnemyEditorProperties.cpp"
+    "editors/enemy_editor/EnemyEditorProperties.cpp",
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -37440,7 +38034,8 @@
   {
    "fr": "Rayon le plus large",
    "where": [
-    "editors/enemy_editor/EnemyEditorProperties.cpp"
+    "editors/enemy_editor/EnemyEditorProperties.cpp",
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -37448,6 +38043,12 @@
    "where": [
     "data/enemies/echo_pyrogyre.json",
     "data/enemies/pyrogyre.json"
+   ]
+  },
+  {
+   "fr": "Rayons",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -37491,6 +38092,7 @@
    "fr": "Rebonds",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
+    "game/enemies/BossAttackSheet.cpp",
     "game/powers/PowerStats.cpp"
    ]
   },
@@ -37539,6 +38141,7 @@
   {
    "fr": "Recharge",
    "where": [
+    "game/enemies/BossAttackSheet.cpp",
     "game/powers/PowerStats.cpp"
    ]
   },
@@ -37575,6 +38178,7 @@
   {
    "fr": "Recherche de son arène…",
    "where": [
+    "ui/screens/BossAttackPreview.cpp",
     "ui/screens/BossStatsScene.cpp"
    ]
   },
@@ -38442,6 +39046,12 @@
    ]
   },
   {
+   "fr": "Rencontrez ce boss dans son niveau : l'exemple de ses attaques s'ouvre ensuite.",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "Rencontrez-le d'abord dans son niveau : l'entraînement s'ouvre ensuite.",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
@@ -38463,6 +39073,18 @@
    "fr": "Renfort",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Renforts",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Renforts présents au plus",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -38845,13 +39467,19 @@
   {
    "fr": "Repousse {0} s",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
    "fr": "Reprendre",
    "where": [
     "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
+   "fr": "Reprendre : clic, Entrée / A",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -39705,7 +40333,8 @@
   {
    "fr": "Runes",
    "where": [
-    "data/enemies/monolithe.json"
+    "data/enemies/monolithe.json",
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -40046,6 +40675,12 @@
    "fr": "Récompenses retirées de ce défi.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Récupération",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -41192,9 +41827,15 @@
    ]
   },
   {
+   "fr": "Sauts alourdis",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Sauts alourdis {0} s",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -41655,6 +42296,12 @@
    ]
   },
   {
+   "fr": "Sens",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Sens (0 vers lui, 1 loin de lui)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -41823,6 +42470,12 @@
    ]
   },
   {
+   "fr": "Ses projectiles explosent à l'impact.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Ses runes s'embrasent !",
    "where": [
     "data/enemies/monolithe.json"
@@ -41850,6 +42503,12 @@
    "fr": "Ses tentacules arrachent la roche : les blocs tournoient !",
    "where": [
     "data/levels/confins_03.json"
+   ]
+  },
+  {
+   "fr": "Ses tirs vous suivent un moment.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -42410,6 +43069,12 @@
    ]
   },
   {
+   "fr": "Son arène est introuvable dans son niveau.",
+   "where": [
+    "game/gameplay/BossAttackDemo.cpp"
+   ]
+  },
+  {
    "fr": "Son canon chauffe au rouge : gare au laser !",
    "where": [
     "data/enemies/titan.json"
@@ -42476,8 +43141,21 @@
    ]
   },
   {
+   "fr": "Son niveau est introuvable.",
+   "where": [
+    "ui/screens/BossAttackPreview.cpp"
+   ]
+  },
+  {
+   "fr": "Son niveau ne peut pas être chargé.",
+   "where": [
+    "game/gameplay/BossAttackDemo.cpp"
+   ]
+  },
+  {
    "fr": "Son niveau ne peut pas être lu.",
    "where": [
+    "ui/screens/BossAttackPreview.cpp",
     "ui/screens/BossTrainingScene.cpp"
    ]
   },
@@ -43326,6 +44004,12 @@
   },
   {
    "fr": "Statistiques des boss et galerie : les nouveaux gardiens et leurs échos y figurent. Musiques : 4 thèmes de combat et la musique d'Aethra.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Statistiques des boss › Fiche : chaque attaque se déplie et se replie (un clic, Entrée ou A ; « Tout déplier », « Tout replier »). Dépliée, elle dit ce qu'elle fait et donne ses caractéristiques lues dans la définition du boss : dégâts, annonce et recharge dans chaque phase où elle sort, récupération, portée et ce que son type utilise (projectiles, vitesse, durée, rayon…).",
    "where": [
     "data/news/changelog.json"
    ]
@@ -44193,7 +44877,8 @@
   {
    "fr": "Séisme",
    "where": [
-    "data/enemies/monolithe.json"
+    "data/enemies/monolithe.json",
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -45483,6 +46168,7 @@
    "fr": "terrain",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
+    "game/gameplay/BossAttackDemo.cpp",
     "game/levels/CampaignPipeline.cpp",
     "game/levels/LevelData.cpp",
     "game/levels/ObjectTypes.cpp"
@@ -45722,6 +46408,12 @@
    "fr": "Tirs ennemis",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tirs à tête chercheuse",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -46196,6 +46888,12 @@
    ]
   },
   {
+   "fr": "Tout déplier",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "Tout effacer",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -46247,6 +46945,12 @@
    "fr": "Tout ramasser dans les 4 niveaux d'Aethra.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Tout replier",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -46325,7 +47029,19 @@
   {
    "fr": "Toutes sauf une",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "toutes sauf une",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Toutes tombent sauf une : la colonne épargnée s'éclaire en vert.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -46425,6 +47141,12 @@
    "fr": "Trajet de mon record",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Trajet sous le sol",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -46859,6 +47581,7 @@
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "editors/level_editor/LevelEditorDialogs.cpp",
     "editors/level_editor/LevelEditorLayout.cpp",
+    "game/enemies/BossAttackSheet.cpp",
     "game/levels/ObjectTypes.cpp",
     "ui/screens/AdminBackups.cpp"
    ]
@@ -47222,6 +47945,12 @@
    ]
   },
   {
+   "fr": "Un anneau s'étend depuis le boss avec une seule ouverture : passez par l'ouverture.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Un ascenseur des Anciens : montez dessus pour descendre.",
    "where": [
     "data/levels/sylvanox_03.json"
@@ -47307,6 +48036,12 @@
    ]
   },
   {
+   "fr": "Un cercle de runes se referme autour de vous : encore dedans quand il se ferme, vos sauts s'alourdissent un moment. Un pas hors du cercle suffit.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Un clan réunit jusqu'à 50 joueurs autour d'un tag, d'une devise et d'un emblème. Ses membres discutent entre eux et additionnent leurs meilleurs résultats vérifiés sur les niveaux EXTRÊME pour le classement des clans. Un seul clan par joueur.",
    "where": [
     "ui/screens/ClanScene.cpp"
@@ -47354,6 +48089,12 @@
    "fr": "Un compte, un ordinateur : votre compte se lie à cet ordinateur. Une connexion depuis un autre est refusée et vous recevez une alerte « Sécurité » ; un seul compte par ordinateur.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Un coup reçu vous ralentit.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -47709,9 +48450,27 @@
    ]
   },
   {
+   "fr": "Un puits gravitationnel vous attire et dévie vos tirs ; son cœur blesse.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Un puits plonge vers la galerie. Planez pour adoucir la chute.",
    "where": [
     "data/levels/glacior_02.json"
+   ]
+  },
+  {
+   "fr": "Un rayon qui rebondit sur les murs et le plafond ; son trajet est montré pendant l'annonce.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Un rayon tiré vers vous, qui peut balayer l'arène : sortez de sa ligne pendant l'annonce.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -47778,6 +48537,12 @@
    ]
   },
   {
+   "fr": "Un seul exemple à la fois : cliquez ici, ou sélectionnez cette attaque, pour voir le sien.",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "Un soir, il ne lui resta qu'une étincelle. Elle eut froid. Elle eut peur d'être seule dans le noir.",
    "where": [
     "data/stories/singularis.json"
@@ -47799,6 +48564,12 @@
    "fr": "Un titre créé sur Cosmic Online.",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "un toutes les {0}",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -47853,6 +48624,12 @@
    "fr": "Une barrière d'énergie barre la canopée : dissolvez-la avec l'Onde.",
    "where": [
     "data/levels/sylvanox_02.json"
+   ]
+  },
+  {
+   "fr": "Une bosse court sous le sol jusqu'à vous, puis un pic jaillit à l'endroit atteint : changez de place.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -48037,6 +48814,12 @@
    ]
   },
   {
+   "fr": "Une ligne se trace vers l'endroit où vous serez, puis le boss fonce le long de cette ligne, la dépasse et remonte.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Une liste déplacée à la molette ou à la barre reste où on l'a laissée : elle ne revient plus d'elle-même sur l'élément sélectionné (elle le suit encore quand on change de sélection au clavier ou à la manette).",
    "where": [
     "data/news/changelog.json"
@@ -48064,6 +48847,12 @@
    "fr": "Une machine de guerre restée en marche au fond d'une fonderie engloutie des Confins. Huit phases, huit lumières : ses presses, ses tapis, ses missiles, sa surchauffe et son calage, et sa dernière salve à survivre.",
    "where": [
     "data/enemies/titan.json"
+   ]
+  },
+  {
+   "fr": "Une marque apparaît derrière vous ; le boss s'y téléporte et frappe autour de lui.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -48236,6 +49025,12 @@
    ]
   },
   {
+   "fr": "Une salve de projectiles en éventail : glissez-vous entre deux tirs ou sautez par-dessus.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Une sauvegarde complète du serveur est faite juste avant. Chaque migration est inscrite au Journal et les deux joueurs reçoivent une notification.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
@@ -48315,15 +49110,33 @@
    ]
   },
   {
+   "fr": "Une sur deux tombe, puis l'autre moitié : entrez dans une colonne qui vient de remonter.",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Une sur deux, {0} vague",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "une sur deux, {0} vague",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
    "fr": "Une sur deux, {0} vagues",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "une sur deux, {0} vagues",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -49323,13 +50136,19 @@
   {
    "fr": "Vers lui",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "vers lui",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
    "fr": "Vers lui  ·  {0} s",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -49692,6 +50511,12 @@
    ]
   },
   {
+   "fr": "Vie des doubles",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Vie des doubles (s, 0 = jusqu'au coup)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -49874,6 +50699,12 @@
    ]
   },
   {
+   "fr": "Visée anticipée",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Visée du piqué suivant (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -49883,6 +50714,7 @@
    "fr": "Vitesse",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
+    "game/enemies/BossAttackSheet.cpp",
     "game/powers/PowerStats.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/BossStatsScene.cpp",
@@ -49923,7 +50755,8 @@
   {
    "fr": "Vitesse de l'anneau",
    "where": [
-    "editors/enemy_editor/EnemyEditorProperties.cpp"
+    "editors/enemy_editor/EnemyEditorProperties.cpp",
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -49972,6 +50805,12 @@
    "fr": "Vitesse des ondes",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Vitesse des projectiles",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -51463,7 +52302,7 @@
   {
    "fr": "{0}  ·  Dégâts {1}  ·  Annonce {2} s  ·  Recharge {3} s",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -52103,6 +52942,12 @@
    ]
   },
   {
+   "fr": "{0} autour du joueur",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "{0} autre(s) à voir ensuite",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
@@ -52195,25 +53040,25 @@
   {
    "fr": "{0} colonne depuis les deux murs",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
    "fr": "{0} colonne en marche",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
    "fr": "{0} colonnes depuis les deux murs",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
    "fr": "{0} colonnes en marche",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -52291,6 +53136,12 @@
    ]
   },
   {
+   "fr": "{0} de large, {1} de haut",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "{0} de morts par passage",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -52356,6 +53207,12 @@
    "fr": "{0} demandes de migration de ce compte refusées (code faux ou expiré) : quelqu'un connaît votre mot de passe.",
    "where": [
     "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "{0} depuis les deux murs",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -52469,7 +53326,14 @@
   {
    "fr": "{0} en ligne",
    "where": [
+    "game/enemies/BossAttackSheet.cpp",
     "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} en marche",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -52649,13 +53513,13 @@
   {
    "fr": "{0} fissure par secousse  ·  Séisme {1} s",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
    "fr": "{0} fissures par secousse  ·  Séisme {1} s",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -52869,13 +53733,13 @@
   {
    "fr": "{0} lame, basse ou haute",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
    "fr": "{0} lames, basse et haute",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -52957,13 +53821,13 @@
   {
    "fr": "{0} missile verrouillé",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
    "fr": "{0} missiles verrouillés",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -53220,13 +54084,13 @@
   {
    "fr": "{0} onde de choc",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
    "fr": "{0} ondes de choc",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -53238,7 +54102,7 @@
   {
    "fr": "{0} piqués enchaînés",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -53280,19 +54144,25 @@
   {
    "fr": "{0} projectiles",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "{0} px",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
    "fr": "{0} rebond  ·  Carapace : dégâts reçus {1}  ·  Étourdi : dégâts reçus {2}",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
    "fr": "{0} rebonds  ·  Carapace : dégâts reçus {1}  ·  Étourdi : dégâts reçus {2}",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -53358,25 +54228,25 @@
   {
    "fr": "{0} rune autour du joueur",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
    "fr": "{0} rune en ligne",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
    "fr": "{0} runes autour du joueur",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
    "fr": "{0} runes en ligne",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -53430,7 +54300,7 @@
   {
    "fr": "{0} salves",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -53996,6 +54866,18 @@
    ]
   },
   {
+   "fr": "{0}, basse et haute",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "{0}, basse ou haute",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "{0}, bord {1}, lueur {2}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -54447,6 +55329,12 @@
    ]
   },
   {
+   "fr": "× {0} salves (une toutes les {1})",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "à 0 PV, invincible",
    "where": [
     "ui/screens/BossStatsScene.cpp"
@@ -54603,6 +55491,12 @@
    ]
   },
   {
+   "fr": "à {0} de votre vitesse pendant {1}",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "À équiper",
    "where": [
     "ui/screens/RewardsScene.cpp"
@@ -54721,6 +55615,18 @@
    ]
   },
   {
+   "fr": "Écart entre deux impacts",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Écart entre deux tirs",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
    "fr": "Écart entre les colonnes (px)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -54730,6 +55636,12 @@
    "fr": "Écart entre les fissures (px)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Écart entre les murs",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -55803,7 +56715,8 @@
    "fr": "Éruptions",
    "where": [
     "data/enemies/echo_pyrogyre.json",
-    "data/enemies/pyrogyre.json"
+    "data/enemies/pyrogyre.json",
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {
@@ -55937,6 +56850,12 @@
    "fr": "Étoiles traqueuses",
    "where": [
     "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Étourdi : dégâts reçus",
+   "where": [
+    "game/enemies/BossAttackSheet.cpp"
    ]
   },
   {

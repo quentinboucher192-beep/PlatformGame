@@ -6,6 +6,13 @@ Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les c
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
 **Nouveau dans la version 2.62.0** :
+* **Statistiques des boss › Fiche** : chaque **attaque se déplie et se replie** (clic, Entrée / A, flèches ;
+  « Tout déplier », « Tout replier ») ; dépliée, elle dit ce qu'elle fait et donne ses **caractéristiques
+  lues dans la définition du boss** (dégâts, annonce et recharge dans chaque phase où elle sort, récupération,
+  portée, ce que son type utilise) avec un **exemple animé joué par le moteur** : le boss dans son arène, à la
+  phase où elle sort (son dernier souffle pour les attaques finales), la lance en boucle et Nova montre comment
+  l'esquiver. Un seul exemple à la fois, préparé sans figer l'écran, jamais compté (records, statistiques,
+  succès) ; pour tous les boss, gardiens d'Aethra, giga-boss des Confins et Singularis compris.
 * **Administration › Créations › Studio** : un éditeur complet des images des créations, pour les admins.
   L'**explorateur** (combinaisons, traînées, cadres, effets de victoire du serveur et brouillons de ce PC,
   recherche, nouveau, dupliquer, renommer, archiver, bibliothèque des sprites et palettes du jeu), des

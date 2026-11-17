@@ -2231,6 +2231,13 @@
     "admin.tab.creations",
     "admin.creations.studio"
    ]
+  },
+  {
+   "id": "stats.sheet.attacks",
+   "version": "2.62.0",
+   "parents": [
+    "stats.sheet"
+   ]
   }
  ]
 }
