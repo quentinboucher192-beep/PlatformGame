@@ -496,3 +496,49 @@ TEST_CASE("level power keys: every campaign level carries the keys of its powers
     CHECK(levels == 25);  // 2.33: Le Cœur d'une Étoile Mourante; 2.48: La Gueule du Dragon; 2.49: Le Cœur de Pierre; 2.53: La Fosse des Abysses;
                           // 2.56: Le Nid de Cendres; 2.57: La Crypte des Noms; 2.58: La Fonderie Engloutie
 }
+
+TEST_CASE("level power keys (2.60): a change follows in the levels that had exactly the same keys") {
+    ContentDatabase content;
+    content.reload();
+    const InputBindings base = InputBindings::defaults();
+    LevelData a = levelWith({"dash", "wave"}, {"shield"});
+    a.id = "keys_a";
+    LevelData b = levelWith({"wave", "dash"}, {"shield"});  // same powers, another order
+    b.id = "keys_b";
+    LevelData c = levelWith({"dash", "wave"});  // one power fewer: not the same keys
+    c.id = "keys_c";
+    LevelData d = levelWith({"dash", "wave"}, {"shield"});
+    d.id = "keys_d";
+    d.powerKeys["dash"] = {{"key", "C"}};  // the level asks for another key: not the same keys
+    PowerKeyOverrides mine;
+    auto keys = [&](const LevelData& l) { return levelPowerKeys(l, content, base, &mine); };
+    CHECK(!powerKeySignature(keys(a)).empty());
+    CHECK(powerKeySignature(keys(a)) == powerKeySignature(keys(b)));
+    CHECK(powerKeySignature(keys(a)) != powerKeySignature(keys(c)));
+    CHECK(powerKeySignature(keys(a)) != powerKeySignature(keys(d)));
+    CHECK(powerKeySignature(PowerKeyMap{}).empty());
+    // The player changes the dash in A: B follows, C and D keep theirs.
+    const PowerKeyMap bBefore = keys(b);
+    mine.setKey(a.id, "dash", SDL_SCANCODE_F);
+    mine.setPad(a.id, "dash", PadBinding::button(SDL_GAMEPAD_BUTTON_NORTH));
+    CHECK(matchPowerKeys(mine, b.id, bBefore, keys(a)));
+    CHECK(keys(b).find("dash")->wantedKey == SDL_SCANCODE_F);
+    CHECK(keys(b).find("dash")->wantedPad == PadBinding::button(SDL_GAMEPAD_BUTTON_NORTH));
+    CHECK(powerKeySignature(keys(a)) == powerKeySignature(keys(b)));
+    CHECK(!mine.has(c.id, "dash"));
+    CHECK(!mine.has(d.id, "dash"));
+    // Nothing more to do the second time.
+    CHECK(!matchPowerKeys(mine, b.id, keys(b), keys(a)));
+    // « Par défaut » in A: B goes back to the same keys, stored as no choice (its level's key).
+    const PowerKeyMap bNow = keys(b);
+    mine.reset(a.id, "dash");
+    CHECK(matchPowerKeys(mine, b.id, bNow, keys(a)));
+    CHECK(!mine.has(b.id, "dash"));
+    CHECK(powerKeySignature(keys(a)) == powerKeySignature(keys(b)));
+    // A level whose own key differs follows by a choice of the player's: D asks for C, A for
+    // the suggestion; D takes the suggestion as its player's key, and the signatures match.
+    const PowerKeyMap dBefore = keys(d);
+    CHECK(matchPowerKeys(mine, d.id, dBefore, keys(a)));
+    CHECK(mine.has(d.id, "dash"));
+    CHECK(powerKeySignature(keys(a)) == powerKeySignature(keys(d)));
+}

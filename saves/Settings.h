@@ -36,6 +36,9 @@ struct GameplaySettings {
     /// 2.51: « Invincible » in training runs (administrators only: boss training, section
     /// training, practice runs; never a run that counts nor a challenge).
     bool adminInvincible = false;
+    /// 2.60: « Touches de ce niveau »: a change of keys also goes to the levels whose keys were
+    /// exactly the same (same powers, same keys and buttons asked for).
+    bool powerKeysShared = true;
     /// The level's messages (hints, signs, power and boss titles), in each mode.
     bool showMessages = true;
     bool focusMessages = false;
