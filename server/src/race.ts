@@ -17,7 +17,7 @@ import { ApiError, Errors, json, nowIso, readJsonObject, readLimited, type Ctx }
 import type { LevelVersionRow } from "./model";
 import { notify } from "./notifications";
 import { RULES, rateLimit } from "./ratelimit";
-import { CHALLENGE_REPLAY_ELSEWHERE, EventType, inflateContainer, MAX_REPLAY_UPLOAD, parseReplay, ReplayError, type Replay } from "./replay";
+import { CHALLENGE_REPLAY_ELSEWHERE, EventType, inflateContainer, MAX_REPLAY_UPLOAD, parseReplay, ReplayError, TEAM_REPLAY_ELSEWHERE, type Replay } from "./replay";
 import { Validator } from "./validate";
 
 export interface RaceLayout {
@@ -146,6 +146,7 @@ export function analyzeRace(
     if (rep.attemptId !== attemptId) reasons.push("tentative différente");
     if (Math.abs(rep.durationMs - timeMs) > 500) reasons.push("durée du replay différente de la tentative");
     if (rep.frames.length === 0) reasons.push("replay vide");
+    if (rep.team) reasons.push(TEAM_REPLAY_ELSEWHERE);  // 2.62: a team's attempt only ranks in Duo / Trio
     if (!challenge) {
         if (rep.challengeRules !== null) reasons.push(CHALLENGE_REPLAY_ELSEWHERE);
     } else {
@@ -225,7 +226,7 @@ export function analyzeRace(
 
 // --------------------------------------------------------------------- boards
 
-interface Board {
+export interface Board {
     key: string;
     /** The boards this one counts (2.47.1): itself, and for an official level the boards of the
      *  revisions it carried with « Garder les records » (campaign_board_links), as the level
@@ -240,7 +241,7 @@ interface Board {
     authorId: string | null;
 }
 
-async function loadBoard(ctx: Ctx, kind: string, levelId: string, version: number | null, levelHash: string | null): Promise<Board> {
+export async function loadBoard(ctx: Ctx, kind: string, levelId: string, version: number | null, levelHash: string | null): Promise<Board> {
     if (kind === "community") {
         if (!ID_RE.test(levelId)) throw Errors.notFound("RACE_NOT_FOUND", "Course introuvable.");
         const l = await ctx.env.DB.prepare("SELECT id, title, author_id, extreme, current_version, status FROM community_levels WHERE id = ?1")
@@ -295,7 +296,7 @@ async function officialKeys(ctx: Ctx, levelId: string, hash: string): Promise<st
 }
 
 /** SQL list of the boards of a Board, bound as JSON. */
-const IN_KEYS = (n: number) => `IN (SELECT value FROM json_each(?${n}))`;
+export const IN_KEYS = (n: number) => `IN (SELECT value FROM json_each(?${n}))`;
 
 /** What an attempt did, per boss and ambush of the layout (for the boards). */
 export function detailOf(layout: RaceLayout, a: RaceAnalysis) {

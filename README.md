@@ -5,15 +5,29 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.63.0** :
+* **Coopération** sur les niveaux EXTRÊME, à **2 ou 3 joueurs** (menu principal › *Coopération*) : une vie
+  chacun, les mêmes règles qu'en solo, **sur un même PC** (une manette par joueur en plus du clavier), **en
+  réseau local** (un PC héberge le relais, sans compte ni serveur) ou **en ligne** avec vos amis (salon,
+  invitations, « Prêt »). Le jeu reste jouable sans compte ni Internet.
+* **Pas de coups entre alliés** ; **joueurs solides, sans poussée** (un allié arrête comme un mur, on peut se
+  poser sur sa tête) ; les ennemis visent le **joueur le plus proche** ; **réanimation** en restant 2 s près
+  de l'âme d'un allié (2 par tentative) ; **caméra commune** (un joueur hors de l'écran depuis 3 s revient
+  près de l'équipe) ; **déconnexion** : 60 s pour revenir, la partie se rattrape en accéléré.
+* **Course à la vérification Duo et Trio** (jamais mélangées entre elles ni avec le solo) : progression du
+  joueur le plus avancé, vérification par le serveur avec les entrées de chaque joueur, confirmation de chaque
+  joueur avec son compte (une partie sur un même PC n'est pas classée : un compte ne s'ouvre que sur son propre
+  ordinateur). Les records solo restent tous valides. Architecture : [docs/COOP.md](docs/COOP.md).
+* **Clans** : une **fiche de clan** publique, comme un profil (emblème, tag, devise, membres et rôles, points et
+  rang, meilleurs résultats EXTRÊME, « Rejoindre » / « Postuler »), ouverte d'un clic sur un tag [TAG] partout ;
+  onglet **« Clan »** dans les profils, avec **« Inviter dans mon clan »** pour le chef et les officiers ; onglet
+  **« Gestion »** dans CLANS (candidatures, invitations envoyées, membres et rôles, paramètres du chef).
+
 **Nouveau dans la version 2.62.5** :
 * L'**histoire du Kraken** (« La Lanterne des profondeurs ») devient un **petit dessin animé** : l'œuf qui éclot
   dans la mer noire, la petite lueur que suivent les poissons perdus, la pluie d'étincelles de l'étoile, les huit
   bras qui s'allument, les poissons qui fuient son ombre, la Fosse ; rayons de lumière, vase, algues, méduses et
   récifs lumineux animés. Une pastille NOUVEAU mène à « Revoir l'histoire ».
-* **Clans** : une **fiche de clan** publique, comme un profil (emblème, tag, devise, membres et rôles, points et
-  rang, meilleurs résultats EXTRÊME, « Rejoindre » / « Postuler »), ouverte d'un clic sur un tag [TAG] partout ;
-  onglet **« Clan »** dans les profils, avec **« Inviter dans mon clan »** pour le chef et les officiers ; onglet
-  **« Gestion »** dans CLANS (candidatures, invitations envoyées, membres et rôles, paramètres du chef).
 
 **Nouveau dans la version 2.62.4** :
 * L'**histoire du Monolithe** (« Le Golem Primordial ») devient elle aussi un **petit dessin animé** : le caillou

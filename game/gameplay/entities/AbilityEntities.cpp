@@ -21,8 +21,8 @@ void GrapplePointEntity::init(GameWorld& w) {
 }
 
 void GrapplePointEntity::fixedUpdate(GameWorld& w, float dt) {
-    const Player& p = w.player();
-    bool now = p.alive() && p.hasPower("grapple") && GrapplePower::findTarget(p, w, range_) == this;
+    // 2.62: aimed at by any player of a team (alone: the only one).
+    bool now = w.anyPlayerWhere([&](const Player& p) { return p.alive() && p.hasPower("grapple") && GrapplePower::findTarget(p, w, range_) == this; });
     if (now != targeted_ && sprite_.set) sprite_.anim.play(now && sprite_.set->clip("active") ? "active" : "idle", true);
     targeted_ = now;
     sprite_.anim.update(dt);

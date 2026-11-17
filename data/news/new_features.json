@@ -2289,22 +2289,33 @@
    ]
   },
   {
+   "id": "menu.coop",
+   "version": "2.63.0"
+  },
+  {
+   "id": "coop",
+   "version": "2.63.0",
+   "parents": [
+    "menu.coop"
+   ]
+  },
+  {
    "id": "profile.tab.clan",
-   "version": "2.62.5",
+   "version": "2.63.0",
    "parents": [
     "menu.online"
    ]
   },
   {
    "id": "profile.clan.invite",
-   "version": "2.62.5",
+   "version": "2.63.0",
    "parents": [
     "profile.tab.clan"
    ]
   },
   {
    "id": "clans.tab.manage",
-   "version": "2.62.5",
+   "version": "2.63.0",
    "parents": [
     "online.nav.clans"
    ]

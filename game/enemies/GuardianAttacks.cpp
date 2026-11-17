@@ -393,7 +393,6 @@ void Enemy::fireSpiral(GameWorld& w, const AttackDef& a) {
 
 void Enemy::guardianActive(GameWorld& w, float dt) {
     const AttackDef& a = *attack_;
-    Player& p = w.player();
     if (!def_.flying) vel.x = approach(vel.x, 0.0f, 900.0f * dt);
     // 2.52: the golem keeps stepping (slowly) while its runes turn, its core pulls or its rings go.
     if (hasGolem_ && !def_.flying &&
@@ -430,9 +429,9 @@ void Enemy::guardianActive(GameWorld& w, float dt) {
             if (burst_ && !attackHit_) {
                 float half = orDefault(a.radius, 16.0f), h = orDefault(a.height, 44.0f);
                 Rect spike{markPos_.x - half, markPos_.y - h, half * 2.0f, h};
-                if (spike.intersects(p.box)) {
+                if (w.playerIn(spike)) {
                     d.source = {markPos_.x, markPos_.y + 10.0f};
-                    attackHit_ = w.damagePlayer(d) || true;
+                    attackHit_ = w.hurtPlayersIn(spike, d) || true;
                 }
             }
             break;
@@ -462,9 +461,9 @@ void Enemy::guardianActive(GameWorld& w, float dt) {
         }
         case AttackType::Vortex:
             // Its mouth hurts: the pull ends in its contact.
-            if (!attackHit_ && box.expanded(4.0f).intersects(p.box)) {
+            if (!attackHit_ && w.playerIn(box.expanded(4.0f))) {
                 d.type = DamageType::Contact;
-                attackHit_ = w.damagePlayer(d) || true;
+                attackHit_ = w.hurtPlayersIn(box.expanded(4.0f), d) || true;
             }
             hopTimer_ -= dt;
             if (hopTimer_ <= 0.0f) {
@@ -473,13 +472,21 @@ void Enemy::guardianActive(GameWorld& w, float dt) {
             }
             break;
         case AttackType::Prism:
-            for (const std::vector<Vec2>* beam : {&path_, &path2_}) {
-                if (laserHitTimer_ > 0.0f) break;
-                for (size_t k = 1; k < beam->size(); ++k)
-                    if (Collision::segmentIntersectsRect((*beam)[k - 1], (*beam)[k], p.box)) {
-                        if (w.damagePlayer(d)) laserHitTimer_ = 0.45f;
-                        break;
+            if (laserHitTimer_ <= 0.0f) {
+                // 2.62: every player in a beam (alone: the only one, as before).
+                bool hurtAny = false;
+                w.forEachPlayer([&](Player& q) {
+                    bool hurtThis = false;
+                    for (const std::vector<Vec2>* beam : {&path_, &path2_}) {
+                        if (hurtThis) break;
+                        for (size_t k = 1; k < beam->size(); ++k)
+                            if (Collision::segmentIntersectsRect((*beam)[k - 1], (*beam)[k], q.box)) {
+                                if (w.damagePlayer(d)) hurtThis = hurtAny = true;
+                                break;
+                            }
                     }
+                });
+                if (hurtAny) laserHitTimer_ = 0.45f;
             }
             hopTimer_ -= dt;
             if (hopTimer_ <= 0.0f) {
@@ -498,16 +505,22 @@ void Enemy::guardianActive(GameWorld& w, float dt) {
             const float fr = a.projectileRadius > 0 ? a.projectileRadius : 8.0f;
             // The crown follows its target slowly: the gaps, not the distance, are the way out.
             if (def_.flying) moveTowards(w, playerPos_ + Vec2{0.0f, -40.0f}, 40.0f, dt);
-            if (laserHitTimer_ <= 0.0f)
-                for (int k = 0; k < n; ++k) {
-                    float ang = angle_ + spin_ * omega * t + static_cast<float>(k) * 2.0f * kPi / static_cast<float>(n);
-                    Vec2 fp = box.center() + Vec2{dmath::cos(ang), dmath::sin(ang)} * r;
-                    if (Collision::circleIntersectsRect(fp, fr, p.box)) {
-                        d.source = fp;
-                        if (w.damagePlayer(d)) laserHitTimer_ = 0.5f;
-                        break;
+            if (laserHitTimer_ <= 0.0f) {
+                // 2.62: every player the crown reaches (alone: the only one, as before).
+                bool hurtAny = false;
+                w.forEachPlayer([&](Player& q) {
+                    for (int k = 0; k < n; ++k) {
+                        float ang = angle_ + spin_ * omega * t + static_cast<float>(k) * 2.0f * kPi / static_cast<float>(n);
+                        Vec2 fp = box.center() + Vec2{dmath::cos(ang), dmath::sin(ang)} * r;
+                        if (Collision::circleIntersectsRect(fp, fr, q.box)) {
+                            d.source = fp;
+                            if (w.damagePlayer(d)) hurtAny = true;
+                            break;
+                        }
                     }
-                }
+                });
+                if (hurtAny) laserHitTimer_ = 0.5f;
+            }
             if (a.arms > 0) {  // Supernova: the spiral fires through the crown
                 burstTimer_ -= dt;
                 if (burstTimer_ <= 0.0f) {
@@ -524,26 +537,33 @@ void Enemy::guardianActive(GameWorld& w, float dt) {
                 fireSpiral(w, a);
             }
             break;
-        case AttackType::Blink:
-            if (!attackHit_ && t <= 0.18f && Collision::circleIntersectsRect(box.center(), orDefault(a.radius, 46.0f), p.box)) {
+        case AttackType::Blink: {
+            auto inBlink = [&](const Player& q) { return Collision::circleIntersectsRect(box.center(), orDefault(a.radius, 46.0f), q.box); };
+            if (!attackHit_ && t <= 0.18f && w.anyPlayerWhere(inBlink)) {
                 d.type = DamageType::Contact;
-                attackHit_ = w.damagePlayer(d) || true;
+                attackHit_ = w.hurtPlayersWhere(inBlink, d) || true;
             }
             break;
+        }
         case AttackType::Ring: {
             ringRadius_ += std::max(40.0f, a.projectileSpeed) * dt;
             if (!attackHit_) {
                 const float gapHalf = degToRad(orDefault(a.spread, 50.0f)) * 0.5f;
-                const Rect& b = p.box;
-                for (Vec2 s : {b.center(), b.pos(), Vec2{b.right(), b.y}, Vec2{b.x, b.bottom()}, Vec2{b.right(), b.bottom()}}) {
-                    float dist = distance(s, markPos_);
-                    if (std::abs(dist - ringRadius_) > kRingThickness * 0.5f) continue;
-                    float ang = dmath::atan2(s.y - markPos_.y, s.x - markPos_.x);
-                    if (std::abs(angleDiff(ang, angle_)) <= gapHalf) continue;  // through the opening
-                    d.source = markPos_;
-                    attackHit_ = w.damagePlayer(d) || true;
-                    break;
-                }
+                bool reached = false;
+                w.forEachPlayer([&](Player& q) {  // 2.62: every player the ring reaches
+                    const Rect& b = q.box;
+                    for (Vec2 s : {b.center(), b.pos(), Vec2{b.right(), b.y}, Vec2{b.x, b.bottom()}, Vec2{b.right(), b.bottom()}}) {
+                        float dist = distance(s, markPos_);
+                        if (std::abs(dist - ringRadius_) > kRingThickness * 0.5f) continue;
+                        float ang = dmath::atan2(s.y - markPos_.y, s.x - markPos_.x);
+                        if (std::abs(angleDiff(ang, angle_)) <= gapHalf) continue;  // through the opening
+                        d.source = markPos_;
+                        w.damagePlayer(d);
+                        reached = true;
+                        break;
+                    }
+                });
+                if (reached) attackHit_ = true;
             }
             break;
         }

@@ -1,7 +1,9 @@
 #pragma once
 
 #include <memory>
+#include <mutex>
 #include <optional>
+#include <thread>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -55,8 +57,18 @@ public:
     void clearCaches();
     size_t textureCount() const { return textures_.size(); }
 
+    /// 2.62: a simulation stepped by another thread (a team's catch-up after a reconnection,
+    /// docs/COOP.md) may ask for resources: the caches are guarded, and a texture not loaded yet
+    /// is never created off the thread that called init() (the renderer's): that thread gets it
+    /// at finishDeferred(), with the animations that were waiting for it.
+    void finishDeferred();
+
 private:
     TexturePtr missingTexture();
+    bool offThread() const { return renderer_ && std::this_thread::get_id() != owner_; }
+    std::recursive_mutex mutex_;
+    std::thread::id owner_;
+    std::vector<AnimationSetPtr> waitingTexture_;  // animations loaded off the owner's thread
 
     Renderer* renderer_ = nullptr;
     AudioSystem* audio_ = nullptr;

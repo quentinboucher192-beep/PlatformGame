@@ -93,8 +93,11 @@ public:
     const LevelData& level() const { return level_; }
     WorldMode mode() const { return mode_; }
     WorldState state() const { return state_; }
-    Player& player() { return player_; }
-    const Player& player() const { return player_; }
+    /// The current player: player 1 outside any context; in a team (2.62, docs/COOP.md), the
+    /// player being simulated during its step, the target of an enemy during that enemy's step,
+    /// each player in turn inside forEachPlayer(). Alone, always the only player.
+    Player& player() { return *cur_; }
+    const Player& player() const { return *cur_; }
     PhysicsWorld& physics() { return physics_; }
     const PhysicsWorld& physics() const { return physics_; }
     Camera& camera() { return camera_; }
@@ -180,6 +183,144 @@ public:
     BossHazards& hazards() { return hazards_; }
     const BossHazards& hazards() const { return hazards_; }
 
+
+    // ----------------------------------------------- 2.62: cooperation (docs/COOP.md)
+    static constexpr int kMaxTeam = 3;
+    static constexpr int kTeamRevives = 2;            // per team and per attempt
+    static constexpr float kReviveSeconds = 2.0f;     // an ally stays this long near the soul
+    static constexpr float kReviveReachX = 40.0f;     // « near »: feet within these distances
+    static constexpr float kReviveReachY = 48.0f;
+    static constexpr int kStandbyLimitTicks = 60 * 120;  // 60 s of standby: the player is gone
+    static constexpr float kOffFrameSeconds = 3.0f;   // out of the team's frame this long: back
+    /// The team's frame (simulation rule): the widest view of the camera, minus margins.
+    static constexpr float kFrameWidth = Camera::kViewWidth / Camera::kMinFitZoom - 64.0f;
+    static constexpr float kFrameHeight = Camera::kViewHeight / Camera::kMinFitZoom - 96.0f;
+    enum class Presence : uint8_t { Playing, Down, Standby, Gone };
+    struct TeamMember {
+        Player* player = nullptr;
+        Presence presence = Presence::Playing;
+        bool absent = false;       // its inputs carry InputFrame::Standby (the relay's decision)
+        bool standbyInput = false; // this step's flag (fixedUpdateTeam)
+        int standbyTicks = 0;      // steps of the current absence
+        Vec2 soul;                 // Down: where its soul waits (feet)
+        float revive = 0.0f;       // Down: seconds an ally has stayed near the soul
+        float offFrame = 0.0f;     // Playing: seconds out of the team's frame
+        bool inFrame = true;       // part of the group the frame keeps (the camera frames it)
+        bool fell = false;         // its last fall was into the void (the soul goes to safe ground)
+        Vec2 safeFeet;             // where it last stood on solid ground (not on an ally)
+        bool hasSafeFeet = false;
+        LevelEntity* interactable = nullptr;
+        uint32_t body = 0;         // collider of its body (ColliderTag::Teammate)
+        int revived = 0, regrouped = 0, returned = 0;  // counters (replays, statistics)
+    };
+    /// Players of this world (1 to 3), before load(). 1, the default, is the solo game: it
+    /// plays exactly as before (same digests).
+    void setTeamSize(int n);
+    int teamSize() const { return team_.empty() ? 1 : static_cast<int>(team_.size()); }
+    bool coop() const { return team_.size() > 1; }
+    Player& playerAt(int i) { return team_.empty() ? player_ : *team_[static_cast<size_t>(i)].player; }
+    const Player& playerAt(int i) const { return team_.empty() ? player_ : *team_[static_cast<size_t>(i)].player; }
+    /// The team state of player `i` (a team only).
+    const TeamMember& member(int i) const { return team_[static_cast<size_t>(i)]; }
+    /// Index of the current player (see player()).
+    int currentPlayer() const { return curIndex_; }
+    int revivesLeft() const { return revivesLeft_; }
+    int revivesUsed() const { return kTeamRevives - revivesLeft_; }
+    /// A player was gone for good (60 s of standby): the attempt is ranked « incomplète ».
+    bool teamIncomplete() const;
+    /// Players in play (not down, in standby or gone), in order; each one is the current
+    /// player during `f`. Alone: the only player, whatever its state (as the code was).
+    template <class F>
+    void forEachPlayer(F&& f) {
+        if (team_.empty()) {
+            f(player_);
+            return;
+        }
+        Player* saved = cur_;
+        const int savedIndex = curIndex_;
+        for (size_t i = 0; i < team_.size(); ++i) {
+            if (team_[i].presence != Presence::Playing) continue;
+            cur_ = team_[i].player;
+            curIndex_ = static_cast<int>(i);
+            f(*team_[i].player);
+        }
+        cur_ = saved;
+        curIndex_ = savedIndex;
+    }
+    /// Every player of the team but the gone ones (hidden ones too), each the current one
+    /// during `f` (cinematics, scripted gifts). Alone: the only player.
+    template <class F>
+    void forEachTeammate(F&& f) {
+        if (team_.empty()) {
+            f(player_);
+            return;
+        }
+        Player* saved = cur_;
+        const int savedIndex = curIndex_;
+        for (size_t i = 0; i < team_.size(); ++i) {
+            if (team_[i].presence == Presence::Gone) continue;
+            cur_ = team_[i].player;
+            curIndex_ = static_cast<int>(i);
+            f(*team_[i].player);
+        }
+        cur_ = saved;
+        curIndex_ = savedIndex;
+    }
+    /// The player an enemy at `from` aims at: the nearest in play (alive, then materialising,
+    /// then falling), ties to the lowest number. Alone: the only player.
+    Player& nearestPlayer(Vec2 from) { return playerAt(targetIndex(from)); }
+    int targetIndex(Vec2 from) const;
+    /// Whether a player in play satisfies `touches` (alone: the only player, as the code always
+    /// tested it, alive or not).
+    template <class Pred>
+    bool anyPlayerWhere(Pred&& touches) {
+        bool any = false;
+        forEachPlayer([&](Player& p) {
+            if (!any && touches(p)) any = true;
+        });
+        return any;
+    }
+    /// Hurts every player in play that `touches` (each the current player during its blow): an
+    /// enemy's blow reaches every player it touches, not only its target. True if one was hurt.
+    /// Alone: the test, then the blow, as before.
+    template <class Pred>
+    bool hurtPlayersWhere(Pred&& touches, const DamageInfo& d) {
+        bool hurt = false;
+        forEachPlayer([&](Player& p) {
+            if (touches(p) && damagePlayer(d)) hurt = true;
+        });
+        return hurt;
+    }
+    bool playerIn(const Rect& area) {
+        return anyPlayerWhere([&](const Player& p) { return area.intersects(p.box); });
+    }
+    bool hurtPlayersIn(const Rect& area, const DamageInfo& d) {
+        return hurtPlayersWhere([&](const Player& p) { return area.intersects(p.box); }, d);
+    }
+    /// The current player for a scope (restored after).
+    class PlayerScope {
+    public:
+        PlayerScope(GameWorld& w, int index) : w_(w), prev_(w.cur_), prevIndex_(w.curIndex_) {
+            w.cur_ = &w.playerAt(index);
+            w.curIndex_ = index;
+        }
+        ~PlayerScope() {
+            w_.cur_ = prev_;
+            w_.curIndex_ = prevIndex_;
+        }
+        PlayerScope(const PlayerScope&) = delete;
+        PlayerScope& operator=(const PlayerScope&) = delete;
+
+    private:
+        GameWorld& w_;
+        Player* prev_;
+        int prevIndex_;
+    };
+    /// One step of a team: an input and a standby flag (InputFrame::Standby) per player.
+    void fixedUpdateTeam(const PlayerInput* inputs, const bool* standby, int n, float dt);
+    /// Where a player of the team may appear near `feet` (never in a wall nor in an ally).
+    Vec2 freeSpot(Vec2 feet, int self) const;
+
     // --------------------------------------------------------- spawning
     Enemy* spawnEnemy(const EnemyDefinition& def, Vec2 feet, bool faceLeft, const std::string& objectId = {},
                       float patrol = 96.0f);
@@ -262,7 +403,9 @@ public:
     CombatZoneEntity* activeAmbush() const;
     void setMusic(const std::string& rel);
     void restoreLevelMusic();
-    LevelEntity* nearestInteractable() const { return interactable_; }
+    LevelEntity* nearestInteractable() const {
+        return team_.empty() ? interactable_ : team_[static_cast<size_t>(curIndex_)].interactable;
+    }
     void lockCameraZone(const CameraZone* zone);
     void beginPlay();  // after the intro: start the timer, give control
     /// Skips the intro and starts playing at `feet` (editor "test from here").
@@ -270,7 +413,7 @@ public:
     /// The same, facing left or right, the respawn facing that way too (a boss training started
     /// in its arena, facing the boss: 2.41).
     void startAt(Vec2 feet, bool faceLeft);
-    bool playerHidden() const { return player_.state() == PlayerState::Hidden; }
+    bool playerHidden() const { return player().state() == PlayerState::Hidden; }
     void addSecretFound(const std::string& id, const std::string& message);
     float lastSplitDelta() const { return lastSplitDelta_; }
     void setReferenceSplits(std::vector<float> splits) { referenceSplits_ = std::move(splits); }
@@ -284,6 +427,7 @@ public:
         std::string tabletId;  // entity offering the power
         std::string powerId;
         int conflictSlot = -1;  // >= 0: only this power can be replaced (same input)
+        int player = 0;         // 2.62: the player of the team it is offered to
     };
     const std::optional<PowerOffer>& powerOffer() const { return powerOffer_; }
     void offerPower(const std::string& tabletId, const std::string& powerId, int conflictSlot);
@@ -295,6 +439,13 @@ public:
     uint8_t autoPowerChoice = 0;
     /// Demos (power guide): no sound.
     bool silent = false;
+    /// 2.62: a team's catch-up (stepped by another thread, docs/COOP.md): no sound, no
+    /// rumble, no particle; nothing of the simulation changes.
+    void setQuiet(bool on) {
+        quiet_ = on;
+        silent = on;
+        particles_.setQuality(on ? 0.0f : services_.particleQuality);
+    }
 
     // ---------------------------------------------------------- render
     /// Fill colour of the screen behind the parallax layers.
@@ -346,6 +497,31 @@ private:
     /// 2.19: a frozen enemy is a platform (a one-way collider on the top of its box).
     void syncFrozenPlatforms();
 
+    // 2.62: the team (empty alone: player_ is the only player).
+    std::vector<TeamMember> team_;
+    std::vector<std::unique_ptr<Player>> extraPlayers_;
+    int teamWanted_ = 1;
+    Player* cur_ = &player_;
+    int curIndex_ = 0;
+    int revivesLeft_ = kTeamRevives;
+    std::vector<PlayerInput> teamInputs_;
+    void loadTeam();
+    void stepTeamPlayers(float dt);
+    void teamBodies(int self, bool on);
+    void updateTeamStandby();
+    void updateTeamRules(float dt);
+    void updateTeamCamera(float dt);
+    void memberDown(int i);
+    void reviveMember(int i);
+    void regroupMember(int i, int toward);
+    void checkTeamDown();
+    bool solidMember(int i) const;
+    bool teammateBody(uint32_t collider) const;
+    /// The player an enemy shot touches first (alone: the only player, if alive).
+    Player* shotTarget(const Projectile& p);
+    int playerIndex(const Player& p) const;
+    friend uint64_t simulationStateHash(const GameWorld& world);
+
     Vec2 decoyPos_;
     float decoyTimer_ = 0.0f;
     float decoyDuration_ = 0.0f;
@@ -383,6 +559,7 @@ private:
     uint64_t seed_ = 0xC0FFEE;
     bool training_ = false;
     bool invincible_ = false;
+    bool quiet_ = false;
     std::optional<ChallengeRules> challenge_;
     /// Challenge without checkpoints: a death goes back to the start with its start state,
     /// the power tablets as the level placed them (none lost, none exchanged).

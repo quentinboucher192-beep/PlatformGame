@@ -10,6 +10,7 @@
 #include <random>
 
 #include "game/gameplay/GameWorld.h"
+#include "game/online/LevelFingerprint.h"
 
 namespace cosmic {
 
@@ -74,6 +75,44 @@ bool fail(std::string* error, const char* msg) {
     return false;
 }
 
+/// Inputs as runs of identical frames (18 bytes each: u16 repeat, u32 held, pressed, released,
+/// i8 moveX, moveY, u8 flags, choice); returns the number of runs.
+uint32_t putRuns(std::vector<uint8_t>& o, const std::vector<InputFrame>& inputs) {
+    uint32_t runs = 0;
+    for (size_t i = 0; i < inputs.size();) {
+        size_t j = i + 1;
+        while (j < inputs.size() && j - i < 0xFFFF && inputs[j] == inputs[i]) ++j;
+        const InputFrame& f = inputs[i];
+        putU16(o, static_cast<uint16_t>(j - i));
+        putU32(o, f.held);
+        putU32(o, f.pressed);
+        putU32(o, f.released);
+        o.push_back(static_cast<uint8_t>(f.moveX));
+        o.push_back(static_cast<uint8_t>(f.moveY));
+        o.push_back(f.flags);
+        o.push_back(f.choice);
+        ++runs;
+        i = j;
+    }
+    return runs;
+}
+
+void putFrame(std::vector<uint8_t>& o, const ReplayFrame& f) {
+    putF32(o, f.x);
+    putF32(o, f.y);
+    o.push_back(f.state);
+    o.push_back(f.flags);
+    o.push_back(f.health);
+    o.push_back(0);
+}
+
+void putEvent(std::vector<uint8_t>& o, const ReplayEvent& e) {
+    putU32(o, e.frame);
+    o.push_back(static_cast<uint8_t>(e.type));
+    o.push_back(e.arg);
+    putU16(o, e.value);
+}
+
 }  // namespace
 
 uint8_t replayPowerIndex(const std::string& id) {
@@ -105,8 +144,9 @@ std::vector<uint8_t> ReplayData::serialize() const {
     o.insert(o.end(), {'C', 'P', 'R', 'P'});
     // Without recorded inputs (trace only) the file stays in version 1; a challenge run is
     // version 4 (its rules after the digests), every other run version 3.
-    const bool challenge = !inputs.empty() && !challengeRules.empty();
-    putU16(o, inputs.empty() ? 1 : challenge ? kFormatChallenge : kFormatVersion);
+    const bool teamRun = !inputs.empty() && !team.empty();  // 2.62: format 5
+    const bool challenge = !inputs.empty() && !challengeRules.empty() && !teamRun;
+    putU16(o, inputs.empty() ? 1 : teamRun ? kFormatTeam : challenge ? kFormatChallenge : kFormatVersion);
     putU16(o, sampleHz);
     putU32(o, static_cast<uint32_t>(frames.size()));
     putU32(o, durationMs);
@@ -127,20 +167,8 @@ std::vector<uint8_t> ReplayData::serialize() const {
     };
     putStr(levelId, 64);
     putStr(gameVersion, 16);
-    for (const auto& f : frames) {
-        putF32(o, f.x);
-        putF32(o, f.y);
-        o.push_back(f.state);
-        o.push_back(f.flags);
-        o.push_back(f.health);
-        o.push_back(0);
-    }
-    for (const auto& e : events) {
-        putU32(o, e.frame);
-        o.push_back(static_cast<uint8_t>(e.type));
-        o.push_back(e.arg);
-        putU16(o, e.value);
-    }
+    for (const auto& f : frames) putFrame(o, f);
+    for (const auto& e : events) putEvent(o, e);
     if (inputs.empty()) return o;
     // Version 3: seed, run-length encoded inputs, state digests.
     putU32(o, static_cast<uint32_t>(seed & 0xFFFFFFFFu));
@@ -151,22 +179,7 @@ std::vector<uint8_t> ReplayData::serialize() const {
     putU32(o, static_cast<uint32_t>(inputs.size()));
     size_t runCountAt = o.size();
     putU32(o, 0);
-    uint32_t runs = 0;
-    for (size_t i = 0; i < inputs.size();) {
-        size_t j = i + 1;
-        while (j < inputs.size() && j - i < 0xFFFF && inputs[j] == inputs[i]) ++j;
-        const InputFrame& f = inputs[i];
-        putU16(o, static_cast<uint16_t>(j - i));
-        putU32(o, f.held);
-        putU32(o, f.pressed);
-        putU32(o, f.released);
-        o.push_back(static_cast<uint8_t>(f.moveX));
-        o.push_back(static_cast<uint8_t>(f.moveY));
-        o.push_back(f.flags);
-        o.push_back(f.choice);  // power choice (was reserved, always 0 before)
-        ++runs;
-        i = j;
-    }
+    const uint32_t runs = putRuns(o, inputs);  // the power choice in the last byte (was reserved)
     for (int k = 0; k < 4; ++k) o[runCountAt + k] = static_cast<uint8_t>((runs >> (8 * k)) & 0xFF);
     putU32(o, static_cast<uint32_t>(checks.size()));
     for (const auto& c : checks) {
@@ -180,6 +193,23 @@ std::vector<uint8_t> ReplayData::serialize() const {
         putU16(o, static_cast<uint16_t>(n));
         o.insert(o.end(), challengeRules.begin(), challengeRules.begin() + static_cast<std::ptrdiff_t>(n));
     }
+    if (teamRun) {
+        // Version 5: the team section (docs/COOP.md § 5).
+        o.push_back(static_cast<uint8_t>(teamSize()));
+        putU16(o, coopVersion);
+        o.push_back(teamIncomplete ? 1 : 0);
+        o.push_back(revives);
+        for (const TeamPlayer& t : team) {
+            putU32(o, static_cast<uint32_t>(t.frames.size()));
+            putU32(o, static_cast<uint32_t>(t.events.size()));
+            for (const auto& f : t.frames) putFrame(o, f);
+            for (const auto& e : t.events) putEvent(o, e);
+            size_t at = o.size();
+            putU32(o, 0);
+            const uint32_t r = putRuns(o, t.inputs);
+            for (int k = 0; k < 4; ++k) o[at + k] = static_cast<uint8_t>((r >> (8 * k)) & 0xFF);
+        }
+    }
     return o;
 }
 
@@ -191,7 +221,7 @@ std::optional<ReplayData> ReplayData::parse(const std::vector<uint8_t>& raw, std
     const uint8_t* p = raw.data();
     ReplayData d;
     d.formatVersion = getU16(p + 4);
-    if (d.formatVersion < 1 || d.formatVersion > kFormatChallenge) {
+    if (d.formatVersion < 1 || d.formatVersion > kFormatTeam) {
         fail(error, "version de format non prise en charge");
         return std::nullopt;
     }
@@ -260,6 +290,7 @@ std::optional<ReplayData> ReplayData::parse(const std::vector<uint8_t>& raw, std
     const size_t runBytes = d.formatVersion >= 3 ? 18 : 12;
     // Version 4 is exactly a challenge run (flag 2 and its section); no other bit exists.
     const bool challenge = d.formatVersion == kFormatChallenge;
+    const bool teamRun = d.formatVersion == kFormatTeam;  // 2.62
     const uint16_t knownFlags = challenge ? (kInputKeysPerSlot | kInputChallengeRules) : kInputKeysPerSlot;
     if (d.tickHz != kSimHz || tickCount == 0 || tickCount > kMaxTicks || runCount == 0 || runCount > tickCount ||
         (inputFlags & ~knownFlags) != 0 || challenge != ((inputFlags & kInputChallengeRules) != 0) ||
@@ -308,7 +339,7 @@ std::optional<ReplayData> ReplayData::parse(const std::vector<uint8_t>& raw, std
     uint32_t checkCount = getU32(p + at);
     at += 4;
     const uint64_t checkBytes = static_cast<uint64_t>(checkCount) * 12;
-    if (checkCount > tickCount / kCheckTicks + 2 || (challenge ? checkBytes + 2 > left() : checkBytes != left())) {
+    if (checkCount > tickCount / kCheckTicks + 2 || (challenge ? checkBytes + 2 > left() : teamRun ? checkBytes + 5 > left() : checkBytes != left())) {
         fail(error, "sommes de contrôle incohérentes");
         return std::nullopt;
     }
@@ -336,6 +367,83 @@ std::optional<ReplayData> ReplayData::parse(const std::vector<uint8_t>& raw, std
         std::string why;
         if (!ChallengeRules::fromCanonical(d.challengeRules, &why)) {
             fail(error, ("règles du défi : " + why).c_str());
+            return std::nullopt;
+        }
+    }
+    if (teamRun) {
+        // Version 5: the team section; the file ends right after it.
+        const uint8_t size = p[at];
+        d.coopVersion = getU16(p + at + 1);
+        const uint8_t flags = p[at + 3];
+        d.revives = p[at + 4];
+        at += 5;
+        if (size < 2 || size > 3 || (flags & ~1u) != 0 || d.revives > 2) {
+            fail(error, "section d'équipe incohérente");
+            return std::nullopt;
+        }
+        d.teamIncomplete = (flags & 1) != 0;
+        for (int i = 1; i < size; ++i) {
+            ReplayData::TeamPlayer t;
+            if (left() < 8) {
+                fail(error, "section d'équipe tronquée");
+                return std::nullopt;
+            }
+            const uint32_t fc = getU32(p + at), ec = getU32(p + at + 4);
+            at += 8;
+            if (fc != frameCount || static_cast<uint64_t>(fc) * 12 + static_cast<uint64_t>(ec) * 8 + 4 > left()) {
+                fail(error, "section d'équipe incohérente");
+                return std::nullopt;
+            }
+            t.frames.resize(fc);
+            for (auto& f : t.frames) {
+                f.x = getF32(p + at);
+                f.y = getF32(p + at + 4);
+                f.state = p[at + 8];
+                f.flags = p[at + 9];
+                f.health = p[at + 10];
+                at += 12;
+            }
+            t.events.resize(ec);
+            for (auto& e : t.events) {
+                e.frame = getU32(p + at);
+                e.type = static_cast<ReplayEventType>(p[at + 4]);
+                e.arg = p[at + 5];
+                e.value = getU16(p + at + 6);
+                at += 8;
+            }
+            const uint32_t rc = getU32(p + at);
+            at += 4;
+            if (rc == 0 || rc > tickCount || static_cast<uint64_t>(rc) * 18 > left()) {
+                fail(error, "entrées d'équipe incohérentes");
+                return std::nullopt;
+            }
+            t.inputs.reserve(tickCount);
+            constexpr uint32_t kMask = InputFrame::kActions >= 32 ? 0xFFFFFFFFu : (1u << InputFrame::kActions) - 1u;
+            for (uint32_t r = 0; r < rc; ++r) {
+                const uint16_t repeat = getU16(p + at);
+                InputFrame f;
+                f.held = getU32(p + at + 2) & kMask;
+                f.pressed = getU32(p + at + 6) & kMask;
+                f.released = getU32(p + at + 10) & kMask;
+                f.moveX = static_cast<int8_t>(p[at + 14]);
+                f.moveY = static_cast<int8_t>(p[at + 15]);
+                f.flags = p[at + 16];
+                f.choice = p[at + 17];
+                at += 18;
+                if (repeat == 0 || t.inputs.size() + repeat > tickCount) {
+                    fail(error, "entrées d'équipe incohérentes");
+                    return std::nullopt;
+                }
+                t.inputs.insert(t.inputs.end(), repeat, f);
+            }
+            if (t.inputs.size() != tickCount) {
+                fail(error, "entrées d'équipe incohérentes");
+                return std::nullopt;
+            }
+            d.team.push_back(std::move(t));
+        }
+        if (left() != 0) {
+            fail(error, "section d'équipe incohérente");
             return std::nullopt;
         }
     }
@@ -421,6 +529,80 @@ void ReplayRecorder::begin(const std::string& levelId, const std::string& levelH
     lastSplits_ = 0;
 }
 
+void ReplayRecorder::beginTeam(int players) {
+    data_.team.assign(static_cast<size_t>(std::clamp(players, 2, 3) - 1), ReplayData::TeamPlayer{});
+    data_.coopVersion = static_cast<uint16_t>(kCoopSimulationVersion);
+    track_.assign(static_cast<size_t>(std::clamp(players, 2, 3)), TeamTrack{});
+}
+
+void ReplayRecorder::recordTeamInputs(const InputFrame* frames, int count) {
+    if (!active_ || data_.inputs.size() >= ReplayData::kMaxTicks || count < 1) return;
+    data_.inputs.push_back(frames[0]);
+    for (size_t i = 0; i < data_.team.size(); ++i)
+        data_.team[i].inputs.push_back(static_cast<int>(i) + 1 < count ? frames[i + 1] : InputFrame{});
+}
+
+void ReplayRecorder::pushTo(int player, ReplayEventType t, uint8_t arg, uint16_t value) {
+    if (player <= 0 || data_.team.empty()) {
+        push(t, arg, value);
+        return;
+    }
+    auto& tp = data_.team[static_cast<size_t>(std::min<int>(player, static_cast<int>(data_.team.size())) - 1)];
+    tp.events.push_back({static_cast<uint32_t>(tp.frames.size()), t, arg, value});
+}
+
+namespace {
+ReplayFrame frameOf(const Player& p) {
+    ReplayFrame f;
+    Vec2 feet = p.feet();
+    f.x = feet.x;
+    f.y = feet.y;
+    f.state = static_cast<uint8_t>(p.state());
+    f.flags = static_cast<uint8_t>((p.facing < 0 ? ReplayFrame::FacingLeft : 0) | (p.grounded() ? ReplayFrame::Grounded : 0) |
+                                   (p.invulnerable() ? ReplayFrame::Invulnerable : 0) | (p.gliding() ? ReplayFrame::Gliding : 0) |
+                                   (p.shieldActive() ? ReplayFrame::Shield : 0));
+    f.health = static_cast<uint8_t>(std::clamp(p.health, 0, 255));
+    return f;
+}
+}  // namespace
+
+void ReplayRecorder::sampleTeam(const GameWorld& w) {
+    for (size_t i = 0; i < data_.team.size(); ++i)
+        if (static_cast<int>(i) + 1 < w.teamSize()) data_.team[i].frames.push_back(frameOf(w.playerAt(static_cast<int>(i) + 1)));
+}
+
+void ReplayRecorder::teamTick(const GameWorld& w) {
+    // Each player's own events: its fall, its revival, its return to the team, its standby.
+    for (int i = 0; i < w.teamSize() && static_cast<size_t>(i) < track_.size(); ++i) {
+        const GameWorld::TeamMember& m = w.member(i);
+        TeamTrack& t = track_[static_cast<size_t>(i)];
+        const auto state = static_cast<uint8_t>(w.playerAt(i).state());
+        if (state == static_cast<uint8_t>(PlayerState::Dead) && t.state != state) pushTo(i, ReplayEventType::Death);
+        t.state = state;
+        for (; t.revived < m.revived; ++t.revived) pushTo(i, ReplayEventType::Revive);
+        for (; t.regrouped < m.regrouped; ++t.regrouped) pushTo(i, ReplayEventType::Regroup);
+        for (; t.returned < m.returned; ++t.returned) pushTo(i, ReplayEventType::Return);
+        const int presence = static_cast<int>(m.presence);
+        if (presence != t.presence) {
+            if (m.presence == GameWorld::Presence::Standby) pushTo(i, ReplayEventType::Standby);
+            if (m.presence == GameWorld::Presence::Gone) pushTo(i, ReplayEventType::Gone);
+            t.presence = presence;
+        }
+    }
+}
+
+void ReplayRecorder::onWorldEvent(const std::string& source, const std::string& trigger, int player) {
+    if (!active_ || !started_) return;
+    if (source == "player" && trigger == "jump") {
+        pushTo(player, ReplayEventType::Jump);
+    } else if (trigger == "powerUsed") {
+        pushTo(player, ReplayEventType::Power, replayPowerIndex(source));
+        if (source == "teleport") pushTo(player, ReplayEventType::Teleport);
+    } else if (trigger == "checkpoint") {
+        push(ReplayEventType::Checkpoint);
+    }
+}
+
 void ReplayRecorder::push(ReplayEventType t, uint8_t arg, uint16_t value) {
     // Events between two samples belong to the next sample (finish() adds the last one).
     data_.events.push_back({static_cast<uint32_t>(data_.frames.size()), t, arg, value});
@@ -472,6 +654,10 @@ void ReplayRecorder::tick(const GameWorld& w) {
         lastSplits_ = timer.splits().size();
     }
     const RunStats& s = w.stats();
+    if (!data_.team.empty()) {
+        lastDeaths_ = s.deaths;  // 2.62: a team's falls are in each player's own trace
+        teamTick(w);
+    }
     for (; lastDeaths_ < s.deaths; ++lastDeaths_) push(ReplayEventType::Death);
     for (; lastShards_ < s.shards; ++lastShards_) push(ReplayEventType::Pickup, static_cast<uint8_t>(ReplayPickup::Shard));
     for (; lastRelics_ < s.relics; ++lastRelics_) push(ReplayEventType::Pickup, static_cast<uint8_t>(ReplayPickup::Relic));
@@ -488,11 +674,14 @@ void ReplayRecorder::tick(const GameWorld& w) {
         push(ReplayEventType::Split, static_cast<uint8_t>(std::min<size_t>(lastSplits_, 255)), static_cast<uint16_t>(static_cast<unsigned long>(std::max(0L, ms)) & 0xFFFFu));
     }
     uint8_t state = static_cast<uint8_t>(w.player().state());
-    if (state != lastState_ && w.player().state() == PlayerState::Respawn) push(ReplayEventType::Respawn);
+    if (state != lastState_ && w.player().state() == PlayerState::Respawn && data_.team.empty()) push(ReplayEventType::Respawn);
     lastState_ = state;
     // One sample every 1/sampleHz second of level time (the timer, not wall clock).
     float next = static_cast<float>(data_.frames.size()) / static_cast<float>(data_.sampleHz);
-    if (timer.elapsed() + 1e-4f >= next) sample(w);
+    if (timer.elapsed() + 1e-4f >= next) {
+        sample(w);
+        sampleTeam(w);  // a team: every player at the same instants
+    }
 }
 
 void ReplayRecorder::raceProgress(const std::vector<float>& bossRemoved, const std::vector<int>& wavesDone) {
@@ -531,8 +720,15 @@ void ReplayRecorder::finishAttempt(const GameWorld& w, float elapsed) {
     tick(w);
     check(w);
     sample(w);
+    sampleTeam(w);
     data_.durationMs = static_cast<uint32_t>(std::lround(elapsed * 1000.0f));
     for (auto& e : data_.events) e.frame = std::min<uint32_t>(e.frame, static_cast<uint32_t>(data_.frames.size() - 1));
+    for (auto& t : data_.team)
+        for (auto& e : t.events) e.frame = std::min<uint32_t>(e.frame, static_cast<uint32_t>(std::max<size_t>(1, t.frames.size()) - 1));
+    if (!data_.team.empty()) {
+        data_.teamIncomplete = w.teamIncomplete();
+        data_.revives = static_cast<uint8_t>(w.revivesUsed());
+    }
     active_ = false;
 }
 
@@ -545,6 +741,13 @@ void ReplayRecorder::finish(const GameWorld& w, float elapsed) {
     data_.events.push_back({static_cast<uint32_t>(data_.frames.size() - 1), ReplayEventType::Finish, 0, 0});
     // Events recorded after the last sample point at it.
     for (auto& e : data_.events) e.frame = std::min<uint32_t>(e.frame, static_cast<uint32_t>(data_.frames.size() - 1));
+    sampleTeam(w);
+    for (auto& t : data_.team)
+        for (auto& e : t.events) e.frame = std::min<uint32_t>(e.frame, static_cast<uint32_t>(std::max<size_t>(1, t.frames.size()) - 1));
+    if (!data_.team.empty()) {
+        data_.teamIncomplete = w.teamIncomplete();
+        data_.revives = static_cast<uint8_t>(w.revivesUsed());
+    }
     active_ = false;
 }
 
@@ -558,7 +761,16 @@ ReplaySimulator::ReplaySimulator(const ReplayData& replay, GameWorld& world) : r
 
 bool ReplaySimulator::step() {
     if (finished() || desynced()) return false;
-    stepWorld(world_, replay_.inputs[tick_], kSimDt);
+    if (!replay_.team.empty()) {
+        // 2.62: a team's step (the world was given the team's size before its load).
+        InputFrame frames[GameWorld::kMaxTeam];
+        frames[0] = replay_.inputs[tick_];
+        int n = 1;
+        for (const auto& t : replay_.team) frames[n++] = tick_ < t.inputs.size() ? t.inputs[tick_] : InputFrame{};
+        stepTeam(world_, frames, n, kSimDt);
+    } else {
+        stepWorld(world_, replay_.inputs[tick_], kSimDt);
+    }
     ++tick_;
     while (nextCheck_ < replay_.checks.size() && replay_.checks[nextCheck_].tick <= tick_) {
         const ReplayCheck& c = replay_.checks[nextCheck_++];

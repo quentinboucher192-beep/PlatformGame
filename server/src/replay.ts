@@ -25,7 +25,9 @@ import type { LevelVersionRow, RecordRow } from "./model";
  * format 3 plus the challenge rules; 3 since 2.24: actions on 32 bits, keys of the power
  * slots). Versions 1 (trajectory only), 2 (actions on 16 bits) and 3 are still accepted.
  */
-export const REPLAY_FORMAT_VERSION = 4;
+export const REPLAY_FORMAT_VERSION = 5;
+/** Format 5 (2.62): a team's attempt (docs/COOP.md § 5), the other players after the digests. */
+export const REPLAY_FORMAT_TEAM = 5;
 /** Format 3: input flags of the input section (bit 0: keys per power slot). */
 export const REPLAY_INPUT_KEYS_PER_SLOT = 1;
 /** Format 4: bit 1 of the input flags, a challenge section follows the state digests. */
@@ -103,7 +105,29 @@ export interface Replay {
      * for every other run).
      */
     challengeRules: string | null;
+    /** Format 3 and later: player 1's input runs (18 bytes each), as written. */
+    inputRuns: Uint8Array | null;
+    /** Format 5: the team (players[0] is player 1, the fields above). */
+    team: TeamReplay | null;
 }
+
+export interface TeamPlayer {
+    frames: ReplayFrame[];
+    events: ReplayEvent[];
+    /** Its input runs (18 bytes each), as many steps as player 1's. */
+    runs: Uint8Array;
+}
+
+export interface TeamReplay {
+    size: number;
+    coopVersion: number;
+    incomplete: boolean;
+    revives: number;
+    players: TeamPlayer[];
+}
+
+/** Reason given when a team's replay is used anywhere but the cooperation's ranking. */
+export const TEAM_REPLAY_ELSEWHERE = "partie d'équipe : elle ne compte que pour les classements Duo et Trio";
 
 export class ReplayError extends Error {}
 
@@ -195,6 +219,8 @@ export function parseReplay(raw: Uint8Array): Replay {
     }
     let inputs: ReplayInputs | null = null;
     let challengeRules: string | null = null;
+    let inputRuns: Uint8Array | null = null;
+    let team: TeamReplay | null = null;
     if (formatVersion >= 2) {
         // Seed, run-length encoded inputs (12 bytes per run in format 2, 18 in format 3: the
         // actions on 32 bits), state digests (12 bytes each).
@@ -207,12 +233,14 @@ export function parseReplay(raw: Uint8Array): Replay {
         at += 20;
         const runBytes = formatVersion >= 3 ? 18 : 12;
         // Format 4 knows the challenge bit; formats 2 and 3 are read exactly as before.
-        const knownFlags = formatVersion >= 4 ? REPLAY_INPUT_KEYS_PER_SLOT | REPLAY_INPUT_CHALLENGE : REPLAY_INPUT_KEYS_PER_SLOT;
-        const challenge = (inputFlags & REPLAY_INPUT_CHALLENGE) !== 0 && formatVersion >= 4;
+        const knownFlags = formatVersion === 4 ? REPLAY_INPUT_KEYS_PER_SLOT | REPLAY_INPUT_CHALLENGE : REPLAY_INPUT_KEYS_PER_SLOT;
+        const challenge = (inputFlags & REPLAY_INPUT_CHALLENGE) !== 0 && formatVersion === 4;
+        const teamRun = formatVersion === REPLAY_FORMAT_TEAM;
         if (tickHz !== REPLAY_TICK_HZ) throw new ReplayError("fréquence de simulation invalide");
         if ((inputFlags & ~knownFlags) !== 0) throw new ReplayError("section des entrées incohérente");
         if (ticks === 0 || ticks > REPLAY_MAX_TICKS || runs === 0 || runs > ticks) throw new ReplayError("section des entrées incohérente");
         need(runs * runBytes + 4);
+        if (runBytes === 18) inputRuns = raw.subarray(at, at + runs * runBytes);
         let total = 0;
         for (let r = 0; r < runs; ++r) {
             const repeat = view.getUint16(at, true);
@@ -225,7 +253,7 @@ export function parseReplay(raw: Uint8Array): Replay {
         at += 4;
         // The file ends right after the digests, or (format 4) after the challenge section.
         const digestsEnd = at + checks * 12;
-        if (checks > Math.floor(ticks / REPLAY_CHECK_TICKS) + 2 || (challenge ? digestsEnd + 2 > raw.byteLength : digestsEnd !== raw.byteLength))
+        if (checks > Math.floor(ticks / REPLAY_CHECK_TICKS) + 2 || (challenge ? digestsEnd + 2 > raw.byteLength : teamRun ? digestsEnd + 5 > raw.byteLength : digestsEnd !== raw.byteLength))
             throw new ReplayError("sommes de contrôle incohérentes");
         let prev = 0;
         for (let c = 0; c < checks; ++c) {
@@ -246,9 +274,55 @@ export function parseReplay(raw: Uint8Array): Replay {
             }
             at += len;
         }
+        if (teamRun) {
+            // Format 5: u8 size, u16 coop version, u8 flags (bit 0: incomplete), u8 revives, then
+            // for each other player: u32 frames, u32 events, frames, events, u32 runs, runs.
+            need(5);
+            const size = raw[at]!;
+            const coopVersion = view.getUint16(at + 1, true);
+            const flags = raw[at + 3]!;
+            const revives = raw[at + 4]!;
+            at += 5;
+            if (size < 2 || size > 3 || (flags & ~1) !== 0 || revives > 2) throw new ReplayError("section d'équipe incohérente");
+            const players: TeamPlayer[] = [{ frames, events, runs: inputRuns ?? new Uint8Array() }];
+            for (let k = 1; k < size; ++k) {
+                need(8);
+                const fc = view.getUint32(at, true);
+                const ec = view.getUint32(at + 4, true);
+                at += 8;
+                if (fc !== frameCount) throw new ReplayError("section d'équipe incohérente");
+                need(fc * 12 + ec * 8 + 4);
+                const pf: ReplayFrame[] = new Array(fc);
+                for (let i = 0; i < fc; ++i) {
+                    pf[i] = { x: view.getFloat32(at, true), y: view.getFloat32(at + 4, true), state: raw[at + 8]!, flags: raw[at + 9]!, health: raw[at + 10]! };
+                    at += 12;
+                }
+                const pe: ReplayEvent[] = new Array(ec);
+                for (let i = 0; i < ec; ++i) {
+                    pe[i] = { frame: view.getUint32(at, true), type: raw[at + 4]!, arg: raw[at + 5]!, value: view.getUint16(at + 6, true) };
+                    at += 8;
+                }
+                const rc = view.getUint32(at, true);
+                at += 4;
+                if (rc === 0 || rc > ticks) throw new ReplayError("entrées d'équipe incohérentes");
+                need(rc * 18);
+                const pr = raw.subarray(at, at + rc * 18);
+                let sum = 0;
+                for (let r = 0; r < rc; ++r) {
+                    const repeat = view.getUint16(at, true);
+                    if (repeat === 0) throw new ReplayError("entrées d'équipe incohérentes");
+                    sum += repeat;
+                    at += 18;
+                }
+                if (sum !== ticks) throw new ReplayError("entrées d'équipe incohérentes");
+                players.push({ frames: pf, events: pe, runs: pr });
+            }
+            if (at !== raw.byteLength) throw new ReplayError("section d'équipe incohérente");
+            team = { size, coopVersion, incomplete: (flags & 1) !== 0, revives, players };
+        }
         inputs = { seed, tickHz, ticks, runs, checks, keysPerSlot: (inputFlags & REPLAY_INPUT_KEYS_PER_SLOT) !== 0 };
     }
-    return { formatVersion, inputs, sampleHz, durationMs, levelHash, attemptId, levelId, gameVersion, frames, events, challengeRules };
+    return { formatVersion, inputs, sampleHz, durationMs, levelHash, attemptId, levelId, gameVersion, frames, events, challengeRules, inputRuns, team };
 }
 
 export interface ReplayAnalysis {
@@ -291,6 +365,7 @@ export function analyzeReplay(rep: Replay, record: RecordRow, level: LevelVersio
     const reasons: string[] = [];
     let maxHealth = 0;
     for (const f of rep.frames) maxHealth = Math.max(maxHealth, f.health);
+    if (rep.team) reasons.push(TEAM_REPLAY_ELSEWHERE);
     if (challenge) {
         if (rep.formatVersion < 4 || rep.challengeRules === null) reasons.push("replay sans les règles du défi (format 4 attendu)");
         else if (rep.challengeRules !== challenge.canonical) reasons.push("règles du replay différentes de celles du défi");

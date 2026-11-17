@@ -48,7 +48,22 @@ void Hud::update(GameWorld& w, float dt) {
         shardPulse_ = 1.0f;
     }
     shardPulse_ = std::max(0.0f, shardPulse_ - dt * 3.0f);
-    if (track_.valid()) {
+    if (track_.valid() && w.coop()) {
+        // 2.62: the team's progress is its most advanced player's (a soul counts where it waits).
+        teamHints_.resize(static_cast<size_t>(w.teamSize()), 0);
+        teamAt_.assign(static_cast<size_t>(w.teamSize()), 0.0f);
+        progress_ = 0.0f;
+        for (int i = 0; i < w.teamSize(); ++i) {
+            const GameWorld::TeamMember& m = w.member(i);
+            if (m.presence == GameWorld::Presence::Gone) continue;
+            const Vec2 at = m.presence == GameWorld::Presence::Down ? m.soul : w.playerAt(i).box.bottomCenter();
+            teamAt_[static_cast<size_t>(i)] = track_.project(at, teamHints_[static_cast<size_t>(i)]);
+            progress_ = std::max(progress_, teamAt_[static_cast<size_t>(i)]);
+        }
+        if (w.state() == WorldState::Completed || w.state() == WorldState::Outro) progress_ = 1.0f;
+        bestProgress_ = std::max(bestProgress_, progress_);
+        shownProgress_ = lerpf(shownProgress_, bestProgress_, damp(6.0f, dt));
+    } else if (track_.valid()) {
         progress_ = track_.project(p.box.bottomCenter(), trackHint_);
         if (w.state() == WorldState::Completed || w.state() == WorldState::Outro) progress_ = 1.0f;
         bestProgress_ = std::max(bestProgress_, progress_);
@@ -136,12 +151,26 @@ void Hud::render(UIContext& ui, GameWorld& w, const WorldView& view, const Level
         // 2.60: what is under each block, where it was drawn the last frame: Nova, the boss, an
         // attack of the boss (the probe armed before the world was drawn). update() fades them.
         const bool fading = settings.fadeHud && fadeAllowed_ && !cinematic;
-        const Rect nova = fading ? novaOnScreen(w, view) : Rect{};
+        // 2.62: in a team, every player in play counts as Nova does alone.
+        Rect novas[GameWorld::kMaxTeam];
+        int seen = 1;
+        if (fading && w.coop()) {
+            seen = 0;
+            for (int k = 0; k < w.teamSize(); ++k) {
+                if (w.member(k).presence != GameWorld::Presence::Playing) continue;
+                GameWorld::PlayerScope who(w, k);
+                novas[seen++] = novaOnScreen(w, view);
+            }
+        } else if (fading) {
+            novas[0] = novaOnScreen(w, view);
+        }
         const Rect boss = fading ? bossOnScreen(w, view) : Rect{};
         for (int i = 0; i < kFadeBlocks; ++i) {
             const bool attack = probeArmed_ && probe_.touched(static_cast<size_t>(i));
-            covered_[static_cast<size_t>(i)] =
-                fading && HudFade::covered(drawn_[static_cast<size_t>(i)], nova, boss, attack, i == static_cast<int>(HudElement::Boss));
+            const bool bar = i == static_cast<int>(HudElement::Boss);
+            bool hidden = HudFade::covered(drawn_[static_cast<size_t>(i)], seen > 0 ? novas[0] : Rect{}, boss, attack, bar);
+            for (int k = 1; k < seen && !hidden; ++k) hidden = HudFade::covered(drawn_[static_cast<size_t>(i)], novas[k], boss, attack, bar);
+            covered_[static_cast<size_t>(i)] = fading && hidden;
         }
         probeArmed_ = false;
         drawn_.fill(Rect{});
@@ -158,11 +187,16 @@ void Hud::render(UIContext& ui, GameWorld& w, const WorldView& view, const Level
     if (!cinematic) {
         auto at = [&](HudElement e) { return place(ui, w, settings, e); };
         auto id = [](HudElement e) { return static_cast<int>(e); };
-        if (hudVisible(settings, HudElement::Vitals)) {
+        teamPanel_ = {};
+        if (w.coop()) {
+            // 2.62: the team panel (every player's hearts, energy, powers and state) in place of
+            // the vitals and the powers of one player (it fades as the vitals would).
+            drawBlock(ui, id(HudElement::Vitals), [&] { drawTeamPanel(ui, w); });
+        } else if (hudVisible(settings, HudElement::Vitals)) {
             Place p = at(HudElement::Vitals);
             drawBlock(ui, id(HudElement::Vitals), [&] { drawVitals(ui, w, p.o, p.k); });
         }
-        if (hudVisible(settings, HudElement::Powers)) {
+        if (!w.coop() && hudVisible(settings, HudElement::Powers)) {
             Place p = at(HudElement::Powers);
             drawBlock(ui, id(HudElement::Powers), [&] { drawPowers(ui, w, p.o, p.k); });
         }
@@ -185,8 +219,17 @@ void Hud::render(UIContext& ui, GameWorld& w, const WorldView& view, const Level
         if (hudVisible(settings, HudElement::Enemies)) drawBlock(ui, id(HudElement::Enemies), [&] { drawEnemies(ui, w, at(HudElement::Enemies)); });
         if (hudVisible(settings, HudElement::Ambush) && (w.activeAmbush() || (editorPreview_ && !w.ambushes().empty())))
             drawBlock(ui, id(HudElement::Ambush), [&] { drawAmbush(ui, w, at(HudElement::Ambush)); });
-        drawBlock(ui, kStatusBlock, [&] { drawStatus(ui, w, settings); });
-        if (settings.showInputHints) drawInteractPrompt(ui, w, view);
+        if (w.coop()) {
+            drawTeamLabels(ui, w, view);  // names over the players, souls and their revival
+            if (settings.showInputHints && team_.promptPlayer >= 0 && team_.promptPlayer < w.teamSize() &&
+                w.member(team_.promptPlayer).presence == GameWorld::Presence::Playing) {
+                GameWorld::PlayerScope local(w, team_.promptPlayer);
+                drawInteractPrompt(ui, w, view);
+            }
+        } else {
+            drawBlock(ui, kStatusBlock, [&] { drawStatus(ui, w, settings); });
+            if (settings.showInputHints) drawInteractPrompt(ui, w, view);
+        }
     }
     if (messagesVisible(settings)) drawMessages(ui, w);
     drawCinematic(ui, w);
@@ -742,6 +785,8 @@ void Hud::drawProgress(UIContext& ui, GameWorld& w, Vec2 o, float k, float width
         for (const auto& rc : racers_) reached = std::max(reached, rc.at);
     }
     float headX = xAt(fill);
+    // 2.62, a team: each player's place, a dot of its colour on the rail (drawn at the end).
+    const bool teamMarks = w.coop() && teamAt_.size() == static_cast<size_t>(w.teamSize());
 
     // No frame around the bar (the player's choice): only a halo that breathes along the rail,
     // so it stays readable over any background.
@@ -1019,6 +1064,17 @@ void Hud::drawProgress(UIContext& ui, GameWorld& w, Vec2 o, float k, float width
         }
         r.fillCircle(h, S(11), gold);
         r.fillCircle(h, S(8), Color{255, 252, 236, 255});
+    }
+    if (teamMarks) {
+        // 2.62: every player on the rail, a dot of its colour ringed in white (a soul: dimmed).
+        for (int i = w.teamSize(); i-- > 0;) {
+            const GameWorld::TeamMember& m = w.member(i);
+            if (m.presence == GameWorld::Presence::Gone) continue;
+            const Vec2 c{xAt(teamAt_[static_cast<size_t>(i)]), rail.center().y};
+            const bool inPlay = m.presence == GameWorld::Presence::Playing;
+            r.fillCircle(c, S(8), Color{255, 255, 255, static_cast<uint8_t>(inPlay ? 235 : 120)});
+            r.fillCircle(c, S(6), teamColor(i).withAlpha(static_cast<uint8_t>(inPlay ? 255 : 110)));
+        }
     }
 }
 

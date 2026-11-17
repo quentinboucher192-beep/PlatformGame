@@ -447,6 +447,18 @@
    ]
   },
   {
+   "fr": "2 joueurs au moins",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "2 ou 3 joueurs · niveaux EXTRÊME",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
    "fr": "2 à 5 lettres ou chiffres",
    "where": [
     "server/src/clans.ts"
@@ -1407,6 +1419,18 @@
    "fr": "admins",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Adresse d'un PC (ex. 192.168.1.20)",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Adresse du serveur invalide.",
+   "where": [
+    "game/coop/CoopTransport.cpp"
    ]
   },
   {
@@ -3131,6 +3155,12 @@
    ]
   },
   {
+   "fr": "Attaques et pouvoirs ne touchent que les ennemis, jamais un coéquipier.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Attaques qui touchent sur attaques lancées",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -3538,6 +3568,12 @@
    ]
   },
   {
+   "fr": "Aucun ami à inviter : ajoutez des amis dans SOCIAL.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun asset inutilisé ici.",
    "where": [
     "ui/screens/AdminAssets.cpp"
@@ -3874,6 +3910,12 @@
    "where": [
     "ui/screens/ClanScene.cpp",
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun niveau EXTRÊME installé.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -4280,6 +4322,12 @@
    ]
   },
   {
+   "fr": "Aucune invitation pour l'instant : un ami vous invite depuis son salon.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucune invitation reçue, aucune candidature envoyée. Un chef ou un officier peut vous inviter ; vous pouvez aussi postuler depuis la page d'un clan.",
    "where": [
     "ui/screens/ClanScene.cpp"
@@ -4440,6 +4488,18 @@
    "fr": "Aucune version nommée pour l'instant.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune équipe de deux n'est encore classée sur ce niveau.",
+   "where": [
+    "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune équipe de trois n'est encore classée sur ce niveau.",
+   "where": [
+    "ui/screens/RaceScene.cpp"
    ]
   },
   {
@@ -4932,6 +4992,12 @@
    "fr": "B recalé sur {0} : {1}",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "B sur sa manette : quitter la place",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -5637,6 +5703,7 @@
    "fr": "booléen attendu",
    "where": [
     "server/src/achievements.ts",
+    "server/src/coopRace.ts",
     "server/src/race.ts"
    ]
   },
@@ -6667,6 +6734,12 @@
    ]
   },
   {
+   "fr": "Caméra commune",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Caméra fixe",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -7306,6 +7379,12 @@
    ]
   },
   {
+   "fr": "Ce niveau n'est pas dans la même version sur ce PC : mettez le jeu à jour.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Ce niveau n'est pas dans votre jeu.",
    "where": [
     "ui/screens/SpectateScene.cpp"
@@ -7352,6 +7431,18 @@
    "fr": "Ce package est déjà installé",
    "where": [
     "packaging/PackageImporter.cpp"
+   ]
+  },
+  {
+   "fr": "Ce PC fait le relais de la partie : les joueurs du réseau local la trouvent dans leur liste. Ni compte ni serveur.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce pouvoir prend la touche d'un pouvoir porté : l'échanger ?",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
    ]
   },
   {
@@ -7528,6 +7619,12 @@
    "fr": "Ce replay vient d'une autre version du niveau : il ne peut pas être rejoué ici.",
    "where": [
     "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce salon n'existe plus ou ne vous est pas ouvert.",
+   "where": [
+    "game/coop/CoopTransport.cpp"
    ]
   },
   {
@@ -7945,6 +8042,12 @@
    ]
   },
   {
+   "fr": "Cette partie en ligne n'a pas été jouée par cette équipe.",
+   "where": [
+    "server/src/coopRace.ts"
+   ]
+  },
+  {
    "fr": "Cette partie est trop longue pour être suivie en direct (30 minutes au plus).",
    "where": [
     "ui/screens/SpectateScene.cpp"
@@ -8038,6 +8141,7 @@
    "fr": "Cette tentative a déjà été envoyée.",
    "where": [
     "server/src/community.ts",
+    "server/src/coopRace.ts",
     "server/src/race.ts"
    ]
   },
@@ -8065,6 +8169,12 @@
    "fr": "Cette version du jeu a été compilée sans client HTTP.",
    "where": [
     "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "Cette version du jeu n'a pas de connexion réseau.",
+   "where": [
+    "game/coop/CoopTransport.cpp"
    ]
   },
   {
@@ -8189,9 +8299,21 @@
    ]
   },
   {
+   "fr": "Changer de manette",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Changer de musique",
    "where": [
     "game/levels/EventSystem.cpp"
+   ]
+  },
+  {
+   "fr": "Changer de niveau…",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -8732,6 +8854,12 @@
    "fr": "Choisir un autre fichier…",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Choisir un niveau EXTRÊME",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -9408,6 +9536,12 @@
    ]
   },
   {
+   "fr": "Classée en Duo ou en Trio si chaque joueur est connecté à son compte et confirme la tentative.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Clavier / souris",
    "where": [
     "editors/level_editor/LevelEditorPowerKeys.cpp",
@@ -9438,6 +9572,18 @@
    "fr": "Clavier : « {0} » est la touche de « {1} » par défaut",
    "where": [
     "editors/level_editor/LevelEditorPowerKeys.cpp"
+   ]
+  },
+  {
+   "fr": "clavier et souris",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "clavier · manette : {0}",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -10382,6 +10528,12 @@
    ]
   },
   {
+   "fr": "compte connecté",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Compte Cosmic Online",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
@@ -10686,6 +10838,12 @@
    ]
   },
   {
+   "fr": "Connectez-vous à Cosmic Online (menu En ligne) pour créer un salon ou rejoindre celui d'un ami.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Connectez-vous à Cosmic Online (menu En ligne) pour recevoir les notifications des créateurs que vous suivez, de vos favoris et de vos commentaires. Le jeu reste entièrement jouable sans compte.",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -10708,6 +10866,12 @@
    "where": [
     "ui/screens/RaceScene.cpp",
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Connectez-vous à Cosmic Online pour jouer en ligne.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -10750,6 +10914,12 @@
    "fr": "Connectez-vous à Cosmic Online pour voir les joueurs sur le globe.",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Connectez-vous à Cosmic Online pour voir vos équipes.",
+   "where": [
+    "ui/screens/RaceScene.cpp"
    ]
   },
   {
@@ -10808,6 +10978,24 @@
    ]
   },
   {
+   "fr": "Connexion au relais…",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Connexion au salon impossible (erreur {0}).",
+   "where": [
+    "game/coop/CoopTransport.cpp"
+   ]
+  },
+  {
+   "fr": "Connexion au salon impossible : {0}.",
+   "where": [
+    "game/coop/CoopTransport.cpp"
+   ]
+  },
+  {
    "fr": "Connexion au serveur…",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
@@ -10824,6 +11012,12 @@
    "fr": "Connexion automatique sur cet ordinateur",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "connexion fermée",
+   "where": [
+    "game/coop/CoopTransport.cpp"
    ]
   },
   {
@@ -10937,7 +11131,8 @@
    "fr": "Connexion…",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp",
-    "game/online/OnlineTypes.cpp"
+    "game/online/OnlineTypes.cpp",
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -11067,6 +11262,18 @@
    "fr": "Conversation privée",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "COOPÉRATION",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Coopération",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
    ]
   },
   {
@@ -11893,6 +12100,18 @@
    ]
   },
   {
+   "fr": "Course à la vérification : le serveur vérifie la tentative d'équipe avec le replay.",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Course à la vérification : onglets Solo, Duo et Trio, qui ne se mélangent jamais. Une équipe est classée par son joueur le plus avancé (à égalité, le moins de réanimations, puis le plus tôt) ; le serveur vérifie chaque tentative avec les entrées et la trajectoire de chaque joueur, et chacun la confirme avec son propre compte. Une partie sur un même PC n'est pas classée (un compte ne s'ouvre que sur son propre ordinateur). Les records solo restent tous valides.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Course à la vérification : {0} %",
    "where": [
     "ui/screens/ResultsScene.cpp"
@@ -12200,6 +12419,12 @@
    ]
   },
   {
+   "fr": "Création du salon impossible.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "création du titre « {0} » refusée : {1}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -12363,6 +12588,12 @@
    "fr": "Créer un niveau dans l'éditeur.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Créer un salon",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -14480,7 +14711,10 @@
   {
    "fr": "Duo",
    "where": [
-    "game/online/Clans.cpp"
+    "game/online/Clans.cpp",
+    "game/online/OnlineCoop.cpp",
+    "ui/screens/CoopGameScene.cpp",
+    "ui/screens/RaceScene.cpp"
    ]
   },
   {
@@ -14643,6 +14877,7 @@
   {
    "fr": "durée du replay différente de la tentative",
    "where": [
+    "server/src/coopRace.ts",
     "server/src/race.ts"
    ]
   },
@@ -14905,6 +15140,12 @@
    ]
   },
   {
+   "fr": "déconnecté · {0} s",
+   "where": [
+    "game/gameplay/HudTeam.cpp"
+   ]
+  },
+  {
    "fr": "Déconnecté, vous jouez en local : la progression continue ici. À la reconnexion, tout est rechargé dans le compte (succès, temps en attente, tenue) et une copie de la progression est envoyée.",
    "where": [
     "ui/screens/OnlineComputer.cpp"
@@ -14914,6 +15155,18 @@
    "fr": "Déconnecté.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Déconnexion",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Déconnexion : le joueur passe en veille (intouchable, il ne gêne personne) ; il a 60 s pour revenir : son jeu rattrape la partie en accéléré, puis il réapparaît près de l'équipe. Sinon l'équipe continue, classée « incomplète ».",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -15505,6 +15758,7 @@
   {
    "fr": "dégâts aux boss différents du replay",
    "where": [
+    "server/src/coopRace.ts",
     "server/src/race.ts"
    ]
   },
@@ -15620,6 +15874,12 @@
    "fr": "Délai avant l'éruption (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Délai d'entrée : {0} images ({1} ms)",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
    ]
   },
   {
@@ -15752,6 +16012,12 @@
    ]
   },
   {
+   "fr": "départ éloigné du point de départ ({0})",
+   "where": [
+    "server/src/coopRace.ts"
+   ]
+  },
+  {
    "fr": "Dépassement",
    "where": [
     "data/achievements/achievements.json"
@@ -15787,6 +16053,12 @@
    "fr": "déplacements impossibles",
    "where": [
     "server/src/race.ts"
+   ]
+  },
+  {
+   "fr": "déplacements impossibles ({0})",
+   "where": [
+    "server/src/coopRace.ts"
    ]
   },
   {
@@ -16040,6 +16312,12 @@
    ]
   },
   {
+   "fr": "Elle cadre toute l'équipe ; un joueur hors de l'écran depuis 3 s revient près de l'allié le plus proche.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "elle est archivée",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -16260,9 +16538,21 @@
    ]
   },
   {
+   "fr": "En attente de {0}…",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
    "fr": "En attente du replay.",
    "where": [
     "server/src/records.ts"
+   ]
+  },
+  {
+   "fr": "En attente du réseau…",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
    ]
   },
   {
@@ -16381,6 +16671,12 @@
    ]
   },
   {
+   "fr": "en jeu",
+   "where": [
+    "game/gameplay/HudTeam.cpp"
+   ]
+  },
+  {
    "fr": "En l'air",
    "where": [
     "game/powers/PowerStats.cpp"
@@ -16424,6 +16720,7 @@
     "ui/online/OnlineWidgets.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/ContentManagerScene.cpp",
+    "ui/screens/CoopLobbyScene.cpp",
     "ui/screens/MainMenuScene.cpp"
    ]
   },
@@ -17200,6 +17497,19 @@
    ]
   },
   {
+   "fr": "entrées d'équipe incohérentes",
+   "where": [
+    "game/online/Replay.cpp",
+    "server/src/replay.ts"
+   ]
+  },
+  {
+   "fr": "entrées différentes de celles relayées en ligne",
+   "where": [
+    "server/src/coopRace.ts"
+   ]
+  },
+  {
    "fr": "entrées enregistrées bien plus longues que la partie",
    "where": [
     "server/src/replay.ts"
@@ -17283,6 +17593,12 @@
    "fr": "Envoi et vérification en cours…",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "envoi impossible",
+   "where": [
+    "game/coop/CoopTransport.cpp"
    ]
   },
   {
@@ -18061,6 +18377,7 @@
     "ui/screens/AdminScene.cpp",
     "ui/screens/ClanScene.cpp",
     "ui/screens/CommunityPublishScene.cpp",
+    "ui/screens/CoopLobbyScene.cpp",
     "ui/screens/GhostOptionsScene.cpp",
     "ui/screens/OnlineMigration.cpp",
     "ui/screens/OnlineSettingsScene.cpp",
@@ -18520,6 +18837,7 @@
   {
    "fr": "fin du niveau absente du replay",
    "where": [
+    "server/src/coopRace.ts",
     "server/src/race.ts",
     "server/src/replay.ts"
    ]
@@ -20644,9 +20962,21 @@
    ]
   },
   {
+   "fr": "Hors classement : chaque joueur doit être connecté à son compte Cosmic Online.",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Hors classement : rien n'est envoyé ni gardé comme meilleur temps.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Hors classement : une partie sur un même PC n'est pas classée (chacun joue avec son compte sur son PC).",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
    ]
   },
   {
@@ -20913,6 +21243,24 @@
    ]
   },
   {
+   "fr": "Héberger la partie",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Héberger sur ce PC",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "hôte",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "I",
    "where": [
     "ui/screens/ReplayScene.cpp",
@@ -21001,6 +21349,7 @@
     "ui/screens/CollectionScene.cpp",
     "ui/screens/CommunityPublishScene.cpp",
     "ui/screens/ContentManagerScene.cpp",
+    "ui/screens/CoopLobbyScene.cpp",
     "ui/screens/GameScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/NotificationsScene.cpp",
@@ -21684,6 +22033,12 @@
    ]
   },
   {
+   "fr": "Impossible d'héberger : le port 47620 de ce PC est déjà pris.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Impossible d'initialiser le jeu. Consultez cosmic.log dans le dossier utilisateur.",
    "where": [
     "main.cpp"
@@ -21724,6 +22079,7 @@
    "fr": "Impossible de charger le niveau",
    "where": [
     "ui/screens/ContentManagerScene.cpp",
+    "ui/screens/CoopGameScene.cpp",
     "ui/screens/GameScene.cpp"
    ]
   },
@@ -21737,6 +22093,12 @@
    "fr": "Impossible de garder une copie des sauvegardes actuelles ({0}.json).",
    "where": [
     "game/online/ProgressMerge.cpp"
+   ]
+  },
+  {
+   "fr": "Impossible de joindre {0} sur le réseau local.",
+   "where": [
+    "game/coop/CoopTransport.cpp"
    ]
   },
   {
@@ -22167,6 +22529,12 @@
    ]
   },
   {
+   "fr": "Invitation impossible.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Invitation introuvable.",
    "where": [
     "server/src/projects.ts"
@@ -22222,6 +22590,12 @@
    ]
   },
   {
+   "fr": "Invitations reçues",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Inviter",
    "where": [
     "ui/screens/ClanScene.cpp",
@@ -22232,6 +22606,12 @@
    "fr": "Inviter dans mon clan",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Inviter un ami",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -22250,6 +22630,12 @@
    "fr": "Invité",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "invité",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -22413,6 +22799,12 @@
    ]
   },
   {
+   "fr": "Je suis prêt",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Jersey",
    "where": [
     "data/online/countries.json",
@@ -22530,6 +22922,12 @@
    ]
   },
   {
+   "fr": "Jouer en ligne",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Jouer hors ligne",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
@@ -22560,6 +22958,18 @@
    ]
   },
   {
+   "fr": "Jouer à 2",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Jouer à 3",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "JOUEUR",
    "where": [
     "ui/screens/OnlineRankingScene.cpp",
@@ -22569,8 +22979,10 @@
   {
    "fr": "Joueur",
    "where": [
+    "game/coop/CoopRelay.cpp",
     "ui/online/OnlineWidgets.cpp",
     "ui/screens/AdminScene.cpp",
+    "ui/screens/CoopLobbyScene.cpp",
     "ui/screens/DownloadedReplaysUi.cpp"
    ]
   },
@@ -22584,6 +22996,12 @@
    "fr": "Joueur ({0}, {1})  vit ({2}, {3})  {4}",
    "where": [
     "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Joueur 1",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -22644,6 +23062,20 @@
    ]
   },
   {
+   "fr": "JOUEUR {0}",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Joueur {0}",
+   "where": [
+    "game/gameplay/HudTeam.cpp",
+    "ui/screens/CoopLobbyScene.cpp",
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Joueurs",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -22653,6 +23085,12 @@
    "fr": "Joueurs de Cosmic Online",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Joueurs solides, sans poussée",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -23130,6 +23568,12 @@
    ]
   },
   {
+   "fr": "L'hôte a quitté la partie.",
+   "where": [
+    "game/coop/NetCoopLink.cpp"
+   ]
+  },
+  {
    "fr": "L'identifiant du niveau ne correspond pas au manifeste",
    "where": [
     "packaging/PackageImporter.cpp"
@@ -23407,6 +23851,12 @@
    "fr": "La combinaison garde la découpe de Nova : {0} images pour « {1} ».",
    "where": [
     "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
+   "fr": "La connexion au relais est perdue.",
+   "where": [
+    "game/coop/NetCoopLink.cpp"
    ]
   },
   {
@@ -23883,9 +24333,27 @@
    ]
   },
   {
+   "fr": "La partie a atteint sa durée maximale (2 h).",
+   "where": [
+    "game/coop/NetCoopLink.cpp"
+   ]
+  },
+  {
+   "fr": "La partie a déjà commencé.",
+   "where": [
+    "server/src/coop.ts"
+   ]
+  },
+  {
    "fr": "la partie attend la connexion pour partir.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "La partie continue pour l'équipe pendant la pause.",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
    ]
   },
   {
@@ -23915,6 +24383,7 @@
   {
    "fr": "La partie est terminée.",
    "where": [
+    "game/coop/NetCoopLink.cpp",
     "ui/screens/SpectateScene.cpp"
    ]
   },
@@ -24222,6 +24691,12 @@
    ]
   },
   {
+   "fr": "La tentative s'arrête, comme en solo ; elle compte dans la course à la vérification.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "La tour des cuves s'enfonce sous la lave... frappez le sol pour descendre.",
    "where": [
     "data/levels/pyralis_01.json"
@@ -24309,6 +24784,7 @@
   {
    "fr": "Laisser {0} ici",
    "where": [
+    "ui/screens/CoopGameScene.cpp",
     "ui/screens/PowerChoiceScene.cpp"
    ]
   },
@@ -24404,6 +24880,12 @@
    "fr": "Lancer le défi",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Lancer · {0} / {1} prêts",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -25371,6 +25853,12 @@
    ]
   },
   {
+   "fr": "Le joueur passe en veille (intouchable, ne gêne personne) ; 60 s pour revenir près de l'équipe. Sinon l'équipe continue, classée « incomplète ».",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Le joueur reçoit une invitation, qu'il accepte depuis l'écran CLANS. Un joueur qui a déjà postulé rejoint le clan aussitôt.",
    "where": [
     "ui/screens/ClanScene.cpp"
@@ -25909,6 +26397,18 @@
    ]
   },
   {
+   "fr": "Le relais a envoyé des données illisibles.",
+   "where": [
+    "game/coop/NetCoopLink.cpp"
+   ]
+  },
+  {
+   "fr": "Le relais refuse cette connexion (partie complète, ou plus de 60 s d'absence).",
+   "where": [
+    "game/coop/NetCoopLink.cpp"
+   ]
+  },
+  {
    "fr": "Le Rempart gelé se protège de face : frappez-le de dos, en Frappe sismique ou au Tir chargé.",
    "where": [
     "data/levels/glacior_01.json"
@@ -25930,6 +26430,7 @@
   {
    "fr": "Le replay de cette tentative a déjà été envoyé.",
    "where": [
+    "server/src/coopRace.ts",
     "server/src/race.ts"
    ]
   },
@@ -25950,6 +26451,7 @@
    "where": [
     "server/src/challenges.ts",
     "server/src/community.ts",
+    "server/src/coopRace.ts",
     "server/src/race.ts",
     "server/src/records.ts"
    ]
@@ -26081,9 +26583,21 @@
    ]
   },
   {
+   "fr": "Le serveur refuse la connexion au salon.",
+   "where": [
+    "game/coop/CoopTransport.cpp"
+   ]
+  },
+  {
    "fr": "Le serveur vérifie cette condition dans l'écriture même (un joueur qui vient de jouer l'emporte, et la fiche se rafraîchit) et n'accepte aucune partie envoyée sur l'ancienne version d'un défi changé : le jeu reçoit la nouvelle version dès qu'il ouvre ou rafraîchit les défis, et dit « ce défi a changé » au lieu d'un faux succès.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Le serveur vérifie chaque tentative d'équipe avec les entrées et la trajectoire de chaque joueur.",
+   "where": [
+    "ui/screens/RaceScene.cpp"
    ]
   },
   {
@@ -27472,6 +27986,24 @@
    ]
   },
   {
+   "fr": "Liaison : mesure…",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "liaison : mesure…",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Liaison {0} ms",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Lianes",
    "where": [
     "ui/screens/CreatureArt.cpp"
@@ -27488,6 +28020,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "libcurl indisponible",
+   "where": [
+    "game/coop/CoopTransport.cpp"
    ]
   },
   {
@@ -28296,6 +28834,7 @@
    "where": [
     "editors/level_editor/LevelEditorPowerKeys.cpp",
     "engine/input/InputManager.cpp",
+    "engine/input/LocalPad.cpp",
     "ui/screens/LevelPowerKeysScene.cpp",
     "ui/screens/SettingsScene.cpp"
    ]
@@ -28322,6 +28861,12 @@
    "fr": "Manette : {0}",
    "where": [
     "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "manette : {0}",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -28593,6 +29138,12 @@
    "fr": "Matériau",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "maudit · {0}",
+   "where": [
+    "game/gameplay/HudTeam.cpp"
    ]
   },
   {
@@ -29472,6 +30023,7 @@
    "where": [
     "game/levels/LevelData.cpp",
     "game/levels/ObjectTypes.cpp",
+    "game/online/OnlineCoop.cpp",
     "game/online/OnlineRecord.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/OnlineMigration.cpp"
@@ -30456,6 +31008,12 @@
    ]
   },
   {
+   "fr": "Mêmes règles qu'en solo : aucune vie de plus.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "N",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -30586,6 +31144,7 @@
   {
    "fr": "NIVEAU",
    "where": [
+    "ui/screens/CoopLobbyScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/OnlineRankingScene.cpp"
    ]
@@ -30981,6 +31540,12 @@
    ]
   },
   {
+   "fr": "Niveau terminé !",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Niveau terminé depuis le départ",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
@@ -31161,6 +31726,12 @@
    "fr": "Niveaux EXTRÊME : « Réessayer en entraînement » après une chute réapparaît sur place, clignotant et protégé un instant ; un bandeau rappelle que la partie est hors classements (R recommence).",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Niveaux EXTRÊME à 2 ou 3 joueurs · une seule vie chacun · classement par équipe",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -31450,6 +32021,7 @@
   {
    "fr": "nombre d'images incohérent avec la durée",
    "where": [
+    "server/src/coopRace.ts",
     "server/src/race.ts",
     "server/src/replay.ts"
    ]
@@ -31772,6 +32344,12 @@
   },
   {
    "fr": "Nouveau : l'écran Statistiques (menu principal), calculé à partir de vos vraies parties et gardé sur cet ordinateur. Vue d'ensemble sur 7, 30 ou 90 jours (temps de jeu, taux d'esquive, précision, morts par heure, comparés à la période précédente), étoiles de succès et morts par heure jour après jour.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Nouveau : la coopération sur les niveaux EXTRÊME, à 2 ou 3 joueurs (menu principal › Coopération). Une vie chacun, les mêmes règles qu'en solo ; sur un même PC (une manette par joueur en plus du clavier), en réseau local (un PC héberge, sans compte ni serveur) ou en ligne avec vos amis (salon, invitations, « Prêt »).",
    "where": [
     "data/news/changelog.json"
    ]
@@ -32876,9 +33454,21 @@
    ]
   },
   {
+   "fr": "On ne peut inviter qu'un ami.",
+   "where": [
+    "server/src/coop.ts"
+   ]
+  },
+  {
    "fr": "On ne peut plus répondre à ce commentaire.",
    "where": [
     "server/src/workshop.ts"
+   ]
+  },
+  {
+   "fr": "On ne se traverse pas et on ne se pousse pas : un allié arrête comme un mur, sans bouger. On peut se poser sur sa tête ; s'il s'en va, on tombe.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -34048,6 +34638,12 @@
    ]
   },
   {
+   "fr": "parti",
+   "where": [
+    "game/gameplay/HudTeam.cpp"
+   ]
+  },
+  {
    "fr": "participants",
    "where": [
     "ui/screens/PlayerProfileScene.cpp",
@@ -34093,9 +34689,27 @@
    ]
   },
   {
+   "fr": "partie d'équipe : elle ne compte que pour les classements Duo et Trio",
+   "where": [
+    "server/src/replay.ts"
+   ]
+  },
+  {
    "fr": "partie de défi (règles imposées) : elle ne compte que pour son défi",
    "where": [
     "server/src/replay.ts"
+   ]
+  },
+  {
+   "fr": "partie de défi : elle ne compte que pour son défi",
+   "where": [
+    "server/src/coopRace.ts"
+   ]
+  },
+  {
+   "fr": "Partie interrompue",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
    ]
   },
   {
@@ -34150,6 +34764,12 @@
    "fr": "PARTIES ARRIVÉES AU BOUT",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Parties du réseau local",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -34221,6 +34841,18 @@
    ]
   },
   {
+   "fr": "Pas de coups entre alliés",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pas de coups entre alliés : attaques et pouvoirs ne touchent que les ennemis. Les joueurs sont solides, sans poussée : un allié vous arrête comme un mur, et l'on peut se poser sur sa tête (s'il s'en va, on tombe). Les ennemis visent le joueur le plus proche ; leurs coups touchent tous ceux qu'ils atteignent.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Pas de danger ici : remontez à gauche et réessayez.",
    "where": [
     "data/levels/sylvanox_03.json"
@@ -34286,6 +34918,12 @@
    "fr": "Pas de replay vérifié pour cette course.",
    "where": [
     "ui/screens/OnlineThreadScene.cpp"
+   ]
+  },
+  {
+   "fr": "pas de réponse",
+   "where": [
+    "game/coop/CoopTransport.cpp"
    ]
   },
   {
@@ -34413,6 +35051,12 @@
    "fr": "pas encore envoyé au serveur",
    "where": [
     "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "Pas encore prêt",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -34695,6 +35339,7 @@
   {
    "fr": "PAUSE",
    "where": [
+    "ui/screens/CoopGameScene.cpp",
     "ui/screens/PauseScene.cpp"
    ]
   },
@@ -35373,6 +36018,30 @@
    ]
   },
   {
+   "fr": "Place libre\n\nAppuyez sur Start ou A d'une autre manette pour prendre cette place.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Place libre\n\nBranchez une manette de plus pour un joueur de plus.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Place libre : un ami invité la prend en rejoignant le salon.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Place libre : un joueur du réseau local la prend en rejoignant la partie.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Place libre — « Modifier » pour suivre un succès",
    "where": [
     "ui/screens/PauseScene.cpp"
@@ -35962,6 +36631,12 @@
    ]
   },
   {
+   "fr": "plus de 2 réanimations",
+   "where": [
+    "server/src/coopRace.ts"
+   ]
+  },
+  {
    "fr": "Plus de clans",
    "where": [
     "ui/screens/AdminClans.cpp",
@@ -36132,6 +36807,12 @@
    "fr": "plusieurs vies utilisées",
    "where": [
     "server/src/race.ts"
+   ]
+  },
+  {
+   "fr": "plusieurs vies utilisées ({0})",
+   "where": [
+    "server/src/coopRace.ts"
    ]
   },
   {
@@ -36606,6 +37287,12 @@
    "where": [
     "server/src/race.ts",
     "server/src/replay.ts"
+   ]
+  },
+  {
+   "fr": "position hors du niveau ({0})",
+   "where": [
+    "server/src/coopRace.ts"
    ]
   },
   {
@@ -37134,6 +37821,12 @@
    ]
   },
   {
+   "fr": "Prendre une manette",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Prenez la tablette du sanctuaire.",
    "where": [
     "data/levels/aethra_01.json",
@@ -37363,6 +38056,12 @@
    "fr": "Progression de l'essai",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Progression de l'équipe : {0} % · temps {1}",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
    ]
   },
   {
@@ -37798,9 +38497,21 @@
    ]
   },
   {
+   "fr": "Prêt",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Prêt : cliquez pour lancer l'installation (le jeu se ferme).",
    "where": [
     "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "Prêt · annuler",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -38341,6 +39052,12 @@
    ]
   },
   {
+   "fr": "Quitter la partie",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Quitter le clan ? Le rôle de chef passera à {0}.",
    "where": [
     "ui/screens/ClanScene.cpp"
@@ -38374,6 +39091,12 @@
    "fr": "Quitter le projet",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Quitter le salon",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -38703,6 +39426,12 @@
    ]
   },
   {
+   "fr": "Rattrapage de la partie en accéléré : {0} %",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Rayon",
    "where": [
     "game/levels/ObjectTypes.cpp",
@@ -39004,6 +39733,12 @@
    ]
   },
   {
+   "fr": "Recherche des niveaux EXTRÊME…",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Recherche des niveaux qui ont exactement les mêmes touches…",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
@@ -39013,6 +39748,12 @@
    "fr": "Recherche des nouveautés…",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Recherche des parties hébergées sur le réseau local…",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -39121,6 +39862,12 @@
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/PauseScene.cpp",
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Recommencer la tentative",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
    ]
   },
   {
@@ -39656,6 +40403,7 @@
    "fr": "Rejoindre",
    "where": [
     "game/online/Clans.cpp",
+    "ui/screens/CoopLobbyScene.cpp",
     "ui/screens/ProjectsScene.cpp"
    ]
   },
@@ -39682,6 +40430,12 @@
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
     "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
+   "fr": "Rejouer en équipe",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
    ]
   },
   {
@@ -39712,6 +40466,12 @@
    "fr": "Relations",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
+   ]
+  },
+  {
+   "fr": "relevé dans {0}",
+   "where": [
+    "game/gameplay/HudTeam.cpp"
    ]
   },
   {
@@ -39858,6 +40618,12 @@
    "fr": "Remplacer toutes les données",
    "where": [
     "ui/screens/AdminBackups.cpp"
+   ]
+  },
+  {
+   "fr": "Remplacer {0}",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
    ]
   },
   {
@@ -40056,6 +40822,12 @@
    ]
   },
   {
+   "fr": "replay d'équipe attendu (format 5)",
+   "where": [
+    "server/src/coopRace.ts"
+   ]
+  },
+  {
    "fr": "Replay de comparaison : la barre de progression du niveau montre les deux personnages, A sur la barre et B dessous, chacun avec sa lettre et sa couleur.",
    "where": [
     "data/news/changelog.json"
@@ -40174,12 +40946,14 @@
   {
    "fr": "Replay non conforme : {0}.",
    "where": [
+    "game/online/OnlineCoop.cpp",
     "game/online/OnlineService.cpp"
    ]
   },
   {
    "fr": "Replay non conforme.",
    "where": [
+    "game/online/OnlineCoop.cpp",
     "game/online/OnlineService.cpp"
    ]
   },
@@ -40291,6 +41065,12 @@
    ]
   },
   {
+   "fr": "Replays d'équipe : le lecteur suit toute l'équipe ou le joueur de votre choix.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Replays de ce niveau",
    "where": [
     "ui/screens/ReplayCompareSetupScene.cpp"
@@ -40341,6 +41121,7 @@
   {
    "fr": "Reprendre",
    "where": [
+    "ui/screens/CoopGameScene.cpp",
     "ui/screens/PauseScene.cpp"
    ]
   },
@@ -40638,6 +41419,7 @@
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/ClanScene.cpp",
     "ui/screens/CollectionScene.cpp",
+    "ui/screens/CoopLobbyScene.cpp",
     "ui/screens/LevelPowerKeysScene.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/OnlineAccountScene.cpp",
@@ -40688,6 +41470,12 @@
    ]
   },
   {
+   "fr": "Retour au salon",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
    "fr": "retour au tirage du défi {0}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -40697,6 +41485,12 @@
    "fr": "Retour aux défis",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Retour dans la partie",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
    ]
   },
   {
@@ -40783,6 +41577,12 @@
    "fr": "Revenir au tirage",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Revenir dans la partie",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -41326,6 +42126,12 @@
    ]
   },
   {
+   "fr": "RÈGLES DE L'ÉQUIPE",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Règles de niveau affichées avant de jouer et réglables dans l'éditeur : facteur de dégâts reçus et nombre de vies.",
    "where": [
     "data/news/changelog.json"
@@ -41417,6 +42223,48 @@
    "fr": "Réalisé le {0}  ·  téléchargé le {1}",
    "where": [
     "ui/screens/DownloadedReplaysUi.cpp"
+   ]
+  },
+  {
+   "fr": "Réanimation",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Réanimation : un joueur à terre laisse son âme ; un allié qui reste 2 s près d'elle le relève (2 réanimations par équipe et par tentative). Tous à terre en même temps : la tentative s'arrête. La caméra cadre toute l'équipe ; un joueur hors de l'écran depuis 3 s revient près de l'allié le plus proche.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Réanimation de {0} : {1}",
+   "where": [
+    "game/gameplay/HudTeam.cpp"
+   ]
+  },
+  {
+   "fr": "Réanimations de l'équipe : {0} utilisée sur {1}",
+   "where": [
+    "game/gameplay/HudTeam.cpp"
+   ]
+  },
+  {
+   "fr": "Réanimations de l'équipe : {0} utilisées sur {1}",
+   "where": [
+    "game/gameplay/HudTeam.cpp"
+   ]
+  },
+  {
+   "fr": "réanimations incohérentes",
+   "where": [
+    "server/src/coopRace.ts"
+   ]
+  },
+  {
+   "fr": "réapparaît",
+   "where": [
+    "game/gameplay/HudTeam.cpp"
    ]
   },
   {
@@ -41756,6 +42604,12 @@
    ]
   },
   {
+   "fr": "réponse invalide",
+   "where": [
+    "game/coop/CoopTransport.cpp"
+   ]
+  },
+  {
    "fr": "Réponse publiée.",
    "where": [
     "ui/online/CommentsPanel.cpp"
@@ -41828,6 +42682,12 @@
    "fr": "Réseau indisponible",
    "where": [
     "game/online/OnlineTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Réseau local",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -42354,6 +43214,12 @@
    ]
   },
   {
+   "fr": "Salon introuvable.",
+   "where": [
+    "server/src/coop.ts"
+   ]
+  },
+  {
    "fr": "Salve",
    "where": [
     "ui/screens/CreatureArt.cpp"
@@ -42467,6 +43333,12 @@
    "fr": "Sans compte",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "sans compte",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -42883,6 +43755,7 @@
    "where": [
     "game/enemies/EnemyDefinition.cpp",
     "game/levels/DifficultyRating.cpp",
+    "game/online/OnlineCoop.cpp",
     "game/online/OnlineRecord.cpp",
     "game/online/OnlineService.cpp",
     "game/records/Records.cpp",
@@ -43050,6 +43923,19 @@
    "fr": "section",
    "where": [
     "main.cpp"
+   ]
+  },
+  {
+   "fr": "section d'équipe incohérente",
+   "where": [
+    "game/online/Replay.cpp",
+    "server/src/replay.ts"
+   ]
+  },
+  {
+   "fr": "section d'équipe tronquée",
+   "where": [
+    "game/online/Replay.cpp"
    ]
   },
   {
@@ -43316,6 +44202,12 @@
    "where": [
     "ui/screens/AdminBackups.cpp",
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "serveur injoignable",
+   "where": [
+    "game/coop/CoopTransport.cpp"
    ]
   },
   {
@@ -43919,7 +44811,8 @@
   {
    "fr": "Solo",
    "where": [
-    "game/online/Clans.cpp"
+    "game/online/Clans.cpp",
+    "ui/screens/RaceScene.cpp"
    ]
   },
   {
@@ -45504,7 +46397,26 @@
   {
    "fr": "Sur ce PC",
    "where": [
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengesScene.cpp",
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Sur ce PC · {0} manette branchée",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Sur ce PC · {0} manettes branchées",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Sur ce PC, la partie n'est pas classée (un compte ne s'ouvre que sur son propre ordinateur) : pour les classements Duo et Trio, jouez en réseau local ou en ligne.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -46225,6 +47137,12 @@
    ]
   },
   {
+   "fr": "taille d'équipe différente du replay",
+   "where": [
+    "server/src/coopRace.ts"
+   ]
+  },
+  {
    "fr": "taille de bloc invalide",
    "where": [
     "server/src/backupFormat.ts"
@@ -46693,9 +47611,28 @@
    ]
   },
   {
+   "fr": "Tentative d'équipe non envoyée",
+   "where": [
+    "game/online/OnlineCoop.cpp"
+   ]
+  },
+  {
+   "fr": "Tentative d'équipe refusée",
+   "where": [
+    "game/online/OnlineCoop.cpp"
+   ]
+  },
+  {
+   "fr": "Tentative d'équipe vérifiée",
+   "where": [
+    "game/online/OnlineCoop.cpp"
+   ]
+  },
+  {
    "fr": "tentative différente",
    "where": [
     "server/src/community.ts",
+    "server/src/coopRace.ts",
     "server/src/race.ts"
    ]
   },
@@ -46713,8 +47650,21 @@
    ]
   },
   {
+   "fr": "Tentative envoyée pour le classement Duo : classée dès que chaque joueur l'a confirmée depuis son compte.",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tentative envoyée pour le classement Trio : classée dès que chaque joueur l'a confirmée depuis son compte.",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Tentative introuvable.",
    "where": [
+    "server/src/coopRace.ts",
     "server/src/devices.ts",
     "server/src/race.ts"
    ]
@@ -47127,6 +48077,12 @@
    "fr": "Terminé",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "terminé",
+   "where": [
+    "ui/screens/RaceScene.cpp"
    ]
   },
   {
@@ -47587,6 +48543,12 @@
    ]
   },
   {
+   "fr": "tombe…",
+   "where": [
+    "game/gameplay/HudTeam.cpp"
+   ]
+  },
+  {
    "fr": "Ton premier pouvoir : la Ruée",
    "where": [
     "game/tutorial/Tutorial.cpp"
@@ -47853,6 +48815,12 @@
    ]
   },
   {
+   "fr": "Tous les emplacements sont pris : quel pouvoir laisser ici ?",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Tous les emplacements sont pris : retirez d'abord un pouvoir, ou ajoutez un emplacement.",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
@@ -47898,6 +48866,12 @@
    "fr": "Tous vos amis sont déjà dans le groupe.",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tous à terre en même temps",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -47994,6 +48968,19 @@
    "fr": "Tout réinitialiser",
    "where": [
     "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Toute l'équipe est en pause.",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Toute l'équipe est à terre",
+   "where": [
+    "game/gameplay/GameWorldTeam.cpp",
+    "ui/screens/CoopGameScene.cpp"
    ]
   },
   {
@@ -48448,7 +49435,10 @@
   {
    "fr": "Trio",
    "where": [
-    "game/online/Clans.cpp"
+    "game/online/Clans.cpp",
+    "game/online/OnlineCoop.cpp",
+    "ui/screens/CoopGameScene.cpp",
+    "ui/screens/RaceScene.cpp"
    ]
   },
   {
@@ -48978,6 +49968,12 @@
    ]
   },
   {
+   "fr": "Un ami",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Un ancien membre",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -49366,6 +50362,12 @@
    "fr": "Un joueur bloqué ne peut plus vous écrire ni vous envoyer de demande d'ami, et ses messages vous sont masqués dans les groupes. Il n'est pas prévenu.",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Un joueur à terre laisse son âme : un allié reste 2 s près d'elle pour le relever. 2 réanimations par équipe et par tentative.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -50131,6 +51133,12 @@
    ]
   },
   {
+   "fr": "une seule vie : retour à un point de passage impossible ({0})",
+   "where": [
+    "server/src/coopRace.ts"
+   ]
+  },
+  {
    "fr": "Une seule vie. Un dragon d'obsidienne. Huit phases.",
    "where": [
     "data/levels/confins_01.json"
@@ -50308,6 +51316,12 @@
    "fr": "Une épave gît sous l'eau... une barrière de phase en garde l'entrée.",
    "where": [
     "data/levels/glacior_02.json"
+   ]
+  },
+  {
+   "fr": "Une équipe = ses joueurs exacts. Progression = le joueur le plus avancé ; à égalité, le moins de réanimations, puis le plus tôt. Une équipe incomplète (un joueur parti) passe derrière une équipe complète au même score. Chaque joueur confirme la tentative avec son compte.",
+   "where": [
+    "ui/screens/RaceScene.cpp"
    ]
   },
   {
@@ -50610,6 +51624,7 @@
   {
    "fr": "vagues différentes du replay",
    "where": [
+    "server/src/coopRace.ts",
     "server/src/race.ts"
    ]
   },
@@ -51311,6 +52326,7 @@
    "fr": "version de niveau différente",
    "where": [
     "server/src/community.ts",
+    "server/src/coopRace.ts",
     "server/src/race.ts"
    ]
   },
@@ -51324,6 +52340,12 @@
    "fr": "version des conditions obsolète",
    "where": [
     "server/src/auth.ts"
+   ]
+  },
+  {
+   "fr": "version des règles de coopération différente",
+   "where": [
+    "server/src/coopRace.ts"
    ]
   },
   {
@@ -52515,6 +53537,12 @@
    ]
   },
   {
+   "fr": "votre équipe",
+   "where": [
+    "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
    "fr": "Vous",
    "where": [
     "editors/level_editor/LevelEditorChat.cpp",
@@ -52526,7 +53554,8 @@
   {
    "fr": "vous",
    "where": [
-    "ui/screens/AdminScene.cpp"
+    "ui/screens/AdminScene.cpp",
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -52677,6 +53706,12 @@
    "fr": "Vous n'êtes pas dans ce clan.",
    "where": [
     "server/src/clans.ts"
+   ]
+  },
+  {
+   "fr": "Vous n'êtes pas dans cette équipe.",
+   "where": [
+    "server/src/coopRace.ts"
    ]
   },
   {
@@ -52879,6 +53914,12 @@
    ]
   },
   {
+   "fr": "Vous réapparaîtrez près de l'équipe dès que votre jeu sera à jour.",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
    "fr": "vous suit",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -52943,6 +53984,12 @@
    "fr": "Vous êtes invité dans ce clan : répondez depuis sa fiche.",
    "where": [
     "game/online/Clans.cpp"
+   ]
+  },
+  {
+   "fr": "Vous êtes l'hôte : invitez un ou deux amis ; ils rejoignent depuis leur écran de coopération.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -54577,6 +55624,12 @@
    ]
   },
   {
+   "fr": "{0} est déconnecté : intouchable, il revient près de l'équipe s'il se reconnecte dans {1} s.",
+   "where": [
+    "game/gameplay/HudTeam.cpp"
+   ]
+  },
+  {
    "fr": "{0} est délié : sa prochaine connexion le liera de nouveau.",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -54628,6 +55681,12 @@
    "fr": "{0} est parti",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
+   ]
+  },
+  {
+   "fr": "{0} est parti : l'équipe continue, la tentative sera classée incomplète.",
+   "where": [
+    "game/gameplay/HudTeam.cpp"
    ]
   },
   {
@@ -55082,6 +56141,7 @@
    "fr": "{0} ms",
    "where": [
     "ui/screens/AdminCreations.cpp",
+    "ui/screens/CoopLobbyScene.cpp",
     "ui/studio/StudioCanvas.cpp"
    ]
   },
@@ -55404,6 +56464,12 @@
    ]
   },
   {
+   "fr": "{0} relève {1} : {2}",
+   "where": [
+    "game/gameplay/HudTeam.cpp"
+   ]
+  },
+  {
    "fr": "{0} replay",
    "where": [
     "ui/screens/ReplayCompareSetupScene.cpp"
@@ -55467,6 +56533,42 @@
    "fr": "{0} réactions à votre commentaire sur {1}",
    "where": [
     "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "{0} réanimation",
+   "where": [
+    "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} réanimation utilisée sur {1}",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} réanimation utilisée sur {1} · équipe incomplète",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} réanimations",
+   "where": [
+    "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} réanimations utilisées sur {1}",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} réanimations utilisées sur {1} · équipe incomplète",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
    ]
   },
   {
@@ -55644,9 +56746,21 @@
    ]
   },
   {
+   "fr": "{0} tentative d'équipe en cours de vérification.",
+   "where": [
+    "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} tentatives",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} tentatives d'équipe en cours de vérification.",
+   "where": [
+    "ui/screens/RaceScene.cpp"
    ]
   },
   {
@@ -55777,6 +56891,12 @@
    ]
   },
   {
+   "fr": "{0} vous invite à jouer en équipe : {1}",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "{0} {1} / {2} à faire",
    "where": [
     "ui/studio/StudioFrise.cpp"
@@ -55834,6 +56954,12 @@
    "fr": "{0} · inscrit le {1}",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · itinéraire {1} %",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
    ]
   },
   {
@@ -55975,6 +57101,12 @@
    ]
   },
   {
+   "fr": "{0} · {1}/3 · en cours",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} × {1} px",
    "where": [
     "ui/screens/AdminAssets.cpp",
@@ -55991,6 +57123,18 @@
    "fr": "{0} × {1} px · {2}",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "{0} à terre : plus de réanimation",
+   "where": [
+    "game/gameplay/HudTeam.cpp"
+   ]
+  },
+  {
+   "fr": "{0} à terre : restez 2 s près de son âme",
+   "where": [
+    "game/gameplay/HudTeam.cpp"
    ]
   },
   {
@@ -56436,6 +57580,12 @@
    ]
   },
   {
+   "fr": "« {0} » en {1} : {2} %. Classée dès que chaque joueur l'a confirmée depuis son compte.",
+   "where": [
+    "game/online/OnlineCoop.cpp"
+   ]
+  },
+  {
    "fr": "« {0} » envoyée au serveur avec son image : tous les jeux la dessinent à leur prochaine lecture.",
    "where": [
     "ui/studio/Studio.cpp"
@@ -56586,6 +57736,12 @@
    ]
   },
   {
+   "fr": "À deux, l'équipe est classée en Duo ; à trois, en Trio. Les classements ne se mélangent jamais.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "À droite : bibliothèque (catégories, recherche, étoile = favori) et entité (propriétés, relations avec les autres objets)",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -56709,6 +57865,18 @@
    "fr": "À sa mort",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "à terre",
+   "where": [
+    "game/gameplay/HudTeam.cpp"
+   ]
+  },
+  {
+   "fr": "à terre · son âme attend",
+   "where": [
+    "game/gameplay/HudTeam.cpp"
    ]
   },
   {
@@ -57891,6 +59059,31 @@
    ]
   },
   {
+   "fr": "ÉQUIPE",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp",
+    "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
+   "fr": "Équipe",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Équipe incomplète",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "équipe incomplète",
+   "where": [
+    "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
    "fr": "Équiper",
    "where": [
     "ui/screens/CollectionScene.cpp",
@@ -58190,6 +59383,12 @@
    "fr": "événements incohérents",
    "where": [
     "server/src/race.ts"
+   ]
+  },
+  {
+   "fr": "événements incohérents ({0})",
+   "where": [
+    "server/src/coopRace.ts"
    ]
   },
   {

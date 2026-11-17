@@ -783,7 +783,7 @@ private:
                     float nf = ui.fitFont(shown, FontFace::Bold, 17, room - ww);
                     ns = ui.label(ui.elide(shown, FontFace::Bold, nf, room - ww), {nx, row.y + ui.s(23)}, nf, ui.theme().text, Align::Left, FontFace::Bold,
                                   VAlign::Middle);
-                    ui_.clanTagLink("f" + pid, pl, shown, {nx, row.y + ui.s(23)}, nf, FontFace::Bold, room - ww);  // 2.62.5: the clan's sheet
+                    ui_.clanTagLink("f" + pid, pl, shown, {nx, row.y + ui.s(23)}, nf, FontFace::Bold, room - ww);  // 2.63.0: the clan's sheet
                 }
                 if (ww > 0.0f)
                     ui.label(word, {nx + ns.x + ui.s(12), row.y + ui.s(23)}, 14, presenceColor(presence), Align::Left, FontFace::Body, VAlign::Middle);
@@ -1356,7 +1356,7 @@ private:
                 const float nf = ui.fitFont(who, FontFace::Bold, 14, room);
                 ui.label(ui.elide(who, FontFace::Bold, nf, room), {view.x + ui.s(54), by - ui.s(10)}, nf, ui.theme().accent, Align::Left, FontFace::Bold,
                          VAlign::Middle);
-                ui_.clanTagLink("m" + id, sender, who, {view.x + ui.s(54), by - ui.s(10)}, nf, FontFace::Bold, room);  // 2.62.5: the clan's sheet
+                ui_.clanTagLink("m" + id, sender, who, {view.x + ui.s(54), by - ui.s(10)}, nf, FontFace::Bold, room);  // 2.63.0: the clan's sheet
             }
             float bx = b.mine ? view.right() - ui.s(18) - b.w : view.x + ui.s(54);
             if (!b.mine && group && b.showName)

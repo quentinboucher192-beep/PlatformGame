@@ -236,3 +236,11 @@ use{0}
 f:{0}|{1}|{2}|{3}
 clips
 lever
+COSMIC-COOP!
+COSMIC-COOP?
+HTTP/1.1 101
+account
+port
+start
+refuse
+Authorization: Bearer {0}

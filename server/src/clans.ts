@@ -145,14 +145,16 @@ const COUNTED_BEST = `NOT EXISTS (SELECT 1 FROM clan_level_bests o WHERE o.clan_
     AND (o.score > b.score OR (o.score = b.score AND o.team_size < b.team_size)))`;
 
 /**
- * Recomputes the Solo bests of one clan (or of every clan with null) and its points, in three
- * statements to put in a batch (so a membership change and the points move together).
+ * Recomputes the bests of one clan (or of every clan with null) and its points, in four
+ * statements to put in a batch (so a membership change and the points move together): Solo
+ * (race_runs), then Duo and Trio (coop_runs, 2.63: a team counts for a clan when every one of
+ * its players is a member and confirmed the attempt, as the Duo / Trio boards rank it).
  */
 export function clanPointsStatements(db: D1Database, clanId: string | null): D1PreparedStatement[] {
     const one = clanId !== null;
     const binds = one ? [clanId] : [];
     return [
-        db.prepare(`DELETE FROM clan_level_bests WHERE team_size = 1${one ? " AND clan_id = ?1" : ""}`).bind(...binds),
+        db.prepare(`DELETE FROM clan_level_bests${one ? " WHERE clan_id = ?1" : ""}`).bind(...binds),
         db
             .prepare(
                 `WITH ${EXTREME_BOARDS},
@@ -162,6 +164,26 @@ export function clanPointsStatements(db: D1Database, clanId: string | null): D1P
                             JOIN ext e ON e.board = r.board${one ? " WHERE m.clan_id = ?1" : ""})
                  INSERT INTO clan_level_bests (clan_id, level_id, team_size, score, finished, run_id, players, achieved_at)
                  SELECT clan_id, level_id, 1, score, finished, run_id, json_array(player_id), verified_at FROM best WHERE n = 1`,
+            )
+            .bind(...binds),
+        db
+            .prepare(
+                `WITH ${EXTREME_BOARDS},
+                 best AS (SELECT m.clan_id, e.level_id, r.size, r.id AS run_id, r.score, r.finished, r.verified_at,
+                                 ROW_NUMBER() OVER (PARTITION BY m.clan_id, e.level_id, r.size
+                                                    ORDER BY r.score DESC, r.incomplete, r.revives, r.verified_at, r.id) AS n
+                            FROM coop_runs r JOIN ext e ON e.board = r.board
+                            JOIN coop_run_members s0 ON s0.run_id = r.id AND s0.seat = 0
+                            JOIN clan_members m ON m.player_id = s0.player_id
+                           WHERE r.status = 'VERIFIED'${one ? " AND m.clan_id = ?1" : ""}
+                             AND NOT EXISTS (SELECT 1 FROM coop_run_members x WHERE x.run_id = r.id
+                                   AND (NOT EXISTS (SELECT 1 FROM clan_members y WHERE y.player_id = x.player_id AND y.clan_id = m.clan_id)
+                                        OR NOT EXISTS (SELECT 1 FROM coop_confirms c WHERE c.attempt_id = r.attempt_id AND c.player_id = x.player_id))))
+                 INSERT INTO clan_level_bests (clan_id, level_id, team_size, score, finished, run_id, players, achieved_at)
+                 SELECT clan_id, level_id, size, score, finished, run_id,
+                        (SELECT json_group_array(player_id) FROM (SELECT player_id FROM coop_run_members WHERE run_id = best.run_id ORDER BY seat)),
+                        verified_at
+                   FROM best WHERE n = 1`,
             )
             .bind(...binds),
         db
@@ -536,8 +558,8 @@ export async function clanRanking(ctx: Ctx, viewer: AuthInfo | null): Promise<Re
 
 /**
  * GET /clans/{clanId}: the clan's page — members and roles (presence only for the clan's own
- * members, and only as each player shares it), the best team per EXTRÊME level (Solo today;
- * `mode` and `team_size` ready for Duo and Trio) with its rank on that level's race, the
+ * members, and only as each player shares it), the best team per EXTRÊME level (Solo, Duo
+ * and Trio: `mode` and `team_size`; the rank on the level's race for the Solo one), the
  * clan's rank, the pending requests (chief and officers only), the discussion (members only).
  */
 export async function getClan(ctx: Ctx, viewer: AuthInfo | null): Promise<Response> {

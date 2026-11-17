@@ -11,6 +11,7 @@
 #include "engine/core/I18n.h"
 #include "game/GameServices.h"
 #include "game/online/Replay.h"
+#include "engine/core/I18n.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/ReplayDownloadUi.h"
@@ -88,7 +89,9 @@ public:
 private:
     void load() {
         loading_ = true;
-        std::string q = "/api/v1/races/board?kind=" + kind_ + "&level_id=" + levelId_;
+        // 2.62: Solo, Duo or Trio (never mixed): the teams' board for 2 or 3 players.
+        std::string q = size_ > 1 ? "/api/v1/coop/board?size=" + std::to_string(size_) + "&kind=" + kind_ + "&level_id=" + levelId_
+                                  : "/api/v1/races/board?kind=" + kind_ + "&level_id=" + levelId_;
         if (kind_ == "community" && version_ > 0) q += "&version=" + std::to_string(version_);
         if (kind_ == "official" && !levelHash_.empty()) q += "&level_hash=" + levelHash_;
         int gen = ++generation_;
@@ -120,12 +123,140 @@ private:
             if (kind_ == "community") sub += " · version " + std::to_string(jget<int>(race, "version", 0));
             else sub += " · campagne";
         }
+        // 2.62: Solo, Duo, Trio: three boards that never mix, at the right of this line.
+        const float tabsW = std::min(ui.s(420), box_.w * 0.4f);
+        const Rect tabs{box_.right() - ui.s(36) - tabsW, box_.y + ui.s(74), tabsW, ui.s(38)};
+        int mode = size_ - 1;
+        if (ui.tabs("size", tabs, {"Solo", "Duo", "Trio"}, mode) && mode + 1 != size_) {
+            size_ = mode + 1;
+            data_ = Json();
+            load();
+        }
         if (!sub.empty())
-            ui.label(ui.elide(sub, FontFace::Body, 18, box_.w - ui.s(72)), {x, box_.y + ui.s(92)}, 18, ui.theme().textDim, Align::Left, FontFace::Body,
+            ui.label(ui.elide(sub, FontFace::Body, 18, tabs.x - ui.s(20) - x), {x, box_.y + ui.s(92)}, 18, ui.theme().textDim, Align::Left, FontFace::Body,
                      VAlign::Middle);
     }
 
+    /// 2.62: the Duo / Trio board (docs/COOP.md § 6): teams, their most advanced player's progress.
+    void drawTeamBody() {
+        UIContext& ui = g_.ui;
+        float x = box_.x + ui.s(36), w = box_.w - ui.s(72);
+        float y = box_.y + ui.s(126);
+        const std::string rules =
+            "Une équipe = ses joueurs exacts. Progression = le joueur le plus avancé ; à égalité, le moins de réanimations, puis le plus tôt. "
+            "Une équipe incomplète (un joueur parti) passe derrière une équipe complète au même score. Chaque joueur confirme la tentative avec son compte.";
+        y += ui.labelWrapped(rules, {x, y}, w, 15, ui.theme().textDim).y + ui.s(14);
+        const Json& list = data_.value("ranking", Json::array());
+        const float replayW = ui.s(104), gap = ui.s(10);
+        const float cDate = x + w - ui.s(14) - replayW - gap;
+        const float cRank = x + ui.s(14), cTeam = x + ui.s(84), cScore = x + w * 0.56f, cBar = cScore + ui.s(24);
+        const float barW = std::max(ui.s(60), std::min(w * 0.18f, cDate - ui.s(130) - cBar));
+        auto head = [&](const std::string& t, float hx, Align a) { ui.label(t, {hx, y + ui.s(10)}, 15, ui.theme().textDim, a, FontFace::Bold, VAlign::Middle); };
+        head("RANG", cRank, Align::Left);
+        head("ÉQUIPE", cTeam, Align::Left);
+        head("SCORE", cScore, Align::Right);
+        head("PROGRESSION", cBar, Align::Left);
+        head("DATE", cDate, Align::Right);
+        y += ui.s(26);
+        const float footH = ui.s(46);
+        const Rect area{x, y, w, box_.bottom() - footH - ui.s(10) - y};
+        const float rh = ui.s(70), rgap = ui.s(6);
+        if (list.empty()) {
+            const std::string m = size_ == 2 ? "Aucune équipe de deux n'est encore classée sur ce niveau." : "Aucune équipe de trois n'est encore classée sur ce niveau.";
+            ui.label(m, {area.center().x, area.y + ui.s(60)}, ui.fitFont(m, FontFace::Body, 19, area.w - ui.s(40)), ui.theme().textDim, Align::Center,
+                     FontFace::Body, VAlign::Middle);
+        } else {
+            ui.beginScroll("teams", area, static_cast<float>(list.size()) * (rh + rgap));
+            float cy = area.y - ui.scrollOffset();
+            for (const auto& e : list) {
+                const Rect row{area.x, cy, area.w - ui.s(14) - replayW - gap, rh};
+                cy += rh + rgap;
+                const std::string runId = jstr(e, "run_id");
+                if (row.bottom() >= area.y && row.y <= area.bottom()) drawTeamRow(e, row, cRank, cTeam, cScore, cBar, barW, cDate);
+                UIContext::ButtonStyle vs;
+                vs.small = true;
+                vs.enabled = jget<bool>(e, "has_replay", false) && !runId.empty() && fetching_.empty();
+                const Rect vb{row.right() + gap, row.y + (rh - ui.s(46)) * 0.5f, replayW, ui.s(46)};
+                vs.fontSize = ui.fitFont("Voir", FontFace::Bold, 20, replayW - ui.s(20));
+                if (ui.button("tv/" + runId, vb, fetching_ == runId && !runId.empty() ? "…" : "Voir", vs)) watchTeam(e);
+            }
+            ui.endScroll();
+        }
+        int pending = jget<int>(data_, "my_pending", 0);
+        std::string foot = !g_.online.loggedIn() ? "Connectez-vous à Cosmic Online pour voir vos équipes."
+                           : pending > 0         ? std::to_string(pending) + (pending > 1 ? " tentatives d'équipe en cours de vérification." : " tentative d'équipe en cours de vérification.")
+                                                 : "Le serveur vérifie chaque tentative d'équipe avec les entrées et la trajectoire de chaque joueur.";
+        if (!msg_.empty()) foot = msg_;
+        ui.label(foot, {x, box_.bottom() - footH * 0.5f - ui.s(6)}, ui.fitFont(foot, FontFace::Body, 16, w), ui.theme().textDim, Align::Left, FontFace::Body,
+                 VAlign::Middle);
+    }
+
+    void drawTeamRow(const Json& e, const Rect& row, float cRank, float cTeam, float cScore, float cBar, float barW, float cDate) {
+        UIContext& ui = g_.ui;
+        const bool me = jget<bool>(e, "me", false);
+        ui.r().fillRoundedRect(row, ui.s(10), me ? Color{18, 48, 74, 255} : Color{10, 17, 36, 255});
+        ui.r().drawRoundedRect(row, ui.s(10), me ? ui.theme().accent : Color{22, 32, 63, 255}, std::max(1.0f, ui.s(1.0f)));
+        const float cy = row.center().y;
+        const int rank = jget<int>(e, "rank", 0);
+        const Color rc = rank == 1 ? Color{255, 210, 90, 255} : rank == 2 ? Color{205, 215, 230, 255} : rank == 3 ? Color{205, 127, 50, 255} : ui.theme().textDim;
+        ui.label(std::to_string(rank), {cRank + ui.s(20), cy}, rank <= 3 ? 26 : 22, rc, Align::Center, FontFace::Bold, VAlign::Middle);
+        std::string names;
+        for (const auto& p : e.value("players", Json::array())) names += (names.empty() ? "" : " · ") + jstr(p, "username");
+        const std::string tag = jstr(e, "clan_tag");  // 2.63: the clan of all its players (else empty)
+        const float room = cScore - ui.s(90) - cTeam;
+        {
+            i18n::Verbatim theirs;  // players' names
+            const std::string line = tag.empty() ? names : "[" + tag + "] " + names;
+            ui.label(ui.elide(line, FontFace::Bold, 19, room), {cTeam, cy - ui.s(10)}, 19, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+        }
+        const int revives = jget<int>(e, "revives", 0);
+        std::string note = std::to_string(revives) + (revives > 1 ? " réanimations" : " réanimation");
+        if (jget<bool>(e, "finished", false)) note += " · terminé";
+        if (jget<bool>(e, "incomplete", false)) note += " · équipe incomplète";
+        if (me) note += " · votre équipe";
+        ui.label(ui.elide(note, FontFace::Body, 14, room), {cTeam, cy + ui.s(14)}, 14,
+                 jget<bool>(e, "incomplete", false) ? Color{255, 180, 84, 255} : ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        const double score = jget<double>(e, "score", 0.0);
+        ui.label(decimal(score) + " %", {cScore, cy}, 20, ui.theme().text, Align::Right, FontFace::Bold, VAlign::Middle);
+        const Rect bar{cBar, cy - ui.s(4), barW, ui.s(8)};
+        ui.r().fillRoundedRect(bar, ui.s(4), Color{4, 7, 18, 255});
+        ui.r().fillRoundedRect({bar.x, bar.y, bar.w * static_cast<float>(std::clamp(score / 100.0, 0.0, 1.0)), bar.h}, ui.s(4), kRouteColor);
+        ui.label(dateFr(jstr(e, "at")).substr(0, 10), {cDate, cy}, 15, ui.theme().textDim, Align::Right, FontFace::Body, VAlign::Middle);
+    }
+
+    void watchTeam(const Json& e) {
+        const std::string runId = jstr(e, "run_id");
+        std::string names;
+        for (const auto& p : e.value("players", Json::array())) names += (names.empty() ? "" : " · ") + jstr(p, "username");
+        const double score = jget<double>(e, "score", 0.0);
+        fetching_ = runId;
+        msg_ = "Téléchargement du replay…";
+        g_.online.getBinary(
+            "/api/v1/coop/runs/" + runId + "/replay",
+            [this, names, score, alive = std::weak_ptr<int>(life_)](const HttpResponse& r) {
+                if (alive.expired()) return;
+                fetching_.clear();
+                if (r.status != 200 || r.body.empty()) {
+                    msg_ = r.networkFailure() ? "Connexion impossible : replay indisponible pour l'instant." : "Replay indisponible (" + std::to_string(r.status) + ").";
+                    return;
+                }
+                std::string err;
+                auto rep = ReplayData::decode(std::vector<uint8_t>(r.body.begin(), r.body.end()), &err);
+                if (!rep) {
+                    msg_ = "Replay illisible : " + err;
+                    return;
+                }
+                msg_.clear();
+                g_.app.pushScene(makeLocalReplayViewer(g_, std::move(*rep), "Course à la vérification – " + names + " – " + decimal(score) + " %"));
+            },
+            16u << 20);
+    }
+
     void drawBody() {
+        if (size_ > 1) {
+            drawTeamBody();
+            return;
+        }
         UIContext& ui = g_.ui;
         const Json& race = data_["race"];
         float x = box_.x + ui.s(36), w = box_.w - ui.s(72);
@@ -268,7 +399,7 @@ private:
             float nf = ui.fitFont(name, FontFace::Bold, 19, room, 0.8f);
             name = ui.elide(name, FontFace::Bold, nf, room);
             ns = ui.label(name, {nx, cy - ui.s(11)}, nf, me ? ui.theme().accent : ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
-            ui_.clanTagLink("r" + pid, p, name, {nx, cy - ui.s(11)}, nf, FontFace::Bold, room);  // 2.62.5: the clan's sheet
+            ui_.clanTagLink("r" + pid, p, name, {nx, cy - ui.s(11)}, nf, FontFace::Bold, room);  // 2.63.0: the clan's sheet
         }
         if (!chip.empty()) {
             Color cc = isVerifier ? ui.theme().warm : ui.theme().success;
@@ -403,6 +534,7 @@ private:
     std::string error_;
     bool loading_ = false;
     int generation_ = 0;
+    int size_ = 1;  // 2.62: 1 Solo, 2 Duo, 3 Trio
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
 };
 

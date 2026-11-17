@@ -101,6 +101,13 @@ public:
     /// Every slot without a key (leaving a level, an editor's arena...).
     void clearPowerSlotKeys();
 
+    /// 2.62, cooperation on one computer: the gamepads of the other local players. They are
+    /// never this manager's gamepad (no live switching to them) and their buttons press no
+    /// command here: each is read by its own LocalPad. Empty: every gamepad is the player's.
+    void setReservedPads(std::vector<SDL_JoystickID> ids);
+    bool reservedPad(SDL_JoystickID id) const;
+    SDL_JoystickID gamepadId() const { return gamepad_ ? gamepadId_ : 0; }
+
     /// Rebinding: the next key (or gamepad button/axis) pressed is captured.
     void beginCapture(InputDevice device);
     void cancelCapture() { capturing_ = false; }
@@ -162,6 +169,7 @@ private:
     bool swallowingPad_ = false;
     // A power slot whose key changed while it was held: nothing until it is released.
     std::array<bool, kPowerSlotKeys> slotWaitRelease_{};
+    std::vector<SDL_JoystickID> reservedPads_;  // 2.62: the other local players' gamepads
 };
 
 }  // namespace cosmic
