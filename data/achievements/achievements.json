@@ -451,12 +451,12 @@
    "id": "chrono_gold_all",
    "category": "chrono",
    "name": "Tout en or",
-   "description": "Obtenir l'or sur les 19 niveaux.",
+   "description": "Obtenir l'or sur les 25 niveaux.",
    "stars": 4,
    "condition": {
     "type": "medal_count",
     "medal": 3,
-    "count": 19
+    "count": 25
    },
    "requires": [
     "chrono_gold_5"
@@ -496,12 +496,12 @@
    "id": "chrono_platinum_all",
    "category": "chrono",
    "name": "Chronomaître",
-   "description": "Obtenir le platine sur les 19 niveaux.",
+   "description": "Obtenir le platine sur les 25 niveaux.",
    "stars": 5,
    "condition": {
     "type": "medal_count",
     "medal": 4,
-    "count": 19
+    "count": 25
    },
    "requires": [
     "chrono_platinum_5",
@@ -762,12 +762,12 @@
    "id": "combat_clear_all",
    "category": "combat",
    "name": "Silence total",
-   "description": "Vaincre tous les ennemis des 19 niveaux de la campagne.",
+   "description": "Vaincre tous les ennemis des 25 niveaux de la campagne.",
    "stars": 5,
    "condition": {
     "type": "set",
     "key": "cleared_levels",
-    "count": 19,
+    "count": 25,
     "campaign": true
    },
    "requires": [
@@ -1403,7 +1403,7 @@
    "stars": 4,
    "condition": {
     "type": "levels_no_death",
-    "count": 19
+    "count": 25
    },
    "requires": [
     "maitrise_nodeath_5"
@@ -3675,12 +3675,12 @@
    "id": "communaute_rate_campaign_all",
    "category": "communaute",
    "name": "Guide stellaire",
-   "description": "Noter les 19 niveaux de la campagne en ligne.",
+   "description": "Noter les 25 niveaux de la campagne en ligne.",
    "stars": 4,
    "condition": {
     "type": "set",
     "key": "rated_campaign",
-    "count": 19
+    "count": 25
    },
    "requires": [
     "communaute_rate_campaign"
