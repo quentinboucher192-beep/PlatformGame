@@ -1,0 +1,9 @@
+{
+  "texture": "stories/liche/arcades.png",
+  "frameWidth": 800,
+  "frameHeight": 170,
+  "pivot": [0, 0],
+  "clips": {
+    "idle": {"row": 0, "count": 4, "fps": 5, "loop": true}
+  }
+}

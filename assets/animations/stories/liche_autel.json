@@ -1,0 +1,9 @@
+{
+  "texture": "stories/liche/autel.png",
+  "frameWidth": 96,
+  "frameHeight": 48,
+  "pivot": [48, 47],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 8, "loop": true}
+  }
+}

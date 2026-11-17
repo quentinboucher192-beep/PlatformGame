@@ -1,0 +1,10 @@
+{
+  "texture": "stories/liche/fuyard2.png",
+  "frameWidth": 40,
+  "frameHeight": 56,
+  "pivot": [20, 54],
+  "clips": {
+    "run": {"row": 0, "count": 8, "fps": 14, "loop": true},
+    "flee": {"row": 1, "count": 8, "fps": 14, "loop": true}
+  }
+}
