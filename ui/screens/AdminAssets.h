@@ -40,6 +40,16 @@ public:
     void open(const std::string& path);
     void draw(const Rect& inner);
 
+    // What the tab shows (checks, automated runs).
+    void setSearch(const std::string& text) { search_ = text; }
+    void setGrid(bool grid) { grid_ = grid; }
+    const std::string& selected() const { return selected_; }
+    const std::vector<int>& results() const { return results_; }
+    const std::shared_ptr<const AssetCatalog>& catalog() const { return cat_; }
+    AssetPreview& preview() { return preview_; }
+    /// Results drawn in the last frame (only the visible ones are drawn).
+    int drawnItems() const { return drawnItems_; }
+
 private:
     struct User {
         AssetUseKind kind = AssetUseKind::Code;
@@ -83,7 +93,7 @@ private:
     std::string selected_;  // its path (kept across filters)
     std::string pendingOpen_;
     bool scrollToSelected_ = false;
-    std::string lastFocus_;
+    int drawnItems_ = 0;
 };
 
 }  // namespace cosmic

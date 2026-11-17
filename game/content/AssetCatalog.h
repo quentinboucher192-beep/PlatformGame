@@ -107,7 +107,9 @@ struct AssetEntry {
     std::vector<AssetUse> uses;  // by kind, then the most numerous first
     std::string search;          // searched text (lowercase, accents removed)
 
-    bool unused() const { return uses.empty(); }
+    /// Nothing of the game uses it: no use but the JSON describing it (a sheet inherits the
+    /// users of its animation, so a sheet whose animation is unused is unused too).
+    bool unused() const;
     int useCount() const;
     bool usedBy(AssetUseKind kind, std::string_view id) const;
 };

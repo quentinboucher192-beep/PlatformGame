@@ -92,6 +92,9 @@ public:
     void draw(const Rect& r, float dt);
     /// Height of the row of controls under the stage (0 when the asset has none).
     float controlsHeight() const;
+    /// Plays the sound or the music shown (« Écouter »): loaded off the main thread, then heard
+    /// on the preview track; the menu's music waits (a music) or is lowered (a sound).
+    void playAudio();
     /// Stops the sound or the music being heard (and gives the menu's music back).
     void stopAudio();
     bool playing() const;
@@ -104,7 +107,6 @@ public:
 private:
     void drawStage(const Rect& r);
     void drawControls(const Rect& r);
-    void startAudio();
     void updateAudio();
     void restoreMusic();
 

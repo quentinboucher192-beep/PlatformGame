@@ -13,15 +13,24 @@
 #include <memory>
 #include <set>
 #include <sstream>
+#include <thread>
 
+#include <SDL3/SDL.h>
+
+#include "engine/audio/AudioSystem.h"
+#include "engine/core/Application.h"
 #include "engine/core/FileUtil.h"
+#include "engine/core/I18n.h"
 #include "engine/core/Paths.h"
 #include "engine/resources/ResourceManager.h"
+#include "game/GameServices.h"
 #include "game/content/AssetCatalog.h"
 #include "game/content/ContentDatabase.h"
 #include "game/levels/ObjectTypes.h"
 #include "packaging/Package.h"
 #include "tests/TestFramework.h"
+#include "ui/screens/AdminAssets.h"
+#include "ui/widgets/UIContext.h"
 
 using namespace cosmic;
 
@@ -37,6 +46,8 @@ const AssetCatalog& catalog() {
         cat = std::make_unique<AssetCatalog>(AssetCatalog::build(Paths::assetsDir(), Paths::dataDir(), content));
         const double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
         std::printf("  catalogue des assets : %zu fichiers, %d inutilisés, lu en %.0f ms\n", cat->assets().size(), cat->unusedCount(), ms);
+        for (const AssetEntry& e : cat->assets())
+            if (e.unused()) std::printf("    inutilisé : %s\n", e.path.c_str());
     }
     return *cat;
 }
@@ -405,9 +416,19 @@ TEST_CASE("asset catalogue: « utilisé par » is right for known examples") {
         }
     }
     CHECK(checked > 500);
-    // Unused: nothing names them.
-    for (const AssetEntry& e : cat.assets())
-        if (e.unused()) CHECK(e.useCount() == 0);
+    // Unused: nothing of the game names them; a sheet only described by unused JSONs is unused too.
+    int unused = 0;
+    for (const AssetEntry& e : cat.assets()) {
+        if (!e.unused()) continue;
+        ++unused;
+        for (const AssetUse& u : e.uses) {
+            CHECK(u.kind == AssetUseKind::Descriptor);
+            const AssetEntry* d = cat.find(u.id);
+            CHECK(d && d->unused());
+        }
+    }
+    CHECK(unused == cat.unusedCount());
+    CHECK(unused < static_cast<int>(cat.assets().size()) / 10);  // a few, to be tidied
 }
 
 TEST_CASE("asset catalogue: search and filters") {
@@ -520,4 +541,144 @@ TEST_CASE("asset catalogue: code_refs.json is up to date with the code") {
     if (scanned != stored) std::printf("  data/assets/code_refs.json n'est pas à jour : python3 tools/assets/code_refs.py\n");
     CHECK(scanned == stored);
     CHECK(stored.count("sounds/ui_move.wav"));
+}
+
+TEST_CASE("asset catalogue: the preview track plays a file loaded off the main thread, alone") {
+    SDL_SetHint(SDL_HINT_AUDIO_DRIVER, "dummy");
+    if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) return;  // no audio at all on this machine
+    AudioSystem audio;
+    if (!audio.init()) {
+        audio.shutdown();
+        SDL_QuitSubSystem(SDL_INIT_AUDIO);
+        return;
+    }
+    const AssetEntry* jump = catalog().find("sounds/jump.wav");
+    CHECK(jump != nullptr);
+    // MIX_LoadAudio may run on any thread: the tab loads there.
+    MIX_Audio* a = nullptr;
+    std::thread([&] { a = MIX_LoadAudio(audio.mixer(), Paths::toUtf8(catalog().absolutePath(*jump)).c_str(), true); }).join();
+    CHECK(a != nullptr);
+    audio.playPreview(a, AudioBus::Effects);
+    CHECK(audio.previewPlaying());
+    // Its length is the one read from the WAV header.
+    CHECK(std::abs(audio.previewDurationMs() - jump->durationMs) <= 2);
+    audio.stopPreview(0);
+    CHECK(!audio.previewPlaying());
+    // A new one replaces it (the previous audio is released), a null one is ignored.
+    audio.playPreview(MIX_LoadAudio(audio.mixer(), Paths::toUtf8(catalog().absolutePath(*catalog().find("sounds/land.wav"))).c_str(), true),
+                      AudioBus::Effects);
+    CHECK(audio.previewPlaying());
+    audio.playPreview(nullptr, AudioBus::Music);
+    CHECK(audio.previewPlaying());
+    audio.stopPreview(0);
+    CHECK(!audio.previewPlaying() && audio.previewPositionMs() == 0);
+    audio.shutdown();
+    SDL_QuitSubSystem(SDL_INIT_AUDIO);
+}
+
+// ---------------------------------------------------------------------------- the tab itself
+
+namespace {
+
+/// ADMINISTRATION › Assets drawn on the whole window, without the administration around it
+/// (which needs an admin session): the tab exactly as it is drawn there.
+class AssetsTabScene : public Scene {
+public:
+    explicit AssetsTabScene(GameServices& g)
+        : g_(g), tab(g, [this](const std::string& m, bool) { said = m; }, [this](const std::string& id) { enemyShown = id; }) {}
+    void onEnter() override { tab.enter(); }
+    void render(float) override {
+        UIContext& ui = g_.ui;
+        ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
+        tab.draw({ui.s(24), ui.s(24), ui.screenW() - ui.s(48), ui.screenH() - ui.s(48)});
+        ui.end();
+    }
+    GameServices& g_;
+    AdminAssets tab;
+    std::string said, enemyShown;
+};
+
+}  // namespace
+
+TEST_CASE("asset catalogue: the Assets tab reads off the main thread, draws only what is visible") {
+    SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "offscreen");
+    Application app;
+    AppConfig cfg;
+    cfg.headless = true;
+    cfg.width = 960;
+    cfg.height = 540;
+    cfg.vsync = false;
+    CHECK(app.init(cfg));
+    {
+        GameServices g(app);
+        g.loadAll();
+        auto owned = std::make_unique<AssetsTabScene>(g);
+        AssetsTabScene* scene = owned.get();
+        app.pushScene(std::move(owned));
+        // The first frames come at once: the catalogue is read on its worker thread meanwhile.
+        int frames = 0;
+        while (!scene->tab.catalog() && frames < 3000) {
+            app.runFrames(1);
+            ++frames;
+        }
+        CHECK(scene->tab.catalog() != nullptr);
+        const AssetCatalog& cat = *scene->tab.catalog();
+        app.runFrames(90);
+        CHECK(scene->tab.results().size() == cat.assets().size());
+        // The grid: only the visible cells are drawn and their thumbnails read.
+        const int drawn = scene->tab.drawnItems();
+        CHECK(drawn > 0 && drawn < static_cast<int>(cat.assets().size()) / 4);
+        CHECK(scene->tab.preview().images().thumbnailsCached() > 0);
+        CHECK(scene->tab.preview().images().thumbnailsCached() <= static_cast<size_t>(drawn) * 3);
+        // An asset chosen from elsewhere (a sheet's « Retour »): selected, its preview shown.
+        for (const char* path : {"animations/golem.json", "sprites/enemies/kraken_p8.png", "sounds/jump.wav", "music/menu_theme.ogg",
+                                 "fonts/Orbitron.ttf", "fonts/OFL-Orbitron.txt", "textures/tiles/basalt.json", "stories/kraken_1.png"}) {
+            scene->tab.open(path);
+            app.runFrames(40);
+            CHECK(scene->tab.selected() == path);
+            CHECK(scene->tab.preview().shown() == cat.find(path));
+        }
+        std::printf("  onglet Assets (960x540, grille) : %d vignettes dessinées sur %zu assets, %zu textures en cache\n", drawn, cat.assets().size(),
+                    scene->tab.preview().images().thumbnailsCached());
+        // Heard (loaded off the main thread), then stopped: the menu's music comes back as it was.
+        const float duck = app.audio().musicDuck();
+        scene->tab.open("sounds/jump.wav");
+        app.runFrames(2);
+        scene->tab.preview().playAudio();
+        CHECK(scene->tab.preview().playing() == app.audio().available());  // loading, then playing (no device: nothing)
+        for (int i = 0; i < 120 && app.audio().available() && !app.audio().previewPlaying(); ++i) app.runFrames(1);
+        if (app.audio().available() && app.audio().previewPlaying()) {
+            CHECK(app.audio().musicDuck() <= 0.35f);  // a sound only lowers the music
+            CHECK(app.audio().previewDurationMs() > 0);
+        }
+        scene->tab.preview().stopAudio();
+        CHECK(!scene->tab.preview().playing());
+        CHECK(app.audio().musicDuck() == duck);
+        app.audio().playMusic(Paths::toUtf8(Paths::assetsDir() / "music" / "menu_theme.ogg"), 0);
+        scene->tab.open("music/victory.ogg");
+        app.runFrames(2);
+        scene->tab.preview().playAudio();
+        for (int i = 0; i < 120 && app.audio().available() && !app.audio().previewPlaying(); ++i) app.runFrames(1);
+        if (app.audio().available() && app.audio().previewPlaying()) CHECK(app.audio().musicPaused());  // a music waits
+        scene->tab.open("sounds/land.wav");  // another asset: the music stops, the menu's comes back
+        app.runFrames(2);
+        CHECK(!scene->tab.preview().playing());
+        CHECK(!app.audio().musicPaused());
+        app.audio().stopMusic(0);
+        // The search, in the list view, in English too.
+        scene->tab.setSearch("kraken");
+        scene->tab.setGrid(false);
+        app.runFrames(10);
+        CHECK(!scene->tab.results().empty());
+        for (int i : scene->tab.results()) CHECK(cat.assets()[static_cast<size_t>(i)].search.find("kraken") != std::string::npos);
+        CHECK(scene->tab.drawnItems() > 0);
+        i18n::setLanguage(Language::English);
+        app.runFrames(10);
+        i18n::setLanguage(Language::French);
+        scene->tab.setSearch("");
+        app.runFrames(10);
+        CHECK(scene->tab.results().size() == cat.assets().size());
+        CHECK(scene->tab.drawnItems() < static_cast<int>(cat.assets().size()) / 4);
+        app.shutdown();  // the scenes first (they use the services)
+    }
 }

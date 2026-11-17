@@ -348,6 +348,7 @@ void AdminAssets::drawResults(const Rect& r) {
         y += bh + ui.s(10);
     }
     const Rect view{in.x, y, in.w, in.bottom() - y};
+    drawnItems_ = 0;
     if (results_.empty()) {
         const std::string t = unusedOnly_ ? "Aucun asset inutilisé ici." : "Aucun asset ne correspond.";
         const float fs = ui.fitFont(t, FontFace::Body, 18, view.w);
@@ -447,6 +448,7 @@ void AdminAssets::drawGrid(const Rect& view) {
             const bool focus = ui.focused(name);
             if (focus && !ui.usingPointer() && selected_ != e.path) select(idx, false);
             if (cell.bottom() < view.y || cell.y > view.bottom()) continue;
+            ++drawnItems_;
             const bool sel = selected_ == e.path;
             rr.fillRoundedRect(cell, ui.s(8), sel ? Color{26, 50, 76, 245} : hovered || focus ? Color{24, 34, 62, 240} : Color{16, 24, 46, 225});
             if (sel || focus) rr.drawRoundedRect(cell, ui.s(8), ui.theme().accent.withAlphaF(sel ? 0.9f : 0.6f), ui.s(focus ? 2.0f : 1.0f));
@@ -505,6 +507,7 @@ void AdminAssets::drawList(const Rect& view) {
         const bool focus = ui.focused(name);
         if (focus && !ui.usingPointer() && selected_ != e.path) select(idx, false);
         if (row.bottom() < view.y || row.y > view.bottom()) continue;
+        ++drawnItems_;
         const bool sel = selected_ == e.path;
         rr.fillRoundedRect(row, ui.s(8), sel ? Color{26, 50, 76, 245} : hovered || focus ? Color{24, 34, 62, 240} : Color{16, 24, 46, 225});
         if (sel || focus) rr.drawRoundedRect(row, ui.s(8), ui.theme().accent.withAlphaF(sel ? 0.9f : 0.6f), ui.s(focus ? 2.0f : 1.0f));
@@ -623,21 +626,22 @@ void AdminAssets::drawUses(const AssetEntry& e, const Rect& r) {
     const float hs = ui.fitFont(head, FontFace::Bold, 17, r.w * 0.6f);
     ui.label(head, {r.x, r.y + ui.s(14)}, hs, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
     const float headW = ui.text().measure(head, FontFace::Bold, ui.s(hs)).x;
+    float top = r.y + ui.s(34);
     if (e.unused()) {
+        // Nothing of the game names it (a sheet: only its unused description does, listed below).
         const std::string t = "Inutilisé : rien dans le jeu ne le nomme.";
-        const float room = r.w;
-        const float fs = ui.fitFont(t, FontFace::Body, 15, room, 0.75f);
-        ui.label(ui.elide(t, FontFace::Body, fs, room), {r.x, r.y + ui.s(46)}, fs, ui.theme().warm, Align::Left, FontFace::Body, VAlign::Middle);
-        return;
-    }
-    {
+        const float fs = ui.fitFont(t, FontFace::Body, 15, r.w, 0.75f);
+        ui.label(ui.elide(t, FontFace::Body, fs, r.w), {r.x, top + ui.s(10)}, fs, ui.theme().warm, Align::Left, FontFace::Body, VAlign::Middle);
+        top += ui.s(28);
+        if (e.uses.empty() || top + ui.s(52) > r.bottom()) return;
+    } else {
         const std::string n = usesText(e.useCount());
         const float room = r.w - headW - ui.s(12);
         const float ns = fz(ui, 14);
         if (room > ui.s(30))
             ui.label(ui.elide(n, FontFace::Body, ns, room), {r.right(), r.y + ui.s(14)}, ns, ui.theme().textDim, Align::Right, FontFace::Body, VAlign::Middle);
     }
-    const Rect view{r.x, r.y + ui.s(34), r.w, r.h - ui.s(34)};
+    const Rect view{r.x, top, r.w, r.bottom() - top};
     const float rowH = ui.s(52), gap = ui.s(5);
     ui.beginScroll("uses", view, static_cast<float>(e.uses.size()) * (rowH + gap));
     float y = view.y - ui.scrollOffset();

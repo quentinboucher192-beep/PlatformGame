@@ -382,7 +382,7 @@ float AssetPreview::controlsHeight() const {
     return t == AssetType::Animation || t == AssetType::Sound || t == AssetType::Music ? g_.ui.s(46) : 0.0f;
 }
 
-void AssetPreview::startAudio() {
+void AssetPreview::playAudio() {
     if (!entry_ || !cat_) return;
     AudioSystem& audio = g_.app.audio();
     stopAudio();
@@ -655,7 +655,7 @@ void AssetPreview::drawControls(const Rect& r) {
         ps.enabled = g_.app.audio().available();
         if (ui.button("listen", {r.x, r.y, std::min(bw, r.w), r.h}, on ? "Arrêter" : "Écouter", ps)) {
             if (on) stopAudio();
-            else startAudio();
+            else playAudio();
         }
         const float room = r.w - bw - gap;
         if (room > ui.s(30)) {

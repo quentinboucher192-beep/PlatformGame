@@ -60,6 +60,12 @@ const char* assetUseKindLabel(AssetUseKind k) {
     return "Code du jeu";
 }
 
+bool AssetEntry::unused() const {
+    for (const AssetUse& u : uses)
+        if (u.kind != AssetUseKind::Descriptor) return false;
+    return true;
+}
+
 int AssetEntry::useCount() const {
     int n = 0;
     for (const AssetUse& u : uses) n += u.count;
