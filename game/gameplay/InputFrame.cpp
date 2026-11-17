@@ -29,16 +29,21 @@ void stepTeam(GameWorld& world, const InputFrame* frames, int count, float dt) {
     if (const auto& offer = world.powerOffer()) {
         const int who = offer->player;
         uint8_t choice = who < count ? frames[who].choice : 0;
-        if (choice == 0 && (who >= count || (frames[who].flags & InputFrame::Standby))) choice = InputFrame::kChoiceLeave;
+        if (choice == 0 && (who >= count || (frames[who].flags & (InputFrame::Standby | InputFrame::Vacant)))) choice = InputFrame::kChoiceLeave;
         if (choice == 0) return;
         world.resolvePowerOffer(choice);
     }
     PlayerInput inputs[GameWorld::kMaxTeam];
     bool standby[GameWorld::kMaxTeam] = {};
+    bool vacant[GameWorld::kMaxTeam] = {};
+    bool anyVacant = false;
     bool skip = false;
     const int n = std::min(count, GameWorld::kMaxTeam);
     for (int i = 0; i < n; ++i) {
-        standby[i] = (frames[i].flags & InputFrame::Standby) != 0;
+        // 2.65 (raids): a vacant seat is out of play like an absent one.
+        vacant[i] = (frames[i].flags & InputFrame::Vacant) != 0;
+        anyVacant = anyVacant || vacant[i];
+        standby[i] = (frames[i].flags & (InputFrame::Standby | InputFrame::Vacant)) != 0;
         if (!standby[i] && (frames[i].flags & InputFrame::SkipCinematic)) skip = true;
     }
     if (skip) {
@@ -47,7 +52,7 @@ void stepTeam(GameWorld& world, const InputFrame* frames, int count, float dt) {
         for (int i = 0; i < n; ++i)
             if (!standby[i]) inputs[i] = frames[i].toPlayerInput();
     }
-    world.fixedUpdateTeam(inputs, standby, n, dt);
+    world.fixedUpdateTeam(inputs, standby, n, dt, anyVacant || world.raidMode() ? vacant : nullptr);
 }
 
 namespace {

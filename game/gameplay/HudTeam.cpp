@@ -110,6 +110,10 @@ void Hud::drawTeamPanel(UIContext& ui, GameWorld& w) {
                 stateColor = dim;
                 state = "parti";
                 break;
+            case Presence::Vacant:
+                stateColor = dim;
+                state = "place libre";
+                break;
         }
         const Rect row{x, y, W, rowH};
         r.fillRoundedRect(row, ui.s(10), {7, 11, 26, 215});

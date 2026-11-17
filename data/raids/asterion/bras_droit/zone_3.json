@@ -1,0 +1,1002 @@
+{
+ "format": "cosmic.level",
+ "formatVersion": 1,
+ "id": "raid_bd_3",
+ "name": "Asterion · Bras droit · Veine de magma",
+ "description": "Une veine de magma remonte le bras : ses terrasses grimpent vers le coude pendant que la lave déborde. Un générateur alimente le verrou du poignet ; un passage caché mène à une grotte.",
+ "planet": "pyralis",
+ "author": "Cosmic Studio",
+ "version": "1.0",
+ "difficulty": 4,
+ "music": "music/pyralis_level.ogg",
+ "bossMusic": "music/pyralis_boss.ogg",
+ "ambience": "music/pyralis_ambience.ogg",
+ "bounds": [
+  0,
+  0,
+  2240,
+  768
+ ],
+ "ambientLight": "#9a6a5a",
+ "backgroundColor": "#14090b",
+ "background": [
+  {
+   "texture": "backgrounds/pyralis/sky.png",
+   "factor": [
+    0.0,
+    0.0
+   ],
+   "fill": true
+  },
+  {
+   "texture": "backgrounds/pyralis/far.png",
+   "factor": [
+    0.1,
+    0.05
+   ],
+   "offset": [
+    0,
+    -20
+   ]
+  },
+  {
+   "texture": "backgrounds/pyralis/mid.png",
+   "factor": [
+    0.25,
+    0.12
+   ],
+   "offset": [
+    0,
+    10
+   ]
+  },
+  {
+   "texture": "backgrounds/pyralis/abyss.png",
+   "factor": [
+    0.4,
+    0.3
+   ],
+   "offset": [
+    0,
+    210
+   ],
+   "fillBelow": "#ff8a3d"
+  },
+  {
+   "texture": "backgrounds/pyralis/near.png",
+   "factor": [
+    0.5,
+    0.25
+   ],
+   "offset": [
+    0,
+    60
+   ]
+  },
+  {
+   "texture": "backgrounds/pyralis/fg_embers.png",
+   "factor": [
+    1.15,
+    1.0
+   ],
+   "offset": [
+    0,
+    -330
+   ],
+   "foreground": true,
+   "tint": "#ffffffc0"
+  }
+ ],
+ "timer": {
+  "mode": "unlimited",
+  "limit": 3600,
+  "onExpire": "continue",
+  "referenceTime": 600,
+  "challengeMaxDeaths": 0
+ },
+ "medals": {
+  "bronze": {},
+  "silver": {
+   "maxTime": 3000
+  },
+  "gold": {
+   "maxTime": 2400
+  },
+  "platinum": {
+   "maxTime": 1800,
+   "maxDeaths": 0
+  }
+ },
+ "startPowers": [
+  "dash",
+  "wave",
+  "shield",
+  "impulse"
+ ],
+ "cameraZoom": 1.0,
+ "layers": [
+  {
+   "id": "bg_decor",
+   "name": "Décor arrière",
+   "order": 0,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "terrain",
+   "name": "Terrain",
+   "order": 10,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "gameplay",
+   "name": "Gameplay",
+   "order": 20,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "fg_decor",
+   "name": "Décor avant",
+   "order": 30,
+   "visible": true,
+   "locked": false,
+   "foreground": true
+  }
+ ],
+ "objects": [
+  {
+   "id": "o1",
+   "type": "liquid",
+   "layer": "gameplay",
+   "rect": [
+    0.0,
+    704.0,
+    2240.0,
+    64.0
+   ],
+   "props": {
+    "kind": "lava"
+   }
+  },
+  {
+   "id": "o2",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    0.0,
+    608.0,
+    960.0,
+    96.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o3",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    960.0,
+    608.0,
+    960.0,
+    96.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o4",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1920.0,
+    608.0,
+    320.0,
+    96.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o5",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    0.0,
+    688.0,
+    1280.0,
+    32.0
+   ],
+   "props": {
+    "effect": "lava_bubbles",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o6",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1280.0,
+    688.0,
+    960.0,
+    32.0
+   ],
+   "props": {
+    "effect": "lava_bubbles",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o7",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    0.0,
+    64.0,
+    1120.0,
+    416.0
+   ],
+   "props": {
+    "effect": "ash_fall",
+    "rate": 1.5
+   }
+  },
+  {
+   "id": "o8",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1120.0,
+    64.0,
+    1120.0,
+    416.0
+   ],
+   "props": {
+    "effect": "ash_fall",
+    "rate": 1.5
+   }
+  },
+  {
+   "id": "o9",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    0.0,
+    576.0,
+    224.0,
+    176.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o10",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    36.0,
+    552.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Épaule",
+    "auto": true
+   }
+  },
+  {
+   "id": "o11",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    40.0,
+    536.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o12",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    16.0,
+    512.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o13",
+   "type": "player_start",
+   "layer": "gameplay",
+   "rect": [
+    123.0,
+    554.0,
+    10.0,
+    22.0
+   ]
+  },
+  {
+   "id": "o14",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    224.0,
+    608.0,
+    256.0,
+    144.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o15",
+   "type": "liquid",
+   "layer": "gameplay",
+   "rect": [
+    480.0,
+    656.0,
+    64.0,
+    48.0
+   ],
+   "props": {
+    "kind": "lava"
+   }
+  },
+  {
+   "id": "o16",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    544.0,
+    560.0,
+    256.0,
+    192.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o17",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    800.0,
+    512.0,
+    256.0,
+    240.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o18",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1056.0,
+    464.0,
+    256.0,
+    288.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o19",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1312.0,
+    416.0,
+    928.0,
+    336.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o20",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    308.0,
+    584.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "La veine déborde : quand la lave monte, grimpez sur les terrasses hautes.",
+    "auto": true
+   }
+  },
+  {
+   "id": "magma_flow",
+   "type": "damage_zone",
+   "layer": "gameplay",
+   "rect": [
+    224.0,
+    512.0,
+    576.0,
+    96.0
+   ],
+   "props": {
+    "damage": 2,
+    "interval": 0.6,
+    "visible": true,
+    "active": false,
+    "style": "embers",
+    "bounce": true
+   }
+  },
+  {
+   "id": "o21",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    360.0,
+    64.0,
+    48.0,
+    128.0
+   ],
+   "props": {
+    "sprite": "lava_fall",
+    "alpha": 0.5,
+    "tint": "#ffb090",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o22",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    648.0,
+    64.0,
+    48.0,
+    128.0
+   ],
+   "props": {
+    "sprite": "lava_fall",
+    "alpha": 0.5,
+    "tint": "#ffb090",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o23",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    904.0,
+    64.0,
+    48.0,
+    128.0
+   ],
+   "props": {
+    "sprite": "lava_fall",
+    "alpha": 0.5,
+    "tint": "#ffb090",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o24",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1160.0,
+    64.0,
+    48.0,
+    128.0
+   ],
+   "props": {
+    "sprite": "lava_fall",
+    "alpha": 0.5,
+    "tint": "#ffb090",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o25",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    695.0,
+    548.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "lava_stalker",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o26",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    1143.0,
+    452.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "lava_stalker",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o27",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    954.0,
+    372.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "fire_wisp",
+    "faceLeft": false,
+    "patrol": 64,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o28",
+   "type": "receptor",
+   "layer": "gameplay",
+   "rect": [
+    1464.0,
+    384.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "targets": "",
+    "duration": 0.0
+   }
+  },
+  {
+   "id": "o29",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    1396.0,
+    392.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Générateur du verrou : frappez-le avec un pouvoir de tir (Onde, Tir chargé, Boomerang).",
+    "auto": true
+   }
+  },
+  {
+   "id": "o30",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1464.0,
+    360.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#39f0d8",
+    "radius": 90,
+    "flicker": 0.1,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o31",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    592.0,
+    512.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "basalt_ledge"
+   }
+  },
+  {
+   "id": "o32",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    496.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "basalt_ledge"
+   }
+  },
+  {
+   "id": "o33",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    320.0,
+    416.0,
+    160.0,
+    32.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o34",
+   "type": "secret_area",
+   "layer": "gameplay",
+   "rect": [
+    288.0,
+    288.0,
+    224.0,
+    160.0
+   ],
+   "props": {
+    "message": "Un passage dans la roche : la Grotte des scories !"
+   }
+  },
+  {
+   "id": "o35",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    356.0,
+    392.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Grotte des scories",
+    "auto": true
+   }
+  },
+  {
+   "id": "o36",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    360.0,
+    376.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o37",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    336.0,
+    352.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o38",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1984.0,
+    352.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "basalt_ledge"
+   }
+  },
+  {
+   "id": "o39",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1664.0,
+    288.0,
+    288.0,
+    32.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o40",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    1760.0,
+    224.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o41",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    1700.0,
+    264.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Avant-bras",
+    "auto": true
+   }
+  },
+  {
+   "id": "o42",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1704.0,
+    248.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o43",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1680.0,
+    224.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o44",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    2164.0,
+    392.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Coude-forge",
+    "auto": true
+   }
+  },
+  {
+   "id": "o45",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2168.0,
+    376.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o46",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    2144.0,
+    352.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o47",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    1370.0,
+    378.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 2
+   }
+  }
+ ],
+ "events": [],
+ "intro": {},
+ "outro": {},
+ "metadata": {
+  "generator": "tools/levelgen/raid_bras_droit.py",
+  "raid": {
+   "branch": "asterion_bras_droit",
+   "zone": 3,
+   "spawns": {
+    "1": [
+     [
+      128,
+      576
+     ]
+    ],
+    "start": [
+     [
+      128,
+      576
+     ],
+     [
+      176,
+      576
+     ]
+    ],
+    "5": [
+     [
+      432,
+      416
+     ]
+    ],
+    "6": [
+     [
+      1856,
+      288
+     ]
+    ],
+    "4": [
+     [
+      2064,
+      416
+     ]
+    ]
+   },
+   "passages": [
+    {
+     "id": "p3_1",
+     "to": 1,
+     "rect": [
+      16,
+      512,
+      64,
+      64
+     ],
+     "lock": "",
+     "door": ""
+    },
+    {
+     "id": "p3_5",
+     "to": 5,
+     "rect": [
+      336,
+      352,
+      64,
+      64
+     ],
+     "lock": "",
+     "door": ""
+    },
+    {
+     "id": "p3_6",
+     "to": 6,
+     "rect": [
+      1680,
+      224,
+      64,
+      64
+     ],
+     "lock": "shortcut",
+     "door": "o40"
+    },
+    {
+     "id": "p3_4",
+     "to": 4,
+     "rect": [
+      2144,
+      352,
+      64,
+      64
+     ],
+     "lock": "",
+     "door": ""
+    }
+   ],
+   "objectives": [
+    {
+     "id": "veine_generateur",
+     "source": "o28",
+     "trigger": "activate"
+    }
+   ],
+   "magma": {
+    "zone": "magma_flow",
+    "period": 60.0,
+    "first": 30.0,
+    "warn": 3.0,
+    "duration": 8.0
+   },
+   "sealed": null
+  }
+ },
+ "killY": 752,
+ "maxPowers": 4
+}

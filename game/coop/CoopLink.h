@@ -76,6 +76,8 @@ public:
     virtual uint32_t rejoinAt() const { return 0; }
     /// The attempt ended after `ticks` steps (the online relay notes the inputs played).
     virtual void result(uint32_t /*ticks*/) {}
+    /// 2.65 (raids): the branch's state the relay gave for step `tick` (objectives done).
+    virtual uint32_t raidStateAt(uint32_t /*tick*/) const { return 0; }
 };
 
 /// Every player on this computer: a step's frame is the inputs just given.

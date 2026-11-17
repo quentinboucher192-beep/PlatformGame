@@ -2451,6 +2451,13 @@
    ]
   },
   {
+   "id": "raids.branch_map",
+   "version": "2.65.0",
+   "parents": [
+    "clans.tab.raids"
+   ]
+  },
+  {
    "id": "admin.tab.raids",
    "version": "2.65.0",
    "parents": [

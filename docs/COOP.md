@@ -350,3 +350,19 @@ Le lecteur de replays rejoue l'équipe et suit **un joueur au choix ou toute l'�
 * **Classements** : `kind=community`, par version (`c:{id}:{version}`), Duo et Trio sur la page du niveau et à
   la fin de la partie. Les points de clan ne comptent que les niveaux officiels (inchangé).
 * La partie elle-même ne change pas : `kCoopSimulationVersion` reste 1.
+
+## 10. Jusqu'à 8 joueurs : les instances de raid (2.65, phase 2 des raids)
+
+La même pile sert les instances des raids de clan (docs/RAIDS.md) : `coopnet::kMaxPlayers` et
+`GameWorld::kMaxTeam` passent à **8**, la coopération des niveaux EXTRÊME reste à 2 ou 3
+(`coopnet::kMaxCoopPlayers` dans le relais du réseau local, `MAX_PLAYERS` du `CoopRoom`). Rien ne
+change pour une équipe de 2 ou 3 : mêmes règles, mêmes empreintes (`kCoopSimulationVersion` reste 1).
+
+Le relais a un **mode raid** (`CoopRelay::setRaid`, `RoomInfo.raid` du `CoopRoom`) : 8 sièges,
+n'importe quel siège lance, les sièges que personne ne tient reçoivent des trames `Vacant`
+(drapeau 4, relais seulement), un joueur peut prendre un siège libre en cours de partie (rattrapage
+puis `REJOIN`), un siège absent depuis 60 s est libéré, et `RAID_STATE` (18) donne l'état de la
+branche à un pas. Le monde a un **mode raid** (`GameWorld::setRaidMode`) : sièges libres
+(`Presence::Vacant`), pas de cadre d'équipe (chacun sa caméra), et `carryOf` / `restoreMember` pour
+passer d'une zone à l'autre.
+

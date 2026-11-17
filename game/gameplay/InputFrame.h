@@ -22,7 +22,8 @@ struct InputFrame {
     static_assert(kActions <= 32, "the recorded actions fit in 32 bits");
     /// Standby (2.62, a team): set by the relay only, on the inputs of a player who is absent
     /// (disconnected); never accepted from a game (docs/COOP.md).
-    enum Flag : uint8_t { SkipCinematic = 1, Standby = 2 };
+    /// Vacant (2.65, raids): set by the relay only, on the frames of a seat nobody holds.
+    enum Flag : uint8_t { SkipCinematic = 1, Standby = 2, Vacant = 4 };
     /// Answer to a pending power offer (GameWorld::powerOffer): 1..8 replaces that slot,
     /// kChoiceLeave leaves the new power on its tablet, 0 = no answer this step.
     static constexpr uint8_t kChoiceLeave = 255;

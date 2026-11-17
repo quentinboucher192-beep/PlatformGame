@@ -142,6 +142,16 @@ void NetCoopLink::handle(const std::vector<uint8_t>& msg) {
             ticks_ += n;
             break;
         }
+        case Msg::RaidState: {
+            // 2.65 (raids): the branch's state from a step on (never one already given).
+            const uint32_t tick = r.u32();
+            const uint32_t mask = r.u32();
+            if (!r.done() || !go_) return;
+            std::lock_guard<std::mutex> lock(framesMutex_);
+            if (tick < ticks_ || (!raidStates_.empty() && tick < raidStates_.back().first)) return;
+            raidStates_.emplace_back(tick, mask);
+            break;
+        }
         case Msg::Pong: {
             const uint32_t clock = r.u32();
             if (r.ok) rttMs_ = static_cast<int>(static_cast<uint32_t>(SDL_GetTicks()) - clock);
@@ -240,6 +250,16 @@ int NetCoopLink::pingMs(int seat) const {
         for (const auto& s : lobby_.value("seats", Json::array()))
             if (jget<int>(s, "seat", -1) == seat) return jget<int>(s, "ping", -1);
     return -1;
+}
+
+uint32_t NetCoopLink::raidStateAt(uint32_t tick) const {
+    std::lock_guard<std::mutex> lock(framesMutex_);
+    uint32_t mask = 0;
+    for (const auto& [t, m] : raidStates_) {
+        if (t > tick) break;
+        mask = m;
+    }
+    return mask;
 }
 
 }  // namespace cosmic
