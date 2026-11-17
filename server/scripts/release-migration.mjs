@@ -1,5 +1,5 @@
 // Registers a game installer offered to players (in-game "nouvelle version" notification):
-//   node scripts/release-migration.mjs 2.4.0 path/to/CosmicPlatformer-Setup-2.4.0.exe "notes" \
+//   node scripts/release-migration.mjs 2.4.0 path/to/CosmicPlatformer-Setup-2.4.0.exe "notes" | --changelog \
 //       > migrations/000N_release_2_4_0.sql
 // then upload the file to the environment's bucket under the same key, and apply:
 //   npx wrangler r2 object put cosmic-online-staging-files/releases/CosmicPlatformer-Setup-2.4.0.exe \
@@ -9,7 +9,29 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
-const [version, file, notes = ""] = process.argv.slice(2);
+const [version, file, notesArg = ""] = process.argv.slice(2);
+// 2.62: "--changelog" = the notes of every version since the previous installer published
+// (the last migrations/*_release_*.sql), read from data/news/changelog.json: a version that
+// never had its own installer (2.61.0 → 2.61.1) is never left out of the notification.
+function changelogNotes(v) {
+    const here = path.dirname(new URL(import.meta.url).pathname);
+    const log = JSON.parse(fs.readFileSync(path.join(here, "../../data/news/changelog.json"), "utf8"));
+    const k = (s) => s.split(".").map(Number).reduce((acc, n) => acc * 1000 + n, 0);
+    const prev = fs
+        .readdirSync(path.join(here, "../migrations"))
+        .map((f) => /_release_(\d+)_(\d+)_(\d+)\.sql$/.exec(f))
+        .filter(Boolean)
+        .map((m) => `${m[1]}.${m[2]}.${m[3]}`)
+        .filter((x) => k(x) < k(v))
+        .sort((x, y) => k(y) - k(x))[0];
+    const out = [];
+    for (const ver of Object.keys(log).sort((x, y) => k(y) - k(x))) {
+        if (k(ver) > k(v) || (prev && k(ver) <= k(prev))) continue;
+        out.push(`Version ${ver} :\n` + log[ver].map((l) => "• " + l).join("\n"));
+    }
+    return out.join("\n\n");
+}
+const notes = notesArg === "--changelog" ? changelogNotes(version) : notesArg;
 if (!/^\d{1,3}\.\d{1,3}\.\d{1,4}$/.test(version ?? "")) throw new Error("version invalide (x.y.z)");
 const data = fs.readFileSync(file);
 if (data.length < 1024 || data[0] !== 0x4d || data[1] !== 0x5a) throw new Error("ce n'est pas un exécutable Windows");

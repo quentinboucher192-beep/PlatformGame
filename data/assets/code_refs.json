@@ -78,7 +78,9 @@
    "ui/screens/CollectionScene.cpp": 1,
    "ui/screens/PlayerProfileScene.cpp": 1,
    "ui/screens/RewardsScene.cpp": 1,
-   "ui/screens/TutorialScenes.cpp": 1
+   "ui/screens/TutorialScenes.cpp": 1,
+   "ui/studio/Studio.cpp": 1,
+   "ui/studio/StudioFrise.cpp": 1
   },
   "animations/phase_wall.json": {
    "game/gameplay/entities/PlatformEntities.cpp": 1,
@@ -565,6 +567,7 @@
    "ui/screens/OnlineRankingScene.cpp": 1,
    "ui/screens/PlanetMapScene.cpp": 3,
    "ui/screens/SocialScene.cpp": 1,
+   "ui/studio/Studio.cpp": 2,
    "ui/widgets/UIContext.cpp": 5
   },
   "sounds/updraft_loop.wav": {
@@ -674,26 +677,33 @@
    "game/levels/ObjectTypes.cpp": 1
   },
   "sprites/player/nova.png": {
-   "game/cosmetics/SuitRecolor.cpp": 1
+   "game/cosmetics/SuitRecolor.cpp": 1,
+   "ui/studio/Studio.cpp": 1,
+   "ui/studio/StudioImport.cpp": 1
   },
   "textures/fx/dust.png": {
-   "packaging/DependencyCollector.cpp": 1
+   "packaging/DependencyCollector.cpp": 1,
+   "ui/studio/StudioImport.cpp": 1
   },
   "textures/fx/explosion.png": {
-   "packaging/DependencyCollector.cpp": 1
+   "packaging/DependencyCollector.cpp": 1,
+   "ui/studio/StudioImport.cpp": 1
   },
   "textures/fx/glow.png": {
    "packaging/DependencyCollector.cpp": 1
   },
   "textures/fx/hit.png": {
-   "packaging/DependencyCollector.cpp": 1
+   "packaging/DependencyCollector.cpp": 1,
+   "ui/studio/StudioImport.cpp": 1
   },
   "textures/fx/particle.png": {
-   "packaging/DependencyCollector.cpp": 1
+   "packaging/DependencyCollector.cpp": 1,
+   "ui/studio/StudioImport.cpp": 1
   },
   "textures/fx/ring.png": {
    "game/gameplay/GameRenderer.cpp": 2,
-   "packaging/DependencyCollector.cpp": 1
+   "packaging/DependencyCollector.cpp": 1,
+   "ui/studio/StudioImport.cpp": 1
   },
   "textures/fx/shield.png": {
    "game/powers/Powers.cpp": 1,
@@ -703,16 +713,20 @@
    "packaging/DependencyCollector.cpp": 1
   },
   "textures/fx/smoke.png": {
-   "packaging/DependencyCollector.cpp": 1
+   "packaging/DependencyCollector.cpp": 1,
+   "ui/studio/StudioImport.cpp": 1
   },
   "textures/fx/spark.png": {
-   "packaging/DependencyCollector.cpp": 1
+   "packaging/DependencyCollector.cpp": 1,
+   "ui/studio/StudioImport.cpp": 1
   },
   "textures/fx/star.png": {
-   "packaging/DependencyCollector.cpp": 1
+   "packaging/DependencyCollector.cpp": 1,
+   "ui/studio/StudioImport.cpp": 1
   },
   "textures/fx/teleport.png": {
-   "packaging/DependencyCollector.cpp": 1
+   "packaging/DependencyCollector.cpp": 1,
+   "ui/studio/StudioImport.cpp": 1
   },
   "textures/fx/warning.png": {
    "game/enemies/EnemyAttacks.cpp": 1,

@@ -143,6 +143,13 @@ public:
             tab_ = kTabAssets;
             if (open.size() > 7) assets_.open(open.substr(7));
         }
+        // 2.61: the Studio's « Donner en récompense… »: the calendar, where a challenge to come
+        // gets its rewards (the creation is in the list of its kind there).
+        creations_.giveReward = [this](const std::string&, const std::string& name) {
+            tab_ = kTabCalendar;
+            calendar_.enter();
+            say("Choisissez un défi à venir, puis « Récompenses » : « " + name + " » est dans la liste des créations.", false);
+        };
         // 2.45: "campaign[:<level id>]" (that level's history open).
         if (open.rfind("campaign", 0) == 0) {
             tab_ = kTabCampaign;
@@ -170,6 +177,17 @@ public:
     }
     void onResume() override { reloadAll(); }
 
+    void handleEvent(const SDL_Event& e) override {
+        // 2.61: a file dropped on the window goes to the Studio (Créations › Studio › Importer).
+        if (e.type == SDL_EVENT_DROP_FILE && e.drop.data) {
+            if (tab_ != kTabCreations) {
+                tab_ = kTabCreations;
+                creations_.enter();
+            }
+            creations_.dropFile(e.drop.data);
+        }
+    }
+
     void update(float dt) override {
         bg_.update(dt);
         // The profile known, without the role: nothing to show (the server would refuse anyway).
@@ -185,7 +203,8 @@ public:
         UIContext& ui = g_.ui;
         ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
         bg_.render(g_, 0.6f);
-        const bool modal = !confirmId_.empty() || devicePlayer_.is_object() || calendar_.modal() || backups_.modal() || campaign_.modal() || clans_.modal();
+        const bool modal = !confirmId_.empty() || devicePlayer_.is_object() || calendar_.modal() || backups_.modal() || campaign_.modal() ||
+                           clans_.modal() || creations_.modal();
         const bool top = g_.app.topScene() == this;
         ui.inputEnabled = top && !modal;
         // 2.41: wider (the calendar's eight columns and its editor side by side).
@@ -196,7 +215,9 @@ public:
         float titleW = ui.text().measure("ADMINISTRATION", FontFace::Title, ui.s(40)).x;
         ui.label("ADMINISTRATION", {x0_, y + hh * 0.5f}, 40, ui.theme().text, Align::Left, FontFace::Title, VAlign::Middle);
         float backW = ui.s(170);
-        bool back = ui.button("back", {x0_ + W_ - backW, y, backW, hh}, "Retour") || (!modal && ui.backPressed());
+        // 2.61: Esc / B first cancels what the Studio has under way (a selection, a shape...).
+        bool back = ui.button("back", {x0_ + W_ - backW, y, backW, hh}, "Retour") ||
+                    (!modal && !(tab_ == kTabCreations && creations_.capturesBack()) && ui.backPressed());
         // The tabs after the title when they fit, else on the line below. Equal tabs, each as
         // wide as its longest label needs (« Calendrier des défis »).
         static const std::vector<std::string> kTabs = {"Joueurs", "Calendrier des défis", "Journal", "Sauvegardes", "Campagne", "Créations", "Ennemis",
@@ -289,8 +310,9 @@ public:
         else if (backups_.modal()) backups_.drawModal();
         else if (campaign_.modal()) campaign_.drawModal();
         else if (clans_.modal()) clans_.drawModal();
+        else if (creations_.modal()) creations_.drawModal();  // 2.61: the Studio's windows
         // 2.60: the tooltip of an exclusive item (the rewards of a challenge, the creations), over everything.
-        if (confirmId_.empty() && !devicePlayer_.is_object()) {
+        if (confirmId_.empty() && !devicePlayer_.is_object() && !creations_.modal()) {
             if (tab_ == kTabCalendar) calendar_.drawTooltip();
             else if (tab_ == kTabCreations) creations_.drawTooltip();
         }
@@ -1047,7 +1069,24 @@ private:
             }
             if (action == "admin_creation_archived") return {"Création", Color{185, 200, 218, 255}, "a archivé " + noun + " " + name};
             if (action == "admin_creation_restored") return {"Création", ui.theme().accent, "a restauré " + noun + " " + name};
+            // 2.61: its image, sent from the Studio (or refused).
+            const Json& img = jfield(e, "image", Json());
+            if (action == "admin_creation_image")
+                return {"Création", ui.theme().accent, "a envoyé l'image de " + noun + " " + name + " (" + std::to_string(jget<int>(img, "width", 0)) + " × " +
+                                                           std::to_string(jget<int>(img, "height", 0)) + " px, " +
+                                                           std::to_string((jget<int>(img, "bytes", 0) + 1023) / 1024) + " Ko)"};
             const std::string act = jstr(crea, "action");
+            if (act == "image") {
+                const std::string why = reason == "NOT_PNG"                  ? std::string("pas un fichier PNG valide")
+                                        : reason == "IMAGE_TOO_LARGE"        ? std::string("image trop lourde")
+                                        : reason == "IMAGE_BAD_SIZE"         ? std::string("mauvaises dimensions")
+                                        : reason == "UNSUPPORTED_MEDIA_TYPE" ? std::string("pas une image PNG")
+                                        : reason == "CREATION_NOT_FOUND"     ? std::string("création introuvable")
+                                        : reason == "CREATION_ARCHIVED"      ? std::string(fem ? "elle est archivée" : "il est archivé")
+                                        : reason == "VALIDATION_ERROR"       ? std::string("réglages de l'image invalides")
+                                                                             : std::string("refus du serveur");
+                return {"Refus", ui.theme().textDim, "envoi de l'image de " + noun + " " + name + " refusé : " + why};
+            }
             const std::string what = act == "create"    ? "création de " + noun + " " + name
                                      : act == "update"  ? "modification de " + noun + " " + name
                                      : act == "restore" ? "restauration de " + noun + " " + name

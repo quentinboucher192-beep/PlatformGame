@@ -27,7 +27,22 @@ export async function latest(ctx: Ctx): Promise<Response> {
         .bind(platform)
         .first<ReleaseRow>();
     if (!r) return json(ctx, { release: null });
+    // 2.62: `since` = the version the player has: the notes of every release published after it,
+    // newest first, so that a player several versions behind sees everything that changed.
+    const since = ctx.url.searchParams.get("since");
+    let changes: { version: string; notes: string; published_at: string }[] | undefined;
+    if (since !== null) {
+        if (!VERSION.test(since)) throw Errors.validation("Version invalide.");
+        const [a = 0, b = 0, c = 0] = since.split(".").map(Number);
+        const rows = await ctx.env.DB.prepare(
+            "SELECT version, notes, published_at FROM client_releases WHERE platform = ?1 AND version_key > ?2 ORDER BY version_key DESC LIMIT 100",
+        )
+            .bind(platform, a * 1000000 + b * 1000 + c)
+            .all<{ version: string; notes: string; published_at: string }>();
+        changes = rows.results ?? [];
+    }
     return json(ctx, {
+        ...(changes ? { changes } : {}),
         release: {
             version: r.version,
             file_name: r.file_name,
