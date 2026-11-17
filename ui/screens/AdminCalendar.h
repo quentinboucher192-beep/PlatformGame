@@ -5,7 +5,8 @@
 // sees — and edits the challenge of a period that has not begun: its level (campaign, or a
 // published community level), its rules, its objective and its tiers, or puts back the
 // server's draw. Everything is checked again by the server (PUT / DELETE
-// /api/v1/admin/challenges/{id}); a period that has begun is read-only. 2.43: a third tab,
+// /api/v1/admin/challenges/{id}); a period that is over is read-only, and (2.60) one that has
+// begun too once a player has a result on it (the editor says how many). 2.43: a third tab,
 // « Récompenses »: the rewards of the period (an item of the game's Collection, or a title
 // created here on the server), each with its condition (PUT …/{id}/rewards, POST /admin/titles).
 
@@ -27,6 +28,33 @@ namespace cosmic {
 class GameServices;
 class OnlineUi;
 
+/// A period of the calendar as GET /admin/challenges gives it (2.60: read apart from the
+/// screen, pure, so that its rules are tested).
+struct AdminChallengePeriod {
+    std::string id, kind, period, date, endDate, state, drawsOn;
+    bool editable = false;
+    /// 2.60: the players who have a result on it (runs, attempts, rewards won, whatever their
+    /// status); -1 when the server does not say (before 2.60).
+    int resultsCount = -1;
+    Json challenge;                         // null: none (not drawn yet, or never)
+    std::optional<DailyChallenge> parsed;   // its level and rules, for the cells
+    std::vector<ChallengePrize> rewards;    // 2.43: its rewards (set even before its draw)
+    std::string rewardsGrantedAt;           // when the server granted them ("" not yet)
+
+    bool running() const { return state == "running"; }
+    bool past() const { return state == "past"; }
+    /// 2.60: begun, and nobody has a result on it yet: it may still change.
+    bool openWhileRunning() const { return running() && editable; }
+    /// Why it may or may not change, for the editor ("" for a period to come): « En cours,
+    /// personne n'a encore de résultat : vous pouvez encore le changer. », « 3 joueurs ont déjà
+    /// un résultat sur ce défi : il ne change plus. », « Défi passé : lecture seule. ».
+    std::string lockNote() const;
+    /// The text of its cell's pill, the longest first (the cell takes the first that fits).
+    std::vector<std::string> pillTexts() const;
+    /// `periods` of GET /admin/challenges; a past period is never editable, whatever it says.
+    static std::vector<AdminChallengePeriod> listFromJson(const Json& data);
+};
+
 class AdminCalendar {
 public:
     /// `say`: the screen's status line (message, error); `lostRole`: the server no longer
@@ -45,14 +73,7 @@ public:
     void drawModal();
 
 private:
-    struct Period {
-        std::string id, kind, period, date, endDate, state, drawsOn;
-        bool editable = false;
-        Json challenge;                         // null: none (not drawn yet, or never)
-        std::optional<DailyChallenge> parsed;   // its level and rules, for the cells
-        std::vector<ChallengePrize> rewards;    // 2.43: its rewards (set even before its draw)
-        std::string rewardsGrantedAt;           // when the server granted them ("" not yet)
-    };
+    using Period = AdminChallengePeriod;
     struct Draft {
         std::string periodId;
         bool level = false;  // a level is chosen
@@ -76,6 +97,10 @@ private:
     const Period* find(const std::string& id) const;
     void save();
     void resetToDraw();
+    /// 2.60: a change refused because the period has just locked (a player's result, its end):
+    /// said in the editor, and the month read again (the editor shows why it is locked now).
+    /// Returns false for any other refusal.
+    bool lockedRefusal(const ApiResult& r);
     Json body() const;
     /// Why « Enregistrer » cannot be used yet ("" = it can).
     std::string draftProblem() const;
@@ -86,6 +111,8 @@ private:
     void drawMonthBand(const Rect& r);
     void drawCell(const std::string& name, const Rect& r, const Period* p, const std::string& head, bool today);
     void drawPill(const Period* p, float x, float cy, float h, float room);
+    /// The width of a period's pill `h` high in `room` (its longest text that fits; `chosen`: that text).
+    float pillWidth(const Period& p, float h, float room, std::string* chosen = nullptr) const;
     void drawLegend(float x, float y, float w);
     void drawEditor(const Rect& r);
     float drawEditorHead(const Period& p, float x, float y, float w);
@@ -134,6 +161,7 @@ private:
     bool busy_ = false;         // a change on its way
     std::string editorMsg_;
     bool editorError_ = false;
+    std::string refusedMsg_;    // 2.60: said again once the month read after a refusal is there
     bool editorWarn_ = false;   // a warning of the server (saved all the same)
     // Levels
     int levelSource_ = 0;       // 0: campaign, 1: community

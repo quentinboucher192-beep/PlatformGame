@@ -245,6 +245,8 @@ prévu est coupé et refusé (`413 PAYLOAD_TOO_LARGE`). Un `Content-Length` inva
 | 409 | `CHALLENGE_ENDED` | (2.32 seulement) plus jamais renvoyé depuis 2.33 : une partie reçue plus de 10 minutes après la fin du défi est acceptée hors délai (`late: true`) |
 | 409 | `RULES_MISMATCH` | `rules_hash` différent de celui du défi ; `details.rules_hash` |
 | 409 | `LEVEL_MISMATCH` | `level_hash` différent de celui du niveau du défi ; `details.level_hash` |
+| 409 | `CHALLENGE_CHANGED` | (2.60) le défi a changé (un admin, personne n'y avait de résultat) entre la lecture de la partie et son écriture : elle n'est jamais classée sur sa nouvelle version |
+| 409 | `CHALLENGE_HAS_RESULTS` | (2.60, admin) défi commencé sur lequel des joueurs ont déjà un résultat : il ne change plus ; `details.results_count` |
 | 409 | `ALREADY_FRIENDS` | Déjà amis |
 | 409 | `REQUEST_ALREADY_SENT` | Demande déjà envoyée |
 | 409 | `FRIEND_LIMIT` | 200 liens sortants atteints |
@@ -1379,8 +1381,9 @@ hors délai). Trois sortes de défis, chacune sur une période UTC :
 J+7 (jours), S+2 (semaines) et M+1 (mois) — à chaque lecture de `GET /challenges/current`, de
 `GET /challenges/daily/current` ou du calendrier, et par la tâche planifiée quotidienne ; des
 tirages simultanés ne créent jamais de doublon — mais **aucune route ne montre un défi avant
-le début de sa période** ; un défi commencé ne change plus (conditions SQL et déclencheur
-`challenges_frozen`). Le tirage automatique (`crypto.getRandomValues`) ne prend que des
+le début de sa période** ; un défi terminé ne change plus, un défi commencé non plus dès qu'un
+joueur y a un résultat (2.60 : conditions SQL de chaque écriture, déclencheurs
+`challenges_frozen` et `challenges_have_results` de la migration 0117). Le tirage automatique (`crypto.getRandomValues`) ne prend que des
 niveaux de la campagne classés dont la révision active est celle du catalogue
 `src/challengeCatalog.json` (généré depuis les fichiers du jeu par
 `scripts/challenge-catalog.mjs`), jamais un niveau EXTRÊME ou à vies comptées (dont le boss

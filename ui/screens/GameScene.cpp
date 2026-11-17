@@ -608,6 +608,12 @@ void GameScene::abandonRaceAttempt() {
 }
 
 void GameScene::restart() {
+    // 2.60: the challenge changed (an administrator) while it was played: never again its former
+    // version; back to « Défis », on its new one.
+    if (opt_.challenge && g_.challenges.changedSince(opt_.challenge->challenge)) {
+        quitToMenu();
+        return;
+    }
     endSpectate("quit");
     abandonRaceAttempt();
     if (!ended_) takeChallengeAttempt(false);  // « Plus loin »: restarting ends the attempt
