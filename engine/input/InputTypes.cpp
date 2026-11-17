@@ -349,17 +349,45 @@ int glyphIndex(const PadBinding& b) {
     return -1;
 }
 
+GamepadStyle gamepadStyleOf(SDL_GamepadType type) {
+    switch (type) {
+        case SDL_GAMEPAD_TYPE_XBOX360:
+        case SDL_GAMEPAD_TYPE_XBOXONE:
+        case SDL_GAMEPAD_TYPE_STANDARD: return GamepadStyle::Xbox;
+        case SDL_GAMEPAD_TYPE_PS3:
+        case SDL_GAMEPAD_TYPE_PS4:
+        case SDL_GAMEPAD_TYPE_PS5: return GamepadStyle::PlayStation;
+        case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
+        case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
+        case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
+        case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR: return GamepadStyle::Switch;
+        default: return GamepadStyle::Generic;
+    }
+}
+
 std::string padBindingName(const PadBinding& b, GamepadStyle style) {
     static const char* xbox[] = {"A", "B", "X", "Y"};
     static const char* ps[] = {"Croix", "Rond", "Carré", "Triangle"};
     static const char* gen[] = {"Bas", "Droite", "Gauche", "Haut"};
+    static const char* sw[] = {"B", "A", "Y", "X"};  // Nintendo: B at the bottom, A at the right
+    const bool nintendo = style == GamepadStyle::Switch;
     switch (b.kind) {
         case PadBinding::Kind::None: return "—";
         case PadBinding::Kind::Button: {
             auto btn = static_cast<SDL_GamepadButton>(b.code);
             if (btn >= SDL_GAMEPAD_BUTTON_SOUTH && btn <= SDL_GAMEPAD_BUTTON_NORTH) {
-                const char** names = style == GamepadStyle::Xbox ? xbox : (style == GamepadStyle::PlayStation ? ps : gen);
+                const char** names = style == GamepadStyle::Xbox ? xbox : style == GamepadStyle::PlayStation ? ps : nintendo ? sw : gen;
                 return names[btn];
+            }
+            if (nintendo) {
+                switch (btn) {
+                    case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: return "L";
+                    case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER: return "R";
+                    case SDL_GAMEPAD_BUTTON_START: return "+";
+                    case SDL_GAMEPAD_BUTTON_BACK: return "−";
+                    case SDL_GAMEPAD_BUTTON_MISC1: return "Capture";
+                    default: break;
+                }
             }
             switch (btn) {
                 case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: return style == GamepadStyle::PlayStation ? "L1" : "LB";
@@ -381,8 +409,8 @@ std::string padBindingName(const PadBinding& b, GamepadStyle style) {
         case PadBinding::Kind::AxisNegative: {
             bool pos = b.kind == PadBinding::Kind::AxisPositive;
             switch (static_cast<SDL_GamepadAxis>(b.code)) {
-                case SDL_GAMEPAD_AXIS_LEFT_TRIGGER: return style == GamepadStyle::PlayStation ? "L2" : "LT";
-                case SDL_GAMEPAD_AXIS_RIGHT_TRIGGER: return style == GamepadStyle::PlayStation ? "R2" : "RT";
+                case SDL_GAMEPAD_AXIS_LEFT_TRIGGER: return style == GamepadStyle::PlayStation ? "L2" : nintendo ? "ZL" : "LT";
+                case SDL_GAMEPAD_AXIS_RIGHT_TRIGGER: return style == GamepadStyle::PlayStation ? "R2" : nintendo ? "ZR" : "RT";
                 case SDL_GAMEPAD_AXIS_LEFTX: return pos ? "Stick G droite" : "Stick G gauche";
                 case SDL_GAMEPAD_AXIS_LEFTY: return pos ? "Stick G bas" : "Stick G haut";
                 case SDL_GAMEPAD_AXIS_RIGHTX: return pos ? "Stick D droite" : "Stick D gauche";

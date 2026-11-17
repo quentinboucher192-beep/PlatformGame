@@ -12,6 +12,7 @@ const char* sheetFor(GamepadStyle style) {
         case GamepadStyle::Xbox: return "ui/glyphs/xbox.png";
         case GamepadStyle::PlayStation: return "ui/glyphs/playstation.png";
         case GamepadStyle::Generic: return "ui/glyphs/generic.png";
+        case GamepadStyle::Switch: return "ui/glyphs/generic.png";  // places, not letters: its names say B / A
     }
     return "ui/glyphs/generic.png";
 }
@@ -36,9 +37,10 @@ float drawKeycap(UIContext& ui, const std::string& label, Vec2 pos, float height
     return w;
 }
 
-float drawPadButton(UIContext& ui, const PadBinding& b, Vec2 pos, float height) {
+float drawPadButton(UIContext& ui, const PadBinding& b, Vec2 pos, float height) { return drawPadButton(ui, b, pos, height, ui.input().gamepadStyle()); }
+
+float drawPadButton(UIContext& ui, const PadBinding& b, Vec2 pos, float height, GamepadStyle style) {
     int idx = glyphIndex(b);
-    GamepadStyle style = ui.input().gamepadStyle();
     if (idx < 0) return drawKeycap(ui, padBindingName(b, style), pos, height);
     ui.icon(sheetFor(style), idx, 32, {pos.x, pos.y - height * 0.5f, height, height});
     return height;

@@ -536,6 +536,7 @@
   },
   "sounds/ui_back.wav": {
    "ui/screens/BossStoryScene.cpp": 1,
+   "ui/screens/CoopLobbyScene.cpp": 1,
    "ui/screens/TutorialScenes.cpp": 2,
    "ui/widgets/UIContext.cpp": 1
   },
@@ -545,12 +546,13 @@
    "ui/screens/BossStoryScene.cpp": 1,
    "ui/screens/BossTrainingScene.cpp": 1,
    "ui/screens/CollectionScene.cpp": 3,
+   "ui/screens/CoopLobbyScene.cpp": 2,
    "ui/screens/GhostSetupScene.cpp": 1,
-   "ui/screens/LevelPowerKeysScene.cpp": 2,
+   "ui/screens/LevelPowerKeysScene.cpp": 4,
    "ui/screens/OnlineRankingScene.cpp": 2,
    "ui/screens/PauseScene.cpp": 1,
    "ui/screens/ReplayScene.cpp": 1,
-   "ui/screens/SettingsScene.cpp": 2,
+   "ui/screens/SettingsScene.cpp": 3,
    "ui/screens/TutorialScenes.cpp": 4,
    "ui/widgets/UIContext.cpp": 1
   },
@@ -765,7 +767,7 @@
   },
   "ui/glyphs/generic.png": {
    "packaging/DependencyCollector.cpp": 1,
-   "ui/widgets/Glyphs.cpp": 2
+   "ui/widgets/Glyphs.cpp": 3
   },
   "ui/glyphs/playstation.png": {
    "packaging/DependencyCollector.cpp": 1,

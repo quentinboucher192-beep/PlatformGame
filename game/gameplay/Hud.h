@@ -180,6 +180,7 @@ public:
         std::vector<int> pingMs;         // online: each player's link (-1: unknown / local)
         int promptPlayer = 0;            // whose interaction prompt is shown (the local player)
         std::string waitingFor;          // online: « En attente de … » (the lockstep waits)
+        std::vector<std::string> deviceNotes;  // 2.65: a pad's low battery (when SDL says it), a pad unplugged online
     };
     void setTeam(TeamInfo t) { team_ = std::move(t); }
     const TeamInfo& team() const { return team_; }

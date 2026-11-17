@@ -28,7 +28,12 @@ ResolvedPowerKey playerPowerKey(GameServices& g, const LevelData& level, const s
 /// (before « Jouer ») and from the pause menu; `extra`: powers given besides the level's own.
 /// `carried` (2.50, from the pause menu): the powers in hand, by slot (index = slot, "" = empty),
 /// shown first with the key and the button they use now (a shared gamepad button moved).
+/// 2.65, cooperation on one computer (GameServices::localTeam, 2 or 3 players): one tab per
+/// player, each with that player's keys (its own choices, saves/power_keys_j2.json…) for the
+/// device it plays with (keyboard / mouse, or its pad with its glyphs), « Copier les touches de
+/// Jn », « Par défaut », « Commandes de Jn… »; `player` is the tab opened first. Solo (no team):
+/// as before, player 1 only, no tab.
 std::unique_ptr<Scene> makeLevelPowerKeys(GameServices& g, LevelData level, std::vector<std::string> extra = {},
-                                          std::vector<std::string> carried = {});
+                                          std::vector<std::string> carried = {}, int player = -1);
 
 }  // namespace cosmic

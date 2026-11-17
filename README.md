@@ -455,6 +455,13 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+* **Coopération sur un même PC, un périphérique par joueur** : clavier et souris à un seul joueur, une manette
+  chacun (Start / Ⓐ pour rejoindre, Ⓑ pour partir, « Changer de périphérique », vibration à l'attribution), boutons
+  allumés en direct sur chaque carte, liste des périphériques en direct (numéros gardés au rebranchement), glyphes
+  Xbox / PlayStation / Switch / génériques ; **manette débranchée** (solo et même PC) : partie et chrono en pause,
+  reprise après 3-2-1 au rebranchement, Ⓐ sur une autre manette ou Entrée pour le clavier, « Continuer sans… » ;
+  **touches par joueur** (profils J1, J2, J3, un onglet par joueur dans « Touches de ce niveau » et les Paramètres).
+
 **Nouveau dans la version 2.64.0** :
 * **Bruitages des histoires** et de la bande-annonce : une ambiance sous chaque plan (vent, grotte, magma, mer
   profonde, catacombes, fonderie, cosmos) et les bruits de l'action (œuf qui craque, flammes, pierre qui se fend, ailes,

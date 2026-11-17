@@ -139,7 +139,9 @@ std::unique_ptr<Scene> makePlanetMap(GameServices& g);
 std::unique_ptr<Scene> makeLevelSelect(GameServices& g, const std::string& planetId, const std::string& levelId = {},
                                        const std::string& fromBoss = {}, const std::string& fromAsset = {});
 std::unique_ptr<Scene> makeGameScene(GameServices& g, const std::string& levelId, PlayOptions opt = {});
-std::unique_ptr<Scene> makeSettingsScene(GameServices& g, bool overlay);
+/// `tab` (2.65): the tab opened first (-1: the first one); `player`: on one PC with a team
+/// (GameServices::localTeam), whose controls the keyboard and gamepad tabs show first.
+std::unique_ptr<Scene> makeSettingsScene(GameServices& g, bool overlay, int tab = -1, int player = 0);
 /// HUD editor: place and size every HUD element; "Enregistrer" writes the layout into `target`.
 std::unique_ptr<Scene> makeHudEditor(GameServices& g, GameplaySettings& target);
 /// Notifications of the main menu (new content, records dropped, new installer); `tab` 1:

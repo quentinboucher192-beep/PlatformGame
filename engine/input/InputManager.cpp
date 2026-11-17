@@ -16,20 +16,30 @@ bool isNavAction(int a) {
            a == static_cast<int>(Action::MenuLeft) || a == static_cast<int>(Action::MenuRight);
 }
 
-GamepadStyle styleFor(SDL_GamepadType t) {
-    switch (t) {
-        case SDL_GAMEPAD_TYPE_XBOX360:
-        case SDL_GAMEPAD_TYPE_XBOXONE:
-        case SDL_GAMEPAD_TYPE_STANDARD: return GamepadStyle::Xbox;
-        case SDL_GAMEPAD_TYPE_PS3:
-        case SDL_GAMEPAD_TYPE_PS4:
-        case SDL_GAMEPAD_TYPE_PS5: return GamepadStyle::PlayStation;
-        default: return GamepadStyle::Generic;
-    }
-}
 }  // namespace
 
-void InputManager::init() { openFirstGamepad(); }
+void InputManager::init() {
+    int count = 0;
+    if (SDL_JoystickID* ids = SDL_GetGamepads(&count)) {
+        for (int i = 0; i < count; ++i) notePlugged(ids[i]);
+        SDL_free(ids);
+    }
+    openFirstGamepad();
+}
+
+void InputManager::notePlugged(SDL_JoystickID id) {
+    // What recognises the same pad when it comes back: its GUID (model) and, when SDL knows it,
+    // its serial number (two identical pads).
+    char guid[64] = {};
+    SDL_GUIDToString(SDL_GetGamepadGUIDForID(id), guid, sizeof guid);
+    std::string key = guid;
+    if (SDL_Gamepad* g = SDL_OpenGamepad(id)) {  // a reference of its own, closed at once
+        if (const char* serial = SDL_GetGamepadSerial(g); serial && *serial) key += std::string("|") + serial;
+        SDL_CloseGamepad(g);
+    }
+    const char* n = SDL_GetGamepadNameForID(id);
+    devices_.plugged(id, key, gamepadStyleOf(SDL_GetGamepadTypeForID(id)), n && *n ? n : "Manette", SDL_GetTicks());
+}
 
 void InputManager::shutdown() {
     if (gamepad_) SDL_CloseGamepad(gamepad_);
@@ -46,7 +56,7 @@ void InputManager::setGamepad(SDL_Gamepad* pad) {
     gamepadId_ = SDL_GetGamepadID(pad);
     const char* n = SDL_GetGamepadName(pad);
     gamepadName_ = n ? n : "Manette";
-    style_ = styleFor(SDL_GetGamepadType(pad));
+    style_ = gamepadStyleOf(SDL_GetGamepadType(pad));
     Log::info("Gamepad connected: {} (type {})", gamepadName_, static_cast<int>(SDL_GetGamepadType(pad)));
 }
 
@@ -91,6 +101,13 @@ void InputManager::beginFrame() {
 }
 
 void InputManager::handleEvent(const SDL_Event& e) {
+    // 2.65: every gamepad of the session, the reserved ones too.
+    if (e.type == SDL_EVENT_GAMEPAD_ADDED) notePlugged(e.gdevice.which);
+    if (e.type == SDL_EVENT_GAMEPAD_REMOVED) devices_.unplugged(e.gdevice.which, SDL_GetTicks());
+    // The pad lost while in use is forgotten as soon as something else is used.
+    if ((e.type == SDL_EVENT_KEY_DOWN && !e.key.repeat) || e.type == SDL_EVENT_MOUSE_BUTTON_DOWN ||
+        (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN && !reservedPad(e.gbutton.which)))
+        lostPad_ = 0;
     // 2.62: the gamepads of the other local players act on nothing here.
     if (!reservedPads_.empty()) {
         if ((e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN || e.type == SDL_EVENT_GAMEPAD_BUTTON_UP) && reservedPad(e.gbutton.which)) return;
@@ -210,6 +227,11 @@ void InputManager::handleEvent(const SDL_Event& e) {
         case SDL_EVENT_GAMEPAD_REMOVED:
             if (gamepad_ && e.gdevice.which == gamepadId_) {
                 Log::info("Gamepad disconnected");
+                // 2.65: the device in use went away (a solo run pauses until it comes back).
+                if (lastDevice_ == InputDevice::Gamepad) {
+                    for (const PadEntry& p : devices_.all())
+                        if (p.id == gamepadId_ && !p.connected) lostPad_ = p.number;
+                }
                 SDL_CloseGamepad(gamepad_);
                 gamepad_ = nullptr;
                 gamepadName_.clear();
@@ -228,15 +250,16 @@ void InputManager::handleEvent(const SDL_Event& e) {
                 break;
             }
             if (swallowingPad_ && swallowPad_ == PadBinding::button(static_cast<SDL_GamepadButton>(e.gbutton.button))) break;
-            for (int i = 0; i < kActionCount; ++i)
+            for (int i = padGameplay_ ? 0 : kFirstMenuAction; i < kActionCount; ++i)
                 for (const auto& pb : bindings_.pad[i])
                     if (pb.kind == PadBinding::Kind::Button && pb.code == e.gbutton.button) {
                         gamePressed_[i] = framePressed_[i] = true;
                         if (int s = powerSlotOf(static_cast<Action>(i)); s >= 0) slotWaitRelease_[static_cast<size_t>(s)] = false;
                     }
             if (gamepad_ == nullptr || e.gbutton.which != gamepadId_) {
-                // A second pad pressed a button: switch to it (live device switching).
-                if (SDL_Gamepad* p = SDL_GetGamepadFromID(e.gbutton.which)) setGamepad(p);
+                // A second pad pressed a button: switch to it (live device switching). A reference
+                // of its own (closed when it switches again): a LocalPad may hold the same pad.
+                if (SDL_Gamepad* p = SDL_OpenGamepad(e.gbutton.which)) setGamepad(p);
             }
             break;
         case SDL_EVENT_GAMEPAD_AXIS_MOTION:
@@ -325,6 +348,7 @@ void InputManager::update(float dt) {
             }
         }
         for (const auto& pb : bindings_.pad[i]) {
+            if (!padGameplay_ && i < kFirstMenuAction) break;  // 2.65: the pads only move in the menus
             if (swallowingPad_ && pb == swallowPad_) continue;
             float v = padValue(pb);
             bool isTrigger = pb.kind != PadBinding::Kind::Button &&
@@ -370,8 +394,8 @@ PlayerInput InputManager::consumePlayerInput() {
     if (held_[idx(Action::MoveUp)]) y -= 1.0f;
     if (held_[idx(Action::MoveDown)]) y += 1.0f;
     // Analog stick magnitude when it is the stick that drives the movement.
-    if (std::abs(leftStick_.x) > 0.01f && lastDevice_ == InputDevice::Gamepad) x = std::clamp(leftStick_.x, -1.0f, 1.0f);
-    if (std::abs(leftStick_.y) > 0.01f && lastDevice_ == InputDevice::Gamepad) y = std::clamp(leftStick_.y, -1.0f, 1.0f);
+    if (std::abs(leftStick_.x) > 0.01f && lastDevice_ == InputDevice::Gamepad && padGameplay_) x = std::clamp(leftStick_.x, -1.0f, 1.0f);
+    if (std::abs(leftStick_.y) > 0.01f && lastDevice_ == InputDevice::Gamepad && padGameplay_) y = std::clamp(leftStick_.y, -1.0f, 1.0f);
     in.move = {std::clamp(x, -1.0f, 1.0f), std::clamp(y, -1.0f, 1.0f)};
     gamePressed_.fill(false);
     gameReleased_.fill(false);

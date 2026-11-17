@@ -17,7 +17,7 @@ const std::vector<std::pair<int, int>> kResolutions = {{1280, 720}, {1600, 900},
 
 class SettingsScene : public Scene {
 public:
-    SettingsScene(GameServices& g, bool overlay) : g_(g), overlay_(overlay) {}
+    SettingsScene(GameServices& g, bool overlay, int tab, int player) : g_(g), overlay_(overlay), startTab_(tab), player_(player) {}
 
     bool isOverlay() const override { return overlay_; }
 
@@ -33,6 +33,9 @@ public:
             g_.onlineOpen.clear();
         }
         g_.ui.setFocus("settings/tabs");
+        if (startTab_ >= 0) tab_ = std::clamp(startTab_, 0, 4);
+        if (!team()) player_ = 0;
+        player_ = std::clamp(player_, 0, team() ? static_cast<int>(g_.localTeam.size()) - 1 : 0);
     }
 
     void onExit() override {
@@ -84,6 +87,12 @@ public:
         }
         Rect content{panel.x + ui.s(40), tabsR.bottom() + ui.s(24), panel.w - ui.s(80), panel.bottom() - tabsR.bottom() - ui.s(110)};
         ui.pushId("tab" + std::to_string(tab_));
+        if (team() && (tab_ == 2 || tab_ == 3)) {
+            // 2.65: one PC with a team: whose controls (each player has its own).
+            const float barH = drawPlayerBar({content.x, content.y, content.w, ui.s(46)}, tab_ == 3);
+            content.y += barH;
+            content.h -= barH;
+        }
         switch (tab_) {
             case 0: graphics(content); break;
             case 1: audio(content); break;
@@ -115,6 +124,60 @@ public:
 
 private:
     float row() const { return g_.ui.s(62); }
+
+    // ------------------------------------------------------------ 2.65: the players of one PC
+    bool team() const { return g_.localTeam.size() >= 2; }
+    /// The controls shown: the chosen player's (player 1's alone).
+    InputBindings& cur() { return working_.playerInput(player_); }
+    /// Player 1's controls drive the menus and the solo game: given to the input at once.
+    void apply() {
+        if (player_ == 0) g_.app.input().setBindings(working_.input);
+    }
+    GamepadStyle padStyle() const { return team() ? g_.playerPadStyle(player_) : g_.app.input().gamepadStyle(); }
+
+    /// « J1 · Nova », « J2 · Lyra »…: whose controls; « Copier les touches de Jn » (this tab's
+    /// device: the keys, or the buttons and the gamepad settings). Returns the height taken.
+    float drawPlayerBar(const Rect& r, bool pad) {
+        UIContext& ui = g_.ui;
+        const int n = static_cast<int>(g_.localTeam.size());
+        std::vector<std::string> labels;
+        for (int i = 0; i < n; ++i) labels.push_back("J" + std::to_string(i + 1) + " · " + g_.localTeam[static_cast<size_t>(i)].name);
+        for (int i = 0; i < n; ++i)
+            if (i != player_) labels.push_back("Copier les touches de J" + std::to_string(i + 1));
+        const float gap = ui.s(8);
+        const float bw = (r.w - gap * static_cast<float>(labels.size() - 1)) / static_cast<float>(labels.size());
+        float fs = 18.0f;
+        for (const auto& l : labels) fs = std::min(fs, ui.fitFont(l, FontFace::Bold, 18, bw - ui.s(16), 0.55f));
+        ui.pushId("players");
+        for (int k = 0; k < static_cast<int>(labels.size()); ++k) {
+            UIContext::ButtonStyle st;
+            st.small = true;
+            st.fontSize = fs;
+            st.selected = k == player_;
+            const Rect b{r.x + static_cast<float>(k) * (bw + gap), r.y, bw, r.h};
+            if (!ui.button("p" + std::to_string(k), b, labels[static_cast<size_t>(k)], st)) continue;
+            if (k < n) {
+                player_ = k;
+                continue;
+            }
+            // Copy: the other players in order, skipping this one.
+            int from = k - n;
+            if (from >= player_) ++from;
+            const InputBindings& src = working_.playerInput(from);
+            if (pad) {
+                cur().pad = src.pad;
+                cur().gamepad = src.gamepad;
+            } else {
+                cur().keys = src.keys;
+            }
+            apply();
+            flash("Touches de J" + std::to_string(from + 1) + " copiées pour J" + std::to_string(player_ + 1));
+            g_.uiSound("ui_confirm");
+        }
+        ui.newBadge("p0", {r.x, r.y, bw, r.h}, pad ? "settings.players.gamepad" : "settings.players.keyboard");
+        ui.popId();
+        return r.h + ui.s(14);
+    }
 
     void graphics(const Rect& c) {
         UIContext& ui = g_.ui;
@@ -177,14 +240,14 @@ private:
         for (int slot = 0; slot < 1; ++slot) {
             Rect b{r.x + r.w * 0.42f, r.y, r.w * 0.38f, r.h};
             std::string label;
-            const PadBinding& pb = working_.input.pad[i][slot];
+            const PadBinding& pb = cur().pad[i][slot];
             // A gamepad button with its icon (drawn on the left): the name stays clear of it.
             const bool icon = pad && pb.kind != PadBinding::Kind::None && glyphIndex(pb) >= 0;
-            if (pad) label = padBindingName(pb, g_.app.input().gamepadStyle());
+            if (pad) label = padBindingName(pb, padStyle());
             else {
                 // A mouse binding says which button it is when there is room (« Souris 4 · bouton
                 // latéral arrière »), else its short name, the one the HUD shows.
-                const SDL_Scancode sc = working_.input.keys[i][slot];
+                const SDL_Scancode sc = cur().keys[i][slot];
                 label = keyName(sc);
                 if (std::string detail = mouseBindingDetail(sc); !detail.empty()) {
                     std::string full = label + " · " + detail;
@@ -203,13 +266,13 @@ private:
                 captureTimer_ = 6.0f;
                 g_.app.input().beginCapture(pad ? InputDevice::Gamepad : InputDevice::Keyboard);
             }
-            if (icon) Glyphs::drawPadButton(ui, pb, {b.x + ui.s(8), b.center().y}, ui.s(32));
+            if (icon) Glyphs::drawPadButton(ui, pb, {b.x + ui.s(8), b.center().y}, ui.s(32), padStyle());
         }
         // « Par défaut »: this command alone back to its key / button of origin (active only when
         // it was changed). A command that used that key loses it, as when a key is chosen.
         {
             const InputBindings d = InputBindings::defaults();
-            const bool same = pad ? working_.input.pad[i] == d.pad[i] : working_.input.keys[i] == d.keys[i];
+            const bool same = pad ? cur().pad[i] == d.pad[i] : cur().keys[i] == d.keys[i];
             Rect rb{r.x + r.w * 0.82f, r.y, r.w * 0.18f, r.h};
             UIContext::ButtonStyle st;
             st.small = true;
@@ -225,24 +288,24 @@ private:
                 if (pad) {
                     const PadBinding def = d.pad[i][0];
                     for (int o = 0; o < kFirstMenuAction; ++o)
-                        for (auto& p : working_.input.pad[o])
+                        for (auto& p : cur().pad[o])
                             if (o != i && def.kind != PadBinding::Kind::None && p == def) {
                                 p = PadBinding{};
                                 flash(std::string("Bouton retiré de « ") + actionLabel(static_cast<Action>(o)) + " »");
                             }
-                    working_.input.pad[i] = d.pad[i];
+                    cur().pad[i] = d.pad[i];
                 } else {
                     const SDL_Scancode def = d.keys[i][0];
                     for (int o = 0; o < kFirstMenuAction; ++o)
-                        for (auto& k : working_.input.keys[o])
+                        for (auto& k : cur().keys[o])
                             if (o != i && def != SDL_SCANCODE_UNKNOWN && k == def) {
                                 k = SDL_SCANCODE_UNKNOWN;
                                 flash(std::string("Touche retirée de « ") + actionLabel(static_cast<Action>(o)) + " »");
                             }
-                    working_.input.keys[i] = d.keys[i];
+                    cur().keys[i] = d.keys[i];
                 }
-                working_.input.keepOneBinding();
-                g_.app.input().setBindings(working_.input);
+                cur().keepOneBinding();
+                apply();
                 g_.uiSound("ui_confirm");
             }
         }
@@ -321,9 +384,9 @@ private:
         UIContext::ButtonStyle d;
         d.danger = true;
         if (ui.button(pad ? "padreset" : "kbreset", reset, "Réinitialiser", d)) {
-            if (pad) working_.input.resetGamepad();
-            else working_.input.resetKeyboard();
-            g_.app.input().setBindings(working_.input);
+            if (pad) cur().resetGamepad();
+            else cur().resetKeyboard();
+            apply();
             flash("Configuration par défaut restaurée");
         }
     }
@@ -338,10 +401,25 @@ private:
         // Right column: device + live view + tuning
         float rx = c.x + leftW + ui.s(40), rw = c.right() - rx;
         float y = c.y;
-        std::string type = in.gamepadStyle() == GamepadStyle::Xbox ? "Xbox / XInput"
-                           : in.gamepadStyle() == GamepadStyle::PlayStation ? "PlayStation"
-                                                                            : "Générique (SDL)";
-        if (in.hasGamepad()) {
+        const GamepadStyle shown = padStyle();
+        std::string type = shown == GamepadStyle::Xbox          ? "Xbox / XInput"
+                           : shown == GamepadStyle::PlayStation ? "PlayStation"
+                           : shown == GamepadStyle::Switch      ? "Switch"
+                                                                : "Générique (SDL)";
+        // 2.65: a team on this PC: the pad of the player shown (its number), else the one in use.
+        const PadEntry* mine = nullptr;
+        if (team() && g_.localTeam[static_cast<size_t>(player_)].device.isPad())
+            mine = in.devices().byNumber(g_.localTeam[static_cast<size_t>(player_)].device.pad);
+        if (team() && !mine) {
+            const std::string who = g_.localTeam[static_cast<size_t>(player_)].device.isKeyboard() ? "J" + std::to_string(player_ + 1) + " joue au clavier"
+                                                                                                   : "J" + std::to_string(player_ + 1) + " n'a pas de manette";
+            const float wf = ui.fitFont(who, FontFace::Bold, 24, rw, 0.6f);
+            ui.label(ui.elide(who, FontFace::Bold, wf, rw), {rx, y}, wf, ui.theme().textDim, Align::Left, FontFace::Bold);
+            ui.label(ui.elide("Ses boutons servent dès qu'il prend une manette.", FontFace::Body, 19, rw), {rx, y + ui.s(32)}, 19, ui.theme().textDim);
+        } else if (mine) {
+            ui.label(ui.elide(padLabel(*mine), FontFace::Bold, 24, rw), {rx, y}, 24, ui.theme().accent, Align::Left, FontFace::Bold);
+            ui.label(ui.elide("Type détecté : " + type, FontFace::Body, 19, rw), {rx, y + ui.s(32)}, 19, ui.theme().textDim);
+        } else if (in.hasGamepad()) {
             ui.label(in.gamepadName(), {rx, y}, 24, ui.theme().accent, Align::Left, FontFace::Bold);
             ui.label("Type détecté : " + type, {rx, y + ui.s(32)}, 19, ui.theme().textDim);
         } else {
@@ -353,23 +431,23 @@ private:
         y += ui.s(186);
         Rect r{rx, y, rw, ui.s(50)};
         float step = ui.s(58);
-        ui.slider("deadzone", r, "Zone morte", working_.input.gamepad.stickDeadzone, 0.0f, 0.6f, 0.02f, "%.2f");
+        ui.slider("deadzone", r, "Zone morte", cur().gamepad.stickDeadzone, 0.0f, 0.6f, 0.02f, "%.2f");
         r.y += step;
-        ui.slider("trigger", r, "Seuil gâchettes", working_.input.gamepad.triggerThreshold, 0.1f, 0.9f, 0.05f, "%.2f");
+        ui.slider("trigger", r, "Seuil gâchettes", cur().gamepad.triggerThreshold, 0.1f, 0.9f, 0.05f, "%.2f");
         r.y += step;
-        ui.slider("sens", r, "Sensibilité", working_.input.gamepad.sensitivity, 0.5f, 2.5f, 0.1f, "%.1f");
+        ui.slider("sens", r, "Sensibilité", cur().gamepad.sensitivity, 0.5f, 2.5f, 0.1f, "%.1f");
         r.y += step;
-        ui.toggle("invx", r, "Inverser l'axe X", working_.input.gamepad.invertX);
+        ui.toggle("invx", r, "Inverser l'axe X", cur().gamepad.invertX);
         r.y += step;
-        ui.toggle("invy", r, "Inverser l'axe Y", working_.input.gamepad.invertY);
+        ui.toggle("invy", r, "Inverser l'axe Y", cur().gamepad.invertY);
         r.y += step;
-        ui.toggle("swap", r, "Inverser les joysticks", working_.input.gamepad.swapSticks);
+        ui.toggle("swap", r, "Inverser les joysticks", cur().gamepad.swapSticks);
         r.y += step;
-        if (ui.toggle("rumble", r, "Vibrations", working_.input.gamepad.rumble) && working_.input.gamepad.rumble) {
+        if (ui.toggle("rumble", r, "Vibrations", cur().gamepad.rumble) && cur().gamepad.rumble && player_ == 0) {
             g_.app.input().setBindings(working_.input);
             g_.app.input().rumble(0.5f, 0.5f, 200);
         }
-        g_.app.input().setBindings(working_.input);
+        apply();
     }
 
     void drawPadVisual(const Rect& r) {
@@ -381,7 +459,7 @@ private:
         auto stick = [&](Vec2 c, Vec2 v) {
             float rad = ui.s(34);
             rr.drawRing(c, rad, ui.s(2), {120, 150, 190, 200});
-            float dz = working_.input.gamepad.stickDeadzone * rad;
+            float dz = cur().gamepad.stickDeadzone * rad;
             rr.drawRing(c, dz, ui.s(1), {255, 120, 120, 120});
             rr.fillCircle(c + v * rad, ui.s(12), ui.theme().accent);
         };
@@ -497,25 +575,25 @@ private:
                 flash("Modification annulée");
             } else if (sc != SDL_SCANCODE_UNKNOWN) {
                 for (int a = 0; a < kFirstMenuAction; ++a)
-                    for (auto& k : working_.input.keys[a])
+                    for (auto& k : cur().keys[a])
                         if (k == sc && !(a == i)) {
                             k = SDL_SCANCODE_UNKNOWN;
                             flash(std::string("Touche retirée de « ") + actionLabel(static_cast<Action>(a)) + " »");
                         }
-                working_.input.keys[i][captureSlot_] = sc;
+                cur().keys[i][captureSlot_] = sc;
             }
         } else {
             PadBinding b = in.capturedPad();
             for (int a = 0; a < kFirstMenuAction; ++a)
-                for (auto& p : working_.input.pad[a])
+                for (auto& p : cur().pad[a])
                     if (p == b && a != i) {
                         p = PadBinding{};
                         flash(std::string("Bouton retiré de « ") + actionLabel(static_cast<Action>(a)) + " »");
                     }
-            working_.input.pad[i][captureSlot_] = b;
+            cur().pad[i][captureSlot_] = b;
         }
-        working_.input.keepOneBinding();  // one key per command, the arrows / d-pad still move
-        g_.app.input().setBindings(working_.input);
+        cur().keepOneBinding();  // one key per command, the arrows / d-pad still move
+        apply();
         g_.app.input().consumePlayerInput();
         captureAction_ = Action::Count;
         g_.uiSound("ui_confirm");
@@ -545,6 +623,8 @@ private:
 
     GameServices& g_;
     bool overlay_;
+    int startTab_ = -1;
+    int player_ = 0;  // 2.65: whose controls (a team on this PC)
     Settings working_;
     MenuBackground bg_;
     int tab_ = 0;
@@ -560,6 +640,8 @@ private:
 
 }  // namespace
 
-std::unique_ptr<Scene> makeSettingsScene(GameServices& g, bool overlay) { return std::make_unique<SettingsScene>(g, overlay); }
+std::unique_ptr<Scene> makeSettingsScene(GameServices& g, bool overlay, int tab, int player) {
+    return std::make_unique<SettingsScene>(g, overlay, tab, player);
+}
 
 }  // namespace cosmic

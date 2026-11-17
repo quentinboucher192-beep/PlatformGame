@@ -11,6 +11,8 @@
 #include <cmath>
 #include <cstdio>
 #include <future>
+#include <map>
+#include <set>
 #include <thread>
 
 #include "engine/core/Log.h"
@@ -26,6 +28,7 @@
 #include "game/powers/PowerKeys.h"
 #include "game/powers/Powers.h"
 #include "game/race/Race.h"
+#include "ui/screens/DeviceLostUi.h"
 #include "ui/screens/Navigation.h"
 
 namespace cosmic {
@@ -57,7 +60,15 @@ public:
     ~CoopGameScene() override {
         stopWorker_ = true;
         if (worker_.joinable()) worker_.join();
-        g_.app.input().setReservedPads({});
+        releaseInput();
+    }
+
+    /// Player 1's controls back on the input, every pad free again (leaving the game).
+    void releaseInput() {
+        InputManager& in = g_.app.input();
+        in.setReservedPads({});
+        in.setGamepadGameplay(true);
+        in.setBindings(g_.settings.input);
     }
 
     bool holdsNotifications() const override { return true; }
@@ -112,14 +123,33 @@ public:
         // The other local players' gamepads: theirs only.
         std::vector<SDL_JoystickID> reserved;
         pads_.resize(static_cast<size_t>(n));
+        devices_.assign(static_cast<size_t>(n), LocalDevice::none());
+        dropped_.assign(static_cast<size_t>(n), 0);
+        unplug_.reset(n);
         for (int i = 0; i < n; ++i) {
-            const CoopSeat& s = setup_.seats[static_cast<size_t>(i)];
-            if (!setup_.local(i) || s.device != CoopSeat::Device::Pad) continue;
+            CoopSeat& s = setup_.seats[static_cast<size_t>(i)];
+            if (!setup_.local(i)) continue;
+            if (s.device == CoopSeat::Device::Keyboard) devices_[static_cast<size_t>(i)] = LocalDevice::keyboard();
+            if (s.device != CoopSeat::Device::Pad) continue;
+            if (s.padNumber == 0) s.padNumber = g_.app.input().devices().numberOf(static_cast<SDL_JoystickID>(s.pad));
+            devices_[static_cast<size_t>(i)] = LocalDevice::gamepad(s.padNumber);
             pads_[static_cast<size_t>(i)] = std::make_unique<LocalPad>();
             if (pads_[static_cast<size_t>(i)]->open(static_cast<SDL_JoystickID>(s.pad))) reserved.push_back(static_cast<SDL_JoystickID>(s.pad));
         }
         g_.app.input().setReservedPads(reserved);
+        reserved_ = reserved;
+        // 2.65, one PC: each player's own controls (profiles J1, J2, J3); the keyboard player plays
+        // with the keyboard and the mouse only, every pad being read by its own LocalPad.
+        if (setup_.mode == CoopSetup::Mode::SamePc) {
+            g_.app.input().setGamepadGameplay(false);
+            if (const int kb = keyboardSeat(); kb >= 0) g_.app.input().setBindings(g_.settings.playerInput(kb));
+        }
         powerKeys_ = levelPowerKeys(level_, g_.content, g_.settings.input, &g_.powerKeyOverrides);
+        seatKeys_.clear();
+        for (int i = 0; i < n; ++i)
+            seatKeys_.push_back(setup_.mode == CoopSetup::Mode::SamePc
+                                    ? levelPowerKeys(level_, g_.content, g_.settings.playerInput(i), &g_.powerKeysOf(i))
+                                    : powerKeys_);
         syncPowerKeys();
         g_.app.input().consumePlayerInput();  // the lobby's presses
         // The team replay (format 5): every player's inputs and trace, the team's digests.
@@ -173,7 +203,7 @@ public:
     }
 
     void onExit() override {
-        g_.app.input().setReservedPads({});
+        releaseInput();
         g_.app.input().clearPowerSlotKeys();
         if (mounted_) g_.app.resources().popMount();
         mounted_ = false;
@@ -189,6 +219,7 @@ public:
         }
         const bool network = setup_.mode != CoopSetup::Mode::SamePc;
         if (paused_ && !network) return;  // one PC: the pause stops the team
+        if (!network && unplug_.paused()) return;  // 2.65: a device missing, then 3-2-1: no step, the chrono waits
         // How many steps this frame: one, more when the relay is ahead (after a wait).
         int steps = 1;
         if (network && link_->available() > tick_ + static_cast<uint32_t>(link_->inputDelay() + 6)) steps = 4;
@@ -230,8 +261,16 @@ public:
             const CoopSeat& s = setup_.seats[static_cast<size_t>(i)];
             PlayerInput in;
             if (s.device == CoopSeat::Device::Pad && pads_[static_cast<size_t>(i)]) in = pads_[static_cast<size_t>(i)]->consume();
-            else if (s.device != CoopSeat::Device::Pad) in = g_.app.input().consumePlayerInput();
+            else if (s.device == CoopSeat::Device::Keyboard) in = g_.app.input().consumePlayerInput();
             InputFrame f = InputFrame::fromPlayerInput(in);
+            // 2.65: « Continuer sans » : this PC decides the player's absence as the relay does
+            // online (Standby: 60 s to come back, then gone; the team is ranked incomplete).
+            if (i < static_cast<int>(dropped_.size()) && dropped_[static_cast<size_t>(i)]) {
+                f = InputFrame{};
+                f.flags = InputFrame::Standby;
+                frames.emplace_back(i, f);
+                continue;
+            }
             if (paused_ || choosing_) f = InputFrame{};  // nothing moves for a player in a menu
             if (skip) {
                 f = InputFrame{};
@@ -347,7 +386,7 @@ public:
         if (!world_) return;
         // The keyboard / first gamepad player: the keys of the powers it carries.
         const int kb = keyboardSeat();
-        if (kb >= 0) applyPowerSlotKeys(g_.app.input(), world_->playerAt(kb), powerKeys_);
+        if (kb >= 0) applyPowerSlotKeys(g_.app.input(), world_->playerAt(kb), keysOf(kb));
         // Each other gamepad: the buttons of the powers its player carries.
         for (size_t i = 0; i < pads_.size(); ++i) {
             if (!pads_[i]) continue;
@@ -356,10 +395,15 @@ public:
             for (int s = 0; s < kPowerSlotKeys && static_cast<size_t>(s) < powers.size(); ++s) {
                 const Power& pw = *powers[static_cast<size_t>(s)];
                 if (pw.trigger() != PowerTrigger::SlotKey || pw.key() != powerSlotAction(s)) continue;
-                if (const ResolvedPowerKey* r = powerKeys_.find(pw.id())) slots[static_cast<size_t>(s)] = r->pad;
+                if (const ResolvedPowerKey* r = keysOf(static_cast<int>(i)).find(pw.id())) slots[static_cast<size_t>(s)] = r->pad;
             }
             pads_[i]->setSlotPads(slots);
         }
+    }
+
+    /// The power keys of a player (its own profile on one PC).
+    const PowerKeyMap& keysOf(int seat) const {
+        return seat >= 0 && seat < static_cast<int>(seatKeys_.size()) ? seatKeys_[static_cast<size_t>(seat)] : powerKeys_;
     }
 
     int keyboardSeat() const {
@@ -372,8 +416,13 @@ public:
         if (!world_) return;
         link_->update(dt);
         if (catching_) return;  // the catch-up thread has the world
-        for (auto& p : pads_)
-            if (p) p->update(g_.settings.input, dt);
+        for (size_t i = 0; i < pads_.size(); ++i)
+            if (pads_[i]) pads_[i]->update(g_.settings.playerInput(static_cast<int>(i)), dt);
+        if (setup_.mode == CoopSetup::Mode::SamePc && !ended_) watchDevices(dt);
+        else if (setup_.mode == CoopSetup::Mode::SamePc && !reserved_.empty()) {
+            reserved_.clear();  // the end screen: every pad moves in it
+            g_.app.input().setReservedPads({});
+        }
         world_->update(dt);
         hud_.update(*world_, dt);
         if (trackFuture_.valid() && trackFuture_.wait_for(std::chrono::seconds(0)) == std::future_status::ready) hud_.setProgressTrack(trackFuture_.get());
@@ -394,14 +443,15 @@ public:
             const int ms = (link_->inputDelay() * 1000 + 60) / 120;
             info.waitingFor = "Délai d'entrée : " + std::to_string(link_->inputDelay()) + " images (" + std::to_string(ms) + " ms)";
         }
+        info.deviceNotes = deviceNotes();
         hud_.setTeam(info);
         if (!link_->endReason().empty() && !ended_) {
             ended_ = true;
             aborted_ = link_->endReason();
             g_.ui.setFocus("coopend/lobby");
         }
-        // Pause: Échap, or Start on any local gamepad.
-        if (!ended_ && !choosing_) {
+        // Pause: Échap, or Start on any local gamepad (not while a device is missing).
+        if (!ended_ && !choosing_ && !unplug_.paused()) {
             bool toggle = g_.app.input().menuPressed(Action::Pause);
             for (auto& p : pads_)
                 if (p && p->startPressed()) toggle = true;
@@ -430,6 +480,188 @@ public:
         }
     }
 
+    // ------------------------------------------------------------ 2.65: devices on one PC
+
+    /// The player who has pad `number`, -1 if it is free.
+    int padOwner(int number) const {
+        for (size_t i = 0; i < devices_.size(); ++i)
+            if (devices_[i].isPad() && devices_[i].pad == number) return static_cast<int>(i);
+        return -1;
+    }
+
+    /// Gives a player a pad (its own plugged back, or a free one taking its place): a LocalPad
+    /// of its own, its buttons for the powers it carries; it vibrates once when it takes a place.
+    void givePad(int i, int number, bool rumble) {
+        const PadEntry* p = g_.app.input().devices().byNumber(number);
+        if (!p || !p->connected || i < 0 || i >= static_cast<int>(setup_.seats.size())) return;
+        CoopSeat& s = setup_.seats[static_cast<size_t>(i)];
+        s.device = CoopSeat::Device::Pad;
+        s.pad = p->id;
+        s.padNumber = number;
+        devices_[static_cast<size_t>(i)] = LocalDevice::gamepad(number);
+        spare_.erase(p->id);
+        pads_[static_cast<size_t>(i)] = std::make_unique<LocalPad>();
+        pads_[static_cast<size_t>(i)]->open(p->id);
+        if (rumble && g_.settings.playerInput(i).gamepad.rumble) pads_[static_cast<size_t>(i)]->rumble(0.55f, 0.55f, 220);
+        syncPowerKeys();
+    }
+
+    /// Gives a player the keyboard and the mouse, with its own keys.
+    void giveKeyboard(int i) {
+        CoopSeat& s = setup_.seats[static_cast<size_t>(i)];
+        s.device = CoopSeat::Device::Keyboard;
+        s.pad = 0;
+        s.padNumber = 0;
+        devices_[static_cast<size_t>(i)] = LocalDevice::keyboard();
+        pads_[static_cast<size_t>(i)].reset();
+        g_.app.input().setBindings(g_.settings.playerInput(i));
+        g_.app.input().consumePlayerInput();
+        syncPowerKeys();
+    }
+
+    /// A player has a device again: the run waits no more for it; one left out comes back.
+    void backIn(int i) {
+        unplug_.restored(i);
+        dropped_[static_cast<size_t>(i)] = 0;
+        unplugMsg_.clear();
+    }
+
+    /// What was pressed during the pause does nothing once the run goes on.
+    void flushInputs() {
+        g_.app.input().consumePlayerInput();
+        for (auto& p : pads_)
+            if (p) p->consume();
+    }
+
+    /// Every frame on one PC: a player's pad gone (the run waits: no step, the chrono stops),
+    /// plugged back (3, 2, 1), a free pad's A or the keyboard's Entrée taking the place, the
+    /// menus' pads, the batteries.
+    void watchDevices(float dt) {
+        InputManager& in = g_.app.input();
+        const DeviceRegistry& reg = in.devices();
+        const int n = static_cast<int>(setup_.seats.size());
+        for (int i = 0; i < n; ++i) {
+            if (!devices_[static_cast<size_t>(i)].isPad()) continue;
+            const int num = devices_[static_cast<size_t>(i)].pad;
+            const PadEntry* p = reg.byNumber(num);
+            if (!p || !p->connected) {
+                if (!dropped_[static_cast<size_t>(i)] && !unplug_.waiting(i)) unplug_.lost(i);
+                continue;
+            }
+            // Plugged back (SDL gives it another id): its LocalPad again, the run goes on.
+            if (!pads_[static_cast<size_t>(i)] || pads_[static_cast<size_t>(i)]->id() != p->id || !pads_[static_cast<size_t>(i)]->connected())
+                givePad(i, num, false);
+            if (unplug_.waiting(i) || dropped_[static_cast<size_t>(i)]) backIn(i);
+        }
+        // Whose place a free pad (A, Start) or the free keyboard (Entrée) takes: the player the run
+        // waits for, else a player the team went on without.
+        int target = unplug_.firstWaiting();
+        for (int i = 0; i < n && target < 0; ++i)
+            if (dropped_[static_cast<size_t>(i)]) target = i;
+        std::set<SDL_JoystickID> freePads;
+        if (target >= 0)
+            for (int num : reg.connectedNumbers())
+                if (padOwner(num) < 0) freePads.insert(reg.byNumber(num)->id);
+        for (auto it = spare_.begin(); it != spare_.end();) it = freePads.count(it->first) ? std::next(it) : spare_.erase(it);
+        SDL_JoystickID taker = 0;
+        for (SDL_JoystickID id : freePads) {
+            auto& w = spare_[id];
+            if (!w) {
+                w = std::make_unique<LocalPad>();
+                w->open(id);  // a button already held counts once released
+            }
+            w->update(g_.settings.playerInput(std::max(0, target)), dt);
+            if (!taker && (w->confirmPressed() || w->startPressed())) taker = id;
+        }
+        if (taker && target >= 0) {
+            givePad(target, reg.numberOf(taker), true);
+            backIn(target);
+        } else if (target >= 0 && keyboardSeat() < 0 && (in.keyPressed(SDL_SCANCODE_RETURN) || in.keyPressed(SDL_SCANCODE_KP_ENTER))) {
+            giveKeyboard(target);
+            backIn(target);
+        }
+        // 3, 2, 1: the run goes on.
+        const bool was = unplug_.paused();
+        unplug_.update(dt);
+        if (was && !unplug_.paused()) flushInputs();
+        if (unplug_.paused() && !unplugShown_) {
+            unplugShown_ = true;
+            unplugConfirmQuit_ = false;
+            g_.ui.setFocus("unplug/resume");
+        } else if (!unplug_.paused()) {
+            unplugShown_ = false;
+        }
+        // The menus: the pads of the players still there move in « MANETTE DÉBRANCHÉE » (the
+        // free ones take a place), every pad in the pause menu; none during the run (each pad
+        // plays for its own player).
+        std::vector<SDL_JoystickID> reserved;
+        if (unplug_.paused()) reserved.assign(freePads.begin(), freePads.end());
+        else if (!paused_)
+            for (int num : reg.connectedNumbers()) reserved.push_back(reg.byNumber(num)->id);
+        if (reserved != reserved_) {
+            reserved_ = reserved;
+            in.setReservedPads(reserved_);
+        }
+        // A low battery: a line in the team panel, no pause (only when SDL knows the charge).
+        if ((batteryTimer_ -= dt) <= 0.0f) {
+            batteryTimer_ = 2.0f;
+            batteryNotes_.clear();
+            for (int i = 0; i < n; ++i) {
+                const LocalPad* p = pads_[static_cast<size_t>(i)].get();
+                const int pct = p ? p->batteryPercent() : -1;
+                if (pct >= 0 && pct <= 15)
+                    batteryNotes_.push_back("Pile faible : manette de " + setup_.seats[static_cast<size_t>(i)].name + " (" + std::to_string(pct) + " %)");
+            }
+        }
+    }
+
+    /// The team panel's device lines.
+    std::vector<std::string> deviceNotes() const {
+        std::vector<std::string> out = batteryNotes_;
+        if (setup_.mode != CoopSetup::Mode::SamePc && g_.app.input().lostPad() != 0)
+            out.push_back("Votre manette est débranchée : rebranchez-la ou jouez au clavier. En ligne, la partie continue pour l'équipe.");
+        return out;
+    }
+
+    /// « MANETTE DÉBRANCHÉE · J2 · Lyra · Manette Xbox (n° 1) », then 3, 2, 1.
+    void drawUnplug() {
+        const int p = unplug_.firstWaiting();
+        DeviceLostView v;
+        v.coop = true;
+        if (p >= 0) {
+            const CoopSeat& s = setup_.seats[static_cast<size_t>(p)];
+            v.seat = "J" + std::to_string(p + 1);
+            v.name = s.name;
+            v.color = s.color;
+            const PadEntry* e = g_.app.input().devices().byNumber(devices_[static_cast<size_t>(p)].pad);
+            v.device = e ? padLabel(*e) : std::string("Manette");
+        }
+        v.keyboardFree = keyboardSeat() < 0;
+        v.countdown = unplug_.countdownNumber();
+        v.message = unplugMsg_;
+        v.confirmQuit = unplugConfirmQuit_;
+        switch (drawDeviceLost(g_.ui, v)) {
+            case DeviceLostChoice::Resume:
+                if (p >= 0 && g_.app.input().devices().connected(devices_[static_cast<size_t>(p)].pad)) backIn(p);
+                else if (p >= 0)
+                    unplugMsg_ = "La manette de " + v.name + " est toujours débranchée : rebranchez-la, ou A sur une manette libre, ou Entrée au clavier.";
+                break;
+            case DeviceLostChoice::ContinueWithout:
+                if (p >= 0) {
+                    dropped_[static_cast<size_t>(p)] = 1;
+                    unplug_.dropped(p);
+                    unplugMsg_.clear();
+                }
+                break;
+            case DeviceLostChoice::Quit:
+                if (unplugConfirmQuit_) backToLobby();
+                unplugConfirmQuit_ = true;
+                break;
+            case DeviceLostChoice::None: break;
+        }
+    }
+
+
     // --------------------------------------------------------------------- drawing
 
     void render(float alpha) override {
@@ -456,6 +688,10 @@ public:
         opt.debug = g_.app.debugOverlay;
         renderer_.render(r, g_.app.resources(), *world_, view, alpha, opt);
         hud_.render(ui, *world_, view, nullptr, g_.settings.gameplay);
+        if (unplug_.paused() && !ended_) {
+            drawUnplug();
+            return;
+        }
         if (choosing_ && !ended_) drawChoice();
         if (paused_ && !ended_) drawPause();
         if (ended_) drawEnd();
@@ -688,6 +924,19 @@ public:
     Hud hud_;
     std::vector<TexturePtr> suits_;
     std::vector<std::unique_ptr<LocalPad>> pads_;
+    // 2.65, one PC: each player's device, whether the team goes on without it, the pause of a
+    // device missing, the free pads (A takes a place), each player's power keys.
+    std::vector<LocalDevice> devices_;
+    std::vector<uint8_t> dropped_;
+    UnplugPause unplug_;
+    bool unplugShown_ = false;
+    bool unplugConfirmQuit_ = false;
+    std::string unplugMsg_;
+    std::map<SDL_JoystickID, std::unique_ptr<LocalPad>> spare_;
+    std::vector<SDL_JoystickID> reserved_;
+    std::vector<PowerKeyMap> seatKeys_;
+    std::vector<std::string> batteryNotes_;
+    float batteryTimer_ = 0.0f;
     std::vector<RaceTracker> trackers_;
     std::future<LevelProgressTrack> trackFuture_;
     std::future<std::vector<Vec2>> routeFuture_;

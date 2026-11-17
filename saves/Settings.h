@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+#include <array>
 #include <string>
 
 #include "engine/audio/AudioSystem.h"
@@ -115,6 +117,14 @@ struct Settings {
     OnlineSettings online;
     GhostSettings ghosts;
     InputBindings input = InputBindings::defaults();
+    /// 2.65: the controls of players 2 and 3 on one computer (cooperation), each with its
+    /// keyboard / mouse keys and its gamepad buttons and settings; player 1's are `input`.
+    std::array<InputBindings, 2> coopInput{InputBindings::defaults(), InputBindings::defaults()};
+    /// The controls of local player `player` (0: player 1, the solo game's).
+    InputBindings& playerInput(int player) { return player <= 0 ? input : coopInput[static_cast<size_t>(std::min(player, 2) - 1)]; }
+    const InputBindings& playerInput(int player) const {
+        return player <= 0 ? input : coopInput[static_cast<size_t>(std::min(player, 2) - 1)];
+    }
 
     Json toJson() const;
     static Settings fromJson(const Json& j);

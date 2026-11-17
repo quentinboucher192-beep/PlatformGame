@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "engine/core/Math.h"
+#include "engine/input/Devices.h"
 #include "engine/input/InputTypes.h"
 
 namespace cosmic {
@@ -111,6 +112,21 @@ public:
     bool reservedPad(SDL_JoystickID id) const;
     SDL_JoystickID gamepadId() const { return gamepad_ ? gamepadId_ : 0; }
 
+    /// 2.65: every gamepad of the session with its stable number (« Manette Xbox (n° 1) »),
+    /// updated as they are plugged and unplugged (the reserved ones too).
+    const DeviceRegistry& devices() const { return devices_; }
+    /// The number of this manager's gamepad (0: none).
+    int gamepadNumber() const { return gamepad_ ? devices_.numberOf(gamepadId_) : 0; }
+    /// 2.65, one PC with several players: false = the gamepads only move in the menus here (each
+    /// player's pad is read by its own LocalPad; the keyboard player plays with the keyboard and
+    /// the mouse only). True by default.
+    void setGamepadGameplay(bool on) { padGameplay_ = on; }
+    /// 2.65: the number of the gamepad that went away while it was the device in use (a solo run
+    /// pauses: GameScene), 0 if none. Cleared by clearLostPad(), or as soon as the keyboard, the
+    /// mouse or another gamepad is used.
+    int lostPad() const { return lostPad_; }
+    void clearLostPad() { lostPad_ = 0; }
+
     /// Rebinding: the next key (or gamepad button/axis) pressed is captured.
     void beginCapture(InputDevice device);
     void cancelCapture() { capturing_ = false; }
@@ -174,6 +190,10 @@ private:
     // A power slot whose key changed while it was held: nothing until it is released.
     std::array<bool, kPowerSlotKeys> slotWaitRelease_{};
     std::vector<SDL_JoystickID> reservedPads_;  // 2.62: the other local players' gamepads
+    DeviceRegistry devices_;  // 2.65
+    bool padGameplay_ = true;
+    int lostPad_ = 0;
+    void notePlugged(SDL_JoystickID id);
 };
 
 }  // namespace cosmic
