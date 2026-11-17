@@ -20312,6 +20312,12 @@
    ]
   },
   {
+   "fr": "Invincible (admin) : le bouton de la pause indique « activé · non classé » ; une partie avec Invincible n'est jamais classée.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Invincible désactivé",
    "where": [
     "ui/screens/GameScene.cpp"
@@ -32027,6 +32033,12 @@
   },
   {
    "fr": "Pause : « Mode concentré » est un bouton comme les autres (texte centré, même police et même taille), son état sur un petit interrupteur à droite.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Pause : « Succès suivis » passe sous la carte, avec les cinq places visibles (une place libre est dessinée en pointillés) et la description de chaque succès ; sans la carte, la colonne garde une ligne de description quand il y a la place.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -44113,6 +44125,12 @@
   },
   {
    "fr": "Touches de ce niveau (menu pause) : les pouvoirs en main d'abord, avec la touche et le bouton qu'ils utilisent maintenant, puis tous les pouvoirs du niveau en lignes compactes.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Touches de ce niveau : un changement de touche, de bouton ou « Par défaut » s'applique aussi aux niveaux qui avaient exactement les mêmes touches (option activée par défaut, avec le nombre de niveaux concernés).",
    "where": [
     "data/news/changelog.json"
    ]
