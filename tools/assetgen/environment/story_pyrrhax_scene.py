@@ -437,7 +437,7 @@ def shot_glass(D):
                                   K(t_flash, alpha=1.0), K(t_flash + 0.06, alpha=0.0, ease="step")], shadow=shade(150, alpha=0.5)),
         sprite("pyrrhax", BOSS, [K(0, pos=(500, 392), alpha=0.0, scale=0.9), K(t_flash, alpha=0.0, ease="step"),
                                  K(t_flash + 0.06, alpha=1.0, clip="summon", ease="step"), K(t_flash + 1.0, clip="idle"),
-                                 K(D, pos=(500, 380), ease="inout")]),
+                                 K(D, pos=(500, 380), ease="inout")], shadow=shade(250, alpha=0.4)),
         particles("eclats", "sparks", "#c8b8ff", (300, 220, 360, 230), [K(0, alpha=0.0), K(t_tr, alpha=0.0),
                                                                         K(t_tr + 0.4, alpha=1.0), K(D, alpha=0.8)]),
         particles("braises", "embers", "#ff6a3a", (120, 160, 720, 300), [K(0, alpha=0.5), K(t_flash, alpha=1.0)]),
@@ -487,7 +487,7 @@ def shot_frontier(D):
     els += [
         sprite("rocher", "rocher", [K(0, pos=(706, 524), clip="idle")]),
         sprite("pyrrhax", BOSS, [K(0, pos=(px, py), clip="idle", flip=True, scale=PS), K(t_in, clip="telegraph_special"),
-                                 K(t_fire, clip="special")]),
+                                 K(t_fire, clip="special")], shadow=shade(230, moon, alpha=0.35)),
         sprite("souffle", "flamme", [K(0, pos=mouth, alpha=0.0, flip=True, scale=1.3), K(t_fire, alpha=0.0, ease="step"),
                                      K(t_fire + 0.01, alpha=1.0, clip="start", ease="step")], blend="add"),
         glow("souffle_lueur", "#ff8a3a", 220, [K(0, pos=(mouth[0] - 200, mouth[1]), alpha=0.0), K(t_fire, alpha=0.0),

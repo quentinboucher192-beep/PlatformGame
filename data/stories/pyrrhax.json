@@ -6593,6 +6593,13 @@
       "id": "pyrrhax",
       "sprite": "animations/pyrrhax.json",
       "depth": 1.0,
+      "shadow": {
+       "alpha": 0.4,
+       "size": [
+        250.0,
+        40.0
+       ]
+      },
       "keys": [
        {
         "t": 0.0,
@@ -7255,6 +7262,17 @@
       "id": "pyrrhax",
       "sprite": "animations/pyrrhax.json",
       "depth": 1.0,
+      "shadow": {
+       "alpha": 0.35,
+       "size": [
+        230.0,
+        36.8
+       ],
+       "light": [
+        600.0,
+        168.0
+       ]
+      },
       "keys": [
        {
         "t": 0.0,
