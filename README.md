@@ -130,6 +130,10 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
   ouvriers, le colosse qui s'éveille sur son échafaudage, la promesse du contremaître, la roche qui engloutit
   la fonderie, la rouille et la vapeur, le Titan face à la visiteuse ; fourneaux, engrenages, chaînes et
   fumée animés. Une pastille NOUVEAU mène à « Revoir l'histoire ».
+* L'**histoire de Singularis** (« Le Cœur effondré ») devient un **petit dessin animé** : Lyse, la jeune
+  étoile qui chante, les trois planètes qui fleurissent de ses dons, les machines qui boivent sa lumière, la
+  dernière étincelle, l'effondrement et Singularis affamé ; nébuleuse, étoiles et poussières animées. Une
+  pastille NOUVEAU mène à « Revoir l'histoire ».
 * **Clans** (EN LIGNE › **CLANS**) : un clan par joueur, **50 membres** au plus, un nom, un **tag** de 2 à 5
   lettres ou chiffres, unique sans tenir compte de la casse (affiché **[AUBE]**), une devise et un **emblème**
   (une forme et deux couleurs, comme les cadres). Le **chef** (un seul, rôle transmissible) et les **officiers**

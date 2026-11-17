@@ -1,0 +1,12 @@
+{
+  "texture": "stories/singularis/don.png",
+  "frameWidth": 16,
+  "frameHeight": 16,
+  "pivot": [8, 8],
+  "clips": {
+    "seve": {"row": 0, "count": 6, "fps": 10, "loop": true},
+    "feu": {"row": 1, "count": 6, "fps": 10, "loop": true},
+    "glace": {"row": 2, "count": 6, "fps": 10, "loop": true},
+    "lumiere": {"row": 3, "count": 6, "fps": 10, "loop": true}
+  }
+}

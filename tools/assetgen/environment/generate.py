@@ -24,7 +24,7 @@ Produces (paths relative to assets/):
   ui/planets/aethra.png, ui/planets/aethra_banner.png                         (aethra_planet)
   ui/planets/confins.png, ui/planets/confins_banner.png                       (confins_planet)
   stories/{singularis,pyrrhax,monolithe,kraken,phenix,liche,titan}_{1..6}.png (giga boss stories, 2.51; kraken 2.53, phenix 2.56, liche 2.57, titan 2.58)  (stories)
-  stories/<boss>/*.png, animations/stories/<boss>_*.json, data/stories/<boss>.json (animated scenes: pyrrhax 2.60, monolithe, kraken, phenix, liche and titan 2.63)  (stories)
+  stories/<boss>/*.png, animations/stories/<boss>_*.json, data/stories/<boss>.json (animated scenes: pyrrhax 2.60, the six others 2.63)  (stories)
 All generators are deterministic (fixed seeds).
 """
 import os

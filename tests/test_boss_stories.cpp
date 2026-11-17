@@ -126,7 +126,7 @@ TEST_CASE("boss stories: every giga boss of the game has its story of six lines,
 // read as version 1 (their paintings).
 namespace {
 
-const std::set<std::string> kAnimated = {"pyrrhax", "monolithe", "kraken", "phenix", "liche", "titan"};
+const std::set<std::string> kAnimated = {"pyrrhax", "monolithe", "kraken", "phenix", "liche", "titan", "singularis"};
 
 // The checks every story told in animated scenes passes; the sheets its scenes use go in `sheets`.
 // `shadowShots`: the shots where a character casts its shadow on the ground (not in deep space).
@@ -348,6 +348,21 @@ TEST_CASE("boss stories v2: the Titan in animated scenes") {
                                       "etoiles"}));
     CHECK(sheets.count("animations/titan.json") == 1);  // the Titan
     CHECK(sheets.count("animations/nova.json") == 1);   // the visitor it takes for a thief
+}
+
+// 2.63: Singularis's story (« Le Cœur effondré »): Lyse the young star, the three planets, her gifts,
+// the machines drinking her light, the last spark, the collapse. Deep space: no shadow on a ground.
+TEST_CASE("boss stories v2: Singularis in animated scenes") {
+    BossStories stories;
+    CHECK(stories.loadDefault());
+    const BossStory* p = stories.find("singularis");
+    CHECK(p != nullptr);
+    if (!p) return;
+    std::set<std::string> sheets;
+    checkAnimatedStory(*p, sheets, 0);
+    CHECK(hasSheets(sheets, "singularis", {"lyse", "foret", "volcan", "glace", "don", "machine", "grain", "astre"}));
+    CHECK(hasSheets(sheets, "singularis", {"cosmos", "etoiles", "voile", "poussiere"}));
+    CHECK(sheets.count("animations/singularis.json") == 1);  // the collapsed heart, awake
 }
 
 TEST_CASE("boss stories v2: the format (keys, clips, camera, shakes, flashes; version 1 unchanged)") {
