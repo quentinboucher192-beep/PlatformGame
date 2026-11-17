@@ -2057,14 +2057,21 @@ interface WonRow extends Omit<CreationLookColumns, "kind"> {
     title_text: string | null;
     title_color: string | null;
     creation_name: string | null;
+    /** 2.60: the condition it was won by (the rule of that challenge), when the challenge still has it. */
+    rule_condition: string | null;
+    rule_value: number | null;
 }
+
+/** SQL: the rule of its challenge a reward won (`w`) was given by (a reward is given once per challenge). */
+const RULE_OF_WON = `WHERE rr.challenge_id = w.challenge_id AND rr.reward_kind = w.reward_kind AND rr.reward_ref = w.reward_ref ORDER BY rr.position LIMIT 1`;
 
 /**
  * GET /players/me/rewards (2.43): `{ rewards: [{ challenge: { id, kind, period, date, title },
  * kind: item|title|suit|trail|frame|victory, ref, item: { id, category, name } | null, title:
  * { id, text, color } | null, suit?: { id, name, colors: { suit, accent, scarf } }, creation?:
- * { id, kind, name, colors, style, ... } (2.59), granted_at }] }`: the rewards of challenges I
- * won, the most recent first (the rewards due are granted first). An item of the catalogue
+ * { id, kind, name, colors, style, ... } (2.59), granted_at, (2.60) condition, value }] }`: the
+ * rewards of challenges I won (`condition` and `value`: the rule of that challenge it was won by,
+ * "tier" 1..3, "top" N or "finished"; null when unknown), the most recent first (the rewards due are granted first). An item of the catalogue
  * unlocks in the Collection, a title ("srv:<id>") or a creation of the server (a suit
  * "srvsuit:<id>"; 2.59 a trail "srvtrail:<id>", a frame "srvframe:<id>", a victory effect
  * "srvvictory:<id>": its current name and look) may be worn (PUT /players/me/cosmetics).
@@ -2074,7 +2081,9 @@ export async function myRewards(ctx: Ctx): Promise<Response> {
     await grantQuietly(ctx, { limit: 5 });
     const rows = await ctx.env.DB.prepare(
         `SELECT w.challenge_id, w.reward_kind AS kind, w.reward_ref AS ref, w.granted_at, c.kind AS challenge_kind, c.period, c.date, c.level_title,
-                t.text AS title_text, t.color AS title_color, ${CREATION_COLUMNS("s")}
+                t.text AS title_text, t.color AS title_color, ${CREATION_COLUMNS("s")},
+                (SELECT rr.condition FROM challenge_reward_rules rr ${RULE_OF_WON}) AS rule_condition,
+                (SELECT rr.condition_value FROM challenge_reward_rules rr ${RULE_OF_WON}) AS rule_value
          FROM player_won_rewards w LEFT JOIN challenges c ON c.id = w.challenge_id
          LEFT JOIN server_titles t ON w.reward_kind = 'title' AND t.id = CAST(substr(w.reward_ref, 5) AS INTEGER)
          ${CREATION_JOIN("s", "w.reward_kind", "w.reward_ref")}
@@ -2109,6 +2118,9 @@ export async function myRewards(ctx: Ctx): Promise<Response> {
             ...(suit ? { suit } : {}),
             ...(creation ? { creation } : {}),
             granted_at: r.granted_at,
+            // 2.60: what it was won by (« Or atteint », « Top 10 final »...): the game's tooltips say it.
+            condition: r.rule_condition ?? null,
+            value: r.rule_condition ? (r.rule_value ?? 0) : null,
         });
     }
     return json(ctx, { rewards });

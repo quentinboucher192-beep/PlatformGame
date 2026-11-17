@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <vector>
 
 #include "game/GameServices.h"
 #include "ui/screens/CosmeticFx.h"
@@ -176,6 +177,14 @@ std::string prizeConditionShort(const ChallengePrize& p) {
     return "Niveau fini";
 }
 
+std::string conditionShort(const std::string& condition, int value) {
+    if (condition != "tier" && condition != "top" && condition != "finished") return {};
+    ChallengePrize p;
+    p.condition = condition;
+    p.value = value;
+    return prizeConditionShort(p);
+}
+
 std::string prizeConditionText(const ChallengePrize& p) {
     if (p.condition == "tier") {
         if (p.value >= 3) return "Atteindre le palier Or sur ce défi.";
@@ -283,6 +292,159 @@ void drawCosmeticPreview(GameServices& g, const CosmeticItem& it, const Rect& bo
     }
 }
 
+// ------------------------------------------------------------------ exclusive items (2.60)
+
+bool exclusiveItem(const CosmeticItem& it) { return it.serverMade() || it.challengeReward(); }
+
+Color exclusiveColor() { return {255, 204, 112, 255}; }
+
+void drawExclusiveAura(UIContext& ui, const Rect& box, float radius, float spread) {
+    if (spread < 1.0f || box.w <= 1.0f || box.h <= 1.0f) return;
+    const float t = ui.time();
+    // A slow breath (about 2.7 s), and a brighter part that goes round the thumbnail.
+    const float pulse = 0.62f + 0.38f * std::sin(t * 2.3f);
+    const Color c = exclusiveColor();
+    radius = std::clamp(radius, 0.0f, std::min(box.w, box.h) * 0.5f);
+    constexpr int kSeg = 6;
+    const Vec2 centers[4] = {{box.right() - radius, box.y + radius},
+                             {box.right() - radius, box.bottom() - radius},
+                             {box.x + radius, box.bottom() - radius},
+                             {box.x + radius, box.y + radius}};
+    const float starts[4] = {-kPi / 2, 0, kPi / 2, kPi};
+    // Kept from a call to the next (the interface draws on one thread): no allocation per frame.
+    static std::vector<SDL_Vertex> v;
+    static std::vector<int> idx;
+    v.clear();
+    idx.clear();
+    auto vtx = [](Vec2 p, Color col) {
+        SDL_Vertex x{};
+        x.position = {p.x, p.y};
+        x.color = {col.r / 255.0f, col.g / 255.0f, col.b / 255.0f, col.a / 255.0f};
+        return x;
+    };
+    const float total = 4.0f * (kSeg + 1);
+    for (int k = 0; k < 4; ++k)
+        for (int i = 0; i <= kSeg; ++i) {
+            const float a = starts[k] + (kPi / 2) * static_cast<float>(i) / kSeg;
+            const Vec2 dir{std::cos(a), std::sin(a)};
+            const float u = static_cast<float>(k * (kSeg + 1) + i) / total;
+            const float shimmer = 0.7f + 0.3f * std::sin((u - t * 0.18f) * 2.0f * kPi);
+            const float alpha = std::clamp(150.0f * pulse * shimmer, 0.0f, 255.0f);
+            // The glow fades from the thumbnail's edge to `spread` beyond it (never further).
+            v.push_back(vtx(centers[k] + dir * radius, c.withAlpha(static_cast<uint8_t>(alpha))));
+            v.push_back(vtx(centers[k] + dir * (radius + spread), c.withAlpha(0)));
+        }
+    const int n = static_cast<int>(v.size() / 2);
+    for (int i = 0; i < n; ++i) {
+        const int a = i * 2, b = ((i + 1) % n) * 2;
+        idx.insert(idx.end(), {a, b, b + 1, a, b + 1, a + 1});
+    }
+    ui.r().drawGeometry(nullptr, v, idx);
+    // Its edge, crisp, on the thumbnail's border.
+    const float line = std::max(1.0f, ui.s(1.2f));
+    ui.r().drawRoundedRect(box.expanded(std::min(spread, line)), radius + std::min(spread, line), c.withAlphaF(0.32f + 0.4f * pulse), line);
+}
+
+std::string challengeOriginText(const std::string& kind, const std::string& period, const std::string& date) {
+    // « 10/11/2026 » from the first day of the period ("2026-11-10").
+    auto day = [](const std::string& d) {
+        int yy = 0, mm = 0, dd = 0;
+        if (d.size() < 10 || std::sscanf(d.c_str(), "%4d-%2d-%2d", &yy, &mm, &dd) != 3 || mm < 1 || mm > 12 || dd < 1 || dd > 31) return std::string();
+        char b[16];
+        std::snprintf(b, sizeof b, "%02d/%02d/%04d", dd, mm, yy);
+        return std::string(b);
+    };
+    if (kind == "monthly") {
+        static const char* const kMonths[12] = {"janvier", "février", "mars",      "avril",   "mai",      "juin",
+                                                "juillet", "août",    "septembre", "octobre", "novembre", "décembre"};
+        int yy = 0, mm = 0;
+        const std::string& m = period.size() >= 7 ? period : date;
+        if (std::sscanf(m.c_str(), "%4d-%2d", &yy, &mm) != 2 || mm < 1 || mm > 12) return {};
+        // « du mois d'avril, d'août, d'octobre »: elided before a vowel.
+        const std::string month = kMonths[mm - 1];
+        const bool vowel = month[0] == 'a' || month[0] == 'o';
+        const std::string year = std::to_string(yy);
+        if (vowel) return "défi du mois d'" + month + " " + year;
+        return "défi du mois de " + month + " " + year;
+    }
+    if (kind == "weekly") {
+        const std::string d = day(date);
+        return d.empty() ? std::string() : "défi de la semaine du " + d;
+    }
+    if (kind == "daily") {
+        const std::string d = day(date.size() >= 10 ? date : period);
+        return d.empty() ? std::string() : "défi du jour du " + d;
+    }
+    return {};
+}
+
+std::string exclusiveOriginText(const std::string& kind, const std::string& period, const std::string& date, const std::string& condition, int value) {
+    const std::string from = challengeOriginText(kind, period, date);
+    if (from.empty()) return "Exclusif aux défis";
+    const std::string cond = conditionShort(condition, value);
+    return "Exclusif : " + from + (cond.empty() ? std::string() : " · " + cond);
+}
+
+std::string exclusiveText(GameServices& g, const CosmeticItem& it) {
+    const WonRewards& won = g.challenges.wonRewards();
+    if (const WonReward* w = won.origin(it.id)) return exclusiveOriginText(w->challengeKind, w->period, w->date, w->condition, w->value);
+    if (it.challengeReward()) return "Exclusif aux défis : " + challengeConditionText(it);
+    return "Exclusif aux défis";
+}
+
+std::string reserveText() { return "Réserve : pas encore donné en récompense"; }
+
+std::string adminCreationTip(const Json& c, bool* reserve) {
+    if (reserve) *reserve = false;
+    if (const Json& g = jfield(c, "given_by", Json()); g.is_object())
+        return exclusiveOriginText(jstr(g, "kind"), jstr(g, "period"), jstr(g, "date"), jstr(g, "condition"), jget<int>(g, "value", 0));
+    if (jget<int>(c, "uses", 0) > 0 || jget<int>(c, "owners", 0) > 0) return "Exclusif aux défis";
+    if (reserve) *reserve = true;
+    return reserveText();
+}
+
+bool ExclusiveTip::wanted(const UIContext& ui, bool hovered, bool focused) { return ui.usingPointer() ? hovered : focused; }
+
+void ExclusiveTip::offer(const Rect& tile, std::string name, std::string text, bool reserve) {
+    tile_ = tile;
+    name_ = std::move(name);
+    text_ = std::move(text);
+    reserve_ = reserve;
+}
+
+void ExclusiveTip::draw(GameServices& g) {
+    if (text_.empty()) return;
+    UIContext& ui = g.ui;
+    Renderer& r = ui.r();
+    const float W = ui.screenW(), H = ui.screenH();
+    const float pad = ui.s(14);
+    const float fsName = 17, fsText = fz(ui, 15);
+    // As wide as its texts need (at most 380, never wider than the screen), then as high.
+    const float maxInner = std::min(ui.s(380), W - ui.s(24)) - 2 * pad;
+    const float nameW = ui.text().measure(name_, FontFace::Bold, ui.s(fsName)).x;
+    const float textW = ui.text().measure(text_, FontFace::Body, ui.s(fsText)).x;
+    const float inner = std::max(ui.s(120), std::min(maxInner, std::max(nameW, textW) + ui.s(2)));
+    const float textH = ui.text().measureWrapped(text_, FontFace::Body, ui.s(fsText), inner).y;
+    const float nameH = name_.empty() ? 0.0f : ui.s(26);
+    const float w = inner + 2 * pad, h = pad + nameH + textH + pad;
+    // Above the tile (its left edge on the tile's) when there is room, else below; always on screen.
+    Rect box{tile_.x, tile_.y - ui.s(10) - h, w, h};
+    if (box.y < ui.s(8)) box.y = tile_.bottom() + ui.s(10);
+    box.y = std::clamp(box.y, ui.s(8), std::max(ui.s(8), H - h - ui.s(8)));
+    box.x = std::clamp(box.x, ui.s(8), std::max(ui.s(8), W - w - ui.s(8)));
+    const Color c = reserve_ ? ui.theme().textDim : exclusiveColor();
+    r.fillRoundedRect(box.expanded(ui.s(1)), ui.s(12), Color{2, 4, 10, 200});
+    r.fillRoundedRect(box, ui.s(11), Color{10, 15, 32, 250});
+    r.drawRoundedRect(box, ui.s(11), c.withAlphaF(0.9f), std::max(1.0f, ui.s(1.6f)));
+    float y = box.y + pad;
+    if (!name_.empty()) {
+        const float nf = std::max(ui.fitFont(name_, FontFace::Bold, fsName, inner, 0.75f), 11.5f / ui.s(1.0f));
+        ui.label(ui.elide(name_, FontFace::Bold, nf, inner), {box.x + pad, y + ui.s(11)}, nf, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+        y += nameH;
+    }
+    ui.labelWrapped(text_, {box.x + pad, y}, inner, fsText, reserve_ ? ui.theme().text : c);
+}
+
 float ChallengeRewardRow::tileWidth(GameServices& g, const CosmeticItem& it, float h) {
     if (it.category != "title") return h;
     UIContext& ui = g.ui;
@@ -295,10 +457,17 @@ void ChallengeRewardRow::setPrizes(GameServices& g, const DailyChallenge* c) {
     prizeChallenge_.clear();
     if (!c) return;
     prizeChallenge_ = c->id;
+    prizeKind_ = challengeKindId(c->kind);
+    prizePeriod_ = c->period;
+    prizeDate_ = c->date;
     prizeEndsMs_ = c->endsAtMs;
     const WonRewards& won = g.challenges.wonRewards();
     for (const ChallengePrize& p : c->prizes)
-        if (auto look = prizeLook(g, p)) prizes_.push_back({std::move(*look), p, won.wonAt(c->id, p.ref)});
+        if (auto look = prizeLook(g, p)) {
+            // 2.60: exclusive (a creation of the server, a reward of the challenges of the catalogue): this challenge, its condition.
+            const bool ex = exclusiveItem(*look);
+            prizes_.push_back({std::move(*look), p, won.wonAt(c->id, p.ref), ex});
+        }
 }
 
 float ChallengeRewardRow::width(GameServices& g, const std::vector<const CosmeticItem*>& items, float h) {
@@ -339,6 +508,8 @@ const CosmeticItem* ChallengeRewardRow::draw(GameServices& g, const std::string&
         const bool focused = ui.focused(name);
         const Color tc = prizeColor(pz.prize);
         r.fillRoundedRect(tile, ui.s(9), pz.won ? Color{14, 34, 30, 245} : Color{11, 18, 38, 245});
+        // 2.60: an exclusive item's aura, between its preview and the tile's border (inside the tile).
+        if (pz.exclusive) drawExclusiveAura(ui, tile.expanded(-ui.s(5)), ui.s(6), ui.s(4));
         drawCosmeticPreview(g, pz.item, tile.expanded(-ui.s(5)), ui.time(), pz.won || pz.prize.serverMade());
         Color border = focused || hovered ? ui.theme().accent : pz.won ? kGreen.withAlpha(210) : tc.withAlphaF(0.75f);
         r.drawRoundedRect(tile, ui.s(9), border, std::max(1.0f, ui.s(focused || hovered ? 2.2f : 1.4f)));
@@ -367,6 +538,8 @@ const CosmeticItem* ChallengeRewardRow::draw(GameServices& g, const std::string&
         const int tier = challengeRewardTier(*it);
         const Color tc = challengeTierColor(tier);
         r.fillRoundedRect(tile, ui.s(9), got ? Color{14, 34, 30, 245} : Color{11, 18, 38, 245});
+        // 2.60: a reward of the challenges is exclusive: its aura, inside the tile.
+        if (exclusiveItem(*it)) drawExclusiveAura(ui, tile.expanded(-ui.s(5)), ui.s(6), ui.s(4));
         drawCosmeticPreview(g, *it, tile.expanded(-ui.s(5)), ui.time(), got);
         // Locked: how far my verified results go, a thin bar along the bottom.
         if (!got) {
@@ -422,12 +595,19 @@ void ChallengeRewardRow::drawTooltip(GameServices& g) {
     }
     const std::string hint = "voir dans la Collection";
     const float fsName = 19, fsSub = fz(ui, 14), fsCond = fz(ui, 16), fsNote = fz(ui, 13.5f), fsState = fz(ui, 15.5f), fsHint = fz(ui, 13.5f);
+    // 2.60: exclusive to the challenges, and (once won at one) where: « Exclusif : défi du jour du… ».
+    const WonReward* origin = p.won ? p.won->origin(it.id) : nullptr;
+    const std::string excl = origin ? exclusiveOriginText(origin->challengeKind, origin->period, origin->date, origin->condition, origin->value)
+                                    : std::string("Exclusif aux défis");
+    const float fsExcl = fz(ui, 14.5f);
+    const float exclH = ui.text().measureWrapped(excl, FontFace::Body, ui.s(fsExcl), inner).y;
     const float condH = ui.text().measureWrapped(cond, FontFace::Body, ui.s(fsCond), inner).y;
     const float noteH = ui.text().measureWrapped(note, FontFace::Body, ui.s(fsNote), inner).y;
     const float stateH = ui.text().measureWrapped(state, FontFace::Bold, ui.s(fsState), inner).y;
     const bool bar = !got && known;
     const float hintH = ui.s(26);
-    float h = pad + ui.s(26) + ui.s(22) + ui.s(10) + condH + ui.s(6) + noteH + ui.s(12) + stateH + (bar ? ui.s(14) : 0.0f) + ui.s(12) + hintH + pad;
+    float h = pad + ui.s(26) + ui.s(22) + ui.s(6) + exclH + ui.s(10) + condH + ui.s(6) + noteH + ui.s(12) + stateH + (bar ? ui.s(14) : 0.0f) + ui.s(12) +
+              hintH + pad;
     // Above the tile (its left edge on the tile's) when there is room, else below; always on screen.
     Rect box{tipTile_.x, tipTile_.y - ui.s(12) - h, w, h};
     if (box.y < ui.s(8)) box.y = tipTile_.bottom() + ui.s(12);
@@ -445,7 +625,9 @@ void ChallengeRewardRow::drawTooltip(GameServices& g) {
              VAlign::Middle);
     y += ui.s(26);
     ui.label(ui.elide(sub, FontFace::Body, fsSub, inner), {x, y + ui.s(11)}, fsSub, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
-    y += ui.s(22) + ui.s(10);
+    y += ui.s(22) + ui.s(6);
+    ui.labelWrapped(excl, {x, y}, inner, fsExcl, exclusiveColor());
+    y += exclH + ui.s(10);
     ui.labelWrapped(cond, {x, y}, inner, fsCond, tc);
     y += condH + ui.s(6);
     ui.labelWrapped(note, {x, y}, inner, fsNote, ui.theme().textDim);
@@ -511,11 +693,15 @@ void ChallengeRewardRow::drawPrizeTooltip(GameServices& g, const Prize& pz) {
     const bool opens = !pz.prize.serverMade() || pz.won;
     const std::string hint = "voir dans la Collection";
     const float fsName = 19, fsSub = fz(ui, 14), fsCond = fz(ui, 16), fsNote = fz(ui, 13.5f), fsState = fz(ui, 15.5f), fsHint = fz(ui, 13.5f);
+    // 2.60: an exclusive item: « Exclusif : défi du jour du 10/11/2026 · Or atteint ».
+    const float fsExcl = fz(ui, 14.5f);
+    const std::string excl = pz.exclusive ? exclusiveOriginText(prizeKind_, prizePeriod_, prizeDate_, pz.prize.condition, pz.prize.value) : std::string();
+    const float exclH = excl.empty() ? 0.0f : ui.text().measureWrapped(excl, FontFace::Body, ui.s(fsExcl), inner).y + ui.s(6);
     const float condH = ui.text().measureWrapped(cond, FontFace::Body, ui.s(fsCond), inner).y;
     const float noteH = ui.text().measureWrapped(note, FontFace::Body, ui.s(fsNote), inner).y;
     const float stateH = ui.text().measureWrapped(state, FontFace::Bold, ui.s(fsState), inner).y;
     const float hintH = opens ? ui.s(26) : 0.0f;
-    float h = pad + ui.s(26) + ui.s(22) + ui.s(10) + condH + ui.s(6) + noteH + ui.s(12) + stateH + (opens ? ui.s(12) + hintH : 0.0f) + pad;
+    float h = pad + ui.s(26) + ui.s(22) + exclH + ui.s(10) + condH + ui.s(6) + noteH + ui.s(12) + stateH + (opens ? ui.s(12) + hintH : 0.0f) + pad;
     Rect box{tipTile_.x, tipTile_.y - ui.s(12) - h, w, h};
     if (box.y < ui.s(8)) box.y = tipTile_.bottom() + ui.s(12);
     box.y = std::clamp(box.y, ui.s(8), std::max(ui.s(8), H - h - ui.s(8)));
@@ -530,7 +716,13 @@ void ChallengeRewardRow::drawPrizeTooltip(GameServices& g, const Prize& pz) {
     ui.label(ui.elide(it.name, FontFace::Bold, nf, inner), {x, y + ui.s(13)}, nf, nameC, Align::Left, FontFace::Bold, VAlign::Middle);
     y += ui.s(26);
     ui.label(ui.elide(sub, FontFace::Body, fsSub, inner), {x, y + ui.s(11)}, fsSub, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
-    y += ui.s(22) + ui.s(10);
+    y += ui.s(22);
+    if (!excl.empty()) {
+        y += ui.s(6);
+        ui.labelWrapped(excl, {x, y}, inner, fsExcl, exclusiveColor());
+        y += exclH - ui.s(6);
+    }
+    y += ui.s(10);
     ui.labelWrapped(cond, {x, y}, inner, fsCond, tc);
     y += condH + ui.s(6);
     ui.labelWrapped(note, {x, y}, inner, fsNote, ui.theme().textDim);

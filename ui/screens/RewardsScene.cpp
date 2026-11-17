@@ -7,6 +7,7 @@
 #include <map>
 
 #include "game/GameServices.h"
+#include "ui/screens/ChallengeRewardsUi.h"
 #include "ui/screens/CosmeticFx.h"
 #include "ui/screens/Navigation.h"
 #include "ui/widgets/Glyphs.h"
@@ -139,11 +140,13 @@ public:
         float tw2 = (tilesW - gap * (cols - 1)) / cols;
         ui.beginScroll("tiles", {rx, ry, rw, listBottom - ry}, listH);
         float so = ui.scrollOffset();
+        tip_.clear();
         for (size_t i = 0; i < items_.size(); ++i) {
             const CosmeticItem& it = *items_[i];
             Rect c{rx + (tw2 + gap) * static_cast<float>(i % cols), ry - so + (th + gap) * static_cast<float>(i / cols), tw2, th};
             bool on = picked_[i];
-            if (ui.hotspot("tile" + std::to_string(i), c)) {
+            bool hovered = false;
+            if (ui.hotspot("tile" + std::to_string(i), c, &hovered)) {
                 picked_[i] = !on;
                 // Only one item of a category can be worn.
                 if (picked_[i])
@@ -153,6 +156,12 @@ public:
             r.fillRoundedRect(c, ui.s(12), on ? ui.theme().accent.withAlpha(30) : Color{14, 20, 40, 235});
             r.drawRoundedRect(c, ui.s(12), on ? ui.theme().accent : ui.theme().accent.withAlpha(40), std::max(1.0f, ui.s(1.5f)));
             Rect thumb{c.x + ui.s(10), c.y + ui.s(10), c.w - ui.s(20), ui.s(84)};
+            // 2.60: an exclusive item (a reward of the challenges): its aura in the tile's margin
+            // around the thumbnail (4 of the 6 pixels above the name), and its tooltip.
+            if (exclusiveItem(it)) {
+                drawExclusiveAura(ui, thumb, ui.s(8), ui.s(4));
+                if (ExclusiveTip::wanted(ui, hovered, ui.focused("tile" + std::to_string(i)))) tip_.offer(c, it.name, exclusiveText(g_, it));
+            }
             r.fillRoundedRect(thumb, ui.s(8), Color{11, 18, 38, 255});
             drawThumb(it, thumb);
             const CosmeticCategory* cat = g_.cosmetics.category(it.category);
@@ -191,6 +200,7 @@ public:
             Glyphs::drawHint(ui, Action::MenuBack, "plus tard", {ui.screenW() * 0.5f + ui.s(90), hy}, ui.s(30));
         }
         ui.popId();
+        tip_.draw(g_);  // over everything
         if (equip && n > 0) {
             for (size_t i = 0; i < items_.size(); ++i)
                 if (picked_[i]) g_.collection.equip(items_[i]->category, items_[i]->id);
@@ -263,6 +273,7 @@ private:
     CosmeticProgress progress_;
     std::vector<const CosmeticItem*> items_;
     std::vector<bool> picked_;
+    ExclusiveTip tip_;  // 2.60: the tooltip of the exclusive reward hovered or focused
     TrailFx trail_;
     Vec2 trailCenter_;
     float trailRadius_ = 60.0f;

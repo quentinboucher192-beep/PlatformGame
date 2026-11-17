@@ -2194,6 +2194,20 @@
    "parents": [
     "stats.bosses"
    ]
+  },
+  {
+   "id": "admin.creations.reserve",
+   "version": "2.62.0",
+   "parents": [
+    "admin.tab.creations"
+   ]
+  },
+  {
+   "id": "collection.exclusive",
+   "version": "2.62.0",
+   "parents": [
+    "collection.tab.wardrobe"
+   ]
   }
  ]
 }

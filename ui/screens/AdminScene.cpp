@@ -269,6 +269,11 @@ public:
         else if (backups_.modal()) backups_.drawModal();
         else if (campaign_.modal()) campaign_.drawModal();
         else if (clans_.modal()) clans_.drawModal();
+        // 2.60: the tooltip of an exclusive item (the rewards of a challenge, the creations), over everything.
+        if (confirmId_.empty() && !devicePlayer_.is_object()) {
+            if (tab_ == kTabCalendar) calendar_.drawTooltip();
+            else if (tab_ == kTabCreations) creations_.drawTooltip();
+        }
         ui.end();
         if (back) g_.app.switchScene(makeMainMenu(g_), 0.3f);
     }

@@ -1675,8 +1675,8 @@ Détails : [CREATIONS.md](CREATIONS.md).
 
 | Méthode | Route | Corps / réponse |
 |---|---|---|
-| GET | `/creations` (public) | `{ creations: [{ id, ref: "srv<kind>:<n>", kind, name, colors, style?, width?, life_ms?, particles?, updated_at }] }` : celles en usage, et les archivées encore gagnées ou données par un défi (une combinaison : comme en 2.45, `colors` seulement) |
-| GET | `/admin/creations` | `{ creations: [{ id, ref, kind, name, colors, style?, width?, life_ms?, particles?, created_at, updated_at, created_by, archived, archived_at, uses, owners }], kinds, styles: { trail, frame, victory }, max_chars }` |
+| GET | `/creations` (public) | `{ creations: [{ id, ref: "srv<kind>:<n>", kind, name, colors, style?, width?, life_ms?, particles?, updated_at }] }` : 2.60, seulement celles qu'un joueur peut rencontrer — gagnées par un joueur, ou données par un défi commencé (archivées ou non) ; jamais la réserve ni une création prévue pour un défi à venir (une combinaison : comme en 2.45, `colors` seulement) |
+| GET | `/admin/creations` | `{ creations: [{ id, ref, kind, name, colors, style?, width?, life_ms?, particles?, created_at, updated_at, created_by, archived, archived_at, uses, owners, game_reserve, status, given_by }], kinds, styles: { trail, frame, victory }, max_chars }` — 2.60 : `game_reserve` (réserve du jeu, `created_by` `null`), `status` `reserve` (jamais donnée) / `given` / `archived`, `given_by` le premier défi qui la donne `{ id, kind, period, date, condition, value }` ou `null` |
 | POST | `/admin/creations` | `{ kind: "suit", name, colors: { suit, accent, scarf } }`, `{ kind: "trail", name, colors: { start, end }, style, width: 50..200, life_ms: 200..1000, particles }`, `{ kind: "frame", name, colors: { border, glow }, style }`, `{ kind: "victory", name, colors: { main, second }, style }` → `201 { creation }` |
 | PUT | `/admin/creations/{id}` | `{ name, colors, (style, width, life_ms, particles selon le type), updated_at? }` → `{ creation, changed }` ; `409 CREATION_ARCHIVED` / `CREATION_CHANGED` |
 | POST | `/admin/creations/{id}/archive` | `{ archived: true\|false }` → `{ creation, changed }` |
@@ -1687,7 +1687,8 @@ traînée hors bornes, champ inconnu), `409` pour un nom déjà pris dans le mê
 Récompenses d'un défi (`PUT /admin/challenges/{id}/rewards`) : `kind` `trail`, `frame` ou
 `victory` avec `ref` `srvtrail:<n>`, `srvframe:<n>`, `srvvictory:<n>` ; dans les défis et
 `GET /players/me/rewards`, la récompense porte alors `creation: { id, kind, name, colors, style,
-… }`. Les classements donnent `player.frame` (`srvframe:<n>` pour un cadre créé) et
+… }`. 2.60 : chaque récompense de `GET /players/me/rewards` dit aussi par quelle règle de son défi
+elle a été gagnée (`condition` `tier` / `top` / `finished`, `value` ; `null` si inconnue). Les classements donnent `player.frame` (`srvframe:<n>` pour un cadre créé) et
 `player.trail` (la traînée, dessinée derrière le fantôme).
 ### 8.10 ter Entités natives modifiées par un admin (2.46)
 
