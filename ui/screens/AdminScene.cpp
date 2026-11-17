@@ -35,6 +35,9 @@
 #include "ui/screens/AdminBackups.h"
 #include "ui/screens/AdminCampaign.h"
 #include "ui/screens/AdminClans.h"
+#include "ui/screens/AdminRaids.h"
+#include "game/online/Raids.h"
+#include "ui/online/RaidWidgets.h"
 #include "ui/screens/AdminCalendar.h"
 #include "ui/screens/AdminCreations.h"
 #include "ui/screens/AdminEnemies.h"
@@ -99,12 +102,12 @@ std::string presenceText(const std::string& p) {
 }
 
 const char* kFilters[] = {"all", "admins", "online"};
-const char* kKinds[] = {"all", "role", "challenge", "campaign", "creation", "enemy", "clan", "refused"};
+const char* kKinds[] = {"all", "role", "challenge", "campaign", "creation", "enemy", "clan", "raid", "refused"};
 
 /// The tabs: Joueurs, Calendrier des défis (2.41), Journal, Sauvegardes, Campagne (2.44), Créations (2.45), Ennemis (2.46),
-/// Clans (2.66), Assets (2.63).
+/// Clans (2.66), Assets (2.63), Raids (the world events of the clan raids, phase 1).
 constexpr int kTabPlayers = 0, kTabCalendar = 1, kTabLog = 2, kTabBackups = 3, kTabCampaign = 4, kTabCreations = 5, kTabEnemies = 6,
-              kTabClans = 7, kTabAssets = 8;
+              kTabClans = 7, kTabAssets = 8, kTabRaids = 9;
 
 /// "20/11" of "2026-11-20".
 std::string shortDate(const std::string& date) { return date.size() >= 10 ? date.substr(8, 2) + "/" + date.substr(5, 2) : date; }
@@ -129,7 +132,9 @@ public:
           creations_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
           enemies_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
           clans_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
-          assets_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const std::string& id) { showEnemy(id); }) {
+          assets_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const std::string& id) { showEnemy(id); }),
+          raids_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }) {
+        if (open.rfind("raids", 0) == 0) tab_ = kTabRaids;
         if (open.rfind("clans", 0) == 0) tab_ = kTabClans;  // 2.66
         if (open.rfind("backups", 0) == 0) tab_ = kTabBackups;
         // "creations[:new]" (the editor opened on a new suit); 2.59 "creations:<kind>[:new|:<id>]".
@@ -204,7 +209,7 @@ public:
         ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
         bg_.render(g_, 0.6f);
         const bool modal = !confirmId_.empty() || devicePlayer_.is_object() || calendar_.modal() || backups_.modal() || campaign_.modal() ||
-                           clans_.modal() || creations_.modal();
+                           clans_.modal() || creations_.modal() || raids_.modal();
         const bool top = g_.app.topScene() == this;
         ui.inputEnabled = top && !modal;
         // 2.41: wider (the calendar's eight columns and its editor side by side).
@@ -221,7 +226,7 @@ public:
         // The tabs after the title when they fit, else on the line below. Equal tabs, each as
         // wide as its longest label needs (« Calendrier des défis »).
         static const std::vector<std::string> kTabs = {"Joueurs", "Calendrier des défis", "Journal", "Sauvegardes", "Campagne", "Créations", "Ennemis",
-                                                       "Clans", "Assets"};
+                                                       "Clans", "Assets", "Raids"};
         float tabW = 0.0f;
         for (const std::string& t : kTabs) tabW = std::max(tabW, ui.text().measure(t, FontFace::Bold, ui.s(20)).x + ui.s(44));
         float tabsW = tabW * static_cast<float>(kTabs.size()), tabsX = x0_ + titleW + ui.s(28);
@@ -251,6 +256,8 @@ public:
         ui.newBadge("tabclans", clanTab, "admin.tab.clans", true, true);
         Rect assetsTab{tabsR.x + kTabAssets * tabW + ui.s(2), tabsR.y, tabW - ui.s(4), tabsR.h};
         ui.newBadge("tabassets", assetsTab, "admin.tab.assets", true, true);
+        Rect raidsTab{tabsR.x + kTabRaids * tabW + ui.s(2), tabsR.y, tabW - ui.s(4), tabsR.h};
+        ui.newBadge("tabraids", raidsTab, "admin.tab.raids", true, true);
         if (tab != tab_) {
             if (tab_ == kTabAssets) assets_.leave();  // its sound stops
             tab_ = tab;
@@ -283,6 +290,10 @@ public:
                 if (ui.featureSeen && ui.isNew("admin.tab.assets")) ui.featureSeen("admin.tab.assets");
                 assets_.enter();
             }
+            if (tab_ == kTabRaids) {
+                if (ui.featureSeen && ui.isNew("admin.tab.raids")) ui.featureSeen("admin.tab.raids");
+                raids_.enter();
+            }
         }
         Rect body{x0_, bodyY, W_, ui.screenH() - bodyY - ui.s(64)};
         if (tab_ == kTabCalendar) {
@@ -299,6 +310,7 @@ public:
             else if (tab_ == kTabEnemies) enemies_.draw(inner);
             else if (tab_ == kTabClans) clans_.draw(inner);
             else if (tab_ == kTabAssets) assets_.draw(inner);
+            else if (tab_ == kTabRaids) raids_.draw(inner);
             else drawLog(inner);
         }
         drawStatus();
@@ -310,6 +322,7 @@ public:
         else if (backups_.modal()) backups_.drawModal();
         else if (campaign_.modal()) campaign_.drawModal();
         else if (clans_.modal()) clans_.drawModal();
+        else if (raids_.modal()) raids_.drawModal();
         else if (creations_.modal()) creations_.drawModal();  // 2.61: the Studio's windows
         // 2.60: the tooltip of an exclusive item (the rewards of a challenge, the creations), over everything.
         if (confirmId_.empty() && !devicePlayer_.is_object() && !creations_.modal()) {
@@ -354,6 +367,7 @@ private:
         if (tab_ == kTabEnemies) enemies_.enter(true);
         if (tab_ == kTabClans) clans_.enter(true);
         if (tab_ == kTabAssets) assets_.enter();
+        if (tab_ == kTabRaids) raids_.enter(true);
     }
 
     /// ADMINISTRATION › Assets › « Fiche » of a native enemy: its page in « Ennemis ».
@@ -942,6 +956,20 @@ private:
             if (action == "admin_refused")
                 return {"Refus", ui.theme().textDim, "a tenté de renommer le clan " + before + " en " + now + " : refusé, ce tag est déjà pris"};
         }
+        // ADMINISTRATION › Raids: a world event created, edited, published or cancelled.
+        if (const Json raid = jfield(e, "raid", Json()); raid.is_object()) {
+            std::string what = "l'événement mondial " + jstr(raid, "name", "Asterion");
+            if (const std::string f = jstr(raid, "format"); !f.empty()) what += " (" + raids::formatLabel(f) + ")";
+            if (auto t = raids::parseUtc(jstr(raid, "starts_at"))) what += " du " + raidui::whenShort(*t);
+            const std::string why = reason.empty() ? std::string() : " · motif : " + reason;
+            if (action == "admin_raid_created") return {"Raid", ui.theme().warm, "a créé le brouillon de " + what};
+            if (action == "admin_raid_updated") return {"Raid", ui.theme().warm, "a modifié " + what};
+            if (action == "admin_raid_published") {
+                const int n = jget<int>(raid, "notified", 0);
+                return {"Raid", ui.theme().success, "a publié " + what + " : " + std::to_string(n) + (n > 1 ? " joueurs prévenus" : " joueur prévenu")};
+            }
+            if (action == "admin_raid_cancelled") return {"Raid", ui.theme().danger, "a annulé " + what + why};
+        }
         if (action == "admin_role_granted")
             return {"Rôle", ui.theme().warm, jstr(e, "by") == "migration" ? "a nommé " + target + " premier admin (mise en service)" : "a donné le rôle admin à " + target};
         if (action == "admin_role_revoked") return {"Rôle", ui.theme().danger, "a retiré le rôle admin à " + target};
@@ -1141,7 +1169,7 @@ private:
         ui.pushId("log");
         float y = in.y, fh = ui.s(46);
         int kind = kind_;
-        float kr = chips("kind", in.x, y, fh, {"Toutes les actions", "Rôles", "Défis", "Campagne", "Créations", "Ennemis", "Clans", "Refus"}, kind, in.right());
+        float kr = chips("kind", in.x, y, fh, {"Toutes les actions", "Rôles", "Défis", "Campagne", "Créations", "Ennemis", "Clans", "Raids", "Refus"}, kind, in.right());
         std::vector<std::string> who{"Tous"};
         for (const auto& a : admins_) who.push_back(jstr(a, "username"));
         int actor = std::min(actor_, static_cast<int>(who.size()) - 1);
@@ -1259,6 +1287,7 @@ private:
     AdminEnemies enemies_;  // « Ennemis » (2.46)
     AdminClans clans_;      // « Clans » (2.66)
     AdminAssets assets_;    // « Assets » (2.63)
+    AdminRaids raids_;      // « Raids » (clan raids, phase 1)
     MenuBackground bg_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     float W_ = 0.0f, x0_ = 0.0f;

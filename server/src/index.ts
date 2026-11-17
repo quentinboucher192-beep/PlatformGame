@@ -17,6 +17,7 @@ import * as cosmetics from "./cosmetics";
 import * as badges from "./badges";
 import * as campaign from "./campaign";
 import * as clans from "./clans";
+import * as raids from "./raids";
 import * as campaignRevisions from "./campaignRevisions";
 import * as enemyRevisions from "./enemyRevisions";
 import * as challenges from "./challenges";
@@ -256,6 +257,21 @@ route("POST", `${V}/clans/{clanId}/requests/{playerId}`, (ctx) => clans.answerAp
 route("POST", `${V}/clans/{clanId}/transfer`, (ctx) => clans.transferLeadership(ctx));
 route("PATCH", `${V}/clans/{clanId}/members/{playerId}`, (ctx) => clans.setMemberRole(ctx));
 route("DELETE", `${V}/clans/{clanId}/members/{playerId}`, (ctx) => clans.removeMember(ctx));
+// Clan raids « Asterion » (raids.ts), phase 1: events, registrations, reminders.
+route("GET", `${V}/raids`, raids.overview, { viewer: true });
+route("GET", `${V}/raids/prefs`, (ctx) => raids.getPrefs(ctx));
+route("PUT", `${V}/raids/prefs`, (ctx) => raids.putPrefs(ctx));
+route("POST", `${V}/raids/events`, (ctx) => raids.scheduleClanRaid(ctx));
+route("GET", `${V}/raids/events/{eventId}`, raids.getEvent, { viewer: true });
+route("DELETE", `${V}/raids/events/{eventId}`, (ctx) => raids.cancelClanRaid(ctx));
+route("POST", `${V}/raids/events/{eventId}/clan`, (ctx) => raids.registerClan(ctx));
+route("PATCH", `${V}/raids/events/{eventId}/clan`, (ctx) => raids.updateEntry(ctx));
+route("DELETE", `${V}/raids/events/{eventId}/clan`, (ctx) => raids.withdrawClan(ctx));
+route("POST", `${V}/raids/events/{eventId}/register`, (ctx) => raids.registerMe(ctx));
+route("DELETE", `${V}/raids/events/{eventId}/register`, (ctx) => raids.unregisterMe(ctx));
+route("POST", `${V}/raids/events/{eventId}/invites`, (ctx) => raids.inviteClan(ctx));
+route("POST", `${V}/raids/events/{eventId}/invitation`, (ctx) => raids.answerInvitation(ctx));
+route("POST", `${V}/raids/events/{eventId}/call`, (ctx) => raids.callMembers(ctx));
 
 // Community levels: publish, browse, download, rate, report, per-level leaderboards
 route("GET", `${V}/community/levels`, (ctx) => community.listLevels(ctx));
@@ -412,6 +428,13 @@ route("POST", `${V}/admin/players/{playerId}/migrate`, (ctx) => migration.adminM
 route("GET", `${V}/admin/clans`, (ctx) => clans.adminListClans(ctx));
 route("PATCH", `${V}/admin/clans/{clanId}`, (ctx) => clans.adminRenameClan(ctx));
 route("DELETE", `${V}/admin/clans/{clanId}`, (ctx) => clans.adminDissolveClan(ctx));
+// ADMINISTRATION › Raids: the world events (each action in the Journal).
+route("GET", `${V}/admin/raids`, (ctx) => raids.adminList(ctx));
+route("POST", `${V}/admin/raids`, (ctx) => raids.adminCreate(ctx));
+route("GET", `${V}/admin/raids/{eventId}`, (ctx) => raids.adminGet(ctx));
+route("PATCH", `${V}/admin/raids/{eventId}`, (ctx) => raids.adminUpdate(ctx));
+route("DELETE", `${V}/admin/raids/{eventId}`, (ctx) => raids.adminCancel(ctx));
+route("POST", `${V}/admin/raids/{eventId}/publish`, (ctx) => raids.adminPublish(ctx));
 route("GET", `${V}/admin/creations`, (ctx) => creations.listCreations(ctx));
 route("POST", `${V}/admin/creations`, (ctx) => creations.createCreation(ctx));
 route("PUT", `${V}/admin/creations/{creationId}`, (ctx) => creations.updateCreation(ctx));
@@ -537,6 +560,11 @@ async function maintenance(env: Bindings, exec: ExecutionContext): Promise<void>
     const rechecked = await recheckHeldRecords(env, exec);
     // 2.66: every clan's points, against the current revisions of the EXTRÊME levels.
     await clans.refreshAllClanPoints(env.DB);
+    try {
+        await raids.pruneRaidReminders(env.DB);
+    } catch (e) {
+        log("error", "raid_maintenance_failed", { error: e instanceof Error ? e.message : String(e) });
+    }
     let challengeRuns: number | null = null;
     let rewardsWon: number | null = null;
     try {
@@ -554,6 +582,17 @@ async function maintenance(env: Bindings, exec: ExecutionContext): Promise<void>
         challenge_runs_rechecked: challengeRuns,
         challenge_rewards_won: rewardsWon,
     });
+}
+
+/** The reminders due now (never while an import replaces the data). */
+async function raidReminders(env: Bindings): Promise<void> {
+    try {
+        if (await backups.maintenanceActive(env)) return;
+        const sent = await raids.raidTick(env.DB);
+        if (sent > 0) log("info", "raid_reminders", { sent });
+    } catch (e) {
+        log("error", "raid_reminders_failed", { error: e instanceof Error ? e.message : String(e) });
+    }
 }
 
 export default {
@@ -581,7 +620,9 @@ export default {
         });
         return response;
     },
-    async scheduled(_controller, env, exec): Promise<void> {
-        exec.waitUntil(daily(env, exec));
+    async scheduled(controller, env, exec): Promise<void> {
+        // Every minute: the reminders of the clan raids (raids.ts); else the daily maintenance.
+        if (controller.cron === raids.RAID_CRON) exec.waitUntil(raidReminders(env));
+        else exec.waitUntil(daily(env, exec));
     },
 } satisfies ExportedHandler<Bindings>;

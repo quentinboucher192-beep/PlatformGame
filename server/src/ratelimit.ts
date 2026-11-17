@@ -81,6 +81,10 @@ export const RULES = {
     clanCreate: { name: "clan_create", limit: 5, windowSeconds: 3600 },
     clanApply: { name: "clan_apply", limit: 30, windowSeconds: 3600 },
     clanWrite: { name: "clan_write", limit: 120, windowSeconds: 3600 },
+    // Clan raids (raids.ts): registrations and answers, the raids scheduled by a clan, the calls to its members.
+    raidWrite: { name: "raid_write", limit: 120, windowSeconds: 3600 },
+    raidSchedule: { name: "raid_schedule", limit: 10, windowSeconds: 3600 },
+    raidCall: { name: "raid_call", limit: 6, windowSeconds: 3600 },
 } as const satisfies Record<string, RateRule>;
 
 /** RATE_LIMIT_SCALE multiplies every limit (development only: repeated local test runs). */

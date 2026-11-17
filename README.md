@@ -456,6 +456,16 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 ## Historique des versions
 
 **Nouveau dans la version 2.64.2** :
+* **Raids de clan « ASTERION, LE DÉVOREUR DE MONDES », phase 1** : onglet CLANS › RAIDS (événement mondial à venir en
+  heure locale et UTC avec compte à rebours, format, difficulté et inscrits ; raids du clan programmés par le chef ou un
+  officier ; invitations entre clans pour un raid commun ; historique ; notifications de raid groupées avec « Tout marquer
+  lu » et rappels 24 h / 1 h / 10 min au choix), fiche d'un événement (inscription, inscription du clan, « Inviter des
+  membres… », groupes de 8 et chef de raid, consignes), **ADMINISTRATION › Raids** (programmation à l'heure locale
+  enregistrée en UTC, aperçu dans plusieurs fuseaux, inscriptions ouvertes ou fermées, capacité, publication à tous les
+  clans, annulation, Journal). Heures au fuseau de l'ordinateur avec son changement d'heure ; le combat arrive dans une
+  prochaine version (serveur : migration 0141, rappels par le cron chaque minute).
+
+**Nouveau dans la version 2.64.2** :
 * **Coopération sur un même PC, un périphérique par joueur** : clavier et souris à un seul joueur, une manette
   chacun (Start / Ⓐ pour rejoindre, Ⓑ pour partir, « Changer de périphérique », vibration à l'attribution), boutons
   allumés en direct sur chaque carte, liste des périphériques en direct (numéros gardés au rebranchement), glyphes

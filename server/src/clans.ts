@@ -20,6 +20,7 @@ import { requireAdminRole } from "./adminRoles";
 import { presenceOf } from "./friends";
 import { ApiError, Errors, json, log, nowIso, readJsonObject, type Ctx } from "./http";
 import { playerSummary, type PlayerRow } from "./model";
+import { raidLeaveStatements } from "./raids";
 import { RULES, rateLimit } from "./ratelimit";
 import { USERNAME_RE, Validator, normalizeUsername, paging, queryString } from "./validate";
 
@@ -1095,7 +1096,15 @@ export async function removeMember(ctx: Ctx): Promise<Response> {
                                AND (a.role = 'leader' OR (a.role = 'officer' AND clan_members.role = 'member')))`,
               )
               .bind(id, pid, me);
-    const r = await db.batch([removal, chatLeave(db, id, pid), ensureLeader(db, id), dropIfEmpty(db, id), ...clanPointsStatements(db, id)]);
+    const r = await db.batch([
+        removal,
+        chatLeave(db, id, pid),
+        ensureLeader(db, id),
+        dropIfEmpty(db, id),
+        ...clanPointsStatements(db, id),
+        // Their registrations to the raids to come go with them (nothing when the removal was refused).
+        ...raidLeaveStatements(db, id, pid),
+    ]);
     if (!r[0]!.meta.changes) {
         const mine = await roleIn(ctx, id, me);
         const target = await roleIn(ctx, id, pid);

@@ -32,6 +32,7 @@
 #include "game/online/OnlineSession.h"
 #include "ui/online/ClanWidgets.h"
 #include "ui/online/OnlineWidgets.h"
+#include "ui/screens/ClanRaids.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/OnlineNav.h"
@@ -144,7 +145,8 @@ float pill(UIContext& ui, float x, float cy, const std::string& t, Color border,
 class ClanScene : public Scene {
 public:
     ClanScene(GameServices& g, std::string clanId, bool pushed, std::string tag = {})
-        : g_(g), ui_(g), wanted_(std::move(clanId)), wantedTag_(std::move(tag)), pushed_(pushed) {}
+        : g_(g), ui_(g), wanted_(std::move(clanId)), wantedTag_(std::move(tag)), pushed_(pushed),
+          raids_(g, [this](const std::string& m, bool e) { say(m, e); }) {}
 
     void onEnter() override {
         g_.playMusic("music/menu_theme.ogg");
@@ -178,6 +180,7 @@ public:
         if (top && (pageShown() || manageShown()) && pageTimer_ >= kPagePoll) loadPage();
         // The discussion only while it is on screen (reading it marks it read).
         if (top && pageShown() && !convId_.empty() && (!chatLoaded_ || chatTimer_ >= kChatPoll)) loadChat();
+        raids_.update(dt, top && tab_ == kTabRaids);
         if (searchDirty_ && g_.ui.time() - searchT_ > 0.35f) {
             searchDirty_ = false;
             loadSearch(false);
@@ -190,7 +193,7 @@ public:
         layout();
         bg_.render(g_, 0.5f);
         const bool top = g_.app.topScene() == this;
-        ui.inputEnabled = top && modal_ == Modal::None;
+        ui.inputEnabled = top && modal_ == Modal::None && !raids_.modal();
         drawHeader();
         const float navH = drawOnlineNav(g_, zoneA_, OnlineSection::Clans);
         drawInfoCard(navH);
@@ -199,6 +202,7 @@ public:
         ui.popId();
         ui.inputEnabled = top;
         if (modal_ != Modal::None) drawModal();
+        else if (raids_.modal()) raids_.drawModal();  // « Organiser un raid du clan… »
         else if (ui.backPressed() && !ui.editingText()) back();
         ui.end();
     }
@@ -206,7 +210,7 @@ public:
 private:
     enum class Modal { None, Form, Invite, Apply, Member, Confirm, Transfer };
     enum class TagState { None, Busy, Failed };  // a sheet asked for by its tag (makeClanByTag)
-    static constexpr int kTabMine = 0, kTabSearch = 1, kTabRanking = 2, kTabManage = 3;
+    static constexpr int kTabMine = 0, kTabSearch = 1, kTabRanking = 2, kTabManage = 3, kTabRaids = 4;
 
     // ------------------------------------------------------------ helpers
     void say(const std::string& m, bool error) {
@@ -282,6 +286,7 @@ private:
         if (!pageId_.empty()) loadPage();
         if (tab_ == kTabSearch) loadSearch(false);
         if (tab_ == kTabRanking) loadRanking(false);
+        raids_.enter(true);  // its badge counts the unread raid notifications
     }
 
     void loadMine() {
@@ -533,12 +538,20 @@ private:
             ids.insert(ids.begin() + 1, kTabManage);
             badges.insert(badges.begin() + 1, myApplications_);  // applications waiting for an answer
         }
-        Rect tabsR{zoneB_.x, zoneB_.y, std::min(zoneB_.w * (manager ? 0.7f : 0.62f), ui.s(manager ? 880 : 700)), ui.s(48)};
+        // RAIDS: the clan raids « Asterion » (phase 1), with the unread raid notifications.
+        labels.push_back("Raids");
+        ids.push_back(kTabRaids);
+        badges.push_back(raids_.unread());
+        Rect tabsR{zoneB_.x, zoneB_.y, std::min(zoneB_.w * (manager ? 0.86f : 0.78f), ui.s(manager ? 1080 : 880)), ui.s(48)};
         const int shownTab = static_cast<int>(std::find(ids.begin(), ids.end(), tab_) - ids.begin()) % static_cast<int>(ids.size());
         int tab = shownTab;
         ui.tabs("tabs", tabsR, labels, tab, badges);
         if (manager) ui.newBadge("tabs", {tabsR.x + tabsR.w / static_cast<float>(labels.size()), tabsR.y, tabsR.w / static_cast<float>(labels.size()), tabsR.h},
                                  "clans.tab.manage");  // « NOUVEAU »
+        {
+            const float tw = tabsR.w / static_cast<float>(labels.size());
+            ui.newBadge("tabs", {tabsR.x + tw * static_cast<float>(labels.size() - 1), tabsR.y, tw, tabsR.h}, "clans.tab.raids");
+        }
         if (tab != shownTab) {
             tab_ = ids[static_cast<size_t>(std::clamp(tab, 0, static_cast<int>(ids.size()) - 1))];
             tagState_ = TagState::None;
@@ -546,6 +559,10 @@ private:
             if ((tab_ == kTabMine || tab_ == kTabManage) && !myClanId().empty()) openPage(myClanId(), false);
             if (tab_ == kTabSearch && !searchLoaded_) loadSearch(false);
             if (tab_ == kTabRanking) loadRanking(false);
+            if (tab_ == kTabRaids) {
+                if (ui.featureSeen && ui.isNew("clans.tab.raids")) ui.featureSeen("clans.tab.raids");
+                raids_.enter(true);
+            }
         }
         // At the right of the tabs: « Retour » on a page opened from a list, the offline note.
         float right = zoneB_.right();
@@ -562,7 +579,7 @@ private:
             if (ui.button("back", {right - bw, tabsR.y + ui.s(4), bw, ui.s(40)}, label, st)) back();
             right -= bw + ui.s(16);
         }
-        const bool cache = showPage || tab_ == kTabManage ? pageCache_ : tab_ == kTabSearch ? searchCache_ : tab_ == kTabRanking ? rankingCache_ : mineCache_;
+        const bool cache = tab_ == kTabRaids && !showPage ? raids_.fromCache() : showPage || tab_ == kTabManage ? pageCache_ : tab_ == kTabSearch ? searchCache_ : tab_ == kTabRanking ? rankingCache_ : mineCache_;
         if (cache) fitLabel(ui, "Hors ligne : données en cache", {right, tabsR.center().y}, 14, right - tabsR.right() - ui.s(16), ui.theme().warm, FontFace::Body,
                             Align::Right);
         Rect body{zoneB_.x, tabsR.bottom() + ui.s(14), zoneB_.w, zoneB_.bottom() - tabsR.bottom() - ui.s(14)};
@@ -570,6 +587,7 @@ private:
             const std::string t = tagState_ == TagState::Busy ? "Recherche du clan " + clans::bracket(wantedTag_) + "…" : tagError_;
             fitLabel(ui, t, {body.x + ui.s(8), body.y + ui.s(20)}, 17, body.w - ui.s(16), tagState_ == TagState::Busy ? ui.theme().textDim : ui.theme().danger);
         } else if (showPage) drawPage(body);
+        else if (tab_ == kTabRaids) raids_.draw(body);
         else if (tab_ == kTabManage) drawManage(body);
         else if (tab_ == kTabMine) drawWithoutClan(body);
         else if (tab_ == kTabSearch) drawSearch(body);
@@ -1780,6 +1798,7 @@ private:
     bool wasLoggedIn_ = false;
     Rect header_, zoneA_, zoneB_;
     int tab_ = kTabMine;
+    ClanRaids raids_;  // the tab RAIDS (clan raids « Asterion », phase 1)
 
     Json mine_;
     bool mineLoaded_ = false, mineCache_ = false;

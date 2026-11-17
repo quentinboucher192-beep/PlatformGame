@@ -26,7 +26,7 @@
     "logs": { "enabled": true, "head_sampling_rate": 1 },
     "traces": { "enabled": true, "head_sampling_rate": 0.05 }
   },
-  "triggers": { "crons": ["17 3 * * *"] },
+  "triggers": { "crons": ["17 3 * * *", "* * * * *"] },
   "secrets": { "required": ["IP_HASH_SALT"] },
   "vars": {
     "ENVIRONMENT": "production",
@@ -65,7 +65,7 @@
         "logs": { "enabled": true, "head_sampling_rate": 1 },
         "traces": { "enabled": true, "head_sampling_rate": 0.2 }
       },
-      "triggers": { "crons": ["17 3 * * *"] },
+      "triggers": { "crons": ["17 3 * * *", "* * * * *"] },
       "secrets": { "required": ["IP_HASH_SALT"] },
       "vars": {
         "ENVIRONMENT": "staging",

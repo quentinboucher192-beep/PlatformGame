@@ -248,3 +248,15 @@ start
 refuse
 Authorization: Bearer {0}
 coop
+asterion
+court
+standard
+raid
+invitation
+lock
+open
+world
+cancel
+capacity
+difficulty
+event

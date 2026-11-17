@@ -151,6 +151,9 @@ de `wrangler.jsonc`, plafonnée à 1 000) multiplie toutes les limites.
 | `clan_create` | 5 | 1 h | joueur | `POST /clans` (2.66) |
 | `clan_apply` | 30 | 1 h | joueur | `POST /clans/{id}/join`, `POST /clans/{id}/invites` |
 | `clan_write` | 120 | 1 h | joueur | les autres changements d'un clan (réglages, rôles, réponses, exclusions, départ, dissolution) |
+| `raid_write` | 120 | 1 h | joueur | inscriptions aux raids (joueur, clan), réponses aux invitations, consignes, rappels |
+| `raid_schedule` | 10 | 1 h | joueur | `POST /raids/events` (raid du clan) |
+| `raid_call` | 6 | 1 h | joueur | `POST /raids/events/{id}/call` (« Inviter des membres… ») |
 | `community_publish` | 10 | 1 h | joueur | `POST /community/levels` |
 | `community_upload` | 40 | 1 h | joueur | `PUT …/versions/{v}/package` et `…/replay` |
 | `community_download` | 120 | 1 h | joueur (ou IP) | `GET /community/levels/{id}/package` |
@@ -1008,6 +1011,57 @@ semaine, défis, course à la vérification — aussi pour un profil privé : un
 `{name?, tag?, reason?}` (Journal : `admin_clan_renamed`, un tag pris : `admin_refused`),
 `DELETE /admin/clans/{id}` `{reason?}` (Journal : `admin_clan_dissolved`, membres prévenus). Le Journal
 les filtre avec `kind=clan`.
+
+### 8.8 ter Raids de clan « Asterion », phase 1 (En ligne → CLANS › RAIDS)
+
+Migration `0141_raids.sql`, code `server/src/raids.ts`. Les combats viennent plus tard (leur résultat sera
+décidé par le consensus des joueurs de chaque instance) : ici, les événements, les inscriptions, les rappels
+et les notifications. **Toutes les heures sont en UTC** (`AAAA-MM-JJTHH:MM[:SS[.mmm]]Z`) : le jeu convertit
+vers le fuseau de l'ordinateur (changement d'heure compris) et envoie de l'UTC ; une heure avec décalage est
+refusée (`400`). Le joueur est toujours celui de la session ; chaque écriture revérifie le rôle dans sa
+propre requête SQL. Formats : `court` 25 à 30 min, `standard` 45 à 60 min, `legendaire` 75 à 90 min ;
+`lock_at` = début − `lock_minutes` (30 par défaut), `ends_at` = début + durée maximale du format.
+
+États (`state`, calculés depuis l'UTC) : `brouillon` (événement mondial non publié), `inscription`
+(inscriptions ouvertes, places libres), `programme` (fermées ou complet), `imminent` (verrouillées),
+`en_cours`, `termine`, `annule`. Vue d'un événement : `{ id, kind: "world"|"clan", raid, name,
+display_name, display_title, format, format_min, format_max, starts_at, lock_at, ends_at, lock_minutes,
+registration_open, capacity (0 : illimité), clan_capacity, difficulty, state, published, cancelled,
+organizer: {id, tag, name}|null, clans, players, my_clan: {registered, players, groups, leader},
+registered }`.
+
+| Méthode | Route | Rôle / corps / réponse |
+|---|---|---|
+| GET | `/raids` | session facultative : `{ server_time, raids, clan, world (5 prochains événements mondiaux publiés), clan_events (raids de mon clan et ceux où il participe), invitations [{event, by, created_at}], rewards: [] (rien avant les combats), history (10 derniers terminés ou annulés), unread (notifications « raid » non lues), prefs }` |
+| GET | `/raids/events/{id}` | session facultative : `{ server_time, event, description, rewards_text, my: {clan, entry: {leader, instructions, registered_by}, registered, can_manage, can_call, is_organizer}, roster, groups [{number, leader, members}] (groupes de 8 : le chef de raid mène le groupe 1), participants, invitations (organisateur), invitation (clan invité) }` ; un raid de clan n'existe (`404 RAID_NOT_FOUND`) que pour son clan, les clans qui y participent et ceux invités |
+| POST | `/raids/events` | chef ou officier : `{ format, starts_at, capacity (2-50), lock_minutes? (0-120), instructions?, leader_id? }` → `201 {event}` ; 15 min à 90 jours d'avance ; `403 NOT_CLAN_OFFICER`, `409 TOO_MANY_RAIDS` (10 à venir) |
+| DELETE | `/raids/events/{id}` | chef ou officier du clan organisateur : annule (inscrits et clans invités prévenus) ; `403 NOT_ORGANIZER` |
+| POST | `/raids/events/{id}/clan` | chef ou officier : inscrit son clan à un événement mondial → `201`, `200 {already}` ; deux officiers en même temps : une seule inscription ; `409 NOT_WORLD_EVENT` / `REGISTRATION_CLOSED` / `RAID_LOCKED` |
+| PATCH | `/raids/events/{id}/clan` | chef ou officier : `{ leader_id? (membre du clan, null), instructions? (600) }` |
+| DELETE | `/raids/events/{id}/clan` | chef ou officier : retire le clan (avant le verrouillage), ses inscriptions avec |
+| POST | `/raids/events/{id}/register` | le joueur lui-même, pour son clan inscrit → `201 {event}` ; capacité de l'événement et du clan vérifiées dans l'INSERT (jamais deux joueurs sur la dernière place) ; `403 NO_CLAN`, `409 CLAN_NOT_REGISTERED` / `RAID_LOCKED` / `REGISTRATION_CLOSED` / `RAID_FULL` / `CLAN_FULL` / `RAID_CANCELLED` |
+| DELETE | `/raids/events/{id}/register` | se désinscrire jusqu'au verrouillage (`409 RAID_LOCKED` ensuite) |
+| POST | `/raids/events/{id}/invites` | organisateur (chef, officier) : `{ tag }` invite un autre clan à un raid commun (10 au plus) ; `409 ALREADY_INVITED` |
+| POST | `/raids/events/{id}/invitation` | chef ou officier du clan invité : `{ accept }` ; accepté : le clan participe ; `409 ALREADY_ANSWERED` |
+| POST | `/raids/events/{id}/call` | chef, officier ou chef de raid : prévient les membres non inscrits (une fois tant que non lue) → `{ notified }` |
+| GET / PUT | `/raids/prefs` | `{ reminders: [1440, 60, 10] (sous-ensemble), member_updates: bool }` |
+| GET | `/admin/raids` | admin : les événements mondiaux (brouillons compris) avec leurs inscriptions |
+| POST | `/admin/raids` | admin : `{ format, starts_at, lock_minutes? (0-240), registration_open?, capacity? (0 : illimité), clan_capacity? (1-50), difficulty? (1-5), rewards_text? (300) }` → brouillon (Journal `admin_raid_created`) |
+| GET | `/admin/raids/{id}` | admin : l'événement et ses clans inscrits (chef de raid, inscrits) |
+| PATCH | `/admin/raids/{id}` | admin : les mêmes champs ; publié : nouvelle heure → inscrits prévenus et rappels recalculés ; inscriptions rouvertes → tous les clans prévenus (une fois tant que non lue) ; `409 RAID_STARTED` (Journal `admin_raid_updated`) |
+| POST | `/admin/raids/{id}/publish` | admin : publie et prévient tous les membres de tous les clans → `{ event, notified }` ; `409 ALREADY_PUBLISHED` / `RAID_TOO_LATE` (Journal `admin_raid_published`) |
+| DELETE | `/admin/raids/{id}` | admin : `{ reason? }` annule (inscrits et chefs des clans inscrits prévenus ; Journal `admin_raid_cancelled`) |
+
+Notifications de type `raid` (centre de notifications, filtre `raids`, `POST /notifications/read-all?filter=raids`) :
+`data.event` = `world`, `open`, `scheduled`, `clan_registered`, `joined`, `reminder` (`minutes`), `start`,
+`member_in` / `member_out` (regroupées tant que non lues, pour le chef, les officiers et le chef de raid, sauf
+`member_updates: false`), `invite`, `invite_accepted`, `invite_declined`, `leader`, `call`, `cancelled`,
+`moved`, `withdrawn` ; avec `event_id`, `raid_name`, `format`, `raid_kind`, `starts_at`. Jamais d'heure dans
+la phrase : chaque jeu l'affiche à son fuseau. **Rappels** : le cron `* * * * *` (`raidTick`) envoie 24 h,
+1 h et 10 min avant (au choix de chaque joueur) puis au début, chacun dans sa fenêtre seulement et **jamais
+deux fois** (`raid_reminders_sent`, écrit dans la même transaction que les notifications ; un événement
+déplacé rappelle de nouveau). Un membre qui quitte son clan perd ses inscriptions aux raids à venir. Journal
+(`GET /admin/log?kind=raid`) : `raid: { id, name, format, starts_at, changes, notified }`.
 
 ### 8.9 Niveaux de la communauté (NIVEAUX EN LIGNE)
 

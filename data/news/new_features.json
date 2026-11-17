@@ -2396,6 +2396,20 @@
    ]
   },
   {
+   "id": "clans.tab.raids",
+   "version": "2.64.2",
+   "parents": [
+    "online.nav.clans"
+   ]
+  },
+  {
+   "id": "admin.tab.raids",
+   "version": "2.64.2",
+   "parents": [
+    "menu.admin"
+   ]
+  },
+  {
    "id": "clans.tab.manage",
    "version": "2.63.7",
    "parents": [
