@@ -25,6 +25,13 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
 * Pour le Studio de Créations : le catalogue (`game/content/AssetCatalog.h` : liste, filtre) et ses
   vignettes et aperçus (`ui/widgets/AssetPreview.h`) forment une API documentée et réutilisable.
 
+**Nouveau dans la version 2.60.0** :
+* **Pause › Succès suivis** sous la carte : les cinq places toujours visibles (une place libre en pointillés) et
+  la description de chaque succès, mesurée pour ne jamais déborder.
+* **Touches de ce niveau** : un changement s'applique aussi aux niveaux qui avaient **exactement les mêmes
+  touches** (option, activée par défaut) ; plus besoin de les refaire niveau par niveau.
+* **Invincible (admin)** : « activé · non classé » sur le bouton de la pause.
+
 **Nouveau dans la version 2.59.0** :
 * **Administration › Créations**, trois nouveaux types en plus des combinaisons : des **traînées** (une forme
   que le jeu sait dessiner, la couleur près de Nova et celle du bout, la largeur, la durée, les étincelles),

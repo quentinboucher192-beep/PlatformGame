@@ -5,6 +5,11 @@
     "Aperçu de l'asset choisi : image sur damier, animation qui défile (clip, images par seconde), son et musique à l'écoute (la musique du menu attend, puis reprend), police et texte ; taille, dimensions, images et clips, durée.",
     "Utilisé par : les ennemis, boss, niveaux (avec le compte), planètes, pouvoirs, histoires, combinaisons, effets, morceaux du juke-box et le code qui s'en servent ; chaque ligne montre ce qu'utilise ce « client », « Fiche » ouvre sa fiche dans le jeu, « Ouvrir le dossier » le fichier sur le PC. Lecture seule."
   ],
+  "2.60.0": [
+    "Pause : « Succès suivis » passe sous la carte, avec les cinq places visibles (une place libre est dessinée en pointillés) et la description de chaque succès ; sans la carte, la colonne garde une ligne de description quand il y a la place.",
+    "Touches de ce niveau : un changement de touche, de bouton ou « Par défaut » s'applique aussi aux niveaux qui avaient exactement les mêmes touches (option activée par défaut, avec le nombre de niveaux concernés).",
+    "Invincible (admin) : le bouton de la pause indique « activé · non classé » ; une partie avec Invincible n'est jamais classée."
+  ],
   "2.59.0": [
     "Administration › Créations : en plus des combinaisons, un admin crée des traînées (une forme que le jeu sait dessiner — comète, poussière d'étoiles, ruban, flammèches, aurore, bulles —, la couleur près de Nova et celle du bout, la largeur, la durée et les étincelles), des cadres d'avatar (un style — anneau poli, gemmes serties, orbite, nébuleuse, constellation, cercle runique —, la couleur du bord et de la lueur) et des effets de victoire (feu d'artifice, pluie d'étoiles, supernova, vortex, aurore boréale ou couronne solaire, en deux couleurs), chacun avec son aperçu animé ; il les modifie ou les archive.",
     "Comme les combinaisons, ils se donnent en récompense d'un défi (Calendrier des défis › Récompenses) ; gagnés, ils rejoignent leur catégorie du Vestiaire et s'équipent, sans mise à jour du jeu, même hors ligne : la traînée derrière Nova et derrière vos fantômes, le cadre sur votre profil et dans les classements, l'effet de victoire à la sortie des niveaux.",
