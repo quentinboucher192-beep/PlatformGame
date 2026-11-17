@@ -290,6 +290,36 @@ void drawAvatarFrame(Renderer& r, Vec2 center, float radius, const std::string& 
             r.fillCircle(tip, (0.8f + 0.6f * lit) * scale, Color{255, 250, 230, 255}, BlendMode::Additive);
         }
         ring(main - 1.5f * scale, 1.2f, Color{255, 208, 74, 200});
+    } else if (look == "ossuary") {
+        // « Ossuaire » (2.57, Liche): bones laid end to end round the avatar, six skulls among
+        // them whose eyes of soul fire light up one after the other. Within kAvatarFrameMargin:
+        // the skulls stay 10 units beyond the avatar.
+        r.drawGlow(center, radius + 14 * scale, Color{150, 240, 110, 60});
+        ring(main, 3.0f, Color{40, 34, 30, 255});
+        const int bones = 18;
+        for (int i = 0; i < bones; ++i) {
+            const float a0 = (static_cast<float>(i) + 0.15f) / bones * 2.0f * kFxPi;
+            const float a1 = (static_cast<float>(i) + 0.85f) / bones * 2.0f * kFxPi;
+            const Vec2 p0 = center + Vec2{std::cos(a0), std::sin(a0)} * main;
+            const Vec2 p1 = center + Vec2{std::cos(a1), std::sin(a1)} * main;
+            r.drawLine(p0, p1, Color{226, 214, 184, 255}, 2.4f * scale);
+            r.fillCircle(p0, 1.6f * scale, Color{236, 226, 198, 255});
+            r.fillCircle(p1, 1.6f * scale, Color{236, 226, 198, 255});
+        }
+        const float turn = std::fmod(time * 0.5f, 1.0f);
+        for (int k = 0; k < 6; ++k) {
+            const float u = static_cast<float>(k) / 6.0f;
+            const float a = u * 2.0f * kFxPi - kFxPi * 0.5f;
+            const Vec2 c = center + Vec2{std::cos(a), std::sin(a)} * (main + 4.0f * scale);
+            r.fillCircle(c, 5.6f * scale, Color{232, 222, 196, 255});
+            r.fillRect({c.x - 3.0f * scale, c.y + 2.5f * scale, 6.0f * scale, 3.4f * scale}, Color{232, 222, 196, 255});
+            float lit = std::fabs(u - turn);
+            lit = std::max(0.0f, 1.0f - std::min(lit, 1.0f - lit) * 5.0f);
+            const Color eye{static_cast<uint8_t>(40 + 140 * lit), static_cast<uint8_t>(40 + 205 * lit), static_cast<uint8_t>(30 + 72 * lit), 255};
+            r.fillCircle(c + Vec2{-2.0f * scale, -0.4f * scale}, 1.3f * scale, eye);
+            r.fillCircle(c + Vec2{2.0f * scale, -0.4f * scale}, 1.3f * scale, eye);
+            if (lit > 0.0f) r.drawGlow(c, (3.0f + 6.0f * lit) * scale, Color{180, 245, 102, static_cast<uint8_t>(60 + 150 * lit)});
+        }
     } else if (look == "laurels") {
         r.drawGlow(center, radius + 18 * scale, Color{255, 214, 90, 110});
         ring(main, 4, Color{255, 214, 90, 255});
@@ -452,6 +482,21 @@ void drawTrailPoint(const Canvas& cv, const std::string& look, Vec2 p, float k, 
         cv.glow(q, 6.0f * k + 1.5f, c.withAlpha(alpha(0.4f * f)));
         cv.line(cv.off(q, d * -len), cv.off(q, d * len), c.withAlpha(alpha(0.9f * f)), 2.4f * k + 0.8f);
         cv.dot(cv.off(q, d * len), 1.0f, Color{255, 250, 225, alpha(0.9f * f)}, BlendMode::Additive);
+    } else if (look == "souls") {
+        // « Âmes errantes » (2.57, Liche): pale souls slip away behind Nova and rise, trembling,
+        // a soft tail under each, two hollow eyes.
+        if (seed % 2 == 1) return;
+        Vec2 j{(noise(seed) - 0.5f) * 10.0f + std::sin(age * 7.0f + static_cast<float>(seed)) * 3.0f, -age * 24.0f - noise(seed * 3u + 1u) * 4.0f};
+        Vec2 q = cv.off(p, j);
+        const float sz = 3.2f * (0.5f + 0.5f * k) + 1.0f;
+        const Color soul = mix(Color{110, 200, 120, 255}, Color{200, 255, 170, 255}, k);
+        cv.glow(q, 7.0f * k + 2.0f, soul.withAlpha(alpha(0.35f * f)));
+        for (int t = 1; t <= 3; ++t)
+            cv.dot(cv.off(q, {std::sin(age * 9.0f + static_cast<float>(t)) * 1.5f, sz * 0.8f * static_cast<float>(t)}), sz * (1.0f - 0.25f * static_cast<float>(t)),
+                   soul.withAlpha(alpha(0.5f * f / static_cast<float>(t))));
+        cv.dot(q, sz, Color{230, 255, 220, alpha(0.85f * f)});
+        cv.dot(cv.off(q, {-sz * 0.35f, -sz * 0.1f}), sz * 0.22f, Color{20, 30, 24, alpha(0.9f * f)});
+        cv.dot(cv.off(q, {sz * 0.35f, -sz * 0.1f}), sz * 0.22f, Color{20, 30, 24, alpha(0.9f * f)});
     } else if (look == "prism") {
         // A ribbon whose colour runs through the rainbow along the trail, and keeps turning.
         Color c = rainbow(static_cast<float>(seed) * 0.06f + age * 0.8f);
@@ -710,6 +755,32 @@ void drawVictoryFx(Renderer& r, const std::string& look, Vec2 at, float t, bool 
                 if (ts < 0.0f) continue;
                 Vec2 q = cv.off(at, {-40.0f + 80.0f * noise(static_cast<uint32_t>(i) * 41u + 9u), -30.0f - 110.0f * noise(static_cast<uint32_t>(i) * 7u + 1u) + 50.0f * ts});
                 star(cv, q, 2.0f, Color{255, 230, 150, alpha(0.8f * fade * std::clamp(1.0f - ts, 0.0f, 1.0f))});
+            }
+        }
+    } else if (look == "candles") {
+        // « Veillée des âmes » (2.57, Liche): candles of soul fire light up one after the other in
+        // a ring round the portal, then their green flames rise toward the sky as souls set free.
+        const int n = 11;
+        for (int i = 0; i < n; ++i) {
+            const float u = static_cast<float>(i) / static_cast<float>(n - 1);
+            const float x = -60.0f + 120.0f * u;
+            const float y = -6.0f * std::sin(u * kFxPi);
+            const float lit = std::clamp((t - 0.12f * static_cast<float>(i)) / 0.25f, 0.0f, 1.0f);
+            const float fly = std::clamp((t - 1.5f - 0.05f * static_cast<float>(i)) / 1.0f, 0.0f, 1.0f);
+            const Vec2 base = cv.off(at, {x, y});
+            cv.line(base, cv.off(base, {0.0f, -12.0f}), Color{226, 214, 184, alpha(fade)}, 3.0f);
+            if (lit <= 0.0f) continue;
+            const float flick = 0.8f + 0.2f * std::sin(t * 17.0f + static_cast<float>(i));
+            if (fly < 1.0f) {
+                const Vec2 fl = cv.off(base, {0.0f, -16.0f});
+                cv.glow(fl, 8.0f * lit * flick, Color{150, 240, 110, alpha(0.5f * lit * fade * (1.0f - fly))});
+                cv.dot(fl, 2.4f * lit * flick, Color{220, 255, 200, alpha(lit * fade * (1.0f - fly))}, BlendMode::Additive);
+            }
+            if (fly > 0.0f) {
+                // The soul leaves its flame and rises, swaying.
+                const Vec2 q = cv.off(base, {std::sin(fly * 6.0f + static_cast<float>(i)) * 6.0f, -16.0f - 110.0f * fly});
+                cv.glow(q, 9.0f, Color{150, 240, 110, alpha(0.45f * fade * (1.0f - fly * 0.6f))});
+                cv.dot(q, 3.0f, Color{230, 255, 220, alpha(fade * (1.0f - fly * 0.5f))}, BlendMode::Additive);
             }
         }
     } else if (look == "corona") {

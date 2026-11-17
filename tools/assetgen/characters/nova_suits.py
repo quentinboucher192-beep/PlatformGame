@@ -42,6 +42,8 @@ SUITS = {
     "encre": ((60, 52, 112), (110, 235, 255), (40, 210, 180)),
     # 2.56: le Phénix Stellaire (a starry night blue, a gold visor of dawn, a scarf of crimson fire)
     "aube": ((52, 47, 103), (255, 208, 74), (255, 110, 96)),
+    # 2.57: la Liche des Catacombes (the purple-black of its robes, a visor of soul fire, a scarf of old bone)
+    "linceul": ((58, 46, 78), (180, 245, 102), (226, 214, 184)),
 }
 
 

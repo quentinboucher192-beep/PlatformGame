@@ -211,10 +211,10 @@ TEST_CASE("new badges: the shipped catalogue leads every novelty to a menu") {
             ++rewards;
         }
     }
-    CHECK(achievements == 72 + 3 + 12 + 2 + 6 + 6);  // 2.29, Singularis's three of 2.34, Les Confins' twelve (2.48-2.49), the Boomerang chargé's
-                                                 // two (2.51), the Kraken's six (2.53), the Phénix's six (2.56)
-    CHECK(rewards == 22 + 1 + 5 + 10 + 5 + 5);   // 2.29, « Briseur d'étoiles » of 2.34, the five of the challenges of 2.35, Les Confins' ten,
-                                                 // the Kraken's five (2.53), the Phénix's five (2.56)
+    CHECK(achievements == 72 + 3 + 12 + 2 + 6 + 6 + 6);  // 2.29, Singularis's three of 2.34, Les Confins' twelve (2.48-2.49), the Boomerang
+                                                     // chargé's two (2.51), the Kraken's six (2.53), the Phénix's six (2.56), the Liche's six (2.57)
+    CHECK(rewards == 22 + 1 + 5 + 10 + 5 + 5 + 5);   // 2.29, « Briseur d'étoiles » of 2.34, the five of the challenges of 2.35, Les Confins' ten,
+                                                     // the Kraken's five (2.53), the Phénix's five (2.56), the Liche's five (2.57)
     // The whole « Collection » category of achievements came with 2.29.
     for (const auto& a : ach.achievements())
         if (a.category == "collection") CHECK(leaves.count("ach." + a.id));
@@ -287,10 +287,11 @@ TEST_CASE("new badges: every planet, level, boss, creature, achievement, reward 
         for (const auto& x : (*t)["tracks"]) need("track." + fs::path(x.value("file", std::string())).stem().string());
     for (const auto& m : missing) std::printf("  sans pastille NOUVEAU : %s\n", m.c_str());
     CHECK(missing.empty());
-    // Les Confins themselves (2.48, 2.49, 2.53: the Kraken, and 2.56: the Phénix).
+    // Les Confins themselves (2.48, 2.49, 2.53: the Kraken, 2.56: the Phénix, and 2.57: the Liche).
     for (const char* id : {"planet.confins", "level.confins_01", "level.confins_02", "level.confins_03", "boss.pyrrhax", "boss.monolithe",
                            "boss.kraken", "gallery.boss.kraken", "track.pyrrhax_boss", "track.monolithe_boss", "track.kraken_boss",
                            "gallery.creature.dragonnet", "gallery.creature.eclat_de_roche", "gallery.creature.photophore", "level.confins_04",
-                           "boss.phenix", "gallery.boss.phenix", "track.phenix_boss", "gallery.creature.etincelle"})
+                           "boss.phenix", "gallery.boss.phenix", "track.phenix_boss", "gallery.creature.etincelle", "level.confins_05",
+                           "boss.liche", "gallery.boss.liche", "track.liche_boss", "gallery.creature.spectre"})
         CHECK(leaves.count(id));
 }

@@ -56,7 +56,7 @@ class Edge(Star):
     FIRE_LIGHTS = ((10, 26, "#ff7a2e"), (48, 30, "#ffc49a"), (86, 26, "#ff7a2e"), (30, 8, "#ff5ad2"), (66, 8, "#ff5ad2"))
 
     def giga_arena(self, boss, music, pits, flying, texts, style="plasma", lights=FIRE_LIGHTS, flicker=0.12,
-                   perches=(), altars=()):
+                   perches=(), altars=(), spawn=None):
         """The giant arena (Star.GIANT_*) of a giga boss: the crust over each pit gives way at
         the 5th phase (magma below), debris orbit from the 3rd, fire closes in at the 8th and at
         the boss's rage. `pits`: (first, last) inside columns of each crust; `flying`: where the
@@ -65,7 +65,8 @@ class Edge(Star):
         the arena's `lights`. 2.56: the ledges at the heights `perches` are perches of embers
         instead (crumble platforms « ember »: they burn under Nova and are reborn). 2.57: `altars`
         (x, h): the altars of the Liche's crypt (objects « altar », 3 tiles wide, 2.5 tall, standing at
-        the height h: 0 the floor, else a ledge), over which it floats and between which it teleports."""
+        the height h: 0 the floor, else a ledge), over which it floats and between which it teleports;
+        `spawn` (x, h): where the boss waits (by default x 70, in the air at 20 tiles when it flies)."""
         L, f = self.L, self.f
         x0 = self.x
         X = x0 + 1
@@ -122,7 +123,8 @@ class Edge(Star):
                           "style": style, "bounce": False})
         curtain1 = [curtain(0, 12), curtain(W - 12, W)]
         curtain2 = [curtain(12, 22), curtain(W - 22, W - 12)]
-        bid = L.enemy(boss, X + 70, f - 20 if flying else f, patrol_tiles=6, face_left=True, dormant=True, boss=True)
+        sx, sh = spawn if spawn else (70, 20 if flying else 0)
+        bid = L.enemy(boss, X + sx, f - sh, patrol_tiles=6, face_left=True, dormant=True, boss=True)
         L.combat(X, f - Hh, X + W, f + 4, doors=left + "," + right, waves=bid, lock=False,
                  music=music or L.data.get("bossMusic", ""))
         L.data["objects"][-1]["props"]["announce"] = False
@@ -357,9 +359,10 @@ LICHE_LIGHTS = ((10, 26, "#b4f566"), (48, 30, "#d8d0ff"), (86, 26, "#b4f566"), (
 # The sky of the Confins seen from the catacombs, grey-violet and cold (display only).
 CRYPT_TINTS = {"sky.png": "#7a6e9a", "far.png": "#5a527a", "mid.png": "#443e60", "near.png": "#2e2a42",
                "fg_embers.png": "#b4f566a0"}
-# The altars of the crypt (x, height above the floor): two on the ledges at 10 tiles (over the
-# ossuaries), two on the floor between the ledges at 5 tiles (where its phylactery is set).
-LICHE_ALTARS = ((18, 10), (37, 0), (59, 0), (78, 10))
+# The altars of the crypt (x, height above the floor): two on the ledges at 5 tiles over the
+# ossuaries, two on the floor between the ledges (where its phylactery is set). Low enough that
+# the Liche floating over them stays in view under the HUD.
+LICHE_ALTARS = ((10, 5), (37, 0), (59, 0), (86, 5))
 
 
 def crypt_of_names():
@@ -386,9 +389,10 @@ def crypt_of_names():
     b.zone_sign("La Liche des Catacombes.")
     b.rooms.append({"type": "boss", "x": b.x, "floor": b.f, "boss": "liche"})
     # It floats (it waits in the air): the crust gives way over two ossuaries at the ends, the
-    # floor between its two floor altars stays; its altars, two on the floor, two on the ledges.
+    # floor between its two floor altars stays; its altars, two on the floor, two on the low ledges;
+    # it waits floating over the floor altar on the right.
     b.giga_arena("liche", "music/liche_boss.ogg", pits=[(6, 22), (74, 90)], flying=True, texts=LICHE_TEXTS,
-                 style="souls", lights=LICHE_LIGHTS, flicker=0.1, altars=LICHE_ALTARS)
+                 style="souls", lights=LICHE_LIGHTS, flicker=0.1, altars=LICHE_ALTARS, spawn=(59, 5))
     width = b.finish("La Liche s'est tue. Dans la crypte, les bougies brûlent encore, pour chaque nom.")
     ref = 360  # about six minutes of fight
     d["timer"] = {"mode": "challenge", "limit": 3600, "onExpire": "gameover", "referenceTime": ref, "challengeMaxDeaths": 0}

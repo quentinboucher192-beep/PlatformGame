@@ -383,7 +383,7 @@ void Enemy::fireSpiral(GameWorld& w, const AttackDef& a) {
         p.clip = a.projectile;
         p.radius = a.projectileRadius > 0 ? a.projectileRadius : 4.5f;
         p.life = 4.0f;
-        p.light = def_.lightColor;
+        p.light = hasLiche_ ? lightColor() : def_.lightColor;  // 2.57: the Liche's souls burn with its phase
         p.knockback = a.knockback;
         p.hitEffect = a.hitEffect.empty() ? "projectile_burst" : a.hitEffect;
         w.spawnProjectile(p);
@@ -727,18 +727,23 @@ void Enemy::renderGuardian(RenderContext& ctx, float prog) const {
             const int n = std::max(1, a.count);
             const float fr = a.projectileRadius > 0 ? a.projectileRadius : 8.0f;
             const AnimationClip* flame = fxClip(fx, a.projectile.c_str());
-            if (!tele) ctx.r.drawWorldCircle(box.center(), r, Color{255, 177, 59, 60}, 1.0f * s);
+            // 2.57: the Liche's round of souls burns with the soul fire of its phase.
+            const Color hot = hasLiche_ ? lightColor() : Color{255, 150, 60, 255};
+            if (!tele) ctx.r.drawWorldCircle(box.center(), r, hasLiche_ ? hot.withAlpha(60) : Color{255, 177, 59, 60}, 1.0f * s);
             for (int k = 0; k < n; ++k) {
                 float ang = angle_ + (tele ? 0.0f : spin_ * omega * t) + static_cast<float>(k) * 2.0f * kPi / static_cast<float>(n);
                 Vec2 fp = box.center() + Vec2{dmath::cos(ang), dmath::sin(ang)} * r;
                 uint8_t al = static_cast<uint8_t>(tele ? 80 + 150 * prog : 255);
                 if (flame) drawClip(ctx, fx, flame, fp, fr * 3.0f, Color{255, 255, 255, al});
-                else {
+                else if (hasLiche_) {
+                    ctx.r.fillWorldCircle(fp, fr, hot.withAlpha(al));
+                    ctx.r.fillWorldCircle(fp, fr * 0.55f, Color{240, 255, 240, al});
+                } else {
                     ctx.r.fillWorldCircle(fp, fr, Color{255, 122, 42, al});
                     ctx.r.fillWorldCircle(fp, fr * 0.5f, Color{255, 230, 150, al});
                 }
-                ctx.r.drawWorldGlow(fp, fr * 2.5f, Color{255, 150, 60, static_cast<uint8_t>(al / 2)});
-                if (!tele) ctx.lights.add(fp, 40.0f, Color{255, 150, 60, 255});
+                ctx.r.drawWorldGlow(fp, fr * 2.5f, hot.withAlpha(static_cast<uint8_t>(al / 2)));
+                if (!tele) ctx.lights.add(fp, 40.0f, hot);
             }
             break;
         }

@@ -239,7 +239,7 @@
    "id": "voyage_all",
    "category": "voyage",
    "name": "Système conquis",
-   "description": "Terminer les 23 niveaux de la campagne.",
+   "description": "Terminer les 24 niveaux de la campagne.",
    "stars": 5,
    "condition": {
     "type": "all_levels"
@@ -343,6 +343,20 @@
    "condition": {
     "type": "level",
     "level": "confins_04"
+   },
+   "requires": [
+    "voyage_first"
+   ]
+  },
+  {
+   "id": "voyage_crypte_noms",
+   "category": "voyage",
+   "name": "Au fond de la crypte",
+   "description": "Terminer La Crypte des Noms, aux Confins.",
+   "stars": 4,
+   "condition": {
+    "type": "level",
+    "level": "confins_05"
    },
    "requires": [
     "voyage_first"
@@ -1243,6 +1257,20 @@
    ]
   },
   {
+   "id": "gardiens_liche",
+   "category": "gardiens",
+   "name": "Liche",
+   "description": "Vaincre la Liche des Catacombes.",
+   "stars": 5,
+   "condition": {
+    "type": "boss",
+    "boss": "liche"
+   },
+   "requires": [
+    "gardiens_first"
+   ]
+  },
+  {
    "id": "gardiens_50",
    "category": "gardiens",
    "name": "Tueur de titans",
@@ -1343,7 +1371,7 @@
    "id": "maitrise_nodeath_all",
    "category": "maitrise",
    "name": "Immortel",
-   "description": "Terminer les 23 niveaux de la campagne sans mourir.",
+   "description": "Terminer les 24 niveaux de la campagne sans mourir.",
    "stars": 4,
    "condition": {
     "type": "levels_no_death",
@@ -1665,6 +1693,35 @@
    },
    "requires": [
     "gardiens_phenix"
+   ]
+  },
+  {
+   "id": "maitrise_liche_nohit",
+   "category": "maitrise",
+   "name": "Pas un frisson",
+   "description": "Vaincre la Liche sans être touché.",
+   "stars": 5,
+   "condition": {
+    "type": "boss",
+    "boss": "liche",
+    "nohit": true
+   },
+   "requires": [
+    "gardiens_liche"
+   ]
+  },
+  {
+   "id": "maitrise_phases_liche",
+   "category": "maitrise",
+   "name": "Les huit sorts",
+   "description": "Battre chaque phase de la Liche sans être touché (pas forcément dans le même combat).",
+   "stars": 5,
+   "condition": {
+    "type": "boss_phases_nohit",
+    "boss": "liche"
+   },
+   "requires": [
+    "gardiens_liche"
    ]
   },
   {
@@ -3157,6 +3214,36 @@
    ]
   },
   {
+   "id": "extreme_crypte_gold",
+   "category": "extreme",
+   "name": "Or de la crypte",
+   "description": "Obtenir l'or dans La Crypte des Noms.",
+   "stars": 4,
+   "condition": {
+    "type": "medal_level",
+    "level": "confins_05",
+    "medal": 3
+   },
+   "requires": [
+    "extreme_first"
+   ]
+  },
+  {
+   "id": "extreme_crypte_platinum",
+   "category": "extreme",
+   "name": "Platine de la crypte",
+   "description": "Obtenir le platine dans La Crypte des Noms.",
+   "stars": 5,
+   "condition": {
+    "type": "medal_level",
+    "level": "confins_05",
+    "medal": 4
+   },
+   "requires": [
+    "extreme_crypte_gold"
+   ]
+  },
+  {
    "id": "extreme_attempts_100",
    "category": "extreme",
    "name": "Increvable",
@@ -3569,11 +3656,11 @@
    "id": "collection_tracks_all",
    "category": "collection",
    "name": "Mélomane",
-   "description": "Débloquer les 24 morceaux du juke-box.",
+   "description": "Débloquer les 25 morceaux du juke-box.",
    "stars": 3,
    "condition": {
     "type": "tracks_heard",
-    "count": 24
+    "count": 25
    },
    "requires": [
     "collection_tracks_10"

@@ -2324,6 +2324,12 @@
    ]
   },
   {
+   "fr": "Armée après (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Arménie",
    "where": [
     "data/online/countries.json",
@@ -2830,6 +2836,12 @@
    ]
   },
   {
+   "fr": "Au fond de la crypte",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Au fond des abysses",
    "where": [
     "data/achievements/achievements.json"
@@ -2914,7 +2926,7 @@
    ]
   },
   {
-   "fr": "Au-delà de l'étoile morte, au bord du système, un monde de verre noir craquelé sur un feu vivant. Ses cendres tombent d'un ciel pourpre ; un dragon d'obsidienne y garde la dernière frontière, un golem plus ancien que les planètes veille sous sa croûte, un kraken hante les mers noires de ses abysses et un phénix d'étoiles renaît de ses cendres sur son plus haut sommet.",
+   "fr": "Au-delà de l'étoile morte, au bord du système, un monde de verre noir craquelé sur un feu vivant. Ses cendres tombent d'un ciel pourpre ; un dragon d'obsidienne y garde la dernière frontière, un golem plus ancien que les planètes veille sous sa croûte, un kraken hante les mers noires de ses abysses, un phénix d'étoiles renaît de ses cendres sur son plus haut sommet et une liche veille sur les noms des morts dans ses catacombes.",
    "where": [
     "data/planets/confins.json"
    ]
@@ -3809,6 +3821,18 @@
    ]
   },
   {
+   "fr": "Autel de la Liche",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Autel de pierre des catacombes : on peut se tenir sur son dessus. Dans l'arène d'un boss qui en a besoin (la Liche), le boss flotte au-dessus des autels et se téléporte de l'un à l'autre.",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
    "fr": "Auteur",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
@@ -3864,6 +3888,12 @@
    "fr": "Autoriser les demandes d'amis",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Autour du joueur (2)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -4447,6 +4477,12 @@
   },
   {
    "fr": "Battre chaque phase d'Aurorax sans être touché (pas forcément dans le même combat).",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Battre chaque phase de la Liche sans être touché (pas forcément dans le même combat).",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -5180,6 +5216,12 @@
    ]
   },
   {
+   "fr": "Brisez le phylactère",
+   "where": [
+    "game/enemies/LicheAttacks.cpp"
+   ]
+  },
+  {
    "fr": "Brisé",
    "where": [
     "data/enemies/kraken.json"
@@ -5383,6 +5425,12 @@
    "fr": "Cache des explorateurs découverte !",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "Cache son âme dans un phylactère",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -6452,6 +6500,7 @@
   {
    "fr": "Cercle de runes",
    "where": [
+    "data/enemies/liche.json",
     "data/enemies/monolithe.json"
    ]
   },
@@ -8206,6 +8255,12 @@
   },
   {
    "fr": "Combat contre Aurorax",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Combat contre la Liche",
    "where": [
     "data/music/tracks.json"
    ]
@@ -10229,6 +10284,30 @@
    ]
   },
   {
+   "fr": "Crypte",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
+   "fr": "Crypte : un soin",
+   "where": [
+    "data/levels/confins_05.json"
+   ]
+  },
+  {
+   "fr": "Cryptes ouvertes",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
+   "fr": "Crânes maudits",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
    "fr": "CRÉATEUR",
    "where": [
     "ui/online/CommentsPanel.cpp",
@@ -10826,6 +10905,12 @@
    ]
   },
   {
+   "fr": "De petites âmes pâles s'échappent derrière Nova et s'élèvent en tremblant.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "DE RETOUR EN LIGNE",
    "where": [
     "ui/screens/OnlineComputer.cpp"
@@ -10976,6 +11061,12 @@
    ]
   },
   {
+   "fr": "Demi-largeur d'une rune",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Demi-largeur du pic",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -11060,6 +11151,12 @@
    ]
   },
   {
+   "fr": "Dernier glas",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
    "fr": "dernier niveau {0}",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -11069,6 +11166,12 @@
    "fr": "Dernier piqué",
    "where": [
     "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Dernier rayon",
+   "where": [
+    "data/enemies/liche.json"
    ]
   },
   {
@@ -11151,6 +11254,12 @@
    ]
   },
   {
+   "fr": "Dernière pluie d'os",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
    "fr": "Dernière secousse",
    "where": [
     "data/enemies/monolithe.json"
@@ -11184,6 +11293,18 @@
    "fr": "Dernières plumes",
    "where": [
     "data/enemies/phenix.json"
+   ]
+  },
+  {
+   "fr": "Dernières runes",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
+   "fr": "Des bougies d'âme s'allument une à une autour du portail, puis leurs flammes vertes s'envolent comme des âmes libérées.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -11242,6 +11363,12 @@
   },
   {
    "fr": "Des nuages de couleur tournent autour du cadre.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Des os mis bout à bout entourent le cadre, six crânes parmi eux dont les yeux s'allument tour à tour : pour avoir vaincu la Liche sans être touché.",
    "where": [
     "data/cosmetics/cosmetics.json"
    ]
@@ -12087,6 +12214,12 @@
    ]
   },
   {
+   "fr": "Durée de la malédiction (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Durée de la rafale (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -12226,7 +12359,7 @@
    ]
   },
   {
-   "fr": "Débloquer les 24 morceaux du juke-box.",
+   "fr": "Débloquer les 25 morceaux du juke-box.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -12396,6 +12529,7 @@
     "data/levels/confins_02.json",
     "data/levels/confins_03.json",
     "data/levels/confins_04.json",
+    "data/levels/confins_05.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -12425,6 +12559,7 @@
     "data/levels/confins_02.json",
     "data/levels/confins_03.json",
     "data/levels/confins_04.json",
+    "data/levels/confins_05.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -13351,6 +13486,12 @@
    ]
   },
   {
+   "fr": "Elle trace ses malédictions : gardez vos distances !",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
    "fr": "Elles ne dépendent pas du nombre d'étoiles : il faut le succès lui-même.",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -14237,6 +14378,12 @@
   },
   {
    "fr": "Entre deux lames (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Entre deux runes (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
@@ -16141,6 +16288,7 @@
     "data/levels/confins_02.json",
     "data/levels/confins_03.json",
     "data/levels/confins_04.json",
+    "data/levels/confins_05.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -16256,6 +16404,12 @@
    "fr": "Gardien de Sylvanox",
    "where": [
     "data/achievements/achievements.json",
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Gardien des noms",
+   "where": [
     "data/cosmetics/cosmetics.json"
    ]
   },
@@ -16506,6 +16660,12 @@
    "fr": "Glaneur",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Glas funèbre",
+   "where": [
+    "data/enemies/liche.json"
    ]
   },
   {
@@ -17053,6 +17213,12 @@
    ]
   },
   {
+   "fr": "Hauteur de son éclat",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Hauteur des murs",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -17060,6 +17226,12 @@
   },
   {
    "fr": "Hauteur des ondes (rayon)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Hauteur des sauts maudits (part)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
@@ -17779,9 +17951,21 @@
    ]
   },
   {
+   "fr": "Il savait tous leurs noms. « Tant qu'on se souvient de toi, disait-il, tu n'es jamais tout à fait parti. »",
+   "where": [
+    "data/stories/liche.json"
+   ]
+  },
+  {
    "fr": "Il veilla sur le village de la caverne pendant dix mille ans. Il connaissait chaque rire.",
    "where": [
     "data/stories/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Il vieillissait. Qui se souviendrait d'eux après lui ? Il cacha son âme dans un cristal, pour ne jamais mourir.",
+   "where": [
+    "data/stories/liche.json"
    ]
   },
   {
@@ -18283,6 +18467,12 @@
    "fr": "Intouchable",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Intouchable tant que le cristal tient : brisez-le !",
+   "where": [
+    "game/enemies/LicheAttacks.cpp"
    ]
   },
   {
@@ -18842,6 +19032,12 @@
    "where": [
     "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Juke-box : la musique du combat, « La Liche des Catacombes » (25 morceaux à débloquer).",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -19458,6 +19654,24 @@
    ]
   },
   {
+   "fr": "LA CRYPTE DES NOMS",
+   "where": [
+    "data/levels/confins_05.json"
+   ]
+  },
+  {
+   "fr": "La Crypte des Noms",
+   "where": [
+    "data/levels/confins_05.json"
+   ]
+  },
+  {
+   "fr": "La Crypte des Noms : la Liche seule, une seule vie, aucun checkpoint. Choisissez vos quatre pouvoirs.",
+   "where": [
+    "data/levels/confins_05.json"
+   ]
+  },
+  {
    "fr": "La définition de l'entité n'est pas valide.",
    "where": [
     "server/src/enemyRevisions.ts"
@@ -19630,6 +19844,66 @@
    ]
   },
   {
+   "fr": "La Liche : elle se téléporte entre les quatre autels de sa crypte (l'autel suivant s'illumine avant qu'elle n'y apparaisse), trace des runes funestes sur le sol où vous vous tenez (armées, elles éclatent sous vos pieds : sautez-les ou passez entre deux), lance son Maléfice (un cercle de runes se referme autour de vous : restez dedans et vos sauts s'alourdissent quelques secondes), dresse des murs d'os, appelle ses spectres, et son dernier sort doit être survécu. Rester sous elle ou à côté ne protège pas.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "La Liche cache son âme dans son phylactère !",
+   "where": [
+    "game/enemies/LicheAttacks.cpp"
+   ]
+  },
+  {
+   "fr": "LA LICHE DES CATACOMBES",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
+   "fr": "La Liche des Catacombes",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "La Liche des Catacombes.",
+   "where": [
+    "data/levels/confins_05.json"
+   ]
+  },
+  {
+   "fr": "La Liche retombe en poussière, enfin en paix. La sortie est ouverte.",
+   "where": [
+    "data/levels/confins_05.json"
+   ]
+  },
+  {
+   "fr": "LA LICHE S'APAISE",
+   "where": [
+    "data/levels/confins_05.json"
+   ]
+  },
+  {
+   "fr": "La Liche s'est tue. Dans la crypte, les bougies brûlent encore, pour chaque nom.",
+   "where": [
+    "data/levels/confins_05.json"
+   ]
+  },
+  {
+   "fr": "La Liche s'éveille parmi ses morts.",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
+   "fr": "La Liche veille toujours sur sa crypte. Elle a oublié son propre nom… mais pas un seul des leurs.",
+   "where": [
+    "data/stories/liche.json"
+   ]
+  },
+  {
    "fr": "La liste du serveur n'est pas encore lue : actualisez.",
    "where": [
     "ui/screens/AdminEnemies.cpp"
@@ -19681,6 +19955,12 @@
    "fr": "La nuit où l'étoile du centre s'effondra, l'oiseau attendit sa lumière. Elle ne revint jamais.",
    "where": [
     "data/stories/phenix.json"
+   ]
+  },
+  {
+   "fr": "La nuit où l'étoile du centre s'effondra, les vivants s'enfuirent. Ossian, lui, resta avec ses morts.",
+   "where": [
+    "data/stories/liche.json"
    ]
   },
   {
@@ -20495,6 +20775,12 @@
    ]
   },
   {
+   "fr": "Le cristal où la Liche a enfermé son âme, posé sur un autel de sa crypte. Tant qu'il tient, rien ne peut la blesser : brisez-le.",
+   "where": [
+    "data/enemies/phylactere.json"
+   ]
+  },
+  {
    "fr": "Le Cryowyrm s'effondre. Le sanctuaire de l'aurore est ouvert.",
    "where": [
     "data/levels/glacior_01.json"
@@ -20816,6 +21102,12 @@
    "fr": "Le Forgeron Primordial s'éteint. La fonderie se tait enfin.",
    "where": [
     "data/levels/pyralis_03.json"
+   ]
+  },
+  {
+   "fr": "Le Gardien des noms",
+   "where": [
+    "data/stories/liche.json"
    ]
   },
   {
@@ -21234,6 +21526,12 @@
    "fr": "Le nom est définitif : une version ne se modifie pas et ne se remplace pas. Les autres membres sont prévenus.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le Néant ! La Liche ne retient plus rien !",
+   "where": [
+    "data/enemies/liche.json"
    ]
   },
   {
@@ -21891,7 +22189,7 @@
    ]
   },
   {
-   "fr": "Les 24 morceaux du juke-box débloqués.",
+   "fr": "Les 25 morceaux du juke-box débloqués.",
    "where": [
     "data/cosmetics/cosmetics.json"
    ]
@@ -21999,8 +22297,15 @@
     "data/levels/confins_02.json",
     "data/levels/confins_03.json",
     "data/levels/confins_04.json",
+    "data/levels/confins_05.json",
     "data/music/tracks.json",
     "data/planets/confins.json"
+   ]
+  },
+  {
+   "fr": "Les Confins — La Crypte des Noms",
+   "where": [
+    "data/levels/confins_05.json"
    ]
   },
   {
@@ -22025,6 +22330,12 @@
    "fr": "Les Confins — Le Nid de Cendres",
    "where": [
     "data/levels/confins_04.json"
+   ]
+  },
+  {
+   "fr": "Les Confins, cinquième niveau : « La Crypte des Noms » (EXTRÊME) : le combat seul de la Liche des Catacombes, giga-boss à huit phases qui flotte d'autel en autel. Une seule vie, aucun checkpoint ; la crypte s'effondre sur ses ossuaires à la cinquième phase.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -22067,6 +22378,12 @@
    "fr": "Les creusets suspendus : enchaînez les ancrages du Grappin.",
    "where": [
     "data/levels/pyralis_03.json"
+   ]
+  },
+  {
+   "fr": "Les cryptes s'ouvrent !",
+   "where": [
+    "data/enemies/liche.json"
    ]
   },
   {
@@ -22268,6 +22585,12 @@
    ]
   },
   {
+   "fr": "Les huit sorts",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Les jeux les téléchargent au démarrage ; les révisions d'avant restent jouables avec leur définition (records archivés, replays, défis déjà commencés). La publication est inscrite au Journal.",
    "where": [
     "editors/enemy_editor/EnemyEditorPublish.cpp"
@@ -22333,6 +22656,12 @@
    "fr": "Les onglets d'une même barre et les boutons de la fiche d'un niveau EN LIGNE ont une seule taille de texte, sans texte coupé.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Les os des catacombes se lèvent !",
+   "where": [
+    "data/enemies/liche.json"
    ]
   },
   {
@@ -22505,6 +22834,12 @@
    ]
   },
   {
+   "fr": "Les siècles rongèrent sa chair jusqu'aux os. Dans le cristal, son âme brûlait encore, d'une flamme verte.",
+   "where": [
+    "data/stories/liche.json"
+   ]
+  },
+  {
    "fr": "Les stalactites tremblent !",
    "where": [
     "data/enemies/echo_frost_hydra.json",
@@ -22563,6 +22898,18 @@
    "fr": "Les {0} emplacements sont pris : retirez d'abord un badge.",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Les âmes des morts referment l'arène !",
+   "where": [
+    "data/levels/confins_05.json"
+   ]
+  },
+  {
+   "fr": "Les âmes perdues tourbillonnent autour d'elle !",
+   "where": [
+    "data/enemies/liche.json"
    ]
   },
   {
@@ -22701,6 +23048,19 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Liche",
+   "where": [
+    "data/achievements/achievements.json",
+    "data/enemies/liche.json"
+   ]
+  },
+  {
+   "fr": "Liche vaincue",
+   "where": [
+    "data/levels/confins_05.json"
    ]
   },
   {
@@ -22855,6 +23215,12 @@
    "fr": "limites du niveau invalides",
    "where": [
     "server/src/community.ts"
+   ]
+  },
+  {
+   "fr": "Linceul des catacombes",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -23407,6 +23773,25 @@
    ]
   },
   {
+   "fr": "Malédiction",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
+   "fr": "Malédiction : les blocs en orbite",
+   "where": [
+    "data/levels/confins_05.json"
+   ]
+  },
+  {
+   "fr": "Maléfice",
+   "where": [
+    "data/enemies/liche.json",
+    "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
    "fr": "Manette",
    "where": [
     "editors/level_editor/LevelEditorPowerKeys.cpp",
@@ -23684,6 +24069,12 @@
    "fr": "Matériau",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Maudite : vos sauts s'alourdissent !",
+   "where": [
+    "game/enemies/LicheAttacks.cpp"
    ]
   },
   {
@@ -25076,6 +25467,12 @@
    "where": [
     "data/enemies/echo_glaciarch.json",
     "data/enemies/glaciarch.json"
+   ]
+  },
+  {
+   "fr": "Murs d'os",
+   "where": [
+    "data/enemies/liche.json"
    ]
   },
   {
@@ -27114,10 +27511,28 @@
    ]
   },
   {
+   "fr": "Néant",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
+   "fr": "Néant : l'arène se resserre",
+   "where": [
+    "data/levels/confins_05.json"
+   ]
+  },
+  {
    "fr": "Nébuleuse",
    "where": [
     "data/cosmetics/cosmetics.json",
     "data/enemies/phenix.json"
+   ]
+  },
+  {
+   "fr": "Nécromancie",
+   "where": [
+    "data/enemies/liche.json"
    ]
   },
   {
@@ -27281,6 +27696,12 @@
    ]
   },
   {
+   "fr": "Obtenir l'or dans La Crypte des Noms.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Obtenir l'or dans La Fosse des Abysses.",
    "where": [
     "data/achievements/achievements.json"
@@ -27336,6 +27757,12 @@
   },
   {
    "fr": "Obtenir le platine dans L'Arène des Échos.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Obtenir le platine dans La Crypte des Noms.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -27709,6 +28136,12 @@
    ]
   },
   {
+   "fr": "Or de la crypte",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Or des abysses",
    "where": [
     "data/achievements/achievements.json"
@@ -27880,6 +28313,13 @@
    "fr": "Orpailleur",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Ossuaire",
+   "where": [
+    "data/cosmetics/cosmetics.json",
+    "data/enemies/liche.json"
    ]
   },
   {
@@ -28894,6 +29334,12 @@
    ]
   },
   {
+   "fr": "Pas un frisson",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "pas une entité native de ce jeu",
    "where": [
     "game/online/EnemyRevisions.cpp"
@@ -29467,6 +29913,30 @@
    ]
   },
   {
+   "fr": "Phylactère : à la fin de sa quatrième phase, la Liche cache son âme dans un cristal posé sur l'un de ses autels ; elle est intouchable tant que vous ne l'avez pas brisé.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Phylactère brisé",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
+   "fr": "Phylactère brisé : la crypte s'effondre sur les ossuaires",
+   "where": [
+    "data/levels/confins_05.json"
+   ]
+  },
+  {
+   "fr": "Phylactère de la Liche",
+   "where": [
+    "data/enemies/phylactere.json"
+   ]
+  },
+  {
    "fr": "Phénix",
    "where": [
     "data/achievements/achievements.json",
@@ -29916,6 +30386,12 @@
    ]
   },
   {
+   "fr": "Platine de la crypte",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Platine des abysses",
    "where": [
     "data/achievements/achievements.json"
@@ -30006,6 +30482,12 @@
    "fr": "Pluie d'obsidienne",
    "where": [
     "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Pluie d'ossements",
+   "where": [
+    "data/enemies/liche.json"
    ]
   },
   {
@@ -30769,6 +31251,12 @@
    ]
   },
   {
+   "fr": "Pour avoir apaisé la Liche des Catacombes.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Pour avoir apaisé le Phénix Stellaire.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -30844,6 +31332,12 @@
    "fr": "pour {0}",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pourpre noir des vieilles robes, visière de feu d'âme, écharpe d'os : la tenue de la Liche.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -32051,6 +32545,12 @@
    ]
   },
   {
+   "fr": "Puits des âmes",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
    "fr": "Puits gravitationnel",
    "where": [
     "data/enemies/echo_nyxara.json",
@@ -32515,6 +33015,7 @@
     "data/levels/confins_02.json",
     "data/levels/confins_03.json",
     "data/levels/confins_04.json",
+    "data/levels/confins_05.json",
     "data/levels/noyau_03.json"
    ]
   },
@@ -32643,6 +33144,12 @@
    ]
   },
   {
+   "fr": "Rayon d'âme",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
    "fr": "Rayon de fusion",
    "where": [
     "data/enemies/astrarque.json",
@@ -32665,6 +33172,18 @@
   },
   {
    "fr": "Rayon de lueur",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Rayon de sang",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
+   "fr": "Rayon du cercle",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
@@ -34143,6 +34662,12 @@
    ]
   },
   {
+   "fr": "Reste armée (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "retard",
    "where": [
     "ui/screens/GhostRun.cpp"
@@ -34568,6 +35093,12 @@
    ]
   },
   {
+   "fr": "Ronde des âmes",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
    "fr": "Rose",
    "where": [
     "saves/Settings.cpp"
@@ -34715,9 +35246,28 @@
    ]
   },
   {
+   "fr": "Runes (par côté avec 2 bras)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Runes d'Aethra",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Runes de sang",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
+   "fr": "Runes funestes",
+   "where": [
+    "data/enemies/liche.json",
+    "game/enemies/EnemyDefinition.cpp"
    ]
   },
   {
@@ -36046,6 +36596,12 @@
    ]
   },
   {
+   "fr": "Sauts alourdis {0} s",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "Sauts en plus",
    "where": [
     "game/powers/PowerStats.cpp"
@@ -36639,6 +37195,18 @@
    ]
   },
   {
+   "fr": "Ses sorts arrachent la roche : les blocs tournoient !",
+   "where": [
+    "data/levels/confins_05.json"
+   ]
+  },
+  {
+   "fr": "Ses spectres se lèvent pour la servir !",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
    "fr": "Ses tentacules arrachent la roche : les blocs tournoient !",
    "where": [
     "data/levels/confins_03.json"
@@ -37196,6 +37764,12 @@
    ]
   },
   {
+   "fr": "Son histoire, avant le premier combat : « Le Gardien des noms », le vieil Ossian qui allumait une bougie pour chaque mort des Confins.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Son histoire, avant le premier combat : « Le Porteur d'aube », le petit oiseau de lumière qui portait le jour aux Confins.",
    "where": [
     "data/news/changelog.json"
@@ -37217,6 +37791,12 @@
    "fr": "Son niveau ne peut pas être lu.",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Son phylactère est brisé : la Liche hurle de rage !",
+   "where": [
+    "data/enemies/liche.json"
    ]
   },
   {
@@ -37446,6 +38026,18 @@
    ]
   },
   {
+   "fr": "Sous les Confins dorment des catacombes. Le vieil Ossian y allumait une bougie pour chaque mort.",
+   "where": [
+    "data/stories/liche.json"
+   ]
+  },
+  {
+   "fr": "Sous les Confins, des catacombes de verre noir où brûlent des bougies d'âme : la Liche des Catacombes et ses huit phases, dans une arène géante. Une seule vie, aucun checkpoint.",
+   "where": [
+    "data/levels/confins_05.json"
+   ]
+  },
+  {
    "fr": "Sous les plaines gelées s'ouvrent des grottes de cristal inondées. Nagez, grimpez les puits au grappin et affrontez l'Hydre de Givre qui garde les profondeurs.",
    "where": [
     "data/levels/glacior_02.json"
@@ -37542,9 +38134,27 @@
    ]
   },
   {
+   "fr": "Spectre de la Liche",
+   "where": [
+    "data/enemies/spectre.json"
+   ]
+  },
+  {
+   "fr": "Spectres",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
    "fr": "Spirale d'encre",
    "where": [
     "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Spirale d'âmes",
+   "where": [
+    "data/enemies/liche.json"
    ]
   },
   {
@@ -38081,6 +38691,12 @@
   },
   {
    "fr": "Succès : chaque succès ajouté porte la pastille dans la liste et le panneau ; sur la toile, un point doré marque les nouveaux et la pastille apparaît près du nom en zoomant.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Succès de la Liche (6 nouveaux, 28 étoiles) ; au Vestiaire : la combinaison Linceul des catacombes (680 étoiles), la traînée Âmes errantes (690), l'effet de victoire Veillée des âmes (700), le cadre Ossuaire et le titre Gardien des noms.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -39643,6 +40259,12 @@
    ]
   },
   {
+   "fr": "Terminer La Crypte des Noms, aux Confins.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Terminer La Fosse des Abysses, aux Confins.",
    "where": [
     "data/achievements/achievements.json"
@@ -39698,13 +40320,13 @@
    ]
   },
   {
-   "fr": "Terminer les 23 niveaux de la campagne sans mourir.",
+   "fr": "Terminer les 24 niveaux de la campagne sans mourir.",
    "where": [
     "data/achievements/achievements.json"
    ]
   },
   {
-   "fr": "Terminer les 23 niveaux de la campagne.",
+   "fr": "Terminer les 24 niveaux de la campagne.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -39877,6 +40499,7 @@
     "data/levels/confins_02.json",
     "data/levels/confins_03.json",
     "data/levels/confins_04.json",
+    "data/levels/confins_05.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -40713,6 +41336,12 @@
    "fr": "Trait lumineux",
    "where": [
     "game/gameplay/BeamRenderer.cpp"
+   ]
+  },
+  {
+   "fr": "Traits d'âme",
+   "where": [
+    "data/enemies/liche.json"
    ]
   },
   {
@@ -41956,6 +42585,12 @@
    ]
   },
   {
+   "fr": "Un vieux gardien des catacombes des Confins, qui enferma son âme dans un cristal pour ne jamais mourir. Huit phases, huit feux d'âme : il flotte d'autel en autel, cache son âme dans son phylactère, et son dernier sort doit être survécu.",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
    "fr": "Un éclat de l'étoile morte, détaché par Singularis pour l'escorter. Il tire des éclats de lumière.",
    "where": [
     "data/enemies/eclat_stellaire.json"
@@ -42184,6 +42819,12 @@
    ]
   },
   {
+   "fr": "Une ombre pâle des catacombes, liée à la Liche : elle flotte autour d'elle et lance des âmes en peine.",
+   "where": [
+    "data/enemies/spectre.json"
+   ]
+  },
+  {
    "fr": "Une onde de froid gèle les ennemis proches : un ennemi gelé devient une plateforme. Les boss sont ralentis et les tirs ennemis pris dans l'onde volent en éclats.",
    "where": [
     "data/powers/frost_nova.json"
@@ -42332,6 +42973,12 @@
    "fr": "Une seule vie. Un oiseau d'étoiles qui renaît de ses cendres. Huit phases.",
    "where": [
     "data/levels/confins_04.json"
+   ]
+  },
+  {
+   "fr": "Une seule vie. Une liche qui n'a oublié aucun nom. Huit phases.",
+   "where": [
+    "data/levels/confins_05.json"
    ]
   },
   {
@@ -42847,6 +43494,18 @@
    ]
   },
   {
+   "fr": "Vaincre la Liche des Catacombes.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre la Liche sans être touché.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Vaincre le Kraken des Abysses.",
    "where": [
     "data/achievements/achievements.json"
@@ -43097,6 +43756,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Veillée des âmes",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -44022,6 +44687,12 @@
    "fr": "Volume général",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Volée d'ossements",
+   "where": [
+    "data/enemies/liche.json"
    ]
   },
   {
@@ -46790,6 +47461,30 @@
    ]
   },
   {
+   "fr": "{0} rune autour du joueur",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} rune en ligne",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} runes autour du joueur",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} runes en ligne",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} réactions à votre commentaire sur {1}",
    "where": [
     "server/src/notifications.ts"
@@ -47856,6 +48551,37 @@
    ]
   },
   {
+   "fr": "Âme en peine",
+   "where": [
+    "data/enemies/spectre.json"
+   ]
+  },
+  {
+   "fr": "Âmes",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
+   "fr": "Âmes de l'ossuaire",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Âmes en peine",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
+   "fr": "Âmes errantes",
+   "where": [
+    "data/cosmetics/cosmetics.json",
+    "data/enemies/liche.json"
+   ]
+  },
+  {
    "fr": "Åland",
    "where": [
     "data/online/countries.json",
@@ -47944,6 +48670,12 @@
   },
   {
    "fr": "Écart entre les fissures (px)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Écart entre les runes (px)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
@@ -48501,6 +49233,12 @@
    "fr": "Éclats de son corps",
    "where": [
     "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Éclats du phylactère",
+   "where": [
+    "data/enemies/liche.json"
    ]
   },
   {
@@ -49098,6 +49836,12 @@
    "fr": "Étreinte",
    "where": [
     "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Étreinte des morts",
+   "where": [
+    "data/enemies/liche.json"
    ]
   },
   {

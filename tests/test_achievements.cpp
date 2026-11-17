@@ -165,7 +165,7 @@ TEST_CASE("achievements: every condition is known and names real content") {
         }
         if (!c.power.empty()) CHECK(f.content.power(c.power) != nullptr);
         if (c.type == "medal_count" || c.type == "levels_no_death" || c.type == "levels_full_collect" || c.type == "levels_all_secrets")
-            CHECK(c.count <= 23);  // the campaign has 23 levels (2.19: Aethra, 2.33: the dying star, 2.48-2.56: Les Confins)
+            CHECK(c.count <= 24);  // the campaign has 24 levels (2.19: Aethra, 2.33: the dying star, 2.48-2.57: Les Confins)
         if (!c.planet.empty() && (c.type == "levels_no_death" || c.type == "levels_full_collect" || c.type == "levels_all_secrets"))
             CHECK(c.count <= static_cast<int64_t>(f.content.levelsForPlanet(c.planet).size()));
         // Reachable: only levels with something to find count for « tout ramasser » and
@@ -186,7 +186,7 @@ TEST_CASE("achievements: every condition is known and names real content") {
         }
         if (c.type == "set") CHECK(sets.count(c.key) == 1);
         if (c.type == "max") CHECK(maxima.count(c.key) == 1);
-        if (c.type == "set" && c.key == "rated_campaign") CHECK(c.count <= 23);  // 2.56: 23 levels
+        if (c.type == "set" && c.key == "rated_campaign") CHECK(c.count <= 24);  // 2.57: 24 levels
         if (c.type == "set" && c.key == "photographed_planets") CHECK(c.count <= static_cast<int64_t>(f.content.planets().size()));
         if (c.type == "max" && c.key == "outfit_categories") CHECK(c.count <= 5);  // the five categories of the Collection
     }
@@ -249,7 +249,7 @@ TEST_CASE("achievements: campaign, medals and bosses come from the saves") {
     const AchievementDef* all = f.catalog.find("voyage_all");
     AchievementProgress p = AchievementBook::progress(*all, f.inputs());
     CHECK(p.value == 12);
-    CHECK(p.target == 23);  // 2.19: the four levels of Aethra; 2.33: Le Cœur d'une Étoile Mourante; 2.48-2.56: Les Confins
+    CHECK(p.target == 24);  // 2.19: the four levels of Aethra; 2.33: Le Cœur d'une Étoile Mourante; 2.48-2.57: Les Confins
 }
 
 TEST_CASE("achievements: counters, sets and the required threads") {
@@ -374,7 +374,7 @@ TEST_CASE("achievements (2.24): the Collection, the replays and Cosmic Online") 
     auto got = run(in);
     CHECK(!has(got, "collection_tracks_10"));
     CHECK(!has(got, "collection_creatures_15"));
-    in.tracksHeard = 24;  // 2.33: Singularis's track; 2.48: Pyrrhax's; 2.49: Monolithe's; 2.53: the Kraken's; 2.56: the Phénix's
+    in.tracksHeard = 25;  // 2.33: Singularis's track; 2.48: Pyrrhax's; 2.49: Monolithe's; 2.53: the Kraken's; 2.56: the Phénix's; 2.57: the Liche's
     in.creaturesMet = 30;
     got = run(in);
     for (const char* id : {"collection_tracks_10", "collection_tracks_all", "collection_creatures_15", "collection_creatures_30"}) CHECK(has(got, id));
@@ -537,11 +537,12 @@ TEST_CASE("collection (2.24): every reward can be won and is drawn") {
     for (const auto& d : a.achievements()) offline -= online.count(d.id) ? d.stars : 0;
     // The looks the game draws (CosmeticFx, the suits' sheets).
     const std::map<std::string, std::set<std::string>> drawn = {
-        {"trail", {"none", "stardust", "comet", "aurora", "eclipse", "flame", "prism", "runes", "month_comet", "ashes", "debris", "bubbles", "feathers"}},
+        {"trail", {"none", "stardust", "comet", "aurora", "eclipse", "flame", "prism", "runes", "month_comet", "ashes", "debris", "bubbles", "feathers",
+                   "souls"}},
         {"frame", {"simple", "bronze", "silver", "gold", "platinum", "constellation", "emerald", "orbit", "nebula", "laurels", "crown", "scales", "runic",
-                   "tentacles", "plumage"}},
+                   "tentacles", "plumage", "ossuary"}},
         {"victory", {"classic", "fireworks", "starfall", "supernova", "vortex", "borealis", "corona", "fire_streak", "dragon_breath", "quake", "tidal_wave",
-                     "rebirth"}}};
+                     "rebirth", "candles"}}};
     std::map<std::string, int> perCategory, defaults;
     std::set<int> thresholds;
     for (const CosmeticItem& it : c.items()) {

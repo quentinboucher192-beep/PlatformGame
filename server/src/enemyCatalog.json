@@ -241,6 +241,10 @@
    "name": "Traqueur de lave"
   },
   {
+   "id": "liche",
+   "name": "Liche"
+  },
+  {
    "id": "magma_gloop",
    "name": "Gloop de magma"
   },
@@ -281,6 +285,10 @@
    "name": "Photophore abyssal"
   },
   {
+   "id": "phylactere",
+   "name": "Phylactère de la Liche"
+  },
+  {
    "id": "prime_sentinel",
    "name": "Sentinelle Prime"
   },
@@ -303,6 +311,10 @@
   {
    "id": "snow_stalker",
    "name": "Traqueur des neiges"
+  },
+  {
+   "id": "spectre",
+   "name": "Spectre de la Liche"
   },
   {
    "id": "spore_queen",

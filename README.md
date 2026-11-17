@@ -5,6 +5,17 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.57.0** :
+* **« La Crypte des Noms »** (EXTRÊME, Les Confins) : le combat seul de la **Liche des Catacombes**,
+  giga-boss à huit phases qui flotte au-dessus des **autels** de sa crypte et se téléporte de l'un à
+  l'autre (l'autel suivant s'illumine avant) : **runes funestes** tracées sur le sol (armées, elles
+  éclatent sous vos pieds), **Maléfice** (un cercle de runes se referme : restez dedans et vos sauts
+  s'alourdissent), murs d'os, spectres ; à la fin de la phase « Spectres », elle cache son âme dans son
+  **phylactère** : intouchable tant que le cristal n'est pas brisé.
+* Son **histoire** avant le premier combat (« Le Gardien des noms ») ; ses succès et son Vestiaire
+  (Linceul des catacombes, Âmes errantes, Veillée des âmes, Ossuaire, titre Gardien des noms).
+* Sa musique, **« La Liche des Catacombes »**, au juke-box (25 morceaux).
+
 **Nouveau dans la version 2.56.0** :
 * **« Le Nid de Cendres »** (EXTRÊME, Les Confins) : le combat seul du **Phénix Stellaire**, giga-boss à huit
   phases qui plane : colonnes solaires tombant de la voûte, lame de plumes au ras du sol ou à hauteur de

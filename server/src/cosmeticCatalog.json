@@ -114,6 +114,13 @@
    "stars": 650
   },
   {
+   "id": "suit_linceul",
+   "category": "suit",
+   "look": "linceul",
+   "name": "Linceul des catacombes",
+   "stars": 680
+  },
+  {
    "id": "suit_sanctuaire",
    "category": "suit",
    "look": "sanctuaire",
@@ -207,6 +214,13 @@
    "look": "feathers",
    "name": "Plumes de lumière",
    "stars": 660
+  },
+  {
+   "id": "trail_ames",
+   "category": "trail",
+   "look": "souls",
+   "name": "Âmes errantes",
+   "stars": 690
   },
   {
    "id": "trail_runes",
@@ -316,6 +330,13 @@
    "look": "tentacles",
    "name": "Étreinte du Kraken",
    "achievement": "maitrise_kraken_nohit"
+  },
+  {
+   "id": "frame_ossuaire",
+   "category": "frame",
+   "look": "ossuary",
+   "name": "Ossuaire",
+   "achievement": "maitrise_liche_nohit"
   },
   {
    "id": "frame_plumes",
@@ -432,6 +453,13 @@
    "look": "Porteur d'aube",
    "name": "Porteur d'aube",
    "achievement": "gardiens_phenix"
+  },
+  {
+   "id": "title_gardien_noms",
+   "category": "title",
+   "look": "Gardien des noms",
+   "name": "Gardien des noms",
+   "achievement": "gardiens_liche"
   },
   {
    "id": "title_analyste",
@@ -569,6 +597,13 @@
    "look": "rebirth",
    "name": "Renaissance",
    "stars": 670
+  },
+  {
+   "id": "victory_veillee",
+   "category": "victory",
+   "look": "candles",
+   "name": "Veillée des âmes",
+   "stars": 700
   },
   {
    "id": "victory_serie_feu",

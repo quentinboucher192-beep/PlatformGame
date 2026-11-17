@@ -1,0 +1,84 @@
+{
+ "format": "cosmic.boss_story",
+ "version": 1,
+ "comment": "Story of a giga boss (game/content/BossStories.h), told before the first fight against it. Each shot: its painting (assets/, tools/assetgen/environment/stories.py), its line of narration, the point the slow zoom goes to, the live particles over it. A shot lasts max(4.5 s, 1.2 s + characters / 16); then the title card (3 s).",
+ "boss": "liche",
+ "title": "Le Gardien des noms",
+ "color": "#b4f566",
+ "accent": "#cf8eff",
+ "clip": "roar",
+ "shots": [
+  {
+   "scene": "candles",
+   "image": "stories/liche_1.png",
+   "text": "Sous les Confins dorment des catacombes. Le vieil Ossian y allumait une bougie pour chaque mort.",
+   "focus": [
+    0.47,
+    0.62
+   ],
+   "zoom": 1.1,
+   "particles": "embers",
+   "glow": "#ffcf7a"
+  },
+  {
+   "scene": "names",
+   "image": "stories/liche_2.png",
+   "text": "Il savait tous leurs noms. « Tant qu'on se souvient de toi, disait-il, tu n'es jamais tout à fait parti. »",
+   "focus": [
+    0.58,
+    0.5
+   ],
+   "zoom": 1.12,
+   "particles": "dust",
+   "glow": "#ffcf7a"
+  },
+  {
+   "scene": "exodus",
+   "image": "stories/liche_3.png",
+   "text": "La nuit où l'étoile du centre s'effondra, les vivants s'enfuirent. Ossian, lui, resta avec ses morts.",
+   "focus": [
+    0.42,
+    0.5
+   ],
+   "zoom": 1.08,
+   "particles": "stars",
+   "glow": "#c88bff"
+  },
+  {
+   "scene": "phylactery",
+   "image": "stories/liche_4.png",
+   "text": "Il vieillissait. Qui se souviendrait d'eux après lui ? Il cacha son âme dans un cristal, pour ne jamais mourir.",
+   "focus": [
+    0.5,
+    0.58
+   ],
+   "zoom": 1.14,
+   "particles": "sparks",
+   "glow": "#b4f566"
+  },
+  {
+   "scene": "bones",
+   "image": "stories/liche_5.png",
+   "text": "Les siècles rongèrent sa chair jusqu'aux os. Dans le cristal, son âme brûlait encore, d'une flamme verte.",
+   "focus": [
+    0.5,
+    0.56
+   ],
+   "zoom": 1.1,
+   "particles": "dust",
+   "glow": "#b4f566"
+  },
+  {
+   "scene": "lich",
+   "image": "stories/liche_6.png",
+   "text": "La Liche veille toujours sur sa crypte. Elle a oublié son propre nom… mais pas un seul des leurs.",
+   "focus": [
+    0.5,
+    0.52
+   ],
+   "zoom": 1.06,
+   "particles": "sparks",
+   "glow": "#b4f566"
+  }
+ ]
+}

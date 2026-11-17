@@ -23,7 +23,7 @@ Produces (paths relative to assets/):
   textures/tiles/{sanctum_stone,nebula_rock}.png/.json (Aethra, in tiles)
   ui/planets/aethra.png, ui/planets/aethra_banner.png                         (aethra_planet)
   ui/planets/confins.png, ui/planets/confins_banner.png                       (confins_planet)
-  stories/{singularis,pyrrhax,monolithe,kraken,phenix}_{1..6}.png (giga boss stories, 2.51; kraken 2.53, phenix 2.56)  (stories)
+  stories/{singularis,pyrrhax,monolithe,kraken,phenix,liche}_{1..6}.png (giga boss stories, 2.51; kraken 2.53, phenix 2.56, liche 2.57)  (stories)
 All generators are deterministic (fixed seeds).
 """
 import os

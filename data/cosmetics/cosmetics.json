@@ -24,6 +24,7 @@
     {"id": "suit_granit", "category": "suit", "name": "Granit", "description": "Gris de granit moucheté, visière ambre, écharpe de mousse : la tenue du Monolithe.", "stars": 590, "look": "granit"},
     {"id": "suit_encre", "category": "suit", "name": "Encre des abysses", "description": "Violet d'encre, visière cyan comme un photophore, écharpe turquoise : la tenue du Kraken.", "stars": 620, "look": "encre"},
     {"id": "suit_aube", "category": "suit", "name": "Plumage d'aube", "description": "Bleu de nuit étoilée, visière d'or, écharpe de feu cramoisi : la tenue du Phénix.", "stars": 650, "look": "aube"},
+    {"id": "suit_linceul", "category": "suit", "name": "Linceul des catacombes", "description": "Pourpre noir des vieilles robes, visière de feu d'âme, écharpe d'os : la tenue de la Liche.", "stars": 680, "look": "linceul"},
     {"id": "suit_sanctuaire", "category": "suit", "name": "Sanctuaire", "description": "Blanc nacré des sanctuaires d'Aethra, visière lavande, écharpe d'or.", "achievement": "chrono_aethra_gold", "look": "sanctuaire"},
     {"id": "suit_champion", "category": "suit", "name": "Champion des défis", "description": "Pourpre, visière d'or et écharpe blanche : la tenue des champions des défis.", "challenge": {"kind": "any", "tier": "gold", "count": 10}, "look": "champion"},
 
@@ -38,6 +39,7 @@
     {"id": "trail_eclats", "category": "trail", "name": "Éclats de roche", "description": "Des éclats de pierre gravés de runes rebondissent derrière Nova.", "stars": 600, "look": "debris"},
     {"id": "trail_bulles", "category": "trail", "name": "Bulles des abysses", "description": "Des bulles de lumière remontent derrière Nova, entre quelques volutes d'encre.", "stars": 630, "look": "bubbles"},
     {"id": "trail_plumes", "category": "trail", "name": "Plumes de lumière", "description": "Des plumes d'or tombent en tournoyant derrière Nova et s'éteignent en braises.", "stars": 660, "look": "feathers"},
+    {"id": "trail_ames", "category": "trail", "name": "Âmes errantes", "description": "De petites âmes pâles s'échappent derrière Nova et s'élèvent en tremblant.", "stars": 690, "look": "souls"},
     {"id": "trail_runes", "category": "trail", "name": "Runes d'Aethra", "description": "Des runes violettes et dorées qui tournent sur elles-mêmes.", "achievement": "tresors_aethra_secrets", "look": "runes"},
     {"id": "trail_comete_mois", "category": "trail", "name": "Comète du mois", "description": "Une tête d'or et une longue queue violette semée d'étoiles.", "challenge": {"kind": "monthly", "tier": "gold", "count": 1}, "look": "month_comet"},
 
@@ -54,6 +56,7 @@
     {"id": "frame_ecailles", "category": "frame", "name": "Écailles d'obsidienne", "description": "Des plaques de verre noir aux jointures de feu : pour avoir vaincu Pyrrhax sans être touché.", "achievement": "maitrise_pyrrhax_nohit", "look": "scales"},
     {"id": "frame_runique", "category": "frame", "name": "Cercle runique", "description": "Un anneau de granit dont les runes s'allument tour à tour : pour avoir vaincu le Monolithe sans être touché.", "achievement": "maitrise_monolithe_nohit", "look": "runic"},
     {"id": "frame_tentacules", "category": "frame", "name": "Étreinte du Kraken", "description": "Des tentacules enlacent le cadre, leurs ventouses s'allument tour à tour : pour avoir vaincu le Kraken sans être touché.", "achievement": "maitrise_kraken_nohit", "look": "tentacles"},
+    {"id": "frame_ossuaire", "category": "frame", "name": "Ossuaire", "description": "Des os mis bout à bout entourent le cadre, six crânes parmi eux dont les yeux s'allument tour à tour : pour avoir vaincu la Liche sans être touché.", "achievement": "maitrise_liche_nohit", "look": "ossuary"},
     {"id": "frame_plumes", "category": "frame", "name": "Couronne de plumes", "description": "Des plumes de nuit bordées d'or entourent le cadre, leurs pointes s'allument comme une aube qui tourne : pour avoir vaincu le Phénix sans être touché.", "achievement": "maitrise_phenix_nohit", "look": "plumage"},
     {"id": "frame_couronne", "category": "frame", "name": "Couronne de la semaine", "description": "Une couronne d'or sertie de trois gemmes au-dessus de l'avatar.", "challenge": {"kind": "weekly", "tier": "gold", "count": 1}, "look": "crown"},
 
@@ -71,8 +74,9 @@
     {"id": "title_briseur_pierre", "category": "title", "name": "Briseur de pierre", "description": "Pour avoir vaincu le Monolithe, le Golem Primordial.", "achievement": "gardiens_monolithe", "look": "Briseur de pierre"},
     {"id": "title_chasseur_kraken", "category": "title", "name": "Chasseur de Kraken", "description": "Pour avoir vaincu le Kraken des Abysses.", "achievement": "gardiens_kraken", "look": "Chasseur de Kraken"},
     {"id": "title_porteur_aube", "category": "title", "name": "Porteur d'aube", "description": "Pour avoir apaisé le Phénix Stellaire.", "achievement": "gardiens_phenix", "look": "Porteur d'aube"},
+    {"id": "title_gardien_noms", "category": "title", "name": "Gardien des noms", "description": "Pour avoir apaisé la Liche des Catacombes.", "achievement": "gardiens_liche", "look": "Gardien des noms"},
     {"id": "title_analyste", "category": "title", "name": "Analyste", "description": "Deux replays comparés.", "achievement": "fantomes_compare", "look": "Analyste"},
-    {"id": "title_melomane", "category": "title", "name": "Mélomane", "description": "Les 24 morceaux du juke-box débloqués.", "achievement": "collection_tracks_all", "look": "Mélomane"},
+    {"id": "title_melomane", "category": "title", "name": "Mélomane", "description": "Les 25 morceaux du juke-box débloqués.", "achievement": "collection_tracks_all", "look": "Mélomane"},
     {"id": "title_encyclopediste", "category": "title", "name": "Encyclopédiste", "description": "Trente créatures du bestiaire rencontrées.", "achievement": "collection_creatures_30", "look": "Encyclopédiste"},
     {"id": "title_briseur", "category": "title", "name": "Briseur de colosses", "description": "Cent ennemis lourds vaincus.", "achievement": "combat_heavy_100", "look": "Briseur de colosses"},
     {"id": "title_maitre_quinze", "category": "title", "name": "Maître des quinze", "description": "Les quinze pouvoirs actifs utilisés.", "achievement": "pouvoirs_distinct_15", "look": "Maître des quinze"},
@@ -91,6 +95,7 @@
     {"id": "victory_seisme", "category": "victory", "name": "Séisme runique", "description": "Le sol tremble, des runes s'allument en cercle et des rochers jaillissent autour du portail.", "stars": 610, "look": "quake"},
     {"id": "victory_raz_de_maree", "category": "victory", "name": "Raz-de-marée", "description": "Une vague géante se dresse derrière le portail, retombe en écume et laisse des bulles de lumière.", "stars": 640, "look": "tidal_wave"},
     {"id": "victory_renaissance", "category": "victory", "name": "Renaissance", "description": "Le portail s'embrase et retombe en cendres, d'où renaît un phénix de lumière qui s'envole.", "stars": 670, "look": "rebirth"},
+    {"id": "victory_veillee", "category": "victory", "name": "Veillée des âmes", "description": "Des bougies d'âme s'allument une à une autour du portail, puis leurs flammes vertes s'envolent comme des âmes libérées.", "stars": 700, "look": "candles"},
     {"id": "victory_serie_feu", "category": "victory", "name": "Série de feu", "description": "Sept flammes s'allument au-dessus du portail, une par jour de la série.", "challengeStreak": {"kind": "daily", "days": 7}, "look": "fire_streak"}
   ]
 }

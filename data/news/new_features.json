@@ -1835,6 +1835,130 @@
    ]
   },
   {
+   "id": "level.confins_05",
+   "version": "2.57.0",
+   "parents": [
+    "planet.confins"
+   ]
+  },
+  {
+   "id": "boss.liche",
+   "version": "2.57.0",
+   "parents": [
+    "stats.bosses"
+   ]
+  },
+  {
+   "id": "gallery.boss.liche",
+   "version": "2.57.0",
+   "parents": [
+    "gallery.tab.bosses"
+   ]
+  },
+  {
+   "id": "gallery.creature.spectre",
+   "version": "2.57.0",
+   "parents": [
+    "gallery.tab.creatures"
+   ]
+  },
+  {
+   "id": "gallery.creature.phylactere",
+   "version": "2.57.0",
+   "parents": [
+    "gallery.tab.creatures"
+   ]
+  },
+  {
+   "id": "ach.voyage_crypte_noms",
+   "version": "2.57.0",
+   "parents": [
+    "achievements.cat.voyage"
+   ]
+  },
+  {
+   "id": "ach.gardiens_liche",
+   "version": "2.57.0",
+   "parents": [
+    "achievements.cat.gardiens"
+   ]
+  },
+  {
+   "id": "ach.maitrise_liche_nohit",
+   "version": "2.57.0",
+   "parents": [
+    "achievements.cat.maitrise"
+   ]
+  },
+  {
+   "id": "ach.maitrise_phases_liche",
+   "version": "2.57.0",
+   "parents": [
+    "achievements.cat.maitrise"
+   ]
+  },
+  {
+   "id": "ach.extreme_crypte_gold",
+   "version": "2.57.0",
+   "parents": [
+    "achievements.cat.extreme"
+   ]
+  },
+  {
+   "id": "ach.extreme_crypte_platinum",
+   "version": "2.57.0",
+   "parents": [
+    "achievements.cat.extreme"
+   ]
+  },
+  {
+   "id": "cos.suit_linceul",
+   "version": "2.57.0",
+   "parents": [
+    "collection.cat.suit",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.trail_ames",
+   "version": "2.57.0",
+   "parents": [
+    "collection.cat.trail",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.frame_ossuaire",
+   "version": "2.57.0",
+   "parents": [
+    "collection.cat.frame",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.title_gardien_noms",
+   "version": "2.57.0",
+   "parents": [
+    "collection.cat.title",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.victory_veillee",
+   "version": "2.57.0",
+   "parents": [
+    "collection.cat.victory",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "track.liche_boss",
+   "version": "2.57.0",
+   "parents": [
+    "collection.tab.music"
+   ]
+  },
+  {
    "id": "stats.player",
    "version": "2.54.0",
    "parents": [

@@ -382,7 +382,7 @@ TEST_CASE("liche: « La Crypte des Noms », the last level of Les Confins, the f
     CHECK(bosses == 1);
     CHECK(checkpoints == 0);
     CHECK(souls == 6);   // two ossuaries, two curtains then two more
-    CHECK(altars == 4);  // two on the floor, two on the ledges at 10 tiles
+    CHECK(altars == 4);  // two on the floor, two on the ledges at 5 tiles
     CHECK(music);
     CHECK(fs::exists(Paths::assetsDir() / "music" / "liche_boss.ogg"));
 }
@@ -665,7 +665,7 @@ TEST_CASE("liche: in its crypt it fights, floats from altar to altar, never stay
             // altar of a ledge, by an altar of the floor, at the edge of an ossuary.
             float tile = 48.0f;
             if (still) {
-                const float spots[8] = {48.0f, 8.0f, 88.0f, 18.0f, 37.0f, 59.0f, 78.0f, 24.0f};
+                const float spots[8] = {48.0f, 8.0f, 88.0f, 10.0f, 37.0f, 59.0f, 86.0f, 24.0f};
                 tile = spots[phase];
             }
             Crypt m(phase, tile);
