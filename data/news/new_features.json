@@ -2411,28 +2411,28 @@
   },
   {
    "id": "coop.devices",
-   "version": "2.64.0",
+   "version": "2.64.1",
    "parents": [
     "menu.coop"
    ]
   },
   {
    "id": "keys.players",
-   "version": "2.64.0",
+   "version": "2.64.1",
    "parents": [
     "coop.keys"
    ]
   },
   {
    "id": "settings.players.keyboard",
-   "version": "2.64.0",
+   "version": "2.64.1",
    "parents": [
     "keys.players"
    ]
   },
   {
    "id": "settings.players.gamepad",
-   "version": "2.64.0",
+   "version": "2.64.1",
    "parents": [
     "keys.players"
    ]

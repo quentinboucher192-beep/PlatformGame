@@ -208,6 +208,8 @@ void InputManager::handleEvent(const SDL_Event& e) {
                 break;
             }
             wheel_ += e.wheel.y;
+            if (y > 0.0f) wheelUpAtMs_ = SDL_GetTicks();
+            else if (y < 0.0f) wheelDownAtMs_ = SDL_GetTicks();
             if (y > 0.0f) {
                 wheelUpPulse_ = true;
                 pressBound(static_cast<SDL_Scancode>(kWheelUpBinding));
@@ -415,6 +417,47 @@ void InputManager::rumble(float low, float high, int ms) {
 }
 
 bool InputManager::rawPadButton(SDL_GamepadButton b) const { return gamepad_ && SDL_GetGamepadButton(gamepad_, b); }
+
+HeldInputs InputManager::heldInputs() const {
+    HeldInputs h;
+    int n = 0;
+    const bool* kb = SDL_GetKeyboardState(&n);
+    for (int i = 0; kb && i < n && i < static_cast<int>(SDL_SCANCODE_COUNT); ++i)
+        if (kb[i]) h.keys.set(static_cast<size_t>(i));
+    h.mouseButtons = mouseHeld_;
+    // A notch of the wheel lasts one frame: lit a moment, long enough to be seen.
+    const uint64_t now = SDL_GetTicks();
+    h.wheelUp = wheelUpAtMs_ != 0 && now - wheelUpAtMs_ < 180;
+    h.wheelDown = wheelDownAtMs_ != 0 && now - wheelDownAtMs_ < 180;
+    if (gamepad_) {
+        for (int b = 0; b < static_cast<int>(SDL_GAMEPAD_BUTTON_COUNT) && b < 64; ++b)
+            if (SDL_GetGamepadButton(gamepad_, static_cast<SDL_GamepadButton>(b))) h.padButtons |= uint64_t{1} << b;
+        h.axes[SDL_GAMEPAD_AXIS_LEFTX] = leftStick_.x;
+        h.axes[SDL_GAMEPAD_AXIS_LEFTY] = leftStick_.y;
+        h.axes[SDL_GAMEPAD_AXIS_RIGHTX] = rightStick_.x;
+        h.axes[SDL_GAMEPAD_AXIS_RIGHTY] = rightStick_.y;
+        h.axes[SDL_GAMEPAD_AXIS_LEFT_TRIGGER] = lt_;
+        h.axes[SDL_GAMEPAD_AXIS_RIGHT_TRIGGER] = rt_;
+    }
+    h.triggerThreshold = bindings_.gamepad.triggerThreshold;
+    return h;
+}
+
+HeldInputs InputManager::heldInputs(SDL_JoystickID pad, float triggerThreshold) const {
+    HeldInputs h = heldInputs();
+    h.padButtons = 0;
+    h.axes.fill(0.0f);
+    h.triggerThreshold = triggerThreshold;
+    // Its own reference for the reading (the pad may be held open by a LocalPad or by nobody).
+    SDL_Gamepad* g = pad != 0 ? SDL_OpenGamepad(pad) : nullptr;
+    if (!g) return h;
+    for (int b = 0; b < static_cast<int>(SDL_GAMEPAD_BUTTON_COUNT) && b < 64; ++b)
+        if (SDL_GetGamepadButton(g, static_cast<SDL_GamepadButton>(b))) h.padButtons |= uint64_t{1} << b;
+    for (int a = 0; a < static_cast<int>(SDL_GAMEPAD_AXIS_COUNT); ++a)
+        h.axes[static_cast<size_t>(a)] = std::clamp(SDL_GetGamepadAxis(g, static_cast<SDL_GamepadAxis>(a)) / 32767.0f, -1.0f, 1.0f);
+    SDL_CloseGamepad(g);
+    return h;
+}
 
 bool InputManager::keyDown(SDL_Scancode sc) const { return SDL_GetKeyboardState(nullptr)[sc]; }
 

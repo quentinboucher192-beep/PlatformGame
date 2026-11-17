@@ -146,20 +146,6 @@ PlayerInput LocalPad::consume() {
     return in;
 }
 
-bool LocalPad::rawHeld(const PadBinding& b) const {
-    if (!connected()) return false;
-    switch (b.kind) {
-        case PadBinding::Kind::None: return false;
-        case PadBinding::Kind::Button: return SDL_GetGamepadButton(pad_, static_cast<SDL_GamepadButton>(b.code));
-        case PadBinding::Kind::AxisPositive:
-        case PadBinding::Kind::AxisNegative: {
-            const float v = SDL_GetGamepadAxis(pad_, static_cast<SDL_GamepadAxis>(b.code)) / 32767.0f;
-            return b.kind == PadBinding::Kind::AxisPositive ? v > 0.5f : v < -0.5f;
-        }
-    }
-    return false;
-}
-
 int LocalPad::batteryPercent() const {
     if (!connected()) return -1;
     int percent = -1;

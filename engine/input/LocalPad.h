@@ -44,9 +44,6 @@ public:
     bool navDown() const { return navDown_; }
     bool heldJump() const { return held_[static_cast<size_t>(Action::Jump)]; }
     void rumble(float low, float high, int ms) const;
-    /// 2.65: whether a button / a direction of an axis is pressed now, as it is (the lobby lights
-    /// the buttons a player presses, to check it is their pad).
-    bool rawHeld(const PadBinding& b) const;
     /// 2.65: the charge of its battery in % when SDL reports it (on battery, a known level), -1
     /// otherwise (wired, unknown): a low battery is only said when it is known.
     int batteryPercent() const;

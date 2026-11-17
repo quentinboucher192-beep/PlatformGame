@@ -49338,6 +49338,12 @@
    ]
   },
   {
+   "fr": "Touches : dans Paramètres › Clavier / souris et Manette, et dans « Touches de ce niveau » (panneaux des niveaux, défis, menu pause « Touches… »), la touche, le bouton de souris ou de manette, la gâchette ou la direction de stick que vous tenez s'allume en direct dans la liste, sans rien changer : de quoi vérifier que c'est bien la bonne touche. Relâchée, elle s'éteint ; rien ne s'allume pendant le choix d'une nouvelle touche.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Touches : les boutons de la souris (gauche, droit, molette, latéraux et boutons en plus des souris de jeu) et la molette se lient aux commandes dans Clavier / souris.",
    "where": [
     "data/news/changelog.json"

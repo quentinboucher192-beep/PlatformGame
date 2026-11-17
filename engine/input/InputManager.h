@@ -8,6 +8,7 @@
 
 #include "engine/core/Math.h"
 #include "engine/input/Devices.h"
+#include "engine/input/HeldBindings.h"
 #include "engine/input/InputTypes.h"
 
 namespace cosmic {
@@ -66,6 +67,14 @@ public:
     float leftTrigger() const { return lt_; }
     float rightTrigger() const { return rt_; }
     bool rawPadButton(SDL_GamepadButton b) const;
+    /// Everything held right now, raw (keys, every mouse button, a notch of the wheel a moment
+    /// ago, the player's gamepad buttons, sticks and triggers as the game reads them): the
+    /// binding lists light what is pressed (keyBindingHeld / padBindingHeld). Reading it acts
+    /// on nothing.
+    HeldInputs heldInputs() const;
+    /// 2.65: the same with the gamepad `pad` instead of this manager's (a local player's own pad,
+    /// read raw; `triggerThreshold`: that player's settings). No pad: none held.
+    HeldInputs heldInputs(SDL_JoystickID pad, float triggerThreshold) const;
 
     // ---------------------------------------------------- keyboard / mouse
     bool keyDown(SDL_Scancode sc) const;
@@ -185,6 +194,7 @@ private:
     // notches of this frame, for the commands bound to them.
     uint64_t mouseHeld_ = 0;
     bool wheelUpPulse_ = false, wheelDownPulse_ = false;
+    uint64_t wheelUpAtMs_ = 0, wheelDownAtMs_ = 0;  // last notch each way (heldInputs)
     PadBinding swallowPad_;
     bool swallowingPad_ = false;
     // A power slot whose key changed while it was held: nothing until it is released.

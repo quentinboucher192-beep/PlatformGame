@@ -954,19 +954,17 @@ public:
         ui.popId();
     }
 
-    /// Whether any button (or trigger) of that pad is pressed now: its line lights in the list.
-    static bool anyPressed(const LocalPad* w) {
-        if (!w) return false;
-        for (int b = 0; b < SDL_GAMEPAD_BUTTON_COUNT; ++b)
-            if (w->rawHeld(PadBinding::button(static_cast<SDL_GamepadButton>(b)))) return true;
-        return w->rawHeld(PadBinding::axisPos(SDL_GAMEPAD_AXIS_LEFT_TRIGGER)) || w->rawHeld(PadBinding::axisPos(SDL_GAMEPAD_AXIS_RIGHT_TRIGGER));
+    /// What is held now on pad `number` (and on the keyboard and the mouse), read raw.
+    HeldInputs heldOn(int number, int player) const {
+        const PadEntry* p = g_.app.input().devices().byNumber(number);
+        return g_.app.input().heldInputs(p && p->connected ? p->id : 0, g_.settings.playerInput(std::max(0, player)).gamepad.triggerThreshold);
     }
 
-    bool keyHeld(SDL_Scancode sc) const {
-        InputManager& in = g_.app.input();
-        if (isKeyboardScancode(sc)) return in.keyDown(sc);
-        if (const int b = mouseBindingButton(sc); b > 0 && b < 8) return in.mouseDown(b);
-        return false;
+    /// Whether any button (or trigger) of that pad is pressed now: its line lights in the list.
+    bool anyPressed(int number) const {
+        const HeldInputs h = heldOn(number, 0);
+        return h.padButtons != 0 || padBindingHeld(PadBinding::axisPos(SDL_GAMEPAD_AXIS_LEFT_TRIGGER), h) ||
+               padBindingHeld(PadBinding::axisPos(SDL_GAMEPAD_AXIS_RIGHT_TRIGGER), h);
     }
 
     /// The buttons shown on a player's card, lit while pressed: its main keys on the keyboard
@@ -976,23 +974,24 @@ public:
         const LocalDevice& d = team_.device(player);
         if (d.isKeyboard()) {
             const InputBindings& b = g_.settings.playerInput(player);
+            const HeldInputs held = g_.app.input().heldInputs();
             for (Action a : {Action::MoveLeft, Action::MoveRight, Action::Jump, Action::Attack, Action::Interact}) {
                 const SDL_Scancode sc = b.keys[static_cast<size_t>(a)][0];
                 if (sc == SDL_SCANCODE_UNKNOWN) continue;
                 const std::string t = keyName(sc);
                 if (std::any_of(out.begin(), out.end(), [&](const auto& c) { return c.first == t; })) continue;
-                out.emplace_back(t, keyHeld(sc));
+                out.emplace_back(t, keyBindingHeld(sc, held));
             }
         } else if (d.isPad()) {
             const PadEntry* p = g_.app.input().devices().byNumber(d.pad);
             const GamepadStyle style = p ? p->style : GamepadStyle::Generic;
-            const LocalPad* w = watcher(d.pad);
+            const HeldInputs held = heldOn(d.pad, player);
             for (const PadBinding& pb :
                  {PadBinding::button(SDL_GAMEPAD_BUTTON_SOUTH), PadBinding::button(SDL_GAMEPAD_BUTTON_EAST), PadBinding::button(SDL_GAMEPAD_BUTTON_WEST),
                   PadBinding::button(SDL_GAMEPAD_BUTTON_NORTH), PadBinding::button(SDL_GAMEPAD_BUTTON_LEFT_SHOULDER),
                   PadBinding::button(SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER), PadBinding::axisPos(SDL_GAMEPAD_AXIS_LEFT_TRIGGER),
                   PadBinding::axisPos(SDL_GAMEPAD_AXIS_RIGHT_TRIGGER)})
-                out.emplace_back(padBindingName(pb, style), w && w->rawHeld(pb));
+                out.emplace_back(padBindingName(pb, style), padBindingHeld(pb, held));
         }
         return out;
     }
@@ -1185,7 +1184,7 @@ public:
         for (const PadEntry& p : pads) {
             std::string state = "branchée";
             if (!p.connected) state = "débranchée il y a " + std::to_string(static_cast<int>((now - p.changedMs) / 1000)) + " s";
-            line(padLabel(p), team_.owner(LocalDevice::gamepad(p.number)), p.connected, p.connected && anyPressed(watcher(p.number)), state);
+            line(padLabel(p), team_.owner(LocalDevice::gamepad(p.number)), p.connected, p.connected && anyPressed(p.number), state);
         }
         ui.endScroll();
     }

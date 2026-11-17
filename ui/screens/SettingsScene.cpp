@@ -133,6 +133,14 @@ private:
     void apply() {
         if (player_ == 0) g_.app.input().setBindings(working_.input);
     }
+    /// What is held now: the keyboard and the mouse, and the pad of the player shown (alone:
+    /// the pad in use).
+    HeldInputs heldNow() {
+        InputManager& in = g_.app.input();
+        if (!team() || !g_.localTeam[static_cast<size_t>(player_)].device.isPad()) return in.heldInputs();
+        const PadEntry* p = in.devices().byNumber(g_.localTeam[static_cast<size_t>(player_)].device.pad);
+        return in.heldInputs(p && p->connected ? p->id : 0, cur().gamepad.triggerThreshold);
+    }
     GamepadStyle padStyle() const { return team() ? g_.playerPadStyle(player_) : g_.app.input().gamepadStyle(); }
 
     /// « J1 · Nova », « J2 · Lyra »…: whose controls; « Copier les touches de Jn » (this tab's
@@ -257,6 +265,12 @@ private:
             std::string id = std::string(pad ? "p" : "k") + actionId(a) + std::to_string(slot);
             UIContext::ButtonStyle st;
             st.small = true;
+            // The key / button held right now is lit (a check, outside any rebinding).
+            {
+                const InputManager& in = g_.app.input();
+                const HeldInputs held = heldNow();
+                st.lit = !in.capturing() && (pad ? padBindingHeld(pb, held) : keyBindingHeld(cur().keys[i][slot], held));
+            }
             float labelRoom = b.w - ui.s(16) - (icon ? 2.0f * (ui.s(8) + ui.s(32) + ui.s(4)) : 0.0f);
             st.fontSize = ui.fitFont(label, FontFace::Bold, 20, std::max(ui.s(30), labelRoom));
             if (ui.button(id, b, label, st)) {
