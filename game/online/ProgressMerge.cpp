@@ -8,6 +8,7 @@
 #include "engine/core/FileUtil.h"
 #include "game/achievements/Achievements.h"
 #include "game/records/BossStats.h"
+#include "game/records/PlayStats.h"
 #include "game/records/Records.h"
 
 namespace cosmic {
@@ -201,12 +202,17 @@ Json mergeCollectionJson(const Json& mine, const Json& theirs) {
     return out;
 }
 
+Json mergeStatsJson(const Json& mine, const Json& theirs, int today) {
+    if (!theirs.is_object() || theirs.empty()) return mine.is_object() ? mine : Json::object();
+    return mergePlayStats(PlayStatsData::fromJson(mine), PlayStatsData::fromJson(theirs), today).toJson();
+}
+
 const std::vector<std::string>& progressCopyParts() {
-    static const std::vector<std::string> parts = {"progress", "records", "boss_stats", "achievements", "collection"};
+    static const std::vector<std::string> parts = {"progress", "records", "boss_stats", "achievements", "collection", "stats"};
     return parts;
 }
 
-Json mergeProgressCopyFiles(const Json& mine, const Json& theirs) {
+Json mergeProgressCopyFiles(const Json& mine, const Json& theirs, int today) {
     Json out = Json::object();
     for (const std::string& part : progressCopyParts()) {
         const Json& a = objectOr(mine, part.c_str());
@@ -219,6 +225,7 @@ Json mergeProgressCopyFiles(const Json& mine, const Json& theirs) {
         else if (part == "records") out[part] = mergeRecordsJson(a, b);
         else if (part == "boss_stats") out[part] = mergeBossStatsJson(a, b);
         else if (part == "achievements") out[part] = mergeAchievementsJson(a, b);
+        else if (part == "stats") out[part] = mergeStatsJson(a, b, today > 0 ? today : localDay());
         else out[part] = mergeCollectionJson(a, b);
     }
     return out;

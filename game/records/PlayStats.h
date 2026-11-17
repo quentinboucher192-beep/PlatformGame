@@ -1,7 +1,9 @@
 #pragma once
 
 // 2.54 — « Statistiques » (main menu → Statistiques): what the player's own runs say about their
-// play, kept on this computer only (saves/stats.json), never sent online.
+// play, kept in saves/stats.json. 2.55: the file travels with the other saves — in the copy of
+// the progression (Cosmic Online, private) and « Migrer vers un nouveau compte » — and is merged
+// without counting anything twice (mergePlayStats, below).
 //
 //  * a summary per day (time played, deaths, attacks that threatened Nova and those she
 //    dodged, her attacks and those that hit, per attack, where the blows came from, the stars
@@ -72,6 +74,9 @@ constexpr size_t kFinishesKept = 40;      // the last full runs
 constexpr size_t kHistoryKept = 40;       // changes of the PB / Sum of Best
 constexpr int kRecentFinishes = 20;       // regularity: the last 20 full runs
 constexpr float kNearBest = 0.05f;        // « à moins de 5 % du meilleur »
+/// 2.55: a new identifier for a boss attempt (random, 18 bits, never 0).
+constexpr uint32_t kAttemptIdMask = (1u << 18) - 1u;
+uint32_t newAttemptId();
 }  // namespace playstats
 
 /// Days since 1970-01-01 of a calendar date, and back (proleptic Gregorian).
@@ -117,11 +122,16 @@ struct LevelSlices {
 };
 
 struct BossAttemptRec {
-    int day = 0;
+    int day = 0;           // 0: unknown (an attempt kept by 2.54)
     float removed = 0.0f;  // share of its total health (every phase) taken, 0..1
     int phase = 0;         // the phase it was in at the end (0 = the first)
     bool won = false;
     std::string attack;    // what ended it (a defeat), "" otherwise
+    /// 2.55: drawn at random (18 bits, different from the other attempts of its day) when the
+    /// attempt is kept, never changed. With its day, it names the attempt: found in two copies of
+    /// the statistics, it is counted once (0: none yet).
+    uint32_t id = 0;
+    uint64_t key() const { return (static_cast<uint64_t>(static_cast<uint32_t>(day)) << 20) | id; }
 };
 
 struct BossHistory {
@@ -190,10 +200,33 @@ struct PlayStatsData {
     const StatsDay* find(int day) const;
     /// Days older than 365 merged by month, and every cap applied (levels, bosses, attempts…).
     void compact(int today);
+    /// 2.55: an identifier for every boss attempt that has none (those of a 2.54 file). True when
+    /// one was given (the file should be written, so that they stay the same).
+    bool assignIds();
     Json toJson() const;
     /// Never trusts the file: wrong types are skipped, numbers clamped.
     static PlayStatsData fromJson(const Json& j);
 };
+
+// ------------------------------------------------------------------ merging two copies (2.55)
+
+/// The statistics of another computer (`theirs`: a copy of the progression restored after
+/// « Migrer vers un nouveau compte ») added to this one's (`mine`), without ever counting the same
+/// thing twice — merging the same copy again changes nothing:
+///  * days and months: each counter the highest of both sides (one day is rarely played on two
+///    computers); a day more than 31 days after `today` in `theirs` is left out;
+///  * the 40 slices of a level: each count the highest of both sides (weights as of the same day);
+///  * a boss's attempts: the union by identifier, then the 200 most recent; the totals (attempts,
+///    victories, phases, fatal attacks) = what both lists show + the highest of what each side
+///    counted before its list (an attempt of one side older than the other's list cannot be told
+///    apart: counted with that part);
+///  * a classic level (the same version of it; another version: the side played the most recently):
+///    the times of each segment united (an equal time once), its best the better one; the full runs
+///    united by (day, time); the PB the better one, with its route; the history of the PB / Sum of
+///    Best united and sorted by day;
+///  * then every cap (compact); should the file still pass 300 KB (very long names in the copy…),
+///    what was played the least recently goes until it fits.
+PlayStatsData mergePlayStats(PlayStatsData mine, PlayStatsData theirs, int today);
 
 // ------------------------------------------------------------------ calculations
 
@@ -481,6 +514,11 @@ public:
     void flush();
     /// « Réinitialiser les statistiques »: everything forgotten, the empty file written.
     void reset();
+    /// 2.55: the statistics restored with a copy of the progression (already merged): kept and
+    /// written (on the worker thread).
+    void replace(PlayStatsData d);
+    /// Written by a newer game: read, never overwritten.
+    bool readOnly() const { return readOnly_; }
     /// The file's text for `d` (tests: its size).
     static std::string serialize(const PlayStatsData& d);
     /// Tests: replaces the data.

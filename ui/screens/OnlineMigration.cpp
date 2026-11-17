@@ -351,8 +351,8 @@ public:
             y += ch + ui.s(14);
         }
         y += boundedText(ui, "Elle s'ajoute à la progression de cet ordinateur : le meilleur de chaque côté est gardé (meilleurs temps, succès, "
-                             "statistiques des boss) et le temps de jeu s'additionne. Les sauvegardes actuelles sont d'abord copiées dans le "
-                             "dossier saves.",
+                             "statistiques, sans double compte) et le temps de jeu s'additionne. Les sauvegardes actuelles sont d'abord copiées "
+                             "dans le dossier saves.",
                          in.x, y, in.w, limit, 15, ui.theme().textDim) +
              ui.s(6);
         if (!done_)

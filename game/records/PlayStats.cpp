@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <cmath>
 #include <ctime>
+#include <mutex>
+#include <random>
 #include <set>
 
 namespace cosmic {
@@ -76,12 +78,19 @@ int field(const Json& o, const char* k, int def = 0) {
     if (!std::isfinite(v)) return def;
     return static_cast<int>(std::clamp(v, -2.0e9, 2.0e9));
 }
+/// At most `maxLen` bytes, never in the middle of a character (the text stays valid UTF-8).
+void cut(std::string& s, size_t maxLen) {
+    if (s.size() <= maxLen) return;
+    size_t n = maxLen;
+    while (n > 0 && (static_cast<unsigned char>(s[n]) & 0xC0u) == 0x80u) --n;
+    s.resize(n);
+}
 std::string text(const Json& o, const char* k, size_t maxLen = 120) {
     if (!o.is_object()) return {};
     auto it = o.find(k);
     if (it == o.end() || !it->is_string()) return {};
     std::string s = it->get<std::string>();
-    if (s.size() > maxLen) s.resize(maxLen);
+    cut(s, maxLen);
     return s;
 }
 const Json& member(const Json& o, const char* k) {
@@ -93,7 +102,7 @@ const Json& member(const Json& o, const char* k) {
 std::string str(const Json& a, size_t i, size_t maxLen = 120) {
     if (!a.is_array() || i >= a.size() || !a[i].is_string()) return {};
     std::string s = a[i].get<std::string>();
-    if (s.size() > maxLen) s.resize(maxLen);
+    cut(s, maxLen);
     return s;
 }
 
@@ -104,6 +113,7 @@ float fromCentis(int c) { return static_cast<float>(c) / 100.0f; }
 // A compact text for long lists (the file stays small): base64url digits, `chars` per value.
 const char kB64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 constexpr unsigned kNoTime = 262143;  // 3 digits, all set: no time
+constexpr int kMaxDayCode = 262143;    // a day in 3 digits (year 2687)
 void putB64(std::string& out, unsigned v, int chars) {
     for (int i = chars - 1; i >= 0; --i) out += kB64[(v >> (6 * i)) & 63u];
 }
@@ -323,6 +333,32 @@ void PlayStatsData::compact(int today) {
     }
 }
 
+uint32_t playstats::newAttemptId() {
+    static std::mutex m;
+    static std::mt19937 rng{std::random_device{}()};
+    std::lock_guard<std::mutex> lock(m);
+    uint32_t id = 0;
+    while (id == 0) id = static_cast<uint32_t>(rng()) & kAttemptIdMask;
+    return id;
+}
+
+bool PlayStatsData::assignIds() {
+    bool any = false;
+    for (auto& [bid, b] : bosses) {
+        std::set<uint64_t> used;
+        for (const auto& r : b.recent)
+            if (r.id != 0) used.insert(r.key());
+        for (auto& r : b.recent) {
+            if (r.id != 0) continue;
+            // Unique on its day (a list holds a few hundred attempts: a free one is always found).
+            do r.id = newAttemptId();
+            while (!used.insert(r.key()).second);
+            any = true;
+        }
+    }
+    return any;
+}
+
 Json PlayStatsData::toJson() const {
     std::map<std::string, int> names;
     Json jd = Json::array(), jm = Json::array();
@@ -358,11 +394,24 @@ Json PlayStatsData::toJson() const {
             names.push_back(n);
             return index.emplace(n, static_cast<int>(index.size())).first->second;
         };
-        std::string attempts;
+        std::string attempts, keys;
+        int prevDay = 0;
         for (const auto& r : b.recent) {
             putB64(attempts, r.won ? 1001u : static_cast<unsigned>(std::clamp(std::lround(r.removed * 1000.0f), 0L, 1000L)), 2);
             putB64(attempts, static_cast<unsigned>(std::clamp(r.phase, 0, 63)), 1);
             putB64(attempts, r.attack.empty() ? 0u : static_cast<unsigned>(nameOf(r.attack) + 1), 1);
+            // 2.55, apart (a 2.54 game reads `r` as before): its day (days after the previous
+            // attempt's: 1 character, 4 for a gap of 63 days or more) and its identifier (3).
+            const int day = std::clamp(r.day, prevDay, kMaxDayCode);
+            const int gap = day - prevDay;
+            if (gap < 63) {
+                putB64(keys, static_cast<unsigned>(gap), 1);
+            } else {
+                putB64(keys, 63u, 1);
+                putB64(keys, static_cast<unsigned>(gap), 3);
+            }
+            putB64(keys, r.id & kAttemptIdMask, 3);
+            prevDay = day;
         }
         Json reached = Json::array(), defeats = Json::array(), fatal = Json::array();
         for (int v : b.reached) reached.push_back(v);
@@ -371,7 +420,7 @@ Json PlayStatsData::toJson() const {
             if (int i = nameOf(a); i >= 0) fatal.push_back(Json::array({i, n}));
         jb[id] = {{"n", b.name},   {"ph", b.phases}, {"a", b.attempts}, {"w", b.wins}, {"fw", b.firstWin},
                   {"bb", static_cast<int>(std::lround(b.bestBefore * 1000.0f))}, {"q", b.lastSeq}, {"re", reached},
-                  {"de", defeats}, {"an", names}, {"fc", fatal}, {"r", attempts}};
+                  {"de", defeats}, {"an", names}, {"fc", fatal}, {"r", attempts}, {"rk", keys}};
     }
 
     Json jr = Json::object();
@@ -479,7 +528,10 @@ PlayStatsData PlayStatsData::fromJson(const Json& j) {
                             b.fatal[names[static_cast<size_t>(i)]] = std::max(0, num(e, 1));
                     }
                 const std::string r = text(o, "r", 4 * (kBossAttemptsKept + 50));
-                size_t pos = 0;
+                const std::string rk = text(o, "rk", 7 * (kBossAttemptsKept + 50));
+                size_t pos = 0, kpos = 0;
+                int day = 0;
+                bool keysOk = true;
                 unsigned code = 0, phase = 0, attack = 0;
                 while (getB64(r, pos, 2, code) && getB64(r, pos, 1, phase) && getB64(r, pos, 1, attack)) {
                     BossAttemptRec rec;
@@ -487,8 +539,20 @@ PlayStatsData PlayStatsData::fromJson(const Json& j) {
                     rec.removed = rec.won ? 1.0f : static_cast<float>(code) / 1000.0f;
                     rec.phase = std::clamp(static_cast<int>(phase), 0, b.phases - 1);
                     if (attack > 0 && attack <= names.size()) rec.attack = names[attack - 1];
+                    // 2.55: its day and identifier (none in a 2.54 file: given by assignIds).
+                    unsigned gap = 0, key = 0;
+                    keysOk = keysOk && getB64(rk, kpos, 1, gap) && (gap < 63 || getB64(rk, kpos, 3, gap)) && getB64(rk, kpos, 3, key);
+                    if (keysOk) {
+                        day = std::min(kMaxDayCode, day + static_cast<int>(gap));
+                        rec.id = key & kAttemptIdMask;
+                    }
+                    rec.day = day;  // the list stays in order (no key: the previous attempt's day)
                     b.recent.push_back(rec);
                 }
+                // Twice the same identifier on a day (a file edited by hand): the second one gets another.
+                std::set<uint64_t> seen;
+                for (auto& rec : b.recent)
+                    if (rec.id != 0 && !seen.insert(rec.key()).second) rec.id = 0;
                 b.attempts = std::max(b.attempts, static_cast<int>(b.recent.size()));
                 out.bosses[id] = b;
             }

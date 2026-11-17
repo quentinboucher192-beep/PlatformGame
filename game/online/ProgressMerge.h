@@ -31,12 +31,19 @@ Json mergeAchievementsJson(const Json& mine, const Json& theirs);
 /// what is worn, the menu music and the profile badges stay those of this computer.
 Json mergeCollectionJson(const Json& mine, const Json& theirs);
 
+/// stats.json (2.55, the « Statistiques » screen): merged without counting anything twice —
+/// mergePlayStats (game/records/PlayStats.h): each day's counters the highest of both sides, the
+/// boss attempts united by identifier, the segment times united, the best times the better ones…
+/// `today`: this computer's day (days since 1970-01-01).
+Json mergeStatsJson(const Json& mine, const Json& theirs, int today);
+
 /// The saves a copy of the progression carries (the keys of its `files`, each <key>.json in saves/).
 const std::vector<std::string>& progressCopyParts();
 /// The `files` of a copy (`theirs`, as the server keeps it) added to this computer's (`mine`, the
 /// same keys): each part with its merge above. A part the copy lacks, or that is not an object,
-/// stays as it is; the result has every part of `progressCopyParts()`.
-Json mergeProgressCopyFiles(const Json& mine, const Json& theirs);
+/// stays as it is; the result has every part of `progressCopyParts()`. `today` (the statistics):
+/// 0 for this computer's calendar.
+Json mergeProgressCopyFiles(const Json& mine, const Json& theirs, int today = 0);
 
 /// Before a restoration: the save files <part>.json of `savesDir` that exist, copied byte for byte
 /// into a new folder `savesDir`/avant_restauration_<stamp> (another name if it exists). False,

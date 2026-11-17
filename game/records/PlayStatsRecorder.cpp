@@ -425,6 +425,9 @@ void PlayStatsStore::open(const fs::path& file) {
     readOnly_ = from > kVersion;
     data_ = PlayStatsData::fromJson(*data);
     data_.compact(today());
+    // 2.55: the boss attempts of a 2.54 file get their identifier, written at once so that they
+    // stay the same (a copy of the progression sent before the next run carries the same ones).
+    if (data_.assignIds()) saveAsync();
 }
 
 std::unique_ptr<PlayStatsRecorder> PlayStatsStore::beginRun(GameWorld& w, const PlayStatsRun& run, const ContentDatabase& content) {
@@ -485,6 +488,14 @@ void PlayStatsStore::merge(const Delta& d) {
             if (b.firstWin == 0) b.firstWin = b.attempts;
         }
         b.recent.push_back(rec);
+        // Its day (never before the previous attempt's: the list stays in order if the clock goes back).
+        if (b.recent.back().day <= 0) b.recent.back().day = day;
+        if (b.recent.size() > 1) b.recent.back().day = std::max(b.recent.back().day, b.recent[b.recent.size() - 2].day);
+        // 2.55: its identifier (the same attempt is counted once when two copies are merged).
+        for (bool taken = true; taken;) {
+            b.recent.back().id = newAttemptId();
+            taken = std::any_of(b.recent.begin(), b.recent.end() - 1, [&](const BossAttemptRec& o) { return o.key() == b.recent.back().key(); });
+        }
         if (!rec.attack.empty()) b.fatal[rec.attack]++;
         b.lastSeq = ++data_.seq;
     }
@@ -531,7 +542,7 @@ std::string PlayStatsStore::serialize(const PlayStatsData& d) {
     env["savedAt"] = FileUtil::nowString();
     env["engine"] = COSMIC_VERSION_STRING;
     env["data"] = d.toJson();
-    return env.dump() + "\n";
+    return env.dump(-1, ' ', false, Json::error_handler_t::replace) + "\n";  // never throws on a bad character
 }
 
 void PlayStatsStore::saveAsync() {
@@ -568,6 +579,14 @@ void PlayStatsStore::flush() {
 
 void PlayStatsStore::reset() {
     data_ = PlayStatsData{};
+    damaged_ = false;
+    saveAsync();
+}
+
+void PlayStatsStore::replace(PlayStatsData d) {
+    data_ = std::move(d);
+    data_.assignIds();
+    data_.compact(today());
     damaged_ = false;
     saveAsync();
 }

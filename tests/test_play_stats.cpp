@@ -1,6 +1,7 @@
 // 2.54 — the player's statistics (game/records/PlayStats.h): the calculations of the
 // « Statistiques » screen, the file (format, caps, damaged file, worker thread), and the
 // recorder, which reads a run without ever changing it (same digests with or without it).
+// 2.55: two copies merged (mergePlayStats) without counting anything twice, under the caps.
 
 #include <cstdio>
 
@@ -39,6 +40,64 @@ StatsCounters dayCounters(double minutes, int deaths, int threats, int dodged, i
     c.attacks = attacks;
     c.hits = hits;
     return c;
+}
+
+/// Years of play with every cap passed (each name prefixed by `tag`: another computer's).
+PlayStatsData atCap(int today, const std::string& tag) {
+    PlayStatsData full;
+    const char* powers[] = {"attack", "wave", "charge_shot", "plasma_bomb", "boomerang", "boomerang_charge", "ground_pound", "dash"};
+    for (int k = 0; k < 365 * 12; ++k) {
+        StatsCounters& c = full.at(today - k);
+        c = dayCounters(355.5, 999, 9999, 8888, 9999, 7777);
+        c.trainSec = 3599.9;
+        c.stars = 1234;
+        for (auto& h : c.hurt) h = 999;
+        for (const char* p : powers) c.powers[p] = {9999, 8888};
+    }
+    for (size_t l = 0; l < kMaxLevels + 10; ++l) {
+        LevelSlices& s = full.levels[tag + "community_level_" + std::to_string(l) + "_abcdefghij"];
+        s.name = "Un niveau de la communauté au nom assez long " + std::to_string(l);
+        s.lastDay = today;
+        s.stamp = today;
+        for (int i = 0; i < kSlices; ++i) {
+            s.passes[static_cast<size_t>(i)] = 99999;
+            s.deaths[static_cast<size_t>(i)] = 9999;
+            s.wPasses[static_cast<size_t>(i)] = 1234.56f;
+            s.wDeaths[static_cast<size_t>(i)] = 123.45f;
+        }
+    }
+    for (size_t bi = 0; bi < kMaxBosses + 5; ++bi) {
+        BossHistory& b = full.bosses[tag + "boss_" + std::to_string(bi)];
+        b.name = "Le boss numéro " + std::to_string(bi);
+        b.phases = 8;
+        b.reached.assign(8, 9999);
+        b.defeats.assign(8, 999);
+        b.attempts = 99999;
+        b.lastSeq = static_cast<int>(bi);
+        for (int a = 0; a < 20; ++a) b.fatal["Une attaque fatale au nom très long numéro " + std::to_string(a)] = a;
+        for (int a = 0; a < 260; ++a)
+            b.recent.push_back({today - 300 + a, 0.987f, 7, false, "Une attaque fatale au nom très long numéro " + std::to_string(a % 12)});
+    }
+    for (size_t li = 0; li < kMaxRunLevels + 4; ++li) {
+        LevelRuns& r = full.runs[tag + "classic_" + std::to_string(li)];
+        r.name = "Niveau classique " + std::to_string(li);
+        r.version = std::string(64, 'f');
+        r.attempts = r.finished = 99999;
+        r.pb = 999.99f;
+        r.lastDay = today;
+        std::string prev;
+        for (int s = 0; s < 18; ++s) {
+            std::string to = "checkpoint_" + std::to_string(s);
+            r.pbRoute.push_back(to);
+            SegmentRec& seg = r.segmentAt(prev, to);
+            for (int t = 0; t < 60; ++t) seg.times.push_back(123.45f);
+            seg.best = 99.99f;
+            prev = to;
+        }
+        for (int f = 0; f < 50; ++f) r.finishes.push_back({today - 50 + f, 999.99f});
+        for (int h = 0; h < 50; ++h) r.history.push_back({today - 50 + h, 999.99f, 888.88f});
+    }
+    return full;
 }
 
 /// Plausible play (exactly the determinism test's): mostly running right, jumps, attacks, dashes.
@@ -441,60 +500,8 @@ TEST_CASE("play stats: the file — written by its worker, read back, damaged, h
     fs::remove_all(dir, ec);
 
     // Years of play with every cap reached: under 300 KB.
-    PlayStatsData full;
     const int today = daysFromCivil(2036, 11, 16);
-    const char* powers[] = {"attack", "wave", "charge_shot", "plasma_bomb", "boomerang", "boomerang_charge", "ground_pound", "dash"};
-    for (int k = 0; k < 365 * 12; ++k) {
-        StatsCounters& c = full.at(today - k);
-        c = dayCounters(355.5, 999, 9999, 8888, 9999, 7777);
-        c.trainSec = 3599.9;
-        c.stars = 1234;
-        for (auto& h : c.hurt) h = 999;
-        for (const char* p : powers) c.powers[p] = {9999, 8888};
-    }
-    for (size_t l = 0; l < kMaxLevels + 10; ++l) {
-        LevelSlices& s = full.levels["community_level_" + std::to_string(l) + "_abcdefghij"];
-        s.name = "Un niveau de la communauté au nom assez long " + std::to_string(l);
-        s.lastDay = today;
-        s.stamp = today;
-        for (int i = 0; i < kSlices; ++i) {
-            s.passes[static_cast<size_t>(i)] = 99999;
-            s.deaths[static_cast<size_t>(i)] = 9999;
-            s.wPasses[static_cast<size_t>(i)] = 1234.56f;
-            s.wDeaths[static_cast<size_t>(i)] = 123.45f;
-        }
-    }
-    for (size_t bi = 0; bi < kMaxBosses + 5; ++bi) {
-        BossHistory& b = full.bosses["boss_" + std::to_string(bi)];
-        b.name = "Le boss numéro " + std::to_string(bi);
-        b.phases = 8;
-        b.reached.assign(8, 9999);
-        b.defeats.assign(8, 999);
-        b.attempts = 99999;
-        b.lastSeq = static_cast<int>(bi);
-        for (int a = 0; a < 20; ++a) b.fatal["Une attaque fatale au nom très long numéro " + std::to_string(a)] = a;
-        for (int a = 0; a < 260; ++a)
-            b.recent.push_back({today - 300 + a, 0.987f, 7, false, "Une attaque fatale au nom très long numéro " + std::to_string(a % 12)});
-    }
-    for (size_t li = 0; li < kMaxRunLevels + 4; ++li) {
-        LevelRuns& r = full.runs["classic_" + std::to_string(li)];
-        r.name = "Niveau classique " + std::to_string(li);
-        r.version = std::string(64, 'f');
-        r.attempts = r.finished = 99999;
-        r.pb = 999.99f;
-        r.lastDay = today;
-        std::string prev;
-        for (int s = 0; s < 18; ++s) {
-            std::string to = "checkpoint_" + std::to_string(s);
-            r.pbRoute.push_back(to);
-            SegmentRec& seg = r.segmentAt(prev, to);
-            for (int t = 0; t < 60; ++t) seg.times.push_back(123.45f);
-            seg.best = 99.99f;
-            prev = to;
-        }
-        for (int f = 0; f < 50; ++f) r.finishes.push_back({today - 50 + f, 999.99f});
-        for (int h = 0; h < 50; ++h) r.history.push_back({today - 50 + h, 999.99f, 888.88f});
-    }
+    PlayStatsData full = atCap(today, "");
     full.compact(today);
     CHECK(full.days.size() == static_cast<size_t>(kDaysKept));
     CHECK(full.months.size() <= static_cast<size_t>(kMonthsKept));
@@ -507,6 +514,362 @@ TEST_CASE("play stats: the file — written by its worker, read back, damaged, h
     for (const auto& [k, v] : parts.items()) std::printf(" %s %zu", k.c_str(), v.dump().size());
     std::printf(" )\n");
     CHECK(bytes < kMaxFileBytes);
+}
+
+// ------------------------------------------------------------------ 2.55: two copies merged
+
+namespace {
+
+BossAttemptRec attemptOn(int day, uint32_t id, float removed, int phase, bool won, const std::string& attack) {
+    BossAttemptRec r;
+    r.day = day;
+    r.id = id;
+    r.removed = removed;
+    r.phase = phase;
+    r.won = won;
+    r.attack = attack;
+    return r;
+}
+
+/// A boss history whose list is `all[from..to)` and which counted `to` attempts.
+BossHistory bossOf(const std::vector<BossAttemptRec>& all, size_t from, size_t to) {
+    BossHistory b;
+    b.name = "Pyrrhax";
+    b.phases = 3;
+    b.reached.assign(3, 0);
+    b.defeats.assign(3, 0);
+    for (size_t i = 0; i < to; ++i) {
+        const BossAttemptRec& r = all[i];
+        b.attempts++;
+        if (r.won) {
+            b.wins++;
+            if (b.firstWin == 0) b.firstWin = b.attempts;
+        }
+        for (int p = 0; p <= r.phase; ++p) b.reached[static_cast<size_t>(p)]++;
+        if (!r.won && !r.attack.empty()) {
+            b.defeats[static_cast<size_t>(r.phase)]++;
+            b.fatal[r.attack]++;
+        }
+        if (i >= from) b.recent.push_back(r);
+        else b.bestBefore = std::max(b.bestBefore, r.won ? 1.0f : r.removed);
+    }
+    b.lastSeq = static_cast<int>(to);
+    return b;
+}
+
+std::string dumpOf(const PlayStatsData& d) { return d.toJson().dump(); }
+
+}  // namespace
+
+TEST_CASE("play stats: two computers merged without counting anything twice (2.55)") {
+    const int today = daysFromCivil(2026, 11, 17);
+    PlayStatsData mine, theirs;
+    // Days: one on each side only, one played on both computers.
+    mine.at(today - 2) = dayCounters(30, 3, 10, 6, 20, 8);
+    mine.at(today - 1) = dayCounters(20, 5, 8, 7, 10, 9);
+    mine.at(today - 1).powers["wave"] = {4, 1};
+    mine.at(today - 1).hurt[static_cast<size_t>(HurtOrigin::Fall)] = 2;
+    mine.at(today - 1).stars = 40;
+    theirs.at(today - 1) = dayCounters(50, 2, 12, 3, 15, 4);
+    theirs.at(today - 1).powers["wave"] = {2, 2};
+    theirs.at(today - 1).powers["boomerang"] = {6, 5};
+    theirs.at(today - 1).hurt[static_cast<size_t>(HurtOrigin::Fall)] = 1;
+    theirs.at(today - 1).stars = 55;
+    theirs.at(today - 10) = dayCounters(15, 1, 4, 4, 4, 4);
+    theirs.at(today + 400) = dayCounters(600, 99, 99, 99, 99, 99);  // far in the future: left out
+    theirs.months.push_back({2020 * 12, dayCounters(90, 9, 9, 9, 9, 9)});
+    // A level's slices.
+    LevelSlices sa, sb;
+    sa.name = "Sylvanox 1";
+    sa.stamp = sa.lastDay = today - 1;
+    sa.passes[3] = 10;
+    sa.deaths[3] = 4;
+    sa.wPasses[3] = 10.0f;
+    sb.stamp = sb.lastDay = today - 1;
+    sb.passes[3] = 6;
+    sb.deaths[3] = 5;
+    sb.passes[7] = 2;
+    sb.wPasses[3] = 6.0f;
+    mine.levels["sylvanox_01"] = sa;
+    theirs.levels["sylvanox_01"] = sb;
+    theirs.levels["glacior_01"] = sb;
+    // A boss: the old computer's attempts, some of them already on this one (restored before).
+    std::vector<BossAttemptRec> all = {attemptOn(today - 9, 11, 0.20f, 0, false, "Piqué"), attemptOn(today - 9, 12, 0.35f, 1, false, "Piqué"),
+                                       attemptOn(today - 5, 13, 0.50f, 1, false, "Boule de feu"), attemptOn(today - 5, 14, 1.0f, 2, true, ""),
+                                       attemptOn(today - 3, 15, 0.10f, 0, false, "")};
+    mine.bosses["pyrrhax"] = bossOf(all, 0, 3);  // 11, 12, 13
+    // The old computer: 11 … 15, and 11 already older than its list (it keeps 12 … 15).
+    theirs.bosses["pyrrhax"] = bossOf(all, 1, 5);
+    // This computer played it too, on its own.
+    BossHistory& mb = mine.bosses["pyrrhax"];
+    mb.recent.push_back(attemptOn(today - 4, 21, 0.60f, 2, false, "Piqué"));
+    mb.attempts++;
+    mb.reached = {4, 3, 1};
+    mb.defeats = {1, 2, 1};
+    mb.fatal = {{"Piqué", 3}, {"Boule de feu", 1}};
+    theirs.bosses["astrarque"] = bossOf({attemptOn(today - 20, 31, 0.4f, 0, false, "Rayon")}, 0, 1);
+    // A classic level: the same version on both sides.
+    LevelRuns ra, rb;
+    ra.name = "Sylvanox 2";
+    ra.version = rb.version = "v1";
+    ra.lastDay = today - 1;
+    rb.lastDay = today - 2;
+    ra.attempts = 6;
+    ra.finished = 2;
+    rb.attempts = 9;
+    rb.finished = 3;
+    ra.pb = 60.0f;
+    ra.pbRoute = {"cp1"};
+    rb.pb = 58.5f;
+    rb.pbRoute = {"cp1"};
+    ra.segmentAt("", "cp1").times = {30.0f, 31.0f, 30.0f};
+    ra.segmentAt("", "cp1").best = 29.5f;
+    ra.segmentAt("cp1", "").times = {29.0f};
+    ra.segmentAt("cp1", "").best = 29.0f;
+    rb.segmentAt("", "cp1").times = {30.0f, 28.75f};
+    rb.segmentAt("", "cp1").best = 28.75f;
+    rb.segmentAt("cp1", "").times = {29.75f, 30.5f};
+    rb.segmentAt("cp1", "").best = 29.75f;
+    rb.segmentAt("cp1", "cp2").times = {12.0f};  // only there
+    rb.segmentAt("cp1", "cp2").best = 12.0f;
+    ra.finishes = {{today - 6, 61.0f}, {today - 1, 60.0f}};
+    rb.finishes = {{today - 8, 63.0f}, {today - 6, 61.0f}, {today - 2, 58.5f}};  // the run of today - 6 is the same
+    ra.history = {{today - 6, 61.0f, 59.5f}, {today - 1, 60.0f, 58.5f}};
+    rb.history = {{today - 8, 63.0f, 60.0f}, {today - 2, 58.5f, 58.5f}};
+    mine.runs["sylvanox_02"] = ra;
+    theirs.runs["sylvanox_02"] = rb;
+    // Another version of a level: the side played the most recently is kept whole.
+    LevelRuns va = ra, vb = rb;
+    vb.version = "v2";
+    vb.lastDay = today;
+    mine.runs["sylvanox_03"] = va;
+    theirs.runs["sylvanox_03"] = vb;
+    mine.seq = 7;
+    theirs.seq = 5;
+
+    const PlayStatsData m = mergePlayStats(mine, theirs, today);
+    // Days: each counter the highest of both sides; a day of one side kept as it is.
+    const StatsDay* both = m.find(today - 1);
+    CHECK(both != nullptr);
+    CHECK_NEAR(both->c.playSec, 50 * 60.0, 1e-6);
+    CHECK(both->c.deaths == 5 && both->c.threats == 12 && both->c.dodged == 7 && both->c.attacks == 15 && both->c.hits == 9);
+    CHECK(both->c.dodged <= both->c.threats && both->c.hits <= both->c.attacks);
+    CHECK(both->c.powers.at("wave")[0] == 4 && both->c.powers.at("wave")[1] == 2);
+    CHECK(both->c.powers.at("boomerang")[0] == 6);
+    CHECK(both->c.hurt[static_cast<size_t>(HurtOrigin::Fall)] == 2);
+    CHECK(both->c.stars == 55);
+    CHECK(m.find(today - 2) && m.find(today - 2)->c.deaths == 3);
+    CHECK(m.find(today - 10) && m.find(today - 10)->c.deaths == 1);
+    CHECK(m.find(today + 400) == nullptr);
+    CHECK(m.days.size() == 3);
+    CHECK(m.months.size() == 1);
+    // Slices: the highest count.
+    const LevelSlices& sl = m.levels.at("sylvanox_01");
+    CHECK(sl.passes[3] == 10 && sl.deaths[3] == 5 && sl.passes[7] == 2);
+    CHECK(sl.name == "Sylvanox 1");
+    CHECK(m.levels.count("glacior_01") == 1);
+    // The boss: 12 … 15 from the old computer, 21 from this one, 12 and 13 once each; 11 is older
+    // than the old computer's list (it might be one it counted): counted once, with the rest.
+    const BossHistory& b = m.bosses.at("pyrrhax");
+    std::vector<uint32_t> ids;
+    for (const auto& r : b.recent) ids.push_back(r.id);
+    CHECK(ids == (std::vector<uint32_t>{12, 13, 14, 21, 15}));  // by day (on a day, this computer's first)
+    CHECK(b.attempts == 6);
+    CHECK(b.firstKept() == 2);
+    CHECK(b.wins == 1);
+    CHECK(b.firstWin == 4);
+    CHECK(b.defeats == (std::vector<int>{1, 2, 1}));
+    CHECK(b.reached == (std::vector<int>{6, 4, 2}));
+    CHECK(b.fatal.at("Piqué") == 3 && b.fatal.at("Boule de feu") == 1);
+    CHECK_NEAR(b.best(), 1.0f, 1e-6);
+    CHECK(m.bosses.count("astrarque") == 1);
+    CHECK(bossesByRecency(m).front() == "pyrrhax");  // fought 3 days ago, the other one 20
+    // The classic level: times united (an equal time once), the better best and PB.
+    const LevelRuns& r = m.runs.at("sylvanox_02");
+    const SegmentRec* first = r.segment("", "cp1");
+    CHECK(first != nullptr);
+    CHECK(first->times == (std::vector<float>{30.0f, 28.75f, 31.0f, 30.0f}));  // the older side first
+    CHECK_NEAR(first->best, 28.75f, 1e-6);
+    CHECK_NEAR(r.segment("cp1", "")->best, 29.0f, 1e-6);
+    CHECK(r.segment("cp1", "cp2") != nullptr);
+    CHECK_NEAR(r.pb, 58.5f, 1e-6);
+    CHECK_NEAR(r.sob(), 28.75f + 29.0f, 1e-4);
+    CHECK(r.finishes.size() == 4);  // 61.0 of today - 6 once
+    CHECK(r.finished == 4);
+    CHECK(r.attempts == 4 + std::max(6 - 2, 9 - 3));
+    CHECK(r.history.size() == 5);  // both histories, sorted, then the merged PB / SOB
+    for (size_t i = 1; i < r.history.size(); ++i) CHECK(r.history[i - 1].day <= r.history[i].day);
+    CHECK_NEAR(r.history.back().pb, 58.5f, 1e-6);
+    CHECK_NEAR(r.history.back().sob, 57.75f, 1e-4);
+    CHECK(m.runs.at("sylvanox_03").version == "v2");
+    CHECK(m.seq >= 7);
+
+    // The same copy merged again (a restoration whose end did not reach the server): nothing changes.
+    CHECK(dumpOf(mergePlayStats(m, theirs, today)) == dumpOf(m));
+    CHECK(dumpOf(mergePlayStats(m, mine, today)) == dumpOf(m));
+    CHECK(dumpOf(mergePlayStats(m, m, today)) == dumpOf(m));
+    // Through the file's text too (what the copy carries).
+    const PlayStatsData read = PlayStatsData::fromJson(m.toJson());
+    CHECK(dumpOf(mergePlayStats(read, PlayStatsData::fromJson(theirs.toJson()), today)) == dumpOf(read));
+    // Nothing from the other side: this computer's statistics as they are.
+    PlayStatsData alone = mine;
+    alone.assignIds();
+    alone.compact(today);
+    CHECK(dumpOf(mergePlayStats(mine, PlayStatsData{}, today)) == dumpOf(alone));
+}
+
+TEST_CASE("play stats: a boss's attempts beyond the 200 kept — counted once, the 200 most recent kept") {
+    const int today = daysFromCivil(2026, 11, 17);
+    std::vector<BossAttemptRec> all;
+    for (int i = 0; i < 350; ++i) {
+        const bool won = i % 50 == 49;
+        all.push_back(attemptOn(today - 40 + i / 10, static_cast<uint32_t>(1000 + i), 0.001f * static_cast<float>(i % 900), i % 3, won,
+                                won ? std::string() : (i % 2 ? "Piqué" : "Boule de feu")));
+    }
+    // This computer has the old one's attempts 0 … 299 (its last 200 kept); the old one played 50
+    // more (0 … 349, its last 200 kept).
+    const BossHistory a = bossOf(all, 100, 300), b = bossOf(all, 150, 350);
+    PlayStatsData mine, theirs;
+    mine.bosses["pyrrhax"] = a;
+    theirs.bosses["pyrrhax"] = b;
+    const PlayStatsData m = mergePlayStats(mine, theirs, today);
+    const BossHistory& x = m.bosses.at("pyrrhax");
+    CHECK(x.attempts == 350);  // not 550
+    CHECK(x.wins == b.wins);
+    CHECK(x.defeats == b.defeats);
+    CHECK(x.reached == b.reached);
+    CHECK(x.fatal == b.fatal);
+    CHECK(x.recent.size() == static_cast<size_t>(kBossAttemptsKept));
+    CHECK(x.recent.front().id == 1150 && x.recent.back().id == 1349);
+    CHECK(x.firstWin == b.firstWin);
+    CHECK(dumpOf(mergePlayStats(m, theirs, today)) == dumpOf(m));
+    CHECK(dumpOf(mergePlayStats(m, mine, today)) == dumpOf(m));
+    // Two computers that never shared anything: every attempt counted.
+    std::vector<BossAttemptRec> other;
+    for (int i = 0; i < 120; ++i) other.push_back(attemptOn(today - 5 + i / 30, static_cast<uint32_t>(5000 + i), 0.3f, 1, false, "Rayon"));
+    PlayStatsData third;
+    third.bosses["pyrrhax"] = bossOf(other, 0, 120);
+    const PlayStatsData d = mergePlayStats(theirs, third, today);
+    const BossHistory& y = d.bosses.at("pyrrhax");
+    CHECK(y.attempts == 350 + 120);
+    CHECK(y.recent.size() == static_cast<size_t>(kBossAttemptsKept));
+    CHECK(y.recent.back().id == 5119);
+    CHECK(y.fatal.at("Rayon") == 120);
+    CHECK(y.defeats[1] == b.defeats[1] + 120);
+    CHECK(dumpOf(mergePlayStats(d, third, today)) == dumpOf(d));
+    CHECK(dumpOf(mergePlayStats(d, theirs, today)) == dumpOf(d));
+}
+
+TEST_CASE("play stats: attempts keep their day and identifier; a 2.54 file gets them once") {
+    fs::path dir = tempDir();
+    fs::path file = dir / "stats.json";
+    const int today = daysFromCivil(2026, 11, 17);
+    PlayStatsData d;
+    BossHistory& b = d.bosses["pyrrhax"];
+    b.phases = 2;
+    b.reached = {2, 1};
+    b.defeats = {1, 0};
+    b.attempts = 2;
+    b.recent = {attemptOn(today - 3, 77, 0.25f, 0, false, "Piqué"), attemptOn(today, 0x3FFFF, 0.5f, 1, false, "")};
+    const PlayStatsData back = PlayStatsData::fromJson(d.toJson());
+    CHECK(back.bosses.at("pyrrhax").recent.size() == 2);
+    CHECK(back.bosses.at("pyrrhax").recent[0].day == today - 3 && back.bosses.at("pyrrhax").recent[0].id == 77);
+    CHECK(back.bosses.at("pyrrhax").recent[1].id == 0x3FFFFu);
+    // A 2.54 file (no "rk"): identifiers given when it is opened, and written at once.
+    Json j = d.toJson();
+    j["bosses"]["pyrrhax"].erase("rk");
+    Json env = {{"format", "cosmic.stats"}, {"version", 1}, {"data", j}};
+    CHECK(FileUtil::writeTextAtomic(file, env.dump()));
+    std::vector<uint32_t> first;
+    {
+        PlayStatsStore s;
+        s.dayOverride = today;
+        s.open(file);
+        s.flush();
+        for (const auto& r : s.data().bosses.at("pyrrhax").recent) {
+            CHECK(r.id != 0 && r.day == 0);
+            first.push_back(r.id);
+        }
+        CHECK(first.size() == 2 && first[0] != first[1]);
+    }
+    {
+        PlayStatsStore s;
+        s.dayOverride = today;
+        s.open(file);
+        std::vector<uint32_t> again;
+        for (const auto& r : s.data().bosses.at("pyrrhax").recent) again.push_back(r.id);
+        CHECK(again == first);  // the same ones: they were written
+        // A new attempt gets its day and its own identifier.
+        PlayStatsStore::Delta delta;
+        delta.attempts.push_back({"pyrrhax", attemptOn(0, 0, 0.9f, 1, true, "")});
+        s.merge(delta);
+        const BossAttemptRec& n = s.data().bosses.at("pyrrhax").recent.back();
+        CHECK(n.day == today && n.id != 0);
+        s.flush();
+    }
+    // The same identifier twice on a day (a file edited by hand): the second one gets another.
+    PlayStatsData dup = PlayStatsData::fromJson(d.toJson());
+    dup.bosses.at("pyrrhax").recent[1].day = today - 3;
+    dup.bosses.at("pyrrhax").recent[1].id = 77;
+    PlayStatsData dup2 = PlayStatsData::fromJson(dup.toJson());
+    CHECK(dup2.bosses.at("pyrrhax").recent[0].id == 77 && dup2.bosses.at("pyrrhax").recent[1].id == 0);
+    CHECK(dup2.assignIds() && dup2.bosses.at("pyrrhax").recent[1].id != 77);
+    // A name cut at 120 bytes never ends in the middle of a character (the file stays writable).
+    PlayStatsData accents;
+    accents.levels["sylvanox_01"].name = std::string(119, 'a') + "é";
+    accents.levels["sylvanox_01"].passes[0] = 1;
+    const PlayStatsData cutBack = PlayStatsData::fromJson(accents.toJson());
+    CHECK(cutBack.levels.at("sylvanox_01").name == std::string(119, 'a'));
+    CHECK(PlayStatsStore::serialize(cutBack).find(std::string(119, 'a')) != std::string::npos);
+    std::error_code ec;
+    fs::remove_all(dir, ec);
+}
+
+TEST_CASE("play stats: two files at every cap merged — still under 300 KB, even from a hostile copy") {
+    const int today = daysFromCivil(2036, 11, 16);
+    PlayStatsData mine = atCap(today, "a_"), theirs = atCap(today - 3, "b_");
+    // A hostile copy: thousands of days far in the future, months too.
+    for (int k = 1; k <= 3000; ++k) theirs.at(today + 40 + k) = dayCounters(600, 9, 9, 9, 9, 9);
+    for (int k = 1; k <= 500; ++k) theirs.months.push_back({(2040 + k) * 12, dayCounters(600, 9, 9, 9, 9, 9)});
+    const PlayStatsData m = mergePlayStats(mine, theirs, today);
+    CHECK(m.days.size() <= static_cast<size_t>(kDaysKept));
+    CHECK(m.months.size() <= static_cast<size_t>(kMonthsKept));
+    CHECK(m.levels.size() == kMaxLevels);
+    CHECK(m.bosses.size() == kMaxBosses);
+    CHECK(m.runs.size() == kMaxRunLevels);
+    for (const auto& [id, b] : m.bosses) CHECK(b.recent.size() <= static_cast<size_t>(kBossAttemptsKept));
+    const size_t bytes = PlayStatsStore::serialize(m).size();
+    std::printf("  statistiques fusionnées au plafond : %zu octets\n", bytes);
+    CHECK(bytes < kMaxFileBytes);
+    // The same names on both sides (one player, two computers): every list at its cap.
+    const PlayStatsData same = mergePlayStats(atCap(today, ""), atCap(today - 1, ""), today);
+    for (const auto& [id, b] : same.bosses) CHECK(b.recent.size() == static_cast<size_t>(kBossAttemptsKept));
+    for (const auto& [id, r] : same.runs)
+        for (const auto& s : r.segments) CHECK(s.times.size() <= kSegmentTimesKept);
+    CHECK(PlayStatsStore::serialize(same).size() < kMaxFileBytes);
+    // Every name at its longest (120 characters) in the copy: over the cap once merged, so what
+    // was played the least recently goes until the file fits.
+    PlayStatsData longNames = atCap(today, "c_");  // played more recently: kept by the caps
+    const std::string longText(120, 'x');
+    for (auto& [id, b] : longNames.bosses) {
+        b.name = longText;
+        std::map<std::string, int> fatal;
+        for (int a = 0; a < 12; ++a) fatal[longText.substr(0, 117) + std::to_string(100 + a)] = a + 1;
+        b.fatal = fatal;
+        for (size_t i = 0; i < b.recent.size(); ++i) {
+            b.recent[i].attack = longText.substr(0, 117) + std::to_string(100 + i % 12);
+            b.recent[i].day += 20;
+        }
+    }
+    for (auto& [id, l] : longNames.levels) l.name = longText;
+    for (auto& [id, r] : longNames.runs) r.name = longText;
+    CHECK(PlayStatsStore::serialize(mergePlayStats(PlayStatsData{}, longNames, today)).size() < kMaxFileBytes);
+    const PlayStatsData fitted = mergePlayStats(mine, longNames, today);
+    std::printf("  noms les plus longs : %zu octets, %zu mois et %zu niveaux classiques gardés\n", PlayStatsStore::serialize(fitted).size(),
+                fitted.months.size(), fitted.runs.size());
+    CHECK(PlayStatsStore::serialize(fitted).size() < kMaxFileBytes);
+    CHECK(fitted.months.size() < m.months.size());  // the oldest went first
+    CHECK(fitted.bosses.size() == kMaxBosses && fitted.days.size() == static_cast<size_t>(kDaysKept));  // only older parts went
 }
 
 TEST_CASE("play stats: the recorder reads a run without changing it") {

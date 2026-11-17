@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <future>
 #include <map>
 #include <set>
 #include <string>
@@ -62,7 +63,8 @@ public:
     /// Boss statistics (victories, phases and fights without being hit), and the giga bosses
     /// whose story has been told.
     BossStats bossStats;
-    /// 2.54: the player's statistics (main menu → Statistiques; saves/stats.json, this computer only).
+    /// 2.54: the player's statistics (main menu → Statistiques; saves/stats.json). 2.55: in the copy of
+    /// the progression and restored with it (merged without counting anything twice).
     PlayStatsStore playStats;
     /// « Histoire des giga-boss » (2.51): the stories told before the first fight against each
     /// giga boss (data/stories).
@@ -99,8 +101,9 @@ public:
     /// What was played in local mode since the logout, set at the login (levels, runs to send,
     /// achievements, stars, minutes); null when nothing new. Shown once, then cleared.
     Json reconnectSummary;
-    /// The copy as the server keeps it: {format, game_version, summary, files}.
-    Json progressCopyBody() const;
+    /// The copy as the server keeps it: {format, game_version, summary, files}. `withStats`
+    /// (2.55): with the statistics (stats.json), the largest part.
+    Json progressCopyBody(bool withStats = true) const;
     /// 2.50 « Migrer vers un nouveau compte »: the files of a copy (`files` of the body above,
     /// sent by the old account's game) added to this computer's saves, the best of each side
     /// kept (game/online/ProgressMerge). The save files are copied first, as they are, to
@@ -116,13 +119,21 @@ public:
     /// account and server: until then nothing about it is shown, no button that a server without
     /// it would fail) and the progression waiting to be restored here. Updated every frame.
     MigrationState migration;
+    /// Sends a copy of the progression: its statistics are written out on a worker thread (the
+    /// largest part), then the copy leaves from updateProgressCopy.
     void sendProgressCopy(std::function<void(const ApiResult&)> done = {});
     /// Every frame: sends a copy when one is due (connected, 10 minutes after the last one), and
     /// asks the server whether it offers the migration (MigrationState).
     void updateProgressCopy(float dt);
+    void sendPreparedCopies();
     bool progressCopyDue = false;
     float progressCopyWait_ = 20.0f;
     bool progressCopyBusy_ = false;
+    struct PreparedCopy {
+        std::future<std::string> text;  // the body, written out off the main thread
+        std::function<void(const ApiResult&)> done;
+    };
+    std::vector<PreparedCopy> preparedCopies_;
     std::set<std::string> copiesMergedThisSession_;  // 2.50: by SHA-256 (restoreProgressCopy)
     /// Collection (2.19): cosmetic rewards unlocked by the stars, equipped items, and the
     /// discoveries of the jukebox and the gallery. Display only.

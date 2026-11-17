@@ -90,6 +90,7 @@
 | Partie en cours regardable par les amis (2.36) : niveau et version (titre fourni par le serveur), graine, commandes de jeu de chaque pas de simulation, empreintes d'état toutes les 0,5 s, heure de début | mémoire de la salle du joueur (Durable Object `SpectateRoom`), **jamais écrite** (ni D1, ni R2, ni stockage de l'objet) ; rien sur ceux qui regardent | les amis acceptés, si le réglage est coché et la présence montrée ; jamais un joueur bloqué | la partie en cours seulement (30 minutes de jeu au plus) ; oubliée 1 minute après sa fin, 2 minutes après le dernier envoi du jeu, dès qu'une nouvelle partie commence, que le réglage est décoché, la présence masquée ou le compte supprimé |
 | Journal de sécurité (action, empreinte d'IP) | D1 `audit_log` | opérateurs | 180 jours |
 | Compteurs de limitation (empreintes) | D1 `rate_limits` | personne | 24 heures |
+| Copies de la progression envoyées par le jeu (2.47 : `progress`, `records`, `boss_stats`, `achievements`, `collection` ; 2.55 : `stats`, l'écran Statistiques), avec le nom de l'ordinateur | R2 privé `progress/` + D1 `progress_copies` | vous (restauration après « Migrer vers un nouveau compte ») et les admins ; jamais les autres joueurs | les 5 plus récentes ; supprimées avec votre compte |
 | Copies de sauvegarde de toutes les données ci-dessus, sauf les sessions et les compteurs (voir [BACKUP.md](BACKUP.md)) | R2 privé `backups/` ; fichier `.cpbk` chiffré quand un admin le télécharge | comptes admin | automatiques : 14 jours ; avant un import : 30 jours ; manuelles : jusqu'à ce que 10 plus récentes existent |
 
 ## Droits du joueur (Paramètres en ligne)
@@ -136,8 +137,9 @@ vérification de son empreinte SHA-256.
 | `online/projects.json` | liens entre les copies locales (ATELIER → Mes niveaux) et les projets, révision de départ |
 | `online/live_<projet>.json` | modifications faites en direct pas encore confirmées par le serveur (supprimé une fois vide) |
 | `saves/progress.json` | temps joué par niveau (affiché sur la fiche de chaque niveau, même sans compte) |
-| `saves/boss_stats.json` | statistiques des boss (victoires, défaites, combats et phases sans dégât) : jamais envoyées au serveur |
+| `saves/boss_stats.json` | statistiques des boss (victoires, défaites, combats et phases sans dégât) : seulement dans la copie privée de la progression, pour le compte connecté |
 | `saves/achievements.json` | succès débloqués et compteurs de partie (sauts, ennemis vaincus…) : seule la liste des succès est envoyée, au compte connecté |
+| `saves/stats.json` | écran Statistiques (compteurs par jour, tranches des niveaux, tentatives de boss, segments des niveaux classiques ; aucune position, aucune donnée personnelle) : seulement dans la copie privée de la progression (2.55), pour le compte connecté |
 | `saves/segments.json` | temps de passage de vos dernières courses et meilleurs segments : jamais envoyés |
 | `ghosts/` | fantômes : vos courses (`local/`), replays téléchargés (`cache/`, limité en taille), replays importés (`files/`) : jamais envoyés |
 

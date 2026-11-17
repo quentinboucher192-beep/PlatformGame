@@ -5,10 +5,15 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.55.0** :
+* Vos **statistiques** voyagent avec vos sauvegardes : dans la copie privée de la progression de
+  Cosmic Online et dans « Migrer vers un nouveau compte », ajoutées à celles du nouvel ordinateur
+  **sans double compte**. Voir [Statistiques](#statistiques).
+
 **Nouveau dans la version 2.54.0** :
-* **Statistiques** (menu principal) : vos vraies parties en courbes et en chiffres, sur cet ordinateur
-  (vue d'ensemble, combat, boss, niveaux classiques avec somme des meilleurs segments, passages
-  difficiles avec leur entraînement). Voir [Statistiques](#statistiques).
+* **Statistiques** (menu principal) : vos vraies parties en courbes et en chiffres, calculées sur
+  votre ordinateur (vue d'ensemble, combat, boss, niveaux classiques avec somme des meilleurs
+  segments, passages difficiles avec leur entraînement). Voir [Statistiques](#statistiques).
 
 **Nouveau dans la version 2.53.0** :
 * **« La Fosse des Abysses »** (EXTRÊME, Les Confins) : le combat seul du **Kraken des Abysses**, giga-boss à
@@ -368,7 +373,8 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
 * **Statistiques des boss** (menu principal → *Statistiques*) : combats, victoires, défaites,
   victoires sans dégât, et pour chaque phase le nombre de fois battue et battue **sans
   dégât**, meilleur combat, dernière victoire. Un petit son salue chaque phase battue sans
-  dégât ; l'écran de fin résume les boss vaincus. Gardées sur l'ordinateur, jamais envoyées.
+  dégât ; l'écran de fin résume les boss vaincus. Gardées sur l'ordinateur (et dans la copie privée
+  de la progression d'un compte connecté).
 * **Pouvoirs** : coûts d'énergie selon leur force (référence : le tir chargé à 20, une attaque
   moins forte coûte moins). Leurs **caractéristiques** (énergie, dégâts, rayon, portée,
   vitesse, recharge…) sont lues dans leur définition et affichées sur les cartes du guide,
@@ -616,9 +622,8 @@ les fiches des boss) · *Paramètres* · *Quitter*.
 
 ### Statistiques
 
-Calculées à partir de **vos vraies parties**, gardées sur cet ordinateur (`saves/stats.json`, jamais
-envoyé en ligne, ni dans la copie de la progression de Cosmic Online). L'écran démarre vide et se
-remplit au fil des parties. Six sections :
+Calculées à partir de **vos vraies parties**, sans compte ni Internet, et gardées dans
+`saves/stats.json`. L'écran démarre vide et se remplit au fil des parties. Six sections :
 
 * **Vue d'ensemble** — sur 7, 30 ou 90 jours : temps de jeu et jours joués, taux d'esquive,
   précision, morts par heure, chacun comparé à la période précédente de même durée (▲ / ▼, l'écart
@@ -638,8 +643,26 @@ remplit au fil des parties. Six sections :
 * **Passages difficiles** — où vous tombez dans un niveau (40 tranches sur son vrai relief, avec
   ses points de passage) et vos 5 passages les plus difficiles, niveaux et phases de boss mêlés,
   chacun avec son entraînement.
-* **Données et sauvegarde** — ce qui est enregistré, où et quand, et « Réinitialiser les
-  statistiques ». *Paramètres › Jeu › « Enregistrer mes statistiques »* (activé par défaut).
+* **Données et sauvegarde** — ce qui est enregistré, où et quand, comment les statistiques
+  voyagent avec la progression, et « Réinitialiser les statistiques ». *Paramètres › Jeu ›
+  « Enregistrer mes statistiques »* (activé par défaut).
+
+**Avec votre progression** (2.55) : connecté à Cosmic Online, `stats.json` fait partie de la copie
+privée de la progression (comme les records et les succès ; aucun autre joueur ne la voit), et la
+progression restaurée après « Migrer vers un nouveau compte » apporte ses statistiques, copiées
+d'abord avec les autres sauvegardes dans `saves/avant_restauration_…`. La fusion ne compte jamais
+rien deux fois, et restaurer deux fois la même copie ne change rien :
+
+* chaque jour (et chaque mois de plus d'un an) : pour chaque compteur, le plus grand des deux côtés
+  (une même journée jouée sur deux ordinateurs est rare) ; de même pour les 40 tranches d'un niveau ;
+* tentatives de boss : réunies par leur identifiant (tiré au hasard quand la tentative est gardée),
+  puis les 200 plus récentes ; les totaux (tentatives, victoires, phases, attaques fatales) comptent
+  chaque tentative une fois ;
+* niveaux classiques (même version du niveau ; sinon celle jouée le plus récemment) : temps de
+  chaque segment réunis (50 gardés), meilleur temps et somme des meilleurs : le meilleur ; parties
+  complètes réunies par jour et temps ; historique du record et de la somme des meilleurs : réuni et
+  trié par jour ;
+* le fichier fusionné reste sous 300 Ko (mêmes plafonds qu'en jeu).
 
 Chaque graphique a une info-bulle à la souris, un curseur au clavier et à la manette (← →) et une
 vue **Tableau**. Les statistiques lisent la partie sans la changer : replays, records et classements
@@ -710,7 +733,8 @@ journal (`cosmic.log`) sont stockés dans :
 * Windows : `%APPDATA%\CosmicStudio\CosmicPlatformer\`
 * Linux : `~/.local/share/CosmicStudio/CosmicPlatformer/`
 
-Les statistiques des boss sont dans `saves/boss_stats.json` (jamais envoyées au serveur).
+Les statistiques des boss sont dans `saves/boss_stats.json`, celles de l'écran Statistiques dans
+`saves/stats.json` (seulement dans la copie privée de la progression, pour un compte connecté).
 Les fichiers sont versionnés et migrés automatiquement ; un fichier corrompu est mis de
 côté (`.corrupt`) au lieu de faire planter le jeu. La désinstallation les conserve, sauf
 demande explicite.

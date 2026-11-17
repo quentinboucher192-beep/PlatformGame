@@ -1,4 +1,7 @@
 {
+  "2.55.0": [
+    "Vos statistiques voyagent avec vos sauvegardes : elles font partie de la copie privée de votre progression sur Cosmic Online et de « Migrer vers un nouveau compte ». Restaurées sur le nouvel ordinateur, elles s'ajoutent aux siennes sans double compte (chaque jour garde le plus grand des deux compteurs, chaque tentative de boss compte une fois, les temps des segments sont réunis, le meilleur record est gardé) ; restaurer deux fois la même copie ne change rien. Détails dans Statistiques › Données et sauvegarde."
+  ],
   "2.54.0": [
     "Nouveau : l'écran Statistiques (menu principal), calculé à partir de vos vraies parties et gardé sur cet ordinateur. Vue d'ensemble sur 7, 30 ou 90 jours (temps de jeu, taux d'esquive, précision, morts par heure, comparés à la période précédente), étoiles de succès et morts par heure jour après jour.",
     "Combat : taux d'esquive et précision avec leur moyenne sur 7 jours joués, précision par pouvoir, et ce qui vous touche (tirs, attaques d'ennemis et de boss, contacts, pièges, chutes).",

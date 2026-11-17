@@ -29,7 +29,10 @@ const NAME_MAX = 40;
 /** At most this many copies of the progression per account (the oldest go). */
 export const PROGRESS_COPIES_KEPT = 5;
 export const MAX_PROGRESS_COPY_BYTES = 4 * 1024 * 1024;
-const PROGRESS_FILES = ["progress", "records", "boss_stats", "achievements", "collection", "segments", "training"] as const;
+/** 2.55: `stats` (the « Statistiques » screen, saves/stats.json): the game keeps it under 300 KB. */
+const PROGRESS_FILES = ["progress", "records", "boss_stats", "achievements", "collection", "segments", "training", "stats"] as const;
+/** Size limits of some files of a copy (UTF-8 bytes of their JSON), on top of the whole copy's. */
+export const PROGRESS_FILE_MAX_BYTES: Readonly<Record<string, number>> = { stats: 512 * 1024 };
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
 
@@ -225,8 +228,10 @@ export async function putProgressCopy(ctx: Ctx): Promise<Response> {
     if (!isObject(f)) v.fail("files", "objet attendu");
     else
         for (const [k, val] of Object.entries(f)) {
+            const max = Object.hasOwn(PROGRESS_FILE_MAX_BYTES, k) ? PROGRESS_FILE_MAX_BYTES[k] : undefined;
             if (!(PROGRESS_FILES as readonly string[]).includes(k)) v.fail(`files.${k}`, "fichier inconnu");
             else if (!isObject(val)) v.fail(`files.${k}`, "objet JSON attendu");
+            else if (max !== undefined && new TextEncoder().encode(JSON.stringify(val)).byteLength > max) v.fail(`files.${k}`, `${max / 1024} Ko au plus`);
         }
     v.done();
     const now = nowIso();
