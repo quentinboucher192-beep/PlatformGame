@@ -308,7 +308,7 @@ TEST_CASE("pause menu: the column is measured, shrinks on short windows and neve
     CHECK(pauseLayout(6, 3, false, 1.0f, 1600.0f).height > pauseLayout(6, 0, false, 1.0f, 1600.0f).height);
     // A comfortable column keeps a line of description under each name; the tightest does not.
     CHECK(pauseLayout(6, 5, true, 1.0f, 1600.0f).rowDescription());
-    CHECK_FALSE(pauseLayout(9, 5, true, 0.6667f, 720.0f).rowDescription());
+    CHECK(!pauseLayout(9, 5, true, 0.6667f, 720.0f).rowDescription());
     // Fewer than five followed: a line says how many places are free.
     PauseLayout four = pauseLayout(6, 4, false, 1.0f, 1600.0f);
     CHECK_NEAR(four.sectionHeight(4, false), four.headerH + 4.0f * four.rowH + four.emptyH, 1e-3);

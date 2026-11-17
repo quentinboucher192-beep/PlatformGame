@@ -528,7 +528,7 @@ TEST_CASE("level power keys (2.60): a change follows in the levels that had exac
     CHECK(!mine.has(c.id, "dash"));
     CHECK(!mine.has(d.id, "dash"));
     // Nothing more to do the second time.
-    CHECK_FALSE(matchPowerKeys(mine, b.id, keys(b), keys(a)));
+    CHECK(!matchPowerKeys(mine, b.id, keys(b), keys(a)));
     // « Par défaut » in A: B goes back to the same keys, stored as no choice (its level's key).
     const PowerKeyMap bNow = keys(b);
     mine.reset(a.id, "dash");
