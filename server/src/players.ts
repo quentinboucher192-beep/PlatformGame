@@ -352,6 +352,20 @@ export async function exportMe(ctx: Ctx): Promise<Response> {
         badges: badgeRows?.results ?? [],
         // 2.19: ratings of the official levels, comments of the campaign and of the runs.
         ...(await campaignExport(ctx, id)),
+        // 2.66: the player's clan (role, since when) and their pending invitations or applications.
+        clan: await ctx.env.DB.prepare(
+            `SELECT c.id, c.name, c.tag, m.role, m.joined_at FROM clan_members m JOIN clans c ON c.id = m.clan_id WHERE m.player_id = ?1`,
+        )
+            .bind(id)
+            .first(),
+        clan_requests: (
+            await ctx.env.DB.prepare(
+                `SELECT q.clan_id, c.tag, q.kind, q.message, q.created_at FROM clan_requests q JOIN clans c ON c.id = q.clan_id
+                 WHERE q.player_id = ?1 ORDER BY q.created_at`,
+            )
+                .bind(id)
+                .all()
+        ).results,
         // 2.31: runs of the daily challenges.
         challenge_runs: (
             await ctx.env.DB.prepare(

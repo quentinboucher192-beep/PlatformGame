@@ -179,3 +179,16 @@ supernova
 arc
 missile
 constellation
+ADMIN
+DEV
+MOD
+MODO
+NULL
+ROOT
+STAFF
+SYS
+clan
+clans
+invitations
+messages
+tag

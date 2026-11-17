@@ -1,4 +1,12 @@
 {
+  "2.66.0": [
+    "Les clans arrivent dans Cosmic Online (EN LIGNE › CLANS) : un clan par joueur, 50 membres au plus, un nom, un tag de 2 à 5 lettres ou chiffres unique (affiché entre crochets, [AUBE]), une devise et un emblème (une forme et deux couleurs).",
+    "Rôles : un chef (qui peut transmettre son rôle), des officiers et des membres. Le chef et les officiers invitent, acceptent ou refusent les candidatures et excluent (un officier n'exclut pas un officier, personne n'exclut le chef) ; le chef nomme les officiers, modifie le clan et peut le dissoudre.",
+    "Adhésion sur invitation, sur candidature (avec un court message) ou ouverte à tous, au choix du chef ; les invitations reçues s'acceptent depuis l'écran CLANS ou la notification.",
+    "La page d'un clan : ses membres et leur rôle (leur présence seulement pour les membres du clan, et si le joueur la partage), sa meilleure équipe sur chaque niveau EXTRÊME (Solo pour l'instant, la coopération Duo et Trio arrive bientôt), les candidatures (chef et officiers) et la discussion du clan, aussi dans SOCIAL.",
+    "Classement des clans : la somme des meilleurs résultats vérifiés par le serveur de chaque clan sur les niveaux EXTRÊME ; le tag du clan s'affiche à côté du pseudo dans les classements, le profil et SOCIAL.",
+    "Administration › Clans : un admin renomme ou dissout un clan ; chaque action est inscrite au Journal."
+  ],
   "2.59.0": [
     "Administration › Créations : en plus des combinaisons, un admin crée des traînées (une forme que le jeu sait dessiner — comète, poussière d'étoiles, ruban, flammèches, aurore, bulles —, la couleur près de Nova et celle du bout, la largeur, la durée et les étincelles), des cadres d'avatar (un style — anneau poli, gemmes serties, orbite, nébuleuse, constellation, cercle runique —, la couleur du bord et de la lueur) et des effets de victoire (feu d'artifice, pluie d'étoiles, supernova, vortex, aurore boréale ou couronne solaire, en deux couleurs), chacun avec son aperçu animé ; il les modifie ou les archive.",
     "Comme les combinaisons, ils se donnent en récompense d'un défi (Calendrier des défis › Récompenses) ; gagnés, ils rejoignent leur catégorie du Vestiaire et s'équipent, sans mise à jour du jeu, même hors ligne : la traînée derrière Nova et derrière vos fantômes, le cadre sur votre profil et dans les classements, l'effet de victoire à la sortie des niveaux.",

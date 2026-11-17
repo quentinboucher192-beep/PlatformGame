@@ -148,6 +148,9 @@ de `wrangler.jsonc`, plafonnée à 1 000) multiplie toutes les limites.
 | `social_group` | 10 | 1 h | joueur | `POST /social/groups` |
 | `social_report` | 20 | 1 h | joueur | `POST /social/messages/{id}/report` |
 | `social_block` | 30 | 1 h | joueur | `POST /social/blocks` |
+| `clan_create` | 5 | 1 h | joueur | `POST /clans` (2.66) |
+| `clan_apply` | 30 | 1 h | joueur | `POST /clans/{id}/join`, `POST /clans/{id}/invites` |
+| `clan_write` | 120 | 1 h | joueur | les autres changements d'un clan (réglages, rôles, réponses, exclusions, départ, dissolution) |
 | `community_publish` | 10 | 1 h | joueur | `POST /community/levels` |
 | `community_upload` | 40 | 1 h | joueur | `PUT …/versions/{v}/package` et `…/replay` |
 | `community_download` | 120 | 1 h | joueur (ou IP) | `GET /community/levels/{id}/package` |
@@ -943,6 +946,66 @@ supprimés, sauts de ligne conservés, 3 lignes vides au plus, espaces de bord r
 | `DELETE /social/messages/{id}` | l'auteur efface son message (le texte est supprimé, la bulle « Message supprimé » reste) |
 | `POST /social/messages/{id}/report` `{reason?}` | signale le message d'un autre membre aux modérateurs (une fois par joueur et par message, journal d'audit) |
 | `GET /social/blocks` · `POST /social/blocks` `{player_id}` · `DELETE /social/blocks/{playerId}` | joueurs bloqués, bloquer, débloquer (le joueur bloqué n'est pas prévenu) |
+
+### 8.8 bis Clans (2.66, En ligne → CLANS)
+
+Migration `0120_clans.sql`, code `server/src/clans.ts`. Le joueur est toujours celui de la session,
+jamais un identifiant de la requête. **Un clan par joueur** (clé primaire de `clan_members`), **50
+membres** au plus, **un seul chef** (index unique partiel), des officiers et des membres. Nom : 3 à 32
+caractères (lettres latines avec accents, chiffres, espaces et `' - _ . ! &`) ; tag : 2 à 5 lettres ou
+chiffres, **unique sans tenir compte de la casse**, affiché `[TAG]` ; devise : 80 caractères ;
+emblème : `{shape: orb|star|shield|diamond|hexagon|crescent, primary: "#rrggbb", secondary: "#rrggbb"}` ;
+adhésion `join_policy` : `invite` (sur invitation), `request` (sur candidature, message de 120
+caractères au plus) ou `open`.
+
+Les règles que deux requêtes pourraient se disputer sont décidées dans **une seule instruction ou un
+seul lot D1** (une transaction) : l'`INSERT` qui ajoute un membre calcule son rôle à partir du nombre de
+membres à cet instant et un rôle impossible fait échouer la contrainte `CHECK` (tout le lot est annulé :
+jamais de 51ᵉ membre) ; chaque départ nomme un chef s'il n'y en a plus (l'officier le plus ancien, sinon
+le membre le plus ancien) et le dernier départ dissout le clan ; chaque changement revérifie le rôle de
+l'acteur dans sa propre clause `WHERE`.
+
+| Route | Rôle |
+|---|---|
+| `GET /clans/me` | mon clan (`clan` + `role`, ou `null`), les `invitations` reçues (`clan`, `by`) et mes `applications` (`clan`, `message`) |
+| `GET /clans?q=&limit=&offset=` | les clans, meilleurs points d'abord ; `q` : un tag (exact, en tête) ou une partie du nom (accents et casse ignorés) ; `has_more` |
+| `GET /clans/ranking?limit=&offset=` | classement des clans ayant des points : `rank`, `clan` ; `total` ; `me` (mon clan et son rang) |
+| `GET /clans/{id}` | page d'un clan : `clan` (+ `rank`), `members[]` (`player` avec `clan_tag`, `role`, `joined_at`, `best`, et `presence` **seulement pour les membres du clan**, `hidden` quand le joueur ne la partage pas), `levels[]` (chaque niveau EXTRÊME officiel : `best` et `teams[]` avec `mode` `solo`/`duo`/`trio`, `team_size`, `score`, `finished`, `players`, `rank` sur sa course), `me` (`role`, `request`), `requests[]` (**chef et officiers seulement**), `conversation_id` (membres seulement) |
+| `POST /clans` `{name, tag, motto?, emblem, join_policy}` | crée le clan (`201`) ; le créateur en est le chef ; sa discussion est créée avec lui — `409 ALREADY_IN_CLAN` / `409 TAG_TAKEN` |
+| `PATCH /clans/{id}` `{name?, tag?, motto?, emblem?, join_policy?}` | modifier le clan (chef) — `403 NOT_CLAN_LEADER`, `409 TAG_TAKEN` |
+| `DELETE /clans/{id}` `{confirm: true}` | dissoudre (chef) : membres, demandes, discussion et points disparaissent ; les membres sont prévenus |
+| `POST /clans/{id}/join` `{message?}` | clan ouvert ou invitation reçue : entrée immédiate (`200 {joined: true}`) ; clan sur candidature : candidature (`201`, message remplacé si renvoyée ; 5 en attente au plus par joueur) — `403 INVITE_ONLY`, `409 CLAN_FULL`, `409 ALREADY_IN_CLAN`, `409 TOO_MANY_APPLICATIONS` |
+| `DELETE /clans/{id}/join` | retirer ma candidature ou refuser l'invitation |
+| `POST /clans/{id}/invites` `{username \| player_id}` | inviter (chef, officiers) ; un joueur qui avait postulé entre aussitôt — `403 NOT_CLAN_OFFICER`, `403 BLOCKED`, `409 CLAN_FULL` |
+| `DELETE /clans/{id}/invites/{playerId}` | retirer une invitation (chef, officiers) |
+| `POST /clans/{id}/requests/{playerId}` `{accept}` | accepter ou refuser une candidature (chef, officiers) — `409 CLAN_FULL`, `409 REQUEST_GONE` |
+| `PATCH /clans/{id}/members/{playerId}` `{role: officer\|member}` | nommer ou retirer un officier (chef) — `409 IS_LEADER` |
+| `POST /clans/{id}/transfer` `{player_id}` | transmettre le rôle de chef (l'ancien chef devient officier) ; deux transferts simultanés : un seul aboutit (`409 TRANSFER_FAILED`) |
+| `DELETE /clans/{id}/members/{playerId}` | quitter (soi-même) ou exclure : le chef exclut officiers et membres, un officier les membres seulement (`403 CANNOT_EXCLUDE_OFFICER`), personne le chef (`403 CANNOT_EXCLUDE_LEADER`) ; `{left, dissolved, leader}` |
+
+**Points et classement** : `clan_level_bests` garde, pour chaque clan, sa meilleure tentative
+**VÉRIFIÉE** (`race_runs.status = 'VERIFIED'`, score calculé par le serveur à partir du replay) sur chaque
+niveau EXTRÊME **officiel** (révision courante et révisions gardées par « Garder les records ») ; les
+niveaux de la communauté ne comptent pas (n'importe qui pourrait en publier un facile). `team_size` (1 =
+Solo) est prêt pour la coopération Duo et Trio. Les points d'un clan sont la somme de ces meilleurs
+résultats ; ils sont recalculés à chaque tentative vérifiée d'un membre, à chaque entrée ou départ, à
+chaque révision publiée et chaque nuit. À égalité, le clan qui a atteint ses points le premier passe devant.
+
+**Discussion** : une conversation de groupe de SOCIAL (`conversations.clan_id`) dont les membres suivent
+ceux du clan ; les routes de groupe (`PATCH`, ajout, départ) répondent `409 CLAN_CONVERSATION`. Dans
+SOCIAL, sa conversation porte `clan: {id, tag}`.
+
+**Tag à côté du pseudo** : `clan_tag` dans les joueurs des classements (niveaux, planètes, pays, amis,
+semaine, défis, course à la vérification — aussi pour un profil privé : un clan est public), de
+`GET /friends`, des membres et messages des conversations ; `clan` (`id`, `name`, `tag`, `role`,
+`emblem`) dans `GET /players/{id}`. Notifications de type `clan` (`event` : `invite`, `apply`,
+`accepted`, `kicked`, `leader`, `dissolved`). L'export des données (`GET /players/me/export`) contient
+`clan` et `clan_requests`.
+
+**Administration** (rôle admin) : `GET /admin/clans?q=` (avec le chef), `PATCH /admin/clans/{id}`
+`{name?, tag?, reason?}` (Journal : `admin_clan_renamed`, un tag pris : `admin_refused`),
+`DELETE /admin/clans/{id}` `{reason?}` (Journal : `admin_clan_dissolved`, membres prévenus). Le Journal
+les filtre avec `kind=clan`.
 
 ### 8.9 Niveaux de la communauté (NIVEAUX EN LIGNE)
 

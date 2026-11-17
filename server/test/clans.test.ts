@@ -619,6 +619,10 @@ describe("clans: the tag next to the username, presence, search", () => {
         expect((await page(c.clan.id, nova!)).body.data.members.find((m: any) => m.player.id === orion!.id).presence).toBe("hidden");
         // Only a country, as the player shares it (never more precise).
         expect(inside.body.data.members[0].player).not.toHaveProperty("region_code");
+        // The data export (RGPD) has the player's clan.
+        const exported = await api("GET", `${V}/players/me/export`, { token: orion!.token });
+        expect(exported.body.data.clan).toMatchObject({ id: c.clan.id, tag: "Aube", role: "member" });
+        expect(exported.body.data.clan_requests).toEqual([]);
     });
 
     it("searches a tag (whatever the case) or a part of a name (accents ignored), page by page", async () => {

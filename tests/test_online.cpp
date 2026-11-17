@@ -70,6 +70,8 @@ struct FakeServer {
     Json friends = {{"friends", Json::array()}, {"incoming", Json::array()}, {"outgoing", Json::array()}};
     Json unread = {{"total", 0}, {"latest", Json::array()}};
     Json notifications = Json::array();  // unread notifications, newest first
+    Json clan = {{"clan", nullptr}, {"invitations", Json::array()}, {"applications", Json::array()}};  // GET /clans/me (2.66)
+    int clanCalls = 0;
     std::vector<Json> playtimeReports;
     int playtimeStatus = 200;
     std::vector<Json> cosmeticsReports;  // bodies of PUT /players/me/cosmetics
@@ -155,6 +157,10 @@ struct FakeServer {
         if (!authorized(rq)) return apiError(401, "TOKEN_EXPIRED");
         if (path == "/api/v1/auth/me") return okData({{"player", player()}});
         if (path == "/api/v1/social/unread") return okData(unread);
+        if (path == "/api/v1/clans/me") {
+            ++clanCalls;
+            return okData(clan);
+        }
         if (path.rfind("/api/v1/notifications?filter=unread", 0) == 0)
             return okData({{"notifications", notifications}, {"unread", static_cast<int>(notifications.size())}});
         if (path == "/api/v1/players/me/playtime") {
@@ -868,6 +874,54 @@ TEST_CASE("online: friend requests are notified once, acceptances too") {
     h.svc.logout(false);
     CHECK(pump(h.svc, [&] { return !h.svc.loggedIn(); }));
     CHECK(h.svc.pendingFriendRequests() == 0);
+}
+
+TEST_CASE("online: the player's clan (2.66) is read after the login, kept offline, forgotten at the logout") {
+    Harness h("clans");
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        h.server->clan = {{"clan", {{"id", "c1"}, {"name", "Les Gardiens de l'Aube"}, {"tag", "AUBE"}, {"role", "leader"}}},
+                          {"invitations", Json::array({{{"clan", {{"id", "c2"}, {"tag", "VEGA"}}}}})},
+                          {"applications", Json::array()}};
+    }
+    // Nothing is asked without an account.
+    CHECK(h.svc.myClanTag().empty());
+    CHECK(h.svc.clanInvitations() == 0);
+    CHECK(h.login());
+    // Read a moment after the connection (never blocking: delivered by update()).
+    CHECK(pump(h.svc, [&] { return h.svc.myClanTag() == "AUBE"; }, 6000, 0.1f));
+    CHECK(h.svc.clanInvitations() == 1);
+    CHECK(jstr(h.svc.myClan()["clan"], "role") == "leader");
+    // Offline: the last answer comes from the cache, the tag stays.
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        h.server->down = true;
+    }
+    bool done = false, cached = false;
+    h.svc.refreshMyClan([&](const ApiResult& r) {
+        done = true;
+        cached = r.ok && r.fromCache;
+    });
+    CHECK(pump(h.svc, [&] { return done; }));
+    CHECK(cached);
+    CHECK(h.svc.myClanTag() == "AUBE");
+    {
+        std::lock_guard<std::mutex> lock(h.server->m);
+        h.server->down = false;
+        h.server->clan["clan"] = nullptr;  // the player left the clan elsewhere
+    }
+    done = false;
+    h.svc.refreshMyClan([&](const ApiResult&) { done = true; });
+    CHECK(pump(h.svc, [&] { return done; }));
+    CHECK(h.svc.myClanTag().empty());
+    // A screen that changed the clan shares the new state at once.
+    h.svc.noteMyClan({{"clan", {{"id", "c3"}, {"tag", "NOVA"}}}, {"invitations", Json::array()}, {"applications", Json::array()}});
+    CHECK(h.svc.myClanTag() == "NOVA");
+    CHECK(h.svc.clanInvitations() == 0);
+    h.svc.logout(false);
+    CHECK(pump(h.svc, [&] { return !h.svc.loggedIn(); }));
+    CHECK(h.svc.myClanTag().empty());
+    CHECK(h.svc.myClan().is_null());
 }
 
 TEST_CASE("online: new messages are notified once, never for the conversation on screen") {

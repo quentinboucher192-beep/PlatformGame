@@ -17,6 +17,7 @@
 #include "engine/core/FileUtil.h"
 #include "engine/core/I18n.h"
 #include "engine/core/Log.h"
+#include "game/online/Clans.h"
 #include "game/GameServices.h"
 #include "game/online/LevelFingerprint.h"
 #include "packaging/PackageImporter.h"
@@ -1067,9 +1068,11 @@ private:
             ou_.drawFlag(country, {x, cy - ui.s(9), ui.s(26), ui.s(18)});
             x += ui.s(34);
         }
-        std::string shown = me ? std::string("Vous") : ou_.displayName(name, rank, false);
+        // 2.66: « [TAG] name » (the tag of the player's clan).
+        std::string shown = me ? std::string("Vous") : p.is_object() ? ou_.displayName(p, rank, false) : ou_.displayName(name, rank, false);
+        const std::string mine = p.is_object() ? clans::taggedName(p) : name;
         i18n::Verbatim pseudo;
-        if (right - x > ui.s(24)) fitLabel(ui, me && !name.empty() ? name : shown, {x, cy}, 17, right - x, me ? ui.theme().accent : ui.theme().text);
+        if (right - x > ui.s(24)) fitLabel(ui, me && !name.empty() ? mine : shown, {x, cy}, 17, right - x, me ? ui.theme().accent : ui.theme().text);
     }
 
     // ------------------------------------------------------------------ my results

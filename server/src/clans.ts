@@ -561,7 +561,7 @@ export async function getClan(ctx: Ctx, viewer: AuthInfo | null): Promise<Respon
                         CASE WHEN b.level_id IS NULL THEN NULL ELSE ${COUNTED_BEST} END AS counted
                  FROM levels l JOIN level_versions v ON v.level_id = l.id AND v.content_hash = l.content_hash AND v.race IS NOT NULL
                  LEFT JOIN clan_level_bests b ON b.clan_id = ?1 AND b.level_id = l.id
-                 ORDER BY l.level_order, l.id, b.team_size`,
+                 ORDER BY l.planet_id, l.level_order, l.id, b.team_size`,
             )
             .bind(id),
         // The rank of each Solo best on its level's race (players with a better best, plus one).
@@ -785,7 +785,7 @@ export async function dissolveClan(ctx: Ctx): Promise<Response> {
     const id = clanIdParam(ctx);
     const body = await readJsonObject(ctx);
     const v = new Validator(body, ["confirm"]);
-    if (v.bool("confirm") !== true) v.fail("confirm", "la dissolution doit être confirmée (true)");
+    if (v.bool("confirm") !== true) v.fail("confirm", "la dissolution doit être confirmée");
     v.done();
     const clan = await loadClan(ctx, id);
     const members = await ctx.env.DB.prepare("SELECT player_id FROM clan_members WHERE clan_id = ?1").bind(id).all<{ player_id: string }>();
