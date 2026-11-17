@@ -193,6 +193,115 @@ std::string shapeLabel(const std::string& shape) {
     return "Orbe";
 }
 
+JoinOffer joinOffer(const Json& clan, const Json& me, bool loggedIn, bool myClanKnown, const std::string& myClanId) {
+    JoinOffer o;
+    if (!jstr(me, "role").empty()) return o;
+    if (!loggedIn) return {"login", "Se connecter pour rejoindre", true, {}};
+    if (!myClanKnown) return o;
+    if (!myClanId.empty() && myClanId != jstr(clan, "id")) {
+        o.note = "Vous êtes déjà dans un clan.";
+        return o;
+    }
+    const bool full = jget<int>(clan, "members", 0) >= jget<int>(clan, "max_members", kMaxMembers);
+    const std::string kind = jstr(jfield(me, "request", Json()), "kind");
+    const std::string policy = jstr(clan, "join_policy");
+    if (kind == "apply") return {"withdraw", "Retirer ma candidature", true, "Candidature envoyée : réponse du chef ou d'un officier."};
+    if (kind == "invite") o = {"accept", "Accepter l'invitation", !full, {}};
+    else if (policy == "open") o = {"join", "Rejoindre", !full, {}};
+    else if (policy == "request") o = {"apply", "Postuler", !full, {}};
+    else {
+        o.note = "Ce clan recrute sur invitation.";
+        return o;
+    }
+    if (full) o.note = "Ce clan est complet.";
+    return o;
+}
+
+std::string joinHint(const JoinOffer& o) {
+    if (o.action == "login") return "Connectez-vous à Cosmic Online pour rejoindre ce clan.";
+    if (!o.note.empty() && (!o.enabled || o.action.empty() || o.action == "withdraw")) return o.note;
+    if (o.action == "join") return "Ouvert à tous : « Rejoindre » sur la fiche du clan.";
+    if (o.action == "apply") return "Sur candidature : « Postuler » sur la fiche du clan.";
+    if (o.action == "accept") return "Vous êtes invité dans ce clan : répondez depuis sa fiche.";
+    return {};
+}
+
+std::vector<PendingRequest> pendingRequests(const Json& requests, const std::string& kind) {
+    std::vector<PendingRequest> out;
+    if (!requests.is_array()) return out;
+    for (const auto& q : requests) {
+        if (!q.is_object() || jstr(q, "kind") != kind) continue;
+        const Json& p = jfield(q, "player", Json());
+        PendingRequest r;
+        r.kind = kind;
+        r.playerId = jstr(p, "id");
+        if (r.playerId.empty()) continue;
+        r.username = jstr(p, "username");
+        r.avatar = jstr(p, "avatar", "avatar_01");
+        r.message = jstr(q, "message");
+        r.createdAt = jstr(q, "created_at");
+        const Json& by = jfield(q, "by", Json());
+        r.byId = jstr(by, "id");
+        r.byName = jstr(by, "username");
+        out.push_back(std::move(r));
+    }
+    return out;
+}
+
+InviteOffer inviteOffer(const Json& mine, const Json& myPage, const Json& target, const std::string& targetId, const std::string& myId,
+                        bool blocked) {
+    InviteOffer o;
+    const Json& clan = jfield(mine, "clan", Json());
+    if (!clan.is_object() || !canManage(jstr(clan, "role")) || targetId.empty() || targetId == myId) return o;
+    o.shown = true;
+    const std::string id = jstr(clan, "id");
+    const int max = jget<int>(clan, "max_members", kMaxMembers);
+    if (blocked) {
+        o.note = "Vous avez bloqué ce joueur : débloquez-le pour l'inviter.";
+        return o;
+    }
+    if (target.is_object()) {
+        o.note = jstr(target, "id") == id ? "Ce joueur est déjà membre de votre clan." : "Ce joueur est déjà dans un clan.";
+        return o;
+    }
+    if (jget<int>(clan, "members", 0) >= max) {
+        o.note = "Votre clan est complet (" + std::to_string(max) + " membres).";
+        return o;
+    }
+    bool applied = false;
+    // Only the page of the player's own clan says what waits (another clan's answer says nothing).
+    const Json& requests = jfield(myPage, "requests", Json());
+    if (jstr(jfield(myPage, "clan", Json()), "id") == id && requests.is_array()) {
+        for (const auto& q : requests) {
+            if (jstr(jfield(q, "player", Json()), "id") != targetId) continue;
+            if (jstr(q, "kind") == "invite") {
+                o.note = "Invitation déjà envoyée : elle attend sa réponse.";
+                return o;
+            }
+            applied = applied || jstr(q, "kind") == "apply";
+        }
+        if (!applied && static_cast<int>(requests.size()) >= kMaxPending) {
+            o.note = "Votre clan a trop de demandes en attente : traitez-en d'abord.";
+            return o;
+        }
+    }
+    o.enabled = true;
+    o.note = applied ? "Ce joueur a postulé : l'inviter l'accepte aussitôt dans votre clan." : "Il recevra une invitation, à accepter depuis l'écran CLANS.";
+    return o;
+}
+
+std::string clanIdForTag(const Json& list, const std::string& tag) {
+    if (!list.is_array() || tag.empty()) return {};
+    auto upper = [](std::string s) {
+        for (char& c : s) c = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+        return s;
+    };
+    const std::string want = upper(tag);
+    for (const auto& c : list)
+        if (upper(jstr(c, "tag")) == want && !jstr(c, "id").empty()) return jstr(c, "id");
+    return {};
+}
+
 std::string colorHex(Color c) {
     char buf[8];
     std::snprintf(buf, sizeof buf, "#%02x%02x%02x", c.r, c.g, c.b);

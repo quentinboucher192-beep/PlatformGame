@@ -4,6 +4,9 @@
 // clan's members, and only as each player shares it); its best team on every EXTRÊME level
 // (Solo today: the server already says `mode` and `team_size` for Duo and Trio); the pending
 // applications (chief and officers only); its discussion (a group conversation of SOCIAL).
+// 2.63.6: the page is the clan's public sheet, opened from search, the ranking, a profile or a
+// « [TAG] » clicked anywhere (makeClanByTag); the tab « Gestion » (chief and officers): the
+// applications received, the invitations sent, the members and their roles, the settings.
 //
 // Every rule is the server's (server/src/clans.ts): the screen only offers what the player's
 // role allows and shows what the server answers. Nothing here needs an account to be looked at:
@@ -140,14 +143,20 @@ float pill(UIContext& ui, float x, float cy, const std::string& t, Color border,
 
 class ClanScene : public Scene {
 public:
-    ClanScene(GameServices& g, std::string clanId, bool pushed) : g_(g), ui_(g), wanted_(std::move(clanId)), pushed_(pushed) {}
+    ClanScene(GameServices& g, std::string clanId, bool pushed, std::string tag = {})
+        : g_(g), ui_(g), wanted_(std::move(clanId)), wantedTag_(std::move(tag)), pushed_(pushed) {}
 
     void onEnter() override {
         g_.playMusic("music/menu_theme.ogg");
         bg_.init(g_);
         g_.ui.setFocus(pushed_ ? "clans/tabs" : "online/nav/clans");
         wasLoggedIn_ = g_.online.loggedIn();
-        if (!wanted_.empty()) openPage(wanted_, true);
+        if (!wanted_.empty()) {
+            entryId_ = wanted_;
+            openPage(wanted_, true);
+        } else if (!wantedTag_.empty()) {
+            resolveTag();
+        }
         reloadAll();
     }
 
@@ -166,8 +175,9 @@ public:
         }
         pageTimer_ += dt;
         chatTimer_ += dt;
-        if (top && pageShown() && pageTimer_ >= kPagePoll) loadPage();
-        if (top && pageShown() && !convId_.empty() && chatTimer_ >= kChatPoll) loadChat();
+        if (top && (pageShown() || manageShown()) && pageTimer_ >= kPagePoll) loadPage();
+        // The discussion only while it is on screen (reading it marks it read).
+        if (top && pageShown() && !convId_.empty() && (!chatLoaded_ || chatTimer_ >= kChatPoll)) loadChat();
         if (searchDirty_ && g_.ui.time() - searchT_ > 0.35f) {
             searchDirty_ = false;
             loadSearch(false);
@@ -194,8 +204,9 @@ public:
     }
 
 private:
-    enum class Modal { None, Form, Invite, Apply, Member, Confirm };
-    static constexpr int kTabMine = 0, kTabSearch = 1, kTabRanking = 2;
+    enum class Modal { None, Form, Invite, Apply, Member, Confirm, Transfer };
+    enum class TagState { None, Busy, Failed };  // a sheet asked for by its tag (makeClanByTag)
+    static constexpr int kTabMine = 0, kTabSearch = 1, kTabRanking = 2, kTabManage = 3;
 
     // ------------------------------------------------------------ helpers
     void say(const std::string& m, bool error) {
@@ -209,8 +220,12 @@ private:
         return c.is_object() ? jstr(c, "id") : std::string();
     }
     std::string myRole() const { return jstr(at(page_, "me"), "role"); }
+    /// The player's role in their clan, as GET /clans/me last said ("" without a clan).
+    std::string myClanRole() const { return jstr(at(mine_, "clan"), "role"); }
     /// A clan's page is on screen (« Mon clan », or opened from a list).
     bool pageShown() const { return !pageId_.empty() && (pageFromList_ || tab_ == kTabMine); }
+    /// The tab « Gestion » shows the page of the player's clan (its requests, members, settings).
+    bool manageShown() const { return tab_ == kTabManage && !pageFromList_ && !pageId_.empty() && pageId_ == myClanId(); }
     /// The player left their clan (or dissolved it): « Mon clan » shows no page until GET /clans/me answers.
     void forgetMyClan() {
         if (mine_.is_object()) mine_["clan"] = nullptr;
@@ -219,12 +234,47 @@ private:
     }
 
     void back() {
-        if (!pageId_.empty() && pageFromList_) closePage();
+        // Opened over another screen on a clan's sheet: back there at once.
+        if (pushed_ && pageFromList_ && !entryId_.empty() && pageId_ == entryId_) g_.app.popScene();
+        else if (!pageId_.empty() && pageFromList_) closePage();
         else if (pushed_) g_.app.popScene();
         else g_.app.switchScene(makeOnlineRanking(g_));
     }
 
     void askAccount() { g_.app.pushScene(makeOnlineAccount(g_, !g_.settings.online.onboardingDone, false)); }
+
+    /// The tab « Gestion » on the page of the player's clan.
+    void goManage() {
+        tab_ = kTabManage;
+        tagState_ = TagState::None;
+        if (pageFromList_ && pageId_ == myClanId()) pageFromList_ = false;
+        else if (pageFromList_) closePage();  // reopens the player's clan (tab « Gestion »)
+        if (!myClanId().empty() && pageId_ != myClanId()) openPage(myClanId(), false);
+    }
+
+    /// makeClanByTag: the clan whose tag was clicked (GET /clans?q=, the exact tag first).
+    void resolveTag() {
+        tagState_ = TagState::Busy;
+        tagError_.clear();
+        const std::string tag = wantedTag_;
+        g_.online.get("/api/v1/clans?limit=10&q=" + online::encodeQueryValue(tag), OnlineService::guard(life_, [this, tag](const ApiResult& r) {
+                          if (tagState_ != TagState::Busy) return;  // a tab chosen meanwhile
+                          if (!r.ok) {
+                              tagState_ = TagState::Failed;
+                              tagError_ = r.message;
+                              return;
+                          }
+                          const std::string id = clans::clanIdForTag(at(r.data, "clans"), tag);
+                          if (id.empty()) {
+                              tagState_ = TagState::Failed;
+                              tagError_ = "Aucun clan ne porte le tag " + clans::bracket(tag) + " : il a peut-être changé ou été dissous.";
+                              return;
+                          }
+                          tagState_ = TagState::None;
+                          entryId_ = id;
+                          openPage(id, true);
+                      }));
+    }
 
     // ------------------------------------------------------------- data
     void reloadAll() {
@@ -248,9 +298,10 @@ private:
                           mine_ = r.data;
                           mineCache_ = r.fromCache;
                           g_.online.noteMyClan(r.data);
-                          // « Mon clan »: the page of the player's clan.
+                          // « Mon clan » (and « Gestion »): the page of the player's clan.
                           const std::string id = myClanId();
-                          if (tab_ == kTabMine && !pageFromList_) {
+                          if (tab_ == kTabManage && !clans::canManage(myClanRole())) tab_ = kTabMine;  // no longer chief or officer
+                          if ((tab_ == kTabMine || tab_ == kTabManage) && !pageFromList_) {
                               if (!id.empty() && pageId_ != id) openPage(id, false);
                               else if (id.empty() && !pageId_.empty()) closePage();
                           }
@@ -280,8 +331,8 @@ private:
         convId_.clear();
         messages_ = Json::array();
         g_.online.setOpenConversation({});
-        // Back on « Mon clan »: the player's own page, if they have a clan.
-        if (tab_ == kTabMine && !myClanId().empty()) openPage(myClanId(), false);
+        // Back on « Mon clan » (or « Gestion »): the player's own page, if they have a clan.
+        if ((tab_ == kTabMine || tab_ == kTabManage) && !myClanId().empty()) openPage(myClanId(), false);
     }
 
     void loadPage() {
@@ -300,13 +351,17 @@ private:
                           pageError_.clear();
                           page_ = r.data;
                           pageCache_ = r.fromCache;
+                          // The applications waiting in the player's clan: the badge of « Gestion ».
+                          if (id == myClanId()) myApplications_ = static_cast<int>(clans::pendingRequests(at(page_, "requests"), "apply").size());
                           const std::string conv = jstr(page_, "conversation_id");
                           if (conv != convId_) {
                               convId_ = conv;
                               messages_ = Json::array();
                               chatLoaded_ = false;
-                              g_.online.setOpenConversation(conv);
-                              if (!conv.empty()) loadChat();
+                              if (pageShown()) {
+                                  g_.online.setOpenConversation(conv);
+                                  if (!conv.empty()) loadChat();
+                              }
                           }
                       }));
     }
@@ -467,13 +522,28 @@ private:
     void drawBody() {
         UIContext& ui = g_.ui;
         const int invitations = static_cast<int>(at(mine_, "invitations").size());
-        Rect tabsR{zoneB_.x, zoneB_.y, std::min(zoneB_.w * 0.62f, ui.s(700)), ui.s(48)};
-        int tab = tab_;
-        ui.tabs("tabs", tabsR, {"Mon clan", "Rechercher", "Classement des clans"}, tab, {invitations, 0, 0});
-        if (tab != tab_) {
-            tab_ = tab;
+        // « Gestion » (2.63.6): for the chief and the officers, next to « Mon clan ».
+        const bool manager = g_.online.loggedIn() && clans::canManage(myClanRole());
+        if (tab_ == kTabManage && !manager && mineLoaded_) tab_ = kTabMine;
+        std::vector<std::string> labels = {"Mon clan", "Rechercher", "Classement des clans"};
+        std::vector<int> ids = {kTabMine, kTabSearch, kTabRanking};
+        std::vector<int> badges = {invitations, 0, 0};
+        if (manager) {
+            labels.insert(labels.begin() + 1, "Gestion");
+            ids.insert(ids.begin() + 1, kTabManage);
+            badges.insert(badges.begin() + 1, myApplications_);  // applications waiting for an answer
+        }
+        Rect tabsR{zoneB_.x, zoneB_.y, std::min(zoneB_.w * (manager ? 0.7f : 0.62f), ui.s(manager ? 880 : 700)), ui.s(48)};
+        const int shownTab = static_cast<int>(std::find(ids.begin(), ids.end(), tab_) - ids.begin()) % static_cast<int>(ids.size());
+        int tab = shownTab;
+        ui.tabs("tabs", tabsR, labels, tab, badges);
+        if (manager) ui.newBadge("tabs", {tabsR.x + tabsR.w / static_cast<float>(labels.size()), tabsR.y, tabsR.w / static_cast<float>(labels.size()), tabsR.h},
+                                 "clans.tab.manage");  // « NOUVEAU »
+        if (tab != shownTab) {
+            tab_ = ids[static_cast<size_t>(std::clamp(tab, 0, static_cast<int>(ids.size()) - 1))];
+            tagState_ = TagState::None;
             if (pageFromList_) closePage();
-            if (tab_ == kTabMine && !myClanId().empty()) openPage(myClanId(), false);
+            if ((tab_ == kTabMine || tab_ == kTabManage) && !myClanId().empty()) openPage(myClanId(), false);
             if (tab_ == kTabSearch && !searchLoaded_) loadSearch(false);
             if (tab_ == kTabRanking) loadRanking(false);
         }
@@ -485,15 +555,22 @@ private:
         if (showPage && pageFromList_) {
             UIContext::ButtonStyle st;
             st.small = true;
-            const float bw = std::max(ui.s(130), textW(ui, "Retour à la liste", 16, FontFace::Bold) + ui.s(36));
-            if (ui.button("back", {right - bw, tabsR.y + ui.s(4), bw, ui.s(40)}, "Retour à la liste", st)) closePage();
+            // The sheet the screen was opened on (over a profile, SOCIAL…): back to that screen.
+            const bool entry = pushed_ && pageId_ == entryId_;
+            const std::string label = entry ? "Retour" : "Retour à la liste";
+            const float bw = std::max(ui.s(130), textW(ui, label, 16, FontFace::Bold) + ui.s(36));
+            if (ui.button("back", {right - bw, tabsR.y + ui.s(4), bw, ui.s(40)}, label, st)) back();
             right -= bw + ui.s(16);
         }
-        const bool cache = showPage ? pageCache_ : tab_ == kTabSearch ? searchCache_ : tab_ == kTabRanking ? rankingCache_ : mineCache_;
+        const bool cache = showPage || tab_ == kTabManage ? pageCache_ : tab_ == kTabSearch ? searchCache_ : tab_ == kTabRanking ? rankingCache_ : mineCache_;
         if (cache) fitLabel(ui, "Hors ligne : données en cache", {right, tabsR.center().y}, 14, right - tabsR.right() - ui.s(16), ui.theme().warm, FontFace::Body,
                             Align::Right);
         Rect body{zoneB_.x, tabsR.bottom() + ui.s(14), zoneB_.w, zoneB_.bottom() - tabsR.bottom() - ui.s(14)};
-        if (showPage) drawPage(body);
+        if (tagState_ != TagState::None && pageId_.empty()) {
+            const std::string t = tagState_ == TagState::Busy ? "Recherche du clan " + clans::bracket(wantedTag_) + "…" : tagError_;
+            fitLabel(ui, t, {body.x + ui.s(8), body.y + ui.s(20)}, 17, body.w - ui.s(16), tagState_ == TagState::Busy ? ui.theme().textDim : ui.theme().danger);
+        } else if (showPage) drawPage(body);
+        else if (tab_ == kTabManage) drawManage(body);
         else if (tab_ == kTabMine) drawWithoutClan(body);
         else if (tab_ == kTabSearch) drawSearch(body);
         else drawRanking(body);
@@ -760,33 +837,26 @@ private:
         const float em = band.h - ui.s(36);
         drawClanEmblem(ui, {band.x + ui.s(20), band.y + ui.s(18), em, em}, clans::emblemFromJson(at(c, "emblem")));
         // Buttons, right to left.
-        const std::string id = jstr(c, "id"), role = myRole(), policy = jstr(c, "join_policy");
-        const Json& request = at(at(page_, "me"), "request");
-        const bool in = g_.online.loggedIn();
-        const bool inOther = in && !myClanId().empty() && myClanId() != id;
+        const std::string role = myRole(), policy = jstr(c, "join_policy");
         struct Btn {
             std::string key, label;
             bool primary = false, danger = false, enabled = true;
         };
         std::vector<Btn> btns;
+        // A note under the buttons when the player cannot join (another clan, invitation only, full).
+        std::string note;
         if (!role.empty()) {
-            if (clans::canManage(role)) btns.push_back({"invite", "Inviter", true});
-            if (role == "leader") btns.push_back({"settings", "Paramètres du clan"});
-            btns.push_back({"leave", "\x1F" "clan|Quitter", false, true});
-        } else if (!in) {
-            btns.push_back({"login", "Se connecter pour rejoindre", true});
-        } else if (!inOther && mineLoaded_) {
-            const std::string kind = jstr(request, "kind");
-            if (kind == "invite") {
-                btns.push_back({"accept", "Accepter l'invitation", true});
-                btns.push_back({"decline", "Refuser"});
-            } else if (kind == "apply") {
-                btns.push_back({"withdraw", "Retirer ma candidature"});
-            } else if (policy == "open") {
-                btns.push_back({"join", "Rejoindre", true, false, jget<int>(c, "members", 0) < clans::kMaxMembers});
-            } else if (policy == "request") {
-                btns.push_back({"apply", "Postuler", true, false, jget<int>(c, "members", 0) < clans::kMaxMembers});
+            if (clans::canManage(role)) {
+                btns.push_back({"invite", "Inviter", true});
+                btns.push_back({"manage", "Gestion"});  // 2.63.6: requests, members, settings
             }
+            btns.push_back({"leave", "\x1F" "clan|Quitter", false, true});
+        } else {
+            // Joining, as the clan's mode allows (clans::joinOffer: the same rules as the server).
+            const clans::JoinOffer offer = clans::joinOffer(c, at(page_, "me"), g_.online.loggedIn(), mineLoaded_, myClanId());
+            if (!offer.action.empty()) btns.push_back({offer.action, offer.label, offer.action != "withdraw", false, offer.enabled});
+            if (offer.action == "accept") btns.push_back({"decline", "Refuser"});
+            note = offer.note;
         }
         float bx = band.right() - ui.s(20);
         const float by = band.y + ui.s(20), bh = ui.s(44);
@@ -800,14 +870,6 @@ private:
             bx -= bw;
             if (ui.button("b" + b.key, {bx, by, bw, bh}, b.label, st)) bandAction(b.key, c);
             bx -= ui.s(10);
-        }
-        // A note under the buttons when the player cannot join (another clan, invitation only, full).
-        std::string note;
-        if (role.empty() && in && mineLoaded_) {
-            if (inOther) note = "Vous êtes déjà dans un clan.";
-            else if (jstr(request, "kind") == "apply") note = "Candidature envoyée : réponse du chef ou d'un officier.";
-            else if (jstr(request, "kind").empty() && policy == "invite") note = "Ce clan recrute sur invitation.";
-            else if (jget<int>(c, "members", 0) >= clans::kMaxMembers) note = "Ce clan est complet.";
         }
         float buttonsLeft = btns.empty() ? band.right() - ui.s(20) : bx + ui.s(10);
         if (!note.empty()) {
@@ -860,6 +922,7 @@ private:
         addPill(clans::policyLabel(policy), Color{34, 48, 90, 255}, ui.theme().text);
         const int rank = jget<int>(c, "rank", 0);
         addPill(rank > 0 ? clans::ordinal(rank) + " au classement des clans" : std::string("Pas encore classé"), kViolet, Color{201, 179, 255, 255});
+        addPill(clans::pointsLabel(jget<double>(c, "points", 0.0)), kGold, kGold);
         if (!role.empty()) addPill("Vous : " + clans::roleLabel(role), Color{34, 48, 90, 255}, clanRoleColor(ui, role));
     }
 
@@ -869,8 +932,8 @@ private:
         if (key == "invite") {
             inviteName_.clear();
             modal_ = Modal::Invite;
-        } else if (key == "settings") {
-            openForm(false);
+        } else if (key == "manage") {
+            goManage();
         } else if (key == "leave") {
             const std::string me = g_.online.playerId();
             std::string text;
@@ -1017,70 +1080,254 @@ private:
         }
         Rect chat = r;
         if (clans::canManage(role)) {
-            const Json& reqs = at(page_, "requests");
-            const float rowH = ui.s(64);
-            const float want = ui.s(44) + std::max<float>(1.0f, static_cast<float>(reqs.size())) * (rowH + ui.s(6)) + ui.s(40);
-            const float h = std::min(want, r.h * 0.42f);
-            Rect box{r.x, r.y, r.w, h};
-            drawRequests(box, reqs, rowH);
+            // 2.63.6: the requests are handled in « Gestion »; here, how many wait, and the way there.
+            int apps = 0, invs = 0;
+            for (const auto& q : at(page_, "requests")) (jstr(q, "kind") == "apply" ? apps : invs) += 1;
+            const Rect box{r.x, r.y, r.w, ui.s(76)};
+            panel(ui, box, apps > 0 ? ui.theme().warm : ui.theme().border);
+            UIContext::ButtonStyle st;
+            st.small = true;
+            st.primary = apps > 0;
+            const float bw = textW(ui, "Gestion", 15, FontFace::Bold) + ui.s(36);
+            const Rect b{box.right() - ui.s(14) - bw, box.y + (box.h - ui.s(40)) * 0.5f, bw, ui.s(40)};
+            if (ui.button("toManage", b, "Gestion", st)) goManage();
+            const float tx = box.x + ui.s(16), room = b.x - ui.s(12) - tx;
+            fitLabel(ui, "DEMANDES EN ATTENTE", {tx, box.y + ui.s(25)}, 13, room, ui.theme().textDim, FontFace::Bold);
+            const std::string line = apps == 0 && invs == 0 ? std::string("Aucune demande en attente.")
+                                                            : std::to_string(apps) + (apps > 1 ? " candidatures" : " candidature") + " · " +
+                                                                  std::to_string(invs) + (invs > 1 ? " invitations envoyées" : " invitation envoyée");
+            fitLabel(ui, line, {tx, box.y + ui.s(51)}, 15, room, apps > 0 ? ui.theme().warm : ui.theme().text);
             chat = {r.x, box.bottom() + ui.s(12), r.w, r.bottom() - box.bottom() - ui.s(12)};
         }
         drawChat(chat);
     }
 
-    void drawRequests(const Rect& box, const Json& reqs, float rowH) {
+    // ------------------------------------------------------------- « Gestion » (2.63.6)
+    /// The chief and the officers: the applications received and the invitations sent (left),
+    /// the members and their roles (middle), the clan's settings (right; changed by the chief).
+    void drawManage(const Rect& body) {
         UIContext& ui = g_.ui;
-        int applications = 0;
-        for (const auto& q : reqs) applications += jstr(q, "kind") == "apply" ? 1 : 0;
-        panel(ui, box, applications > 0 ? ui.theme().warm : ui.theme().border);
-        float y = sectionTitle(ui, box, "CANDIDATURES · " + std::to_string(applications));
-        static const char* kNote = "Visible du chef et des officiers seulement.";
-        const float noteY = box.bottom() - ui.s(18);
-        fitLabel(ui, kNote, {box.x + ui.s(16), noteY}, 12, box.w - ui.s(32), ui.theme().textDim);
-        Rect view{box.x + ui.s(10), y, box.w - ui.s(20), noteY - ui.s(14) - y};
-        if (reqs.empty()) {
-            fitLabel(ui, "Aucune demande en attente.", {view.x + ui.s(6), view.y + ui.s(12)}, 14, view.w - ui.s(12), ui.theme().textDim);
+        const Json& c = at(page_, "clan");
+        if (!manageShown() || !c.is_object()) {
+            const std::string t = myClanId().empty() ? std::string("Vous n'avez pas de clan.")
+                                  : !pageLoaded_     ? std::string("Chargement…")
+                                  : pageError_.empty() ? std::string("Clan introuvable.")
+                                                       : pageError_;
+            fitLabel(ui, t, {body.x + ui.s(8), body.y + ui.s(20)}, 17, body.w - ui.s(16), pageError_.empty() ? ui.theme().textDim : ui.theme().danger);
             return;
         }
-        const std::string id = pageId_;
-        ui.beginScroll("requests", view, static_cast<float>(reqs.size()) * (rowH + ui.s(6)));
+        const std::string role = myRole();
+        if (!clans::canManage(role)) {
+            fitLabel(ui, "Seuls le chef et les officiers du clan gèrent ses demandes et ses membres.", {body.x + ui.s(8), body.y + ui.s(20)}, 17,
+                     body.w - ui.s(16), ui.theme().textDim);
+            return;
+        }
+        const float leftW = std::clamp(body.w * 0.36f, ui.s(380), ui.s(560));
+        const float rightW = std::clamp(body.w * 0.27f, ui.s(320), ui.s(420));
+        const Rect left{body.x, body.y, leftW, body.h};
+        const Rect right{body.right() - rightW, body.y, rightW, body.h};
+        const Rect mid{left.right() + ui.s(16), body.y, right.x - ui.s(16) - left.right() - ui.s(16), body.h};
+        const float half = std::floor((left.h - ui.s(12)) * 0.5f);
+        drawPending({left.x, left.y, left.w, half}, true);
+        drawPending({left.x, left.y + half + ui.s(12), left.w, left.h - half - ui.s(12)}, false);
+        drawManageMembers(mid, c, role);
+        drawSettings(right, c, role);
+    }
+
+    /// A box's title at its left and a button at its right (measured first); true when clicked.
+    /// `y` receives the top of the box's content.
+    bool titleWithButton(const Rect& r, const std::string& title, const std::string& key, const std::string& label, float& y) {
+        UIContext& ui = g_.ui;
+        UIContext::ButtonStyle st;
+        st.small = true;
+        st.enabled = !busy_;
+        const float bw = std::min(textW(ui, label, 14, FontFace::Bold) + ui.s(30), r.w * 0.5f);
+        const Rect b{r.right() - ui.s(12) - bw, r.y + ui.s(8), bw, ui.s(34)};
+        const bool clicked = ui.button(key, b, label, st);
+        fitLabel(ui, title, {r.x + ui.s(16), r.y + ui.s(25)}, 14, b.x - ui.s(12) - r.x - ui.s(16), ui.theme().textDim, FontFace::Bold);
+        y = r.y + ui.s(50);
+        return clicked;
+    }
+
+    /// The applications received (`applications`: accept, refuse, the message) or the
+    /// invitations sent (who, by whom, when; « Annuler »).
+    void drawPending(const Rect& box, bool applications) {
+        UIContext& ui = g_.ui;
+        const auto list = clans::pendingRequests(at(page_, "requests"), applications ? "apply" : "invite");
+        const std::string id = pageId_, me = g_.online.playerId();
+        panel(ui, box, applications && !list.empty() ? ui.theme().warm : ui.theme().border);
+        float y = 0.0f;
+        if (applications) {
+            y = sectionTitle(ui, box, "CANDIDATURES REÇUES · " + std::to_string(list.size()));
+        } else if (titleWithButton(box, "INVITATIONS ENVOYÉES · " + std::to_string(list.size()), "inviteM", "Inviter un joueur", y)) {
+            inviteName_.clear();
+            modal_ = Modal::Invite;
+        }
+        const Rect view{box.x + ui.s(10), y, box.w - ui.s(20), box.bottom() - ui.s(10) - y};
+        if (list.empty()) {
+            const char* empty = applications ? "Aucune candidature en attente. Un joueur postule depuis la fiche du clan quand il recrute sur candidature."
+                                             : "Aucune invitation en attente. Invitez un joueur par son pseudonyme, ou depuis son profil (onglet « Clan »).";
+            ui.labelWrapped(empty, {view.x + ui.s(6), view.y}, view.w - ui.s(12), 14, ui.theme().textDim);
+            return;
+        }
+        const float rowH = ui.s(78);
+        ui.beginScroll(applications ? "apps" : "invs", view, static_cast<float>(list.size()) * (rowH + ui.s(6)));
         float ry = view.y - ui.scrollOffset();
-        for (const auto& q : reqs) {
-            const Json& p = at(q, "player");
-            const std::string pid = jstr(p, "id"), name = jstr(p, "username");
-            const bool apply = jstr(q, "kind") == "apply";
-            Rect rr{view.x, ry, view.w - ui.s(12), rowH};
+        for (const clans::PendingRequest& q : list) {
+            const Rect rr{view.x, ry, view.w - ui.s(12), rowH};
             ry += rowH + ui.s(6);
             ui.r().fillRoundedRect(rr, ui.s(8), kRow);
-            // The buttons on the second line, right aligned; the name and the message above.
+            // The avatar opens the player's profile (mouse), like everywhere.
+            ui_.drawAvatar(q.avatar, q.playerId, {rr.x + ui.s(8), rr.y + ui.s(10), ui.s(40), ui.s(40)});
+            const float tx = rr.x + ui.s(58), xr = rr.right() - ui.s(10);
+            // Line 1: the date at the right (measured first), the name in the room left.
+            const std::string when = (applications ? "reçue le " : "le ") + dayText(q.createdAt);
+            const float ww = std::min(textW(ui, when, 13) + ui.s(4), (xr - tx) * 0.4f);
+            fitLabel(ui, when, {xr, rr.y + ui.s(20)}, 13, ww, ui.theme().textDim, FontFace::Body, Align::Right);
+            fitLabel(ui, q.username, {tx, rr.y + ui.s(20)}, 16, xr - ww - ui.s(10) - tx, ui.theme().text, FontFace::Bold, Align::Left, true);
+            // Line 2: the buttons at the right (placed first), the message or who invited at their left.
             UIContext::ButtonStyle st;
             st.small = true;
-            float bx = rr.right() - ui.s(6);
+            st.enabled = !busy_;
+            float bx = xr;
             auto btn = [&](const std::string& key, const std::string& label, bool primary) {
                 UIContext::ButtonStyle s2 = st;
                 s2.primary = primary;
-                s2.enabled = !busy_;
-                const float bw = textW(ui, label, 14, FontFace::Bold) + ui.s(24);
+                const float bw = textW(ui, label, 14, FontFace::Bold) + ui.s(26);
                 bx -= bw;
-                bool c2 = ui.button(key + pid, {bx, rr.y + ui.s(30), bw, ui.s(30)}, label, s2);
+                const bool clicked = ui.button(key + q.playerId, {bx, rr.y + ui.s(40), bw, ui.s(30)}, label, s2);
                 bx -= ui.s(6);
-                return c2;
+                return clicked;
             };
-            if (apply) {
+            const std::string pid = q.playerId, name = q.username;
+            std::string line;
+            Color lineColor = ui.theme().textDim;
+            bool verbatim = false;
+            if (applications) {
                 if (btn("refuse", "Refuser", false))
                     act("POST", "/api/v1/clans/" + id + "/requests/" + pid, {{"accept", false}}, "Candidature refusée.");
                 if (btn("accept", "Accepter", true))
                     act("POST", "/api/v1/clans/" + id + "/requests/" + pid, {{"accept", true}}, name + " a rejoint le clan.");
-            } else if (btn("cancel", "\x1F" "clan|Retirer", false)) {
-                act("DELETE", "/api/v1/clans/" + id + "/invites/" + pid, Json(), "Invitation retirée.");
+                line = q.message.empty() ? std::string("Sans message") : "« " + q.message + " »";
+                verbatim = !q.message.empty();
+                if (verbatim) lineColor = Color{201, 211, 238, 255};
+            } else {
+                if (btn("cancel", "Annuler", false)) act("DELETE", "/api/v1/clans/" + id + "/invites/" + pid, Json(), "Invitation annulée.");
+                line = q.byId == me ? std::string("Invité par vous") : q.byName.empty() ? std::string("Invitation envoyée") : "Invité par " + q.byName;
             }
-            const float tx = rr.x + ui.s(10), room = rr.right() - ui.s(10) - tx;
-            const std::string msg = jstr(q, "message");
-            fitLabel(ui, apply ? (msg.empty() ? name : name + " · « " + msg + " »") : name, {tx, rr.y + ui.s(15)}, 14, room, ui.theme().text, FontFace::Bold,
-                     Align::Left, true);
-            fitLabel(ui, apply ? "Candidature" : "Invitation envoyée", {tx, rr.y + ui.s(45)}, 12, bx - tx - ui.s(6), apply ? ui.theme().warm : ui.theme().textDim);
+            fitLabel(ui, line, {tx, rr.y + ui.s(55)}, 13, bx - ui.s(4) - tx, lineColor, FontFace::Body, Align::Left, verbatim);
         }
         ui.endScroll();
+    }
+
+    /// The members and their roles: « Gérer » opens what the player's role allows on a member
+    /// (name an officer, hand over the chief's role, exclude), « Profil » their profile.
+    void drawManageMembers(const Rect& r, const Json& c, const std::string& role) {
+        UIContext& ui = g_.ui;
+        panel(ui, r, ui.theme().border);
+        const Json& members = at(page_, "members");
+        float y = sectionTitle(ui, r, "MEMBRES ET RÔLES", std::to_string(members.size()) + " / " + std::to_string(jget<int>(c, "max_members", clans::kMaxMembers)),
+                               ui.theme().textDim);
+        static const char* kNote = "Le chef nomme et retire les officiers, et peut transmettre son rôle ; le chef et les officiers excluent les membres.";
+        const float nw = r.w - ui.s(32);
+        const float nh = ui.text().measureWrapped(kNote, FontFace::Body, ui.s(13), nw).y;
+        const Rect view{r.x + ui.s(10), y, r.w - ui.s(20), r.bottom() - ui.s(12) - y - nh - ui.s(10)};
+        ui.labelWrapped(kNote, {r.x + ui.s(16), view.bottom() + ui.s(6)}, nw, 13, ui.theme().textDim);
+        const std::string me = g_.online.playerId();
+        const float rowH = ui.s(56);
+        ui.beginScroll("roles", view, static_cast<float>(members.size()) * (rowH + ui.s(6)));
+        float ry = view.y - ui.scrollOffset();
+        for (const auto& m : members) {
+            const Json& p = at(m, "player");
+            const std::string pid = jstr(p, "id"), mrole = jstr(m, "role");
+            const Rect rr{view.x, ry, view.w - ui.s(12), rowH};
+            ry += rowH + ui.s(6);
+            ui.r().fillRoundedRect(rr, ui.s(8), kRow);
+            // The button first (right), then the texts in the room it leaves.
+            const bool self = pid == me;
+            const bool manageable = !self && ((role == "leader" && mrole != "leader") || clans::canExclude(role, mrole));
+            float xr = rr.right() - ui.s(8);
+            if (!self) {
+                const std::string label = manageable ? "Gérer" : "Profil";
+                UIContext::ButtonStyle st;
+                st.small = true;
+                st.primary = manageable;
+                st.enabled = !busy_;
+                const float bw = textW(ui, label, 14, FontFace::Bold) + ui.s(30);
+                if (ui.button("role" + pid, {xr - bw, rr.y + (rowH - ui.s(32)) * 0.5f, bw, ui.s(32)}, label, st)) {
+                    if (manageable) {
+                        memberSel_ = m;
+                        modal_ = Modal::Member;
+                    } else {
+                        g_.app.pushScene(makePlayerProfile(g_, pid));
+                    }
+                }
+                xr -= bw + ui.s(10);
+            }
+            const float tx = rr.x + ui.s(12), room = xr - tx;
+            fitLabel(ui, jstr(p, "username") + (self ? " (vous)" : ""), {tx, rr.y + ui.s(19)}, 15, room, self ? ui.theme().accent : ui.theme().text,
+                     FontFace::Bold, Align::Left, !self);
+            const Vec2 rs = fitLabel(ui, clans::roleLabel(mrole), {tx, rr.y + ui.s(40)}, 13, room * 0.4f, clanRoleColor(ui, mrole), FontFace::Bold);
+            if (const std::string since = dayText(jstr(m, "joined_at")); !since.empty())
+                fitLabel(ui, " · membre depuis le " + since, {tx + rs.x, rr.y + ui.s(40)}, 13, room - rs.x, ui.theme().textDim);
+        }
+        ui.endScroll();
+    }
+
+    /// The clan's settings: what they are, and (the chief) change them, hand over the role, dissolve.
+    void drawSettings(const Rect& r, const Json& c, const std::string& role) {
+        UIContext& ui = g_.ui;
+        panel(ui, r, ui.theme().border);
+        float y = sectionTitle(ui, r, "PARAMÈTRES DU CLAN");
+        const float x = r.x + ui.s(16), w = r.w - ui.s(32);
+        const float em = ui.s(64);
+        drawClanEmblem(ui, {x, y, em, em}, clans::emblemFromJson(at(c, "emblem")));
+        fitLabel(ui, clans::bracket(jstr(c, "tag")), {x + em + ui.s(14), y + ui.s(18)}, 18, w - em - ui.s(14), kGold, FontFace::Bold, Align::Left, true);
+        fitLabel(ui, jstr(c, "name"), {x + em + ui.s(14), y + ui.s(44)}, 15, w - em - ui.s(14), ui.theme().text, FontFace::Bold, Align::Left, true);
+        y += em + ui.s(18);
+        // The buttons from the bottom up (the chief), the description in the room above them.
+        struct Btn {
+            std::string key, label;
+            bool primary = false, danger = false;
+        };
+        std::vector<Btn> btns;
+        if (role == "leader") {
+            btns.push_back({"dissolve", "Dissoudre le clan…", false, true});
+            btns.push_back({"transfer", "Transmettre le rôle de chef…"});
+            btns.push_back({"edit", "Modifier le clan…", true});
+        }
+        const float bh = ui.s(46), gap = ui.s(10);
+        float by = r.bottom() - ui.s(16) - bh;
+        std::string chosen;
+        for (const Btn& b : btns) {
+            UIContext::ButtonStyle st;
+            st.primary = b.primary;
+            st.danger = b.danger;
+            st.enabled = !busy_;
+            if (ui.button("set/" + b.key, {x, by, w, bh}, b.label, st)) chosen = b.key;
+            by -= bh + gap;
+        }
+        const float bottom = btns.empty() ? r.bottom() - ui.s(16) : by + bh;  // the top of the highest button
+        auto line = [&](const std::string& caption, const std::string& value, bool verbatim) {
+            if (y + ui.s(44) > bottom) return;
+            fitLabel(ui, caption, {x, y + ui.s(8)}, 13, w, ui.theme().textDim, FontFace::Bold);
+            y += ui.s(18);
+            i18n::Verbatim words(verbatim);
+            const float vh = std::min(ui.text().measureWrapped(value, FontFace::Body, ui.s(15), w).y, bottom - y - ui.s(4));
+            if (vh < ui.s(14)) return;
+            if (ui.text().measureWrapped(value, FontFace::Body, ui.s(15), w).y <= vh + 0.5f) ui.labelWrapped(value, {x, y}, w, 15, ui.theme().text);
+            else fitLabel(ui, value, {x, y + ui.s(10)}, 15, w, ui.theme().text, FontFace::Body, Align::Left, verbatim);
+            y += vh + ui.s(12);
+        };
+        const std::string motto = jstr(c, "motto");
+        line("DEVISE", motto.empty() ? std::string("Aucune devise.") : "« " + motto + " »", !motto.empty());
+        line("ADHÉSION", clans::policyLabel(jstr(c, "join_policy")), false);
+        line("FONDÉ LE", dayText(jstr(c, "created_at")), false);
+        if (role != "leader")
+            line("RÉSERVÉ AU CHEF", "Seul le chef modifie le nom, le tag, la devise, l'emblème et l'adhésion, transmet son rôle ou dissout le clan.", false);
+        if (chosen == "edit") openForm(false);
+        else if (chosen == "transfer") modal_ = Modal::Transfer;
+        else if (chosen == "dissolve") askDissolve();
     }
 
     /// The clan's discussion: the newest messages (sender, text), the field and « Envoyer ».
@@ -1212,7 +1459,63 @@ private:
         else if (modal_ == Modal::Apply) drawApply();
         else if (modal_ == Modal::Member) drawMember();
         else if (modal_ == Modal::Confirm) drawConfirm();
+        else if (modal_ == Modal::Transfer) drawTransfer();
         ui.popId();
+    }
+
+    /// « Gestion › Transmettre le rôle de chef… » (the chief): the member who becomes chief, then a confirmation.
+    void drawTransfer() {
+        UIContext& ui = g_.ui;
+        ui.pushId("transfer");
+        const std::string me = g_.online.playerId(), id = pageId_;
+        std::vector<const Json*> list;
+        for (const auto& m : at(page_, "members"))
+            if (jstr(at(m, "player"), "id") != me && jstr(m, "role") != "leader") list.push_back(&m);
+        const float w = ui.s(620), tw = w - ui.s(60), rowH = ui.s(46);
+        const float listH = list.empty() ? ui.s(40) : std::min(static_cast<float>(list.size()) * (rowH + ui.s(8)), ui.s(400));
+        Rect box = modalBox(w, ui.s(104) + listH + ui.s(24) + ui.s(48) + ui.s(28));
+        const float x = box.x + ui.s(30);
+        fitLabel(ui, "Transmettre le rôle de chef", {x, box.y + ui.s(42)}, 26, tw, ui.theme().accent, FontFace::Title);
+        fitLabel(ui, "Choisissez le nouveau chef : vous deviendrez officier.", {x, box.y + ui.s(78)}, 15, tw, ui.theme().textDim);
+        const Rect view{x, box.y + ui.s(104), tw, std::min(listH, box.bottom() - ui.s(100) - box.y - ui.s(104))};
+        std::string chosenId, chosenName;
+        if (list.empty()) {
+            fitLabel(ui, "Aucun autre membre : invitez d'abord un joueur.", {view.x, view.y + ui.s(16)}, 16, view.w, ui.theme().textDim);
+        } else {
+            ui.beginScroll("list", view, static_cast<float>(list.size()) * (rowH + ui.s(8)));
+            float ry = view.y - ui.scrollOffset();
+            for (const Json* m : list) {
+                const Json& p = at(*m, "player");
+                const std::string pid = jstr(p, "id"), name = jstr(p, "username"), role = jstr(*m, "role");
+                const Rect rr{view.x, ry, view.w - ui.s(12), rowH};
+                ry += rowH + ui.s(8);
+                UIContext::ButtonStyle st;
+                st.align = Align::Left;
+                st.enabled = !busy_;
+                if (ui.button("m" + pid, rr, "", st)) {
+                    chosenId = pid;
+                    chosenName = name;
+                }
+                const float rw = std::min(textW(ui, clans::roleLabel(role), 14, FontFace::Bold) + ui.s(4), rr.w * 0.35f);
+                fitLabel(ui, clans::roleLabel(role), {rr.right() - ui.s(14), rr.center().y}, 14, rw, clanRoleColor(ui, role), FontFace::Bold, Align::Right);
+                fitLabel(ui, name, {rr.x + ui.s(14), rr.center().y}, 16, rr.w - ui.s(28) - rw - ui.s(12), ui.theme().text, FontFace::Bold, Align::Left, true);
+            }
+            ui.endScroll();
+        }
+        const float cW = textW(ui, "Annuler", 17, FontFace::Bold) + ui.s(44);
+        const bool cancel = ui.button("cancel", {box.right() - ui.s(30) - cW, box.bottom() - ui.s(76), cW, ui.s(48)}, "Annuler") ||
+                            (ui.backPressed() && !ui.editingText());
+        ui.popId();
+        if (!chosenId.empty()) {
+            modal_ = Modal::None;
+            confirm("Transmettre le rôle de chef à " + chosenName + " ? Vous deviendrez officier ; seul le nouveau chef pourra vous le rendre.", "Transmettre",
+                    [this, id, chosenId, chosenName] {
+                        act("POST", "/api/v1/clans/" + id + "/transfer", {{"player_id", chosenId}}, chosenName + " est maintenant le chef du clan.");
+                    },
+                    false);
+        } else if (cancel) {
+            modal_ = Modal::None;
+        }
     }
 
     void drawForm() {
@@ -1468,6 +1771,11 @@ private:
     MenuBackground bg_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     std::string wanted_;
+    std::string wantedTag_;   // makeClanByTag: the tag clicked
+    std::string entryId_;     // the clan's sheet the screen was opened on (pushed): « Retour » goes back
+    TagState tagState_ = TagState::None;
+    std::string tagError_;
+    int myApplications_ = 0;  // applications waiting in the player's clan (badge of « Gestion »)
     bool pushed_ = false;
     bool wasLoggedIn_ = false;
     Rect header_, zoneA_, zoneB_;
@@ -1521,5 +1829,7 @@ private:
 std::unique_ptr<Scene> makeClans(GameServices& g, const std::string& clanId, bool pushed) {
     return std::make_unique<ClanScene>(g, clanId, pushed);
 }
+
+std::unique_ptr<Scene> makeClanByTag(GameServices& g, const std::string& tag) { return std::make_unique<ClanScene>(g, std::string(), true, tag); }
 
 }  // namespace cosmic

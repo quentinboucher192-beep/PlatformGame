@@ -19,6 +19,8 @@ constexpr int kNameMin = 3;
 constexpr int kNameMax = 32;
 constexpr int kMottoMax = 80;
 constexpr int kMessageMax = 120;
+/// Pending requests (invitations and applications) of a clan at most (server: MAX_PENDING).
+constexpr int kMaxPending = 100;
 
 /// "[AUBE] Nova" (the tag between brackets before the username), "Nova" without a tag.
 std::string tagged(const std::string& username, const std::string& tag);
@@ -65,6 +67,53 @@ bool canExclude(const std::string& myRole, const std::string& targetRole);
 /// member (the server's rule), from the page's member list (chief first, then the officers,
 /// then the members, each by seniority). Their username, "" when the chief is alone.
 std::string successorName(const Json& members, const std::string& leaderId);
+
+// ------------------------------------------------------------- the sheet (2.63.6)
+
+/// What a clan's sheet offers to a player who is not one of its members: the button (its
+/// action and label) and the note that explains what waits or why nothing is offered.
+struct JoinOffer {
+    /// "login", "join" (open clan), "apply" (on application), "accept" (an invitation received,
+    /// shown with « Refuser »), "withdraw" (an application sent), "" (nothing to do).
+    std::string action;
+    std::string label;
+    bool enabled = true;
+    std::string note;
+};
+/// `clan`: the page's « clan » ({id, join_policy, members, max_members}); `me`: the page's
+/// « me » ({role, request: {kind}}); `myClanKnown`: GET /clans/me answered; `myClanId`: the
+/// player's clan ("" without one). A member of the clan gets nothing here (their own buttons).
+JoinOffer joinOffer(const Json& clan, const Json& me, bool loggedIn, bool myClanKnown, const std::string& myClanId);
+/// One sentence for a sheet shown elsewhere (a player's profile): how to join from the page.
+std::string joinHint(const JoinOffer& offer);
+
+/// A pending request of a clan (GET /clans/{id} « requests », for its chief and officers).
+struct PendingRequest {
+    std::string kind;  // "invite" (sent by the clan) or "apply" (received from the player)
+    std::string playerId, username, avatar;
+    std::string message;       // the application's message ("" without one)
+    std::string createdAt;     // ISO 8601
+    std::string byId, byName;  // who sent the invitation ("" when unknown, or a deleted account)
+};
+/// The requests of `kind` in the server's order (oldest first); a row without a player is skipped.
+std::vector<PendingRequest> pendingRequests(const Json& requests, const std::string& kind);
+
+/// The button « Inviter dans mon clan » of a player's profile.
+struct InviteOffer {
+    bool shown = false;    // the viewer leads (or co-leads) a clan and the profile is someone else's
+    bool enabled = false;  // the server would accept it, as far as the game knows
+    std::string note;      // why it is disabled, or what the invitation does
+};
+/// `mine`: GET /clans/me ({clan: {id, role, members, max_members}}); `myPage`: GET /clans/{my
+/// clan} (its pending requests; null while unknown); `target`: the profile's « clan » (null
+/// without one); `blocked`: the viewer blocked this player. The server checks everything again
+/// (and also refuses a player who blocked the viewer, without saying so).
+InviteOffer inviteOffer(const Json& mine, const Json& myPage, const Json& target, const std::string& targetId, const std::string& myId,
+                        bool blocked);
+
+/// The id of the clan whose tag is `tag` (case ignored) in a list of clans (GET /clans?q=),
+/// "" when none: a « [TAG] » shown before a name opens its clan's sheet.
+std::string clanIdForTag(const Json& list, const std::string& tag);
 
 // ------------------------------------------------------------------ emblem
 

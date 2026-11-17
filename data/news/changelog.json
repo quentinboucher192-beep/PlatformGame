@@ -1,4 +1,9 @@
 {
+  "2.63.7": [
+    "Clans : chaque clan a sa fiche publique, comme un profil (emblème, nom et tag, devise, date de fondation, membres et rôles, points et rang, meilleurs résultats EXTRÊME, « Rejoindre » ou « Postuler » selon son mode d'adhésion), visible même sans compte. Elle s'ouvre depuis la recherche, le classement des clans, un profil, ou d'un clic sur un tag [TAG] dans les classements et dans SOCIAL.",
+    "Profils des joueurs : nouvel onglet « Clan » avec la fiche du clan du joueur (ou « Ce joueur n'est dans aucun clan »). Le chef et les officiers d'un clan y trouvent « Inviter dans mon clan », grisé avec la raison quand c'est impossible (clan complet, invitation déjà envoyée, joueur déjà dans un clan, joueur bloqué).",
+    "CLANS : nouvel onglet « Gestion » pour le chef et les officiers : candidatures reçues (message, accepter ou refuser), invitations envoyées (joueur, date, qui l'a invité, « Annuler »), membres et rôles, et paramètres du clan (devise, emblème et adhésion, transmission du rôle de chef, dissolution confirmée) réservés au chef."
+  ],
   "2.63.6": [
     "Coopération sur les niveaux EXTRÊME de la communauté : le salon de COOPÉRATION propose « Campagne / Communauté » (titre, auteur, version des niveaux installés depuis NIVEAUX EN LIGNE), et la page d'un niveau EXTRÊME gagne « Jouer en coop ». Tout le monde joue la même version : un invité qui n'a pas le niveau le reçoit avant « Prêt » (téléchargé depuis Cosmic Online, ou envoyé par le PC hôte en réseau local, même sans Internet), avec sa progression ; sa taille est bornée et son empreinte vérifiée avant l'installation, et une partie ne démarre jamais avec deux versions différentes. Les classements Duo et Trio de chaque version s'affichent sur la page du niveau et à la fin de la partie (les points de clan restent ceux des niveaux officiels)."
   ],

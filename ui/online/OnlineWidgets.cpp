@@ -7,6 +7,7 @@
 #include <cstdio>
 
 #include "engine/core/FileUtil.h"
+#include "engine/core/I18n.h"
 #include "game/online/Clans.h"
 #include "game/GameServices.h"
 #include "game/online/OnlineSession.h"
@@ -123,6 +124,25 @@ std::string OnlineUi::displayName(const std::string& name, int rank, bool me) co
 std::string OnlineUi::displayName(const Json& player, int rank, bool me) const {
     if (me || g_.settings.online.showPseudonyms) return clans::taggedName(player);
     return displayName(jstr(player, "username"), rank, me);
+}
+
+void OnlineUi::clanTagLink(const std::string& key, const Json& player, const std::string& shown, Vec2 left, float size, FontFace face, float room) {
+    const std::string tag = player.is_object() ? jstr(player, "clan_tag") : std::string();
+    if (tag.empty()) return;
+    const std::string bracket = clans::bracket(tag);
+    if (shown.compare(0, bracket.size(), bracket) != 0) return;
+    UIContext& ui = g_.ui;
+    float w;
+    {
+        i18n::Verbatim words;  // a tag is never translated
+        w = std::min(ui.text().measure(bracket, face, ui.s(size)).x, room);
+    }
+    if (w < ui.s(8)) return;
+    const float h = ui.s(size) * 1.25f;
+    const Rect r{left.x, left.y - h * 0.5f, w, h};
+    bool hovered = false;
+    if (ui.mouseClick("clantag/" + key, r, &hovered)) g_.app.pushScene(makeClanByTag(g_, tag));
+    if (hovered) ui.r().fillRect({r.x, left.y + ui.s(size) * 0.55f, r.w, std::max(1.0f, ui.s(1.5f))}, Color{255, 210, 122, 255});
 }
 
 bool OnlineUi::countryPicker(const std::string& id, const Rect& area, std::string& filter, std::string& code) {

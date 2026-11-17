@@ -240,6 +240,9 @@ std::unique_ptr<Scene> makeSocial(GameServices& g, const std::string& conversati
 /// of a clan. `clanId`: that clan's page on arrival. `pushed`: opened over another screen (a
 /// profile, SOCIAL): « Retour » pops it instead of going back to the ONLINE screens.
 std::unique_ptr<Scene> makeClans(GameServices& g, const std::string& clanId = {}, bool pushed = false);
+/// The sheet of the clan whose tag is `tag` (2.63.6: a « [TAG] » clicked before a name in a
+/// ranking or in SOCIAL), pushed over the current screen; found by GET /clans?q=.
+std::unique_ptr<Scene> makeClanByTag(GameServices& g, const std::string& tag);
 /// SOCIAL › Amis › « Regarder » (2.36, pushed over SOCIAL): a friend's run, live, re-simulated
 /// from the inputs their game streams (read only; the friend is never told).
 std::unique_ptr<Scene> makeSpectate(GameServices& g, const std::string& playerId, const std::string& name, const std::string& avatar);

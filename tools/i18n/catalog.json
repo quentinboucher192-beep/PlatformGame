@@ -994,7 +994,7 @@
   {
    "fr": "Accepter l'invitation",
    "where": [
-    "ui/screens/ClanScene.cpp"
+    "game/online/Clans.cpp"
    ]
   },
   {
@@ -1257,6 +1257,12 @@
    "fr": "Adhérence du sol gelé",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "ADHÉSION",
+   "where": [
+    "ui/screens/ClanScene.cpp"
    ]
   },
   {
@@ -3580,6 +3586,12 @@
    ]
   },
   {
+   "fr": "Aucun autre membre : invitez d'abord un joueur.",
+   "where": [
+    "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun autre niveau n'a exactement les mêmes touches : vos choix valent pour ce niveau.",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
@@ -3607,6 +3619,12 @@
    "fr": "Aucun clan ne correspond.",
    "where": [
     "ui/screens/AdminClans.cpp",
+    "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun clan ne porte le tag {0} : il a peut-être changé ou été dissous.",
+   "where": [
     "ui/screens/ClanScene.cpp"
    ]
   },
@@ -3890,7 +3908,8 @@
   {
    "fr": "Aucun niveau EXTRÊME classé pour l'instant.",
    "where": [
-    "ui/screens/ClanScene.cpp"
+    "ui/screens/ClanScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -4181,6 +4200,12 @@
    ]
   },
   {
+   "fr": "Aucune candidature en attente. Un joueur postule depuis la fiche du clan quand il recrute sur candidature.",
+   "where": [
+    "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucune combinaison créée pour l'instant : « Nouvelle combinaison » pour commencer.",
    "where": [
     "ui/screens/AdminCreations.cpp"
@@ -4236,6 +4261,12 @@
    ]
   },
   {
+   "fr": "Aucune devise.",
+   "where": [
+    "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucune différence : les deux révisions ont le même contenu.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -4288,6 +4319,12 @@
    "fr": "Aucune invitation en attente.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune invitation en attente. Invitez un joueur par son pseudonyme, ou depuis son profil (onglet « Clan »).",
+   "where": [
+    "ui/screens/ClanScene.cpp"
    ]
   },
   {
@@ -4443,7 +4480,8 @@
   {
    "fr": "Aucune tentative vérifiée",
    "where": [
-    "ui/screens/ClanScene.cpp"
+    "ui/screens/ClanScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -4797,6 +4835,7 @@
   {
    "fr": "avatar",
    "where": [
+    "game/online/Clans.cpp",
     "game/online/LiveSession.cpp",
     "game/online/OnlineGlobe.cpp",
     "ui/online/CommentsPanel.cpp",
@@ -6721,12 +6760,6 @@
    ]
   },
   {
-   "fr": "Candidature",
-   "where": [
-    "ui/screens/ClanScene.cpp"
-   ]
-  },
-  {
    "fr": "Candidature envoyée",
    "where": [
     "ui/screens/ClanScene.cpp"
@@ -6735,7 +6768,7 @@
   {
    "fr": "Candidature envoyée : réponse du chef ou d'un officier.",
    "where": [
-    "ui/screens/ClanScene.cpp"
+    "game/online/Clans.cpp"
    ]
   },
   {
@@ -6757,7 +6790,7 @@
    ]
   },
   {
-   "fr": "CANDIDATURES · {0}",
+   "fr": "CANDIDATURES REÇUES · {0}",
    "where": [
     "ui/screens/ClanScene.cpp"
    ]
@@ -6962,7 +6995,7 @@
   {
    "fr": "Ce clan est complet.",
    "where": [
-    "ui/screens/ClanScene.cpp"
+    "game/online/Clans.cpp"
    ]
   },
   {
@@ -6992,7 +7025,7 @@
   {
    "fr": "Ce clan recrute sur invitation.",
    "where": [
-    "ui/screens/ClanScene.cpp"
+    "game/online/Clans.cpp"
    ]
   },
   {
@@ -7160,6 +7193,12 @@
    ]
   },
   {
+   "fr": "Ce joueur a postulé : l'inviter l'accepte aussitôt dans votre clan.",
+   "where": [
+    "game/online/Clans.cpp"
+   ]
+  },
+  {
    "fr": "Ce joueur est déjà dans le clan.",
    "where": [
     "server/src/clans.ts"
@@ -7168,7 +7207,14 @@
   {
    "fr": "Ce joueur est déjà dans un clan.",
    "where": [
+    "game/online/Clans.cpp",
     "server/src/clans.ts"
+   ]
+  },
+  {
+   "fr": "Ce joueur est déjà membre de votre clan.",
+   "where": [
+    "game/online/Clans.cpp"
    ]
   },
   {
@@ -7205,6 +7251,12 @@
    "fr": "Ce joueur n'accepte pas les demandes d'amis.",
    "where": [
     "server/src/friends.ts"
+   ]
+  },
+  {
+   "fr": "Ce joueur n'est dans aucun clan.",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -8483,6 +8535,12 @@
    ]
   },
   {
+   "fr": "Chargement de la fiche du clan…",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
    "fr": "Chargement de la partie…",
    "where": [
     "ui/screens/SpectateScene.cpp"
@@ -8896,6 +8954,12 @@
    ]
   },
   {
+   "fr": "Choisissez le nouveau chef : vous deviendrez officier.",
+   "where": [
+    "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
    "fr": "Choisissez les notifications Cosmic Online que vous recevez. Une catégorie désactivée n'est plus enregistrée par le serveur ; les autres joueurs n'en sont pas informés.",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -9276,7 +9340,8 @@
    "where": [
     "ui/screens/AdminClans.cpp",
     "ui/screens/AdminScene.cpp",
-    "ui/screens/NotificationsScene.cpp"
+    "ui/screens/NotificationsScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -9321,6 +9386,18 @@
    "where": [
     "ui/screens/AdminScene.cpp",
     "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Clans : chaque clan a sa fiche publique, comme un profil (emblème, nom et tag, devise, date de fondation, membres et rôles, points et rang, meilleurs résultats EXTRÊME, « Rejoindre » ou « Postuler » selon son mode d'adhésion), visible même sans compte. Elle s'ouvre depuis la recherche, le classement des clans, un profil, ou d'un clic sur un tag [TAG] dans les classements et dans SOCIAL.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "CLANS : nouvel onglet « Gestion » pour le chef et les officiers : candidatures reçues (message, accepter ou refuser), invitations envoyées (joueur, date, qui l'a invité, « Annuler »), membres et rôles, et paramètres du clan (devise, emblème et adhésion, transmission du rôle de chef, dissolution confirmée) réservés au chef.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -10899,6 +10976,12 @@
    "fr": "Connectez-vous à Cosmic Online pour regarder vos amis.",
    "where": [
     "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
+   "fr": "Connectez-vous à Cosmic Online pour rejoindre ce clan.",
+   "where": [
+    "game/online/Clans.cpp"
    ]
   },
   {
@@ -13242,6 +13325,12 @@
    ]
   },
   {
+   "fr": "DEMANDES EN ATTENTE",
+   "where": [
+    "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
    "fr": "Demandes envoyées",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp",
@@ -13912,6 +14001,12 @@
    "fr": "Devant le joueur",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "DEVISE",
+   "where": [
+    "ui/screens/ClanScene.cpp"
    ]
   },
   {
@@ -18464,6 +18559,12 @@
    ]
   },
   {
+   "fr": "Fiche du clan indisponible.",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
    "fr": "Fiches des boss : lieux, animations, entraînement",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -19143,6 +19244,12 @@
    ]
   },
   {
+   "fr": "FONDÉ LE",
+   "where": [
+    "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
    "fr": "Fondé le",
    "where": [
     "ui/screens/AdminClans.cpp"
@@ -19151,7 +19258,8 @@
   {
    "fr": "Fondé le {0}",
    "where": [
-    "ui/screens/ClanScene.cpp"
+    "ui/screens/ClanScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -19919,6 +20027,12 @@
    ]
   },
   {
+   "fr": "Gestion",
+   "where": [
+    "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
    "fr": "Geysers de magma",
    "where": [
     "data/enemies/pyrrhax.json"
@@ -20624,6 +20738,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Gérer",
+   "where": [
+    "ui/screens/ClanScene.cpp"
    ]
   },
   {
@@ -21606,6 +21726,12 @@
    ]
   },
   {
+   "fr": "Il recevra une invitation, à accepter depuis l'écran CLANS.",
+   "where": [
+    "game/online/Clans.cpp"
+   ]
+  },
+  {
    "fr": "Il rejoint la bibliothèque de l'éditeur.",
    "where": [
     "game/progression/NewsCenter.cpp"
@@ -22467,6 +22593,24 @@
    ]
   },
   {
+   "fr": "Invitation annulée.",
+   "where": [
+    "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Invitation déjà envoyée : elle attend sa réponse.",
+   "where": [
+    "game/online/Clans.cpp"
+   ]
+  },
+  {
+   "fr": "Invitation déjà envoyée à {0}.",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
    "fr": "Invitation envoyée",
    "where": [
     "ui/screens/ClanScene.cpp"
@@ -22481,7 +22625,8 @@
   {
    "fr": "Invitation envoyée à {0}.",
    "where": [
-    "ui/screens/ClanScene.cpp"
+    "ui/screens/ClanScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -22501,12 +22646,6 @@
    "where": [
     "ui/screens/ClanScene.cpp",
     "ui/screens/ProjectsScene.cpp"
-   ]
-  },
-  {
-   "fr": "Invitation retirée.",
-   "where": [
-    "ui/screens/ClanScene.cpp"
    ]
   },
   {
@@ -22540,6 +22679,12 @@
    ]
   },
   {
+   "fr": "INVITATIONS ENVOYÉES · {0}",
+   "where": [
+    "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
    "fr": "INVITATIONS ET CANDIDATURES",
    "where": [
     "ui/screens/ClanScene.cpp"
@@ -22556,6 +22701,12 @@
    "where": [
     "ui/screens/ClanScene.cpp",
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Inviter dans mon clan",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -22586,6 +22737,12 @@
    "fr": "invité",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Invité par vous",
+   "where": [
+    "ui/screens/ClanScene.cpp"
    ]
   },
   {
@@ -25190,6 +25347,12 @@
    ]
   },
   {
+   "fr": "Le chef nomme et retire les officiers, et peut transmettre son rôle ; le chef et les officiers excluent les membres.",
+   "where": [
+    "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
    "fr": "Le chemin de ronde craque sous le givre. Ne traînez pas sous les bombes !",
    "where": [
     "data/levels/glacior_03.json"
@@ -26862,6 +27025,7 @@
   {
    "fr": "le {0}",
    "where": [
+    "ui/screens/ClanScene.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
   },
@@ -29444,6 +29608,12 @@
    ]
   },
   {
+   "fr": "MEILLEURS RÉSULTATS EXTRÊME",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
    "fr": "MEILLEURS SEGMENTS - {0}",
    "where": [
     "ui/screens/SobMontageScene.cpp"
@@ -29482,6 +29652,12 @@
    ]
   },
   {
+   "fr": "membre depuis le {0}",
+   "where": [
+    "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
    "fr": "Membre retiré pendant l'édition en direct : retour au menu principal avec une notification, sa version du niveau est gardée ; rôle changé : l'éditeur passe aussitôt en lecture seule (ou redevient modifiable).",
    "where": [
     "data/news/changelog.json"
@@ -29497,7 +29673,8 @@
   {
    "fr": "MEMBRES",
    "where": [
-    "ui/screens/ClanScene.cpp"
+    "ui/screens/ClanScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -29518,6 +29695,12 @@
    "fr": "MEMBRES DU GROUPE",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "MEMBRES ET RÔLES",
+   "where": [
+    "ui/screens/ClanScene.cpp"
    ]
   },
   {
@@ -29681,6 +29864,7 @@
     "editors/level_editor/LevelEditorCampaign.cpp",
     "game/levels/CampaignPipeline.cpp",
     "game/levels/ObjectTypes.cpp",
+    "game/online/Clans.cpp",
     "game/online/OnlineService.cpp",
     "game/online/OnlineTypes.cpp",
     "ui/screens/AdminBackups.cpp",
@@ -30205,6 +30389,12 @@
    "fr": "Modifier le cadre",
    "where": [
     "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Modifier le clan…",
+   "where": [
+    "ui/screens/ClanScene.cpp"
    ]
   },
   {
@@ -33981,6 +34171,12 @@
    ]
   },
   {
+   "fr": "Ouvert à tous : « Rejoindre » sur la fiche du clan.",
+   "where": [
+    "game/online/Clans.cpp"
+   ]
+  },
+  {
    "fr": "Ouverte au départ",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -34560,6 +34756,12 @@
    ]
   },
   {
+   "fr": "PARAMÈTRES DU CLAN",
+   "where": [
+    "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
    "fr": "Paramètres du clan",
    "where": [
     "ui/screens/ClanScene.cpp"
@@ -35002,7 +35204,8 @@
   {
    "fr": "Pas encore classé",
    "where": [
-    "ui/screens/ClanScene.cpp"
+    "ui/screens/ClanScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -37014,7 +37217,8 @@
    "where": [
     "ui/screens/AdminClans.cpp",
     "ui/screens/ClanScene.cpp",
-    "ui/screens/OnlineRankingScene.cpp"
+    "ui/screens/OnlineRankingScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -37369,7 +37573,7 @@
   {
    "fr": "Postuler",
    "where": [
-    "ui/screens/ClanScene.cpp"
+    "game/online/Clans.cpp"
    ]
   },
   {
@@ -37980,6 +38184,7 @@
    "fr": "Profil",
    "where": [
     "ui/screens/AdminCreations.cpp",
+    "ui/screens/ClanScene.cpp",
     "ui/screens/OnlineRankingScene.cpp",
     "ui/studio/StudioFrise.cpp"
    ]
@@ -38028,6 +38233,12 @@
   },
   {
    "fr": "Profils complets : badge CRÉATEUR, statistiques de créateur, créations, abonnés et abonnements, SUIVRE, ami, blocage ; recherche de créateurs.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Profils des joueurs : nouvel onglet « Clan » avec la fiche du clan du joueur (ou « Ce joueur n'est dans aucun clan »). Le chef et les officiers d'un clan y trouvent « Inviter dans mon clan », grisé avec la raison quand c'est impossible (clan complet, invitation déjà envoyée, joueur déjà dans un clan, joueur bloqué).",
    "where": [
     "data/news/changelog.json"
    ]
@@ -39797,6 +40008,12 @@
    ]
   },
   {
+   "fr": "Recherche du clan {0}…",
+   "where": [
+    "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
    "fr": "Recherche du défi…",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -40436,7 +40653,7 @@
   {
    "fr": "Rejoindre",
    "where": [
-    "ui/screens/ClanScene.cpp",
+    "game/online/Clans.cpp",
     "ui/screens/CoopLobbyScene.cpp",
     "ui/screens/ProjectsScene.cpp"
    ]
@@ -41407,7 +41624,7 @@
   {
    "fr": "Retirer ma candidature",
    "where": [
-    "ui/screens/ClanScene.cpp"
+    "game/online/Clans.cpp"
    ]
   },
   {
@@ -41451,6 +41668,7 @@
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/ChallengesScene.cpp",
+    "ui/screens/ClanScene.cpp",
     "ui/screens/CollectionScene.cpp",
     "ui/screens/CoopLobbyScene.cpp",
     "ui/screens/LevelPowerKeysScene.cpp",
@@ -41666,6 +41884,12 @@
    "fr": "Revoir mon meilleur replay",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "reçue le {0}",
+   "where": [
+    "ui/screens/ClanScene.cpp"
    ]
   },
   {
@@ -42766,6 +42990,12 @@
    ]
   },
   {
+   "fr": "RÉSERVÉ AU CHEF",
+   "where": [
+    "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
    "fr": "Réservé aux administrateurs du projet.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -43425,6 +43655,12 @@
    ]
   },
   {
+   "fr": "Sans message",
+   "where": [
+    "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
    "fr": "SANS MORT",
    "where": [
     "game/online/OnlineTypes.cpp"
@@ -43823,7 +44059,7 @@
   {
    "fr": "Se connecter pour rejoindre",
    "where": [
-    "ui/screens/ClanScene.cpp"
+    "game/online/Clans.cpp"
    ]
   },
   {
@@ -44454,6 +44690,12 @@
    ]
   },
   {
+   "fr": "Seul le chef modifie le nom, le tag, la devise, l'emblème et l'adhésion, transmet son rôle ou dissout le clan.",
+   "where": [
+    "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
    "fr": "Seul le créateur du groupe peut ajouter des membres.",
    "where": [
     "server/src/social.ts"
@@ -44511,6 +44753,12 @@
    "fr": "Seules les parties vérifiées par Cosmic Online comptent ; une récompense débloquée est annoncée par une notification et dans « Nouvelles récompenses ».",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Seuls le chef et les officiers du clan gèrent ses demandes et ses membres.",
+   "where": [
+    "ui/screens/ClanScene.cpp"
    ]
   },
   {
@@ -46389,6 +46637,12 @@
   },
   {
    "fr": "Sur candidature",
+   "where": [
+    "game/online/Clans.cpp"
+   ]
+  },
+  {
+   "fr": "Sur candidature : « Postuler » sur la fiche du clan.",
    "where": [
     "game/online/Clans.cpp"
    ]
@@ -49221,6 +49475,12 @@
    ]
   },
   {
+   "fr": "Transmettre le rôle de chef",
+   "where": [
+    "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
    "fr": "Transmettre le rôle de chef à {0} ? Vous deviendrez officier ; seul le nouveau chef pourra vous le rendre.",
    "where": [
     "ui/screens/ClanScene.cpp"
@@ -50092,6 +50352,12 @@
    "fr": "Un cercle de runes se referme autour de vous : encore dedans quand il se ferme, vos sauts s'alourdissent un moment. Un pas hors du cercle suffit.",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Un clan réunit jusqu'à 50 joueurs autour d'un tag, d'une devise et d'un emblème ; ses membres additionnent leurs meilleurs résultats vérifiés sur les niveaux EXTRÊME. Les clans se trouvent dans COSMIC ONLINE › CLANS.",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -52794,12 +53060,6 @@
    ]
   },
   {
-   "fr": "Visible du chef et des officiers seulement.",
-   "where": [
-    "ui/screens/ClanScene.cpp"
-   ]
-  },
-  {
    "fr": "Visiteur",
    "where": [
     "data/achievements/achievements.json"
@@ -53032,6 +53292,12 @@
    ]
   },
   {
+   "fr": "Voir la fiche du clan",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
    "fr": "Voir la réponse",
    "where": [
     "ui/online/CommentsPanel.cpp"
@@ -53092,6 +53358,12 @@
    "where": [
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/OnlineThreadScene.cpp"
+   ]
+  },
+  {
+   "fr": "Voir les clans",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -53264,6 +53536,18 @@
    "fr": "Votre choix, retenu pour ce segment.",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre clan a trop de demandes en attente : traitez-en d'abord.",
+   "where": [
+    "game/online/Clans.cpp"
+   ]
+  },
+  {
+   "fr": "Votre clan est complet ({0} membres).",
+   "where": [
+    "game/online/Clans.cpp"
    ]
   },
   {
@@ -53550,6 +53834,12 @@
    ]
   },
   {
+   "fr": "Vous avez bloqué ce joueur : débloquez-le pour l'inviter.",
+   "where": [
+    "game/online/Clans.cpp"
+   ]
+  },
+  {
    "fr": "Vous avez déjà publié ce commentaire.",
    "where": [
     "server/src/workshop.ts"
@@ -53628,6 +53918,12 @@
    ]
   },
   {
+   "fr": "Vous n'avez pas de clan.",
+   "where": [
+    "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
    "fr": "Vous n'avez pas encore créé de niveau. « Nouveau niveau » ouvre l'éditeur ; vos créations sont enregistrées dans votre dossier utilisateur et peuvent être exportées en .cplanet.",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
@@ -53655,6 +53951,12 @@
    "fr": "Vous n'avez rien publié : ATELIER → Mes niveaux → Publier.",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vous n'êtes dans aucun clan.",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -53925,8 +54227,8 @@
   {
    "fr": "Vous êtes déjà dans un clan.",
    "where": [
-    "server/src/clans.ts",
-    "ui/screens/ClanScene.cpp"
+    "game/online/Clans.cpp",
+    "server/src/clans.ts"
    ]
   },
   {
@@ -53945,6 +54247,12 @@
    "fr": "vous êtes déjà propriétaire",
    "where": [
     "server/src/projects.ts"
+   ]
+  },
+  {
+   "fr": "Vous êtes invité dans ce clan : répondez depuis sa fiche.",
+   "where": [
+    "game/online/Clans.cpp"
    ]
   },
   {
@@ -53976,6 +54284,12 @@
    "fr": "Vous êtes maintenant le chef du clan {0}",
    "where": [
     "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Vous êtes membre de ce clan : {0}.",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -54672,6 +54986,7 @@
    "fr": "{0} (vous)",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp",
+    "ui/screens/ClanScene.cpp",
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/SocialScene.cpp"
@@ -55039,6 +55354,12 @@
    ]
   },
   {
+   "fr": "{0} a rejoint votre clan.",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} a retiré {1} du projet",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -55143,7 +55464,8 @@
   {
    "fr": "{0} au classement des clans",
    "where": [
-    "ui/screens/ClanScene.cpp"
+    "ui/screens/ClanScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -55216,6 +55538,30 @@
    "fr": "{0} bronze · {1} argent · {2} or (joueurs vérifiés)",
    "where": [
     "ui/screens/ChallengeUi.cpp"
+   ]
+  },
+  {
+   "fr": "{0} candidature · {1} invitation envoyée",
+   "where": [
+    "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} candidature · {1} invitations envoyées",
+   "where": [
+    "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} candidatures · {1} invitation envoyée",
+   "where": [
+    "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} candidatures · {1} invitations envoyées",
+   "where": [
+    "ui/screens/ClanScene.cpp"
    ]
   },
   {
@@ -56006,7 +56352,8 @@
   {
    "fr": "{0} membres sur {1}",
    "where": [
-    "ui/screens/ClanScene.cpp"
+    "ui/screens/ClanScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {

@@ -6,6 +6,7 @@
 #include <string>
 
 #include "engine/core/Math.h"
+#include "engine/rendering/Text.h"
 #include "engine/rendering/Texture.h"
 #include "game/online/OnlineGlobe.h"
 #include "game/online/OnlineTypes.h"
@@ -39,6 +40,12 @@ public:
     /// The same for a player object of the server ({username, clan_tag?}): « [TAG] name » (2.66,
     /// the tag of their clan before the name), both hidden in streaming mode.
     std::string displayName(const Json& player, int rank, bool me) const;
+    /// 2.63.6: the « [TAG] » at the start of `shown` (a name drawn left aligned at `left.x`,
+    /// centred on `left.y`, at the unscaled `size` and `face`, within `room`) opens the sheet of
+    /// the player's clan when clicked, underlined under the mouse. Mouse only, like the avatars:
+    /// the keyboard and the gamepad reach it through the player's profile (tab « Clan »).
+    /// Nothing when `shown` does not start with the tag (streaming mode, « Vous »).
+    void clanTagLink(const std::string& key, const Json& player, const std::string& shown, Vec2 left, float size, FontFace face, float room);
 
     /// Searchable country list; returns true when the player picked one (`code` updated).
     bool countryPicker(const std::string& id, const Rect& area, std::string& filter, std::string& code);

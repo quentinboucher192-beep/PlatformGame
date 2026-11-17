@@ -401,6 +401,7 @@ private:
             float nf = ui.fitFont(name, FontFace::Bold, 19, room, 0.8f);
             name = ui.elide(name, FontFace::Bold, nf, room);
             ns = ui.label(name, {nx, cy - ui.s(11)}, nf, me ? ui.theme().accent : ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+            ui_.clanTagLink("r" + pid, p, name, {nx, cy - ui.s(11)}, nf, FontFace::Bold, room);  // 2.63.6: the clan's sheet
         }
         if (!chip.empty()) {
             Color cc = isVerifier ? ui.theme().warm : ui.theme().success;

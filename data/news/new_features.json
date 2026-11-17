@@ -2380,6 +2380,27 @@
    "parents": [
     "online.nav.levels"
    ]
+  },
+  {
+   "id": "profile.tab.clan",
+   "version": "2.63.7",
+   "parents": [
+    "menu.online"
+   ]
+  },
+  {
+   "id": "profile.clan.invite",
+   "version": "2.63.7",
+   "parents": [
+    "profile.tab.clan"
+   ]
+  },
+  {
+   "id": "clans.tab.manage",
+   "version": "2.63.7",
+   "parents": [
+    "online.nav.clans"
+   ]
   }
  ]
 }
