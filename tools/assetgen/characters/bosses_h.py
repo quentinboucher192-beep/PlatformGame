@@ -1,6 +1,6 @@
 """BOSSES-H entry point (called from boss.py `build()`): the phoenix giga boss.
 
-  * phenix - Le Phénix Stellaire   256x192, pivot [128, 150]  (boss_h_phenix.py)
+  * phenix - Le Phénix Stellaire   256x192, pivot [128, 190]  (boss_h_phenix.py)
 
 Eight sheets, one per phase (sprites/enemies/phenix.png for phase 1, phenix_p2..p8.png): the
 same clips, the light (feather edges, eyes, chest star, tail plumes, sparks) recoloured per phase

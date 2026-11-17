@@ -11,6 +11,10 @@ start (data/planets/confins.json):
   data/levels/confins_03.json  "La Fosse des Abysses" (2.53, EXTRÊME): the same for the Kraken des
                                 Abysses (tools/contentgen/kraken.py; it swims: the crust gives way
                                 over two trenches of dark water, the middle stays)
+  data/levels/confins_04.json  "Le Nid de Cendres" (2.55, EXTRÊME): the same for the Phénix
+                                Stellaire (tools/contentgen/phenix.py; it flies: the crust gives
+                                way over two beds of embers at the ends, its nest in the middle
+                                stays; its perches of embers burn under Nova and are reborn)
 
 2.49: each level of Les Confins is its giga boss's fight alone (no platforming before it).
 
@@ -47,12 +51,15 @@ class Edge(Star):
 
     FIRE_LIGHTS = ((10, 26, "#ff7a2e"), (48, 30, "#ffc49a"), (86, 26, "#ff7a2e"), (30, 8, "#ff5ad2"), (66, 8, "#ff5ad2"))
 
-    def giga_arena(self, boss, music, pits, flying, texts, style="plasma", lights=FIRE_LIGHTS, flicker=0.12):
+    def giga_arena(self, boss, music, pits, flying, texts, style="plasma", lights=FIRE_LIGHTS, flicker=0.12,
+                   perches=()):
         """The giant arena (Star.GIANT_*) of a giga boss: the crust over each pit gives way at
         the 5th phase (magma below), debris orbit from the 3rd, fire closes in at the 8th and at
         the boss's rage. `pits`: (first, last) inside columns of each crust; `flying`: where the
         boss waits (in the air, or on the floor). 2.53: `style` of what fills the pits and closes
-        in (« plasma », or « abyss »: the dark water of the Kraken), the arena's `lights`."""
+        in (« plasma », « abyss »: the dark water of the Kraken, or 2.55 « embers »: the Phénix's),
+        the arena's `lights`. 2.55: the ledges at the heights `perches` are perches of embers
+        instead (crumble platforms « ember »: they burn under Nova and are reborn)."""
         L, f = self.L, self.f
         x0 = self.x
         X = x0 + 1
@@ -84,7 +91,10 @@ class Edge(Star):
                                 "style": style, "bounce": True}))
         for h, ls in self.GIANT_LEDGES.items():
             for (lx, lw) in ls:
-                L.oneway(X + lx, X + lx + lw, f - h, ledge)
+                if h in perches:
+                    L.crumble(X + lx, f - h, lw, delay=0.6, respawn=3.5, style="ember")
+                else:
+                    L.oneway(X + lx, X + lx + lw, f - h, ledge)
         ocx, och, orx, ory = self.GIANT_ORBIT
         debris = []
         for k in range(3):
@@ -271,7 +281,63 @@ def abyss_trench():
     return width
 
 
+# ---------------------------------------------------------------- the nest of ashes (2.55)
+PHENIX_TEXTS = {
+    3: ("Ses ailes arrachent la roche : les blocs tournoient !", "Aurore : les blocs en orbite"),
+    5: "Cendres : le nid s'effondre sur les braises",
+    7: "Comète : un soin",
+    8: ("Le feu solaire referme l'arène !", "Supernova : l'arène se resserre"),
+    "won": ("Le Phénix retombe en cendres, apaisé. La sortie est ouverte.", "Phénix vaincu"),
+}
+# The lights of the nest: gold of dawn high up, embers glowing low over the beds of ash.
+PHENIX_LIGHTS = ((10, 26, "#ffd04a"), (48, 30, "#fff3c8"), (86, 26, "#ffd04a"), (30, 8, "#ff8a3a"), (66, 8, "#ff8a3a"))
+# The sky of the Confins at dawn, gold and rose through the smoke (display only).
+DAWN_TINTS = {"sky.png": "#ffc89a", "far.png": "#d8a088", "mid.png": "#b07a6a", "near.png": "#7a5450",
+              "fg_embers.png": "#ffd08ac0"}
+
+
+def phoenix_nest():
+    b = Edge("confins_04", "Le Nid de Cendres", "pyralis", seed=8401)
+    L, d = b.L, b.L.data
+    d["description"] = ("Au sommet des Confins, un nid de braises sous un ciel d'aube : le Phénix Stellaire et ses huit "
+                        "phases, dans une arène géante. Une seule vie, aucun checkpoint.")
+    d["difficulty"] = 5
+    d["extreme"] = True
+    d["bossMusic"] = "music/phenix_boss.ogg"
+    d["ambientLight"] = "#b49a8a"
+    d["backgroundColor"] = "#1c0e10"
+    for layer in d["background"]:
+        name = layer["texture"].rsplit("/", 1)[-1]
+        if name in DAWN_TINTS:
+            layer["tint"] = DAWN_TINTS[name]
+        if "fillBelow" in layer:
+            layer["fillBelow"] = "#2a1210"
+    b.f = 40
+    # Only the fight, as the other giga bosses' levels: the choice of the powers, then the arena.
+    b.th.update(floor="obsidian", roof="obsidian", accent="obsidian")
+    b.opening("Le Nid de Cendres : le Phénix seul, une seule vie, aucun checkpoint. Choisissez vos quatre pouvoirs.")
+    b.tablets(giga_powers("confins_04"))  # every power of the game
+    b.zone_sign("Le Phénix Stellaire.")
+    b.rooms.append({"type": "boss", "x": b.x, "floor": b.f, "boss": "phenix"})
+    # It flies (it waits in the air): the crust gives way over two beds of embers at the ends, the
+    # nest in the middle stays (where it burns to ashes and is reborn); the ledges at 10 and 15
+    # tiles are perches of embers.
+    b.giga_arena("phenix", "music/phenix_boss.ogg", pits=[(6, 22), (74, 90)], flying=True, texts=PHENIX_TEXTS,
+                 style="embers", lights=PHENIX_LIGHTS, flicker=0.14, perches=(10, 15))
+    width = b.finish("Le Phénix s'est endormi dans ses cendres. Une aube se lève sur les Confins.")
+    ref = 360  # about six minutes of fight
+    d["timer"] = {"mode": "challenge", "limit": 3600, "onExpire": "gameover", "referenceTime": ref, "challengeMaxDeaths": 0}
+    d["medals"] = {"bronze": {}, "silver": {"maxTime": int(ref * 1.6)}, "gold": {"maxTime": int(ref * 1.2)},
+                   "platinum": {"maxTime": ref, "maxDeaths": 0}}
+    b.cinematics("LE NID DE CENDRES", "Les Confins", "Une seule vie. Un oiseau d'étoiles qui renaît de ses cendres. Huit phases.",
+                 "LE PHÉNIX S'APAISE")
+    d["metadata"] = {"generator": "tools/levelgen/confins.py", "revision": 1, "rooms": b.rooms, "noHealing": True}
+    L.save(os.path.join(ROOT, "data/levels/confins_04.json"))
+    return width
+
+
 if __name__ == "__main__":
     print("confins_01 :", dragon_maw(), "tuiles")
     print("confins_02 :", stone_heart(), "tuiles")  # 2.49
     print("confins_03 :", abyss_trench(), "tuiles")  # 2.53
+    print("confins_04 :", phoenix_nest(), "tuiles")  # 2.55

@@ -89,6 +89,7 @@ public:
         bool ground = false;   // display: a carpet of fire along the ground (else a puff)
         Color color{255, 122, 46, 255};  // display: the fire of the phase
         bool ink = false;                // display (2.53, the Kraken): a cloud of ink lit by the phase
+        bool ash = false;                // display (2.55, the Phénix): a cloud of ash, embers glowing in it
         float emitTimer = 0.0f;          // display: its smoke
         /// The part of its area reached at its age.
         Rect current() const;

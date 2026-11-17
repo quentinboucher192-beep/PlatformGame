@@ -312,8 +312,9 @@ void BossHazards::fixedUpdate(GameWorld& w, float dt) {
             if (r.w > 2.0f) {
                 Vec2 at{w.fxRng().range(r.x, r.right()), w.fxRng().range(r.y + r.h * 0.3f, r.bottom() - 2.0f)};
                 // 2.53: the Kraken's ink sheds bubbles of its light, no smoke.
-                w.particles().emit(c.ink ? "bubbles" : "fire_cloud", at, 1.0f, {}, &c.color);
-                if (w.fxRng().chance(0.35f) && !c.ink) w.particles().emit("fire_smoke", at + Vec2{0.0f, -r.h * 0.3f}, 1.0f);
+                // 2.55: the Phénix's ash sheds ash and a few embers.
+                w.particles().emit(c.ink ? "bubbles" : (c.ash ? "ash_fall" : "fire_cloud"), at, 1.0f, {}, &c.color);
+                if (w.fxRng().chance(0.35f) && !c.ink) w.particles().emit(c.ash ? "embers_rising" : "fire_smoke", at + Vec2{0.0f, -r.h * 0.3f}, 1.0f);
             }
         }
         if (!exposed || c.damage <= 0.0f || !c.burning() || !c.current().intersects(p.box)) continue;
@@ -645,6 +646,16 @@ void BossHazards::render(RenderContext& ctx) const {
                 float seed = x * 0.071f + static_cast<float>(row) * 1.7f;
                 float rad = r.h / static_cast<float>(rows) * (0.55f + 0.12f * dmath::sin(t * 2.3f + seed * 3.1f));
                 Vec2 pc{x + 3.0f * dmath::sin(t * 1.7f + seed), y - 2.0f * dmath::sin(t * 2.9f + seed * 2.0f)};
+                if (c.ash) {
+                    // 2.55, the Phénix: thick grey ash billowing, embers glinting in it.
+                    ctx.r.drawWorldGlow(pc, rad * 1.6f, fire.withAlpha(static_cast<uint8_t>(40 * a)));
+                    ctx.r.fillWorldCircle(pc, rad, Color{92, 84, 80, static_cast<uint8_t>(215 * a)});
+                    ctx.r.fillWorldCircle(pc + Vec2{-rad * 0.25f, -rad * 0.3f}, rad * 0.55f, Color{150, 140, 132, static_cast<uint8_t>(120 * a)});
+                    const float glint = 0.5f + 0.5f * dmath::sin(t * 7.0f + seed * 5.0f);
+                    ctx.r.fillWorldCircle(pc + Vec2{rad * 0.2f, rad * 0.25f}, std::max(1.0f, rad * 0.14f),
+                                          Color{255, 150, 70, static_cast<uint8_t>(200 * a * glint)}, BlendMode::Additive);
+                    continue;
+                }
                 if (c.ink) {
                     // 2.53, the Kraken: dense ink, only its rim lit by the light of its phase.
                     ctx.r.drawWorldGlow(pc, rad * 1.7f, fire.withAlpha(static_cast<uint8_t>(50 * a)));

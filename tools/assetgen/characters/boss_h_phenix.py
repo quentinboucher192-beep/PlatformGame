@@ -19,14 +19,17 @@ The light changes colour at every phase; the plumage never does.  Every emissive
 five tones P0..P4 of the phase ramp (plus pure white), so each phase sheet is the phase-1 sheet with
 those five colours swapped (exact LUT, `recolour`), see PHASES.
 
-Frames 256x192, pivot [128, 150] = bottom-centre of the 64x56 collision box (x 96..160,
-y 94..150) around the body (torso and legs; not the wings, the neck, the head or the tail).
-Drawn at scale 1.25 in game (320x240 px frame, 80x70 px box).
+Frames 256x192, pivot [128, 190] = bottom-centre of the 64x96 collision box (x 96..160,
+y 94..190) around the body (torso and legs; not the wings, the neck or the head) and down to the
+tips of the tail plumes (2.55: the pivot was at the talons, y 150, and the plumes of form II hung
+~40 px under the box: low over the floor they went through it and under the HUD, as the Kraken's
+arms in 2.53; the art is unchanged, only the anchor and the box; its ashes settle at y 184, inside
+the box). Drawn at scale 1.25 in game (320x240 px frame, 80x120 px box).
 ORIGIN (projectile origin = just in front of the beak, frame pixels from the pivot, x forward,
 y down; x1.25 in game):
   * attack frame 1 (`fire`, the wing slash: wings struck down, talons forward, a bolt of starfire
-    leaves the open beak): (+87, -61) = frame pixel (215, 89);
-  * special (starfire beam loop; the head does not move on its four frames): (+80, -66)
+    leaves the open beak): (+87, -101) = frame pixel (215, 89);
+  * special (starfire beam loop; the head does not move on its four frames): (+80, -106)
     = frame pixel (208, 84); the beam itself is drawn by the game, the sheet only shows a short
     burst at the beak.
 `Phenix.mouth(pose)` gives these points (see `attack_poses` and `special_pose`).
@@ -51,8 +54,8 @@ from raster import TCanvas
 
 PI = math.pi
 W, H = 256, 192
-PIVOT = [128, 150]
-BOX = (96, 94, 160, 150)  # x0, y0, x1, y1 (collision box, frame pixels)
+PIVOT = [128, 190]
+BOX = (96, 94, 160, 190)  # x0, y0, x1, y1 (collision box, frame pixels; 2.55: down to the plumes)
 BX, BY = 128.0, 112.0  # centre of the body (body coordinates): the whole bird tilts around it
 GROUND = 184.0  # where the ashes settle (death)
 WHITE = "#ffffff"

@@ -333,6 +333,7 @@ void Enemy::breathe(GameWorld& w) {
     c.ground = true;
     c.color = lightColor();
     c.ink = a.look == "ink";  // 2.53, the Kraken (display only)
+    c.ash = a.look == "ash";  // 2.55, the Phénix (display only)
     w.hazards().addCloud(c);
 }
 
@@ -360,6 +361,7 @@ void Enemy::fireClouds(GameWorld& w) {
         p.cloudOwner = uid_;
         p.cloudColor = lightColor();
         p.cloudInk = a.look == "ink";
+        p.cloudAsh = a.look == "ash";
         w.spawnProjectile(p);
     };
     if (a.gravity > 0.0f && !path_.empty()) {

@@ -261,7 +261,7 @@ for _k in range(8):
 # Eight sheets, one per phase, packed like Pyrrhax' (it flies: no teleport, no footsteps).
 for _k in range(8):
     _id = "phenix" if _k == 0 else "phenix_p%d" % (_k + 1)
-    ANIMS[_id] = (256, 192, [128, 150], DRAGON_CLIPS, {"attack": [(1, "fire")]}, {})
+    ANIMS[_id] = (256, 192, [128, 190], DRAGON_CLIPS, {"attack": [(1, "fire")]}, {})
     TEXTURES[_id] = f"sprites/enemies/{_id}.png"
     LOOPING[_id] = {"idle", "walk", "move", "special"}
 
