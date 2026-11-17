@@ -1,0 +1,9 @@
+{
+  "texture": "stories/monolithe/grotte_fond.png",
+  "frameWidth": 560,
+  "frameHeight": 300,
+  "pivot": [0, 0],
+  "clips": {
+    "idle": {"row": 0, "count": 4, "fps": 4, "loop": true}
+  }
+}

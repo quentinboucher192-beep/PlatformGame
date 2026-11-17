@@ -1,0 +1,10 @@
+{
+  "texture": "stories/monolithe/hutte.png",
+  "frameWidth": 96,
+  "frameHeight": 80,
+  "pivot": [48, 77],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 5, "loop": true},
+    "ruin": {"row": 1, "count": 6, "fps": 4, "loop": true}
+  }
+}

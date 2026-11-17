@@ -1,0 +1,9 @@
+{
+  "texture": "stories/monolithe/grain.png",
+  "frameWidth": 16,
+  "frameHeight": 16,
+  "pivot": [8, 8],
+  "clips": {
+    "spin": {"row": 0, "count": 6, "fps": 6, "loop": true}
+  }
+}

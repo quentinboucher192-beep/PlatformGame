@@ -1,0 +1,9 @@
+{
+  "texture": "stories/monolithe/torche.png",
+  "frameWidth": 24,
+  "frameHeight": 40,
+  "pivot": [12, 33],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 9, "loop": true}
+  }
+}

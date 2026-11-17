@@ -1,0 +1,14 @@
+{
+  "texture": "stories/monolithe/enfant3.png",
+  "frameWidth": 40,
+  "frameHeight": 56,
+  "pivot": [20, 54],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 6, "loop": true},
+    "run": {"row": 1, "count": 8, "fps": 14, "loop": true},
+    "cheer": {"row": 2, "count": 6, "durations": [0.08, 0.08, 0.1, 0.12, 0.1, 0.12], "loop": true},
+    "wave": {"row": 3, "count": 6, "fps": 8, "loop": true},
+    "look_up": {"row": 4, "count": 4, "durations": [0.1, 0.1, 0.12, 0.2], "loop": false, "next": "gaze"},
+    "gaze": {"row": 5, "count": 6, "fps": 5, "loop": true}
+  }
+}

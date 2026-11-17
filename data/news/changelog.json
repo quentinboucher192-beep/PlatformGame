@@ -1,7 +1,8 @@
 {
   "2.62.3": [
     "Embuscades : tomber pendant une embuscade ne la fait plus recommencer. Elle attend Nova telle qu'elle l'a laissée (même vague, ennemis vaincus toujours vaincus, les autres à leur place avec leur vie) ; ses portes s'ouvrent pour la laisser revenir et se referment derrière elle. Un ennemi d'une embuscade qui sort de son arène y est ramené : l'embuscade peut toujours être terminée. Records conservés.",
-    "HUD : « Embuscade : N ennemis restants » (et la vague en cours) pendant une embuscade, à placer ou masquer dans l'éditeur du HUD ; flèches violettes vers ses ennemis hors écran (Paramètres › Jeu › Flèches vers les ennemis hors écran)."
+    "HUD : « Embuscade : N ennemis restants » (et la vague en cours) pendant une embuscade, à placer ou masquer dans l'éditeur du HUD ; flèches violettes vers ses ennemis hors écran (Paramètres › Jeu › Flèches vers les ennemis hors écran).",
+    "L'histoire du Monolithe, « Le Golem Primordial », devient à son tour un petit dessin animé : le caillou qui tourne dans la poussière des origines, les enfants de la caverne qui y gravent leur rune, la pierre qui grandit de génération en génération avant de se lever, le village et son feu, les vaisseaux qui partent vers les étoiles, puis le golem seul dans les ruines face à une visiteuse qu'il ne reconnaît pas. Décors vivants (cristaux qui respirent, torches, brume, poussière), personnages animés image par image, caméra qui suit l'action ; une pastille NOUVEAU mène à « Revoir l'histoire »."
   ],
   "2.62.2": [
     "Didacticiel : il est proposé une fois à tout joueur qui ne l'a pas encore vu, même avec une progression existante (avant, seuls les tout nouveaux joueurs le recevaient). « Passer le didacticiel » reste proposé au départ.",

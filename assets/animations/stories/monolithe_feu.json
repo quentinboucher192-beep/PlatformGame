@@ -1,0 +1,9 @@
+{
+  "texture": "stories/monolithe/feu.png",
+  "frameWidth": 48,
+  "frameHeight": 40,
+  "pivot": [24, 37],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 9, "loop": true}
+  }
+}
