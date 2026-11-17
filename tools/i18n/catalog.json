@@ -23356,6 +23356,12 @@
    ]
   },
   {
+   "fr": "L'histoire de la Liche, « Le Gardien des noms », devient elle aussi un petit dessin animé : le vieil Ossian qui allume une bougie pour chaque mort des catacombes, les pierres dont les noms s'illuminent pendant qu'il les raconte à un enfant, la nuit où l'étoile s'effondre et où les vivants s'enfuient tandis qu'il reste, son âme cachée dans le cristal de l'autel, les siècles qui éteignent les bougies et ne laissent que ses os et la flamme verte, puis la Liche qui veille sur sa crypte au milieu des noms. Décors vivants (niches, bougies, toiles d'araignée, brume, poussière), personnages animés image par image ; une pastille NOUVEAU mène à « Revoir l'histoire ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "L'histoire de Pyrrhax, « Le Dragon d'Obsidienne », devient un petit dessin animé : ses six plans sont des scènes animées faites de vrais sprites, dans le style du jeu — la Fumerolle et ses frères et sœurs de feu, l'œuf qui éclot dans le nid de cendres, les flammes, la fumée, la pluie de braises, le ventre qui s'illumine, la transformation en dragon de verre noir, puis le grand Pyrrhax devant la dernière frontière.",
    "where": [
     "data/news/changelog.json"

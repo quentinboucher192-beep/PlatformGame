@@ -2312,6 +2312,20 @@
    "parents": [
     "stats.bosses"
    ]
+  },
+  {
+   "id": "gallery.story.liche",
+   "version": "2.63.1",
+   "parents": [
+    "gallery.boss.liche"
+   ]
+  },
+  {
+   "id": "stats.story.liche",
+   "version": "2.63.1",
+   "parents": [
+    "stats.bosses"
+   ]
   }
  ]
 }

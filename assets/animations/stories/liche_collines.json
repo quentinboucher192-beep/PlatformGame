@@ -1,0 +1,9 @@
+{
+  "texture": "stories/liche/collines.png",
+  "frameWidth": 720,
+  "frameHeight": 130,
+  "pivot": [0, 0],
+  "clips": {
+    "idle": {"row": 0, "count": 4, "fps": 4, "loop": true}
+  }
+}

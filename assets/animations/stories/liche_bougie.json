@@ -1,0 +1,14 @@
+{
+  "texture": "stories/liche/bougie.png",
+  "frameWidth": 16,
+  "frameHeight": 32,
+  "pivot": [8, 31],
+  "clips": {
+    "unlit": {"row": 0, "count": 6, "fps": 6, "loop": true},
+    "light": {"row": 1, "count": 5, "durations": [0.06, 0.08, 0.1, 0.08, 0.1], "loop": false, "next": "lit"},
+    "lit": {"row": 2, "count": 6, "fps": 9, "loop": true},
+    "green": {"row": 3, "count": 6, "fps": 8, "loop": true},
+    "low": {"row": 4, "count": 6, "fps": 9, "loop": true},
+    "out": {"row": 5, "count": 6, "durations": [0.1, 0.1, 0.1, 0.1, 0.1, 0.4], "loop": false}
+  }
+}

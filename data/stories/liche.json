@@ -1,7 +1,7 @@
 {
  "format": "cosmic.boss_story",
- "version": 1,
- "comment": "Story of a giga boss (game/content/BossStories.h), told before the first fight against it. Each shot: its painting (assets/, tools/assetgen/environment/stories.py), its line of narration, the point the slow zoom goes to, the live particles over it. A shot lasts max(4.5 s, 1.2 s + characters / 16); then the title card (3 s).",
+ "version": 2,
+ "comment": "Story of a giga boss (game/content/BossStories.h), told before the first fight against it. Version 2: each shot is an animated scene (« stage »: parallax layers, sprites moved by keyframes, glows, particles, camera, shakes, flashes), written by tools/assetgen/environment/story_liche_scene.py (edit it there); its image is the still rendered from the scene. A shot lasts max(4.5 s, 1.2 s + characters / 16); then the title card (3 s).",
  "boss": "liche",
  "title": "Le Gardien des noms",
  "color": "#b4f566",
@@ -16,9 +16,627 @@
     0.47,
     0.62
    ],
-   "zoom": 1.1,
-   "particles": "embers",
-   "glow": "#ffcf7a"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#ffcf7a",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#060508",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       250.0,
+       350.0
+      ],
+      "zoom": 1.45
+     },
+     {
+      "t": 2.6,
+      "pos": [
+       420.0,
+       350.0
+      ],
+      "zoom": 1.42
+     },
+     {
+      "t": 7.2,
+      "pos": [
+       660.0,
+       346.0
+      ],
+      "zoom": 1.38
+     }
+    ],
+    "elements": [
+     {
+      "id": "galerie",
+      "sprite": "animations/stories/liche_galerie.json",
+      "depth": 0.05,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "arcades_loin",
+      "sprite": "animations/stories/liche_arcades.json",
+      "depth": 0.25,
+      "tint": "#605860",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         150.0
+        ],
+        "clip": "idle",
+        "offset": 0.4
+       }
+      ]
+     },
+     {
+      "id": "brume",
+      "sprite": "animations/stories/liche_brume.json",
+      "depth": 0.3,
+      "drift": [
+       8.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -160.0,
+         300.0
+        ],
+        "alpha": 0.7,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "poussiere_voute",
+      "particles": "dustfall",
+      "color": "#c8c0b0",
+      "area": [
+       0.0,
+       40.0,
+       960.0,
+       380.0
+      ],
+      "depth": 0.5,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       }
+      ]
+     },
+     {
+      "id": "arcades",
+      "sprite": "animations/stories/liche_arcades.json",
+      "depth": 0.5,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -320.0,
+         100.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "brume_basse",
+      "sprite": "animations/stories/liche_brume.json",
+      "depth": 0.7,
+      "drift": [
+       -6.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         380.0
+        ],
+        "alpha": 0.45,
+        "clip": "idle",
+        "offset": 0.5
+       }
+      ]
+     },
+     {
+      "id": "dalles",
+      "sprite": "animations/stories/liche_dalles.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "bougie_loin1",
+      "sprite": "animations/stories/liche_bougie.json",
+      "depth": 0.8,
+      "keys": [
+       {
+        "t": 0.0,
+        "clip": "lit",
+        "offset": 0.0,
+        "pos": [
+         180,
+         432
+        ],
+        "scale": 0.8
+       }
+      ]
+     },
+     {
+      "id": "bougie_loin1_lueur",
+      "glow": "#ffb347",
+      "radius": 60.0,
+      "depth": 0.8,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         180.0,
+         409.6
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5,
+       0.0
+      ]
+     },
+     {
+      "id": "bougie_loin2",
+      "sprite": "animations/stories/liche_bougie.json",
+      "depth": 0.8,
+      "keys": [
+       {
+        "t": 0.0,
+        "clip": "lit",
+        "offset": 0.2,
+        "pos": [
+         860,
+         432
+        ],
+        "scale": 0.8
+       }
+      ]
+     },
+     {
+      "id": "bougie_loin2_lueur",
+      "glow": "#ffb347",
+      "radius": 60.0,
+      "depth": 0.8,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         860.0,
+         409.6
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5,
+       0.3
+      ]
+     },
+     {
+      "id": "ossian",
+      "sprite": "animations/stories/liche_ossian.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        62.0,
+        9.9
+       ],
+       "light": [
+        300.0,
+        400.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         140.0,
+         450.0
+        ],
+        "clip": "walk"
+       },
+       {
+        "t": 0.9,
+        "pos": [
+         266.0,
+         450.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 0.91,
+        "clip": "point",
+        "ease": "step"
+       },
+       {
+        "t": 1.52,
+        "clip": "walk"
+       },
+       {
+        "t": 2.4,
+        "pos": [
+         416.0,
+         450.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 2.41,
+        "clip": "point",
+        "ease": "step"
+       },
+       {
+        "t": 3.02,
+        "clip": "walk"
+       },
+       {
+        "t": 3.9,
+        "pos": [
+         566.0,
+         450.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 3.91,
+        "clip": "point",
+        "ease": "step"
+       },
+       {
+        "t": 4.52,
+        "clip": "walk"
+       },
+       {
+        "t": 5.4,
+        "pos": [
+         716.0,
+         450.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 5.41,
+        "clip": "point",
+        "ease": "step"
+       },
+       {
+        "t": 6.1,
+        "clip": "idle"
+       },
+       {
+        "t": 6.4,
+        "clip": "look_up",
+        "flip": true
+       }
+      ]
+     },
+     {
+      "id": "bougie_ossian",
+      "glow": "#ffb347",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         146.0,
+         410.0
+        ],
+        "alpha": 0.6
+       },
+       {
+        "t": 0.9,
+        "pos": [
+         274.0,
+         410.0
+        ]
+       },
+       {
+        "t": 2.4,
+        "pos": [
+         424.0,
+         410.0
+        ]
+       },
+       {
+        "t": 3.9,
+        "pos": [
+         574.0,
+         410.0
+        ]
+       },
+       {
+        "t": 5.4,
+        "pos": [
+         724.0,
+         410.0
+        ]
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.45
+      ]
+     },
+     {
+      "id": "bougie1",
+      "sprite": "animations/stories/liche_bougie.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "clip": "unlit",
+        "offset": 0.0,
+        "pos": [
+         300,
+         452
+        ],
+        "scale": 1.0
+       },
+       {
+        "t": 1.2,
+        "clip": "light"
+       }
+      ]
+     },
+     {
+      "id": "bougie1_lueur",
+      "glow": "#ffb347",
+      "radius": 80.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         300.0,
+         424.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 1.2,
+        "alpha": 0.0
+       },
+       {
+        "t": 1.4,
+        "alpha": 0.6,
+        "ease": "out"
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5,
+       0.0
+      ]
+     },
+     {
+      "id": "bougie2",
+      "sprite": "animations/stories/liche_bougie.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "clip": "unlit",
+        "offset": 0.2,
+        "pos": [
+         450,
+         452
+        ],
+        "scale": 1.0
+       },
+       {
+        "t": 2.7,
+        "clip": "light"
+       }
+      ]
+     },
+     {
+      "id": "bougie2_lueur",
+      "glow": "#ffb347",
+      "radius": 80.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         450.0,
+         424.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 2.7,
+        "alpha": 0.0
+       },
+       {
+        "t": 2.9,
+        "alpha": 0.6,
+        "ease": "out"
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5,
+       0.2
+      ]
+     },
+     {
+      "id": "bougie3",
+      "sprite": "animations/stories/liche_bougie.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "clip": "unlit",
+        "offset": 0.4,
+        "pos": [
+         600,
+         452
+        ],
+        "scale": 1.0
+       },
+       {
+        "t": 4.2,
+        "clip": "light"
+       }
+      ]
+     },
+     {
+      "id": "bougie3_lueur",
+      "glow": "#ffb347",
+      "radius": 80.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         600.0,
+         424.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 4.2,
+        "alpha": 0.0
+       },
+       {
+        "t": 4.4,
+        "alpha": 0.6,
+        "ease": "out"
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5,
+       0.4
+      ]
+     },
+     {
+      "id": "bougie4",
+      "sprite": "animations/stories/liche_bougie.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "clip": "unlit",
+        "offset": 0.6,
+        "pos": [
+         750,
+         452
+        ],
+        "scale": 1.0
+       },
+       {
+        "t": 5.7,
+        "clip": "light"
+       }
+      ]
+     },
+     {
+      "id": "bougie4_lueur",
+      "glow": "#ffb347",
+      "radius": 80.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         750.0,
+         424.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 5.7,
+        "alpha": 0.0
+       },
+       {
+        "t": 5.9,
+        "alpha": 0.6,
+        "ease": "out"
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5,
+       0.6000000000000001
+      ]
+     },
+     {
+      "id": "poussiere",
+      "particles": "dust",
+      "color": "#e8d8b0",
+      "area": [
+       80.0,
+       260.0,
+       800.0,
+       200.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/liche_avant.json",
+      "depth": 1.35,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ]
+   }
   },
   {
    "scene": "names",
@@ -28,9 +646,986 @@
     0.58,
     0.5
    ],
-   "zoom": 1.12,
-   "particles": "dust",
-   "glow": "#ffcf7a"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#ffcf7a",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#060508",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       430.0,
+       344.0
+      ],
+      "zoom": 1.3
+     },
+     {
+      "t": 3.0,
+      "pos": [
+       500.0,
+       340.0
+      ],
+      "zoom": 1.4
+     },
+     {
+      "t": 7.825,
+      "pos": [
+       470.0,
+       360.0
+      ],
+      "zoom": 1.55
+     }
+    ],
+    "elements": [
+     {
+      "id": "galerie",
+      "sprite": "animations/stories/liche_galerie.json",
+      "depth": 0.05,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "arcades_loin",
+      "sprite": "animations/stories/liche_arcades.json",
+      "depth": 0.25,
+      "tint": "#605860",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         150.0
+        ],
+        "clip": "idle",
+        "offset": 0.4
+       }
+      ]
+     },
+     {
+      "id": "brume",
+      "sprite": "animations/stories/liche_brume.json",
+      "depth": 0.3,
+      "drift": [
+       8.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -160.0,
+         300.0
+        ],
+        "alpha": 0.7,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "poussiere_voute",
+      "particles": "dustfall",
+      "color": "#c8c0b0",
+      "area": [
+       0.0,
+       40.0,
+       960.0,
+       380.0
+      ],
+      "depth": 0.5,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       }
+      ]
+     },
+     {
+      "id": "arcades",
+      "sprite": "animations/stories/liche_arcades.json",
+      "depth": 0.5,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -320.0,
+         100.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "brume_basse",
+      "sprite": "animations/stories/liche_brume.json",
+      "depth": 0.7,
+      "drift": [
+       -6.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         380.0
+        ],
+        "alpha": 0.45,
+        "clip": "idle",
+        "offset": 0.5
+       }
+      ]
+     },
+     {
+      "id": "bougie_loin1",
+      "sprite": "animations/stories/liche_bougie.json",
+      "depth": 0.8,
+      "keys": [
+       {
+        "t": 0.0,
+        "clip": "lit",
+        "offset": 0.0,
+        "pos": [
+         110,
+         436
+        ],
+        "scale": 0.75
+       }
+      ]
+     },
+     {
+      "id": "bougie_loin1_lueur",
+      "glow": "#ffb347",
+      "radius": 55.0,
+      "depth": 0.8,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         110.0,
+         415.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5,
+       0.0
+      ]
+     },
+     {
+      "id": "bougie_loin2",
+      "sprite": "animations/stories/liche_bougie.json",
+      "depth": 0.8,
+      "keys": [
+       {
+        "t": 0.0,
+        "clip": "lit",
+        "offset": 0.3,
+        "pos": [
+         850,
+         436
+        ],
+        "scale": 0.75
+       }
+      ]
+     },
+     {
+      "id": "bougie_loin2_lueur",
+      "glow": "#ffb347",
+      "radius": 55.0,
+      "depth": 0.8,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         850.0,
+         415.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5,
+       0.4
+      ]
+     },
+     {
+      "id": "dalles",
+      "sprite": "animations/stories/liche_dalles.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "bougie1",
+      "sprite": "animations/stories/liche_bougie.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "clip": "lit",
+        "pos": [
+         250,
+         452
+        ],
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "bougie1_lueur",
+      "glow": "#ffb347",
+      "radius": 80.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         250.0,
+         424.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5,
+       0.0
+      ]
+     },
+     {
+      "id": "bougie2",
+      "sprite": "animations/stories/liche_bougie.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "clip": "lit",
+        "offset": 0.3,
+        "pos": [
+         780,
+         454
+        ],
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "bougie2_lueur",
+      "glow": "#ffb347",
+      "radius": 80.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         780.0,
+         426.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5,
+       0.4
+      ]
+     },
+     {
+      "id": "nom1",
+      "sprite": "animations/stories/liche_plaque.json",
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         400.0,
+         300.0
+        ],
+        "clip": "idle",
+        "scale": 1.1
+       },
+       {
+        "t": 1.1,
+        "clip": "gold",
+        "offset": 0.0
+       }
+      ]
+     },
+     {
+      "id": "nom1_lueur",
+      "glow": "#ffcf7a",
+      "radius": 34.0,
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         400.0,
+         300.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 1.1,
+        "alpha": 0.0
+       },
+       {
+        "t": 1.4,
+        "alpha": 0.5,
+        "ease": "out"
+       }
+      ],
+      "pulse": [
+       0.4,
+       1.4,
+       0.0
+      ]
+     },
+     {
+      "id": "nom2",
+      "sprite": "animations/stories/liche_plaque.json",
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         470.0,
+         300.0
+        ],
+        "clip": "idle",
+        "scale": 1.1
+       },
+       {
+        "t": 1.42,
+        "clip": "gold",
+        "offset": 0.1
+       }
+      ]
+     },
+     {
+      "id": "nom2_lueur",
+      "glow": "#ffcf7a",
+      "radius": 34.0,
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         470.0,
+         300.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 1.42,
+        "alpha": 0.0
+       },
+       {
+        "t": 1.72,
+        "alpha": 0.5,
+        "ease": "out"
+       }
+      ],
+      "pulse": [
+       0.4,
+       1.4,
+       0.13
+      ]
+     },
+     {
+      "id": "nom3",
+      "sprite": "animations/stories/liche_plaque.json",
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         540.0,
+         300.0
+        ],
+        "clip": "idle",
+        "scale": 1.1
+       },
+       {
+        "t": 1.74,
+        "clip": "gold",
+        "offset": 0.2
+       }
+      ]
+     },
+     {
+      "id": "nom3_lueur",
+      "glow": "#ffcf7a",
+      "radius": 34.0,
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         540.0,
+         300.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 1.74,
+        "alpha": 0.0
+       },
+       {
+        "t": 2.04,
+        "alpha": 0.5,
+        "ease": "out"
+       }
+      ],
+      "pulse": [
+       0.4,
+       1.4,
+       0.26
+      ]
+     },
+     {
+      "id": "nom4",
+      "sprite": "animations/stories/liche_plaque.json",
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         610.0,
+         300.0
+        ],
+        "clip": "idle",
+        "scale": 1.1
+       },
+       {
+        "t": 2.06,
+        "clip": "gold",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "nom4_lueur",
+      "glow": "#ffcf7a",
+      "radius": 34.0,
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         610.0,
+         300.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 2.06,
+        "alpha": 0.0
+       },
+       {
+        "t": 2.36,
+        "alpha": 0.5,
+        "ease": "out"
+       }
+      ],
+      "pulse": [
+       0.4,
+       1.4,
+       0.39
+      ]
+     },
+     {
+      "id": "nom5",
+      "sprite": "animations/stories/liche_plaque.json",
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         680.0,
+         300.0
+        ],
+        "clip": "idle",
+        "scale": 1.1
+       },
+       {
+        "t": 2.38,
+        "clip": "gold",
+        "offset": 0.4
+       }
+      ]
+     },
+     {
+      "id": "nom5_lueur",
+      "glow": "#ffcf7a",
+      "radius": 34.0,
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         680.0,
+         300.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 2.38,
+        "alpha": 0.0
+       },
+       {
+        "t": 2.68,
+        "alpha": 0.5,
+        "ease": "out"
+       }
+      ],
+      "pulse": [
+       0.4,
+       1.4,
+       0.52
+      ]
+     },
+     {
+      "id": "nom6",
+      "sprite": "animations/stories/liche_plaque.json",
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         400.0,
+         354.0
+        ],
+        "clip": "idle",
+        "scale": 1.1
+       },
+       {
+        "t": 2.7,
+        "clip": "gold",
+        "offset": 0.5
+       }
+      ]
+     },
+     {
+      "id": "nom6_lueur",
+      "glow": "#ffcf7a",
+      "radius": 34.0,
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         400.0,
+         354.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 2.7,
+        "alpha": 0.0
+       },
+       {
+        "t": 3.0,
+        "alpha": 0.5,
+        "ease": "out"
+       }
+      ],
+      "pulse": [
+       0.4,
+       1.4,
+       0.65
+      ]
+     },
+     {
+      "id": "nom7",
+      "sprite": "animations/stories/liche_plaque.json",
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         470.0,
+         354.0
+        ],
+        "clip": "idle",
+        "scale": 1.1
+       },
+       {
+        "t": 3.02,
+        "clip": "gold",
+        "offset": 0.6
+       }
+      ]
+     },
+     {
+      "id": "nom7_lueur",
+      "glow": "#ffcf7a",
+      "radius": 34.0,
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         470.0,
+         354.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 3.02,
+        "alpha": 0.0
+       },
+       {
+        "t": 3.32,
+        "alpha": 0.5,
+        "ease": "out"
+       }
+      ],
+      "pulse": [
+       0.4,
+       1.4,
+       0.78
+      ]
+     },
+     {
+      "id": "nom8",
+      "sprite": "animations/stories/liche_plaque.json",
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         540.0,
+         354.0
+        ],
+        "clip": "idle",
+        "scale": 1.1
+       },
+       {
+        "t": 3.34,
+        "clip": "gold",
+        "offset": 0.7
+       }
+      ]
+     },
+     {
+      "id": "nom8_lueur",
+      "glow": "#ffcf7a",
+      "radius": 34.0,
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         540.0,
+         354.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 3.34,
+        "alpha": 0.0
+       },
+       {
+        "t": 3.64,
+        "alpha": 0.5,
+        "ease": "out"
+       }
+      ],
+      "pulse": [
+       0.4,
+       1.4,
+       0.91
+      ]
+     },
+     {
+      "id": "nom9",
+      "sprite": "animations/stories/liche_plaque.json",
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         610.0,
+         354.0
+        ],
+        "clip": "idle",
+        "scale": 1.1
+       },
+       {
+        "t": 3.66,
+        "clip": "gold",
+        "offset": 0.8
+       }
+      ]
+     },
+     {
+      "id": "nom9_lueur",
+      "glow": "#ffcf7a",
+      "radius": 34.0,
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         610.0,
+         354.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 3.66,
+        "alpha": 0.0
+       },
+       {
+        "t": 3.96,
+        "alpha": 0.5,
+        "ease": "out"
+       }
+      ],
+      "pulse": [
+       0.4,
+       1.4,
+       1.04
+      ]
+     },
+     {
+      "id": "nom10",
+      "sprite": "animations/stories/liche_plaque.json",
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         680.0,
+         354.0
+        ],
+        "clip": "idle",
+        "scale": 1.1
+       },
+       {
+        "t": 3.98,
+        "clip": "gold",
+        "offset": 0.9
+       }
+      ]
+     },
+     {
+      "id": "nom10_lueur",
+      "glow": "#ffcf7a",
+      "radius": 34.0,
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         680.0,
+         354.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 3.98,
+        "alpha": 0.0
+       },
+       {
+        "t": 4.28,
+        "alpha": 0.5,
+        "ease": "out"
+       }
+      ],
+      "pulse": [
+       0.4,
+       1.4,
+       1.17
+      ]
+     },
+     {
+      "id": "ossian",
+      "sprite": "animations/stories/liche_ossian.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        62.0,
+        9.9
+       ],
+       "light": [
+        250.0,
+        400.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         330.0,
+         452.0
+        ],
+        "clip": "idle"
+       },
+       {
+        "t": 0.9,
+        "clip": "point"
+       },
+       {
+        "t": 4.2,
+        "clip": "idle"
+       },
+       {
+        "t": 5.2,
+        "clip": "kneel"
+       }
+      ]
+     },
+     {
+      "id": "bougie_ossian",
+      "glow": "#ffb347",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         338.0,
+         412.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.45
+      ]
+     },
+     {
+      "id": "enfant",
+      "sprite": "animations/stories/liche_enfant.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        50.0,
+        8.0
+       ],
+       "light": [
+        780.0,
+        400.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         560.0,
+         456.0
+        ],
+        "clip": "kneel",
+        "flip": true
+       },
+       {
+        "t": 3.0,
+        "clip": "look_up",
+        "flip": false
+       },
+       {
+        "t": 5.4,
+        "clip": "idle",
+        "flip": true
+       },
+       {
+        "t": 6.4,
+        "clip": "wave"
+       }
+      ]
+     },
+     {
+      "id": "poussiere",
+      "particles": "dust",
+      "color": "#e8d8b0",
+      "area": [
+       200.0,
+       240.0,
+       600.0,
+       220.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       }
+      ]
+     },
+     {
+      "id": "etincelles",
+      "particles": "sparks",
+      "color": "#ffcf7a",
+      "area": [
+       360.0,
+       260.0,
+       380.0,
+       140.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.0
+       },
+       {
+        "t": 1.2,
+        "alpha": 0.0
+       },
+       {
+        "t": 2.4,
+        "alpha": 0.8
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/liche_avant.json",
+      "depth": 1.35,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ]
+   }
   },
   {
    "scene": "exodus",
@@ -40,9 +1635,705 @@
     0.42,
     0.5
    ],
-   "zoom": 1.08,
-   "particles": "stars",
-   "glow": "#c88bff"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#c88bff",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#04030a",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       620.0,
+       200.0
+      ],
+      "zoom": 1.2
+     },
+     {
+      "t": 2.0,
+      "pos": [
+       560.0,
+       260.0
+      ],
+      "zoom": 1.16
+     },
+     {
+      "t": 4.0,
+      "pos": [
+       440.0,
+       330.0
+      ],
+      "zoom": 1.12
+     },
+     {
+      "t": 7.512,
+      "pos": [
+       330.0,
+       350.0
+      ],
+      "zoom": 1.3
+     }
+    ],
+    "elements": [
+     {
+      "id": "ciel",
+      "sprite": "animations/stories/liche_ciel.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "etoiles",
+      "sprite": "animations/stories/liche_etoiles.json",
+      "depth": 0.08,
+      "drift": [
+       4.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -20.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "astre1",
+      "sprite": "animations/stories/liche_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         228.7,
+         101.7
+        ],
+        "clip": "twinkle",
+        "offset": 0.969,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre2",
+      "sprite": "animations/stories/liche_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         757.9,
+         33.7
+        ],
+        "clip": "twinkle",
+        "offset": 0.524,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre3",
+      "sprite": "animations/stories/liche_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         778.2,
+         53.7
+        ],
+        "clip": "twinkle",
+        "offset": 0.363,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre4",
+      "sprite": "animations/stories/liche_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         226.4,
+         212.6
+        ],
+        "clip": "twinkle",
+        "offset": 0.669,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre5",
+      "sprite": "animations/stories/liche_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         784.2,
+         127.6
+        ],
+        "clip": "twinkle",
+        "offset": 0.298,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre6",
+      "sprite": "animations/stories/liche_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         873.0,
+         56.1
+        ],
+        "clip": "twinkle",
+        "offset": 0.012,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "lueur_etoile",
+      "glow": "#fff2c8",
+      "radius": 150.0,
+      "depth": 0.06,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         700.0,
+         110.0
+        ],
+        "alpha": 0.55
+       },
+       {
+        "t": 1.2,
+        "alpha": 0.7
+       },
+       {
+        "t": 1.6,
+        "alpha": 1.0
+       },
+       {
+        "t": 2.0,
+        "alpha": 0.0,
+        "ease": "in"
+       }
+      ]
+     },
+     {
+      "id": "lueur_trou",
+      "glow": "#c06cf0",
+      "radius": 110.0,
+      "depth": 0.06,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         700.0,
+         110.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 1.85,
+        "alpha": 0.0
+       },
+       {
+        "t": 2.0,
+        "alpha": 0.9,
+        "ease": "out"
+       },
+       {
+        "t": 7.512,
+        "alpha": 0.4
+       }
+      ],
+      "pulse": [
+       0.25,
+       1.4
+      ]
+     },
+     {
+      "id": "etoile",
+      "sprite": "animations/stories/liche_etoile.json",
+      "depth": 0.06,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         700.0,
+         110.0
+        ],
+        "clip": "shine",
+        "scale": 1.4
+       },
+       {
+        "t": 1.2,
+        "clip": "collapse"
+       }
+      ]
+     },
+     {
+      "id": "collines",
+      "sprite": "animations/stories/liche_collines.json",
+      "depth": 0.25,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -240.0,
+         170.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "brume",
+      "sprite": "animations/stories/liche_brume.json",
+      "depth": 0.4,
+      "drift": [
+       10.0,
+       0.0
+      ],
+      "repeat": true,
+      "tint": "#a0a0c8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -160.0,
+         330.0
+        ],
+        "alpha": 0.7,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "tombes",
+      "sprite": "animations/stories/liche_tombes.json",
+      "depth": 0.6,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -320.0,
+         260.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "dalles",
+      "sprite": "animations/stories/liche_dalles.json",
+      "depth": 1.0,
+      "tint": "#a0a0c0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "porte_lueur",
+      "glow": "#ffb347",
+      "radius": 110.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         134.0,
+         268.0
+        ],
+        "alpha": 0.5
+       }
+      ],
+      "pulse": [
+       0.35,
+       0.5
+      ]
+     },
+     {
+      "id": "porte_lueur2",
+      "glow": "#ffb347",
+      "radius": 110.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         266.0,
+         268.0
+        ],
+        "alpha": 0.5
+       }
+      ],
+      "pulse": [
+       0.35,
+       0.55,
+       0.3
+      ]
+     },
+     {
+      "id": "porte",
+      "sprite": "animations/stories/liche_porte.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.3,
+       "size": [
+        260.0,
+        41.6
+       ],
+       "light": [
+        700.0,
+        110.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         200.0,
+         448.0
+        ],
+        "clip": "idle",
+        "scale": 1.1
+       }
+      ]
+     },
+     {
+      "id": "ossian",
+      "sprite": "animations/stories/liche_ossian.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        62.0,
+        9.9
+       ],
+       "light": [
+        700.0,
+        110.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         300.0,
+         452.0
+        ],
+        "clip": "idle"
+       },
+       {
+        "t": 1.0,
+        "clip": "look_up"
+       },
+       {
+        "t": 3.2,
+        "clip": "sad"
+       },
+       {
+        "t": 5.6,
+        "clip": "walk",
+        "flip": true
+       },
+       {
+        "t": 6.6,
+        "pos": [
+         214.0,
+         450.0
+        ],
+        "alpha": 1.0,
+        "ease": "linear"
+       },
+       {
+        "t": 7.1,
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "bougie_ossian",
+      "glow": "#ffb347",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         308.0,
+         414.0
+        ],
+        "alpha": 0.6
+       },
+       {
+        "t": 5.6,
+        "pos": [
+         308.0,
+         414.0
+        ]
+       },
+       {
+        "t": 6.6,
+        "pos": [
+         206.0,
+         412.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 7.1,
+        "alpha": 0.0
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.45
+      ]
+     },
+     {
+      "id": "fuyard1",
+      "sprite": "animations/stories/liche_fuyard1.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        56.0,
+        9.0
+       ],
+       "light": [
+        700.0,
+        110.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -60.0,
+         458.0
+        ],
+        "alpha": 0.0,
+        "clip": "flee"
+       },
+       {
+        "t": 2.2,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 2.21,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 4.8,
+        "pos": [
+         1060.0,
+         458.0
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "fuyard2",
+      "sprite": "animations/stories/liche_fuyard2.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        56.0,
+        9.0
+       ],
+       "light": [
+        700.0,
+        110.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -60.0,
+         462.0
+        ],
+        "alpha": 0.0,
+        "clip": "flee"
+       },
+       {
+        "t": 2.7,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 2.71,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 5.3,
+        "pos": [
+         1060.0,
+         462.0
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "fuyard3",
+      "sprite": "animations/stories/liche_fuyard3.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        56.0,
+        9.0
+       ],
+       "light": [
+        700.0,
+        110.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -60.0,
+         466.0
+        ],
+        "alpha": 0.0,
+        "clip": "run"
+       },
+       {
+        "t": 3.1,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 3.11,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 5.7,
+        "pos": [
+         1060.0,
+         466.0
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "etoiles_vives",
+      "particles": "stars",
+      "color": "#d8d8ff",
+      "area": [
+       0.0,
+       0.0,
+       960.0,
+       260.0
+      ],
+      "depth": 0.1,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       },
+       {
+        "t": 2.0,
+        "alpha": 0.2
+       }
+      ]
+     },
+     {
+      "id": "poussiere",
+      "particles": "dust",
+      "color": "#a8a8c8",
+      "area": [
+       0.0,
+       300.0,
+       960.0,
+       180.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.5
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/liche_avant.json",
+      "depth": 1.35,
+      "tint": "#a0a0c0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 1.9,
+      "to": 2.5,
+      "amount": 3.0
+     }
+    ],
+    "flash": [
+     {
+      "t": 1.92,
+      "in": 0.06,
+      "out": 0.5,
+      "color": "#e0b0ff",
+      "alpha": 0.4
+     }
+    ]
+   }
   },
   {
    "scene": "phylactery",
@@ -52,9 +2343,623 @@
     0.5,
     0.58
    ],
-   "zoom": 1.14,
-   "particles": "sparks",
-   "glow": "#b4f566"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#b4f566",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#060508",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       400.0,
+       350.0
+      ],
+      "zoom": 1.36
+     },
+     {
+      "t": 2.5,
+      "pos": [
+       500.0,
+       348.0
+      ],
+      "zoom": 1.45
+     },
+     {
+      "t": 5.6,
+      "pos": [
+       540.0,
+       336.0
+      ],
+      "zoom": 1.62
+     },
+     {
+      "t": 8.137,
+      "pos": [
+       548.0,
+       330.0
+      ],
+      "zoom": 1.7
+     }
+    ],
+    "elements": [
+     {
+      "id": "galerie",
+      "sprite": "animations/stories/liche_galerie.json",
+      "depth": 0.05,
+      "tint": "#b0a8b8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "arcades_loin",
+      "sprite": "animations/stories/liche_arcades.json",
+      "depth": 0.25,
+      "tint": "#605860",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         150.0
+        ],
+        "clip": "idle",
+        "offset": 0.4
+       }
+      ]
+     },
+     {
+      "id": "brume",
+      "sprite": "animations/stories/liche_brume.json",
+      "depth": 0.3,
+      "drift": [
+       8.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -160.0,
+         300.0
+        ],
+        "alpha": 0.7,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "poussiere_voute",
+      "particles": "dustfall",
+      "color": "#c8c0b0",
+      "area": [
+       0.0,
+       40.0,
+       960.0,
+       380.0
+      ],
+      "depth": 0.5,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       }
+      ]
+     },
+     {
+      "id": "arcades",
+      "sprite": "animations/stories/liche_arcades.json",
+      "depth": 0.5,
+      "tint": "#b0a8b8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -320.0,
+         100.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "brume_basse",
+      "sprite": "animations/stories/liche_brume.json",
+      "depth": 0.7,
+      "drift": [
+       -6.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         380.0
+        ],
+        "alpha": 0.45,
+        "clip": "idle",
+        "offset": 0.5
+       }
+      ]
+     },
+     {
+      "id": "bougie_loin1",
+      "sprite": "animations/stories/liche_bougie.json",
+      "depth": 0.8,
+      "keys": [
+       {
+        "t": 0.0,
+        "clip": "lit",
+        "offset": 0.0,
+        "pos": [
+         110,
+         436
+        ],
+        "scale": 0.75
+       }
+      ]
+     },
+     {
+      "id": "bougie_loin1_lueur",
+      "glow": "#ffb347",
+      "radius": 55.0,
+      "depth": 0.8,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         110.0,
+         415.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5,
+       0.0
+      ]
+     },
+     {
+      "id": "bougie_loin2",
+      "sprite": "animations/stories/liche_bougie.json",
+      "depth": 0.8,
+      "keys": [
+       {
+        "t": 0.0,
+        "clip": "lit",
+        "offset": 0.3,
+        "pos": [
+         850,
+         436
+        ],
+        "scale": 0.75
+       }
+      ]
+     },
+     {
+      "id": "bougie_loin2_lueur",
+      "glow": "#ffb347",
+      "radius": 55.0,
+      "depth": 0.8,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         850.0,
+         415.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5,
+       0.4
+      ]
+     },
+     {
+      "id": "dalles",
+      "sprite": "animations/stories/liche_dalles.json",
+      "depth": 1.0,
+      "tint": "#b0a8b8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "bougie1",
+      "sprite": "animations/stories/liche_bougie.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "clip": "lit",
+        "pos": [
+         420,
+         452
+        ],
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "bougie1_lueur",
+      "glow": "#ffb347",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         420.0,
+         424.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5,
+       0.0
+      ]
+     },
+     {
+      "id": "bougie2",
+      "sprite": "animations/stories/liche_bougie.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "clip": "lit",
+        "offset": 0.3,
+        "pos": [
+         740,
+         454
+        ],
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "bougie2_lueur",
+      "glow": "#ffb347",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         740.0,
+         426.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5,
+       0.3
+      ]
+     },
+     {
+      "id": "autel",
+      "sprite": "animations/stories/liche_autel.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        200.0,
+        32.0
+       ],
+       "light": [
+        420.0,
+        400.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         580.0,
+         452.0
+        ],
+        "clip": "idle",
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "cristal_lueur",
+      "glow": "#b4f566",
+      "radius": 90.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         580.0,
+         354.0
+        ],
+        "alpha": 0.25
+       },
+       {
+        "t": 5.6,
+        "alpha": 0.25
+       },
+       {
+        "t": 5.8,
+        "alpha": 1.0,
+        "scale": 1.6
+       },
+       {
+        "t": 8.137,
+        "alpha": 0.7,
+        "scale": 1.2
+       }
+      ],
+      "pulse": [
+       0.3,
+       1.2
+      ]
+     },
+     {
+      "id": "cristal",
+      "sprite": "animations/phylactere.json",
+      "depth": 1.0,
+      "tint": "#d0ffb8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         580.0,
+         394.0
+        ],
+        "clip": "idle",
+        "scale": 0.6
+       }
+      ]
+     },
+     {
+      "id": "vieux",
+      "sprite": "animations/stories/liche_vieux.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        62.0,
+        9.9
+       ],
+       "light": [
+        420.0,
+        400.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         220.0,
+         452.0
+        ],
+        "clip": "walk"
+       },
+       {
+        "t": 2.4,
+        "pos": [
+         486.0,
+         452.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 2.5,
+        "clip": "kneel"
+       },
+       {
+        "t": 6.2,
+        "clip": "kneel"
+       }
+      ]
+     },
+     {
+      "id": "ame",
+      "sprite": "animations/stories/liche_ame.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         500.0,
+         412.0
+        ],
+        "alpha": 0.0,
+        "scale": 0.6
+       },
+       {
+        "t": 4.2,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 4.22,
+        "alpha": 1.0,
+        "clip": "idle",
+        "ease": "step"
+       },
+       {
+        "t": 4.9,
+        "pos": [
+         530.0,
+         330.0
+        ],
+        "scale": 1.0,
+        "ease": "out"
+       },
+       {
+        "t": 5.6,
+        "pos": [
+         580.0,
+         364.0
+        ],
+        "scale": 0.5,
+        "ease": "in"
+       },
+       {
+        "t": 5.65,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "ame_lueur",
+      "glow": "#b4f566",
+      "radius": 60.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         500.0,
+         400.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 4.2,
+        "alpha": 0.0
+       },
+       {
+        "t": 4.4,
+        "alpha": 0.8
+       },
+       {
+        "t": 4.9,
+        "pos": [
+         530.0,
+         320.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 5.6,
+        "pos": [
+         580.0,
+         354.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 5.7,
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "ames",
+      "particles": "sparks",
+      "color": "#b4f566",
+      "area": [
+       460.0,
+       280.0,
+       200.0,
+       160.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.0
+       },
+       {
+        "t": 4.2,
+        "alpha": 0.0
+       },
+       {
+        "t": 4.6,
+        "alpha": 1.0
+       },
+       {
+        "t": 8.137,
+        "alpha": 0.6
+       }
+      ]
+     },
+     {
+      "id": "poussiere",
+      "particles": "dust",
+      "color": "#d8d0c0",
+      "area": [
+       200.0,
+       240.0,
+       600.0,
+       220.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.5
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/liche_avant.json",
+      "depth": 1.35,
+      "tint": "#b0a8b8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 5.6,
+      "to": 6.1,
+      "amount": 2.5
+     }
+    ],
+    "flash": [
+     {
+      "t": 5.6499999999999995,
+      "in": 0.08,
+      "out": 0.6,
+      "color": "#d8ffb0",
+      "alpha": 0.55
+     }
+    ]
+   }
   },
   {
    "scene": "bones",
@@ -64,9 +2969,669 @@
     0.5,
     0.56
    ],
-   "zoom": 1.1,
-   "particles": "dust",
-   "glow": "#b4f566"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#b4f566",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#060508",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       520.0,
+       360.0
+      ],
+      "zoom": 1.36
+     },
+     {
+      "t": 4.6,
+      "pos": [
+       520.0,
+       356.0
+      ],
+      "zoom": 1.5
+     },
+     {
+      "t": 7.762,
+      "pos": [
+       540.0,
+       350.0
+      ],
+      "zoom": 1.62
+     }
+    ],
+    "elements": [
+     {
+      "id": "galerie",
+      "sprite": "animations/stories/liche_galerie.json",
+      "depth": 0.05,
+      "tint": "#a8a0b0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "arcades_loin",
+      "sprite": "animations/stories/liche_arcades.json",
+      "depth": 0.25,
+      "tint": "#605860",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         150.0
+        ],
+        "clip": "idle",
+        "offset": 0.4
+       }
+      ]
+     },
+     {
+      "id": "brume",
+      "sprite": "animations/stories/liche_brume.json",
+      "depth": 0.3,
+      "drift": [
+       8.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -160.0,
+         300.0
+        ],
+        "alpha": 0.7,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "poussiere_voute",
+      "particles": "dustfall",
+      "color": "#c8c0b0",
+      "area": [
+       0.0,
+       40.0,
+       960.0,
+       380.0
+      ],
+      "depth": 0.5,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       }
+      ]
+     },
+     {
+      "id": "arcades",
+      "sprite": "animations/stories/liche_arcades.json",
+      "depth": 0.5,
+      "tint": "#a8a0b0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -320.0,
+         100.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "brume_basse",
+      "sprite": "animations/stories/liche_brume.json",
+      "depth": 0.7,
+      "drift": [
+       -6.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         380.0
+        ],
+        "alpha": 0.45,
+        "clip": "idle",
+        "offset": 0.5
+       }
+      ]
+     },
+     {
+      "id": "bougie_loin1",
+      "sprite": "animations/stories/liche_bougie.json",
+      "depth": 0.8,
+      "keys": [
+       {
+        "t": 0.0,
+        "clip": "lit",
+        "offset": 0.0,
+        "pos": [
+         110,
+         436
+        ],
+        "scale": 0.75
+       }
+      ]
+     },
+     {
+      "id": "bougie_loin1_lueur",
+      "glow": "#ffb347",
+      "radius": 55.0,
+      "depth": 0.8,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         110.0,
+         415.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5,
+       0.0
+      ]
+     },
+     {
+      "id": "bougie_loin2",
+      "sprite": "animations/stories/liche_bougie.json",
+      "depth": 0.8,
+      "keys": [
+       {
+        "t": 0.0,
+        "clip": "lit",
+        "offset": 0.3,
+        "pos": [
+         850,
+         436
+        ],
+        "scale": 0.75
+       }
+      ]
+     },
+     {
+      "id": "bougie_loin2_lueur",
+      "glow": "#ffb347",
+      "radius": 55.0,
+      "depth": 0.8,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         850.0,
+         415.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5,
+       0.4
+      ]
+     },
+     {
+      "id": "dalles",
+      "sprite": "animations/stories/liche_dalles.json",
+      "depth": 1.0,
+      "tint": "#a8a0b0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "chaise",
+      "sprite": "animations/stories/liche_chaise.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        80.0,
+        12.8
+       ],
+       "light": [
+        640.0,
+        380.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         470.0,
+         452.0
+        ],
+        "clip": "idle",
+        "scale": 1.2
+       }
+      ]
+     },
+     {
+      "id": "vieux",
+      "sprite": "animations/stories/liche_vieux.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         464.0,
+         452.0
+        ],
+        "clip": "sit",
+        "scale": 1.2
+       },
+       {
+        "t": 2.4,
+        "alpha": 1.0
+       },
+       {
+        "t": 4.6,
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "squelette",
+      "sprite": "animations/stories/liche_squelette.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         470.0,
+         452.0
+        ],
+        "clip": "idle",
+        "scale": 1.2,
+        "alpha": 0.0
+       },
+       {
+        "t": 2.4,
+        "alpha": 0.0
+       },
+       {
+        "t": 4.6,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "toile1",
+      "sprite": "animations/stories/liche_toile.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         460.0,
+         360.0
+        ],
+        "alpha": 0.0,
+        "scale": 0.9
+       },
+       {
+        "t": 1.0,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 1.02,
+        "alpha": 1.0,
+        "clip": "grow",
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "toile2",
+      "sprite": "animations/stories/liche_toile.json",
+      "depth": 0.5,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         300.0,
+         250.0
+        ],
+        "alpha": 0.0,
+        "scale": 1.6
+       },
+       {
+        "t": 2.2,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 2.22,
+        "alpha": 1.0,
+        "clip": "grow",
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "socle",
+      "sprite": "animations/stories/liche_autel.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        130.0,
+        20.8
+       ],
+       "light": [
+        640.0,
+        380.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         640.0,
+         452.0
+        ],
+        "clip": "idle",
+        "scale": 0.7
+       }
+      ]
+     },
+     {
+      "id": "cristal_lueur",
+      "glow": "#b4f566",
+      "radius": 80.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         640.0,
+         360.0
+        ],
+        "alpha": 0.5
+       },
+       {
+        "t": 4.6,
+        "alpha": 0.9,
+        "scale": 1.4
+       },
+       {
+        "t": 7.762,
+        "alpha": 1.0,
+        "scale": 1.5
+       }
+      ],
+      "pulse": [
+       0.3,
+       1.1
+      ]
+     },
+     {
+      "id": "cristal",
+      "sprite": "animations/phylactere.json",
+      "depth": 1.0,
+      "tint": "#d0ffb8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         640.0,
+         412.0
+        ],
+        "clip": "idle",
+        "scale": 0.55
+       }
+      ]
+     },
+     {
+      "id": "bougie1",
+      "sprite": "animations/stories/liche_bougie.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         330.0,
+         452.0
+        ],
+        "clip": "lit",
+        "offset": 0.0
+       },
+       {
+        "t": 2.0,
+        "clip": "low"
+       },
+       {
+        "t": 3.6,
+        "clip": "out"
+       }
+      ]
+     },
+     {
+      "id": "bougie1_lueur",
+      "glow": "#ffb347",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         330.0,
+         424.0
+        ],
+        "alpha": 0.6
+       },
+       {
+        "t": 2.0,
+        "alpha": 0.4
+       },
+       {
+        "t": 3.6,
+        "alpha": 0.0
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5,
+       0.0
+      ]
+     },
+     {
+      "id": "bougie2",
+      "sprite": "animations/stories/liche_bougie.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         380.0,
+         452.0
+        ],
+        "clip": "lit",
+        "offset": 0.2
+       },
+       {
+        "t": 2.8,
+        "clip": "low"
+       },
+       {
+        "t": 4.4,
+        "clip": "out"
+       }
+      ]
+     },
+     {
+      "id": "bougie2_lueur",
+      "glow": "#ffb347",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         380.0,
+         424.0
+        ],
+        "alpha": 0.6
+       },
+       {
+        "t": 2.8,
+        "alpha": 0.4
+       },
+       {
+        "t": 4.4,
+        "alpha": 0.0
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5,
+       0.2
+      ]
+     },
+     {
+      "id": "bougie3",
+      "sprite": "animations/stories/liche_bougie.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         760.0,
+         452.0
+        ],
+        "clip": "lit",
+        "offset": 0.4
+       },
+       {
+        "t": 3.6,
+        "clip": "low"
+       },
+       {
+        "t": 5.2,
+        "clip": "out"
+       }
+      ]
+     },
+     {
+      "id": "bougie3_lueur",
+      "glow": "#ffb347",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         760.0,
+         424.0
+        ],
+        "alpha": 0.6
+       },
+       {
+        "t": 3.6,
+        "alpha": 0.4
+       },
+       {
+        "t": 5.2,
+        "alpha": 0.0
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5,
+       0.4
+      ]
+     },
+     {
+      "id": "chute",
+      "particles": "dustfall",
+      "color": "#c8c0b0",
+      "area": [
+       200.0,
+       100.0,
+       560.0,
+       360.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.5
+       },
+       {
+        "t": 2.4,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "ame",
+      "particles": "sparks",
+      "color": "#b4f566",
+      "area": [
+       580.0,
+       300.0,
+       120.0,
+       140.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       },
+       {
+        "t": 4.6,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/liche_avant.json",
+      "depth": 1.35,
+      "tint": "#a8a0b0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ]
+   }
   },
   {
    "scene": "lich",
@@ -76,9 +3641,1120 @@
     0.5,
     0.52
    ],
-   "zoom": 1.06,
-   "particles": "sparks",
-   "glow": "#b4f566"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#b4f566",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#060508",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       480.0,
+       300.0
+      ],
+      "zoom": 1.28
+     },
+     {
+      "t": 2.6,
+      "pos": [
+       480.0,
+       296.0
+      ],
+      "zoom": 1.2
+     },
+     {
+      "t": 7.262,
+      "pos": [
+       480.0,
+       290.0
+      ],
+      "zoom": 1.08
+     }
+    ],
+    "elements": [
+     {
+      "id": "galerie",
+      "sprite": "animations/stories/liche_galerie.json",
+      "depth": 0.05,
+      "tint": "#a8c8a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "arcades_loin",
+      "sprite": "animations/stories/liche_arcades.json",
+      "depth": 0.25,
+      "tint": "#605860",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         150.0
+        ],
+        "clip": "idle",
+        "offset": 0.4
+       }
+      ]
+     },
+     {
+      "id": "brume",
+      "sprite": "animations/stories/liche_brume.json",
+      "depth": 0.3,
+      "drift": [
+       8.0,
+       0.0
+      ],
+      "repeat": true,
+      "tint": "#b4f566",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -160.0,
+         300.0
+        ],
+        "alpha": 0.7,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "poussiere_voute",
+      "particles": "dustfall",
+      "color": "#c8c0b0",
+      "area": [
+       0.0,
+       40.0,
+       960.0,
+       380.0
+      ],
+      "depth": 0.5,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       }
+      ]
+     },
+     {
+      "id": "arcades",
+      "sprite": "animations/stories/liche_arcades.json",
+      "depth": 0.5,
+      "tint": "#a8c8a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -320.0,
+         100.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "brume_basse",
+      "sprite": "animations/stories/liche_brume.json",
+      "depth": 0.7,
+      "drift": [
+       -6.0,
+       0.0
+      ],
+      "repeat": true,
+      "tint": "#b4f566",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         380.0
+        ],
+        "alpha": 0.45,
+        "clip": "idle",
+        "offset": 0.5
+       }
+      ]
+     },
+     {
+      "id": "bougie_loin1",
+      "sprite": "animations/stories/liche_bougie.json",
+      "depth": 0.8,
+      "keys": [
+       {
+        "t": 0.0,
+        "clip": "green",
+        "offset": 0.0,
+        "pos": [
+         110,
+         436
+        ],
+        "scale": 0.75
+       }
+      ]
+     },
+     {
+      "id": "bougie_loin1_lueur",
+      "glow": "#b4f566",
+      "radius": 55.0,
+      "depth": 0.8,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         110.0,
+         415.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5,
+       0.0
+      ]
+     },
+     {
+      "id": "bougie_loin2",
+      "sprite": "animations/stories/liche_bougie.json",
+      "depth": 0.8,
+      "keys": [
+       {
+        "t": 0.0,
+        "clip": "green",
+        "offset": 0.3,
+        "pos": [
+         850,
+         436
+        ],
+        "scale": 0.75
+       }
+      ]
+     },
+     {
+      "id": "bougie_loin2_lueur",
+      "glow": "#b4f566",
+      "radius": 55.0,
+      "depth": 0.8,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         850.0,
+         415.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5,
+       0.4
+      ]
+     },
+     {
+      "id": "dalles",
+      "sprite": "animations/stories/liche_dalles.json",
+      "depth": 1.0,
+      "tint": "#a8c8a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "nom1",
+      "sprite": "animations/stories/liche_plaque.json",
+      "depth": 0.85,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         150.0,
+         290.0
+        ],
+        "clip": "green",
+        "offset": 0.0,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "nom2",
+      "sprite": "animations/stories/liche_plaque.json",
+      "depth": 0.85,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         225.0,
+         290.0
+        ],
+        "clip": "green",
+        "offset": 0.13,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "nom3",
+      "sprite": "animations/stories/liche_plaque.json",
+      "depth": 0.85,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         300.0,
+         290.0
+        ],
+        "clip": "green",
+        "offset": 0.26,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "nom4",
+      "sprite": "animations/stories/liche_plaque.json",
+      "depth": 0.85,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         150.0,
+         342.0
+        ],
+        "clip": "green",
+        "offset": 0.39,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "nom5",
+      "sprite": "animations/stories/liche_plaque.json",
+      "depth": 0.85,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         225.0,
+         342.0
+        ],
+        "clip": "green",
+        "offset": 0.52,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "nom6",
+      "sprite": "animations/stories/liche_plaque.json",
+      "depth": 0.85,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         300.0,
+         342.0
+        ],
+        "clip": "green",
+        "offset": 0.65,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "nom7",
+      "sprite": "animations/stories/liche_plaque.json",
+      "depth": 0.85,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         660.0,
+         290.0
+        ],
+        "clip": "green",
+        "offset": 0.78,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "nom8",
+      "sprite": "animations/stories/liche_plaque.json",
+      "depth": 0.85,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         735.0,
+         290.0
+        ],
+        "clip": "green",
+        "offset": 0.91,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "nom9",
+      "sprite": "animations/stories/liche_plaque.json",
+      "depth": 0.85,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         810.0,
+         290.0
+        ],
+        "clip": "green",
+        "offset": 1.04,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "nom10",
+      "sprite": "animations/stories/liche_plaque.json",
+      "depth": 0.85,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         660.0,
+         342.0
+        ],
+        "clip": "green",
+        "offset": 1.17,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "nom11",
+      "sprite": "animations/stories/liche_plaque.json",
+      "depth": 0.85,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         735.0,
+         342.0
+        ],
+        "clip": "green",
+        "offset": 1.3,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "nom12",
+      "sprite": "animations/stories/liche_plaque.json",
+      "depth": 0.85,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         810.0,
+         342.0
+        ],
+        "clip": "green",
+        "offset": 1.43,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "bougie1",
+      "sprite": "animations/stories/liche_bougie.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "clip": "green",
+        "offset": 0.0,
+        "pos": [
+         240,
+         452
+        ],
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "bougie1_lueur",
+      "glow": "#b4f566",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         240.0,
+         424.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5,
+       0.0
+      ]
+     },
+     {
+      "id": "bougie2",
+      "sprite": "animations/stories/liche_bougie.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "clip": "green",
+        "offset": 0.15,
+        "pos": [
+         340,
+         452
+        ],
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "bougie2_lueur",
+      "glow": "#b4f566",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         340.0,
+         424.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5,
+       0.25
+      ]
+     },
+     {
+      "id": "bougie3",
+      "sprite": "animations/stories/liche_bougie.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "clip": "green",
+        "offset": 0.3,
+        "pos": [
+         620,
+         452
+        ],
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "bougie3_lueur",
+      "glow": "#b4f566",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         620.0,
+         424.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5,
+       0.5
+      ]
+     },
+     {
+      "id": "bougie4",
+      "sprite": "animations/stories/liche_bougie.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "clip": "green",
+        "offset": 0.45,
+        "pos": [
+         720,
+         452
+        ],
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "bougie4_lueur",
+      "glow": "#b4f566",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         720.0,
+         424.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5,
+       0.75
+      ]
+     },
+     {
+      "id": "liche_lueur",
+      "glow": "#b4f566",
+      "radius": 220.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         286.0
+        ],
+        "alpha": 0.35
+       },
+       {
+        "t": 2.6,
+        "alpha": 0.35
+       },
+       {
+        "t": 3.0,
+        "alpha": 0.7
+       },
+       {
+        "t": 7.262,
+        "alpha": 0.5
+       }
+      ],
+      "pulse": [
+       0.25,
+       1.6
+      ]
+     },
+     {
+      "id": "liche",
+      "sprite": "animations/liche.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.5,
+       "size": [
+        180.0,
+        28.8
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         446.0
+        ],
+        "clip": "idle",
+        "scale": 0.82
+       },
+       {
+        "t": 2.6,
+        "clip": "summon"
+       },
+       {
+        "t": 3.6,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "ame1",
+      "sprite": "animations/stories/liche_ame.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         650.0,
+         296.0
+        ],
+        "ease": "linear",
+        "clip": "idle",
+        "offset": 0.0,
+        "scale": 0.75
+       },
+       {
+        "t": 0.908,
+        "pos": [
+         609.3,
+         328.5
+        ],
+        "ease": "linear",
+        "scale": 0.88
+       },
+       {
+        "t": 1.815,
+        "pos": [
+         506.6,
+         345.4
+        ],
+        "ease": "linear",
+        "scale": 0.95
+       },
+       {
+        "t": 2.723,
+        "pos": [
+         391.2,
+         338.6
+        ],
+        "ease": "linear",
+        "scale": 0.92
+       },
+       {
+        "t": 3.631,
+        "pos": [
+         318.3,
+         311.5
+        ],
+        "ease": "linear",
+        "scale": 0.81
+       },
+       {
+        "t": 4.539,
+        "pos": [
+         322.9,
+         276.9
+        ],
+        "ease": "linear",
+        "scale": 0.67
+       },
+       {
+        "t": 5.446,
+        "pos": [
+         402.8,
+         251.4
+        ],
+        "ease": "linear",
+        "scale": 0.57
+       },
+       {
+        "t": 6.354,
+        "pos": [
+         519.7,
+         247.4
+        ],
+        "ease": "linear",
+        "scale": 0.56
+       },
+       {
+        "t": 7.262,
+        "pos": [
+         617.5,
+         266.6
+        ],
+        "ease": "linear",
+        "scale": 0.63
+       }
+      ]
+     },
+     {
+      "id": "ame2",
+      "sprite": "animations/stories/liche_ame.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         346.0
+        ],
+        "ease": "linear",
+        "clip": "idle",
+        "offset": 0.17,
+        "scale": 0.95
+       },
+       {
+        "t": 0.908,
+        "pos": [
+         369.6,
+         334.0
+        ],
+        "ease": "linear",
+        "scale": 0.9
+       },
+       {
+        "t": 1.815,
+        "pos": [
+         312.1,
+         303.8
+        ],
+        "ease": "linear",
+        "scale": 0.78
+       },
+       {
+        "t": 2.723,
+        "pos": [
+         335.1,
+         269.9
+        ],
+        "ease": "linear",
+        "scale": 0.65
+       },
+       {
+        "t": 3.631,
+        "pos": [
+         427.5,
+         248.4
+        ],
+        "ease": "linear",
+        "scale": 0.56
+       },
+       {
+        "t": 4.539,
+        "pos": [
+         545.1,
+         249.8
+        ],
+        "ease": "linear",
+        "scale": 0.57
+       },
+       {
+        "t": 5.446,
+        "pos": [
+         631.5,
+         273.3
+        ],
+        "ease": "linear",
+        "scale": 0.66
+       },
+       {
+        "t": 6.354,
+        "pos": [
+         645.3,
+         307.7
+        ],
+        "ease": "linear",
+        "scale": 0.8
+       },
+       {
+        "t": 7.262,
+        "pos": [
+         579.9,
+         336.5
+        ],
+        "ease": "linear",
+        "scale": 0.91
+       }
+      ]
+     },
+     {
+      "id": "ame3",
+      "sprite": "animations/stories/liche_ame.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         310.0,
+         296.0
+        ],
+        "ease": "linear",
+        "clip": "idle",
+        "offset": 0.34,
+        "scale": 0.75
+       },
+       {
+        "t": 0.908,
+        "pos": [
+         350.7,
+         263.5
+        ],
+        "ease": "linear",
+        "scale": 0.62
+       },
+       {
+        "t": 1.815,
+        "pos": [
+         453.4,
+         246.6
+        ],
+        "ease": "linear",
+        "scale": 0.55
+       },
+       {
+        "t": 2.723,
+        "pos": [
+         568.8,
+         253.4
+        ],
+        "ease": "linear",
+        "scale": 0.58
+       },
+       {
+        "t": 3.631,
+        "pos": [
+         641.7,
+         280.5
+        ],
+        "ease": "linear",
+        "scale": 0.69
+       },
+       {
+        "t": 4.539,
+        "pos": [
+         637.1,
+         315.1
+        ],
+        "ease": "linear",
+        "scale": 0.83
+       },
+       {
+        "t": 5.446,
+        "pos": [
+         557.2,
+         340.6
+        ],
+        "ease": "linear",
+        "scale": 0.93
+       },
+       {
+        "t": 6.354,
+        "pos": [
+         440.3,
+         344.6
+        ],
+        "ease": "linear",
+        "scale": 0.94
+       },
+       {
+        "t": 7.262,
+        "pos": [
+         342.5,
+         325.4
+        ],
+        "ease": "linear",
+        "scale": 0.87
+       }
+      ]
+     },
+     {
+      "id": "ame4",
+      "sprite": "animations/stories/liche_ame.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         246.0
+        ],
+        "ease": "linear",
+        "clip": "idle",
+        "offset": 0.51,
+        "scale": 0.55
+       },
+       {
+        "t": 0.908,
+        "pos": [
+         590.4,
+         258.0
+        ],
+        "ease": "linear",
+        "scale": 0.6
+       },
+       {
+        "t": 1.815,
+        "pos": [
+         647.9,
+         288.2
+        ],
+        "ease": "linear",
+        "scale": 0.72
+       },
+       {
+        "t": 2.723,
+        "pos": [
+         624.9,
+         322.1
+        ],
+        "ease": "linear",
+        "scale": 0.85
+       },
+       {
+        "t": 3.631,
+        "pos": [
+         532.5,
+         343.6
+        ],
+        "ease": "linear",
+        "scale": 0.94
+       },
+       {
+        "t": 4.539,
+        "pos": [
+         414.9,
+         342.2
+        ],
+        "ease": "linear",
+        "scale": 0.93
+       },
+       {
+        "t": 5.446,
+        "pos": [
+         328.5,
+         318.7
+        ],
+        "ease": "linear",
+        "scale": 0.84
+       },
+       {
+        "t": 6.354,
+        "pos": [
+         314.7,
+         284.3
+        ],
+        "ease": "linear",
+        "scale": 0.7
+       },
+       {
+        "t": 7.262,
+        "pos": [
+         380.1,
+         255.5
+        ],
+        "ease": "linear",
+        "scale": 0.59
+       }
+      ]
+     },
+     {
+      "id": "cristal",
+      "sprite": "animations/phylactere.json",
+      "depth": 1.0,
+      "tint": "#d0ffb8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         800.0,
+         452.0
+        ],
+        "clip": "idle",
+        "scale": 0.6
+       }
+      ]
+     },
+     {
+      "id": "etincelles",
+      "particles": "sparks",
+      "color": "#b4f566",
+      "area": [
+       200.0,
+       180.0,
+       560.0,
+       260.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       },
+       {
+        "t": 2.6,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "poussiere",
+      "particles": "dust",
+      "color": "#c8e0b0",
+      "area": [
+       80.0,
+       240.0,
+       800.0,
+       220.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.5
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/liche_avant.json",
+      "depth": 1.35,
+      "tint": "#a8c8a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 2.6,
+      "to": 3.2,
+      "amount": 3.0
+     }
+    ],
+    "flash": [
+     {
+      "t": 2.7,
+      "in": 0.08,
+      "out": 0.5,
+      "color": "#d8ffb0",
+      "alpha": 0.4
+     }
+    ]
+   }
   }
  ]
 }

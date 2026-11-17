@@ -120,6 +120,10 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
   qui respirent et ombres qui suivent le feu ; la caméra suit l'action. Format des histoires en
   **version 2** (les autres histoires gardent leurs peintures). Une pastille NOUVEAU mène à « Revoir
   l'histoire ».
+* L'**histoire de la Liche** (« Le Gardien des noms ») devient un **petit dessin animé** : Ossian qui allume
+  une bougie pour chaque mort, les noms qui s'illuminent, la fuite des vivants, l'âme cachée dans le cristal,
+  les siècles qui ne laissent que les os et la flamme verte, la Liche dans sa crypte ; bougies, niches, toiles
+  et brume animées. Une pastille NOUVEAU mène à « Revoir l'histoire ».
 * **Clans** (EN LIGNE › **CLANS**) : un clan par joueur, **50 membres** au plus, un nom, un **tag** de 2 à 5
   lettres ou chiffres, unique sans tenir compte de la casse (affiché **[AUBE]**), une devise et un **emblème**
   (une forme et deux couleurs, comme les cadres). Le **chef** (un seul, rôle transmissible) et les **officiers**
