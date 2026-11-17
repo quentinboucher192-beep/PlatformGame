@@ -2340,6 +2340,26 @@
    "parents": [
     "stats.bosses"
    ]
+  },
+  {
+   "id": "gallery.boss.singularis",
+   "parents": [
+    "gallery.tab.bosses"
+   ]
+  },
+  {
+   "id": "gallery.story.singularis",
+   "version": "2.63.5",
+   "parents": [
+    "gallery.boss.singularis"
+   ]
+  },
+  {
+   "id": "stats.story.singularis",
+   "version": "2.63.5",
+   "parents": [
+    "stats.bosses"
+   ]
   }
  ]
 }

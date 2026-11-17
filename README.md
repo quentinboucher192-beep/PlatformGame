@@ -453,6 +453,12 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.63.5** :
+* L'**histoire de Singularis** (« Le Cœur effondré ») devient un **petit dessin animé** : Lyse, la jeune
+  étoile qui chante, les trois planètes qui fleurissent de ses dons, les machines qui boivent sa lumière, la
+  dernière étincelle, l'effondrement et Singularis affamé ; nébuleuse, étoiles et poussières animées. Une
+  pastille NOUVEAU mène à « Revoir l'histoire ».
+
 **Nouveau dans la version 2.63.4** :
 * Petits textes : les espaces entre les mots ne disparaissent plus en 1280×720.
 

@@ -1,0 +1,10 @@
+{
+  "texture": "stories/singularis/machine.png",
+  "frameWidth": 64,
+  "frameHeight": 48,
+  "pivot": [40, 24],
+  "clips": {
+    "fly": {"row": 0, "count": 6, "fps": 10, "loop": true},
+    "drink": {"row": 1, "count": 6, "fps": 10, "loop": true}
+  }
+}

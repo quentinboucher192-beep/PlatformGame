@@ -1,7 +1,7 @@
 {
  "format": "cosmic.boss_story",
- "version": 1,
- "comment": "Story of a giga boss (game/content/BossStories.h), told before the first fight against it. Each shot: its painting (assets/, tools/assetgen/environment/stories.py), its line of narration, the point the slow zoom goes to, the live particles over it. A shot lasts max(4.5 s, 1.2 s + characters / 16); then the title card (3 s).",
+ "version": 2,
+ "comment": "Story of a giga boss (game/content/BossStories.h), told before the first fight against it. Version 2: each shot is an animated scene (« stage »: parallax layers, sprites moved by keyframes, glows, particles, camera, shakes, flashes), written by tools/assetgen/environment/story_singularis_scene.py (edit it there); its image is the still rendered from the scene. A shot lasts max(4.5 s, 1.2 s + characters / 16); then the title card (3 s).",
  "boss": "singularis",
  "title": "Le Cœur effondré",
  "color": "#c88bff",
@@ -16,9 +16,483 @@
     0.5,
     0.46
    ],
-   "zoom": 1.12,
-   "particles": "sparks",
-   "glow": "#ffe9a8"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#ffe9a8",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#04030a",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       480.0,
+       270.0
+      ],
+      "zoom": 1.04
+     },
+     {
+      "t": 2.0,
+      "pos": [
+       480.0,
+       270.0
+      ],
+      "zoom": 1.1
+     },
+     {
+      "t": 7.637,
+      "pos": [
+       482.0,
+       268.0
+      ],
+      "zoom": 1.62
+     }
+    ],
+    "elements": [
+     {
+      "id": "cosmos",
+      "sprite": "animations/stories/singularis_cosmos.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "etoiles",
+      "sprite": "animations/stories/singularis_etoiles.json",
+      "depth": 0.08,
+      "drift": [
+       3.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "astre1",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         869.0,
+         487.0
+        ],
+        "clip": "twinkle",
+        "offset": 0.95,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre2",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         870.7,
+         160.1
+        ],
+        "clip": "twinkle",
+        "offset": 0.086,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre3",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         308.6,
+         474.3
+        ],
+        "clip": "twinkle",
+        "offset": 0.429,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre4",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         523.3,
+         317.6
+        ],
+        "clip": "twinkle",
+        "offset": 0.631,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre5",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         308.7,
+         392.8
+        ],
+        "clip": "twinkle",
+        "offset": 0.366,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre6",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         418.0,
+         62.0
+        ],
+        "clip": "twinkle",
+        "offset": 0.07,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre7",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         463.6,
+         351.5
+        ],
+        "clip": "twinkle",
+        "offset": 0.064,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre8",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         612.6,
+         225.3
+        ],
+        "clip": "twinkle",
+        "offset": 0.857,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "voile",
+      "sprite": "animations/stories/singularis_voile.json",
+      "depth": 0.15,
+      "drift": [
+       -6.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         60.0
+        ],
+        "alpha": 0.7,
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "poussiere",
+      "sprite": "animations/stories/singularis_poussiere.json",
+      "depth": 0.3,
+      "drift": [
+       9.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         380.0
+        ],
+        "alpha": 0.6,
+        "clip": "idle",
+        "offset": 0.5
+       }
+      ]
+     },
+     {
+      "id": "grain1",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.4,
+      "tint": "#b0a0c0",
+      "drift": [
+       8.49387476456942,
+       -1.5991342900704941
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         879.5,
+         392.6
+        ],
+        "clip": "spin",
+        "offset": 0.997,
+        "scale": 0.9
+       }
+      ]
+     },
+     {
+      "id": "grain2",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.7,
+      "tint": "#b0a0c0",
+      "drift": [
+       -2.8488169674852637,
+       2.6262292879646942
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         103.4,
+         191.8
+        ],
+        "clip": "spin",
+        "offset": 0.929,
+        "scale": 1.2
+       }
+      ]
+     },
+     {
+      "id": "grain3",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.7,
+      "tint": "#b0a0c0",
+      "drift": [
+       5.313106708855646,
+       -1.557378508027405
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         581.3,
+         280.7
+        ],
+        "clip": "spin",
+        "offset": 0.314,
+        "scale": 1.2
+       }
+      ]
+     },
+     {
+      "id": "grain4",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.55,
+      "tint": "#b0a0c0",
+      "drift": [
+       -8.838662139557165,
+       -0.14232917493110797
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         461.0,
+         241.7
+        ],
+        "clip": "spin",
+        "offset": 0.104,
+        "scale": 1.05
+       }
+      ]
+     },
+     {
+      "id": "grain5",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.7,
+      "tint": "#b0a0c0",
+      "drift": [
+       -1.3868973330681307,
+       1.7152428269948592
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         87.1,
+         408.7
+        ],
+        "clip": "spin",
+        "offset": 0.644,
+        "scale": 1.2
+       }
+      ]
+     },
+     {
+      "id": "lyse_halo",
+      "glow": "#ffe9a8",
+      "radius": 300.0,
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "alpha": 0.5
+       }
+      ],
+      "pulse": [
+       0.25,
+       2.6
+      ]
+     },
+     {
+      "id": "lyse_lueur",
+      "glow": "#fff6d8",
+      "radius": 120.0,
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "alpha": 0.8
+       }
+      ],
+      "pulse": [
+       0.3,
+       1.2,
+       0.4
+      ]
+     },
+     {
+      "id": "lyse",
+      "sprite": "animations/stories/singularis_lyse.json",
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "clip": "idle",
+        "scale": 1.3
+       }
+      ]
+     },
+     {
+      "id": "poussiere_vive",
+      "particles": "dust",
+      "color": "#ffd27a",
+      "area": [
+       0.0,
+       60.0,
+       960.0,
+       420.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.7
+       }
+      ]
+     },
+     {
+      "id": "etoiles_vives",
+      "particles": "stars",
+      "color": "#fff0d8",
+      "area": [
+       0.0,
+       0.0,
+       960.0,
+       540.0
+      ],
+      "depth": 0.1,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.5
+       }
+      ]
+     },
+     {
+      "id": "voile_proche",
+      "sprite": "animations/stories/singularis_voile.json",
+      "depth": 1.3,
+      "drift": [
+       18.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         420.0
+        ],
+        "alpha": 0.5,
+        "clip": "idle"
+       }
+      ]
+     }
+    ]
+   }
   },
   {
    "scene": "three_planets",
@@ -28,9 +502,1009 @@
     0.5,
     0.5
    ],
-   "zoom": 1.08,
-   "particles": "stars",
-   "glow": "#ffe2b0"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#ffe2b0",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#04030a",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       480.0,
+       280.0
+      ],
+      "zoom": 1.2
+     },
+     {
+      "t": 6.95,
+      "pos": [
+       480.0,
+       270.0
+      ],
+      "zoom": 1.08
+     }
+    ],
+    "elements": [
+     {
+      "id": "cosmos",
+      "sprite": "animations/stories/singularis_cosmos.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "etoiles",
+      "sprite": "animations/stories/singularis_etoiles.json",
+      "depth": 0.08,
+      "drift": [
+       3.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "astre1",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         132.0,
+         105.7
+        ],
+        "clip": "twinkle",
+        "offset": 0.698,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre2",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         525.3,
+         40.2
+        ],
+        "clip": "twinkle",
+        "offset": 0.363,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre3",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         472.3,
+         396.1
+        ],
+        "clip": "twinkle",
+        "offset": 0.385,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre4",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         151.1,
+         54.8
+        ],
+        "clip": "twinkle",
+        "offset": 0.122,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre5",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         72.5,
+         407.5
+        ],
+        "clip": "twinkle",
+        "offset": 0.135,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre6",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         53.3,
+         120.9
+        ],
+        "clip": "twinkle",
+        "offset": 0.255,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre7",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         543.3,
+         283.5
+        ],
+        "clip": "twinkle",
+        "offset": 0.783,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre8",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         467.8,
+         318.9
+        ],
+        "clip": "twinkle",
+        "offset": 0.158,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "voile",
+      "sprite": "animations/stories/singularis_voile.json",
+      "depth": 0.15,
+      "drift": [
+       -6.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         60.0
+        ],
+        "alpha": 0.7,
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "poussiere",
+      "sprite": "animations/stories/singularis_poussiere.json",
+      "depth": 0.3,
+      "drift": [
+       9.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         380.0
+        ],
+        "alpha": 0.6,
+        "clip": "idle",
+        "offset": 0.5
+       }
+      ]
+     },
+     {
+      "id": "grain1",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.4,
+      "tint": "#b0a0c0",
+      "drift": [
+       0.9857646914021796,
+       -3.516178057664175
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         208.5,
+         304.1
+        ],
+        "clip": "spin",
+        "offset": 0.859,
+        "scale": 0.9
+       }
+      ]
+     },
+     {
+      "id": "grain2",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.4,
+      "tint": "#b0a0c0",
+      "drift": [
+       -3.5810590611210706,
+       2.2607252312263126
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         306.1,
+         266.5
+        ],
+        "clip": "spin",
+        "offset": 0.772,
+        "scale": 0.9
+       }
+      ]
+     },
+     {
+      "id": "grain3",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.55,
+      "tint": "#b0a0c0",
+      "drift": [
+       5.901110935898286,
+       -3.100152400228647
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         118.8,
+         102.7
+        ],
+        "clip": "spin",
+        "offset": 0.057,
+        "scale": 1.05
+       }
+      ]
+     },
+     {
+      "id": "grain4",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.4,
+      "tint": "#b0a0c0",
+      "drift": [
+       -5.7421798849049255,
+       0.5508213486080678
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         638.8,
+         75.2
+        ],
+        "clip": "spin",
+        "offset": 0.222,
+        "scale": 0.9
+       }
+      ]
+     },
+     {
+      "id": "grain5",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.4,
+      "tint": "#b0a0c0",
+      "drift": [
+       2.35572918583086,
+       -2.9454510753985375
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         614.5,
+         132.9
+        ],
+        "clip": "spin",
+        "offset": 0.487,
+        "scale": 0.9
+       }
+      ]
+     },
+     {
+      "id": "lyse_halo",
+      "glow": "#ffe9a8",
+      "radius": 320.0,
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "alpha": 0.55
+       }
+      ],
+      "pulse": [
+       0.25,
+       2.2
+      ]
+     },
+     {
+      "id": "lyse",
+      "sprite": "animations/stories/singularis_lyse.json",
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "clip": "sing",
+        "scale": 1.15
+       }
+      ]
+     },
+     {
+      "id": "foret",
+      "sprite": "animations/stories/singularis_foret.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         698.7,
+         338.5
+        ],
+        "ease": "linear",
+        "scale": 1.09,
+        "clip": "spin",
+        "offset": 0.0
+       },
+       {
+        "t": 0.869,
+        "pos": [
+         654.4,
+         351.4
+        ],
+        "ease": "linear",
+        "scale": 1.11
+       },
+       {
+        "t": 1.738,
+        "pos": [
+         603.5,
+         361.1
+        ],
+        "ease": "linear",
+        "scale": 1.13
+       },
+       {
+        "t": 2.606,
+        "pos": [
+         547.7,
+         367.4
+        ],
+        "ease": "linear",
+        "scale": 1.14
+       },
+       {
+        "t": 3.475,
+        "pos": [
+         489.4,
+         370.0
+        ],
+        "ease": "linear",
+        "scale": 1.15
+       },
+       {
+        "t": 4.344,
+        "pos": [
+         430.7,
+         368.6
+        ],
+        "ease": "linear",
+        "scale": 1.15
+       },
+       {
+        "t": 5.213,
+        "pos": [
+         374.0,
+         363.5
+        ],
+        "ease": "linear",
+        "scale": 1.14
+       },
+       {
+        "t": 6.081,
+        "pos": [
+         321.2,
+         354.9
+        ],
+        "ease": "linear",
+        "scale": 1.12
+       },
+       {
+        "t": 6.95,
+        "pos": [
+         274.6,
+         342.9
+        ],
+        "ease": "linear",
+        "scale": 1.1
+       }
+      ]
+     },
+     {
+      "id": "foret_lueur",
+      "glow": "#c8ff9a",
+      "radius": 50.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         698.7,
+         338.5
+        ],
+        "ease": "linear",
+        "scale": 1.09,
+        "alpha": 0.35
+       },
+       {
+        "t": 0.869,
+        "pos": [
+         654.4,
+         351.4
+        ],
+        "ease": "linear",
+        "scale": 1.11
+       },
+       {
+        "t": 1.738,
+        "pos": [
+         603.5,
+         361.1
+        ],
+        "ease": "linear",
+        "scale": 1.13
+       },
+       {
+        "t": 2.606,
+        "pos": [
+         547.7,
+         367.4
+        ],
+        "ease": "linear",
+        "scale": 1.14
+       },
+       {
+        "t": 3.475,
+        "pos": [
+         489.4,
+         370.0
+        ],
+        "ease": "linear",
+        "scale": 1.15
+       },
+       {
+        "t": 4.344,
+        "pos": [
+         430.7,
+         368.6
+        ],
+        "ease": "linear",
+        "scale": 1.15
+       },
+       {
+        "t": 5.213,
+        "pos": [
+         374.0,
+         363.5
+        ],
+        "ease": "linear",
+        "scale": 1.14
+       },
+       {
+        "t": 6.081,
+        "pos": [
+         321.2,
+         354.9
+        ],
+        "ease": "linear",
+        "scale": 1.12
+       },
+       {
+        "t": 6.95,
+        "pos": [
+         274.6,
+         342.9
+        ],
+        "ease": "linear",
+        "scale": 1.1
+       }
+      ],
+      "pulse": [
+       0.3,
+       1.6,
+       0.0
+      ]
+     },
+     {
+      "id": "volcan",
+      "sprite": "animations/stories/singularis_volcan.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         192.8,
+         298.9
+        ],
+        "ease": "linear",
+        "scale": 1.01,
+        "clip": "spin",
+        "offset": 0.3
+       },
+       {
+        "t": 0.869,
+        "pos": [
+         181.4,
+         279.7
+        ],
+        "ease": "linear",
+        "scale": 0.97
+       },
+       {
+        "t": 1.738,
+        "pos": [
+         181.5,
+         260.1
+        ],
+        "ease": "linear",
+        "scale": 0.93
+       },
+       {
+        "t": 2.606,
+        "pos": [
+         193.0,
+         240.8
+        ],
+        "ease": "linear",
+        "scale": 0.89
+       },
+       {
+        "t": 3.475,
+        "pos": [
+         215.6,
+         222.7
+        ],
+        "ease": "linear",
+        "scale": 0.86
+       },
+       {
+        "t": 4.344,
+        "pos": [
+         248.3,
+         206.5
+        ],
+        "ease": "linear",
+        "scale": 0.82
+       },
+       {
+        "t": 5.213,
+        "pos": [
+         290.0,
+         192.6
+        ],
+        "ease": "linear",
+        "scale": 0.8
+       },
+       {
+        "t": 6.081,
+        "pos": [
+         338.9,
+         181.7
+        ],
+        "ease": "linear",
+        "scale": 0.77
+       },
+       {
+        "t": 6.95,
+        "pos": [
+         393.3,
+         174.3
+        ],
+        "ease": "linear",
+        "scale": 0.76
+       }
+      ]
+     },
+     {
+      "id": "volcan_lueur",
+      "glow": "#ffb070",
+      "radius": 50.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         192.8,
+         298.9
+        ],
+        "ease": "linear",
+        "scale": 1.01,
+        "alpha": 0.35
+       },
+       {
+        "t": 0.869,
+        "pos": [
+         181.4,
+         279.7
+        ],
+        "ease": "linear",
+        "scale": 0.97
+       },
+       {
+        "t": 1.738,
+        "pos": [
+         181.5,
+         260.1
+        ],
+        "ease": "linear",
+        "scale": 0.93
+       },
+       {
+        "t": 2.606,
+        "pos": [
+         193.0,
+         240.8
+        ],
+        "ease": "linear",
+        "scale": 0.89
+       },
+       {
+        "t": 3.475,
+        "pos": [
+         215.6,
+         222.7
+        ],
+        "ease": "linear",
+        "scale": 0.86
+       },
+       {
+        "t": 4.344,
+        "pos": [
+         248.3,
+         206.5
+        ],
+        "ease": "linear",
+        "scale": 0.82
+       },
+       {
+        "t": 5.213,
+        "pos": [
+         290.0,
+         192.6
+        ],
+        "ease": "linear",
+        "scale": 0.8
+       },
+       {
+        "t": 6.081,
+        "pos": [
+         338.9,
+         181.7
+        ],
+        "ease": "linear",
+        "scale": 0.77
+       },
+       {
+        "t": 6.95,
+        "pos": [
+         393.3,
+         174.3
+        ],
+        "ease": "linear",
+        "scale": 0.76
+       }
+      ],
+      "pulse": [
+       0.3,
+       1.8,
+       0.3
+      ]
+     },
+     {
+      "id": "glace",
+      "sprite": "animations/stories/singularis_glace.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         548.5,
+         172.6
+        ],
+        "ease": "linear",
+        "scale": 0.76,
+        "clip": "spin",
+        "offset": 0.6
+       },
+       {
+        "t": 0.869,
+        "pos": [
+         604.2,
+         179.0
+        ],
+        "ease": "linear",
+        "scale": 0.77
+       },
+       {
+        "t": 1.738,
+        "pos": [
+         655.1,
+         188.8
+        ],
+        "ease": "linear",
+        "scale": 0.79
+       },
+       {
+        "t": 2.606,
+        "pos": [
+         699.2,
+         201.7
+        ],
+        "ease": "linear",
+        "scale": 0.81
+       },
+       {
+        "t": 3.475,
+        "pos": [
+         735.0,
+         217.3
+        ],
+        "ease": "linear",
+        "scale": 0.84
+       },
+       {
+        "t": 4.344,
+        "pos": [
+         760.9,
+         234.9
+        ],
+        "ease": "linear",
+        "scale": 0.88
+       },
+       {
+        "t": 5.213,
+        "pos": [
+         776.1,
+         253.8
+        ],
+        "ease": "linear",
+        "scale": 0.92
+       },
+       {
+        "t": 6.081,
+        "pos": [
+         779.8,
+         273.4
+        ],
+        "ease": "linear",
+        "scale": 0.96
+       },
+       {
+        "t": 6.95,
+        "pos": [
+         772.1,
+         292.8
+        ],
+        "ease": "linear",
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "glace_lueur",
+      "glow": "#e8ffff",
+      "radius": 50.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         548.5,
+         172.6
+        ],
+        "ease": "linear",
+        "scale": 0.76,
+        "alpha": 0.35
+       },
+       {
+        "t": 0.869,
+        "pos": [
+         604.2,
+         179.0
+        ],
+        "ease": "linear",
+        "scale": 0.77
+       },
+       {
+        "t": 1.738,
+        "pos": [
+         655.1,
+         188.8
+        ],
+        "ease": "linear",
+        "scale": 0.79
+       },
+       {
+        "t": 2.606,
+        "pos": [
+         699.2,
+         201.7
+        ],
+        "ease": "linear",
+        "scale": 0.81
+       },
+       {
+        "t": 3.475,
+        "pos": [
+         735.0,
+         217.3
+        ],
+        "ease": "linear",
+        "scale": 0.84
+       },
+       {
+        "t": 4.344,
+        "pos": [
+         760.9,
+         234.9
+        ],
+        "ease": "linear",
+        "scale": 0.88
+       },
+       {
+        "t": 5.213,
+        "pos": [
+         776.1,
+         253.8
+        ],
+        "ease": "linear",
+        "scale": 0.92
+       },
+       {
+        "t": 6.081,
+        "pos": [
+         779.8,
+         273.4
+        ],
+        "ease": "linear",
+        "scale": 0.96
+       },
+       {
+        "t": 6.95,
+        "pos": [
+         772.1,
+         292.8
+        ],
+        "ease": "linear",
+        "scale": 1.0
+       }
+      ],
+      "pulse": [
+       0.3,
+       2.0,
+       0.6
+      ]
+     },
+     {
+      "id": "chant",
+      "particles": "sparks",
+      "color": "#ffe9a8",
+      "area": [
+       300.0,
+       120.0,
+       360.0,
+       300.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.8
+       }
+      ]
+     },
+     {
+      "id": "poussiere_vive",
+      "particles": "dust",
+      "color": "#ffd27a",
+      "area": [
+       0.0,
+       60.0,
+       960.0,
+       420.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       }
+      ]
+     },
+     {
+      "id": "voile_proche",
+      "sprite": "animations/stories/singularis_voile.json",
+      "depth": 1.3,
+      "drift": [
+       18.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         420.0
+        ],
+        "alpha": 0.5,
+        "clip": "idle"
+       }
+      ]
+     }
+    ]
+   }
   },
   {
    "scene": "gifts",
@@ -40,9 +1514,1254 @@
     0.45,
     0.5
    ],
-   "zoom": 1.1,
-   "particles": "sparks",
-   "glow": "#ffd27a"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#ffd27a",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#04030a",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       420.0,
+       270.0
+      ],
+      "zoom": 1.24
+     },
+     {
+      "t": 2.2,
+      "pos": [
+       480.0,
+       280.0
+      ],
+      "zoom": 1.2
+     },
+     {
+      "t": 6.45,
+      "pos": [
+       500.0,
+       290.0
+      ],
+      "zoom": 1.16
+     }
+    ],
+    "elements": [
+     {
+      "id": "cosmos",
+      "sprite": "animations/stories/singularis_cosmos.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "etoiles",
+      "sprite": "animations/stories/singularis_etoiles.json",
+      "depth": 0.08,
+      "drift": [
+       3.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "astre1",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         444.0,
+         398.5
+        ],
+        "clip": "twinkle",
+        "offset": 0.6,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre2",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         506.2,
+         459.6
+        ],
+        "clip": "twinkle",
+        "offset": 0.806,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre3",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         701.4,
+         348.5
+        ],
+        "clip": "twinkle",
+        "offset": 0.204,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre4",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         298.9,
+         163.7
+        ],
+        "clip": "twinkle",
+        "offset": 0.067,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre5",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         356.4,
+         434.3
+        ],
+        "clip": "twinkle",
+        "offset": 0.354,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre6",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         65.0,
+         428.8
+        ],
+        "clip": "twinkle",
+        "offset": 0.93,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre7",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         901.8,
+         311.4
+        ],
+        "clip": "twinkle",
+        "offset": 0.842,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre8",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         819.1,
+         238.4
+        ],
+        "clip": "twinkle",
+        "offset": 0.907,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "voile",
+      "sprite": "animations/stories/singularis_voile.json",
+      "depth": 0.15,
+      "drift": [
+       -6.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         60.0
+        ],
+        "alpha": 0.7,
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "poussiere",
+      "sprite": "animations/stories/singularis_poussiere.json",
+      "depth": 0.3,
+      "drift": [
+       9.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         380.0
+        ],
+        "alpha": 0.6,
+        "clip": "idle",
+        "offset": 0.5
+       }
+      ]
+     },
+     {
+      "id": "grain1",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.7,
+      "tint": "#b0a0c0",
+      "drift": [
+       0.5686062962406364,
+       3.192987531892287
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         723.8,
+         270.1
+        ],
+        "clip": "spin",
+        "offset": 0.413,
+        "scale": 1.2
+       }
+      ]
+     },
+     {
+      "id": "grain2",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.55,
+      "tint": "#b0a0c0",
+      "drift": [
+       -6.599331435081199,
+       -0.28400121723224103
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         631.2,
+         371.1
+        ],
+        "clip": "spin",
+        "offset": 0.677,
+        "scale": 1.05
+       }
+      ]
+     },
+     {
+      "id": "grain3",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.55,
+      "tint": "#b0a0c0",
+      "drift": [
+       6.971936065406833,
+       -1.6373583723899863
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         310.6,
+         83.5
+        ],
+        "clip": "spin",
+        "offset": 0.366,
+        "scale": 1.05
+       }
+      ]
+     },
+     {
+      "id": "grain4",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.4,
+      "tint": "#b0a0c0",
+      "drift": [
+       5.5081985513484515,
+       3.667449952954505
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         129.6,
+         80.5
+        ],
+        "clip": "spin",
+        "offset": 0.838,
+        "scale": 0.9
+       }
+      ]
+     },
+     {
+      "id": "grain5",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.7,
+      "tint": "#b0a0c0",
+      "drift": [
+       -0.8641420403364268,
+       2.049925605564032
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         657.1,
+         332.0
+        ],
+        "clip": "spin",
+        "offset": 0.869,
+        "scale": 1.2
+       }
+      ]
+     },
+     {
+      "id": "lyse_halo",
+      "glow": "#ffe9a8",
+      "radius": 300.0,
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         330.0,
+         270.0
+        ],
+        "alpha": 0.55
+       }
+      ],
+      "pulse": [
+       0.25,
+       2.2
+      ]
+     },
+     {
+      "id": "lyse",
+      "sprite": "animations/stories/singularis_lyse.json",
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         330.0,
+         270.0
+        ],
+        "clip": "sing",
+        "scale": 1.15
+       }
+      ]
+     },
+     {
+      "id": "foret_lueur",
+      "glow": "#a8f070",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         640.0,
+         160.0
+        ],
+        "alpha": 0.3
+       },
+       {
+        "t": 1.6,
+        "alpha": 0.3
+       },
+       {
+        "t": 1.8,
+        "alpha": 0.7,
+        "scale": 1.5
+       },
+       {
+        "t": 2.8,
+        "alpha": 0.45,
+        "scale": 1.2
+       }
+      ],
+      "pulse": [
+       0.3,
+       1.4,
+       0.0
+      ]
+     },
+     {
+      "id": "foret",
+      "sprite": "animations/stories/singularis_foret.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         640.0,
+         160.0
+        ],
+        "clip": "spin",
+        "scale": 1.3,
+        "offset": 0.0
+       },
+       {
+        "t": 1.6,
+        "clip": "bloom"
+       },
+       {
+        "t": 6.45,
+        "pos": [
+         650.0,
+         154.0
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "don_foret1",
+      "sprite": "animations/stories/singularis_don.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         330.0,
+         270.0
+        ],
+        "alpha": 0.0,
+        "clip": "seve",
+        "scale": 1.4
+       },
+       {
+        "t": 0.6,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 0.61,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 1.1,
+        "pos": [
+         485.0,
+         165.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 1.6,
+        "pos": [
+         640.0,
+         160.0
+        ],
+        "ease": "in",
+        "scale": 0.8
+       },
+       {
+        "t": 1.62,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "don_foret2",
+      "sprite": "animations/stories/singularis_don.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         330.0,
+         270.0
+        ],
+        "alpha": 0.0,
+        "clip": "seve",
+        "scale": 1.4
+       },
+       {
+        "t": 0.72,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 0.73,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 1.22,
+        "pos": [
+         485.0,
+         185.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 1.72,
+        "pos": [
+         640.0,
+         160.0
+        ],
+        "ease": "in",
+        "scale": 0.8
+       },
+       {
+        "t": 1.74,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "don_foret3",
+      "sprite": "animations/stories/singularis_don.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         330.0,
+         270.0
+        ],
+        "alpha": 0.0,
+        "clip": "seve",
+        "scale": 1.4
+       },
+       {
+        "t": 0.84,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 0.85,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 1.34,
+        "pos": [
+         485.0,
+         205.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 1.84,
+        "pos": [
+         640.0,
+         160.0
+        ],
+        "ease": "in",
+        "scale": 0.8
+       },
+       {
+        "t": 1.86,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "don_foret4",
+      "sprite": "animations/stories/singularis_don.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         330.0,
+         270.0
+        ],
+        "alpha": 0.0,
+        "clip": "seve",
+        "scale": 1.4
+       },
+       {
+        "t": 0.96,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 0.97,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 1.46,
+        "pos": [
+         485.0,
+         225.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 1.96,
+        "pos": [
+         640.0,
+         160.0
+        ],
+        "ease": "in",
+        "scale": 0.8
+       },
+       {
+        "t": 1.98,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "volcan_lueur",
+      "glow": "#ffa040",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         720.0,
+         300.0
+        ],
+        "alpha": 0.3
+       },
+       {
+        "t": 3.2,
+        "alpha": 0.3
+       },
+       {
+        "t": 3.4,
+        "alpha": 0.7,
+        "scale": 1.5
+       },
+       {
+        "t": 4.4,
+        "alpha": 0.45,
+        "scale": 1.2
+       }
+      ],
+      "pulse": [
+       0.3,
+       1.4,
+       0.2
+      ]
+     },
+     {
+      "id": "volcan",
+      "sprite": "animations/stories/singularis_volcan.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         720.0,
+         300.0
+        ],
+        "clip": "spin",
+        "scale": 1.3,
+        "offset": 0.2
+       },
+       {
+        "t": 3.2,
+        "clip": "bloom"
+       },
+       {
+        "t": 6.45,
+        "pos": [
+         730.0,
+         294.0
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "don_volcan1",
+      "sprite": "animations/stories/singularis_don.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         330.0,
+         270.0
+        ],
+        "alpha": 0.0,
+        "clip": "feu",
+        "scale": 1.4
+       },
+       {
+        "t": 2.2,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 2.21,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 2.7,
+        "pos": [
+         525.0,
+         235.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 3.2,
+        "pos": [
+         720.0,
+         300.0
+        ],
+        "ease": "in",
+        "scale": 0.8
+       },
+       {
+        "t": 3.22,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "don_volcan2",
+      "sprite": "animations/stories/singularis_don.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         330.0,
+         270.0
+        ],
+        "alpha": 0.0,
+        "clip": "feu",
+        "scale": 1.4
+       },
+       {
+        "t": 2.32,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 2.33,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 2.82,
+        "pos": [
+         525.0,
+         255.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 3.32,
+        "pos": [
+         720.0,
+         300.0
+        ],
+        "ease": "in",
+        "scale": 0.8
+       },
+       {
+        "t": 3.34,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "don_volcan3",
+      "sprite": "animations/stories/singularis_don.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         330.0,
+         270.0
+        ],
+        "alpha": 0.0,
+        "clip": "feu",
+        "scale": 1.4
+       },
+       {
+        "t": 2.44,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 2.45,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 2.94,
+        "pos": [
+         525.0,
+         275.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 3.44,
+        "pos": [
+         720.0,
+         300.0
+        ],
+        "ease": "in",
+        "scale": 0.8
+       },
+       {
+        "t": 3.46,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "don_volcan4",
+      "sprite": "animations/stories/singularis_don.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         330.0,
+         270.0
+        ],
+        "alpha": 0.0,
+        "clip": "feu",
+        "scale": 1.4
+       },
+       {
+        "t": 2.56,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 2.57,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 3.06,
+        "pos": [
+         525.0,
+         295.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 3.56,
+        "pos": [
+         720.0,
+         300.0
+        ],
+        "ease": "in",
+        "scale": 0.8
+       },
+       {
+        "t": 3.58,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "glace_lueur",
+      "glow": "#a8e8ff",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         610.0,
+         430.0
+        ],
+        "alpha": 0.3
+       },
+       {
+        "t": 4.8,
+        "alpha": 0.3
+       },
+       {
+        "t": 5.0,
+        "alpha": 0.7,
+        "scale": 1.5
+       },
+       {
+        "t": 6.0,
+        "alpha": 0.45,
+        "scale": 1.2
+       }
+      ],
+      "pulse": [
+       0.3,
+       1.4,
+       0.4
+      ]
+     },
+     {
+      "id": "glace",
+      "sprite": "animations/stories/singularis_glace.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         610.0,
+         430.0
+        ],
+        "clip": "spin",
+        "scale": 1.3,
+        "offset": 0.4
+       },
+       {
+        "t": 4.8,
+        "clip": "bloom"
+       },
+       {
+        "t": 6.45,
+        "pos": [
+         620.0,
+         424.0
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "don_glace1",
+      "sprite": "animations/stories/singularis_don.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         330.0,
+         270.0
+        ],
+        "alpha": 0.0,
+        "clip": "glace",
+        "scale": 1.4
+       },
+       {
+        "t": 3.8,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 3.81,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 4.3,
+        "pos": [
+         470.0,
+         300.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 4.8,
+        "pos": [
+         610.0,
+         430.0
+        ],
+        "ease": "in",
+        "scale": 0.8
+       },
+       {
+        "t": 4.82,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "don_glace2",
+      "sprite": "animations/stories/singularis_don.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         330.0,
+         270.0
+        ],
+        "alpha": 0.0,
+        "clip": "glace",
+        "scale": 1.4
+       },
+       {
+        "t": 3.92,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 3.93,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 4.42,
+        "pos": [
+         470.0,
+         320.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 4.92,
+        "pos": [
+         610.0,
+         430.0
+        ],
+        "ease": "in",
+        "scale": 0.8
+       },
+       {
+        "t": 4.94,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "don_glace3",
+      "sprite": "animations/stories/singularis_don.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         330.0,
+         270.0
+        ],
+        "alpha": 0.0,
+        "clip": "glace",
+        "scale": 1.4
+       },
+       {
+        "t": 4.04,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 4.05,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 4.54,
+        "pos": [
+         470.0,
+         340.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 5.04,
+        "pos": [
+         610.0,
+         430.0
+        ],
+        "ease": "in",
+        "scale": 0.8
+       },
+       {
+        "t": 5.06,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "don_glace4",
+      "sprite": "animations/stories/singularis_don.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         330.0,
+         270.0
+        ],
+        "alpha": 0.0,
+        "clip": "glace",
+        "scale": 1.4
+       },
+       {
+        "t": 4.16,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 4.17,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 4.66,
+        "pos": [
+         470.0,
+         360.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 5.16,
+        "pos": [
+         610.0,
+         430.0
+        ],
+        "ease": "in",
+        "scale": 0.8
+       },
+       {
+        "t": 5.18,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "chant",
+      "particles": "sparks",
+      "color": "#ffe9a8",
+      "area": [
+       220.0,
+       140.0,
+       560.0,
+       280.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.8
+       }
+      ]
+     },
+     {
+      "id": "poussiere_vive",
+      "particles": "dust",
+      "color": "#ffd27a",
+      "area": [
+       0.0,
+       60.0,
+       960.0,
+       420.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       }
+      ]
+     },
+     {
+      "id": "voile_proche",
+      "sprite": "animations/stories/singularis_voile.json",
+      "depth": 1.3,
+      "drift": [
+       18.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         420.0
+        ],
+        "alpha": 0.5,
+        "clip": "idle"
+       }
+      ]
+     }
+    ]
+   }
   },
   {
    "scene": "machines",
@@ -52,9 +2771,1165 @@
     0.5,
     0.42
    ],
-   "zoom": 1.1,
-   "particles": "sparks",
-   "glow": "#7fe8ff"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#7fe8ff",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#04030a",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       480.0,
+       270.0
+      ],
+      "zoom": 1.12
+     },
+     {
+      "t": 5.45,
+      "pos": [
+       480.0,
+       270.0
+      ],
+      "zoom": 1.3
+     }
+    ],
+    "elements": [
+     {
+      "id": "cosmos",
+      "sprite": "animations/stories/singularis_cosmos.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "etoiles",
+      "sprite": "animations/stories/singularis_etoiles.json",
+      "depth": 0.08,
+      "drift": [
+       3.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "astre1",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         371.3,
+         444.1
+        ],
+        "clip": "twinkle",
+        "offset": 0.82,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre2",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         416.7,
+         218.4
+        ],
+        "clip": "twinkle",
+        "offset": 0.182,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre3",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         107.3,
+         283.4
+        ],
+        "clip": "twinkle",
+        "offset": 1.132,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre4",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         283.0,
+         276.3
+        ],
+        "clip": "twinkle",
+        "offset": 0.425,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre5",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         894.9,
+         254.0
+        ],
+        "clip": "twinkle",
+        "offset": 0.796,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre6",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         654.4,
+         480.3
+        ],
+        "clip": "twinkle",
+        "offset": 0.355,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre7",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         460.0,
+         327.0
+        ],
+        "clip": "twinkle",
+        "offset": 1.088,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre8",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         788.8,
+         413.4
+        ],
+        "clip": "twinkle",
+        "offset": 0.323,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "voile",
+      "sprite": "animations/stories/singularis_voile.json",
+      "depth": 0.15,
+      "drift": [
+       -6.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         60.0
+        ],
+        "alpha": 0.7,
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "poussiere",
+      "sprite": "animations/stories/singularis_poussiere.json",
+      "depth": 0.3,
+      "drift": [
+       9.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         380.0
+        ],
+        "alpha": 0.6,
+        "clip": "idle",
+        "offset": 0.5
+       }
+      ]
+     },
+     {
+      "id": "grain1",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.55,
+      "tint": "#b0a0c0",
+      "drift": [
+       -1.375432434926914,
+       -0.6659073085279914
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         803.9,
+         347.1
+        ],
+        "clip": "spin",
+        "offset": 0.821,
+        "scale": 1.05
+       }
+      ]
+     },
+     {
+      "id": "grain2",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.55,
+      "tint": "#b0a0c0",
+      "drift": [
+       8.869863434055006,
+       -2.715463139462525
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         173.5,
+         99.9
+        ],
+        "clip": "spin",
+        "offset": 0.547,
+        "scale": 1.05
+       }
+      ]
+     },
+     {
+      "id": "grain3",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.4,
+      "tint": "#b0a0c0",
+      "drift": [
+       -0.24134873917590483,
+       1.3045356802745722
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         508.7,
+         208.7
+        ],
+        "clip": "spin",
+        "offset": 0.951,
+        "scale": 0.9
+       }
+      ]
+     },
+     {
+      "id": "grain4",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.4,
+      "tint": "#b0a0c0",
+      "drift": [
+       -4.07904324483064,
+       -0.17357558133759632
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         302.7,
+         349.6
+        ],
+        "clip": "spin",
+        "offset": 0.941,
+        "scale": 0.9
+       }
+      ]
+     },
+     {
+      "id": "grain5",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.7,
+      "tint": "#b0a0c0",
+      "drift": [
+       6.134007317393543,
+       -1.8447028809427328
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         837.9,
+         464.0
+        ],
+        "clip": "spin",
+        "offset": 0.836,
+        "scale": 1.2
+       }
+      ]
+     },
+     {
+      "id": "lyse_halo",
+      "glow": "#ffe9a8",
+      "radius": 300.0,
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "alpha": 0.55
+       },
+       {
+        "t": 1.3,
+        "alpha": 0.55
+       },
+       {
+        "t": 5.45,
+        "alpha": 0.2,
+        "scale": 0.7
+       }
+      ],
+      "pulse": [
+       0.25,
+       2.0
+      ]
+     },
+     {
+      "id": "lyse_lueur",
+      "glow": "#fff6d8",
+      "radius": 110.0,
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "alpha": 0.8
+       },
+       {
+        "t": 5.45,
+        "alpha": 0.35,
+        "scale": 0.7
+       }
+      ],
+      "pulse": [
+       0.35,
+       0.9
+      ]
+     },
+     {
+      "id": "lyse",
+      "sprite": "animations/stories/singularis_lyse.json",
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "clip": "idle",
+        "scale": 1.2
+       },
+       {
+        "t": 2.5,
+        "clip": "dim"
+       },
+       {
+        "t": 5.45,
+        "scale": 0.95
+       }
+      ]
+     },
+     {
+      "id": "machine1",
+      "sprite": "animations/stories/singularis_machine.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         960.0,
+         140.0
+        ],
+        "clip": "fly",
+        "flip": false
+       },
+       {
+        "t": 0.2,
+        "pos": [
+         960.0,
+         140.0
+        ]
+       },
+       {
+        "t": 1.25,
+        "pos": [
+         620.0,
+         200.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 1.3,
+        "clip": "drink"
+       }
+      ]
+     },
+     {
+      "id": "gorgee1_1",
+      "sprite": "animations/stories/singularis_don.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "alpha": 0.0,
+        "clip": "lumiere"
+       },
+       {
+        "t": 1.5,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 1.51,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 2.1,
+        "pos": [
+         590.0,
+         200.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 2.12,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "gorgee1_2",
+      "sprite": "animations/stories/singularis_don.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "alpha": 0.0,
+        "clip": "lumiere"
+       },
+       {
+        "t": 2.25,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 2.26,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 2.85,
+        "pos": [
+         590.0,
+         200.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 2.87,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "gorgee1_3",
+      "sprite": "animations/stories/singularis_don.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "alpha": 0.0,
+        "clip": "lumiere"
+       },
+       {
+        "t": 3.0,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 3.01,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 3.6,
+        "pos": [
+         590.0,
+         200.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 3.62,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "gorgee1_4",
+      "sprite": "animations/stories/singularis_don.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "alpha": 0.0,
+        "clip": "lumiere"
+       },
+       {
+        "t": 3.75,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 3.76,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 4.35,
+        "pos": [
+         590.0,
+         200.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 4.37,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "gorgee1_5",
+      "sprite": "animations/stories/singularis_don.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "alpha": 0.0,
+        "clip": "lumiere"
+       },
+       {
+        "t": 4.5,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 4.51,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 5.1,
+        "pos": [
+         590.0,
+         200.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 5.12,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "machine2",
+      "sprite": "animations/stories/singularis_machine.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         1000.0,
+         380.0
+        ],
+        "clip": "fly",
+        "flip": false
+       },
+       {
+        "t": 0.45,
+        "pos": [
+         1000.0,
+         380.0
+        ]
+       },
+       {
+        "t": 1.25,
+        "pos": [
+         640.0,
+         330.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 1.3,
+        "clip": "drink"
+       }
+      ]
+     },
+     {
+      "id": "gorgee2_1",
+      "sprite": "animations/stories/singularis_don.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "alpha": 0.0,
+        "clip": "lumiere"
+       },
+       {
+        "t": 1.7,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 1.71,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 2.3,
+        "pos": [
+         610.0,
+         330.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 2.32,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "gorgee2_2",
+      "sprite": "animations/stories/singularis_don.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "alpha": 0.0,
+        "clip": "lumiere"
+       },
+       {
+        "t": 2.45,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 2.46,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 3.05,
+        "pos": [
+         610.0,
+         330.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 3.07,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "gorgee2_3",
+      "sprite": "animations/stories/singularis_don.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "alpha": 0.0,
+        "clip": "lumiere"
+       },
+       {
+        "t": 3.2,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 3.21,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 3.8,
+        "pos": [
+         610.0,
+         330.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 3.82,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "gorgee2_4",
+      "sprite": "animations/stories/singularis_don.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "alpha": 0.0,
+        "clip": "lumiere"
+       },
+       {
+        "t": 3.95,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 3.96,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 4.55,
+        "pos": [
+         610.0,
+         330.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 4.57,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "gorgee2_5",
+      "sprite": "animations/stories/singularis_don.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "alpha": 0.0,
+        "clip": "lumiere"
+       },
+       {
+        "t": 4.7,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 4.71,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 5.3,
+        "pos": [
+         610.0,
+         330.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 5.32,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "machine3",
+      "sprite": "animations/stories/singularis_machine.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -20.0,
+         120.0
+        ],
+        "clip": "fly",
+        "flip": true
+       },
+       {
+        "t": 0.7,
+        "pos": [
+         -20.0,
+         120.0
+        ]
+       },
+       {
+        "t": 1.25,
+        "pos": [
+         330.0,
+         200.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 1.3,
+        "clip": "drink"
+       }
+      ]
+     },
+     {
+      "id": "gorgee3_1",
+      "sprite": "animations/stories/singularis_don.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "alpha": 0.0,
+        "clip": "lumiere"
+       },
+       {
+        "t": 1.9,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 1.91,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 2.5,
+        "pos": [
+         360.0,
+         200.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 2.52,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "gorgee3_2",
+      "sprite": "animations/stories/singularis_don.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "alpha": 0.0,
+        "clip": "lumiere"
+       },
+       {
+        "t": 2.65,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 2.66,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 3.25,
+        "pos": [
+         360.0,
+         200.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 3.27,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "gorgee3_3",
+      "sprite": "animations/stories/singularis_don.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "alpha": 0.0,
+        "clip": "lumiere"
+       },
+       {
+        "t": 3.4,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 3.41,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 4.0,
+        "pos": [
+         360.0,
+         200.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 4.02,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "gorgee3_4",
+      "sprite": "animations/stories/singularis_don.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "alpha": 0.0,
+        "clip": "lumiere"
+       },
+       {
+        "t": 4.15,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 4.16,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 4.75,
+        "pos": [
+         360.0,
+         200.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 4.77,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "lumiere",
+      "particles": "sparks",
+      "color": "#ffe9a8",
+      "area": [
+       360.0,
+       160.0,
+       240.0,
+       220.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.8
+       },
+       {
+        "t": 5.45,
+        "alpha": 0.3
+       }
+      ]
+     },
+     {
+      "id": "poussiere_vive",
+      "particles": "dust",
+      "color": "#c8b8d8",
+      "area": [
+       0.0,
+       60.0,
+       960.0,
+       420.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       }
+      ]
+     },
+     {
+      "id": "voile_proche",
+      "sprite": "animations/stories/singularis_voile.json",
+      "depth": 1.3,
+      "drift": [
+       18.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         420.0
+        ],
+        "alpha": 0.5,
+        "clip": "idle"
+       }
+      ]
+     }
+    ]
+   }
   },
   {
    "scene": "last_spark",
@@ -64,9 +3939,557 @@
     0.5,
     0.52
    ],
-   "zoom": 1.14,
-   "particles": "dust",
-   "glow": "#ffb27a"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#ffb27a",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#020206",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       480.0,
+       270.0
+      ],
+      "zoom": 1.04
+     },
+     {
+      "t": 7.387,
+      "pos": [
+       480.0,
+       270.0
+      ],
+      "zoom": 1.86
+     }
+    ],
+    "elements": [
+     {
+      "id": "cosmos",
+      "sprite": "animations/stories/singularis_cosmos.json",
+      "depth": 0.03,
+      "tint": "#7a7aa8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "etoiles",
+      "sprite": "animations/stories/singularis_etoiles.json",
+      "depth": 0.08,
+      "drift": [
+       3.0,
+       0.0
+      ],
+      "repeat": true,
+      "tint": "#7a7aa8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "astre1",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         450.2,
+         50.5
+        ],
+        "clip": "twinkle",
+        "offset": 0.785,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre2",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         600.9,
+         465.4
+        ],
+        "clip": "twinkle",
+        "offset": 0.168,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre3",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         203.5,
+         431.8
+        ],
+        "clip": "twinkle",
+        "offset": 1.036,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre4",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         872.9,
+         65.4
+        ],
+        "clip": "twinkle",
+        "offset": 1.021,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre5",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         890.3,
+         476.8
+        ],
+        "clip": "twinkle",
+        "offset": 0.544,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre6",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         440.0,
+         11.5
+        ],
+        "clip": "twinkle",
+        "offset": 0.657,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre7",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         114.1,
+         311.9
+        ],
+        "clip": "twinkle",
+        "offset": 0.68,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre8",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         632.6,
+         58.8
+        ],
+        "clip": "twinkle",
+        "offset": 0.565,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "voile",
+      "sprite": "animations/stories/singularis_voile.json",
+      "depth": 0.15,
+      "drift": [
+       -6.0,
+       0.0
+      ],
+      "repeat": true,
+      "tint": "#7a7aa8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         60.0
+        ],
+        "alpha": 0.42,
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "poussiere",
+      "sprite": "animations/stories/singularis_poussiere.json",
+      "depth": 0.3,
+      "drift": [
+       9.0,
+       0.0
+      ],
+      "repeat": true,
+      "tint": "#7a7aa8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         380.0
+        ],
+        "alpha": 0.36,
+        "clip": "idle",
+        "offset": 0.5
+       }
+      ]
+     },
+     {
+      "id": "grain1",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.4,
+      "tint": "#7a7aa8",
+      "drift": [
+       2.6292750958414874,
+       3.286127656591148
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         111.3,
+         334.6
+        ],
+        "clip": "spin",
+        "offset": 0.152,
+        "scale": 0.9
+       }
+      ]
+     },
+     {
+      "id": "grain2",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.55,
+      "tint": "#7a7aa8",
+      "drift": [
+       7.270536747205721,
+       0.03422517116652113
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         163.4,
+         143.8
+        ],
+        "clip": "spin",
+        "offset": 0.844,
+        "scale": 1.05
+       }
+      ]
+     },
+     {
+      "id": "grain3",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.7,
+      "tint": "#7a7aa8",
+      "drift": [
+       8.673489772245631,
+       -0.3744652470667713
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         137.5,
+         417.4
+        ],
+        "clip": "spin",
+        "offset": 0.946,
+        "scale": 1.2
+       }
+      ]
+     },
+     {
+      "id": "grain4",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.7,
+      "tint": "#7a7aa8",
+      "drift": [
+       0.949301418022678,
+       -3.1815916211701456
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         58.8,
+         251.7
+        ],
+        "clip": "spin",
+        "offset": 0.003,
+        "scale": 1.2
+       }
+      ]
+     },
+     {
+      "id": "grain5",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.4,
+      "tint": "#7a7aa8",
+      "drift": [
+       -8.046405475640512,
+       -0.2359357281507828
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         538.6,
+         218.0
+        ],
+        "clip": "spin",
+        "offset": 0.666,
+        "scale": 0.9
+       }
+      ]
+     },
+     {
+      "id": "foret",
+      "sprite": "animations/stories/singularis_foret.json",
+      "depth": 0.5,
+      "tint": "#606080",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         120.0,
+         140.0
+        ],
+        "clip": "spin",
+        "scale": 0.6,
+        "offset": 0.0
+       },
+       {
+        "t": 7.387,
+        "pos": [
+         84.0,
+         127.0
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "volcan",
+      "sprite": "animations/stories/singularis_volcan.json",
+      "depth": 0.5,
+      "tint": "#606080",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         860.0,
+         420.0
+        ],
+        "clip": "spin",
+        "scale": 0.6,
+        "offset": 0.3
+       },
+       {
+        "t": 7.387,
+        "pos": [
+         898.0,
+         435.0
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "glace",
+      "sprite": "animations/stories/singularis_glace.json",
+      "depth": 0.5,
+      "tint": "#606080",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         820.0,
+         120.0
+        ],
+        "clip": "spin",
+        "scale": 0.6,
+        "offset": 0.6
+       },
+       {
+        "t": 7.387,
+        "pos": [
+         854.0,
+         105.0
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "etincelle_lueur",
+      "glow": "#d8d8ff",
+      "radius": 50.0,
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.6,
+       0.9
+      ]
+     },
+     {
+      "id": "froid",
+      "glow": "#5a6aa8",
+      "radius": 260.0,
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "alpha": 0.25
+       }
+      ],
+      "pulse": [
+       0.3,
+       3.0
+      ]
+     },
+     {
+      "id": "lyse",
+      "sprite": "animations/stories/singularis_lyse.json",
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "clip": "spark",
+        "scale": 1.2
+       }
+      ]
+     },
+     {
+      "id": "froid_vif",
+      "particles": "snow",
+      "color": "#c8d8ff",
+      "area": [
+       0.0,
+       0.0,
+       960.0,
+       540.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       }
+      ]
+     },
+     {
+      "id": "poussiere_vive",
+      "particles": "dust",
+      "color": "#8a8ab8",
+      "area": [
+       0.0,
+       60.0,
+       960.0,
+       420.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.4
+       }
+      ]
+     },
+     {
+      "id": "voile_proche",
+      "sprite": "animations/stories/singularis_voile.json",
+      "depth": 1.3,
+      "drift": [
+       18.0,
+       0.0
+      ],
+      "repeat": true,
+      "tint": "#7a7aa8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         420.0
+        ],
+        "alpha": 0.4,
+        "clip": "idle"
+       }
+      ]
+     }
+    ]
+   }
   },
   {
    "scene": "collapse",
@@ -76,9 +4499,1496 @@
     0.5,
     0.5
    ],
-   "zoom": 1.16,
-   "particles": "embers",
-   "glow": "#c88bff"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#c88bff",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#04030a",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       480.0,
+       270.0
+      ],
+      "zoom": 1.7
+     },
+     {
+      "t": 2.4,
+      "pos": [
+       480.0,
+       270.0
+      ],
+      "zoom": 1.5
+     },
+     {
+      "t": 4.6,
+      "pos": [
+       480.0,
+       280.0
+      ],
+      "zoom": 1.12
+     },
+     {
+      "t": 7.387,
+      "pos": [
+       480.0,
+       276.0
+      ],
+      "zoom": 1.06
+     }
+    ],
+    "elements": [
+     {
+      "id": "cosmos",
+      "sprite": "animations/stories/singularis_cosmos.json",
+      "depth": 0.03,
+      "tint": "#a090c0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "etoiles",
+      "sprite": "animations/stories/singularis_etoiles.json",
+      "depth": 0.08,
+      "drift": [
+       3.0,
+       0.0
+      ],
+      "repeat": true,
+      "tint": "#a090c0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "astre1",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         37.8,
+         222.8
+        ],
+        "clip": "twinkle",
+        "offset": 0.616,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre2",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         894.9,
+         455.2
+        ],
+        "clip": "twinkle",
+        "offset": 0.956,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre3",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         219.0,
+         46.7
+        ],
+        "clip": "twinkle",
+        "offset": 0.934,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre4",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         768.9,
+         149.6
+        ],
+        "clip": "twinkle",
+        "offset": 1.198,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre5",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         190.7,
+         162.4
+        ],
+        "clip": "twinkle",
+        "offset": 1.125,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre6",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         606.8,
+         180.1
+        ],
+        "clip": "twinkle",
+        "offset": 0.489,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre7",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         190.3,
+         85.9
+        ],
+        "clip": "twinkle",
+        "offset": 0.595,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre8",
+      "sprite": "animations/stories/singularis_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         777.8,
+         474.0
+        ],
+        "clip": "twinkle",
+        "offset": 0.269,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "voile",
+      "sprite": "animations/stories/singularis_voile.json",
+      "depth": 0.15,
+      "drift": [
+       -6.0,
+       0.0
+      ],
+      "repeat": true,
+      "tint": "#a090c0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         60.0
+        ],
+        "alpha": 0.7,
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "poussiere",
+      "sprite": "animations/stories/singularis_poussiere.json",
+      "depth": 0.3,
+      "drift": [
+       9.0,
+       0.0
+      ],
+      "repeat": true,
+      "tint": "#a090c0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         380.0
+        ],
+        "alpha": 0.6,
+        "clip": "idle",
+        "offset": 0.5
+       }
+      ]
+     },
+     {
+      "id": "grain1",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.7,
+      "tint": "#a090c0",
+      "drift": [
+       9.020630571971594,
+       3.1227047895786075
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         414.4,
+         275.5
+        ],
+        "clip": "spin",
+        "offset": 0.382,
+        "scale": 1.2
+       }
+      ]
+     },
+     {
+      "id": "grain2",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.4,
+      "tint": "#a090c0",
+      "drift": [
+       5.5670850916093,
+       0.5287474764873661
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         741.3,
+         150.9
+        ],
+        "clip": "spin",
+        "offset": 0.073,
+        "scale": 0.9
+       }
+      ]
+     },
+     {
+      "id": "grain3",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.7,
+      "tint": "#a090c0",
+      "drift": [
+       -3.902961088156567,
+       3.498885375519772
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         285.7,
+         479.1
+        ],
+        "clip": "spin",
+        "offset": 0.186,
+        "scale": 1.2
+       }
+      ]
+     },
+     {
+      "id": "grain4",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.7,
+      "tint": "#a090c0",
+      "drift": [
+       -1.8541576573100436,
+       -2.5191859978349838
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         910.6,
+         327.9
+        ],
+        "clip": "spin",
+        "offset": 0.34,
+        "scale": 1.2
+       }
+      ]
+     },
+     {
+      "id": "grain5",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.4,
+      "tint": "#a090c0",
+      "drift": [
+       8.558744137750427,
+       -2.2077569864204722
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         476.1,
+         195.5
+        ],
+        "clip": "spin",
+        "offset": 0.824,
+        "scale": 0.9
+       }
+      ]
+     },
+     {
+      "id": "foret",
+      "sprite": "animations/stories/singularis_foret.json",
+      "depth": 0.6,
+      "tint": "#8080a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         140.0,
+         150.0
+        ],
+        "clip": "spin",
+        "scale": 0.6
+       },
+       {
+        "t": 2.4,
+        "pos": [
+         140.0,
+         150.0
+        ]
+       },
+       {
+        "t": 7.387,
+        "pos": [
+         293.0,
+         204.0
+        ],
+        "scale": 0.75,
+        "ease": "in"
+       }
+      ]
+     },
+     {
+      "id": "volcan",
+      "sprite": "animations/stories/singularis_volcan.json",
+      "depth": 0.6,
+      "tint": "#8080a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         840.0,
+         420.0
+        ],
+        "clip": "spin",
+        "scale": 0.6
+       },
+       {
+        "t": 2.4,
+        "pos": [
+         840.0,
+         420.0
+        ]
+       },
+       {
+        "t": 7.387,
+        "pos": [
+         678.0,
+         352.5
+        ],
+        "scale": 0.75,
+        "ease": "in"
+       }
+      ]
+     },
+     {
+      "id": "glace",
+      "sprite": "animations/stories/singularis_glace.json",
+      "depth": 0.6,
+      "tint": "#8080a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         800.0,
+         110.0
+        ],
+        "clip": "spin",
+        "scale": 0.6
+       },
+       {
+        "t": 2.4,
+        "pos": [
+         800.0,
+         110.0
+        ]
+       },
+       {
+        "t": 7.387,
+        "pos": [
+         656.0,
+         182.0
+        ],
+        "scale": 0.75,
+        "ease": "in"
+       }
+      ]
+     },
+     {
+      "id": "debris1",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.95,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         805.6,
+         293.9
+        ],
+        "clip": "spin",
+        "scale": 1.03,
+        "offset": 0.951
+       },
+       {
+        "t": 3.939,
+        "alpha": 1.0
+       },
+       {
+        "t": 4.489,
+        "pos": [
+         674.5,
+         362.8
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 5.039,
+        "pos": [
+         537.8,
+         365.3
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 5.589,
+        "pos": [
+         462.1,
+         322.6
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 6.139,
+        "pos": [
+         473.2,
+         274.4
+        ],
+        "ease": "linear",
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "debris2",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.95,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         779.1,
+         122.2
+        ],
+        "clip": "spin",
+        "scale": 0.84,
+        "offset": 0.778
+       },
+       {
+        "t": 3.049,
+        "alpha": 1.0
+       },
+       {
+        "t": 3.599,
+        "pos": [
+         770.3,
+         245.6
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 4.149,
+        "pos": [
+         662.2,
+         317.6
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 4.699,
+        "pos": [
+         539.8,
+         321.3
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 5.249,
+        "pos": [
+         480.6,
+         276.0
+        ],
+        "ease": "linear",
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "debris3",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.95,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         122.9,
+         175.5
+        ],
+        "clip": "spin",
+        "scale": 1.4,
+        "offset": 0.186
+       },
+       {
+        "t": 3.238,
+        "alpha": 1.0
+       },
+       {
+        "t": 3.788,
+        "pos": [
+         312.0,
+         124.4
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 4.338,
+        "pos": [
+         468.9,
+         150.1
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 4.888,
+        "pos": [
+         529.9,
+         214.5
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 5.438,
+        "pos": [
+         488.6,
+         267.0
+        ],
+        "ease": "linear",
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "debris4",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.95,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         341.5,
+         501.5
+        ],
+        "clip": "spin",
+        "scale": 1.18,
+        "offset": 0.34
+       },
+       {
+        "t": 5.368,
+        "alpha": 1.0
+       },
+       {
+        "t": 5.918,
+        "pos": [
+         238.2,
+         386.4
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 6.468,
+        "pos": [
+         271.7,
+         285.9
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 7.018,
+        "pos": [
+         379.7,
+         242.9
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 7.387,
+        "pos": [
+         474.4,
+         265.0
+        ],
+        "ease": "linear",
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "debris5",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.95,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         238.1,
+         365.6
+        ],
+        "clip": "spin",
+        "scale": 1.1,
+        "offset": 0.323
+       },
+       {
+        "t": 2.855,
+        "alpha": 1.0
+       },
+       {
+        "t": 3.405,
+        "pos": [
+         260.4,
+         274.3
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 3.955,
+        "pos": [
+         349.8,
+         225.5
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 4.505,
+        "pos": [
+         441.5,
+         228.0
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 5.055,
+        "pos": [
+         480.5,
+         264.0
+        ],
+        "ease": "linear",
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "debris6",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.95,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         662.4,
+         50.7
+        ],
+        "clip": "spin",
+        "scale": 0.94,
+        "offset": 0.871
+       },
+       {
+        "t": 3.072,
+        "alpha": 1.0
+       },
+       {
+        "t": 3.622,
+        "pos": [
+         742.0,
+         171.9
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 4.172,
+        "pos": [
+         689.2,
+         269.0
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 4.722,
+        "pos": [
+         573.9,
+         303.9
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 5.272,
+        "pos": [
+         484.6,
+         275.3
+        ],
+        "ease": "linear",
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "debris7",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.95,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         294.5,
+         395.8
+        ],
+        "clip": "spin",
+        "scale": 0.9,
+        "offset": 0.839
+       },
+       {
+        "t": 2.578,
+        "alpha": 1.0
+       },
+       {
+        "t": 3.128,
+        "pos": [
+         276.8,
+         307.3
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 3.678,
+        "pos": [
+         339.7,
+         248.2
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 4.228,
+        "pos": [
+         426.2,
+         236.5
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 4.778,
+        "pos": [
+         477.8,
+         264.1
+        ],
+        "ease": "linear",
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "debris8",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.95,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         195.2,
+         102.4
+        ],
+        "clip": "spin",
+        "scale": 0.89,
+        "offset": 0.566
+       },
+       {
+        "t": 2.933,
+        "alpha": 1.0
+       },
+       {
+        "t": 3.483,
+        "pos": [
+         406.8,
+         94.4
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 4.033,
+        "pos": [
+         541.4,
+         153.0
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 4.583,
+        "pos": [
+         560.9,
+         227.8
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 5.133,
+        "pos": [
+         489.9,
+         269.0
+        ],
+        "ease": "linear",
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "debris9",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.95,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         810.7,
+         393.9
+        ],
+        "clip": "spin",
+        "scale": 1.36,
+        "offset": 0.617
+       },
+       {
+        "t": 2.599,
+        "alpha": 1.0
+       },
+       {
+        "t": 3.149,
+        "pos": [
+         611.6,
+         428.3
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 3.699,
+        "pos": [
+         462.6,
+         389.5
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 4.249,
+        "pos": [
+         417.5,
+         320.6
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 4.799,
+        "pos": [
+         470.7,
+         272.2
+        ],
+        "ease": "linear",
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "debris10",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.95,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         146.4,
+         371.1
+        ],
+        "clip": "spin",
+        "scale": 1.25,
+        "offset": 0.005
+       },
+       {
+        "t": 4.561,
+        "alpha": 1.0
+       },
+       {
+        "t": 5.111,
+        "pos": [
+         198.1,
+         256.0
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 5.661,
+        "pos": [
+         325.2,
+         202.0
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 6.211,
+        "pos": [
+         441.8,
+         213.9
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 6.761,
+        "pos": [
+         481.6,
+         264.1
+        ],
+        "ease": "linear",
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "debris11",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.95,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         514.3,
+         65.2
+        ],
+        "clip": "spin",
+        "scale": 1.37,
+        "offset": 0.593
+       },
+       {
+        "t": 3.098,
+        "alpha": 1.0
+       },
+       {
+        "t": 3.648,
+        "pos": [
+         637.3,
+         145.9
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 4.198,
+        "pos": [
+         644.6,
+         231.6
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 4.748,
+        "pos": [
+         571.8,
+         280.0
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 5.298,
+        "pos": [
+         487.5,
+         274.0
+        ],
+        "ease": "linear",
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "debris12",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.95,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         304.0,
+         495.7
+        ],
+        "clip": "spin",
+        "scale": 1.21,
+        "offset": 0.771
+       },
+       {
+        "t": 4.286,
+        "alpha": 1.0
+       },
+       {
+        "t": 4.836,
+        "pos": [
+         217.9,
+         373.7
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 5.386,
+        "pos": [
+         267.5,
+         274.2
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 5.936,
+        "pos": [
+         383.2,
+         237.0
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 6.486,
+        "pos": [
+         475.2,
+         264.7
+        ],
+        "ease": "linear",
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "debris13",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.95,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         738.7,
+         355.3
+        ],
+        "clip": "spin",
+        "scale": 1.39,
+        "offset": 0.124
+       },
+       {
+        "t": 2.576,
+        "alpha": 1.0
+       },
+       {
+        "t": 3.126,
+        "pos": [
+         590.9,
+         386.7
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 3.676,
+        "pos": [
+         475.2,
+         361.5
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 4.226,
+        "pos": [
+         435.4,
+         310.8
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 4.776,
+        "pos": [
+         470.9,
+         272.6
+        ],
+        "ease": "linear",
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "debris14",
+      "sprite": "animations/stories/singularis_grain.json",
+      "depth": 0.95,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         368.4,
+         48.8
+        ],
+        "clip": "spin",
+        "scale": 0.81,
+        "offset": 0.417
+       },
+       {
+        "t": 4.32,
+        "alpha": 1.0
+       },
+       {
+        "t": 4.87,
+        "pos": [
+         553.8,
+         100.9
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 5.42,
+        "pos": [
+         622.5,
+         187.9
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 5.97,
+        "pos": [
+         581.4,
+         256.7
+        ],
+        "ease": "linear",
+        "alpha": 1.0
+       },
+       {
+        "t": 6.52,
+        "pos": [
+         489.4,
+         272.0
+        ],
+        "ease": "linear",
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "trou_lueur",
+      "glow": "#c88bff",
+      "radius": 220.0,
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 1.2,
+        "alpha": 0.0
+       },
+       {
+        "t": 2.4,
+        "alpha": 0.8,
+        "ease": "out"
+       },
+       {
+        "t": 7.387,
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.25,
+       1.2
+      ]
+     },
+     {
+      "id": "lyse",
+      "sprite": "animations/stories/singularis_lyse.json",
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "clip": "spark",
+        "scale": 1.2
+       },
+       {
+        "t": 0.8,
+        "clip": "implode"
+       },
+       {
+        "t": 2.4,
+        "alpha": 1.0
+       },
+       {
+        "t": 2.45,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "singularis",
+      "sprite": "animations/singularis.json",
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         370.0
+        ],
+        "alpha": 0.0,
+        "scale": 0.8,
+        "clip": "summon"
+       },
+       {
+        "t": 2.4,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 2.42,
+        "alpha": 1.0,
+        "clip": "summon",
+        "ease": "step"
+       },
+       {
+        "t": 3.4,
+        "clip": "idle"
+       },
+       {
+        "t": 4.6,
+        "clip": "roar"
+       },
+       {
+        "t": 6.0,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "coeur",
+      "glow": "#ffd27a",
+      "radius": 70.0,
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 2.4,
+        "alpha": 0.0
+       },
+       {
+        "t": 2.8,
+        "alpha": 0.7,
+        "ease": "out"
+       },
+       {
+        "t": 7.387,
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.4,
+       0.8
+      ]
+     },
+     {
+      "id": "aspiration",
+      "particles": "sparks",
+      "color": "#c88bff",
+      "area": [
+       220.0,
+       80.0,
+       520.0,
+       380.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.0
+       },
+       {
+        "t": 2.4,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "poussiere_vive",
+      "particles": "dust",
+      "color": "#c8b8d8",
+      "area": [
+       0.0,
+       60.0,
+       960.0,
+       420.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       }
+      ]
+     },
+     {
+      "id": "voile_proche",
+      "sprite": "animations/stories/singularis_voile.json",
+      "depth": 1.3,
+      "drift": [
+       18.0,
+       0.0
+      ],
+      "repeat": true,
+      "tint": "#a090c0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         420.0
+        ],
+        "alpha": 0.5,
+        "clip": "idle"
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 2.4,
+      "to": 3.2,
+      "amount": 5.0
+     },
+     {
+      "from": 4.6,
+      "to": 5.6,
+      "amount": 6.0
+     }
+    ],
+    "flash": [
+     {
+      "t": 2.4,
+      "in": 0.1,
+      "out": 0.7,
+      "color": "#e0b0ff",
+      "alpha": 0.7
+     }
+    ]
+   }
   }
  ]
 }

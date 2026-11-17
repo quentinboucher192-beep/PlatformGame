@@ -1,0 +1,9 @@
+{
+  "texture": "stories/singularis/poussiere.png",
+  "frameWidth": 640,
+  "frameHeight": 80,
+  "pivot": [0, 0],
+  "clips": {
+    "idle": {"row": 0, "count": 4, "fps": 3, "loop": true}
+  }
+}

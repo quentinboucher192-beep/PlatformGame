@@ -14,7 +14,9 @@ numbered) into DIR.
 2.60: Pyrrhax's story is told in animated scenes (version 2 of data/stories/*.json): its sprites,
 its layers of scenery, its scenes and its stills come from story_pyrrhax_scene.py (SCENES); the
 budget counts the files of the scenes with the paintings.  2.63: the other giga bosses' stories
-follow, one by one (story_<boss>_scene.py, on the tooling of story_stage.py and story_scenery.py).
+follow, one by one (story_<boss>_scene.py, on the tooling of story_stage.py and story_scenery.py);
+every story is now told in animated scenes (MODULES, the painted ones, is empty: story_paint.py and
+the story_<boss>.py painters are kept for reference only).
 """
 import os
 import sys
@@ -34,12 +36,13 @@ MAX_BYTES = 420 * 1024        # per painting
 MAX_TOTAL = 14 * 1024 * 1024  # every painting of every story (2.53: room for the next giga bosses; 2.57: the Liche, 12 MiB; 2.58: the Titan, 14 MiB)
 
 
-MODULES = {"singularis": "story_singularis"}  # 2.53, 2.56, 2.57, 2.58
+MODULES = {}  # 2.53, 2.56, 2.57, 2.58
 SCENES = {"pyrrhax": "story_pyrrhax_scene",  # 2.60: animated scenes (their stills are the paintings)
           "monolithe": "story_monolithe_scene", "kraken": "story_kraken_scene",
           "phenix": "story_phenix_scene",
           "liche": "story_liche_scene",
-          "titan": "story_titan_scene"}  # 2.63: the other giga bosses follow (story_stage.py)
+          "titan": "story_titan_scene",
+          "singularis": "story_singularis_scene"}  # 2.63: the other giga bosses follow (story_stage.py)
 
 
 def bosses(names=None):
