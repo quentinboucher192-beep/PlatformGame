@@ -1,5 +1,8 @@
 {
   "2.60.0": [
+    "Pause : « Succès suivis » passe sous la carte, avec les cinq places visibles (une place libre est dessinée en pointillés) et la description de chaque succès ; sans la carte, la colonne garde une ligne de description quand il y a la place.",
+    "Touches de ce niveau : un changement de touche, de bouton ou « Par défaut » s'applique aussi aux niveaux qui avaient exactement les mêmes touches (option activée par défaut, avec le nombre de niveaux concernés).",
+    "Invincible (admin) : le bouton de la pause indique « activé · non classé » ; une partie avec Invincible n'est jamais classée.",
     "Objets exclusifs : ce qui ne s'obtient qu'en récompense de défi (les créations de Cosmic Online et les récompenses des défis du Vestiaire) porte une aura dorée qui pulse doucement autour de sa vignette, dans le Vestiaire, l'écran des nouvelles récompenses, les récompenses d'un défi et la fin d'un défi. Son infobulle, à la souris, au clavier ou à la manette, dit d'où il vient : « Exclusif : défi du jour du 10/11/2026 · Or atteint ».",
     "Administration › Créations : la réserve du jeu, 40 combinaisons, 30 traînées, 30 cadres et 30 effets de victoire aux noms et aux couleurs soignés, prêts à donner en récompense d'un défi (Calendrier des défis › Récompenses). Un filtre et une étiquette par création : réserve (jamais donnée), donnée en récompense, archivée.",
     "Une création reste invisible des joueurs tant qu'aucun défi commencé ne la donne et que personne ne l'a gagnée : la réserve et les récompenses des défis à venir ne se découvrent pas avant l'heure."
