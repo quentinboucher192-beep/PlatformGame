@@ -384,4 +384,42 @@ SHOTS = [shot_foundry, shot_builders, shot_promise, shot_alone, shot_rust, shot_
 
 def generate(review=None):
     """Sprites, layers, the story file and the stills; returns the files written."""
-    return S.generate("titan", "story_titan_scene", SHOTS, _sprites(), LAYERS, review)
+    return S.generate("titan", "story_titan_scene", SHOTS, _sprites(), LAYERS, review, SOUNDS)
+
+
+# =================================================================== the sounds (2.63)
+from story_stage import amb, sfx  # noqa: E402
+
+
+def _snd_foundry(D):
+    return [amb("story_amb_foundry", 0.55), sfx("lava_bubble", 0.8, 0.4, at=(480, 300)), sfx("story_steam", 1.0, 0.35, at=(480, 420))] + [
+        sfx("story_clang", t, 0.45, at=(280, 440), pitch=1.0 + 0.05 * (i % 2)) for i, t in enumerate((0.45, 1.1, 1.75, 2.4, 3.05, 3.7))] + [
+        sfx("story_steam", 3.0, 0.35, at=(680, 400))]
+
+
+def _snd_builders(D):
+    return [amb("story_amb_foundry", 0.5), sfx("story_clang", 2.4, 0.7, at=(560, 200)), sfx("story_steam", 4.7, 0.5),
+            sfx("boss_roar", 5.02, 0.85, pitch=0.85, duck=True)]
+
+
+def _snd_promise(D):
+    return [amb("story_amb_foundry", 0.4), sfx("story_collapse", 1.0, 0.8, at=(520, 70), duck=True), sfx("story_steam", 3.6, 0.4, at=(640, 300))]
+
+
+def _snd_alone(D):
+    return [amb("story_amb_foundry", 0.45)] + [s for t in (1.61, 3.6, 5.6) for s in (sfx("story_clang", t + 0.1, 0.55),
+                                                                                       sfx("golem_slam", t + 0.12, 0.35))] + [
+        sfx("story_stone", 2.4, 0.35), sfx("story_stone", 6.6, 0.35, pitch=0.9)]
+
+
+def _snd_rust(D):
+    return [amb("story_amb_foundry", 0.45)] + [sfx("story_clang", t + 0.1, 0.5, pitch=0.8) for t in (1.0, 2.4, 4.6, 6.0)] + [
+        sfx("story_steam", t, 0.5, pan=p) for t, p in ((0.6, -0.3), (1.9, 0.3), (3.1, -0.1), (4.3, 0.4), (5.5, -0.4))]
+
+
+def _snd_titan(D):
+    return [amb("story_amb_foundry", 0.45), sfx("laser_charge", 4.4, 0.5), sfx("boss_roar", 5.2, 0.9, duck=True), sfx("story_steam", 5.25, 0.5)]
+
+
+SOUNDS = {"shot_foundry": _snd_foundry, "shot_builders": _snd_builders, "shot_promise": _snd_promise, "shot_alone": _snd_alone,
+          "shot_rust": _snd_rust, "shot_titan": _snd_titan}

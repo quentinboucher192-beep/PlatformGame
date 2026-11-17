@@ -816,6 +816,36 @@
        }
       ]
      }
+    ],
+    "sfx": [
+     {
+      "sound": "sounds/story_amb_space.wav",
+      "t": 0.0,
+      "volume": 0.55,
+      "fade": 0.6,
+      "loop": true
+     },
+     {
+      "sound": "sounds/dash.wav",
+      "t": 1.5,
+      "volume": 0.25,
+      "pitch": 0.6,
+      "pan": -0.6
+     },
+     {
+      "sound": "sounds/dash.wav",
+      "t": 3.2,
+      "volume": 0.25,
+      "pitch": 0.6,
+      "pan": 0.0
+     },
+     {
+      "sound": "sounds/dash.wav",
+      "t": 4.9,
+      "volume": 0.25,
+      "pitch": 0.6,
+      "pan": 0.6
+     }
     ]
    }
   },
@@ -1354,6 +1384,43 @@
         ],
         "clip": "idle"
        }
+      ]
+     }
+    ],
+    "sfx": [
+     {
+      "sound": "sounds/story_amb_cave.wav",
+      "t": 0.0,
+      "volume": 0.5,
+      "fade": 0.6,
+      "loop": true
+     },
+     {
+      "sound": "sounds/story_chisel.wav",
+      "t": 3.0,
+      "volume": 0.6,
+      "at": [
+       540.0,
+       420.0
+      ]
+     },
+     {
+      "sound": "sounds/story_chisel.wav",
+      "t": 4.0,
+      "volume": 0.55,
+      "pitch": 1.05,
+      "at": [
+       540.0,
+       420.0
+      ]
+     },
+     {
+      "sound": "sounds/story_glow.wav",
+      "t": 5.0,
+      "volume": 0.5,
+      "at": [
+       560.0,
+       400.0
       ]
      }
     ]
@@ -2109,6 +2176,52 @@
       "color": "#ffd8a0",
       "alpha": 0.7
      }
+    ],
+    "sfx": [
+     {
+      "sound": "sounds/story_amb_cave.wav",
+      "t": 0.0,
+      "volume": 0.45,
+      "fade": 0.6,
+      "loop": true
+     },
+     {
+      "sound": "sounds/story_chisel.wav",
+      "t": 0.2,
+      "volume": 0.45,
+      "at": [
+       436.0,
+       420.0
+      ]
+     },
+     {
+      "sound": "sounds/story_glow.wav",
+      "t": 1.5,
+      "volume": 0.3
+     },
+     {
+      "sound": "sounds/story_glow.wav",
+      "t": 2.7,
+      "volume": 0.3,
+      "pitch": 1.2
+     },
+     {
+      "sound": "sounds/story_stone.wav",
+      "t": 3.9,
+      "volume": 0.8,
+      "duck": true
+     },
+     {
+      "sound": "sounds/golem_slam.wav",
+      "t": 4.5,
+      "volume": 0.8,
+      "duck": true
+     },
+     {
+      "sound": "sounds/crumble.wav",
+      "t": 4.6,
+      "volume": 0.5
+     }
     ]
    }
   },
@@ -2769,6 +2882,32 @@
         ],
         "clip": "idle"
        }
+      ]
+     }
+    ],
+    "sfx": [
+     {
+      "sound": "sounds/story_amb_cave.wav",
+      "t": 0.0,
+      "volume": 0.3,
+      "fade": 0.6,
+      "loop": true
+     },
+     {
+      "sound": "sounds/story_amb_fire.wav",
+      "t": 0.0,
+      "volume": 0.45,
+      "fade": 0.6,
+      "loop": true
+     },
+     {
+      "sound": "sounds/golem_slam.wav",
+      "t": 3.45,
+      "volume": 0.25,
+      "pitch": 0.8,
+      "at": [
+       790.0,
+       446.0
       ]
      }
     ]
@@ -3476,6 +3615,43 @@
        }
       ]
      }
+    ],
+    "sfx": [
+     {
+      "sound": "sounds/story_amb_night.wav",
+      "t": 0.0,
+      "volume": 0.45,
+      "fade": 0.6,
+      "loop": true
+     },
+     {
+      "sound": "sounds/story_launch.wav",
+      "t": 0.3,
+      "volume": 0.55,
+      "at": [
+       560.0,
+       420.0
+      ],
+      "duck": true
+     },
+     {
+      "sound": "sounds/story_launch.wav",
+      "t": 1.3,
+      "volume": 0.45,
+      "at": [
+       700.0,
+       420.0
+      ]
+     },
+     {
+      "sound": "sounds/story_launch.wav",
+      "t": 2.4,
+      "volume": 0.4,
+      "at": [
+       470.0,
+       420.0
+      ]
+     }
     ]
    }
   },
@@ -3964,6 +4140,48 @@
       "out": 0.6,
       "color": "#ffc070",
       "alpha": 0.35
+     }
+    ],
+    "sfx": [
+     {
+      "sound": "sounds/story_amb_cave.wav",
+      "t": 0.0,
+      "volume": 0.4,
+      "fade": 0.6,
+      "loop": true
+     },
+     {
+      "sound": "sounds/footstep_a.wav",
+      "t": 2.0,
+      "volume": 0.25,
+      "pan": -0.6
+     },
+     {
+      "sound": "sounds/footstep_b.wav",
+      "t": 2.4,
+      "volume": 0.25,
+      "pan": -0.5
+     },
+     {
+      "sound": "sounds/footstep_a.wav",
+      "t": 2.8,
+      "volume": 0.25,
+      "pan": -0.4
+     },
+     {
+      "sound": "sounds/boss_roar.wav",
+      "t": 5.0,
+      "volume": 0.9,
+      "at": [
+       600.0,
+       300.0
+      ],
+      "duck": true
+     },
+     {
+      "sound": "sounds/crumble.wav",
+      "t": 5.3,
+      "volume": 0.45
      }
     ]
    }

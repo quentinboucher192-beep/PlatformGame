@@ -329,4 +329,42 @@ SHOTS = [shot_dawn_bird, shot_waking, shot_long_night, shot_burning, shot_reborn
 
 def generate(review=None):
     """Sprites, layers, the story file and the stills; returns the files written."""
-    return S.generate("phenix", "story_phenix_scene", SHOTS, _sprites(), LAYERS, review)
+    return S.generate("phenix", "story_phenix_scene", SHOTS, _sprites(), LAYERS, review, SOUNDS)
+
+
+# =================================================================== the sounds (2.63)
+from story_stage import amb, sfx  # noqa: E402
+
+
+def _snd_dawn_bird(D):
+    return [amb("story_amb_space", 0.45), sfx("story_glow", 1.0, 0.5, at=(200, 170)), sfx("story_wings", 1.1, 0.5, at=(220, 170)),
+            sfx("story_wings", 2.8, 0.4, at=(380, 150)), sfx("story_wings", 5.6, 0.4, at=(720, 270))]
+
+
+def _snd_waking(D):
+    return [amb("story_amb_night", 0.4), amb("story_amb_magma", 0.25)] + [sfx("story_wings", t, v, at=p)
+                                                                         for t, v, p in ((0.4, 0.45, (60, 320)), (3.2, 0.4, (420, 330)),
+                                                                                         (6.0, 0.35, (820, 330)))]
+
+
+def _snd_long_night(D):
+    return [amb("story_amb_night", 0.45), sfx("story_collapse", 1.2, 0.9, at=(660, 120), duck=True), sfx("story_glow", 2.7, 0.3, pitch=0.5)]
+
+
+def _snd_burning(D):
+    return [amb("story_amb_night", 0.35), sfx("story_ignite", 1.0, 0.8, duck=True), amb("story_amb_fire", 0.6, t=1.3, to=5.0),
+            sfx("crumble", 4.6, 0.4, pitch=1.3), sfx("story_puff", 5.1, 0.5, pitch=0.8)]
+
+
+def _snd_reborn(D):
+    return [amb("story_amb_night", 0.3), amb("story_amb_fire", 0.5, t=1.9), sfx("story_glow", 0.8, 0.3, pitch=0.7),
+            sfx("story_ignite", 1.9, 0.7), sfx("respawn", 2.4, 0.7, duck=True), sfx("story_wings", 3.4, 0.45), sfx("story_wings", 5.0, 0.4)]
+
+
+def _snd_nest(D):
+    return [amb("story_amb_fire", 0.45), amb("story_amb_magma", 0.25), sfx("story_ignite", 3.2, 0.9, duck=True),
+            sfx("supernova", 3.76, 0.6), sfx("story_wings", 3.8, 0.5)]
+
+
+SOUNDS = {"shot_dawn_bird": _snd_dawn_bird, "shot_waking": _snd_waking, "shot_long_night": _snd_long_night, "shot_burning": _snd_burning,
+          "shot_reborn": _snd_reborn, "shot_nest": _snd_nest}

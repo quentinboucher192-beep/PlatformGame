@@ -298,6 +298,29 @@ def shots():
     return out
 
 
+def sounds(scene, D):
+    """The trailer's sounds (2.63): the game's own noises on its cuts — Nova's jumps and shots, the
+    giga bosses' roars, impacts — over its music (which lowers a little under the big ones)."""
+    from story_stage import amb, sfx
+    roars = {"monolithe": ("boss_roar", 1.0), "kraken": ("boss_roar", 0.7), "phenix": ("boss_roar_fire", 1.3),
+             "liche": ("summon", 1.0), "titan": ("boss_roar", 0.8), "pyrrhax": ("boss_roar_fire", 1.0), "singularis": ("star_roar", 1.0)}
+    if scene.startswith("boss_"):
+        name, pitch = roars[scene[5:]]
+        return [sfx(name, 0.03, 0.75, pitch=pitch, duck=True)]
+    table = {
+        "system": [amb("story_amb_space", 0.3), sfx("story_glow", 0.3, 0.35)],
+        "run": [sfx("jump", 1.0, 0.45), sfx("double_jump", 1.34, 0.45), sfx("land", 2.12, 0.4)],
+        "powers": [sfx("dash", 0.0, 0.45), sfx("charge_shot", 0.57, 0.55), sfx("enemy_hurt", 1.25, 0.45),
+                   sfx("explosion", 1.3, 0.5, duck=True)],
+        "enemies": [sfx("glide_open", 0.05, 0.4), sfx("land", 1.72, 0.4), sfx("slash", 1.9, 0.45)],
+        "giga": [sfx("supernova", 0.05, 0.7, duck=True)],
+        "stories": [sfx("story_egg_crack", 1.0, 0.6)],
+        "coop": [sfx("jump", t, 0.35, pan=p) for t, p in ((0.5, -0.4), (0.9, 0.0), (1.3, 0.4))],
+        "online": [sfx("medal", 0.1, 0.6)],
+    }
+    return table.get(scene, [])
+
+
 def build():
     data = {
         "format": "cosmic.boss_story",
@@ -317,6 +340,7 @@ def build():
     }
     for scene, text, sub, D, focus, col, fn in shots():
         st = fn(D)
+        st["sfx"] = sounds(scene, D)
         stage = {"size": [960, 540]}
         stage.update(st)
         shot = {"scene": scene, "image": "", "text": text}
@@ -356,6 +380,10 @@ def check(data):
                 for k in el["keys"]:
                     if "clip" in k and k["clip"] not in clips:
                         errs.append(f"shot {n}: {el['id']}: no clip {k['clip']}")
+        for fx in st.get("sfx", []):
+            times.append(fx["t"])
+            if not os.path.isfile(os.path.join(S.ASSETS, fx["sound"])):
+                errs.append(f"shot {n}: no {fx['sound']}")
         bad = [t for t in times if not 0 <= t <= D + 1e-6]
         if bad:
             errs.append(f"shot {n}: times outside 0..{D}: {bad[:3]}")

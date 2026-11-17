@@ -456,11 +456,17 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 ## Historique des versions
 
 **Nouveau dans la version 2.63.9** :
+* **Bruitages des histoires** et de la bande-annonce : une ambiance sous chaque plan (vent, grotte, magma, mer
+  profonde, catacombes, fonderie, cosmos) et les bruits de l'action (œuf qui craque, flammes, pierre qui se fend, ailes,
+  effondrement de l'étoile, bulles, bougies, os, vapeur, chant de Lyse, rugissements), placés à gauche ou à droite
+  selon l'image, sur le volume « Effets » ; la musique baisse un peu sous les plus gros.
 * **Bande-annonce** (environ 40 s, [vidéo MP4](docs/media/trailer.mp4)) : plans rapides et grands titres faits de vraies
   scènes du jeu (Nova sur trois planètes, les sept giga-boss dans les décors de leurs histoires, la coopération, Cosmic
   Online) sur la musique de Singularis. Elle se lance sur l'écran d'accueil après **1 minute sans aucune action** et
   tourne en boucle ; n'importe quelle entrée ramène au menu sans rien déclencher. Jamais pendant une saisie, une
   fenêtre ouverte, un téléchargement ou avant le didacticiel ; désactivable dans Paramètres › Jeu.
+* **Histoires** : « Passer » (Espace, Entrée, Ⓐ, clic) ne passe que le plan en cours ; « Quitter » (Échap, Ⓑ ou un
+  clic sur son indication) quitte toute l'histoire.
 
 **Nouveau dans la version 2.63.8** :
 * Mise à jour du jeu : barre de progression du téléchargement, plus de coupure au bout de 90 s sur une connexion lente, vraie raison d'un échec.

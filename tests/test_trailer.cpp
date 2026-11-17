@@ -75,6 +75,16 @@ TEST_CASE("trailer: about forty seconds of quick cuts, real files and clips, tit
     }
     // Nothing made up: Nova, the seven giga bosses on the scenery of their stories, real enemies.
     CHECK(sheets.count("animations/nova.json") == 1);
+    // Its sounds (2.63): the game's own, each within its shot; every giga boss roars on its cut.
+    int roars = 0;
+    for (const StoryShot& shot : t->shots)
+        if (shot.stage)
+            for (const StorySfx& fx : shot.stage->sounds) {
+                CHECK(FileUtil::exists(Paths::assetsDir() / fx.sound));
+                CHECK(fx.t >= 0.0f && fx.t <= shot.duration);
+                roars += shot.scene.rfind("boss_", 0) == 0 ? 1 : 0;
+            }
+    CHECK(roars == 7);
     for (const char* b : {"monolithe", "kraken", "phenix", "liche", "titan", "pyrrhax", "singularis"}) {
         CHECK(sheets.count(std::string("animations/") + b + ".json") == 1);
         bool scenery = false;

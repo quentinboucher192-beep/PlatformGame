@@ -478,6 +478,7 @@ def stages(story):
     for shot, fn in zip(story["shots"], SHOTS):
         D = shot_duration(shot["text"])
         st = fn(math.floor(D * 1000) / 1000)
+        st["sfx"] = SOUNDS[fn.__name__](math.floor(D * 1000) / 1000)  # 2.63: its sounds
         still = st.pop("still")
         stage = {"size": [W, H]}
         stage.update(st)
@@ -534,3 +535,41 @@ def generate(review=None):
         os.makedirs(review, exist_ok=True)
         S.review(built, os.path.join(review, "sprites_pyrrhax.png"))
     return files
+
+
+# =================================================================== the sounds (2.63)
+from story_stage import amb, sfx  # noqa: E402
+
+
+def _snd_nest(D):
+    return [amb("story_amb_magma", 0.4), sfx("story_egg_crack", 2.2, 0.55, at=(480, 452)),
+            sfx("story_egg_crack", 3.45, 0.8, at=(480, 452), duck=True, pitch=0.9), sfx("story_glow", 3.6, 0.35, pitch=1.2)]
+
+
+def _snd_smoke(D):
+    return [amb("story_amb_magma", 0.35), sfx("story_flame", 0.78, 0.7, at=(560, 420)), sfx("story_flame", 1.38, 0.6, at=(720, 420), pitch=1.12),
+            sfx("inhale", 3.3, 0.5, at=(290, 436)), sfx("story_puff", 3.96, 0.7, at=(320, 420))]
+
+
+def _snd_ember_rain(D):
+    return [amb("story_amb_night", 0.4, to=2.6), amb("story_amb_magma", 0.45, t=2.2), sfx("story_collapse", 1.2, 0.9, at=(600, 150), duck=True),
+            sfx("fireball", 2.7, 0.35, pan=0.3), sfx("fireball", 3.5, 0.3, pan=-0.2), sfx("fireball", 4.4, 0.3, pan=0.4)]
+
+
+def _snd_swallow(D):
+    return [amb("story_amb_magma", 0.35)] + [sfx("collect_orb", t + 0.24, 0.45, pitch=0.7) for t in (0.8, 1.9, 3.0)] + [
+        sfx("power_unlock", 4.0, 0.5, duck=True)]
+
+
+def _snd_glass(D):
+    return [amb("story_amb_magma", 0.4), sfx("story_stone", 1.8, 0.7, pitch=1.3), sfx("wyrm_roar", 3.9, 0.55, pitch=1.3),
+            sfx("supernova", 4.95, 0.7, duck=True), sfx("boss_roar_fire", 5.15, 0.8, duck=True)]
+
+
+def _snd_frontier(D):
+    return [amb("story_amb_night", 0.35), amb("story_amb_magma", 0.3), sfx("inhale", 3.5, 0.5, pitch=0.6, at=(600, 300)),
+            sfx("story_flame", 4.26, 0.9, pitch=0.8, at=(500, 300), duck=True)]
+
+
+SOUNDS = {"shot_nest": _snd_nest, "shot_smoke": _snd_smoke, "shot_ember_rain": _snd_ember_rain, "shot_swallow": _snd_swallow,
+          "shot_glass": _snd_glass, "shot_frontier": _snd_frontier}

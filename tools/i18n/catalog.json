@@ -21022,6 +21022,12 @@
    ]
   },
   {
+   "fr": "Histoires des giga-boss : « Passer » (Espace, Entrée, Ⓐ ou un clic) ne passe plus que le plan en cours, avec un fondu rapide vers le suivant (au dernier plan, l'histoire se termine) ; « Quitter » (Échap, Ⓑ ou un clic sur son indication) quitte toute l'histoire.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Historique",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
@@ -27741,6 +27747,12 @@
    "fr": "Les grottes de cristal... Le signal du relais résonne sous la glace.",
    "where": [
     "data/levels/glacior_02.json"
+   ]
+  },
+  {
+   "fr": "Les histoires des sept giga-boss et la bande-annonce ont désormais leurs bruitages : une ambiance sous chaque plan (vent de la nuit, grotte qui goutte, magma qui gronde, mer profonde, catacombes, fonderie, bourdonnement cosmique) et les bruits de ce qui s'y passe — l'œuf qui craque, le souffle des flammes, la pierre qui se fend, les ailes, l'étoile du centre qui s'effondre, les bulles, les bougies, les os, la vapeur et les marteaux, le chant de Lyse, les rugissements des boss. Placés dans l'image (gauche, droite), joués sur le volume « Effets » des Paramètres (et coupés avec lui) ; la musique baisse un peu sous les plus gros.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -39395,6 +39407,7 @@
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
     "editors/level_editor/LevelEditorDialogs.cpp",
+    "ui/screens/BossStoryScene.cpp",
     "ui/screens/MainMenuScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/SocialScene.cpp"
@@ -53570,6 +53583,7 @@
   {
    "fr": "volume",
    "where": [
+    "game/content/BossStories.cpp",
     "game/levels/Cinematic.cpp",
     "game/levels/EventSystem.cpp"
    ]

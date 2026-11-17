@@ -80,6 +80,9 @@ public:
     void updateLoops();
 
     void setVolumes(const AudioVolumes& v);
+    /// The gain of a bus (its volume of the settings; the master volume is the mixer's): 0 mutes
+    /// whatever plays on it.
+    float busGain(AudioBus bus) const;
     const AudioVolumes& volumes() const { return volumes_; }
 
     /// Releases cached sounds that are no longer playing.
@@ -93,7 +96,6 @@ private:
     };
     MIX_Track* acquireEffectTrack();
     void applyMusicGain();
-    float busGain(AudioBus bus) const;
 
     MIX_Mixer* mixer_ = nullptr;
     std::unordered_map<std::string, MIX_Audio*> cache_;

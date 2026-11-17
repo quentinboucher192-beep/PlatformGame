@@ -78,6 +78,29 @@ def particles(id_, kind, color, area, keys, depth=1.0):
     return {"id": id_, "particles": kind, "color": color, "area": [float(v) for v in area], "depth": depth, "keys": keys}
 
 
+def sfx(sound, t, volume=None, pan=None, at=None, loop=False, to=None, fade=None, duck=False, pitch=None):
+    """A sound of a scene (2.63): `sound` a name of assets/sounds (or a whole path), heard at `t`
+    (seconds of the French line); a loop plays from `t` to `to` (the shot's end when None), fading
+    in and out; `at` a point of the stage (panned by its place on the screen); `duck`: a big
+    sound (the music lowers a little)."""
+    s = {"sound": sound if "/" in sound else f"sounds/{sound}.wav", "t": round(float(t), 3)}
+    for k, v in (("volume", volume), ("pitch", pitch), ("pan", pan), ("to", to), ("fade", fade)):
+        if v is not None:
+            s[k] = round(float(v), 3)
+    if at is not None:
+        s["at"] = [round(float(at[0]), 1), round(float(at[1]), 1)]
+    if loop:
+        s["loop"] = True
+    if duck:
+        s["duck"] = True
+    return s
+
+
+def amb(sound, volume=0.45, t=0.0, to=None, fade=0.6):
+    """An ambience under a shot (a loop of story_amb_*)."""
+    return sfx(sound, t, volume=volume, loop=True, to=to, fade=fade)
+
+
 def appear(t, dur=0.01):
     """Keys that make an element pop in at t (alpha 0 -> 1, a step)."""
     return [K(max(0.0, t - dur), alpha=0.0, ease="step"), K(t, alpha=1.0, ease="step")]
@@ -138,11 +161,14 @@ class Kit:
 
 
 # =================================================================== the story file
-def stages(story, shots):
+def stages(story, shots, sounds=None):
     out = []
     for shot, fn in zip(story["shots"], shots):
         D = shot_duration(shot["text"])
-        st = fn(math.floor(D * 1000) / 1000)
+        Dt = math.floor(D * 1000) / 1000
+        st = fn(Dt)
+        if sounds and fn.__name__ in sounds:  # 2.63: its sounds
+            st["sfx"] = sounds[fn.__name__](Dt)
         still = st.pop("still")
         stage = {"size": [W, H]}
         stage.update(st)
@@ -231,11 +257,11 @@ def review_sheets(built, path, scale=2):
     return path
 
 
-def generate(boss, module, shots, sprites, layers, review=None):
+def generate(boss, module, shots, sprites, layers, review=None, sounds=None):
     """A boss's sheets, its story file and its stills; returns the files written."""
     built, files = build_sheets(boss, sprites, layers)
     story = json.load(open(story_path(boss), encoding="utf-8"))
-    st = stages(story, shots)
+    st = stages(story, shots, sounds)
     write_story(boss, st, module)
     Anim._cache.clear()
     for i, (stage, still) in enumerate(st, 1):

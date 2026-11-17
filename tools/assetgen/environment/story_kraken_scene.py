@@ -378,4 +378,41 @@ SHOTS = [shot_birth, shot_lantern, shot_star_rain, shot_growing, shot_alone, sho
 
 def generate(review=None):
     """Sprites, layers, the story file and the stills; returns the files written."""
-    return S.generate("kraken", "story_kraken_scene", SHOTS, _sprites(), LAYERS, review)
+    return S.generate("kraken", "story_kraken_scene", SHOTS, _sprites(), LAYERS, review, SOUNDS)
+
+
+# =================================================================== the sounds (2.63)
+from story_stage import amb, sfx  # noqa: E402
+
+
+def _snd_birth(D):
+    return [amb("story_amb_deep", 0.55), sfx("story_egg_crack", 3.6, 0.5, pitch=0.8, at=(520, 420)), sfx("story_bubbles", 3.65, 0.6, at=(520, 420)),
+            sfx("story_glow", 5.6, 0.6, at=(548, 380))]
+
+
+def _snd_lantern(D):
+    return [amb("story_amb_deep", 0.5), sfx("story_bubbles", 2.0, 0.3, pan=-0.2), sfx("lava_bubble", 6.0, 0.4, at=(780, 400)),
+            sfx("story_bubbles", 6.4, 0.35, at=(800, 380))]
+
+
+def _snd_star_rain(D):
+    return [amb("story_amb_night", 0.45, to=2.6), amb("story_amb_deep", 0.5, t=2.2), sfx("story_collapse", 1.2, 0.9, at=(620, 86), duck=True)] + [
+        sfx("story_bubbles", t, 0.3, pan=p) for t, p in ((2.8, 0.3), (3.5, -0.2), (4.3, 0.5))]
+
+
+def _snd_growing(D):
+    return [amb("story_amb_deep", 0.5)] + [sfx("story_glow", t + 0.24, 0.45, pitch=1.0 + 0.2 * i) for i, t in enumerate((0.9, 2.0, 3.1))] + [
+        sfx("power_unlock", 4.2, 0.7, duck=True), sfx("story_glow", 4.4, 0.4, pitch=0.8)]
+
+
+def _snd_alone(D):
+    return [amb("story_amb_deep", 0.5), sfx("wave_cast", 1.2, 0.5, pitch=0.6, at=(380, 300)), sfx("story_bubbles", 1.9, 0.5, pan=0.4)]
+
+
+def _snd_trench(D):
+    return [amb("story_amb_deep", 0.55), sfx("story_glow", 0.5, 0.3, pitch=0.9), sfx("story_glow", 1.55, 0.3, pitch=1.1),
+            sfx("summon", 3.0, 0.6, duck=True), sfx("story_bubbles", 5.62, 0.3, pan=-0.4)]
+
+
+SOUNDS = {"shot_birth": _snd_birth, "shot_lantern": _snd_lantern, "shot_star_rain": _snd_star_rain, "shot_growing": _snd_growing,
+          "shot_alone": _snd_alone, "shot_trench": _snd_trench}

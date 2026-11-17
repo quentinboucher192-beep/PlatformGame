@@ -300,4 +300,41 @@ SHOTS = [shot_dust, shot_rune, shot_rising, shot_village, shot_ships, shot_alone
 
 def generate(review=None):
     """Sprites, layers, the story file and the stills; returns the files written."""
-    return S.generate("monolithe", "story_monolithe_scene", SHOTS, _sprites(), LAYERS, review)
+    return S.generate("monolithe", "story_monolithe_scene", SHOTS, _sprites(), LAYERS, review, SOUNDS)
+
+
+# =================================================================== the sounds (2.63)
+from story_stage import amb, sfx  # noqa: E402
+
+
+def _snd_dust(D):
+    return [amb("story_amb_space", 0.55)] + [sfx("dash", 0.6 + 1.7 * i + 0.9, 0.25, pitch=0.6, pan=-0.6 + 0.6 * i) for i in range(3)]
+
+
+def _snd_rune(D):
+    return [amb("story_amb_cave", 0.5), sfx("story_chisel", 3.0, 0.6, at=(540, 420)), sfx("story_chisel", 4.0, 0.55, at=(540, 420), pitch=1.05),
+            sfx("story_glow", 5.0, 0.5, at=(560, 400))]
+
+
+def _snd_rising(D):
+    return [amb("story_amb_cave", 0.45), sfx("story_chisel", 0.2, 0.45, at=(436, 420)), sfx("story_glow", 1.5, 0.3),
+            sfx("story_glow", 2.7, 0.3, pitch=1.2), sfx("story_stone", 3.9, 0.8, duck=True), sfx("golem_slam", 4.5, 0.8, duck=True),
+            sfx("crumble", 4.6, 0.5)]
+
+
+def _snd_village(D):
+    return [amb("story_amb_cave", 0.3), amb("story_amb_fire", 0.45), sfx("golem_slam", 3.45, 0.25, pitch=0.8, at=(790, 446))]
+
+
+def _snd_ships(D):
+    return [amb("story_amb_night", 0.45)] + [sfx("story_launch", t, v, at=(x, 420), duck=i == 0)
+                                             for i, (t, x, v) in enumerate(((0.3, 560, 0.55), (1.3, 700, 0.45), (2.4, 470, 0.4)))]
+
+
+def _snd_alone(D):
+    return [amb("story_amb_cave", 0.4), sfx("footstep_a", 2.0, 0.25, pan=-0.6), sfx("footstep_b", 2.4, 0.25, pan=-0.5),
+            sfx("footstep_a", 2.8, 0.25, pan=-0.4), sfx("boss_roar", 5.0, 0.9, at=(600, 300), duck=True), sfx("crumble", 5.3, 0.45)]
+
+
+SOUNDS = {"shot_dust": _snd_dust, "shot_rune": _snd_rune, "shot_rising": _snd_rising, "shot_village": _snd_village,
+          "shot_ships": _snd_ships, "shot_alone": _snd_alone}

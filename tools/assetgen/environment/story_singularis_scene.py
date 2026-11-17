@@ -235,4 +235,40 @@ SHOTS = [shot_young_star, shot_three_planets, shot_gifts, shot_machines, shot_la
 
 def generate(review=None):
     """Sprites, layers, the story file and the stills; returns the files written."""
-    return S.generate("singularis", "story_singularis_scene", SHOTS, _sprites(), LAYERS, review)
+    return S.generate("singularis", "story_singularis_scene", SHOTS, _sprites(), LAYERS, review, SOUNDS)
+
+
+# =================================================================== the sounds (2.63)
+from story_stage import amb, sfx  # noqa: E402
+
+
+def _snd_young_star(D):
+    return [amb("story_amb_space", 0.55), sfx("story_glow", 0.5, 0.35), sfx("story_glow", 3.5, 0.3, pitch=1.2)]
+
+
+def _snd_three_planets(D):
+    return [amb("story_amb_space", 0.5), sfx("story_sing", 0.3, 0.6), sfx("story_sing", 3.5, 0.5, pitch=1.06)]
+
+
+def _snd_gifts(D):
+    return [amb("story_amb_space", 0.45), sfx("story_sing", 0.2, 0.4)] + [s for t, p, g in ((1.6, (640, 160), "root_burst"), (3.2, (720, 300), "fireball"),
+                                                                                            (4.8, (610, 430), "freeze"))
+                                                                         for s in (sfx("story_glow", t, 0.45, at=p), sfx(g, t + 0.05, 0.4, at=p))]
+
+
+def _snd_machines(D):
+    return [amb("story_amb_space", 0.45)] + [sfx("teleport_in", 0.4 + 0.25 * i, 0.35, pan=p) for i, p in enumerate((0.6, 0.7, -0.6))] + [
+        sfx("story_drain", 1.3, 0.6), sfx("story_drain", 2.9, 0.5, pitch=0.9), sfx("story_glow", 2.5, 0.3, pitch=0.5)]
+
+
+def _snd_last_spark(D):
+    return [amb("story_amb_space", 0.35), sfx("story_glow", 3.0, 0.2, pitch=0.6)]
+
+
+def _snd_collapse(D):
+    return [amb("story_amb_space", 0.4), sfx("story_collapse", 0.8, 0.9, duck=True), sfx("shell_shatter", 2.4, 0.7, duck=True),
+            sfx("gravity_well", 2.6, 0.5), sfx("star_roar", 4.6, 0.9, duck=True)]
+
+
+SOUNDS = {"shot_young_star": _snd_young_star, "shot_three_planets": _snd_three_planets, "shot_gifts": _snd_gifts,
+          "shot_machines": _snd_machines, "shot_last_spark": _snd_last_spark, "shot_collapse": _snd_collapse}

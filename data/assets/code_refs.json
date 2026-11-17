@@ -535,6 +535,7 @@
    "game/player/Player.cpp": 1
   },
   "sounds/ui_back.wav": {
+   "ui/screens/BossStoryScene.cpp": 1,
    "ui/screens/TutorialScenes.cpp": 2,
    "ui/widgets/UIContext.cpp": 1
   },
