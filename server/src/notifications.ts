@@ -30,6 +30,7 @@ export const NOTIFICATION_KINDS = [
     "security", //          2.47: the account and its computer (login refused elsewhere, bound, unbound by an admin); 2.50: migrations
     "coop_invite", //       2.62: a friend invites me to play an EXTRÊME level in a team
     "clan", //              2.66: my clan (invitation, application to answer, accepted, excluded, chief, dissolved)
+    "raid", //              clan raids (raids.ts): events scheduled or announced, reminders, registrations, invitations
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
@@ -38,6 +39,8 @@ const GROUPS: Record<string, NotificationKind[]> = {
     creators: ["new_level", "level_update", "new_follower", "race_verified", "challenge_featured"],
     comments: ["comment_reply", "comment_reaction", "level_comment", "run_comment"],
     projects: ["project_invite", "project_role", "project_version", "project_mention", "project_reply", "project_removed"],
+    // The panel « Notifications de raid » of CLANS › RAIDS.
+    raids: ["raid"],
 };
 const MAX_PER_PLAYER = 500;
 
@@ -169,6 +172,64 @@ function sentence(n: NotificationRow, d: Record<string, string>): string {
             return `${who} vous invite à jouer en équipe : ${d.title ?? ""}`;
         case "clan":
             return clanSentence(d, who);
+        case "raid":
+            return raidSentence(d as unknown as Record<string, unknown>, who, n.count);
+    }
+}
+
+/** « raid court », « raid standard », « raid légendaire ». */
+function raidFormatName(format: unknown): string {
+    return format === "court" ? "raid court" : format === "legendaire" ? "raid légendaire" : "raid standard";
+}
+
+/** « 24 h », « 1 h », « 10 min ». */
+function raidDelay(minutes: number): string {
+    if (!(minutes > 0)) return "quelques instants";
+    return minutes >= 60 ? `${Math.round(minutes / 60)} h` : `${Math.round(minutes)} min`;
+}
+
+/** Clan raids (raids.ts writes `event`, `raid_name`, `format`, and `tag`, `from_tag`, `minutes` when they apply). Never a time: each game shows it in its own zone. */
+function raidSentence(d: Record<string, unknown>, who: string, count: number): string {
+    const s = (k: string) => (typeof d[k] === "string" ? (d[k] as string) : "");
+    const raid = `${s("raid_name") || "Asterion"} (${raidFormatName(d.format)})`;
+    const tag = s("tag") ? `[${s("tag")}]` : "votre clan";
+    switch (s("event")) {
+        case "world":
+            return `Événement mondial annoncé : ${raid}`;
+        case "open":
+            return `Inscriptions ouvertes : ${raid}, événement mondial`;
+        case "scheduled":
+            return `${who} a programmé un raid du clan : ${raid}`;
+        case "clan_registered":
+            return `${who} a inscrit ${tag} à ${raid} : inscrivez-vous`;
+        case "joined":
+            return `${tag} participe au raid commun ${raid} : inscrivez-vous`;
+        case "reminder":
+            return `Rappel : ${raid} commence dans ${raidDelay(Number(d.minutes))}`;
+        case "start":
+            return `C'est l'heure : ${raid} commence (le combat arrive dans une prochaine version)`;
+        case "member_in":
+            return count > 1 ? `${count} membres se sont inscrits à ${raid}` : `${who} s'est inscrit à ${raid}`;
+        case "member_out":
+            return count > 1 ? `${count} membres se sont désinscrits de ${raid}` : `${who} s'est désinscrit de ${raid}`;
+        case "invite":
+            return `[${s("from_tag")}] invite ${tag} à un raid commun : ${raid}`;
+        case "invite_accepted":
+            return `${tag} a accepté votre raid commun : ${raid}`;
+        case "invite_declined":
+            return `${tag} a refusé votre raid commun : ${raid}`;
+        case "leader":
+            return `Vous êtes le chef de raid de ${tag} pour ${raid}`;
+        case "call":
+            return `${who} vous invite à vous inscrire : ${raid}`;
+        case "cancelled":
+            return `Raid annulé : ${raid}`;
+        case "moved":
+            return `Horaire modifié : ${raid}`;
+        case "withdrawn":
+            return `${tag} s'est retiré de ${raid} : votre inscription est annulée`;
+        default:
+            return `Du nouveau sur un raid : ${raid}`;
     }
 }
 
@@ -272,7 +333,7 @@ export async function listNotifications(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
     const filter = ctx.url.searchParams.get("filter") ?? "all";
     if (!["all", "unread", ...Object.keys(GROUPS)].includes(filter))
-        throw Errors.validation([{ field: "filter", message: "all, unread, creators, comments ou projects" }]);
+        throw Errors.validation([{ field: "filter", message: "all, unread, creators, comments, projects ou raids" }]);
     const { limit, offset } = paging(ctx.url, 30, 100);
     const where = ["n.player_id = ?1"];
     if (filter === "unread") where.push("n.read_at IS NULL");
@@ -310,11 +371,15 @@ export async function readNotification(ctx: Ctx): Promise<Response> {
     return json(ctx, { read: true });
 }
 
-/** POST /notifications/read-all */
+/** POST /notifications/read-all[?filter=creators|comments|projects|raids]: every unread one, or those of a group. */
 export async function readAllNotifications(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
-    const r = await ctx.env.DB.prepare("UPDATE notifications SET read_at = ?2 WHERE player_id = ?1 AND read_at IS NULL").bind(auth.player.id, nowIso()).run();
-    return json(ctx, { read: r.meta.changes });
+    const filter = ctx.url.searchParams.get("filter");
+    if (filter !== null && !(filter in GROUPS)) throw Errors.validation([{ field: "filter", message: "creators, comments, projects ou raids" }]);
+    const only = filter ? ` AND kind IN (${GROUPS[filter]!.map((k) => `'${k}'`).join(", ")})` : "";
+    const r = await ctx.env.DB.prepare(`UPDATE notifications SET read_at = ?2 WHERE player_id = ?1 AND read_at IS NULL${only}`).bind(auth.player.id, nowIso()).run();
+    const unread = await ctx.env.DB.prepare("SELECT COUNT(*) AS n FROM notifications WHERE player_id = ?1 AND read_at IS NULL").bind(auth.player.id).first<{ n: number }>();
+    return json(ctx, { read: r.meta.changes, unread: unread?.n ?? 0 });
 }
 
 /** DELETE /notifications/{id} */

@@ -669,6 +669,24 @@
    ]
   },
   {
+   "fr": "[{0}] est déjà invité.",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
+   "fr": "[{0}] invite {1} à un raid commun : {2}",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "[{0}] participe déjà à ce raid.",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
    "fr": "A",
    "where": [
     "editors/shared/PropertyEditor.cpp",
@@ -704,6 +722,12 @@
   },
   {
    "fr": "a choisi le défi {0} : {1}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a créé le brouillon de {0}",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -787,6 +811,12 @@
    ]
   },
   {
+   "fr": "a modifié {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "a modifié {0} {1} ({2})",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -806,6 +836,18 @@
   },
   {
    "fr": "a publié la révision {0} de « {1} » (remplace la révision {2}) · {3}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a publié {0} : {1} joueur prévenu",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a publié {0} : {1} joueurs prévenus",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -1003,9 +1045,11 @@
   {
    "fr": "Accepter",
    "where": [
+    "ui/screens/ClanRaids.cpp",
     "ui/screens/ClanScene.cpp",
     "ui/screens/OnlineSettingsScene.cpp",
     "ui/screens/ProjectsScene.cpp",
+    "ui/screens/RaidEventScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
   },
@@ -1025,6 +1069,12 @@
    "fr": "Accepter les demandes d'amis",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "acceptée",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -1429,6 +1479,12 @@
   },
   {
    "fr": "Administration › Joueurs : nouvelle colonne « Version du jeu » (la version installée chez chaque joueur, « à jour » ou « ancienne ») ; le détail est dans la fenêtre « Ordinateur ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "ADMINISTRATION › Raids : programmer un événement mondial à son heure locale (enregistré en UTC, aperçu à Paris, Montréal, São Paulo et Tokyo), régler son format, son verrouillage, sa capacité et sa difficulté, ouvrir ou fermer ses inscriptions, le publier en prévenant tous les clans ou l'annuler ; chaque action va au Journal. Toutes les heures des raids suivent le fuseau de l'ordinateur et son changement d'heure.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -2235,6 +2291,7 @@
     "ui/screens/AdminScene.cpp",
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/ChallengesScene.cpp",
+    "ui/screens/ClanRaids.cpp",
     "ui/screens/ClanScene.cpp",
     "ui/screens/ContentManagerScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
@@ -2244,6 +2301,7 @@
     "ui/screens/OnlineSettingsScene.cpp",
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/ProjectsScene.cpp",
+    "ui/screens/RaidEventScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp",
     "ui/screens/SocialScene.cpp",
     "ui/screens/StatisticsScene.cpp",
@@ -2252,9 +2310,45 @@
    ]
   },
   {
+   "fr": "Annuler ce raid ? Les inscrits et les clans invités sont prévenus ; il reste dans l'historique du clan.",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Annuler cet événement mondial ? Les clans et les joueurs inscrits sont prévenus ; le Journal garde la trace.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Annuler l'événement",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Annuler l'événement…",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Annuler la migration",
    "where": [
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Annuler le raid",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Annuler le raid…",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -2274,6 +2368,13 @@
    "fr": "Annuler · Ctrl+Z",
    "where": [
     "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Annulé",
+   "where": [
+    "game/online/Raids.cpp",
+    "ui/screens/ClanRaids.cpp"
    ]
   },
   {
@@ -2366,6 +2467,7 @@
   {
    "fr": "août",
    "where": [
+    "game/online/Raids.cpp",
     "ui/screens/ChallengeRewardsUi.cpp",
     "ui/screens/ChallengeUi.cpp",
     "ui/screens/StatisticsScene.cpp"
@@ -3058,6 +3160,28 @@
    ]
   },
   {
+   "fr": "ASTERION",
+   "where": [
+    "game/online/Raids.cpp",
+    "game/online/Raids.h",
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Asterion",
+   "where": [
+    "game/online/Raids.cpp",
+    "game/online/Raids.h",
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Asterion, le Dévoreur de mondes",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Astrarque",
    "where": [
     "data/achievements/achievements.json",
@@ -3498,6 +3622,37 @@
    ]
   },
   {
+   "fr": "au moins {0} minutes à l'avance",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
+   "fr": "Au moins {0} minutes à l'avance.",
+   "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Au plus 90 jours à l'avance.",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Au plus un an à l'avance.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "au plus {0} jours à l'avance",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
    "fr": "Au plus {0} niveaux publiés par joueur.",
    "where": [
     "server/src/community.ts"
@@ -3594,6 +3749,7 @@
    "where": [
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/OnlineSettingsScene.cpp",
+    "ui/screens/RaidEventScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
   },
@@ -3676,10 +3832,22 @@
    ]
   },
   {
+   "fr": "Aucun clan inscrit pour l'instant.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Aucun clan ne correspond.",
    "where": [
     "ui/screens/AdminClans.cpp",
     "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun clan ne porte le tag [{0}].",
+   "where": [
+    "server/src/raids.ts"
    ]
   },
   {
@@ -4100,6 +4268,24 @@
    ]
   },
   {
+   "fr": "Aucun raid du clan à venir. Programmez-en un : les membres sont prévenus et s'inscrivent eux-mêmes.",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun raid du clan à venir. {0}",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun raid terminé pour l'instant.",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
    "fr": "Aucun recoin oublié",
    "where": [
     "data/achievements/achievements.json"
@@ -4226,6 +4412,18 @@
    ]
   },
   {
+   "fr": "Aucun événement mondial pour l'instant : programmez-en un à gauche.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun événement mondial programmé pour l'instant. Les administrateurs du jeu l'annoncent ici et dans vos notifications ; les raids de votre clan se programment juste en dessous.",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
    "fr": "Aucune",
    "where": [
     "data/cosmetics/cosmetics.json",
@@ -4276,6 +4474,12 @@
    "fr": "Aucune combinaison créée pour l'instant : « Nouvelle combinaison » pour commencer.",
    "where": [
     "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune consigne pour l'instant.",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -4407,6 +4611,12 @@
    ]
   },
   {
+   "fr": "Aucune invitation à un raid commun.",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
    "fr": "Aucune invitation.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -4428,6 +4638,12 @@
    "fr": "aucune note pour l'instant",
    "where": [
     "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune notification de raid.",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
    ]
   },
   {
@@ -4494,6 +4710,12 @@
    "fr": "Aucune récompense pour ce défi. Ajoutez un élément du jeu ou créez un titre.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune récompense à récupérer",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
    ]
   },
   {
@@ -6289,6 +6511,12 @@
    ]
   },
   {
+   "fr": "Brouillon",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "brouillon",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp",
@@ -6300,6 +6528,12 @@
    "fr": "Brouillon archivé sur ce PC (« Archives » pour le revoir).",
    "where": [
     "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "Brouillon créé : publiez-le pour prévenir tous les clans (inscrit au Journal).",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -6336,6 +6570,12 @@
    "fr": "Brouillon « {0} » enregistré sur ce PC à {1}.",
    "where": [
     "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "BROUILLON · ÉVÉNEMENT MONDIAL",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -6473,6 +6713,12 @@
    ]
   },
   {
+   "fr": "C'est l'heure : {0} commence (le combat arrive dans une prochaine version)",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "C'est la dernière",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -6490,6 +6736,18 @@
    "where": [
     "game/online/AccountMigration.cpp",
     "server/src/accountMigration.ts"
+   ]
+  },
+  {
+   "fr": "c'est votre propre clan",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
+   "fr": "C'est votre propre clan.",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -7684,6 +7942,30 @@
    ]
   },
   {
+   "fr": "Ce raid a été annulé.",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Ce raid est annulé.",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
+   "fr": "Ce raid est complet.",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
+   "fr": "Ce raid est terminé.",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
    "fr": "Ce record a été refusé.",
    "where": [
     "server/src/records.ts"
@@ -8094,6 +8376,12 @@
    "fr": "Cet ordinateur est lié au compte « {0} » : un seul compte par ordinateur.",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "Cet événement est déjà publié.",
+   "where": [
+    "server/src/raids.ts"
    ]
   },
   {
@@ -8644,6 +8932,12 @@
    ]
   },
   {
+   "fr": "Chargement de l'événement…",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
    "fr": "Chargement de la course…",
    "where": [
     "ui/screens/OnlineThreadScene.cpp"
@@ -8677,6 +8971,12 @@
    "fr": "Chargement des joueurs…",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Chargement des raids…",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
    ]
   },
   {
@@ -8735,8 +9035,10 @@
     "ui/screens/AdminClans.cpp",
     "ui/screens/AdminCreations.cpp",
     "ui/screens/AdminEnemies.cpp",
+    "ui/screens/AdminRaids.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/ChallengesScene.cpp",
+    "ui/screens/ClanRaids.cpp",
     "ui/screens/ClanScene.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
@@ -8859,6 +9161,19 @@
    "where": [
     "game/online/Clans.cpp",
     "ui/screens/AdminClans.cpp"
+   ]
+  },
+  {
+   "fr": "chef : {0}",
+   "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Chef de raid",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -9150,6 +9465,12 @@
    "fr": "Choisissez un pseudonyme d'au moins 3 caractères.",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "Choisissez un événement pour voir ses inscriptions.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -9472,6 +9793,12 @@
    ]
   },
   {
+   "fr": "Clan inscrit : ses membres sont prévenus et s'inscrivent eux-mêmes.",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
    "fr": "Clan introuvable.",
    "where": [
     "server/src/clans.ts",
@@ -9519,6 +9846,24 @@
    "fr": "CLANS : nouvel onglet « Gestion » pour le chef et les officiers : candidatures reçues (message, accepter ou refuser), invitations envoyées (joueur, date, qui l'a invité, « Annuler »), membres et rôles, et paramètres du clan (devise, emblème et adhésion, transmission du rôle de chef, dissolution confirmée) réservés au chef.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "CLANS DU RAID",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "CLANS INSCRITS",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Clans inscrits",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -10704,6 +11049,12 @@
    ]
   },
   {
+   "fr": "Complet",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Compléter avec Nova",
    "where": [
     "ui/studio/StudioFrise.cpp"
@@ -11041,6 +11392,18 @@
    ]
   },
   {
+   "fr": "Connectez-vous pour recevoir les notifications de raid.",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Connectez-vous pour voir les raids de votre clan.",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Connectez-vous à Cosmic Online (menu En ligne) pour créer un salon ou rejoindre celui d'un ami.",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
@@ -11342,6 +11705,30 @@
    "fr": "Conservateur",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Consignes ({0} caractères au plus)",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "CONSIGNES DU CHEF DE RAID · {0}",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "CONSIGNES DU CLAN",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Consignes du clan",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -12387,6 +12774,13 @@
    ]
   },
   {
+   "fr": "Court",
+   "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
    "fr": "Couvée",
    "where": [
     "data/enemies/pyrrhax.json"
@@ -12777,6 +13171,12 @@
    "fr": "Créer la version",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Créer le brouillon",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -13272,6 +13672,19 @@
    "where": [
     "ui/screens/AdminBackups.cpp",
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Date (JJ/MM/AAAA)",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Date attendue : JJ/MM/AAAA.",
+   "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/ClanRaids.cpp"
    ]
   },
   {
@@ -14090,7 +14503,8 @@
     "packaging/PackageImporter.cpp",
     "ui/screens/CommunityPublishScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
-    "ui/screens/ProjectsScene.cpp"
+    "ui/screens/ProjectsScene.cpp",
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -14235,6 +14649,7 @@
   {
    "fr": "Difficulté",
    "where": [
+    "ui/screens/AdminRaids.cpp",
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
@@ -14292,6 +14707,12 @@
    "fr": "Difficulté {0}   —   {1}",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Difficulté {0} / 5",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -14940,6 +15361,12 @@
    ]
   },
   {
+   "fr": "Du nouveau sur un raid : {0}",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "du parcours",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -14960,6 +15387,7 @@
   {
    "fr": "du {0}",
    "where": [
+    "ui/screens/AdminScene.cpp",
     "ui/screens/SobMontageScene.cpp"
    ]
   },
@@ -15284,6 +15712,25 @@
    ]
   },
   {
+   "fr": "Début (votre heure)",
+   "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Début : {0}",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Début dans",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Début du niveau (source = level)",
    "where": [
     "game/levels/EventSystem.cpp"
@@ -15304,6 +15751,7 @@
   {
    "fr": "déc.",
    "where": [
+    "game/online/Raids.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
   },
@@ -15359,6 +15807,7 @@
   {
    "fr": "décembre",
    "where": [
+    "game/online/Raids.cpp",
     "ui/screens/ChallengeRewardsUi.cpp",
     "ui/screens/ChallengeUi.cpp"
    ]
@@ -16790,7 +17239,8 @@
    "fr": "en attente",
    "where": [
     "game/gameplay/entities/HazardEntities.cpp",
-    "game/gameplay/entities/ZoneEntities.cpp"
+    "game/gameplay/entities/ZoneEntities.cpp",
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -16863,6 +17313,7 @@
   {
    "fr": "En cours",
    "where": [
+    "game/online/Raids.cpp",
     "ui/screens/PlayerProfileScene.cpp"
    ]
   },
@@ -16877,6 +17328,12 @@
    "fr": "en cours !",
    "where": [
     "game/gameplay/Hud.cpp"
+   ]
+  },
+  {
+   "fr": "En cours · fin prévue dans",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -17412,7 +17869,8 @@
     "ui/screens/AdminCreations.cpp",
     "ui/screens/ClanScene.cpp",
     "ui/screens/HudEditorScene.cpp",
-    "ui/screens/OnlineSettingsScene.cpp"
+    "ui/screens/OnlineSettingsScene.cpp",
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -17458,6 +17916,12 @@
    ]
   },
   {
+   "fr": "Enregistrer les changements",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Enregistrer mes statistiques",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -17476,6 +17940,12 @@
    ]
   },
   {
+   "fr": "Enregistrez avant de publier",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Enregistré",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -17485,6 +17955,12 @@
    "fr": "Enregistré dans {0}",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Enregistré en UTC : {0}. Aperçu des heures locales : {1}. Le changement d'heure est calculé par le jeu de chaque joueur.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -17503,6 +17979,12 @@
    "fr": "Enregistrée : {0}",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ensuite, chaque membre s'inscrit lui-même.",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -18672,6 +19154,12 @@
    ]
   },
   {
+   "fr": "Fermer les inscriptions",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Fermer les réglages",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -19510,7 +19998,10 @@
   {
    "fr": "Format",
    "where": [
-    "ui/screens/AdminAssets.cpp"
+    "ui/screens/AdminAssets.cpp",
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/ClanRaids.cpp",
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -19536,6 +20027,7 @@
     "game/online/OnlineCache.cpp",
     "game/online/OnlineSession.cpp",
     "game/online/ProgressMerge.cpp",
+    "game/online/Raids.cpp",
     "game/planets/PlanetData.cpp",
     "game/powers/PowerDefinition.cpp",
     "game/progression/NewBadges.cpp",
@@ -19544,6 +20036,9 @@
     "packaging/PackageExporter.cpp",
     "packaging/PackageImporter.cpp",
     "saves/SaveFile.cpp",
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/AdminScene.cpp",
+    "ui/screens/ClanRaids.cpp",
     "ui/screens/GameScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/studio/StudioDoc.cpp"
@@ -19829,6 +20324,7 @@
   {
    "fr": "févr.",
    "where": [
+    "game/online/Raids.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
   },
@@ -19842,6 +20338,7 @@
   {
    "fr": "février",
    "where": [
+    "game/online/Raids.cpp",
     "ui/screens/ChallengeRewardsUi.cpp",
     "ui/screens/ChallengeUi.cpp"
    ]
@@ -20021,6 +20518,13 @@
    "fr": "Garde-robe",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Garder",
+   "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -20766,6 +21270,12 @@
    ]
   },
   {
+   "fr": "Groupe 1 : bras droit, puis le torse…",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
    "fr": "Groupe créé.",
    "where": [
     "ui/screens/SocialScene.cpp"
@@ -20784,6 +21294,12 @@
    ]
   },
   {
+   "fr": "Groupe {0} · chef {1}",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
    "fr": "Grouper",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
@@ -20794,6 +21310,18 @@
    "fr": "Grouper (Ctrl+G)",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
+   ]
+  },
+  {
+   "fr": "Groupes de 8 dans l'ordre des inscriptions : le chef de raid mène le groupe 1, le premier inscrit de chaque autre groupe mène le sien. La répartition en instances arrivera avec les combats.",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "groupes de 8 joueurs",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -21130,6 +21658,25 @@
    ]
   },
   {
+   "fr": "Heure (votre heure)",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Heure attendue : HH:MM.",
+   "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "heure UTC attendue (AAAA-MM-JJTHH:MM:SSZ) : le jeu convertit l'heure locale",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
    "fr": "Hexagone",
    "where": [
     "game/online/Clans.cpp"
@@ -21172,6 +21719,12 @@
     "ui/screens/AdminCampaign.cpp",
     "ui/screens/AdminEnemies.cpp",
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "HISTORIQUE DU CLAN",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
    ]
   },
   {
@@ -21232,6 +21785,12 @@
    "fr": "Hop ! Bip te ramène sur la terre ferme.",
    "where": [
     "game/gameplay/GameWorld.cpp"
+   ]
+  },
+  {
+   "fr": "Horaire modifié : {0}",
+   "where": [
+    "server/src/notifications.ts"
    ]
   },
   {
@@ -21638,6 +22197,7 @@
     "game/online/LevelFingerprint.cpp",
     "game/online/LiveSession.cpp",
     "game/online/OnlineService.cpp",
+    "game/online/Raids.cpp",
     "game/online/Spectate.cpp",
     "game/planets/PlanetData.cpp",
     "game/powers/PowerDefinition.cpp",
@@ -21649,9 +22209,11 @@
     "ui/screens/AdminCampaign.cpp",
     "ui/screens/AdminClans.cpp",
     "ui/screens/AdminCreations.cpp",
+    "ui/screens/AdminRaids.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp",
+    "ui/screens/ClanRaids.cpp",
     "ui/screens/ClanScene.cpp",
     "ui/screens/CollectionScene.cpp",
     "ui/screens/CommunityPublishScene.cpp",
@@ -21668,6 +22230,7 @@
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/RaceScene.cpp",
+    "ui/screens/RaidEventScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp",
     "ui/screens/ReplayScene.cpp",
     "ui/screens/ResultsScene.cpp",
@@ -21988,18 +22551,21 @@
   {
    "fr": "il y a {0} h",
    "where": [
+    "game/online/Raids.cpp",
     "ui/online/OnlineWidgets.cpp"
    ]
   },
   {
    "fr": "il y a {0} j",
    "where": [
+    "game/online/Raids.cpp",
     "ui/online/OnlineWidgets.cpp"
    ]
   },
   {
    "fr": "il y a {0} min",
    "where": [
+    "game/online/Raids.cpp",
     "ui/online/OnlineWidgets.cpp"
    ]
   },
@@ -22007,6 +22573,12 @@
    "fr": "Illimitée",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "illimitées",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -22174,6 +22746,12 @@
    "fr": "Images à importer",
    "where": [
     "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "Imminent",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -22561,6 +23139,85 @@
    ]
   },
   {
+   "fr": "Inscription annulée.",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "INSCRIPTIONS",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Inscriptions des membres : désactivées",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Inscriptions des membres : regroupées",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Inscriptions fermées",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Inscriptions ouvertes",
+   "where": [
+    "game/online/Raids.cpp",
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Inscriptions ouvertes : {0}, événement mondial",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Inscriptions ouvertes jusqu'à {0}",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Inscriptions verrouillées",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Inscriptions verrouillées : rendez-vous au début.",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "INSCRIPTIONS · {0}",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Inscrire mon clan",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Inscrit",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Inscrit le",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -22811,6 +23468,12 @@
    ]
   },
   {
+   "fr": "Invitation acceptée : vos membres sont prévenus.",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
    "fr": "Invitation annulée.",
    "where": [
     "ui/screens/ClanScene.cpp"
@@ -22862,6 +23525,7 @@
   {
    "fr": "Invitation refusée.",
    "where": [
+    "ui/screens/ClanRaids.cpp",
     "ui/screens/ClanScene.cpp",
     "ui/screens/ProjectsScene.cpp"
    ]
@@ -22882,6 +23546,12 @@
    "fr": "Invitation à un projet",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "INVITATIONS",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -22909,6 +23579,12 @@
    ]
   },
   {
+   "fr": "INVITATIONS ET RÉCOMPENSES",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
    "fr": "Invitations reçues",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
@@ -22918,7 +23594,8 @@
    "fr": "Inviter",
    "where": [
     "ui/screens/ClanScene.cpp",
-    "ui/screens/ProjectsScene.cpp"
+    "ui/screens/ProjectsScene.cpp",
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -22928,9 +23605,27 @@
    ]
   },
   {
+   "fr": "Inviter des membres…",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
    "fr": "Inviter un ami",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Inviter un clan",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Inviter un clan…",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -23115,6 +23810,12 @@
    "fr": "Jardins gardés",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "Je m'inscris",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -23410,6 +24111,24 @@
    "fr": "Joueurs de Cosmic Online",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Joueurs inscrits",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Joueurs maximum (0 : illimité)",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Joueurs par clan (1 à 50)",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -24076,6 +24795,18 @@
    "fr": "L'étoile s'éveille.",
    "where": [
     "data/enemies/astrarque.json"
+   ]
+  },
+  {
+   "fr": "L'événement a commencé : son heure ne change plus.",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
+   "fr": "l'événement mondial {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -25631,6 +26362,24 @@
    ]
   },
   {
+   "fr": "le chef de raid doit être un membre du clan",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
+   "fr": "Le chef de raid et les consignes ne sont visibles que par les membres de votre clan.",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le chef et les officiers organisent les raids du clan.",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Le chef garde son rôle : transmettez-le d'abord.",
    "where": [
     "server/src/clans.ts"
@@ -25640,6 +26389,25 @@
    "fr": "Le chef nomme et retire les officiers, et peut transmettre son rôle ; le chef et les officiers excluent les membres.",
    "where": [
     "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le chef ou un officier inscrit d'abord le clan.",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Le chef ou un officier répond.",
+   "where": [
+    "ui/screens/ClanRaids.cpp",
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le chef, les officiers et le chef de raid invitent les membres.",
+   "where": [
+    "server/src/raids.ts"
    ]
   },
   {
@@ -25680,9 +26448,21 @@
    ]
   },
   {
+   "fr": "Le clan a déjà répondu à cette invitation.",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
    "fr": "Le clan est dissous.",
    "where": [
     "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le clan qui organise un raid l'annule au lieu de s'en retirer.",
+   "where": [
+    "server/src/raids.ts"
    ]
   },
   {
@@ -25713,6 +26493,18 @@
    "fr": "Le coffre de phase !",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "Le combat arrive dans une prochaine version : le raid est ouvert, rien à jouer pour l'instant.",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le combat arrive dans une prochaine version.",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -26054,6 +26846,15 @@
    "fr": "Le défi peut être un niveau de la campagne ou un niveau ONLINE LEVELS choisi par l'administrateur ; « Télécharger » l'installe depuis le défi, et son créateur est prévenu que son niveau est à l'honneur.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "LE DÉVOREUR DE MONDES",
+   "where": [
+    "game/online/Raids.cpp",
+    "game/online/Raids.h",
+    "server/src/raids.ts",
+    "ui/screens/ClanRaids.cpp"
    ]
   },
   {
@@ -27328,6 +28129,12 @@
    ]
   },
   {
+   "fr": "Le verrouillage des inscriptions est passé : changez l'heure de début avant de publier.",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
    "fr": "Le vestiaire, le juke-box et la galerie de la Collection.",
    "where": [
     "data/achievements/achievements.json"
@@ -27522,6 +28329,12 @@
    "fr": "Les 26 morceaux du juke-box débloqués.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Les administrateurs du jeu ouvriront les inscriptions.",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -27745,6 +28558,12 @@
    "fr": "Les Confins, troisième niveau : « La Fosse des Abysses » (EXTRÊME) : le combat seul du Kraken des Abysses, giga-boss à huit phases qui nage. Une seule vie, aucun checkpoint.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Les consignes sont réservées aux membres d'un clan inscrit.",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -28031,6 +28850,24 @@
    ]
   },
   {
+   "fr": "Les inscriptions de cet événement sont fermées.",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
+   "fr": "Les inscriptions sont fermées pour l'instant.",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Les inscriptions sont verrouillées ({0} min avant le début).",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
    "fr": "Les jeux les téléchargent au démarrage ; les révisions d'avant restent jouables avec leur définition (records archivés, replays, défis déjà commencés). La publication est inscrite au Journal.",
    "where": [
     "editors/enemy_editor/EnemyEditorPublish.cpp"
@@ -28060,6 +28897,12 @@
    "fr": "les meilleurs temps du défi, avec leur palier.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Les membres du clan sont prévenus ; chacun s'inscrit lui-même jusqu'au verrouillage. L'heure est celle de cet ordinateur ({0}) : le jeu l'envoie en UTC.",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
    ]
   },
   {
@@ -28256,9 +29099,21 @@
    ]
   },
   {
+   "fr": "Les récompenses arriveront avec les combats d'Asterion.",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
    "fr": "les réglages « {0} » du niveau",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
+   ]
+  },
+  {
+   "fr": "Les résultats des combats arriveront avec eux.",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
    ]
   },
   {
@@ -28899,6 +29754,12 @@
    ]
   },
   {
+   "fr": "liste parmi 1440, 60 et 10 (minutes avant le début)",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
    "fr": "Liste triée par date, filtre par niveau, Regarder / Comparer / Supprimer ; un replay fait sur une autre version du niveau le signale au lieu d'être mal rejoué.",
    "where": [
     "data/news/changelog.json"
@@ -29075,6 +29936,12 @@
    ]
   },
   {
+   "fr": "lundi",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Luxembourg",
    "where": [
     "data/online/countries.json",
@@ -29085,6 +29952,13 @@
    "fr": "Lyse chantait de la lumière, et trois petites planètes venaient se réchauffer autour d'elle.",
    "where": [
     "data/stories/singularis.json"
+   ]
+  },
+  {
+   "fr": "Légendaire",
+   "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/ClanRaids.cpp"
    ]
   },
   {
@@ -29227,6 +30101,12 @@
    "fr": "Maintenance en cours : réessayez dans quelques minutes.",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "maintenant",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -29866,6 +30746,12 @@
    ]
   },
   {
+   "fr": "Me désinscrire",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Meilleur",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -30205,6 +31091,12 @@
    "where": [
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Mes rappels",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
    ]
   },
   {
@@ -30552,6 +31444,12 @@
    ]
   },
   {
+   "fr": "Mise à jour du jeu, erreur d'horaire…",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Missiles",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -30769,6 +31667,12 @@
    "fr": "Modifier le clan…",
    "where": [
     "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Modifier les consignes (chef, officiers)",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -31021,6 +31925,12 @@
    ]
   },
   {
+   "fr": "mondial",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
    "fr": "Mongolie",
    "where": [
     "data/online/countries.json",
@@ -31074,6 +31984,12 @@
    "fr": "Montré en fantôme sur le chronomètre de A, décalable dans le temps.",
    "where": [
     "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Montréal",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -31217,7 +32133,8 @@
   {
    "fr": "Motif (facultatif, gardé au Journal)",
    "where": [
-    "ui/screens/AdminClans.cpp"
+    "ui/screens/AdminClans.cpp",
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -32944,6 +33861,12 @@
    ]
   },
   {
+   "fr": "NOTIFICATIONS DE RAID",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
    "fr": "NOUVEAU",
    "where": [
     "ui/widgets/UIContext.cpp"
@@ -33219,7 +34142,8 @@
   {
    "fr": "Nouvel événement",
    "where": [
-    "editors/level_editor/LevelEditorDialogs.cpp"
+    "editors/level_editor/LevelEditorDialogs.cpp",
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -33397,6 +34321,7 @@
   {
    "fr": "novembre",
    "where": [
+    "game/online/Raids.cpp",
     "ui/screens/ChallengeRewardsUi.cpp",
     "ui/screens/ChallengeUi.cpp"
    ]
@@ -34463,6 +35388,18 @@
    ]
   },
   {
+   "fr": "Organiser un raid du clan",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Organiser un raid du clan…",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
    "fr": "Origine",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -34646,6 +35583,12 @@
    "where": [
     "ui/screens/AdminAssets.cpp",
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ouvrir les inscriptions",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -35233,6 +36176,12 @@
    ]
   },
   {
+   "fr": "Paris",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Part",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -35278,7 +36227,14 @@
    "fr": "participants",
    "where": [
     "ui/screens/PlayerProfileScene.cpp",
-    "ui/screens/RaceScene.cpp"
+    "ui/screens/RaceScene.cpp",
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Participation",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -35649,6 +36605,12 @@
    ]
   },
   {
+   "fr": "Pas encore de récompense : elles arriveront avec les combats d'Asterion, dans une prochaine version.",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
    "fr": "Pas encore de segment chronométré.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -35688,6 +36650,12 @@
    "fr": "Pas encore prêt",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pas encore publié.",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -36207,6 +37175,12 @@
    ]
   },
   {
+   "fr": "Personne de votre clan n'est inscrit pour l'instant.",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
    "fr": "Personne n'est encore classé. Toute tentative compte, même sans arriver au bout.",
    "where": [
     "ui/screens/RaceScene.cpp"
@@ -36667,6 +37641,12 @@
    ]
   },
   {
+   "fr": "place libre",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
    "fr": "Place libre : un ami invité la prend en rejoignant le salon.",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
@@ -36682,6 +37662,18 @@
    "fr": "Place libre — « Modifier » pour suivre un succès",
    "where": [
     "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
+   "fr": "Places",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Places (2 à 50 joueurs)",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
    ]
   },
   {
@@ -38643,6 +39635,24 @@
    ]
   },
   {
+   "fr": "Programmer",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "PROGRAMMER UN ÉVÉNEMENT MONDIAL",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Programmé",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "PROGRESSION",
    "where": [
     "ui/screens/RaceScene.cpp"
@@ -39277,6 +40287,12 @@
    "fr": "PUBLIER EN LIGNE",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
+   ]
+  },
+  {
+   "fr": "Publier et notifier tous les clans",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -39957,6 +40973,106 @@
    ]
   },
   {
+   "fr": "Raid",
+   "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/AdminScene.cpp",
+    "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Raid annulé",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Raid annulé : {0}",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Raid court",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "raid court",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "RAID DU CLAN {0}",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Raid introuvable.",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
+   "fr": "Raid légendaire",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "raid légendaire",
+   "where": [
+    "game/online/Raids.cpp",
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Raid programmé : les membres du clan sont prévenus.",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Raid standard",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "raid standard",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Raids",
+   "where": [
+    "ui/screens/AdminScene.cpp",
+    "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Raids de clan (événements, rappels, inscriptions, invitations)",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Raids de clan, phase 1 : « ASTERION, LE DÉVOREUR DE MONDES » arrive dans CLANS › RAIDS. La carte de l'événement mondial à venir (heure locale et UTC, compte à rebours, format court, standard ou légendaire, difficulté, clans et joueurs inscrits, inscrits de votre clan), les raids du clan programmés par le chef ou un officier (places, verrouillage des inscriptions avant le début), les invitations entre clans pour un raid commun, l'historique du clan et le panneau des notifications de raid (« Tout marquer lu », rappels 24 h, 1 h et 10 min au choix, inscriptions des membres regroupées). La fiche d'un événement : inscription et désinscription, inscription du clan, « Inviter des membres… », groupes de 8 avec leur chef, chef de raid et consignes. Le combat arrive dans une prochaine version : rien à gagner pour l'instant.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "RAIDS DU CLAN",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
    "fr": "Raison",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -40070,6 +41186,18 @@
    "fr": "Rangée {0} → {1} · {2} images / s, en boucle",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Rappels",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Rappels dans le jeu : centre de notifications et bandeau. Pas de notification Windows pour l'instant.",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
    ]
   },
   {
@@ -40944,9 +42072,11 @@
   {
    "fr": "Refuser",
    "where": [
+    "ui/screens/ClanRaids.cpp",
     "ui/screens/ClanScene.cpp",
     "ui/screens/OnlineSettingsScene.cpp",
     "ui/screens/ProjectsScene.cpp",
+    "ui/screens/RaidEventScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
   },
@@ -40981,6 +42111,12 @@
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminCreations.cpp",
     "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "refusée",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -41034,6 +42170,12 @@
    ]
   },
   {
+   "fr": "regroupées",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
    "fr": "Reine Sporale",
    "where": [
     "data/achievements/achievements.json",
@@ -41050,6 +42192,20 @@
    "fr": "Reine vaincue",
    "where": [
     "data/levels/sylvanox_02.json"
+   ]
+  },
+  {
+   "fr": "Rejoignez un clan pour participer aux raids et en organiser.",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Rejoignez un clan pour participer aux raids.",
+   "where": [
+    "game/online/Raids.cpp",
+    "server/src/raids.ts",
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -42001,6 +43157,12 @@
    ]
   },
   {
+   "fr": "Retirer le clan",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
    "fr": "Retirer le rôle",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -42034,6 +43196,24 @@
    "fr": "Retirer ma note",
    "where": [
     "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "Retirer mon clan",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Retirer mon clan…",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Retirer votre clan de ce raid ? Les inscriptions de vos membres sont annulées et ils sont prévenus.",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -42078,6 +43258,7 @@
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/OnlineAccountScene.cpp",
     "ui/screens/PowerGuideScene.cpp",
+    "ui/screens/RaidEventScene.cpp",
     "ui/screens/ReplayScene.cpp",
     "ui/screens/SettingsScene.cpp",
     "ui/screens/SobMontageScene.cpp",
@@ -42990,6 +44171,12 @@
    ]
   },
   {
+   "fr": "RÉCOMPENSES",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
    "fr": "Récompenses",
    "where": [
     "ui/screens/AdminCalendar.cpp",
@@ -43001,6 +44188,12 @@
    "where": [
     "game/achievements/AchievementSuggestions.cpp",
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Récompenses (texte)",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -44446,6 +45639,7 @@
   {
    "fr": "Se connecter",
    "where": [
+    "game/online/Raids.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/ClanScene.cpp",
     "ui/screens/CommunityPublishScene.cpp",
@@ -45105,6 +46299,18 @@
    ]
   },
   {
+   "fr": "Seul le clan qui organise ce raid peut inviter d'autres clans.",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
+   "fr": "Seul le clan qui organise ce raid peut l'annuler.",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
    "fr": "Seul le créateur du groupe peut ajouter des membres.",
    "where": [
     "server/src/social.ts"
@@ -45159,6 +46365,12 @@
    ]
   },
   {
+   "fr": "Seules les inscriptions existent dans cette version : les instances, les boss et les rapports des joueurs arriveront avec les combats.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Seules les parties vérifiées par Cosmic Online comptent ; une récompense débloquée est annoncée par une notification et dans « Nouvelles récompenses ».",
    "where": [
     "data/news/changelog.json"
@@ -45173,7 +46385,8 @@
   {
    "fr": "Seuls le chef et les officiers du clan peuvent le faire.",
    "where": [
-    "server/src/clans.ts"
+    "server/src/clans.ts",
+    "server/src/raids.ts"
    ]
   },
   {
@@ -45629,6 +46842,12 @@
    "fr": "Son canon chauffe au rouge : gare au laser !",
    "where": [
     "data/enemies/titan.json"
+   ]
+  },
+  {
+   "fr": "Son chef ou un de ses officiers accepte ou refuse ; s'il accepte, ses membres peuvent s'inscrire à ce raid commun.",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -46270,7 +47489,9 @@
   {
    "fr": "Standard",
    "where": [
-    "data/cosmetics/cosmetics.json"
+    "data/cosmetics/cosmetics.json",
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/ClanRaids.cpp"
    ]
   },
   {
@@ -47458,6 +48679,12 @@
    ]
   },
   {
+   "fr": "São Paulo",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "São Tomé-et-Principe",
    "where": [
     "data/online/countries.json",
@@ -47774,7 +49001,8 @@
   {
    "fr": "TAG",
    "where": [
-    "ui/screens/AdminClans.cpp"
+    "ui/screens/AdminClans.cpp",
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -47805,6 +49033,12 @@
    "fr": "Tag : lettres et chiffres seulement (sans accent).",
    "where": [
     "game/online/Clans.cpp"
+   ]
+  },
+  {
+   "fr": "Tag du clan (2 à 5 lettres ou chiffres)",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -48775,6 +50009,7 @@
   {
    "fr": "Terminé",
    "where": [
+    "game/online/Raids.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -49230,6 +50465,12 @@
    ]
   },
   {
+   "fr": "Tokyo",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Tomber 1 000 fois et toujours se relever.",
    "where": [
     "data/achievements/achievements.json"
@@ -49557,6 +50798,12 @@
    ]
   },
   {
+   "fr": "Tous les membres non inscrits ont déjà une invitation non lue.",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
    "fr": "Tous les niveaux",
    "where": [
     "ui/screens/DownloadedReplaysUi.cpp"
@@ -49665,6 +50912,12 @@
    ]
   },
   {
+   "fr": "Tout marquer lu",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
    "fr": "Tout ramasser dans 5 niveaux.",
    "where": [
     "data/achievements/achievements.json"
@@ -49754,6 +51007,12 @@
    "fr": "Toutes les places sont ouvertes : {0} badges au plus.",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Toutes les places sont prises.",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -50891,6 +52150,12 @@
    ]
   },
   {
+   "fr": "Un compte Cosmic Online et un clan sont nécessaires pour participer.",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Un compte gratuit suffit",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
@@ -51299,6 +52564,12 @@
    ]
   },
   {
+   "fr": "Un raid de clan se rejoint sur invitation du clan qui l'organise.",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
    "fr": "Un rayon qui rebondit sur les murs et le plafond ; son trajet est montré pendant l'annonce.",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -51395,6 +52666,12 @@
    "fr": "UN SYSTÈME À EXPLORER",
    "where": [
     "data/trailer/trailer.json"
+   ]
+  },
+  {
+   "fr": "Un titan cosmique avale les planètes de la bordure. Les clans l'affronteront ensemble, branche par branche, sur son propre corps, jusqu'à son cœur.",
+   "where": [
+    "server/src/raids.ts"
    ]
   },
   {
@@ -52177,6 +53454,24 @@
    ]
   },
   {
+   "fr": "UTC",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "UTC+{0}",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "UTC-{0}",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Utilisateur de pouvoirs",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
@@ -52895,6 +54190,12 @@
    ]
   },
   {
+   "fr": "vendredi",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Venezuela",
    "where": [
     "data/online/countries.json",
@@ -52957,6 +54258,19 @@
    ]
   },
   {
+   "fr": "Verrouillage des inscriptions",
+   "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "verrouillage {0} min avant",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
    "fr": "Verrouiller la caméra sur une zone",
    "where": [
     "game/levels/EventSystem.cpp"
@@ -53011,6 +54325,12 @@
    "fr": "Verrouillée",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Verrouillées {0} min avant le début.",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -53393,6 +54713,12 @@
    "fr": "vide",
    "where": [
     "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
+   "fr": "Vide : le texte d'Asterion",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -53804,6 +55130,13 @@
    ]
   },
   {
+   "fr": "Voir l'événement",
+   "where": [
+    "ui/screens/ClanRaids.cpp",
+    "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
    "fr": "Voir la Collection",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -54058,6 +55391,30 @@
    ]
   },
   {
+   "fr": "VOTRE CLAN",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre clan a atteint {0} inscrits.",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Votre clan a déjà {0} inscrits : c'est complet.",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
+   "fr": "Votre clan a déjà {0} raids à venir : annulez-en un ou attendez la fin d'un raid.",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
    "fr": "Votre clan a trop de demandes en attente : traitez-en d'abord.",
    "where": [
     "game/online/Clans.cpp"
@@ -54073,6 +55430,38 @@
    "fr": "Votre clan est créé : vous en êtes le chef.",
    "where": [
     "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre clan n'est pas encore inscrit à cet événement.",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre clan n'est pas inscrit : le chef ou un officier l'inscrit d'abord.",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
+   "fr": "Votre clan n'est pas inscrit à ce raid.",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
+   "fr": "Votre clan n'est pas invité à ce raid.",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
+   "fr": "Votre clan ne participe pas à ce raid.",
+   "where": [
+    "game/online/Raids.cpp",
+    "server/src/raids.ts",
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -54509,6 +55898,12 @@
    ]
   },
   {
+   "fr": "Vous n'êtes pas inscrit à ce raid.",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
    "fr": "Vous n'êtes pas prévenu quand un ami regarde.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
@@ -54775,6 +56170,18 @@
    ]
   },
   {
+   "fr": "Vous êtes inscrit",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vous êtes inscrit : les rappels arriveront ici.",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
    "fr": "Vous êtes invité dans ce clan : répondez depuis sa fiche.",
    "where": [
     "game/online/Clans.cpp"
@@ -54784,6 +56191,12 @@
    "fr": "Vous êtes l'hôte : invitez un ou deux amis ; ils rejoignent depuis leur écran de coopération.",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vous êtes le chef de raid de {0} pour {1}",
+   "where": [
+    "server/src/notifications.ts"
    ]
   },
   {
@@ -55602,6 +57015,12 @@
    ]
   },
   {
+   "fr": "{0} / {1} inscrits",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} / {1} membres · {2}",
    "where": [
     "ui/screens/ClanScene.cpp"
@@ -55672,6 +57091,12 @@
    "fr": "{0} : chargement…",
    "where": [
     "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} : clan pas encore inscrit",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
    ]
   },
   {
@@ -55807,6 +57232,12 @@
    ]
   },
   {
+   "fr": "{0} a accepté votre raid commun : {1}",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "{0} a commenté votre course : {1}",
    "where": [
     "server/src/notifications.ts"
@@ -55849,6 +57280,12 @@
    ]
   },
   {
+   "fr": "{0} a inscrit {1} à {2} : inscrivez-vous",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "{0} a invité {1} ({2})",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -55867,6 +57304,12 @@
    ]
   },
   {
+   "fr": "{0} a programmé un raid du clan : {1}",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "{0} a quitté la partie.",
    "where": [
     "ui/screens/SpectateScene.cpp"
@@ -55882,6 +57325,12 @@
    "fr": "{0} a refusé la demande de {1}",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} a refusé votre raid commun : {1}",
+   "where": [
+    "server/src/notifications.ts"
    ]
   },
   {
@@ -56120,9 +57569,31 @@
    ]
   },
   {
+   "fr": "{0} clan",
+   "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/ClanRaids.cpp",
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} clan sur le serveur",
    "where": [
     "ui/screens/AdminClans.cpp"
+   ]
+  },
+  {
+   "fr": "{0} clans",
+   "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/ClanRaids.cpp",
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} clans invités au plus par raid.",
+   "where": [
+    "server/src/raids.ts"
    ]
   },
   {
@@ -56653,8 +58124,27 @@
    ]
   },
   {
+   "fr": "{0} groupe",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} groupes",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} h avant",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "{0} h {1} min",
    "where": [
+    "game/online/Raids.cpp",
     "game/progression/Progression.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/MainMenuScene.cpp"
@@ -56728,6 +58218,34 @@
    ]
   },
   {
+   "fr": "{0} INSCRIT",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} inscrit",
+   "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/ClanRaids.cpp",
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} INSCRITS",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} inscrits",
+   "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/ClanRaids.cpp",
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} invitation reçue",
    "where": [
     "ui/screens/ClanScene.cpp"
@@ -56740,9 +58258,34 @@
    ]
   },
   {
+   "fr": "{0} invite votre clan à ce raid commun.",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} invite {1} à un raid commun",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
    "fr": "{0} j {1} h",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} j {1} h {2} min",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} joueur",
+   "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -56764,6 +58307,18 @@
    ]
   },
   {
+   "fr": "{0} joueur inscrit",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} joueur prévenu",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "{0} joueur trouvé sur {1} · {2} admin",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -56778,6 +58333,8 @@
   {
    "fr": "{0} joueurs",
    "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/RaidEventScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
   },
@@ -56794,9 +58351,21 @@
    ]
   },
   {
+   "fr": "{0} joueurs inscrits",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
    "fr": "{0} joueurs ont déjà un résultat sur ce défi : il ne change plus.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "{0} joueurs prévenus",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -56893,9 +58462,33 @@
    ]
   },
   {
+   "fr": "{0} membre invité",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} membres",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} membres invités",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} membres se sont désinscrits de {1}",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "{0} membres se sont inscrits à {1}",
+   "where": [
+    "server/src/notifications.ts"
    ]
   },
   {
@@ -56940,8 +58533,22 @@
    ]
   },
   {
+   "fr": "{0} min avant",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} min avant le début",
+   "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
    "fr": "{0} min {1} s",
    "where": [
+    "game/online/Raids.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -57487,6 +59094,24 @@
    ]
   },
   {
+   "fr": "{0} s'est désinscrit de {1}",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "{0} s'est inscrit à {1}",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "{0} s'est retiré de {1} : votre inscription est annulée",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "{0} salves",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -57770,6 +59395,12 @@
    ]
   },
   {
+   "fr": "{0} vous invite à vous inscrire : {1}",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "{0} {1} / {2} à faire",
    "where": [
     "ui/studio/StudioFrise.cpp"
@@ -57992,6 +59623,24 @@
    ]
   },
   {
+   "fr": "{0} · {1} (votre heure)",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · {1} / {2} inscrits",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · {1} UTC",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} · {1} · planète {2}",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -58001,6 +59650,18 @@
    "fr": "{0} · {1} · {2} action(s)",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · {1} à votre heure ({2}) · {3} UTC",
+   "where": [
+    "ui/online/RaidWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · {1} à {2} min",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -58026,6 +59687,12 @@
    "fr": "{0} × {1} px · {2}",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "{0} à s'inscrire.",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -58713,6 +60380,7 @@
   {
    "fr": "à l'instant",
    "where": [
+    "game/online/Raids.cpp",
     "ui/online/OnlineWidgets.cpp"
    ]
   },
@@ -60083,7 +61751,8 @@
    "fr": "État",
    "where": [
     "ui/screens/AdminBackups.cpp",
-    "ui/screens/OnlineSettingsScene.cpp"
+    "ui/screens/OnlineSettingsScene.cpp",
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -60258,6 +61927,18 @@
    ]
   },
   {
+   "fr": "Événement annulé : les inscrits sont prévenus (inscrit au Journal).",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Événement enregistré (inscrit au Journal).",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Événement hors de la trajectoire.",
    "where": [
     "game/ghost/Ghost.cpp"
@@ -60267,6 +61948,31 @@
    "fr": "événement hors du replay",
    "where": [
     "server/src/replay.ts"
+   ]
+  },
+  {
+   "fr": "ÉVÉNEMENT MONDIAL",
+   "where": [
+    "ui/screens/ClanRaids.cpp",
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Événement mondial annoncé : {0}",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "ÉVÉNEMENT MONDIAL · {0}",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Événement publié : {0} (inscrit au Journal).",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -60304,6 +62010,12 @@
    "fr": "événements incohérents ({0})",
    "where": [
     "server/src/coopRace.ts"
+   ]
+  },
+  {
+   "fr": "ÉVÉNEMENTS MONDIAUX",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {

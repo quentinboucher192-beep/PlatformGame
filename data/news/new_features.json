@@ -2442,6 +2442,20 @@
    "parents": [
     "menu.coop"
    ]
+  },
+  {
+   "id": "clans.tab.raids",
+   "version": "2.65.0",
+   "parents": [
+    "online.nav.clans"
+   ]
+  },
+  {
+   "id": "admin.tab.raids",
+   "version": "2.65.0",
+   "parents": [
+    "menu.admin"
+   ]
   }
  ]
 }

@@ -74,6 +74,7 @@ const std::vector<OnlineKind>& onlineKinds() {
         {"challenge_reward", "T", {255, 214, 90, 255}, "Récompense de défi", "Récompense gagnée à un défi"},
         {"security", "!", {255, 138, 61, 255}, "Sécurité", "Mon compte et son ordinateur (connexion refusée ailleurs…)"},
         {"clan", "K", {166, 107, 255, 255}, "Clan", "Mon clan (invitation, candidature à traiter, exclusion, rôle de chef)"},
+        {"raid", "R", {255, 138, 76, 255}, "Raid", "Raids de clan (événements, rappels, inscriptions, invitations)"},
     };
     return k;
 }
@@ -303,6 +304,9 @@ private:
         if (kind == "challenge_reward") return "Voir la Collection";
         // 2.66: a clan still there (a dissolved one has no page any more).
         if (kind == "clan" && n.contains("data") && jstr(n["data"], "event") != "dissolved" && !jstr(n["data"], "clan_id").empty()) return "Voir le clan";
+        // Clan raids: the sheet of the event (a cancelled one has nothing more to show).
+        if (kind == "raid" && n.contains("data") && !jstr(n["data"], "event_id").empty() && jstr(n["data"], "event") != "cancelled")
+            return "Voir l'événement";
         if (kind == "security") {
             // 2.50: a refused login was the player on a new computer: the migration starts here.
             if (g_.migration.available() && securityReason(n) == "login_refused") return "C'était moi : préparer une migration";
@@ -324,6 +328,10 @@ private:
                 else if (g_.migration.available() && securityReason(n) == "migration_in" && jstr(n["data"], "action") == "progress_restore")
                     openRestore();
                 else g_.app.pushScene(makeOnlineSettings(g_, 3));
+                return;
+            }
+            if (kind == "raid") {  // the sheet of a clan raid event
+                g_.app.pushScene(makeRaidEvent(g_, jstr(n["data"], "event_id")));
                 return;
             }
             if (kind == "clan") {  // 2.66: the clan's page (an invitation is answered there)

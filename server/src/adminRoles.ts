@@ -33,6 +33,8 @@ export const ADMIN_ACTIONS = {
     account: ["admin_device_unbound", "admin_device_bound", "admin_account_migrated", "account_migrated"],
     // 2.66: ADMINISTRATION › Clans (clans.ts): a clan renamed or dissolved by an administrator.
     clan: ["admin_clan_renamed", "admin_clan_dissolved"],
+    // ADMINISTRATION › Raids (raids.ts): a world event created, edited, published or cancelled.
+    raid: ["admin_raid_created", "admin_raid_updated", "admin_raid_published", "admin_raid_cancelled"],
     // Backups (ADMINISTRATION › Sauvegardes, backups.ts): copies, downloads, imports. Never a passphrase.
     backup: [
         "backup_created",
@@ -58,9 +60,10 @@ const ALL_ADMIN_ACTIONS: readonly string[] = [
         ...ADMIN_ACTIONS.enemy,
         ...ADMIN_ACTIONS.account,
         ...ADMIN_ACTIONS.clan,
+        ...ADMIN_ACTIONS.raid,
     ]),
 ];
-const LOG_KINDS = ["all", "role", "challenge", "refused", "backup", "campaign", "creation", "enemy", "account", "clan"] as const;
+const LOG_KINDS = ["all", "role", "challenge", "refused", "backup", "campaign", "creation", "enemy", "account", "clan", "raid"] as const;
 
 const ID_RE = /^[A-Za-z0-9-]{8,64}$/;
 
@@ -387,8 +390,23 @@ function clanOfDetails(d: Record<string, unknown>) {
     return { id: c.id, name: str(c, "name"), tag: str(c, "tag"), previous: prev, members: typeof c.members === "number" ? c.members : null };
 }
 
+/** A world event of ADMINISTRATION › Raids as the Journal keeps it. */
+function raidOfDetails(d: Record<string, unknown>) {
+    const r = d.raid;
+    if (!isObject(r) || typeof r.id !== "string") return null;
+    const str = (k: string) => (typeof r[k] === "string" ? (r[k] as string) : null);
+    return {
+        id: r.id,
+        name: str("name"),
+        format: str("format"),
+        starts_at: str("starts_at"),
+        changes: Array.isArray(r.changes) ? r.changes.filter((c): c is string => typeof c === "string") : null,
+        notified: typeof r.notified === "number" ? r.notified : null,
+    };
+}
+
 /**
- * GET /admin/log?kind=all|role|challenge|refused|backup|campaign|creation|enemy|account|clan&actor=<player id>&limit=&offset=
+ * GET /admin/log?kind=all|role|challenge|refused|backup|campaign|creation|enemy|account|clan|raid&actor=<player id>&limit=&offset=
  * The administration's own actions, newest first: who (the admin's current username, or the
  * one written at the time when the account is gone), what, when. Never the IP hash.
  */
@@ -446,6 +464,8 @@ export async function listLog(ctx: Ctx): Promise<Response> {
             migration: migrationOfDetails(d),
             // 2.66: a clan renamed or dissolved (or a refused rename).
             clan: clanOfDetails(d),
+            // A world event of ADMINISTRATION › Raids (created, edited, published, cancelled).
+            raid: raidOfDetails(d),
         };
     });
     return json(ctx, { entries, has_more: rows.results.length > page.limit, offset: page.offset });

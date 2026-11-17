@@ -242,6 +242,8 @@ std::unique_ptr<Scene> makeSocial(GameServices& g, const std::string& conversati
 /// of a clan. `clanId`: that clan's page on arrival. `pushed`: opened over another screen (a
 /// profile, SOCIAL): « Retour » pops it instead of going back to the ONLINE screens.
 std::unique_ptr<Scene> makeClans(GameServices& g, const std::string& clanId = {}, bool pushed = false);
+/// The sheet of a clan raid event (CLANS › RAIDS, phase 1 of « Asterion »), pushed over the current screen.
+std::unique_ptr<Scene> makeRaidEvent(GameServices& g, const std::string& eventId);
 /// The sheet of the clan whose tag is `tag` (2.63.6: a « [TAG] » clicked before a name in a
 /// ranking or in SOCIAL), pushed over the current screen; found by GET /clans?q=.
 std::unique_ptr<Scene> makeClanByTag(GameServices& g, const std::string& tag);
