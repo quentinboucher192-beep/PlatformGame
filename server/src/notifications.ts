@@ -29,6 +29,7 @@ export const NOTIFICATION_KINDS = [
     "challenge_reward", //  rewards won at a challenge, once its period is over (2.43)
     "security", //          2.47: the account and its computer (login refused elsewhere, bound, unbound by an admin); 2.50: migrations
     "coop_invite", //       2.62: a friend invites me to play an EXTRÊME level in a team
+    "clan", //              2.66: my clan (invitation, application to answer, accepted, excluded, chief, dissolved)
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
@@ -166,6 +167,29 @@ function sentence(n: NotificationRow, d: Record<string, string>): string {
             return securitySentence(d, n.count);
         case "coop_invite":
             return `${who} vous invite à jouer en équipe : ${d.title ?? ""}`;
+        case "clan":
+            return clanSentence(d, who);
+    }
+}
+
+/** 2.66: my clan (clans.ts writes `event`, `name` and `tag`). */
+function clanSentence(d: Record<string, string>, who: string): string {
+    const clan = `[${d.tag ?? ""}] ${d.name ?? ""}`;
+    switch (d.event) {
+        case "invite":
+            return `${who} vous invite dans le clan ${clan}`;
+        case "apply":
+            return `${who} demande à rejoindre votre clan ${clan}`;
+        case "accepted":
+            return `Bienvenue dans le clan ${clan} : votre candidature est acceptée`;
+        case "kicked":
+            return `Vous avez été exclu du clan ${clan}`;
+        case "leader":
+            return `Vous êtes maintenant le chef du clan ${clan}`;
+        case "dissolved":
+            return (d as Record<string, unknown>).by_admin === true ? `Le clan ${clan} a été dissous par la modération` : `Le clan ${clan} a été dissous par son chef`;
+        default:
+            return `Du nouveau dans votre clan ${clan}`;
     }
 }
 

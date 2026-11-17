@@ -16,6 +16,8 @@
 //  * per classic level (not EXTRÊME) played from its start in the campaign, its segments between
 //    checkpoints (the splits of the level timer, the same as Ghost Racing's): the last 50 times
 //    of each, the best ones, the last full runs and the history of the PB and Sum of Best.
+//    2.60.3: the best section-training time of each segment too, counted in the Sum of Best
+//    only (« tout confondu »): never in the PB, the times, the consistency nor the regularity.
 //
 // The recorder (PlayStatsRecorder) is a WorldListener: it reads the world after each step and
 // hears its informative hooks, it never changes the run (replays, records and rankings are the
@@ -155,6 +157,11 @@ struct SegmentRec {
     std::string from, to;
     std::vector<float> times;  // the last 50 (seconds), oldest first
     float best = -1.0f;        // the best ever (-1: none)
+    /// 2.60.3: the best section-training time of this segment (-1: none). Counted in the Sum
+    /// of Best only; `times` and `best` stay the full runs'.
+    float trainBest = -1.0f;
+    /// The best of both (-1: none): its part of the Sum of Best.
+    float bestAll() const;
 };
 struct FinishRec {
     int day = 0;
@@ -182,7 +189,8 @@ struct LevelRuns {
     SegmentRec& segmentAt(const std::string& from, const std::string& to);
     /// The segments of the PB route, in order ("" at both ends).
     std::vector<std::pair<std::string, std::string>> route() const;
-    /// Sum of Best: the best time of each segment of the PB route added up (-1 unknown).
+    /// Sum of Best: the best time of each segment of the PB route added up, full runs and
+    /// section trainings together (SegmentRec::bestAll; -1 unknown).
     float sob() const;
 };
 
@@ -347,6 +355,9 @@ struct PlayStatsRun {
     /// training: its segments count (« Niveaux »).
     bool classic = false;
     std::string levelVersion;  // the level's fingerprint (its segments start again with another)
+    /// 2.60.3: a section training of such a level: the time of its segment, when done, is a
+    /// training time of that segment (its Sum of Best only).
+    bool trainingSegments = false;
 };
 
 /// Follows one run (a GameScene): set as the world's listener, stepped after each step.
@@ -361,6 +372,13 @@ public:
         classic_ = true;
         version_ = std::move(version);
     }
+    /// 2.60.3: a section training of a classic level: its segment's time counts in the Sum of Best.
+    void setTrainingSegments(std::string version) {
+        trainingLevel_ = true;
+        version_ = std::move(version);
+    }
+    /// The segment from `from` to `to` ("" = the start / the exit) done in `seconds` (section training).
+    void noteTrainingSegment(const std::string& from, const std::string& to, float seconds);
     /// The route of the level (computed off the main thread): until it comes, no slice.
     void setRouteFuture(std::future<LevelProgressTrack> f) { trackFuture_ = std::move(f); }
     void setRoute(LevelProgressTrack t);
@@ -455,6 +473,8 @@ private:
     std::vector<std::string> cps_;
     std::vector<std::pair<std::pair<std::string, std::string>, float>> segTimes_;  // pending
     float finishTime_ = -1.0f;
+    bool trainingLevel_ = false;
+    std::vector<std::pair<std::pair<std::string, std::string>, float>> trainTimes_;  // pending (section training)
     // Boss fight.
     std::optional<Fight> fight_;
     LastBlow lastBlow_;
@@ -505,6 +525,9 @@ public:
         std::vector<std::pair<std::pair<std::string, std::string>, float>> segments;
         float finish = -1.0f;
         std::vector<std::string> route;  // a full run: its checkpoints
+        /// 2.60.3: a section training of a classic level (`version`): its segments' times.
+        bool trainingLevel = false;
+        std::vector<std::pair<std::pair<std::string, std::string>, float>> training;
     };
     void merge(const Delta& d);
 

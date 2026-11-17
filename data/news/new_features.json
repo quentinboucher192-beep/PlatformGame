@@ -982,11 +982,11 @@
   },
   {
    "id": "menu.coop",
-   "version": "2.62.0"
+   "version": "2.63.0"
   },
   {
    "id": "coop",
-   "version": "2.62.0",
+   "version": "2.63.0",
    "parents": [
     "menu.coop"
    ]
@@ -2169,6 +2169,120 @@
    "parents": [
     "menu.challenges",
     "challenges.tab.calendar"
+   ]
+  },
+  {
+   "id": "ghosts.training.invincible",
+   "version": "2.60.3",
+   "parents": [
+    "ghosts.training"
+   ]
+  },
+  {
+   "id": "online.nav.clans",
+   "version": "2.62.0",
+   "parents": [
+    "menu.online"
+   ]
+  },
+  {
+   "id": "admin.tab.clans",
+   "version": "2.62.0",
+   "parents": [
+    "menu.admin"
+   ]
+  },
+  {
+   "id": "gallery.story.pyrrhax",
+   "version": "2.62.0",
+   "parents": [
+    "gallery.boss.pyrrhax"
+   ]
+  },
+  {
+   "id": "stats.story.pyrrhax",
+   "version": "2.62.0",
+   "parents": [
+    "stats.bosses"
+   ]
+  },
+  {
+   "id": "admin.creations.reserve",
+   "version": "2.62.0",
+   "parents": [
+    "admin.tab.creations"
+   ]
+  },
+  {
+   "id": "collection.exclusive",
+   "version": "2.62.0",
+   "parents": [
+    "collection.tab.wardrobe"
+   ]
+  },
+  {
+   "id": "admin.creations.studio",
+   "version": "2.62.0",
+   "parents": [
+    "admin.tab.creations"
+   ]
+  },
+  {
+   "id": "admin.creations.studio.import",
+   "version": "2.62.0",
+   "parents": [
+    "admin.tab.creations",
+    "admin.creations.studio"
+   ]
+  },
+  {
+   "id": "admin.creations.studio.recolor",
+   "version": "2.62.0",
+   "parents": [
+    "admin.tab.creations",
+    "admin.creations.studio"
+   ]
+  },
+  {
+   "id": "stats.sheet.attacks",
+   "version": "2.62.0",
+   "parents": [
+    "stats.sheet"
+   ]
+  },
+  {
+   "id": "admin.tab.assets",
+   "version": "2.62.0",
+   "parents": [
+    "menu.admin"
+   ]
+  },
+  {
+   "id": "ghosts.training.montage",
+   "version": "2.62.1",
+   "parents": [
+    "ghosts.training"
+   ]
+  },
+  {
+   "id": "hud.ambush",
+   "version": "2.62.3",
+   "parents": [
+    "settings.hud_editor"
+   ]
+  },
+  {
+   "id": "gallery.story.monolithe",
+   "version": "2.62.4",
+   "parents": [
+    "gallery.boss.monolithe"
+   ]
+  },
+  {
+   "id": "stats.story.monolithe",
+   "version": "2.62.4",
+   "parents": [
+    "stats.bosses"
    ]
   }
  ]

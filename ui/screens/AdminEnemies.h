@@ -24,6 +24,8 @@ public:
 
     /// The tab is shown: the list is read (again with `force`).
     void enter(bool force = false);
+    /// 2.63: that entity's history shown (« Fiche » of an enemy in ADMINISTRATION › Assets).
+    void show(const std::string& id) { loadHistory(id); }
     void draw(const Rect& inner);
 
 private:

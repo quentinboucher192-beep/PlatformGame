@@ -1,0 +1,9 @@
+{
+  "texture": "stories/pyrrhax/flammeches.png",
+  "frameWidth": 48,
+  "frameHeight": 32,
+  "pivot": [24, 32],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 10, "loop": true}
+  }
+}

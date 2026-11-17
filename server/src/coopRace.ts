@@ -15,7 +15,8 @@
 // no ranking.
 
 import { optionalAuth, requireAuth } from "./auth";
-import { ApiError, Errors, json, nowIso, readJsonObject, readLimited, type Ctx } from "./http";
+import { clanPointsStatements } from "./clans";
+import { ApiError, Errors, json, log, nowIso, readJsonObject, readLimited, type Ctx } from "./http";
 import { IN_KEYS, loadBoard, raceScore, routeReached, type RaceLayout } from "./race";
 import { RULES, rateLimit } from "./ratelimit";
 import { EventType, inflateContainer, MAX_REPLAY_UPLOAD, parseReplay, ReplayError, type Replay, type ReplayFrame } from "./replay";
@@ -268,6 +269,7 @@ export async function uploadRunReplay(ctx: Ctx): Promise<Response> {
         .bind(run.id, key, ok ? "VERIFIED" : "REJECTED", score, a.route, a.revives, a.incomplete ? 1 : 0, a.finished ? 1 : 0, JSON.stringify(detail),
             ok ? null : JSON.stringify(a.reasons.slice(0, 8)), ok ? now : null)
         .run();
+    if (ok) await refreshTeamClans(ctx, String(run.id));
     return json(ctx, { run: { id: run.id, status: ok ? "VERIFIED" : "REJECTED", score, finished: a.finished, reasons: ok ? [] : a.reasons.slice(0, 8) } });
 }
 
@@ -280,7 +282,38 @@ export async function confirm(ctx: Ctx): Promise<Response> {
     await ctx.env.DB.prepare("INSERT OR IGNORE INTO coop_confirms (attempt_id, player_id, created_at) VALUES (?1, ?2, ?3)")
         .bind(attemptId, auth.player.id, nowIso())
         .run();
+    // The last confirmation of a verified attempt ranks it: its clan's points follow.
+    const run = await ctx.env.DB.prepare("SELECT id FROM coop_runs WHERE attempt_id = ?1 AND status = 'VERIFIED'").bind(attemptId).first<{ id: string }>();
+    if (run) await refreshTeamClans(ctx, run.id);
     return json(ctx, { confirmed: attemptId });
+}
+
+/**
+ * A team attempt verified or confirmed: the tag of the clan of all its players (shown on the
+ * Duo / Trio boards, null when they are not all in one clan) and the points of their clans
+ * (clans.ts: a team counts for a clan once every player is a member and confirmed). Never fails
+ * the caller.
+ */
+async function refreshTeamClans(ctx: Ctx, runId: string): Promise<void> {
+    try {
+        const db = ctx.env.DB;
+        await db
+            .prepare(
+                `UPDATE coop_runs SET clan_tag = (SELECT c.tag FROM clans c
+                   WHERE (SELECT COUNT(*) FROM coop_run_members cm JOIN clan_members m ON m.player_id = cm.player_id AND m.clan_id = c.id
+                           WHERE cm.run_id = coop_runs.id) = coop_runs.size)
+                 WHERE id = ?1`,
+            )
+            .bind(runId)
+            .run();
+        const clans = await db
+            .prepare("SELECT DISTINCT m.clan_id FROM coop_run_members cm JOIN clan_members m ON m.player_id = cm.player_id WHERE cm.run_id = ?1")
+            .bind(runId)
+            .all<{ clan_id: string }>();
+        for (const c of clans.results) await db.batch(clanPointsStatements(db, c.clan_id));
+    } catch (e) {
+        log("error", "coop_clan_points_failed", { error: e instanceof Error ? e.message : String(e) });
+    }
 }
 
 /** The best verified attempt of every team (all members confirmed), ranked. */

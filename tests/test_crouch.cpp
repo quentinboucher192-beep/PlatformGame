@@ -104,7 +104,7 @@ TEST_CASE("crouch: a shot at head height passes over a crouching player") {
 }
 
 TEST_CASE("crouch: the rankings generation follows the rules (2.17: a new generation)") {
-    CHECK(kSimulationVersion == 13);  // 2.33: the giga boss's rules (other runs: same rules)
+    CHECK(kSimulationVersion == 14);  // 2.62.2: ambushes kept after a fall, their enemies kept in
     CHECK(kRankingGeneration == 8);  // ... so the 2.17 rankings are kept
     ContentDatabase content;
     content.reload();

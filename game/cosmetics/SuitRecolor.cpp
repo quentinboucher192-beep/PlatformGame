@@ -277,7 +277,8 @@ bool ServerSuitBook::applyList(const Json& creations) {
     for (size_t i = 0; !changed && i < next.size(); ++i)
         changed = next[i].ref != suits_[i].ref || next[i].name != suits_[i].name || next[i].colors != suits_[i].colors ||
                   next[i].updatedAt != suits_[i].updatedAt;
-    suits_ = std::move(next);
+    // The same list: what was found before stays valid (no new vector under the callers' pointers).
+    if (changed) suits_ = std::move(next);
     known_ = true;
     return changed;
 }

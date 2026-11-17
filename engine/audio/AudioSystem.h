@@ -53,6 +53,20 @@ public:
     const std::string& currentMusic() const { return musicPath_; }
     /// Temporarily lowers music (e.g. pause menu); 1 = normal.
     void setMusicDuck(float factor);
+    float musicDuck() const { return duck_; }
+
+    /// Preview (2.63, ADMINISTRATION › Assets): one sound or music heard on its own track,
+    /// whatever the music and the effects do, at the volume of `bus`. `audio` comes from
+    /// MIX_LoadAudio(mixer(), …), which may run on any thread (load it off the main thread);
+    /// the system owns it from here (also when it cannot be played). A new preview replaces
+    /// the previous one.
+    void playPreview(MIX_Audio* audio, AudioBus bus);
+    void stopPreview(int fadeMs = 0);
+    bool previewPlaying() const;
+    int64_t previewPositionMs() const;
+    int64_t previewDurationMs() const;
+    /// The mixer the audio of a preview is loaded for (nullptr without an audio device).
+    MIX_Mixer* mixer() const { return mixer_; }
 
     void playAmbience(const std::string& path, int fadeMs = 1500);
     void stopAmbience(int fadeMs = 800);
@@ -95,6 +109,8 @@ private:
         bool playing = false;
     };
     std::unordered_map<std::string, Loop> loops_;
+    MIX_Track* preview_ = nullptr;
+    MIX_Audio* previewAudio_ = nullptr;
     std::string musicPath_;
     std::string ambiencePath_;
     AudioVolumes volumes_;

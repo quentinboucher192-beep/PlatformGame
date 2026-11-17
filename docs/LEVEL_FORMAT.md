@@ -128,7 +128,7 @@ absente prend sa valeur par défaut.
 | Catégorie | Types |
 |---|---|
 | Terrain | `solid` — `material` : `ruin_stone`, `ancient_metal`, `crystal`, `root` (Sylvanox), `basalt`, `obsidian`, `forge_metal` (Pyralis), `glacier_ice` (glissante), `snow_rock`, `frost_metal` (Glacior) |
-| Plateformes | `oneway` (`style` : `ruin_bridge`, `tech_ledge`, `root_branch`, `basalt_ledge`, `chain_grate`, `ice_ledge`, `snow_bridge`), `moving_platform` (2.33 : `orbit` — elle tourne autour de sa place, `dx` / `dy` = rayons de l'ellipse, `phase` = angle de départ, signe de `dx` = sens), `crumble_platform` (`style` : `ruins`, `basalt`, `ice`, `star` ; 2.33 : `onEvent` — elle ne cède qu'à une action `activate` / `break`, et reste cassée), `power_gate` (`power` : `dash` mur de cristal, `teleport` barrière de phase, `wave` barrière d'énergie — aussi dissoute par le Tir chargé —, `impulse` rocher fissuré, `shield` rideau de plasma, `ground_pound` sol fissuré), `bounce_pad`, `ladder` |
+| Plateformes | `oneway` (`style` : `ruin_bridge`, `tech_ledge`, `root_branch`, `basalt_ledge`, `chain_grate`, `ice_ledge`, `snow_bridge`), `moving_platform` (2.33 : `orbit` — elle tourne autour de sa place, `dx` / `dy` = rayons de l'ellipse, `phase` = angle de départ, signe de `dx` = sens), `crumble_platform` (`style` : `ruins`, `basalt`, `ice`, `star` ; 2.33 : `onEvent` — elle ne cède qu'à une action `activate` / `break`, et reste cassée), `power_gate` (`power` : `dash` mur de cristal, `teleport` barrière de phase, `wave` barrière d'énergie — aussi dissoute par le Tir chargé —, `impulse` rocher fissuré, `shield` rideau de plasma, `ground_pound` sol fissuré), `bounce_pad`, `ladder`, `bubble` (2.64 : bulle porteuse — elle part quand Nova s'y pose, la porte de `dx`, `dy` à `speed` px/s, éclate au bout et renaît à sa place après `respawn` s) |
 | Dangers | `spikes`, `liquid` (`kind` : `acid`, `water`, `lava`, `icewater` — l'eau et l'eau glacée se nagent), `damage_zone` (2.33 : `active` faux = éteinte jusqu'à un `enable` ; `style` : `toxic`, `plasma` ; `bounce` : projette vers le haut), `slow_zone` (`style` du nuage : `spores`, `frost`, `ash`), `laser` |
 | Gameplay | `player_start`, `checkpoint` (`label` ; `optional` : point d'une route alternative ou d'un détour, que le détecteur de raccourcis n'exige pas), `exit`, `shard`, `relic`, `health_orb` (`amount`, 2 par défaut ; 2.33 : `hidden` — invisible et intouchable jusqu'à une action `spawn` / `activate`), `energy_orb`, `power_unlock` (`power` parmi les 10 pouvoirs), `heart_container` (`hearts` : cœurs maximum en plus pour le niveau) |
 | Interactifs | `door`, `lever`, `receptor` (activé par l'Onde ou le Tir chargé), `sign`, `grapple_point` (point d'ancrage du Grappin) |
@@ -158,7 +158,7 @@ les `id` d'objets.
 * `actions[].type` : `open`, `close`, `toggle`, `activate`, `disable`, `enable`, `spawn`,
   `startBoss`, `showText`, `hint`, `dialogue`, `cameraPan`, `lockCamera`, `unlockCamera`,
   `shake`, `flash`, `playMusic`, `playSound`, `effect`, `addTime`, `givePower`, `heal`,
-  `killPlayer`, `completeLevel` ; `target` = `id` de l'objet visé.
+  `killPlayer`, `completeLevel`, `tutorial` (2.64 : `params.card` = une explication du didacticiel, `game/tutorial/Tutorial.h` ; le jeu s'arrête jusqu'à « Compris, je continue », chaque carte une fois) ; `target` = `id` de l'objet visé.
 
 Les événements sont interprétés par `EventSystem` : ce sont des **données**, jamais du code.
 
@@ -247,7 +247,7 @@ peut n'avoir aucun checkpoint : la première chute met fin à la partie.
 ## Règles du niveau (2.8)
 
 `damageFactor` (×0,25 à ×5, 1 par défaut) multiplie les dégâts que reçoit le joueur (jamais
-moins d'un cœur par coup) ; `lives` (0 = illimitées) est le nombre de vies pour tout le niveau.
+moins d'un cœur par coup) ; `lives` (0 = illimitées) est le nombre de vies pour tout le niveau. `tutorial` (2.64, écrit seulement s'il est vrai : le didacticiel `data/tutorial/premier_envol.json`) : aucune chute n'est mortelle — Nova revient aussitôt sur la dernière terre ferme immobile (jamais une bulle ni une plateforme mobile) — et une vie perdue la ramène aussitôt au dernier point de passage.
 Les deux ne sont écrits que s'ils diffèrent de leur valeur par défaut, et font partie de
 l'empreinte de gameplay. La fiche du niveau affiche toujours « Dégâts reçus : ×… — Vies : … »
 (le mode défi compte `challengeMaxDeaths + 1` vies).

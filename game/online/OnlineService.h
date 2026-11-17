@@ -133,6 +133,20 @@ public:
     /// A screen that loaded GET /social/unread itself shares the answer.
     void noteUnread(const Json& data);
 
+    // ---------------------------------------------------------- clans (2.66)
+    /// The player's clan as last read (GET /clans/me: {clan, invitations, applications}), from the
+    /// network or, offline, from the cache; null before the first answer and without an account.
+    const Json& myClan() const { return myClan_; }
+    /// The tag of the player's clan ("" without one, or while it is unknown).
+    std::string myClanTag() const;
+    /// The invitations to a clan the player received (last known), for the badge of CLANS.
+    int clanInvitations() const;
+    /// Reads GET /clans/me now (kept in the cache for offline display). Also read a moment after
+    /// each login, then every five minutes while connected.
+    void refreshMyClan(ApiCallback cb = {});
+    /// A screen that read GET /clans/me, or changed the clan (created, joined, left…), shares it.
+    void noteMyClan(const Json& data);
+
     // -------------------------------------------------------- notifications
     /// Unread notifications of the Cosmic Online centre (last known), for the badges.
     int unreadNotifications() const { return unreadNotifications_; }
@@ -344,6 +358,10 @@ private:
     std::map<std::string, int> unreadByConversation_;
     std::set<std::string> unreadGroupIds_;  // which of them are groups
     std::string openConversation_;
+
+    Json myClan_;  // 2.66: GET /clans/me
+    bool clanBusy_ = false;
+    float clanTimer_ = 2.0f;
 
     float notificationsTimer_ = 4.0f;
     bool notificationsBusy_ = false;

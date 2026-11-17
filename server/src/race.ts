@@ -9,6 +9,7 @@
 // RaceOptions, the replay carries the challenge's rules, and deaths with returns to the
 // checkpoints are allowed when the challenge has its checkpoints on.
 
+import { refreshClanOfPlayer } from "./clans";
 import { optionalAuth, requireAuth } from "./auth";
 import { pseudoVersionOf } from "./community";
 import { boardCosmetics, withCosmetics } from "./cosmetics";
@@ -389,6 +390,8 @@ export async function uploadRunReplay(ctx: Ctx): Promise<Response> {
         .run();
     let verifier = false;
     if (ok && a.finished) verifier = await crown(ctx, board, me, String(run.id), now);
+    // 2.66: the official EXTRÊME levels count for the clans (their best per level).
+    if (ok && board.kind === "official") await refreshClanOfPlayer(ctx, me);
     const rank = ok ? await rankOf(ctx, board.keys, me) : null;
     return json(ctx, {
         run: { id: run.id, status: ok ? "VERIFIED" : "REJECTED", score, finished: a.finished, reasons: ok ? [] : a.reasons.slice(0, 8), rank },

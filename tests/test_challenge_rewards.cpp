@@ -11,6 +11,7 @@
 #include "game/online/DailyChallenges.h"
 #include "game/online/Replay.h"
 #include "tests/TestFramework.h"
+#include "ui/screens/ChallengeRewardsUi.h"
 
 using namespace cosmic;
 
@@ -278,4 +279,69 @@ TEST_CASE("rewards of one challenge (2.43): read strictly, titles of the server 
     CHECK(book.equippedIds(cat, mine)["title"] == "srv:12");
     book.equip("title", "srv:77");
     CHECK(book.equipped(cat, "title", mine)->isDefault);
+}
+
+TEST_CASE("exclusive items (2.60): only rewards of the challenges, where they come from with the real date and condition") {
+    CosmeticCatalog cat;
+    std::string err;
+    CHECK(cat.loadDefault(&err));
+    // Exclusive: a reward of the challenges of the catalogue, any creation of the server; never an item of the stars.
+    const CosmeticItem* champion = cat.find("suit_champion");
+    const CosmeticItem* givre = cat.find("suit_givre");
+    CHECK(champion && exclusiveItem(*champion));
+    CHECK(givre && !exclusiveItem(*givre));
+    CosmeticItem made;
+    made.id = "srvvictory:7";
+    made.category = "victory";
+    CHECK(exclusiveItem(made));
+
+    // What it was won by (2.60): kept with the reward, strictly read, back from the cache as it was.
+    auto entry = [](const std::string& id, const std::string& kind, const std::string& period, const std::string& date, const std::string& ref,
+                    const std::string& cond, int value) {
+        return Json{{"challenge", {{"id", id}, {"kind", kind}, {"period", period}, {"date", date}}},
+                    {"kind", "item"},
+                    {"ref", ref},
+                    {"granted_at", "2026-11-16T03:17:00.000Z"},
+                    {"condition", cond},
+                    {"value", value}};
+    };
+    Json won = Json::array({
+        entry("daily-2026-11-10", "daily", "2026-11-10", "2026-11-10", "suit_noyau", "tier", 3),
+        entry("weekly-2026-W46", "weekly", "2026-W46", "2026-11-09", "suit_braise", "top", 10),
+        entry("monthly-2026-10", "monthly", "2026-10", "2026-10-01", "suit_seve", "podium", 1),
+        entry("daily-2026-11-12", "daily", "2026-11-12", "2026-11-12", "suit_spectre", "tier", 7),
+    });
+    auto w = WonRewards::fromJson(won);
+    CHECK(w && w->list.size() == 4);
+    if (!w) return;
+    const WonReward* noyau = w->origin("suit_noyau");
+    CHECK(noyau && noyau->condition == "tier" && noyau->value == 3);
+    CHECK(w->origin("suit_braise") && w->origin("suit_braise")->condition == "top" && w->origin("suit_braise")->value == 10);
+    CHECK(w->origin("suit_seve") && w->origin("suit_seve")->condition.empty());      // a condition this game does not know: nothing said
+    CHECK(w->origin("suit_spectre") && w->origin("suit_spectre")->condition.empty());  // out of its bounds: nothing said
+    auto again = WonRewards::fromJson(w->toJson());
+    CHECK(again && *again == *w && again->origin("suit_noyau")->value == 3);
+
+    // The tooltip's words: the real date of the challenge, its kind, its condition.
+    CHECK(challengeOriginText("daily", "2026-11-10", "2026-11-10") == "défi du jour du 10/11/2026");
+    CHECK(challengeOriginText("weekly", "2026-W46", "2026-11-09") == "défi de la semaine du 09/11/2026");
+    CHECK(challengeOriginText("monthly", "2026-10", "2026-10-01") == "défi du mois d'octobre 2026");
+    CHECK(challengeOriginText("monthly", "2026-11", "2026-11-01") == "défi du mois de novembre 2026");
+    CHECK(challengeOriginText("daily", "", "").empty());
+    CHECK(exclusiveOriginText("daily", "2026-11-10", "2026-11-10", "tier", 3) == "Exclusif : défi du jour du 10/11/2026 · Or atteint");
+    CHECK(exclusiveOriginText("weekly", "2026-W46", "2026-11-09", "top", 10) == "Exclusif : défi de la semaine du 09/11/2026 · Top 10 final");
+    CHECK(exclusiveOriginText("monthly", "2026-10", "2026-10-01") == "Exclusif : défi du mois d'octobre 2026");
+    CHECK(exclusiveOriginText("daily", "2026-11-12", "2026-11-12", "finished", 0) == "Exclusif : défi du jour du 12/11/2026 · Niveau fini");
+    CHECK(exclusiveOriginText("", "", "") == "Exclusif aux défis");
+    CHECK(conditionShort("podium", 1).empty());
+    CHECK(reserveText() == "Réserve : pas encore donné en récompense");
+
+    // The administration's tooltip of a creation (GET /admin/creations): the first challenge that gives it, else the reserve.
+    bool reserve = false;
+    Json given = {{"status", "given"},
+                  {"uses", 1},
+                  {"given_by", {{"id", "daily-2026-11-20"}, {"kind", "daily"}, {"period", "2026-11-20"}, {"date", "2026-11-20"}, {"condition", "tier"}, {"value", 2}}}};
+    CHECK(adminCreationTip(given, &reserve) == "Exclusif : défi du jour du 20/11/2026 · Argent atteint" && !reserve);
+    Json never = {{"status", "reserve"}, {"uses", 0}, {"owners", 0}, {"given_by", nullptr}};
+    CHECK(adminCreationTip(never, &reserve) == reserveText() && reserve);
 }

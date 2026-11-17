@@ -1,6 +1,11 @@
 """Pyrrhax, « Le Dragon d'Obsidienne »: the smallest of a brood of hatchlings, grey, who only
 breathes smoke (« la Fumerolle »); the rain of embers when the star collapses; the embers he
-swallows; his scales turned to black glass; the giant guarding the last frontier."""
+swallows; his scales turned to black glass; the giant guarding the last frontier.
+
+2.60: Pyrrhax's story is no longer painted here: it is told in animated scenes
+(story_pyrrhax_scene.py, which also renders its stills). This module stays for the painting
+helpers the other stories share (collapsed_star, embers, flame, ground, spires…); its SHOTS are the
+paintings of version 1, kept for reference and no longer written."""
 import math
 
 import numpy as np

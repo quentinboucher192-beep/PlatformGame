@@ -8,6 +8,9 @@
 // shot ends; a progress bar and « Espace · Ⓐ Passer » sit at the bottom right. The title card
 // reveals the boss (its sprite, « GIGA-BOSS · 8 PHASES », its name, its subtitle, its difficulty).
 // Space, Enter, the gamepad's A or a click skips it (a short fade, then the screen below again).
+// 2.60: a shot of version 2 is played as its animated scene instead (parallax layers, sprites
+// moved by keyframes, glows, particles, a camera, shakes, flashes; with the same slow zoom and
+// cross-fades); every file of the story is loaded when it opens, none while it plays.
 // Display only.
 
 #include <memory>
@@ -21,6 +24,17 @@ namespace cosmic {
 
 class GameServices;
 class UIContext;
+struct AnimationSet;
+struct AnimationClip;
+
+/// Version 2's scenes: units of a stage per pixel of its sheets and layers (at scale 1).
+constexpr float kStoryPixel = 2.0f;
+/// The frame (source rectangle) of a scene's sprite: its clip `clip` (its idle clip, else its
+/// first, when the sheet has no such clip) `t` seconds in; a looping clip wraps, another one holds
+/// its last frame or goes on with the clip it names as its next.
+Rect storySpriteFrame(const AnimationSet& set, const std::string& clip, float t);
+/// The same with the clip already found (nullptr: the sheet's idle clip, else its first).
+Rect storySpriteFrame(const AnimationSet& set, const AnimationClip* clip, float t);
 
 /// The bottom band of a story: its progress bar, the room of the line of narration, left of the
 /// measured « Espace · Ⓐ Passer » hint, and the line wrapped there (at most two lines, at the
@@ -40,7 +54,8 @@ StoryNarrationLayout layoutStoryNarration(UIContext& ui, const std::string& show
 
 /// The story of `bossId`; nullptr when it has none. `startAt` (automated screenshots): the shot
 /// to start from (0 = the first), its line already typed (the number of shots: the title card
-/// revealed); -1: from its beginning, faded in.
-std::unique_ptr<Scene> makeBossStory(GameServices& g, const std::string& bossId, int startAt = -1);
+/// revealed); -1: from its beginning, faded in. `atSeconds` (automated screenshots, 2.60): the
+/// story that many seconds in, as it plays then (instead of `startAt`).
+std::unique_ptr<Scene> makeBossStory(GameServices& g, const std::string& bossId, int startAt = -1, float atSeconds = -1.0f);
 
 }  // namespace cosmic

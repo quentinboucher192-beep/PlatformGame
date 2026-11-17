@@ -5,7 +5,7 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
-**Nouveau dans la version 2.62.0** :
+**Nouveau dans la version 2.63.0** :
 * **Coopération** sur les niveaux EXTRÊME, à **2 ou 3 joueurs** (menu principal › *Coopération*) : une vie
   chacun, les mêmes règles qu'en solo, **sur un même PC** (une manette par joueur en plus du clavier), **en
   réseau local** (un PC héberge le relais, sans compte ni serveur) ou **en ligne** avec vos amis (salon,
@@ -18,6 +18,145 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
   joueur le plus avancé, vérification par le serveur avec les entrées de chaque joueur, confirmation de chaque
   joueur avec son compte (une partie sur un même PC n'est pas classée : un compte ne s'ouvre que sur son propre
   ordinateur). Les records solo restent tous valides. Architecture : [docs/COOP.md](docs/COOP.md).
+
+**Nouveau dans la version 2.62.4** :
+* L'**histoire du Monolithe** (« Le Golem Primordial ») devient elle aussi un **petit dessin animé** : le caillou
+  dans la poussière des origines, les enfants de la caverne qui gravent leur rune, la pierre qui grandit puis se
+  lève, le village, les vaisseaux qui partent, le golem seul dans les ruines ; décors en couches animées
+  (cristaux, torches, brume), personnages animés image par image. Une pastille NOUVEAU mène à « Revoir
+  l'histoire ».
+
+**Nouveau dans la version 2.62.3** :
+* Embuscades : une chute ne les fait plus recommencer (reprise à la même vague, ennemis ramenés dans l'arène) ;
+  HUD « Embuscade : N ennemis restants » et flèches violettes vers ses ennemis hors écran.
+
+**Nouveau dans la version 2.62.2** :
+* Didacticiel proposé une fois à tout joueur qui ne l'a pas vu (même avec une progression).
+* SEGMENTS : record du monde aussi pour les niveaux de la communauté.
+
+**Nouveau dans la version 2.62.1** :
+* **Somme des meilleurs tout confondu** et **« Regarder »** (entraînement par segment) : la SOB prend le meilleur temps
+  de chaque segment parmi les courses complètes **et** les entraînements par segment de la même version du niveau
+  (écran d'entraînement, Statistiques et son graphique, panneau des fantômes, résumé des segments ; le record, les
+  temps et la régularité restent ceux des courses). « Regarder » enchaîne ces meilleurs segments, chacun **rejoué à
+  l'identique** depuis le replay exact de la course ou de l'essai qui l'a fait (bannière « Segment k · entraînement
+  du 17/11 · 0:23,45 » ou « course du 12/11 », chronomètre jusqu'à la SOB, écart au record). Replays gardés sur ce
+  PC seulement tant qu'un meilleur segment s'y rapporte ; un meilleur temps d'avant 2.60.3 sans replay est annoncé
+  comme tel. Affichage seulement : rien de classé, rien d'envoyé, simulation inchangée.
+* **Segments** (fin de course, en ligne) : colonne « Record du monde · pseudo » avec les temps de passage du record du
+  monde **vérifié** de la même version du niveau, lus dans son replay vérifié (durée, écart cumulé).
+
+**Nouveau dans la version 2.62.0** :
+* **Administration › Assets** : tous les fichiers installés sous `assets/`, rangés en arbre —
+  Personnages (Nova, combinaisons), Ennemis et Boss et giga-boss (par monde), Pouvoirs, Décors et tuiles
+  (par planète), Interface et icônes, Effets et particules, Histoires, Musiques (par groupe du juke-box),
+  Sons, Polices —, chaque dossier avec son nombre d'assets et son poids.
+* **Recherche instantanée** (nom, chemin, dossier, type et « utilisé par » : un ennemi, un niveau…), filtres
+  par type et **« Inutilisés »** ; résultats en **grille de vignettes** ou en **liste**, seules les lignes
+  visibles sont lues (vignettes décodées hors du thread principal, cache LRU de textures).
+* **Aperçu** : image à l'échelle sur damier, animation qui défile (clip, images par seconde, pause), son et
+  musique à l'écoute (la musique du menu attend ou baisse, puis reprend), spécimen d'une police, début d'un
+  fichier texte ; taille, dimensions (lues dans l'en-tête PNG), images et clips, durée (en-têtes WAV et Ogg).
+* **Utilisé par** : chaque ennemi, boss, niveau (compté objet par objet), planète, pouvoir, histoire,
+  combinaison du Vestiaire, effet de particules, morceau du juke-box, et le code du jeu
+  (`data/assets/code_refs.json`, écrit par `tools/assets/code_refs.py`) ; une ligne montre tout ce
+  qu'utilise ce « client », **Fiche** ouvre sa fiche dans le jeu (fiche du boss, niveau, entité dans
+  Administration › Ennemis, Vestiaire, histoire, guide des pouvoirs) et « Retour » ramène à l'asset.
+  « **Ouvrir le dossier** » montre le fichier sur le PC. Lecture seule : rien n'est modifié.
+* Pour le Studio de Créations : le catalogue (`game/content/AssetCatalog.h` : liste, filtre) et ses
+  vignettes et aperçus (`ui/widgets/AssetPreview.h`) forment une API documentée et réutilisable.
+* **Statistiques des boss › Fiche** : chaque **attaque se déplie et se replie** (clic, Entrée / A, flèches ;
+  « Tout déplier », « Tout replier ») ; dépliée, elle dit ce qu'elle fait et donne ses **caractéristiques
+  lues dans la définition du boss** (dégâts, annonce et recharge dans chaque phase où elle sort, récupération,
+  portée, ce que son type utilise) avec un **exemple animé joué par le moteur** : le boss dans son arène, à la
+  phase où elle sort (son dernier souffle pour les attaques finales), la lance en boucle et Nova montre comment
+  l'esquiver. Un seul exemple à la fois, préparé sans figer l'écran, jamais compté (records, statistiques,
+  succès) ; pour tous les boss, gardiens d'Aethra, giga-boss des Confins et Singularis compris.
+* **Administration › Créations › Studio** : un éditeur complet des images des créations, pour les admins.
+  L'**explorateur** (combinaisons, traînées, cadres, effets de victoire du serveur et brouillons de ce PC,
+  recherche, nouveau, dupliquer, renommer, archiver, bibliothèque des sprites et palettes du jeu), des
+  **onglets** (● non enregistrée, fermeture confirmée), une **toile** de pixels (zoom, grille, pelure
+  d'oignon, coordonnées) et ses outils — crayon, gomme, pot de peinture, pipette, ligne, rectangle, ellipse,
+  sélection, déplacer, miroirs et symétrie, annuler / rétablir — au clavier, à la manette (un curseur, les
+  outils sur LB / RB, les images sur les gâchettes) et à la souris, avec leurs raccourcis en infobulles.
+* Une **combinaison** se dessine image par image sur la planche de Nova : la **frise** de chaque animation du
+  jeu, la lecture, la **pelure d'oignon** et « **Recolorer toutes les images…** » d'un coup. Une **traînée**
+  ou un **effet de victoire** devient une **particule animée et son émetteur** (particules par seconde, durée
+  de vie, taille, vitesse, dispersion, gravité, rotation, fondu, couleurs, étincelles) ; un **cadre**, un
+  anneau autour de l'avatar. **Aperçu en direct** : Nova qui court, son fantôme, l'effet rejoué, le cadre sur
+  le profil et dans un classement.
+* **Importer une image** : glissez un PNG dans la fenêtre, choisissez-le, ou déposez-le dans le dossier
+  « **Images à importer** » du jeu (surveillé) ; **détection automatique des zones**, grille régulière ou à la
+  main, l'animation du jeu de chaque rangée, un **aperçu animé** avant d'importer ; un fichier refusé dit
+  pourquoi.
+* « Enregistrer » garde un **brouillon** sur ce PC ; « **Envoyer au serveur** » publie la création et son
+  image (migration **0119**) : le serveur vérifie le PNG (signature, IHDR, dimensions, taille), le garde dans
+  R2 sous son empreinte SHA-256 et note chaque envoi et chaque refus au Journal. Un joueur ne télécharge que
+  l'image d'une création qu'il a gagnée, ou qui apparaît dans un classement, un profil ou les récompenses
+  d'un défi commencé ; le jeu la garde pour le hors-ligne et dessine l'apparence simple tant qu'elle manque.
+* **Objets exclusifs** (récompenses de défi seulement) : une **aura** dorée qui pulse autour de leur vignette et
+  une infobulle qui dit d'où ils viennent (« Exclusif : défi du jour du 10/11/2026 · Or atteint ») ;
+  **Administration › Créations** apporte la **réserve du jeu** (40 combinaisons, 30 traînées, 30 cadres, 30
+  effets de victoire), invisible des joueurs tant qu'aucun défi ne la donne, avec un filtre réserve / donnée /
+  archivée.
+* L'**histoire de Pyrrhax** (« Le Dragon d'Obsidienne ») devient un **petit dessin animé** : ses six plans sont
+  des scènes animées faites de vrais sprites dans le style du jeu (la Fumerolle et ses frères et sœurs de feu,
+  l'œuf qui éclot dans le nid de cendres, flammes, fumée, pluie de braises, ventre qui s'illumine,
+  transformation en dragon de verre noir), animés image par image. Le **décor vit aussi**, en couches de
+  sprites animés qui défilent chacune à sa vitesse (parallaxe) : ciel et étoiles qui scintillent, nuages et
+  brume qui dérivent, magma qui respire au pied des pics, braises qui crépitent, cendres dans le vent, lueurs
+  qui respirent et ombres qui suivent le feu ; la caméra suit l'action. Format des histoires en
+  **version 2** (les autres histoires gardent leurs peintures). Une pastille NOUVEAU mène à « Revoir
+  l'histoire ».
+* **Clans** (EN LIGNE › **CLANS**) : un clan par joueur, **50 membres** au plus, un nom, un **tag** de 2 à 5
+  lettres ou chiffres, unique sans tenir compte de la casse (affiché **[AUBE]**), une devise et un **emblème**
+  (une forme et deux couleurs, comme les cadres). Le **chef** (un seul, rôle transmissible) et les **officiers**
+  invitent, acceptent ou refusent les candidatures et excluent (un officier n'exclut pas un officier, personne
+  n'exclut le chef) ; le chef nomme les officiers, modifie le clan et peut le **dissoudre** (avec confirmation).
+* Adhésion **sur invitation**, **sur candidature** (avec un court message) ou **ouverte**, au choix du chef.
+  Chaque règle est décidée par le serveur dans une seule transaction : deux actions simultanées ne font jamais
+  un 51ᵉ membre, deux chefs ou un clan sans chef.
+* **Page d'un clan** : membres et rôles (la **présence** seulement pour les membres du clan, et si le joueur la
+  partage déjà), **meilleure équipe du clan sur chaque niveau EXTRÊME** (Solo pour l'instant, la coopération
+  Duo et Trio arrive bientôt), candidatures (chef et officiers) et **discussion du clan** (un groupe de SOCIAL
+  qui suit ses membres).
+* **Classement des clans** : la somme des meilleurs résultats **vérifiés par le serveur** de chaque clan sur les
+  niveaux EXTRÊME officiels. Le **tag** s'affiche à côté du pseudo dans les classements, le profil et SOCIAL.
+* **Administration › Clans** : un admin renomme ou dissout un clan ; chaque action va au **Journal**.
+* Serveur : migration D1 `0120_clans.sql`, routes `/api/v1/clans/*` et `/api/v1/admin/clans/*`
+  ([`server/openapi.yaml`](server/openapi.yaml)) ; le jeu reste jouable sans compte et sans Internet (la page
+  de son clan reste visible hors ligne, depuis le cache).
+* Notification de mise à jour : les nouveautés de toutes les versions depuis celle du joueur.
+
+**Nouveau dans la version 2.61.1** :
+* Didacticiel : bulles porteuses au-dessus de la terre ferme, traînée d'éclats à hauteur de Nova ; correctif des combinaisons recolorées.
+
+**Nouveau dans la version 2.61.0** :
+* **Didacticiel du premier lancement, « Le premier envol de Nova »** : au tout premier lancement (aucune
+  progression), **Bip**, un petit robot compagnon qui flotte près de Nova, propose un vol d'essai d'environ six
+  minutes dans la **Pépinière d'étoiles**, un petit monde pastel hors de la campagne : aucune planète sur la carte,
+  aucun classement, aucun record, aucun succès compté, rien d'envoyé en ligne. « Passer le didacticiel » est
+  proposé au départ (avec confirmation) et dans le menu Pause.
+* **Sept zones** : se déplacer ; sauter (plus haut en maintenant, double saut) ; rebondir sur les **champignons**
+  et attraper les éclats en l'air ; attaquer des **petites bêtes endormies** qui ne ripostent pas ; prendre la
+  **Ruée** (le Dash) sur une tablette, briser un mur de cristal et traverser un ruisseau sur des **bulles
+  porteuses** ; repartir d'une **lanterne** ; affronter **Mycélia la Câline**, variante ralentie du boss le plus
+  facile du jeu selon la note de difficulté des boss, aux attaques longuement annoncées. Aucune chute n'est
+  mortelle : Bip ramène Nova sur la dernière terre ferme.
+* **Neuf explications bloquantes** : la simulation s'arrête vraiment ; une carte montre Bip, « 3 / 9 », un
+  petit aperçu animé, le texte mesuré et les **touches réelles** du joueur (clavier, manette Xbox ou
+  PlayStation) ; « **Compris, je continue** » (Entrée, A ou clic) reprend la partie.
+* **Fin** : « Bravo, Nova ! », ce qui a été appris, le souvenir **« Premier envol »** (un titre du Vestiaire,
+  accordé sur cet ordinateur ; en ligne, le serveur ne pouvant pas le vérifier, le titre par défaut s'affiche) et
+  « Commencer l'aventure », qui ouvre Sylvanox. Le didacticiel ne se rejoue **jamais**, qu'on le finisse ou
+  qu'on le passe ; un joueur qui avait déjà une progression ne le voit pas ; les copies de progression et la
+  migration de compte gardent ce choix.
+* **Éditeur de niveaux** : la **Bulle porteuse** et l'action « Didacticiel : explication bloquante ». Le niveau
+  est généré par `tools/levelgen/tutorial.py` (`data/tutorial/premier_envol.json`) ; aucune règle des niveaux
+  existants ne change (même version de simulation, mêmes empreintes).
+
+**Nouveau dans la version 2.60.3** :
+* Entraînement par segment : interrupteur « Invincible (admin) · non classé » sur l'écran de choix du segment (administrateurs).
 
 **Nouveau dans la version 2.60.2** :
 * **Administration › Calendrier des défis** : un défi du jour, de la semaine ou du mois **déjà commencé** se

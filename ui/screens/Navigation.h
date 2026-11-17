@@ -9,6 +9,7 @@
 #include "engine/core/Scene.h"
 #include "game/gameplay/BossTraining.h"
 #include "game/ghost/GhostStore.h"
+#include "game/ghost/SobMontage.h"
 #include "game/levels/LevelData.h"
 #include "game/online/DailyChallenges.h"
 
@@ -69,6 +70,10 @@ struct PlayOptions {
         bool practice = false;
     };
     std::optional<Challenge> challenge;
+    /// 2.64: the tutorial of the first launch (`level` holds it, game/tutorial/Tutorial.h): a
+    /// training run (nothing of it counts), Bip by Nova, its explanation cards; its end card
+    /// leads to the map of Sylvanox. Left from its pause menu, it is skipped for good.
+    bool tutorial = false;
 };
 
 /// A finished run's segments (results screen → Segments): this run, my best segments, my
@@ -81,10 +86,14 @@ struct SegmentSummary {
     std::vector<float> splits;            // this run (cumulative)
     float time = 0.0f;
     std::vector<float> bestSegments;      // my best ones before this run (-1 unknown)
+    /// 2.60.3: the Sum of Best before this run, full runs and section trainings together (-1:
+    /// unknown, the sum of `bestSegments` is shown).
+    float sob = -1.0f;
     std::vector<float> pbSplits;          // my record's splits before this run
     float pbTime = 0.0f;
     struct Ghost {
         std::string name;
+        std::string recordId;             // an online record (2.60.3: the world record's own column)
         Color color;
         std::vector<float> splits;
         float duration = 0.0f;
@@ -92,6 +101,11 @@ struct SegmentSummary {
         bool sameVersion = true;
     };
     std::vector<Ghost> ghosts;
+    /// 2.60.3, online only: the level version (GhostStore::levelKey's hash), its leaderboard
+    /// (GET path, empty: none) and where its records' verified replays are (« <base><id>/replay »).
+    std::string levelHash;
+    std::string wrBoard;
+    std::string wrReplayBase;
 };
 std::unique_ptr<Scene> makeSegments(GameServices& g, std::shared_ptr<const SegmentSummary> s);
 
@@ -108,16 +122,22 @@ struct GhostSetupRequest {
 
 // Factories of every screen (implemented next to each scene).
 std::unique_ptr<Scene> makeSplashScene(GameServices& g);
+/// 2.64: the tutorial of the first launch: its welcome (« Commencer » / « Passer », confirmed),
+/// then the tutorial itself (nullptr from makeTutorialRun when its level cannot be read).
+std::unique_ptr<Scene> makeTutorialWelcome(GameServices& g);
+std::unique_ptr<Scene> makeTutorialRun(GameServices& g);
 std::unique_ptr<Scene> makeMainMenu(GameServices& g);
 /// ADMINISTRATION (2.40, accounts with the admin role only). `open`: "log" for the Journal,
 /// "players:<search>[:confirm]", "calendar[:<YYYY-MM>[:<challenge id>[:objectif]]]" (2.41,
-/// « Calendrier des défis »), "campaign[:<level id>]" (2.45, « Campagne ») (automated screenshots).
+/// « Calendrier des défis »), "campaign[:<level id>]" (2.45, « Campagne ») (automated screenshots);
+/// 2.63: "assets[:<asset path>]" (« Assets », that asset selected: the way back from a sheet).
 std::unique_ptr<Scene> makeAdmin(GameServices& g, const std::string& open = {});
 std::unique_ptr<Scene> makePlanetMap(GameServices& g);
 /// `levelId`: the level selected on arrival (else the last one played). `fromBoss`: opened
 /// from the statistics of this boss (« Retour » goes back there instead of the planet map).
+/// `fromAsset` (2.63): opened from ADMINISTRATION › Assets on this asset (« Retour » goes back there).
 std::unique_ptr<Scene> makeLevelSelect(GameServices& g, const std::string& planetId, const std::string& levelId = {},
-                                       const std::string& fromBoss = {});
+                                       const std::string& fromBoss = {}, const std::string& fromAsset = {});
 std::unique_ptr<Scene> makeGameScene(GameServices& g, const std::string& levelId, PlayOptions opt = {});
 std::unique_ptr<Scene> makeSettingsScene(GameServices& g, bool overlay);
 /// HUD editor: place and size every HUD element; "Enregistrer" writes the layout into `target`.
@@ -127,6 +147,16 @@ std::unique_ptr<Scene> makeHudEditor(GameServices& g, GameplaySettings& target);
 std::unique_ptr<Scene> makeNotifications(GameServices& g, int tab = 0);
 /// Before a run: the ghosts to race against (mine, downloaded, online) and the training mode.
 std::unique_ptr<Scene> makeGhostSetup(GameServices& g, const std::string& levelId, GhostSetupRequest req = {});
+/// 2.60.3, section training › « Regarder »: the Sum of Best of a level version watched, its best
+/// segments one after the other (full runs and section trainings), each from its exact replay.
+struct SobMontageRequest {
+    std::string levelId;
+    std::string levelHash;  // the version every replay must be of (GhostStore::levelKey)
+    std::string levelName;
+    MontagePlan plan;
+    std::vector<std::string> names;  // one per segment of the plan (« Départ du niveau → Seuil I »)
+};
+std::unique_ptr<Scene> makeSobMontage(GameServices& g, SobMontageRequest req);
 class GameScene;
 /// Ghost Racing options (opacity, colours, HUD): from the pause menu (`game`: the run, whose
 /// ghosts follow the changes at once) or from the pre-race screen (nullptr).
@@ -148,7 +178,8 @@ std::unique_ptr<Scene> makeNewRewards(GameServices& g);
 std::unique_ptr<Scene> makeStatistics(GameServices& g, int tab = 0);
 /// Statistiques › Boss › « Fiches des boss »: the bosses (victories, without being hit, per
 /// phase, how they look, where to fight them). `bossId`: the boss selected on arrival.
-std::unique_ptr<Scene> makeBossStats(GameServices& g, const std::string& bossId = {});
+/// `fromAsset` (2.63): opened from ADMINISTRATION › Assets on this asset (« Retour » goes back there).
+std::unique_ptr<Scene> makeBossStats(GameServices& g, const std::string& bossId = {}, const std::string& fromAsset = {});
 /// Boss statistics → Entraînement: hearts, power slots, powers and phase, then the boss's arena.
 /// `phase` (2.54, « Passages difficiles »): the phase chosen on arrival (0 = the first, -1 every
 /// phase; -2: the last choice for this boss).
@@ -205,6 +236,10 @@ std::unique_ptr<Scene> makeCommunityPublish(GameServices& g, const std::string& 
 /// SOCIAL (in ONLINE): conversations with friends, groups, friends, blocked players.
 /// `conversationId`: open this conversation; `tab`: 0 Discussions, 1 Amis, 2 Bloqués.
 std::unique_ptr<Scene> makeSocial(GameServices& g, const std::string& conversationId = {}, int tab = 0);
+/// ONLINE › CLANS (2.66): the player's clan, the search of the clans, their ranking, the creation
+/// of a clan. `clanId`: that clan's page on arrival. `pushed`: opened over another screen (a
+/// profile, SOCIAL): « Retour » pops it instead of going back to the ONLINE screens.
+std::unique_ptr<Scene> makeClans(GameServices& g, const std::string& clanId = {}, bool pushed = false);
 /// SOCIAL › Amis › « Regarder » (2.36, pushed over SOCIAL): a friend's run, live, re-simulated
 /// from the inputs their game streams (read only; the friend is never told).
 std::unique_ptr<Scene> makeSpectate(GameServices& g, const std::string& playerId, const std::string& name, const std::string& avatar);

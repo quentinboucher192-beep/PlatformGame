@@ -13,8 +13,8 @@ constexpr uint32_t kSettleSteps = 45;
 constexpr double kHalfMs = 0.0005;
 }  // namespace
 
-ReplayPlayback::ReplayPlayback(WorldServices services, LevelData level, const ReplayData& replay)
-    : services_(services), level_(std::move(level)), replay_(replay) {
+ReplayPlayback::ReplayPlayback(WorldServices services, LevelData level, const ReplayData& replay, Setup setup)
+    : services_(services), level_(std::move(level)), replay_(replay), setup_(std::move(setup)) {
     chrono_.assign(static_cast<size_t>(replay_.inputs.size()) + 1, -1.0f);
     chrono_[0] = 0.0f;
     main_ = makeRun();
@@ -38,6 +38,9 @@ ReplayPlayback::Run ReplayPlayback::makeRun() const {
     r.world->seedGameplay(levelSeed(level_.id));
     r.world->silent = true;
     r.sim = std::make_unique<ReplaySimulator>(replay_, *r.world);
+    // A run that started elsewhere (a section training): set up as it was, once seeded (the
+    // simulator seeds the world again with the same seed: the run's own order).
+    if (setup_) setup_(*r.world);
     return r;
 }
 

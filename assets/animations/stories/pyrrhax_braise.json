@@ -1,0 +1,12 @@
+{
+  "texture": "stories/pyrrhax/braise.png",
+  "frameWidth": 32,
+  "frameHeight": 32,
+  "pivot": [16, 16],
+  "clips": {
+    "fall": {"row": 0, "count": 4, "fps": 12, "loop": true},
+    "float": {"row": 1, "count": 6, "fps": 9, "loop": true},
+    "impact": {"row": 2, "count": 6, "durations": [0.05, 0.06, 0.07, 0.08, 0.1, 0.12], "loop": false},
+    "spark": {"row": 3, "count": 4, "fps": 10, "loop": true}
+  }
+}

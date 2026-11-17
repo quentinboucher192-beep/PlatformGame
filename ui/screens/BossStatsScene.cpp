@@ -8,19 +8,29 @@
 // « Fiche » (2.37): what the boss is, read from its definition (data/enemies): health, contact
 // damage, speed, weaknesses, time limit, each phase (from which share of its health, its rhythm,
 // its attacks) and each attack (type, damage, wind-up, cooldown). Nothing is estimated there.
+// 2.60: each attack of the sheet unfolds (a click, Entrée / A; « Tout déplier », « Tout
+// replier »): what it does, its characteristics read from its definition, and an example of it
+// played by the game engine (ui/screens/BossAttackPreview.h): the boss in its arena giving that
+// attack again and again, Nova dodging it; one example at a time, the unfolded attack that has
+// the focus or the last unfolded (game/enemies/BossAttackSheet.h). The fold stays while the
+// screen is open.
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <map>
 
 #include "engine/core/I18n.h"
 #include "game/GameServices.h"
 #include "game/content/CreaturePlaces.h"
+#include "game/enemies/BossAttackSheet.h"
 #include "game/enemies/BossDifficulty.h"
 #include "game/gameplay/BossTraining.h"
 #include "game/gameplay/BossBadge.h"
 #include "ui/online/RatingWidgets.h"
+#include "ui/screens/BossAttackPreview.h"
 #include "ui/screens/BossStoryScene.h"
 #include "ui/screens/CreatureArt.h"
 #include "ui/screens/MenuBackground.h"
@@ -85,12 +95,13 @@ float clipHold(float loop) {
 
 class BossStatsScene : public Scene {
 public:
-    BossStatsScene(GameServices& g, std::string bossId) : g_(g), wanted_(std::move(bossId)) {}
+    BossStatsScene(GameServices& g, std::string bossId, std::string fromAsset = {})
+        : g_(g), wanted_(std::move(bossId)), fromAsset_(std::move(fromAsset)), preview_(g) {}
 
     void onEnter() override {
         bg_.init(g_);
         for (const auto* d : g_.content.enemies())
-            if (d->isBoss) bosses_.push_back(d);
+            if (d->isBoss && !d->tutorial) bosses_.push_back(d);  // 2.64: not the tutorial's
         // Bosses met first (most victories), then the others by name.
         std::stable_sort(bosses_.begin(), bosses_.end(), [&](const EnemyDefinition* a, const EnemyDefinition* b) {
             const BossRecord* ra = g_.bossStats.find(a->id);
@@ -101,34 +112,63 @@ public:
             if (ka != kb) return ka > kb;
             return a->name < b->name;
         });
-        // Automated screenshots: "boss:<id>[:<clip>]" (the clip then stays shown).
+        // Automated screenshots: "boss:<id>[:<clip>][:fiche][:attaques][:attaque=<attack id>|:tout]"
+        // (the clip then stays shown; « fiche »: its sheet; « attaques »: its list of attacks at the
+        // top; an attack unfolded with its example, or every attack unfolded).
+        std::string unfold;
+        bool unfoldAll = false;
         if (!g_.onlineOpen.empty() && g_.onlineOpen.rfind("boss:", 0) == 0) {
             std::string v = g_.onlineOpen.substr(5);
-            if (v.size() > 6 && v.compare(v.size() - 6, 6, ":fiche") == 0) {
-                tab_ = 1;
-                v.resize(v.size() - 6);
+            std::vector<std::string> parts;
+            for (size_t from = 0;;) {
+                size_t c = v.find(':', from);
+                parts.push_back(v.substr(from, c == std::string::npos ? std::string::npos : c - from));
+                if (c == std::string::npos) break;
+                from = c + 1;
             }
-            if (auto c = v.find(':'); c != std::string::npos) {
-                forcedClip_ = std::max(0, std::atoi(v.c_str() + c + 1));
-                v = v.substr(0, c);
+            wanted_ = parts.front();
+            for (size_t i = 1; i < parts.size(); ++i) {
+                const std::string& p = parts[i];
+                if (p == "fiche") tab_ = 1;
+                else if (p == "tout") unfoldAll = true;
+                else if (p == "attaques") scrollToList_ = true;
+                else if (p.rfind("attaque=", 0) == 0) unfold = p.substr(8);
+                else if (!p.empty() && std::isdigit(static_cast<unsigned char>(p.front()))) forcedClip_ = std::max(0, std::atoi(p.c_str()));
             }
-            wanted_ = v;
+            if (!unfold.empty() || unfoldAll || scrollToList_) tab_ = 1;
             g_.onlineOpen.clear();
         }
         for (size_t i = 0; i < bosses_.size(); ++i)
             if (bosses_[i]->id == wanted_) selected_ = static_cast<int>(i);
         g_.ui.setFocus("bstats/b" + std::to_string(selected_));
+        if (!bosses_.empty() && (!unfold.empty() || unfoldAll)) {
+            const EnemyDefinition& d = *bosses_[static_cast<size_t>(selected_)];
+            AttackFold& f = folds_[d.id];
+            if (unfoldAll) {
+                std::vector<std::string> ids;
+                for (const AttackDef& a : d.attacks) ids.push_back(a.id);
+                f.expandAll(ids);
+            }
+            if (!unfold.empty() && d.attack(unfold)) {
+                f.expand(unfold);
+                scrollToAttack_ = unfold;
+            }
+        }
         atlas_ = officialCreatureAtlas(g_.content);  // starts reading the levels (worker thread)
     }
+
+    void fixedUpdate(float) override { preview_.fixedUpdate(); }
 
     void update(float dt) override {
         t_ += dt;
         clipT_ += dt;
+        frameDt_ = dt;
         bg_.update(dt);
         if (!atlas_) atlas_ = officialCreatureAtlas(g_.content);
+        preview_.update(dt);
     }
 
-    void render(float) override {
+    void render(float alpha) override {
         UIContext& ui = g_.ui;
         ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
         bg_.render(g_, 0.6f);
@@ -150,9 +190,14 @@ public:
         if (!bosses_.empty()) {
             const EnemyDefinition& d = *bosses_[static_cast<size_t>(std::clamp(selected_, 0, static_cast<int>(bosses_.size()) - 1))];
             show(d);
-            drawDetail(detail, d);
+            drawDetail(detail, d, alpha);
+            // One example at a time, only while the sheet is shown.
+            if (tab_ != 1) preview_.stop();
         }
-        if (leave || ui.backPressed()) g_.app.switchScene(makeStatistics(g_, 2), 0.3f);  // 2.54: back to Statistiques › Boss
+        if (leave || ui.backPressed()) {
+            if (!fromAsset_.empty()) g_.app.switchScene(makeAdmin(g_, "assets:" + fromAsset_), 0.3f);  // 2.63: back to Administration › Assets
+            else g_.app.switchScene(makeStatistics(g_, 2), 0.3f);                                      // 2.54: back to Statistiques › Boss
+        }
         ui.popId();
         ui.end();
     }
@@ -268,7 +313,7 @@ private:
         ui.endScroll();
     }
 
-    void drawDetail(const Rect& p, const EnemyDefinition& d) {
+    void drawDetail(const Rect& p, const EnemyDefinition& d, float alpha) {
         UIContext& ui = g_.ui;
         ui.panel(p, true, 16);
         const BossRecord* rec = g_.bossStats.find(d.id);
@@ -292,7 +337,9 @@ private:
             const float bw = std::min(rw * 0.45f, ui.text().measure(lbl, FontFace::Bold, ui.s(16)).x + ui.s(44));
             const Rect sb{rx + rw - bw, y, bw, ui.s(40)};
             if (ui.button("story", sb, lbl, st)) openStory(d.id);
-            ui.newBadge("story", sb, "stats.story", true, true);
+            // 2.60: a story told anew (Pyrrhax's, in animated scenes) has its own novelty.
+            const std::string fresh = "stats.story." + d.id;
+            ui.newBadge("story", sb, ui.isNew(fresh) ? fresh : std::string("stats.story"), true, true);
             nameRoom = rw - bw - ui.s(16);
         }
         float tf = ui.fitFont(d.name, FontFace::Title, 32, nameRoom, 0.6f);
@@ -349,7 +396,7 @@ private:
             bh -= dh + ui.s(12);
             float leftW = std::floor((w - colGap) * 0.4f);
             drawSheetFacts({x, y, leftW, bh}, d);
-            drawSheetPhases({x + leftW + colGap, y, w - leftW - colGap, bh}, d);
+            drawSheetPhases({x + leftW + colGap, y, w - leftW - colGap, bh}, d, alpha);
             return;
         }
         float leftW = std::floor((w - colGap) * 0.44f);
@@ -458,7 +505,7 @@ private:
     /// Its phases (from which share of its health, its rhythm, its attacks), its last stand,
     /// then every attack once (type, damage, wind-up, cooldown). One scroll region: the
     /// content's height is the one measured on the previous frame.
-    void drawSheetPhases(const Rect& area, const EnemyDefinition& d) {
+    void drawSheetPhases(const Rect& area, const EnemyDefinition& d, float alpha) {
         UIContext& ui = g_.ui;
         ui.label("Phases et attaques", {area.x, area.y + ui.s(14)}, 22, ui.theme().accent, Align::Left, FontFace::Bold, VAlign::Middle);
         Rect view{area.x, area.y + ui.s(40), area.w, area.bottom() - area.y - ui.s(40)};
@@ -542,68 +589,260 @@ private:
         }
         if (!d.finalAttacks.empty())
             block("Dernier souffle", "à 0 PV, invincible", d.finalText, names(d.finalAttacks), ui.theme().danger.withAlpha(220));
-        // Every attack once.
+        // Every attack once (2.60: each one unfolds).
         y += ui.s(6);
-        ui.label("Attaques", {view.x, y + ui.s(12)}, 20, ui.theme().accent, Align::Left, FontFace::Bold, VAlign::Middle);
-        y += ui.s(32);
-        for (const auto& a : d.attacks) {
-            std::string details = std::string(attackTypeLabel(a.type)) + "  ·  Dégâts " + num(a.damage) + "  ·  Annonce " + num(a.telegraph, 2) +
-                                  " s  ·  Recharge " + num(a.cooldown, 2) + " s";
-            // 2.50: the dragon's attacks say what they chain or leave behind.
-            if (a.type == AttackType::Dive) {
-                if (a.count > 1) details += "  ·  " + std::to_string(a.count) + " piqués enchaînés";
-            } else if (a.type == AttackType::Gust) {
-                details += "  ·  Repousse " + num(a.duration > 0.0f ? a.duration : 2.2f, 1) + " s";
-            } else if (a.type == AttackType::Shell) {  // 2.52: the golem's attacks
-                const int bounces = a.bounces > 0 ? a.bounces : 1;
-                details += "  ·  " + std::to_string(bounces) + (bounces > 1 ? " rebonds" : " rebond") + "  ·  Carapace : dégâts reçus " +
-                           times(a.armor > 0.0f ? a.armor : 0.35f) + "  ·  Étourdi : dégâts reçus " + times(a.vulnerability > 0.0f ? a.vulnerability : 1.5f);
-            } else if (a.type == AttackType::Quake) {
-                details += "  ·  " + std::to_string(a.count) + (a.count > 1 ? " fissures par secousse" : " fissure par secousse") + "  ·  Séisme " +
-                           num(a.duration > 0.0f ? a.duration : 3.6f, 1) + " s";
-            } else if (a.type == AttackType::Skyfall) {
-                details += "  ·  " + std::to_string(a.count) + (a.count > 1 ? " ondes de choc" : " onde de choc");
-            } else if (a.type == AttackType::Sunbeam) {  // 2.56: the phoenix's attacks
-                const int columns = a.arms >= 2 ? 2 * a.count + 1 : a.count;
-                details += "  ·  " + std::to_string(columns) + (columns > 1 ? " colonnes" : " colonne") +
-                           (a.arms >= 2 ? " depuis les deux murs" : " en marche");
-            } else if (a.type == AttackType::Sweep) {
-                details += "  ·  " + std::to_string(a.count) + (a.count > 1 ? " lames, basse et haute" : " lame, basse ou haute");
-            } else if (a.type == AttackType::Glyph) {  // 2.57: the lich's spells
-                const int runes = a.arms >= 2 ? 2 * a.count + 1 : a.count;
-                details += "  ·  " + std::to_string(runes) + (runes > 1 ? " runes" : " rune") + (a.arms >= 2 ? " autour du joueur" : " en ligne");
-            } else if (a.type == AttackType::Hex) {
-                details += "  ·  Sauts alourdis " + num(a.duration > 0.0f ? a.duration : 5.0f, 1) + " s";
-            } else if (a.type == AttackType::Press) {  // 2.58: the war machine's machinery
-                if (a.arms == 2) details += "  ·  Toutes sauf une";
-                else if (a.arms == 3) details += "  ·  En marche, l'une après l'autre";
-                else details += "  ·  Une sur deux, " + std::to_string(a.count) + (a.count > 1 ? " vagues" : " vague");
-            } else if (a.type == AttackType::Missile) {
-                details += "  ·  " + std::to_string(a.count) + (a.count > 1 ? " missiles verrouillés" : " missile verrouillé");
-            } else if (a.type == AttackType::Belt) {
-                details += std::string(a.arms == 1 ? "  ·  Loin de lui" : "  ·  Vers lui") + "  ·  " + num(a.duration > 0.0f ? a.duration : 5.0f, 1) + " s";
-            } else if (a.count > 1) {
-                details += "  ·  " + std::to_string(a.count) + " projectiles";
-            }
-            if (a.bursts > 1) details += "  ·  " + std::to_string(a.bursts) + " salves";
-            if (a.type == AttackType::Perch || a.type == AttackType::CloudShot)
-                details += "  ·  Nuage de feu " + num(a.duration > 0.0f ? a.duration : (a.type == AttackType::Perch ? 3.5f : 3.0f), 1) + " s";
-            if (a.type == AttackType::Perch)
-                details += "  ·  Posé : dégâts reçus " + times(a.vulnerability > 0.0f ? a.vulnerability : 1.5f);
-            Rect row{view.x, y, w, ui.s(52)};
-            y += ui.s(56);
-            if (row.bottom() < view.y || row.y > view.bottom()) continue;
-            ui.r().fillRoundedRect(row, ui.s(6), Color{12, 18, 38, 180});
-            float room = row.w - ui.s(24);
-            float nf = fit(ui, a.name, FontFace::Bold, 16, room, 0.75f);
-            ui.label(ui.elide(a.name, FontFace::Bold, nf, room), {row.x + ui.s(12), row.y + ui.s(16)}, nf, ui.theme().text, Align::Left, FontFace::Bold,
-                     VAlign::Middle);
-            float df = fit(ui, details, FontFace::Body, 14, room, 0.75f);
-            ui.label(ui.elide(details, FontFace::Body, df, room), {row.x + ui.s(12), row.y + ui.s(37)}, df, ui.theme().textDim, Align::Left,
-                     FontFace::Body, VAlign::Middle);
-        }
+        y = drawAttacks(view, top, y, w, d, alpha);
         sheetH_ = y - top;
         ui.endScroll();
+    }
+
+    // ------------------------------------------------- the attacks, folded or unfolded (2.60)
+
+    /// The attacks of `d` as the sheet shows them (read again when another boss is shown).
+    const std::vector<BossAttackEntry>& attackEntries(const EnemyDefinition& d) {
+        if (entriesOf_ != d.id) {
+            entriesOf_ = d.id;
+            layouts_.clear();
+            entries_ = bossAttackEntries(d, [this](const std::string& id) {
+                const EnemyDefinition* e = g_.content.enemy(id);
+                return e ? e->name : id;
+            });
+        }
+        return entries_;
+    }
+
+    /// The characteristics of an unfolded attack, in a column `w` wide from (x, y): the label at
+    /// the left and the value at the right when both fit on one line, else the value wrapped on
+    /// lines of its own under its label. Returns the height; draws only with `draw`.
+    float factsBlock(const std::vector<AttackFact>& facts, float x, float y, float w, bool draw) {
+        UIContext& ui = g_.ui;
+        const float size = fz(ui, 14);
+        const float lineH = ui.s(24);
+        const float indent = ui.s(12);
+        float h = 0.0f;
+        for (size_t i = 0; i < facts.size(); ++i) {
+            const AttackFact& f = facts[i];
+            const float lw = ui.text().measure(f.label, FontFace::Body, ui.s(size)).x;
+            const float vw = ui.text().measure(f.value, FontFace::Bold, ui.s(size)).x;
+            const bool oneLine = lw + ui.s(14) + vw <= w - ui.s(12);
+            float vh = 0.0f;
+            if (!oneLine) vh = ui.text().measureWrapped(f.value, FontFace::Body, ui.s(size), w - indent - ui.s(6)).y;
+            const float rowH = oneLine ? lineH : lineH + vh + ui.s(4);
+            if (draw) {
+                const Rect row{x, y + h, w, rowH - ui.s(2)};
+                ui.r().fillRoundedRect(row, ui.s(4), i % 2 ? Color{12, 18, 38, 150} : Color{18, 27, 52, 190});
+                const float room = w - ui.s(12);
+                const float lroom = oneLine ? room - vw - ui.s(14) : room;
+                const float lf = fit(ui, f.label, FontFace::Body, 14, lroom, 0.8f);
+                ui.label(ui.elide(f.label, FontFace::Body, lf, lroom), {row.x + ui.s(6), row.y + lineH * 0.5f - ui.s(1)}, lf, ui.theme().textDim,
+                         Align::Left, FontFace::Body, VAlign::Middle);
+                if (oneLine)
+                    ui.label(f.value, {row.right() - ui.s(6), row.y + lineH * 0.5f - ui.s(1)}, size, ui.theme().text, Align::Right, FontFace::Bold,
+                             VAlign::Middle);
+                else
+                    ui.labelWrapped(f.value, {row.x + indent, row.y + lineH - ui.s(2)}, w - indent - ui.s(6), size, ui.theme().text);
+            }
+            h += rowH;
+        }
+        return h;
+    }
+
+    /// A small triangle: pointing right (folded) or down (unfolded).
+    void chevron(Vec2 c, float r, bool open, Color col) {
+        Renderer& rr = g_.ui.r();
+        if (open) rr.fillTriangle({c.x - r, c.y - r * 0.55f}, {c.x + r, c.y - r * 0.55f}, {c.x, c.y + r * 0.65f}, col);
+        else rr.fillTriangle({c.x - r * 0.55f, c.y - r}, {c.x + r * 0.65f, c.y}, {c.x - r * 0.55f, c.y + r}, col);
+    }
+
+    /// « Attaques », « Tout déplier » / « Tout replier », then every attack: folded, its name,
+    /// where it comes and its line of details; unfolded, what it does, its characteristics and
+    /// its example (beside them when there is room, else under them). Returns the next y.
+    float drawAttacks(const Rect& view, float top, float y, float w, const EnemyDefinition& d, float alpha) {
+        UIContext& ui = g_.ui;
+        Renderer& r = ui.r();
+        const UITheme& th = ui.theme();
+        const std::vector<BossAttackEntry>& entries = attackEntries(d);
+        AttackFold& fold = folds_[d.id];
+        std::vector<std::string> ids;
+        for (const BossAttackEntry& e : entries) ids.push_back(e.attack->id);
+        auto visible = [&](const Rect& rc) { return rc.bottom() >= view.y && rc.y <= view.bottom(); };
+
+        if (scrollToList_) {  // (automated screenshots: the list of the attacks at the top)
+            ui.setScroll("sheet", y - top);
+            scrollToList_ = false;
+        }
+        // The title and the two buttons: on its line when they fit, else on the line below.
+        {
+            UIContext::ButtonStyle st;
+            st.small = true;
+            const std::string openAll = "Tout déplier", closeAll = "Tout replier";
+            const float bf = fz(ui, 15);
+            const float gap = ui.s(8), bh = ui.s(34);
+            float b1 = ui.text().measure(openAll, FontFace::Bold, ui.s(bf)).x + ui.s(30);
+            float b2 = ui.text().measure(closeAll, FontFace::Bold, ui.s(bf)).x + ui.s(30);
+            const float titleW = ui.text().measure("Attaques", FontFace::Bold, ui.s(20)).x;
+            float bx = view.x, by = y;
+            // (The pill « NOUVEAU » sits on the top edge of the first button: room is kept above it.)
+            if (titleW + ui.s(20) + b1 + gap + b2 <= w) {
+                bx = view.x + w - b1 - gap - b2;
+                by = y + ui.s(10);
+                ui.label("Attaques", {view.x, by + bh * 0.5f}, 20, th.accent, Align::Left, FontFace::Bold, VAlign::Middle);
+                y = by + bh + ui.s(10);
+            } else {
+                ui.label("Attaques", {view.x, y + ui.s(14)}, 20, th.accent, Align::Left, FontFace::Bold, VAlign::Middle);
+                y += ui.s(44);
+                if (b1 + gap + b2 > w) b1 = b2 = (w - gap) * 0.5f;
+                bx = view.x;
+                by = y;
+                y += bh + ui.s(8);
+            }
+            const Rect r1{bx, by, b1, bh}, r2{bx + b1 + gap, by, b2, bh};
+            st.enabled = !fold.allExpanded(ids);
+            st.fontSize = fit(ui, openAll, FontFace::Bold, 15, b1 - ui.s(16), 0.75f);
+            if (ui.button("atk_all", r1, openAll, st)) fold.expandAll(ids);
+            ui.newBadge("atk_all", r1, "stats.sheet.attacks", true, true);  // « NOUVEAU » (2.60)
+            st.enabled = fold.anyExpanded();
+            st.fontSize = fit(ui, closeAll, FontFace::Bold, 15, b2 - ui.s(16), 0.75f);
+            if (ui.button("atk_none", r2, closeAll, st)) fold.collapseAll();
+        }
+
+        const BossRecord* rec = g_.bossStats.find(d.id);
+        const bool met = g_.collection.met.count(d.id) > 0 || (rec && rec->fights > 0);
+        std::string focusedAttack;
+        const float headH = ui.s(56), pad = ui.s(12);
+        for (size_t i = 0; i < entries.size(); ++i) {
+            const BossAttackEntry& e = entries[i];
+            const AttackDef& a = *e.attack;
+            const bool open = fold.expanded(a.id);
+            const std::string rowId = "atk" + std::to_string(i), viewId = "atkv" + std::to_string(i);
+            // Unfolded: its layout measured first (the next attack goes under it).
+            const float iw = w - 2.0f * pad;
+            const bool side = iw >= ui.s(560);
+            float pw = 0.0f, ph = 0.0f, exH = 0.0f, tw = iw, descH = 0.0f, factsH = 0.0f, bodyH = 0.0f;
+            const float capH = ui.s(30);
+            // Its example once the boss has been met (as its training: nothing is given away before).
+            const bool canShow = e.plan.showable && met;
+            const std::string unshown = !e.plan.showable ? "Exemple indisponible : " + e.plan.reason
+                                                         : std::string("Rencontrez ce boss dans son niveau : l'exemple de ses attaques s'ouvre ensuite.");
+            if (open) {
+                pw = side ? std::clamp(iw * 0.56f, ui.s(260), ui.s(520)) : std::min(iw, ui.s(560));
+                ph = std::round(pw * 9.0f / 16.0f);
+                tw = side ? iw - pw - ui.s(16) : iw;
+                // The texts measured once for this width (not at every frame).
+                if (layouts_.size() != entries.size()) layouts_.assign(entries.size(), AttackLayout{});
+                AttackLayout& L = layouts_[i];
+                if (L.width != w || L.canShow != canShow) {
+                    L.width = w;
+                    L.canShow = canShow;
+                    L.descH = ui.text().measureWrapped(e.description, FontFace::Body, ui.s(fz(ui, 15)), tw).y;
+                    L.factsH = factsBlock(e.facts, 0.0f, 0.0f, tw, false);
+                    L.reasonH = canShow ? 0.0f : ui.text().measureWrapped(unshown, FontFace::Body, ui.s(fz(ui, 15)), pw - 2.0f * pad).y;
+                }
+                descH = L.descH;
+                factsH = L.factsH;
+                exH = canShow ? ph + capH : L.reasonH + 2.0f * pad;
+                const float textH = descH + ui.s(10) + factsH;
+                bodyH = side ? std::max(textH, exH) : textH + ui.s(12) + exH;
+            }
+            const Rect block{view.x, y, w, headH + (open ? bodyH + pad + ui.s(4) : 0.0f)};
+            const Rect head{view.x, y, w, headH};
+            if (scrollToAttack_ == a.id) {
+                ui.setScroll("sheet", y - top - ui.s(6));  // its top at the top of the list
+                scrollToAttack_.clear();
+            }
+            y += block.h + ui.s(6);
+            // The header: a click, Entrée or A folds / unfolds it (reachable when scrolled out).
+            bool hovered = false;
+            if (ui.hotspot(rowId, head, &hovered)) {
+                fold.toggle(a.id);
+                if (fold.expanded(a.id)) scrollToAttack_ = a.id;
+            }
+            ui.newBadge(rowId, head, "stats.sheet.attacks", false);
+            const bool focus = ui.focused(rowId);
+            if (focus) focusedAttack = a.id;
+            // Its example's frame (focusable too: activate it to show it, or to pause it).
+            Rect frame, cap;
+            const float bx = view.x + pad, byy = head.bottom() + ui.s(4);
+            if (open) {
+                const float ex = side ? bx + tw + ui.s(16) : bx;
+                const float ey = side ? byy : byy + descH + ui.s(10) + factsH + ui.s(12);
+                frame = {ex, ey, pw, canShow ? ph : exH};
+                cap = {ex, ey + ph, pw, capH};
+            }
+            const bool active = open && canShow && preview_.bossId() == d.id && preview_.attackId() == a.id;
+            bool frameHover = false;
+            if (open && canShow) {
+                const Rect whole{frame.x, frame.y, frame.w, ph + capH};
+                if (ui.hotspot(viewId, whole, &frameHover)) {
+                    if (active) preview_.setPaused(!preview_.paused());
+                    else fold.expand(a.id);
+                }
+                if (ui.focused(viewId)) focusedAttack = a.id;
+            }
+            if (!visible(block)) continue;
+            // Drawn.
+            r.fillRoundedRect(block, ui.s(8), open ? Color{16, 25, 50, 235} : Color{12, 18, 38, 190});
+            if (focus || hovered) r.drawRoundedRect(head, ui.s(8), focus ? th.accent : th.accent.withAlpha(110), std::max(1.0f, ui.s(focus ? 2.0f : 1.2f)));
+            chevron({head.x + ui.s(17), head.y + ui.s(18)}, ui.s(6), open, open ? th.accent : th.textDim);
+            const float tx = head.x + ui.s(32), room = head.right() - ui.s(12) - tx;
+            // Its name first, and where it comes at the right when there is room.
+            const float nf = fit(ui, a.name, FontFace::Bold, 16, room, 0.75f);
+            const float nameW = std::min(room, ui.text().measure(a.name, FontFace::Bold, ui.s(nf)).x);
+            const float wroom = room - nameW - ui.s(16);
+            if (wroom > ui.s(60)) {
+                const float wf = fit(ui, e.where, FontFace::Body, 14, wroom, 0.8f);
+                ui.label(ui.elide(e.where, FontFace::Body, wf, wroom), {head.right() - ui.s(12), head.y + ui.s(18)}, wf,
+                         e.final ? Color{255, 140, 150, 255} : th.textDim, Align::Right, FontFace::Body, VAlign::Middle);
+            }
+            ui.label(ui.elide(a.name, FontFace::Bold, nf, room), {tx, head.y + ui.s(18)}, nf, th.text, Align::Left, FontFace::Bold, VAlign::Middle);
+            const float df = fit(ui, e.summary, FontFace::Body, 14, room, 0.75f);
+            ui.label(ui.elide(e.summary, FontFace::Body, df, room), {tx, head.y + ui.s(39)}, df, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+            if (!open) continue;
+            // What it does, its characteristics.
+            ui.labelWrapped(e.description, {bx, byy}, tw, fz(ui, 15), Color{200, 214, 230, 255});
+            factsBlock(e.facts, bx, byy + descH + ui.s(10), tw, true);
+            // Its example.
+            if (!canShow) {
+                r.fillRoundedRect(frame, ui.s(8), Color{30, 22, 30, 230});
+                r.drawRoundedRect(frame, ui.s(8), th.warm.withAlpha(120), std::max(1.0f, ui.s(1.2f)));
+                ui.labelWrapped(unshown, {frame.x + pad, frame.y + pad}, frame.w - 2.0f * pad, fz(ui, 15), th.warm);
+                continue;
+            }
+            const bool frameFocus = ui.focused(viewId);
+            if (active) {
+                if (frame.intersects(view)) preview_.draw(ui, frame, alpha);  // out of sight: it waits
+            } else {
+                r.fillRoundedRect(frame, ui.s(8), Color{5, 8, 18, 255});
+                const std::string wait = "Un seul exemple à la fois : cliquez ici, ou sélectionnez cette attaque, pour voir le sien.";
+                const float room2 = frame.w - 2.0f * pad;
+                const float hh = ui.text().measureWrapped(wait, FontFace::Body, ui.s(fz(ui, 14)), room2).y;
+                if (hh <= frame.h - 2.0f * pad) ui.labelWrapped(wait, {frame.x + pad, frame.center().y - hh * 0.5f}, room2, fz(ui, 14), th.textDim);
+            }
+            // Its caption: the phase shown (or the state of the preparation), and what
+            // activating it does.
+            r.fillRect(cap, Color{6, 10, 22, 230});
+            const std::string left = active ? preview_.caption() : std::string("Exemple en attente");
+            std::string right;
+            if (active && preview_.status() == BossAttackPreview::Status::Running)
+                right = preview_.paused() ? "Reprendre : clic, Entrée / A" : "Pause : clic, Entrée / A";
+            const float cf = fz(ui, 13);
+            float rightW = right.empty() ? 0.0f : ui.text().measure(right, FontFace::Body, ui.s(cf)).x;
+            const float leftW = ui.text().measure(left, FontFace::Body, ui.s(cf)).x;
+            if (rightW > 0.0f && leftW + ui.s(16) + rightW > cap.w - ui.s(20)) rightW = 0.0f;  // no room: the state only
+            if (rightW > 0.0f) ui.label(right, {cap.right() - ui.s(10), cap.center().y}, cf, th.accent, Align::Right, FontFace::Body, VAlign::Middle);
+            const float lroom = cap.w - ui.s(20) - (rightW > 0.0f ? rightW + ui.s(16) : 0.0f);
+            const float lf = fit(ui, left, FontFace::Body, 13, lroom, 0.85f);
+            ui.label(ui.elide(left, FontFace::Body, lf, lroom), {cap.x + ui.s(10), cap.center().y}, lf, th.textDim, Align::Left, FontFace::Body,
+                     VAlign::Middle);
+            const Rect whole{frame.x, frame.y, frame.w, ph + capH};
+            r.drawRoundedRect(whole, ui.s(8), frameFocus || frameHover ? th.accent : th.accent.withAlpha(active ? 90 : 40),
+                              std::max(1.0f, ui.s(frameFocus ? 2.0f : 1.2f)));
+        }
+        // One example at a time: the unfolded attack with the focus (after a moment), else the
+        // last unfolded.
+        fold.update(focusedAttack, frameDt_);
+        preview_.request(&d, met ? fold.preview() : std::string{}, atlas_);
+        return y;
     }
 
     /// The boss in motion: every clip in turn once beaten (activate: the next one), its
@@ -849,6 +1088,7 @@ private:
 
     GameServices& g_;
     std::string wanted_;
+    std::string fromAsset_;  // 2.63: opened from ADMINISTRATION › Assets on this asset
     MenuBackground bg_;
     std::vector<const EnemyDefinition*> bosses_;
     int selected_ = 0;
@@ -866,10 +1106,27 @@ private:
     float sheetH_ = 0.0f;
     std::string placesOf_;
     std::vector<CreaturePlace> places_;
+    // 2.60: the attacks of the sheet (read from the boss shown), unfolded or not per boss for
+    // the whole visit, and the one example played.
+    std::string entriesOf_;
+    std::vector<BossAttackEntry> entries_;
+    struct AttackLayout {  // an unfolded attack's texts, measured for a width
+        float width = -1.0f;
+        bool canShow = false;
+        float descH = 0.0f, factsH = 0.0f, reasonH = 0.0f;
+    };
+    std::vector<AttackLayout> layouts_;
+    std::map<std::string, AttackFold> folds_;
+    BossAttackPreview preview_;
+    std::string scrollToAttack_;  // brought to the top of the list on the next frame
+    bool scrollToList_ = false;
+    float frameDt_ = 0.0f;
 };
 
 }  // namespace
 
-std::unique_ptr<Scene> makeBossStats(GameServices& g, const std::string& bossId) { return std::make_unique<BossStatsScene>(g, bossId); }
+std::unique_ptr<Scene> makeBossStats(GameServices& g, const std::string& bossId, const std::string& fromAsset) {
+    return std::make_unique<BossStatsScene>(g, bossId, fromAsset);
+}
 
 }  // namespace cosmic

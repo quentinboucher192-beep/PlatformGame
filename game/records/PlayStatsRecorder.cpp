@@ -351,6 +351,8 @@ void PlayStatsRecorder::commit() {
     d.segments = std::move(segTimes_);
     d.finish = finishTime_;
     if (finishTime_ > 0.0f) d.route = cps_;
+    d.trainingLevel = trainingLevel_;
+    d.training = std::move(trainTimes_);
     store_.merge(d);
     store_.saveAsync();
     run_ = {};
@@ -359,8 +361,14 @@ void PlayStatsRecorder::commit() {
     attempts_.clear();
     phaseMarks_.clear();
     segTimes_.clear();
+    trainTimes_.clear();
     attemptPending_ = false;
     finishTime_ = -1.0f;
+}
+
+void PlayStatsRecorder::noteTrainingSegment(const std::string& from, const std::string& to, float seconds) {
+    if (!active_ || !trainingLevel_ || !(seconds > 0.0f) || !std::isfinite(seconds)) return;
+    trainTimes_.push_back({{from, to}, seconds});
 }
 
 void PlayStatsRecorder::finish() {
@@ -440,6 +448,7 @@ std::unique_ptr<PlayStatsRecorder> PlayStatsStore::beginRun(GameWorld& w, const 
     if (!training && run.level)
         r->setRouteFuture(std::async(std::launch::async, [l = *run.level, &content] { return buildProgressTrack(l, content); }));
     if (!training && run.classic) r->setClassic(run.levelVersion);
+    if (training && run.trainingSegments) r->setTrainingSegments(run.levelVersion);
     w.listener = r.get();
     return r;
 }
@@ -528,6 +537,29 @@ void PlayStatsStore::merge(const Delta& d) {
         const float sob = r.sob();
         auto changed = [](float a, float b) { return (a > 0.0f) != (b > 0.0f) || std::abs(a - b) > 0.005f; };
         if (r.pb > 0.0f && (changed(r.pb, pbBefore) || changed(sob, sobBefore))) {
+            if (!r.history.empty() && r.history.back().day == day) r.history.back() = {day, r.pb, sob};
+            else r.history.push_back({day, r.pb, sob});
+        }
+    }
+    // 2.60.3: a section training of a classic level: the best time of its segment, counted in
+    // the Sum of Best only (never the times, the best of the full runs, the PB nor the attempts).
+    if (d.trainingLevel && !d.levelId.empty() && !d.training.empty()) {
+        LevelRuns& r = data_.runs[d.levelId];
+        if (r.version != d.version) {
+            r = LevelRuns{};
+            r.version = d.version;
+        }
+        if (!d.levelName.empty()) r.name = d.levelName;
+        r.lastDay = day;
+        const float sobBefore = r.sob();
+        for (const auto& [ends, t] : d.training) {
+            if (t <= 0.0f || !std::isfinite(t)) continue;
+            SegmentRec& s = r.segmentAt(ends.first, ends.second);
+            if (s.trainBest <= 0.0f || t < s.trainBest) s.trainBest = t;
+        }
+        const float sob = r.sob();
+        auto changed = [](float a, float b) { return (a > 0.0f) != (b > 0.0f) || std::abs(a - b) > 0.005f; };
+        if (r.pb > 0.0f && changed(sob, sobBefore)) {
             if (!r.history.empty() && r.history.back().day == day) r.history.back() = {day, r.pb, sob};
             else r.history.push_back({day, r.pb, sob});
         }

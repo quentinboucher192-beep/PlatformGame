@@ -5,6 +5,8 @@ of energy with a white-hot spine, a dark outline and a soft glow.
 * assets/ui/boss_arrow.png: a boss, in the red of the boss bars (blinking in game).
 * assets/ui/enemy_arrow.png (2.52): the enemies already met, in the amber of the HUD (steady,
   smaller, one per pack with its count).
+* assets/ui/ambush_arrow.png (2.62.2): the enemies of the ambush being fought, in violet (the
+  colour of its counter in the HUD), drawn like the amber ones.
 
     python3 tools/assetgen/boss_arrow.py
 """
@@ -23,6 +25,8 @@ PALETTES = {
                            OUTLINE=(24, 4, 12), GLOW=(255, 80, 110)),
     "enemy_arrow.png": dict(DEEP=(150, 74, 10), RED=(255, 166, 48), HOT=(255, 214, 128), GOLD=(255, 250, 218),
                             OUTLINE=(30, 14, 2), GLOW=(255, 176, 64)),
+    "ambush_arrow.png": dict(DEEP=(86, 34, 160), RED=(178, 112, 255), HOT=(214, 176, 255), GOLD=(246, 236, 255),
+                             OUTLINE=(16, 6, 34), GLOW=(170, 104, 255)),
 }
 
 

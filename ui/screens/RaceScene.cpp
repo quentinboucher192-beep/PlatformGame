@@ -8,6 +8,7 @@
 #include <cmath>
 #include <cstdio>
 
+#include "engine/core/I18n.h"
 #include "game/GameServices.h"
 #include "game/online/Replay.h"
 #include "engine/core/I18n.h"
@@ -201,7 +202,7 @@ private:
         ui.label(std::to_string(rank), {cRank + ui.s(20), cy}, rank <= 3 ? 26 : 22, rc, Align::Center, FontFace::Bold, VAlign::Middle);
         std::string names;
         for (const auto& p : e.value("players", Json::array())) names += (names.empty() ? "" : " · ") + jstr(p, "username");
-        const std::string tag = jstr(e, "clan_tag");  // clans: later (always empty now)
+        const std::string tag = jstr(e, "clan_tag");  // 2.63: the clan of all its players (else empty)
         const float room = cScore - ui.s(90) - cTeam;
         {
             i18n::Verbatim theirs;  // players' names
@@ -390,10 +391,15 @@ private:
         std::string chip = isVerifier ? "VÉRIFICATEUR" : finished ? "TERMINÉ" : "";
         float chipW = chip.empty() ? 0.0f : ui.text().measure(chip, FontFace::Bold, ui.s(12)).x + ui.s(18);
         float room = cScore - ui.s(150) - nx - (chipW > 0 ? chipW + ui.s(10) : 0.0f);
-        std::string name = ui_.displayName(jstr(p, "username"), rank, me);
-        float nf = ui.fitFont(name, FontFace::Bold, 19, room, 0.8f);
-        name = ui.elide(name, FontFace::Bold, nf, room);
-        Vec2 ns = ui.label(name, {nx, cy - ui.s(11)}, nf, me ? ui.theme().accent : ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+        // 2.66: « [TAG] name » (the tag of the player's clan), as the player chose them.
+        std::string name = ui_.displayName(p, rank, me);
+        Vec2 ns;
+        {
+            i18n::Verbatim playerWords(me || g_.settings.online.showPseudonyms);
+            float nf = ui.fitFont(name, FontFace::Bold, 19, room, 0.8f);
+            name = ui.elide(name, FontFace::Bold, nf, room);
+            ns = ui.label(name, {nx, cy - ui.s(11)}, nf, me ? ui.theme().accent : ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+        }
         if (!chip.empty()) {
             Color cc = isVerifier ? ui.theme().warm : ui.theme().success;
             Rect cr{nx + ns.x + ui.s(10), cy - ui.s(22), chipW, ui.s(22)};

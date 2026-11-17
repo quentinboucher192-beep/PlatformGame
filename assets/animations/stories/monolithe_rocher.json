@@ -1,0 +1,14 @@
+{
+  "texture": "stories/monolithe/rocher.png",
+  "frameWidth": 112,
+  "frameHeight": 96,
+  "pivot": [56, 90],
+  "clips": {
+    "idle": {"row": 0, "count": 4, "fps": 3, "loop": true},
+    "carve": {"row": 1, "count": 9, "durations": [0.3, 0.12, 0.34, 0.12, 0.34, 0.12, 0.3, 0.12, 0.3], "loop": false, "next": "rune"},
+    "rune": {"row": 2, "count": 6, "fps": 6, "loop": true},
+    "grow": {"row": 3, "count": 12, "durations": [0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3], "loop": false, "next": "runes"},
+    "runes": {"row": 4, "count": 6, "fps": 7, "loop": true},
+    "wake": {"row": 5, "count": 6, "fps": 14, "loop": true}
+  }
+}

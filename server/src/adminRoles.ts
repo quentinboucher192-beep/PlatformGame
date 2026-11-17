@@ -24,12 +24,15 @@ export const ADMIN_ACTIONS = {
     // 2.45: ADMINISTRATION › Campagne (campaignRevisions.ts): a revision published, or an earlier one made current again.
     campaign: ["admin_campaign_published", "admin_campaign_reverted"],
     // ADMINISTRATION › Créations (creations.ts): a suit (2.59: a trail, a frame, a victory effect) created, edited, archived or restored.
-    creation: ["admin_creation_created", "admin_creation_updated", "admin_creation_archived", "admin_creation_restored"],
+    // 2.61: its image sent from the Studio (creationAssets.ts).
+    creation: ["admin_creation_created", "admin_creation_updated", "admin_creation_archived", "admin_creation_restored", "admin_creation_image"],
     // 2.46: ADMINISTRATION › Ennemis (enemyRevisions.ts): a native entity published as a revision.
     enemy: ["admin_enemy_published"],
     // 2.47: ADMINISTRATION › Joueurs: the computer an account is bound to (devices.ts).
     // 2.50: an account's data migrated to another one, by an admin or by the player with a code (accountMigration.ts).
     account: ["admin_device_unbound", "admin_device_bound", "admin_account_migrated", "account_migrated"],
+    // 2.66: ADMINISTRATION › Clans (clans.ts): a clan renamed or dissolved by an administrator.
+    clan: ["admin_clan_renamed", "admin_clan_dissolved"],
     // Backups (ADMINISTRATION › Sauvegardes, backups.ts): copies, downloads, imports. Never a passphrase.
     backup: [
         "backup_created",
@@ -54,9 +57,10 @@ const ALL_ADMIN_ACTIONS: readonly string[] = [
         ...ADMIN_ACTIONS.creation,
         ...ADMIN_ACTIONS.enemy,
         ...ADMIN_ACTIONS.account,
+        ...ADMIN_ACTIONS.clan,
     ]),
 ];
-const LOG_KINDS = ["all", "role", "challenge", "refused", "backup", "campaign", "creation", "enemy", "account"] as const;
+const LOG_KINDS = ["all", "role", "challenge", "refused", "backup", "campaign", "creation", "enemy", "account", "clan"] as const;
 
 const ID_RE = /^[A-Za-z0-9-]{8,64}$/;
 
@@ -301,6 +305,28 @@ function creationOfDetails(d: Record<string, unknown>) {
 }
 
 /**
+ * 2.61: the image of a creation sent from the Studio (or refused): its hash, its size in bytes and
+ * in pixels, how it is cut, the hash it replaced. Only the keys the server writes.
+ */
+function imageOfDetails(d: Record<string, unknown>) {
+    const i = d.image;
+    if (!isObject(i)) return null;
+    const num = (k: string) => (typeof i[k] === "number" ? (i[k] as number) : null);
+    const str = (k: string) => (typeof i[k] === "string" ? (i[k] as string) : null);
+    return {
+        hash: str("hash"),
+        previous_hash: str("previous_hash"),
+        bytes: num("bytes"),
+        width: num("width"),
+        height: num("height"),
+        frame_w: num("frame_w"),
+        frame_h: num("frame_h"),
+        frames: num("frames"),
+        fps: num("fps"),
+    };
+}
+
+/**
  * What the Journal shows of a native entity published as a revision, or refused (2.46): the
  * entity, its revision, and each campaign level given a new revision with its records choice.
  */
@@ -350,7 +376,19 @@ function migrationOfDetails(d: Record<string, unknown>) {
 }
 
 /**
- * GET /admin/log?kind=all|role|challenge|refused|backup|campaign|creation|enemy|account&actor=<player id>&limit=&offset=
+ * What the Journal shows of a clan renamed, dissolved, or a refused rename (2.66): the clan,
+ * its name and tag before a rename, its members when dissolved. Only the keys the server writes.
+ */
+function clanOfDetails(d: Record<string, unknown>) {
+    const c = d.clan;
+    if (!isObject(c) || typeof c.id !== "string") return null;
+    const str = (o: Record<string, unknown>, k: string) => (typeof o[k] === "string" ? (o[k] as string) : null);
+    const prev = isObject(c.previous) ? { name: str(c.previous, "name"), tag: str(c.previous, "tag") } : null;
+    return { id: c.id, name: str(c, "name"), tag: str(c, "tag"), previous: prev, members: typeof c.members === "number" ? c.members : null };
+}
+
+/**
+ * GET /admin/log?kind=all|role|challenge|refused|backup|campaign|creation|enemy|account|clan&actor=<player id>&limit=&offset=
  * The administration's own actions, newest first: who (the admin's current username, or the
  * one written at the time when the account is gone), what, when. Never the IP hash.
  */
@@ -402,8 +440,12 @@ export async function listLog(ctx: Ctx): Promise<Response> {
             enemy: enemyOfDetails(d),
             // A creation (ADMINISTRATION › Créations): created, edited, archived, restored or refused.
             creation: creationOfDetails(d),
+            // 2.61: the image of a creation (the Studio), sent or refused.
+            image: imageOfDetails(d),
             // 2.50: a migration of an account's data to another one.
             migration: migrationOfDetails(d),
+            // 2.66: a clan renamed or dissolved (or a refused rename).
+            clan: clanOfDetails(d),
         };
     });
     return json(ctx, { entries, has_more: rows.results.length > page.limit, offset: page.offset });

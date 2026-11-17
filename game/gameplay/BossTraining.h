@@ -63,6 +63,21 @@ std::optional<CreaturePlace> bossTrainingPlace(const CreatureAtlas& atlas, const
 /// first ones kept).
 std::vector<std::string> fitTrainingPowers(const ContentDatabase& content, const std::vector<std::string>& wanted, int slots);
 
+/// Section training (« Répéter un segment »): how an attempt starts. Applied to a world just
+/// loaded and seeded, before its first step, by the run itself (GameScene) and, since 2.60.3,
+/// by its replay (ReplayPlayback): the same start, so that the replay plays it exactly.
+struct SectionTrainingStart {
+    std::string checkpointId;  // the checkpoint it starts from, reached silently ("" = the level's start)
+    bool hasSpawn = false;     // the player placed at `spawn` (the checkpoint); else the level's start
+    Vec2 spawn;
+    std::vector<std::string> powers;  // chosen ones, or the tablets placed before the start on the route
+    bool powersChosen = false;        // exactly `powers`; else they are added to the level's start powers
+    Json toJson() const;
+    /// Never trusts the file: nullopt when a field is damaged.
+    static std::optional<SectionTrainingStart> fromJson(const Json& j);
+};
+void applySectionTraining(GameWorld& w, const SectionTrainingStart& s);
+
 /// Hearts a training can give (the player's own maximum is the default).
 constexpr int kTrainingMinHearts = 1;
 constexpr int kTrainingMaxHearts = 20;

@@ -10,6 +10,7 @@
 #include "game/GameServices.h"
 #include "game/enemies/Enemy.h"
 #include "game/gameplay/BossTraining.h"
+#include "game/gameplay/entities/Entities.h"
 #include "game/gameplay/RunCounters.h"
 #include "game/levels/LevelAnalyzer.h"
 #include "game/online/LevelFingerprint.h"
@@ -18,6 +19,8 @@
 #include "ui/screens/PauseScene.h"
 #include "ui/screens/PowerChoiceScene.h"
 #include "ui/screens/ResultsScene.h"
+#include "ui/screens/TutorialScenes.h"
+#include "game/tutorial/Tutorial.h"
 
 namespace cosmic {
 
@@ -77,13 +80,23 @@ void GameScene::onEnter() {
     if (opt_.bossTraining) {
         if (!applyBossTraining(*world_, *opt_.bossTraining))
             Log::warn("Entraînement : boss {} introuvable dans {}", opt_.bossTraining->bossId, levelId_);
-    } else if (opt_.spawn) {
-        world_->startAt(*opt_.spawn);
+    } else if (opt_.spawn && !opt_.training) {
+        world_->startAt(*opt_.spawn);  // a section training starts in startTraining (its replay the same way)
     }
     // Daily challenge: its rules right after the load (simulation 11), its own recording.
     if (opt_.challenge) startChallenge();
     // 2.48: a hardcore level played as a practice run (respawn where Nova fell, not ranked).
     if (opt_.practiceRespawn && level_.extreme && !opt_.challenge && !opt_.bossTraining) world_->setPracticeRespawn(true);
+    // 2.64: the tutorial counts for nothing (no record, ranking, achievement, statistics, nothing
+    // online); it is started: never offered again.
+    if (opt_.tutorial) {
+        world_->setTraining(true);
+        if (g_.progression.tutorial != "finished" && g_.progression.tutorial != "skipped") {
+            g_.progression.tutorial = "started";
+            g_.progression.save();
+        }
+    }
+    tutorialOrder_ = tutorial::levelCards(level_);
     // 2.51: « Invincible » (administrators): training runs only, never a run that counts.
     if (invincibleAllowed() && g_.settings.gameplay.adminInvincible) {
         world_->setTraining(true);
@@ -111,7 +124,7 @@ void GameScene::onEnter() {
     if (!g_.inputScript.empty()) script_.parse(g_.inputScript);
     // Cosmic Online: official levels and community levels played from their start can be
     // ranked; a player level finished in an editor test (from its start) can be published.
-    if (!opt_.spawn && counted) {
+    if (!opt_.spawn && counted && !opt_.training) {
         bool community = !opt_.editorTest && !opt_.level && g_.online.communityInstall(levelId_) != nullptr;
         if (opt_.editorTest || community) {
             gameplayHash_ = fingerprintGameplay(g_.content, level_);
@@ -166,12 +179,22 @@ void GameScene::onEnter() {
         else ghostHash_ = fingerprintGameplay(g_.content, level_);
         startGhosts();
     }
+    // 2.60.3: a section training is recorded for this computer only (never sent, never ranked):
+    // its best attempt keeps its replay, which plays the segment again exactly (« Regarder »).
+    if (opt_.training && counted && !ghostHash_.empty() && !opt_.editorTest && !opt_.level) {
+        attemptId_ = makeUuidV4();
+        recorder_.begin(levelId_, ghostHash_, attemptId_, world_->gameplaySeed());
+        recordMode_ = RecordMode::Training;
+    }
     startSpectate();
     // 2.54: the player's statistics (they read the run, never change it); a classic campaign level
     // from its start counts its segments too.
+    if (!opt_.tutorial)
     playStats_ = g_.playStats.beginRun(
         *world_, PlayStatsRun{levelId_, &level_, opt_.editorTest, opt_.training,
-                              counted && !opt_.training && !workshop_ && !opt_.spawn && !opt_.level && !level_.extreme, ghostHash_},
+                              counted && !opt_.training && !workshop_ && !opt_.spawn && !opt_.level && !level_.extreme, ghostHash_,
+                              // 2.60.3: a section training of such a level: its segment's time joins the Sum of Best.
+                              counted && opt_.training && !workshop_ && !opt_.level && !level_.extreme && !ghostHash_.empty()},
         g_.content);
 }
 
@@ -360,6 +383,17 @@ void GameScene::startGhosts() {
     for (const GhostEntry& e : local)
         if (e.meta.source == "pb" && e.meta.levelHash == ghostHash_) pb = &e;
     if (pb) pbGhostMs_ = pb->meta.timeMs;
+    {
+        // 2.60.3: the Sum of Best « tout confondu » (the training screen's): the full runs' gold
+        // segments, completed with the record's, and the section trainings' best times.
+        const std::string key = GhostStore::levelKey(levelId_, ghostHash_);
+        SegmentReferences::RunInput pbRun;
+        if (pb) {
+            pbRun.time = static_cast<float>(pb->meta.timeMs) / 1000.0f;
+            pbRun.splits = pb->meta.splits;
+        }
+        sobAtStart_ = buildSegmentReferences(g_.segments.goldSegments(key), g_.segments.goldCheckpoints(key), {}, pbRun, {}, g_.training.bests(key)).sob;
+    }
     std::vector<GhostEntry> choices;
     if (opt_.ghostsChosen) choices = opt_.ghosts;
     else if (gs.enabled && gs.personalByDefault && pb) choices.push_back(*pb);
@@ -379,6 +413,7 @@ void GameScene::startGhosts() {
         ghostRun_.setPersonal(g_.segments.bestSegments(key, pb->meta.splits.size()), pb->meta.splits,
                               static_cast<float>(pb->meta.timeMs) / 1000.0f);
     }
+    ghostRun_.setSumOfBest(sobAtStart_);
     ghostRun_.setVisible(gs.enabled || opt_.ghostsChosen);
 }
 
@@ -470,7 +505,11 @@ void GameScene::saveGhosts(const RunResult& r) {
     if (fingerprint_) m.levelVersion = fingerprint_->version;
     bool newBest = pbGhostMs_ <= 0 || m.timeMs < pbGhostMs_;
     g_.ghosts.recordRun(*lastReplay_, m, newBest);
-    g_.segments.add(GhostStore::levelKey(levelId_, ghostHash_), r.splits, r.time, r.date, runCheckpoints_);
+    // 2.60.3: the run's exact replay stays with the gold segments it sets (« Regarder » the
+    // Sum of Best in section training); kept only while a gold segment refers to it.
+    std::vector<uint8_t> replay;
+    if (lastReplay_->exact()) replay = lastReplay_->encode();
+    g_.segments.add(GhostStore::levelKey(levelId_, ghostHash_), r.splits, r.time, r.date, runCheckpoints_, replay.empty() ? nullptr : &replay);
     g_.segments.save();
 }
 
@@ -511,6 +550,50 @@ void GameScene::onResume() {
     g_.app.audio().setMusicDuck(1.0f);
     refreshPowerKeys();  // « Touches de ce niveau », the settings: maybe other keys now
     g_.app.input().consumePlayerInput();
+    if (tutorialCardOpen_) {
+        // « Compris, je continue »: the run goes on (the press that closed the card dropped
+        // above), or the next card already asked for opens.
+        tutorialCardOpen_ = false;
+        tutorialCard_.clear();
+        if (world_ && !ended_) checkTutorialCard();
+    }
+}
+
+void GameScene::checkTutorialCard() {
+    if (!world_ || !tutorialCard_.empty()) return;
+    while (auto c = world_->takeTutorialCard()) {
+        // Automated runs (scripted input) never wait for a card.
+        if (script_.active() || !tutorial::card(*c)) continue;
+        tutorialCard_ = *c;
+        return;
+    }
+}
+
+std::pair<int, int> GameScene::tutorialCardRank(const std::string& id) const {
+    auto it = std::find(tutorialOrder_.begin(), tutorialOrder_.end(), id);
+    const int n = static_cast<int>(tutorialOrder_.size());
+    return {it == tutorialOrder_.end() ? 0 : static_cast<int>(it - tutorialOrder_.begin()) + 1, n};
+}
+
+void GameScene::leaveTutorial() {
+    if (!g_.progression.tutorialFinished()) {
+        g_.progression.tutorial = "skipped";
+        g_.progression.save();
+    }
+    g_.app.switchScene(makeMainMenu(g_), 0.4f);
+}
+
+void GameScene::finishTutorial() {
+    ended_ = true;
+    // Finished: never again, and its souvenir (a title of the Vestiaire, given on this computer).
+    g_.progression.tutorial = "finished";
+    g_.progression.save();
+    g_.collection.markAnnounced(tutorial::kSouvenirTitle);  // shown by the end card, not again later
+    g_.collection.save();
+    g_.syncCosmetics();
+    std::string victory = g_.app.resources().soundPath("music/victory.ogg");
+    if (!victory.empty()) g_.app.audio().playSound(victory, 0.9f, 1.0f, 0.0f, AudioBus::Music);
+    g_.app.pushScene(makeTutorialEnd(g_));
 }
 
 void GameScene::refreshPowerKeys() {
@@ -633,6 +716,10 @@ void GameScene::restartPractice() {
 }
 
 void GameScene::quitToMenu() {
+    if (opt_.tutorial) {
+        leaveTutorial();
+        return;
+    }
     endSpectate("quit");
     abandonRaceAttempt();
     if (!ended_) takeChallengeAttempt(false);  // « Plus loin »: leaving ends the attempt
@@ -683,6 +770,8 @@ void GameScene::fixedUpdate(float dt) {
     if (!world_) return;
     // The story of a giga boss is due: the run waits for it (no step, no input recorded).
     if (!storyBoss_.empty()) return;
+    // 2.64: a card of the tutorial is due or open: the run waits for « Compris, je continue ».
+    if (!tutorialCard_.empty()) return;
     // A power offer waits for the player's answer (PowerChoiceScene): nothing is simulated
     // or recorded until it comes. Scripted runs leave the power unless told otherwise.
     uint8_t choice = 0;
@@ -730,6 +819,7 @@ void GameScene::fixedUpdate(float dt) {
         bossFeedback();
     }
     if (!ended_) checkBossStory();
+    if (!ended_) checkTutorialCard();
     if (!ended_ && race_.active()) {
         race_.update(*world_);
         recorder_.raceProgress(race_.progress().bossRemoved, race_.progress().wavesDone);
@@ -810,14 +900,25 @@ void GameScene::drawEnemyArrows(const WorldView& view) {
     const Rect screen{0.0f, 0.0f, W, H};
     // Who is on screen now (noted whatever the setting: turned on again, the arrows know them).
     // The boss is left out: it has its own arrow.
+    // 2.62.2: the enemies of the ambush being fought have arrows of their own (violet), met or
+    // not; the others keep theirs (amber, those already met).
+    std::vector<Rect> ambushAway;
+    std::unordered_set<uint32_t> inAmbush;
+    if (const CombatZoneEntity* ambush = world_->activeAmbush())
+        for (const Enemy* e : ambush->fightingEnemies(*world_)) {
+            inAmbush.insert(e->uid());
+            if (Rect r = view.toScreen(e->box); !r.intersects(screen)) ambushAway.push_back(r);
+        }
     std::vector<EnemyArrows::Tracker::Enemy> seen;
     seen.reserve(world_->enemies().size());
     for (const auto& e : world_->enemies())
-        seen.push_back({e->uid(), view.toScreen(e->box), e->alive() && !e->dormant() && !e->def().isBoss});
+        seen.push_back({e->uid(), view.toScreen(e->box), e->alive() && !e->dormant() && !e->def().isBoss && !inAmbush.count(e->uid())});
     const std::vector<Rect> away = metEnemies_.update(screen, seen);
-    if (!g_.settings.gameplay.enemyArrows || away.empty()) return;
-    auto tex = g_.app.resources().texture("ui/enemy_arrow.png");
-    if (!tex) return;
+    if (!g_.settings.gameplay.enemyArrows || (away.empty() && ambushAway.empty())) return;
+    const EnemyArrows::Look usual = EnemyArrows::look(false), fight = EnemyArrows::look(true);
+    auto tex = g_.app.resources().texture(usual.texture);
+    auto ambushTex = g_.app.resources().texture(fight.texture);
+    if (!tex || !ambushTex) return;
     EnemyArrows::Layout l;
     l.screen = screen;
     l.arrowSize = ui.s(54);
@@ -827,7 +928,7 @@ void GameScene::drawEnemyArrows(const WorldView& view) {
     l.packSpan = ui.s(360);
     // The count of a pack: its room is that of the largest count possible (every enemy away).
     const float fs = std::max(22.0f, 13.0f / ui.s(1.0f));
-    const Vec2 widest = ui.text().measure("×" + std::to_string(away.size()), FontFace::Bold, ui.s(fs));
+    const Vec2 widest = ui.text().measure("×" + std::to_string(std::max(away.size(), ambushAway.size())), FontFace::Bold, ui.s(fs));
     l.badgeSize = {widest.x + ui.s(16), std::max(widest.y, ui.s(fs)) + ui.s(6)};
     // Kept clear: the HUD as it is drawn, the boss arrow, the ghosts' box, the banners at the
     // bottom left (training, challenge) and the frame counter.
@@ -837,6 +938,7 @@ void GameScene::drawEnemyArrows(const WorldView& view) {
         auto el = static_cast<HudElement>(e);
         if (el == HudElement::Splits || !hudVisible(gs, el)) continue;
         if (el == HudElement::Boss && !(boss && boss->alive())) continue;
+        if (el == HudElement::Ambush && !world_->activeAmbush()) continue;  // drawn during an ambush only
         Rect a = hud_.area(ui, *world_, el, hud_.place(ui, *world_, gs, el));
         if (!a.empty()) l.keepOut.push_back(a);
     }
@@ -860,20 +962,25 @@ void GameScene::drawEnemyArrows(const WorldView& view) {
                 l.keepOut.push_back({(W - ui.s(1100)) * 0.5f, H - ui.s(200), ui.s(1100), ui.s(150)});
                 break;
             }
-    for (const EnemyArrows::Arrow& a : EnemyArrows::layout(l, away)) {
-        // Steady (the boss arrow blinks), fainter for a pack far away.
-        const float distK = std::clamp((a.target - a.pos).length() / (W * 1.2f), 0.0f, 1.0f);
-        const float alpha = 1.0f - 0.45f * distK;
-        ui.r().drawTexture(*tex, nullptr, a.box, Color::white().withAlphaF(alpha), BlendMode::Alpha, false, false, a.angle * 57.29578f);
-        if (a.count > 1) {
-            const std::string n = "×" + std::to_string(a.count);
-            ui.r().fillRoundedRect(a.badge, a.badge.h * 0.5f, Color{8, 12, 26, 220});
-            ui.r().drawRoundedRect(a.badge, a.badge.h * 0.5f, ui.theme().warm.withAlphaF(0.8f * alpha), std::max(1.0f, ui.s(1.5f)));
-            ui.label(n, a.badge.center(), ui.fitFont(n, FontFace::Bold, fs, a.badge.w - ui.s(10), 0.6f), ui.theme().warm, Align::Center,
-                     FontFace::Bold, VAlign::Middle);
+    auto draw = [&](const std::vector<Rect>& targets, const Texture& arrow, Color badge) {
+        for (const EnemyArrows::Arrow& a : EnemyArrows::layout(l, targets)) {
+            // Steady (the boss arrow blinks), fainter for a pack far away.
+            const float distK = std::clamp((a.target - a.pos).length() / (W * 1.2f), 0.0f, 1.0f);
+            const float alpha = 1.0f - 0.45f * distK;
+            ui.r().drawTexture(arrow, nullptr, a.box, Color::white().withAlphaF(alpha), BlendMode::Alpha, false, false, a.angle * 57.29578f);
+            if (a.count > 1) {
+                const std::string n = "×" + std::to_string(a.count);
+                ui.r().fillRoundedRect(a.badge, a.badge.h * 0.5f, Color{8, 12, 26, 220});
+                ui.r().drawRoundedRect(a.badge, a.badge.h * 0.5f, badge.withAlphaF(0.8f * alpha), std::max(1.0f, ui.s(1.5f)));
+                ui.label(n, a.badge.center(), ui.fitFont(n, FontFace::Bold, fs, a.badge.w - ui.s(10), 0.6f), badge, Align::Center,
+                         FontFace::Bold, VAlign::Middle);
+            }
+            enemyArrowAreas_.push_back(a.area.expanded(ui.s(6)));  // with room for a frame's move
+            l.keepOut.push_back(a.area);                             // the next set never covers it
         }
-        enemyArrowAreas_.push_back(a.area.expanded(ui.s(6)));  // with room for a frame's move
-    }
+    };
+    draw(ambushAway, *ambushTex, fight.count);  // first: the fight under way
+    draw(away, *tex, usual.count);
 }
 
 void GameScene::bossFeedback() {
@@ -890,6 +997,12 @@ void GameScene::bossFeedback() {
 }
 
 void GameScene::finishRun(bool completed) {
+    if (opt_.tutorial) {
+        // 2.64: the tutorial's end (it cannot be lost: no time limit, no life counted).
+        if (completed) finishTutorial();
+        else restart();
+        return;
+    }
     endSpectate(completed ? "finished" : "failed");
     if (opt_.challenge) {
         finishChallenge(completed);
@@ -1048,11 +1161,24 @@ void GameScene::finishRun(bool completed) {
         seg->pbSplits = gr.personalSplits();
         seg->pbTime = gr.personalTime();
         if (seg->bestSegments.empty()) seg->bestSegments = g_.segments.bestSegments(seg->levelKey, r.splits.size());
+        seg->sob = sobAtStart_;  // 2.60.3: section trainings included
+        // 2.60.3: the world record's splits (online, this version), shown by « Segments »: the
+        // official leaderboard lists verified records only and says whose replay was verified.
+        seg->levelHash = ghostHash_;
+        if (recordMode_ == RecordMode::Official && fingerprint_) {
+            seg->wrBoard = "/api/v1/leaderboards/level/" + levelId_ + "?category=ANY_PERCENT&limit=10&offset=0&period=all";
+            seg->wrReplayBase = "/api/v1/records/";
+        } else if (const Json* c = g_.online.communityInstall(levelId_); recordMode_ == RecordMode::Community && c && !jstr(*c, "id").empty()) {
+            // 2.62.2: a community level too: its board lists checked records only (REPLAY_OK), each
+            // with `has_replay`; its version is the installed one (the replay's hash is checked too).
+            seg->wrBoard = "/api/v1/community/levels/" + jstr(*c, "id") + "/leaderboard?version=" + std::to_string(jget<int>(*c, "version", 0));
+            seg->wrReplayBase = "/api/v1/community/records/";
+        }
         for (int i = 0; i < gr.size(); ++i) {
             const GhostRace::Racer& g = gr.racer(i);
             std::string name = g.meta.sourceLabel();
             if (!g.meta.label.empty() && g.meta.label != "Moi") name += " · " + g.meta.label;
-            seg->ghosts.push_back({name, g.color, g.track.splits(), g.track.duration(), g.liveDelta, g.sameVersion});
+            seg->ghosts.push_back({name, g.meta.recordId, g.color, g.track.splits(), g.track.duration(), g.liveDelta, g.sameVersion});
         }
         data.segments = seg;
     }
@@ -1086,8 +1212,24 @@ void GameScene::update(float dt) {
         }
         if (storyOpen_) return;
     }
+    if (!tutorialCard_.empty()) {
+        if (!tutorialCardOpen_) {
+            tutorialCardOpen_ = true;
+            g_.app.pushScene(makeTutorialCard(g_, *this, tutorialCard_));
+        }
+        return;
+    }
     syncPowerKeys();
     world_->update(dt);
+    if (opt_.tutorial) {
+        // 2.64: Bip floats a little behind Nova, above her shoulder (display only).
+        const Player& pl = world_->player();
+        const Vec2 target = pl.center() + Vec2{-pl.facing * 20.0f, -30.0f};
+        if (!bipPlaced_ || distance(bipPos_, target) > 400.0f) bipPos_ = target;
+        bipPlaced_ = true;
+        bipPos_ = bipPos_ + (target - bipPos_) * (1.0f - std::exp(-dt * 3.5f));
+        bipTime_ += dt;
+    }
     // The pause map: what the camera has shown (display only, outside the simulation).
     if (explored_.cols == 0) explored_.reset(world_->level().bounds);
     explored_.mark(world_->camera().visibleArea(1920, 1080));
@@ -1111,7 +1253,7 @@ void GameScene::update(float dt) {
         }
         if ((metTimer_ -= dt) <= 0.0f) {
             metTimer_ = 0.25f;
-            noteCreaturesMet();
+            if (!opt_.tutorial) noteCreaturesMet();  // 2.64: the tutorial's creatures are not the bestiary's
         }
     }
     InputManager& in = g_.app.input();
@@ -1215,27 +1357,22 @@ void GameScene::update(float dt) {
     }
 }
 
-void GameScene::startTraining() {
-    // The checkpoint the segment starts from is reached (silently): the timer's first split.
-    if (!opt_.trainingCheckpoint.empty())
-        if (LevelEntity* e = world_->entity(opt_.trainingCheckpoint)) e->handleAction(*world_, "activate", Json::object());
-    if (opt_.trainingPowersChosen) {
-        // The powers chosen in the training setup, exactly these (the level's start powers
-        // only if chosen too), as a boss training does.
-        Player& p = world_->player();
-        p.clearPowers();
-        int slots = p.powerSlots() > 0 ? p.powerSlots() : LevelData::kMaxPowerSlots;
-        for (const std::string& id : fitTrainingPowers(g_.content, opt_.trainingPowers, slots))
-            if (const PowerDefinition* d = g_.content.power(id)) p.grantPower(*d);
-        return;
+SectionTrainingStart GameScene::trainingStart() const {
+    SectionTrainingStart s;
+    s.checkpointId = opt_.trainingCheckpoint;
+    if (opt_.spawn) {
+        s.hasSpawn = true;
+        s.spawn = *opt_.spawn;
     }
-    // The powers of the tablets placed before it on the route (the last ones if the slots are
-    // fewer: those a player would keep).
-    std::vector<std::string> powers = opt_.trainingPowers;
-    int slots = world_->player().powerSlots();
-    if (slots > 0 && static_cast<int>(powers.size()) > slots) powers.erase(powers.begin(), powers.end() - slots);
-    for (const std::string& id : powers)
-        if (const PowerDefinition* d = g_.content.power(id); d && !world_->player().hasPower(id)) world_->player().grantPower(*d);
+    s.powers = opt_.trainingPowers;
+    s.powersChosen = opt_.trainingPowersChosen;
+    return s;
+}
+
+void GameScene::startTraining() {
+    // At its checkpoint (reached silently: the timer's first split), with its powers: the same
+    // function sets up its replay (2.60.3), so that it plays again exactly.
+    applySectionTraining(*world_, trainingStart());
 }
 
 void GameScene::trainingSegmentDone() {
@@ -1256,8 +1393,22 @@ void GameScene::trainingSegmentDone() {
     if (!ghostHash_.empty()) {
         std::string lk = GhostStore::levelKey(levelId_, ghostHash_);
         if (const TrainingRecords::Entry* e = g_.training.get(lk, opt_.trainingCheckpoint, opt_.trainingEnd)) trainingBestBefore_ = e->best;
-        trainingNewBest_ = g_.training.add(lk, opt_.trainingCheckpoint, opt_.trainingEnd, t, FileUtil::nowString());
+        // 2.60.3: a new best attempt keeps its exact replay (this computer only), shown in the
+        // Sum of Best's montage. Compared to the millisecond, as the training records compare.
+        std::vector<uint8_t> replay;
+        const bool best = trainingBestBefore_ <= 0.0f ||
+                          std::llround(static_cast<double>(t) * 1000.0) < std::llround(static_cast<double>(trainingBestBefore_) * 1000.0);
+        if (recordMode_ == RecordMode::Training && recorder_.active()) {
+            recorder_.finish(*world_, t);
+            ReplayData rd = recorder_.take();
+            if (best && rd.exact()) replay = rd.encode();
+        }
+        const SectionTrainingStart start = trainingStart();
+        trainingNewBest_ = g_.training.add(lk, opt_.trainingCheckpoint, opt_.trainingEnd, t, FileUtil::nowString(), replay.empty() ? nullptr : &replay,
+                                           &start);
         g_.training.save();
+        // The statistics' Sum of Best counts it too (never the PB, the times nor the regularity).
+        if (playStats_) playStats_->noteTrainingSegment(opt_.trainingCheckpoint, opt_.trainingEnd, t);
     }
     segmentBanner_ = 3.0f;
     g_.uiSound(trainingNewBest_ || segmentBest_ < 0.0f || t < segmentBest_ ? "medal" : "ui_confirm", 0.6f);
@@ -1302,6 +1453,7 @@ void GameScene::render(float alpha) {
     opt.debug = g_.app.debugOverlay;
     opt.threats = hud_.threatProbe(*world_, g_.settings.gameplay);  // 2.60: the HUD fades over the boss's attacks
     renderer_.render(r, g_.app.resources(), *world_, view, alpha, opt);
+    if (opt_.tutorial) drawTutorialWorld(view, alpha);  // 2.64: Bip, the sleeping creatures' « z »
     if (ghostRun_.active()) ghostRun_.drawWorld(r, view, world_->player().anim.set());
     trail_.draw(r, trailLook_, true);
     if (victoryT_ >= 0.0f) drawVictoryFx(r, victoryLook_, victoryAt_, victoryT_, true);
@@ -1352,6 +1504,28 @@ void GameScene::render(float alpha) {
         std::snprintf(buf, sizeof(buf), "%.0f FPS", g_.app.fps());
         g_.ui.label(buf, {g_.ui.s(12), g_.ui.screenH() - g_.ui.s(30)}, 18, g_.ui.theme().textDim);
     }
+}
+
+void GameScene::drawTutorialWorld(const WorldView& view, float /*alpha*/) {
+    Renderer& r = g_.app.renderer();
+    // The sleeping creatures of the garden: their « z » (display only).
+    for (const auto& e : world_->enemies()) {
+        if (!e->alive() || !e->def().tutorial || e->def().isBoss) continue;
+        const Vec2 top = view.toScreen({e->box.center().x, e->box.y});
+        for (int i = 0; i < 2; ++i) {
+            const float f = std::fmod(bipTime_ * 0.6f + i * 0.5f, 1.0f);
+            const float s = view.scale * (4.0f + 3.0f * f);
+            const Vec2 c{top.x + view.scale * (4.0f + 8.0f * f), top.y - view.scale * (6.0f + 16.0f * f)};
+            const Color col = Color{255, 255, 255, 255}.withAlphaF(0.85f * (1.0f - f));
+            const float t = std::max(1.0f, s * 0.18f);
+            r.drawLine({c.x - s * 0.5f, c.y - s * 0.5f}, {c.x + s * 0.5f, c.y - s * 0.5f}, col, t);
+            r.drawLine({c.x + s * 0.5f, c.y - s * 0.5f}, {c.x - s * 0.5f, c.y + s * 0.5f}, col, t);
+            r.drawLine({c.x - s * 0.5f, c.y + s * 0.5f}, {c.x + s * 0.5f, c.y + s * 0.5f}, col, t);
+        }
+    }
+    // Bip, by Nova (not while she is hidden: the intro, a respawn).
+    if (bipPlaced_ && world_->player().state() != PlayerState::Hidden)
+        drawBip(r, view.toScreen(bipPos_), 14.0f * view.scale, bipTime_);
 }
 
 void GameScene::drawTrainingBanner() {

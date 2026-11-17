@@ -206,6 +206,30 @@ std::string archivedText(const std::string& kind, const std::string& n, bool arc
                     : "Combinaison « " + n + " » restaurée : de nouveau proposée en récompense.";
 }
 
+/// 2.60: where a creation stands (the server's `status`): "reserve" (never given), "given", "archived".
+std::string statusOf(const Json& c) {
+    const std::string st = jstr(c, "status");
+    if (st == "reserve" || st == "given" || st == "archived") return st;
+    // An older server: from its other fields.
+    if (jget<bool>(c, "archived", false)) return "archived";
+    return jget<int>(c, "uses", 0) > 0 || jget<int>(c, "owners", 0) > 0 ? "given" : "reserve";
+}
+
+/// The label of a status (agreed with the kind's noun).
+std::string statusLabel(const std::string& st, bool fem) {
+    if (st == "archived") return fem ? "Archivée" : "Archivé";
+    if (st == "given") return fem ? "Donnée en récompense" : "Donné en récompense";
+    return fem ? "Réserve (jamais donnée)" : "Réserve (jamais donné)";
+}
+
+/// Whether a creation is shown by the filter `f` (0 in service, 1 the reserve, 2 given, 3 archived).
+bool shownBy(int f, const std::string& st) {
+    if (f == 1) return st == "reserve";
+    if (f == 2) return st == "given";
+    if (f == 3) return st == "archived";
+    return st != "archived";
+}
+
 /// The look of a creation of the list (`kind` its kind): nullopt when its fields are not readable.
 std::optional<CreationLook> lookOf(const Json& c) { return creationLookFromJson(jstr(c, "kind"), c); }
 
@@ -273,6 +297,12 @@ AdminCreations::AdminCreations(GameServices& g, std::function<void(const std::st
     : g_(g), say_(std::move(say)), lostRole_(std::move(lostRole)), online_(g) {}
 
 void AdminCreations::open(const std::string& arg) {
+    // 2.61 "studio[:<what>]": the Studio (Studio::open: "new:<kind>", "import[:<file>]", a draft).
+    if (arg.rfind("studio", 0) == 0) {
+        studioMode_ = true;
+        if (arg.size() > 7) studio().open(arg.substr(7));
+        return;
+    }
     // "<kind>[:new|:<id>]": that kind's list at once; the rest once the list is read.
     const size_t colon = arg.find(':');
     const int k = kindIndex(arg.substr(0, colon));
@@ -485,15 +515,20 @@ void AdminCreations::setArchived(bool archived) {
                        msgError_ = false;
                        msgWarn_ = false;
                        say_(msg_, false);
-                       if (archived) showArchived_ = true;  // it stays in sight
+                       // It stays in sight: the archives, or (restored) those in service.
+                       if (archived) filter_ = 3;
+                       else if (filter_ == 3) filter_ = 0;
                        load();
                    }));
 }
 
 // ------------------------------------------------------------------ drawing
 
+void AdminCreations::drawTooltip() { tip_.draw(g_); }
+
 void AdminCreations::draw(const Rect& in) {
     UIContext& ui = g_.ui;
+    tip_.clear();
     if (!wantOpen_.empty() && loaded_) {
         if (wantOpen_ == "new") startNew();
         else if (const int id = std::atoi(wantOpen_.c_str()); id > 0)
@@ -501,15 +536,83 @@ void AdminCreations::draw(const Rect& in) {
         wantOpen_.clear();
     }
     ui.pushId("creations");
+    // 2.61: « Bibliothèque » / « Studio » at the top; the Studio's own bar beside them.
+    const float mh = ui.s(38);
+    const float switchW = drawModeSwitchWidth(ui);
+    drawModeSwitch({in.x, in.y, switchW, mh});
+    if (studioMode_) {
+        studio().setServerList(list_, loaded_);
+        const float gap = ui.s(14);
+        studio().draw({in.x + switchW + gap, in.y, in.w - switchW - gap, mh}, {in.x, in.y + mh + ui.s(10), in.w, in.h - mh - ui.s(10)});
+        ui.popId();
+        return;
+    }
     // The kinds over the whole width, then the list and the editor.
     const float kh = ui.s(42);
-    drawKinds({in.x, in.y, in.w, kh});
-    const float top = in.y + kh + ui.s(14);
+    const float kindsY = in.y + mh + ui.s(10);
+    drawKinds({in.x, kindsY, in.w, kh});
+    const float top = kindsY + kh + ui.s(14);
     const Rect body{in.x, top, in.w, in.bottom() - top};
     const float gap = ui.s(20);
     const float lw = std::floor((body.w - gap) * 0.36f);
     drawList({body.x, body.y, lw, body.h});
     drawEditor({body.x + lw + gap, body.y, body.w - lw - gap, body.h});
+    ui.popId();
+}
+
+// ------------------------------------------------------------------ 2.61: the Studio
+
+studio::Studio& AdminCreations::studio() {
+    if (!studio_) {
+        studio::Studio::Hooks h;
+        h.say = say_;
+        h.lostRole = lostRole_;
+        h.reloadList = [this] { load(); };
+        h.giveReward = [this](const std::string& ref, const std::string& name) {
+            if (giveReward) giveReward(ref, name);
+        };
+        studio_ = std::make_unique<studio::Studio>(g_, std::move(h));
+    }
+    return *studio_;
+}
+
+void AdminCreations::dropFile(const std::string& path) {
+    studioMode_ = true;
+    studio().dropFile(path);
+}
+
+float AdminCreations::drawModeSwitchWidth(UIContext& ui) {
+    float w = 0.0f;
+    for (const char* l : {"Bibliothèque", "Studio"}) w += ui.text().measure(l, FontFace::Bold, ui.s(fz(ui, 15))).x + ui.s(36);
+    return w + ui.newPillWidth(true) + ui.s(8);
+}
+
+void AdminCreations::drawModeSwitch(const Rect& r) {
+    UIContext& ui = g_.ui;
+    Renderer& rr = ui.r();
+    ui.pushId("mode");
+    const std::string labels[2] = {"Bibliothèque", "Studio"};
+    const float pill = ui.newPillWidth(true) + ui.s(8);
+    const float w0 = ui.text().measure(labels[0], FontFace::Bold, ui.s(fz(ui, 15))).x + ui.s(36);
+    const Rect seg[2] = {{r.x, r.y, w0, r.h}, {r.x + w0, r.y, r.w - w0, r.h}};
+    rr.fillRoundedRect(r, ui.s(8), Color{15, 23, 48, 255});
+    for (int i = 0; i < 2; ++i) {
+        const bool on = (i == 1) == studioMode_;
+        bool hovered = false;
+        if (ui.hotspot(i == 0 ? "lib" : "studio", seg[i], &hovered) && !modal()) {
+            if (i == 1 && ui.featureSeen && ui.isNew("admin.creations.studio")) ui.featureSeen("admin.creations.studio");
+            studioMode_ = i == 1;
+        }
+        if (on) rr.fillRoundedRect(seg[i], ui.s(8), Color{29, 74, 94, 255});
+        else if (hovered || ui.focused(i == 0 ? "lib" : "studio")) rr.fillRoundedRect(seg[i], ui.s(8), Color{18, 48, 74, 160});
+        const float room = seg[i].w - ui.s(16) - (i == 1 ? pill : 0.0f);
+        const float tx = i == 1 ? seg[i].x + ui.s(16) : seg[i].center().x;
+        fitLabel(ui, labels[i], {tx, seg[i].center().y}, 15, room, on ? Color::white() : Color{201, 211, 238, 255}, i == 1 ? Align::Left : Align::Center,
+                 on ? FontFace::Bold : FontFace::Body);
+    }
+    rr.drawRoundedRect(r, ui.s(8), Color{34, 48, 90, 255}, std::max(1.0f, ui.s(1)));
+    // « NOUVEAU » inside the Studio's half, at its right (not on its word).
+    if (ui.newBadge("studio", seg[1], "admin.creations.studio", false, true)) ui.drawNewPill(seg[1].right() - ui.s(6), seg[1].center().y, true);
     ui.popId();
 }
 
@@ -544,10 +647,15 @@ void AdminCreations::drawList(const Rect& r) {
     const KindWords& words = kKinds[kind_];
     ui.pushId("list");
     float y = r.y;
-    // Title and counts (of this kind).
-    int inService = 0, archived = 0;
+    // Title and counts (of this kind; 2.60: the reserve never given, those given, the archives).
+    int inService = 0, archived = 0, reserve = 0, given = 0;
     for (const Json& c : list_)
-        if (jstr(c, "kind", "suit") == kindId()) (jget<bool>(c, "archived", false) ? archived : inService)++;
+        if (jstr(c, "kind", "suit") == kindId()) {
+            const std::string st = statusOf(c);
+            (st == "archived" ? archived : inService)++;
+            if (st == "reserve") ++reserve;
+            if (st == "given") ++given;
+        }
     {
         const std::string count = loaded_ ? std::to_string(inService) + " en service" + (archived > 0 ? " · " + std::to_string(archived) + " en archive" : std::string())
                                           : std::string();
@@ -556,9 +664,9 @@ void AdminCreations::drawList(const Rect& r) {
         if (!count.empty()) fitLabel(ui, count, {r.right(), y + ui.s(14)}, 15, cw, ui.theme().textDim, Align::Right);
         y += ui.s(36);
     }
-    // « Nouvelle… », « Actualiser », « Archives ».
+    // « Nouvelle… », « Actualiser ».
     {
-        const std::vector<std::string> labels = {words.add, "Actualiser", "Archives"};
+        const std::vector<std::string> labels = {words.add, "Actualiser"};
         const float bh = ui.s(42), gap = ui.s(8);
         ButtonRow row = fitButtons(ui, labels, r.w, gap);
         float x = r.x;
@@ -572,10 +680,27 @@ void AdminCreations::drawList(const Rect& r) {
         st.primary = false;
         st.enabled = !loading_;
         if (ui.button("refresh", {x, y, row.widths[1], bh}, labels[1], st)) load();
-        x += row.widths[1] + gap;
-        st.enabled = true;
-        st.selected = showArchived_;
-        if (ui.button("archived", {x, y, row.widths[2], bh}, labels[2], st)) showArchived_ = !showArchived_;
+        y += bh + ui.s(10);
+    }
+    // 2.60: the filter: in service, the reserve (never given), given as a reward, the archives.
+    {
+        const bool fem = words.feminine;
+        const std::vector<std::string> labels = {"En service (" + std::to_string(inService) + ")", "Réserve (" + std::to_string(reserve) + ")",
+                                                 fem ? "Données (" + std::to_string(given) + ")" : "Donnés (" + std::to_string(given) + ")",
+                                                 "Archives (" + std::to_string(archived) + ")"};
+        const float bh = ui.s(36), gap = ui.s(6);
+        ButtonRow row = fitButtons(ui, labels, r.w, gap, 15.0f);
+        float x = r.x;
+        for (int f = 0; f < 4; ++f) {
+            UIContext::ButtonStyle st;
+            st.small = true;
+            st.fontSize = row.font;
+            st.selected = filter_ == f;
+            const Rect b{x, y, row.widths[static_cast<size_t>(f)], bh};
+            if (ui.button("filter" + std::to_string(f), b, labels[static_cast<size_t>(f)], st)) filter_ = f;
+            if (f == 1) ui.newBadge("filter1", b, "admin.creations.reserve", true, true);
+            x += b.w + gap;
+        }
         y += bh + ui.s(12);
     }
     // What they are for.
@@ -585,10 +710,10 @@ void AdminCreations::drawList(const Rect& r) {
         ui.labelWrapped(words.info, {r.x, y}, r.w, fs, ui.theme().textDim);
         y += th + ui.s(12);
     }
-    // The rows of this kind: those in service, then (« Archives ») the archived ones.
+    // The rows of this kind the filter shows.
     std::vector<const Json*> rows;
     for (const Json& c : list_)
-        if (jstr(c, "kind", "suit") == kindId() && (showArchived_ || !jget<bool>(c, "archived", false))) rows.push_back(&c);
+        if (jstr(c, "kind", "suit") == kindId() && shownBy(filter_, statusOf(c))) rows.push_back(&c);
     Rect area{r.x, y, r.w, r.bottom() - y};
     if (rows.empty()) {
         std::string t;
@@ -598,6 +723,12 @@ void AdminCreations::drawList(const Rect& r) {
             col = ui.theme().danger;
         } else if (!loaded_) {
             t = "Chargement…";
+        } else if (filter_ == 1) {
+            t = "Rien en réserve ici : tout a déjà été donné en récompense (ou archivé).";
+        } else if (filter_ == 2) {
+            t = "Rien n'a encore été donné en récompense ici : Calendrier des défis › Récompenses.";
+        } else if (filter_ == 3) {
+            t = "Aucune archive ici.";
         } else if (archived > 0) {
             t = "Rien en service ici : « Archives » en montre " + std::to_string(archived) + ".";
         } else {
@@ -668,12 +799,21 @@ void AdminCreations::drawRow(const Json& c, const Rect& row) {
     const std::string name = "row" + std::to_string(id);
     if (ui.hotspot(name, row, &hovered)) choose(id);
     const bool focused = ui.focused(name);
+    const std::string status = statusOf(c);
     r.fillRoundedRect(row, ui.s(10), selected ? Color{26, 38, 72, 240} : archived ? Color{22, 22, 32, 235} : Color{18, 26, 50, 235});
     r.drawRoundedRect(row, ui.s(10), selected || focused || hovered ? ui.theme().accent : Color{57, 70, 100, 140},
                       std::max(1.0f, ui.s(selected || focused ? 1.8f : 1.0f)));
     // Its preview (as every game draws it).
     const float ps = row.h - ui.s(14);
     Rect pv{row.x + ui.s(8), row.y + ui.s(7), ps, ps};
+    // 2.60: a creation is exclusive (only a reward of the challenges): the aura in the row's margin
+    // around its preview (5 of its 7 pixels), and the tooltip of the row: where it stands.
+    drawExclusiveAura(ui, pv, ui.s(8), ui.s(5));
+    if (ExclusiveTip::wanted(ui, hovered, focused)) {
+        bool reserveTip = false;
+        std::string tip = adminCreationTip(c, &reserveTip);
+        tip_.offer(row, jstr(c, "name"), std::move(tip), reserveTip);
+    }
     r.fillRoundedRect(pv, ui.s(8), Color{11, 18, 38, 255});
     drawRowPreview(c, pv, selected, archived);
     // Its colours at the top right (as the server has them).
@@ -695,28 +835,32 @@ void AdminCreations::drawRow(const Json& c, const Rect& row) {
     // Its name (in the room left of the colours), its style and what it is used for, who made it.
     fitLabel(ui, jstr(c, "name"), {tx, row.y + ui.s(22)}, 18, swX - ui.s(10) - tx, archived ? ui.theme().textDim : ui.theme().text, Align::Left,
              FontFace::Bold);
+    // 2.60: its status (« Réserve (jamais donnée) », « Donnée en récompense », « Archivée »), then
+    // its style and what it is used for, in the room left at its right.
     const int uses = jget<int>(c, "uses", 0), owners = jget<int>(c, "owners", 0);
+    float ux = tx;
+    {
+        const std::string label = statusLabel(status, fem);
+        const Color pc = status == "archived" ? ui.theme().warm : status == "given" ? ui.theme().success : ui.theme().accent;
+        if (pillWidth(ui, label) < room) ux += pill(ui, label, tx, row.y + ui.s(47), pc) + ui.s(8);
+    }
     std::string use;
-    if (uses == 0 && owners == 0) use = fem ? "Pas encore donnée en récompense" : "Pas encore donné en récompense";
-    else {
-        if (fem) use = uses == 0 ? std::string("Donnée par aucun défi") : "Donnée par " + std::to_string(uses) + (uses > 1 ? " défis" : " défi");
-        else use = uses == 0 ? std::string("Donné par aucun défi") : "Donné par " + std::to_string(uses) + (uses > 1 ? " défis" : " défi");
+    if (uses > 0 || owners > 0) {
+        if (fem) use = uses == 0 ? std::string("donnée par aucun défi") : "donnée par " + std::to_string(uses) + (uses > 1 ? " défis" : " défi");
+        else use = uses == 0 ? std::string("donné par aucun défi") : "donné par " + std::to_string(uses) + (uses > 1 ? " défis" : " défi");
         if (fem) use += " · " + (owners == 0 ? std::string("gagnée par personne") : "gagnée par " + std::to_string(owners) + (owners > 1 ? " joueurs" : " joueur"));
         else use += " · " + (owners == 0 ? std::string("gagné par personne") : "gagné par " + std::to_string(owners) + (owners > 1 ? " joueurs" : " joueur"));
     }
     if (!suitKind())
-        if (const std::string style = creationStyleName(kindId(), jstr(c, "style")); !style.empty()) use = style + " · " + use;
-    fitLabel(ui, use, {tx, row.y + ui.s(47)}, 14, room, ui.theme().textDim);
-    float lx = tx;
-    if (archived) {
-        const std::string a = fem ? "archivée" : "archivé";
-        if (pillWidth(ui, a) < room) lx += pill(ui, a, tx, row.y + ui.s(70), ui.theme().warm) + ui.s(8);
-    }
+        if (const std::string style = creationStyleName(kindId(), jstr(c, "style")); !style.empty()) use = use.empty() ? style : style + " · " + use;
+    if (!use.empty() && row.right() - ui.s(12) - ux > ui.s(30)) fitLabel(ui, use, {ux, row.y + ui.s(47)}, 14, row.right() - ui.s(12) - ux, ui.theme().textDim);
+    // Who made it: an administrator, or (2.60) the game's reserve.
     const std::string by = jstr(c, "created_by");
     std::string made;
-    if (fem) made = (by.empty() ? std::string("Créée") : "Créée par " + by) + " le " + dayOf(jstr(c, "created_at"));
+    if (jget<bool>(c, "game_reserve", false)) made = "Réserve du jeu";
+    else if (fem) made = (by.empty() ? std::string("Créée") : "Créée par " + by) + " le " + dayOf(jstr(c, "created_at"));
     else made = (by.empty() ? std::string("Créé") : "Créé par " + by) + " le " + dayOf(jstr(c, "created_at"));
-    fitLabel(ui, made, {lx, row.y + ui.s(70)}, 13, row.right() - ui.s(12) - lx, ui.theme().textDim);
+    fitLabel(ui, made, {tx, row.y + ui.s(70)}, 13, room, ui.theme().textDim);
 }
 
 void AdminCreations::drawEditor(const Rect& r) {

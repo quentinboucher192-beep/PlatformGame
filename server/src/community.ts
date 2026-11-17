@@ -428,14 +428,24 @@ export async function getLevel(ctx: Ctx): Promise<Response> {
 
 async function board(ctx: Ctx, levelId: string, version: number, me: string, limit: number) {
     const rows = await ctx.env.DB.prepare(
-        `SELECT r.id, r.player_id, MIN(r.time_ms) AS time_ms, r.deaths, p.username, p.avatar, p.avatar_custom_key, p.country_code, p.location_visibility, p.id AS pid
+        `SELECT r.id, r.player_id, MIN(r.time_ms) AS time_ms, r.deaths, r.replay_key IS NOT NULL AS has_replay, p.username, p.avatar, p.avatar_custom_key, p.country_code, p.location_visibility, p.id AS pid
          FROM community_records r JOIN players p ON p.id = r.player_id
          WHERE r.level_id = ?1 AND r.version = ?2 AND r.status = 'REPLAY_OK' AND p.account_status = 'active'
          GROUP BY r.player_id ORDER BY time_ms, MIN(r.created_at) LIMIT ?3`,
     )
         .bind(levelId, version, limit)
-        .all<PlayerRow & { id: string; player_id: string; time_ms: number; deaths: number; pid: string }>();
-    const entries = rows.results.map((r, i) => ({ rank: i + 1, time_ms: r.time_ms, deaths: r.deaths, record_id: r.id, player: playerSummary({ ...r, id: r.pid }), me: r.player_id === me }));
+        .all<PlayerRow & { id: string; player_id: string; time_ms: number; deaths: number; has_replay: number; pid: string }>();
+    // 2.62.2: `has_replay` = this record's replay is kept and was checked (REPLAY_OK): the game reads
+    // the world record's splits from it (« Segments »).
+    const entries = rows.results.map((r, i) => ({
+        rank: i + 1,
+        time_ms: r.time_ms,
+        deaths: r.deaths,
+        record_id: r.id,
+        has_replay: r.has_replay > 0,
+        player: playerSummary({ ...r, id: r.pid }),
+        me: r.player_id === me,
+    }));
     let mine = null;
     if (me) {
         const best = await ctx.env.DB.prepare(

@@ -16,10 +16,12 @@ import * as achievements from "./achievements";
 import * as cosmetics from "./cosmetics";
 import * as badges from "./badges";
 import * as campaign from "./campaign";
+import * as clans from "./clans";
 import * as campaignRevisions from "./campaignRevisions";
 import * as enemyRevisions from "./enemyRevisions";
 import * as challenges from "./challenges";
 import * as creations from "./creations";
+import * as creationAssets from "./creationAssets";
 import * as devices from "./devices";
 import * as notifications from "./notifications";
 import * as race from "./race";
@@ -172,6 +174,10 @@ route("GET", `${V}/campaign/revisions`, (ctx) => campaignRevisions.manifest(ctx)
 route("GET", `${V}/campaign/levels/{levelId}/revisions/{version}/file`, (ctx) => campaignRevisions.file(ctx), { cacheable: true });
 // The creations of an administrator that every game may have to draw (public: suits' names and colours).
 route("GET", `${V}/creations`, (ctx) => creations.publicCreations(ctx), { cacheable: true });
+// 2.61 Studio de Créations: the images of the creations the caller may read, and each image
+// (creationAssets.ts: its owner, a board, a profile or a challenge begun; cached by its hash).
+route("GET", `${V}/creations/images`, (ctx, viewer) => creationAssets.publicImages(ctx, viewer), { viewer: true });
+route("GET", `${V}/creations/{creationId}/image/{hash}`, (ctx, viewer) => creationAssets.getCreationImage(ctx, viewer), { viewer: true });
 // 2.46: the native entities published by an administrator (public: the games download every revision).
 route("GET", `${V}/enemies/revisions`, (ctx) => enemyRevisions.manifest(ctx), { cacheable: true });
 route("GET", `${V}/enemies/{enemyId}/revisions/{revision}/file`, (ctx) => enemyRevisions.file(ctx), { cacheable: true });
@@ -232,6 +238,24 @@ route("POST", `${V}/social/messages/{messageId}/report`, (ctx) => social.reportM
 route("GET", `${V}/social/blocks`, (ctx) => social.listBlocks(ctx));
 route("POST", `${V}/social/blocks`, (ctx) => social.blockPlayer(ctx));
 route("DELETE", `${V}/social/blocks/{playerId}`, (ctx) => social.unblockPlayer(ctx));
+
+// Clans (2.66, clans.ts): the literal routes come before /clans/{clanId}. Their discussion is a
+// group conversation of the social routes above.
+route("GET", `${V}/clans/me`, (ctx) => clans.myClan(ctx));
+route("GET", `${V}/clans/ranking`, clans.clanRanking, { viewer: true, cacheable: true });
+route("GET", `${V}/clans`, (ctx) => clans.searchClans(ctx), { cacheable: true });
+route("POST", `${V}/clans`, (ctx) => clans.createClan(ctx));
+route("GET", `${V}/clans/{clanId}`, clans.getClan, { viewer: true, cacheable: true });
+route("PATCH", `${V}/clans/{clanId}`, (ctx) => clans.updateClan(ctx));
+route("DELETE", `${V}/clans/{clanId}`, (ctx) => clans.dissolveClan(ctx));
+route("POST", `${V}/clans/{clanId}/join`, (ctx) => clans.joinClan(ctx));
+route("DELETE", `${V}/clans/{clanId}/join`, (ctx) => clans.withdrawRequest(ctx));
+route("POST", `${V}/clans/{clanId}/invites`, (ctx) => clans.invitePlayer(ctx));
+route("DELETE", `${V}/clans/{clanId}/invites/{playerId}`, (ctx) => clans.cancelInvite(ctx));
+route("POST", `${V}/clans/{clanId}/requests/{playerId}`, (ctx) => clans.answerApplication(ctx));
+route("POST", `${V}/clans/{clanId}/transfer`, (ctx) => clans.transferLeadership(ctx));
+route("PATCH", `${V}/clans/{clanId}/members/{playerId}`, (ctx) => clans.setMemberRole(ctx));
+route("DELETE", `${V}/clans/{clanId}/members/{playerId}`, (ctx) => clans.removeMember(ctx));
 
 // Community levels: publish, browse, download, rate, report, per-level leaderboards
 route("GET", `${V}/community/levels`, (ctx) => community.listLevels(ctx));
@@ -384,10 +408,17 @@ route("POST", `${V}/admin/players/{playerId}/device`, (ctx) => devices.adminSetD
 // 2.50: ADMINISTRATION › Joueurs › « Migrer » : preview, then a full backup and the migration.
 route("GET", `${V}/admin/players/{playerId}/migration`, (ctx) => migration.adminPreview(ctx));
 route("POST", `${V}/admin/players/{playerId}/migrate`, (ctx) => migration.adminMigrate(ctx));
+// ADMINISTRATION › Clans (2.66): rename or dissolve a clan (each action in the Journal).
+route("GET", `${V}/admin/clans`, (ctx) => clans.adminListClans(ctx));
+route("PATCH", `${V}/admin/clans/{clanId}`, (ctx) => clans.adminRenameClan(ctx));
+route("DELETE", `${V}/admin/clans/{clanId}`, (ctx) => clans.adminDissolveClan(ctx));
 route("GET", `${V}/admin/creations`, (ctx) => creations.listCreations(ctx));
 route("POST", `${V}/admin/creations`, (ctx) => creations.createCreation(ctx));
 route("PUT", `${V}/admin/creations/{creationId}`, (ctx) => creations.updateCreation(ctx));
 route("POST", `${V}/admin/creations/{creationId}/archive`, (ctx) => creations.archiveCreation(ctx));
+// 2.61: the image of a creation (the Studio): sent (a PNG checked, kept in R2), and every image.
+route("GET", `${V}/admin/creations/images`, (ctx) => creationAssets.adminImages(ctx));
+route("PUT", `${V}/admin/creations/{creationId}/image`, (ctx) => creationAssets.putCreationImage(ctx));
 
 function match(method: string, path: string): { route: Route; params: Record<string, string> } | "method" | null {
     let pathMatched = false;
@@ -504,6 +535,8 @@ async function maintenance(env: Bindings, exec: ExecutionContext): Promise<void>
         log("error", "migration_maintenance_failed", { error: e instanceof Error ? e.message : String(e) });
     }
     const rechecked = await recheckHeldRecords(env, exec);
+    // 2.66: every clan's points, against the current revisions of the EXTRÊME levels.
+    await clans.refreshAllClanPoints(env.DB);
     let challengeRuns: number | null = null;
     let rewardsWon: number | null = null;
     try {

@@ -528,8 +528,18 @@ void AdminCalendar::resetToDraw() {
 
 // ------------------------------------------------------------------ the calendar
 
+void AdminCalendar::drawTooltip() { tip_.draw(g_); }
+
+const Json* AdminCalendar::creationByRef(const std::string& ref) const {
+    if (!suits_.is_array()) return nullptr;
+    for (const Json& c : suits_)
+        if (jstr(c, "ref") == ref) return &c;
+    return nullptr;
+}
+
 void AdminCalendar::draw(const Rect& body) {
     UIContext& ui = g_.ui;
+    tip_.clear();
     art_.beginFrame();
     ui.pushId("cal");
     // The community search, once the typing stops.
@@ -1692,7 +1702,7 @@ void AdminCalendar::drawPrizeForm(const Rect& box) {
     }
 }
 
-bool AdminCalendar::drawPrizeRow(size_t i, const Rect& row, bool editable) {
+bool AdminCalendar::drawPrizeRow(const Period& per, size_t i, const Rect& row, bool editable) {
     UIContext& ui = g_.ui;
     Renderer& r = ui.r();
     const ChallengePrize& p = prizes_[i];
@@ -1700,9 +1710,20 @@ bool AdminCalendar::drawPrizeRow(size_t i, const Rect& row, bool editable) {
     // The icon: the item's own preview; a title, a star of its colour.
     const float ih = row.h - ui.s(16);
     Rect icon{row.x + ui.s(10), row.center().y - ih * 0.5f, ih, ih};
+    std::optional<CosmeticItem> look = prizeLook(g_, p);
+    // 2.60: an exclusive item (a creation of the server, a reward of the challenges of the
+    // catalogue): its aura in the 8 pixels around the icon (5 of them), and a tooltip on the icon
+    // (focusable: « Exclusif : défi du jour du… », this challenge and its condition).
+    if (look && exclusiveItem(*look)) {
+        drawExclusiveAura(ui, icon, ui.s(8), ui.s(5));
+        bool hovered = false;
+        const std::string tipId = "pri" + std::to_string(i);
+        ui.hotspot(tipId, icon, &hovered);
+        if (ExclusiveTip::wanted(ui, hovered, ui.focused(tipId)))
+            tip_.offer(icon, look->name, exclusiveOriginText(per.kind, per.period, per.date, p.condition, p.value));
+    }
     r.fillRoundedRect(icon, ui.s(8), Color{11, 18, 38, 255});
     r.drawRoundedRect(icon, ui.s(8), Color{57, 70, 100, 200}, std::max(1.0f, ui.s(1.0f)));
-    std::optional<CosmeticItem> look = prizeLook(g_, p);
     if (p.title()) titleStar(r, icon.center(), ih * 0.3f, titleColor(p.color));
     else if (look) drawCosmeticPreview(g_, *look, icon.expanded(-ui.s(3)), ui.time(), true);
     else ui.label("?", icon.center(), 20, ui.theme().textDim, Align::Center, FontFace::Bold, VAlign::Middle);
@@ -1751,11 +1772,20 @@ bool AdminCalendar::drawPrizeRow(size_t i, const Rect& row, bool editable) {
             ui.label(ui.elide(name, FontFace::Bold, nf, nameRoom), {tx + catW + ui.s(10), row.y + ui.s(20)}, nf,
                      p.title() ? titleColor(p.color) : ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
         }
-        const std::string from = p.title()                         ? "créé par un admin · pas besoin de mise à jour"
-                                 : p.suit() || p.kind == "trail" ? "créée par un admin · pas besoin de mise à jour"
-                                 : p.creation()                  ? "créé par un admin · pas besoin de mise à jour"
-                                 : look                          ? "dans le jeu"
-                                                                 : "inconnu de cette version du jeu";
+        // 2.60: a creation of the reserve was not made by an administrator.
+        const bool creation = p.suit() || p.creation();
+        const Json* made = creation ? creationByRef(p.ref) : nullptr;
+        const bool reserve = made && jget<bool>(*made, "game_reserve", false);
+        const bool fem = p.suit() || p.kind == "trail";
+        // Who made a creation is said once the list of « Créations » is read (never guessed).
+        const std::string from = reserve                     ? "réserve du jeu · pas besoin de mise à jour"
+                                 : creation && !made && fem  ? "créée sur Cosmic Online · pas besoin de mise à jour"
+                                 : creation && !made         ? "créé sur Cosmic Online · pas besoin de mise à jour"
+                                 : p.title()                 ? "créé par un admin · pas besoin de mise à jour"
+                                 : creation && fem           ? "créée par un admin · pas besoin de mise à jour"
+                                 : creation                  ? "créé par un admin · pas besoin de mise à jour"
+                                 : look                      ? "dans le jeu"
+                                                             : "inconnu de cette version du jeu";
         ui.label(ui.elide(from, FontFace::Body, fz(ui, 14), room), {tx, row.y + ui.s(43)}, fz(ui, 14), ui.theme().textDim, Align::Left, FontFace::Body,
                  VAlign::Middle);
     }
@@ -1766,7 +1796,8 @@ void AdminCalendar::drawRewardsTab(const Period& p, const Rect& r, bool editable
     UIContext& ui = g_.ui;
     const float x = r.x, w = r.w;
     float y = r.y;
-    if (editable && !titlesLoaded_) loadTitles();
+    // 2.60: read for a challenge already begun too (who made each creation: an admin or the game's reserve).
+    if (!titlesLoaded_) loadTitles();
     // Title and count.
     const std::string count = std::to_string(prizes_.size()) + " / " + std::to_string(kMaxPrizes);
     const float countW = ui.text().measure(count, FontFace::Body, ui.s(fz(ui, 15))).x + ui.s(12);
@@ -1842,7 +1873,7 @@ void AdminCalendar::drawRewardsTab(const Period& p, const Rect& r, bool editable
     int remove = -1;
     for (size_t i = 0; i < prizes_.size(); ++i) {
         Rect row{x, y - so + static_cast<float>(i) * (rowH + gap), rowW, rowH};
-        if (drawPrizeRow(i, row, editable)) remove = static_cast<int>(i);
+        if (drawPrizeRow(p, i, row, editable)) remove = static_cast<int>(i);
     }
     ui.endScroll();
     if (remove >= 0) {
@@ -1858,6 +1889,7 @@ void AdminCalendar::drawRewardsTab(const Period& p, const Rect& r, bool editable
 void AdminCalendar::drawItemPicker() {
     UIContext& ui = g_.ui;
     Renderer& r = ui.r();
+    tip_.clear();  // only the picker's own tooltips while it is open
     r.fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{2, 4, 12, 185});
     const auto& cats = g_.cosmetics.categories();
     if (cats.empty()) {
@@ -1980,7 +2012,21 @@ void AdminCalendar::drawItemPicker() {
         const bool on = pickRef_ == it.id, focused = ui.focused(name);
         r.fillRoundedRect(t, ui.s(10), on ? ui.theme().accent.withAlpha(40) : Color{14, 20, 40, 235});
         r.drawRoundedRect(t, ui.s(10), on || focused || hovered ? ui.theme().accent : Color{57, 70, 100, 160}, std::max(1.0f, ui.s(on || focused ? 2.0f : 1.2f)));
-        drawCosmeticPreview(g_, it, {t.x + ui.s(8), t.y + ui.s(8), t.w - ui.s(16), ui.s(76)}, ui.time(), !taken);
+        const Rect pv{t.x + ui.s(8), t.y + ui.s(8), t.w - ui.s(16), ui.s(76)};
+        // 2.60: an exclusive item: its aura around the preview (inside the tile, above its name)
+        // and where it stands: the reserve never given, the first challenge that gives it, or the
+        // condition of a reward of the challenges of the catalogue.
+        if (exclusiveItem(it)) {
+            drawExclusiveAura(ui, pv, ui.s(6), ui.s(5));
+            if (ExclusiveTip::wanted(ui, hovered, focused)) {
+                bool reserve = false;
+                std::string tip = "Exclusif aux défis";
+                if (const Json* c = it.serverSuit() || it.serverLook() ? creationByRef(it.id) : nullptr) tip = adminCreationTip(*c, &reserve);
+                else if (it.challengeReward()) tip = exclusiveText(g_, it);
+                tip_.offer(t, it.name, std::move(tip), reserve);
+            }
+        }
+        drawCosmeticPreview(g_, it, pv, ui.time(), !taken);
         const std::string label = taken ? "déjà dans la liste" : it.serverTitle() ? "créé par un admin" : it.name;
         const Color lc = taken ? ui.theme().textDim : it.serverTitle() ? titleColor(it.color) : ui.theme().text;
         const float lf = fz(ui, 15);

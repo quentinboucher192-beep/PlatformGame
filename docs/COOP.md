@@ -1,4 +1,4 @@
-# Coopération à 2 ou 3 joueurs (niveaux EXTRÊME, 2.62)
+# Coopération à 2 ou 3 joueurs (niveaux EXTRÊME, 2.63)
 
 Ce document fixe l'architecture, les formats, les règles et la sécurité de la coopération.
 Il a été écrit **avant** le code et sert de référence aux quatre étapes :

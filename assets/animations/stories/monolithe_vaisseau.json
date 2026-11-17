@@ -1,0 +1,10 @@
+{
+  "texture": "stories/monolithe/vaisseau.png",
+  "frameWidth": 64,
+  "frameHeight": 56,
+  "pivot": [32, 44],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 4, "loop": true},
+    "launch": {"row": 1, "count": 6, "fps": 14, "loop": true}
+  }
+}

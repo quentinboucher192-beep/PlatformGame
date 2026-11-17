@@ -154,7 +154,9 @@ SKIP_CALLS = {
 }
 # First argument only is a widget id / key (the second is shown).
 ID_FIRST_ARG = {"button", "toggle", "slider", "sliderInt", "cycle", "textField", "passwordField", "numberField", "hotspot", "listItem",
-                "tabs", "beginScroll", "value", "jstr", "jget", "header"}
+                "tabs", "beginScroll", "value", "jstr", "jget", "header",
+                # 2.61 Studio de Créations (ui/studio): its own widgets, their id first.
+                "smallButton", "chip", "check", "tip", "mouseClick"}
 
 
 def load_ignore():

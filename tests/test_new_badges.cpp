@@ -271,7 +271,8 @@ TEST_CASE("new badges: every planet, level, boss, creature, achievement, reward 
             if (e->source == ContentSource::Builtin) need("level." + e->id);
     }
     for (const EnemyDefinition* d : content.enemies()) {
-        if (!d->builtin || !content.isNativeEnemy(d->id) || !d->variantOf.empty()) continue;
+        // 2.64: the tutorial's creatures are never in the gallery (nor « NOUVEAU »).
+        if (!d->builtin || !content.isNativeEnemy(d->id) || !d->variantOf.empty() || d->tutorial) continue;
         if (d->isBoss) {
             need("boss." + d->id);
             need("gallery.boss." + d->id);
@@ -284,7 +285,8 @@ TEST_CASE("new badges: every planet, level, boss, creature, achievement, reward 
     for (const auto& a : ach.achievements()) need("ach." + a.id);
     CosmeticCatalog cos;
     CHECK(cos.loadDefault());
-    for (const auto& c : cos.items()) need("cos." + c.id);
+    for (const auto& c : cos.items())
+        if (c.souvenir.empty()) need("cos." + c.id);  // 2.64: a souvenir (the tutorial's title) is for new players: no pill
     if (auto t = FileUtil::loadJson(Paths::dataDir() / "music" / "tracks.json"); t && t->contains("tracks"))
         for (const auto& x : (*t)["tracks"]) need("track." + fs::path(x.value("file", std::string())).stem().string());
     for (const auto& m : missing) std::printf("  sans pastille NOUVEAU : %s\n", m.c_str());

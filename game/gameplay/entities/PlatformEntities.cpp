@@ -49,11 +49,12 @@ Vec2 MovingPlatformEntity::orbitPos(float angle) const {
 }
 
 void MovingPlatformEntity::init(GameWorld& w) {
+    bubble_ = obj_.type == "bubble";
     start_ = box.pos();
     end_ = start_ + Vec2{obj_.prop<float>("dx", 128.0f), obj_.prop<float>("dy", 0.0f)};
     length_ = std::max(1.0f, distance(start_, end_));
     moving_ = obj_.prop<bool>("active", true);
-    triggered_ = obj_.prop<bool>("triggered", false);
+    triggered_ = obj_.prop<bool>("triggered", false) || bubble_;
     if (triggered_) moving_ = false;
     t_ = std::clamp(obj_.prop<float>("phase", 0.0f), 0.0f, 1.0f);
     box = Rect{lerpf(start_.x, end_.x, t_), lerpf(start_.y, end_.y, t_), box.w, box.h};
@@ -67,13 +68,89 @@ void MovingPlatformEntity::init(GameWorld& w) {
         box.y = p.y;
     }
     prevPos_ = box.pos();
-    bool oneway = obj_.prop<bool>("oneway", false);
+    bool oneway = obj_.prop<bool>("oneway", false) || bubble_;
     Rect col = oneway ? Rect{box.x, box.y, box.w, 4.0f} : box;
     collider_ = w.physics().add(col, oneway ? ColliderKind::OneWay : ColliderKind::Solid, ColliderTag::Moving, this, true);
-    tex_ = w.resources().texture("sprites/objects/moving_platform.png");
+    if (!bubble_) tex_ = w.resources().texture("sprites/objects/moving_platform.png");
+}
+
+void MovingPlatformEntity::bubbleStep(GameWorld& w, float dt) {
+    prevPos_ = box.pos();
+    delta_ = {};
+    if (popped_) {
+        reborn_ -= dt;
+        if (reborn_ > 0.0f) return;
+        // Born again where it was, waiting for Nova.
+        popped_ = false;
+        moving_ = false;
+        t_ = 0.0f;
+        box.x = start_.x;
+        box.y = start_.y;
+        prevPos_ = box.pos();
+        w.physics().setEnabled(collider_, true);
+        w.physics().setDynamicBox(collider_, {box.x, box.y, box.w, 4.0f}, {});
+        return;
+    }
+    if (!moving_ && w.player().groundCollider() == collider_) moving_ = true;
+    if (moving_) {
+        t_ = std::min(1.0f, t_ + obj_.prop<float>("speed", 55.0f) * dt / length_);
+        Vec2 p{lerpf(start_.x, end_.x, t_), lerpf(start_.y, end_.y, t_)};
+        delta_ = p - box.pos();
+        box.x = p.x;
+        box.y = p.y;
+    }
+    w.physics().setDynamicBox(collider_, {box.x, box.y, box.w, 4.0f}, delta_ / std::max(dt, 1e-4f));
+    if (t_ >= 1.0f) {
+        // The end of its route: it pops (Nova falls if she is still on it).
+        popped_ = true;
+        reborn_ = std::max(0.2f, obj_.prop<float>("respawn", 1.2f));
+        w.physics().setEnabled(collider_, false);
+        burstAt_ = {box.center().x, box.y + box.w * 0.5f};
+        burst_ = 0.0f;
+        w.particles().emit("bubbles", burstAt_, 1.0f);
+        w.playSound("sounds/bounce.wav", burstAt_, 0.5f, 1.6f);
+        w.emit(id(), "activate");
+    }
+}
+
+void MovingPlatformEntity::update(GameWorld& /*w*/, float dt) {
+    if (!bubble_) return;
+    // Display only: it grows back after a pop, its burst fades.
+    shown_ = popped_ ? 0.0f : std::min(1.0f, shown_ + dt / 0.35f);
+    if (popped_) burst_ += dt;
+}
+
+void MovingPlatformEntity::renderBubble(RenderContext& ctx) const {
+    const float r = box.w * 0.5f;
+    if (popped_) {
+        // The burst: a ring that widens and fades.
+        const float k = std::clamp(burst_ / 0.3f, 0.0f, 1.0f);
+        if (k < 1.0f) ctx.r.drawWorldCircle(burstAt_, r * (1.0f + 0.6f * k), Color{230, 250, 255, 255}.withAlphaF(1.0f - k), 2.0f);
+        return;
+    }
+    Vec2 p = lerpv(prevPos_, box.pos(), ctx.alpha);
+    const float grow = 0.35f + 0.65f * applyEase(Ease::OutBack, shown_);
+    const float wob = 1.0f + 0.04f * dmath::sin(ctx.time * 5.0f + start_.x * 0.01f);
+    const float rx = r * grow * wob, ry = r * grow / wob;
+    // The top of the bubble is its standing line (box.y): it hangs under it.
+    Vec2 c{p.x + box.w * 0.5f, p.y + ry - 2.0f};
+    ctx.r.fillWorldCircle(c, std::max(rx, ry), Color{150, 220, 255, 60});
+    ctx.r.drawWorldCircle(c, std::max(rx, ry), Color{220, 245, 255, 190}, 1.5f);
+    ctx.r.fillWorldCircle(c + Vec2{-rx * 0.4f, -ry * 0.45f}, std::max(2.0f, r * 0.18f * grow), Color{255, 255, 255, 200});
+    ctx.r.drawWorldGlow(c, r * 1.2f, Color{140, 210, 255, 70});
+    ctx.lights.add(c, r * 2.2f, {170, 225, 255, 255});
+    if (ctx.editor) {
+        Vec2 a = obj_.rect.center(), b = a + Vec2{obj_.prop<float>("dx", 0), obj_.prop<float>("dy", 0)};
+        ctx.r.drawWorldLine(a, b, {150, 220, 255, 160}, 1.0f);
+        ctx.r.drawWorldCircle(b, r * 0.5f, {150, 220, 255, 120}, 1.0f);
+    }
 }
 
 void MovingPlatformEntity::fixedUpdate(GameWorld& w, float dt) {
+    if (bubble_) {
+        bubbleStep(w, dt);
+        return;
+    }
     prevPos_ = box.pos();
     if (triggered_ && !moving_ && w.anyPlayerWhere([&](const Player& p) { return p.groundCollider() == collider_; })) moving_ = true;
     if (orbit_) {
@@ -120,6 +197,10 @@ void MovingPlatformEntity::fixedUpdate(GameWorld& w, float dt) {
 }
 
 void MovingPlatformEntity::render(RenderContext& ctx) {
+    if (bubble_) {
+        renderBubble(ctx);
+        return;
+    }
     if (!tex_) return;
     Vec2 p = lerpv(prevPos_, box.pos(), ctx.alpha);
     Rect r{p.x, p.y, box.w, 16.0f};
@@ -152,7 +233,10 @@ bool MovingPlatformEntity::handleAction(GameWorld& /*w*/, const std::string& act
     return true;
 }
 
-std::string MovingPlatformEntity::debugInfo() const { return moving_ ? "en mouvement" : "arrêtée"; }
+std::string MovingPlatformEntity::debugInfo() const {
+    if (bubble_) return popped_ ? "éclatée" : moving_ ? "en route" : "attend Nova";
+    return moving_ ? "en mouvement" : "arrêtée";
+}
 
 // --------------------------------------------------------- crumble platform
 

@@ -47,6 +47,7 @@ bool GameWorld::load(const LevelData& level) {
     hazards_ = BossHazards{};  // its colliders go with the physics below
     physics_.clear();
     entities_.clear();
+    ambushes_.clear();
     entityById_.clear();
     enemies_.clear();
     pendingEnemies_.clear();
@@ -90,6 +91,8 @@ bool GameWorld::load(const LevelData& level) {
     buildStatic();
     createEntities();
     for (auto& e : entities_) e->init(*this);
+    for (auto& e : entities_)
+        if (auto* cz = dynamic_cast<CombatZoneEntity*>(e.get()); cz && cz->ambush()) ambushes_.push_back(cz);
 
     // Player start
     respawn_ = {level_.bounds.x + 64, level_.bounds.y + 64};
@@ -305,6 +308,14 @@ void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
             player_.state() != PlayerState::Respawn && player_.vel.y >= 0.0f) {
             safeFeet_ = player_.feet();
             hasSafeFeet_ = true;
+        } else if (level_.tutorial && player_.grounded() && player_.state() != PlayerState::Dead && player_.state() != PlayerState::Respawn &&
+                   player_.vel.y >= 0.0f) {
+            // 2.64, the tutorial: the last solid ground that does not move (a bubble pops, a platform goes).
+            const Collider* ground = physics_.get(player_.groundCollider());
+            if (ground && !ground->dynamic) {
+                safeFeet_ = player_.feet();
+                hasSafeFeet_ = true;
+            }
         }
     }
 
@@ -654,6 +665,10 @@ void GameWorld::checkKillPlane() {
     forEachPlayer([&](Player& pl) {  // 2.62: each player of a team (alone: the only one)
         if (!pl.alive()) return;
         if (pl.box.y > level_.effectiveKillY()) {
+            if (level_.tutorial && team_.empty()) {  // 2.64: no deadly fall in the tutorial
+                rescueGently();
+                return;
+            }
             if (!team_.empty()) team_[static_cast<size_t>(curIndex_)].fell = true;  // its soul: safe ground
             HurtScope fall(*this, HurtOrigin::Fall);  // 2.54 (statistics)
             pl.kill(*this);
@@ -987,6 +1002,10 @@ void GameWorld::onPlayerDeathAnimationDone() {
         player_.spawn(*this, respawn_, respawnFaceLeft_, true);
         return;
     }
+    if (level_.tutorial) {  // 2.64: back at the last lantern at once, nothing lost
+        respawnPlayer();
+        return;
+    }
     if (practiceRespawn_) {  // 2.48: a practice run of a hardcore level goes on where Nova fell
         practiceRespawnNow();
         return;
@@ -1052,6 +1071,8 @@ void GameWorld::practiceRespawnNow() {
     hazards_.clear(*this);
     projectiles_.clear();
     pendingProjectiles_.clear();
+    // 2.62.2: an ambush she fell in waits for her as it is, its doors open to let her back in.
+    for (CombatZoneEntity* z : ambushes_) z->suspend(*this);
     const Vec2 at = hasSafeFeet_ ? safeFeet_ : respawn_;
     player_.spawn(*this, at, player_.facing < 0.0f, true);
     player_.setInvulnerable(2.5f);  // after the materialisation (0.75 s): blinking, no damage
@@ -1070,6 +1091,32 @@ bool GameWorld::rescueInvincible() {
     player_.setInvulnerable(1.0f);
     particles_.emit("shield_up", player_.center(), 0.8f);
     return true;
+}
+
+void GameWorld::rescueGently() {
+    const Vec2 at = hasSafeFeet_ ? safeFeet_ : respawn_;
+    player_.box.x = at.x - player_.box.w * 0.5f;
+    player_.box.y = at.y - player_.box.h;
+    player_.prevBox = player_.box;
+    player_.vel = {0.0f, 0.0f};
+    player_.setInvulnerable(1.0f);
+    particles_.emit("shield_up", player_.center(), 0.8f);
+    playSound("sounds/respawn.wav", 0.6f, 1.2f);
+    hint("Hop ! Bip te ramène sur la terre ferme.", 2.0f);
+}
+
+void GameWorld::requestTutorialCard(const std::string& card) {
+    if (card.empty() || mode_ == WorldMode::Editor) return;
+    if (std::find(tutorialAsked_.begin(), tutorialAsked_.end(), card) != tutorialAsked_.end()) return;
+    tutorialAsked_.push_back(card);
+    tutorialCards_.push_back(card);
+}
+
+std::optional<std::string> GameWorld::takeTutorialCard() {
+    if (tutorialCards_.empty()) return std::nullopt;
+    std::string card = std::move(tutorialCards_.front());
+    tutorialCards_.erase(tutorialCards_.begin());
+    return card;
 }
 
 void GameWorld::respawnPlayer() {
@@ -1167,6 +1214,16 @@ void GameWorld::failLevel(const std::string& reason) {
     failReason_ = reason;
     timer_.stop();
     forEachTeammate([](Player& p) { p.controlEnabled = false; });
+}
+
+CombatZoneEntity* GameWorld::activeAmbush() const {
+    CombatZoneEntity* first = nullptr;
+    for (CombatZoneEntity* z : ambushes_)
+        if (z->fighting()) {
+            if (z->playerInside) return z;
+            if (!first) first = z;
+        }
+    return first;
 }
 
 std::optional<Rect> GameWorld::arenaOf(const Enemy& e) const {

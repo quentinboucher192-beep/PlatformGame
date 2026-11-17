@@ -91,6 +91,7 @@ describe("community levels", () => {
         const board = await api("GET", `/api/v1/community/levels/${id}/leaderboard`, { token: c.token });
         expect(board.body.data.entries.map((e: any) => [e.player.username, e.time_ms])).toEqual([["Orion", 58000], ["Lyra", 61000]]);
         expect(board.body.data.verification).toContain("non re-simulé");
+        expect(board.body.data.entries.every((e: any) => e.has_replay === true)).toBe(true);  // 2.62.2: WR splits
         const list = await api("GET", "/api/v1/community/levels?sort=popular");
         expect(list.body.data.levels[0]).toMatchObject({ completions: 2, best: { time_ms: 58000, player: "Orion" } });
         expect((await api("GET", `/api/v1/community/records/${board.body.data.entries[0].record_id}/replay`)).status).toBe(200);

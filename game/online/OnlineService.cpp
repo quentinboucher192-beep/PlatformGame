@@ -203,6 +203,14 @@ void OnlineService::update(float dt) {
             refreshUnread();
         }
     }
+    // 2.66: the player's clan (its tag, the invitations received): on connection, then every five minutes.
+    if (netState_ == OnlineState::Online && loggedIn() && !clanBusy_) {
+        clanTimer_ -= dt;
+        if (clanTimer_ <= 0.0f) {
+            clanTimer_ = 300.0f;
+            refreshMyClan();
+        }
+    }
     // Notification centre: read on connection, then every minute.
     if (netState_ == OnlineState::Online && loggedIn() && !notificationsBusy_) {
         notificationsTimer_ -= dt;
@@ -1057,6 +1065,41 @@ void OnlineService::resetFriends() {
     openConversation_.clear();
     unreadNotifications_ = 0;
     notificationsTimer_ = 4.0f;
+    myClan_ = Json();
+    clanTimer_ = 2.0f;
+}
+
+// ------------------------------------------------------------------- clans (2.66)
+
+std::string OnlineService::myClanTag() const {
+    if (!loggedIn() || !myClan_.is_object()) return {};
+    const Json& c = jfield(myClan_, "clan", Json());
+    return c.is_object() ? jstr(c, "tag") : std::string();
+}
+
+int OnlineService::clanInvitations() const {
+    if (!loggedIn() || !myClan_.is_object()) return 0;
+    const Json& inv = jfield(myClan_, "invitations", Json::array());
+    return inv.is_array() ? static_cast<int>(inv.size()) : 0;
+}
+
+void OnlineService::noteMyClan(const Json& data) {
+    if (loggedIn() && data.is_object() && data.contains("clan")) myClan_ = data;
+}
+
+void OnlineService::refreshMyClan(ApiCallback cb) {
+    if (!loggedIn()) {
+        if (cb) cb(unusableResult());
+        return;
+    }
+    clanBusy_ = true;
+    const std::string who = tokens_.playerId;
+    get("/api/v1/clans/me", [this, who, cb](const ApiResult& r) {
+        clanBusy_ = false;
+        // An answer for an account that is no longer the one connected changes nothing.
+        if (r.ok && tokens_.playerId == who) noteMyClan(r.data);
+        if (cb) cb(r);
+    });
 }
 
 // ------------------------------------------------------------ notification centre

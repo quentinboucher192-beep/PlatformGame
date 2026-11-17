@@ -47,6 +47,22 @@ private:
     float angle_ = 0.0f;
     TexturePtr tex_;
     Vec2 orbitPos(float angle) const;
+    // 2.64: a carrying bubble (object type « bubble »): it waits where it was born, leaves when
+    // Nova stands on it, goes once along its route, pops at the end (its collider off) and is
+    // born again at its place `respawn` seconds later.
+    bool bubble_ = false;
+    bool popped_ = false;
+    float reborn_ = 0.0f;   // seconds until it is born again (popped)
+    float shown_ = 1.0f;    // display only: 0 → 1 as it grows back, the burst after a pop
+    float burst_ = 0.0f;
+    Vec2 burstAt_;
+    void bubbleStep(GameWorld& w, float dt);
+    void renderBubble(RenderContext& ctx) const;
+
+public:
+    bool isBubble() const { return bubble_; }
+    bool popped() const { return popped_; }
+    void update(GameWorld& w, float dt) override;
 };
 
 class CrumblePlatformEntity : public LevelEntity {
@@ -469,14 +485,42 @@ public:
     /// The waves an arena will have, read from the level (same rules as init()).
     static size_t countWaves(const LevelObject& zone, const LevelData& level);
 
+    /// 2.62.2 (simulation 14): an ambush, an arena whose waves hold no boss (a boss's arena
+    /// keeps its own rules: it starts again, the boss keeping its wounds). A fall during an
+    /// ambush does not reset it: it waits as Nova left it (wave, enemies beaten, the others
+    /// where they are with their life), its doors open to let her back in, and closing behind
+    /// her as she comes back (suspend(), then onPlayerEnter()). An enemy of an ambush being
+    /// fought that leaves the arena is brought back into it (bringBack()).
+    bool ambush() const { return ambush_; }
+    bool fighting() const { return started_ && !cleared_; }
+    /// Waiting for Nova after her fall (its doors open).
+    bool suspended() const { return suspended_; }
+    /// The wave being fought (0-based; during the pause between two waves, the next one).
+    size_t currentWave() const { return waveDelay_ > 0.0f ? wave_ + 1 : wave_; }
+    /// The enemies listed by its waves (all waves).
+    size_t enemyCount() const;
+    /// Enemies still to beat: those alive of the current wave and every one of the waves to come.
+    int enemiesLeft(GameWorld& w) const;
+    /// The enemies of the current wave alive and awake (display: the HUD's arrows).
+    std::vector<const Enemy*> fightingEnemies(GameWorld& w) const;
+    /// Nova fell during the fight: an ambush waits for her, its doors open (no effect on
+    /// another arena, nor on an ambush not being fought).
+    void suspend(GameWorld& w);
+
 private:
     void startWave(GameWorld& w, size_t index);
     void setDoors(GameWorld& w, bool open);
+    void bringBack(GameWorld& w);
+    /// Where an enemy brought back lands: its spawn point when it is in the arena and free,
+    /// otherwise the free place of the arena nearest to it (on the ground for a walker).
+    Vec2 returnPoint(GameWorld& w, const Enemy& e, Vec2 spawn) const;
     std::vector<std::vector<std::string>> waves_;
     std::vector<std::string> doors_;
     size_t wave_ = 0;
     bool started_ = false;
     bool cleared_ = false;
+    bool ambush_ = false;
+    bool suspended_ = false;
     float waveDelay_ = 0.0f;
 };
 
@@ -521,6 +565,8 @@ public:
     void respawnKeepingWounds(GameWorld& w, bool dormant);
     bool enemyAlive(GameWorld& w) const;
     bool defeated() const { return defeated_; }
+    /// Where its enemy appears (the feet).
+    Vec2 spawnFeet() const { return obj_.rect.bottomCenter(); }
 
 private:
     uint32_t enemyUid_ = 0;

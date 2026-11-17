@@ -168,6 +168,16 @@ no boss
 no shots
 not an object
 unreadable
+a stage of a bad size
+a stage that is not an object
+a stage without elements
+an element that is not an object
+bad camera keys
+element '{0}' without its file
+element '{0}' without keys
+element '{0}': neither a layer, a sprite, a glow nor particles
+shot {0}: {1}
+version {0} not known
 an
 replace
 trace
@@ -179,6 +189,53 @@ supernova
 arc
 missile
 constellation
+# 2.61 Studio de Créations : noms de textures, chemins, blocs PNG, clés JSON.
+<aperçu import>
+<image {0}>
+<import>
+<modèle {0}>
+<studio {0}>
+IDAT
+IEND
+IHDR
+{0}-{1}-{2}T{3}:{4}:{5}Z
+archives
+images
+png
+palette
+hop
+robot
+skipped
+souvenir
+ADMIN
+DEV
+MOD
+MODO
+NULL
+ROOT
+STAFF
+SYS
+clan
+clans
+invitations
+messages
+tag
+COSMIC PLATFORMER · AaBbCcDdEeFfGg 0123456789 · àâçéèêëîïôùûœ ÀÉÈÇŒ !?
+Aa
+TXT
+IHDR
+OggS
+OpusHead
+RIFF
+WAVE
+asset
+clip
+interface
+scenery
+use{0}
+f:{0}|{1}|{2}|{3}
+clips
+lever
 COSMIC-COOP!
 COSMIC-COOP?
 HTTP/1.1 101
