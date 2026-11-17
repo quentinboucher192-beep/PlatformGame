@@ -40,7 +40,7 @@ public:
     /// The same for a player object of the server ({username, clan_tag?}): « [TAG] name » (2.66,
     /// the tag of their clan before the name), both hidden in streaming mode.
     std::string displayName(const Json& player, int rank, bool me) const;
-    /// 2.63.1: the « [TAG] » at the start of `shown` (a name drawn left aligned at `left.x`,
+    /// 2.63.3: the « [TAG] » at the start of `shown` (a name drawn left aligned at `left.x`,
     /// centred on `left.y`, at the unscaled `size` and `face`, within `room`) opens the sheet of
     /// the player's clan when clicked, underlined under the mouse. Mouse only, like the avatars:
     /// the keyboard and the gamepad reach it through the player's profile (tab « Clan »).

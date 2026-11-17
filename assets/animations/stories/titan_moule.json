@@ -1,0 +1,9 @@
+{
+  "texture": "stories/titan/moule.png",
+  "frameWidth": 64,
+  "frameHeight": 24,
+  "pivot": [32, 23],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 8, "loop": true}
+  }
+}

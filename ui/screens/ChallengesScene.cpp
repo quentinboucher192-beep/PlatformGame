@@ -1078,7 +1078,7 @@ private:
         if (right - x > ui.s(24)) {
             const std::string drawn = me && !name.empty() ? mine : shown;
             fitLabel(ui, drawn, {x, cy}, 17, right - x, me ? ui.theme().accent : ui.theme().text);
-            // 2.63.1: the tag opens its clan's sheet.
+            // 2.63.3: the tag opens its clan's sheet.
             if (p.is_object())
                 ou_.clanTagLink("c" + jstr(p, "id") + std::to_string(static_cast<int>(cy)), p, drawn, {x, cy}, fit(ui, drawn, FontFace::Body, 17, right - x),
                                 FontFace::Body, right - x);

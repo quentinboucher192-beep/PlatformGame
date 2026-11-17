@@ -1,0 +1,9 @@
+{
+  "texture": "stories/liche/ame.png",
+  "frameWidth": 32,
+  "frameHeight": 32,
+  "pivot": [16, 20],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 10, "loop": true}
+  }
+}

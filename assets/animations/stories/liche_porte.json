@@ -1,0 +1,9 @@
+{
+  "texture": "stories/liche/porte.png",
+  "frameWidth": 128,
+  "frameHeight": 112,
+  "pivot": [64, 111],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 9, "loop": true}
+  }
+}

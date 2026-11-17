@@ -126,7 +126,7 @@ TEST_CASE("boss stories: every giga boss of the game has its story of six lines,
 // read as version 1 (their paintings).
 namespace {
 
-const std::set<std::string> kAnimated = {"pyrrhax", "monolithe", "kraken", "phenix"};
+const std::set<std::string> kAnimated = {"pyrrhax", "monolithe", "kraken", "phenix", "liche", "titan"};
 
 // The checks every story told in animated scenes passes; the sheets its scenes use go in `sheets`.
 // `shadowShots`: the shots where a character casts its shadow on the ground (not in deep space).
@@ -313,6 +313,41 @@ TEST_CASE("boss stories v2: the Phénix in animated scenes") {
                                        "avant"}));
     CHECK(sheets.count("animations/phenix.json") == 1);     // the Phénix in its nest…
     CHECK(sheets.count("animations/phenix_p5.json") == 1);  // …burning itself away (its rebirth)
+}
+
+// 2.63: the Liche's story (« Le Gardien des noms »): Ossian's candles, the names, the living fleeing,
+// the soul hidden in the crystal, the bones, the Liche in its crypt.
+TEST_CASE("boss stories v2: the Liche in animated scenes") {
+    BossStories stories;
+    CHECK(stories.loadDefault());
+    const BossStory* p = stories.find("liche");
+    CHECK(p != nullptr);
+    if (!p) return;
+    std::set<std::string> sheets;
+    checkAnimatedStory(*p, sheets, 6);
+    CHECK(hasSheets(sheets, "liche", {"ossian", "vieux", "enfant", "fuyard1", "fuyard2", "fuyard3", "bougie", "plaque", "autel", "ame", "toile",
+                                      "chaise", "squelette", "porte", "etoile", "astre"}));
+    CHECK(hasSheets(sheets, "liche", {"galerie", "arcades", "brume", "dalles", "avant", "ciel", "etoiles", "collines", "tombes"}));
+    CHECK(sheets.count("animations/liche.json") == 1);       // the Liche
+    CHECK(sheets.count("animations/phylactere.json") == 1);  // the crystal of its soul
+}
+
+// 2.63: the Titan's story (« Le Dernier Quart »): the foundry, the colossus waking up, the foreman's
+// promise, the rock swallowing the foundry, the rust, the visitor.
+TEST_CASE("boss stories v2: the Titan in animated scenes") {
+    BossStories stories;
+    CHECK(stories.loadDefault());
+    const BossStory* p = stories.find("titan");
+    CHECK(p != nullptr);
+    if (!p) return;
+    std::set<std::string> sheets;
+    checkAnimatedStory(*p, sheets, 6);
+    CHECK(hasSheets(sheets, "titan", {"ouvrier1", "ouvrier2", "ouvrier3", "contremaitre", "creuset", "moule", "engrenage", "vapeur",
+                                      "echafaudage", "crochet", "fourneau", "etoile", "astre"}));
+    CHECK(hasSheets(sheets, "titan", {"fonderie", "puits", "poutres", "chaines", "fumee", "sol", "avant", "roche", "rochers", "ciel",
+                                      "etoiles"}));
+    CHECK(sheets.count("animations/titan.json") == 1);  // the Titan
+    CHECK(sheets.count("animations/nova.json") == 1);   // the visitor it takes for a thief
 }
 
 TEST_CASE("boss stories v2: the format (keys, clips, camera, shakes, flashes; version 1 unchanged)") {

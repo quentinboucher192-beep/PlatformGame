@@ -1,0 +1,9 @@
+{
+  "texture": "stories/liche/squelette.png",
+  "frameWidth": 32,
+  "frameHeight": 48,
+  "pivot": [16, 47],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 5, "loop": true}
+  }
+}
