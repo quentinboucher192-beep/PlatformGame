@@ -2210,6 +2210,29 @@
    ]
   },
   {
+   "id": "admin.creations.studio",
+   "version": "2.62.0",
+   "parents": [
+    "admin.tab.creations"
+   ]
+  },
+  {
+   "id": "admin.creations.studio.import",
+   "version": "2.62.0",
+   "parents": [
+    "admin.tab.creations",
+    "admin.creations.studio"
+   ]
+  },
+  {
+   "id": "admin.creations.studio.recolor",
+   "version": "2.62.0",
+   "parents": [
+    "admin.tab.creations",
+    "admin.creations.studio"
+   ]
+  },
+  {
    "id": "stats.sheet.attacks",
    "version": "2.60.0",
    "parents": [

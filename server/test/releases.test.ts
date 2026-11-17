@@ -40,6 +40,21 @@ describe("installers", () => {
         expect([...new Uint8Array(d.body as ArrayBuffer)]).toEqual([...data]);
     });
 
+    it("since: the notes of every release after the player's version, newest first (2.62)", async () => {
+        await publish("2.30.0", 2030000, new Uint8Array([1]));
+        await publish("2.32.1", 2032001, new Uint8Array([2]));
+        await publish("2.60.2", 2060002, new Uint8Array([3]));
+        await publish("2.61.1", 2061001, new Uint8Array([4]));
+        const r = await api("GET", "/api/v1/client/latest?platform=windows&since=2.32.0");
+        expect(r.status).toBe(200);
+        expect(r.body.data.release.version).toBe("2.61.1");
+        expect(r.body.data.changes.map((c: { version: string }) => c.version)).toEqual(["2.61.1", "2.60.2", "2.32.1"]);
+        expect(r.body.data.changes[0].notes).toBe("notes");
+        const none = await api("GET", "/api/v1/client/latest?platform=windows");
+        expect(none.body.data.changes).toBeUndefined();
+        expect((await api("GET", "/api/v1/client/latest?platform=windows&since=2.x")).status).toBe(400);
+    });
+
     it("unknown or malformed versions are not found, downloads are rate limited", async () => {
         await publish("2.4.0", 2004000, new Uint8Array([4, 5]));
         expect((await api("GET", "/api/v1/client/download/9.9.9")).status).toBe(404);

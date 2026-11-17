@@ -84,6 +84,8 @@ void GameServices::loadAll() {
 TexturePtr GameServices::suitSheet(const std::string& look, const SuitColors* colors) {
     if (look.empty() || look == "standard") return nullptr;
     if (!isServerSuitRef(look)) return app.resources().texture("sprites/player/suits/nova_" + look + ".png");
+    // 2.61: its own sheet, drawn in the Studio de Créations, once downloaded and read.
+    if (TexturePtr t = creationImages.texture(look, app.renderer())) return t;
     std::optional<SuitColors> c;
     if (colors) c = *colors;
     else if (const ServerSuit* s = serverSuits.find(look)) c = s->colors;
@@ -124,6 +126,19 @@ void GameServices::startServerSuits(bool fetch) {
     serverLooks.setFile(Paths::userDir() / "online" / "creation_looks.json");
     serverLooks.load();
     setCreationLookResolver([this](const std::string& ref) { return creationLook(ref); });
+    // 2.61: their images (kept beside them; downloaded with the session, checked by their hash).
+    creationImages.setDir(Paths::userDir() / "online" / "creation_images");
+    creationImages.load();
+    creationImages.setFetch([this](const std::string& path, std::function<void(bool, std::vector<uint8_t>)> done) {
+        online.getBinary(
+            path,
+            [done](const HttpResponse& r) {
+                const bool ok = !r.networkFailure() && r.status == 200;
+                done(ok, ok ? std::vector<uint8_t>(r.body.begin(), r.body.end()) : std::vector<uint8_t>());
+            },
+            kCreationImageMaxBytes + 4096);
+    });
+    setCreationImageResolver([this](const std::string& ref) { return creationImage(ref); });
     serverSuitsFetch_ = fetch;
     serverSuitsTimer_ = 0.0f;
     if (fetch) refreshServerSuits();
@@ -141,6 +156,23 @@ void GameServices::refreshServerSuits() {
         if (serverSuits.applyList(list)) serverSuits.save();
         if (serverLooks.applyList(list)) serverLooks.save();
     });
+    // 2.61: the images those creations have (with the session: the ones won are listed too).
+    // A server before 2.61 answers 404: nothing changes.
+    online.get(
+        "/api/v1/creations/images",
+        [this](const ApiResult& r) {
+            if (!r.ok || r.fromCache) return;
+            if (creationImages.applyList(jfield(r.data, "images", Json()))) creationImages.save();
+        },
+        false);
+}
+
+std::optional<CreationImageDraw> GameServices::creationImage(const std::string& ref) {
+    const CreationImageInfo* info = creationImages.find(ref);
+    if (!info) return std::nullopt;
+    TexturePtr t = creationImages.texture(ref, app.renderer());
+    if (!t) return std::nullopt;
+    return CreationImageDraw{t, *info};
 }
 
 void GameServices::updateServerSuits(float dt) {
@@ -508,12 +540,25 @@ void GameServices::checkAchievements(bool announce) {
 
 void GameServices::checkForUpdate() {
     if (!online.usable()) return;
-    online.get("/api/v1/client/latest?platform=windows", [this](const ApiResult& r) {
+    // 2.62: `since` = this game's version: the notes of every installer published after it
+    // (a player several versions behind sees all that changed, not only the newest).
+    online.get(std::string("/api/v1/client/latest?platform=windows&since=") + COSMIC_VERSION_STRING, [this](const ApiResult& r) {
         if (!r.ok || !r.data.is_object() || !r.data.contains("release") || !r.data["release"].is_object()) return;
         const Json& rel = r.data["release"];
         std::string v = jstr(rel, "version");
         if (v.empty() || !versionNewer(v, COSMIC_VERSION_STRING)) return;
-        news.offerRelease(v, jget<int64_t>(rel, "size", 0), jstr(rel, "sha256"), jstr(rel, "download"), jstr(rel, "notes"));
+        std::string notes;
+        if (r.data.contains("changes") && r.data["changes"].is_array()) {
+            for (const Json& c : r.data["changes"]) {
+                const std::string cv = jstr(c, "version"), cn = jstr(c, "notes");
+                if (cv.empty() || cn.empty() || !versionNewer(cv, COSMIC_VERSION_STRING)) continue;
+                if (!notes.empty()) notes += "\n\n";
+                // Notes written from the changelog already start with « Version x.y.z : ».
+                notes += cn.rfind("Version ", 0) == 0 ? cn : "Version " + cv + " :\n" + cn;
+            }
+        }
+        if (notes.empty()) notes = jstr(rel, "notes");  // an older server: the newest installer's notes
+        news.offerRelease(v, jget<int64_t>(rel, "size", 0), jstr(rel, "sha256"), jstr(rel, "download"), notes);
     }, false);
 }
 

@@ -33,6 +33,7 @@
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/ChallengeRewardsUi.h"
 #include "ui/screens/CosmeticFx.h"
+#include "ui/studio/Studio.h"
 
 namespace cosmic {
 
@@ -51,6 +52,20 @@ public:
     void draw(const Rect& inner);
     /// 2.60: the tooltip of the row hovered or focused, over everything (once the screen is drawn).
     void drawTooltip();
+
+    // 2.61: « Bibliothèque » (the list and the editor above) or « Studio » (ui/studio/Studio.h:
+    // the editor of the creations' images), chosen at the top of the tab.
+    /// A window of the Studio is open over everything (drawn by drawModal()).
+    bool modal() const { return studioMode_ && studio_ && studio_->modal(); }
+    void drawModal() {
+        if (modal()) studio_->drawModal();
+    }
+    /// Esc / B has something to cancel in the Studio: the screen stays.
+    bool capturesBack() const { return studioMode_ && studio_ && studio_->capturesBack(); }
+    /// A file dropped on the window: imported in the Studio (opened on it).
+    void dropFile(const std::string& path);
+    /// « Donner en récompense… »: the screen opens the challenges' calendar (AdminScene).
+    std::function<void(const std::string& ref, const std::string& name)> giveReward;
 
 private:
     struct Draft {
@@ -142,6 +157,12 @@ private:
     TrailFx previewTrail_;
     Rect previewTrailRect_;
     float previewClock_ = -1.0f;
+    // 2.61: the Studio (made when first shown).
+    bool studioMode_ = false;
+    std::unique_ptr<studio::Studio> studio_;
+    studio::Studio& studio();
+    void drawModeSwitch(const Rect& r);
+    static float drawModeSwitchWidth(UIContext& ui);
 };
 
 }  // namespace cosmic

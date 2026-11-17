@@ -3,6 +3,12 @@
  "comment": "Textes français affichés par le jeu (généré par tools/i18n/extract.py : ne pas éditer).",
  "strings": [
   {
+   "fr": "#rrggbb, par exemple #3ee6d6",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
    "fr": "%Y-%m-%d %H:%M",
    "where": [
     "engine/core/FileUtil.cpp"
@@ -168,9 +174,27 @@
    ]
   },
   {
+   "fr": "+ Image",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
+   "fr": "+ Nouveau",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "+ Nouveau cadre",
    "where": [
     "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "+ Nouvel",
+   "where": [
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -180,9 +204,16 @@
    ]
   },
   {
+   "fr": "+ Nouvelle",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "+ Nouvelle combinaison",
    "where": [
-    "ui/screens/AdminCreations.cpp"
+    "ui/screens/AdminCreations.cpp",
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -195,6 +226,12 @@
    "fr": "+ Récompense du jeu",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "+ {0} autres · réserve du jeu",
+   "where": [
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -370,6 +407,12 @@
    "fr": "12 nouveaux succès (Aethra, les 4 gardiens, les 16 gardiens et échos, Nyxara sans être touché, les nouveaux pouvoirs) : 146 succès, 383 étoiles. Les succès « tous les niveaux » comptent désormais les 18 niveaux.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "16 images au plus : seules les 16 premières seront prises.",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -575,6 +618,12 @@
    ]
   },
   {
+   "fr": "A : outil · gâchettes : images · LB / RB : outils · X / Y : annuler / rétablir",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
    "fr": "A : {0}",
    "where": [
     "ui/screens/ReplayCompareSetupScene.cpp"
@@ -638,6 +687,12 @@
    "fr": "A en retard",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "a envoyé l'image de {0} {1} ({2} × {3} px, {4} Ko)",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -874,7 +929,8 @@
   {
    "fr": "Accent",
    "where": [
-    "ui/screens/AdminCreations.cpp"
+    "ui/screens/AdminCreations.cpp",
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -920,6 +976,12 @@
    "fr": "Accordées {0}, d'après les parties vérifiées reçues à l'heure.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Accroupi",
+   "where": [
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -1061,7 +1123,8 @@
     "game/gameplay/entities/PlatformEntities.cpp",
     "game/levels/DifficultyRating.cpp",
     "game/levels/ObjectTypes.cpp",
-    "ui/screens/TutorialScenes.cpp"
+    "ui/screens/TutorialScenes.cpp",
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -1273,6 +1336,12 @@
    ]
   },
   {
+   "fr": "Administration › Créations › Studio : un vrai éditeur pour dessiner les images des créations. À gauche l'explorateur (combinaisons, traînées, cadres, effets de victoire du serveur et brouillons de ce PC, recherche, nouveau, dupliquer, renommer, archiver, bibliothèque) ; en haut les onglets des créations ouvertes (● non enregistrée, fermeture confirmée) ; au centre la toile, avec zoom, grille, pelure d'oignon et coordonnées, et ses outils : crayon, gomme, pot de peinture, pipette, ligne, rectangle, ellipse, sélection, déplacer, miroirs et symétrie, annuler / rétablir (Ctrl+Z / Ctrl+Y) ; à droite la palette (celle de la création, de Nova, des planètes), le sélecteur TSV, le code #rrggbb et l'aperçu en direct.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Administration › Ennemis : un admin modifie une entité native et publie une révision ; chaque niveau de la campagne qui l'utilise reçoit une nouvelle révision, avec une case par niveau pour réinitialiser ses records ou les garder.",
    "where": [
     "data/news/changelog.json"
@@ -1358,7 +1427,8 @@
    "fr": "Afficher",
    "where": [
     "ui/screens/HudEditorScene.cpp",
-    "ui/screens/OnlineLevelsScene.cpp"
+    "ui/screens/OnlineLevelsScene.cpp",
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -1536,6 +1606,12 @@
    ]
   },
   {
+   "fr": "Ajouter la couleur 1 à la palette",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
    "fr": "Ajouter un calque",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -1569,6 +1645,18 @@
    "fr": "Ajouter {0}",
    "where": [
     "editors/level_editor/LevelEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ajouter à la création",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Ajouter à la palette",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -1920,6 +2008,12 @@
    ]
   },
   {
+   "fr": "Animation de la rangée {0}",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "Animation du joueur",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -1950,9 +2044,21 @@
    ]
   },
   {
+   "fr": "Anneau",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "Anneau des ancrages",
    "where": [
     "data/levels/sylvanox_03.json"
+   ]
+  },
+  {
+   "fr": "anneau du jeu · 64 × 64",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -2041,7 +2147,9 @@
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp",
     "ui/screens/SocialScene.cpp",
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsScene.cpp",
+    "ui/studio/StudioCanvas.cpp",
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -2061,6 +2169,18 @@
    "fr": "Annuler ma demande",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Annuler · Ctrl+Z",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Annulé : {0}.",
+   "where": [
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -2189,9 +2309,21 @@
    ]
   },
   {
+   "fr": "APERÇU AVANT D'IMPORTER",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "Aperçu de votre profil",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "APERÇU EN DIRECT",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
    ]
   },
   {
@@ -2422,7 +2554,14 @@
   {
    "fr": "Archiver",
    "where": [
-    "ui/screens/AdminCreations.cpp"
+    "ui/screens/AdminCreations.cpp",
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "Archives (serveur et brouillons)",
+   "where": [
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -2466,7 +2605,8 @@
    "where": [
     "ui/screens/AdminCampaign.cpp",
     "ui/screens/AdminCreations.cpp",
-    "ui/screens/AdminEnemies.cpp"
+    "ui/screens/AdminEnemies.cpp",
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -2476,9 +2616,27 @@
    ]
   },
   {
+   "fr": "Archivée : restaurez-la d'abord.",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "Archivée : restaurez-la pour la modifier.",
    "where": [
     "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Archivée sur le serveur : plus proposée en récompense ; ceux qui l'ont gagnée la gardent.",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "Archivée sur le serveur : restaurez-la d'abord (Bibliothèque).",
+   "where": [
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -2826,13 +2984,20 @@
     "engine/input/InputTypes.cpp",
     "game/enemies/EnemyDefinition.h",
     "ui/screens/CreatureArt.cpp",
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsScene.cpp",
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
    "fr": "Attaque du boss",
    "where": [
     "game/records/PlayStatsRecorder.cpp"
+   ]
+  },
+  {
+   "fr": "Attaque en l'air",
+   "where": [
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -2983,7 +3148,8 @@
   {
    "fr": "Attente",
    "where": [
-    "editors/level_editor/LevelEditorDialogs.cpp"
+    "editors/level_editor/LevelEditorDialogs.cpp",
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -3026,6 +3192,12 @@
    "fr": "Attention : {0} fichier(s) ont changé entre la copie et son téléchargement : leur version la plus récente sera restaurée.",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "Atterrissage",
+   "where": [
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -3274,7 +3446,8 @@
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
-    "ui/screens/PlanetMapScene.cpp"
+    "ui/screens/PlanetMapScene.cpp",
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -3832,7 +4005,8 @@
   {
    "fr": "aucune",
    "where": [
-    "game/online/HttpTransport.cpp"
+    "game/online/HttpTransport.cpp",
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -3896,6 +4070,12 @@
    ]
   },
   {
+   "fr": "Aucune création ouverte. Choisissez-en une dans l'explorateur (celles du serveur et vos brouillons), « + Nouvelle » pour en commencer une, ou « Importer… » pour découper une planche d'images : glissez un PNG dans la fenêtre, ou déposez-le dans le dossier « Images à importer » du jeu.",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "Aucune de ses phases ne l'utilise : le boss ne la lance jamais en combat.",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -3937,6 +4117,18 @@
    "where": [
     "game/online/Spectate.cpp",
     "server/src/spectate.ts"
+   ]
+  },
+  {
+   "fr": "Aucune image : déposez des PNG dans le dossier « Images à importer » ({0}), ou glissez-en un dans la fenêtre.",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune image choisie.",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -4443,7 +4635,8 @@
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/RaceScene.cpp",
-    "ui/screens/SocialScene.cpp"
+    "ui/screens/SocialScene.cpp",
+    "ui/studio/StudioFrise.cpp"
    ]
   },
   {
@@ -4569,7 +4762,8 @@
     "engine/input/InputTypes.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp",
-    "ui/screens/ReplayScene.cpp"
+    "ui/screens/ReplayScene.cpp",
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -5042,7 +5236,15 @@
   {
    "fr": "BIBLIOTHÈQUE",
    "where": [
-    "editors/level_editor/LevelEditorLayout.cpp"
+    "editors/level_editor/LevelEditorLayout.cpp",
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Bibliothèque",
+   "where": [
+    "ui/screens/AdminCreations.cpp",
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -5116,6 +5318,12 @@
    "fr": "Blanc nacré des sanctuaires d'Aethra, visière lavande, écharpe d'or.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Blessure",
+   "where": [
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -5745,7 +5953,50 @@
    "fr": "brouillon",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp",
-    "ui/screens/PlayerProfileScene.cpp"
+    "ui/screens/PlayerProfileScene.cpp",
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "Brouillon archivé sur ce PC (« Archives » pour le revoir).",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "Brouillon enregistré sur ce PC à {0}",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "Brouillon illisible : {0}",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "Brouillon impossible à déplacer : {0}",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "Brouillon non enregistré : {0}",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "Brouillon restauré.",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "Brouillon « {0} » enregistré sur ce PC à {1}.",
+   "where": [
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -5941,13 +6192,16 @@
   {
    "fr": "Cadre",
    "where": [
-    "ui/screens/PlayerProfileScene.cpp"
+    "ui/screens/PlayerProfileScene.cpp",
+    "ui/studio/StudioDoc.cpp",
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
    "fr": "cadre",
    "where": [
-    "ui/screens/CollectionScene.cpp"
+    "ui/screens/CollectionScene.cpp",
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -5972,6 +6226,12 @@
    "fr": "Cadre d'avatar",
    "where": [
     "game/cosmetics/Collection.cpp"
+   ]
+  },
+  {
+   "fr": "cadre du jeu",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -6037,7 +6297,8 @@
   {
    "fr": "Cadres",
    "where": [
-    "ui/screens/AdminCreations.cpp"
+    "ui/screens/AdminCreations.cpp",
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -6955,6 +7216,12 @@
    ]
   },
   {
+   "fr": "Ce qui est dessiné se reflète dans l'image : aucune, verticale, horizontale, les deux.",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
    "fr": "CE QUI EST ENREGISTRÉ",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -7362,6 +7629,12 @@
    ]
   },
   {
+   "fr": "Cette animation",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "Cette attaque est introuvable dans la définition du boss.",
    "where": [
     "game/gameplay/BossAttackDemo.cpp",
@@ -7402,6 +7675,18 @@
    "fr": "Cette création est archivée : restaurez-la avant de la modifier.",
    "where": [
     "server/src/creations.ts"
+   ]
+  },
+  {
+   "fr": "Cette création est archivée : restaurez-la avant de lui donner une image.",
+   "where": [
+    "server/src/creationAssets.ts"
+   ]
+  },
+  {
+   "fr": "Cette image",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -7770,6 +8055,12 @@
    ]
   },
   {
+   "fr": "CHAQUE RANGÉE VA DANS…",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "Charge",
    "where": [
     "data/enemies/archon_catacombs.json",
@@ -7778,7 +8069,8 @@
     "data/enemies/thornwarden.json",
     "game/enemies/EnemyDefinition.cpp",
     "game/powers/PowerStats.cpp",
-    "ui/screens/CreatureArt.cpp"
+    "ui/screens/CreatureArt.cpp",
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -7786,7 +8078,8 @@
    "where": [
     "game/enemies/EnemyDefinition.cpp",
     "game/powers/PowersExtra.cpp",
-    "ui/screens/CreatureArt.cpp"
+    "ui/screens/CreatureArt.cpp",
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -8177,6 +8470,12 @@
    ]
   },
   {
+   "fr": "Choisir un autre fichier…",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "Choisir…",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
@@ -8213,6 +8512,12 @@
    ]
   },
   {
+   "fr": "Choisissez la couleur à remplacer.",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "Choisissez les notifications Cosmic Online que vous recevez. Une catégorie désactivée n'est plus enregistrée par le serveur ; les autres joueurs n'en sont pas informés.",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -8222,6 +8527,12 @@
    "fr": "Choisissez un cadre dans la liste pour le modifier, ou « Nouveau cadre » pour en créer un : un nom, un style que le jeu sait dessiner et deux couleurs (le bord, la lueur). Il se donne ensuite en récompense d'un défi : ceux qui le gagnent l'équipent, et tous les jeux le dessinent sans mise à jour, sur leur profil et dans les classements.",
    "where": [
     "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Choisissez un défi à venir, puis « Récompenses » : « {0} » est dans la liste des créations.",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -8288,6 +8599,12 @@
    "fr": "Choisissez une discussion à gauche, ou « Écrire » à un ami.",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Choisissez une image à gauche.",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -8401,6 +8718,12 @@
    ]
   },
   {
+   "fr": "Chute",
+   "where": [
+    "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
    "fr": "chute",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
@@ -8458,6 +8781,12 @@
    "fr": "Chute en planant",
    "where": [
     "game/powers/PowerStats.cpp"
+   ]
+  },
+  {
+   "fr": "Chute fatale",
+   "where": [
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -8631,13 +8960,20 @@
   {
    "fr": "Classement",
    "where": [
-    "game/online/OnlineService.cpp"
+    "game/online/OnlineService.cpp",
+    "ui/studio/StudioFrise.cpp"
    ]
   },
   {
    "fr": "Classement (version {0})",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Classement : le cadre dans une ligne",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
    ]
   },
   {
@@ -8827,6 +9163,72 @@
    ]
   },
   {
+   "fr": "Clic : 100 %, 50 %, 200 % (au pixel près, sans flou) ; une zone plus grande qu'une image est réduite pour tenir.",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Clic : couleur 1 · clic droit : couleur 2",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Clic : couleur 1 · clic droit : couleur 2 · Maj : ligne droite depuis le dernier point",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Clic : couleur 1 · clic droit : couleur 2 · Maj+clic : la retirer",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Clic : la palette suivante (Maj : la précédente) · celle de la création, de Nova, des planètes, couleurs de base.",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Clic : la suivante (Maj : la précédente) · « Ignorée » : pas importée.",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Clic : la taille suivante.",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Clic : le sélecteur la modifie · X : échanger les deux couleurs",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Clic : prendre la couleur 1 ({0})",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Clic : prendre la couleur 1 ({0}) · les images de la particule sont teintées de l'une à l'autre.",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Clic : une autre création ouverte, ou une nouvelle (combinaison, traînée, cadre, effet de victoire).",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "clic de la molette",
    "where": [
     "engine/input/InputTypes.cpp"
@@ -8860,6 +9262,18 @@
    "fr": "Clic sur un pseudo : son profil · Entrée sur le rôle : le changer",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Clic sur une zone : la retirer ou la reprendre",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Clic, A ou Entrée sur une zone : la retirer ou la reprendre. À la main : glisser, ou A sur deux coins opposés ; flèches : le curseur.",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -8976,6 +9390,12 @@
     "game/online/OnlineTypes.cpp",
     "saves/Settings.cpp",
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Code de la couleur",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -9266,7 +9686,15 @@
    "where": [
     "game/cosmetics/Collection.cpp",
     "ui/screens/AdminCreations.cpp",
-    "ui/screens/PlayerProfileScene.cpp"
+    "ui/screens/PlayerProfileScene.cpp",
+    "ui/studio/StudioDoc.cpp",
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "combinaison",
+   "where": [
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -9279,6 +9707,12 @@
    "fr": "Combinaison cuivrée, visière orange, écharpe rouge.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "combinaison du jeu",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -9333,7 +9767,8 @@
    "fr": "Combinaisons",
    "where": [
     "data/cosmetics/cosmetics.json",
-    "ui/screens/AdminCreations.cpp"
+    "ui/screens/AdminCreations.cpp",
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -9352,6 +9787,12 @@
    "fr": "Comme les autres gardiens : statistiques, entraînement, succès (vaincre, sans dégât, chaque phase sans dégât), titre « Briseur d'étoiles », musique dans le juke-box, Galerie ; pas d'écho dans L'Arène des Échos.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Comme les combinaisons du jeu : chaque pixel garde sa lumière, prend la teinte de la combinaison, de l'accent ou de l'écharpe (clic : la couleur 1).",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -9609,6 +10050,12 @@
    "where": [
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Compléter avec Nova",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
    ]
   },
   {
@@ -9894,6 +10341,18 @@
    ]
   },
   {
+   "fr": "Connectez-vous avec un compte administrateur pour envoyer au serveur.",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "Connectez-vous avec un compte administrateur.",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "Connectez-vous pour ajouter des amis et comparer vos temps.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
@@ -10094,7 +10553,8 @@
   {
    "fr": "Connexion impossible : rien n'a changé sur le serveur.",
    "where": [
-    "ui/screens/AdminCreations.cpp"
+    "ui/screens/AdminCreations.cpp",
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -10310,6 +10770,12 @@
    "fr": "Copie ajoutée à l'ATELIER → Mes niveaux.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Copie cette image sur la suivante de « {0} ».",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
    ]
   },
   {
@@ -10688,9 +11154,33 @@
    ]
   },
   {
+   "fr": "Couleur 1",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Couleur 1 {0} · couleur 2 {1}",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Couleur 2",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
    "fr": "Couleur : {0} — {1}",
    "where": [
     "ui/screens/GhostOptionsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Couleur au début de la vie d'une particule",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -10778,9 +11268,22 @@
    ]
   },
   {
+   "fr": "Couleur à la fin de sa vie",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
    "fr": "Couleurs",
    "where": [
-    "ui/screens/AdminCreations.cpp"
+    "ui/screens/AdminCreations.cpp",
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Couleurs de base",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -10970,7 +11473,8 @@
   {
    "fr": "Course",
    "where": [
-    "ui/screens/CreatureArt.cpp"
+    "ui/screens/CreatureArt.cpp",
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -11044,6 +11548,18 @@
    "fr": "Course non terminée.",
    "where": [
     "game/ghost/Ghost.cpp"
+   ]
+  },
+  {
+   "fr": "Course · la traînée suit Nova",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
+   "fr": "Course · la traînée équipée suit Nova",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
    ]
   },
   {
@@ -11150,6 +11666,12 @@
     "data/enemies/astrarque.json",
     "data/enemies/echo_ignivore.json",
     "data/enemies/ignivore.json"
+   ]
+  },
+  {
+   "fr": "Crayon",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -11357,7 +11879,8 @@
   {
    "fr": "Création",
    "where": [
-    "ui/screens/AdminScene.cpp"
+    "ui/screens/AdminScene.cpp",
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -11379,8 +11902,27 @@
    ]
   },
   {
+   "fr": "Création enregistrée sur le serveur, mais son image est refusée : erreur inconnue.",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "Création enregistrée sur le serveur, mais son image est refusée : {0}",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "création introuvable",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Création introuvable.",
    "where": [
+    "server/src/creationAssets.ts",
     "server/src/creations.ts"
    ]
   },
@@ -11426,6 +11968,12 @@
    "fr": "créatures",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Crée ou met à jour la création sur Cosmic Online, puis envoie son image ; le serveur vérifie tout et le note au Journal.",
+   "where": [
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -11840,6 +12388,12 @@
    ]
   },
   {
+   "fr": "dans une nouvelle création · {0}",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "Dans vos favoris ({0})",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -11861,6 +12415,12 @@
    "fr": "dans {0} min",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "dans « {0} » · {1}",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -11907,7 +12467,8 @@
     "packaging/DependencyCollector.cpp",
     "ui/screens/AdminCreations.cpp",
     "ui/screens/HudEditorScene.cpp",
-    "ui/screens/TutorialScenes.cpp"
+    "ui/screens/TutorialScenes.cpp",
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -11967,6 +12528,12 @@
    ]
   },
   {
+   "fr": "De 1 à {0} images.",
+   "where": [
+    "game/cosmetics/CreationImages.cpp"
+   ]
+  },
+  {
    "fr": "de jeu",
    "where": [
     "ui/screens/OnlineComputer.cpp",
@@ -11984,6 +12551,12 @@
    "fr": "De petites âmes pâles s'échappent derrière Nova et s'élèvent en tremblant.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "De petites étoiles aux couleurs de la particule, ici et là.",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -12008,6 +12581,19 @@
    "fr": "de {0} à {1}",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "De {0} à {1} images par seconde.",
+   "where": [
+    "game/cosmetics/CreationImages.cpp",
+    "server/src/creationAssets.ts"
+   ]
+  },
+  {
+   "fr": "De {0} à {1} images.",
+   "where": [
+    "server/src/creationAssets.ts"
    ]
   },
   {
@@ -12920,6 +13506,12 @@
    ]
   },
   {
+   "fr": "dimensions différentes de celles annoncées",
+   "where": [
+    "game/cosmetics/CreationImages.cpp"
+   ]
+  },
+  {
    "fr": "dimensions du niveau invalides",
    "where": [
     "game/levels/LevelData.cpp",
@@ -12996,6 +13588,12 @@
    "fr": "Dispersion",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Dispersion (angle)",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -13116,6 +13714,12 @@
    ]
   },
   {
+   "fr": "doc.json illisible.",
+   "where": [
+    "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
    "fr": "Document du projet illisible.",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
@@ -13165,6 +13769,12 @@
    ]
   },
   {
+   "fr": "Donner en récompense…",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "Donner le rôle",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -13197,7 +13807,8 @@
   {
    "fr": "Donnez-lui un nom.",
    "where": [
-    "ui/screens/AdminCreations.cpp"
+    "ui/screens/AdminCreations.cpp",
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -13349,6 +13960,12 @@
    ]
   },
   {
+   "fr": "Dossier « Images à importer » du jeu, surveillé : déposez-y vos PNG, ou glissez un fichier dans la fenêtre.",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "Double bond titanesque",
    "where": [
     "data/enemies/monolithe.json"
@@ -13377,6 +13994,12 @@
    "where": [
     "data/enemies/phenix.json",
     "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Double saut",
+   "where": [
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -13501,6 +14124,12 @@
    ]
   },
   {
+   "fr": "Du type du groupe choisi dans l'explorateur. Une combinaison part de la planche de Nova.",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "Duo",
    "where": [
     "game/online/Clans.cpp"
@@ -13511,7 +14140,9 @@
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
     "editors/level_editor/LevelEditorLayout.cpp",
-    "editors/level_editor/LevelEditorPanels.cpp"
+    "editors/level_editor/LevelEditorPanels.cpp",
+    "ui/studio/Studio.cpp",
+    "ui/studio/StudioFrise.cpp"
    ]
   },
   {
@@ -13521,11 +14152,23 @@
    ]
   },
   {
+   "fr": "Dupliquer l'image",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
    "fr": "Dupliquer pour modifier",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
     "editors/level_editor/LevelEditorLayout.cpp",
     "editors/level_editor/LevelEditorTools.cpp"
+   ]
+  },
+  {
+   "fr": "Dupliquer · Ctrl+D",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
    ]
   },
   {
@@ -13622,6 +14265,12 @@
    "fr": "Durée de la spirale (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Durée de vie",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -13813,6 +14462,12 @@
    ]
   },
   {
+   "fr": "Décalage : {0} px",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "Décalage de B",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -13993,6 +14648,18 @@
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "DÉCOUPE",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Découper et importer",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -14771,7 +15438,8 @@
    "fr": "Déplacer",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp",
-    "editors/level_editor/LevelEditorViewport.cpp"
+    "editors/level_editor/LevelEditorViewport.cpp",
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -14829,9 +15497,16 @@
    ]
   },
   {
+   "fr": "Détection automatique",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "E",
    "where": [
-    "ui/screens/NotificationsScene.cpp"
+    "ui/screens/NotificationsScene.cpp",
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -14850,6 +15525,12 @@
    "fr": "Eaux abyssales",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Effacer la sélection",
+   "where": [
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -14887,7 +15568,14 @@
   {
    "fr": "Effet de victoire",
    "where": [
-    "game/cosmetics/Collection.cpp"
+    "game/cosmetics/Collection.cpp",
+    "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
+   "fr": "effet de victoire",
+   "where": [
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -14936,7 +15624,8 @@
    "fr": "Effets de victoire",
    "where": [
     "data/cosmetics/cosmetics.json",
-    "ui/screens/AdminCreations.cpp"
+    "ui/screens/AdminCreations.cpp",
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -15022,6 +15711,12 @@
    "fr": "Elles tombent en marche, l'une après l'autre : revenez sous une presse déjà remontée.",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Ellipse",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -15267,6 +15962,12 @@
    "fr": "En haut de l'écran",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "En jeu",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
    ]
   },
   {
@@ -15742,6 +16443,12 @@
    ]
   },
   {
+   "fr": "Enregistrer et fermer",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "Enregistrer et quitter",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -15760,9 +16467,21 @@
    ]
   },
   {
+   "fr": "Enregistrer le brouillon · Ctrl+S",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "Enregistrer mes statistiques",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Enregistrer · Ctrl+S",
+   "where": [
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -16089,13 +16808,20 @@
   {
    "fr": "Envoi au serveur…",
    "where": [
-    "ui/screens/AdminCreations.cpp"
+    "ui/screens/AdminCreations.cpp",
+    "ui/studio/Studio.cpp"
    ]
   },
   {
    "fr": "Envoi d'une copie de la progression, puis création du code…",
    "where": [
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "envoi de l'image de {0} {1} refusé : {2}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -16114,6 +16840,12 @@
    "fr": "Envoi du replay de fin de niveau…",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
+   ]
+  },
+  {
+   "fr": "Envoi en cours…",
+   "where": [
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -16172,6 +16904,12 @@
    ]
   },
   {
+   "fr": "Envoyer au serveur",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "Envoyer la candidature",
    "where": [
     "ui/screens/ClanScene.cpp"
@@ -16208,6 +16946,12 @@
    ]
   },
   {
+   "fr": "Envoyez-la d'abord au serveur.",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "Envoyé",
    "where": [
     "game/online/DailyChallenges.cpp"
@@ -16235,6 +16979,12 @@
    "fr": "erreur réseau",
    "where": [
     "game/online/HttpTransport.cpp"
+   ]
+  },
+  {
+   "fr": "Escalade",
+   "where": [
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -16273,6 +17023,12 @@
    "fr": "Espacement (px)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Espacement : {0} px",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -16515,6 +17271,12 @@
    ]
   },
   {
+   "fr": "EXPLORATEUR",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "Explorateur",
    "where": [
     "data/achievements/achievements.json",
@@ -16537,7 +17299,8 @@
   {
    "fr": "Explosion",
    "where": [
-    "game/gameplay/Damage.cpp"
+    "game/gameplay/Damage.cpp",
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -16703,7 +17466,14 @@
    "fr": "Fantôme",
    "where": [
     "game/ghost/Ghost.cpp",
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengesScene.cpp",
+    "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
+   "fr": "Fantôme : translucide, comme dans les courses",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
    ]
   },
   {
@@ -16867,7 +17637,8 @@
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/RaceScene.cpp",
     "ui/screens/SegmentsScene.cpp",
-    "ui/screens/SocialScene.cpp"
+    "ui/screens/SocialScene.cpp",
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -16880,6 +17651,18 @@
    "fr": "Fermer les réglages",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Fermer sans enregistrer",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Fermer « {0} » ?",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -16981,6 +17764,12 @@
    ]
   },
   {
+   "fr": "Fichier de brouillon inconnu.",
+   "where": [
+    "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
    "fr": "Fichier de sauvegarde altéré ou tronqué (bloc {0}) : il ne peut pas être importé.",
    "where": [
     "server/src/backups.ts"
@@ -16989,6 +17778,7 @@
   {
    "fr": "fichier différent de celui du serveur (SHA-256)",
    "where": [
+    "game/cosmetics/CreationImages.cpp",
     "game/online/CampaignRevisions.cpp",
     "game/online/EnemyRevisions.cpp"
    ]
@@ -17027,6 +17817,12 @@
    "fr": "Fichier hors du dossier COSMIC_LEVEL : {0}",
    "where": [
     "packaging/PackageImporter.cpp"
+   ]
+  },
+  {
+   "fr": "Fichier illisible",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -17091,6 +17887,34 @@
    ]
   },
   {
+   "fr": "Fichier PNG abîmé (en-tête IHDR).",
+   "where": [
+    "game/cosmetics/CreationImages.cpp",
+    "server/src/creationAssets.ts"
+   ]
+  },
+  {
+   "fr": "Fichier PNG invalide (en-tête IHDR absent).",
+   "where": [
+    "game/cosmetics/CreationImages.cpp",
+    "server/src/creationAssets.ts"
+   ]
+  },
+  {
+   "fr": "Fichier PNG invalide (format de couleur).",
+   "where": [
+    "game/cosmetics/CreationImages.cpp",
+    "server/src/creationAssets.ts"
+   ]
+  },
+  {
+   "fr": "Fichier PNG tronqué.",
+   "where": [
+    "game/cosmetics/CreationImages.cpp",
+    "server/src/creationAssets.ts"
+   ]
+  },
+  {
    "fr": "Fichier refusé (empreinte SHA-256 différente).",
    "where": [
     "game/online/UpdateInstaller.cpp"
@@ -17102,6 +17926,18 @@
     "game/online/Replay.cpp",
     "server/src/backupFormat.ts",
     "server/src/replay.ts"
+   ]
+  },
+  {
+   "fr": "fichier trop grand",
+   "where": [
+    "game/cosmetics/CreationImages.cpp"
+   ]
+  },
+  {
+   "fr": "Fichier trop lourd ({0}, 8 Mo au plus)",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -17132,6 +17968,12 @@
    "fr": "Fichier trop volumineux.",
    "where": [
     "game/ghost/GhostStore.cpp"
+   ]
+  },
+  {
+   "fr": "fichier vide",
+   "where": [
+    "game/cosmetics/CreationImages.cpp"
    ]
   },
   {
@@ -17515,6 +18357,12 @@
    ]
   },
   {
+   "fr": "Fond uni → transparent",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "Fonderie",
    "where": [
     "data/levels/sylvanox_03.json"
@@ -17529,7 +18377,8 @@
   {
    "fr": "Fondu",
    "where": [
-    "editors/level_editor/LevelEditorDialogs.cpp"
+    "editors/level_editor/LevelEditorDialogs.cpp",
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -17607,6 +18456,7 @@
     "game/GameServices.cpp",
     "game/achievements/Achievements.cpp",
     "game/content/ContentDatabase.cpp",
+    "game/cosmetics/CreationImages.cpp",
     "game/ghost/Ghost.cpp",
     "game/ghost/GhostStore.cpp",
     "game/ghost/ReplayLibrary.cpp",
@@ -17632,7 +18482,8 @@
     "packaging/PackageImporter.cpp",
     "saves/SaveFile.cpp",
     "ui/screens/GameScene.cpp",
-    "ui/screens/ProjectsScene.cpp"
+    "ui/screens/ProjectsScene.cpp",
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -17729,7 +18580,9 @@
    "fr": "fps",
    "where": [
     "engine/animation/Animation.cpp",
-    "game/levels/DecorAtlas.cpp"
+    "game/cosmetics/CreationImages.cpp",
+    "game/levels/DecorAtlas.cpp",
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -17833,6 +18686,12 @@
    ]
   },
   {
+   "fr": "FRISE",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
    "fr": "fréquence d'échantillonnage invalide",
    "where": [
     "server/src/replay.ts"
@@ -17854,6 +18713,12 @@
    "fr": "Fuite sous (% PV)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Fumée",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -17916,6 +18781,12 @@
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp",
     "ui/screens/ChallengeUi.cpp"
+   ]
+  },
+  {
+   "fr": "G",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -18230,6 +19101,12 @@
    ]
   },
   {
+   "fr": "Gardé sur ce PC (dossier utilisateur du jeu, studio/brouillons) : rien ne part au serveur.",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "Gardés sur cet ordinateur : ils se regardent sans connexion et sans compte. On les télécharge depuis les classements en ligne, les défis et les courses à la vérification (« Télécharger » ou la flèche à côté de « Voir »).",
    "where": [
     "ui/screens/DownloadedReplaysUi.cpp"
@@ -18436,9 +19313,69 @@
    ]
   },
   {
+   "fr": "Glissade",
+   "where": [
+    "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
+   "fr": "Glissade au mur",
+   "where": [
+    "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
+   "fr": "Glisser d'un bout à l'autre · clic droit : couleur 2",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Glisser d'un coin à l'autre · Maj en lâchant : plein",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Glisser d'un coin à l'autre · Maj en lâchant : pleine",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Glisser la sélection, ou toute l'image si rien n'est choisi · flèches : 1 pixel",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Glisser pour choisir un rectangle · Suppr : l'effacer · Échap : la quitter",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Glisser pour tracer une zone · clic sur une zone : la retirer",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "Glisser un objet sélectionné : déplacer (aimanté à la grille) · poignées : redimensionner",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Glisser · flèches : de 4 % en 4 % (Maj : 1 %)",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Glisser · ↑ ↓ : de 6° en 6° (Maj : 1°)",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -18523,6 +19460,12 @@
    ]
   },
   {
+   "fr": "Gomme",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
    "fr": "Gouffre ! Sautez, double sautez, puis Dash en plein vol.",
    "where": [
     "data/levels/sylvanox_01.json"
@@ -18583,7 +19526,8 @@
    "where": [
     "data/powers/grapple.json",
     "game/gameplay/Hud.cpp",
-    "game/levels/ObjectTypes.cpp"
+    "game/levels/ObjectTypes.cpp",
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -18629,7 +19573,8 @@
    "fr": "Gravité",
    "where": [
     "data/enemies/singularis.json",
-    "editors/enemy_editor/EnemyEditorProperties.cpp"
+    "editors/enemy_editor/EnemyEditorProperties.cpp",
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -18660,7 +19605,8 @@
   {
    "fr": "Grille",
    "where": [
-    "editors/level_editor/LevelEditorLayout.cpp"
+    "editors/level_editor/LevelEditorLayout.cpp",
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -18670,9 +19616,21 @@
    ]
   },
   {
+   "fr": "Grille régulière",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "Grille suspendue",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Grille · Ctrl+G",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -18901,6 +19859,12 @@
    ]
   },
   {
+   "fr": "H",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
    "fr": "Habitant du cosmos",
    "where": [
     "data/achievements/achievements.json"
@@ -18959,6 +19923,12 @@
    "fr": "Hauteur (px)",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Hauteur : {0} px",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -19151,6 +20121,12 @@
    "where": [
     "data/enemies/echo_nyxara.json",
     "data/enemies/nyxara.json"
+   ]
+  },
+  {
+   "fr": "horizontale",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -19432,7 +20408,8 @@
   {
    "fr": "I",
    "where": [
-    "ui/screens/ReplayScene.cpp"
+    "ui/screens/ReplayScene.cpp",
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -19525,7 +20502,9 @@
     "ui/screens/ReplayScene.cpp",
     "ui/screens/ResultsScene.cpp",
     "ui/screens/SocialScene.cpp",
-    "ui/screens/SpectateScene.cpp"
+    "ui/screens/SpectateScene.cpp",
+    "ui/studio/Studio.cpp",
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -19671,6 +20650,18 @@
    "fr": "IGNIVORE, LE SERPENT DE FEU",
    "where": [
     "data/enemies/ignivore.json"
+   ]
+  },
+  {
+   "fr": "Ignorer les cases vides",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Ignorée",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -19858,7 +20849,10 @@
    "fr": "image",
    "where": [
     "game/content/BossStories.cpp",
-    "ui/screens/ReplayScene.cpp"
+    "ui/screens/AdminScene.cpp",
+    "ui/screens/ReplayScene.cpp",
+    "ui/studio/Studio.cpp",
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -19868,15 +20862,130 @@
    ]
   },
   {
+   "fr": "Image de « {0} » non téléchargée (illisible) : ses paramètres sont dessinés à la place.",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "Image de « {0} » non téléchargée ({1}) : ses paramètres sont dessinés à la place.",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "Image du brouillon aux mauvaises dimensions.",
+   "where": [
+    "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
+   "fr": "Image entièrement transparente : rien à découper.",
+   "where": [
+    "ui/studio/StudioSlicer.cpp"
+   ]
+  },
+  {
+   "fr": "Image illisible.",
+   "where": [
+    "ui/studio/StudioSlicer.cpp"
+   ]
+  },
+  {
+   "fr": "Image impossible à écrire en PNG.",
+   "where": [
+    "ui/studio/Studio.cpp",
+    "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
+   "fr": "Image introuvable.",
+   "where": [
+    "server/src/creationAssets.ts"
+   ]
+  },
+  {
+   "fr": "Image trop grande : {0} × {1} pixels ({2} × {3} au plus).",
+   "where": [
+    "ui/studio/StudioSlicer.cpp"
+   ]
+  },
+  {
+   "fr": "Image trop grande : {0} × {1} px (2048 au plus)",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "image trop lourde",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Image trop lourde : {0} Ko en PNG ({1} Ko au plus). Moins de couleurs différentes la rendent plus légère.",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "Image vide.",
+   "where": [
+    "game/cosmetics/CreationImages.cpp"
+   ]
+  },
+  {
+   "fr": "Image {0} / {1}",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
    "fr": "Image ›",
    "where": [
     "ui/screens/ReplayScene.cpp"
    ]
   },
   {
+   "fr": "image.png illisible.",
+   "where": [
+    "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
    "fr": "Images / s",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "IMAGES DÉTECTÉES",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Images importées",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Images par seconde",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
+   "fr": "Images PNG",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Images à importer",
+   "where": [
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -19895,6 +21004,18 @@
    "fr": "Imp.",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Impact",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Impact au sol",
+   "where": [
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -19959,9 +21080,51 @@
    ]
   },
   {
+   "fr": "IMPORTER UNE IMAGE",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Importer une image : glissez un PNG dans la fenêtre, choisissez-le, ou déposez-le dans le dossier « Images à importer » du jeu, que le Studio surveille. Découpe par détection automatique des zones, par grille régulière ou à la main ; chaque rangée va dans l'animation de votre choix, avec un aperçu animé avant d'importer ; un fichier refusé dit pourquoi. Ctrl+Z annule l'import en entier.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Importer une image · Ctrl+I",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "Importer une sauvegarde…",
    "where": [
     "ui/screens/AdminBackups.cpp"
+   ]
+  },
+  {
+   "fr": "Importer {0} image dans {1}",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Importer {0} images dans {1}",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Importer « {0} »",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Importer…",
+   "where": [
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -20268,6 +21431,12 @@
    "fr": "Interactifs",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Interaction",
+   "where": [
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -21084,7 +22253,8 @@
   {
    "fr": "L",
    "where": [
-    "ui/screens/ReplayScene.cpp"
+    "ui/screens/ReplayScene.cpp",
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -21115,6 +22285,12 @@
    "fr": "l'ancien compte",
    "where": [
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "L'animation au rythme où le jeu la joue.",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
    ]
   },
   {
@@ -21339,6 +22515,18 @@
    "fr": "L'identifiant du niveau ne correspond pas au manifeste",
    "where": [
     "packaging/PackageImporter.cpp"
+   ]
+  },
+  {
+   "fr": "L'image d'avant (bleutée) et celle d'après (rosée), en transparence, pour suivre le mouvement.",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "L'image est vide : dessinez au moins une image.",
+   "where": [
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -21598,6 +22786,12 @@
    ]
   },
   {
+   "fr": "La combinaison garde la découpe de Nova : {0} images pour « {1} ».",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
    "fr": "La connexion automatique conserve un jeton de session protégé par votre compte Windows (ou lisible seulement par votre utilisateur sous Linux). Le mot de passe n'est jamais enregistré.",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
@@ -21727,6 +22921,12 @@
    "fr": "La Dévoreuse d'étoiles",
    "where": [
     "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "La fenêtre des fichiers du système : un PNG n'importe où sur ce PC.",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -21893,6 +23093,12 @@
    "fr": "La Lanterne les recueillit une à une. Il grandit, grandit encore, et ses huit bras s'allumèrent.",
    "where": [
     "data/stories/kraken.json"
+   ]
+  },
+  {
+   "fr": "La lecture de la frise ; dans le jeu, la particule joue ses images sur sa durée de vie.",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
    ]
   },
   {
@@ -22104,6 +23310,13 @@
    "fr": "La phrase secrète ne doit pas contenir de caractère de contrôle.",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "La planche doit mesurer {0} × {1} pixels (ses images côte à côte).",
+   "where": [
+    "game/cosmetics/CreationImages.cpp",
+    "server/src/creationAssets.ts"
    ]
   },
   {
@@ -22622,6 +23835,12 @@
    ]
   },
   {
+   "fr": "Largeur : {0} px",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "Larme d'aurore",
    "where": [
     "data/levels/aethra_02.json",
@@ -22997,6 +24216,12 @@
    ]
   },
   {
+   "fr": "Le corps doit être l'image PNG (image/png).",
+   "where": [
+    "server/src/creationAssets.ts"
+   ]
+  },
+  {
    "fr": "Le courant de la cheminée remonte jusqu'à la surface.",
    "where": [
     "data/levels/pyralis_01.json"
@@ -23208,6 +24433,12 @@
    "fr": "Le direct reprend depuis le début de la partie.",
    "where": [
     "server/src/spectate.ts"
+   ]
+  },
+  {
+   "fr": "Le dossier est vide pour l'instant :\n{0}",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -23817,6 +25048,12 @@
    ]
   },
   {
+   "fr": "Le nouveau nom part au serveur avec « Envoyer au serveur ».",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "Le Néant ! La Liche ne retient plus rien !",
    "where": [
     "data/enemies/liche.json"
@@ -24106,6 +25343,12 @@
    ]
   },
   {
+   "fr": "Le rythme du cadre animé.",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
    "fr": "Le récepteur n'ouvre la porte que quelques secondes : frappez-le, puis foncez (Dash) !",
    "where": [
     "data/levels/glacior_03.json"
@@ -24157,6 +25400,12 @@
    "fr": "Le serveur a refusé une modification ({0}).",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
+   ]
+  },
+  {
+   "fr": "le serveur a répondu {0}",
+   "where": [
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -24572,6 +25821,12 @@
    ]
   },
   {
+   "fr": "Lecture · P",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
    "fr": "Lecture…",
    "where": [
     "ui/screens/AdminScene.cpp",
@@ -24862,6 +26117,12 @@
    ]
   },
   {
+   "fr": "les deux",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
    "fr": "Les deux mots de passe sont différents.",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
@@ -25072,6 +26333,19 @@
    ]
   },
   {
+   "fr": "Les images d'un cadre sont carrées.",
+   "where": [
+    "game/cosmetics/CreationImages.cpp",
+    "server/src/creationAssets.ts"
+   ]
+  },
+  {
+   "fr": "Les images vides prennent celles de Nova (une combinaison doit les avoir toutes).",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
    "fr": "Les impacts se suivent le long d'une ligne.",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -25149,6 +26423,12 @@
    "fr": "Les os des catacombes se lèvent !",
    "where": [
     "data/enemies/liche.json"
+   ]
+  },
+  {
+   "fr": "Les paramètres de la combinaison prennent aussi ces couleurs (son apparence simple, sans image).",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -25385,6 +26665,12 @@
    "fr": "Les touches des pouvoirs se règlent pour chaque niveau : éditeur, choix du niveau › Touches…, pause › Touches de ce niveau.",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Les trois couleurs d'une combinaison",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -25645,6 +26931,12 @@
    "fr": "Lieux sûrs",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ligne",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -26101,7 +27393,8 @@
   {
    "fr": "M",
    "where": [
-    "ui/screens/NotificationsScene.cpp"
+    "ui/screens/NotificationsScene.cpp",
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -26434,6 +27727,12 @@
    ]
   },
   {
+   "fr": "Marche",
+   "where": [
+    "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
    "fr": "Marche des presses",
    "where": [
     "data/enemies/titan.json"
@@ -26456,6 +27755,12 @@
    "where": [
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Marge autour des zones : {0} px",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -26638,6 +27943,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "mauvaises dimensions",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -27129,7 +28440,8 @@
     "ui/screens/AdminCreations.cpp",
     "ui/screens/ClanScene.cpp",
     "ui/screens/OnlineAccountScene.cpp",
-    "ui/screens/ProjectsScene.cpp"
+    "ui/screens/ProjectsScene.cpp",
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -27379,15 +28691,28 @@
    ]
   },
   {
+   "fr": "Miroir et symétrie",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
    "fr": "Miroir horizontal",
    "where": [
-    "editors/level_editor/LevelEditorPanels.cpp"
+    "editors/level_editor/LevelEditorPanels.cpp",
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
    "fr": "Miroir sans tache",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Miroir vertical",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -27555,7 +28880,8 @@
   {
    "fr": "Modifications non enregistrées",
    "where": [
-    "editors/level_editor/LevelEditorPanels.cpp"
+    "editors/level_editor/LevelEditorPanels.cpp",
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -27645,9 +28971,21 @@
    ]
   },
   {
+   "fr": "modifié depuis l'envoi au serveur",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "modifié {0}",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Modèle illisible : {0}.",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -27668,6 +29006,12 @@
    "where": [
     "game/online/Spectate.cpp",
     "server/src/spectate.ts"
+   ]
+  },
+  {
+   "fr": "Moins d'images par seconde",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
    ]
   },
   {
@@ -27713,6 +29057,24 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Molette : zoom · espace + glisser : déplacer la vue",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Molette vers l'avant, sur la toile",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Molette vers soi, sur la toile",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -29204,7 +30566,8 @@
   {
    "fr": "Nom : 32 caractères au plus.",
    "where": [
-    "ui/screens/AdminCreations.cpp"
+    "ui/screens/AdminCreations.cpp",
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -29345,6 +30708,12 @@
    "fr": "nom ou couleurs invalides",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Nom, couleur, type…",
+   "where": [
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -29636,6 +31005,12 @@
    ]
   },
   {
+   "fr": "Notification de mise à jour : elle montre les nouveautés de toutes les versions publiées depuis celle du joueur (et de chaque version sans installateur propre), pas seulement celles de la dernière.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Notification introuvable.",
    "where": [
     "server/src/notifications.ts"
@@ -29710,7 +31085,9 @@
   {
    "fr": "Nouveau cadre",
    "where": [
-    "ui/screens/AdminCreations.cpp"
+    "ui/screens/AdminCreations.cpp",
+    "ui/studio/Studio.cpp",
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -29808,6 +31185,12 @@
    ]
   },
   {
+   "fr": "Nouveau nom",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "Nouveau pouvoir : le Boomerang chargé. Maintenez pour charger, relâchez pour lancer : la lame s'accroche au premier ennemi touché et tourne sur lui (0,4 à 2 s selon la charge), 1 dégât puis 1 toutes les 0,3 s, puis revient. 25 d'énergie.",
    "where": [
     "data/news/changelog.json"
@@ -29900,9 +31283,16 @@
    ]
   },
   {
+   "fr": "Nouvel effet",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "Nouvel effet de victoire",
    "where": [
-    "ui/screens/AdminCreations.cpp"
+    "ui/screens/AdminCreations.cpp",
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -29930,6 +31320,12 @@
    ]
   },
   {
+   "fr": "nouvelle",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "Nouvelle attaque",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -29938,13 +31334,21 @@
   {
    "fr": "Nouvelle combinaison",
    "where": [
-    "ui/screens/AdminCreations.cpp"
+    "ui/screens/AdminCreations.cpp",
+    "ui/studio/Studio.cpp",
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
    "fr": "Nouvelle commande : {0}",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Nouvelle création à partir de « {0} » : pas encore enregistrée.",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -29980,7 +31384,9 @@
   {
    "fr": "Nouvelle traînée",
    "where": [
-    "ui/screens/AdminCreations.cpp"
+    "ui/screens/AdminCreations.cpp",
+    "ui/studio/Studio.cpp",
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -30054,7 +31460,8 @@
     "game/records/Records.cpp",
     "game/records/Records.h",
     "ui/screens/CollectionScene.cpp",
-    "ui/screens/RewardsScene.cpp"
+    "ui/screens/RewardsScene.cpp",
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -30331,6 +31738,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "O",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -30715,6 +32128,12 @@
    "fr": "OFFLINE",
    "where": [
     "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "OK",
+   "where": [
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -31247,6 +32666,24 @@
    ]
   },
   {
+   "fr": "Ouvre le Calendrier des défis : choisissez un défi à venir, puis « Récompenses ».",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "Ouvrez une création : elle se voit ici comme dans le jeu.",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
+   "fr": "Ouvrez une création d'abord.",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "Ouvrir (porte, barrière, portail)",
    "where": [
     "game/levels/EventSystem.cpp"
@@ -31302,6 +32739,12 @@
    ]
   },
   {
+   "fr": "Où chaque zone se pose dans son image de 32 × 32 : sous les pieds (comme Nova) ou au centre.",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "OÙ ET QUAND",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -31323,6 +32766,12 @@
    "fr": "OÙ LE COMBAT S'ARRÊTE",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Où vont les images",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -31433,9 +32882,34 @@
    ]
   },
   {
+   "fr": "PALETTE",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
    "fr": "Palette",
    "where": [
     "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Palette : {0}",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Palette « {0} »",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Palettes",
+   "where": [
+    "ui/studio/Studio.cpp",
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -31557,6 +33031,12 @@
    "fr": "par exemple #c8e1ff",
    "where": [
     "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "par la couleur 1 :",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -31834,6 +33314,25 @@
    "where": [
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
+   "fr": "Particule",
+   "where": [
+    "ui/studio/StudioDoc.cpp",
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "particule du jeu",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Particules par seconde",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -32148,6 +33647,18 @@
    ]
   },
   {
+   "fr": "Pas encore enregistré sur ce PC",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "pas encore envoyé au serveur",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "Pas encore rencontrée.",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -32208,9 +33719,28 @@
    ]
   },
   {
+   "fr": "pas un fichier PNG valide",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pas un fichier PNG.",
+   "where": [
+    "game/cosmetics/CreationImages.cpp",
+    "server/src/creationAssets.ts"
+   ]
+  },
+  {
    "fr": "Pas un frisson",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Pas un PNG transparent : ignorée",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -32223,6 +33753,12 @@
    "fr": "Pas une goutte d'encre",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "pas une image PNG",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -32410,7 +33946,8 @@
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
     "engine/input/InputTypes.cpp",
-    "ui/screens/ReplayScene.cpp"
+    "ui/screens/ReplayScene.cpp",
+    "ui/studio/StudioFrise.cpp"
    ]
   },
   {
@@ -32447,6 +33984,12 @@
    "fr": "Pause aux extrémités (s)",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Pause · P",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
    ]
   },
   {
@@ -32535,6 +34078,18 @@
    "fr": "Peloton",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Pelure d'oignon (± 1)",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Pelure d'oignon · Ctrl+P",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -32942,6 +34497,12 @@
    ]
   },
   {
+   "fr": "Pipette",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
    "fr": "Piqué",
    "where": [
     "data/enemies/ash_wing.json",
@@ -32953,7 +34514,8 @@
     "data/enemies/frost_wing.json",
     "data/enemies/howling_wyrm.json",
     "data/enemies/ignivore.json",
-    "data/enemies/nightwing.json"
+    "data/enemies/nightwing.json",
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -33001,6 +34563,12 @@
    "fr": "Pistons",
    "where": [
     "data/levels/aethra_03.json"
+   ]
+  },
+  {
+   "fr": "Pixel transparent : choisissez un pixel de couleur.",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -33080,6 +34648,12 @@
    "fr": "Plaines de givre",
    "where": [
     "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "planche de Nova · 320 × 864",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -33788,6 +35362,12 @@
    ]
   },
   {
+   "fr": "PNG illisible",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "Poids (probabilité)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -33821,6 +35401,18 @@
    "fr": "Point d'ancrage",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Point d'ancrage : au centre",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Point d'ancrage : sous les pieds, au centre",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -34283,6 +35875,12 @@
    ]
   },
   {
+   "fr": "Pot de peinture",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
    "fr": "Poulpe cosmique",
    "where": [
     "data/online/avatars.json"
@@ -34412,6 +36010,12 @@
    "fr": "Poursuite sous le sol (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Poussière",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -34734,6 +36338,12 @@
    ]
   },
   {
+   "fr": "Prend la couleur d'un pixel · clic droit : pour la couleur 2",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
    "fr": "Prenez la tablette du sanctuaire.",
    "where": [
     "data/levels/aethra_01.json",
@@ -34846,7 +36456,20 @@
    "fr": "Profil",
    "where": [
     "ui/screens/AdminCreations.cpp",
-    "ui/screens/OnlineRankingScene.cpp"
+    "ui/screens/OnlineRankingScene.cpp",
+    "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
+   "fr": "Profil : la combinaison au côté de l'avatar",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
+   "fr": "Profil : le cadre autour de l'avatar",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
    ]
   },
   {
@@ -35960,7 +37583,8 @@
    "fr": "R",
    "where": [
     "ui/screens/NotificationsScene.cpp",
-    "ui/screens/ReplayScene.cpp"
+    "ui/screens/ReplayScene.cpp",
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -36243,6 +37867,24 @@
    "where": [
     "game/enemies/EnemyDefinition.cpp",
     "game/powers/PowerStats.cpp"
+   ]
+  },
+  {
+   "fr": "Rangée {0} · {1} images",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Rangée {0} → ignorée · {1} images / s, en boucle",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Rangée {0} → {1} · {2} images / s, en boucle",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -36579,7 +38221,8 @@
   {
    "fr": "Rechercher",
    "where": [
-    "ui/screens/ClanScene.cpp"
+    "ui/screens/ClanScene.cpp",
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -36617,6 +38260,24 @@
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Recolorer",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "RECOLORER TOUTES LES IMAGES",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Recolorer toutes les images…",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -36833,6 +38494,12 @@
    "fr": "Recover",
    "where": [
     "game/enemies/Enemy.cpp"
+   ]
+  },
+  {
+   "fr": "Rectangle",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -37055,7 +38722,8 @@
    "fr": "Refusé par le serveur.",
    "where": [
     "ui/screens/AdminCalendar.cpp",
-    "ui/screens/AdminCreations.cpp"
+    "ui/screens/AdminCreations.cpp",
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -37154,7 +38822,8 @@
   {
    "fr": "Rejouer",
    "where": [
-    "editors/enemy_editor/EnemyEditorScene.cpp"
+    "editors/enemy_editor/EnemyEditorScene.cpp",
+    "ui/studio/StudioFrise.cpp"
    ]
   },
   {
@@ -37297,6 +38966,12 @@
    ]
   },
   {
+   "fr": "Remplacer (les couleurs de l'image, la plus présente d'abord) :",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "Remplacer (package / ennemis / pouvoirs)",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
@@ -37319,6 +38994,12 @@
    "fr": "Remplacer toutes les données",
    "where": [
     "ui/screens/AdminBackups.cpp"
+   ]
+  },
+  {
+   "fr": "Remplit la zone d'une même couleur, dans l'image en cours · clic droit : couleur 2",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -37377,6 +39058,12 @@
    ]
   },
   {
+   "fr": "Rend les pixels transparents · Maj : ligne droite",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
    "fr": "Rend transparents les décors avant au-dessus de la zone et compte comme secret trouvé.",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -37411,7 +39098,8 @@
    "where": [
     "ui/screens/AdminClans.cpp",
     "ui/screens/OnlineComputer.cpp",
-    "ui/screens/SocialScene.cpp"
+    "ui/screens/SocialScene.cpp",
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -37433,9 +39121,27 @@
    ]
   },
   {
+   "fr": "Renommer · F2",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "Renommer…",
    "where": [
     "ui/screens/AdminClans.cpp"
+   ]
+  },
+  {
+   "fr": "Renommée : le nouveau nom part au serveur avec « Envoyer au serveur ».",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "Renommée.",
+   "where": [
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -37866,7 +39572,8 @@
    "where": [
     "ui/screens/AdminCreations.cpp",
     "ui/screens/OnlineMigration.cpp",
-    "ui/screens/ProjectsScene.cpp"
+    "ui/screens/ProjectsScene.cpp",
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -37913,6 +39620,12 @@
    ]
   },
   {
+   "fr": "Restaurée sur le serveur : de nouveau proposée en récompense.",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "Reste armée (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -37931,6 +39644,12 @@
    ]
   },
   {
+   "fr": "Retire cette image de la particule.",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
    "fr": "Retirer",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
@@ -37939,6 +39658,12 @@
     "ui/screens/OnlineSettingsScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Retirer de la palette",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -38050,7 +39775,8 @@
     "ui/screens/ReplayScene.cpp",
     "ui/screens/SettingsScene.cpp",
     "ui/screens/SpectateScene.cpp",
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsScene.cpp",
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -38138,6 +39864,24 @@
    "fr": "Retourner",
    "where": [
     "editors/level_editor/LevelEditorViewport.cpp"
+   ]
+  },
+  {
+   "fr": "Retourner la sélection ou l'image (H, Maj+H) · symétrie en dessinant (S)",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Retourner à l'horizontale · H",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Retourner à la verticale · Maj+H",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -38281,9 +40025,21 @@
    ]
   },
   {
+   "fr": "Rien n'est remplacé avant « Importer » ; ensuite, Ctrl+Z annule l'import en entier.",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "Rien ne se perd",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Rien à annuler.",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -38302,6 +40058,12 @@
    "fr": "rien à modifier",
    "where": [
     "server/src/clans.ts"
+   ]
+  },
+  {
+   "fr": "Rien à rétablir.",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -38421,7 +40183,8 @@
    "fr": "Rotation",
    "where": [
     "editors/level_editor/LevelEditorScene.cpp",
-    "game/powers/PowerStats.cpp"
+    "game/powers/PowerStats.cpp",
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -38562,7 +40325,9 @@
     "ui/screens/CollectionScene.cpp",
     "ui/screens/CreatureArt.cpp",
     "ui/screens/RewardsScene.cpp",
-    "ui/screens/TutorialScenes.cpp"
+    "ui/screens/TutorialScenes.cpp",
+    "ui/studio/StudioDoc.cpp",
+    "ui/studio/StudioFrise.cpp"
    ]
   },
   {
@@ -38619,7 +40384,8 @@
   {
    "fr": "Ruée",
    "where": [
-    "game/tutorial/Tutorial.cpp"
+    "game/tutorial/Tutorial.cpp",
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -38984,6 +40750,12 @@
    ]
   },
   {
+   "fr": "réglages de l'image invalides",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Réglages du niveau : {0}",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -39211,6 +40983,12 @@
    ]
   },
   {
+   "fr": "Réserve du jeu (masquer)",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "réserve du jeu · pas besoin de mise à jour",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -39254,9 +41032,22 @@
    ]
   },
   {
+   "fr": "Rétabli : {0}.",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "Rétablir",
    "where": [
-    "editors/level_editor/LevelEditorLayout.cpp"
+    "editors/level_editor/LevelEditorLayout.cpp",
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Rétablir · Ctrl+Y",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -39859,7 +41650,9 @@
   {
    "fr": "Sans nom",
    "where": [
-    "ui/screens/AdminCreations.cpp"
+    "ui/screens/AdminCreations.cpp",
+    "ui/studio/Studio.cpp",
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -39921,10 +41714,17 @@
    ]
   },
   {
+   "fr": "Saturation et valeur",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
    "fr": "Saut",
    "where": [
     "engine/input/InputTypes.cpp",
-    "ui/screens/ReplayScene.cpp"
+    "ui/screens/ReplayScene.cpp",
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -40646,6 +42446,12 @@
    ]
   },
   {
+   "fr": "Ses modifications ne sont pas enregistrées. « Enregistrer et fermer » garde le brouillon sur ce PC ; « Fermer sans enregistrer » les perd.",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "Ses pas arrachent la roche : les blocs tournoient !",
    "where": [
     "data/levels/confins_02.json"
@@ -40752,6 +42558,12 @@
    "fr": "Seuil",
    "where": [
     "data/levels/aethra_04.json"
+   ]
+  },
+  {
+   "fr": "Seuil de transparence : {0} %",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -41360,6 +43172,12 @@
    ]
   },
   {
+   "fr": "Sort",
+   "where": [
+    "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
    "fr": "sorte de défi inconnue",
    "where": [
     "game/online/DailyChallenges.cpp"
@@ -41387,6 +43205,12 @@
    "fr": "Sortie des cheminées",
    "where": [
     "data/levels/pyralis_01.json"
+   ]
+  },
+  {
+   "fr": "Sortie du niveau · {0},{1} s",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
    ]
   },
   {
@@ -41848,6 +43672,13 @@
    ]
   },
   {
+   "fr": "Sprites du jeu (modèles)",
+   "where": [
+    "ui/studio/Studio.cpp",
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "Spéc.",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -42244,6 +44075,18 @@
    ]
   },
   {
+   "fr": "Studio",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Studio : dessinez les images des créations ; elles partent au serveur avec « Envoyer au serveur ».",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "Style",
    "where": [
     "game/levels/ObjectTypes.cpp",
@@ -42567,7 +44410,8 @@
     "ui/screens/DownloadedReplaysUi.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/ProjectsScene.cpp",
-    "ui/screens/SocialScene.cpp"
+    "ui/screens/SocialScene.cpp",
+    "ui/studio/StudioFrise.cpp"
    ]
   },
   {
@@ -42580,6 +44424,12 @@
    "fr": "Supprimer et retirer en ligne",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
+   ]
+  },
+  {
+   "fr": "Supprimer l'image",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
    ]
   },
   {
@@ -42894,6 +44744,18 @@
    ]
   },
   {
+   "fr": "Symétrie : {0}",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Symétrie en dessinant · S",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
    "fr": "Synchronisation automatique",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
@@ -43035,7 +44897,8 @@
    "fr": "Sélection",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
-    "editors/level_editor/LevelEditorLayout.cpp"
+    "editors/level_editor/LevelEditorLayout.cpp",
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -43109,6 +44972,12 @@
    "fr": "T",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "T {0}° · S {1} % · V {2} %",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -43328,7 +45197,20 @@
    "fr": "Taille",
    "where": [
     "ui/screens/AdminBackups.cpp",
-    "ui/screens/HudEditorScene.cpp"
+    "ui/screens/HudEditorScene.cpp",
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Taille : {0} %",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Taille d'une image : {0} × {1} px",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -43456,7 +45338,8 @@
   {
    "fr": "Teinte",
    "where": [
-    "game/levels/ObjectTypes.cpp"
+    "game/levels/ObjectTypes.cpp",
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -44453,7 +46336,8 @@
   {
    "fr": "Tir",
    "where": [
-    "ui/screens/ReplayScene.cpp"
+    "ui/screens/ReplayScene.cpp",
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -45107,6 +46991,12 @@
    ]
   },
   {
+   "fr": "Toutes les images",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "Toutes les phases",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
@@ -45169,7 +47059,8 @@
   {
    "fr": "Traction",
    "where": [
-    "game/powers/PowerStats.cpp"
+    "game/powers/PowerStats.cpp",
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -45388,7 +47279,14 @@
    "fr": "Traînée",
    "where": [
     "game/cosmetics/Collection.cpp",
-    "ui/screens/PlayerProfileScene.cpp"
+    "ui/screens/PlayerProfileScene.cpp",
+    "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
+   "fr": "traînée",
+   "where": [
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -45450,7 +47348,8 @@
    "fr": "Traînées",
    "where": [
     "data/cosmetics/cosmetics.json",
-    "ui/screens/AdminCreations.cpp"
+    "ui/screens/AdminCreations.cpp",
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -45724,6 +47623,13 @@
    ]
   },
   {
+   "fr": "Type de création inconnu.",
+   "where": [
+    "game/cosmetics/CreationImages.cpp",
+    "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
    "fr": "Type de fichier interdit : {0}",
    "where": [
     "packaging/PackageImporter.cpp"
@@ -45772,6 +47678,18 @@
    ]
   },
   {
+   "fr": "Téléchargement de son image…",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "téléchargement de son image…",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "Téléchargement du niveau…",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -45802,7 +47720,8 @@
   {
    "fr": "téléchargement impossible",
    "where": [
-    "game/GameServices.cpp"
+    "game/GameServices.cpp",
+    "game/cosmetics/CreationImages.cpp"
    ]
   },
   {
@@ -45953,7 +47872,8 @@
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "engine/input/InputTypes.cpp",
-    "game/levels/ObjectTypes.cpp"
+    "game/levels/ObjectTypes.cpp",
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -46094,6 +48014,13 @@
    "fr": "Un cadre d'avatar créé sur Cosmic Online.",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Un cadre mesure de {0} à {1} pixels de côté.",
+   "where": [
+    "game/cosmetics/CreationImages.cpp",
+    "server/src/creationAssets.ts"
    ]
   },
   {
@@ -46493,6 +48420,12 @@
    ]
   },
   {
+   "fr": "Un PNG glissé dans la fenêtre, choisi, ou déposé dans le dossier « Images à importer » ; découpé en images avant d'être ajouté.",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "Un point à chaque date où l'un des deux a changé",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -46742,6 +48675,13 @@
    ]
   },
   {
+   "fr": "Une combinaison est la planche entière de Nova : {0} × {1} pixels (ici {2} × {3}).",
+   "where": [
+    "game/cosmetics/CreationImages.cpp",
+    "server/src/creationAssets.ts"
+   ]
+  },
+  {
    "fr": "une combinaison porte déjà ce nom",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -46754,15 +48694,45 @@
    ]
   },
   {
+   "fr": "Une combinaison se dessine image par image sur la planche de Nova : la frise montre chaque animation du jeu (attente, course, saut…) et ses images, avec lecture, pelure d'oignon et « Recolorer toutes les images… » d'un coup (une couleur par une autre, ou les trois couleurs d'une combinaison).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Une copie automatique chaque nuit · 14 gardées · manuelles 90 jours",
    "where": [
     "ui/screens/AdminBackups.cpp"
    ]
   },
   {
+   "fr": "Une copie de cette image, juste après.",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
    "fr": "Une copie de la progression vient d'être envoyée. Avec ce code, un nouveau compte, sur un autre ordinateur, récupère toutes vos données.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Une copie, ouverte comme nouveau brouillon (jamais envoyée tant que vous ne l'envoyez pas).",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "Une couleur par une autre",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Une couleur remplacée par une autre dans toutes les images d'un coup (ou une animation, ou une image).",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -46796,6 +48766,12 @@
    ]
   },
   {
+   "fr": "Une création du serveur n'est plus proposée en récompense (ceux qui l'ont la gardent) ; un brouillon va dans les archives de ce PC.",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "Une création reste invisible des joueurs tant qu'aucun défi commencé ne la donne et que personne ne l'a gagnée : la réserve et les récompenses des défis à venir ne se découvrent pas avant l'heure.",
    "where": [
     "data/news/changelog.json"
@@ -46823,6 +48799,18 @@
    "fr": "Une heure dans les étoiles",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Une image vide après celle-ci (16 au plus).",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
+   "fr": "Une ligne entre chaque pixel quand le zoom le permet.",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -46910,6 +48898,12 @@
    ]
   },
   {
+   "fr": "une nouvelle {0}",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "Une ombre bordée d'or.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -46931,6 +48925,13 @@
    "fr": "Une onde de lumière à la fin du niveau.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Une particule mesure de {0} à {1} pixels de côté.",
+   "where": [
+    "game/cosmetics/CreationImages.cpp",
+    "server/src/creationAssets.ts"
    ]
   },
   {
@@ -47178,6 +49179,12 @@
    "fr": "Une traînée créée sur Cosmic Online.",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Une traînée ou un effet de victoire devient une particule animée et son émetteur (particules par seconde, durée de vie, taille, vitesse, dispersion, gravité, rotation, fondu, couleurs du début à la fin, étincelles) ; un cadre, un anneau dessiné autour de l'avatar. Aperçus : Nova qui court, son fantôme, l'effet rejoué à la sortie, le cadre sur le profil et dans un classement.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -47491,7 +49498,8 @@
   {
    "fr": "V",
    "where": [
-    "ui/screens/NotificationsScene.cpp"
+    "ui/screens/NotificationsScene.cpp",
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -48202,7 +50210,8 @@
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/RaceScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp",
-    "ui/screens/SpectateScene.cpp"
+    "ui/screens/SpectateScene.cpp",
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -48330,6 +50339,12 @@
    ]
   },
   {
+   "fr": "Version invalide.",
+   "where": [
+    "server/src/releases.ts"
+   ]
+  },
+  {
    "fr": "Version {0}",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
@@ -48354,6 +50369,12 @@
    "where": [
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Version {0} :\n{1}",
+   "where": [
+    "game/GameServices.cpp"
    ]
   },
   {
@@ -48394,6 +50415,12 @@
    ]
   },
   {
+   "fr": "verticale",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
    "fr": "Vestiaire",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -48409,7 +50436,8 @@
    "fr": "Victoire",
    "where": [
     "data/music/tracks.json",
-    "ui/screens/PlayerProfileScene.cpp"
+    "ui/screens/PlayerProfileScene.cpp",
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -48468,6 +50496,18 @@
    "fr": "Victory",
    "where": [
     "game/player/Player.cpp"
+   ]
+  },
+  {
+   "fr": "vide",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
+   "fr": "Vide cette image (à redessiner ou « Compléter avec Nova »).",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
    ]
   },
   {
@@ -48677,7 +50717,8 @@
     "game/enemies/BossAttackSheet.cpp",
     "game/powers/PowerStats.cpp",
     "ui/screens/AdminCalendar.cpp",
-    "ui/screens/BossStatsScene.cpp"
+    "ui/screens/BossStatsScene.cpp",
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -48957,6 +50998,12 @@
    "fr": "Vol après le verrouillage (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Vol plané",
+   "where": [
+    "ui/studio/StudioDoc.cpp"
    ]
   },
   {
@@ -49260,7 +51307,8 @@
   {
    "fr": "Votre pseudo",
    "where": [
-    "ui/screens/AdminCreations.cpp"
+    "ui/screens/AdminCreations.cpp",
+    "ui/studio/StudioFrise.cpp"
    ]
   },
   {
@@ -50003,6 +52051,24 @@
    ]
   },
   {
+   "fr": "x 00 · y 00",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "x {0} · y {1}",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "x – · y",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
    "fr": "Xbox / XInput",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -50135,6 +52201,12 @@
    ]
   },
   {
+   "fr": "Zones de l'image",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "ZONES À TRAVAILLER",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -50166,6 +52238,18 @@
    ]
   },
   {
+   "fr": "Zoom arrière",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Zoom avant",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
    "fr": "Zoom caméra",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -50175,6 +52259,12 @@
    "fr": "zoom de la caméra",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Zoom {0} %",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -50354,10 +52444,23 @@
    ]
   },
   {
+   "fr": "{0} (brouillon archivé)",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "{0} (choisie avec le sélecteur ou la palette)",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "{0} (copie)",
    "where": [
     "editors/enemy_editor/EnemyEditAccess.cpp",
-    "ui/screens/ProjectsScene.cpp"
+    "ui/screens/ProjectsScene.cpp",
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -50382,6 +52485,12 @@
    "fr": "{0} (mes modifications)",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} (modèle)",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -50518,6 +52627,12 @@
    "fr": "{0} : comparaison…",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} : de {1} à {2}",
+   "where": [
+    "server/src/creationAssets.ts"
    ]
   },
   {
@@ -50977,6 +53092,12 @@
    ]
   },
   {
+   "fr": "{0} créée sur ce PC : dessinez-la, « Enregistrer » garde le brouillon, « Envoyer au serveur » la publie.",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "{0} créée sur Cosmic Online · récompense de ce défi",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
@@ -51422,6 +53543,54 @@
    ]
   },
   {
+   "fr": "{0} images",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
+   "fr": "{0} images / s",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
+   "fr": "{0} images / s (rythme du jeu)",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
+   "fr": "{0} images importées dans « {1} » ({2} réduites pour tenir) : Ctrl+Z annule l'import en entier.",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "{0} images importées dans « {1} » : Ctrl+Z annule l'import en entier.",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "{0} images trouvées en {1} rangée",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "{0} images trouvées en {1} rangées",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "{0} images, la rangée {1} de la planche de Nova",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
    "fr": "{0} imposé",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -51557,7 +53726,8 @@
    "fr": "{0} Ko",
    "where": [
     "ui/screens/AdminBackups.cpp",
-    "ui/screens/ContentManagerScene.cpp"
+    "ui/screens/ContentManagerScene.cpp",
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -51703,7 +53873,8 @@
   {
    "fr": "{0} ms",
    "where": [
-    "ui/screens/AdminCreations.cpp"
+    "ui/screens/AdminCreations.cpp",
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -51875,6 +54046,18 @@
    ]
   },
   {
+   "fr": "{0} nouvelle",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "{0} nouvelles",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "{0} objet(s) copié(s)",
    "where": [
     "editors/level_editor/LevelEditorScene.cpp"
@@ -51920,6 +54103,18 @@
    "fr": "{0} piqués enchaînés",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "{0} pixels",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "{0} pixels changeront.",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -52350,6 +54545,12 @@
    ]
   },
   {
+   "fr": "{0} {1} / {2} à faire",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
    "fr": "{0} · Boss",
    "where": [
     "ui/screens/AdminEnemies.cpp"
@@ -52359,6 +54560,18 @@
    "fr": "{0} · clic : suivre sa vue",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · Ctrl+N",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · Ctrl+W ferme l'onglet",
+   "where": [
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -52380,6 +54593,12 @@
    ]
   },
   {
+   "fr": "{0} · image {1} / {2}",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
    "fr": "{0} · inscrit le {1}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -52389,6 +54608,12 @@
    "fr": "{0} · natif",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · non enregistrée (●) · Ctrl+W ferme l'onglet",
+   "where": [
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -52515,6 +54740,24 @@
    "fr": "{0} · {1} · {2} action(s)",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "{0} × {1} px",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "{0} × {1} px (taille de Nova)",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "{0} × {1} px · {2}",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -52673,7 +54916,8 @@
   {
    "fr": "{0},{1} Mo",
    "where": [
-    "ui/screens/DownloadedReplaysUi.cpp"
+    "ui/screens/DownloadedReplaysUi.cpp",
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -52749,9 +54993,21 @@
    ]
   },
   {
+   "fr": "« , » et « . » : image précédente, suivante · gâchettes à la manette",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
    "fr": "« Afficher les pseudonymes » désactivé : les autres joueurs apparaissent sous la forme « Joueur n°X » (diffusion en direct). « Économie » limite le nombre de marqueurs et ne télécharge pas les avatars personnalisés.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "« Enregistrer » garde un brouillon sur ce PC ; « Envoyer au serveur » publie la création et son image : le serveur vérifie le PNG (signature, dimensions, taille), le garde sous son empreinte et note chaque envoi et chaque refus au Journal. Les jeux téléchargent l'image d'une création que vous avez gagnée, ou qui apparaît dans un classement, un profil ou les récompenses d'un défi, la gardent pour le jeu hors ligne et dessinent l'apparence simple tant qu'elle manque.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -52839,6 +55095,12 @@
    ]
   },
   {
+   "fr": "« {0} » : copie ouverte, pas encore enregistrée.",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "« {0} » : empreinte impossible à calculer.",
    "where": [
     "game/online/EnemyPublication.cpp"
@@ -52917,9 +55179,33 @@
    ]
   },
   {
+   "fr": "« {0} » : {1} image(s) vide(s) sur {2}. Dessinez-les, ou « Compléter avec Nova ».",
+   "where": [
+    "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
    "fr": "« {0} » : « {1} » dans ce niveau.{2}",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "« {0} » a {1} images : les {2} dernières gardent leur dessin.",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "« {0} » du jeu a {1} images : seules les {2} premières seront prises.",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "« {0} » envoyée au serveur avec son image : tous les jeux la dessinent à leur prochaine lecture.",
+   "where": [
+    "ui/studio/Studio.cpp"
    ]
   },
   {
@@ -52995,6 +55281,12 @@
    ]
   },
   {
+   "fr": "« {0} » reçoit déjà la rangée {1} : celle-ci la remplace.",
+   "where": [
+    "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
    "fr": "« {0} » révision {1} (pas de changement majeur, classements gardés, {2} meilleur temps reporté)",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -53022,6 +55314,12 @@
    "fr": "« {0} » · révision en ligne {1} → nouvelle révision {2}",
    "where": [
     "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "°/s",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -53091,6 +55389,12 @@
    ]
   },
   {
+   "fr": "à jour sur le serveur",
+   "where": [
+    "ui/studio/Studio.cpp"
+   ]
+  },
+  {
    "fr": "À l'arrêt",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -53121,9 +55425,21 @@
    ]
   },
   {
+   "fr": "à la fin",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
    "fr": "À la fin du temps",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "À la main",
+   "where": [
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -53374,7 +55690,8 @@
   {
    "fr": "Écharpe",
    "where": [
-    "ui/screens/AdminCreations.cpp"
+    "ui/screens/AdminCreations.cpp",
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -54002,6 +56319,12 @@
    ]
   },
   {
+   "fr": "Écriture impossible dans {0}.",
+   "where": [
+    "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
    "fr": "Écriture impossible sur ce PC.",
    "where": [
     "game/ghost/ReplayLibrary.cpp"
@@ -54228,6 +56551,18 @@
    ]
   },
   {
+   "fr": "ÉMETTEUR",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Émetteur",
+   "where": [
+    "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
    "fr": "Émetteur de particules",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -54433,7 +56768,8 @@
   {
    "fr": "Étincelle",
    "where": [
-    "data/achievements/achievements.json"
+    "data/achievements/achievements.json",
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -54446,7 +56782,8 @@
    "fr": "Étincelles",
    "where": [
     "data/enemies/phenix.json",
-    "ui/screens/AdminCreations.cpp"
+    "ui/screens/AdminCreations.cpp",
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -54461,7 +56798,8 @@
     "data/online/avatars.json",
     "game/gameplay/BossBadge.cpp",
     "game/online/Clans.cpp",
-    "game/planets/PlanetData.cpp"
+    "game/planets/PlanetData.cpp",
+    "ui/studio/StudioImport.cpp"
    ]
   },
   {
@@ -54833,6 +57171,12 @@
    "fr": "▲ {0} — en recul",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "▶ Lecture",
+   "where": [
+    "ui/studio/StudioFrise.cpp"
    ]
   },
   {
