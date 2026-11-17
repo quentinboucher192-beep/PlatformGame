@@ -1323,6 +1323,20 @@ void GameScene::render(float alpha) {
                           static_cast<int>(keepOut.size()), hud_.opacity(HudElement::Splits));
         hud_.setDrawn(HudElement::Splits, ghostRun_.boxDrawn());  // 2.60: it fades like the HUD's blocks
     }
+    {
+        // 2.60: in a boss arena that fits the view, the camera keeps the vault under the HUD's top
+        // blocks and the floor above its bottom ones, as far as the arena's spare height allows
+        // (where they were really drawn; display only).
+        const float H = g_.ui.screenH();
+        float top = 0.0f, bottom = 0.0f;
+        for (int i = 0; i < Hud::kFadeBlocks; ++i) {
+            const Rect& d = hud_.drawn(i);
+            if (d.w <= 0.0f || d.h <= 0.0f) continue;
+            if (d.y < H * 0.15f) top = std::max(top, d.bottom());
+            else if (d.bottom() > H * 0.85f) bottom = std::max(bottom, H - d.y);
+        }
+        world_->camera().setScreenMargins(top, bottom);
+    }
     drawBossArrow(view);
     drawEnemyArrows(view);
     if (opt_.training || opt_.bossTraining || (world_ && world_->practiceRespawn())) drawTrainingBanner();

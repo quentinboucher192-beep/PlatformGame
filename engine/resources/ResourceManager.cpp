@@ -115,7 +115,7 @@ AnimationSetPtr ResourceManager::animation(const std::string& rel) {
 
 Rect ResourceManager::visibleBox(const AnimationSet& set, const Rect& src) {
     if (set.textureFile.empty() || set.frameWidth <= 0 || set.frameHeight <= 0) return {};
-    const std::string key = set.textureFile + "|" + std::to_string(set.frameWidth) + "x" + std::to_string(set.frameHeight);
+    const std::string key = set.textureFile + '|' + std::to_string(set.frameWidth) + ',' + std::to_string(set.frameHeight);
     auto it = visibleCells_.find(key);
     if (it == visibleCells_.end()) {
         it = visibleCells_.emplace(key, VisibleCells{}).first;
