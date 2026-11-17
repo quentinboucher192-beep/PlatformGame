@@ -14,6 +14,7 @@ EntityFactory::Creator make() {
 std::map<std::string, EntityFactory::Creator>& EntityFactory::registry() {
     static std::map<std::string, Creator> r = {
         {"moving_platform", make<MovingPlatformEntity>()},
+        {"bubble", make<MovingPlatformEntity>()},  // 2.64: a carrying bubble (MovingPlatformEntity::bubble_)
         {"crumble_platform", make<CrumblePlatformEntity>()},
         {"altar", make<AltarEntity>()},  // 2.57: the Liche's crypt
         {"conveyor", make<ConveyorEntity>()},     // 2.58: the Titan's foundry

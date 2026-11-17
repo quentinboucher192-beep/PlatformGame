@@ -271,7 +271,8 @@ TEST_CASE("new badges: every planet, level, boss, creature, achievement, reward 
             if (e->source == ContentSource::Builtin) need("level." + e->id);
     }
     for (const EnemyDefinition* d : content.enemies()) {
-        if (!d->builtin || !content.isNativeEnemy(d->id) || !d->variantOf.empty()) continue;
+        // 2.64: the tutorial's creatures are never in the gallery (nor « NOUVEAU »).
+        if (!d->builtin || !content.isNativeEnemy(d->id) || !d->variantOf.empty() || d->tutorial) continue;
         if (d->isBoss) {
             need("boss." + d->id);
             need("gallery.boss." + d->id);

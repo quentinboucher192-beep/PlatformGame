@@ -16,6 +16,9 @@ const count = (v) => (Number.isInteger(v) && v >= 1 && v <= 10000 ? v : null);
 const items = [];
 for (const i of data.items) {
     if (!categories.includes(i.category) || items.some((o) => o.id === i.id)) continue; // as the game: the first wins
+    // 2.64: a souvenir is given on the player's computer (the tutorial finished): the server cannot
+    // check it, so it never knows it (worn online, the category's default shows instead).
+    if (typeof i.souvenir === "string" && i.souvenir) continue;
     const item = { id: i.id, category: i.category, look: i.look ?? "", name: i.name };
     if (i.default === true) item.default = true;
     else if (typeof i.achievement === "string" && i.achievement) item.achievement = i.achievement;

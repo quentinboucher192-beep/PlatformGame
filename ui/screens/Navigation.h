@@ -69,6 +69,10 @@ struct PlayOptions {
         bool practice = false;
     };
     std::optional<Challenge> challenge;
+    /// 2.64: the tutorial of the first launch (`level` holds it, game/tutorial/Tutorial.h): a
+    /// training run (nothing of it counts), Bip by Nova, its explanation cards; its end card
+    /// leads to the map of Sylvanox. Left from its pause menu, it is skipped for good.
+    bool tutorial = false;
 };
 
 /// A finished run's segments (results screen → Segments): this run, my best segments, my
@@ -108,6 +112,10 @@ struct GhostSetupRequest {
 
 // Factories of every screen (implemented next to each scene).
 std::unique_ptr<Scene> makeSplashScene(GameServices& g);
+/// 2.64: the tutorial of the first launch: its welcome (« Commencer » / « Passer », confirmed),
+/// then the tutorial itself (nullptr from makeTutorialRun when its level cannot be read).
+std::unique_ptr<Scene> makeTutorialWelcome(GameServices& g);
+std::unique_ptr<Scene> makeTutorialRun(GameServices& g);
 std::unique_ptr<Scene> makeMainMenu(GameServices& g);
 /// ADMINISTRATION (2.40, accounts with the admin role only). `open`: "log" for the Journal,
 /// "players:<search>[:confirm]", "calendar[:<YYYY-MM>[:<challenge id>[:objectif]]]" (2.41,
