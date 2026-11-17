@@ -35463,6 +35463,12 @@
    ]
   },
   {
+   "fr": "Petits textes (fenêtre 1280×720 et moins) : les espaces entre les mots ne disparaissent plus.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Peut être activé par un événement",
    "where": [
     "game/levels/ObjectTypes.cpp"

@@ -41,6 +41,10 @@ TTF_Font* TextRenderer::font(FontFace face, int px) {
         f = TTF_OpenFont(files_[static_cast<int>(FontFace::Body)].c_str(), static_cast<float>(px));
     }
     if (!f) Log::error("TTF_OpenFont({}) failed: {}", file, SDL_GetError());
+    // 2.63.4: small sizes (a 1280×720 window scales the UI to 2/3): the normal hinting rounds the
+    // advances to whole pixels, a space (≈ 2.4 px at 10 px) then looks like the gap between two
+    // letters (« Aucunedemandeenattente »). Light hinting with subpixel positions keeps the spaces.
+    if (f && px < 13) TTF_SetFontHinting(f, TTF_HINTING_LIGHT_SUBPIXEL);
     fonts_[key] = f;
     return f;
 }

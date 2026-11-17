@@ -453,6 +453,9 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.63.4** :
+* Petits textes : les espaces entre les mots ne disparaissent plus en 1280×720.
+
 **Nouveau dans la version 2.63.3** :
 * L'**histoire du Titan** (« Le Dernier Quart ») devient un **petit dessin animé** : la fonderie et ses
   ouvriers, le colosse qui s'éveille sur son échafaudage, la promesse du contremaître, la roche qui engloutit
