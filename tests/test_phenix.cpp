@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
-#include <cstdlib>
 #include <optional>
 #include <set>
 
@@ -415,7 +414,6 @@ TEST_CASE("phenix: its columns of sunlight fall from the roof onto marks, one af
     REQUIRE(cracks.size() == 5);
     float lastDelay = 0.0f;
     for (const auto& c : cracks) {
-        if (std::getenv("PHENIX_DEBUG")) std::printf("    colonne x %.0f y %.0f de %.0f, boss %.0f %.0f\n", c.at.x, c.at.y, c.fromY, e->center().x, e->center().y);
         CHECK(c.sun);
         CHECK(std::abs(c.at.y - kFloor) < 1.0f);  // down to the floor
         CHECK(std::abs(c.fromY - 292.0f) < 1.0f);  // from the roof
@@ -701,8 +699,6 @@ TEST_CASE("phenix: in its nest it fights, glides, never stays in a corner nor ag
                         names.insert(a->name);
                     }
                 last = b->state();
-                if (std::getenv("PHENIX_DEBUG") && i % 120 == 0)
-                    std::printf("    t %d %s\n", i / 120, b->debugInfo().c_str());
                 inside = inside && m.zone.expanded(8.0f).containsRect(b->box);
                 const bool atWall = b->box.x < m.zone.x + 48.0f || b->box.right() > m.zone.right() - 48.0f;
                 const bool atRoof = b->box.y < m.zone.y + 24.0f;
