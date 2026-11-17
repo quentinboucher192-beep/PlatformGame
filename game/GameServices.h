@@ -10,6 +10,7 @@
 #include "engine/core/Application.h"
 #include "game/achievements/Achievements.h"
 #include "game/cosmetics/Collection.h"
+#include "game/cosmetics/CreationImages.h"
 #include "game/content/BossStories.h"
 #include "game/content/ContentDatabase.h"
 #include "game/ghost/GhostStore.h"
@@ -163,6 +164,13 @@ public:
     /// unknown yet: nullopt (the category's simple look is drawn meanwhile) and the list is read
     /// again soon. What the drawing code asks (setCreationLookResolver, set by startServerSuits).
     std::optional<CreationLook> creationLook(const std::string& ref);
+    /// 2.61 Studio de Créations: the images of the creations (a suit's whole sheet, a trail's or
+    /// a victory effect's particle, a frame's ring): the list (GET /creations/images) and their
+    /// files kept on this computer (online/creation_images), read off the main thread; drawn
+    /// instead of the parameters once ready (suitSheet(), CosmeticFx through
+    /// resolveCreationImage()). Missing: the category's simple look.
+    CreationImageBook creationImages;
+    std::optional<CreationImageDraw> creationImage(const std::string& ref);
     /// The lists kept on disk at once; with `fetch`, read from the server now and every 30 minutes.
     void startServerSuits(bool fetch);
     void refreshServerSuits();
