@@ -35,7 +35,8 @@
 //                           with an admin account (calendar: that month, that period in the
 //                           editor, its tab « Objectif et paliers »; campaign: that level's history;
 //                           creations: a kind's list (suit, trail, frame, victory), a new one, one
-//                           creation by its id)
+//                           creation by its id; 2.61 creations:studio[:new:<kind>|:import[:<file>]|
+//                           :<draft>]: the Studio, a new creation, the import of a PNG, a draft)
 //   --stats [<section>]     open the player's statistics (0 overview ... 5 data and saves)
 //   --stats-day <YYYY-MM-DD>
 //                           count the runs of this session on that day (automated checks of the

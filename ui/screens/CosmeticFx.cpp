@@ -1,5 +1,7 @@
 #include "ui/screens/CosmeticFx.h"
 
+#include "ui/screens/CreationImageFx.h"
+
 #include <algorithm>
 #include <cmath>
 
@@ -330,6 +332,9 @@ void drawCustomVictory(const Canvas& cv, const CreationLook& L, Vec2 at, float t
 }  // namespace
 
 void drawAvatarFrame(Renderer& r, Vec2 center, float radius, const std::string& look, float scale, float time, const CreationLook* custom) {
+    // 2.61: a frame drawn in the Studio de Créations, its image ready (else its parameters).
+    if (!custom)
+        if (auto im = resolveCreationImage(look); im && im->info.kind == "frame") return drawImageFrame(r, spriteOf(*im), center, radius, scale, time);
     if (auto c = customLook("frame", look, custom)) return drawCustomFrame(r, center, radius, *c, scale, time);
     auto ring = [&](float rad, float th, Color c) { r.drawRing(center, rad, th * scale, c); };
     // A polished edge: a lighter arc on the upper left of the main ring.
@@ -819,6 +824,16 @@ void drawTrailPoint(const Canvas& cv, const std::string& look, Vec2 p, float k, 
 
 void TrailFx::draw(Renderer& r, const std::string& look, bool world, float scale, float fade, const CreationLook* custom) const {
     if (pts_.empty()) return;
+    // 2.61: a trail drawn in the Studio de Créations: its particle thrown by its emitter.
+    if (!custom)
+        if (auto im = resolveCreationImage(look); im && im->info.kind == "trail" && im->info.emitter) {
+            std::vector<TrailSample> samples;
+            samples.reserve(pts_.size());
+            for (const Pt& p : pts_) samples.push_back({p.p, p.age, p.seed});
+            const std::optional<CreationLook> L = resolveCreationLook(look);
+            drawImageTrail(r, spriteOf(*im), *im->info.emitter, L ? L->a : Rgb8{255, 255, 255}, L ? L->b : Rgb8{255, 255, 255}, samples, world, scale, fade);
+            return;
+        }
     // 2.59: a trail created on Cosmic Online (its look known: else nothing, like « none »).
     const std::optional<CreationLook> made = customLook("trail", look, custom);
     if (!made && (look.empty() || look == "none" || isServerLookRef(look))) return;
@@ -839,6 +854,22 @@ void TrailFx::draw(Renderer& r, const std::string& look, bool world, float scale
 }
 
 void drawTrailSample(Renderer& r, const std::string& look, const Rect& box, float time, float fade, const CreationLook* custom) {
+    // 2.61: from its image: the particles of samples across the box, as if Nova ran through it.
+    if (!custom)
+        if (auto im = resolveCreationImage(look); im && im->info.kind == "trail" && im->info.emitter) {
+            std::vector<TrailSample> samples;
+            const float life = static_cast<float>(im->info.emitter->lifeMs) / 1000.0f;
+            const int n = 40;
+            for (int i = 0; i < n; ++i) {
+                const float u = static_cast<float>(i) / static_cast<float>(n - 1);
+                samples.push_back({{box.x + box.w * (0.12f + 0.72f * u), box.center().y + std::sin(u * 5.0f + time * 1.5f) * box.h * 0.08f},
+                                   life * (1.0f - u) * 0.95f, static_cast<uint32_t>(i) + 1u});
+            }
+            const std::optional<CreationLook> L = resolveCreationLook(look);
+            drawImageTrail(r, spriteOf(*im), *im->info.emitter, L ? L->a : Rgb8{255, 255, 255}, L ? L->b : Rgb8{255, 255, 255}, samples, false,
+                           box.h / 60.0f, fade);
+            return;
+        }
     const std::optional<CreationLook> made = customLook("trail", look, custom);
     if (!made && (look.empty() || look == "none" || isServerLookRef(look))) return;
     const float life = made ? made->life() : kTrailLife;
@@ -859,6 +890,13 @@ void drawTrailSample(Renderer& r, const std::string& look, const Rect& box, floa
 
 void drawVictoryFx(Renderer& r, const std::string& look, Vec2 at, float t, bool world, float scale, const CreationLook* custom) {
     if (t < 0.0f || t > kVictoryFxTime) return;
+    // 2.61: an effect drawn in the Studio de Créations: its particle thrown by its emitter.
+    if (!custom)
+        if (auto im = resolveCreationImage(look); im && im->info.kind == "victory" && im->info.emitter) {
+            const std::optional<CreationLook> L = resolveCreationLook(look);
+            drawImageVictory(r, spriteOf(*im), *im->info.emitter, L ? L->a : Rgb8{255, 255, 255}, L ? L->b : Rgb8{255, 255, 255}, at, t, world, scale);
+            return;
+        }
     // 2.59: an effect created on Cosmic Online (its look not known yet: the classic finish).
     const std::optional<CreationLook> made = customLook("victory", look, custom);
     if (!made && (look.empty() || look == "classic" || isServerLookRef(look))) return;

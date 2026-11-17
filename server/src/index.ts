@@ -20,6 +20,7 @@ import * as campaignRevisions from "./campaignRevisions";
 import * as enemyRevisions from "./enemyRevisions";
 import * as challenges from "./challenges";
 import * as creations from "./creations";
+import * as creationAssets from "./creationAssets";
 import * as devices from "./devices";
 import * as notifications from "./notifications";
 import * as race from "./race";
@@ -169,6 +170,10 @@ route("GET", `${V}/campaign/revisions`, (ctx) => campaignRevisions.manifest(ctx)
 route("GET", `${V}/campaign/levels/{levelId}/revisions/{version}/file`, (ctx) => campaignRevisions.file(ctx), { cacheable: true });
 // The creations of an administrator that every game may have to draw (public: suits' names and colours).
 route("GET", `${V}/creations`, (ctx) => creations.publicCreations(ctx), { cacheable: true });
+// 2.61 Studio de Créations: the images of the creations the caller may read, and each image
+// (creationAssets.ts: its owner, a board, a profile or a challenge begun; cached by its hash).
+route("GET", `${V}/creations/images`, (ctx, viewer) => creationAssets.publicImages(ctx, viewer), { viewer: true });
+route("GET", `${V}/creations/{creationId}/image/{hash}`, (ctx, viewer) => creationAssets.getCreationImage(ctx, viewer), { viewer: true });
 // 2.46: the native entities published by an administrator (public: the games download every revision).
 route("GET", `${V}/enemies/revisions`, (ctx) => enemyRevisions.manifest(ctx), { cacheable: true });
 route("GET", `${V}/enemies/{enemyId}/revisions/{revision}/file`, (ctx) => enemyRevisions.file(ctx), { cacheable: true });
@@ -374,6 +379,9 @@ route("GET", `${V}/admin/creations`, (ctx) => creations.listCreations(ctx));
 route("POST", `${V}/admin/creations`, (ctx) => creations.createCreation(ctx));
 route("PUT", `${V}/admin/creations/{creationId}`, (ctx) => creations.updateCreation(ctx));
 route("POST", `${V}/admin/creations/{creationId}/archive`, (ctx) => creations.archiveCreation(ctx));
+// 2.61: the image of a creation (the Studio): sent (a PNG checked, kept in R2), and every image.
+route("GET", `${V}/admin/creations/images`, (ctx) => creationAssets.adminImages(ctx));
+route("PUT", `${V}/admin/creations/{creationId}/image`, (ctx) => creationAssets.putCreationImage(ctx));
 
 function match(method: string, path: string): { route: Route; params: Record<string, string> } | "method" | null {
     let pathMatched = false;

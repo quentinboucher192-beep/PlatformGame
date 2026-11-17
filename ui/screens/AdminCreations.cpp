@@ -273,6 +273,12 @@ AdminCreations::AdminCreations(GameServices& g, std::function<void(const std::st
     : g_(g), say_(std::move(say)), lostRole_(std::move(lostRole)), online_(g) {}
 
 void AdminCreations::open(const std::string& arg) {
+    // 2.61 "studio[:<what>]": the Studio (Studio::open: "new:<kind>", "import[:<file>]", a draft).
+    if (arg.rfind("studio", 0) == 0) {
+        studioMode_ = true;
+        if (arg.size() > 7) studio().open(arg.substr(7));
+        return;
+    }
     // "<kind>[:new|:<id>]": that kind's list at once; the rest once the list is read.
     const size_t colon = arg.find(':');
     const int k = kindIndex(arg.substr(0, colon));
@@ -501,15 +507,83 @@ void AdminCreations::draw(const Rect& in) {
         wantOpen_.clear();
     }
     ui.pushId("creations");
+    // 2.61: « Bibliothèque » / « Studio » at the top; the Studio's own bar beside them.
+    const float mh = ui.s(38);
+    const float switchW = drawModeSwitchWidth(ui);
+    drawModeSwitch({in.x, in.y, switchW, mh});
+    if (studioMode_) {
+        studio().setServerList(list_, loaded_);
+        const float gap = ui.s(14);
+        studio().draw({in.x + switchW + gap, in.y, in.w - switchW - gap, mh}, {in.x, in.y + mh + ui.s(10), in.w, in.h - mh - ui.s(10)});
+        ui.popId();
+        return;
+    }
     // The kinds over the whole width, then the list and the editor.
     const float kh = ui.s(42);
-    drawKinds({in.x, in.y, in.w, kh});
-    const float top = in.y + kh + ui.s(14);
+    const float kindsY = in.y + mh + ui.s(10);
+    drawKinds({in.x, kindsY, in.w, kh});
+    const float top = kindsY + kh + ui.s(14);
     const Rect body{in.x, top, in.w, in.bottom() - top};
     const float gap = ui.s(20);
     const float lw = std::floor((body.w - gap) * 0.36f);
     drawList({body.x, body.y, lw, body.h});
     drawEditor({body.x + lw + gap, body.y, body.w - lw - gap, body.h});
+    ui.popId();
+}
+
+// ------------------------------------------------------------------ 2.61: the Studio
+
+studio::Studio& AdminCreations::studio() {
+    if (!studio_) {
+        studio::Studio::Hooks h;
+        h.say = say_;
+        h.lostRole = lostRole_;
+        h.reloadList = [this] { load(); };
+        h.giveReward = [this](const std::string& ref, const std::string& name) {
+            if (giveReward) giveReward(ref, name);
+        };
+        studio_ = std::make_unique<studio::Studio>(g_, std::move(h));
+    }
+    return *studio_;
+}
+
+void AdminCreations::dropFile(const std::string& path) {
+    studioMode_ = true;
+    studio().dropFile(path);
+}
+
+float AdminCreations::drawModeSwitchWidth(UIContext& ui) {
+    float w = 0.0f;
+    for (const char* l : {"Bibliothèque", "Studio"}) w += ui.text().measure(l, FontFace::Bold, ui.s(fz(ui, 15))).x + ui.s(36);
+    return w + ui.newPillWidth(true) + ui.s(8);
+}
+
+void AdminCreations::drawModeSwitch(const Rect& r) {
+    UIContext& ui = g_.ui;
+    Renderer& rr = ui.r();
+    ui.pushId("mode");
+    const std::string labels[2] = {"Bibliothèque", "Studio"};
+    const float pill = ui.newPillWidth(true) + ui.s(8);
+    const float w0 = ui.text().measure(labels[0], FontFace::Bold, ui.s(fz(ui, 15))).x + ui.s(36);
+    const Rect seg[2] = {{r.x, r.y, w0, r.h}, {r.x + w0, r.y, r.w - w0, r.h}};
+    rr.fillRoundedRect(r, ui.s(8), Color{15, 23, 48, 255});
+    for (int i = 0; i < 2; ++i) {
+        const bool on = (i == 1) == studioMode_;
+        bool hovered = false;
+        if (ui.hotspot(i == 0 ? "lib" : "studio", seg[i], &hovered) && !modal()) {
+            if (i == 1 && ui.featureSeen && ui.isNew("admin.creations.studio")) ui.featureSeen("admin.creations.studio");
+            studioMode_ = i == 1;
+        }
+        if (on) rr.fillRoundedRect(seg[i], ui.s(8), Color{29, 74, 94, 255});
+        else if (hovered || ui.focused(i == 0 ? "lib" : "studio")) rr.fillRoundedRect(seg[i], ui.s(8), Color{18, 48, 74, 160});
+        const float room = seg[i].w - ui.s(16) - (i == 1 ? pill : 0.0f);
+        const float tx = i == 1 ? seg[i].x + ui.s(16) : seg[i].center().x;
+        fitLabel(ui, labels[i], {tx, seg[i].center().y}, 15, room, on ? Color::white() : Color{201, 211, 238, 255}, i == 1 ? Align::Left : Align::Center,
+                 on ? FontFace::Bold : FontFace::Body);
+    }
+    rr.drawRoundedRect(r, ui.s(8), Color{34, 48, 90, 255}, std::max(1.0f, ui.s(1)));
+    // « NOUVEAU » inside the Studio's half, at its right (not on its word).
+    if (ui.newBadge("studio", seg[1], "admin.creations.studio", false, true)) ui.drawNewPill(seg[1].right() - ui.s(6), seg[1].center().y, true);
     ui.popId();
 }
 

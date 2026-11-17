@@ -24,7 +24,8 @@ export const ADMIN_ACTIONS = {
     // 2.45: ADMINISTRATION › Campagne (campaignRevisions.ts): a revision published, or an earlier one made current again.
     campaign: ["admin_campaign_published", "admin_campaign_reverted"],
     // ADMINISTRATION › Créations (creations.ts): a suit (2.59: a trail, a frame, a victory effect) created, edited, archived or restored.
-    creation: ["admin_creation_created", "admin_creation_updated", "admin_creation_archived", "admin_creation_restored"],
+    // 2.61: its image sent from the Studio (creationAssets.ts).
+    creation: ["admin_creation_created", "admin_creation_updated", "admin_creation_archived", "admin_creation_restored", "admin_creation_image"],
     // 2.46: ADMINISTRATION › Ennemis (enemyRevisions.ts): a native entity published as a revision.
     enemy: ["admin_enemy_published"],
     // 2.47: ADMINISTRATION › Joueurs: the computer an account is bound to (devices.ts).
@@ -298,6 +299,28 @@ function creationOfDetails(d: Record<string, unknown>) {
 }
 
 /**
+ * 2.61: the image of a creation sent from the Studio (or refused): its hash, its size in bytes and
+ * in pixels, how it is cut, the hash it replaced. Only the keys the server writes.
+ */
+function imageOfDetails(d: Record<string, unknown>) {
+    const i = d.image;
+    if (!isObject(i)) return null;
+    const num = (k: string) => (typeof i[k] === "number" ? (i[k] as number) : null);
+    const str = (k: string) => (typeof i[k] === "string" ? (i[k] as string) : null);
+    return {
+        hash: str("hash"),
+        previous_hash: str("previous_hash"),
+        bytes: num("bytes"),
+        width: num("width"),
+        height: num("height"),
+        frame_w: num("frame_w"),
+        frame_h: num("frame_h"),
+        frames: num("frames"),
+        fps: num("fps"),
+    };
+}
+
+/**
  * What the Journal shows of a native entity published as a revision, or refused (2.46): the
  * entity, its revision, and each campaign level given a new revision with its records choice.
  */
@@ -399,6 +422,8 @@ export async function listLog(ctx: Ctx): Promise<Response> {
             enemy: enemyOfDetails(d),
             // A creation (ADMINISTRATION › Créations): created, edited, archived, restored or refused.
             creation: creationOfDetails(d),
+            // 2.61: the image of a creation (the Studio), sent or refused.
+            image: imageOfDetails(d),
             // 2.50: a migration of an account's data to another one.
             migration: migrationOfDetails(d),
         };
