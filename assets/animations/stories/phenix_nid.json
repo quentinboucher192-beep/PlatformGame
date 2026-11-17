@@ -1,0 +1,10 @@
+{
+  "texture": "stories/phenix/nid.png",
+  "frameWidth": 176,
+  "frameHeight": 64,
+  "pivot": [88, 52],
+  "clips": {
+    "back": {"row": 0, "count": 6, "fps": 6, "loop": true},
+    "front": {"row": 1, "count": 6, "fps": 6, "loop": true}
+  }
+}

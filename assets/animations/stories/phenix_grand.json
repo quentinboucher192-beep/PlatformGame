@@ -1,0 +1,10 @@
+{
+  "texture": "stories/phenix/grand.png",
+  "frameWidth": 112,
+  "frameHeight": 96,
+  "pivot": [56, 70],
+  "clips": {
+    "rise": {"row": 0, "count": 8, "durations": [0.12, 0.12, 0.12, 0.12, 0.12, 0.14, 0.14, 0.2], "loop": false, "next": "hover"},
+    "hover": {"row": 1, "count": 8, "fps": 10, "loop": true}
+  }
+}

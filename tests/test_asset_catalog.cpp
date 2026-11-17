@@ -650,12 +650,10 @@ TEST_CASE("asset catalogue: the Assets tab reads off the main thread, draws only
         auto owned = std::make_unique<AssetsTabScene>(g);
         AssetsTabScene* scene = owned.get();
         app.pushScene(std::move(owned));
-        // The first frames come at once: the catalogue is read on its worker thread meanwhile.
-        int frames = 0;
-        while (!scene->tab.catalog() && frames < 3000) {
-            app.runFrames(1);
-            ++frames;
-        }
+        // The first frames come at once: the catalogue is read on its worker thread meanwhile (2.63:
+        // waited for by the clock, not a count of frames: a busy machine reads it more slowly).
+        const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(60);
+        while (!scene->tab.catalog() && std::chrono::steady_clock::now() < deadline) app.runFrames(1);
         CHECK(scene->tab.catalog() != nullptr);
         const AssetCatalog& cat = *scene->tab.catalog();
         app.runFrames(90);
