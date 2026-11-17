@@ -195,6 +195,7 @@ public:
                 onTarget = true;
             }
         }
+        drawTarget_ = onTarget ? target_ : nullptr;
         drawStory();
         if (onTarget) {
             r.setTarget(nullptr);
@@ -297,7 +298,23 @@ private:
         const float local = t_ - s.start;
         const float p = easeInOut(local / (s.dur + story::kCrossFade));
         if (s.stageReady) {
-            drawStage(i, img, alpha, local, p);
+            Renderer& rr = g_.ui.r();
+            if (alpha < 0.999f) {
+                // Cross-fading: the scene drawn whole on its own target, then shown with its alpha
+                // (its layers never show through one another).
+                if (!shotTarget_ || shotTarget_->width() != rr.width() || shotTarget_->height() != rr.height())
+                    shotTarget_ = rr.createTarget(rr.width(), rr.height(), true);
+            }
+            if (alpha < 0.999f && shotTarget_) {
+                rr.setTarget(shotTarget_);
+                SDL_SetRenderDrawColor(rr.sdl(), 0, 0, 0, 0);
+                SDL_RenderClear(rr.sdl());
+                drawStage(i, img, 1.0f, local, p);
+                rr.setTarget(drawTarget_);
+                rr.drawTexture(*shotTarget_, &img, img, Color::white().withAlphaF(alpha));
+            } else {
+                drawStage(i, img, alpha, local, p);
+            }
         } else if (s.tex && s.tex->width() > 0 && s.tex->height() > 0) {
             const float iw = static_cast<float>(s.tex->width()), ih = static_cast<float>(s.tex->height());
             const float cover = std::max(img.w / iw, img.h / ih);
@@ -620,6 +637,8 @@ private:
     bool roared_ = false;
     float roarLen_ = 0.0f;
     TexturePtr target_;
+    TexturePtr shotTarget_;  // a scene cross-fading in
+    TexturePtr drawTarget_;  // where the story is drawn this frame (nullptr: the window)
 };
 
 }  // namespace
