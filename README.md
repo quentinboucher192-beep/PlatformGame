@@ -455,6 +455,7 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.64.1** :
 * **Vérification des touches** : dans Paramètres › Clavier / souris et Manette et dans « Touches de ce niveau », la
   touche, le bouton de souris ou de manette, la gâchette ou la direction de stick tenus s'allument en direct dans la
   liste (hors choix d'une nouvelle touche) : de quoi vérifier que c'est la bonne touche, sans rien changer.
