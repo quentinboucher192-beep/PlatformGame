@@ -58,6 +58,17 @@ pendant le jeu, comme le fait `nova_suits.py`. Gagnée à un défi, elle rejoint
 du Vestiaire (identifiant `srvsuit:<n>`) ; la liste des combinaisons créées est gardée sur
 l'ordinateur pour les dessiner hors ligne.
 
+### Traînées, cadres et effets de victoire créés par un admin (2.59)
+
+De la même façon, une **traînée** (`srvtrail:<n>` : une forme du jeu en deux couleurs, sa
+largeur, sa durée, ses étincelles), un **cadre d'avatar** (`srvframe:<n>` : un style du jeu,
+la couleur du bord et de la lueur) ou un **effet de victoire** (`srvvictory:<n>` : un effet du
+jeu en deux couleurs) créés sur Cosmic Online se gagnent à un défi, rejoignent leur catégorie
+du Vestiaire et s'équipent. Ils sont dessinés par `ui/screens/CosmeticFx` (mêmes formes que les
+éléments du catalogue, recolorées) d'après la liste gardée dans
+`<dossier utilisateur>/online/creation_looks.json` ou les récompenses gagnées
+(`game/cosmetics/CreationLooks.*`). Les fantômes laissent la traînée de leur joueur (2.59).
+
 ### Badges du profil (2.41)
 
 Vestiaire › *Badges du profil* : des succès obtenus, affichés comme badges sur le profil Cosmic

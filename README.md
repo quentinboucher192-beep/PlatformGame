@@ -5,6 +5,19 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.59.0** :
+* **Administration › Créations**, trois nouveaux types en plus des combinaisons : des **traînées** (une forme
+  que le jeu sait dessiner, la couleur près de Nova et celle du bout, la largeur, la durée, les étincelles),
+  des **cadres d'avatar** (un style, la couleur du bord et de la lueur) et des **effets de victoire** (feu
+  d'artifice, pluie d'étoiles, supernova, vortex, aurore boréale ou couronne solaire, en deux couleurs), chacun
+  avec son **aperçu animé** ; le serveur vérifie tout (couleurs `#rrggbb`, styles d'une liste blanche, rôle
+  admin par la session) et note chaque action au Journal.
+* Comme les combinaisons, ils se donnent en **récompense d'un défi** ; gagnés, ils rejoignent leur catégorie
+  du **Vestiaire** et s'équipent sans mise à jour du jeu, même hors ligne : la traînée derrière Nova et ses
+  fantômes, le cadre sur le profil et dans les classements, l'effet de victoire à la sortie des niveaux.
+* Les **fantômes** laissent la traînée de leur joueur ; l'**effet de victoire** se joue dès la sortie du
+  niveau, pendant sa scène de fin.
+
 **Nouveau dans la version 2.58.0** :
 * **« La Fonderie Engloutie »** (EXTRÊME, Les Confins) : le combat seul du **Titan Mécanique**, giga-boss à
   huit phases, une machine de guerre qui marche dans sa fonderie : **presses hydrauliques** qui s'abattent de

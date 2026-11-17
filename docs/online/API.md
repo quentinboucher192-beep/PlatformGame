@@ -1603,20 +1603,26 @@ ADMIN_TOKEN=… node scripts/register-levels.mjs manifest.json http://127.0.0.1:
 Erreurs : 400, 401, 404, 409 `REVISION_CONFLICT` (même numéro, autre contenu ; les niveaux
 précédents de la liste sont déjà enregistrés), 413, 415.
 
-### 8.10 bis Créations d'un admin : combinaisons recolorées (2.45)
+### 8.10 bis Créations d'un admin : combinaisons recolorées (2.45), traînées, cadres et effets de victoire (2.59)
 
 Détails : [CREATIONS.md](CREATIONS.md).
 
 | Méthode | Route | Corps / réponse |
 |---|---|---|
-| GET | `/creations` (public) | `{ creations: [{ id, ref: "srvsuit:<n>", kind: "suit", name, colors: { suit, accent, scarf }, updated_at }] }` : celles en usage, et les archivées encore gagnées ou données par un défi |
-| GET | `/admin/creations` | `{ creations: [{ id, ref, kind, name, colors, created_at, updated_at, created_by, archived, archived_at, uses, owners }], kinds, max_chars }` |
-| POST | `/admin/creations` | `{ kind: "suit", name, colors: { suit, accent, scarf } }` → `201 { creation }` |
-| PUT | `/admin/creations/{id}` | `{ name, colors, updated_at? }` → `{ creation, changed }` ; `409 CREATION_ARCHIVED` / `CREATION_CHANGED` |
+| GET | `/creations` (public) | `{ creations: [{ id, ref: "srv<kind>:<n>", kind, name, colors, style?, width?, life_ms?, particles?, updated_at }] }` : celles en usage, et les archivées encore gagnées ou données par un défi (une combinaison : comme en 2.45, `colors` seulement) |
+| GET | `/admin/creations` | `{ creations: [{ id, ref, kind, name, colors, style?, width?, life_ms?, particles?, created_at, updated_at, created_by, archived, archived_at, uses, owners }], kinds, styles: { trail, frame, victory }, max_chars }` |
+| POST | `/admin/creations` | `{ kind: "suit", name, colors: { suit, accent, scarf } }`, `{ kind: "trail", name, colors: { start, end }, style, width: 50..200, life_ms: 200..1000, particles }`, `{ kind: "frame", name, colors: { border, glow }, style }`, `{ kind: "victory", name, colors: { main, second }, style }` → `201 { creation }` |
+| PUT | `/admin/creations/{id}` | `{ name, colors, (style, width, life_ms, particles selon le type), updated_at? }` → `{ creation, changed }` ; `409 CREATION_ARCHIVED` / `CREATION_CHANGED` |
 | POST | `/admin/creations/{id}/archive` | `{ archived: true\|false }` → `{ creation, changed }` |
 
 Rôle admin vérifié à chaque requête (`404` pour un autre compte, `401` sans session) ; `400
-VALIDATION_ERROR` (nom, couleurs `#rrggbb`), `409` pour un nom déjà pris.
+VALIDATION_ERROR` (nom, couleurs `#rrggbb`, style hors de la liste de son type, réglages d'une
+traînée hors bornes, champ inconnu), `409` pour un nom déjà pris dans le même type.
+Récompenses d'un défi (`PUT /admin/challenges/{id}/rewards`) : `kind` `trail`, `frame` ou
+`victory` avec `ref` `srvtrail:<n>`, `srvframe:<n>`, `srvvictory:<n>` ; dans les défis et
+`GET /players/me/rewards`, la récompense porte alors `creation: { id, kind, name, colors, style,
+… }`. Les classements donnent `player.frame` (`srvframe:<n>` pour un cadre créé) et
+`player.trail` (la traînée, dessinée derrière le fantôme).
 ### 8.10 ter Entités natives modifiées par un admin (2.46)
 
 Détails et routes : [ENEMY_REVISIONS.md](ENEMY_REVISIONS.md). Admin : `GET /admin/enemies`,

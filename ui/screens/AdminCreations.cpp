@@ -531,7 +531,10 @@ void AdminCreations::drawKinds(const Rect& r) {
         st.fontSize = font;
         st.selected = i == kind_;
         st.enabled = !saving_;
-        if (ui.button("k" + std::to_string(i), {r.x + static_cast<float>(i) * (tw + gap), r.y, tw, r.h}, labels[static_cast<size_t>(i)], st)) chooseKind(i);
+        const Rect b{r.x + static_cast<float>(i) * (tw + gap), r.y, tw, r.h};
+        if (ui.button("k" + std::to_string(i), b, labels[static_cast<size_t>(i)], st)) chooseKind(i);
+        // 2.59: the three new kinds (« NOUVEAU » until the button gets the focus or a click).
+        if (i > 0) ui.newBadge("k" + std::to_string(i), b, std::string("admin.creations.") + kKinds[i].id, true, true);
     }
     ui.popId();
 }

@@ -1226,6 +1226,27 @@
    ]
   },
   {
+   "id": "admin.creations.trail",
+   "version": "2.59.0",
+   "parents": [
+    "admin.tab.creations"
+   ]
+  },
+  {
+   "id": "admin.creations.frame",
+   "version": "2.59.0",
+   "parents": [
+    "admin.tab.creations"
+   ]
+  },
+  {
+   "id": "admin.creations.victory",
+   "version": "2.59.0",
+   "parents": [
+    "admin.tab.creations"
+   ]
+  },
+  {
    "id": "collection.tab.music",
    "parents": [
     "menu.collection"
