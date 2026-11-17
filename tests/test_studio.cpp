@@ -6,6 +6,7 @@
 #include <cstring>
 
 #include "engine/core/FileUtil.h"
+#include "engine/rendering/Renderer.h"
 #include "game/cosmetics/CreationImages.h"
 #include "packaging/Sha256.h"
 #include "tests/TestFramework.h"
@@ -360,4 +361,53 @@ TEST_CASE("creation images: layouts, PNG header, emitter and the list kept") {
     again.setDir(Paths::userDir() / "online" / "creation_images");
     again.load();
     CHECK(again.all().size() == 1 && again.find("srvtrail:7")->emitter == e);
+}
+
+TEST_CASE("creation images: downloaded once, checked, kept on disk, never waited for") {
+    PixelImage img(32, 16);
+    img.fill({1, 1, 6, 6}, kBlue);
+    const std::vector<uint8_t> png = encodePng(img.w(), img.h(), img.data());
+    const std::string hash = Sha256::hex(png);
+    ImageEmitter e;
+    Json list = Json::array();
+    list.push_back(Json{{"ref", "srvvictory:3"}, {"kind", "victory"}, {"hash", hash}, {"width", 32}, {"height", 16}, {"frame_w", 16},
+                        {"frame_h", 16}, {"frames", 2}, {"fps", 12}, {"emitter", e.toJson()}});
+    const fs::path dir = Paths::userDir() / "online" / "creation_images_dl";
+    std::error_code ec;
+    fs::remove_all(dir, ec);
+    CreationImageBook book;
+    book.setDir(dir);
+    book.applyList(list);
+    // The download is asked for, its answer comes later (the drawing never waits).
+    std::vector<std::string> asked;
+    std::function<void(bool, std::vector<uint8_t>)> answer;
+    book.setFetch([&](const std::string& path, std::function<void(bool, std::vector<uint8_t>)> done) {
+        asked.push_back(path);
+        answer = std::move(done);
+    });
+    Renderer none;  // no window: the texture itself cannot be made here
+    CHECK(book.texture("srvvictory:3", none) == nullptr);
+    CHECK(asked.size() == 1 && asked[0] == "/api/v1/creations/3/image/" + hash);
+    CHECK(book.texture("srvvictory:3", none) == nullptr);
+    CHECK(asked.size() == 1);  // not asked twice while it comes
+    CHECK(book.busy() == 1);
+    // Other bytes than the server announced: refused, nothing kept.
+    std::vector<uint8_t> other = png;
+    other.back() ^= 0x5A;
+    answer(true, other);
+    CHECK(!fs::exists(book.fileOf(hash)));
+    CHECK(book.busy() == 0);
+    // The good file: kept on disk for the next times (offline too), read off the main thread.
+    CreationImageBook fresh;
+    fresh.setDir(dir);
+    fresh.applyList(list);
+    fresh.setFetch([&](const std::string& path, std::function<void(bool, std::vector<uint8_t>)> done) {
+        asked.push_back(path);
+        done(true, png);
+    });
+    CHECK(fresh.texture("srvvictory:3", none) == nullptr);
+    CHECK(fs::exists(fresh.fileOf(hash)));
+    CHECK(*FileUtil::readBinary(fresh.fileOf(hash)) == png);
+    CHECK(!fresh.texture("srvtrail:404", none));  // not listed: nothing asked
+    CHECK(asked.size() == 2);
 }

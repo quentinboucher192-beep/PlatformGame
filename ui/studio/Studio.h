@@ -128,6 +128,7 @@ private:
         int previewMode = 0;
         // Its animations (currentAnim() points in it: the same count for a document's life).
         mutable std::vector<DocAnim> animCache;
+        mutable int animFps = 0;
     };
 
     // ----------------------------------------------------------------- documents

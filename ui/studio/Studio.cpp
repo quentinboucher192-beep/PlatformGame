@@ -102,10 +102,17 @@ const Studio::OpenDoc* Studio::active() const {
 std::vector<DocAnim> Studio::animsOf(const OpenDoc& d) const { return d.doc.anims(novaAnims_); }
 
 const DocAnim* Studio::currentAnim(const OpenDoc& d) const {
-    std::vector<DocAnim> fresh = animsOf(d);
-    if (fresh.size() != d.animCache.size()) d.animCache = std::move(fresh);
-    else
-        for (size_t i = 0; i < fresh.size(); ++i) d.animCache[i] = std::move(fresh[i]);
+    // Made again only when a strip's frames or rhythm changed (a suit's never do); assigned in
+    // place, so that a pointer given earlier in the frame stays valid.
+    const bool stale = d.animCache.empty() ||
+                       (d.doc.kind != DocKind::Suit && (d.animCache[0].count != std::max(1, d.doc.stripFrames()) || d.animFps != d.doc.fps));
+    if (stale) {
+        std::vector<DocAnim> fresh = animsOf(d);
+        if (fresh.size() != d.animCache.size()) d.animCache = std::move(fresh);
+        else
+            for (size_t i = 0; i < fresh.size(); ++i) d.animCache[i] = fresh[i];
+        d.animFps = d.doc.fps;
+    }
     if (d.animCache.empty()) return nullptr;
     return &d.animCache[static_cast<size_t>(std::clamp(d.anim, 0, static_cast<int>(d.animCache.size()) - 1))];
 }
