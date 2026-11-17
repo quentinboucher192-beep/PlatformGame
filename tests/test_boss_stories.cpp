@@ -126,7 +126,7 @@ TEST_CASE("boss stories: every giga boss of the game has its story of six lines,
 // read as version 1 (their paintings).
 namespace {
 
-const std::set<std::string> kAnimated = {"pyrrhax", "monolithe"};
+const std::set<std::string> kAnimated = {"pyrrhax", "monolithe", "kraken"};
 
 // The checks every story told in animated scenes passes; the sheets its scenes use go in `sheets`.
 // `shadowShots`: the shots where a character casts its shadow on the ground (not in deep space).
@@ -279,6 +279,23 @@ TEST_CASE("boss stories v2: the Monolithe in animated scenes") {
                                           "avant", "ciel", "montagnes", "nuages"}));
     CHECK(sheets.count("animations/monolithe.json") == 1);  // the golem, once it stands up
     CHECK(sheets.count("animations/nova.json") == 1);       // the visitor it does not know
+}
+
+// 2.63: the Kraken's story (« La Lanterne des profondeurs »): the egg in the black sea, the fish
+// following the little light, the star's light falling into the sea, the eight arms lighting up,
+// the fish fleeing from its shadow, the Trench.
+TEST_CASE("boss stories v2: the Kraken in animated scenes") {
+    BossStories stories;
+    CHECK(stories.loadDefault());
+    const BossStory* p = stories.find("kraken");
+    CHECK(p != nullptr);
+    if (!p) return;
+    std::set<std::string> sheets;
+    checkAnimatedStory(*p, sheets, 6);
+    CHECK(hasSheets(sheets, "kraken", {"poulpe", "jeune", "oeuf", "poisson", "meduse", "source", "bulles", "etincelle", "etoile", "astre"}));
+    CHECK(hasSheets(sheets, "kraken", {"abysses", "vase", "croute", "recifs_loin", "recifs", "algues", "fond", "avant", "ciel", "etoiles",
+                                       "mer", "vagues", "fosse"}));
+    CHECK(sheets.count("animations/kraken.json") == 1);  // the Kraken, grown
 }
 
 TEST_CASE("boss stories v2: the format (keys, clips, camera, shakes, flashes; version 1 unchanged)") {

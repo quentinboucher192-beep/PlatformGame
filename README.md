@@ -5,16 +5,22 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.62.5** :
+* L'**histoire du Kraken** (« La Lanterne des profondeurs ») devient un **petit dessin animé** : l'œuf qui éclot
+  dans la mer noire, la petite lueur que suivent les poissons perdus, la pluie d'étincelles de l'étoile, les huit
+  bras qui s'allument, les poissons qui fuient son ombre, la Fosse ; rayons de lumière, vase, algues, méduses et
+  récifs lumineux animés. Une pastille NOUVEAU mène à « Revoir l'histoire ».
+* **Clans** : une **fiche de clan** publique, comme un profil (emblème, tag, devise, membres et rôles, points et
+  rang, meilleurs résultats EXTRÊME, « Rejoindre » / « Postuler »), ouverte d'un clic sur un tag [TAG] partout ;
+  onglet **« Clan »** dans les profils, avec **« Inviter dans mon clan »** pour le chef et les officiers ; onglet
+  **« Gestion »** dans CLANS (candidatures, invitations envoyées, membres et rôles, paramètres du chef).
+
 **Nouveau dans la version 2.62.4** :
 * L'**histoire du Monolithe** (« Le Golem Primordial ») devient elle aussi un **petit dessin animé** : le caillou
   dans la poussière des origines, les enfants de la caverne qui gravent leur rune, la pierre qui grandit puis se
   lève, le village, les vaisseaux qui partent, le golem seul dans les ruines ; décors en couches animées
   (cristaux, torches, brume), personnages animés image par image. Une pastille NOUVEAU mène à « Revoir
   l'histoire ».
-* **Clans** : une **fiche de clan** publique, comme un profil (emblème, tag, devise, membres et rôles, points et
-  rang, meilleurs résultats EXTRÊME, « Rejoindre » / « Postuler »), ouverte d'un clic sur un tag [TAG] partout ;
-  onglet **« Clan »** dans les profils, avec **« Inviter dans mon clan »** pour le chef et les officiers ; onglet
-  **« Gestion »** dans CLANS (candidatures, invitations envoyées, membres et rôles, paramètres du chef).
 
 **Nouveau dans la version 2.62.3** :
 * Embuscades : une chute ne les fait plus recommencer (reprise à la même vague, ennemis ramenés dans l'arène) ;

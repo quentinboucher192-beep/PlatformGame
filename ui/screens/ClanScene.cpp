@@ -4,7 +4,7 @@
 // clan's members, and only as each player shares it); its best team on every EXTRÊME level
 // (Solo today: the server already says `mode` and `team_size` for Duo and Trio); the pending
 // applications (chief and officers only); its discussion (a group conversation of SOCIAL).
-// 2.62.4: the page is the clan's public sheet, opened from search, the ranking, a profile or a
+// 2.62.5: the page is the clan's public sheet, opened from search, the ranking, a profile or a
 // « [TAG] » clicked anywhere (makeClanByTag); the tab « Gestion » (chief and officers): the
 // applications received, the invitations sent, the members and their roles, the settings.
 //
@@ -522,7 +522,7 @@ private:
     void drawBody() {
         UIContext& ui = g_.ui;
         const int invitations = static_cast<int>(at(mine_, "invitations").size());
-        // « Gestion » (2.62.4): for the chief and the officers, next to « Mon clan ».
+        // « Gestion » (2.62.5): for the chief and the officers, next to « Mon clan ».
         const bool manager = g_.online.loggedIn() && clans::canManage(myClanRole());
         if (tab_ == kTabManage && !manager && mineLoaded_) tab_ = kTabMine;
         std::vector<std::string> labels = {"Mon clan", "Rechercher", "Classement des clans"};
@@ -848,7 +848,7 @@ private:
         if (!role.empty()) {
             if (clans::canManage(role)) {
                 btns.push_back({"invite", "Inviter", true});
-                btns.push_back({"manage", "Gestion"});  // 2.62.4: requests, members, settings
+                btns.push_back({"manage", "Gestion"});  // 2.62.5: requests, members, settings
             }
             btns.push_back({"leave", "\x1F" "clan|Quitter", false, true});
         } else {
@@ -1080,7 +1080,7 @@ private:
         }
         Rect chat = r;
         if (clans::canManage(role)) {
-            // 2.62.4: the requests are handled in « Gestion »; here, how many wait, and the way there.
+            // 2.62.5: the requests are handled in « Gestion »; here, how many wait, and the way there.
             int apps = 0, invs = 0;
             for (const auto& q : at(page_, "requests")) (jstr(q, "kind") == "apply" ? apps : invs) += 1;
             const Rect box{r.x, r.y, r.w, ui.s(76)};
@@ -1102,7 +1102,7 @@ private:
         drawChat(chat);
     }
 
-    // ------------------------------------------------------------- « Gestion » (2.62.4)
+    // ------------------------------------------------------------- « Gestion » (2.62.5)
     /// The chief and the officers: the applications received and the invitations sent (left),
     /// the members and their roles (middle), the clan's settings (right; changed by the chief).
     void drawManage(const Rect& body) {
