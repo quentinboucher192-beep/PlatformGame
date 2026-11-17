@@ -1,10 +1,12 @@
 #pragma once
 // The example of the attack unfolded on a boss's sheet (2.60, Statistiques des boss › Fiche):
-// one at a time. It is prepared without holding up the screen: the boss's level is read on a
-// worker thread, its world set up when it arrives, its terrain baked and the scene brought to
-// the attack's first wind-up a few milliseconds per frame; meanwhile the frame says what is
-// being prepared. The scene itself is game/gameplay/BossAttackDemo.h (a training world: never
-// recorded, silent).
+// one at a time. It is prepared without holding up the screen: the boss's level is read and
+// parsed on a worker thread (kept for its next example); then its world is loaded, the boss and
+// Nova placed and its drawing prepared, each in a frame of its own (they create textures: the
+// main thread's work), and its terrain baked and the scene brought to the attack's first wind-up
+// a few milliseconds per frame; meanwhile the frame says what is being prepared. Only the
+// example shown is played, and only while its frame is on screen. The scene itself is
+// game/gameplay/BossAttackDemo.h (a training world: never recorded, silent).
 
 #include <future>
 #include <memory>

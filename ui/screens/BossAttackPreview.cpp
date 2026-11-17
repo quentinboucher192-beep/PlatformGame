@@ -197,15 +197,21 @@ void BossAttackPreview::prepare() {
         return;
     }
     if (!demo_->arranged()) {
-        // Its own frame: the boss at its phase, Nova at her place, then the drawing prepared.
+        // Its own frame: the boss at its phase, Nova at her place.
         if (!demo_->arrange()) {
             unavailable(demo_->failure().empty() ? std::string("L'exemple ne peut pas être préparé.") : demo_->failure());
             return;
         }
+        Log::info("Fiche des boss : exemple {} / {} mis en place en {:.1f} ms", bossId_, attackId_, msSince(t0));
+        return;
+    }
+    if (!renderer_) {
+        // Its own frame too: the drawing of its level prepared (its terrain baked afterwards,
+        // a little at each frame).
         renderer_ = std::make_unique<GameRenderer>();
         renderer_->buildProgressive(res, *demo_->world());
         terrainLeft_ = renderer_->terrain().pendingChunks();
-        Log::info("Fiche des boss : exemple {} / {} mis en place en {:.1f} ms", bossId_, attackId_, msSince(t0));
+        Log::info("Fiche des boss : dessin de l'exemple {} / {} préparé en {:.1f} ms", bossId_, attackId_, msSince(t0));
         return;
     }
     // The terrain baked (the arena first) and the scene brought to the attack, a few
