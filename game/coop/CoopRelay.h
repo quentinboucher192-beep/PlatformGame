@@ -7,8 +7,10 @@
 // Pure logic: the transport (sockets) and the clock are given by its owner.
 
 #include <cstdint>
+#include <array>
 #include <deque>
 #include <functional>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -24,8 +26,13 @@ public:
 
     CoopRelay(Send send, Close close) : send_(std::move(send)), close_(std::move(close)) {}
 
-    /// The level the host chose (lobby): its id, its fingerprint, its name.
-    void setLevel(const std::string& id, const std::string& hash, const std::string& title);
+    /// The level the host chose (lobby): its id, its fingerprint, its name; 2.63.5: its source
+    /// ("campaign" or "community") and its published version (community).
+    void setLevel(const std::string& id, const std::string& hash, const std::string& title, const std::string& source = "campaign",
+                  int version = 0);
+    /// 2.63.5: the package of a community level (kMaxPackage at most; null: none kept on this
+    /// PC), sent part by part, in the lobby, to a game that does not have the level (PACKAGE_ASK).
+    void setPackage(std::shared_ptr<const std::vector<uint8_t>> bytes);
     void connected(int conn, uint32_t nowMs);
     void disconnected(int conn, uint32_t nowMs);
     void received(int conn, const uint8_t* data, size_t size, uint32_t nowMs);
@@ -70,7 +77,10 @@ private:
     Close close_;
     Seat seats_[kSeats];
     std::vector<int> waiting_;  // connections before their HELLO
-    std::string level_, hash_, title_;
+    std::string level_, hash_, title_, source_ = "campaign";
+    int version_ = 0;
+    std::shared_ptr<const std::vector<uint8_t>> package_;
+    std::array<uint8_t, 32> packageSha_{};
     bool started_ = false;
     int players_ = 0;
     int delay_ = 3;

@@ -5,17 +5,31 @@
 #include "engine/core/Json.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/online/Replay.h"
+#include "packaging/Sha256.h"
 
 namespace cosmic {
 
 using namespace coopnet;
 
-void CoopRelay::setLevel(const std::string& id, const std::string& hash, const std::string& title) {
+void CoopRelay::setLevel(const std::string& id, const std::string& hash, const std::string& title, const std::string& source, int version) {
     if (started_) return;
     level_ = id;
     hash_ = hash;
     title_ = title;
+    source_ = source == "community" ? "community" : "campaign";
+    version_ = version;
     broadcastLobby();
+}
+
+void CoopRelay::setPackage(std::shared_ptr<const std::vector<uint8_t>> bytes) {
+    if (bytes && (bytes->empty() || bytes->size() > kMaxPackage)) bytes.reset();
+    package_ = std::move(bytes);
+    packageSha_ = {};
+    if (package_) {
+        Sha256 sha;
+        sha.update(package_->data(), package_->size());
+        packageSha_ = sha.finish();
+    }
 }
 
 int CoopRelay::seatOf(int conn) const {
@@ -122,6 +136,20 @@ void CoopRelay::received(int conn, const uint8_t* data, size_t size, uint32_t no
             }
             s.rejoinAt = at;
             sendAll(rejoin(static_cast<uint8_t>(seat), at));
+            break;
+        }
+        case Msg::PackageAsk: {
+            // 2.63.5: a part of the community level's package (lobby only, in order, bounded).
+            const uint32_t offset = r.u32();
+            if (!r.done() || started_) return drop(conn);
+            if (!package_) {
+                send_(conn, packagePart(0, 0, {}, nullptr, 0));
+                break;
+            }
+            const size_t size = package_->size();
+            if (offset >= size) return drop(conn);
+            const size_t n = std::min<size_t>(kPackageChunk, size - offset);
+            send_(conn, packagePart(static_cast<uint32_t>(size), offset, packageSha_, package_->data() + offset, n));
             break;
         }
         case Msg::Leave:
@@ -306,7 +334,10 @@ std::string CoopRelay::lobbyJson() const {
         seats.push_back({{"seat", k}, {"name", s.name}, {"account", s.account}, {"ready", s.ready || k == 0}, {"ping", s.rttMs},
                          {"connected", s.conn >= 0 && !s.absent}});
     }
-    return Json{{"level", level_}, {"hash", hash_}, {"title", title_}, {"started", started_}, {"seats", seats}}.dump();
+    return Json{{"level", level_},     {"hash", hash_},           {"title", title_},
+                {"source", source_},   {"version", version_},     {"size", package_ ? package_->size() : size_t{0}},
+                {"started", started_}, {"seats", seats}}
+        .dump();
 }
 
 void CoopRelay::sendAll(const std::vector<uint8_t>& bytes) {

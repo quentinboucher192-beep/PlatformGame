@@ -287,3 +287,31 @@ Le lecteur de replays rejoue l'équipe et suit **un joueur au choix ou toute l'�
   un joueur peut sortir de l'image affichée un peu avant que la règle ne le compte hors du cadre.
 * Le relais en ligne garde la partie en mémoire : si Cloudflare déplace l'objet durable pendant
   une partie (rare), la partie s'arrête pour toute l'équipe.
+
+## 9. Niveaux EXTRÊME de la communauté (2.63.5)
+
+* **Le salon** propose « Campagne / Communauté ». La communauté, ce sont les niveaux installés depuis
+  NIVEAUX EN LIGNE qui sont EXTRÊME, à une vie, et dont la copie est **la version publiée** (son empreinte de
+  jeu `fingerprintGameplay` est celle de la version) : titre, auteur, version (`game/coop/CoopLevels`). La page
+  d'un niveau EXTRÊME de NIVEAUX EN LIGNE a « Jouer en coop » : elle télécharge la version courante si besoin
+  et ouvre le salon sur ce niveau.
+* **Le niveau d'un salon** : `source` `campaign` (`id` = niveau du jeu) ou `community` (`id` = identifiant en
+  ligne, `version` = version publiée), et son empreinte `hash`. Le LOBBY (JSON) donne `source`, `version` et, en
+  ligne, `size` (taille du paquet). En ligne, `POST /coop/rooms` vérifie qu'un niveau de la communauté est
+  publié, EXTRÊME, et que `hash` est l'empreinte de cette version (sinon 409) ; le titre vient du serveur.
+* **Le même niveau pour tous** : un invité qui n'a pas le niveau dans cette version (même identifiant, même
+  version, même empreinte) ne peut pas se dire « Prêt » ; il le reçoit d'abord, avec sa progression :
+  * en ligne, depuis Cosmic Online (`GET /community/levels/{id}/package?version=N`, SHA-256 de l'en-tête
+    `x-content-sha256` vérifié) ;
+  * en réseau local, **par la liaison** (sans Internet) : `PACKAGE_ASK` (9, jeu → relais, `u32 position`) et
+    `PACKAGE_PART` (17, relais → jeu : `u32 taille totale` (0 : aucun paquet), `u32 position`, 32 octets de
+    SHA-256 du tout, puis au plus 48 Kio). Le PC hôte envoie le paquet qu'il a téléchargé, lu par le fil du relais
+    (16 Mio au plus) ; les parties arrivent dans l'ordre, une demandée après l'autre ; le relais ferme une demande
+    hors du paquet ou après le départ. Sans paquet chez l'hôte, l'invité le télécharge depuis Cosmic Online ;
+    sinon un message clair le dit.
+  * Le paquet est vérifié hors du fil principal (taille, SHA-256), puis installé comme tout paquet
+    (`PackageImporter`) ; son empreinte de jeu doit être celle du salon, sinon il est retiré et la partie ne peut
+    pas commencer. Au départ (`GO`), chaque jeu retrouve encore le niveau par identifiant, version et empreinte.
+* **Classements** : `kind=community`, par version (`c:{id}:{version}`), Duo et Trio sur la page du niveau et à
+  la fin de la partie. Les points de clan ne comptent que les niveaux officiels (inchangé).
+* La partie elle-même ne change pas : `kCoopSimulationVersion` reste 1.

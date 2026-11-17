@@ -123,8 +123,11 @@ public:
         syncPowerKeys();
         g_.app.input().consumePlayerInput();  // the lobby's presses
         // The team replay (format 5): every player's inputs and trace, the team's digests.
+        // 2.63.5: a community level is identified by what it plays like (its published fingerprint).
         std::string hash = std::string(64, '0');
-        if (const LevelFingerprint* fp = g_.online.fingerprints().get(g_.content, setup_.levelId)) hash = fp->hash;
+        if (!setup_.communityId.empty()) hash = fingerprintGameplay(g_.content, level_);
+        else if (const LevelFingerprint* fp = g_.online.fingerprints().get(g_.content, setup_.levelId)) hash = fp->hash;
+        levelHash_ = hash;
         recorder_.begin(setup_.levelId, hash, setup_.attemptId.empty() ? makeUuidV4() : setup_.attemptId, world_->gameplaySeed());
         recorder_.beginTeam(n);
         world_->eventObserver = [this](const std::string& src, const std::string& trig) { recorder_.onWorldEvent(src, trig, world_->currentPlayer()); };
@@ -284,6 +287,7 @@ public:
         replay_ = std::make_shared<ReplayData>(recorder_.take());
         link_->result(tick_);  // online: the relay notes the inputs of the attempt (ranking)
         submitRanking(completed, p);
+        loadBoard();
         g_.ui.setFocus("coopend/again");
     }
 
@@ -312,12 +316,20 @@ public:
         rankNote_ = "Tentative envoyée pour le classement " + std::string(ids.size() >= 3 ? "Trio" : "Duo") +
                     " : classée dès que chaque joueur l'a confirmée depuis son compte.";
         if (!submitter) return;
-        const LevelFingerprint* fp = g_.online.fingerprints().get(g_.content, setup_.levelId);
-        if (!fp) return;
         OnlineService::RaceAttempt a;
-        a.kind = "official";
-        a.levelId = setup_.levelId;
-        a.levelHash = fp->hash;
+        if (!setup_.communityId.empty()) {
+            // 2.63.5: a community level's Duo / Trio boards, per version (no clan points: those
+            // count the official levels only).
+            a.kind = "community";
+            a.levelId = setup_.communityId;
+            a.version = setup_.communityVersion;
+        } else {
+            const LevelFingerprint* fp = g_.online.fingerprints().get(g_.content, setup_.levelId);
+            if (!fp) return;
+            a.kind = "official";
+            a.levelId = setup_.levelId;
+            a.levelHash = fp->hash;
+        }
         a.title = level_.name;
         a.attemptId = replay_->attemptId;
         a.timeMs = static_cast<int64_t>(std::llround(static_cast<double>(endTime_) * 1000.0));
@@ -549,11 +561,49 @@ public:
         ui.popId();
     }
 
+    /// The board of this level for this team's size (Duo or Trio): kind, id and version or hash.
+    std::string boardKind() const { return setup_.communityId.empty() ? "official" : "community"; }
+    std::string boardLevel() const { return setup_.communityId.empty() ? setup_.levelId : setup_.communityId; }
+
+    /// 2.63.5: the best team of the level's Duo / Trio board, under the result.
+    void loadBoard() {
+        const int n = world_ ? world_->teamSize() : 2;
+        const std::string label = n >= 3 ? "Classement Trio" : "Classement Duo";
+        if (!g_.online.usable() || (setup_.communityId.empty() && !g_.online.fingerprints().get(g_.content, setup_.levelId))) {
+            boardLine_ = label + " : indisponible hors ligne.";
+            return;
+        }
+        boardLine_ = label + " : chargement…";
+        std::string q = "/api/v1/coop/board?size=" + std::to_string(n >= 3 ? 3 : 2) + "&kind=" + boardKind() + "&level_id=" + boardLevel();
+        if (!setup_.communityId.empty()) q += "&version=" + std::to_string(setup_.communityVersion);
+        else q += "&level_hash=" + levelHash_;
+        g_.online.get(q, OnlineService::guard(life_, [this, label](const ApiResult& r) {
+                          if (!r.ok) {
+                              boardLine_ = label + " : " + (r.message.empty() ? std::string("indisponible.") : r.message);
+                              return;
+                          }
+                          const Json ranking = r.data.value("ranking", Json::array());
+                          if (!ranking.is_array() || ranking.empty()) {
+                              boardLine_ = label + " : aucune équipe classée pour l'instant.";
+                              return;
+                          }
+                          std::string names;
+                          for (const auto& p : ranking[0].value("players", Json::array())) names += (names.empty() ? "" : " + ") + jstr(p, "username");
+                          char sc[32];
+                          std::snprintf(sc, sizeof sc, "%.1f", jget<double>(ranking[0], "score", 0.0));
+                          std::string s = sc;
+                          for (char& c : s)
+                              if (c == '.') c = ',';
+                          boardLine_ = label + " : 1re équipe " + names + " · " + s + " %";
+                      }),
+                      false);
+    }
+
     void drawEnd() {
         UIContext& ui = g_.ui;
         ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{2, 4, 10, 190});
         const int n = world_->teamSize();
-        Rect box = centred(ui.s(760), ui.s(330) + n * ui.s(46));
+        Rect box = centred(ui.s(760), ui.s(364) + n * ui.s(46));
         ui.panel(box, true, 16);
         std::string title = !aborted_.empty() ? "Partie interrompue" : completed_ ? "Niveau terminé !" : "Toute l'équipe est à terre";
         ui.label(title, {box.center().x, box.y + ui.s(44)}, ui.fitFont(title, FontFace::Title, 38, box.w - ui.s(48)),
@@ -590,14 +640,35 @@ public:
         const std::string note = !rankNote_.empty() ? rankNote_ : "Course à la vérification : le serveur vérifie la tentative d'équipe avec le replay.";
         ui.label(note, {box.center().x, y}, ui.fitFont(note, FontFace::Body, 16, box.w - ui.s(48)), ui.theme().textDim, Align::Center, FontFace::Body,
                  VAlign::Middle);
+        y += ui.s(34);
+        if (!boardLine_.empty()) {
+            // 2.63.5: the Duo / Trio board of this level (a community level: of its version).
+            const std::string t = ui.elide(boardLine_, FontFace::Body, ui.fitFont(boardLine_, FontFace::Body, 17, box.w - ui.s(48)), box.w - ui.s(48));
+            ui.label(t, {box.center().x, y}, ui.fitFont(t, FontFace::Body, 17, box.w - ui.s(48)), Color{201, 179, 255, 255}, Align::Center, FontFace::Body,
+                     VAlign::Middle);
+        }
         ui.pushId("coopend");
-        const float bw = (box.w - ui.s(100)) * 0.5f, bh = ui.s(58);
+        const float gap = ui.s(16), bh = ui.s(58);
+        const float bw = (box.w - ui.s(80) - gap * 2.0f) / 3.0f;
         const float by = box.bottom() - bh - ui.s(28);
+        const std::string boardLabel = n >= 3 ? "Classement Trio" : "Classement Duo";
+        float fs = 20.0f;
+        for (const char* t : {"Rejouer en équipe", "Retour au salon"}) fs = std::min(fs, ui.fitFont(t, FontFace::Bold, 20.0f, bw - ui.s(24), 0.55f));
+        fs = std::min(fs, ui.fitFont(boardLabel, FontFace::Bold, 20.0f, bw - ui.s(24), 0.55f));
         UIContext::ButtonStyle bs;
         bs.primary = true;
+        bs.fontSize = fs;
         bs.enabled = setup_.mode == CoopSetup::Mode::SamePc && aborted_.empty();
         if (ui.button("again", {box.x + ui.s(40), by, bw, bh}, "Rejouer en équipe", bs)) restart();
-        if (ui.button("lobby", {box.x + ui.s(60) + bw, by, bw, bh}, "Retour au salon")) backToLobby();
+        UIContext::ButtonStyle rs;
+        rs.fontSize = fs;
+        rs.enabled = g_.online.usable() && (!setup_.communityId.empty() || g_.online.fingerprints().get(g_.content, setup_.levelId));
+        if (ui.button("board", {box.x + ui.s(40) + bw + gap, by, bw, bh}, boardLabel, rs))
+            g_.app.pushScene(makeRaceBoard(g_, boardKind(), boardLevel(), setup_.communityVersion, setup_.communityId.empty() ? levelHash_ : std::string(),
+                                           n >= 3 ? 3 : 2));
+        UIContext::ButtonStyle ls;
+        ls.fontSize = fs;
+        if (ui.button("lobby", {box.x + ui.s(40) + (bw + gap) * 2.0f, by, bw, bh}, "Retour au salon", ls)) backToLobby();
         ui.popId();
     }
 
@@ -643,6 +714,9 @@ public:
     float endTime_ = 0.0f, endScore_ = 0.0f;
     std::string aborted_;
     std::string rankNote_;
+    std::string levelHash_;  // the fingerprint the team replay carries
+    std::string boardLine_;  // 2.63.5: the best team of the level's Duo / Trio board
+    std::shared_ptr<int> life_ = std::make_shared<int>(0);
 };
 
 }  // namespace

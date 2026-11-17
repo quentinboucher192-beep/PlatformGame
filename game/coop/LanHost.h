@@ -12,17 +12,22 @@
 #include <thread>
 #include <vector>
 
+#include "engine/core/Paths.h"
+#include "game/coop/CoopProtocol.h"
+
 namespace cosmic {
 
 class LanHost {
 public:
     ~LanHost() { stop(); }
-    /// Starts hosting (`name`: shown to the others). False when the port is taken.
-    bool start(const std::string& name, const std::string& levelId, const std::string& levelHash, const std::string& levelTitle);
+    /// Starts hosting (`name`: shown to the others). False when the port is taken. 2.63.5:
+    /// `package`: the .cplanet of a community level kept on this PC ("" : none), sent to a game
+    /// of the local network that does not have it (read by the relay's thread, never here).
+    bool start(const std::string& name, const coopnet::RoomLevel& level, const fs::path& package = {});
     void stop();
     bool running() const { return running_; }
     /// The host changes the level before the start.
-    void setLevel(const std::string& id, const std::string& hash, const std::string& title);
+    void setLevel(const coopnet::RoomLevel& level, const fs::path& package = {});
     uint16_t port() const { return port_; }
 
 private:
@@ -31,7 +36,9 @@ private:
     std::atomic<bool> running_{false};
     std::atomic<bool> stop_{false};
     std::mutex mutex_;
-    std::string name_, level_, hash_, title_;
+    std::string name_;
+    coopnet::RoomLevel level_;
+    fs::path package_;
     bool levelChanged_ = false;
     uint16_t port_ = 0;
     intptr_t listen_ = -1, udp_ = -1;

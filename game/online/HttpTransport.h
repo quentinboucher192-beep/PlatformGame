@@ -22,6 +22,8 @@ struct HttpRequest {
     size_t maxResponseBytes = 8 * 1024 * 1024;
     /// Set to true from any thread to abort the transfer as soon as possible.
     std::shared_ptr<std::atomic<bool>> cancel = std::make_shared<std::atomic<bool>>(false);
+    /// 2.63.5: when set, the bytes of the body received so far (a progress bar).
+    std::shared_ptr<std::atomic<size_t>> received;
 };
 
 struct HttpResponse {

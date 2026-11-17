@@ -42,6 +42,12 @@ public:
     void setReady(bool on);
     /// The host starts the game (everybody ready).
     void startGame(int players);
+    /// 2.63.5 (local network): asks the PC that hosts for its community level's package, part
+    /// after part (each part asks the next one); package() tells how far it went.
+    void requestPackage();
+    const coopnet::PackageReceiver& package() const { return package_; }
+    bool receivingPackage() const { return askingPackage_; }
+    std::vector<uint8_t> takePackage() { return package_.take(); }
     /// The game started (GO came): what it plays.
     const std::optional<coopnet::GoInfo>& go() const { return go_; }
     /// This game joined a game already started: it plays the steps given so far again first.
@@ -89,6 +95,8 @@ private:
     std::optional<coopnet::GoInfo> go_;
     bool joinedLate_ = false;
     bool sawLobby_ = false;
+    coopnet::PackageReceiver package_;
+    bool askingPackage_ = false;
     uint32_t rejoinAt_ = 0;
     int rttMs_ = -1;
     uint32_t lastPing_ = 0;
