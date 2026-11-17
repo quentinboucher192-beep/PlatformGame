@@ -133,6 +133,10 @@
    "name": "Tisseuse ardente"
   },
   {
+   "id": "etincelle",
+   "name": "Étincelle du Phénix"
+  },
+  {
    "id": "fire_wisp",
    "name": "Feu follet ardent"
   },
@@ -267,6 +271,10 @@
   {
    "id": "nyxara",
    "name": "Nyxara"
+  },
+  {
+   "id": "phenix",
+   "name": "Phénix"
   },
   {
    "id": "photophore",

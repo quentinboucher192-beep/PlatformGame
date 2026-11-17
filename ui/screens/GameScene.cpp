@@ -1130,8 +1130,29 @@ void GameScene::update(float dt) {
             // A capture never counts (boss statistics, achievements, records), as a training.
             world_->setTraining(true);
             const int n = static_cast<int>(b->def().phases.size());
-            if (b->phaseIndex() < std::min(opt_.forceBossPhase, n) - 1) jumpBossToPhase(*world_, *b, std::min(opt_.forceBossPhase, n) - 1);
-            if (opt_.forceBossPhase <= n || b->lastStand()) {
+            const int target = std::min(opt_.forceBossPhase, n) - 1;
+            bool rebirthPending = false;
+            if (opt_.forceBossPhase <= n && target > 0 && b->def().phases[static_cast<size_t>(target - 1)].rebirth > 0.0f) {
+                // 2.56: a phase reached by a rebirth (the Phénix's « Cendres ») is reached as in the
+                // fight: the boss burns to ashes at the end of the phase before, then is reborn into it.
+                if (b->inAshes() || b->phaseIndex() >= target) {
+                    opt_.forceBossPhase = 0;
+                } else {
+                    if (b->phaseIndex() < target - 1) jumpBossToPhase(*world_, *b, target - 1);
+                    b->setWounds(b->maxHp() * (b->def().phases[static_cast<size_t>(target)].hpThreshold + 0.001f), target - 1);
+                    DamageInfo d;
+                    d.amount = b->maxHp() * 0.01f;
+                    d.type = DamageType::Projectile;
+                    d.source = b->center();
+                    b->takeDamage(*world_, d);
+                    rebirthPending = true;  // tried again next frame until it lies in its ashes
+                }
+            } else if (b->phaseIndex() < target) {
+                jumpBossToPhase(*world_, *b, target);
+            }
+            if (opt_.forceBossPhase == 0 || rebirthPending) {
+                // reached (its rebirth under way), or not yet
+            } else if (opt_.forceBossPhase <= n || b->lastStand()) {
                 opt_.forceBossPhase = 0;
             } else {
                 // Its last stand: the last blow of the fight, as soon as it can be hurt.

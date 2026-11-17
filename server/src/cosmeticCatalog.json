@@ -107,6 +107,13 @@
    "stars": 620
   },
   {
+   "id": "suit_aube",
+   "category": "suit",
+   "look": "aube",
+   "name": "Plumage d'aube",
+   "stars": 650
+  },
+  {
    "id": "suit_sanctuaire",
    "category": "suit",
    "look": "sanctuaire",
@@ -193,6 +200,13 @@
    "look": "bubbles",
    "name": "Bulles des abysses",
    "stars": 630
+  },
+  {
+   "id": "trail_plumes",
+   "category": "trail",
+   "look": "feathers",
+   "name": "Plumes de lumière",
+   "stars": 660
   },
   {
    "id": "trail_runes",
@@ -304,6 +318,13 @@
    "achievement": "maitrise_kraken_nohit"
   },
   {
+   "id": "frame_plumes",
+   "category": "frame",
+   "look": "plumage",
+   "name": "Couronne de plumes",
+   "achievement": "maitrise_phenix_nohit"
+  },
+  {
    "id": "frame_couronne",
    "category": "frame",
    "look": "crown",
@@ -404,6 +425,13 @@
    "look": "Chasseur de Kraken",
    "name": "Chasseur de Kraken",
    "achievement": "gardiens_kraken"
+  },
+  {
+   "id": "title_porteur_aube",
+   "category": "title",
+   "look": "Porteur d'aube",
+   "name": "Porteur d'aube",
+   "achievement": "gardiens_phenix"
   },
   {
    "id": "title_analyste",
@@ -534,6 +562,13 @@
    "look": "tidal_wave",
    "name": "Raz-de-marée",
    "stars": 640
+  },
+  {
+   "id": "victory_renaissance",
+   "category": "victory",
+   "look": "rebirth",
+   "name": "Renaissance",
+   "stars": 670
   },
   {
    "id": "victory_serie_feu",

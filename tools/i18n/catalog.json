@@ -1573,6 +1573,12 @@
    ]
   },
   {
+   "fr": "Alors, pour que l'aube revienne, il alluma ses propres plumes. Il brûla, brûla… et tomba en cendres.",
+   "where": [
+    "data/stories/phenix.json"
+   ]
+  },
+  {
    "fr": "Aléatoire",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -1842,6 +1848,12 @@
    "fr": "Anneaux de nacre",
    "where": [
     "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Anneaux de renaissance",
+   "where": [
+    "data/enemies/phenix.json"
    ]
   },
   {
@@ -2806,6 +2818,12 @@
    ]
   },
   {
+   "fr": "Au cœur du nid",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Au fond de l'étoile, un cœur mort s'est éveillé : Singularis et ses huit phases, dans une arène géante. Une seule vie, aucun checkpoint.",
    "where": [
     "data/levels/noyau_03.json"
@@ -2878,6 +2896,12 @@
    ]
   },
   {
+   "fr": "Au sommet des Confins, un nid de braises sous un ciel d'aube : le Phénix Stellaire et ses huit phases, dans une arène géante. Une seule vie, aucun checkpoint.",
+   "where": [
+    "data/levels/confins_04.json"
+   ]
+  },
+  {
    "fr": "Au sommet du vent !",
    "where": [
     "data/levels/glacior_01.json"
@@ -2890,7 +2914,7 @@
    ]
   },
   {
-   "fr": "Au-delà de l'étoile morte, au bord du système, un monde de verre noir craquelé sur un feu vivant. Ses cendres tombent d'un ciel pourpre ; un dragon d'obsidienne y garde la dernière frontière, un golem plus ancien que les planètes veille sous sa croûte et un kraken hante les mers noires de ses abysses.",
+   "fr": "Au-delà de l'étoile morte, au bord du système, un monde de verre noir craquelé sur un feu vivant. Ses cendres tombent d'un ciel pourpre ; un dragon d'obsidienne y garde la dernière frontière, un golem plus ancien que les planètes veille sous sa croûte, un kraken hante les mers noires de ses abysses et un phénix d'étoiles renaît de ses cendres sur son plus haut sommet.",
    "where": [
     "data/planets/confins.json"
    ]
@@ -2929,6 +2953,7 @@
    "fr": "Aube",
    "where": [
     "data/enemies/echo_pyrogyre.json",
+    "data/enemies/phenix.json",
     "data/enemies/pyrogyre.json"
    ]
   },
@@ -3754,7 +3779,14 @@
    "where": [
     "data/cosmetics/cosmetics.json",
     "data/enemies/aurorax.json",
-    "data/enemies/echo_aurorax.json"
+    "data/enemies/echo_aurorax.json",
+    "data/enemies/phenix.json"
+   ]
+  },
+  {
+   "fr": "Aurore : les blocs en orbite",
+   "where": [
+    "data/levels/confins_04.json"
    ]
   },
   {
@@ -3878,6 +3910,12 @@
    "fr": "Autre version du niveau.",
    "where": [
     "game/ghost/Ghost.cpp"
+   ]
+  },
+  {
+   "fr": "Autrefois, chaque matin, un petit oiseau de lumière quittait l'étoile du centre pour porter l'aube aux Confins.",
+   "where": [
+    "data/stories/phenix.json"
    ]
   },
   {
@@ -4354,6 +4392,12 @@
    ]
   },
   {
+   "fr": "Battement d'ailes",
+   "where": [
+    "data/enemies/phenix.json"
+   ]
+  },
+  {
    "fr": "Battez-le pour le voir en entier",
    "where": [
     "ui/screens/BossStatsScene.cpp"
@@ -4445,6 +4489,12 @@
   },
   {
    "fr": "Battre chaque phase du Monolithe sans être touché (pas forcément dans le même combat).",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Battre chaque phase du Phénix sans être touché (pas forcément dans le même combat).",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -4602,6 +4652,12 @@
    "fr": "Bleu",
    "where": [
     "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Bleu de nuit étoilée, visière d'or, écharpe de feu cramoisi : la tenue du Phénix.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -5045,6 +5101,12 @@
    "fr": "Braises par salve",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Braises sous la cendre",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
    ]
   },
   {
@@ -6309,9 +6371,27 @@
    ]
   },
   {
+   "fr": "Cendres",
+   "where": [
+    "data/enemies/phenix.json"
+   ]
+  },
+  {
    "fr": "Cendres (Pyralis)",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Cendres : le nid s'effondre sur les braises",
+   "where": [
+    "data/levels/confins_04.json"
+   ]
+  },
+  {
+   "fr": "Cendres : à la fin de sa cinquième phase, le Phénix se consume sur son nid, intouchable, puis renaît avec les PV de sa phase ; écartez-vous de ses cendres quand l'anneau de feu s'allume.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -8074,6 +8154,12 @@
    ]
   },
   {
+   "fr": "Colonnes (par côté)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "colonnes en double dans la table {0}",
    "where": [
     "server/src/backups.ts"
@@ -8083,6 +8169,13 @@
    "fr": "colonnes invalides pour la table {0}",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "Colonnes solaires",
+   "where": [
+    "data/enemies/phenix.json",
+    "game/enemies/EnemyDefinition.cpp"
    ]
   },
   {
@@ -8119,6 +8212,12 @@
   },
   {
    "fr": "Combat contre le Kraken",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Combat contre le Phénix",
    "where": [
     "data/music/tracks.json"
    ]
@@ -8630,7 +8729,14 @@
    "fr": "Comète",
    "where": [
     "data/cosmetics/cosmetics.json",
+    "data/enemies/phenix.json",
     "data/online/avatars.json"
+   ]
+  },
+  {
+   "fr": "Comète : un soin",
+   "where": [
+    "data/levels/confins_04.json"
    ]
   },
   {
@@ -9785,6 +9891,13 @@
    ]
   },
   {
+   "fr": "Couronne de plumes",
+   "where": [
+    "data/cosmetics/cosmetics.json",
+    "data/enemies/phenix.json"
+   ]
+  },
+  {
    "fr": "Couronne du gardien",
    "where": [
     "data/levels/glacior_03.json"
@@ -9793,7 +9906,8 @@
   {
    "fr": "Couronne solaire",
    "where": [
-    "data/cosmetics/cosmetics.json"
+    "data/cosmetics/cosmetics.json",
+    "data/enemies/phenix.json"
    ]
   },
   {
@@ -10452,6 +10566,12 @@
    ]
   },
   {
+   "fr": "Cœur de nébuleuse",
+   "where": [
+    "data/enemies/phenix.json"
+   ]
+  },
+  {
    "fr": "Cœur du Creuset",
    "where": [
     "data/achievements/achievements.json",
@@ -10844,6 +10964,12 @@
    ]
   },
   {
+   "fr": "Demi-largeur d'une colonne",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Demi-largeur d'une fissure",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -10892,6 +11018,12 @@
    ]
   },
   {
+   "fr": "Depuis les deux murs (2)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Depuis « Paramètres en ligne », vous pouvez à tout moment : modifier votre pseudonyme, votre avatar et votre pays ; masquer votre pays ou votre présence sur le globe ; masquer votre profil public ; refuser les demandes d'amis ; exporter vos données (fichier JSON) ; supprimer définitivement votre compte, vos records, vos replays et vos amis (confirmation par mot de passe). Vous pouvez aussi vous déconnecter de tous vos appareils.",
    "where": [
     "data/online/terms_fr.txt"
@@ -10907,6 +11039,18 @@
    "fr": "Depuis, il garde la dernière frontière. Plus personne ne se moquera jamais de son feu.",
    "where": [
     "data/stories/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Depuis, le Phénix se consume chaque matin dans son nid. Il ne sait plus s'arrêter, de peur que la nuit gagne.",
+   "where": [
+    "data/stories/phenix.json"
+   ]
+  },
+  {
+   "fr": "Dernier envol",
+   "where": [
+    "data/enemies/phenix.json"
    ]
   },
   {
@@ -10941,6 +11085,12 @@
    ]
   },
   {
+   "fr": "Dernier zénith",
+   "where": [
+    "data/enemies/phenix.json"
+   ]
+  },
+  {
    "fr": "Dernière activité",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -10950,6 +11100,12 @@
    "fr": "Dernière ascension",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "Dernière aube",
+   "where": [
+    "data/enemies/phenix.json"
    ]
   },
   {
@@ -11025,6 +11181,12 @@
    ]
   },
   {
+   "fr": "Dernières plumes",
+   "where": [
+    "data/enemies/phenix.json"
+   ]
+  },
+  {
    "fr": "Des braises qui s'élèvent derrière Nova.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -11092,6 +11254,18 @@
   },
   {
    "fr": "Des plaques de verre noir aux jointures de feu : pour avoir vaincu Pyrrhax sans être touché.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Des plumes d'or tombent en tournoyant derrière Nova et s'éteignent en braises.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Des plumes de nuit bordées d'or entourent le cadre, leurs pointes s'allument comme une aube qui tourne : pour avoir vaincu le Phénix sans être touché.",
    "where": [
     "data/cosmetics/cosmetics.json"
    ]
@@ -11699,8 +11873,15 @@
    ]
   },
   {
+   "fr": "Double lame d'ailes",
+   "where": [
+    "data/enemies/phenix.json"
+   ]
+  },
+  {
    "fr": "Double piqué",
    "where": [
+    "data/enemies/phenix.json",
     "data/enemies/pyrrhax.json"
    ]
   },
@@ -11876,6 +12057,12 @@
    ]
   },
   {
+   "fr": "Durée d'une colonne (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "durée de ce segment",
    "where": [
     "ui/screens/SegmentsScene.cpp"
@@ -12039,7 +12226,7 @@
    ]
   },
   {
-   "fr": "Débloquer les 23 morceaux du juke-box.",
+   "fr": "Débloquer les 24 morceaux du juke-box.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -12208,6 +12395,7 @@
     "data/levels/confins_01.json",
     "data/levels/confins_02.json",
     "data/levels/confins_03.json",
+    "data/levels/confins_04.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -12236,6 +12424,7 @@
     "data/levels/confins_01.json",
     "data/levels/confins_02.json",
     "data/levels/confins_03.json",
+    "data/levels/confins_04.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -14038,6 +14227,18 @@
    "fr": "Entraînement — ne compte pas pour les succès ni les statistiques · INVINCIBLE",
    "where": [
     "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Entre deux colonnes (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Entre deux lames (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -15939,6 +16140,7 @@
     "data/levels/confins_01.json",
     "data/levels/confins_02.json",
     "data/levels/confins_03.json",
+    "data/levels/confins_04.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -16833,6 +17035,12 @@
    ]
   },
   {
+   "fr": "Hauteur de la lame basse",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Hauteur de la lave",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -17538,6 +17746,24 @@
    "where": [
     "server/src/live.ts",
     "server/src/projects.ts"
+   ]
+  },
+  {
+   "fr": "Il file comme une comète, ses étincelles avec lui !",
+   "where": [
+    "data/enemies/phenix.json"
+   ]
+  },
+  {
+   "fr": "Il frôlait les volcans endormis et les vallées de verre noir. Partout où il passait, le jour se levait.",
+   "where": [
+    "data/stories/phenix.json"
+   ]
+  },
+  {
+   "fr": "Il plane au cœur de sa nébuleuse !",
+   "where": [
+    "data/enemies/phenix.json"
    ]
   },
   {
@@ -18631,6 +18857,12 @@
    ]
   },
   {
+   "fr": "Juke-box : la musique du combat, « Le Phénix Stellaire » (24 morceaux à débloquer).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Jump",
    "where": [
     "game/player/Player.cpp"
@@ -19446,6 +19678,12 @@
    ]
   },
   {
+   "fr": "La nuit où l'étoile du centre s'effondra, l'oiseau attendit sa lumière. Elle ne revint jamais.",
+   "where": [
+    "data/stories/phenix.json"
+   ]
+  },
+  {
    "fr": "La nuit où l'étoile du centre s'effondra, sa lumière tomba dans la mer en une pluie d'étincelles.",
    "where": [
     "data/stories/kraken.json"
@@ -19853,6 +20091,13 @@
    ]
   },
   {
+   "fr": "Lame d'ailes",
+   "where": [
+    "data/enemies/phenix.json",
+    "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
    "fr": "Lame d'énergie",
    "where": [
     "game/gameplay/Damage.cpp"
@@ -19869,6 +20114,12 @@
    "where": [
     "data/enemies/echo_glaciarch.json",
     "data/enemies/glaciarch.json"
+   ]
+  },
+  {
+   "fr": "Lames (basse et haute)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -20471,6 +20722,12 @@
    ]
   },
   {
+   "fr": "Le feu solaire referme l'arène !",
+   "where": [
+    "data/levels/confins_04.json"
+   ]
+  },
+  {
    "fr": "Le fichier contient les données de tous les joueurs. Il est chiffré avec la phrase secrète choisie ici (12 caractères au moins) : sans elle, personne ne peut le lire, vous non plus. Le serveur ne la garde pas.",
    "where": [
     "ui/screens/AdminBackups.cpp"
@@ -20764,6 +21021,12 @@
    ]
   },
   {
+   "fr": "Le lendemain, il renaquit de ses cendres, plus grand et plus brillant. Et il recommença.",
+   "where": [
+    "data/stories/phenix.json"
+   ]
+  },
+  {
    "fr": "le Leurre holographique",
    "where": [
     "game/levels/CampaignPipeline.cpp"
@@ -20902,6 +21165,24 @@
    ]
   },
   {
+   "fr": "LE NID DE CENDRES",
+   "where": [
+    "data/levels/confins_04.json"
+   ]
+  },
+  {
+   "fr": "Le Nid de Cendres",
+   "where": [
+    "data/levels/confins_04.json"
+   ]
+  },
+  {
+   "fr": "Le Nid de Cendres : le Phénix seul, une seule vie, aucun checkpoint. Choisissez vos quatre pouvoirs.",
+   "where": [
+    "data/levels/confins_04.json"
+   ]
+  },
+  {
    "fr": "Le nid du blizzard !",
    "where": [
     "data/levels/glacior_01.json"
@@ -20974,6 +21255,66 @@
    ]
   },
   {
+   "fr": "Le Phénix : colonnes de lumière solaire qui tombent de la voûte (un pas de côté entre deux suffit), lame de plumes qui balaie l'arène au ras du sol (sautez) ou à hauteur de saut (restez au sol), éventails et pluies de plumes, piqués, souffle d'étoile, cendres qui voilent l'arène (Nova et l'interface restent nettes), et sa dernière aube à survivre. Rester sous lui ou à côté ne protège pas.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Le Phénix renaît de ses cendres !",
+   "where": [
+    "data/enemies/phenix.json"
+   ]
+  },
+  {
+   "fr": "Le Phénix retombe en cendres, apaisé. La sortie est ouverte.",
+   "where": [
+    "data/levels/confins_04.json"
+   ]
+  },
+  {
+   "fr": "LE PHÉNIX S'APAISE",
+   "where": [
+    "data/levels/confins_04.json"
+   ]
+  },
+  {
+   "fr": "Le Phénix s'est endormi dans ses cendres. Une aube se lève sur les Confins.",
+   "where": [
+    "data/levels/confins_04.json"
+   ]
+  },
+  {
+   "fr": "Le Phénix s'éveille avec l'aube.",
+   "where": [
+    "data/enemies/phenix.json"
+   ]
+  },
+  {
+   "fr": "Le Phénix se consume…",
+   "where": [
+    "game/enemies/PhoenixAttacks.cpp"
+   ]
+  },
+  {
+   "fr": "LE PHÉNIX STELLAIRE",
+   "where": [
+    "data/enemies/phenix.json"
+   ]
+  },
+  {
+   "fr": "Le Phénix Stellaire",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Le Phénix Stellaire.",
+   "where": [
+    "data/levels/confins_04.json"
+   ]
+  },
+  {
    "fr": "Le plafond s'effondre !",
    "where": [
     "data/enemies/echo_prime_sentinel.json",
@@ -21014,6 +21355,18 @@
    "fr": "Le portail est scellé...",
    "where": [
     "game/gameplay/entities/InteractiveEntities.cpp"
+   ]
+  },
+  {
+   "fr": "Le portail s'embrase et retombe en cendres, d'où renaît un phénix de lumière qui s'envole.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Le Porteur d'aube",
+   "where": [
+    "data/stories/phenix.json"
    ]
   },
   {
@@ -21314,6 +21667,12 @@
    ]
   },
   {
+   "fr": "Le soleil est au zénith : sa lumière tombe d'aplomb !",
+   "where": [
+    "data/enemies/phenix.json"
+   ]
+  },
+  {
    "fr": "le temps de l'Or doit être inférieur ou égal à celui de l'Argent",
    "where": [
     "server/src/challengeSpec.mjs"
@@ -21532,7 +21891,7 @@
    ]
   },
   {
-   "fr": "Les 23 morceaux du juke-box débloqués.",
+   "fr": "Les 24 morceaux du juke-box débloqués.",
    "where": [
     "data/cosmetics/cosmetics.json"
    ]
@@ -21639,6 +21998,7 @@
     "data/levels/confins_01.json",
     "data/levels/confins_02.json",
     "data/levels/confins_03.json",
+    "data/levels/confins_04.json",
     "data/music/tracks.json",
     "data/planets/confins.json"
    ]
@@ -21662,7 +22022,19 @@
    ]
   },
   {
+   "fr": "Les Confins — Le Nid de Cendres",
+   "where": [
+    "data/levels/confins_04.json"
+   ]
+  },
+  {
    "fr": "Les Confins, deuxième niveau : « Le Cœur de Pierre » (EXTRÊME) : le combat du Monolithe, le Golem Primordial, seul. Une seule vie, aucun checkpoint.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Les Confins, quatrième niveau : « Le Nid de Cendres » (EXTRÊME) : le combat seul du Phénix Stellaire, giga-boss à huit phases qui plane. Une seule vie, aucun checkpoint ; ses perchoirs de braise brûlent sous vos pieds et renaissent.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -21863,6 +22235,12 @@
    "fr": "Les grottes de cristal... Le signal du relais résonne sous la glace.",
    "where": [
     "data/levels/glacior_02.json"
+   ]
+  },
+  {
+   "fr": "Les huit aubes",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -23927,6 +24305,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Midi solaire",
+   "where": [
+    "data/enemies/phenix.json"
    ]
   },
   {
@@ -26645,6 +27029,12 @@
    ]
   },
   {
+   "fr": "Nuées de cendres",
+   "where": [
+    "data/enemies/phenix.json"
+   ]
+  },
+  {
    "fr": "Nyxara",
    "where": [
     "data/achievements/achievements.json",
@@ -26726,7 +27116,8 @@
   {
    "fr": "Nébuleuse",
    "where": [
-    "data/cosmetics/cosmetics.json"
+    "data/cosmetics/cosmetics.json",
+    "data/enemies/phenix.json"
    ]
   },
   {
@@ -26908,6 +27299,12 @@
    ]
   },
   {
+   "fr": "Obtenir l'or dans Le Nid de Cendres.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Obtenir l'or sur 10 niveaux.",
    "where": [
     "data/achievements/achievements.json"
@@ -26963,6 +27360,12 @@
   },
   {
    "fr": "Obtenir le platine dans Le Cœur de Pierre.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Obtenir le platine dans Le Nid de Cendres.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -27307,6 +27710,12 @@
   },
   {
    "fr": "Or des abysses",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Or des cendres",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -28497,6 +28906,12 @@
    ]
   },
   {
+   "fr": "Pas une plume",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Pas utile",
    "where": [
     "ui/online/CommentsPanel.cpp"
@@ -28784,6 +29199,12 @@
    ]
   },
   {
+   "fr": "Perchoir de braise",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
    "fr": "Perfection d'Aethra",
    "where": [
     "data/achievements/achievements.json"
@@ -29048,7 +29469,14 @@
   {
    "fr": "Phénix",
    "where": [
-    "data/achievements/achievements.json"
+    "data/achievements/achievements.json",
+    "data/enemies/phenix.json"
+   ]
+  },
+  {
+   "fr": "Phénix vaincu",
+   "where": [
+    "data/levels/confins_04.json"
    ]
   },
   {
@@ -29126,6 +29554,12 @@
    "where": [
     "data/enemies/echo_ignivore.json",
     "data/enemies/ignivore.json"
+   ]
+  },
+  {
+   "fr": "Piqué solaire",
+   "where": [
+    "data/enemies/phenix.json"
    ]
   },
   {
@@ -29488,6 +29922,12 @@
    ]
   },
   {
+   "fr": "Platine des cendres",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Platine des sanctuaires",
    "where": [
     "data/achievements/achievements.json"
@@ -29603,6 +30043,7 @@
   {
    "fr": "Pluie de cendres",
    "where": [
+    "data/enemies/phenix.json",
     "data/enemies/pyrrhax.json"
    ]
   },
@@ -29610,6 +30051,12 @@
    "fr": "Pluie de cendres stellaires",
    "where": [
     "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Pluie de comètes",
+   "where": [
+    "data/enemies/phenix.json"
    ]
   },
   {
@@ -29625,6 +30072,12 @@
    "where": [
     "data/enemies/echo_ignivore.json",
     "data/enemies/ignivore.json"
+   ]
+  },
+  {
+   "fr": "Pluie de plumes",
+   "where": [
+    "data/enemies/phenix.json"
    ]
   },
   {
@@ -29652,6 +30105,12 @@
    ]
   },
   {
+   "fr": "Plumage d'aube",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Plume des vents",
    "where": [
     "data/levels/sylvanox_02.json"
@@ -29661,6 +30120,30 @@
    "fr": "Plume du puits",
    "where": [
     "data/levels/glacior_02.json"
+   ]
+  },
+  {
+   "fr": "Plumes de feu",
+   "where": [
+    "data/enemies/etincelle.json"
+   ]
+  },
+  {
+   "fr": "Plumes de la lame",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Plumes de lumière",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Plumes traqueuses",
+   "where": [
+    "data/enemies/phenix.json"
    ]
   },
   {
@@ -30137,6 +30620,12 @@
    ]
   },
   {
+   "fr": "Porteur d'aube",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Porto Rico",
    "where": [
     "data/online/countries.json",
@@ -30277,6 +30766,12 @@
    "fr": "Poulpe cosmique",
    "where": [
     "data/online/avatars.json"
+   ]
+  },
+  {
+   "fr": "Pour avoir apaisé le Phénix Stellaire.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -30648,6 +31143,12 @@
    "fr": "Premiers pas sur Aethra",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Première colonne après (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -32013,6 +32514,7 @@
     "data/levels/confins_01.json",
     "data/levels/confins_02.json",
     "data/levels/confins_03.json",
+    "data/levels/confins_04.json",
     "data/levels/noyau_03.json"
    ]
   },
@@ -32130,6 +32632,12 @@
   },
   {
    "fr": "Rayon d'un rocher",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Rayon d'une plume",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
@@ -32778,6 +33286,12 @@
    ]
   },
   {
+   "fr": "Reflets de nébuleuse",
+   "where": [
+    "data/enemies/phenix.json"
+   ]
+  },
+  {
    "fr": "Reflets éternels",
    "where": [
     "data/enemies/aurorax.json",
@@ -33096,6 +33610,19 @@
    "fr": "Remporter 50 combats contre des boss.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Renaissance",
+   "where": [
+    "data/cosmetics/cosmetics.json",
+    "data/enemies/phenix.json"
+   ]
+  },
+  {
+   "fr": "renaît avec {0} % des PV",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -34020,6 +34547,12 @@
    "fr": "Rond",
    "where": [
     "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Ronde des comètes",
+   "where": [
+    "data/enemies/phenix.json"
    ]
   },
   {
@@ -35707,6 +36240,12 @@
    ]
   },
   {
+   "fr": "Se consume puis renaît",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "Se divise en",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -36041,13 +36580,20 @@
   {
    "fr": "Ses ailes arrachent la roche : les blocs tournoient !",
    "where": [
-    "data/levels/confins_01.json"
+    "data/levels/confins_01.json",
+    "data/levels/confins_04.json"
    ]
   },
   {
    "fr": "Ses ailes déchaînent la tempête !",
    "where": [
     "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Ses ailes déchirent l'aurore !",
+   "where": [
+    "data/enemies/phenix.json"
    ]
   },
   {
@@ -36072,6 +36618,12 @@
    "fr": "Ses photophores crépitent d'éclairs !",
    "where": [
     "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Ses plumes s'embrasent : les cendres pleuvent !",
+   "where": [
+    "data/enemies/phenix.json"
    ]
   },
   {
@@ -36644,6 +37196,12 @@
    ]
   },
   {
+   "fr": "Son histoire, avant le premier combat : « Le Porteur d'aube », le petit oiseau de lumière qui portait le jour aux Confins.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Son manteau se déchire : les abysses s'ouvrent !",
    "where": [
     "data/enemies/kraken.json"
@@ -36767,12 +37325,24 @@
    ]
   },
   {
+   "fr": "Souffle d'étoile",
+   "where": [
+    "data/enemies/phenix.json"
+   ]
+  },
+  {
    "fr": "Souffle de forge",
    "where": [
     "data/enemies/crucible_heart.json",
     "data/enemies/echo_crucible_heart.json",
     "data/enemies/echo_magmaroth.json",
     "data/enemies/magmaroth.json"
+   ]
+  },
+  {
+   "fr": "Souffle de l'aurore",
+   "where": [
+    "data/enemies/phenix.json"
    ]
   },
   {
@@ -36987,6 +37557,12 @@
    "fr": "Spirale de naine blanche",
    "where": [
     "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Spirale de plumes",
+   "where": [
+    "data/enemies/phenix.json"
    ]
   },
   {
@@ -37534,6 +38110,12 @@
    ]
   },
   {
+   "fr": "Succès du Phénix (6 nouveaux, 28 étoiles) ; au Vestiaire : la combinaison Plumage d'aube (650 étoiles), la traînée Plumes de lumière (660), l'effet de victoire Renaissance (670), le cadre Couronne de plumes et le titre Porteur d'aube.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Succès débloqué : {0}",
    "where": [
     "game/GameServices.cpp"
@@ -37693,6 +38275,7 @@
     "data/cosmetics/cosmetics.json",
     "data/enemies/astrarque.json",
     "data/enemies/echo_pyrogyre.json",
+    "data/enemies/phenix.json",
     "data/enemies/pyrogyre.json",
     "data/enemies/singularis.json"
    ]
@@ -37704,8 +38287,15 @@
    ]
   },
   {
+   "fr": "Supernova ! Le Phénix brûle de toute sa lumière !",
+   "where": [
+    "data/enemies/phenix.json"
+   ]
+  },
+  {
    "fr": "Supernova : l'arène se resserre",
    "where": [
+    "data/levels/confins_04.json",
     "data/levels/noyau_03.json"
    ]
   },
@@ -39089,6 +39679,12 @@
    ]
   },
   {
+   "fr": "Terminer Le Nid de Cendres, aux Confins.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Terminer le niveau",
    "where": [
     "game/levels/EventSystem.cpp",
@@ -39102,13 +39698,13 @@
    ]
   },
   {
-   "fr": "Terminer les 22 niveaux de la campagne sans mourir.",
+   "fr": "Terminer les 23 niveaux de la campagne sans mourir.",
    "where": [
     "data/achievements/achievements.json"
    ]
   },
   {
-   "fr": "Terminer les 22 niveaux de la campagne.",
+   "fr": "Terminer les 23 niveaux de la campagne.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -39280,6 +39876,7 @@
     "data/levels/confins_01.json",
     "data/levels/confins_02.json",
     "data/levels/confins_03.json",
+    "data/levels/confins_04.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -41218,6 +41815,12 @@
    ]
   },
   {
+   "fr": "Un oiseau de lumière stellaire qui se consume et renaît de ses cendres, aux Confins du système. Huit phases, huit lueurs : il se consume, renaît, et sa dernière aube doit être survécue.",
+   "where": [
+    "data/enemies/phenix.json"
+   ]
+  },
+  {
    "fr": "un pays est nécessaire pour être visible",
    "where": [
     "server/src/auth.ts"
@@ -41726,6 +42329,12 @@
    ]
   },
   {
+   "fr": "Une seule vie. Un oiseau d'étoiles qui renaît de ses cendres. Huit phases.",
+   "where": [
+    "data/levels/confins_04.json"
+   ]
+  },
+  {
    "fr": "Une seule vie. Une étoile morte. Huit phases.",
    "where": [
     "data/levels/noyau_03.json"
@@ -41819,6 +42428,12 @@
    "fr": "Une étape de cet import est en cours : réessayez dans un instant.",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "Une étincelle arrachée aux plumes du Phénix, qui vole encore et lance de petites plumes de feu.",
+   "where": [
+    "data/enemies/etincelle.json"
    ]
   },
   {
@@ -42251,6 +42866,18 @@
   },
   {
    "fr": "Vaincre le Monolithe, le Golem Primordial.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre le Phénix sans être touché.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre le Phénix Stellaire.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -43165,6 +43792,12 @@
   },
   {
    "fr": "Vitesse de la descente",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Vitesse de la lame",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
@@ -44464,6 +45097,7 @@
    "fr": "Zénith",
    "where": [
     "data/enemies/echo_pyrogyre.json",
+    "data/enemies/phenix.json",
     "data/enemies/pyrogyre.json"
    ]
   },
@@ -45151,6 +45785,30 @@
    ]
   },
   {
+   "fr": "{0} colonne depuis les deux murs",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} colonne en marche",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} colonnes depuis les deux murs",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} colonnes en marche",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} commentaire",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -45707,6 +46365,18 @@
    "where": [
     "ui/screens/AdminBackups.cpp",
     "ui/screens/ContentManagerScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} lame, basse ou haute",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} lames, basse et haute",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -46712,7 +47382,19 @@
    ]
   },
   {
+   "fr": "{0}. Phase {1} · {2} % de vie (renaissance)",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "{0}. {1} · {2} % de vie",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0}. {1} · {2} % de vie (renaissance)",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
    ]
@@ -47252,6 +47934,12 @@
    "fr": "Écart en direct (« +2,450 s » retard, « -1,230 s » avance), temps du fantôme au même endroit, fin estimée ; écarts exacts à chaque point de sauvegarde, meilleurs segments en or, animation de nouveau record.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Écart entre les colonnes (px)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -48331,6 +49019,18 @@
    ]
   },
   {
+   "fr": "Étincelle du Phénix",
+   "where": [
+    "data/enemies/etincelle.json"
+   ]
+  },
+  {
+   "fr": "Étincelles",
+   "where": [
+    "data/enemies/phenix.json"
+   ]
+  },
+  {
    "fr": "Étoile",
    "where": [
     "data/online/avatars.json",
@@ -48420,6 +49120,12 @@
    "fr": "Éventail d'étoiles",
    "where": [
     "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Éventail de plumes",
+   "where": [
+    "data/enemies/phenix.json"
    ]
   },
   {
