@@ -1,0 +1,9 @@
+{
+  "texture": "stories/phenix/rocher.png",
+  "frameWidth": 96,
+  "frameHeight": 64,
+  "pivot": [48, 63],
+  "clips": {
+    "idle": {"row": 0, "count": 4, "fps": 3, "loop": true}
+  }
+}

@@ -2298,6 +2298,20 @@
    "parents": [
     "menu.coop"
    ]
+  },
+  {
+   "id": "gallery.story.phenix",
+   "version": "2.63.0",
+   "parents": [
+    "gallery.boss.phenix"
+   ]
+  },
+  {
+   "id": "stats.story.phenix",
+   "version": "2.63.0",
+   "parents": [
+    "stats.bosses"
+   ]
   }
  ]
 }

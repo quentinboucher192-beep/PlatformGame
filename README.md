@@ -114,6 +114,10 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
   qui respirent et ombres qui suivent le feu ; la caméra suit l'action. Format des histoires en
   **version 2** (les autres histoires gardent leurs peintures). Une pastille NOUVEAU mène à « Revoir
   l'histoire ».
+* L'**histoire du Phénix** (« Le Porteur d'aube ») devient un **petit dessin animé** : l'oiseau de lumière qui
+  porte l'aube, le jour qui se lève derrière lui sur les volcans et le verre noir, la longue nuit, les plumes
+  qui brûlent jusqu'aux cendres, la renaissance, le Phénix qui se consume dans son nid ; aube, fumées et
+  brume animées. Une pastille NOUVEAU mène à « Revoir l'histoire ».
 * **Clans** (EN LIGNE › **CLANS**) : un clan par joueur, **50 membres** au plus, un nom, un **tag** de 2 à 5
   lettres ou chiffres, unique sans tenir compte de la casse (affiché **[AUBE]**), une devise et un **emblème**
   (une forme et deux couleurs, comme les cadres). Le **chef** (un seul, rôle transmissible) et les **officiers**
