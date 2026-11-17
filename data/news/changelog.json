@@ -1,4 +1,7 @@
 {
+  "2.63.8": [
+    "Mise à jour du jeu : une barre de progression montre où en est le téléchargement de l'installateur (Mo reçus / total), le téléchargement n'est plus coupé au bout de 90 s sur une connexion lente (il ne s'arrête que si plus rien n'arrive pendant 60 s), et le message dit la vraie raison d'un échec (connexion trop lente, pas de connexion au serveur, erreur du serveur)."
+  ],
   "2.63.7": [
     "Clans : chaque clan a sa fiche publique, comme un profil (emblème, nom et tag, devise, date de fondation, membres et rôles, points et rang, meilleurs résultats EXTRÊME, « Rejoindre » ou « Postuler » selon son mode d'adhésion), visible même sans compte. Elle s'ouvre depuis la recherche, le classement des clans, un profil, ou d'un clic sur un tag [TAG] dans les classements et dans SOCIAL.",
     "Profils des joueurs : nouvel onglet « Clan » avec la fiche du clan du joueur (ou « Ce joueur n'est dans aucun clan »). Le chef et les officiers d'un clan y trouvent « Inviter dans mon clan », grisé avec la raison quand c'est impossible (clan complet, invitation déjà envoyée, joueur déjà dans un clan, joueur bloqué).",

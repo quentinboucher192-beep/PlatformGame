@@ -453,6 +453,9 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.63.8** :
+* Mise à jour du jeu : barre de progression du téléchargement, plus de coupure au bout de 90 s sur une connexion lente, vraie raison d'un échec.
+
 **Nouveau dans la version 2.63.7** :
 * **Clans** : une **fiche de clan** publique, comme un profil (emblème, tag, devise, membres et rôles, points et
   rang, meilleurs résultats EXTRÊME, « Rejoindre » / « Postuler »), ouverte d'un clic sur un tag [TAG] partout ;

@@ -30178,6 +30178,12 @@
    ]
   },
   {
+   "fr": "Mise à jour du jeu : une barre de progression montre où en est le téléchargement de l'installateur (Mo reçus / total), le téléchargement n'est plus coupé au bout de 90 s sur une connexion lente (il ne s'arrête que si plus rien n'arrive pendant 60 s), et le message dit la vraie raison d'un échec (connexion trop lente, pas de connexion au serveur, erreur du serveur).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Missiles",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -49949,7 +49955,13 @@
    ]
   },
   {
-   "fr": "Téléchargement de l'installateur{0}…",
+   "fr": "Téléchargement de l'installateur : {0} / {1} Mo ({2} %)",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "Téléchargement de l'installateur : {0} Mo…",
    "where": [
     "ui/screens/MainMenuScene.cpp"
    ]
@@ -50032,7 +50044,7 @@
    ]
   },
   {
-   "fr": "Téléchargement impossible : pas de connexion.",
+   "fr": "Téléchargement impossible : pas de connexion au serveur.",
    "where": [
     "game/online/UpdateInstaller.cpp"
    ]
@@ -50052,12 +50064,30 @@
    ]
   },
   {
+   "fr": "Téléchargement interrompu ({0}). Réessayez.",
+   "where": [
+    "game/online/UpdateInstaller.cpp"
+   ]
+  },
+  {
+   "fr": "Téléchargement interrompu : la connexion est trop lente ou s'est arrêtée. Réessayez.",
+   "where": [
+    "game/online/UpdateInstaller.cpp"
+   ]
+  },
+  {
    "fr": "Téléchargement refusé ({0}).",
    "where": [
     "ui/screens/AdminBackups.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Téléchargement refusé : fichier plus gros que prévu.",
+   "where": [
+    "game/online/UpdateInstaller.cpp"
    ]
   },
   {
@@ -50077,7 +50107,6 @@
    "where": [
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
-    "ui/screens/NotificationsScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp",
     "ui/screens/ReplayDownloadUi.cpp"
@@ -55065,6 +55094,12 @@
    ]
   },
   {
+   "fr": "{0} / {1} Mo",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} / {1} niveaux terminés",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
@@ -56453,6 +56488,12 @@
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/records/Records.cpp"
+   ]
+  },
+  {
+   "fr": "{0} Mo…",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
    ]
   },
   {

@@ -547,8 +547,21 @@ private:
         const std::string version = it.target;
         UpdateInstaller::State us = g_.updates.state(version);
         if (us == UpdateInstaller::State::Downloading || us == UpdateInstaller::State::Checking) {
-            const std::string label = us == UpdateInstaller::State::Downloading ? "Téléchargement…" : "Vérification…";
-            ui.label(label, b.center(), 18, ui.theme().accent, Align::Center, FontFace::Bold, VAlign::Middle);
+            // 2.63.8: a progress bar (Mo received / expected) while it downloads.
+            auto [got, total] = g_.updates.progress(version);
+            std::string label = "Vérification…";
+            if (us == UpdateInstaller::State::Downloading) {
+                const int gotMb = static_cast<int>(got / (1024 * 1024)), totalMb = static_cast<int>(total / (1024 * 1024));
+                label = total > 0 ? std::to_string(gotMb) + " / " + std::to_string(totalMb) + " Mo" : std::to_string(gotMb) + " Mo…";
+            }
+            const float lf = ui.fitFont(label, FontFace::Bold, 18, b.w, 0.6f);
+            ui.label(label, {b.center().x, b.y + b.h * 0.35f}, lf, ui.theme().accent, Align::Center, FontFace::Bold, VAlign::Middle);
+            const float k = us == UpdateInstaller::State::Checking ? 1.0f
+                            : total > 0 ? std::clamp(static_cast<float>(static_cast<double>(got) / static_cast<double>(total)), 0.0f, 1.0f)
+                                        : 0.0f;
+            Rect bar{b.x, b.y + b.h * 0.72f, b.w, ui.s(8)};
+            ui.r().fillRoundedRect(bar, ui.s(4), Color{40, 50, 70, 255});
+            ui.r().fillRoundedRect({bar.x, bar.y, bar.w * k, bar.h}, ui.s(4), ui.theme().accent);
         } else if (us == UpdateInstaller::State::Ready) {
             st.primary = true;
             if (ui.button("run" + it.id, b, "Lancer l'installateur", st) && g_.updates.launch(version)) g_.app.quit();

@@ -761,7 +761,9 @@ void OnlineService::getBinary(const std::string& path, std::function<void(const 
         rq.url = config_.serverUrl + path;
         rq.received = received;
         if (withSession && loggedIn() && !tokens_.accessToken.empty()) rq.headers.push_back({"Authorization", "Bearer " + tokens_.accessToken});
-        rq.timeoutMs = maxBytes > (2u << 20) ? 90000 : 20000;
+        // 2.63.8: an installer (~100 MB) on a slow line takes minutes: 30 min in all for the big
+        // files (a stalled transfer still stops after 60 s without data).
+        rq.timeoutMs = maxBytes > (64u << 20) ? 30 * 60 * 1000 : maxBytes > (2u << 20) ? 90000 : 20000;
         rq.maxResponseBytes = maxBytes;
         client_->send(std::move(rq), [cb](const HttpResponse& r) { cb(r); });
     };

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <atomic>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -27,6 +28,8 @@ public:
 
     State state(const std::string& version) const;
     std::string error(const std::string& version) const;
+    /// 2.63.8: bytes received so far and the expected size (0: unknown) of a download in progress.
+    std::pair<size_t, int64_t> progress(const std::string& version) const;
     std::filesystem::path file(const std::string& version) const;
 
     /// Downloads the installer of `it` (no-op while one is under way). `launchWhenReady`: the
@@ -56,6 +59,8 @@ private:
     std::map<std::string, State> states_;
     std::map<std::string, std::string> errors_;
     std::map<std::string, std::shared_ptr<Check>> checks_;
+    std::map<std::string, std::shared_ptr<std::atomic<size_t>>> received_;
+    std::map<std::string, int64_t> sizes_;
     std::string launchWhenReady_, launchNow_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
 };

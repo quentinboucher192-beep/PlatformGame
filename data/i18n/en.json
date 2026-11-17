@@ -9863,6 +9863,15 @@
     "{0} candidature · {1} invitation envoyée": "{0} application · {1} invitation sent",
     "{0} candidature · {1} invitations envoyées": "{0} application · {1} invitations sent",
     "{0} candidatures · {1} invitation envoyée": "{0} applications · {1} invitation sent",
-    "{0} candidatures · {1} invitations envoyées": "{0} applications · {1} invitations sent"
+    "{0} candidatures · {1} invitations envoyées": "{0} applications · {1} invitations sent",
+    "Mise à jour du jeu : une barre de progression montre où en est le téléchargement de l'installateur (Mo reçus / total), le téléchargement n'est plus coupé au bout de 90 s sur une connexion lente (il ne s'arrête que si plus rien n'arrive pendant 60 s), et le message dit la vraie raison d'un échec (connexion trop lente, pas de connexion au serveur, erreur du serveur).": "Game update: a progress bar shows how far the installer download is (MB received / total), the download is no longer cut after 90 s on a slow connection (it only stops if nothing arrives for 60 s), and the message gives the real reason for a failure (connection too slow, no connection to the server, server error).",
+    "Téléchargement interrompu : la connexion est trop lente ou s'est arrêtée. Réessayez.": "Download interrupted: the connection is too slow or stopped. Try again.",
+    "Téléchargement impossible : pas de connexion au serveur.": "Download impossible: no connection to the server.",
+    "Téléchargement refusé : fichier plus gros que prévu.": "Download refused: the file is larger than expected.",
+    "Téléchargement de l'installateur : {0} / {1} Mo ({2} %)": "Downloading the installer: {0} / {1} MB ({2} %)",
+    "Téléchargement de l'installateur : {0} Mo…": "Downloading the installer: {0} MB…",
+    "Téléchargement interrompu ({0}). Réessayez.": "Download interrupted ({0}). Try again.",
+    "{0} / {1} Mo": "{0} / {1} MB",
+    "{0} Mo…": "{0} MB…"
   }
 }

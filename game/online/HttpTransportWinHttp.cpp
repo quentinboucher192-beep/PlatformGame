@@ -165,7 +165,10 @@ public:
                                           WINHTTP_DEFAULT_ACCEPT_TYPES, url.https ? WINHTTP_FLAG_SECURE : 0));
         if (!request.h) return failLast("requête impossible");
         int connectTimeout = std::min(rq.timeoutMs, 6000);
-        WinHttpSetTimeouts(request.h, connectTimeout, connectTimeout, rq.timeoutMs, rq.timeoutMs);
+        // 2.63.8: send / receive are per operation (a stalled transfer), at most 60 s; the whole
+        // transfer keeps rq.timeoutMs (the watchdog below), long for an installer.
+        const int stall = std::min(rq.timeoutMs, 60000);
+        WinHttpSetTimeouts(request.h, connectTimeout, connectTimeout, stall, stall);
         DWORD redirect = WINHTTP_OPTION_REDIRECT_POLICY_NEVER;
         WinHttpSetOption(request.h, WINHTTP_OPTION_REDIRECT_POLICY, &redirect, sizeof(redirect));
         if (isLoopbackHost(url.host)) {

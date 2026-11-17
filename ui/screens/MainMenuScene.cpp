@@ -1,5 +1,6 @@
 // Splash screen and main menu.
 
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 
@@ -193,7 +194,15 @@ private:
         const std::string size = it->size > 0 ? " (" + std::to_string((it->size + 524288) / 1048576) + " Mo)" : std::string();
         std::string line;
         switch (st) {
-            case UpdateInstaller::State::Downloading: line = "Téléchargement de l'installateur" + size + "…"; break;
+            case UpdateInstaller::State::Downloading: {
+                // 2.63.8: how far it is (Mo received / expected), not only « … ».
+                auto [got, total] = g_.updates.progress(version);
+                const int gotMb = static_cast<int>(got / (1024 * 1024)), totalMb = static_cast<int>(total / (1024 * 1024));
+                line = total > 0 ? "Téléchargement de l'installateur : " + std::to_string(gotMb) + " / " + std::to_string(totalMb) + " Mo (" +
+                                       std::to_string(static_cast<int>(100.0 * static_cast<double>(got) / static_cast<double>(total))) + " %)"
+                                 : "Téléchargement de l'installateur : " + std::to_string(gotMb) + " Mo…";
+                break;
+            }
             case UpdateInstaller::State::Checking: line = "Vérification de l'installateur (SHA-256)…"; break;
             case UpdateInstaller::State::Ready:
                 line = g_.updates.error(version);
@@ -221,6 +230,15 @@ private:
         float f2 = ui.fitFont(line, FontFace::Body, 16, room, 0.6f);
         Color c2 = !g_.updates.error(version).empty() ? ui.theme().danger : ui.theme().textDim;
         ui.label(line, {tx, r.y + r.h * 0.70f}, f2, c2, Align::Left, FontFace::Body, VAlign::Middle);
+        if (st == UpdateInstaller::State::Downloading) {
+            auto [got, total] = g_.updates.progress(version);
+            if (total > 0) {  // a thin bar along the bottom of the alert, inside its frame
+                const float k = std::clamp(static_cast<float>(static_cast<double>(got) / static_cast<double>(total)), 0.0f, 1.0f);
+                Rect bar{tx, r.bottom() - ui.s(9), room, ui.s(4)};
+                ui.r().fillRoundedRect(bar, ui.s(2), Color{40, 50, 70, 255});
+                ui.r().fillRoundedRect({bar.x, bar.y, bar.w * k, bar.h}, ui.s(2), ui.theme().accent);
+            }
+        }
         if (!clicked) return;
         if (st == UpdateInstaller::State::Ready) {
             if (g_.updates.launch(version)) g_.app.quit();

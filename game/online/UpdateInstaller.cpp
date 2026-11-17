@@ -58,6 +58,9 @@ void UpdateInstaller::download(const NewsCenter::Item& item, bool launchWhenRead
     }
     states_[version] = State::Downloading;
     errors_.erase(version);
+    auto received = std::make_shared<std::atomic<size_t>>(0);
+    received_[version] = received;
+    sizes_[version] = item.size;
     std::string sha = item.sha256;
     fs::path target = file(version);
     online_->getBinary(
@@ -66,8 +69,14 @@ void UpdateInstaller::download(const NewsCenter::Item& item, bool launchWhenRead
             if (alive.expired()) return;
             if (r.status != 200 || r.body.empty()) {
                 states_[version] = State::Failed;
-                errors_[version] = r.status ? "Échec du téléchargement (erreur " + std::to_string(r.status) + ")."
-                                            : std::string("Téléchargement impossible : pas de connexion.");
+                // 2.63.8: say what really happened (a slow line is not « no connection »).
+                if (r.status) errors_[version] = "Échec du téléchargement (erreur " + std::to_string(r.status) + ").";
+                else if (r.error == NetError::Timeout)
+                    errors_[version] = "Téléchargement interrompu : la connexion est trop lente ou s'est arrêtée. Réessayez.";
+                else if (r.error == NetError::Dns || r.error == NetError::Connect)
+                    errors_[version] = "Téléchargement impossible : pas de connexion au serveur.";
+                else if (r.error == NetError::TooLarge) errors_[version] = "Téléchargement refusé : fichier plus gros que prévu.";
+                else errors_[version] = std::string("Téléchargement interrompu (") + netErrorLabel(r.error) + "). Réessayez.";
                 return;
             }
             // The SHA-256 of ~40 MB and the write: off the main thread.
@@ -94,7 +103,13 @@ void UpdateInstaller::download(const NewsCenter::Item& item, bool launchWhenRead
                 check->done = true;
             }).detach();
         },
-        256u * 1024u * 1024u);
+        256u * 1024u * 1024u, received);
+}
+
+std::pair<size_t, int64_t> UpdateInstaller::progress(const std::string& version) const {
+    auto it = received_.find(version);
+    auto sz = sizes_.find(version);
+    return {it != received_.end() && it->second ? it->second->load() : 0u, sz != sizes_.end() ? sz->second : 0};
 }
 
 void UpdateInstaller::update() {

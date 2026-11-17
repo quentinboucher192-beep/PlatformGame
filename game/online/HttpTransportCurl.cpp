@@ -79,6 +79,9 @@ public:
         curl_easy_setopt(h, CURLOPT_NOPROXY, "localhost,127.0.0.1,::1");
         curl_easy_setopt(h, CURLOPT_TIMEOUT_MS, static_cast<long>(rq.timeoutMs));
         curl_easy_setopt(h, CURLOPT_CONNECTTIMEOUT_MS, static_cast<long>(std::min(rq.timeoutMs, 6000)));
+        // 2.63.8: a transfer that stalls (under 1 byte/s for 60 s) stops, whatever its whole limit.
+        curl_easy_setopt(h, CURLOPT_LOW_SPEED_LIMIT, 1L);
+        curl_easy_setopt(h, CURLOPT_LOW_SPEED_TIME, static_cast<long>(std::max(1, std::min(rq.timeoutMs, 60000) / 1000)));
         curl_easy_setopt(h, CURLOPT_SSL_VERIFYPEER, 1L);
         curl_easy_setopt(h, CURLOPT_SSL_VERIFYHOST, 2L);
         curl_easy_setopt(h, CURLOPT_USERAGENT, "CosmicPlatformer/" COSMIC_VERSION_STRING);
