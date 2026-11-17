@@ -176,7 +176,7 @@ TEST_CASE("pyrrhax: four attack types of its own, named in French, saved only wh
     // The attacks of before are written as before (their levels keep their fingerprints).
     for (const EnemyDefinition* d : content().enemies())
         for (const AttackDef& x : d->attacks) {
-            if (x.isDragonType() || x.isGuardianType()) continue;
+            if (x.isDragonType() || x.isGuardianType() || x.isGolemType()) continue;  // 2.52: the golem's shell too
             CHECK(!x.toJson().contains("vulnerability"));
         }
 }

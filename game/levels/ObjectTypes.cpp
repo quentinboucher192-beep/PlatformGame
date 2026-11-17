@@ -257,7 +257,7 @@ std::vector<ObjectTypeInfo> build() {
                    pBool("visible", "Visible (brume toxique)", true),
                    pBool("shieldProtects", "Le bouclier protège", true),
                    pBool("active", "Active au départ", true, "Sinon, un événement l'active"),
-                   pEnum("style", "Apparence", "toxic", {"toxic", "plasma"}, {"Brume toxique", "Plasma d'étoile"}),
+                   pEnum("style", "Apparence", "toxic", {"toxic", "plasma", "abyss"}, {"Brume toxique", "Plasma d'étoile", "Eaux abyssales"}),
                    pBool("bounce", "Projette vers le haut", false)};
         add(t);
     }

@@ -799,6 +799,12 @@
    ]
   },
   {
+   "fr": "Abysses",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Accent",
    "where": [
     "ui/screens/AdminCreations.cpp"
@@ -1833,6 +1839,12 @@
    ]
   },
   {
+   "fr": "Anneaux de nacre",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Annoncer le combat (titres)",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -2800,6 +2812,12 @@
    ]
   },
   {
+   "fr": "Au fond des abysses",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Au fond des forges, le creuset bouillonne : radeaux de basalte sur la lave, cheminées brûlantes, pistons, fonderie à franchir à temps. Son cœur vivant vous attend.",
    "where": [
     "data/levels/pyralis_04.json"
@@ -2872,7 +2890,7 @@
    ]
   },
   {
-   "fr": "Au-delà de l'étoile morte, au bord du système, un monde de verre noir craquelé sur un feu vivant. Ses cendres tombent d'un ciel pourpre ; un dragon d'obsidienne y garde la dernière frontière, et un golem plus ancien que les planètes veille sous sa croûte.",
+   "fr": "Au-delà de l'étoile morte, au bord du système, un monde de verre noir craquelé sur un feu vivant. Ses cendres tombent d'un ciel pourpre ; un dragon d'obsidienne y garde la dernière frontière, un golem plus ancien que les planètes veille sous sa croûte et un kraken hante les mers noires de ses abysses.",
    "where": [
     "data/planets/confins.json"
    ]
@@ -4414,6 +4432,12 @@
    ]
   },
   {
+   "fr": "Battre chaque phase du Kraken sans être touché (pas forcément dans le même combat).",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Battre chaque phase du Monolithe sans être touché (pas forcément dans le même combat).",
    "where": [
     "data/achievements/achievements.json"
@@ -4701,9 +4725,10 @@
    ]
   },
   {
-   "fr": "Bond sismique",
+   "fr": "Bond titanesque",
    "where": [
-    "data/enemies/monolithe.json"
+    "data/enemies/monolithe.json",
+    "game/enemies/EnemyDefinition.cpp"
    ]
   },
   {
@@ -5087,6 +5112,18 @@
    ]
   },
   {
+   "fr": "Brisé",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Brisé : les abysses s'ouvrent",
+   "where": [
+    "data/levels/confins_03.json"
+   ]
+  },
+  {
    "fr": "Bronze",
    "where": [
     "data/cosmetics/cosmetics.json",
@@ -5169,6 +5206,18 @@
    "fr": "Bulle protectrice temporaire : absorbe les dégâts, renvoie les projectiles et permet de franchir les rideaux de plasma.",
    "where": [
     "data/powers/shield.json"
+   ]
+  },
+  {
+   "fr": "Bulles de lumière",
+   "where": [
+    "data/enemies/photophore.json"
+   ]
+  },
+  {
+   "fr": "Bulles des abysses",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -5578,6 +5627,19 @@
    "where": [
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/PowerGuideScene.cpp"
+   ]
+  },
+  {
+   "fr": "Carapace folle",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Carapace roulante",
+   "where": [
+    "data/enemies/monolithe.json",
+    "game/enemies/EnemyDefinition.cpp"
    ]
   },
   {
@@ -6979,6 +7041,12 @@
    ]
   },
   {
+   "fr": "Chasseur de Kraken",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Chasseur de légendes",
    "where": [
     "data/achievements/achievements.json"
@@ -8039,6 +8107,12 @@
   },
   {
    "fr": "Combat contre Aurorax",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Combat contre le Kraken",
    "where": [
     "data/music/tracks.json"
    ]
@@ -9630,6 +9704,12 @@
    ]
   },
   {
+   "fr": "Courant des abysses",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Courbe (inOutCubic, linear, outBack…)",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -9684,6 +9764,12 @@
    "fr": "Couronne de la semaine",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Couronne de photophores",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -10450,6 +10536,12 @@
    ]
   },
   {
+   "fr": "Dans le noir, les poissons perdus suivaient sa lueur jusqu'aux sources chaudes. On l'appelait « la Lanterne ».",
+   "where": [
+    "data/stories/kraken.json"
+   ]
+  },
+  {
    "fr": "Dans mon record",
    "where": [
     "ui/screens/GameScene.cpp",
@@ -10740,6 +10832,12 @@
    ]
   },
   {
+   "fr": "Demi-largeur d'une fissure",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Demi-largeur du pic",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -10797,6 +10895,12 @@
    "fr": "Depuis, il garde la dernière frontière. Plus personne ne se moquera jamais de son feu.",
    "where": [
     "data/stories/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Dernier fouet",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -10879,6 +10983,18 @@
    ]
   },
   {
+   "fr": "Dernière secousse",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Dernière vague",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Dernière version récupérée ; vos modifications sont gardées dans « … (mes modifications) ».",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -10898,6 +11014,12 @@
   },
   {
    "fr": "Des braises qui s'élèvent derrière Nova.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Des bulles de lumière remontent derrière Nova, entre quelques volutes d'encre.",
    "where": [
     "data/cosmetics/cosmetics.json"
    ]
@@ -10970,6 +11092,12 @@
   },
   {
    "fr": "Des runes violettes et dorées qui tournent sur elles-mêmes.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Des tentacules enlacent le cadre, leurs ventouses s'allument tour à tour : pour avoir vaincu le Kraken sans être touché.",
    "where": [
     "data/cosmetics/cosmetics.json"
    ]
@@ -11541,6 +11669,18 @@
    ]
   },
   {
+   "fr": "Double bond titanesque",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Double fouet",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Double frappe",
    "where": [
     "data/enemies/monolithe.json"
@@ -11796,6 +11936,12 @@
    ]
   },
   {
+   "fr": "Durée du séisme (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Durée du travelling",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -11881,7 +12027,7 @@
    ]
   },
   {
-   "fr": "Débloquer les 22 morceaux du juke-box.",
+   "fr": "Débloquer les 23 morceaux du juke-box.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -12049,6 +12195,7 @@
     "data/levels/aethra_04.json",
     "data/levels/confins_01.json",
     "data/levels/confins_02.json",
+    "data/levels/confins_03.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -12076,6 +12223,7 @@
     "data/levels/aethra_04.json",
     "data/levels/confins_01.json",
     "data/levels/confins_02.json",
+    "data/levels/confins_03.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -12172,6 +12320,12 @@
    "fr": "Défense (garde frontale)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Déferlante d'encre",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -12586,7 +12740,19 @@
    ]
   },
   {
+   "fr": "Dégâts reçus en carapace (x, 0 = 0,35)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Dégâts reçus posé (x, 0 = 1,5)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Dégâts reçus étourdi (x, 0 = 1,5)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
@@ -12625,6 +12791,12 @@
    "fr": "Délai avant chute (s)",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Délai avant l'éruption (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -12869,6 +13041,12 @@
   },
   {
    "fr": "Eau glacée",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Eaux abyssales",
    "where": [
     "game/levels/ObjectTypes.cpp"
    ]
@@ -13431,6 +13609,24 @@
    "fr": "Encore {0} étoiles",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Encre",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Encre : les blocs en orbite",
+   "where": [
+    "data/levels/confins_03.json"
+   ]
+  },
+  {
+   "fr": "Encre des abysses",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -15082,6 +15278,12 @@
    ]
   },
   {
+   "fr": "Fissures par secousse",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Fixe (tourelle)",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
@@ -15390,6 +15592,18 @@
    "where": [
     "data/enemies/echo_mycelia.json",
     "data/enemies/mycelia.json"
+   ]
+  },
+  {
+   "fr": "Foudre marine",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Fouet des abysses",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -15712,6 +15926,7 @@
     "data/levels/aethra_04.json",
     "data/levels/confins_01.json",
     "data/levels/confins_02.json",
+    "data/levels/confins_03.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -15940,6 +16155,12 @@
    "fr": "Geysers de roche",
    "where": [
     "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Geysers des abysses",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -16182,6 +16403,7 @@
    "fr": "Grande marée",
    "where": [
     "data/enemies/echo_pyrogyre.json",
+    "data/enemies/kraken.json",
     "data/enemies/pyrogyre.json"
    ]
   },
@@ -16593,6 +16815,12 @@
    ]
   },
   {
+   "fr": "Hauteur de l'éruption",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Hauteur de la lave",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -16606,6 +16834,12 @@
   },
   {
    "fr": "Hauteur des murs",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Hauteur des ondes (rayon)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
@@ -16758,6 +16992,12 @@
    "fr": "HORS DE LA SIMULATION",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Hors de vue (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -17225,6 +17465,12 @@
    "fr": "Il apparaît dans les niveaux et l'éditeur (Bibliothèque › Pouvoirs).",
    "where": [
     "game/progression/NewsCenter.cpp"
+   ]
+  },
+  {
+   "fr": "Il crache son encre !",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -17766,7 +18012,19 @@
    ]
   },
   {
+   "fr": "Intervalle des ondes (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Intervalle des salves (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Intervalle des secousses (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
@@ -18050,6 +18308,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Jet abyssal",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -18349,6 +18613,12 @@
    ]
   },
   {
+   "fr": "Juke-box : la musique du combat, « Le Kraken des Abysses » (23 morceaux à débloquer).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Jump",
    "where": [
     "game/player/Player.cpp"
@@ -18412,6 +18682,19 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Kraken",
+   "where": [
+    "data/achievements/achievements.json",
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Kraken vaincu",
+   "where": [
+    "data/levels/confins_03.json"
    ]
   },
   {
@@ -19013,6 +19296,24 @@
    ]
   },
   {
+   "fr": "LA FOSSE DES ABYSSES",
+   "where": [
+    "data/levels/confins_03.json"
+   ]
+  },
+  {
+   "fr": "La Fosse des Abysses",
+   "where": [
+    "data/levels/confins_03.json"
+   ]
+  },
+  {
+   "fr": "La Fosse des Abysses : le Kraken seul, une seule vie, aucun checkpoint. Choisissez vos quatre pouvoirs.",
+   "where": [
+    "data/levels/confins_03.json"
+   ]
+  },
+  {
    "fr": "la Frappe sismique",
    "where": [
     "game/levels/CampaignPipeline.cpp"
@@ -19073,6 +19374,18 @@
    ]
   },
   {
+   "fr": "La Lanterne des profondeurs",
+   "where": [
+    "data/stories/kraken.json"
+   ]
+  },
+  {
+   "fr": "La Lanterne les recueillit une à une. Il grandit, grandit encore, et ses huit bras s'allumèrent.",
+   "where": [
+    "data/stories/kraken.json"
+   ]
+  },
+  {
    "fr": "La liste du serveur n'est pas encore lue : actualisez.",
    "where": [
     "ui/screens/AdminEnemies.cpp"
@@ -19082,6 +19395,12 @@
    "fr": "La machine se tait. Le signal, lui, part vers les étoiles... vers Pyralis.",
    "where": [
     "data/levels/sylvanox_03.json"
+   ]
+  },
+  {
+   "fr": "La marée monte dans l'arène !",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -19112,6 +19431,12 @@
    "fr": "la Nova de givre",
    "where": [
     "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
+   "fr": "La nuit où l'étoile du centre s'effondra, sa lumière tomba dans la mer en une pluie d'étincelles.",
+   "where": [
+    "data/stories/kraken.json"
    ]
   },
   {
@@ -20336,6 +20661,60 @@
    ]
   },
   {
+   "fr": "Le Kraken : un fouet qui plonge à travers vous, des tentacules qui jaillissent du sol de part et d'autre, des nuages et des nappes d'encre, des marées d'eau noire, tourbillons et maelström, ondes sonar, éclairs réfléchis, lueurs arrachées à ses bras, et sa dernière vague à survivre. Rester sous lui ou à côté ne protège pas.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Le Kraken a sombré. Les abysses se taisent.",
+   "where": [
+    "data/levels/confins_03.json"
+   ]
+  },
+  {
+   "fr": "Le Kraken allume toujours ses lueurs au fond de la Fosse. Il attend qu'on le suive, comme autrefois.",
+   "where": [
+    "data/stories/kraken.json"
+   ]
+  },
+  {
+   "fr": "LE KRAKEN DES ABYSSES",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Le Kraken des Abysses",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Le Kraken des Abysses.",
+   "where": [
+    "data/levels/confins_03.json"
+   ]
+  },
+  {
+   "fr": "Le Kraken remonte des abysses.",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "LE KRAKEN SOMBRE",
+   "where": [
+    "data/levels/confins_03.json"
+   ]
+  },
+  {
+   "fr": "Le Kraken sombre dans les abysses. La sortie est ouverte.",
+   "where": [
+    "data/levels/confins_03.json"
+   ]
+  },
+  {
    "fr": "Le Lac aux Reflets",
    "where": [
     "data/levels/aethra_02.json"
@@ -20460,6 +20839,12 @@
    "fr": "Le Monolithe s'est tu. Le cœur des Confins se refroidit.",
    "where": [
     "data/levels/confins_02.json"
+   ]
+  },
+  {
+   "fr": "Le Monolithe se réveille : il marche vers vous et se replace au milieu de son sol (il ne reste plus coincé au bord des fosses ni dans les coins, et n'y tombe plus). Trois nouvelles attaques : Carapace roulante (il se roule en boule de pierre runique et fonce en rebondissant sur les murs : sautez par-dessus avec un double saut ; en carapace il encaisse, étourdi ensuite il prend plus de dégâts), Tremblement de terre (des fissures éclatent sous vos pieds et des rochers tombent de la voûte : ne restez pas immobile) et Bond titanesque (il disparaît en haut, son ombre vous suit, il retombe sur vous et ses ondes de choc filent au sol : sautez-les). Vos records du Cœur de Pierre restent valables.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -21129,7 +21514,7 @@
    ]
   },
   {
-   "fr": "Les 22 morceaux du juke-box débloqués.",
+   "fr": "Les 23 morceaux du juke-box débloqués.",
    "where": [
     "data/cosmetics/cosmetics.json"
    ]
@@ -21235,8 +21620,15 @@
    "where": [
     "data/levels/confins_01.json",
     "data/levels/confins_02.json",
+    "data/levels/confins_03.json",
     "data/music/tracks.json",
     "data/planets/confins.json"
+   ]
+  },
+  {
+   "fr": "Les Confins — La Fosse des Abysses",
+   "where": [
+    "data/levels/confins_03.json"
    ]
   },
   {
@@ -21253,6 +21645,12 @@
   },
   {
    "fr": "Les Confins, deuxième niveau : « Le Cœur de Pierre » (EXTRÊME) : le combat du Monolithe, le Golem Primordial, seul. Une seule vie, aucun checkpoint.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Les Confins, troisième niveau : « La Fosse des Abysses » (EXTRÊME) : le combat seul du Kraken des Abysses, giga-boss à huit phases qui nage. Une seule vie, aucun checkpoint.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -21384,6 +21782,12 @@
    ]
   },
   {
+   "fr": "Les eaux noires referment l'arène !",
+   "where": [
+    "data/levels/confins_03.json"
+   ]
+  },
+  {
    "fr": "Les ennemis officiels ne peuvent pas être supprimés",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
@@ -21445,6 +21849,12 @@
   },
   {
    "fr": "Les huit flammes",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Les huit lueurs",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -22291,6 +22701,12 @@
    ]
   },
   {
+   "fr": "Lueurs détachées",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Lumière",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -22366,6 +22782,24 @@
    ]
   },
   {
+   "fr": "Léviathan",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Léviathan ! Les abysses se déchaînent !",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Léviathan : l'arène se resserre",
+   "where": [
+    "data/levels/confins_03.json"
+   ]
+  },
+  {
    "fr": "M",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -22408,6 +22842,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Maelström",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -22515,6 +22955,12 @@
    "fr": "Maintien (s)",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Mais il devint si grand que les poissons eurent peur de son ombre et s'enfuirent dans les failles.",
+   "where": [
+    "data/stories/kraken.json"
    ]
   },
   {
@@ -22743,6 +23189,12 @@
    ]
   },
   {
+   "fr": "Marée",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Marée de lave",
    "where": [
     "data/enemies/echo_pyrogyre.json",
@@ -22755,6 +23207,12 @@
    "fr": "Marée de plasma",
    "where": [
     "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Marée montante",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -24379,6 +24837,12 @@
    ]
   },
   {
+   "fr": "Méduses électriques",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Mélomane",
    "where": [
     "data/achievements/achievements.json",
@@ -24452,10 +24916,22 @@
    ]
   },
   {
+   "fr": "Nacre",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Namibie",
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Nappe d'encre",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -26079,6 +26555,12 @@
    ]
   },
   {
+   "fr": "Nuage d'encre",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Nuage de feu {0} s",
    "where": [
     "ui/screens/BossStatsScene.cpp"
@@ -26130,6 +26612,12 @@
    "fr": "Nuées ardentes",
    "where": [
     "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Nuées d'encre",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -26378,6 +26866,12 @@
    ]
   },
   {
+   "fr": "Obtenir l'or dans La Fosse des Abysses.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Obtenir l'or dans La Gueule du Dragon.",
    "where": [
     "data/achievements/achievements.json"
@@ -26421,6 +26915,12 @@
   },
   {
    "fr": "Obtenir le platine dans L'Arène des Échos.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Obtenir le platine dans La Fosse des Abysses.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -26618,6 +27118,12 @@
    ]
   },
   {
+   "fr": "Onde sonar",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Onde sur le récepteur : la porte s'ouvre... quelques secondes.",
    "where": [
     "data/levels/sylvanox_04.json"
@@ -26636,6 +27142,12 @@
     "engine/input/InputTypes.cpp",
     "game/gameplay/Damage.cpp",
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Ondes de choc",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -26767,6 +27279,12 @@
    "fr": "Or atteint",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Or des abysses",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -27949,6 +28467,12 @@
    ]
   },
   {
+   "fr": "Pas une goutte d'encre",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Pas utile",
    "where": [
     "ui/online/CommentsPanel.cpp"
@@ -28474,6 +28998,12 @@
    ]
   },
   {
+   "fr": "Photophore abyssal",
+   "where": [
+    "data/enemies/photophore.json"
+   ]
+  },
+  {
    "fr": "Phrase secrète",
    "where": [
     "ui/screens/AdminBackups.cpp"
@@ -28928,6 +29458,12 @@
    ]
   },
   {
+   "fr": "Platine des abysses",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Platine des sanctuaires",
    "where": [
     "data/achievements/achievements.json"
@@ -28994,6 +29530,12 @@
    "where": [
     "data/enemies/echo_prime_sentinel.json",
     "data/enemies/prime_sentinel.json"
+   ]
+  },
+  {
+   "fr": "Pluie abyssale",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -29727,6 +30269,12 @@
   },
   {
    "fr": "Pour avoir terminé Sylvanox.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Pour avoir vaincu le Kraken des Abysses.",
    "where": [
     "data/cosmetics/cosmetics.json"
    ]
@@ -31440,6 +31988,7 @@
    "where": [
     "data/levels/confins_01.json",
     "data/levels/confins_02.json",
+    "data/levels/confins_03.json",
     "data/levels/noyau_03.json"
    ]
   },
@@ -31556,6 +32105,12 @@
    ]
   },
   {
+   "fr": "Rayon d'un rocher",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Rayon de fusion",
    "where": [
     "data/enemies/astrarque.json",
@@ -31649,6 +32204,12 @@
    ]
   },
   {
+   "fr": "Raz-de-marée",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "RB",
    "where": [
     "engine/input/InputTypes.cpp"
@@ -31672,6 +32233,12 @@
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "game/powers/PowerStats.cpp"
+   ]
+  },
+  {
+   "fr": "Rebonds sur les murs (0 = 1)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -31970,6 +32537,12 @@
    ]
   },
   {
+   "fr": "Records gardés : la refonte du Monolithe ne remet aucun classement à zéro (vos temps sur « Le Cœur de Pierre » restent valables, en ligne comme dans le jeu) ; sa musique est aussi la bonne en entraînement de boss.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Records locaux",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
@@ -32172,6 +32745,12 @@
    "fr": "Reflets d'étoile",
    "where": [
     "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Reflets de nacre",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -33399,6 +33978,12 @@
    ]
   },
   {
+   "fr": "Rochers par secousse (0 = 2)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Ronces jaillissantes",
    "where": [
     "data/enemies/archon_catacombs.json",
@@ -33411,6 +33996,12 @@
    "fr": "Rond",
    "where": [
     "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Ronde des fouets",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -35442,9 +36033,21 @@
    ]
   },
   {
+   "fr": "Ses lueurs se détachent et tournoient !",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Ses pas arrachent la roche : les blocs tournoient !",
    "where": [
     "data/levels/confins_02.json"
+   ]
+  },
+  {
+   "fr": "Ses photophores crépitent d'éclairs !",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -35457,6 +36060,12 @@
    "fr": "Ses réglages se modifient ici. Ses planches d'animation et la durée de leurs images restent celles du jeu (lecture seule). « Publier… » met la définition en ligne.",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Ses tentacules arrachent la roche : les blocs tournoient !",
+   "where": [
+    "data/levels/confins_03.json"
    ]
   },
   {
@@ -36005,6 +36614,18 @@
    ]
   },
   {
+   "fr": "Son histoire, avant le premier combat : « la Lanterne », le petit poulpe des mers enfouies qui devint le Kraken.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Son manteau se déchire : les abysses s'ouvrent !",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Son mot de passe",
    "where": [
     "ui/screens/OnlineMigration.cpp"
@@ -36201,9 +36822,21 @@
    ]
   },
   {
+   "fr": "Sous la croûte des Confins dort une mer noire. Un petit poulpe y naquit, avec une seule lueur au bout d'un bras.",
+   "where": [
+    "data/stories/kraken.json"
+   ]
+  },
+  {
    "fr": "Sous la croûte des Confins, une caverne de granit gravé de runes : le Monolithe et ses huit phases, dans une arène géante. Une seule vie, aucun checkpoint.",
    "where": [
     "data/levels/confins_02.json"
+   ]
+  },
+  {
+   "fr": "Sous la croûte des Confins, une mer noire sans fond : le Kraken des Abysses et ses huit phases, dans une arène géante. Une seule vie, aucun checkpoint.",
+   "where": [
+    "data/levels/confins_03.json"
    ]
   },
   {
@@ -36312,6 +36945,12 @@
    "fr": "Spectre",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Spirale d'encre",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -36854,6 +37493,12 @@
   },
   {
    "fr": "Succès du Boomerang chargé : « Maîtrise : Boomerang chargé » et « Virtuose : Boomerang chargé ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Succès du Kraken (6 nouveaux, 28 étoiles) ; au Vestiaire : la combinaison Encre des abysses (620 étoiles), la traînée Bulles des abysses (630), l'effet de victoire Raz-de-marée (640), le cadre Étreinte du Kraken et le titre Chasseur de Kraken.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -38390,6 +39035,12 @@
    ]
   },
   {
+   "fr": "Terminer La Fosse des Abysses, aux Confins.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Terminer La Gueule du Dragon, aux Confins.",
    "where": [
     "data/achievements/achievements.json"
@@ -38433,13 +39084,13 @@
    ]
   },
   {
-   "fr": "Terminer les 21 niveaux de la campagne sans mourir.",
+   "fr": "Terminer les 22 niveaux de la campagne sans mourir.",
    "where": [
     "data/achievements/achievements.json"
    ]
   },
   {
-   "fr": "Terminer les 21 niveaux de la campagne.",
+   "fr": "Terminer les 22 niveaux de la campagne.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -38610,6 +39261,7 @@
     "data/levels/aethra_04.json",
     "data/levels/confins_01.json",
     "data/levels/confins_02.json",
+    "data/levels/confins_03.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -39182,7 +39834,14 @@
     "data/enemies/cryowyrm.json",
     "data/enemies/echo_cryowyrm.json",
     "data/enemies/echo_ignivore.json",
-    "data/enemies/ignivore.json"
+    "data/enemies/ignivore.json",
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Tourbillon : un soin",
+   "where": [
+    "data/levels/confins_03.json"
    ]
   },
   {
@@ -39633,6 +40292,13 @@
    "fr": "Tremblement de caméra",
    "where": [
     "game/levels/EventSystem.cpp"
+   ]
+  },
+  {
+   "fr": "Tremblement de terre",
+   "where": [
+    "data/enemies/monolithe.json",
+    "game/enemies/EnemyDefinition.cpp"
    ]
   },
   {
@@ -40450,6 +41116,12 @@
    ]
   },
   {
+   "fr": "Un kraken colossal des mers noires enfouies sous la croûte des Confins. Huit phases, huit lueurs : son manteau se déchire, la marée monte, et sa dernière vague doit être survécue.",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Un lac de Glacior flotte sous l'aurore d'Aethra. Ses rives de cristal renvoient chaque geste, et sur la glace, Aurorax se bat avec ses propres reflets.",
    "where": [
     "data/levels/aethra_02.json"
@@ -40831,6 +41503,18 @@
    ]
   },
   {
+   "fr": "Une lueur arrachée à un bras du Kraken, qui flotte encore et crache des bulles de lumière.",
+   "where": [
+    "data/enemies/photophore.json"
+   ]
+  },
+  {
+   "fr": "Une lueur de nacre monte de son cœur !",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Une meute de Braisites : écrasez-les d'une Frappe sismique au milieu du groupe !",
    "where": [
     "data/levels/pyralis_01.json"
@@ -41018,6 +41702,12 @@
    ]
   },
   {
+   "fr": "Une seule vie. Un kraken venu des mers enfouies. Huit phases.",
+   "where": [
+    "data/levels/confins_03.json"
+   ]
+  },
+  {
    "fr": "Une seule vie. Une étoile morte. Huit phases.",
    "where": [
     "data/levels/noyau_03.json"
@@ -41055,6 +41745,12 @@
   },
   {
    "fr": "Une tête d'or et une longue queue violette semée d'étoiles.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Une vague géante se dresse derrière le portail, retombe en écume et laisse des bulles de lumière.",
    "where": [
     "data/cosmetics/cosmetics.json"
    ]
@@ -41513,6 +42209,18 @@
   },
   {
    "fr": "Vaincre l'Astrarque, au cœur de l'étoile.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre le Kraken des Abysses.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre le Kraken sans être touché.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -42286,6 +42994,12 @@
    ]
   },
   {
+   "fr": "Violet d'encre, visière cyan comme un photophore, écharpe turquoise : la tenue du Kraken.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Violet translucide, comme un fantôme.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -42426,6 +43140,12 @@
    ]
   },
   {
+   "fr": "Vitesse de la carapace",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Vitesse de la descente",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -42451,6 +43171,12 @@
   },
   {
    "fr": "Vitesse des braises",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Vitesse des ondes",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
@@ -44819,6 +45545,18 @@
    ]
   },
   {
+   "fr": "{0} fissure par secousse  ·  Séisme {1} s",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} fissures par secousse  ·  Séisme {1} s",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} FPS",
    "where": [
     "ui/screens/GameScene.cpp"
@@ -45244,6 +45982,18 @@
    ]
   },
   {
+   "fr": "{0} onde de choc",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} ondes de choc",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} performance(s) à envoyer",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
@@ -45275,6 +46025,18 @@
   },
   {
    "fr": "{0} projectiles",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} rebond  ·  Carapace : dégâts reçus {1}  ·  Étourdi : dégâts reçus {2}",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} rebonds  ·  Carapace : dégâts reçus {1}  ·  Étourdi : dégâts reçus {2}",
    "where": [
     "ui/screens/BossStatsScene.cpp"
    ]
@@ -46475,6 +47237,12 @@
    ]
   },
   {
+   "fr": "Écart entre les fissures (px)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Écart interquartile ÷ médiane",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -46936,6 +47704,12 @@
    ]
   },
   {
+   "fr": "Éclair réfléchi",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Éclairage dynamique",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -47060,6 +47834,12 @@
    "where": [
     "data/enemies/echo_prime_sentinel.json",
     "data/enemies/prime_sentinel.json"
+   ]
+  },
+  {
+   "fr": "Écrasement autour de lui (px)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -47514,6 +48294,12 @@
    ]
   },
   {
+   "fr": "Étau de tentacules",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Éthiopie",
    "where": [
     "data/online/countries.json",
@@ -47582,6 +48368,24 @@
    "fr": "Étoiles traqueuses",
    "where": [
     "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Étourdi après la roulade (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Étreinte",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Étreinte du Kraken",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {

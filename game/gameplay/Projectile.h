@@ -43,6 +43,7 @@ struct Projectile {
     float cloudDamage = 0.0f;
     uint32_t cloudOwner = 0;
     Color cloudColor{255, 122, 46, 255};  // display only
+    bool cloudInk = false;                // display only (2.53, the Kraken): a cloud of ink, not of fire
     std::vector<const void*> hitTargets;  // already damaged (piercing)
     // 2.54, statistics only (never read by the simulation): set by GameWorld::spawnProjectile.
     uint32_t uid = 0;           // a serial of the run's shots

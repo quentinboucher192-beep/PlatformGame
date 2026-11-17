@@ -73,7 +73,7 @@ TEST_CASE("boss stories: every giga boss of the game has its story of six lines,
             CHECK(w * 9 == h * 16);
         }
     }
-    CHECK(giga.count("singularis") && giga.count("pyrrhax") && giga.count("monolithe"));
+    CHECK(giga.count("singularis") && giga.count("pyrrhax") && giga.count("monolithe") && giga.count("kraken"));  // 2.53: the Kraken
     // Every story is a giga boss's (the echoes and the bosses of three phases have none).
     for (const auto& [id, s] : stories.all()) {
         const EnemyDefinition* d = content.enemy(id);
@@ -85,12 +85,17 @@ TEST_CASE("boss stories: every giga boss of the game has its story of six lines,
     CHECK(stories.find("pyrrhax")->shots[5].text == "Depuis, il garde la dernière frontière. Plus personne ne se moquera jamais de son feu.");
     CHECK(stories.find("monolithe")->shots[1].text ==
           "Les premiers enfants des Confins le trouvèrent dans une caverne et y gravèrent une rune, pour jouer : « Protège-nous ».");
+    CHECK(stories.find("kraken")->shots[1].text ==
+          "Dans le noir, les poissons perdus suivaient sa lueur jusqu'aux sources chaudes. On l'appelait « la Lanterne ».");
+    CHECK(stories.find("kraken")->shots[5].text ==
+          "Le Kraken allume toujours ses lueurs au fond de la Fosse. Il attend qu'on le suive, comme autrefois.");
     CHECK(stories.find("pyrrhax")->title == "Le Dragon d'Obsidienne");
+    CHECK(stories.find("kraken")->title == "La Lanterne des profondeurs");  // its name on the card: « LE KRAKEN DES ABYSSES »
     // Time to read: max(4.5 s, 1.2 s + characters / 16); 35 to 50 s with the title card.
     CHECK_NEAR(story::shotDuration("court"), 4.5f, 1e-4f);
     CHECK_NEAR(story::shotDuration(std::string(160, 'a')), 11.2f, 1e-4f);
     CHECK(story::characters("éàü") == 3);
-    for (const char* id : {"singularis", "pyrrhax", "monolithe"}) {
+    for (const char* id : {"singularis", "pyrrhax", "monolithe", "kraken"}) {
         float t = story::duration(*stories.find(id));
         CHECK(t >= 35.0f && t <= 50.0f);
     }

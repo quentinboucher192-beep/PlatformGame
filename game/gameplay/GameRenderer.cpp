@@ -125,12 +125,14 @@ void GameRenderer::drawProjectiles(Renderer& r, GameWorld& world, float alpha, L
         Vec2 pos = lerpv(p.prevPos, p.pos, alpha);
         lights.add(pos, p.lightRadius, p.light);
         if (p.clip == "shockwave") {
+            // Its size follows its radius (2.52: the golem's waves are taller), its colour its light.
             float t = std::fmod(p.age * 3.0f, 1.0f);
+            float k = std::max(1.0f, p.radius / 7.0f);
             if (ringTex_) {
-                Rect dst = Rect::fromCenter(pos + Vec2{0, -2}, {18.0f + t * 4, 14.0f});
-                r.drawWorldTexture(*ringTex_, nullptr, dst, Color{255, 179, 71, 230}, BlendMode::Additive);
+                Rect dst = Rect::fromCenter(pos + Vec2{0, -2.0f * k}, {(18.0f + t * 4) * k, 14.0f * k});
+                r.drawWorldTexture(*ringTex_, nullptr, dst, p.light.withAlpha(230), BlendMode::Additive);
             }
-            r.drawWorldGlow(pos, 12.0f, {255, 200, 120, 160});
+            r.drawWorldGlow(pos, 12.0f * k, k > 1.0f ? p.light.withAlpha(160) : Color{255, 200, 120, 160});
             continue;
         }
         if (projectiles_ && projectiles_->texture) {

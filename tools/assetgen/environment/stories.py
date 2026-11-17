@@ -6,7 +6,7 @@ One illustration per shot of data/stories/<boss>.json: assets/stories/<boss>_<n>
 with a slow zoom between letterbox bands (only the middle ~74 % in height is seen, plus the zoom:
 the subject stays in the middle). Deterministic: fixed seeds.
 
-    python3 tools/assetgen/environment/stories.py [singularis|pyrrhax|monolithe …] [--review DIR]
+    python3 tools/assetgen/environment/stories.py [singularis|pyrrhax|monolithe|kraken …] [--review DIR]
 
 --review DIR also writes the shots and one contact sheet per boss (the six shots in a 3x2 grid,
 numbered) into DIR.
@@ -26,10 +26,11 @@ from helpers import ASSETS  # noqa: E402
 OUT = os.path.join(ASSETS, "stories")
 SIZE = (960, 540)
 MAX_BYTES = 420 * 1024        # per painting
-MAX_TOTAL = 7 * 1024 * 1024   # every painting of every story
+MAX_TOTAL = 10 * 1024 * 1024  # every painting of every story (2.53: room for the next giga bosses)
 
 
-MODULES = {"singularis": "story_singularis", "pyrrhax": "story_pyrrhax", "monolithe": "story_monolithe"}
+MODULES = {"singularis": "story_singularis", "pyrrhax": "story_pyrrhax", "monolithe": "story_monolithe",
+           "kraken": "story_kraken"}  # 2.53
 
 
 def bosses(names=None):

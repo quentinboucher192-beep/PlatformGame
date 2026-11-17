@@ -110,6 +110,8 @@
     "fire_cloud":       { "texture": "textures/fx/smoke.png", "frames": 4, "count": [1, 2], "life": [0.5, 0.9], "speed": [10, 34], "angle": -90, "spread": 70, "gravity": -30, "drag": 1, "size": [12, 24], "colorStart": "#ff8a3dc0", "colorEnd": "#a3123a00", "emitBox": [6, 4] },
     "fire_smoke":       { "texture": "textures/fx/smoke.png", "frames": 4, "count": [1, 1], "life": [0.9, 1.5], "speed": [8, 22], "angle": -90, "spread": 50, "gravity": -12, "size": [16, 30], "colorStart": "#3a24208c", "colorEnd": "#1a100c00", "additive": false },
     "wing_ash":         { "texture": "textures/fx/particle.png", "count": [2, 3], "life": [0.5, 0.9], "speed": [170, 320], "angle": 0, "spread": 14, "drag": 0.6, "size": [3, 1], "colorStart": "#d6c8bec8", "colorEnd": "#5a4a4400", "additive": false, "stretch": 0.05, "emitBox": [6, 34] },
-    "dive_trail":       { "texture": "textures/fx/particle.png", "count": [2, 3], "life": [0.25, 0.5], "speed": [10, 40], "spread": 360, "drag": 3, "gravity": -40, "size": [8, 0], "colorStart": "#ffd27aff", "colorEnd": "#ff4d1e00", "emitBox": [22, 16] }
+    "dive_trail":       { "texture": "textures/fx/particle.png", "count": [2, 3], "life": [0.25, 0.5], "speed": [10, 40], "spread": 360, "drag": 3, "gravity": -40, "size": [8, 0], "colorStart": "#ffd27aff", "colorEnd": "#ff4d1e00", "emitBox": [22, 16] },
+    "rune_glow":        { "texture": "textures/fx/particle.png", "count": [1, 2], "life": [0.35, 0.7], "speed": [10, 40], "angle": -90, "spread": 80, "drag": 2, "gravity": -30, "size": [5, 0], "colorStart": "#ffd9a8ff", "colorEnd": "#ff7a2e00", "emitBox": [4, 4] },
+    "quake_rocks":      { "texture": "textures/fx/particle.png", "count": [10, 14], "life": [0.45, 0.9], "speed": [90, 230], "angle": -90, "spread": 70, "gravity": 650, "size": [5, 3], "colorStart": "#b3a691ff", "colorEnd": "#4b443b00", "additive": false, "emitBox": [14, 2] }
   }
 }

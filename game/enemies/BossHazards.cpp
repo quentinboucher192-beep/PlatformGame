@@ -25,6 +25,12 @@ Rect BossHazards::Cloud::current() const {
     return {l, area.y, r - l, area.h};
 }
 
+Vec2 BossHazards::Crack::rockAt() const {
+    float k = delay > 0.0f ? std::clamp(age / delay, 0.0f, 1.0f) : 1.0f;
+    float y0 = fromY + half, y1 = at.y - half;
+    return {at.x, y0 + (y1 - y0) * k * k};
+}
+
 float BossHazards::Flood::level() const {
     if (age < rise) return height * smooth(age / std::max(0.05f, rise));
     if (age < rise + hold) return height;
@@ -61,6 +67,17 @@ void BossHazards::addWind(const Wind& wd) {
             return;
         }
     winds_.push_back(wd);
+}
+
+void BossHazards::addCrack(const Crack& c) {
+    // A quake opens many: the oldest of an enemy go first past two dozen.
+    if (crackCount(c.owner) >= 24)
+        for (auto it = cracks_.begin(); it != cracks_.end(); ++it)
+            if (it->owner == c.owner) {
+                cracks_.erase(it);
+                break;
+            }
+    cracks_.push_back(c);
 }
 
 void BossHazards::addIce(GameWorld& w, uint32_t owner, const Rect& area, float grip, float seconds) {
@@ -100,9 +117,11 @@ void BossHazards::addFlood(const Flood& f) {
 }
 
 void BossHazards::addWall(GameWorld& w, uint32_t owner, const Rect& rect, float seconds, float damage, float inside,
-                          const std::string& look) {
+                          const std::string& look, Color color) {
     Wall wall;
     wall.look = look;
+    wall.side = inside >= 0.0f ? 1.0f : -1.0f;
+    wall.color = color;
     wall.owner = owner;
     wall.rect = rect;
     wall.time = seconds;
@@ -151,6 +170,7 @@ void BossHazards::removeOwner(GameWorld& w, uint32_t owner) {
     ice_.erase(std::remove_if(ice_.begin(), ice_.end(), [&](const Ice& i) { return i.owner == owner; }), ice_.end());
     floods_.erase(std::remove_if(floods_.begin(), floods_.end(), [&](const Flood& f) { return f.owner == owner; }), floods_.end());
     clouds_.erase(std::remove_if(clouds_.begin(), clouds_.end(), [&](const Cloud& c) { return c.owner == owner; }), clouds_.end());
+    cracks_.erase(std::remove_if(cracks_.begin(), cracks_.end(), [&](const Crack& c) { return c.owner == owner; }), cracks_.end());
 }
 
 void BossHazards::clear(GameWorld& w) {
@@ -162,6 +182,7 @@ void BossHazards::clear(GameWorld& w) {
     walls_.clear();
     clouds_.clear();
     winds_.clear();
+    cracks_.clear();
 }
 
 bool BossHazards::hasIce(uint32_t owner) const {
@@ -178,6 +199,9 @@ bool BossHazards::hasWind(uint32_t owner) const {
 }
 int BossHazards::cloudCount(uint32_t owner) const {
     return static_cast<int>(std::count_if(clouds_.begin(), clouds_.end(), [&](const Cloud& c) { return c.owner == owner; }));
+}
+int BossHazards::crackCount(uint32_t owner) const {
+    return static_cast<int>(std::count_if(cracks_.begin(), cracks_.end(), [&](const Crack& c) { return c.owner == owner; }));
 }
 
 // ================================================================= stepping
@@ -287,8 +311,9 @@ void BossHazards::fixedUpdate(GameWorld& w, float dt) {
             Rect r = c.current();
             if (r.w > 2.0f) {
                 Vec2 at{w.fxRng().range(r.x, r.right()), w.fxRng().range(r.y + r.h * 0.3f, r.bottom() - 2.0f)};
-                w.particles().emit("fire_cloud", at, 1.0f, {}, &c.color);
-                if (w.fxRng().chance(0.35f)) w.particles().emit("fire_smoke", at + Vec2{0.0f, -r.h * 0.3f}, 1.0f);
+                // 2.53: the Kraken's ink sheds bubbles of its light, no smoke.
+                w.particles().emit(c.ink ? "bubbles" : "fire_cloud", at, 1.0f, {}, &c.color);
+                if (w.fxRng().chance(0.35f) && !c.ink) w.particles().emit("fire_smoke", at + Vec2{0.0f, -r.h * 0.3f}, 1.0f);
             }
         }
         if (!exposed || c.damage <= 0.0f || !c.burning() || !c.current().intersects(p.box)) continue;
@@ -300,6 +325,44 @@ void BossHazards::fixedUpdate(GameWorld& w, float dt) {
         if (w.damagePlayer(dmg)) w.particles().emit("fire_burst", p.center(), 0.8f);
     }
     clouds_.erase(std::remove_if(clouds_.begin(), clouds_.end(), [](const Cloud& c) { return c.time <= 0.0f; }), clouds_.end());
+
+    // The golem's quake (2.52): the cracks burst out of the ground, the rocks land on their marks.
+    for (Crack& c : cracks_) {
+        const bool was = c.bursting();
+        c.age += dt;
+        if (!was && c.bursting()) {
+            if (c.rock) {
+                w.particles().emit("rock_shatter", c.at + Vec2{0.0f, -c.half}, 0.9f);
+                w.particles().emit("slam_dust", c.at, 0.8f);
+                w.playSound("sounds/golem_slam.wav", c.at, 0.5f, 1.5f);
+                w.shake(0.12f);
+            } else {
+                w.particles().emit("quake_rocks", c.at, 1.0f);
+                w.particles().emit("rune_glow", c.at + Vec2{0.0f, -6.0f}, 2.0f, {}, &c.color);
+                w.particles().emit("slam_dust", c.at, 0.9f);
+                w.playSound("sounds/root_burst.wav", c.at, 0.7f, 0.7f);
+                w.shake(0.18f);
+            }
+        }
+        if (!exposed || c.hit || c.damage <= 0.0f) continue;
+        Rect hurt;
+        if (c.rock && !c.bursting()) {
+            hurt = Rect::fromCenter(c.rockAt(), {c.half * 1.6f, c.half * 1.6f});  // the stone on its way down
+        } else if (c.bursting() && c.age < c.delay + c.burst) {
+            const float w2 = c.rock ? c.half * 1.3f : c.half;
+            hurt = {c.at.x - w2, c.at.y - c.height, w2 * 2.0f, c.height};
+        } else {
+            continue;
+        }
+        if (!hurt.intersects(p.box)) continue;
+        DamageInfo dmg;
+        dmg.amount = c.damage;
+        dmg.type = DamageType::Contact;
+        dmg.source = c.rock && !c.bursting() ? c.rockAt() + Vec2{0.0f, -c.half} : Vec2{c.at.x, c.at.y + 12.0f};
+        dmg.knockback = c.knockback;
+        if (w.damagePlayer(dmg)) c.hit = true;
+    }
+    cracks_.erase(std::remove_if(cracks_.begin(), cracks_.end(), [](const Crack& c) { return c.done(); }), cracks_.end());
 }
 
 void BossHazards::bendShot(Projectile& p, float dt) const {
@@ -322,6 +385,73 @@ void BossHazards::bendShot(Projectile& p, float dt) const {
 }
 
 // ================================================================== render
+
+namespace {
+/// A tide of the abyss (2.53, the Kraken): dark water, its crests lit with the boss's light,
+/// foam where the swell peaks, bubbles rising inside. Display only (time-driven).
+void drawTide(RenderContext& ctx, const BossHazards::Flood& f, float t) {
+    const float top = f.surfaceY();
+    const Rect body{f.left, top, f.right - f.left, f.floorY + 64.0f - top};
+    const Color c = f.color;
+    ctx.r.fillWorldRect(body, Color{10, 22, 52, 228});
+    ctx.r.fillWorldRect({body.x, top + 10.0f, body.w, std::max(0.0f, body.h - 10.0f)}, Color{c.r, c.g, c.b, 30}, BlendMode::Additive);
+    for (float x = f.left; x < f.right; x += 8.0f) {
+        const float wdt = std::min(8.0f, f.right - x);
+        const float swell = 3.0f * dmath::sin(t * 1.8f + x * 0.025f) + 1.5f * dmath::sin(t * 4.3f + x * 0.11f);
+        ctx.r.fillWorldRect({x, top - 3.0f + swell, wdt, 5.0f}, Color{30, 70, 120, 240});
+        ctx.r.fillWorldRect({x, top - 3.0f + swell, wdt, 2.0f}, c.withAlpha(210), BlendMode::Additive);
+        if (swell < -2.6f) ctx.r.fillWorldRect({x, top - 5.0f + swell, wdt, 2.0f}, Color{235, 250, 255, 190}, BlendMode::Additive);
+    }
+    const float depth = std::min(f.level(), 220.0f);
+    const int bubbles = static_cast<int>(body.w / 40.0f);
+    for (int k = 0; k < bubbles && depth > 12.0f; ++k) {
+        const float ph = std::fmod(t * 0.45f + static_cast<float>(k) * 0.618f, 1.0f);
+        const float x = f.left + std::fmod(static_cast<float>(k) * 97.3f, body.w) + 4.0f * dmath::sin(t * 3.0f + static_cast<float>(k));
+        const float y = top + 8.0f + (1.0f - ph) * (depth - 8.0f);
+        ctx.r.drawWorldCircle({x, y}, 1.5f + 1.5f * ph, Color{200, 240, 255, static_cast<uint8_t>(150 * ph)}, 1.0f);
+    }
+    for (float x = f.left + 48.0f; x < f.right; x += 120.0f) ctx.lights.add({x, top}, 110.0f, c);
+}
+
+/// A tentacle out of the floor (2.53, the Kraken's « Étau de tentacules »): it sways, its tip
+/// curls over the cage, a row of suckers lit with the boss's light along its inner side.
+void drawTentacle(RenderContext& ctx, const BossHazards::Wall& wl, const Rect& vis, float t) {
+    const float h = vis.h;
+    if (h < 1.0f) return;
+    const int n = std::max(4, static_cast<int>(h / 6.0f));
+    const float base = vis.bottom(), cx = vis.center().x, side = wl.side, seed = wl.rect.x * 0.037f;
+    auto at = [&](int i, float& rad) {
+        const float s = static_cast<float>(i) / static_cast<float>(n);
+        const float sway = (2.0f + 7.0f * s) * dmath::sin(t * 2.6f + s * 3.6f + seed);
+        rad = 10.5f * (1.0f - 0.78f * s) + 1.2f;
+        return Vec2{cx + sway + side * 16.0f * s * s * s, base - h * s};
+    };
+    const Color outline{22, 14, 44, 255}, skin{67, 64, 126, 255}, sheen{95, 138, 168, 255}, belly{157, 147, 194, 255};
+    float rad = 0.0f;
+    for (int i = 0; i <= n; ++i) {
+        const Vec2 p = at(i, rad);
+        ctx.r.fillWorldCircle(p, rad + 1.5f, outline);
+    }
+    for (int i = 0; i <= n; ++i) {
+        const Vec2 p = at(i, rad);
+        ctx.r.fillWorldCircle(p, rad, skin);
+    }
+    for (int i = 0; i <= n; ++i) {
+        const Vec2 p = at(i, rad);
+        ctx.r.fillWorldCircle(p + Vec2{-side * rad * 0.45f, -rad * 0.2f}, rad * 0.35f, sheen);
+    }
+    for (int i = 1; i < n; i += 3) {
+        const Vec2 p = at(i, rad);
+        const Vec2 q = p + Vec2{side * rad * 0.62f, 0.0f};
+        const float pulse = 0.55f + 0.45f * dmath::sin(t * 5.0f - static_cast<float>(i) * 0.7f);
+        ctx.r.fillWorldCircle(q, std::max(1.2f, rad * 0.32f), belly);
+        ctx.r.drawWorldGlow(q, 5.0f + rad * 0.4f, wl.color.withAlpha(static_cast<uint8_t>(150 * pulse)));
+    }
+    const Vec2 tip = at(n, rad);
+    ctx.r.drawWorldGlow(tip, 9.0f, wl.color.withAlpha(160));
+    ctx.lights.add(vis.center(), 60.0f, wl.color.withAlpha(200));
+}
+}  // namespace
 
 void BossHazards::render(RenderContext& ctx) const {
     if (empty()) return;
@@ -366,6 +496,10 @@ void BossHazards::render(RenderContext& ctx) const {
     for (const Flood& f : floods_) {
         float level = f.level();
         if (level < 0.5f) continue;
+        if (f.look == "tide") {
+            drawTide(ctx, f, t);
+            continue;
+        }
         const bool plasma = f.look == "plasma";
         const AnimationSetPtr& lavaFx = plasma && clipIn(plasmaFx, "surface") ? plasmaFx : lavaSheet;
         const AnimationClip* lava = clipIn(lavaFx, "surface");
@@ -402,6 +536,10 @@ void BossHazards::render(RenderContext& ctx) const {
         Rect r = wl.rect;
         float h = r.h * grow;
         Rect vis{r.x, r.bottom() - h, r.w, h};
+        if (wl.look == "tentacle") {
+            drawTentacle(ctx, wl, vis, t);
+            continue;
+        }
         const bool star = wl.look == "star";
         const AnimationSetPtr& thornFx = star && clipIn(starFx, "idle") ? starFx : thornSheet;
         const AnimationClip* thorn = clipIn(thornFx, "idle");
@@ -445,6 +583,14 @@ void BossHazards::render(RenderContext& ctx) const {
                 float seed = x * 0.071f + static_cast<float>(row) * 1.7f;
                 float rad = r.h / static_cast<float>(rows) * (0.55f + 0.12f * dmath::sin(t * 2.3f + seed * 3.1f));
                 Vec2 pc{x + 3.0f * dmath::sin(t * 1.7f + seed), y - 2.0f * dmath::sin(t * 2.9f + seed * 2.0f)};
+                if (c.ink) {
+                    // 2.53, the Kraken: dense ink, only its rim lit by the light of its phase.
+                    ctx.r.drawWorldGlow(pc, rad * 1.7f, fire.withAlpha(static_cast<uint8_t>(50 * a)));
+                    ctx.r.fillWorldCircle(pc, rad, Color{16, 10, 34, static_cast<uint8_t>(210 * a)});
+                    ctx.r.fillWorldCircle(pc + Vec2{-rad * 0.3f, -rad * 0.3f}, rad * 0.35f, Color{fire.r, fire.g, fire.b, static_cast<uint8_t>(45 * a)},
+                                          BlendMode::Additive);
+                    continue;
+                }
                 ctx.r.drawWorldGlow(pc, rad * 1.9f, fire.withAlpha(static_cast<uint8_t>(95 * a)));
                 ctx.r.fillWorldCircle(pc, rad, Color{58, 20, 16, static_cast<uint8_t>(120 * a)});
                 ctx.r.fillWorldCircle(pc + Vec2{0.0f, rad * 0.25f}, rad * 0.55f,
@@ -452,7 +598,9 @@ void BossHazards::render(RenderContext& ctx) const {
             }
         }
         if (c.ground)
-            ctx.r.fillWorldRect({r.x, r.bottom() - 3.0f, r.w, 3.0f}, Color{255, 214, 120, static_cast<uint8_t>(200 * a)}, BlendMode::Additive);
+            ctx.r.fillWorldRect({r.x, r.bottom() - 3.0f, r.w, 3.0f},
+                                c.ink ? fire.withAlpha(static_cast<uint8_t>(150 * a)) : Color{255, 214, 120, static_cast<uint8_t>(200 * a)},
+                                BlendMode::Additive);
         for (float x = r.x + 40.0f; x < r.right(); x += 110.0f)
             ctx.lights.add({x, r.center().y}, 90.0f, fire.withAlpha(static_cast<uint8_t>(220 * a)));
         if (r.w < 80.0f) ctx.lights.add(r.center(), 80.0f, fire.withAlpha(static_cast<uint8_t>(220 * a)));
@@ -471,6 +619,78 @@ void BossHazards::render(RenderContext& ctx) const {
             Color c{214, 200, 188, static_cast<uint8_t>(150 * a * (1.0f - ph))};
             ctx.r.drawWorldLine({x, y}, {x - side * len, y + 2.0f}, c, std::max(1.0f, 2.0f * px * ctx.r.view().scale));
         }
+    }
+
+    // The golem's quake (2.52): glowing cracks that burst into stone spikes, rocks falling from
+    // the roof onto their marks.
+    for (const Crack& c : cracks_) {
+        const Color col = c.color;
+        const float line = std::max(1.0f, 2.0f * px * ctx.r.view().scale);
+        if (c.rock) {
+            const float k = c.delay > 0.0f ? std::clamp(c.age / c.delay, 0.0f, 1.0f) : 1.0f;
+            if (!c.bursting()) {
+                // Its mark: a shadow widening as it comes, a red line under it.
+                const float wdt = c.half * (1.2f + 1.4f * k);
+                ctx.r.fillWorldRect(Rect::fromCenter(c.at + Vec2{0.0f, -2.0f}, {wdt * 2.0f, 4.0f}), Color{14, 8, 6, static_cast<uint8_t>(80 + 140 * k)});
+                ctx.r.fillWorldRect(Rect::fromCenter(c.at + Vec2{0.0f, -1.0f}, {c.half * 3.0f, 2.0f}),
+                                    Color{255, 80, 60, static_cast<uint8_t>(100 + 120 * k)}, BlendMode::Additive);
+                // The stone: granite, a rune glowing on it, dust trailing above.
+                const Vec2 rp = c.rockAt();
+                const float rr = c.half;
+                ctx.r.drawWorldLine(rp + Vec2{0.0f, -rr}, rp + Vec2{0.0f, -rr - 26.0f * k - 6.0f}, Color{200, 190, 170, 70},
+                                    std::max(1.0f, rr * 0.8f * ctx.r.view().scale), BlendMode::Additive);
+                ctx.r.fillWorldCircle(rp, rr + 1.5f, Color{36, 32, 28, 255});
+                ctx.r.fillWorldCircle(rp, rr, Color{108, 98, 85, 255});
+                ctx.r.fillWorldCircle(rp + Vec2{-rr * 0.25f, -rr * 0.3f}, rr * 0.62f, Color{142, 130, 112, 255});
+                ctx.r.fillWorldCircle(rp + Vec2{-rr * 0.35f, -rr * 0.45f}, rr * 0.25f, Color{179, 166, 145, 255});
+                ctx.r.drawWorldLine(rp + Vec2{-rr * 0.3f, rr * 0.35f}, rp + Vec2{rr * 0.1f, -rr * 0.3f}, col, line, BlendMode::Additive);
+                ctx.r.drawWorldLine(rp + Vec2{rr * 0.1f, -rr * 0.3f}, rp + Vec2{rr * 0.4f, rr * 0.25f}, col, line, BlendMode::Additive);
+                ctx.r.drawWorldGlow(rp, rr * 1.6f, col.withAlpha(70));
+            } else {
+                const float f = std::clamp((c.age - c.delay) / 0.35f, 0.0f, 1.0f);
+                ctx.r.drawWorldGlow(c.at + Vec2{0.0f, -c.half}, c.half * (1.5f + f), col.withAlpha(static_cast<uint8_t>(150 * (1.0f - f))));
+            }
+            continue;
+        }
+        const float h = c.half;
+        if (!c.bursting()) {
+            // A crack opening in the ground, brighter as it is about to burst; it trembles at the end.
+            const float k = c.delay > 0.0f ? std::clamp(c.age / c.delay, 0.0f, 1.0f) : 1.0f;
+            const float shake = k > 0.7f ? dmath::sin(t * 70.0f + c.at.x) * 1.2f : 0.0f;
+            const Vec2 base = c.at + Vec2{shake, 0.0f};
+            const float open = h * (0.4f + 0.6f * k);
+            ctx.r.fillWorldRect({base.x - open, base.y - 3.0f, open * 2.0f, 3.0f}, Color{20, 12, 10, static_cast<uint8_t>(160 + 80 * k)});
+            const float thick = std::max(1.0f, (1.0f + 1.5f * k) * px * ctx.r.view().scale);
+            Vec2 prev{base.x - open, base.y - 1.5f};
+            for (int i = 1; i <= 6; ++i) {
+                float x = base.x - open + open * 2.0f * static_cast<float>(i) / 6.0f;
+                Vec2 next{x, base.y - 1.5f - ((i % 2) ? 2.0f : 0.0f) * k};
+                ctx.r.drawWorldLine(prev, next, col.withAlpha(static_cast<uint8_t>(110 + 140 * k)), thick, BlendMode::Additive);
+                prev = next;
+            }
+            ctx.r.drawWorldGlow(base + Vec2{0.0f, -2.0f}, h * (0.8f + 0.8f * k), col.withAlpha(static_cast<uint8_t>(40 + 110 * k)));
+            if (k > 0.5f) ctx.lights.add(base, 50.0f * k, col);
+            continue;
+        }
+        // The burst: stone spikes out of the ground, light under them; they sink back.
+        const float e = c.age - c.delay;
+        const float up = std::clamp(e / 0.06f, 0.0f, 1.0f) * (1.0f - std::clamp((e - c.burst) / 0.25f, 0.0f, 1.0f));
+        if (up <= 0.0f) continue;
+        const float top = c.height * up;
+        ctx.r.drawWorldGlow(c.at + Vec2{0.0f, -top * 0.5f}, h + top * 0.5f, col.withAlpha(static_cast<uint8_t>(140 * up)));
+        const auto& v = ctx.r.view();
+        for (int i = 0; i < 3; ++i) {
+            const float off = static_cast<float>(i - 1) * h * 0.62f;
+            const float sh = top * (i == 1 ? 1.0f : 0.68f);
+            const float hw = h * (i == 1 ? 0.5f : 0.38f);
+            Vec2 l{c.at.x + off - hw, c.at.y}, r{c.at.x + off + hw, c.at.y}, tip{c.at.x + off * 1.15f, c.at.y - sh};
+            ctx.r.fillTriangle(v.toScreen(l + Vec2{-1.0f, 0.0f}), v.toScreen(r + Vec2{1.0f, 0.0f}), v.toScreen(tip + Vec2{0.0f, -1.5f}), Color{36, 32, 28, 255});
+            ctx.r.fillTriangle(v.toScreen(l), v.toScreen(r), v.toScreen(tip), Color{108, 98, 85, 255});
+            ctx.r.fillTriangle(v.toScreen(l), v.toScreen({(l.x + r.x) * 0.5f, l.y}), v.toScreen(tip), Color{142, 130, 112, 255});
+            ctx.r.drawWorldLine({(l.x + r.x) * 0.5f, l.y - 2.0f}, tip + Vec2{0.0f, sh * 0.25f}, col.withAlpha(static_cast<uint8_t>(220 * up)), line,
+                                BlendMode::Additive);
+        }
+        ctx.lights.add(c.at + Vec2{0.0f, -top * 0.5f}, 70.0f, col);
     }
 
     // Pulls: a black hole (well) or air rushing in (vortex).

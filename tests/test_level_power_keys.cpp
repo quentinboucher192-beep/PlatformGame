@@ -493,5 +493,5 @@ TEST_CASE("level power keys: every campaign level carries the keys of its powers
             CHECK(r.levelKeySource == PowerKeySource::Level);
         }
     }
-    CHECK(levels == 21);  // 2.33: Le Cœur d'une Étoile Mourante; 2.48: La Gueule du Dragon; 2.49: Le Cœur de Pierre
+    CHECK(levels == 22);  // 2.33: Le Cœur d'une Étoile Mourante; 2.48: La Gueule du Dragon; 2.49: Le Cœur de Pierre; 2.53: La Fosse des Abysses
 }

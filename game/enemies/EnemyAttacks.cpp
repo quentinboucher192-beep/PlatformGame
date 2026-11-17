@@ -109,7 +109,8 @@ bool Enemy::chooseBossAttack(GameWorld& w, const std::vector<const AttackDef*>& 
         if (a->type == AttackType::Leap && def_.flying) continue;
         if (underneath && a->type != AttackType::Leap && a->type != AttackType::Rain && a->type != AttackType::Eruption &&
             a->type != AttackType::Arc && a->type != AttackType::Summon &&
-            !(a->isGuardianType() && a->type != AttackType::Tracker && a->type != AttackType::Cage && a->type != AttackType::Orbit))
+            !(a->isGuardianType() && a->type != AttackType::Tracker && a->type != AttackType::Cage && a->type != AttackType::Orbit) &&
+            !(a->isGolemType() && a->type != AttackType::Shell))  // 2.52: its quake and its leap reach her
             continue;
         float fit = a->weight;
         switch (a->type) {
@@ -131,6 +132,7 @@ bool Enemy::chooseBossAttack(GameWorld& w, const std::vector<const AttackDef*>& 
                 break;
         }
         if (below) fit *= belowFit(*a);
+        if (hasGolem_) fit *= golemFit(w, *a, near, far, air);  // 2.52: the golem reads its floor too
         if (fit <= 0.0f) continue;
         if (!inRange) {
             if (!punish) continue;
@@ -157,6 +159,9 @@ bool Enemy::chooseBossAttack(GameWorld& w, const std::vector<const AttackDef*>& 
                 case AttackType::Perch: k = 2.0f; break;
                 case AttackType::CloudShot: k = 1.6f; break;
                 case AttackType::Gust: k = 1.2f; break;
+                case AttackType::Shell: k = above > 48.0f ? 0.0f : 1.5f; break;  // 2.52: the golem
+                case AttackType::Quake: k = 2.0f; break;
+                case AttackType::Skyfall: k = 2.5f; break;
                 default: break;
             }
             if (k <= 0.0f) continue;
@@ -266,6 +271,7 @@ void Enemy::beginAttack(GameWorld& w) {
     if (attack_->type == AttackType::Laser) w.playSound("sounds/laser_charge.wav", box.center(), 0.8f);
     if (attack_->isGuardianType()) guardianBegin(w);
     if (attack_->isDragonType()) dragonBegin(w);
+    if (attack_->isGolemType()) golemBegin(w);
     if (hasMirror_ && doubles_ > 0) copyToDoubles(w);  // « Reflets »: the doubles strike too
 }
 
@@ -298,6 +304,7 @@ void Enemy::stepTelegraph(GameWorld& w, float dt) {
         face(aimDir_.x);
     }
     if (attack_ && attack_->isDragonType()) dragonTelegraph(w, dt);
+    if (attack_ && attack_->isGolemType()) golemTelegraph(w, dt);
     if (stateTimer_ <= 0.0f && attack_) {
         state_ = EnemyState::Attack;
         stateTimer_ = attack_->active;
@@ -425,6 +432,10 @@ void Enemy::performAttackStart(GameWorld& w) {
         dragonStart(w);
         return;
     }
+    if (a.isGolemType()) {
+        golemStart(w);
+        return;
+    }
     switch (a.type) {
         case AttackType::Rain:
         case AttackType::Eruption: {
@@ -471,9 +482,17 @@ void Enemy::performAttackStart(GameWorld& w) {
             Vec2 tgt = predictPlayer(w, std::max(a.lead, 0.5f));
             float groundY = tgt.y;
             Vec2 from{tgt.x, tgt.y - 40.0f}, to{tgt.x, tgt.y + 400.0f};
-            if (auto t = w.physics().raycast(from, to, true)) groundY = from.y + (to.y - from.y) * *t;
+            if (hasGolem_ && floorKnown_) {
+                // 2.52: the golem lands on its own floor (never into a pit nor on a ledge).
+                const float lo = walkLo(), hi = walkHi();
+                tgt.x = lo <= hi ? std::clamp(tgt.x, lo, hi) : (lo + hi) * 0.5f;
+                groundY = floorY_;
+                dropThrough_ = true;
+            } else if (auto t = w.physics().raycast(from, to, true)) {
+                groundY = from.y + (to.y - from.y) * *t;
+            }
             float dx = std::clamp(tgt.x - box.center().x, -640.0f, 640.0f);
-            if (std::abs(dx) < std::abs(tgt.x - box.center().x)) {
+            if (std::abs(dx) < std::abs(tgt.x - box.center().x) && !hasGolem_) {
                 // Too far for one leap: land as close as possible, on the ground there.
                 float lx = box.center().x + dx;
                 groundY = box.bottom();
@@ -533,6 +552,10 @@ void Enemy::performAttackActive(GameWorld& w, float dt) {
         dragonActive(w, dt);
         return;
     }
+    if (a.isGolemType()) {
+        golemActive(w, dt);
+        return;
+    }
     // Staggered impacts (eruption lines) and further volleys (bursts), re-aimed each time.
     for (size_t k = 0; k < staged_.size();) {
         if (attackClock_ >= staged_[k].time) {
@@ -576,6 +599,13 @@ void Enemy::performAttackActive(GameWorld& w, float dt) {
         case AttackType::Charge: {
             float sp = a.lungeSpeed * phaseSpeed();
             vel.x = facing * sp;
+            if (hasGolem_ && floorKnown_ && ((facing > 0.0f && box.center().x + sp * dt > walkHi()) || (facing < 0.0f && box.center().x - sp * dt < walkLo()))) {
+                // 2.52: the golem skids to a halt before the end of its floor (a pit, a crust).
+                vel.x = 0.0f;
+                stateTimer_ = 0.0f;
+                w.particles().emit("slam_dust", box.bottomCenter() + Vec2{facing * box.w * 0.5f, 0.0f}, 1.4f);
+                break;
+            }
             chargeDistance_ += sp * dt;
             if (!attackHit_ && box.expanded(2).intersects(p.box)) attackHit_ = w.damagePlayer(d) || true;
             hopTimer_ -= dt;  // reused as dust emission timer while charging
@@ -603,6 +633,7 @@ void Enemy::performAttackActive(GameWorld& w, float dt) {
         case AttackType::Leap:
             if (!leapLanded_ && attackClock_ > 0.12f && grounded_) {
                 leapLanded_ = true;
+                dropThrough_ = false;
                 vel.x = 0.0f;
                 slam(w, a);
                 stateTimer_ = std::min(stateTimer_, 0.15f);
@@ -626,6 +657,11 @@ void Enemy::stepAttack(GameWorld& w, float dt) {
 void Enemy::finishAttack(GameWorld& w) {
     if (attack_ && attack_->isGuardianType()) guardianEnd(w);
     if (attack_ && attack_->isDragonType()) dragonEnd(w, false);
+    if (attack_ && attack_->isGolemType()) golemEnd(w, false);
+    if (hasGolem_) {
+        walkTime_ = 0.0f;  // 2.52: its steps before the next blow
+        dropThrough_ = false;
+    }
     if (attackIndex_ >= 0 && attackIndex_ < static_cast<int>(attackCooldowns_.size()))
         attackCooldowns_[attackIndex_] = attack_->cooldown * phaseCooldown();
     state_ = EnemyState::Recover;
@@ -712,6 +748,10 @@ void Enemy::renderTelegraph(RenderContext& ctx) const {
     }
     if (attack_->isDragonType()) {
         renderDragon(ctx, std::clamp(prog, 0.0f, 1.0f));
+        return;
+    }
+    if (attack_->isGolemType()) {
+        renderGolem(ctx, std::clamp(prog, 0.0f, 1.0f));
         return;
     }
     switch (attack_->type) {

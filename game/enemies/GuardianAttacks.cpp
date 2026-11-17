@@ -268,7 +268,8 @@ void Enemy::guardianStart(GameWorld& w) {
             float h = orDefault(a.height, 136.0f);
             float secs = orDefault(a.duration, 4.0f);
             for (const Vec2& base : path_)
-                w.hazards().addWall(w, uid_, {base.x - 8.0f, base.y - h, 16.0f, h}, secs, a.damage, signf(markPos_.x - base.x), a.look);
+                w.hazards().addWall(w, uid_, {base.x - 8.0f, base.y - h, 16.0f, h}, secs, a.damage, signf(markPos_.x - base.x), a.look,
+                                    lightColor());
             stateTimer_ = secs;
             burstTimer_ = 0.35f;
             w.shake(0.35f);
@@ -319,6 +320,7 @@ void Enemy::guardianStart(GameWorld& w) {
             f.hold = orDefault(a.duration, 4.0f);
             f.damage = a.damage;
             f.look = a.look;
+            f.color = lightColor();
             w.hazards().addFlood(f);
             w.shake(0.4f);
             if (a.sound.empty()) w.playSound("sounds/lava_rise.wav", box.center(), 1.0f);
@@ -393,6 +395,11 @@ void Enemy::guardianActive(GameWorld& w, float dt) {
     const AttackDef& a = *attack_;
     Player& p = w.player();
     if (!def_.flying) vel.x = approach(vel.x, 0.0f, 900.0f * dt);
+    // 2.52: the golem keeps stepping (slowly) while its runes turn, its core pulls or its rings go.
+    if (hasGolem_ && !def_.flying &&
+        (a.type == AttackType::Spiral || a.type == AttackType::Orbit || a.type == AttackType::Well || a.type == AttackType::Cage ||
+         a.type == AttackType::Ring || a.type == AttackType::Flood))
+        golemWalk(dt, golemSpot(w, dt), 0.5f);
     DamageInfo d;
     d.amount = a.damage;
     d.type = DamageType::Projectile;

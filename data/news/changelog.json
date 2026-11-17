@@ -7,11 +7,20 @@
     "Passages difficiles : où vous tombez dans chaque niveau, sur son vrai relief, et vos 5 passages les plus difficiles (niveaux et phases de boss) avec l'entraînement qui va avec.",
     "Chaque graphique a son info-bulle à la souris, un curseur au clavier et à la manette (← →) et une vue « Tableau ». Paramètres › Jeu : « Enregistrer mes statistiques » (activé par défaut) ; « Réinitialiser les statistiques » dans l'écran."
   ],
+  "2.53.0": [
+    "Les Confins, troisième niveau : « La Fosse des Abysses » (EXTRÊME) : le combat seul du Kraken des Abysses, giga-boss à huit phases qui nage. Une seule vie, aucun checkpoint.",
+    "Le Kraken : un fouet qui plonge à travers vous, des tentacules qui jaillissent du sol de part et d'autre, des nuages et des nappes d'encre, des marées d'eau noire, tourbillons et maelström, ondes sonar, éclairs réfléchis, lueurs arrachées à ses bras, et sa dernière vague à survivre. Rester sous lui ou à côté ne protège pas.",
+    "Son histoire, avant le premier combat : « la Lanterne », le petit poulpe des mers enfouies qui devint le Kraken.",
+    "Succès du Kraken (6 nouveaux, 28 étoiles) ; au Vestiaire : la combinaison Encre des abysses (620 étoiles), la traînée Bulles des abysses (630), l'effet de victoire Raz-de-marée (640), le cadre Étreinte du Kraken et le titre Chasseur de Kraken.",
+    "Juke-box : la musique du combat, « Le Kraken des Abysses » (23 morceaux à débloquer)."
+  ],
   "2.52.0": [
     "Succès › Suggestions : 5 succès proposés d'après votre progression (les plus proches du but, faisables maintenant, de catégories variées), avec ce qu'il reste à faire (« Plus que 70 sauts »).",
     "Suivez jusqu'à 5 succès (case « Suivre » dans la liste, la toile ou les suggestions) : leur avancée s'affiche dans le menu pause, avec ce que la partie en cours y ajoute.",
     "HUD : « Ennemis vaincus X / Y » pour les missions où il faut vaincre tous les ennemis d'un niveau (à placer dans l'éditeur du HUD).",
-    "Flèches vers les ennemis hors écran : un ennemi déjà rencontré qui sort de l'écran est signalé par une flèche sur le bord, tournée vers lui ; un groupe d'ennemis n'a qu'une flèche, vers son centre, avec leur nombre (« ×5 »). Option dans Paramètres › Jeu, activée par défaut."
+    "Flèches vers les ennemis hors écran : un ennemi déjà rencontré qui sort de l'écran est signalé par une flèche sur le bord, tournée vers lui ; un groupe d'ennemis n'a qu'une flèche, vers son centre, avec leur nombre (« ×5 »). Option dans Paramètres › Jeu, activée par défaut.",
+    "Le Monolithe se réveille : il marche vers vous et se replace au milieu de son sol (il ne reste plus coincé au bord des fosses ni dans les coins, et n'y tombe plus). Trois nouvelles attaques : Carapace roulante (il se roule en boule de pierre runique et fonce en rebondissant sur les murs : sautez par-dessus avec un double saut ; en carapace il encaisse, étourdi ensuite il prend plus de dégâts), Tremblement de terre (des fissures éclatent sous vos pieds et des rochers tombent de la voûte : ne restez pas immobile) et Bond titanesque (il disparaît en haut, son ombre vous suit, il retombe sur vous et ses ondes de choc filent au sol : sautez-les). Vos records du Cœur de Pierre restent valables.",
+    "Records gardés : la refonte du Monolithe ne remet aucun classement à zéro (vos temps sur « Le Cœur de Pierre » restent valables, en ligne comme dans le jeu) ; sa musique est aussi la bonne en entraînement de boss."
   ],
   "2.51.0": [
     "L'histoire des giga-boss : avant votre premier combat contre Singularis, Pyrrhax ou le Monolithe, une cinématique illustrée raconte comment il est devenu ce qu'il est (environ 45 secondes, texte laissé le temps de lire). Espace, Entrée, A ou un clic la passent ; elle ne compte pas dans le chrono.",

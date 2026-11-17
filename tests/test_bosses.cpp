@@ -68,9 +68,10 @@ TEST_CASE("bosses: every boss attacks, changes phase and dies") {
                 used.insert(boss->currentAttackName());
             // Wear it down through its phases (never below a quarter of its health here). The
             // same blows for every boss: a dragon landed by its « Atterrissage » takes more
-            // (2.50), so the blow waits for it to take off.
+            // (2.50), so the blow waits for it to take off; the golem curled in its shell, dizzy
+            // or out of sight (2.52) too.
             if (step % 700 == 699 && boss->hpRatio() > 0.26f) wearDue = true;
-            if (wearDue && !boss->perched()) {
+            if (wearDue && !boss->perched() && !boss->curled() && !boss->dizzy() && !boss->outOfSight()) {
                 wearDue = false;
                 DamageInfo d;
                 d.amount = boss->maxHp() * 0.15f;

@@ -178,15 +178,18 @@ void DamageZoneEntity::fixedUpdate(GameWorld& w, float dt) {
     if (!active || !obj_.prop<bool>("visible", true)) return;
     fxTimer_ -= dt;
     if (fxTimer_ <= 0.0f) {
-        bool plasma = obj_.propStr("style", "toxic") == "plasma";
-        fxTimer_ = std::max(0.05f, (plasma ? 1.2f : 2.0f) / std::max(1.0f, box.w * box.h / 2000.0f));
-        w.particles().emit(plasma ? "lava_bubbles" : "toxic_mist",
+        const std::string style = obj_.propStr("style", "toxic");
+        bool plasma = style == "plasma";
+        bool abyss = style == "abyss";  // 2.53: the dark water of the Kraken's arena
+        fxTimer_ = std::max(0.05f, (plasma || abyss ? 1.2f : 2.0f) / std::max(1.0f, box.w * box.h / 2000.0f));
+        w.particles().emit(plasma ? "lava_bubbles" : (abyss ? "bubbles" : "toxic_mist"),
                            {w.fxRng().range(box.x, box.right()), w.fxRng().range(box.y, box.bottom())}, 1.0f);
     }
 }
 
 bool DamageZoneEntity::handleAction(GameWorld& w, const std::string& action, const Json&) {
-    if ((action == "enable" || action == "activate") && !active && obj_.propStr("style", "toxic") == "plasma") {
+    const std::string style = obj_.propStr("style", "toxic");
+    if ((action == "enable" || action == "activate") && !active && (style == "plasma" || style == "abyss")) {
         w.playSound("sounds/lava_rise.wav", box.center(), 0.9f);
         w.shake(0.3f);
     }
@@ -205,6 +208,10 @@ void DamageZoneEntity::render(RenderContext& ctx) {
     if (!obj_.prop<bool>("visible", true) || shown_ <= 0.0f) return;
     if (obj_.propStr("style", "toxic") == "plasma") {
         renderPlasma(ctx);
+        return;
+    }
+    if (obj_.propStr("style", "toxic") == "abyss") {
+        renderAbyss(ctx);
         return;
     }
     if (active) {
@@ -259,6 +266,55 @@ void DamageZoneEntity::renderPlasma(RenderContext& ctx) const {
         ctx.lights.add({x, pool ? box.y : box.center().y}, 120.0f, Color{255, 110, 220, static_cast<uint8_t>(255 * a)});
     if (!pool)
         for (float y = box.y + 60.0f; y < box.bottom(); y += 140.0f) ctx.lights.add({box.center().x, y}, 140.0f, Color{255, 110, 220, static_cast<uint8_t>(255 * a)});
+}
+
+void DamageZoneEntity::renderAbyss(RenderContext& ctx) const {
+    // The dark water of the abyss (2.53, the Kraken's arena): a pool (a swell lit in cyan, foam
+    // on its crests, bubbles rising) or a curtain (a wall of falling water, wavering edges),
+    // fading in when switched on. Display only (time-driven).
+    const float a = shown_;
+    const float t = ctx.time;
+    const bool pool = box.w >= box.h;
+    const Color deep{10, 22, 52, static_cast<uint8_t>(228 * a)};
+    const Color crest{122, 230, 255, static_cast<uint8_t>(210 * a)};
+    if (pool) {
+        ctx.r.fillWorldRect(box, deep);
+        ctx.r.fillWorldRect({box.x, box.y + 8.0f, box.w, std::max(0.0f, box.h - 8.0f)}, Color{60, 150, 230, static_cast<uint8_t>(30 * a)},
+                            BlendMode::Additive);
+        for (float x = box.x; x < box.right(); x += 8.0f) {
+            const float wdt = std::min(8.0f, box.right() - x);
+            const float swell = 2.5f * dmath::sin(t * 1.8f + x * 0.025f) + 1.2f * dmath::sin(t * 4.3f + x * 0.11f);
+            ctx.r.fillWorldRect({x, box.y - 2.0f + swell, wdt, 4.0f}, Color{30, 70, 120, static_cast<uint8_t>(240 * a)});
+            ctx.r.fillWorldRect({x, box.y - 2.0f + swell, wdt, 2.0f}, crest, BlendMode::Additive);
+            if (swell < -2.2f) ctx.r.fillWorldRect({x, box.y - 4.0f + swell, wdt, 2.0f}, Color{235, 250, 255, static_cast<uint8_t>(180 * a)}, BlendMode::Additive);
+        }
+        const int bubbles = static_cast<int>(box.w / 48.0f);
+        for (int k = 0; k < bubbles; ++k) {
+            const float ph = std::fmod(t * 0.5f + static_cast<float>(k) * 0.618f, 1.0f);
+            const float x = box.x + std::fmod(static_cast<float>(k) * 97.3f, box.w) + 3.0f * dmath::sin(t * 3.0f + static_cast<float>(k));
+            const float y = box.bottom() - ph * box.h;
+            ctx.r.drawWorldCircle({x, y}, 1.2f + 1.2f * ph, Color{200, 240, 255, static_cast<uint8_t>(140 * a * ph)}, 1.0f);
+        }
+    } else {
+        ctx.r.fillWorldRect(box, deep);
+        ctx.r.fillWorldRect(box, Color{60, 150, 230, static_cast<uint8_t>(40 * a)}, BlendMode::Additive);
+        for (float y = box.y; y < box.bottom(); y += 6.0f) {
+            const float wv = 2.0f * dmath::sin(t * 5.0f + y * 0.07f);
+            ctx.r.fillWorldRect({box.x - 1.0f + wv, y, 3.0f, 6.0f}, crest, BlendMode::Additive);
+            ctx.r.fillWorldRect({box.right() - 2.0f - wv, y, 3.0f, 6.0f}, crest, BlendMode::Additive);
+        }
+        // Streaks of water falling down the curtain.
+        for (int k = 0; k < 8; ++k) {
+            const float ph = std::fmod(t * 0.6f + static_cast<float>(k) / 8.0f, 1.0f);
+            const float x = box.x + box.w * (0.1f + 0.8f * std::fmod(static_cast<float>(k) * 0.381f, 1.0f));
+            const float y = box.y + ph * box.h;
+            ctx.r.fillWorldRect({x, y, 2.0f, 26.0f}, Color{170, 230, 255, static_cast<uint8_t>(70 * a * (1.0f - ph))}, BlendMode::Additive);
+        }
+    }
+    const Color glow{90, 200, 255, static_cast<uint8_t>(255 * a)};
+    for (float x = box.x + 40.0f; x < box.right(); x += 120.0f) ctx.lights.add({x, pool ? box.y : box.center().y}, 120.0f, glow);
+    if (!pool)
+        for (float y = box.y + 60.0f; y < box.bottom(); y += 140.0f) ctx.lights.add({box.center().x, y}, 140.0f, glow);
 }
 
 // ---------------------------------------------------------------- slow zone

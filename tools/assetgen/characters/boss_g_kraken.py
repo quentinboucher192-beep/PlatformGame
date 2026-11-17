@@ -20,13 +20,15 @@ every phase; the skin, the beak, the ink and the bubbles never do.  Every emissi
 five tones P0..P4 of the phase ramp (plus pure white), so each phase sheet is the phase-1 sheet with
 those five colours swapped (exact LUT, `recolour`), see PHASES.
 
-Frames 256x224, pivot [128, 136] = bottom-centre of the 104x108 collision box (x 76..180,
-y 28..136) around the mantle, the head and the crown of the arms (the top of the dome, the arms and
-the beak's hook stay outside).  Drawn at scale 1.25 in game (320x280 px frame, 130x135 px box).
+Frames 256x224, pivot [128, 196] = bottom-centre of the 104x168 collision box (x 76..180,
+y 28..196) around the mantle, the head and the arms down to their usual tips (2.53: the pivot was
+at the crown of the arms, y 136, and the arms hung ~70 px under the box: landed, they went through
+the floor and under the HUD; the art is unchanged, only the anchor and the box).  Drawn at scale
+1.25 in game (320x280 px frame, 130x210 px box).
 ORIGIN (frame pixels from the pivot, x forward, y down; x1.25 in game):
   * attack frame 1 (`fire`, the lash: the front arm uncoiled forward, a bolt of light leaves its
-    tip): (+109, -9) = frame pixel (237, 127);
-  * special (the jet loop: the head and the beak do not move on its four frames): (+48, -11)
+    tip): (+109, -69) = frame pixel (237, 127);
+  * special (the jet loop: the head and the beak do not move on its four frames): (+48, -71)
     = frame pixel (176, 125), between the open mandibles; the beam itself is drawn by the game,
     the sheet only shows a short burst of light and ink at the beak.
 `Kraken.tip(pose)` and `Kraken.beak(pose)` give these points (see `attack_poses` and
@@ -50,8 +52,8 @@ from raster import LIGHT3, TCanvas
 
 PI = math.pi
 W, H = 256, 224
-PIVOT = [128, 136]
-BOX = (76, 28, 180, 136)  # x0, y0, x1, y1 (collision box, frame pixels)
+PIVOT = [128, 196]
+BOX = (76, 28, 180, 196)  # x0, y0, x1, y1 (collision box, frame pixels)
 BX, BY = 128.0, 100.0  # rotation centre (body coordinates): the whole kraken tilts around it
 WHITE = "#ffffff"
 SEED = 61873

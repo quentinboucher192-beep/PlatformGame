@@ -170,6 +170,12 @@
       "group": "confins",
       "title": "Le Golem Primordial",
       "where": "Combat contre Monolithe"
+    },
+    {
+      "file": "music/kraken_boss.ogg",
+      "group": "confins",
+      "title": "Le Kraken des Abysses",
+      "where": "Combat contre le Kraken"
     }
   ]
 }

@@ -10,6 +10,21 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
   (vue d'ensemble, combat, boss, niveaux classiques avec somme des meilleurs segments, passages
   difficiles avec leur entraînement). Voir [Statistiques](#statistiques).
 
+**Nouveau dans la version 2.53.0** :
+* **« La Fosse des Abysses »** (EXTRÊME, Les Confins) : le combat seul du **Kraken des Abysses**, giga-boss à
+  huit phases qui nage : fouet plongeant, tentacules jaillissant du sol, encre, marées d'eau noire,
+  tourbillons, ondes sonar ; rester sous lui ou à côté ne protège pas.
+* Son **histoire** avant le premier combat ; ses succès et son Vestiaire (Encre des abysses, Bulles des
+  abysses, Raz-de-marée, Étreinte du Kraken, titre Chasseur de Kraken).
+* Sa musique, **« Le Kraken des Abysses »**, au juke-box (23 morceaux).
+
+**Nouveau dans la version 2.52.0** :
+* **Le Monolithe se réveille** : il marche vers vous (fini les coins et les fosses), Carapace roulante,
+  Tremblement de terre, Bond titanesque et ses ondes de choc ; aucun classement remis à zéro.
+* **Flèches vers les ennemis hors écran**, regroupées par paquets avec leur nombre (« ×4 »).
+* **Succès › Suggestions** (5 proposés d'après votre progression), jusqu'à 5 succès suivis avec leur avancée
+  dans le menu pause, et le HUD « Ennemis vaincus X / Y ».
+
 **Nouveau dans la version 2.51.0** :
 * **L'histoire des giga-boss** : une cinématique illustrée avant le premier combat (passable, hors chrono),
   « Revoir l'histoire » sur la fiche du boss et dans la Galerie, option dans Paramètres › Jeu.

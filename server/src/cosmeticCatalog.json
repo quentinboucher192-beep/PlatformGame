@@ -100,6 +100,13 @@
    "stars": 590
   },
   {
+   "id": "suit_encre",
+   "category": "suit",
+   "look": "encre",
+   "name": "Encre des abysses",
+   "stars": 620
+  },
+  {
    "id": "suit_sanctuaire",
    "category": "suit",
    "look": "sanctuaire",
@@ -179,6 +186,13 @@
    "look": "debris",
    "name": "Éclats de roche",
    "stars": 600
+  },
+  {
+   "id": "trail_bulles",
+   "category": "trail",
+   "look": "bubbles",
+   "name": "Bulles des abysses",
+   "stars": 630
   },
   {
    "id": "trail_runes",
@@ -283,6 +297,13 @@
    "achievement": "maitrise_monolithe_nohit"
   },
   {
+   "id": "frame_tentacules",
+   "category": "frame",
+   "look": "tentacles",
+   "name": "Étreinte du Kraken",
+   "achievement": "maitrise_kraken_nohit"
+  },
+  {
    "id": "frame_couronne",
    "category": "frame",
    "look": "crown",
@@ -376,6 +397,13 @@
    "look": "Briseur de pierre",
    "name": "Briseur de pierre",
    "achievement": "gardiens_monolithe"
+  },
+  {
+   "id": "title_chasseur_kraken",
+   "category": "title",
+   "look": "Chasseur de Kraken",
+   "name": "Chasseur de Kraken",
+   "achievement": "gardiens_kraken"
   },
   {
    "id": "title_analyste",
@@ -499,6 +527,13 @@
    "look": "quake",
    "name": "Séisme runique",
    "stars": 610
+  },
+  {
+   "id": "victory_raz_de_maree",
+   "category": "victory",
+   "look": "tidal_wave",
+   "name": "Raz-de-marée",
+   "stars": 640
   },
   {
    "id": "victory_serie_feu",

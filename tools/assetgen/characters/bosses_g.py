@@ -1,6 +1,6 @@
 """BOSSES-G entry point (called from boss.py `build()`): the abyssal giga boss.
 
-  * kraken - le Kraken des Abysses   256x224, pivot [128, 136]  (boss_g_kraken.py)
+  * kraken - le Kraken des Abysses   256x224, pivot [128, 196]  (boss_g_kraken.py)
 
 Eight sheets, one per phase (sprites/enemies/kraken.png for phase 1, kraken_p2..p8.png): the same
 clips, the bioluminescence (bands, spots, eyes, suckers, inner core, jet) recoloured per phase

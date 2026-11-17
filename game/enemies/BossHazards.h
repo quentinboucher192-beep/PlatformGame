@@ -24,7 +24,9 @@ struct RenderContext;
 ///  * walls of thorns (Cage de ronces): solid colliders that hurt on contact;
 ///  * (2.50, the dragon) clouds of fire that linger where its breath or its fireballs left them
 ///    (they hurt inside), and the wind of its wings that pushes Nova away from it (a limited
-///    push, always below her run speed: running against it still moves her forward).
+///    push, always below her run speed: running against it still moves her forward);
+///  * (2.52, the golem's quake) cracks in the ground that glow, then burst out of it, and rocks
+///    falling from the roof onto marked spots.
 /// An effect belongs to the enemy that made it (its uid): it ends with its time, with the
 /// enemy (death, removal) or when the player respawns.
 class BossHazards {
@@ -56,7 +58,8 @@ public:
         float rise = 1.0f, hold = 4.0f, fall = 1.0f;
         float damage = 2.0f;
         float age = 0.0f;
-        std::string look;  // display: "" = lava, "plasma" = star plasma (2.33)
+        std::string look;  // display: "" = lava, "plasma" = star plasma (2.33), "tide" = dark water (2.53)
+        Color color{122, 230, 255, 255};  // display: the light of its crests ("tide": the boss's phase)
         /// Surface height above the floor (0 .. height) at the current age.
         float level() const;
         float surfaceY() const { return floorY - level(); }
@@ -69,7 +72,9 @@ public:
         float time = 4.0f;
         float age = 0.0f;
         float damage = 1.0f;
-        std::string look;  // display: "" = thorns, "star" = starlight (2.33)
+        std::string look;  // display: "" = thorns, "star" = starlight (2.33), "tentacle" = the Kraken's (2.53)
+        float side = 1.0f;                // display: the cage's side of it (a tentacle curls over it)
+        Color color{122, 230, 255, 255};  // display: the light of its suckers ("tentacle")
     };
 
     struct Cloud {
@@ -82,11 +87,34 @@ public:
         float damage = 1.0f;
         bool ground = false;   // display: a carpet of fire along the ground (else a puff)
         Color color{255, 122, 46, 255};  // display: the fire of the phase
+        bool ink = false;                // display (2.53, the Kraken): a cloud of ink lit by the phase
         float emitTimer = 0.0f;          // display: its smoke
         /// The part of its area reached at its age.
         Rect current() const;
         /// It hurts after a short flare and until its last quarter second (it fades harmless).
         bool burning() const { return age >= 0.1f && time > 0.25f; }
+    };
+    /// A crack of the golem's quake (2.52): marked on the ground, it bursts after `delay` (stone
+    /// spikes up to `height` for `burst` seconds); or a rock falling from the roof (`rock`): its
+    /// mark on the ground until it lands there after `delay`.
+    struct Crack {
+        uint32_t owner = 0;
+        Vec2 at;                 // on the ground: its middle (x) and the surface (y)
+        float half = 22.0f;      // half its width (a rock: its radius)
+        float height = 46.0f;    // how high the burst reaches (a rock: its impact)
+        float delay = 0.75f;     // seconds before it bursts (a rock: before it lands)
+        float burst = 0.3f;      // the burst hurts this long
+        float age = 0.0f;
+        float damage = 1.0f;
+        float knockback = 220.0f;
+        bool rock = false;
+        float fromY = 0.0f;      // a rock: where it falls from (the roof)
+        bool hit = false;        // it has hurt (once)
+        Color color{255, 179, 71, 255};  // display: the light of the phase
+        bool bursting() const { return age >= delay; }
+        bool done() const { return age >= delay + burst + (rock ? 0.35f : 0.25f); }
+        /// A rock: the centre of the falling stone at its age (it speeds up).
+        Vec2 rockAt() const;
     };
     struct Wind {
         uint32_t owner = 0;
@@ -100,12 +128,13 @@ public:
     void addPull(const Pull& p);
     void addCloud(const Cloud& c);
     void addWind(const Wind& wd);
+    void addCrack(const Crack& c);
     /// Freezes the floors, ledges and platforms whose top lies in `area` (grip < 1).
     void addIce(GameWorld& w, uint32_t owner, const Rect& area, float grip, float seconds);
     void addFlood(const Flood& f);
     /// A solid wall; Nova standing where it rises is pushed to the `inside` side (+1: right).
     void addWall(GameWorld& w, uint32_t owner, const Rect& rect, float seconds, float damage, float inside,
-                 const std::string& look = {});
+                 const std::string& look = {}, Color color = Color{122, 230, 255, 255});
     /// Ends what an enemy channels (pulls and walls); the ice and the lava keep their time.
     void endChannel(GameWorld& w, uint32_t owner);
     /// Ends every effect of an enemy (it died or left the world).
@@ -116,19 +145,22 @@ public:
     void bendShot(Projectile& p, float dt) const;
 
     bool empty() const {
-        return pulls_.empty() && ice_.empty() && floods_.empty() && walls_.empty() && clouds_.empty() && winds_.empty();
+        return pulls_.empty() && ice_.empty() && floods_.empty() && walls_.empty() && clouds_.empty() && winds_.empty() &&
+               cracks_.empty();
     }
     bool hasIce(uint32_t owner) const;
     bool hasFlood(uint32_t owner) const;
     bool hasPull(uint32_t owner) const;
     bool hasWind(uint32_t owner) const;
     int cloudCount(uint32_t owner) const;
+    int crackCount(uint32_t owner) const;
     const std::vector<Pull>& pulls() const { return pulls_; }
     const std::vector<Ice>& ice() const { return ice_; }
     const std::vector<Flood>& floods() const { return floods_; }
     const std::vector<Wall>& walls() const { return walls_; }
     const std::vector<Cloud>& clouds() const { return clouds_; }
     const std::vector<Wind>& winds() const { return winds_; }
+    const std::vector<Crack>& cracks() const { return cracks_; }
 
     /// Display only.
     void render(RenderContext& ctx) const;
@@ -141,6 +173,7 @@ private:
     std::vector<Wall> walls_;
     std::vector<Cloud> clouds_;
     std::vector<Wind> winds_;
+    std::vector<Crack> cracks_;
 };
 
 }  // namespace cosmic
