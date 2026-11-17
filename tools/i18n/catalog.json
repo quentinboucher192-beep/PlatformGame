@@ -39865,6 +39865,12 @@
    ]
   },
   {
+   "fr": "Succès « tous les niveaux » (l'or et le platine partout, Silence total, Immortel, noter toute la campagne) et titre Chronomaître : ils demandent maintenant les 25 niveaux de la campagne, comme leur texte l'annonce ; un succès déjà obtenu reste acquis.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Succès › Suggestions : 5 succès proposés d'après votre progression (les plus proches du but, faisables maintenant, de catégories variées), avec ce qu'il reste à faire (« Plus que 70 sauts »).",
    "where": [
     "data/news/changelog.json"

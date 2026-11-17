@@ -17,6 +17,9 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
   fantômes, le cadre sur le profil et dans les classements, l'effet de victoire à la sortie des niveaux.
 * Les **fantômes** laissent la traînée de leur joueur ; l'**effet de victoire** se joue dès la sortie du
   niveau, pendant sa scène de fin.
+* Les succès « **tous les niveaux** » (l'or et le platine partout, Silence total, Immortel, noter toute la
+  campagne) et le titre Chronomaître demandent maintenant les **25 niveaux** de la campagne, comme leur texte ;
+  un succès déjà obtenu reste acquis.
 
 **Nouveau dans la version 2.58.0** :
 * **« La Fonderie Engloutie »** (EXTRÊME, Les Confins) : le combat seul du **Titan Mécanique**, giga-boss à
