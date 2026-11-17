@@ -23392,6 +23392,12 @@
    ]
   },
   {
+   "fr": "L'histoire du Titan, « Le Dernier Quart », devient elle aussi un petit dessin animé : la fonderie sous les Confins avec ses fourneaux, le creuset qui coule l'acier et les ouvriers qui martèlent, le colosse qui s'éveille sur son échafaudage, le contremaître qui lui confie les feux le soir où l'étoile s'effondre, la roche qui engloutit la fonderie pendant qu'il entretient seul les feux, la rouille et la vapeur, puis le Titan qui se retourne contre la visiteuse venue « éteindre ses feux ». Décors vivants (fourneaux qui grondent, engrenages, chaînes, fumée, étincelles), personnages animés image par image ; une pastille NOUVEAU mène à « Revoir l'histoire ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "L'Horizon des événements",
    "where": [
     "data/levels/aethra_04.json"

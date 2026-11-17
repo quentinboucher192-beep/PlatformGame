@@ -1,0 +1,9 @@
+{
+  "texture": "stories/titan/crochet.png",
+  "frameWidth": 48,
+  "frameHeight": 96,
+  "pivot": [24, 0],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 5, "loop": true}
+  }
+}

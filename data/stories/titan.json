@@ -1,7 +1,7 @@
 {
  "format": "cosmic.boss_story",
- "version": 1,
- "comment": "Story of a giga boss (game/content/BossStories.h), told before the first fight against it. Each shot: its painting (assets/, tools/assetgen/environment/stories.py), its line of narration, the point the slow zoom goes to, the live particles over it. A shot lasts max(4.5 s, 1.2 s + characters / 16); then the title card (3 s).",
+ "version": 2,
+ "comment": "Story of a giga boss (game/content/BossStories.h), told before the first fight against it. Version 2: each shot is an animated scene (« stage »: parallax layers, sprites moved by keyframes, glows, particles, camera, shakes, flashes), written by tools/assetgen/environment/story_titan_scene.py (edit it there); its image is the still rendered from the scene. A shot lasts max(4.5 s, 1.2 s + characters / 16); then the title card (3 s).",
  "boss": "titan",
  "title": "Le Dernier Quart",
  "color": "#ffc23c",
@@ -16,9 +16,519 @@
     0.5,
     0.55
    ],
-   "zoom": 1.1,
-   "particles": "embers",
-   "glow": "#ff8a2e"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#ff8a2e",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#0a0606",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       480.0,
+       290.0
+      ],
+      "zoom": 1.12
+     },
+     {
+      "t": 2.4,
+      "pos": [
+       440.0,
+       320.0
+      ],
+      "zoom": 1.24
+     },
+     {
+      "t": 7.45,
+      "pos": [
+       500.0,
+       330.0
+      ],
+      "zoom": 1.3
+     }
+    ],
+    "elements": [
+     {
+      "id": "fond",
+      "sprite": "animations/stories/titan_fonderie.json",
+      "depth": 0.05,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "engrenage1",
+      "sprite": "animations/stories/titan_engrenage.json",
+      "depth": 0.1,
+      "tint": "#c0b0a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         150.0,
+         120.0
+        ],
+        "clip": "spin",
+        "scale": 1.2,
+        "flip": false
+       }
+      ]
+     },
+     {
+      "id": "engrenage2",
+      "sprite": "animations/stories/titan_engrenage.json",
+      "depth": 0.1,
+      "tint": "#c0b0a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         220.0,
+         150.0
+        ],
+        "clip": "spin",
+        "scale": 0.8,
+        "flip": true
+       }
+      ]
+     },
+     {
+      "id": "engrenage3",
+      "sprite": "animations/stories/titan_engrenage.json",
+      "depth": 0.1,
+      "tint": "#c0b0a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         760.0,
+         110.0
+        ],
+        "clip": "spin",
+        "scale": 1.4,
+        "flip": false
+       }
+      ]
+     },
+     {
+      "id": "engrenage4",
+      "sprite": "animations/stories/titan_engrenage.json",
+      "depth": 0.1,
+      "tint": "#c0b0a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         820.0,
+         160.0
+        ],
+        "clip": "spin",
+        "scale": 0.9,
+        "flip": true
+       }
+      ]
+     },
+     {
+      "id": "poutres",
+      "sprite": "animations/stories/titan_poutres.json",
+      "depth": 0.3,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -240.0,
+         -20.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "chaines",
+      "sprite": "animations/stories/titan_chaines.json",
+      "depth": 0.45,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         -20.0
+        ],
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "fumee",
+      "sprite": "animations/stories/titan_fumee.json",
+      "depth": 0.35,
+      "drift": [
+       10.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         60.0
+        ],
+        "alpha": 0.7,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "sol",
+      "sprite": "animations/stories/titan_sol.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "fourneau_lueur",
+      "glow": "#ff8a3a",
+      "radius": 165.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         820.0,
+         397.0
+        ],
+        "alpha": 0.7
+       }
+      ],
+      "pulse": [
+       0.25,
+       0.7
+      ]
+     },
+     {
+      "id": "fourneau",
+      "sprite": "animations/stories/titan_fourneau.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         820.0,
+         452.0
+        ],
+        "clip": "idle",
+        "scale": 1.1
+       }
+      ]
+     },
+     {
+      "id": "creuset",
+      "sprite": "animations/stories/titan_creuset.json",
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         430.0,
+         120.0
+        ],
+        "clip": "idle",
+        "scale": 1.2
+       },
+       {
+        "t": 0.8,
+        "clip": "pour"
+       }
+      ]
+     },
+     {
+      "id": "coulee_lueur",
+      "glow": "#ffb040",
+      "radius": 120.0,
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         490.0,
+         380.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 0.8,
+        "alpha": 0.0
+       },
+       {
+        "t": 1.2,
+        "alpha": 0.8
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.4
+      ]
+     },
+     {
+      "id": "moule",
+      "sprite": "animations/stories/titan_moule.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        150.0,
+        24.0
+       ],
+       "light": [
+        820.0,
+        380.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         448.0
+        ],
+        "clip": "idle",
+        "scale": 1.3
+       }
+      ]
+     },
+     {
+      "id": "ouvrier1",
+      "sprite": "animations/stories/titan_ouvrier1.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        62.0,
+        9.9
+       ],
+       "light": [
+        820.0,
+        380.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         250.0,
+         452.0
+        ],
+        "clip": "hammer"
+       }
+      ]
+     },
+     {
+      "id": "ouvrier2",
+      "sprite": "animations/stories/titan_ouvrier2.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        62.0,
+        9.9
+       ],
+       "light": [
+        820.0,
+        380.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         320.0,
+         456.0
+        ],
+        "clip": "hammer",
+        "offset": 0.35,
+        "flip": true
+       }
+      ]
+     },
+     {
+      "id": "ouvrier3",
+      "sprite": "animations/stories/titan_ouvrier3.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        62.0,
+        9.9
+       ],
+       "light": [
+        820.0,
+        380.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -30.0,
+         454.0
+        ],
+        "clip": "walk"
+       },
+       {
+        "t": 4.2,
+        "pos": [
+         560.0,
+         454.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 4.21,
+        "clip": "point",
+        "ease": "step"
+       },
+       {
+        "t": 5.6,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "lanterne",
+      "glow": "#ffd27a",
+      "radius": 60.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -20.0,
+         410.0
+        ],
+        "alpha": 0.6
+       },
+       {
+        "t": 4.2,
+        "pos": [
+         570.0,
+         410.0
+        ],
+        "ease": "linear"
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5
+      ]
+     },
+     {
+      "id": "vapeur",
+      "sprite": "animations/stories/titan_vapeur.json",
+      "depth": 0.95,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         680.0,
+         446.0
+        ],
+        "clip": "jet",
+        "scale": 1.2
+       }
+      ]
+     },
+     {
+      "id": "etincelles",
+      "particles": "embers",
+      "color": "#ffb040",
+      "area": [
+       140.0,
+       280.0,
+       760.0,
+       200.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.9
+       }
+      ]
+     },
+     {
+      "id": "eclats",
+      "particles": "sparks",
+      "color": "#ffd27a",
+      "area": [
+       220.0,
+       380.0,
+       160.0,
+       70.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "cendres",
+      "particles": "ash",
+      "color": "#a89888",
+      "area": [
+       0.0,
+       300.0,
+       960.0,
+       180.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.5
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/titan_avant.json",
+      "depth": 1.35,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ]
+   }
   },
   {
    "scene": "builders",
@@ -28,9 +538,602 @@
     0.5,
     0.45
    ],
-   "zoom": 1.12,
-   "particles": "sparks",
-   "glow": "#bfe0ff"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#bfe0ff",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#0a0606",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       500.0,
+       300.0
+      ],
+      "zoom": 1.3
+     },
+     {
+      "t": 2.4,
+      "pos": [
+       510.0,
+       260.0
+      ],
+      "zoom": 1.24
+     },
+     {
+      "t": 4.6,
+      "pos": [
+       500.0,
+       270.0
+      ],
+      "zoom": 1.12
+     },
+     {
+      "t": 6.825,
+      "pos": [
+       500.0,
+       280.0
+      ],
+      "zoom": 1.06
+     }
+    ],
+    "elements": [
+     {
+      "id": "fond",
+      "sprite": "animations/stories/titan_fonderie.json",
+      "depth": 0.05,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "engrenage1",
+      "sprite": "animations/stories/titan_engrenage.json",
+      "depth": 0.1,
+      "tint": "#c0b0a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         150.0,
+         120.0
+        ],
+        "clip": "spin",
+        "scale": 1.2,
+        "flip": false
+       }
+      ]
+     },
+     {
+      "id": "engrenage2",
+      "sprite": "animations/stories/titan_engrenage.json",
+      "depth": 0.1,
+      "tint": "#c0b0a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         220.0,
+         150.0
+        ],
+        "clip": "spin",
+        "scale": 0.8,
+        "flip": true
+       }
+      ]
+     },
+     {
+      "id": "engrenage3",
+      "sprite": "animations/stories/titan_engrenage.json",
+      "depth": 0.1,
+      "tint": "#c0b0a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         760.0,
+         110.0
+        ],
+        "clip": "spin",
+        "scale": 1.4,
+        "flip": false
+       }
+      ]
+     },
+     {
+      "id": "engrenage4",
+      "sprite": "animations/stories/titan_engrenage.json",
+      "depth": 0.1,
+      "tint": "#c0b0a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         820.0,
+         160.0
+        ],
+        "clip": "spin",
+        "scale": 0.9,
+        "flip": true
+       }
+      ]
+     },
+     {
+      "id": "poutres",
+      "sprite": "animations/stories/titan_poutres.json",
+      "depth": 0.3,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -240.0,
+         -20.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "chaines",
+      "sprite": "animations/stories/titan_chaines.json",
+      "depth": 0.45,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         -20.0
+        ],
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "fumee",
+      "sprite": "animations/stories/titan_fumee.json",
+      "depth": 0.35,
+      "drift": [
+       10.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         60.0
+        ],
+        "alpha": 0.7,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "sol",
+      "sprite": "animations/stories/titan_sol.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "fourneau_lueur",
+      "glow": "#ff8a3a",
+      "radius": 150.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         880.0,
+         402.0
+        ],
+        "alpha": 0.7
+       }
+      ],
+      "pulse": [
+       0.25,
+       0.7
+      ]
+     },
+     {
+      "id": "fourneau",
+      "sprite": "animations/stories/titan_fourneau.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         880.0,
+         452.0
+        ],
+        "clip": "idle",
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "titan_eteint",
+      "sprite": "animations/titan.json",
+      "depth": 1.0,
+      "tint": "#605a60",
+      "shadow": {
+       "alpha": 0.5,
+       "size": [
+        240.0,
+        38.4
+       ],
+       "light": [
+        820.0,
+        380.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         500.0,
+         448.0
+        ],
+        "clip": "idle",
+        "scale": 0.85
+       },
+       {
+        "t": 4.6,
+        "alpha": 1.0
+       },
+       {
+        "t": 5.0,
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "titan",
+      "sprite": "animations/titan.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         500.0,
+         448.0
+        ],
+        "clip": "idle",
+        "scale": 0.85,
+        "alpha": 0.0
+       },
+       {
+        "t": 4.6,
+        "alpha": 0.0
+       },
+       {
+        "t": 5.0,
+        "alpha": 1.0
+       },
+       {
+        "t": 5.02,
+        "clip": "roar"
+       }
+      ]
+     },
+     {
+      "id": "reacteur",
+      "glow": "#ffc23c",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         520.0,
+         198.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 4.6,
+        "alpha": 0.0
+       },
+       {
+        "t": 5.1,
+        "alpha": 0.9,
+        "ease": "out"
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.8
+      ]
+     },
+     {
+      "id": "echafaudage",
+      "sprite": "animations/stories/titan_echafaudage.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         510.0,
+         452.0
+        ],
+        "clip": "idle",
+        "scale": 1.15
+       },
+       {
+        "t": 4.96,
+        "alpha": 1.0
+       },
+       {
+        "t": 5.04,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "crochet",
+      "sprite": "animations/stories/titan_crochet.json",
+      "depth": 0.95,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         560.0,
+         -200.0
+        ],
+        "clip": "idle"
+       },
+       {
+        "t": 2.4,
+        "pos": [
+         560.0,
+         110.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 3.4,
+        "pos": [
+         560.0,
+         110.0
+        ]
+       },
+       {
+        "t": 4.6,
+        "pos": [
+         560.0,
+         -220.0
+        ],
+        "ease": "in"
+       }
+      ]
+     },
+     {
+      "id": "ouvrier1",
+      "sprite": "animations/stories/titan_ouvrier1.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         460.0,
+         244.0
+        ],
+        "clip": "hammer"
+       },
+       {
+        "t": 4.0,
+        "clip": "look_up"
+       },
+       {
+        "t": 4.96,
+        "alpha": 1.0
+       },
+       {
+        "t": 5.04,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "ouvrier2",
+      "sprite": "animations/stories/titan_ouvrier2.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         560.0,
+         356.0
+        ],
+        "clip": "hammer",
+        "offset": 0.3
+       },
+       {
+        "t": 4.2,
+        "clip": "look_up"
+       },
+       {
+        "t": 4.96,
+        "alpha": 1.0
+       },
+       {
+        "t": 5.04,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "ouvrier3",
+      "sprite": "animations/stories/titan_ouvrier3.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        62.0,
+        9.9
+       ],
+       "light": [
+        880.0,
+        380.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         300.0,
+         456.0
+        ],
+        "alpha": 0.0,
+        "clip": "look_up"
+       },
+       {
+        "t": 4.96,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 5.04,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 6.0,
+        "clip": "wave"
+       }
+      ]
+     },
+     {
+      "id": "contremaitre",
+      "sprite": "animations/stories/titan_contremaitre.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        62.0,
+        9.9
+       ],
+       "light": [
+        820.0,
+        380.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         200.0,
+         452.0
+        ],
+        "clip": "point"
+       },
+       {
+        "t": 4.9,
+        "clip": "wave"
+       }
+      ]
+     },
+     {
+      "id": "soudure",
+      "particles": "sparks",
+      "color": "#ffe8a0",
+      "area": [
+       420.0,
+       200.0,
+       200.0,
+       200.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 1.0
+       },
+       {
+        "t": 4.1,
+        "alpha": 1.0
+       },
+       {
+        "t": 4.6,
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "etincelles",
+      "particles": "embers",
+      "color": "#ffb040",
+      "area": [
+       200.0,
+       200.0,
+       600.0,
+       260.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.7
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/titan_avant.json",
+      "depth": 1.35,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 5.0,
+      "to": 5.8,
+      "amount": 4.0
+     }
+    ],
+    "flash": [
+     {
+      "t": 5.0,
+      "in": 0.1,
+      "out": 0.6,
+      "color": "#ffd890",
+      "alpha": 0.5
+     }
+    ]
+   }
   },
   {
    "scene": "promise",
@@ -40,9 +1143,663 @@
     0.47,
     0.42
    ],
-   "zoom": 1.08,
-   "particles": "stars",
-   "glow": "#c88bff"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#c88bff",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#06040e",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       520.0,
+       160.0
+      ],
+      "zoom": 1.3
+     },
+     {
+      "t": 2.0,
+      "pos": [
+       520.0,
+       200.0
+      ],
+      "zoom": 1.26
+     },
+     {
+      "t": 3.4,
+      "pos": [
+       540.0,
+       320.0
+      ],
+      "zoom": 1.2
+     },
+     {
+      "t": 7.387,
+      "pos": [
+       500.0,
+       330.0
+      ],
+      "zoom": 1.16
+     }
+    ],
+    "elements": [
+     {
+      "id": "ciel",
+      "sprite": "animations/stories/titan_ciel.json",
+      "depth": 0.05,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -40.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "etoiles",
+      "sprite": "animations/stories/titan_etoiles.json",
+      "depth": 0.05,
+      "drift": [
+       3.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -40.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "lueur_etoile",
+      "glow": "#fff2c8",
+      "radius": 110.0,
+      "depth": 0.05,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         520.0,
+         70.0
+        ],
+        "alpha": 0.55
+       },
+       {
+        "t": 1.0,
+        "alpha": 0.7
+       },
+       {
+        "t": 1.4,
+        "alpha": 1.0
+       },
+       {
+        "t": 1.8,
+        "alpha": 0.0,
+        "ease": "in"
+       }
+      ]
+     },
+     {
+      "id": "lueur_trou",
+      "glow": "#c06cf0",
+      "radius": 90.0,
+      "depth": 0.05,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         520.0,
+         70.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 1.65,
+        "alpha": 0.0
+       },
+       {
+        "t": 1.8,
+        "alpha": 0.9,
+        "ease": "out"
+       },
+       {
+        "t": 7.387,
+        "alpha": 0.4
+       }
+      ],
+      "pulse": [
+       0.25,
+       1.4
+      ]
+     },
+     {
+      "id": "etoile",
+      "sprite": "animations/stories/titan_etoile.json",
+      "depth": 0.05,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         520.0,
+         70.0
+        ],
+        "clip": "shine",
+        "scale": 1.1
+       },
+       {
+        "t": 1.0,
+        "clip": "collapse"
+       }
+      ]
+     },
+     {
+      "id": "astre1",
+      "sprite": "animations/stories/titan_astre.json",
+      "depth": 0.05,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         440.0,
+         54.2
+        ],
+        "clip": "twinkle",
+        "offset": 0.969,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre2",
+      "sprite": "animations/stories/titan_astre.json",
+      "depth": 0.05,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         608.4,
+         14.0
+        ],
+        "clip": "twinkle",
+        "offset": 0.524,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre3",
+      "sprite": "animations/stories/titan_astre.json",
+      "depth": 0.05,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         614.9,
+         25.8
+        ],
+        "clip": "twinkle",
+        "offset": 0.363,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre4",
+      "sprite": "animations/stories/titan_astre.json",
+      "depth": 0.05,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         439.3,
+         119.7
+        ],
+        "clip": "twinkle",
+        "offset": 0.669,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "fond",
+      "sprite": "animations/stories/titan_puits.json",
+      "depth": 0.05,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "engrenage1",
+      "sprite": "animations/stories/titan_engrenage.json",
+      "depth": 0.1,
+      "tint": "#c0b0a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         150.0,
+         120.0
+        ],
+        "clip": "spin",
+        "scale": 1.2,
+        "flip": false
+       }
+      ]
+     },
+     {
+      "id": "engrenage2",
+      "sprite": "animations/stories/titan_engrenage.json",
+      "depth": 0.1,
+      "tint": "#c0b0a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         220.0,
+         150.0
+        ],
+        "clip": "spin",
+        "scale": 0.8,
+        "flip": true
+       }
+      ]
+     },
+     {
+      "id": "engrenage3",
+      "sprite": "animations/stories/titan_engrenage.json",
+      "depth": 0.1,
+      "tint": "#c0b0a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         760.0,
+         110.0
+        ],
+        "clip": "spin",
+        "scale": 1.4,
+        "flip": false
+       }
+      ]
+     },
+     {
+      "id": "engrenage4",
+      "sprite": "animations/stories/titan_engrenage.json",
+      "depth": 0.1,
+      "tint": "#c0b0a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         820.0,
+         160.0
+        ],
+        "clip": "spin",
+        "scale": 0.9,
+        "flip": true
+       }
+      ]
+     },
+     {
+      "id": "poutres",
+      "sprite": "animations/stories/titan_poutres.json",
+      "depth": 0.3,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -240.0,
+         -20.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "chaines",
+      "sprite": "animations/stories/titan_chaines.json",
+      "depth": 0.45,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         -20.0
+        ],
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "fumee",
+      "sprite": "animations/stories/titan_fumee.json",
+      "depth": 0.35,
+      "drift": [
+       10.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         60.0
+        ],
+        "alpha": 0.7,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "sol",
+      "sprite": "animations/stories/titan_sol.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "fourneau_lueur",
+      "glow": "#ff8a3a",
+      "radius": 150.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         160.0,
+         402.0
+        ],
+        "alpha": 0.7
+       }
+      ],
+      "pulse": [
+       0.25,
+       0.7
+      ]
+     },
+     {
+      "id": "fourneau",
+      "sprite": "animations/stories/titan_fourneau.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         160.0,
+         452.0
+        ],
+        "clip": "idle",
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "titan",
+      "sprite": "animations/titan.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.5,
+       "size": [
+        240.0,
+        38.4
+       ],
+       "light": [
+        160.0,
+        380.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         640.0,
+         448.0
+        ],
+        "clip": "idle",
+        "scale": 0.85,
+        "flip": true
+       },
+       {
+        "t": 3.6,
+        "clip": "telegraph"
+       },
+       {
+        "t": 4.4,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "contremaitre",
+      "sprite": "animations/stories/titan_contremaitre.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        62.0,
+        9.9
+       ],
+       "light": [
+        160.0,
+        380.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         470.0,
+         452.0
+        ],
+        "clip": "look_up"
+       },
+       {
+        "t": 2.2,
+        "clip": "idle"
+       },
+       {
+        "t": 3.0,
+        "clip": "point"
+       },
+       {
+        "t": 4.2,
+        "clip": "wave"
+       },
+       {
+        "t": 4.8,
+        "clip": "walk",
+        "flip": true
+       },
+       {
+        "t": 7.387,
+        "pos": [
+         250.0,
+         452.0
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "ouvrier1",
+      "sprite": "animations/stories/titan_ouvrier1.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        62.0,
+        9.9
+       ],
+       "light": [
+        160.0,
+        380.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         360.0,
+         456.0
+        ],
+        "clip": "look_up"
+       },
+       {
+        "t": 2.4,
+        "clip": "walk",
+        "flip": true
+       },
+       {
+        "t": 5.6,
+        "pos": [
+         -40.0,
+         456.0
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "ouvrier3",
+      "sprite": "animations/stories/titan_ouvrier3.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        62.0,
+        9.9
+       ],
+       "light": [
+        160.0,
+        380.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         300.0,
+         458.0
+        ],
+        "clip": "look_up"
+       },
+       {
+        "t": 2.9,
+        "clip": "walk",
+        "flip": true
+       },
+       {
+        "t": 6.2,
+        "pos": [
+         -40.0,
+         458.0
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "etoiles_vives",
+      "particles": "stars",
+      "color": "#d8d8ff",
+      "area": [
+       330.0,
+       0.0,
+       300.0,
+       160.0
+      ],
+      "depth": 0.05,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       },
+       {
+        "t": 1.8,
+        "alpha": 0.2
+       }
+      ]
+     },
+     {
+      "id": "etincelles",
+      "particles": "embers",
+      "color": "#ffb040",
+      "area": [
+       60.0,
+       280.0,
+       300.0,
+       180.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.8
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/titan_avant.json",
+      "depth": 1.35,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 1.7,
+      "to": 2.3,
+      "amount": 3.0
+     }
+    ],
+    "flash": [
+     {
+      "t": 1.72,
+      "in": 0.06,
+      "out": 0.5,
+      "color": "#e0b0ff",
+      "alpha": 0.4
+     }
+    ]
+   }
   },
   {
    "scene": "alone",
@@ -52,9 +1809,482 @@
     0.52,
     0.56
    ],
-   "zoom": 1.14,
-   "particles": "dust",
-   "glow": "#ff8a2e"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#ff8a2e",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#0a0606",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       420.0,
+       320.0
+      ],
+      "zoom": 1.3
+     },
+     {
+      "t": 7.95,
+      "pos": [
+       480.0,
+       290.0
+      ],
+      "zoom": 1.06
+     }
+    ],
+    "elements": [
+     {
+      "id": "fond",
+      "sprite": "animations/stories/titan_fonderie.json",
+      "depth": 0.05,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "engrenage1",
+      "sprite": "animations/stories/titan_engrenage.json",
+      "depth": 0.1,
+      "tint": "#c0b0a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         150.0,
+         120.0
+        ],
+        "clip": "spin",
+        "scale": 1.2,
+        "flip": false
+       }
+      ]
+     },
+     {
+      "id": "engrenage2",
+      "sprite": "animations/stories/titan_engrenage.json",
+      "depth": 0.1,
+      "tint": "#c0b0a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         220.0,
+         150.0
+        ],
+        "clip": "spin",
+        "scale": 0.8,
+        "flip": true
+       }
+      ]
+     },
+     {
+      "id": "engrenage3",
+      "sprite": "animations/stories/titan_engrenage.json",
+      "depth": 0.1,
+      "tint": "#c0b0a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         760.0,
+         110.0
+        ],
+        "clip": "spin",
+        "scale": 1.4,
+        "flip": false
+       }
+      ]
+     },
+     {
+      "id": "engrenage4",
+      "sprite": "animations/stories/titan_engrenage.json",
+      "depth": 0.1,
+      "tint": "#c0b0a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         820.0,
+         160.0
+        ],
+        "clip": "spin",
+        "scale": 0.9,
+        "flip": true
+       }
+      ]
+     },
+     {
+      "id": "poutres",
+      "sprite": "animations/stories/titan_poutres.json",
+      "depth": 0.3,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -240.0,
+         -20.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "chaines",
+      "sprite": "animations/stories/titan_chaines.json",
+      "depth": 0.45,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         -20.0
+        ],
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "fumee",
+      "sprite": "animations/stories/titan_fumee.json",
+      "depth": 0.35,
+      "drift": [
+       10.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         60.0
+        ],
+        "alpha": 0.7,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "roche",
+      "sprite": "animations/stories/titan_roche.json",
+      "depth": 0.55,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.0,
+        "pos": [
+         -280.0,
+         -40.0
+        ],
+        "clip": "idle"
+       },
+       {
+        "t": 1.6,
+        "alpha": 0.0
+       },
+       {
+        "t": 7.35,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "rochers",
+      "sprite": "animations/stories/titan_rochers.json",
+      "depth": 0.6,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.0,
+        "pos": [
+         -320.0,
+         150.0
+        ],
+        "offset": 0.2,
+        "clip": "idle"
+       },
+       {
+        "t": 1.6,
+        "alpha": 0.0
+       },
+       {
+        "t": 7.35,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "sol",
+      "sprite": "animations/stories/titan_sol.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "fourneau1_lueur",
+      "glow": "#ff8a3a",
+      "radius": 165.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         260.0,
+         397.0
+        ],
+        "alpha": 0.7
+       }
+      ],
+      "pulse": [
+       0.25,
+       0.7
+      ]
+     },
+     {
+      "id": "fourneau1",
+      "sprite": "animations/stories/titan_fourneau.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         260.0,
+         452.0
+        ],
+        "clip": "idle",
+        "scale": 1.1
+       }
+      ]
+     },
+     {
+      "id": "fourneau2_lueur",
+      "glow": "#ff8a3a",
+      "radius": 120.0,
+      "depth": 0.85,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         760.0,
+         406.0
+        ],
+        "alpha": 0.7
+       }
+      ],
+      "pulse": [
+       0.25,
+       0.7
+      ]
+     },
+     {
+      "id": "fourneau2",
+      "sprite": "animations/stories/titan_fourneau.json",
+      "depth": 0.85,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         760.0,
+         446.0
+        ],
+        "clip": "idle",
+        "scale": 0.8
+       }
+      ]
+     },
+     {
+      "id": "titan",
+      "sprite": "animations/titan.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.5,
+       "size": [
+        240.0,
+        38.4
+       ],
+       "light": [
+        260.0,
+        380.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         470.0,
+         448.0
+        ],
+        "clip": "walk",
+        "scale": 0.82,
+        "flip": true
+       },
+       {
+        "t": 1.6,
+        "pos": [
+         390.0,
+         448.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 1.61,
+        "clip": "attack",
+        "ease": "step"
+       },
+       {
+        "t": 2.4,
+        "clip": "idle"
+       },
+       {
+        "t": 3.6,
+        "clip": "attack"
+       },
+       {
+        "t": 4.4,
+        "clip": "idle"
+       },
+       {
+        "t": 5.6,
+        "clip": "attack"
+       },
+       {
+        "t": 6.4,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "chute",
+      "particles": "dustfall",
+      "color": "#b8a898",
+      "area": [
+       0.0,
+       40.0,
+       960.0,
+       380.0
+      ],
+      "depth": 0.5,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.3
+       },
+       {
+        "t": 7.95,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "etincelles",
+      "particles": "embers",
+      "color": "#ffb040",
+      "area": [
+       160.0,
+       280.0,
+       200.0,
+       180.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.9
+       }
+      ]
+     },
+     {
+      "id": "eclats",
+      "particles": "sparks",
+      "color": "#ffd27a",
+      "area": [
+       200.0,
+       360.0,
+       140.0,
+       90.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.0
+       },
+       {
+        "t": 1.7,
+        "alpha": 1.0
+       },
+       {
+        "t": 2.4,
+        "alpha": 0.2
+       },
+       {
+        "t": 3.7,
+        "alpha": 1.0
+       },
+       {
+        "t": 4.4,
+        "alpha": 0.2
+       },
+       {
+        "t": 5.7,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/titan_avant.json",
+      "depth": 1.35,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 1.7,
+      "to": 1.9,
+      "amount": 3.0
+     },
+     {
+      "from": 3.7,
+      "to": 3.9,
+      "amount": 3.0
+     },
+     {
+      "from": 5.7,
+      "to": 5.9,
+      "amount": 3.0
+     }
+    ]
+   }
   },
   {
    "scene": "rust",
@@ -64,9 +2294,588 @@
     0.5,
     0.5
    ],
-   "zoom": 1.1,
-   "particles": "sparks",
-   "glow": "#ff7c3c"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#ff7c3c",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#0a0606",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       520.0,
+       250.0
+      ],
+      "zoom": 1.7
+     },
+     {
+      "t": 3.0,
+      "pos": [
+       510.0,
+       280.0
+      ],
+      "zoom": 1.5
+     },
+     {
+      "t": 7.512,
+      "pos": [
+       500.0,
+       300.0
+      ],
+      "zoom": 1.3
+     }
+    ],
+    "elements": [
+     {
+      "id": "fond",
+      "sprite": "animations/stories/titan_fonderie.json",
+      "depth": 0.05,
+      "tint": "#c0a8a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "engrenage1",
+      "sprite": "animations/stories/titan_engrenage.json",
+      "depth": 0.1,
+      "tint": "#c0a8a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         150.0,
+         120.0
+        ],
+        "clip": "spin",
+        "scale": 1.2,
+        "flip": false
+       }
+      ]
+     },
+     {
+      "id": "engrenage2",
+      "sprite": "animations/stories/titan_engrenage.json",
+      "depth": 0.1,
+      "tint": "#c0a8a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         220.0,
+         150.0
+        ],
+        "clip": "spin",
+        "scale": 0.8,
+        "flip": true
+       }
+      ]
+     },
+     {
+      "id": "engrenage3",
+      "sprite": "animations/stories/titan_engrenage.json",
+      "depth": 0.1,
+      "tint": "#c0a8a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         760.0,
+         110.0
+        ],
+        "clip": "spin",
+        "scale": 1.4,
+        "flip": false
+       }
+      ]
+     },
+     {
+      "id": "engrenage4",
+      "sprite": "animations/stories/titan_engrenage.json",
+      "depth": 0.1,
+      "tint": "#c0a8a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         820.0,
+         160.0
+        ],
+        "clip": "spin",
+        "scale": 0.9,
+        "flip": true
+       }
+      ]
+     },
+     {
+      "id": "poutres",
+      "sprite": "animations/stories/titan_poutres.json",
+      "depth": 0.3,
+      "tint": "#c0a8a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -240.0,
+         -20.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "chaines",
+      "sprite": "animations/stories/titan_chaines.json",
+      "depth": 0.45,
+      "tint": "#c0a8a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         -20.0
+        ],
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "fumee",
+      "sprite": "animations/stories/titan_fumee.json",
+      "depth": 0.35,
+      "drift": [
+       10.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         60.0
+        ],
+        "alpha": 0.7,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "roche",
+      "sprite": "animations/stories/titan_roche.json",
+      "depth": 0.55,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 1.0,
+        "pos": [
+         -280.0,
+         -40.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "rochers",
+      "sprite": "animations/stories/titan_rochers.json",
+      "depth": 0.6,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 1.0,
+        "pos": [
+         -320.0,
+         150.0
+        ],
+        "offset": 0.2,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "sol",
+      "sprite": "animations/stories/titan_sol.json",
+      "depth": 1.0,
+      "tint": "#c0a8a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "fourneau_lueur",
+      "glow": "#ff8a3a",
+      "radius": 165.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         220.0,
+         397.0
+        ],
+        "alpha": 0.7
+       }
+      ],
+      "pulse": [
+       0.25,
+       0.7
+      ]
+     },
+     {
+      "id": "fourneau",
+      "sprite": "animations/stories/titan_fourneau.json",
+      "depth": 1.0,
+      "tint": "#c0a8a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         220.0,
+         452.0
+        ],
+        "clip": "idle",
+        "scale": 1.1
+       }
+      ]
+     },
+     {
+      "id": "chaudiere",
+      "glow": "#ff5a2a",
+      "radius": 140.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         530.0,
+         198.0
+        ],
+        "alpha": 0.4
+       },
+       {
+        "t": 3.0,
+        "alpha": 0.7
+       },
+       {
+        "t": 7.512,
+        "alpha": 1.0,
+        "scale": 1.4
+       }
+      ],
+      "pulse": [
+       0.4,
+       0.6
+      ]
+     },
+     {
+      "id": "titan",
+      "sprite": "animations/titan.json",
+      "depth": 1.0,
+      "tint": "#d8a080",
+      "shadow": {
+       "alpha": 0.5,
+       "size": [
+        260.0,
+        41.6
+       ],
+       "light": [
+        220.0,
+        380.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         520.0,
+         448.0
+        ],
+        "clip": "idle",
+        "scale": 0.95,
+        "flip": true
+       },
+       {
+        "t": 1.0,
+        "clip": "attack"
+       },
+       {
+        "t": 2.0,
+        "clip": "hurt"
+       },
+       {
+        "t": 2.4,
+        "clip": "attack"
+       },
+       {
+        "t": 3.4,
+        "clip": "hurt"
+       },
+       {
+        "t": 3.8,
+        "clip": "idle"
+       },
+       {
+        "t": 4.6,
+        "clip": "attack"
+       },
+       {
+        "t": 5.6,
+        "clip": "hurt"
+       },
+       {
+        "t": 6.0,
+        "clip": "attack"
+       }
+      ]
+     },
+     {
+      "id": "vapeur1",
+      "sprite": "animations/stories/titan_vapeur.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         450.0,
+         218.0
+        ],
+        "alpha": 0.0,
+        "scale": 1.1
+       },
+       {
+        "t": 0.6,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 0.62,
+        "alpha": 0.9,
+        "clip": "puff",
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "vapeur2",
+      "sprite": "animations/stories/titan_vapeur.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         580.0,
+         298.0
+        ],
+        "alpha": 0.0,
+        "scale": 1.1
+       },
+       {
+        "t": 1.9,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 1.92,
+        "alpha": 0.9,
+        "clip": "puff",
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "vapeur3",
+      "sprite": "animations/stories/titan_vapeur.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         500.0,
+         148.0
+        ],
+        "alpha": 0.0,
+        "scale": 1.1
+       },
+       {
+        "t": 3.1,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 3.12,
+        "alpha": 0.9,
+        "clip": "puff",
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "vapeur4",
+      "sprite": "animations/stories/titan_vapeur.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         610.0,
+         188.0
+        ],
+        "alpha": 0.0,
+        "scale": 1.1
+       },
+       {
+        "t": 4.3,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 4.32,
+        "alpha": 0.9,
+        "clip": "puff",
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "vapeur5",
+      "sprite": "animations/stories/titan_vapeur.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         430.0,
+         328.0
+        ],
+        "alpha": 0.0,
+        "scale": 1.1
+       },
+       {
+        "t": 5.5,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 5.52,
+        "alpha": 0.9,
+        "clip": "puff",
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "etincelles",
+      "particles": "sparks",
+      "color": "#ffd27a",
+      "area": [
+       400.0,
+       128.0,
+       240.0,
+       300.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.8
+       }
+      ]
+     },
+     {
+      "id": "rouille",
+      "particles": "ash",
+      "color": "#a86a4a",
+      "area": [
+       320.0,
+       148.0,
+       400.0,
+       300.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.8
+       }
+      ]
+     },
+     {
+      "id": "braises",
+      "particles": "embers",
+      "color": "#ff7a3a",
+      "area": [
+       420.0,
+       148.0,
+       200.0,
+       200.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.5
+       },
+       {
+        "t": 7.512,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/titan_avant.json",
+      "depth": 1.35,
+      "tint": "#c0a8a0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 1.0,
+      "to": 1.3,
+      "amount": 2.0
+     },
+     {
+      "from": 2.4,
+      "to": 2.7,
+      "amount": 2.0
+     },
+     {
+      "from": 4.6,
+      "to": 7.512,
+      "amount": 1.5
+     }
+    ]
+   }
   },
   {
    "scene": "titan",
@@ -76,9 +2885,549 @@
     0.5,
     0.48
    ],
-   "zoom": 1.06,
-   "particles": "embers",
-   "glow": "#ffc23c"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#ffc23c",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#0a0606",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       600.0,
+       300.0
+      ],
+      "zoom": 1.32
+     },
+     {
+      "t": 2.4,
+      "pos": [
+       500.0,
+       320.0
+      ],
+      "zoom": 1.12
+     },
+     {
+      "t": 3.6,
+      "pos": [
+       440.0,
+       330.0
+      ],
+      "zoom": 1.06
+     },
+     {
+      "t": 5.2,
+      "pos": [
+       460.0,
+       320.0
+      ],
+      "zoom": 1.16
+     },
+     {
+      "t": 7.575,
+      "pos": [
+       470.0,
+       316.0
+      ],
+      "zoom": 1.22
+     }
+    ],
+    "elements": [
+     {
+      "id": "fond",
+      "sprite": "animations/stories/titan_fonderie.json",
+      "depth": 0.05,
+      "tint": "#b8a8a8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "engrenage1",
+      "sprite": "animations/stories/titan_engrenage.json",
+      "depth": 0.1,
+      "tint": "#b8a8a8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         150.0,
+         120.0
+        ],
+        "clip": "spin",
+        "scale": 1.2,
+        "flip": false
+       }
+      ]
+     },
+     {
+      "id": "engrenage2",
+      "sprite": "animations/stories/titan_engrenage.json",
+      "depth": 0.1,
+      "tint": "#b8a8a8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         220.0,
+         150.0
+        ],
+        "clip": "spin",
+        "scale": 0.8,
+        "flip": true
+       }
+      ]
+     },
+     {
+      "id": "engrenage3",
+      "sprite": "animations/stories/titan_engrenage.json",
+      "depth": 0.1,
+      "tint": "#b8a8a8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         760.0,
+         110.0
+        ],
+        "clip": "spin",
+        "scale": 1.4,
+        "flip": false
+       }
+      ]
+     },
+     {
+      "id": "engrenage4",
+      "sprite": "animations/stories/titan_engrenage.json",
+      "depth": 0.1,
+      "tint": "#b8a8a8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         820.0,
+         160.0
+        ],
+        "clip": "spin",
+        "scale": 0.9,
+        "flip": true
+       }
+      ]
+     },
+     {
+      "id": "poutres",
+      "sprite": "animations/stories/titan_poutres.json",
+      "depth": 0.3,
+      "tint": "#b8a8a8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -240.0,
+         -20.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "chaines",
+      "sprite": "animations/stories/titan_chaines.json",
+      "depth": 0.45,
+      "tint": "#b8a8a8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         -20.0
+        ],
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "fumee",
+      "sprite": "animations/stories/titan_fumee.json",
+      "depth": 0.35,
+      "drift": [
+       10.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         60.0
+        ],
+        "alpha": 0.7,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "roche",
+      "sprite": "animations/stories/titan_roche.json",
+      "depth": 0.55,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 1.0,
+        "pos": [
+         -280.0,
+         -40.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "rochers",
+      "sprite": "animations/stories/titan_rochers.json",
+      "depth": 0.6,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 1.0,
+        "pos": [
+         -320.0,
+         150.0
+        ],
+        "offset": 0.2,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "sol",
+      "sprite": "animations/stories/titan_sol.json",
+      "depth": 1.0,
+      "tint": "#b8a8a8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "fourneau1_lueur",
+      "glow": "#ff8a3a",
+      "radius": 165.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         800.0,
+         397.0
+        ],
+        "alpha": 0.7
+       }
+      ],
+      "pulse": [
+       0.25,
+       0.7
+      ]
+     },
+     {
+      "id": "fourneau1",
+      "sprite": "animations/stories/titan_fourneau.json",
+      "depth": 1.0,
+      "tint": "#d0c0b0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         800.0,
+         452.0
+        ],
+        "clip": "idle",
+        "scale": 1.1
+       }
+      ]
+     },
+     {
+      "id": "fourneau2_lueur",
+      "glow": "#ff8a3a",
+      "radius": 112.5,
+      "depth": 0.85,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         660.0,
+         402.5
+        ],
+        "alpha": 0.7
+       }
+      ],
+      "pulse": [
+       0.25,
+       0.7
+      ]
+     },
+     {
+      "id": "fourneau2",
+      "sprite": "animations/stories/titan_fourneau.json",
+      "depth": 0.85,
+      "tint": "#d0c0b0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         660.0,
+         440.0
+        ],
+        "clip": "idle",
+        "scale": 0.75
+       }
+      ]
+     },
+     {
+      "id": "reacteur",
+      "glow": "#ffc23c",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         620.0,
+         198.0
+        ],
+        "alpha": 0.6
+       },
+       {
+        "t": 4.8,
+        "alpha": 1.0,
+        "scale": 1.6
+       },
+       {
+        "t": 7.575,
+        "alpha": 0.8,
+        "scale": 1.2
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.7
+      ]
+     },
+     {
+      "id": "titan",
+      "sprite": "animations/titan.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.5,
+       "size": [
+        250.0,
+        40.0
+       ],
+       "light": [
+        800.0,
+        380.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         600.0,
+         448.0
+        ],
+        "clip": "attack",
+        "scale": 0.9
+       },
+       {
+        "t": 0.8,
+        "clip": "idle"
+       },
+       {
+        "t": 4.4,
+        "flip": true,
+        "clip": "telegraph_special"
+       },
+       {
+        "t": 5.2,
+        "clip": "roar"
+       }
+      ]
+     },
+     {
+      "id": "nova",
+      "sprite": "animations/nova.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        40.0,
+        6.4
+       ],
+       "light": [
+        800.0,
+        380.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -40.0,
+         448.0
+        ],
+        "clip": "walk",
+        "scale": 1.1
+       },
+       {
+        "t": 1.2,
+        "pos": [
+         -40.0,
+         448.0
+        ]
+       },
+       {
+        "t": 3.6,
+        "pos": [
+         300.0,
+         448.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 3.61,
+        "clip": "idle",
+        "ease": "step"
+       },
+       {
+        "t": 5.4,
+        "clip": "hurt"
+       },
+       {
+        "t": 5.8,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "vapeur",
+      "sprite": "animations/stories/titan_vapeur.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         540.0,
+         248.0
+        ],
+        "alpha": 0.0,
+        "scale": 1.3
+       },
+       {
+        "t": 5.2,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 5.22,
+        "alpha": 0.9,
+        "clip": "puff",
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "etincelles",
+      "particles": "embers",
+      "color": "#ffb040",
+      "area": [
+       500.0,
+       260.0,
+       400.0,
+       200.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.8
+       }
+      ]
+     },
+     {
+      "id": "chute",
+      "particles": "dustfall",
+      "color": "#b8a898",
+      "area": [
+       100.0,
+       60.0,
+       760.0,
+       360.0
+      ],
+      "depth": 0.5,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.4
+       },
+       {
+        "t": 5.2,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/titan_avant.json",
+      "depth": 1.35,
+      "tint": "#b8a8a8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 5.2,
+      "to": 6.4,
+      "amount": 6.0
+     }
+    ],
+    "flash": [
+     {
+      "t": 5.300000000000001,
+      "in": 0.08,
+      "out": 0.6,
+      "color": "#ffc070",
+      "alpha": 0.35
+     }
+    ]
+   }
   }
  ]
 }

@@ -5,6 +5,12 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.63.3** :
+* L'**histoire du Titan** (« Le Dernier Quart ») devient un **petit dessin animé** : la fonderie et ses
+  ouvriers, le colosse qui s'éveille sur son échafaudage, la promesse du contremaître, la roche qui engloutit
+  la fonderie, la rouille et la vapeur, le Titan face à la visiteuse ; fourneaux, engrenages, chaînes et
+  fumée animés. Une pastille NOUVEAU mène à « Revoir l'histoire ».
+
 **Nouveau dans la version 2.63.2** :
 * L'**histoire de la Liche** (« Le Gardien des noms ») devient un **petit dessin animé** : Ossian qui allume
   une bougie pour chaque mort, les noms qui s'illuminent, la fuite des vivants, l'âme cachée dans le cristal,
