@@ -56,11 +56,15 @@ public:
     BossAttackDemo(const BossAttackDemo&) = delete;
     BossAttackDemo& operator=(const BossAttackDemo&) = delete;
 
-    /// Sets the scene up. `content`: a private copy of the game's content (the example adds
-    /// the boss's revision to it); `level`: the boss's own level with `bossObject` its level
+    /// Loads the scene's world. `content`: a private copy of the game's content (the example
+    /// adds the boss's revision to it); `level`: the boss's own level with `bossObject` its level
     /// object, or nullopt for a neutral arena. False (and `error`, in words) when it cannot be.
     bool setup(std::shared_ptr<ContentDatabase> content, ResourceManager& res, const EnemyDefinition& def, const std::string& attackId,
                std::optional<LevelData> level, const std::string& bossObject, std::string* error = nullptr);
+    /// Then (another frame: the work is shared out): the boss at its phase in its arena, Nova at
+    /// her place. Done by warmUp() when not called before. False (failure()) when it cannot be.
+    bool arrange();
+    bool arranged() const { return arranged_; }
 
     /// Brings the scene to the first wind-up of the attack, `steps` fixed steps at most; true
     /// once it has begun (failed(): it never did within kMaxWarmSteps).
@@ -100,6 +104,10 @@ private:
     std::string attackId_;
     std::string attackName_;
     AttackPreviewPlan plan_;
+    bool own_ = false;       // its own level (else the neutral arena)
+    bool arranged_ = false;
+    std::string bossId_, bossObject_;
+    float dist_ = 200.0f;    // Nova's distance to the boss
     uint32_t bossUid_ = 0;
     Rect arena_;
     Vec2 home_;               // Nova's place

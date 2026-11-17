@@ -82,6 +82,7 @@ private:
     size_t terrainLeft_ = 0;
     bool paused_ = false;
     float spinner_ = 0.0f;
+    int unseen_ = 0;  // frames since its frame was last on screen
     Rect cam_;  // the part of the world shown (followed smoothly)
     bool camValid_ = false;
     float aspect_ = 16.0f / 9.0f;  // of the frame it was last drawn in

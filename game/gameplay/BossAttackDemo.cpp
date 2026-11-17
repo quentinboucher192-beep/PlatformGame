@@ -163,17 +163,40 @@ bool BossAttackDemo::setup(std::shared_ptr<ContentDatabase> content, ResourceMan
     GameWorld& w = *world_;
     w.silent = true;
     w.setKeysPerSlot(true);
-    const float dist = demoNovaDistance(*attack);
+    own_ = own;
+    bossId_ = def.id;
+    bossObject_ = bossObject;
+    dist_ = demoNovaDistance(*attack);
+    arranged_ = false;
     if (own) {
         LevelData l = std::move(*level);
         if (!l.metadata.is_object()) l.metadata = Json::object();
         l.metadata["enemyRevisions"][def.id] = kRevision;
         if (!w.load(l)) return fail("Son niveau ne peut pas être chargé.");
         w.seedGameplay(levelSeed(l.id));
+    } else {
+        neutralDef_ = std::make_unique<EnemyDefinition>(restricted);
+        if (!w.load(neutralArena())) return fail("L'arène neutre ne peut pas être chargée.");
+        w.seedGameplay(levelSeed("boss_attack_demo"));
+    }
+    return true;
+}
+
+bool BossAttackDemo::arrange() {
+    if (arranged_) return true;
+    if (!world_ || failed()) return false;
+    auto fail = [&](const std::string& why) {
+        failure_ = why;
+        world_.reset();
+        return false;
+    };
+    arranged_ = true;
+    GameWorld& w = *world_;
+    if (own_) {
         BossTrainingSetup s;
-        s.bossId = def.id;
-        s.levelId = l.id;
-        s.bossObject = bossObject;
+        s.bossId = bossId_;
+        s.levelId = w.level().id;
+        s.bossObject = bossObject_;
         s.hearts = kTrainingMaxHearts;
         s.slots = 1;
         s.phase = plan_.phase;
@@ -193,7 +216,7 @@ bool BossAttackDemo::setup(std::shared_ptr<ContentDatabase> content, ResourceMan
         for (size_t i = 0; i < ta->spots.size(); ++i) {
             const TrainingSpot& sp = ta->spots[i];
             const float dx = std::abs(sp.feet.x - bc.x);
-            float score = std::abs(dx - dist) + (sp.ledge ? 140.0f : 0.0f) + (lowest - sp.feet.y) * 0.8f + (sp.feet.x > bc.x ? 24.0f : 0.0f);
+            float score = std::abs(dx - dist_) + (sp.ledge ? 140.0f : 0.0f) + (lowest - sp.feet.y) * 0.8f + (sp.feet.x > bc.x ? 24.0f : 0.0f);
             if (score < bestScore) {
                 bestScore = score;
                 best = static_cast<int>(i);
@@ -204,9 +227,6 @@ bool BossAttackDemo::setup(std::shared_ptr<ContentDatabase> content, ResourceMan
         w.setInvincible(true);
         w.startAt(home_, bc.x < home_.x);
     } else {
-        neutralDef_ = std::make_unique<EnemyDefinition>(restricted);
-        if (!w.load(neutralArena())) return fail("L'arène neutre ne peut pas être chargée.");
-        w.seedGameplay(levelSeed("boss_attack_demo"));
         w.setTraining(true);
         w.setInvincible(true);
         const float floorY = 320.0f;
@@ -215,7 +235,7 @@ bool BossAttackDemo::setup(std::shared_ptr<ContentDatabase> content, ResourceMan
         if (!b) return fail("Le boss ne peut pas être placé dans l'arène.");
         bossUid_ = b->uid();
         arena_ = w.level().bounds;
-        home_ = {std::clamp(bx - dist, 60.0f, bx - 60.0f), floorY};
+        home_ = {std::clamp(bx - dist_, 60.0f, bx - 60.0f), floorY};
         w.startAt(home_, false);
         w.fixedUpdate(PlayerInput{}, kDt);  // the boss joins the world
         if (Enemy* e = bossMut()) {
@@ -223,7 +243,7 @@ bool BossAttackDemo::setup(std::shared_ptr<ContentDatabase> content, ResourceMan
             jumpBossToPhase(w, *e, plan_.phase);
         }
     }
-    Log::info("Fiche des boss : exemple de {} / {} ({}, phase {}{})", def.id, attackId, own ? "son arène" : "arène neutre", plan_.phase + 1,
+    Log::info("Fiche des boss : exemple de {} / {} ({}, phase {}{})", bossId_, attackId_, own_ ? "son arène" : "arène neutre", plan_.phase + 1,
               plan_.lastStand ? ", dernier souffle" : "");
     return true;
 }
@@ -296,6 +316,7 @@ void BossAttackDemo::lookAround() {
 }
 
 bool BossAttackDemo::warmUp(int steps) {
+    if (!arranged_ && !arrange()) return false;
     if (!world_ || ready_ || failed()) return ready_;
     for (int i = 0; i < steps && !ready_; ++i) {
         step();

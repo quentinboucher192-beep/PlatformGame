@@ -97,6 +97,7 @@ void BossAttackPreview::begin() {
 
 void BossAttackPreview::update(float dt) {
     spinner_ += dt;
+    ++unseen_;  // draw() sets it back
     switch (status_) {
         case Status::Idle:
         case Status::Unavailable: return;
@@ -151,6 +152,7 @@ void BossAttackPreview::update(float dt) {
                 return;
             }
             GameWorld* w = demo_->world();
+            if (unseen_ > 2) return;  // its frame is out of sight: nothing to animate
             if (!paused_) w->update(dt);
             // The part of the world shown follows the boss and Nova smoothly (display only).
             const Enemy* b = demo_->boss();
@@ -191,6 +193,15 @@ void BossAttackPreview::prepare() {
             unavailable(error.empty() ? std::string("L'exemple ne peut pas être préparé.") : error);
             return;
         }
+        Log::info("Fiche des boss : niveau de l'exemple {} / {} chargé en {:.1f} ms", bossId_, attackId_, msSince(t0));
+        return;
+    }
+    if (!demo_->arranged()) {
+        // Its own frame: the boss at its phase, Nova at her place, then the drawing prepared.
+        if (!demo_->arrange()) {
+            unavailable(demo_->failure().empty() ? std::string("L'exemple ne peut pas être préparé.") : demo_->failure());
+            return;
+        }
         renderer_ = std::make_unique<GameRenderer>();
         renderer_->buildProgressive(res, *demo_->world());
         terrainLeft_ = renderer_->terrain().pendingChunks();
@@ -216,7 +227,8 @@ void BossAttackPreview::prepare() {
 }
 
 void BossAttackPreview::fixedUpdate() {
-    if (status_ != Status::Running || paused_ || !demo_) return;
+    // Played only while its frame is on screen (scrolled out of the list: it waits).
+    if (status_ != Status::Running || paused_ || !demo_ || unseen_ > 2) return;
     demo_->step();
 }
 
@@ -241,6 +253,7 @@ void BossAttackPreview::draw(UIContext& ui, const Rect& frame, float alpha) {
     r.fillRoundedRect(frame, ui.s(8), Color{5, 8, 18, 255});
     if (frame.w < 4.0f || frame.h < 4.0f) return;
     aspect_ = frame.w / frame.h;
+    unseen_ = 0;  // drawn: on screen (the caller draws it only then)
     if (status_ == Status::Running && demo_ && demo_->world() && renderer_ && camValid_ && cam_.w > 1.0f) {
         WorldView v;
         v.scale = frame.w / cam_.w;

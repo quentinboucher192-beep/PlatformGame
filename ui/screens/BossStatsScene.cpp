@@ -804,7 +804,7 @@ private:
             }
             const bool frameFocus = ui.focused(viewId);
             if (active) {
-                preview_.draw(ui, frame, alpha);
+                if (frame.intersects(view)) preview_.draw(ui, frame, alpha);  // out of sight: it waits
             } else {
                 r.fillRoundedRect(frame, ui.s(8), Color{5, 8, 18, 255});
                 const std::string wait = "Un seul exemple à la fois : cliquez ici, ou sélectionnez cette attaque, pour voir le sien.";
