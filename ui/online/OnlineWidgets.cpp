@@ -7,6 +7,7 @@
 #include <cstdio>
 
 #include "engine/core/FileUtil.h"
+#include "game/online/Clans.h"
 #include "game/GameServices.h"
 #include "game/online/OnlineSession.h"
 #include "ui/screens/Navigation.h"
@@ -117,6 +118,11 @@ void OnlineUi::drawConnection(Vec2 pos) const {
 std::string OnlineUi::displayName(const std::string& name, int rank, bool me) const {
     if (me || g_.settings.online.showPseudonyms) return name;
     return rank > 0 ? "Joueur n°" + std::to_string(rank) : "Joueur";
+}
+
+std::string OnlineUi::displayName(const Json& player, int rank, bool me) const {
+    if (me || g_.settings.online.showPseudonyms) return clans::taggedName(player);
+    return displayName(jstr(player, "username"), rank, me);
 }
 
 bool OnlineUi::countryPicker(const std::string& id, const Rect& area, std::string& filter, std::string& code) {

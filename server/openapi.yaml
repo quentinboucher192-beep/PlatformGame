@@ -41,6 +41,7 @@ tags:
   description: Coordinates are the approximate centre of the player's country, never a personal position.
 - {name: Friends}
 - {name: Social, description: "Private conversations between friends, groups, blocks and reports"}
+- {name: Clans, description: "Clans (2.66): one per player, 50 members, chief, officers, members; their discussion is a Social group; their points come from the verified EXTRÊME races"}
 - name: Administration
   description: 'Operators only: enabled when the ADMIN_TOKEN secret (>= 32 characters) is set, otherwise 404.'
 paths:
@@ -3465,6 +3466,490 @@ paths:
                 request_id: c4c16a63-d3a9-450b-b73a-925f325b55b0
         '413': {$ref: '#/components/responses/PayloadTooLarge'}
         '415': {$ref: '#/components/responses/UnsupportedMediaType'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /clans/me:
+    get:
+      tags: [Clans]
+      operationId: myClan
+      summary: 'My clan, the invitations I received and the applications I sent'
+      security:
+      - {bearerAuth: []}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /clans/ranking:
+    get:
+      tags: [Clans]
+      operationId: clanRanking
+      summary: 'Ranking of the clans'
+      security: []
+      description: 'Sum, over the official EXTRÊME levels, of each clan''s best VERIFIED result of the race (computed by the server). Clans without points are not ranked. `me`: the viewer''s clan and its rank.'
+      parameters:
+      - {name: limit, in: query, required: false, schema: {type: integer, minimum: 1, maximum: 100}}
+      - {name: offset, in: query, required: false, schema: {type: integer, minimum: 0, maximum: 10000}}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /clans:
+    get:
+      tags: [Clans]
+      operationId: searchClans
+      summary: 'Search the clans (best points first)'
+      security: []
+      description: '`q`: a tag (any case, first) or a part of a name (accents and case ignored).'
+      parameters:
+      - {name: q, in: query, required: false, schema: {type: string, maxLength: 32}}
+      - {name: limit, in: query, required: false, schema: {type: integer, minimum: 1, maximum: 100}}
+      - {name: offset, in: query, required: false, schema: {type: integer, minimum: 0, maximum: 10000}}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+    post:
+      tags: [Clans]
+      operationId: createClan
+      summary: 'Create a clan (its creator is its chief; its discussion is created with it)'
+      security:
+      - {bearerAuth: []}
+      description: 'One clan per player; the tag is unique whatever the case. Rate limit `clan_create`: 5 per hour per player.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [name, tag, emblem, join_policy]
+              properties:
+                name: {type: string, minLength: 3, maxLength: 32}
+                tag: {type: string, pattern: '^[A-Za-z0-9]{2,5}$'}
+                motto: {type: string, maxLength: 80}
+                emblem: {type: object, additionalProperties: false, required: [shape, primary, secondary], properties: {shape: {type: string, enum: [orb, star, shield, diamond, hexagon, crescent]}, primary: {type: string, pattern: '^#[0-9a-fA-F]{6}$'}, secondary: {type: string, pattern: '^#[0-9a-fA-F]{6}$'}}}
+                join_policy: {type: string, enum: [invite, request, open]}
+      responses:
+        '201':
+          description: Created.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '409': {description: 'Conflict (ALREADY_IN_CLAN, CLAN_FULL, TAG_TAKEN, TOO_MANY_APPLICATIONS, REQUEST_GONE, TRANSFER_FAILED, IS_LEADER).'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /clans/{clanId}:
+    get:
+      tags: [Clans]
+      operationId: getClan
+      summary: 'A clan''s page'
+      security: []
+      description: 'Members and roles (presence only for the clan''s members, as each player shares it), the best team per EXTRÊME level (`mode`, `team_size`: Solo today), the clan''s rank, the pending requests (chief and officers only), the discussion''s conversation id (members only).'
+      parameters:
+      - {name: clanId, in: path, required: true, schema: {type: string, format: uuid}}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '404': {description: Clan, player, member or request not found.}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+    patch:
+      tags: [Clans]
+      operationId: updateClan
+      summary: 'Edit the clan (chief)'
+      security:
+      - {bearerAuth: []}
+      description: 'Rate limit `clan_write`: 120 per hour per player.'
+      parameters:
+      - {name: clanId, in: path, required: true, schema: {type: string, format: uuid}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                name: {type: string, minLength: 3, maxLength: 32}
+                tag: {type: string, pattern: '^[A-Za-z0-9]{2,5}$'}
+                motto: {type: string, maxLength: 80}
+                emblem: {type: object, additionalProperties: false, required: [shape, primary, secondary], properties: {shape: {type: string, enum: [orb, star, shield, diamond, hexagon, crescent]}, primary: {type: string, pattern: '^#[0-9a-fA-F]{6}$'}, secondary: {type: string, pattern: '^#[0-9a-fA-F]{6}$'}}}
+                join_policy: {type: string, enum: [invite, request, open]}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '403': {description: 'Not allowed for this role (NOT_CLAN_OFFICER, NOT_CLAN_LEADER, CANNOT_EXCLUDE_OFFICER, CANNOT_EXCLUDE_LEADER, INVITE_ONLY).'}
+        '404': {description: Clan, player, member or request not found.}
+        '409': {description: 'Conflict (ALREADY_IN_CLAN, CLAN_FULL, TAG_TAKEN, TOO_MANY_APPLICATIONS, REQUEST_GONE, TRANSFER_FAILED, IS_LEADER).'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+    delete:
+      tags: [Clans]
+      operationId: dissolveClan
+      summary: 'Dissolve the clan (chief, with its confirmation)'
+      security:
+      - {bearerAuth: []}
+      parameters:
+      - {name: clanId, in: path, required: true, schema: {type: string, format: uuid}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [confirm]
+              properties:
+                confirm: {type: boolean, enum: [true]}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '403': {description: 'Not allowed for this role (NOT_CLAN_OFFICER, NOT_CLAN_LEADER, CANNOT_EXCLUDE_OFFICER, CANNOT_EXCLUDE_LEADER, INVITE_ONLY).'}
+        '404': {description: Clan, player, member or request not found.}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /clans/{clanId}/join:
+    post:
+      tags: [Clans]
+      operationId: joinClan
+      summary: 'Join (open clan or invitation) or apply (clan on application)'
+      security:
+      - {bearerAuth: []}
+      description: 'The 50th member is the last: decided inside the INSERT. Rate limit `clan_apply`: 30 per hour per player.'
+      parameters:
+      - {name: clanId, in: path, required: true, schema: {type: string, format: uuid}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                message: {type: string, maxLength: 120}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '403': {description: 'Not allowed for this role (NOT_CLAN_OFFICER, NOT_CLAN_LEADER, CANNOT_EXCLUDE_OFFICER, CANNOT_EXCLUDE_LEADER, INVITE_ONLY).'}
+        '404': {description: Clan, player, member or request not found.}
+        '409': {description: 'Conflict (ALREADY_IN_CLAN, CLAN_FULL, TAG_TAKEN, TOO_MANY_APPLICATIONS, REQUEST_GONE, TRANSFER_FAILED, IS_LEADER).'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+    delete:
+      tags: [Clans]
+      operationId: withdrawClanRequest
+      summary: 'Withdraw my application or decline the invitation'
+      security:
+      - {bearerAuth: []}
+      parameters:
+      - {name: clanId, in: path, required: true, schema: {type: string, format: uuid}}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '404': {description: Clan, player, member or request not found.}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /clans/{clanId}/invites:
+    post:
+      tags: [Clans]
+      operationId: invitePlayer
+      summary: 'Invite a player (chief or officer); a player who applied joins at once'
+      security:
+      - {bearerAuth: []}
+      description: 'Rate limit `clan_apply`.'
+      parameters:
+      - {name: clanId, in: path, required: true, schema: {type: string, format: uuid}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                username: {type: string, minLength: 3, maxLength: 20}
+                player_id: {type: string, format: uuid}
+      responses:
+        '201':
+          description: Invited (200 when the player joined or was already invited).
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '403': {description: 'Not allowed for this role (NOT_CLAN_OFFICER, NOT_CLAN_LEADER, CANNOT_EXCLUDE_OFFICER, CANNOT_EXCLUDE_LEADER, INVITE_ONLY).'}
+        '404': {description: Clan, player, member or request not found.}
+        '409': {description: 'Conflict (ALREADY_IN_CLAN, CLAN_FULL, TAG_TAKEN, TOO_MANY_APPLICATIONS, REQUEST_GONE, TRANSFER_FAILED, IS_LEADER).'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /clans/{clanId}/invites/{playerId}:
+    delete:
+      tags: [Clans]
+      operationId: cancelClanInvite
+      summary: 'Withdraw an invitation (chief or officer)'
+      security:
+      - {bearerAuth: []}
+      parameters:
+      - {name: clanId, in: path, required: true, schema: {type: string, format: uuid}}
+      - {name: playerId, in: path, required: true, schema: {type: string, format: uuid}}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '403': {description: 'Not allowed for this role (NOT_CLAN_OFFICER, NOT_CLAN_LEADER, CANNOT_EXCLUDE_OFFICER, CANNOT_EXCLUDE_LEADER, INVITE_ONLY).'}
+        '404': {description: Clan, player, member or request not found.}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /clans/{clanId}/requests/{playerId}:
+    post:
+      tags: [Clans]
+      operationId: answerClanApplication
+      summary: 'Accept or refuse an application (chief or officer)'
+      security:
+      - {bearerAuth: []}
+      parameters:
+      - {name: clanId, in: path, required: true, schema: {type: string, format: uuid}}
+      - {name: playerId, in: path, required: true, schema: {type: string, format: uuid}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [accept]
+              properties:
+                accept: {type: boolean}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '403': {description: 'Not allowed for this role (NOT_CLAN_OFFICER, NOT_CLAN_LEADER, CANNOT_EXCLUDE_OFFICER, CANNOT_EXCLUDE_LEADER, INVITE_ONLY).'}
+        '404': {description: Clan, player, member or request not found.}
+        '409': {description: 'Conflict (ALREADY_IN_CLAN, CLAN_FULL, TAG_TAKEN, TOO_MANY_APPLICATIONS, REQUEST_GONE, TRANSFER_FAILED, IS_LEADER).'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /clans/{clanId}/transfer:
+    post:
+      tags: [Clans]
+      operationId: transferClanLeadership
+      summary: 'Hand the chief''s role to a member (the chief becomes an officer)'
+      security:
+      - {bearerAuth: []}
+      description: 'Two transfers at once: one wins (one chief per clan, a partial unique index).'
+      parameters:
+      - {name: clanId, in: path, required: true, schema: {type: string, format: uuid}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [player_id]
+              properties:
+                player_id: {type: string, format: uuid}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '403': {description: 'Not allowed for this role (NOT_CLAN_OFFICER, NOT_CLAN_LEADER, CANNOT_EXCLUDE_OFFICER, CANNOT_EXCLUDE_LEADER, INVITE_ONLY).'}
+        '404': {description: Clan, player, member or request not found.}
+        '409': {description: 'Conflict (ALREADY_IN_CLAN, CLAN_FULL, TAG_TAKEN, TOO_MANY_APPLICATIONS, REQUEST_GONE, TRANSFER_FAILED, IS_LEADER).'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /clans/{clanId}/members/{playerId}:
+    patch:
+      tags: [Clans]
+      operationId: setClanMemberRole
+      summary: 'Name or remove an officer (chief)'
+      security:
+      - {bearerAuth: []}
+      parameters:
+      - {name: clanId, in: path, required: true, schema: {type: string, format: uuid}}
+      - {name: playerId, in: path, required: true, schema: {type: string, format: uuid}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [role]
+              properties:
+                role: {type: string, enum: [officer, member]}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '403': {description: 'Not allowed for this role (NOT_CLAN_OFFICER, NOT_CLAN_LEADER, CANNOT_EXCLUDE_OFFICER, CANNOT_EXCLUDE_LEADER, INVITE_ONLY).'}
+        '404': {description: Clan, player, member or request not found.}
+        '409': {description: 'Conflict (ALREADY_IN_CLAN, CLAN_FULL, TAG_TAKEN, TOO_MANY_APPLICATIONS, REQUEST_GONE, TRANSFER_FAILED, IS_LEADER).'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+    delete:
+      tags: [Clans]
+      operationId: removeClanMember
+      summary: 'Leave the clan (oneself) or exclude a member'
+      security:
+      - {bearerAuth: []}
+      description: 'The chief excludes officers and members, an officer members only, nobody the chief. A chief who leaves hands the role to the oldest officer (else the oldest member); the last member dissolves the clan.'
+      parameters:
+      - {name: clanId, in: path, required: true, schema: {type: string, format: uuid}}
+      - {name: playerId, in: path, required: true, schema: {type: string, format: uuid}}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '403': {description: 'Not allowed for this role (NOT_CLAN_OFFICER, NOT_CLAN_LEADER, CANNOT_EXCLUDE_OFFICER, CANNOT_EXCLUDE_LEADER, INVITE_ONLY).'}
+        '404': {description: Clan, player, member or request not found.}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /admin/clans:
+    get:
+      tags: [Administration]
+      operationId: adminListClans
+      summary: 'ADMINISTRATION › Clans: the clans and their chief (admin role)'
+      security:
+      - {bearerAuth: []}
+      description: '404 for any other account.'
+      parameters:
+      - {name: q, in: query, required: false, schema: {type: string, maxLength: 32}}
+      - {name: limit, in: query, required: false, schema: {type: integer, minimum: 1, maximum: 100}}
+      - {name: offset, in: query, required: false, schema: {type: integer, minimum: 0, maximum: 10000}}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /admin/clans/{clanId}:
+    patch:
+      tags: [Administration]
+      operationId: adminRenameClan
+      summary: 'Rename a clan (admin role; Journal: admin_clan_renamed)'
+      security:
+      - {bearerAuth: []}
+      parameters:
+      - {name: clanId, in: path, required: true, schema: {type: string, format: uuid}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                name: {type: string, minLength: 3, maxLength: 32}
+                tag: {type: string, pattern: '^[A-Za-z0-9]{2,5}$'}
+                reason: {type: string, maxLength: 200}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '404': {description: Clan, player, member or request not found.}
+        '409': {description: 'Conflict (ALREADY_IN_CLAN, CLAN_FULL, TAG_TAKEN, TOO_MANY_APPLICATIONS, REQUEST_GONE, TRANSFER_FAILED, IS_LEADER).'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+    delete:
+      tags: [Administration]
+      operationId: adminDissolveClan
+      summary: 'Dissolve a clan (admin role; Journal: admin_clan_dissolved)'
+      security:
+      - {bearerAuth: []}
+      parameters:
+      - {name: clanId, in: path, required: true, schema: {type: string, format: uuid}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                reason: {type: string, maxLength: 200}
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SuccessEnvelope'}
+        '404': {description: Clan, player, member or request not found.}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '429': {$ref: '#/components/responses/RateLimited'}
         '500': {$ref: '#/components/responses/InternalError'}
 components:
   securitySchemes:

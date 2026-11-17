@@ -26,6 +26,7 @@
 
 #include "engine/core/I18n.h"
 #include "game/GameServices.h"
+#include "game/online/Clans.h"
 #include "game/online/OnlineSession.h"
 #include "game/progression/NewsCenter.h"
 #include "ui/online/OnlineWidgets.h"
@@ -33,6 +34,7 @@
 #include "ui/screens/AdminAssets.h"
 #include "ui/screens/AdminBackups.h"
 #include "ui/screens/AdminCampaign.h"
+#include "ui/screens/AdminClans.h"
 #include "ui/screens/AdminCalendar.h"
 #include "ui/screens/AdminCreations.h"
 #include "ui/screens/AdminEnemies.h"
@@ -97,12 +99,12 @@ std::string presenceText(const std::string& p) {
 }
 
 const char* kFilters[] = {"all", "admins", "online"};
-const char* kKinds[] = {"all", "role", "challenge", "campaign", "creation", "enemy", "refused"};
+const char* kKinds[] = {"all", "role", "challenge", "campaign", "creation", "enemy", "clan", "refused"};
 
 /// The tabs: Joueurs, Calendrier des défis (2.41), Journal, Sauvegardes, Campagne (2.44), Créations (2.45), Ennemis (2.46),
-/// Assets (2.63).
+/// Clans (2.66), Assets (2.63).
 constexpr int kTabPlayers = 0, kTabCalendar = 1, kTabLog = 2, kTabBackups = 3, kTabCampaign = 4, kTabCreations = 5, kTabEnemies = 6,
-              kTabAssets = 7;
+              kTabClans = 7, kTabAssets = 8;
 
 /// "20/11" of "2026-11-20".
 std::string shortDate(const std::string& date) { return date.size() >= 10 ? date.substr(8, 2) + "/" + date.substr(5, 2) : date; }
@@ -126,7 +128,9 @@ public:
           campaign_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
           creations_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
           enemies_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
+          clans_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
           assets_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const std::string& id) { showEnemy(id); }) {
+        if (open.rfind("clans", 0) == 0) tab_ = kTabClans;  // 2.66
         if (open.rfind("backups", 0) == 0) tab_ = kTabBackups;
         // "creations[:new]" (the editor opened on a new suit); 2.59 "creations:<kind>[:new|:<id>]".
         if (open.rfind("creations", 0) == 0) {
@@ -181,7 +185,7 @@ public:
         UIContext& ui = g_.ui;
         ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
         bg_.render(g_, 0.6f);
-        const bool modal = !confirmId_.empty() || devicePlayer_.is_object() || calendar_.modal() || backups_.modal() || campaign_.modal();
+        const bool modal = !confirmId_.empty() || devicePlayer_.is_object() || calendar_.modal() || backups_.modal() || campaign_.modal() || clans_.modal();
         const bool top = g_.app.topScene() == this;
         ui.inputEnabled = top && !modal;
         // 2.41: wider (the calendar's eight columns and its editor side by side).
@@ -196,7 +200,7 @@ public:
         // The tabs after the title when they fit, else on the line below. Equal tabs, each as
         // wide as its longest label needs (« Calendrier des défis »).
         static const std::vector<std::string> kTabs = {"Joueurs", "Calendrier des défis", "Journal", "Sauvegardes", "Campagne", "Créations", "Ennemis",
-                                                       "Assets"};
+                                                       "Clans", "Assets"};
         float tabW = 0.0f;
         for (const std::string& t : kTabs) tabW = std::max(tabW, ui.text().measure(t, FontFace::Bold, ui.s(20)).x + ui.s(44));
         float tabsW = tabW * static_cast<float>(kTabs.size()), tabsX = x0_ + titleW + ui.s(28);
@@ -222,6 +226,8 @@ public:
         ui.newBadge("tabcrea", creaTab, "admin.tab.creations", true, true);
         Rect enTab{tabsR.x + kTabEnemies * tabW + ui.s(2), tabsR.y, tabW - ui.s(4), tabsR.h};
         ui.newBadge("tabenemies", enTab, "admin.tab.enemies", true, true);
+        Rect clanTab{tabsR.x + kTabClans * tabW + ui.s(2), tabsR.y, tabW - ui.s(4), tabsR.h};
+        ui.newBadge("tabclans", clanTab, "admin.tab.clans", true, true);
         Rect assetsTab{tabsR.x + kTabAssets * tabW + ui.s(2), tabsR.y, tabW - ui.s(4), tabsR.h};
         ui.newBadge("tabassets", assetsTab, "admin.tab.assets", true, true);
         if (tab != tab_) {
@@ -248,6 +254,10 @@ public:
                 if (ui.featureSeen && ui.isNew("admin.tab.enemies")) ui.featureSeen("admin.tab.enemies");
                 enemies_.enter();
             }
+            if (tab_ == kTabClans) {
+                if (ui.featureSeen && ui.isNew("admin.tab.clans")) ui.featureSeen("admin.tab.clans");
+                clans_.enter();
+            }
             if (tab_ == kTabAssets) {
                 if (ui.featureSeen && ui.isNew("admin.tab.assets")) ui.featureSeen("admin.tab.assets");
                 assets_.enter();
@@ -266,6 +276,7 @@ public:
             else if (tab_ == kTabCampaign) campaign_.draw(inner);
             else if (tab_ == kTabCreations) creations_.draw(inner);
             else if (tab_ == kTabEnemies) enemies_.draw(inner);
+            else if (tab_ == kTabClans) clans_.draw(inner);
             else if (tab_ == kTabAssets) assets_.draw(inner);
             else drawLog(inner);
         }
@@ -277,6 +288,12 @@ public:
         else if (calendar_.modal()) calendar_.drawModal();
         else if (backups_.modal()) backups_.drawModal();
         else if (campaign_.modal()) campaign_.drawModal();
+        else if (clans_.modal()) clans_.drawModal();
+        // 2.60: the tooltip of an exclusive item (the rewards of a challenge, the creations), over everything.
+        if (confirmId_.empty() && !devicePlayer_.is_object()) {
+            if (tab_ == kTabCalendar) calendar_.drawTooltip();
+            else if (tab_ == kTabCreations) creations_.drawTooltip();
+        }
         ui.end();
         if (back) g_.app.switchScene(makeMainMenu(g_), 0.3f);
     }
@@ -313,6 +330,7 @@ private:
         }
         if (tab_ == kTabCreations) creations_.enter(true);
         if (tab_ == kTabEnemies) enemies_.enter(true);
+        if (tab_ == kTabClans) clans_.enter(true);
         if (tab_ == kTabAssets) assets_.enter();
     }
 
@@ -887,6 +905,21 @@ private:
         std::string target = e.contains("target") && e["target"].is_object() ? jstr(e["target"], "username", "un compte supprimé") : "";
         std::string reason = jstr(e, "reason");
         const Json& ch = jfield(e, "challenge", Json());
+        // 2.66: ADMINISTRATION › Clans: a clan renamed or dissolved, or a rename refused.
+        if (const Json clan = jfield(e, "clan", Json()); clan.is_object()) {
+            const std::string now = "« " + clans::tagged(jstr(clan, "name"), jstr(clan, "tag")) + " »";
+            const Json prev = jfield(clan, "previous", Json());
+            const std::string before = prev.is_object() ? "« " + clans::tagged(jstr(prev, "name"), jstr(prev, "tag")) + " »" : now;
+            const std::string why = reason.empty() ? std::string() : " · motif : " + reason;
+            if (action == "admin_clan_renamed") return {"Clan", ui.theme().warm, "a renommé le clan " + before + " en " + now + why};
+            if (action == "admin_clan_dissolved") {
+                const int members = jget<int>(clan, "members", 0);
+                return {"Clan", ui.theme().danger,
+                        "a dissous le clan " + now + " (" + std::to_string(members) + (members > 1 ? " membres)" : " membre)") + why};
+            }
+            if (action == "admin_refused")
+                return {"Refus", ui.theme().textDim, "a tenté de renommer le clan " + before + " en " + now + " : refusé, ce tag est déjà pris"};
+        }
         if (action == "admin_role_granted")
             return {"Rôle", ui.theme().warm, jstr(e, "by") == "migration" ? "a nommé " + target + " premier admin (mise en service)" : "a donné le rôle admin à " + target};
         if (action == "admin_role_revoked") return {"Rôle", ui.theme().danger, "a retiré le rôle admin à " + target};
@@ -932,6 +965,8 @@ private:
             const Json& rep = jfield(ch, "replaced", Json());
             if (rep.is_object() && !jstr(rep, "title").empty())
                 text += jstr(rep, "source") == "auto" ? " (remplace le tirage « " + jstr(rep, "title") + " »)" : " (remplace « " + jstr(rep, "title") + " »)";
+            // 2.60: changed while it ran, nobody had a result on it.
+            if (jget<bool>(ch, "running", false)) text += " · en cours, sans résultat";
             return {"Défi", ui.theme().accent, text};
         }
         if (action == "admin_challenge_reset" && ch.is_object()) {
@@ -939,6 +974,7 @@ private:
             const Json& drawn = jfield(ch, "drawn", Json());
             if (drawn.is_object() && !jstr(drawn, "title").empty()) text += " (tiré à nouveau : « " + jstr(drawn, "title") + " »)";
             else if (!jstr(ch, "draws_on").empty()) text += " (tirage le " + shortDate(jstr(ch, "draws_on")) + ")";
+            if (jget<bool>(ch, "running", false)) text += " · en cours, sans résultat";
             return {"Défi", Color{185, 200, 218, 255}, text};
         }
         if (action == "admin_challenge_rewards" && ch.is_object()) {
@@ -1042,6 +1078,7 @@ private:
             std::string what = (act == "reset" ? "retour au tirage du défi " : act == "rewards" ? "modification des récompenses du défi " : "modification du défi ") +
                                periodPhrase(ch);
             std::string why = reason == "CHALLENGE_STARTED"    ? std::string("déjà commencé")
+                              : reason == "CHALLENGE_HAS_RESULTS" ? std::string("des joueurs y ont déjà un résultat")
                               : reason == "VALIDATION_ERROR"   ? std::string(act == "rewards" ? "récompenses invalides" : "règles invalides")
                               : reason == "LEVEL_UNAVAILABLE"  ? std::string("niveau indisponible")
                               : reason == "FINISH_NEEDS_ROUTE" ? std::string("« Finir le niveau » sans parcours tracé")
@@ -1065,7 +1102,7 @@ private:
         ui.pushId("log");
         float y = in.y, fh = ui.s(46);
         int kind = kind_;
-        float kr = chips("kind", in.x, y, fh, {"Toutes les actions", "Rôles", "Défis", "Campagne", "Créations", "Ennemis", "Refus"}, kind, in.right());
+        float kr = chips("kind", in.x, y, fh, {"Toutes les actions", "Rôles", "Défis", "Campagne", "Créations", "Ennemis", "Clans", "Refus"}, kind, in.right());
         std::vector<std::string> who{"Tous"};
         for (const auto& a : admins_) who.push_back(jstr(a, "username"));
         int actor = std::min(actor_, static_cast<int>(who.size()) - 1);
@@ -1181,6 +1218,7 @@ private:
     std::string campaignSelect_;
     AdminCreations creations_;  // « Créations »: the suits, trails, frames and victory effects made on the server
     AdminEnemies enemies_;  // « Ennemis » (2.46)
+    AdminClans clans_;      // « Clans » (2.66)
     AdminAssets assets_;    // « Assets » (2.63)
     MenuBackground bg_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);

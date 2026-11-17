@@ -20,12 +20,21 @@ interface ConversationRow {
     created_by: string | null;
     created_at: string;
     last_message_at: string | null;
+    /** 2.66: the discussion of a clan (its members follow the clan's: managed by clans.ts). */
+    clan_id?: string | null;
+    clan_tag?: string | null;
 }
+
+/** 2.66: the tag of a clan's discussion (for the conversation lists). */
+const CLAN_TAG_SQL = "(SELECT k.tag FROM clans k WHERE k.id = c.clan_id) AS clan_tag";
 
 interface MemberRow {
     role: "owner" | "member";
     last_read_at: string | null;
 }
+
+const CLAN_CONVERSATION = () =>
+    Errors.conflict("CLAN_CONVERSATION", "La discussion du clan suit ses membres : gérez-les depuis la page du clan.");
 
 /** Message text: no control characters (line breaks kept), trimmed, at most 3 blank lines. */
 export function cleanMessage(raw: string): string {
@@ -64,7 +73,7 @@ async function activePlayer(ctx: Ctx, id: string): Promise<PlayerRow> {
 async function conversationFor(ctx: Ctx, id: string, me: string): Promise<{ conv: ConversationRow; member: MemberRow }> {
     if (!ID_RE.test(id)) throw Errors.notFound("CONVERSATION_NOT_FOUND", "Conversation introuvable.");
     const row = await ctx.env.DB.prepare(
-        `SELECT c.*, m.role AS m_role, m.last_read_at AS m_last_read_at FROM conversations c
+        `SELECT c.*, ${CLAN_TAG_SQL}, m.role AS m_role, m.last_read_at AS m_last_read_at FROM conversations c
          JOIN conversation_members m ON m.conversation_id = c.id AND m.player_id = ?2 WHERE c.id = ?1`,
     )
         .bind(id, me)
@@ -73,30 +82,31 @@ async function conversationFor(ctx: Ctx, id: string, me: string): Promise<{ conv
     return { conv: row, member: { role: row.m_role, last_read_at: row.m_last_read_at } };
 }
 
-async function membersOf(ctx: Ctx, ids: string[]): Promise<Map<string, Array<ReturnType<typeof playerSummary> & { role: string }>>> {
-    const out = new Map<string, Array<ReturnType<typeof playerSummary> & { role: string }>>();
+type Member = ReturnType<typeof playerSummary> & { role: string; clan_tag?: string };
+
+/** The clan tag of a player row read with CLAN_OF (2.66), only when the player has a clan. */
+const CLAN_OF = "LEFT JOIN clan_members km ON km.player_id = p.id LEFT JOIN clans kc ON kc.id = km.clan_id";
+const tagged = <T extends object>(o: T, tag: string | null | undefined): T & { clan_tag?: string } => (tag ? { ...o, clan_tag: tag } : o);
+
+async function membersOf(ctx: Ctx, ids: string[]): Promise<Map<string, Member[]>> {
+    const out = new Map<string, Member[]>();
     if (ids.length === 0) return out;
     const placeholders = ids.map((_, i) => `?${i + 1}`).join(",");
     const rows = await ctx.env.DB.prepare(
-        `SELECT cm.conversation_id, cm.role, p.* FROM conversation_members cm JOIN players p ON p.id = cm.player_id
+        `SELECT cm.conversation_id, cm.role, p.*, kc.tag AS clan_tag FROM conversation_members cm JOIN players p ON p.id = cm.player_id ${CLAN_OF}
          WHERE cm.conversation_id IN (${placeholders}) ORDER BY cm.joined_at`,
     )
         .bind(...ids)
-        .all<PlayerRow & { conversation_id: string; role: string }>();
+        .all<PlayerRow & { conversation_id: string; role: string; clan_tag: string | null }>();
     for (const r of rows.results) {
         const list = out.get(r.conversation_id) ?? [];
-        list.push({ ...playerSummary(r), role: r.role });
+        list.push(tagged({ ...playerSummary(r), role: r.role }, r.clan_tag));
         out.set(r.conversation_id, list);
     }
     return out;
 }
 
-function conversationJson(
-    c: ConversationRow,
-    me: string,
-    members: Array<ReturnType<typeof playerSummary> & { role: string }>,
-    extra: Record<string, unknown> = {},
-) {
+function conversationJson(c: ConversationRow, me: string, members: Member[], extra: Record<string, unknown> = {}) {
     const others = members.filter((m) => m.id !== me);
     return {
         id: c.id,
@@ -106,6 +116,8 @@ function conversationJson(
         members,
         created_at: c.created_at,
         last_message_at: c.last_message_at,
+        // 2.66: a clan's discussion (managed from the clan's page, not as a group).
+        ...(c.clan_id ? { clan: { id: c.clan_id, tag: c.clan_tag ?? null } } : {}),
         ...extra,
     };
 }
@@ -122,7 +134,7 @@ export async function listConversations(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
     const me = auth.player.id;
     const rows = await ctx.env.DB.prepare(
-        `SELECT c.*, m.role AS m_role, ${UNREAD_SQL} AS unread,
+        `SELECT c.*, ${CLAN_TAG_SQL}, m.role AS m_role, ${UNREAD_SQL} AS unread,
            (SELECT x.id || char(31) || COALESCE(x.sender_id, '') || char(31) || x.created_at || char(31) || substr(x.body, 1, 120)
               FROM messages x WHERE x.conversation_id = c.id AND x.deleted_at IS NULL
                 AND x.sender_id NOT IN (SELECT blocked_id FROM player_blocks WHERE player_id = ?1)
@@ -283,6 +295,7 @@ export async function renameGroup(ctx: Ctx): Promise<Response> {
     const me = auth.player.id;
     const { conv, member } = await conversationFor(ctx, ctx.params.conversationId!, me);
     if (conv.kind !== "group") throw Errors.conflict("NOT_A_GROUP", "Cette conversation n'est pas un groupe.");
+    if (conv.clan_id) throw CLAN_CONVERSATION();
     if (member.role !== "owner") throw Errors.forbidden("NOT_OWNER", "Seul le créateur du groupe peut le renommer.");
     const body = await readJsonObject(ctx);
     const v = new Validator(body, ["name"]);
@@ -298,6 +311,7 @@ export async function addMember(ctx: Ctx): Promise<Response> {
     const me = auth.player.id;
     const { conv, member } = await conversationFor(ctx, ctx.params.conversationId!, me);
     if (conv.kind !== "group") throw Errors.conflict("NOT_A_GROUP", "Cette conversation n'est pas un groupe.");
+    if (conv.clan_id) throw CLAN_CONVERSATION();
     if (member.role !== "owner") throw Errors.forbidden("NOT_OWNER", "Seul le créateur du groupe peut ajouter des membres.");
     const body = await readJsonObject(ctx);
     const v = new Validator(body, ["player_id"]);
@@ -327,6 +341,7 @@ export async function removeMember(ctx: Ctx): Promise<Response> {
     const me = auth.player.id;
     const { conv, member } = await conversationFor(ctx, ctx.params.conversationId!, me);
     if (conv.kind !== "group") throw Errors.conflict("NOT_A_GROUP", "Cette conversation n'est pas un groupe.");
+    if (conv.clan_id) throw CLAN_CONVERSATION();
     const target = ctx.params.playerId!;
     if (target !== me && member.role !== "owner") throw Errors.forbidden("NOT_OWNER", "Seul le créateur du groupe peut retirer un membre.");
     const res = await ctx.env.DB.prepare("DELETE FROM conversation_members WHERE conversation_id = ?1 AND player_id = ?2").bind(conv.id, target).run();
@@ -356,21 +371,22 @@ export async function listMessages(ctx: Ctx): Promise<Response> {
     if (before !== null && !/^\d{4}-\d{2}-\d{2}T[\d:.]+Z$/.test(before))
         throw Errors.validation([{ field: "before", message: "date ISO attendue" }]);
     const rows = await ctx.env.DB.prepare(
-        `SELECT x.id, x.sender_id, x.body, x.created_at, x.deleted_at, p.username, p.avatar, p.avatar_custom_key, p.country_code, p.location_visibility, p.id AS pid
-         FROM messages x JOIN players p ON p.id = x.sender_id
+        `SELECT x.id, x.sender_id, x.body, x.created_at, x.deleted_at, p.username, p.avatar, p.avatar_custom_key, p.country_code, p.location_visibility, p.id AS pid,
+                kc.tag AS clan_tag
+         FROM messages x JOIN players p ON p.id = x.sender_id ${CLAN_OF}
          WHERE x.conversation_id = ?1 AND (?2 IS NULL OR x.created_at < ?2)
            AND x.sender_id NOT IN (SELECT blocked_id FROM player_blocks WHERE player_id = ?3)
          ORDER BY x.created_at DESC LIMIT ?4`,
     )
         .bind(conv.id, before, me, limit + 1)
-        .all<{ id: string; sender_id: string; body: string; created_at: string; deleted_at: string | null } & PlayerRow & { pid: string }>();
+        .all<{ id: string; sender_id: string; body: string; created_at: string; deleted_at: string | null; clan_tag: string | null } & PlayerRow & { pid: string }>();
     const more = rows.results.length > limit;
     const messages = rows.results
         .slice(0, limit)
         .reverse()
         .map((r) => ({
             id: r.id,
-            sender: playerSummary({ ...r, id: r.pid }),
+            sender: tagged(playerSummary({ ...r, id: r.pid }), r.clan_tag),
             mine: r.sender_id === me,
             body: r.deleted_at ? "" : r.body,
             deleted: r.deleted_at !== null,

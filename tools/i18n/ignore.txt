@@ -168,6 +168,16 @@ no boss
 no shots
 not an object
 unreadable
+a stage of a bad size
+a stage that is not an object
+a stage without elements
+an element that is not an object
+bad camera keys
+element '{0}' without its file
+element '{0}' without keys
+element '{0}': neither a layer, a sprite, a glow nor particles
+shot {0}: {1}
+version {0} not known
 an
 replace
 trace
@@ -179,6 +189,23 @@ supernova
 arc
 missile
 constellation
+hop
+robot
+skipped
+souvenir
+ADMIN
+DEV
+MOD
+MODO
+NULL
+ROOT
+STAFF
+SYS
+clan
+clans
+invitations
+messages
+tag
 COSMIC PLATFORMER · AaBbCcDdEeFfGg 0123456789 · àâçéèêëîïôùûœ ÀÉÈÇŒ !?
 Aa
 TXT

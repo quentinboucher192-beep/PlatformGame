@@ -1,0 +1,9 @@
+{
+  "texture": "stories/pyrrhax/lune.png",
+  "frameWidth": 112,
+  "frameHeight": 112,
+  "pivot": [56, 56],
+  "clips": {
+    "idle": {"row": 0, "count": 4, "fps": 3, "loop": true}
+  }
+}

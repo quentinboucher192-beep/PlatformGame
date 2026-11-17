@@ -7,7 +7,8 @@
   },
   "animations/bounce_pad.json": {
    "game/gameplay/entities/PlatformEntities.cpp": 1,
-   "game/levels/ObjectTypes.cpp": 1
+   "game/levels/ObjectTypes.cpp": 1,
+   "ui/screens/TutorialScenes.cpp": 1
   },
   "animations/breakable_wall.json": {
    "game/gameplay/entities/PlatformEntities.cpp": 1,
@@ -16,7 +17,8 @@
   },
   "animations/checkpoint.json": {
    "game/gameplay/entities/InteractiveEntities.cpp": 1,
-   "game/levels/ObjectTypes.cpp": 1
+   "game/levels/ObjectTypes.cpp": 1,
+   "ui/screens/TutorialScenes.cpp": 1
   },
   "animations/cracked_floor.json": {
    "game/gameplay/entities/PlatformEntities.cpp": 1,
@@ -36,6 +38,9 @@
   },
   "animations/frost_floor.json": {
    "game/enemies/BossHazards.cpp": 1
+  },
+  "animations/gloop.json": {
+   "ui/screens/TutorialScenes.cpp": 1
   },
   "animations/glowmite.json": {
    "game/enemies/EnemyDefinition.h": 1
@@ -61,6 +66,9 @@
    "game/gameplay/entities/InteractiveEntities.cpp": 1,
    "game/levels/ObjectTypes.cpp": 1
   },
+  "animations/mycelia.json": {
+   "ui/screens/TutorialScenes.cpp": 1
+  },
   "animations/nova.json": {
    "editors/level_editor/LevelEditorViewport.cpp": 1,
    "game/gameplay/GameWorld.cpp": 1,
@@ -69,7 +77,8 @@
    "ui/screens/ChallengeRewardsUi.cpp": 1,
    "ui/screens/CollectionScene.cpp": 1,
    "ui/screens/PlayerProfileScene.cpp": 1,
-   "ui/screens/RewardsScene.cpp": 1
+   "ui/screens/RewardsScene.cpp": 1,
+   "ui/screens/TutorialScenes.cpp": 1
   },
   "animations/phase_wall.json": {
    "game/gameplay/entities/PlatformEntities.cpp": 1,
@@ -108,7 +117,8 @@
    "game/enemies/GuardianAttacks.cpp": 1
   },
   "animations/shard.json": {
-   "game/levels/ObjectTypes.cpp": 1
+   "game/levels/ObjectTypes.cpp": 1,
+   "ui/screens/TutorialScenes.cpp": 1
   },
   "animations/sign.json": {
    "game/gameplay/entities/InteractiveEntities.cpp": 1,
@@ -170,13 +180,15 @@
   },
   "music/menu_theme.ogg": {
    "game/GameServices.cpp": 2,
+   "ui/screens/ClanScene.cpp": 1,
    "ui/screens/ContentManagerScene.cpp": 1,
    "ui/screens/MainMenuScene.cpp": 1,
    "ui/screens/OnlineLevelsScene.cpp": 1,
    "ui/screens/OnlineRankingScene.cpp": 2,
    "ui/screens/ProjectsScene.cpp": 1,
    "ui/screens/SocialScene.cpp": 1,
-   "ui/screens/SpectateScene.cpp": 1
+   "ui/screens/SpectateScene.cpp": 1,
+   "ui/screens/TutorialScenes.cpp": 1
   },
   "music/planet_map.ogg": {
    "ui/screens/PlanetMapScene.cpp": 2
@@ -190,7 +202,7 @@
   "music/victory.ogg": {
    "game/GameServices.cpp": 1,
    "packaging/DependencyCollector.cpp": 1,
-   "ui/screens/GameScene.cpp": 2
+   "ui/screens/GameScene.cpp": 3
   },
   "online/avatars.png": {
    "ui/online/OnlineWidgets.cpp": 1
@@ -237,7 +249,7 @@
    "game/enemies/PhoenixAttacks.cpp": 1
   },
   "sounds/bounce.wav": {
-   "game/gameplay/entities/PlatformEntities.cpp": 1
+   "game/gameplay/entities/PlatformEntities.cpp": 2
   },
   "sounds/burrow.wav": {
    "game/enemies/Enemy.cpp": 1,
@@ -447,7 +459,7 @@
    "game/powers/PowersSanctuary.cpp": 1
   },
   "sounds/respawn.wav": {
-   "game/gameplay/GameWorld.cpp": 2,
+   "game/gameplay/GameWorld.cpp": 3,
    "game/levels/Cinematic.cpp": 1
   },
   "sounds/root_burst.wav": {
@@ -517,6 +529,7 @@
    "game/player/Player.cpp": 1
   },
   "sounds/ui_back.wav": {
+   "ui/screens/TutorialScenes.cpp": 2,
    "ui/widgets/UIContext.cpp": 1
   },
   "sounds/ui_confirm.wav": {
@@ -531,6 +544,7 @@
    "ui/screens/PauseScene.cpp": 1,
    "ui/screens/ReplayScene.cpp": 1,
    "ui/screens/SettingsScene.cpp": 2,
+   "ui/screens/TutorialScenes.cpp": 4,
    "ui/widgets/UIContext.cpp": 1
   },
   "sounds/ui_error.wav": {
@@ -539,7 +553,7 @@
    "ui/screens/AchievementsScene.cpp": 2,
    "ui/screens/BossStatsScene.cpp": 2,
    "ui/screens/BossTrainingScene.cpp": 5,
-   "ui/screens/ChallengesScene.cpp": 5,
+   "ui/screens/ChallengesScene.cpp": 6,
    "ui/screens/ContentManagerScene.cpp": 2,
    "ui/screens/DownloadedReplaysUi.cpp": 1,
    "ui/screens/GhostSetupScene.cpp": 1,

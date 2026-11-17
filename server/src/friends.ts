@@ -15,18 +15,21 @@ export async function listFriends(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
     const id = auth.player.id;
     const rows = await ctx.env.DB.prepare(
-        `SELECT f.player_id AS a, f.friend_id AS b, f.status, f.created_at, p.*
+        `SELECT f.player_id AS a, f.friend_id AS b, f.status, f.created_at, p.*, kc.tag AS clan_tag
          FROM player_friends f JOIN players p ON p.id = CASE WHEN f.player_id = ?1 THEN f.friend_id ELSE f.player_id END
+         LEFT JOIN clan_members km ON km.player_id = p.id LEFT JOIN clans kc ON kc.id = km.clan_id
          WHERE (f.player_id = ?1 OR f.friend_id = ?1) AND p.account_status = 'active'
          ORDER BY p.username_normalized`,
     )
         .bind(id)
-        .all<PlayerRow & { a: string; b: string; status: string; created_at: string }>();
+        .all<PlayerRow & { a: string; b: string; status: string; created_at: string; clan_tag: string | null }>();
     const friends = [];
     const incoming = [];
     const outgoing = [];
     for (const r of rows.results) {
-        const entry = { player: playerSummary(r), since: r.created_at, ...(r.status === "accepted" ? { presence: presenceOf(r) } : {}) };
+        // 2.66: the clan tag next to the username (only when the player has a clan).
+        const player = r.clan_tag ? { ...playerSummary(r), clan_tag: r.clan_tag } : playerSummary(r);
+        const entry = { player, since: r.created_at, ...(r.status === "accepted" ? { presence: presenceOf(r) } : {}) };
         if (r.status === "accepted") {
             if (r.a === id) friends.push(entry);
         } else if (r.a === id) outgoing.push(entry);

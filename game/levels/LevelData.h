@@ -145,6 +145,10 @@ struct LevelData {
     /// « course à la vérification » (progress ranking) online. Not part of the gameplay: the
     /// ranked fingerprint leaves it out.
     bool extreme = false;
+    /// 2.64: the tutorial of the first launch (« Le premier envol de Nova », data/tutorial): no
+    /// deadly fall (Nova comes back on her last solid ground at once), a death brings her back
+    /// to the last lantern at once. Written only when set: the other levels keep their fingerprints.
+    bool tutorial = false;
     /// One life only: what an extreme level requires.
     bool oneLife() const { return livesAllowed() == 1; }
     /// Lives the player really has: `lives`, or what the challenge mode allows (0 = unlimited).

@@ -17,6 +17,7 @@
 // manifest, its binding); the routes exist only for an active administrator (requireAdminRole).
 // Community levels and the players' own levels keep the shipped definitions.
 
+import { refreshAllClanPoints } from "./clans";
 import { audit, type AuthInfo } from "./auth";
 import { parseManifestLevel } from "./admin";
 import { requireAdminRole } from "./adminRoles";
@@ -488,6 +489,8 @@ export async function publish(ctx: Ctx): Promise<Response> {
             await refuse(ctx, auth, Errors.conflict("BASE_CHANGED", "La définition ou un niveau a changé entre-temps : rouvrez l'entité."), what);
         throw e;
     }
+    // 2.66: new revisions of campaign levels: the clans' points follow them.
+    await refreshAllClanPoints(ctx.env.DB);
     await audit(ctx, auth.player.id, "admin_enemy_published", {
         enemy: { enemy_id: enemyId, enemy_name: NATIVES.get(enemyId), revision, from_revision: cur, levels: journalLevels },
         by_username: auth.player.username,

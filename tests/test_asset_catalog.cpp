@@ -25,6 +25,7 @@
 #include "engine/resources/ResourceManager.h"
 #include "game/GameServices.h"
 #include "game/content/AssetCatalog.h"
+#include "game/content/BossStories.h"
 #include "game/content/ContentDatabase.h"
 #include "game/levels/ObjectTypes.h"
 #include "packaging/Package.h"
@@ -343,6 +344,31 @@ TEST_CASE("asset catalogue: « utilisé par » is right for known examples") {
     CHECK(uses("animations/kraken.json", AssetUseKind::Boss, "kraken"));
     CHECK(uses("sprites/enemies/kraken_p8.png", AssetUseKind::Boss, "kraken"));
     CHECK(uses("stories/kraken_1.png", AssetUseKind::Story, "kraken"));
+    // 2.62: the pieces of the animated scenes of a story (layers, sprites) are its own too.
+    {
+        BossStories stories;
+        CHECK(stories.loadDefault());
+        int pieces = 0;
+        for (const auto& [id, s] : stories.all()) {
+            const story::StageAssets sa = story::stageAssets(s);
+            for (const std::string& t : sa.textures) {
+                CHECK(uses(t, AssetUseKind::Story, id));
+                ++pieces;
+            }
+            for (const std::string& a : sa.animations) {
+                CHECK(uses(a, AssetUseKind::Story, id));
+                const AssetEntry* anim = cat.find(a);
+                CHECK(anim && cat.find(anim->sheet) && cat.find(anim->sheet)->usedBy(AssetUseKind::Story, id));
+                ++pieces;
+            }
+        }
+        if (pieces > 0) {
+            for (const std::string& a : story::stageAssets(*stories.find("pyrrhax")).animations) {
+                const AssetEntry* anim = cat.find(a);
+                CHECK(cat.folders()[static_cast<size_t>(anim->folder)].key == "stories/pyrrhax");
+            }
+        }
+    }
     {
         auto level = content.loadLevel("confins_03");
         CHECK(level.has_value());

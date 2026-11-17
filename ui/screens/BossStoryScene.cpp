@@ -5,7 +5,10 @@
 #include <cstdint>
 #include <vector>
 
+#include "engine/animation/Animation.h"
 #include "engine/core/I18n.h"
+#include "engine/core/Log.h"
+#include "engine/resources/ResourceManager.h"
 #include "game/GameServices.h"
 #include "game/content/BossStories.h"
 #include "game/enemies/BossDifficulty.h"
@@ -108,12 +111,15 @@ SkipHintMetrics skipHintMetrics(UIContext& ui) {
 
 class BossStoryScene : public Scene {
 public:
-    BossStoryScene(GameServices& g, const BossStory& story, int startAt) : g_(g), story_(story), startAt_(startAt) {}
+    BossStoryScene(GameServices& g, const BossStory& story, int startAt, float atSeconds)
+        : g_(g), story_(story), startAt_(atSeconds >= 0.0f ? -1 : startAt), atSeconds_(atSeconds) {}
 
     void onEnter() override {
         def_ = g_.content.enemy(story_.bossId);
         // The timeline, from the lines as they are shown (a shot lasts long enough to read its
         // line in the language in use).
+        // Every texture of the story is loaded here, at its start (never while it plays): the
+        // paintings, the scenes' layers and sprite sheets, the boss's own sheet (title card).
         float t = 0.0f;
         for (const StoryShot& s : story_.shots) {
             Shot shot;
@@ -122,15 +128,23 @@ public:
             shot.words = narrationWords(shot.shown);
             shot.start = t;
             shot.dur = story::shotDuration(shot.shown);
-            shot.tex = s.image.empty() ? nullptr : g_.app.resources().texture(s.image, false);
+            // A scene is written in seconds of its French line: stretched to the line shown.
+            shot.stageScale = story::shotDuration(s.text) / std::max(0.01f, shot.dur);
+            if (s.stage) shot.stageReady = loadStage(shot, *s.stage);
+            if (!shot.stageReady) shot.tex = s.image.empty() ? nullptr : g_.app.resources().texture(s.image, false);
             t += shot.dur;
             shots_.push_back(std::move(shot));
         }
+        if (def_ && !def_->animation.empty()) g_.app.resources().animation(def_->animation);
         titleStart_ = t;
         total_ = t + story::kTitleCard;
         if (startAt_ >= 0) {
             // Automated screenshots: that shot with its line typed, or the title card revealed.
             t_ = startAt_ < static_cast<int>(shots_.size()) ? shots_[static_cast<size_t>(startAt_)].start + 1.4f : titleStart_ + 1.8f;
+            sinceEnter_ = 10.0f;
+        }
+        if (atSeconds_ >= 0.0f) {  // automated screenshots: that moment of the story, as it plays
+            t_ = std::min(atSeconds_, total_ - 0.01f);
             sinceEnter_ = 10.0f;
         }
         roarLen_ = def_ ? creatureClipDuration(g_, *def_, story_.clip) : 0.0f;
@@ -172,7 +186,7 @@ public:
         UIContext& ui = g_.ui;
         ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
         Renderer& r = ui.r();
-        const float in = startAt_ >= 0 ? 1.0f : clamp01(sinceEnter_ / story::kFade);
+        const float in = startAt_ >= 0 || atSeconds_ >= 0.0f ? 1.0f : clamp01(sinceEnter_ / story::kFade);
         const float out = closing_ ? 1.0f - clamp01(closeT_ / story::kFade) : 1.0f;
         const float alpha = std::min(in, out);
         // Faded in and out over the screen below: drawn on a target, then shown with its alpha.
@@ -186,6 +200,7 @@ public:
                 onTarget = true;
             }
         }
+        drawTarget_ = onTarget ? target_ : nullptr;
         drawStory();
         if (onTarget) {
             r.setTarget(nullptr);
@@ -200,7 +215,43 @@ private:
         std::vector<std::string> words;
         float start = 0.0f, dur = 0.0f;
         TexturePtr tex;
+        // Version 2: the scene's files, per element (loaded at the start), whether all are there.
+        std::vector<TexturePtr> layers;
+        std::vector<AnimationSetPtr> sheets;
+        std::vector<std::vector<const AnimationClip*>> clips;  // per sprite, the clip each key starts
+        bool stageReady = false;
+        float stageScale = 1.0f;  // seconds of the scene per second of the shot
     };
+
+    /// Loads the files of a scene; false (its painting instead) when one is missing.
+    bool loadStage(Shot& shot, const StoryStage& st) {
+        ResourceManager& res = g_.app.resources();
+        shot.layers.assign(st.elements.size(), nullptr);
+        shot.sheets.assign(st.elements.size(), nullptr);
+        shot.clips.assign(st.elements.size(), {});
+        bool ok = true;
+        for (size_t k = 0; k < st.elements.size(); ++k) {
+            const StoryElement& e = st.elements[k];
+            if (e.kind == StoryElementKind::Layer) {
+                if (res.exists(e.source)) shot.layers[k] = res.texture(e.source, true);
+                else ok = false;
+            } else if (e.kind == StoryElementKind::Sprite) {
+                AnimationSetPtr set = res.exists(e.source) ? res.animation(e.source) : nullptr;
+                if (set && set->texture && res.exists(set->texturePath)) {
+                    shot.sheets[k] = set;
+                    // found once, here: drawing a frame never looks a clip up by its name
+                    for (const StoryKey& key : e.keys) shot.clips[k].push_back(key.clip.empty() ? nullptr : set->clip(key.clip));
+                } else {
+                    ok = false;
+                }
+            }
+            if (!ok) {
+                Log::warn("Histoire de {} : « {} » introuvable, le plan garde sa peinture", story_.bossId, e.source);
+                return false;
+            }
+        }
+        return true;
+    }
 
     void finish() {
         if (done_) return;
@@ -258,7 +309,25 @@ private:
         const Shot& s = shots_[static_cast<size_t>(i)];
         const float local = t_ - s.start;
         const float p = easeInOut(local / (s.dur + story::kCrossFade));
-        if (s.tex && s.tex->width() > 0 && s.tex->height() > 0) {
+        if (s.stageReady) {
+            Renderer& rr = g_.ui.r();
+            if (alpha < 0.999f) {
+                // Cross-fading: the scene drawn whole on its own target, then shown with its alpha
+                // (its layers never show through one another).
+                if (!shotTarget_ || shotTarget_->width() != rr.width() || shotTarget_->height() != rr.height())
+                    shotTarget_ = rr.createTarget(rr.width(), rr.height(), true);
+            }
+            if (alpha < 0.999f && shotTarget_) {
+                rr.setTarget(shotTarget_);
+                SDL_SetRenderDrawColor(rr.sdl(), 0, 0, 0, 0);
+                SDL_RenderClear(rr.sdl());
+                drawStage(i, img, 1.0f, local, p);
+                rr.setTarget(drawTarget_);
+                rr.drawTexture(*shotTarget_, &img, img, Color::white().withAlphaF(alpha));
+            } else {
+                drawStage(i, img, alpha, local, p);
+            }
+        } else if (s.tex && s.tex->width() > 0 && s.tex->height() > 0) {
             const float iw = static_cast<float>(s.tex->width()), ih = static_cast<float>(s.tex->height());
             const float cover = std::max(img.w / iw, img.h / ih);
             const Vec2 size0{iw * cover, ih * cover};
@@ -282,18 +351,124 @@ private:
         drawParticles(s.data->particles, s.data->glow, img, t_, alpha, static_cast<uint32_t>(i) * 7919U + 17U);
     }
 
+    /// Shot `i` played as its scene, `local` seconds in, covering `img`: the camera (with the slow
+    /// zoom of every shot, `p` of the way), each element in its order at its depth, the shakes, the
+    /// flashes.
+    void drawStage(int i, const Rect& img, float alpha, float local, float p) {
+        Renderer& r = g_.ui.r();
+        const Shot& s = shots_[static_cast<size_t>(i)];
+        const StoryStage& st = *s.data->stage;
+        const float tau = local * s.stageScale;
+        const float base = std::max(img.w / st.size.x, img.h / st.size.y);
+        auto [cam, zoom] = st.cameraAt(tau);
+        zoom *= 1.0f + (s.data->zoom - 1.0f) * p;
+        cam = st.clampCamera(cam, {img.w / (base * zoom), img.h / (base * zoom)});
+        const Vec2 shake = st.shakeAt(tau) * base;
+        const Vec2 c0 = st.size * 0.5f;
+        r.fillRect(img, st.backdrop.withAlphaF(alpha));
+        for (size_t k = 0; k < st.elements.size(); ++k) {
+            const StoryElement& e = st.elements[k];
+            const StoryElementState es = e.at(tau);
+            const float a = es.alpha * alpha * e.pulseAt(tau);
+            if (a <= 0.003f) continue;
+            const float kd = base * (1.0f + (zoom - 1.0f) * e.depth);  // far layers zoom less
+            const Vec2 cd = c0 + (cam - c0) * e.depth;                   // and move less
+            auto scr = [&](Vec2 q) { return img.center() + (q - cd) * kd + shake; };
+            const Color col = e.tint.withAlphaF(a * static_cast<float>(e.tint.a) / 255.0f);
+            const BlendMode blend = e.additive ? BlendMode::Additive : BlendMode::Alpha;
+            switch (e.kind) {
+                case StoryElementKind::Layer: {
+                    const TexturePtr& tex = s.layers[k];
+                    if (!tex) break;
+                    const float sc = kStoryPixel * es.scale * kd;
+                    const Vec2 size{static_cast<float>(tex->width()) * sc, static_cast<float>(tex->height()) * sc};
+                    const Vec2 tl = scr(es.pos + e.drift * tau);
+                    if (e.repeat && size.x >= 1.0f) {
+                        float x = img.x + std::fmod(tl.x - img.x, size.x);
+                        if (x > img.x) x -= size.x;
+                        for (; x < img.right(); x += size.x) r.drawTexture(*tex, nullptr, {x, tl.y, size.x, size.y}, col, blend);
+                    } else {
+                        r.drawTexture(*tex, nullptr, {tl.x, tl.y, size.x, size.y}, col, blend);
+                    }
+                    break;
+                }
+                case StoryElementKind::Sprite: {
+                    const AnimationSetPtr& set = s.sheets[k];
+                    if (!set || !set->texture) break;
+                    const AnimationClip* clip = es.clipKey >= 0 ? s.clips[k][static_cast<size_t>(es.clipKey)] : nullptr;
+                    const Rect src = storySpriteFrame(*set, clip, es.clipTime);
+                    if (src.w <= 0.0f) break;
+                    const float sc = kStoryPixel * es.scale * kd;
+                    Vec2 pv = set->pivot;
+                    if (es.flip) pv.x = static_cast<float>(set->frameWidth) - pv.x;
+                    const Vec2 at = scr(es.pos + e.drift * tau);
+                    const Vec2 pivot = pv * sc;
+                    if (e.shadow.on && r.glowTexture()) {
+                        // its shadow on the ground, pushed away from its light
+                        float off = 0.0f;
+                        if (e.shadow.light) off = std::clamp((es.pos.x - e.shadow.light->x) * 0.12f, -40.0f, 40.0f);
+                        const Vec2 c = scr({es.pos.x + off, es.pos.y});
+                        const Vec2 size = e.shadow.size * (es.scale * kd);
+                        r.drawTexture(*r.glowTexture(), nullptr, Rect::fromCenter(c, size), Color{0, 0, 0, 255}.withAlphaF(a * e.shadow.alpha));
+                    }
+                    if (e.repeat && src.w * sc >= 1.0f) {  // scenery: the sheet repeated along x
+                        const float step = src.w * sc;
+                        float x = img.x + std::fmod(at.x - pivot.x - img.x, step);
+                        if (x > img.x) x -= step;
+                        for (; x < img.right(); x += step) r.drawTexture(*set->texture, &src, {x, at.y - pivot.y, step, src.h * sc}, col, blend, es.flip);
+                    } else {
+                        r.drawTexture(*set->texture, &src, {at.x - pivot.x, at.y - pivot.y, src.w * sc, src.h * sc}, col, blend, es.flip,
+                                      false, es.rot, &pivot);
+                    }
+                    break;
+                }
+                case StoryElementKind::Glow:
+                    r.drawGlow(scr(es.pos), e.radius * es.scale * kd, e.color.withAlphaF(a));
+                    break;
+                case StoryElementKind::Particles: {
+                    const Vec2 tl = scr({e.area.x, e.area.y});
+                    drawParticles(e.source, e.color, {tl.x, tl.y, e.area.w * kd, e.area.h * kd}, tau + static_cast<float>(k) * 1.7f, a,
+                                  static_cast<uint32_t>(i) * 977U + static_cast<uint32_t>(k) * 131U + 7U);
+                    break;
+                }
+            }
+        }
+        Color fc = Color::white();
+        if (const float f = st.flashAt(tau, &fc) * alpha; f > 0.003f) r.fillRect(img, fc.withAlphaF(f), BlendMode::Additive);
+    }
+
     /// A few live particles over a painting (display only).
     void drawParticles(const std::string& kind, Color c, const Rect& area, float t, float alpha, uint32_t seed) {
         if (kind == "none" || alpha <= 0.0f) return;
         UIContext& ui = g_.ui;
         Renderer& r = ui.r();
         const float u = std::max(0.5f, ui.s(1.0f));
-        const int n = kind == "stars" ? 46 : kind == "dust" ? 34 : kind == "sparks" ? 26 : 32;
+        const int n = kind == "stars" ? 46 : kind == "dust" ? 34 : kind == "sparks" ? 26 : kind == "ember_rain" ? 40 : kind == "ash" ? 44 : 32;
+        if (kind == "ember_rain") {
+            // 2.60: burning embers falling down and to the left, each with its trail.
+            for (int k = 0; k < n; ++k) {
+                const uint32_t h = seed * 131U + static_cast<uint32_t>(k) * 2654435761U;
+                const float a = hash01(h), b = hash01(h + 1), c2 = hash01(h + 2), d = hash01(h + 3);
+                const float span = area.h + u * 80.0f;
+                const float speed = u * (120.0f + 140.0f * b);
+                const float y = std::fmod(t * speed + c2 * span, span);
+                const Vec2 head{area.x + a * (area.w + span * 0.5f) - y * 0.5f, area.y - u * 40.0f + y};
+                const Vec2 dir = Vec2{-0.447f, 0.894f};
+                const float len = u * (14.0f + 22.0f * d);
+                const float op = alpha * (0.5f + 0.5f * std::sin(t * (7.0f + 4.0f * d) + a * 30.0f)) * 0.8f + alpha * 0.2f;
+                if (op <= 0.01f || head.x < area.x - len || head.x > area.right() + len) continue;
+                r.drawLine(head - dir * len, head, c.withAlphaF(0.5f * op), std::max(1.0f, u * 1.5f), BlendMode::Additive);
+                r.drawGlow(head, u * (6.0f + 6.0f * d), c.withAlphaF(0.5f * op));
+                r.fillCircle(head, u * (1.2f + 1.2f * d), Color::lerp(c, Color::white(), 0.6f).withAlphaF(op), BlendMode::Additive);
+            }
+            return;
+        }
         for (int k = 0; k < n; ++k) {
             const uint32_t h = seed * 131U + static_cast<uint32_t>(k) * 2654435761U;
             const float a = hash01(h), b = hash01(h + 1), c2 = hash01(h + 2), d = hash01(h + 3), e = hash01(h + 4);
             Vec2 p;
             float size = u * (1.5f + 2.5f * d), glow = 0.0f, op = 0.0f;
+            Color pc = c;
             if (kind == "embers") {
                 // Rising, swaying, flickering.
                 const float span = area.h + u * 60.0f;
@@ -320,6 +495,24 @@ private:
                 p = {area.x + a * area.w + std::sin(t * (0.5f + e) + c2 * 6.28f) * u * 22.0f, area.y - u * 20.0f + y};
                 op = 0.7f;
                 glow = size * 2.5f;
+            } else if (kind == "ash") {
+                // 2.60: ash lifted by the wind: blown along in gusts, rising and sinking.
+                const float span = area.w + u * 60.0f;
+                const float gust = 1.0f + 0.6f * std::sin(t * 0.9f + c2 * 3.0f);
+                const float x = std::fmod(a * span + t * u * (30.0f + 40.0f * b) * gust, span);
+                p = {area.x - u * 30.0f + x, area.bottom() - (0.1f + 0.85f * c2) * area.h + std::sin(t * (1.1f + e) + d * 6.28f) * u * 14.0f};
+                op = 0.35f + 0.4f * std::fabs(std::sin(t * 1.3f + e * 6.28f));
+                size *= 0.6f;
+                glow = 0.0f;
+                pc = Color::lerp(Color{150, 140, 150, 255}, c, 0.35f);
+            } else if (kind == "dustfall") {
+                // 2.60: dust falling slowly from the spires.
+                const float span = area.h + u * 30.0f;
+                const float y = std::fmod(t * u * (10.0f + 14.0f * b) + c2 * span, span);
+                p = {area.x + a * area.w + std::sin(t * (0.6f + e) + c2 * 6.28f) * u * 6.0f, area.y - u * 15.0f + y};
+                op = 0.45f * smooth(std::min(y / (span * 0.15f), (span - y) / (span * 0.25f)));
+                size *= 0.55f;
+                glow = size * 2.0f;
             } else {  // dust: drifting motes
                 const float span = area.w + u * 40.0f;
                 const float x = std::fmod(a * span + t * u * (6.0f + 12.0f * b), span);
@@ -330,8 +523,8 @@ private:
             }
             op *= alpha;
             if (op <= 0.01f) continue;
-            if (glow > 0.0f) r.drawGlow(p, glow, c.withAlphaF(0.45f * op));
-            r.fillCircle(p, size, Color::lerp(c, Color::white(), 0.55f).withAlphaF(op), BlendMode::Additive);
+            if (glow > 0.0f) r.drawGlow(p, glow, pc.withAlphaF(0.45f * op));
+            r.fillCircle(p, size, Color::lerp(pc, Color::white(), kind == "ash" ? 0.15f : 0.55f).withAlphaF(op), BlendMode::Additive);
         }
     }
 
@@ -481,6 +674,7 @@ private:
     const BossStory& story_;
     const EnemyDefinition* def_ = nullptr;
     int startAt_ = -1;
+    float atSeconds_ = -1.0f;
     std::vector<Shot> shots_;
     float titleStart_ = 0.0f, total_ = 0.0f;
     float t_ = 0.0f;            // time in the story
@@ -491,9 +685,45 @@ private:
     bool roared_ = false;
     float roarLen_ = 0.0f;
     TexturePtr target_;
+    TexturePtr shotTarget_;  // a scene cross-fading in
+    TexturePtr drawTarget_;  // where the story is drawn this frame (nullptr: the window)
 };
 
 }  // namespace
+
+Rect storySpriteFrame(const AnimationSet& set, const std::string& clip, float t) {
+    return storySpriteFrame(set, clip.empty() ? nullptr : set.clip(clip), t);
+}
+
+Rect storySpriteFrame(const AnimationSet& set, const AnimationClip* clip, float t) {
+    const AnimationClip* c = clip;
+    if (!c) c = set.clip("idle");
+    if (!c)  // the sheet's first clip (its top-left frame)
+        for (const auto& [name, cl] : set.clips)
+            if (!c || cl.row < c->row || (cl.row == c->row && cl.start < c->start)) c = &cl;
+    t = std::max(0.0f, t);
+    for (int hop = 0; c && hop < 8; ++hop) {
+        const float total = c->totalDuration();
+        if (c->frameCount() == 0 || total <= 0.0f) return {};
+        if (c->loop) {
+            t = std::fmod(t, total);
+        } else if (t >= total) {
+            if (const AnimationClip* n = c->next.empty() ? nullptr : set.clip(c->next)) {
+                t -= total;
+                c = n;
+                continue;
+            }
+            return set.frameRect(*c, c->frameCount() - 1);
+        }
+        float acc = 0.0f;
+        for (int f = 0; f < c->frameCount(); ++f) {
+            acc += c->durations[static_cast<size_t>(f)];
+            if (t < acc) return set.frameRect(*c, f);
+        }
+        return set.frameRect(*c, c->frameCount() - 1);
+    }
+    return c ? set.frameRect(*c, c->frameCount() - 1) : Rect{};
+}
 
 StoryNarrationLayout layoutStoryNarration(UIContext& ui, const std::string& shown) {
     StoryNarrationLayout lay;
@@ -531,10 +761,10 @@ StoryNarrationLayout layoutStoryNarration(UIContext& ui, const std::string& show
     return lay;
 }
 
-std::unique_ptr<Scene> makeBossStory(GameServices& g, const std::string& bossId, int startAt) {
+std::unique_ptr<Scene> makeBossStory(GameServices& g, const std::string& bossId, int startAt, float atSeconds) {
     const BossStory* s = g.stories.find(bossId);
     if (!s || s->shots.empty()) return nullptr;
-    return std::make_unique<BossStoryScene>(g, *s, std::max(-1, startAt));
+    return std::make_unique<BossStoryScene>(g, *s, std::max(-1, startAt), std::isfinite(atSeconds) ? atSeconds : -1.0f);
 }
 
 }  // namespace cosmic

@@ -73,6 +73,15 @@ public:
     bool holdsNotifications() const override { return true; }
 
     void restart();
+    // 2.64, the tutorial (PlayOptions::tutorial) and its explanation cards (event action
+    // « tutorial », in any level): the card due or open ("" none); while it is, the run waits
+    // (not a step is simulated, as under the pause menu).
+    bool tutorial() const { return opt_.tutorial; }
+    const std::string& tutorialCard() const { return tutorialCard_; }
+    /// A card's rank among the level's cards (1 = the first) and their number (« 3 / 9 »).
+    std::pair<int, int> tutorialCardRank(const std::string& id) const;
+    /// The tutorial left from its pause menu: skipped for good, back to the main menu.
+    void leaveTutorial();
     /// 2.48: the same level again as a practice run (hardcore levels).
     void restartPractice();
     void quitToMenu();
@@ -159,6 +168,17 @@ private:
     // input recorded until it ends, as under the pause menu). `storyBoss_`: the boss whose story
     // is due or being told; `storyOpen_`: its scene was opened (cleared when it closes).
     void checkBossStory();
+    // 2.64: the tutorial's cards (see tutorialCard()) and Bip, the small robot floating by Nova
+    // (display only).
+    void checkTutorialCard();
+    void finishTutorial();
+    void drawTutorialWorld(const WorldView& view, float alpha);
+    std::string tutorialCard_;
+    bool tutorialCardOpen_ = false;
+    std::vector<std::string> tutorialOrder_;
+    Vec2 bipPos_;
+    bool bipPlaced_ = false;
+    float bipTime_ = 0.0f;
     std::string storyBoss_;
     bool forcedPhase_ = false;  // 2.58: a capture that forced a boss phase (still one once the phase is reached)
     bool storyOpen_ = false;

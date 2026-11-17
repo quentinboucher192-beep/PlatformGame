@@ -15,7 +15,7 @@ int onlineSocialBadge(GameServices& g) {
 
 float drawOnlineNav(GameServices& g, const Rect& area, OnlineSection current) {
     UIContext& ui = g.ui;
-    constexpr int kItems = 6;
+    constexpr int kItems = 7;
     Rect nav{area.x, area.y, area.w, ui.s(kItems * 58 + 20)};
     ui.r().fillRoundedRect(nav, ui.s(14), Color{6, 10, 22, 170});
     ui.pushId("online/nav");
@@ -54,6 +54,8 @@ float drawOnlineNav(GameServices& g, const Rect& area, OnlineSection current) {
     const bool in = g.online.loggedIn();
     if (item("social", "SOCIAL", current == OnlineSection::Social, in ? g.online.unreadMessages() : 0, in ? g.online.pendingFriendRequests() : 0))
         g.app.switchScene(makeSocial(g));
+    // 2.66: the clans (the invitations received in an amber pill, like the friend requests).
+    if (item("clans", "CLANS", current == OnlineSection::Clans, 0, in ? g.online.clanInvitations() : 0)) g.app.switchScene(makeClans(g));
     if (item("projects", "PROJETS", current == OnlineSection::Projects)) g.app.switchScene(makeProjects(g));
     if (item("workshop", "ATELIER", current == OnlineSection::Workshop)) g.app.switchScene(makeContentManager(g));
     if (item("back", "RETOUR", false)) g.app.switchScene(makeMainMenu(g));

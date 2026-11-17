@@ -520,7 +520,14 @@ AssetCatalog AssetCatalog::build(const fs::path& assetsDir, const fs::path& data
     for (const auto& [bossId, s] : stories.all()) {
         auto d = natives.find(bossId);
         const std::string name = d != natives.end() ? d->second->name : bossId;
-        for (const StoryShot& shot : s.shots) uses.add(shot.image, AssetUseKind::Story, bossId, name, d == natives.end());
+        for (const StoryShot& shot : s.shots) {
+            uses.add(shot.image, AssetUseKind::Story, bossId, name, d == natives.end());
+            // 2.62: a shot played as an animated scene: its layers' images and its sprites' sheets.
+            if (shot.stage)
+                for (const StoryElement& el : shot.stage->elements)
+                    if (el.kind == StoryElementKind::Layer || el.kind == StoryElementKind::Sprite)
+                        uses.add(el.source, AssetUseKind::Story, bossId, name, d == natives.end());
+        }
     }
 
     // The suits of the Vestiaire (the standard one is Nova's own sheet).
@@ -717,9 +724,11 @@ AssetCatalog AssetCatalog::build(const fs::path& assetsDir, const fs::path& data
         if (under("ui/")) return {{"interface", "Interface et icônes", 5}, {"interface/icons", "Icônes et images", 0}};
         if (under("online/")) return {{"interface", "Interface et icônes", 5}, {"interface/online", "En ligne", 3}};
         if (under("stories/")) {
+            // stories/<boss>_<n>.png (the paintings), stories/<boss>/<piece>.png (2.62: the pieces of its scenes).
             std::string boss = stem;
             const size_t us = boss.rfind('_');
             if (us != std::string::npos && us + 1 < boss.size() && std::isdigit(static_cast<unsigned char>(boss[us + 1]))) boss.resize(us);
+            if (const size_t sub = p.find('/', 8); sub != std::string::npos) boss = p.substr(8, sub - 8);
             auto d = natives.find(boss);
             return {{"stories", "Histoires", 7}, {"stories/" + boss, d != natives.end() ? d->second->name : boss, 0}};
         }
