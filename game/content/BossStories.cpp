@@ -84,18 +84,16 @@ StoryElementState storyStateAt(const std::vector<StoryKey>& keys, float t) {
         if (k.flip) s.flip = *k.flip;
         return s;
     };
-    std::string clip;
+    int clipKey = -1;
     float start = 0.0f, offset = 0.0f;
-    bool started = false;
     for (size_t i = 0; i < keys.size(); ++i) {
         const StoryKey& k = keys[i];
         StoryElementState next = apply(cur, k);
         if (k.t <= t) {
             if (!k.clip.empty()) {
-                clip = k.clip;
+                clipKey = static_cast<int>(i);
                 start = k.t;
                 offset = k.offset;
-                started = true;
             }
             cur = next;
             continue;
@@ -112,16 +110,17 @@ StoryElementState storyStateAt(const std::vector<StoryKey>& keys, float t) {
         }
         break;
     }
-    if (!started) {  // before its first clip starts: that clip's first frame
-        for (const StoryKey& k : keys)
-            if (!k.clip.empty()) {
-                clip = k.clip;
+    if (clipKey < 0) {  // before its first clip starts: that clip's first frame
+        for (size_t i = 0; i < keys.size(); ++i)
+            if (!keys[i].clip.empty()) {
+                clipKey = static_cast<int>(i);
                 start = t;
-                offset = k.offset;
+                offset = keys[i].offset;
                 break;
             }
     }
-    cur.clip = clip;
+    cur.clipKey = clipKey;
+    if (clipKey >= 0) cur.clip = keys[static_cast<size_t>(clipKey)].clip;
     cur.clipTime = std::max(0.0f, t - start + offset);
     return cur;
 }
@@ -137,6 +136,7 @@ std::optional<StoryStage> StoryStage::fromJson(const Json& j, std::string* error
     if (!(st.size.x >= 16.0f && st.size.y >= 16.0f && st.size.x <= 8192.0f && st.size.y <= 8192.0f)) return fail("a stage of a bad size");
     st.backdrop = hexOr(j, "backdrop", st.backdrop);
     if (j.contains("camera") && !keysFromJson(j["camera"], st.camera)) return fail("bad camera keys");
+    if (!st.camera.empty() && !st.camera.front().pos) st.camera.front().pos = st.size * 0.5f;  // from the middle
     if (j.contains("shake") && j["shake"].is_array())
         for (const auto& s : j["shake"]) {
             StoryShake sh;
@@ -222,9 +222,7 @@ float StoryElement::pulseAt(float t) const {
 
 std::pair<Vec2, float> StoryStage::cameraAt(float t) const {
     if (camera.empty()) return {size * 0.5f, 1.0f};
-    std::vector<StoryKey> keys = camera;
-    if (!keys.front().pos) keys.front().pos = size * 0.5f;
-    const StoryElementState s = storyStateAt(keys, t);
+    const StoryElementState s = storyStateAt(camera, t);
     return {s.pos, std::max(0.05f, s.scale)};
 }
 

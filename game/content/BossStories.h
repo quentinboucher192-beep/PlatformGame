@@ -60,7 +60,8 @@ struct StoryElementState {
     float alpha = 1.0f;
     float rot = 0.0f;
     bool flip = false;
-    std::string clip;       // empty: the sheet's idle clip
+    std::string_view clip;  // the clip playing (a view of its key's name; empty: the sheet's idle clip)
+    int clipKey = -1;       // the key that started it (-1: none)
     float clipTime = 0.0f;  // seconds into it
 };
 

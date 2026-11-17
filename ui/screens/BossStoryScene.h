@@ -25,6 +25,7 @@ namespace cosmic {
 class GameServices;
 class UIContext;
 struct AnimationSet;
+struct AnimationClip;
 
 /// Version 2's scenes: units of a stage per pixel of its sheets and layers (at scale 1).
 constexpr float kStoryPixel = 2.0f;
@@ -32,6 +33,8 @@ constexpr float kStoryPixel = 2.0f;
 /// first, when the sheet has no such clip) `t` seconds in; a looping clip wraps, another one holds
 /// its last frame or goes on with the clip it names as its next.
 Rect storySpriteFrame(const AnimationSet& set, const std::string& clip, float t);
+/// The same with the clip already found (nullptr: the sheet's idle clip, else its first).
+Rect storySpriteFrame(const AnimationSet& set, const AnimationClip* clip, float t);
 
 /// The bottom band of a story: its progress bar, the room of the line of narration, left of the
 /// measured « Espace · Ⓐ Passer » hint, and the line wrapped there (at most two lines, at the

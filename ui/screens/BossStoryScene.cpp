@@ -218,6 +218,7 @@ private:
         // Version 2: the scene's files, per element (loaded at the start), whether all are there.
         std::vector<TexturePtr> layers;
         std::vector<AnimationSetPtr> sheets;
+        std::vector<std::vector<const AnimationClip*>> clips;  // per sprite, the clip each key starts
         bool stageReady = false;
         float stageScale = 1.0f;  // seconds of the scene per second of the shot
     };
@@ -227,6 +228,7 @@ private:
         ResourceManager& res = g_.app.resources();
         shot.layers.assign(st.elements.size(), nullptr);
         shot.sheets.assign(st.elements.size(), nullptr);
+        shot.clips.assign(st.elements.size(), {});
         bool ok = true;
         for (size_t k = 0; k < st.elements.size(); ++k) {
             const StoryElement& e = st.elements[k];
@@ -235,8 +237,13 @@ private:
                 else ok = false;
             } else if (e.kind == StoryElementKind::Sprite) {
                 AnimationSetPtr set = res.exists(e.source) ? res.animation(e.source) : nullptr;
-                if (set && set->texture && res.exists(set->texturePath)) shot.sheets[k] = set;
-                else ok = false;
+                if (set && set->texture && res.exists(set->texturePath)) {
+                    shot.sheets[k] = set;
+                    // found once, here: drawing a frame never looks a clip up by its name
+                    for (const StoryKey& key : e.keys) shot.clips[k].push_back(key.clip.empty() ? nullptr : set->clip(key.clip));
+                } else {
+                    ok = false;
+                }
             }
             if (!ok) {
                 Log::warn("Histoire de {} : « {} » introuvable, le plan garde sa peinture", story_.bossId, e.source);
@@ -388,7 +395,8 @@ private:
                 case StoryElementKind::Sprite: {
                     const AnimationSetPtr& set = s.sheets[k];
                     if (!set || !set->texture) break;
-                    const Rect src = storySpriteFrame(*set, es.clip, es.clipTime);
+                    const AnimationClip* clip = es.clipKey >= 0 ? s.clips[k][static_cast<size_t>(es.clipKey)] : nullptr;
+                    const Rect src = storySpriteFrame(*set, clip, es.clipTime);
                     if (src.w <= 0.0f) break;
                     const float sc = kStoryPixel * es.scale * kd;
                     Vec2 pv = set->pivot;
@@ -684,7 +692,11 @@ private:
 }  // namespace
 
 Rect storySpriteFrame(const AnimationSet& set, const std::string& clip, float t) {
-    const AnimationClip* c = set.clip(clip.empty() ? std::string("idle") : clip);
+    return storySpriteFrame(set, clip.empty() ? nullptr : set.clip(clip), t);
+}
+
+Rect storySpriteFrame(const AnimationSet& set, const AnimationClip* clip, float t) {
+    const AnimationClip* c = clip;
     if (!c) c = set.clip("idle");
     if (!c)  // the sheet's first clip (its top-left frame)
         for (const auto& [name, cl] : set.clips)
