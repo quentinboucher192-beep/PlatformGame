@@ -3,10 +3,15 @@
 // Each power used with a key of its own keeps that key wherever it sits in the HUD. The level
 // chose it (editor, « Touches des pouvoirs »), or it is the power's suggestion; the player may
 // change it for this level only (saves/power_keys.json) and go back with « Par défaut ».
+// 2.60: a change also goes to the levels whose keys were exactly the same (an option, on by
+// default): the player sets them once, not in every level.
 
 #include "ui/screens/LevelPowerKeysScene.h"
 
 #include <algorithm>
+#include <atomic>
+#include <future>
+#include <memory>
 
 #include "game/GameServices.h"
 #include "game/powers/Power.h"
@@ -37,6 +42,7 @@ public:
         refresh();
         if (!keys_.powers.empty()) g_.ui.setFocus("lpk/k" + keys_.powers.front().power);
         else g_.ui.setFocus("lpk/back");
+        startTwins();
         // Automated screenshots: --online-open powerkeys[:<power>=<key>,…] (keys set first, as
         // the player would).
         if (g_.onlineOpen.rfind("powerkeys", 0) == 0) {
@@ -54,10 +60,17 @@ public:
         }
     }
 
-    void onExit() override { g_.app.input().cancelCapture(); }
+    void onExit() override {
+        g_.app.input().cancelCapture();
+        stopTwins();
+    }
 
     void update(float dt) override {
         t_ += dt;
+        if (twinsJob_.valid() && twinsJob_.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+            twins_ = twinsJob_.get();
+            twinsReady_ = true;
+        }
         if (captureTimer_ > 0.0f) {
             captureTimer_ -= dt;
             if (captureTimer_ <= 0.0f) g_.app.input().cancelCapture();
@@ -79,10 +92,12 @@ public:
         const float W = std::min(ui.s(1320), ui.screenW() - ui.s(80));
         const float pad = ui.s(34), innerW = W - 2.0f * pad;
         const std::string intro =
-            "Chaque pouvoir garde sa touche dans tout le niveau, quel que soit son emplacement. Vos choix ne valent que pour vous et pour ce "
-            "niveau ; « Par défaut » reprend la touche du niveau.";
+            "Chaque pouvoir garde sa touche dans tout le niveau, quel que soit son emplacement. Vos choix ne valent que pour vous : pour ce "
+            "niveau, et pour les niveaux qui ont exactement les mêmes touches si l'option ci-dessous est cochée ; « Par défaut » reprend la "
+            "touche du niveau.";
         const float introH = ui.text().measureWrapped(intro, FontFace::Body, ui.s(fz(ui, 17)), innerW).y;
-        const float headH = ui.s(26) + ui.s(48) + ui.s(30) + introH + ui.s(18) + ui.s(30);
+        const float shareH = ui.s(48) + ui.s(14);  // 2.60: the levels with the same keys
+        const float headH = ui.s(26) + ui.s(48) + ui.s(30) + introH + ui.s(18) + shareH + ui.s(30);
         const float footH = ui.s(96);
         const float rowsW = innerW - ui.s(14);  // the scroll bar
         // 2.50: with many powers (a giga boss arena offers them all), compact rows; the powers
@@ -119,6 +134,8 @@ public:
         y += ui.s(30);
         ui.labelWrapped(intro, {x, y}, innerW, fz(ui, 17), th.textDim);
         y += introH + ui.s(18);
+        drawShare({x, y, innerW, ui.s(48)});
+        y += shareH;
         // Column titles.
         const Cols c = cols(x, rowsW);
         auto head = [&](const std::string& t, float cx, float cw) {
@@ -309,9 +326,10 @@ private:
             st.fontSize = std::max(ui.fitFont(label, FontFace::Bold, 17, b.w - ui.s(14), 0.6f), fz(ui, 11.5f));
             if (ui.button("r" + r.power, b, label, st) && mine) {
                 g_.powerKeyOverrides.reset(level_.id, r.power);
+                const std::string also = shareChange();
                 g_.powerKeyOverrides.save();
                 refresh();
-                say("« " + powerName(r.power) + " » reprend les touches du niveau.", false);
+                say("« " + powerName(r.power) + " » reprend les touches du niveau." + also, false);
                 g_.uiSound("ui_confirm");
             }
         }
@@ -371,6 +389,89 @@ private:
         keys_ = playerPowerKeys(g_, level_, extra_);
     }
 
+    // ------------------------------------------------------------ 2.60: the same keys elsewhere
+    struct Twin {
+        std::string id, name;
+        PowerKeyMap keys;  // its keys when found (its levels' own keys never change)
+    };
+
+    /// Looks, off the main thread, for the other levels whose keys are exactly this level's.
+    void startTwins() {
+        stopTwins();
+        twins_.clear();
+        twinsReady_ = false;
+        const std::string sig = powerKeySignature(levelPowerKeys(level_, g_.content, g_.settings.input, &g_.powerKeyOverrides));
+        if (sig.empty()) {
+            twinsReady_ = true;  // no key power: nothing to share
+            return;
+        }
+        std::vector<std::string> ids;
+        for (const LevelEntry* e : g_.content.levels())
+            if (e && e->id != level_.id) ids.push_back(e->id);
+        twinsCancel_ = std::make_shared<std::atomic<bool>>(false);
+        twinsJob_ = std::async(std::launch::async, [content = &g_.content, ids = std::move(ids), overrides = g_.powerKeyOverrides,
+                                                    base = g_.settings.input, sig, cancel = twinsCancel_]() {
+            std::vector<Twin> out;
+            for (const std::string& id : ids) {
+                if (cancel->load()) break;
+                std::optional<LevelData> l = content->loadLevel(id);
+                if (!l) continue;
+                PowerKeyMap m = levelPowerKeys(*l, *content, base, &overrides);
+                if (powerKeySignature(m) == sig) out.push_back({id, l->name.empty() ? id : l->name, std::move(m)});
+            }
+            return out;
+        });
+    }
+
+    void stopTwins() {
+        if (twinsCancel_) twinsCancel_->store(true);
+        if (twinsJob_.valid()) twinsJob_.wait();  // at most the level being read
+        twinsJob_ = {};
+    }
+
+    /// After a change of this level's keys (stored, not yet saved): the levels that had the
+    /// same keys follow when the option is on. Returns what to add to the message.
+    std::string shareChange() {
+        if (!g_.settings.gameplay.powerKeysShared || !twinsReady_) {
+            // The keys of this level are no longer those of the levels found: look again.
+            startTwins();
+            return {};
+        }
+        const PowerKeyMap mine = levelPowerKeys(level_, g_.content, g_.settings.input, &g_.powerKeyOverrides);
+        int n = 0;
+        for (const Twin& t : twins_) n += matchPowerKeys(g_.powerKeyOverrides, t.id, t.keys, mine) ? 1 : 0;
+        if (n == 0) return {};
+        return n == 1 ? " Aussi dans 1 autre niveau aux mêmes touches." : " Aussi dans " + std::to_string(n) + " autres niveaux aux mêmes touches.";
+    }
+
+    /// The option, with how many levels share these keys (or that none does, or the search).
+    void drawShare(const Rect& r) {
+        UIContext& ui = g_.ui;
+        const UITheme& th = ui.theme();
+        if (!twinsReady_ || twins_.empty()) {
+            const std::string t = !twinsReady_ ? "Recherche des niveaux qui ont exactement les mêmes touches…"
+                                               : "Aucun autre niveau n'a exactement les mêmes touches : vos choix valent pour ce niveau.";
+            const float f = std::max(ui.fitFont(t, FontFace::Body, fz(ui, 16), r.w, 0.75f), fz(ui, 11.5f));
+            ui.label(ui.elide(t, FontFace::Body, f, r.w), {r.x, r.center().y}, f, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+            return;
+        }
+        const size_t n = twins_.size();
+        std::string t = "Appliquer aussi " + (n == 1 ? std::string("à l'autre niveau qui a") : "aux " + std::to_string(n) + " autres niveaux qui ont") +
+                        " exactement les mêmes touches";
+        // Which ones, when there is room (the toggle fits its label, never under its switch).
+        std::string names;
+        for (size_t i = 0; i < n && i < 3; ++i) names += (i ? ", " : "") + twins_[i].name;
+        if (n > 3) names += "…";
+        const std::string full = t + " (" + names + ")";
+        if (ui.text().measure(full, FontFace::Body, ui.s(22.0f * 0.6f)).x <= r.w - ui.s(20) - ui.s(96)) t = full;
+        bool on = g_.settings.gameplay.powerKeysShared;
+        if (ui.toggle("share", r, t, on)) {
+            g_.settings.gameplay.powerKeysShared = on;
+            g_.saveSettings();
+        }
+        ui.newBadge("share", r, "keys.shared_levels");
+    }
+
     void say(const std::string& m, bool warn) {
         msg_ = m;
         msgWarn_ = warn;
@@ -415,14 +516,15 @@ private:
                 swapped = o.power;
             }
         storeKey(*me, sc);
+        const std::string also = shareChange();
         g_.powerKeyOverrides.save();
         refresh();
         if (std::string cmd = baseCommandOfKey(g_.settings.input, sc); !cmd.empty())
             say("« " + keyName(sc) + " » est la touche de « " + cmd + " » : la commande l'emporte, choisissez une autre touche.", true);
         else if (!swapped.empty())
-            say("« " + powerName(swapped) + " » prend « " + keyName(old) + " » : les deux pouvoirs échangent leurs touches.", false);
+            say("« " + powerName(swapped) + " » prend « " + keyName(old) + " » : les deux pouvoirs échangent leurs touches." + also, false);
         else
-            say("« " + powerName(power) + " » : « " + keyName(sc) + " » dans ce niveau.", false);
+            say("« " + powerName(power) + " » : « " + keyName(sc) + " » dans ce niveau." + also, false);
     }
 
     void setPad(const std::string& power, const PadBinding& b) {
@@ -437,14 +539,16 @@ private:
                 swapped = o.power;
             }
         storePad(*me, b);
+        const std::string also = shareChange();
         g_.powerKeyOverrides.save();
         refresh();
         if (std::string cmd = baseCommandOfPad(g_.settings.input, b); !cmd.empty())
             say("« " + padBindingName(b, style) + " » est le bouton de « " + cmd + " » : la commande l'emporte, choisissez un autre bouton.", true);
         else if (!swapped.empty())
-            say("« " + powerName(swapped) + " » prend « " + padBindingName(old, style) + " » : les deux pouvoirs échangent leurs boutons.", false);
+            say("« " + powerName(swapped) + " » prend « " + padBindingName(old, style) + " » : les deux pouvoirs échangent leurs boutons." + also,
+                false);
         else
-            say("« " + powerName(power) + " » : « " + padBindingName(b, style) + " » dans ce niveau.", false);
+            say("« " + powerName(power) + " » : « " + padBindingName(b, style) + " » dans ce niveau." + also, false);
     }
 
     void storeKey(const ResolvedPowerKey& r, SDL_Scancode sc) {
@@ -484,6 +588,10 @@ private:
     std::string msg_;
     bool msgWarn_ = false;
     float msgTimer_ = 0.0f;
+    std::future<std::vector<Twin>> twinsJob_;
+    std::shared_ptr<std::atomic<bool>> twinsCancel_;
+    std::vector<Twin> twins_;
+    bool twinsReady_ = false;
 };
 
 }  // namespace

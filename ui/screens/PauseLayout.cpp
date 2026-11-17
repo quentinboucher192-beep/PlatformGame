@@ -4,11 +4,13 @@
 
 namespace cosmic {
 
-PauseLayout pauseLayout(int buttons, int rows, bool note, float scale, float screenH) {
+PauseLayout pauseLayout(int buttons, int rows, bool note, float scale, float screenH, bool section) {
     buttons = std::max(0, buttons);
     rows = std::clamp(rows, 0, 5);
-    const PauseLayout roomy;  // the comfortable sizes (those of the struct)
+    PauseLayout roomy;  // the comfortable sizes (those of the struct)
+    roomy.section = section;
     PauseLayout tight;
+    tight.section = section;
     tight.top = 176.0f;
     tight.buttonH = 48.0f;
     tight.gap = 8.0f;
@@ -25,6 +27,7 @@ PauseLayout pauseLayout(int buttons, int rows, bool note, float scale, float scr
     const float t = a <= room ? 0.0f : std::clamp((a - room) / std::max(a - b, 0.001f), 0.0f, 1.0f);
     auto mix = [t](float x, float y) { return x + (y - x) * t; };
     PauseLayout l;
+    l.section = section;
     l.top = mix(roomy.top, tight.top);
     l.buttonH = mix(roomy.buttonH, tight.buttonH);
     l.gap = mix(roomy.gap, tight.gap);
@@ -36,6 +39,14 @@ PauseLayout pauseLayout(int buttons, int rows, bool note, float scale, float scr
     l.footer = mix(roomy.footer, tight.footer);
     l.height = total(l);
     return l;
+}
+
+float PauseSideTracked::height(const std::vector<int>& descLines, bool note) const {
+    float h = headerH;
+    const int rows = static_cast<int>(std::min<size_t>(descLines.size(), PauseLayout::kPlaces));
+    for (int i = 0; i < rows; ++i) h += rowHeight(descLines[static_cast<size_t>(i)]);
+    h += static_cast<float>(PauseLayout::kPlaces - rows) * (freeH + 8.0f);
+    return h + (note ? noteH : 0.0f);
 }
 
 }  // namespace cosmic
