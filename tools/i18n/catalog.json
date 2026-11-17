@@ -6258,6 +6258,12 @@
    ]
   },
   {
+   "fr": "Ce défi vient de changer : revenez aux défis pour jouer sa nouvelle version.",
+   "where": [
+    "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
    "fr": "Ce défi vient de se terminer : la partie sera hors classement.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
