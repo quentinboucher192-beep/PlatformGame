@@ -8,6 +8,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "engine/core/Math.h"
 #include "game/online/AsterionBody.h"
@@ -20,8 +21,10 @@ class AsterionFigure {
 public:
     /// The titan fitted and centred in `r` (whole multiples of its pixels once enlarged), each
     /// part in its state (intact when `states` does not name it). `id`: the prefix of its focus
-    /// stops. Returns the id of the part clicked or activated (empty when none).
-    std::string draw(GameServices& g, const std::string& id, const Rect& r, const std::map<std::string, asterion::State>& states);
+    /// stops. `openable`: the parts a click opens (the map of their branch; its tooltip says so).
+    /// Returns the id of the openable part clicked or activated (empty when none).
+    std::string draw(GameServices& g, const std::string& id, const Rect& r, const std::map<std::string, asterion::State>& states,
+                     const std::vector<std::string>& openable = {});
     /// The tooltip of the part hovered or focused by the last draw(), over everything: called once
     /// the rest of the screen is drawn (nothing when draw() was not called since the last one).
     void drawTooltip(GameServices& g);
@@ -31,6 +34,7 @@ public:
 private:
     std::string tip_;
     asterion::State tipState_ = asterion::State::Intact;
+    bool tipOpens_ = false;
     Rect tipFigure_;
     Vec2 tipAnchor_;
 };

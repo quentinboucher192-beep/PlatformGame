@@ -244,6 +244,16 @@ std::unique_ptr<Scene> makeSocial(GameServices& g, const std::string& conversati
 std::unique_ptr<Scene> makeClans(GameServices& g, const std::string& clanId = {}, bool pushed = false);
 /// The sheet of a clan raid event (CLANS › RAIDS, phase 1 of « Asterion »), pushed over the current screen.
 std::unique_ptr<Scene> makeRaidEvent(GameServices& g, const std::string& eventId);
+/// 2.65, raids phase 2 (docs/RAIDS.md): the map of the branch « BRAS DROIT » of an event running
+/// (zones and their state, the groups and where they are, « Rejoindre » / « Aider »), pushed.
+std::unique_ptr<Scene> makeRaidBranch(GameServices& g, const std::string& eventId);
+/// The instance a player enters (POST /raids/events/{id}/instance): its event, id, clan and group.
+struct RaidEntry {
+    std::string eventId, instanceId, clanTag;
+    int group = 1;
+};
+/// The combat of a raid instance (up to 8 players in lockstep), in place of the current screen.
+std::unique_ptr<Scene> makeRaidGame(GameServices& g, RaidEntry entry);
 /// The sheet of the clan whose tag is `tag` (2.63.6: a « [TAG] » clicked before a name in a
 /// ranking or in SOCIAL), pushed over the current screen; found by GET /clans?q=.
 std::unique_ptr<Scene> makeClanByTag(GameServices& g, const std::string& tag);

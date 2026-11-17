@@ -464,7 +464,7 @@
   },
   "sounds/respawn.wav": {
    "game/gameplay/GameWorld.cpp": 3,
-   "game/gameplay/GameWorldTeam.cpp": 2,
+   "game/gameplay/GameWorldTeam.cpp": 3,
    "game/levels/Cinematic.cpp": 1
   },
   "sounds/root_burst.wav": {
@@ -809,6 +809,9 @@
   },
   "ui/raids/asterion.json": {
    "ui/widgets/AsterionFigure.cpp": 2
+  },
+  "ui/raids/asterion.png": {
+   "ui/widgets/AsterionFigure.cpp": 1
   }
  }
 }

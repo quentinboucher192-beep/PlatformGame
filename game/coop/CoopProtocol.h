@@ -18,7 +18,10 @@
 namespace cosmic::coopnet {
 
 constexpr uint8_t kProtocol = 1;
-constexpr int kMaxPlayers = 3;
+/// 2.65: the seats of a relay: 8 for a raid instance (docs/RAIDS.md); a cooperation room keeps
+/// 2 or 3 players (kMaxCoopPlayers).
+constexpr int kMaxPlayers = 8;
+constexpr int kMaxCoopPlayers = 3;
 /// Steps of one INPUT or FRAMES message at most.
 constexpr int kMaxBatch = 255;
 /// A seat silent this long is absent (its frames become standby frames).
@@ -51,6 +54,7 @@ enum class Msg : uint8_t {
     Rejoin = 15,      // relay → game: u8 seat, u32 tick
     End = 16,         // relay → game: u8 reason
     PackagePart = 17, // relay → game (2.63.5): u32 total (0: none), u32 offset, 32 bytes SHA-256 of the whole, the bytes
+    RaidState = 18,   // relay → game (2.65, raids): u32 step from which it applies, u32 objectives done (bits)
 };
 
 /// 2.63.5: the level of a room. `source` "campaign" (`id`: the level of the game) or
@@ -158,6 +162,8 @@ std::vector<uint8_t> framesMsg(uint32_t firstTick, const InputFrame* frames, siz
 std::vector<uint8_t> pong(uint32_t clockMs);
 std::vector<uint8_t> rejoin(uint8_t seat, uint32_t tick);
 std::vector<uint8_t> end(EndReason r);
+/// 2.65 (raids): the branch's state (objectives done, bit i = objective i) from step `tick` on.
+std::vector<uint8_t> raidState(uint32_t tick, uint32_t mask);
 
 std::vector<uint8_t> packageAsk(uint32_t offset);
 /// `total` 0: this relay has no package to send (the bytes are then empty).

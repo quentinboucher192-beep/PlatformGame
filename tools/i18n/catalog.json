@@ -687,6 +687,12 @@
    ]
   },
   {
+   "fr": "[{0}]·{1} · {2} / 8 · votre clan",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "A",
    "where": [
     "editors/shared/PropertyEditor.cpp",
@@ -968,6 +974,12 @@
    ]
   },
   {
+   "fr": "Abattre le golem gardien du biceps",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
    "fr": "ABDOMEN",
    "where": [
     "data/raids/asterion.json"
@@ -1026,6 +1038,12 @@
    "where": [
     "ui/online/OnlineWidgets.cpp",
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "absent {0} s",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -1272,6 +1290,18 @@
    "fr": "Activer Cosmic Online",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Activer le générateur de l'avant-bras (un pouvoir de tir)",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
+   "fr": "Activer le générateur de la Veine (un pouvoir de tir)",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
    ]
   },
   {
@@ -1694,6 +1724,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Aider [{0}]·{1}",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -3194,6 +3230,72 @@
    ]
   },
   {
+   "fr": "ASTERION · BRAS DROIT",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Asterion · Bras droit · Avant-bras",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Bras droit · Biceps de basalte",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_2.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Bras droit · Coude-forge",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_4.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Bras droit · Grotte des scories",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_5.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Bras droit · Main de Pyroclast",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Bras droit · Poignet-verrou",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Bras droit · Veine de magma",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Bras droit · Épaule",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_1.json"
+   ]
+  },
+  {
+   "fr": "ASTERION · {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Asterion, bras droit. Chaque zone a ses objectifs ; la carte de la branche montre où sont les groupes.",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_1.json"
+   ]
+  },
+  {
    "fr": "Asterion, le Dévoreur de mondes",
    "where": [
     "ui/screens/AdminRaids.cpp"
@@ -4019,6 +4121,12 @@
    ]
   },
   {
+   "fr": "Aucun groupe ici pour l'instant.",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun joueur bloqué",
    "where": [
     "ui/screens/SocialScene.cpp"
@@ -4198,6 +4306,18 @@
    "fr": "Aucun niveau.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun objectif dans cette zone : avancez vers les passages.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun objectif dans cette zone.",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -5133,6 +5253,12 @@
    ]
   },
   {
+   "fr": "Avant-bras",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
    "fr": "Avant-poste gelé",
    "where": [
     "data/levels/glacior_01.json"
@@ -5801,6 +5927,12 @@
    ]
   },
   {
+   "fr": "Biceps de basalte",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
    "fr": "Bienvenue dans Cosmic Online",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
@@ -6081,9 +6213,11 @@
     "game/online/AsterionBody.cpp",
     "game/progression/NewsCenter.cpp",
     "game/race/Race.cpp",
+    "game/raid/RaidBranch.cpp",
     "game/tutorial/Tutorial.cpp",
     "saves/HudLayout.cpp",
-    "ui/screens/MainMenuScene.cpp"
+    "ui/screens/MainMenuScene.cpp",
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -6382,9 +6516,39 @@
    ]
   },
   {
+   "fr": "branch.json introuvable",
+   "where": [
+    "game/raid/RaidBranch.cpp"
+   ]
+  },
+  {
    "fr": "Branche",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "branche vide",
+   "where": [
+    "game/raid/RaidBranch.cpp"
+   ]
+  },
+  {
+   "fr": "BRANCHE · Le raccourci Veine ⇄ Avant-bras est ouvert",
+   "where": [
+    "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
+   "fr": "BRANCHE · Les deux générateurs tournent : le Poignet-verrou s'ouvre",
+   "where": [
+    "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
+   "fr": "BRANCHE · {0} : accompli par un autre groupe",
+   "where": [
+    "game/raid/RaidRun.cpp"
    ]
   },
   {
@@ -6432,7 +6596,10 @@
   {
    "fr": "BRAS DROIT",
    "where": [
-    "data/raids/asterion.json"
+    "data/raids/asterion.json",
+    "data/raids/asterion/bras_droit/branch.json",
+    "ui/screens/RaidBranchScene.cpp",
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -6457,6 +6624,12 @@
    "fr": "Brise-sorts",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Briser le verrou du poignet : vaincre sa garde",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
    ]
   },
   {
@@ -7288,6 +7461,12 @@
    ]
   },
   {
+   "fr": "Carte du Bras droit",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
    "fr": "Cartographe",
    "where": [
     "data/achievements/achievements.json"
@@ -7303,6 +7482,12 @@
    "fr": "Cartographe émérite",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "catalogue de la branche illisible",
+   "where": [
+    "game/raid/RaidBranch.cpp"
    ]
   },
   {
@@ -7575,6 +7760,18 @@
    "fr": "Ce fichier ne se lit pas.",
    "where": [
     "ui/widgets/AssetPreview.cpp"
+   ]
+  },
+  {
+   "fr": "Ce groupe a déjà 8 joueurs.",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "Ce groupe n'est plus en jeu.",
+   "where": [
+    "server/src/raidZones.ts"
    ]
   },
   {
@@ -7994,6 +8191,12 @@
    "fr": "Ce raid est terminé.",
    "where": [
     "server/src/raids.ts"
+   ]
+  },
+  {
+   "fr": "Ce raid se joue avec une autre version de la branche : mettez le jeu à jour.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -8969,6 +9172,12 @@
    ]
   },
   {
+   "fr": "Chargement de la branche…",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "Chargement de la course…",
    "where": [
     "ui/screens/OnlineThreadScene.cpp"
@@ -8984,6 +9193,12 @@
    "fr": "Chargement de la partie…",
    "where": [
     "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
+   "fr": "Chargement de la zone…",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -10248,6 +10463,12 @@
    ]
   },
   {
+   "fr": "Clic ou validation : carte de la branche",
+   "where": [
+    "ui/widgets/AsterionFigure.cpp"
+   ]
+  },
+  {
    "fr": "Clic sur un pseudo : son profil · Entrée sur le rôle : le changer",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -10644,6 +10865,24 @@
    "fr": "Combat de boss commencé",
    "where": [
     "game/levels/EventSystem.cpp"
+   ]
+  },
+  {
+   "fr": "Combat en instances de 8 joueurs : chaque groupe joue en verrouillage par entrées comme la coopération (arrivée en cours de partie, 60 s pour revenir après une déconnexion, puis la place est libérée), passe de zone en zone sans perdre ses cœurs ni ses pouvoirs, avec une minimap, le panneau du groupe, les objectifs de la zone, les alertes de la branche et l'annonce des coulées de magma. Le serveur ne valide un objectif que si la majorité des joueurs de l'instance a vu exactement la même chose ; un objectif détruit par deux groupes en même temps ne compte qu'une fois.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "combat · {0} groupe",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "combat · {0} groupes",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -11453,6 +11692,12 @@
    ]
   },
   {
+   "fr": "Connectez-vous à Cosmic Online pour combattre dans le raid.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Connectez-vous à Cosmic Online pour créer un clan ou en rejoindre un. Les clans, leurs pages et leur classement restent visibles sans compte, et le jeu se joue sans compte.",
    "where": [
     "ui/screens/ClanScene.cpp"
@@ -11713,6 +11958,18 @@
    ]
   },
   {
+   "fr": "Connexion à l'instance de {0}…",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Connexion à l'instance…",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "Connexion à la partie de {0}…",
    "where": [
     "ui/screens/SpectateScene.cpp"
@@ -11871,6 +12128,12 @@
    "fr": "contrôle hors de ce morceau",
    "where": [
     "server/src/spectate.ts"
+   ]
+  },
+  {
+   "fr": "contrôlée",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -12304,6 +12567,18 @@
    ]
   },
   {
+   "fr": "Coude-forge",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
+   "fr": "Coude-forge : deux soufflets, deux groupes. Chaque groupe en détruit un (un pouvoir de tir).",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_4.json"
+   ]
+  },
+  {
    "fr": "Couleur",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
@@ -12485,11 +12760,23 @@
    ]
   },
   {
+   "fr": "Coulée dans {0} s · montez !",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Coulée de lave",
    "where": [
     "data/enemies/astrarque.json",
     "data/enemies/echo_forge_core.json",
     "data/enemies/forge_core.json"
+   ]
+  },
+  {
+   "fr": "Coulée de magma ! Restez sur les plateformes hautes",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -13548,6 +13835,12 @@
    ]
   },
   {
+   "fr": "DANGER · Coulée de magma dans {0} s : montez !",
+   "where": [
+    "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
    "fr": "Dans aucun niveau du jeu : pas d'arène",
    "where": [
     "ui/screens/BossStatsScene.cpp"
@@ -13557,6 +13850,12 @@
    "fr": "Dans l'arène",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Dans la zone",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -15970,6 +16269,14 @@
     "data/levels/sylvanox_02.json",
     "data/levels/sylvanox_03.json",
     "data/levels/sylvanox_04.json",
+    "data/raids/asterion/bras_droit/zone_1.json",
+    "data/raids/asterion/bras_droit/zone_2.json",
+    "data/raids/asterion/bras_droit/zone_3.json",
+    "data/raids/asterion/bras_droit/zone_4.json",
+    "data/raids/asterion/bras_droit/zone_5.json",
+    "data/raids/asterion/bras_droit/zone_6.json",
+    "data/raids/asterion/bras_droit/zone_7.json",
+    "data/raids/asterion/bras_droit/zone_8.json",
     "data/tutorial/premier_envol.json",
     "game/levels/LevelData.cpp"
    ]
@@ -16002,6 +16309,14 @@
     "data/levels/sylvanox_02.json",
     "data/levels/sylvanox_03.json",
     "data/levels/sylvanox_04.json",
+    "data/raids/asterion/bras_droit/zone_1.json",
+    "data/raids/asterion/bras_droit/zone_2.json",
+    "data/raids/asterion/bras_droit/zone_3.json",
+    "data/raids/asterion/bras_droit/zone_4.json",
+    "data/raids/asterion/bras_droit/zone_5.json",
+    "data/raids/asterion/bras_droit/zone_6.json",
+    "data/raids/asterion/bras_droit/zone_7.json",
+    "data/raids/asterion/bras_droit/zone_8.json",
     "data/tutorial/premier_envol.json",
     "game/levels/LevelData.cpp"
    ]
@@ -16029,6 +16344,18 @@
    "fr": "Découper et importer",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "découverte · {0} groupe",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "découverte · {0} groupes",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -16632,6 +16959,12 @@
    ]
   },
   {
+   "fr": "déjà signalé avec une autre valeur",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
    "fr": "Délai avant chute (s)",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -16942,6 +17275,18 @@
    "fr": "Détruire le crâne aveugle Asterion : ses attaques perdent en précision.",
    "where": [
     "data/raids/asterion.json"
+   ]
+  },
+  {
+   "fr": "Détruire le soufflet est (un autre groupe)",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
+   "fr": "Détruire le soufflet ouest (un groupe)",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
    ]
   },
   {
@@ -17357,7 +17702,8 @@
   {
    "fr": "En attente de {0}…",
    "where": [
-    "ui/screens/CoopGameScene.cpp"
+    "ui/screens/CoopGameScene.cpp",
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -17369,7 +17715,8 @@
   {
    "fr": "En attente du réseau…",
    "where": [
-    "ui/screens/CoopGameScene.cpp"
+    "ui/screens/CoopGameScene.cpp",
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -17497,7 +17844,8 @@
   {
    "fr": "en jeu",
    "where": [
-    "game/gameplay/HudTeam.cpp"
+    "game/gameplay/HudTeam.cpp",
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -18982,6 +19330,24 @@
    ]
   },
   {
+   "fr": "Facultatif : emporter la relique des scories",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
+   "fr": "Facultatif : ouvrir le raccourci vers la Veine (levier)",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
+   "fr": "Facultatif : vaincre l'Enclume vivante",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
    "fr": "Facultative (500 caractères)",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
@@ -19646,6 +20012,12 @@
    "fr": "Fin de course › Segments, en ligne : une colonne « Record du monde · pseudo » avec les temps de passage du record du monde vérifié de la même version du niveau (lus dans son replay vérifié, jamais un record en attente), durée et écart cumulé ; « chargement… » pendant la requête, pas de colonne hors ligne ; s'il était déjà un fantôme de la course, sa colonne est renommée.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "FIN DE L'INSTANCE",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -20581,6 +20953,14 @@
     "data/levels/sylvanox_02.json",
     "data/levels/sylvanox_03.json",
     "data/levels/sylvanox_04.json",
+    "data/raids/asterion/bras_droit/zone_1.json",
+    "data/raids/asterion/bras_droit/zone_2.json",
+    "data/raids/asterion/bras_droit/zone_3.json",
+    "data/raids/asterion/bras_droit/zone_4.json",
+    "data/raids/asterion/bras_droit/zone_5.json",
+    "data/raids/asterion/bras_droit/zone_6.json",
+    "data/raids/asterion/bras_droit/zone_7.json",
+    "data/raids/asterion/bras_droit/zone_8.json",
     "data/tutorial/premier_envol.json",
     "game/levels/LevelData.cpp",
     "game/levels/ObjectTypes.cpp"
@@ -20866,9 +21246,22 @@
    ]
   },
   {
+   "fr": "gigaboss",
+   "where": [
+    "game/raid/RaidBranch.cpp",
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "Gigaboss : {0}",
    "where": [
     "ui/widgets/AsterionFigure.cpp"
+   ]
+  },
+  {
+   "fr": "Gigaboss : {0} · prochaine version",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -21361,6 +21754,12 @@
    ]
   },
   {
+   "fr": "Grotte des scories",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
    "fr": "Groupe",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
@@ -21398,6 +21797,18 @@
    ]
   },
   {
+   "fr": "GROUPE · Objectif accompli : {0}",
+   "where": [
+    "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE · Tout le groupe est à terre : la zone reprend",
+   "where": [
+    "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
    "fr": "Grouper",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
@@ -21411,7 +21822,7 @@
    ]
   },
   {
-   "fr": "Groupes de 8 dans l'ordre des inscriptions : le chef de raid mène le groupe 1, le premier inscrit de chaque autre groupe mène le sien. La répartition en instances arrivera avec les combats.",
+   "fr": "Groupes de 8 dans l'ordre des inscriptions : le chef de raid mène le groupe 1, le premier inscrit de chaque autre groupe mène le sien. Pendant le raid, chaque groupe joue dans sa propre instance (8 joueurs au plus).",
    "where": [
     "ui/screens/RaidEventScene.cpp"
    ]
@@ -21420,6 +21831,18 @@
    "fr": "groupes de 8 joueurs",
    "where": [
     "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Groupes présents",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "Groupes présents · {0} groupes requis",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -21550,6 +21973,13 @@
    "fr": "Général",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Générateur du verrou : frappez-le avec un pouvoir de tir (Onde, Tir chargé, Boomerang).",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_3.json",
+    "data/raids/asterion/bras_droit/zone_6.json"
    ]
   },
   {
@@ -22302,6 +22732,7 @@
     "game/powers/PowerDefinition.cpp",
     "game/progression/NewsCenter.cpp",
     "game/race/Race.cpp",
+    "game/raid/RaidBranch.cpp",
     "ui/online/CommentsPanel.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/AdminCalendar.cpp",
@@ -22329,6 +22760,7 @@
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/RaceScene.cpp",
+    "ui/screens/RaidBranchScene.cpp",
     "ui/screens/RaidEventScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp",
     "ui/screens/ReplayScene.cpp",
@@ -23060,6 +23492,12 @@
    ]
   },
   {
+   "fr": "Impossible de charger la première zone du raid.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Impossible de charger le niveau",
    "where": [
     "ui/screens/ContentManagerScene.cpp",
@@ -23335,6 +23773,12 @@
    ]
   },
   {
+   "fr": "Inscrivez-vous au raid (fiche de l'événement) pour combattre.",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "Inspiration",
    "where": [
     "data/enemies/echo_mycelia.json",
@@ -23382,6 +23826,18 @@
    "fr": "Installé, mais cette copie diffère de la version publiée : vos temps n'y seront pas classés.",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Instance de {0} : {1} / 8 joueurs connectés",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Instance introuvable.",
+   "where": [
+    "server/src/raidZones.ts"
    ]
   },
   {
@@ -24221,6 +24677,7 @@
    "where": [
     "game/gameplay/HudTeam.cpp",
     "ui/screens/CoopLobbyScene.cpp",
+    "ui/screens/RaidGameScene.cpp",
     "ui/screens/ReplayScene.cpp"
    ]
   },
@@ -24636,6 +25093,12 @@
    ]
   },
   {
+   "fr": "L'avant-bras, couvert de câbles de forge. Son générateur alimente le verrou du poignet ; son levier ouvre le raccourci vers la Veine. Au bout : la Main.",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_6.json"
+   ]
+  },
+  {
    "fr": "L'avant-poste est libéré. Le col vous attend.",
    "where": [
     "data/levels/glacior_01.json"
@@ -24868,6 +25331,18 @@
    "fr": "L'éditeur de niveaux et d'ennemis, la publication.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "L'épaule du titan, porte du bras droit. Trois points d'apparition, une garde de lave à disperser, puis deux chemins : le Biceps en hauteur, la Veine en contrebas.",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_1.json"
+   ]
+  },
+  {
+   "fr": "L'épaule est à nous ! Biceps en haut, Veine en bas.",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_1.json"
    ]
   },
   {
@@ -25505,6 +25980,12 @@
    ]
   },
   {
+   "fr": "La main du titan, où veille le gigaboss Pyroclast. Sa porte est scellée : le combat arrive dans la prochaine version.",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_8.json"
+   ]
+  },
+  {
    "fr": "La manette de {0} est toujours débranchée : rebranchez-la, ou A sur une manette libre, ou Entrée au clavier.",
    "where": [
     "ui/screens/CoopGameScene.cpp"
@@ -26020,6 +26501,12 @@
    ]
   },
   {
+   "fr": "La veine déborde : quand la lave monte, grimpez sur les terrasses hautes.",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_3.json"
+   ]
+  },
+  {
    "fr": "La voûte s'effondre sur vous !",
    "where": [
     "data/enemies/monolithe.json"
@@ -26176,9 +26663,21 @@
    ]
   },
   {
+   "fr": "Lancer le raid",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Lancer · {0} / {1} prêts",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Lancez le raid quand votre groupe est là : ceux qui arrivent ensuite rejoignent la partie en cours.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -26338,6 +26837,12 @@
    "fr": "Le Bastion Gelé... Le dernier gardien des Anciens y veille sur le relais. Courage, Nova.",
    "where": [
     "data/levels/glacior_03.json"
+   ]
+  },
+  {
+   "fr": "Le biceps du titan se gonfle et se relâche : ses plateformes de basalte respirent au-dessus de la lave. Un golem garde le muscle.",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_2.json"
    ]
   },
   {
@@ -26616,12 +27121,6 @@
    "fr": "Le coffre de phase !",
    "where": [
     "data/levels/sylvanox_01.json"
-   ]
-  },
-  {
-   "fr": "Le combat arrive dans une prochaine version : le raid est ouvert, rien à jouer pour l'instant.",
-   "where": [
-    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -27124,6 +27623,12 @@
    ]
   },
   {
+   "fr": "Le gigaboss Pyroclast attend derrière sa porte scellée : prochaine version.",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "Le Glaciarque appelle sa garde !",
    "where": [
     "data/enemies/echo_glaciarch.json",
@@ -27191,6 +27696,18 @@
    "fr": "Le Grappin rend vos sauts aériens : enchaînez traction, saut et Planeur.",
    "where": [
     "data/levels/sylvanox_03.json"
+   ]
+  },
+  {
+   "fr": "Le groupe continue à jouer pendant la pause.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le groupe joue déjà : rattrapage de la partie ({0} %)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -27717,6 +28234,12 @@
    ]
   },
   {
+   "fr": "Le poignet, verrouillé par deux générateurs. Sa garde défend le passage vers la Main de Pyroclast.",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_7.json"
+   ]
+  },
+  {
    "fr": "Le pont est fragile : certaines dalles s'effondrent sous vos pas.",
    "where": [
     "data/levels/glacior_03.json"
@@ -27813,6 +28336,25 @@
     "data/levels/aethra_03.json",
     "data/levels/noyau_02.json",
     "data/levels/pyralis_04.json"
+   ]
+  },
+  {
+   "fr": "Le raid est en cours : la branche « Bras droit » est ouverte aux groupes (le gigaboss, dans une prochaine version).",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "le raid n'est pas en cours",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "Le raid n'est pas en cours : les combats se jouent pendant l'événement.",
+   "where": [
+    "server/src/raidZones.ts",
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -28255,6 +28797,12 @@
    "fr": "le Triple saut",
    "where": [
     "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
+   "fr": "Le verrou cède : la Main de Pyroclast est ouverte.",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_7.json"
    ]
   },
   {
@@ -29095,6 +29643,12 @@
    ]
   },
   {
+   "fr": "Les plateformes montent et descendent avec la respiration du titan : sautez au bon moment.",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_2.json"
+   ]
+  },
+  {
    "fr": "Les points de passage fonctionnent comme d'habitude.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -29358,6 +29912,12 @@
    "fr": "Les trois mondes, une dernière fois.",
    "where": [
     "data/levels/noyau_02.json"
+   ]
+  },
+  {
+   "fr": "Les zones du raid sont introuvables dans les données du jeu : réinstallez le jeu.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -30218,6 +30778,12 @@
    "fr": "Main",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "Main de Pyroclast",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
    ]
   },
   {
@@ -31490,6 +32056,24 @@
    "fr": "Mini-boss (phases, jauge de vie)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "MINIMAP · ?",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "MINIMAP · {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "minoritaire : l'instance a validé une autre valeur",
+   "where": [
+    "server/src/raidZones.ts"
    ]
   },
   {
@@ -34730,6 +35314,12 @@
    ]
   },
   {
+   "fr": "objectif d'une autre zone",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
    "fr": "objectif du défi inconnu",
    "where": [
     "game/online/DailyChallenges.cpp"
@@ -34748,9 +35338,33 @@
    ]
   },
   {
+   "fr": "OBJECTIFS",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Objectifs",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "objectifs de la branche dans le désordre",
+   "where": [
+    "game/raid/RaidBranch.cpp"
+   ]
+  },
+  {
    "fr": "Objectifs de médaille",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "OBJECTIFS · {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -36355,7 +36969,8 @@
   {
    "fr": "parti",
    "where": [
-    "game/gameplay/HudTeam.cpp"
+    "game/gameplay/HudTeam.cpp",
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -36842,6 +37457,12 @@
    ]
   },
   {
+   "fr": "pas impossible depuis le début de l'instance",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
    "fr": "Pas meilleur que votre temps déjà envoyé : gardé sur ce PC.",
    "where": [
     "game/online/DailyChallenges.cpp"
@@ -36930,6 +37551,102 @@
    "fr": "Passage secret découvert !",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Passage verrouillé vers ? : il faut les deux générateurs.",
+   "where": [
+    "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
+   "fr": "Passage verrouillé vers ? : le levier de l'avant-bras l'ouvre.",
+   "where": [
+    "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
+   "fr": "Passage verrouillé vers ?.",
+   "where": [
+    "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
+   "fr": "Passage verrouillé vers {0} : il faut les deux générateurs.",
+   "where": [
+    "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
+   "fr": "Passage verrouillé vers {0} : le levier de l'avant-bras l'ouvre.",
+   "where": [
+    "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
+   "fr": "Passage verrouillé vers {0}.",
+   "where": [
+    "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
+   "fr": "Passage vers : Avant-bras",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_2.json",
+    "data/raids/asterion/bras_droit/zone_3.json",
+    "data/raids/asterion/bras_droit/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Biceps de basalte",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_1.json",
+    "data/raids/asterion/bras_droit/zone_4.json",
+    "data/raids/asterion/bras_droit/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Coude-forge",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_2.json",
+    "data/raids/asterion/bras_droit/zone_3.json",
+    "data/raids/asterion/bras_droit/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Grotte des scories",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Main de Pyroclast",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_6.json",
+    "data/raids/asterion/bras_droit/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Poignet-verrou",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_4.json",
+    "data/raids/asterion/bras_droit/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Veine de magma",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_1.json",
+    "data/raids/asterion/bras_droit/zone_4.json",
+    "data/raids/asterion/bras_droit/zone_5.json",
+    "data/raids/asterion/bras_droit/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Épaule",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_2.json",
+    "data/raids/asterion/bras_droit/zone_3.json"
    ]
   },
   {
@@ -37074,7 +37791,8 @@
    "fr": "PAUSE",
    "where": [
     "ui/screens/CoopGameScene.cpp",
-    "ui/screens/PauseScene.cpp"
+    "ui/screens/PauseScene.cpp",
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -37778,7 +38496,9 @@
   {
    "fr": "place libre",
    "where": [
-    "ui/screens/RaidEventScene.cpp"
+    "game/gameplay/HudTeam.cpp",
+    "ui/screens/RaidEventScene.cpp",
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -38590,6 +39310,18 @@
    "fr": "Poids (probabilité)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Poignet-verrou",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
+   "fr": "Poignet-verrou : il s'ouvre quand les deux générateurs (Veine, Avant-bras) tournent.",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_4.json"
    ]
   },
   {
@@ -40669,6 +41401,24 @@
    ]
   },
   {
+   "fr": "Pyroclast",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pyroclast — prochaine version",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Pyroclast — prochaine version. La porte de la Main restera scellée jusque-là.",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_8.json"
+   ]
+  },
+  {
    "fr": "Pyrogyre",
    "where": [
     "data/achievements/achievements.json",
@@ -40891,6 +41641,12 @@
    ]
   },
   {
+   "fr": "Quitter le raid (retour à la carte)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Quitter le salon",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
@@ -40946,6 +41702,12 @@
    "fr": "Raccourci : {0}",
    "where": [
     "editors/level_editor/LevelEditorTools.cpp"
+   ]
+  },
+  {
+   "fr": "Raccourci vers la Veine : actionnez le levier pour l'ouvrir à tous les groupes.",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_6.json"
    ]
   },
   {
@@ -41197,6 +41959,12 @@
   },
   {
    "fr": "Raids de clan, phase 1 : « ASTERION, LE DÉVOREUR DE MONDES » arrive dans CLANS › RAIDS. La carte de l'événement mondial à venir (heure locale et UTC, compte à rebours, format court, standard ou légendaire, difficulté, clans et joueurs inscrits, inscrits de votre clan), les raids du clan programmés par le chef ou un officier (places, verrouillage des inscriptions avant le début), les invitations entre clans pour un raid commun, l'historique du clan et le panneau des notifications de raid (« Tout marquer lu », rappels 24 h, 1 h et 10 min au choix, inscriptions des membres regroupées). La fiche d'un événement : inscription et désinscription, inscription du clan, « Inviter des membres… », groupes de 8 avec leur chef, chef de raid et consignes. Le combat arrive dans une prochaine version : rien à gagner pour l'instant.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids de clan, phase 2 : la branche « BRAS DROIT » d'Asterion se joue. Pendant un raid en cours, la fiche de l'événement ouvre la carte de la branche : huit zones reliées sur le bras du titan (l'Épaule et ses trois points d'apparition, le Biceps de basalte aux plateformes qui respirent, la Veine de magma et sa coulée, le Coude-forge et ses deux soufflets à détruire par deux groupes, la Grotte des scories secrète, l'Avant-bras et son raccourci, le Poignet-verrou ouvert par deux générateurs, la Main de Pyroclast scellée jusqu'à la prochaine version), leur état, les objectifs faits et par quel groupe, les groupes et où ils sont, « Rejoindre » ou « Aider » un autre groupe.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -42364,6 +43132,24 @@
    ]
   },
   {
+   "fr": "Rejoindre mon groupe",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "Rejoindre · {0} place",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "Rejoindre · {0} places",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "rejoint {0}",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -42441,6 +43227,18 @@
    "where": [
     "data/achievements/achievements.json",
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Relique des scories",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_5.json"
+   ]
+  },
+  {
+   "fr": "relique emportée par {0}",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -43067,13 +43865,20 @@
    "where": [
     "ui/screens/CoopGameScene.cpp",
     "ui/screens/DeviceLostUi.cpp",
-    "ui/screens/PauseScene.cpp"
+    "ui/screens/PauseScene.cpp",
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
    "fr": "Reprendre : clic, Entrée / A",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Reprendre l'épaule : vaincre la garde de l'arène",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
    ]
   },
   {
@@ -43480,6 +44285,18 @@
    "where": [
     "ui/screens/PauseScene.cpp",
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Retour à la carte",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Retour à la carte de la branche",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -44223,6 +45040,12 @@
    "fr": "Réanimations de l'équipe : {0} utilisées sur {1}",
    "where": [
     "game/gameplay/HudTeam.cpp"
+   ]
+  },
+  {
+   "fr": "Réanimations de la zone : {0} / {1}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -45715,6 +46538,12 @@
    ]
   },
   {
+   "fr": "scellée · prochaine version",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "Scintillement",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -45875,7 +46704,9 @@
   {
    "fr": "secret",
    "where": [
-    "game/achievements/AchievementSuggestions.cpp"
+    "game/achievements/AchievementSuggestions.cpp",
+    "game/raid/RaidBranch.cpp",
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -46211,6 +47042,24 @@
    "fr": "Serveur non configuré",
    "where": [
     "game/online/OnlineTypes.cpp"
+   ]
+  },
+  {
+   "fr": "SERVEUR · Rapport non envoyé : {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "SERVEUR · Refusé : {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "SERVEUR · Validé pour la branche : {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -50212,6 +51061,14 @@
     "data/levels/sylvanox_02.json",
     "data/levels/sylvanox_03.json",
     "data/levels/sylvanox_04.json",
+    "data/raids/asterion/bras_droit/zone_1.json",
+    "data/raids/asterion/bras_droit/zone_2.json",
+    "data/raids/asterion/bras_droit/zone_3.json",
+    "data/raids/asterion/bras_droit/zone_4.json",
+    "data/raids/asterion/bras_droit/zone_5.json",
+    "data/raids/asterion/bras_droit/zone_6.json",
+    "data/raids/asterion/bras_droit/zone_7.json",
+    "data/raids/asterion/bras_droit/zone_8.json",
     "data/tutorial/premier_envol.json",
     "editors/level_editor/LevelEditorLayout.cpp",
     "game/levels/LevelData.cpp",
@@ -50609,6 +51466,12 @@
    "fr": "Tokyo",
    "where": [
     "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "tombe",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -52176,6 +53039,18 @@
    ]
   },
   {
+   "fr": "Un autre groupe doit accomplir celui-ci : votre groupe a déjà fait l'autre.",
+   "where": [
+    "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
+   "fr": "un autre groupe doit accomplir l'autre objectif de la paire",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
    "fr": "Un autre import est en train de remplacer les données.",
    "where": [
     "server/src/backups.ts"
@@ -52651,6 +53526,12 @@
    ]
   },
   {
+   "fr": "Un passage dans la roche : la Grotte des scories !",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_3.json"
+   ]
+  },
+  {
    "fr": "un pays est nécessaire pour être visible",
    "where": [
     "server/src/auth.ts"
@@ -52876,6 +53757,12 @@
    ]
   },
   {
+   "fr": "Une articulation de basalte où le titan fond le métal des mondes avalés. Deux soufflets attisent la forge : il faut deux groupes, un par soufflet. La coulée de magma revient sans cesse.",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_4.json"
+   ]
+  },
+  {
    "fr": "Une autre révision vient d'être publiée : rouvrez le niveau.",
    "where": [
     "server/src/campaignRevisions.ts"
@@ -53054,6 +53941,12 @@
    "fr": "Une graine cachée sous le pont de racines !",
    "where": [
     "data/levels/sylvanox_02.json"
+   ]
+  },
+  {
+   "fr": "Une grotte secrète sous la Veine, pleine de scories. Une relique y attend qui ose la chercher.",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_5.json"
    ]
   },
   {
@@ -53500,6 +54393,12 @@
    "fr": "Une vanne de la fonderie du Titan, qui apparaît quand il cale. Tournez-les toutes (en les frappant) avant qu'il redémarre : sa chaudière explose.",
    "where": [
     "data/enemies/vanne.json"
+   ]
+  },
+  {
+   "fr": "Une veine de magma remonte le bras : ses terrasses grimpent vers le coude pendant que la lave déborde. Un générateur alimente le verrou du poignet ; un passage caché mène à une grotte.",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_3.json"
    ]
   },
   {
@@ -54324,6 +55223,12 @@
    ]
   },
   {
+   "fr": "Veine de magma",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
    "fr": "Ven",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -54432,9 +55337,21 @@
    ]
   },
   {
+   "fr": "verrouillé",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "Verrouillé (ouvert par événement)",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "verrouillé ({0} / {1})",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -55690,6 +56607,18 @@
    ]
   },
   {
+   "fr": "Votre groupe entre par l'Épaule ; il rejoint ensuite les zones ouvertes.",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre groupe est dans : {0}.",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "Votre identité publique dans les classements",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
@@ -55878,6 +56807,7 @@
     "editors/level_editor/LevelEditorChat.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/PauseScene.cpp",
+    "ui/screens/RaidGameScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
   },
@@ -56069,6 +56999,12 @@
    ]
   },
   {
+   "fr": "Vous ne jouez pas dans cette instance.",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
    "fr": "Vous ne pouvez pas changer votre propre rôle.",
    "where": [
     "server/src/adminRoles.ts"
@@ -56247,6 +57183,12 @@
    "fr": "Vous pouvez masquer votre profil, exporter vos données ou supprimer votre compte depuis les paramètres en ligne.",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vous rejoignez {0} près de vos alliés dès que votre jeu est à jour.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -56675,7 +57617,10 @@
    "fr": "zone",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
-    "game/levels/EventSystem.cpp"
+    "game/levels/EventSystem.cpp",
+    "game/raid/RaidBranch.cpp",
+    "ui/screens/RaidBranchScene.cpp",
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -56706,6 +57651,18 @@
    "fr": "Zone 5 — Le Cœur. L'Astrarque attend.",
    "where": [
     "data/levels/noyau_02.json"
+   ]
+  },
+  {
+   "fr": "Zone : ?",
+   "where": [
+    "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
+   "fr": "Zone : {0}",
+   "where": [
+    "game/raid/RaidRun.cpp"
    ]
   },
   {
@@ -56751,9 +57708,33 @@
    ]
   },
   {
+   "fr": "zone secrète",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "Zone sécurisée",
    "where": [
     "game/gameplay/entities/ZoneEntities.cpp"
+   ]
+  },
+  {
+   "fr": "zone verrouillée pour la branche",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "Zone {0} sur 8 · délai d'entrée {1} images",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Zone {0} sur 8 · sélectionnée",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -56772,6 +57753,12 @@
    "fr": "Zones de l'image",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "zones de la branche dans le désordre",
+   "where": [
+    "game/raid/RaidBranch.cpp"
    ]
   },
   {
@@ -57223,6 +58210,12 @@
    ]
   },
   {
+   "fr": "{0} : allumer les deux générateurs (Veine, Avant-bras)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} : aucune équipe classée pour l'instant.",
    "where": [
     "ui/screens/CoopGameScene.cpp"
@@ -57289,6 +58282,12 @@
    ]
   },
   {
+   "fr": "{0} : introuvable",
+   "where": [
+    "game/raid/RaidBranch.cpp"
+   ]
+  },
+  {
    "fr": "{0} : la référence « {1} » n'existe pas",
    "where": [
     "editors/level_editor/LevelEditorTools.cpp"
@@ -57319,6 +58318,12 @@
    ]
   },
   {
+   "fr": "{0} : passage verrouillé",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} : performance gardée en local.",
    "where": [
     "ui/screens/ResultsScene.cpp"
@@ -57328,6 +58333,12 @@
    "fr": "{0} : plateforme mobile immobile (déplacement nul)",
    "where": [
     "editors/level_editor/LevelEditorTools.cpp"
+   ]
+  },
+  {
+   "fr": "{0} : raccourci fermé (le levier est dans l'Avant-bras)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -58280,6 +59291,12 @@
    "fr": "{0} groupes",
    "where": [
     "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} groupes requis",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -59548,6 +60565,18 @@
    ]
   },
   {
+   "fr": "{0} zones sur 8 contrôlées · {1} groupe en jeu",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} zones sur 8 contrôlées · {1} groupes en jeu",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} {1} / {2} à faire",
    "where": [
     "ui/studio/StudioFrise.cpp"
@@ -60580,6 +61609,12 @@
    ]
   },
   {
+   "fr": "à prendre",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "À rencontrer d'abord dans son niveau",
    "where": [
     "ui/screens/BossStatsScene.cpp"
@@ -60594,7 +61629,8 @@
   {
    "fr": "à terre",
    "where": [
-    "game/gameplay/HudTeam.cpp"
+    "game/gameplay/HudTeam.cpp",
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -61747,6 +62783,12 @@
    ]
   },
   {
+   "fr": "Épaule",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
    "fr": "Épines chercheuses",
    "where": [
     "data/enemies/archon_catacombs.json",
@@ -62074,6 +63116,12 @@
    ]
   },
   {
+   "fr": "Événement : {0}",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "Événement annulé : les inscrits sont prévenus (inscrit au Journal).",
    "where": [
     "ui/screens/AdminRaids.cpp"
@@ -62095,6 +63143,12 @@
    "fr": "événement hors du replay",
    "where": [
     "server/src/replay.ts"
+   ]
+  },
+  {
+   "fr": "Événement introuvable.",
+   "where": [
+    "server/src/raidZones.ts"
    ]
   },
   {
@@ -62326,6 +63380,12 @@
    ]
   },
   {
+   "fr": "‹ Retour",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "›  {0} objets sélectionnés",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -62341,6 +63401,12 @@
    "fr": "← → : grands pas · Maj : petits pas",
    "where": [
     "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "⇄ raccourci déblocable",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -62365,6 +63431,30 @@
    "fr": "−5 s",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "━ chemin ouvert",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "━ combat en cours",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "┅ verrouillé",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "▢ zone secrète (pointillés)",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -62407,6 +63497,18 @@
    "fr": "▼ {0} — en recul",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "◆ objectif facultatif",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "● vous  ● groupe  ● ennemis  ◆ objectif  ▮ passage",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   }
  ]

@@ -185,7 +185,9 @@ public:
 
 
     // ----------------------------------------------- 2.62: cooperation (docs/COOP.md)
-    static constexpr int kMaxTeam = 3;
+    /// 2.65: 8 players at most (a raid instance, docs/RAIDS.md); the cooperation of the EXTRÊME
+    /// levels stays at 2 or 3 (its lobbies), with the same rules and digests as before.
+    static constexpr int kMaxTeam = 8;
     static constexpr int kTeamRevives = 2;            // per team and per attempt
     static constexpr float kReviveSeconds = 2.0f;     // an ally stays this long near the soul
     static constexpr float kReviveReachX = 40.0f;     // « near »: feet within these distances
@@ -195,12 +197,15 @@ public:
     /// The team's frame (simulation rule): the widest view of the camera, minus margins.
     static constexpr float kFrameWidth = Camera::kViewWidth / Camera::kMinFitZoom - 64.0f;
     static constexpr float kFrameHeight = Camera::kViewHeight / Camera::kMinFitZoom - 96.0f;
-    enum class Presence : uint8_t { Playing, Down, Standby, Gone };
+    /// Vacant (2.65, raids only): a seat nobody holds (yet, or again after 60 s of absence): not in
+    /// play, invisible, ignored. A player who takes it joins at the zone's place (fresh vitals).
+    enum class Presence : uint8_t { Playing, Down, Standby, Gone, Vacant };
     struct TeamMember {
         Player* player = nullptr;
         Presence presence = Presence::Playing;
         bool absent = false;       // its inputs carry InputFrame::Standby (the relay's decision)
         bool standbyInput = false; // this step's flag (fixedUpdateTeam)
+        bool vacantInput = false;  // 2.65 (raids): this step's InputFrame::Vacant flag
         int standbyTicks = 0;      // steps of the current absence
         Vec2 soul;                 // Down: where its soul waits (feet)
         float revive = 0.0f;       // Down: seconds an ally has stayed near the soul
@@ -258,7 +263,7 @@ public:
         Player* saved = cur_;
         const int savedIndex = curIndex_;
         for (size_t i = 0; i < team_.size(); ++i) {
-            if (team_[i].presence == Presence::Gone) continue;
+            if (team_[i].presence == Presence::Gone || team_[i].presence == Presence::Vacant) continue;
             cur_ = team_[i].player;
             curIndex_ = static_cast<int>(i);
             f(*team_[i].player);
@@ -316,8 +321,30 @@ public:
         Player* prev_;
         int prevIndex_;
     };
-    /// One step of a team: an input and a standby flag (InputFrame::Standby) per player.
-    void fixedUpdateTeam(const PlayerInput* inputs, const bool* standby, int n, float dt);
+    /// One step of a team: an input and a standby flag (InputFrame::Standby) per player; 2.65,
+    /// raids: a vacant flag (InputFrame::Vacant) per player, or none.
+    void fixedUpdateTeam(const PlayerInput* inputs, const bool* standby, int n, float dt, const bool* vacant = nullptr);
+
+    // ----------------------------------------------- 2.65: raid instances (docs/RAIDS.md)
+    /// A raid world (before load(), with setTeamSize): seats may be vacant (joined late, or
+    /// freed after 60 s of absence), every player keeps their own camera (no team frame: no
+    /// regrouping), and a team all down fails the zone (the raid run brings it back).
+    void setRaidMode(bool on) { raidMode_ = on; }
+    bool raidMode() const { return raidMode_; }
+    /// Display only: the player the camera follows in a raid (this computer's player).
+    void setCameraFollow(int index) { cameraFollow_ = index; }
+    /// What a player carries from a zone to the next (vitals, powers, presence).
+    struct MemberCarry {
+        int health = 0;
+        float energy = 0.0f;
+        std::vector<std::string> powers;
+        Presence presence = Presence::Playing;
+        bool absent = false;
+        int standbyTicks = 0;
+    };
+    MemberCarry carryOf(int i) const;
+    /// Gives back a player's carry after load(), at `feet` (a free spot near it).
+    void restoreMember(int i, const MemberCarry& c, Vec2 feet);
     /// Where a player of the team may appear near `feet` (never in a wall nor in an ally).
     Vec2 freeSpot(Vec2 feet, int self) const;
 
@@ -505,7 +532,10 @@ private:
     int curIndex_ = 0;
     int revivesLeft_ = kTeamRevives;
     std::vector<PlayerInput> teamInputs_;
+    bool raidMode_ = false;
+    int cameraFollow_ = -1;
     void loadTeam();
+    void vacateMember(int i);
     void stepTeamPlayers(float dt);
     void teamBodies(int self, bool on);
     void updateTeamStandby();

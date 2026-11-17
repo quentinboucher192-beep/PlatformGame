@@ -28,6 +28,8 @@ const Data& data(GameServices& g) {
     if (!loaded) {
         loaded = true;
         if (auto j = g.app.resources().json("ui/raids/asterion.json")) d.sprite = asterion::parseSprite(*j);
+        // The sheet named here (so the asset catalogue counts it as used); the manifest's must agree.
+        if (d.sprite.sheet != "ui/raids/asterion.png") d.sprite.valid = false;
         if (auto j = FileUtil::loadJson(Paths::dataDir() / "raids" / "asterion.json")) d.parts = asterion::parseParts(*j);
     }
     return d;
@@ -51,7 +53,8 @@ void pillColors(asterion::State s, Color& fill, Color& text) {
 
 }  // namespace
 
-std::string AsterionFigure::draw(GameServices& g, const std::string& id, const Rect& r, const std::map<std::string, asterion::State>& states) {
+std::string AsterionFigure::draw(GameServices& g, const std::string& id, const Rect& r, const std::map<std::string, asterion::State>& states,
+                                 const std::vector<std::string>& openable) {
     tip_.clear();
     const Data& d = data(g);
     UIContext& ui = g.ui;
@@ -121,9 +124,11 @@ std::string AsterionFigure::draw(GameServices& g, const std::string& id, const R
         const asterion::Layer& l = layers[static_cast<size_t>(shown)];
         tip_ = l.id;
         tipState_ = asterion::stateOf(states, l.id);
+        tipOpens_ = std::find(openable.begin(), openable.end(), l.id) != openable.end();
         tipFigure_ = fig;
         tipAnchor_ = {ox + (static_cast<float>(l.anchorX) + 0.5f) * k, oy + (static_cast<float>(l.anchorY) + 0.5f) * k};
     }
+    if (std::find(openable.begin(), openable.end(), activated) == openable.end()) activated.clear();  // the others: nothing yet
     return activated;
 }
 
@@ -142,7 +147,8 @@ void AsterionFigure::drawTooltip(GameServices& g) {
     const auto effect = wrap(ui, tt.effect, FontFace::Body, 15, inner, 4);
     const float titleH = ui.s(30), bossH = tt.boss.empty() ? 0.0f : ui.s(24), stateH = ui.s(34), lineH = ui.s(21);
     const float effectH = effect.empty() ? 0.0f : ui.s(4) + lineH * static_cast<float>(effect.size());
-    const float h = pad + titleH + bossH + stateH + effectH + pad;
+    const float hintH = tipOpens_ ? ui.s(34) : 0.0f;
+    const float h = pad + titleH + bossH + stateH + effectH + hintH + pad;
     // Beside the figure (left, else right, else over it), level with the part; always on screen.
     float x = tipFigure_.x - ui.s(12) - w;
     if (x < margin) x = tipFigure_.right() + ui.s(12);
@@ -166,6 +172,11 @@ void AsterionFigure::drawTooltip(GameServices& g) {
     if (pill(ui, tx, ty + stateH * 0.5f, tt.state, fill, text, tx + inner, 13) == 0.0f) fit(ui, tt.state, {tx, ty + stateH * 0.5f}, 13, inner, text, FontFace::Bold);
     ty += stateH;
     if (!effect.empty()) drawLines(ui, effect, {tx, ty + ui.s(4)}, 15, lineH, kDim);
+    ty += effectH;
+    if (tipOpens_) {
+        rr.fillRect({tx, ty + ui.s(8), inner, std::max(1.0f, ui.s(1))}, Color{60, 76, 110, 160});
+        fit(ui, "Clic ou validation : carte de la branche", {tx, ty + ui.s(22)}, 14, inner, kSky, FontFace::Bold);
+    }
 }
 
 }  // namespace cosmic

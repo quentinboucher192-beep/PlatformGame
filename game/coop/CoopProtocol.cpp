@@ -10,7 +10,8 @@ namespace cosmic::coopnet {
 
 namespace {
 enum Bits : uint8_t { Held = 1, Pressed = 2, Released = 4, MoveX = 8, MoveY = 16, Flags = 32, Choice = 64 };
-constexpr uint8_t kKnownFlags = InputFrame::SkipCinematic | InputFrame::Standby;
+// 2.65: Vacant (raids), set by the relay only like Standby.
+constexpr uint8_t kKnownFlags = InputFrame::SkipCinematic | InputFrame::Standby | InputFrame::Vacant;
 
 bool validChoice(uint8_t c) { return c == 0 || c == InputFrame::kChoiceLeave || (c >= 1 && c <= 8); }
 }  // namespace
@@ -182,6 +183,14 @@ std::vector<uint8_t> rejoin(uint8_t seat, uint32_t tick) {
 std::vector<uint8_t> end(EndReason r) {
     auto o = msg(Msg::End);
     Writer{o}.u8(static_cast<uint8_t>(r));
+    return o;
+}
+
+std::vector<uint8_t> raidState(uint32_t tick, uint32_t mask) {
+    auto o = msg(Msg::RaidState);
+    Writer w{o};
+    w.u32(tick);
+    w.u32(mask);
     return o;
 }
 

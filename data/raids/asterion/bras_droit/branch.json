@@ -1,0 +1,270 @@
+{
+ "id": "asterion_bras_droit",
+ "revision": 1,
+ "raid": "asterion",
+ "branch": "bras_droit",
+ "name": "BRAS DROIT",
+ "gigaboss": "Pyroclast",
+ "start_zone": 1,
+ "generators_needed": 2,
+ "zones": [
+  {
+   "id": 1,
+   "name": "Épaule",
+   "sub": "entrée · 3 points d'apparition",
+   "x": 110,
+   "y": 360,
+   "level": "zone_1.json",
+   "inside": "Ennemis : acariens de braise, rôdeurs de lave · arène de la garde",
+   "event": "",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1
+  },
+  {
+   "id": 2,
+   "name": "Biceps de basalte",
+   "sub": "plateformes qui respirent",
+   "x": 330,
+   "y": 200,
+   "level": "zone_2.json",
+   "inside": "Ennemis : golem de magma (gardien), acariens de braise",
+   "event": "",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1
+  },
+  {
+   "id": 3,
+   "name": "Veine de magma",
+   "sub": "courant de lave à remonter",
+   "x": 330,
+   "y": 520,
+   "level": "zone_3.json",
+   "inside": "Ennemis : rôdeurs de lave, feux follets · générateur ouest",
+   "event": "Coulée de magma toutes les 60 s (terrasses hautes sûres)",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1
+  },
+  {
+   "id": 4,
+   "name": "Coude-forge",
+   "sub": "2 soufflets à détruire",
+   "x": 560,
+   "y": 300,
+   "level": "zone_4.json",
+   "inside": "Ennemis : forgerons de lave, drones-scories · mini-boss : l'Enclume vivante",
+   "event": "Coulée de magma toutes les 90 s (plateformes hautes sûres)",
+   "secret": false,
+   "boss": false,
+   "groups_required": 2
+  },
+  {
+   "id": 5,
+   "name": "Grotte des scories",
+   "sub": "zone secrète ◆ relique",
+   "x": 560,
+   "y": 620,
+   "level": "zone_5.json",
+   "inside": "Ennemis : gloops de magma, acariens de braise",
+   "event": "",
+   "secret": true,
+   "boss": false,
+   "groups_required": 1
+  },
+  {
+   "id": 6,
+   "name": "Avant-bras",
+   "sub": "raccourci ⇄ depuis la Veine",
+   "x": 790,
+   "y": 160,
+   "level": "zone_6.json",
+   "inside": "Ennemis : drones de forge, ailes de cendre · générateur est",
+   "event": "",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1
+  },
+  {
+   "id": 7,
+   "name": "Poignet-verrou",
+   "sub": "s'ouvre : 2 générateurs",
+   "x": 790,
+   "y": 470,
+   "level": "zone_7.json",
+   "inside": "Ennemis : la garde du verrou (arène en trois vagues)",
+   "event": "",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1
+  },
+  {
+   "id": 8,
+   "name": "Main de Pyroclast",
+   "sub": "GIGABOSS · prochaine version",
+   "x": 1000,
+   "y": 320,
+   "level": "zone_8.json",
+   "inside": "Le gigaboss Pyroclast attend derrière sa porte scellée",
+   "event": "",
+   "secret": false,
+   "boss": true,
+   "groups_required": 1
+  }
+ ],
+ "edges": [
+  {
+   "a": 1,
+   "b": 2,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 1,
+   "b": 3,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 2,
+   "b": 4,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 3,
+   "b": 4,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 3,
+   "b": 5,
+   "lock": "",
+   "secret": true
+  },
+  {
+   "a": 2,
+   "b": 6,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 3,
+   "b": 6,
+   "lock": "shortcut",
+   "secret": false
+  },
+  {
+   "a": 4,
+   "b": 7,
+   "lock": "generators",
+   "secret": false
+  },
+  {
+   "a": 6,
+   "b": 8,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 7,
+   "b": 8,
+   "lock": "objective:poignet_verrou",
+   "secret": false
+  }
+ ],
+ "objectives": [
+  {
+   "id": "epaule_arene",
+   "index": 0,
+   "zone": 1,
+   "label": "Reprendre l'épaule : vaincre la garde de l'arène",
+   "optional": false,
+   "role": "",
+   "pair": ""
+  },
+  {
+   "id": "biceps_gardien",
+   "index": 1,
+   "zone": 2,
+   "label": "Abattre le golem gardien du biceps",
+   "optional": false,
+   "role": "",
+   "pair": ""
+  },
+  {
+   "id": "veine_generateur",
+   "index": 2,
+   "zone": 3,
+   "label": "Activer le générateur de la Veine (un pouvoir de tir)",
+   "optional": false,
+   "role": "generator",
+   "pair": ""
+  },
+  {
+   "id": "forge_soufflet_ouest",
+   "index": 3,
+   "zone": 4,
+   "label": "Détruire le soufflet ouest (un groupe)",
+   "optional": false,
+   "role": "",
+   "pair": "soufflets"
+  },
+  {
+   "id": "forge_soufflet_est",
+   "index": 4,
+   "zone": 4,
+   "label": "Détruire le soufflet est (un autre groupe)",
+   "optional": false,
+   "role": "",
+   "pair": "soufflets"
+  },
+  {
+   "id": "forge_enclume",
+   "index": 5,
+   "zone": 4,
+   "label": "Facultatif : vaincre l'Enclume vivante",
+   "optional": true,
+   "role": "",
+   "pair": ""
+  },
+  {
+   "id": "grotte_relique",
+   "index": 6,
+   "zone": 5,
+   "label": "Facultatif : emporter la relique des scories",
+   "optional": true,
+   "role": "",
+   "pair": ""
+  },
+  {
+   "id": "avantbras_generateur",
+   "index": 7,
+   "zone": 6,
+   "label": "Activer le générateur de l'avant-bras (un pouvoir de tir)",
+   "optional": false,
+   "role": "generator",
+   "pair": ""
+  },
+  {
+   "id": "avantbras_raccourci",
+   "index": 8,
+   "zone": 6,
+   "label": "Facultatif : ouvrir le raccourci vers la Veine (levier)",
+   "optional": true,
+   "role": "shortcut",
+   "pair": ""
+  },
+  {
+   "id": "poignet_verrou",
+   "index": 9,
+   "zone": 7,
+   "label": "Briser le verrou du poignet : vaincre sa garde",
+   "optional": false,
+   "role": "",
+   "pair": ""
+  }
+ ]
+}

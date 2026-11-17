@@ -455,6 +455,22 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.66.0** :
+* **Raids de clan, phase 2 : la branche « BRAS DROIT » d'Asterion est jouable** : 8 sous-zones générées par
+  `tools/levelgen/raid_bras_droit.py` (Épaule à 3 points d'apparition, Biceps de basalte, Veine de magma et sa coulée,
+  Coude-forge à deux soufflets pour deux groupes, Grotte des scories secrète, Avant-bras et son raccourci, Poignet-verrou
+  ouvert par deux générateurs, Main de Pyroclast scellée jusqu'à la phase 3) ; **instances de 8 joueurs** en
+  verrouillage par entrées (le relais de la coopération étendu à 8 sièges : arrivée en cours de partie, règle des 60 s,
+  siège libéré), changement de zone sans rien perdre (cœurs, énergie, pouvoirs) ; **carte de la branche** (zones,
+  états, groupes, « Rejoindre » / « Aider ») et **HUD de combat** (minimap, groupe de 8, objectifs, alertes, danger).
+  Le serveur n'accepte un objectif ou un changement de zone que sur le **consensus** de la majorité des joueurs de
+  l'instance (menteur minoritaire ignoré et journalisé, objectif compté une fois) ; migration **0142** (docs/RAIDS.md).
+* **Asterion dessiné en pixel art, partie par partie** : dans CLANS › RAIDS et la fiche d'un événement, le titan
+  est un vrai sprite en calques (crâne, bras, torse, abdomen, jambes, cœur cosmique, aura) qui respire, dont le cœur bat
+  et autour duquel dérivent des particules ; survoler une partie à la souris (ses propres pixels) ou y aller au clavier
+  ou à la manette l'éclaire et affiche son infobulle : nom, gigaboss, état (intact, sous attaque, affaibli, détruit,
+  non découvert) et effet de sa destruction sur Asterion ; un clic sur le bras droit d'un raid en cours ouvre la carte de sa branche.
+
 **Nouveau dans la version 2.65.0** :
 * **Raids de clan « ASTERION, LE DÉVOREUR DE MONDES », phase 1** : onglet CLANS › RAIDS (événement mondial à venir en
   heure locale et UTC avec compte à rebours, format, difficulté et inscrits ; raids du clan programmés par le chef ou un
@@ -464,11 +480,6 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   enregistrée en UTC, aperçu dans plusieurs fuseaux, inscriptions ouvertes ou fermées, capacité, publication à tous les
   clans, annulation, Journal). Heures au fuseau de l'ordinateur avec son changement d'heure ; le combat arrive dans une
   prochaine version (serveur : migration 0141, rappels par le cron chaque minute).
-* **Asterion dessiné en pixel art, partie par partie** : dans CLANS › RAIDS et la fiche d'un événement, le titan
-  est un vrai sprite en calques (crâne, bras, torse, abdomen, jambes, cœur cosmique, aura) qui respire, dont le cœur bat
-  et autour duquel dérivent des particules ; survoler une partie à la souris (ses propres pixels) ou y aller au clavier
-  ou à la manette l'éclaire et affiche son infobulle : nom, gigaboss, état (intact, sous attaque, affaibli, détruit,
-  non découvert) et effet de sa destruction sur Asterion.
 
 **Nouveau dans la version 2.64.2** :
 * **Coopération sur un même PC, un périphérique par joueur** : clavier et souris à un seul joueur, une manette

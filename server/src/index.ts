@@ -18,6 +18,7 @@ import * as badges from "./badges";
 import * as campaign from "./campaign";
 import * as clans from "./clans";
 import * as raids from "./raids";
+import * as raidZones from "./raidZones";
 import * as campaignRevisions from "./campaignRevisions";
 import * as enemyRevisions from "./enemyRevisions";
 import * as challenges from "./challenges";
@@ -272,6 +273,11 @@ route("DELETE", `${V}/raids/events/{eventId}/register`, (ctx) => raids.unregiste
 route("POST", `${V}/raids/events/{eventId}/invites`, (ctx) => raids.inviteClan(ctx));
 route("POST", `${V}/raids/events/{eventId}/invitation`, (ctx) => raids.answerInvitation(ctx));
 route("POST", `${V}/raids/events/{eventId}/call`, (ctx) => raids.callMembers(ctx));
+// Phase 2 (raidZones.ts, 2.65): the branch « BRAS DROIT », its instances of 8 and the consensus of their reports.
+route("GET", `${V}/raids/events/{eventId}/branch`, (ctx) => raidZones.branchView(ctx));
+route("POST", `${V}/raids/events/{eventId}/instance`, (ctx) => raidZones.joinInstance(ctx));
+route("GET", `${V}/raids/instances/{instanceId}/socket`, (ctx) => raidZones.instanceSocket(ctx));
+route("POST", `${V}/raids/instances/{instanceId}/reports`, (ctx) => raidZones.report(ctx));
 
 // Community levels: publish, browse, download, rate, report, per-level leaderboards
 route("GET", `${V}/community/levels`, (ctx) => community.listLevels(ctx));

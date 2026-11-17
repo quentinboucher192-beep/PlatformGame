@@ -143,7 +143,7 @@ void GameWorld::teamBodies(int self, bool on) {
     }
 }
 
-void GameWorld::fixedUpdateTeam(const PlayerInput* inputs, const bool* standby, int n, float dt) {
+void GameWorld::fixedUpdateTeam(const PlayerInput* inputs, const bool* standby, int n, float dt, const bool* vacant) {
     if (team_.empty()) {
         fixedUpdate(n > 0 ? inputs[0] : PlayerInput{}, dt);
         return;
@@ -152,6 +152,8 @@ void GameWorld::fixedUpdateTeam(const PlayerInput* inputs, const bool* standby, 
     for (size_t i = 0; i < team_.size(); ++i) {
         const bool have = static_cast<int>(i) < n;
         team_[i].standbyInput = have ? standby[i] : true;  // no input at all: absent
+        // 2.65 (raids): a seat nobody holds; never in a cooperation world (the relay sends none).
+        team_[i].vacantInput = raidMode_ && (have ? vacant != nullptr && vacant[i] : true);
         if (have && !standby[i]) teamInputs_[i] = inputs[i];
     }
     fixedUpdate(teamInputs_[0], dt);
@@ -186,11 +188,58 @@ void GameWorld::stepTeamPlayers(float dt) {
     teamBodies(-1, false);
 }
 
+void GameWorld::vacateMember(int i) {
+    // 2.65 (raids): the seat is free; whoever takes it next starts fresh (the zone's start powers,
+    // every heart).
+    TeamMember& m = team_[static_cast<size_t>(i)];
+    Player& p = *m.player;
+    m.presence = Presence::Vacant;
+    m.absent = false;
+    m.standbyTicks = 0;
+    m.revive = 0.0f;
+    m.offFrame = 0.0f;
+    p.setHidden(true);
+    p.clearPowers();
+    for (const auto& pid : level_.startPowers)
+        if (const PowerDefinition* d = services_.content.power(pid)) p.grantPower(*d);
+    p.health = p.maxHealth();
+}
+
 void GameWorld::updateTeamStandby() {
     for (size_t i = 0; i < team_.size(); ++i) {
         TeamMember& m = team_[i];
-        if (m.presence == Presence::Gone) continue;
         Player& p = *m.player;
+        if (m.vacantInput) {
+            if (m.presence != Presence::Vacant) vacateMember(static_cast<int>(i));
+            continue;
+        }
+        if (m.presence == Presence::Vacant) {
+            if (m.standbyInput) continue;  // taken, not caught up yet
+            // Joined: near the nearest player in play, else at the zone's start, every heart.
+            int toward = -1;
+            float best = 0.0f;
+            for (size_t j = 0; j < team_.size(); ++j) {
+                if (j == i || !solidMember(static_cast<int>(j))) continue;
+                const Vec2 d = team_[j].player->center() - p.center();
+                const float d2 = d.x * d.x + d.y * d.y;
+                if (toward < 0 || d2 < best) {
+                    toward = static_cast<int>(j);
+                    best = d2;
+                }
+            }
+            const Vec2 at = toward >= 0 ? (team_[static_cast<size_t>(toward)].hasSafeFeet ? team_[static_cast<size_t>(toward)].safeFeet
+                                                                                          : team_[static_cast<size_t>(toward)].player->feet())
+                                        : respawn_;
+            m.presence = Presence::Playing;
+            PlayerScope scope(*this, static_cast<int>(i));
+            p.spawn(*this, freeSpot(at, static_cast<int>(i)), false, true);
+            p.setInvulnerable(1.75f);
+            m.safeFeet = p.feet();
+            m.hasSafeFeet = true;
+            playSound("sounds/respawn.wav", p.center(), 0.7f);
+            continue;
+        }
+        if (m.presence == Presence::Gone) continue;
         if (m.standbyInput) {
             if (!m.absent) {
                 m.absent = true;
@@ -317,6 +366,15 @@ void GameWorld::updateTeamRules(float dt) {
         if (m.revive >= kReviveSeconds) reviveMember(static_cast<int>(i));
     }
 
+    if (raidMode_) {
+        // 2.65 (raids): every player has their own camera; no team frame, nobody is brought back.
+        for (auto& m : team_) {
+            m.inFrame = m.presence == Presence::Playing;
+            m.offFrame = 0.0f;
+        }
+        checkTeamDown();
+        return;
+    }
     // The team's frame: the largest group of players in play that fits in it (ties: the group
     // holding the lowest number); the others are out of it and come back after 3 s.
     int in[kMaxTeam];  // no allocation in the step
@@ -404,11 +462,15 @@ void GameWorld::updateTeamCamera(float dt) {
         grounded = grounded && p.grounded();
         ++n;
     };
+    // 2.65 (raids, display only): this computer's player alone, while in play.
+    const bool follow = raidMode_ && cameraFollow_ >= 0 && cameraFollow_ < static_cast<int>(team_.size()) &&
+                        team_[static_cast<size_t>(cameraFollow_)].presence == Presence::Playing;
+    if (follow) add(*team_[static_cast<size_t>(cameraFollow_)].player);
     for (const TeamMember& m : team_)
-        if (m.presence == Presence::Playing && m.inFrame && m.player->state() != PlayerState::Hidden) add(*m.player);
+        if (!follow && m.presence == Presence::Playing && m.inFrame && m.player->state() != PlayerState::Hidden) add(*m.player);
     if (!any)
         for (const TeamMember& m : team_)
-            if (m.presence != Presence::Gone) add(*m.player);
+            if (m.presence != Presence::Gone && m.presence != Presence::Vacant) add(*m.player);
     if (!any) add(player_);
     const Vec2 c = bb.center();
     activeZone_ = nullptr;
@@ -434,6 +496,54 @@ void GameWorld::updateTeamCamera(float dt) {
     camera_.setTeamArea(&frame);
     camera_.setTarget(c, n > 0 ? vel / static_cast<float>(n) : Vec2{}, 0.0f, grounded);
     camera_.fixedUpdate(dt);
+}
+
+GameWorld::MemberCarry GameWorld::carryOf(int i) const {
+    MemberCarry c;
+    const Player& p = playerAt(i);
+    c.health = p.health;
+    c.energy = p.energy;
+    for (const auto& pw : p.powers()) c.powers.push_back(pw->id());
+    if (!team_.empty()) {
+        const TeamMember& m = team_[static_cast<size_t>(i)];
+        c.presence = m.presence;
+        c.absent = m.absent;
+        c.standbyTicks = m.standbyTicks;
+    }
+    return c;
+}
+
+void GameWorld::restoreMember(int i, const MemberCarry& c, Vec2 feet) {
+    Player& p = playerAt(i);
+    p.clearPowers();
+    for (const auto& pid : c.powers)
+        if (const PowerDefinition* d = services_.content.power(pid)) p.grantPower(*d);
+    int health = std::clamp(c.health, 1, p.maxHealth());
+    if (team_.empty()) {
+        p.teleportTo(feet);
+        p.health = health;
+        p.energy = c.energy;
+        return;
+    }
+    TeamMember& m = team_[static_cast<size_t>(i)];
+    // A player down when the group left comes back on its feet with half its hearts.
+    m.presence = c.presence == Presence::Down ? Presence::Playing : c.presence;
+    if (c.presence == Presence::Down) health = std::max(1, (p.maxHealth() + 1) / 2);
+    m.absent = c.absent;
+    m.standbyTicks = c.standbyTicks;
+    m.revive = 0.0f;
+    m.offFrame = 0.0f;
+    if (m.presence == Presence::Playing) {
+        PlayerScope scope(*this, i);
+        p.spawn(*this, freeSpot(feet, i), false, false);
+        m.safeFeet = p.feet();
+        m.hasSafeFeet = true;
+    } else {
+        p.teleportTo(feet);
+        p.setHidden(true);
+    }
+    p.health = health;  // after spawn(), which fills them
+    p.energy = c.energy;
 }
 
 }  // namespace cosmic

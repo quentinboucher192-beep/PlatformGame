@@ -1,0 +1,672 @@
+{
+ "format": "cosmic.level",
+ "formatVersion": 1,
+ "id": "raid_bd_8",
+ "name": "Asterion · Bras droit · Main de Pyroclast",
+ "description": "La main du titan, où veille le gigaboss Pyroclast. Sa porte est scellée : le combat arrive dans la prochaine version.",
+ "planet": "pyralis",
+ "author": "Cosmic Studio",
+ "version": "1.0",
+ "difficulty": 4,
+ "music": "music/pyralis_level.ogg",
+ "bossMusic": "music/pyralis_boss.ogg",
+ "ambience": "music/pyralis_ambience.ogg",
+ "bounds": [
+  0,
+  0,
+  1440,
+  768
+ ],
+ "ambientLight": "#9a6a5a",
+ "backgroundColor": "#14090b",
+ "background": [
+  {
+   "texture": "backgrounds/pyralis/sky.png",
+   "factor": [
+    0.0,
+    0.0
+   ],
+   "fill": true
+  },
+  {
+   "texture": "backgrounds/pyralis/far.png",
+   "factor": [
+    0.1,
+    0.05
+   ],
+   "offset": [
+    0,
+    -20
+   ]
+  },
+  {
+   "texture": "backgrounds/pyralis/mid.png",
+   "factor": [
+    0.25,
+    0.12
+   ],
+   "offset": [
+    0,
+    10
+   ]
+  },
+  {
+   "texture": "backgrounds/pyralis/abyss.png",
+   "factor": [
+    0.4,
+    0.3
+   ],
+   "offset": [
+    0,
+    210
+   ],
+   "fillBelow": "#ff8a3d"
+  },
+  {
+   "texture": "backgrounds/pyralis/near.png",
+   "factor": [
+    0.5,
+    0.25
+   ],
+   "offset": [
+    0,
+    60
+   ]
+  },
+  {
+   "texture": "backgrounds/pyralis/fg_embers.png",
+   "factor": [
+    1.15,
+    1.0
+   ],
+   "offset": [
+    0,
+    -330
+   ],
+   "foreground": true,
+   "tint": "#ffffffc0"
+  }
+ ],
+ "timer": {
+  "mode": "unlimited",
+  "limit": 3600,
+  "onExpire": "continue",
+  "referenceTime": 600,
+  "challengeMaxDeaths": 0
+ },
+ "medals": {
+  "bronze": {},
+  "silver": {
+   "maxTime": 3000
+  },
+  "gold": {
+   "maxTime": 2400
+  },
+  "platinum": {
+   "maxTime": 1800,
+   "maxDeaths": 0
+  }
+ },
+ "startPowers": [
+  "dash",
+  "wave",
+  "shield",
+  "impulse"
+ ],
+ "cameraZoom": 1.0,
+ "layers": [
+  {
+   "id": "bg_decor",
+   "name": "Décor arrière",
+   "order": 0,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "terrain",
+   "name": "Terrain",
+   "order": 10,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "gameplay",
+   "name": "Gameplay",
+   "order": 20,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "fg_decor",
+   "name": "Décor avant",
+   "order": 30,
+   "visible": true,
+   "locked": false,
+   "foreground": true
+  }
+ ],
+ "objects": [
+  {
+   "id": "o1",
+   "type": "liquid",
+   "layer": "gameplay",
+   "rect": [
+    0.0,
+    704.0,
+    1440.0,
+    64.0
+   ],
+   "props": {
+    "kind": "lava"
+   }
+  },
+  {
+   "id": "o2",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    0.0,
+    608.0,
+    960.0,
+    96.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o3",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    960.0,
+    608.0,
+    480.0,
+    96.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o4",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    0.0,
+    688.0,
+    1280.0,
+    32.0
+   ],
+   "props": {
+    "effect": "lava_bubbles",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o5",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1280.0,
+    688.0,
+    160.0,
+    32.0
+   ],
+   "props": {
+    "effect": "lava_bubbles",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o6",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    0.0,
+    64.0,
+    1120.0,
+    416.0
+   ],
+   "props": {
+    "effect": "ash_fall",
+    "rate": 1.5
+   }
+  },
+  {
+   "id": "o7",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1120.0,
+    64.0,
+    320.0,
+    416.0
+   ],
+   "props": {
+    "effect": "ash_fall",
+    "rate": 1.5
+   }
+  },
+  {
+   "id": "o8",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    0.0,
+    512.0,
+    640.0,
+    240.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o9",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    36.0,
+    488.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Avant-bras",
+    "auto": true
+   }
+  },
+  {
+   "id": "o10",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    40.0,
+    472.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o11",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    16.0,
+    448.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o12",
+   "type": "player_start",
+   "layer": "gameplay",
+   "rect": [
+    139.0,
+    490.0,
+    10.0,
+    22.0
+   ]
+  },
+  {
+   "id": "o13",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    640.0,
+    576.0,
+    800.0,
+    176.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o14",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    724.0,
+    552.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Poignet-verrou",
+    "auto": true
+   }
+  },
+  {
+   "id": "o15",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    728.0,
+    536.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o16",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    704.0,
+    512.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o17",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    1280.0,
+    384.0,
+    16.0,
+    192.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o18",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    1140.0,
+    552.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Pyroclast — prochaine version. La porte de la Main restera scellée jusque-là.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o19",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1008.0,
+    544.0,
+    32.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "skull_rock",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o20",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1204.0,
+    528.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "obsidian_spire",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o21",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1364.0,
+    528.0,
+    24.0,
+    48.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "obsidian_spire",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o22",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    690.1296519151467,
+    552.0,
+    32.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_big",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o23",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    782.1465434933191,
+    552.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "fire_plant",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o24",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    849.2618934116998,
+    528.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "obsidian_spire",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o25",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    929.8694297312106,
+    544.0,
+    32.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "skull_rock",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o26",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1026.4321129579864,
+    552.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ember_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o27",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1272.0,
+    472.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd27a",
+    "radius": 160,
+    "flicker": 0.3,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o28",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1120.0,
+    320.0,
+    320.0,
+    256.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 2.5
+   }
+  }
+ ],
+ "events": [],
+ "intro": {},
+ "outro": {},
+ "metadata": {
+  "generator": "tools/levelgen/raid_bras_droit.py",
+  "raid": {
+   "branch": "asterion_bras_droit",
+   "zone": 8,
+   "spawns": {
+    "6": [
+     [
+      144,
+      512
+     ]
+    ],
+    "start": [
+     [
+      144,
+      512
+     ],
+     [
+      192,
+      512
+     ]
+    ],
+    "7": [
+     [
+      832,
+      576
+     ]
+    ]
+   },
+   "passages": [
+    {
+     "id": "p8_6",
+     "to": 6,
+     "rect": [
+      16,
+      448,
+      64,
+      64
+     ],
+     "lock": "",
+     "door": ""
+    },
+    {
+     "id": "p8_7",
+     "to": 7,
+     "rect": [
+      704,
+      512,
+      64,
+      64
+     ],
+     "lock": "objective:poignet_verrou",
+     "door": ""
+    }
+   ],
+   "objectives": [],
+   "magma": null,
+   "sealed": {
+    "door": "o17",
+    "label": "Pyroclast — prochaine version"
+   }
+  }
+ },
+ "killY": 752,
+ "maxPowers": 4
+}

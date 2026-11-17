@@ -188,7 +188,7 @@ void Hud::render(UIContext& ui, GameWorld& w, const WorldView& view, const Level
         auto at = [&](HudElement e) { return place(ui, w, settings, e); };
         auto id = [](HudElement e) { return static_cast<int>(e); };
         teamPanel_ = {};
-        if (w.coop()) {
+        if (w.coop() && !raidView_) {
             // 2.62: the team panel (every player's hearts, energy, powers and state) in place of
             // the vitals and the powers of one player (it fades as the vitals would).
             drawBlock(ui, id(HudElement::Vitals), [&] { drawTeamPanel(ui, w); });
@@ -196,15 +196,17 @@ void Hud::render(UIContext& ui, GameWorld& w, const WorldView& view, const Level
             Place p = at(HudElement::Vitals);
             drawBlock(ui, id(HudElement::Vitals), [&] { drawVitals(ui, w, p.o, p.k); });
         }
-        if (!w.coop() && hudVisible(settings, HudElement::Powers)) {
+        if ((!w.coop() || raidView_) && hudVisible(settings, HudElement::Powers)) {
             Place p = at(HudElement::Powers);
             drawBlock(ui, id(HudElement::Powers), [&] { drawPowers(ui, w, p.o, p.k); });
         }
-        if (hudVisible(settings, HudElement::Timer)) {
+        // 2.65 (raids): the raid's own HUD takes the top (minimap, objectives): no timer, shards,
+        // progress, kills nor ambush banner there.
+        if (!raidView_ && hudVisible(settings, HudElement::Timer)) {
             Place p = at(HudElement::Timer);
             drawBlock(ui, id(HudElement::Timer), [&] { drawTimer(ui, w, record, p.o, p.k); });
         }
-        if (hudVisible(settings, HudElement::Collectibles)) {
+        if (!raidView_ && hudVisible(settings, HudElement::Collectibles)) {
             Place p = at(HudElement::Collectibles);
             drawBlock(ui, id(HudElement::Collectibles), [&] { drawCollectibles(ui, w, p.o, p.k); });
         }
@@ -212,12 +214,12 @@ void Hud::render(UIContext& ui, GameWorld& w, const WorldView& view, const Level
             Place p = at(HudElement::Boss);
             drawBlock(ui, id(HudElement::Boss), [&] { drawBoss(ui, w, p.o, p.k); });
         }
-        if (hudVisible(settings, HudElement::Progress)) {
+        if (!raidView_ && hudVisible(settings, HudElement::Progress)) {
             Place p = at(HudElement::Progress);
             drawBlock(ui, id(HudElement::Progress), [&] { drawProgress(ui, w, p.o, p.k, p.width); });
         }
-        if (hudVisible(settings, HudElement::Enemies)) drawBlock(ui, id(HudElement::Enemies), [&] { drawEnemies(ui, w, at(HudElement::Enemies)); });
-        if (hudVisible(settings, HudElement::Ambush) && (w.activeAmbush() || (editorPreview_ && !w.ambushes().empty())))
+        if (!raidView_ && hudVisible(settings, HudElement::Enemies)) drawBlock(ui, id(HudElement::Enemies), [&] { drawEnemies(ui, w, at(HudElement::Enemies)); });
+        if (!raidView_ && hudVisible(settings, HudElement::Ambush) && (w.activeAmbush() || (editorPreview_ && !w.ambushes().empty())))
             drawBlock(ui, id(HudElement::Ambush), [&] { drawAmbush(ui, w, at(HudElement::Ambush)); });
         if (w.coop()) {
             drawTeamLabels(ui, w, view);  // names over the players, souls and their revival

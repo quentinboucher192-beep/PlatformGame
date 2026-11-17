@@ -33,6 +33,14 @@ public:
     /// 2.63.5: the package of a community level (kMaxPackage at most; null: none kept on this
     /// PC), sent part by part, in the lobby, to a game that does not have the level (PACKAGE_ASK).
     void setPackage(std::shared_ptr<const std::vector<uint8_t>> bytes);
+    /// 2.65: a raid instance (docs/RAIDS.md): 8 seats; any seat starts it (one player is
+    /// enough); a seat nobody holds is vacant (InputFrame::Vacant frames) and a player may take
+    /// it while the game runs (catch-up, then REJOIN); a seat absent for 60 s becomes vacant.
+    void setRaid(bool on) { raid_ = on; }
+    bool raid() const { return raid_; }
+    /// 2.65 (raids): the branch's state (objectives done). Once started, it applies from the
+    /// first step not given yet, for everyone (RAID_STATE), and is kept for the catch-ups.
+    void setRaidState(uint32_t mask);
     void connected(int conn, uint32_t nowMs);
     void disconnected(int conn, uint32_t nowMs);
     void received(int conn, const uint8_t* data, size_t size, uint32_t nowMs);
@@ -44,6 +52,7 @@ public:
     int players() const { return players_; }
     int seatOf(int conn) const;
     bool absent(int seat) const { return seat >= 0 && seat < kSeats && seats_[seat].absent; }
+    bool vacant(int seat) const { return seat >= 0 && seat < kSeats && seats_[seat].vacant; }
     /// The lobby as JSON (also what LOBBY carries).
     std::string lobbyJson() const;
 
@@ -60,9 +69,11 @@ private:
         bool absent = false;
         uint32_t absentFrom = 0;
         uint32_t rejoinAt = 0;  // 0: not rejoining
+        bool vacant = false;    // 2.65 (raids): nobody holds it (Vacant frames)
         std::deque<InputFrame> pending;  // inputs for steps next_, next_ + 1...
         std::deque<bool> have;
     };
+    int maxSeats() const { return raid_ ? coopnet::kMaxPlayers : coopnet::kMaxCoopPlayers; }
     void hello(int conn, coopnet::Reader& r, uint32_t now);
     void input(int seat, coopnet::Reader& r);
     void markAbsent(int seat);
@@ -89,6 +100,9 @@ private:
     uint32_t next_ = 0;
     std::vector<InputFrame> history_;  // every step given, players frames each
     uint32_t flushed_ = 0;             // steps already sent
+    bool raid_ = false;
+    uint32_t raidMask_ = 0;
+    std::vector<std::pair<uint32_t, uint32_t>> raidStates_;  // (step, mask), in order
 };
 
 }  // namespace cosmic
