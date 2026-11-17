@@ -239,11 +239,7 @@ void Enemy::beginWard(GameWorld& w, int next) {
     m.text = "La Liche cache son âme dans son phylactère !";
     m.subtitle = "Brisez le phylactère";
     m.duration = 3.0f;
-    w.message(m);
-    WorldMessage hint;
-    hint.text = "Intouchable tant que le cristal tient : brisez-le !";
-    hint.duration = 4.5f;
-    w.message(hint);
+    w.message(m);  // then, while the crystal stands, the HUD says so (Hud::drawStatus)
     if (!objectId_.empty()) w.emit(objectId_, "bossWard");
 }
 
@@ -369,8 +365,7 @@ void Enemy::licheEnd(GameWorld& w, bool cut) {
     w.playSound("sounds/shadow_step.wav", markPos_, 0.9f, 0.7f);
     if (!p.alive() || p.respawning() || distance(p.center(), markPos_) > ringRadius_) return;
     hexLanded_ = true;
-    const bool already = p.cursed();
-    p.applyCurse(orDefault(a.curse, kHexCurse), orDefault(a.duration, kHexTime));
+    p.applyCurse(orDefault(a.curse, kHexCurse), orDefault(a.duration, kHexTime));  // the HUD shows it (Hud::drawStatus)
     if (a.damage > 0.0f) {
         DamageInfo dmg;
         dmg.amount = a.damage;
@@ -381,11 +376,6 @@ void Enemy::licheEnd(GameWorld& w, bool cut) {
     }
     w.particles().emit("boss_phase", p.center(), 0.6f);
     w.flash({150, 80, 230, 255}, 0.15f);
-    if (already) return;  // told once per curse
-    WorldMessage m;
-    m.text = "Maudite : vos sauts s'alourdissent !";
-    m.duration = 2.2f;
-    w.message(m);
 }
 
 // ================================================================== render

@@ -65,6 +65,11 @@ private:
     /// « Ennemis vaincus : X / Y » (2.51): the run's kills (RunStats::kills) against the
     /// level's enemies (RunStats::totalEnemies), as « Aucun survivant » counts them. Display only.
     void drawEnemies(UIContext& ui, GameWorld& w, const Place& p);
+    /// 2.57: what the Liche does to the fight, as long as it lasts: Nova cursed (her jumps
+    /// heavy, the seconds left), the boss's soul in its phylactery (it cannot be hurt). Chips
+    /// on the left of the screen, one under the other, measured and placed where they cover no
+    /// other element of the HUD (drawn after the world: never under a sprite).
+    void drawStatus(UIContext& ui, GameWorld& w, const GameplaySettings& settings);
     void drawMessages(UIContext& ui, GameWorld& w);
     /// How to use a power just picked up, centred on `center`: the key of its slot, or its
     /// move / « passif » in the dashed gold frame of the powers off their slot key.

@@ -3001,7 +3001,7 @@
   "Intervalle des spores (s)": "Spore interval (s)",
   "Intervalle entre salves (s)": "Interval between salvos (s)",
   "Intouchable": "Untouchable",
-  "Intouchable tant que le cristal tient : brisez-le !": "Untouchable while the crystal stands: break it!",
+  "Intouchable : brisez le phylactère": "Untouchable: break the phylactery",
   "Introduction": "Intro",
   "Inventaire complet": "Full Inventory",
   "Inverser l'axe X": "Invert the X axis",
@@ -3952,7 +3952,7 @@
   "Masse gélatineuse qui bondit en crachant de l'acide. Se divise en deux quand on le frappe à mort. Variante de Glacior : ses attaques glacées ralentissent.": "Gelatinous blob that bounces around spitting acid. Splits in two when struck down. Glacior variant: its icy attacks slow you down.",
   "Masse gélatineuse qui bondit en crachant de l'acide. Se divise en deux quand on le frappe à mort. Variante de Pyralis forgée dans la lave : plus résistante et plus rapide.": "Gelatinous blob that bounces around spitting acid. Splits in two when struck down. Pyralis variant forged in lava: tougher and faster.",
   "Matériau": "Material",
-  "Maudite : vos sauts s'alourdissent !": "Cursed: your jumps grow heavy!",
+  "Maudite : sauts alourdis {0} s": "Cursed: heavy jumps {0} s",
   "Maurice": "Mauritius",
   "Mauritanie": "Mauritania",
   "Maximum en vie": "Maximum alive",
@@ -5987,7 +5987,6 @@
   "Sautez puis appuyez à nouveau sur Saut en l'air : double saut !": "Jump, then press Jump again in the air: double jump!",
   "Sauts": "Jumps",
   "sauts": "jumps",
-  "Sauts alourdis {0} s": "Heavy jumps {0} s",
   "Sauts en plus": "Extra jumps",
   "Sauvegarde": "Backup",
   "Sauvegarde automatique de l'éditeur": "Editor autosave",
@@ -8246,6 +8245,7 @@
   "▲ {0} — en recul": "▲ {0} — slipping",
   "▼ moins régulier qu'il y a 30 jours": "▼ less regular than 30 days ago",
   "▼ {0} — en progrès": "▼ {0} — improving",
-  "▼ {0} — en recul": "▼ {0} — slipping"
+  "▼ {0} — en recul": "▼ {0} — slipping",
+  "Sauts alourdis {0} s": "Heavy jumps {0} s"
  }
 }

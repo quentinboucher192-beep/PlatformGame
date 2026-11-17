@@ -32,11 +32,15 @@
 
 using namespace cosmic;
 
-// A check that ends the test case when it fails (what follows needs it).
-#define REQUIRE(cond)        \
-    do {                     \
-        CHECK(cond);         \
-        if (!(cond)) return; \
+// A check that ends the test case when it fails (what follows needs it). The condition is
+// evaluated once (it may act: an attack forced, a blow dealt), again only to report a failure.
+#define REQUIRE(cond)                                    \
+    do {                                                 \
+        const bool required_ = static_cast<bool>(cond); \
+        if (!required_) {                                \
+            CHECK(cond);                                 \
+            return;                                      \
+        }                                                \
     } while (0)
 
 namespace {

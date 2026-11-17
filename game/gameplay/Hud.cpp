@@ -105,6 +105,7 @@ void Hud::render(UIContext& ui, GameWorld& w, const WorldView& view, const Level
             drawProgress(ui, w, p.o, p.k, p.width);
         }
         if (hudVisible(settings, HudElement::Enemies)) drawEnemies(ui, w, at(HudElement::Enemies));
+        drawStatus(ui, w, settings);
         if (settings.showInputHints) drawInteractPrompt(ui, w, view);
     }
     if (messagesVisible(settings)) drawMessages(ui, w);
@@ -454,6 +455,73 @@ void Hud::drawEnemies(UIContext& ui, GameWorld& w, const Place& p) {
     TextStyle st = style(ui, p.k * 20, all ? green : ui.theme().text, FontFace::Bold, Align::Left, VAlign::Middle);
     ui.text().draw(enemiesText(s.kills, s.totalEnemies), {a.x + S(14) + S(28) + S(10), cy}, st);
     if (all) ui.icon(kHudIcons, Check, 16, {a.right() - S(14) - S(24), cy - S(12), S(24), S(24)}, green);
+}
+
+void Hud::drawStatus(UIContext& ui, GameWorld& w, const GameplaySettings& settings) {
+    struct Chip {
+        std::string text;
+        Color color;
+    };
+    std::vector<Chip> chips;
+    const Player& pl = w.player();
+    if (pl.alive() && pl.cursed())
+        chips.push_back({"Maudite : sauts alourdis " + std::to_string(static_cast<int>(std::ceil(pl.curseTime()))) + " s", Color{200, 140, 255, 255}});
+    if (const Enemy* b = w.activeBoss(); b && b->alive() && b->warded())
+        chips.push_back({"Intouchable : brisez le phylactère", Color{170, 240, 255, 255}});
+    if (chips.empty()) return;
+    const float W = ui.screenW(), H = ui.screenH();
+    const float h = ui.s(40), pad = ui.s(14), dot = ui.s(10), maxW = std::min(ui.s(440), W - ui.s(80));
+    // Each chip as wide as its text (smaller type for a long one), never wider than maxW.
+    std::vector<float> sizes, widths;
+    float total = 0.0f;
+    for (const Chip& c : chips) {
+        const float room = maxW - pad * 3.0f - dot;
+        const float fs = ui.fitFont(c.text, FontFace::Bold, 20, room);
+        sizes.push_back(fs);
+        widths.push_back(std::min(maxW, pad * 3.0f + dot + ui.text().measure(c.text, FontFace::Bold, ui.s(fs)).x));
+        total += h + ui.s(8);
+    }
+    // Where they cover nothing of the HUD shown: under the left column first, then lower down.
+    std::vector<Rect> taken;
+    for (int i = 0; i < kHudElements; ++i) {
+        auto e = static_cast<HudElement>(i);
+        if (e == HudElement::Splits || !hudVisible(settings, e)) continue;
+        if (e == HudElement::Boss && !(w.activeBoss() && w.activeBoss()->alive())) continue;
+        Rect a = area(ui, w, e, place(ui, w, settings, e));
+        if (a.w > 0.0f) taken.push_back(a.expanded(ui.s(6)));
+    }
+    float below = ui.s(34);
+    for (HudElement e : {HudElement::Vitals, HudElement::Powers, HudElement::Enemies}) {
+        if (!hudVisible(settings, e)) continue;
+        Rect a = area(ui, w, e, place(ui, w, settings, e));
+        if (a.w > 0.0f && a.x < W * 0.5f) below = std::max(below, a.bottom() + ui.s(12));
+    }
+    float widest = 0.0f;
+    for (float wd : widths) widest = std::max(widest, wd);
+    const Vec2 spots[] = {{ui.s(40), below}, {ui.s(40), H * 0.42f}, {ui.s(40), H * 0.56f}, {W - ui.s(40) - widest, H * 0.42f}};
+    Vec2 at = spots[0];
+    for (const Vec2& o : spots) {
+        const Rect all{o.x, o.y, widest, total};
+        if (all.bottom() > H || all.right() > W) continue;
+        bool free = true;
+        for (const Rect& t : taken) free = free && !all.intersects(t);
+        if (free) {
+            at = o;
+            break;
+        }
+    }
+    const float pulse = 0.5f + 0.5f * std::sin(time_ * 5.0f);
+    for (size_t i = 0; i < chips.size(); ++i) {
+        const Rect r{at.x, at.y, widths[i], h};
+        ui.r().fillRoundedRect(r, h * 0.5f, Color{14, 8, 26, 215});
+        ui.r().drawRoundedRect(r, h * 0.5f, chips[i].color.withAlpha(static_cast<uint8_t>(120 + 100 * pulse)), ui.s(1.5f));
+        ui.r().drawGlow({r.x + pad + dot * 0.5f, r.center().y}, dot * 1.6f, chips[i].color.withAlpha(static_cast<uint8_t>(90 + 80 * pulse)));
+        ui.r().fillCircle({r.x + pad + dot * 0.5f, r.center().y}, dot * 0.5f, chips[i].color);
+        const float room = r.w - pad * 3.0f - dot;
+        TextStyle st = style(ui, sizes[i], chips[i].color, FontFace::Bold, Align::Left, VAlign::Middle);
+        ui.text().draw(ui.elide(chips[i].text, FontFace::Bold, sizes[i], room), {r.x + pad * 2.0f + dot, r.center().y}, st);
+        at.y += h + ui.s(8);
+    }
 }
 
 void Hud::drawProgress(UIContext& ui, GameWorld& w, Vec2 o, float k, float width) {

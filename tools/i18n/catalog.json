@@ -18470,9 +18470,9 @@
    ]
   },
   {
-   "fr": "Intouchable tant que le cristal tient : brisez-le !",
+   "fr": "Intouchable : brisez le phylactère",
    "where": [
-    "game/enemies/LicheAttacks.cpp"
+    "game/gameplay/Hud.cpp"
    ]
   },
   {
@@ -24072,9 +24072,9 @@
    ]
   },
   {
-   "fr": "Maudite : vos sauts s'alourdissent !",
+   "fr": "Maudite : sauts alourdis {0} s",
    "where": [
-    "game/enemies/LicheAttacks.cpp"
+    "game/gameplay/Hud.cpp"
    ]
   },
   {
