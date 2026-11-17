@@ -25,6 +25,7 @@ void GameWorld::setKeysPerSlot(bool on) {
     if (keysPerSlot_ == on) return;
     keysPerSlot_ = on;
     player_.setKeysPerSlot(on);
+    for (auto& x : extraPlayers_) x->setKeysPerSlot(on);  // 2.62: a team (set before load())
     if (time_ > 0.0f || level_.startPowers.empty()) return;
     // Loaded but not started: the start powers as the new rule grants them (two powers on
     // the same old button are both kept with keys per slot). Untouched when it is the same.
@@ -61,6 +62,11 @@ bool GameWorld::load(const LevelData& level) {
     decoyTimer_ = 0.0f;
     decoysBroken_ = 0;
     frozenPlatforms_.clear();  // their colliders went with physics_.clear()
+    team_.clear();  // 2.62: rebuilt below for a team (loadTeam)
+    extraPlayers_.clear();
+    cur_ = &player_;
+    curIndex_ = 0;
+    revivesLeft_ = kTeamRevives;
 
     particles_.init(&services_.res);
     particles_.loadPresets(services_.content.effects());
@@ -103,6 +109,7 @@ bool GameWorld::load(const LevelData& level) {
     player_.spawn(*this, respawn_, respawnFaceLeft_, false);
     camera_.reset(respawn_ - Vec2{0, 20});
     flash_.a = 0;
+    if (teamWanted_ > 1 && mode_ != WorldMode::Editor) loadTeam();  // 2.62: the other players
 
     if (mode_ == WorldMode::Editor) {
         player_.setHidden(true);
@@ -116,8 +123,10 @@ bool GameWorld::load(const LevelData& level) {
     }
     if (mode_ == WorldMode::Play && !level_.intro.empty()) {
         state_ = WorldState::Intro;
-        player_.setHidden(true);
-        player_.controlEnabled = false;
+        forEachTeammate([](Player& p) {
+            p.setHidden(true);
+            p.controlEnabled = false;
+        });
         cinematic_.start(level_.intro, *this);
     } else {
         beginPlay();
@@ -189,21 +198,30 @@ void GameWorld::startAt(Vec2 feet) {
     if (cinematic_.active()) cinematic_.skip(*this);
     respawn_ = feet;
     player_.spawn(*this, feet, false, false);
+    // 2.62: a team starts side by side from there (never one inside another).
+    for (size_t i = 1; i < team_.size(); ++i) team_[i].player->spawn(*this, freeSpot(feet, static_cast<int>(i)), false, false);
     camera_.reset(feet - Vec2{0, 20});
     if (state_ != WorldState::Playing) beginPlay();
-    player_.controlEnabled = true;
+    forEachTeammate([](Player& p) { p.controlEnabled = true; });
 }
 
 void GameWorld::startAt(Vec2 feet, bool faceLeft) {
     startAt(feet);
     respawnFaceLeft_ = faceLeft;
-    player_.facing = faceLeft ? -1.0f : 1.0f;
+    forEachTeammate([&](Player& p) { p.facing = faceLeft ? -1.0f : 1.0f; });
 }
 
 void GameWorld::beginPlay() {
     state_ = WorldState::Playing;
     player_.controlEnabled = true;
     if (player_.state() == PlayerState::Hidden) player_.spawn(*this, respawn_, respawnFaceLeft_, true);
+    // 2.62: the rest of the team appears beside player 1 (in order, each in a free spot).
+    for (size_t i = 1; i < team_.size(); ++i) {
+        Player& p = *team_[i].player;
+        p.controlEnabled = true;
+        if (p.state() == PlayerState::Hidden && team_[i].presence == Presence::Playing)
+            p.spawn(*this, freeSpot(respawn_, static_cast<int>(i)), respawnFaceLeft_, true);
+    }
     camera_.releaseScript();
     // 2.47.1: the clock starts when Nova can move. An intro that shows her appearing (watched to
     // the end) has played her materialisation already; a skipped one plays it now: the clock
@@ -218,7 +236,7 @@ void GameWorld::beginPlay() {
 
 // ================================================================== update
 
-Vec2 GameWorld::enemyAim() const { return decoyTimer_ > 0.0f ? decoyPos_ : player_.center(); }
+Vec2 GameWorld::enemyAim() const { return decoyTimer_ > 0.0f ? decoyPos_ : player().center(); }
 
 void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
     // Waiting for the player to choose which power to keep: nothing moves (see stepWorld).
@@ -227,6 +245,7 @@ void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
     if (flashTimer_ > 0.0f) flashTimer_ = std::max(0.0f, flashTimer_ - dt);
     if (splitFlash_ > 0.0f) splitFlash_ -= dt;
     if (mode_ == WorldMode::Editor) return;
+    if (coop()) updateTeamStandby();  // 2.62: the relay's standby flags (counted every step)
 
     if (hitStop_ > 0.0f) {
         hitStop_ -= dt;
@@ -268,20 +287,25 @@ void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
     }
     carryBodies();
 
-    player_.onLadder = false;
-    player_.inWater = false;
-    player_.speedMultiplier = 1.0f;
-    player_.updraft = 0.0f;
-    {
-        HurtScope traps(*this, HurtOrigin::Hazard);
-        updatePlayerOverlaps(dt);
-    }
-    player_.fixedUpdate(*this, effective, dt);
-    // 2.48: the last solid ground under Nova (practice runs of hardcore levels come back there).
-    if ((practiceRespawn_ || invincible()) && player_.grounded() && player_.state() != PlayerState::Dead &&
-        player_.state() != PlayerState::Respawn && player_.vel.y >= 0.0f) {
-        safeFeet_ = player_.feet();
-        hasSafeFeet_ = true;
+    if (coop()) {
+        // 2.62: each player in turn (docs/COOP.md, order of resolution).
+        stepTeamPlayers(dt);
+    } else {
+        player_.onLadder = false;
+        player_.inWater = false;
+        player_.speedMultiplier = 1.0f;
+        player_.updraft = 0.0f;
+        {
+            HurtScope traps(*this, HurtOrigin::Hazard);
+            updatePlayerOverlaps(dt);
+        }
+        player_.fixedUpdate(*this, effective, dt);
+        // 2.48: the last solid ground under Nova (practice runs of hardcore levels come back there).
+        if ((practiceRespawn_ || invincible()) && player_.grounded() && player_.state() != PlayerState::Dead &&
+            player_.state() != PlayerState::Respawn && player_.vel.y >= 0.0f) {
+            safeFeet_ = player_.feet();
+            hasSafeFeet_ = true;
+        }
     }
 
     // Time slow power: enemies (and, in updateProjectiles, their shots) run slower.
@@ -307,6 +331,7 @@ void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
                     entities_.end());
 
     checkKillPlane();
+    if (coop()) updateTeamRules(dt);  // 2.62: revivals, the team's frame, everybody down
     updateCamera(dt);
 
     if (state_ == WorldState::Outro && !cinematic_.active()) state_ = WorldState::Completed;
@@ -329,14 +354,26 @@ void GameWorld::carryBodies() {
         if (!mp) continue;
         Vec2 d = mp->lastDelta();
         if (d.lengthSq() < 1e-8f) continue;
-        MoveOptions opt = player_.moveOptions();
-        if (player_.groundCollider() == mp->colliderId() && player_.alive()) {
-            physics_.move(player_.box, {d.x, 0.0f}, opt);
-            player_.box.y += d.y;  // vertical carry is exact (platform pushes / pulls)
-            player_.prevBox = player_.prevBox.translated(d);
-        } else if (d.y < 0.0f && player_.alive() && player_.box.intersects(mp->box)) {
-            // Rising platform pushing the player from below.
-            player_.box.y = mp->box.y - player_.box.h;
+        auto carry = [&](Player& pl) {
+            MoveOptions opt = pl.moveOptions();
+            if (pl.groundCollider() == mp->colliderId() && pl.alive()) {
+                physics_.move(pl.box, {d.x, 0.0f}, opt);
+                pl.box.y += d.y;  // vertical carry is exact (platform pushes / pulls)
+                pl.prevBox = pl.prevBox.translated(d);
+            } else if (d.y < 0.0f && pl.alive() && pl.box.intersects(mp->box)) {
+                // Rising platform pushing the player from below.
+                pl.box.y = mp->box.y - pl.box.h;
+            }
+        };
+        if (team_.empty()) {
+            carry(player_);
+        } else {
+            for (size_t i = 0; i < team_.size(); ++i) {
+                if (!solidMember(static_cast<int>(i))) continue;
+                teamBodies(static_cast<int>(i), true);  // the others' bodies stop it, never move
+                carry(*team_[i].player);
+            }
+            teamBodies(-1, false);
         }
         for (auto& en : enemies_) {
             Rect feet{en->box.x, en->box.bottom() - 1, en->box.w, 3};
@@ -346,20 +383,27 @@ void GameWorld::carryBodies() {
 }
 
 void GameWorld::updatePlayerOverlaps(float dt) {
-    interactable_ = nullptr;
+    // The current player (alone: the only one). 2.62: in a team, each player has its own
+    // « inside » bit and its own interactable object.
+    Player& pl = player();
+    const bool team = !team_.empty();
+    const uint8_t bit = team ? static_cast<uint8_t>(1u << curIndex_) : 0;
+    LevelEntity*& interactable = team ? team_[static_cast<size_t>(curIndex_)].interactable : interactable_;
+    interactable = nullptr;
     float best = 1e9f;
     for (size_t i = 0; i < entities_.size(); ++i) {
         LevelEntity* e = entities_[i].get();
         if (!e->active || e->removed) continue;
-        if (e->interactable() && player_.alive() && e->box.expanded(8).intersects(player_.box)) {
-            float d = distance(e->box.center(), player_.center());
+        if (e->interactable() && pl.alive() && e->box.expanded(8).intersects(pl.box)) {
+            float d = distance(e->box.center(), pl.center());
             if (d < best) {
                 best = d;
-                interactable_ = e;
+                interactable = e;
             }
         }
         if (!e->wantsPlayerOverlap()) continue;
-        bool inside = player_.alive() && !player_.respawning() && e->overlapBox().intersects(player_.box);
+        if (team) e->playerInside = (e->insideMask & bit) != 0;
+        bool inside = pl.alive() && !pl.respawning() && e->overlapBox().intersects(pl.box);
         if (inside && !e->playerInside) {
             e->playerInside = true;
             e->onPlayerEnter(*this);
@@ -368,6 +412,10 @@ void GameWorld::updatePlayerOverlaps(float dt) {
             e->onPlayerExit(*this);
         }
         if (inside) e->onPlayerStay(*this, dt);
+        if (team) {
+            e->insideMask = static_cast<uint8_t>(e->playerInside ? (e->insideMask | bit) : (e->insideMask & ~bit));
+            e->playerInside = e->insideMask != 0;
+        }
     }
 }
 
@@ -375,6 +423,11 @@ void GameWorld::updateEnemies(float dt) {
     for (size_t i = 0; i < enemies_.size(); ++i) {
         Enemy* e = enemies_[i].get();
         HurtScope blows(*this, e->def().isBoss ? HurtOrigin::BossAttack : HurtOrigin::EnemyAttack, e);  // 2.54 (statistics)
+        if (!team_.empty()) {
+            PlayerScope target(*this, targetIndex(e->center()));  // 2.62: its nearest player
+            e->fixedUpdate(*this, dt);
+            continue;
+        }
         e->fixedUpdate(*this, dt);
     }
     enemies_.erase(std::remove_if(enemies_.begin(), enemies_.end(),
@@ -408,9 +461,9 @@ void GameWorld::updateProjectiles(float frameDt) {
         }
         p.vel.y += p.gravity * dt;
         if (p.fromPlayer && !hazards_.empty()) hazards_.bendShot(p, dt);  // gravity wells (2.19)
-        if (p.homing > 0.0f && p.age < p.homingTime && !p.fromPlayer && player_.alive()) {
+        if (p.homing > 0.0f && p.age < p.homingTime && !p.fromPlayer && nearestPlayer(p.pos).alive()) {
             // Seeker: turns toward the player at a bounded rate (deterministic math).
-            Vec2 to = player_.center() - p.pos;
+            Vec2 to = nearestPlayer(p.pos).center() - p.pos;
             float want = dmath::atan2(to.y, to.x);
             float cur = dmath::atan2(p.vel.y, p.vel.x);
             float diff = want - cur;
@@ -497,8 +550,9 @@ void GameWorld::updateProjectiles(float frameDt) {
                     break;
                 }
             }
-        } else if (player_.alive() && Collision::circleIntersectsRect(p.pos, p.radius, player_.box)) {
-            if (player_.shieldActive() && p.clip != "shockwave") {
+        } else if (Player* hitP = shotTarget(p)) {
+            PlayerScope hitScope(*this, playerIndex(*hitP));  // 2.62: the player it touches (alone: the only one)
+            if (hitP->shieldActive() && p.clip != "shockwave") {
                 // Reflect back at the enemies.
                 p.vel = -p.vel * 1.25f;
                 p.fromPlayer = true;
@@ -530,6 +584,13 @@ void GameWorld::updateProjectiles(float frameDt) {
                 p.alive = false;
                 particles_.emit(p.hitEffect, p.pos, 0.8f);
                 if (p.cloudRadius > 0.0f) cloudFromShot(p, p.pos);
+            } else if (!team_.empty()) {
+                // 2.62: a ground shockwave goes on: it reaches the other players it touches too.
+                forEachPlayer([&](Player& q) {
+                    if (&q == hitP || !q.alive() || !Collision::circleIntersectsRect(p.pos, p.radius, q.box)) return;
+                    HurtScope shot(*this, static_cast<HurtOrigin>(p.origin), findEnemy(p.owner), p.uid, &p.attackName);
+                    damagePlayer(d);
+                });
             }
         }
     }
@@ -580,23 +641,33 @@ void GameWorld::explodeProjectile(const Projectile& p, Vec2 at) {
         AttackScope shot(*this, p.attackTag);  // 2.54 (statistics)
         damageEnemies(Rect::fromCenter(at, {r * 2, r * 2}), d, nullptr);
         powerHit("impulse", Rect::fromCenter(at, {r * 2, r * 2}));  // breaks cracked rock
-    } else if (player_.alive() && Collision::circleIntersectsRect(at, r, player_.box)) {
-        HurtScope shot(*this, static_cast<HurtOrigin>(p.origin), findEnemy(p.owner), p.uid, &p.attackName);  // 2.54 (statistics)
-        damagePlayer(d);
+    } else {
+        forEachPlayer([&](Player& pl) {  // 2.62: every player in the blast (alone: the only one)
+            if (!pl.alive() || !Collision::circleIntersectsRect(at, r, pl.box)) return;
+            HurtScope shot(*this, static_cast<HurtOrigin>(p.origin), findEnemy(p.owner), p.uid, &p.attackName);  // 2.54 (statistics)
+            damagePlayer(d);
+        });
     }
 }
 
 void GameWorld::checkKillPlane() {
-    if (!player_.alive()) return;
-    if (player_.box.y > level_.effectiveKillY()) {
-        HurtScope fall(*this, HurtOrigin::Fall);  // 2.54 (statistics)
-        player_.kill(*this);
-        // Falling death: no point waiting at the bottom of the screen.
-        hitStop_ = 0.0f;
-    }
+    forEachPlayer([&](Player& pl) {  // 2.62: each player of a team (alone: the only one)
+        if (!pl.alive()) return;
+        if (pl.box.y > level_.effectiveKillY()) {
+            if (!team_.empty()) team_[static_cast<size_t>(curIndex_)].fell = true;  // its soul: safe ground
+            HurtScope fall(*this, HurtOrigin::Fall);  // 2.54 (statistics)
+            pl.kill(*this);
+            // Falling death: no point waiting at the bottom of the screen.
+            hitStop_ = 0.0f;
+        }
+    });
 }
 
 void GameWorld::updateCamera(float dt) {
+    if (!team_.empty()) {
+        updateTeamCamera(dt);  // 2.62: the whole team in view
+        return;
+    }
     activeZone_ = nullptr;
     if (const CameraZone* bz = bossCameraZone()) {
         activeZone_ = bz;  // a boss fight: the whole arena in view
@@ -719,7 +790,7 @@ bool GameWorld::powerHit(const std::string& power, const Rect& area) {
 
 bool GameWorld::damagePlayer(const DamageInfo& dmg) {
     ++inDamage_;
-    const bool hurt = player_.hurt(*this, dmg);
+    const bool hurt = player().hurt(*this, dmg);
     --inDamage_;
     if (hurt && listener) listener->playerHurt(*this, dmg, hurtSource(&dmg));
     return hurt;
@@ -858,7 +929,7 @@ Color GameWorld::flashColor() const {
 }
 
 void GameWorld::rumble(float low, float high, int ms) {
-    if (services_.input && mode_ != WorldMode::Editor) services_.input->rumble(low, high, ms);
+    if (services_.input && mode_ != WorldMode::Editor && !quiet_) services_.input->rumble(low, high, ms);
 }
 
 void GameWorld::message(WorldMessage msg) {
@@ -906,6 +977,10 @@ void GameWorld::setCheckpoint(const std::string& id, Vec2 feet) {
 }
 
 void GameWorld::onPlayerDeathAnimationDone() {
+    if (!team_.empty()) {
+        memberDown(curIndex_);  // 2.62: down, its soul waits for an ally (docs/COOP.md)
+        return;
+    }
     if (mode_ == WorldMode::Arena) {
         hazards_.clear(*this);
         if (onPlayerDied) onPlayerDied();
@@ -937,12 +1012,12 @@ void GameWorld::onPlayerDeathAnimationDone() {
 
 void GameWorld::offerPower(const std::string& tabletId, const std::string& powerId, int conflictSlot) {
     if (powerOffer_ || mode_ == WorldMode::Editor) return;
-    powerOffer_ = PowerOffer{tabletId, powerId, conflictSlot};
+    powerOffer_ = PowerOffer{tabletId, powerId, conflictSlot, curIndex_};
     if (autoPowerChoice) {
         resolvePowerOffer(autoPowerChoice);
         return;
     }
-    player_.vel = {0.0f, std::min(player_.vel.y, 0.0f)};
+    player().vel = {0.0f, std::min(player().vel.y, 0.0f)};
     playSound("sounds/power_unlock.wav", 0.6f, 0.8f);
 }
 
@@ -950,18 +1025,20 @@ bool GameWorld::resolvePowerOffer(uint8_t choice) {
     if (!powerOffer_) return false;
     PowerOffer offer = *powerOffer_;
     powerOffer_.reset();
+    PlayerScope who(*this, team_.empty() ? 0 : offer.player);  // 2.62: the player it was offered to
+    Player& pl = player();
     const PowerDefinition* def = services_.content.power(offer.powerId);
     auto* tablet = dynamic_cast<PowerUnlockEntity*>(entity(offer.tabletId));
     int slot = static_cast<int>(choice) - 1;
     if (offer.conflictSlot >= 0) slot = offer.conflictSlot;  // a power on the same button must go
     bool leave = choice == 0 || choice == InputFrame::kChoiceLeave || !def || !tablet ||
-                 slot < 0 || slot >= static_cast<int>(player_.powers().size());
+                 slot < 0 || slot >= static_cast<int>(pl.powers().size());
     if (leave) {
         hint("Pouvoir laissé ici : vous pourrez revenir le prendre.", 2.5f);
         return true;
     }
-    std::string dropped = player_.replacePower(slot, *def);
-    player_.addEnergy(100.0f);
+    std::string dropped = pl.replacePower(slot, *def);
+    pl.addEnergy(100.0f);
     tablet->exchange(*this, dropped);
     PowerUnlockEntity::celebrate(*this, *def, tablet->box.center(), {}, dropped);
     emit(offer.tabletId, "collected");
@@ -1050,9 +1127,12 @@ void GameWorld::reachExit(const LevelEntity& exitEntity) {
     if (state_ != WorldState::Playing || mode_ != WorldMode::Play) return;
     state_ = WorldState::Outro;
     timer_.stop();
-    player_.controlEnabled = false;
-    player_.vel.x = 0.0f;
-    player_.startVictory();
+    // 2.62: in a team, the player who reached it celebrates, the others stop.
+    forEachTeammate([](Player& p) {
+        p.controlEnabled = false;
+        p.vel.x = 0.0f;
+    });
+    player().startVictory();
     emit(exitEntity.id(), "exit");
     services_.audio.stopMusic(600);
     playSound("sounds/portal.wav", 1.0f);
@@ -1086,7 +1166,7 @@ void GameWorld::failLevel(const std::string& reason) {
     state_ = WorldState::Failed;
     failReason_ = reason;
     timer_.stop();
-    player_.controlEnabled = false;
+    forEachTeammate([](Player& p) { p.controlEnabled = false; });
 }
 
 std::optional<Rect> GameWorld::arenaOf(const Enemy& e) const {

@@ -36,6 +36,12 @@ enum class ReplayEventType : uint8_t {
     Split = 14,        // 2.18: a checkpoint split; arg: split index (255 = more), value: low
                        //       16 bits of the split time in ms, the frame gives the rest
                        //       (ReplayData::splitTimeMs; Ghost Racing; ignored by the server)
+    // 2.62, a team (format 5, docs/COOP.md § 5): in the trace of the player concerned.
+    Revive = 15,       // revived by an ally (its trace jumps to where it appears)
+    Regroup = 16,      // out of the team's frame for 3 s: back near an ally (the trace jumps)
+    Standby = 17,      // disconnected: in standby
+    Return = 18,       // back from standby near the team (the trace jumps)
+    Gone = 19,         // 60 s of standby: gone for good (the team is « incomplète »)
 };
 
 enum class ReplayPickup : uint8_t { Shard = 0, Relic = 1, Health = 2, Energy = 3, HeartContainer = 4, Secret = 5 };
@@ -74,6 +80,9 @@ struct ReplayData {
     static constexpr uint16_t kInputKeysPerSlot = 1;
     /// Version 4: the run was played with challenge rules (section after the digests).
     static constexpr uint16_t kInputChallengeRules = 2;
+    /// 5 since 2.62: a team's attempt (docs/COOP.md § 5): version 3 for player 1, then a team
+    /// section (the other players' traces, events and inputs). The digests cover the team.
+    static constexpr uint16_t kFormatTeam = 5;
     /// One state digest every kCheckTicks steps (0.5 s).
     static constexpr uint32_t kCheckTicks = 60;
     /// Longest run accepted (2 hours of steps).
@@ -103,6 +112,21 @@ struct ReplayData {
     /// ChallengeRules::canonical); empty for any other run (written in version 3).
     std::string challengeRules;
     bool exact() const { return formatVersion >= 2 && !inputs.empty(); }
+
+    /// Version 5: the team (players 2 and 3; player 1 is the fields above).
+    struct TeamPlayer {
+        std::vector<ReplayFrame> frames;
+        std::vector<ReplayEvent> events;
+        std::vector<InputFrame> inputs;  // as many as player 1's
+    };
+    int teamSize() const { return 1 + static_cast<int>(team.size()); }
+    std::vector<TeamPlayer> team;
+    uint16_t coopVersion = 0;
+    bool teamIncomplete = false;
+    uint8_t revives = 0;
+    /// The trace and the events of player `i` (0 = player 1).
+    const std::vector<ReplayFrame>& framesOf(int i) const { return i <= 0 ? frames : team[static_cast<size_t>(i - 1)].frames; }
+    const std::vector<ReplayEvent>& eventsOf(int i) const { return i <= 0 ? events : team[static_cast<size_t>(i - 1)].events; }
 
     /// Raw "CPRP" bytes.
     std::vector<uint8_t> serialize() const;
@@ -135,6 +159,12 @@ public:
     /// rules, ReplayData::challengeRules: a challenge run is written in version 4).
     void tick(const GameWorld& w);
     void onWorldEvent(const std::string& source, const std::string& trigger);
+    /// 2.62: a team of `players` (2 or 3), right after begin(): the replay is written in format 5.
+    void beginTeam(int players);
+    /// A team's step: one input per player (instead of recordInput).
+    void recordTeamInputs(const InputFrame* frames, int count);
+    /// A world event and the player that made it (a team: jumps and powers in its own trace).
+    void onWorldEvent(const std::string& source, const std::string& trigger, int player);
     /// Ends the recording when the level is completed (`elapsed` = timer value).
     void finish(const GameWorld& w, float elapsed);
     /// Ends the recording of an attempt that did not reach the end (an extreme level's race).
@@ -158,6 +188,15 @@ private:
     size_t lastSplits_ = 0;
     std::vector<uint16_t> lastBoss_;
     std::vector<int> lastWaves_;
+    // 2.62, a team: each player's last state (deaths, revivals, standby... in its own trace).
+    struct TeamTrack {
+        uint8_t state = 0;
+        int presence = 0, revived = 0, regrouped = 0, returned = 0;
+    };
+    std::vector<TeamTrack> track_;
+    void teamTick(const GameWorld& w);
+    void pushTo(int player, ReplayEventType t, uint8_t arg = 0, uint16_t value = 0);
+    void sampleTeam(const GameWorld& w);
 };
 
 /// Plays a version 2 replay again: feeds the recorded inputs to a world loaded with the same

@@ -389,15 +389,15 @@ void Enemy::stepAshes(GameWorld& w, float dt) {
                 hp_ = std::max(hp_, std::min(maxHp_, maxHp_ * share));
                 playClip("roar", true);
                 const Vec2 heart = ashSpot_ + Vec2{0.0f, -30.0f};
-                Player& p = w.player();
-                if (p.alive() && Collision::circleIntersectsRect(heart, kRebirthRadius, p.box)) {
+                w.forEachPlayer([&](Player& p) {  // 2.62: every player in the burst
+                    if (!p.alive() || !Collision::circleIntersectsRect(heart, kRebirthRadius, p.box)) return;
                     DamageInfo dmg;
                     dmg.amount = 2.0f;
                     dmg.type = DamageType::Explosion;
                     dmg.source = heart;
                     dmg.knockback = 320.0f;
                     w.damagePlayer(dmg);
-                }
+                });
                 w.flash({255, 240, 200, 255}, 0.4f);
                 w.shake(0.8f);
                 w.rumble(0.8f, 0.6f, 300);

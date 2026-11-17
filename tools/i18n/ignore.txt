@@ -179,3 +179,11 @@ supernova
 arc
 missile
 constellation
+COSMIC-COOP!
+COSMIC-COOP?
+HTTP/1.1 101
+account
+port
+start
+refuse
+Authorization: Bearer {0}

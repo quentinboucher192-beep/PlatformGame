@@ -5,6 +5,19 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.62.0** :
+* **Coopération** sur les niveaux EXTRÊME, à **2 ou 3 joueurs** (menu principal › *Coopération*) : une vie
+  chacun, les mêmes règles qu'en solo, **sur un même PC** (une manette par joueur en plus du clavier), **en
+  réseau local** (un PC héberge le relais, sans compte ni serveur) ou **en ligne** avec vos amis (salon,
+  invitations, « Prêt »). Le jeu reste jouable sans compte ni Internet.
+* **Pas de coups entre alliés** ; **joueurs solides, sans poussée** (un allié arrête comme un mur, on peut se
+  poser sur sa tête) ; les ennemis visent le **joueur le plus proche** ; **réanimation** en restant 2 s près
+  de l'âme d'un allié (2 par tentative) ; **caméra commune** (un joueur hors de l'écran depuis 3 s revient
+  près de l'équipe) ; **déconnexion** : 60 s pour revenir, la partie se rattrape en accéléré.
+* **Course à la vérification Duo et Trio** (jamais mélangées entre elles ni avec le solo) : progression du
+  joueur le plus avancé, vérification par le serveur avec les entrées de chaque joueur, confirmation de chaque
+  joueur avec son compte. Les records solo restent tous valides. Architecture : [docs/COOP.md](docs/COOP.md).
+
 **Nouveau dans la version 2.59.0** :
 * **Administration › Créations**, trois nouveaux types en plus des combinaisons : des **traînées** (une forme
   que le jeu sait dessiner, la couleur près de Nova et celle du bout, la largeur, la durée, les étincelles),
@@ -665,7 +678,8 @@ local sans compte Cloudflare. Documentation complète : [docs/online/](docs/onli
 
 ## Menu principal
 
-*Continuer* (dernier niveau joué) · *Campagne* (planètes et niveaux) · *En ligne* ·
+*Continuer* (dernier niveau joué) · *Campagne* (planètes et niveaux) · *Défis* · *Coopération*
+(niveaux EXTRÊME à 2 ou 3, sur un PC, en réseau local ou en ligne) · *En ligne* ·
 *Notifications* · *Succès* (toile des 218 succès et de leurs 597 étoiles) · *Collection*
 (vestiaire, route des étoiles, musiques, galerie) · *Statistiques* (vos statistiques de jeu, et
 les fiches des boss) · *Paramètres* · *Quitter*.
@@ -814,6 +828,7 @@ L'exécutable est dans `build/bin/`. Installateur Windows : `installer\build_ins
 * [docs/BUILDING.md](docs/BUILDING.md) – compilation, tests, installateur
 * [docs/ASSET_SPEC.md](docs/ASSET_SPEC.md) – contrat des assets (sprites, animations, tuiles, audio)
 * [docs/I18N.md](docs/I18N.md) – langues (français / anglais) : choix, fonctionnement, ajouter une traduction
+* [docs/COOP.md](docs/COOP.md) – coopération à 2 ou 3 joueurs : règles, simulation, réseau, replays d'équipe, classements Duo / Trio
 * [docs/GHOST_RACING.md](docs/GHOST_RACING.md) – fantômes, écarts, entraînement, succès, mode concentré (et leurs limites)
 * [docs/online/](docs/online/README.md) – Cosmic Online : installation, déploiement, secrets, API, règles, confidentialité, dépannage
 

@@ -28,6 +28,7 @@ export const NOTIFICATION_KINDS = [
     "record_beaten", //     my world record (first place of a campaign leaderboard) was beaten (2.30.2)
     "challenge_reward", //  rewards won at a challenge, once its period is over (2.43)
     "security", //          2.47: the account and its computer (login refused elsewhere, bound, unbound by an admin); 2.50: migrations
+    "coop_invite", //       2.62: a friend invites me to play an EXTRÊME level in a team
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
@@ -163,6 +164,8 @@ function sentence(n: NotificationRow, d: Record<string, string>): string {
             return rewardSentence(d as unknown as Record<string, unknown>);
         case "security":
             return securitySentence(d, n.count);
+        case "coop_invite":
+            return `${who} vous invite à jouer en équipe : ${d.title ?? ""}`;
     }
 }
 

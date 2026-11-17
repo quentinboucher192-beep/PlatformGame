@@ -68,6 +68,9 @@ public:
     bool visible = true;
     bool removed = false;
     bool playerInside = false;
+    /// 2.62, a team (docs/COOP.md): bit n = player n+1 is inside. During a player's overlap
+    /// callbacks, playerInside is that player's bit; after them, « anyone inside ».
+    uint8_t insideMask = 0;
 
 protected:
     LevelObject obj_;

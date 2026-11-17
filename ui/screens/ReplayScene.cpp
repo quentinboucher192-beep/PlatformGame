@@ -607,6 +607,12 @@ private:
         if (playback_ && (!comparing_ || camMode_ == 0)) {
             float alpha = playing_ ? std::clamp(acc_ / kSimDt, 0.0f, 1.0f) : 1.0f;
             WorldView g = world().camera().view(r.width(), r.height(), alpha);
+            // 2.62, a team replay: one player followed (at the game's scale), or the team (its camera).
+            if (teamFollow_ >= 0 && teamFollow_ < world().teamSize()) {
+                const Player& p = world().playerAt(teamFollow_);
+                const Vec2 c = lerpv(p.prevBox.center(), p.box.center(), alpha);
+                g.topLeft = c - Vec2{static_cast<float>(r.width()), static_cast<float>(r.height())} * (0.5f / g.scale);
+            }
             const float k = fitScale(r);
             if (k >= 0.999f) return g;
             // Recadré : the centre of what the player saw at the centre of the free part,
@@ -931,6 +937,21 @@ private:
         std::string of = "sur " + formatRunMs(a_.replay->durationMs) + (splitsExactA_ || splitsA_.empty() ? "" : " · passages à 1/30 s près");
         ui.label(ui.elide(of, FontFace::Body, fz(ui, 14), inner), {x, y}, fz(ui, 14), th.textDim);
         y += lineH(14) + ui.s(6);
+        if (playback_ && a_.replay->teamSize() > 1) {
+            // 2.62: a team replay: follow the team (its camera) or one of its players.
+            const int n = a_.replay->teamSize();
+            const float bh = buttonH(), gap = ui.s(6);
+            const float bw = (inner - gap * static_cast<float>(n)) / static_cast<float>(n + 1);
+            for (int i = -1; i < n; ++i) {
+                UIContext::ButtonStyle st;
+                st.small = true;
+                st.selected = teamFollow_ == i;
+                const std::string label = i < 0 ? "Équipe" : "Joueur " + std::to_string(i + 1);
+                st.fontSize = ui.fitFont(label, FontFace::Bold, fz(ui, 15), bw - ui.s(12), 0.6f);
+                if (ui.button("follow" + std::to_string(i + 1), {x + static_cast<float>(i + 1) * (bw + gap), y, bw, bh}, label, st)) teamFollow_ = i;
+            }
+            y += bh + ui.s(8);
+        }
         ui.r().fillRect({x, y, inner, std::max(1.0f, ui.s(1))}, th.accent.withAlpha(60));
         y += ui.s(8);
         ui.label("TEMPS DE PASSAGE", {x, y}, fz(ui, 15), th.textDim, Align::Left, FontFace::Bold);
@@ -1634,6 +1655,7 @@ private:
     int alignRow_ = 0;
     std::string offsetText_;
     int camMode_ = 0;  // 0 A, 1 B, 2 both
+    int teamFollow_ = -1;  // 2.62, a team replay: -1 the team, else that player
     bool showPaths_ = true;  // comparison: both trajectories (a replay alone shows its player)
     bool showInfo_ = true;   // the side panel (splits / comparison); hidden: the run on the whole width
     std::vector<Rect> hudRects_;  // HUD drawn this frame (vitals, powers, boss gauge, progress): the tags avoid them

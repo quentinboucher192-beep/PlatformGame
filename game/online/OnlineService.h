@@ -209,6 +209,11 @@ public:
         float estimate = 0.0f;
     };
     void submitRaceAttempt(RaceAttempt a, std::vector<uint8_t> replay);
+    /// 2.62: a team's attempt (Duo / Trio, docs/COOP.md § 6): `mode` "online", "lan" or "same_pc",
+    /// `players` their account ids by seat; the replay is a team replay (format 5). The team is
+    /// ranked once each player confirmed it (confirmCoopAttempt, from their own game).
+    void submitCoopAttempt(RaceAttempt a, const std::string& mode, std::vector<std::string> players, std::vector<uint8_t> replay);
+    void confirmCoopAttempt(const std::string& attemptId);
     void submitCommunityRun(const std::string& localLevelId, int64_t timeMs, int deaths, const std::string& attemptId,
                             std::vector<uint8_t> replay);
     /// PUT / POST of raw bytes with the session (packages, replays).
@@ -231,6 +236,9 @@ public:
     std::optional<OnlineCache::Entry> cached(const std::string& pathAndQuery);
     size_t clearCache();
     void checkConnection(ApiCallback cb = {});
+    /// 2.62: a fresh access token for a connection the game opens itself (the WebSocket of a
+    /// team's relay): `cb(token, serverUrl)` once renewed (an empty token when not logged in).
+    void freshAccess(std::function<void(const std::string& token, const std::string& serverUrl)> cb);
     std::string cacheKey(const std::string& pathAndQuery) const;
 
     // -------------------------------------------------------------- records

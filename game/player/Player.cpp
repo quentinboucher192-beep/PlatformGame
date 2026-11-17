@@ -112,6 +112,7 @@ MoveOptions Player::moveOptions() const {
 
 int Player::wallDirection(const GameWorld& w) const {
     MoveOptions o = moveOptions();
+    o.ignoreTags |= ColliderTag::Teammate;  // 2.62: an ally is never a wall to slide or jump off
     Rect r = box.translated({1.5f, 0.0f});
     r.y += 2;
     r.h -= 6;

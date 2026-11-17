@@ -19,7 +19,7 @@ void CinematicPlayer::start(const CinematicDef& def, GameWorld& w) {
     dialogue_.clear();
     speaker_.clear();
     titleDur_ = dialogueDur_ = 0.0f;
-    w.player().controlEnabled = false;
+    w.forEachTeammate([](Player& p) { p.controlEnabled = false; });  // 2.62: the whole team
     if (!active_) finish(w);
 }
 
@@ -54,16 +54,19 @@ void CinematicPlayer::beginStep(GameWorld& w, const CinematicStep& s) {
         dialogueT_ = 0.0f;
         dialogueDur_ = s.duration;
     } else if (t == "spawnPlayer") {
-        w.player().spawn(w, w.respawnPoint(), false, true);
-        w.player().controlEnabled = false;
+        // 2.62: the whole team appears, side by side from the start.
+        w.forEachTeammate([&](Player& pl) {
+            pl.spawn(w, w.coop() ? w.freeSpot(w.respawnPoint(), w.currentPlayer()) : w.respawnPoint(), false, true);
+            pl.controlEnabled = false;
+            w.particles().emit("teleport_in", pl.center(), 1.5f);
+        });
         w.playSound("sounds/respawn.wav", 0.9f);
-        w.particles().emit("teleport_in", w.player().center(), 1.5f);
     } else if (t == "hidePlayer") {
-        w.player().setHidden(true);
+        w.forEachTeammate([](Player& pl) { pl.setHidden(true); });
     } else if (t == "playerAnim") {
-        w.player().forceAnimation(jstr(p, "anim", "victory"), s.duration);
+        w.forEachTeammate([&](Player& pl) { pl.forceAnimation(jstr(p, "anim", "victory"), s.duration); });
     } else if (t == "playerWalk") {
-        w.player().setCinematicWalk(jget<float>(p, "speed", 60.0f));
+        w.forEachTeammate([&](Player& pl) { pl.setCinematicWalk(jget<float>(p, "speed", 60.0f)); });
     } else if (t == "shake") {
         w.shake(jget<float>(p, "amount", 0.5f));
     } else if (t == "flash") {
@@ -106,7 +109,7 @@ void CinematicPlayer::fixedUpdate(GameWorld& w, float dt) {
     running_.erase(std::remove_if(running_.begin(), running_.end(),
                                   [&](const Running& r) {
                                       bool done = r.elapsed >= r.step.duration;
-                                      if (done && r.step.type == "playerWalk") w.player().setCinematicWalk(0.0f);
+                                      if (done && r.step.type == "playerWalk") w.forEachTeammate([](Player& pl) { pl.setCinematicWalk(0.0f); });
                                       return done;
                                   }),
                    running_.end());
@@ -140,9 +143,9 @@ void CinematicPlayer::skip(GameWorld& w) {
 
 void CinematicPlayer::finish(GameWorld& w) {
     active_ = false;
-    w.player().setCinematicWalk(0.0f);
+    w.forEachTeammate([](Player& pl) { pl.setCinematicWalk(0.0f); });  // 2.62: the whole team
     w.camera().releaseScript();
-    if (w.state() == WorldState::Playing) w.player().controlEnabled = true;
+    if (w.state() == WorldState::Playing) w.forEachTeammate([](Player& pl) { pl.controlEnabled = true; });
     if (w.state() == WorldState::Intro) w.beginPlay();
 }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <vector>
 
 #include "engine/animation/Animation.h"
 #include "engine/rendering/Parallax.h"
@@ -11,6 +12,7 @@ namespace cosmic {
 
 class GameWorld;
 class ResourceManager;
+struct RenderContext;
 
 struct RenderOptions {
     bool lighting = true;
@@ -33,6 +35,9 @@ public:
     void render(Renderer& r, ResourceManager& res, GameWorld& world, const WorldView& view, float alpha,
                 const RenderOptions& opt);
     const TerrainRenderer& terrain() const { return terrain_; }
+    /// 2.62, a team: the colour of each player (souls, standby ghosts). Display only.
+    void setTeamColors(std::vector<Color> colors) { teamColors_ = std::move(colors); }
+    Color teamColor(int i) const;
     size_t lastLightCount() const { return lastLights_; }
 
 private:
@@ -41,6 +46,10 @@ private:
     /// 2.56, the Phénix's « Cendres »: ash falling over the arena and a grey veil away from Nova
     /// (around her the view stays clear; the HUD is drawn after the world, never veiled).
     void drawAshVeil(Renderer& r, GameWorld& world, const WorldView& view, float alpha);
+    /// 2.62: the players of a team: in play as usual, a soul for a player down (its revival
+    /// as a ring filling up), a grey ghost for a player in standby.
+    void drawTeam(RenderContext& ctx, GameWorld& world);
+    std::vector<Color> teamColors_;
 
     TerrainRenderer terrain_;
     ParallaxBackground parallax_;

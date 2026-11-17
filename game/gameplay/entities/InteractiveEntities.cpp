@@ -147,13 +147,15 @@ void DoorEntity::setOpen(GameWorld& w, bool open, bool silent) {
         w.playSound("sounds/door_open.wav", box.center(), 0.8f, open ? 1.0f : 0.85f);
         w.particles().emit("door_sparks", box.center(), 1.0f);
     }
-    // Never close a door on the player: push them out.
-    if (!open && w.player().box.intersects(box)) {
-        float dir = w.player().center().x < box.center().x ? -1.0f : 1.0f;
-        Rect pb = w.player().box;
-        pb.x = dir < 0 ? box.x - pb.w - 0.5f : box.right() + 0.5f;
-        w.player().box = pb;
-    }
+    // Never close a door on the player: push them out (2.62: every player of a team).
+    if (!open)
+        w.forEachPlayer([&](Player& p) {
+            if (!p.box.intersects(box)) return;
+            float dir = p.center().x < box.center().x ? -1.0f : 1.0f;
+            Rect pb = p.box;
+            pb.x = dir < 0 ? box.x - pb.w - 0.5f : box.right() + 0.5f;
+            p.box = pb;
+        });
 }
 
 bool DoorEntity::handleAction(GameWorld& w, const std::string& action, const Json&) {

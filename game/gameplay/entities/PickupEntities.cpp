@@ -67,8 +67,8 @@ void CollectibleEntity::fixedUpdate(GameWorld& w, float dt) {
         }
         if (r.hitLeft || r.hitRight) vel_.x = -vel_.x * 0.5f;
     } else {
-        // Magnet toward a nearby player (drops and energy orbs).
-        Player& p = w.player();
+        // Magnet toward a nearby player (drops and energy orbs); 2.62: the nearest of a team.
+        Player& p = w.nearestPlayer(box.center());
         float d = distance(p.center(), box.center());
         // The Magnet power pulls every collectible from much farther, and faster.
         float reach = 40.0f, speed = 220.0f;
@@ -215,7 +215,11 @@ void PowerUnlockEntity::onPlayerEnter(GameWorld& w) {
     celebrate(w, *def, box.center(), obj_.propStr("message"));
     w.emit(id(), "collected");
     w.emit(power_, "unlocked");
-    removed = true;
+    // 2.62: in a team, the tablet stays until every player carries its power.
+    bool everyone = true;
+    for (int i = 0; i < w.teamSize() && w.coop(); ++i)
+        if (w.member(i).presence != GameWorld::Presence::Gone && !w.playerAt(i).hasPower(power_)) everyone = false;
+    removed = everyone;
 }
 
 void PowerUnlockEntity::exchange(GameWorld& w, const std::string& dropped) {

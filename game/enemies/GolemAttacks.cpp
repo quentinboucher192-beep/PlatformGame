@@ -430,15 +430,15 @@ void Enemy::landSkyfall(GameWorld& w) {
     // Under it and around its feet: crushed.
     const float reach = orDefault(a.radius, 26.0f);
     Rect stomp{box.x - reach, box.y, box.w + reach * 2.0f, box.h};
-    Player& p = w.player();
-    if (p.alive() && stomp.intersects(p.box)) {
+    w.forEachPlayer([&](Player& p) {  // 2.62: every player crushed
+        if (!p.alive() || !stomp.intersects(p.box)) return;
         DamageInfo d;
         d.amount = std::max(a.damage, def_.contactDamage);
         d.type = DamageType::Contact;
         d.source = box.bottomCenter();
         d.knockback = std::max(a.knockback, 280.0f);
         w.damagePlayer(d);
-    }
+    });
     shockwaves(w, 0);
     ringsLeft_ = std::max(0, a.count - 1);
     burstTimer_ = orDefault(a.burstInterval, 0.35f);
@@ -486,7 +486,6 @@ void Enemy::golemStart(GameWorld& w) {
 
 void Enemy::golemActive(GameWorld& w, float dt) {
     const AttackDef& a = *attack_;
-    Player& p = w.player();
     switch (a.type) {
         case AttackType::Shell: {
             const float sp = rollSpeed(a, phaseSpeed());
@@ -547,13 +546,13 @@ void Enemy::golemActive(GameWorld& w, float dt) {
             }
             if (curled()) {
                 // The shell hurts what it rolls into.
-                if (laserHitTimer_ <= 0.0f && std::abs(vel.x) > 20.0f && box.expanded(1.0f).intersects(p.box)) {
+                if (laserHitTimer_ <= 0.0f && std::abs(vel.x) > 20.0f && w.playerIn(box.expanded(1.0f))) {
                     DamageInfo d;
                     d.amount = a.damage;
                     d.type = DamageType::Contact;
                     d.source = {box.center().x - signf(vel.x) * 8.0f, box.center().y + 6.0f};
                     d.knockback = a.knockback;
-                    if (w.damagePlayer(d)) laserHitTimer_ = 0.6f;
+                    if (w.hurtPlayersIn(box.expanded(1.0f), d)) laserHitTimer_ = 0.6f;
                 }
                 hopTimer_ -= dt;
                 if (hopTimer_ <= 0.0f && std::abs(vel.x) > 40.0f) {
@@ -610,13 +609,13 @@ void Enemy::golemActive(GameWorld& w, float dt) {
                 case GolemStage::Fall:
                     vel.y = std::min(vel.y + kFallAccel * dt, kFallMax);
                     if (box.bottom() + vel.y * dt >= floorY_) landSkyfall(w);
-                    else if (!attackHit_ && box.intersects(p.box)) {
+                    else if (!attackHit_ && w.playerIn(box)) {
                         DamageInfo d;
                         d.amount = std::max(a.damage, def_.contactDamage);
                         d.type = DamageType::Contact;
                         d.source = {box.center().x, box.y};
                         d.knockback = std::max(a.knockback, 280.0f);
-                        attackHit_ = w.damagePlayer(d) || true;
+                        attackHit_ = w.hurtPlayersIn(box, d) || true;
                     }
                     break;
                 case GolemStage::Land:

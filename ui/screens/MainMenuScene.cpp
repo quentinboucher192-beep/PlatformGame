@@ -7,6 +7,7 @@
 #include "game/GameServices.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/MenuBackground.h"
+#include "ui/screens/CoopGameScene.h"
 #include "ui/screens/Navigation.h"
 #include "ui/widgets/Glyphs.h"
 
@@ -76,10 +77,11 @@ public:
                            !g_.content.campaignPlanetOf(g_.progression.lastLevel).empty();
         // ADMINISTRATION (2.40): only for an account with the admin role, never for the others.
         const bool admin = g_.online.isAdmin();
-        int rows = (canContinue ? 10 : 9) + (admin ? 1 : 0);
+        int rows = (canContinue ? 11 : 10) + (admin ? 1 : 0);  // 2.62: « Coopération »
         // Ten rows (2.32: « Défis »): a little tighter so that the menu keeps clear of the footer;
         // eleven (an admin's menu): tighter still.
-        float x = ui.s(120), w = ui.s(470), h = ui.s(rows > 10 ? 56 : rows > 9 ? 62 : 66), gap = ui.s(rows > 10 ? 10 : rows > 9 ? 12 : 14);
+        float x = ui.s(120), w = ui.s(470);
+        float h = ui.s(rows > 11 ? 52 : rows > 10 ? 56 : rows > 9 ? 62 : 66), gap = ui.s(rows > 11 ? 8 : rows > 10 ? 10 : rows > 9 ? 12 : 14);
         float y = ui.screenH() * 0.5f - (rows * (h + gap)) * 0.5f + ui.s(rows > 10 ? 12 : 40);
         Rect side{x - ui.s(40), y - ui.s(40), w + ui.s(80), rows * (h + gap) + ui.s(70)};
         ui.r().fillRoundedRect(side, ui.s(18), Color{6, 10, 22, 150});
@@ -111,6 +113,7 @@ public:
         }
         if (btn("campaign", "Campagne", "planètes et niveaux", !canContinue)) g_.app.switchScene(makePlanetMap(g_));
         if (btn("challenges", "Défis", challengeSubtitle())) g_.app.switchScene(makeChallenges(g_), 0.3f);
+        if (btn("coop", "Coopération", "2 ou 3 joueurs · niveaux EXTRÊME")) g_.app.switchScene(makeCoopLobby(g_), 0.3f);
         std::string onlineSub = g_.online.loggedIn() ? g_.online.username() : "compte requis";
         if (int n = g_.online.loggedIn() ? g_.online.pendingFriendRequests() : 0; n > 0)
             onlineSub += " · " + std::to_string(n) + (n > 1 ? " demandes d'amis" : " demande d'ami");

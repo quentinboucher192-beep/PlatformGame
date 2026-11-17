@@ -54,6 +54,11 @@ constexpr int kSimulationVersion = 13;  // 6: energy 150, time slow, magnet, air
                                        //    skipped intro that shows her appearing no longer
                                        //    counts her materialisation (watching it gave ~1 s).
                                        //    The rankings are kept: no run became better.
+/// 2.62: version of the rules of cooperation (docs/COOP.md): a team of 2 or 3 players in one
+/// world. It changes nothing for a solo run (kSimulationVersion and its digests are the same);
+/// a team's attempts carry it, and any change of the team rules (solid players, revivals,
+/// standby, the team's frame...) bumps it with the reference digests of tests/test_coop.cpp.
+constexpr int kCoopSimulationVersion = 1;
 /// Generation of the rankings, part of every ranked fingerprint. It follows
 /// kSimulationVersion when a change makes earlier runs incomparable (records and replays of
 /// different generations are never mixed). A change that only adds a possibility and

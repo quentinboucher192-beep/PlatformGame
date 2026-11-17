@@ -308,6 +308,10 @@ void OnlineService::noteResult(const ApiResult& r) {
     if (r.ok) lastError_.clear();
 }
 
+void OnlineService::freshAccess(std::function<void(const std::string& token, const std::string& serverUrl)> cb) {
+    withRefresh([this, cb = std::move(cb)](const ApiResult& r) { cb(r.ok ? tokens_.accessToken : std::string(), config_.serverUrl); });
+}
+
 void OnlineService::checkConnection(ApiCallback cb) {
     if (!usable()) {
         if (cb) cb(unusableResult());

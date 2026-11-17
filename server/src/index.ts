@@ -29,6 +29,9 @@ import { liveRoute } from "./live";
 // The Durable Object classes (live editing rooms, live spectating rooms) are exported by the Worker module.
 export { ProjectRoom } from "./live";
 export { SpectateRoom } from "./spectate";
+export { CoopRoom } from "./coop";
+import * as coop from "./coop";
+import * as coopRace from "./coopRace";
 import * as spectate from "./spectate";
 import { listLevels } from "./levels";
 import type { RecordRow } from "./model";
@@ -201,6 +204,17 @@ route("DELETE", `${V}/friends/{playerId}`, (ctx) => friends.deleteFriend(ctx));
 // Live spectating between friends (2.36): the player's own run sent, a friend's run read
 route("POST", `${V}/spectate/broadcast`, (ctx) => spectate.broadcast(ctx));
 route("GET", `${V}/spectate/{playerId}`, (ctx) => spectate.watch(ctx));
+// Cooperation on the EXTRÊME levels (2.62, docs/COOP.md): rooms, invitations, the relay's socket.
+route("POST", `${V}/coop/rooms`, (ctx) => coop.createRoom(ctx));
+route("POST", `${V}/coop/rooms/{roomId}/invite`, (ctx) => coop.invite(ctx));
+route("GET", `${V}/coop/invitations`, (ctx) => coop.invitations(ctx));
+route("GET", `${V}/coop/rooms/{roomId}/socket`, (ctx) => coop.socket(ctx));
+// Duo / Trio boards of the « course à la vérification » (2.62): team attempts, confirmations.
+route("POST", `${V}/coop/runs`, (ctx) => coopRace.submitRun(ctx));
+route("PUT", `${V}/coop/runs/{runId}/replay`, (ctx) => coopRace.uploadRunReplay(ctx));
+route("GET", `${V}/coop/runs/{runId}/replay`, (ctx) => coopRace.downloadRunReplay(ctx));
+route("POST", `${V}/coop/attempts/{attemptId}/confirm`, (ctx) => coopRace.confirm(ctx));
+route("GET", `${V}/coop/board`, (ctx) => coopRace.getBoard(ctx));
 
 // Social: conversations between friends, groups, blocks
 route("GET", `${V}/social/conversations`, (ctx) => social.listConversations(ctx));

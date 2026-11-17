@@ -121,7 +121,7 @@ void Enemy::alert(GameWorld& w) {
     if (state_ == EnemyState::TeleportIn) return;  // keeps its appearance animation
     state_ = EnemyState::Alert;
     stateTimer_ = 0.3f;
-    face(w.player().center().x - box.center().x);
+    face(w.nearestPlayer(box.center()).center().x - box.center().x);  // 2.62: its nearest player
 }
 
 // ======================================================================= AI
@@ -734,14 +734,18 @@ void Enemy::contactDamage(GameWorld& w) {
     if (def_.contactDamage <= 0.0f || contactTimer_ > 0.0f || state_ == EnemyState::TeleportOut ||
         state_ == EnemyState::TeleportIn || inAshes())  // 2.56: its ashes do not burn on contact
         return;
-    Player& p = w.player();
-    if (!p.alive() || !box.expanded(-1).intersects(p.box)) return;
-    DamageInfo d;
-    d.amount = def_.contactDamage;
-    d.type = DamageType::Contact;
-    d.source = box.center();
-    d.knockback = 160.0f;
-    if (w.damagePlayer(d)) contactTimer_ = 0.5f;
+    // 2.62: every player it touches (alone: the only one).
+    bool hit = false;
+    w.forEachPlayer([&](Player& p) {
+        if (!p.alive() || !box.expanded(-1).intersects(p.box)) return;
+        DamageInfo d;
+        d.amount = def_.contactDamage;
+        d.type = DamageType::Contact;
+        d.source = box.center();
+        d.knockback = 160.0f;
+        if (w.damagePlayer(d)) hit = true;
+    });
+    if (hit) contactTimer_ = 0.5f;
 }
 
 // ================================================================== damage

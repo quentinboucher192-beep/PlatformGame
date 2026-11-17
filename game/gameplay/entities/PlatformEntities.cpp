@@ -75,7 +75,7 @@ void MovingPlatformEntity::init(GameWorld& w) {
 
 void MovingPlatformEntity::fixedUpdate(GameWorld& w, float dt) {
     prevPos_ = box.pos();
-    if (triggered_ && !moving_ && w.player().groundCollider() == collider_) moving_ = true;
+    if (triggered_ && !moving_ && w.anyPlayerWhere([&](const Player& p) { return p.groundCollider() == collider_; })) moving_ = true;
     if (orbit_) {
         // In orbit: the speed along the ellipse (px/s), the sign of dx giving the direction.
         if (moving_) {
@@ -186,7 +186,7 @@ void CrumblePlatformEntity::fixedUpdate(GameWorld& w, float dt) {
     switch (phase_) {
         case Phase::Solid:
             if (obj_.prop<bool>("onEvent", false)) break;  // 2.33: gives way to an event only
-            if (w.player().groundCollider() == collider_ && w.player().grounded()) {
+            if (w.anyPlayerWhere([&](const Player& p) { return p.groundCollider() == collider_ && p.grounded(); })) {
                 phase_ = Phase::Shaking;
                 timer_ = obj_.prop<float>("delay", 0.45f);
                 w.playSound("sounds/crumble.wav", box.center(), 0.5f, 1.3f);
@@ -208,7 +208,7 @@ void CrumblePlatformEntity::fixedUpdate(GameWorld& w, float dt) {
             if (timer_ > 0.0f) {
                 timer_ -= dt;
                 if (timer_ <= 0.0f) {
-                    if (w.player().box.intersects(box)) {
+                    if (w.anyPlayerWhere([&](const Player& p) { return p.box.intersects(box); })) {
                         timer_ = 0.3f;  // wait until the player moved away
                     } else {
                         phase_ = Phase::Solid;
@@ -512,20 +512,21 @@ void PowerGateEntity::fixedUpdate(GameWorld& w, float dt) {
     if (broken_) return;
     sprite_.anim.update(dt);
     // Plasma curtains hurt when crossed without the shield.
-    if (power_ == "shield" && w.player().alive() && !w.player().shieldActive() &&
-        box.expanded(1).intersects(w.player().box)) {
-        DamageInfo d;
-        d.amount = 1;
-        d.type = DamageType::Hazard;
-        d.source = box.center();
-        w.damagePlayer(d);
-        if (hintCooldown_ <= 0.0f) {
-            w.hint("Un rideau de plasma : activez le Bouclier pour le traverser.", 3.0f);
-            hintCooldown_ = 6.0f;
-        }
-    }
-    if (power_ == "teleport" && hintCooldown_ <= 0.0f && box.expanded(4).intersects(w.player().box) &&
-        !w.player().hasPower("teleport")) {
+    if (power_ == "shield")
+        w.forEachPlayer([&](Player& p) {  // 2.62: every player of a team (alone: the only one)
+            if (!p.alive() || p.shieldActive() || !box.expanded(1).intersects(p.box)) return;
+            DamageInfo d;
+            d.amount = 1;
+            d.type = DamageType::Hazard;
+            d.source = box.center();
+            w.damagePlayer(d);
+            if (hintCooldown_ <= 0.0f) {
+                w.hint("Un rideau de plasma : activez le Bouclier pour le traverser.", 3.0f);
+                hintCooldown_ = 6.0f;
+            }
+        });
+    if (power_ == "teleport" && hintCooldown_ <= 0.0f &&
+        w.anyPlayerWhere([&](const Player& p) { return box.expanded(4).intersects(p.box) && !p.hasPower("teleport"); })) {
         w.hint("Cette barrière de phase semble traversable... par téléportation.", 3.0f);
         hintCooldown_ = 8.0f;
     }

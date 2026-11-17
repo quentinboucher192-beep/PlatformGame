@@ -46,13 +46,16 @@
   // themselves are kept in D1.
   // Live spectating between friends (2.36): one Durable Object per player (SpectateRoom)
   // keeps the run being played in memory only; nothing of it is ever written.
+  // Cooperation (2.62): one Durable Object per team room (CoopRoom), the relay of its game
+  // over WebSockets, in memory only.
   "durable_objects": {
     "bindings": [
       { "name": "PROJECT_ROOMS", "class_name": "ProjectRoom" },
-      { "name": "SPECTATE_ROOMS", "class_name": "SpectateRoom" }
+      { "name": "SPECTATE_ROOMS", "class_name": "SpectateRoom" },
+          { "name": "COOP_ROOMS", "class_name": "CoopRoom" }
     ]
   },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ProjectRoom"] }, { "tag": "v2", "new_sqlite_classes": ["SpectateRoom"] }],
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ProjectRoom"] }, { "tag": "v2", "new_sqlite_classes": ["SpectateRoom"] }, { "tag": "v3", "new_sqlite_classes": ["CoopRoom"] }],
   "env": {
     "staging": {
       "name": "cosmic-online-staging",
@@ -80,10 +83,11 @@
       "durable_objects": {
         "bindings": [
           { "name": "PROJECT_ROOMS", "class_name": "ProjectRoom" },
-          { "name": "SPECTATE_ROOMS", "class_name": "SpectateRoom" }
+          { "name": "SPECTATE_ROOMS", "class_name": "SpectateRoom" },
+          { "name": "COOP_ROOMS", "class_name": "CoopRoom" }
         ]
       },
-      "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ProjectRoom"] }, { "tag": "v2", "new_sqlite_classes": ["SpectateRoom"] }]
+      "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ProjectRoom"] }, { "tag": "v2", "new_sqlite_classes": ["SpectateRoom"] }, { "tag": "v3", "new_sqlite_classes": ["CoopRoom"] }]
     },
     "dev": {
       "name": "cosmic-online-dev",
@@ -108,10 +112,11 @@
       "durable_objects": {
         "bindings": [
           { "name": "PROJECT_ROOMS", "class_name": "ProjectRoom" },
-          { "name": "SPECTATE_ROOMS", "class_name": "SpectateRoom" }
+          { "name": "SPECTATE_ROOMS", "class_name": "SpectateRoom" },
+          { "name": "COOP_ROOMS", "class_name": "CoopRoom" }
         ]
       },
-      "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ProjectRoom"] }, { "tag": "v2", "new_sqlite_classes": ["SpectateRoom"] }]
+      "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ProjectRoom"] }, { "tag": "v2", "new_sqlite_classes": ["SpectateRoom"] }, { "tag": "v3", "new_sqlite_classes": ["CoopRoom"] }]
     }
   },
   "dev": { "ip": "127.0.0.1", "port": 8787 }

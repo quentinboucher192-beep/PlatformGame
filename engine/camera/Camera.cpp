@@ -86,6 +86,13 @@ void Camera::fixedUpdate(float dt) {
     if (zoomT_ < zoomDur_) {
         zoomT_ += dt;
         zoom_ = lerpf(zoomFrom_, zoomTo_, applyEase(zoomEase_, std::min(1.0f, zoomT_ / zoomDur_)));
+    } else if (teamArea_ && !scripted_) {
+        // 2.62: a team: the zone's zoom (or the level's), less when the team needs more room.
+        float base = baseZoom_;
+        if (zone_ && zone_->fitArea) base = std::clamp(fitZoom(zone_->area), kMinFitZoom, std::max(kMinFitZoom, baseZoom_));
+        else if (zone_ && zone_->zoom > 0.0f) base = zone_->zoom;
+        float z = std::min(base, std::clamp(fitZoom(*teamArea_), kMinFitZoom, std::max(kMinFitZoom, baseZoom_)));
+        zoom_ = lerpf(zoom_, z, damp(3.0f, dt));
     } else if (zone_ && (zone_->zoom > 0.0f || zone_->fitArea) && !scripted_) {
         float z = zone_->fitArea ? std::clamp(fitZoom(zone_->area), kMinFitZoom, std::max(kMinFitZoom, baseZoom_)) : zone_->zoom;
         zoom_ = lerpf(zoom_, z, damp(3.0f, dt));

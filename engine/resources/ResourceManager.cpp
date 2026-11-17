@@ -14,6 +14,7 @@ namespace cosmic {
 void ResourceManager::init(Renderer* renderer, AudioSystem* audio) {
     renderer_ = renderer;
     audio_ = audio;
+    owner_ = std::this_thread::get_id();
     // Installed (native) assets always win; the user folder and packages only add new files.
     mounts_ = {Paths::assetsDir(), Paths::userDir() / "assets"};
 }
@@ -70,6 +71,7 @@ TexturePtr ResourceManager::missingTexture() {
 }
 
 TexturePtr ResourceManager::texture(const std::string& rel, bool pixelArt) {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     auto path = resolve(rel);
     if (!path) {
         static std::unordered_map<std::string, bool> warned;
@@ -82,7 +84,7 @@ TexturePtr ResourceManager::texture(const std::string& rel, bool pixelArt) {
     std::string key = Paths::toUtf8(*path) + (pixelArt ? "|p" : "|l");
     auto it = textures_.find(key);
     if (it != textures_.end()) return it->second;
-    if (!renderer_) return nullptr;
+    if (!renderer_ || offThread()) return nullptr;  // 2.62: created by the owner's thread only
     SDL_Surface* s = IMG_Load(Paths::toUtf8(*path).c_str());
     if (!s) {
         Log::error("IMG_Load({}) failed: {}", rel, SDL_GetError());
@@ -96,6 +98,7 @@ TexturePtr ResourceManager::texture(const std::string& rel, bool pixelArt) {
 }
 
 AnimationSetPtr ResourceManager::animation(const std::string& rel) {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     auto path = resolve(rel);
     if (!path) {
         Log::error("Animation not found: {}", rel);
@@ -108,17 +111,28 @@ AnimationSetPtr ResourceManager::animation(const std::string& rel) {
     if (!j) return nullptr;
     auto set = AnimationSet::fromJson(*j, rel);
     set->texture = texture(set->texturePath);
+    if (!set->texture && offThread()) waitingTexture_.push_back(set);  // 2.62: finishDeferred()
     animations_[key] = set;
     return set;
 }
 
+void ResourceManager::finishDeferred() {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
+    if (offThread()) return;
+    for (auto& set : waitingTexture_)
+        if (set && !set->texture) set->texture = texture(set->texturePath);
+    waitingTexture_.clear();
+}
+
 std::optional<Json> ResourceManager::json(const std::string& rel) {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     auto path = resolve(rel);
     if (!path) return std::nullopt;
     return FileUtil::loadJson(*path);
 }
 
 std::string ResourceManager::soundPath(const std::string& rel) {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     std::string key;
     for (const auto& m : mounts_) key += Paths::toUtf8(m) + ";";
     key += rel;

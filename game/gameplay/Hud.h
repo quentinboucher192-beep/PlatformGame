@@ -122,6 +122,33 @@ private:
     std::vector<ProgressRacer> racers_;
 
 public:
+    /// 2.62, a team (docs/COOP.md): who plays (names, colours, links) for the team panel, the
+    /// labels over the souls and the marks of the progress bar. Display only.
+    struct TeamInfo {
+        std::vector<std::string> names;  // one per player
+        std::vector<Color> colors;
+        std::vector<int> pingMs;         // online: each player's link (-1: unknown / local)
+        int promptPlayer = 0;            // whose interaction prompt is shown (the local player)
+        std::string waitingFor;          // online: « En attente de … » (the lockstep waits)
+    };
+    void setTeam(TeamInfo t) { team_ = std::move(t); }
+    const TeamInfo& team() const { return team_; }
+    /// Where the team panel was drawn last (empty when none).
+    const Rect& teamPanelRect() const { return teamPanel_; }
+    /// Team panel's height for `players` rows (layout checks).
+    static float teamPanelHeight(float unit, int players, int notices);
+
+private:
+    TeamInfo team_;
+    Rect teamPanel_;
+    std::vector<size_t> teamHints_;
+    std::vector<float> teamAt_;  // each player's place on the route (0..1)
+    void drawTeamPanel(UIContext& ui, GameWorld& w);
+    void drawTeamLabels(UIContext& ui, GameWorld& w, const WorldView& view);
+    std::string teamName(int i) const;
+    Color teamColor(int i) const;
+
+public:
     float skipProgress() const { return skipHold_; }
     void setSkipHold(float v) { skipHold_ = v; }
 };
