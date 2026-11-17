@@ -46,12 +46,12 @@ public:
     /// Adds a session to the total and to the level.
     void addPlayTime(const std::string& levelId, double seconds);
     bool introSeen = false;
-    /// 2.64: the tutorial of the first launch (« Le premier envol de Nova »): "" never offered (a
-    /// new player: it is due), "started", "skipped", "finished", or "before" (a progression of a
-    /// game before 2.64: never offered). Never played twice, whatever its end.
+    /// 2.64: the tutorial of the first launch (« Le premier envol de Nova »): "" not seen yet (it is
+    /// due, whatever the progression: 2.62.2), "started", "skipped" or "finished" (seen). Never
+    /// played twice, whatever its end.
     std::string tutorial;
     bool tutorialFinished() const { return tutorial == "finished"; }
-    /// "finished" > "skipped" > "started" > "before" > "": the furthest of two (copies, migration).
+    /// "finished" > "skipped" > "started" > "" (not seen): the furthest of two (copies, migration).
     static std::string furthestTutorial(const std::string& a, const std::string& b);
     bool unlockAll = false;  // from the settings: every level is playable (testing)
 

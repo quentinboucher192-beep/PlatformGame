@@ -381,16 +381,21 @@ TEST_CASE("tutorial: its boss is the easiest of the game, slowed down for the tu
     }
 }
 
-TEST_CASE("tutorial: offered to a new player only, never again, kept by copies and migrations") {
+TEST_CASE("tutorial: offered once to whoever has not seen it, never again, kept by copies and migrations") {
     Progression fresh;
     CHECK(tutorial::due(fresh));
-    // A progression written before 2.64: an existing player, never offered.
+    // 2.62.2: a progression written before the tutorial (no key), or marked "before" by 2.61.x:
+    // not seen, so it is offered once too.
     Progression old;
-    old.fromJson(Json{{"completedLevels", Json::array()}, {"lastPlanet", "sylvanox"}});
-    CHECK(old.tutorial == "before");
-    CHECK(!tutorial::due(old));
-    // Every state after the first launch keeps it away, and is saved.
-    for (const char* st : {"started", "skipped", "finished", "before"}) {
+    old.fromJson(Json{{"completedLevels", Json::array({"sylvanox_01"})}, {"lastPlanet", "sylvanox"}});
+    CHECK(old.tutorial.empty());
+    CHECK(tutorial::due(old));
+    Progression marked;
+    marked.fromJson(Json{{"tutorial", "before"}});
+    CHECK(marked.tutorial.empty());
+    CHECK(tutorial::due(marked));
+    // Every state once seen keeps it away, and is saved.
+    for (const char* st : {"started", "skipped", "finished"}) {
         Progression p;
         p.tutorial = st;
         CHECK(!tutorial::due(p));
@@ -405,14 +410,15 @@ TEST_CASE("tutorial: offered to a new player only, never again, kept by copies a
         back.fromJson(p.toJson());
         CHECK(tutorial::due(back));
     }
-    // A new player with levels completed (a copy restored): not due.
+    // Levels completed do not matter, only seen / not seen.
     Progression played;
     played.markCompleted("sylvanox_01");
-    CHECK(!tutorial::due(played));
+    CHECK(tutorial::due(played));
     // Copies and migrations merge the furthest state: never offered again once gone through.
     auto merged = [](const Json& a, const Json& b) { return jstr(mergeProgressJson(a, b), "tutorial"); };
     Json neu = Json{{"tutorial", ""}}, before = Json{{"completedLevels", Json::array()}};
-    CHECK(merged(neu, before) == "before");  // a copy of an older game: an existing player
+    CHECK(merged(neu, before).empty());  // a copy of an older game: not seen either
+    CHECK(merged(Json{{"tutorial", "before"}}, neu) != "skipped");
     CHECK(merged(neu, Json{{"tutorial", "finished"}}) == "finished");
     CHECK(merged(Json{{"tutorial", "skipped"}}, neu) == "skipped");
     CHECK(merged(Json{{"tutorial", "started"}}, Json{{"tutorial", "finished"}}) == "finished");

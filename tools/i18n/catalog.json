@@ -13622,6 +13622,12 @@
    ]
   },
   {
+   "fr": "Didacticiel : il est proposé une fois à tout joueur qui ne l'a pas encore vu, même avec une progression existante (avant, seuls les tout nouveaux joueurs le recevaient). « Passer le didacticiel » reste proposé au départ.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Didacticiel : les bulles porteuses finissent au-dessus de la terre ferme et la traînée d'éclats est à hauteur de Nova ; combinaisons recolorées : la liste reçue du serveur n'est plus remplacée quand elle est identique.",
    "where": [
     "data/news/changelog.json"
@@ -42880,6 +42886,12 @@
    "fr": "Segments",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "SEGMENTS : la colonne « Record du monde » existe aussi pour les niveaux de la communauté (record vérifié de la même version, lu dans son replay).",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {

@@ -85,7 +85,8 @@ const std::vector<std::string>& learnt() {
     return v;
 }
 
-bool due(const Progression& p) { return p.tutorial.empty() && p.completedCount() == 0; }
+// 2.62.2: seen / not seen only (an existing player who never saw it gets it once too).
+bool due(const Progression& p) { return p.tutorial.empty() || p.tutorial == "before"; }
 
 std::optional<LevelData> loadLevel(std::string* error) {
     const fs::path file = Paths::dataDir() / kLevelFile;

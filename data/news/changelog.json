@@ -1,4 +1,8 @@
 {
+  "2.62.2": [
+    "Didacticiel : il est proposé une fois à tout joueur qui ne l'a pas encore vu, même avec une progression existante (avant, seuls les tout nouveaux joueurs le recevaient). « Passer le didacticiel » reste proposé au départ.",
+    "SEGMENTS : la colonne « Record du monde » existe aussi pour les niveaux de la communauté (record vérifié de la même version, lu dans son replay)."
+  ],
   "2.62.1": [
     "Somme des meilleurs (SOB) tout confondu : le meilleur temps de chaque segment compte, qu'il ait été fait dans une course complète ou en entraînement par segment (même version du niveau) — écran d'entraînement, Statistiques (graphique compris), panneau des fantômes et résumé des segments. Le record, les temps des segments et la régularité restent ceux des courses complètes.",
     "Entraînement par segment › « Regarder » : vos meilleurs segments à la suite, chacun rejoué à l'identique depuis le replay de la course ou de l'essai d'entraînement qui l'a fait ; à chaque coupure, « Segment 2 · entraînement du 17/11 · 0:23,45 » ou « course du 12/11 », et un chronomètre qui additionne jusqu'à la somme des meilleurs, comparée au record. Lecture, pause, segment précédent / suivant, vitesse, au clavier, à la manette et à la souris.",

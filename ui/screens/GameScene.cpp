@@ -1150,6 +1150,11 @@ void GameScene::finishRun(bool completed) {
         if (recordMode_ == RecordMode::Official && fingerprint_) {
             seg->wrBoard = "/api/v1/leaderboards/level/" + levelId_ + "?category=ANY_PERCENT&limit=10&offset=0&period=all";
             seg->wrReplayBase = "/api/v1/records/";
+        } else if (const Json* c = g_.online.communityInstall(levelId_); recordMode_ == RecordMode::Community && c && !jstr(*c, "id").empty()) {
+            // 2.62.2: a community level too: its board lists checked records only (REPLAY_OK), each
+            // with `has_replay`; its version is the installed one (the replay's hash is checked too).
+            seg->wrBoard = "/api/v1/community/levels/" + jstr(*c, "id") + "/leaderboard?version=" + std::to_string(jget<int>(*c, "version", 0));
+            seg->wrReplayBase = "/api/v1/community/records/";
         }
         for (int i = 0; i < gr.size(); ++i) {
             const GhostRace::Racer& g = gr.racer(i);

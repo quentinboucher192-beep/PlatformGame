@@ -9544,6 +9544,8 @@
     "{0} possible": "{0} possible",
     "{0} segment sur {1} en replay": "{0} segment of {1} in replay",
     "{0} segments sur {1} en replay": "{0} segments of {1} in replay",
-    "{0} segments sur {1} ont leur replay : le montage annonce les autres.": "{0} segments of {1} have their replay: the montage announces the others."
+    "{0} segments sur {1} ont leur replay : le montage annonce les autres.": "{0} segments of {1} have their replay: the montage announces the others.",
+    "Didacticiel : il est proposé une fois à tout joueur qui ne l'a pas encore vu, même avec une progression existante (avant, seuls les tout nouveaux joueurs le recevaient). « Passer le didacticiel » reste proposé au départ.": "Tutorial: it is offered once to every player who has not seen it yet, even with an existing progression (before, only brand-new players got it). « Skip the tutorial » is still offered at the start.",
+    "SEGMENTS : la colonne « Record du monde » existe aussi pour les niveaux de la communauté (record vérifié de la même version, lu dans son replay).": "SEGMENTS: the « World record » column is also shown for community levels (the checked record of the same version, read from its replay)."
   }
 }

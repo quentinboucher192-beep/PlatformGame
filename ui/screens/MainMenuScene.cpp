@@ -25,7 +25,7 @@ public:
         bool skip = t_ > 0.6f && (g_.app.input().anyMenuInput() || g_.app.input().mousePressed(SDL_BUTTON_LEFT));
         if ((t_ > 3.2f || skip) && !leaving_) {
             leaving_ = true;
-            // 2.64: a new player's very first launch: the tutorial is offered before the menu.
+            // 2.64 / 2.62.2: whoever has not seen the tutorial yet gets it once, before the menu.
             g_.app.switchScene(tutorial::due(g_.progression) ? makeTutorialWelcome(g_) : makeMainMenu(g_), 0.6f);
         }
     }

@@ -5,6 +5,10 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.62.2** :
+* Didacticiel proposé une fois à tout joueur qui ne l'a pas vu (même avec une progression).
+* SEGMENTS : record du monde aussi pour les niveaux de la communauté.
+
 **Nouveau dans la version 2.62.1** :
 * **Somme des meilleurs tout confondu** et **« Regarder »** (entraînement par segment) : la SOB prend le meilleur temps
   de chaque segment parmi les courses complètes **et** les entraînements par segment de la même version du niveau

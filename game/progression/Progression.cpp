@@ -50,12 +50,14 @@ void Progression::fromJson(const Json& j) {
         for (auto it = j["levelPlayTime"].begin(); it != j["levelPlayTime"].end(); ++it)
             if (it.value().is_number() && it.value().get<double>() > 0.0) levelPlayTime_[it.key()] = it.value().get<double>();
     introSeen = jget<bool>(j, "introSeen", false);
-    // 2.64: a progression written before the tutorial existed is a player's who never needs it.
-    tutorial = jstr(j, "tutorial", "before");
+    // 2.62.2: seen / not seen only. A progression written before the tutorial existed (no key), or
+    // marked "before" by 2.61.x, has not seen it: it is offered once, like to a new player.
+    tutorial = jstr(j, "tutorial", "");
+    if (tutorial == "before") tutorial.clear();
 }
 
 std::string Progression::furthestTutorial(const std::string& a, const std::string& b) {
-    auto rank = [](const std::string& s) { return s == "finished" ? 4 : s == "skipped" ? 3 : s == "started" ? 2 : s.empty() ? 0 : 1; };
+    auto rank = [](const std::string& s) { return s == "finished" ? 4 : s == "skipped" ? 3 : s == "started" ? 2 : 0; };
     return rank(b) > rank(a) ? b : a;
 }
 
