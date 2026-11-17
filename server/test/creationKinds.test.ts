@@ -218,6 +218,16 @@ describe("creations 2.59: the games draw them, a challenge gives them, their win
         const suit = (await create(a, "suit", "Givre", { colors: { suit: "#c8e1ff", accent: "#78c8ff", scarf: "#ebf5ff" } })).body.data.creation;
         const made = [];
         for (const kind of KINDS) made.push((await create(a, kind, "Aurore", LOOKS[kind])).body.data.creation);
+        // 2.60: given by no challenge yet: no player sees them.
+        expect((await api("GET", `${V}/creations`)).body.data.creations).toEqual([]);
+        // Given by a challenge that has begun (its rewards are shown): listed.
+        const today = await challenge(utcDate());
+        for (const [i, c] of [suit, ...made].entries())
+            await env.DB.prepare(
+                "INSERT INTO challenge_reward_rules (challenge_id, position, reward_kind, reward_ref, condition, condition_value) VALUES (?1, ?2, ?3, ?4, 'finished', 0)",
+            )
+                .bind(today, i, c.kind, c.ref)
+                .run();
         const pub = (await api("GET", `${V}/creations`)).body.data.creations;
         // A suit's entry as in 2.45 (the games before 2.59 read it), the others with their style.
         expect(Object.keys(pub[0]).sort()).toEqual(["colors", "id", "kind", "name", "ref", "updated_at"]);
@@ -225,8 +235,10 @@ describe("creations 2.59: the games draw them, a challenge gives them, their win
         expect(pub.slice(1)).toEqual(
             made.map((c) => ({ id: c.id, ref: c.ref, kind: c.kind, name: "Aurore", ...LOWER[c.kind as Kind], updated_at: c.updated_at })),
         );
-        // Archived and given to nobody: gone from the public list.
+        // Archived, still given by that challenge: still listed (the players see its rewards); given by none: gone.
         await api("POST", `${V}/admin/creations/${made[1].id}/archive`, { token: a.token, body: { archived: true } });
+        expect((await api("GET", `${V}/creations`)).body.data.creations.map((c: any) => c.ref)).toEqual([suit.ref, ...made.map((c) => c.ref)]);
+        await env.DB.prepare("DELETE FROM challenge_reward_rules WHERE reward_ref = ?1").bind(made[1].ref).run();
         expect((await api("GET", `${V}/creations`)).body.data.creations.map((c: any) => c.ref)).toEqual([suit.ref, made[0].ref, made[2].ref]);
     });
 
