@@ -362,11 +362,20 @@ TEST_CASE("asset catalogue: « utilisé par » is right for known examples") {
                 ++pieces;
             }
         }
+        // The story's own pieces are filed under Histoires › Pyrrhax (the boss's sheet, which
+        // its scenes use too, stays with the boss).
         if (pieces > 0) {
+            int own = 0;
             for (const std::string& a : story::stageAssets(*stories.find("pyrrhax")).animations) {
                 const AssetEntry* anim = cat.find(a);
-                CHECK(cat.folders()[static_cast<size_t>(anim->folder)].key == "stories/pyrrhax");
+                if (a.rfind("animations/stories/", 0) == 0) {
+                    CHECK(cat.folders()[static_cast<size_t>(anim->folder)].key == "stories/pyrrhax");
+                    ++own;
+                } else if (a == "animations/pyrrhax.json") {
+                    CHECK(cat.folders()[static_cast<size_t>(anim->folder)].key.rfind("bosses/", 0) == 0);
+                }
             }
+            CHECK(own > 10);
         }
     }
     {
