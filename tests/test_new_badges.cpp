@@ -211,8 +211,10 @@ TEST_CASE("new badges: the shipped catalogue leads every novelty to a menu") {
             ++rewards;
         }
     }
-    CHECK(achievements == 72 + 3 + 12 + 2 + 6);  // 2.29, Singularis's three of 2.34, Les Confins' twelve (2.48-2.49), the Boomerang chargé's two (2.51), the Kraken's six (2.53)
-    CHECK(rewards == 22 + 1 + 5 + 10 + 5);   // 2.29, « Briseur d'étoiles » of 2.34, the five of the challenges of 2.35, Les Confins' ten, the Kraken's five (2.53)
+    CHECK(achievements == 72 + 3 + 12 + 2 + 6 + 6);  // 2.29, Singularis's three of 2.34, Les Confins' twelve (2.48-2.49), the Boomerang chargé's
+                                                 // two (2.51), the Kraken's six (2.53), the Phénix's six (2.56)
+    CHECK(rewards == 22 + 1 + 5 + 10 + 5 + 5);   // 2.29, « Briseur d'étoiles » of 2.34, the five of the challenges of 2.35, Les Confins' ten,
+                                                 // the Kraken's five (2.53), the Phénix's five (2.56)
     // The whole « Collection » category of achievements came with 2.29.
     for (const auto& a : ach.achievements())
         if (a.category == "collection") CHECK(leaves.count("ach." + a.id));

@@ -649,8 +649,9 @@ void BossHazards::render(RenderContext& ctx) const {
                 if (c.ash) {
                     // 2.56, the Phénix: thick grey ash billowing, embers glinting in it.
                     ctx.r.drawWorldGlow(pc, rad * 1.6f, fire.withAlpha(static_cast<uint8_t>(40 * a)));
-                    ctx.r.fillWorldCircle(pc, rad, Color{92, 84, 80, static_cast<uint8_t>(215 * a)});
-                    ctx.r.fillWorldCircle(pc + Vec2{-rad * 0.25f, -rad * 0.3f}, rad * 0.55f, Color{150, 140, 132, static_cast<uint8_t>(120 * a)});
+                    // Thick, but Nova stays visible inside it (the ash veils, it never hides her).
+                    ctx.r.fillWorldCircle(pc, rad, Color{92, 84, 80, static_cast<uint8_t>(90 * a)});
+                    ctx.r.fillWorldCircle(pc + Vec2{-rad * 0.25f, -rad * 0.3f}, rad * 0.55f, Color{150, 140, 132, static_cast<uint8_t>(45 * a)});
                     const float glint = 0.5f + 0.5f * dmath::sin(t * 7.0f + seed * 5.0f);
                     ctx.r.fillWorldCircle(pc + Vec2{rad * 0.2f, rad * 0.25f}, std::max(1.0f, rad * 0.14f),
                                           Color{255, 150, 70, static_cast<uint8_t>(200 * a * glint)}, BlendMode::Additive);
