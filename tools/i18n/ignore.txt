@@ -179,3 +179,17 @@ supernova
 arc
 missile
 constellation
+# 2.61 Studio de Créations : noms de textures, chemins, blocs PNG, clés JSON.
+<aperçu import>
+<image {0}>
+<import>
+<modèle {0}>
+<studio {0}>
+IDAT
+IEND
+IHDR
+{0}-{1}-{2}T{3}:{4}:{5}Z
+archives
+images
+png
+palette
