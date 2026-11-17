@@ -1,0 +1,9 @@
+{
+  "texture": "stories/kraken/meduse.png",
+  "frameWidth": 32,
+  "frameHeight": 40,
+  "pivot": [16, 12],
+  "clips": {
+    "idle": {"row": 0, "count": 8, "fps": 7, "loop": true}
+  }
+}

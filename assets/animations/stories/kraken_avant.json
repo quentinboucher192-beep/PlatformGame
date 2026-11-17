@@ -1,0 +1,9 @@
+{
+  "texture": "stories/kraken/avant.png",
+  "frameWidth": 900,
+  "frameHeight": 120,
+  "pivot": [0, 0],
+  "clips": {
+    "idle": {"row": 0, "count": 4, "fps": 4, "loop": true}
+  }
+}

@@ -94,6 +94,10 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
   qui respirent et ombres qui suivent le feu ; la caméra suit l'action. Format des histoires en
   **version 2** (les autres histoires gardent leurs peintures). Une pastille NOUVEAU mène à « Revoir
   l'histoire ».
+* L'**histoire du Kraken** (« La Lanterne des profondeurs ») devient un **petit dessin animé** : l'œuf qui éclot
+  dans la mer noire, la petite lueur que suivent les poissons perdus, la pluie d'étincelles de l'étoile, les huit
+  bras qui s'allument, les poissons qui fuient son ombre, la Fosse ; rayons de lumière, vase, algues, méduses et
+  récifs lumineux animés. Une pastille NOUVEAU mène à « Revoir l'histoire ».
 * **Clans** (EN LIGNE › **CLANS**) : un clan par joueur, **50 membres** au plus, un nom, un **tag** de 2 à 5
   lettres ou chiffres, unique sans tenir compte de la casse (affiché **[AUBE]**), une devise et un **emblème**
   (une forme et deux couleurs, comme les cadres). Le **chef** (un seul, rôle transmissible) et les **officiers**

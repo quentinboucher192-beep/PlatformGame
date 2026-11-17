@@ -1,0 +1,9 @@
+{
+  "texture": "stories/kraken/source.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "pivot": [32, 63],
+  "clips": {
+    "idle": {"row": 0, "count": 8, "fps": 8, "loop": true}
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "texture": "stories/kraken/bulles.png",
+  "frameWidth": 24,
+  "frameHeight": 80,
+  "pivot": [12, 79],
+  "clips": {
+    "idle": {"row": 0, "count": 8, "fps": 8, "loop": true}
+  }
+}

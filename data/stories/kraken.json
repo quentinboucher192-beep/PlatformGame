@@ -1,7 +1,7 @@
 {
  "format": "cosmic.boss_story",
- "version": 1,
- "comment": "Story of a giga boss (game/content/BossStories.h), told before the first fight against it. Each shot: its painting (assets/, tools/assetgen/environment/stories.py), its line of narration, the point the slow zoom goes to, the live particles over it. A shot lasts max(4.5 s, 1.2 s + characters / 16); then the title card (3 s).",
+ "version": 2,
+ "comment": "Story of a giga boss (game/content/BossStories.h), told before the first fight against it. Version 2: each shot is an animated scene (« stage »: parallax layers, sprites moved by keyframes, glows, particles, camera, shakes, flashes), written by tools/assetgen/environment/story_kraken_scene.py (edit it there); its image is the still rendered from the scene. A shot lasts max(4.5 s, 1.2 s + characters / 16); then the title card (3 s).",
  "boss": "kraken",
  "title": "La Lanterne des profondeurs",
  "color": "#7ae6ff",
@@ -16,9 +16,555 @@
     0.5,
     0.58
    ],
-   "zoom": 1.14,
-   "particles": "dust",
-   "glow": "#a8d0e8"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#a8d0e8",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#010204",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       480.0,
+       200.0
+      ],
+      "zoom": 1.12
+     },
+     {
+      "t": 2.4,
+      "pos": [
+       500.0,
+       330.0
+      ],
+      "zoom": 1.24
+     },
+     {
+      "t": 3.6,
+      "pos": [
+       520.0,
+       384.0
+      ],
+      "zoom": 1.55
+     },
+     {
+      "t": 6.0,
+      "pos": [
+       540.0,
+       372.0
+      ],
+      "zoom": 1.8
+     },
+     {
+      "t": 8.2,
+      "pos": [
+       546.0,
+       366.0
+      ],
+      "zoom": 1.86
+     }
+    ],
+    "elements": [
+     {
+      "id": "abysses",
+      "sprite": "animations/stories/kraken_abysses.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "vase_loin",
+      "sprite": "animations/stories/kraken_vase.json",
+      "depth": 0.15,
+      "drift": [
+       -4.0,
+       -2.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "alpha": 0.6,
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "croute",
+      "sprite": "animations/stories/kraken_croute.json",
+      "depth": 0.25,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -240.0,
+         -60.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "recifs_loin",
+      "sprite": "animations/stories/kraken_recifs_loin.json",
+      "depth": 0.3,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -240.0,
+         170.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "algues_loin",
+      "sprite": "animations/stories/kraken_algues.json",
+      "depth": 0.45,
+      "drift": [
+       0.0,
+       0.0
+      ],
+      "repeat": true,
+      "tint": "#7a9ab8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         300.0
+        ],
+        "alpha": 0.7,
+        "clip": "idle",
+        "offset": 0.5
+       }
+      ]
+     },
+     {
+      "id": "meduse1",
+      "sprite": "animations/stories/kraken_meduse.json",
+      "depth": 0.5,
+      "blend": "add",
+      "drift": [
+       0.5476691113764707,
+       -5.0
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         834.8,
+         204.7
+        ],
+        "clip": "idle",
+        "offset": 0.785
+       }
+      ]
+     },
+     {
+      "id": "meduse2",
+      "sprite": "animations/stories/kraken_meduse.json",
+      "depth": 0.6,
+      "blend": "add",
+      "drift": [
+       -0.8151694422568632,
+       -5.0
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         315.5,
+         306.1
+        ],
+        "clip": "idle",
+        "offset": 0.869
+       }
+      ]
+     },
+     {
+      "id": "meduse3",
+      "sprite": "animations/stories/kraken_meduse.json",
+      "depth": 0.7,
+      "blend": "add",
+      "drift": [
+       1.0853773876850648,
+       -5.0
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         858.5,
+         180.4
+        ],
+        "clip": "idle",
+        "offset": 0.805
+       }
+      ]
+     },
+     {
+      "id": "recifs",
+      "sprite": "animations/stories/kraken_recifs.json",
+      "depth": 0.6,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -320.0,
+         150.0
+        ],
+        "clip": "idle",
+        "offset": 0.2
+       }
+      ]
+     },
+     {
+      "id": "algues",
+      "sprite": "animations/stories/kraken_algues.json",
+      "depth": 0.8,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         330.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "fond",
+      "sprite": "animations/stories/kraken_fond.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "vase",
+      "sprite": "animations/stories/kraken_vase.json",
+      "depth": 0.9,
+      "drift": [
+       6.0,
+       -3.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "alpha": 0.8,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "oeuf2",
+      "sprite": "animations/stories/kraken_oeuf.json",
+      "depth": 1.0,
+      "tint": "#8a8aaa",
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        40.0,
+        6.4
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         452.0,
+         452.0
+        ],
+        "clip": "idle",
+        "offset": 0.5,
+        "scale": 0.9
+       }
+      ]
+     },
+     {
+      "id": "oeuf3",
+      "sprite": "animations/stories/kraken_oeuf.json",
+      "depth": 1.0,
+      "tint": "#8a8aaa",
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        40.0,
+        6.4
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         590.0,
+         450.0
+        ],
+        "clip": "idle",
+        "offset": 0.2,
+        "scale": 0.85,
+        "flip": true
+       }
+      ]
+     },
+     {
+      "id": "oeuf_lueur",
+      "glow": "#7ae6ff",
+      "radius": 50.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         520.0,
+         410.0
+        ],
+        "alpha": 0.25
+       },
+       {
+        "t": 3.6,
+        "alpha": 0.5
+       },
+       {
+        "t": 4.0,
+        "alpha": 0.0
+       }
+      ],
+      "pulse": [
+       0.5,
+       1.2
+      ]
+     },
+     {
+      "id": "oeuf",
+      "sprite": "animations/stories/kraken_oeuf.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        50.0,
+        8.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         520.0,
+         446.0
+        ],
+        "clip": "idle",
+        "scale": 1.1
+       },
+       {
+        "t": 3.6,
+        "clip": "hatch"
+       }
+      ]
+     },
+     {
+      "id": "bulles",
+      "sprite": "animations/stories/kraken_bulles.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         524.0,
+         426.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 3.6,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 3.62,
+        "alpha": 1.0,
+        "clip": "idle",
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "poulpe",
+      "sprite": "animations/stories/kraken_poulpe.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.25,
+       "size": [
+        40.0,
+        6.4
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         520.0,
+         420.0
+        ],
+        "alpha": 0.0,
+        "clip": "dark"
+       },
+       {
+        "t": 3.9,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 3.92,
+        "alpha": 1.0,
+        "clip": "swim_dark",
+        "ease": "step"
+       },
+       {
+        "t": 5.0,
+        "pos": [
+         548.0,
+         360.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 5.01,
+        "clip": "dark",
+        "ease": "step"
+       },
+       {
+        "t": 5.6,
+        "clip": "light"
+       }
+      ]
+     },
+     {
+      "id": "lanterne",
+      "glow": "#7ae6ff",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         566.0,
+         410.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 5.9,
+        "alpha": 0.0
+       },
+       {
+        "t": 6.4,
+        "alpha": 0.9,
+        "ease": "out"
+       },
+       {
+        "t": 8.2,
+        "alpha": 0.85
+       }
+      ],
+      "pulse": [
+       0.3,
+       1.0
+      ]
+     },
+     {
+      "id": "bulles_vives",
+      "particles": "embers",
+      "color": "#9adcff",
+      "area": [
+       360.0,
+       300.0,
+       320.0,
+       180.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.3
+       },
+       {
+        "t": 3.6,
+        "alpha": 1.0
+       },
+       {
+        "t": 5.2,
+        "alpha": 0.4
+       }
+      ]
+     },
+     {
+      "id": "vase_vive",
+      "particles": "dust",
+      "color": "#7aa8c8",
+      "area": [
+       60.0,
+       120.0,
+       840.0,
+       360.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.5
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/kraken_avant.json",
+      "depth": 1.35,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ]
+   }
   },
   {
    "scene": "lantern",
@@ -28,9 +574,887 @@
     0.42,
     0.46
    ],
-   "zoom": 1.1,
-   "particles": "embers",
-   "glow": "#7ae6ff"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#7ae6ff",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#010204",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       250.0,
+       330.0
+      ],
+      "zoom": 1.36
+     },
+     {
+      "t": 2.0,
+      "pos": [
+       330.0,
+       336.0
+      ],
+      "zoom": 1.3
+     },
+     {
+      "t": 4.0,
+      "pos": [
+       500.0,
+       330.0
+      ],
+      "zoom": 1.26
+     },
+     {
+      "t": 6.0,
+      "pos": [
+       640.0,
+       340.0
+      ],
+      "zoom": 1.22
+     },
+     {
+      "t": 8.074,
+      "pos": [
+       660.0,
+       336.0
+      ],
+      "zoom": 1.18
+     }
+    ],
+    "elements": [
+     {
+      "id": "abysses",
+      "sprite": "animations/stories/kraken_abysses.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "vase_loin",
+      "sprite": "animations/stories/kraken_vase.json",
+      "depth": 0.15,
+      "drift": [
+       -4.0,
+       -2.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "alpha": 0.6,
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "recifs_loin",
+      "sprite": "animations/stories/kraken_recifs_loin.json",
+      "depth": 0.3,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -240.0,
+         170.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "algues_loin",
+      "sprite": "animations/stories/kraken_algues.json",
+      "depth": 0.45,
+      "drift": [
+       0.0,
+       0.0
+      ],
+      "repeat": true,
+      "tint": "#7a9ab8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         300.0
+        ],
+        "alpha": 0.7,
+        "clip": "idle",
+        "offset": 0.5
+       }
+      ]
+     },
+     {
+      "id": "meduse1",
+      "sprite": "animations/stories/kraken_meduse.json",
+      "depth": 0.5,
+      "blend": "add",
+      "drift": [
+       1.1249500847009184,
+       -5.0
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         357.0,
+         219.9
+        ],
+        "clip": "idle",
+        "offset": 0.816
+       }
+      ]
+     },
+     {
+      "id": "meduse2",
+      "sprite": "animations/stories/kraken_meduse.json",
+      "depth": 0.6,
+      "blend": "add",
+      "drift": [
+       2.0204328854258256,
+       -5.0
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         320.3,
+         219.2
+        ],
+        "clip": "idle",
+        "offset": 0.564
+       }
+      ]
+     },
+     {
+      "id": "meduse3",
+      "sprite": "animations/stories/kraken_meduse.json",
+      "depth": 0.7,
+      "blend": "add",
+      "drift": [
+       1.6695408564027554,
+       -5.0
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         249.9,
+         304.6
+        ],
+        "clip": "idle",
+        "offset": 0.315
+       }
+      ]
+     },
+     {
+      "id": "recifs",
+      "sprite": "animations/stories/kraken_recifs.json",
+      "depth": 0.6,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -320.0,
+         150.0
+        ],
+        "clip": "idle",
+        "offset": 0.2
+       }
+      ]
+     },
+     {
+      "id": "algues",
+      "sprite": "animations/stories/kraken_algues.json",
+      "depth": 0.8,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         330.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "fond",
+      "sprite": "animations/stories/kraken_fond.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "vase",
+      "sprite": "animations/stories/kraken_vase.json",
+      "depth": 0.9,
+      "drift": [
+       6.0,
+       -3.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "alpha": 0.8,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "source1_lueur",
+      "glow": "#ff9a4a",
+      "radius": 110.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         760.0,
+         376.0
+        ],
+        "alpha": 0.5
+       }
+      ],
+      "pulse": [
+       0.35,
+       1.1,
+       0.0
+      ]
+     },
+     {
+      "id": "source1",
+      "sprite": "animations/stories/kraken_source.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.3,
+       "size": [
+        80.0,
+        12.8
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         760.0,
+         446.0
+        ],
+        "clip": "idle",
+        "offset": 0.0,
+        "scale": 1.2
+       }
+      ]
+     },
+     {
+      "id": "bulles1",
+      "sprite": "animations/stories/kraken_bulles.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         760.0,
+         376.0
+        ],
+        "clip": "idle",
+        "offset": 0.0
+       }
+      ]
+     },
+     {
+      "id": "source2_lueur",
+      "glow": "#ff9a4a",
+      "radius": 110.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         850.0,
+         382.0
+        ],
+        "alpha": 0.5
+       }
+      ],
+      "pulse": [
+       0.35,
+       1.4000000000000001,
+       0.4
+      ]
+     },
+     {
+      "id": "source2",
+      "sprite": "animations/stories/kraken_source.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.3,
+       "size": [
+        80.0,
+        12.8
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         850.0,
+         452.0
+        ],
+        "clip": "idle",
+        "offset": 0.3,
+        "scale": 0.95
+       }
+      ]
+     },
+     {
+      "id": "bulles2",
+      "sprite": "animations/stories/kraken_bulles.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         850.0,
+         382.0
+        ],
+        "clip": "idle",
+        "offset": 0.5
+       }
+      ]
+     },
+     {
+      "id": "poulpe",
+      "sprite": "animations/stories/kraken_poulpe.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         60.0,
+         300.0
+        ],
+        "clip": "swim"
+       },
+       {
+        "t": 2.0,
+        "pos": [
+         300.0,
+         340.0
+        ],
+        "ease": "inout"
+       },
+       {
+        "t": 4.0,
+        "pos": [
+         520.0,
+         312.0
+        ],
+        "ease": "inout"
+       },
+       {
+        "t": 6.0,
+        "pos": [
+         690.0,
+         350.0
+        ],
+        "ease": "inout"
+       },
+       {
+        "t": 6.01,
+        "clip": "idle"
+       },
+       {
+        "t": 8.074,
+        "pos": [
+         720.0,
+         344.0
+        ],
+        "ease": "out"
+       }
+      ]
+     },
+     {
+      "id": "lanterne",
+      "glow": "#7ae6ff",
+      "radius": 90.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         46.0,
+         324.0
+        ],
+        "alpha": 0.9
+       },
+       {
+        "t": 2.0,
+        "pos": [
+         286.0,
+         364.0
+        ]
+       },
+       {
+        "t": 4.0,
+        "pos": [
+         506.0,
+         336.0
+        ]
+       },
+       {
+        "t": 6.0,
+        "pos": [
+         692.0,
+         384.0
+        ]
+       },
+       {
+        "t": 8.074,
+        "pos": [
+         722.0,
+         378.0
+        ]
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.9
+      ]
+     },
+     {
+      "id": "poisson1",
+      "sprite": "animations/stories/kraken_poisson.json",
+      "depth": 1.0,
+      "tint": "#ffffff",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         0.0,
+         290.8
+        ],
+        "clip": "swim",
+        "offset": 0.266,
+        "scale": 0.9
+       },
+       {
+        "t": 2.45,
+        "pos": [
+         250.0,
+         330.8
+        ],
+        "ease": "inout"
+       },
+       {
+        "t": 4.45,
+        "pos": [
+         470.0,
+         302.8
+        ],
+        "ease": "inout"
+       },
+       {
+        "t": 6.45,
+        "pos": [
+         640.0,
+         340.8
+        ],
+        "ease": "inout"
+       },
+       {
+        "t": 8.074,
+        "pos": [
+         643.7,
+         296.3
+        ],
+        "ease": "out"
+       }
+      ]
+     },
+     {
+      "id": "poisson2",
+      "sprite": "animations/stories/kraken_poisson.json",
+      "depth": 1.0,
+      "tint": "#c8e8ff",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -30.0,
+         288.0
+        ],
+        "clip": "swim",
+        "offset": 0.264,
+        "scale": 1.2
+       },
+       {
+        "t": 2.87,
+        "pos": [
+         232.0,
+         333.1
+        ],
+        "ease": "inout"
+       },
+       {
+        "t": 4.87,
+        "pos": [
+         452.0,
+         305.1
+        ],
+        "ease": "inout"
+       },
+       {
+        "t": 6.87,
+        "pos": [
+         622.0,
+         343.1
+        ],
+        "ease": "inout"
+       },
+       {
+        "t": 8.074,
+        "pos": [
+         601.3,
+         317.2
+        ],
+        "ease": "out"
+       }
+      ]
+     },
+     {
+      "id": "poisson3",
+      "sprite": "animations/stories/kraken_poisson.json",
+      "depth": 1.0,
+      "tint": "#ffe0c0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -60.0,
+         320.2
+        ],
+        "clip": "swim",
+        "offset": 0.127,
+        "scale": 1.2
+       },
+       {
+        "t": 3.29,
+        "pos": [
+         214.0,
+         365.7
+        ],
+        "ease": "inout"
+       },
+       {
+        "t": 5.29,
+        "pos": [
+         434.0,
+         337.7
+        ],
+        "ease": "inout"
+       },
+       {
+        "t": 7.29,
+        "pos": [
+         604.0,
+         375.7
+        ],
+        "ease": "inout"
+       },
+       {
+        "t": 8.074,
+        "pos": [
+         556.3,
+         352.1
+        ],
+        "ease": "out"
+       }
+      ]
+     },
+     {
+      "id": "poisson4",
+      "sprite": "animations/stories/kraken_poisson.json",
+      "depth": 1.0,
+      "tint": "#d8c8ff",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -90.0,
+         316.7
+        ],
+        "clip": "swim",
+        "offset": 0.315,
+        "scale": 1.2
+       },
+       {
+        "t": 3.71,
+        "pos": [
+         196.0,
+         357.5
+        ],
+        "ease": "inout"
+       },
+       {
+        "t": 5.71,
+        "pos": [
+         416.0,
+         329.5
+        ],
+        "ease": "inout"
+       },
+       {
+        "t": 7.71,
+        "pos": [
+         586.0,
+         367.5
+        ],
+        "ease": "inout"
+       },
+       {
+        "t": 8.074,
+        "pos": [
+         517.0,
+         306.7
+        ],
+        "ease": "out"
+       }
+      ]
+     },
+     {
+      "id": "poisson5",
+      "sprite": "animations/stories/kraken_poisson.json",
+      "depth": 1.0,
+      "tint": "#ffffff",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -120.0,
+         303.4
+        ],
+        "clip": "swim",
+        "offset": 0.292,
+        "scale": 1.2
+       },
+       {
+        "t": 4.13,
+        "pos": [
+         178.0,
+         338.9
+        ],
+        "ease": "inout"
+       },
+       {
+        "t": 6.13,
+        "pos": [
+         398.0,
+         310.9
+        ],
+        "ease": "inout"
+       },
+       {
+        "t": 8.074,
+        "pos": [
+         568.0,
+         348.9
+        ],
+        "ease": "inout"
+       },
+       {
+        "t": 8.074,
+        "pos": [
+         638.9,
+         323.4
+        ],
+        "ease": "out"
+       }
+      ]
+     },
+     {
+      "id": "poisson6",
+      "sprite": "animations/stories/kraken_poisson.json",
+      "depth": 1.0,
+      "tint": "#c8e8ff",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -150.0,
+         325.7
+        ],
+        "clip": "swim",
+        "offset": 0.395,
+        "scale": 0.9
+       },
+       {
+        "t": 4.55,
+        "pos": [
+         160.0,
+         359.9
+        ],
+        "ease": "inout"
+       },
+       {
+        "t": 6.55,
+        "pos": [
+         380.0,
+         331.9
+        ],
+        "ease": "inout"
+       },
+       {
+        "t": 8.074,
+        "pos": [
+         550.0,
+         369.9
+        ],
+        "ease": "inout"
+       },
+       {
+        "t": 8.074,
+        "pos": [
+         592.4,
+         354.3
+        ],
+        "ease": "out"
+       }
+      ]
+     },
+     {
+      "id": "poisson7",
+      "sprite": "animations/stories/kraken_poisson.json",
+      "depth": 1.0,
+      "tint": "#ffe0c0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -180.0,
+         312.1
+        ],
+        "clip": "swim",
+        "offset": 0.42,
+        "scale": 1.0
+       },
+       {
+        "t": 4.97,
+        "pos": [
+         142.0,
+         350.4
+        ],
+        "ease": "inout"
+       },
+       {
+        "t": 6.97,
+        "pos": [
+         362.0,
+         322.4
+        ],
+        "ease": "inout"
+       },
+       {
+        "t": 8.074,
+        "pos": [
+         532.0,
+         360.4
+        ],
+        "ease": "inout"
+       },
+       {
+        "t": 8.074,
+        "pos": [
+         550.6,
+         304.8
+        ],
+        "ease": "out"
+       }
+      ]
+     },
+     {
+      "id": "bulles_vives",
+      "particles": "embers",
+      "color": "#9adcff",
+      "area": [
+       700.0,
+       260.0,
+       200.0,
+       200.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.8
+       }
+      ]
+     },
+     {
+      "id": "vase_vive",
+      "particles": "dust",
+      "color": "#7aa8c8",
+      "area": [
+       60.0,
+       120.0,
+       840.0,
+       360.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.5
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/kraken_avant.json",
+      "depth": 1.35,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ]
+   }
   },
   {
    "scene": "star_rain",
@@ -40,9 +1464,1220 @@
     0.5,
     0.5
    ],
-   "zoom": 1.1,
-   "particles": "snow",
-   "glow": "#c8b8ff"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#c8b8ff",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#06040e",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       600.0,
+       150.0
+      ],
+      "zoom": 1.3
+     },
+     {
+      "t": 2.2,
+      "pos": [
+       586.0,
+       170.0
+      ],
+      "zoom": 1.26
+     },
+     {
+      "t": 4.4,
+      "pos": [
+       480.0,
+       340.0
+      ],
+      "zoom": 1.14
+     },
+     {
+      "t": 7.262,
+      "pos": [
+       470.0,
+       356.0
+      ],
+      "zoom": 1.2
+     }
+    ],
+    "elements": [
+     {
+      "id": "ciel",
+      "sprite": "animations/stories/kraken_ciel.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "etoiles",
+      "sprite": "animations/stories/kraken_etoiles.json",
+      "depth": 0.08,
+      "drift": [
+       4.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -20.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "astre1",
+      "sprite": "animations/stories/kraken_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         228.7,
+         70.9
+        ],
+        "clip": "twinkle",
+        "offset": 0.969,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre2",
+      "sprite": "animations/stories/kraken_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         757.9,
+         18.3
+        ],
+        "clip": "twinkle",
+        "offset": 0.524,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre3",
+      "sprite": "animations/stories/kraken_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         778.2,
+         33.8
+        ],
+        "clip": "twinkle",
+        "offset": 0.363,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre4",
+      "sprite": "animations/stories/kraken_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         226.4,
+         156.5
+        ],
+        "clip": "twinkle",
+        "offset": 0.669,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre5",
+      "sprite": "animations/stories/kraken_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         784.2,
+         90.9
+        ],
+        "clip": "twinkle",
+        "offset": 0.298,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre6",
+      "sprite": "animations/stories/kraken_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         873.0,
+         35.6
+        ],
+        "clip": "twinkle",
+        "offset": 0.012,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "lueur_etoile",
+      "glow": "#fff2c8",
+      "radius": 140.0,
+      "depth": 0.06,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         620.0,
+         86.0
+        ],
+        "alpha": 0.55
+       },
+       {
+        "t": 1.2,
+        "alpha": 0.7
+       },
+       {
+        "t": 1.6,
+        "alpha": 1.0
+       },
+       {
+        "t": 2.0,
+        "alpha": 0.0,
+        "ease": "in"
+       }
+      ]
+     },
+     {
+      "id": "lueur_trou",
+      "glow": "#c06cf0",
+      "radius": 110.0,
+      "depth": 0.06,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         620.0,
+         86.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 1.85,
+        "alpha": 0.0
+       },
+       {
+        "t": 2.0,
+        "alpha": 0.9,
+        "ease": "out"
+       },
+       {
+        "t": 7.262,
+        "alpha": 0.4
+       }
+      ],
+      "pulse": [
+       0.25,
+       1.4
+      ]
+     },
+     {
+      "id": "etoile",
+      "sprite": "animations/stories/kraken_etoile.json",
+      "depth": 0.06,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         620.0,
+         86.0
+        ],
+        "clip": "shine",
+        "scale": 1.4
+       },
+       {
+        "t": 1.2,
+        "clip": "collapse"
+       }
+      ]
+     },
+     {
+      "id": "mer",
+      "sprite": "animations/stories/kraken_mer.json",
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         224.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "vagues",
+      "sprite": "animations/stories/kraken_vagues.json",
+      "depth": 0.9,
+      "drift": [
+       10.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         204.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "pluie",
+      "particles": "ember_rain",
+      "color": "#c8b8ff",
+      "area": [
+       0.0,
+       -40.0,
+       1000.0,
+       244.0
+      ],
+      "depth": 0.7,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.0
+       },
+       {
+        "t": 2.0,
+        "alpha": 0.0
+       },
+       {
+        "t": 2.6,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "etincelle1",
+      "sprite": "animations/stories/kraken_etincelle.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         410.8,
+         -40.0
+        ],
+        "alpha": 0.0,
+        "rot": -26.6
+       },
+       {
+        "t": 2.0,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 2.01,
+        "alpha": 1.0,
+        "clip": "fall",
+        "ease": "step",
+        "offset": 0.082
+       },
+       {
+        "t": 2.55,
+        "pos": [
+         281.8,
+         218.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 2.8,
+        "rot": 0.0
+       },
+       {
+        "t": 6.05,
+        "pos": [
+         251.8,
+         452.7
+        ],
+        "alpha": 0.5,
+        "ease": "out"
+       }
+      ]
+     },
+     {
+      "id": "etincelle2",
+      "sprite": "animations/stories/kraken_etincelle.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         330.7,
+         -40.0
+        ],
+        "alpha": 0.0,
+        "rot": -26.6
+       },
+       {
+        "t": 2.359,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 2.369,
+        "alpha": 1.0,
+        "clip": "fall",
+        "ease": "step",
+        "offset": 0.06
+       },
+       {
+        "t": 2.909,
+        "pos": [
+         201.7,
+         218.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 3.159,
+        "rot": 0.0
+       },
+       {
+        "t": 6.433,
+        "pos": [
+         171.7,
+         455.5
+        ],
+        "alpha": 0.5,
+        "ease": "out"
+       }
+      ]
+     },
+     {
+      "id": "etincelle3",
+      "sprite": "animations/stories/kraken_etincelle.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         507.4,
+         -40.0
+        ],
+        "alpha": 0.0,
+        "rot": -26.6
+       },
+       {
+        "t": 2.606,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 2.616,
+        "alpha": 1.0,
+        "clip": "fall",
+        "ease": "step",
+        "offset": 0.167
+       },
+       {
+        "t": 3.156,
+        "pos": [
+         378.4,
+         218.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 3.406,
+        "rot": 0.0
+       },
+       {
+        "t": 6.41,
+        "pos": [
+         348.4,
+         462.9
+        ],
+        "alpha": 0.5,
+        "ease": "out"
+       }
+      ]
+     },
+     {
+      "id": "etincelle4",
+      "sprite": "animations/stories/kraken_etincelle.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         650.9,
+         -40.0
+        ],
+        "alpha": 0.0,
+        "rot": -26.6
+       },
+       {
+        "t": 2.972,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 2.982,
+        "alpha": 1.0,
+        "clip": "fall",
+        "ease": "step",
+        "offset": 0.284
+       },
+       {
+        "t": 3.522,
+        "pos": [
+         521.9,
+         218.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 3.772,
+        "rot": 0.0
+       },
+       {
+        "t": 6.82,
+        "pos": [
+         491.9,
+         403.8
+        ],
+        "alpha": 0.5,
+        "ease": "out"
+       }
+      ]
+     },
+     {
+      "id": "etincelle5",
+      "sprite": "animations/stories/kraken_etincelle.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         257.3,
+         -40.0
+        ],
+        "alpha": 0.0,
+        "rot": -26.6
+       },
+       {
+        "t": 3.198,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 3.208,
+        "alpha": 1.0,
+        "clip": "fall",
+        "ease": "step",
+        "offset": 0.139
+       },
+       {
+        "t": 3.748,
+        "pos": [
+         128.3,
+         218.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 3.998,
+        "rot": 0.0
+       },
+       {
+        "t": 7.262,
+        "pos": [
+         100.2,
+         398.4
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "etincelle6",
+      "sprite": "animations/stories/kraken_etincelle.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         615.6,
+         -40.0
+        ],
+        "alpha": 0.0,
+        "rot": -26.6
+       },
+       {
+        "t": 3.407,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 3.417,
+        "alpha": 1.0,
+        "clip": "fall",
+        "ease": "step",
+        "offset": 0.002
+       },
+       {
+        "t": 3.957,
+        "pos": [
+         486.6,
+         218.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 4.207,
+        "rot": 0.0
+       },
+       {
+        "t": 7.138,
+        "pos": [
+         456.6,
+         436.7
+        ],
+        "alpha": 0.5,
+        "ease": "out"
+       }
+      ]
+     },
+     {
+      "id": "etincelle7",
+      "sprite": "animations/stories/kraken_etincelle.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         685.1,
+         -40.0
+        ],
+        "alpha": 0.0,
+        "rot": -26.6
+       },
+       {
+        "t": 3.716,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 3.726,
+        "alpha": 1.0,
+        "clip": "fall",
+        "ease": "step",
+        "offset": 0.112
+       },
+       {
+        "t": 4.266,
+        "pos": [
+         556.1,
+         218.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 4.516,
+        "rot": 0.0
+       },
+       {
+        "t": 7.262,
+        "pos": [
+         531.9,
+         398.2
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "etincelle8",
+      "sprite": "animations/stories/kraken_etincelle.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         850.5,
+         -40.0
+        ],
+        "alpha": 0.0,
+        "rot": -26.6
+       },
+       {
+        "t": 4.053,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 4.063,
+        "alpha": 1.0,
+        "clip": "fall",
+        "ease": "step",
+        "offset": 0.284
+       },
+       {
+        "t": 4.603,
+        "pos": [
+         721.5,
+         218.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 4.853,
+        "rot": 0.0
+       },
+       {
+        "t": 7.262,
+        "pos": [
+         701.9,
+         357.1
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "etincelle9",
+      "sprite": "animations/stories/kraken_etincelle.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         678.5,
+         -40.0
+        ],
+        "alpha": 0.0,
+        "rot": -26.6
+       },
+       {
+        "t": 4.415,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 4.425,
+        "alpha": 1.0,
+        "clip": "fall",
+        "ease": "step",
+        "offset": 0.101
+       },
+       {
+        "t": 4.965,
+        "pos": [
+         549.5,
+         218.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 5.215,
+        "rot": 0.0
+       },
+       {
+        "t": 7.262,
+        "pos": [
+         526.8,
+         391.9
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "etincelle10",
+      "sprite": "animations/stories/kraken_etincelle.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         602.6,
+         -40.0
+        ],
+        "alpha": 0.0,
+        "rot": -26.6
+       },
+       {
+        "t": 4.764,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 4.774,
+        "alpha": 1.0,
+        "clip": "fall",
+        "ease": "step",
+        "offset": 0.039
+       },
+       {
+        "t": 5.314,
+        "pos": [
+         473.6,
+         218.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 5.564,
+        "rot": 0.0
+       },
+       {
+        "t": 7.262,
+        "pos": [
+         454.3,
+         323.7
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "etincelle11",
+      "sprite": "animations/stories/kraken_etincelle.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         263.6,
+         -40.0
+        ],
+        "alpha": 0.0,
+        "rot": -26.6
+       },
+       {
+        "t": 4.958,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 4.968,
+        "alpha": 1.0,
+        "clip": "fall",
+        "ease": "step",
+        "offset": 0.099
+       },
+       {
+        "t": 5.508,
+        "pos": [
+         134.6,
+         218.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 5.758,
+        "rot": 0.0
+       },
+       {
+        "t": 7.262,
+        "pos": [
+         119.7,
+         319.6
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "etincelle12",
+      "sprite": "animations/stories/kraken_etincelle.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         295.9,
+         -40.0
+        ],
+        "alpha": 0.0,
+        "rot": -26.6
+       },
+       {
+        "t": 5.186,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 5.196,
+        "alpha": 1.0,
+        "clip": "fall",
+        "ease": "step",
+        "offset": 0.266
+       },
+       {
+        "t": 5.736,
+        "pos": [
+         166.9,
+         218.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 5.986,
+        "rot": 0.0
+       },
+       {
+        "t": 7.262,
+        "pos": [
+         155.4,
+         299.0
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "etincelle13",
+      "sprite": "animations/stories/kraken_etincelle.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         546.9,
+         -40.0
+        ],
+        "alpha": 0.0,
+        "rot": -26.6
+       },
+       {
+        "t": 5.537,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 5.547,
+        "alpha": 1.0,
+        "clip": "fall",
+        "ease": "step",
+        "offset": 0.284
+       },
+       {
+        "t": 6.087,
+        "pos": [
+         417.9,
+         218.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 6.337,
+        "rot": 0.0
+       },
+       {
+        "t": 7.262,
+        "pos": [
+         406.5,
+         290.4
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "etincelle14",
+      "sprite": "animations/stories/kraken_etincelle.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         594.9,
+         -40.0
+        ],
+        "alpha": 0.0,
+        "rot": -26.6
+       },
+       {
+        "t": 5.902,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 5.912,
+        "alpha": 1.0,
+        "clip": "fall",
+        "ease": "step",
+        "offset": 0.234
+       },
+       {
+        "t": 6.452,
+        "pos": [
+         465.9,
+         218.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 6.702,
+        "rot": 0.0
+       },
+       {
+        "t": 7.262,
+        "pos": [
+         458.5,
+         270.3
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "etincelle15",
+      "sprite": "animations/stories/kraken_etincelle.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         588.4,
+         -40.0
+        ],
+        "alpha": 0.0,
+        "rot": -26.6
+       },
+       {
+        "t": 6.192,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 6.202,
+        "alpha": 1.0,
+        "clip": "fall",
+        "ease": "step",
+        "offset": 0.098
+       },
+       {
+        "t": 6.742,
+        "pos": [
+         459.4,
+         218.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 6.992,
+        "rot": 0.0
+       },
+       {
+        "t": 7.262,
+        "pos": [
+         454.9,
+         245.8
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "algues",
+      "sprite": "animations/stories/kraken_algues.json",
+      "depth": 0.95,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         330.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "fond",
+      "sprite": "animations/stories/kraken_fond.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         410.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "poulpe",
+      "sprite": "animations/stories/kraken_poulpe.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.3,
+       "size": [
+        40.0,
+        6.4
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         440.0,
+         430.0
+        ],
+        "clip": "idle"
+       },
+       {
+        "t": 7.262,
+        "pos": [
+         450.0,
+         416.0
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "lanterne",
+      "glow": "#7ae6ff",
+      "radius": 60.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         424.0,
+         450.0
+        ],
+        "alpha": 0.8
+       },
+       {
+        "t": 7.262,
+        "pos": [
+         434.0,
+         436.0
+        ],
+        "ease": "linear"
+       }
+      ],
+      "pulse": [
+       0.3,
+       1.0
+      ]
+     },
+     {
+      "id": "lumiere",
+      "particles": "snow",
+      "color": "#c8b8ff",
+      "area": [
+       0.0,
+       234.0,
+       960.0,
+       300.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.0
+       },
+       {
+        "t": 2.6,
+        "alpha": 0.0
+       },
+       {
+        "t": 3.4,
+        "alpha": 0.9
+       }
+      ]
+     },
+     {
+      "id": "vase_vive",
+      "particles": "dust",
+      "color": "#7aa8c8",
+      "area": [
+       60.0,
+       254.0,
+       840.0,
+       260.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.4
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 1.9,
+      "to": 2.6,
+      "amount": 4.0
+     }
+    ],
+    "flash": [
+     {
+      "t": 1.92,
+      "in": 0.06,
+      "out": 0.5,
+      "color": "#e0b0ff",
+      "alpha": 0.45
+     }
+    ]
+   }
   },
   {
    "scene": "growing",
@@ -52,9 +2687,973 @@
     0.5,
     0.5
    ],
-   "zoom": 1.12,
-   "particles": "sparks",
-   "glow": "#7ae6ff"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#7ae6ff",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#010204",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       490.0,
+       350.0
+      ],
+      "zoom": 1.8
+     },
+     {
+      "t": 3.6,
+      "pos": [
+       486.0,
+       352.0
+      ],
+      "zoom": 1.62
+     },
+     {
+      "t": 4.2,
+      "pos": [
+       480.0,
+       340.0
+      ],
+      "zoom": 1.36
+     },
+     {
+      "t": 7.2,
+      "pos": [
+       480.0,
+       330.0
+      ],
+      "zoom": 1.2
+     }
+    ],
+    "elements": [
+     {
+      "id": "abysses",
+      "sprite": "animations/stories/kraken_abysses.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "vase_loin",
+      "sprite": "animations/stories/kraken_vase.json",
+      "depth": 0.15,
+      "drift": [
+       -4.0,
+       -2.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "alpha": 0.6,
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "recifs_loin",
+      "sprite": "animations/stories/kraken_recifs_loin.json",
+      "depth": 0.3,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -240.0,
+         170.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "algues_loin",
+      "sprite": "animations/stories/kraken_algues.json",
+      "depth": 0.45,
+      "drift": [
+       0.0,
+       0.0
+      ],
+      "repeat": true,
+      "tint": "#7a9ab8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         300.0
+        ],
+        "alpha": 0.7,
+        "clip": "idle",
+        "offset": 0.5
+       }
+      ]
+     },
+     {
+      "id": "meduse1",
+      "sprite": "animations/stories/kraken_meduse.json",
+      "depth": 0.5,
+      "blend": "add",
+      "drift": [
+       0.3397352165375036,
+       -5.0
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         322.3,
+         221.4
+        ],
+        "clip": "idle",
+        "offset": 0.304
+       }
+      ]
+     },
+     {
+      "id": "meduse2",
+      "sprite": "animations/stories/kraken_meduse.json",
+      "depth": 0.6,
+      "blend": "add",
+      "drift": [
+       -0.16158198769237408,
+       -5.0
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         406.3,
+         208.2
+        ],
+        "clip": "idle",
+        "offset": 0.03
+       }
+      ]
+     },
+     {
+      "id": "meduse3",
+      "sprite": "animations/stories/kraken_meduse.json",
+      "depth": 0.7,
+      "blend": "add",
+      "drift": [
+       2.3818245666174445,
+       -5.0
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         162.6,
+         162.4
+        ],
+        "clip": "idle",
+        "offset": 0.195
+       }
+      ]
+     },
+     {
+      "id": "recifs",
+      "sprite": "animations/stories/kraken_recifs.json",
+      "depth": 0.6,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -320.0,
+         150.0
+        ],
+        "clip": "idle",
+        "offset": 0.2
+       }
+      ]
+     },
+     {
+      "id": "algues",
+      "sprite": "animations/stories/kraken_algues.json",
+      "depth": 0.8,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         330.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "fond",
+      "sprite": "animations/stories/kraken_fond.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "vase",
+      "sprite": "animations/stories/kraken_vase.json",
+      "depth": 0.9,
+      "drift": [
+       6.0,
+       -3.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "alpha": 0.8,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "lanterne",
+      "glow": "#7ae6ff",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         466.0,
+         402.0
+        ],
+        "alpha": 0.8
+       },
+       {
+        "t": 1.6,
+        "pos": [
+         462.0,
+         408.0
+        ],
+        "alpha": 0.9
+       },
+       {
+        "t": 2.7,
+        "pos": [
+         458.0,
+         414.0
+        ]
+       },
+       {
+        "t": 3.8,
+        "pos": [
+         454.0,
+         420.0
+        ]
+       },
+       {
+        "t": 4.2,
+        "alpha": 0.0
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.9
+      ]
+     },
+     {
+      "id": "poulpe",
+      "sprite": "animations/stories/kraken_poulpe.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.3,
+       "size": [
+        40.0,
+        6.4
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         380.0
+        ],
+        "clip": "idle",
+        "scale": 1.0
+       },
+       {
+        "t": 0.9,
+        "clip": "catch"
+       },
+       {
+        "t": 1.5,
+        "scale": 1.25,
+        "ease": "out"
+       },
+       {
+        "t": 2.0,
+        "clip": "catch"
+       },
+       {
+        "t": 2.6,
+        "scale": 1.5,
+        "ease": "out"
+       },
+       {
+        "t": 3.1,
+        "clip": "catch"
+       },
+       {
+        "t": 3.7,
+        "scale": 1.75,
+        "ease": "out"
+       },
+       {
+        "t": 4.2,
+        "alpha": 1.0
+       },
+       {
+        "t": 4.22,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "etincelle1",
+      "sprite": "animations/stories/kraken_etincelle.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         600.0,
+         -40.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 0.0,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 0.01,
+        "alpha": 1.0,
+        "clip": "fall",
+        "ease": "step"
+       },
+       {
+        "t": 1.14,
+        "pos": [
+         494.0,
+         350.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 1.16,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "eclat1",
+      "glow": "#e0d0ff",
+      "radius": 80.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         376.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 1.14,
+        "alpha": 0.0
+       },
+       {
+        "t": 1.24,
+        "alpha": 0.8,
+        "ease": "out"
+       },
+       {
+        "t": 1.9,
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "etincelle2",
+      "sprite": "animations/stories/kraken_etincelle.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         540.0,
+         -40.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 0.0,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 0.01,
+        "alpha": 1.0,
+        "clip": "fall",
+        "ease": "step"
+       },
+       {
+        "t": 2.24,
+        "pos": [
+         497.5,
+         342.5
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 2.26,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "eclat2",
+      "glow": "#e0d0ff",
+      "radius": 80.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         376.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 2.24,
+        "alpha": 0.0
+       },
+       {
+        "t": 2.34,
+        "alpha": 0.8,
+        "ease": "out"
+       },
+       {
+        "t": 3.0,
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "etincelle3",
+      "sprite": "animations/stories/kraken_etincelle.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         -40.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 1.1,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 1.11,
+        "alpha": 1.0,
+        "clip": "fall",
+        "ease": "step"
+       },
+       {
+        "t": 3.34,
+        "pos": [
+         501.0,
+         335.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 3.36,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "eclat3",
+      "glow": "#e0d0ff",
+      "radius": 80.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         376.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 3.34,
+        "alpha": 0.0
+       },
+       {
+        "t": 3.44,
+        "alpha": 0.8,
+        "ease": "out"
+       },
+       {
+        "t": 4.1,
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "jeune",
+      "sprite": "animations/stories/kraken_jeune.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.3,
+       "size": [
+        120.0,
+        19.2
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         476.0,
+         442.0
+        ],
+        "alpha": 0.0,
+        "scale": 0.9
+       },
+       {
+        "t": 4.2,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 4.22,
+        "alpha": 1.0,
+        "clip": "light_arms",
+        "ease": "step"
+       },
+       {
+        "t": 7.2,
+        "scale": 1.0,
+        "ease": "out"
+       }
+      ]
+     },
+     {
+      "id": "bras1",
+      "glow": "#7ae6ff",
+      "radius": 46.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         536.3,
+         430.9
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 4.36,
+        "alpha": 0.0
+       },
+       {
+        "t": 4.48,
+        "alpha": 0.8,
+        "ease": "out"
+       },
+       {
+        "t": 7.2,
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.35,
+       0.8,
+       0.0
+      ]
+     },
+     {
+      "id": "bras3",
+      "glow": "#7ae6ff",
+      "radius": 46.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         473.8,
+         460.6
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 4.52,
+        "alpha": 0.0
+       },
+       {
+        "t": 4.64,
+        "alpha": 0.8,
+        "ease": "out"
+       },
+       {
+        "t": 7.2,
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.35,
+       0.9,
+       0.13
+      ]
+     },
+     {
+      "id": "bras5",
+      "glow": "#7ae6ff",
+      "radius": 46.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         451.2,
+         453.3
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 4.68,
+        "alpha": 0.0
+       },
+       {
+        "t": 4.8,
+        "alpha": 0.8,
+        "ease": "out"
+       },
+       {
+        "t": 7.2,
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.35,
+       1.0,
+       0.26
+      ]
+     },
+     {
+      "id": "bras7",
+      "glow": "#7ae6ff",
+      "radius": 46.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         469.4,
+         462.2
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 4.84,
+        "alpha": 0.0
+       },
+       {
+        "t": 4.96,
+        "alpha": 0.8,
+        "ease": "out"
+       },
+       {
+        "t": 7.2,
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.35,
+       1.1,
+       0.39
+      ]
+     },
+     {
+      "id": "bras8",
+      "glow": "#7ae6ff",
+      "radius": 46.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         430.6,
+         402.7
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 5.0,
+        "alpha": 0.0
+       },
+       {
+        "t": 5.12,
+        "alpha": 0.8,
+        "ease": "out"
+       },
+       {
+        "t": 7.2,
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.35,
+       1.2000000000000002,
+       0.52
+      ]
+     },
+     {
+      "id": "bras6",
+      "glow": "#7ae6ff",
+      "radius": 46.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         450.3,
+         427.7
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 5.16,
+        "alpha": 0.0
+       },
+       {
+        "t": 5.28,
+        "alpha": 0.8,
+        "ease": "out"
+       },
+       {
+        "t": 7.2,
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.35,
+       1.3,
+       0.65
+      ]
+     },
+     {
+      "id": "bras4",
+      "glow": "#7ae6ff",
+      "radius": 46.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         517.7,
+         446.3
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 5.32,
+        "alpha": 0.0
+       },
+       {
+        "t": 5.44,
+        "alpha": 0.8,
+        "ease": "out"
+       },
+       {
+        "t": 7.2,
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.35,
+       1.4000000000000001,
+       0.78
+      ]
+     },
+     {
+      "id": "bras2",
+      "glow": "#7ae6ff",
+      "radius": 46.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         479.5,
+         459.7
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 5.48,
+        "alpha": 0.0
+       },
+       {
+        "t": 5.6,
+        "alpha": 0.8,
+        "ease": "out"
+       },
+       {
+        "t": 7.2,
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.35,
+       1.5,
+       0.91
+      ]
+     },
+     {
+      "id": "etincelles",
+      "particles": "sparks",
+      "color": "#c8b8ff",
+      "area": [
+       340.0,
+       220.0,
+       280.0,
+       220.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.5
+       },
+       {
+        "t": 4.2,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "lumiere",
+      "particles": "snow",
+      "color": "#c8b8ff",
+      "area": [
+       0.0,
+       0.0,
+       960.0,
+       400.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       },
+       {
+        "t": 4.2,
+        "alpha": 0.2
+       }
+      ]
+     },
+     {
+      "id": "vase_vive",
+      "particles": "dust",
+      "color": "#7aa8c8",
+      "area": [
+       60.0,
+       120.0,
+       840.0,
+       360.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.5
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/kraken_avant.json",
+      "depth": 1.35,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 4.2,
+      "to": 4.8,
+      "amount": 3.0
+     }
+    ],
+    "flash": [
+     {
+      "t": 4.2,
+      "in": 0.1,
+      "out": 0.7,
+      "color": "#c8f4ff",
+      "alpha": 0.8
+     }
+    ]
+   }
   },
   {
    "scene": "alone",
@@ -64,9 +3663,794 @@
     0.56,
     0.48
    ],
-   "zoom": 1.1,
-   "particles": "dust",
-   "glow": "#6a8ab8"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#6a8ab8",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#010204",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       470.0,
+       300.0
+      ],
+      "zoom": 1.12
+     },
+     {
+      "t": 1.9,
+      "pos": [
+       520.0,
+       310.0
+      ],
+      "zoom": 1.1
+     },
+     {
+      "t": 7.325,
+      "pos": [
+       560.0,
+       320.0
+      ],
+      "zoom": 1.18
+     }
+    ],
+    "elements": [
+     {
+      "id": "abysses",
+      "sprite": "animations/stories/kraken_abysses.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "vase_loin",
+      "sprite": "animations/stories/kraken_vase.json",
+      "depth": 0.15,
+      "drift": [
+       -4.0,
+       -2.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "alpha": 0.6,
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "recifs_loin",
+      "sprite": "animations/stories/kraken_recifs_loin.json",
+      "depth": 0.3,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -240.0,
+         170.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "algues_loin",
+      "sprite": "animations/stories/kraken_algues.json",
+      "depth": 0.45,
+      "drift": [
+       0.0,
+       0.0
+      ],
+      "repeat": true,
+      "tint": "#7a9ab8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         300.0
+        ],
+        "alpha": 0.56,
+        "clip": "idle",
+        "offset": 0.5
+       }
+      ]
+     },
+     {
+      "id": "meduse1",
+      "sprite": "animations/stories/kraken_meduse.json",
+      "depth": 0.5,
+      "blend": "add",
+      "drift": [
+       2.9953252230468213,
+       -5.0
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         760.3,
+         266.6
+        ],
+        "clip": "idle",
+        "offset": 0.017
+       }
+      ]
+     },
+     {
+      "id": "meduse2",
+      "sprite": "animations/stories/kraken_meduse.json",
+      "depth": 0.6,
+      "blend": "add",
+      "drift": [
+       -1.0341675208613454,
+       -5.0
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         703.4,
+         231.8
+        ],
+        "clip": "idle",
+        "offset": 0.078
+       }
+      ]
+     },
+     {
+      "id": "meduse3",
+      "sprite": "animations/stories/kraken_meduse.json",
+      "depth": 0.7,
+      "blend": "add",
+      "drift": [
+       2.8486375184386254,
+       -5.0
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         724.8,
+         261.7
+        ],
+        "clip": "idle",
+        "offset": 0.803
+       }
+      ]
+     },
+     {
+      "id": "recifs",
+      "sprite": "animations/stories/kraken_recifs.json",
+      "depth": 0.6,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -320.0,
+         150.0
+        ],
+        "clip": "idle",
+        "offset": 0.2
+       }
+      ]
+     },
+     {
+      "id": "algues",
+      "sprite": "animations/stories/kraken_algues.json",
+      "depth": 0.8,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         330.0
+        ],
+        "alpha": 0.8,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "fond",
+      "sprite": "animations/stories/kraken_fond.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "vase",
+      "sprite": "animations/stories/kraken_vase.json",
+      "depth": 0.9,
+      "drift": [
+       6.0,
+       -3.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "alpha": 0.8,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "lumieres",
+      "glow": "#7ae6ff",
+      "radius": 200.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         400.0,
+         270.0
+        ],
+        "alpha": 0.35
+       }
+      ],
+      "pulse": [
+       0.3,
+       2.0
+      ]
+     },
+     {
+      "id": "kraken",
+      "sprite": "animations/kraken.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.6,
+       "size": [
+        330.0,
+        52.8
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         380.0,
+         420.0
+        ],
+        "clip": "idle",
+        "scale": 0.8
+       },
+       {
+        "t": 1.2,
+        "clip": "move"
+       },
+       {
+        "t": 3.4,
+        "pos": [
+         470.0,
+         412.0
+        ]
+       },
+       {
+        "t": 3.41,
+        "clip": "idle",
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "failles_lueur",
+      "glow": "#3a8ab8",
+      "radius": 160.0,
+      "depth": 0.6,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         860.0,
+         350.0
+        ],
+        "alpha": 0.35
+       }
+      ],
+      "pulse": [
+       0.4,
+       2.2
+      ]
+     },
+     {
+      "id": "poisson1",
+      "sprite": "animations/stories/kraken_poisson.json",
+      "depth": 0.62,
+      "tint": "#ffffff",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         656.1,
+         213.4
+        ],
+        "clip": "swim",
+        "offset": 0.468,
+        "scale": 1.0
+       },
+       {
+        "t": 1.91,
+        "pos": [
+         639.2,
+         210.0
+        ]
+       },
+       {
+        "t": 1.92,
+        "clip": "flee"
+       },
+       {
+        "t": 3.91,
+        "pos": [
+         840.0,
+         350.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 4.01,
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "poisson2",
+      "sprite": "animations/stories/kraken_poisson.json",
+      "depth": 1.0,
+      "tint": "#c8e8ff",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         649.0,
+         218.3
+        ],
+        "clip": "swim",
+        "offset": 0.345,
+        "scale": 1.0
+       },
+       {
+        "t": 2.382,
+        "pos": [
+         638.3,
+         214.2
+        ]
+       },
+       {
+        "t": 2.392,
+        "clip": "flee"
+       },
+       {
+        "t": 4.361,
+        "pos": [
+         900.0,
+         410.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 4.461,
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "poisson3",
+      "sprite": "animations/stories/kraken_poisson.json",
+      "depth": 1.0,
+      "tint": "#ffe0c0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         655.5,
+         248.1
+        ],
+        "clip": "swim",
+        "offset": 0.489,
+        "scale": 1.1
+       },
+       {
+        "t": 2.292,
+        "pos": [
+         652.2,
+         257.6
+        ]
+       },
+       {
+        "t": 2.302,
+        "clip": "flee"
+       },
+       {
+        "t": 3.788,
+        "pos": [
+         760.0,
+         300.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 3.888,
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "poisson4",
+      "sprite": "animations/stories/kraken_poisson.json",
+      "depth": 0.62,
+      "tint": "#d8c8ff",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         598.3,
+         266.9
+        ],
+        "clip": "swim",
+        "offset": 0.57,
+        "scale": 1.0
+       },
+       {
+        "t": 2.391,
+        "pos": [
+         615.5,
+         258.6
+        ]
+       },
+       {
+        "t": 2.401,
+        "clip": "flee"
+       },
+       {
+        "t": 4.006,
+        "pos": [
+         930.0,
+         300.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 4.106,
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "poisson5",
+      "sprite": "animations/stories/kraken_poisson.json",
+      "depth": 1.0,
+      "tint": "#ffffff",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         644.8,
+         177.0
+        ],
+        "clip": "swim",
+        "offset": 0.408,
+        "scale": 0.9
+       },
+       {
+        "t": 2.159,
+        "pos": [
+         638.7,
+         177.9
+        ]
+       },
+       {
+        "t": 2.169,
+        "clip": "flee"
+       },
+       {
+        "t": 3.957,
+        "pos": [
+         840.0,
+         350.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 4.057,
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "poisson6",
+      "sprite": "animations/stories/kraken_poisson.json",
+      "depth": 1.0,
+      "tint": "#c8e8ff",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         639.0,
+         262.5
+        ],
+        "clip": "swim",
+        "offset": 0.403,
+        "scale": 1.1
+       },
+       {
+        "t": 1.934,
+        "pos": [
+         658.9,
+         256.3
+        ]
+       },
+       {
+        "t": 1.944,
+        "clip": "flee"
+       },
+       {
+        "t": 3.205,
+        "pos": [
+         900.0,
+         410.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 3.305,
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "poisson7",
+      "sprite": "animations/stories/kraken_poisson.json",
+      "depth": 0.62,
+      "tint": "#ffe0c0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         659.7,
+         292.2
+        ],
+        "clip": "swim",
+        "offset": 0.301,
+        "scale": 1.1
+       },
+       {
+        "t": 2.36,
+        "pos": [
+         674.1,
+         298.3
+        ]
+       },
+       {
+        "t": 2.37,
+        "clip": "flee"
+       },
+       {
+        "t": 4.225,
+        "pos": [
+         760.0,
+         300.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 4.325,
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "poisson8",
+      "sprite": "animations/stories/kraken_poisson.json",
+      "depth": 1.0,
+      "tint": "#d8c8ff",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         637.8,
+         277.5
+        ],
+        "clip": "swim",
+        "offset": 0.015,
+        "scale": 1.0
+       },
+       {
+        "t": 2.366,
+        "pos": [
+         630.0,
+         271.4
+        ]
+       },
+       {
+        "t": 2.376,
+        "clip": "flee"
+       },
+       {
+        "t": 4.359,
+        "pos": [
+         930.0,
+         300.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 4.459,
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "poisson9",
+      "sprite": "animations/stories/kraken_poisson.json",
+      "depth": 1.0,
+      "tint": "#ffffff",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         647.0,
+         262.5
+        ],
+        "clip": "swim",
+        "offset": 0.194,
+        "scale": 1.1
+       },
+       {
+        "t": 2.273,
+        "pos": [
+         659.1,
+         252.7
+        ]
+       },
+       {
+        "t": 2.283,
+        "clip": "flee"
+       },
+       {
+        "t": 3.781,
+        "pos": [
+         840.0,
+         350.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 3.881,
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "poisson10",
+      "sprite": "animations/stories/kraken_poisson.json",
+      "depth": 0.62,
+      "tint": "#c8e8ff",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         651.9,
+         189.5
+        ],
+        "clip": "swim",
+        "offset": 0.37,
+        "scale": 1.0
+       },
+       {
+        "t": 2.347,
+        "pos": [
+         646.2,
+         186.7
+        ]
+       },
+       {
+        "t": 2.357,
+        "clip": "flee"
+       },
+       {
+        "t": 4.292,
+        "pos": [
+         900.0,
+         410.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 4.392,
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "bulles_vives",
+      "particles": "embers",
+      "color": "#9adcff",
+      "area": [
+       200.0,
+       200.0,
+       400.0,
+       260.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.4
+       },
+       {
+        "t": 1.2,
+        "alpha": 0.9
+       }
+      ]
+     },
+     {
+      "id": "vase_vive",
+      "particles": "dust",
+      "color": "#7aa8c8",
+      "area": [
+       60.0,
+       120.0,
+       840.0,
+       360.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/kraken_avant.json",
+      "depth": 1.35,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ]
+   }
   },
   {
    "scene": "trench",
@@ -76,9 +4460,617 @@
     0.5,
     0.56
    ],
-   "zoom": 1.06,
-   "particles": "embers",
-   "glow": "#7ae6ff"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#7ae6ff",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#010204",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       480.0,
+       380.0
+      ],
+      "zoom": 1.3
+     },
+     {
+      "t": 3.0,
+      "pos": [
+       480.0,
+       372.0
+      ],
+      "zoom": 1.24
+     },
+     {
+      "t": 5.0,
+      "pos": [
+       440.0,
+       320.0
+      ],
+      "zoom": 1.12
+     },
+     {
+      "t": 7.45,
+      "pos": [
+       470.0,
+       260.0
+      ],
+      "zoom": 1.08
+     }
+    ],
+    "elements": [
+     {
+      "id": "abysses",
+      "sprite": "animations/stories/kraken_abysses.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "vase_loin",
+      "sprite": "animations/stories/kraken_vase.json",
+      "depth": 0.15,
+      "drift": [
+       -3.0,
+       -2.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "alpha": 0.6,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "fosse_loin",
+      "sprite": "animations/stories/kraken_fosse.json",
+      "depth": 0.3,
+      "tint": "#6a7a9a",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -40.0
+        ],
+        "clip": "idle",
+        "offset": 0.4
+       }
+      ]
+     },
+     {
+      "id": "recifs_loin",
+      "sprite": "animations/stories/kraken_recifs_loin.json",
+      "depth": 0.45,
+      "tint": "#8090b0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -240.0,
+         230.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "meduse1",
+      "sprite": "animations/stories/kraken_meduse.json",
+      "depth": 0.5,
+      "blend": "add",
+      "drift": [
+       2.0,
+       -6.0
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         330.0,
+         200.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "meduse2",
+      "sprite": "animations/stories/kraken_meduse.json",
+      "depth": 0.55,
+      "blend": "add",
+      "drift": [
+       -2.0,
+       -4.0
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         640.0,
+         150.0
+        ],
+        "clip": "idle",
+        "offset": 0.4
+       }
+      ]
+     },
+     {
+      "id": "fosse",
+      "sprite": "animations/stories/kraken_fosse.json",
+      "depth": 0.7,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -110.0,
+         -50.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "algues",
+      "sprite": "animations/stories/kraken_algues.json",
+      "depth": 0.85,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         340.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "bulles",
+      "sprite": "animations/stories/kraken_bulles.json",
+      "depth": 0.9,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         560.0,
+         430.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "fond",
+      "sprite": "animations/stories/kraken_fond.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         410.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "vase",
+      "sprite": "animations/stories/kraken_vase.json",
+      "depth": 0.9,
+      "drift": [
+       5.0,
+       -3.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "alpha": 0.8,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "lueur1",
+      "glow": "#7ae6ff",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         410.0,
+         380.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 0.5,
+        "alpha": 0.0
+       },
+       {
+        "t": 0.8,
+        "alpha": 0.75,
+        "ease": "out"
+       },
+       {
+        "t": 7.45,
+        "alpha": 0.7
+       }
+      ],
+      "pulse": [
+       0.45,
+       1.2,
+       0.0
+      ]
+     },
+     {
+      "id": "lueur2",
+      "glow": "#7ae6ff",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         540.0,
+         360.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 0.85,
+        "alpha": 0.0
+       },
+       {
+        "t": 1.15,
+        "alpha": 0.75,
+        "ease": "out"
+       },
+       {
+        "t": 7.45,
+        "alpha": 0.7
+       }
+      ],
+      "pulse": [
+       0.45,
+       1.4,
+       0.17
+      ]
+     },
+     {
+      "id": "lueur3",
+      "glow": "#7ae6ff",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         450.0,
+         300.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 1.2,
+        "alpha": 0.0
+       },
+       {
+        "t": 1.5,
+        "alpha": 0.75,
+        "ease": "out"
+       },
+       {
+        "t": 7.45,
+        "alpha": 0.7
+       }
+      ],
+      "pulse": [
+       0.45,
+       1.6,
+       0.34
+      ]
+     },
+     {
+      "id": "lueur4",
+      "glow": "#7ae6ff",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         520.0,
+         430.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 1.55,
+        "alpha": 0.0
+       },
+       {
+        "t": 1.85,
+        "alpha": 0.75,
+        "ease": "out"
+       },
+       {
+        "t": 7.45,
+        "alpha": 0.7
+       }
+      ],
+      "pulse": [
+       0.45,
+       1.8,
+       0.51
+      ]
+     },
+     {
+      "id": "lueur5",
+      "glow": "#7ae6ff",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         370.0,
+         430.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 1.9,
+        "alpha": 0.0
+       },
+       {
+        "t": 2.2,
+        "alpha": 0.75,
+        "ease": "out"
+       },
+       {
+        "t": 7.45,
+        "alpha": 0.7
+       }
+      ],
+      "pulse": [
+       0.45,
+       2.0,
+       0.68
+      ]
+     },
+     {
+      "id": "lueur6",
+      "glow": "#7ae6ff",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         580.0,
+         410.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 2.25,
+        "alpha": 0.0
+       },
+       {
+        "t": 2.55,
+        "alpha": 0.75,
+        "ease": "out"
+       },
+       {
+        "t": 7.45,
+        "alpha": 0.7
+       }
+      ],
+      "pulse": [
+       0.45,
+       2.2,
+       0.8500000000000001
+      ]
+     },
+     {
+      "id": "kraken",
+      "sprite": "animations/kraken.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.5,
+       "size": [
+        300.0,
+        48.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         470.0
+        ],
+        "clip": "idle",
+        "scale": 0.8
+       },
+       {
+        "t": 3.0,
+        "clip": "summon"
+       },
+       {
+        "t": 4.0,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "poisson",
+      "sprite": "animations/stories/kraken_poisson.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         200.0,
+         140.0
+        ],
+        "alpha": 0.0,
+        "clip": "swim"
+       },
+       {
+        "t": 3.6,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 3.62,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 5.0,
+        "pos": [
+         330.0,
+         250.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 5.6,
+        "pos": [
+         338.0,
+         246.0
+        ]
+       },
+       {
+        "t": 5.62,
+        "clip": "flee",
+        "flip": true,
+        "ease": "step"
+       },
+       {
+        "t": 7.45,
+        "pos": [
+         150.0,
+         120.0
+        ],
+        "ease": "in"
+       }
+      ]
+     },
+     {
+      "id": "bulles_vives",
+      "particles": "embers",
+      "color": "#9adcff",
+      "area": [
+       320.0,
+       250.0,
+       320.0,
+       240.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       }
+      ]
+     },
+     {
+      "id": "etincelles",
+      "particles": "sparks",
+      "color": "#7ae6ff",
+      "area": [
+       300.0,
+       220.0,
+       360.0,
+       260.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.0
+       },
+       {
+        "t": 3.0,
+        "alpha": 0.0
+       },
+       {
+        "t": 3.4,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "vase_vive",
+      "particles": "dust",
+      "color": "#7aa8c8",
+      "area": [
+       60.0,
+       60.0,
+       840.0,
+       420.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.5
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/kraken_avant.json",
+      "depth": 1.35,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 3.0,
+      "to": 3.6,
+      "amount": 2.5
+     }
+    ]
+   }
   }
  ]
 }

@@ -1,0 +1,10 @@
+{
+  "texture": "stories/kraken/poisson.png",
+  "frameWidth": 24,
+  "frameHeight": 16,
+  "pivot": [12, 8],
+  "clips": {
+    "swim": {"row": 0, "count": 6, "fps": 9, "loop": true},
+    "flee": {"row": 1, "count": 4, "fps": 16, "loop": true}
+  }
+}
