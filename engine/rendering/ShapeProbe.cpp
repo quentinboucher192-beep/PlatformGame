@@ -98,31 +98,59 @@ void ShapeBounds::glow(Vec2 center, float radius) {
 
 // ------------------------------------------------------------------ coverage
 
-void CoverageProbe::watch(const std::vector<Rect>& zones) {
-    zones_ = zones;
-    hit_.assign(zones_.size(), 0);
+void CoverageProbe::watch(const Rect* zones, size_t count) {
+    zones_.assign(zones, zones + count);
+    hit_.assign(count, 0);
+    left_ = 0;
+    for (size_t i = 0; i < count; ++i) {
+        if (empty(zones_[i])) hit_[i] = 2;  // never touched, never tested
+        else ++left_;
+    }
+}
+
+void CoverageProbe::ignore(size_t i) {
+    if (i >= zones_.size() || hit_[i] == 2) return;
+    if (hit_[i] == 0) --left_;
+    zones_[i] = {};
+    hit_[i] = 2;
+}
+
+template <class Exact>
+void CoverageProbe::test(float x0, float y0, float x1, float y1, Exact&& exact) {
+    // Most shapes are far from every block: their bounding box alone tells it.
+    for (size_t i = 0; i < zones_.size() && left_ > 0; ++i) {
+        if (hit_[i] != 0) continue;
+        const Rect& z = zones_[i];
+        if (x1 <= z.x || x0 >= z.right() || y1 <= z.y || y0 >= z.bottom()) continue;
+        if (exact(z)) {
+            hit_[i] = 1;
+            --left_;
+        }
+    }
 }
 
 void CoverageProbe::triangle(Vec2 a, Vec2 b, Vec2 c) {
-    for (size_t i = 0; i < zones_.size(); ++i)
-        if (!hit_[i] && ShapeTest::triangleTouchesRect(a, b, c, zones_[i])) hit_[i] = 1;
+    if (left_ == 0) return;
+    test(std::min({a.x, b.x, c.x}), std::min({a.y, b.y, c.y}), std::max({a.x, b.x, c.x}), std::max({a.y, b.y, c.y}),
+         [&](const Rect& z) { return ShapeTest::triangleTouchesRect(a, b, c, z); });
 }
 
 void CoverageProbe::segment(Vec2 a, Vec2 b) {
-    for (size_t i = 0; i < zones_.size(); ++i)
-        if (!hit_[i] && ShapeTest::segmentTouchesRect(a, b, zones_[i])) hit_[i] = 1;
+    if (left_ == 0) return;
+    test(std::min(a.x, b.x), std::min(a.y, b.y), std::max(a.x, b.x), std::max(a.y, b.y),
+         [&](const Rect& z) { return ShapeTest::segmentTouchesRect(a, b, z); });
 }
 
 void CoverageProbe::rect(const Rect& r) {
-    if (r.w <= 0.0f || r.h <= 0.0f) return;
-    for (size_t i = 0; i < zones_.size(); ++i)
-        if (!hit_[i] && zones_[i].w > 0.0f && zones_[i].h > 0.0f && r.intersects(zones_[i])) hit_[i] = 1;
+    if (left_ == 0 || r.w <= 0.0f || r.h <= 0.0f) return;
+    test(r.x, r.y, r.right(), r.bottom(), [](const Rect&) { return true; });
 }
 
 void CoverageProbe::glow(Vec2 center, float radius) {
     const float core = radius * kGlowCore;
-    for (size_t i = 0; i < zones_.size(); ++i)
-        if (!hit_[i] && ShapeTest::circleTouchesRect(center, core, zones_[i])) hit_[i] = 1;
+    if (left_ == 0 || core <= 0.0f) return;
+    test(center.x - core, center.y - core, center.x + core, center.y + core,
+         [&](const Rect& z) { return ShapeTest::circleTouchesRect(center, core, z); });
 }
 
 }  // namespace cosmic

@@ -42,11 +42,15 @@ private:
 /// shape tested exactly (a thin diagonal beam touches only what it crosses).
 class CoverageProbe final : public ShapeListener {
 public:
-    /// The rectangles watched (an empty one is never touched); every one untouched.
-    void watch(const std::vector<Rect>& zones);
+    /// The rectangles watched (an empty one is never touched); every one untouched. The storage
+    /// is kept from one frame to the next (no allocation once it has grown).
+    void watch(const Rect* zones, size_t count);
+    void watch(const std::vector<Rect>& zones) { watch(zones.data(), zones.size()); }
+    /// A zone no shape can touch any more (emptied).
+    void ignore(size_t i);
     size_t size() const { return zones_.size(); }
     const Rect& zone(size_t i) const { return zones_[i]; }
-    bool touched(size_t i) const { return i < hit_.size() && hit_[i] != 0; }
+    bool touched(size_t i) const { return i < hit_.size() && hit_[i] == 1; }
 
     void triangle(Vec2 a, Vec2 b, Vec2 c) override;
     void segment(Vec2 a, Vec2 b) override;
@@ -54,8 +58,13 @@ public:
     void glow(Vec2 center, float radius) override;
 
 private:
+    /// Marks the zones a shape whose bounding box is [x0, x1] x [y0, y1] touches (`exact` tells
+    /// whether it really does, the bounding boxes overlapping).
+    template <class Exact>
+    void test(float x0, float y0, float x1, float y1, Exact&& exact);
     std::vector<Rect> zones_;
     std::vector<uint8_t> hit_;
+    size_t left_ = 0;  // zones not touched yet (none: nothing to test)
 };
 
 /// Exact tests of a shape against a rectangle (shapes touching only along an edge do not count;

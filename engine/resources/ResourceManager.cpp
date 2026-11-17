@@ -115,11 +115,12 @@ AnimationSetPtr ResourceManager::animation(const std::string& rel) {
 
 Rect ResourceManager::visibleBox(const AnimationSet& set, const Rect& src) {
     if (set.textureFile.empty() || set.frameWidth <= 0 || set.frameHeight <= 0) return {};
-    const std::string key = set.textureFile + '|' + std::to_string(set.frameWidth) + ',' + std::to_string(set.frameHeight);
-    auto it = visibleCells_.find(key);
-    if (it == visibleCells_.end()) {
-        it = visibleCells_.emplace(key, VisibleCells{}).first;
+    auto it = visibleCells_.find(set.textureFile);  // read each frame: no string built for it
+    if (it == visibleCells_.end() || it->second.frameW != set.frameWidth || it->second.frameH != set.frameHeight) {
+        it = visibleCells_.insert_or_assign(set.textureFile, VisibleCells{}).first;
         VisibleCells& vc = it->second;
+        vc.frameW = set.frameWidth;
+        vc.frameH = set.frameHeight;
         SDL_Surface* loaded = IMG_Load(set.textureFile.c_str());
         SDL_Surface* s = loaded ? SDL_ConvertSurface(loaded, SDL_PIXELFORMAT_RGBA32) : nullptr;
         if (loaded) SDL_DestroySurface(loaded);

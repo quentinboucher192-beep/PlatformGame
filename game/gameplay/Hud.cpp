@@ -115,9 +115,8 @@ CoverageProbe* Hud::threatProbe(const GameWorld& w, const GameplaySettings& s) {
     probeArmed_ = false;
     const Enemy* b = w.activeBoss();
     if (!s.fadeHud || !fadeAllowed_ || !b || !b->alive()) return nullptr;
-    std::vector<Rect> zones(drawn_.begin(), drawn_.end());
-    zones[static_cast<size_t>(HudElement::Boss)] = {};  // the boss's bar gives way to Nova only
-    probe_.watch(zones);
+    probe_.watch(drawn_.data(), drawn_.size());
+    probe_.ignore(static_cast<size_t>(HudElement::Boss));  // the boss's bar gives way to Nova only
     probeArmed_ = true;
     return &probe_;
 }

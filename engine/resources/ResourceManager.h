@@ -65,6 +65,7 @@ private:
     std::unordered_map<std::string, AnimationSetPtr> animations_;
     std::unordered_map<std::string, std::string> soundPaths_;
     struct VisibleCells {
+        int frameW = 0, frameH = 0;  // the cut it was read with
         int cols = 0;
         std::vector<Rect> cells;  // row by row, in the frame's pixels
     };
