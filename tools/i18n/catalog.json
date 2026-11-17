@@ -14957,6 +14957,12 @@
    ]
   },
   {
+   "fr": "Entraînement par segment : un administrateur peut activer « Invincible » directement sur l'écran de choix du segment (non classé), en plus du menu pause.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "ENTRAÎNEMENT TERMINÉ",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -19237,6 +19243,12 @@
    "fr": "Invincible (admin) : le bouton de la pause indique « activé · non classé » ; une partie avec Invincible n'est jamais classée.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Invincible (admin) · non classé",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
