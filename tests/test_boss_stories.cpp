@@ -14,6 +14,7 @@
 #include <set>
 
 #include "engine/animation/Animation.h"
+#include "engine/audio/AudioSystem.h"
 #include "engine/core/Application.h"
 #include "engine/core/FileUtil.h"
 #include "engine/core/I18n.h"
@@ -208,6 +209,24 @@ void checkAnimatedStory(const BossStory& p, std::set<std::string>& sheets, int s
     const story::StageAssets assets = story::stageAssets(p);
     CHECK(assets.animations.size() == sheets.size());
     CHECK(assets.textures.empty());  // no fixed layer: every layer of scenery is an animated sheet
+    // 2.63: its sounds — an ambience under every shot, each sound a file of the game, within its shot.
+    std::set<std::string> sounds;
+    for (const StoryShot& shot : p.shots) {
+        if (!shot.stage) continue;
+        const float dur = story::shotDuration(shot.text);
+        int ambiences = 0;
+        for (const StorySfx& fx : shot.stage->sounds) {
+            sounds.insert(fx.sound);
+            CHECK(FileUtil::exists(Paths::assetsDir() / fx.sound));
+            if (!FileUtil::exists(Paths::assetsDir() / fx.sound)) std::printf("  %s: no sound %s\n", p.bossId.c_str(), fx.sound.c_str());
+            CHECK(fx.t >= 0.0f && fx.t <= dur + 1e-3f);
+            CHECK(fx.to <= dur + 1e-3f);
+            CHECK(fx.volume > 0.0f && fx.volume <= 1.0f);
+            ambiences += fx.loop ? 1 : 0;
+        }
+        CHECK(ambiences >= 1);
+    }
+    CHECK(assets.sounds.size() == sounds.size());
     // Its duration and its title card do not change.
     CHECK(story::duration(p) >= 35.0f && story::duration(p) <= 50.0f);
 }
@@ -363,6 +382,44 @@ TEST_CASE("boss stories v2: Singularis in animated scenes") {
     CHECK(hasSheets(sheets, "singularis", {"lyse", "foret", "volcan", "glace", "don", "machine", "grain", "astre"}));
     CHECK(hasSheets(sheets, "singularis", {"cosmos", "etoiles", "voile", "poussiere"}));
     CHECK(sheets.count("animations/singularis.json") == 1);  // the collapsed heart, awake
+}
+
+// 2.63: the sounds of a scene: read from its stage, a scene without any is still valid, and the
+// « effets » volume of the settings at 0 mutes them (they play on the effects bus).
+TEST_CASE("boss stories v2: sounds of the scenes (format, a silent scene, muted with the effects volume)") {
+    Json j = {{"size", {960, 540}},
+              {"camera", Json::array({{{"t", 0}, {"pos", {480, 270}}}, {{"t", 2}, {"zoom", 1.2}}})},
+              {"elements", Json::array({{{"id", "g"}, {"glow", "#ffffff"}, {"keys", Json::array({{{"t", 0}, {"pos", {0, 0}}}})}}})}};
+    auto silent = StoryStage::fromJson(j);
+    CHECK(silent.has_value() && silent->sounds.empty());
+    j["sfx"] = Json::array({{{"sound", "sounds/story_amb_cave.wav"}, {"t", 0}, {"loop", true}, {"volume", 0.4}, {"fade", 0.5}},
+                            {{"sound", "sounds/boss_roar.wav"}, {"t", 1.5}, {"at", {800, 300}}, {"duck", true}, {"pitch", 0.8}},
+                            {{"sound", "sounds/jump.wav"}, {"t", 1.0}, {"pan", -0.5}, {"volume", 3.0}}});
+    auto st = StoryStage::fromJson(j);
+    CHECK(st.has_value());
+    if (st) {
+        CHECK(st->sounds.size() == 3);
+        CHECK(st->sounds[0].loop && st->sounds[0].to == 0.0f && std::fabs(st->sounds[0].volume - 0.4f) < 1e-4f);
+        CHECK(st->sounds[1].at.has_value() && st->sounds[1].duck && std::fabs(st->sounds[1].pitch - 0.8f) < 1e-4f);
+        CHECK(st->sounds[2].pan.has_value() && *st->sounds[2].pan == -0.5f && st->sounds[2].volume == 1.0f);  // clamped
+        CHECK(std::fabs(st->lastTime() - 2.0f) < 1e-4f);
+    }
+    Json bad = j;
+    bad["sfx"][0].erase("sound");
+    CHECK(!StoryStage::fromJson(bad).has_value());  // a sound without its file
+    bad = j;
+    bad["sfx"][0]["t"] = 2.0;
+    bad["sfx"][0]["to"] = 1.0;
+    CHECK(!StoryStage::fromJson(bad).has_value());  // ending before it starts
+    // The « effets » volume at 0: the effects bus (every sound of the stories) is silent.
+    AudioSystem audio;
+    AudioVolumes v;
+    v.effects = 0.0f;
+    audio.setVolumes(v);
+    CHECK(audio.busGain(AudioBus::Effects) == 0.0f);
+    v.effects = 0.8f;
+    audio.setVolumes(v);
+    CHECK(audio.busGain(AudioBus::Effects) > 0.0f);
 }
 
 TEST_CASE("boss stories v2: the format (keys, clips, camera, shakes, flashes; version 1 unchanged)") {
@@ -654,18 +711,30 @@ TEST_CASE("boss stories: the run waits while the story is told (headless game lo
             CHECK(w->player().box.pos().x == player.x && w->player().box.pos().y == player.y);
             CHECK(w->activeBoss() && w->activeBoss()->hp() == bossHp);
             CHECK(w->activeBoss() && w->activeBoss()->box.pos().x == boss.x && w->activeBoss()->box.pos().y == boss.y);
-            // Skipped: a short fade, then the fight goes on from where it was.
-            SDL_Event down{};
-            down.type = SDL_EVENT_KEY_DOWN;
-            down.key.scancode = SDL_SCANCODE_SPACE;
-            down.key.key = SDLK_SPACE;
-            down.key.down = true;
-            SDL_PushEvent(&down);
-            app.runFrames(2);
-            SDL_Event up = down;
-            up.type = SDL_EVENT_KEY_UP;
-            up.key.down = false;
-            SDL_PushEvent(&up);
+            // 2.63: « Passer » (Space) skips only the shot playing: on to the next one, the story
+            // still there; « Quitter » (Échap) leaves it all: a short fade, then the fight goes on
+            // from where it was.
+            auto press = [&](SDL_Scancode sc, SDL_Keycode key) {
+                SDL_Event down{};
+                down.type = SDL_EVENT_KEY_DOWN;
+                down.key.scancode = sc;
+                down.key.key = key;
+                down.key.down = true;
+                SDL_PushEvent(&down);
+                app.runFrames(2);
+                SDL_Event up = down;
+                up.type = SDL_EVENT_KEY_UP;
+                up.key.down = false;
+                SDL_PushEvent(&up);
+            };
+            const int shot = storyShot(app.topScene());
+            CHECK(shot >= 0);
+            press(SDL_SCANCODE_SPACE, SDLK_SPACE);
+            app.runFrames(30);
+            CHECK(app.sceneCount() == 2);
+            CHECK(storyShot(app.topScene()) == shot + 1);
+            CHECK(w->time() == time);
+            press(SDL_SCANCODE_ESCAPE, SDLK_ESCAPE);
             app.runFrames(30);
             CHECK(app.sceneCount() == 1);
             CHECK(game->storyBoss().empty());

@@ -65,6 +65,9 @@ std::unique_ptr<Scene> makeBossStory(GameServices& g, const std::string& bossId,
 /// button, a click, the mouse or a stick moving — leaves it at once, without acting on the menu).
 /// nullptr when there is no trailer. `atSeconds` (automated screenshots): that moment of it.
 std::unique_ptr<Scene> makeTrailer(GameServices& g, bool attract, float atSeconds = -1.0f);
+/// 2.63: the shot a story (or the trailer) `s` is playing (its number of shots: the title card); -1
+/// when `s` is not one. « Passer » goes on to the next shot, « Quitter » leaves the whole story.
+int storyShot(const Scene* s);
 /// The passes of the trailer `s` plays in attract mode (0 during the first); -1 when `s` is not one.
 int trailerPasses(const Scene* s);
 /// The main menu's attract mode: after this long without any input, the trailer plays.

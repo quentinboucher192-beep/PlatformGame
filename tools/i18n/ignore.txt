@@ -172,6 +172,9 @@ a stage of a bad size
 a stage that is not an object
 a stage without elements
 an element that is not an object
+a sound that ends before it starts
+a sound that is not an object
+a sound without its file
 bad camera keys
 element '{0}' without its file
 element '{0}' without keys

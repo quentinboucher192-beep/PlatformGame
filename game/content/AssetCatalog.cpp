@@ -527,6 +527,9 @@ AssetCatalog AssetCatalog::build(const fs::path& assetsDir, const fs::path& data
                 for (const StoryElement& el : shot.stage->elements)
                     if (el.kind == StoryElementKind::Layer || el.kind == StoryElementKind::Sprite)
                         uses.add(el.source, AssetUseKind::Story, bossId, name, d == natives.end());
+            // 2.63: its sounds.
+            if (shot.stage)
+                for (const StorySfx& fx : shot.stage->sounds) uses.add(fx.sound, AssetUseKind::Story, bossId, name, d == natives.end());
         }
     }
 

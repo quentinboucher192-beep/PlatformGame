@@ -33,6 +33,7 @@ from helpers import ASSETS  # noqa: E402
 OUT = os.path.join(ASSETS, "stories")
 SIZE = (960, 540)
 MAX_BYTES = 420 * 1024        # per painting
+MAX_SOUNDS = 8 * 1024 * 1024  # 2.63: the sounds the stories' scenes play (their own and the game's), apart
 MAX_TOTAL = 14 * 1024 * 1024  # every painting of every story (2.53: room for the next giga bosses; 2.57: the Liche, 12 MiB; 2.58: the Titan, 14 MiB)
 
 
@@ -158,10 +159,21 @@ def check_stage(where, shot):
             for k in keys:
                 if "clip" in k and k["clip"] not in meta["clips"]:
                     errs.append(f"{where}: {el.get('id')}: no clip {k['clip']} in {el['sprite']}")
+    sounds = check_stage.sounds  # 2.63: its sounds (their own budget, MAX_SOUNDS)
+    for fx in stage.get("sfx", []):
+        times += [fx["t"]] + ([fx["to"]] if "to" in fx else [])
+        p = os.path.join(ASSETS, fx["sound"])
+        if not os.path.isfile(p):
+            errs.append(f"{where}: missing sound {fx['sound']}")
+        else:
+            sounds.append(p)
     bad = [t for t in times if not 0.0 <= t <= dur + 1e-6]
     if bad:
         errs.append(f"{where}: times {bad[:4]} outside the shot (0..{dur:.2f} s)")
     return errs, files
+
+
+check_stage.sounds = []
 
 
 def check():
@@ -197,6 +209,10 @@ def check():
                 errs.append(f"{shot['image']}: {size // 1024} KiB > {MAX_BYTES // 1024} KiB")
     if total > MAX_TOTAL:
         errs.append(f"stories: {total // 1024} KiB in all > {MAX_TOTAL // 1024} KiB")
+    snd = sum(os.path.getsize(q) for q in set(check_stage.sounds))
+    check_stage.sounds.clear()
+    if snd > MAX_SOUNDS:
+        errs.append(f"stories: {snd // 1024} KiB of sounds > {MAX_SOUNDS // 1024} KiB")
     return errs
 
 

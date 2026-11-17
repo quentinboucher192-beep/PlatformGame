@@ -416,4 +416,40 @@ SHOTS = [shot_candles, shot_names, shot_exodus, shot_phylactery, shot_bones, sho
 
 def generate(review=None):
     """Sprites, layers, the story file and the stills; returns the files written."""
-    return S.generate("liche", "story_liche_scene", SHOTS, _sprites(), LAYERS, review)
+    return S.generate("liche", "story_liche_scene", SHOTS, _sprites(), LAYERS, review, SOUNDS)
+
+
+# =================================================================== the sounds (2.63)
+from story_stage import amb, sfx  # noqa: E402
+
+
+def _snd_candles(D):
+    return [amb("story_amb_crypt", 0.5)] + [sfx("story_candle", 0.9 + 1.5 * i + 0.3, 0.55, at=(x, 440))
+                                            for i, x in enumerate((300, 450, 600, 750))]
+
+
+def _snd_names(D):
+    return [amb("story_amb_crypt", 0.45), sfx("story_glow", 1.1, 0.35), sfx("story_glow", 2.4, 0.3, pitch=1.2)]
+
+
+def _snd_exodus(D):
+    return [amb("story_amb_night", 0.45), sfx("story_collapse", 1.2, 0.9, at=(700, 110), duck=True)] + [
+        sfx("footstep_a" if i % 2 else "footstep_b", 2.4 + 0.3 * i, 0.3, pan=-0.8 + 0.3 * i) for i in range(6)] + [
+        sfx("door_open", 6.3, 0.4, at=(200, 400))]
+
+
+def _snd_phylactery(D):
+    return [amb("story_amb_crypt", 0.45), sfx("story_soul", 4.2, 0.7, at=(500, 400)), sfx("power_unlock", 5.6, 0.55, duck=True)]
+
+
+def _snd_bones(D):
+    return [amb("story_amb_crypt", 0.5)] + [sfx("story_puff", t, 0.2, pitch=1.6, at=(x, 440)) for t, x in ((3.6, 330), (4.4, 380), (5.2, 760))] + [
+        sfx("story_bones", 4.6, 0.55, at=(470, 420))]
+
+
+def _snd_lich(D):
+    return [amb("story_amb_crypt", 0.5), sfx("story_soul", 0.5, 0.35), sfx("summon", 2.6, 0.7, duck=True), sfx("story_bones", 2.7, 0.45)]
+
+
+SOUNDS = {"shot_candles": _snd_candles, "shot_names": _snd_names, "shot_exodus": _snd_exodus, "shot_phylactery": _snd_phylactery,
+          "shot_bones": _snd_bones, "shot_lich": _snd_lich}

@@ -96,9 +96,11 @@ std::vector<std::string> wrapWords(TextRenderer& tr, const std::vector<std::stri
 
 struct SkipHintMetrics {
     float h = 0, fs = 0, space = 0, keyW = 0, dotW = 0, txtW = 0, total = 0;
+    // 2.63: « Échap · Ⓑ Quitter » after it (« Passer » skips the shot, « Quitter » the story)
+    float quitKeyW = 0, quitTxtW = 0, quitW = 0, gap = 0;
 };
 
-/// The parts of « Espace · Ⓐ  Passer », measured.
+/// The parts of « Espace · Ⓐ  Passer   Échap · Ⓑ  Quitter », measured.
 SkipHintMetrics skipHintMetrics(UIContext& ui) {
     SkipHintMetrics m;
     m.h = std::max(18.0f, ui.s(30));
@@ -107,7 +109,11 @@ SkipHintMetrics skipHintMetrics(UIContext& ui) {
     m.keyW = Glyphs::drawBinding(ui, SDL_SCANCODE_SPACE, PadBinding{}, false, {0, 0}, m.h, false);
     m.dotW = ui.text().measure("·", FontFace::Bold, m.fs).x;
     m.txtW = ui.text().measure("Passer", FontFace::Body, m.fs).x;
-    m.total = m.keyW + m.space + m.dotW + m.space + m.h + m.space * 1.4f + m.txtW;
+    m.quitKeyW = Glyphs::drawBinding(ui, SDL_SCANCODE_ESCAPE, PadBinding{}, false, {0, 0}, m.h, false);
+    m.quitTxtW = ui.text().measure("Quitter", FontFace::Body, m.fs).x;
+    m.quitW = m.quitKeyW + m.space + m.dotW + m.space + m.h + m.space * 1.4f + m.quitTxtW;
+    m.gap = m.h * 1.1f;
+    m.total = m.keyW + m.space + m.dotW + m.space + m.h + m.space * 1.4f + m.txtW + m.gap + m.quitW;
     return m;
 }
 
@@ -117,6 +123,8 @@ public:
         : g_(g), story_(story), startAt_(atSeconds >= 0.0f ? -1 : startAt), atSeconds_(atSeconds), trailer_(story.isTrailer()),
           attract_(attract) {}
 
+    /// 2.63: the shot playing (the number of shots: the title card).
+    int shotIndex() const { return t_ >= titleStart_ ? static_cast<int>(shots_.size()) : currentShot(); }
     /// 2.63: the trailer's passes (attract mode: it starts again at its end).
     int passes() const { return passes_; }
     bool attract() const { return attract_; }
@@ -160,13 +168,20 @@ public:
         }
         roarLen_ = def_ ? creatureClipDuration(g_, *def_, story_.clip) : 0.0f;
         activity_ = g_.app.input().activityCount();
-        if (trailer_ && !story_.music.empty()) g_.playMusic(story_.music);  // the trailer's own music
-        else g_.app.audio().setMusicDuck(0.3f);
+        if (trailer_ && !story_.music.empty()) {
+            g_.playMusic(story_.music);  // the trailer's own music
+            baseDuck_ = 1.0f;
+        }
+        setDuck(baseDuck_);
+        // 2.63: its sounds are decoded here too (never while it plays).
+        ResourceManager& res = g_.app.resources();
+        for (const StoryShot& s : story_.shots)
+            if (s.stage)
+                for (const StorySfx& fx : s.stage->sounds)
+                    if (const std::string p = res.soundPath(fx.sound); !p.empty()) g_.app.audio().load(p, true);
     }
 
-    void onExit() override {
-        if (!trailer_ || story_.music.empty()) g_.app.audio().setMusicDuck(1.0f);
-    }
+    void onExit() override { g_.app.audio().setMusicDuck(1.0f); }
 
     bool isOverlay() const override { return true; }
     bool holdsNotifications() const override { return true; }
@@ -195,8 +210,10 @@ public:
             t_ = 0.0f;
             roared_ = false;
             ++passes_;
+            sfxShot_ = -1;
             return;
         }
+        playSounds();
         if (!roared_ && t_ >= titleStart_ + 0.2f) {
             roared_ = true;
             if (def_ && !def_->alertSound.empty()) g_.app.resources().playSound(def_->alertSound, 0.5f);
@@ -205,12 +222,20 @@ public:
             closing_ = true;
             return;
         }
-        // Skipped (never by a press of the fight's first instant: the player may be jumping).
+        // 2.63: « Passer » (Space, Enter, Ⓐ, a click) skips the shot playing — a quick cross-fade
+        // to the next one; on the last shot or the title card, the story ends. « Quitter »
+        // (Échap, Ⓑ, a click on its hint) leaves the whole story. Never by a press of the
+        // fight's first instant (the player may be jumping).
         InputManager& in = g_.app.input();
-        bool skip = in.menuPressed(Action::MenuConfirm) || in.menuPressed(Action::MenuBack) || in.keyPressed(SDL_SCANCODE_SPACE) ||
-                    in.mousePressed(SDL_BUTTON_LEFT);
-        if (skip && sinceEnter_ > 0.6f) {
+        const bool click = in.mousePressed(SDL_BUTTON_LEFT);
+        const bool quit = in.menuPressed(Action::MenuBack) || (click && quitRect_.contains(in.mousePos()));
+        const bool skip = !quit && (in.menuPressed(Action::MenuConfirm) || in.keyPressed(SDL_SCANCODE_SPACE) || click);
+        if (sinceEnter_ <= 0.6f) return;
+        if (quit) {
             closing_ = true;
+            g_.uiSound("ui_back", 0.35f);
+        } else if (skip) {
+            skipShot();
             g_.uiSound("ui_confirm", 0.35f);
         }
     }
@@ -571,6 +596,65 @@ private:
         }
     }
 
+    /// 2.63: « Passer »: on to the next shot (its scene from its start, cross-faded from this
+    /// one), or the end of the story from its last shot or its title card.
+    void skipShot() {
+        const int cur = currentShot();
+        if (t_ >= titleStart_ || cur + 1 >= static_cast<int>(shots_.size())) {
+            closing_ = true;
+            return;
+        }
+        t_ = shots_[static_cast<size_t>(cur + 1)].start;
+    }
+
+    void setDuck(float d) {
+        if (std::fabs(d - duck_) < 1e-4f) return;
+        duck_ = d;
+        g_.app.audio().setMusicDuck(d);
+    }
+
+    /// 2.63: the sounds of the shot playing: a one-shot when the scene passes its time, a loop
+    /// (an ambience) kept up while the scene is within it, fading in and out; a big sound lowers
+    /// the music a little while it lasts. All on the « effets » volume (muted with it). Not
+    /// refreshed any more (the next shot, the title card, skipped), a loop fades out by itself.
+    void playSounds() {
+        if (t_ >= titleStart_ || shots_.empty()) {
+            setDuck(baseDuck_);
+            return;
+        }
+        const int cur = currentShot();
+        const Shot& s = shots_[static_cast<size_t>(cur)];
+        if (!s.stageReady || !s.data->stage) return;
+        const StoryStage& st = *s.data->stage;
+        const float tau = (t_ - s.start) * s.stageScale;
+        if (cur != sfxShot_) {
+            sfxShot_ = cur;
+            sfxTau_ = -1e-3f;
+        }
+        ResourceManager& res = g_.app.resources();
+        const float end = s.dur * s.stageScale;
+        const auto [cam, zoom] = st.cameraAt(tau);
+        for (size_t k = 0; k < st.sounds.size(); ++k) {
+            const StorySfx& fx = st.sounds[k];
+            float pan = fx.pan.value_or(0.0f);
+            if (!fx.pan && fx.at) pan = std::clamp((fx.at->x - cam.x) / (st.size.x * 0.5f / zoom), -1.0f, 1.0f) * 0.8f;
+            if (fx.loop) {
+                const float to = fx.to > 0.0f ? fx.to : end;
+                if (tau < fx.t || tau > to) continue;
+                const float f = fx.fade > 0.0f ? std::min(clamp01((tau - fx.t) / fx.fade), clamp01((to - tau) / fx.fade)) : 1.0f;
+                res.sustainLoop("story/" + std::to_string(cur) + "/" + std::to_string(k), fx.sound, fx.volume * f);
+            } else if (fx.t > sfxTau_ && fx.t <= tau) {
+                res.playSound(fx.sound, fx.volume, fx.pitch, pan);
+                if (fx.duck) {
+                    const int64_t ms = g_.app.audio().fileDurationMs(res.soundPath(fx.sound));
+                    duckUntil_ = std::max(duckUntil_, t_ + (ms > 0 ? static_cast<float>(ms) / 1000.0f : 1.2f));
+                }
+            }
+        }
+        sfxTau_ = tau;
+        setDuck(baseDuck_ * (t_ < duckUntil_ ? 0.7f : 1.0f));
+    }
+
     /// 2.63, the trailer: cuts are quicker than a story's cross-fades.
     float crossFade() const { return trailer_ ? 0.18f : story::kCrossFade; }
 
@@ -790,26 +874,35 @@ private:
         }
     }
 
-    /// « Espace · Ⓐ  Passer », its right edge at `rightMid.x`, centred on `rightMid.y`.
+    /// « Espace · Ⓐ  Passer   Échap · Ⓑ  Quitter », its right edge at `rightMid.x`, centred on
+    /// `rightMid.y` (the room of « Quitter » is kept: a click on it leaves the story).
     void drawSkipHint(Vec2 rightMid) {
         UIContext& ui = g_.ui;
         const SkipHintMetrics m = skipHintMetrics(ui);
         float x = rightMid.x - m.total;
-        Glyphs::drawBinding(ui, SDL_SCANCODE_SPACE, PadBinding{}, false, {x, rightMid.y}, m.h, true);
-        x += m.keyW + m.space;
-        TextStyle st;
-        st.face = FontFace::Bold;
-        st.size = m.fs;
-        st.color = Color{200, 208, 224, 255};
-        st.valign = VAlign::Middle;
-        ui.text().draw("·", {x, rightMid.y}, st);
-        x += m.dotW + m.space;
-        Glyphs::drawPadButton(ui, PadBinding::button(SDL_GAMEPAD_BUTTON_SOUTH), {x, rightMid.y}, m.h);
-        x += m.h + m.space * 1.4f;
-        st.face = FontFace::Body;
-        st.color = Color{226, 232, 244, 255};
-        st.shadow = true;
-        ui.text().draw("Passer", {x, rightMid.y}, st);
+        auto group = [&](SDL_Scancode key, SDL_GamepadButton pad, float keyW, const char* label, Color c) {
+            Glyphs::drawBinding(ui, key, PadBinding{}, false, {x, rightMid.y}, m.h, true);
+            x += keyW + m.space;
+            TextStyle st;
+            st.face = FontFace::Bold;
+            st.size = m.fs;
+            st.color = Color{200, 208, 224, 255};
+            st.valign = VAlign::Middle;
+            ui.text().draw("·", {x, rightMid.y}, st);
+            x += m.dotW + m.space;
+            Glyphs::drawPadButton(ui, PadBinding::button(pad), {x, rightMid.y}, m.h);
+            x += m.h + m.space * 1.4f;
+            st.face = FontFace::Body;
+            st.color = c;
+            st.shadow = true;
+            ui.text().draw(label, {x, rightMid.y}, st);
+        };
+        group(SDL_SCANCODE_SPACE, SDL_GAMEPAD_BUTTON_SOUTH, m.keyW, "Passer", Color{226, 232, 244, 255});
+        x += m.txtW + m.gap;
+        quitRect_ = {x - m.space, rightMid.y - m.h * 0.7f, m.quitW + 2.0f * m.space, m.h * 1.4f};
+        const bool hover = quitRect_.contains(g_.app.input().mousePos());
+        if (hover) ui.r().fillRoundedRect(quitRect_, m.h * 0.3f, Color{255, 255, 255, 28});
+        group(SDL_SCANCODE_ESCAPE, SDL_GAMEPAD_BUTTON_EAST, m.quitKeyW, "Quitter", hover ? Color{255, 255, 255, 255} : Color{200, 208, 224, 255});
     }
 
     GameServices& g_;
@@ -826,12 +919,18 @@ private:
     bool done_ = false;
     bool roared_ = false;
     float roarLen_ = 0.0f;
+    int sfxShot_ = -1;          // 2.63: the shot whose sounds are being played,
+    float sfxTau_ = 0.0f;       // up to this second of its scene
+    float duckUntil_ = 0.0f;    // a big sound: the music a little lower until then
+    float baseDuck_ = 0.3f;     // the music under a story (the trailer's own: full)
+    float duck_ = -1.0f;
     bool trailer_ = false;      // 2.63: the game's trailer (its titles, its last card)
     bool attract_ = false;      // 2.63: the main menu's attract mode (loops, any input leaves)
     bool quickClose_ = false;   // left by an input in attract mode
     int passes_ = 0;
     uint64_t activity_ = 0;
     static constexpr float kQuickFade = 0.2f;
+    Rect quitRect_;             // 2.63: « Échap · Ⓑ Quitter », as drawn last (a click there leaves)
     TexturePtr target_;
     TexturePtr shotTarget_;  // a scene cross-fading in
     TexturePtr drawTarget_;  // where the story is drawn this frame (nullptr: the window)
@@ -912,6 +1011,11 @@ StoryNarrationLayout layoutStoryNarration(UIContext& ui, const std::string& show
 std::unique_ptr<Scene> makeTrailer(GameServices& g, bool attract, float atSeconds) {
     if (!g.trailer || g.trailer->shots.empty()) return nullptr;
     return std::make_unique<BossStoryScene>(g, *g.trailer, -1, std::isfinite(atSeconds) ? atSeconds : -1.0f, attract);
+}
+
+int storyShot(const Scene* s) {
+    const auto* t = dynamic_cast<const BossStoryScene*>(s);
+    return t ? t->shotIndex() : -1;
 }
 
 int trailerPasses(const Scene* s) {

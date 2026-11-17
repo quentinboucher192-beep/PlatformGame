@@ -101,6 +101,25 @@ struct StoryElement {
 struct StoryShake {
     float from = 0.0f, to = 0.0f, amount = 0.0f;  // seconds, units
 };
+/// 2.63: a sound of a scene, on the « effets » volume of the settings (and muted with it). A
+/// one-shot plays once at `t`; a loop (an ambience) plays from `t` to `to` (the shot's end when 0),
+/// fading in and out over `fade`. `at`: where it is heard from (a point of the stage: panned by
+/// its place on the screen); `pan` a fixed panning instead (-1 left .. 1 right). `duck`: a big
+/// sound — the music lowers a little while it plays. Its times are seconds of the French line,
+/// stretched as the rest of the scene.
+struct StorySfx {
+    std::string sound;  // assets/<sound>
+    float t = 0.0f;
+    float volume = 0.7f;
+    float pitch = 1.0f;
+    std::optional<float> pan;
+    std::optional<Vec2> at;
+    bool loop = false;
+    float to = 0.0f;
+    float fade = 0.4f;
+    bool duck = false;
+};
+
 struct StoryFlash {
     float t = 0.0f;               // its peak
     float in = 0.1f, out = 0.5f;  // rising before it, fading after it
@@ -119,6 +138,7 @@ struct StoryStage {
     std::vector<StoryShake> shakes;
     std::vector<StoryFlash> flashes;
     std::vector<StoryElement> elements;
+    std::vector<StorySfx> sounds;  // 2.63: its sound effects (none: a silent scene, as before)
 
     static std::optional<StoryStage> fromJson(const Json& j, std::string* error = nullptr);
     /// The camera at `t`: its point and its zoom (before it is kept inside the stage).
@@ -196,6 +216,7 @@ constexpr int kVersion = 2;  // the newest format read (1: paintings, 2: animate
 struct StageAssets {
     std::vector<std::string> textures;
     std::vector<std::string> animations;
+    std::vector<std::string> sounds;  // 2.63: the sounds of its scenes
 };
 StageAssets stageAssets(const BossStory& s);
 }  // namespace story

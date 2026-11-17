@@ -155,6 +155,24 @@ std::optional<StoryStage> StoryStage::fromJson(const Json& j, std::string* error
             fl.alpha = std::clamp(finiteOr(jget<float>(f, "alpha", fl.alpha), fl.alpha), 0.0f, 1.0f);
             st.flashes.push_back(fl);
         }
+    if (j.contains("sfx") && j["sfx"].is_array())  // 2.63: its sounds
+        for (const auto& s : j["sfx"]) {
+            if (!s.is_object()) return fail("a sound that is not an object");
+            StorySfx fx;
+            fx.sound = jstr(s, "sound");
+            if (fx.sound.empty()) return fail("a sound without its file");
+            fx.t = std::max(0.0f, finiteOr(jget<float>(s, "t", 0.0f), 0.0f));
+            fx.volume = std::clamp(finiteOr(jget<float>(s, "volume", fx.volume), fx.volume), 0.0f, 1.0f);
+            fx.pitch = std::clamp(finiteOr(jget<float>(s, "pitch", 1.0f), 1.0f), 0.25f, 4.0f);
+            if (s.contains("pan") && s["pan"].is_number()) fx.pan = std::clamp(finiteOr(s["pan"].get<float>(), 0.0f), -1.0f, 1.0f);
+            if (s.contains("at") && s["at"].is_array() && s["at"].size() == 2) fx.at = vec2FromJson(s["at"]);
+            fx.loop = jget<bool>(s, "loop", false);
+            fx.to = std::max(0.0f, finiteOr(jget<float>(s, "to", 0.0f), 0.0f));
+            if (fx.to > 0.0f && fx.to < fx.t) return fail("a sound that ends before it starts");
+            fx.fade = std::clamp(finiteOr(jget<float>(s, "fade", fx.fade), fx.fade), 0.0f, 10.0f);
+            fx.duck = jget<bool>(s, "duck", false);
+            st.sounds.push_back(std::move(fx));
+        }
     if (!j.contains("elements") || !j["elements"].is_array()) return fail("a stage without elements");
     for (const auto& e : j["elements"]) {
         if (!e.is_object()) return fail("an element that is not an object");
@@ -265,6 +283,7 @@ float StoryStage::lastTime() const {
     for (const StoryFlash& f : flashes) t = std::max(t, f.t);
     for (const StoryElement& e : elements)
         for (const StoryKey& k : e.keys) t = std::max(t, k.t);
+    for (const StorySfx& s : sounds) t = std::max({t, s.t, s.to});
     return t;
 }
 
@@ -351,6 +370,8 @@ StageAssets stageAssets(const BossStory& s) {
             if (!seen.insert(e.source).second) continue;
             (e.kind == StoryElementKind::Layer ? a.textures : a.animations).push_back(e.source);
         }
+        for (const StorySfx& s : shot.stage->sounds)
+            if (seen.insert(s.sound).second) a.sounds.push_back(s.sound);
     }
     return a;
 }

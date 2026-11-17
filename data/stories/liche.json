@@ -635,6 +635,51 @@
        }
       ]
      }
+    ],
+    "sfx": [
+     {
+      "sound": "sounds/story_amb_crypt.wav",
+      "t": 0.0,
+      "volume": 0.5,
+      "fade": 0.6,
+      "loop": true
+     },
+     {
+      "sound": "sounds/story_candle.wav",
+      "t": 1.2,
+      "volume": 0.55,
+      "at": [
+       300.0,
+       440.0
+      ]
+     },
+     {
+      "sound": "sounds/story_candle.wav",
+      "t": 2.7,
+      "volume": 0.55,
+      "at": [
+       450.0,
+       440.0
+      ]
+     },
+     {
+      "sound": "sounds/story_candle.wav",
+      "t": 4.2,
+      "volume": 0.55,
+      "at": [
+       600.0,
+       440.0
+      ]
+     },
+     {
+      "sound": "sounds/story_candle.wav",
+      "t": 5.7,
+      "volume": 0.55,
+      "at": [
+       750.0,
+       440.0
+      ]
+     }
     ]
    }
   },
@@ -1624,6 +1669,26 @@
        }
       ]
      }
+    ],
+    "sfx": [
+     {
+      "sound": "sounds/story_amb_crypt.wav",
+      "t": 0.0,
+      "volume": 0.45,
+      "fade": 0.6,
+      "loop": true
+     },
+     {
+      "sound": "sounds/story_glow.wav",
+      "t": 1.1,
+      "volume": 0.35
+     },
+     {
+      "sound": "sounds/story_glow.wav",
+      "t": 2.4,
+      "volume": 0.3,
+      "pitch": 1.2
+     }
     ]
    }
   },
@@ -2332,6 +2397,70 @@
       "color": "#e0b0ff",
       "alpha": 0.4
      }
+    ],
+    "sfx": [
+     {
+      "sound": "sounds/story_amb_night.wav",
+      "t": 0.0,
+      "volume": 0.45,
+      "fade": 0.6,
+      "loop": true
+     },
+     {
+      "sound": "sounds/story_collapse.wav",
+      "t": 1.2,
+      "volume": 0.9,
+      "at": [
+       700.0,
+       110.0
+      ],
+      "duck": true
+     },
+     {
+      "sound": "sounds/footstep_b.wav",
+      "t": 2.4,
+      "volume": 0.3,
+      "pan": -0.8
+     },
+     {
+      "sound": "sounds/footstep_a.wav",
+      "t": 2.7,
+      "volume": 0.3,
+      "pan": -0.5
+     },
+     {
+      "sound": "sounds/footstep_b.wav",
+      "t": 3.0,
+      "volume": 0.3,
+      "pan": -0.2
+     },
+     {
+      "sound": "sounds/footstep_a.wav",
+      "t": 3.3,
+      "volume": 0.3,
+      "pan": 0.1
+     },
+     {
+      "sound": "sounds/footstep_b.wav",
+      "t": 3.6,
+      "volume": 0.3,
+      "pan": 0.4
+     },
+     {
+      "sound": "sounds/footstep_a.wav",
+      "t": 3.9,
+      "volume": 0.3,
+      "pan": 0.7
+     },
+     {
+      "sound": "sounds/door_open.wav",
+      "t": 6.3,
+      "volume": 0.4,
+      "at": [
+       200.0,
+       400.0
+      ]
+     }
     ]
    }
   },
@@ -2957,6 +3086,30 @@
       "out": 0.6,
       "color": "#d8ffb0",
       "alpha": 0.55
+     }
+    ],
+    "sfx": [
+     {
+      "sound": "sounds/story_amb_crypt.wav",
+      "t": 0.0,
+      "volume": 0.45,
+      "fade": 0.6,
+      "loop": true
+     },
+     {
+      "sound": "sounds/story_soul.wav",
+      "t": 4.2,
+      "volume": 0.7,
+      "at": [
+       500.0,
+       400.0
+      ]
+     },
+     {
+      "sound": "sounds/power_unlock.wav",
+      "t": 5.6,
+      "volume": 0.55,
+      "duck": true
      }
     ]
    }
@@ -3628,6 +3781,54 @@
         ],
         "clip": "idle"
        }
+      ]
+     }
+    ],
+    "sfx": [
+     {
+      "sound": "sounds/story_amb_crypt.wav",
+      "t": 0.0,
+      "volume": 0.5,
+      "fade": 0.6,
+      "loop": true
+     },
+     {
+      "sound": "sounds/story_puff.wav",
+      "t": 3.6,
+      "volume": 0.2,
+      "pitch": 1.6,
+      "at": [
+       330.0,
+       440.0
+      ]
+     },
+     {
+      "sound": "sounds/story_puff.wav",
+      "t": 4.4,
+      "volume": 0.2,
+      "pitch": 1.6,
+      "at": [
+       380.0,
+       440.0
+      ]
+     },
+     {
+      "sound": "sounds/story_puff.wav",
+      "t": 5.2,
+      "volume": 0.2,
+      "pitch": 1.6,
+      "at": [
+       760.0,
+       440.0
+      ]
+     },
+     {
+      "sound": "sounds/story_bones.wav",
+      "t": 4.6,
+      "volume": 0.55,
+      "at": [
+       470.0,
+       420.0
       ]
      }
     ]
@@ -4752,6 +4953,31 @@
       "out": 0.5,
       "color": "#d8ffb0",
       "alpha": 0.4
+     }
+    ],
+    "sfx": [
+     {
+      "sound": "sounds/story_amb_crypt.wav",
+      "t": 0.0,
+      "volume": 0.5,
+      "fade": 0.6,
+      "loop": true
+     },
+     {
+      "sound": "sounds/story_soul.wav",
+      "t": 0.5,
+      "volume": 0.35
+     },
+     {
+      "sound": "sounds/summon.wav",
+      "t": 2.6,
+      "volume": 0.7,
+      "duck": true
+     },
+     {
+      "sound": "sounds/story_bones.wav",
+      "t": 2.7,
+      "volume": 0.45
      }
     ]
    }

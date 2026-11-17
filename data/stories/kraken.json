@@ -563,6 +563,43 @@
        }
       ]
      }
+    ],
+    "sfx": [
+     {
+      "sound": "sounds/story_amb_deep.wav",
+      "t": 0.0,
+      "volume": 0.55,
+      "fade": 0.6,
+      "loop": true
+     },
+     {
+      "sound": "sounds/story_egg_crack.wav",
+      "t": 3.6,
+      "volume": 0.5,
+      "pitch": 0.8,
+      "at": [
+       520.0,
+       420.0
+      ]
+     },
+     {
+      "sound": "sounds/story_bubbles.wav",
+      "t": 3.65,
+      "volume": 0.6,
+      "at": [
+       520.0,
+       420.0
+      ]
+     },
+     {
+      "sound": "sounds/story_glow.wav",
+      "t": 5.6,
+      "volume": 0.6,
+      "at": [
+       548.0,
+       380.0
+      ]
+     }
     ]
    }
   },
@@ -1451,6 +1488,39 @@
         ],
         "clip": "idle"
        }
+      ]
+     }
+    ],
+    "sfx": [
+     {
+      "sound": "sounds/story_amb_deep.wav",
+      "t": 0.0,
+      "volume": 0.5,
+      "fade": 0.6,
+      "loop": true
+     },
+     {
+      "sound": "sounds/story_bubbles.wav",
+      "t": 2.0,
+      "volume": 0.3,
+      "pan": -0.2
+     },
+     {
+      "sound": "sounds/lava_bubble.wav",
+      "t": 6.0,
+      "volume": 0.4,
+      "at": [
+       780.0,
+       400.0
+      ]
+     },
+     {
+      "sound": "sounds/story_bubbles.wav",
+      "t": 6.4,
+      "volume": 0.35,
+      "at": [
+       800.0,
+       380.0
       ]
      }
     ]
@@ -2676,6 +2746,51 @@
       "color": "#e0b0ff",
       "alpha": 0.45
      }
+    ],
+    "sfx": [
+     {
+      "sound": "sounds/story_amb_night.wav",
+      "t": 0.0,
+      "volume": 0.45,
+      "to": 2.6,
+      "fade": 0.6,
+      "loop": true
+     },
+     {
+      "sound": "sounds/story_amb_deep.wav",
+      "t": 2.2,
+      "volume": 0.5,
+      "fade": 0.6,
+      "loop": true
+     },
+     {
+      "sound": "sounds/story_collapse.wav",
+      "t": 1.2,
+      "volume": 0.9,
+      "at": [
+       620.0,
+       86.0
+      ],
+      "duck": true
+     },
+     {
+      "sound": "sounds/story_bubbles.wav",
+      "t": 2.8,
+      "volume": 0.3,
+      "pan": 0.3
+     },
+     {
+      "sound": "sounds/story_bubbles.wav",
+      "t": 3.5,
+      "volume": 0.3,
+      "pan": -0.2
+     },
+     {
+      "sound": "sounds/story_bubbles.wav",
+      "t": 4.3,
+      "volume": 0.3,
+      "pan": 0.5
+     }
     ]
    }
   },
@@ -3652,6 +3767,45 @@
       "color": "#c8f4ff",
       "alpha": 0.8
      }
+    ],
+    "sfx": [
+     {
+      "sound": "sounds/story_amb_deep.wav",
+      "t": 0.0,
+      "volume": 0.5,
+      "fade": 0.6,
+      "loop": true
+     },
+     {
+      "sound": "sounds/story_glow.wav",
+      "t": 1.14,
+      "volume": 0.45,
+      "pitch": 1.0
+     },
+     {
+      "sound": "sounds/story_glow.wav",
+      "t": 2.24,
+      "volume": 0.45,
+      "pitch": 1.2
+     },
+     {
+      "sound": "sounds/story_glow.wav",
+      "t": 3.34,
+      "volume": 0.45,
+      "pitch": 1.4
+     },
+     {
+      "sound": "sounds/power_unlock.wav",
+      "t": 4.2,
+      "volume": 0.7,
+      "duck": true
+     },
+     {
+      "sound": "sounds/story_glow.wav",
+      "t": 4.4,
+      "volume": 0.4,
+      "pitch": 0.8
+     }
     ]
    }
   },
@@ -4449,6 +4603,31 @@
        }
       ]
      }
+    ],
+    "sfx": [
+     {
+      "sound": "sounds/story_amb_deep.wav",
+      "t": 0.0,
+      "volume": 0.5,
+      "fade": 0.6,
+      "loop": true
+     },
+     {
+      "sound": "sounds/wave_cast.wav",
+      "t": 1.2,
+      "volume": 0.5,
+      "pitch": 0.6,
+      "at": [
+       380.0,
+       300.0
+      ]
+     },
+     {
+      "sound": "sounds/story_bubbles.wav",
+      "t": 1.9,
+      "volume": 0.5,
+      "pan": 0.4
+     }
     ]
    }
   },
@@ -5068,6 +5247,39 @@
       "from": 3.0,
       "to": 3.6,
       "amount": 2.5
+     }
+    ],
+    "sfx": [
+     {
+      "sound": "sounds/story_amb_deep.wav",
+      "t": 0.0,
+      "volume": 0.55,
+      "fade": 0.6,
+      "loop": true
+     },
+     {
+      "sound": "sounds/story_glow.wav",
+      "t": 0.5,
+      "volume": 0.3,
+      "pitch": 0.9
+     },
+     {
+      "sound": "sounds/story_glow.wav",
+      "t": 1.55,
+      "volume": 0.3,
+      "pitch": 1.1
+     },
+     {
+      "sound": "sounds/summon.wav",
+      "t": 3.0,
+      "volume": 0.6,
+      "duck": true
+     },
+     {
+      "sound": "sounds/story_bubbles.wav",
+      "t": 5.62,
+      "volume": 0.3,
+      "pan": -0.4
      }
     ]
    }
