@@ -1,0 +1,38 @@
+#pragma once
+// Asterion, le Dévoreur de mondes, drawn from its sprite in layers (CLANS › RAIDS, the sheet of a
+// raid event): each branch of its body, its heart and its aura, in the state the server gives
+// (game/online/AsterionBody.h), breathing, its heart beating, motes drifting around it. Every
+// part answers the mouse (its own pixels, not a box) and the keyboard / gamepad (one focus stop
+// per part): it lights up and its tooltip tells its name, its gigaboss, its state and what
+// destroying it does to the titan.
+
+#include <map>
+#include <string>
+
+#include "engine/core/Math.h"
+#include "game/online/AsterionBody.h"
+
+namespace cosmic {
+
+class GameServices;
+
+class AsterionFigure {
+public:
+    /// The titan fitted and centred in `r` (whole multiples of its pixels once enlarged), each
+    /// part in its state (intact when `states` does not name it). `id`: the prefix of its focus
+    /// stops. Returns the id of the part clicked or activated (empty when none).
+    std::string draw(GameServices& g, const std::string& id, const Rect& r, const std::map<std::string, asterion::State>& states);
+    /// The tooltip of the part hovered or focused by the last draw(), over everything: called once
+    /// the rest of the screen is drawn (nothing when draw() was not called since the last one).
+    void drawTooltip(GameServices& g);
+    /// The part whose tooltip shows (empty when none).
+    std::string shownPart() const { return tip_; }
+
+private:
+    std::string tip_;
+    asterion::State tipState_ = asterion::State::Intact;
+    Rect tipFigure_;
+    Vec2 tipAnchor_;
+};
+
+}  // namespace cosmic

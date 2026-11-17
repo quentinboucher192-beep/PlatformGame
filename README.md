@@ -464,6 +464,11 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   enregistrée en UTC, aperçu dans plusieurs fuseaux, inscriptions ouvertes ou fermées, capacité, publication à tous les
   clans, annulation, Journal). Heures au fuseau de l'ordinateur avec son changement d'heure ; le combat arrive dans une
   prochaine version (serveur : migration 0141, rappels par le cron chaque minute).
+* **Asterion dessiné en pixel art, partie par partie** : dans CLANS › RAIDS et la fiche d'un événement, le titan
+  est un vrai sprite en calques (crâne, bras, torse, abdomen, jambes, cœur cosmique, aura) qui respire, dont le cœur bat
+  et autour duquel dérivent des particules ; survoler une partie à la souris (ses propres pixels) ou y aller au clavier
+  ou à la manette l'éclaire et affiche son infobulle : nom, gigaboss, état (intact, sous attaque, affaibli, détruit,
+  non découvert) et effet de sa destruction sur Asterion.
 
 **Nouveau dans la version 2.64.2** :
 * **Coopération sur un même PC, un périphérique par joueur** : clavier et souris à un seul joueur, une manette

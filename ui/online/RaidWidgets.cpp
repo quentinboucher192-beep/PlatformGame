@@ -116,29 +116,6 @@ Color stateText(raids::State s) {
     }
 }
 
-void drawTitan(UIContext& ui, const Rect& r, float time) {
-    // Proportions of the maquette (420 × 300): head, core, arms, legs, the burning eye.
-    const float k = std::min(r.w / 420.0f, r.h / 300.0f);
-    const float ox = r.x + (r.w - 420.0f * k) * 0.5f, oy = r.y + (r.h - 300.0f * k) * 0.5f;
-    auto P = [&](float x, float y) { return Vec2{ox + x * k, oy + y * k}; };
-    const Color limb{74, 26, 82, 255};
-    const float pulse = 0.5f + 0.5f * std::sin(time * 1.6f);
-    auto bar = [&](Vec2 a, Vec2 b, float wpx) { ui.r().drawLine(a, b, limb, wpx * k); ui.r().fillCircle(a, wpx * 0.5f * k, limb); ui.r().fillCircle(b, wpx * 0.5f * k, limb); };
-    bar(P(55, 140), P(175, 100), 26);   // arms
-    bar(P(245, 100), P(365, 140), 26);
-    bar(P(170, 250), P(160, 300), 30);  // legs
-    bar(P(250, 250), P(260, 300), 30);
-    ui.r().fillRoundedRect({ox + 160 * k, oy + 200 * k, 100 * k, 60 * k}, 30 * k, limb);
-    ui.r().drawGlow(P(210, 144), 90 * k, Color{255, 106, 61, static_cast<uint8_t>(60 + 40 * pulse)});
-    ui.r().fillRoundedRect({ox + 150 * k, oy + 84 * k, 120 * k, 120 * k}, 40 * k, Color{150, 42, 70, 255});
-    ui.r().fillRoundedRect({ox + 162 * k, oy + 96 * k, 96 * k, 96 * k}, 34 * k, Color{220, 90, 60, 255});
-    ui.r().drawGlow(P(210, 46), 50 * k, Color{255, 90, 176, 70});
-    ui.r().fillCircle(P(210, 46), 40 * k, Color{122, 42, 138, 255});
-    ui.r().fillCircle(P(210, 46), 26 * k, Color{255, 176, 208, 255});
-    ui.r().drawGlow(P(210, 142), 30 * k, Color{255, 210, 122, static_cast<uint8_t>(90 + 80 * pulse)});
-    ui.r().fillCircle(P(210, 142), 14 * k, Color{255, 224, 138, 255});
-}
-
 int chips(UIContext& ui, const std::string& id, float x, float y, float right, const std::vector<std::string>& labels, const std::vector<bool>& on,
           float& bottom, bool enabled) {
     int clicked = -1;

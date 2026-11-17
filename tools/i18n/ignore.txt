@@ -260,3 +260,5 @@ cancel
 capacity
 difficulty
 event
+box
+contour
